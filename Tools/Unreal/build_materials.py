@@ -17,10 +17,12 @@ ASSET_TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 
 
 def recreate_material(name: str) -> unreal.Material:
-    """Borra el material si existe y crea uno vacío."""
+    """Reutiliza el material si existe (vaciando su grafo) para no romper referencias; si no, lo crea."""
     full = f"{MATERIALS_PATH}/{name}"
     if unreal.EditorAssetLibrary.does_asset_exist(full):
-        unreal.EditorAssetLibrary.delete_asset(full)
+        material = unreal.EditorAssetLibrary.load_asset(full)
+        MEL.delete_all_material_expressions(material)
+        return material
     material = ASSET_TOOLS.create_asset(name, MATERIALS_PATH, unreal.Material, unreal.MaterialFactoryNew())
     if material is None:
         raise RuntimeError(f"No se pudo crear {full}")
@@ -65,59 +67,105 @@ def finish(material):
 # Terreno
 # ---------------------------------------------------------------------------
 
-TERRAIN_HLSL = r"""
-// Color por vértice en sRGB -> lineal.
-float3 baseColor = pow(saturate(VC.rgb), 2.2);
-
-// Ruido de valor barato en espacio de mundo (metros) a dos escalas.
+# Muestreo triplanar compartido por color y normal (metros del mundo).
+TRIPLANAR_COMMON = r"""
+float3 n = normalize(VN);
+float3 w = pow(abs(n), 4.0);
+w /= (w.x + w.y + w.z);
 float3 p = WP / 100.0;
-float2 cell = floor(p.xy / 3.0);
-float2 f = frac(p.xy / 3.0);
-f = f * f * (3.0 - 2.0 * f);
-float h00 = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
-float h10 = frac(sin(dot(cell + float2(1, 0), float2(127.1, 311.7))) * 43758.5453);
-float h01 = frac(sin(dot(cell + float2(0, 1), float2(127.1, 311.7))) * 43758.5453);
-float h11 = frac(sin(dot(cell + float2(1, 1), float2(127.1, 311.7))) * 43758.5453);
-float n1 = lerp(lerp(h00, h10, f.x), lerp(h01, h11, f.x), f.y);
+float s1 = 1.0 / 2.7;
+float s2 = 1.0 / 11.0;
+"""
 
-float2 cell2 = floor(p.xy / 0.6);
-float n2 = frac(sin(dot(cell2, float2(269.5, 183.3))) * 43758.5453);
+TERRAIN_COLOR_HLSL = TRIPLANAR_COMMON + r"""
+float4 d1 = Texture2DSample(Detail, DetailSampler, p.yz * s1) * w.x
+          + Texture2DSample(Detail, DetailSampler, p.xz * s1) * w.y
+          + Texture2DSample(Detail, DetailSampler, p.xy * s1) * w.z;
+float4 d2 = Texture2DSample(Detail, DetailSampler, p.yz * s2) * w.x
+          + Texture2DSample(Detail, DetailSampler, p.xz * s2) * w.y
+          + Texture2DSample(Detail, DetailSampler, p.xy * s2) * w.z;
+float4 macro = Texture2DSample(Detail, DetailSampler, p.xy / 70.0 + 0.37);
 
-// Estratos en la roca siguiendo la altura.
-float strata = 0.5 + 0.5 * sin(p.z * 2.3 + n1 * 3.0);
+// Color por vértice en sRGB -> lineal.
+float3 base = pow(saturate(VC.rgb), 2.2);
 float rock = saturate(VC.a);
 
-float variation = lerp(0.9, 1.1, n1) * lerp(0.96, 1.04, n2);
-float3 color = baseColor * variation;
-color *= lerp(1.0, lerp(0.85, 1.08, strata), rock);
+// Variación macro: manchas algo más cálidas o frías y más claras u oscuras.
+float3 warm = base * float3(1.08, 1.02, 0.86);
+float3 cool = base * float3(0.9, 1.0, 1.04);
+float3 color = lerp(cool, warm, macro.r);
+color *= lerp(0.82, 1.12, macro.g);
+
+// Detalle: grano fino y medio; guijarros en suelo blando, vetas en roca.
+color *= lerp(0.86, 1.1, d1.r) * lerp(0.9, 1.08, d2.g);
+color *= lerp(lerp(0.9, 1.06, d1.b), lerp(0.78, 1.12, d2.a), rock);
 return color;
 """
+
+TERRAIN_NORMAL_HLSL = TRIPLANAR_COMMON + r"""
+float2 nx = Texture2DSample(NormalTex, NormalTexSampler, p.yz * s1).rg * 2.0 - 1.0;
+float2 ny = Texture2DSample(NormalTex, NormalTexSampler, p.xz * s1).rg * 2.0 - 1.0;
+float2 nz = Texture2DSample(NormalTex, NormalTexSampler, p.xy * s1).rg * 2.0 - 1.0;
+float2 mz = Texture2DSample(NormalTex, NormalTexSampler, p.xy * s2).rg * 2.0 - 1.0;
+float strength = lerp(0.45, 1.1, saturate(Rock));
+// Perturbación aproximada por eje de proyección (estilo «whiteout» simplificado).
+float3 perturb = float3(0.0, nx.x, nx.y) * w.x
+               + float3(ny.x, 0.0, ny.y) * w.y
+               + float3(nz.x + mz.x * 0.6, nz.y + mz.y * 0.6, 0.0) * w.z;
+return normalize(n + perturb * strength);
+"""
+
+
+def texture_object(material, path: str, x: int, y: int):
+    node = expr(material, unreal.MaterialExpressionTextureObject, x, y)
+    texture = unreal.EditorAssetLibrary.load_asset(path)
+    if texture is None:
+        raise RuntimeError(f"Falta la textura {path}; ejecuta Tools/Unreal/import_textures.py")
+    node.set_editor_property("texture", texture)
+    return node
 
 
 def build_terrain():
     m = recreate_material("M_Terrain")
-    vc = expr(m, unreal.MaterialExpressionVertexColor, -900, 0)
-    wp = expr(m, unreal.MaterialExpressionWorldPosition, -900, 200)
-    append = expr(m, unreal.MaterialExpressionAppendVector, -700, 0)
+    m.set_editor_property("tangent_space_normal", False)
+
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1100, 200)
+    vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1100, 300)
+    detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1100, 420)
+    normal_tex = texture_object(m, "/Game/Generated/Textures/T_TerrainNormal", -1100, 620)
+
+    append = expr(m, unreal.MaterialExpressionAppendVector, -850, 0)
     connect(vc, "", append, "A")
     connect(vc, "A", append, "B")
 
-    body = custom(m, -450, 0, TERRAIN_HLSL, ["VC", "WP"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainColor")
-    connect(append, "", body, "VC")
-    connect(wp, "", body, "WP")
-    to_property(body, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail"],
+                   unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainColor")
+    connect(append, "", color, "VC")
+    connect(wp, "", color, "WP")
+    connect(vn, "", color, "VN")
+    connect(detail, "", color, "Detail")
+    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
-    rough = expr(m, unreal.MaterialExpressionLinearInterpolate, -300, 300)
-    c_soft = expr(m, unreal.MaterialExpressionConstant, -500, 300)
-    c_soft.set_editor_property("r", 0.94)
-    c_rock = expr(m, unreal.MaterialExpressionConstant, -500, 380)
-    c_rock.set_editor_property("r", 0.72)
+    normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"],
+                    unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainNormal")
+    connect(wp, "", normal, "WP")
+    connect(vn, "", normal, "VN")
+    connect(normal_tex, "", normal, "NormalTex")
+    connect(vc, "A", normal, "Rock")
+    to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
+
+    rough = expr(m, unreal.MaterialExpressionLinearInterpolate, -300, 700)
+    c_soft = expr(m, unreal.MaterialExpressionConstant, -500, 700)
+    c_soft.set_editor_property("r", 0.93)
+    c_rock = expr(m, unreal.MaterialExpressionConstant, -500, 780)
+    c_rock.set_editor_property("r", 0.74)
     connect(c_soft, "", rough, "A")
     connect(c_rock, "", rough, "B")
     connect(vc, "A", rough, "Alpha")
     to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
 
-    spec = expr(m, unreal.MaterialExpressionConstant, -300, 460)
+    spec = expr(m, unreal.MaterialExpressionConstant, -300, 860)
     spec.set_editor_property("r", 0.3)
     to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     finish(m)
@@ -191,7 +239,11 @@ def build_ocean():
         s = expr(m, unreal.MaterialExpressionScalarParameter, -1400, 320 + i * 180)
         s.set_editor_property("parameter_name", f"Steepness{i}")
         s.set_editor_property("default_value", steep)
-        wave_params.append(w)
+        # El parámetro vectorial sale como float3; se añade el alfa para tener float4.
+        rgba = expr(m, unreal.MaterialExpressionAppendVector, -1200, 240 + i * 180)
+        connect(w, "", rgba, "A")
+        connect(w, "A", rgba, "B")
+        wave_params.append(rgba)
         steep_params.append(s)
 
     inputs = ["WP", "T", "W0", "W1", "W2", "W3", "S0", "S1", "S2", "S3"]
@@ -270,7 +322,7 @@ def build_stars():
     m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
     m.set_editor_property("two_sided", True)
-    m.set_editor_property("is_sky", True)
+    # Cúpula translúcida aditiva normal: un material «de cielo» debe cubrir toda la pantalla.
 
     cv = expr(m, unreal.MaterialExpressionCameraVectorWS, -800, 0)
     t = expr(m, unreal.MaterialExpressionTime, -800, 100)
@@ -286,11 +338,144 @@ def build_stars():
     finish(m)
 
 
+# ---------------------------------------------------------------------------
+# Vegetación y rocas (se reconstruyen en su sitio para conservar las referencias)
+# ---------------------------------------------------------------------------
+
+GENERATED_MATERIALS = "/Game/Generated/Materials"
+
+WIND_HLSL = r"""
+// Viento: balanceo lento global + ráfagas + aleteo fino, modulado por la máscara (alfa del color de vértice).
+float3 p = WP / 100.0;
+float phase = dot(p.xy, float2(0.07, 0.05));
+float sway = sin(T * 0.9 + phase) * 0.6 + sin(T * 1.7 + phase * 1.9) * 0.25;
+float gust = saturate(sin(T * 0.23 + p.x * 0.004) * 0.5 + 0.5);
+float flutter = sin(T * 7.0 + dot(p, float3(3.1, 2.3, 4.7))) * 0.15;
+float amount = Mask * Mask * Strength * (0.6 + gust * 0.8);
+float3 dir = normalize(float3(0.8, 0.45, 0.0));
+return (dir * (sway + flutter) + float3(0, 0, -abs(sway) * 0.25)) * amount;
+"""
+
+FOLIAGE_COLOR_HLSL = r"""
+float3 base = pow(saturate(VC), 2.2);
+// Tinte por instancia: unas plantas algo más amarillas y otras más oscuras.
+float3 tintA = float3(1.10, 1.04, 0.80);
+float3 tintB = float3(0.82, 0.95, 0.90);
+float3 color = base * lerp(tintA, tintB, R) * lerp(0.85, 1.1, frac(R * 7.31));
+color *= lerp(0.88, 1.08, Noise.r) * lerp(0.94, 1.04, Noise.b);
+return color;
+"""
+
+
+def rebuild_material(path: str, name: str) -> unreal.Material:
+    """Reutiliza el material si existe (vaciando su grafo); si no, lo crea."""
+    full = f"{path}/{name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(full):
+        material = unreal.EditorAssetLibrary.load_asset(full)
+        MEL.delete_all_material_expressions(material)
+        return material
+    unreal.EditorAssetLibrary.make_directory(path)
+    return ASSET_TOOLS.create_asset(name, path, unreal.Material, unreal.MaterialFactoryNew())
+
+
+def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
+    m = rebuild_material(GENERATED_MATERIALS, name)
+    if two_sided_foliage:
+        m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
+        m.set_editor_property("two_sided", True)
+    else:
+        m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+        m.set_editor_property("two_sided", False)
+
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
+    rnd = expr(m, unreal.MaterialExpressionPerInstanceRandom, -1100, 150)
+    uv = expr(m, unreal.MaterialExpressionTextureCoordinate, -1300, 300)
+    noise_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 300)
+    noise_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_LeafNoise"))
+    noise_tex.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
+    connect(uv, "", noise_tex, "UVs")
+
+    color = custom(m, -700, 0, FOLIAGE_COLOR_HLSL, ["VC", "R", "Noise"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "FoliageColor")
+    connect(vc, "", color, "VC")
+    connect(rnd, "", color, "R")
+    connect(noise_tex, "RGBA", color, "Noise")
+    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    if two_sided_foliage:
+        sss = expr(m, unreal.MaterialExpressionMultiply, -400, 200)
+        k = expr(m, unreal.MaterialExpressionConstant3Vector, -600, 250)
+        k.set_editor_property("constant", unreal.LinearColor(0.9, 1.0, 0.45, 1.0))
+        connect(color, "", sss, "A")
+        connect(k, "", sss, "B")
+        to_property(sss, "", unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
+
+    rough = expr(m, unreal.MaterialExpressionConstant, -400, 350)
+    rough.set_editor_property("r", 0.62 if two_sided_foliage else 0.88)
+    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+
+    if wind_strength > 0.0:
+        wp = expr(m, unreal.MaterialExpressionWorldPosition, -1100, 500)
+        t = expr(m, unreal.MaterialExpressionTime, -1100, 600)
+        strength = expr(m, unreal.MaterialExpressionScalarParameter, -1100, 700)
+        strength.set_editor_property("parameter_name", "WindStrength")
+        strength.set_editor_property("default_value", wind_strength)
+        wind = custom(m, -700, 500, WIND_HLSL, ["WP", "T", "Mask", "Strength"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "Wind")
+        connect(wp, "", wind, "WP")
+        connect(t, "", wind, "T")
+        connect(vc, "A", wind, "Mask")
+        connect(strength, "", wind, "Strength")
+        to_property(wind, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    finish(m)
+
+
+def build_rock():
+    m = rebuild_material(GENERATED_MATERIALS, "M_Rock")
+    m.set_editor_property("tangent_space_normal", False)
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1100, 200)
+    vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1100, 300)
+    detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1100, 420)
+    normal_tex = texture_object(m, "/Game/Generated/Textures/T_TerrainNormal", -1100, 620)
+    one = expr(m, unreal.MaterialExpressionConstant, -1100, 800)
+    one.set_editor_property("r", 1.0)
+
+    append = expr(m, unreal.MaterialExpressionAppendVector, -850, 0)
+    connect(vc, "", append, "A")
+    connect(one, "", append, "B")  # Alfa = 1: se trata todo como roca.
+
+    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockColor")
+    connect(append, "", color, "VC")
+    connect(wp, "", color, "WP")
+    connect(vn, "", color, "VN")
+    connect(detail, "", color, "Detail")
+    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockNormal")
+    connect(wp, "", normal, "WP")
+    connect(vn, "", normal, "VN")
+    connect(normal_tex, "", normal, "NormalTex")
+    connect(one, "", normal, "Rock")
+    to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
+
+    rough = expr(m, unreal.MaterialExpressionConstant, -300, 700)
+    rough.set_editor_property("r", 0.8)
+    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    finish(m)
+
+
+def build_vegetation_materials():
+    build_foliage("M_Leaf", wind_strength=0.35, two_sided_foliage=True)
+    build_foliage("M_Grass", wind_strength=0.25, two_sided_foliage=True)
+    build_foliage("M_Bark", wind_strength=0.0, two_sided_foliage=False)
+    build_rock()
+
+
 def main():
     unreal.EditorAssetLibrary.make_directory(MATERIALS_PATH)
     build_terrain()
     build_ocean()
     build_stars()
+    build_vegetation_materials()
 
 
 main()

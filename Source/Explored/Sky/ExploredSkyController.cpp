@@ -74,13 +74,13 @@ AExploredSkyController::AExploredSkyController()
 
 	Fog = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("Fog"));
 	Fog->SetupAttachment(Root);
-	Fog->SetFogDensity(0.012f);
-	Fog->SetFogHeightFalloff(0.12f);
+	Fog->SetFogDensity(0.0025f);
+	Fog->SetFogHeightFalloff(0.2f);
 	Fog->SetVolumetricFog(true);
 	Fog->VolumetricFogScatteringDistribution = 0.75f;
 	Fog->VolumetricFogExtinctionScale = 0.6f;
 	Fog->SetVolumetricFogDistance(9000.0f);
-	Fog->SetStartDistance(800.0f);
+	Fog->SetStartDistance(3000.0f);
 
 	Clouds = CreateDefaultSubobject<UVolumetricCloudComponent>(TEXT("Clouds"));
 	Clouds->SetupAttachment(Root);
@@ -123,7 +123,7 @@ AExploredSkyController::AExploredSkyController()
 	StarDome->SetupAttachment(Root);
 	StarDome->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	StarDome->SetCastShadow(false);
-	StarDome->SetWorldScale3D(FVector(20000.0f));
+	StarDome->SetWorldScale3D(FVector(100000.0f));
 	StarDome->bVisibleInReflectionCaptures = false;
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> Sphere(TEXT("/Engine/EngineMeshes/Sphere.Sphere"));
 	if (Sphere.Succeeded())
@@ -192,6 +192,6 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 
 	// Noches más densas y frescas; niebla matinal suave.
 	const bool bMorning = Hours > 4.5f && Hours < 9.0f;
-	Fog->SetFogDensity(bMorning ? 0.02f : 0.012f);
+	Fog->SetFogDensity(bMorning ? 0.006f : 0.0025f);
 	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.45f, 0.6f, 0.75f), SunUp));
 }

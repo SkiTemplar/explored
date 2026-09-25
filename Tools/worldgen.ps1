@@ -1,6 +1,6 @@
 ﻿# Genera la vista previa o hornea el archipiélago con el commandlet ExploredWorldGen.
 param(
-    [ValidateSet('preview', 'bake')] [string]$Mode = 'preview',
+    [ValidateSet('preview', 'bake', 'terrain', 'map')] [string]$Mode = 'preview',
     [uint32]$Seed = 20260926,
     [string]$Extra = ''
 )

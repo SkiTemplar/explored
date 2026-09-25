@@ -13,7 +13,7 @@ public class ExploredEditor : ModuleRules
 		{
 			"Core", "CoreUObject", "Engine", "UnrealEd", "Explored",
 			"ImageWrapper", "MeshDescription", "StaticMeshDescription",
-			"AssetRegistry", "AssetTools", "RenderCore", "PhysicsCore"
+			"AssetRegistry", "AssetTools", "RenderCore", "PhysicsCore", "Json"
 		});
 	}
 }

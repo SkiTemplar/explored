@@ -27,3 +27,5 @@ Thumbs.db
 
 compile_commands.json
 .cache/
+
+.claude/worktrees/

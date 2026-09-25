@@ -1,6 +1,11 @@
 #include "WorldGenCommandlet.h"
 
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Async/ParallelFor.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
@@ -23,6 +28,8 @@
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
+#include "WorldGen/ExploredVegetationCell.h"
+#include "WorldGen/VegetationScatter.h"
 
 namespace
 {
@@ -43,7 +50,18 @@ namespace
 		Args.TopLevelFlags = bIsMap ? RF_NoFlags : (RF_Public | RF_Standalone);
 		Args.Error = GError;
 		Args.SaveFlags = SAVE_NoError;
-		return UPackage::SavePackage(Package, Asset, *Filename, Args);
+		// Se borra el fichero anterior: sobrescribir un mapa existente desde un paquete nuevo falla.
+		if (bIsMap)
+		{
+			IFileManager::Get().Delete(*Filename, false, true, true);
+		}
+		const FSavePackageResultStruct Result = UPackage::Save(Package, Asset, *Filename, Args);
+		if (Result.Result != ESavePackageResult::Success)
+		{
+			UE_LOG(LogExplored, Error, TEXT("No se pudo guardar %s (código %d)"), *Filename, static_cast<int32>(Result.Result));
+			return false;
+		}
+		return true;
 	}
 
 	// ------------------------------------------------------------------
@@ -365,7 +383,185 @@ namespace
 			SavePackageToDisk(Mesh->GetPackage(), Mesh, false);
 		}
 
-		// 5) Mapa: se recrea desde cero para que el proceso sea idempotente.
+		UE_LOG(LogExplored, Display, TEXT("Terreno horneado: %d mallas, %lld triángulos, %.1f s"),
+			Built.Num(), Triangles, FPlatformTime::Seconds() - StartTime);
+		return 0;
+	}
+
+	// ------------------------------------------------------------------
+	// Composición del mapa
+	// ------------------------------------------------------------------
+
+	struct FTerrainPiece
+	{
+		UStaticMesh* Mesh = nullptr;
+		FVector LocationCm = FVector::ZeroVector;
+	};
+
+	/** Localiza las mallas de terreno ya horneadas y su posición a partir del nombre. */
+	TArray<FTerrainPiece> FindTerrainPieces(const FTerrainChunkSettings& Settings)
+	{
+		IAssetRegistry& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
+		Registry.ScanPathsSynchronous({FString(TerrainFolder)}, true);
+		TArray<FAssetData> Assets;
+		Registry.GetAssetsByPath(FName(TerrainFolder), Assets, true);
+
+		TArray<FTerrainPiece> Pieces;
+		for (const FAssetData& Asset : Assets)
+		{
+			const FString Name = Asset.AssetName.ToString();
+			FTerrainPiece Piece;
+			if (Name != TEXT("SM_Terrain_DeepFloor"))
+			{
+				TArray<FString> Parts;
+				Name.ParseIntoArray(Parts, TEXT("_"));
+				if (Parts.Num() != 5)
+				{
+					continue;
+				}
+				const FIntVector Coord(FCString::Atoi(*Parts[2]), FCString::Atoi(*Parts[3]), FCString::Atoi(*Parts[4]));
+				Piece.LocationCm = FTerrainChunkBuilder::ChunkOrigin(Coord, Settings) * 100.0;
+			}
+			Piece.Mesh = Cast<UStaticMesh>(Asset.GetAsset());
+			if (Piece.Mesh)
+			{
+				Pieces.Add(Piece);
+			}
+		}
+		return Pieces;
+	}
+
+	/** Lee Art/Export/Meshes/manifest.json y asigna mallas importadas a cada regla por categoría. */
+	void ResolveScatterMeshes(TArray<FScatterRule>& Rules)
+	{
+		const FString ManifestPath = FPaths::ProjectDir() / TEXT("Art/Export/Meshes/manifest.json");
+		FString Text;
+		if (!FFileHelper::LoadFileToString(Text, *ManifestPath))
+		{
+			UE_LOG(LogExplored, Warning, TEXT("No hay manifest de mallas en %s: sin vegetación"), *ManifestPath);
+			return;
+		}
+		TSharedPtr<FJsonValue> Root;
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+		if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
+		{
+			UE_LOG(LogExplored, Error, TEXT("Manifest de mallas inválido"));
+			return;
+		}
+
+		// Acepta tanto una lista de mallas como un objeto con la lista en «meshes».
+		TArray<TSharedPtr<FJsonValue>> Entries;
+		if (Root->Type == EJson::Array)
+		{
+			Entries = Root->AsArray();
+		}
+		else if (Root->Type == EJson::Object && Root->AsObject()->HasField(TEXT("meshes")))
+		{
+			Entries = Root->AsObject()->GetArrayField(TEXT("meshes"));
+		}
+
+		IAssetRegistry& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
+		Registry.ScanPathsSynchronous({TEXT("/Game/Generated/Meshes")}, true);
+		TArray<FAssetData> Imported;
+		Registry.GetAssetsByPath(FName(TEXT("/Game/Generated/Meshes")), Imported, true);
+
+		for (const TSharedPtr<FJsonValue>& Entry : Entries)
+		{
+			const TSharedPtr<FJsonObject> Obj = Entry->AsObject();
+			if (!Obj)
+			{
+				continue;
+			}
+			const FString Name = Obj->GetStringField(TEXT("name"));
+			const FString Category = Obj->GetStringField(TEXT("category"));
+			const FAssetData* Asset = Imported.FindByPredicate([&Name](const FAssetData& A)
+			{
+				return A.AssetName.ToString() == Name;
+			});
+			if (!Asset)
+			{
+				UE_LOG(LogExplored, Warning, TEXT("Malla %s del manifest no importada"), *Name);
+				continue;
+			}
+			for (FScatterRule& Rule : Rules)
+			{
+				if (Rule.ManifestCategory == Category && (Rule.NameFilter.IsEmpty() || Name.Contains(Rule.NameFilter)))
+				{
+					Rule.Meshes.Add(Asset->GetSoftObjectPath());
+				}
+			}
+		}
+		for (const FScatterRule& Rule : Rules)
+		{
+			UE_LOG(LogExplored, Display, TEXT("  %s: %d mallas"), *Rule.Species.ToString(), Rule.Meshes.Num());
+		}
+	}
+
+	void SpawnVegetation(UWorld* World, const FTerrainDensity& Density)
+	{
+		TArray<FScatterRule> Rules = FVegetationScatter::DefaultRules();
+		ResolveScatterMeshes(Rules);
+		Rules.RemoveAll([](const FScatterRule& R) { return R.Meshes.IsEmpty(); });
+		if (Rules.IsEmpty())
+		{
+			return;
+		}
+
+		const double Start = FPlatformTime::Seconds();
+		const float E = FArchipelagoLayout::WorldHalfExtent;
+		const FScatterResult Result = FVegetationScatter::Generate(Density, Rules, FBox2D(FVector2D(-E), FVector2D(E)),
+			Density.GetLayout().Seed);
+		UE_LOG(LogExplored, Display, TEXT("Vegetación: %d instancias en %.1f s"), Result.Total(), FPlatformTime::Seconds() - Start);
+
+		// Celdas de 512 m: el culling y el streaming trabajan por celda.
+		constexpr float CellSizeCm = 51200.0f;
+		TMap<FIntPoint, AExploredVegetationCell*> Cells;
+		for (int32 R = 0; R < Rules.Num(); ++R)
+		{
+			TArray<UStaticMesh*> Meshes;
+			for (const FSoftObjectPath& Path : Rules[R].Meshes)
+			{
+				Meshes.Add(Cast<UStaticMesh>(Path.TryLoad()));
+			}
+			for (const FScatterInstance& Instance : Result.PerRule[R])
+			{
+				UStaticMesh* Mesh = Meshes[Instance.MeshIndex];
+				if (!Mesh)
+				{
+					continue;
+				}
+				const FVector Location = Instance.Transform.GetLocation();
+				const FIntPoint Key(FMath::FloorToInt32(Location.X / CellSizeCm), FMath::FloorToInt32(Location.Y / CellSizeCm));
+				AExploredVegetationCell*& Cell = Cells.FindOrAdd(Key);
+				if (!Cell)
+				{
+					const FVector CellOrigin(Key.X * CellSizeCm + CellSizeCm * 0.5f, Key.Y * CellSizeCm + CellSizeCm * 0.5f, 0.0f);
+					Cell = World->SpawnActor<AExploredVegetationCell>(CellOrigin, FRotator::ZeroRotator);
+					Cell->CellCoord = Key;
+					Cell->SetActorLabel(FString::Printf(TEXT("Vegetation_%d_%d"), Key.X, Key.Y));
+					Cell->SetFolderPath(FName(TEXT("Vegetation")));
+				}
+				UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh, Rules[R].Species,
+					!Rules[R].bNoCollision, Rules[R].CullDistance);
+				Component->AddInstance(Instance.Transform, true);
+			}
+		}
+		for (const auto& Pair : Cells)
+		{
+			for (UActorComponent* C : Pair.Value->GetComponents())
+			{
+				if (UHierarchicalInstancedStaticMeshComponent* H = Cast<UHierarchicalInstancedStaticMeshComponent>(C))
+				{
+					H->BuildTreeIfOutdated(false, true);
+				}
+			}
+		}
+		UE_LOG(LogExplored, Display, TEXT("Vegetación repartida en %d celdas"), Cells.Num());
+	}
+
+	int32 ComposeMap(const FTerrainDensity& Density, const TArray<FTerrainPiece>& Terrain, bool bVegetation)
+	{
+		// El mapa se recrea desde cero para que el proceso sea idempotente.
 		UPackage* MapPackage = CreatePackage(MapPath);
 		UWorldFactory* Factory = NewObject<UWorldFactory>();
 		Factory->WorldType = EWorldType::Editor;
@@ -374,22 +570,23 @@ namespace
 		UWorld* World = CastChecked<UWorld>(Factory->FactoryCreateNew(UWorld::StaticClass(), MapPackage,
 			FName(TEXT("Archipelago")), RF_Public | RF_Standalone, nullptr, GWarn));
 
-		for (int32 I = 0; I < Built.Num(); ++I)
+		for (const FTerrainPiece& Piece : Terrain)
 		{
-			SpawnMeshActor(World, Built[I], Locations[I], Names[I]);
+			SpawnMeshActor(World, Piece.Mesh, Piece.LocationCm, Piece.Mesh->GetName());
 		}
 
 		const FVector Spawn = FindSpawnPoint(Density) * 100.0;
 		World->SpawnActor<APlayerStart>(Spawn, FRotator::ZeroRotator)->SetActorLabel(TEXT("PlayerStart"));
 		SpawnOptional(World, TEXT("/Script/Explored.ExploredSkyController"), FVector(0, 0, 10000), TEXT("Sky"));
 		SpawnOptional(World, TEXT("/Script/Explored.ExploredOcean"), FVector::ZeroVector, TEXT("Ocean"));
-		SpawnOptional(World, TEXT("/Script/Explored.ExploredWorldInfo"), FVector::ZeroVector, TEXT("WorldInfo"));
+		if (bVegetation)
+		{
+			SpawnVegetation(World, Density);
+		}
 
 		const bool bSaved = SavePackageToDisk(MapPackage, World, true);
 		World->DestroyWorld(false);
-
-		UE_LOG(LogExplored, Display, TEXT("Horneado %s: %d mallas, %lld triángulos, %.1f s"),
-			bSaved ? TEXT("completado") : TEXT("FALLIDO"), Built.Num(), Triangles, FPlatformTime::Seconds() - StartTime);
+		UE_LOG(LogExplored, Display, TEXT("Mapa %s con %d piezas de terreno"), bSaved ? TEXT("guardado") : TEXT("NO guardado"), Terrain.Num());
 		return bSaved ? 0 : 1;
 	}
 }
@@ -421,7 +618,7 @@ int32 UExploredWorldGenCommandlet::Main(const FString& Params)
 		return RunPreview(Density, Size, Out);
 	}
 
-	if (Mode == TEXT("bake"))
+	if (Mode == TEXT("bake") || Mode == TEXT("terrain") || Mode == TEXT("map"))
 	{
 		FTerrainChunkSettings Settings;
 		FParse::Value(*Params, TEXT("voxel="), Settings.VoxelSize);
@@ -440,7 +637,16 @@ int32 UExploredWorldGenCommandlet::Main(const FString& Params)
 					FVector2D(FCString::Atof(*Parts[2]), FCString::Atof(*Parts[3])));
 			}
 		}
-		return RunBake(Density, Settings, Region);
+		if (Mode != TEXT("map"))
+		{
+			const int32 TerrainResult = RunBake(Density, Settings, Region);
+			if (TerrainResult != 0 || Mode == TEXT("terrain"))
+			{
+				return TerrainResult;
+			}
+		}
+		const bool bVegetation = !FParse::Param(*Params, TEXT("novegetation"));
+		return ComposeMap(Density, FindTerrainPieces(Settings), bVegetation);
 	}
 
 	UE_LOG(LogExplored, Error, TEXT("Modo desconocido: %s"), *Mode);
