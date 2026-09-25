@@ -102,7 +102,7 @@ Los finales no se excluyen: tras cualquiera de ellos se puede continuar la misma
   navegables) y el **detalle** es procedural: forma de las costas, relieve, ríos,
   vegetación, posición exacta de recursos y secretos.
 - Terreno: ruido fractal + máscara por isla + erosión hidráulica simplificada + ríos desde
-  las cumbres + arrecifes en la plataforma costera. Malla facetada low-poly por chunks,
+  las cumbres + arrecifes en la plataforma costera. Malla de terreno suave por chunks,
   con LOD y colisión.
 - Fondo marino modelado: plataforma somera turquesa, arrecife, talud y aguas profundas
   (azul oscuro, tiburones).
@@ -392,10 +392,21 @@ bandadas, y ciclo diario de actividad.
 
 ## 8. Dirección de arte
 
-- **Low-poly facetado** con flat shading, color por vértice y paletas por isla: turquesa
-  y arena en el Amaraje, verdes saturados en Esmeralda, negro y rojo en el Humo, gris y
-  blanco en los Dientes, verde grisáceo y niebla en el Manglar, blanco y cian en Arenas
-  Blancas, dorado y verde en la Meseta.
+- **Estilizado suave («low-poly pulido»):** geometría de densidad media con
+  **sombreado suave** (normales interpoladas), siluetas limpias y formas redondeadas; no
+  facetado extremo. Referencias de tono: la calidez de *Firewatch*, la limpieza de
+  *Sable* y la luz de *A Short Hike*, en 3D con iluminación moderna.
+- **Materiales estilizados:** color base por vértice + gradientes suaves + texturas de
+  ruido procedurales (triplanares en el terreno) que dan variación sin fotorrealismo;
+  rugosidad por material, borde de luz (rim) sutil en la vegetación, subsuperficie en
+  hojas.
+- **Paletas por isla:** turquesa y arena en el Amaraje, verdes saturados en Esmeralda,
+  negro y rojo en el Humo, gris y blanco en los Dientes, verde grisáceo y niebla en el
+  Manglar, blanco y cian en Arenas Blancas, dorado y verde en la Meseta.
+- **Densidad:** la selva debe sentirse frondosa: capas de sotobosque, helechos, lianas,
+  árboles medianos y dosel, con variación de escala, tono y rotación por instancia.
+- **Criterio de calidad:** cada captura de referencia (§13) debe apetecer explorarla.
+  Si no apetece, no pasa el hito.
 - **Luz como protagonista:** Lumen, niebla volumétrica, rayos de sol entre hojas,
   atardeceres saturados, noches azules con estrellas y Vía Láctea.
 - **Agua:** océano con oleaje por vértice, espuma en la orilla, caústicas, transparencia
@@ -489,7 +500,7 @@ verdad* (terminar en modo Náufrago), *Sin mapa* (final sin abrir el mapa del di
 
 | Módulo | Responsabilidad |
 |---|---|
-| `WorldGen` | Semilla → islas, relieve, biomas, ríos, arrecifes, PdI; chunks de malla facetada |
+| `WorldGen` | Semilla → islas, relieve, biomas, ríos, arrecifes, PdI; chunks de malla de terreno suave |
 | `Scatter` | Vegetación, rocas y recursos en HISM, por reglas de bioma; recolección persistente |
 | `Ocean` | Malla de océano, mareas, flotabilidad, corrientes |
 | `Sky` | Sol, Luna y fases, estrellas, atmósfera |
