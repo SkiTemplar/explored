@@ -139,6 +139,10 @@ canal.
 
 ## 4. Sistemas del jugador
 
+> El catálogo completo de objetos, el sistema de combinación por propiedades, la caza,
+> las estaciones y los temporales están en `docs/design/biblia-de-contenido.md`,
+> que prevalece sobre este documento en caso de discrepancia.
+
 ### 4.1 Movimiento
 
 Andar, correr, agacharse, saltar, **trepar** salientes y paredes marcadas con grietas y
@@ -311,6 +315,9 @@ cueva de la cascada.
   pasos, pozas y cuevas; la pleamar las cierra y puede dejarte atrapado.
 
 ### 5.2 Clima
+
+El año tiene 4 estaciones (seca, primeras lluvias, monzón y ciclones) de 8 días cada
+una; ver la biblia de contenido, §6.
 
 Soleado, nublado, niebla matinal, lluvia ligera, chubasco tropical, tormenta eléctrica
 (rayos que pueden prender fuego a la vegetación seca), ola de calor, viento fuerte y
