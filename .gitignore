@@ -24,3 +24,6 @@ __pycache__/
 *.log
 .DS_Store
 Thumbs.db
+
+compile_commands.json
+.cache/
