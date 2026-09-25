@@ -79,11 +79,20 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	const FExploredNoise N(Island.Seed);
 	FVector2D Q = ToLocal(Island, X, Y);
 
+	// Forma alargada propia de cada isla (las circulares no parecen naturales).
+	const float Aspect = 0.62f + 0.3f * ExploredHash::ToUnitFloat(ExploredHash::Hash32(Island.Seed ^ 0xA5u));
+	Q.Y /= Aspect;
+
 	// Costa irregular: deformación del dominio a dos escalas.
-	const FVector2D Warped = N.Warp2D(Q.X * 2.2f, Q.Y * 2.2f, 0.35f, 3) / 2.2f;
-	Q = FMath::Lerp(Q, Warped, 0.8f);
-	const float Coast = 1.0f + 0.12f * N.Fbm2D(Q.X * 5.0f + 11.0f, Q.Y * 5.0f - 7.0f, 3);
-	const float T = Q.Size() / Coast;
+	const FVector2D Warped = N.Warp2D(Q.X * 1.6f, Q.Y * 1.6f, 0.55f, 4) / 1.6f;
+	Q = FMath::Lerp(Q, Warped, 0.85f);
+
+	// Lóbulos y bahías: ruido sobre la dirección (continuo alrededor de la isla).
+	const float Len = Q.Size();
+	const FVector2D Dir = Len > KINDA_SMALL_NUMBER ? Q / Len : FVector2D(1.0f, 0.0f);
+	const float Lobes = N.Fbm2D(Dir.X * 1.4f + 5.0f, Dir.Y * 1.4f - 3.0f, 3);
+	const float Coast = 1.0f + 0.32f * Lobes + 0.1f * N.Fbm2D(Q.X * 6.0f + 11.0f, Q.Y * 6.0f - 7.0f, 3);
+	const float T = Len / FMath::Max(Coast, 0.45f);
 	OutT = T;
 
 	if (T >= InfluenceLimit)
@@ -93,8 +102,12 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 
 	// Perfil submarino común: plataforma somera, cresta de arrecife y talud.
 	const float Floor = FArchipelagoLayout::OceanFloor;
-	float Underwater = FMath::Lerp(ShelfDepth, Floor, SmoothStep(1.05f, InfluenceLimit, T));
-	Underwater += 1.2f * FMath::Exp(-FMath::Square((T - 1.28f) / 0.05f));
+	// Plataforma somera estrecha, cresta de arrecife discontinua y talud pronunciado.
+	const float ShelfEnd = 1.22f + 0.08f * N.Fbm2D(Q.X * 3.0f - 20.0f, Q.Y * 3.0f, 2);
+	float Underwater = FMath::Lerp(ShelfDepth, -6.0f, SmoothStep(1.02f, ShelfEnd, T));
+	Underwater = FMath::Lerp(Underwater, Floor, SmoothStep(ShelfEnd, InfluenceLimit, T));
+	const float ReefBreaks = SmoothStep(-0.1f, 0.3f, N.Fbm2D(Q.X * 8.0f, Q.Y * 8.0f + 50.0f, 2));
+	Underwater += 3.2f * ReefBreaks * FMath::Exp(-FMath::Square((T - ShelfEnd + 0.03f) / 0.025f));
 
 	const float U = 1.0f - T;
 	const float Hmax = Island.MaxHeight;
@@ -141,10 +154,12 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	}
 	case EIslandArchetype::Mesa:
 	{
-		const float Rise = SmoothStep(0.05f, 0.7f, U);
-		const float Stepped = Terrace(Rise * (0.9f + 0.1f * N.Fbm2D(Q.X * 2.0f, Q.Y * 2.0f, 3)), 3, 0.18f);
-		const float Plateau = 4.0f * N.Fbm2D(Q.X * 6.0f, Q.Y * 6.0f, 4);
-		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped + Plateau * Rise;
+		// Terrazas deformadas por ruido para que los escarpes serpenteen, con valles que las cortan.
+		const float Rise = SmoothStep(0.03f, 0.75f, U + 0.18f * N.Fbm2D(Q.X * 2.5f, Q.Y * 2.5f, 3));
+		const float Stepped = Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 3, 0.22f);
+		const float Valley = 1.0f - SmoothStep(0.02f, 0.12f, FMath::Abs(N.Fbm2D(Q.X * 2.0f + 70.0f, Q.Y * 2.0f, 3)));
+		const float Plateau = 5.0f * N.Fbm2D(Q.X * 7.0f, Q.Y * 7.0f, 4);
+		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped * (1.0f - 0.35f * Valley) + Plateau * Rise;
 		break;
 	}
 	case EIslandArchetype::Mangrove:
@@ -186,10 +201,9 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 				Best = FMath::Max(Best, D < 1.0f ? 1.0f + Height * Stack : FMath::Lerp(-2.5f, 1.0f, 1.6f - D));
 			}
 		}
-		Land = FMath::Max(Best, -3.0f + 1.5f * N.Fbm2D(Q.X * 5.0f, Q.Y * 5.0f, 3));
-		// Entre islotes siempre hay agua somera, no tierra.
-		Underwater = FMath::Max(Underwater, -3.0f);
-		return T < 1.0f ? Land : FMath::Max(Underwater, Land * (1.0f - SmoothStep(1.0f, 1.2f, T)));
+		// Entre islotes, fondo rocoso somero; nunca tierra.
+		Land = FMath::Max(Best, -3.5f + 1.5f * N.Fbm2D(Q.X * 5.0f, Q.Y * 5.0f, 3));
+		return T < 1.0f ? Land : FMath::Lerp(Land, Underwater, SmoothStep(1.0f, 1.25f, T));
 	}
 	default:
 		break;
@@ -197,6 +211,10 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 
 	if (T >= 1.0f)
 	{
+		if (Land < -500.0f)
+		{
+			return Underwater;
+		}
 		// Transición suave entre la orilla y la plataforma.
 		return FMath::Lerp(FMath::Min(Land, 0.0f) + ShelfDepth, Underwater, SmoothStep(1.0f, 1.12f, T));
 	}

@@ -7,9 +7,13 @@ public class ExploredEditor : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		CppStandard = CppStandardVersion.Cpp20;
 
+		PublicIncludePaths.Add(ModuleDirectory);
+
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "UnrealEd", "Explored"
+			"Core", "CoreUObject", "Engine", "UnrealEd", "Explored",
+			"ImageWrapper", "MeshDescription", "StaticMeshDescription",
+			"AssetRegistry", "AssetTools", "RenderCore", "PhysicsCore"
 		});
 	}
 }

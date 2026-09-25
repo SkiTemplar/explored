@@ -13,7 +13,7 @@
 		{
 			"Name": "ExploredEditor",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

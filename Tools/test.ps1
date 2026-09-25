@@ -1,4 +1,4 @@
-# Ejecuta los Automation Tests del proyecto sin interfaz y falla si alguno no pasa.
+﻿# Ejecuta los Automation Tests del proyecto sin interfaz y falla si alguno no pasa.
 param([string]$Filter = 'Explored')
 . "$PSScriptRoot\common.ps1"
 

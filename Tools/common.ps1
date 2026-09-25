@@ -1,4 +1,4 @@
-# Rutas compartidas por los scripts de herramientas.
+﻿# Rutas y utilidades compartidas por los scripts de herramientas.
 $ErrorActionPreference = 'Stop'
 $script:ProjectRoot = Split-Path -Parent $PSScriptRoot
 $script:UProject = Join-Path $ProjectRoot 'Explored.uproject'
@@ -11,4 +11,18 @@ $script:Blender = if ($env:BLENDER_EXE) { $env:BLENDER_EXE } else { 'C:\Program 
 
 function Assert-ExitCode([string]$Step) {
     if ($LASTEXITCODE -ne 0) { throw "$Step falló con código $LASTEXITCODE" }
+}
+
+# Ejecuta un binario nativo sin que su stderr aborte el script (PowerShell 5.1)
+# y muestra solo las líneas que casan con $Filter. Devuelve el código de salida.
+function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Filter = '.') {
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        & $Exe @Arguments 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -match $Filter } | ForEach-Object { Write-Host $_ }
+        return $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previous
+    }
 }

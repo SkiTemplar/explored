@@ -15,12 +15,12 @@ namespace
 
 	// Orden de colocación: primero las grandes, que son las más difíciles de encajar.
 	const FArchetypeTemplate Templates[] = {
-		{EIslandArchetype::Mesa, 620.0f, 720.0f, 230.0f, 280.0f},
-		{EIslandArchetype::Emerald, 580.0f, 680.0f, 160.0f, 200.0f},
-		{EIslandArchetype::Smoke, 540.0f, 620.0f, 380.0f, 440.0f},
-		{EIslandArchetype::Mangrove, 480.0f, 560.0f, 10.0f, 16.0f},
-		{EIslandArchetype::WhiteSands, 440.0f, 520.0f, 7.0f, 10.0f},
-		{EIslandArchetype::Teeth, 320.0f, 380.0f, 70.0f, 100.0f},
+		{EIslandArchetype::Mesa, 720.0f, 820.0f, 230.0f, 280.0f},
+		{EIslandArchetype::Emerald, 680.0f, 780.0f, 160.0f, 200.0f},
+		{EIslandArchetype::Smoke, 600.0f, 680.0f, 380.0f, 440.0f},
+		{EIslandArchetype::Mangrove, 560.0f, 640.0f, 10.0f, 16.0f},
+		{EIslandArchetype::WhiteSands, 480.0f, 560.0f, 7.0f, 10.0f},
+		{EIslandArchetype::Teeth, 380.0f, 440.0f, 70.0f, 100.0f},
 	};
 
 	bool Overlaps(const FIslandDesc& A, FVector2D Center, float Radius)
@@ -67,7 +67,7 @@ FArchipelagoLayout FArchipelagoLayout::Generate(uint32 InSeed)
 		// La isla de inicio va cerca del centro, algo desplazada al sur.
 		FIslandDesc Landing;
 		Landing.Archetype = EIslandArchetype::Landing;
-		Landing.Radius = Rng.RangeFloat(420.0f, 480.0f);
+		Landing.Radius = Rng.RangeFloat(520.0f, 580.0f);
 		Landing.MaxHeight = Rng.RangeFloat(45.0f, 65.0f);
 		Landing.Center = FVector2D(Rng.RangeFloat(-250.0f, 250.0f), Rng.RangeFloat(-700.0f, -400.0f));
 		Landing.Seed = Rng.NextUInt32();
