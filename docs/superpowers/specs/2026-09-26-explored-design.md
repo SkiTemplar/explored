@@ -96,13 +96,17 @@ Los finales no se excluyen: tras cualquiera de ellos se puede continuar la misma
 
 ### 3.1 Generación
 
-- Semilla elegida en «Nueva partida» (con una semilla «oficial» recomendada para la
-  primera partida). Mapa de unos **6 × 6 km**.
+- El archipiélago se genera **en el editor** a partir de una semilla (proceso determinista
+  y reproducible) y se hornea como mallas Nanite en World Partition: Lumen con campos de
+  distancia, LOD y streaming nativos. La semilla oficial es la del juego publicado; la
+  elección de semilla en «Nueva partida» queda como mejora posterior (generación en
+  tiempo de ejecución) y no bloquea el lanzamiento.
+- Mapa de unos **6 × 6 km**.
 - La **estructura** está garantizada (7 islas con su identidad, PdI obligatorios, rutas
   navegables) y el **detalle** es procedural: forma de las costas, relieve, ríos,
   vegetación, posición exacta de recursos y secretos.
 - Terreno: ruido fractal + máscara por isla + erosión hidráulica simplificada + ríos desde
-  las cumbres + arrecifes en la plataforma costera. Malla de terreno suave por chunks,
+  las cumbres + arrecifes en la plataforma costera. Terreno volumétrico (campo de distancia con signo poligonizado con Surface Nets): malla suave por chunks que admite cuevas, voladizos, arcos marinos y túneles,
   con LOD y colisión.
 - Fondo marino modelado: plataforma somera turquesa, arrecife, talud y aguas profundas
   (azul oscuro, tiburones).
