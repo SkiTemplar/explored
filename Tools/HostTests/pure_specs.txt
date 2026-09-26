@@ -1,5 +1,6 @@
 # Automation Specs de Source/Explored/Tests que también se ejecutan en el host (solo modelos puros).
 Tests/SurvivalSpec.cpp
+Tests/SwimSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldGenSpec.cpp
 Tests/OceanCurrentsSpec.cpp
