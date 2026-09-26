@@ -15,6 +15,8 @@ SETTINGS = {
     "T_TerrainDetail": (False, unreal.TextureCompressionSettings.TC_MASKS),
     "T_TerrainNormal": (False, unreal.TextureCompressionSettings.TC_NORMALMAP),
     "T_LeafNoise": (False, unreal.TextureCompressionSettings.TC_MASKS),
+    "T_WaterFoam": (False, unreal.TextureCompressionSettings.TC_MASKS),
+    "T_WaterRipple": (False, unreal.TextureCompressionSettings.TC_NORMALMAP),
 }
 
 

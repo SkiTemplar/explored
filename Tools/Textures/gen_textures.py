@@ -7,6 +7,8 @@ Salida en Art/Export/Textures/:
     T_TerrainDetail.png  RGBA: R ruido fino, G ruido medio, B guijarros (celular), A vetas.
     T_TerrainNormal.png  mapa de normales (tangente, OpenGL→DirectX con G invertido) de las alturas combinadas.
     T_LeafNoise.png      variación para hojas (R ruido, G venas, B moteado, A máscara de borde).
+    T_WaterFoam.png      patrón de espuma del océano (gris, se repite), orilla y crestas.
+    T_WaterRipple.png    normales de oleaje fino del océano (tangente, misma convención que T_TerrainNormal).
 """
 
 from __future__ import annotations
@@ -76,6 +78,26 @@ def to_u8(a: np.ndarray) -> np.ndarray:
     return np.clip(a * 255.0 + 0.5, 0, 255).astype(np.uint8)
 
 
+def tileable_waves(size: int, count: int, fmin: int, fmax: int, falloff: float, seed: int) -> np.ndarray:
+    """Suma de ondas con vectores de frecuencia enteros: se repite exacta cada `size` píxeles.
+    Cresta algo afilada (como el oleaje real) y amplitud que baja con la frecuencia."""
+    rng = np.random.default_rng(seed)
+    y, x = np.mgrid[0:size, 0:size] / size
+    h = np.zeros((size, size))
+    for _ in range(count):
+        f = int(rng.integers(fmin, fmax + 1))
+        angle = rng.uniform(0.0, 2.0 * np.pi)
+        kx, ky = int(round(f * np.cos(angle))), int(round(f * np.sin(angle)))
+        if kx == 0 and ky == 0:
+            continue
+        phase = rng.uniform(0.0, 2.0 * np.pi)
+        wave = np.sin(2.0 * np.pi * (kx * x + ky * y) + phase)
+        crest = 1.0 - np.abs(wave)
+        amp = (np.hypot(kx, ky)) ** (-falloff)
+        h += amp * (0.6 * wave + 0.4 * (crest * 2.0 - 1.0))
+    return normalize01(h)
+
+
 def height_to_normal(height: np.ndarray, strength: float) -> np.ndarray:
     """Normal en espacio tangente con diferencias centrales periódicas (convención de Unreal: Y verde hacia abajo)."""
     dx = (np.roll(height, -1, axis=1) - np.roll(height, 1, axis=1)) * strength
@@ -107,7 +129,17 @@ def main() -> None:
     leaf = np.stack([leaf_noise, veins, mottled, edge], axis=-1)
     Image.fromarray(to_u8(leaf), "RGBA").save(OUT / "T_LeafNoise.png")
 
-    for name in ("T_TerrainDetail.png", "T_TerrainNormal.png", "T_LeafNoise.png"):
+    # Espuma del océano: celdas irregulares (dos capas de ondas cruzadas) con agujeros, en gris.
+    foam_a = tileable_waves(SIZE, 48, 3, 20, 0.6, seed=101)
+    foam_b = tileable_waves(SIZE, 48, 8, 40, 0.4, seed=103)
+    foam = np.clip((foam_a * 0.6 + foam_b * 0.4 - 0.45) * 3.0, 0.0, 1.0)
+    Image.fromarray(to_u8(foam), "L").save(OUT / "T_WaterFoam.png")
+
+    # Oleaje fino del agua: ondas de frecuencia entera (se repiten sin costura) convertidas a normal.
+    ripple_height = tileable_waves(SIZE, 90, 2, 48, 1.1, seed=107)
+    Image.fromarray(to_u8(height_to_normal(ripple_height, strength=4.5)), "RGB").save(OUT / "T_WaterRipple.png")
+
+    for name in ("T_TerrainDetail.png", "T_TerrainNormal.png", "T_LeafNoise.png", "T_WaterFoam.png", "T_WaterRipple.png"):
         print(f"[texturas] {OUT / name}")
 
 

@@ -99,6 +99,18 @@ color *= lerp(0.82, 1.12, macro.g);
 // Detalle: grano fino y medio; guijarros en suelo blando, vetas en roca.
 color *= lerp(0.86, 1.1, d1.r) * lerp(0.9, 1.08, d2.g);
 color *= lerp(lerp(0.9, 1.06, d1.b), lerp(0.78, 1.12, d2.a), rock);
+
+// Cáusticas bajo el agua: dos rejillas distorsionadas que se desplazan y se cruzan,
+// solo bajo el nivel del mar y más marcadas cerca de la superficie (agua somera).
+float depthM = -min(WP.z / 100.0, 0.0);
+if (depthM > 0.0)
+{
+    float2 cp = WP.xy / 220.0;
+    float c1 = sin(cp.x * 2.4 + sin(cp.y * 1.7 + Time * 0.35) * 1.6 + Time * 0.6);
+    float c2 = sin(cp.y * 2.1 - sin(cp.x * 1.9 - Time * 0.28) * 1.6 - Time * 0.5);
+    float caustics = saturate(c1 * c2) * exp(-depthM / 9.0);
+    color += caustics * 0.22 * float3(0.7, 0.95, 0.9);
+}
 return color;
 """
 
@@ -134,17 +146,19 @@ def build_terrain():
     vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1100, 300)
     detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1100, 420)
     normal_tex = texture_object(m, "/Game/Generated/Textures/T_TerrainNormal", -1100, 620)
+    time = expr(m, unreal.MaterialExpressionTime, -1100, 780)
 
     append = expr(m, unreal.MaterialExpressionAppendVector, -850, 0)
     connect(vc, "", append, "A")
     connect(vc, "A", append, "B")
 
-    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail"],
+    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail", "Time"],
                    unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainColor")
     connect(append, "", color, "VC")
     connect(wp, "", color, "WP")
     connect(vn, "", color, "VN")
     connect(detail, "", color, "Detail")
+    connect(time, "", color, "Time")
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
     normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"],
@@ -155,24 +169,39 @@ def build_terrain():
     connect(vc, "A", normal, "Rock")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
+    # Arena mojada junto a la orilla (mismo umbral que FTerrainDensity::SurfaceColor): brillo sutil.
     rough = expr(m, unreal.MaterialExpressionLinearInterpolate, -300, 700)
     c_soft = expr(m, unreal.MaterialExpressionConstant, -500, 700)
-    c_soft.set_editor_property("r", 0.93)
+    c_soft.set_editor_property("r", 0.82)
     c_rock = expr(m, unreal.MaterialExpressionConstant, -500, 780)
-    c_rock.set_editor_property("r", 0.74)
+    c_rock.set_editor_property("r", 0.72)
     connect(c_soft, "", rough, "A")
     connect(c_rock, "", rough, "B")
     connect(vc, "A", rough, "Alpha")
-    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
 
-    spec = expr(m, unreal.MaterialExpressionConstant, -300, 860)
-    spec.set_editor_property("r", 0.3)
+    wet = custom(m, -300, 900, "return saturate(1.0 - abs(WP.z) / 70.0);",
+                ["WP"], unreal.CustomMaterialOutputType.CMOT_FLOAT1, "WetSand")
+    connect(wp, "", wet, "WP")
+    rough_wet = expr(m, unreal.MaterialExpressionLinearInterpolate, -100, 750)
+    connect(rough, "", rough_wet, "A")
+    wet_value = expr(m, unreal.MaterialExpressionConstant, -300, 980)
+    wet_value.set_editor_property("r", 0.35)
+    connect(wet_value, "", rough_wet, "B")
+    connect(wet, "", rough_wet, "Alpha")
+    to_property(rough_wet, "", unreal.MaterialProperty.MP_ROUGHNESS)
+
+    spec = expr(m, unreal.MaterialExpressionConstant, -300, 1080)
+    spec.set_editor_property("r", 0.35)
     to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     finish(m)
 
 
 # ---------------------------------------------------------------------------
-# Océano
+# Océano — agua cartoon a lo Tortunabo: bandas de color por profundidad real
+# (laguna turquesa -> arrecife azul -> talud azul profundo), espuma de orilla
+# que avanza y se retira con las olas, estelas de espuma en las crestas de
+# Gerstner y líneas de brillo. Sigue siendo Single Layer Water (cáusticas y
+# niebla bajo el agua las da el propio SLW con Scattering/Absorption reales).
 # ---------------------------------------------------------------------------
 
 # Debe coincidir con FOceanWaves::Displacement (cm, s).
@@ -183,6 +212,7 @@ float2 pos = WP.xy;
 float3 offset = 0;
 float3 tangent = float3(1, 0, 0);
 float3 binormal = float3(0, 1, 0);
+float sumAmp = 0.0001;
 [unroll]
 for (int i = 0; i < 4; ++i)
 {
@@ -197,18 +227,42 @@ for (int i = 0; i < 4; ++i)
     offset += float3(q * a * d.x * c, q * a * d.y * c, a * s);
     tangent += float3(-q * d.x * d.x * k * a * s, -q * d.x * d.y * k * a * s, d.x * k * a * c);
     binormal += float3(-q * d.x * d.y * k * a * s, -q * d.y * d.y * k * a * s, d.y * k * a * c);
+    sumAmp += a;
 }
 """
 
 OCEAN_WPO_HLSL = GERSTNER_COMMON + "return offset;"
+
 OCEAN_NORMAL_HLSL = GERSTNER_COMMON + r"""
 float3 n = normalize(cross(tangent, binormal));
-// Detalle de ondas pequeñas.
-float2 uv = pos / 350.0;
-float r1 = sin(uv.x * 3.1 + T * 1.3) * cos(uv.y * 2.7 - T * 1.1);
-float r2 = sin(uv.x * 7.3 - T * 2.1 + uv.y * 5.1) * 0.5;
-n = normalize(n + float3(r1 * 0.035, r2 * 0.035, 0));
-return n;
+// Detalle fino: tres capas de la misma textura de oleaje a escalas y velocidades distintas.
+float2 uv = pos / 600.0;
+float3 r1 = Texture2DSample(Ripple, RippleSampler, uv + T * float2(0.010, 0.004)).xyz * 2.0 - 1.0;
+float3 r2 = Texture2DSample(Ripple, RippleSampler, uv * 2.3 - T * float2(0.007, 0.011)).xyz * 2.0 - 1.0;
+float3 r3 = Texture2DSample(Ripple, RippleSampler, uv * 0.35 + T * float2(0.003, -0.002)).xyz * 2.0 - 1.0;
+float2 detail = (r1.xy + 0.5 * r2.xy + 0.7 * r3.xy) * RippleStrength;
+return normalize(n + float3(detail, 0.0));
+"""
+
+# Espuma de cresta: donde la ola de Gerstner sube más, whitecaps que crecen con el mar de fondo.
+OCEAN_CREST_HLSL = GERSTNER_COMMON + r"""
+float crest = smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55));
+return saturate(crest) * saturate(SeaState * 1.4);
+"""
+
+# Espuma de orilla (late con las olas: avanza y se retira) y líneas de brillo que se desplazan.
+# D = profundidad real del agua (SceneDepth - PixelDepth): 0 en la orilla, crece mar adentro.
+OCEAN_FOAM_HLSL = r"""
+float2 uv = P.xy / 900.0;
+float n1 = Texture2DSample(Foam, FoamSampler, uv + T * float2(0.010, 0.004)).r;
+float n2 = Texture2DSample(Foam, FoamSampler, uv * 1.9 - T * float2(0.006, 0.012)).r;
+float pattern = saturate(n1 * 0.6 + n2 * 0.4);
+float wave = 0.5 + 0.5 * sin(T * 6.2831853 / 5.0);
+float band = (35.0 + 85.0 * wave) * (0.6 + 0.6 * SeaState);
+float shore = 1.0 - saturate(D / max(band, 1.0));
+float foam = saturate(shore * shore * (0.45 + 0.7 * pattern));
+float glint = step(0.965, sin(dot(P.xy, float2(0.004, 0.0027)) + T * 0.9) * (0.55 + 0.45 * pattern));
+return float2(foam, glint * (0.5 + 0.5 * SeaState));
 """
 
 
@@ -218,11 +272,14 @@ def build_ocean():
     m.set_editor_property("tangent_space_normal", False)
     m.set_editor_property("two_sided", False)
 
-    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1400, 0)
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1600, 0)
     # Se usa la posición sin desplazar para evaluar las olas.
     wp.set_editor_property("world_position_shader_offset", unreal.WorldPositionIncludedOffsets.WPT_EXCLUDE_ALL_SHADER_OFFSETS)
-    time = expr(m, unreal.MaterialExpressionScalarParameter, -1400, 120)
+    time = expr(m, unreal.MaterialExpressionScalarParameter, -1600, 120)
     time.set_editor_property("parameter_name", "WaveTime")
+    sea_state = expr(m, unreal.MaterialExpressionScalarParameter, -1600, 200)
+    sea_state.set_editor_property("parameter_name", "SeaState")
+    sea_state.set_editor_property("default_value", 0.15)
 
     defaults = [
         ((0.8, 0.6, 6000.0, 18.0), 0.35),
@@ -233,56 +290,147 @@ def build_ocean():
     wave_params = []
     steep_params = []
     for i, (vec, steep) in enumerate(defaults):
-        w = expr(m, unreal.MaterialExpressionVectorParameter, -1400, 240 + i * 180)
+        w = expr(m, unreal.MaterialExpressionVectorParameter, -1600, 300 + i * 180)
         w.set_editor_property("parameter_name", f"Wave{i}")
         w.set_editor_property("default_value", unreal.LinearColor(*vec))
-        s = expr(m, unreal.MaterialExpressionScalarParameter, -1400, 320 + i * 180)
+        s = expr(m, unreal.MaterialExpressionScalarParameter, -1600, 380 + i * 180)
         s.set_editor_property("parameter_name", f"Steepness{i}")
         s.set_editor_property("default_value", steep)
         # El parámetro vectorial sale como float3; se añade el alfa para tener float4.
-        rgba = expr(m, unreal.MaterialExpressionAppendVector, -1200, 240 + i * 180)
+        rgba = expr(m, unreal.MaterialExpressionAppendVector, -1400, 300 + i * 180)
         connect(w, "", rgba, "A")
         connect(w, "A", rgba, "B")
         wave_params.append(rgba)
         steep_params.append(s)
 
-    inputs = ["WP", "T", "W0", "W1", "W2", "W3", "S0", "S1", "S2", "S3"]
+    gerstner_inputs = ["WP", "T", "W0", "W1", "W2", "W3", "S0", "S1", "S2", "S3"]
 
-    def wire(node):
+    def wire_gerstner(node):
         connect(wp, "", node, "WP")
         connect(time, "", node, "T")
         for i in range(4):
             connect(wave_params[i], "", node, f"W{i}")
             connect(steep_params[i], "", node, f"S{i}")
 
-    wpo = custom(m, -900, 0, OCEAN_WPO_HLSL, inputs, unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GerstnerOffset")
-    wire(wpo)
+    wpo = custom(m, -1000, 0, OCEAN_WPO_HLSL, gerstner_inputs, unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GerstnerOffset")
+    wire_gerstner(wpo)
     to_property(wpo, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
 
-    normal = custom(m, -900, 400, OCEAN_NORMAL_HLSL, inputs, unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GerstnerNormal")
-    wire(normal)
+    ripple_tex = texture_object(m, "/Game/Generated/Textures/T_WaterRipple", -1600, 1200)
+    ripple_strength = expr(m, unreal.MaterialExpressionScalarParameter, -1600, 1320)
+    ripple_strength.set_editor_property("parameter_name", "RippleStrength")
+    ripple_strength.set_editor_property("default_value", 0.6)
+
+    normal = custom(m, -1000, 500, OCEAN_NORMAL_HLSL, gerstner_inputs + ["Ripple", "RippleStrength"],
+                    unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GerstnerNormal")
+    wire_gerstner(normal)
+    connect(ripple_tex, "", normal, "Ripple")
+    connect(ripple_strength, "", normal, "RippleStrength")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
-    base = expr(m, unreal.MaterialExpressionVectorParameter, -400, -300)
-    base.set_editor_property("parameter_name", "BaseColor")
-    base.set_editor_property("default_value", unreal.LinearColor(0.02, 0.12, 0.16, 1.0))
-    to_property(base, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    crest = custom(m, -1000, 950, OCEAN_CREST_HLSL, gerstner_inputs + ["SeaState"],
+                   unreal.CustomMaterialOutputType.CMOT_FLOAT1, "CrestFoam")
+    wire_gerstner(crest)
+    connect(sea_state, "", crest, "SeaState")
 
-    rough = expr(m, unreal.MaterialExpressionConstant, -400, -150)
-    rough.set_editor_property("r", 0.04)
+    # Profundidad real del agua: escena opaca (fondo) menos la propia superficie del agua.
+    foam_tex = texture_object(m, "/Game/Generated/Textures/T_WaterFoam", -1600, 1450)
+    scene_depth = expr(m, unreal.MaterialExpressionSceneDepth, -1000, 1450)
+    pixel_depth = expr(m, unreal.MaterialExpressionPixelDepth, -1000, 1550)
+    water_depth = expr(m, unreal.MaterialExpressionSubtract, -800, 1500)
+    connect(scene_depth, "", water_depth, "A")
+    connect(pixel_depth, "", water_depth, "B")
+
+    foam_glint = custom(m, -600, 1450, OCEAN_FOAM_HLSL, ["D", "P", "T", "SeaState", "Foam"],
+                        unreal.CustomMaterialOutputType.CMOT_FLOAT2, "ShoreFoam")
+    connect(water_depth, "", foam_glint, "D")
+    connect(wp, "", foam_glint, "P")
+    connect(time, "", foam_glint, "T")
+    connect(sea_state, "", foam_glint, "SeaState")
+    connect(foam_tex, "", foam_glint, "Foam")
+
+    foam_mask = expr(m, unreal.MaterialExpressionComponentMask, -350, 1400)
+    for channel in ("r", "g", "b", "a"):
+        foam_mask.set_editor_property(channel, channel == "r")
+    connect(foam_glint, "", foam_mask, "")
+    glint_mask = expr(m, unreal.MaterialExpressionComponentMask, -350, 1500)
+    for channel in ("r", "g", "b", "a"):
+        glint_mask.set_editor_property(channel, channel == "g")
+    connect(foam_glint, "", glint_mask, "")
+
+    total_foam = expr(m, unreal.MaterialExpressionMax, -150, 1350)
+    connect(foam_mask, "", total_foam, "A")
+    connect(crest, "", total_foam, "B")
+
+    # Factores de mezcla por profundidad: 0 en la laguna somera, 1 en el talud profundo.
+    t1 = custom(m, -800, 300, "return saturate((D - 100.0) / 250.0);", ["D"],
+               unreal.CustomMaterialOutputType.CMOT_FLOAT1, "ShallowToMid")
+    connect(water_depth, "", t1, "D")
+    t2 = custom(m, -800, 400, "return saturate((D - 900.0) / 900.0);", ["D"],
+               unreal.CustomMaterialOutputType.CMOT_FLOAT1, "MidToDeep")
+    connect(water_depth, "", t2, "D")
+
+    # Color por profundidad: laguna turquesa -> arrecife azul -> talud azul profundo.
+    def blend3(name, color_a, color_b, color_c, x, y):
+        pa = expr(m, unreal.MaterialExpressionVectorParameter, x, y)
+        pa.set_editor_property("parameter_name", f"{name}Shallow")
+        pa.set_editor_property("default_value", unreal.LinearColor(*color_a))
+        pb = expr(m, unreal.MaterialExpressionVectorParameter, x, y + 90)
+        pb.set_editor_property("parameter_name", f"{name}Mid")
+        pb.set_editor_property("default_value", unreal.LinearColor(*color_b))
+        pc = expr(m, unreal.MaterialExpressionVectorParameter, x, y + 180)
+        pc.set_editor_property("parameter_name", f"{name}Deep")
+        pc.set_editor_property("default_value", unreal.LinearColor(*color_c))
+        lerp1 = expr(m, unreal.MaterialExpressionLinearInterpolate, x + 260, y)
+        connect(pa, "", lerp1, "A")
+        connect(pb, "", lerp1, "B")
+        connect(t1, "", lerp1, "Alpha")
+        lerp2 = expr(m, unreal.MaterialExpressionLinearInterpolate, x + 420, y + 45)
+        connect(lerp1, "", lerp2, "A")
+        connect(pc, "", lerp2, "B")
+        connect(t2, "", lerp2, "Alpha")
+        return lerp2
+
+    base_blend = blend3("BaseColor", (0.30, 0.86, 0.80), (0.05, 0.45, 0.62), (0.02, 0.10, 0.22), -700, -450)
+    scatter_blend = blend3("Scattering", (0.02, 0.14, 0.13), (0.012, 0.07, 0.075), (0.004, 0.03, 0.045), -700, 100)
+    absorb_blend = blend3("Absorption", (0.20, 0.05, 0.02), (0.42, 0.075, 0.05), (0.65, 0.20, 0.10), -700, 700)
+
+    foam_color = expr(m, unreal.MaterialExpressionVectorParameter, -150, -300)
+    foam_color.set_editor_property("parameter_name", "FoamColor")
+    foam_color.set_editor_property("default_value", unreal.LinearColor(0.94, 0.97, 0.98, 1.0))
+    glint_color = expr(m, unreal.MaterialExpressionVectorParameter, -150, -180)
+    glint_color.set_editor_property("parameter_name", "GlintColor")
+    glint_color.set_editor_property("default_value", unreal.LinearColor(0.85, 0.95, 1.0, 1.0))
+
+    base_with_foam = expr(m, unreal.MaterialExpressionLinearInterpolate, 100, -350)
+    connect(base_blend, "", base_with_foam, "A")
+    connect(foam_color, "", base_with_foam, "B")
+    connect(total_foam, "", base_with_foam, "Alpha")
+    to_property(base_with_foam, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    glint_amount = expr(m, unreal.MaterialExpressionMultiply, -150, -60)
+    connect(glint_mask, "", glint_amount, "A")
+    glint_amount.set_editor_property("const_b", 0.6)
+    glint_emissive = expr(m, unreal.MaterialExpressionMultiply, 100, -180)
+    connect(glint_color, "", glint_emissive, "A")
+    connect(glint_amount, "", glint_emissive, "B")
+    to_property(glint_emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+
+    rough_calm = expr(m, unreal.MaterialExpressionConstant, -150, 20)
+    rough_calm.set_editor_property("r", 0.05)
+    rough_foam = expr(m, unreal.MaterialExpressionConstant, -150, 60)
+    rough_foam.set_editor_property("r", 0.6)
+    rough = expr(m, unreal.MaterialExpressionLinearInterpolate, 100, 40)
+    connect(rough_calm, "", rough, "A")
+    connect(rough_foam, "", rough, "B")
+    connect(total_foam, "", rough, "Alpha")
     to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
 
-    output = expr(m, unreal.MaterialExpressionSingleLayerWaterMaterialOutput, -100, 600)
-    scattering = expr(m, unreal.MaterialExpressionVectorParameter, -400, 500)
-    scattering.set_editor_property("parameter_name", "Scattering")
-    scattering.set_editor_property("default_value", unreal.LinearColor(0.012, 0.07, 0.075, 1.0))
-    absorption = expr(m, unreal.MaterialExpressionVectorParameter, -400, 650)
-    absorption.set_editor_property("parameter_name", "Absorption")
-    absorption.set_editor_property("default_value", unreal.LinearColor(0.42, 0.075, 0.05, 1.0))
-    phase = expr(m, unreal.MaterialExpressionConstant, -400, 800)
-    phase.set_editor_property("r", 0.35)
-    connect(scattering, "", output, "ScatteringCoefficients")
-    connect(absorption, "", output, "AbsorptionCoefficients")
+    output = expr(m, unreal.MaterialExpressionSingleLayerWaterMaterialOutput, 300, 400)
+    connect(scatter_blend, "", output, "ScatteringCoefficients")
+    connect(absorb_blend, "", output, "AbsorptionCoefficients")
+    phase = expr(m, unreal.MaterialExpressionConstant, 100, 500)
+    phase.set_editor_property("r", 0.4)
     connect(phase, "", output, "PhaseG")
     finish(m)
 
@@ -413,6 +561,23 @@ def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
     rough.set_editor_property("r", 0.62 if two_sided_foliage else 0.88)
     to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
 
+    # Borde de luz sutil (rim/fresnel): remarca la silueta contra el cielo, cálido y discreto.
+    fresnel = expr(m, unreal.MaterialExpressionFresnel, -700, 550)
+    fresnel.set_editor_property("exponent", 2.6)
+    fresnel.set_editor_property("base_reflect_fraction", 0.02)
+    rim_tint = expr(m, unreal.MaterialExpressionConstant3Vector, -700, 650)
+    rim_tint.set_editor_property("constant", unreal.LinearColor(1.0, 0.86, 0.6, 1.0))
+    rim_amount = expr(m, unreal.MaterialExpressionScalarParameter, -700, 750)
+    rim_amount.set_editor_property("parameter_name", "RimIntensity")
+    rim_amount.set_editor_property("default_value", 0.22)
+    rim_colored = expr(m, unreal.MaterialExpressionMultiply, -300, 650)
+    connect(fresnel, "", rim_colored, "A")
+    connect(rim_tint, "", rim_colored, "B")
+    rim_scaled = expr(m, unreal.MaterialExpressionMultiply, -150, 650)
+    connect(rim_colored, "", rim_scaled, "A")
+    connect(rim_amount, "", rim_scaled, "B")
+    to_property(rim_scaled, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+
     if wind_strength > 0.0:
         wp = expr(m, unreal.MaterialExpressionWorldPosition, -1100, 500)
         t = expr(m, unreal.MaterialExpressionTime, -1100, 600)
@@ -436,6 +601,7 @@ def build_rock():
     vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1100, 300)
     detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1100, 420)
     normal_tex = texture_object(m, "/Game/Generated/Textures/T_TerrainNormal", -1100, 620)
+    time = expr(m, unreal.MaterialExpressionTime, -1100, 780)
     one = expr(m, unreal.MaterialExpressionConstant, -1100, 800)
     one.set_editor_property("r", 1.0)
 
@@ -443,11 +609,12 @@ def build_rock():
     connect(vc, "", append, "A")
     connect(one, "", append, "B")  # Alfa = 1: se trata todo como roca.
 
-    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockColor")
+    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail", "Time"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockColor")
     connect(append, "", color, "VC")
     connect(wp, "", color, "WP")
     connect(vn, "", color, "VN")
     connect(detail, "", color, "Detail")
+    connect(time, "", color, "Time")
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
     normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockNormal")
