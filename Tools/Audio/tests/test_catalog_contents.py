@@ -9,7 +9,7 @@ def test_ambientes_esperados(catalog):
     assert names == {
         "amb_ocean_calm", "amb_ocean_rough", "amb_wind_light", "amb_wind_strong",
         "amb_jungle_day", "amb_jungle_night", "amb_rain_light", "amb_rain_heavy",
-        "amb_rain_on_leaves", "amb_stream", "amb_underwater",
+        "amb_rain_on_leaves", "amb_rain_on_thatch", "amb_wind_palms", "amb_stream", "amb_underwater",
     }
 
 

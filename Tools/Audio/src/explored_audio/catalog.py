@@ -9,7 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from .generators import ambience, birds, body, cartography, construction, crafting, fauna, footsteps, garden, impacts, misc_sfx, ui, water
+from .generators import ambience, birds, body, cartography, construction, crafting, fauna, fire, footsteps, garden, impacts, misc_sfx, ui, water
 from .music import compose as music_compose
 
 
@@ -53,6 +53,8 @@ def build_catalog() -> list[SoundSpec]:
         "amb_rain_light": ambience.amb_rain_light,
         "amb_rain_heavy": ambience.amb_rain_heavy,
         "amb_rain_on_leaves": ambience.amb_rain_on_leaves,
+        "amb_rain_on_thatch": ambience.amb_rain_on_thatch,
+        "amb_wind_palms": ambience.amb_wind_palms,
         "amb_stream": ambience.amb_stream,
         "amb_underwater": ambience.amb_underwater,
     }
@@ -71,7 +73,7 @@ def build_catalog() -> list[SoundSpec]:
 
     specs.append(SoundSpec("sfx_splash_small", "Efectos", False, misc_sfx.splash_small))
     specs.append(SoundSpec("sfx_splash_big", "Efectos", False, misc_sfx.splash_big))
-    specs.append(SoundSpec("sfx_fire_loop", "Efectos", True, misc_sfx.fire_loop))
+    specs.append(SoundSpec("sfx_fire_loop", "Efectos", True, fire.fire_loop))
 
     for species in ("parrot", "gull", "songbird"):
         for i in range(1, 4):

@@ -110,6 +110,8 @@ def test_nuevos_sfx_duracion_esperada(specs_by_name):
         "sfx_breath_tired": (1.0, 2.5),
         "sfx_heartbeat_low_loop": (3.5, 5.0),
         "amb_rain_on_leaves": (30.0, 60.0),
+        "amb_rain_on_thatch": (30.0, 60.0),
+        "amb_wind_palms": (30.0, 60.0),
     }
     from explored_audio.build import render_sound
 

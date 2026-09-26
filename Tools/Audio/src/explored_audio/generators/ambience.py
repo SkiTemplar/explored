@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 
 from ..constants import SAMPLE_RATE
-from ..envelopes import ar_envelope, smooth_random_walk
+from ..envelopes import ar_envelope, fit_length, smooth_random_walk
 from ..filters import static_filter, time_varying_filter
 from ..granular import place_grains, render_noise_grains
 from ..loop import seamless_loop
@@ -19,7 +19,7 @@ from ..modal import modal_hit
 from ..noise import brown_noise, pink_noise
 from ..reverb import schroeder_reverb
 from ..rng import rng_for
-from ..stereo import decorrelate
+from ..stereo import decorrelate, pan_constant_power
 
 SR = SAMPLE_RATE
 
@@ -282,4 +282,127 @@ def amb_underwater(name: str) -> np.ndarray:
     mono = body * breathing + bubbles
     mono = static_filter(mono, SR, fc=750, q=0.6, kind="lowpass")
     stereo = decorrelate(mono, rng, SR, spread_ms=10)
+    return seamless_loop(stereo, loop_len, fade_len)
+
+
+def _add_panned(bed: np.ndarray, mono_event: np.ndarray, position: int, pan: float) -> None:
+    """Suma en sitio un evento mono panoramizado (sin copiar el colchon entero
+    por evento, como hace `stereo.mix_event_into_bed`)."""
+    end = min(position + len(mono_event), bed.shape[-1])
+    if end > position:
+        bed[:, position:end] += pan_constant_power(mono_event[: end - position], pan)
+
+
+def _water_drop(rng: np.random.Generator) -> np.ndarray:
+    """Gota que cae en un charco: la burbuja que atrapa resuena con un tono que
+    SUBE en pocos milisegundos (modelo de Minnaert), no con un golpe de ruido."""
+    dur = rng.uniform(0.05, 0.11)
+    dn = int(dur * SR)
+    t = np.arange(dn) / SR
+    f0 = rng.uniform(900, 1900)
+    freq = f0 * (1.0 + rng.uniform(0.5, 1.2) * (1.0 - np.exp(-t / 0.012)))
+    tone = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-t / rng.uniform(0.012, 0.03))
+    splat_len = int(0.004 * SR)
+    splat = static_filter(rng.standard_normal(splat_len), SR, fc=3000, q=0.7, kind="highpass")
+    tone[:splat_len] += splat * np.exp(-np.arange(splat_len) / SR / 0.0012) * 0.4
+    return tone
+
+
+def amb_rain_on_thatch(name: str) -> np.ndarray:
+    """Lluvia oida desde dentro de un refugio con tejado de palma.
+
+    La paja es fibrosa: absorbe el agudo del impacto, asi que el repiqueteo es
+    mas sordo y denso que sobre hojas (`amb_rain_on_leaves`), con un lavado
+    medio continuo y un leve retumbe del armazon. Lo que da la sensacion de
+    estar "a cubierto" son los goteos del alero: unos pocos puntos fijos que
+    gotean casi con periodo propio sobre charcos, colocados en el estereo."""
+    rng = rng_for(name)
+    n, loop_len, fade_len = _lens(40.0, 4.0)
+
+    patter = render_noise_grains(
+        n, SR, rng, rate_hz=260.0, grain_len_s_range=(0.004, 0.012),
+        band_hz_range=(700, 3000), q=1.1, amp_scale=0.3,
+    )
+    wash = static_filter(pink_noise(n, rng), SR, fc=1300, q=0.8, kind="bandpass")
+    wash = static_filter(wash, SR, fc=3500, q=0.7, kind="lowpass")
+    intensity = smooth_random_walk(n, rng, smoothing_hz=0.05, sr=SR, low=0.7, high=1.0)
+    frame = static_filter(brown_noise(n, rng, leak=0.998), SR, fc=160, q=0.7, kind="lowpass")
+
+    mono = (patter + wash * 0.35 + frame * 0.12) * intensity
+    stereo = decorrelate(mono, rng, SR, spread_ms=14)
+
+    # Goteos del alero: cada punto tiene su periodo (el agua se acumula en la
+    # punta de la hoja a ritmo casi constante) con algo de irregularidad.
+    for _ in range(5):
+        pan = rng.uniform(-0.9, 0.9)
+        period = rng.uniform(0.35, 1.4)
+        level = rng.uniform(0.15, 0.4)
+        t = rng.uniform(0.0, period)
+        while t < n / SR:
+            drop = _water_drop(rng) * level * rng.uniform(0.7, 1.0)
+            _add_panned(stereo, drop, int(t * SR), pan)
+            t += period * rng.uniform(0.8, 1.25)
+
+    return seamless_loop(stereo, loop_len, fade_len)
+
+
+def _frond_click(rng: np.random.Generator) -> np.ndarray:
+    glen = max(int(rng.uniform(0.003, 0.01) * SR), 16)
+    click = static_filter(rng.standard_normal(glen), SR, fc=rng.uniform(1400, 4200), q=2.5, kind="bandpass")
+    return click * np.exp(-np.arange(glen) / SR / rng.uniform(0.001, 0.003))
+
+
+def _trunk_creak(rng: np.random.Generator) -> np.ndarray:
+    """Crujido del tronco al cimbrearse: friccion de adherencia-deslizamiento,
+    un tren de pulsos irregular (25-60 por segundo) filtrado por la madera."""
+    dur = rng.uniform(0.6, 1.4)
+    dn = int(dur * SR)
+    pulses = np.zeros(dn)
+    t = 0.0
+    rate = rng.uniform(25, 60)
+    while t < dur:
+        pos = int(t * SR)
+        if pos < dn:
+            pulses[pos] = rng.uniform(0.5, 1.0)
+        t += (1.0 / rate) * rng.uniform(0.7, 1.3)
+        rate *= rng.uniform(0.98, 1.03)
+    body = static_filter(pulses, SR, fc=rng.uniform(450, 900), q=4.0, kind="bandpass")
+    body += static_filter(pulses, SR, fc=rng.uniform(1300, 2000), q=5.0, kind="bandpass") * 0.4
+    env = fit_length(ar_envelope(SR, dur * 0.4, dur * 0.6, shape=1.2), dn)
+    return body * env
+
+
+def amb_wind_palms(name: str) -> np.ndarray:
+    """Viento entre palmeras: a diferencia de `amb_wind_light`, que es solo
+    aire, aqui suenan las hojas. Los foliolos de palma son rigidos: con cada
+    racha aletean (ruido agudo modulado a 8-20 Hz) y se golpean entre si con
+    un tableteo seco que solo aparece cuando la racha es fuerte. De vez en
+    cuando cruje un tronco."""
+    rng = rng_for(name)
+    n, loop_len, fade_len = _lens(40.0, 4.0)
+
+    gust = smooth_random_walk(n, rng, smoothing_hz=0.07, sr=SR, low=0.0, high=1.0)
+    gust = gust ** 2.0
+
+    air_track = 380.0 + gust * 700.0
+    air = time_varying_filter(pink_noise(n, rng), SR, air_track, q=1.0, kind="bandpass")
+
+    flutter = smooth_random_walk(n, rng, smoothing_hz=14.0, sr=SR, low=0.3, high=1.0)
+    rustle = static_filter(pink_noise(n, rng), SR, fc=2200, q=0.7, kind="highpass")
+    rustle = static_filter(rustle, SR, fc=8000, q=0.7, kind="lowpass")
+
+    clatter = np.zeros(n)
+    for pos, amp in place_grains(n, SR, rng, rate_hz=90.0, jitter=1.0):
+        if rng.random() > gust[pos] ** 2:
+            continue
+        piece = _frond_click(rng) * amp
+        end = min(pos + len(piece), n)
+        clatter[pos:end] += piece[: end - pos]
+
+    mono = air * (0.15 + 0.6 * gust) + rustle * (0.03 + 0.6 * gust) * flutter + clatter * 1.0
+    stereo = decorrelate(mono, rng, SR, spread_ms=24)
+
+    for pos, _amp in place_grains(n, SR, rng, rate_hz=0.05, jitter=0.6):
+        _add_panned(stereo, _trunk_creak(rng) * 0.35, pos, rng.uniform(-0.7, 0.7))
+
     return seamless_loop(stereo, loop_len, fade_len)

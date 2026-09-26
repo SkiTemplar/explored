@@ -21,6 +21,7 @@ from explored_audio.io_utils import to_wav_bytes
         "sfx_fire_loop",
         "sfx_ui_click",
         "sfx_crab_02",
+        "amb_wind_palms",
         "sfx_cooking_sizzle_loop",
         "mus_theme",
         "mus_storm",
