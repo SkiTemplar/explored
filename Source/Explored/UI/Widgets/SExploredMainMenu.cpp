@@ -11,7 +11,9 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 {
 	OnContinue = InArgs._OnContinue;
 	OnNewGame = InArgs._OnNewGame;
+	OnLoad = InArgs._OnLoad;
 	OnSettings = InArgs._OnSettings;
+	OnAchievements = InArgs._OnAchievements;
 	OnCredits = InArgs._OnCredits;
 	OnQuit = InArgs._OnQuit;
 	const bool bCanContinue = InArgs._bCanContinue;
@@ -23,6 +25,10 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 	ContinueButton->SetEnabled(bCanContinue);
 	TSharedRef<SWidget> NewGameButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "NewGame", "Nueva partida"),
 		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleNewGame));
+	// «Cargar» solo tiene sentido con alguna partida legible (la misma condición que «Continuar»).
+	TSharedRef<SWidget> LoadButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "LoadGame", "Cargar"),
+		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleLoad));
+	LoadButton->SetEnabled(bCanContinue);
 	// Un botón deshabilitado no puede recibir el foco.
 	InitialFocus = bCanContinue ? ContinueButton : NewGameButton;
 
@@ -45,19 +51,33 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 					.Font(Style.FontTitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 28.0f))
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 0.0f))
 				[
 					SNew(STextBlock)
 					.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Un archipiélago que no aparece en ningún mapa"))
 					.Font(Style.FontSubtitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
 				]
+				// Dedicatoria (GDD §15): idéntica en los dos idiomas.
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 6.0f, 0.0f, 28.0f))
+				[
+					SNew(STextBlock)
+					.Text(NSLOCTEXT("ExploredUI", "Dedication", "Para Almudena, mi Limón"))
+					.Font(Style.FontSmall())
+					.ColorAndOpacity(FSlateColor(Style.ColorAccent()))
+				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ContinueButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ NewGameButton ]
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ LoadButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
 					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleSettings))
+				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
+				[
+					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Achievements", "Logros"),
+						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleAchievements))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
@@ -83,6 +103,18 @@ FReply SExploredMainMenu::HandleContinue()
 FReply SExploredMainMenu::HandleNewGame()
 {
 	OnNewGame.ExecuteIfBound();
+	return FReply::Handled();
+}
+
+FReply SExploredMainMenu::HandleLoad()
+{
+	OnLoad.ExecuteIfBound();
+	return FReply::Handled();
+}
+
+FReply SExploredMainMenu::HandleAchievements()
+{
+	OnAchievements.ExecuteIfBound();
 	return FReply::Handled();
 }
 

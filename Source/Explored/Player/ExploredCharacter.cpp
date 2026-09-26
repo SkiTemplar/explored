@@ -490,7 +490,8 @@ void AExploredCharacter::RebuildKeyMappings()
 	MapKey(MappingContext, UseSecondaryAction, EKeys::Gamepad_LeftTrigger);
 	MapKey(MappingContext, DropAction, EKeys::Gamepad_DPad_Down);
 	MapKey(MappingContext, CombineAction, EKeys::Gamepad_FaceButton_Top);
-	MapKey(MappingContext, ToggleBackpackAction, EKeys::Gamepad_Special_Left);
+	// View (Special_Left) saca el mapa en las manos (P-UI2, AExploredPlayerController): la mochila va a la cruceta.
+	MapKey(MappingContext, ToggleBackpackAction, EKeys::Gamepad_DPad_Right);
 
 	// Reloj de pulsera (fijo, fuera de la tabla de remapeo). H de «hora»: la T es
 	// para soltar sedal al pescar.

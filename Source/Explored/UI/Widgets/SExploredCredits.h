@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
-/** Pantalla de créditos (GDD §10): desplazable, sobre el mundo. Escape o B vuelven al menú. */
+/** Pantalla de créditos (GDD §10, §15): desplazable, sobre el mundo, con la dedicatoria. Escape o B vuelven al menú. */
 class EXPLORED_API SExploredCredits : public SCompoundWidget
 {
 public:

@@ -159,27 +159,18 @@ Deducidos del pipeline de UE 4.14–5.x (`FJsonInternationalizationManifestSeria
 
 ## Integración pendiente
 
-Otros paquetes están tocando `Source/Explored/UI/**` y `ExploredGameUserSettings.*`, así
-que esta rama no los modifica. Lo que falta, por fichero:
+Lo que falta, por fichero:
 
-### Literales de la UI que hay que convertir (paquete P-UI)
+### Literales de la UI (hecho en P-UI2)
 
-| Fichero:línea | Hoy | Cambio |
-|---|---|---|
-| `UI/ExploredHUD.cpp:59` | `FString Prompt = TEXT("[E] ");` | `FText::Format(NSLOCTEXT("ExploredUI", "InteractPrompt", "[{Key}] {Actions}"), Args)` con `Key` = nombre de la tecla asignada a `IA_Interact` (hoy la «E» está fija aunque se reasigne) |
-| `UI/ExploredHUD.cpp:65` | `Prompt += TEXT(" · ");` | `Actions` = `FText::Join(INVTEXT(" · "), Verbs)`; dibujar el `FText` sin pasar por `FString` |
-| `UI/Widgets/SExploredSettingsPanel.cpp:359` | `FText::FromString(FString::Printf(TEXT("%d min"), …))` | `FText::Format(NSLOCTEXT("ExploredUI", "DayLengthMinutes", "{0} min"), FText::AsNumber(Minutes))` |
-| `UI/Widgets/SExploredSettingsPanel.cpp:67` y `:77` | `FText::FromString(TEXT("<"))`, `TEXT(">")` | `INVTEXT("<")`, `INVTEXT(">")` |
-| `UI/Widgets/SExploredSettingsPanel.cpp:184` | `FText::FromString(FString::Printf(TEXT("%d x %d"), …))` | `FText::AsCultureInvariant(FString::Printf(…))` (sin `AsNumber`: pondría separador de millares) |
-| `UI/Widgets/SExploredSettingsPanel.cpp:195-196` | `FText::FromString(TEXT("30"))`… `TEXT("144")` | `FText::AsNumber(30)`… o `INVTEXT("30")` |
-| `UI/Widgets/SExploredMainMenu.cpp` y `SExploredCredits.cpp` | Falta la dedicatoria (GDD §15) | `NSLOCTEXT("ExploredUI", "Dedication", "Para Almudena, mi Limón")` bajo el subtítulo y en los créditos |
-
-Las claves `InteractPrompt`, `DayLengthMinutes` y `Dedication` ya están traducidas en
-`translations/en.json` como *pendientes*; al usarlas con ese texto exacto, la herramienta
-avisa de que se quite la marca `pendiente`.
-
-`Items/ItemTypes.cpp:7` (`LexToString(EItemSize)` → «Pequeño»…) sale como *revisar*: hoy
-solo se usa en depuración; si llega a la UI, que sea con `NSLOCTEXT`.
+Convertidos en `nube/pantallas-2026-09-26`: el aviso de interacción del HUD usa
+`ExploredUI,InteractPrompt` con la tecla que tenga asignada `IA_Interact` y los verbos unidos
+con `FText::Join(INVTEXT(" · "), …)`, dibujado como `FText` (`FCanvasTextItem`); la duración
+del día usa `ExploredUI,DayLengthMinutes`; `<`, `>`, las resoluciones y los límites de FPS
+son invariantes (`INVTEXT`, `FText::AsCultureInvariant`, `FText::AsNumber`); la dedicatoria
+(`ExploredUI,Dedication`) va bajo el subtítulo del menú principal y en los créditos. El texto
+de espera de la pesca también pasó a `ExploredUI,FishingWaiting`. Ya no queda ninguna clave
+*pendiente* en `translations/en.json`.
 
 ### Idioma activo (paquete de ajustes)
 

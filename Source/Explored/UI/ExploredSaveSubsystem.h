@@ -67,6 +67,12 @@ public:
 
 	/** Estado de todas las ranuras con fichero, en orden de «Continuar». */
 	TArray<FSaveSlotInfo> ListSlots() const;
+
+	/**
+	 * Ranuras que tienen copia de seguridad «.bak» en disco (selector de
+	 * ranuras, P-UI2: enseña si queda una versión anterior a la que volver).
+	 */
+	TArray<FString> GetSlotsWithBackup() const;
 	FString GetContinueSlotId() const;
 
 	/**

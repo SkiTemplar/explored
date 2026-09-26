@@ -657,12 +657,75 @@
 			"Children": [
 				{
 					"Source": {
+						"Text": "Conseguido"
+					},
+					"Translation": {
+						"Text": "Conseguido"
+					},
+					"Key": "AchievementDone"
+				},
+				{
+					"Source": {
+						"Text": "Logro oculto: se revela al conseguirlo."
+					},
+					"Translation": {
+						"Text": "Logro oculto: se revela al conseguirlo."
+					},
+					"Key": "AchievementHidden"
+				},
+				{
+					"Source": {
+						"Text": "{0} (no se puede conseguir en este modo)"
+					},
+					"Translation": {
+						"Text": "{0} (no se puede conseguir en este modo)"
+					},
+					"Key": "AchievementOtherMode"
+				},
+				{
+					"Source": {
 						"Text": "Logro conseguido"
 					},
 					"Translation": {
 						"Text": "Logro conseguido"
 					},
 					"Key": "AchievementUnlocked"
+				},
+				{
+					"Source": {
+						"Text": "Logros"
+					},
+					"Translation": {
+						"Text": "Logros"
+					},
+					"Key": "Achievements"
+				},
+				{
+					"Source": {
+						"Text": "Conseguidos: {0} de {1}"
+					},
+					"Translation": {
+						"Text": "Conseguidos: {0} de {1}"
+					},
+					"Key": "AchievementsSummary"
+				},
+				{
+					"Source": {
+						"Text": "Logros"
+					},
+					"Translation": {
+						"Text": "Logros"
+					},
+					"Key": "AchievementsTitle"
+				},
+				{
+					"Source": {
+						"Text": "Los logros no están disponibles."
+					},
+					"Translation": {
+						"Text": "Los logros no están disponibles."
+					},
+					"Key": "AchievementsUnavailable"
 				},
 				{
 					"Source": {
@@ -909,6 +972,24 @@
 				},
 				{
 					"Source": {
+						"Text": "{0} min"
+					},
+					"Translation": {
+						"Text": "{0} min"
+					},
+					"Key": "DayLengthMinutes"
+				},
+				{
+					"Source": {
+						"Text": "Para Almudena, mi Limón"
+					},
+					"Translation": {
+						"Text": "Para Almudena, mi Limón"
+					},
+					"Key": "Dedication"
+				},
+				{
+					"Source": {
 						"Text": "Efectos"
 					},
 					"Translation": {
@@ -942,6 +1023,15 @@
 						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
 					},
 					"Key": "FishingLineOut"
+				},
+				{
+					"Source": {
+						"Text": "Esperando la picada… [F] recoger"
+					},
+					"Translation": {
+						"Text": "Esperando la picada… [F] recoger"
+					},
+					"Key": "FishingWaiting"
 				},
 				{
 					"Source": {
@@ -990,30 +1080,147 @@
 				},
 				{
 					"Source": {
+						"Text": "[{Key}] {Actions}"
+					},
+					"Translation": {
+						"Text": "[{Key}] {Actions}"
+					},
+					"Key": "InteractPrompt"
+				},
+				{
+					"Source": {
+						"Text": "Mochila ({0} de {1} l)"
+					},
+					"Translation": {
+						"Text": "Mochila ({0} de {1} l)"
+					},
+					"Key": "InvBackpack"
+				},
+				{
+					"Source": {
+						"Text": "Cinturón ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Cinturón ({0}/{1})"
+					},
+					"Key": "InvBelt"
+				},
+				{
+					"Source": {
+						"Text": "En las dos manos: {0}"
+					},
+					"Translation": {
+						"Text": "En las dos manos: {0}"
+					},
+					"Key": "InvBothHands"
+				},
+				{
+					"Source": {
+						"Text": "vacía"
+					},
+					"Translation": {
+						"Text": "vacía"
+					},
+					"Key": "InvEmptyHand"
+				},
+				{
+					"Source": {
+						"Text": "Vas cargado: te cansas antes y haces más ruido."
+					},
+					"Translation": {
+						"Text": "Vas cargado: te cansas antes y haces más ruido."
+					},
+					"Key": "InvHeavy"
+				},
+				{
+					"Source": {
+						"Text": "Mano izquierda: {0}"
+					},
+					"Translation": {
+						"Text": "Mano izquierda: {0}"
+					},
+					"Key": "InvLeftHand"
+				},
+				{
+					"Source": {
+						"Text": "nada"
+					},
+					"Translation": {
+						"Text": "nada"
+					},
+					"Key": "InvNothing"
+				},
+				{
+					"Source": {
+						"Text": "No puedes cargar más."
+					},
+					"Translation": {
+						"Text": "No puedes cargar más."
+					},
+					"Key": "InvOverloaded"
+				},
+				{
+					"Source": {
+						"Text": "Bolsillos ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Bolsillos ({0}/{1})"
+					},
+					"Key": "InvPockets"
+				},
+				{
+					"Source": {
+						"Text": "Bolsa estanca ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Bolsa estanca ({0}/{1})"
+					},
+					"Key": "InvPouch"
+				},
+				{
+					"Source": {
+						"Text": "Mano derecha: {0}"
+					},
+					"Translation": {
+						"Text": "Mano derecha: {0}"
+					},
+					"Key": "InvRightHand"
+				},
+				{
+					"Source": {
+						"Text": "Angarillas ({0} kg)"
+					},
+					"Translation": {
+						"Text": "Angarillas ({0} kg)"
+					},
+					"Key": "InvSledge"
+				},
+				{
+					"Source": {
+						"Text": "Lo que llevas"
+					},
+					"Translation": {
+						"Text": "Lo que llevas"
+					},
+					"Key": "InvTitle"
+				},
+				{
+					"Source": {
+						"Text": "Carga: {0} kg de {1} kg cómodos"
+					},
+					"Translation": {
+						"Text": "Carga: {0} kg de {1} kg cómodos"
+					},
+					"Key": "InvWeight"
+				},
+				{
+					"Source": {
 						"Text": "Invertir eje Y"
 					},
 					"Translation": {
 						"Text": "Invertir eje Y"
 					},
 					"Key": "InvertY"
-				},
-				{
-					"Source": {
-						"Text": "Diario (Próximamente)"
-					},
-					"Translation": {
-						"Text": "Diario (Próximamente)"
-					},
-					"Key": "Journal"
-				},
-				{
-					"Source": {
-						"Text": "Próximamente"
-					},
-					"Translation": {
-						"Text": "Próximamente"
-					},
-					"Key": "JournalTooltip"
 				},
 				{
 					"Source": {
@@ -1041,6 +1248,312 @@
 						"Text": "Idioma"
 					},
 					"Key": "Language"
+				},
+				{
+					"Source": {
+						"Text": "Cargar"
+					},
+					"Translation": {
+						"Text": "Cargar"
+					},
+					"Key": "LoadGame"
+				},
+				{
+					"Source": {
+						"Text": "Rumbo {0}°, {1} m"
+					},
+					"Translation": {
+						"Text": "Rumbo {0}°, {1} m"
+					},
+					"Key": "MapAnnotationBearing"
+				},
+				{
+					"Source": {
+						"Text": "Radio de {0} m"
+					},
+					"Translation": {
+						"Text": "Radio de {0} m"
+					},
+					"Key": "MapAnnotationRadius"
+				},
+				{
+					"Source": {
+						"Text": "{0} caracteres libres"
+					},
+					"Translation": {
+						"Text": "{0} caracteres libres"
+					},
+					"Key": "MapCharsLeft"
+				},
+				{
+					"Source": {
+						"Text": "Colección"
+					},
+					"Translation": {
+						"Text": "Colección"
+					},
+					"Key": "MapCollection"
+				},
+				{
+					"Source": {
+						"Text": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno."
+					},
+					"Translation": {
+						"Text": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno."
+					},
+					"Key": "MapControlsHint"
+				},
+				{
+					"Source": {
+						"Text": "El papel está húmedo."
+					},
+					"Translation": {
+						"Text": "El papel está húmedo."
+					},
+					"Key": "MapDamp"
+				},
+				{
+					"Source": {
+						"Text": "Pulsa en la hoja para poner la marca."
+					},
+					"Translation": {
+						"Text": "Pulsa en la hoja para poner la marca."
+					},
+					"Key": "MapHintPlace"
+				},
+				{
+					"Source": {
+						"Text": "El papel está empapado: la tinta se corre. Guárdalo en seco."
+					},
+					"Translation": {
+						"Text": "El papel está empapado: la tinta se corre. Guárdalo en seco."
+					},
+					"Key": "MapInkRunning"
+				},
+				{
+					"Source": {
+						"Text": "dibujada a mano"
+					},
+					"Translation": {
+						"Text": "dibujada a mano"
+					},
+					"Key": "MapMarkHand"
+				},
+				{
+					"Source": {
+						"Text": "Marcar donde estoy"
+					},
+					"Translation": {
+						"Text": "Marcar donde estoy"
+					},
+					"Key": "MapMarkHere"
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada."
+					},
+					"Translation": {
+						"Text": "Marca dibujada."
+					},
+					"Key": "MapMarkPlaced"
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada donde crees estar."
+					},
+					"Translation": {
+						"Text": "Marca dibujada donde crees estar."
+					},
+					"Key": "MapMarkPlacedHere"
+				},
+				{
+					"Source": {
+						"Text": "situada con el sextante"
+					},
+					"Translation": {
+						"Text": "situada con el sextante"
+					},
+					"Key": "MapMarkSextant"
+				},
+				{
+					"Source": {
+						"Text": "vista con el catalejo"
+					},
+					"Translation": {
+						"Text": "vista con el catalejo"
+					},
+					"Key": "MapMarkSpyglass"
+				},
+				{
+					"Source": {
+						"Text": "Texto corto (opcional)"
+					},
+					"Translation": {
+						"Text": "Texto corto (opcional)"
+					},
+					"Key": "MapMarkTextHint"
+				},
+				{
+					"Source": {
+						"Text": "No caben más marcas en la hoja."
+					},
+					"Translation": {
+						"Text": "No caben más marcas en la hoja."
+					},
+					"Key": "MapMarksFull"
+				},
+				{
+					"Source": {
+						"Text": "Elige un sello o escribe una nota."
+					},
+					"Translation": {
+						"Text": "Elige un sello o escribe una nota."
+					},
+					"Key": "MapNeedStampOrText"
+				},
+				{
+					"Source": {
+						"Text": "Aún no has anotado recetas al margen."
+					},
+					"Translation": {
+						"Text": "Aún no has anotado recetas al margen."
+					},
+					"Key": "MapNoRecipes"
+				},
+				{
+					"Source": {
+						"Text": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una."
+					},
+					"Translation": {
+						"Text": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una."
+					},
+					"Key": "MapNoWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Guardar el mapa"
+					},
+					"Translation": {
+						"Text": "Guardar el mapa"
+					},
+					"Key": "MapPutAway"
+				},
+				{
+					"Source": {
+						"Text": "{0}: «{1}», {2}"
+					},
+					"Translation": {
+						"Text": "{0}: «{1}», {2}"
+					},
+					"Key": "MapSelectedMark"
+				},
+				{
+					"Source": {
+						"Text": "Mostrar las anotaciones de rumbo"
+					},
+					"Translation": {
+						"Text": "Mostrar las anotaciones de rumbo"
+					},
+					"Key": "MapShowWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Sello"
+					},
+					"Translation": {
+						"Text": "Sello"
+					},
+					"Key": "MapStamp"
+				},
+				{
+					"Source": {
+						"Text": "Nota"
+					},
+					"Translation": {
+						"Text": "Nota"
+					},
+					"Key": "MapStampNote"
+				},
+				{
+					"Source": {
+						"Text": "Marcas"
+					},
+					"Translation": {
+						"Text": "Marcas"
+					},
+					"Key": "MapTabMarks"
+				},
+				{
+					"Source": {
+						"Text": "Recetas"
+					},
+					"Translation": {
+						"Text": "Recetas"
+					},
+					"Key": "MapTabRecipes"
+				},
+				{
+					"Source": {
+						"Text": "Rumbos"
+					},
+					"Translation": {
+						"Text": "Rumbos"
+					},
+					"Key": "MapTabWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Aves al atardecer"
+					},
+					"Translation": {
+						"Text": "Aves al atardecer"
+					},
+					"Key": "MapTechniqueBirds"
+				},
+				{
+					"Source": {
+						"Text": "Nubes fijas"
+					},
+					"Translation": {
+						"Text": "Nubes fijas"
+					},
+					"Key": "MapTechniqueClouds"
+				},
+				{
+					"Source": {
+						"Text": "Camino de estrellas"
+					},
+					"Translation": {
+						"Text": "Camino de estrellas"
+					},
+					"Key": "MapTechniqueStarPath"
+				},
+				{
+					"Source": {
+						"Text": "Lectura del oleaje"
+					},
+					"Translation": {
+						"Text": "Lectura del oleaje"
+					},
+					"Key": "MapTechniqueSwell"
+				},
+				{
+					"Source": {
+						"Text": "Color del agua"
+					},
+					"Translation": {
+						"Text": "Color del agua"
+					},
+					"Key": "MapTechniqueWater"
+				},
+				{
+					"Source": {
+						"Text": "Mapa"
+					},
+					"Translation": {
+						"Text": "Mapa"
+					},
+					"Key": "MapTitle"
 				},
 				{
 					"Source": {
@@ -1104,6 +1617,168 @@
 						"Text": "Sensibilidad del ratón"
 					},
 					"Key": "MouseSensitivity"
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} de {1} tesoros expuestos"
+					},
+					"Translation": {
+						"Text": "Coleccionista: {0} de {1} tesoros expuestos"
+					},
+					"Key": "MuseumCollector"
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} tesoros expuestos (conseguido)"
+					},
+					"Translation": {
+						"Text": "Coleccionista: {0} tesoros expuestos (conseguido)"
+					},
+					"Key": "MuseumCollectorDone"
+				},
+				{
+					"Source": {
+						"Text": "común"
+					},
+					"Translation": {
+						"Text": "común"
+					},
+					"Key": "MuseumCommon"
+				},
+				{
+					"Source": {
+						"Text": "Expuesto en el museo"
+					},
+					"Translation": {
+						"Text": "Expuesto en el museo"
+					},
+					"Key": "MuseumExhibited"
+				},
+				{
+					"Source": {
+						"Text": "Hallado"
+					},
+					"Translation": {
+						"Text": "Hallado"
+					},
+					"Key": "MuseumFound"
+				},
+				{
+					"Source": {
+						"Text": "Cueva ritual"
+					},
+					"Translation": {
+						"Text": "Cueva ritual"
+					},
+					"Key": "MuseumFromCave"
+				},
+				{
+					"Source": {
+						"Text": "Marae"
+					},
+					"Translation": {
+						"Text": "Marae"
+					},
+					"Key": "MuseumFromMarae"
+				},
+				{
+					"Source": {
+						"Text": "Ruina sumergida"
+					},
+					"Translation": {
+						"Text": "Ruina sumergida"
+					},
+					"Key": "MuseumFromSunken"
+				},
+				{
+					"Source": {
+						"Text": "Pecio"
+					},
+					"Translation": {
+						"Text": "Pecio"
+					},
+					"Key": "MuseumFromWreck"
+				},
+				{
+					"Source": {
+						"Text": "Fotografiado, sin recoger"
+					},
+					"Translation": {
+						"Text": "Fotografiado, sin recoger"
+					},
+					"Key": "MuseumPhotographed"
+				},
+				{
+					"Source": {
+						"Text": "Procedencia: {0} · {1}"
+					},
+					"Translation": {
+						"Text": "Procedencia: {0} · {1}"
+					},
+					"Key": "MuseumProvenance"
+				},
+				{
+					"Source": {
+						"Text": "raro"
+					},
+					"Translation": {
+						"Text": "raro"
+					},
+					"Key": "MuseumRare"
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1}"
+					},
+					"Translation": {
+						"Text": "{0} · {1}"
+					},
+					"Key": "MuseumStateAt"
+				},
+				{
+					"Source": {
+						"Text": "Catálogo: {0} de {1} registrados · {2} hallados"
+					},
+					"Translation": {
+						"Text": "Catálogo: {0} de {1} registrados · {2} hallados"
+					},
+					"Key": "MuseumSummary"
+				},
+				{
+					"Source": {
+						"Text": "Museo"
+					},
+					"Translation": {
+						"Text": "Museo"
+					},
+					"Key": "MuseumTitle"
+				},
+				{
+					"Source": {
+						"Text": "El catálogo no está disponible en este mundo."
+					},
+					"Translation": {
+						"Text": "El catálogo no está disponible en este mundo."
+					},
+					"Key": "MuseumUnavailable"
+				},
+				{
+					"Source": {
+						"Text": "único"
+					},
+					"Translation": {
+						"Text": "único"
+					},
+					"Key": "MuseumUnique"
+				},
+				{
+					"Source": {
+						"Text": "Sin descubrir"
+					},
+					"Translation": {
+						"Text": "Sin descubrir"
+					},
+					"Key": "MuseumUnknown"
 				},
 				{
 					"Source": {
@@ -1176,6 +1851,24 @@
 						"Text": "Calidad general"
 					},
 					"Key": "OverallQuality"
+				},
+				{
+					"Source": {
+						"Text": "Mapa"
+					},
+					"Translation": {
+						"Text": "Mapa"
+					},
+					"Key": "PauseMap"
+				},
+				{
+					"Source": {
+						"Text": "Museo"
+					},
+					"Translation": {
+						"Text": "Museo"
+					},
+					"Key": "PauseMuseum"
 				},
 				{
 					"Source": {
@@ -1401,6 +2094,177 @@
 						"Text": "Sombras"
 					},
 					"Key": "Shadows"
+				},
+				{
+					"Source": {
+						"Text": "Autoguardado"
+					},
+					"Translation": {
+						"Text": "Autoguardado"
+					},
+					"Key": "SlotAuto"
+				},
+				{
+					"Source": {
+						"Text": "Dañada: no se puede leer"
+					},
+					"Translation": {
+						"Text": "Dañada: no se puede leer"
+					},
+					"Key": "SlotDamaged"
+				},
+				{
+					"Source": {
+						"Text": "Vacía"
+					},
+					"Translation": {
+						"Text": "Vacía"
+					},
+					"Key": "SlotEmpty"
+				},
+				{
+					"Source": {
+						"Text": "Guardada con una versión más nueva del juego"
+					},
+					"Translation": {
+						"Text": "Guardada con una versión más nueva del juego"
+					},
+					"Key": "SlotFuture"
+				},
+				{
+					"Source": {
+						"Text": "Con copia de seguridad"
+					},
+					"Translation": {
+						"Text": "Con copia de seguridad"
+					},
+					"Key": "SlotHasBackup"
+				},
+				{
+					"Source": {
+						"Text": "Ranura {0}"
+					},
+					"Translation": {
+						"Text": "Ranura {0}"
+					},
+					"Key": "SlotManual"
+				},
+				{
+					"Source": {
+						"Text": "Sin copia de seguridad"
+					},
+					"Translation": {
+						"Text": "Sin copia de seguridad"
+					},
+					"Key": "SlotNoBackup"
+				},
+				{
+					"Source": {
+						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
+					},
+					"Translation": {
+						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
+					},
+					"Key": "SlotRecovered"
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1} h {2} min jugados"
+					},
+					"Translation": {
+						"Text": "{0} · {1} h {2} min jugados"
+					},
+					"Key": "SlotSavedAt"
+				},
+				{
+					"Source": {
+						"Text": "Cancelar"
+					},
+					"Translation": {
+						"Text": "Cancelar"
+					},
+					"Key": "SlotsCancel"
+				},
+				{
+					"Source": {
+						"Text": "Sobrescribir"
+					},
+					"Translation": {
+						"Text": "Sobrescribir"
+					},
+					"Key": "SlotsConfirmOverwrite"
+				},
+				{
+					"Source": {
+						"Text": "Elige la partida que quieres cargar."
+					},
+					"Translation": {
+						"Text": "Elige la partida que quieres cargar."
+					},
+					"Key": "SlotsLoadHint"
+				},
+				{
+					"Source": {
+						"Text": "Cargar partida"
+					},
+					"Translation": {
+						"Text": "Cargar partida"
+					},
+					"Key": "SlotsLoadTitle"
+				},
+				{
+					"Source": {
+						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
+					},
+					"Translation": {
+						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
+					},
+					"Key": "SlotsOverwrite"
+				},
+				{
+					"Source": {
+						"Text": "No se pudo guardar la partida."
+					},
+					"Translation": {
+						"Text": "No se pudo guardar la partida."
+					},
+					"Key": "SlotsSaveFailed"
+				},
+				{
+					"Source": {
+						"Text": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras."
+					},
+					"Translation": {
+						"Text": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras."
+					},
+					"Key": "SlotsSaveHint"
+				},
+				{
+					"Source": {
+						"Text": "Guardar partida"
+					},
+					"Translation": {
+						"Text": "Guardar partida"
+					},
+					"Key": "SlotsSaveTitle"
+				},
+				{
+					"Source": {
+						"Text": "Partida guardada en la {0}."
+					},
+					"Translation": {
+						"Text": "Partida guardada en la {0}."
+					},
+					"Key": "SlotsSaved"
+				},
+				{
+					"Source": {
+						"Text": "El guardado no está disponible."
+					},
+					"Translation": {
+						"Text": "El guardado no está disponible."
+					},
+					"Key": "SlotsUnavailable"
 				},
 				{
 					"Source": {

@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 488,
-		"cpp": 184,
+		"total": 584,
+		"cpp": 280,
 		"datos": 304,
-		"pendientes": 3,
+		"pendientes": 0,
 		"sin_en": 0,
-		"literales": 2,
-		"invariantes": 9,
-		"revisar": 65
+		"literales": 0,
+		"invariantes": 2,
+		"revisar": 64
 	},
 	"entries": [
 		{
@@ -721,12 +721,83 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "AchievementDone",
+			"es": "Conseguido",
+			"en": "Unlocked",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:67"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementHidden",
+			"es": "Logro oculto: se revela al conseguirlo.",
+			"en": "Hidden achievement: revealed once unlocked.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:44"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementOtherMode",
+			"es": "{0} (no se puede conseguir en este modo)",
+			"en": "{0} (can't be earned in this mode)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:48"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "AchievementUnlocked",
 			"es": "Logro conseguido",
 			"en": "Achievement unlocked",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredAchievementToast.cpp:32"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Achievements",
+			"es": "Logros",
+			"en": "Achievements",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79",
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:61"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementsSummary",
+			"es": "Conseguidos: {0} de {1}",
+			"en": "Unlocked: {0} of {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:37"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementsTitle",
+			"es": "Logros",
+			"en": "Achievements",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:105"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementsUnavailable",
+			"es": "Los logros no están disponibles.",
+			"en": "Achievements aren't available.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:28"
 			]
 		},
 		{
@@ -826,7 +897,7 @@
 			"en": "Apply",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:542"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:543"
 			]
 		},
 		{
@@ -836,9 +907,12 @@
 			"en": "Back",
 			"origin": "cpp",
 			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:24",
 				"Source/Explored/UI/Widgets/SExploredCredits.cpp:35",
 				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:63",
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:550"
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:83",
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:33",
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:551"
 			]
 		},
 		{
@@ -848,7 +922,7 @@
 			"en": "Brightness",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:302"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:303"
 			]
 		},
 		{
@@ -858,7 +932,7 @@
 			"en": "Deuteranopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:511"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:512"
 			]
 		},
 		{
@@ -868,7 +942,7 @@
 			"en": "None",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:509"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:510"
 			]
 		},
 		{
@@ -878,7 +952,7 @@
 			"en": "Protanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:510"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:511"
 			]
 		},
 		{
@@ -888,7 +962,7 @@
 			"en": "Tritanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:512"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:513"
 			]
 		},
 		{
@@ -898,7 +972,7 @@
 			"en": "Camera bob",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:374"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:375"
 			]
 		},
 		{
@@ -918,7 +992,7 @@
 			"en": "Colour-blind mode",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:518"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:519"
 			]
 		},
 		{
@@ -928,7 +1002,7 @@
 			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:22"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
 			]
 		},
 		{
@@ -938,7 +1012,7 @@
 			"en": "Credits",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:64"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:84"
 			]
 		},
 		{
@@ -998,8 +1072,31 @@
 			"en": "Day length",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:474"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:475"
 			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "DayLengthMinutes",
+			"es": "{0} min",
+			"en": "{0} min",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:459"
+			],
+			"note": "FText::Format(..., FText::AsNumber(Minutes))."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Dedication",
+			"es": "Para Almudena, mi Limón",
+			"en": "Para Almudena, mi Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:70",
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:65"
+			],
+			"note": "Dedicatoria: idéntica en los dos idiomas."
 		},
 		{
 			"namespace": "ExploredUI",
@@ -1008,7 +1105,7 @@
 			"en": "Effects",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:317"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:318"
 			]
 		},
 		{
@@ -1018,7 +1115,7 @@
 			"en": "Exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:64"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:76"
 			]
 		},
 		{
@@ -1028,7 +1125,7 @@
 			"en": "Field of view",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:369"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:370"
 			]
 		},
 		{
@@ -1038,7 +1135,17 @@
 			"en": "Line out: {0} m · [R] reel in · [T] let out",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:130"
+				"Source/Explored/UI/ExploredHUD.cpp:137"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "FishingWaiting",
+			"es": "Esperando la picada… [F] recoger",
+			"en": "Waiting for a bite… [F] reel in",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:124"
 			]
 		},
 		{
@@ -1048,7 +1155,7 @@
 			"en": "Foliage",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:318"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:319"
 			]
 		},
 		{
@@ -1058,7 +1165,7 @@
 			"en": "FPS limit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:295"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:296"
 			]
 		},
 		{
@@ -1068,7 +1175,7 @@
 			"en": "Global illumination",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:313"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:314"
 			]
 		},
 		{
@@ -1078,7 +1185,7 @@
 			"en": "Controller sensitivity",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:360"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:361"
 			]
 		},
 		{
@@ -1088,7 +1195,158 @@
 			"en": "Hold to crouch",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:378"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:379"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InteractPrompt",
+			"es": "[{Key}] {Actions}",
+			"en": "[{Key}] {Actions}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:82"
+			],
+			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvBackpack",
+			"es": "Mochila ({0} de {1} l)",
+			"en": "Backpack ({0} of {1} l)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:47"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvBelt",
+			"es": "Cinturón ({0}/{1})",
+			"en": "Belt ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:43"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvBothHands",
+			"es": "En las dos manos: {0}",
+			"en": "In both hands: {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:173"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvEmptyHand",
+			"es": "vacía",
+			"en": "empty",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:168"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvHeavy",
+			"es": "Vas cargado: te cansas antes y haces más ruido.",
+			"en": "You're weighed down: you tire sooner and make more noise.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:227"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvLeftHand",
+			"es": "Mano izquierda: {0}",
+			"en": "Left hand: {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:180"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvNothing",
+			"es": "nada",
+			"en": "nothing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:201"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvOverloaded",
+			"es": "No puedes cargar más.",
+			"en": "You can't carry any more.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:228"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvPockets",
+			"es": "Bolsillos ({0}/{1})",
+			"en": "Pockets ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:41"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvPouch",
+			"es": "Bolsa estanca ({0}/{1})",
+			"en": "Dry pouch ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:45"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvRightHand",
+			"es": "Mano derecha: {0}",
+			"en": "Right hand: {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:185"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvSledge",
+			"es": "Angarillas ({0} kg)",
+			"en": "Sledge ({0} kg)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:50"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvTitle",
+			"es": "Lo que llevas",
+			"en": "What you carry",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:164"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvWeight",
+			"es": "Carga: {0} kg de {1} kg cómodos",
+			"en": "Load: {0} kg of {1} kg comfortable",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:219"
 			]
 		},
 		{
@@ -1098,27 +1356,7 @@
 			"en": "Invert Y axis",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:365"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "Journal",
-			"es": "Diario (Próximamente)",
-			"en": "Journal (Coming soon)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:24"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "JournalTooltip",
-			"es": "Próximamente",
-			"en": "Coming soon",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:26"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:366"
 			]
 		},
 		{
@@ -1128,7 +1366,7 @@
 			"en": "English",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:468"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:469"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -1139,7 +1377,7 @@
 			"en": "Español",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:467"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:468"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -1150,7 +1388,350 @@
 			"en": "Language",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:493"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:494"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "LoadGame",
+			"es": "Cargar",
+			"en": "Load",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:29"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapAnnotationBearing",
+			"es": "Rumbo {0}°, {1} m",
+			"en": "Bearing {0}°, {1} m",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:467"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapAnnotationRadius",
+			"es": "Radio de {0} m",
+			"en": "{0} m radius",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:465"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapCharsLeft",
+			"es": "{0} caracteres libres",
+			"en": "{0} characters left",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:789"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapCollection",
+			"es": "Colección",
+			"en": "Collection",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:251"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapControlsHint",
+			"es": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno.",
+			"en": "Drag or use the arrows to move; wheel or LB/RB to zoom. Y switches between sheet and notebook.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:322"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapDamp",
+			"es": "El papel está húmedo.",
+			"en": "The paper is damp.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:782"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapHintPlace",
+			"es": "Pulsa en la hoja para poner la marca.",
+			"en": "Tap the sheet to place the mark.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:91",
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:678"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapInkRunning",
+			"es": "El papel está empapado: la tinta se corre. Guárdalo en seco.",
+			"en": "The paper is soaked: the ink is running. Keep it dry.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:778"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkHand",
+			"es": "dibujada a mano",
+			"en": "drawn by hand",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:70"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkHere",
+			"es": "Marcar donde estoy",
+			"en": "Mark where I am",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:395"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkPlaced",
+			"es": "Marca dibujada.",
+			"en": "Mark drawn.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:661"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkPlacedHere",
+			"es": "Marca dibujada donde crees estar.",
+			"en": "Mark drawn where you think you are.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:692"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkSextant",
+			"es": "situada con el sextante",
+			"en": "fixed with the sextant",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:69"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkSpyglass",
+			"es": "vista con el catalejo",
+			"en": "sighted with the spyglass",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:68"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarkTextHint",
+			"es": "Texto corto (opcional)",
+			"en": "Short note (optional)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:420"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapMarksFull",
+			"es": "No caben más marcas en la hoja.",
+			"en": "No room for more marks on the sheet.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:670",
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:701"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapNeedStampOrText",
+			"es": "Elige un sello o escribe una nota.",
+			"en": "Choose a stamp or write a note.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:655"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapNoRecipes",
+			"es": "Aún no has anotado recetas al margen.",
+			"en": "No recipes noted in the margin yet.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:567"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapNoWayfinding",
+			"es": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una.",
+			"en": "You haven't learnt any wayfinding yet. Each complete ruin teaches one.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:493"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapPutAway",
+			"es": "Guardar el mapa",
+			"en": "Put the map away",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:262"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapSelectedMark",
+			"es": "{0}: «{1}», {2}",
+			"en": "{0}: “{1}”, {2}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:768"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapShowWayfinding",
+			"es": "Mostrar las anotaciones de rumbo",
+			"en": "Show bearing notes",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:519"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapStamp",
+			"es": "Sello",
+			"en": "Stamp",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:408"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapStampNote",
+			"es": "Nota",
+			"en": "Note",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:215",
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:385"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTabMarks",
+			"es": "Marcas",
+			"en": "Marks",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:288"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTabRecipes",
+			"es": "Recetas",
+			"en": "Recipes",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:296"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTabWayfinding",
+			"es": "Rumbos",
+			"en": "Bearings",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:292"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTechniqueBirds",
+			"es": "Aves al atardecer",
+			"en": "Birds at dusk",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:58"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTechniqueClouds",
+			"es": "Nubes fijas",
+			"en": "Fixed clouds",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:59"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTechniqueStarPath",
+			"es": "Camino de estrellas",
+			"en": "Star path",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:56"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTechniqueSwell",
+			"es": "Lectura del oleaje",
+			"en": "Swell reading",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:57"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTechniqueWater",
+			"es": "Color del agua",
+			"en": "Water colour",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:60"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MapTitle",
+			"es": "Mapa",
+			"en": "Map",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:271"
 			]
 		},
 		{
@@ -1220,7 +1801,187 @@
 			"en": "Mouse sensitivity",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:355"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:356"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumCollector",
+			"es": "Coleccionista: {0} de {1} tesoros expuestos",
+			"en": "Collector: {0} of {1} treasures on display",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:104"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumCollectorDone",
+			"es": "Coleccionista: {0} tesoros expuestos (conseguido)",
+			"en": "Collector: {0} treasures on display (unlocked)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:103"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumCommon",
+			"es": "común",
+			"en": "common",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:40"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumExhibited",
+			"es": "Expuesto en el museo",
+			"en": "On display in the museum",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:128"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumFound",
+			"es": "Hallado",
+			"en": "Found",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:129"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumFromCave",
+			"es": "Cueva ritual",
+			"en": "Ritual cave",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:28"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumFromMarae",
+			"es": "Marae",
+			"en": "Marae",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:27"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumFromSunken",
+			"es": "Ruina sumergida",
+			"en": "Sunken ruin",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:30"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumFromWreck",
+			"es": "Pecio",
+			"en": "Shipwreck",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:29"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumPhotographed",
+			"es": "Fotografiado, sin recoger",
+			"en": "Photographed, not collected",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:130"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumProvenance",
+			"es": "Procedencia: {0} · {1}",
+			"en": "Provenance: {0} · {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:142"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumRare",
+			"es": "raro",
+			"en": "rare",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:38"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumStateAt",
+			"es": "{0} · {1}",
+			"en": "{0} · {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:139"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumSummary",
+			"es": "Catálogo: {0} de {1} registrados · {2} hallados",
+			"en": "Catalogue: {0} of {1} recorded · {2} found",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:94"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumTitle",
+			"es": "Museo",
+			"en": "Museum",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:192"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumUnavailable",
+			"es": "El catálogo no está disponible en este mundo.",
+			"en": "The catalogue isn't available in this world.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:88"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumUnique",
+			"es": "único",
+			"en": "unique",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:39"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MuseumUnknown",
+			"es": "Sin descubrir",
+			"en": "Undiscovered",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:131"
 			]
 		},
 		{
@@ -1270,7 +2031,7 @@
 			"en": "New game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:26"
 			]
 		},
 		{
@@ -1280,7 +2041,7 @@
 			"en": "Disable flashing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:529"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:530"
 			]
 		},
 		{
@@ -1300,7 +2061,27 @@
 			"en": "Overall quality",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:308"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:309"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PauseMap",
+			"es": "Mapa",
+			"en": "Map",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:51"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PauseMuseum",
+			"es": "Museo",
+			"en": "Museum",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:56"
 			]
 		},
 		{
@@ -1310,7 +2091,7 @@
 			"en": "Paused",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:46"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:44"
 			]
 		},
 		{
@@ -1320,7 +2101,7 @@
 			"en": "Post-processing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:315"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:316"
 			]
 		},
 		{
@@ -1390,7 +2171,7 @@
 			"en": "Quit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:69"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:89"
 			]
 		},
 		{
@@ -1400,7 +2181,7 @@
 			"en": "Quit game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:69"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:81"
 			]
 		},
 		{
@@ -1410,7 +2191,7 @@
 			"en": "Reduce motion",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:525"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:526"
 			]
 		},
 		{
@@ -1420,7 +2201,7 @@
 			"en": "Reflections",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:314"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:315"
 			]
 		},
 		{
@@ -1430,7 +2211,7 @@
 			"en": "Gamepad buttons can't be remapped.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:430"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:431"
 			]
 		},
 		{
@@ -1440,7 +2221,7 @@
 			"en": "{0} is already used for «{1}».",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:438"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:439"
 			]
 		},
 		{
@@ -1450,7 +2231,7 @@
 			"en": "{0} is reserved (movement or menu).",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:434"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:435"
 			]
 		},
 		{
@@ -1460,7 +2241,7 @@
 			"en": "Resolution",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:277"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:278"
 			]
 		},
 		{
@@ -1470,7 +2251,7 @@
 			"en": "Restore defaults",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:546"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:547"
 			]
 		},
 		{
@@ -1480,7 +2261,7 @@
 			"en": "Resume",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:28"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:26"
 			]
 		},
 		{
@@ -1490,7 +2271,7 @@
 			"en": "Save game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:59"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:71"
 			]
 		},
 		{
@@ -1510,7 +2291,7 @@
 			"en": "Display",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:274"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:275"
 			]
 		},
 		{
@@ -1520,7 +2301,7 @@
 			"en": "Quality",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:305"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:306"
 			]
 		},
 		{
@@ -1530,7 +2311,7 @@
 			"en": "Key bindings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:383"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:384"
 			]
 		},
 		{
@@ -1540,8 +2321,8 @@
 			"en": "Settings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:59",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:54"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:74",
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:66"
 			]
 		},
 		{
@@ -1551,7 +2332,197 @@
 			"en": "Shadows",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:312"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:313"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotAuto",
+			"es": "Autoguardado",
+			"en": "Autosave",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:113"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotDamaged",
+			"es": "Dañada: no se puede leer",
+			"en": "Damaged: can't be read",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:125"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotEmpty",
+			"es": "Vacía",
+			"en": "Empty",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:123"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotFuture",
+			"es": "Guardada con una versión más nueva del juego",
+			"en": "Saved with a newer version of the game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:127"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotHasBackup",
+			"es": "Con copia de seguridad",
+			"en": "Backup available",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:153"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotManual",
+			"es": "Ranura {0}",
+			"en": "Slot {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:114"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotNoBackup",
+			"es": "Sin copia de seguridad",
+			"en": "No backup",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:153"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotRecovered",
+			"es": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)",
+			"en": "{0} · restored from the backup (the main file was damaged)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:140"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotSavedAt",
+			"es": "{0} · {1} h {2} min jugados",
+			"en": "{0} · {1} h {2} min played",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:135"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsCancel",
+			"es": "Cancelar",
+			"en": "Cancel",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:190"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsConfirmOverwrite",
+			"es": "Sobrescribir",
+			"en": "Overwrite",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:222"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsLoadHint",
+			"es": "Elige la partida que quieres cargar.",
+			"en": "Choose the game you want to load.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:31"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsLoadTitle",
+			"es": "Cargar partida",
+			"en": "Load game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:67"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsOverwrite",
+			"es": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad.",
+			"en": "Overwrite {0}? The previous game is kept as a backup.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:210"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsSaveFailed",
+			"es": "No se pudo guardar la partida.",
+			"en": "The game couldn't be saved.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:257"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsSaveHint",
+			"es": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras.",
+			"en": "Choose a manual slot. The autosave is written when you sleep and at campfires.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:30"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsSaveTitle",
+			"es": "Guardar partida",
+			"en": "Save game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:67"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsSaved",
+			"es": "Partida guardada en la {0}.",
+			"en": "Game saved in {0}.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:256"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotsUnavailable",
+			"es": "El guardado no está disponible.",
+			"en": "Saving isn't available.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:99"
 			]
 		},
 		{
@@ -1561,7 +2532,7 @@
 			"en": "Visual sound cues",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:533"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:534"
 			]
 		},
 		{
@@ -1571,7 +2542,7 @@
 			"en": "An archipelago on no map",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:51"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:57"
 			]
 		},
 		{
@@ -1581,7 +2552,7 @@
 			"en": "Subtitles",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:482"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:483"
 			]
 		},
 		{
@@ -1641,7 +2612,7 @@
 			"en": "Large",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:464"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:465"
 			]
 		},
 		{
@@ -1651,7 +2622,7 @@
 			"en": "Medium",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:463"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:464"
 			]
 		},
 		{
@@ -1661,7 +2632,7 @@
 			"en": "Text size",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:486"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:487"
 			]
 		},
 		{
@@ -1671,7 +2642,7 @@
 			"en": "Small",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:462"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:463"
 			]
 		},
 		{
@@ -1681,7 +2652,7 @@
 			"en": "Textures",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:316"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:317"
 			]
 		},
 		{
@@ -1691,7 +2662,7 @@
 			"en": "EXPLORED",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:44"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:50"
 			]
 		},
 		{
@@ -1701,7 +2672,7 @@
 			"en": "Unlimited",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:265"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:266"
 			]
 		},
 		{
@@ -1711,7 +2682,7 @@
 			"en": "VSync",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:291"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:292"
 			]
 		},
 		{
@@ -1721,7 +2692,7 @@
 			"en": "View distance",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:311"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:312"
 			]
 		},
 		{
@@ -1731,7 +2702,7 @@
 			"en": "Ambience",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:340"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:341"
 			]
 		},
 		{
@@ -1741,7 +2712,7 @@
 			"en": "Effects",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:339"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:340"
 			]
 		},
 		{
@@ -1751,7 +2722,7 @@
 			"en": "Master",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:337"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:338"
 			]
 		},
 		{
@@ -1761,7 +2732,7 @@
 			"en": "Music",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:338"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:339"
 			]
 		},
 		{
@@ -1771,7 +2742,7 @@
 			"en": "Interface",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:341"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:342"
 			]
 		},
 		{
@@ -1821,7 +2792,7 @@
 			"en": "Borderless window",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:259"
 			]
 		},
 		{
@@ -1831,7 +2802,7 @@
 			"en": "Fullscreen",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:257"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258"
 			]
 		},
 		{
@@ -1841,7 +2812,7 @@
 			"en": "Window mode",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:284"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:285"
 			]
 		},
 		{
@@ -1851,7 +2822,7 @@
 			"en": "Windowed",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:259"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:260"
 			]
 		},
 		{
@@ -4903,39 +5874,6 @@
 			"locations": [
 				"Config/DefaultGame.ini:4"
 			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "DayLengthMinutes",
-			"es": "{0} min",
-			"en": "{0} min",
-			"origin": "pendiente",
-			"locations": [
-				"SExploredSettingsPanel.cpp:359, en lugar de FString::Printf(TEXT(\"%d min\"))"
-			],
-			"note": "FText::Format(..., FText::AsNumber(Minutes))."
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "Dedication",
-			"es": "Para Almudena, mi Limón",
-			"en": "Para Almudena, mi Limón",
-			"origin": "pendiente",
-			"locations": [
-				"SExploredMainMenu (bajo el subtítulo) y SExploredCredits (GDD §15); no se traduce"
-			],
-			"note": "Dedicatoria: idéntica en los dos idiomas."
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InteractPrompt",
-			"es": "[{Key}] {Actions}",
-			"en": "[{Key}] {Actions}",
-			"origin": "pendiente",
-			"locations": [
-				"ExploredHUD.cpp:59-66, en lugar de TEXT(\"[E] \") y la concatenación con TEXT(\" · \")"
-			],
-			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
 		}
 	]
 }
