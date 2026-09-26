@@ -18,6 +18,7 @@
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
 #include "Player/SwimComponent.h"
+#include "Survival/BodySignalsComponent.h"
 
 namespace
 {
@@ -49,8 +50,9 @@ namespace
 AExploredCharacter::AExploredCharacter()
 {
 	// Excepción deliberada: el balanceo de las manos (punto 6 del encargo de
-	// M2) necesita un seno por fotograma. Es la única razón para tener tick
-	// en el personaje; todo lo demás sigue dirigido por eventos y delegados.
+	// M2) y su temblor (UBodySignalsComponent) necesitan un valor por
+	// fotograma. Es la única razón para tener tick en el personaje; todo lo
+	// demás sigue dirigido por eventos y delegados.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.0f / 30.0f;
 
@@ -84,6 +86,7 @@ AExploredCharacter::AExploredCharacter()
 	Carry = CreateDefaultSubobject<UCarryComponent>(TEXT("Carry"));
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
+	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 
 	bUseControllerRotationYaw = true;
 
@@ -119,6 +122,11 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// Señales del cuerpo: temblor de manos (frío, hambre, fiebre, sueño) y tiritona de cámara.
+	const FVector TremorL = Body ? Body->GetHandTremorOffset(false) : FVector::ZeroVector;
+	const FVector TremorR = Body ? Body->GetHandTremorOffset(true) : FVector::ZeroVector;
+	const FRotator Shiver = Body ? Body->GetShiverRotation() : FRotator::ZeroRotator;
+
 	const EWaterState WaterState = Swim ? Swim->GetWaterState() : EWaterState::OnLand;
 	if (WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving)
 	{
@@ -129,21 +137,31 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 		const float SwingR = FMath::Sin(Phase + UE_PI) * SwimStrokeAmount;
 		if (HandMeshLeft)
 		{
-			HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(SwingL * 0.6f, 0.0f, SwingL));
+			HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(SwingL * 0.6f, 0.0f, SwingL) + TremorL);
 		}
 		if (HandMeshRight)
 		{
-			HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(SwingR * 0.6f, 0.0f, SwingR));
+			HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(SwingR * 0.6f, 0.0f, SwingR) + TremorR);
 		}
 
-		// La cámara deja de seguir solo el control del jugador: se le suma el balanceo de la ola.
+		// La cámara deja de seguir solo el control del jugador: se le suma el balanceo de la ola
+		// (y la tiritona, si el agua enfría).
 		Camera->bUsePawnControlRotation = false;
 		const FRotator ControlRot = GetControlRotation();
 		const FRotator Tilt = Swim->GetWaveTilt();
-		Camera->SetWorldRotation(FRotator(ControlRot.Pitch + Tilt.Pitch, ControlRot.Yaw, Tilt.Roll));
+		Camera->SetWorldRotation(FRotator(ControlRot.Pitch + Tilt.Pitch, ControlRot.Yaw, Tilt.Roll) + Shiver);
 		return;
 	}
-	Camera->bUsePawnControlRotation = true;
+	// Tiritona (GDD §8.3): mismo mecanismo que el balanceo de la ola, sin tocar la rotación de control.
+	if (!Shiver.IsNearlyZero())
+	{
+		Camera->bUsePawnControlRotation = false;
+		Camera->SetWorldRotation(GetControlRotation() + Shiver);
+	}
+	else
+	{
+		Camera->bUsePawnControlRotation = true;
+	}
 
 	const float SpeedRatio = FMath::Clamp(GetVelocity().Size2D() / FMath::Max(WalkSpeed, 1.0f), 0.0f, 1.0f);
 	if (SpeedRatio > KINDA_SMALL_NUMBER)
@@ -153,11 +171,11 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 	const float Offset = FMath::Sin(HandSwayPhase) * HandSwayAmount * SpeedRatio;
 	if (HandMeshLeft)
 	{
-		HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(0.0f, 0.0f, Offset));
+		HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(0.0f, 0.0f, Offset) + TremorL);
 	}
 	if (HandMeshRight)
 	{
-		HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(0.0f, 0.0f, -Offset));
+		HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(0.0f, 0.0f, -Offset) + TremorR);
 	}
 }
 
@@ -236,6 +254,7 @@ void AExploredCharacter::BuildInputAssets()
 	CombineAction = MakeAction(this, TEXT("IA_Combine"), EInputActionValueType::Boolean);
 	ToggleBackpackAction = MakeAction(this, TEXT("IA_ToggleBackpack"), EInputActionValueType::Boolean);
 	DiveAction = MakeAction(this, TEXT("IA_Dive"), EInputActionValueType::Boolean);
+	WatchAction = MakeAction(this, TEXT("IA_Watch"), EInputActionValueType::Boolean);
 
 	// E también sube en vuelo de depuración (VerticalAction); en juego normal
 	// solo importa como interacción, así que conviven en la misma tecla.
@@ -247,6 +266,9 @@ void AExploredCharacter::BuildInputAssets()
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Tab);
 	// Bucear: mantener para bajar; soltar deja que el pulmón empuje de vuelta a la superficie.
 	MapKey(MappingContext, DiveAction, EKeys::LeftControl);
+	// Reloj de pulsera: mantener para levantar la muñeca y ver la hora (GDD §8.3).
+	MapKey(MappingContext, WatchAction, EKeys::T);
+	MapKey(MappingContext, WatchAction, EKeys::Gamepad_DPad_Up);
 }
 
 void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -272,6 +294,8 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
 	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
 	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
+	Input->BindAction(WatchAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleWatchStarted);
+	Input->BindAction(WatchAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleWatchCompleted);
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -454,5 +478,21 @@ void AExploredCharacter::HandleDiveCompleted(const FInputActionValue&)
 	if (Swim)
 	{
 		Swim->SetDiveHeld(false);
+	}
+}
+
+void AExploredCharacter::HandleWatchStarted(const FInputActionValue&)
+{
+	if (Body)
+	{
+		Body->SetWristWatchRaised(true);
+	}
+}
+
+void AExploredCharacter::HandleWatchCompleted(const FInputActionValue&)
+{
+	if (Body)
+	{
+		Body->SetWristWatchRaised(false);
 	}
 }

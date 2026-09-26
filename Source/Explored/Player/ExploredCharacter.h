@@ -7,6 +7,7 @@
 
 #include "ExploredCharacter.generated.h"
 
+class UBodySignalsComponent;
 class UCameraComponent;
 class UCarryComponent;
 class UInputAction;
@@ -44,6 +45,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
 	USwimComponent* GetSwimComponent() const { return Swim; }
 
+	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
+	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
+
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
 
@@ -72,6 +76,8 @@ private:
 	void HandleToggleBackpack(const FInputActionValue& Value);
 	void HandleDiveStarted(const FInputActionValue& Value);
 	void HandleDiveCompleted(const FInputActionValue& Value);
+	void HandleWatchStarted(const FInputActionValue& Value);
+	void HandleWatchCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 
@@ -96,6 +102,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
 	TObjectPtr<USwimComponent> Swim;
+
+	/** Cuerpo como HUD: supervivencia, señales corporales y reloj de pulsera (GDD §8.3). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
+	TObjectPtr<UBodySignalsComponent> Body;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -138,6 +148,9 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> DiveAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> WatchAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;
