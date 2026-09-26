@@ -104,6 +104,22 @@ def test_arco_sale_de_vara_y_cuerda(real: DataSet) -> None:
     assert arco is not None and arco.definition == "arco"
 
 
+def test_angarillas_en_dos_pasos(real: DataSet) -> None:
+    asta = apply(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
+    assert asta is not None and asta.definition == "atado_generico"
+    angarillas = apply(real, asta, inst(real, "hoja_palma"), "Atar")
+    assert angarillas is not None and angarillas.definition == "angarillas"
+
+
+def test_angarillas_no_sombrea_lanza_ni_hacha(real: DataSet) -> None:
+    # Van antes que hacha y lanza en templates.json: las cadenas de CraftingSpec
+    # no llevan nada Fibroso >= 2, así que deben seguir dando su herramienta.
+    asta = apply(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
+    assert apply(real, asta, inst(real, "hueso_largo"), "Atar").definition == "lanza"
+    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    assert apply(real, mango, inst(real, "lasca_pedernal"), "Atar").definition == "hacha"
+
+
 def test_combinacion_simetrica(real: DataSet) -> None:
     a, b = inst(real, "canto_rodado"), inst(real, "pedernal")
     assert apply(real, a, b, "Golpear").definition == apply(real, b, a, "Golpear").definition
