@@ -9,7 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from .generators import ambience, birds, body, construction, crafting, fauna, footsteps, impacts, misc_sfx, ui, water
+from .generators import ambience, birds, body, cartography, construction, crafting, fauna, fire, footsteps, garden, impacts, misc_sfx, ui, water
 from .music import compose as music_compose
 
 
@@ -70,6 +70,8 @@ def build_catalog() -> list[SoundSpec]:
         "amb_rain_light": ambience.amb_rain_light,
         "amb_rain_heavy": ambience.amb_rain_heavy,
         "amb_rain_on_leaves": ambience.amb_rain_on_leaves,
+        "amb_rain_on_thatch": ambience.amb_rain_on_thatch,
+        "amb_wind_palms": ambience.amb_wind_palms,
         "amb_stream": ambience.amb_stream,
         "amb_underwater": ambience.amb_underwater,
     }
@@ -88,7 +90,7 @@ def build_catalog() -> list[SoundSpec]:
 
     specs.append(SoundSpec("sfx_splash_small", "Efectos", False, misc_sfx.splash_small))
     specs.append(SoundSpec("sfx_splash_big", "Efectos", False, misc_sfx.splash_big))
-    specs.append(SoundSpec("sfx_fire_loop", "Efectos", True, misc_sfx.fire_loop))
+    specs.append(SoundSpec("sfx_fire_loop", "Efectos", True, fire.fire_loop))
 
     for species in ("parrot", "gull", "songbird"):
         for i in range(1, 4):
@@ -102,8 +104,9 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_ui_page_turn", "Efectos", False, ui.ui_page_turn))
     specs.append(SoundSpec("sfx_ui_discovery_notify", "Efectos", False, ui.ui_discovery_notify))
 
-    # Fauna (biblia de contenido §6), mas alla de las aves ya cubiertas arriba.
-    for species in ("monkey", "crocodile", "boar", "crab", "turtle"):
+    # Fauna marina y de orilla (biblia de contenido §6), mas alla de las aves.
+    # Sin fauna terrestre: el GDD la excluye (§10, §12).
+    for species in ("crab", "turtle"):
         for i in range(1, 4):
             specs.append(_fauna_spec(species, i))
 
@@ -120,6 +123,22 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_build_place", "Efectos", False, construction.build_place))
     specs.append(SoundSpec("sfx_build_snap", "Efectos", False, construction.build_snap))
     specs.append(SoundSpec("sfx_build_thatch", "Efectos", False, construction.build_thatch))
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_build_hammer_{i:02d}", "Efectos", False, construction.build_hammer))
+    specs.append(SoundSpec("sfx_build_dismantle", "Efectos", False, construction.build_dismantle))
+
+    # Huerto: cavar, regar y cosechar.
+    for i in range(1, 4):
+        specs.append(SoundSpec(f"sfx_garden_dig_{i:02d}", "Efectos", False, garden.garden_dig))
+    specs.append(SoundSpec("sfx_garden_water", "Efectos", False, garden.garden_water))
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_garden_harvest_{i:02d}", "Efectos", False, garden.garden_harvest))
+
+    # Cartografia: pluma sobre papel, desplegar el mapa y sellar.
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_map_pen_scratch_{i:02d}", "Efectos", False, cartography.map_pen_scratch))
+    specs.append(SoundSpec("sfx_map_unfold", "Efectos", False, cartography.map_unfold))
+    specs.append(SoundSpec("sfx_map_stamp", "Efectos", False, cartography.map_stamp))
 
     # Agua interactiva (§5.2, `Boats`).
     for i in range(1, 3):

@@ -1,0 +1,77 @@
+"""Hoguera, lluvia en tejado de palma y viento en palmeras: cada uno tiene el
+caracter que lo distingue de su pariente mas generico del catalogo."""
+
+from __future__ import annotations
+
+import numpy as np
+
+from explored_audio.constants import SAMPLE_RATE
+
+
+def _mono(audio: np.ndarray) -> np.ndarray:
+    return audio if audio.ndim == 1 else audio.mean(axis=0)
+
+
+def _band_share(audio: np.ndarray, low_hz: float, high_hz: float) -> float:
+    spectrum = np.abs(np.fft.rfft(_mono(audio))) ** 2
+    freqs = np.fft.rfftfreq(audio.shape[-1], 1.0 / SAMPLE_RATE)
+    band = (freqs >= low_hz) & (freqs < high_hz)
+    return float(spectrum[band].sum() / spectrum.sum())
+
+
+def _centroid(audio: np.ndarray) -> float:
+    spectrum = np.abs(np.fft.rfft(_mono(audio))) ** 2
+    freqs = np.fft.rfftfreq(audio.shape[-1], 1.0 / SAMPLE_RATE)
+    return float((freqs * spectrum).sum() / spectrum.sum())
+
+
+def _envelope_db(audio: np.ndarray, win_s: float) -> np.ndarray:
+    x = _mono(audio)
+    win = int(win_s * SAMPLE_RATE)
+    frames = x[: len(x) // win * win].reshape(-1, win)
+    return 20.0 * np.log10(np.sqrt(np.mean(frames**2, axis=1)) + 1e-9)
+
+
+def test_hoguera_tiene_cuerpo_y_chisporroteo(rendered):
+    fire = rendered["sfx_fire_loop"]
+    # Cuerpo: el rugido de la llama pesa en graves (la version anterior era
+    # casi todo siseo por encima de 6 kHz).
+    assert _band_share(fire, 60.0, 500.0) >= 0.35
+    assert _band_share(fire, 6000.0, 20000.0) <= 0.25
+    # Chisporroteo: transitorios muy por encima del lecho en ventanas de 5 ms.
+    env = _envelope_db(fire, 0.005)
+    assert np.percentile(env, 99.5) - np.median(env) >= 10.0
+
+
+def test_hoguera_alterna_rachas_vivas_y_calmas(rendered):
+    # La actividad de los racimos sube y baja: en ventanas de 1 s, la
+    # densidad de agudos cambia claramente de una a otra.
+    fire = rendered["sfx_fire_loop"]
+    spectrum_env = []
+    win = SAMPLE_RATE
+    for start in range(0, len(fire) - win, win):
+        spectrum_env.append(_band_share(fire[start : start + win], 2000.0, 12000.0))
+    assert max(spectrum_env) >= 2.0 * min(spectrum_env)
+
+
+def test_tejado_de_palma_suena_mas_sordo_que_las_hojas(rendered):
+    thatch = rendered["amb_rain_on_thatch"]
+    leaves = rendered["amb_rain_on_leaves"]
+    assert _centroid(thatch) < _centroid(leaves) * 0.8
+    assert _band_share(thatch, 6000.0, 20000.0) < _band_share(leaves, 6000.0, 20000.0)
+
+
+def test_tejado_de_palma_tiene_goteos_del_alero(rendered):
+    # Los goteos sobresalen del lecho de lluvia en ventanas cortas.
+    env = _envelope_db(rendered["amb_rain_on_thatch"], 0.01)
+    assert np.percentile(env, 99.5) - np.median(env) >= 6.0
+
+
+def test_viento_en_palmeras_suena_a_hojas(rendered):
+    palms = rendered["amb_wind_palms"]
+    wind = rendered["amb_wind_light"]
+    # El aleteo y el tableteo de los foliolos llevan energia a 2-6 kHz que el
+    # viento solo apenas tiene.
+    assert _band_share(palms, 2000.0, 6000.0) >= 2.0 * _band_share(wind, 2000.0, 6000.0)
+    # Y las rachas se oyen: la sonoridad por segundo varia mas que en el viento solo.
+    assert np.std(_envelope_db(palms, 1.0)) > np.std(_envelope_db(wind, 1.0))

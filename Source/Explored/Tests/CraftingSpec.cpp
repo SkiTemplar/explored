@@ -70,7 +70,12 @@ void FCraftingSpec::Define()
 				{
 					AddError(FString::Printf(TEXT("Plantilla «%s» no alcanzable con %s + %s: %s"),
 						TemplateId, *LeftId.ToString(), *RightId.ToString(), *FailReason.ToString()));
+					return;
 				}
+				// Que la combinación tenga éxito no basta: otra plantilla del mismo
+				// verbo puede ganar y producir otro objeto (así se escondió el arco).
+				TestEqual(*FString::Printf(TEXT("%s + %s produce el resultado de «%s»"), *LeftId.ToString(), *RightId.ToString(), TemplateId),
+					Result.DefinitionId.ToString(), Templates[TemplateIndex].ResultDefinitionId.ToString());
 			};
 
 			// Un paso, directo del catálogo (biblia §3).
@@ -79,7 +84,8 @@ void FCraftingSpec::Define()
 			ExpectDirect(TEXT("pasta_medicinal_por_machacado"), TEXT("canto_rodado"), TEXT("planta_medicinal_aloe"));
 			ExpectDirect(TEXT("recipiente_de_coco"), TEXT("lasca_pedernal"), TEXT("coco_maduro"));
 			ExpectDirect(TEXT("cordel"), TEXT("fibra_coco"), TEXT("corteza"));
-			ExpectDirect(TEXT("cesta"), TEXT("hoja_palma"), TEXT("fibra_coco"));
+			// hoja_palma + fibra_coco da cordel (Fibroso 4 cubre los dos huecos de cordel y gana por orden).
+			ExpectDirect(TEXT("cesta"), TEXT("hoja_palma"), TEXT("hoja_palma"));
 			ExpectDirect(TEXT("atado_generico"), TEXT("palo_recto"), TEXT("liana"));
 			ExpectDirect(TEXT("pegado_generico"), TEXT("palo_recto"), TEXT("resina"));
 			ExpectDirect(TEXT("cuchillo"), TEXT("lasca_obsidiana"), TEXT("palo_recto"));

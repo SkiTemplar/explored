@@ -1,5 +1,6 @@
-"""Recogida, chapoteos, fuego y truenos: piezas cortas que combinan ruido
-filtrado, envolventes y, en el trueno, sintesis modal para el retumbe grave."""
+"""Recogida, chapoteos, rafagas y truenos (el fuego vive en `fire.py`):
+piezas cortas que combinan ruido filtrado, envolventes y, en el trueno,
+sintesis modal para el retumbe grave."""
 
 from __future__ import annotations
 
@@ -7,10 +8,8 @@ import numpy as np
 
 from ..constants import SAMPLE_RATE
 from ..envelopes import ar_envelope, exp_decay, fit_length, smooth_random_walk
-from ..filters import static_filter, time_varying_filter
+from ..filters import static_filter
 from ..granular import render_noise_grains
-from ..loop import seamless_loop
-from ..modal import modal_hit
 from ..noise import brown_noise, pink_noise
 from ..rng import rng_for
 
@@ -55,32 +54,6 @@ def splash_small(name: str) -> np.ndarray:
 
 def splash_big(name: str) -> np.ndarray:
     return _splash(rng_for(name), "big")
-
-
-def fire_loop(name: str) -> np.ndarray:
-    """Bucle mono de crepitar: chisporroteo granular sobre un lecho de siseo bajo."""
-    rng = rng_for(name)
-    loop_s, fade_s = 22.0, 3.0
-    loop_len = int(loop_s * SR)
-    fade_len = int(fade_s * SR)
-    n = loop_len + fade_len
-
-    hiss = static_filter(pink_noise(n, rng), SR, fc=900, q=0.6, kind="lowpass")
-    hiss = static_filter(hiss, SR, fc=140, q=0.6, kind="highpass")
-    hiss_amp = smooth_random_walk(n, rng, smoothing_hz=0.3, sr=SR, low=0.12, high=0.22)
-
-    crackle = np.zeros(n)
-    from ..granular import place_grains
-
-    for pos, amp in place_grains(n, SR, rng, rate_hz=12.0, jitter=0.8):
-        glen = max(int(rng.uniform(0.01, 0.04) * SR), 8)
-        pop = static_filter(rng.standard_normal(glen), SR, fc=rng.uniform(1500, 5000), q=1.5, kind="highpass")
-        pop *= np.exp(-np.arange(glen) / SR / 0.015) * amp * 0.6
-        end = min(pos + glen, n)
-        crackle[pos:end] += pop[: end - pos]
-
-    mono = hiss * hiss_amp + crackle
-    return seamless_loop(mono, loop_len, fade_len)
 
 
 def wind_gust(name: str) -> np.ndarray:
