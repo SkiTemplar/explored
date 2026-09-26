@@ -16,6 +16,7 @@
 
 #include "Explored.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredPlayerController.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
 
@@ -50,6 +51,21 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	OutputDir = FPaths::ProjectSavedDir() / TEXT("Shots");
 	FParse::Value(FCommandLine::Get(), TEXT("ShotsDir="), OutputDir);
 	BuildShotList(Set);
+
+	// El conjunto «menu» quiere ver el frontend (menú, ajustes, pausa) tal
+	// cual lo vería el jugador; el resto de conjuntos son verificación del
+	// mundo y no deben quedar tapados por el menú principal que se muestra
+	// por defecto al arrancar el mapa.
+	if (Set != TEXT("menu"))
+	{
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(&InWorld, 0))
+		{
+			if (AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(PC))
+			{
+				ExploredPC->SetUIMode(EExploredUIMode::Playing);
+			}
+		}
+	}
 
 	bActive = Shots.Num() > 0;
 	Current = INDEX_NONE;
@@ -125,6 +141,24 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		Shot.Hours = 15.5f;
 		Shots.Add(Shot);
 	}
+
+	if (Set == TEXT("menu"))
+	{
+		// El menú principal ya está en pantalla por defecto al arrancar el
+		// mapa (AExploredPlayerController::BeginPlay); aquí solo se pide a
+		// Ajustes y a Pausa que se abran para el resto de capturas (ver
+		// BeginShot). La cámara y la hora no importan: se ven detrás del
+		// panel de UI, que es lo que hay que verificar.
+		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause") })
+		{
+			FExploredShot Shot;
+			Shot.Name = Name;
+			Shot.Location = FVector(0.0, -3000.0 * 100.0, 1200.0 * 100.0);
+			Shot.Rotation = FRotator(-20.0f, 90.0f, 0.0f);
+			Shot.Hours = 12.0f;
+			Shots.Add(Shot);
+		}
+	}
 }
 
 void UExploredShotSubsystem::BeginShot(int32 Index)
@@ -146,6 +180,21 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		if (APawn* Pawn = PC->GetPawn())
 		{
 			Pawn->SetActorHiddenInGame(true);
+		}
+
+		// Conjunto «menu»: pide al frontend que muestre Ajustes o Pausa para
+		// esta vista concreta (menu_main ya está mostrando el menú principal
+		// por defecto). Vuelve a fijar la cámara orbital propia del menú.
+		if (AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(PC))
+		{
+			if (Shot.Name == TEXT("menu_settings"))
+			{
+				ExploredPC->OpenSettings();
+			}
+			else if (Shot.Name == TEXT("menu_pause"))
+			{
+				ExploredPC->OpenPauseMenu();
+			}
 		}
 	}
 	if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
