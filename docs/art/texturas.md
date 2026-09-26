@@ -15,8 +15,9 @@ uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2
 cd Tools/Textures && uv run --with numpy --with pillow --with pytest python -m pytest -q tests
 ```
 
-Hoja de contacto actual: [`texturas-2026-09-26.png`](texturas-2026-09-26.png) (vista iluminada
-en 2×2 para comprobar el tileado + miniaturas BC / N / ARH).
+Hoja de contacto actual: [`texturas-2026-09-26.png`](texturas-2026-09-26.png): vista iluminada
+en 2×2 para comprobar el tileado y, debajo, la misma vista **en 4×4 reducida** (cómo se ve a
+media distancia: delata la repetición) + miniaturas BC / N / ARH.
 
 ## Estilo
 
@@ -47,18 +48,18 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | `Grass` | 1.5 m | Césped cartoon: 7 capas de hojas afiladas que siguen un flujo suave + florecillas. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
 | `GardenSoil` | 2 m | Tierra de huerto labrada: surcos en el eje u, terrones, paja, surcos más húmedos. |
-| `Ash` | 2 m | Ceniza del Humo: dunas suaves, carbones, pómez y alguna brasa. |
+| `Ash` | 2 m | Ceniza del Humo: dunas suaves con rizos de viento, costra cuarteada por zonas, pómez, carbones y alguna brasa. |
 | `VolcanicRock` | 3 m | Basalto en losas facetadas (low-poly), vesículas, óxido, aristas realzadas. |
 | `Limestone` | 3 m | Caliza estratificada clara con poros y líquenes naranja/salvia. |
 | `PalmThatch` | 1 m | Techo de hojas de palma en hileras solapadas; **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
 | `WoodPlanks` | 2 m | Tablones con juntas escalonadas, nudos y clavos; **u = a lo largo de la tabla**. |
-| `StoneWall` | 2.5 m | Muro polinesio de piedra seca: basalto encajado, algún bloque de coral, musgo en juntas. |
+| `StoneWall` | 2.5 m | Muro polinesio de piedra seca: basalto encajado con caras planas (low-poly), algún bloque de coral poroso, musgo en juntas y en la mitad baja de cada piedra. |
 | `Canvas` | 0.5 m | Lona de vela/toldo (tafetán) con manchas y zonas descoloridas. |
-| `Rope` | 0.25 m | Cuerda de 3 cabos: **u = alrededor, v = a lo largo** (UV de cilindro). |
+| `Rope` | 0.25 m | Cuerda de 3 cabos redondos con hilos en torsión contraria (arcos en «S»): **u = alrededor, v = a lo largo** (UV de cilindro). |
 | `MapPaper` | 0.6 m | Papel del mapa: fibras, manchas de agua con cerco, foxing. |
-| `Bark` | 1.5 m | Corteza fisurada vertical para troncos y postes; **v = a lo largo**. |
+| `Bark` | 1.5 m | Corteza de placas alargadas (4:1) con fisuras en V, grietas finas, crestas curtidas y liquen; **v = a lo largo**. |
 | `WaterWaves` | 6 m | Solo `_N`: oleaje fino con dirección de viento y crestas algo afiladas. |
 | `SeaFoam` | 6 m | Solo `_M`: R encaje de espuma, G burbujas, B masa suave, A estelas. |
 
@@ -130,8 +131,13 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
 
 1. Escribe `def mi_material(size, seed) -> Material` en `texgen/materials.py` usando las
    primitivas periódicas de `texgen/noise.py` (`spectral_noise`, `voronoi`,
-   `scatter_dots`, `blur`, `ramp`, `macro_variation`). Define todo en coordenadas de tile y
+   `scatter_dots`, `blur`, `ramp`, `macro_variation`). Para celdas alargadas (placas,
+   vetas) usa `voronoi(..., nx, ny, isotropic=False)`: mide en unidades de celda y la
+   celda sale con la proporción de la rejilla; `_facet_plane(vo, a, b)` da un plano
+   inclinado por celda para caras planas tipo low-poly. Define todo en coordenadas de tile y
    no pongas juntas estructurales justo en el borde (usa una fase fraccionaria).
 2. Regístralo en `MATERIALS` con su tamaño de tile y uso.
-3. `pytest` comprueba tileado, rangos y determinismo automáticamente; genera la hoja de
-   contacto y **mírala** antes de darlo por bueno.
+3. `pytest` comprueba tileado, rangos, determinismo y que la variación macro del albedo
+   esté en rango (`tests/test_macro.py`: ni plano a lo lejos ni manchas que dominen el
+   tile); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
+   darlo por bueno.

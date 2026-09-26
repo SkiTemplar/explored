@@ -104,8 +104,9 @@ def _thumb(arr: np.ndarray, px: int, tiles: int = 1) -> Image.Image:
 
 
 def contact_sheet(cards: list[dict], path: Path, title: str, cols: int = 5, big: int = 300) -> Path:
-    """cards: [{name, info, lit, thumbs: [array, ...]}]; lit se muestra en 2×2 para ver el tileado."""
-    small = big // 3
+    """cards: [{name, info, lit, thumbs: [array, ...]}]; lit se muestra en 2×2 para ver el tileado
+    y, debajo, en 4×4 reducido (vista lejana: delata la repetición) junto a los mapas."""
+    small = big // 4
     pad = 14
     label_h = 44
     card_w = big
@@ -124,8 +125,9 @@ def contact_sheet(cards: list[dict], path: Path, title: str, cols: int = 5, big:
         draw.text((cx, cy + 2), card["name"], fill=(250, 244, 230), font=f_name)
         draw.text((cx, cy + 24), card["info"], fill=(170, 172, 180), font=f_info)
         sheet.paste(_thumb(card["lit"], big, tiles=2), (cx, cy + label_h))
+        sheet.paste(_thumb(card["lit"], small, tiles=4), (cx, cy + label_h + big))
         for j, th in enumerate(card["thumbs"][:3]):
-            sheet.paste(_thumb(th, small), (cx + j * small, cy + label_h + big))
+            sheet.paste(_thumb(th, small), (cx + (j + 1) * small, cy + label_h + big))
     path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(path, optimize=True)
     if path.stat().st_size > 1_900_000:

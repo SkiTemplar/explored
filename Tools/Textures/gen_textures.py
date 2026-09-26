@@ -101,7 +101,7 @@ def main(argv: list[str] | None = None) -> None:
     write_manifest(args.out, manifest)
 
     if args.sheet:
-        title = f"Explored · texturas procedurales · {args.size}px · vista iluminada en 2×2 (tileado) · BC / N / ARH"
+        title = f"Explored · texturas procedurales · {args.size}px · iluminada 2×2 · abajo: lejos 4×4 / BC / N / ARH"
         path = contact_sheet(cards, args.sheet, title)
         print(f"[texturas] hoja de contacto: {path} ({path.stat().st_size / 1e6:.2f} MB)")
 
