@@ -1,6 +1,10 @@
 #include "Survival/SurvivalModel.h"
 
-namespace
+#include "Survival/BodyModel.h"
+
+// Espacio de nombres con nombre: en la compilación unity de UE varios .cpp comparten
+// unidad de traducción y los ayudantes genéricos (Drain, ModeScale) chocarían.
+namespace SurvivalModelDetail
 {
 	// Horas de juego que tarda cada necesidad en vaciarse en reposo activo (modo Superviviente).
 	constexpr float HungerHours = 36.0f;
@@ -8,6 +12,8 @@ namespace
 	constexpr float RestHours = 30.0f;
 	constexpr float SleepRecoveryHours = 6.0f;
 	constexpr float NutrientHours = 72.0f;
+	// La vitamina C aguanta mucho más que el resto (escorbuto tras semanas sin fruta, GDD §8.3).
+	constexpr float VitaminHours = 336.0f;
 
 	float ModeScale(ESurvivalMode Mode)
 	{
@@ -42,6 +48,40 @@ namespace
 	constexpr float BaseBreathHoldSeconds = 40.0f;
 }
 
+using namespace SurvivalModelDetail;
+
+FSurvivalModeSettings FSurvivalModeSettings::FromMode(ESurvivalMode InMode)
+{
+	FSurvivalModeSettings Settings;
+	Settings.Mode = InMode;
+	return Settings;
+}
+
+FSurvivalModeSettings FSurvivalModeSettings::MakeCustom(float InNeedSpeed, bool bInNeedsCanKill)
+{
+	FSurvivalModeSettings Settings;
+	Settings.Mode = ESurvivalMode::Custom;
+	Settings.NeedSpeed = FMath::Clamp(InNeedSpeed, 0.25f, 3.0f);
+	Settings.bNeedsCanKill = bInNeedsCanKill;
+	return Settings;
+}
+
+float FSurvivalModeSettings::NeedScale() const
+{
+	const float Custom = Mode == ESurvivalMode::Custom ? FMath::Clamp(NeedSpeed, 0.25f, 3.0f) : 1.0f;
+	return ModeScale(Mode) * Custom;
+}
+
+bool FSurvivalModeSettings::NeedsCanKill() const
+{
+	switch (Mode)
+	{
+	case ESurvivalMode::Explorer: return false;
+	case ESurvivalMode::Custom: return bNeedsCanKill;
+	default: return true;
+	}
+}
+
 void FSurvivalState::AddCondition(ECondition C, float Hours)
 {
 	float& T = ConditionTime[static_cast<int32>(C)];
@@ -60,6 +100,9 @@ float FSurvivalState::MaxEnergy() const
 	{
 		Max -= 20.0f;
 	}
+	// Consecuencias leves de la dieta monótona y del escorbuto (FBodyModel).
+	Max -= FBodyModel::MonotonyFactor(*this) * 10.0f;
+	Max -= ScurvySeverity * 15.0f;
 	return FMath::Clamp(Max, 20.0f, 100.0f);
 }
 
@@ -73,7 +116,21 @@ float FSurvivalState::WorkEfficiency() const
 	{
 		E -= 0.15f;
 	}
+	E -= FBodyModel::MonotonyFactor(*this) * 0.05f;
 	return FMath::Clamp(E, 0.5f, 1.15f);
+}
+
+float FSurvivalState::DietBalance() const
+{
+	// Diferencias de hasta 25 puntos entre grupos se consideran una dieta pareja.
+	const float Hi = FMath::Max3(Protein, Carbs, Vitamins);
+	const float Lo = FMath::Min3(Protein, Carbs, Vitamins);
+	return 1.0f - FMath::Clamp((Hi - Lo - 25.0f) / 50.0f, 0.0f, 1.0f);
+}
+
+float FSurvivalState::SleepDeprivation() const
+{
+	return FMath::Clamp((30.0f - Rest) / 30.0f, 0.0f, 1.0f);
 }
 
 float FSurvivalModel::EffectiveTemperature(const FSurvivalState& State, const FSurvivalInputs& In)
@@ -120,11 +177,17 @@ float FSurvivalModel::OxygenRecoveryPerSecond(float LungCapacityRatio)
 void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaHours, ESurvivalMode Mode,
 	float RandomRoll, TArray<ESurvivalEvent>& OutEvents)
 {
+	Tick(S, In, DeltaHours, FSurvivalModeSettings::FromMode(Mode), RandomRoll, OutEvents);
+}
+
+void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaHours, const FSurvivalModeSettings& Mode,
+	float RandomRoll, TArray<ESurvivalEvent>& OutEvents)
+{
 	if (S.IsDead() || DeltaHours <= 0.0f)
 	{
 		return;
 	}
-	const float Scale = ModeScale(Mode);
+	const float Scale = Mode.NeedScale();
 	const float Metabolism = ActivityMetabolism(In.Activity);
 	const bool bSleeping = In.Activity == EActivity::Sleeping;
 	const float Heat = FMath::Max(0.0f, In.AirTemperature - 30.0f) / 6.0f + In.SunExposure * 0.5f;
@@ -140,10 +203,11 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 	{
 		S.Rest = Drain(S.Rest, 100.0f / RestHours * Scale, DeltaHours);
 	}
-	for (float* Nutrient : {&S.Protein, &S.Carbs, &S.Vitamins})
+	for (float* Nutrient : {&S.Protein, &S.Carbs})
 	{
 		*Nutrient = Drain(*Nutrient, 100.0f / NutrientHours * Scale, DeltaHours);
 	}
+	S.Vitamins = Drain(S.Vitamins, 100.0f / VitaminHours * Scale, DeltaHours);
 
 	// Humedad: se moja con lluvia o agua; se seca al sol, con fuego o bajo techo.
 	if (In.bInWater)
@@ -164,11 +228,7 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 		+ (S.HasCondition(ECondition::Fever) ? 1.6f : 0.0f);
 	S.BodyTemperature = FMath::FInterpTo(S.BodyTemperature, Target, DeltaHours, 1.2f);
 
-	// Insolación y quemaduras solares.
-	if (In.SunExposure > 0.7f && !In.bHasHat && In.AirTemperature > 29.0f)
-	{
-		S.AddCondition(ECondition::SunBurn, 10.0f);
-	}
+	// Las quemaduras solares se acumulan por dosis de sol (sombrero y sombra la frenan): FBodyModel::Tick.
 
 	// Estados: se consumen con el tiempo y dañan mientras duran.
 	float Damage = 0.0f;
@@ -179,13 +239,15 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 		{
 			continue;
 		}
+		// L4: en el último paso de un estado solo cuenta el tiempo que aún le quedaba.
+		const float Active = FMath::Min(T, DeltaHours);
 		T = FMath::Max(0.0f, T - DeltaHours);
 		switch (static_cast<ECondition>(C))
 		{
-		case ECondition::Bleeding: Damage += 6.0f * DeltaHours; break;
-		case ECondition::Poisoned: Damage += 3.0f * DeltaHours; S.Thirst = Drain(S.Thirst, 4.0f, DeltaHours); break;
-		case ECondition::Infection: Damage += 1.5f * DeltaHours; break;
-		case ECondition::SunBurn: S.Morale = Drain(S.Morale, 1.0f, DeltaHours); break;
+		case ECondition::Bleeding: Damage += 6.0f * Active; break;
+		case ECondition::Poisoned: Damage += 3.0f * Active; S.Thirst = Drain(S.Thirst, 4.0f, Active); break;
+		case ECondition::Infection: Damage += 1.5f * Active; break;
+		case ECondition::SunBurn: S.Morale = Drain(S.Morale, 1.0f, Active); break;
 		default: break;
 		}
 	}
@@ -195,6 +257,10 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 		S.AddCondition(ECondition::Infection, 36.0f);
 		S.AddCondition(ECondition::Fever, 24.0f);
 	}
+
+	// Cuerpo: cortes, escorbuto, picaduras, sol, dieta, tormentas y música (P-BODY).
+	float BodyMoralePerHour = 0.0f;
+	FBodyModel::Tick(S, In, DeltaHours, Mode, Damage, BodyMoralePerHour, OutEvents);
 
 	// Necesidades en cero, hipotermia y golpe de calor.
 	if (S.Hunger <= 0.0f)
@@ -235,10 +301,11 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 	MoraleDelta -= (S.Hunger < 25.0f ? 3.0f : 0.0f) + (S.Thirst < 25.0f ? 3.0f : 0.0f);
 	MoraleDelta -= (S.BodyTemperature < 36.0f ? 3.0f : 0.0f) + In.Rain * (In.bSheltered ? 0.0f : 2.0f);
 	MoraleDelta -= 0.5f; // la soledad pesa
+	MoraleDelta += BodyMoralePerHour;
 	S.Morale = FMath::Clamp(S.Morale + MoraleDelta * DeltaHours, 0.0f, 100.0f);
 
-	// En modo Explorador las necesidades nunca matan.
-	if (Mode == ESurvivalMode::Explorer)
+	// En modo Explorador (y en el Personalizado si así se elige) las necesidades nunca matan.
+	if (!Mode.NeedsCanKill())
 	{
 		Damage = FMath::Min(Damage, FMath::Max(0.0f, S.Health - 10.0f));
 	}
@@ -266,6 +333,10 @@ void FSurvivalModel::Consume(FSurvivalState& S, const FConsumable& Item, float R
 		{
 			S.ClearCondition(static_cast<ECondition>(C));
 		}
+	}
+	if (Item.HallucinogenHours > 0.0f)
+	{
+		S.AddCondition(ECondition::Hallucinating, Item.HallucinogenHours);
 	}
 	if (Item.Toxicity > 0.0f && RandomRoll < Item.Toxicity)
 	{

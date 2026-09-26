@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Sky/MoonModel.h"
 #include "Subsystems/WorldSubsystem.h"
 
 #include "TimeOfDaySubsystem.generated.h"
@@ -16,8 +17,8 @@ namespace ExploredSky
 	/** Días del año de juego (GDD: 4 estaciones de 8 días). */
 	constexpr int32 DaysPerYear = 32;
 
-	/** Días de un ciclo lunar completo. */
-	constexpr int32 DaysPerLunarCycle = 12;
+	/** Días de un ciclo lunar completo (fuente única: FMoonModel). */
+	constexpr int32 DaysPerLunarCycle = FMoonModel::DaysPerCycle;
 
 	/** Declinación solar en grados para un día del año (0..DaysPerYear). */
 	EXPLORED_API float SolarDeclinationDeg(float DayOfYear);
@@ -31,10 +32,10 @@ namespace ExploredSky
 	/** Dirección hacia la Luna: opuesta al Sol, desplazada por la fase. */
 	EXPLORED_API FVector MoonDirection(float Hours, float DayOfYear, float MoonPhase);
 
-	/** Fase lunar en [0, 1): 0 luna nueva, 0.5 luna llena. */
+	/** Fase lunar en [0, 1): 0 luna nueva, 0.5 luna llena (delega en FMoonModel::Phase). */
 	EXPLORED_API float MoonPhase(float TotalDays);
 
-	/** Fracción iluminada del disco lunar (0 nueva, 1 llena). */
+	/** Fracción iluminada del disco lunar (0 nueva, 1 llena; delega en FMoonModel). */
 	EXPLORED_API float MoonIllumination(float Phase);
 }
 
@@ -51,6 +52,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
+	/** Toma la duración del día de los ajustes del jugador (Ajustes > Juego). */
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	/** Hora local en [0, 24). */
 	float GetHours() const { return Hours; }

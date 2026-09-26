@@ -1,0 +1,2596 @@
+{
+	"FormatVersion": 2,
+	"Namespace": "",
+	"Children": [],
+	"Subnamespaces": [
+		{
+			"Namespace": "Explored",
+			"Children": [
+				{
+					"Source": {
+						"Text": "la canoa"
+					},
+					"Translation": {
+						"Text": "la canoa"
+					},
+					"Key": "Boat_Canoe"
+				},
+				{
+					"Source": {
+						"Text": "el «Limón»"
+					},
+					"Translation": {
+						"Text": "el «Limón»"
+					},
+					"Key": "Boat_Limon"
+				},
+				{
+					"Source": {
+						"Text": "la canoa con balancín"
+					},
+					"Translation": {
+						"Text": "la canoa con balancín"
+					},
+					"Key": "Boat_Outrigger"
+				},
+				{
+					"Source": {
+						"Text": "la balsa"
+					},
+					"Translation": {
+						"Text": "la balsa"
+					},
+					"Key": "Boat_Raft"
+				},
+				{
+					"Source": {
+						"Text": "Ya está ahí."
+					},
+					"Translation": {
+						"Text": "Ya está ahí."
+					},
+					"Key": "Carry_AlreadyThere"
+				},
+				{
+					"Source": {
+						"Text": "No entra en la mochila."
+					},
+					"Translation": {
+						"Text": "No entra en la mochila."
+					},
+					"Key": "Carry_BackpackTooBig"
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado para la mochila."
+					},
+					"Translation": {
+						"Text": "Pesa demasiado para la mochila."
+					},
+					"Key": "Carry_BackpackTooHeavy"
+				},
+				{
+					"Source": {
+						"Text": "El cinturón no tiene enganches libres."
+					},
+					"Translation": {
+						"Text": "El cinturón no tiene enganches libres."
+					},
+					"Key": "Carry_BeltFull"
+				},
+				{
+					"Source": {
+						"Text": "El cinturón solo lleva herramientas o recipientes."
+					},
+					"Translation": {
+						"Text": "El cinturón solo lleva herramientas o recipientes."
+					},
+					"Key": "Carry_BeltNotTool"
+				},
+				{
+					"Source": {
+						"Text": "No queda sitio."
+					},
+					"Translation": {
+						"Text": "No queda sitio."
+					},
+					"Key": "Carry_ContainerFull"
+				},
+				{
+					"Source": {
+						"Text": "Vacíalo antes."
+					},
+					"Translation": {
+						"Text": "Vacíalo antes."
+					},
+					"Key": "Carry_ContainerNotEmpty"
+				},
+				{
+					"Source": {
+						"Text": "No se puede."
+					},
+					"Translation": {
+						"Text": "No se puede."
+					},
+					"Key": "Carry_Generic"
+				},
+				{
+					"Source": {
+						"Text": "No llevas nada en esa mano."
+					},
+					"Translation": {
+						"Text": "No llevas nada en esa mano."
+					},
+					"Key": "Carry_HandEmpty"
+				},
+				{
+					"Source": {
+						"Text": "Esa mano ya está ocupada."
+					},
+					"Translation": {
+						"Text": "Esa mano ya está ocupada."
+					},
+					"Key": "Carry_HandOccupied"
+				},
+				{
+					"Source": {
+						"Text": "Tienes las dos manos ocupadas."
+					},
+					"Translation": {
+						"Text": "Tienes las dos manos ocupadas."
+					},
+					"Key": "Carry_HandsFull"
+				},
+				{
+					"Source": {
+						"Text": "Ese objeto no se puede coger."
+					},
+					"Translation": {
+						"Text": "Ese objeto no se puede coger."
+					},
+					"Key": "Carry_InvalidItem"
+				},
+				{
+					"Source": {
+						"Text": "Ahí no hay nada."
+					},
+					"Translation": {
+						"Text": "Ahí no hay nada."
+					},
+					"Key": "Carry_InvalidSlotIndex"
+				},
+				{
+					"Source": {
+						"Text": "Necesitas las dos manos libres para esto."
+					},
+					"Translation": {
+						"Text": "Necesitas las dos manos libres para esto."
+					},
+					"Key": "Carry_NeedBothHands"
+				},
+				{
+					"Source": {
+						"Text": "No tienes mochila."
+					},
+					"Translation": {
+						"Text": "No tienes mochila."
+					},
+					"Key": "Carry_NoBackpack"
+				},
+				{
+					"Source": {
+						"Text": "No tienes dónde guardarlo seco."
+					},
+					"Translation": {
+						"Text": "No tienes dónde guardarlo seco."
+					},
+					"Key": "Carry_NoPouch"
+				},
+				{
+					"Source": {
+						"Text": "No entra."
+					},
+					"Translation": {
+						"Text": "No entra."
+					},
+					"Key": "Carry_NoRoom"
+				},
+				{
+					"Source": {
+						"Text": "No llevas angarillas."
+					},
+					"Translation": {
+						"Text": "No llevas angarillas."
+					},
+					"Key": "Carry_NoSledge"
+				},
+				{
+					"Source": {
+						"Text": "Ahí no se lleva agua."
+					},
+					"Translation": {
+						"Text": "Ahí no se lleva agua."
+					},
+					"Key": "Carry_NotALiquidContainer"
+				},
+				{
+					"Source": {
+						"Text": "Eso no se lleva puesto."
+					},
+					"Translation": {
+						"Text": "Eso no se lleva puesto."
+					},
+					"Key": "Carry_NotEquippable"
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay nada que coger."
+					},
+					"Translation": {
+						"Text": "Aquí no hay nada que coger."
+					},
+					"Key": "Carry_NothingToPickUp"
+				},
+				{
+					"Source": {
+						"Text": "No puedes con más peso."
+					},
+					"Translation": {
+						"Text": "No puedes con más peso."
+					},
+					"Key": "Carry_OverCarryLimit"
+				},
+				{
+					"Source": {
+						"Text": "Solo los objetos pequeños caben en los bolsillos."
+					},
+					"Translation": {
+						"Text": "Solo los objetos pequeños caben en los bolsillos."
+					},
+					"Key": "Carry_PocketTooSmall"
+				},
+				{
+					"Source": {
+						"Text": "Los bolsillos están llenos."
+					},
+					"Translation": {
+						"Text": "Los bolsillos están llenos."
+					},
+					"Key": "Carry_PocketsFull"
+				},
+				{
+					"Source": {
+						"Text": "Es un solo objeto: no se combina consigo mismo."
+					},
+					"Translation": {
+						"Text": "Es un solo objeto: no se combina consigo mismo."
+					},
+					"Key": "Carry_SameItem"
+				},
+				{
+					"Source": {
+						"Text": "Ya arrastras unas angarillas."
+					},
+					"Translation": {
+						"Text": "Ya arrastras unas angarillas."
+					},
+					"Key": "Carry_SledgeAttached"
+				},
+				{
+					"Source": {
+						"Text": "Las angarillas son para madera y piedra."
+					},
+					"Translation": {
+						"Text": "Las angarillas son para madera y piedra."
+					},
+					"Key": "Carry_SledgeOnlyMaterial"
+				},
+				{
+					"Source": {
+						"Text": "Es demasiado grande para guardarlo ahí."
+					},
+					"Translation": {
+						"Text": "Es demasiado grande para guardarlo ahí."
+					},
+					"Key": "Carry_TooBig"
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado."
+					},
+					"Translation": {
+						"Text": "Pesa demasiado."
+					},
+					"Key": "Carry_TooHeavy"
+				},
+				{
+					"Source": {
+						"Text": "Eso ocupa las dos manos: no se guarda."
+					},
+					"Translation": {
+						"Text": "Eso ocupa las dos manos: no se guarda."
+					},
+					"Key": "Carry_TwoHandedNoStore"
+				},
+				{
+					"Source": {
+						"Text": "Eso no se guarda ahí."
+					},
+					"Translation": {
+						"Text": "Eso no se guarda ahí."
+					},
+					"Key": "Carry_WrongKind"
+				},
+				{
+					"Source": {
+						"Text": "cesta"
+					},
+					"Translation": {
+						"Text": "cesta"
+					},
+					"Key": "Container_Basket"
+				},
+				{
+					"Source": {
+						"Text": "arcón"
+					},
+					"Translation": {
+						"Text": "arcón"
+					},
+					"Key": "Container_Chest"
+				},
+				{
+					"Source": {
+						"Text": "estante"
+					},
+					"Translation": {
+						"Text": "estante"
+					},
+					"Key": "Container_Shelf"
+				},
+				{
+					"Source": {
+						"Text": "Necesitas un objeto en cada mano."
+					},
+					"Translation": {
+						"Text": "Necesitas un objeto en cada mano."
+					},
+					"Key": "Crafting_NeedTwo"
+				},
+				{
+					"Source": {
+						"Text": "Estos objetos no se pueden combinar así."
+					},
+					"Translation": {
+						"Text": "Estos objetos no se pueden combinar así."
+					},
+					"Key": "Crafting_NoMatch"
+				},
+				{
+					"Source": {
+						"Text": "El registro de objetos no está disponible."
+					},
+					"Translation": {
+						"Text": "El registro de objetos no está disponible."
+					},
+					"Key": "Crafting_NoRegistry"
+				},
+				{
+					"Source": {
+						"Text": "Echar al fuego"
+					},
+					"Translation": {
+						"Text": "Echar al fuego"
+					},
+					"Key": "Fire_AddFuel"
+				},
+				{
+					"Source": {
+						"Text": "Retirar la comida"
+					},
+					"Translation": {
+						"Text": "Retirar la comida"
+					},
+					"Key": "Fire_Collect"
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Translation": {
+						"Text": "Encender"
+					},
+					"Key": "Fire_Ignite"
+				},
+				{
+					"Source": {
+						"Text": "Avivar las brasas"
+					},
+					"Translation": {
+						"Text": "Avivar las brasas"
+					},
+					"Key": "Fire_Revive"
+				},
+				{
+					"Source": {
+						"Text": "Explored"
+					},
+					"Translation": {
+						"Text": "Explored"
+					},
+					"Key": "Title"
+				},
+				{
+					"Source": {
+						"Text": "Enganchar las angarillas"
+					},
+					"Translation": {
+						"Text": "Enganchar las angarillas"
+					},
+					"Key": "Verb_AttachSledge"
+				},
+				{
+					"Source": {
+						"Text": "Subir a {0}"
+					},
+					"Translation": {
+						"Text": "Subir a {0}"
+					},
+					"Key": "Verb_Board"
+				},
+				{
+					"Source": {
+						"Text": "Revisar la trampa"
+					},
+					"Translation": {
+						"Text": "Revisar la trampa"
+					},
+					"Key": "Verb_CheckTrap"
+				},
+				{
+					"Source": {
+						"Text": "Arrancar la planta seca"
+					},
+					"Translation": {
+						"Text": "Arrancar la planta seca"
+					},
+					"Key": "Verb_ClearDeadPlant"
+				},
+				{
+					"Source": {
+						"Text": "Cosechar {0}"
+					},
+					"Translation": {
+						"Text": "Cosechar {0}"
+					},
+					"Key": "Verb_Harvest"
+				},
+				{
+					"Source": {
+						"Text": "Cargar en las angarillas"
+					},
+					"Translation": {
+						"Text": "Cargar en las angarillas"
+					},
+					"Key": "Verb_LoadSledge"
+				},
+				{
+					"Source": {
+						"Text": "Coger {0}"
+					},
+					"Translation": {
+						"Text": "Coger {0}"
+					},
+					"Key": "Verb_PickUp"
+				},
+				{
+					"Source": {
+						"Text": "Plantar {0}"
+					},
+					"Translation": {
+						"Text": "Plantar {0}"
+					},
+					"Key": "Verb_Plant"
+				},
+				{
+					"Source": {
+						"Text": "Adrizar {0}"
+					},
+					"Translation": {
+						"Text": "Adrizar {0}"
+					},
+					"Key": "Verb_RightBoat"
+				},
+				{
+					"Source": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Translation": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Key": "Verb_RuinCanoe"
+				},
+				{
+					"Source": {
+						"Text": "Examinar las pinturas"
+					},
+					"Translation": {
+						"Text": "Examinar las pinturas"
+					},
+					"Key": "Verb_RuinCave"
+				},
+				{
+					"Source": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Translation": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Key": "Verb_RuinCompass"
+				},
+				{
+					"Source": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Translation": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Key": "Verb_RuinOffering"
+				},
+				{
+					"Source": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Translation": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Key": "Verb_RuinPetroglyph"
+				},
+				{
+					"Source": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Translation": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Key": "Verb_RuinStatue"
+				},
+				{
+					"Source": {
+						"Text": "Guardar en {0}"
+					},
+					"Translation": {
+						"Text": "Guardar en {0}"
+					},
+					"Key": "Verb_StoreIn"
+				},
+				{
+					"Source": {
+						"Text": "Sacar de {0}"
+					},
+					"Translation": {
+						"Text": "Sacar de {0}"
+					},
+					"Key": "Verb_TakeFrom"
+				},
+				{
+					"Source": {
+						"Text": "Marisquear"
+					},
+					"Translation": {
+						"Text": "Marisquear"
+					},
+					"Key": "Verb_TidePool"
+				},
+				{
+					"Source": {
+						"Text": "Regar"
+					},
+					"Translation": {
+						"Text": "Regar"
+					},
+					"Key": "Verb_Water"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredBuilding",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Giro no válido"
+					},
+					"Translation": {
+						"Text": "Giro no válido"
+					},
+					"Key": "InvalidRotation"
+				},
+				{
+					"Source": {
+						"Text": "Faltan materiales"
+					},
+					"Translation": {
+						"Text": "Faltan materiales"
+					},
+					"Key": "MissingMaterials"
+				},
+				{
+					"Source": {
+						"Text": "Falta otra pieza en la base"
+					},
+					"Translation": {
+						"Text": "Falta otra pieza en la base"
+					},
+					"Key": "MissingRequiredPiece"
+				},
+				{
+					"Source": {
+						"Text": "Falta una herramienta"
+					},
+					"Translation": {
+						"Text": "Falta una herramienta"
+					},
+					"Key": "MissingTools"
+				},
+				{
+					"Source": {
+						"Text": "Tiene que ir sobre el terreno"
+					},
+					"Translation": {
+						"Text": "Tiene que ir sobre el terreno"
+					},
+					"Key": "NeedsGround"
+				},
+				{
+					"Source": {
+						"Text": "No tiene dónde apoyarse"
+					},
+					"Translation": {
+						"Text": "No tiene dónde apoyarse"
+					},
+					"Key": "NoSupport"
+				},
+				{
+					"Source": {
+						"Text": "No hay nada que reparar"
+					},
+					"Translation": {
+						"Text": "No hay nada que reparar"
+					},
+					"Key": "NothingToRepair"
+				},
+				{
+					"Source": {
+						"Text": "Ya hay algo ahí"
+					},
+					"Translation": {
+						"Text": "Ya hay algo ahí"
+					},
+					"Key": "Occupied"
+				},
+				{
+					"Source": {
+						"Text": "Fuera de la base"
+					},
+					"Translation": {
+						"Text": "Fuera de la base"
+					},
+					"Key": "UnknownBase"
+				},
+				{
+					"Source": {
+						"Text": "Esa pieza ya no existe"
+					},
+					"Translation": {
+						"Text": "Esa pieza ya no existe"
+					},
+					"Key": "UnknownInstance"
+				},
+				{
+					"Source": {
+						"Text": "Pieza desconocida"
+					},
+					"Translation": {
+						"Text": "Pieza desconocida"
+					},
+					"Key": "UnknownPiece"
+				},
+				{
+					"Source": {
+						"Text": "Demasiado lejos de un apoyo"
+					},
+					"Translation": {
+						"Text": "Demasiado lejos de un apoyo"
+					},
+					"Key": "Unstable"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredUI",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Conseguido"
+					},
+					"Translation": {
+						"Text": "Conseguido"
+					},
+					"Key": "AchievementDone"
+				},
+				{
+					"Source": {
+						"Text": "Logro oculto: se revela al conseguirlo."
+					},
+					"Translation": {
+						"Text": "Logro oculto: se revela al conseguirlo."
+					},
+					"Key": "AchievementHidden"
+				},
+				{
+					"Source": {
+						"Text": "{0} (no se puede conseguir en este modo)"
+					},
+					"Translation": {
+						"Text": "{0} (no se puede conseguir en este modo)"
+					},
+					"Key": "AchievementOtherMode"
+				},
+				{
+					"Source": {
+						"Text": "Logro conseguido"
+					},
+					"Translation": {
+						"Text": "Logro conseguido"
+					},
+					"Key": "AchievementUnlocked"
+				},
+				{
+					"Source": {
+						"Text": "Logros"
+					},
+					"Translation": {
+						"Text": "Logros"
+					},
+					"Key": "Achievements"
+				},
+				{
+					"Source": {
+						"Text": "Conseguidos: {0} de {1}"
+					},
+					"Translation": {
+						"Text": "Conseguidos: {0} de {1}"
+					},
+					"Key": "AchievementsSummary"
+				},
+				{
+					"Source": {
+						"Text": "Logros"
+					},
+					"Translation": {
+						"Text": "Logros"
+					},
+					"Key": "AchievementsTitle"
+				},
+				{
+					"Source": {
+						"Text": "Los logros no están disponibles."
+					},
+					"Translation": {
+						"Text": "Los logros no están disponibles."
+					},
+					"Key": "AchievementsUnavailable"
+				},
+				{
+					"Source": {
+						"Text": "Mochila"
+					},
+					"Translation": {
+						"Text": "Mochila"
+					},
+					"Key": "ActionBackpack"
+				},
+				{
+					"Source": {
+						"Text": "Combinar"
+					},
+					"Translation": {
+						"Text": "Combinar"
+					},
+					"Key": "ActionCombine"
+				},
+				{
+					"Source": {
+						"Text": "Agacharse / bucear"
+					},
+					"Translation": {
+						"Text": "Agacharse / bucear"
+					},
+					"Key": "ActionDive"
+				},
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Translation": {
+						"Text": "Soltar"
+					},
+					"Key": "ActionDrop"
+				},
+				{
+					"Source": {
+						"Text": "Interactuar / coger"
+					},
+					"Translation": {
+						"Text": "Interactuar / coger"
+					},
+					"Key": "ActionInteract"
+				},
+				{
+					"Source": {
+						"Text": "Saltar"
+					},
+					"Translation": {
+						"Text": "Saltar"
+					},
+					"Key": "ActionJump"
+				},
+				{
+					"Source": {
+						"Text": "Correr"
+					},
+					"Translation": {
+						"Text": "Correr"
+					},
+					"Key": "ActionSprint"
+				},
+				{
+					"Source": {
+						"Text": "Usar mano derecha"
+					},
+					"Translation": {
+						"Text": "Usar mano derecha"
+					},
+					"Key": "ActionUsePrimary"
+				},
+				{
+					"Source": {
+						"Text": "Usar mano izquierda"
+					},
+					"Translation": {
+						"Text": "Usar mano izquierda"
+					},
+					"Key": "ActionUseSecondary"
+				},
+				{
+					"Source": {
+						"Text": "Aplicar"
+					},
+					"Translation": {
+						"Text": "Aplicar"
+					},
+					"Key": "Apply"
+				},
+				{
+					"Source": {
+						"Text": "Volver"
+					},
+					"Translation": {
+						"Text": "Volver"
+					},
+					"Key": "Back"
+				},
+				{
+					"Source": {
+						"Text": "Brillo"
+					},
+					"Translation": {
+						"Text": "Brillo"
+					},
+					"Key": "Brightness"
+				},
+				{
+					"Source": {
+						"Text": "Deuteranopía"
+					},
+					"Translation": {
+						"Text": "Deuteranopía"
+					},
+					"Key": "CVDDeuteranopia"
+				},
+				{
+					"Source": {
+						"Text": "Ninguno"
+					},
+					"Translation": {
+						"Text": "Ninguno"
+					},
+					"Key": "CVDNone"
+				},
+				{
+					"Source": {
+						"Text": "Protanopía"
+					},
+					"Translation": {
+						"Text": "Protanopía"
+					},
+					"Key": "CVDProtanopia"
+				},
+				{
+					"Source": {
+						"Text": "Tritanopía"
+					},
+					"Translation": {
+						"Text": "Tritanopía"
+					},
+					"Key": "CVDTritanopia"
+				},
+				{
+					"Source": {
+						"Text": "Balanceo de cámara"
+					},
+					"Translation": {
+						"Text": "Balanceo de cámara"
+					},
+					"Key": "CameraBob"
+				},
+				{
+					"Source": {
+						"Text": "Elige cómo quieres sobrevivir"
+					},
+					"Translation": {
+						"Text": "Elige cómo quieres sobrevivir"
+					},
+					"Key": "ChooseMode"
+				},
+				{
+					"Source": {
+						"Text": "Modo daltónico"
+					},
+					"Translation": {
+						"Text": "Modo daltónico"
+					},
+					"Key": "Colorblind"
+				},
+				{
+					"Source": {
+						"Text": "Continuar"
+					},
+					"Translation": {
+						"Text": "Continuar"
+					},
+					"Key": "Continue"
+				},
+				{
+					"Source": {
+						"Text": "Créditos"
+					},
+					"Translation": {
+						"Text": "Créditos"
+					},
+					"Key": "Credits"
+				},
+				{
+					"Source": {
+						"Text": "Todo el arte, sonido y música generados por código"
+					},
+					"Translation": {
+						"Text": "Todo el arte, sonido y música generados por código"
+					},
+					"Key": "CreditsArt"
+				},
+				{
+					"Source": {
+						"Text": "Un juego de Rodrigo Fernández"
+					},
+					"Translation": {
+						"Text": "Un juego de Rodrigo Fernández"
+					},
+					"Key": "CreditsAuthor"
+				},
+				{
+					"Source": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Translation": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Key": "CreditsClaude"
+				},
+				{
+					"Source": {
+						"Text": "Motor: Unreal Engine 5.6"
+					},
+					"Translation": {
+						"Text": "Motor: Unreal Engine 5.6"
+					},
+					"Key": "CreditsEngine"
+				},
+				{
+					"Source": {
+						"Text": "EXPLORED"
+					},
+					"Translation": {
+						"Text": "EXPLORED"
+					},
+					"Key": "CreditsTitle"
+				},
+				{
+					"Source": {
+						"Text": "Duración del día"
+					},
+					"Translation": {
+						"Text": "Duración del día"
+					},
+					"Key": "DayLength"
+				},
+				{
+					"Source": {
+						"Text": "{0} min"
+					},
+					"Translation": {
+						"Text": "{0} min"
+					},
+					"Key": "DayLengthMinutes"
+				},
+				{
+					"Source": {
+						"Text": "Para Almudena, mi Limón"
+					},
+					"Translation": {
+						"Text": "Para Almudena, mi Limón"
+					},
+					"Key": "Dedication"
+				},
+				{
+					"Source": {
+						"Text": "Efectos"
+					},
+					"Translation": {
+						"Text": "Efectos"
+					},
+					"Key": "Effects"
+				},
+				{
+					"Source": {
+						"Text": "Salir al menú"
+					},
+					"Translation": {
+						"Text": "Salir al menú"
+					},
+					"Key": "ExitToMenu"
+				},
+				{
+					"Source": {
+						"Text": "Campo de visión"
+					},
+					"Translation": {
+						"Text": "Campo de visión"
+					},
+					"Key": "FOV"
+				},
+				{
+					"Source": {
+						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
+					},
+					"Translation": {
+						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
+					},
+					"Key": "FishingLineOut"
+				},
+				{
+					"Source": {
+						"Text": "Esperando la picada… [F] recoger"
+					},
+					"Translation": {
+						"Text": "Esperando la picada… [F] recoger"
+					},
+					"Key": "FishingWaiting"
+				},
+				{
+					"Source": {
+						"Text": "Vegetación"
+					},
+					"Translation": {
+						"Text": "Vegetación"
+					},
+					"Key": "Foliage"
+				},
+				{
+					"Source": {
+						"Text": "Límite de FPS"
+					},
+					"Translation": {
+						"Text": "Límite de FPS"
+					},
+					"Key": "FpsLimit"
+				},
+				{
+					"Source": {
+						"Text": "Iluminación global"
+					},
+					"Translation": {
+						"Text": "Iluminación global"
+					},
+					"Key": "GI"
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del mando"
+					},
+					"Translation": {
+						"Text": "Sensibilidad del mando"
+					},
+					"Key": "GamepadSensitivity"
+				},
+				{
+					"Source": {
+						"Text": "Agacharse manteniendo pulsado"
+					},
+					"Translation": {
+						"Text": "Agacharse manteniendo pulsado"
+					},
+					"Key": "HoldCrouch"
+				},
+				{
+					"Source": {
+						"Text": "[{Key}] {Actions}"
+					},
+					"Translation": {
+						"Text": "[{Key}] {Actions}"
+					},
+					"Key": "InteractPrompt"
+				},
+				{
+					"Source": {
+						"Text": "Mochila ({0} de {1} l)"
+					},
+					"Translation": {
+						"Text": "Mochila ({0} de {1} l)"
+					},
+					"Key": "InvBackpack"
+				},
+				{
+					"Source": {
+						"Text": "Cinturón ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Cinturón ({0}/{1})"
+					},
+					"Key": "InvBelt"
+				},
+				{
+					"Source": {
+						"Text": "En las dos manos: {0}"
+					},
+					"Translation": {
+						"Text": "En las dos manos: {0}"
+					},
+					"Key": "InvBothHands"
+				},
+				{
+					"Source": {
+						"Text": "vacía"
+					},
+					"Translation": {
+						"Text": "vacía"
+					},
+					"Key": "InvEmptyHand"
+				},
+				{
+					"Source": {
+						"Text": "Vas cargado: te cansas antes y haces más ruido."
+					},
+					"Translation": {
+						"Text": "Vas cargado: te cansas antes y haces más ruido."
+					},
+					"Key": "InvHeavy"
+				},
+				{
+					"Source": {
+						"Text": "Mano izquierda: {0}"
+					},
+					"Translation": {
+						"Text": "Mano izquierda: {0}"
+					},
+					"Key": "InvLeftHand"
+				},
+				{
+					"Source": {
+						"Text": "nada"
+					},
+					"Translation": {
+						"Text": "nada"
+					},
+					"Key": "InvNothing"
+				},
+				{
+					"Source": {
+						"Text": "No puedes cargar más."
+					},
+					"Translation": {
+						"Text": "No puedes cargar más."
+					},
+					"Key": "InvOverloaded"
+				},
+				{
+					"Source": {
+						"Text": "Bolsillos ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Bolsillos ({0}/{1})"
+					},
+					"Key": "InvPockets"
+				},
+				{
+					"Source": {
+						"Text": "Bolsa estanca ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Bolsa estanca ({0}/{1})"
+					},
+					"Key": "InvPouch"
+				},
+				{
+					"Source": {
+						"Text": "Mano derecha: {0}"
+					},
+					"Translation": {
+						"Text": "Mano derecha: {0}"
+					},
+					"Key": "InvRightHand"
+				},
+				{
+					"Source": {
+						"Text": "Angarillas ({0} kg)"
+					},
+					"Translation": {
+						"Text": "Angarillas ({0} kg)"
+					},
+					"Key": "InvSledge"
+				},
+				{
+					"Source": {
+						"Text": "Lo que llevas"
+					},
+					"Translation": {
+						"Text": "Lo que llevas"
+					},
+					"Key": "InvTitle"
+				},
+				{
+					"Source": {
+						"Text": "Carga: {0} kg de {1} kg cómodos"
+					},
+					"Translation": {
+						"Text": "Carga: {0} kg de {1} kg cómodos"
+					},
+					"Key": "InvWeight"
+				},
+				{
+					"Source": {
+						"Text": "Invertir eje Y"
+					},
+					"Translation": {
+						"Text": "Invertir eje Y"
+					},
+					"Key": "InvertY"
+				},
+				{
+					"Source": {
+						"Text": "English"
+					},
+					"Translation": {
+						"Text": "English"
+					},
+					"Key": "LangEn"
+				},
+				{
+					"Source": {
+						"Text": "Español"
+					},
+					"Translation": {
+						"Text": "Español"
+					},
+					"Key": "LangEs"
+				},
+				{
+					"Source": {
+						"Text": "Idioma"
+					},
+					"Translation": {
+						"Text": "Idioma"
+					},
+					"Key": "Language"
+				},
+				{
+					"Source": {
+						"Text": "Cargar"
+					},
+					"Translation": {
+						"Text": "Cargar"
+					},
+					"Key": "LoadGame"
+				},
+				{
+					"Source": {
+						"Text": "Rumbo {0}°, {1} m"
+					},
+					"Translation": {
+						"Text": "Rumbo {0}°, {1} m"
+					},
+					"Key": "MapAnnotationBearing"
+				},
+				{
+					"Source": {
+						"Text": "Radio de {0} m"
+					},
+					"Translation": {
+						"Text": "Radio de {0} m"
+					},
+					"Key": "MapAnnotationRadius"
+				},
+				{
+					"Source": {
+						"Text": "{0} caracteres libres"
+					},
+					"Translation": {
+						"Text": "{0} caracteres libres"
+					},
+					"Key": "MapCharsLeft"
+				},
+				{
+					"Source": {
+						"Text": "Colección"
+					},
+					"Translation": {
+						"Text": "Colección"
+					},
+					"Key": "MapCollection"
+				},
+				{
+					"Source": {
+						"Text": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno."
+					},
+					"Translation": {
+						"Text": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno."
+					},
+					"Key": "MapControlsHint"
+				},
+				{
+					"Source": {
+						"Text": "El papel está húmedo."
+					},
+					"Translation": {
+						"Text": "El papel está húmedo."
+					},
+					"Key": "MapDamp"
+				},
+				{
+					"Source": {
+						"Text": "Pulsa en la hoja para poner la marca."
+					},
+					"Translation": {
+						"Text": "Pulsa en la hoja para poner la marca."
+					},
+					"Key": "MapHintPlace"
+				},
+				{
+					"Source": {
+						"Text": "El papel está empapado: la tinta se corre. Guárdalo en seco."
+					},
+					"Translation": {
+						"Text": "El papel está empapado: la tinta se corre. Guárdalo en seco."
+					},
+					"Key": "MapInkRunning"
+				},
+				{
+					"Source": {
+						"Text": "dibujada a mano"
+					},
+					"Translation": {
+						"Text": "dibujada a mano"
+					},
+					"Key": "MapMarkHand"
+				},
+				{
+					"Source": {
+						"Text": "Marcar donde estoy"
+					},
+					"Translation": {
+						"Text": "Marcar donde estoy"
+					},
+					"Key": "MapMarkHere"
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada."
+					},
+					"Translation": {
+						"Text": "Marca dibujada."
+					},
+					"Key": "MapMarkPlaced"
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada donde crees estar."
+					},
+					"Translation": {
+						"Text": "Marca dibujada donde crees estar."
+					},
+					"Key": "MapMarkPlacedHere"
+				},
+				{
+					"Source": {
+						"Text": "situada con el sextante"
+					},
+					"Translation": {
+						"Text": "situada con el sextante"
+					},
+					"Key": "MapMarkSextant"
+				},
+				{
+					"Source": {
+						"Text": "vista con el catalejo"
+					},
+					"Translation": {
+						"Text": "vista con el catalejo"
+					},
+					"Key": "MapMarkSpyglass"
+				},
+				{
+					"Source": {
+						"Text": "Texto corto (opcional)"
+					},
+					"Translation": {
+						"Text": "Texto corto (opcional)"
+					},
+					"Key": "MapMarkTextHint"
+				},
+				{
+					"Source": {
+						"Text": "No caben más marcas en la hoja."
+					},
+					"Translation": {
+						"Text": "No caben más marcas en la hoja."
+					},
+					"Key": "MapMarksFull"
+				},
+				{
+					"Source": {
+						"Text": "Elige un sello o escribe una nota."
+					},
+					"Translation": {
+						"Text": "Elige un sello o escribe una nota."
+					},
+					"Key": "MapNeedStampOrText"
+				},
+				{
+					"Source": {
+						"Text": "Aún no has anotado recetas al margen."
+					},
+					"Translation": {
+						"Text": "Aún no has anotado recetas al margen."
+					},
+					"Key": "MapNoRecipes"
+				},
+				{
+					"Source": {
+						"Text": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una."
+					},
+					"Translation": {
+						"Text": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una."
+					},
+					"Key": "MapNoWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Guardar el mapa"
+					},
+					"Translation": {
+						"Text": "Guardar el mapa"
+					},
+					"Key": "MapPutAway"
+				},
+				{
+					"Source": {
+						"Text": "{0}: «{1}», {2}"
+					},
+					"Translation": {
+						"Text": "{0}: «{1}», {2}"
+					},
+					"Key": "MapSelectedMark"
+				},
+				{
+					"Source": {
+						"Text": "Mostrar las anotaciones de rumbo"
+					},
+					"Translation": {
+						"Text": "Mostrar las anotaciones de rumbo"
+					},
+					"Key": "MapShowWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Sello"
+					},
+					"Translation": {
+						"Text": "Sello"
+					},
+					"Key": "MapStamp"
+				},
+				{
+					"Source": {
+						"Text": "Nota"
+					},
+					"Translation": {
+						"Text": "Nota"
+					},
+					"Key": "MapStampNote"
+				},
+				{
+					"Source": {
+						"Text": "Marcas"
+					},
+					"Translation": {
+						"Text": "Marcas"
+					},
+					"Key": "MapTabMarks"
+				},
+				{
+					"Source": {
+						"Text": "Recetas"
+					},
+					"Translation": {
+						"Text": "Recetas"
+					},
+					"Key": "MapTabRecipes"
+				},
+				{
+					"Source": {
+						"Text": "Rumbos"
+					},
+					"Translation": {
+						"Text": "Rumbos"
+					},
+					"Key": "MapTabWayfinding"
+				},
+				{
+					"Source": {
+						"Text": "Aves al atardecer"
+					},
+					"Translation": {
+						"Text": "Aves al atardecer"
+					},
+					"Key": "MapTechniqueBirds"
+				},
+				{
+					"Source": {
+						"Text": "Nubes fijas"
+					},
+					"Translation": {
+						"Text": "Nubes fijas"
+					},
+					"Key": "MapTechniqueClouds"
+				},
+				{
+					"Source": {
+						"Text": "Camino de estrellas"
+					},
+					"Translation": {
+						"Text": "Camino de estrellas"
+					},
+					"Key": "MapTechniqueStarPath"
+				},
+				{
+					"Source": {
+						"Text": "Lectura del oleaje"
+					},
+					"Translation": {
+						"Text": "Lectura del oleaje"
+					},
+					"Key": "MapTechniqueSwell"
+				},
+				{
+					"Source": {
+						"Text": "Color del agua"
+					},
+					"Translation": {
+						"Text": "Color del agua"
+					},
+					"Key": "MapTechniqueWater"
+				},
+				{
+					"Source": {
+						"Text": "Mapa"
+					},
+					"Translation": {
+						"Text": "Mapa"
+					},
+					"Key": "MapTitle"
+				},
+				{
+					"Source": {
+						"Text": "Náufrago"
+					},
+					"Translation": {
+						"Text": "Náufrago"
+					},
+					"Key": "ModeCastaway"
+				},
+				{
+					"Source": {
+						"Text": "Necesidades más duras y sin reaparición en fogatas."
+					},
+					"Translation": {
+						"Text": "Necesidades más duras y sin reaparición en fogatas."
+					},
+					"Key": "ModeCastawayDesc"
+				},
+				{
+					"Source": {
+						"Text": "Explorador"
+					},
+					"Translation": {
+						"Text": "Explorador"
+					},
+					"Key": "ModeExplorer"
+				},
+				{
+					"Source": {
+						"Text": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia."
+					},
+					"Translation": {
+						"Text": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia."
+					},
+					"Key": "ModeExplorerDesc"
+				},
+				{
+					"Source": {
+						"Text": "Superviviente"
+					},
+					"Translation": {
+						"Text": "Superviviente"
+					},
+					"Key": "ModeSurvivor"
+				},
+				{
+					"Source": {
+						"Text": "La experiencia prevista."
+					},
+					"Translation": {
+						"Text": "La experiencia prevista."
+					},
+					"Key": "ModeSurvivorDesc"
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del ratón"
+					},
+					"Translation": {
+						"Text": "Sensibilidad del ratón"
+					},
+					"Key": "MouseSensitivity"
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} de {1} tesoros expuestos"
+					},
+					"Translation": {
+						"Text": "Coleccionista: {0} de {1} tesoros expuestos"
+					},
+					"Key": "MuseumCollector"
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} tesoros expuestos (conseguido)"
+					},
+					"Translation": {
+						"Text": "Coleccionista: {0} tesoros expuestos (conseguido)"
+					},
+					"Key": "MuseumCollectorDone"
+				},
+				{
+					"Source": {
+						"Text": "común"
+					},
+					"Translation": {
+						"Text": "común"
+					},
+					"Key": "MuseumCommon"
+				},
+				{
+					"Source": {
+						"Text": "Expuesto en el museo"
+					},
+					"Translation": {
+						"Text": "Expuesto en el museo"
+					},
+					"Key": "MuseumExhibited"
+				},
+				{
+					"Source": {
+						"Text": "Hallado"
+					},
+					"Translation": {
+						"Text": "Hallado"
+					},
+					"Key": "MuseumFound"
+				},
+				{
+					"Source": {
+						"Text": "Cueva ritual"
+					},
+					"Translation": {
+						"Text": "Cueva ritual"
+					},
+					"Key": "MuseumFromCave"
+				},
+				{
+					"Source": {
+						"Text": "Marae"
+					},
+					"Translation": {
+						"Text": "Marae"
+					},
+					"Key": "MuseumFromMarae"
+				},
+				{
+					"Source": {
+						"Text": "Ruina sumergida"
+					},
+					"Translation": {
+						"Text": "Ruina sumergida"
+					},
+					"Key": "MuseumFromSunken"
+				},
+				{
+					"Source": {
+						"Text": "Pecio"
+					},
+					"Translation": {
+						"Text": "Pecio"
+					},
+					"Key": "MuseumFromWreck"
+				},
+				{
+					"Source": {
+						"Text": "Fotografiado, sin recoger"
+					},
+					"Translation": {
+						"Text": "Fotografiado, sin recoger"
+					},
+					"Key": "MuseumPhotographed"
+				},
+				{
+					"Source": {
+						"Text": "Procedencia: {0} · {1}"
+					},
+					"Translation": {
+						"Text": "Procedencia: {0} · {1}"
+					},
+					"Key": "MuseumProvenance"
+				},
+				{
+					"Source": {
+						"Text": "raro"
+					},
+					"Translation": {
+						"Text": "raro"
+					},
+					"Key": "MuseumRare"
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1}"
+					},
+					"Translation": {
+						"Text": "{0} · {1}"
+					},
+					"Key": "MuseumStateAt"
+				},
+				{
+					"Source": {
+						"Text": "Catálogo: {0} de {1} registrados · {2} hallados"
+					},
+					"Translation": {
+						"Text": "Catálogo: {0} de {1} registrados · {2} hallados"
+					},
+					"Key": "MuseumSummary"
+				},
+				{
+					"Source": {
+						"Text": "Museo"
+					},
+					"Translation": {
+						"Text": "Museo"
+					},
+					"Key": "MuseumTitle"
+				},
+				{
+					"Source": {
+						"Text": "El catálogo no está disponible en este mundo."
+					},
+					"Translation": {
+						"Text": "El catálogo no está disponible en este mundo."
+					},
+					"Key": "MuseumUnavailable"
+				},
+				{
+					"Source": {
+						"Text": "único"
+					},
+					"Translation": {
+						"Text": "único"
+					},
+					"Key": "MuseumUnique"
+				},
+				{
+					"Source": {
+						"Text": "Sin descubrir"
+					},
+					"Translation": {
+						"Text": "Sin descubrir"
+					},
+					"Key": "MuseumUnknown"
+				},
+				{
+					"Source": {
+						"Text": "muy mal"
+					},
+					"Translation": {
+						"Text": "muy mal"
+					},
+					"Key": "NeedCritical"
+				},
+				{
+					"Source": {
+						"Text": "regular"
+					},
+					"Translation": {
+						"Text": "regular"
+					},
+					"Key": "NeedFair"
+				},
+				{
+					"Source": {
+						"Text": "bien"
+					},
+					"Translation": {
+						"Text": "bien"
+					},
+					"Key": "NeedGood"
+				},
+				{
+					"Source": {
+						"Text": "mal"
+					},
+					"Translation": {
+						"Text": "mal"
+					},
+					"Key": "NeedLow"
+				},
+				{
+					"Source": {
+						"Text": "Nueva partida"
+					},
+					"Translation": {
+						"Text": "Nueva partida"
+					},
+					"Key": "NewGame"
+				},
+				{
+					"Source": {
+						"Text": "Desactivar destellos"
+					},
+					"Translation": {
+						"Text": "Desactivar destellos"
+					},
+					"Key": "NoFlashing"
+				},
+				{
+					"Source": {
+						"Text": "(sin asignar)"
+					},
+					"Translation": {
+						"Text": "(sin asignar)"
+					},
+					"Key": "NoKey"
+				},
+				{
+					"Source": {
+						"Text": "Calidad general"
+					},
+					"Translation": {
+						"Text": "Calidad general"
+					},
+					"Key": "OverallQuality"
+				},
+				{
+					"Source": {
+						"Text": "Mapa"
+					},
+					"Translation": {
+						"Text": "Mapa"
+					},
+					"Key": "PauseMap"
+				},
+				{
+					"Source": {
+						"Text": "Museo"
+					},
+					"Translation": {
+						"Text": "Museo"
+					},
+					"Key": "PauseMuseum"
+				},
+				{
+					"Source": {
+						"Text": "Pausa"
+					},
+					"Translation": {
+						"Text": "Pausa"
+					},
+					"Key": "Paused"
+				},
+				{
+					"Source": {
+						"Text": "Postproceso"
+					},
+					"Translation": {
+						"Text": "Postproceso"
+					},
+					"Key": "PostProcess"
+				},
+				{
+					"Source": {
+						"Text": "Pulsa una tecla..."
+					},
+					"Translation": {
+						"Text": "Pulsa una tecla..."
+					},
+					"Key": "PressAnyKey"
+				},
+				{
+					"Source": {
+						"Text": "Cinemática"
+					},
+					"Translation": {
+						"Text": "Cinemática"
+					},
+					"Key": "QualityCinematic"
+				},
+				{
+					"Source": {
+						"Text": "Épica"
+					},
+					"Translation": {
+						"Text": "Épica"
+					},
+					"Key": "QualityEpic"
+				},
+				{
+					"Source": {
+						"Text": "Alta"
+					},
+					"Translation": {
+						"Text": "Alta"
+					},
+					"Key": "QualityHigh"
+				},
+				{
+					"Source": {
+						"Text": "Baja"
+					},
+					"Translation": {
+						"Text": "Baja"
+					},
+					"Key": "QualityLow"
+				},
+				{
+					"Source": {
+						"Text": "Media"
+					},
+					"Translation": {
+						"Text": "Media"
+					},
+					"Key": "QualityMedium"
+				},
+				{
+					"Source": {
+						"Text": "Salir"
+					},
+					"Translation": {
+						"Text": "Salir"
+					},
+					"Key": "Quit"
+				},
+				{
+					"Source": {
+						"Text": "Salir del juego"
+					},
+					"Translation": {
+						"Text": "Salir del juego"
+					},
+					"Key": "QuitGame"
+				},
+				{
+					"Source": {
+						"Text": "Reducir movimiento"
+					},
+					"Translation": {
+						"Text": "Reducir movimiento"
+					},
+					"Key": "ReduceMotion"
+				},
+				{
+					"Source": {
+						"Text": "Reflejos"
+					},
+					"Translation": {
+						"Text": "Reflejos"
+					},
+					"Key": "Reflections"
+				},
+				{
+					"Source": {
+						"Text": "Los botones del mando no se pueden remapear."
+					},
+					"Translation": {
+						"Text": "Los botones del mando no se pueden remapear."
+					},
+					"Key": "RemapGamepad"
+				},
+				{
+					"Source": {
+						"Text": "{0} ya se usa para «{1}»."
+					},
+					"Translation": {
+						"Text": "{0} ya se usa para «{1}»."
+					},
+					"Key": "RemapInUse"
+				},
+				{
+					"Source": {
+						"Text": "{0} está reservada (movimiento o menú)."
+					},
+					"Translation": {
+						"Text": "{0} está reservada (movimiento o menú)."
+					},
+					"Key": "RemapReserved"
+				},
+				{
+					"Source": {
+						"Text": "Resolución"
+					},
+					"Translation": {
+						"Text": "Resolución"
+					},
+					"Key": "Resolution"
+				},
+				{
+					"Source": {
+						"Text": "Restaurar valores por defecto"
+					},
+					"Translation": {
+						"Text": "Restaurar valores por defecto"
+					},
+					"Key": "RestoreDefaults"
+				},
+				{
+					"Source": {
+						"Text": "Reanudar"
+					},
+					"Translation": {
+						"Text": "Reanudar"
+					},
+					"Key": "Resume"
+				},
+				{
+					"Source": {
+						"Text": "Guardar partida"
+					},
+					"Translation": {
+						"Text": "Guardar partida"
+					},
+					"Key": "SaveGame"
+				},
+				{
+					"Source": {
+						"Text": "Guardando..."
+					},
+					"Translation": {
+						"Text": "Guardando..."
+					},
+					"Key": "Saving"
+				},
+				{
+					"Source": {
+						"Text": "Pantalla"
+					},
+					"Translation": {
+						"Text": "Pantalla"
+					},
+					"Key": "SectionDisplay"
+				},
+				{
+					"Source": {
+						"Text": "Calidad"
+					},
+					"Translation": {
+						"Text": "Calidad"
+					},
+					"Key": "SectionQuality"
+				},
+				{
+					"Source": {
+						"Text": "Remapeo de teclas"
+					},
+					"Translation": {
+						"Text": "Remapeo de teclas"
+					},
+					"Key": "SectionRemap"
+				},
+				{
+					"Source": {
+						"Text": "Ajustes"
+					},
+					"Translation": {
+						"Text": "Ajustes"
+					},
+					"Key": "Settings"
+				},
+				{
+					"Source": {
+						"Text": "Sombras"
+					},
+					"Translation": {
+						"Text": "Sombras"
+					},
+					"Key": "Shadows"
+				},
+				{
+					"Source": {
+						"Text": "Autoguardado"
+					},
+					"Translation": {
+						"Text": "Autoguardado"
+					},
+					"Key": "SlotAuto"
+				},
+				{
+					"Source": {
+						"Text": "Dañada: no se puede leer"
+					},
+					"Translation": {
+						"Text": "Dañada: no se puede leer"
+					},
+					"Key": "SlotDamaged"
+				},
+				{
+					"Source": {
+						"Text": "Vacía"
+					},
+					"Translation": {
+						"Text": "Vacía"
+					},
+					"Key": "SlotEmpty"
+				},
+				{
+					"Source": {
+						"Text": "Guardada con una versión más nueva del juego"
+					},
+					"Translation": {
+						"Text": "Guardada con una versión más nueva del juego"
+					},
+					"Key": "SlotFuture"
+				},
+				{
+					"Source": {
+						"Text": "Con copia de seguridad"
+					},
+					"Translation": {
+						"Text": "Con copia de seguridad"
+					},
+					"Key": "SlotHasBackup"
+				},
+				{
+					"Source": {
+						"Text": "Ranura {0}"
+					},
+					"Translation": {
+						"Text": "Ranura {0}"
+					},
+					"Key": "SlotManual"
+				},
+				{
+					"Source": {
+						"Text": "Sin copia de seguridad"
+					},
+					"Translation": {
+						"Text": "Sin copia de seguridad"
+					},
+					"Key": "SlotNoBackup"
+				},
+				{
+					"Source": {
+						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
+					},
+					"Translation": {
+						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
+					},
+					"Key": "SlotRecovered"
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1} h {2} min jugados"
+					},
+					"Translation": {
+						"Text": "{0} · {1} h {2} min jugados"
+					},
+					"Key": "SlotSavedAt"
+				},
+				{
+					"Source": {
+						"Text": "Cancelar"
+					},
+					"Translation": {
+						"Text": "Cancelar"
+					},
+					"Key": "SlotsCancel"
+				},
+				{
+					"Source": {
+						"Text": "Sobrescribir"
+					},
+					"Translation": {
+						"Text": "Sobrescribir"
+					},
+					"Key": "SlotsConfirmOverwrite"
+				},
+				{
+					"Source": {
+						"Text": "Elige la partida que quieres cargar."
+					},
+					"Translation": {
+						"Text": "Elige la partida que quieres cargar."
+					},
+					"Key": "SlotsLoadHint"
+				},
+				{
+					"Source": {
+						"Text": "Cargar partida"
+					},
+					"Translation": {
+						"Text": "Cargar partida"
+					},
+					"Key": "SlotsLoadTitle"
+				},
+				{
+					"Source": {
+						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
+					},
+					"Translation": {
+						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
+					},
+					"Key": "SlotsOverwrite"
+				},
+				{
+					"Source": {
+						"Text": "No se pudo guardar la partida."
+					},
+					"Translation": {
+						"Text": "No se pudo guardar la partida."
+					},
+					"Key": "SlotsSaveFailed"
+				},
+				{
+					"Source": {
+						"Text": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras."
+					},
+					"Translation": {
+						"Text": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras."
+					},
+					"Key": "SlotsSaveHint"
+				},
+				{
+					"Source": {
+						"Text": "Guardar partida"
+					},
+					"Translation": {
+						"Text": "Guardar partida"
+					},
+					"Key": "SlotsSaveTitle"
+				},
+				{
+					"Source": {
+						"Text": "Partida guardada en la {0}."
+					},
+					"Translation": {
+						"Text": "Partida guardada en la {0}."
+					},
+					"Key": "SlotsSaved"
+				},
+				{
+					"Source": {
+						"Text": "El guardado no está disponible."
+					},
+					"Translation": {
+						"Text": "El guardado no está disponible."
+					},
+					"Key": "SlotsUnavailable"
+				},
+				{
+					"Source": {
+						"Text": "Avisos visuales de sonido"
+					},
+					"Translation": {
+						"Text": "Avisos visuales de sonido"
+					},
+					"Key": "SoundCues"
+				},
+				{
+					"Source": {
+						"Text": "Un archipiélago que no aparece en ningún mapa"
+					},
+					"Translation": {
+						"Text": "Un archipiélago que no aparece en ningún mapa"
+					},
+					"Key": "Subtitle"
+				},
+				{
+					"Source": {
+						"Text": "Subtítulos"
+					},
+					"Translation": {
+						"Text": "Subtítulos"
+					},
+					"Key": "Subtitles"
+				},
+				{
+					"Source": {
+						"Text": "Accesibilidad"
+					},
+					"Translation": {
+						"Text": "Accesibilidad"
+					},
+					"Key": "TabAccessibility"
+				},
+				{
+					"Source": {
+						"Text": "Audio"
+					},
+					"Translation": {
+						"Text": "Audio"
+					},
+					"Key": "TabAudio"
+				},
+				{
+					"Source": {
+						"Text": "Controles"
+					},
+					"Translation": {
+						"Text": "Controles"
+					},
+					"Key": "TabControls"
+				},
+				{
+					"Source": {
+						"Text": "Juego"
+					},
+					"Translation": {
+						"Text": "Juego"
+					},
+					"Key": "TabGame"
+				},
+				{
+					"Source": {
+						"Text": "Gráficos"
+					},
+					"Translation": {
+						"Text": "Gráficos"
+					},
+					"Key": "TabGraphics"
+				},
+				{
+					"Source": {
+						"Text": "Grande"
+					},
+					"Translation": {
+						"Text": "Grande"
+					},
+					"Key": "TextLarge"
+				},
+				{
+					"Source": {
+						"Text": "Mediano"
+					},
+					"Translation": {
+						"Text": "Mediano"
+					},
+					"Key": "TextMedium"
+				},
+				{
+					"Source": {
+						"Text": "Tamaño del texto"
+					},
+					"Translation": {
+						"Text": "Tamaño del texto"
+					},
+					"Key": "TextSize"
+				},
+				{
+					"Source": {
+						"Text": "Pequeño"
+					},
+					"Translation": {
+						"Text": "Pequeño"
+					},
+					"Key": "TextSmall"
+				},
+				{
+					"Source": {
+						"Text": "Texturas"
+					},
+					"Translation": {
+						"Text": "Texturas"
+					},
+					"Key": "Textures"
+				},
+				{
+					"Source": {
+						"Text": "EXPLORED"
+					},
+					"Translation": {
+						"Text": "EXPLORED"
+					},
+					"Key": "Title"
+				},
+				{
+					"Source": {
+						"Text": "Sin límite"
+					},
+					"Translation": {
+						"Text": "Sin límite"
+					},
+					"Key": "Unlimited"
+				},
+				{
+					"Source": {
+						"Text": "VSync"
+					},
+					"Translation": {
+						"Text": "VSync"
+					},
+					"Key": "VSync"
+				},
+				{
+					"Source": {
+						"Text": "Vista"
+					},
+					"Translation": {
+						"Text": "Vista"
+					},
+					"Key": "ViewDistance"
+				},
+				{
+					"Source": {
+						"Text": "Ambiente"
+					},
+					"Translation": {
+						"Text": "Ambiente"
+					},
+					"Key": "VolAmbient"
+				},
+				{
+					"Source": {
+						"Text": "Efectos"
+					},
+					"Translation": {
+						"Text": "Efectos"
+					},
+					"Key": "VolEffects"
+				},
+				{
+					"Source": {
+						"Text": "Maestro"
+					},
+					"Translation": {
+						"Text": "Maestro"
+					},
+					"Key": "VolMaster"
+				},
+				{
+					"Source": {
+						"Text": "Música"
+					},
+					"Translation": {
+						"Text": "Música"
+					},
+					"Key": "VolMusic"
+				},
+				{
+					"Source": {
+						"Text": "Interfaz"
+					},
+					"Translation": {
+						"Text": "Interfaz"
+					},
+					"Key": "VolUI"
+				},
+				{
+					"Source": {
+						"Text": "Comida"
+					},
+					"Translation": {
+						"Text": "Comida"
+					},
+					"Key": "WatchFood"
+				},
+				{
+					"Source": {
+						"Text": "Sueño"
+					},
+					"Translation": {
+						"Text": "Sueño"
+					},
+					"Key": "WatchRest"
+				},
+				{
+					"Source": {
+						"Text": "Calor"
+					},
+					"Translation": {
+						"Text": "Calor"
+					},
+					"Key": "WatchWarmth"
+				},
+				{
+					"Source": {
+						"Text": "Agua"
+					},
+					"Translation": {
+						"Text": "Agua"
+					},
+					"Key": "WatchWater"
+				},
+				{
+					"Source": {
+						"Text": "Ventana sin bordes"
+					},
+					"Translation": {
+						"Text": "Ventana sin bordes"
+					},
+					"Key": "WindowBorderless"
+				},
+				{
+					"Source": {
+						"Text": "Pantalla completa"
+					},
+					"Translation": {
+						"Text": "Pantalla completa"
+					},
+					"Key": "WindowFullscreen"
+				},
+				{
+					"Source": {
+						"Text": "Modo de ventana"
+					},
+					"Translation": {
+						"Text": "Modo de ventana"
+					},
+					"Key": "WindowMode"
+				},
+				{
+					"Source": {
+						"Text": "Ventana"
+					},
+					"Translation": {
+						"Text": "Ventana"
+					},
+					"Key": "WindowWindowed"
+				}
+			]
+		}
+	]
+}

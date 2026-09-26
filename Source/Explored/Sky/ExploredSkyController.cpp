@@ -222,9 +222,10 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 		StarDome->SetScalarParameterValueOnMaterials(TEXT("Night"), 1.0f - FMath::SmoothStep(-0.15f, 0.05f, SunZ));
 	}
 
-	// Noches más densas y frescas; niebla matinal suave.
-	const bool bMorning = Hours > 4.5f && Hours < 9.0f;
-	Fog->SetFogDensity((bMorning ? 0.006f : 0.0025f) + WeatherFog * 0.03f + WeatherRain * 0.006f);
+	// Noches más densas y frescas; niebla matinal suave. L3: la niebla matinal
+	// entra y sale con SmoothStep (antes era un escalón ×2,4 a las 4:30 y a las 9:00).
+	const float Morning = FMath::SmoothStep(4.0f, 5.5f, Hours) * (1.0f - FMath::SmoothStep(8.0f, 9.5f, Hours));
+	Fog->SetFogDensity(FMath::Lerp(0.0025f, 0.006f, Morning) + WeatherFog * 0.03f + WeatherRain * 0.006f);
 	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.45f, 0.6f, 0.75f), SunUp));
 
 	// Centro del histograma (estrecho, ver constructor) según la hora: casi fijo, sin la

@@ -1,0 +1,346 @@
+{
+  "version": 1,
+  "note": "Tesoros del pueblo navegante (GDD §7, biblia §10) y muebles del museo de la base. Lo lee URuinsSubsystem y lo valida Tools/DataCheck. Un hueco admite su tamaño y los menores. offsetCm: posición local del hueco en la malla del mueble (centímetros). piece: pieza de building_pieces.json que construye el mueble (null mientras no exista).",
+  "provenances": [
+    {
+      "id": "marae",
+      "nameEs": "Marae",
+      "nameEn": "Marae"
+    },
+    {
+      "id": "cueva_ritual",
+      "nameEs": "Cueva ritual",
+      "nameEn": "Ritual cave"
+    },
+    {
+      "id": "pecio",
+      "nameEs": "Pecio",
+      "nameEn": "Shipwreck"
+    },
+    {
+      "id": "ruina_sumergida",
+      "nameEs": "Ruina sumergida",
+      "nameEn": "Sunken ruin"
+    }
+  ],
+  "rarities": [
+    {
+      "id": "comun",
+      "nameEs": "Común",
+      "nameEn": "Common"
+    },
+    {
+      "id": "raro",
+      "nameEs": "Raro",
+      "nameEn": "Rare"
+    },
+    {
+      "id": "unico",
+      "nameEs": "Único",
+      "nameEn": "Unique"
+    }
+  ],
+  "displays": [
+    {
+      "id": "estanteria_museo",
+      "nameEs": "Estantería del museo",
+      "nameEn": "Museum shelf",
+      "piece": "estanteria_museo",
+      "mesh": "SM_Base_DisplayShelf",
+      "slots": [
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            -60,
+            -2,
+            14.0
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            0,
+            -2,
+            14.0
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            60,
+            -2,
+            14.0
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            -60,
+            -2,
+            59.25
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            0,
+            -2,
+            59.25
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            60,
+            -2,
+            59.25
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            -60,
+            -2,
+            104.5
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            0,
+            -2,
+            104.5
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            60,
+            -2,
+            104.5
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            -60,
+            -2,
+            149.75
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            0,
+            -2,
+            149.75
+          ]
+        },
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            60,
+            -2,
+            149.75
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vitrina_museo",
+      "nameEs": "Vitrina",
+      "nameEn": "Display case",
+      "piece": null,
+      "mesh": "SM_Base_DisplayCase",
+      "slots": [
+        {
+          "maxSize": "Mediano",
+          "offsetCm": [
+            0,
+            0,
+            97
+          ]
+        }
+      ]
+    },
+    {
+      "id": "panel_museo",
+      "nameEs": "Panel de pared del museo",
+      "nameEn": "Museum wall panel",
+      "piece": null,
+      "mesh": null,
+      "slots": [
+        {
+          "maxSize": "Grande",
+          "offsetCm": [
+            0,
+            -6,
+            110
+          ]
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "anzuelo_hueso",
+      "kind": "hook_bone",
+      "nameEs": "Anzuelo de hueso tallado",
+      "nameEn": "Carved bone fish hook",
+      "provenance": "marae",
+      "rarity": "comun",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_FishHook_Bone"
+    },
+    {
+      "id": "anzuelo_nacar",
+      "kind": "hook_bone",
+      "nameEs": "Anzuelo de nácar",
+      "nameEn": "Mother-of-pearl fish hook",
+      "provenance": "pecio",
+      "rarity": "comun",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_FishHook_Shell"
+    },
+    {
+      "id": "anzuelo_ceremonial",
+      "kind": "hook_bone",
+      "nameEs": "Anzuelo ceremonial de hueso de ballena",
+      "nameEn": "Ceremonial whalebone hook",
+      "provenance": "cueva_ritual",
+      "rarity": "raro",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_FishHook_Bone"
+    },
+    {
+      "id": "colgante_concha",
+      "kind": "shell_ornament",
+      "nameEs": "Colgante de concha",
+      "nameEn": "Shell pendant",
+      "provenance": "marae",
+      "rarity": "comun",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_ShellPendant"
+    },
+    {
+      "id": "collar_conchas",
+      "kind": "shell_ornament",
+      "nameEs": "Collar de conchas",
+      "nameEn": "Shell necklace",
+      "provenance": "cueva_ritual",
+      "rarity": "comun",
+      "size": "Mediano",
+      "mesh": "SM_Treasure_ShellNecklace"
+    },
+    {
+      "id": "pectoral_nacar",
+      "kind": "shell_ornament",
+      "nameEs": "Pectoral de nácar",
+      "nameEn": "Pearl-shell breastplate",
+      "provenance": "ruina_sumergida",
+      "rarity": "raro",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_ShellPendant"
+    },
+    {
+      "id": "colgante_carey",
+      "kind": "shell_ornament",
+      "nameEs": "Colgante de carey con tortuga",
+      "nameEn": "Tortoiseshell turtle pendant",
+      "provenance": "pecio",
+      "rarity": "raro",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_ShellPendant"
+    },
+    {
+      "id": "figura_navegante",
+      "kind": "stone_figure",
+      "nameEs": "Figura del navegante",
+      "nameEn": "Navigator figure",
+      "provenance": "marae",
+      "rarity": "raro",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_StoneFigure_Navigator"
+    },
+    {
+      "id": "figura_gemelos",
+      "kind": "stone_figure",
+      "nameEs": "Figura de los gemelos",
+      "nameEn": "Twin figure",
+      "provenance": "cueva_ritual",
+      "rarity": "raro",
+      "size": "Pequeno",
+      "mesh": "SM_Treasure_StoneFigure_Twins"
+    },
+    {
+      "id": "figura_mira_cielo",
+      "kind": "stone_figure",
+      "nameEs": "Figura de basalto que mira al cielo",
+      "nameEn": "Basalt sky-gazer figure",
+      "provenance": "ruina_sumergida",
+      "rarity": "unico",
+      "size": "Mediano",
+      "mesh": "SM_Treasure_StoneFigure_Navigator"
+    },
+    {
+      "id": "carta_varillas",
+      "kind": "stick_chart",
+      "nameEs": "Carta de varillas y conchas",
+      "nameEn": "Stick and shell chart",
+      "provenance": "marae",
+      "rarity": "raro",
+      "size": "Mediano",
+      "mesh": "SM_Treasure_StickChart"
+    },
+    {
+      "id": "carta_oleaje",
+      "kind": "stick_chart",
+      "nameEs": "Carta del oleaje de las siete islas",
+      "nameEn": "Swell chart of the seven islands",
+      "provenance": "pecio",
+      "rarity": "unico",
+      "size": "Mediano",
+      "mesh": "SM_Treasure_StickChart"
+    },
+    {
+      "id": "tapa_pintada",
+      "kind": "tapa_cloth",
+      "nameEs": "Tapa pintada",
+      "nameEn": "Painted tapa cloth",
+      "provenance": "cueva_ritual",
+      "rarity": "raro",
+      "size": "Grande",
+      "mesh": "SM_Treasure_Tapa"
+    },
+    {
+      "id": "tapa_estrellas",
+      "kind": "tapa_cloth",
+      "nameEs": "Tapa de las estrellas",
+      "nameEn": "Star tapa cloth",
+      "provenance": "marae",
+      "rarity": "unico",
+      "size": "Grande",
+      "mesh": "SM_Treasure_Tapa"
+    },
+    {
+      "id": "remo_ceremonial",
+      "kind": "ceremonial_paddle",
+      "nameEs": "Remo ceremonial",
+      "nameEn": "Ceremonial paddle",
+      "provenance": "marae",
+      "rarity": "raro",
+      "size": "Grande",
+      "mesh": "SM_Treasure_CeremonialPaddle"
+    },
+    {
+      "id": "remo_canoa_doble",
+      "kind": "ceremonial_paddle",
+      "nameEs": "Remo tallado de la canoa doble",
+      "nameEn": "Carved double-canoe paddle",
+      "provenance": "ruina_sumergida",
+      "rarity": "unico",
+      "size": "Grande",
+      "mesh": "SM_Treasure_CeremonialPaddle"
+    }
+  ]
+}

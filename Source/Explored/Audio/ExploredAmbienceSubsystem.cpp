@@ -5,8 +5,11 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
+#include "Sound/SoundClass.h"
 
+#include "Ocean/ExploredOcean.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredGameUserSettings.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
 
@@ -72,12 +75,27 @@ void UExploredAmbienceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	CurrentVolumes.Init(0.0f, NumLayers);
 	TargetVolumes.Init(0.0f, NumLayers);
+
+	// H7: las capas pasan por la SoundClass de Ambiente (si existe) para que la
+	// mezcla de ajustes les aplique Maestro × Ambiente; si aún no existe, el
+	// volumen de Ambiente lo aplica este subsistema (ver AmbienceLayerGain).
+	UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get();
+	USoundClass* AmbientClass = Settings ? Settings->GetSoundClass(EExploredAudioChannel::Ambient) : nullptr;
+	if (Settings)
+	{
+		SetAmbienceVolume(Settings->GetAmbienceLayerGain());
+	}
+
 	for (int32 I = 0; I < NumLayers; ++I)
 	{
 		USoundBase* Sound = LoadObject<USoundBase>(nullptr, LayerAssets[I], nullptr, LOAD_Quiet | LOAD_NoWarn);
 		UAudioComponent* Component = Sound ? UGameplayStatics::CreateSound2D(&InWorld, Sound, 1.0f, 1.0f, 0.0f, nullptr, true, false) : nullptr;
 		if (Component)
 		{
+			if (AmbientClass)
+			{
+				Component->SoundClassOverride = AmbientClass;
+			}
 			Component->SetVolumeMultiplier(0.0f);
 			// Arranque en un punto aleatorio del bucle para que las capas no suenen sincronizadas.
 			Component->Play(FMath::FRandRange(0.0f, 20.0f));
@@ -111,7 +129,17 @@ FAmbienceEnvironment UExploredAmbienceSubsystem::Evaluate(const FVector& Listene
 
 	const FVector P = ListenerCm / 100.0;
 	const FTerrainColumn Here = Density->SampleColumn(P.X, P.Y);
-	Env.Underwater = P.Z < -0.3f ? 1.0f : 0.0f;
+	// Sumergido respecto a la superficie real del oleaje, con el mismo margen que el cielo
+	// (ExploredSkyController::ApplyUnderwater): con el nivel del mar fijo, la cámara del
+	// nadador cruzaba -30 cm en cada seno de ola y el ambiente se apagaba a cada ola.
+	if (const AExploredOcean* OceanActor = Ocean.Get())
+	{
+		Env.Underwater = ListenerCm.Z < OceanActor->GetWaterHeightAt(ListenerCm) - 15.0f ? 1.0f : 0.0f;
+	}
+	else
+	{
+		Env.Underwater = P.Z < -0.3f ? 1.0f : 0.0f;
+	}
 	Env.Altitude = FMath::Clamp((P.Z - FMath::Max(Here.Height, 0.0f) * 0.2f) / 250.0f, 0.0f, 1.0f);
 
 	// Distancia a la costa: primera muestra de agua en 8 direcciones.
@@ -157,11 +185,26 @@ void UExploredAmbienceSubsystem::Tick(float DeltaTime)
 	if (SampleTimer <= 0.0f)
 	{
 		SampleTimer = SampleInterval;
+		if (!Ocean.IsValid())
+		{
+			Ocean = Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(GetWorld(), AExploredOcean::StaticClass()));
+		}
 		const APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		if (PC && PC->PlayerCameraManager)
 		{
+			const FVector Listener = PC->PlayerCameraManager->GetCameraLocation();
+			ListenerEnvironment = Evaluate(Listener);
+			ListenerIsland = EIslandArchetype::Count;
+			if (Density)
+			{
+				const FTerrainColumn Column = Density->SampleColumn(static_cast<float>(Listener.X / 100.0), static_cast<float>(Listener.Y / 100.0));
+				if (Density->GetLayout().Islands.IsValidIndex(Column.IslandIndex))
+				{
+					ListenerIsland = Density->GetLayout().Islands[Column.IslandIndex].Archetype;
+				}
+			}
 			float Mix[NumLayers];
-			FAmbienceMixer::Mix(Evaluate(PC->PlayerCameraManager->GetCameraLocation()), Mix);
+			FAmbienceMixer::Mix(ListenerEnvironment, Mix);
 			for (int32 I = 0; I < NumLayers; ++I)
 			{
 				TargetVolumes[I] = Mix[I];

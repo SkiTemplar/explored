@@ -1,5 +1,6 @@
 #include "Ocean/OceanCurrents.h"
 
+#include "Sky/MoonModel.h"
 #include "WorldGen/ArchipelagoLayout.h"
 
 namespace
@@ -24,6 +25,11 @@ float FOceanTide::SpringNeapFactor(float MoonPhase01)
 {
 	// Periodo de medio ciclo lunar: pico en 0 (nueva) y 0.5 (llena), valle en 0.25 y 0.75 (cuartos).
 	return 0.7f + 0.3f * FMath::Cos(4.0f * UE_PI * MoonPhase01);
+}
+
+float FOceanTide::SpringNeapFactorAt(float TotalDays)
+{
+	return SpringNeapFactor(FMoonModel::Phase(TotalDays));
 }
 
 TArray<FOceanStrait> FOceanCurrents::BuildStraits(const FArchipelagoLayout& Layout)

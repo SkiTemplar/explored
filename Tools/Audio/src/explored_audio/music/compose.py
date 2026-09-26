@@ -431,6 +431,39 @@ def _menu() -> tuple:
     return tracks, [], 16, bpm, beats_per_bar, 0.4, 0.75
 
 
+# ---------------------------------------------------------------------------
+# Flauta de bambu diegetica (GDD §8.12): el jugador toca 5 notas de la
+# pentatonica mayor una octava sobre ROOT (el mismo registro que las frases
+# de flauta de la banda sonora, `add_flute_phrase` con octave_shift=1). Se
+# exporta UNA nota en la tonica y el juego la transpone a cada grado con el
+# multiplicador de tono 2^(semitonos/12): cinco muestras casi identicas no
+# aportarian nada y la transposicion maxima (9 semitonos) no degrada el timbre
+# de una flauta sintetica.
+# ---------------------------------------------------------------------------
+FLUTE_SAMPLE_NAME = "sfx_flute_note"
+FLUTE_SCALE = "major_pentatonic"
+FLUTE_SAMPLE_FREQ = semitone_freq(ROOT, 12)  # D4
+FLUTE_NOTE_BEATS = 3.0
+FLUTE_NOTE_BPM = 120.0  # 3 tiempos a 120 bpm: 1,5 s de nota sostenida
+
+
+def flute_note_sample(name: str = FLUTE_SAMPLE_NAME) -> np.ndarray:
+    """Una nota de flauta mono y sostenida en FLUTE_SAMPLE_FREQ, con el mismo
+    contorno (ataque, vibrato, soplido) que las frases de la banda sonora."""
+    from .sequencer import render_flute_phrase
+
+    rng = rng_for(name)
+    # Velocidad 0.45: deja la nota en torno a -15 LUFS, dentro del rango de
+    # los efectos cortos (test_loudness) y a la altura de la musica.
+    notes = [(0.0, FLUTE_NOTE_BEATS, FLUTE_SAMPLE_FREQ, 0.45)]
+    audio, _start = render_flute_phrase(notes, FLUTE_NOTE_BPM, SR, rng)
+    # Cola corta: la nota termina en silencio aunque el juego la corte antes.
+    fade_n = min(int(0.12 * SR), audio.shape[-1] // 4)
+    audio = audio.copy()
+    audio[-fade_n:] *= np.linspace(1.0, 0.0, fade_n)
+    return audio
+
+
 def _dispatch(name: str) -> tuple:
     if name == "mus_theme":
         return _theme()

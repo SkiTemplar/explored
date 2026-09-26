@@ -97,3 +97,8 @@ def test_musica_esperada(catalog):
         "mus_finale_rescue", "mus_finale_voyage", "mus_finale_stay",
         "mus_menu", "mus_credits",
     }
+
+
+def test_flauta_diegetica(catalog):
+    flute = [spec for spec in catalog if spec.name == "sfx_flute_note"]
+    assert len(flute) == 1 and flute[0].category == "Efectos" and not flute[0].is_loop

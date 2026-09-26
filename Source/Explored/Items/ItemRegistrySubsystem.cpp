@@ -292,6 +292,8 @@ bool UItemRegistrySubsystem::ReloadFromDisk()
 	}
 	else
 	{
+		// L10: sin este aviso, faltar el fichero dejaba la fabricación vacía en silencio.
+		UE_LOG(LogTemp, Error, TEXT("[Explored] No se encontró %s"), *GetDataFilePath(TEXT("templates.json")));
 		bOk = false;
 	}
 
@@ -311,6 +313,7 @@ bool UItemRegistrySubsystem::ReloadFromDisk()
 	}
 	else
 	{
+		UE_LOG(LogTemp, Error, TEXT("[Explored] No se encontró %s"), *GetDataFilePath(TEXT("verbs.json")));
 		bOk = false;
 	}
 

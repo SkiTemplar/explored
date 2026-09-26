@@ -28,11 +28,34 @@ void UExploredWeatherSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Model = MakeUnique<FWeatherModel>(WeatherSeed);
 }
 
+uint32 UExploredWeatherSubsystem::GetWorldWeatherSeed()
+{
+	return WeatherSeed;
+}
+
 void UExploredWeatherSubsystem::ForceState(EWeatherState InState, float DurationHours)
 {
 	const UTimeOfDaySubsystem* Time = GetWorld()->GetSubsystem<UTimeOfDaySubsystem>();
 	ForcedState = InState;
 	ForcedUntilDays = (Time ? Time->GetTotalDays() : 0.0f) + DurationHours / 24.0f;
+}
+
+void UExploredWeatherSubsystem::RestoreForcedState(EWeatherState InState, float UntilDays)
+{
+	ForcedState = InState;
+	ForcedUntilDays = UntilDays;
+}
+
+int32 UExploredWeatherSubsystem::GetCycloneCategory() const
+{
+	if (State != EWeatherState::Cyclone)
+	{
+		return 0;
+	}
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	const int32 Planned = (Model && Time) ? Model->CycloneCategoryAt(Time->GetTotalDays()) : 0;
+	return Planned > 0 ? Planned : FMath::Clamp(ForcedCycloneCategory, 1, 3);
 }
 
 void UExploredWeatherSubsystem::Tick(float DeltaTime)

@@ -30,8 +30,27 @@ public:
 	EWeatherState GetState() const { return State; }
 	ESeason GetSeason() const { return Season; }
 
+	/** Semilla del clima del mundo (la usa FWorldEventsModel para ver el mismo cielo). */
+	static uint32 GetWorldWeatherSeed();
+	/** Planificador determinista (lo usa el huerto para la lluvia de días que no se han jugado). */
+	const FWeatherModel* GetModel() const { return Model.Get(); }
+
 	/** Fuerza un estado durante un tiempo (depuración y eventos de guion). Duración en horas de juego. */
 	void ForceState(EWeatherState InState, float DurationHours);
+
+	/** Estado forzado vigente (Count si no hay) y hasta cuándo (días totales): para el guardado. */
+	EWeatherState GetForcedState(float& OutUntilDays) const { OutUntilDays = ForcedUntilDays; return ForcedState; }
+	/** Restaura un estado forzado guardado (Count lo quita). */
+	void RestoreForcedState(EWeatherState InState, float UntilDays);
+
+	/**
+	 * Categoría del ciclón activo (1–3, FWeatherModel::CycloneCategoryAt); 0 si no
+	 * hay ciclón. Un ciclón forzado sin planificar da ForcedCycloneCategory.
+	 */
+	int32 GetCycloneCategory() const;
+
+	/** Categoría de un ciclón forzado a mano (depuración). */
+	int32 ForcedCycloneCategory = 2;
 
 	FOnWeatherStateChanged OnWeatherStateChanged;
 	FOnSeasonChanged OnSeasonChanged;

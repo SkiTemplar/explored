@@ -96,6 +96,12 @@ void AExploredOcean::BuildMesh()
 		}
 	}
 
+	// L15: la malla es plana y sus límites tenían altura 0 (SetBoundsScale no amplía un eje nulo):
+	// dos vértices sin triángulos a ±3 m dan altura a los límites para que las olas no se recorten
+	// al mirar hacia arriba desde el agua.
+	Vertices.Add(FVector(0.0f, 0.0f, 300.0f));
+	Vertices.Add(FVector(0.0f, 0.0f, -300.0f));
+
 	Normals.Init(FVector::UpVector, Vertices.Num());
 	Tangents.Init(FProcMeshTangent(1.0f, 0.0f, 0.0f), Vertices.Num());
 	UVs.SetNumZeroed(Vertices.Num());

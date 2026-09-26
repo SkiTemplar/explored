@@ -5,92 +5,101 @@
     "harvest.everyDays": "días de juego entre cosechas en la etapa final",
     "harvest.min / harvest.max": "unidades del objeto cosechado por cosecha",
     "waterPerDay": "riegos al día necesarios (0 = basta la lluvia de la estación)",
-    "seasons": "estaciones en que se puede plantar: seca, primeras_lluvias, monzon, ciclones"
+    "seasons": "estaciones en que se puede plantar: seca, primeras_lluvias, monzon, ciclones",
+    "birdsEat": "las aves picotean la fruta si no hay espantapájaros cerca (opcional, false por defecto)"
   },
   "plants": [
     {
       "id": "limonero",
       "nameEs": "Limonero",
+      "nameEn": "Lemon tree",
       "plantedFrom": "limon",
       "requiresPiece": "arriate_limonero",
       "seasons": ["seca", "primeras_lluvias", "monzon", "ciclones"],
       "waterPerDay": 1,
       "neverRemoved": true,
       "stages": [
-        { "id": "esqueje", "nameEs": "Esqueje", "days": 2, "mesh": null },
-        { "id": "brote", "nameEs": "Brote", "days": 4, "mesh": null },
-        { "id": "arbol_joven", "nameEs": "Árbol joven", "days": 6, "mesh": null },
-        { "id": "arbol_adulto", "nameEs": "Árbol adulto con fruta", "days": 0, "mesh": null }
+        { "id": "esqueje", "nameEs": "Esqueje", "nameEn": "Cutting", "days": 2, "mesh": null },
+        { "id": "brote", "nameEs": "Brote", "nameEn": "Sprout", "days": 4, "mesh": null },
+        { "id": "arbol_joven", "nameEs": "Árbol joven", "nameEn": "Young tree", "days": 6, "mesh": null },
+        { "id": "arbol_adulto", "nameEs": "Árbol adulto con fruta", "nameEn": "Grown tree with fruit", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "limon", "min": 2, "max": 4, "everyDays": 3 }
     },
     {
       "id": "platanera",
       "nameEs": "Platanera",
+      "nameEn": "Banana plant",
       "plantedFrom": "hijuelo_platano",
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
       "waterPerDay": 1,
+      "birdsEat": true,
       "stages": [
-        { "id": "hijuelo", "nameEs": "Hijuelo", "days": 3, "mesh": null },
-        { "id": "planta_joven", "nameEs": "Planta joven", "days": 5, "mesh": null },
-        { "id": "planta_con_racimo", "nameEs": "Planta con racimo", "days": 0, "mesh": null }
+        { "id": "hijuelo", "nameEs": "Hijuelo", "nameEn": "Sucker", "days": 3, "mesh": null },
+        { "id": "planta_joven", "nameEs": "Planta joven", "nameEn": "Young plant", "days": 5, "mesh": null },
+        { "id": "planta_con_racimo", "nameEs": "Planta con racimo", "nameEn": "Plant with a bunch", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "platano", "min": 4, "max": 8, "everyDays": 6 }
     },
     {
       "id": "taro",
       "nameEs": "Taro",
+      "nameEn": "Taro",
       "plantedFrom": "taro",
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
       "waterPerDay": 2,
       "stages": [
-        { "id": "brote", "nameEs": "Brote", "days": 3, "mesh": null },
-        { "id": "hojas_grandes", "nameEs": "Hojas grandes", "days": 5, "mesh": null },
-        { "id": "listo", "nameEs": "Listo para arrancar", "days": 0, "mesh": null }
+        { "id": "brote", "nameEs": "Brote", "nameEn": "Sprout", "days": 3, "mesh": null },
+        { "id": "hojas_grandes", "nameEs": "Hojas grandes", "nameEn": "Large leaves", "days": 5, "mesh": null },
+        { "id": "listo", "nameEs": "Listo para arrancar", "nameEn": "Ready to pull up", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "taro", "min": 2, "max": 3, "everyDays": 0 }
     },
     {
       "id": "batata",
       "nameEs": "Batata",
+      "nameEn": "Sweet potato",
       "plantedFrom": "batata",
       "requiresPiece": "bancal",
       "seasons": ["seca", "primeras_lluvias", "monzon"],
       "waterPerDay": 1,
       "stages": [
-        { "id": "brote", "nameEs": "Brote", "days": 2, "mesh": null },
-        { "id": "enredadera", "nameEs": "Enredadera", "days": 4, "mesh": null },
-        { "id": "listo", "nameEs": "Listo para arrancar", "days": 0, "mesh": null }
+        { "id": "brote", "nameEs": "Brote", "nameEn": "Sprout", "days": 2, "mesh": null },
+        { "id": "enredadera", "nameEs": "Enredadera", "nameEn": "Vine", "days": 4, "mesh": null },
+        { "id": "listo", "nameEs": "Listo para arrancar", "nameEn": "Ready to pull up", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "batata", "min": 2, "max": 4, "everyDays": 0 }
     },
     {
       "id": "pina",
       "nameEs": "Piña",
+      "nameEn": "Pineapple",
       "plantedFrom": "pina",
       "requiresPiece": "bancal",
       "seasons": ["seca", "primeras_lluvias"],
       "waterPerDay": 0,
       "stages": [
-        { "id": "corona", "nameEs": "Corona plantada", "days": 4, "mesh": null },
-        { "id": "roseta", "nameEs": "Roseta", "days": 6, "mesh": null },
-        { "id": "con_fruto", "nameEs": "Con fruto", "days": 0, "mesh": null }
+        { "id": "corona", "nameEs": "Corona plantada", "nameEn": "Planted crown", "days": 4, "mesh": null },
+        { "id": "roseta", "nameEs": "Roseta", "nameEn": "Rosette", "days": 6, "mesh": null },
+        { "id": "con_fruto", "nameEs": "Con fruto", "nameEn": "Fruiting", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "pina", "min": 1, "max": 1, "everyDays": 0 }
     },
     {
       "id": "maracuya",
       "nameEs": "Maracuyá",
+      "nameEn": "Passion fruit",
       "plantedFrom": "maracuya",
       "requiresPiece": "espaldera",
       "seasons": ["primeras_lluvias", "monzon"],
       "waterPerDay": 1,
+      "birdsEat": true,
       "stages": [
-        { "id": "brote", "nameEs": "Brote", "days": 3, "mesh": null },
-        { "id": "trepadora", "nameEs": "Trepadora en la espaldera", "days": 5, "mesh": null },
-        { "id": "en_flor_y_fruto", "nameEs": "En flor y con fruto", "days": 0, "mesh": null }
+        { "id": "brote", "nameEs": "Brote", "nameEn": "Sprout", "days": 3, "mesh": null },
+        { "id": "trepadora", "nameEs": "Trepadora en la espaldera", "nameEn": "Climbing the trellis", "days": 5, "mesh": null },
+        { "id": "en_flor_y_fruto", "nameEs": "En flor y con fruto", "nameEn": "Flowering and fruiting", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "maracuya", "min": 3, "max": 6, "everyDays": 3 }
     }

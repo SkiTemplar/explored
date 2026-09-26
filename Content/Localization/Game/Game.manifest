@@ -1,0 +1,3126 @@
+{
+	"FormatVersion": 1,
+	"Namespace": "",
+	"Children": [],
+	"Subnamespaces": [
+		{
+			"Namespace": "Explored",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Adrizar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RightBoat",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 479"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ahí no hay nada."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_InvalidSlotIndex",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 110"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ahí no se lleva agua."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NotALiquidContainer",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay nada que coger."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NothingToPickUp",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 218"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Arrancar la planta seca"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_ClearDeadPlant",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 253"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Avivar las brasas"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Revive",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 267"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cargar en las angarillas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_LoadSledge",
+							"Path": "Source/Explored/Carry/ExploredSledge.cpp - line 41"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Coger {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_PickUp",
+							"Path": "Source/Explored/Items/ExploredItemActor.cpp - line 74"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cosechar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Harvest",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 250"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinOffering",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 133"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Echar al fuego"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_AddFuel",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 272"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El cinturón no tiene enganches libres."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BeltFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 139"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El cinturón solo lleva herramientas o recipientes."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BeltNotTool",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 125"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El registro de objetos no está disponible."
+					},
+					"Keys": [
+						{
+							"Key": "Crafting_NoRegistry",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 33"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Ignite",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 268"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Enganchar las angarillas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_AttachSledge",
+							"Path": "Source/Explored/Carry/ExploredSledge.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Es demasiado grande para guardarlo ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TooBig",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 121"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Es un solo objeto: no se combina consigo mismo."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SameItem",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esa mano ya está ocupada."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandOccupied",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 112"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ese objeto no se puede coger."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_InvalidItem",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 109"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso no se guarda ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_WrongKind",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso no se lleva puesto."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NotEquippable",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 158"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso ocupa las dos manos: no se guarda."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TwoHandedNoStore",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 310"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Estos objetos no se pueden combinar así."
+					},
+					"Keys": [
+						{
+							"Key": "Crafting_NoMatch",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 238"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCompass",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 136"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinPetroglyph",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 145"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCanoe",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 139"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar las pinturas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCave",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 142"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Explored"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Config/DefaultGame.ini - line 4"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardar en {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_StoreIn",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 153"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Las angarillas son para madera y piedra."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SledgeOnlyMaterial",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 129"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Los bolsillos están llenos."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_PocketsFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 135"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marisquear"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_TidePool",
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 132"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinStatue",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 130"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesitas las dos manos libres para esto."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NeedBothHands",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesitas un objeto en cada mano."
+					},
+					"Keys": [
+						{
+							"Key": "Crafting_NeedTwo",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 209"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No entra en la mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BackpackTooBig",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 151"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No entra."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoRoom",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas angarillas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoSledge",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 156"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas nada en esa mano."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandEmpty",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 273"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No puedes con más peso."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_OverCarryLimit",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No queda sitio."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_ContainerFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 141"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No se puede."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_Generic",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 162"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tienes dónde guardarlo seco."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoPouch",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tienes mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoBackpack",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 154"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado para la mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BackpackTooHeavy",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 145"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TooHeavy",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 147"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Plantar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Plant",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 256"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Regar"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Water",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 260"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Retirar la comida"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Collect",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 262"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Revisar la trampa"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_CheckTrap",
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 135"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sacar de {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_TakeFrom",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 156"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Solo los objetos pequeños caben en los bolsillos."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_PocketTooSmall",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 119"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Subir a {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Board",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 483"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tienes las dos manos ocupadas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandsFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 114"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vacíalo antes."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_ContainerNotEmpty",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya arrastras unas angarillas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SledgeAttached",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya está ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_AlreadyThere",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 111"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "arcón"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Chest",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "cesta"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Basket",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 30"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "el «Limón»"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Limon",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 81"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "estante"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Shelf",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 27"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la balsa"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Raft",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la canoa"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Canoe",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la canoa con balancín"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Outrigger",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredBuilding",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Demasiado lejos de un apoyo"
+					},
+					"Keys": [
+						{
+							"Key": "Unstable",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 279"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esa pieza ya no existe"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownInstance",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 285"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Falta otra pieza en la base"
+					},
+					"Keys": [
+						{
+							"Key": "MissingRequiredPiece",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 281"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Falta una herramienta"
+					},
+					"Keys": [
+						{
+							"Key": "MissingTools",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 282"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Faltan materiales"
+					},
+					"Keys": [
+						{
+							"Key": "MissingMaterials",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 283"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Fuera de la base"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownBase",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 276"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Giro no válido"
+					},
+					"Keys": [
+						{
+							"Key": "InvalidRotation",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 275"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No hay nada que reparar"
+					},
+					"Keys": [
+						{
+							"Key": "NothingToRepair",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 284"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tiene dónde apoyarse"
+					},
+					"Keys": [
+						{
+							"Key": "NoSupport",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 278"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pieza desconocida"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownPiece",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 274"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tiene que ir sobre el terreno"
+					},
+					"Keys": [
+						{
+							"Key": "NeedsGround",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 280"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya hay algo ahí"
+					},
+					"Keys": [
+						{
+							"Key": "Occupied",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 277"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredUI",
+			"Children": [
+				{
+					"Source": {
+						"Text": "(sin asignar)"
+					},
+					"Keys": [
+						{
+							"Key": "NoKey",
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 37"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Accesibilidad"
+					},
+					"Keys": [
+						{
+							"Key": "TabAccessibility",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 206"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agacharse / bucear"
+					},
+					"Keys": [
+						{
+							"Key": "ActionDive",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agacharse manteniendo pulsado"
+					},
+					"Keys": [
+						{
+							"Key": "HoldCrouch",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 379"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agua"
+					},
+					"Keys": [
+						{
+							"Key": "WatchWater",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 48"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ajustes"
+					},
+					"Keys": [
+						{
+							"Key": "Settings",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 74"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Alta"
+					},
+					"Keys": [
+						{
+							"Key": "QualityHigh",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 128"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ambiente"
+					},
+					"Keys": [
+						{
+							"Key": "VolAmbient",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 341"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Angarillas ({0} kg)"
+					},
+					"Keys": [
+						{
+							"Key": "InvSledge",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 50"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aplicar"
+					},
+					"Keys": [
+						{
+							"Key": "Apply",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 543"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno."
+					},
+					"Keys": [
+						{
+							"Key": "MapControlsHint",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 322"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Audio"
+					},
+					"Keys": [
+						{
+							"Key": "TabAudio",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 203"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Autoguardado"
+					},
+					"Keys": [
+						{
+							"Key": "SlotAuto",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aves al atardecer"
+					},
+					"Keys": [
+						{
+							"Key": "MapTechniqueBirds",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 58"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Avisos visuales de sonido"
+					},
+					"Keys": [
+						{
+							"Key": "SoundCues",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 534"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aún no has anotado recetas al margen."
+					},
+					"Keys": [
+						{
+							"Key": "MapNoRecipes",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 567"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una."
+					},
+					"Keys": [
+						{
+							"Key": "MapNoWayfinding",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 493"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Baja"
+					},
+					"Keys": [
+						{
+							"Key": "QualityLow",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 126"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Balanceo de cámara"
+					},
+					"Keys": [
+						{
+							"Key": "CameraBob",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 375"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Bolsa estanca ({0}/{1})"
+					},
+					"Keys": [
+						{
+							"Key": "InvPouch",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 45"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Bolsillos ({0}/{1})"
+					},
+					"Keys": [
+						{
+							"Key": "InvPockets",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 41"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Brillo"
+					},
+					"Keys": [
+						{
+							"Key": "Brightness",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 303"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calidad"
+					},
+					"Keys": [
+						{
+							"Key": "SectionQuality",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 306"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calidad general"
+					},
+					"Keys": [
+						{
+							"Key": "OverallQuality",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 309"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calor"
+					},
+					"Keys": [
+						{
+							"Key": "WatchWarmth",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 60"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Camino de estrellas"
+					},
+					"Keys": [
+						{
+							"Key": "MapTechniqueStarPath",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 56"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Campo de visión"
+					},
+					"Keys": [
+						{
+							"Key": "FOV",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 370"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cancelar"
+					},
+					"Keys": [
+						{
+							"Key": "SlotsCancel",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 190"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Carga: {0} kg de {1} kg cómodos"
+					},
+					"Keys": [
+						{
+							"Key": "InvWeight",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 219"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cargar"
+					},
+					"Keys": [
+						{
+							"Key": "LoadGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 29"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cargar partida"
+					},
+					"Keys": [
+						{
+							"Key": "SlotsLoadTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 67"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Catálogo: {0} de {1} registrados · {2} hallados"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumSummary",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 94"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cinemática"
+					},
+					"Keys": [
+						{
+							"Key": "QualityCinematic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 130"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cinturón ({0}/{1})"
+					},
+					"Keys": [
+						{
+							"Key": "InvBelt",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 43"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} de {1} tesoros expuestos"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumCollector",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 104"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Coleccionista: {0} tesoros expuestos (conseguido)"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumCollectorDone",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 103"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Colección"
+					},
+					"Keys": [
+						{
+							"Key": "MapCollection",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 251"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Color del agua"
+					},
+					"Keys": [
+						{
+							"Key": "MapTechniqueWater",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 60"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Combinar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionCombine",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 118"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Comida"
+					},
+					"Keys": [
+						{
+							"Key": "WatchFood",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 52"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Con copia de seguridad"
+					},
+					"Keys": [
+						{
+							"Key": "SlotHasBackup",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 153"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Conseguido"
+					},
+					"Keys": [
+						{
+							"Key": "AchievementDone",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 67"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Conseguidos: {0} de {1}"
+					},
+					"Keys": [
+						{
+							"Key": "AchievementsSummary",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 37"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Continuar"
+					},
+					"Keys": [
+						{
+							"Key": "Continue",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 24"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Controles"
+					},
+					"Keys": [
+						{
+							"Key": "TabControls",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 204"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Correr"
+					},
+					"Keys": [
+						{
+							"Key": "ActionSprint",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 112"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Créditos"
+					},
+					"Keys": [
+						{
+							"Key": "Credits",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 84"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cueva ritual"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumFromCave",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Dañada: no se puede leer"
+					},
+					"Keys": [
+						{
+							"Key": "SlotDamaged",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 125"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Desactivar destellos"
+					},
+					"Keys": [
+						{
+							"Key": "NoFlashing",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 530"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsClaude",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 60"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Deuteranopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDDeuteranopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 512"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Duración del día"
+					},
+					"Keys": [
+						{
+							"Key": "DayLength",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 475"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "EXPLORED"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 58"
+						},
+						{
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 50"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Efectos"
+					},
+					"Keys": [
+						{
+							"Key": "Effects",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 318"
+						},
+						{
+							"Key": "VolEffects",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 340"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El catálogo no está disponible en este mundo."
+					},
+					"Keys": [
+						{
+							"Key": "MuseumUnavailable",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 88"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El guardado no está disponible."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsUnavailable",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 99"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El papel está empapado: la tinta se corre. Guárdalo en seco."
+					},
+					"Keys": [
+						{
+							"Key": "MapInkRunning",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 778"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El papel está húmedo."
+					},
+					"Keys": [
+						{
+							"Key": "MapDamp",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 782"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Elige cómo quieres sobrevivir"
+					},
+					"Keys": [
+						{
+							"Key": "ChooseMode",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 41"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Elige la partida que quieres cargar."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsLoadHint",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 31"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Elige un sello o escribe una nota."
+					},
+					"Keys": [
+						{
+							"Key": "MapNeedStampOrText",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 655"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsSaveHint",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 30"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "En las dos manos: {0}"
+					},
+					"Keys": [
+						{
+							"Key": "InvBothHands",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 173"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "English"
+					},
+					"Keys": [
+						{
+							"Key": "LangEn",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 469"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Español"
+					},
+					"Keys": [
+						{
+							"Key": "LangEs",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 468"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esperando la picada… [F] recoger"
+					},
+					"Keys": [
+						{
+							"Key": "FishingWaiting",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 124"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Explorador"
+					},
+					"Keys": [
+						{
+							"Key": "ModeExplorer",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 48"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Expuesto en el museo"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumExhibited",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 128"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Fotografiado, sin recoger"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumPhotographed",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 130"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Grande"
+					},
+					"Keys": [
+						{
+							"Key": "TextLarge",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 465"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Gráficos"
+					},
+					"Keys": [
+						{
+							"Key": "TabGraphics",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 202"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardada con una versión más nueva del juego"
+					},
+					"Keys": [
+						{
+							"Key": "SlotFuture",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 127"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardando..."
+					},
+					"Keys": [
+						{
+							"Key": "Saving",
+							"Path": "Source/Explored/UI/Widgets/SExploredSavingIndicator.cpp - line 25"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardar el mapa"
+					},
+					"Keys": [
+						{
+							"Key": "MapPutAway",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 262"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardar partida"
+					},
+					"Keys": [
+						{
+							"Key": "SaveGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 71"
+						},
+						{
+							"Key": "SlotsSaveTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 67"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Hallado"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumFound",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 129"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Idioma"
+					},
+					"Keys": [
+						{
+							"Key": "Language",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 494"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Iluminación global"
+					},
+					"Keys": [
+						{
+							"Key": "GI",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 314"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Interactuar / coger"
+					},
+					"Keys": [
+						{
+							"Key": "ActionInteract",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 114"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Interfaz"
+					},
+					"Keys": [
+						{
+							"Key": "VolUI",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 342"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Invertir eje Y"
+					},
+					"Keys": [
+						{
+							"Key": "InvertY",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 366"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Juego"
+					},
+					"Keys": [
+						{
+							"Key": "TabGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 205"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "La experiencia prevista."
+					},
+					"Keys": [
+						{
+							"Key": "ModeSurvivorDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 24"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia."
+					},
+					"Keys": [
+						{
+							"Key": "ModeExplorerDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 49"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Lectura del oleaje"
+					},
+					"Keys": [
+						{
+							"Key": "MapTechniqueSwell",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 57"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Lo que llevas"
+					},
+					"Keys": [
+						{
+							"Key": "InvTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 164"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Logro conseguido"
+					},
+					"Keys": [
+						{
+							"Key": "AchievementUnlocked",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievementToast.cpp - line 32"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Logro oculto: se revela al conseguirlo."
+					},
+					"Keys": [
+						{
+							"Key": "AchievementHidden",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 44"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Logros"
+					},
+					"Keys": [
+						{
+							"Key": "Achievements",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 79"
+						},
+						{
+							"Key": "AchievementsTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 105"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Los botones del mando no se pueden remapear."
+					},
+					"Keys": [
+						{
+							"Key": "RemapGamepad",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 431"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Los logros no están disponibles."
+					},
+					"Keys": [
+						{
+							"Key": "AchievementsUnavailable",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Límite de FPS"
+					},
+					"Keys": [
+						{
+							"Key": "FpsLimit",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 296"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Maestro"
+					},
+					"Keys": [
+						{
+							"Key": "VolMaster",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 338"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mano derecha: {0}"
+					},
+					"Keys": [
+						{
+							"Key": "InvRightHand",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 185"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mano izquierda: {0}"
+					},
+					"Keys": [
+						{
+							"Key": "InvLeftHand",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 180"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mapa"
+					},
+					"Keys": [
+						{
+							"Key": "MapTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 271"
+						},
+						{
+							"Key": "PauseMap",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 51"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marae"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumFromMarae",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 27"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada donde crees estar."
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkPlacedHere",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 692"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marca dibujada."
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkPlaced",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 661"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marcar donde estoy"
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkHere",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 395"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marcas"
+					},
+					"Keys": [
+						{
+							"Key": "MapTabMarks",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 288"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Media"
+					},
+					"Keys": [
+						{
+							"Key": "QualityMedium",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 127"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mediano"
+					},
+					"Keys": [
+						{
+							"Key": "TextMedium",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 464"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mochila"
+					},
+					"Keys": [
+						{
+							"Key": "ActionBackpack",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 119"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mochila ({0} de {1} l)"
+					},
+					"Keys": [
+						{
+							"Key": "InvBackpack",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 47"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Modo daltónico"
+					},
+					"Keys": [
+						{
+							"Key": "Colorblind",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 519"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Modo de ventana"
+					},
+					"Keys": [
+						{
+							"Key": "WindowMode",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 285"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mostrar las anotaciones de rumbo"
+					},
+					"Keys": [
+						{
+							"Key": "MapShowWayfinding",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 519"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Motor: Unreal Engine 5.6"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsEngine",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 61"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Museo"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 192"
+						},
+						{
+							"Key": "PauseMuseum",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 56"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Música"
+					},
+					"Keys": [
+						{
+							"Key": "VolMusic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 339"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesidades más duras y sin reaparición en fogatas."
+					},
+					"Keys": [
+						{
+							"Key": "ModeCastawayDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ninguno"
+					},
+					"Keys": [
+						{
+							"Key": "CVDNone",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 510"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No caben más marcas en la hoja."
+					},
+					"Keys": [
+						{
+							"Key": "MapMarksFull",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 670"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No puedes cargar más."
+					},
+					"Keys": [
+						{
+							"Key": "InvOverloaded",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 228"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No se pudo guardar la partida."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsSaveFailed",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 257"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Nota"
+					},
+					"Keys": [
+						{
+							"Key": "MapStampNote",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 215"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Nubes fijas"
+					},
+					"Keys": [
+						{
+							"Key": "MapTechniqueClouds",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Nueva partida"
+					},
+					"Keys": [
+						{
+							"Key": "NewGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 26"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Náufrago"
+					},
+					"Keys": [
+						{
+							"Key": "ModeCastaway",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 58"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pantalla"
+					},
+					"Keys": [
+						{
+							"Key": "SectionDisplay",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 275"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pantalla completa"
+					},
+					"Keys": [
+						{
+							"Key": "WindowFullscreen",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 258"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Para Almudena, mi Limón"
+					},
+					"Keys": [
+						{
+							"Key": "Dedication",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 70"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Partida guardada en la {0}."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsSaved",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 256"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pausa"
+					},
+					"Keys": [
+						{
+							"Key": "Paused",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 44"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pecio"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumFromWreck",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 29"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pequeño"
+					},
+					"Keys": [
+						{
+							"Key": "TextSmall",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 463"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Postproceso"
+					},
+					"Keys": [
+						{
+							"Key": "PostProcess",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 316"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Procedencia: {0} · {1}"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumProvenance",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 142"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Protanopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDProtanopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 511"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pulsa en la hoja para poner la marca."
+					},
+					"Keys": [
+						{
+							"Key": "MapHintPlace",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 91"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pulsa una tecla..."
+					},
+					"Keys": [
+						{
+							"Key": "PressAnyKey",
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 34"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Radio de {0} m"
+					},
+					"Keys": [
+						{
+							"Key": "MapAnnotationRadius",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 465"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ranura {0}"
+					},
+					"Keys": [
+						{
+							"Key": "SlotManual",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 114"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reanudar"
+					},
+					"Keys": [
+						{
+							"Key": "Resume",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 26"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recetas"
+					},
+					"Keys": [
+						{
+							"Key": "MapTabRecipes",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 296"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reducir movimiento"
+					},
+					"Keys": [
+						{
+							"Key": "ReduceMotion",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 526"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reflejos"
+					},
+					"Keys": [
+						{
+							"Key": "Reflections",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 315"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Remapeo de teclas"
+					},
+					"Keys": [
+						{
+							"Key": "SectionRemap",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 384"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Resolución"
+					},
+					"Keys": [
+						{
+							"Key": "Resolution",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 278"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Restaurar valores por defecto"
+					},
+					"Keys": [
+						{
+							"Key": "RestoreDefaults",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 547"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ruina sumergida"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumFromSunken",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 30"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Rumbo {0}°, {1} m"
+					},
+					"Keys": [
+						{
+							"Key": "MapAnnotationBearing",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 467"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Rumbos"
+					},
+					"Keys": [
+						{
+							"Key": "MapTabWayfinding",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 292"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir"
+					},
+					"Keys": [
+						{
+							"Key": "Quit",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 89"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir al menú"
+					},
+					"Keys": [
+						{
+							"Key": "ExitToMenu",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 76"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir del juego"
+					},
+					"Keys": [
+						{
+							"Key": "QuitGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 81"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Saltar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionJump",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 111"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
+					},
+					"Keys": [
+						{
+							"Key": "FishingLineOut",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 137"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sello"
+					},
+					"Keys": [
+						{
+							"Key": "MapStamp",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 408"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del mando"
+					},
+					"Keys": [
+						{
+							"Key": "GamepadSensitivity",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 361"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del ratón"
+					},
+					"Keys": [
+						{
+							"Key": "MouseSensitivity",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 356"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sin copia de seguridad"
+					},
+					"Keys": [
+						{
+							"Key": "SlotNoBackup",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 153"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sin descubrir"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumUnknown",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 131"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sin límite"
+					},
+					"Keys": [
+						{
+							"Key": "Unlimited",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 266"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sobrescribir"
+					},
+					"Keys": [
+						{
+							"Key": "SlotsConfirmOverwrite",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 222"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionDrop",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 117"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sombras"
+					},
+					"Keys": [
+						{
+							"Key": "Shadows",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 313"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Subtítulos"
+					},
+					"Keys": [
+						{
+							"Key": "Subtitles",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 483"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sueño"
+					},
+					"Keys": [
+						{
+							"Key": "WatchRest",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 56"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Superviviente"
+					},
+					"Keys": [
+						{
+							"Key": "ModeSurvivor",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 23"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tamaño del texto"
+					},
+					"Keys": [
+						{
+							"Key": "TextSize",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 487"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Texto corto (opcional)"
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkTextHint",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 420"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Texturas"
+					},
+					"Keys": [
+						{
+							"Key": "Textures",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 317"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Todo el arte, sonido y música generados por código"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsArt",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 64"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tritanopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDTritanopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 513"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Un archipiélago que no aparece en ningún mapa"
+					},
+					"Keys": [
+						{
+							"Key": "Subtitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 57"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Un juego de Rodrigo Fernández"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsAuthor",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Usar mano derecha"
+					},
+					"Keys": [
+						{
+							"Key": "ActionUsePrimary",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 115"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Usar mano izquierda"
+					},
+					"Keys": [
+						{
+							"Key": "ActionUseSecondary",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 116"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "VSync"
+					},
+					"Keys": [
+						{
+							"Key": "VSync",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 292"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vacía"
+					},
+					"Keys": [
+						{
+							"Key": "SlotEmpty",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 123"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vas cargado: te cansas antes y haces más ruido."
+					},
+					"Keys": [
+						{
+							"Key": "InvHeavy",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 227"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vegetación"
+					},
+					"Keys": [
+						{
+							"Key": "Foliage",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 319"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ventana"
+					},
+					"Keys": [
+						{
+							"Key": "WindowWindowed",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 260"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ventana sin bordes"
+					},
+					"Keys": [
+						{
+							"Key": "WindowBorderless",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 259"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vista"
+					},
+					"Keys": [
+						{
+							"Key": "ViewDistance",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 312"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Volver"
+					},
+					"Keys": [
+						{
+							"Key": "Back",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 24"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "[{Key}] {Actions}"
+					},
+					"Keys": [
+						{
+							"Key": "InteractPrompt",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 82"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "bien"
+					},
+					"Keys": [
+						{
+							"Key": "NeedGood",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 118"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "común"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumCommon",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "dibujada a mano"
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkHand",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 70"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "mal"
+					},
+					"Keys": [
+						{
+							"Key": "NeedLow",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 120"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "muy mal"
+					},
+					"Keys": [
+						{
+							"Key": "NeedCritical",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 121"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "nada"
+					},
+					"Keys": [
+						{
+							"Key": "InvNothing",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 201"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "raro"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumRare",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 38"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "regular"
+					},
+					"Keys": [
+						{
+							"Key": "NeedFair",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 119"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "situada con el sextante"
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkSextant",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 69"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "vacía"
+					},
+					"Keys": [
+						{
+							"Key": "InvEmptyHand",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 168"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "vista con el catalejo"
+					},
+					"Keys": [
+						{
+							"Key": "MapMarkSpyglass",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 68"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} (no se puede conseguir en este modo)"
+					},
+					"Keys": [
+						{
+							"Key": "AchievementOtherMode",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievements.cpp - line 48"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} caracteres libres"
+					},
+					"Keys": [
+						{
+							"Key": "MapCharsLeft",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 789"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} está reservada (movimiento o menú)."
+					},
+					"Keys": [
+						{
+							"Key": "RemapReserved",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 435"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} min"
+					},
+					"Keys": [
+						{
+							"Key": "DayLengthMinutes",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 459"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} ya se usa para «{1}»."
+					},
+					"Keys": [
+						{
+							"Key": "RemapInUse",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 439"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
+					},
+					"Keys": [
+						{
+							"Key": "SlotRecovered",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 140"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1}"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumStateAt",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 139"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} · {1} h {2} min jugados"
+					},
+					"Keys": [
+						{
+							"Key": "SlotSavedAt",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 135"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0}: «{1}», {2}"
+					},
+					"Keys": [
+						{
+							"Key": "MapSelectedMark",
+							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 768"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
+					},
+					"Keys": [
+						{
+							"Key": "SlotsOverwrite",
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 210"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Épica"
+					},
+					"Keys": [
+						{
+							"Key": "QualityEpic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 129"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "único"
+					},
+					"Keys": [
+						{
+							"Key": "MuseumUnique",
+							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 39"
+						}
+					]
+				}
+			]
+		}
+	]
+}

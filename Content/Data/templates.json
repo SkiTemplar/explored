@@ -1,9 +1,9 @@
 [
 	{
-		"id": "lasca_por_golpeo", "nameEs": "Lasca por golpeo",
+		"id": "lasca_por_golpeo", "nameEs": "Lasca por golpeo", "nameEn": "Struck flake",
 		"verbs": ["Golpear"],
 		"resultDefinitionId": "lasca_tallada",
-		"nameTemplate": "Lasca de {1}",
+		"nameTemplate": "Lasca de {1}", "nameTemplateEn": "{1} flake",
 		"baseMaxDurability": 10,
 		"slots": [
 			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
@@ -11,10 +11,10 @@
 		]
 	},
 	{
-		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado",
+		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado", "nameEn": "Carved stake",
 		"verbs": ["Tallar"],
 		"resultDefinitionId": "estaca",
-		"nameTemplate": "Estaca de {1}",
+		"nameTemplate": "Estaca de {1}", "nameTemplateEn": "{1} stake",
 		"baseMaxDurability": 15,
 		"slots": [
 			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
@@ -22,10 +22,10 @@
 		]
 	},
 	{
-		"id": "pasta_medicinal_por_machacado", "nameEs": "Pasta medicinal por machacado",
+		"id": "pasta_medicinal_por_machacado", "nameEs": "Pasta medicinal por machacado", "nameEn": "Crushed medicinal paste",
 		"verbs": ["Machacar"],
 		"resultDefinitionId": "pasta_medicinal",
-		"nameTemplate": "Pasta de {1}",
+		"nameTemplate": "Pasta de {1}", "nameTemplateEn": "{1} paste",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "Mazo", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 2 } ] },
@@ -33,10 +33,10 @@
 		]
 	},
 	{
-		"id": "recipiente_de_coco", "nameEs": "Recipiente de coco",
+		"id": "recipiente_de_coco", "nameEs": "Recipiente de coco", "nameEn": "Coconut bowl",
 		"verbs": ["Golpear", "Raspar"],
 		"resultDefinitionId": "recipiente_coco",
-		"nameTemplate": "Recipiente de coco",
+		"nameTemplate": "Recipiente de coco", "nameTemplateEn": "Coconut bowl",
 		"baseMaxDurability": 15,
 		"slots": [
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 } ] },
@@ -44,10 +44,10 @@
 		]
 	},
 	{
-		"id": "cordel", "nameEs": "Cordel",
+		"id": "cordel", "nameEs": "Cordel", "nameEn": "Twine",
 		"verbs": ["Trenzar"],
 		"resultDefinitionId": "cordel",
-		"nameTemplate": "Cordel de fibra",
+		"nameTemplate": "Cordel de fibra", "nameTemplateEn": "Fibre twine",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
@@ -55,10 +55,10 @@
 		]
 	},
 	{
-		"id": "cuerda", "nameEs": "Cuerda",
+		"id": "cuerda", "nameEs": "Cuerda", "nameEn": "Rope",
 		"verbs": ["Trenzar"],
 		"resultDefinitionId": "cuerda",
-		"nameTemplate": "Cuerda trenzada",
+		"nameTemplate": "Cuerda trenzada", "nameTemplateEn": "Braided rope",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "CordelA", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
@@ -66,10 +66,10 @@
 		]
 	},
 	{
-		"id": "cesta", "nameEs": "Cesta",
+		"id": "cesta", "nameEs": "Cesta", "nameEn": "Basket",
 		"verbs": ["Trenzar"],
 		"resultDefinitionId": "cesta",
-		"nameTemplate": "Cesta de {0}",
+		"nameTemplate": "Cesta de {0}", "nameTemplateEn": "{0} basket",
 		"baseMaxDurability": 30,
 		"slots": [
 			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
@@ -77,10 +77,10 @@
 		]
 	},
 	{
-		"id": "arco", "nameEs": "Arco",
+		"id": "arco", "nameEs": "Arco", "nameEn": "Bow",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "arco",
-		"nameTemplate": "Arco de {0} con cuerda de {1}",
+		"nameTemplate": "Arco de {0} con cuerda de {1}", "nameTemplateEn": "{0} bow with a {1} string",
 		"baseMaxDurability": 45,
 		"slots": [
 			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
@@ -88,10 +88,10 @@
 		]
 	},
 	{
-		"id": "atado_generico", "nameEs": "Atado genérico",
+		"id": "atado_generico", "nameEs": "Atado genérico", "nameEn": "Simple lashing",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "atado_generico",
-		"nameTemplate": "{0} atado con {1}",
+		"nameTemplate": "{0} atado con {1}", "nameTemplateEn": "{0} lashed with {1}",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "Base", "requireAll": false, "requirements": [] },
@@ -99,10 +99,10 @@
 		]
 	},
 	{
-		"id": "pegado_generico", "nameEs": "Pegado genérico",
+		"id": "pegado_generico", "nameEs": "Pegado genérico", "nameEn": "Simple gluing",
 		"verbs": ["Pegar"],
 		"resultDefinitionId": "pegado_generico",
-		"nameTemplate": "{0} pegado con {1}",
+		"nameTemplate": "{0} pegado con {1}", "nameTemplateEn": "{0} glued with {1}",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "Base", "requireAll": false, "requirements": [] },
@@ -110,10 +110,10 @@
 		]
 	},
 	{
-		"id": "hacha", "nameEs": "Hacha",
+		"id": "hacha", "nameEs": "Hacha", "nameEn": "Axe",
 		"verbs": ["Atar", "Pegar"],
 		"resultDefinitionId": "hacha",
-		"nameTemplate": "Hacha de {0} con mango de {1}, atada con {2}",
+		"nameTemplate": "Hacha de {0} con mango de {1}, atada con {2}", "nameTemplateEn": "{0} axe with a {1} handle, lashed with {2}",
 		"baseMaxDurability": 60,
 		"slots": [
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 }, { "property": "Contundente", "min": 2 } ] },
@@ -122,10 +122,10 @@
 		]
 	},
 	{
-		"id": "lanza", "nameEs": "Lanza",
+		"id": "lanza", "nameEs": "Lanza", "nameEn": "Spear",
 		"verbs": ["Atar", "Pegar"],
 		"resultDefinitionId": "lanza",
-		"nameTemplate": "Lanza de {0} con punta de {1}, atada con {2}",
+		"nameTemplate": "Lanza de {0} con punta de {1}, atada con {2}", "nameTemplateEn": "{0} spear with a {1} tip, lashed with {2}",
 		"baseMaxDurability": 50,
 		"slots": [
 			{ "role": "Asta", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 2 } ] },
@@ -134,10 +134,10 @@
 		]
 	},
 	{
-		"id": "cuchillo", "nameEs": "Cuchillo",
+		"id": "cuchillo", "nameEs": "Cuchillo", "nameEn": "Knife",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "cuchillo",
-		"nameTemplate": "Cuchillo de {0} con mango de {1}",
+		"nameTemplate": "Cuchillo de {0} con mango de {1}", "nameTemplateEn": "{0} knife with a {1} handle",
 		"baseMaxDurability": 40,
 		"slots": [
 			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
@@ -145,10 +145,10 @@
 		]
 	},
 	{
-		"id": "martillo", "nameEs": "Martillo",
+		"id": "martillo", "nameEs": "Martillo", "nameEn": "Hammer",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "martillo",
-		"nameTemplate": "Martillo de {0} con mango de {1}",
+		"nameTemplate": "Martillo de {0} con mango de {1}", "nameTemplateEn": "{0} hammer with a {1} handle",
 		"baseMaxDurability": 50,
 		"slots": [
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
@@ -156,10 +156,10 @@
 		]
 	},
 	{
-		"id": "antorcha", "nameEs": "Antorcha",
+		"id": "antorcha", "nameEs": "Antorcha", "nameEn": "Torch",
 		"verbs": ["Atar", "Pegar"],
 		"resultDefinitionId": "antorcha",
-		"nameTemplate": "Antorcha de {0} con {1}",
+		"nameTemplate": "Antorcha de {0} con {1}", "nameTemplateEn": "{0} torch with {1}",
 		"baseMaxDurability": 20,
 		"slots": [
 			{ "role": "Asta", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
@@ -167,10 +167,10 @@
 		]
 	},
 	{
-		"id": "flecha", "nameEs": "Flecha",
+		"id": "flecha", "nameEs": "Flecha", "nameEn": "Arrow",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "flecha",
-		"nameTemplate": "Flecha de {0} con punta de {1}",
+		"nameTemplate": "Flecha de {0} con punta de {1}", "nameTemplateEn": "{0} arrow with a {1} tip",
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "Astil", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 1 } ] },
@@ -178,10 +178,10 @@
 		]
 	},
 	{
-		"id": "pala", "nameEs": "Pala",
+		"id": "pala", "nameEs": "Pala", "nameEn": "Shovel",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "pala",
-		"nameTemplate": "Pala de {0} con mango de {1}",
+		"nameTemplate": "Pala de {0} con mango de {1}", "nameTemplateEn": "{0} shovel with a {1} handle",
 		"baseMaxDurability": 40,
 		"slots": [
 			{ "role": "Superficie", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 2 }, { "property": "Contundente", "min": 1 } ] },
@@ -189,7 +189,7 @@
 		]
 	},
 	{
-		"id": "afilar_generico", "nameEs": "Afilar",
+		"id": "afilar_generico", "nameEs": "Afilar", "nameEn": "Sharpen",
 		"verbs": ["Afilar"],
 		"resultDefinitionId": "hacha",
 		"nameTemplate": "",

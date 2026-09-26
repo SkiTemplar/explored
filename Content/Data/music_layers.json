@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "pieces": [
+    {
+      "id": "mus_theme",
+      "role": "theme",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_theme.mus_theme",
+      "bpm": 80,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": false,
+      "seconds_per_bar": 3.0,
+      "duration_s": 120.0
+    },
+    {
+      "id": "mus_explore_landing",
+      "role": "explore",
+      "variant": "landing",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_landing.mus_explore_landing",
+      "bpm": 82,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 2.926829,
+      "duration_s": 117.073171
+    },
+    {
+      "id": "mus_explore_emerald",
+      "role": "explore",
+      "variant": "emerald",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_emerald.mus_explore_emerald",
+      "bpm": 84,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 2.857143,
+      "duration_s": 114.285714
+    },
+    {
+      "id": "mus_explore_smoke",
+      "role": "explore",
+      "variant": "smoke",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_smoke.mus_explore_smoke",
+      "bpm": 70,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 3.428571,
+      "duration_s": 137.142857
+    },
+    {
+      "id": "mus_explore_teeth",
+      "role": "explore",
+      "variant": "teeth",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_teeth.mus_explore_teeth",
+      "bpm": 86,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 2.790698,
+      "duration_s": 111.627907
+    },
+    {
+      "id": "mus_explore_mangrove",
+      "role": "explore",
+      "variant": "mangrove",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_mangrove.mus_explore_mangrove",
+      "bpm": 74,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 3.243243,
+      "duration_s": 129.72973
+    },
+    {
+      "id": "mus_explore_whitesands",
+      "role": "explore",
+      "variant": "whitesands",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_whitesands.mus_explore_whitesands",
+      "bpm": 88,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 2.727273,
+      "duration_s": 109.090909
+    },
+    {
+      "id": "mus_explore_mesa",
+      "role": "explore",
+      "variant": "mesa",
+      "asset": "/Game/Generated/Audio/Musica/mus_explore_mesa.mus_explore_mesa",
+      "bpm": 78,
+      "beats_per_bar": 4,
+      "bars": 40,
+      "loop": true,
+      "seconds_per_bar": 3.076923,
+      "duration_s": 123.076923
+    },
+    {
+      "id": "mus_night",
+      "role": "night",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_night.mus_night",
+      "bpm": 70,
+      "beats_per_bar": 4,
+      "bars": 16,
+      "loop": true,
+      "seconds_per_bar": 3.428571,
+      "duration_s": 54.857143
+    },
+    {
+      "id": "mus_tension",
+      "role": "tension",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_tension.mus_tension",
+      "bpm": 90,
+      "beats_per_bar": 4,
+      "bars": 16,
+      "loop": true,
+      "seconds_per_bar": 2.666667,
+      "duration_s": 42.666667
+    },
+    {
+      "id": "mus_storm",
+      "role": "storm",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_storm.mus_storm",
+      "bpm": 64,
+      "beats_per_bar": 4,
+      "bars": 16,
+      "loop": true,
+      "seconds_per_bar": 3.75,
+      "duration_s": 60.0
+    },
+    {
+      "id": "mus_sea",
+      "role": "sea",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_sea.mus_sea",
+      "bpm": 152,
+      "beats_per_bar": 6,
+      "bars": 16,
+      "loop": true,
+      "seconds_per_bar": 2.368421,
+      "duration_s": 37.894737
+    },
+    {
+      "id": "mus_discovery_01",
+      "role": "discovery",
+      "variant": "01",
+      "asset": "/Game/Generated/Audio/Musica/mus_discovery_01.mus_discovery_01",
+      "bpm": 90,
+      "beats_per_bar": 4,
+      "bars": 0.5,
+      "loop": false,
+      "seconds_per_bar": 2.666667,
+      "duration_s": 1.333333
+    },
+    {
+      "id": "mus_discovery_02",
+      "role": "discovery",
+      "variant": "02",
+      "asset": "/Game/Generated/Audio/Musica/mus_discovery_02.mus_discovery_02",
+      "bpm": 88,
+      "beats_per_bar": 4,
+      "bars": 0.6,
+      "loop": false,
+      "seconds_per_bar": 2.727273,
+      "duration_s": 1.636364
+    },
+    {
+      "id": "mus_discovery_03",
+      "role": "discovery",
+      "variant": "03",
+      "asset": "/Game/Generated/Audio/Musica/mus_discovery_03.mus_discovery_03",
+      "bpm": 92,
+      "beats_per_bar": 4,
+      "bars": 0.65,
+      "loop": false,
+      "seconds_per_bar": 2.608696,
+      "duration_s": 1.695652
+    },
+    {
+      "id": "mus_discovery_04",
+      "role": "discovery",
+      "variant": "04",
+      "asset": "/Game/Generated/Audio/Musica/mus_discovery_04.mus_discovery_04",
+      "bpm": 76,
+      "beats_per_bar": 4,
+      "bars": 0.65,
+      "loop": false,
+      "seconds_per_bar": 3.157895,
+      "duration_s": 2.052632
+    },
+    {
+      "id": "mus_finale_rescue",
+      "role": "finale",
+      "variant": "rescue",
+      "asset": "/Game/Generated/Audio/Musica/mus_finale_rescue.mus_finale_rescue",
+      "bpm": 84,
+      "beats_per_bar": 4,
+      "bars": 32,
+      "loop": false,
+      "seconds_per_bar": 2.857143,
+      "duration_s": 91.428571
+    },
+    {
+      "id": "mus_finale_voyage",
+      "role": "finale",
+      "variant": "voyage",
+      "asset": "/Game/Generated/Audio/Musica/mus_finale_voyage.mus_finale_voyage",
+      "bpm": 80,
+      "beats_per_bar": 4,
+      "bars": 32,
+      "loop": false,
+      "seconds_per_bar": 3.0,
+      "duration_s": 96.0
+    },
+    {
+      "id": "mus_finale_stay",
+      "role": "finale",
+      "variant": "stay",
+      "asset": "/Game/Generated/Audio/Musica/mus_finale_stay.mus_finale_stay",
+      "bpm": 72,
+      "beats_per_bar": 4,
+      "bars": 32,
+      "loop": false,
+      "seconds_per_bar": 3.333333,
+      "duration_s": 106.666667
+    },
+    {
+      "id": "mus_menu",
+      "role": "menu",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_menu.mus_menu",
+      "bpm": 72,
+      "beats_per_bar": 4,
+      "bars": 16,
+      "loop": true,
+      "seconds_per_bar": 3.333333,
+      "duration_s": 53.333333
+    },
+    {
+      "id": "mus_credits",
+      "role": "credits",
+      "variant": "",
+      "asset": "/Game/Generated/Audio/Musica/mus_credits.mus_credits",
+      "bpm": 76,
+      "beats_per_bar": 4,
+      "bars": 32,
+      "loop": false,
+      "seconds_per_bar": 3.157895,
+      "duration_s": 101.052632
+    }
+  ],
+  "day_variants": {
+    "landing": [
+      "mus_explore_landing",
+      "mus_explore_teeth",
+      "mus_explore_whitesands"
+    ],
+    "emerald": [
+      "mus_explore_emerald",
+      "mus_explore_mesa",
+      "mus_explore_mangrove"
+    ],
+    "smoke": [
+      "mus_explore_smoke",
+      "mus_explore_mangrove",
+      "mus_explore_mesa"
+    ],
+    "teeth": [
+      "mus_explore_teeth",
+      "mus_explore_whitesands",
+      "mus_explore_landing"
+    ],
+    "mangrove": [
+      "mus_explore_mangrove",
+      "mus_explore_mesa",
+      "mus_explore_smoke"
+    ],
+    "whitesands": [
+      "mus_explore_whitesands",
+      "mus_explore_teeth",
+      "mus_explore_landing"
+    ],
+    "mesa": [
+      "mus_explore_mesa",
+      "mus_explore_mangrove",
+      "mus_explore_emerald"
+    ]
+  },
+  "flute": {
+    "sample": "sfx_flute_note",
+    "asset": "/Game/Generated/Audio/Efectos/sfx_flute_note.sfx_flute_note",
+    "sample_hz": 293.6648,
+    "scale": "major_pentatonic",
+    "semitones": [
+      0,
+      2,
+      4,
+      7,
+      9
+    ]
+  }
+}

@@ -29,6 +29,14 @@ public:
 	FLinearColor ColorAccent() const { return FLinearColor(0.86f, 0.55f, 0.18f, 1.0f); }
 	FLinearColor ColorAccentDim() const { return FLinearColor(0.60f, 0.38f, 0.13f, 1.0f); }
 	FLinearColor ColorDisabled() const { return FLinearColor(0.35f, 0.32f, 0.28f, 0.6f); }
+	/** Papel de las hojas que se sostienen (mapa, fichas del museo): crema opaco. */
+	FLinearColor ColorSheet() const { return FLinearColor(0.93f, 0.87f, 0.74f, 1.0f); }
+	/** Tinta sobre el papel crema: sepia oscuro opaco. */
+	FLinearColor ColorSheetInk() const { return FLinearColor(0.20f, 0.14f, 0.09f, 1.0f); }
+	/** Pulgares que sujetan el mapa (un tono de piel neutro y cálido). */
+	FLinearColor ColorSkin() const { return FLinearColor(0.72f, 0.52f, 0.40f, 1.0f); }
+	/** Aviso (sobrescribir, ranura dañada, carga al tope). */
+	FLinearColor ColorWarning() const { return FLinearColor(0.85f, 0.25f, 0.18f, 1.0f); }
 
 	FSlateFontInfo FontTitle() const;
 	FSlateFontInfo FontSubtitle() const;
@@ -38,6 +46,12 @@ public:
 
 	const FSlateBrush* BrushPanel() const { return &PanelBrush; }
 	const FSlateBrush* BrushPanelLight() const { return &PanelLightBrush; }
+	/** Hoja de papel crema con esquinas algo redondeadas (mapa en las manos). */
+	const FSlateBrush* BrushSheet() const { return &SheetBrush; }
+	/** Pulgar: óvalo de color piel. */
+	const FSlateBrush* BrushThumb() const { return &ThumbBrush; }
+	/** Relleno liso blanco para teñir (siluetas, manchas). */
+	const FSlateBrush* BrushWhite() const { return &WhiteBrush; }
 
 	/** Botón de menú: fondo transparente en reposo, resalte ámbar al pasar el ratón, hueco al pulsar. */
 	const FButtonStyle& ButtonStyle() const { return MenuButtonStyle; }
@@ -46,6 +60,10 @@ public:
 	const FCheckBoxStyle& CheckBoxStyle() const { return CheckBoxStyleValue; }
 	const FSliderStyle& SliderStyle() const { return SliderStyleValue; }
 	const FScrollBarStyle& ScrollBarStyle() const { return ScrollBarStyleValue; }
+	/** Barra de progreso de logros y del museo: fondo oscuro y relleno ámbar. */
+	const FProgressBarStyle& ProgressBarStyle() const { return ProgressBarStyleValue; }
+	/** Cuadro de texto corto (texto de las marcas del mapa). */
+	const FEditableTextBoxStyle& EditableTextBoxStyle() const { return EditableTextBoxStyleValue; }
 
 private:
 	FExploredUIStyle();
@@ -56,6 +74,9 @@ private:
 	FSlateRoundedBoxBrush ButtonHoveredBrush;
 	FSlateRoundedBoxBrush ButtonPressedBrush;
 	FSlateColorBrush TransparentBrush;
+	FSlateRoundedBoxBrush SheetBrush;
+	FSlateRoundedBoxBrush ThumbBrush;
+	FSlateColorBrush WhiteBrush;
 
 	FButtonStyle MenuButtonStyle;
 	FButtonStyle TabButtonActiveStyle;
@@ -63,4 +84,6 @@ private:
 	FCheckBoxStyle CheckBoxStyleValue;
 	FSliderStyle SliderStyleValue;
 	FScrollBarStyle ScrollBarStyleValue;
+	FProgressBarStyle ProgressBarStyleValue;
+	FEditableTextBoxStyle EditableTextBoxStyleValue;
 };

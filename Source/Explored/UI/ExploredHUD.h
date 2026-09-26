@@ -25,4 +25,7 @@ private:
 	void DrawReticle();
 	void DrawContextPrompt(const AExploredCharacter& Character);
 	void DrawHandLabels(const AExploredCharacter& Character);
+	void DrawFishing(const AExploredCharacter& Character);
+	/** Texto centrado en horizontal a la altura Y, con la fuente por defecto del HUD. */
+	void DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y);
 };

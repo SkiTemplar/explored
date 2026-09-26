@@ -5,7 +5,19 @@ from __future__ import annotations
 import pytest
 
 from datacheck import crafting
-from datacheck.checks import DataSet, Report, check_building, check_crafting_reachability, run_all
+from datacheck.checks import (
+    DataSet,
+    Report,
+    check_artifacts,
+    check_building,
+    check_crafting_reachability,
+    check_ruins,
+    run_all,
+)
+
+
+from datacheck import cooking, crafting
+from datacheck.checks import DataSet, Report, check_building, check_cooking, check_crafting_reachability, run_all
 
 
 @pytest.fixture(scope="module")
@@ -156,6 +168,16 @@ def test_detecta_ciclo_de_piezas(ds: DataSet) -> None:
     assert any_error(r.errors, "ciclo")
 
 
+def test_detecta_encaje_desconocido(ds: DataSet) -> None:
+    piece(ds, "techo_bambu")["socket"] = "tejado"
+    assert any_error(errors_of(ds), "techo_bambu", "socket")
+
+
+def test_detecta_sin_punto_de_reaparicion(ds: DataSet) -> None:
+    piece(ds, "fogata").pop("respawnPoint")
+    assert any_error(errors_of(ds), "reaparición")
+
+
 def test_detecta_tier_que_no_mejora(ds: DataSet) -> None:
     for p in ds.building["pieces"]:
         if p["tier"] == "piedra":
@@ -205,6 +227,16 @@ def test_detecta_valor_inicial_distinto_del_cpp(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "animo", "SurvivalModel.h")
 
 
+def test_detecta_desfase_con_body_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["body"]["wounds"]["infectionHours"]["value"] = 99
+    assert any_error(errors_of(ds), "WoundInfectionHours")
+
+
+def test_detecta_evento_de_animo_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["body"]["moraleEvents"]["StormHit"] = 4
+    assert any_error(errors_of(ds), "StormHit")
+
+
 def test_detecta_fauna_terrestre(ds: DataSet) -> None:
     item(ds, "grasa")["nameEs"] = "Grasa de jabalí"
     assert any_error(errors_of(ds), "jabalí")
@@ -217,3 +249,305 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
+
+
+# --------------------------------------------------------------------------- logros (GDD §16)
+
+
+def achievement(ds: DataSet, aid: str) -> dict:
+    return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
+
+
+def test_logros_reales_son_treinta_con_los_del_gdd(real: DataSet) -> None:
+    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
+    assert len(ids) == 30
+    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
+
+
+def test_detecta_numero_de_logros(ds: DataSet) -> None:
+    ds.data["achievements.json"]["achievements"].pop()
+    assert any_error(errors_of(ds), "29 logros")
+
+
+def test_detecta_logro_duplicado(ds: DataSet) -> None:
+    achievement(ds, "wayfinder")["id"] = "cartografo"
+    assert any_error(errors_of(ds), "id duplicado", "cartografo")
+
+
+def test_detecta_id_con_tilde(ds: DataSet) -> None:
+    achievement(ds, "cartografo")["id"] = "cartógrafo"
+    assert any_error(errors_of(ds), "id inválido")
+
+
+def test_detecta_falta_de_ingles(ds: DataSet) -> None:
+    del achievement(ds, "primer_fuego")["descriptionEn"]
+    assert any_error(errors_of(ds), "primer_fuego", "descriptionEn")
+
+
+def test_detecta_estadistica_desconocida(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["condition"] = {"stat": "hogueras", "op": ">=", "value": 1}
+    assert any_error(errors_of(ds), "estadística desconocida", "hogueras")
+
+
+def test_detecta_tipo_incompatible(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["condition"] = {"stat": "fires_lit", "contains": "fogata"}
+    assert any_error(errors_of(ds), "no es un conjunto")
+
+
+def test_detecta_id_no_admitido_en_conjunto(ds: DataSet) -> None:
+    achievement(ds, "el_limonero")["condition"] = {"stat": "crops_harvested", "contains": "naranjo"}
+    assert any_error(errors_of(ds), "naranjo", "no es un id admitido")
+
+
+def test_detecta_meta_inalcanzable(ds: DataSet) -> None:
+    achievement(ds, "wayfinder")["condition"]["value"] = 6
+    assert any_error(errors_of(ds), "wayfinder", "solo admite 5")
+
+
+def test_detecta_sin_mapa_mal_escrito(ds: DataSet) -> None:
+    achievement(ds, "sin_mapa")["condition"] = {"flag": "hidden_island_reached"}
+    assert any_error(errors_of(ds), "sin_mapa")
+
+
+def test_detecta_nombre_de_la_dedicatoria(ds: DataSet) -> None:
+    achievement(ds, "el_limonero")["nameEs"] = "Para Almudena"
+    assert any_error(errors_of(ds), "dedicatoria")
+
+
+def test_detecta_estadistica_sin_documentar(ds: DataSet) -> None:
+    ds.data["achievements.json"]["stats"].append(
+        {"id": "shells_found", "kind": "counter", "scope": "profile", "descriptionEs": "Conchas."})
+    assert any_error(errors_of(ds), "estadisticas.md", "shells_found")
+
+
+def test_detecta_ambito_distinto_del_documentado(ds: DataSet) -> None:
+    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "fires_lit")["scope"] = "run"
+    assert any_error(errors_of(ds), "estadisticas.md", "fires_lit")
+
+
+# --------------------------------------------------------------------------- ruinas y museo
+
+
+def ruins_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_ruins(ds, r)
+    return r.errors
+
+
+def artifacts_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_artifacts(ds, r)
+    return r.errors
+
+
+def artifact(ds: DataSet, aid: str) -> dict:
+    return next(a for a in ds.data["artifacts.json"]["artifacts"] if a["id"] == aid)
+
+
+def test_ruinas_y_tesoros_reales_sin_errores(real: DataSet) -> None:
+    assert ruins_errors(real) == []
+    assert artifacts_errors(real) == []
+
+
+def test_detecta_tecnica_que_no_esta_en_el_cpp(ds: DataSet) -> None:
+    ds.data["ruins.json"]["techniques"][0]["id"] = "star_trail"
+    assert any_error(ruins_errors(ds), "RuinsModel.cpp")
+
+
+def test_detecta_constante_de_caminos_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["ruins.json"]["requiredStarPaths"] = 5
+    assert any_error(ruins_errors(ds), "RequiredStarPaths")
+
+
+def test_detecta_ruina_de_isla_que_falta(ds: DataSet) -> None:
+    ds.data["ruins.json"]["sites"].pop(0)
+    assert any_error(ruins_errors(ds), "islas del C++")
+
+
+def test_detecta_tipo_de_tesoro_desconocido(ds: DataSet) -> None:
+    artifact(ds, "anzuelo_hueso")["kind"] = "golden_idol"
+    assert any_error(artifacts_errors(ds), "golden_idol")
+
+
+def test_detecta_tesoro_con_malla_inventada(ds: DataSet) -> None:
+    artifact(ds, "tapa_pintada")["mesh"] = "SM_Treasure_Crown"
+    assert any_error(artifacts_errors(ds), "SM_Treasure_Crown")
+
+
+def test_detecta_tesoro_que_no_cabe_en_ningun_mueble(ds: DataSet) -> None:
+    for d in ds.data["artifacts.json"]["displays"]:
+        for slot in d["slots"]:
+            slot["maxSize"] = "Mediano"
+    assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco")
+
+
+def test_detecta_mueble_con_pieza_inexistente(ds: DataSet) -> None:
+    ds.data["artifacts.json"]["displays"][1]["piece"] = "vitrina_de_oro"
+    assert any_error(artifacts_errors(ds), "vitrina_de_oro")
+
+
+def test_detecta_id_de_tesoro_con_tilde(ds: DataSet) -> None:
+    artifact(ds, "pectoral_nacar")["id"] = "pectoral_nácar"
+    assert any_error(artifacts_errors(ds), "id inválido")
+
+
+def test_detecta_pocos_tesoros_para_coleccionista(ds: DataSet) -> None:
+    ds.data["artifacts.json"]["artifacts"] = ds.data["artifacts.json"]["artifacts"][:9]
+    assert any_error(artifacts_errors(ds), "Coleccionista")
+
+
+# --------------------------------------------------------------------------- fuego y cocina
+
+
+def cooking_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_cooking(ds, r)
+    return r.errors
+
+
+def recipe(ds: DataSet, rid: str) -> dict:
+    return next(r for r in ds.data["recipes.json"]["recipes"] if r["id"] == rid)
+
+
+def test_tablas_cpp_de_cocina_al_dia(real: DataSet) -> None:
+    for rel, text in cooking.generated_files(real.data).items():
+        assert (real.repo_root / rel).read_text(encoding="utf-8") == text, rel
+
+
+def test_detecta_inl_desactualizado(ds: DataSet) -> None:
+    ds.data["fuels.json"]["fuels"][0]["burnHours"] = 0.07
+    assert any_error(cooking_errors(ds), "FireData.inl", "--write-cooking")
+
+
+def test_detecta_combustible_que_no_arde(ds: DataSet) -> None:
+    ds.data["fuels.json"]["fuels"].append({"item": "canto_rodado", "burnHours": 1, "heat": 0.5, "tinder": False, "green": False})
+    assert any_error(cooking_errors(ds), "canto_rodado", "no es madera")
+
+
+def test_detecta_nivel_de_fuego_que_no_mejora(ds: DataSet) -> None:
+    ds.data["fuels.json"]["levels"][1]["heat"] = 0.5
+    assert any_error(cooking_errors(ds), "heat", "hoguera")
+
+
+def test_detecta_hervir_en_recipiente_no_estanco(ds: DataSet) -> None:
+    recipe(ds, "agua_hervida")["vessels"].append("espeto")
+    assert any_error(cooking_errors(ds), "agua_hervida", "no es estanco")
+
+
+def test_detecta_tecnica_desconocida(ds: DataSet) -> None:
+    recipe(ds, "pescado_asado")["technique"] = "freir"
+    assert any_error(cooking_errors(ds), "freir")
+
+
+def test_detecta_comida_sin_conservacion(ds: DataSet) -> None:
+    ds.data["recipes.json"]["foods"] = [f for f in ds.data["recipes.json"]["foods"] if f["item"] != "platano"]
+    assert any_error(cooking_errors(ds), "platano")
+
+
+def test_detecta_yuca_sin_toxicidad(ds: DataSet) -> None:
+    next(f for f in ds.data["recipes.json"]["foods"] if f["item"] == "yuca")["toxicity"] = 0
+    assert any_error(cooking_errors(ds), "yuca", "Toxico")
+
+
+def test_detecta_orden_de_conservacion_roto(ds: DataSet) -> None:
+    ds.data["recipes.json"]["preservation"]["stateHours"]["ahumado"] = 48
+    assert any_error(cooking_errors(ds), "crudo < cocinado")
+
+
+def test_detecta_hornear_fuera_del_horno(ds: DataSet) -> None:
+    recipe(ds, "vasija_barro")["minFireLevel"] = "hoguera"
+    assert any_error(cooking_errors(ds), "horno")
+
+
+# --------------------------------------------------------------------------- embarcaciones
+
+
+def boat(ds: DataSet, bid: str) -> dict:
+    return next(b for b in ds.boats if b["id"] == bid)
+
+
+def test_limon_exige_piezas_del_albatros(real: DataSet) -> None:
+    limon = boat(real, "barco_limon")
+    assert set(limon["requiresShipParts"]) == {"Fuselage", "Wing", "Tail", "Engine"}
+    assert {"chapa_fuselaje", "tubo_aluminio"} <= {c["item"] for c in limon["cost"]}
+
+
+def test_detecta_ingrediente_de_barco_inexistente(ds: DataSet) -> None:
+    boat(ds, "canoa")["cost"].append({"item": "tronco_de_teca", "count": 1})
+    assert any_error(errors_of(ds), "canoa", "tronco_de_teca")
+
+
+def test_detecta_limon_sin_piezas_del_albatros(ds: DataSet) -> None:
+    boat(ds, "barco_limon")["requiresShipParts"] = ["Fuselage"]
+    assert any_error(errors_of(ds), "cuatro piezas del Albatros")
+
+
+def test_detecta_pieza_del_albatros_inventada(ds: DataSet) -> None:
+    boat(ds, "barco_limon")["requiresShipParts"].append("Helice")
+    assert any_error(errors_of(ds), "Helice")
+
+
+def test_detecta_progresion_al_reves(ds: DataSet) -> None:
+    boat(ds, "canoa")["requiresBoat"] = "canoa_balancin"
+    assert any_error(errors_of(ds), "no va antes en la progresión")
+
+
+def test_detecta_malla_distinta_del_cpp(ds: DataSet) -> None:
+    boat(ds, "balsa")["mesh"] = "SM_Canoe"
+    assert any_error(errors_of(ds), "balsa", "FBoatDefinition::MeshName")
+
+
+def test_detecta_tipo_de_barco_desconocido(ds: DataSet) -> None:
+    boat(ds, "canoa")["type"] = "Catamaran"
+    assert any_error(errors_of(ds), "EBoatType")
+
+
+def test_detecta_astillero_inexistente(ds: DataSet) -> None:
+    boat(ds, "balsa")["station"] = "dique_seco"
+    assert any_error(errors_of(ds), "dique_seco")
+
+
+# --------------------------------------------------------------------------- pesca
+
+
+def fish(ds: DataSet) -> dict:
+    return ds.data["fish.json"]
+
+
+def test_pesca_captura_sin_objeto(ds: DataSet) -> None:
+    ds.items.remove(item(ds, "pargo"))
+    assert any_error(errors_of(ds), "fish.json «pargo»", "items.json")
+
+
+def test_pesca_recompensa_legendaria_inexistente(ds: DataSet) -> None:
+    fish(ds)["legendary"][0]["rewards"] = ["trofeo_de_oro"]
+    assert any_error(errors_of(ds), "trofeo_de_oro")
+
+
+def test_pesca_desincronizada_del_cpp(ds: DataSet) -> None:
+    next(s for s in fish(ds)["species"] if s["id"] == "atun")["strengthKgf"] = 99.0
+    assert any_error(errors_of(ds), "fish.json «atun»", "FishingModel.cpp")
+
+
+def test_pesca_trampa_desincronizada_del_cpp(ds: DataSet) -> None:
+    fish(ds)["traps"]["nasa"]["catches"][0]["perHour"] = 0.5
+    assert any_error(errors_of(ds), "trampa «nasa»", "FishingModel.cpp")
+
+
+def test_pesca_once_peces(ds: DataSet) -> None:
+    fish(ds)["species"] = [s for s in fish(ds)["species"] if s["id"] != "dorado"]
+    assert any_error(errors_of(ds), "11")
+
+
+def test_detecta_conjunto_desfasado_con_su_catalogo(ds: DataSet) -> None:
+    stats = ds.data["achievements.json"]["stats"]
+    boats = next(s for s in stats if s["id"] == "boats_built")
+    boats["values"] = ["balsa", "canoa", "canoa_balancin", "limon"]
+    assert any_error(errors_of(ds), "boats_built", "boats.json")
+
+
+def test_detecta_tecnica_con_id_distinto_de_ruins(ds: DataSet) -> None:
+    stats = ds.data["achievements.json"]["stats"]
+    techniques = next(s for s in stats if s["id"] == "wayfinding_techniques")
+    techniques["values"] = ["camino_estrellas", "lectura_oleaje", "aves_atardecer", "nubes_fijas", "color_agua"]
+    assert any_error(errors_of(ds), "wayfinding_techniques", "ruins.json")

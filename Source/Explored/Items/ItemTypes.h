@@ -113,12 +113,24 @@ struct EXPLORED_API FItemInstance
 	 * Carry, Crafting); si algún día hace falta desde Blueprint, envolver el
 	 * array en un tipo indirecto (p. ej. TArray<TInstancedStruct<FItemInstance>>
 	 * o un USTRUCT contenedor con un puntero) en vez de quitar este comentario.
+	 *
+	 * Revisión L9: por lo mismo no se serializa con la reflexión. El guardado
+	 * del inventario (P-SAVE) tiene que aplanar el árbol (lista de piezas con el
+	 * índice de su padre) en vez de marcar este campo como UPROPERTY.
 	 */
 	TArray<FItemInstance> Components;
 
 	/** Nombre generado por la fabricación; vacío = usar el nombre de la definición. */
 	UPROPERTY(BlueprintReadWrite, Category = "Explored|Objetos")
 	FText GeneratedName;
+
+	/**
+	 * Litros de agua que lleva dentro (cantimplora, coco...). Mientras el
+	 * objeto va encima, la fuente de verdad es FInventoryModel; aquí se
+	 * conserva al soltarlo o guardarlo en un contenedor del mundo.
+	 */
+	UPROPERTY(BlueprintReadWrite, Category = "Explored|Objetos")
+	float LiquidLiters = 0.0f;
 
 	bool IsValid() const { return !DefinitionId.IsNone(); }
 };

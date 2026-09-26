@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import crafting
+from . import achievements, cooking, crafting
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -23,6 +23,8 @@ SIZES = {"Pequeno", "Mediano", "Grande", "DosManos"}
 # Verbos que exige ItemsSpec.cpp (biblia §2.2).
 REQUIRED_VERBS = {"Golpear", "Tallar", "Atar", "Pegar", "Afilar", "Trenzar", "Machacar", "Raspar"}
 SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
+# Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
+BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
@@ -36,8 +38,13 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
+    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
+    "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
+    "fish.json",
 ]
+ASCII_ID = re.compile(r"^[a-z0-9_]+$")
+# Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
+ALBATROS_ITEMS = {"chapa_fuselaje", "tubo_aluminio", "cable_electrico", "cinta_americana"}
 
 
 @dataclass
@@ -94,6 +101,10 @@ class DataSet:
     @property
     def building(self) -> dict:
         return self.data.get("building_pieces.json", {"tiers": [], "pieces": []})
+
+    @property
+    def boats(self) -> list[dict]:
+        return self.data.get("boats.json", {}).get("boats", [])
 
     @property
     def item_ids(self) -> set[str]:
@@ -342,6 +353,13 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
             r.error(f"building_pieces.json «{pid}»: integrity fuera de [1, 100]")
         if p.get("maxCycloneCategory") not in (0, 1, 2, 3):
             r.error(f"building_pieces.json «{pid}»: maxCycloneCategory fuera de 0-3")
+        # Encaje en la rejilla: lo lee FBuildingModel (ParseBuildSocket) y sin él la pieza no se coloca.
+        if p.get("socket") not in BUILDING_SOCKETS:
+            r.error(f"building_pieces.json «{pid}»: socket {p.get('socket')!r} no es uno de {sorted(BUILDING_SOCKETS)}")
+        if "respawnPoint" in p and not isinstance(p["respawnPoint"], bool):
+            r.error(f"building_pieces.json «{pid}»: respawnPoint debe ser true o false")
+    if not any(p.get("respawnPoint") is True for p in pieces.values()):
+        r.error("building_pieces.json: ninguna pieza es punto de reaparición (GDD §8.6: las fogatas encendidas)")
     # Tier de una pieza estructural nunca por debajo de lo que aguanta: piedra ≥ madera ≥ ...
     by_tier: dict[str, list[int]] = {}
     for p in pieces.values():
@@ -377,6 +395,103 @@ def _check_piece_cycles(pieces: dict[str, dict], r: Report) -> None:
         visit(pid, [])
 
 
+# --------------------------------------------------------------------------- embarcaciones
+
+
+def _cpp_enum(text: str, name: str) -> list[str]:
+    m = re.search(rf"enum class {name}\s*:\s*uint8\s*\{{(.*?)\}};", text, re.S)
+    if not m:
+        return []
+    body = re.sub(r"//[^\n]*", "", m.group(1))
+    names = [re.split(r"[\s=]", v.strip())[0] for v in body.split(",")]
+    return [n for n in names if n and n != "Count"]
+
+
+def _read_source(ds: DataSet, rel: str) -> str:
+    path = ds.repo_root / "Source" / "Explored" / rel
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def check_boats(ds: DataSet, r: Report, obtainable: set[str]) -> None:
+    doc = ds.data.get("boats.json")
+    if not doc:
+        return
+    boats = {b.get("id"): b for b in ds.boats}
+    if len(boats) != len(ds.boats):
+        r.error("boats.json: ids de embarcación duplicados")
+    pieces = {p.get("id") for p in ds.building.get("pieces", [])}
+
+    types_h = _read_source(ds, "Boats/BoatTypes.h")
+    model_cpp = _read_source(ds, "Boats/BoatModel.cpp")
+    progress_h = _read_source(ds, "Narrative/ExploredProgress.h")
+    cpp_types = _cpp_enum(types_h, "EBoatType")
+    ship_parts = set(_cpp_enum(progress_h, "EShipPart"))
+    if not cpp_types:
+        r.warn("boats.json: no se encuentra EBoatType en Boats/BoatTypes.h; no se compara con el C++")
+    cpp_meshes = {
+        m.group(1): m.group(2)
+        for m in re.finditer(r"case EBoatType::(\w+):(?:(?!break;).)*?D\.MeshName = TEXT\(\"([^\"]*)\"\)", model_cpp, re.S)
+    }
+
+    orders = sorted(b.get("order") for b in boats.values())
+    if orders != list(range(len(orders))):
+        r.error(f"boats.json: órdenes de progresión no consecutivos {orders}")
+    if cpp_types and sorted(b.get("type") for b in boats.values()) != sorted(cpp_types):
+        r.error(f"boats.json: los tipos deben ser exactamente los de EBoatType {cpp_types}")
+
+    for bid, b in boats.items():
+        if not isinstance(bid, str) or not re.fullmatch(r"[a-z0-9_]+", bid or ""):
+            r.error(f"boats.json: id inválido {bid!r} (minúsculas, dígitos y _)")
+            continue
+        for key in ("nameEs", "nameEn"):
+            if not isinstance(b.get(key), str) or not b[key]:
+                r.error(f"boats.json «{bid}»: falta {key}")
+        if b.get("station") not in pieces:
+            r.error(f"boats.json «{bid}»: estación «{b.get('station')}» no está en building_pieces.json")
+        if not b.get("cost"):
+            r.error(f"boats.json «{bid}»: sin coste")
+        for c in b.get("cost", []):
+            if c.get("item") not in ds.item_ids:
+                r.error(f"boats.json «{bid}»: ingrediente «{c.get('item')}» no está en items.json")
+            elif c["item"] not in obtainable:
+                r.error(f"boats.json «{bid}»: ingrediente «{c['item']}» no obtenible")
+            if not isinstance(c.get("count"), int) or not 1 <= c["count"] <= 50:
+                r.error(f"boats.json «{bid}»: count {c.get('count')!r} fuera de [1, 50]")
+        for tool in b.get("tools", []):
+            if tool not in ds.item_ids:
+                r.error(f"boats.json «{bid}»: herramienta «{tool}» no está en items.json")
+            elif tool not in obtainable:
+                r.error(f"boats.json «{bid}»: herramienta «{tool}» no obtenible")
+        req = b.get("requiresBoat")
+        if req is not None:
+            if req not in boats:
+                r.error(f"boats.json «{bid}»: requiere la embarcación «{req}», que no existe")
+            elif boats[req].get("order", 0) >= b.get("order", 0):
+                r.error(f"boats.json «{bid}»: requiere «{req}», que no va antes en la progresión")
+        elif b.get("consumesRequiredBoat"):
+            r.error(f"boats.json «{bid}»: consumesRequiredBoat sin requiresBoat")
+        bad_parts = set(b.get("requiresShipParts", [])) - ship_parts
+        if ship_parts and bad_parts:
+            r.error(f"boats.json «{bid}»: piezas del Albatros desconocidas {sorted(bad_parts)} (EShipPart)")
+        if not _type_ok(b.get("buildMinutes"), (int, float)) or not 1 <= b["buildMinutes"] <= 600:
+            r.error(f"boats.json «{bid}»: buildMinutes fuera de [1, 600]")
+        btype = b.get("type")
+        if btype in cpp_meshes and (cpp_meshes[btype] or None) != b.get("mesh"):
+            r.error(f"boats.json «{bid}»: mesh={b.get('mesh')!r} pero FBoatDefinition::MeshName dice {cpp_meshes[btype]!r}")
+
+    limon = next((b for b in boats.values() if b.get("type") == "Limon"), None)
+    if limon is None:
+        r.error("boats.json: falta el barco «Limón» (GDD §8.10)")
+    else:
+        if ship_parts and set(limon.get("requiresShipParts", [])) != ship_parts:
+            r.error("boats.json: el «Limón» debe exigir las cuatro piezas del Albatros (GDD §4.3)")
+        if not {c.get("item") for c in limon.get("cost", [])} & ALBATROS_ITEMS:
+            r.error("boats.json: el «Limón» debe usar material rescatado del Albatros (GDD §8.10)")
+    first = next((b for b in boats.values() if b.get("order") == 0), None)
+    if first is not None and first.get("type") != "Raft":
+        r.error("boats.json: la progresión empieza por la balsa (GDD §8.10)")
+
+
 # --------------------------------------------------------------------------- mallas
 
 
@@ -393,7 +508,9 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages}
+    displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
+    boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
+    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
@@ -414,6 +531,9 @@ def check_meshes(ds: DataSet, r: Report) -> None:
         for s in pl.get("stages", []):
             if s.get("mesh") is not None and s["mesh"] not in known:
                 r.error(f"plants.json «{pl['id']}.{s['id']}»: malla {s['mesh']} no existe en Tools/Blender/props")
+    for b in ds.boats:
+        if b.get("mesh") is not None and b["mesh"] not in known:
+            r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
 
     pending = ds.data.get("meshes_pendientes.json", {})
     for group, expected in pending_expected(ds).items():
@@ -422,6 +542,162 @@ def check_meshes(ds: DataSet, r: Report) -> None:
             r.error(f"meshes_pendientes.json/{group}: falta «{missing}» (usa marcador o mesh null)")
         for stale in sorted(listed - expected):
             r.error(f"meshes_pendientes.json/{group}: «{stale}» ya tiene malla o no existe; quítalo")
+
+
+# --------------------------------------------------------------------------- ruinas y museo
+
+RUINS_CPP = "Source/Explored/Ruins/RuinsModel.cpp"
+RUINS_H = "Source/Explored/Ruins/RuinsModel.h"
+MUSEUM_CPP = "Source/Explored/Ruins/MuseumModel.cpp"
+MUSEUM_H = "Source/Explored/Ruins/MuseumModel.h"
+ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
+SIZE_ORDER = {"Pequeno": 0, "Mediano": 1, "Grande": 2}
+
+
+def _cpp_lex_ids(repo_root: Path, rel: str, enum: str) -> set[str]:
+    """Ids que devuelve LexToString(<enum>) en un .cpp (``case E::X: return TEXT("id");``)."""
+    path = repo_root / rel
+    if not path.exists():
+        return set()
+    text = path.read_text(encoding="utf-8")
+    return set(re.findall(rf'case {enum}::\w+: return TEXT\("([^"]+)"\);', text))
+
+
+def _cpp_int(repo_root: Path, rel: str, name: str) -> int | None:
+    path = repo_root / rel
+    if not path.exists():
+        return None
+    m = re.search(rf"static constexpr int32 {name} = (\d+);", path.read_text(encoding="utf-8"))
+    return int(m.group(1)) if m else None
+
+
+def _check_names(r: Report, where: str, entry: dict, keys: tuple[str, ...] = ("nameEs", "nameEn")) -> None:
+    for key in keys:
+        v = entry.get(key)
+        if not isinstance(v, str) or not v or len(v) > 60:
+            r.error(f"{where} «{entry.get('id')}»: {key} vacío o de más de 60 caracteres (GDD §3: una línea)")
+
+
+def _check_ids(r: Report, where: str, entries: list) -> list[str]:
+    ids = [e.get("id") for e in entries]
+    for e in entries:
+        if not isinstance(e.get("id"), str) or not ASCII_ID.match(e["id"]):
+            r.error(f"{where}: id inválido {e.get('id')!r} (minúsculas ASCII, dígitos y _)")
+    for dup in sorted({i for i in ids if isinstance(i, str) and ids.count(i) > 1}):
+        r.error(f"{where}: id duplicado «{dup}»")
+    return ids
+
+
+def check_ruins(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("ruins.json")
+    if not doc:
+        return
+    techniques = _check_ids(r, "ruins.json/techniques", doc.get("techniques", []))
+    elements = _check_ids(r, "ruins.json/elements", doc.get("elements", []))
+    sites = _check_ids(r, "ruins.json/sites", doc.get("sites", []))
+    for group in ("techniques", "elements", "sites"):
+        for e in doc.get(group, []):
+            _check_names(r, f"ruins.json/{group}", e)
+    for e in doc.get("techniques", []):
+        _check_names(r, "ruins.json/techniques", e, ("revealsEs", "revealsEn"))
+    if len(techniques) != 5:
+        r.error(f"ruins.json: {len(techniques)} técnicas; el GDD §6.2 fija 5")
+
+    # Espejo del C++: mismos ids que LexToString y mismas constantes.
+    root = ds.repo_root
+    cpp_techniques = _cpp_lex_ids(root, RUINS_CPP, "EWayfindingTechnique")
+    if not cpp_techniques:
+        r.warn("ruins.json: no se encuentra RuinsModel.cpp; no se compara con el C++")
+        return
+    if set(techniques) != cpp_techniques:
+        r.error(f"ruins.json/techniques {sorted(techniques)} no coincide con RuinsModel.cpp {sorted(cpp_techniques)}")
+    cpp_elements = _cpp_lex_ids(root, RUINS_CPP, "ERuinElementKind")
+    if set(elements) != cpp_elements:
+        r.error(f"ruins.json/elements {sorted(elements)} no coincide con RuinsModel.cpp {sorted(cpp_elements)}")
+    archetypes = _cpp_lex_ids(root, ARCHIPELAGO_CPP, "EIslandArchetype")
+    expected_sites = {f"ruin_{a.lower()}" for a in archetypes} | {"ruin_compass"}
+    if archetypes and set(sites) != expected_sites:
+        r.error(f"ruins.json/sites {sorted(sites)} no coincide con las islas del C++ {sorted(expected_sites)}")
+    for key, name in (("requiredStarPaths", "RequiredStarPaths"), ("petroglyphsPerSite", "PetroglyphsPerSite")):
+        v = _cpp_int(root, RUINS_H, name)
+        if v is None:
+            r.error(f"ruins.json: no existe la constante {name} en RuinsModel.h")
+        elif doc.get(key) != v:
+            r.error(f"ruins.json: {key}={doc.get(key)!r} pero RuinsModel.h dice {name}={v}")
+    # Una ruina de isla por cada técnica que no es camino de estrellas; el resto y la brújula enseñan caminos.
+    star_paths = (len(expected_sites) - 1) - (len(techniques) - 1) + 1
+    if isinstance(doc.get("requiredStarPaths"), int) and doc["requiredStarPaths"] > star_paths:
+        r.error(f"ruins.json: requiredStarPaths={doc['requiredStarPaths']} pero solo hay {star_paths} caminos de estrellas")
+
+
+def check_artifacts(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("artifacts.json")
+    if not doc:
+        return
+    root = ds.repo_root
+    kinds = {k.get("id") for k in ds.data.get("story_es.json", {}).get("artifact_kinds", [])}
+    sizes = _cpp_lex_ids(root, MUSEUM_CPP, "EArtifactSize") or set(SIZE_ORDER)
+    provenances = _check_ids(r, "artifacts.json/provenances", doc.get("provenances", []))
+    rarities = _check_ids(r, "artifacts.json/rarities", doc.get("rarities", []))
+    for group in ("provenances", "rarities"):
+        for e in doc.get(group, []):
+            _check_names(r, f"artifacts.json/{group}", e)
+    for enum, ids, group in (("EArtifactProvenance", provenances, "provenances"), ("EArtifactRarity", rarities, "rarities")):
+        cpp = _cpp_lex_ids(root, MUSEUM_CPP, enum)
+        if cpp and set(ids) != cpp:
+            r.error(f"artifacts.json/{group} {sorted(ids)} no coincide con MuseumModel.cpp {sorted(cpp)}")
+
+    known_meshes = blender_mesh_names(root)
+    pieces = {p.get("id"): p for p in ds.building.get("pieces", [])}
+    displays = doc.get("displays", [])
+    _check_ids(r, "artifacts.json/displays", displays)
+    largest_slot = -1
+    for d in displays:
+        did = d.get("id")
+        _check_names(r, "artifacts.json/displays", d)
+        piece_id = d.get("piece")
+        if piece_id is None:
+            r.info.append(f"artifacts.json: el mueble «{did}» aún no tiene pieza en building_pieces.json")
+        elif piece_id not in pieces:
+            r.error(f"artifacts.json/displays «{did}»: pieza «{piece_id}» no está en building_pieces.json")
+        elif pieces[piece_id].get("category") != "museo":
+            r.error(f"artifacts.json/displays «{did}»: la pieza «{piece_id}» no es de la categoría museo")
+        if d.get("mesh") is not None and d["mesh"] not in known_meshes:
+            r.error(f"artifacts.json/displays «{did}»: malla {d['mesh']} no existe en Tools/Blender/props")
+        slots = d.get("slots", [])
+        if not slots:
+            r.error(f"artifacts.json/displays «{did}»: sin huecos")
+        for i, slot in enumerate(slots):
+            if slot.get("maxSize") not in sizes:
+                r.error(f"artifacts.json/displays «{did}»[{i}]: maxSize {slot.get('maxSize')!r} no es {sorted(sizes)}")
+            else:
+                largest_slot = max(largest_slot, SIZE_ORDER.get(slot["maxSize"], -1))
+            off = slot.get("offsetCm")
+            if not (isinstance(off, list) and len(off) == 3 and all(_type_ok(v, (int, float)) and abs(v) <= 400 for v in off)):
+                r.error(f"artifacts.json/displays «{did}»[{i}]: offsetCm debe ser [x, y, z] en cm dentro de ±400")
+
+    artifacts = doc.get("artifacts", [])
+    _check_ids(r, "artifacts.json/artifacts", artifacts)
+    threshold = _cpp_int(root, MUSEUM_H, "CollectorThreshold")
+    if threshold is not None and len(artifacts) < threshold:
+        r.error(f"artifacts.json: {len(artifacts)} tesoros; el logro «Coleccionista» pide {threshold} expuestos")
+    for a in artifacts:
+        aid = a.get("id")
+        _check_names(r, "artifacts.json/artifacts", a)
+        if a.get("kind") not in kinds:
+            r.error(f"artifacts.json «{aid}»: kind «{a.get('kind')}» no está en story_es.json/artifact_kinds")
+        if a.get("provenance") not in provenances:
+            r.error(f"artifacts.json «{aid}»: procedencia «{a.get('provenance')}» desconocida")
+        if a.get("rarity") not in rarities:
+            r.error(f"artifacts.json «{aid}»: rareza «{a.get('rarity')}» desconocida")
+        if a.get("size") not in sizes:
+            r.error(f"artifacts.json «{aid}»: size {a.get('size')!r} no es {sorted(sizes)}")
+        elif SIZE_ORDER.get(a["size"], 99) > largest_slot:
+            r.error(f"artifacts.json «{aid}»: tamaño {a['size']} sin ningún hueco donde exponerlo")
+        if a.get("mesh") not in known_meshes:
+            r.error(f"artifacts.json «{aid}»: malla {a.get('mesh')!r} no existe en Tools/Blender/props")
+    for missing in sorted(kinds - {a.get("kind") for a in artifacts}):
+        r.error(f"artifacts.json: ningún tesoro del tipo «{missing}» (story_es.json/artifact_kinds)")
 
 
 # --------------------------------------------------------------------------- supervivencia
@@ -502,6 +778,184 @@ def check_survival(ds: DataSet, r: Report) -> None:
         v = _cpp_float(cpp, pat)
         if v is not None and v != bt.get(key):
             r.error(f"survival_needs.json: bodyTemperature.{key}={bt.get(key)} pero C++ dice {v}")
+    check_survival_body(doc, src, r)
+
+
+def _body_constants(node, path: str = "body"):
+    """Recorre «body» y devuelve (ruta, valor, cppConstant) de cada constante reflejada."""
+    if isinstance(node, dict):
+        if "cppConstant" in node and "value" in node:
+            yield path, node["value"], node["cppConstant"]
+            return
+        for key, child in node.items():
+            yield from _body_constants(child, f"{path}.{key}")
+
+
+def check_survival_body(doc: dict, src, r: Report) -> None:
+    body = doc.get("body")
+    if body is None:
+        return
+    path = src / "BodyModel.cpp"
+    if not path.exists():
+        r.warn("survival_needs.json: no se encuentra BodyModel.cpp; no se compara «body» con el C++")
+        return
+    cpp = path.read_text(encoding="utf-8")
+    for where, value, name in _body_constants(body):
+        if not _type_ok(value, (int, float)):
+            r.error(f"survival_needs.json {where}: value debe ser un número")
+            continue
+        v = _cpp_float(cpp, rf"constexpr float {name} = ([0-9.]+)f;")
+        if v is None:
+            r.error(f"survival_needs.json {where}: no existe la constante {name} en BodyModel.cpp")
+        elif v != value:
+            r.error(f"survival_needs.json {where}: value={value} pero {name}={v} en BodyModel.cpp")
+    events_body = _function_body(cpp, "float FBodyModel::MoraleEventDelta(")
+    for event, value in body.get("moraleEvents", {}).items():
+        m = re.search(rf"EMoraleEvent::{event}: return (-?[0-9.]+)f;", events_body)
+        if m is None:
+            r.error(f"survival_needs.json body.moraleEvents: EMoraleEvent::{event} no existe en BodyModel.cpp")
+        elif float(m.group(1)) != value:
+            r.error(f"survival_needs.json body.moraleEvents.{event}={value} pero BodyModel.cpp dice {m.group(1)}")
+
+
+# --------------------------------------------------------------------------- fuego y cocina
+
+
+def check_cooking(ds: DataSet, r: Report) -> None:
+    piece_ids = {p.get("id") for p in ds.building.get("pieces", [])}
+    if "fuels.json" in ds.data:
+        cooking.check_fuels(ds.data["fuels.json"], ds.items, piece_ids, r.error)
+    if "recipes.json" in ds.data:
+        cooking.check_recipes(ds.data["recipes.json"], ds.items, piece_ids, r.error)
+    cooking.check_generated(ds.repo_root, ds.data, r.error)
+
+
+# --------------------------------------------------------------------------- pesca
+
+FISH_HABITATS = {"orilla", "laguna", "arrecife", "talud", "profundo"}
+FISH_METHODS = {"cana", "arpon", "red", "trampa", "mano"}
+FISH_TRAPS = {"nasa", "trampa_cangrejos", "corral_piedras"}
+FISH_CPP = Path("Source") / "Explored" / "Fishing" / "FishingModel.cpp"
+FISH_TRAP_KINDS = {"Nasa": "nasa", "CrabTrap": "trampa_cangrejos", "StoneCorral": "corral_piedras"}
+
+
+def _cpp_calls(text: str, fn: str) -> dict[str, list[str]]:
+    """Argumentos de cada llamada «fn(TEXT("id"), ...)» del C++, por id."""
+    calls = {}
+    for m in re.finditer(rf'{fn}\(TEXT\("(\w+)"\),(.*?)\);', text, re.S):
+        calls[m.group(1)] = [a.strip() for a in m.group(2).split(",")]
+    return calls
+
+
+def _cpp_num(arg: str) -> float:
+    return float(arg.rstrip("f"))
+
+
+def _check_fish_species(doc: dict, ids: set[str], items: dict[str, dict], r: Report) -> None:
+    bait_keys = {"sin_cebo"} | set(doc.get("baits", {}))
+    species = doc.get("species", [])
+    rod_fish = [s for s in species if "cana" in s.get("methods", [])]
+    if len(rod_fish) != 11:
+        r.error(f"fish.json: {len(rod_fish)} peces de caña; el GDD §8.8 fija 11")
+    if "langosta" not in {s.get("id") for s in species}:
+        r.error("fish.json: falta la langosta de arrecife (GDD §8.8)")
+    for s in species:
+        sid = s.get("id")
+        if sid not in ids:
+            r.error(f"fish.json «{sid}»: la captura no está en items.json")
+        elif "comida" not in items[sid].get("tags", []):
+            r.error(f"fish.json «{sid}»: la captura debe tener la etiqueta comida")
+        if not set(s.get("habitats", [])) or set(s.get("habitats", [])) - FISH_HABITATS:
+            r.error(f"fish.json «{sid}»: hábitats inválidos {s.get('habitats')}")
+        if not set(s.get("methods", [])) or set(s.get("methods", [])) - FISH_METHODS:
+            r.error(f"fish.json «{sid}»: métodos inválidos {s.get('methods')}")
+        for key in ("depthM", "weightKg"):
+            lo, hi = (list(s.get(key) or []) + [0, 0])[:2]
+            if not (_type_ok(lo, (int, float)) and _type_ok(hi, (int, float)) and 0 < lo < hi):
+                r.error(f"fish.json «{sid}»: {key} {s.get(key)} no es un rango [min < max] positivo")
+        for group in ("periods", "tide", "moon", "baits"):
+            for k, v in s.get(group, {}).items():
+                if not _type_ok(v, (int, float)) or not 0 <= v <= 3:
+                    r.error(f"fish.json «{sid}».{group}.{k}={v!r} fuera de [0, 3]")
+        for k in s.get("baits", {}):
+            if k not in bait_keys:
+                r.error(f"fish.json «{sid}»: cebo desconocido «{k}»")
+
+
+def _check_fish_mirror(ds: DataSet, doc: dict, r: Report) -> None:
+    """Espejo del C++: ids y números de las tablas de FFishingModel."""
+    cpp_path = ds.repo_root / FISH_CPP
+    if not cpp_path.exists():
+        r.warn("fish.json: no se encuentra FishingModel.cpp; no se compara con el C++")
+        return
+    cpp = cpp_path.read_text(encoding="utf-8")
+    cpp_species = _cpp_calls(cpp, "MakeSpecies")
+    json_species = {s.get("id"): s for s in doc.get("species", [])}
+    for sid in sorted(set(cpp_species) ^ set(json_species)):
+        r.error(f"fish.json: la especie «{sid}» no coincide entre fish.json y FishingModel.cpp")
+    for sid in sorted(set(cpp_species) & set(json_species)):
+        n = [_cpp_num(a) for a in cpp_species[sid][-9:]]
+        s = json_species[sid]
+        expected = [*s.get("depthM", []), s.get("bitesPerMinute"), *s.get("weightKg", []),
+                    s.get("strengthKgf"), s.get("staminaSeconds"), s.get("aggression"), s.get("wariness")]
+        if n != expected:
+            r.error(f"fish.json «{sid}»: números distintos de FishingModel.cpp ({expected} frente a {n})")
+    cpp_legends = _cpp_calls(cpp, "MakeLegend")
+    json_legends = {leg.get("id") for leg in doc.get("legendary", [])}
+    for lid in sorted(set(cpp_legends) ^ json_legends):
+        r.error(f"fish.json: la legendaria «{lid}» no coincide entre fish.json y FishingModel.cpp")
+    cpp_traps = {(FISH_TRAP_KINDS.get(m.group(1)), m.group(2), float(m.group(3)))
+                 for m in re.finditer(r'\{ ETrapKind::(\w+), TEXT\("(\w+)"\), [^{}]*?, ([\d.]+)f, [\d.]+f, EFishBait', cpp)}
+    json_traps = {(k, c.get("item"), c.get("perHour"))
+                  for k, t in doc.get("traps", {}).items() for c in t.get("catches", [])}
+    for kind, item_id, rate in sorted(cpp_traps ^ json_traps, key=str):
+        r.error(f"fish.json: trampa «{kind}» «{item_id}» ({rate}/h) no coincide con FishingModel.cpp")
+
+
+def check_fish(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("fish.json")
+    if not doc:
+        return
+    ids = ds.item_ids
+    items = {i["id"]: i for i in ds.items}
+    for key, item_id in doc.get("baits", {}).items():
+        if item_id not in ids:
+            r.error(f"fish.json baits.{key}: «{item_id}» no está en items.json")
+    _check_fish_species(doc, ids, items, r)
+
+    legendary = doc.get("legendary", [])
+    if len(legendary) != 5:
+        r.error(f"fish.json: {len(legendary)} legendarias; la biblia §4.6 fija 5")
+    for leg in legendary:
+        if not leg.get("rewards"):
+            r.error(f"fish.json legendaria «{leg.get('id')}»: sin recompensa")
+        for reward in leg.get("rewards", []):
+            if reward not in ids:
+                r.error(f"fish.json legendaria «{leg.get('id')}»: recompensa «{reward}» no está en items.json")
+        if not leg.get("spot"):
+            r.error(f"fish.json legendaria «{leg.get('id')}»: sin sitio")
+
+    traps = doc.get("traps", {})
+    if set(traps) != FISH_TRAPS:
+        r.error(f"fish.json: trampas {sorted(traps)}; se esperan {sorted(FISH_TRAPS)}")
+    for kind, trap in traps.items():
+        if not isinstance(trap.get("capacity"), int) or trap["capacity"] < 1:
+            r.error(f"fish.json trampa «{kind}»: capacidad inválida")
+        for c in trap.get("catches", []):
+            if c.get("item") not in ids:
+                r.error(f"fish.json trampa «{kind}»: «{c.get('item')}» no está en items.json")
+            if not _type_ok(c.get("perHour"), (int, float)) or not 0 < c["perHour"] <= 1:
+                r.error(f"fish.json trampa «{kind}» «{c.get('item')}»: perHour fuera de (0, 1]")
+            bait = c.get("favouriteBait")
+            if bait is not None and bait not in ids:
+                r.error(f"fish.json trampa «{kind}»: cebo «{bait}» no está en items.json")
+    for c in doc.get("tidePool", {}).get("catches", []):
+        if c.get("item") not in ids:
+            r.error(f"fish.json poza: «{c.get('item')}» no está en items.json")
+    for y in doc.get("butchery", {}).get("yields", []):
+        if y not in ids:
+            r.error(f"fish.json despiece: «{y}» no está en items.json")
+    _check_fish_mirror(ds, doc, r)
 
 
 # --------------------------------------------------------------------------- story y reglas
@@ -550,8 +1004,14 @@ def run_all(ds: DataSet) -> Report:
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
     check_building(ds, r, obtainable)
+    check_boats(ds, r, obtainable)
     check_meshes(ds, r)
     check_survival(ds, r)
+    check_cooking(ds, r)
     check_story(ds, r)
+    achievements.check_achievements(ds, r)
+    check_ruins(ds, r)
+    check_artifacts(ds, r)
+    check_fish(ds, r)
     check_forbidden_terms(ds, r)
     return r

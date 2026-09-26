@@ -13,6 +13,23 @@ from .generators import ambience, birds, body, construction, crafting, fauna, fo
 from .music import compose as music_compose
 
 
+# Piezas de la musica adaptativa, en el orden en que se exportan. `music.layers`
+# las describe (papel, isla, tempo, compases) para el director de musica del juego.
+MUSIC_ISLANDS = ("landing", "emerald", "smoke", "teeth", "mangrove", "whitesands", "mesa")
+MUSIC_NAMES = [
+    "mus_theme",
+    *(f"mus_explore_{island}" for island in MUSIC_ISLANDS),
+    "mus_night",
+    "mus_tension",
+    "mus_storm",
+    "mus_sea",
+    *(f"mus_discovery_{variant}" for variant in ("01", "02", "03", "04")),
+    *(f"mus_finale_{variant}" for variant in ("rescue", "voyage", "stay")),
+    "mus_menu",
+    "mus_credits",
+]
+
+
 @dataclass(frozen=True)
 class SoundSpec:
     name: str
@@ -127,19 +144,11 @@ def build_catalog() -> list[SoundSpec]:
     # Musica adaptativa (§9.3): la genera `music.compose`, aqui solo se cablea
     # en el catalogo para que pase por el mismo postproceso, exportacion y
     # manifiesto que el resto de sonidos.
-    music_names = [
-        "mus_theme",
-        *(f"mus_explore_{island}" for island in ("landing", "emerald", "smoke", "teeth", "mangrove", "whitesands", "mesa")),
-        "mus_night",
-        "mus_tension",
-        "mus_storm",
-        "mus_sea",
-        *(f"mus_discovery_{variant}" for variant in ("01", "02", "03", "04")),
-        *(f"mus_finale_{variant}" for variant in ("rescue", "voyage", "stay")),
-        "mus_menu",
-        "mus_credits",
-    ]
-    for name in music_names:
+    for name in MUSIC_NAMES:
         specs.append(_music_spec(name))
+
+    # Flauta de bambu diegetica (GDD §8.12): una sola nota que el juego
+    # transpone a cada grado de la pentatonica (ver `music.layers`).
+    specs.append(SoundSpec(music_compose.FLUTE_SAMPLE_NAME, "Efectos", False, music_compose.flute_note_sample))
 
     return specs

@@ -1,0 +1,500 @@
+{
+  "version": 1,
+  "units": {
+    "condition": "{stat, op, value} compara un contador, un máximo o el tamaño de un conjunto; {stat, contains} pide un id en un conjunto; {flag} pide una marca; {all: [...]}, {any: [...]} y {not: {...}} las combinan",
+    "op": ">=, >, <=, <, ==",
+    "modes": "modos en que se puede conseguir (Explorer, Survivor, Castaway, Custom); si falta, en todos",
+    "hidden": "la UI no muestra nombre ni descripción hasta desbloquearlo",
+    "icon": "pista de icono genérica; la UI decide el dibujo",
+    "stats.kind": "counter suma, max guarda el mayor, set reúne ids distintos, flag se marca una vez",
+    "stats.scope": "profile dura toda la vida del jugador; run se vacía al empezar partida y viaja con su guardado",
+    "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces)"
+  },
+  "source": "Catálogo de estadísticas documentado en docs/tecnico/estadisticas.md; Tools/DataCheck comprueba que ambos coinciden.",
+  "modes": ["Explorer", "Survivor", "Castaway", "Custom"],
+  "stats": [
+    {
+      "id": "fires_lit",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "P-COOK / Survival",
+      "descriptionEs": "Hogueras y fogatas encendidas (cada encendido cuenta uno)."
+    },
+    {
+      "id": "palms_climbed",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Player (movimiento)",
+      "descriptionEs": "Veces que se trepa hasta la copa de un cocotero."
+    },
+    {
+      "id": "coconuts_opened",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Interaction / Crafting",
+      "descriptionEs": "Cocos abiertos para beber o comer."
+    },
+    {
+      "id": "fish_caught",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "P-FISH",
+      "descriptionEs": "Peces capturados con cualquier técnica (caña, arpón, red, nasa)."
+    },
+    {
+      "id": "legendary_catches",
+      "kind": "set",
+      "scope": "profile",
+      "reportedBy": "P-FISH",
+      "descriptionEs": "Capturas legendarias conseguidas (biblia §4.6).",
+      "values": ["el_viejo", "sombra", "manta_negra", "el_errante", "rey_de_plata"]
+    },
+    {
+      "id": "max_dive_depth_m",
+      "kind": "max",
+      "scope": "profile",
+      "reportedBy": "P-SWIM",
+      "descriptionEs": "Profundidad máxima alcanzada buceando, en metros."
+    },
+    {
+      "id": "distance_sailed_m",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "P-BOATS",
+      "descriptionEs": "Metros recorridos a vela (no a remo)."
+    },
+    {
+      "id": "foods_eaten",
+      "kind": "set",
+      "scope": "profile",
+      "reportedBy": "P-COOK / Survival",
+      "descriptionEs": "Comidas distintas probadas (ids de items.json).",
+      "valuesFrom": "items"
+    },
+    {
+      "id": "events_witnessed",
+      "kind": "set",
+      "scope": "profile",
+      "reportedBy": "P-EVENTS",
+      "descriptionEs": "Eventos del mundo presenciados (GDD §9.3; LexToString de EWorldEventType).",
+      "values": ["TurtleNesting", "TurtleHatchlings", "Bioluminescence", "MeteorShower", "WhalePassage", "ShipOnHorizon", "MinorEruption", "ExtremeSpringTide"]
+    },
+    {
+      "id": "cyclones_survived_intact",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "P-BUILD + Weather",
+      "descriptionEs": "Ciclones superados sin que ninguna pieza de la base pierda integridad."
+    },
+    {
+      "id": "flute_played_by_fire",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "P-MUSIC / Audio",
+      "descriptionEs": "Melodías tocadas con la flauta de bambú junto a un fuego encendido."
+    },
+    {
+      "id": "days_survived",
+      "kind": "max",
+      "scope": "run",
+      "reportedBy": "Sky / TimeOfDay",
+      "descriptionEs": "Días completos vividos en la partida actual (se informa el total, no el incremento)."
+    },
+    {
+      "id": "islands_visited",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "WorldGen / Player",
+      "descriptionEs": "Islas pisadas (LexToString de EIslandArchetype). La isla oculta no cuenta: ver hidden_island_reached.",
+      "values": ["Landing", "Emerald", "Smoke", "Teeth", "Mangrove", "WhiteSands", "Mesa"]
+    },
+    {
+      "id": "islands_mapped",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "P-MAP",
+      "descriptionEs": "Islas cuyo contorno está entero en trazo firme.",
+      "values": ["Landing", "Emerald", "Smoke", "Teeth", "Mangrove", "WhiteSands", "Mesa"]
+    },
+    {
+      "id": "coast_drawn",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "P-MAP",
+      "descriptionEs": "Se marca con el primer trazo de costa del mapa (también el automático al caminar por la orilla)."
+    },
+    {
+      "id": "places_visited",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "Narrative / WorldGen",
+      "descriptionEs": "Lugares singulares visitados.",
+      "values": ["crater_humo", "tubo_lava", "cascada_esmeralda", "faro_dientes", "estacion_halden", "observatorio_mareas", "pecio_velero", "cueva_aire"]
+    },
+    {
+      "id": "museum_treasures_on_display",
+      "kind": "max",
+      "scope": "run",
+      "reportedBy": "P-RUINS (museo)",
+      "descriptionEs": "Tesoros expuestos a la vez en estanterías y vitrinas (se informa el total actual)."
+    },
+    {
+      "id": "wayfinding_techniques",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "P-RUINS",
+      "descriptionEs": "Técnicas de navegación ancestral aprendidas (GDD §6.2; ids de ruins.json).",
+      "values": ["star_path", "swell_reading", "birds_at_dusk", "fixed_clouds", "water_colour"]
+    },
+    {
+      "id": "albatros_parts_recovered",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "Narrative / Carry",
+      "descriptionEs": "Restos del Albatros recuperados.",
+      "values": ["fuselaje", "ala", "cola", "motor"]
+    },
+    {
+      "id": "building_pieces_built",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "P-BUILD",
+      "descriptionEs": "Piezas de construcción colocadas al menos una vez (ids de building_pieces.json).",
+      "valuesFrom": "building_pieces"
+    },
+    {
+      "id": "building_tier_max",
+      "kind": "max",
+      "scope": "run",
+      "reportedBy": "P-BUILD",
+      "descriptionEs": "Nivel de material más alto construido (order de building_pieces.json: 0 palma … 3 piedra)."
+    },
+    {
+      "id": "crops_harvested",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "P-FARM",
+      "descriptionEs": "Cultivos cosechados al menos una vez (ids de plants.json).",
+      "valuesFrom": "plants"
+    },
+    {
+      "id": "boats_built",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "P-BOATS",
+      "descriptionEs": "Embarcaciones terminadas en el astillero (ids de boats.json).",
+      "values": ["balsa", "canoa", "canoa_balancin", "barco_limon"]
+    },
+    {
+      "id": "hidden_island_reached",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "P-BOATS / P-RUINS",
+      "descriptionEs": "Se marca al desembarcar en la isla oculta."
+    }
+  ],
+  "achievements": [
+    {
+      "id": "primer_fuego",
+      "nameEs": "Primer fuego",
+      "nameEn": "First Fire",
+      "descriptionEs": "Enciende tu primera hoguera en el archipiélago.",
+      "descriptionEn": "Light your first fire on the archipelago.",
+      "hidden": false,
+      "icon": "fuego",
+      "condition": {"stat": "fires_lit", "op": ">=", "value": 1}
+    },
+    {
+      "id": "diez_amaneceres",
+      "nameEs": "Diez amaneceres",
+      "nameEn": "Ten Sunrises",
+      "descriptionEs": "Aguanta diez días en las islas.",
+      "descriptionEn": "Last ten days on the islands.",
+      "hidden": false,
+      "icon": "sol",
+      "condition": {"stat": "days_survived", "op": ">=", "value": 10}
+    },
+    {
+      "id": "un_ano_de_islas",
+      "nameEs": "Un año de islas",
+      "nameEn": "A Year of Islands",
+      "descriptionEs": "Vive un año entero del archipiélago, sus cuatro estaciones, en modo Superviviente o Náufrago.",
+      "descriptionEn": "Live through a whole island year, all four seasons, in Survivor or Castaway mode.",
+      "hidden": false,
+      "icon": "estaciones",
+      "modes": ["Survivor", "Castaway"],
+      "condition": {"stat": "days_survived", "op": ">=", "value": 32}
+    },
+    {
+      "id": "rey_del_cocotero",
+      "nameEs": "Rey del cocotero",
+      "nameEn": "Coconut King",
+      "descriptionEs": "Trepa a lo alto de un cocotero y abre cincuenta cocos.",
+      "descriptionEn": "Climb to the top of a coconut palm and open fifty coconuts.",
+      "hidden": false,
+      "icon": "coco",
+      "condition": {"all": [{"stat": "palms_climbed", "op": ">=", "value": 1}, {"stat": "coconuts_opened", "op": ">=", "value": 50}]}
+    },
+    {
+      "id": "tierra_firme",
+      "nameEs": "Tierra firme",
+      "nameEn": "Solid Ground",
+      "descriptionEs": "Pisa una segunda isla del archipiélago.",
+      "descriptionEn": "Set foot on a second island.",
+      "hidden": false,
+      "icon": "isla",
+      "condition": {"stat": "islands_visited", "op": ">=", "value": 2}
+    },
+    {
+      "id": "las_siete_islas",
+      "nameEs": "Las siete islas",
+      "nameEn": "The Seven Islands",
+      "descriptionEs": "Pisa las siete islas del archipiélago.",
+      "descriptionEn": "Set foot on all seven islands.",
+      "hidden": false,
+      "icon": "archipielago",
+      "condition": {"stat": "islands_visited", "op": ">=", "value": 7}
+    },
+    {
+      "id": "cartografo",
+      "nameEs": "Cartógrafo",
+      "nameEn": "Cartographer",
+      "descriptionEs": "Completa el mapa de una isla con tu propia mano.",
+      "descriptionEn": "Complete the map of one island by your own hand.",
+      "hidden": false,
+      "icon": "mapa",
+      "condition": {"stat": "islands_mapped", "op": ">=", "value": 1}
+    },
+    {
+      "id": "el_mapa_entero",
+      "nameEs": "El mapa entero",
+      "nameEn": "The Whole Map",
+      "descriptionEs": "Completa el mapa de las siete islas.",
+      "descriptionEn": "Complete the map of all seven islands.",
+      "hidden": false,
+      "icon": "mapa",
+      "condition": {"stat": "islands_mapped", "op": ">=", "value": 7}
+    },
+    {
+      "id": "bajo_el_volcan",
+      "nameEs": "Bajo el volcán",
+      "nameEn": "Under the Volcano",
+      "descriptionEs": "Atraviesa el tubo de lava que corre bajo el volcán de la Isla del Humo.",
+      "descriptionEn": "Walk through the lava tube beneath the volcano on Smoke Island.",
+      "hidden": false,
+      "icon": "volcan",
+      "condition": {"stat": "places_visited", "contains": "tubo_lava"}
+    },
+    {
+      "id": "restos_del_albatros",
+      "nameEs": "Restos del Albatros",
+      "nameEn": "What the Albatross Left",
+      "descriptionEs": "Recupera los cuatro restos del Albatros: fuselaje, ala, cola y motor.",
+      "descriptionEn": "Recover all four pieces of the Albatross: fuselage, wing, tail and engine.",
+      "hidden": false,
+      "icon": "avion",
+      "condition": {"stat": "albatros_parts_recovered", "op": ">=", "value": 4}
+    },
+    {
+      "id": "primer_techo",
+      "nameEs": "Un techo propio",
+      "nameEn": "A Roof of Your Own",
+      "descriptionEs": "Construye tu primer refugio o tu primer techo.",
+      "descriptionEn": "Build your first shelter or your first roof.",
+      "hidden": false,
+      "icon": "refugio",
+      "condition": {"any": [{"stat": "building_pieces_built", "contains": "refugio_inclinado"}, {"stat": "building_pieces_built", "contains": "techo_palma"}, {"stat": "building_pieces_built", "contains": "techo_bambu"}, {"stat": "building_pieces_built", "contains": "techo_madera"}]}
+    },
+    {
+      "id": "cimientos_de_piedra",
+      "nameEs": "Cimientos de piedra",
+      "nameEn": "Stone Foundations",
+      "descriptionEs": "Construye con piedra, el material más sólido de la base.",
+      "descriptionEn": "Build with stone, the sturdiest material for your base.",
+      "hidden": false,
+      "icon": "piedra",
+      "condition": {"stat": "building_tier_max", "op": ">=", "value": 3}
+    },
+    {
+      "id": "ojo_de_ciclon",
+      "nameEs": "Ojo de ciclón",
+      "nameEn": "Eye of the Cyclone",
+      "descriptionEs": "Sobrevive a un ciclón sin que tu base sufra ningún daño.",
+      "descriptionEn": "Weather a cyclone without a single scratch on your base.",
+      "hidden": false,
+      "icon": "ciclon",
+      "condition": {"stat": "cyclones_survived_intact", "op": ">=", "value": 1}
+    },
+    {
+      "id": "el_limonero",
+      "nameEs": "El limonero",
+      "nameEn": "The Lemon Tree",
+      "descriptionEs": "Cosecha el primer limón de tu limonero.",
+      "descriptionEn": "Harvest the first lemon from your lemon tree.",
+      "hidden": false,
+      "icon": "limon",
+      "condition": {"stat": "crops_harvested", "contains": "limonero"}
+    },
+    {
+      "id": "huerto_en_flor",
+      "nameEs": "Huerto en flor",
+      "nameEn": "Garden in Bloom",
+      "descriptionEs": "Cosecha cinco cultivos distintos.",
+      "descriptionEn": "Harvest five different crops.",
+      "hidden": false,
+      "icon": "huerto",
+      "condition": {"stat": "crops_harvested", "op": ">=", "value": 5}
+    },
+    {
+      "id": "cocina_de_isla",
+      "nameEs": "Cocina de isla",
+      "nameEn": "Island Kitchen",
+      "descriptionEs": "Prueba veinte comidas distintas.",
+      "descriptionEn": "Taste twenty different foods.",
+      "hidden": false,
+      "icon": "olla",
+      "condition": {"stat": "foods_eaten", "op": ">=", "value": 20}
+    },
+    {
+      "id": "primera_captura",
+      "nameEs": "Primera captura",
+      "nameEn": "First Catch",
+      "descriptionEs": "Pesca tu primer pez.",
+      "descriptionEn": "Catch your first fish.",
+      "hidden": false,
+      "icon": "pez",
+      "condition": {"stat": "fish_caught", "op": ">=", "value": 1}
+    },
+    {
+      "id": "una_historia_que_contar",
+      "nameEs": "Una historia que contar",
+      "nameEn": "A Tale to Tell",
+      "descriptionEs": "Captura una de las cinco presas legendarias del archipiélago.",
+      "descriptionEn": "Land one of the archipelago's five legendary catches.",
+      "hidden": true,
+      "icon": "anzuelo",
+      "condition": {"stat": "legendary_catches", "op": ">=", "value": 1}
+    },
+    {
+      "id": "pulmones_de_perla",
+      "nameEs": "Pulmones de perla",
+      "nameEn": "Pearl Lungs",
+      "descriptionEs": "Bucea hasta veinte metros de profundidad.",
+      "descriptionEn": "Dive down to twenty metres.",
+      "hidden": false,
+      "icon": "burbujas",
+      "condition": {"stat": "max_dive_depth_m", "op": ">=", "value": 20}
+    },
+    {
+      "id": "mar_abierto",
+      "nameEs": "Mar abierto",
+      "nameEn": "Open Sea",
+      "descriptionEs": "Navega diez kilómetros a vela.",
+      "descriptionEn": "Sail ten kilometres.",
+      "hidden": false,
+      "icon": "vela",
+      "condition": {"stat": "distance_sailed_m", "op": ">=", "value": 10000}
+    },
+    {
+      "id": "luz_en_el_agua",
+      "nameEs": "Luz en el agua",
+      "nameEn": "Light in the Water",
+      "descriptionEs": "Contempla el mar encendido de bioluminiscencia.",
+      "descriptionEn": "Watch the sea light up with bioluminescence.",
+      "hidden": false,
+      "icon": "ola",
+      "condition": {"stat": "events_witnessed", "contains": "Bioluminescence"}
+    },
+    {
+      "id": "madrugada_de_tortugas",
+      "nameEs": "Madrugada de tortugas",
+      "nameEn": "Turtle Dawn",
+      "descriptionEs": "Acompaña con la mirada a las crías de tortuga en su camino al mar.",
+      "descriptionEn": "Watch the turtle hatchlings make their way to the sea.",
+      "hidden": false,
+      "icon": "tortuga",
+      "condition": {"stat": "events_witnessed", "contains": "TurtleNesting"}
+    },
+    {
+      "id": "canto_de_ballenas",
+      "nameEs": "Canto de ballenas",
+      "nameEn": "Whale Song",
+      "descriptionEs": "Avista el paso de las ballenas.",
+      "descriptionEn": "Spot the whales passing by.",
+      "hidden": false,
+      "icon": "ballena",
+      "condition": {"stat": "events_witnessed", "contains": "WhalePassage"}
+    },
+    {
+      "id": "deseos_a_punados",
+      "nameEs": "Deseos a puñados",
+      "nameEn": "Wishes by the Handful",
+      "descriptionEs": "Pasa en vela una noche de lluvia de estrellas.",
+      "descriptionEn": "Stay up through a night of shooting stars.",
+      "hidden": true,
+      "icon": "estrella",
+      "condition": {"stat": "events_witnessed", "contains": "MeteorShower"}
+    },
+    {
+      "id": "melodia_junto_al_fuego",
+      "nameEs": "Melodía junto al fuego",
+      "nameEn": "Fireside Tune",
+      "descriptionEs": "Toca la flauta de bambú junto al fuego.",
+      "descriptionEn": "Play the bamboo flute by the fire.",
+      "hidden": false,
+      "icon": "flauta",
+      "condition": {"stat": "flute_played_by_fire", "op": ">=", "value": 1}
+    },
+    {
+      "id": "coleccionista",
+      "nameEs": "Coleccionista",
+      "nameEn": "Collector",
+      "descriptionEs": "Expón diez tesoros a la vez en el museo de tu base.",
+      "descriptionEn": "Display ten treasures at once in your home museum.",
+      "hidden": false,
+      "icon": "vitrina",
+      "condition": {"stat": "museum_treasures_on_display", "op": ">=", "value": 10}
+    },
+    {
+      "id": "wayfinder",
+      "nameEs": "Wayfinder",
+      "nameEn": "Wayfinder",
+      "descriptionEs": "Aprende las cinco técnicas de navegación ancestral.",
+      "descriptionEn": "Learn all five ancestral wayfinding techniques.",
+      "hidden": false,
+      "icon": "brujula",
+      "condition": {"stat": "wayfinding_techniques", "op": ">=", "value": 5}
+    },
+    {
+      "id": "limon_zarpa",
+      "nameEs": "Limón zarpa",
+      "nameEn": "Limón Sets Sail",
+      "descriptionEs": "Construye el barco «Limón» y llega con él a la isla oculta.",
+      "descriptionEn": "Build the boat «Limón» and sail her to the hidden island.",
+      "hidden": false,
+      "icon": "barco",
+      "condition": {"all": [{"stat": "boats_built", "contains": "barco_limon"}, {"flag": "hidden_island_reached"}]}
+    },
+    {
+      "id": "naufrago_de_verdad",
+      "nameEs": "Náufrago de verdad",
+      "nameEn": "True Castaway",
+      "descriptionEs": "Llega a la isla oculta en modo Náufrago.",
+      "descriptionEn": "Reach the hidden island in Castaway mode.",
+      "hidden": false,
+      "icon": "ancla",
+      "modes": ["Castaway"],
+      "condition": {"flag": "hidden_island_reached"}
+    },
+    {
+      "id": "sin_mapa",
+      "nameEs": "Sin mapa",
+      "nameEn": "No Map",
+      "descriptionEs": "Llega a la isla oculta sin haber dibujado ninguna costa.",
+      "descriptionEn": "Reach the hidden island without ever drawing a coastline.",
+      "hidden": true,
+      "icon": "estrella",
+      "condition": {"all": [{"flag": "hidden_island_reached"}, {"not": {"flag": "coast_drawn"}}]}
+    }
+  ]
+}
