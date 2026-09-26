@@ -5,4 +5,6 @@ Tests/WorldGenSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/GaitSpec.cpp
+Tests/MuseumSpec.cpp
+Tests/RuinsSpec.cpp
 Tests/VegetationScatterSpec.cpp

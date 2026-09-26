@@ -5,7 +5,15 @@ from __future__ import annotations
 import pytest
 
 from datacheck import crafting
-from datacheck.checks import DataSet, Report, check_building, check_crafting_reachability, run_all
+from datacheck.checks import (
+    DataSet,
+    Report,
+    check_artifacts,
+    check_building,
+    check_crafting_reachability,
+    check_ruins,
+    run_all,
+)
 
 
 @pytest.fixture(scope="module")
@@ -217,3 +225,74 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
+
+
+# --------------------------------------------------------------------------- ruinas y museo
+
+
+def ruins_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_ruins(ds, r)
+    return r.errors
+
+
+def artifacts_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_artifacts(ds, r)
+    return r.errors
+
+
+def artifact(ds: DataSet, aid: str) -> dict:
+    return next(a for a in ds.data["artifacts.json"]["artifacts"] if a["id"] == aid)
+
+
+def test_ruinas_y_tesoros_reales_sin_errores(real: DataSet) -> None:
+    assert ruins_errors(real) == []
+    assert artifacts_errors(real) == []
+
+
+def test_detecta_tecnica_que_no_esta_en_el_cpp(ds: DataSet) -> None:
+    ds.data["ruins.json"]["techniques"][0]["id"] = "star_trail"
+    assert any_error(ruins_errors(ds), "RuinsModel.cpp")
+
+
+def test_detecta_constante_de_caminos_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["ruins.json"]["requiredStarPaths"] = 5
+    assert any_error(ruins_errors(ds), "RequiredStarPaths")
+
+
+def test_detecta_ruina_de_isla_que_falta(ds: DataSet) -> None:
+    ds.data["ruins.json"]["sites"].pop(0)
+    assert any_error(ruins_errors(ds), "islas del C++")
+
+
+def test_detecta_tipo_de_tesoro_desconocido(ds: DataSet) -> None:
+    artifact(ds, "anzuelo_hueso")["kind"] = "golden_idol"
+    assert any_error(artifacts_errors(ds), "golden_idol")
+
+
+def test_detecta_tesoro_con_malla_inventada(ds: DataSet) -> None:
+    artifact(ds, "tapa_pintada")["mesh"] = "SM_Treasure_Crown"
+    assert any_error(artifacts_errors(ds), "SM_Treasure_Crown")
+
+
+def test_detecta_tesoro_que_no_cabe_en_ningun_mueble(ds: DataSet) -> None:
+    for d in ds.data["artifacts.json"]["displays"]:
+        for slot in d["slots"]:
+            slot["maxSize"] = "Mediano"
+    assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco")
+
+
+def test_detecta_mueble_con_pieza_inexistente(ds: DataSet) -> None:
+    ds.data["artifacts.json"]["displays"][1]["piece"] = "vitrina_de_oro"
+    assert any_error(artifacts_errors(ds), "vitrina_de_oro")
+
+
+def test_detecta_id_de_tesoro_con_tilde(ds: DataSet) -> None:
+    artifact(ds, "pectoral_nacar")["id"] = "pectoral_nácar"
+    assert any_error(artifacts_errors(ds), "id inválido")
+
+
+def test_detecta_pocos_tesoros_para_coleccionista(ds: DataSet) -> None:
+    ds.data["artifacts.json"]["artifacts"] = ds.data["artifacts.json"]["artifacts"][:9]
+    assert any_error(artifacts_errors(ds), "Coleccionista")

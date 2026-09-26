@@ -133,5 +133,8 @@
     "taro.brote",
     "taro.hojas_grandes",
     "taro.listo"
+  ],
+  "museumDisplays": [
+    "panel_museo"
   ]
 }

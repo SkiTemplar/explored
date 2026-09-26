@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "note": "Textos de las ruinas del pueblo navegante y de las técnicas de wayfinding (GDD §6, biblia §9). La disposición y la asignación de técnicas las calcula FRuinsLayout a partir de la semilla; ids y constantes deben coincidir con Source/Explored/Ruins/RuinsModel.{h,cpp} (lo comprueba Tools/DataCheck).",
+  "requiredStarPaths": 3,
+  "petroglyphsPerSite": 2,
+  "techniques": [
+    {
+      "id": "star_path",
+      "nameEs": "Camino de estrellas",
+      "nameEn": "Star path",
+      "revealsEs": "Rumbo nocturno hacia otra isla concreta",
+      "revealsEn": "Night bearing towards a specific island"
+    },
+    {
+      "id": "swell_reading",
+      "nameEs": "Lectura del oleaje",
+      "nameEn": "Swell reading",
+      "revealsEs": "Distancia y dirección a tierra por el mar de fondo",
+      "revealsEn": "Distance and direction to land from the swell"
+    },
+    {
+      "id": "birds_at_dusk",
+      "nameEs": "Aves al atardecer",
+      "nameEn": "Birds at dusk",
+      "revealsEs": "Las bandadas vuelven a la isla más cercana",
+      "revealsEn": "Flocks fly back to the nearest island"
+    },
+    {
+      "id": "fixed_clouds",
+      "nameEs": "Nubes fijas",
+      "nameEn": "Fixed clouds",
+      "revealsEs": "Una nube quieta delata una isla alta y lejana",
+      "revealsEn": "A still cloud gives away a distant high island"
+    },
+    {
+      "id": "water_colour",
+      "nameEs": "Color del agua",
+      "nameEn": "Water colour",
+      "revealsEs": "El tono del agua marca bajíos y arrecifes",
+      "revealsEn": "The water's hue marks shoals and reefs"
+    }
+  ],
+  "elements": [
+    {
+      "id": "petroglyph",
+      "nameEs": "Petroglifo",
+      "nameEn": "Petroglyph"
+    },
+    {
+      "id": "statue",
+      "nameEs": "Estatua alineada",
+      "nameEn": "Aligned statue"
+    },
+    {
+      "id": "altar",
+      "nameEs": "Ofrenda en el altar",
+      "nameEn": "Altar offering"
+    },
+    {
+      "id": "compass",
+      "nameEs": "Brújula estelar",
+      "nameEn": "Star compass"
+    },
+    {
+      "id": "canoe",
+      "nameEs": "Canoa doble fosilizada",
+      "nameEn": "Fossilised double canoe"
+    },
+    {
+      "id": "cave",
+      "nameEs": "Cueva ritual",
+      "nameEn": "Ritual cave"
+    }
+  ],
+  "sites": [
+    {
+      "id": "ruin_landing",
+      "nameEs": "Marae del palmeral",
+      "nameEn": "Palm grove marae"
+    },
+    {
+      "id": "ruin_emerald",
+      "nameEs": "Marae de la cascada",
+      "nameEn": "Waterfall marae"
+    },
+    {
+      "id": "ruin_smoke",
+      "nameEs": "Marae del tubo de lava",
+      "nameEn": "Lava tube marae"
+    },
+    {
+      "id": "ruin_teeth",
+      "nameEs": "Marae de los acantilados",
+      "nameEn": "Cliff marae"
+    },
+    {
+      "id": "ruin_mangrove",
+      "nameEs": "Marae de las raíces",
+      "nameEn": "Root marae"
+    },
+    {
+      "id": "ruin_whitesands",
+      "nameEs": "Marae de las canoas",
+      "nameEn": "Canoe marae"
+    },
+    {
+      "id": "ruin_mesa",
+      "nameEs": "Marae de la meseta",
+      "nameEn": "Plateau marae"
+    },
+    {
+      "id": "ruin_compass",
+      "nameEs": "Brújula estelar del Humo",
+      "nameEn": "Star compass of Smoke Island"
+    }
+  ]
+}
