@@ -230,6 +230,31 @@ def montage(mats, samples, res):
     _stage(w + 16, 26, (0, 0), (-w * 0.28, -w * 0.78, w * 0.3), (0.0, 0.0, 1.6), 42, out, samples, res)
 
 
+def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2):
+    """Lámina a escala real de todas las variantes de un módulo de props,
+    en rejilla cuyas columnas/filas se dimensionan por las cajas reales."""
+    import importlib
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    mod = importlib.import_module(mod_name)
+    objs = [mod.build(v) for v in mod.VARIANTS]
+    bpy.context.view_layer.update()
+    dims = [(_bounds(o)[1] - _bounds(o)[0], _bounds(o)[3] - _bounds(o)[2]) for o in objs]
+    rows = math.ceil(len(objs) / cols)
+    col_w = [max([dims[i][0] for i in range(c, len(objs), cols)] + [0]) + gap for c in range(cols)]
+    row_d = [max(dims[i][1] for i in range(r * cols, min(len(objs), (r + 1) * cols))) + gap
+             for r in range(rows)]
+    total_w, total_d = sum(col_w), sum(row_d)
+    for i, o in enumerate(objs):
+        c, r = i % cols, i // cols
+        cx = -total_w / 2 + sum(col_w[:c]) + col_w[c] / 2
+        cy = -total_d / 2 + sum(row_d[:r]) + row_d[r] / 2
+        x0, x1, y0, y1, z0, _ = _bounds(o)
+        o.location = (cx - (x0 + x1) / 2, cy - (y0 + y1) / 2, -z0)
+    out = os.path.join(OUT_DIR, f'{slug}.png')
+    _stage(total_w + 20, total_d + 20, (0, 0), (-0.45 * total_w, -1.3 * total_d, 0.9 * total_d), (0, 0, 0.3), 40,
+           out, samples, res)
+
+
 def main():
     o = _args()
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -240,6 +265,8 @@ def main():
             catalog(m, samples, o['res'])
     if o['mode'] in ('all', 'montage'):
         montage(mats, samples, o['res'])
+    if o['mode'] == 'module':
+        module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')))
 
 
 if __name__ == '__main__':

@@ -55,6 +55,7 @@ MODULE_GROUPS = [
     # kit modular de la base: una carpeta por material (KitPalma, KitBambu,
     # KitMadera, KitPiedra), que cada variante declara en su clave 'group'.
     ('kit_construccion', 'KitConstruccion'),
+    ('mobiliario_base', 'MobiliarioBase'),
 ]
 
 

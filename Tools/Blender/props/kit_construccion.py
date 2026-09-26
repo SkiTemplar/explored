@@ -134,6 +134,9 @@ BEVEL = {
     'stone': (0.035, 2, 35.0),
     'slab': (0.018, 2, 35.0),
     'shingle': (0.01, 1, 35.0),
+    'soft': (0.02, 2, 35.0),
+    # piezas orgánicas o diminutas (blobs, brotes): sin bisel
+    'none': None,
 }
 
 _BUILDERS = {}
@@ -188,13 +191,24 @@ class Parts:
             if not objs:
                 continue
             obj = C.join_objects(objs, f'{name}_{kind}') if len(objs) > 1 else objs[0]
-            w, seg, ang = BEVEL[kind]
-            S.bevel_obj(obj, width=w, segments=seg, limit_angle_deg=ang)
+            if BEVEL.get(kind) is not None:
+                w, seg, ang = BEVEL[kind]
+                S.bevel_obj(obj, width=w, segments=seg, limit_angle_deg=ang)
             joined.append(obj)
         obj = C.join_objects(joined, name) if len(joined) > 1 else joined[0]
         C.shade_smooth_auto(obj, angle_deg=35.0)
         C.add_basic_uv(obj)
         return obj
+
+
+def ground(obj):
+    """Baja/sube la malla para que su punto más bajo quede en z=0 (pivote
+    en la base aunque blobs con ruido o piedras asomen unos mm por debajo)."""
+    mz = min(v.co.z for v in obj.data.vertices)
+    if abs(mz) > 1e-5:
+        obj.data.transform(Matrix.Translation((0.0, 0.0, -mz)))
+        obj.data.update()
+    return obj
 
 
 # ---------------------------------------------------------------------------

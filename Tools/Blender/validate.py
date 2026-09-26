@@ -82,6 +82,7 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'KitBambu':        (40.0, 450.0),
     'KitMadera':       (40.0, 450.0),
     'KitPiedra':       (40.0, 450.0),
+    'MobiliarioBase':  (60.0, 450.0),    # vitrina ~1 m .. muelle 4 m
 }
 
 
