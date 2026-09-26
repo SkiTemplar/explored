@@ -34,7 +34,7 @@ compila y pasa sus tests en local.
 | Farming | en curso | ✅ | sin compilar | `FFarmModel` + `UFarmSubsystem` y `AExploredPlantActor`; verificar en local (P-FARM) |
 | Cooking | ❌ | ❌ | ❌ | (P-COOK) |
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
-| Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
+| Ruins / museo | ✅ modelo | ✅ | sin compilar | `FRuinsModel` + `FMuseumModel` con specs en el host; `URuinsSubsystem` y `UMuseumDisplayComponent` por verificar en local (P-RUINS) |
 | Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
 | Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
@@ -54,7 +54,7 @@ compila y pasa sus tests en local.
 | P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | pendiente |
 | P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | en curso (nube/huerto-2026-09-26) |
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
-| P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
+| P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | en curso (nube/ruinas-2026-09-26) |
 | P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
 | P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | en curso (nube/eventos-2026-09-26) |
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |

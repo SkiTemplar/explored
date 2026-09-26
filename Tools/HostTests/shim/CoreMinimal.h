@@ -585,7 +585,7 @@ using TUniqueFunction = std::function<T>;
 // Cadenas
 // ---------------------------------------------------------------------------
 
-/** Como en Unreal (Misc/CString.h): mayúsculas en comparaciones de FString. */
+/** Como en Unreal (Misc/CString.h): distinguir o no mayúsculas al comparar cadenas. */
 namespace ESearchCase
 {
 	enum Type { CaseSensitive, IgnoreCase };
@@ -636,7 +636,9 @@ public:
 	bool operator!=(const FString& O) const { return !(*this == O); }
 	bool operator<(const FString& O) const { return Lower(Str) < Lower(O.Str); }
 	bool Equals(const FString& O, bool bCaseSensitive = true) const { return bCaseSensitive ? Str == O.Str : Lower(Str) == Lower(O.Str); }
-	bool Equals(const FString& O, ESearchCase::Type Case) const { return Equals(O, Case == ESearchCase::CaseSensitive); }
+	/** Firma de Unreal (FString::Equals con ESearchCase). */
+	bool Equals(const FString& O, ESearchCase::Type SearchCase) const { return Equals(O, SearchCase == ESearchCase::CaseSensitive); }
+	bool Equals(const char* O, ESearchCase::Type SearchCase) const { return Equals(FString(O), SearchCase); }
 	int32 Compare(const FString& O) const { return Str.compare(O.Str); }
 	bool StartsWith(const FString& P) const { return Str.rfind(P.Str, 0) == 0; }
 	bool EndsWith(const FString& P) const { return Str.size() >= P.Str.size() && Str.compare(Str.size() - P.Str.size(), P.Str.size(), P.Str) == 0; }

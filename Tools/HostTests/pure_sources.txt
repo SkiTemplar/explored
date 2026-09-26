@@ -12,6 +12,8 @@ Fauna/ProceduralGait.cpp
 Ocean/OceanCurrents.cpp
 Ocean/OceanWaves.cpp
 Player/SwimModel.cpp
+Ruins/MuseumModel.cpp
+Ruins/RuinsModel.cpp
 Sky/MoonModel.cpp
 Survival/SurvivalModel.cpp
 Weather/WeatherModel.cpp

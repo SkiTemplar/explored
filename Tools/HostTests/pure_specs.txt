@@ -6,7 +6,9 @@ Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
 Tests/GaitSpec.cpp
 Tests/MoonSpec.cpp
+Tests/MuseumSpec.cpp
 Tests/OceanCurrentsSpec.cpp
+Tests/RuinsSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/VegetationScatterSpec.cpp

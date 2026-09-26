@@ -39,7 +39,9 @@ FORBIDDEN_TERMS = [
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
+    "artifacts.json", "ruins.json",
 ]
+ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 
 
 @dataclass
@@ -402,7 +404,8 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages}
+    displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
+    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
@@ -431,6 +434,162 @@ def check_meshes(ds: DataSet, r: Report) -> None:
             r.error(f"meshes_pendientes.json/{group}: falta «{missing}» (usa marcador o mesh null)")
         for stale in sorted(listed - expected):
             r.error(f"meshes_pendientes.json/{group}: «{stale}» ya tiene malla o no existe; quítalo")
+
+
+# --------------------------------------------------------------------------- ruinas y museo
+
+RUINS_CPP = "Source/Explored/Ruins/RuinsModel.cpp"
+RUINS_H = "Source/Explored/Ruins/RuinsModel.h"
+MUSEUM_CPP = "Source/Explored/Ruins/MuseumModel.cpp"
+MUSEUM_H = "Source/Explored/Ruins/MuseumModel.h"
+ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
+SIZE_ORDER = {"Pequeno": 0, "Mediano": 1, "Grande": 2}
+
+
+def _cpp_lex_ids(repo_root: Path, rel: str, enum: str) -> set[str]:
+    """Ids que devuelve LexToString(<enum>) en un .cpp (``case E::X: return TEXT("id");``)."""
+    path = repo_root / rel
+    if not path.exists():
+        return set()
+    text = path.read_text(encoding="utf-8")
+    return set(re.findall(rf'case {enum}::\w+: return TEXT\("([^"]+)"\);', text))
+
+
+def _cpp_int(repo_root: Path, rel: str, name: str) -> int | None:
+    path = repo_root / rel
+    if not path.exists():
+        return None
+    m = re.search(rf"static constexpr int32 {name} = (\d+);", path.read_text(encoding="utf-8"))
+    return int(m.group(1)) if m else None
+
+
+def _check_names(r: Report, where: str, entry: dict, keys: tuple[str, ...] = ("nameEs", "nameEn")) -> None:
+    for key in keys:
+        v = entry.get(key)
+        if not isinstance(v, str) or not v or len(v) > 60:
+            r.error(f"{where} «{entry.get('id')}»: {key} vacío o de más de 60 caracteres (GDD §3: una línea)")
+
+
+def _check_ids(r: Report, where: str, entries: list) -> list[str]:
+    ids = [e.get("id") for e in entries]
+    for e in entries:
+        if not isinstance(e.get("id"), str) or not ASCII_ID.match(e["id"]):
+            r.error(f"{where}: id inválido {e.get('id')!r} (minúsculas ASCII, dígitos y _)")
+    for dup in sorted({i for i in ids if isinstance(i, str) and ids.count(i) > 1}):
+        r.error(f"{where}: id duplicado «{dup}»")
+    return ids
+
+
+def check_ruins(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("ruins.json")
+    if not doc:
+        return
+    techniques = _check_ids(r, "ruins.json/techniques", doc.get("techniques", []))
+    elements = _check_ids(r, "ruins.json/elements", doc.get("elements", []))
+    sites = _check_ids(r, "ruins.json/sites", doc.get("sites", []))
+    for group in ("techniques", "elements", "sites"):
+        for e in doc.get(group, []):
+            _check_names(r, f"ruins.json/{group}", e)
+    for e in doc.get("techniques", []):
+        _check_names(r, "ruins.json/techniques", e, ("revealsEs", "revealsEn"))
+    if len(techniques) != 5:
+        r.error(f"ruins.json: {len(techniques)} técnicas; el GDD §6.2 fija 5")
+
+    # Espejo del C++: mismos ids que LexToString y mismas constantes.
+    root = ds.repo_root
+    cpp_techniques = _cpp_lex_ids(root, RUINS_CPP, "EWayfindingTechnique")
+    if not cpp_techniques:
+        r.warn("ruins.json: no se encuentra RuinsModel.cpp; no se compara con el C++")
+        return
+    if set(techniques) != cpp_techniques:
+        r.error(f"ruins.json/techniques {sorted(techniques)} no coincide con RuinsModel.cpp {sorted(cpp_techniques)}")
+    cpp_elements = _cpp_lex_ids(root, RUINS_CPP, "ERuinElementKind")
+    if set(elements) != cpp_elements:
+        r.error(f"ruins.json/elements {sorted(elements)} no coincide con RuinsModel.cpp {sorted(cpp_elements)}")
+    archetypes = _cpp_lex_ids(root, ARCHIPELAGO_CPP, "EIslandArchetype")
+    expected_sites = {f"ruin_{a.lower()}" for a in archetypes} | {"ruin_compass"}
+    if archetypes and set(sites) != expected_sites:
+        r.error(f"ruins.json/sites {sorted(sites)} no coincide con las islas del C++ {sorted(expected_sites)}")
+    for key, name in (("requiredStarPaths", "RequiredStarPaths"), ("petroglyphsPerSite", "PetroglyphsPerSite")):
+        v = _cpp_int(root, RUINS_H, name)
+        if v is None:
+            r.error(f"ruins.json: no existe la constante {name} en RuinsModel.h")
+        elif doc.get(key) != v:
+            r.error(f"ruins.json: {key}={doc.get(key)!r} pero RuinsModel.h dice {name}={v}")
+    # Una ruina de isla por cada técnica que no es camino de estrellas; el resto y la brújula enseñan caminos.
+    star_paths = (len(expected_sites) - 1) - (len(techniques) - 1) + 1
+    if isinstance(doc.get("requiredStarPaths"), int) and doc["requiredStarPaths"] > star_paths:
+        r.error(f"ruins.json: requiredStarPaths={doc['requiredStarPaths']} pero solo hay {star_paths} caminos de estrellas")
+
+
+def check_artifacts(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("artifacts.json")
+    if not doc:
+        return
+    root = ds.repo_root
+    kinds = {k.get("id") for k in ds.data.get("story_es.json", {}).get("artifact_kinds", [])}
+    sizes = _cpp_lex_ids(root, MUSEUM_CPP, "EArtifactSize") or set(SIZE_ORDER)
+    provenances = _check_ids(r, "artifacts.json/provenances", doc.get("provenances", []))
+    rarities = _check_ids(r, "artifacts.json/rarities", doc.get("rarities", []))
+    for group in ("provenances", "rarities"):
+        for e in doc.get(group, []):
+            _check_names(r, f"artifacts.json/{group}", e)
+    for enum, ids, group in (("EArtifactProvenance", provenances, "provenances"), ("EArtifactRarity", rarities, "rarities")):
+        cpp = _cpp_lex_ids(root, MUSEUM_CPP, enum)
+        if cpp and set(ids) != cpp:
+            r.error(f"artifacts.json/{group} {sorted(ids)} no coincide con MuseumModel.cpp {sorted(cpp)}")
+
+    known_meshes = blender_mesh_names(root)
+    pieces = {p.get("id"): p for p in ds.building.get("pieces", [])}
+    displays = doc.get("displays", [])
+    _check_ids(r, "artifacts.json/displays", displays)
+    largest_slot = -1
+    for d in displays:
+        did = d.get("id")
+        _check_names(r, "artifacts.json/displays", d)
+        piece_id = d.get("piece")
+        if piece_id is None:
+            r.info.append(f"artifacts.json: el mueble «{did}» aún no tiene pieza en building_pieces.json")
+        elif piece_id not in pieces:
+            r.error(f"artifacts.json/displays «{did}»: pieza «{piece_id}» no está en building_pieces.json")
+        elif pieces[piece_id].get("category") != "museo":
+            r.error(f"artifacts.json/displays «{did}»: la pieza «{piece_id}» no es de la categoría museo")
+        if d.get("mesh") is not None and d["mesh"] not in known_meshes:
+            r.error(f"artifacts.json/displays «{did}»: malla {d['mesh']} no existe en Tools/Blender/props")
+        slots = d.get("slots", [])
+        if not slots:
+            r.error(f"artifacts.json/displays «{did}»: sin huecos")
+        for i, slot in enumerate(slots):
+            if slot.get("maxSize") not in sizes:
+                r.error(f"artifacts.json/displays «{did}»[{i}]: maxSize {slot.get('maxSize')!r} no es {sorted(sizes)}")
+            else:
+                largest_slot = max(largest_slot, SIZE_ORDER.get(slot["maxSize"], -1))
+            off = slot.get("offsetCm")
+            if not (isinstance(off, list) and len(off) == 3 and all(_type_ok(v, (int, float)) and abs(v) <= 400 for v in off)):
+                r.error(f"artifacts.json/displays «{did}»[{i}]: offsetCm debe ser [x, y, z] en cm dentro de ±400")
+
+    artifacts = doc.get("artifacts", [])
+    _check_ids(r, "artifacts.json/artifacts", artifacts)
+    threshold = _cpp_int(root, MUSEUM_H, "CollectorThreshold")
+    if threshold is not None and len(artifacts) < threshold:
+        r.error(f"artifacts.json: {len(artifacts)} tesoros; el logro «Coleccionista» pide {threshold} expuestos")
+    for a in artifacts:
+        aid = a.get("id")
+        _check_names(r, "artifacts.json/artifacts", a)
+        if a.get("kind") not in kinds:
+            r.error(f"artifacts.json «{aid}»: kind «{a.get('kind')}» no está en story_es.json/artifact_kinds")
+        if a.get("provenance") not in provenances:
+            r.error(f"artifacts.json «{aid}»: procedencia «{a.get('provenance')}» desconocida")
+        if a.get("rarity") not in rarities:
+            r.error(f"artifacts.json «{aid}»: rareza «{a.get('rarity')}» desconocida")
+        if a.get("size") not in sizes:
+            r.error(f"artifacts.json «{aid}»: size {a.get('size')!r} no es {sorted(sizes)}")
+        elif SIZE_ORDER.get(a["size"], 99) > largest_slot:
+            r.error(f"artifacts.json «{aid}»: tamaño {a['size']} sin ningún hueco donde exponerlo")
+        if a.get("mesh") not in known_meshes:
+            r.error(f"artifacts.json «{aid}»: malla {a.get('mesh')!r} no existe en Tools/Blender/props")
+    for missing in sorted(kinds - {a.get("kind") for a in artifacts}):
+        r.error(f"artifacts.json: ningún tesoro del tipo «{missing}» (story_es.json/artifact_kinds)")
 
 
 # --------------------------------------------------------------------------- supervivencia
@@ -563,5 +722,7 @@ def run_all(ds: DataSet) -> Report:
     check_survival(ds, r)
     check_story(ds, r)
     achievements.check_achievements(ds, r)
+    check_ruins(ds, r)
+    check_artifacts(ds, r)
     check_forbidden_terms(ds, r)
     return r
