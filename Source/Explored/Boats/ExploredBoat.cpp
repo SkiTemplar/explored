@@ -20,6 +20,8 @@
 #include "UObject/SoftObjectPath.h"
 #include "UObject/SoftObjectPtr.h"
 
+#include "Achievements/AchievementsSubsystem.h"
+#include "Core/SystemLinks.h"
 #include "Ocean/ExploredOcean.h"
 #include "Ocean/OceanWaves.h"
 #include "Player/ExploredCharacter.h"
@@ -125,6 +127,14 @@ void AExploredBoat::BeginPlay()
 	const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
 	Straits = FOceanCurrents::BuildStraits(Layout);
 	Ocean = Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(GetWorld(), AExploredOcean::StaticClass()));
+
+	if (bBuiltByPlayer)
+	{
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStatItem(TEXT("boats_built"), ExploredLinks::BoatStatId(Model.GetState().Type));
+		}
+	}
 }
 
 void AExploredBoat::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -440,6 +450,11 @@ void AExploredBoat::AdjustSailTrim(float Delta01)
 		Controls.bAutoTrim = false;
 	}
 	Controls.SailTrim01 = FMath::Clamp(Controls.SailTrim01 + Delta01, 0.0f, 1.0f);
+}
+
+AExploredCharacter* AExploredBoat::GetOccupant() const
+{
+	return Occupant.Get();
 }
 
 void AExploredBoat::RestoreFromSaveData(const FBoatSaveData& Data)

@@ -71,6 +71,26 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Barcos")
 	bool IsOccupied() const { return Occupant.IsValid(); }
 
+	/** Tripulante a bordo (nullptr si no hay nadie). */
+	AExploredCharacter* GetOccupant() const;
+
+	UFUNCTION(BlueprintPure, Category = "Explored|Barcos")
+	bool IsSailRaised() const { return Model.GetState().bSailRaised; }
+
+	UFUNCTION(BlueprintPure, Category = "Explored|Barcos")
+	EExploredBoatKind GetBoatKind() const { return BoatKind; }
+
+	/** Daño de otro sistema (ciclón, fauna): fracción del casco 0–1. */
+	void ApplyExternalDamage(float Amount01) { Model.ApplyDamage(Amount01); }
+
+	/**
+	 * La embarcación la ha terminado el jugador en el astillero (no estaba en el mapa):
+	 * al aparecer cuenta para «boats_built» y la partida la vuelve a crear al cargar.
+	 * Quien la construya la crea diferida y lo marca antes de FinishSpawning.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Explored|Barcos")
+	bool bBuiltByPlayer = false;
+
 	/** Una palada (false = babor, true = estribor). Devuelve false si aún dura la anterior. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Barcos")
 	bool PaddleStroke(bool bStarboard);
@@ -121,7 +141,7 @@ public:
 
 	const FBoatModel& GetModel() const { return Model; }
 
-	/** Datos planos para P-SAVE. */
+	/** Datos planos para la sección «boats» (UExploredWiringSubsystem). */
 	FBoatSaveData GetSaveData() const { return Model.ToSaveData(); }
 	void RestoreFromSaveData(const FBoatSaveData& Data);
 

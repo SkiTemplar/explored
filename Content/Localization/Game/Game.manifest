@@ -13,7 +13,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RightBoat",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 464"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 479"
 						}
 					]
 				},
@@ -24,7 +24,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_InvalidSlotIndex",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 109"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 110"
 						}
 					]
 				},
@@ -35,7 +35,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NotALiquidContainer",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
 						}
 					]
 				},
@@ -46,7 +46,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NothingToPickUp",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 217"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 218"
 						}
 					]
 				},
@@ -68,7 +68,7 @@
 					"Keys": [
 						{
 							"Key": "Fire_Revive",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 234"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 267"
 						}
 					]
 				},
@@ -107,12 +107,23 @@
 				},
 				{
 					"Source": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinOffering",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 133"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Echar al fuego"
 					},
 					"Keys": [
 						{
 							"Key": "Fire_AddFuel",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 239"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 272"
 						}
 					]
 				},
@@ -123,7 +134,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BeltFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 138"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 139"
 						}
 					]
 				},
@@ -134,7 +145,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BeltNotTool",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 124"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 125"
 						}
 					]
 				},
@@ -156,7 +167,7 @@
 					"Keys": [
 						{
 							"Key": "Fire_Ignite",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 235"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 268"
 						}
 					]
 				},
@@ -178,7 +189,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TooBig",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 120"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 121"
 						}
 					]
 				},
@@ -189,7 +200,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SameItem",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 114"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
 						}
 					]
 				},
@@ -200,7 +211,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandOccupied",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 111"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 112"
 						}
 					]
 				},
@@ -211,7 +222,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_InvalidItem",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 108"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 109"
 						}
 					]
 				},
@@ -222,7 +233,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_WrongKind",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 130"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
 						}
 					]
 				},
@@ -233,7 +244,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NotEquippable",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 158"
 						}
 					]
 				},
@@ -244,7 +255,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TwoHandedNoStore",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 309"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 310"
 						}
 					]
 				},
@@ -256,6 +267,50 @@
 						{
 							"Key": "Crafting_NoMatch",
 							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 216"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCompass",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 136"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinPetroglyph",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 145"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCanoe",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 139"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Examinar las pinturas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinCave",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 142"
 						}
 					]
 				},
@@ -288,7 +343,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SledgeOnlyMaterial",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 128"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 129"
 						}
 					]
 				},
@@ -299,7 +354,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_PocketsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 134"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 135"
 						}
 					]
 				},
@@ -310,7 +365,18 @@
 					"Keys": [
 						{
 							"Key": "Verb_TidePool",
-							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 103"
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 132"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RuinStatue",
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 130"
 						}
 					]
 				},
@@ -321,7 +387,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NeedBothHands",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 112"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 113"
 						}
 					]
 				},
@@ -343,7 +409,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooBig",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 150"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 151"
 						}
 					]
 				},
@@ -354,7 +420,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoRoom",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 152"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
 						}
 					]
 				},
@@ -365,7 +431,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoSledge",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 156"
 						}
 					]
 				},
@@ -376,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 272"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 273"
 						}
 					]
 				},
@@ -387,7 +453,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_OverCarryLimit",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
 						}
 					]
 				},
@@ -398,7 +464,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_ContainerFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 140"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 141"
 						}
 					]
 				},
@@ -409,7 +475,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_Generic",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 162"
 						}
 					]
 				},
@@ -420,7 +486,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoPouch",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 154"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
 						}
 					]
 				},
@@ -431,7 +497,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoBackpack",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 154"
 						}
 					]
 				},
@@ -442,7 +508,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooHeavy",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 144"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 145"
 						}
 					]
 				},
@@ -453,7 +519,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TooHeavy",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 146"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 147"
 						}
 					]
 				},
@@ -486,7 +552,7 @@
 					"Keys": [
 						{
 							"Key": "Fire_Collect",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 229"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 262"
 						}
 					]
 				},
@@ -497,7 +563,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_CheckTrap",
-							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 106"
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 135"
 						}
 					]
 				},
@@ -519,7 +585,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_PocketTooSmall",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 118"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 119"
 						}
 					]
 				},
@@ -530,7 +596,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_Board",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 468"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 483"
 						}
 					]
 				},
@@ -541,7 +607,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 113"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 114"
 						}
 					]
 				},
@@ -552,7 +618,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_ContainerNotEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 158"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
 						}
 					]
 				},
@@ -563,7 +629,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SledgeAttached",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 156"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
 						}
 					]
 				},
@@ -574,7 +640,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_AlreadyThere",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 110"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 111"
 						}
 					]
 				},
@@ -607,7 +673,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Limon",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 81"
 						}
 					]
 				},
@@ -629,7 +695,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Raft",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 76"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
 						}
 					]
 				},
@@ -640,7 +706,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Canoe",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 77"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
 						}
 					]
 				},
@@ -651,7 +717,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Outrigger",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
 						}
 					]
 				}
@@ -667,7 +733,7 @@
 					"Keys": [
 						{
 							"Key": "Unstable",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 240"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 279"
 						}
 					]
 				},
@@ -678,7 +744,7 @@
 					"Keys": [
 						{
 							"Key": "UnknownInstance",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 246"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 285"
 						}
 					]
 				},
@@ -689,7 +755,7 @@
 					"Keys": [
 						{
 							"Key": "MissingRequiredPiece",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 242"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 281"
 						}
 					]
 				},
@@ -700,7 +766,7 @@
 					"Keys": [
 						{
 							"Key": "MissingTools",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 243"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 282"
 						}
 					]
 				},
@@ -711,7 +777,7 @@
 					"Keys": [
 						{
 							"Key": "MissingMaterials",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 244"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 283"
 						}
 					]
 				},
@@ -722,7 +788,7 @@
 					"Keys": [
 						{
 							"Key": "UnknownBase",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 237"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 276"
 						}
 					]
 				},
@@ -733,7 +799,7 @@
 					"Keys": [
 						{
 							"Key": "InvalidRotation",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 236"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 275"
 						}
 					]
 				},
@@ -744,7 +810,7 @@
 					"Keys": [
 						{
 							"Key": "NothingToRepair",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 245"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 284"
 						}
 					]
 				},
@@ -755,7 +821,7 @@
 					"Keys": [
 						{
 							"Key": "NoSupport",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 239"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 278"
 						}
 					]
 				},
@@ -766,7 +832,7 @@
 					"Keys": [
 						{
 							"Key": "UnknownPiece",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 235"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 274"
 						}
 					]
 				},
@@ -777,7 +843,7 @@
 					"Keys": [
 						{
 							"Key": "NeedsGround",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 241"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 280"
 						}
 					]
 				},
@@ -788,7 +854,7 @@
 					"Keys": [
 						{
 							"Key": "Occupied",
-							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 238"
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 277"
 						}
 					]
 				}

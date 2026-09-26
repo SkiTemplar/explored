@@ -7,8 +7,8 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 488 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 184 |
+| Textos en el catálogo | 494 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 190 |
 | … de `Content/Data` (campos bilingües) | 304 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 3 |
@@ -134,13 +134,13 @@ Ninguno.
 ## Avisos (24)
 
 - translations/en.json: Explored,Carry_NoRegistry no aparece en el código (¿clave renombrada o borrada?)
-- Source/Explored/Building/BuildingSubsystem.cpp:238: ExploredBuilding,Occupied: el inglés (26 car.) es más de 1.3× el español (15); comprueba que cabe
-- Source/Explored/Building/BuildingSubsystem.cpp:242: ExploredBuilding,MissingRequiredPiece: el inglés (36 car.) es más de 1.3× el español (27); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:110: Explored,Carry_AlreadyThere: el inglés (19 car.) es más de 1.3× el español (12); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:152: Explored,Carry_NoRoom: el inglés (13 car.) es más de 1.3× el español (9); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:159: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:161: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
-- Source/Explored/Fishing/ExploredTrap.cpp:103: Explored,Verb_TidePool: el inglés (15 car.) es más de 1.3× el español (10); comprueba que cabe
+- Source/Explored/Building/BuildingSubsystem.cpp:277: ExploredBuilding,Occupied: el inglés (26 car.) es más de 1.3× el español (15); comprueba que cabe
+- Source/Explored/Building/BuildingSubsystem.cpp:281: ExploredBuilding,MissingRequiredPiece: el inglés (36 car.) es más de 1.3× el español (27); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:111: Explored,Carry_AlreadyThere: el inglés (19 car.) es más de 1.3× el español (12); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:153: Explored,Carry_NoRoom: el inglés (13 car.) es más de 1.3× el español (9); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:160: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:162: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
+- Source/Explored/Fishing/ExploredTrap.cpp:132: Explored,Verb_TidePool: el inglés (15 car.) es más de 1.3× el español (10); comprueba que cabe
 - Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:311: ExploredUI,ViewDistance: el inglés (13 car.) es más de 1.3× el español (5); comprueba que cabe
 - Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:315: ExploredUI,PostProcess: el inglés (15 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/items.json «palo_recto» nameEs/nameEn: Data.items.items,palo_recto.nameEs: el inglés (14 car.) es más de 1.3× el español (10); comprueba que cabe

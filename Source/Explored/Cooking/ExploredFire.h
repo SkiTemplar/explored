@@ -68,10 +68,14 @@ public:
 	/** Mejora el hogar (fogata → hoguera → horno); lo llamará la construcción (P-BUILD). */
 	bool UpgradeLevel(EFireLevel NewLevel);
 
-	/** Estado plano para el guardado (P-SAVE). */
+	/** Estado plano para el guardado (sección «cooking», UExploredWiringSubsystem). */
 	const FFireState& GetFireState() const { return State; }
 	const FCookingPot& GetPot() const { return Pot; }
+	/** Utensilio puesto al fuego (inválido si se asa en el espeto). */
+	const FItemInstance& GetPotVesselItem() const { return PotVesselItem; }
 	void RestoreState(const FFireState& InState, const FCookingPot& InPot);
+	/** Restaura también el utensilio que había al fuego. */
+	void RestoreState(const FFireState& InState, const FCookingPot& InPot, const FItemInstance& InVesselItem);
 
 protected:
 	virtual void BeginPlay() override;

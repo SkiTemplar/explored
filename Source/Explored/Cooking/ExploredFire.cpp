@@ -1,6 +1,8 @@
 #include "Cooking/ExploredFire.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Carry/CarryComponent.h"
+#include "Engine/GameInstance.h"
 #include "CollisionQueryParams.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -12,7 +14,9 @@
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Save/SaveSlots.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 
 namespace ExploredFireDetail
@@ -169,10 +173,26 @@ FCookEnvironment AExploredFire::MakeCookEnvironment() const
 
 void AExploredFire::ReportEvents(const TArray<EFireEvent>& Events) const
 {
-	// Sonidos y textos llegarán con el audio (P-MUSIC) y la UI; de momento, registro.
+	// Sonidos y textos llegarán con el audio y la UI; aquí, estadísticas y autoguardado.
 	for (const EFireEvent Event : Events)
 	{
 		UE_LOG(LogExplored, Verbose, TEXT("%s: suceso de fuego %d"), *GetName(), static_cast<int32>(Event));
+		if (Event != EFireEvent::Ignited)
+		{
+			continue;
+		}
+		// Cada encendido cuenta uno (docs/tecnico/estadisticas.md).
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStat(TEXT("fires_lit"));
+		}
+		// Encender una hoguera autoguarda, con el intervalo mínimo de FSaveSlotPolicy.
+		const UWorld* World = GetWorld();
+		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
+		if (UExploredSaveSubsystem* Save = GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
+		{
+			Save->RequestAutosave(ESaveTrigger::Campfire);
+		}
 	}
 }
 
@@ -218,6 +238,19 @@ void AExploredFire::RestoreState(const FFireState& InState, const FCookingPot& I
 	Pot = InPot;
 	PotVesselId = Pot.Status == EPotStatus::Empty ? FName(NAME_None) : Pot.VesselId;
 	RefreshVisuals();
+}
+
+void AExploredFire::RestoreState(const FFireState& InState, const FCookingPot& InPot, const FItemInstance& InVesselItem)
+{
+	RestoreState(InState, InPot);
+	PotVesselItem = InVesselItem;
+	// Una olla vacía al fuego también cuenta: sin cocción, el utensilio manda.
+	if (PotVesselItem.IsValid() && PotVesselId.IsNone())
+	{
+		PotVesselId = FCookingData::Default().VesselForItem(PotVesselItem.DefinitionId);
+	}
+	// Tras cargar, el tiempo se vuelve a medir desde ahora (no se simula el salto).
+	LastTotalDays = -1.0f;
 }
 
 // --- Interacción -------------------------------------------------------------

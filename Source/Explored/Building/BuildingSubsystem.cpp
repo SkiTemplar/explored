@@ -10,8 +10,12 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Building/ExploredBuildingPiece.h"
+#include "Engine/GameInstance.h"
 #include "Items/ItemRegistrySubsystem.h"
+#include "Save/SaveSystemStates.h"
+#include "UI/ExploredSaveSubsystem.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 
@@ -21,6 +25,15 @@ namespace BuildingSubsystemDetail
 {
 	/** Tope de horas por paso (saltos de tiempo al dormir o al cargar). */
 	constexpr float MaxHoursPerStep = 48.0f;
+
+	/** Sección de la partida (docs/tecnico/guardado.md). */
+	const TCHAR* const SaveSection = TEXT("building");
+
+	UExploredSaveSubsystem* FindSave(const UWorld* World)
+	{
+		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
+		return GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
+	}
 
 	void ReadNameArray(const TSharedPtr<FJsonObject>& Obj, const TCHAR* Field, TArray<FName>& Out)
 	{
@@ -141,10 +154,36 @@ void UBuildingSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Collection.InitializeDependency<UExploredWeatherSubsystem>();
 	Model = MakeUnique<FBuildingModel>(FBuildingCatalog());
 	ReloadFromDisk();
+
+	if (UExploredSaveSubsystem* Save = BuildingSubsystemDetail::FindSave(GetWorld()))
+	{
+		TWeakObjectPtr<UBuildingSubsystem> WeakThis(this);
+		Save->RegisterSection(BuildingSubsystemDetail::SaveSection,
+			[WeakThis](FSaveArchive& Ar)
+			{
+				if (const UBuildingSubsystem* Self = WeakThis.Get())
+				{
+					ExploredSaveStates::SaveBuilding(Ar, Self->GetSaveState());
+				}
+			},
+			[WeakThis](const FSaveArchive& Ar)
+			{
+				if (UBuildingSubsystem* Self = WeakThis.Get())
+				{
+					FBuildingSaveState State;
+					ExploredSaveStates::LoadBuilding(Ar, State);
+					Self->RestoreSaveState(State);
+				}
+			});
+	}
 }
 
 void UBuildingSubsystem::Deinitialize()
 {
+	if (UExploredSaveSubsystem* Save = BuildingSubsystemDetail::FindSave(GetWorld()))
+	{
+		Save->UnregisterSection(BuildingSubsystemDetail::SaveSection);
+	}
 	Actors.Empty();
 	Model.Reset();
 	Super::Deinitialize();
@@ -332,6 +371,12 @@ int32 UBuildingSubsystem::TryPlacePiece(FName DefId, const FVector& AimPoint, in
 		{
 			SpawnActorFor(*Piece);
 		}
+		// Estadísticas (docs/tecnico/estadisticas.md): pieza construida y nivel de material.
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStatItem(TEXT("building_pieces_built"), DefId);
+			Achievements->ReportStat(TEXT("building_tier_max"), Model->GetCatalog().TierOrderOf(*Def));
+		}
 	}
 	return PieceId;
 }
@@ -452,8 +497,12 @@ FBuildingWeather UBuildingSubsystem::SampleWeather() const
 		Weather.StormCategory = 0.5f;
 		break;
 	case EWeatherState::Cyclone:
-		Weather.StormCategory = FMath::Clamp(CycloneCategory, 1.0f, 3.0f);
+	{
+		// La categoría sale del modelo del clima; un ciclón forzado (depuración) usa CycloneCategory.
+		const int32 Category = WeatherSubsystem->GetCycloneCategory();
+		Weather.StormCategory = FMath::Clamp(Category > 0 ? static_cast<float>(Category) : CycloneCategory, 1.0f, 3.0f);
 		break;
+	}
 	default:
 		break;
 	}

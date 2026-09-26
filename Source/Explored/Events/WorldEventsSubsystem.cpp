@@ -4,7 +4,10 @@
 #include "Stats/Stats.h"
 #include "Subsystems/SubsystemCollection.h"
 
+#include "Engine/GameInstance.h"
+#include "Save/SaveSystemStates.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/ArchipelagoLayout.h"
 
@@ -14,6 +17,14 @@ namespace WorldEventsSubsystemDetail
 	constexpr uint32 EventsSeed = FArchipelagoLayout::OfficialSeed ^ 0xE7E47u;
 	/** Cada cuánto se sondea el modelo (s reales): con días de 40 min son unos 18 s de juego. */
 	constexpr float PollInterval = 0.5f;
+	/** Sección de la partida (docs/tecnico/guardado.md). */
+	const TCHAR* const SaveSection = TEXT("events");
+
+	UExploredSaveSubsystem* FindSave(const UWorld* World)
+	{
+		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
+		return GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
+	}
 }
 
 bool UWorldEventsSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
@@ -29,10 +40,36 @@ void UWorldEventsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	// El modelo tiene su propio FWeatherModel con la misma semilla que el clima del mundo:
 	// ve el mismo cielo planificado (no los estados forzados de depuración).
 	Model = MakeUnique<FWorldEventsModel>(WorldEventsSubsystemDetail::EventsSeed, UExploredWeatherSubsystem::GetWorldWeatherSeed());
+
+	if (UExploredSaveSubsystem* Save = WorldEventsSubsystemDetail::FindSave(GetWorld()))
+	{
+		TWeakObjectPtr<UWorldEventsSubsystem> WeakThis(this);
+		Save->RegisterSection(WorldEventsSubsystemDetail::SaveSection,
+			[WeakThis](FSaveArchive& Ar)
+			{
+				if (const UWorldEventsSubsystem* Self = WeakThis.Get())
+				{
+					ExploredSaveStates::SaveWorldEvents(Ar, Self->State);
+				}
+			},
+			[WeakThis](const FSaveArchive& Ar)
+			{
+				if (UWorldEventsSubsystem* Self = WeakThis.Get())
+				{
+					FWorldEventsState Loaded;
+					ExploredSaveStates::LoadWorldEvents(Ar, Loaded);
+					Self->LoadSaveState(Loaded);
+				}
+			});
+	}
 }
 
 void UWorldEventsSubsystem::Deinitialize()
 {
+	if (UExploredSaveSubsystem* Save = WorldEventsSubsystemDetail::FindSave(GetWorld()))
+	{
+		Save->UnregisterSection(WorldEventsSubsystemDetail::SaveSection);
+	}
 	OnEventStarted.Clear();
 	OnEventEnded.Clear();
 	Active.Reset();

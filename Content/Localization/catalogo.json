@@ -2,8 +2,8 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 488,
-		"cpp": 184,
+		"total": 494,
+		"cpp": 190,
 		"datos": 304,
 		"pendientes": 3,
 		"sin_en": 0,
@@ -19,7 +19,7 @@
 			"en": "the canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:77"
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
 			]
 		},
 		{
@@ -29,7 +29,7 @@
 			"en": "the «Limón»",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
+				"Source/Explored/Boats/ExploredBoat.cpp:81"
 			]
 		},
 		{
@@ -39,7 +39,7 @@
 			"en": "the outrigger canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:78"
+				"Source/Explored/Boats/ExploredBoat.cpp:80"
 			]
 		},
 		{
@@ -49,7 +49,7 @@
 			"en": "the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:76"
+				"Source/Explored/Boats/ExploredBoat.cpp:78"
 			]
 		},
 		{
@@ -59,7 +59,7 @@
 			"en": "It's already there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:110"
+				"Source/Explored/Carry/CarryComponent.cpp:111"
 			]
 		},
 		{
@@ -69,7 +69,7 @@
 			"en": "It won't fit in the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:150"
+				"Source/Explored/Carry/CarryComponent.cpp:151"
 			]
 		},
 		{
@@ -79,7 +79,7 @@
 			"en": "Too heavy for the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:144"
+				"Source/Explored/Carry/CarryComponent.cpp:145"
 			]
 		},
 		{
@@ -89,7 +89,7 @@
 			"en": "No free loops left on your belt.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:138"
+				"Source/Explored/Carry/CarryComponent.cpp:139"
 			]
 		},
 		{
@@ -99,7 +99,7 @@
 			"en": "Your belt only holds tools and containers.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:124"
+				"Source/Explored/Carry/CarryComponent.cpp:125"
 			]
 		},
 		{
@@ -109,7 +109,7 @@
 			"en": "No room left.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:140"
+				"Source/Explored/Carry/CarryComponent.cpp:141"
 			]
 		},
 		{
@@ -119,7 +119,7 @@
 			"en": "Empty it first.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:158"
+				"Source/Explored/Carry/CarryComponent.cpp:159"
 			]
 		},
 		{
@@ -129,7 +129,7 @@
 			"en": "You can't do that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:161"
+				"Source/Explored/Carry/CarryComponent.cpp:162"
 			]
 		},
 		{
@@ -139,10 +139,10 @@
 			"en": "That hand is empty.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:272",
-				"Source/Explored/Carry/CarryComponent.cpp:301",
-				"Source/Explored/Carry/CarryComponent.cpp:423",
-				"Source/Explored/Carry/CarryComponent.cpp:584"
+				"Source/Explored/Carry/CarryComponent.cpp:273",
+				"Source/Explored/Carry/CarryComponent.cpp:302",
+				"Source/Explored/Carry/CarryComponent.cpp:424",
+				"Source/Explored/Carry/CarryComponent.cpp:585"
 			]
 		},
 		{
@@ -152,7 +152,7 @@
 			"en": "That hand is already full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:111"
+				"Source/Explored/Carry/CarryComponent.cpp:112"
 			]
 		},
 		{
@@ -162,7 +162,7 @@
 			"en": "Both your hands are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:113"
+				"Source/Explored/Carry/CarryComponent.cpp:114"
 			]
 		},
 		{
@@ -172,8 +172,8 @@
 			"en": "You can't pick that up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:108",
-				"Source/Explored/Carry/CarryComponent.cpp:223"
+				"Source/Explored/Carry/CarryComponent.cpp:109",
+				"Source/Explored/Carry/CarryComponent.cpp:224"
 			]
 		},
 		{
@@ -183,9 +183,9 @@
 			"en": "Nothing there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:109",
-				"Source/Explored/Carry/CarryComponent.cpp:322",
-				"Source/Explored/Carry/CarryComponent.cpp:609"
+				"Source/Explored/Carry/CarryComponent.cpp:110",
+				"Source/Explored/Carry/CarryComponent.cpp:323",
+				"Source/Explored/Carry/CarryComponent.cpp:610"
 			]
 		},
 		{
@@ -195,7 +195,7 @@
 			"en": "You need both hands free for this.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:112"
+				"Source/Explored/Carry/CarryComponent.cpp:113"
 			]
 		},
 		{
@@ -205,7 +205,7 @@
 			"en": "You have no backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:153"
+				"Source/Explored/Carry/CarryComponent.cpp:154"
 			]
 		},
 		{
@@ -215,7 +215,7 @@
 			"en": "You have nowhere to keep it dry.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:154"
+				"Source/Explored/Carry/CarryComponent.cpp:155"
 			]
 		},
 		{
@@ -225,7 +225,7 @@
 			"en": "It won't fit.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:152"
+				"Source/Explored/Carry/CarryComponent.cpp:153"
 			]
 		},
 		{
@@ -235,8 +235,8 @@
 			"en": "You have no travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:155",
-				"Source/Explored/Carry/CarryComponent.cpp:500"
+				"Source/Explored/Carry/CarryComponent.cpp:156",
+				"Source/Explored/Carry/CarryComponent.cpp:501"
 			]
 		},
 		{
@@ -246,7 +246,7 @@
 			"en": "That can't hold water.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:160"
+				"Source/Explored/Carry/CarryComponent.cpp:161"
 			]
 		},
 		{
@@ -256,7 +256,7 @@
 			"en": "You can't wear that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:157"
+				"Source/Explored/Carry/CarryComponent.cpp:158"
 			]
 		},
 		{
@@ -266,7 +266,7 @@
 			"en": "There's nothing here to pick up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:217"
+				"Source/Explored/Carry/CarryComponent.cpp:218"
 			]
 		},
 		{
@@ -276,7 +276,7 @@
 			"en": "You can't carry any more weight.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:159"
+				"Source/Explored/Carry/CarryComponent.cpp:160"
 			]
 		},
 		{
@@ -286,7 +286,7 @@
 			"en": "Only small things fit in your pockets.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:118"
+				"Source/Explored/Carry/CarryComponent.cpp:119"
 			]
 		},
 		{
@@ -296,7 +296,7 @@
 			"en": "Your pockets are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:134"
+				"Source/Explored/Carry/CarryComponent.cpp:135"
 			]
 		},
 		{
@@ -306,7 +306,7 @@
 			"en": "It's a single object: it can't combine with itself.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:114"
+				"Source/Explored/Carry/CarryComponent.cpp:115"
 			]
 		},
 		{
@@ -316,7 +316,7 @@
 			"en": "You're already dragging a travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:156"
+				"Source/Explored/Carry/CarryComponent.cpp:157"
 			]
 		},
 		{
@@ -326,7 +326,7 @@
 			"en": "The travois is for wood and stone.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:128"
+				"Source/Explored/Carry/CarryComponent.cpp:129"
 			]
 		},
 		{
@@ -336,7 +336,7 @@
 			"en": "It's too big to store there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:120"
+				"Source/Explored/Carry/CarryComponent.cpp:121"
 			]
 		},
 		{
@@ -346,7 +346,7 @@
 			"en": "It's too heavy.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:146"
+				"Source/Explored/Carry/CarryComponent.cpp:147"
 			]
 		},
 		{
@@ -356,7 +356,7 @@
 			"en": "That takes both hands; it can't be stowed.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:309"
+				"Source/Explored/Carry/CarryComponent.cpp:310"
 			]
 		},
 		{
@@ -366,7 +366,7 @@
 			"en": "That doesn't go there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:130"
+				"Source/Explored/Carry/CarryComponent.cpp:131"
 			]
 		},
 		{
@@ -436,7 +436,7 @@
 			"en": "Feed the fire",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:239"
+				"Source/Explored/Cooking/ExploredFire.cpp:272"
 			]
 		},
 		{
@@ -446,7 +446,7 @@
 			"en": "Take the food off",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:229"
+				"Source/Explored/Cooking/ExploredFire.cpp:262"
 			]
 		},
 		{
@@ -456,7 +456,7 @@
 			"en": "Light",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:235"
+				"Source/Explored/Cooking/ExploredFire.cpp:268"
 			]
 		},
 		{
@@ -466,7 +466,7 @@
 			"en": "Stoke the embers",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:234"
+				"Source/Explored/Cooking/ExploredFire.cpp:267"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Board {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:468"
+				"Source/Explored/Boats/ExploredBoat.cpp:483"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "Check the trap",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Fishing/ExploredTrap.cpp:106"
+				"Source/Explored/Fishing/ExploredTrap.cpp:135"
 			]
 		},
 		{
@@ -556,7 +556,67 @@
 			"en": "Right {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:464"
+				"Source/Explored/Boats/ExploredBoat.cpp:479"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinCanoe",
+			"es": "Examinar la canoa doble",
+			"en": "Examine the double canoe",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:139"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinCave",
+			"es": "Examinar las pinturas",
+			"en": "Examine the paintings",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:142"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinCompass",
+			"es": "Estudiar la brújula estelar",
+			"en": "Study the star compass",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:136"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinOffering",
+			"es": "Dejar una ofrenda",
+			"en": "Leave an offering",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:133"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinPetroglyph",
+			"es": "Examinar el petroglifo",
+			"en": "Study the petroglyph",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:145"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RuinStatue",
+			"es": "Mirar hacia donde mira la estatua",
+			"en": "Look where the statue looks",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:130"
 			]
 		},
 		{
@@ -586,7 +646,7 @@
 			"en": "Forage the pool",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Fishing/ExploredTrap.cpp:103"
+				"Source/Explored/Fishing/ExploredTrap.cpp:132"
 			]
 		},
 		{
@@ -606,7 +666,7 @@
 			"en": "Invalid rotation",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:236"
+				"Source/Explored/Building/BuildingSubsystem.cpp:275"
 			]
 		},
 		{
@@ -616,7 +676,7 @@
 			"en": "Not enough materials",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:244"
+				"Source/Explored/Building/BuildingSubsystem.cpp:283"
 			]
 		},
 		{
@@ -626,7 +686,7 @@
 			"en": "Another piece is missing in the base",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:242"
+				"Source/Explored/Building/BuildingSubsystem.cpp:281"
 			]
 		},
 		{
@@ -636,7 +696,7 @@
 			"en": "A tool is missing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:243"
+				"Source/Explored/Building/BuildingSubsystem.cpp:282"
 			]
 		},
 		{
@@ -646,7 +706,7 @@
 			"en": "Must go on the ground",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:241"
+				"Source/Explored/Building/BuildingSubsystem.cpp:280"
 			]
 		},
 		{
@@ -656,7 +716,7 @@
 			"en": "Nothing to rest on",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:239"
+				"Source/Explored/Building/BuildingSubsystem.cpp:278"
 			]
 		},
 		{
@@ -666,7 +726,7 @@
 			"en": "Nothing to repair",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:245"
+				"Source/Explored/Building/BuildingSubsystem.cpp:284"
 			]
 		},
 		{
@@ -676,7 +736,7 @@
 			"en": "Something is already there",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:238"
+				"Source/Explored/Building/BuildingSubsystem.cpp:277"
 			]
 		},
 		{
@@ -686,7 +746,7 @@
 			"en": "Outside the base",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:237"
+				"Source/Explored/Building/BuildingSubsystem.cpp:276"
 			]
 		},
 		{
@@ -696,7 +756,7 @@
 			"en": "That piece no longer exists",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:246"
+				"Source/Explored/Building/BuildingSubsystem.cpp:285"
 			]
 		},
 		{
@@ -706,7 +766,7 @@
 			"en": "Unknown piece",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:235"
+				"Source/Explored/Building/BuildingSubsystem.cpp:274"
 			]
 		},
 		{
@@ -716,7 +776,7 @@
 			"en": "Too far from a support",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:240"
+				"Source/Explored/Building/BuildingSubsystem.cpp:279"
 			]
 		},
 		{

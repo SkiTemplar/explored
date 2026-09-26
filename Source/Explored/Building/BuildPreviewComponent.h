@@ -67,8 +67,8 @@ public:
 
 	/**
 	 * Construir sin materiales ni herramientas (depuración). Sin él, se exige llevar
-	 * encima lo que cuesta la pieza; aún no se descuenta (UCarryComponent no tiene API
-	 * para quitar objetos: ver docs/roadmap.md, P-BUILD).
+	 * encima (angarillas incluidas) lo que cuesta la pieza y se descuenta del
+	 * inventario al colocarla (UCarryComponent::ConsumeMaterials).
 	 */
 	UPROPERTY(EditAnywhere, Category = "Explored|Construcción")
 	bool bFreeBuild = false;

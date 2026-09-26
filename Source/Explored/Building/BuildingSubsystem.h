@@ -19,9 +19,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnBuildingPiecesChanged, const FBuildingCha
  * con la lluvia y los temporales de UExploredWeatherSubsystem, y retira los
  * actores de lo que se rompe o se derrumba.
  *
- * Pendiente (docs/roadmap.md, P-BUILD): descontar materiales de UCarryComponent
- * (no tiene API para quitar objetos), gastar los minutos de trabajo y guardar el
- * estado con P-SAVE (GetSaveState / RestoreSaveState ya están listos).
+ * Registra la sección «building» de la partida y avisa a los logros de cada
+ * pieza construida. Los materiales los descuenta UBuildPreviewComponent del
+ * inventario (UCarryComponent::ConsumeMaterials). Pendiente: gastar los minutos
+ * de trabajo.
  */
 UCLASS()
 class EXPLORED_API UBuildingSubsystem : public UTickableWorldSubsystem
@@ -82,8 +83,8 @@ public:
 	FOnBuildingPiecesChanged OnPiecesRemoved;
 
 	/**
-	 * Categoría con la que se aplica un ciclón. FWeatherModel aún no distingue
-	 * categorías 1–3 (biblia §6.2); hasta entonces se usa este valor.
+	 * Categoría de un ciclón forzado a mano (ForceState, depuración): los ciclones
+	 * planificados traen la suya de FWeatherModel::CycloneCategoryAt.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Explored|Construcción")
 	float CycloneCategory = 2.0f;

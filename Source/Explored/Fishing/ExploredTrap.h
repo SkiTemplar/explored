@@ -30,6 +30,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
 	int32 GetTrapId() const { return TrapId; }
 
+	/** Es una poza de marea natural (no una trampa colocada). */
+	bool IsTidePool() const;
+
+	/** Vuelve a crear el actor de una trampa guardada (sección «fishing»). */
+	static AExploredTrap* SpawnRestored(UWorld* World, const FPlacedTrap& Placed);
+
+	/** «nasa», «trampa_cangrejos» o «corral_piedras». */
+	static FName NameForKind(ETrapKind Kind);
+
 	// IExploredInteractable
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
 	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;
@@ -55,7 +64,6 @@ protected:
 	int32 TrapId = 0;
 
 private:
-	bool IsTidePool() const;
 	static bool KindFromName(FName Name, ETrapKind& OutKind);
 	void DropCatches(const TArray<FTrapCatch>& Catches) const;
 };

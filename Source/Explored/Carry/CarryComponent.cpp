@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 
 #include "Carry/ExploredContainer.h"
+#include "Core/SystemLinks.h"
 #include "Carry/ExploredSledge.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -671,6 +672,126 @@ const FItemInstance* UCarryComponent::GetHandItemPtr(EHand Hand) const
 		return nullptr;
 	}
 	return (Hand == EHand::Left) ? &HandLeft : &HandRight;
+}
+
+// --------------------------------------------------------------------------- materiales
+
+namespace CarryComponentDetail
+{
+	/** Orden de gasto: lo que se arrastra o va en la espalda antes que lo que va en la mano. */
+	int32 SpendPriority(EInventorySlot Slot)
+	{
+		switch (Slot)
+		{
+		case EInventorySlot::Sledge: return 0;
+		case EInventorySlot::Backpack: return 1;
+		case EInventorySlot::Pockets:
+		case EInventorySlot::Belt:
+		case EInventorySlot::Pouch: return 2;
+		default: return 3;
+		}
+	}
+}
+
+void UCarryComponent::CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>& OutTools) const
+{
+	const FInventoryState& State = Model.GetState();
+	auto Add = [this, &OutCounts, &OutTools](const FInventoryItem& Record)
+	{
+		if (!Record.IsValid())
+		{
+			return;
+		}
+		const FItemInstance* Payload = Payloads.Find(Record.InstanceId);
+		OutCounts.FindOrAdd(Record.DefinitionId) += FMath::Max(Payload ? Payload->Count : 1, 1);
+		OutTools.Add(Record.DefinitionId);
+	};
+	Add(State.HandLeft);
+	// Un objeto a dos manos ocupa las dos: se cuenta una vez.
+	if (!State.bHandsHoldTwoHanded)
+	{
+		Add(State.HandRight);
+	}
+	for (const FInventoryContainer* Container : {&State.Pockets, &State.Belt, &State.Pouch, &State.Backpack, &State.Sledge})
+	{
+		for (const FInventoryEntry& Entry : Container->Entries)
+		{
+			Add(Entry.Item);
+		}
+	}
+}
+
+bool UCarryComponent::ConsumeMaterials(const TArray<FBuildingCost>& Costs)
+{
+	if (Costs.Num() == 0)
+	{
+		return true;
+	}
+	const FInventoryState& State = Model.GetState();
+	TArray<ExploredLinks::FMaterialStack> Stacks;
+	auto AddStack = [this, &Stacks](const FInventoryItem& Record, EInventorySlot Slot)
+	{
+		if (!Record.IsValid())
+		{
+			return;
+		}
+		const FItemInstance* Payload = Payloads.Find(Record.InstanceId);
+		Stacks.Add({Record.InstanceId, Record.DefinitionId, FMath::Max(Payload ? Payload->Count : 1, 1),
+			CarryComponentDetail::SpendPriority(Slot)});
+	};
+	AddStack(State.HandLeft, EInventorySlot::HandLeft);
+	if (!State.bHandsHoldTwoHanded)
+	{
+		AddStack(State.HandRight, EInventorySlot::HandRight);
+	}
+	const TPair<const FInventoryContainer*, EInventorySlot> Containers[] = {
+		{&State.Sledge, EInventorySlot::Sledge}, {&State.Backpack, EInventorySlot::Backpack},
+		{&State.Pockets, EInventorySlot::Pockets}, {&State.Belt, EInventorySlot::Belt}, {&State.Pouch, EInventorySlot::Pouch}};
+	for (const TPair<const FInventoryContainer*, EInventorySlot>& Container : Containers)
+	{
+		for (const FInventoryEntry& Entry : Container.Key->Entries)
+		{
+			AddStack(Entry.Item, Container.Value);
+		}
+	}
+
+	TArray<ExploredLinks::FMaterialTake> Takes;
+	if (!ExploredLinks::PlanMaterialTakes(Stacks, Costs, Takes))
+	{
+		return false;
+	}
+	for (const ExploredLinks::FMaterialTake& Take : Takes)
+	{
+		FItemInstance* Payload = Payloads.Find(Take.InstanceId);
+		const int32 Count = Payload ? FMath::Max(Payload->Count, 1) : 1;
+		EInventoryFail Fail = EInventoryFail::None;
+		if (Take.Count >= Count)
+		{
+			FInventoryItem Removed;
+			if (Model.ConsumeItem(Take.InstanceId, Removed, Fail))
+			{
+				Payloads.Remove(Take.InstanceId);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo gastar el objeto %lld: %s"), Take.InstanceId, LexToString(Fail));
+			}
+			continue;
+		}
+		// Pila que mengua: el registro se rehace con el nuevo Count y conserva su sitio y su líquido.
+		Payload->Count = Count - Take.Count;
+		FInventoryItem Record = MakeRecord(*Payload, Take.InstanceId, GetRegistry());
+		if (const FInventoryItem* Current = Model.FindItemById(Take.InstanceId))
+		{
+			Record.LiquidLiters = Current->LiquidLiters;
+		}
+		if (!Model.ShrinkItem(Record, Fail))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo mermar la pila %lld: %s"), Take.InstanceId, LexToString(Fail));
+		}
+	}
+	SyncFromModel();
+	return true;
 }
 
 // --------------------------------------------------------------------------- guardado

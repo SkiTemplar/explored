@@ -17,7 +17,8 @@ DECLARE_MULTICAST_DELEGATE(FOnMuseumChanged);
 /**
  * Capa fina de Unreal sobre FRuinsModel y FMuseumModel: genera las ruinas y el
  * reparto de tesoros a partir de la semilla, carga artifacts.json y ruins.json y
- * recibe los eventos de descubrimiento de los puntos de interés y de la interacción.
+ * recibe los eventos de descubrimiento de los puntos de interés y de la interacción
+ * (AExploredRuinElement). Registra la sección «ruins» de la partida (ruinas y museo).
  * Toda la lógica vive en los modelos puros (ver RuinsSpec y MuseumSpec).
  */
 UCLASS()
@@ -27,6 +28,7 @@ class EXPLORED_API URuinsSubsystem : public UWorldSubsystem
 
 public:
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Deinitialize() override;
 
@@ -75,6 +77,11 @@ public:
 
 private:
 	void LoadDataFiles();
+	/**
+	 * Crea un AExploredRuinElement por cada elemento del modelo que no tenga ya un
+	 * actor en el mapa, asentado en el suelo con una traza vertical (P-WIRE).
+	 */
+	void SpawnMissingElementActors(UWorld& World);
 
 	FRuinsModel Ruins;
 	FMuseumModel Museum;

@@ -15,9 +15,11 @@
  *
  * Qué informar y con qué ids: docs/tecnico/estadisticas.md.
  *
- * Contrato para el equipo de guardado (P-SAVE): GetSaveState() devuelve un
- * struct plano; el perfil guarda Profile y Unlocked, cada partida guarda Run y
- * RunMode. Al cargar, RestoreSaveState() y después EvaluatePending().
+ * Guardado (P-WIRE): registra la sección «achievements» de la partida con el
+ * perfil, la partida y los logros. Al cargar, la partida trae sus estadísticas
+ * de partida y el perfil se fusiona sin retroceder nunca
+ * (ExploredSaveStates::MergeLoadedAchievements); después se revisan los
+ * logros pendientes.
  */
 UCLASS()
 class EXPLORED_API UAchievementsSubsystem : public UGameInstanceSubsystem
@@ -26,6 +28,7 @@ class EXPLORED_API UAchievementsSubsystem : public UGameInstanceSubsystem
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	/** Atajo desde cualquier UObject con mundo; nullptr sin GameInstance (tests con mundo temporal). */
 	static UAchievementsSubsystem* Get(const UObject* WorldContextObject);
@@ -81,6 +84,10 @@ public:
 	/** Parseo separado para poder validar el JSON en un Automation Spec sin GameInstance. */
 	static bool ParseAchievementsJson(const FString& JsonText, TArray<FAchievementStatDef>& OutStats,
 		TArray<FAchievementDef>& OutAchievements, FString& OutError);
+
+	/** Empieza una partida nueva (BeginRun): los sistemas reinician sus contadores de partida. */
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnRunStarted, EExploredGameplayMode /*Mode*/);
+	FOnRunStarted OnRunStarted;
 
 	/** Se dispara una vez por logro, en el orden en que se consiguen. */
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnAchievementUnlocked, FName /*AchievementId*/);
