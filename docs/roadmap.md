@@ -41,7 +41,7 @@ compila y pasa sus tests en local.
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
 | Save | stub | ❌ | stub | (P-SAVE) |
 | Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
-| Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
+| Audio | ✅ base | ✅ director de música y flauta | parcial | `UExploredMusicSubsystem` y arreglo M5 sin compilar (P-MUSIC); falta cablear descubrimientos, peligro y barcos |
 | UI / frontend | ✅ base | — | parcial | Bugs H2, H6, H7, M8, M11–M14; mapa y museo (P-UI) |
 | Localización | ❌ | — | ❌ | ES/EN (P-L10N) |
 
@@ -65,7 +65,7 @@ compila y pasa sus tests en local.
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
 | P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |
-| P-MUSIC | Director de música adaptativa por capas | pendiente |
+| P-MUSIC | Director de música adaptativa por capas | en curso (nube/musica-2026-09-26) |
 | P-L10N | Tabla de textos ES/EN y selector | pendiente |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |
 
