@@ -370,6 +370,19 @@ public:
 	float FillLiquid(int64 InstanceId, float Liters, EInventoryFail& OutFail);
 	/** Devuelve los litros que realmente se han bebido. */
 	float DrinkFrom(int64 InstanceId, float Liters);
+
+	/**
+	 * Gasta un objeto que lleva el jugador (materiales al construir): lo quita de
+	 * donde esté, también de las angarillas. No quita el equipo puesto ni deja la
+	 * bolsa estanca sin soporte con cosas dentro (ContainerNotEmpty).
+	 */
+	bool ConsumeItem(int64 InstanceId, FInventoryItem& OutItem, EInventoryFail& OutFail);
+
+	/**
+	 * Sustituye el registro de un objeto por otro con el mismo id y la misma
+	 * definición que no pese ni ocupe más (una pila que mengua): se queda en su sitio.
+	 */
+	bool ShrinkItem(const FInventoryItem& Updated, EInventoryFail& OutFail);
 	/** Litros que caben en un recipiente según su propiedad Recipiente (0–5, biblia §2.1). */
 	static float LiquidCapacityFromRecipiente(float RecipienteValue) { return FMath::Max(0.0f, RecipienteValue) * 0.25f; }
 

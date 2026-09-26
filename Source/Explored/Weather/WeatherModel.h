@@ -76,6 +76,17 @@ public:
 	/** Muestra física en un instante, con transiciones suaves entre bloques y aviso previo de temporales. */
 	FWeatherSample SampleAt(float TotalDays) const;
 
+	/**
+	 * Categoría del ciclón activo en un instante (1–3, biblia §6.2); 0 si no hay
+	 * ciclón planificado. Sale de su propio hash de la semilla y del día en que
+	 * empieza, así que no altera la secuencia de estados: 50 % de categoría 1,
+	 * 35 % de 2 y 15 % de 3.
+	 */
+	int32 CycloneCategoryAt(float TotalDays) const;
+
+	/** Categoría del ciclón que empieza la noche de un día (aunque ese día no haya ciclón). */
+	int32 CycloneCategoryForDay(int32 Day) const;
+
 	/** Siguiente temporal grave (ciclón o galerna) a partir de un instante; false si no hay en 40 días. */
 	bool NextSevereEvent(float FromDays, FWeatherSpan& OutSpan) const;
 

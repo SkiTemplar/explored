@@ -21,9 +21,11 @@ Tests/OceanCurrentsSpec.cpp
 Tests/RuinsSpec.cpp
 Tests/SaveArchiveSpec.cpp
 Tests/SaveSlotsSpec.cpp
+Tests/SaveSystemsSpec.cpp
 Tests/SettingsLogicSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
+Tests/SystemLinksSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp

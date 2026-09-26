@@ -621,6 +621,53 @@ void FInventorySpec::Define()
 			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
 		});
 	});
+
+	Describe("Gastar materiales", [this]()
+	{
+		It("quita un objeto de las angarillas o de la mano", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Sledge = Angarillas(Model);
+			TestTrue(TEXT("Engancha"), Model.AttachSledge(Sledge, FInventoryContainer(), Fail));
+			const FInventoryItem Log = Tronco(Model);
+			TestTrue(TEXT("Coge el tronco"), Model.PickUp(Log, Fail));
+			TestTrue(TEXT("A las angarillas"), Model.Move(Log.InstanceId, EInventorySlot::Sledge, Fail));
+			const FInventoryItem Stone = Piedra(Model);
+			TestTrue(TEXT("Piedra en la mano"), Model.PickUp(Stone, Fail));
+
+			FInventoryItem Out;
+			TestTrue(TEXT("Gasta el tronco"), Model.ConsumeItem(Log.InstanceId, Out, Fail));
+			TestEqual(TEXT("Es el tronco"), Out.InstanceId, Log.InstanceId);
+			TestTrue(TEXT("Angarillas vacías"), Model.GetContainer(EInventorySlot::Sledge)->IsEmpty());
+			TestTrue(TEXT("Gasta la piedra"), Model.ConsumeItem(Stone.InstanceId, Out, Fail));
+			TestTrue(TEXT("Manos vacías"), Model.IsHandEmpty(EInventorySlot::HandLeft) && Model.IsHandEmpty(EInventorySlot::HandRight));
+			TestFalse(TEXT("Ya no está"), Model.ConsumeItem(Stone.InstanceId, Out, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::NotFound);
+		});
+
+		It("mengua una pila sin moverla y no deja que crezca", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			FInventoryItem Stones = Piedra(Model);
+			Stones.WeightKg = 3.0f;
+			TestTrue(TEXT("Al bolsillo"), PickAndStore(Model, Stones, EInventorySlot::Pockets, Fail));
+
+			FInventoryItem Fewer = Stones;
+			Fewer.WeightKg = 1.0f;
+			TestTrue(TEXT("Mengua"), Model.ShrinkItem(Fewer, Fail));
+			TestEqual(TEXT("Sigue en el bolsillo"), Model.FindItem(Stones.InstanceId), EInventorySlot::Pockets);
+			TestEqual(TEXT("Pesa menos"), Model.FindItemById(Stones.InstanceId)->WeightKg, 1.0f);
+
+			FInventoryItem More = Stones;
+			More.WeightKg = 5.0f;
+			TestFalse(TEXT("No crece"), Model.ShrinkItem(More, Fail));
+			FInventoryItem Other = Fewer;
+			Other.DefinitionId = FName(TEXT("coral"));
+			TestFalse(TEXT("No cambia de objeto"), Model.ShrinkItem(Other, Fail));
+		});
+	});
 }
 
 #endif

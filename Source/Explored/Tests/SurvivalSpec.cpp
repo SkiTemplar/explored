@@ -50,6 +50,19 @@ void FSurvivalSpec::Define()
 		TestFalse(TEXT("Explorador no muere"), Explorer.IsDead());
 	});
 
+	It("en el último paso de un estado solo daña el tiempo que le quedaba (L4)", [this]()
+	{
+		TArray<ESurvivalEvent> Events;
+		FSurvivalState Clean;
+		FSurvivalState Poisoned;
+		Poisoned.AddCondition(ECondition::Poisoned, 0.5f);
+		FSurvivalModel::Tick(Clean, FSurvivalInputs(), 2.0f, ESurvivalMode::Survivor, 0.99f, Events);
+		FSurvivalModel::Tick(Poisoned, FSurvivalInputs(), 2.0f, ESurvivalMode::Survivor, 0.99f, Events);
+		// 3 puntos por hora durante media hora, no durante las dos del paso.
+		TestEqual(TEXT("Daño de media hora"), Clean.Health - Poisoned.Health, 1.5f, 0.05f);
+		TestFalse(TEXT("Se le pasa"), Poisoned.HasCondition(ECondition::Poisoned));
+	});
+
 	It("enfría el cuerpo de noche, mojado y con viento, y el fuego lo recupera", [this]()
 	{
 		FSurvivalState S;

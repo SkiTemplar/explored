@@ -1450,6 +1450,56 @@ float FInventoryModel::DrinkFrom(int64 InstanceId, float Liters)
 	return Drunk;
 }
 
+bool FInventoryModel::ConsumeItem(int64 InstanceId, FInventoryItem& OutItem, EInventoryFail& OutFail)
+{
+	const EInventorySlot From = FindItem(InstanceId);
+	if (From == EInventorySlot::None)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	if (WouldOrphanPouch(InstanceId, From, EInventorySlot::None))
+	{
+		OutFail = EInventoryFail::ContainerNotEmpty;
+		return false;
+	}
+	if (!RemoveUnchecked(InstanceId, OutItem))
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	OutFail = EInventoryFail::None;
+	return true;
+}
+
+bool FInventoryModel::ShrinkItem(const FInventoryItem& Updated, EInventoryFail& OutFail)
+{
+	FInventoryItem* Item = FindMutableItemById(Updated.InstanceId);
+	if (!Item)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	if (!Updated.IsValid() || Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
+	{
+		OutFail = EInventoryFail::InvalidItem;
+		return false;
+	}
+	if (Updated.GetTotalWeightKg() > Item->GetTotalWeightKg() + UE_KINDA_SMALL_NUMBER ||
+		Updated.VolumeLiters > Item->VolumeLiters + UE_KINDA_SMALL_NUMBER)
+	{
+		OutFail = EInventoryFail::TooHeavy;
+		return false;
+	}
+	*Item = Updated;
+	if (State.bHandsHoldTwoHanded && State.HandLeft.InstanceId == Updated.InstanceId)
+	{
+		State.HandRight = State.HandLeft;
+	}
+	OutFail = EInventoryFail::None;
+	return true;
+}
+
 // ---------------------------------------------------------------- guardado
 
 bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFail& OutFail)

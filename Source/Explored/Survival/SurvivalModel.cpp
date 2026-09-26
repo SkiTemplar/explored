@@ -239,13 +239,15 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 		{
 			continue;
 		}
+		// L4: en el último paso de un estado solo cuenta el tiempo que aún le quedaba.
+		const float Active = FMath::Min(T, DeltaHours);
 		T = FMath::Max(0.0f, T - DeltaHours);
 		switch (static_cast<ECondition>(C))
 		{
-		case ECondition::Bleeding: Damage += 6.0f * DeltaHours; break;
-		case ECondition::Poisoned: Damage += 3.0f * DeltaHours; S.Thirst = Drain(S.Thirst, 4.0f, DeltaHours); break;
-		case ECondition::Infection: Damage += 1.5f * DeltaHours; break;
-		case ECondition::SunBurn: S.Morale = Drain(S.Morale, 1.0f, DeltaHours); break;
+		case ECondition::Bleeding: Damage += 6.0f * Active; break;
+		case ECondition::Poisoned: Damage += 3.0f * Active; S.Thirst = Drain(S.Thirst, 4.0f, Active); break;
+		case ECondition::Infection: Damage += 1.5f * Active; break;
+		case ECondition::SunBurn: S.Morale = Drain(S.Morale, 1.0f, Active); break;
 		default: break;
 		}
 	}
