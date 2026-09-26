@@ -1,0 +1,908 @@
+{
+  "version": 1,
+  "units": {
+    "cost[].count": "unidades del objeto de items.json que se consumen",
+    "tools": "ids de items.json que el jugador debe llevar (no se consumen); deben ser fabricables",
+    "requiresPieces": "piezas que deben existir ya en la base (grafo sin ciclos)",
+    "buildMinutes": "minutos de juego de trabajo (actividad Working) con eficiencia 1.0",
+    "integrity": "puntos de integridad 1-100 antes de romperse (GDD §8.6)",
+    "maxCycloneCategory": "categoría de ciclón (0-3) que aguanta sin daño si está bien apoyada; 0 = cae con cualquier galerna",
+    "mesh": "nombre SM_ generado por Tools/Blender/props; null = pendiente (ver meshes_pendientes.json)"
+  },
+  "tiers": [
+    {
+      "id": "palma",
+      "order": 0,
+      "nameEs": "Hoja de palma",
+      "requiresTools": []
+    },
+    {
+      "id": "bambu",
+      "order": 1,
+      "nameEs": "Bambú",
+      "requiresTools": [
+        "cuchillo"
+      ]
+    },
+    {
+      "id": "madera",
+      "order": 2,
+      "nameEs": "Madera",
+      "requiresTools": [
+        "hacha"
+      ]
+    },
+    {
+      "id": "piedra",
+      "order": 3,
+      "nameEs": "Piedra",
+      "requiresTools": [
+        "martillo"
+      ]
+    }
+  ],
+  "pieces": [
+    {
+      "id": "refugio_inclinado",
+      "nameEs": "Refugio inclinado",
+      "tier": "palma",
+      "category": "especial",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 3
+        },
+        {
+          "item": "hoja_palma",
+          "count": 8
+        },
+        {
+          "item": "liana",
+          "count": 1
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 25,
+      "maxCycloneCategory": 0,
+      "mesh": "SM_Shelter_LeanTo"
+    },
+    {
+      "id": "cama_hojas",
+      "nameEs": "Cama de hojas",
+      "tier": "palma",
+      "category": "mobiliario",
+      "cost": [
+        {
+          "item": "hoja_palma",
+          "count": 6
+        },
+        {
+          "item": "hoja_platano",
+          "count": 4
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 10,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "mesh": "SM_Bed_Leaves"
+    },
+    {
+      "id": "fogata",
+      "nameEs": "Fogata",
+      "tier": "palma",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "canto_rodado",
+          "count": 6
+        },
+        {
+          "item": "rama_seca",
+          "count": 5
+        },
+        {
+          "item": "fibra_coco",
+          "count": 1
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 10,
+      "integrity": 30,
+      "maxCycloneCategory": 0,
+      "mesh": "SM_Campfire"
+    },
+    {
+      "id": "hoguera_senal",
+      "nameEs": "Hoguera de señal",
+      "tier": "palma",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "rama_seca",
+          "count": 12
+        },
+        {
+          "item": "tronco_pequeno",
+          "count": 2
+        },
+        {
+          "item": "hoja_palma",
+          "count": 6
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 30,
+      "maxCycloneCategory": 0,
+      "mesh": "SM_Bonfire_Signal"
+    },
+    {
+      "id": "piedra_trabajo",
+      "nameEs": "Piedra de trabajo",
+      "tier": "palma",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "piedra_plana",
+          "count": 1
+        },
+        {
+          "item": "canto_rodado",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 5,
+      "integrity": 90,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
+      "id": "suelo_palma",
+      "nameEs": "Suelo de palma",
+      "tier": "palma",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "hoja_palma",
+          "count": 6
+        },
+        {
+          "item": "palo_recto",
+          "count": 4
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 30,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "pared_palma",
+      "nameEs": "Pared de palma",
+      "tier": "palma",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "hoja_palma",
+          "count": 8
+        },
+        {
+          "item": "palo_recto",
+          "count": 3
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 30,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "techo_palma",
+      "nameEs": "Techo de palma",
+      "tier": "palma",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "hoja_palma",
+          "count": 10
+        },
+        {
+          "item": "palo_recto",
+          "count": 4
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 25,
+      "integrity": 30,
+      "maxCycloneCategory": 0,
+      "mesh": "SM_Roof_PalmThatch"
+    },
+    {
+      "id": "puerta_palma",
+      "nameEs": "Puerta de palma",
+      "tier": "palma",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "hoja_palma",
+          "count": 6
+        },
+        {
+          "item": "palo_recto",
+          "count": 2
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 25,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "bancal",
+      "nameEs": "Bancal",
+      "tier": "palma",
+      "category": "huerto",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 6
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "pala"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 50,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "arriate_limonero",
+      "nameEs": "Arriate del limonero",
+      "tier": "palma",
+      "category": "huerto",
+      "cost": [
+        {
+          "item": "canto_rodado",
+          "count": 8
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "pala"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 80,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
+      "id": "suelo_bambu",
+      "nameEs": "Suelo de bambú",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 3
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 50,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "pared_bambu",
+      "nameEs": "Pared de bambú",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 4
+        },
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 3
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 50,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "techo_bambu",
+      "nameEs": "Techo de bambú y palma",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "hoja_palma",
+          "count": 8
+        },
+        {
+          "item": "cordel",
+          "count": 3
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 35,
+      "integrity": 45,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "puerta_bambu",
+      "nameEs": "Puerta de bambú",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "pilote_bambu",
+      "nameEs": "Pilote de bambú",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 2
+        },
+        {
+          "item": "cordel",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 45,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "escalera_bambu",
+      "nameEs": "Escalera de bambú",
+      "tier": "bambu",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 2
+        },
+        {
+          "item": "bambu_fino",
+          "count": 4
+        },
+        {
+          "item": "cordel",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "secadero",
+      "nameEs": "Secadero",
+      "tier": "bambu",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 35,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "telar",
+      "nameEs": "Telar de fibra",
+      "tier": "bambu",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 2
+        },
+        {
+          "item": "cordel",
+          "count": 6
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "espaldera",
+      "nameEs": "Espaldera",
+      "tier": "bambu",
+      "category": "huerto",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "bancal"
+      ],
+      "buildMinutes": 20,
+      "integrity": 35,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "recolector_lluvia",
+      "nameEs": "Recolector de lluvia",
+      "tier": "bambu",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 3
+        },
+        {
+          "item": "hoja_platano",
+          "count": 4
+        },
+        {
+          "item": "cordel",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 25,
+      "integrity": 35,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "suelo_madera",
+      "nameEs": "Suelo de madera",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 2
+        },
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 75,
+      "maxCycloneCategory": 2,
+      "mesh": "SM_Floor_Wood"
+    },
+    {
+      "id": "pared_madera",
+      "nameEs": "Pared de madera",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 3
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        },
+        {
+          "item": "resina",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 75,
+      "maxCycloneCategory": 2,
+      "mesh": "SM_Wall_Wood"
+    },
+    {
+      "id": "techo_madera",
+      "nameEs": "Techo de madera y palma",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "hoja_palma",
+          "count": 10
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 50,
+      "integrity": 65,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "puerta_madera",
+      "nameEs": "Puerta de madera",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 3
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 70,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "pilote_madera",
+      "nameEs": "Pilote de madera",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 1
+        },
+        {
+          "item": "resina",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 80,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "escalera_madera",
+      "nameEs": "Escalera de madera",
+      "tier": "madera",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 70,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "mesa_cartografia",
+      "nameEs": "Mesa de cartografía",
+      "tier": "madera",
+      "category": "mobiliario",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 60,
+      "integrity": 60,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "estanteria_museo",
+      "nameEs": "Estantería del museo",
+      "tier": "madera",
+      "category": "museo",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 40,
+      "integrity": 60,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "cimiento_piedra",
+      "nameEs": "Cimiento de piedra",
+      "tier": "piedra",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "basalto",
+          "count": 6
+        },
+        {
+          "item": "arcilla_roja",
+          "count": 3
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "martillo",
+        "pala"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 90,
+      "integrity": 100,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
+      "id": "muro_piedra",
+      "nameEs": "Muro de piedra seca",
+      "tier": "piedra",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "basalto",
+          "count": 8
+        },
+        {
+          "item": "arcilla_roja",
+          "count": 4
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [
+        "cimiento_piedra"
+      ],
+      "buildMinutes": 90,
+      "integrity": 100,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
+      "id": "horno_barro",
+      "nameEs": "Horno de barro",
+      "tier": "piedra",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "arcilla_roja",
+          "count": 8
+        },
+        {
+          "item": "canto_rodado",
+          "count": 6
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "pala"
+      ],
+      "requiresPieces": [
+        "fogata"
+      ],
+      "buildMinutes": 120,
+      "integrity": 90,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
+      "id": "chimenea",
+      "nameEs": "Chimenea",
+      "tier": "piedra",
+      "category": "estructura",
+      "cost": [
+        {
+          "item": "basalto",
+          "count": 4
+        },
+        {
+          "item": "arcilla_roja",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [
+        "horno_barro",
+        "muro_piedra"
+      ],
+      "buildMinutes": 90,
+      "integrity": 95,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    }
+  ]
+}

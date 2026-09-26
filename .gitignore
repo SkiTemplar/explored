@@ -14,6 +14,9 @@ Saved/
 Plugins/*/Binaries/
 Plugins/*/Intermediate/
 
+# Salidas generadas por las herramientas (se regeneran; no se versionan)
+Art/Export/Textures/
+
 # Python / herramientas
 .venv/
 __pycache__/

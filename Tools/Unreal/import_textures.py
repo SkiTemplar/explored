@@ -3,6 +3,7 @@
     UnrealEditor-Cmd Explored.uproject -run=pythonscript -script="Tools/Unreal/import_textures.py"
 """
 
+import json
 import os
 
 import unreal
@@ -10,7 +11,7 @@ import unreal
 SOURCE_DIR = os.path.join(unreal.Paths.project_dir(), "Art", "Export", "Textures")
 DEST = "/Game/Generated/Textures"
 
-# Nombre -> (sRGB, compresión)
+# Nombre -> (sRGB, compresión). Respaldo si falta textures.json (lo escribe gen_textures.py).
 SETTINGS = {
     "T_TerrainDetail": (False, unreal.TextureCompressionSettings.TC_MASKS),
     "T_TerrainNormal": (False, unreal.TextureCompressionSettings.TC_NORMALMAP),
@@ -20,7 +21,24 @@ SETTINGS = {
 }
 
 
-def import_texture(path: str) -> None:
+KIND_COMPRESSION = {
+    "color": unreal.TextureCompressionSettings.TC_DEFAULT,
+    "normal": unreal.TextureCompressionSettings.TC_NORMALMAP,
+    "masks": unreal.TextureCompressionSettings.TC_MASKS,
+}
+
+
+def load_manifest() -> dict:
+    """textures.json: nombre -> {kind: color|normal|masks, srgb}. Cubre T_<Material>_BC/_N/_ARH."""
+    path = os.path.join(SOURCE_DIR, "textures.json")
+    if not os.path.isfile(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    return {name: (entry["srgb"], KIND_COMPRESSION[entry["kind"]]) for name, entry in data.items()}
+
+
+def import_texture(path: str, settings: dict) -> None:
     name = os.path.splitext(os.path.basename(path))[0]
     task = unreal.AssetImportTask()
     task.set_editor_property("filename", path)
@@ -34,11 +52,11 @@ def import_texture(path: str) -> None:
     texture = unreal.EditorAssetLibrary.load_asset(f"{DEST}/{name}")
     if texture is None:
         raise RuntimeError(f"No se importó {path}")
-    srgb, compression = SETTINGS.get(name, (True, unreal.TextureCompressionSettings.TC_DEFAULT))
+    srgb, compression = settings.get(name, (True, unreal.TextureCompressionSettings.TC_DEFAULT))
     texture.set_editor_property("srgb", srgb)
     texture.set_editor_property("compression_settings", compression)
     if compression == unreal.TextureCompressionSettings.TC_NORMALMAP:
-        # El generador ya escribe la convención de Unreal (verde invertido).
+        # Los juegos nuevos (_N) ya salen en convención DirectX; los legado los lee HLSL propio.
         texture.set_editor_property("flip_green_channel", False)
     unreal.EditorAssetLibrary.save_loaded_asset(texture)
     unreal.log(f"[Explored] Textura importada: {DEST}/{name}")
@@ -47,9 +65,10 @@ def import_texture(path: str) -> None:
 def main() -> None:
     if not os.path.isdir(SOURCE_DIR):
         raise RuntimeError(f"No existe {SOURCE_DIR}; ejecuta antes Tools/Textures/gen_textures.py")
+    settings = {**SETTINGS, **load_manifest()}
     for file in sorted(os.listdir(SOURCE_DIR)):
         if file.lower().endswith(".png"):
-            import_texture(os.path.join(SOURCE_DIR, file))
+            import_texture(os.path.join(SOURCE_DIR, file), settings)
 
 
 main()

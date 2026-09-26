@@ -1,0 +1,24 @@
+[project]
+name = "explored-datacheck"
+version = "0.1.0"
+description = "Validador de los datos de Content/Data/*.json de Explored: esquemas, referencias cruzadas y progresión alcanzable."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+datacheck = "datacheck.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/datacheck"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

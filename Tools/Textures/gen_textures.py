@@ -1,146 +1,109 @@
-"""Genera texturas de detalle periódicas (sin costuras) para los materiales.
+"""Genera las texturas procedurales periódicas (sin costuras) de Explored.
 
 Uso (desde la raíz del repositorio):
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py
+    uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2048 --only SandDry Grass
+    uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --sheet docs/art/texturas-AAAA-MM-DD.png
 
-Salida en Art/Export/Textures/:
+Salida en Art/Export/Textures/ (no se versiona):
+  Legado (las usa hoy build_materials.py; no cambian):
     T_TerrainDetail.png  RGBA: R ruido fino, G ruido medio, B guijarros (celular), A vetas.
-    T_TerrainNormal.png  mapa de normales (tangente, OpenGL→DirectX con G invertido) de las alturas combinadas.
+    T_TerrainNormal.png  normales de las alturas combinadas (verde OpenGL, leído por HLSL propio).
     T_LeafNoise.png      variación para hojas (R ruido, G venas, B moteado, A máscara de borde).
-    T_WaterFoam.png      patrón de espuma del océano (gris, se repite), orilla y crestas.
-    T_WaterRipple.png    normales de oleaje fino del océano (tangente, misma convención que T_TerrainNormal).
+    T_WaterFoam.png      patrón de espuma del océano (gris).
+    T_WaterRipple.png    normales de oleaje fino del océano.
+  Juegos PBR estilizados (ver docs/art/texturas.md):
+    T_<Material>_BC.png  color base sRGB.
+    T_<Material>_N.png   normal en espacio tangente, convención DirectX (la de Unreal).
+    T_<Material>_ARH.png R oclusión, G rugosidad, B altura (lineal).
+    T_WaterWaves_N.png, T_SeaFoam_M.png (RGBA de máscaras de espuma).
+  textures.json          manifiesto nombre -> {kind, srgb} que usa import_textures.py.
 """
 
 from __future__ import annotations
 
+import argparse
+import sys
+import time
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
-SIZE = 1024
-OUT = Path(__file__).resolve().parents[2] / "Art" / "Export" / "Textures"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from texgen.legacy import LEGACY_KINDS, generate_legacy  # noqa: E402
+from texgen.materials import MATERIALS, default_seed, generate  # noqa: E402
+from texgen.output import KINDS, contact_sheet, lit_preview, texture_name, write_manifest, write_maps  # noqa: E402
 
-def periodic_value_noise(size: int, cells: int, rng: np.random.Generator) -> np.ndarray:
-    """Ruido de valor con interpolación suave que se repite exactamente cada `size` píxeles."""
-    grid = rng.random((cells, cells))
-    coords = np.arange(size) * cells / size
-    i0 = np.floor(coords).astype(int)
-    frac = coords - i0
-    t = frac * frac * (3.0 - 2.0 * frac)
-    i1 = (i0 + 1) % cells
-    a = grid[np.ix_(i0, i0)]
-    b = grid[np.ix_(i0, i1)]
-    c = grid[np.ix_(i1, i0)]
-    d = grid[np.ix_(i1, i1)]
-    tx = t[None, :]
-    ty = t[:, None]
-    return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "Art" / "Export" / "Textures"
 
 
-def fbm(size: int, base_cells: int, octaves: int, seed: int) -> np.ndarray:
-    rng = np.random.default_rng(seed)
-    total = np.zeros((size, size))
-    amplitude = 1.0
-    norm = 0.0
-    cells = base_cells
-    for _ in range(octaves):
-        total += periodic_value_noise(size, cells, rng) * amplitude
-        norm += amplitude
-        amplitude *= 0.5
-        cells *= 2
-    return total / norm
+def preview_card(name: str, maps: dict, seed: int) -> dict:
+    spec = MATERIALS[name]
+    info = f"{spec.tile_m:g} m/tile · semilla {seed}"
+    if "BC" in maps:
+        arh = maps["ARH"]
+        lit = lit_preview(maps["BC"], maps["N"], arh[..., 0], arh[..., 1])
+        thumbs = [maps["BC"], maps["N"] * 0.5 + 0.5, arh]
+    elif "N" in maps:
+        water = np.broadcast_to(np.array([0.10, 0.42, 0.52]), maps["N"].shape).copy()
+        lit = lit_preview(water, maps["N"], None, np.full(maps["N"].shape[:2], 0.08))
+        thumbs = [maps["N"] * 0.5 + 0.5]
+    else:
+        m = maps["M"]
+        sea = np.array([0.12, 0.45, 0.55])
+        foam = np.clip(m[..., 0] * 0.8 + m[..., 1] * 0.5 + m[..., 2] * 0.5, 0, 1)[..., None]
+        lit = sea + (np.array([0.95, 0.97, 0.96]) - sea) * foam
+        thumbs = [m[..., :3], np.repeat(m[..., 3:4], 3, axis=-1)]
+    return {"name": name, "info": info, "lit": lit, "thumbs": thumbs}
 
 
-def cellular(size: int, points: int, seed: int) -> np.ndarray:
-    """Distancia al punto más cercano en un toro (guijarros o celdas)."""
-    rng = np.random.default_rng(seed)
-    pts = rng.random((points, 2)) * size
-    ys, xs = np.mgrid[0:size, 0:size].astype(np.float32)
-    best = np.full((size, size), np.inf, dtype=np.float32)
-    for px, py in pts:
-        dx = np.abs(xs - px)
-        dy = np.abs(ys - py)
-        dx = np.minimum(dx, size - dx)
-        dy = np.minimum(dy, size - dy)
-        best = np.minimum(best, np.sqrt(dx * dx + dy * dy))
-    best /= best.max()
-    return best
+def main(argv: list[str] | None = None) -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--size", type=int, default=1024, help="resolución (potencia de 2: 1024 o 2048)")
+    ap.add_argument("--only", nargs="*", help="solo estos materiales (p. ej. SandDry Grass)")
+    ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--no-legacy", action="store_true", help="no regenerar las texturas legado")
+    ap.add_argument("--sheet", type=Path, help="escribe una hoja de contacto PNG en esta ruta")
+    ap.add_argument("--seed", type=int, help="semilla global (por defecto, una estable por material)")
+    args = ap.parse_args(argv)
 
+    if args.size & (args.size - 1) or args.size < 64:
+        ap.error("--size debe ser potencia de 2 (>= 64)")
+    names = args.only or list(MATERIALS)
+    unknown = [n for n in names if n not in MATERIALS]
+    if unknown:
+        ap.error(f"materiales desconocidos: {unknown}; hay {list(MATERIALS)}")
 
-def normalize01(a: np.ndarray) -> np.ndarray:
-    lo, hi = a.min(), a.max()
-    return (a - lo) / (hi - lo + 1e-9)
+    args.out.mkdir(parents=True, exist_ok=True)
+    manifest: dict[str, dict] = {}
+    if not args.no_legacy:
+        for name, img in generate_legacy().items():
+            img.save(args.out / f"{name}.png")
+            print(f"[texturas] {args.out / name}.png")
+    for name, (kind, srgb) in LEGACY_KINDS.items():
+        manifest[name] = {"kind": kind, "srgb": srgb}
 
+    cards = []
+    for name in MATERIALS:
+        for suffix in MATERIALS[name].outputs:
+            kind, srgb = KINDS[suffix]
+            manifest[texture_name(name, suffix)] = {"kind": kind, "srgb": srgb}
+    for name in names:
+        seed = args.seed if args.seed is not None else default_seed(name)
+        t0 = time.perf_counter()
+        maps = generate(name, args.size, seed)
+        written = write_maps(args.out, name, maps)
+        print(f"[texturas] {name}: {', '.join(written)} ({time.perf_counter() - t0:.1f} s)")
+        if args.sheet:
+            cards.append(preview_card(name, maps, seed))
+    write_manifest(args.out, manifest)
 
-def to_u8(a: np.ndarray) -> np.ndarray:
-    return np.clip(a * 255.0 + 0.5, 0, 255).astype(np.uint8)
-
-
-def tileable_waves(size: int, count: int, fmin: int, fmax: int, falloff: float, seed: int) -> np.ndarray:
-    """Suma de ondas con vectores de frecuencia enteros: se repite exacta cada `size` píxeles.
-    Cresta algo afilada (como el oleaje real) y amplitud que baja con la frecuencia."""
-    rng = np.random.default_rng(seed)
-    y, x = np.mgrid[0:size, 0:size] / size
-    h = np.zeros((size, size))
-    for _ in range(count):
-        f = int(rng.integers(fmin, fmax + 1))
-        angle = rng.uniform(0.0, 2.0 * np.pi)
-        kx, ky = int(round(f * np.cos(angle))), int(round(f * np.sin(angle)))
-        if kx == 0 and ky == 0:
-            continue
-        phase = rng.uniform(0.0, 2.0 * np.pi)
-        wave = np.sin(2.0 * np.pi * (kx * x + ky * y) + phase)
-        crest = 1.0 - np.abs(wave)
-        amp = (np.hypot(kx, ky)) ** (-falloff)
-        h += amp * (0.6 * wave + 0.4 * (crest * 2.0 - 1.0))
-    return normalize01(h)
-
-
-def height_to_normal(height: np.ndarray, strength: float) -> np.ndarray:
-    """Normal en espacio tangente con diferencias centrales periódicas (convención de Unreal: Y verde hacia abajo)."""
-    dx = (np.roll(height, -1, axis=1) - np.roll(height, 1, axis=1)) * strength
-    dy = (np.roll(height, -1, axis=0) - np.roll(height, 1, axis=0)) * strength
-    n = np.stack([-dx, dy, np.ones_like(height)], axis=-1)
-    n /= np.linalg.norm(n, axis=-1, keepdims=True)
-    return n * 0.5 + 0.5
-
-
-def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-
-    fine = normalize01(fbm(SIZE, 32, 4, seed=11))
-    medium = normalize01(fbm(SIZE, 8, 5, seed=23))
-    pebbles = 1.0 - normalize01(cellular(SIZE, 420, seed=37))
-    streak_base = fbm(SIZE, 4, 4, seed=51)
-    streaks = normalize01(np.sin((np.arange(SIZE)[:, None] / SIZE * 48.0 + streak_base * 6.0) * np.pi))
-
-    detail = np.stack([fine, medium, pebbles, streaks], axis=-1)
-    Image.fromarray(to_u8(detail), "RGBA").save(OUT / "T_TerrainDetail.png")
-
-    height = fine * 0.35 + medium * 0.35 + np.power(pebbles, 3.0) * 0.3
-    Image.fromarray(to_u8(height_to_normal(height, strength=6.0)), "RGB").save(OUT / "T_TerrainNormal.png")
-
-    leaf_noise = normalize01(fbm(SIZE, 16, 4, seed=71))
-    veins = normalize01(np.abs(np.sin((np.arange(SIZE)[None, :] / SIZE * 20.0 + fbm(SIZE, 6, 3, seed=73) * 3.0) * np.pi)))
-    mottled = normalize01(fbm(SIZE, 48, 3, seed=79))
-    edge = normalize01(1.0 - cellular(SIZE, 160, seed=83))
-    leaf = np.stack([leaf_noise, veins, mottled, edge], axis=-1)
-    Image.fromarray(to_u8(leaf), "RGBA").save(OUT / "T_LeafNoise.png")
-
-    # Espuma del océano: celdas irregulares (dos capas de ondas cruzadas) con agujeros, en gris.
-    foam_a = tileable_waves(SIZE, 48, 3, 20, 0.6, seed=101)
-    foam_b = tileable_waves(SIZE, 48, 8, 40, 0.4, seed=103)
-    foam = np.clip((foam_a * 0.6 + foam_b * 0.4 - 0.45) * 3.0, 0.0, 1.0)
-    Image.fromarray(to_u8(foam), "L").save(OUT / "T_WaterFoam.png")
-
-    # Oleaje fino del agua: ondas de frecuencia entera (se repiten sin costura) convertidas a normal.
-    ripple_height = tileable_waves(SIZE, 90, 2, 48, 1.1, seed=107)
-    Image.fromarray(to_u8(height_to_normal(ripple_height, strength=4.5)), "RGB").save(OUT / "T_WaterRipple.png")
-
-    for name in ("T_TerrainDetail.png", "T_TerrainNormal.png", "T_LeafNoise.png", "T_WaterFoam.png", "T_WaterRipple.png"):
-        print(f"[texturas] {OUT / name}")
+    if args.sheet:
+        title = f"Explored · texturas procedurales · {args.size}px · iluminada 2×2 · abajo: lejos 4×4 / BC / N / ARH"
+        path = contact_sheet(cards, args.sheet, title)
+        print(f"[texturas] hoja de contacto: {path} ({path.stat().st_size / 1e6:.2f} MB)")
 
 
 if __name__ == "__main__":
