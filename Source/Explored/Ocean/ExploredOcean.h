@@ -40,6 +40,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Océano")
 	float GetSeaState() const { return SeaState; }
 
+	/** Olas que dibuja el material: los barcos (FBoatModel) flotan exactamente sobre la misma superficie. */
+	const FOceanWaves& GetWaves() const { return Waves; }
+
+	/** Reloj de las olas (s): el mismo que recibe el material cada fotograma. */
+	float GetWaveTimeSeconds() const { return GetWaveTime(); }
+
 protected:
 	virtual void BeginPlay() override;
 
