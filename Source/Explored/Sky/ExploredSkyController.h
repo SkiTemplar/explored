@@ -12,6 +12,7 @@ class USkyAtmosphereComponent;
 class USkyLightComponent;
 class UStaticMeshComponent;
 class UVolumetricCloudComponent;
+class AExploredOcean;
 
 /**
  * Cielo completo del archipiélago: Sol, Luna, atmósfera, nubes volumétricas,
@@ -47,10 +48,19 @@ protected:
 
 private:
 	void ApplyTime(float Hours, float TotalDays);
+	/** Niebla y viraje de color cuando la cámara del jugador está bajo el agua (§8: «vista
+	 * submarina bonita»); el océano no usa el plugin Water de Epic, así que esto no es
+	 * automático y hay que aplicarlo a mano sobre el postproceso y la niebla existentes. */
+	void ApplyUnderwater(float DeltaSeconds);
 
 	float CloudCover = 0.2f;
 	float WeatherFog = 0.0f;
 	float WeatherRain = 0.0f;
+	/** Fracción sumergida actual (0 en superficie, 1 ya asentada bajo el agua); suaviza la transición. */
+	float UnderwaterBlend = 0.0f;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<AExploredOcean> Ocean;
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Cielo")
 	TObjectPtr<UDirectionalLightComponent> Sun;
