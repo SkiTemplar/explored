@@ -134,6 +134,70 @@ void FWorldGenSpec::Define()
 				TestTrue(TEXT("Islotes"), Teeth->Islets.Num() >= 5 && Teeth->Islets.Num() <= 8);
 			}
 		});
+
+		It("encadena las islas con estrechos navegables y una dorsal continua", [this]()
+		{
+			for (uint32 Seed = 1; Seed <= 40; ++Seed)
+			{
+				const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(Seed);
+				TestEqual(TEXT("Dorsal"), Layout.Spine.Num(), Layout.Islands.Num() + 2);
+				TestEqual(TEXT("Empieza en el volcán"), Layout.Islands[0].Archetype, EIslandArchetype::Smoke);
+				TestEqual(TEXT("Acaba en el atolón"), Layout.Islands.Last().Archetype, EIslandArchetype::WhiteSands);
+				for (int32 I = 0; I + 1 < Layout.Islands.Num(); ++I)
+				{
+					const FIslandDesc& A = Layout.Islands[I];
+					const FIslandDesc& B = Layout.Islands[I + 1];
+					const float Gap = FVector2D::Distance(A.Center, B.Center) - A.Radius - B.Radius;
+					if (Gap > FArchipelagoLayout::MaxChainChannel + 1.0f)
+					{
+						AddError(FString::Printf(TEXT("Semilla %u: estrecho de %.0f m entre %s y %s"), Seed, Gap,
+							LexToString(A.Archetype), LexToString(B.Archetype)));
+						return;
+					}
+				}
+			}
+		});
+
+		It("mantiene penínsulas y cayos dentro de su isla y lejos de las demás", [this]()
+		{
+			const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(OfficialSeed);
+			int32 CayCount = 0;
+			for (const FIslandDesc& Island : Layout.Islands)
+			{
+				for (const FIslandLobe& Lobe : Island.Lobes)
+				{
+					TestTrue(TEXT("Península dentro de 1,1 radios"), Lobe.Offset.Size() + Lobe.Radius <= 1.1f + KINDA_SMALL_NUMBER);
+				}
+				for (const FCayDesc& Cay : Island.Cays)
+				{
+					++CayCount;
+					for (const FIslandDesc& Other : Layout.Islands)
+					{
+						if (&Other != &Island)
+						{
+							TestTrue(TEXT("Cayo lejos de otras islas"), FVector2D::Distance(Other.Center, Cay.Center) > Other.Radius * 1.35f);
+						}
+					}
+				}
+			}
+			TestTrue(TEXT("Hay cayos satélite"), CayCount >= 5);
+		});
+
+		It("hace emerger los cayos satélite", [this]()
+		{
+			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
+			int32 Emerged = 0;
+			int32 Total = 0;
+			for (const FIslandDesc& Island : Density.GetLayout().Islands)
+			{
+				for (const FCayDesc& Cay : Island.Cays)
+				{
+					++Total;
+					Emerged += Density.SampleColumn(Cay.Center.X, Cay.Center.Y).Height > 0.5f ? 1 : 0;
+				}
+			}
+			TestEqual(TEXT("Cayos sobre el agua"), Emerged, Total);
+		});
 	});
 
 	Describe("FTerrainDensity", [this]()

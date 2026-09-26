@@ -24,6 +24,53 @@ namespace
 		return (Base + SmoothStep(0.5f - Softness, 0.5f + Softness, Frac)) / Steps;
 	}
 
+	/** Mínimo suave polinómico: une dos siluetas sin arista en la junta. */
+	FORCEINLINE float SmoothMin(float A, float B, float K)
+	{
+		const float H = FMath::Max(K - FMath::Abs(A - B), 0.0f) / K;
+		return FMath::Min(A, B) - H * H * K * 0.25f;
+	}
+
+	/** Profundidad del lomo de la dorsal submarina que une la cadena. */
+	constexpr float RidgeDepth = -26.0f;
+
+	float DistanceToPolyline(const TArray<FVector2D>& Points, const FVector2D& P)
+	{
+		float Best = TNumericLimits<float>::Max();
+		for (int32 I = 0; I + 1 < Points.Num(); ++I)
+		{
+			const FVector2D A = Points[I];
+			const FVector2D AB = Points[I + 1] - A;
+			const float T = FMath::Clamp(FVector2D::DotProduct(P - A, AB) / FMath::Max(AB.SizeSquared(), 1.0f), 0.0f, 1.0f);
+			Best = FMath::Min(Best, FVector2D::Distance(P, A + AB * T));
+		}
+		return Best;
+	}
+
+	/** Altura de un cayo satélite; muy negativa fuera de su alcance. */
+	float CayHeight(const FCayDesc& Cay, float X, float Y, float Wobble)
+	{
+		const FVector2D D = FVector2D(X, Y) - Cay.Center;
+		const float C = FMath::Cos(-Cay.Angle);
+		const float S = FMath::Sin(-Cay.Angle);
+		const FVector2D L(D.X * C - D.Y * S, (D.X * S + D.Y * C) / Cay.Aspect);
+		const float R = L.Size() * (1.0f + 0.3f * Wobble) / Cay.Radius;
+		if (R > 3.0f)
+		{
+			return -1000.0f;
+		}
+		// Falda sumergida: arena somera que se hunde hacia el talud.
+		const float Skirt = FMath::Lerp(-0.8f, -22.0f, SmoothStep(1.0f, 3.0f, R));
+		if (R >= 1.0f)
+		{
+			return Skirt;
+		}
+		const float Land = Cay.bRocky
+			? -2.0f + (Cay.Height + 2.0f) * FMath::Pow(FMath::Max(0.0f, 1.0f - R * R), 0.35f)
+			: -0.6f + (Cay.Height + 0.6f) * (1.0f - R * R);
+		return FMath::Max(Land, Skirt);
+	}
+
 	FVector2D ToLocal(const FIslandDesc& Island, float X, float Y)
 	{
 		const FVector2D D = (FVector2D(X, Y) - Island.Center) / Island.Radius;
@@ -92,7 +139,17 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	const FVector2D Dir = Len > KINDA_SMALL_NUMBER ? Q / Len : FVector2D(1.0f, 0.0f);
 	const float Lobes = N.Fbm2D(Dir.X * 1.4f + 5.0f, Dir.Y * 1.4f - 3.0f, 3);
 	const float Coast = 1.0f + 0.32f * Lobes + 0.1f * N.Fbm2D(Q.X * 6.0f + 11.0f, Q.Y * 6.0f - 7.0f, 3);
-	const float T = Len / FMath::Max(Coast, 0.45f);
+	float T = Len / FMath::Max(Coast, 0.45f);
+
+	// Penínsulas: elipses secundarias unidas con mínimo suave a la silueta principal.
+	for (const FIslandLobe& Lobe : Island.Lobes)
+	{
+		const FVector2D D = Q - Lobe.Offset;
+		const float C = FMath::Cos(-Lobe.Angle);
+		const float S = FMath::Sin(-Lobe.Angle);
+		const FVector2D L(D.X * C - D.Y * S, (D.X * S + D.Y * C) / Lobe.Aspect);
+		T = SmoothMin(T, L.Size() / (Lobe.Radius * FMath::Max(Coast, 0.45f)), 0.18f);
+	}
 	OutT = T;
 
 	if (T >= InfluenceLimit)
@@ -230,6 +287,13 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 	FTerrainColumn Column;
 	Column.Height = FArchipelagoLayout::OceanFloor + 6.0f * FloorNoise.Fbm2D(X / 420.0f, Y / 420.0f, 4);
 
+	// Dorsal submarina: las islas de la cadena comparten un zócalo menos profundo.
+	if (Layout.Spine.Num() >= 2)
+	{
+		const float Ridge = DistanceToPolyline(Layout.Spine, FVector2D(X, Y)) * (1.0f + 0.35f * FloorNoise.Fbm2D(X / 300.0f + 50.0f, Y / 300.0f, 3));
+		Column.Height = FMath::Lerp(RidgeDepth, Column.Height, SmoothStep(250.0f, 1100.0f, Ridge));
+	}
+
 	for (int32 I = 0; I < Layout.Islands.Num(); ++I)
 	{
 		const FIslandDesc& Island = Layout.Islands[I];
@@ -249,6 +313,27 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 		{
 			Column.NormalizedDistance = T;
 			Column.IslandIndex = I;
+		}
+	}
+
+	// Cayos satélite: solo cuentan si asoman sobre lo que ya había.
+	for (int32 I = 0; I < Layout.Islands.Num(); ++I)
+	{
+		for (const FCayDesc& Cay : Layout.Islands[I].Cays)
+		{
+			if (FVector2D::DistSquared(Cay.Center, FVector2D(X, Y)) > FMath::Square(Cay.Radius * 4.0f))
+			{
+				continue;
+			}
+			const float H = CayHeight(Cay, X, Y, DetailNoise.Fbm2D(X / 60.0f, Y / 60.0f, 3));
+			if (H > Column.Height)
+			{
+				Column.Height = H;
+				if (H > -2.0f)
+				{
+					Column.IslandIndex = I;
+				}
+			}
 		}
 	}
 

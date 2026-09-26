@@ -40,6 +40,25 @@ namespace
 		}
 	}
 
+	/**
+	 * Gira y desplaza cada octava para que sus rejillas no coincidan: sin esto, los
+	 * ceros de la rejilla del ruido de gradiente se alinean en todas las octavas y las
+	 * costas salen con tramos rectos y esquinas en ángulo recto.
+	 */
+	FORCEINLINE FVector2D OctaveDomain(float X, float Y, int32 Octave)
+	{
+		// Rotación de 0,6435 rad (triángulo 3-4-5) acumulada por octava.
+		float C = 1.0f;
+		float S = 0.0f;
+		for (int32 I = 0; I <= Octave; ++I)
+		{
+			const float NC = C * 0.8f - S * 0.6f;
+			S = S * 0.8f + C * 0.6f;
+			C = NC;
+		}
+		return FVector2D(X * C - Y * S + 31.416f * (Octave + 1), X * S + Y * C - 17.32f * (Octave + 1));
+	}
+
 	template <typename FSampler>
 	float Fractal(FSampler&& Sample, int32 Octaves, float Lacunarity, float Gain)
 	{
@@ -108,7 +127,8 @@ float FExploredNoise::Fbm2D(float X, float Y, int32 Octaves, float Lacunarity, f
 	return Fractal([&](float F, int32 I)
 	{
 		const FExploredNoise Octave(Seed + static_cast<uint32>(I) * 1013u);
-		return Octave.Gradient2D(X * F, Y * F);
+		const FVector2D P = OctaveDomain(X * F, Y * F, I);
+		return Octave.Gradient2D(P.X, P.Y);
 	}, Octaves, Lacunarity, Gain);
 }
 
@@ -126,7 +146,8 @@ float FExploredNoise::Ridged2D(float X, float Y, int32 Octaves, float Lacunarity
 	return Fractal([&](float F, int32 I)
 	{
 		const FExploredNoise Octave(Seed + static_cast<uint32>(I) * 7919u);
-		const float R = 1.0f - FMath::Abs(Octave.Gradient2D(X * F, Y * F));
+		const FVector2D P = OctaveDomain(X * F, Y * F, I);
+		const float R = 1.0f - FMath::Abs(Octave.Gradient2D(P.X, P.Y));
 		return R * R;
 	}, Octaves, Lacunarity, Gain);
 }
