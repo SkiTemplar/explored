@@ -384,8 +384,18 @@ def blender_mesh_names(repo_root: Path) -> set[str]:
     names: set[str] = set()
     props = repo_root / "Tools" / "Blender" / "props"
     for py in props.glob("*.py"):
-        for m in re.finditer(r"dict\(name='([A-Za-z0-9_]+)'", py.read_text(encoding="utf-8")):
+        src = py.read_text(encoding="utf-8")
+        for m in re.finditer(r"dict\(name='([A-Za-z0-9_]+)'", src):
             names.add("SM_" + m.group(1))
+        # kit modular (kit_construccion.py): los nombres se generan como
+        # name=f'Kit_{_mat}_{_key}' cruzando MATERIALS x PIECES
+        if "name=f'Kit_{_mat}_{_key}'" in src:
+            mats = re.search(r"^MATERIALS = \[([^\]]*)\]", src, re.M)
+            pieces = re.search(r"^PIECES = \[(.*?)^\]", src, re.M | re.S)
+            if mats and pieces:
+                for mat in re.findall(r"'(\w+)'", mats.group(1)):
+                    for key in re.findall(r"^\s*\('(\w+)',", pieces.group(1), re.M):
+                        names.add(f"SM_Kit_{mat}_{key}")
     return names
 
 
