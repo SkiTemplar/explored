@@ -1,12 +1,18 @@
 #include "UI/ExploredHUD.h"
 
 #include "Carry/CarryComponent.h"
+#include "CanvasItem.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
+#include "Engine/LocalPlayer.h"
+#include "InputCoreTypes.h"
 #include "Fishing/FishingComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ItemRegistrySubsystem.h"
 #include "Player/ExploredCharacter.h"
+#include "UI/ExploredInputSettingsSubsystem.h"
+#include "UI/SettingsLogic.h"
 
 AExploredCharacter* AExploredHUD::GetExploredCharacter() const
 {
@@ -58,19 +64,23 @@ void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
 		return;
 	}
 
-	FString Prompt = TEXT("[E] ");
-	for (int32 Index = 0; Index < Verbs.Num(); ++Index)
+	// La tecla es la que tenga asignada Interactuar (se puede remapear), no una «E» fija.
+	const FName InteractAction(TEXT("IA_Interact"));
+	FKey InteractKey(ExploredSettingsLogic::GetDefaultKeyFor(InteractAction));
+	const APlayerController* PC = GetOwningPlayerController();
+	if (const ULocalPlayer* LocalPlayer = PC ? PC->GetLocalPlayer() : nullptr)
 	{
-		Prompt += Verbs[Index].ToString();
-		if (Index + 1 < Verbs.Num())
+		if (const UExploredInputSettingsSubsystem* InputSettings = LocalPlayer->GetSubsystem<UExploredInputSettingsSubsystem>())
 		{
-			Prompt += TEXT(" · ");
+			InteractKey = InputSettings->GetKeyFor(InteractAction, InteractKey);
 		}
 	}
 
-	float TextWidth = 0.0f, TextHeight = 0.0f;
-	GetTextSize(Prompt, TextWidth, TextHeight);
-	DrawText(Prompt, FLinearColor::White, (Canvas->SizeX - TextWidth) * 0.5f, Canvas->SizeY * 0.6f);
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("Key"), InteractKey.GetDisplayName(false));
+	Args.Add(TEXT("Actions"), FText::Join(INVTEXT(" · "), Verbs));
+	const FText Prompt = FText::Format(NSLOCTEXT("ExploredUI", "InteractPrompt", "[{Key}] {Actions}"), Args);
+	DrawCenteredText(Prompt, FLinearColor::White, Canvas->SizeY * 0.6f);
 }
 
 void AExploredHUD::DrawHandLabels(const AExploredCharacter& Character)
@@ -111,10 +121,7 @@ void AExploredHUD::DrawFishing(const AExploredCharacter& Character)
 	const float Y = Canvas->SizeY * 0.7f;
 	if (FishingComp->GetSessionState() == EFishingSessionState::Waiting)
 	{
-		const FString Waiting = TEXT("Esperando la picada… [F] recoger");
-		float TextWidth = 0.0f, TextHeight = 0.0f;
-		GetTextSize(Waiting, TextWidth, TextHeight);
-		DrawText(Waiting, FLinearColor(1.0f, 1.0f, 1.0f, 0.8f), CenterX - TextWidth * 0.5f, Y);
+		DrawCenteredText(NSLOCTEXT("ExploredUI", "FishingWaiting", "Esperando la picada… [F] recoger"), FLinearColor(1.0f, 1.0f, 1.0f, 0.8f), Y);
 		return;
 	}
 
@@ -132,4 +139,18 @@ void AExploredHUD::DrawFishing(const AExploredCharacter& Character)
 	float TextWidth = 0.0f, TextHeight = 0.0f;
 	GetTextSize(Label, TextWidth, TextHeight);
 	DrawText(Label, FLinearColor::White, CenterX - TextWidth * 0.5f, Y + BarHeight + 6.0f);
+}
+
+void AExploredHUD::DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y)
+{
+	// FText directo al Canvas (sin pasar por FString): se re-traduce solo al cambiar de idioma.
+	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
+	if (!Canvas || !Font)
+	{
+		return;
+	}
+	float TextWidth = 0.0f, TextHeight = 0.0f;
+	Canvas->TextSize(Font, Text.ToString(), TextWidth, TextHeight);
+	FCanvasTextItem Item(FVector2D((Canvas->SizeX - TextWidth) * 0.5f, Y), Text, Font, Color);
+	Canvas->DrawItem(Item);
 }

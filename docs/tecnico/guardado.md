@@ -235,11 +235,12 @@ ficheros en memoria que puede fallar en cualquier paso, y el subsistema usa el d
 
 | Llamada | Uso |
 |---|---|
-| `RequestSave(FName Slot = "Auto")` | Pausa → «Guardar partida». Dispara `OnSaveCompleted` u `OnSaveFailed`. |
+| `RequestSave(FName Slot = "Auto")` | Pausa → «Guardar» → selector de ranura (`SExploredSaveSlots`, ranuras manuales). Dispara `OnSaveCompleted` u `OnSaveFailed`. |
 | `RequestAutosave(ESaveTrigger)` | Cama y hoguera. |
 | `LoadContinueGame()` | Menú → «Continuar» (lo llama `AExploredPlayerController::ContinueGame`). |
-| `SaveToSlot` / `LoadFromSlot` | Guardar y cargar una ranura concreta; `OnLoadCompleted` tras cargar. |
+| `SaveToSlot` / `LoadFromSlot` | Guardar y cargar una ranura concreta (menú → «Cargar» usa `LoadFromSlot`); `OnLoadCompleted` tras cargar. |
 | `HasSaveGame()` / `GetSlotNames()` / `ListSlots()` | Menús (ranuras legibles, en orden de «Continuar»). |
+| `GetSlotsWithBackup()` | Selector de ranura (P-UI2): ranuras con copia `.bak` en disco. |
 | `RegisterSection` / `UnregisterSection` | Sistemas (ver arriba). |
 | `GetMigrations()` | Migraciones del formato. |
 | `SetWorldSeed` / `GetPlayTimeSeconds` | Cabecera. |

@@ -63,6 +63,15 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 						[
 							Line(NSLOCTEXT("ExploredUI", "CreditsArt", "Todo el arte, sonido y música generados por código"))
 						]
+						// Dedicatoria (GDD §15): la misma clave que el menú principal, idéntica en los dos idiomas.
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f, 0.0f, 24.0f))
+						[
+							SNew(STextBlock)
+							.Text(NSLOCTEXT("ExploredUI", "Dedication", "Para Almudena, mi Limón"))
+							.Font(Style.FontSubtitle())
+							.ColorAndOpacity(FSlateColor(Style.ColorAccent()))
+							.Justification(ETextJustify::Center)
+						]
 					]
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(FMargin(0.0f, 16.0f, 0.0f, 0.0f))
 					[

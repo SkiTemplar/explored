@@ -7,44 +7,32 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 488 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 184 |
+| Textos en el catálogo | 584 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 280 |
 | … de `Content/Data` (campos bilingües) | 304 |
 | Textos sin inglés | 0 |
-| Claves propuestas pendientes de integrar | 3 |
-| Literales sin localizar | 2 |
-| Literales invariantes | 9 |
-| Literales para revisar | 65 |
+| Claves propuestas pendientes de integrar | 0 |
+| Literales sin localizar | 0 |
+| Literales invariantes | 2 |
+| Literales para revisar | 64 |
 | Errores / avisos | 0 / 24 |
 
 ## Literales del C++
 
-### Literal (2)
+### Literal (0)
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
 
-| Fichero:línea | Texto | Código |
-|---|---|---|
-| `Source/Explored/UI/ExploredHUD.cpp:61` | `[E] ` | `FString Prompt = TEXT("[E] ");` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:458` | `%d min` | `DayLengthLabels.Add(FText::FromString(FString::Printf(TEXT("%d min"), static_cast<int32>(Minutes))));` |
-
-### Invariante (9)
+### Invariante (2)
 
 Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FText::AsNumber`, sin traducir.
 
 | Fichero:línea | Texto | Código |
 |---|---|---|
-| `Source/Explored/UI/ExploredHUD.cpp:67` | ` · ` | `Prompt += TEXT(" · ");` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:83` | `<` | `.Text(FText::FromString(TEXT("<")))` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:93` | `>` | `.Text(FText::FromString(TEXT(">")))` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:253` | `%d x %d` | `ResolutionLabels.Add(FText::FromString(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:264` | `30` | `FText::FromString(TEXT("30")), FText::FromString(TEXT("60")), FText::FromString(TEXT("120")),` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:264` | `60` | `FText::FromString(TEXT("30")), FText::FromString(TEXT("60")), FText::FromString(TEXT("120")),` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:264` | `120` | `FText::FromString(TEXT("30")), FText::FromString(TEXT("60")), FText::FromString(TEXT("120")),` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:265` | `144` | `FText::FromString(TEXT("144")), NSLOCTEXT("ExploredUI", "Unlimited", "Sin límite")` |
+| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (65)
+### Revisar (64)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -114,18 +102,11 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Save/SaveValue.cpp:754` | `se esperaba «,» o «]»` | `return Fail(TEXT("se esperaba «,» o «]»"));` |
 | `Source/Explored/Save/SaveValue.cpp:781` | `carácter inesperado` | `return Fail(TEXT("carácter inesperado"));` |
 | `Source/Explored/Save/SaveValue.cpp:1227` | `texto sobrante tras el valor` | `Parser.Fail(TEXT("texto sobrante tras el valor"));` |
-| `Source/Explored/UI/ExploredHUD.cpp:114` | `Esperando la picada… [F] recoger` | `const FString Waiting = TEXT("Esperando la picada… [F] recoger");` |
 
 ## Claves propuestas pendientes de integrar
 
 Ya traducidas en `Tools/Localization/translations/en.json`; el paquete que toque el fichero
 las usa con exactamente este espacio de nombres, clave y texto.
-
-| Espacio,clave | ES | EN | Dónde |
-|---|---|---|---|
-| `ExploredUI,DayLengthMinutes` | {0} min | {0} min | SExploredSettingsPanel.cpp:359, en lugar de FString::Printf(TEXT("%d min")) |
-| `ExploredUI,Dedication` | Para Almudena, mi Limón | Para Almudena, mi Limón | SExploredMainMenu (bajo el subtítulo) y SExploredCredits (GDD §15); no se traduce |
-| `ExploredUI,InteractPrompt` | [{Key}] {Actions} | [{Key}] {Actions} | ExploredHUD.cpp:59-66, en lugar de TEXT("[E] ") y la concatenación con TEXT(" · ") |
 
 ## Errores (0)
 
@@ -141,8 +122,10 @@ Ninguno.
 - Source/Explored/Carry/CarryComponent.cpp:159: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
 - Source/Explored/Carry/CarryComponent.cpp:161: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
 - Source/Explored/Fishing/ExploredTrap.cpp:103: Explored,Verb_TidePool: el inglés (15 car.) es más de 1.3× el español (10); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:311: ExploredUI,ViewDistance: el inglés (13 car.) es más de 1.3× el español (5); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:315: ExploredUI,PostProcess: el inglés (15 car.) es más de 1.3× el español (11); comprueba que cabe
+- Source/Explored/UI/Widgets/SExploredAchievements.cpp:105: ExploredUI,AchievementsTitle: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
+- Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79: ExploredUI,Achievements: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
+- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:312: ExploredUI,ViewDistance: el inglés (13 car.) es más de 1.3× el español (5); comprueba que cabe
+- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:316: ExploredUI,PostProcess: el inglés (15 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/items.json «palo_recto» nameEs/nameEn: Data.items.items,palo_recto.nameEs: el inglés (14 car.) es más de 1.3× el español (10); comprueba que cabe
 - Content/Data/items.json «bonito» nameEs/nameEn: Data.items.items,bonito.nameEs: el inglés (13 car.) es más de 1.3× el español (6); comprueba que cabe
 - Content/Data/items.json «atun» nameEs/nameEn: Data.items.items,atun.nameEs: el inglés (14 car.) es más de 1.3× el español (4); comprueba que cabe
@@ -155,5 +138,3 @@ Ninguno.
 - Content/Data/plants.json «batata» nameEs/nameEn: Data.plants.plants,batata.nameEs: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
 - Content/Data/plants.json «maracuya» nameEs/nameEn: Data.plants.plants,maracuya.nameEs: el inglés (13 car.) es más de 1.3× el español (8); comprueba que cabe
 - Content/Data/story_es.json «6» petroglyph_themes/petroglyph_themes_en: Data.story_es.petroglyph_themes,06: el inglés (21 car.) es más de 1.3× el español (16); comprueba que cabe
-- Source/Explored/UI/ExploredHUD.cpp:61: literal sin localizar «[E] »
-- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:458: literal sin localizar «%d min»

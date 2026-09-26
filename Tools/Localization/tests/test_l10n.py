@@ -178,6 +178,8 @@ def test_traduccion_huerfana(src: Sources) -> None:
 
 
 def test_pendiente_ya_integrada(src: Sources) -> None:
+    # La dedicatoria ya está en el código (P-UI2): se simula que en.json aún la marca como pendiente.
+    src.translations["ExploredUI"]["Dedication"]["pendiente"] = "SExploredMainMenu y SExploredCredits"
     src.loctexts.append(loc("ExploredUI", "Dedication", DEDICATION))
     cat = build(src)
     assert has(cat.report.warnings, "ExploredUI,Dedication", "quita «pendiente»")

@@ -36,6 +36,8 @@ Sky/MoonModel.cpp
 Survival/BodyModel.cpp
 Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
+UI/MapViewLogic.cpp
+UI/ScreensLogic.cpp
 UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp

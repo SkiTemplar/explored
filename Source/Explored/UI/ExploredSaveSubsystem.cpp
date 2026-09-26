@@ -112,6 +112,20 @@ TArray<FSaveSlotInfo> UExploredSaveSubsystem::ListSlots() const
 	return Store.List();
 }
 
+TArray<FString> UExploredSaveSubsystem::GetSlotsWithBackup() const
+{
+	TArray<FString> Out;
+	const FString Directory = GetSaveDirectory();
+	for (const FString& SlotId : FSaveSlotPolicy::AllSlotIds())
+	{
+		if (IFileManager::Get().FileExists(*FSaveSlotPolicy::JoinPath(Directory, FSaveSlotPolicy::BackupFileName(SlotId))))
+		{
+			Out.Add(SlotId);
+		}
+	}
+	return Out;
+}
+
 FString UExploredSaveSubsystem::GetContinueSlotId() const
 {
 	ExploredSaveDisk::FDiskFileSystem Disk;

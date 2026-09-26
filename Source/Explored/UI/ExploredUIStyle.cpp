@@ -9,6 +9,9 @@ FExploredUIStyle::FExploredUIStyle()
 	, ButtonHoveredBrush(ColorAccentDim(), 4.0f)
 	, ButtonPressedBrush(ColorAccent(), 4.0f)
 	, TransparentBrush(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f))
+	, SheetBrush(ColorSheet(), 6.0f)
+	, ThumbBrush(ColorSkin(), 22.0f)
+	, WhiteBrush(FLinearColor::White)
 {
 	MenuButtonStyle.SetNormal(ButtonNormalBrush);
 	MenuButtonStyle.SetHovered(ButtonHoveredBrush);
@@ -53,6 +56,28 @@ FExploredUIStyle::FExploredUIStyle()
 	ScrollBarStyleValue.SetNormalThumbImage(ScrollThumbBrush);
 	ScrollBarStyleValue.SetHoveredThumbImage(ScrollThumbBrush);
 	ScrollBarStyleValue.SetDraggedThumbImage(ScrollThumbBrush);
+
+	static const FSlateRoundedBoxBrush ProgressBackBrush(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), 3.0f);
+	static const FSlateRoundedBoxBrush ProgressFillBrush(ColorAccent(), 3.0f);
+	ProgressBarStyleValue.SetBackgroundImage(ProgressBackBrush);
+	ProgressBarStyleValue.SetFillImage(ProgressFillBrush);
+	ProgressBarStyleValue.SetMarqueeImage(ProgressFillBrush);
+
+	// Cuadro de texto sobre el papel: fondo crema algo más claro, tinta sepia.
+	static const FSlateRoundedBoxBrush TextNormalBrush(FLinearColor(1.0f, 0.97f, 0.88f, 0.9f), 3.0f);
+	static const FSlateRoundedBoxBrush TextFocusedBrush(FLinearColor(1.0f, 0.93f, 0.78f, 1.0f), 3.0f);
+	EditableTextBoxStyleValue.SetBackgroundImageNormal(TextNormalBrush);
+	EditableTextBoxStyleValue.SetBackgroundImageHovered(TextFocusedBrush);
+	EditableTextBoxStyleValue.SetBackgroundImageFocused(TextFocusedBrush);
+	EditableTextBoxStyleValue.SetBackgroundImageReadOnly(TextNormalBrush);
+	EditableTextBoxStyleValue.SetTextStyle(FTextBlockStyle()
+		.SetFont(FontBody())
+		.SetColorAndOpacity(FSlateColor(ColorSheetInk()))
+		.SetSelectedBackgroundColor(FSlateColor(ColorAccentDim()))
+		.SetHighlightColor(ColorAccent()));
+	EditableTextBoxStyleValue.SetForegroundColor(FSlateColor(ColorSheetInk()));
+	EditableTextBoxStyleValue.SetFocusedForegroundColor(FSlateColor(ColorSheetInk()));
+	EditableTextBoxStyleValue.SetPadding(FMargin(8.0f, 4.0f));
 }
 
 FExploredUIStyle& FExploredUIStyle::Get()

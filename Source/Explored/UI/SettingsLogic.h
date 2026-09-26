@@ -101,7 +101,7 @@ namespace ExploredSettingsLogic
 
 	/**
 	 * Teclas fijas que no se pueden asignar a una acción remapeable: el
-	 * movimiento (WASD), Escape (pausa/volver) y F8 (vuelo de depuración).
+	 * movimiento (WASD), Escape (pausa/volver), M (mapa) y F8 (vuelo de depuración).
 	 */
 	EXPLORED_API bool IsReservedKey(FName KeyName);
 
@@ -136,7 +136,10 @@ namespace ExploredSettingsLogic
 
 	// --- Navegación del frontend --------------------------------------------------
 
-	/** Pantalla del frontend visible. None = jugando, sin menú encima. */
+	/**
+	 * Pantalla del frontend visible. None = jugando, sin menú encima. Los
+	 * valores nuevos van al final para no cambiar los existentes.
+	 */
 	enum class EMenuScreen : uint8
 	{
 		None,
@@ -144,22 +147,80 @@ namespace ExploredSettingsLogic
 		ModeSelect,
 		Settings,
 		Credits,
-		Pause
+		Pause,
+		/** Mapa en las manos (GDD §5.6): se abre jugando (M o View) o desde la pausa. */
+		Map,
+		/** Museo y catálogo de tesoros (GDD §7): desde la pausa o desde el apartado de colección del mapa. */
+		Museum,
+		/** Lista de logros (GDD §15, §16): desde el menú principal o la pausa. */
+		Achievements,
+		/** Selector de ranura: «Guardar» en la pausa y «Cargar» en el menú principal. */
+		SaveSlots
 	};
 
 	/**
-	 * A qué pantalla lleva «Volver» (botón, Escape o B del mando) desde Current.
-	 * Ajustes vuelve a la pausa o al menú principal según desde dónde se abrió.
-	 * En el menú principal no hace nada (devuelve MainMenu).
+	 * A qué pantalla lleva «Volver» (botón, Escape o B del mando) desde Current
+	 * cuando solo se sabe si se abrió desde la pausa (tabla por defecto):
+	 * - Ajustes, Logros y Ranuras vuelven a la pausa o al menú principal.
+	 * - El mapa vuelve a la pausa o al juego (None).
+	 * - El museo vuelve a la pausa o al mapa (su apartado de colección).
+	 * En el menú principal no hace nada (devuelve MainMenu). Con varias
+	 * pantallas encadenadas (juego → mapa → museo) manda FMenuNavigation.
 	 */
-	EXPLORED_API EMenuScreen ScreenAfterBack(EMenuScreen Current, bool bSettingsOpenedFromPause);
+	EXPLORED_API EMenuScreen ScreenAfterBack(EMenuScreen Current, bool bOpenedFromPause);
 
 	/** Como ScreenAfterBack, pero jugando (None) Escape abre la pausa. */
-	EXPLORED_API EMenuScreen ScreenAfterEscape(EMenuScreen Current, bool bSettingsOpenedFromPause);
+	EXPLORED_API EMenuScreen ScreenAfterEscape(EMenuScreen Current, bool bOpenedFromPause);
+
+	/** Si existe la transición «abrir To estando en From» (botones y teclas del frontend). */
+	EXPLORED_API bool CanOpenScreenFrom(EMenuScreen From, EMenuScreen To);
+
+	/**
+	 * Pila de pantallas del frontend: recuerda desde dónde se abrió cada una
+	 * para que «Volver» regrese allí aunque se encadenen (juego → mapa → museo
+	 * → mapa → juego). La base es la raíz: None (jugando) o MainMenu.
+	 */
+	class EXPLORED_API FMenuNavigation
+	{
+	public:
+		FMenuNavigation() { Stack.Add(EMenuScreen::None); }
+
+		/** Vacía la pila y deja solo la raíz. */
+		void Reset(EMenuScreen Root);
+
+		EMenuScreen Current() const { return Stack.Last(); }
+		EMenuScreen Root() const { return Stack[0]; }
+		int32 Depth() const { return Stack.Num(); }
+
+		/** Screen está en la pila (es la actual o una de las que llevan a ella). */
+		bool IsInStack(EMenuScreen Screen) const { return Stack.Contains(Screen); }
+
+		/**
+		 * Abre Screen. Si ya es la actual, no cambia nada; si está más abajo en
+		 * la pila, vuelve a ella (recorta lo de encima); si la transición existe
+		 * (CanOpenScreenFrom), la apila. Si no, devuelve false y no cambia nada.
+		 */
+		bool Open(EMenuScreen Screen);
+
+		/**
+		 * Destino de «Volver» sin modificar la pila: la pantalla anterior o, en
+		 * la raíz, la tabla por defecto (jugando y en el menú principal no hace nada).
+		 */
+		EMenuScreen BackTarget() const;
+
+		/** Destino de Escape: jugando abre la pausa; en el resto, como BackTarget. */
+		EMenuScreen EscapeTarget() const;
+
+	private:
+		TArray<EMenuScreen> Stack;
+	};
 
 	/** Teclas que equivalen a «Volver» en cualquier menú: Escape y B del mando. */
 	EXPLORED_API bool IsMenuBackKey(FName KeyName);
 
 	/** Teclas que abren y cierran la pausa: Escape y Start (Menu) del mando. */
 	EXPLORED_API bool IsPauseToggleKey(FName KeyName);
+
+	/** Teclas que sacan y guardan el mapa: M y View (Back) del mando. */
+	EXPLORED_API bool IsMapToggleKey(FName KeyName);
 }

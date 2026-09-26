@@ -51,6 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Mapa")
 	bool AddSpyglassMark(FName StampId, FVector TargetLocation, const FString& Text);
 
+	/** Marca dibujada a mano donde el jugador elige en la hoja (coordenadas de mapa [0, 1]²; mapa en las manos). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mapa")
+	bool AddMarkOnSheet(FName StampId, FVector2D MapPosition, const FString& Text) { return Model.AddMarkOnSheet(StampId, MapPosition, Text) != INDEX_NONE; }
+
 	/** Marca con el sextante la posición exacta del jugador, también en mar abierto. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Mapa")
 	bool AddSextantMarkHere(FName StampId, const FString& Text);

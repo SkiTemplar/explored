@@ -80,7 +80,7 @@ namespace ExploredSettingsPanelDetail
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SButton).ButtonStyle(&S().ButtonStyle())
-				.Text(FText::FromString(TEXT("<")))
+				.Text(INVTEXT("<"))
 				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex(((GetIndex() - 1) % Count + Count) % Count); return FReply::Handled(); })
 			]
 			+ SHorizontalBox::Slot().AutoWidth().Padding(FMargin(6.0f, 0.0f))
@@ -90,7 +90,7 @@ namespace ExploredSettingsPanelDetail
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SButton).ButtonStyle(&S().ButtonStyle())
-				.Text(FText::FromString(TEXT(">")))
+				.Text(INVTEXT(">"))
 				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex(((GetIndex() + 1) % Count + Count) % Count); return FReply::Handled(); })
 			];
 	}
@@ -250,7 +250,8 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 	TArray<FText> ResolutionLabels;
 	for (const FIntPoint& R : Resolutions)
 	{
-		ResolutionLabels.Add(FText::FromString(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));
+		// Sin AsNumber: pondría separador de millares («1.920 x 1.080»).
+		ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));
 	}
 
 	TArray<FText> WindowModeLabels = {
@@ -261,8 +262,8 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 
 	TArray<float> FpsLimits = { 30.0f, 60.0f, 120.0f, 144.0f, 0.0f };
 	TArray<FText> FpsLabels = {
-		FText::FromString(TEXT("30")), FText::FromString(TEXT("60")), FText::FromString(TEXT("120")),
-		FText::FromString(TEXT("144")), NSLOCTEXT("ExploredUI", "Unlimited", "Sin límite")
+		FText::AsNumber(30), FText::AsNumber(60), FText::AsNumber(120),
+		FText::AsNumber(144), NSLOCTEXT("ExploredUI", "Unlimited", "Sin límite")
 	};
 
 	auto QualityRow = [](const FText& Label, TFunction<int32()> Get, TFunction<void(int32)> Set)
@@ -455,7 +456,7 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 	TArray<FText> DayLengthLabels;
 	for (const float Minutes : UExploredGameUserSettings::GetSupportedDayLengths())
 	{
-		DayLengthLabels.Add(FText::FromString(FString::Printf(TEXT("%d min"), static_cast<int32>(Minutes))));
+		DayLengthLabels.Add(FText::Format(NSLOCTEXT("ExploredUI", "DayLengthMinutes", "{0} min"), FText::AsNumber(static_cast<int32>(Minutes))));
 	}
 
 	TArray<FText> TextSizeLabels = {

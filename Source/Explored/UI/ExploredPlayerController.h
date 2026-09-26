@@ -10,6 +10,7 @@
 class AExploredMenuCamera;
 class SExploredAchievementToast;
 class SExploredFade;
+class SExploredInventoryPanel;
 class SExploredSavingIndicator;
 class SExploredSettingsPanel;
 class UExploredGameUserSettings;
@@ -21,7 +22,12 @@ enum class EExploredUIMode : uint8
 {
 	Menu,
 	Playing,
-	Paused
+	Paused,
+	/**
+	 * Mapa en las manos jugando (GDD §5.6, P-UI2): el mundo sigue sin pausa ni
+	 * cámara lenta, pero la entrada es del mapa (el personaje se queda quieto).
+	 */
+	InHands
 };
 
 /** Funciones puras del estado de UI, separadas para poder testearlas sin un UWorld en marcha. */
@@ -44,12 +50,22 @@ namespace ExploredUI
  * Navegación (H6): cada pantalla atiende Escape/B en su propio OnKeyDown
  * (con FInputModeUIOnly las teclas no llegan al InputComponent) y llama a su
  * delegado de «Volver»; el controlador decide el destino con
- * ExploredSettingsLogic::ScreenAfterBack. El binding de Escape/Start del
+ * ExploredSettingsLogic::FMenuNavigation::BackTarget. El binding de Escape/Start del
  * InputComponent solo actúa jugando (abre la pausa) y lleva
  * bExecuteWhenPaused por si la entrada llega con el juego pausado.
  *
- * Guardado: RequestSaveGame() guarda en la ranura automática y ContinueGame()
- * carga la ranura más reciente a través de UExploredSaveSubsystem (ver
+ * Las pantallas se encadenan con ExploredSettingsLogic::FMenuNavigation (pila
+ * pura con spec): «Volver» regresa a la pantalla desde la que se abrió cada
+ * una, también en cadenas como juego → mapa → museo → mapa → juego.
+ *
+ * P-UI2: M o View del mando sacan el mapa en las manos (SExploredMapInHands);
+ * la pausa abre Mapa, Museo, Logros y el selector de ranura para Guardar; el
+ * menú principal abre Cargar y Logros; la vista del inventario
+ * (SExploredInventoryPanel) sale sola mientras la mochila está abierta.
+ *
+ * Guardado: «Guardar» de la pausa abre el selector de ranuras manuales,
+ * RequestSaveGame() guarda en la automática y ContinueGame() carga la ranura
+ * más reciente a través de UExploredSaveSubsystem (ver
  * UI/ExploredSaveSubsystem.h y docs/tecnico/guardado.md).
  */
 UCLASS()
@@ -100,6 +116,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void RequestSaveGame();
 
+	/** Saca el mapa en las manos (jugando o desde la pausa). No hace nada sin personaje con mapa. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void OpenMap();
+
+	/** Museo y catálogo de tesoros (pausa o apartado «Colección» del mapa). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void OpenMuseum();
+
+	/** Lista de logros (menú principal o pausa). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void OpenAchievements();
+
+	/** Selector de ranura para guardar (pausa → «Guardar»). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void OpenSaveGame();
+
+	/** Selector de ranura para cargar (menú principal → «Cargar»). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void OpenLoadGame();
+
+	/** Carga una ranura y funde a jugar (lo llama el selector en modo Cargar). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void LoadSlotAndPlay(const FString& SlotId);
+
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void ExitToMainMenu();
 
@@ -112,10 +152,14 @@ public:
 
 private:
 	void HandleEscape();
+	/** M o View jugando: saca el mapa. Con el mapa fuera la tecla la atiende el propio mapa. */
+	void HandleMapKey();
 	/** «Volver» de la pantalla actual (botón, Escape o B). */
 	void NavigateBack();
 	void NavigateTo(ExploredSettingsLogic::EMenuScreen Screen);
 	void ShowMainMenu();
+	/** Selector de ranura en modo Cargar (bLoading) o Guardar. */
+	void ShowSaveSlots(bool bLoading);
 	/** Añade el overlay al viewport y da el foco a FocusTarget (o al propio overlay). */
 	void ShowOverlay(TSharedRef<SWidget> Widget, TSharedPtr<SWidget> FocusTarget, ExploredSettingsLogic::EMenuScreen Screen);
 	void HideOverlay();
@@ -124,12 +168,14 @@ private:
 	AExploredMenuCamera* FindOrSpawnMenuCamera();
 
 	EExploredUIMode UIMode = EExploredUIMode::Menu;
-	ExploredSettingsLogic::EMenuScreen CurrentScreen = ExploredSettingsLogic::EMenuScreen::None;
-	bool bSettingsOpenedFromPause = false;
+	/** Pantalla actual y camino hasta ella (la base es None jugando o MainMenu). */
+	ExploredSettingsLogic::FMenuNavigation Navigation;
 
 	TSharedPtr<SExploredFade> FadeWidget;
 	TSharedPtr<SExploredSavingIndicator> SavingIndicator;
 	TSharedPtr<SExploredAchievementToast> AchievementToast;
+	/** Vista del inventario: siempre en el viewport, visible solo con la mochila abierta. */
+	TSharedPtr<SExploredInventoryPanel> InventoryPanel;
 	TSharedPtr<SWidget> CurrentOverlay;
 	/** Widget con el foco inicial del overlay actual (primer botón, pestaña activa...). */
 	TSharedPtr<SWidget> CurrentFocusTarget;

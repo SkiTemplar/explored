@@ -231,6 +231,12 @@ public:
 	int32 AddSpyglassMark(FName StampId, const FVector2D& ObserverWorld, const FVector2D& TargetWorld, const FString& Text);
 	/** Marca con sextante: punto exacto (sin deriva ni error), también en mar abierto. */
 	int32 AddSextantMark(FName StampId, const FVector2D& WorldPosition, const FString& Text);
+	/**
+	 * Marca dibujada a mano en un punto de la hoja que elige el jugador (mapa en
+	 * las manos, P-UI2): va donde se dibuja, sin deriva. La posición se recorta
+	 * a la hoja; INDEX_NONE si no es finita, el sello no existe o no caben más.
+	 */
+	int32 AddMarkOnSheet(FName StampId, const FVector2D& MapPosition, const FString& Text);
 
 	/** Anota una receta; true si es nueva o si gana su boceto. */
 	bool NoteRecipe(FName RecipeId, bool bDoodle);

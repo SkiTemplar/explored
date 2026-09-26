@@ -4,7 +4,9 @@
 #include "Widgets/SCompoundWidget.h"
 
 /**
- * Menú principal (GDD §10): título, subtítulo y los cinco botones sobre el mundo real.
+ * Menú principal (GDD §10, §15): título, subtítulo, la dedicatoria «Para
+ * Almudena, mi Limón» y Continuar, Nueva partida, Cargar, Ajustes, Logros,
+ * Créditos y Salir sobre el mundo real.
  * Escape no hace nada aquí (ver ExploredSettingsLogic::ScreenAfterBack).
  */
 class EXPLORED_API SExploredMainMenu : public SCompoundWidget
@@ -16,7 +18,9 @@ public:
 		SLATE_ARGUMENT(bool, bCanContinue)
 		SLATE_EVENT(FSimpleDelegate, OnContinue)
 		SLATE_EVENT(FSimpleDelegate, OnNewGame)
+		SLATE_EVENT(FSimpleDelegate, OnLoad)
 		SLATE_EVENT(FSimpleDelegate, OnSettings)
+		SLATE_EVENT(FSimpleDelegate, OnAchievements)
 		SLATE_EVENT(FSimpleDelegate, OnCredits)
 		SLATE_EVENT(FSimpleDelegate, OnQuit)
 	SLATE_END_ARGS()
@@ -31,14 +35,18 @@ public:
 private:
 	FSimpleDelegate OnContinue;
 	FSimpleDelegate OnNewGame;
+	FSimpleDelegate OnLoad;
 	FSimpleDelegate OnSettings;
+	FSimpleDelegate OnAchievements;
 	FSimpleDelegate OnCredits;
 	FSimpleDelegate OnQuit;
 	TSharedPtr<SWidget> InitialFocus;
 
 	FReply HandleContinue();
 	FReply HandleNewGame();
+	FReply HandleLoad();
 	FReply HandleSettings();
+	FReply HandleAchievements();
 	FReply HandleCredits();
 	FReply HandleQuit();
 };

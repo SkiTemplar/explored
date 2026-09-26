@@ -35,6 +35,13 @@ void FExploredFrontendControllerSpec::Define()
 			TestTrue(TEXT("Pausa marca pausa de gameplay"), ExploredUI::ShouldPauseGame(EExploredUIMode::Paused));
 		});
 
+		It("con el mapa en las manos muestra el cursor, no pausa y Escape vuelve a jugar (P-UI2)", [this]()
+		{
+			TestTrue(TEXT("Cursor visible con el mapa"), ExploredUI::ShouldShowCursor(EExploredUIMode::InHands));
+			TestFalse(TEXT("El mundo sigue con el mapa en las manos"), ExploredUI::ShouldPauseGame(EExploredUIMode::InHands));
+			TestEqual(TEXT("Escape guarda el mapa"), ExploredUI::NextModeOnEscape(EExploredUIMode::InHands), EExploredUIMode::Playing);
+		});
+
 		It("Escape recorre Menú → Juego → Pausa → Juego correctamente", [this]()
 		{
 			// Menú → Juego → Pausa → Juego (GDD §10: Escape solo pausa/reanuda estando en juego).

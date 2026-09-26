@@ -384,6 +384,15 @@ int32 FCartographyModel::AddSextantMark(FName StampId, const FVector2D& WorldPos
 	return AddMarkAt(StampId, WorldToMap(WorldPosition), Text, EMapMarkSource::Sextant);
 }
 
+int32 FCartographyModel::AddMarkOnSheet(FName StampId, const FVector2D& MapPosition, const FString& Text)
+{
+	if (!FMath::IsFinite(MapPosition.X) || !FMath::IsFinite(MapPosition.Y))
+	{
+		return INDEX_NONE;
+	}
+	return AddMarkAt(StampId, FVector2D(FMath::Clamp(MapPosition.X, 0.0, 1.0), FMath::Clamp(MapPosition.Y, 0.0, 1.0)), Text, EMapMarkSource::Hand);
+}
+
 bool FCartographyModel::NoteRecipe(FName RecipeId, bool bDoodle)
 {
 	if (RecipeId.IsNone())
