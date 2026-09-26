@@ -12,6 +12,12 @@ Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Events/WorldEventsModel.cpp
 Farming/FarmModel.cpp
+Fauna/BoidsModel.cpp
+Fauna/FaunaAnimation.cpp
+Fauna/FaunaGroups.cpp
+Fauna/FaunaSpawning.cpp
+Fauna/FaunaTypes.cpp
+Fauna/MarineCreatureBrain.cpp
 Fauna/ProceduralGait.cpp
 Ocean/OceanCurrents.cpp
 Ocean/OceanWaves.cpp

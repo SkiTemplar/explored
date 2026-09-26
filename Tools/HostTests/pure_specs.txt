@@ -2,6 +2,7 @@
 Tests/AchievementsSpec.cpp
 Tests/BoatSpec.cpp
 Tests/BodySpec.cpp
+Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
 Tests/CookingSpec.cpp
@@ -10,6 +11,7 @@ Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
 Tests/GaitSpec.cpp
 Tests/InventorySpec.cpp
+Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/OceanCurrentsSpec.cpp
