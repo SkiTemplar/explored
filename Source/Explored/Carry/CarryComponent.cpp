@@ -302,6 +302,29 @@ bool UCarryComponent::ReplaceHandsWithCraftResult(const FItemInstance& Result, F
 	return bPlaced;
 }
 
+bool UCarryComponent::TakeOneFromHand(EHand Hand, FItemInstance& OutTaken)
+{
+	const bool bFilled = (Hand == EHand::Left) ? bHandLeftFilled : bHandRightFilled;
+	if (!bFilled || bHandsHoldTwoHandedItem)
+	{
+		return false;
+	}
+	FItemInstance& HandRef = (Hand == EHand::Left) ? HandLeft : HandRight;
+	OutTaken = HandRef;
+	OutTaken.Count = 1;
+	if (HandRef.Count > 1)
+	{
+		--HandRef.Count;
+	}
+	else
+	{
+		HandRef = FItemInstance();
+		if (Hand == EHand::Left) { bHandLeftFilled = false; } else { bHandRightFilled = false; }
+	}
+	OnCarryChanged.Broadcast();
+	return true;
+}
+
 bool UCarryComponent::SwapHands()
 {
 	if (bHandsHoldTwoHandedItem)

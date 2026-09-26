@@ -4,6 +4,8 @@ Building/BuildingModel.cpp
 Cartography/CartographyModel.cpp
 Cartography/CoastlineTrace.cpp
 Cartography/MapStroke.cpp
+Cooking/CookingModel.cpp
+Cooking/FireModel.cpp
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Events/WorldEventsModel.cpp

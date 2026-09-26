@@ -2,8 +2,10 @@
 Tests/AchievementsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
+Tests/CookingSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
+Tests/FireSpec.cpp
 Tests/GaitSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp

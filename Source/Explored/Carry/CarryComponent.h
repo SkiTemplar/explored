@@ -51,6 +51,15 @@ public:
 	bool ConsumeOneFromHand(EHand Hand);
 
 	/**
+	 * Saca una unidad de lo que hay en una mano sin soltarla al mundo (echar
+	 * leña al fuego, gastar una cerilla, meter algo en la olla). Si el objeto
+	 * es apilable y hay varias, la mano se queda con el resto. No vale para
+	 * objetos DosManos.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
+	bool TakeOneFromHand(EHand Hand, FItemInstance& OutTaken);
+
+	/**
 	 * Vacía las dos manos (las piezas ya se consumieron al fabricar) y coloca
 	 * el resultado en la mano libre, o en las dos si es DosManos. Lo usa
 	 * AExploredCharacter::HandleCombine tras UCraftingLibrary::Apply.
