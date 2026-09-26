@@ -13,6 +13,7 @@
 #include "AssetCompilingManager.h"
 #include "ShaderCompiler.h"
 #include "UnrealClient.h"
+#include "WorldPartition/WorldPartitionSubsystem.h"
 
 #include "Explored.h"
 #include "Sky/TimeOfDaySubsystem.h"
@@ -132,6 +133,71 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
+	if (bAll || Set == TEXT("water"))
+	{
+		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
+		// Mismo sector que «day» (donde se sabe que hay playa despejada cerca), con un ángulo
+		// algo distinto para variar la composición.
+		const FVector2D ShoreDir = FVector2D(1.0f, -0.3f).GetSafeNormal();
+
+		// Las islas no son círculos perfectos (cabos, calas, arroyos que abren huecos por
+		// debajo del nivel del mar tierra adentro): en vez de la altura (contaminada por
+		// esos arroyos) se usa NormalizedDistance, la métrica radial propia de WorldGen
+		// donde 1.0 es, por construcción, la costa nominal en cualquier dirección.
+		float ShoreR = Landing->Radius;
+		{
+			const int32 Steps = 120;
+			const float MinR = Landing->Radius * 0.2f;
+			const float MaxR = Landing->Radius * 2.0f;
+			for (int32 I = 0; I <= Steps; ++I)
+			{
+				const float R = FMath::Lerp(MinR, MaxR, static_cast<float>(I) / Steps);
+				const FVector2D P = Landing->Center + ShoreDir * R;
+				if (Density.SampleColumn(P.X, P.Y).NormalizedDistance >= 1.0f)
+				{
+					ShoreR = R;
+					break;
+				}
+			}
+		}
+		{
+			const FVector2D ShoreP = Landing->Center + ShoreDir * ShoreR;
+			UE_LOG(LogExplored, Display, TEXT("[Shots] Landing Radius=%.1f ShoreR=%.1f HeightAtShore=%.2f"),
+				Landing->Radius, ShoreR, Density.SampleColumn(ShoreP.X, ShoreP.Y).Height);
+		}
+
+		// Orilla de cerca: casi a ras de agua, a caballo entre la arena y la laguna, para ver
+		// la espuma neta que avanza y se retira y la banda de color turquesa.
+		{
+			const FVector2D CamXY = Landing->Center + ShoreDir * (ShoreR + 2.5f);
+			const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
+			FExploredShot Shot;
+			Shot.Name = TEXT("shore_closeup");
+			// Todo el vector en metros y se pasa a centimetros junto (X e Y también, no solo Z).
+			Shot.Location = FVector(CamXY.X, CamXY.Y, FMath::Max(GroundZ, -0.3f) + 0.6f) * 100.0;
+			const FVector2D TargetXY = Landing->Center + ShoreDir * (ShoreR - 5.0f);
+			const float TargetZ = FMath::Max(Density.SampleColumn(TargetXY.X, TargetXY.Y).Height, 0.0f);
+			Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ) * 100.0 - Shot.Location).Rotation();
+			Shot.Hours = 10.5f;
+			Shots.Add(Shot);
+		}
+
+		// Bajo el agua: bien pasada la orilla, dentro de la laguna, mirando hacia la
+		// superficie iluminada.
+		{
+			const FVector2D CamXY = Landing->Center + ShoreDir * (ShoreR + 50.0f);
+			const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
+			const float LowerBound = FMath::Min(GroundZ + 0.5f, -0.6f);
+			const float SafeZ = FMath::Clamp(-1.6f, LowerBound, -0.6f);
+			FExploredShot Shot;
+			Shot.Name = TEXT("underwater");
+			Shot.Location = FVector(CamXY.X, CamXY.Y, SafeZ) * 100.0;
+			Shot.Rotation = FRotator(20.0f, 200.0f, 0.0f);
+			Shot.Hours = 12.5f;
+			Shots.Add(Shot);
+		}
+	}
+
 	if (bAll || Set == TEXT("aerial"))
 	{
 		FExploredShot Shot;
@@ -180,6 +246,10 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		if (APawn* Pawn = PC->GetPawn())
 		{
 			Pawn->SetActorHiddenInGame(true);
+			// World Partition transmite en función de la posición del pawn, no de la cámara de
+			// la vista; sin esto, un encuadre lejos del punto de aparición (orilla, submarino)
+			// se queda con los trozos de terreno cercanos sin cargar.
+			Pawn->SetActorLocation(Shot.Location, false, nullptr, ETeleportType::TeleportPhysics);
 		}
 
 		// Conjunto «menu»: pide al frontend que muestre Ajustes o Pausa para
@@ -211,6 +281,16 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 	if ((GShaderCompilingManager && GShaderCompilingManager->IsCompiling()) || FAssetCompilingManager::Get().GetNumRemainingAssets() > 0)
 	{
 		return;
+	}
+	// World Partition transmite según la posición del pawn (ya teleportado en BeginShot); sin
+	// esperar a que termine, una vista lejos del punto de aparición se captura con los trozos
+	// de terreno cercanos todavía sin cargar (mar y cielo vacíos alrededor de la cámara).
+	if (const UWorldPartitionSubsystem* Partition = GetWorld()->GetSubsystem<UWorldPartitionSubsystem>())
+	{
+		if (!Partition->IsStreamingCompleted())
+		{
+			return;
+		}
 	}
 
 	Timer += DeltaTime;
