@@ -30,6 +30,9 @@ public:
 	EWeatherState GetState() const { return State; }
 	ESeason GetSeason() const { return Season; }
 
+	/** Planificador del clima (para anticipar temporales: barómetro, música). Nulo antes de Initialize. */
+	const FWeatherModel* GetModel() const { return Model.Get(); }
+
 	/** Fuerza un estado durante un tiempo (depuración y eventos de guion). Duración en horas de juego. */
 	void ForceState(EWeatherState InState, float DurationHours);
 
