@@ -43,7 +43,7 @@ compila y pasa sus tests en local.
 | Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
 | Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
 | UI / frontend | ✅ base | — | parcial | Bugs H2, H6, H7, M8, M11–M14; mapa y museo (P-UI) |
-| Localización | ❌ | — | ❌ | ES/EN (P-L10N) |
+| Localización | parcial | ✅ | ❌ | Catálogo, textos ES/EN, manifiesto y archivos de UE en `Tools/Localization`; falta integrar en UI/objetos y compilar `.locres` (P-L10N) |
 
 ## Paquetes de trabajo
 
@@ -66,7 +66,7 @@ compila y pasa sus tests en local.
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
 | P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |
 | P-MUSIC | Director de música adaptativa por capas | pendiente |
-| P-L10N | Tabla de textos ES/EN y selector | pendiente |
+| P-L10N | Tabla de textos ES/EN y selector | en curso (nube/localizacion-2026-09-26) |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |
 
 ## Lo que solo puede hacerse en local (con UE 5.6)
