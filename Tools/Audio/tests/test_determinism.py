@@ -20,6 +20,10 @@ from explored_audio.io_utils import to_wav_bytes
         "sfx_bird_gull_03",
         "sfx_fire_loop",
         "sfx_ui_click",
+        "sfx_monkey_02",
+        "sfx_cooking_sizzle_loop",
+        "mus_theme",
+        "mus_storm",
     ],
 )
 def test_misma_semilla_produce_bytes_identicos(specs_by_name, name):

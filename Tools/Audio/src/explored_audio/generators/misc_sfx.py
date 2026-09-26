@@ -83,6 +83,20 @@ def fire_loop(name: str) -> np.ndarray:
     return seamless_loop(mono, loop_len, fade_len)
 
 
+def wind_gust(name: str) -> np.ndarray:
+    """Rafaga puntual de viento fuerte (complementa el colchon continuo
+    `amb_wind_strong`): hinchazon de ruido pasabanda con un aullido resonante
+    superpuesto, para anuncios de temporal o momentos de guion."""
+    rng = rng_for(name)
+    dur = rng.uniform(2.0, 3.0)
+    n = int(dur * SR)
+    body = static_filter(rng.standard_normal(n), SR, fc=1600, q=0.7, kind="bandpass")
+    body = static_filter(body, SR, fc=250, q=0.6, kind="highpass")
+    env = fit_length(ar_envelope(SR, dur * 0.35, dur * 0.6, shape=1.6), n)
+    howl = static_filter(pink_noise(n, rng), SR, fc=900, q=2.5, kind="bandpass")
+    return body * env * 0.8 + howl * env * 0.3
+
+
 def thunder(name: str) -> np.ndarray:
     """Trueno: chasquido inicial de banda ancha seguido de un retumbe grave largo."""
     rng = rng_for(name)

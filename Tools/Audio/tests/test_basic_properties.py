@@ -9,8 +9,8 @@ import numpy as np
 from explored_audio.constants import PEAK_CEILING_LINEAR, SAMPLE_RATE
 
 
-def test_catalogo_tiene_58_sonidos(catalog):
-    assert len(catalog) == 58
+def test_catalogo_tiene_124_sonidos(catalog):
+    assert len(catalog) == 124
 
 
 def test_nombres_unicos(catalog):
@@ -19,7 +19,15 @@ def test_nombres_unicos(catalog):
 
 
 def test_categorias_validas(catalog):
-    assert {spec.category for spec in catalog} == {"Ambiente", "Efectos"}
+    assert {spec.category for spec in catalog} == {"Ambiente", "Efectos", "Musica"}
+
+
+def test_musica_es_estereo(catalog, rendered):
+    for spec in catalog:
+        if spec.category != "Musica":
+            continue
+        audio = rendered[spec.name]
+        assert audio.ndim == 2 and audio.shape[0] == 2, f"{spec.name} deberia ser estereo"
 
 
 def test_ambiente_es_estereo_y_bucle(catalog, rendered):

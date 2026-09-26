@@ -13,12 +13,12 @@ from explored_audio.constants import SAMPLE_RATE
 
 def test_build_all_escribe_wav_y_manifest_coherente(tmp_path):
     entries = build_all(output_root=tmp_path, verbose=False)
-    assert len(entries) == 58
+    assert len(entries) == 124
 
     manifest_path = tmp_path / "manifest.json"
     assert manifest_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["count"] == 58
+    assert manifest["count"] == 124
     assert manifest["sample_rate"] == SAMPLE_RATE
     assert manifest["bit_depth"] == 16
 
@@ -27,7 +27,7 @@ def test_build_all_escribe_wav_y_manifest_coherente(tmp_path):
 
     # Comprobacion cruzada con un par de ficheros: el WAV en disco coincide
     # con lo que dice el manifiesto (duracion, canales, ruta).
-    for name in ("amb_ocean_calm", "sfx_ui_click"):
+    for name in ("amb_ocean_calm", "sfx_ui_click", "mus_theme"):
         entry = by_name[name]
         wav_path = tmp_path / entry["file"]
         assert wav_path.exists()

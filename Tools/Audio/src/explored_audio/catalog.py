@@ -9,13 +9,14 @@ from typing import Callable
 
 import numpy as np
 
-from .generators import ambience, birds, footsteps, impacts, misc_sfx, ui
+from .generators import ambience, birds, body, construction, crafting, fauna, footsteps, impacts, misc_sfx, ui, water
+from .music import compose as music_compose
 
 
 @dataclass(frozen=True)
 class SoundSpec:
     name: str
-    category: str  # "Ambiente" (estereo, bucle) o "Efectos" (mono)
+    category: str  # "Ambiente" (estereo, bucle), "Efectos" (mono) o "Musica" (estereo)
     is_loop: bool
     generate: Callable[[str], np.ndarray]
 
@@ -30,6 +31,15 @@ def _bird_spec(species: str, index: int) -> SoundSpec:
     return SoundSpec(name, "Efectos", False, lambda n, s=species: birds.bird_call(n, s))
 
 
+def _fauna_spec(species: str, index: int) -> SoundSpec:
+    name = f"sfx_{species}_{index:02d}"
+    return SoundSpec(name, "Efectos", False, lambda n, s=species: fauna.fauna_call(n, s))
+
+
+def _music_spec(name: str) -> SoundSpec:
+    return SoundSpec(name, "Musica", music_compose.is_loop(name), lambda n: music_compose.generate(n))
+
+
 def build_catalog() -> list[SoundSpec]:
     specs: list[SoundSpec] = []
 
@@ -42,6 +52,7 @@ def build_catalog() -> list[SoundSpec]:
         "amb_jungle_night": ambience.amb_jungle_night,
         "amb_rain_light": ambience.amb_rain_light,
         "amb_rain_heavy": ambience.amb_rain_heavy,
+        "amb_rain_on_leaves": ambience.amb_rain_on_leaves,
         "amb_stream": ambience.amb_stream,
         "amb_underwater": ambience.amb_underwater,
     }
@@ -70,5 +81,65 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_ui_hover", "Efectos", False, ui.ui_hover))
     specs.append(SoundSpec("sfx_ui_open", "Efectos", False, ui.ui_open))
     specs.append(SoundSpec("sfx_ui_close", "Efectos", False, ui.ui_close))
+    specs.append(SoundSpec("sfx_ui_journal_open", "Efectos", False, ui.ui_journal_open))
+    specs.append(SoundSpec("sfx_ui_page_turn", "Efectos", False, ui.ui_page_turn))
+    specs.append(SoundSpec("sfx_ui_discovery_notify", "Efectos", False, ui.ui_discovery_notify))
+
+    # Fauna (biblia de contenido §6), mas alla de las aves ya cubiertas arriba.
+    for species in ("monkey", "crocodile", "boar", "crab", "turtle"):
+        for i in range(1, 4):
+            specs.append(_fauna_spec(species, i))
+
+    # Herramientas y fabricacion (§3.4, §5.3).
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_carve_{i:02d}", "Efectos", False, crafting.carve))
+        specs.append(SoundSpec(f"sfx_stone_knap_{i:02d}", "Efectos", False, crafting.stone_knap))
+    specs.append(SoundSpec("sfx_tie_cord", "Efectos", False, crafting.tie_cord))
+    specs.append(SoundSpec("sfx_wood_saw", "Efectos", False, crafting.wood_saw))
+    specs.append(SoundSpec("sfx_fire_ignite", "Efectos", False, crafting.fire_ignite))
+    specs.append(SoundSpec("sfx_cooking_sizzle_loop", "Efectos", True, crafting.cooking_sizzle))
+
+    # Construccion (§3.10).
+    specs.append(SoundSpec("sfx_build_place", "Efectos", False, construction.build_place))
+    specs.append(SoundSpec("sfx_build_snap", "Efectos", False, construction.build_snap))
+    specs.append(SoundSpec("sfx_build_thatch", "Efectos", False, construction.build_thatch))
+
+    # Agua interactiva (§5.2, `Boats`).
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_swim_stroke_{i:02d}", "Efectos", False, water.swim_stroke))
+        specs.append(SoundSpec(f"sfx_bubbles_{i:02d}", "Efectos", False, water.bubbles))
+        specs.append(SoundSpec(f"sfx_paddle_stroke_{i:02d}", "Efectos", False, water.paddle_stroke))
+    specs.append(SoundSpec("sfx_dive_splash", "Efectos", False, water.dive_splash))
+    specs.append(SoundSpec("sfx_sail_flap", "Efectos", False, water.sail_flap))
+
+    # Clima: rafaga puntual de viento fuerte (el trueno ya esta arriba, y el
+    # colchon continuo de lluvia sobre hojas en `ambience_map`).
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_wind_gust_{i:02d}", "Efectos", False, misc_sfx.wind_gust))
+
+    # Cuerpo y necesidades (§5.4, GDD §4.3).
+    for i in range(1, 3):
+        specs.append(SoundSpec(f"sfx_eat_{i:02d}", "Efectos", False, body.eat))
+    specs.append(SoundSpec("sfx_drink", "Efectos", False, body.drink))
+    specs.append(SoundSpec("sfx_breath_tired", "Efectos", False, body.breath_tired))
+    specs.append(SoundSpec("sfx_heartbeat_low_loop", "Efectos", True, body.heartbeat_low))
+
+    # Musica adaptativa (§9.3): la genera `music.compose`, aqui solo se cablea
+    # en el catalogo para que pase por el mismo postproceso, exportacion y
+    # manifiesto que el resto de sonidos.
+    music_names = [
+        "mus_theme",
+        *(f"mus_explore_{island}" for island in ("landing", "emerald", "smoke", "teeth", "mangrove", "whitesands", "mesa")),
+        "mus_night",
+        "mus_tension",
+        "mus_storm",
+        "mus_sea",
+        *(f"mus_discovery_{variant}" for variant in ("01", "02", "03", "04")),
+        *(f"mus_finale_{variant}" for variant in ("rescue", "voyage", "stay")),
+        "mus_menu",
+        "mus_credits",
+    ]
+    for name in music_names:
+        specs.append(_music_spec(name))
 
     return specs

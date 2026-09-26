@@ -243,6 +243,25 @@ def amb_stream(name: str) -> np.ndarray:
     return seamless_loop(stereo, loop_len, fade_len)
 
 
+def amb_rain_on_leaves(name: str) -> np.ndarray:
+    """Lluvia sobre el dosel de la selva: mas repiqueteo agudo y resonante
+    que `amb_rain_light`/`amb_rain_heavy` (las hojas dispersan cada gota en
+    varios impactos), con goterones ocasionales cayendo de las puntas de las
+    hojas."""
+    rng = rng_for(name)
+    n, loop_len, fade_len = _lens(34.0, 4.0)
+
+    patter = render_noise_grains(n, SR, rng, rate_hz=70.0, grain_len_s_range=(0.006, 0.018), band_hz_range=(3000, 9000), q=2.4, amp_scale=0.45)
+    drips = render_noise_grains(n, SR, rng, rate_hz=3.5, grain_len_s_range=(0.02, 0.05), band_hz_range=(1200, 3200), q=1.6, amp_scale=0.7)
+    canopy = static_filter(pink_noise(n, rng), SR, fc=2500, q=0.6, kind="lowpass")
+    canopy = static_filter(canopy, SR, fc=500, q=0.6, kind="highpass")
+    amp = smooth_random_walk(n, rng, smoothing_hz=0.12, sr=SR, low=0.5, high=0.85)
+
+    mono = patter + drips * 0.5 + canopy * amp * 0.3
+    stereo = decorrelate(mono, rng, SR, spread_ms=16)
+    return seamless_loop(stereo, loop_len, fade_len)
+
+
 def amb_underwater(name: str) -> np.ndarray:
     rng = rng_for(name)
     n, loop_len, fade_len = _lens(32.0, 4.0)

@@ -23,6 +23,10 @@ from .manifest import build_entry, write_manifest
 # sonoridad de referencia consistente (a diferencia de un efecto puntual,
 # donde interesa conservar el factor de cresta natural del diseño).
 AMBIENCE_TARGET_LUFS = -23.0
+# La musica se mezcla mas alta que un colchon de ambiente (es la protagonista
+# cuando suena) pero deja margen bajo el techo de pico para las capas de
+# efectos y ambiente que conviven con ella en el juego.
+MUSIC_TARGET_LUFS = -16.0
 
 
 def default_output_root() -> Path:
@@ -37,6 +41,8 @@ def finalize(audio: np.ndarray, category: str) -> np.ndarray:
     audio = remove_dc(audio)
     if category == "Ambiente":
         audio = match_lufs(audio, AMBIENCE_TARGET_LUFS)
+    elif category == "Musica":
+        audio = match_lufs(audio, MUSIC_TARGET_LUFS)
     audio = enforce_peak_ceiling(audio)
     # El limitador de picos es una saturacion no lineal (tanh): si la señal
     # de origen no era perfectamente simetrica puede desplazar la media una
