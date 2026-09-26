@@ -7,6 +7,7 @@
 #include "ExploredPlayerController.generated.h"
 
 class AExploredMenuCamera;
+class SExploredAchievementToast;
 class SExploredFade;
 class SExploredSavingIndicator;
 class UExploredGameUserSettings;
@@ -111,6 +112,7 @@ private:
 
 	TSharedPtr<SExploredFade> FadeWidget;
 	TSharedPtr<SExploredSavingIndicator> SavingIndicator;
+	TSharedPtr<SExploredAchievementToast> AchievementToast;
 	TSharedPtr<SWidget> CurrentOverlay;
 
 	TWeakObjectPtr<AExploredMenuCamera> MenuCamera;

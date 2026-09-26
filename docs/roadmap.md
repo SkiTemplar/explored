@@ -40,7 +40,7 @@ compila y pasa sus tests en local.
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
 | Save | stub | ❌ | stub | (P-SAVE) |
-| Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
+| Achievements | parcial | ✅ | sin compilar | 30 logros en `achievements.json`; estadísticas en `docs/tecnico/estadisticas.md` (P-ACH) |
 | Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
 | UI / frontend | ✅ base | — | parcial | Bugs H2, H6, H7, M8, M11–M14; mapa y museo (P-UI) |
 | Localización | ❌ | — | ❌ | ES/EN (P-L10N) |
@@ -61,7 +61,7 @@ compila y pasa sus tests en local.
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
-| P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
+| P-ACH | `FAchievementsModel`: 30 logros y estadísticas | en curso (nube/logros-2026-09-26) |
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
 | P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |

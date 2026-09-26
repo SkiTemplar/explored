@@ -1,5 +1,6 @@
 #include "UI/ExploredPlayerController.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Engine/LocalPlayer.h"
 #include "EngineUtils.h"
 #include "GameFramework/GameUserSettings.h"
@@ -10,6 +11,7 @@
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/ExploredMenuCamera.h"
 #include "UI/ExploredSaveSubsystem.h"
+#include "UI/Widgets/SExploredAchievementToast.h"
 #include "UI/Widgets/SExploredCredits.h"
 #include "UI/Widgets/SExploredFade.h"
 #include "UI/Widgets/SExploredMainMenu.h"
@@ -60,9 +62,11 @@ void AExploredPlayerController::BeginPlay()
 
 	FadeWidget = SNew(SExploredFade);
 	SavingIndicator = SNew(SExploredSavingIndicator);
+	AchievementToast = SNew(SExploredAchievementToast);
 	if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
 	{
 		Viewport->AddViewportWidgetContent(SavingIndicator.ToSharedRef(), 900);
+		Viewport->AddViewportWidgetContent(AchievementToast.ToSharedRef(), 950);
 		Viewport->AddViewportWidgetContent(FadeWidget.ToSharedRef(), 1000);
 	}
 
@@ -73,6 +77,19 @@ void AExploredPlayerController::BeginPlay()
 			if (SavingIndicator.IsValid())
 			{
 				SavingIndicator->Show();
+			}
+		});
+	}
+
+	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+	{
+		TWeakObjectPtr<UAchievementsSubsystem> WeakAchievements(Achievements);
+		Achievements->OnAchievementUnlocked.AddWeakLambda(this, [this, WeakAchievements](FName AchievementId)
+		{
+			const UAchievementsSubsystem* Source = WeakAchievements.Get();
+			if (Source && AchievementToast.IsValid())
+			{
+				AchievementToast->Enqueue(Source->GetDisplayName(AchievementId), Source->GetDescription(AchievementId));
 			}
 		});
 	}
@@ -235,6 +252,11 @@ void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
 	// jugar. El modo (Explorador/Superviviente/Náufrago) queda anotado para
 	// que el equipo de Survival lo lea (GDD §7); de momento solo se registra.
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Nueva partida, modo %d"), static_cast<int32>(Mode));
+	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+	{
+		// Vacía las estadísticas de partida y fija el modo para logros como «Náufrago de verdad».
+		Achievements->BeginRun(Mode);
+	}
 
 	if (!FadeWidget.IsValid())
 	{
