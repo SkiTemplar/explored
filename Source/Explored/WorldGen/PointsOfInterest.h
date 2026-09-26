@@ -5,29 +5,26 @@
 
 class FTerrainDensity;
 
-/** Tipos de punto de interés (GDD §3.3). */
+/** Tipos de punto de interés (GDD §4.3). */
 enum class EPoiType : uint8
 {
-	WreckFuselage,    // Fuselaje del Albatros hundido en la laguna (batería).
-	WreckWing,        // Ala en la playa (mochila, pistola de bengalas).
-	WreckTail,        // Cola en el fondo del canal (antena).
-	WreckEngine,      // Motor en Esmeralda (piezas y cable).
-	HaldenCamp,       // Campamento de la expedición.
-	RadioStation,     // Estación de radio (Manglar): pieza «radio».
-	TideObservatory,  // Observatorio de mareas (Meseta).
-	Lighthouse,       // Faro en ruinas (Los Dientes).
-	StarCompass,      // Brújula estelar (cumbre del Humo).
+	WreckFuselage,    // Fuselaje del Albatros hundido en la laguna (pieza para el barco).
+	WreckWing,        // Ala en la playa (mochila, pieza para el barco).
+	WreckTail,        // Cola en el fondo del canal (pieza para el barco).
+	WreckEngine,      // Motor en Esmeralda (piezas y cable, pieza para el barco).
+	HaldenCamp,       // Campamento abandonado de la expedición de 1974 (ruina, recursos).
+	RadioStation,     // Estación de radio abandonada (Manglar): ruina, recursos.
+	TideObservatory,  // Observatorio de mareas abandonado (Meseta): ruina, tabla de mareas.
+	Lighthouse,       // Faro en ruinas (Los Dientes): objetivo emergente de reparación.
+	StarCompass,      // Marae con brújula estelar (cumbre del Humo): wayfinding.
 	Waterfall,        // Cascada con cueva (Esmeralda).
-	Viewpoint,        // Mirador (revela el mapa).
+	Viewpoint,        // Mirador (boceto de mapa sin confirmar, GDD §5.3).
 	Shipwreck,        // Pecio del velero (Arenas Blancas).
 	TurtleBeach,      // Playa de desove.
 	HotSpring,        // Aguas termales (Humo).
 	TidePool,         // Pozas de marea.
-	Note,             // Nota de Inés.
-	HaldenPage,       // Página del diario Halden.
-	Bottle,           // Mensaje en botella.
-	Petroglyph,       // Petroglifo.
-	BeaconSite,       // Lugar para montar la baliza (pico más alto).
+	Bottle,           // Objeto de colección hallado en la playa.
+	Petroglyph,       // Petroglifo (motivo del pueblo navegante, wayfinding).
 	Count
 };
 

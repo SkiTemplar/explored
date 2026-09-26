@@ -23,11 +23,8 @@ const TCHAR* LexToString(EPoiType Type)
 	case EPoiType::TurtleBeach: return TEXT("TurtleBeach");
 	case EPoiType::HotSpring: return TEXT("HotSpring");
 	case EPoiType::TidePool: return TEXT("TidePool");
-	case EPoiType::Note: return TEXT("Note");
-	case EPoiType::HaldenPage: return TEXT("HaldenPage");
 	case EPoiType::Bottle: return TEXT("Bottle");
 	case EPoiType::Petroglyph: return TEXT("Petroglyph");
-	case EPoiType::BeaconSite: return TEXT("BeaconSite");
 	default: return TEXT("Unknown");
 	}
 }
@@ -154,11 +151,6 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		Out.Add(Poi);
 	};
 
-	auto BeachOrInland = [&](const FIslandDesc& Island, float Angle, FVector& Location)
-	{
-		return FindBeach(Density, Island, Angle, Location) || FindInland(Density, Island, Angle, 0.7f, Location);
-	};
-
 	// Miradores: cima de cada isla (en Los Dientes, el islote más alto).
 	for (int32 I = 0; I < Layout.Islands.Num(); ++I)
 	{
@@ -167,7 +159,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		Add(EPoiType::Viewpoint, I, Summit, 0.0f, FName(*FString::Printf(TEXT("view_%s"), LexToString(Island.Archetype))));
 	}
 
-	// Isla del Amaraje: laguna con el fuselaje, ala en la playa y notas 1–4.
+	// Isla del Amaraje: laguna con el fuselaje y ala en la playa (piezas del barco).
 	const int32 LandingIndex = IndexOf(Layout, EIslandArchetype::Landing);
 	if (LandingIndex != INDEX_NONE)
 	{
@@ -178,18 +170,12 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		const FVector2D LagoonLocal(0.58f * Island.Radius, 0.0f);
 		const FVector2D Lagoon = Island.Center + FVector2D(LagoonLocal.X * C - LagoonLocal.Y * S, LagoonLocal.X * S + LagoonLocal.Y * C);
 		const FVector LagoonFloor(Lagoon.X, Lagoon.Y, Density.SampleColumn(Lagoon.X, Lagoon.Y).Height);
-		Add(EPoiType::WreckFuselage, LandingIndex, LagoonFloor, Rng.RangeFloat(0.0f, 360.0f), FName(TEXT("ines_01")), true);
+		Add(EPoiType::WreckFuselage, LandingIndex, LagoonFloor, Rng.RangeFloat(0.0f, 360.0f), NAME_None, true);
 
 		FVector Beach;
 		if (FindBeach(Density, Island, Island.Rotation + UE_PI, Beach))
 		{
-			Add(EPoiType::WreckWing, LandingIndex, Beach, YawTowards(Beach, Island.Center), FName(TEXT("ines_02")));
-		}
-		FVector Hill = FindSummit(Density, Island);
-		Add(EPoiType::Note, LandingIndex, Hill + FVector(2, 2, 0), 0.0f, FName(TEXT("ines_03")));
-		if (FindBeach(Density, Island, Island.Rotation + 0.35f, Beach))
-		{
-			Add(EPoiType::Note, LandingIndex, Beach, YawTowards(Beach, Island.Center), FName(TEXT("ines_04")));
+			Add(EPoiType::WreckWing, LandingIndex, Beach, YawTowards(Beach, Island.Center));
 		}
 		if (FindBeach(Density, Island, Island.Rotation + UE_HALF_PI, Beach))
 		{
@@ -197,7 +183,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		}
 	}
 
-	// Esmeralda: cascada con cueva, campamento I, motor, notas 5–8.
+	// Esmeralda: cascada con cueva, campamento I, motor.
 	const int32 EmeraldIndex = IndexOf(Layout, EIslandArchetype::Emerald);
 	if (EmeraldIndex != INDEX_NONE)
 	{
@@ -208,36 +194,31 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		{
 			if (FVector2D::Distance(FVector2D(Cave.Start), Island.Center) < Island.Radius)
 			{
-				Add(EPoiType::Waterfall, EmeraldIndex, Cave.Start, YawTowards(Cave.Start, Island.Center) + 180.0f, FName(TEXT("ines_07")));
+				Add(EPoiType::Waterfall, EmeraldIndex, Cave.Start, YawTowards(Cave.Start, Island.Center) + 180.0f);
 				Add(EPoiType::Petroglyph, EmeraldIndex, FMath::Lerp(Cave.Start, Cave.End, 0.7f), 0.0f, FName(TEXT("petro_01")));
 				break;
 			}
 		}
-		if (FindBeach(Density, Island, Island.Rotation + UE_PI, P)) { Add(EPoiType::Note, EmeraldIndex, P, 0.0f, FName(TEXT("ines_05"))); }
 		if (FindInland(Density, Island, Island.Rotation + 2.2f, 0.55f, P))
 		{
 			Add(EPoiType::HaldenCamp, EmeraldIndex, P, Rng.RangeFloat(0.0f, 360.0f), FName(TEXT("camp_halden_1")));
-			Add(EPoiType::Note, EmeraldIndex, P + FVector(3, -2, 0), 0.0f, FName(TEXT("ines_06")));
 		}
-		if (FindInland(Density, Island, Island.Rotation + UE_HALF_PI, 0.65f, P)) { Add(EPoiType::Note, EmeraldIndex, P, 0.0f, FName(TEXT("ines_08"))); }
 		if (FindInland(Density, Island, Island.Rotation - 0.8f, 0.8f, P)) { Add(EPoiType::WreckEngine, EmeraldIndex, P, Rng.RangeFloat(0.0f, 360.0f)); }
 	}
 
-	// Manglar: estación de radio y notas 9–10.
+	// Manglar: estación de radio abandonada.
 	const int32 MangroveIndex = IndexOf(Layout, EIslandArchetype::Mangrove);
 	if (MangroveIndex != INDEX_NONE)
 	{
 		const FIslandDesc& Island = Layout.Islands[MangroveIndex];
 		FVector P;
-		if (BeachOrInland(Island, Island.Rotation, P)) { Add(EPoiType::Note, MangroveIndex, P, 0.0f, FName(TEXT("ines_09"))); }
 		if (FindInland(Density, Island, Island.Rotation + 1.8f, 0.35f, P))
 		{
 			Add(EPoiType::RadioStation, MangroveIndex, P, Rng.RangeFloat(0.0f, 360.0f), FName(TEXT("radio")));
-			Add(EPoiType::Note, MangroveIndex, P + FVector(2, 2, 0), 0.0f, FName(TEXT("ines_10")));
 		}
 	}
 
-	// Arenas Blancas: pecio, playa de tortugas y campamento III, nota 11.
+	// Arenas Blancas: pecio, playa de tortugas y campamento III.
 	const int32 SandsIndex = IndexOf(Layout, EIslandArchetype::WhiteSands);
 	if (SandsIndex != INDEX_NONE)
 	{
@@ -247,30 +228,28 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		{
 			const FVector2D Out2D = FVector2D(P) + (FVector2D(P) - Island.Center).GetSafeNormal() * 60.0f;
 			const FVector Wreck(Out2D.X, Out2D.Y, Density.SampleColumn(Out2D.X, Out2D.Y).Height);
-			Add(EPoiType::Shipwreck, SandsIndex, Wreck, YawTowards(Wreck, Island.Center), FName(TEXT("ines_11")), Wreck.Z < -1.0f);
+			Add(EPoiType::Shipwreck, SandsIndex, Wreck, YawTowards(Wreck, Island.Center), NAME_None, Wreck.Z < -1.0f);
 		}
 		if (FindBeach(Density, Island, Island.Rotation + 2.5f, P)) { Add(EPoiType::TurtleBeach, SandsIndex, P, 0.0f); }
 		if (FindBeach(Density, Island, Island.Rotation - 1.6f, P)) { Add(EPoiType::HaldenCamp, SandsIndex, P, 0.0f, FName(TEXT("camp_halden_3"))); }
 	}
 
-	// Humo: brújula estelar en la cumbre, aguas termales, campamento II, notas 12–13 y lugar de la baliza.
+	// Humo: marae con brújula estelar en la cumbre, aguas termales, campamento II.
 	const int32 SmokeIndex = IndexOf(Layout, EIslandArchetype::Smoke);
 	if (SmokeIndex != INDEX_NONE)
 	{
 		const FIslandDesc& Island = Layout.Islands[SmokeIndex];
 		const FVector Summit = FindSummit(Density, Island);
-		Add(EPoiType::StarCompass, SmokeIndex, Summit, 0.0f, FName(TEXT("ines_13")));
-		Add(EPoiType::BeaconSite, SmokeIndex, Summit + FVector(6, 0, 0), 0.0f);
+		Add(EPoiType::StarCompass, SmokeIndex, Summit, 0.0f);
 		FVector P;
 		if (FindInland(Density, Island, Island.Rotation + 0.6f, 0.75f, P))
 		{
 			Add(EPoiType::HaldenCamp, SmokeIndex, P, 0.0f, FName(TEXT("camp_halden_2")));
-			Add(EPoiType::Note, SmokeIndex, P + FVector(-2, 3, 0), 0.0f, FName(TEXT("ines_12")));
 		}
 		if (FindInland(Density, Island, Island.Rotation - 1.2f, 0.85f, P)) { Add(EPoiType::HotSpring, SmokeIndex, P, 0.0f); }
 	}
 
-	// Meseta: observatorio de mareas, campamento IV y notas 14–15.
+	// Meseta: observatorio de mareas, campamento IV.
 	const int32 MesaIndex = IndexOf(Layout, EIslandArchetype::Mesa);
 	if (MesaIndex != INDEX_NONE)
 	{
@@ -278,25 +257,21 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		FVector P;
 		if (FindInland(Density, Island, Island.Rotation + 0.3f, 0.3f, P))
 		{
-			Add(EPoiType::TideObservatory, MesaIndex, P, 0.0f, FName(TEXT("ines_14")));
+			Add(EPoiType::TideObservatory, MesaIndex, P, 0.0f);
 		}
 		if (FindInland(Density, Island, Island.Rotation + 2.6f, 0.6f, P))
 		{
 			Add(EPoiType::HaldenCamp, MesaIndex, P, 0.0f, FName(TEXT("camp_halden_4")));
-			Add(EPoiType::Note, MesaIndex, P + FVector(2, -3, 0), 0.0f, FName(TEXT("ines_15")));
 		}
 	}
 
-	// Los Dientes: faro en el islote más alto, colonia de aves y notas 16–18.
+	// Los Dientes: faro en el islote más alto.
 	const int32 TeethIndex = IndexOf(Layout, EIslandArchetype::Teeth);
 	if (TeethIndex != INDEX_NONE)
 	{
 		const FIslandDesc& Island = Layout.Islands[TeethIndex];
 		const FVector Summit = FindSummit(Density, Island);
-		Add(EPoiType::Lighthouse, TeethIndex, Summit, 0.0f, FName(TEXT("ines_18")));
-		Add(EPoiType::Note, TeethIndex, Summit + FVector(-4, 3, -2), 0.0f, FName(TEXT("ines_17")));
-		FVector P;
-		if (BeachOrInland(Island, Island.Rotation + 1.0f, P)) { Add(EPoiType::Note, TeethIndex, P, 0.0f, FName(TEXT("ines_16"))); }
+		Add(EPoiType::Lighthouse, TeethIndex, Summit, 0.0f);
 	}
 
 	// Cola del Albatros: en el fondo del canal entre la isla de inicio y la más cercana.
@@ -316,31 +291,6 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 			const FVector2D Mid = FMath::Lerp(Landing.Center, Nearest->Center, Landing.Radius / (Landing.Radius + Nearest->Radius));
 			Add(EPoiType::WreckTail, LandingIndex, FVector(Mid.X, Mid.Y, Density.SampleColumn(Mid.X, Mid.Y).Height), Rng.RangeFloat(0.0f, 360.0f), NAME_None, true);
 		}
-	}
-
-	// Páginas del diario Halden: repartidas entre los campamentos, la estación y el observatorio.
-	{
-		TArray<const FPointOfInterest*> Anchors;
-		for (const FPointOfInterest& Poi : Out)
-		{
-			if (Poi.Type == EPoiType::HaldenCamp || Poi.Type == EPoiType::RadioStation || Poi.Type == EPoiType::TideObservatory || Poi.Type == EPoiType::StarCompass)
-			{
-				Anchors.Add(&Poi);
-			}
-		}
-		TArray<FPointOfInterest> Pages;
-		for (int32 Page = 1; Page <= 24 && Anchors.Num() > 0; ++Page)
-		{
-			const FPointOfInterest& Anchor = *Anchors[(Page - 1) % Anchors.Num()];
-			const FVector2D Offset = Rng.InsideUnitDisc() * 12.0f;
-			FPointOfInterest P;
-			P.Type = EPoiType::HaldenPage;
-			P.IslandIndex = Anchor.IslandIndex;
-			P.Location = OnSurface(Density, Anchor.Location.X + Offset.X, Anchor.Location.Y + Offset.Y);
-			P.ContentId = FName(*FString::Printf(TEXT("halden_%02d"), Page));
-			Pages.Add(P);
-		}
-		Out.Append(Pages);
 	}
 
 	// Botellas en playas al azar y petroglifos en cuevas y cumbres.

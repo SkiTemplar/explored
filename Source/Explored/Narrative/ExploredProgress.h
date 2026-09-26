@@ -4,68 +4,51 @@
 
 #include "ExploredProgress.generated.h"
 
-/** Piezas del Albatros necesarias para la baliza (GDD §7). */
+/** Piezas del Albatros necesarias para construir el barco «Limón» (GDD §8.10). */
 UENUM()
-enum class EBeaconPart : uint8
+enum class EShipPart : uint8
 {
-	Radio,
-	Battery,
-	Antenna,
-	Flare,
+	Fuselage,
+	Wing,
+	Tail,
+	Engine,
 	Count UMETA(Hidden)
 };
 
-/** Finales posibles (GDD §2.4). */
+/** Cómo termina (opcionalmente) una partida (GDD §0, §6.3). */
 UENUM()
 enum class EExploredEnding : uint8
 {
 	None,
-	Rescue,
-	Voyage,
-	Stay,
-	SecretEpilogue
+	Departed,
+	Stayed
 };
 
 /**
- * Progreso narrativo y de exploración de una partida. Es serializable
- * (se guarda tal cual en la partida) y sus reglas son funciones puras.
+ * Progreso de exploración de una partida (mapa, colecciones, barco). Es
+ * serializable (se guarda tal cual en la partida) y sus reglas son funciones puras.
  */
 USTRUCT()
 struct EXPLORED_API FExploredProgress
 {
 	GENERATED_BODY()
 
-	static constexpr int32 TotalInesNotes = 18;
-	static constexpr int32 TotalHaldenPages = 24;
 	static constexpr int32 TotalPetroglyphs = 30;
 	static constexpr int32 TotalBottles = 8;
-	static constexpr int32 TotalMorse = 6;
 	static constexpr int32 TotalViewpoints = 7;
 
-	/** Contenido descubierto por id (notas, páginas, petroglifos, botellas, morse, miradores, especies…). */
+	/** Contenido descubierto por id (petroglifos, botellas, miradores, especies…). */
 	UPROPERTY()
 	TSet<FName> Discovered;
 
 	UPROPERTY()
-	uint8 BeaconParts = 0;
+	uint8 ShipParts = 0;
 
 	UPROPERTY()
-	bool bBeaconBuilt = false;
+	bool bShipBuilt = false;
 
 	UPROPERTY()
-	bool bBeaconActivated = false;
-
-	UPROPERTY()
-	bool bStarCompassDeciphered = false;
-
-	UPROPERTY()
-	bool bOutriggerCanoeBuilt = false;
-
-	UPROPERTY()
-	bool bCanelaBefriended = false;
-
-	UPROPERTY()
-	bool bReachedEmergedIsland = false;
+	bool bReachedHiddenIsland = false;
 
 	UPROPERTY()
 	TArray<EExploredEnding> EndingsSeen;
@@ -74,27 +57,24 @@ struct EXPLORED_API FExploredProgress
 	bool Discover(FName Id);
 	bool IsDiscovered(FName Id) const { return Discovered.Contains(Id); }
 
-	/** Cuenta los descubrimientos cuyo id empieza por el prefijo (p. ej. «ines_»). */
+	/** Cuenta los descubrimientos cuyo id empieza por el prefijo (p. ej. «petro_»). */
 	int32 CountWithPrefix(const FString& Prefix) const;
 
-	void AddBeaconPart(EBeaconPart Part) { BeaconParts |= 1u << static_cast<uint8>(Part); }
-	bool HasBeaconPart(EBeaconPart Part) const { return (BeaconParts & (1u << static_cast<uint8>(Part))) != 0; }
-	bool HasAllBeaconParts() const;
+	void AddShipPart(EShipPart Part) { ShipParts |= 1u << static_cast<uint8>(Part); }
+	bool HasShipPart(EShipPart Part) const { return (ShipParts & (1u << static_cast<uint8>(Part))) != 0; }
+	bool HasAllShipParts() const;
 
-	bool CanBuildBeacon() const { return HasAllBeaconParts() && !bBeaconBuilt; }
+	bool CanBuildShip() const { return HasAllShipParts() && !bShipBuilt; }
 
-	/** El final Rescate exige la baliza montada y encendida (de noche, lo comprueba el juego). */
-	bool CanTriggerRescue() const { return bBeaconBuilt && bBeaconActivated; }
+	/** Zarpar hacia la isla oculta guiándose por las estrellas (GDD §6.3). */
+	bool CanDepart() const { return bShipBuilt; }
 
-	/** La Travesía exige descifrar la brújula estelar y la canoa de balancín, y llegar a la isla emergida. */
-	bool CanTriggerVoyage() const { return bStarCompassDeciphered && bOutriggerCanoeBuilt && bReachedEmergedIsland; }
+	/** Quedarse (modo libre) es la alternativa a zarpar, una vez construido el barco. */
+	bool CanChooseStay() const { return bShipBuilt; }
 
-	/** «El que se queda»: rechazar el rescate con el diario Halden completo. */
-	bool CanChooseStay() const { return CanTriggerRescue() && CountWithPrefix(TEXT("halden_")) >= TotalHaldenPages; }
+	/** Porcentaje del mapa completado (petroglifos, botellas, miradores; 0–100). */
+	float MapCompletion() const;
 
-	/** Epílogo secreto: diario al 100 %. */
-	bool IsJournalComplete() const;
-
-	/** Porcentaje del diario completado (0–100). */
-	float JournalCompletion() const;
+	/** El mapa está completo cuando se ha reunido toda la colección. */
+	bool IsMapComplete() const;
 };

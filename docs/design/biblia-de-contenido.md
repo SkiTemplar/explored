@@ -1,6 +1,6 @@
 # EXPLORED — Biblia de contenido
 
-Versión 1 · 2026-09-26 · Complementa el GDD
+Versión 2 · 2026-09-26 · Complementa el GDD
 (`docs/superpowers/specs/2026-09-26-explored-design.md`).
 
 Este documento define **qué hay en el mundo y cómo se combina**: objetos, materiales,
@@ -26,7 +26,7 @@ una wiki. Se consigue con cuatro ideas:
    problemas, cada necesidad su solución. Nunca se presentan más de tres conceptos
    nuevos a la vez.
 4. **El personaje tiene ideas.** Al sostener objetos que se podrían combinar, el
-   personaje piensa en voz baja («esto podría servir de mango…») y en el diario aparece
+   personaje piensa en voz baja («esto podría servir de mango…») y en el mapa aparece
    un boceto tenue. Es una pista, no una solución.
 
 ---
@@ -125,9 +125,9 @@ generan más de **400 variantes** con nombre propio
 
 | Mecanismo | Cómo funciona |
 |---|---|
-| **Ideas** | Sostener combinaciones plausibles provoca una idea del personaje y un boceto tenue en el diario |
-| **Observación** | Ver algo en el mundo sugiere su uso: un mono rompiendo un coco con una piedra, una nota Halden con un dibujo de una nasa |
-| **Hallazgos** | Objetos fabricados por Inés o Halden encontrados en el mundo: al examinarlos se aprende su receta |
+| **Ideas** | Sostener combinaciones plausibles provoca una idea del personaje y un boceto tenue en el mapa |
+| **Observación** | Ver algo en el mundo sugiere su uso: una gaviota dejando caer una almeja sobre una roca para romperla, un grabado con el dibujo de una nasa |
+| **Hallazgos** | Objetos de ruinas, campamentos abandonados o pecios: al examinarlos se aprende su receta |
 | **Experimentación** | Una combinación nueva que funciona se anota con un dibujo; las que fallan no penalizan |
 | **Necesidad** | Cuando una necesidad aprieta, la voz interna sugiere soluciones del nivel actual («si pudiera hervir el agua…») |
 
@@ -213,17 +213,14 @@ de buceo (madera tallada + cristal + resina), tubo de respiración de bambú, si
 flauta de bambú, tambor de tronco, reloj de sol, destilador solar, colador, embudo de
 hoja, fuelle de piel, camilla (angarillas), escalera de cuerda, garfio de escalada.
 
-### 3.5 Caza, pesca y combate (≈ 30)
+### 3.5 Pesca y marisqueo (≈ 20)
 
-Lanza (de empuje y arrojadiza), arpón de pesca con cabo, arco corto y largo, flechas
-(punta roma para aves, hueso, pedernal, obsidiana, pesca con arpón, incendiaria con
-brea), honda, boleadoras (piedras + cuerda), cerbatana de bambú, dardos (normales y
-envenenados con rana dardo o látex), garrote, cuchillo de desollar, red de mano, red de
-pesca, caña de pescar con carrete de madera, sedal de fibra o de nailon, anzuelos (6
-tipos), cebos (lombriz, vísceras, fruta fermentada, cangrejo), nasa, corral de piedras
-para peces (en la zona intermareal, funciona con la marea), trampa de lazo, lastre
-(tronco que cae), fosa con estacas, jaula, liga de resina para aves, reclamo de ave,
-señuelo de pesca tallado.
+Lanza de pesca (empuje y arrojadiza), arpón de pesca con cabo, arco con flechas de
+arpón (hueso, pedernal, obsidiana, incendiaria con brea), cuchillo de desollar, red de
+mano, red de pesca, caña de pescar con carrete de madera, sedal de fibra o de nailon,
+anzuelos (6 tipos), cebos (lombriz, vísceras, fruta fermentada, cangrejo), nasa, trampa
+de nasa para cangrejos, corral de piedras para peces (en la zona intermareal, funciona
+con la marea), señuelo de pesca tallado.
 
 ### 3.6 Comida (≈ 95)
 
@@ -231,14 +228,13 @@ señuelo de pesca tallado.
 mango, papaya, carambola, guayaba, fruta del pan, maracuyá, piña silvestre, lima
 silvestre, higo, noni, anacardo (tóxico sin tostar), taro, yuca, batata, ñame, palmito,
 brotes de bambú, algas, setas (5 especies: 2 comestibles, 2 tóxicas y 1 alucinógena),
-miel, huevos (gallina, gaviota, tortuga no), larvas de palmera, cangrejo, cangrejo de los
+miel, huevos de gaviota, larvas de palmera, cangrejo, cangrejo de los
 cocoteros, langosta, lapas, almejas, mejillones, erizo, pulpo, calamar, 8 peces de
-arrecife, 4 peces de río o estuario, 3 de mar abierto, carne de jabalí (4 cortes), carne
-de ave, iguana, caracol terrestre.
+arrecife, 4 peces de río o estuario, 3 de mar abierto, percebes, caracol de mar.
 
 **Preparado (≈ 45):** pescado asado en espeto, pescado al vapor en caña de bambú,
 pescado en hoja de plátano, pescado ahumado, pescado salado, ceviche (lima + pescado
-crudo), sopa de pescado, caldo de huesos, estofado de jabalí, jabalí ahumado, cecina,
+crudo), sopa de pescado, caldo de espinas, estofado de pescado, pescado en salazón,
 pinchos, huevos a la brasa, fruta del pan asada, taro hervido, yuca cocida (desintoxica),
 batata asada, puré de plátano macho, pan de ñame en piedra caliente, leche de coco,
 crema de coco, dulce de coco con miel, mermelada de mango, fruta seca, cangrejo en su
@@ -257,7 +253,7 @@ calidad media.
 Venda de tela, venda de hojas, sutura con aguja de hueso y tendón (cortes profundos),
 cataplasma de noni, gel de aloe (quemaduras), pasta de cúrcuma silvestre (infección),
 miel (heridas), agua salada (limpiar), antiséptico del botiquín, alcohol destilado,
-analgésicos (6), antídoto de corteza (serpiente), vinagre (medusa), carbón activado
+analgésicos (6), antídoto de corteza (picadura de raya), vinagre (medusa), carbón activado
 (intoxicación), té de corteza de sauce isleño (fiebre), férula de bambú (esguince y
 fractura), repelente de ceniza y aceite (mosquitos), crema de óxido de cinc casera
 (protector solar con arcilla blanca y aceite), jabón (previene infecciones).
@@ -286,87 +282,77 @@ hierro (Halden), lata, termo, arcón de madera, estantería.
 - **De piedra (tardío):** cimiento de piedra, muro de piedra seca, horno, chimenea.
 - **Mobiliario:** cama de hojas, catre de bambú, hamaca, banco, mesa, estantería,
   colgadores de pared (herramientas expuestas), arcón, alfombra de estera, cortina,
-  lámpara colgante, trofeos de caza, tablero de corcho para el diario (mapa grande en la
-  base).
+  lámpara colgante, trofeos de pesca, mesa de cartografía (donde se copia el mapa
+  grande de la base).
 - **Producción:** fogata, hoguera de señal, horno de barro, horno de fundición,
   ahumadero, secadero, salina, destilador solar, recolector de lluvia, cisterna, filtro
   de arena y carbón, telar, piedra de trabajo, banco de chatarra, astillero, mesa de
   despiece, pila de compost.
-- **Granja:** bancal, espaldera (maracuyá), vivero, gallinero, pocilga (crías de
-  jabalí), colmena, estanque de peces, espantapájaros (contra monos y aves).
+- **Granja:** bancal, espaldera (maracuyá), vivero, arriate del limonero, colmena,
+  estanque de peces, trampa de cangrejos con cercado, espantapájaros (contra aves).
 - **Exterior:** muelle, puente colgante, tirolina, escalera de cuerda, torre de vigía,
   cerca de estacas, empalizada, sendero de piedras, hito de piedras, bandera, farol de
   camino.
 
 ---
 
-## 4. Caza
+## 4. Pesca y marisqueo
 
-La caza es un **bucle completo**: leer el terreno, acercarse, abatir, despiezar y
-conservar. Cada fase tiene decisiones.
+Sin fauna terrestre que cazar: el bucle de captura es **leer las aguas, acercarse,
+capturar, despiezar y conservar**. Toda la presión de supervivencia viene del mar.
 
-### 4.1 Leer el terreno
+### 4.1 Leer las aguas y la orilla
 
-- **Sendas de animales** generadas entre agua, comida y refugio. Se reconocen por la
-  vegetación pisada.
-- **Rastros:** huellas (su nitidez indica cuánto hace: la lluvia las borra), excrementos
-  (frescos o secos), pelos en ramas, marcas de colmillos en troncos, hozaduras de jabalí,
-  plumas, restos de fruta.
-- **Horarios:** cada especie tiene horas de actividad. Los abrevaderos al amanecer y al
-  atardecer son los mejores sitios de espera.
-- **Canela** sigue rastros frescos si se le da a oler una huella.
+- **Sombras y bancos** visibles bajo la superficie desde la orilla o un mirador.
+- **Rastros:** huellas de tortuga hacia el mar tras el desove, burbujas, aleteos en la
+  superficie, cambios de color del agua sobre un bajío.
+- **Horarios:** cada especie tiene horas de actividad; el amanecer y el atardecer son
+  los mejores momentos.
 
 ### 4.2 Acercarse
 
 | Factor | Efecto | Contramedida |
 |---|---|---|
-| **Viento** | Lleva tu olor | Moverse contra el viento (se ve en la hierba, el humo y un puñado de arena) |
-| **Olor** | Humo, sangre y sudor aumentan el rastro | Bañarse, pintura de barro |
-| **Ruido** | Depende de la superficie, el peso y la velocidad | Agacharse, ir descalzo, soltar peso |
-| **Vista** | Silueta contra el cielo, movimiento | Quedarse quieto, vegetación, camuflaje, horas de poca luz |
-| **Canela** | Puede espantar a la presa | Orden de «quieta» con el silbato |
+| **Corriente** | Delata tu posición y dispersa el cebo | Pescar a favor de corriente |
+| **Sombra y reflejo** | Ahuyenta a los peces cautelosos | Quedarse quieto, ropa oscura, luz baja |
+| **Ruido en el agua** | Aleja al banco | Entrar despacio, evitar chapoteo |
+| **Sangre o cebo** | Atrae, pero también atrae depredadores mayores | Usar cebo con cuidado cerca del talud |
 
-### 4.3 Abatir
+### 4.3 Capturar
 
-- **Lanza:** empuje (seguro, requiere acercarse) o lanzamiento (arco de trayectoria).
-- **Arco:** tensión progresiva, caída de la flecha, las flechas se recuperan.
-- **Honda y boleadoras:** para aves y presas pequeñas.
-- **Cerbatana:** silenciosa; los dardos envenenados duermen o matan a presas medianas.
-- **Trampas:** lazo, lastre, fosa, jaula, liga de resina. Se revisan cada día y los
-  cebos importan. Hay que resetearlas.
-- **Presas heridas** huyen dejando rastro de sangre, que la lluvia borra.
-- **Peligro:** el jabalí acorralado embiste; el cocodrilo arrastra al agua (se escapa
-  golpeándole los ojos con una secuencia rápida).
+- **Arpón:** empuje (seguro, aguas someras) o lanzamiento (arco con flecha de arpón).
+- **Caña:** minijuego de tensión; el sedal se puede romper con presas grandes.
+- **Trampas:** nasa y corral de piedras en zona intermareal; se revisan cada día y los
+  cebos importan.
+- **Peligro:** la raya pica si se pisa (se evita arrastrando los pies); la medusa
+  escuece a la deriva; los tiburones acuden si hay sangre en el agua.
 
 ### 4.4 Despiezar y conservar
 
 - Hace falta un cuchillo. La calidad del filo cambia la velocidad y el rendimiento.
-- La carcasa se divide en piezas físicas: cortes de carne, piel, grasa, tendones,
-  huesos, colmillos o plumas y vísceras (cebo).
-- Una carcasa sin aprovechar se pudre en un día y atrae cangrejos, aves y, en el agua,
-  tiburones.
+- La pieza se divide físicamente: filetes, espinas, piel, vísceras (cebo).
+- Una pieza sin aprovechar se pudre en un día y atrae cangrejos y aves.
 - **Conservar:** ahumar, salar, secar, confitar en grasa o guardar en vasija con
   vinagre.
 
 ### 4.5 Ecosistema
 
-- Cada zona tiene **poblaciones**. Sobrecazar una zona vacía el área durante días,
-  lo que empuja a explorar más lejos, y la población se recupera sola.
-- **Cadena alimentaria simulada:** las aves comen pescado que se deja al aire, los
-  cangrejos limpian carroña, los tiburones siguen la sangre en el agua y los monos roban
-  fruta de los secaderos.
+- Cada zona tiene **poblaciones**. Sobrepescar una zona la vacía durante días, lo que
+  empuja a explorar más lejos, y la población se recupera sola.
+- **Cadena alimentaria simulada:** las aves siguen a tu canoa si llevas pescado, los
+  cangrejos limpian los restos y los tiburones siguen la sangre en el agua.
 
-### 4.6 Presas legendarias
+### 4.6 Capturas legendarias
 
-Cinco animales únicos con nombre, comportamiento propio y recompensa exclusiva.
+Cinco presas únicas con nombre, comportamiento propio y recompensa exclusiva.
 
-| Legendario | Dónde | Reto | Recompensa |
+| Legendaria | Dónde | Reto | Recompensa |
 |---|---|---|---|
-| **Colmillo Roto** — jabalí macho gigante | Esmeralda | Muy listo; rompe trampas simples y huye de la luz | Colmillos (hacha de hueso legendaria), piel de alfombra |
 | **El Viejo** — mero gigante | Cueva submarina de Arenas Blancas | Rompe sedales; hace falta sedal de nailon y un anzuelo de alambre | Trofeo, festín (ánimo máximo varios días) |
-| **Reina del manglar** — cocodrilo | Manglar de las Voces | Emboscada; se caza con trampa de pozo y cebo | Placas de piel (armadura ligera) |
 | **Sombra** — tiburón tigre | Canal profundo | Ataca embarcaciones pequeñas | Dientes (sierra de tiburón legendaria) |
-| **El Ladrón** — mono alfa | Tropa de Esmeralda | Te roba un objeto valioso y hay que seguirlo por los árboles | Recuperar el objeto + una mascota opcional |
+| **La Manta Negra** — raya gigante | Bajíos del Manglar | Emboscada en aguas turbias; hay que localizarla por su sombra | Aguijón (punta de lanza legendaria) |
+| **El Errante** — tiburón de arrecife de cicatrices | Arrecife de Arenas Blancas | Muy cauto; huye si te ha visto antes | Piel de tiburón curtida (armadura ligera) |
+| **El Rey de Plata** — pez gigante de mar abierto | Aguas profundas, a vela | Solo se pesca desde la canoa, lejos de tierra | Sedal y anzuelo legendarios |
 
 ---
 
@@ -379,7 +365,7 @@ Cinco animales únicos con nombre, comportamiento propio y recompensa exclusiva.
 | **Día 1** | Sed, sol, la primera noche | Coco, sombra, refugio inclinado, fuego con el mechero |
 | **Días 2–4** | Hambre, agua limpia | Pesca en la orilla, fruta, hervir agua, arco de fuego |
 | **Días 5–10** | Herramientas, lluvias | Hachas, cabaña, conservar comida, trampas |
-| **Semanas 2–3** | Otras islas, peligros | Balsa, caza mayor, medicina, cerámica |
+| **Semanas 2–3** | Otras islas, peligros | Balsa, pesca de altura, medicina, cerámica |
 | **Temporada de ciclones** | Resistir | Construcción sólida, reservas, prepararse |
 | **Mes 2+** | La vida ya es estable | El reto pasa a ser explorar, los legendarios y la historia |
 
@@ -420,8 +406,8 @@ Necesidades, estados y heridas se describen en el GDD (§4.3). Aquí se añaden:
   tela.
 - **Insolación** si pasas horas al sol sin sombrero en la estación seca.
 - **Moral y rutina:** dormir en tu cama, comer caliente, tener la base ordenada, tocar la
-  flauta, escribir en el diario y acariciar a Canela suben el ánimo. El ánimo alto da
-  pequeñas ventajas (trabajo más rápido, ideas más frecuentes).
+  flauta y completar el mapa de una isla suben el ánimo. El ánimo alto da pequeñas
+  ventajas (trabajo más rápido, ideas más frecuentes).
 
 ---
 
@@ -469,22 +455,39 @@ daños da un logro.
   erizos), cuevas marinas, el corral de piedras para peces y restos del Albatros.
 - **La pleamar cierra** esos pasos: un jugador descuidado queda atrapado en un islote
   hasta la siguiente bajamar.
-- La tabla de mareas del diario se completa observando y en el observatorio Halden.
+- La tabla de mareas se completa observando y en el observatorio Halden, y queda
+  anotada en el mapa.
 
 ---
 
-## 7. Granja, animales y hogar
+## 7. Huerto, museo y hogar
 
-- **Huerto:** plantar semillas y esquejes encontrados (plátano, taro, batata, piña,
-  maracuyá, especias, plantas medicinales). Cada cultivo tiene su estación. Riego,
-  compost, espantapájaros y cercas contra jabalíes y monos.
-- **Domesticar:** gallinas silvestres (atraídas con semillas) y crías de jabalí huérfanas.
-  Dan huevos y compañía, necesitan cercado y comida.
+### 7.1 El limonero
+
+El primer árbol que se planta junto a la base, con un limón encontrado en el equipaje
+del Albatros. Crece en etapas estáticas ligadas a los días (esqueje → brote → árbol
+joven → árbol adulto con fruta), regado a mano o con el recolector de lluvia. Sus
+limones previenen y curan el escorbuto (visión y encías si faltan semanas sin fruta
+fresca). Es el primer cultivo del juego y el que nunca se arranca.
+
+### 7.2 Huerto
+
+Plantar semillas y esquejes encontrados (plátano, taro, batata, piña, maracuyá,
+especias, plantas medicinales), además del limonero. Cada cultivo tiene etapas
+estáticas por días y su estación. Riego, compost y espantapájaros contra las aves.
+
+### 7.3 Colmena y estanque
+
 - **Colmena:** capturar un enjambre en una caja de madera → miel y cera.
 - **Estanque:** peces vivos capturados con nasa se crían para tener comida segura en el
   monzón.
-- **El hogar crece:** la base se personaliza con trofeos, fotos colgadas, el mapa grande
-  del diario en la pared, pigmentos para pintar paredes y un jardín.
+
+### 7.4 El hogar como museo
+
+La base guarda y expone lo encontrado explorando: estanterías y vitrinas con los
+tesoros de las ruinas (§9), el mapa dibujado a mano en la pared de la mesa de
+cartografía, pigmentos para pintar paredes y un jardín. Cada tesoro expuesto tiene su
+sitio fijo: el hogar se lee de un vistazo como el registro de la partida.
 
 ---
 
@@ -497,9 +500,9 @@ daños da un logro.
 | **30 segundos** | Ver algo → acercarse → cogerlo o usarlo | Una fruta, una huella, un brillo en el agua |
 | **5 minutos** | Necesidad → plan → fabricar o cazar → resolver | «Tengo hambre» → lanza → pozas de marea → cangrejos |
 | **1 día** | Amanecer → trabajo → volver antes de la noche → fuego → dormir | Planificar la salida según la marea y el clima |
-| **1 semana** | Proyecto grande | La canoa, la cabaña sobre pilotes, cazar a Colmillo Roto |
+| **1 semana** | Proyecto grande | La canoa, la cabaña sobre pilotes, pescar a El Viejo |
 | **1 estación** | Adaptarse | Prepararse para el monzón, aprovechar la seca para explorar |
-| **Campaña** | Historia y finales | Seguir a Inés, descifrar Halden y la brújula estelar |
+| **Partida completa** | Explorar y coleccionar | Completar el mapa de cada isla, reunir los tesoros, construir el barco «Limón» |
 
 ### 8.2 Reglas anti-aburrimiento
 
@@ -509,8 +512,8 @@ daños da un logro.
    y el garfio abren formas nuevas de moverse, no solo +10 %.
 3. **La estación renueva los problemas:** lo que funcionaba en la seca no funciona en el
    monzón.
-4. **El mundo tiene su propia agenda:** eventos, legendarios, contenedores que llegan
-   con los ciclones, monos que roban.
+4. **El mundo tiene su propia agenda:** eventos, capturas legendarias, contenedores
+   que llegan con los ciclones, mareas que descubren ruinas.
 5. **Nada es relleno:** cada cueva y cada PdI tiene al menos una de estas cosas: recurso
    único, historia, vista o atajo.
 
@@ -523,39 +526,91 @@ daños da un logro.
 4. **Legibilidad low-poly:** cada objeto se reconoce por su forma y su color a 20 m.
 5. **Sin microgestión:** no hay ropa que se ensucie ni hambre de la mascota. Las
    estadísticas se leen en el propio objeto (grietas, color, olor).
-6. **El diario ordena el conocimiento:** todo lo aprendido queda a un gesto.
-7. **Modo Explorador** para quien solo quiere el mundo y la historia.
+6. **El mapa ordena el conocimiento:** todo lo explorado queda a un gesto, en tu
+   propia letra.
+7. **Modo Explorador** para quien solo quiere el mundo, sin presión de supervivencia.
 
 ---
 
-## 9. Contenido emergente (el mundo como sistema)
+## 9. Ruinas y navegación ancestral
+
+Antes de Halden, antes de que llegaras aquí: un pueblo de navegantes ficticio, tratado con el
+mismo respeto que una cultura real, dejó su huella en las siete islas.
+
+### 9.1 Qué se encuentra
+
+- **Marae:** plataformas de piedra a ras de suelo, a veces con un muro bajo o un patio.
+- **Estatuas** talladas en basalto, erosionadas, mirando siempre hacia el mar o hacia
+  una estrella concreta.
+- **Petroglifos** (30, catálogo en `Data/story_es.json`): motivos tallados en roca
+  junto a cuevas y cumbres.
+- **Canoas dobles fosilizadas** varadas o semienterradas en la arena.
+- **Cuevas rituales:** cámaras con pinturas y ofrendas, a veces bajo el nivel del mar.
+- **Ruinas sumergidas:** solo visibles con la marea viva extrema; el resto del tiempo
+  quedan bajo el agua.
+
+### 9.2 Wayfinding: lo que enseñan
+
+Cada ruina completa enseña una técnica de navegación tradicional, que se añade al mapa
+dibujado a mano como una anotación propia:
+
+| Técnica | Qué revela |
+|---|---|
+| **Camino de estrellas** | Rumbo nocturno hacia otra isla concreta |
+| **Lectura del oleaje** | Distancia y dirección a tierra por el patrón del mar de fondo |
+| **Aves al atardecer** | Las bandadas vuelan hacia tierra al anochecer: indican la isla más cercana |
+| **Nubes fijas** | Una nube estacionaria sobre el horizonte delata una isla lejana |
+| **Color del agua** | El cambio de tono marca bajíos y arrecifes antes de verlos |
+
+### 9.3 El objetivo final
+
+Reunir suficientes caminos de estrellas permite, de noche y solo guiándose por el
+cielo, llevar el barco «Limón» hasta una isla oculta que no aparece en ningún mapa
+dibujado por el propio jugador hasta ese momento.
+
+---
+
+## 10. Tesoros y colección
+
+- **Artefactos:** anzuelos de hueso tallado, adornos de concha, figuras de piedra,
+  cartas de navegación de varillas y conchas (mapas de palos), tapa (tela vegetal
+  pintada), remos ceremoniales. Se encuentran en marae, cuevas rituales y pecios.
+- **Exposición:** cada artefacto se coloca en una estantería o vitrina de la base; la
+  base se convierte así en un pequeño museo que crece con la partida.
+- **Catálogo:** el mapa físico lleva un apartado de colección con silueta y procedencia
+  de cada tesoro, completo o no.
+
+---
+
+## 11. Contenido emergente (el mundo como sistema)
 
 Interacciones que no están guionizadas y producen historias propias:
 
-- El fuego en la estación seca se extiende, espanta animales y deja carbón y cenizas
-  fértiles.
-- Los monos roban lo que dejas en el suelo y lo esconden en la copa de un árbol: se
-  forman «tesoros» de monos.
+- El fuego en la estación seca se extiende y deja carbón y cenizas fértiles.
 - Las mareas mueven objetos flotantes: una balsa mal amarrada aparece en otra playa.
+- La marea viva extrema deja al descubierto una ruina que el resto del año está bajo
+  el agua.
 - La lluvia llena cualquier recipiente abierto que dejes fuera.
 - Las gaviotas siguen a tu canoa si llevas pescado.
 - Los tiburones acuden a la sangre en el agua.
 - Los rayos caen en lo más alto, incluida tu torre de vigía.
 - La madera se pudre si está siempre húmeda; la de palma dura menos que la dura.
-- Canela desentierra cosas donde los monos esconden.
-- Los animales usan tus caminos y tus puentes.
 - Un árbol talado cae según su inclinación y el viento, y puede servir de puente.
 
 ---
 
-## 10. Implementación de datos
+## 12. Implementación de datos
 
 - `Data/properties.json` — definición de propiedades.
 - `Data/items.json` — objetos base: malla, propiedades, peso, volumen, etiquetas.
 - `Data/templates.json` — plantillas de resultado: piezas, requisitos y fórmulas.
 - `Data/verbs.json` — verbos y condiciones.
 - `Data/recipes_cooking.json` — recetas con nombre (el resto es guiso improvisado).
-- `Data/species.json` — fauna: comportamiento, horarios, despiece, población.
+- `Data/species.json` — fauna marina: comportamiento, horarios, despiece, población.
+- `Data/story_es.json` — motivos de petroglifo, tesoros de las ruinas y sellos de
+  cartografía (agua, cueva, peligro, recurso, texto), todo en un único fichero por
+  ahora; se separará en `petroglyphs.json` / `artifacts.json` / `map_marks.json` si
+  crece.
 - `Data/seasons.json`, `Data/weather.json`, `Data/events.json`.
 - Importadas a `UDataAsset` por el pipeline. **Añadir un objeto nuevo es añadir una
   entrada de JSON y un script de malla.**

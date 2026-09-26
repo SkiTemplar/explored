@@ -47,7 +47,7 @@ struct EXPLORED_API FSurvivalInputs
 	bool bHasHat = false;
 	float ClothingInsulation = 0.0f; // 0–1
 	float CarriedWeightRatio = 0.0f; // peso / capacidad cómoda
-	bool bCompanionNearby = false;   // Canela
+	bool bCompanionNearby = false;   // reservado (sin animal de compañía en el diseño actual)
 };
 
 /** Lo que aporta una comida o bebida. */
