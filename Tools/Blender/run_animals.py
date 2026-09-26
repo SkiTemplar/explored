@@ -29,6 +29,24 @@ objeto (la nota de Tools/Blender/animals/rig.py). Por cada variante:
 Fuera de alcance a propósito: luciérnagas, mariposas, abejas, libélulas y
 peces voladores (biblia §6, "fauna ambiental") — el diseño los resuelve con
 sistemas de partículas/bandadas (boids), no con mallas rigged individuales.
+
+3ª pasada (encargo del autor, 2026-09-26): la fauna terrestre grande/mediana
+(perro, mono, jabalí, cocodrilo, iguana, gecko, serpiente, murciélago,
+gallina) y el pulpo se retiran del juego; el kit se queda con fauna marina y
+aves, SIN esqueleto — nada de huesos ni de jerarquía animada en C++
+(ProceduralGait.h queda sin usar por este kit). La animación es o bien un
+shader de vértices (peces, tortuga, medusa, aves) o piezas rígidas sin más
+animación (patas de cangrejo). Para eso, además del color visual «Col» de
+siempre, cada pieza exportada lleva un SEGUNDO atributo de color de vértice
+«Anim» (FLOAT_COLOR, CORNER) que consumirá el material de Unreal — el
+convenio completo está documentado en _write_anim_channel() más abajo y
+repetido en animals.json como referencia rápida para quien escriba ese
+material. Resumen: Anim.R = posición a lo largo del cuerpo (0 cola -> 1
+cabeza, sobre el eje X de todo el kit), Anim.G = 1.0 si la pieza es un
+apéndice deformable (aleta/ala/pata/tentáculo/garra) o 0.0 si es
+cuerpo/cabeza rígido, Anim.B = lado (0 izquierda, 0.5 centro, 1 derecha).
+Cada especie anota además su «anim» en animals.json: swim | flap | pulse |
+scuttle.
 """
 
 import importlib
@@ -49,26 +67,42 @@ for _p in (LIB_DIR, ANIMALS_DIR):
 import common as C  # noqa: E402
 import rig  # noqa: E402
 
-MODULE_NAMES = [
-    'quadrupeds', 'arthropods', 'reptiles', 'serpent', 'birds', 'bat',
-    'turtle', 'fish', 'cephalopod', 'jellyfish',
-]
+# 3ª pasada (encargo del autor): fuera los animales terrestres grandes y
+# medianos (perro, mono, jabalí, cocodrilo, iguana, gecko, serpiente,
+# murciélago, gallina) y el pulpo — el juego se queda con fauna marina y
+# aves, SIN esqueleto (animada en shader de vértices o piezas rígidas, ver
+# ANIM_MASK_ROLES/_write_anim_channel más abajo). quadrupeds.py, reptiles.py,
+# serpent.py, bat.py y cephalopod.py se dejan en el repo tal cual (no hace
+# falta borrarlos) pero ya no se generan.
+MODULE_NAMES = ['turtle', 'fish', 'jellyfish', 'birds']
 
 # Presupuesto orientativo de triángulos TOTAL por especie (suma de todas sus
 # piezas, LOD0). Orientativo aquí (solo se avisa); validate.py es quien lo
 # hace cumplir de verdad antes de dar el kit por bueno.
 TRIANGLE_BUDGET_BY_CATEGORY = {
-    'quadruped': (1200, 7000),
-    'arthropod': (500, 4000),
-    'cephalopod': (500, 4000),
     'jellyfish': (300, 4200),
-    'reptile': (400, 7000),
-    'serpent': (300, 3000),
-    'bird': (400, 3500),
-    'bat': (300, 2200),
+    'bird': (300, 3000),
     'turtle': (400, 4500),
     'fish': (100, 6000),
 }
+
+# Tipo de animación que espera el shader de Unreal (documentado también en
+# animals.json de salida): swim = onda de columna con ProceduralGait-style
+# fuera de la CPU (todo en shader, ver _write_anim_channel); pulse = bulto
+# de la medusa contrayéndose; scuttle = ciclo de patas de artrópodo, aquí
+# piezas rígidas sin más -no se anima por shader, solo se listan-; flap =
+# aleteo de ave.
+ANIM_BY_CATEGORY = {
+    'jellyfish': 'pulse',
+    'bird': 'flap',
+    'turtle': 'swim',
+    'fish': 'swim',
+}
+
+# Roles que el shader debe tratar como APÉNDICE deformable (aleteo/vaivén
+# propio, encima de la onda de columna del cuerpo principal) frente al
+# cuerpo/cráneo/caparazón rígido que solo seguiría la onda de columna.
+ANIM_MASK_ROLES = {'fin', 'wing', 'flipper', 'leg', 'tentacle', 'claw', 'tail'}
 
 LOD1_MIN_TRIS = 140
 LOD1_RATIO = 0.5
@@ -91,6 +125,81 @@ def _species_bbox_cm(pieces, abs_by_name):
     if not xs:
         return (0.0, 0.0, 0.0)
     return (max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs))
+
+
+def _species_x_range(pieces, abs_by_name):
+    """Rango de X absoluto (cm) de toda la especie: la referencia para
+    normalizar spine_t en _write_anim_channel («X adelante» es la
+    convención de eje de todo el kit, así que X ES el eje del cuerpo)."""
+    xs = []
+    for p in pieces:
+        piv = abs_by_name[p['name']]
+        for v in p['obj'].data.vertices:
+            xs.append(v.co.x * 100.0 + piv[0])
+    if not xs:
+        return (0.0, 1.0)
+    return (min(xs), max(xs))
+
+
+def _write_anim_channel(pieces, abs_by_name, x_min, x_max):
+    """Escribe el segundo canal de color de vértice «Anim» (FLOAT_COLOR,
+    CORNER) que consumirá el shader de animación en Unreal (sin esqueleto:
+    todo el movimiento sale de estos datos + tiempo, en el material):
+
+        R = spine_t: posición a lo largo del cuerpo normalizada al bbox
+            entero de la especie, 0 = extremo de cola, 1 = extremo de
+            cabeza (recto en X porque «X adelante» es la convención de eje
+            de todo el kit: basta proyectar la posición absoluta de cada
+            vértice sobre X, no hace falta ningún caso especial por
+            archetype). Pensado para una onda de columna tipo
+            sin(spine_t * frecuencia - fase(tiempo)) que crece hacia la
+            cola.
+        G = mask: 1.0 si la pieza es un apéndice deformable (aleta, ala,
+            pata, tentáculo, garra, aleta caudal — ANIM_MASK_ROLES), 0.0 si
+            es cuerpo/cabeza/caparazón rígido que solo sigue spine_t.
+        B = side: 0.0 pieza del lado IZQUIERDO (Y absoluto < -0.5 cm),
+            1.0 lado DERECHO (Y > +0.5 cm), 0.5 centrada (aleta dorsal,
+            caudal, cuerpo...) — para que el shader pueda invertir el signo
+            del aleteo/aleta entre lados opuestos.
+        A = sin usar, 1.0 (reservado).
+
+    IMPORTANTE para quien importe estos FBX (Blender o Unreal): «Anim» es
+    DATO NUMÉRICO, no color visual — hay que leerlo/reimportarlo en LINEAL,
+    nunca con la decodificación sRGB por defecto de un importador de FBX
+    (en Blender: bpy.ops.import_scene.fbx(..., colors_type='LINEAR'), igual
+    que ya hace render_preview.py con «Col»). Verificado en runtime: sin
+    ese flag, un 0.5 escrito aquí vuelve como ~0.216 al reimportar (la
+    conversión sRGB->lineal aplicada de más), lo que rompería spine_t/
+    mask/side en el material si el shader los diera por sentado tal cual.
+
+    «Col» (el primer color de vértice) sigue siendo SOLO el aspecto visual
+    -no toca esta función-; se deja como el color activo tras escribir
+    «Anim» para que los materiales/preview existentes seteados por
+    finalize_piece no cambien de comportamiento.
+    """
+    span = max(x_max - x_min, 1e-6)
+    for p in pieces:
+        obj = p['obj']
+        me = obj.data
+        piv = abs_by_name[p['name']]
+        mask = 1.0 if p['role'] in ANIM_MASK_ROLES else 0.0
+        if piv[1] > 0.5:
+            side = 1.0
+        elif piv[1] < -0.5:
+            side = 0.0
+        else:
+            side = 0.5
+        if 'Anim' in me.color_attributes:
+            me.color_attributes.remove(me.color_attributes['Anim'])
+        attr = me.color_attributes.new('Anim', 'FLOAT_COLOR', 'CORNER')
+        for poly in me.polygons:
+            for li in poly.loop_indices:
+                v = me.vertices[me.loops[li].vertex_index]
+                world_x = piv[0] + v.co.x * 100.0
+                t = max(0.0, min(1.0, (world_x - x_min) / span))
+                attr.data[li].color = (t, mask, side, 1.0)
+        if 'Col' in me.color_attributes:
+            me.color_attributes.active_color_name = 'Col'
 
 
 def _export_piece(species, out_dir, piece):
@@ -122,6 +231,8 @@ def main():
 
             abs_by_name = {p['name']: p['pivot_cm'] for p in pieces}
             dims_cm = _species_bbox_cm(pieces, abs_by_name)
+            x_min, x_max = _species_x_range(pieces, abs_by_name)
+            _write_anim_channel(pieces, abs_by_name, x_min, x_max)
 
             piece_entries = []
             total_tris = 0
@@ -156,6 +267,7 @@ def main():
             in_budget = lo <= total_tris <= hi
             species_list.append(dict(
                 species=species, category=mod.CATEGORY, locomotion=locomotion,
+                anim=variant.get('anim_override', ANIM_BY_CATEGORY.get(mod.CATEGORY, 'swim')),
                 habitat=variant.get('habitat', ''), behavior=variant.get('behavior', ''),
                 use=variant.get('use', ''), diet=variant.get('diet', ''),
                 material=f'M_Fauna_{species}',
@@ -170,9 +282,26 @@ def main():
             print(f"[run_animals] {species}: {total_tris} tris en {len(piece_entries)} "
                   f"piezas ({flag}), dims_cm={tuple(round(d, 1) for d in dims_cm)}")
 
+    anim_channel_doc = dict(
+        summary='Fauna sin esqueleto: cada FBX lleva un 2º color de vertice '
+                '"Anim" (FLOAT_COLOR, CORNER) ademas de "Col" (aspecto '
+                'visual). Reimportar SIEMPRE en lineal (colors_type=\'LINEAR\' '
+                'en Blender) - un byte-color por defecto aplica sRGB de mas '
+                'y rompe los valores.',
+        R_spine_t='0.0 = extremo de cola, 1.0 = extremo de cabeza; posicion '
+                  'absoluta del vertice sobre X normalizada al bbox de TODA '
+                  'la especie (no solo la pieza).',
+        G_mask='1.0 = apendice deformable (fin/wing/flipper/leg/tentacle/'
+               'claw/tail), 0.0 = cuerpo/cabeza/caparazon rigido.',
+        B_side='0.0 = lado izquierdo (Y<-0.5cm), 1.0 = derecho (Y>+0.5cm), '
+               '0.5 = centrado (aleta dorsal/caudal, cuerpo...).',
+        A='sin usar, siempre 1.0 (reservado).',
+        anim_values='swim (peces/tortuga), flap (aves), pulse (medusa).',
+    )
     manifest_path = os.path.join(EXPORT_DIR, 'animals.json')
     with open(manifest_path, 'w', encoding='utf-8') as f:
         json.dump(dict(generated_by='Tools/Blender/run_animals.py',
+                        anim_channel=anim_channel_doc,
                         species_count=len(species_list), species=species_list),
                   f, indent=2, ensure_ascii=False)
     print(f"[run_animals] manifest escrito en {manifest_path} ({len(species_list)} especies)")

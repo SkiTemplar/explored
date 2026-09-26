@@ -1,11 +1,14 @@
 """
-Tools/Blender/animals/fish.py — 6 peces de arrecife, raya, tiburón de
-arrecife, tiburón tigre, delfín y ballena jorobada (biblia §6). Todos
-comparten locomotion=swimmer: ProceduralGait.cpp devuelve una pose vacía
-para Swimmer (cuerpo Y patas) porque la ondulación de nadar la resuelve el
-material (vertex shader), no el hueso — así que aquí no hace falta ninguna
-cadena de columna, solo un cuerpo rígido (torpedo o disco, según la
-especie) con aletas decorativas ancladas.
+Tools/Blender/animals/fish.py — 6 peces de arrecife, atún/jurel, raya,
+tiburón de arrecife, tiburón tigre, delfín y ballena jorobada (biblia §6).
+3ª pasada (encargo del autor): el kit va SIN esqueleto -nada de C++/
+ProceduralGait para esta fauna-, así que «swim» aquí significa el shader de
+vértices de Unreal leyendo el canal «Anim» que escribe run_animals.py
+(spine_t/máscara/lado), no una pose calculada en la CPU. Por eso no hace
+falta ninguna cadena de columna real: solo un cuerpo rígido (torpedo o
+disco, según la especie) con aletas decorativas ancladas, y es el propio
+spine_t (posición a lo largo de X) el que alimenta la onda de natación en
+el material.
 
 Dos estilos de cuerpo:
     - 'torpedo' (peces y tiburones): una única cápsula ahusada de 3-4
@@ -102,10 +105,24 @@ VARIANTS = [
         habitat='Arrecife', behavior='Bancos', use='Pesca', diet='carnívoro',
     ),
     dict(
+        # Atún/jurel: pelágico rápido de mar abierto, cuerpo fusiforme con
+        # pedúnculo caudal muy estrecho y aleta caudal en media luna alta.
+        species='Tuna', seed=5313, body_style='torpedo', body_len_cm=90.0,
+        body_profile_cm=[(5.5, 6.5), (13.0, 15.0), (4.0, 5.0), (1.2, 1.6)],
+        color=(0.75, 0.78, 0.80), color_dark=(0.15, 0.30, 0.45),
+        eye_offset_cm=(6.0, 4.5, 2.0), eye_radius_cm=0.7,
+        dorsal=dict(len_cm=10.0, radii_cm=[(4.5, 0.8), (1.5, 0.4)], t=0.42, dir=(-0.15, 0.0, 1.0)),
+        pectoral=dict(len_cm=8.0, radii_cm=[(3.0, 0.6), (1.0, 0.3)], t=0.25, dir=(0.3, 1.0, -0.15)),
+        tail_fin=dict(len_cm=14.0, radii_cm=[(0.8, 7.0), (0.3, 1.5)], dir=(-1.0, 0.0, 0.0)),
+        stride_length_cm=200.0, total_length_cm=90.0,
+        habitat='Mar abierto', behavior='Bancos rápidos, migra largas distancias',
+        use='Pesca', diet='piscívoro',
+    ),
+    dict(
         species='Stingray', seed=5307, body_style='disc',
         disc_radii_cm=(28.0, 45.0, 7.0),
         color=(0.55, 0.53, 0.50), color_dark=(0.16, 0.15, 0.15),
-        eye_offset_cm=(14.0, 7.0, 3.0), eye_radius_cm=0.9,
+        eye_offset_cm=(14.0, 8.0, 6.0), eye_radius_cm=0.9,
         tail_chain=dict(
             seg_len_cm=[22.0, 20.0, 18.0],
             seg_radii_cm=[[1.4, 0.9], [0.9, 0.5], [0.5, 0.15]],

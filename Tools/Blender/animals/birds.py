@@ -1,12 +1,14 @@
 """
-Tools/Blender/animals/birds.py — gaviota, fragata, loro, tucán y gallina
-silvestre (biblia §6). Constructor paramétrico único (build): cuerpo (blob),
-cuello+cabeza+pico, dos patas biarticuladas finas, dos alas de 2 segmentos
-(en su pose de reposo PLEGADA contra el cuerpo —el aleteo lo hace el C++
-rotando estas mismas piezas, WingFlap/WingFold de ProceduralGait— ) y una
-cola de una pieza aplanada. Locomoción: bird (el ciclo de patas no se anima
-en tierra por este sistema; lo que mueve el C++ es el aleteo y la cola).
-"""
+Tools/Blender/animals/birds.py — gaviota y fragata (encargo 4ª pasada del
+autor: fuera TODA fauna que se detenga o se pose — piquero, loro genérico,
+Limón y cualquier ave con patas quedan fuera del juego. Solo quedan
+bandadas de aves marinas que SIEMPRE están volando lejos, en silueta:
+sin patas -nunca se posan, no hace falta- y con las alas en pose ABIERTA
+de vuelo (antes plegada de reposo). Constructor paramétrico único (build):
+cuerpo (blob), cuello+cabeza+pico y un ala de una sola pieza por lado
+(rig.build_blade_piece). Sin esqueleto: cada pieza es rígida, y
+run_animals.py añade el canal de color «Anim» que consume el shader de
+aleteo en Unreal (anim=flap) — no hay animación en C++."""
 
 import os
 import sys
@@ -30,9 +32,8 @@ VARIANTS = [
         beak_len_cm=3.8, beak_dir=(0.95, 0.0, -0.15),
         beak_radii_cm=[(0.9, 0.7), (0.25, 0.2)], beak_color=(0.95, 0.75, 0.20),
         eye_offset_cm=(2.6, 3.06, 1.0), eye_radius_cm=0.30,
-        leg_upper_cm=5.5, leg_lower_cm=5.0, leg_radius=0.55, leg_color=(0.85, 0.35, 0.20),
         wing_len_cm=28.0, wing_width_base_cm=5.2, wing_width_tip_cm=1.2,
-        wing_dir=(-0.75, 0.55, 0.10),
+        wing_dir=(-0.15, 1.0, 0.05),
         tail_len_cm=8.0, tail_radii_cm=[(3.0, 0.6), (1.0, 0.3)], tail_dir=(-1.0, 0.0, 0.05),
         stride_length_cm=14.0, total_length_cm=45.0,
         habitat='Costa', behavior='Bandadas, roban pescado',
@@ -47,64 +48,12 @@ VARIANTS = [
         beak_len_cm=5.5, beak_dir=(0.95, 0.0, -0.25),
         beak_radii_cm=[(0.7, 0.55), (0.15, 0.15)], beak_color=(0.15, 0.12, 0.10),
         eye_offset_cm=(2.2, 2.55, 0.8), eye_radius_cm=0.26,
-        leg_upper_cm=3.0, leg_lower_cm=2.8, leg_radius=0.40, leg_color=(0.15, 0.12, 0.10),
         wing_len_cm=48.0, wing_width_base_cm=7.2, wing_width_tip_cm=1.4,
-        wing_dir=(-0.70, 0.60, 0.15),
+        wing_dir=(-0.10, 1.0, 0.10),
         tail_len_cm=16.0, tail_radii_cm=[(2.6, 0.5), (0.6, 0.2)], tail_dir=(-1.0, 0.0, 0.0),
         stride_length_cm=8.0, total_length_cm=40.0,
         habitat='Los Dientes', behavior='Planea en térmicas',
         use='Ambiente', diet='piscívoro',
-    ),
-    dict(
-        species='Parrot', seed=5003,
-        hip_height_cm=9.0, body_radii_cm=(7.0, 5.5, 6.0),
-        body_color=(0.20, 0.65, 0.22), body_dark=(0.09, 0.38, 0.12),
-        head_radii_cm=(3.4, 3.0, 3.2), head_offset_cm=(1.6, 0.0, 0.6),
-        neck_len_cm=1.8, neck_dir=(0.50, 0.0, 0.75), neck_radii_cm=[2.0, 1.9],
-        beak_len_cm=2.0, beak_dir=(0.9, 0.0, -0.4),
-        beak_radii_cm=[(1.1, 0.9), (0.3, 0.5)], beak_color=(0.12, 0.10, 0.09),
-        eye_offset_cm=(2.0, 2.55, 0.9), eye_radius_cm=0.28,
-        leg_upper_cm=2.6, leg_lower_cm=2.4, leg_radius=0.42, leg_color=(0.45, 0.40, 0.30),
-        wing_len_cm=19.0, wing_width_base_cm=4.0, wing_width_tip_cm=1.0,
-        wing_dir=(-0.75, 0.55, 0.10),
-        tail_len_cm=13.0, tail_radii_cm=[(1.8, 0.4), (0.7, 0.15)], tail_dir=(-1.0, 0.0, -0.05),
-        stride_length_cm=6.0, total_length_cm=30.0,
-        habitat='Selva', behavior='Grupos ruidosos, imitan sonidos',
-        use='Plumas, aviso', diet='frugívoro',
-    ),
-    dict(
-        species='Toucan', seed=5004,
-        hip_height_cm=11.0, body_radii_cm=(8.0, 6.0, 7.0),
-        body_color=(0.08, 0.08, 0.10), body_dark=(0.04, 0.04, 0.05),
-        head_radii_cm=(3.6, 3.2, 3.4), head_offset_cm=(1.6, 0.0, 0.6),
-        neck_len_cm=1.6, neck_dir=(0.50, 0.0, 0.75), neck_radii_cm=[2.1, 2.0],
-        beak_len_cm=15.0, beak_dir=(0.95, 0.0, -0.05),
-        beak_radii_cm=[(1.1, 2.2), (0.25, 0.5)], beak_color=(0.95, 0.65, 0.05),
-        eye_offset_cm=(2.0, 2.72, 0.9), eye_radius_cm=0.30,
-        leg_upper_cm=3.2, leg_lower_cm=3.0, leg_radius=0.48, leg_color=(0.25, 0.45, 0.55),
-        wing_len_cm=17.0, wing_width_base_cm=3.6, wing_width_tip_cm=0.9,
-        wing_dir=(-0.75, 0.55, 0.10),
-        tail_len_cm=10.0, tail_radii_cm=[(1.6, 0.4), (0.6, 0.15)], tail_dir=(-1.0, 0.0, 0.10),
-        stride_length_cm=7.0, total_length_cm=32.0,
-        habitat='Selva', behavior='Solitario, come fruta',
-        use='Ambiente', diet='frugívoro',
-    ),
-    dict(
-        species='Chicken', seed=5005,
-        hip_height_cm=13.0, body_radii_cm=(9.5, 7.5, 8.5),
-        body_color=(0.72, 0.55, 0.28), body_dark=(0.40, 0.27, 0.12),
-        head_radii_cm=(3.2, 2.8, 3.0), head_offset_cm=(1.6, 0.0, 0.6),
-        neck_len_cm=4.5, neck_dir=(0.55, 0.0, 0.80), neck_radii_cm=[2.0, 1.9],
-        beak_len_cm=1.6, beak_dir=(0.9, 0.0, -0.25),
-        beak_radii_cm=[(0.6, 0.5), (0.15, 0.15)], beak_color=(0.85, 0.65, 0.20),
-        eye_offset_cm=(1.8, 2.38, 0.8), eye_radius_cm=0.25,
-        leg_upper_cm=5.5, leg_lower_cm=5.0, leg_radius=0.62, leg_color=(0.80, 0.65, 0.35),
-        wing_len_cm=14.5, wing_width_base_cm=4.4, wing_width_tip_cm=1.1,
-        wing_dir=(-0.75, 0.55, 0.05),
-        tail_len_cm=9.0, tail_radii_cm=[(2.4, 0.6), (1.0, 0.3)], tail_dir=(-0.6, 0.0, 0.85),
-        stride_length_cm=12.0, total_length_cm=38.0,
-        habitat='Selva baja', behavior='Huye, se puede domesticar',
-        use='Huevos', diet='omnívoro',
     ),
 ]
 
@@ -137,25 +86,6 @@ def _build_head(species, cfg, body_color_fn, seed):
                                     cfg['beak_len_cm'], cfg['beak_radii_cm'],
                                     beak_fn, segments=6)
     return [neck, head, beak], head_pivot
-
-
-def _legs(species, cfg, color_fn):
-    body_rx, body_ry, body_rz = cfg['body_radii_cm']
-    hip_h = cfg['hip_height_cm']
-    bottom_z = hip_h - body_rz * 0.75
-    upper, lower, r = cfg['leg_upper_cm'], cfg['leg_lower_cm'], cfg['leg_radius']
-    pieces = []
-    for side, sign in (('L', 1.0), ('R', -1.0)):
-        hip = (body_rx * 0.05, sign * body_ry * 0.32, bottom_z)
-        d_up = tuple(C.Vector((0.08, 0.0, -1.0)).normalized())
-        d_lo = tuple(C.Vector((-0.06, 0.0, -1.0)).normalized())
-        chain = rig.build_chain(
-            [f'Leg{side}_Upper', f'Leg{side}_Lower'], 'Body', hip, 'leg', species,
-            directions=[d_up, d_lo], lengths_cm=[upper, lower],
-            radii_profiles_cm=[[r, r * 0.75], [r * 0.7, r * 0.4]],
-            color_fn=color_fn, segments=6)
-        pieces.extend(chain)
-    return pieces
 
 
 def _wings(species, cfg, color_fn):
@@ -200,9 +130,6 @@ def build(variant):
 
     head_pieces, _head_pivot = _build_head(species, cfg, body_fn, seed)
     pieces.extend(head_pieces)
-
-    leg_fn = C.constant_tint(cfg['leg_color'], alpha=0.0, jitter=0.02, rnd=rnd)
-    pieces.extend(_legs(species, cfg, leg_fn))
 
     wing_fn = C.gradient_along_axis(cfg['body_dark'], cfg['body_color'], 'z',
                                      -0.02, 0.02, curve=1.0, jitter=0.02, rnd=rnd)
