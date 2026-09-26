@@ -77,6 +77,17 @@
 		]
 	},
 	{
+		"id": "arco", "nameEs": "Arco",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "arco",
+		"nameTemplate": "Arco de {0} con cuerda de {1}",
+		"baseMaxDurability": 45,
+		"slots": [
+			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
+			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
 		"id": "atado_generico", "nameEs": "Atado genérico",
 		"verbs": ["Atar"],
 		"resultDefinitionId": "atado_generico",
@@ -153,17 +164,6 @@
 		"slots": [
 			{ "role": "Asta", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
 			{ "role": "Combustible", "requireAll": false, "requirements": [ { "property": "Combustible", "min": 2 }, { "property": "Inflamable", "min": 2 } ] }
-		]
-	},
-	{
-		"id": "arco", "nameEs": "Arco",
-		"verbs": ["Atar"],
-		"resultDefinitionId": "arco",
-		"nameTemplate": "Arco de {0} con cuerda de {1}",
-		"baseMaxDurability": 45,
-		"slots": [
-			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
-			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
 		]
 	},
 	{
