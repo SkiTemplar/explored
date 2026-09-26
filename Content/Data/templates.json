@@ -110,6 +110,18 @@
 		]
 	},
 	{
+		"id": "angarillas", "nameEs": "Angarillas",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "angarillas",
+		"nameTemplate": "Angarillas de {0}",
+		"baseMaxDurability": 60,
+		"slots": [
+			{ "role": "Varales", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Lecho", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
 		"id": "hacha", "nameEs": "Hacha",
 		"verbs": ["Atar", "Pegar"],
 		"resultDefinitionId": "hacha",
