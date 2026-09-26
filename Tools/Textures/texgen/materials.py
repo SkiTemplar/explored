@@ -132,26 +132,46 @@ def sand_dry(size: int, seed: int) -> Material:
 
 
 def sand_wet(size: int, seed: int) -> Material:
+    """Arena mojada de orilla: caramelo saturado (no gris), rizos lavados, láminas de agua
+    que reflejan el cielo, marcas de resaca, agujeritos de cangrejo y alguna concha."""
     u, v, height, rip, zones, fine, grain = _sand_base(size, seed, 0.3)
     height = blur(height, 0.0015)
-    # Charcos y láminas de agua: zonas bajas y lisas que brillan.
+    # Láminas de agua: zonas bajas y lisas (charcos) con borde suave de arena empapada.
     puddle_n = unit(spectral_noise(size, seed + 8, 1, 6, 2.2), 2.0)
-    puddle = smoothstep(0.58, 0.72, puddle_n + 0.12 * (0.5 - height))
+    soak = smoothstep(0.52, 0.7, puddle_n + 0.12 * (0.5 - height))
+    puddle = smoothstep(0.66, 0.78, puddle_n + 0.12 * (0.5 - height))
     height = height * (1.0 - 0.6 * puddle)
     t = 0.2 + 0.5 * rip * (0.4 + 0.6 * zones) + 0.3 * fine
-    albedo = ramp(t, [(0.0, "#8f6c44"), (0.4, "#a88457"), (0.75, "#bd9a69"), (1.0, "#cfae7c")])
-    albedo = mix_color(albedo, "#7f6a55", puddle * 0.35)
+    albedo = ramp(t, [(0.0, "#a47442"), (0.4, "#b98a52"), (0.75, "#cca168"), (1.0, "#dcb67e")])
+    # La arena empapada se oscurece y satura; el charco toma algo del cielo (turquesa claro).
+    albedo = mix_color(albedo, "#98683c", soak * 0.35)
+    sky = ramp(unit(spectral_noise(size, seed + 13, 1, 4, 2.0)), [(0.0, "#9c9a78"), (1.0, "#a9b6a0")])
+    albedo = albedo + (sky - albedo) * (puddle * 0.3)[..., None]
     # Marcas de resaca: líneas finas y onduladas que dejó la espuma al retirarse.
     swash_warp = spectral_noise(size, seed + 9, 1, 5, 2.6)
-    swash_phase = 3 * v + 0.45 * swash_warp + 0.3 * spectral_noise(size, seed + 11, 3, 12, 2.0) * 0.2
+    swash_phase = 3 * v + 0.45 * swash_warp + 0.06 * spectral_noise(size, seed + 11, 3, 12, 2.0)
     line = np.abs(np.mod(swash_phase, 1.0) - 0.5) * 2.0
     froth = (1.0 - smoothstep(0.0, 0.035, 1.0 - line)) * smoothstep(0.4, 0.7, unit(
         spectral_noise(size, seed + 10, 2, 10, 2.0), 2.0))
     froth = froth * (0.6 + 0.4 * unit(spectral_noise(size, seed + 12, 30, 300, 1.0)))
-    albedo = mix_color(albedo, "#ece6d6", froth * 0.7)
-    albedo = mix_color(albedo, "#5e4a36", smoothstep(2.2, 3.2, grain) * 0.4)
-    albedo = macro_variation(albedo, seed + 20, warm="#e6b27a", cool="#b7b3a6", amount=0.16, value=0.07)
-    rough = np.clip(0.55 - 0.4 * puddle + 0.15 * froth + 0.08 * (fine - 0.5), 0.08, 1.0)
+    # Por detrás de cada marca, una banda algo más clara donde la arena ya escurrió.
+    drained = smoothstep(0.55, 0.95, np.mod(swash_phase, 1.0)) * (1.0 - soak)
+    albedo = mix_color(albedo, "#dfbd88", drained * 0.25)
+    albedo = mix_color(albedo, "#f4efe2", froth * 0.75)
+    height = height + 0.05 * froth
+    # Agujeritos de cangrejo/pulga de mar con su anillo de bolitas, y conchas sueltas.
+    holes = scatter_dots(size, 11, seed + 14, radius=0.07, keep=0.3)
+    ring = scatter_dots(size, 11, seed + 14, radius=0.2, keep=0.3)["mask"] - holes["mask"]
+    shells = scatter_dots(size, 8, seed + 15, radius=0.11, keep=0.12, vary=0.3)
+    height = height - 0.2 * holes["mask"] + 0.06 * ring + 0.1 * shells["mask"]
+    albedo = mix_color(albedo, "#6b4a2b", holes["mask"] * 0.8)
+    albedo = mix_color(albedo, "#c69a62", np.clip(ring, 0, 1) * 0.35)
+    shell_col = lerp(hex_rgb("#eec3ad"), hex_rgb("#f6e2c8"), shells["id"])
+    albedo = albedo + (shell_col - albedo) * shells["mask"][..., None]
+    albedo = mix_color(albedo, "#7d5a3a", smoothstep(2.4, 3.3, grain) * 0.3)
+    albedo = macro_variation(albedo, seed + 20, warm="#f0b878", cool="#c9c2ab", amount=0.14, value=0.06)
+    rough = np.clip(0.6 - 0.2 * soak - 0.35 * puddle + 0.2 * froth + 0.08 * (fine - 0.5)
+                    + 0.3 * shells["mask"], 0.08, 1.0)
     return Material(albedo, height, rough, depth=0.006, ao_strength=0.8)
 
 
@@ -369,7 +389,9 @@ def palm_thatch(size: int, seed: int) -> Material:
     """Techo de hojas de palma en hileras solapadas (tejas vegetales); v = pendiente abajo."""
     u, v = uv_grid(size)
     rows, per_row = 7, 22
-    rv = v * rows + 0.37
+    # Las hileras no son reglas: el borde de cada una ondula (atado a mano) a lo largo de u.
+    sag = spectral_noise(size, seed + 4, 1, 3, 3.0, stretch=(1.0, 4.0))
+    rv = v * rows + 0.37 + 0.07 * sag
     row = np.floor(rv).astype(np.int64) % rows
     t = rv - np.floor(rv)
     tab = rng_table(seed, rows, per_row, 4)
@@ -380,7 +402,7 @@ def palm_thatch(size: int, seed: int) -> Material:
     x = cu - np.floor(cu)
     r = tab[row, col]
     width = 0.52 * (1.0 - 0.4 * t ** 2) * (0.85 + 0.15 * r[..., 0])
-    length = 0.88 + 0.12 * r[..., 2]
+    length = 0.85 + 0.15 * r[..., 2]
     # Punta redondeada-afilada: la hoja se estrecha en el último 20 % de su largo.
     width = width * np.sqrt(np.clip((length - t) / 0.2, 0.02, 1.0))
     across = np.abs(x - 0.5 - (r[..., 1] - 0.5) * 0.08) / width
@@ -613,18 +635,34 @@ def _plain_weave(size: int, seed: int, threads: int, amp: float = 0.28):
 
 
 def canvas(size: int, seed: int) -> Material:
-    weave, warp_top, u, v = _plain_weave(size, seed, 56)
+    """Lona de vela/toldo: tafetán legible (urdimbre algo más clara que la trama), hilos con
+    grosor irregular, zonas descoloridas por el sol y alguna mancha de sal con cerco."""
+    weave, warp_top, u, v = _plain_weave(size, seed, 44, amp=0.32)
     fuzz = unit(spectral_noise(size, seed + 5, 80, 600, 0.8))
-    height = 0.85 * weave + 0.15 * fuzz
-    albedo = ramp(0.55 * weave + 0.25 * fuzz + 0.2 * warp_top,
-                  [(0.0, "#a8987a"), (0.35, "#cbbd9a"), (0.7, "#e0d4b4"), (1.0, "#efe6cc")])
-    stains = smoothstep(0.62, 0.8, unit(spectral_noise(size, seed + 6, 1, 8, 2.2), 2.0))
-    albedo = mix_color(albedo, "#b49a6c", stains * 0.35)
-    bleach = smoothstep(0.6, 0.85, unit(spectral_noise(size, seed + 7, 1, 5, 2.5), 2.0))
-    albedo = mix_color(albedo, "#f5efdf", bleach * 0.3)
-    albedo = macro_variation(albedo, seed + 20, warm="#e8cf9a", cool="#c9ccc2", amount=0.14, value=0.06)
-    rough = 0.9 + 0.05 * fuzz
-    return Material(albedo, height, rough, depth=0.004, ao_strength=1.0)
+    height = 0.88 * weave + 0.12 * fuzz
+    # Tono por hilo: cada hilo de urdimbre/trama tiene su matiz (lo que da vida al tejido).
+    ix = np.floor(u * 44 + 0.5).astype(np.int64) % 44
+    iy = np.floor(v * 44 + 0.5).astype(np.int64) % 44
+    thread = np.where(warp_top, rng_table(seed + 8, 44)[ix], rng_table(seed + 9, 44)[iy])
+    t = 0.5 * weave + 0.15 * fuzz + 0.2 * warp_top + 0.15 * thread
+    albedo = ramp(t, [(0.0, "#b39a72"), (0.35, "#d3bf95"), (0.7, "#e7d8b3"), (1.0, "#f4eacd")])
+    albedo = mix_color(albedo, "#8f7a58", smoothstep(0.35, 0.0, weave) * 0.5)
+    # Descolorido por el sol: zonas grandes más pálidas y algo más frías.
+    bleach = smoothstep(0.5, 0.85, unit(spectral_noise(size, seed + 7, 1, 4, 2.5), 2.0))
+    albedo = mix_color(albedo, "#f3efe2", bleach * 0.28)
+    # Manchas de sal/agua: pocas, con cerco fino (no borrones).
+    wu = u + 0.04 * spectral_noise(size, seed + 10, 2, 8, 2.0)
+    wv = v + 0.04 * spectral_noise(size, seed + 11, 2, 8, 2.0)
+    st = voronoi(size, 2, 2, seed + 6, jitter=0.7, u=wu, v=wv)
+    r0 = 0.18 + 0.12 * st["id"]
+    alive = st["id2"] < 0.5
+    rim = np.exp(-((st["f1"] - r0) / 0.02) ** 2) * alive
+    fill = smoothstep(r0, r0 - 0.06, st["f1"]) * alive
+    albedo = mix_color(albedo, "#c9ae7e", fill * 0.18)
+    albedo = mix_color(albedo, "#a7885a", rim * 0.35)
+    albedo = macro_variation(albedo, seed + 20, warm="#ecd098", cool="#c7cdc4", amount=0.14, value=0.06)
+    rough = 0.9 + 0.05 * fuzz - 0.05 * rim
+    return Material(albedo, height, rough, depth=0.005, ao_strength=1.1)
 
 
 def rope(size: int, seed: int) -> Material:
@@ -658,33 +696,36 @@ def rope(size: int, seed: int) -> Material:
 
 
 def map_paper(size: int, seed: int) -> Material:
-    """Papel viejo del mapa: fibras, manchas de agua con cerco, motas de óxido (foxing)."""
+    """Papel viejo del mapa: fibras largas visibles, pulpa, ondulación (cockling), pocas
+    manchas de agua de forma irregular con cerco, motas de óxido (foxing)."""
     u, v = uv_grid(size)
-    blotch = unit(spectral_noise(size, seed + 1, 1, 10, 2.4), 2.2)
+    blotch = unit(spectral_noise(size, seed + 1, 1, 6, 2.6), 2.4)
     cockle = unit(spectral_noise(size, seed + 2, 2, 12, 2.6))
     fib_l = strokes(size, 70, seed + 3, length=0.45, width=0.05, keep=0.7)
     fib_d = strokes(size, 45, seed + 4, length=0.45, width=0.04, keep=0.5)
+    fib_long = strokes(size, 24, seed + 11, length=0.48, width=0.025, keep=0.35)
     pulp = unit(spectral_noise(size, seed + 5, 40, 500, 1.1))
-    albedo = ramp(0.6 * blotch + 0.25 * pulp + 0.15 * cockle,
-                  [(0.0, "#c8ab78"), (0.35, "#dbc596"), (0.7, "#e9dcb7"), (1.0, "#f5ecd2")])
-    albedo = mix_color(albedo, "#fbf4de", fib_l * 0.35)
+    albedo = ramp(0.45 * blotch + 0.3 * pulp + 0.25 * cockle,
+                  [(0.0, "#d0b17c"), (0.35, "#e0c998"), (0.7, "#ecdfbb"), (1.0, "#f6eed6")])
+    albedo = mix_color(albedo, "#fbf5e2", fib_l * 0.4)
     albedo = mix_color(albedo, "#a88a5a", fib_d * 0.3)
-    # Manchas de agua: relleno suave y cerco más oscuro en el borde.
-    wu = u + 0.03 * spectral_noise(size, seed + 6, 2, 10, 2.0)
-    wv = v + 0.03 * spectral_noise(size, seed + 7, 2, 10, 2.0)
-    st = voronoi(size, 3, 3, seed + 8, jitter=0.8, u=wu, v=wv)
-    r0 = 0.25 + 0.2 * st["id"]
-    alive = st["id2"] < 0.6
-    ring = np.exp(-((st["f1"] - r0) / 0.018) ** 2) * alive
-    fill = smoothstep(r0, r0 - 0.08, st["f1"]) * alive
-    albedo = mix_color(albedo, "#c29a5e", fill * 0.22)
-    albedo = mix_color(albedo, "#9b7141", ring * 0.45)
-    fox = scatter_dots(size, 24, seed + 9, radius=0.16, keep=0.22)
-    fox_soft = scatter_dots(size, 11, seed + 10, radius=0.3, keep=0.2)
-    albedo = mix_color(albedo, "#8f5a2e", fox["mask"] * 0.55)
-    albedo = mix_color(albedo, "#b88b55", fox_soft["mask"] * 0.3)
+    albedo = mix_color(albedo, "#9c7c4c", fib_long * 0.45)
+    # Manchas de agua: borde deformado por ruido (no círculos), relleno suave y cerco oscuro.
+    wu = u + 0.06 * spectral_noise(size, seed + 6, 2, 10, 2.0)
+    wv = v + 0.06 * spectral_noise(size, seed + 7, 2, 10, 2.0)
+    st = voronoi(size, 2, 2, seed + 8, jitter=0.8, u=wu, v=wv)
+    r0 = 0.2 + 0.14 * st["id"] + 0.05 * spectral_noise(size, seed + 12, 3, 14, 1.8)
+    alive = st["id2"] < 0.55
+    ring = np.exp(-((st["f1"] - r0) / 0.02) ** 2) * alive
+    fill = smoothstep(r0, r0 - 0.1, st["f1"]) * alive
+    albedo = mix_color(albedo, "#c9a66d", fill * 0.2)
+    albedo = mix_color(albedo, "#9b7141", ring * 0.4)
+    fox = scatter_dots(size, 24, seed + 9, radius=0.16, keep=0.22, vary=0.5)
+    fox_soft = scatter_dots(size, 11, seed + 10, radius=0.3, keep=0.2, vary=0.4)
+    albedo = mix_color(albedo, "#8f5a2e", fox["mask"] * 0.5)
+    albedo = mix_color(albedo, "#b88b55", fox_soft["mask"] * 0.25)
     albedo = macro_variation(albedo, seed + 20, warm="#e4b777", cool="#d8d2bb", amount=0.16, value=0.06)
-    height = 0.5 * cockle + 0.25 * pulp + 0.15 * fib_l + 0.1 * ring
+    height = 0.5 * cockle + 0.22 * pulp + 0.13 * fib_l + 0.08 * fib_long + 0.07 * ring
     rough = 0.88 - 0.1 * fill
     return Material(albedo, height, rough, depth=0.003, ao_strength=0.6)
 

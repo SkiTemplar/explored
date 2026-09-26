@@ -44,21 +44,21 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | Material | Tile | Uso y notas |
 |---|---|---|
 | `SandDry` | 2 m | Arena seca de playa/dunas: rizos eólicos asimétricos, granos, conchas y guijarros. |
-| `SandWet` | 2 m | Franja de orilla: más oscura, rizos suaves, charcos brillantes (rugosidad ~0.15), marcas de resaca. |
+| `SandWet` | 2 m | Franja de orilla: caramelo saturado (no gris), rizos lavados, arena empapada alrededor de láminas de agua brillantes (rugosidad ~0.2, tinte leve de cielo), marcas de resaca con banda escurrida detrás, agujeritos de cangrejo y alguna concha. |
 | `Grass` | 1.5 m | Césped cartoon: 7 capas de hojas afiladas que siguen un flujo suave + florecillas. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
 | `GardenSoil` | 2 m | Tierra de huerto labrada: surcos en el eje u, terrones, paja, surcos más húmedos. |
 | `Ash` | 2 m | Ceniza del Humo: dunas suaves con rizos de viento, costra cuarteada por zonas, pómez, carbones y alguna brasa. |
 | `VolcanicRock` | 3 m | Basalto en losas facetadas (low-poly), vesículas, óxido, aristas realzadas. |
 | `Limestone` | 3 m | Caliza estratificada clara con poros y líquenes naranja/salvia. |
-| `PalmThatch` | 1 m | Techo de hojas de palma en hileras solapadas; **v = pendiente abajo**. |
+| `PalmThatch` | 1 m | Techo de hojas de palma en hileras solapadas cuyo borde ondula suavemente (atado a mano, no a regla); **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
 | `WoodPlanks` | 2 m | Tablones con juntas escalonadas, nudos y clavos; **u = a lo largo de la tabla**. |
 | `StoneWall` | 2.5 m | Muro polinesio de piedra seca: basalto encajado con caras planas (low-poly), algún bloque de coral poroso, musgo en juntas y en la mitad baja de cada piedra. |
-| `Canvas` | 0.5 m | Lona de vela/toldo (tafetán) con manchas y zonas descoloridas. |
+| `Canvas` | 0.5 m | Lona de vela/toldo: tafetán de 44 hilos/tile con matiz por hilo, zonas descoloridas por el sol y pocas manchas de sal con cerco fino. |
 | `Rope` | 0.25 m | Cuerda de 3 cabos redondos con hilos en torsión contraria (arcos en «S»): **u = alrededor, v = a lo largo** (UV de cilindro). |
-| `MapPaper` | 0.6 m | Papel del mapa: fibras, manchas de agua con cerco, foxing. |
+| `MapPaper` | 0.6 m | Papel del mapa: fibras cortas y largas, pulpa, ondulación, pocas manchas de agua de borde irregular con cerco, foxing de tamaño variable. |
 | `Bark` | 1.5 m | Corteza de placas alargadas (4:1) con fisuras en V, grietas finas, crestas curtidas y liquen; **v = a lo largo**. |
 | `WaterWaves` | 6 m | Solo `_N`: oleaje fino con dirección de viento y crestas algo afiladas. |
 | `SeaFoam` | 6 m | Solo `_M`: R encaje de espuma, G burbujas, B masa suave, A estelas. |
@@ -137,7 +137,9 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    inclinado por celda para caras planas tipo low-poly. Define todo en coordenadas de tile y
    no pongas juntas estructurales justo en el borde (usa una fase fraccionaria).
 2. Regístralo en `MATERIALS` con su tamaño de tile y uso.
-3. `pytest` comprueba tileado, rangos, determinismo y que la variación macro del albedo
+3. `pytest` comprueba tileado, rangos, determinismo, el contrato de nombres con
+   `build_materials.py` (`tests/test_contract.py`: toda `T_*` que cargue un material debe
+   salir del generador) y que la variación macro del albedo
    esté en rango (`tests/test_macro.py`: ni plano a lo lejos ni manchas que dominen el
    tile); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
    darlo por bueno.
