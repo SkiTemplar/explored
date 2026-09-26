@@ -12,6 +12,7 @@
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
 
+#include "Building/BuildPreviewComponent.h"
 #include "Carry/CarryComponent.h"
 #include "Cartography/CartographyComponent.h"
 #include "Crafting/CraftingLibrary.h"
@@ -94,6 +95,7 @@ AExploredCharacter::AExploredCharacter()
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
 	Cartography = CreateDefaultSubobject<UCartographyComponent>(TEXT("Cartography"));
+	BuildPreview = CreateDefaultSubobject<UBuildPreviewComponent>(TEXT("BuildPreview"));
 
 	bUseControllerRotationYaw = true;
 
@@ -294,6 +296,12 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
 	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
 	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
+
+	// Modo construcción: contexto propio (B, R, Z/X y clic izquierdo) con prioridad 1.
+	if (BuildPreview)
+	{
+		BuildPreview->SetupInput(Input);
+	}
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -395,6 +403,11 @@ void AExploredCharacter::UseHand(EHand Hand)
 
 void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 {
+	// En modo construcción el clic izquierdo coloca la pieza (UBuildPreviewComponent).
+	if (BuildPreview && BuildPreview->IsBuildModeActive())
+	{
+		return;
+	}
 	// «Clic izquierdo = usar la mano derecha» (encargo, punto 5).
 	UseHand(EHand::Right);
 }

@@ -449,6 +449,9 @@ class TMap
 public:
 	using ElementType = TPair<K, V>;
 
+	TMap() = default;
+	/** Como TMap(std::initializer_list<TPairInitializer<...>>) de Unreal: {{Clave, Valor}, ...}. */
+	TMap(std::initializer_list<TPair<K, V>> Init) { for (const TPair<K, V>& P : Init) { Add(P.Key, P.Value); } }
 	int32 Num() const { return Pairs.Num(); }
 	bool IsEmpty() const { return Pairs.IsEmpty(); }
 	V& Add(const K& Key, const V& Value = V())
@@ -582,6 +585,12 @@ using TUniqueFunction = std::function<T>;
 // Cadenas
 // ---------------------------------------------------------------------------
 
+/** Como en Unreal (Misc/CString.h): mayúsculas en comparaciones de FString. */
+namespace ESearchCase
+{
+	enum Type { CaseSensitive, IgnoreCase };
+}
+
 class FString
 {
 public:
@@ -627,6 +636,7 @@ public:
 	bool operator!=(const FString& O) const { return !(*this == O); }
 	bool operator<(const FString& O) const { return Lower(Str) < Lower(O.Str); }
 	bool Equals(const FString& O, bool bCaseSensitive = true) const { return bCaseSensitive ? Str == O.Str : Lower(Str) == Lower(O.Str); }
+	bool Equals(const FString& O, ESearchCase::Type Case) const { return Equals(O, Case == ESearchCase::CaseSensitive); }
 	int32 Compare(const FString& O) const { return Str.compare(O.Str); }
 	bool StartsWith(const FString& P) const { return Str.rfind(P.Str, 0) == 0; }
 	bool EndsWith(const FString& P) const { return Str.size() >= P.Str.size() && Str.compare(Str.size() - P.Str.size(), P.Str.size(), P.Str) == 0; }

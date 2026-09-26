@@ -156,6 +156,16 @@ def test_detecta_ciclo_de_piezas(ds: DataSet) -> None:
     assert any_error(r.errors, "ciclo")
 
 
+def test_detecta_encaje_desconocido(ds: DataSet) -> None:
+    piece(ds, "techo_bambu")["socket"] = "tejado"
+    assert any_error(errors_of(ds), "techo_bambu", "socket")
+
+
+def test_detecta_sin_punto_de_reaparicion(ds: DataSet) -> None:
+    piece(ds, "fogata").pop("respawnPoint")
+    assert any_error(errors_of(ds), "reaparición")
+
+
 def test_detecta_tier_que_no_mejora(ds: DataSet) -> None:
     for p in ds.building["pieces"]:
         if p["tier"] == "piedra":
