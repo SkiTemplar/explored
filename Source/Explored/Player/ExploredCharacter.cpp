@@ -27,6 +27,7 @@
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/SettingsLogic.h"
+#include "Survival/BodySignalsComponent.h"
 
 // Espacio de nombres con nombre (no anónimo): MakeAction/MapKey son nombres
 // demasiado genéricos para el Unity build.
@@ -70,8 +71,9 @@ using namespace ExploredCharacterInput;
 AExploredCharacter::AExploredCharacter()
 {
 	// Excepción deliberada: el balanceo de las manos (punto 6 del encargo de
-	// M2) necesita un seno por fotograma. Es la única razón para tener tick
-	// en el personaje; todo lo demás sigue dirigido por eventos y delegados.
+	// M2) y su temblor (UBodySignalsComponent) necesitan un valor por
+	// fotograma. Es la única razón para tener tick en el personaje; todo lo
+	// demás sigue dirigido por eventos y delegados.
 	PrimaryActorTick.bCanEverTick = true;
 	// 30 Hz basta para el vaivén de las manos; al nadar (la cámara sigue a la
 	// ola) o con balanceo de cámara en marcha se pasa a cada fotograma (ver
@@ -111,6 +113,7 @@ AExploredCharacter::AExploredCharacter()
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
 	Cartography = CreateDefaultSubobject<UCartographyComponent>(TEXT("Cartography"));
 	BuildPreview = CreateDefaultSubobject<UBuildPreviewComponent>(TEXT("BuildPreview"));
+	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 
 	bUseControllerRotationYaw = true;
 
@@ -268,6 +271,10 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 	const UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get();
 	// «Reducir movimiento» (accesibilidad) anula el balanceo aunque esté activado.
 	const bool bCameraMotion = !Settings || (Settings->GetCameraBobEnabled() && !Settings->GetReduceMotion());
+	// Señales del cuerpo: temblor de manos (frío, hambre, fiebre, sueño) y tiritona de cámara.
+	const FVector TremorL = Body ? Body->GetHandTremorOffset(false) : FVector::ZeroVector;
+	const FVector TremorR = Body ? Body->GetHandTremorOffset(true) : FVector::ZeroVector;
+	const FRotator Shiver = Body ? Body->GetShiverRotation() : FRotator::ZeroRotator;
 
 	const EWaterState WaterState = Swim ? Swim->GetWaterState() : EWaterState::OnLand;
 	if (WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving)
@@ -292,11 +299,11 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 		const float SwingR = FMath::Sin(Phase + UE_PI) * SwimStrokeAmount;
 		if (HandMeshLeft)
 		{
-			HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(SwingL * 0.6f, 0.0f, SwingL));
+			HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(SwingL * 0.6f, 0.0f, SwingL) + TremorL);
 		}
 		if (HandMeshRight)
 		{
-			HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(SwingR * 0.6f, 0.0f, SwingR));
+			HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(SwingR * 0.6f, 0.0f, SwingR) + TremorR);
 		}
 
 		// La cámara deja de seguir solo el control del jugador: se le suma el
@@ -305,10 +312,20 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 		Camera->bUsePawnControlRotation = false;
 		const FRotator ControlRot = GetControlRotation();
 		const FRotator Tilt = bCameraMotion ? Swim->GetWaveTilt() : FRotator::ZeroRotator;
-		Camera->SetWorldRotation(FRotator(ControlRot.Pitch + Tilt.Pitch, ControlRot.Yaw, Tilt.Roll));
+		// Tiritona (UBodySignalsComponent) si el agua enfría.
+		Camera->SetWorldRotation(FRotator(ControlRot.Pitch + Tilt.Pitch, ControlRot.Yaw, Tilt.Roll) + Shiver);
 		return;
 	}
-	Camera->bUsePawnControlRotation = true;
+	// Tiritona (GDD §8.3): mismo mecanismo que el balanceo de la ola, sin tocar la rotación de control.
+	if (!Shiver.IsNearlyZero())
+	{
+		Camera->bUsePawnControlRotation = false;
+		Camera->SetWorldRotation(GetControlRotation() + Shiver);
+	}
+	else
+	{
+		Camera->bUsePawnControlRotation = true;
+	}
 
 	const float SpeedRatio = FMath::Clamp(GetVelocity().Size2D() / FMath::Max(WalkSpeed, 1.0f), 0.0f, 1.0f);
 	const bool bMoving = SpeedRatio > KINDA_SMALL_NUMBER;
@@ -319,11 +336,11 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 	const float Offset = FMath::Sin(HandSwayPhase) * HandSwayAmount * SpeedRatio;
 	if (HandMeshLeft)
 	{
-		HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(0.0f, 0.0f, Offset));
+		HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(0.0f, 0.0f, Offset) + TremorL);
 	}
 	if (HandMeshRight)
 	{
-		HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(0.0f, 0.0f, -Offset));
+		HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(0.0f, 0.0f, -Offset) + TremorR);
 	}
 
 	// Balanceo de cámara: un rebote por paso (el doble de la frecuencia del vaivén de las manos).
@@ -398,6 +415,8 @@ void AExploredCharacter::BuildInputAssets()
 	// Bucear (en el agua) o agacharse (en tierra): mantener para bajar; al soltar,
 	// el pulmón empuja de vuelta a la superficie.
 	DiveAction = MakeAction(this, TEXT("IA_Dive"), EInputActionValueType::Boolean);
+	// Reloj de pulsera: mantener para levantar la muñeca y ver la hora (GDD §8.3).
+	WatchAction = MakeAction(this, TEXT("IA_Watch"), EInputActionValueType::Boolean);
 
 #if !UE_BUILD_SHIPPING
 	// M12: E/Q de subir y bajar en vuelo viven en un contexto aparte que solo se
@@ -468,6 +487,10 @@ void AExploredCharacter::RebuildKeyMappings()
 	MapKey(MappingContext, CombineAction, EKeys::Gamepad_FaceButton_Top);
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Gamepad_Special_Left);
 
+	// Reloj de pulsera (fijo, fuera de la tabla de remapeo).
+	MapKey(MappingContext, WatchAction, EKeys::T);
+	MapKey(MappingContext, WatchAction, EKeys::Gamepad_DPad_Up);
+
 #if !UE_BUILD_SHIPPING
 	MapKey(MappingContext, FlyAction, EKeys::F8);
 #endif
@@ -522,6 +545,8 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		BuildPreview->SetupInput(Input);
 	}
+	Input->BindAction(WatchAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleWatchStarted);
+	Input->BindAction(WatchAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleWatchCompleted);
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -758,5 +783,21 @@ void AExploredCharacter::HandleDiveCompleted(const FInputActionValue&)
 	if (bHold && GetCharacterMovement()->bWantsToCrouch)
 	{
 		UnCrouch();
+	}
+}
+
+void AExploredCharacter::HandleWatchStarted(const FInputActionValue&)
+{
+	if (Body)
+	{
+		Body->SetWristWatchRaised(true);
+	}
+}
+
+void AExploredCharacter::HandleWatchCompleted(const FInputActionValue&)
+{
+	if (Body)
+	{
+		Body->SetWristWatchRaised(false);
 	}
 }

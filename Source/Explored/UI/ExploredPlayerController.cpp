@@ -11,7 +11,9 @@
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/Pawn.h"
 #include "Misc/CommandLine.h"
+#include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/ExploredMenuCamera.h"
@@ -373,9 +375,22 @@ void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
 {
 	// El personaje ya está generado y posee su PlayerStart desde el flujo
 	// normal de AGameModeBase; aquí solo se retira el menú y se entra a
-	// jugar. El modo (Explorador/Superviviente/Náufrago) queda anotado para
-	// que el equipo de Survival lo lea (GDD §7); de momento solo se registra.
+	// jugar. El modo (Explorador/Superviviente/Náufrago) se pasa al cuerpo
+	// del jugador (UBodySignalsComponent, GDD §7 y §11).
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Nueva partida, modo %d"), static_cast<int32>(Mode));
+	if (const APawn* PlayerPawn = GetPawn())
+	{
+		if (UBodySignalsComponent* Body = PlayerPawn->FindComponentByClass<UBodySignalsComponent>())
+		{
+			switch (Mode)
+			{
+			case EExploredGameplayMode::Explorer: Body->SetMode(ESurvivalMode::Explorer); break;
+			case EExploredGameplayMode::Castaway: Body->SetMode(ESurvivalMode::Castaway); break;
+			default: Body->SetMode(ESurvivalMode::Survivor); break;
+			}
+		}
+	}
+
 	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
 	{
 		// Vacía las estadísticas de partida y fija el modo para logros como «Náufrago de verdad».

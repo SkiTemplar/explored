@@ -8,6 +8,7 @@
 #include "ExploredCharacter.generated.h"
 
 class UBuildPreviewComponent;
+class UBodySignalsComponent;
 class UCameraComponent;
 class UCarryComponent;
 class UCartographyComponent;
@@ -58,6 +59,8 @@ public:
 	UCartographyComponent* GetCartographyComponent() const { return Cartography; }
 	UFUNCTION(BlueprintPure, Category = "Explored|Construcción")
 	UBuildPreviewComponent* GetBuildPreviewComponent() const { return BuildPreview; }
+	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
+	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -107,6 +110,8 @@ private:
 	void HandleToggleBackpack(const FInputActionValue& Value);
 	void HandleDiveStarted(const FInputActionValue& Value);
 	void HandleDiveCompleted(const FInputActionValue& Value);
+	void HandleWatchStarted(const FInputActionValue& Value);
+	void HandleWatchCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 	/** Andar o correr, por el multiplicador de carga de UCarryComponent. */
@@ -140,6 +145,9 @@ private:
 	/** Modo construcción: fantasma, giro y confirmación (GDD §8.6). */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Construcción")
 	TObjectPtr<UBuildPreviewComponent> BuildPreview;
+	/** Cuerpo como HUD: supervivencia, señales corporales y reloj de pulsera (GDD §8.3). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
+	TObjectPtr<UBodySignalsComponent> Body;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -190,6 +198,9 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> DiveAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> WatchAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;

@@ -18,8 +18,8 @@
       "recoversWith": ["pescado", "marisco"], "atZero": "Menos energía máxima si la dieta media baja de 25" },
     { "id": "energia_dieta", "nameEs": "Hidratos", "state": "Carbs", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",
       "recoversWith": ["tuberculo", "fruta"], "atZero": "Menos energía máxima si la dieta media baja de 25" },
-    { "id": "vitamina_c", "nameEs": "Vitamina C", "state": "Vitamins", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",
-      "recoversWith": ["citrico", "fruta"], "atZero": "Escorbuto (pendiente en C++): encías, visión, sangrado leve" },
+    { "id": "vitamina_c", "nameEs": "Vitamina C", "state": "Vitamins", "initial": 50, "hoursToEmpty": 336, "cppConstant": "VitaminHours",
+      "recoversWith": ["citrico", "fruta"], "atZero": "Escorbuto por etapas (body.scurvy): encías, visión, sangrado leve" },
     { "id": "animo", "nameEs": "Ánimo", "state": "Morale", "initial": 60, "hoursToEmpty": null, "cppConstant": null,
       "recoversWith": [], "atZero": "Menos eficiencia de trabajo; nunca mata" },
     { "id": "salud", "nameEs": "Salud", "state": "Health", "initial": 100, "hoursToEmpty": null, "cppConstant": null,
@@ -28,5 +28,61 @@
   "sleepRecoveryHours": { "value": 6, "cppConstant": "SleepRecoveryHours" },
   "bodyTemperature": { "initial": 37, "hypothermiaBelow": 35, "heatstrokeAbove": 39.5, "unit": "°C" },
   "modeScale": { "Explorer": 0.6, "Survivor": 1.0, "Castaway": 1.35 },
-  "activityMetabolism": { "Resting": 0.8, "Walking": 1.0, "Sprinting": 1.8, "Swimming": 1.7, "Working": 1.5, "Sleeping": 0.5 }
+  "customNeedSpeed": { "min": 0.25, "max": 3.0, "note": "Modo Personalizado (GDD §11): multiplica modeScale de Superviviente" },
+  "activityMetabolism": { "Resting": 0.8, "Walking": 1.0, "Sprinting": 1.8, "Swimming": 1.7, "Working": 1.5, "Sleeping": 0.5 },
+  "body": {
+    "source": "Espejo de Source/Explored/Survival/BodyModel.cpp (namespace BodyModelDetail); Tools/DataCheck compara cada cppConstant",
+    "scurvy": {
+      "vitaminThreshold": { "value": 5, "cppConstant": "ScurvyVitaminThreshold", "note": "vitamina C por debajo de la cual avanza" },
+      "recoveryVitamins": { "value": 15, "cppConstant": "ScurvyRecoveryVitamins", "note": "vitamina C por encima de la cual retrocede" },
+      "onsetHours": { "value": 240, "cppConstant": "ScurvyOnsetHours", "note": "horas sin vitamina C de 0 a escorbuto pleno" },
+      "recoveryHours": { "value": 48, "cppConstant": "ScurvyRecoveryHours", "note": "horas comiendo fruta de pleno a curado" },
+      "gumsAt": { "value": 0.15, "cppConstant": "ScurvyGumsAt" },
+      "visionAt": { "value": 0.45, "cppConstant": "ScurvyVisionAt" },
+      "bleedingAt": { "value": 0.75, "cppConstant": "ScurvyBleedingAt" },
+      "bleedDamagePerHour": { "value": 0.5, "cppConstant": "ScurvyBleedDamagePerHour" }
+    },
+    "wounds": {
+      "bleedDamagePerHour": { "value": 10, "cppConstant": "WoundBleedDamagePerHour", "note": "por corte sangrando al máximo" },
+      "clotPerHour": { "value": 0.25, "cppConstant": "WoundClotPerHour", "note": "coagulación de un corte superficial" },
+      "infectionHours": { "value": 12, "cppConstant": "WoundInfectionHours", "note": "horas sin vendar ni limpiar hasta infectarse (→ fiebre)" },
+      "healHours": { "value": 36, "cppConstant": "WoundHealHours", "note": "cicatrización vendado, × (1 + profundidad)" },
+      "bandageMaxDepth": { "value": 0.8, "cppConstant": "BandageMaxDepth", "note": "más profundo necesita sutura" }
+    },
+    "falls": {
+      "safeHeightM": { "value": 3, "cppConstant": "SafeFallHeight" },
+      "damageScale": { "value": 4, "cppConstant": "FallDamageScale", "note": "daño = escala × (altura − segura)^exponente × dureza" },
+      "damageExponent": { "value": 1.6, "cppConstant": "FallDamageExponent" },
+      "sprainHeightM": { "value": 4.5, "cppConstant": "SprainFallHeight" },
+      "sprainHours": { "value": 36, "cppConstant": "SprainHours" },
+      "waterSafeHeightM": { "value": 12, "cppConstant": "WaterSafeFallHeight" }
+    },
+    "stings": {
+      "jellyfishHours": { "value": 6, "cppConstant": "JellyfishStingHours", "curedBy": "vinagre" },
+      "jellyfishDamagePerHour": { "value": 1, "cppConstant": "JellyfishDamagePerHour" },
+      "rayHours": { "value": 12, "cppConstant": "RayStingHours", "curedBy": "antídoto de corteza" },
+      "rayDamagePerHour": { "value": 3, "cppConstant": "RayDamagePerHour" },
+      "rayWoundDepth": { "value": 0.35, "cppConstant": "RayWoundDepth" }
+    },
+    "sun": {
+      "burnDoseHours": { "value": 2, "cppConstant": "SunBurnDoseHours", "note": "horas a pleno sol sin sombrero hasta quemarse" },
+      "hatFactor": { "value": 0.3, "cppConstant": "HatSunFactor" },
+      "doseDecayPerHour": { "value": 0.5, "cppConstant": "SunDoseDecayPerHour" }
+    },
+    "diet": {
+      "monotonyBalanceBelow": { "value": 0.5, "cppConstant": "MonotonyBalanceBelow", "note": "equilibrio de dieta por debajo del cual cuenta como monótona" },
+      "monotonyFullHours": { "value": 72, "cppConstant": "MonotonyFullHours", "note": "horas de dieta monótona hasta el efecto pleno (leve)" }
+    },
+    "hazards": {
+      "unboiledWater": { "value": 0.35, "cppConstant": "UnboiledWaterToxicity" },
+      "swampWater": { "value": 0.85, "cppConstant": "SwampWaterToxicity" },
+      "toxicMushroom": { "value": 0.9, "cppConstant": "ToxicMushroomToxicity" },
+      "hallucinogenicMushroom": { "value": 0.15, "cppConstant": "HallucinogenicMushroomToxicity" },
+      "hallucinogenHours": { "value": 4, "cppConstant": "HallucinogenHours" },
+      "rawCassava": { "value": 0.8, "cppConstant": "RawCassavaToxicity" },
+      "rawCashew": { "value": 0.5, "cppConstant": "RawCashewToxicity" },
+      "seaWaterThirst": { "value": 15, "cppConstant": "SeaWaterThirst", "note": "sed que quita beber agua de mar" }
+    },
+    "moraleEvents": { "Discovery": 8, "MapProgress": 5, "IslandMapped": 15, "MusicPlayed": 4, "HotMeal": 3, "SleptInBed": 5, "Injured": -6, "StormHit": -4 }
+  }
 }

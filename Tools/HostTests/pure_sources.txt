@@ -23,6 +23,8 @@ Save/SaveSlots.cpp
 Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
+Survival/BodyModel.cpp
+Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
 UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
