@@ -15,7 +15,7 @@ uv run pytest               # tests (datos reales + regresiones sintéticas)
 Qué comprueba:
 
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
-  `plants.json`, `building_pieces.json`, `survival_needs.json` y
+  `plants.json`, `building_pieces.json`, `survival_needs.json`, `boats.json` y
   `meshes_pendientes.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -26,5 +26,9 @@ Qué comprueba:
   `Tools/Blender/props`; todo marcador o `null` debe estar en
   `meshes_pendientes.json`, y nada obsoleto puede quedarse allí.
 - **Espejo del C++**: `survival_needs.json` contra las constantes de
-  `Source/Explored/Survival/SurvivalModel.{h,cpp}`.
+  `Source/Explored/Survival/SurvivalModel.{h,cpp}`; `boats.json` contra `EBoatType` y
+  `FBoatDefinition::MeshName` (`Boats/`) y contra `EShipPart` (`Narrative/ExploredProgress.h`).
+- **Astillero** (`boats.json`): progresión balsa → canoa → balancín → «Limón», estación
+  existente, ingredientes y herramientas obtenibles, y el «Limón» con las cuatro piezas
+  del Albatros y material rescatado (GDD §4.3, §8.10).
 - **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.

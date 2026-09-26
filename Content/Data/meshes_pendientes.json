@@ -87,6 +87,7 @@
   ],
   "buildingPieces": [
     "arriate_limonero",
+    "astillero",
     "bancal",
     "chimenea",
     "cimiento_piedra",
@@ -133,5 +134,8 @@
     "taro.brote",
     "taro.hojas_grandes",
     "taro.listo"
+  ],
+  "boats": [
+    "barco_limon"
   ]
 }

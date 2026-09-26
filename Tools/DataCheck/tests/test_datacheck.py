@@ -217,3 +217,51 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
+
+
+# --------------------------------------------------------------------------- embarcaciones
+
+
+def boat(ds: DataSet, bid: str) -> dict:
+    return next(b for b in ds.boats if b["id"] == bid)
+
+
+def test_limon_exige_piezas_del_albatros(real: DataSet) -> None:
+    limon = boat(real, "barco_limon")
+    assert set(limon["requiresShipParts"]) == {"Fuselage", "Wing", "Tail", "Engine"}
+    assert {"chapa_fuselaje", "tubo_aluminio"} <= {c["item"] for c in limon["cost"]}
+
+
+def test_detecta_ingrediente_de_barco_inexistente(ds: DataSet) -> None:
+    boat(ds, "canoa")["cost"].append({"item": "tronco_de_teca", "count": 1})
+    assert any_error(errors_of(ds), "canoa", "tronco_de_teca")
+
+
+def test_detecta_limon_sin_piezas_del_albatros(ds: DataSet) -> None:
+    boat(ds, "barco_limon")["requiresShipParts"] = ["Fuselage"]
+    assert any_error(errors_of(ds), "cuatro piezas del Albatros")
+
+
+def test_detecta_pieza_del_albatros_inventada(ds: DataSet) -> None:
+    boat(ds, "barco_limon")["requiresShipParts"].append("Helice")
+    assert any_error(errors_of(ds), "Helice")
+
+
+def test_detecta_progresion_al_reves(ds: DataSet) -> None:
+    boat(ds, "canoa")["requiresBoat"] = "canoa_balancin"
+    assert any_error(errors_of(ds), "no va antes en la progresión")
+
+
+def test_detecta_malla_distinta_del_cpp(ds: DataSet) -> None:
+    boat(ds, "balsa")["mesh"] = "SM_Canoe"
+    assert any_error(errors_of(ds), "balsa", "FBoatDefinition::MeshName")
+
+
+def test_detecta_tipo_de_barco_desconocido(ds: DataSet) -> None:
+    boat(ds, "canoa")["type"] = "Catamaran"
+    assert any_error(errors_of(ds), "EBoatType")
+
+
+def test_detecta_astillero_inexistente(ds: DataSet) -> None:
+    boat(ds, "balsa")["station"] = "dique_seco"
+    assert any_error(errors_of(ds), "dique_seco")
