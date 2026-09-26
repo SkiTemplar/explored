@@ -29,6 +29,20 @@ def recreate_material(name: str) -> unreal.Material:
     return material
 
 
+def recreate_material_fresh(name: str) -> unreal.Material:
+    """Borra el asset y lo crea desde cero. delete_all_material_expressions no limpia el nodo
+    de salida especial de un material (p. ej. SingleLayerWaterMaterialOutput): reutilizar ese
+    material deja dos salidas de agua y el shader no compila («solo puede haber un nodo Single
+    Layer Water»), cayendo al Default Material sin avisar más que en el log de shaders."""
+    full = f"{MATERIALS_PATH}/{name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(full):
+        unreal.EditorAssetLibrary.delete_asset(full)
+    material = ASSET_TOOLS.create_asset(name, MATERIALS_PATH, unreal.Material, unreal.MaterialFactoryNew())
+    if material is None:
+        raise RuntimeError(f"No se pudo crear {full}")
+    return material
+
+
 def expr(material, cls, x, y):
     return MEL.create_material_expression(material, cls, x, y)
 
@@ -267,7 +281,15 @@ return float2(foam, glint * (0.5 + 0.5 * SeaState));
 
 
 def build_ocean():
-    m = recreate_material("M_Ocean")
+    # Single Layer Water compila como material opaco: SceneDepth/PixelDepth solo se pueden leer
+    # en materiales translúcidos o de postproceso («Only transparent or postprocess materials
+    # can read from scene depth»), así que la profundidad real de agua no vale aquí. Además,
+    # reutilizar el material (recreate_material) no borra el nodo de salida de Single Layer
+    # Water: con uno viejo y otro nuevo el shader no compila («solo puede haber un nodo Single
+    # Layer Water») y cae al Default Material sin más aviso que una línea en el log de shaders
+    # — exactamente lo que pasó aquí. Se recrea desde cero y la profundidad se aproxima con
+    # DistanceToNearestSurface (campo de distancia del terreno, válido en material opaco).
+    m = recreate_material_fresh("M_Ocean")
     m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_SINGLE_LAYER_WATER)
     m.set_editor_property("tangent_space_normal", False)
     m.set_editor_property("two_sided", False)
@@ -333,13 +355,11 @@ def build_ocean():
     wire_gerstner(crest)
     connect(sea_state, "", crest, "SeaState")
 
-    # Profundidad real del agua: escena opaca (fondo) menos la propia superficie del agua.
+    # Aproximación de la profundidad de agua: distancia (cm) al campo de distancia del terreno
+    # más cercano desde la posición de la propia superficie. Cerca de la orilla esa distancia
+    # es pequeña (el fondo está justo debajo); mar adentro crece con la profundidad real.
     foam_tex = texture_object(m, "/Game/Generated/Textures/T_WaterFoam", -1600, 1450)
-    scene_depth = expr(m, unreal.MaterialExpressionSceneDepth, -1000, 1450)
-    pixel_depth = expr(m, unreal.MaterialExpressionPixelDepth, -1000, 1550)
-    water_depth = expr(m, unreal.MaterialExpressionSubtract, -800, 1500)
-    connect(scene_depth, "", water_depth, "A")
-    connect(pixel_depth, "", water_depth, "B")
+    water_depth = expr(m, unreal.MaterialExpressionDistanceToNearestSurface, -1000, 1450)
 
     foam_glint = custom(m, -600, 1450, OCEAN_FOAM_HLSL, ["D", "P", "T", "SeaState", "Foam"],
                         unreal.CustomMaterialOutputType.CMOT_FLOAT2, "ShoreFoam")
