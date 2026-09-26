@@ -13,6 +13,7 @@
 #include "InputModifiers.h"
 
 #include "Carry/CarryComponent.h"
+#include "Cartography/CartographyComponent.h"
 #include "Crafting/CraftingLibrary.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
@@ -92,6 +93,7 @@ AExploredCharacter::AExploredCharacter()
 	Carry = CreateDefaultSubobject<UCarryComponent>(TEXT("Carry"));
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
+	Cartography = CreateDefaultSubobject<UCartographyComponent>(TEXT("Cartography"));
 
 	bUseControllerRotationYaw = true;
 

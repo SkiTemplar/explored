@@ -9,6 +9,7 @@
 
 class UCameraComponent;
 class UCarryComponent;
+class UCartographyComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
@@ -43,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
 	USwimComponent* GetSwimComponent() const { return Swim; }
+
+	UFUNCTION(BlueprintPure, Category = "Explored|Mapa")
+	UCartographyComponent* GetCartographyComponent() const { return Cartography; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -96,6 +100,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
 	TObjectPtr<USwimComponent> Swim;
+
+	/** Mapa dibujado a mano (GDD §5). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Mapa")
+	TObjectPtr<UCartographyComponent> Cartography;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
