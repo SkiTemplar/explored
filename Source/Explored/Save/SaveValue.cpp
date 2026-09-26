@@ -412,7 +412,7 @@ namespace SaveValueDetail
 		{
 			if (Error.IsEmpty())
 			{
-				Error = FString::Printf(TEXT("%s (posición %d)"), Message, Pos);
+				Error = FString::Printf(TEXT("%s (posición %d)"), Message, Pos); // loc: ignorar (diagnóstico interno del lector)
 			}
 			return false;
 		}
@@ -438,7 +438,7 @@ namespace SaveValueDetail
 			{
 				if (Pos >= Len || CodeOf(Data[Pos]) != static_cast<uint32>(static_cast<uint8>(*P)))
 				{
-					return Fail(TEXT("literal no válido"));
+					return Fail(TEXT("literal no válido")); // loc: ignorar (diagnóstico interno del lector)
 				}
 				++Pos;
 			}

@@ -2,16 +2,66 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 361,
-		"cpp": 114,
-		"datos": 247,
+		"total": 488,
+		"cpp": 184,
+		"datos": 304,
 		"pendientes": 3,
 		"sin_en": 0,
 		"literales": 2,
-		"invariantes": 8,
-		"revisar": 1
+		"invariantes": 9,
+		"revisar": 65
 	},
 	"entries": [
+		{
+			"namespace": "Explored",
+			"key": "Boat_Canoe",
+			"es": "la canoa",
+			"en": "the canoe",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:77"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Boat_Limon",
+			"es": "el «Limón»",
+			"en": "the «Limón»",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Boat_Outrigger",
+			"es": "la canoa con balancín",
+			"en": "the outrigger canoe",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:78"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Boat_Raft",
+			"es": "la balsa",
+			"en": "the raft",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:76"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_AlreadyThere",
+			"es": "Ya está ahí.",
+			"en": "It's already there.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:110"
+			]
+		},
 		{
 			"namespace": "Explored",
 			"key": "Carry_BackpackTooBig",
@@ -19,7 +69,7 @@
 			"en": "It won't fit in the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:211"
+				"Source/Explored/Carry/CarryComponent.cpp:150"
 			]
 		},
 		{
@@ -29,7 +79,7 @@
 			"en": "Too heavy for the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:206"
+				"Source/Explored/Carry/CarryComponent.cpp:144"
 			]
 		},
 		{
@@ -39,7 +89,7 @@
 			"en": "No free loops left on your belt.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:178"
+				"Source/Explored/Carry/CarryComponent.cpp:138"
 			]
 		},
 		{
@@ -49,7 +99,37 @@
 			"en": "Your belt only holds tools and containers.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:173"
+				"Source/Explored/Carry/CarryComponent.cpp:124"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_ContainerFull",
+			"es": "No queda sitio.",
+			"en": "No room left.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:140"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_ContainerNotEmpty",
+			"es": "Vacíalo antes.",
+			"en": "Empty it first.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:158"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_Generic",
+			"es": "No se puede.",
+			"en": "You can't do that.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:161"
 			]
 		},
 		{
@@ -59,8 +139,10 @@
 			"en": "That hand is empty.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:115",
-				"Source/Explored/Carry/CarryComponent.cpp:137"
+				"Source/Explored/Carry/CarryComponent.cpp:272",
+				"Source/Explored/Carry/CarryComponent.cpp:301",
+				"Source/Explored/Carry/CarryComponent.cpp:423",
+				"Source/Explored/Carry/CarryComponent.cpp:584"
 			]
 		},
 		{
@@ -70,7 +152,7 @@
 			"en": "That hand is already full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:231"
+				"Source/Explored/Carry/CarryComponent.cpp:111"
 			]
 		},
 		{
@@ -80,7 +162,7 @@
 			"en": "Both your hands are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:52"
+				"Source/Explored/Carry/CarryComponent.cpp:113"
 			]
 		},
 		{
@@ -90,7 +172,8 @@
 			"en": "You can't pick that up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:66"
+				"Source/Explored/Carry/CarryComponent.cpp:108",
+				"Source/Explored/Carry/CarryComponent.cpp:223"
 			]
 		},
 		{
@@ -100,7 +183,9 @@
 			"en": "Nothing there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:244"
+				"Source/Explored/Carry/CarryComponent.cpp:109",
+				"Source/Explored/Carry/CarryComponent.cpp:322",
+				"Source/Explored/Carry/CarryComponent.cpp:609"
 			]
 		},
 		{
@@ -110,7 +195,7 @@
 			"en": "You need both hands free for this.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:29"
+				"Source/Explored/Carry/CarryComponent.cpp:112"
 			]
 		},
 		{
@@ -120,17 +205,58 @@
 			"en": "You have no backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:188"
+				"Source/Explored/Carry/CarryComponent.cpp:153"
 			]
 		},
 		{
 			"namespace": "Explored",
-			"key": "Carry_NoRegistry",
-			"es": "El registro de objetos no está disponible.",
-			"en": "The item registry isn't available.",
+			"key": "Carry_NoPouch",
+			"es": "No tienes dónde guardarlo seco.",
+			"en": "You have nowhere to keep it dry.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:193"
+				"Source/Explored/Carry/CarryComponent.cpp:154"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NoRoom",
+			"es": "No entra.",
+			"en": "It won't fit.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:152"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NoSledge",
+			"es": "No llevas angarillas.",
+			"en": "You have no travois.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:155",
+				"Source/Explored/Carry/CarryComponent.cpp:500"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NotALiquidContainer",
+			"es": "Ahí no se lleva agua.",
+			"en": "That can't hold water.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:160"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NotEquippable",
+			"es": "Eso no se lleva puesto.",
+			"en": "You can't wear that.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:157"
 			]
 		},
 		{
@@ -140,7 +266,17 @@
 			"en": "There's nothing here to pick up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:60"
+				"Source/Explored/Carry/CarryComponent.cpp:217"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_OverCarryLimit",
+			"es": "No puedes con más peso.",
+			"en": "You can't carry any more weight.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:159"
 			]
 		},
 		{
@@ -150,7 +286,7 @@
 			"en": "Only small things fit in your pockets.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:150"
+				"Source/Explored/Carry/CarryComponent.cpp:118"
 			]
 		},
 		{
@@ -160,7 +296,57 @@
 			"en": "Your pockets are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:155"
+				"Source/Explored/Carry/CarryComponent.cpp:134"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_SameItem",
+			"es": "Es un solo objeto: no se combina consigo mismo.",
+			"en": "It's a single object: it can't combine with itself.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:114"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_SledgeAttached",
+			"es": "Ya arrastras unas angarillas.",
+			"en": "You're already dragging a travois.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:156"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_SledgeOnlyMaterial",
+			"es": "Las angarillas son para madera y piedra.",
+			"en": "The travois is for wood and stone.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:128"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_TooBig",
+			"es": "Es demasiado grande para guardarlo ahí.",
+			"en": "It's too big to store there.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:120"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_TooHeavy",
+			"es": "Pesa demasiado.",
+			"en": "It's too heavy.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:146"
 			]
 		},
 		{
@@ -170,7 +356,47 @@
 			"en": "That takes both hands; it can't be stowed.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:131"
+				"Source/Explored/Carry/CarryComponent.cpp:309"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_WrongKind",
+			"es": "Eso no se guarda ahí.",
+			"en": "That doesn't go there.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:130"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Container_Basket",
+			"es": "cesta",
+			"en": "basket",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredContainer.cpp:30"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Container_Chest",
+			"es": "arcón",
+			"en": "chest",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredContainer.cpp:28"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Container_Shelf",
+			"es": "estante",
+			"en": "shelf",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredContainer.cpp:27"
 			]
 		},
 		{
@@ -205,6 +431,106 @@
 		},
 		{
 			"namespace": "Explored",
+			"key": "Fire_AddFuel",
+			"es": "Echar al fuego",
+			"en": "Feed the fire",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:239"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Fire_Collect",
+			"es": "Retirar la comida",
+			"en": "Take the food off",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:229"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Fire_Ignite",
+			"es": "Encender",
+			"en": "Light",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:235"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Fire_Revive",
+			"es": "Avivar las brasas",
+			"en": "Stoke the embers",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:234"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_AttachSledge",
+			"es": "Enganchar las angarillas",
+			"en": "Hitch the travois",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredSledge.cpp:40"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_Board",
+			"es": "Subir a {0}",
+			"en": "Board {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:468"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_CheckTrap",
+			"es": "Revisar la trampa",
+			"en": "Check the trap",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredTrap.cpp:106"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_ClearDeadPlant",
+			"es": "Arrancar la planta seca",
+			"en": "Pull up the dead plant",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Farming/ExploredPlantActor.cpp:253"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_Harvest",
+			"es": "Cosechar {0}",
+			"en": "Harvest {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Farming/ExploredPlantActor.cpp:250"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_LoadSledge",
+			"es": "Cargar en las angarillas",
+			"en": "Load onto the travois",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredSledge.cpp:41"
+			]
+		},
+		{
+			"namespace": "Explored",
 			"key": "Verb_PickUp",
 			"es": "Coger {0}",
 			"en": "Pick up {0}",
@@ -214,13 +540,253 @@
 			]
 		},
 		{
+			"namespace": "Explored",
+			"key": "Verb_Plant",
+			"es": "Plantar {0}",
+			"en": "Plant {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Farming/ExploredPlantActor.cpp:256"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_RightBoat",
+			"es": "Adrizar {0}",
+			"en": "Right {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredBoat.cpp:464"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_StoreIn",
+			"es": "Guardar en {0}",
+			"en": "Put in {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredContainer.cpp:153"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_TakeFrom",
+			"es": "Sacar de {0}",
+			"en": "Take from {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/ExploredContainer.cpp:156"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_TidePool",
+			"es": "Marisquear",
+			"en": "Forage the pool",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredTrap.cpp:103"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_Water",
+			"es": "Regar",
+			"en": "Water",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Farming/ExploredPlantActor.cpp:260"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "InvalidRotation",
+			"es": "Giro no válido",
+			"en": "Invalid rotation",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:236"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "MissingMaterials",
+			"es": "Faltan materiales",
+			"en": "Not enough materials",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:244"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "MissingRequiredPiece",
+			"es": "Falta otra pieza en la base",
+			"en": "Another piece is missing in the base",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:242"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "MissingTools",
+			"es": "Falta una herramienta",
+			"en": "A tool is missing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:243"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "NeedsGround",
+			"es": "Tiene que ir sobre el terreno",
+			"en": "Must go on the ground",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:241"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "NoSupport",
+			"es": "No tiene dónde apoyarse",
+			"en": "Nothing to rest on",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:239"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "NothingToRepair",
+			"es": "No hay nada que reparar",
+			"en": "Nothing to repair",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:245"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "Occupied",
+			"es": "Ya hay algo ahí",
+			"en": "Something is already there",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:238"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "UnknownBase",
+			"es": "Fuera de la base",
+			"en": "Outside the base",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:237"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "UnknownInstance",
+			"es": "Esa pieza ya no existe",
+			"en": "That piece no longer exists",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:246"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "UnknownPiece",
+			"es": "Pieza desconocida",
+			"en": "Unknown piece",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:235"
+			]
+		},
+		{
+			"namespace": "ExploredBuilding",
+			"key": "Unstable",
+			"es": "Demasiado lejos de un apoyo",
+			"en": "Too far from a support",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Building/BuildingSubsystem.cpp:240"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "AchievementUnlocked",
+			"es": "Logro conseguido",
+			"en": "Achievement unlocked",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredAchievementToast.cpp:32"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionBackpack",
+			"es": "Mochila",
+			"en": "Backpack",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:119"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionCombine",
+			"es": "Combinar",
+			"en": "Combine",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:118"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionDive",
+			"es": "Agacharse / bucear",
+			"en": "Crouch / dive",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:113"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionDrop",
+			"es": "Soltar",
+			"en": "Drop",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:117"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionInteract",
+			"es": "Interactuar / coger",
+			"en": "Interact / pick up",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:114"
+			]
+		},
+		{
 			"namespace": "ExploredUI",
 			"key": "ActionJump",
 			"es": "Saltar",
 			"en": "Jump",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:345"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:111"
 			]
 		},
 		{
@@ -230,7 +796,27 @@
 			"en": "Sprint",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:346"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:112"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionUsePrimary",
+			"es": "Usar mano derecha",
+			"en": "Use right hand",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:115"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionUseSecondary",
+			"es": "Usar mano izquierda",
+			"en": "Use left hand",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:116"
 			]
 		},
 		{
@@ -240,7 +826,7 @@
 			"en": "Apply",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:438"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:542"
 			]
 		},
 		{
@@ -250,9 +836,9 @@
 			"en": "Back",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59",
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:56",
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:446"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:35",
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:63",
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:550"
 			]
 		},
 		{
@@ -262,7 +848,7 @@
 			"en": "Brightness",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:233"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:302"
 			]
 		},
 		{
@@ -272,7 +858,7 @@
 			"en": "Deuteranopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:407"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:511"
 			]
 		},
 		{
@@ -282,7 +868,7 @@
 			"en": "None",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:405"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:509"
 			]
 		},
 		{
@@ -292,7 +878,7 @@
 			"en": "Protanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:406"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:510"
 			]
 		},
 		{
@@ -302,7 +888,7 @@
 			"en": "Tritanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:408"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:512"
 			]
 		},
 		{
@@ -312,7 +898,7 @@
 			"en": "Camera bob",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:320"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:374"
 			]
 		},
 		{
@@ -322,7 +908,7 @@
 			"en": "Choose how you want to survive",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:32"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:41"
 			]
 		},
 		{
@@ -332,7 +918,7 @@
 			"en": "Colour-blind mode",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:414"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:518"
 			]
 		},
 		{
@@ -362,7 +948,7 @@
 			"en": "All art, sound and music generated in code",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:54"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:64"
 			]
 		},
 		{
@@ -372,7 +958,7 @@
 			"en": "A game by Rodrigo Fernández",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:49"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59"
 			]
 		},
 		{
@@ -382,7 +968,7 @@
 			"en": "Made with Claude (Anthropic)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:50"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:60"
 			]
 		},
 		{
@@ -392,7 +978,7 @@
 			"en": "Engine: Unreal Engine 5.6",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:51"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:61"
 			]
 		},
 		{
@@ -402,7 +988,7 @@
 			"en": "EXPLORED",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:48"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:58"
 			]
 		},
 		{
@@ -412,7 +998,7 @@
 			"en": "Day length",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:375"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:474"
 			]
 		},
 		{
@@ -422,7 +1008,7 @@
 			"en": "Effects",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:253"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:317"
 			]
 		},
 		{
@@ -432,7 +1018,7 @@
 			"en": "Exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:61"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:64"
 			]
 		},
 		{
@@ -442,7 +1028,17 @@
 			"en": "Field of view",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:310"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:369"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "FishingLineOut",
+			"es": "Sedal fuera: {0} m · [R] recoger · [T] soltar",
+			"en": "Line out: {0} m · [R] reel in · [T] let out",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:130"
 			]
 		},
 		{
@@ -452,7 +1048,7 @@
 			"en": "Foliage",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:318"
 			]
 		},
 		{
@@ -462,7 +1058,7 @@
 			"en": "FPS limit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:226"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:295"
 			]
 		},
 		{
@@ -472,7 +1068,7 @@
 			"en": "Global illumination",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:249"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:313"
 			]
 		},
 		{
@@ -482,7 +1078,7 @@
 			"en": "Controller sensitivity",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:296"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:360"
 			]
 		},
 		{
@@ -492,7 +1088,7 @@
 			"en": "Hold to crouch",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:324"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:378"
 			]
 		},
 		{
@@ -502,7 +1098,7 @@
 			"en": "Invert Y axis",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:306"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:365"
 			]
 		},
 		{
@@ -512,7 +1108,7 @@
 			"en": "Journal (Coming soon)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:21"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:24"
 			]
 		},
 		{
@@ -522,7 +1118,7 @@
 			"en": "Coming soon",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:23"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:26"
 			]
 		},
 		{
@@ -532,7 +1128,7 @@
 			"en": "English",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:369"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:468"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -543,7 +1139,7 @@
 			"en": "Español",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:368"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:467"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -554,7 +1150,7 @@
 			"en": "Language",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:393"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:493"
 			]
 		},
 		{
@@ -564,7 +1160,7 @@
 			"en": "Castaway",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:51"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:58"
 			]
 		},
 		{
@@ -574,7 +1170,7 @@
 			"en": "Harsher needs and no respawning at campfires.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:52"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:59"
 			]
 		},
 		{
@@ -584,7 +1180,7 @@
 			"en": "Explorer",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:39"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:48"
 			]
 		},
 		{
@@ -594,7 +1190,7 @@
 			"en": "Needs never kill and wildlife is peaceful. For enjoying the world and its story.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:40"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:49"
 			]
 		},
 		{
@@ -604,7 +1200,7 @@
 			"en": "Survivor",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:45"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:23"
 			]
 		},
 		{
@@ -614,7 +1210,7 @@
 			"en": "The intended experience.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:46"
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:24"
 			]
 		},
 		{
@@ -624,7 +1220,47 @@
 			"en": "Mouse sensitivity",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:286"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:355"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedCritical",
+			"es": "muy mal",
+			"en": "very bad",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:121"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedFair",
+			"es": "regular",
+			"en": "so-so",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:119"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedGood",
+			"es": "bien",
+			"en": "fine",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:118"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedLow",
+			"es": "mal",
+			"en": "bad",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:120"
 			]
 		},
 		{
@@ -634,7 +1270,7 @@
 			"en": "New game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:54"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
 			]
 		},
 		{
@@ -644,7 +1280,7 @@
 			"en": "Disable flashing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:425"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:529"
 			]
 		},
 		{
@@ -654,7 +1290,7 @@
 			"en": "(unbound)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:35"
+				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:37"
 			]
 		},
 		{
@@ -664,7 +1300,7 @@
 			"en": "Overall quality",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:244"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:308"
 			]
 		},
 		{
@@ -674,7 +1310,7 @@
 			"en": "Paused",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:39"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:46"
 			]
 		},
 		{
@@ -684,7 +1320,7 @@
 			"en": "Post-processing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:251"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:315"
 			]
 		},
 		{
@@ -694,7 +1330,7 @@
 			"en": "Press a key...",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:32"
+				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:34"
 			]
 		},
 		{
@@ -704,7 +1340,7 @@
 			"en": "Cinematic",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:89"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:130"
 			]
 		},
 		{
@@ -714,7 +1350,7 @@
 			"en": "Epic",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:88"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:129"
 			]
 		},
 		{
@@ -724,7 +1360,7 @@
 			"en": "High",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:87"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:128"
 			]
 		},
 		{
@@ -734,7 +1370,7 @@
 			"en": "Low",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:85"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:126"
 			]
 		},
 		{
@@ -744,7 +1380,7 @@
 			"en": "Medium",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:86"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:127"
 			]
 		},
 		{
@@ -764,7 +1400,7 @@
 			"en": "Quit game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:66"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:69"
 			]
 		},
 		{
@@ -774,7 +1410,7 @@
 			"en": "Reduce motion",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:421"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:525"
 			]
 		},
 		{
@@ -784,7 +1420,37 @@
 			"en": "Reflections",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:250"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:314"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "RemapGamepad",
+			"es": "Los botones del mando no se pueden remapear.",
+			"en": "Gamepad buttons can't be remapped.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:430"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "RemapInUse",
+			"es": "{0} ya se usa para «{1}».",
+			"en": "{0} is already used for «{1}».",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:438"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "RemapReserved",
+			"es": "{0} está reservada (movimiento o menú).",
+			"en": "{0} is reserved (movement or menu).",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:434"
 			]
 		},
 		{
@@ -794,7 +1460,7 @@
 			"en": "Resolution",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:208"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:277"
 			]
 		},
 		{
@@ -804,7 +1470,7 @@
 			"en": "Restore defaults",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:442"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:546"
 			]
 		},
 		{
@@ -814,7 +1480,7 @@
 			"en": "Resume",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:45"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:28"
 			]
 		},
 		{
@@ -824,7 +1490,7 @@
 			"en": "Save game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:56"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:59"
 			]
 		},
 		{
@@ -844,7 +1510,7 @@
 			"en": "Display",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:205"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:274"
 			]
 		},
 		{
@@ -854,7 +1520,7 @@
 			"en": "Quality",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:241"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:305"
 			]
 		},
 		{
@@ -864,7 +1530,7 @@
 			"en": "Key bindings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:332"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:383"
 			]
 		},
 		{
@@ -875,7 +1541,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:59",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:51"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:54"
 			]
 		},
 		{
@@ -885,7 +1551,7 @@
 			"en": "Shadows",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:248"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:312"
 			]
 		},
 		{
@@ -895,7 +1561,7 @@
 			"en": "Visual sound cues",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:429"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:533"
 			]
 		},
 		{
@@ -905,7 +1571,7 @@
 			"en": "An archipelago on no map",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:47"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:51"
 			]
 		},
 		{
@@ -915,7 +1581,7 @@
 			"en": "Subtitles",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:382"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:482"
 			]
 		},
 		{
@@ -925,7 +1591,7 @@
 			"en": "Accessibility",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:160"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:206"
 			]
 		},
 		{
@@ -935,7 +1601,7 @@
 			"en": "Audio",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:157"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:203"
 			]
 		},
 		{
@@ -945,7 +1611,7 @@
 			"en": "Controls",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:158"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:204"
 			]
 		},
 		{
@@ -955,7 +1621,7 @@
 			"en": "Game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:159"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:205"
 			]
 		},
 		{
@@ -965,7 +1631,7 @@
 			"en": "Graphics",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:156"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:202"
 			]
 		},
 		{
@@ -975,7 +1641,7 @@
 			"en": "Large",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:365"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:464"
 			]
 		},
 		{
@@ -985,7 +1651,7 @@
 			"en": "Medium",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:364"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:463"
 			]
 		},
 		{
@@ -995,7 +1661,7 @@
 			"en": "Text size",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:386"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:486"
 			]
 		},
 		{
@@ -1005,7 +1671,7 @@
 			"en": "Small",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:363"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:462"
 			]
 		},
 		{
@@ -1015,7 +1681,7 @@
 			"en": "Textures",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:252"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:316"
 			]
 		},
 		{
@@ -1025,7 +1691,7 @@
 			"en": "EXPLORED",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:40"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:44"
 			]
 		},
 		{
@@ -1035,7 +1701,7 @@
 			"en": "Unlimited",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:196"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:265"
 			]
 		},
 		{
@@ -1045,7 +1711,7 @@
 			"en": "VSync",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:222"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:291"
 			]
 		},
 		{
@@ -1055,7 +1721,7 @@
 			"en": "View distance",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:247"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:311"
 			]
 		},
 		{
@@ -1065,7 +1731,7 @@
 			"en": "Ambience",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:274"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:340"
 			]
 		},
 		{
@@ -1075,7 +1741,7 @@
 			"en": "Effects",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:273"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:339"
 			]
 		},
 		{
@@ -1085,7 +1751,7 @@
 			"en": "Master",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:271"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:337"
 			]
 		},
 		{
@@ -1095,7 +1761,7 @@
 			"en": "Music",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:272"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:338"
 			]
 		},
 		{
@@ -1105,7 +1771,47 @@
 			"en": "Interface",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:275"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:341"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WatchFood",
+			"es": "Comida",
+			"en": "Food",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:52"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WatchRest",
+			"es": "Sueño",
+			"en": "Sleep",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:56"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WatchWarmth",
+			"es": "Calor",
+			"en": "Warmth",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:60"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WatchWater",
+			"es": "Agua",
+			"en": "Water",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:48"
 			]
 		},
 		{
@@ -1115,7 +1821,7 @@
 			"en": "Borderless window",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:189"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258"
 			]
 		},
 		{
@@ -1125,7 +1831,7 @@
 			"en": "Fullscreen",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:188"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:257"
 			]
 		},
 		{
@@ -1135,7 +1841,7 @@
 			"en": "Window mode",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:215"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:284"
 			]
 		},
 		{
@@ -1145,7 +1851,7 @@
 			"en": "Windowed",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:190"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:259"
 			]
 		},
 		{
@@ -1156,6 +1862,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «arriate_limonero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "astillero.nameEs",
+			"es": "Astillero",
+			"en": "Shipyard",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «astillero» nameEs/nameEn"
 			]
 		},
 		{
@@ -1520,6 +2236,56 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "aceite_pescado.nameEs",
+			"es": "Aceite de pescado",
+			"en": "Fish oil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «aceite_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "agua_hervida.nameEs",
+			"es": "Agua hervida",
+			"en": "Boiled water",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «agua_hervida» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "agua_mar.nameEs",
+			"es": "Agua de mar",
+			"en": "Seawater",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «agua_mar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "agua_sin_tratar.nameEs",
+			"es": "Agua sin tratar",
+			"en": "Untreated water",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «agua_sin_tratar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "aguijon_manta_negra.nameEs",
+			"es": "Aguijón de La Manta Negra",
+			"en": "Black Manta barb",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «aguijon_manta_negra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "alga_fibra.nameEs",
 			"es": "Alga de fibra",
 			"en": "Fibre seaweed",
@@ -1540,12 +2306,32 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "angarillas.nameEs",
+			"es": "Angarillas",
+			"en": "Travois",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «angarillas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "antorcha.nameEs",
 			"es": "Antorcha",
 			"en": "Torch",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «antorcha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "anzuelo_legendario.nameEs",
+			"es": "Anzuelo legendario",
+			"en": "Legendary hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «anzuelo_legendario» nameEs/nameEn"
 			]
 		},
 		{
@@ -1600,6 +2386,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "atun.nameEs",
+			"es": "Atún",
+			"en": "Yellowfin tuna",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «atun» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "azufre.nameEs",
 			"es": "Azufre",
 			"en": "Sulphur",
@@ -1630,6 +2426,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "barracuda.nameEs",
+			"es": "Barracuda",
+			"en": "Barracuda",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «barracuda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "basalto.nameEs",
 			"es": "Basalto",
 			"en": "Basalt",
@@ -1650,6 +2456,46 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "batata_asada.nameEs",
+			"es": "Batata asada",
+			"en": "Roast sweet potato",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «batata_asada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "bolsa_impermeable.nameEs",
+			"es": "Bolsa estanca",
+			"en": "Dry bag",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «bolsa_impermeable» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "bonito.nameEs",
+			"es": "Bonito",
+			"en": "Skipjack tuna",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «bonito» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "brujula.nameEs",
+			"es": "Brújula",
+			"en": "Compass",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «brujula» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cable_electrico.nameEs",
 			"es": "Cable eléctrico",
 			"en": "Electrical cable",
@@ -1666,6 +2512,36 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cangrejo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cangrejo_caparazon.nameEs",
+			"es": "Cangrejo en su caparazón",
+			"en": "Crab roasted in its shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cangrejo_caparazon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cangrejo_cocotero.nameEs",
+			"es": "Cangrejo de los cocoteros",
+			"en": "Coconut crab",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cangrejo_cocotero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cantimplora.nameEs",
+			"es": "Cantimplora",
+			"en": "Canteen",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cantimplora» nameEs/nameEn"
 			]
 		},
 		{
@@ -1750,6 +2626,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "cinturon_cuero.nameEs",
+			"es": "Cinturón de cuero",
+			"en": "Leather belt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cinturon_cuero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "coco_maduro.nameEs",
 			"es": "Coco maduro",
 			"en": "Ripe coconut",
@@ -1766,6 +2652,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «coco_verde» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "comida_quemada.nameEs",
+			"es": "Comida quemada",
+			"en": "Burnt food",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «comida_quemada» nameEs/nameEn"
 			]
 		},
 		{
@@ -1840,6 +2736,46 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "dientes_sombra.nameEs",
+			"es": "Dientes de Sombra",
+			"en": "Shadow's teeth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «dientes_sombra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "dorado.nameEs",
+			"es": "Dorado",
+			"en": "Mahi-mahi",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «dorado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "erizo.nameEs",
+			"es": "Erizo de mar",
+			"en": "Sea urchin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «erizo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "espina_pescado.nameEs",
+			"es": "Espina de pescado",
+			"en": "Fish bone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «espina_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "esponja_mar.nameEs",
 			"es": "Esponja de mar",
 			"en": "Sea sponge",
@@ -1860,12 +2796,32 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "estofado_pescado.nameEs",
+			"es": "Estofado de pescado",
+			"en": "Fish stew",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «estofado_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "fibra_coco.nameEs",
 			"es": "Fibra de coco",
 			"en": "Coconut fibre",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «fibra_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "filete_pescado.nameEs",
+			"es": "Filete de pescado",
+			"en": "Fish fillet",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «filete_pescado» nameEs/nameEn"
 			]
 		},
 		{
@@ -1880,12 +2836,42 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "fruta_fermentada.nameEs",
+			"es": "Fruta fermentada",
+			"en": "Fermented fruit",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «fruta_fermentada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "fruta_seca.nameEs",
+			"es": "Fruta seca",
+			"en": "Dried fruit",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «fruta_seca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "grasa.nameEs",
 			"es": "Grasa",
 			"en": "Fat",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «grasa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "guiso_improvisado.nameEs",
+			"es": "Guiso improvisado",
+			"en": "Improvised stew",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «guiso_improvisado» nameEs/nameEn"
 			]
 		},
 		{
@@ -1960,12 +2946,52 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "huevo_brasa.nameEs",
+			"es": "Huevo a la brasa",
+			"en": "Ember-roasted egg",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «huevo_brasa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "jurel.nameEs",
+			"es": "Jurel",
+			"en": "Trevally",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «jurel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "langosta.nameEs",
+			"es": "Langosta de arrecife",
+			"en": "Spiny lobster",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «langosta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "lanza.nameEs",
 			"es": "Lanza",
 			"en": "Spear",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «lanza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lapa.nameEs",
+			"es": "Lapa",
+			"en": "Limpet",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lapa» nameEs/nameEn"
 			]
 		},
 		{
@@ -2026,6 +3052,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «limon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lombriz.nameEs",
+			"es": "Lombriz",
+			"en": "Earthworm",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lombriz» nameEs/nameEn"
 			]
 		},
 		{
@@ -2100,6 +3136,46 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "mero.nameEs",
+			"es": "Mero",
+			"en": "Grouper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mochila.nameEs",
+			"es": "Mochila del Albatros",
+			"en": "Albatros backpack",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mochila» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mochila_cuero_bambu.nameEs",
+			"es": "Mochila de cuero con armazón de bambú",
+			"en": "Leather backpack with bamboo frame",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mochila_cuero_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mochila_fibra.nameEs",
+			"es": "Mochila de fibra",
+			"en": "Fibre backpack",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mochila_fibra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "musgo.nameEs",
 			"es": "Musgo",
 			"en": "Moss",
@@ -2140,6 +3216,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "pargo.nameEs",
+			"es": "Pargo",
+			"en": "Snapper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pargo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "pasta_medicinal.nameEs",
 			"es": "Pasta medicinal",
 			"en": "Medicinal paste",
@@ -2170,12 +3256,72 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "pescado_ahumado.nameEs",
+			"es": "Pescado ahumado",
+			"en": "Smoked fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pescado_ahumado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "pescado_arrecife.nameEs",
 			"es": "Pescado de arrecife",
 			"en": "Reef fish",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «pescado_arrecife» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pescado_asado.nameEs",
+			"es": "Pescado asado en espeto",
+			"en": "Spit-roasted fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pescado_asado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pescado_salado.nameEs",
+			"es": "Pescado salado",
+			"en": "Salted fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pescado_salado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pez_ballesta.nameEs",
+			"es": "Pez ballesta",
+			"en": "Triggerfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pez_ballesta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pez_cirujano.nameEs",
+			"es": "Pez cirujano",
+			"en": "Surgeonfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pez_cirujano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pez_loro.nameEs",
+			"es": "Pez loro",
+			"en": "Parrotfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pez_loro» nameEs/nameEn"
 			]
 		},
 		{
@@ -2196,6 +3342,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «piel_bruto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "piel_el_errante.nameEs",
+			"es": "Piel curtida de El Errante",
+			"en": "The Wanderer's tanned hide",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «piel_el_errante» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "piel_pescado.nameEs",
+			"es": "Piel de pescado",
+			"en": "Fish skin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «piel_pescado» nameEs/nameEn"
 			]
 		},
 		{
@@ -2236,6 +3402,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «plumas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pulpo.nameEs",
+			"es": "Pulpo",
+			"en": "Octopus",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pulpo» nameEs/nameEn"
 			]
 		},
 		{
@@ -2290,12 +3466,52 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "salmonete.nameEs",
+			"es": "Salmonete",
+			"en": "Goatfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «salmonete» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "sedal_legendario.nameEs",
+			"es": "Sedal legendario",
+			"en": "Legendary line",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sedal_legendario» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "senuelo_tallado.nameEs",
+			"es": "Señuelo tallado",
+			"en": "Carved lure",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «senuelo_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "seta_comestible.nameEs",
 			"es": "Seta comestible",
 			"en": "Edible mushroom",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «seta_comestible» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "sopa_pescado.nameEs",
+			"es": "Sopa de pescado",
+			"en": "Fish soup",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sopa_pescado» nameEs/nameEn"
 			]
 		},
 		{
@@ -2310,12 +3526,32 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "taro_hervido.nameEs",
+			"es": "Taro hervido",
+			"en": "Boiled taro",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «taro_hervido» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "tendon.nameEs",
 			"es": "Tendón",
 			"en": "Sinew",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «tendon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "trofeo_el_viejo.nameEs",
+			"es": "Trofeo de El Viejo",
+			"en": "The Old One trophy",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «trofeo_el_viejo» nameEs/nameEn"
 			]
 		},
 		{
@@ -2350,12 +3586,52 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "vasija_barro.nameEs",
+			"es": "Vasija de barro cocido",
+			"en": "Fired clay pot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «vasija_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "visceras_pescado.nameEs",
+			"es": "Vísceras de pescado",
+			"en": "Fish guts",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «visceras_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "yesca_hongo.nameEs",
 			"es": "Yesca de hongo",
 			"en": "Fungus tinder",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «yesca_hongo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "yuca.nameEs",
+			"es": "Yuca",
+			"en": "Cassava root",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «yuca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "yuca_cocida.nameEs",
+			"es": "Yuca cocida",
+			"en": "Boiled cassava",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «yuca_cocida» nameEs/nameEn"
 			]
 		},
 		{

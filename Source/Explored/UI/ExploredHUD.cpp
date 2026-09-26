@@ -126,7 +126,9 @@ void AExploredHUD::DrawFishing(const AExploredCharacter& Character)
 	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f), CenterX - BarWidth * 0.5f, Y, BarWidth, BarHeight);
 	DrawRect(Fill, CenterX - BarWidth * 0.5f, Y, BarWidth * Tension, BarHeight);
 
-	const FString Label = FString::Printf(TEXT("Sedal fuera: %.0f m · [R] recoger · [T] soltar"), FishingComp->GetLineOutM());
+	const FString Label = FText::Format(
+		NSLOCTEXT("ExploredUI", "FishingLineOut", "Sedal fuera: {0} m · [R] recoger · [T] soltar"),
+		FText::AsNumber(FMath::RoundToInt(FishingComp->GetLineOutM()))).ToString();
 	float TextWidth = 0.0f, TextHeight = 0.0f;
 	GetTextSize(Label, TextWidth, TextHeight);
 	DrawText(Label, FLinearColor::White, CenterX - TextWidth * 0.5f, Y + BarHeight + 6.0f);

@@ -8,12 +8,34 @@
 			"Children": [
 				{
 					"Source": {
+						"Text": "Adrizar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_RightBoat",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 464"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Ahí no hay nada."
 					},
 					"Keys": [
 						{
 							"Key": "Carry_InvalidSlotIndex",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 244"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 109"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ahí no se lleva agua."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NotALiquidContainer",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
 						}
 					]
 				},
@@ -24,7 +46,40 @@
 					"Keys": [
 						{
 							"Key": "Carry_NothingToPickUp",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 60"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 217"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Arrancar la planta seca"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_ClearDeadPlant",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 253"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Avivar las brasas"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Revive",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 234"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cargar en las angarillas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_LoadSledge",
+							"Path": "Source/Explored/Carry/ExploredSledge.cpp - line 41"
 						}
 					]
 				},
@@ -41,12 +96,34 @@
 				},
 				{
 					"Source": {
+						"Text": "Cosechar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Harvest",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 250"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Echar al fuego"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_AddFuel",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 239"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "El cinturón no tiene enganches libres."
 					},
 					"Keys": [
 						{
 							"Key": "Carry_BeltFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 178"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 138"
 						}
 					]
 				},
@@ -57,7 +134,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BeltNotTool",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 173"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 124"
 						}
 					]
 				},
@@ -67,12 +144,52 @@
 					},
 					"Keys": [
 						{
-							"Key": "Carry_NoRegistry",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 193"
-						},
-						{
 							"Key": "Crafting_NoRegistry",
 							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 33"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Ignite",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 235"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Enganchar las angarillas"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_AttachSledge",
+							"Path": "Source/Explored/Carry/ExploredSledge.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Es demasiado grande para guardarlo ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TooBig",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 120"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Es un solo objeto: no se combina consigo mismo."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SameItem",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 114"
 						}
 					]
 				},
@@ -83,7 +200,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandOccupied",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 231"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 111"
 						}
 					]
 				},
@@ -94,7 +211,29 @@
 					"Keys": [
 						{
 							"Key": "Carry_InvalidItem",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 66"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 108"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso no se guarda ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_WrongKind",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 130"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso no se lleva puesto."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NotEquippable",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
 						}
 					]
 				},
@@ -105,7 +244,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TwoHandedNoStore",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 309"
 						}
 					]
 				},
@@ -133,12 +272,45 @@
 				},
 				{
 					"Source": {
+						"Text": "Guardar en {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_StoreIn",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 153"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Las angarillas son para madera y piedra."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SledgeOnlyMaterial",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 128"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Los bolsillos están llenos."
 					},
 					"Keys": [
 						{
 							"Key": "Carry_PocketsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 134"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Marisquear"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_TidePool",
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 103"
 						}
 					]
 				},
@@ -149,7 +321,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NeedBothHands",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 29"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 112"
 						}
 					]
 				},
@@ -171,7 +343,29 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooBig",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 211"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 150"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No entra."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoRoom",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 152"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas angarillas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoSledge",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
 						}
 					]
 				},
@@ -182,7 +376,51 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 272"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No puedes con más peso."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_OverCarryLimit",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No queda sitio."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_ContainerFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 140"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No se puede."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_Generic",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tienes dónde guardarlo seco."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoPouch",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 154"
 						}
 					]
 				},
@@ -193,7 +431,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoBackpack",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 188"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
 						}
 					]
 				},
@@ -204,7 +442,73 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooHeavy",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 206"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 144"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TooHeavy",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 146"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Plantar {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Plant",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 256"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Regar"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Water",
+							"Path": "Source/Explored/Farming/ExploredPlantActor.cpp - line 260"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Retirar la comida"
+					},
+					"Keys": [
+						{
+							"Key": "Fire_Collect",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 229"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Revisar la trampa"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_CheckTrap",
+							"Path": "Source/Explored/Fishing/ExploredTrap.cpp - line 106"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sacar de {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_TakeFrom",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 156"
 						}
 					]
 				},
@@ -215,7 +519,18 @@
 					"Keys": [
 						{
 							"Key": "Carry_PocketTooSmall",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 150"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 118"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Subir a {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_Board",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 468"
 						}
 					]
 				},
@@ -226,7 +541,254 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 52"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vacíalo antes."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_ContainerNotEmpty",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 158"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya arrastras unas angarillas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_SledgeAttached",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 156"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya está ahí."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_AlreadyThere",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 110"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "arcón"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Chest",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "cesta"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Basket",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 30"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "el «Limón»"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Limon",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "estante"
+					},
+					"Keys": [
+						{
+							"Key": "Container_Shelf",
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 27"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la balsa"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Raft",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 76"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la canoa"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Canoe",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 77"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "la canoa con balancín"
+					},
+					"Keys": [
+						{
+							"Key": "Boat_Outrigger",
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredBuilding",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Demasiado lejos de un apoyo"
+					},
+					"Keys": [
+						{
+							"Key": "Unstable",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 240"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esa pieza ya no existe"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownInstance",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 246"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Falta otra pieza en la base"
+					},
+					"Keys": [
+						{
+							"Key": "MissingRequiredPiece",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 242"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Falta una herramienta"
+					},
+					"Keys": [
+						{
+							"Key": "MissingTools",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 243"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Faltan materiales"
+					},
+					"Keys": [
+						{
+							"Key": "MissingMaterials",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 244"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Fuera de la base"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownBase",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 237"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Giro no válido"
+					},
+					"Keys": [
+						{
+							"Key": "InvalidRotation",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 236"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No hay nada que reparar"
+					},
+					"Keys": [
+						{
+							"Key": "NothingToRepair",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 245"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tiene dónde apoyarse"
+					},
+					"Keys": [
+						{
+							"Key": "NoSupport",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 239"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pieza desconocida"
+					},
+					"Keys": [
+						{
+							"Key": "UnknownPiece",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 235"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tiene que ir sobre el terreno"
+					},
+					"Keys": [
+						{
+							"Key": "NeedsGround",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 241"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya hay algo ahí"
+					},
+					"Keys": [
+						{
+							"Key": "Occupied",
+							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 238"
 						}
 					]
 				}
@@ -242,7 +804,7 @@
 					"Keys": [
 						{
 							"Key": "NoKey",
-							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 35"
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 37"
 						}
 					]
 				},
@@ -253,7 +815,18 @@
 					"Keys": [
 						{
 							"Key": "TabAccessibility",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 160"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 206"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agacharse / bucear"
+					},
+					"Keys": [
+						{
+							"Key": "ActionDive",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 113"
 						}
 					]
 				},
@@ -264,7 +837,18 @@
 					"Keys": [
 						{
 							"Key": "HoldCrouch",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 324"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 378"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agua"
+					},
+					"Keys": [
+						{
+							"Key": "WatchWater",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 48"
 						}
 					]
 				},
@@ -286,7 +870,7 @@
 					"Keys": [
 						{
 							"Key": "QualityHigh",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 87"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 128"
 						}
 					]
 				},
@@ -297,7 +881,7 @@
 					"Keys": [
 						{
 							"Key": "VolAmbient",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 274"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 340"
 						}
 					]
 				},
@@ -308,7 +892,7 @@
 					"Keys": [
 						{
 							"Key": "Apply",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 438"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 542"
 						}
 					]
 				},
@@ -319,7 +903,7 @@
 					"Keys": [
 						{
 							"Key": "TabAudio",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 157"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 203"
 						}
 					]
 				},
@@ -330,7 +914,7 @@
 					"Keys": [
 						{
 							"Key": "SoundCues",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 429"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 533"
 						}
 					]
 				},
@@ -341,7 +925,7 @@
 					"Keys": [
 						{
 							"Key": "QualityLow",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 85"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 126"
 						}
 					]
 				},
@@ -352,7 +936,7 @@
 					"Keys": [
 						{
 							"Key": "CameraBob",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 320"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 374"
 						}
 					]
 				},
@@ -363,7 +947,7 @@
 					"Keys": [
 						{
 							"Key": "Brightness",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 233"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 302"
 						}
 					]
 				},
@@ -374,7 +958,7 @@
 					"Keys": [
 						{
 							"Key": "SectionQuality",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 241"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 305"
 						}
 					]
 				},
@@ -385,7 +969,18 @@
 					"Keys": [
 						{
 							"Key": "OverallQuality",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 244"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 308"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calor"
+					},
+					"Keys": [
+						{
+							"Key": "WatchWarmth",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 60"
 						}
 					]
 				},
@@ -396,7 +991,7 @@
 					"Keys": [
 						{
 							"Key": "FOV",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 310"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 369"
 						}
 					]
 				},
@@ -407,7 +1002,29 @@
 					"Keys": [
 						{
 							"Key": "QualityCinematic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 89"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 130"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Combinar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionCombine",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 118"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Comida"
+					},
+					"Keys": [
+						{
+							"Key": "WatchFood",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 52"
 						}
 					]
 				},
@@ -429,7 +1046,7 @@
 					"Keys": [
 						{
 							"Key": "TabControls",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 158"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 204"
 						}
 					]
 				},
@@ -440,7 +1057,7 @@
 					"Keys": [
 						{
 							"Key": "ActionSprint",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 346"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 112"
 						}
 					]
 				},
@@ -462,7 +1079,7 @@
 					"Keys": [
 						{
 							"Key": "NoFlashing",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 425"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 529"
 						}
 					]
 				},
@@ -473,7 +1090,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsClaude",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 50"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 60"
 						}
 					]
 				},
@@ -484,7 +1101,7 @@
 					"Keys": [
 						{
 							"Key": "CVDDeuteranopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 407"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 511"
 						}
 					]
 				},
@@ -495,7 +1112,7 @@
 					"Keys": [
 						{
 							"Key": "Journal",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 21"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 24"
 						}
 					]
 				},
@@ -506,7 +1123,7 @@
 					"Keys": [
 						{
 							"Key": "DayLength",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 375"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 474"
 						}
 					]
 				},
@@ -517,11 +1134,11 @@
 					"Keys": [
 						{
 							"Key": "CreditsTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 48"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 58"
 						},
 						{
 							"Key": "Title",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 40"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 44"
 						}
 					]
 				},
@@ -532,11 +1149,11 @@
 					"Keys": [
 						{
 							"Key": "Effects",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 253"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 317"
 						},
 						{
 							"Key": "VolEffects",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 273"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 339"
 						}
 					]
 				},
@@ -547,7 +1164,7 @@
 					"Keys": [
 						{
 							"Key": "ChooseMode",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 32"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 41"
 						}
 					]
 				},
@@ -558,7 +1175,7 @@
 					"Keys": [
 						{
 							"Key": "LangEn",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 369"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 468"
 						}
 					]
 				},
@@ -569,7 +1186,7 @@
 					"Keys": [
 						{
 							"Key": "LangEs",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 368"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 467"
 						}
 					]
 				},
@@ -580,7 +1197,7 @@
 					"Keys": [
 						{
 							"Key": "ModeExplorer",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 39"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 48"
 						}
 					]
 				},
@@ -591,7 +1208,7 @@
 					"Keys": [
 						{
 							"Key": "TextLarge",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 365"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 464"
 						}
 					]
 				},
@@ -602,7 +1219,7 @@
 					"Keys": [
 						{
 							"Key": "TabGraphics",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 156"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 202"
 						}
 					]
 				},
@@ -624,7 +1241,7 @@
 					"Keys": [
 						{
 							"Key": "SaveGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 56"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 59"
 						}
 					]
 				},
@@ -635,7 +1252,7 @@
 					"Keys": [
 						{
 							"Key": "Language",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 393"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 493"
 						}
 					]
 				},
@@ -646,7 +1263,18 @@
 					"Keys": [
 						{
 							"Key": "GI",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 249"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 313"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Interactuar / coger"
+					},
+					"Keys": [
+						{
+							"Key": "ActionInteract",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 114"
 						}
 					]
 				},
@@ -657,7 +1285,7 @@
 					"Keys": [
 						{
 							"Key": "VolUI",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 275"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 341"
 						}
 					]
 				},
@@ -668,7 +1296,7 @@
 					"Keys": [
 						{
 							"Key": "InvertY",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 306"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 365"
 						}
 					]
 				},
@@ -679,7 +1307,7 @@
 					"Keys": [
 						{
 							"Key": "TabGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 159"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 205"
 						}
 					]
 				},
@@ -690,7 +1318,7 @@
 					"Keys": [
 						{
 							"Key": "ModeSurvivorDesc",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 46"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 24"
 						}
 					]
 				},
@@ -701,7 +1329,29 @@
 					"Keys": [
 						{
 							"Key": "ModeExplorerDesc",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 40"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 49"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Logro conseguido"
+					},
+					"Keys": [
+						{
+							"Key": "AchievementUnlocked",
+							"Path": "Source/Explored/UI/Widgets/SExploredAchievementToast.cpp - line 32"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Los botones del mando no se pueden remapear."
+					},
+					"Keys": [
+						{
+							"Key": "RemapGamepad",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 430"
 						}
 					]
 				},
@@ -712,7 +1362,7 @@
 					"Keys": [
 						{
 							"Key": "FpsLimit",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 226"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 295"
 						}
 					]
 				},
@@ -723,7 +1373,7 @@
 					"Keys": [
 						{
 							"Key": "VolMaster",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 271"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 337"
 						}
 					]
 				},
@@ -734,7 +1384,7 @@
 					"Keys": [
 						{
 							"Key": "QualityMedium",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 86"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 127"
 						}
 					]
 				},
@@ -745,7 +1395,18 @@
 					"Keys": [
 						{
 							"Key": "TextMedium",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 364"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 463"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mochila"
+					},
+					"Keys": [
+						{
+							"Key": "ActionBackpack",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 119"
 						}
 					]
 				},
@@ -756,7 +1417,7 @@
 					"Keys": [
 						{
 							"Key": "Colorblind",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 414"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 518"
 						}
 					]
 				},
@@ -767,7 +1428,7 @@
 					"Keys": [
 						{
 							"Key": "WindowMode",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 215"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 284"
 						}
 					]
 				},
@@ -778,7 +1439,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsEngine",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 51"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 61"
 						}
 					]
 				},
@@ -789,7 +1450,7 @@
 					"Keys": [
 						{
 							"Key": "VolMusic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 272"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 338"
 						}
 					]
 				},
@@ -800,7 +1461,7 @@
 					"Keys": [
 						{
 							"Key": "ModeCastawayDesc",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 52"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 59"
 						}
 					]
 				},
@@ -811,7 +1472,7 @@
 					"Keys": [
 						{
 							"Key": "CVDNone",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 405"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 509"
 						}
 					]
 				},
@@ -822,7 +1483,7 @@
 					"Keys": [
 						{
 							"Key": "NewGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 54"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 24"
 						}
 					]
 				},
@@ -833,7 +1494,7 @@
 					"Keys": [
 						{
 							"Key": "ModeCastaway",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 51"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 58"
 						}
 					]
 				},
@@ -844,7 +1505,7 @@
 					"Keys": [
 						{
 							"Key": "SectionDisplay",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 205"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 274"
 						}
 					]
 				},
@@ -855,7 +1516,7 @@
 					"Keys": [
 						{
 							"Key": "WindowFullscreen",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 188"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 257"
 						}
 					]
 				},
@@ -866,7 +1527,7 @@
 					"Keys": [
 						{
 							"Key": "Paused",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 39"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 46"
 						}
 					]
 				},
@@ -877,7 +1538,7 @@
 					"Keys": [
 						{
 							"Key": "TextSmall",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 363"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 462"
 						}
 					]
 				},
@@ -888,7 +1549,7 @@
 					"Keys": [
 						{
 							"Key": "PostProcess",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 251"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 315"
 						}
 					]
 				},
@@ -899,7 +1560,7 @@
 					"Keys": [
 						{
 							"Key": "CVDProtanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 406"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 510"
 						}
 					]
 				},
@@ -910,7 +1571,7 @@
 					"Keys": [
 						{
 							"Key": "JournalTooltip",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 23"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 26"
 						}
 					]
 				},
@@ -921,7 +1582,7 @@
 					"Keys": [
 						{
 							"Key": "PressAnyKey",
-							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 32"
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 34"
 						}
 					]
 				},
@@ -932,7 +1593,7 @@
 					"Keys": [
 						{
 							"Key": "Resume",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 45"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 28"
 						}
 					]
 				},
@@ -943,7 +1604,7 @@
 					"Keys": [
 						{
 							"Key": "ReduceMotion",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 421"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 525"
 						}
 					]
 				},
@@ -954,7 +1615,7 @@
 					"Keys": [
 						{
 							"Key": "Reflections",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 250"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 314"
 						}
 					]
 				},
@@ -965,7 +1626,7 @@
 					"Keys": [
 						{
 							"Key": "SectionRemap",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 332"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 383"
 						}
 					]
 				},
@@ -976,7 +1637,7 @@
 					"Keys": [
 						{
 							"Key": "Resolution",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 208"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 277"
 						}
 					]
 				},
@@ -987,7 +1648,7 @@
 					"Keys": [
 						{
 							"Key": "RestoreDefaults",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 442"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 546"
 						}
 					]
 				},
@@ -1009,7 +1670,7 @@
 					"Keys": [
 						{
 							"Key": "ExitToMenu",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 61"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 64"
 						}
 					]
 				},
@@ -1020,7 +1681,7 @@
 					"Keys": [
 						{
 							"Key": "QuitGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 66"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 69"
 						}
 					]
 				},
@@ -1031,7 +1692,18 @@
 					"Keys": [
 						{
 							"Key": "ActionJump",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 345"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 111"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
+					},
+					"Keys": [
+						{
+							"Key": "FishingLineOut",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 130"
 						}
 					]
 				},
@@ -1042,7 +1714,7 @@
 					"Keys": [
 						{
 							"Key": "GamepadSensitivity",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 296"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 360"
 						}
 					]
 				},
@@ -1053,7 +1725,7 @@
 					"Keys": [
 						{
 							"Key": "MouseSensitivity",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 286"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 355"
 						}
 					]
 				},
@@ -1064,7 +1736,18 @@
 					"Keys": [
 						{
 							"Key": "Unlimited",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 196"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 265"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionDrop",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 117"
 						}
 					]
 				},
@@ -1075,7 +1758,7 @@
 					"Keys": [
 						{
 							"Key": "Shadows",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 248"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 312"
 						}
 					]
 				},
@@ -1086,7 +1769,18 @@
 					"Keys": [
 						{
 							"Key": "Subtitles",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 382"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 482"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sueño"
+					},
+					"Keys": [
+						{
+							"Key": "WatchRest",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 56"
 						}
 					]
 				},
@@ -1097,7 +1791,7 @@
 					"Keys": [
 						{
 							"Key": "ModeSurvivor",
-							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 45"
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 23"
 						}
 					]
 				},
@@ -1108,7 +1802,7 @@
 					"Keys": [
 						{
 							"Key": "TextSize",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 386"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 486"
 						}
 					]
 				},
@@ -1119,7 +1813,7 @@
 					"Keys": [
 						{
 							"Key": "Textures",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 252"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 316"
 						}
 					]
 				},
@@ -1130,7 +1824,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsArt",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 54"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 64"
 						}
 					]
 				},
@@ -1141,7 +1835,7 @@
 					"Keys": [
 						{
 							"Key": "CVDTritanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 408"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 512"
 						}
 					]
 				},
@@ -1152,7 +1846,7 @@
 					"Keys": [
 						{
 							"Key": "Subtitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 47"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 51"
 						}
 					]
 				},
@@ -1163,7 +1857,29 @@
 					"Keys": [
 						{
 							"Key": "CreditsAuthor",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 49"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Usar mano derecha"
+					},
+					"Keys": [
+						{
+							"Key": "ActionUsePrimary",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 115"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Usar mano izquierda"
+					},
+					"Keys": [
+						{
+							"Key": "ActionUseSecondary",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 116"
 						}
 					]
 				},
@@ -1174,7 +1890,7 @@
 					"Keys": [
 						{
 							"Key": "VSync",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 222"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 291"
 						}
 					]
 				},
@@ -1185,7 +1901,7 @@
 					"Keys": [
 						{
 							"Key": "Foliage",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 254"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 318"
 						}
 					]
 				},
@@ -1196,7 +1912,7 @@
 					"Keys": [
 						{
 							"Key": "WindowWindowed",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 190"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 259"
 						}
 					]
 				},
@@ -1207,7 +1923,7 @@
 					"Keys": [
 						{
 							"Key": "WindowBorderless",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 189"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 258"
 						}
 					]
 				},
@@ -1218,7 +1934,7 @@
 					"Keys": [
 						{
 							"Key": "ViewDistance",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 247"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 311"
 						}
 					]
 				},
@@ -1229,7 +1945,73 @@
 					"Keys": [
 						{
 							"Key": "Back",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 35"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "bien"
+					},
+					"Keys": [
+						{
+							"Key": "NeedGood",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 118"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "mal"
+					},
+					"Keys": [
+						{
+							"Key": "NeedLow",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 120"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "muy mal"
+					},
+					"Keys": [
+						{
+							"Key": "NeedCritical",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 121"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "regular"
+					},
+					"Keys": [
+						{
+							"Key": "NeedFair",
+							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 119"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} está reservada (movimiento o menú)."
+					},
+					"Keys": [
+						{
+							"Key": "RemapReserved",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 434"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} ya se usa para «{1}»."
+					},
+					"Keys": [
+						{
+							"Key": "RemapInUse",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 438"
 						}
 					]
 				},
@@ -1240,7 +2022,7 @@
 					"Keys": [
 						{
 							"Key": "QualityEpic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 88"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 129"
 						}
 					]
 				}

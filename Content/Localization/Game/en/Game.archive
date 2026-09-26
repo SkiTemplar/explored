@@ -8,6 +8,51 @@
 			"Children": [
 				{
 					"Source": {
+						"Text": "la canoa"
+					},
+					"Translation": {
+						"Text": "the canoe"
+					},
+					"Key": "Boat_Canoe"
+				},
+				{
+					"Source": {
+						"Text": "el «Limón»"
+					},
+					"Translation": {
+						"Text": "the «Limón»"
+					},
+					"Key": "Boat_Limon"
+				},
+				{
+					"Source": {
+						"Text": "la canoa con balancín"
+					},
+					"Translation": {
+						"Text": "the outrigger canoe"
+					},
+					"Key": "Boat_Outrigger"
+				},
+				{
+					"Source": {
+						"Text": "la balsa"
+					},
+					"Translation": {
+						"Text": "the raft"
+					},
+					"Key": "Boat_Raft"
+				},
+				{
+					"Source": {
+						"Text": "Ya está ahí."
+					},
+					"Translation": {
+						"Text": "It's already there."
+					},
+					"Key": "Carry_AlreadyThere"
+				},
+				{
+					"Source": {
 						"Text": "No entra en la mochila."
 					},
 					"Translation": {
@@ -41,6 +86,33 @@
 						"Text": "Your belt only holds tools and containers."
 					},
 					"Key": "Carry_BeltNotTool"
+				},
+				{
+					"Source": {
+						"Text": "No queda sitio."
+					},
+					"Translation": {
+						"Text": "No room left."
+					},
+					"Key": "Carry_ContainerFull"
+				},
+				{
+					"Source": {
+						"Text": "Vacíalo antes."
+					},
+					"Translation": {
+						"Text": "Empty it first."
+					},
+					"Key": "Carry_ContainerNotEmpty"
+				},
+				{
+					"Source": {
+						"Text": "No se puede."
+					},
+					"Translation": {
+						"Text": "You can't do that."
+					},
+					"Key": "Carry_Generic"
 				},
 				{
 					"Source": {
@@ -107,12 +179,48 @@
 				},
 				{
 					"Source": {
-						"Text": "El registro de objetos no está disponible."
+						"Text": "No tienes dónde guardarlo seco."
 					},
 					"Translation": {
-						"Text": "The item registry isn't available."
+						"Text": "You have nowhere to keep it dry."
 					},
-					"Key": "Carry_NoRegistry"
+					"Key": "Carry_NoPouch"
+				},
+				{
+					"Source": {
+						"Text": "No entra."
+					},
+					"Translation": {
+						"Text": "It won't fit."
+					},
+					"Key": "Carry_NoRoom"
+				},
+				{
+					"Source": {
+						"Text": "No llevas angarillas."
+					},
+					"Translation": {
+						"Text": "You have no travois."
+					},
+					"Key": "Carry_NoSledge"
+				},
+				{
+					"Source": {
+						"Text": "Ahí no se lleva agua."
+					},
+					"Translation": {
+						"Text": "That can't hold water."
+					},
+					"Key": "Carry_NotALiquidContainer"
+				},
+				{
+					"Source": {
+						"Text": "Eso no se lleva puesto."
+					},
+					"Translation": {
+						"Text": "You can't wear that."
+					},
+					"Key": "Carry_NotEquippable"
 				},
 				{
 					"Source": {
@@ -122,6 +230,15 @@
 						"Text": "There's nothing here to pick up."
 					},
 					"Key": "Carry_NothingToPickUp"
+				},
+				{
+					"Source": {
+						"Text": "No puedes con más peso."
+					},
+					"Translation": {
+						"Text": "You can't carry any more weight."
+					},
+					"Key": "Carry_OverCarryLimit"
 				},
 				{
 					"Source": {
@@ -143,12 +260,93 @@
 				},
 				{
 					"Source": {
+						"Text": "Es un solo objeto: no se combina consigo mismo."
+					},
+					"Translation": {
+						"Text": "It's a single object: it can't combine with itself."
+					},
+					"Key": "Carry_SameItem"
+				},
+				{
+					"Source": {
+						"Text": "Ya arrastras unas angarillas."
+					},
+					"Translation": {
+						"Text": "You're already dragging a travois."
+					},
+					"Key": "Carry_SledgeAttached"
+				},
+				{
+					"Source": {
+						"Text": "Las angarillas son para madera y piedra."
+					},
+					"Translation": {
+						"Text": "The travois is for wood and stone."
+					},
+					"Key": "Carry_SledgeOnlyMaterial"
+				},
+				{
+					"Source": {
+						"Text": "Es demasiado grande para guardarlo ahí."
+					},
+					"Translation": {
+						"Text": "It's too big to store there."
+					},
+					"Key": "Carry_TooBig"
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado."
+					},
+					"Translation": {
+						"Text": "It's too heavy."
+					},
+					"Key": "Carry_TooHeavy"
+				},
+				{
+					"Source": {
 						"Text": "Eso ocupa las dos manos: no se guarda."
 					},
 					"Translation": {
 						"Text": "That takes both hands; it can't be stowed."
 					},
 					"Key": "Carry_TwoHandedNoStore"
+				},
+				{
+					"Source": {
+						"Text": "Eso no se guarda ahí."
+					},
+					"Translation": {
+						"Text": "That doesn't go there."
+					},
+					"Key": "Carry_WrongKind"
+				},
+				{
+					"Source": {
+						"Text": "cesta"
+					},
+					"Translation": {
+						"Text": "basket"
+					},
+					"Key": "Container_Basket"
+				},
+				{
+					"Source": {
+						"Text": "arcón"
+					},
+					"Translation": {
+						"Text": "chest"
+					},
+					"Key": "Container_Chest"
+				},
+				{
+					"Source": {
+						"Text": "estante"
+					},
+					"Translation": {
+						"Text": "shelf"
+					},
+					"Key": "Container_Shelf"
 				},
 				{
 					"Source": {
@@ -179,6 +377,42 @@
 				},
 				{
 					"Source": {
+						"Text": "Echar al fuego"
+					},
+					"Translation": {
+						"Text": "Feed the fire"
+					},
+					"Key": "Fire_AddFuel"
+				},
+				{
+					"Source": {
+						"Text": "Retirar la comida"
+					},
+					"Translation": {
+						"Text": "Take the food off"
+					},
+					"Key": "Fire_Collect"
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Translation": {
+						"Text": "Light"
+					},
+					"Key": "Fire_Ignite"
+				},
+				{
+					"Source": {
+						"Text": "Avivar las brasas"
+					},
+					"Translation": {
+						"Text": "Stoke the embers"
+					},
+					"Key": "Fire_Revive"
+				},
+				{
+					"Source": {
 						"Text": "Explored"
 					},
 					"Translation": {
@@ -188,18 +422,293 @@
 				},
 				{
 					"Source": {
+						"Text": "Enganchar las angarillas"
+					},
+					"Translation": {
+						"Text": "Hitch the travois"
+					},
+					"Key": "Verb_AttachSledge"
+				},
+				{
+					"Source": {
+						"Text": "Subir a {0}"
+					},
+					"Translation": {
+						"Text": "Board {0}"
+					},
+					"Key": "Verb_Board"
+				},
+				{
+					"Source": {
+						"Text": "Revisar la trampa"
+					},
+					"Translation": {
+						"Text": "Check the trap"
+					},
+					"Key": "Verb_CheckTrap"
+				},
+				{
+					"Source": {
+						"Text": "Arrancar la planta seca"
+					},
+					"Translation": {
+						"Text": "Pull up the dead plant"
+					},
+					"Key": "Verb_ClearDeadPlant"
+				},
+				{
+					"Source": {
+						"Text": "Cosechar {0}"
+					},
+					"Translation": {
+						"Text": "Harvest {0}"
+					},
+					"Key": "Verb_Harvest"
+				},
+				{
+					"Source": {
+						"Text": "Cargar en las angarillas"
+					},
+					"Translation": {
+						"Text": "Load onto the travois"
+					},
+					"Key": "Verb_LoadSledge"
+				},
+				{
+					"Source": {
 						"Text": "Coger {0}"
 					},
 					"Translation": {
 						"Text": "Pick up {0}"
 					},
 					"Key": "Verb_PickUp"
+				},
+				{
+					"Source": {
+						"Text": "Plantar {0}"
+					},
+					"Translation": {
+						"Text": "Plant {0}"
+					},
+					"Key": "Verb_Plant"
+				},
+				{
+					"Source": {
+						"Text": "Adrizar {0}"
+					},
+					"Translation": {
+						"Text": "Right {0}"
+					},
+					"Key": "Verb_RightBoat"
+				},
+				{
+					"Source": {
+						"Text": "Guardar en {0}"
+					},
+					"Translation": {
+						"Text": "Put in {0}"
+					},
+					"Key": "Verb_StoreIn"
+				},
+				{
+					"Source": {
+						"Text": "Sacar de {0}"
+					},
+					"Translation": {
+						"Text": "Take from {0}"
+					},
+					"Key": "Verb_TakeFrom"
+				},
+				{
+					"Source": {
+						"Text": "Marisquear"
+					},
+					"Translation": {
+						"Text": "Forage the pool"
+					},
+					"Key": "Verb_TidePool"
+				},
+				{
+					"Source": {
+						"Text": "Regar"
+					},
+					"Translation": {
+						"Text": "Water"
+					},
+					"Key": "Verb_Water"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredBuilding",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Giro no válido"
+					},
+					"Translation": {
+						"Text": "Invalid rotation"
+					},
+					"Key": "InvalidRotation"
+				},
+				{
+					"Source": {
+						"Text": "Faltan materiales"
+					},
+					"Translation": {
+						"Text": "Not enough materials"
+					},
+					"Key": "MissingMaterials"
+				},
+				{
+					"Source": {
+						"Text": "Falta otra pieza en la base"
+					},
+					"Translation": {
+						"Text": "Another piece is missing in the base"
+					},
+					"Key": "MissingRequiredPiece"
+				},
+				{
+					"Source": {
+						"Text": "Falta una herramienta"
+					},
+					"Translation": {
+						"Text": "A tool is missing"
+					},
+					"Key": "MissingTools"
+				},
+				{
+					"Source": {
+						"Text": "Tiene que ir sobre el terreno"
+					},
+					"Translation": {
+						"Text": "Must go on the ground"
+					},
+					"Key": "NeedsGround"
+				},
+				{
+					"Source": {
+						"Text": "No tiene dónde apoyarse"
+					},
+					"Translation": {
+						"Text": "Nothing to rest on"
+					},
+					"Key": "NoSupport"
+				},
+				{
+					"Source": {
+						"Text": "No hay nada que reparar"
+					},
+					"Translation": {
+						"Text": "Nothing to repair"
+					},
+					"Key": "NothingToRepair"
+				},
+				{
+					"Source": {
+						"Text": "Ya hay algo ahí"
+					},
+					"Translation": {
+						"Text": "Something is already there"
+					},
+					"Key": "Occupied"
+				},
+				{
+					"Source": {
+						"Text": "Fuera de la base"
+					},
+					"Translation": {
+						"Text": "Outside the base"
+					},
+					"Key": "UnknownBase"
+				},
+				{
+					"Source": {
+						"Text": "Esa pieza ya no existe"
+					},
+					"Translation": {
+						"Text": "That piece no longer exists"
+					},
+					"Key": "UnknownInstance"
+				},
+				{
+					"Source": {
+						"Text": "Pieza desconocida"
+					},
+					"Translation": {
+						"Text": "Unknown piece"
+					},
+					"Key": "UnknownPiece"
+				},
+				{
+					"Source": {
+						"Text": "Demasiado lejos de un apoyo"
+					},
+					"Translation": {
+						"Text": "Too far from a support"
+					},
+					"Key": "Unstable"
 				}
 			]
 		},
 		{
 			"Namespace": "ExploredUI",
 			"Children": [
+				{
+					"Source": {
+						"Text": "Logro conseguido"
+					},
+					"Translation": {
+						"Text": "Achievement unlocked"
+					},
+					"Key": "AchievementUnlocked"
+				},
+				{
+					"Source": {
+						"Text": "Mochila"
+					},
+					"Translation": {
+						"Text": "Backpack"
+					},
+					"Key": "ActionBackpack"
+				},
+				{
+					"Source": {
+						"Text": "Combinar"
+					},
+					"Translation": {
+						"Text": "Combine"
+					},
+					"Key": "ActionCombine"
+				},
+				{
+					"Source": {
+						"Text": "Agacharse / bucear"
+					},
+					"Translation": {
+						"Text": "Crouch / dive"
+					},
+					"Key": "ActionDive"
+				},
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Translation": {
+						"Text": "Drop"
+					},
+					"Key": "ActionDrop"
+				},
+				{
+					"Source": {
+						"Text": "Interactuar / coger"
+					},
+					"Translation": {
+						"Text": "Interact / pick up"
+					},
+					"Key": "ActionInteract"
+				},
 				{
 					"Source": {
 						"Text": "Saltar"
@@ -217,6 +726,24 @@
 						"Text": "Sprint"
 					},
 					"Key": "ActionSprint"
+				},
+				{
+					"Source": {
+						"Text": "Usar mano derecha"
+					},
+					"Translation": {
+						"Text": "Use right hand"
+					},
+					"Key": "ActionUsePrimary"
+				},
+				{
+					"Source": {
+						"Text": "Usar mano izquierda"
+					},
+					"Translation": {
+						"Text": "Use left hand"
+					},
+					"Key": "ActionUseSecondary"
 				},
 				{
 					"Source": {
@@ -409,6 +936,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
+					},
+					"Translation": {
+						"Text": "Line out: {0} m · [R] reel in · [T] let out"
+					},
+					"Key": "FishingLineOut"
+				},
+				{
+					"Source": {
 						"Text": "Vegetación"
 					},
 					"Translation": {
@@ -571,6 +1107,42 @@
 				},
 				{
 					"Source": {
+						"Text": "muy mal"
+					},
+					"Translation": {
+						"Text": "very bad"
+					},
+					"Key": "NeedCritical"
+				},
+				{
+					"Source": {
+						"Text": "regular"
+					},
+					"Translation": {
+						"Text": "so-so"
+					},
+					"Key": "NeedFair"
+				},
+				{
+					"Source": {
+						"Text": "bien"
+					},
+					"Translation": {
+						"Text": "fine"
+					},
+					"Key": "NeedGood"
+				},
+				{
+					"Source": {
+						"Text": "mal"
+					},
+					"Translation": {
+						"Text": "bad"
+					},
+					"Key": "NeedLow"
+				},
+				{
+					"Source": {
 						"Text": "Nueva partida"
 					},
 					"Translation": {
@@ -712,6 +1284,33 @@
 						"Text": "Reflections"
 					},
 					"Key": "Reflections"
+				},
+				{
+					"Source": {
+						"Text": "Los botones del mando no se pueden remapear."
+					},
+					"Translation": {
+						"Text": "Gamepad buttons can't be remapped."
+					},
+					"Key": "RemapGamepad"
+				},
+				{
+					"Source": {
+						"Text": "{0} ya se usa para «{1}»."
+					},
+					"Translation": {
+						"Text": "{0} is already used for «{1}»."
+					},
+					"Key": "RemapInUse"
+				},
+				{
+					"Source": {
+						"Text": "{0} está reservada (movimiento o menú)."
+					},
+					"Translation": {
+						"Text": "{0} is reserved (movement or menu)."
+					},
+					"Key": "RemapReserved"
 				},
 				{
 					"Source": {
@@ -1000,6 +1599,42 @@
 						"Text": "Interface"
 					},
 					"Key": "VolUI"
+				},
+				{
+					"Source": {
+						"Text": "Comida"
+					},
+					"Translation": {
+						"Text": "Food"
+					},
+					"Key": "WatchFood"
+				},
+				{
+					"Source": {
+						"Text": "Sueño"
+					},
+					"Translation": {
+						"Text": "Sleep"
+					},
+					"Key": "WatchRest"
+				},
+				{
+					"Source": {
+						"Text": "Calor"
+					},
+					"Translation": {
+						"Text": "Warmth"
+					},
+					"Key": "WatchWarmth"
+				},
+				{
+					"Source": {
+						"Text": "Agua"
+					},
+					"Translation": {
+						"Text": "Water"
+					},
+					"Key": "WatchWater"
 				},
 				{
 					"Source": {

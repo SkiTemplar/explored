@@ -856,6 +856,7 @@
     {
       "id": "astillero",
       "nameEs": "Astillero",
+      "nameEn": "Shipyard",
       "tier": "madera",
       "category": "produccion",
       "socket": "terreno",
