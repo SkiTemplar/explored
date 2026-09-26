@@ -38,10 +38,9 @@ namespace ExploredUI
  * por el flujo normal de AGameModeBase; este controlador solo decide qué
  * cámara y qué modo de entrada usar mientras el menú está encima.
  *
- * Integración para el equipo de guardado: RequestSaveGame() y ContinueGame()
- * llaman a UExploredSaveSubsystem (ver UI/ExploredSaveSubsystem.h). Cuando
- * el guardado real cargue el mundo, sustituir el cuerpo de ContinueGame()
- * (hoy solo quita el menú y entra a jugar) por la restauración real.
+ * Guardado: RequestSaveGame() guarda en la ranura automática y ContinueGame()
+ * carga la ranura más reciente a través de UExploredSaveSubsystem (ver
+ * UI/ExploredSaveSubsystem.h y docs/tecnico/guardado.md).
  */
 UCLASS()
 class EXPLORED_API AExploredPlayerController : public APlayerController

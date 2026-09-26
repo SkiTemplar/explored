@@ -11,6 +11,8 @@ Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RuinsSpec.cpp
+Tests/SaveArchiveSpec.cpp
+Tests/SaveSlotsSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/VegetationScatterSpec.cpp
