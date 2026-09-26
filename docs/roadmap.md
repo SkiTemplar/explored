@@ -35,7 +35,7 @@ compila y pasa sus tests en local.
 | Cooking | ❌ | ❌ | ❌ | (P-COOK) |
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
 | Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
-| Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
+| Boats | 🚧 modelo | ✅ | sin compilar | `FBoatModel` + `BoatSpec`; `AExploredBoat` sin compilar; datos del astillero en `boats.json`; falta malla del «Limón» y marea en el océano (P-BOATS) |
 | Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
@@ -57,7 +57,7 @@ compila y pasa sus tests en local.
 | P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
 | P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
 | P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | pendiente |
-| P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
+| P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | en curso (nube/barcos-2026-09-26) |
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
