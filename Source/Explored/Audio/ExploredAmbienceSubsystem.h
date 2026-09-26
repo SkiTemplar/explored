@@ -2,9 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "WorldGen/ArchipelagoLayout.h"
 
 #include "ExploredAmbienceSubsystem.generated.h"
 
+class AExploredOcean;
 class UAudioComponent;
 class USoundBase;
 class FTerrainDensity;
@@ -69,6 +71,12 @@ public:
 	/** Evalúa el entorno sonoro en un punto (centímetros, espacio de mundo). */
 	FAmbienceEnvironment Evaluate(const FVector& ListenerCm) const;
 
+	/** Último entorno evaluado en el oyente (lo leen la música y otros sistemas). */
+	const FAmbienceEnvironment& GetListenerEnvironment() const { return ListenerEnvironment; }
+
+	/** Isla en cuya zona de influencia está el oyente; Count en mar abierto. */
+	EIslandArchetype GetListenerIsland() const { return ListenerIsland; }
+
 private:
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UAudioComponent>> Layers;
@@ -76,6 +84,10 @@ private:
 	TArray<float> CurrentVolumes;
 	TArray<float> TargetVolumes;
 	TSharedPtr<FTerrainDensity> Density;
+	/** Océano del nivel: la superficie real (con oleaje) decide si el oyente está sumergido. */
+	TWeakObjectPtr<AExploredOcean> Ocean;
+	FAmbienceEnvironment ListenerEnvironment;
+	EIslandArchetype ListenerIsland = EIslandArchetype::Count;
 	float SampleTimer = 0.0f;
 	float Rain = 0.0f;
 	float SeaState = 0.15f;
