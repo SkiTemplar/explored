@@ -7,6 +7,7 @@
 
 #include "ExploredCharacter.generated.h"
 
+class UBuildPreviewComponent;
 class UCameraComponent;
 class UCarryComponent;
 class UInputAction;
@@ -43,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
 	USwimComponent* GetSwimComponent() const { return Swim; }
+
+	UFUNCTION(BlueprintPure, Category = "Explored|Construcción")
+	UBuildPreviewComponent* GetBuildPreviewComponent() const { return BuildPreview; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -96,6 +100,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
 	TObjectPtr<USwimComponent> Swim;
+
+	/** Modo construcción: fantasma, giro y confirmación (GDD §8.6). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Construcción")
+	TObjectPtr<UBuildPreviewComponent> BuildPreview;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;

@@ -30,7 +30,7 @@ compila y pasa sus tests en local.
 | Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto y HUD corporal (P-BODY) |
 | Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
 | Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
-| Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
+| Building | ✅ modelo | ✅ | sin compilar | `FBuildingModel` (rejilla, apoyos, temporales, reparación, coste, reaparición) con `BuildingSpec` en el host; `UBuildingSubsystem`, `AExploredBuildingPiece` y modo construcción (B, R, Z/X, clic) por verificar en local. Pendiente: descontar materiales de `UCarryComponent`, gastar los minutos de trabajo, persistir con P-SAVE, categorías de ciclón en `FWeatherModel` e importar las mallas de `Tools/Blender/props` (Construccion, Kit*) |
 | Farming | ❌ | ❌ | ❌ | Datos en `plants.json` (P-FARM) |
 | Cooking | ❌ | ❌ | ❌ | (P-COOK) |
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
@@ -51,7 +51,7 @@ compila y pasa sus tests en local.
 |---|---|---|
 | P-HOST | Tests del host + CI | en curso (#5) |
 | P-SWIM | `FSwimModel`: estados con histéresis (H5), apnea por profundidad (H4), oxígeno a FPS altos (M1), corrientes como velocidad (M4) | pendiente |
-| P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | pendiente |
+| P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | en curso (nube/construccion-2026-09-26) |
 | P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | pendiente |
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
 | P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
