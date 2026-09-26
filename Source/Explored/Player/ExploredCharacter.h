@@ -109,6 +109,8 @@ private:
 	void HandleDiveCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
+	/** Andar o correr, por el multiplicador de carga de UCarryComponent. */
+	void ApplyWalkSpeed();
 
 	UFUNCTION()
 	void RefreshHandMeshes();
@@ -211,6 +213,7 @@ private:
 	float CameraBobAmount = 1.2f;
 
 	bool bIsDebugFlying = false;
+	bool bSprintHeld = false;
 	bool bBackpackOpen = false;
 	bool bTickEveryFrame = false;
 	float HandSwayPhase = 0.0f;

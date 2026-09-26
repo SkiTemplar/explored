@@ -8,6 +8,7 @@ Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
 Tests/GaitSpec.cpp
+Tests/InventorySpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/OceanCurrentsSpec.cpp

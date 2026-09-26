@@ -2,6 +2,7 @@
 Achievements/AchievementsModel.cpp
 Boats/BoatModel.cpp
 Building/BuildingModel.cpp
+Carry/InventoryModel.cpp
 Cartography/CartographyModel.cpp
 Cartography/CoastlineTrace.cpp
 Cartography/MapStroke.cpp

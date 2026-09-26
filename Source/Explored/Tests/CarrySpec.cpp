@@ -4,6 +4,7 @@
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/Actor.h"
 #include "UObject/StrongObjectPtr.h"
 
@@ -169,6 +170,65 @@ void FCarrySpec::Define()
 
 			TestTrue(TEXT("Se suelta"), Carry->Drop(EHand::Left, FailReason));
 			TestTrue(TEXT("La mano queda vacía"), Carry->IsHandEmpty(EHand::Left));
+
+			// Revisión (huecos de tests de Carry): volver a coger el actor soltado.
+			AExploredItemActor* Dropped = nullptr;
+			for (TActorIterator<AExploredItemActor> It(TestWorld.Get()); It; ++It)
+			{
+				if (It->GetItemInstance().DefinitionId == Original.DefinitionId)
+				{
+					Dropped = *It;
+				}
+			}
+			if (!TestNotNull(TEXT("Hay un actor soltado en el mundo"), Dropped))
+			{
+				return;
+			}
+			TestTrue(TEXT("Se vuelve a coger"), Carry->TryPickUp(Dropped, FailReason));
+			FItemInstance Again;
+			TestTrue(TEXT("Vuelve a la mano"), Carry->GetHandItem(EHand::Left, Again));
+			TestEqual(TEXT("Misma calidad tras soltar y coger"), Again.Quality, Original.Quality);
+			TestEqual(TEXT("Misma durabilidad tras soltar y coger"), Again.Durability, Original.Durability);
+		});
+
+		It("cuentan una sola vez el peso de un DosManos y no lo combinan consigo mismo (H3)", [this]()
+		{
+			FScopedTestWorld TestWorld;
+			AActor* Owner = TestWorld.Get()->SpawnActor<AActor>();
+			UCarryComponent* Carry = NewObject<UCarryComponent>(Owner);
+			Carry->RegisterComponent();
+
+			AExploredItemActor* Tronco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
+			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco_pequeno")));
+			FText FailReason;
+			TestTrue(TEXT("Se coge"), Carry->TryPickUp(Tronco, FailReason));
+			TestTrue(TEXT("Es un único objeto en las dos manos"), Carry->IsHoldingTwoHandedItem());
+			TestEqual(TEXT("Pesa una vez"), Carry->GetTotalWeight(), Items[TEXT("tronco_pequeno")].WeightKg);
+			EInventoryFail Fail = EInventoryFail::None;
+			TestFalse(TEXT("El modelo no deja combinarlo"), Carry->GetInventoryModel().CanCombineHands(Fail));
+			TestTrue(TEXT("Porque es el mismo objeto"), Fail == EInventoryFail::SameItem);
+		});
+
+		It("sustituyen las piezas por el resultado de fabricar", [this]()
+		{
+			FScopedTestWorld TestWorld;
+			AActor* Owner = TestWorld.Get()->SpawnActor<AActor>();
+			UCarryComponent* Carry = NewObject<UCarryComponent>(Owner);
+			Carry->RegisterComponent();
+
+			FText FailReason;
+			for (const TCHAR* Id : { TEXT("cuchillo"), TEXT("palo_recto") })
+			{
+				AExploredItemActor* Piece = TestWorld.Get()->SpawnActor<AExploredItemActor>();
+				Piece->InitializeFromInstance(MakeInstance(Id));
+				TestTrue(TEXT("Pieza a la mano"), Carry->TryPickUp(Piece, FailReason));
+			}
+			TestTrue(TEXT("El resultado entra"), Carry->ReplaceHandsWithCraftResult(MakeInstance(TEXT("hacha")), FailReason));
+			FItemInstance InHand;
+			TestTrue(TEXT("En la mano izquierda"), Carry->GetHandItem(EHand::Left, InHand));
+			TestTrue(TEXT("Es el hacha"), InHand.DefinitionId == FName(TEXT("hacha")));
+			TestTrue(TEXT("La derecha queda libre"), Carry->IsHandEmpty(EHand::Right));
+			TestEqual(TEXT("Solo pesa el hacha"), Carry->GetTotalWeight(), Items[TEXT("hacha")].WeightKg);
 		});
 	});
 
