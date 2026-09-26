@@ -188,6 +188,13 @@ bool UCraftingLibrary::ApplyWithData(const FItemInstance& Left, const FItemInsta
 		return false;
 	}
 
+	// De entre todas las plantillas que casan, gana la más específica (más
+	// slots), no la primera del catálogo: los «atado_generico»/«pegado_generico»
+	// de comodín tienen un slot «Base» sin requisitos que casa con casi
+	// cualquier pieza, y si ganasen por orden de aparición nunca se llegaría a
+	// una plantilla de 3 roles como el hacha (Cabeza+Mango+Unión) aunque las
+	// dos piezas combinadas la satisfagan de sobra.
+	const FCraftingTemplateDef* BestTemplate = nullptr;
 	for (const FCraftingTemplateDef& Template : Templates)
 	{
 		if (!Template.Verbs.Contains(VerbId))
@@ -198,26 +205,33 @@ bool UCraftingLibrary::ApplyWithData(const FItemInstance& Left, const FItemInsta
 		{
 			continue;
 		}
-
-		if (Template.bIsSharpen)
+		if (!BestTemplate || Template.Slots.Num() > BestTemplate->Slots.Num())
 		{
-			// Slots[0] = herramienta a afilar, Slots[1] = abrasivo (se consume, no se guarda).
-			const bool bLeftIsTool = Template.Slots.Num() > 0 && SlotSatisfiedBy(Template.Slots[0], Left, Items);
-			OutResult = bLeftIsTool ? Left : Right;
-			OutResult.Durability = 1.0f;
-			return true;
+			BestTemplate = &Template;
 		}
+	}
 
-		OutResult = FItemInstance();
-		OutResult.DefinitionId = Template.ResultDefinitionId;
-		OutResult.Quality = FMath::Clamp(FMath::Min(Left.Quality, Right.Quality), 1, 5);
-		OutResult.Durability = FMath::Min(Left.Durability, Right.Durability);
-		OutResult.Count = 1;
-		OutResult.Components = { Left, Right };
-		OutResult.GeneratedName = BuildGeneratedName(Template, Left, Right, Items);
+	if (!BestTemplate)
+	{
+		OutFailReason = NSLOCTEXT("Explored", "Crafting_NoMatch", "Estos objetos no se pueden combinar así.");
+		return false;
+	}
+
+	if (BestTemplate->bIsSharpen)
+	{
+		// Slots[0] = herramienta a afilar, Slots[1] = abrasivo (se consume, no se guarda).
+		const bool bLeftIsTool = BestTemplate->Slots.Num() > 0 && SlotSatisfiedBy(BestTemplate->Slots[0], Left, Items);
+		OutResult = bLeftIsTool ? Left : Right;
+		OutResult.Durability = 1.0f;
 		return true;
 	}
 
-	OutFailReason = NSLOCTEXT("Explored", "Crafting_NoMatch", "Estos objetos no se pueden combinar así.");
-	return false;
+	OutResult = FItemInstance();
+	OutResult.DefinitionId = BestTemplate->ResultDefinitionId;
+	OutResult.Quality = FMath::Clamp(FMath::Min(Left.Quality, Right.Quality), 1, 5);
+	OutResult.Durability = FMath::Min(Left.Durability, Right.Durability);
+	OutResult.Count = 1;
+	OutResult.Components = { Left, Right };
+	OutResult.GeneratedName = BuildGeneratedName(*BestTemplate, Left, Right, Items);
+	return true;
 }

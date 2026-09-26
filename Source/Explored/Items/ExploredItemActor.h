@@ -36,8 +36,8 @@ public:
 
 	// IExploredInteractable
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
-	virtual bool CanInteract_Implementation(AActor* Instigator) const override;
-	virtual void Interact_Implementation(AActor* Instigator) override;
+	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;
+	virtual void Interact_Implementation(AActor* InInstigator) override;
 
 protected:
 	virtual void PostInitializeComponents() override;

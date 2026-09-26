@@ -23,10 +23,13 @@ public:
 	/** Como máximo 3 verbos contextuales (biblia §8.3), en español, para el HUD. */
 	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
 	void GetContextVerbs(TArray<FText>& OutVerbs) const;
+	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
 	bool CanInteract(AActor* Instigator) const;
+	virtual bool CanInteract_Implementation(AActor* Instigator) const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
 	void Interact(AActor* Instigator);
+	virtual void Interact_Implementation(AActor* Instigator);
 };

@@ -74,12 +74,12 @@ void AExploredItemActor::GetContextVerbs_Implementation(TArray<FText>& OutVerbs)
 	OutVerbs.Add(FText::Format(NSLOCTEXT("Explored", "Verb_PickUp", "Coger {0}"), Name));
 }
 
-bool AExploredItemActor::CanInteract_Implementation(AActor* Instigator) const
+bool AExploredItemActor::CanInteract_Implementation(AActor* InInstigator) const
 {
 	return Instance.IsValid();
 }
 
-void AExploredItemActor::Interact_Implementation(AActor* Instigator)
+void AExploredItemActor::Interact_Implementation(AActor* InInstigator)
 {
 	// La recogida real la hace UCarryComponent (Player/ExploredCharacter.cpp),
 	// que es quien conoce las reglas de manos y tamaños; este método por

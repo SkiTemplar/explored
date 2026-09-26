@@ -209,9 +209,15 @@ namespace
 				}
 			}
 		}
-		if (OutTemplate.Slots.Num() < 1 || OutTemplate.Slots.Num() > 2)
+		// UCraftingLibrary::TemplateMatches exige cada slot a Left O A Right, sin
+		// asignación 1:1 rol-pieza: una pieza ya compuesta (p. ej. «palo atado con
+		// liana») puede cubrir dos roles a la vez (Mango y Unión). Por eso una
+		// plantilla puede tener más de dos slots aunque solo se combinen dos
+		// piezas a la vez (hacha, lanza: 3 roles alcanzados en dos pasos). Lo único
+		// que de verdad exige el formato es no dejar una plantilla sin ningún slot.
+		if (OutTemplate.Slots.Num() < 1)
 		{
-			OutError = FString::Printf(TEXT("Plantilla \"%s\" debe tener 1 o 2 slots (se combinan como máximo dos piezas)"), *IdString);
+			OutError = FString::Printf(TEXT("Plantilla \"%s\" no tiene ningún slot"), *IdString);
 			return false;
 		}
 		return true;

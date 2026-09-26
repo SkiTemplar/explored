@@ -105,8 +105,15 @@ struct EXPLORED_API FItemInstance
 	UPROPERTY(BlueprintReadWrite, Category = "Explored|Objetos")
 	int32 Count = 1;
 
-	/** Piezas combinadas para fabricar este objeto; vacío en materiales en bruto. */
-	UPROPERTY(BlueprintReadWrite, Category = "Explored|Objetos")
+	/**
+	 * Piezas combinadas para fabricar este objeto; vacío en materiales en bruto.
+	 * Sin UPROPERTY a propósito: UHT no admite la recursión de un USTRUCT vía
+	 * TArray de sí mismo («'Struct' recursion via arrays is unsupported for
+	 * properties»). No hay ningún acceso a este campo fuera de C++ (Items,
+	 * Carry, Crafting); si algún día hace falta desde Blueprint, envolver el
+	 * array en un tipo indirecto (p. ej. TArray<TInstancedStruct<FItemInstance>>
+	 * o un USTRUCT contenedor con un puntero) en vez de quitar este comentario.
+	 */
 	TArray<FItemInstance> Components;
 
 	/** Nombre generado por la fabricación; vacío = usar el nombre de la definición. */

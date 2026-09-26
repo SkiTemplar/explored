@@ -2,6 +2,7 @@
 #include "Misc/FileHelper.h"
 
 #include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "UObject/StrongObjectPtr.h"
@@ -66,6 +67,12 @@ BEGIN_DEFINE_SPEC(FCarrySpec, "Explored.Carry",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 	TMap<FName, FItemDefinition> Items;
+	// UItemRegistrySubsystem hereda de UGameInstanceSubsystem, cuya UCLASS
+	// exige Within = GameInstance: NewObject<UItemRegistrySubsystem>() sin ese
+	// outer crea el objeto dentro de un Package y dispara un ensure (ClassWithin
+	// inválido). Este GameInstance nunca se inicializa (Init()); solo existe
+	// para darle al registro un outer del tipo que su reflection exige.
+	TStrongObjectPtr<UGameInstance> DummyGameInstance;
 	TStrongObjectPtr<UItemRegistrySubsystem> Registry;
 
 END_DEFINE_SPEC(FCarrySpec)
@@ -85,13 +92,15 @@ void FCarrySpec::Define()
 
 		// SetLoadedDataForTests enlaza este registro en UCraftingLibrary, que
 		// es el camino de repuesto que usa UCarryComponent sin GameInstance.
-		Registry = TStrongObjectPtr<UItemRegistrySubsystem>(NewObject<UItemRegistrySubsystem>());
+		DummyGameInstance = TStrongObjectPtr<UGameInstance>(NewObject<UGameInstance>());
+		Registry = TStrongObjectPtr<UItemRegistrySubsystem>(NewObject<UItemRegistrySubsystem>(DummyGameInstance.Get()));
 		Registry->SetLoadedDataForTests(Items, {}, {});
 	});
 
 	AfterEach([this]()
 	{
 		Registry.Reset();
+		DummyGameInstance.Reset();
 	});
 
 	Describe("Las manos", [this]()
