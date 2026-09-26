@@ -30,6 +30,9 @@ public:
 	EWeatherState GetState() const { return State; }
 	ESeason GetSeason() const { return Season; }
 
+	/** Semilla del clima del mundo (la usa FWorldEventsModel para ver el mismo cielo). */
+	static uint32 GetWorldWeatherSeed();
+
 	/** Fuerza un estado durante un tiempo (depuración y eventos de guion). Duración en horas de juego. */
 	void ForceState(EWeatherState InState, float DurationHours);
 
