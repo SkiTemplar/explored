@@ -28,7 +28,7 @@ compila y pasa sus tests en local.
 | Sky / tiempo | ✅ base | parcial | ✅ | Fases lunares en modelo (P-EVENTS) |
 | Weather | ✅ | ✅ | ✅ | |
 | Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto y HUD corporal (P-BODY) |
-| Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
+| Interaction / Carry / Crafting | ✅ base | parcial (Carry: `FInventoryModel` ✅; Crafting sin modelo) | parcial (Carry sin compilar) | P-CARRY: cinturón, bolsa estanca, mochilas, contenedores y angarillas en modelo; falta compilar en local, plantillas de fabricación de mochilas/cinturón/angarillas y mallas. **TODO:** vista 3D del interior de la mochila (sacar las cosas con la mano, GDD §8.2) |
 | Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
 | Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
 | Farming | ❌ | ❌ | ❌ | Datos en `plants.json` (P-FARM) |
@@ -63,7 +63,7 @@ compila y pasa sus tests en local.
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
-| P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
+| P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | en curso (nube/inventario-2026-09-26) |
 | P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |
 | P-MUSIC | Director de música adaptativa por capas | pendiente |
 | P-L10N | Tabla de textos ES/EN y selector | pendiente |
