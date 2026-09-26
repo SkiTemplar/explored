@@ -12,6 +12,7 @@ class UCarryComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
+class USwimComponent;
 class UStaticMeshComponent;
 struct FInputActionValue;
 
@@ -40,6 +41,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Interacción")
 	UInteractionComponent* GetInteractionComponent() const { return Interaction; }
 
+	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
+	USwimComponent* GetSwimComponent() const { return Swim; }
+
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
 
@@ -66,6 +70,8 @@ private:
 	void HandleDrop(const FInputActionValue& Value);
 	void HandleCombine(const FInputActionValue& Value);
 	void HandleToggleBackpack(const FInputActionValue& Value);
+	void HandleDiveStarted(const FInputActionValue& Value);
+	void HandleDiveCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 
@@ -87,6 +93,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Interacción")
 	TObjectPtr<UInteractionComponent> Interaction;
+
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
+	TObjectPtr<USwimComponent> Swim;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -127,6 +136,9 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> ToggleBackpackAction;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> DiveAction;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;
 
@@ -139,6 +151,10 @@ private:
 	/** Amplitud del balanceo cosmético de las manos al andar (GDD, punto 6 del encargo). */
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Manos")
 	float HandSwayAmount = 1.2f;
+
+	/** Amplitud de la brazada procedural al nadar; mucho mayor que el balanceo al andar. */
+	UPROPERTY(EditDefaultsOnly, Category = "Explored|Manos")
+	float SwimStrokeAmount = 14.0f;
 
 	bool bIsDebugFlying = false;
 	bool bBackpackOpen = false;

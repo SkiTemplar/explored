@@ -17,6 +17,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
+#include "Player/SwimComponent.h"
 
 namespace
 {
@@ -82,6 +83,7 @@ AExploredCharacter::AExploredCharacter()
 
 	Carry = CreateDefaultSubobject<UCarryComponent>(TEXT("Carry"));
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
+	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
 
 	bUseControllerRotationYaw = true;
 
@@ -116,6 +118,32 @@ void AExploredCharacter::BeginPlay()
 void AExploredCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	const EWaterState WaterState = Swim ? Swim->GetWaterState() : EWaterState::OnLand;
+	if (WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving)
+	{
+		// Brazadas: la fase la lleva USwimComponent (avanza con la velocidad de nado);
+		// aquí solo se traduce en el vaivén de las manos, mucho más amplio que al andar.
+		const float Phase = Swim->GetStrokePhase() * UE_TWO_PI;
+		const float SwingL = FMath::Sin(Phase) * SwimStrokeAmount;
+		const float SwingR = FMath::Sin(Phase + UE_PI) * SwimStrokeAmount;
+		if (HandMeshLeft)
+		{
+			HandMeshLeft->SetRelativeLocation(HandRestLocationLeft + FVector(SwingL * 0.6f, 0.0f, SwingL));
+		}
+		if (HandMeshRight)
+		{
+			HandMeshRight->SetRelativeLocation(HandRestLocationRight + FVector(SwingR * 0.6f, 0.0f, SwingR));
+		}
+
+		// La cámara deja de seguir solo el control del jugador: se le suma el balanceo de la ola.
+		Camera->bUsePawnControlRotation = false;
+		const FRotator ControlRot = GetControlRotation();
+		const FRotator Tilt = Swim->GetWaveTilt();
+		Camera->SetWorldRotation(FRotator(ControlRot.Pitch + Tilt.Pitch, ControlRot.Yaw, Tilt.Roll));
+		return;
+	}
+	Camera->bUsePawnControlRotation = true;
 
 	const float SpeedRatio = FMath::Clamp(GetVelocity().Size2D() / FMath::Max(WalkSpeed, 1.0f), 0.0f, 1.0f);
 	if (SpeedRatio > KINDA_SMALL_NUMBER)
@@ -207,6 +235,7 @@ void AExploredCharacter::BuildInputAssets()
 	DropAction = MakeAction(this, TEXT("IA_Drop"), EInputActionValueType::Boolean);
 	CombineAction = MakeAction(this, TEXT("IA_Combine"), EInputActionValueType::Boolean);
 	ToggleBackpackAction = MakeAction(this, TEXT("IA_ToggleBackpack"), EInputActionValueType::Boolean);
+	DiveAction = MakeAction(this, TEXT("IA_Dive"), EInputActionValueType::Boolean);
 
 	// E también sube en vuelo de depuración (VerticalAction); en juego normal
 	// solo importa como interacción, así que conviven en la misma tecla.
@@ -216,6 +245,8 @@ void AExploredCharacter::BuildInputAssets()
 	MapKey(MappingContext, DropAction, EKeys::G);
 	MapKey(MappingContext, CombineAction, EKeys::C);
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Tab);
+	// Bucear: mantener para bajar; soltar deja que el pulmón empuje de vuelta a la superficie.
+	MapKey(MappingContext, DiveAction, EKeys::LeftControl);
 }
 
 void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -239,13 +270,19 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(DropAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDrop);
 	Input->BindAction(CombineAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleCombine);
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
+	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
+	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
 	const FRotator Yaw(0.0f, GetControlRotation().Yaw, 0.0f);
-	if (bIsDebugFlying)
+	// Buceando (sumergido de verdad, no solo a flote) se nada libremente hacia
+	// donde mira la cámara, como en vuelo de depuración; a flote W/S siguen
+	// moviendo por el plano horizontal, igual que andando.
+	const bool bFreeSwim = Swim && Swim->GetWaterState() == EWaterState::Diving;
+	if (bIsDebugFlying || bFreeSwim)
 	{
 		AddMovementInput(GetControlRotation().Vector(), Axis.Y);
 	}
@@ -400,4 +437,20 @@ void AExploredCharacter::HandleToggleBackpack(const FInputActionValue&)
 {
 	bBackpackOpen = !bBackpackOpen;
 	OnBackpackToggled.Broadcast(bBackpackOpen);
+}
+
+void AExploredCharacter::HandleDiveStarted(const FInputActionValue&)
+{
+	if (Swim)
+	{
+		Swim->SetDiveHeld(true);
+	}
+}
+
+void AExploredCharacter::HandleDiveCompleted(const FInputActionValue&)
+{
+	if (Swim)
+	{
+		Swim->SetDiveHeld(false);
+	}
 }
