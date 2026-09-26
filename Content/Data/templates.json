@@ -1,0 +1,203 @@
+[
+	{
+		"id": "lasca_por_golpeo", "nameEs": "Lasca por golpeo",
+		"verbs": ["Golpear"],
+		"resultDefinitionId": "lasca_tallada",
+		"nameTemplate": "Lasca de {1}",
+		"baseMaxDurability": 10,
+		"slots": [
+			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Nucleo", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 4 } ] }
+		]
+	},
+	{
+		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "estaca",
+		"nameTemplate": "Estaca de {1}",
+		"baseMaxDurability": 15,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Madera", "requireAll": true, "requirements": [ { "property": "Largo", "min": 1 }, { "property": "Rigido", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "pasta_medicinal_por_machacado", "nameEs": "Pasta medicinal por machacado",
+		"verbs": ["Machacar"],
+		"resultDefinitionId": "pasta_medicinal",
+		"nameTemplate": "Pasta de {1}",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Mazo", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 2 } ] },
+			{ "role": "Planta", "requireAll": false, "requirements": [ { "property": "Medicinal", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "recipiente_de_coco", "nameEs": "Recipiente de coco",
+		"verbs": ["Golpear", "Raspar"],
+		"resultDefinitionId": "recipiente_coco",
+		"nameTemplate": "Recipiente de coco",
+		"baseMaxDurability": 15,
+		"slots": [
+			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 } ] },
+			{ "role": "Coco", "requireAll": false, "requirements": [], "tags": ["coco"] }
+		]
+	},
+	{
+		"id": "cordel", "nameEs": "Cordel",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "cordel",
+		"nameTemplate": "Cordel de fibra",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "cuerda", "nameEs": "Cuerda",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "cuerda",
+		"nameTemplate": "Cuerda trenzada",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "CordelA", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "CordelB", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "cesta", "nameEs": "Cesta",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "cesta",
+		"nameTemplate": "Cesta de {0}",
+		"baseMaxDurability": 30,
+		"slots": [
+			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
+			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "atado_generico", "nameEs": "Atado genérico",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "atado_generico",
+		"nameTemplate": "{0} atado con {1}",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Base", "requireAll": false, "requirements": [] },
+			{ "role": "Ligadura", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "pegado_generico", "nameEs": "Pegado genérico",
+		"verbs": ["Pegar"],
+		"resultDefinitionId": "pegado_generico",
+		"nameTemplate": "{0} pegado con {1}",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Base", "requireAll": false, "requirements": [] },
+			{ "role": "Ligadura", "requireAll": false, "requirements": [ { "property": "Adhesivo", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "hacha", "nameEs": "Hacha",
+		"verbs": ["Atar", "Pegar"],
+		"resultDefinitionId": "hacha",
+		"nameTemplate": "Hacha de {0} con mango de {1}, atada con {2}",
+		"baseMaxDurability": 60,
+		"slots": [
+			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 }, { "property": "Contundente", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "lanza", "nameEs": "Lanza",
+		"verbs": ["Atar", "Pegar"],
+		"resultDefinitionId": "lanza",
+		"nameTemplate": "Lanza de {0} con punta de {1}, atada con {2}",
+		"baseMaxDurability": 50,
+		"slots": [
+			{ "role": "Asta", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "cuchillo", "nameEs": "Cuchillo",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "cuchillo",
+		"nameTemplate": "Cuchillo de {0} con mango de {1}",
+		"baseMaxDurability": 40,
+		"slots": [
+			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "martillo", "nameEs": "Martillo",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "martillo",
+		"nameTemplate": "Martillo de {0} con mango de {1}",
+		"baseMaxDurability": 50,
+		"slots": [
+			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "antorcha", "nameEs": "Antorcha",
+		"verbs": ["Atar", "Pegar"],
+		"resultDefinitionId": "antorcha",
+		"nameTemplate": "Antorcha de {0} con {1}",
+		"baseMaxDurability": 20,
+		"slots": [
+			{ "role": "Asta", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
+			{ "role": "Combustible", "requireAll": false, "requirements": [ { "property": "Combustible", "min": 2 }, { "property": "Inflamable", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "arco", "nameEs": "Arco",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "arco",
+		"nameTemplate": "Arco de {0} con cuerda de {1}",
+		"baseMaxDurability": 45,
+		"slots": [
+			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
+			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "flecha", "nameEs": "Flecha",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "flecha",
+		"nameTemplate": "Flecha de {0} con punta de {1}",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Astil", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 1 } ] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "pala", "nameEs": "Pala",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "pala",
+		"nameTemplate": "Pala de {0} con mango de {1}",
+		"baseMaxDurability": 40,
+		"slots": [
+			{ "role": "Superficie", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 2 }, { "property": "Contundente", "min": 1 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "afilar_generico", "nameEs": "Afilar",
+		"verbs": ["Afilar"],
+		"resultDefinitionId": "hacha",
+		"nameTemplate": "",
+		"baseMaxDurability": 0,
+		"isSharpen": true,
+		"slots": [
+			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 }, { "property": "Punta", "min": 1 } ] },
+			{ "role": "Abrasivo", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 2 } ] }
+		]
+	}
+]

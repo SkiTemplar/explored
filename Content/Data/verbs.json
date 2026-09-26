@@ -1,0 +1,10 @@
+[
+	{ "id": "Golpear", "nameEs": "Golpear", "description": "Contundente sobre duro: lascas o cocos abiertos." },
+	{ "id": "Tallar", "nameEs": "Tallar", "description": "Filo sobre madera o hueso: estacas, mangos, cucharas." },
+	{ "id": "Atar", "nameEs": "Atar", "description": "Ata más dos piezas: herramientas compuestas." },
+	{ "id": "Pegar", "nameEs": "Pegar", "description": "Adhesivo más dos piezas: unión más duradera que atar." },
+	{ "id": "Afilar", "nameEs": "Afilar", "description": "Abrasivo sobre filo: recupera filo y durabilidad." },
+	{ "id": "Trenzar", "nameEs": "Trenzar", "description": "Fibroso combinado: cordel, cuerda, cesta." },
+	{ "id": "Machacar", "nameEs": "Machacar", "description": "Contundente sobre blando: pasta, fibra, pigmento." },
+	{ "id": "Raspar", "nameEs": "Raspar", "description": "Filo sobre piel o corteza: cuero en bruto, fibra." }
+]
