@@ -1,0 +1,26 @@
+# Validación sin Unreal: modelos puros de C++ (con ASan/UBSan) y generador de texturas.
+name: host-tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  cpp-models:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests de modelos puros
+        run: Tools/HostTests/run.sh
+      - name: Tests de modelos puros con ASan/UBSan
+        run: HOST_TESTS_SANITIZE=ON Tools/HostTests/run.sh
+
+  textures:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Tests del generador de texturas
+        working-directory: Tools/Textures
+        run: uv run --with numpy --with pillow --with pytest python -m pytest -q tests
