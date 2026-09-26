@@ -30,6 +30,14 @@ struct EXPLORED_API FOceanWaves
 	/** Altura aproximada del agua en (X, Y) (corrige el desplazamiento horizontal con dos iteraciones). */
 	float HeightAt(const FVector2D& Position, float Time) const;
 
+	/**
+	 * Normal unitaria de la superficie en (X, Y), por diferencias finitas de
+	 * HeightAt. La usa el nado en superficie para inclinar la cámara con la
+	 * pendiente de la ola; el material evalúa su propia normal por separado,
+	 * pero a partir de las mismas olas.
+	 */
+	FVector NormalAt(const FVector2D& Position, float Time) const;
+
 	/** Gravedad en cm/s² para la relación de dispersión. */
 	static constexpr float Gravity = 981.0f;
 };

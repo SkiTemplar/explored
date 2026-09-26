@@ -29,8 +29,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Océano")
 	float GetWaterHeightAt(const FVector& WorldLocation) const;
 
+	/** Normal de la superficie (espacio de mundo) en una posición; para inclinar la cámara al nadar. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Océano")
+	FVector GetWaterNormalAt(const FVector& WorldLocation) const;
+
 	/** Fuerza del mar: 0 calma, 1 temporal. La fija el sistema de clima. */
 	void SetSeaState(float InSeaState);
+
+	/** Fuerza del mar actual (0 calma, 1 temporal): más espuma de cresta y de orilla cuando sube. */
+	UFUNCTION(BlueprintPure, Category = "Explored|Océano")
+	float GetSeaState() const { return SeaState; }
 
 protected:
 	virtual void BeginPlay() override;

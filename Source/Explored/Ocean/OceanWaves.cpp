@@ -48,3 +48,17 @@ float FOceanWaves::HeightAt(const FVector2D& Position, float Time) const
 	}
 	return Displacement(Rest, Time).Z;
 }
+
+FVector FOceanWaves::NormalAt(const FVector2D& Position, float Time) const
+{
+	constexpr float Step = 25.0f; // cm; suficiente para captar la ola más corta (900 cm).
+	const float HxMinus = HeightAt(Position - FVector2D(Step, 0.0f), Time);
+	const float HxPlus = HeightAt(Position + FVector2D(Step, 0.0f), Time);
+	const float HyMinus = HeightAt(Position - FVector2D(0.0f, Step), Time);
+	const float HyPlus = HeightAt(Position + FVector2D(0.0f, Step), Time);
+	const FVector Tangent(2.0f * Step, 0.0f, HxPlus - HxMinus);
+	const FVector Bitangent(0.0f, 2.0f * Step, HyPlus - HyMinus);
+	const FVector Normal = FVector::CrossProduct(Tangent, Bitangent).GetSafeNormal();
+	// CrossProduct puede degenerar a cero solo si el paso es cero; con Step > 0 siempre da Z > 0.
+	return Normal.IsNearlyZero() ? FVector::UpVector : Normal;
+}

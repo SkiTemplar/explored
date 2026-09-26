@@ -127,6 +127,7 @@ void AExploredOcean::PushWaveParameters()
 		MaterialInstance->SetScalarParameterValue(*FString::Printf(TEXT("Steepness%d"), I), W.Steepness);
 	}
 	MaterialInstance->SetScalarParameterValue(TEXT("WaveCount"), FOceanWaves::NumWaves);
+	MaterialInstance->SetScalarParameterValue(TEXT("SeaState"), SeaState);
 }
 
 void AExploredOcean::SetSeaState(float InSeaState)
@@ -162,4 +163,9 @@ void AExploredOcean::Tick(float DeltaSeconds)
 float AExploredOcean::GetWaterHeightAt(const FVector& WorldLocation) const
 {
 	return Waves.HeightAt(FVector2D(WorldLocation.X, WorldLocation.Y), GetWaveTime());
+}
+
+FVector AExploredOcean::GetWaterNormalAt(const FVector& WorldLocation) const
+{
+	return Waves.NormalAt(FVector2D(WorldLocation.X, WorldLocation.Y), GetWaveTime());
 }
