@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "UObject/ConstructorHelpers.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Fishing/ExploredFishingSubsystem.h"
 #include "Fishing/FishingComponent.h"
 
@@ -55,6 +56,34 @@ bool AExploredTrap::KindFromName(FName Name, ETrapKind& OutKind)
 		return true;
 	}
 	return false;
+}
+
+FName AExploredTrap::NameForKind(ETrapKind Kind)
+{
+	switch (Kind)
+	{
+	case ETrapKind::CrabTrap: return FName(TEXT("trampa_cangrejos"));
+	case ETrapKind::StoneCorral: return FName(TEXT("corral_piedras"));
+	default: return FName(TEXT("nasa"));
+	}
+}
+
+AExploredTrap* AExploredTrap::SpawnRestored(UWorld* World, const FPlacedTrap& Placed)
+{
+	if (!World)
+	{
+		return nullptr;
+	}
+	const FTransform Transform(FRotator::ZeroRotator, Placed.Location);
+	AExploredTrap* Trap = World->SpawnActorDeferred<AExploredTrap>(AExploredTrap::StaticClass(), Transform);
+	if (Trap)
+	{
+		Trap->Configure(NameForKind(Placed.Kind), FFishingModel::BaitItemId(Placed.Bait));
+		// Con el id ya puesto, BeginPlay la encuentra en el estado y no la registra otra vez.
+		Trap->TrapId = Placed.Id;
+		Trap->FinishSpawning(Transform);
+	}
+	return Trap;
 }
 
 void AExploredTrap::BeginPlay()
@@ -134,6 +163,20 @@ void AExploredTrap::Interact_Implementation(AActor* InInstigator)
 void AExploredTrap::DropCatches(const TArray<FTrapCatch>& Catches) const
 {
 	UWorld* World = GetWorld();
+	// «fish_caught» cuenta los peces de cualquier técnica, también los de nasa (no el marisco).
+	int32 Fish = 0;
+	for (const FTrapCatch& Catch : Catches)
+	{
+		const FFishSpecies* Species = FFishingModel::FindSpecies(Catch.ItemId);
+		Fish += (Species && Species->IsFish()) ? 1 : 0;
+	}
+	if (Fish > 0)
+	{
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStat(TEXT("fish_caught"), Fish);
+		}
+	}
 	const FVector Base = GetActorLocation() + FVector(0.0, 0.0, 40.0);
 	for (int32 Index = 0; Index < Catches.Num(); ++Index)
 	{

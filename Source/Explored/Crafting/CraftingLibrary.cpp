@@ -36,6 +36,28 @@ bool UCraftingLibrary::Apply(const FItemInstance& Left, const FItemInstance& Rig
 	return ApplyWithData(Left, Right, VerbId, Registry->GetItems(), Registry->GetTemplates(), OutResult, OutFailReason);
 }
 
+TArray<FName> UCraftingLibrary::FindActionsInWorld(const UObject* WorldContextObject, const FItemInstance& Left, const FItemInstance& Right)
+{
+	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(WorldContextObject);
+	if (!Registry)
+	{
+		return {};
+	}
+	return FindActionsWithData(Left, Right, Registry->GetItems(), Registry->GetTemplates());
+}
+
+bool UCraftingLibrary::ApplyInWorld(const UObject* WorldContextObject, const FItemInstance& Left, const FItemInstance& Right, FName VerbId,
+	FItemInstance& OutResult, FText& OutFailReason)
+{
+	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(WorldContextObject);
+	if (!Registry)
+	{
+		OutFailReason = NSLOCTEXT("Explored", "Crafting_NoRegistry", "El registro de objetos no está disponible.");
+		return false;
+	}
+	return ApplyWithData(Left, Right, VerbId, Registry->GetItems(), Registry->GetTemplates(), OutResult, OutFailReason);
+}
+
 bool UCraftingLibrary::SlotSatisfiedBy(const FCraftingSlot& Slot, const FItemInstance& Piece, const TMap<FName, FItemDefinition>& Items)
 {
 	if (!Piece.IsValid())

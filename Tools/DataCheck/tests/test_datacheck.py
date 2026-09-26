@@ -537,3 +537,17 @@ def test_pesca_trampa_desincronizada_del_cpp(ds: DataSet) -> None:
 def test_pesca_once_peces(ds: DataSet) -> None:
     fish(ds)["species"] = [s for s in fish(ds)["species"] if s["id"] != "dorado"]
     assert any_error(errors_of(ds), "11")
+
+
+def test_detecta_conjunto_desfasado_con_su_catalogo(ds: DataSet) -> None:
+    stats = ds.data["achievements.json"]["stats"]
+    boats = next(s for s in stats if s["id"] == "boats_built")
+    boats["values"] = ["balsa", "canoa", "canoa_balancin", "limon"]
+    assert any_error(errors_of(ds), "boats_built", "boats.json")
+
+
+def test_detecta_tecnica_con_id_distinto_de_ruins(ds: DataSet) -> None:
+    stats = ds.data["achievements.json"]["stats"]
+    techniques = next(s for s in stats if s["id"] == "wayfinding_techniques")
+    techniques["values"] = ["camino_estrellas", "lectura_oleaje", "aves_atardecer", "nubes_fijas", "color_agua"]
+    assert any_error(errors_of(ds), "wayfinding_techniques", "ruins.json")

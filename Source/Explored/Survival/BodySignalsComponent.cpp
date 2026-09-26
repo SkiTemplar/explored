@@ -159,6 +159,34 @@ void UBodySignalsComponent::Consume(const FConsumable& Item)
 	Broadcast(Events);
 }
 
+void UBodySignalsComponent::RestoreSurvival(const FSurvivalState& InState, ESurvivalMode Mode)
+{
+	State = InState;
+	// El Personalizado guarda su multiplicador fuera del cuerpo: se conserva el actual.
+	if (Mode != ESurvivalMode::Custom)
+	{
+		ModeSettings = FSurvivalModeSettings::FromMode(Mode);
+	}
+	StepAccumulator = 0.0f;
+}
+
+void UBodySignalsComponent::ApplyRespawn()
+{
+	State = ExploredLinks::MakeRespawnState(State);
+	StepAccumulator = 0.0f;
+	bWasFalling = false;
+	bFallFromFlight = false;
+	if (const ACharacter* Character = Cast<ACharacter>(GetOwner()))
+	{
+		FallApexZ = Character->GetActorLocation().Z;
+	}
+}
+
+void UBodySignalsComponent::AddMorale(float Points)
+{
+	State.Morale = FMath::Clamp(State.Morale + Points, 0.0f, 100.0f);
+}
+
 void UBodySignalsComponent::AddCut(float Depth)
 {
 	FBodyModel::AddCut(State, Depth);
@@ -225,8 +253,10 @@ void UBodySignalsComponent::StepSurvival(float RealSeconds)
 		return;
 	}
 	Inputs.Activity = CurrentActivity();
+	FSurvivalInputs Linked = Inputs;
+	ExploredLinks::ApplySurvivalLinks(Linked, Links);
 	TArray<ESurvivalEvent> Events;
-	FSurvivalModel::Tick(State, Inputs, DeltaHours, ModeSettings, FMath::FRand(), Events);
+	FSurvivalModel::Tick(State, Linked, DeltaHours, ModeSettings, FMath::FRand(), Events);
 	Broadcast(Events);
 
 	// Estómago: la señal es una probabilidad por minuto real.
@@ -286,7 +316,7 @@ void UBodySignalsComponent::SampleEnvironment()
 void UBodySignalsComponent::UpdateEnergy(float DeltaSeconds)
 {
 	const EActivity Activity = CurrentActivity();
-	const float Drain = FSurvivalModel::EnergyDrainPerSecond(Activity, Inputs.CarriedWeightRatio);
+	const float Drain = FSurvivalModel::EnergyDrainPerSecond(Activity, FMath::Max(Inputs.CarriedWeightRatio, Links.CarriedWeightRatio));
 	State.Energy = FMath::Clamp(State.Energy - Drain * DeltaSeconds, 0.0f, State.MaxEnergy());
 }
 

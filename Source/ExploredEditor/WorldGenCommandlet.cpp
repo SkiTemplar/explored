@@ -343,9 +343,21 @@ namespace
 			}
 		});
 
-		// 3) Limpia la carpeta de terreno anterior.
-		const FString TerrainDir = FPackageName::LongPackageNameToFilename(TerrainFolder, TEXT(""));
-		IFileManager::Get().DeleteDirectory(*TerrainDir, false, true);
+		// 3) Limpia la carpeta de terreno anterior, solo si se hornea el mundo entero (M10): con
+		//    -region= se conservan los chunks de fuera (el mapa se compone con todos y la
+		//    vegetación cubre el mundo) y los de dentro se sobrescriben por nombre.
+		const float WorldExtent = FArchipelagoLayout::WorldHalfExtent;
+		const bool bWholeWorld = Region.Min.X <= -WorldExtent && Region.Min.Y <= -WorldExtent &&
+			Region.Max.X >= WorldExtent && Region.Max.Y >= WorldExtent;
+		if (bWholeWorld)
+		{
+			const FString TerrainDir = FPackageName::LongPackageNameToFilename(TerrainFolder, TEXT(""));
+			IFileManager::Get().DeleteDirectory(*TerrainDir, false, true);
+		}
+		else
+		{
+			UE_LOG(LogExplored, Display, TEXT("Horneado por región: se conservan los chunks de fuera de la región"));
+		}
 
 		// 4) Crea y construye las mallas.
 		TArray<UStaticMesh*> Built;

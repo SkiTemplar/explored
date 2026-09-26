@@ -67,6 +67,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Pesca")
 	void SetBaitItem(FName ItemId) { Bait = FFishingModel::BaitFromItemId(ItemId); }
 
+	/** Pesca desde una embarcación (lo pone UExploredWiringSubsystem): el Rey de Plata solo pica así. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Pesca")
+	void SetFromBoat(bool bInFromBoat) { bFromBoat = bInFromBoat; }
+
 	/** Sitio con nombre en el que se está (lo fijan volúmenes del mundo; legendarias, biblia §4.6). */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Pesca")
 	void SetSpotTag(FName Tag) { SpotTag = Tag; }
@@ -132,4 +136,5 @@ private:
 	FFishBite PendingBite;
 	TOptional<FFishFight> Fight;
 	float ReelInput = 0.0f;
+	bool bFromBoat = false;
 };

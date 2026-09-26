@@ -12,6 +12,7 @@ Cooking/FireModel.cpp
 Core/ExploredLocalization.cpp
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
+Core/SystemLinks.cpp
 Events/WorldEventsModel.cpp
 Farming/FarmModel.cpp
 Fauna/BoidsModel.cpp
@@ -30,6 +31,7 @@ Ruins/MuseumModel.cpp
 Ruins/RuinsModel.cpp
 Save/SaveFormat.cpp
 Save/SaveSlots.cpp
+Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp

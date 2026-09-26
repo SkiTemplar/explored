@@ -5,6 +5,7 @@
 #include "Templates/SharedPointer.h"
 #include "UObject/SoftObjectPtr.h"
 
+#include "Core/SystemLinks.h"
 #include "Survival/BodyModel.h"
 #include "Survival/BodySignals.h"
 #include "Survival/SurvivalModel.h"
@@ -58,6 +59,23 @@ public:
 	const FSurvivalModeSettings& GetModeSettings() const { return ModeSettings; }
 	void SetModeSettings(const FSurvivalModeSettings& InSettings) { ModeSettings = InSettings; }
 	void SetMode(ESurvivalMode Mode) { ModeSettings = FSurvivalModeSettings::FromMode(Mode); }
+
+	/**
+	 * Lo que aportan otros sistemas al entorno del cuerpo (calor de los fuegos,
+	 * carga, música...). Lo refresca UExploredWiringSubsystem y se mezcla con lo que
+	 * mide el propio componente (ExploredLinks::ApplySurvivalLinks).
+	 */
+	void SetLinkInputs(const ExploredLinks::FSurvivalLinkInputs& InLinks) { Links = InLinks; }
+	const FSurvivalInputs& GetInputs() const { return Inputs; }
+
+	/** Estado de una partida guardada (sección «body»). */
+	void RestoreSurvival(const FSurvivalState& InState, ESurvivalMode Mode);
+
+	/** Reaparición (el modo de juego decide dónde): vivo, sin heridas, con el cuerpo tocado. */
+	void ApplyRespawn();
+
+	/** Ánimo que suman otros sistemas por su cuenta (la flauta junto al fuego), en puntos. */
+	void AddMorale(float Points);
 
 	/** Sucesos del cuerpo (intoxicación, infección, esguince…) para sonidos y textos. */
 	FOnBodySurvivalEvent OnSurvivalEvent;
@@ -163,6 +181,7 @@ private:
 	FSurvivalState State;
 	FSurvivalModeSettings ModeSettings;
 	FSurvivalInputs Inputs;
+	ExploredLinks::FSurvivalLinkInputs Links;
 	FBodySignals Signals;
 	FBodySignals TargetSignals;
 	FWristWatchReadout WatchReadout;

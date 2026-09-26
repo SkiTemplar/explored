@@ -176,6 +176,12 @@ void USwimComponent::ApplyStep(const FSwimStep& Step, float DeltaTime)
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	UCharacterMovementComponent* Movement = Character ? Character->GetCharacterMovement() : nullptr;
 
+	// L7: el vuelo de depuración (sin colisión) manda sobre el nado: no se toca su movimiento.
+	if (Character && !Character->GetActorEnableCollision())
+	{
+		return;
+	}
+
 	// Modo de movimiento: el modelo ya aplica la histéresis (H5), así que la
 	// zambullida suena una sola vez al entrar y no en cada valle de ola.
 	if (Step.bSwimming)

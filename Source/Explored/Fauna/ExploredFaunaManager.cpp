@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Core/ExploredRandom.h"
+#include "Core/SystemLinks.h"
 #include "Fauna/ExploredMarineCreature.h"
 #include "Ocean/ExploredOcean.h"
 #include "Ocean/OceanCurrents.h"
@@ -180,6 +181,23 @@ void AExploredFaunaManager::AddBloodInWater(const FVector& LocationCm, float Amo
 	Source.OriginCm = LocationCm;
 	Source.Amount01 = FMath::Clamp(Amount01, 0.0f, 1.0f);
 	Blood.Add(Source);
+}
+
+float AExploredFaunaManager::GetPlayerThreat01(const FVector& PlayerCm) const
+{
+	float Threat = 0.0f;
+	for (const FCreatureEntry& Entry : Creatures)
+	{
+		const AExploredMarineCreature* Creature = Entry.Actor.Get();
+		if (!Creature || !Creature->GetBrain().IsVisible())
+		{
+			continue;
+		}
+		const FMarineCreatureBrain& Brain = Creature->GetBrain();
+		const float Distance = static_cast<float>(FVector::Dist(Brain.GetPosition(), PlayerCm));
+		Threat = FMath::Max(Threat, ExploredLinks::PredatorThreat01(Brain.GetSpecies(), Brain.GetState(), Distance));
+	}
+	return Threat;
 }
 
 void AExploredFaunaManager::SetPlayerBoatState(bool bInBoat, bool bCarriesFish)

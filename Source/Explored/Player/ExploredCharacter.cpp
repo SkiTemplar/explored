@@ -16,9 +16,11 @@
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Building/BuildPreviewComponent.h"
 #include "Carry/CarryComponent.h"
 #include "Cartography/CartographyComponent.h"
+#include "Cooking/CookingModel.h"
 #include "Crafting/CraftingLibrary.h"
 #include "Fishing/FishingComponent.h"
 #include "Interaction/InteractionComponent.h"
@@ -631,7 +633,12 @@ void AExploredCharacter::HandleToggleFly(const FInputActionValue&)
 {
 #if !UE_BUILD_SHIPPING
 	bIsDebugFlying = !bIsDebugFlying;
-	GetCharacterMovement()->SetMovementMode(bIsDebugFlying ? MOVE_Flying : MOVE_Falling);
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	// L7: el nado reutiliza MOVE_Flying y deja su velocidad y su gravedad; el vuelo de
+	// depuración las vuelve a poner al activarse y la gravedad normal al soltarlo.
+	Movement->MaxFlySpeed = DebugFlySpeed;
+	Movement->GravityScale = bIsDebugFlying ? 0.0f : 1.0f;
+	Movement->SetMovementMode(bIsDebugFlying ? MOVE_Flying : MOVE_Falling);
 	SetActorEnableCollision(!bIsDebugFlying);
 	SetDebugMappingActive(bIsDebugFlying);
 #endif
@@ -681,10 +688,25 @@ void AExploredCharacter::UseHand(EHand Hand)
 	{
 		return;
 	}
-	// El efecto concreto de usar cada objeto (cortar leña, beber, encender una
-	// antorcha...) lo aportan los módulos de supervivencia y recolección
-	// (fuera del alcance de M2); de momento solo se deja constancia de la
-	// acción para que esos sistemas puedan enganchar aquí más adelante.
+	// Comer (P-WIRE): lo que tiene ficha de comida en recipes.json alimenta al cuerpo.
+	const FFoodDef* Food = FCookingData::Default().FindFood(Item.DefinitionId);
+	if (Food && Body && !Carry->IsHoldingTwoHandedItem() && Carry->ConsumeOneFromHand(Hand))
+	{
+		Body->Consume(Food->Effects);
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStatItem(TEXT("foods_eaten"), Item.DefinitionId);
+			const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
+			FItemDefinition Definition;
+			if (Registry && Registry->FindDefinition(Item.DefinitionId, Definition) && Definition.HasTag(TEXT("coco")))
+			{
+				Achievements->ReportStat(TEXT("coconuts_opened"));
+			}
+		}
+		return;
+	}
+	// El resto de usos (cortar leña, beber, encender una antorcha...) llegarán con
+	// sus módulos; de momento solo se deja constancia de la acción.
 	UE_LOG(LogTemp, Verbose, TEXT("[Explored] Usar mano %s: %s"),
 		Hand == EHand::Left ? TEXT("izquierda") : TEXT("derecha"), *Item.DefinitionId.ToString());
 }
@@ -748,7 +770,7 @@ void AExploredCharacter::HandleCombine(const FInputActionValue&)
 		return;
 	}
 
-	const TArray<FName> Verbs = UCraftingLibrary::FindActions(Left, Right);
+	const TArray<FName> Verbs = UCraftingLibrary::FindActionsInWorld(this, Left, Right);
 	if (Verbs.Num() == 0)
 	{
 		return;
@@ -761,7 +783,7 @@ void AExploredCharacter::HandleCombine(const FInputActionValue&)
 	// FindActions ya deja listos los candidatos para esa pantalla futura.
 	FItemInstance Result;
 	FText FailReason;
-	if (UCraftingLibrary::Apply(Left, Right, Verbs[0], Result, FailReason))
+	if (UCraftingLibrary::ApplyInWorld(this, Left, Right, Verbs[0], Result, FailReason))
 	{
 		Carry->ReplaceHandsWithCraftResult(Result, FailReason);
 	}

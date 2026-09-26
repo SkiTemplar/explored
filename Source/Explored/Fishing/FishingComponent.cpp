@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
+#include "Achievements/AchievementsSubsystem.h"
 #include "Carry/CarryComponent.h"
 #include "Fishing/ExploredFishingSubsystem.h"
 #include "Fishing/ExploredTrap.h"
@@ -123,6 +124,7 @@ bool UFishingComponent::StartCast()
 	Conditions.Tackle = Tackle;
 	Conditions.SpotTag = SpotTag;
 	Conditions.Noise01 = ComputeNoise();
+	Conditions.bFromBoat = bFromBoat;
 
 	const float Now = Fishing->GetNowDays();
 	FFishingSaveState& SaveState = Fishing->GetState();
@@ -209,6 +211,16 @@ void UFishingComponent::HandleCatch()
 	}
 	const float Now = Fishing->GetNowDays();
 	FFishingModel::RegisterCatch(Fishing->GetState(), FFishingModel::ZoneKeyAt(FVector2D(CastPoint)), Now);
+
+	// Estadísticas (docs/tecnico/estadisticas.md): toda captura cuenta; las legendarias, además, por su id.
+	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+	{
+		Achievements->ReportStat(TEXT("fish_caught"));
+		if (PendingBite.bLegendary)
+		{
+			Achievements->ReportStatItem(TEXT("legendary_catches"), PendingBite.Id);
+		}
+	}
 
 	const FVector DropLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 80.0f + FVector(0.0, 0.0, 20.0);
 	if (!PendingBite.bLegendary)

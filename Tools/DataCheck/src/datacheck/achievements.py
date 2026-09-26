@@ -20,6 +20,15 @@ VALUE_SOURCES = {"items", "plants", "building_pieces"}
 STATS_DOC = Path("docs") / "tecnico" / "estadisticas.md"
 DOC_ROW = re.compile(r"^\|\s*`([a-z0-9_]+)`\s*\|\s*([a-z]+)\s*\|\s*([a-z]+)\s*\|")
 
+# Conjuntos cuyos ids son los de otro catálogo: tienen que coincidir exactamente (P-WIRE).
+CATALOG_SETS = {
+    "wayfinding_techniques": ("ruins.json → techniques",
+                              lambda ds: [t.get("id") for t in ds.data.get("ruins.json", {}).get("techniques", [])]),
+    "legendary_catches": ("fish.json → legendary",
+                          lambda ds: [f.get("id") for f in ds.data.get("fish.json", {}).get("legendary", [])]),
+    "boats_built": ("boats.json → boats", lambda ds: [b.get("id") for b in ds.boats]),
+}
+
 # Ejemplos del GDD §16: tienen que existir con estos ids.
 REQUIRED = {
     "primer_fuego", "tierra_firme", "cartografo", "coleccionista", "rey_del_cocotero",
@@ -155,6 +164,15 @@ def check_achievements(ds, r) -> None:
                 r.error(f"achievements.json: «{sid}».values debe ser una lista no vacía sin repetidos")
         if "valuesFrom" in stat and stat["valuesFrom"] not in VALUE_SOURCES:
             r.error(f"achievements.json: «{sid}».valuesFrom «{stat['valuesFrom']}» (admite {sorted(VALUE_SOURCES)})")
+
+    # Conjuntos que reflejan otro catálogo (lo que informa el juego sale de ahí).
+    for sid, (source, ids_of) in CATALOG_SETS.items():
+        stat = stats.get(sid)
+        ids = [i for i in ids_of(ds) if isinstance(i, str)]
+        if stat is None or not ids or not isinstance(stat.get("values"), list):
+            continue
+        if set(stat["values"]) != set(ids):
+            r.error(f"achievements.json: «{sid}».values {sorted(stat['values'])} no coincide con {source} {sorted(ids)}")
 
     # Logros.
     achievements = doc.get("achievements", [])

@@ -45,6 +45,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Fabricación")
 	static bool Apply(const FItemInstance& Left, const FItemInstance& Right, FName VerbId, FItemInstance& OutResult, FText& OutFailReason);
 
+	/**
+	 * M17: variantes con contexto de mundo. Usan el registro de la GameInstance de
+	 * ese mundo (UItemRegistrySubsystem::Resolve) y solo caen al enlazado si no hay
+	 * GameInstance, así que un test que rebinde el registro durante PIE no deja la
+	 * fabricación del juego apuntando a su registro de prueba.
+	 */
+	static TArray<FName> FindActionsInWorld(const UObject* WorldContextObject, const FItemInstance& Left, const FItemInstance& Right);
+	static bool ApplyInWorld(const UObject* WorldContextObject, const FItemInstance& Left, const FItemInstance& Right, FName VerbId,
+		FItemInstance& OutResult, FText& OutFailReason);
+
 	// --- Variantes puras (sin UObject) que usan los Automation Spec y a las que delegan las de arriba ---
 
 	static TArray<FName> FindActionsWithData(const FItemInstance& Left, const FItemInstance& Right,

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "Building/BuildingTypes.h"
 #include "Carry/CarryTypes.h"
 #include "Carry/InventoryModel.h"
 #include "Items/ItemTypes.h"
@@ -186,6 +187,21 @@ public:
 
 	/** Instancia completa de un objeto que lleva el jugador, por su id del modelo. */
 	const FItemInstance* FindInstance(int64 InstanceId) const { return Payloads.Find(InstanceId); }
+
+	// ------------------------------------------------ materiales (construcción)
+
+	/**
+	 * Unidades de cada definición que se llevan encima (manos, bolsillos, cinturón,
+	 * bolsa, mochila y angarillas) y las definiciones presentes como herramientas.
+	 */
+	void CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>& OutTools) const;
+
+	/**
+	 * Gasta materiales (P-WIRE): primero de las angarillas, luego de la mochila y
+	 * los contenedores del cuerpo y al final de las manos (ExploredLinks::PlanMaterialTakes).
+	 * Todo o nada: false si no alcanza, sin tocar nada.
+	 */
+	bool ConsumeMaterials(const TArray<FBuildingCost>& Costs);
 
 	/** Guardado (P-SAVE): estado plano del modelo y las instancias completas por id. */
 	void ExportState(FInventoryState& OutState, TMap<int64, FItemInstance>& OutInstances) const;

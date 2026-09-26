@@ -9,7 +9,10 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Save/SaveSystemStates.h"
+#include "Subsystems/SubsystemCollection.h"
 #include "UI/ExploredGameUserSettings.h"
+#include "UI/ExploredSaveSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogExploredAchievements, Log, All);
 
@@ -122,10 +125,53 @@ namespace AchievementsJsonDetail
 	}
 }
 
+namespace AchievementsSaveDetail
+{
+	const TCHAR* const Section = TEXT("achievements");
+}
+
 void UAchievementsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	ReloadFromDisk();
+
+	// Sección «achievements» de la partida (P-WIRE).
+	if (UExploredSaveSubsystem* Save = Collection.InitializeDependency<UExploredSaveSubsystem>())
+	{
+		TWeakObjectPtr<UAchievementsSubsystem> WeakThis(this);
+		Save->RegisterSection(AchievementsSaveDetail::Section,
+			[WeakThis](FSaveArchive& Ar)
+			{
+				if (const UAchievementsSubsystem* Self = WeakThis.Get())
+				{
+					ExploredSaveStates::SaveAchievements(Ar, Self->Model.GetState());
+				}
+			},
+			[WeakThis](const FSaveArchive& Ar)
+			{
+				UAchievementsSubsystem* Self = WeakThis.Get();
+				if (!Self)
+				{
+					return;
+				}
+				FAchievementsState Loaded;
+				ExploredSaveStates::LoadAchievements(Ar, Loaded);
+				Self->Model.RestoreState(ExploredSaveStates::MergeLoadedAchievements(Self->Model.GetState(), Loaded));
+				Self->EvaluatePending();
+			});
+	}
+}
+
+void UAchievementsSubsystem::Deinitialize()
+{
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (UExploredSaveSubsystem* Save = GameInstance->GetSubsystem<UExploredSaveSubsystem>())
+		{
+			Save->UnregisterSection(AchievementsSaveDetail::Section);
+		}
+	}
+	Super::Deinitialize();
 }
 
 UAchievementsSubsystem* UAchievementsSubsystem::Get(const UObject* WorldContextObject)
@@ -271,6 +317,7 @@ void UAchievementsSubsystem::ReportStatItem(FName Stat, FName Item)
 void UAchievementsSubsystem::BeginRun(EExploredGameplayMode Mode)
 {
 	Model.BeginRun(ModeId(Mode));
+	OnRunStarted.Broadcast(Mode);
 }
 
 void UAchievementsSubsystem::EvaluatePending()

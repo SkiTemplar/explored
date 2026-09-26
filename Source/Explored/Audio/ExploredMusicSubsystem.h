@@ -70,6 +70,9 @@ public:
 	/** Nota de flauta asociada a una tecla (INDEX_NONE si no es de la flauta). */
 	int32 FluteNoteForKey(const FName& KeyName) const { return Flute ? Flute->NoteForKey(KeyName) : INDEX_NONE; }
 
+	/** El jugador está tocando una melodía de verdad (FFluteModel::IsPerforming). */
+	bool IsFlutePerforming() const { return Flute && Flute->IsPerforming(Clock); }
+
 	/** Ánimo por hora de juego que suma tocar ahora junto a un fuego (FireHeat 0–1), para la supervivencia. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Música")
 	float GetFluteMoraleRatePerHour(float FireHeat) const;

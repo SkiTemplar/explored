@@ -9,12 +9,33 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
+#include "CollisionQueryParams.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/GameInstance.h"
+#include "Engine/HitResult.h"
+#include "EngineUtils.h"
 #include "Explored.h"
+#include "Ruins/ExploredRuinElement.h"
+#include "Save/SaveSystemStates.h"
+#include "Subsystems/SubsystemCollection.h"
+#include "UI/ExploredSaveSubsystem.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
 
 namespace RuinsSubsystemDetail
 {
+	/** Sección de la partida (docs/tecnico/guardado.md). */
+	const TCHAR* const SaveSection = TEXT("ruins");
+	/** Altura desde la que se busca el suelo al asentar un elemento (cm). */
+	constexpr double GroundTraceUpCm = 20000.0;
+	constexpr double GroundTraceDownCm = 40000.0;
+
+	UExploredSaveSubsystem* FindSave(const UWorld* World)
+	{
+		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
+		return GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
+	}
+
 	FString DataFilePath(const TCHAR* FileName)
 	{
 		return FPaths::ProjectContentDir() / TEXT("Data") / FileName;
@@ -62,15 +83,88 @@ bool URuinsSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) con
 	return WorldType == EWorldType::Game || WorldType == EWorldType::PIE;
 }
 
+void URuinsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	if (UExploredSaveSubsystem* Save = RuinsSubsystemDetail::FindSave(GetWorld()))
+	{
+		TWeakObjectPtr<URuinsSubsystem> WeakThis(this);
+		Save->RegisterSection(RuinsSubsystemDetail::SaveSection,
+			[WeakThis](FSaveArchive& Ar)
+			{
+				if (const URuinsSubsystem* Self = WeakThis.Get())
+				{
+					ExploredSaveStates::SaveRuins(Ar, Self->GetRuinsState(), Self->GetMuseumState());
+				}
+			},
+			[WeakThis](const FSaveArchive& Ar)
+			{
+				if (URuinsSubsystem* Self = WeakThis.Get())
+				{
+					FRuinsState RuinsState;
+					FMuseumState MuseumState;
+					ExploredSaveStates::LoadRuins(Ar, RuinsState, MuseumState);
+					Self->LoadSavedState(RuinsState, MuseumState);
+				}
+			});
+	}
+}
+
 void URuinsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	LoadDataFiles();
 	BuildForSeed(FArchipelagoLayout::OfficialSeed);
+	SpawnMissingElementActors(InWorld);
+}
+
+void URuinsSubsystem::SpawnMissingElementActors(UWorld& World)
+{
+	TSet<FName> Placed;
+	for (TActorIterator<AExploredRuinElement> It(&World); It; ++It)
+	{
+		Placed.Add(It->GetElementId());
+	}
+	int32 Spawned = 0;
+	for (const FRuinSite& Site : Ruins.GetLayout().Sites)
+	{
+		for (const FRuinElement& Element : Site.Elements)
+		{
+			if (Placed.Contains(Element.Id))
+			{
+				continue;
+			}
+			// El modelo trabaja en metros; el suelo real lo da una traza vertical.
+			FVector Location = Element.Location * 100.0;
+			FHitResult Hit;
+			FCollisionQueryParams Params(SCENE_QUERY_STAT(ExploredRuinElementGround), false);
+			const FVector Start(Location.X, Location.Y, Location.Z + RuinsSubsystemDetail::GroundTraceUpCm);
+			const FVector End(Location.X, Location.Y, Location.Z - RuinsSubsystemDetail::GroundTraceDownCm);
+			if (World.LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params))
+			{
+				Location = Hit.ImpactPoint;
+			}
+			const FTransform Transform(FRotator(0.0, Element.Yaw, 0.0), Location);
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			SpawnParams.bDeferConstruction = true;
+			if (AExploredRuinElement* Actor = World.SpawnActor<AExploredRuinElement>(AExploredRuinElement::StaticClass(), Transform, SpawnParams))
+			{
+				Actor->Configure(Element.Id, Element.Kind);
+				Actor->FinishSpawning(Transform);
+				++Spawned;
+			}
+		}
+	}
+	UE_LOG(LogExplored, Display, TEXT("Ruinas: %d elementos creados en el mundo"), Spawned);
 }
 
 void URuinsSubsystem::Deinitialize()
 {
+	if (UExploredSaveSubsystem* Save = RuinsSubsystemDetail::FindSave(GetWorld()))
+	{
+		Save->UnregisterSection(RuinsSubsystemDetail::SaveSection);
+	}
 	OnRuinDiscovery.Clear();
 	OnMuseumChanged.Clear();
 	Super::Deinitialize();

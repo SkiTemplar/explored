@@ -63,6 +63,12 @@ public:
 	/** Pide a las tortugas cercanas a BeachCm que acudan a desovar (P-EVENTS, luna llena). */
 	void StartTurtleNesting(const FVector& BeachCm, float RadiusCm);
 
+	/**
+	 * Amenaza de las criaturas cercanas para el jugador (0–1): la mayor de
+	 * ExploredLinks::PredatorThreat01 entre las visibles. La usa la música (SetDanger).
+	 */
+	float GetPlayerThreat01(const FVector& PlayerCm) const;
+
 	FOnFaunaDamage OnFaunaDamage;
 	FOnFaunaMoment OnFaunaMoment;
 	FOnFishStolen OnFishStolen;

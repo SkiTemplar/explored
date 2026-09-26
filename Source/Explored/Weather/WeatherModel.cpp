@@ -202,6 +202,37 @@ const TArray<FWeatherSpan>& FWeatherModel::SpansForDay(int32 Day) const
 	return Spans;
 }
 
+int32 FWeatherModel::CycloneCategoryForDay(int32 Day) const
+{
+	const float Roll = ExploredHash::ToUnitFloat(ExploredHash::Hash2D(Seed, Day, 0xCA7E6));
+	return Roll < 0.5f ? 1 : (Roll < 0.85f ? 2 : 3);
+}
+
+int32 FWeatherModel::CycloneCategoryAt(float TotalDays) const
+{
+	if (StateAt(TotalDays) != EWeatherState::Cyclone)
+	{
+		return 0;
+	}
+	// El ciclón ocupa la noche de su día de anclaje (de D + 0,8 a D + 1,25).
+	const int32 Day = FMath::FloorToInt32(TotalDays);
+	for (const int32 D : {Day, Day - 1})
+	{
+		if (D < 0)
+		{
+			continue;
+		}
+		for (const FWeatherSpan& Span : SpansForDay(D))
+		{
+			if (Span.State == EWeatherState::Cyclone && TotalDays >= Span.Start && TotalDays < Span.End)
+			{
+				return CycloneCategoryForDay(D);
+			}
+		}
+	}
+	return 0;
+}
+
 EWeatherState FWeatherModel::StateAt(float TotalDays) const
 {
 	const int32 Day = FMath::FloorToInt32(TotalDays);

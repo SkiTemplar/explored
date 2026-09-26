@@ -38,6 +38,20 @@ public:
 	/** Fuerza un estado durante un tiempo (depuración y eventos de guion). Duración en horas de juego. */
 	void ForceState(EWeatherState InState, float DurationHours);
 
+	/** Estado forzado vigente (Count si no hay) y hasta cuándo (días totales): para el guardado. */
+	EWeatherState GetForcedState(float& OutUntilDays) const { OutUntilDays = ForcedUntilDays; return ForcedState; }
+	/** Restaura un estado forzado guardado (Count lo quita). */
+	void RestoreForcedState(EWeatherState InState, float UntilDays);
+
+	/**
+	 * Categoría del ciclón activo (1–3, FWeatherModel::CycloneCategoryAt); 0 si no
+	 * hay ciclón. Un ciclón forzado sin planificar da ForcedCycloneCategory.
+	 */
+	int32 GetCycloneCategory() const;
+
+	/** Categoría de un ciclón forzado a mano (depuración). */
+	int32 ForcedCycloneCategory = 2;
+
 	FOnWeatherStateChanged OnWeatherStateChanged;
 	FOnSeasonChanged OnSeasonChanged;
 

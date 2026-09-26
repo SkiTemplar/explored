@@ -25,7 +25,7 @@
 #include "Building/ExploredBuildingPiece.h"
 #include "Carry/CarryComponent.h"
 #include "Carry/CarryTypes.h"
-#include "Items/ItemTypes.h"
+#include "Core/SystemLinks.h"
 
 namespace BuildPreviewDetail
 {
@@ -37,16 +37,6 @@ namespace BuildPreviewDetail
 		UInputAction* Action = NewObject<UInputAction>(Outer, Name);
 		Action->ValueType = EInputActionValueType::Boolean;
 		return Action;
-	}
-
-	void AddCarried(const FItemInstance& Item, TMap<FName, int32>& Inventory, TSet<FName>& Tools)
-	{
-		if (!Item.IsValid())
-		{
-			return;
-		}
-		Inventory.FindOrAdd(Item.DefinitionId) += FMath::Max(Item.Count, 1);
-		Tools.Add(Item.DefinitionId);
 	}
 }
 
@@ -290,34 +280,10 @@ void UBuildPreviewComponent::UpdatePreview()
 
 void UBuildPreviewComponent::GatherCarried(TMap<FName, int32>& OutInventory, TSet<FName>& OutTools) const
 {
-	const UCarryComponent* Carry = GetOwner() ? GetOwner()->FindComponentByClass<UCarryComponent>() : nullptr;
-	if (!Carry)
+	// Todo lo que se lleva encima, angarillas incluidas (la madera y la piedra van ahí).
+	if (const UCarryComponent* Carry = GetOwner() ? GetOwner()->FindComponentByClass<UCarryComponent>() : nullptr)
 	{
-		return;
-	}
-	if (const FItemInstance* Left = Carry->GetHandItemPtr(EHand::Left))
-	{
-		BuildPreviewDetail::AddCarried(*Left, OutInventory, OutTools);
-	}
-	// Un objeto a dos manos ocupa las dos: se cuenta una vez.
-	if (!Carry->IsHoldingTwoHandedItem())
-	{
-		if (const FItemInstance* Right = Carry->GetHandItemPtr(EHand::Right))
-		{
-			BuildPreviewDetail::AddCarried(*Right, OutInventory, OutTools);
-		}
-	}
-	for (const FItemInstance& Item : Carry->GetPocketItems())
-	{
-		BuildPreviewDetail::AddCarried(Item, OutInventory, OutTools);
-	}
-	for (const FItemInstance& Item : Carry->GetBeltItems())
-	{
-		BuildPreviewDetail::AddCarried(Item, OutInventory, OutTools);
-	}
-	for (const FItemInstance& Item : Carry->GetBackpackItems())
-	{
-		BuildPreviewDetail::AddCarried(Item, OutInventory, OutTools);
+		Carry->CountMaterials(OutInventory, OutTools);
 	}
 }
 
@@ -359,11 +325,20 @@ bool UBuildPreviewComponent::ConfirmPlacement(FText& OutReason)
 		GatherCarried(Inventory, Tools);
 	}
 
+	const TMap<FName, int32> Before = Inventory;
 	EBuildFailReason Reason = EBuildFailReason::None;
 	const int32 PieceId = Building->TryPlacePiece(SelectedPiece, AimPoint, Rotation, bAimOnGround, Inventory, Tools, Reason);
-	// TODO(P-BUILD/P-CARRY): descontar de UCarryComponent lo que el modelo ha gastado en Inventory
-	// y gastar GetBuildMinutes(SelectedPiece) de trabajo (actividad Working del FSurvivalModel).
 	OutReason = UBuildingSubsystem::GetReasonText(Reason);
+	if (PieceId != INDEX_NONE && !bFreeBuild)
+	{
+		// Lo que el modelo ha descontado del recuento sale ahora del inventario de verdad.
+		UCarryComponent* Carry = GetOwner() ? GetOwner()->FindComponentByClass<UCarryComponent>() : nullptr;
+		if (Carry && !Carry->ConsumeMaterials(ExploredLinks::SpentMaterials(Before, Inventory)))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Explored] Construcción: el inventario no tenía lo que el recuento decía"));
+		}
+	}
+	// Pendiente: gastar GetBuildMinutes(SelectedPiece) de trabajo (actividad Working del FSurvivalModel).
 	return PieceId != INDEX_NONE;
 }
 

@@ -503,6 +503,60 @@
 				},
 				{
 					"Source": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Translation": {
+						"Text": "Examinar la canoa doble"
+					},
+					"Key": "Verb_RuinCanoe"
+				},
+				{
+					"Source": {
+						"Text": "Examinar las pinturas"
+					},
+					"Translation": {
+						"Text": "Examinar las pinturas"
+					},
+					"Key": "Verb_RuinCave"
+				},
+				{
+					"Source": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Translation": {
+						"Text": "Estudiar la brújula estelar"
+					},
+					"Key": "Verb_RuinCompass"
+				},
+				{
+					"Source": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Translation": {
+						"Text": "Dejar una ofrenda"
+					},
+					"Key": "Verb_RuinOffering"
+				},
+				{
+					"Source": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Translation": {
+						"Text": "Examinar el petroglifo"
+					},
+					"Key": "Verb_RuinPetroglyph"
+				},
+				{
+					"Source": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Translation": {
+						"Text": "Mirar hacia donde mira la estatua"
+					},
+					"Key": "Verb_RuinStatue"
+				},
+				{
+					"Source": {
 						"Text": "Guardar en {0}"
 					},
 					"Translation": {

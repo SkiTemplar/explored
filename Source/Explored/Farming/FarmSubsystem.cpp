@@ -8,8 +8,12 @@
 #include "Serialization/JsonSerializer.h"
 #include "Subsystems/SubsystemCollection.h"
 
+#include "Achievements/AchievementsSubsystem.h"
+#include "Engine/GameInstance.h"
 #include "Items/ItemRegistrySubsystem.h"
+#include "Save/SaveSystemStates.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/ArchipelagoLayout.h"
 
@@ -20,6 +24,15 @@ namespace FarmSubsystemDetail
 	constexpr int32 MaxCatchUpDays = FWeatherModel::DaysPerYear * 2;
 	/** Un salto de reloj mayor que esto (SetTime, dormir) no se toma como lluvia vista. */
 	constexpr float MaxLiveRainStepDays = 0.25f;
+
+	/** Sección de la partida (docs/tecnico/guardado.md). */
+	const TCHAR* const SaveSection = TEXT("farm");
+
+	UExploredSaveSubsystem* FindSave(const UWorld* World)
+	{
+		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
+		return GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
+	}
 
 	bool ParseStage(const TSharedPtr<FJsonValue>& Value, FPlantStageDef& OutStage)
 	{
@@ -160,10 +173,40 @@ void UFarmSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		// AddUObject guarda una referencia débil: si el subsistema muere antes, no se llama.
 		NewDayHandle = Time->OnNewDay.AddUObject(this, &UFarmSubsystem::HandleNewDay);
 	}
+
+	if (UExploredSaveSubsystem* Save = FarmSubsystemDetail::FindSave(GetWorld()))
+	{
+		TWeakObjectPtr<UFarmSubsystem> WeakThis(this);
+		Save->RegisterSection(FarmSubsystemDetail::SaveSection,
+			[WeakThis](FSaveArchive& Ar)
+			{
+				if (const UFarmSubsystem* Self = WeakThis.Get())
+				{
+					ExploredSaveStates::SaveFarm(Ar, Self->GetSaveState());
+				}
+			},
+			[WeakThis](const FSaveArchive& Ar)
+			{
+				if (UFarmSubsystem* Self = WeakThis.Get())
+				{
+					FFarmState State;
+					ExploredSaveStates::LoadFarm(Ar, State);
+					// Sin sección (partida anterior al huerto) se conservan las parcelas del mapa.
+					if (!Ar.IsEmpty())
+					{
+						Self->LoadSaveState(State);
+					}
+				}
+			});
+	}
 }
 
 void UFarmSubsystem::Deinitialize()
 {
+	if (UExploredSaveSubsystem* Save = FarmSubsystemDetail::FindSave(GetWorld()))
+	{
+		Save->UnregisterSection(FarmSubsystemDetail::SaveSection);
+	}
 	if (UTimeOfDaySubsystem* Time = TimeOfDay.Get())
 	{
 		Time->OnNewDay.Remove(NewDayHandle);
@@ -410,10 +453,16 @@ EFarmResult UFarmSubsystem::Harvest(int32 PlotId, FFarmHarvest& Out)
 	{
 		return EFarmResult::UnknownPlot;
 	}
+	// El cultivo se lee antes: una cosecha que arranca la planta deja la parcela vacía.
+	const FName PlantId = Model->GetStageView(PlotId).PlantId;
 	const EFarmResult Result = Model->Harvest(PlotId, GetCurrentDay(), Out);
 	if (Result == EFarmResult::Ok)
 	{
 		OnPlotChanged.Broadcast(PlotId);
+		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		{
+			Achievements->ReportStatItem(TEXT("crops_harvested"), PlantId);
+		}
 	}
 	return Result;
 }
