@@ -1,0 +1,8 @@
+# Automation Specs de Source/Explored/Tests que también se ejecutan en el host (solo modelos puros).
+Tests/SurvivalSpec.cpp
+Tests/WeatherSpec.cpp
+Tests/WorldGenSpec.cpp
+Tests/OceanCurrentsSpec.cpp
+Tests/ExploredRandomNoiseSpec.cpp
+Tests/GaitSpec.cpp
+Tests/VegetationScatterSpec.cpp

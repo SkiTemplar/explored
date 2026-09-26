@@ -127,7 +127,9 @@ void FWorldGenSpec::Define()
 
 		It("coloca Los Dientes con entre cinco y ocho islotes", [this]()
 		{
-			const FIslandDesc* Teeth = FArchipelagoLayout::Generate(OfficialSeed).FindIsland(EIslandArchetype::Teeth);
+			// El layout debe vivir en una variable: FindIsland devuelve un puntero a su interior.
+			const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(OfficialSeed);
+			const FIslandDesc* Teeth = Layout.FindIsland(EIslandArchetype::Teeth);
 			TestNotNull(TEXT("Existe"), Teeth);
 			if (Teeth)
 			{
