@@ -13,6 +13,7 @@ Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp
+Tests/MapViewLogicSpec.cpp
 Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
@@ -21,6 +22,7 @@ Tests/OceanCurrentsSpec.cpp
 Tests/RuinsSpec.cpp
 Tests/SaveArchiveSpec.cpp
 Tests/SaveSlotsSpec.cpp
+Tests/ScreensLogicSpec.cpp
 Tests/SettingsLogicSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp

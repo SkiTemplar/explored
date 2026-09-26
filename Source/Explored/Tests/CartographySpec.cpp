@@ -6,6 +6,8 @@
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace CartographyTest
@@ -243,6 +245,27 @@ void FCartographySpec::Define()
 		const FVector2D AtSea(-2100.0, 1750.0);
 		const int32 Exact = Model.AddSextantMark(FName(TEXT("wreck")), AtSea, TEXT("Pecio"));
 		TestTrue(TEXT("Sextante exacto"), FCartographyModel::MapToWorld(Model.GetState().Marks[Exact].Position).Equals(AtSea, 1.e-6));
+	});
+
+	It("pone marcas a mano en el punto de la hoja que se elige, sin deriva (mapa en las manos)", [this]()
+	{
+		FCartographyModel Model(Seed);
+		const int32 Placed = Model.AddMarkOnSheet(FName(TEXT("ruin")), FVector2D(0.25, 0.75), TEXT("  Marae  "));
+		if (!TestTrue(TEXT("Se pone"), Placed != INDEX_NONE))
+		{
+			return;
+		}
+		const FMapMark& Mark = Model.GetState().Marks[Placed];
+		TestTrue(TEXT("Donde se dibuja"), Mark.Position.Equals(FVector2D(0.25, 0.75), 1.e-12));
+		TestEqual(TEXT("A mano"), Mark.Source, EMapMarkSource::Hand);
+		TestEqual(TEXT("Texto recortado"), Mark.Text, FString(TEXT("Marae")));
+
+		const int32 Outside = Model.AddMarkOnSheet(NAME_None, FVector2D(1.4, -0.2), TEXT("Nota"));
+		TestTrue(TEXT("Fuera de la hoja se recorta al borde"), Outside != INDEX_NONE
+			&& Model.GetState().Marks[Outside].Position.Equals(FVector2D(1.0, 0.0), 1.e-12));
+		TestEqual(TEXT("Posición no finita"), Model.AddMarkOnSheet(FName(TEXT("cave")), FVector2D(std::numeric_limits<double>::quiet_NaN(), 0.5), FString()), INDEX_NONE);
+		TestEqual(TEXT("Sello desconocido"), Model.AddMarkOnSheet(FName(TEXT("volcano")), FVector2D(0.5, 0.5), FString()), INDEX_NONE);
+		TestEqual(TEXT("Nota vacía"), Model.AddMarkOnSheet(NAME_None, FVector2D(0.5, 0.5), TEXT("   ")), INDEX_NONE);
 	});
 
 	It("pierde detalle con el agua pero conserva la cobertura", [this]()

@@ -105,7 +105,7 @@ namespace ExploredSettingsLogic
 	{
 		static const TArray<FName> Reserved = {
 			FName(TEXT("W")), FName(TEXT("A")), FName(TEXT("S")), FName(TEXT("D")),
-			FName(TEXT("Escape")), FName(TEXT("F8"))
+			FName(TEXT("Escape")), FName(TEXT("M")), FName(TEXT("F8"))
 		};
 		return Reserved.Contains(KeyName);
 	}
@@ -135,7 +135,7 @@ namespace ExploredSettingsLogic
 		return Out;
 	}
 
-	EMenuScreen ScreenAfterBack(EMenuScreen Current, bool bSettingsOpenedFromPause)
+	EMenuScreen ScreenAfterBack(EMenuScreen Current, bool bOpenedFromPause)
 	{
 		switch (Current)
 		{
@@ -143,7 +143,13 @@ namespace ExploredSettingsLogic
 		case EMenuScreen::Credits:
 			return EMenuScreen::MainMenu;
 		case EMenuScreen::Settings:
-			return bSettingsOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::MainMenu;
+		case EMenuScreen::Achievements:
+		case EMenuScreen::SaveSlots:
+			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::MainMenu;
+		case EMenuScreen::Map:
+			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::None;
+		case EMenuScreen::Museum:
+			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::Map;
 		case EMenuScreen::Pause:
 			return EMenuScreen::None;
 		case EMenuScreen::MainMenu:
@@ -153,9 +159,68 @@ namespace ExploredSettingsLogic
 		}
 	}
 
-	EMenuScreen ScreenAfterEscape(EMenuScreen Current, bool bSettingsOpenedFromPause)
+	EMenuScreen ScreenAfterEscape(EMenuScreen Current, bool bOpenedFromPause)
 	{
-		return Current == EMenuScreen::None ? EMenuScreen::Pause : ScreenAfterBack(Current, bSettingsOpenedFromPause);
+		return Current == EMenuScreen::None ? EMenuScreen::Pause : ScreenAfterBack(Current, bOpenedFromPause);
+	}
+
+	bool CanOpenScreenFrom(EMenuScreen From, EMenuScreen To)
+	{
+		switch (From)
+		{
+		case EMenuScreen::MainMenu:
+			return To == EMenuScreen::ModeSelect || To == EMenuScreen::Settings || To == EMenuScreen::Credits
+				|| To == EMenuScreen::Achievements || To == EMenuScreen::SaveSlots;
+		case EMenuScreen::None:
+			return To == EMenuScreen::Pause || To == EMenuScreen::Map;
+		case EMenuScreen::Pause:
+			return To == EMenuScreen::Settings || To == EMenuScreen::Map || To == EMenuScreen::Museum
+				|| To == EMenuScreen::Achievements || To == EMenuScreen::SaveSlots;
+		case EMenuScreen::Map:
+			return To == EMenuScreen::Museum;
+		default:
+			return false;
+		}
+	}
+
+	void FMenuNavigation::Reset(EMenuScreen Root)
+	{
+		Stack.Reset();
+		Stack.Add(Root);
+	}
+
+	bool FMenuNavigation::Open(EMenuScreen Screen)
+	{
+		if (Screen == Current())
+		{
+			return true;
+		}
+		const int32 Existing = Stack.Find(Screen);
+		if (Existing != INDEX_NONE)
+		{
+			Stack.SetNum(Existing + 1);
+			return true;
+		}
+		if (!CanOpenScreenFrom(Current(), Screen))
+		{
+			return false;
+		}
+		Stack.Add(Screen);
+		return true;
+	}
+
+	EMenuScreen FMenuNavigation::BackTarget() const
+	{
+		if (Stack.Num() > 1)
+		{
+			return Stack[Stack.Num() - 2];
+		}
+		return ScreenAfterBack(Current(), false);
+	}
+
+	EMenuScreen FMenuNavigation::EscapeTarget() const
+	{
+		return Current() == EMenuScreen::None ? EMenuScreen::Pause : BackTarget();
 	}
 
 	bool IsMenuBackKey(FName KeyName)
@@ -166,5 +231,10 @@ namespace ExploredSettingsLogic
 	bool IsPauseToggleKey(FName KeyName)
 	{
 		return KeyName == FName(TEXT("Escape")) || KeyName == FName(TEXT("Gamepad_Special_Right"));
+	}
+
+	bool IsMapToggleKey(FName KeyName)
+	{
+		return KeyName == FName(TEXT("M")) || KeyName == FName(TEXT("Gamepad_Special_Left"));
 	}
 }
