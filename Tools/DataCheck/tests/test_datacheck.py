@@ -217,3 +217,77 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
+
+
+# --------------------------------------------------------------------------- logros (GDD §16)
+
+
+def achievement(ds: DataSet, aid: str) -> dict:
+    return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
+
+
+def test_logros_reales_son_treinta_con_los_del_gdd(real: DataSet) -> None:
+    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
+    assert len(ids) == 30
+    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
+
+
+def test_detecta_numero_de_logros(ds: DataSet) -> None:
+    ds.data["achievements.json"]["achievements"].pop()
+    assert any_error(errors_of(ds), "29 logros")
+
+
+def test_detecta_logro_duplicado(ds: DataSet) -> None:
+    achievement(ds, "wayfinder")["id"] = "cartografo"
+    assert any_error(errors_of(ds), "id duplicado", "cartografo")
+
+
+def test_detecta_id_con_tilde(ds: DataSet) -> None:
+    achievement(ds, "cartografo")["id"] = "cartógrafo"
+    assert any_error(errors_of(ds), "id inválido")
+
+
+def test_detecta_falta_de_ingles(ds: DataSet) -> None:
+    del achievement(ds, "primer_fuego")["descriptionEn"]
+    assert any_error(errors_of(ds), "primer_fuego", "descriptionEn")
+
+
+def test_detecta_estadistica_desconocida(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["condition"] = {"stat": "hogueras", "op": ">=", "value": 1}
+    assert any_error(errors_of(ds), "estadística desconocida", "hogueras")
+
+
+def test_detecta_tipo_incompatible(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["condition"] = {"stat": "fires_lit", "contains": "fogata"}
+    assert any_error(errors_of(ds), "no es un conjunto")
+
+
+def test_detecta_id_no_admitido_en_conjunto(ds: DataSet) -> None:
+    achievement(ds, "el_limonero")["condition"] = {"stat": "crops_harvested", "contains": "naranjo"}
+    assert any_error(errors_of(ds), "naranjo", "no es un id admitido")
+
+
+def test_detecta_meta_inalcanzable(ds: DataSet) -> None:
+    achievement(ds, "wayfinder")["condition"]["value"] = 6
+    assert any_error(errors_of(ds), "wayfinder", "solo admite 5")
+
+
+def test_detecta_sin_mapa_mal_escrito(ds: DataSet) -> None:
+    achievement(ds, "sin_mapa")["condition"] = {"flag": "hidden_island_reached"}
+    assert any_error(errors_of(ds), "sin_mapa")
+
+
+def test_detecta_nombre_de_la_dedicatoria(ds: DataSet) -> None:
+    achievement(ds, "el_limonero")["nameEs"] = "Para Almudena"
+    assert any_error(errors_of(ds), "dedicatoria")
+
+
+def test_detecta_estadistica_sin_documentar(ds: DataSet) -> None:
+    ds.data["achievements.json"]["stats"].append(
+        {"id": "shells_found", "kind": "counter", "scope": "profile", "descriptionEs": "Conchas."})
+    assert any_error(errors_of(ds), "estadisticas.md", "shells_found")
+
+
+def test_detecta_ambito_distinto_del_documentado(ds: DataSet) -> None:
+    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "fires_lit")["scope"] = "run"
+    assert any_error(errors_of(ds), "estadisticas.md", "fires_lit")
