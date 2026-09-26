@@ -145,3 +145,23 @@ orejas pequeñas y manos con un disco estelar de 8 puntas.
 | `Ruin_Petroglyph_Honu/Canoe/Star/Bird` | Losa de 1,4 m con relieve hundido real (malla densa) |
 | `Ruin_Canoe_DoubleWreck` | Canoa doble de 6,5 m, un casco partido, dunas; recortada bajo z = 0 |
 | `Ruin_Altar_Table` / `_OfferingStone` | Mesa sobre dos piedras con ofrendas / piedra de cazoletas |
+
+## Tesoros (`tesoros.py`, grupo `Tesoros`)
+
+Lámina: `docs/art/modelos/tesoros.png` (cada pieza normalizada a la misma
+dimensión mayor **solo en la lámina**; las mallas van a escala real). Las
+figuras reutilizan la cabeza de las estatuas para que el estilo del pueblo se
+reconozca a cualquier tamaño. Todas interactuables (se exponen en
+`SM_Base_DisplayShelf` / `SM_Base_DisplayCase`).
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Treasure_FishHook_Bone` | 11 cm | Anzuelo de hueso con lengüeta y atadura roja |
+| `SM_Treasure_FishHook_Shell` | 21 cm | Señuelo de nácar con punta de hueso y borla |
+| `SM_Treasure_ShellPendant` | 28 cm | Disco de nácar con estrella incisa, cordón y cuentas |
+| `SM_Treasure_ShellNecklace` | 41 cm | Collar de cauris con disco central |
+| `SM_Treasure_StoneFigure_Navigator` | 22 cm | Piedra verde, mira al cielo |
+| `SM_Treasure_StoneFigure_Twins` | 18 cm | Gemelos espalda con espalda |
+| `SM_Treasure_StickChart` | 82 cm | Rejilla de varillas, frentes de oleaje curvos, conchas = islas |
+| `SM_Treasure_CeremonialPaddle` | 1,7 m | Tumbado; hoja con bandas de dientes y ojo estelar |
+| `SM_Treasure_Tapa` | 1,2 × 0,85 m | Tela de corteza ondulada con marco y rombos pintados |

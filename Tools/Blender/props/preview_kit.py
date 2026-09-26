@@ -241,7 +241,7 @@ def montage(mats, samples, res):
     _stage(w + 16, 26, (0, 0), (-w * 0.28, -w * 0.78, w * 0.3), (0.0, 0.0, 1.6), 42, out, samples, res)
 
 
-def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None):
+def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None, normalize=None):
     """Lámina a escala real de todas las variantes de un módulo de props,
     en rejilla cuyas columnas/filas se dimensionan por las cajas reales."""
     import importlib
@@ -249,6 +249,13 @@ def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None):
     mod = importlib.import_module(mod_name)
     objs = [mod.build(v) for v in mod.VARIANTS if group is None or v.get('group') == group]
     bpy.context.view_layer.update()
+    if normalize:
+        # objetos pequeños (tesoros de 10 cm junto a un remo de 1,6 m): cada
+        # uno a la misma dimensión mayor, SOLO para la lámina
+        for o in objs:
+            b = _bounds(o)
+            o.scale = [normalize / max(b[1] - b[0], b[3] - b[2], b[5] - b[4])] * 3
+        bpy.context.view_layer.update()
     dims = [(_bounds(o)[1] - _bounds(o)[0], _bounds(o)[3] - _bounds(o)[2]) for o in objs]
     rows = math.ceil(len(objs) / cols)
     col_w = [max([dims[i][0] for i in range(c, len(objs), cols)] + [0]) + gap for c in range(cols)]
@@ -262,7 +269,8 @@ def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None):
         x0, x1, y0, y1, z0, _ = _bounds(o)
         o.location = (cx - (x0 + x1) / 2, cy - (y0 + y1) / 2, -z0)
     out = os.path.join(OUT_DIR, f'{slug}.png')
-    _stage(total_w + 30, total_d + 30, (0, 0), (-8.0, -20.0, 15.0), (0, 0, 0.3), 40, out, samples, res)
+    _stage(total_w + 30, total_d + 30, (0, 0), (-8.0, -20.0, 15.0), (0, 0, 0.3 * (normalize or 1.0)), 40, out,
+           samples, res)
 
 
 def main():
@@ -276,7 +284,8 @@ def main():
     if o['mode'] in ('all', 'montage'):
         montage(mats, samples, o['res'])
     if o['mode'] == 'module':
-        module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')), group=o.get('group'))
+        module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')), group=o.get('group'),
+                     normalize=float(o['normalize']) if o.get('normalize') else None)
 
 
 if __name__ == '__main__':

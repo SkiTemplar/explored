@@ -57,6 +57,7 @@ MODULE_GROUPS = [
     ('kit_construccion', 'KitConstruccion'),
     ('mobiliario_base', 'MobiliarioBase'),
     ('ruinas_polinesias', 'Ruinas'),  # grupos RuinasMarae / RuinasTallas por variante
+    ('tesoros', 'Tesoros'),
 ]
 
 
