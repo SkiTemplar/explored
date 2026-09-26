@@ -171,6 +171,19 @@ void UExploredWiringSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 }
 
+void UExploredWiringSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	// Si el mundo aún no tenía GameInstance al inicializarse, se registra ahora.
+	if (!bSectionsRegistered)
+	{
+		if (UExploredSaveSubsystem* Save = ExploredWiringDetail::FindSave(&InWorld))
+		{
+			RegisterSections(*Save);
+		}
+	}
+}
+
 void UExploredWiringSubsystem::Deinitialize()
 {
 	UnbindPawn();
@@ -901,6 +914,7 @@ void UExploredWiringSubsystem::RegisterSections(UExploredSaveSubsystem& Save)
 	Register(SectionFishing, &UExploredWiringSubsystem::SaveFishing, &UExploredWiringSubsystem::LoadFishing);
 	Register(SectionCooking, &UExploredWiringSubsystem::SaveFires, &UExploredWiringSubsystem::LoadFires);
 	Register(SectionBoats, &UExploredWiringSubsystem::SaveBoats, &UExploredWiringSubsystem::LoadBoats);
+	bSectionsRegistered = true;
 }
 
 void UExploredWiringSubsystem::UnregisterSections(UExploredSaveSubsystem& Save)

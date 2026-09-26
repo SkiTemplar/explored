@@ -52,6 +52,7 @@ class EXPLORED_API UExploredWiringSubsystem : public UTickableWorldSubsystem
 public:
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Deinitialize() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
@@ -172,6 +173,5 @@ private:
 	float MaxDiveReportedM = 0.0f;
 	int32 LastDaysReported = -1;
 	float SampleTimer = 0.0f;
-	bool bLastFireHeatValid = false;
-	float LastFireHeat = 0.0f;
+	bool bSectionsRegistered = false;
 };
