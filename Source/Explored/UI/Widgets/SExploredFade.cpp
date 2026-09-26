@@ -1,5 +1,6 @@
 #include "UI/Widgets/SExploredFade.h"
 
+#include "Styling/CoreStyle.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBox.h"
 

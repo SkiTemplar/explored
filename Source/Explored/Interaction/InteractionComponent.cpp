@@ -60,7 +60,11 @@ void UInteractionComponent::UpdateFocus()
 		}
 	}
 
-	if (NewFocus == FocusedActor.Get())
+	// L5: si el actor enfocado se destruye, el puntero débil pasa a null y
+	// NewFocus (null) coincidía con él, así que nunca se avisaba de la pérdida
+	// de foco. bHasFocus recuerda que el último aviso fue «hay foco».
+	const bool bLostStaleFocus = !NewFocus && bHasFocus && !FocusedActor.IsValid();
+	if (NewFocus == FocusedActor.Get() && !bLostStaleFocus)
 	{
 		return;
 	}
@@ -71,6 +75,7 @@ void UInteractionComponent::UpdateFocus()
 	}
 
 	FocusedActor = NewFocus;
+	bHasFocus = NewFocus != nullptr;
 	CurrentVerbs.Reset();
 
 	if (NewFocus)

@@ -1,9 +1,20 @@
 #include "UI/ExploredInputSettingsSubsystem.h"
 
+#include "UI/SettingsLogic.h"
+
+const FName UExploredInputSettingsSubsystem::ReservedConflictName(TEXT("Reserved"));
+
 void UExploredInputSettingsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	LoadConfig();
+
+	// M12: todas las acciones remapeables participan en la detección de
+	// conflictos desde el principio, no solo las que la UI haya registrado.
+	for (const ExploredSettingsLogic::FRemappableAction& Action : ExploredSettingsLogic::GetRemappableActions())
+	{
+		RegisterAction(Action.ActionName, FKey(Action.DefaultKey));
+	}
 }
 
 void UExploredInputSettingsSubsystem::RegisterAction(FName ActionName, FKey DefaultKey)
@@ -32,25 +43,37 @@ FKey UExploredInputSettingsSubsystem::GetKeyFor(FName ActionName, FKey DefaultKe
 	return Override.IsValid() ? Override : DefaultKey;
 }
 
+FName UExploredInputSettingsSubsystem::GetConflictFor(FName ActionName, FKey NewKey) const
+{
+	TArray<ExploredSettingsLogic::FKeyBinding> Effective;
+	Effective.Reserve(Defaults.Num());
+	for (const TPair<FName, FKey>& Pair : Defaults)
+	{
+		Effective.Add({ Pair.Key, GetKeyFor(Pair.Key, Pair.Value).GetFName() });
+	}
+
+	const ExploredSettingsLogic::FRemapCheckResult Check =
+		ExploredSettingsLogic::CheckRemap(Effective, ActionName, NewKey.IsValid() ? NewKey.GetFName() : NAME_None);
+	switch (Check.Result)
+	{
+	case ExploredSettingsLogic::ERemapCheck::InUse: return Check.ConflictingAction;
+	case ExploredSettingsLogic::ERemapCheck::ReservedKey:
+	case ExploredSettingsLogic::ERemapCheck::InvalidKey: return ReservedConflictName;
+	default: return NAME_None;
+	}
+}
+
 bool UExploredInputSettingsSubsystem::SetKeyFor(FName ActionName, FKey NewKey)
 {
-	if (!NewKey.IsValid())
+	// Los mapeos de mando son fijos (ver AExploredCharacter): una tecla de mando
+	// aquí sustituiría la de teclado de la acción.
+	if (!NewKey.IsValid() || NewKey.IsGamepadKey())
 	{
 		return false;
 	}
-
-	// Comprueba conflicto contra la tecla efectiva de cualquier otra acción conocida.
-	for (const TPair<FName, FKey>& Pair : Defaults)
+	if (!GetConflictFor(ActionName, NewKey).IsNone())
 	{
-		if (Pair.Key == ActionName)
-		{
-			continue;
-		}
-		const FKey Effective = GetKeyFor(Pair.Key, Pair.Value);
-		if (Effective == NewKey)
-		{
-			return false;
-		}
+		return false;
 	}
 
 	bool bFound = false;
@@ -71,7 +94,7 @@ bool UExploredInputSettingsSubsystem::SetKeyFor(FName ActionName, FKey NewKey)
 		Overrides.Add(NewOverride);
 	}
 
-	SaveConfig();
+	SaveOverrides();
 	OnBindingsChanged.Broadcast(ActionName);
 	return true;
 }
@@ -85,7 +108,21 @@ void UExploredInputSettingsSubsystem::ResetKeyFor(FName ActionName)
 	if (Index != INDEX_NONE)
 	{
 		Overrides.RemoveAt(Index);
-		SaveConfig();
+		SaveOverrides();
 		OnBindingsChanged.Broadcast(ActionName);
+	}
+}
+
+void UExploredInputSettingsSubsystem::UseTransientStorageForTesting()
+{
+	bPersistOverrides = false;
+	Overrides.Reset();
+}
+
+void UExploredInputSettingsSubsystem::SaveOverrides()
+{
+	if (bPersistOverrides)
+	{
+		SaveConfig();
 	}
 }

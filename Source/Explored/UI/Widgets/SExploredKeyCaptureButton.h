@@ -10,7 +10,11 @@ DECLARE_DELEGATE_OneParam(FOnExploredKeyPicked, FKey);
  * Botón de remapeo (Ajustes > Controles): muestra la tecla actual y, al
  * pulsarlo, espera a que el jugador pulse la tecla, botón de ratón o
  * gatillo/botón de mando siguiente y la reporta por OnKeyPicked. Escape
- * cancela la captura sin cambiar nada.
+ * (o B del mando) cancela la captura sin cambiar nada.
+ *
+ * Mientras captura, el widget toma el ratón (CaptureMouse) y escucha
+ * OnPreviewMouseButtonDown, que llega antes que al SButton hijo: antes el
+ * botón consumía el clic y no se podía asignar ningún botón del ratón (M13).
  */
 class EXPLORED_API SExploredKeyCaptureButton : public SCompoundWidget
 {
@@ -24,14 +28,17 @@ public:
 
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent) override;
+	virtual FReply OnPreviewMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
 	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
+	virtual void OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent) override;
 
 private:
 	FReply HandleClicked();
 	FText GetLabel() const;
-	void ReportKey(FKey Key);
+	/** Termina la captura (informando de Key si no es de cancelar) y suelta el ratón. */
+	FReply ReportKey(FKey Key);
 
 	TAttribute<FKey> CurrentKey;
 	FOnExploredKeyPicked OnKeyPicked;

@@ -3,7 +3,12 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
-/** Menú de pausa (GDD §10): Reanudar, Diario, Ajustes, Guardar, Salir al menú, Salir del juego. */
+/**
+ * Menú de pausa (GDD §10): Reanudar, Diario, Ajustes, Guardar, Salir al menú, Salir del juego.
+ *
+ * Escape, Start o B del mando reanudan (H6): con FInputModeUIOnly la tecla no
+ * llega al InputComponent del PlayerController, así que la atiende el widget.
+ */
 class EXPLORED_API SExploredPauseMenu : public SCompoundWidget
 {
 public:
@@ -17,8 +22,15 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
+	virtual bool SupportsKeyboardFocus() const override { return true; }
+	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+
+	/** Primer botón: recibe el foco al abrir la pantalla para navegar con teclado y mando. */
+	TSharedPtr<SWidget> GetInitialFocus() const { return InitialFocus; }
+
 private:
 	FSimpleDelegate OnResume, OnSettings, OnSave, OnExitToMenu, OnQuit;
+	TSharedPtr<SWidget> InitialFocus;
 
 	FReply HandleResume();
 	FReply HandleJournal() { return FReply::Handled(); }

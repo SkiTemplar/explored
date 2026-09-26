@@ -29,6 +29,9 @@ void FExploredFrontendInputSpec::Define()
 	{
 		DummyLocalPlayer = TStrongObjectPtr<ULocalPlayer>(NewObject<ULocalPlayer>(GEngine));
 		Subsystem = TStrongObjectPtr<UExploredInputSettingsSubsystem>(NewObject<UExploredInputSettingsSubsystem>(DummyLocalPlayer.Get()));
+		// Sin esto, SetKeyFor escribía Overrides en el Game.ini real del usuario y
+		// el subsistema arrancaba con los remapeos que el CDO leyó de ese ini.
+		Subsystem->UseTransientStorageForTesting();
 	});
 
 	AfterEach([this]()
@@ -76,6 +79,23 @@ void FExploredFrontendInputSpec::Define()
 			TestFalse(TEXT("Se rechaza el conflicto"), bChanged);
 			TestEqual(TEXT("Sprint conserva su tecla"), Subsystem->GetKeyFor(TEXT("Test_Sprint"), EKeys::LeftShift), FKey(EKeys::LeftShift));
 			TestEqual(TEXT("No dispara el delegado"), FireCount, 0);
+		});
+
+		It("rechaza teclas reservadas y de mando", [this]()
+		{
+			Subsystem->RegisterAction(TEXT("Test_ActionD"), EKeys::SpaceBar);
+			TestFalse(TEXT("Escape está reservada"), Subsystem->SetKeyFor(TEXT("Test_ActionD"), EKeys::Escape));
+			TestFalse(TEXT("W es de movimiento"), Subsystem->SetKeyFor(TEXT("Test_ActionD"), EKeys::W));
+			TestFalse(TEXT("Los botones de mando no se remapean"), Subsystem->SetKeyFor(TEXT("Test_ActionD"), EKeys::Gamepad_FaceButton_Bottom));
+			TestTrue(TEXT("Un botón de ratón sí"), Subsystem->SetKeyFor(TEXT("Test_ActionD"), EKeys::ThumbMouseButton));
+		});
+
+		It("GetConflictFor nombra la acción que ya usa la tecla", [this]()
+		{
+			Subsystem->RegisterAction(TEXT("Test_Interact"), EKeys::E);
+			Subsystem->RegisterAction(TEXT("Test_Jump2"), EKeys::SpaceBar);
+			TestEqual(TEXT("E la usa interactuar"), Subsystem->GetConflictFor(TEXT("Test_Jump2"), EKeys::E), FName(TEXT("Test_Interact")));
+			TestTrue(TEXT("F está libre"), Subsystem->GetConflictFor(TEXT("Test_Jump2"), EKeys::F).IsNone());
 		});
 
 		It("ResetKeyFor devuelve la tecla por defecto", [this]()

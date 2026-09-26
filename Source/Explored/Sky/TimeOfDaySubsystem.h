@@ -51,6 +51,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
+	/** Toma la duración del día de los ajustes del jugador (Ajustes > Juego). */
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	/** Hora local en [0, 24). */
 	float GetHours() const { return Hours; }

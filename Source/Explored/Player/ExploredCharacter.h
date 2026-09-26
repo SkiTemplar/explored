@@ -9,6 +9,7 @@
 
 class UCameraComponent;
 class UCarryComponent;
+class UExploredInputSettingsSubsystem;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
@@ -24,6 +25,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBackpackToggled, bool, bOpen);
  *
  * Manos, mochila y fabricación (M2, GDD §4.2/§4.5) viven en UCarryComponent y
  * UCraftingLibrary; este personaje solo traduce la entrada a esas llamadas.
+ *
+ * Ajustes del jugador (H7): FOV, sensibilidad de ratón y mando, invertir Y,
+ * balanceo de cámara y agacharse mantenido/alterno se leen de
+ * UExploredGameUserSettings (y se refrescan con OnSettingsApplied). Las teclas
+ * de las acciones remapeables salen de UExploredInputSettingsSubsystem con la
+ * tabla ExploredSettingsLogic::GetRemappableActions, y el contexto se
+ * reconstruye al remapear.
  */
 UCLASS()
 class EXPLORED_API AExploredCharacter : public ACharacter
@@ -52,13 +60,33 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	/** L8: el contexto de entrada se añade al cambiar de controlador, no solo en BeginPlay. */
+	virtual void NotifyControllerChanged() override;
 
 private:
 	void BuildInputAssets();
+	/** Rehace todos los mapeos del contexto con las teclas efectivas (remapeo incluido). */
+	void RebuildKeyMappings();
+	/** RebuildKeyMappings y pide a Enhanced Input que recalcule los mapeos activos. */
+	void RefreshKeyMappings();
+	UInputAction* FindActionByName(FName ActionName) const;
+	UExploredInputSettingsSubsystem* GetInputSettings() const;
+	/** Se suscribe a los ajustes y al remapeo del jugador local actual (idempotente). */
+	void BindToPlayerSettings();
+	void UnbindFromPlayerSettings();
+	void HandleBindingsChanged(FName ActionName);
+	/** Aplica FOV (y lo que no se lee en cada uso) desde UExploredGameUserSettings. */
+	void ApplyPlayerSettings();
+	void SetDebugMappingActive(bool bActive);
+	void UpdateTickRate(bool bNeedsEveryFrame);
+
 	void HandleMove(const FInputActionValue& Value);
 	void HandleLook(const FInputActionValue& Value);
+	void HandleLookGamepad(const FInputActionValue& Value);
+	void ApplyLookInput(FVector2D Axis, float Sensitivity);
 	void HandleSprintStarted(const FInputActionValue& Value);
 	void HandleSprintCompleted(const FInputActionValue& Value);
 	void HandleToggleFly(const FInputActionValue& Value);
@@ -105,6 +133,14 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> LookAction;
+
+	/** Mirar con el stick derecho: acción aparte para aplicarle la sensibilidad del mando. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> LookGamepadAction;
+
+	/** Contexto de depuración (vuelo): prioridad mayor que el principal y solo mientras se vuela. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> DebugMappingContext;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> JumpAction;
@@ -156,9 +192,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Manos")
 	float SwimStrokeAmount = 14.0f;
 
+	/** Amplitud vertical del balanceo de cámara al andar (Ajustes > Controles). */
+	UPROPERTY(EditDefaultsOnly, Category = "Explored|Cámara")
+	float CameraBobAmount = 1.2f;
+
 	bool bIsDebugFlying = false;
 	bool bBackpackOpen = false;
+	bool bTickEveryFrame = false;
 	float HandSwayPhase = 0.0f;
 	FVector HandRestLocationLeft = FVector::ZeroVector;
 	FVector HandRestLocationRight = FVector::ZeroVector;
+	FVector CameraRestLocation = FVector::ZeroVector;
+
+	/** Suscripciones a ajustes y remapeo; se retiran en EndPlay o al cambiar de controlador. */
+	TWeakObjectPtr<UExploredInputSettingsSubsystem> BoundInputSettings;
+	FDelegateHandle BindingsChangedHandle;
+	FDelegateHandle SettingsAppliedHandle;
 };

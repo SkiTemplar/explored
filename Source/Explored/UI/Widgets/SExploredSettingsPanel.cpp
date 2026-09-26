@@ -1,11 +1,14 @@
 #include "UI/Widgets/SExploredSettingsPanel.h"
 
+#include "Input/Events.h"
+#include "InputCoreTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
+#include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "UI/Widgets/SExploredKeyCaptureButton.h"
-#include "UI/ExploredUIStyle.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SSlider.h"
@@ -14,9 +17,11 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/Text/STextBlock.h"
 
-namespace
+// Espacio de nombres con nombre (no anónimo) para no chocar en el Unity build.
+namespace ExploredSettingsPanelDetail
 {
 	const FExploredUIStyle& S() { return FExploredUIStyle::Get(); }
 
@@ -49,6 +54,17 @@ namespace
 			.OnCheckStateChanged_Lambda([SetValue](ECheckBoxState NewState) { SetValue(NewState == ECheckBoxState::Checked); });
 	}
 
+	/** Slider continuo sobre un rango de ExploredSettingsLogic (la conversión es pura y está testeada). */
+	TSharedRef<SWidget> MakeRangeSlider(const ExploredSettingsLogic::FSettingRange& Range, TFunction<float()> GetValue, TFunction<void(float)> SetValue)
+	{
+		return SNew(SBox).WidthOverride(220.0f)
+			[
+				SNew(SSlider).Style(&S().SliderStyle())
+				.Value_Lambda([GetValue, Range]() { return ExploredSettingsLogic::ValueToSlider(GetValue(), Range); })
+				.OnValueChanged_Lambda([SetValue, Range](float V) { SetValue(ExploredSettingsLogic::SliderToValue(V, Range)); })
+			];
+	}
+
 	/** Selector de opción discreta con flechas «<  Texto  >», cómodo con mando y ratón. */
 	TSharedRef<SWidget> MakeCycler(TArray<FText> Labels, TFunction<int32()> GetIndex, TFunction<void(int32)> SetIndex)
 	{
@@ -58,7 +74,7 @@ namespace
 			.ColorAndOpacity(FSlateColor(S().ColorInk()))
 			.MinDesiredWidth(160.0f)
 			.Justification(ETextJustify::Center)
-			.Text_Lambda([GetIndex, Labels, Count]() { return Labels[((GetIndex() % Count) + Count) % Count]; });
+			.Text_Lambda([GetIndex, Labels, Count]() { return Labels.IsValidIndex(((GetIndex() % Count) + Count) % Count) ? Labels[((GetIndex() % Count) + Count) % Count] : FText::GetEmpty(); });
 
 		return SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth()
@@ -75,8 +91,33 @@ namespace
 			[
 				SNew(SButton).ButtonStyle(&S().ButtonStyle())
 				.Text(FText::FromString(TEXT(">")))
-				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex((GetIndex() + 1) % Count); return FReply::Handled(); })
+				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex(((GetIndex() + 1) % Count + Count) % Count); return FReply::Handled(); })
 			];
+	}
+
+	/** Etiqueta de cada acción remapeable (ExploredSettingsLogic::GetRemappableActions). */
+	FText ActionLabel(FName ActionName)
+	{
+		static const FName Jump(TEXT("IA_Jump"));
+		static const FName Sprint(TEXT("IA_Sprint"));
+		static const FName Dive(TEXT("IA_Dive"));
+		static const FName Interact(TEXT("IA_Interact"));
+		static const FName UsePrimary(TEXT("IA_UsePrimary"));
+		static const FName UseSecondary(TEXT("IA_UseSecondary"));
+		static const FName Drop(TEXT("IA_Drop"));
+		static const FName Combine(TEXT("IA_Combine"));
+		static const FName Backpack(TEXT("IA_ToggleBackpack"));
+
+		if (ActionName == Jump) { return NSLOCTEXT("ExploredUI", "ActionJump", "Saltar"); }
+		if (ActionName == Sprint) { return NSLOCTEXT("ExploredUI", "ActionSprint", "Correr"); }
+		if (ActionName == Dive) { return NSLOCTEXT("ExploredUI", "ActionDive", "Agacharse / bucear"); }
+		if (ActionName == Interact) { return NSLOCTEXT("ExploredUI", "ActionInteract", "Interactuar / coger"); }
+		if (ActionName == UsePrimary) { return NSLOCTEXT("ExploredUI", "ActionUsePrimary", "Usar mano derecha"); }
+		if (ActionName == UseSecondary) { return NSLOCTEXT("ExploredUI", "ActionUseSecondary", "Usar mano izquierda"); }
+		if (ActionName == Drop) { return NSLOCTEXT("ExploredUI", "ActionDrop", "Soltar"); }
+		if (ActionName == Combine) { return NSLOCTEXT("ExploredUI", "ActionCombine", "Combinar"); }
+		if (ActionName == Backpack) { return NSLOCTEXT("ExploredUI", "ActionBackpack", "Mochila"); }
+		return FText::FromName(ActionName);
 	}
 
 	TArray<FText> QualityLabels()
@@ -90,6 +131,8 @@ namespace
 		};
 	}
 }
+
+using namespace ExploredSettingsPanelDetail;
 
 void SExploredSettingsPanel::Construct(const FArguments& InArgs)
 {
@@ -144,20 +187,36 @@ void SExploredSettingsPanel::Construct(const FArguments& InArgs)
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildTabBar()
 {
+	TabButtons.Reset();
 	auto MakeTab = [this](ETab Tab, const FText& Label)
 	{
+		TSharedRef<SWidget> Button = ExploredUIWidgets::MakeTabButton(Label, CurrentTab == Tab, FOnClicked::CreateSP(this, &SExploredSettingsPanel::SelectTab, Tab));
+		TabButtons.Add(Button);
 		return SNew(SBox).Padding(FMargin(0.0f, 0.0f, 6.0f, 0.0f))
 		[
-			ExploredUIWidgets::MakeTabButton(Label, CurrentTab == Tab, FOnClicked::CreateSP(this, &SExploredSettingsPanel::SelectTab, Tab))
+			Button
 		];
 	};
 
+	// Se construyen en el orden de ETab: TabButtons[Tab] es el botón de esa pestaña.
+	TSharedRef<SWidget> Graphics = MakeTab(ETab::Graphics, NSLOCTEXT("ExploredUI", "TabGraphics", "Gráficos"));
+	TSharedRef<SWidget> Audio = MakeTab(ETab::Audio, NSLOCTEXT("ExploredUI", "TabAudio", "Audio"));
+	TSharedRef<SWidget> Controls = MakeTab(ETab::Controls, NSLOCTEXT("ExploredUI", "TabControls", "Controles"));
+	TSharedRef<SWidget> Game = MakeTab(ETab::Game, NSLOCTEXT("ExploredUI", "TabGame", "Juego"));
+	TSharedRef<SWidget> Accessibility = MakeTab(ETab::Accessibility, NSLOCTEXT("ExploredUI", "TabAccessibility", "Accesibilidad"));
+
 	return SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().AutoWidth() [ MakeTab(ETab::Graphics, NSLOCTEXT("ExploredUI", "TabGraphics", "Gráficos")) ]
-		+ SHorizontalBox::Slot().AutoWidth() [ MakeTab(ETab::Audio, NSLOCTEXT("ExploredUI", "TabAudio", "Audio")) ]
-		+ SHorizontalBox::Slot().AutoWidth() [ MakeTab(ETab::Controls, NSLOCTEXT("ExploredUI", "TabControls", "Controles")) ]
-		+ SHorizontalBox::Slot().AutoWidth() [ MakeTab(ETab::Game, NSLOCTEXT("ExploredUI", "TabGame", "Juego")) ]
-		+ SHorizontalBox::Slot().AutoWidth() [ MakeTab(ETab::Accessibility, NSLOCTEXT("ExploredUI", "TabAccessibility", "Accesibilidad")) ];
+		+ SHorizontalBox::Slot().AutoWidth() [ Graphics ]
+		+ SHorizontalBox::Slot().AutoWidth() [ Audio ]
+		+ SHorizontalBox::Slot().AutoWidth() [ Controls ]
+		+ SHorizontalBox::Slot().AutoWidth() [ Game ]
+		+ SHorizontalBox::Slot().AutoWidth() [ Accessibility ];
+}
+
+TSharedPtr<SWidget> SExploredSettingsPanel::GetInitialFocus() const
+{
+	const int32 Index = static_cast<int32>(CurrentTab);
+	return TabButtons.IsValidIndex(Index) ? TabButtons[Index] : TSharedPtr<SWidget>();
 }
 
 FReply SExploredSettingsPanel::SelectTab(ETab Tab)
@@ -166,12 +225,22 @@ FReply SExploredSettingsPanel::SelectTab(ETab Tab)
 	Switcher->SetActiveWidgetIndex(static_cast<int32>(Tab));
 	// Se reconstruye entera porque el estilo activo/inactivo de cada botón se fija al crearlo.
 	TabBarContainer->SetContent(BuildTabBar());
-	return FReply::Handled();
+	// El botón que tenía el foco acaba de destruirse: sin devolver el foco a la
+	// pestaña nueva, la navegación con teclado/mando (y Escape) se quedaría sin destino.
+	const TSharedPtr<SWidget> Focus = GetInitialFocus();
+	return Focus.IsValid() ? FReply::Handled().SetUserFocus(Focus.ToSharedRef(), EFocusCause::Navigation) : FReply::Handled();
 }
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 {
-	UExploredGameUserSettings* GS = Settings;
+	// Los ajustes viven lo que GEngine (más que cualquier widget): las lambdas
+	// de los controles pueden capturar el puntero crudo.
+	UExploredGameUserSettings* GS = Settings.Get();
+	if (!GS)
+	{
+		return SNullWidget::NullWidget;
+	}
+
 	TArray<FIntPoint> Resolutions;
 	UKismetSystemLibrary::GetSupportedFullscreenResolutions(Resolutions);
 	if (Resolutions.Num() == 0)
@@ -196,7 +265,7 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 		FText::FromString(TEXT("144")), NSLOCTEXT("ExploredUI", "Unlimited", "Sin límite")
 	};
 
-	auto QualityRow = [this](const FText& Label, TFunction<int32()> Get, TFunction<void(int32)> Set)
+	auto QualityRow = [](const FText& Label, TFunction<int32()> Get, TFunction<void(int32)> Set)
 	{
 		return MakeRow(Label, MakeCycler(QualityLabels(), MoveTemp(Get), MoveTemp(Set)));
 	};
@@ -207,8 +276,8 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "Resolution", "Resolución"),
 				MakeCycler(ResolutionLabels,
-					[GS, Resolutions]() { const FIntPoint Cur = GS->GetScreenResolution(); return Resolutions.IndexOfByPredicate([Cur](const FIntPoint& R) { return R == Cur; }); },
-					[GS, Resolutions](int32 Index) { GS->SetScreenResolution(Resolutions[Index]); }))
+					[GS, Resolutions]() { const FIntPoint Cur = GS->GetScreenResolution(); return FMath::Max(0, Resolutions.IndexOfByPredicate([Cur](const FIntPoint& R) { return R == Cur; })); },
+					[GS, Resolutions](int32 Index) { if (Resolutions.IsValidIndex(Index)) { GS->SetScreenResolution(Resolutions[Index]); } }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
@@ -226,17 +295,12 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 			MakeRow(NSLOCTEXT("ExploredUI", "FpsLimit", "Límite de FPS"),
 				MakeCycler(FpsLabels,
 					[GS, FpsLimits]() { const float Cur = GS->GetFrameRateLimit(); int32 Best = 0; for (int32 I = 0; I < FpsLimits.Num(); ++I) { if (FMath::IsNearlyEqual(Cur, FpsLimits[I], 0.5f)) { Best = I; } } return Best; },
-					[GS, FpsLimits](int32 Index) { GS->SetFrameRateLimit(FpsLimits[Index]); }))
+					[GS, FpsLimits](int32 Index) { if (FpsLimits.IsValidIndex(Index)) { GS->SetFrameRateLimit(FpsLimits[Index]); } }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 8.0f, 0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "Brightness", "Brillo"),
-				SNew(SBox).WidthOverride(220.0f)
-				[
-					SNew(SSlider).Style(&S().SliderStyle())
-					.Value_Lambda([GS]() { return (GS->GetBrightness() - 1.7f) / 1.0f; })
-					.OnValueChanged_Lambda([GS](float V) { GS->SetBrightness(1.7f + V * 1.0f); })
-				])
+				MakeRangeSlider(ExploredSettingsLogic::BrightnessRange, [GS]() { return GS->GetBrightness(); }, [GS](float V) { GS->SetBrightness(V); }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 16.0f, 0.0f, 8.0f)) [ MakeSectionTitle(NSLOCTEXT("ExploredUI", "SectionQuality", "Calidad")) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
@@ -256,15 +320,17 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildAudioTab()
 {
-	UExploredGameUserSettings* GS = Settings;
+	UExploredGameUserSettings* GS = Settings.Get();
+	if (!GS)
+	{
+		return SNullWidget::NullWidget;
+	}
+
 	auto VolumeRow = [GS](const FText& Label, EExploredAudioChannel Channel)
 	{
-		return MakeRow(Label, SNew(SBox).WidthOverride(220.0f)
-			[
-				SNew(SSlider).Style(&S().SliderStyle())
-				.Value_Lambda([GS, Channel]() { return GS->GetVolume(Channel) / 100.0f; })
-				.OnValueChanged_Lambda([GS, Channel](float V) { GS->SetVolume(Channel, V * 100.0f); })
-			]);
+		return MakeRow(Label, MakeRangeSlider(ExploredSettingsLogic::VolumeRange,
+			[GS, Channel]() { return GS->GetVolume(Channel); },
+			[GS, Channel](float V) { GS->SetVolume(Channel, V); }));
 	};
 
 	return SNew(SVerticalBox)
@@ -277,29 +343,22 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildAudioTab()
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildControlsTab()
 {
-	UExploredGameUserSettings* GS = Settings;
-	UExploredInputSettingsSubsystem* IS = InputSettings;
+	UExploredGameUserSettings* GS = Settings.Get();
+	if (!GS)
+	{
+		return SNullWidget::NullWidget;
+	}
 
 	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "MouseSensitivity", "Sensibilidad del ratón"),
-				SNew(SBox).WidthOverride(220.0f)
-				[
-					SNew(SSlider).Style(&S().SliderStyle())
-					.Value_Lambda([GS]() { return GS->GetMouseSensitivity() / 5.0f; })
-					.OnValueChanged_Lambda([GS](float V) { GS->SetMouseSensitivity(V * 5.0f); })
-				])
+				MakeRangeSlider(ExploredSettingsLogic::SensitivityRange, [GS]() { return GS->GetMouseSensitivity(); }, [GS](float V) { GS->SetMouseSensitivity(V); }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "GamepadSensitivity", "Sensibilidad del mando"),
-				SNew(SBox).WidthOverride(220.0f)
-				[
-					SNew(SSlider).Style(&S().SliderStyle())
-					.Value_Lambda([GS]() { return GS->GetGamepadSensitivity() / 5.0f; })
-					.OnValueChanged_Lambda([GS](float V) { GS->SetGamepadSensitivity(V * 5.0f); })
-				])
+				MakeRangeSlider(ExploredSettingsLogic::SensitivityRange, [GS]() { return GS->GetGamepadSensitivity(); }, [GS](float V) { GS->SetGamepadSensitivity(V); }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
@@ -308,12 +367,7 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildControlsTab()
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "FOV", "Campo de visión"),
-				SNew(SBox).WidthOverride(220.0f)
-				[
-					SNew(SSlider).Style(&S().SliderStyle())
-					.Value_Lambda([GS]() { return (GS->GetFOV() - 70.0f) / 40.0f; })
-					.OnValueChanged_Lambda([GS](float V) { GS->SetFOV(70.0f + V * 40.0f); })
-				])
+				MakeRangeSlider(ExploredSettingsLogic::FieldOfViewRange, [GS]() { return GS->GetFOV(); }, [GS](float V) { GS->SetFOV(V); }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
@@ -324,34 +378,79 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildControlsTab()
 			MakeRow(NSLOCTEXT("ExploredUI", "HoldCrouch", "Agacharse manteniendo pulsado"), MakeToggle([GS]() { return GS->GetHoldToCrouch(); }, [GS](bool B) { GS->SetHoldToCrouch(B); }))
 		];
 
-	if (IS)
+	if (InputSettings.IsValid())
 	{
-		IS->RegisterAction(ExploredInputActionNames::Jump, EKeys::SpaceBar);
-		IS->RegisterAction(ExploredInputActionNames::Sprint, EKeys::LeftShift);
-
 		Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 16.0f, 0.0f, 8.0f)) [ MakeSectionTitle(NSLOCTEXT("ExploredUI", "SectionRemap", "Remapeo de teclas")) ];
 
-		auto AddRemapRow = [&Box, IS](const FName ActionName, FKey DefaultKey, const FText& Label)
+		// Una fila por acción remapeable, de la misma tabla con la que el
+		// personaje construye sus mapeos y el subsistema detecta conflictos (M12).
+		const TWeakObjectPtr<UExploredInputSettingsSubsystem> WeakInput = InputSettings;
+		for (const ExploredSettingsLogic::FRemappableAction& Action : ExploredSettingsLogic::GetRemappableActions())
 		{
-			TAttribute<FKey> KeyAttr = TAttribute<FKey>::CreateLambda([IS, ActionName, DefaultKey]() { return IS->GetKeyFor(ActionName, DefaultKey); });
+			const FName ActionName = Action.ActionName;
+			const FKey DefaultKey(Action.DefaultKey);
+			TAttribute<FKey> KeyAttr = TAttribute<FKey>::CreateLambda([WeakInput, ActionName, DefaultKey]()
+			{
+				const UExploredInputSettingsSubsystem* IS = WeakInput.Get();
+				return IS ? IS->GetKeyFor(ActionName, DefaultKey) : DefaultKey;
+			});
 			Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 			[
-				MakeRow(Label,
+				MakeRow(ActionLabel(ActionName),
 					SNew(SExploredKeyCaptureButton)
 					.CurrentKey(KeyAttr)
-					.OnKeyPicked_Lambda([IS, ActionName](FKey NewKey) { IS->SetKeyFor(ActionName, NewKey); }))
+					.OnKeyPicked(FOnExploredKeyPicked::CreateSP(this, &SExploredSettingsPanel::HandleKeyPicked, ActionName)))
 			];
-		};
-		AddRemapRow(ExploredInputActionNames::Jump, EKeys::SpaceBar, NSLOCTEXT("ExploredUI", "ActionJump", "Saltar"));
-		AddRemapRow(ExploredInputActionNames::Sprint, EKeys::LeftShift, NSLOCTEXT("ExploredUI", "ActionSprint", "Correr"));
+		}
+
+		Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 8.0f, 0.0f, 0.0f))
+		[
+			SNew(STextBlock)
+			.Font(S().FontBody())
+			.ColorAndOpacity(FSlateColor(S().ColorAccent()))
+			.AutoWrapText(true)
+			.Text_Lambda([this]() { return RemapMessage; })
+		];
 	}
 
 	return Box;
 }
 
+void SExploredSettingsPanel::HandleKeyPicked(FKey NewKey, FName ActionName)
+{
+	UExploredInputSettingsSubsystem* IS = InputSettings.Get();
+	if (!IS)
+	{
+		return;
+	}
+
+	const FName Conflict = IS->GetConflictFor(ActionName, NewKey);
+	if (NewKey.IsGamepadKey())
+	{
+		RemapMessage = NSLOCTEXT("ExploredUI", "RemapGamepad", "Los botones del mando no se pueden remapear.");
+	}
+	else if (Conflict == UExploredInputSettingsSubsystem::ReservedConflictName)
+	{
+		RemapMessage = FText::Format(NSLOCTEXT("ExploredUI", "RemapReserved", "{0} está reservada (movimiento o menú)."), NewKey.GetDisplayName());
+	}
+	else if (!Conflict.IsNone())
+	{
+		RemapMessage = FText::Format(NSLOCTEXT("ExploredUI", "RemapInUse", "{0} ya se usa para «{1}»."), NewKey.GetDisplayName(), ActionLabel(Conflict));
+	}
+	else
+	{
+		IS->SetKeyFor(ActionName, NewKey);
+		RemapMessage = FText::GetEmpty();
+	}
+}
+
 TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 {
-	UExploredGameUserSettings* GS = Settings;
+	UExploredGameUserSettings* GS = Settings.Get();
+	if (!GS)
+	{
+		return SNullWidget::NullWidget;
+	}
 
 	TArray<FText> DayLengthLabels;
 	for (const float Minutes : UExploredGameUserSettings::GetSupportedDayLengths())
@@ -374,8 +473,9 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "DayLength", "Duración del día"),
 				MakeCycler(DayLengthLabels,
-					[GS]() { const TArray<float>& Lengths = UExploredGameUserSettings::GetSupportedDayLengths(); return Lengths.IndexOfByPredicate([GS](float M) { return FMath::IsNearlyEqual(M, GS->GetDayLengthMinutes(), 0.1f); }); },
-					[GS](int32 Index) { GS->SetDayLengthMinutes(UExploredGameUserSettings::GetSupportedDayLengths()[Index]); }))
+					// Índice de la duración soportada más cercana: nunca -1 aunque el ini traiga un valor raro (M14).
+					[GS]() { return ExploredSettingsLogic::DayLengthIndex(GS->GetDayLengthMinutes()); },
+					[GS](int32 Index) { const TArray<float>& Lengths = UExploredGameUserSettings::GetSupportedDayLengths(); if (Lengths.IsValidIndex(Index)) { GS->SetDayLengthMinutes(Lengths[Index]); } }))
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
@@ -399,7 +499,11 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildAccessibilityTab()
 {
-	UExploredGameUserSettings* GS = Settings;
+	UExploredGameUserSettings* GS = Settings.Get();
+	if (!GS)
+	{
+		return SNullWidget::NullWidget;
+	}
 
 	TArray<FText> ColorblindLabels = {
 		NSLOCTEXT("ExploredUI", "CVDNone", "Ninguno"),
@@ -449,25 +553,63 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildFooter()
 
 FReply SExploredSettingsPanel::HandleApply()
 {
-	if (Settings)
+	if (UExploredGameUserSettings* GS = Settings.Get())
 	{
-		Settings->ApplySettings(false);
-		Settings->ApplyAudioSettings(WorldContextObject);
+		// ApplySettings → ApplyNonResolutionSettings (override): brillo, idioma,
+		// daltonismo, audio, duración del día y aviso al personaje; y guarda el ini.
+		GS->ApplySettings(false);
+		// Redundante con lo anterior salvo si el mundo del panel no figura entre
+		// los mundos de juego del motor; ApplyToWorld es idempotente.
+		GS->ApplyToWorld(WorldContextObject.Get());
 	}
 	return FReply::Handled();
 }
 
 FReply SExploredSettingsPanel::HandleRestoreDefaults()
 {
-	if (Settings)
+	if (UExploredGameUserSettings* GS = Settings.Get())
 	{
-		Settings->SetToDefaults();
+		GS->SetToDefaults();
+		// M11: SetToDefaults solo cambia los valores; lo que se previsualiza al
+		// instante (brillo, daltonismo, idioma) se re-aplica para que la pantalla
+		// coincida con lo que muestra el panel. El resto espera a «Aplicar».
+		GS->ApplyPreviewSettings();
 	}
 	return FReply::Handled();
 }
 
 FReply SExploredSettingsPanel::HandleBack()
 {
-	OnBack.ExecuteIfBound();
+	RequestBack();
 	return FReply::Handled();
+}
+
+void SExploredSettingsPanel::RequestBack()
+{
+	if (UExploredGameUserSettings* GS = Settings.Get())
+	{
+		// M11: «Volver» sin «Aplicar» descarta. Se recarga el ini del disco y se
+		// re-aplica todo lo que no es resolución (que no cambia hasta
+		// ApplyResolutionSettings), incluidos brillo, idioma y daltonismo.
+		// El remapeo de teclas no entra aquí: se guarda al elegir cada tecla.
+		GS->LoadSettings(true);
+		GS->ApplyNonResolutionSettings();
+		// En el editor ApplyNonResolutionSettings no toca la cultura; en PIE el
+		// selector sí la cambió al instante, así que se deshace aquí explícitamente.
+		GS->ApplyPreviewSettings();
+	}
+	OnBack.ExecuteIfBound();
+}
+
+FReply SExploredSettingsPanel::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	// Llega por burbujeo desde el control con foco (botón, slider...) si ese
+	// control no la ha consumido. El botón de remapeo que está capturando sí la
+	// consume, así que Escape allí solo cancela la captura.
+	if (ExploredSettingsLogic::IsMenuBackKey(InKeyEvent.GetKey().GetFName()))
+	{
+		RequestBack();
+		return FReply::Handled();
+	}
+	return SCompoundWidget::OnKeyDown(MyGeometry, InKeyEvent);
 }

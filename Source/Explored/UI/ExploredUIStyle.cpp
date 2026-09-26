@@ -1,5 +1,7 @@
 #include "UI/ExploredUIStyle.h"
 
+#include "Styling/CoreStyle.h"
+
 FExploredUIStyle::FExploredUIStyle()
 	: PanelBrush(ColorPaper(), 10.0f)
 	, PanelLightBrush(ColorPaperLight(), 6.0f)

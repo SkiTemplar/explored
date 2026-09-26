@@ -1,18 +1,45 @@
 #include "UI/ExploredGameUserSettings.h"
 
+#include "Audio/ExploredAmbienceSubsystem.h"
 #include "Engine/Engine.h"
+#include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
-#include "HAL/IConsoleManager.h"
+#include "Internationalization/Culture.h"
 #include "Internationalization/Internationalization.h"
 #include "Kismet/GameplayStatics.h"
 #include "Rendering/SlateRenderer.h"
+#include "Sky/TimeOfDaySubsystem.h"
+#include "Sound/AudioSettings.h"
 #include "Sound/SoundClass.h"
 #include "Sound/SoundMix.h"
+#include "UI/SettingsLogic.h"
+#include "UObject/Class.h"
+#include "UObject/SoftObjectPath.h"
 
-namespace
+namespace ExploredGameUserSettingsDetail
 {
-	/** Duraciones de día soportadas en Ajustes > Juego (GDD §10). */
-	const TArray<float> GDayLengths = { 20.0f, 40.0f, 60.0f, 90.0f };
+	/**
+	 * SoundClass del proyecto por canal. Las crea Tools/Unreal/import_audio.py
+	 * (SC_Master es la madre de las otras cuatro) y asigna cada SoundWave a la
+	 * suya según su categoría del manifiesto.
+	 */
+	const TCHAR* SoundClassPath(EExploredAudioChannel Channel)
+	{
+		switch (Channel)
+		{
+		case EExploredAudioChannel::Master: return TEXT("/Game/Audio/Classes/SC_Master.SC_Master");
+		case EExploredAudioChannel::Music: return TEXT("/Game/Audio/Classes/SC_Music.SC_Music");
+		case EExploredAudioChannel::Effects: return TEXT("/Game/Audio/Classes/SC_Effects.SC_Effects");
+		case EExploredAudioChannel::Ambient: return TEXT("/Game/Audio/Classes/SC_Ambient.SC_Ambient");
+		case EExploredAudioChannel::Interface: return TEXT("/Game/Audio/Classes/SC_Interface.SC_Interface");
+		default: return nullptr;
+		}
+	}
+
+	constexpr EExploredAudioChannel AllChannels[] = {
+		EExploredAudioChannel::Master, EExploredAudioChannel::Music, EExploredAudioChannel::Effects,
+		EExploredAudioChannel::Ambient, EExploredAudioChannel::Interface
+	};
 
 	EColorVisionDeficiency ToEngineDeficiency(EExploredColorblindMode Mode)
 	{
@@ -23,6 +50,21 @@ namespace
 		case EExploredColorblindMode::Tritanopia: return EColorVisionDeficiency::Tritanope;
 		default: return EColorVisionDeficiency::NormalVision;
 		}
+	}
+
+	/** Número de valores de un UENUM sin contar el _MAX que añade UHT. */
+	template <typename TEnum>
+	int32 NumEnumValues()
+	{
+		const UEnum* Enum = StaticEnum<TEnum>();
+		return Enum ? FMath::Max(Enum->NumEnums() - 1, 1) : 1;
+	}
+
+	template <typename TEnum>
+	TEnum SanitizeEnum(TEnum Value, TEnum Default)
+	{
+		return static_cast<TEnum>(ExploredSettingsLogic::SanitizeEnumIndex(
+			static_cast<int32>(Value), NumEnumValues<TEnum>(), static_cast<int32>(Default)));
 	}
 }
 
@@ -39,14 +81,15 @@ void UExploredGameUserSettings::SetToDefaults()
 {
 	Super::SetToDefaults();
 
-	Brightness = 2.2f;
-	VolumeMaster = VolumeMusic = VolumeEffects = VolumeAmbient = VolumeInterface = 100.0f;
-	FieldOfView = 90.0f;
-	MouseSensitivity = GamepadSensitivity = 1.0f;
+	using namespace ExploredSettingsLogic;
+	Brightness = BrightnessRange.Default;
+	VolumeMaster = VolumeMusic = VolumeEffects = VolumeAmbient = VolumeInterface = VolumeRange.Default;
+	FieldOfView = FieldOfViewRange.Default;
+	MouseSensitivity = GamepadSensitivity = SensitivityRange.Default;
 	bInvertY = false;
 	bCameraBobEnabled = true;
 	bHoldToCrouch = true;
-	DayLengthMinutes = 40.0f;
+	DayLengthMinutes = DefaultDayLengthMinutes;
 	bSubtitlesEnabled = true;
 	TextSize = EExploredTextSize::Medium;
 	Language = EExploredLanguage::Spanish;
@@ -56,9 +99,95 @@ void UExploredGameUserSettings::SetToDefaults()
 	bSoundVisualCues = false;
 }
 
-const TArray<float>& UExploredGameUserSettings::GetSupportedDayLengths()
+void UExploredGameUserSettings::LoadSettings(bool bForceReload)
 {
-	return GDayLengths;
+	Super::LoadSettings(bForceReload);
+	// El ini lo puede editar el jugador a mano: VolumeMaster=500 o DayLengthMinutes=45
+	// no deben llegar al juego (M14).
+	SanitizeCustomSettings();
+}
+
+void UExploredGameUserSettings::ValidateSettings()
+{
+	Super::ValidateSettings();
+	SanitizeCustomSettings();
+}
+
+void UExploredGameUserSettings::SanitizeCustomSettings()
+{
+	using namespace ExploredSettingsLogic;
+	using ExploredGameUserSettingsDetail::SanitizeEnum;
+
+	Brightness = ClampToRange(Brightness, BrightnessRange);
+	VolumeMaster = ClampToRange(VolumeMaster, VolumeRange);
+	VolumeMusic = ClampToRange(VolumeMusic, VolumeRange);
+	VolumeEffects = ClampToRange(VolumeEffects, VolumeRange);
+	VolumeAmbient = ClampToRange(VolumeAmbient, VolumeRange);
+	VolumeInterface = ClampToRange(VolumeInterface, VolumeRange);
+	FieldOfView = ClampToRange(FieldOfView, FieldOfViewRange);
+	MouseSensitivity = ClampToRange(MouseSensitivity, SensitivityRange);
+	GamepadSensitivity = ClampToRange(GamepadSensitivity, SensitivityRange);
+	DayLengthMinutes = SnapDayLength(DayLengthMinutes);
+	TextSize = SanitizeEnum(TextSize, EExploredTextSize::Medium);
+	Language = SanitizeEnum(Language, EExploredLanguage::Spanish);
+	ColorblindMode = SanitizeEnum(ColorblindMode, EExploredColorblindMode::None);
+}
+
+void UExploredGameUserSettings::ApplyNonResolutionSettings()
+{
+	Super::ApplyNonResolutionSettings();
+	SanitizeCustomSettings();
+
+	// En el editor no se toca la cultura al cargar: cambiaría el idioma de toda
+	// la interfaz del editor solo por abrir el proyecto. En PIE el selector de
+	// idioma sigue aplicándolo al instante (SetLanguage).
+	ApplyPreviewSettings(!GIsEditor);
+
+	// Al arrancar el motor todavía no hay mundo: entonces lo aplica
+	// AExploredPlayerController::BeginPlay con ApplyToWorld().
+	if (GEngine)
+	{
+		for (const FWorldContext& Context : GEngine->GetWorldContexts())
+		{
+			UWorld* World = Context.World();
+			if (World && World->IsGameWorld())
+			{
+				ApplyToWorld(World);
+			}
+		}
+	}
+
+	OnSettingsApplied.Broadcast();
+}
+
+void UExploredGameUserSettings::ApplyPreviewSettings(bool bIncludeLanguage)
+{
+	ApplyBrightness();
+	ApplyColorblindMode();
+	if (bIncludeLanguage)
+	{
+		ApplyLanguage();
+	}
+}
+
+void UExploredGameUserSettings::ApplyToWorld(const UObject* WorldContextObject)
+{
+	UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull) : nullptr;
+	if (!World)
+	{
+		return;
+	}
+
+	ApplyAudioSettings(World);
+
+	if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
+	{
+		Time->SetDayLengthMinutes(DayLengthMinutes);
+	}
+	if (UExploredAmbienceSubsystem* Ambience = World->GetSubsystem<UExploredAmbienceSubsystem>())
+	{
+		Ambience->SetAmbienceVolume(GetAmbienceLayerGain());
+	}
 }
 
 float UExploredGameUserSettings::GetVolume(EExploredAudioChannel Channel) const
@@ -70,13 +199,13 @@ float UExploredGameUserSettings::GetVolume(EExploredAudioChannel Channel) const
 	case EExploredAudioChannel::Effects: return VolumeEffects;
 	case EExploredAudioChannel::Ambient: return VolumeAmbient;
 	case EExploredAudioChannel::Interface: return VolumeInterface;
-	default: return 100.0f;
+	default: return ExploredSettingsLogic::VolumeRange.Default;
 	}
 }
 
 void UExploredGameUserSettings::SetVolume(EExploredAudioChannel Channel, float Volume0To100)
 {
-	const float Clamped = FMath::Clamp(Volume0To100, 0.0f, 100.0f);
+	const float Clamped = ExploredSettingsLogic::ClampToRange(Volume0To100, ExploredSettingsLogic::VolumeRange);
 	switch (Channel)
 	{
 	case EExploredAudioChannel::Master: VolumeMaster = Clamped; break;
@@ -88,110 +217,162 @@ void UExploredGameUserSettings::SetVolume(EExploredAudioChannel Channel, float V
 	}
 }
 
-USoundClass* UExploredGameUserSettings::GetOrCreateSoundClass(EExploredAudioChannel Channel)
+USoundClass* UExploredGameUserSettings::GetSoundClass(EExploredAudioChannel Channel)
 {
 	TObjectPtr<USoundClass>* Slot = nullptr;
-	FName Name;
 	switch (Channel)
 	{
-	case EExploredAudioChannel::Master: Slot = &MasterSoundClass; Name = TEXT("Explored_Master"); break;
-	case EExploredAudioChannel::Music: Slot = &MusicSoundClass; Name = TEXT("Explored_Music"); break;
-	case EExploredAudioChannel::Effects: Slot = &EffectsSoundClass; Name = TEXT("Explored_Effects"); break;
-	case EExploredAudioChannel::Ambient: Slot = &AmbientSoundClass; Name = TEXT("Explored_Ambient"); break;
-	case EExploredAudioChannel::Interface: Slot = &InterfaceSoundClass; Name = TEXT("Explored_Interface"); break;
+	case EExploredAudioChannel::Master: Slot = &MasterSoundClass; break;
+	case EExploredAudioChannel::Music: Slot = &MusicSoundClass; break;
+	case EExploredAudioChannel::Effects: Slot = &EffectsSoundClass; break;
+	case EExploredAudioChannel::Ambient: Slot = &AmbientSoundClass; break;
+	case EExploredAudioChannel::Interface: Slot = &InterfaceSoundClass; break;
 	default: return nullptr;
 	}
+	// Se reintenta mientras no exista: el asset puede crearse con el editor abierto
+	// (import_audio.py) y Aplicar es poco frecuente.
 	if (!*Slot)
 	{
-		*Slot = NewObject<USoundClass>(GetTransientPackage(), Name);
+		if (const TCHAR* Path = ExploredGameUserSettingsDetail::SoundClassPath(Channel))
+		{
+			*Slot = LoadObject<USoundClass>(nullptr, Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+		}
 	}
 	return *Slot;
 }
 
+USoundClass* UExploredGameUserSettings::GetEngineDefaultSoundClass() const
+{
+	const UAudioSettings* AudioSettings = GetDefault<UAudioSettings>();
+	return AudioSettings ? Cast<USoundClass>(AudioSettings->DefaultSoundClassName.TryLoad()) : nullptr;
+}
+
+float UExploredGameUserSettings::GetAmbienceLayerGain()
+{
+	return ExploredSettingsLogic::AmbienceLayerGain(VolumeAmbient, GetSoundClass(EExploredAudioChannel::Ambient) != nullptr);
+}
+
 void UExploredGameUserSettings::ApplyAudioSettings(const UObject* WorldContextObject)
 {
-	if (!WorldContextObject)
+	UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull) : nullptr;
+	if (!World)
 	{
 		return;
 	}
 
 	if (!SoundMix)
 	{
-		SoundMix = NewObject<USoundMix>(GetTransientPackage(), TEXT("Explored_SoundMix"));
+		SoundMix = NewObject<USoundMix>(this, TEXT("Explored_SettingsMix"));
+		// Sin fundidos: el cambio de volumen se oye en cuanto se pulsa Aplicar.
+		SoundMix->FadeInTime = 0.0f;
+		SoundMix->FadeOutTime = 0.0f;
 	}
-	UGameplayStatics::PushSoundMixModifier(WorldContextObject, SoundMix);
 
-	static const EExploredAudioChannel Channels[] = {
-		EExploredAudioChannel::Master, EExploredAudioChannel::Music, EExploredAudioChannel::Effects,
-		EExploredAudioChannel::Ambient, EExploredAudioChannel::Interface
-	};
-	for (const EExploredAudioChannel Channel : Channels)
+	// Antes se hacía PushSoundMixModifier en cada Aplicar sin su Pop, y el
+	// contador de referencias de la mezcla crecía sin fin. La mezcla base es
+	// única por dispositivo de audio y SetBaseSoundMix es idempotente, así que
+	// se puede llamar en cada Aplicar y en cada BeginPlay sin acumular nada.
+	// (El proyecto no define DefaultBaseSoundMix en AudioSettings; si algún día
+	// lo hace, esa mezcla quedaría sustituida por esta.)
+	UGameplayStatics::SetBaseSoundMix(World, SoundMix);
+
+	for (const EExploredAudioChannel Channel : ExploredGameUserSettingsDetail::AllChannels)
 	{
-		if (USoundClass* SoundClass = GetOrCreateSoundClass(Channel))
+		USoundClass* SoundClass = GetSoundClass(Channel);
+		if (!SoundClass && Channel == EExploredAudioChannel::Master)
 		{
-			UGameplayStatics::SetSoundMixClassOverride(
-				WorldContextObject, SoundMix, SoundClass, GetVolume(Channel) / 100.0f, 1.0f, 0.0f, true);
+			SoundClass = GetEngineDefaultSoundClass();
+		}
+		if (SoundClass)
+		{
+			// bApplyToChildren: el maestro multiplica a sus hijas (música, efectos...).
+			UGameplayStatics::SetSoundMixClassOverride(World, SoundMix, SoundClass,
+				ExploredSettingsLogic::VolumeToGain(GetVolume(Channel)), 1.0f, 0.0f, true);
 		}
 	}
 }
 
 void UExploredGameUserSettings::SetBrightness(float NewBrightness)
 {
-	Brightness = FMath::Clamp(NewBrightness, 1.7f, 2.7f);
-	if (IConsoleVariable* Gamma = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Gamma")))
+	Brightness = ExploredSettingsLogic::ClampToRange(NewBrightness, ExploredSettingsLogic::BrightnessRange);
+	ApplyBrightness();
+}
+
+void UExploredGameUserSettings::ApplyBrightness() const
+{
+	// M16: antes se escribía r.Gamma. Esa variable es, hasta donde sabemos, una
+	// gamma ADICIONAL del tonemapper con valor por defecto 1,0, así que escribir
+	// 2,2 lavaba la imagen en cuanto se tocaba el slider; como su semántica no
+	// está clara, se deja de tocar. En su lugar se usa GEngine->DisplayGamma:
+	// la gamma de pantalla que devuelve FViewport::GetDisplayGamma() al
+	// renderer, 2,2 por defecto en BaseEngine.ini y la misma que cambia el
+	// comando de consola «gamma». El tonemapper aplica 2,2 / DisplayGamma como
+	// exponente, así que valores mayores aclaran y 2,2 deja la imagen como está.
+	// El rango [1,7; 2,7] deja el valor por defecto en el centro del slider.
+	// Verificar en local que el brillo cambia de forma suave en ambos sentidos.
+	if (GEngine)
 	{
-		Gamma->Set(Brightness);
+		GEngine->DisplayGamma = Brightness;
 	}
 }
 
 void UExploredGameUserSettings::SetFOV(float NewFOV)
 {
-	FieldOfView = FMath::Clamp(NewFOV, 70.0f, 110.0f);
+	FieldOfView = ExploredSettingsLogic::ClampToRange(NewFOV, ExploredSettingsLogic::FieldOfViewRange);
 }
 
 void UExploredGameUserSettings::SetMouseSensitivity(float NewSensitivity)
 {
-	MouseSensitivity = FMath::Clamp(NewSensitivity, 0.1f, 5.0f);
+	MouseSensitivity = ExploredSettingsLogic::ClampToRange(NewSensitivity, ExploredSettingsLogic::SensitivityRange);
 }
 
 void UExploredGameUserSettings::SetGamepadSensitivity(float NewSensitivity)
 {
-	GamepadSensitivity = FMath::Clamp(NewSensitivity, 0.1f, 5.0f);
+	GamepadSensitivity = ExploredSettingsLogic::ClampToRange(NewSensitivity, ExploredSettingsLogic::SensitivityRange);
 }
 
 void UExploredGameUserSettings::SetDayLengthMinutes(float Minutes)
 {
-	float Best = GDayLengths[0];
-	float BestDist = FMath::Abs(Minutes - Best);
-	for (const float Candidate : GDayLengths)
-	{
-		const float Dist = FMath::Abs(Minutes - Candidate);
-		if (Dist < BestDist)
-		{
-			Best = Candidate;
-			BestDist = Dist;
-		}
-	}
-	DayLengthMinutes = Best;
+	DayLengthMinutes = ExploredSettingsLogic::SnapDayLength(Minutes);
+}
+
+const TArray<float>& UExploredGameUserSettings::GetSupportedDayLengths()
+{
+	return ExploredSettingsLogic::GetSupportedDayLengths();
 }
 
 void UExploredGameUserSettings::SetLanguage(EExploredLanguage NewLanguage)
 {
 	Language = NewLanguage;
+	ApplyLanguage();
+}
+
+void UExploredGameUserSettings::ApplyLanguage() const
+{
 	const FString Culture = (Language == EExploredLanguage::English) ? TEXT("en") : TEXT("es");
-	FInternationalization::Get().SetCurrentCulture(Culture);
+	FInternationalization& I18n = FInternationalization::Get();
+	// Cambiar de cultura reconstruye todos los textos: solo si de verdad cambia.
+	if (I18n.GetCurrentCulture()->GetName() != Culture)
+	{
+		I18n.SetCurrentCulture(Culture);
+	}
 }
 
 void UExploredGameUserSettings::SetColorblindMode(EExploredColorblindMode NewMode)
 {
 	ColorblindMode = NewMode;
+	ApplyColorblindMode();
+}
+
+void UExploredGameUserSettings::ApplyColorblindMode() const
+{
 	// FSlateApplication::GetRenderer() devuelve un FSlateRenderer* crudo (no un
 	// TSharedPtr), de ahí el chequeo por nulidad en vez de IsValid().
 	if (FSlateApplication::IsInitialized())
 	{
 		if (FSlateRenderer* Renderer = FSlateApplication::Get().GetRenderer())
 		{
-			Renderer->SetColorVisionDeficiencyType(ToEngineDeficiency(ColorblindMode), 10, true, false);
+			Renderer->SetColorVisionDeficiencyType(ExploredGameUserSettingsDetail::ToEngineDeficiency(ColorblindMode), 10, true, false);
 		}
 	}
 }

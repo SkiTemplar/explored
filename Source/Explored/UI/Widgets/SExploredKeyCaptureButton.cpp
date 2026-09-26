@@ -1,7 +1,9 @@
 #include "UI/Widgets/SExploredKeyCaptureButton.h"
 
 #include "Framework/Application/SlateApplication.h"
+#include "Input/Events.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -38,7 +40,12 @@ FText SExploredKeyCaptureButton::GetLabel() const
 FReply SExploredKeyCaptureButton::HandleClicked()
 {
 	bCapturing = true;
-	return FReply::Handled().SetUserFocus(SharedThis(this), EFocusCause::SetDirectly);
+	// El clic que abre la captura llega en el mouse-up del SButton; al pedir
+	// aquí la captura del ratón, el SButton no la suelta (respeta el nuevo
+	// captor) y el siguiente clic, esté donde esté el cursor, llega a este widget.
+	return FReply::Handled()
+		.SetUserFocus(SharedThis(this), EFocusCause::SetDirectly)
+		.CaptureMouse(SharedThis(this));
 }
 
 FReply SExploredKeyCaptureButton::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
@@ -49,15 +56,31 @@ FReply SExploredKeyCaptureButton::OnFocusReceived(const FGeometry& MyGeometry, c
 void SExploredKeyCaptureButton::OnFocusLost(const FFocusEvent& InFocusEvent)
 {
 	bCapturing = false;
+	if (HasMouseCapture() && FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().ReleaseAllPointerCapture();
+	}
 }
 
-void SExploredKeyCaptureButton::ReportKey(FKey Key)
+void SExploredKeyCaptureButton::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
+{
+	SCompoundWidget::OnMouseCaptureLost(CaptureLostEvent);
+	bCapturing = false;
+}
+
+FReply SExploredKeyCaptureButton::ReportKey(FKey Key)
 {
 	bCapturing = false;
-	if (Key.IsValid() && Key != EKeys::Escape)
+	if (Key.IsValid() && !ExploredSettingsLogic::IsMenuBackKey(Key.GetFName()))
 	{
 		OnKeyPicked.ExecuteIfBound(Key);
 	}
+	FReply Reply = FReply::Handled();
+	if (HasMouseCapture())
+	{
+		Reply.ReleaseMouseCapture();
+	}
+	return Reply;
 }
 
 FReply SExploredKeyCaptureButton::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent)
@@ -66,16 +89,28 @@ FReply SExploredKeyCaptureButton::OnKeyDown(const FGeometry& MyGeometry, const F
 	{
 		return FReply::Unhandled();
 	}
-	ReportKey(KeyEvent.GetKey());
-	return FReply::Handled();
+	return ReportKey(KeyEvent.GetKey());
 }
 
-FReply SExploredKeyCaptureButton::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SExploredKeyCaptureButton::OnPreviewMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	if (!bCapturing)
 	{
 		return FReply::Unhandled();
 	}
-	ReportKey(MouseEvent.GetEffectingButton());
-	return FReply::Handled();
+	return ReportKey(MouseEvent.GetEffectingButton());
+}
+
+FReply SExploredKeyCaptureButton::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (bCapturing)
+	{
+		return ReportKey(MouseEvent.GetEffectingButton());
+	}
+	// Captura huérfana (p. ej. se perdió el foco sin evento de captura): se suelta.
+	if (HasMouseCapture())
+	{
+		return FReply::Handled().ReleaseMouseCapture();
+	}
+	return FReply::Unhandled();
 }

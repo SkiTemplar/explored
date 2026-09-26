@@ -1,6 +1,9 @@
 #include "UI/Widgets/SExploredCredits.h"
 
+#include "Input/Events.h"
+#include "InputCoreTypes.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -8,7 +11,8 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
 
-namespace
+// Espacio de nombres con nombre (no anónimo) para no chocar en el Unity build.
+namespace ExploredCreditsDetail
 {
 	TSharedRef<SWidget> Line(const FText& Text, bool bHeading = false)
 	{
@@ -23,8 +27,14 @@ namespace
 
 void SExploredCredits::Construct(const FArguments& InArgs)
 {
+	using ExploredCreditsDetail::Line;
+
 	OnBack = InArgs._OnBack;
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
+
+	TSharedRef<SWidget> BackButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Back", "Volver"),
+		FOnClicked::CreateSP(this, &SExploredCredits::HandleBack), false);
+	InitialFocus = BackButton;
 
 	ChildSlot
 	[
@@ -56,13 +66,21 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 					]
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(FMargin(0.0f, 16.0f, 0.0f, 0.0f))
 					[
-						ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Back", "Volver"),
-							FOnClicked::CreateSP(this, &SExploredCredits::HandleBack), false)
+						BackButton
 					]
 				]
 			]
 		]
 	];
+}
+
+FReply SExploredCredits::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	if (ExploredSettingsLogic::IsMenuBackKey(InKeyEvent.GetKey().GetFName()))
+	{
+		return HandleBack();
+	}
+	return SCompoundWidget::OnKeyDown(MyGeometry, InKeyEvent);
 }
 
 FReply SExploredCredits::HandleBack()
