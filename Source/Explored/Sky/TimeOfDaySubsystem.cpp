@@ -1,5 +1,7 @@
 #include "Sky/TimeOfDaySubsystem.h"
 
+#include "UI/ExploredGameUserSettings.h"
+
 namespace ExploredSky
 {
 	float SolarDeclinationDeg(float DayOfYear)
@@ -64,6 +66,17 @@ TStatId UTimeOfDaySubsystem::GetStatId() const
 bool UTimeOfDaySubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
 {
 	return WorldType == EWorldType::Game || WorldType == EWorldType::PIE;
+}
+
+void UTimeOfDaySubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	// H7: antes nadie llamaba a SetDayLengthMinutes y el día duraba siempre 40 min.
+	// Al pulsar Aplicar lo actualiza UExploredGameUserSettings::ApplyToWorld().
+	if (const UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get())
+	{
+		SetDayLengthMinutes(Settings->GetDayLengthMinutes());
+	}
 }
 
 void UTimeOfDaySubsystem::SetTime(int32 InDay, float InHours)

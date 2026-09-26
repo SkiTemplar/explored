@@ -22,6 +22,7 @@ Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
 Survival/SurvivalModel.cpp
+UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp
 WorldGen/PointsOfInterest.cpp

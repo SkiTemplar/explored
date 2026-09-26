@@ -21,6 +21,10 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeMenuButton(
 		NSLOCTEXT("ExploredUI", "Continue", "Continuar"), FOnClicked::CreateSP(this, &SExploredMainMenu::HandleContinue));
 	ContinueButton->SetEnabled(bCanContinue);
+	TSharedRef<SWidget> NewGameButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "NewGame", "Nueva partida"),
+		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleNewGame));
+	// Un botón deshabilitado no puede recibir el foco.
+	InitialFocus = bCanContinue ? ContinueButton : NewGameButton;
 
 	ChildSlot
 	[
@@ -49,11 +53,7 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 					.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ContinueButton ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "NewGame", "Nueva partida"),
-						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleNewGame))
-				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ NewGameButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
 					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),

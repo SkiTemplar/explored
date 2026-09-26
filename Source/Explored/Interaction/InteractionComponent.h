@@ -52,6 +52,9 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<AActor> FocusedActor;
 
+	/** true si el último OnFocusChanged emitido fue con un actor (ver L5 en UpdateFocus). */
+	bool bHasFocus = false;
+
 	UPROPERTY()
 	TArray<FText> CurrentVerbs;
 };

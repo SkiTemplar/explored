@@ -7,6 +7,7 @@
 
 class UDirectionalLightComponent;
 class UExponentialHeightFogComponent;
+class UMaterialInterface;
 class UPostProcessComponent;
 class USkyAtmosphereComponent;
 class USkyLightComponent;

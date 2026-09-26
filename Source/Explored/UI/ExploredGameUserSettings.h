@@ -53,19 +53,23 @@ enum class EExploredColorblindMode : uint8
  * Registrada como GameUserSettingsClassName en Config/DefaultEngine.ini.
  * Acceso: Cast<UExploredGameUserSettings>(GEngine->GetGameUserSettings()).
  *
- * Integración para otros equipos:
- * - Audio: leer GetVolume(EExploredAudioChannel) tras cada ApplySettings()
- *   (o suscribirse indirectamente llamando a ApplyAudioSettings(), que ya
- *   empuja los valores a un USoundMix propio vía
- *   UGameplayStatics::SetSoundMixClassOverride). Los USoundClass de cada
- *   canal se crean en tiempo de ejecución en este archivo; si el equipo de
- *   audio ya tiene sus propios USoundClass del proyecto, sustituir
- *   GetOrCreateSoundClass() por una referencia a esos assets.
- * - Personaje/cámara: leer GetFOV(), GetMouseSensitivity(),
- *   GetGamepadSensitivity(), GetInvertY(), GetCameraBobEnabled(),
- *   GetHoldToCrouch().
- * - Mundo/tiempo: leer GetDayLengthMinutes() y aplicarlo con
- *   UTimeOfDaySubsystem::SetDayLengthMinutes().
+ * Cómo se aplican (H7):
+ * - ApplyNonResolutionSettings() (la llama ApplySettings() y el motor al
+ *   arrancar, tras LoadSettings()) re-aplica brillo, idioma y daltonismo,
+ *   empuja el audio y la duración del día a los mundos de juego abiertos y
+ *   emite OnSettingsApplied, al que se suscribe AExploredCharacter para FOV,
+ *   sensibilidad, invertir Y, balanceo de cámara y agacharse.
+ * - ApplyToWorld() aplica lo que depende de un mundo (mezcla de audio,
+ *   UTimeOfDaySubsystem::SetDayLengthMinutes y volumen del ambiente). La
+ *   llama también AExploredPlayerController::BeginPlay, porque al arrancar el
+ *   motor todavía no hay mundo.
+ * - Audio: una única USoundMix persistente fijada como mezcla base (idempotente,
+ *   sin Push/Pop) con un ajuste por canal sobre las SoundClass del proyecto
+ *   (/Game/Audio/Classes/SC_*, las crea Tools/Unreal/import_audio.py). Si
+ *   SC_Master no existe todavía, el volumen maestro se aplica a la SoundClass
+ *   por defecto del motor para que al menos ese control funcione.
+ * - Validación (M14): LoadSettings() y ValidateSettings() recortan cada campo
+ *   con ExploredSettingsLogic (UI/SettingsLogic.h).
  */
 UCLASS(BlueprintType)
 class EXPLORED_API UExploredGameUserSettings : public UGameUserSettings
@@ -78,11 +82,33 @@ public:
 	static UExploredGameUserSettings* Get();
 
 	virtual void SetToDefaults() override;
+	virtual void LoadSettings(bool bForceReload = false) override;
+	virtual void ValidateSettings() override;
+	virtual void ApplyNonResolutionSettings() override;
+
+	/**
+	 * Re-aplica al instante los ajustes que el jugador ve mientras edita el
+	 * panel: brillo, daltonismo y (si bIncludeLanguage) idioma. Lo usan
+	 * «Restaurar valores por defecto» y «Volver» sin aplicar (M11).
+	 */
+	void ApplyPreviewSettings(bool bIncludeLanguage = true);
+
+	/** Aplica lo que depende de un mundo: audio, duración del día y volumen del ambiente. */
+	void ApplyToWorld(const UObject* WorldContextObject);
+
+	/** SoundClass del proyecto para un canal (/Game/Audio/Classes/SC_*), o nullptr si aún no existe. */
+	class USoundClass* GetSoundClass(EExploredAudioChannel Channel);
+
+	/** Multiplicador que el subsistema de ambiente aplica a sus capas (ver ExploredSettingsLogic::AmbienceLayerGain). */
+	float GetAmbienceLayerGain();
+
+	/** Se emite al final de cada ApplyNonResolutionSettings() (Aplicar, descartar y arranque). */
+	FSimpleMulticastDelegate OnSettingsApplied;
 
 	// --- Gráficos (brillo; el resto ya lo cubre UGameUserSettings) ---
 	UFUNCTION(BlueprintCallable, Category = "Explored|Ajustes|Gráficos")
 	float GetBrightness() const { return Brightness; }
-	/** Gamma de pantalla (r.Gamma); se aplica al instante para que el jugador vea el resultado mientras arrastra. */
+	/** Gamma de pantalla (GEngine->DisplayGamma, ver M16); se aplica al instante para que el jugador vea el resultado mientras arrastra. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Ajustes|Gráficos")
 	void SetBrightness(float NewBrightness);
 
@@ -91,7 +117,7 @@ public:
 	float GetVolume(EExploredAudioChannel Channel) const;
 	UFUNCTION(BlueprintCallable, Category = "Explored|Ajustes|Audio")
 	void SetVolume(EExploredAudioChannel Channel, float Volume0To100);
-	/** Empuja los volúmenes actuales a los USoundClass en tiempo de ejecución. */
+	/** Fija la mezcla de ajustes como mezcla base y aplica el volumen de cada canal a su SoundClass. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Ajustes|Audio")
 	void ApplyAudioSettings(const UObject* WorldContextObject);
 
@@ -174,7 +200,13 @@ public:
 	static const TArray<float>& GetSupportedDayLengths();
 
 private:
-	class USoundClass* GetOrCreateSoundClass(EExploredAudioChannel Channel);
+	/** Recorta cada campo propio a su rango (M14). */
+	void SanitizeCustomSettings();
+	void ApplyBrightness() const;
+	void ApplyLanguage() const;
+	void ApplyColorblindMode() const;
+	/** SoundClass por defecto del motor (UAudioSettings), para el volumen maestro si SC_Master no existe. */
+	class USoundClass* GetEngineDefaultSoundClass() const;
 
 	UPROPERTY(Config)
 	float Brightness = 2.2f;
@@ -231,6 +263,7 @@ private:
 	TObjectPtr<class USoundClass> AmbientSoundClass;
 	UPROPERTY(Transient)
 	TObjectPtr<class USoundClass> InterfaceSoundClass;
+	/** Mezcla de ajustes: se crea una vez y se fija como mezcla base en cada ApplyAudioSettings(). */
 	UPROPERTY(Transient)
 	TObjectPtr<class USoundMix> SoundMix;
 };

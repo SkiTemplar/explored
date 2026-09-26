@@ -63,7 +63,11 @@ public:
 	void SetRainIntensity(float Value) { Rain = FMath::Clamp(Value, 0.0f, 1.0f); }
 	void SetSeaState(float Value) { SeaState = FMath::Clamp(Value, 0.0f, 1.0f); }
 
-	/** Volumen maestro del ambiente (ajustes de audio). */
+	/**
+	 * Multiplicador de todas las capas. Lo fija UExploredGameUserSettings
+	 * (ApplyToWorld y OnWorldBeginPlay): 1 si las capas pasan por la SoundClass
+	 * de Ambiente, o el volumen de Ambiente si esa SoundClass aún no existe.
+	 */
 	void SetAmbienceVolume(float Value) { MasterVolume = FMath::Clamp(Value, 0.0f, 1.0f); }
 
 	/** Evalúa el entorno sonoro en un punto (centímetros, espacio de mundo). */

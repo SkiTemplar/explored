@@ -42,7 +42,7 @@ compila y pasa sus tests en local.
 | Save | stub | ❌ | stub | (P-SAVE) |
 | Achievements | parcial | ✅ | sin compilar | 30 logros en `achievements.json`; estadísticas en `docs/tecnico/estadisticas.md` (P-ACH) |
 | Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
-| UI / frontend | ✅ base | — | parcial | Bugs H2, H6, H7, M8, M11–M14; mapa y museo (P-UI) |
+| UI / frontend | ✅ base | ajustes y navegación (`SettingsLogic`) | parcial | H6, H7, M8, M11–M14, M16 aplicados sin compilar; mapa y museo (P-UI) |
 | Localización | ❌ | — | ❌ | ES/EN (P-L10N) |
 
 ## Paquetes de trabajo
@@ -64,7 +64,7 @@ compila y pasa sus tests en local.
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | en curso (nube/logros-2026-09-26) |
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
-| P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |
+| P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | en curso (nube/ui-2026-09-26) |
 | P-MUSIC | Director de música adaptativa por capas | pendiente |
 | P-L10N | Tabla de textos ES/EN y selector | pendiente |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |

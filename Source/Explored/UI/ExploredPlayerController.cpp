@@ -1,9 +1,14 @@
 #include "UI/ExploredPlayerController.h"
 
 #include "Achievements/AchievementsSubsystem.h"
+#include "Components/InputComponent.h"
+#include "Engine/GameInstance.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/GameUserSettings.h"
+#include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/CommandLine.h"
@@ -60,6 +65,15 @@ void AExploredPlayerController::BeginPlay()
 		return;
 	}
 
+	// H7: al arrancar el motor los ajustes se aplican antes de que exista un
+	// mundo; aquí se completa lo que depende de él (audio, duración del día,
+	// ambiente) y se re-aplica lo visual por si el mapa se abrió desde el editor.
+	if (UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get())
+	{
+		Settings->ApplyPreviewSettings(!GIsEditor);
+		Settings->ApplyToWorld(this);
+	}
+
 	FadeWidget = SNew(SExploredFade);
 	SavingIndicator = SNew(SExploredSavingIndicator);
 	AchievementToast = SNew(SExploredAchievementToast);
@@ -72,7 +86,8 @@ void AExploredPlayerController::BeginPlay()
 
 	if (UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
 	{
-		SaveSubsystem->OnSaveCompleted.AddWeakLambda(this, [this]()
+		SaveSubsystemBound = SaveSubsystem;
+		SaveCompletedHandle = SaveSubsystem->OnSaveCompleted.AddWeakLambda(this, [this]()
 		{
 			if (SavingIndicator.IsValid())
 			{
@@ -84,7 +99,8 @@ void AExploredPlayerController::BeginPlay()
 	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
 	{
 		TWeakObjectPtr<UAchievementsSubsystem> WeakAchievements(Achievements);
-		Achievements->OnAchievementUnlocked.AddWeakLambda(this, [this, WeakAchievements](FName AchievementId)
+		AchievementsBound = Achievements;
+		AchievementUnlockedHandle = Achievements->OnAchievementUnlocked.AddWeakLambda(this, [this, WeakAchievements](FName AchievementId)
 		{
 			const UAchievementsSubsystem* Source = WeakAchievements.Get();
 			if (Source && AchievementToast.IsValid())
@@ -106,27 +122,101 @@ void AExploredPlayerController::BeginPlay()
 	}
 }
 
+void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// M8: el subsistema de guardado sobrevive a OpenLevel; sin quitar el handle
+	// se acumulaba una suscripción por cada carga de mapa.
+	if (UExploredSaveSubsystem* SaveSubsystem = SaveSubsystemBound.Get())
+	{
+		SaveSubsystem->OnSaveCompleted.Remove(SaveCompletedHandle);
+	}
+	SaveSubsystemBound.Reset();
+	SaveCompletedHandle.Reset();
+	if (UAchievementsSubsystem* Achievements = AchievementsBound.Get())
+	{
+		Achievements->OnAchievementUnlocked.Remove(AchievementUnlockedHandle);
+	}
+	AchievementsBound.Reset();
+	AchievementUnlockedHandle.Reset();
+
+	// M8: los widgets añadidos al viewport no son del mundo; si no se retiran,
+	// se quedan pintados (y referenciados) tras parar PIE o cambiar de mapa.
+	HideOverlay();
+	UWorld* World = GetWorld();
+	if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr)
+	{
+		if (FadeWidget.IsValid())
+		{
+			Viewport->RemoveViewportWidgetContent(FadeWidget.ToSharedRef());
+		}
+		if (SavingIndicator.IsValid())
+		{
+			Viewport->RemoveViewportWidgetContent(SavingIndicator.ToSharedRef());
+		}
+		if (AchievementToast.IsValid())
+		{
+			Viewport->RemoveViewportWidgetContent(AchievementToast.ToSharedRef());
+		}
+	}
+	FadeWidget.Reset();
+	SavingIndicator.Reset();
+	AchievementToast.Reset();
+	CurrentFocusTarget.Reset();
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void AExploredPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	// Meta-entrada del controlador (no pasa por Enhanced Input, que es del personaje).
-	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AExploredPlayerController::HandleEscape);
+	// Jugando, Escape o Start abren la pausa. En la pausa y en los menús la
+	// entrada es FInputModeUIOnly y la tecla la atiende el widget con foco;
+	// bExecuteWhenPaused cubre el caso de que llegue aquí con el juego pausado.
+	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
+	InputComponent->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
 }
 
 void AExploredPlayerController::HandleEscape()
 {
-	const EExploredUIMode Next = ExploredUI::NextModeOnEscape(UIMode);
-	if (Next == UIMode)
+	// Ajustes descarta lo no aplicado al volver (M11): se pasa por el panel.
+	if (CurrentScreen == ExploredSettingsLogic::EMenuScreen::Settings)
 	{
-		return;
+		if (TSharedPtr<SExploredSettingsPanel> Panel = SettingsPanel.Pin())
+		{
+			Panel->RequestBack();
+			return;
+		}
 	}
-	if (Next == EExploredUIMode::Paused)
+
+	const ExploredSettingsLogic::EMenuScreen Next = ExploredSettingsLogic::ScreenAfterEscape(CurrentScreen, bSettingsOpenedFromPause);
+	if (Next != CurrentScreen)
 	{
-		OpenPauseMenu();
+		NavigateTo(Next);
 	}
-	else if (Next == EExploredUIMode::Playing)
+}
+
+void AExploredPlayerController::NavigateBack()
+{
+	const ExploredSettingsLogic::EMenuScreen Next = ExploredSettingsLogic::ScreenAfterBack(CurrentScreen, bSettingsOpenedFromPause);
+	if (Next != CurrentScreen)
 	{
-		ResumeGame();
+		NavigateTo(Next);
+	}
+}
+
+void AExploredPlayerController::NavigateTo(ExploredSettingsLogic::EMenuScreen Screen)
+{
+	using ExploredSettingsLogic::EMenuScreen;
+	switch (Screen)
+	{
+	case EMenuScreen::None: ResumeGame(); break;
+	case EMenuScreen::MainMenu: ShowMainMenu(); break;
+	case EMenuScreen::ModeSelect: OpenModeSelect(); break;
+	case EMenuScreen::Settings: OpenSettings(); break;
+	case EMenuScreen::Credits: OpenCredits(); break;
+	case EMenuScreen::Pause: OpenPauseMenu(); break;
+	default: break;
 	}
 }
 
@@ -138,6 +228,7 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 
 	if (NewMode == EExploredUIMode::Playing)
 	{
+		CurrentScreen = ExploredSettingsLogic::EMenuScreen::None;
 		SetInputMode(FInputModeGameOnly());
 		if (APawn* ControlledPawn = GetPawn())
 		{
@@ -148,7 +239,11 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 	{
 		FInputModeUIOnly InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		if (CurrentOverlay.IsValid())
+		if (CurrentFocusTarget.IsValid())
+		{
+			InputMode.SetWidgetToFocus(CurrentFocusTarget);
+		}
+		else if (CurrentOverlay.IsValid())
 		{
 			InputMode.SetWidgetToFocus(CurrentOverlay);
 		}
@@ -178,16 +273,21 @@ AExploredMenuCamera* AExploredPlayerController::FindOrSpawnMenuCamera()
 	return Spawned;
 }
 
-void AExploredPlayerController::ShowOverlay(TSharedRef<SWidget> Widget)
+void AExploredPlayerController::ShowOverlay(TSharedRef<SWidget> Widget, TSharedPtr<SWidget> FocusTarget, ExploredSettingsLogic::EMenuScreen Screen)
 {
 	HideOverlay();
 	CurrentOverlay = Widget;
+	CurrentScreen = Screen;
+	// H6: el foco va al primer control para que las flechas, el d-pad y
+	// Aceptar funcionen desde el principio; si no hay, al propio overlay, que
+	// acepta foco y atiende Escape/B.
+	CurrentFocusTarget = FocusTarget.IsValid() ? FocusTarget : TSharedPtr<SWidget>(Widget);
 	if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
 	{
 		Viewport->AddViewportWidgetContent(Widget, 500);
 	}
 	FInputModeUIOnly InputMode;
-	InputMode.SetWidgetToFocus(Widget);
+	InputMode.SetWidgetToFocus(CurrentFocusTarget);
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
 }
@@ -196,12 +296,15 @@ void AExploredPlayerController::HideOverlay()
 {
 	if (CurrentOverlay.IsValid())
 	{
-		if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
+		UWorld* World = GetWorld();
+		if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr)
 		{
 			Viewport->RemoveViewportWidgetContent(CurrentOverlay.ToSharedRef());
 		}
 		CurrentOverlay.Reset();
 	}
+	CurrentFocusTarget.Reset();
+	SettingsPanel.Reset();
 }
 
 void AExploredPlayerController::ShowMainMenu()
@@ -216,7 +319,34 @@ void AExploredPlayerController::ShowMainMenu()
 		.OnSettings(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSettings))
 		.OnCredits(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenCredits))
 		.OnQuit(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::QuitToDesktop));
-	ShowOverlay(Menu);
+	ShowOverlay(Menu, Menu->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::MainMenu);
+}
+
+void AExploredPlayerController::FadeIntoGameplay()
+{
+	if (!FadeWidget.IsValid())
+	{
+		HideOverlay();
+		SetUIMode(EExploredUIMode::Playing);
+		return;
+	}
+	// M8: el PC puede destruirse durante el fundido (parar PIE, cambiar de mapa);
+	// la lambda comprueba un puntero débil en vez de capturar this crudo.
+	const TWeakObjectPtr<AExploredPlayerController> WeakThis(this);
+	FadeWidget->FadeToBlack(0.6f, [WeakThis]()
+	{
+		AExploredPlayerController* PC = WeakThis.Get();
+		if (!PC)
+		{
+			return;
+		}
+		PC->HideOverlay();
+		PC->SetUIMode(EExploredUIMode::Playing);
+		if (PC->FadeWidget.IsValid())
+		{
+			PC->FadeWidget->FadeFromBlack(0.6f);
+		}
+	});
 }
 
 void AExploredPlayerController::ContinueGame()
@@ -228,26 +358,15 @@ void AExploredPlayerController::ContinueGame()
 	{
 		SaveSubsystem->LoadContinueGame();
 	}
-	if (!FadeWidget.IsValid())
-	{
-		SetUIMode(EExploredUIMode::Playing);
-		HideOverlay();
-		return;
-	}
-	FadeWidget->FadeToBlack(0.6f, [this]()
-	{
-		HideOverlay();
-		SetUIMode(EExploredUIMode::Playing);
-		FadeWidget->FadeFromBlack(0.6f);
-	});
+	FadeIntoGameplay();
 }
 
 void AExploredPlayerController::OpenModeSelect()
 {
 	TSharedRef<SExploredModeSelect> Widget = SNew(SExploredModeSelect)
 		.OnChosen(FOnExploredModeChosen::CreateUObject(this, &AExploredPlayerController::StartNewGame))
-		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ShowMainMenu));
-	ShowOverlay(Widget);
+		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::NavigateBack));
+	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::ModeSelect);
 }
 
 void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
@@ -262,24 +381,16 @@ void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
 		// Vacía las estadísticas de partida y fija el modo para logros como «Náufrago de verdad».
 		Achievements->BeginRun(Mode);
 	}
-
-	if (!FadeWidget.IsValid())
-	{
-		HideOverlay();
-		SetUIMode(EExploredUIMode::Playing);
-		return;
-	}
-	FadeWidget->FadeToBlack(0.6f, [this]()
-	{
-		HideOverlay();
-		SetUIMode(EExploredUIMode::Playing);
-		FadeWidget->FadeFromBlack(0.6f);
-	});
+	FadeIntoGameplay();
 }
 
 void AExploredPlayerController::OpenSettings()
 {
-	bSettingsOpenedFromPause = (UIMode == EExploredUIMode::Paused);
+	// Se recuerda desde dónde se abrió para que «Volver» regrese allí.
+	if (CurrentScreen != ExploredSettingsLogic::EMenuScreen::Settings)
+	{
+		bSettingsOpenedFromPause = (UIMode == EExploredUIMode::Paused);
+	}
 
 	UExploredGameUserSettings* Settings = Cast<UExploredGameUserSettings>(UGameUserSettings::GetGameUserSettings());
 	UExploredInputSettingsSubsystem* InputSettings = GetLocalPlayer() ? GetLocalPlayer()->GetSubsystem<UExploredInputSettingsSubsystem>() : nullptr;
@@ -289,31 +400,25 @@ void AExploredPlayerController::OpenSettings()
 		.InputSettings(InputSettings)
 		.WorldContextObject(this)
 		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::CloseSettings));
-	ShowOverlay(Widget);
+	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Settings);
+	SettingsPanel = Widget;
 }
 
 void AExploredPlayerController::CloseSettings()
 {
-	if (bSettingsOpenedFromPause)
-	{
-		OpenPauseMenu();
-	}
-	else
-	{
-		ShowMainMenu();
-	}
+	NavigateBack();
 }
 
 void AExploredPlayerController::OpenCredits()
 {
 	TSharedRef<SExploredCredits> Widget = SNew(SExploredCredits)
 		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::CloseCredits));
-	ShowOverlay(Widget);
+	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Credits);
 }
 
 void AExploredPlayerController::CloseCredits()
 {
-	ShowMainMenu();
+	NavigateBack();
 }
 
 void AExploredPlayerController::OpenPauseMenu()
@@ -325,7 +430,7 @@ void AExploredPlayerController::OpenPauseMenu()
 		.OnSave(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::RequestSaveGame))
 		.OnExitToMenu(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ExitToMainMenu))
 		.OnQuit(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::QuitToDesktop));
-	ShowOverlay(Widget);
+	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Pause);
 }
 
 void AExploredPlayerController::ResumeGame()

@@ -5,8 +5,10 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
+#include "Sound/SoundClass.h"
 
 #include "Sky/TimeOfDaySubsystem.h"
+#include "UI/ExploredGameUserSettings.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
 
@@ -72,12 +74,27 @@ void UExploredAmbienceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	CurrentVolumes.Init(0.0f, NumLayers);
 	TargetVolumes.Init(0.0f, NumLayers);
+
+	// H7: las capas pasan por la SoundClass de Ambiente (si existe) para que la
+	// mezcla de ajustes les aplique Maestro × Ambiente; si aún no existe, el
+	// volumen de Ambiente lo aplica este subsistema (ver AmbienceLayerGain).
+	UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get();
+	USoundClass* AmbientClass = Settings ? Settings->GetSoundClass(EExploredAudioChannel::Ambient) : nullptr;
+	if (Settings)
+	{
+		SetAmbienceVolume(Settings->GetAmbienceLayerGain());
+	}
+
 	for (int32 I = 0; I < NumLayers; ++I)
 	{
 		USoundBase* Sound = LoadObject<USoundBase>(nullptr, LayerAssets[I], nullptr, LOAD_Quiet | LOAD_NoWarn);
 		UAudioComponent* Component = Sound ? UGameplayStatics::CreateSound2D(&InWorld, Sound, 1.0f, 1.0f, 0.0f, nullptr, true, false) : nullptr;
 		if (Component)
 		{
+			if (AmbientClass)
+			{
+				Component->SoundClassOverride = AmbientClass;
+			}
 			Component->SetVolumeMultiplier(0.0f);
 			// Arranque en un punto aleatorio del bucle para que las capas no suenen sincronizadas.
 			Component->Play(FMath::FRandRange(0.0f, 20.0f));

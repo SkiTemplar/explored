@@ -1,6 +1,9 @@
 #include "UI/Widgets/SExploredPauseMenu.h"
 
+#include "Input/Events.h"
+#include "InputCoreTypes.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -22,6 +25,10 @@ void SExploredPauseMenu::Construct(const FArguments& InArgs)
 	JournalButton->SetEnabled(false);
 	JournalButton->SetToolTipText(NSLOCTEXT("ExploredUI", "JournalTooltip", "Próximamente"));
 
+	TSharedRef<SWidget> ResumeButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Resume", "Reanudar"),
+		FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleResume));
+	InitialFocus = ResumeButton;
+
 	ChildSlot
 	[
 		SNew(SBox)
@@ -40,11 +47,7 @@ void SExploredPauseMenu::Construct(const FArguments& InArgs)
 					.Font(Style.FontHeading())
 					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Resume", "Reanudar"),
-						FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleResume))
-				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ResumeButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ JournalButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
@@ -69,6 +72,16 @@ void SExploredPauseMenu::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+}
+
+FReply SExploredPauseMenu::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	const FName Key = InKeyEvent.GetKey().GetFName();
+	if (ExploredSettingsLogic::IsPauseToggleKey(Key) || ExploredSettingsLogic::IsMenuBackKey(Key))
+	{
+		return HandleResume();
+	}
+	return SCompoundWidget::OnKeyDown(MyGeometry, InKeyEvent);
 }
 
 FReply SExploredPauseMenu::HandleResume()

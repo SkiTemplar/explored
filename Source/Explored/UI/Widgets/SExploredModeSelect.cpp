@@ -1,6 +1,9 @@
 #include "UI/Widgets/SExploredModeSelect.h"
 
+#include "Input/Events.h"
+#include "InputCoreTypes.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
@@ -14,6 +17,12 @@ void SExploredModeSelect::Construct(const FArguments& InArgs)
 	OnBack = InArgs._OnBack;
 
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
+
+	// Superviviente es «la experiencia prevista»: el foco inicial va ahí.
+	TSharedRef<SWidget> SurvivorRow = MakeModeRow(EExploredGameplayMode::Survivor,
+		NSLOCTEXT("ExploredUI", "ModeSurvivor", "Superviviente"),
+		NSLOCTEXT("ExploredUI", "ModeSurvivorDesc", "La experiencia prevista."));
+	InitialFocus = SurvivorRow;
 
 	ChildSlot
 	[
@@ -41,9 +50,7 @@ void SExploredModeSelect::Construct(const FArguments& InArgs)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 6.0f))
 				[
-					MakeModeRow(EExploredGameplayMode::Survivor,
-						NSLOCTEXT("ExploredUI", "ModeSurvivor", "Superviviente"),
-						NSLOCTEXT("ExploredUI", "ModeSurvivorDesc", "La experiencia prevista."))
+					SurvivorRow
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 6.0f))
 				[
@@ -97,6 +104,15 @@ FReply SExploredModeSelect::HandleChoose(EExploredGameplayMode Mode)
 {
 	OnChosen.ExecuteIfBound(Mode);
 	return FReply::Handled();
+}
+
+FReply SExploredModeSelect::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	if (ExploredSettingsLogic::IsMenuBackKey(InKeyEvent.GetKey().GetFName()))
+	{
+		return HandleBack();
+	}
+	return SCompoundWidget::OnKeyDown(MyGeometry, InKeyEvent);
 }
 
 FReply SExploredModeSelect::HandleBack()
