@@ -11,6 +11,7 @@ Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
 Tests/GaitSpec.cpp
 Tests/InventorySpec.cpp
+Tests/LocalizationSpec.cpp
 Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp

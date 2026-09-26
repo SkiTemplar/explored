@@ -1,0 +1,3665 @@
+{
+	"version": 1,
+	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
+	"stats": {
+		"total": 361,
+		"cpp": 114,
+		"datos": 247,
+		"pendientes": 3,
+		"sin_en": 0,
+		"literales": 2,
+		"invariantes": 8,
+		"revisar": 1
+	},
+	"entries": [
+		{
+			"namespace": "Explored",
+			"key": "Carry_BackpackTooBig",
+			"es": "No entra en la mochila.",
+			"en": "It won't fit in the backpack.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:211"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_BackpackTooHeavy",
+			"es": "Pesa demasiado para la mochila.",
+			"en": "Too heavy for the backpack.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:206"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_BeltFull",
+			"es": "El cinturón no tiene enganches libres.",
+			"en": "No free loops left on your belt.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:178"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_BeltNotTool",
+			"es": "El cinturón solo lleva herramientas o recipientes.",
+			"en": "Your belt only holds tools and containers.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:173"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_HandEmpty",
+			"es": "No llevas nada en esa mano.",
+			"en": "That hand is empty.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:115",
+				"Source/Explored/Carry/CarryComponent.cpp:137"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_HandOccupied",
+			"es": "Esa mano ya está ocupada.",
+			"en": "That hand is already full.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:231"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_HandsFull",
+			"es": "Tienes las dos manos ocupadas.",
+			"en": "Both your hands are full.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:52"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_InvalidItem",
+			"es": "Ese objeto no se puede coger.",
+			"en": "You can't pick that up.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:66"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_InvalidSlotIndex",
+			"es": "Ahí no hay nada.",
+			"en": "Nothing there.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:244"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NeedBothHands",
+			"es": "Necesitas las dos manos libres para esto.",
+			"en": "You need both hands free for this.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:29"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NoBackpack",
+			"es": "No tienes mochila.",
+			"en": "You have no backpack.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:188"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NoRegistry",
+			"es": "El registro de objetos no está disponible.",
+			"en": "The item registry isn't available.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:193"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NothingToPickUp",
+			"es": "Aquí no hay nada que coger.",
+			"en": "There's nothing here to pick up.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:60"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_PocketTooSmall",
+			"es": "Solo los objetos pequeños caben en los bolsillos.",
+			"en": "Only small things fit in your pockets.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:150"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_PocketsFull",
+			"es": "Los bolsillos están llenos.",
+			"en": "Your pockets are full.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:155"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_TwoHandedNoStore",
+			"es": "Eso ocupa las dos manos: no se guarda.",
+			"en": "That takes both hands; it can't be stowed.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:131"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Crafting_NeedTwo",
+			"es": "Necesitas un objeto en cada mano.",
+			"en": "You need something in each hand.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Crafting/CraftingLibrary.cpp:187"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Crafting_NoMatch",
+			"es": "Estos objetos no se pueden combinar así.",
+			"en": "These don't go together that way.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Crafting/CraftingLibrary.cpp:216"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Crafting_NoRegistry",
+			"es": "El registro de objetos no está disponible.",
+			"en": "The item registry isn't available.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Crafting/CraftingLibrary.cpp:33"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Verb_PickUp",
+			"es": "Coger {0}",
+			"en": "Pick up {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredItemActor.cpp:74"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionJump",
+			"es": "Saltar",
+			"en": "Jump",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:345"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ActionSprint",
+			"es": "Correr",
+			"en": "Sprint",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:346"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Apply",
+			"es": "Aplicar",
+			"en": "Apply",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:438"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Back",
+			"es": "Volver",
+			"en": "Back",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59",
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:56",
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:446"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Brightness",
+			"es": "Brillo",
+			"en": "Brightness",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:233"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CVDDeuteranopia",
+			"es": "Deuteranopía",
+			"en": "Deuteranopia",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:407"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CVDNone",
+			"es": "Ninguno",
+			"en": "None",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:405"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CVDProtanopia",
+			"es": "Protanopía",
+			"en": "Protanopia",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:406"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CVDTritanopia",
+			"es": "Tritanopía",
+			"en": "Tritanopia",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:408"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CameraBob",
+			"es": "Balanceo de cámara",
+			"en": "Camera bob",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:320"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ChooseMode",
+			"es": "Elige cómo quieres sobrevivir",
+			"en": "Choose how you want to survive",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:32"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Colorblind",
+			"es": "Modo daltónico",
+			"en": "Colour-blind mode",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:414"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Continue",
+			"es": "Continuar",
+			"en": "Continue",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:22"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Credits",
+			"es": "Créditos",
+			"en": "Credits",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:64"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsArt",
+			"es": "Todo el arte, sonido y música generados por código",
+			"en": "All art, sound and music generated in code",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:54"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsAuthor",
+			"es": "Un juego de Rodrigo Fernández",
+			"en": "A game by Rodrigo Fernández",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:49"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsClaude",
+			"es": "Desarrollado con Claude (Anthropic)",
+			"en": "Made with Claude (Anthropic)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:50"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsEngine",
+			"es": "Motor: Unreal Engine 5.6",
+			"en": "Engine: Unreal Engine 5.6",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:51"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsTitle",
+			"es": "EXPLORED",
+			"en": "EXPLORED",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:48"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "DayLength",
+			"es": "Duración del día",
+			"en": "Day length",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:375"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Effects",
+			"es": "Efectos",
+			"en": "Effects",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:253"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ExitToMenu",
+			"es": "Salir al menú",
+			"en": "Exit to menu",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:61"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "FOV",
+			"es": "Campo de visión",
+			"en": "Field of view",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:310"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Foliage",
+			"es": "Vegetación",
+			"en": "Foliage",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "FpsLimit",
+			"es": "Límite de FPS",
+			"en": "FPS limit",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:226"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "GI",
+			"es": "Iluminación global",
+			"en": "Global illumination",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:249"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "GamepadSensitivity",
+			"es": "Sensibilidad del mando",
+			"en": "Controller sensitivity",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:296"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "HoldCrouch",
+			"es": "Agacharse manteniendo pulsado",
+			"en": "Hold to crouch",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:324"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InvertY",
+			"es": "Invertir eje Y",
+			"en": "Invert Y axis",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:306"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Journal",
+			"es": "Diario (Próximamente)",
+			"en": "Journal (Coming soon)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:21"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "JournalTooltip",
+			"es": "Próximamente",
+			"en": "Coming soon",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:23"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "LangEn",
+			"es": "English",
+			"en": "English",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:369"
+			],
+			"note": "Cada idioma se nombra en su propia lengua."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "LangEs",
+			"es": "Español",
+			"en": "Español",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:368"
+			],
+			"note": "Cada idioma se nombra en su propia lengua."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Language",
+			"es": "Idioma",
+			"en": "Language",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:393"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeCastaway",
+			"es": "Náufrago",
+			"en": "Castaway",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:51"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeCastawayDesc",
+			"es": "Necesidades más duras y sin reaparición en fogatas.",
+			"en": "Harsher needs and no respawning at campfires.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:52"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeExplorer",
+			"es": "Explorador",
+			"en": "Explorer",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:39"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeExplorerDesc",
+			"es": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia.",
+			"en": "Needs never kill and wildlife is peaceful. For enjoying the world and its story.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:40"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeSurvivor",
+			"es": "Superviviente",
+			"en": "Survivor",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:45"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ModeSurvivorDesc",
+			"es": "La experiencia prevista.",
+			"en": "The intended experience.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:46"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MouseSensitivity",
+			"es": "Sensibilidad del ratón",
+			"en": "Mouse sensitivity",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:286"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NewGame",
+			"es": "Nueva partida",
+			"en": "New game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:54"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NoFlashing",
+			"es": "Desactivar destellos",
+			"en": "Disable flashing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:425"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NoKey",
+			"es": "(sin asignar)",
+			"en": "(unbound)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:35"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "OverallQuality",
+			"es": "Calidad general",
+			"en": "Overall quality",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:244"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Paused",
+			"es": "Pausa",
+			"en": "Paused",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:39"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PostProcess",
+			"es": "Postproceso",
+			"en": "Post-processing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:251"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PressAnyKey",
+			"es": "Pulsa una tecla...",
+			"en": "Press a key...",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:32"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QualityCinematic",
+			"es": "Cinemática",
+			"en": "Cinematic",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:89"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QualityEpic",
+			"es": "Épica",
+			"en": "Epic",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:88"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QualityHigh",
+			"es": "Alta",
+			"en": "High",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:87"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QualityLow",
+			"es": "Baja",
+			"en": "Low",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:85"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QualityMedium",
+			"es": "Media",
+			"en": "Medium",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:86"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Quit",
+			"es": "Salir",
+			"en": "Quit",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:69"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "QuitGame",
+			"es": "Salir del juego",
+			"en": "Quit game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:66"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ReduceMotion",
+			"es": "Reducir movimiento",
+			"en": "Reduce motion",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:421"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Reflections",
+			"es": "Reflejos",
+			"en": "Reflections",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:250"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Resolution",
+			"es": "Resolución",
+			"en": "Resolution",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:208"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "RestoreDefaults",
+			"es": "Restaurar valores por defecto",
+			"en": "Restore defaults",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:442"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Resume",
+			"es": "Reanudar",
+			"en": "Resume",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:45"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SaveGame",
+			"es": "Guardar partida",
+			"en": "Save game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:56"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Saving",
+			"es": "Guardando...",
+			"en": "Saving...",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSavingIndicator.cpp:25"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SectionDisplay",
+			"es": "Pantalla",
+			"en": "Display",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:205"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SectionQuality",
+			"es": "Calidad",
+			"en": "Quality",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:241"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SectionRemap",
+			"es": "Remapeo de teclas",
+			"en": "Key bindings",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:332"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Settings",
+			"es": "Ajustes",
+			"en": "Settings",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:59",
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:51"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Shadows",
+			"es": "Sombras",
+			"en": "Shadows",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:248"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SoundCues",
+			"es": "Avisos visuales de sonido",
+			"en": "Visual sound cues",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:429"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Subtitle",
+			"es": "Un archipiélago que no aparece en ningún mapa",
+			"en": "An archipelago on no map",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:47"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Subtitles",
+			"es": "Subtítulos",
+			"en": "Subtitles",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:382"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TabAccessibility",
+			"es": "Accesibilidad",
+			"en": "Accessibility",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:160"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TabAudio",
+			"es": "Audio",
+			"en": "Audio",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:157"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TabControls",
+			"es": "Controles",
+			"en": "Controls",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:158"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TabGame",
+			"es": "Juego",
+			"en": "Game",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:159"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TabGraphics",
+			"es": "Gráficos",
+			"en": "Graphics",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:156"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TextLarge",
+			"es": "Grande",
+			"en": "Large",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:365"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TextMedium",
+			"es": "Mediano",
+			"en": "Medium",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:364"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TextSize",
+			"es": "Tamaño del texto",
+			"en": "Text size",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:386"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "TextSmall",
+			"es": "Pequeño",
+			"en": "Small",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:363"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Textures",
+			"es": "Texturas",
+			"en": "Textures",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:252"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Title",
+			"es": "EXPLORED",
+			"en": "EXPLORED",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:40"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Unlimited",
+			"es": "Sin límite",
+			"en": "Unlimited",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:196"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VSync",
+			"es": "VSync",
+			"en": "VSync",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:222"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ViewDistance",
+			"es": "Vista",
+			"en": "View distance",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:247"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VolAmbient",
+			"es": "Ambiente",
+			"en": "Ambience",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:274"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VolEffects",
+			"es": "Efectos",
+			"en": "Effects",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:273"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VolMaster",
+			"es": "Maestro",
+			"en": "Master",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:271"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VolMusic",
+			"es": "Música",
+			"en": "Music",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:272"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "VolUI",
+			"es": "Interfaz",
+			"en": "Interface",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:275"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WindowBorderless",
+			"es": "Ventana sin bordes",
+			"en": "Borderless window",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:189"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WindowFullscreen",
+			"es": "Pantalla completa",
+			"en": "Fullscreen",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:188"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WindowMode",
+			"es": "Modo de ventana",
+			"en": "Window mode",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:215"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "WindowWindowed",
+			"es": "Ventana",
+			"en": "Windowed",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:190"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "arriate_limonero.nameEs",
+			"es": "Arriate del limonero",
+			"en": "Lemon tree bed",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «arriate_limonero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "bancal.nameEs",
+			"es": "Bancal",
+			"en": "Garden bed",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «bancal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "cama_hojas.nameEs",
+			"es": "Cama de hojas",
+			"en": "Leaf bed",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «cama_hojas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "chimenea.nameEs",
+			"es": "Chimenea",
+			"en": "Chimney",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «chimenea» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "cimiento_piedra.nameEs",
+			"es": "Cimiento de piedra",
+			"en": "Stone foundation",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «cimiento_piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "escalera_bambu.nameEs",
+			"es": "Escalera de bambú",
+			"en": "Bamboo ladder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «escalera_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "escalera_madera.nameEs",
+			"es": "Escalera de madera",
+			"en": "Wooden ladder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «escalera_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "espaldera.nameEs",
+			"es": "Espaldera",
+			"en": "Trellis",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «espaldera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "estanteria_museo.nameEs",
+			"es": "Estantería del museo",
+			"en": "Museum shelf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «estanteria_museo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "fogata.nameEs",
+			"es": "Fogata",
+			"en": "Campfire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «fogata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "hoguera_senal.nameEs",
+			"es": "Hoguera de señal",
+			"en": "Signal fire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «hoguera_senal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "horno_barro.nameEs",
+			"es": "Horno de barro",
+			"en": "Clay oven",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «horno_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "mesa_cartografia.nameEs",
+			"es": "Mesa de cartografía",
+			"en": "Chart table",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «mesa_cartografia» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "muro_piedra.nameEs",
+			"es": "Muro de piedra seca",
+			"en": "Dry-stone wall",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «muro_piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pared_bambu.nameEs",
+			"es": "Pared de bambú",
+			"en": "Bamboo wall",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pared_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pared_madera.nameEs",
+			"es": "Pared de madera",
+			"en": "Wooden wall",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pared_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pared_palma.nameEs",
+			"es": "Pared de palma",
+			"en": "Palm wall",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pared_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "piedra_trabajo.nameEs",
+			"es": "Piedra de trabajo",
+			"en": "Work stone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «piedra_trabajo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pilote_bambu.nameEs",
+			"es": "Pilote de bambú",
+			"en": "Bamboo stilt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pilote_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pilote_madera.nameEs",
+			"es": "Pilote de madera",
+			"en": "Wooden stilt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pilote_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "puerta_bambu.nameEs",
+			"es": "Puerta de bambú",
+			"en": "Bamboo door",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «puerta_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "puerta_madera.nameEs",
+			"es": "Puerta de madera",
+			"en": "Wooden door",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «puerta_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "puerta_palma.nameEs",
+			"es": "Puerta de palma",
+			"en": "Palm door",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «puerta_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "recolector_lluvia.nameEs",
+			"es": "Recolector de lluvia",
+			"en": "Rain catcher",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «recolector_lluvia» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "refugio_inclinado.nameEs",
+			"es": "Refugio inclinado",
+			"en": "Lean-to shelter",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «refugio_inclinado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "secadero.nameEs",
+			"es": "Secadero",
+			"en": "Drying rack",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «secadero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "suelo_bambu.nameEs",
+			"es": "Suelo de bambú",
+			"en": "Bamboo floor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «suelo_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "suelo_madera.nameEs",
+			"es": "Suelo de madera",
+			"en": "Wooden floor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «suelo_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "suelo_palma.nameEs",
+			"es": "Suelo de palma",
+			"en": "Palm floor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «suelo_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "techo_bambu.nameEs",
+			"es": "Techo de bambú y palma",
+			"en": "Bamboo and palm roof",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «techo_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "techo_madera.nameEs",
+			"es": "Techo de madera y palma",
+			"en": "Wood and palm roof",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «techo_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "techo_palma.nameEs",
+			"es": "Techo de palma",
+			"en": "Palm roof",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «techo_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "telar.nameEs",
+			"es": "Telar de fibra",
+			"en": "Fibre loom",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «telar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.tiers",
+			"key": "bambu.nameEs",
+			"es": "Bambú",
+			"en": "Bamboo",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.tiers",
+			"key": "madera.nameEs",
+			"es": "Madera",
+			"en": "Wood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.tiers",
+			"key": "palma.nameEs",
+			"es": "Hoja de palma",
+			"en": "Palm leaf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.tiers",
+			"key": "piedra.nameEs",
+			"es": "Piedra",
+			"en": "Stone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "alga_fibra.nameEs",
+			"es": "Alga de fibra",
+			"en": "Fibre seaweed",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «alga_fibra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "algodon_silvestre.nameEs",
+			"es": "Algodón silvestre",
+			"en": "Wild cotton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «algodon_silvestre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "antorcha.nameEs",
+			"es": "Antorcha",
+			"en": "Torch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «antorcha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "arcilla_roja.nameEs",
+			"es": "Arcilla roja",
+			"en": "Red clay",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arcilla_roja» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "arco.nameEs",
+			"es": "Arco",
+			"en": "Bow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "arena.nameEs",
+			"es": "Arena",
+			"en": "Sand",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arena» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "arenisca.nameEs",
+			"es": "Arenisca",
+			"en": "Sandstone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arenisca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "atado_generico.nameEs",
+			"es": "Atado",
+			"en": "Bound piece",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «atado_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "azufre.nameEs",
+			"es": "Azufre",
+			"en": "Sulphur",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «azufre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "bambu_fino.nameEs",
+			"es": "Caña de bambú fina",
+			"en": "Thin bamboo cane",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «bambu_fino» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "bambu_grueso.nameEs",
+			"es": "Caña de bambú gruesa",
+			"en": "Thick bamboo cane",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «bambu_grueso» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "basalto.nameEs",
+			"es": "Basalto",
+			"en": "Basalt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «basalto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "batata.nameEs",
+			"es": "Batata",
+			"en": "Sweet potato",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «batata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cable_electrico.nameEs",
+			"es": "Cable eléctrico",
+			"en": "Electrical cable",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cable_electrico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cangrejo.nameEs",
+			"es": "Cangrejo",
+			"en": "Crab",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cangrejo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "canto_rodado.nameEs",
+			"es": "Canto rodado",
+			"en": "Pebble",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «canto_rodado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "caracola.nameEs",
+			"es": "Caracola",
+			"en": "Conch shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «caracola» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "carbon_vegetal.nameEs",
+			"es": "Carbón vegetal",
+			"en": "Charcoal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «carbon_vegetal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cascara_coco.nameEs",
+			"es": "Cáscara de coco",
+			"en": "Coconut shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cascara_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cerillas.nameEs",
+			"es": "Cerillas",
+			"en": "Matches",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cerillas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cesta.nameEs",
+			"es": "Cesta",
+			"en": "Basket",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cesta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "chapa_fuselaje.nameEs",
+			"es": "Chapa del fuselaje",
+			"en": "Fuselage sheet metal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «chapa_fuselaje» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cinta_americana.nameEs",
+			"es": "Cinta americana",
+			"en": "Duct tape",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cinta_americana» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "coco_maduro.nameEs",
+			"es": "Coco maduro",
+			"en": "Ripe coconut",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «coco_maduro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "coco_verde.nameEs",
+			"es": "Coco verde",
+			"en": "Green coconut",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «coco_verde» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "concha_grande.nameEs",
+			"es": "Concha grande de almeja gigante",
+			"en": "Giant clam shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «concha_grande» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "concha_pequena.nameEs",
+			"es": "Concha pequeña",
+			"en": "Small shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «concha_pequena» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cordel.nameEs",
+			"es": "Cordel",
+			"en": "Twine",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cordel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "corteza.nameEs",
+			"es": "Corteza",
+			"en": "Bark",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «corteza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cuchillo.nameEs",
+			"es": "Cuchillo",
+			"en": "Knife",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cuchillo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cuerda.nameEs",
+			"es": "Cuerda",
+			"en": "Rope",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cuerda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cuero_curtido.nameEs",
+			"es": "Piel de tiburón curtida",
+			"en": "Tanned shark skin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cuero_curtido» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "esponja_mar.nameEs",
+			"es": "Esponja de mar",
+			"en": "Sea sponge",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «esponja_mar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "estaca.nameEs",
+			"es": "Estaca",
+			"en": "Stake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «estaca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "fibra_coco.nameEs",
+			"es": "Fibra de coco",
+			"en": "Coconut fibre",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «fibra_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "flecha.nameEs",
+			"es": "Flecha",
+			"en": "Arrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «flecha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "grasa.nameEs",
+			"es": "Grasa",
+			"en": "Fat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «grasa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hacha.nameEs",
+			"es": "Hacha",
+			"en": "Axe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hacha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hijuelo_platano.nameEs",
+			"es": "Hijuelo de plátano",
+			"en": "Banana sucker",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hijuelo_platano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hoja_palma.nameEs",
+			"es": "Hoja de palma",
+			"en": "Palm leaf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hoja_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hoja_platano.nameEs",
+			"es": "Hoja de plátano",
+			"en": "Banana leaf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hoja_platano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hueso_largo.nameEs",
+			"es": "Hueso largo",
+			"en": "Long bone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hueso_largo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hueso_pequeno.nameEs",
+			"es": "Hueso pequeño",
+			"en": "Small bone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hueso_pequeno» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "huevo.nameEs",
+			"es": "Huevo",
+			"en": "Egg",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «huevo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lanza.nameEs",
+			"es": "Lanza",
+			"en": "Spear",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lanza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lasca_obsidiana.nameEs",
+			"es": "Lasca de obsidiana",
+			"en": "Obsidian flake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lasca_obsidiana» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lasca_pedernal.nameEs",
+			"es": "Lasca de pedernal",
+			"en": "Flint flake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lasca_pedernal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lasca_tallada.nameEs",
+			"es": "Lasca",
+			"en": "Knapped flake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lasca_tallada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "liana.nameEs",
+			"es": "Liana",
+			"en": "Vine",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «liana» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lima_silvestre.nameEs",
+			"es": "Lima silvestre",
+			"en": "Wild lime",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lima_silvestre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "limon.nameEs",
+			"es": "Limón",
+			"en": "Lemon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «limon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "madera_blanda.nameEs",
+			"es": "Madera blanda de balsa",
+			"en": "Balsa wood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «madera_blanda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "madera_dura.nameEs",
+			"es": "Madera dura de guayabo",
+			"en": "Hardwood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «madera_dura» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "madera_flotante.nameEs",
+			"es": "Madera flotante",
+			"en": "Driftwood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «madera_flotante» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "madera_naufragio.nameEs",
+			"es": "Madera de naufragio",
+			"en": "Shipwreck wood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «madera_naufragio» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mango_fruta.nameEs",
+			"es": "Mango",
+			"en": "Mango",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mango_fruta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "maracuya.nameEs",
+			"es": "Maracuyá",
+			"en": "Passion fruit",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «maracuya» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "martillo.nameEs",
+			"es": "Martillo",
+			"en": "Hammer",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «martillo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "musgo.nameEs",
+			"es": "Musgo",
+			"en": "Moss",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «musgo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "obsidiana.nameEs",
+			"es": "Obsidiana",
+			"en": "Obsidian",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «obsidiana» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pala.nameEs",
+			"es": "Pala",
+			"en": "Shovel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pala» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "palo_recto.nameEs",
+			"es": "Palo recto",
+			"en": "Straight stick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «palo_recto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pasta_medicinal.nameEs",
+			"es": "Pasta medicinal",
+			"en": "Medicinal paste",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pasta_medicinal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pedernal.nameEs",
+			"es": "Pedernal",
+			"en": "Flint",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pedernal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pegado_generico.nameEs",
+			"es": "Pegado",
+			"en": "Glued piece",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pegado_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pescado_arrecife.nameEs",
+			"es": "Pescado de arrecife",
+			"en": "Reef fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pescado_arrecife» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "piedra_plana.nameEs",
+			"es": "Piedra plana",
+			"en": "Flat stone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «piedra_plana» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "piel_bruto.nameEs",
+			"es": "Piel de tiburón en bruto",
+			"en": "Raw shark skin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «piel_bruto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pina.nameEs",
+			"es": "Piña silvestre",
+			"en": "Wild pineapple",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "planta_medicinal_aloe.nameEs",
+			"es": "Aloe",
+			"en": "Aloe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «planta_medicinal_aloe» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "platano.nameEs",
+			"es": "Plátano",
+			"en": "Banana",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «platano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "plumas.nameEs",
+			"es": "Plumas",
+			"en": "Feathers",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «plumas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "rama_seca.nameEs",
+			"es": "Rama seca",
+			"en": "Dry branch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «rama_seca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "rama_verde.nameEs",
+			"es": "Rama verde",
+			"en": "Green branch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «rama_verde» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "recipiente_coco.nameEs",
+			"es": "Recipiente de coco",
+			"en": "Coconut bowl",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «recipiente_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "resina.nameEs",
+			"es": "Resina",
+			"en": "Resin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «resina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "sal_marina.nameEs",
+			"es": "Sal marina",
+			"en": "Sea salt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sal_marina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "seta_comestible.nameEs",
+			"es": "Seta comestible",
+			"en": "Edible mushroom",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «seta_comestible» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "taro.nameEs",
+			"es": "Taro",
+			"en": "Taro root",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «taro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "tendon.nameEs",
+			"es": "Tendón",
+			"en": "Sinew",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tendon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "tronco_pequeno.nameEs",
+			"es": "Tronco pequeño",
+			"en": "Small log",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tronco_pequeno» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "tubo_aluminio.nameEs",
+			"es": "Tubo de aluminio",
+			"en": "Aluminium tube",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tubo_aluminio» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "vara_flexible.nameEs",
+			"es": "Vara flexible de bambú",
+			"en": "Flexible bamboo rod",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «vara_flexible» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "yesca_hongo.nameEs",
+			"es": "Yesca de hongo",
+			"en": "Fungus tinder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «yesca_hongo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "batata.nameEs",
+			"es": "Batata",
+			"en": "Sweet potato",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «batata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "limonero.nameEs",
+			"es": "Limonero",
+			"en": "Lemon tree",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «limonero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "maracuya.nameEs",
+			"es": "Maracuyá",
+			"en": "Passion fruit",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «maracuya» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "pina.nameEs",
+			"es": "Piña",
+			"en": "Pineapple",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «pina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "platanera.nameEs",
+			"es": "Platanera",
+			"en": "Banana plant",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «platanera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "taro.nameEs",
+			"es": "Taro",
+			"en": "Taro",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «taro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "batata.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «batata.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "batata.enredadera.nameEs",
+			"es": "Enredadera",
+			"en": "Vine",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «batata.enredadera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "batata.listo.nameEs",
+			"es": "Listo para arrancar",
+			"en": "Ready to pull up",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «batata.listo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "limonero.arbol_adulto.nameEs",
+			"es": "Árbol adulto con fruta",
+			"en": "Grown tree with fruit",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «limonero.arbol_adulto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "limonero.arbol_joven.nameEs",
+			"es": "Árbol joven",
+			"en": "Young tree",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «limonero.arbol_joven» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "limonero.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «limonero.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "limonero.esqueje.nameEs",
+			"es": "Esqueje",
+			"en": "Cutting",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «limonero.esqueje» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "maracuya.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «maracuya.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "maracuya.en_flor_y_fruto.nameEs",
+			"es": "En flor y con fruto",
+			"en": "Flowering and fruiting",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «maracuya.en_flor_y_fruto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "maracuya.trepadora.nameEs",
+			"es": "Trepadora en la espaldera",
+			"en": "Climbing the trellis",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «maracuya.trepadora» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "pina.con_fruto.nameEs",
+			"es": "Con fruto",
+			"en": "Fruiting",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «pina.con_fruto» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "pina.corona.nameEs",
+			"es": "Corona plantada",
+			"en": "Planted crown",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «pina.corona» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "pina.roseta.nameEs",
+			"es": "Roseta",
+			"en": "Rosette",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «pina.roseta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "platanera.hijuelo.nameEs",
+			"es": "Hijuelo",
+			"en": "Sucker",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «platanera.hijuelo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "platanera.planta_con_racimo.nameEs",
+			"es": "Planta con racimo",
+			"en": "Plant with a bunch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «platanera.planta_con_racimo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "platanera.planta_joven.nameEs",
+			"es": "Planta joven",
+			"en": "Young plant",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «platanera.planta_joven» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "taro.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «taro.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "taro.hojas_grandes.nameEs",
+			"es": "Hojas grandes",
+			"en": "Large leaves",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «taro.hojas_grandes» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "taro.listo.nameEs",
+			"es": "Listo para arrancar",
+			"en": "Ready to pull up",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «taro.listo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "ceremonial_paddle.label",
+			"es": "Remo ceremonial",
+			"en": "Ceremonial paddle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «ceremonial_paddle» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "hook_bone.label",
+			"es": "Anzuelo de hueso tallado",
+			"en": "Carved bone fishhook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «hook_bone» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "shell_ornament.label",
+			"es": "Adorno de concha",
+			"en": "Shell ornament",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «shell_ornament» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "stick_chart.label",
+			"es": "Carta de navegación de varillas y conchas",
+			"en": "Stick-and-shell sailing chart",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «stick_chart» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "stone_figure.label",
+			"es": "Figura de piedra",
+			"en": "Stone figure",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «stone_figure» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.artifact_kinds",
+			"key": "tapa_cloth.label",
+			"es": "Tapa (tela vegetal pintada)",
+			"en": "Tapa (painted bark cloth)",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «tapa_cloth» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "cave.label",
+			"es": "Cueva",
+			"en": "Cave",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «cave» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "danger.label",
+			"es": "Peligro",
+			"en": "Danger",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «danger» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "resource.label",
+			"es": "Recurso",
+			"en": "Resource",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «resource» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "ruin.label",
+			"es": "Ruina",
+			"en": "Ruin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «ruin» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "water.label",
+			"es": "Agua dulce",
+			"en": "Fresh water",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «water» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.map_marks",
+			"key": "wreck.label",
+			"es": "Resto del Albatros",
+			"en": "Albatros wreckage",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «wreck» label/labelEn"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "00",
+			"es": "Canoa de doble casco bajo una estrella",
+			"en": "Double-hulled canoe beneath a star",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «0» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "01",
+			"es": "Espiral de marea",
+			"en": "Tidal spiral",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «1» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "02",
+			"es": "Tortuga con siete puntos (las siete islas)",
+			"en": "Turtle with seven dots (the seven islands)",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «2» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "03",
+			"es": "Figura mirando al cielo",
+			"en": "Figure gazing at the sky",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «3» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "04",
+			"es": "Pez volador",
+			"en": "Flying fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «4» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "05",
+			"es": "Ballena con cría",
+			"en": "Whale with calf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «5» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "06",
+			"es": "Fragata en vuelo",
+			"en": "Frigatebird in flight",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «6» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "07",
+			"es": "Estrella de ocho brazos",
+			"en": "Eight-armed star",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «7» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "08",
+			"es": "Ola que se retira",
+			"en": "Receding wave",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «8» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "09",
+			"es": "Isla que emerge",
+			"en": "Emerging island",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «9» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "10",
+			"es": "Mano abierta",
+			"en": "Open hand",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «10» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "11",
+			"es": "Luna nueva",
+			"en": "New moon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «11» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "12",
+			"es": "Cangrejo de los cocoteros",
+			"en": "Coconut crab",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «12» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "13",
+			"es": "Volcán con humo",
+			"en": "Smoking volcano",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «13» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "14",
+			"es": "Camino de estrellas",
+			"en": "Star path",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «14» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "15",
+			"es": "Cesta de pesca",
+			"en": "Fishing basket",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «15» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "16",
+			"es": "Tambor",
+			"en": "Drum",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «16» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "17",
+			"es": "Tiburón y círculo",
+			"en": "Shark and circle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «17» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "18",
+			"es": "Tres canoas",
+			"en": "Three canoes",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «18» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "19",
+			"es": "Palmera doblada por el viento",
+			"en": "Wind-bent palm",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «19» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "20",
+			"es": "Ojo",
+			"en": "Eye",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «20» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "21",
+			"es": "Raíces de manglar",
+			"en": "Mangrove roots",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «21» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "22",
+			"es": "Nube fija sobre el horizonte",
+			"en": "Still cloud on the horizon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «22» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "23",
+			"es": "Ola de oleaje marcada",
+			"en": "Marked ocean swell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «23» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "24",
+			"es": "Cascada",
+			"en": "Waterfall",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «24» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "25",
+			"es": "Pareja de aves",
+			"en": "Pair of birds",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «25» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "26",
+			"es": "Faro (grabado moderno)",
+			"en": "Lighthouse (modern carving)",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «26» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "27",
+			"es": "Limonero (grabado moderno)",
+			"en": "Lemon tree (modern carving)",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «27» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "28",
+			"es": "Sol naciente sobre el mar",
+			"en": "Sun rising over the sea",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «28» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.story_es.petroglyph_themes",
+			"key": "29",
+			"es": "Marae con estatua",
+			"en": "Marae with statue",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/story_es.json «29» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "animo.nameEs",
+			"es": "Ánimo",
+			"en": "Mood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «animo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "energia_dieta.nameEs",
+			"es": "Hidratos",
+			"en": "Carbs",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «energia_dieta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "hambre.nameEs",
+			"es": "Hambre",
+			"en": "Hunger",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «hambre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "proteina.nameEs",
+			"es": "Proteína",
+			"en": "Protein",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «proteina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "salud.nameEs",
+			"es": "Salud",
+			"en": "Health",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «salud» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "sed.nameEs",
+			"es": "Sed",
+			"en": "Thirst",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sed» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "sueno.nameEs",
+			"es": "Sueño",
+			"en": "Sleep",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sueno» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.needs",
+			"key": "vitamina_c.nameEs",
+			"es": "Vitamina C",
+			"en": "Vitamin C",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «vitamina_c» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "afilar_generico.nameEs",
+			"es": "Afilar",
+			"en": "Sharpen",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «afilar_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "antorcha.nameEs",
+			"es": "Antorcha",
+			"en": "Torch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «antorcha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "antorcha.nameTemplate",
+			"es": "Antorcha de {0} con {1}",
+			"en": "{0} torch with {1}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «antorcha» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arco.nameEs",
+			"es": "Arco",
+			"en": "Bow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arco.nameTemplate",
+			"es": "Arco de {0} con cuerda de {1}",
+			"en": "{0} bow with a {1} string",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "atado_generico.nameEs",
+			"es": "Atado genérico",
+			"en": "Simple lashing",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «atado_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "atado_generico.nameTemplate",
+			"es": "{0} atado con {1}",
+			"en": "{0} lashed with {1}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «atado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cesta.nameEs",
+			"es": "Cesta",
+			"en": "Basket",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cesta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cesta.nameTemplate",
+			"es": "Cesta de {0}",
+			"en": "{0} basket",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cesta» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cordel.nameEs",
+			"es": "Cordel",
+			"en": "Twine",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cordel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cordel.nameTemplate",
+			"es": "Cordel de fibra",
+			"en": "Fibre twine",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cordel» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cuchillo.nameEs",
+			"es": "Cuchillo",
+			"en": "Knife",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuchillo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cuchillo.nameTemplate",
+			"es": "Cuchillo de {0} con mango de {1}",
+			"en": "{0} knife with a {1} handle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuchillo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cuerda.nameEs",
+			"es": "Cuerda",
+			"en": "Rope",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuerda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cuerda.nameTemplate",
+			"es": "Cuerda trenzada",
+			"en": "Braided rope",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuerda» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "estaca_por_tallado.nameEs",
+			"es": "Estaca por tallado",
+			"en": "Carved stake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «estaca_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "estaca_por_tallado.nameTemplate",
+			"es": "Estaca de {1}",
+			"en": "{1} stake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «estaca_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "flecha.nameEs",
+			"es": "Flecha",
+			"en": "Arrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «flecha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "flecha.nameTemplate",
+			"es": "Flecha de {0} con punta de {1}",
+			"en": "{0} arrow with a {1} tip",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «flecha» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hacha.nameEs",
+			"es": "Hacha",
+			"en": "Axe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hacha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hacha.nameTemplate",
+			"es": "Hacha de {0} con mango de {1}, atada con {2}",
+			"en": "{0} axe with a {1} handle, lashed with {2}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hacha» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lanza.nameEs",
+			"es": "Lanza",
+			"en": "Spear",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lanza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lanza.nameTemplate",
+			"es": "Lanza de {0} con punta de {1}, atada con {2}",
+			"en": "{0} spear with a {1} tip, lashed with {2}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lanza» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lasca_por_golpeo.nameEs",
+			"es": "Lasca por golpeo",
+			"en": "Struck flake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lasca_por_golpeo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lasca_por_golpeo.nameTemplate",
+			"es": "Lasca de {1}",
+			"en": "{1} flake",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lasca_por_golpeo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "martillo.nameEs",
+			"es": "Martillo",
+			"en": "Hammer",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «martillo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "martillo.nameTemplate",
+			"es": "Martillo de {0} con mango de {1}",
+			"en": "{0} hammer with a {1} handle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «martillo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pala.nameEs",
+			"es": "Pala",
+			"en": "Shovel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pala» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pala.nameTemplate",
+			"es": "Pala de {0} con mango de {1}",
+			"en": "{0} shovel with a {1} handle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pala» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pasta_medicinal_por_machacado.nameEs",
+			"es": "Pasta medicinal por machacado",
+			"en": "Crushed medicinal paste",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pasta_medicinal_por_machacado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pasta_medicinal_por_machacado.nameTemplate",
+			"es": "Pasta de {1}",
+			"en": "{1} paste",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pasta_medicinal_por_machacado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pegado_generico.nameEs",
+			"es": "Pegado genérico",
+			"en": "Simple gluing",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pegado_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pegado_generico.nameTemplate",
+			"es": "{0} pegado con {1}",
+			"en": "{0} glued with {1}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pegado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "recipiente_de_coco.nameEs",
+			"es": "Recipiente de coco",
+			"en": "Coconut bowl",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «recipiente_de_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "recipiente_de_coco.nameTemplate",
+			"es": "Recipiente de coco",
+			"en": "Coconut bowl",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «recipiente_de_coco» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Afilar.description",
+			"es": "Abrasivo sobre filo: recupera filo y durabilidad.",
+			"en": "Abrasive on an edge: restores sharpness and durability.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Afilar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Afilar.nameEs",
+			"es": "Afilar",
+			"en": "Sharpen",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Afilar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Atar.description",
+			"es": "Ata más dos piezas: herramientas compuestas.",
+			"en": "Binding plus two pieces: composite tools.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Atar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Atar.nameEs",
+			"es": "Atar",
+			"en": "Lash",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Atar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Golpear.description",
+			"es": "Contundente sobre duro: lascas o cocos abiertos.",
+			"en": "Blunt on hard: flakes or cracked coconuts.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Golpear» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Golpear.nameEs",
+			"es": "Golpear",
+			"en": "Strike",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Golpear» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Machacar.description",
+			"es": "Contundente sobre blando: pasta, fibra, pigmento.",
+			"en": "Blunt on soft: paste, fibre, pigment.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Machacar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Machacar.nameEs",
+			"es": "Machacar",
+			"en": "Crush",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Machacar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Pegar.description",
+			"es": "Adhesivo más dos piezas: unión más duradera que atar.",
+			"en": "Glue plus two pieces: a sturdier join than lashing.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Pegar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Pegar.nameEs",
+			"es": "Pegar",
+			"en": "Glue",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Pegar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Raspar.description",
+			"es": "Filo sobre piel o corteza: cuero en bruto, fibra.",
+			"en": "Edge on hide or bark: rawhide, fibre.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Raspar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Raspar.nameEs",
+			"es": "Raspar",
+			"en": "Scrape",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Raspar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Tallar.description",
+			"es": "Filo sobre madera o hueso: estacas, mangos, cucharas.",
+			"en": "Edge on wood or bone: stakes, handles, spoons.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Tallar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Tallar.nameEs",
+			"es": "Tallar",
+			"en": "Carve",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Tallar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Trenzar.description",
+			"es": "Fibroso combinado: cordel, cuerda, cesta.",
+			"en": "Fibres combined: twine, rope, basket.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Trenzar» description/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.verbs.verbs",
+			"key": "Trenzar.nameEs",
+			"es": "Trenzar",
+			"en": "Braid",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/verbs.json «Trenzar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Title",
+			"es": "Explored",
+			"en": "Explored",
+			"origin": "ini",
+			"locations": [
+				"Config/DefaultGame.ini:4"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "DayLengthMinutes",
+			"es": "{0} min",
+			"en": "{0} min",
+			"origin": "pendiente",
+			"locations": [
+				"SExploredSettingsPanel.cpp:359, en lugar de FString::Printf(TEXT(\"%d min\"))"
+			],
+			"note": "FText::Format(..., FText::AsNumber(Minutes))."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "Dedication",
+			"es": "Para Almudena, mi Limón",
+			"en": "Para Almudena, mi Limón",
+			"origin": "pendiente",
+			"locations": [
+				"SExploredMainMenu (bajo el subtítulo) y SExploredCredits (GDD §15); no se traduce"
+			],
+			"note": "Dedicatoria: idéntica en los dos idiomas."
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "InteractPrompt",
+			"es": "[{Key}] {Actions}",
+			"en": "[{Key}] {Actions}",
+			"origin": "pendiente",
+			"locations": [
+				"ExploredHUD.cpp:59-66, en lugar de TEXT(\"[E] \") y la concatenación con TEXT(\" · \")"
+			],
+			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
+		}
+	]
+}

@@ -1,0 +1,1250 @@
+{
+	"FormatVersion": 1,
+	"Namespace": "",
+	"Children": [],
+	"Subnamespaces": [
+		{
+			"Namespace": "Explored",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Ahí no hay nada."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_InvalidSlotIndex",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 244"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay nada que coger."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NothingToPickUp",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 60"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Coger {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Verb_PickUp",
+							"Path": "Source/Explored/Items/ExploredItemActor.cpp - line 74"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El cinturón no tiene enganches libres."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BeltFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 178"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El cinturón solo lleva herramientas o recipientes."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BeltNotTool",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 173"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El registro de objetos no está disponible."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoRegistry",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 193"
+						},
+						{
+							"Key": "Crafting_NoRegistry",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 33"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esa mano ya está ocupada."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandOccupied",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 231"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ese objeto no se puede coger."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_InvalidItem",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 66"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Eso ocupa las dos manos: no se guarda."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_TwoHandedNoStore",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Estos objetos no se pueden combinar así."
+					},
+					"Keys": [
+						{
+							"Key": "Crafting_NoMatch",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 216"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Explored"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Config/DefaultGame.ini - line 4"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Los bolsillos están llenos."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_PocketsFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesitas las dos manos libres para esto."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NeedBothHands",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 29"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesitas un objeto en cada mano."
+					},
+					"Keys": [
+						{
+							"Key": "Crafting_NeedTwo",
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 187"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No entra en la mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BackpackTooBig",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 211"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas nada en esa mano."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandEmpty",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No tienes mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NoBackpack",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 188"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pesa demasiado para la mochila."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_BackpackTooHeavy",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 206"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Solo los objetos pequeños caben en los bolsillos."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_PocketTooSmall",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 150"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tienes las dos manos ocupadas."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_HandsFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 52"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredUI",
+			"Children": [
+				{
+					"Source": {
+						"Text": "(sin asignar)"
+					},
+					"Keys": [
+						{
+							"Key": "NoKey",
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 35"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Accesibilidad"
+					},
+					"Keys": [
+						{
+							"Key": "TabAccessibility",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 160"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Agacharse manteniendo pulsado"
+					},
+					"Keys": [
+						{
+							"Key": "HoldCrouch",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 324"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ajustes"
+					},
+					"Keys": [
+						{
+							"Key": "Settings",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Alta"
+					},
+					"Keys": [
+						{
+							"Key": "QualityHigh",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 87"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ambiente"
+					},
+					"Keys": [
+						{
+							"Key": "VolAmbient",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 274"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aplicar"
+					},
+					"Keys": [
+						{
+							"Key": "Apply",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 438"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Audio"
+					},
+					"Keys": [
+						{
+							"Key": "TabAudio",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 157"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Avisos visuales de sonido"
+					},
+					"Keys": [
+						{
+							"Key": "SoundCues",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 429"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Baja"
+					},
+					"Keys": [
+						{
+							"Key": "QualityLow",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 85"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Balanceo de cámara"
+					},
+					"Keys": [
+						{
+							"Key": "CameraBob",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 320"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Brillo"
+					},
+					"Keys": [
+						{
+							"Key": "Brightness",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 233"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calidad"
+					},
+					"Keys": [
+						{
+							"Key": "SectionQuality",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 241"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Calidad general"
+					},
+					"Keys": [
+						{
+							"Key": "OverallQuality",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 244"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Campo de visión"
+					},
+					"Keys": [
+						{
+							"Key": "FOV",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 310"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cinemática"
+					},
+					"Keys": [
+						{
+							"Key": "QualityCinematic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 89"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Continuar"
+					},
+					"Keys": [
+						{
+							"Key": "Continue",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 22"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Controles"
+					},
+					"Keys": [
+						{
+							"Key": "TabControls",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 158"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Correr"
+					},
+					"Keys": [
+						{
+							"Key": "ActionSprint",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 346"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Créditos"
+					},
+					"Keys": [
+						{
+							"Key": "Credits",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 64"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Desactivar destellos"
+					},
+					"Keys": [
+						{
+							"Key": "NoFlashing",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 425"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsClaude",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 50"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Deuteranopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDDeuteranopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 407"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Diario (Próximamente)"
+					},
+					"Keys": [
+						{
+							"Key": "Journal",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 21"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Duración del día"
+					},
+					"Keys": [
+						{
+							"Key": "DayLength",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 375"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "EXPLORED"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 48"
+						},
+						{
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Efectos"
+					},
+					"Keys": [
+						{
+							"Key": "Effects",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 253"
+						},
+						{
+							"Key": "VolEffects",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 273"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Elige cómo quieres sobrevivir"
+					},
+					"Keys": [
+						{
+							"Key": "ChooseMode",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 32"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "English"
+					},
+					"Keys": [
+						{
+							"Key": "LangEn",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 369"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Español"
+					},
+					"Keys": [
+						{
+							"Key": "LangEs",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 368"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Explorador"
+					},
+					"Keys": [
+						{
+							"Key": "ModeExplorer",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 39"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Grande"
+					},
+					"Keys": [
+						{
+							"Key": "TextLarge",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 365"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Gráficos"
+					},
+					"Keys": [
+						{
+							"Key": "TabGraphics",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 156"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardando..."
+					},
+					"Keys": [
+						{
+							"Key": "Saving",
+							"Path": "Source/Explored/UI/Widgets/SExploredSavingIndicator.cpp - line 25"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Guardar partida"
+					},
+					"Keys": [
+						{
+							"Key": "SaveGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 56"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Idioma"
+					},
+					"Keys": [
+						{
+							"Key": "Language",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 393"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Iluminación global"
+					},
+					"Keys": [
+						{
+							"Key": "GI",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 249"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Interfaz"
+					},
+					"Keys": [
+						{
+							"Key": "VolUI",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 275"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Invertir eje Y"
+					},
+					"Keys": [
+						{
+							"Key": "InvertY",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 306"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Juego"
+					},
+					"Keys": [
+						{
+							"Key": "TabGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 159"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "La experiencia prevista."
+					},
+					"Keys": [
+						{
+							"Key": "ModeSurvivorDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 46"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia."
+					},
+					"Keys": [
+						{
+							"Key": "ModeExplorerDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Límite de FPS"
+					},
+					"Keys": [
+						{
+							"Key": "FpsLimit",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 226"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Maestro"
+					},
+					"Keys": [
+						{
+							"Key": "VolMaster",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 271"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Media"
+					},
+					"Keys": [
+						{
+							"Key": "QualityMedium",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 86"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mediano"
+					},
+					"Keys": [
+						{
+							"Key": "TextMedium",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 364"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Modo daltónico"
+					},
+					"Keys": [
+						{
+							"Key": "Colorblind",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 414"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Modo de ventana"
+					},
+					"Keys": [
+						{
+							"Key": "WindowMode",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 215"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Motor: Unreal Engine 5.6"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsEngine",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 51"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Música"
+					},
+					"Keys": [
+						{
+							"Key": "VolMusic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 272"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesidades más duras y sin reaparición en fogatas."
+					},
+					"Keys": [
+						{
+							"Key": "ModeCastawayDesc",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 52"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ninguno"
+					},
+					"Keys": [
+						{
+							"Key": "CVDNone",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 405"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Nueva partida"
+					},
+					"Keys": [
+						{
+							"Key": "NewGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 54"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Náufrago"
+					},
+					"Keys": [
+						{
+							"Key": "ModeCastaway",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 51"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pantalla"
+					},
+					"Keys": [
+						{
+							"Key": "SectionDisplay",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 205"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pantalla completa"
+					},
+					"Keys": [
+						{
+							"Key": "WindowFullscreen",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 188"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pausa"
+					},
+					"Keys": [
+						{
+							"Key": "Paused",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 39"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pequeño"
+					},
+					"Keys": [
+						{
+							"Key": "TextSmall",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 363"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Postproceso"
+					},
+					"Keys": [
+						{
+							"Key": "PostProcess",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 251"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Protanopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDProtanopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 406"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Próximamente"
+					},
+					"Keys": [
+						{
+							"Key": "JournalTooltip",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 23"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pulsa una tecla..."
+					},
+					"Keys": [
+						{
+							"Key": "PressAnyKey",
+							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 32"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reanudar"
+					},
+					"Keys": [
+						{
+							"Key": "Resume",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 45"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reducir movimiento"
+					},
+					"Keys": [
+						{
+							"Key": "ReduceMotion",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 421"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Reflejos"
+					},
+					"Keys": [
+						{
+							"Key": "Reflections",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 250"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Remapeo de teclas"
+					},
+					"Keys": [
+						{
+							"Key": "SectionRemap",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 332"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Resolución"
+					},
+					"Keys": [
+						{
+							"Key": "Resolution",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 208"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Restaurar valores por defecto"
+					},
+					"Keys": [
+						{
+							"Key": "RestoreDefaults",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 442"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir"
+					},
+					"Keys": [
+						{
+							"Key": "Quit",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 69"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir al menú"
+					},
+					"Keys": [
+						{
+							"Key": "ExitToMenu",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 61"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Salir del juego"
+					},
+					"Keys": [
+						{
+							"Key": "QuitGame",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 66"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Saltar"
+					},
+					"Keys": [
+						{
+							"Key": "ActionJump",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 345"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del mando"
+					},
+					"Keys": [
+						{
+							"Key": "GamepadSensitivity",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 296"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sensibilidad del ratón"
+					},
+					"Keys": [
+						{
+							"Key": "MouseSensitivity",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 286"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sin límite"
+					},
+					"Keys": [
+						{
+							"Key": "Unlimited",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 196"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sombras"
+					},
+					"Keys": [
+						{
+							"Key": "Shadows",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 248"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Subtítulos"
+					},
+					"Keys": [
+						{
+							"Key": "Subtitles",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 382"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Superviviente"
+					},
+					"Keys": [
+						{
+							"Key": "ModeSurvivor",
+							"Path": "Source/Explored/UI/Widgets/SExploredModeSelect.cpp - line 45"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tamaño del texto"
+					},
+					"Keys": [
+						{
+							"Key": "TextSize",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 386"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Texturas"
+					},
+					"Keys": [
+						{
+							"Key": "Textures",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 252"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Todo el arte, sonido y música generados por código"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsArt",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 54"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tritanopía"
+					},
+					"Keys": [
+						{
+							"Key": "CVDTritanopia",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 408"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Un archipiélago que no aparece en ningún mapa"
+					},
+					"Keys": [
+						{
+							"Key": "Subtitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 47"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Un juego de Rodrigo Fernández"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsAuthor",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 49"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "VSync"
+					},
+					"Keys": [
+						{
+							"Key": "VSync",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 222"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vegetación"
+					},
+					"Keys": [
+						{
+							"Key": "Foliage",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 254"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ventana"
+					},
+					"Keys": [
+						{
+							"Key": "WindowWindowed",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 190"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ventana sin bordes"
+					},
+					"Keys": [
+						{
+							"Key": "WindowBorderless",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 189"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Vista"
+					},
+					"Keys": [
+						{
+							"Key": "ViewDistance",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 247"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Volver"
+					},
+					"Keys": [
+						{
+							"Key": "Back",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Épica"
+					},
+					"Keys": [
+						{
+							"Key": "QualityEpic",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 88"
+						}
+					]
+				}
+			]
+		}
+	]
+}

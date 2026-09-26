@@ -9,6 +9,7 @@ Cartography/MapStroke.cpp
 Cooking/CookingModel.cpp
 Cooking/FireModel.cpp
 Core/ExploredNoise.cpp
+Core/ExploredLocalization.cpp
 Core/ExploredRandom.cpp
 Events/WorldEventsModel.cpp
 Farming/FarmModel.cpp

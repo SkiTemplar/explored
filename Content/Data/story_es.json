@@ -2,12 +2,12 @@
   "version": 2,
   "language": "es",
   "map_marks": [
-    {"id": "water", "label": "Agua dulce"},
-    {"id": "cave", "label": "Cueva"},
-    {"id": "danger", "label": "Peligro"},
-    {"id": "resource", "label": "Recurso"},
-    {"id": "ruin", "label": "Ruina"},
-    {"id": "wreck", "label": "Resto del Albatros"}
+    {"id": "water", "label": "Agua dulce", "labelEn": "Fresh water"},
+    {"id": "cave", "label": "Cueva", "labelEn": "Cave"},
+    {"id": "danger", "label": "Peligro", "labelEn": "Danger"},
+    {"id": "resource", "label": "Recurso", "labelEn": "Resource"},
+    {"id": "ruin", "label": "Ruina", "labelEn": "Ruin"},
+    {"id": "wreck", "label": "Resto del Albatros", "labelEn": "Albatros wreckage"}
   ],
   "petroglyph_themes": [
     "Canoa de doble casco bajo una estrella", "Espiral de marea", "Tortuga con siete puntos (las siete islas)",
@@ -18,12 +18,21 @@
     "Nube fija sobre el horizonte", "Ola de oleaje marcada", "Cascada", "Pareja de aves", "Faro (grabado moderno)",
     "Limonero (grabado moderno)", "Sol naciente sobre el mar", "Marae con estatua"
   ],
+  "petroglyph_themes_en": [
+    "Double-hulled canoe beneath a star", "Tidal spiral", "Turtle with seven dots (the seven islands)",
+    "Figure gazing at the sky", "Flying fish", "Whale with calf", "Frigatebird in flight", "Eight-armed star",
+    "Receding wave", "Emerging island", "Open hand", "New moon",
+    "Coconut crab", "Smoking volcano", "Star path", "Fishing basket", "Drum",
+    "Shark and circle", "Three canoes", "Wind-bent palm", "Eye", "Mangrove roots",
+    "Still cloud on the horizon", "Marked ocean swell", "Waterfall", "Pair of birds", "Lighthouse (modern carving)",
+    "Lemon tree (modern carving)", "Sun rising over the sea", "Marae with statue"
+  ],
   "artifact_kinds": [
-    {"id": "hook_bone", "label": "Anzuelo de hueso tallado"},
-    {"id": "shell_ornament", "label": "Adorno de concha"},
-    {"id": "stone_figure", "label": "Figura de piedra"},
-    {"id": "stick_chart", "label": "Carta de navegación de varillas y conchas"},
-    {"id": "tapa_cloth", "label": "Tapa (tela vegetal pintada)"},
-    {"id": "ceremonial_paddle", "label": "Remo ceremonial"}
+    {"id": "hook_bone", "label": "Anzuelo de hueso tallado", "labelEn": "Carved bone fishhook"},
+    {"id": "shell_ornament", "label": "Adorno de concha", "labelEn": "Shell ornament"},
+    {"id": "stone_figure", "label": "Figura de piedra", "labelEn": "Stone figure"},
+    {"id": "stick_chart", "label": "Carta de navegación de varillas y conchas", "labelEn": "Stick-and-shell sailing chart"},
+    {"id": "tapa_cloth", "label": "Tapa (tela vegetal pintada)", "labelEn": "Tapa (painted bark cloth)"},
+    {"id": "ceremonial_paddle", "label": "Remo ceremonial", "labelEn": "Ceremonial paddle"}
   ]
 }

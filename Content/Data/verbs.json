@@ -1,10 +1,10 @@
 [
-	{ "id": "Golpear", "nameEs": "Golpear", "description": "Contundente sobre duro: lascas o cocos abiertos." },
-	{ "id": "Tallar", "nameEs": "Tallar", "description": "Filo sobre madera o hueso: estacas, mangos, cucharas." },
-	{ "id": "Atar", "nameEs": "Atar", "description": "Ata más dos piezas: herramientas compuestas." },
-	{ "id": "Pegar", "nameEs": "Pegar", "description": "Adhesivo más dos piezas: unión más duradera que atar." },
-	{ "id": "Afilar", "nameEs": "Afilar", "description": "Abrasivo sobre filo: recupera filo y durabilidad." },
-	{ "id": "Trenzar", "nameEs": "Trenzar", "description": "Fibroso combinado: cordel, cuerda, cesta." },
-	{ "id": "Machacar", "nameEs": "Machacar", "description": "Contundente sobre blando: pasta, fibra, pigmento." },
-	{ "id": "Raspar", "nameEs": "Raspar", "description": "Filo sobre piel o corteza: cuero en bruto, fibra." }
+	{ "id": "Golpear", "nameEs": "Golpear", "nameEn": "Strike", "description": "Contundente sobre duro: lascas o cocos abiertos.", "descriptionEn": "Blunt on hard: flakes or cracked coconuts." },
+	{ "id": "Tallar", "nameEs": "Tallar", "nameEn": "Carve", "description": "Filo sobre madera o hueso: estacas, mangos, cucharas.", "descriptionEn": "Edge on wood or bone: stakes, handles, spoons." },
+	{ "id": "Atar", "nameEs": "Atar", "nameEn": "Lash", "description": "Ata más dos piezas: herramientas compuestas.", "descriptionEn": "Binding plus two pieces: composite tools." },
+	{ "id": "Pegar", "nameEs": "Pegar", "nameEn": "Glue", "description": "Adhesivo más dos piezas: unión más duradera que atar.", "descriptionEn": "Glue plus two pieces: a sturdier join than lashing." },
+	{ "id": "Afilar", "nameEs": "Afilar", "nameEn": "Sharpen", "description": "Abrasivo sobre filo: recupera filo y durabilidad.", "descriptionEn": "Abrasive on an edge: restores sharpness and durability." },
+	{ "id": "Trenzar", "nameEs": "Trenzar", "nameEn": "Braid", "description": "Fibroso combinado: cordel, cuerda, cesta.", "descriptionEn": "Fibres combined: twine, rope, basket." },
+	{ "id": "Machacar", "nameEs": "Machacar", "nameEn": "Crush", "description": "Contundente sobre blando: pasta, fibra, pigmento.", "descriptionEn": "Blunt on soft: paste, fibre, pigment." },
+	{ "id": "Raspar", "nameEs": "Raspar", "nameEn": "Scrape", "description": "Filo sobre piel o corteza: cuero en bruto, fibra.", "descriptionEn": "Edge on hide or bark: rawhide, fibre." }
 ]

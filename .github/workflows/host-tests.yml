@@ -16,6 +16,18 @@ jobs:
       - name: Tests de modelos puros con ASan/UBSan
         run: HOST_TESTS_SANITIZE=ON Tools/HostTests/run.sh
 
+  localization:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Tests de la herramienta de localización
+        working-directory: Tools/Localization
+        run: uv run pytest -q
+      - name: Catálogo ES/EN completo y ficheros de Unreal al día
+        working-directory: Tools/Localization
+        run: uv run l10n export --check --quiet
+
   textures:
     runs-on: ubuntu-24.04
     steps:
