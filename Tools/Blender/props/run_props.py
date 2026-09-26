@@ -56,6 +56,7 @@ MODULE_GROUPS = [
     # KitMadera, KitPiedra), que cada variante declara en su clave 'group'.
     ('kit_construccion', 'KitConstruccion'),
     ('mobiliario_base', 'MobiliarioBase'),
+    ('ruinas_polinesias', 'Ruinas'),  # grupos RuinasMarae / RuinasTallas por variante
 ]
 
 

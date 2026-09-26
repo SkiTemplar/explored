@@ -83,6 +83,8 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'KitMadera':       (40.0, 450.0),
     'KitPiedra':       (40.0, 450.0),
     'MobiliarioBase':  (60.0, 450.0),    # vitrina ~1 m .. muelle 4 m
+    'RuinasMarae':     (80.0, 900.0),    # enlosado 2 m .. marae grande ~8,5 m
+    'RuinasTallas':    (80.0, 700.0),    # losa grabada 1,4 m .. canoa doble 6,5 m
 }
 
 

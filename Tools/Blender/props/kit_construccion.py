@@ -135,6 +135,9 @@ BEVEL = {
     'slab': (0.018, 2, 35.0),
     'shingle': (0.01, 1, 35.0),
     'soft': (0.02, 2, 35.0),
+    # sillares grandes de ruina: bisel ancho de un solo segmento (el
+    # redondeo lo pone el sombreado suave; 2 segmentos disparaban el marae)
+    'block': (0.03, 1, 35.0),
     # piezas orgánicas o diminutas (blobs, brotes): sin bisel
     'none': None,
 }
@@ -196,6 +199,7 @@ class Parts:
                 S.bevel_obj(obj, width=w, segments=seg, limit_angle_deg=ang)
             joined.append(obj)
         obj = C.join_objects(joined, name) if len(joined) > 1 else joined[0]
+        obj.name = name
         C.shade_smooth_auto(obj, angle_deg=35.0)
         C.add_basic_uv(obj)
         return obj

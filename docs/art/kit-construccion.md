@@ -96,3 +96,52 @@ paleta son **lineales**: un 0,8 lineal ya se ve casi blanco en el render.
 
 `validate.py` comprueba presupuesto, geometría degenerada, color de vértice «Col»
 y materiales estables (48/48 en verde a 2026-09-26).
+
+## Mobiliario de base (`mobiliario_base.py`, grupo `MobiliarioBase`)
+
+Lámina: `docs/art/modelos/mobiliario-base.png`. Reutiliza primitivas, paletas y
+biseles del kit. Pivote en la base.
+
+| Malla | Medidas aprox. | Notas |
+|---|---|---|
+| `SM_Base_Bed` | 2,0 × 1,0 m | Cabecero de cañas, colchón de hoja, tapa a rayas |
+| `SM_Base_Workbench` | 1,6 × 0,8 × 0,9 m | Balda con leña, mazo de piedra, cuenco |
+| `SM_Base_DisplayShelf` | 1,9 × 0,48 × 2,1 m | 3 × 4 huecos para tesoros (museo) |
+| `SM_Base_DisplayCase` | 1,0 × 0,6 × 1,3 m | Urna de cristal del Albatros (`M_Glass`) |
+| `SM_Base_RainCollector` | Ø 1,4 × 1,8 m | Barril de duelas, embudo de palma, grifo de caña |
+| `SM_Base_DryingRack` | 2,3 × 1,4 × 1,7 m | Caballetes en A con pescado abierto |
+| `SM_Base_Smokehouse` | 2,7 × 2,7 × 2,8 m | Paredes de palma del kit (escaladas), fogón, respiradero |
+| `SM_Base_Dock` / `_DockEnd` | 2 × 4 m | Cubierta a **+2,0 m** sobre el pivote (fondo); se encadena en Y |
+| `SM_Base_GardenPlot_Logs` / `_Stones` | 2 × 2 m | Encaja en una celda de la rejilla |
+
+## Ruinas polinesias (`ruinas_polinesias.py`, grupos `RuinasMarae` y `RuinasTallas`)
+
+Láminas: `docs/art/modelos/ruinas-marae.png`, `docs/art/modelos/ruinas-tallas.png`.
+Basalto cálido oscuro con musgo en las caras que miran arriba y manchas de
+liquen (amarillo y naranja); las estatuas en toba rojiza.
+
+Módulo del yacimiento (para montar marae de cualquier tamaño con piezas):
+
+| Cota | Valor |
+|---|---|
+| Tramo de terraza | 2 m de ancho (en X), se encadena |
+| Escalón `TIER_H` | 0,45 m (el segundo apoya 2 cm más bajo para no dejar rendija) |
+| Retranqueo `TIER_INSET` | 0,8 m |
+| Escalinata | 1,6 m de ancho, 2 peldaños, sube un escalón (0,45 m) en 0,7 m |
+| Enlosado | 2 × 2 m, se encadena en X/Y |
+| Muro de piedra seca | 2 m × 1 m + albardilla, talud 0,75 → 0,5 m; esquina en L |
+
+Estatuas: diseño **propio** del pueblo navegante (no moai ni tiki): cuerpo
+rechoncho, cabeza ancha de ojos redondos que mira al cielo, diadema de olas,
+orejas pequeñas y manos con un disco estelar de 8 puntas.
+
+| Malla | Notas |
+|---|---|
+| `Ruin_Marae_Small` / `_Large` | 2 y 3 escalones, enlosado arriba, piedras erguidas; el grande con escalinata |
+| `Ruin_Marae_TerraceStraight` / `_TerraceCorner` / `_Paving` / `_Steps` | Piezas modulares |
+| `Ruin_DryWall_Straight` / `_Ruined` / `_Corner` | Muro de piedra seca |
+| `Ruin_StandingStone_A/B/C` | 1,5 / 2,3 / 3,1 m con calzos |
+| `Ruin_Statue_Navigator` / `_Seated` / `_HeadFallen` | 2,5 m / 1,8 m / cabeza caída semienterrada |
+| `Ruin_Petroglyph_Honu/Canoe/Star/Bird` | Losa de 1,4 m con relieve hundido real (malla densa) |
+| `Ruin_Canoe_DoubleWreck` | Canoa doble de 6,5 m, un casco partido, dunas; recortada bajo z = 0 |
+| `Ruin_Altar_Table` / `_OfferingStone` | Mesa sobre dos piedras con ofrendas / piedra de cazoletas |

@@ -72,28 +72,39 @@ def _look_at(obj, target):
 
 def _frame(cam, loc, target, objs, margin=0.04):
     """Acerca la cámara por su dirección de vista (fija, 3/4) hasta la
-    distancia MÍNIMA en que todas las cajas de `objs` caben en el encuadre:
-    lo más cerca posible sin cortar piezas en los bordes."""
+    distancia MÍNIMA en que todas las cajas de `objs` caben en el encuadre,
+    y centra el contenido con el desplazamiento de lente (shift): lo más
+    cerca posible sin cortar piezas y sin dejar medio encuadre de arena."""
     from bpy_extras.object_utils import world_to_camera_view
     scene = bpy.context.scene
     corners = [o.matrix_world @ Vector(c) for o in objs for c in o.bound_box]
     center = sum(corners, Vector()) / len(corners)
     target = Vector((center.x, center.y, target.z))
     direction = (loc - target).normalized()
-    dist = 2.0
-    while dist < 400.0:
-        cam.location = target + direction * dist
-        _look_at(cam, target)
-        bpy.context.view_layer.update()
-        ok = True
+    aspect = scene.render.resolution_y / scene.render.resolution_x
+
+    def fits():
         for c in corners:
-            p = world_to_camera_view(scene, cam, c)
-            if not (margin <= p.x <= 1 - margin and margin <= p.y <= 1 - margin and p.z > 0):
-                ok = False
+            q = world_to_camera_view(scene, cam, c)
+            if not (margin <= q.x <= 1 - margin and margin <= q.y <= 1 - margin and q.z > 0):
+                return False
+        return True
+
+    for _ in range(3):
+        dist = 2.0
+        while dist < 400.0:
+            cam.location = target + direction * dist
+            _look_at(cam, target)
+            bpy.context.view_layer.update()
+            if fits():
                 break
-        if ok:
-            return
-        dist *= 1.03
+            dist *= 1.02
+        qs = [world_to_camera_view(scene, cam, c) for c in corners]
+        cx = (min(q.x for q in qs) + max(q.x for q in qs)) / 2
+        cy = (min(q.y for q in qs) + max(q.y for q in qs)) / 2
+        cam.data.shift_x += (cx - 0.5)
+        cam.data.shift_y += (cy - 0.5) * aspect
+        bpy.context.view_layer.update()
 
 
 def _stage(extent_x, extent_y, center, cam_loc, cam_target, fov_deg, out_path, samples, res):
@@ -230,13 +241,13 @@ def montage(mats, samples, res):
     _stage(w + 16, 26, (0, 0), (-w * 0.28, -w * 0.78, w * 0.3), (0.0, 0.0, 1.6), 42, out, samples, res)
 
 
-def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2):
+def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None):
     """Lámina a escala real de todas las variantes de un módulo de props,
     en rejilla cuyas columnas/filas se dimensionan por las cajas reales."""
     import importlib
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mod = importlib.import_module(mod_name)
-    objs = [mod.build(v) for v in mod.VARIANTS]
+    objs = [mod.build(v) for v in mod.VARIANTS if group is None or v.get('group') == group]
     bpy.context.view_layer.update()
     dims = [(_bounds(o)[1] - _bounds(o)[0], _bounds(o)[3] - _bounds(o)[2]) for o in objs]
     rows = math.ceil(len(objs) / cols)
@@ -251,8 +262,7 @@ def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2):
         x0, x1, y0, y1, z0, _ = _bounds(o)
         o.location = (cx - (x0 + x1) / 2, cy - (y0 + y1) / 2, -z0)
     out = os.path.join(OUT_DIR, f'{slug}.png')
-    _stage(total_w + 20, total_d + 20, (0, 0), (-0.45 * total_w, -1.3 * total_d, 0.9 * total_d), (0, 0, 0.3), 40,
-           out, samples, res)
+    _stage(total_w + 30, total_d + 30, (0, 0), (-8.0, -20.0, 15.0), (0, 0, 0.3), 40, out, samples, res)
 
 
 def main():
@@ -266,7 +276,7 @@ def main():
     if o['mode'] in ('all', 'montage'):
         montage(mats, samples, o['res'])
     if o['mode'] == 'module':
-        module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')))
+        module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')), group=o.get('group'))
 
 
 if __name__ == '__main__':
