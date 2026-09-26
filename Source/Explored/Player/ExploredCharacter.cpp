@@ -122,6 +122,12 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 	const EWaterState WaterState = Swim ? Swim->GetWaterState() : EWaterState::OnLand;
 	if (WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving)
 	{
+		// Con angarillas no se nada: se quedan en la orilla con su carga.
+		if (Carry && Carry->HasSledge())
+		{
+			Carry->HandleEnterWater();
+		}
+
 		// Brazadas: la fase la lleva USwimComponent (avanza con la velocidad de nado);
 		// aquí solo se traduce en el vaivén de las manos, mucho más amplio que al andar.
 		const float Phase = Swim->GetStrokePhase() * UE_TWO_PI;
@@ -163,6 +169,9 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 
 void AExploredCharacter::RefreshHandMeshes()
 {
+	// Cualquier cambio de carga puede cambiar el peso y, con él, la velocidad.
+	ApplyWalkSpeed();
+
 	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
 	if (!Registry || !Carry)
 	{
@@ -302,12 +311,22 @@ void AExploredCharacter::HandleLook(const FInputActionValue& Value)
 
 void AExploredCharacter::HandleSprintStarted(const FInputActionValue&)
 {
-	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	bSprintHeld = true;
+	ApplyWalkSpeed();
 }
 
 void AExploredCharacter::HandleSprintCompleted(const FInputActionValue&)
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	bSprintHeld = false;
+	ApplyWalkSpeed();
+}
+
+void AExploredCharacter::ApplyWalkSpeed()
+{
+	// La carga frena: sobrepeso y angarillas (FInventoryModel::GetMoveSpeedMultiplier).
+	const float Base = bSprintHeld ? SprintSpeed : WalkSpeed;
+	const float Multiplier = Carry ? Carry->GetMoveSpeedMultiplier() : 1.0f;
+	GetCharacterMovement()->MaxWalkSpeed = Base * Multiplier;
 }
 
 void AExploredCharacter::HandleToggleFly(const FInputActionValue&)
