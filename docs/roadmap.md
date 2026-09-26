@@ -29,22 +29,22 @@ Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI 
 | Ocean | host ✅ | ✅ | — | Flotabilidad de barcos (P-BOATS) |
 | Sky / Luna / eventos | host ✅ `FMoonModel`, `FWorldEventsModel` | UE ⚠ `UWorldEventsSubsystem` | #7 | Enganchar océano (bioluminiscencia, bajamar extrema), `M_Stars`, erupción, hoguera de señal, obsidiana |
 | Weather | host ✅ | ✅ | — | Categoría de ciclón en el modelo (la usa construcción) |
-| Survival / cuerpo | host ✅ | parcial | — | P-BODY en curso |
+| Survival / cuerpo | host ✅ `FSurvivalModel`, `FBodyModel`, `FBodySignalsModel` | UE ⚠ `UBodySignalsComponent`, reloj | integración | Material `M_PP_Body` en `build_materials.py`; muerte y reaparición; calor del fuego, sombrero y sueño como entradas |
 | Nado | host ✅ `FSwimModel` | UE ⚠ | #6 | Ajustar umbrales en PIE |
-| Interaction / Carry / Crafting | parcial | ✅ | — | P-CARRY en curso (retirar materiales, brújula y funda seca) |
+| Interaction / Carry / Crafting | host ✅ `FInventoryModel` | UE ⚠ contenedores, angarillas | integración | Plantillas de fabricación para mochilas, cinturón y angarillas; vista 3D de la mochila |
 | Building | host ✅ `FBuildingModel` | UE ⚠ subsistema, pieza, vista previa | #11 | Consumir materiales (P-CARRY), importar mallas del kit, piezas de ventana/barandilla/hastial |
 | Farming | host ✅ `FFarmModel` | UE ⚠ `UFarmSubsystem`, `AExploredPlantActor` | #8 | Objeto de compost, gasto de agua al regar, parcelas desde construcción |
 | Cooking / fuego | host ✅ `FFireModel`, `FCookingModel` | UE ⚠ `AExploredFire` | #13 | Frescura en el inventario, calor → supervivencia, reaparición → GameMode |
 | Cartography | host ✅ `FCartographyModel` | UE ⚠ componente + `SExploredMapSheet` | #9 | Mapa en las manos, mirador → boceto, Los Dientes por islote |
 | Ruins / museo | host ✅ `FRuinsModel`, `FMuseumModel` | UE ⚠ subsistema + expositor | #12 | Actores de estatua/altar/canoa, `Notify*` desde la interacción, piezas de museo |
-| Boats | — | — | — | P-BOATS en curso |
-| Fauna | gait | — | — | P-FAUNA en curso |
-| Fishing | — | — | — | P-FISH en curso |
+| Boats | host ✅ `FBoatModel` | UE ⚠ `AExploredBoat` | integración | Malla del «Limón» y del astillero; marea en `AExploredOcean`; dirección del viento en el clima |
+| Fauna | host ✅ boids, cerebro marino, aparición, LOD | UE ⚠ gestor + criaturas | integración | Importar mallas de fauna y materiales animados por shader; daño → supervivencia |
+| Fishing | host ✅ `FFishingModel`, tensión | UE ⚠ componente, trampas | integración | Aparejos como objetos; zonas de pesca legendaria; máscara de arrecife desde WorldGen |
 | Save | host ✅ formato, ranuras, deltas | UE ⚠ `UExploredSaveSubsystem` | #14 | Registrar las secciones de cada sistema (P-WIRE) |
 | Achievements | host ✅ `FAchievementsModel` | UE ⚠ subsistema + aviso | #10 | Que los sistemas reporten estadísticas (P-WIRE), pantalla de logros |
-| Audio / música | — | parcial | — | P-MUSIC en curso |
-| UI / frontend | host ✅ `SettingsLogic` | UE ⚠ H6, H7, M8, M11–M16 | integración | Pantallas de mapa y museo, entrada «Logros» |
-| Localización | — | — | — | P-L10N en curso |
+| Audio / música | host ✅ `FMusicDirectorModel`, flauta | UE ⚠ `UExploredMusicSubsystem`, M5 | integración | Re-renderizar audio (`sfx_flute_note`); `NotifyDiscovery`/`SetDanger` desde los sistemas |
+| UI / frontend | host ✅ `SettingsLogic` | UE ⚠ H6, H7, M8, M11–M16 | #17 | Pantallas de mapa y museo, entrada «Logros» |
+| Localización | host ✅ selector ES/EN | catálogo + archivos de Unreal | integración | Compilar `.locres` en el editor; nombres de objetos por cultura en el registro |
 
 ## Paquetes de trabajo
 
@@ -60,15 +60,15 @@ Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI 
 | P-RUINS | Ruinas, wayfinding, tesoros, museo | hecho, sin compilar (#12) |
 | P-COOK | Fuego, cocina, conservación | hecho, sin compilar (#13) |
 | P-SAVE | Formato, ranuras, deltas | hecho, sin compilar (#14) |
-| P-UI | Arreglos de la revisión (H6, H7, M8, M11–M16, L3, L5, L6, L8) | hecho, sin compilar (rama `nube/ui-2026-09-26`, en la integración) |
-| P-INT | Rama de integración con todo lo anterior fusionado y resuelto | en curso (`nube/integracion-2026-09-26`) |
-| P-BOATS | Balsa → canoa → balancín → «Limón» | en curso |
-| P-FAUNA | Boids, fauna marina, percepción | en curso |
-| P-FISH | Pesca con tensión, nasas, pozas | en curso |
-| P-CARRY | Cinturón, bolsillos, mochila, contenedores, angarillas | en curso |
-| P-BODY | Heridas, escorbuto, nutrición, señales corporales | en curso |
-| P-MUSIC | Director de música adaptativa, flauta | en curso |
-| P-L10N | Catálogo ES/EN y exportación a Unreal | en curso |
+| P-UI | Arreglos de la revisión (H6, H7, M8, M11–M16, L3, L5, L6, L8) | hecho, sin compilar (#17) |
+| P-INT | Rama de integración con todo fusionado y resuelto | hecho (#17) |
+| P-BOATS | Balsa → canoa → balancín → «Limón» | hecho, sin compilar (#17) |
+| P-FAUNA | Boids, fauna marina, percepción | hecho, sin compilar (#17) |
+| P-FISH | Pesca con tensión, nasas, pozas | hecho, sin compilar (#17) |
+| P-CARRY | Cinturón, bolsillos, mochila, contenedores, angarillas | hecho, sin compilar (#17) |
+| P-BODY | Heridas, escorbuto, nutrición, señales corporales | hecho, sin compilar (#17) |
+| P-MUSIC | Director de música adaptativa, flauta | hecho, sin compilar (#17) |
+| P-L10N | Catálogo ES/EN y exportación a Unreal | hecho (#17) |
 | P-WIRE | Conectar sistemas entre sí: secciones de guardado, estadísticas de logros, interacción con ruinas/mirador, calor del fuego → supervivencia, consumo de materiales | pendiente |
 | P-UI2 | Pantallas: mapa en las manos, museo, logros, selector de ranura | pendiente |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |
