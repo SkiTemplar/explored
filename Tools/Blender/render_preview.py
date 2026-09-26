@@ -63,8 +63,7 @@ ROW_SIZE_AXIS = {
     'palm': 'z', 'tree': 'z', 'shrub': 'z', 'grass': 'z',
     'rock': 'max', 'debris': 'max',
 }
-ROW_DEPTH = 7.0           # separación en Y entre filas (holgada: la fila del
-                          # árbol es ancha y no debe invadir la siguiente)
+ROW_DEPTH = 3.3           # separación en Y entre filas
 ITEM_MARGIN = 0.5         # separación horizontal entre mallas de una misma fila
 
 
@@ -121,8 +120,6 @@ def main():
         by_category.setdefault(entry['category'], []).append(entry)
 
     max_row_width = 0.0
-    n_rows = len(ROW_ORDER)
-
     row_ys = []
     for row_i, cat in enumerate(ROW_ORDER):
         entries = by_category.get(cat, [])
@@ -178,7 +175,7 @@ def main():
     bpy.ops.mesh.primitive_plane_add(size=1.0)
     ground = bpy.context.object
     ground.name = 'Ground'
-    ground.scale = (max_row_width * 0.75 + 3.0, total_depth * 0.75 + 3.0, 1.0)
+    ground.scale = (max_row_width * 0.85 + 4.0, total_depth * 1.15 + 8.0, 1.0)
     ground.location = (center_x, center_y, 0.0)
     mat = bpy.data.materials.new('M_Ground')
     mat.use_nodes = True
@@ -209,18 +206,23 @@ def main():
     bg.inputs['Strength'].default_value = 0.18
 
     # --- cámara: vista 3/4 elevada que abarca toda la rejilla de filas ---
-    fov = math.radians(48.0)
+    # La distancia se dimensiona por el ANCHO (lo que de verdad ocupa
+    # pantalla en una vista en perspectiva); la profundidad total ya la
+    # absorbe la perspectiva + el ángulo de elevación, así que solo suma un
+    # margen pequeño en vez de escalar 1:1 con total_depth (eso fue lo que
+    # dejó la primera versión de esta lámina demasiado alejada y diminuta).
+    fov = math.radians(50.0)
     aspect = 1600.0 / 900.0
-    dist_for_width = (max_row_width / 2.0 + 1.0) / math.tan(fov / 2.0) / aspect
-    dist_for_depth = (total_depth + max_target_height * 2.0)
-    distance = max(dist_for_width, dist_for_depth, 8.0)
+    dist_for_width = (max_row_width / 2.0 + 0.6) / math.tan(fov / 2.0) / aspect
+    distance = max(dist_for_width * 1.5, 18.0) + total_depth * 0.15
 
-    cam_z = max_target_height * 1.4
-    bpy.ops.object.camera_add(location=(center_x, -distance * 0.55, cam_z))
+    cam_z = max_target_height * 0.75
+    look_y = center_y * 0.62  # sesga la mirada hacia las filas delanteras
+    bpy.ops.object.camera_add(location=(center_x, -distance * 0.5, cam_z))
     cam = bpy.context.object
     cam.data.lens_unit = 'FOV'
     cam.data.angle = fov
-    _point_camera(cam, Vector((center_x, center_y, max_target_height * 0.3)))
+    _point_camera(cam, Vector((center_x, look_y, max_target_height * 0.25)))
     scene.camera = cam
 
     # --- render ---

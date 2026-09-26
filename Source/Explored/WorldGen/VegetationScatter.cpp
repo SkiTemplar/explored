@@ -54,19 +54,82 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.LeanTowardsSea = 14.0f;
 		Rules.Add(R);
 	}
-	// Árboles de selva: interior de las islas verdes.
+	// Gigantes del dosel: pocos y dispersos, sobre todo en Esmeralda.
 	{
-		FScatterRule R = MakeRule(TEXT("JungleTree"), TEXT("tree"), TEXT(""),
-			{{E::Emerald, 1.0f}, {E::Landing, 0.55f}, {E::Mangrove, 0.7f}, {E::Mesa, 0.35f}, {E::Smoke, 0.25f}, {E::Teeth, 0.15f}});
+		FScatterRule R = MakeRule(TEXT("JungleGiant"), TEXT("tree"), TEXT("Giant"),
+			{{E::Emerald, 1.0f}, {E::Landing, 0.35f}, {E::Mesa, 0.25f}});
+		R.MinHeight = 8.0f;
+		R.MaxHeight = 170.0f;
+		R.MinNormalZ = 0.8f;
+		R.Spacing = 34.0f;
+		R.ClusterScale = 160.0f;
+		R.ClusterThreshold = -0.2f;
+		R.MinScale = 0.8f;
+		R.MaxScale = 1.15f;
+		R.Sink = 0.8f;
+		Rules.Add(R);
+	}
+	// Árboles de copa ancha: el grueso de la selva.
+	{
+		FScatterRule R = MakeRule(TEXT("JungleWide"), TEXT("tree"), TEXT("Wide"),
+			{{E::Emerald, 1.0f}, {E::Landing, 0.6f}, {E::Mesa, 0.4f}, {E::Smoke, 0.3f}, {E::Teeth, 0.15f}});
 		R.MinHeight = 4.0f;
-		R.MaxHeight = 190.0f;
+		R.MaxHeight = 200.0f;
 		R.MinNormalZ = 0.72f;
-		R.Spacing = 9.0f;
+		R.Spacing = 12.0f;
 		R.ClusterScale = 90.0f;
 		R.ClusterThreshold = -0.35f;
 		R.MinScale = 0.75f;
-		R.MaxScale = 1.3f;
+		R.MaxScale = 1.25f;
 		R.Sink = 0.6f;
+		Rules.Add(R);
+	}
+	// Manglar: en la orilla y los canales del Manglar de las Voces.
+	{
+		FScatterRule R = MakeRule(TEXT("Mangrove"), TEXT("tree"), TEXT("Mangrove"),
+			{{E::Mangrove, 1.0f}, {E::WhiteSands, 0.08f}, {E::Landing, 0.05f}});
+		R.MinHeight = -0.6f;
+		R.MaxHeight = 5.0f;
+		R.MinNormalZ = 0.8f;
+		R.Spacing = 9.0f;
+		R.ClusterScale = 50.0f;
+		R.ClusterThreshold = -0.4f;
+		R.MinScale = 0.8f;
+		R.MaxScale = 1.3f;
+		R.Sink = 0.2f;
+		Rules.Add(R);
+	}
+	// Árboles de sotobosque: rellenan bajo el dosel.
+	{
+		FScatterRule R = MakeRule(TEXT("Understory"), TEXT("tree"), TEXT("Understory"),
+			{{E::Emerald, 1.0f}, {E::Landing, 0.7f}, {E::Mangrove, 0.35f}, {E::Mesa, 0.3f}});
+		R.MinHeight = 3.0f;
+		R.MaxHeight = 160.0f;
+		R.MinNormalZ = 0.7f;
+		R.Spacing = 7.0f;
+		R.ClusterScale = 60.0f;
+		R.ClusterThreshold = -0.25f;
+		R.MinScale = 0.8f;
+		R.MaxScale = 1.25f;
+		R.Sink = 0.3f;
+		R.CullDistance = 450.0f;
+		Rules.Add(R);
+	}
+	// Restos por el suelo: troncos caídos, tocones, ramas y cocos.
+	{
+		FScatterRule R = MakeRule(TEXT("Debris"), TEXT("debris"), TEXT(""),
+			{{E::Emerald, 1.0f}, {E::Landing, 0.9f}, {E::Mangrove, 0.6f}, {E::Mesa, 0.5f}, {E::WhiteSands, 0.5f}, {E::Smoke, 0.3f}});
+		R.MinHeight = 1.2f;
+		R.MaxHeight = 180.0f;
+		R.MinNormalZ = 0.8f;
+		R.Spacing = 16.0f;
+		R.ClusterScale = 40.0f;
+		R.ClusterThreshold = -0.3f;
+		R.MinScale = 0.8f;
+		R.MaxScale = 1.2f;
+		R.AlignToNormal = 0.9f;
+		R.Sink = 0.1f;
+		R.CullDistance = 250.0f;
 		Rules.Add(R);
 	}
 	// Sotobosque: helechos, arbustos y hojas grandes, muy denso en la selva.

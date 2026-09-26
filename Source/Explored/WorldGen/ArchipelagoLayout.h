@@ -35,6 +35,8 @@ struct EXPLORED_API FIslandDesc
 /** Disposición completa del archipiélago. */
 struct EXPLORED_API FArchipelagoLayout
 {
+	/** Semilla del archipiélago publicado. */
+	static constexpr uint32 OfficialSeed = 20260926;
 	static constexpr float WorldHalfExtent = 3000.0f;
 	static constexpr float SeaLevel = 0.0f;
 	static constexpr float OceanFloor = -70.0f;

@@ -15,7 +15,6 @@ namespace
 	constexpr int32 NumLayers = static_cast<int32>(EAmbienceLayer::Count);
 	constexpr float SampleInterval = 0.4f;
 	constexpr float FadeSpeed = 0.6f; // unidades de volumen por segundo
-	constexpr uint32 WorldSeed = 20260926;
 
 	const TCHAR* LayerAssets[NumLayers] = {
 		TEXT("/Game/Generated/Audio/Ambiente/amb_ocean_calm.amb_ocean_calm"),
@@ -69,7 +68,7 @@ bool UExploredAmbienceSubsystem::DoesSupportWorldType(const EWorldType::Type Wor
 void UExploredAmbienceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	Density = MakeShared<FTerrainDensity>(FArchipelagoLayout::Generate(WorldSeed));
+	Density = MakeShared<FTerrainDensity>(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 
 	CurrentVolumes.Init(0.0f, NumLayers);
 	TargetVolumes.Init(0.0f, NumLayers);

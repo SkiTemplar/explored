@@ -20,7 +20,6 @@
 
 namespace
 {
-	constexpr uint32 WorldSeed = 20260926;
 	/** Segundos de espera en cada vista para que Lumen y la exposición converjan. */
 	constexpr float SettleSeconds = 4.0f;
 	/** Espera inicial tras terminar los shaders (streaming de Nanite y distance fields). */
@@ -59,7 +58,7 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 void UExploredShotSubsystem::BuildShotList(const FString& Set)
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(WorldSeed));
+	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 	const bool bAll = Set == TEXT("all");
 
 	if (bAll || Set == TEXT("spawn"))

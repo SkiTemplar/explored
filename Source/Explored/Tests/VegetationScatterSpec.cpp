@@ -49,9 +49,9 @@ void FVegetationScatterSpec::Define()
 		const FScatterResult Result = FVegetationScatter::Generate(*Density, Rules, Region, 7);
 		for (int32 R = 0; R < Rules.Num(); ++R)
 		{
-			if (Rules[R].Species == TEXT("JungleTree"))
+			if (Rules[R].Species == TEXT("JungleWide"))
 			{
-				TestTrue(TEXT("Árboles"), Result.PerRule[R].Num() > 50);
+				TestTrue(TEXT("Árboles"), Result.PerRule[R].Num() > 30);
 			}
 			if (Rules[R].Species == TEXT("Shrub"))
 			{

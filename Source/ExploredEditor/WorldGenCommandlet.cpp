@@ -33,7 +33,7 @@
 
 namespace
 {
-	constexpr uint32 DefaultSeed = 20260926;
+	constexpr uint32 DefaultSeed = FArchipelagoLayout::OfficialSeed;
 	const TCHAR* TerrainFolder = TEXT("/Game/World/Terrain");
 	const TCHAR* MapPath = TEXT("/Game/Maps/Archipelago");
 	const TCHAR* TerrainMaterialPath = TEXT("/Game/Materials/M_Terrain.M_Terrain");
