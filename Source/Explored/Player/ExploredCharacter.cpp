@@ -14,6 +14,7 @@
 
 #include "Carry/CarryComponent.h"
 #include "Crafting/CraftingLibrary.h"
+#include "Fishing/FishingComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -84,6 +85,7 @@ AExploredCharacter::AExploredCharacter()
 	Carry = CreateDefaultSubobject<UCarryComponent>(TEXT("Carry"));
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
+	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
 
 	bUseControllerRotationYaw = true;
 
@@ -247,6 +249,15 @@ void AExploredCharacter::BuildInputAssets()
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Tab);
 	// Bucear: mantener para bajar; soltar deja que el pulmón empuje de vuelta a la superficie.
 	MapKey(MappingContext, DiveAction, EKeys::LeftControl);
+
+	// Pesca (GDD §8.9): F lanza o recoge; R recoge sedal y T lo suelta en la pelea.
+	FishAction = MakeAction(this, TEXT("IA_Fish"), EInputActionValueType::Boolean);
+	ReelAction = MakeAction(this, TEXT("IA_Reel"), EInputActionValueType::Axis1D);
+	MapKey(MappingContext, FishAction, EKeys::F);
+	MapKey(MappingContext, ReelAction, EKeys::R);
+	MapKey(MappingContext, ReelAction, EKeys::T, true);
+	MapKey(MappingContext, ReelAction, EKeys::Gamepad_RightTriggerAxis);
+	MapKey(MappingContext, ReelAction, EKeys::Gamepad_LeftTriggerAxis, true);
 }
 
 void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -272,6 +283,9 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
 	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
 	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
+	Input->BindAction(FishAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleFish);
+	Input->BindAction(ReelAction, ETriggerEvent::Triggered, this, &AExploredCharacter::HandleReel);
+	Input->BindAction(ReelAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleReelCompleted);
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -454,5 +468,37 @@ void AExploredCharacter::HandleDiveCompleted(const FInputActionValue&)
 	if (Swim)
 	{
 		Swim->SetDiveHeld(false);
+	}
+}
+
+void AExploredCharacter::HandleFish(const FInputActionValue&)
+{
+	if (!Fishing)
+	{
+		return;
+	}
+	if (Fishing->GetSessionState() == EFishingSessionState::Idle)
+	{
+		Fishing->StartCast();
+	}
+	else
+	{
+		Fishing->Cancel();
+	}
+}
+
+void AExploredCharacter::HandleReel(const FInputActionValue& Value)
+{
+	if (Fishing)
+	{
+		Fishing->SetReelInput(Value.Get<float>());
+	}
+}
+
+void AExploredCharacter::HandleReelCompleted(const FInputActionValue&)
+{
+	if (Fishing)
+	{
+		Fishing->SetReelInput(0.0f);
 	}
 }

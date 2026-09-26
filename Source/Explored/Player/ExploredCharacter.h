@@ -9,6 +9,7 @@
 
 class UCameraComponent;
 class UCarryComponent;
+class UFishingComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
@@ -44,6 +45,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
 	USwimComponent* GetSwimComponent() const { return Swim; }
 
+	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
+	UFishingComponent* GetFishingComponent() const { return Fishing; }
+
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
 
@@ -72,6 +76,9 @@ private:
 	void HandleToggleBackpack(const FInputActionValue& Value);
 	void HandleDiveStarted(const FInputActionValue& Value);
 	void HandleDiveCompleted(const FInputActionValue& Value);
+	void HandleFish(const FInputActionValue& Value);
+	void HandleReel(const FInputActionValue& Value);
+	void HandleReelCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 
@@ -96,6 +103,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
 	TObjectPtr<USwimComponent> Swim;
+
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Pesca")
+	TObjectPtr<UFishingComponent> Fishing;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -138,6 +148,12 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> DiveAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> FishAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> ReelAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;

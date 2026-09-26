@@ -2,6 +2,7 @@
 
 #include "Carry/CarryComponent.h"
 #include "Engine/Canvas.h"
+#include "Fishing/FishingComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -28,6 +29,7 @@ void AExploredHUD::DrawHUD()
 	{
 		DrawContextPrompt(*Character);
 		DrawHandLabels(*Character);
+		DrawFishing(*Character);
 	}
 }
 
@@ -95,4 +97,37 @@ void AExploredHUD::DrawHandLabels(const AExploredCharacter& Character)
 		GetTextSize(Text, TextWidth, TextHeight);
 		DrawText(Text, FLinearColor::White, Canvas->SizeX - Margin - TextWidth, Bottom);
 	}
+}
+
+void AExploredHUD::DrawFishing(const AExploredCharacter& Character)
+{
+	const UFishingComponent* FishingComp = Character.GetFishingComponent();
+	if (!FishingComp || FishingComp->GetSessionState() == EFishingSessionState::Idle)
+	{
+		return;
+	}
+
+	const float CenterX = Canvas->SizeX * 0.5f;
+	const float Y = Canvas->SizeY * 0.7f;
+	if (FishingComp->GetSessionState() == EFishingSessionState::Waiting)
+	{
+		const FString Waiting = TEXT("Esperando la picada… [F] recoger");
+		float TextWidth = 0.0f, TextHeight = 0.0f;
+		GetTextSize(Waiting, TextWidth, TextHeight);
+		DrawText(Waiting, FLinearColor(1.0f, 1.0f, 1.0f, 0.8f), CenterX - TextWidth * 0.5f, Y);
+		return;
+	}
+
+	// Barra de tensión: verde con el sedal cómodo, roja cerca de la rotura (GDD §8.9).
+	constexpr float BarWidth = 240.0f;
+	constexpr float BarHeight = 8.0f;
+	const float Tension = FMath::Clamp(FishingComp->GetTension01(), 0.0f, 1.0f);
+	const FLinearColor Fill = FLinearColor::LerpUsingHSV(FLinearColor(0.2f, 0.8f, 0.3f), FLinearColor(0.9f, 0.15f, 0.1f), Tension);
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f), CenterX - BarWidth * 0.5f, Y, BarWidth, BarHeight);
+	DrawRect(Fill, CenterX - BarWidth * 0.5f, Y, BarWidth * Tension, BarHeight);
+
+	const FString Label = FString::Printf(TEXT("Sedal fuera: %.0f m · [R] recoger · [T] soltar"), FishingComp->GetLineOutM());
+	float TextWidth = 0.0f, TextHeight = 0.0f;
+	GetTextSize(Label, TextWidth, TextHeight);
+	DrawText(Label, FLinearColor::White, CenterX - TextWidth * 0.5f, Y + BarHeight + 6.0f);
 }

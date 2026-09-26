@@ -25,4 +25,5 @@ private:
 	void DrawReticle();
 	void DrawContextPrompt(const AExploredCharacter& Character);
 	void DrawHandLabels(const AExploredCharacter& Character);
+	void DrawFishing(const AExploredCharacter& Character);
 };

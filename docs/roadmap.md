@@ -37,7 +37,7 @@ compila y pasa sus tests en local.
 | Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
 | Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
 | Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
-| Fishing | ❌ | ❌ | ❌ | (P-FISH) |
+| Fishing | en curso | ✅ | sin compilar | `FFishingModel` + `FFishFight`, `fish.json`; `UFishingComponent`, `AExploredTrap` por verificar en local (P-FISH) |
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
 | Save | stub | ❌ | stub | (P-SAVE) |
 | Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
@@ -59,7 +59,7 @@ compila y pasa sus tests en local.
 | P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | pendiente |
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
-| P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
+| P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | en curso (nube/pesca-2026-09-26) |
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
