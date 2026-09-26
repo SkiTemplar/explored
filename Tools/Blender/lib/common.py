@@ -736,6 +736,141 @@ def dimensions_cm(obj):
             (max(zs) - min(zs)) * 100.0)
 
 
+# ---------------------------------------------------------------------------
+# Geometría: cápsulas ahusadas de eje arbitrario (kit de fauna por piezas)
+# ---------------------------------------------------------------------------
+#
+# A diferencia de make_curved_trunk (pensado para troncos/ramas curvados vía
+# curva Bezier biselada), el kit de fauna necesita piezas RÍGIDAS —patas,
+# cuello, cola, morro, alas, aletas, garras— con el origen del objeto en el
+# pivote de la articulación y la malla ya orientada en su pose de reposo
+# final, sin aplicar ninguna rotación al objeto (rotation = identidad):
+# make_tapered_capsule construye los vértices directamente a lo largo de
+# «direction» partiendo de (0, 0, 0), así el FBX exportado deja el pivote
+# exacto donde el C++ lo necesita para reconstruir la jerarquía con
+# animals.json (offset de traslación pura respecto al padre).
+
+def _orthonormal_frame(direction, up_hint=None):
+    """Base ortonormal (fwd, right, up) a partir de un eje arbitrario,
+    usada por make_tapered_capsule para generar anillos de sección sin
+    tocar la transformación del objeto (ver nota arriba)."""
+    fwd = Vector(direction)
+    if fwd.length < 1e-8:
+        fwd = Vector((0.0, 0.0, 1.0))
+    fwd.normalize()
+    if up_hint is None:
+        up_hint = Vector((0.0, 0.0, 1.0)) if abs(fwd.z) < 0.9 else Vector((0.0, 1.0, 0.0))
+    else:
+        up_hint = Vector(up_hint)
+    up_ortho = up_hint - fwd * up_hint.dot(fwd)
+    if up_ortho.length < 1e-6:
+        alt = Vector((1.0, 0.0, 0.0))
+        up_ortho = alt - fwd * alt.dot(fwd)
+    up_ortho.normalize()
+    right = fwd.cross(up_ortho).normalized()
+    up_final = right.cross(fwd).normalized()
+    return fwd, right, up_final
+
+
+def make_tapered_capsule(name, direction, length, radii, segments=8,
+                          cap_start=True, cap_end=True, dome=0.55, up_hint=None):
+    """Cápsula ahusada a lo largo de un eje arbitrario, con el origen del
+    objeto en (0, 0, 0) —el pivote de la pieza— y la malla ya orientada en
+    su pose de reposo: no hace falta reorientar el objeto después (sin
+    transform_apply), así que el FBX exportado deja el pivote exacto en la
+    articulación, tal y como pide el kit de fauna por piezas.
+
+    «radii» es una lista de 2 o más radios muestreados a intervalos
+    regulares entre el origen y la punta (longitud «length» en esa misma
+    unidad de escena, metros); cada radio puede ser un float (sección
+    circular) o un par (rx, ry) para sección elíptica —aplanada—, útil en
+    alas, aletas y colas de pez. Los remates son un único vértice polar
+    desplazado dome*radio a lo largo del eje: aproxima una semiesfera
+    barata sin anillos adicionales, suficiente para el low-poly pulido del
+    encargo.
+    """
+    if len(radii) < 2:
+        raise ValueError('make_tapered_capsule: se necesitan al menos 2 radios')
+    fwd, right, up = _orthonormal_frame(direction, up_hint)
+    n = len(radii)
+    bm = bmesh.new()
+    rings = []
+    for i in range(n):
+        t = i / (n - 1)
+        center = fwd * (length * t)
+        r = radii[i]
+        rx, ry = r if isinstance(r, (tuple, list)) else (r, r)
+        ring = []
+        for j in range(segments):
+            ang = 2.0 * math.pi * j / segments
+            p = center + right * (rx * math.cos(ang)) + up * (ry * math.sin(ang))
+            ring.append(bm.verts.new(p))
+        rings.append(ring)
+
+    for i in range(n - 1):
+        for j in range(segments):
+            j2 = (j + 1) % segments
+            bm.faces.new((rings[i][j], rings[i][j2], rings[i + 1][j2], rings[i + 1][j]))
+
+    if cap_start:
+        rx0, ry0 = (radii[0] if isinstance(radii[0], (tuple, list)) else (radii[0], radii[0]))
+        apex = bm.verts.new(-fwd * (dome * max(rx0, ry0)))
+        for j in range(segments):
+            j2 = (j + 1) % segments
+            bm.faces.new((apex, rings[0][j2], rings[0][j]))
+    if cap_end:
+        rxN, ryN = (radii[-1] if isinstance(radii[-1], (tuple, list)) else (radii[-1], radii[-1]))
+        apex = bm.verts.new(fwd * length + fwd * (dome * max(rxN, ryN)))
+        for j in range(segments):
+            j2 = (j + 1) % segments
+            bm.faces.new((apex, rings[-1][j], rings[-1][j2]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+    return obj
+
+
+# ---------------------------------------------------------------------------
+# Ojos pintados (kit de fauna): bulto de geometría + color de vértice negro
+# ---------------------------------------------------------------------------
+
+def add_eyes(obj, eye_centers, eye_radius, subdivisions=1, seed=0):
+    """Añade un bulto de ojo (esfera pequeña, make_blob sin ruido) por cada
+    centro local en «eye_centers» y los une a «obj». Devuelve el objeto ya
+    unido; los centros siguen siendo válidos en el espacio local del
+    objeto resultante porque bpy.ops.object.join conserva el espacio local
+    del objeto activo (el primero de la lista). Pinta los ojos DESPUÉS de
+    llamar a esto, con with_eye_dots() envolviendo el color_fn de la pieza,
+    antes de set_vertex_colors."""
+    eyes = [make_blob(f'{obj.name}_Eye{i}', c, eye_radius, seed=seed + i,
+                       subdivisions=subdivisions, noise_strength=0.0)
+            for i, c in enumerate(eye_centers)]
+    merged = join_objects([obj] + eyes, obj.name)
+    merge_by_distance(merged, dist=0.0004)
+    return merged
+
+
+def with_eye_dots(base_fn, eye_centers, eye_radius, eye_color=(0.02, 0.02, 0.03)):
+    """Envuelve un color_fn: pinta casi negros los vértices a distancia
+    <= eye_radius de cualquier centro en «eye_centers» (los bultos que
+    añade add_eyes), delegando en base_fn para el resto de la pieza. El
+    canal alfa de los ojos se deja a 0.0 (sin uso en piezas de fauna salvo
+    en los nadadores de una sola malla, donde alpha ya codifica la
+    posición en la columna y las mallas de nadador no llevan add_eyes)."""
+    centers = [Vector(c) for c in eye_centers]
+
+    def fn(v):
+        for c in centers:
+            if (v.co - c).length <= eye_radius:
+                return (*eye_color, 0.0)
+        return base_fn(v)
+    return fn
+
+
 def export_fbx(filepath, objects):
     """Exporta objetos a un FBX listo para Unreal:
         - apply_unit_scale=True   -> 1 m Blender = 100 uu Unreal.
@@ -773,3 +908,285 @@ def export_fbx(filepath, objects):
         path_mode='COPY',
         embed_textures=False,
     )
+
+
+# ---------------------------------------------------------------------------
+# Materiales genéricos (para kits hermanos: props, animales...) — no toca
+# _MATERIAL_DEFS/MATERIAL_NAMES del kit de vegetación, solo añade una
+# fábrica de materiales con el mismo grafo de nodos para nombres/colores
+# arbitrarios que decide el llamador.
+# ---------------------------------------------------------------------------
+
+def get_material_ext(name, base_color, roughness, metallic=0.0, alpha_blend=False):
+    """Como get_material(), pero para materiales fuera del kit estable de
+    vegetación: nombre y color los define el llamador (p.ej. el kit de
+    props con M_Wood/M_Metal/M_Fabric/M_Stone/M_Glass/M_Paper/M_Leaf). Mismo
+    grafo de nodos: Attribute «Col» multiplicado por un color base
+    constante -> Base Color, para que el tinte de vértice siga funcionando
+    igual que en el resto del proyecto."""
+    if name in bpy.data.materials:
+        return bpy.data.materials[name]
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    bsdf = nt.nodes.get('Principled BSDF')
+
+    attr = nt.nodes.new('ShaderNodeAttribute')
+    attr.attribute_name = 'Col'
+    attr.attribute_type = 'GEOMETRY'
+
+    base = nt.nodes.new('ShaderNodeRGB')
+    base.outputs[0].default_value = (base_color[0], base_color[1], base_color[2], 1.0)
+
+    mix = nt.nodes.new('ShaderNodeMixRGB')
+    mix.blend_type = 'MULTIPLY'
+    mix.inputs['Fac'].default_value = 1.0
+    nt.links.new(base.outputs[0], mix.inputs['Color1'])
+    nt.links.new(attr.outputs['Color'], mix.inputs['Color2'])
+    nt.links.new(mix.outputs[0], bsdf.inputs['Base Color'])
+
+    bsdf.inputs['Roughness'].default_value = roughness
+    if 'Metallic' in bsdf.inputs:
+        bsdf.inputs['Metallic'].default_value = metallic
+
+    if alpha_blend:
+        mat.blend_method = 'BLEND'
+        mat.show_transparent_back = False
+        if 'Alpha' in bsdf.inputs:
+            bsdf.inputs['Alpha'].default_value = 0.35
+            nt.links.new(attr.outputs['Alpha'], bsdf.inputs['Alpha'])
+    return mat
+
+
+# ---------------------------------------------------------------------------
+# Geometría: primitivas de props (cajas, cilindros/conos, loft de anillos,
+# tubos huecos) — el kit de vegetación no las necesitaba (todo era troncos,
+# frondas y blobs), pero el kit de props sí: fuselajes, cascos, torres,
+# cajas, barriles...
+# ---------------------------------------------------------------------------
+
+def make_box(name, size, center=(0.0, 0.0, 0.0)):
+    """Caja simple (8 vértices). size=(sx, sy, sz) en metros; centrada en
+    «center». Base de cajas, mesas, cabañas, piezas de construcción..."""
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    cx, cy, cz = center
+    for v in bm.verts:
+        v.co.x *= size[0]
+        v.co.y *= size[1]
+        v.co.z *= size[2]
+        v.co += Vector((cx, cy, cz))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+    return obj
+
+
+def make_cylinder(name, radius, depth, segments=16, center=(0.0, 0.0, 0.0),
+                   cap_ends=True, radius2=None):
+    """Cilindro (o cono/tronco de cono si radius2 se indica) a lo largo de
+    Z, centrado en «center»."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(
+        bm, cap_ends=cap_ends, cap_tris=False, segments=segments,
+        radius1=radius, radius2=(radius if radius2 is None else radius2),
+        depth=depth)
+    cx, cy, cz = center
+    for v in bm.verts:
+        v.co += Vector((cx, cy, cz))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+    return obj
+
+
+def point_ring(center, radius, segments, normal='z', start_angle=0.0):
+    """Anillo de puntos (list[Vector]) en el plano perpendicular a
+    «normal» ('x'/'y'/'z'), para construir loft a mano con ring_loft() o
+    make_tube()."""
+    pts = []
+    for i in range(segments):
+        a = start_angle + 2.0 * math.pi * i / segments
+        u, w = math.cos(a) * radius, math.sin(a) * radius
+        if normal == 'z':
+            pts.append(Vector(center) + Vector((u, w, 0.0)))
+        elif normal == 'y':
+            pts.append(Vector(center) + Vector((u, 0.0, w)))
+        else:
+            pts.append(Vector(center) + Vector((0.0, u, w)))
+    return pts
+
+
+def ring_loft(name, rings_pts, cap_start=False, cap_end=False, skip_fn=None):
+    """Construye una malla uniendo anillos de puntos consecutivos con caras
+    (loft): rings_pts es una lista de anillos (cada uno list[Vector], todos
+    con el mismo número de puntos). Pensado para fuselajes, cascos, torres y
+    cualquier perfil que varíe de sección en sección.
+
+    skip_fn(ring_index, point_index) -> bool: si se indica, omite la cara
+    entre ese anillo y el siguiente en esa posición angular — sirve para
+    abrir huecos (cabina del Albatros, puertas, ventanas) sin recurrir a
+    una operación booleana.
+    """
+    bm = bmesh.new()
+    vert_rings = [[bm.verts.new(p) for p in ring_pts] for ring_pts in rings_pts]
+    n = len(vert_rings[0])
+    for r in range(len(vert_rings) - 1):
+        a, b = vert_rings[r], vert_rings[r + 1]
+        for i in range(n):
+            if skip_fn is not None and skip_fn(r, i):
+                continue
+            i2 = (i + 1) % n
+            bm.faces.new((a[i], a[i2], b[i2], b[i]))
+    if cap_start:
+        bm.faces.new(list(reversed(vert_rings[0])))
+    if cap_end:
+        bm.faces.new(vert_rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+    return obj
+
+
+def make_tube(name, height, segments, outer_radii, inner_radii,
+              cap_bottom=True, cap_top=False, z0=0.0):
+    """Tubo hueco (pared con espesor) a lo largo de Z: pared exterior,
+    pared interior (normales hacia adentro) y tapas de anillo opcionales.
+    outer_radii/inner_radii son listas de radios (un valor por nivel; la
+    altura se reparte uniformemente entre z0 y z0+height). Pensado para
+    volúmenes transitables por dentro: la torre del faro, pozos, chimeneas.
+    """
+    n_levels = len(outer_radii)
+    if n_levels != len(inner_radii) or n_levels < 2:
+        raise ValueError('make_tube: outer_radii/inner_radii deben tener la misma '
+                          'longitud (>=2 niveles)')
+    bm = bmesh.new()
+    outer_rings, inner_rings = [], []
+    for li in range(n_levels):
+        z = z0 + height * li / (n_levels - 1)
+        outer_rings.append([bm.verts.new(Vector((
+            math.cos(2.0 * math.pi * i / segments) * outer_radii[li],
+            math.sin(2.0 * math.pi * i / segments) * outer_radii[li], z)))
+            for i in range(segments)])
+        inner_rings.append([bm.verts.new(Vector((
+            math.cos(2.0 * math.pi * i / segments) * inner_radii[li],
+            math.sin(2.0 * math.pi * i / segments) * inner_radii[li], z)))
+            for i in range(segments)])
+
+    for li in range(n_levels - 1):
+        a, b = outer_rings[li], outer_rings[li + 1]
+        for i in range(segments):
+            i2 = (i + 1) % segments
+            bm.faces.new((a[i], a[i2], b[i2], b[i]))
+        a, b = inner_rings[li], inner_rings[li + 1]
+        for i in range(segments):
+            i2 = (i + 1) % segments
+            bm.faces.new((b[i], b[i2], a[i2], a[i]))  # normal hacia el eje
+
+    if cap_bottom:
+        a, b = outer_rings[0], inner_rings[0]
+        for i in range(segments):
+            i2 = (i + 1) % segments
+            bm.faces.new((a[i], a[i2], b[i2], b[i]))
+    if cap_top:
+        a, b = outer_rings[-1], inner_rings[-1]
+        for i in range(segments):
+            i2 = (i + 1) % segments
+            bm.faces.new((b[i], b[i2], a[i2], a[i]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+    return obj
+
+
+def boolean_cut(obj, cutter, delete_cutter=True, solver='EXACT'):
+    """Recorte booleano (DIFFERENCE) aplicado como modificador. Se reserva
+    para huecos irregulares donde construir el hueco a mano (skip_fn de
+    ring_loft, o cajas encajadas) no compensa: p.ej. los 32 agujeros de la
+    brújula estelar sobre un disco ya deformado por ruido."""
+    select_only(obj)
+    mod = obj.modifiers.new('Cut', 'BOOLEAN')
+    mod.operation = 'DIFFERENCE'
+    mod.object = cutter
+    mod.solver = solver
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    if delete_cutter:
+        bpy.data.objects.remove(cutter, do_unlink=True)
+
+
+# ---------------------------------------------------------------------------
+# Color de vértice: grabado en relieve (petroglifos)
+# ---------------------------------------------------------------------------
+
+def _dist_point_segment_xy(p, a, b):
+    """Distancia de un punto 3D a un segmento, proyectados ambos sobre XY
+    (para grabar trazos en una losa que crece en X/Y con Z ~ profundidad)."""
+    a2 = Vector((a[0], a[1], 0.0))
+    b2 = Vector((b[0], b[1], 0.0))
+    p2 = Vector((p.x, p.y, 0.0))
+    ab = b2 - a2
+    if ab.length_squared < 1e-12:
+        return (p2 - a2).length
+    t = max(0.0, min(1.0, (p2 - a2).dot(ab) / ab.length_squared))
+    proj = a2 + ab * t
+    return (p2 - proj).length
+
+
+def carve_strokes(obj, strokes, width, depth):
+    """Hunde la malla a lo largo de -normal cerca de una lista de trazos
+    (cada trazo es una polilínea de puntos locales (x, y) sobre el plano de
+    la losa) para grabar relieve hundido tipo petroglifo. Devuelve un dict
+    {vertex_index: profundidad 0..1} para poder pintar el fondo del grabado
+    más claro con groove_tint()."""
+    me = obj.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.normal_update()
+    depths = {}
+    for v in bm.verts:
+        best = 1e9
+        for stroke in strokes:
+            for i in range(len(stroke) - 1):
+                d = _dist_point_segment_xy(v.co, stroke[i], stroke[i + 1])
+                if d < best:
+                    best = d
+        t = max(0.0, 1.0 - best / width) if width > 0 else 0.0
+        if t > 0.0:
+            v.co -= v.normal * depth * t
+        depths[v.index] = t
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+    return depths
+
+
+def groove_tint(base_rgb, light_rgb, depths, alpha=0.0, jitter=0.03, rnd=None):
+    """Color_fn para losas grabadas: interpola de base_rgb (piedra sin
+    tocar) a light_rgb (fondo del grabado, más claro/erosionado) según la
+    profundidad devuelta por carve_strokes()."""
+    cache = {}
+
+    def fn(v):
+        if v.index not in cache:
+            cache[v.index] = rnd.uniform(-jitter, jitter) if (jitter and rnd is not None) else 0.0
+        j = cache[v.index]
+        t = depths.get(v.index, 0.0)
+        r = _clamp01(base_rgb[0] + (light_rgb[0] - base_rgb[0]) * t + j)
+        g = _clamp01(base_rgb[1] + (light_rgb[1] - base_rgb[1]) * t + j)
+        b = _clamp01(base_rgb[2] + (light_rgb[2] - base_rgb[2]) * t + j)
+        return (r, g, b, alpha)
+    return fn

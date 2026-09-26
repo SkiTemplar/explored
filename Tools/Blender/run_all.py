@@ -118,6 +118,22 @@ def _run_props_kit():
     run_props.main()
 
 
+def _run_animals_kit():
+    """Encadena el kit de fauna (Tools/Blender/run_animals.py) tras
+    vegetación y props: mismo motivo que _run_props_kit(), `run_all.py`
+    sigue siendo el único comando que regenera todo el contenido de malla.
+    run_animals.py vive junto a run_all.py en Tools/Blender/ (no en un
+    subdirectorio propio como props/), pero Blender no añade el directorio
+    del script en ejecución a sys.path (a diferencia del intérprete estándar
+    de Python), así que hay que insertarlo a mano igual que props_dir arriba
+    para que sea importable por nombre."""
+    if BLENDER_DIR not in sys.path:
+        sys.path.insert(0, BLENDER_DIR)
+    run_animals = _import_or_reload('run_animals')
+    run_animals.main()
+
+
 if __name__ == '__main__':
     main()
     _run_props_kit()
+    _run_animals_kit()

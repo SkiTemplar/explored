@@ -272,6 +272,162 @@ def main_props():
     print('[validate] VALIDACIÓN DE PROPS OK')
 
 
+# ---------------------------------------------------------------------------
+# Kit de fauna (Tools/Blender/run_animals.py). A diferencia de vegetación y
+# props (una malla = un fichero), cada especie es un kit de piezas: aquí no
+# se valida «una malla» sino la especie entera, reimportando TODAS sus
+# piezas y comprobando además la propia coherencia del rig (padres que
+# existen, una única raíz, roles reconocidos) antes de las comprobaciones
+# de geometría 1/2/4/5 de siempre, ya por pieza. La dimensión total se
+# RECALCULA desde las piezas reimportadas (no se confía en el
+# «dimensions_cm» que anotó run_animals.py) para que un bug de export o de
+# pivote (como el eje X invertido que se coló en el primer intento del kit
+# de peces) lo detecte esta validación en vez de colarse silencioso.
+# ---------------------------------------------------------------------------
+FAUNA_DIR = os.path.join(EXPORT_DIR, 'Fauna')
+FAUNA_MANIFEST_PATH = os.path.join(FAUNA_DIR, 'animals.json')
+
+FAUNA_ALLOWED_ROLES = {
+    'body', 'shell', 'bell', 'head', 'neck', 'jaw', 'beak', 'leg', 'tail',
+    'spine', 'wing', 'fin', 'flipper', 'tentacle', 'claw', 'ear', 'eye',
+}
+
+# Tolerancia de la dimensión total recalculada frente a la anotada en el
+# manifest: el máximo entre 2 cm y un 5% (los bichos pequeños necesitan un
+# suelo absoluto; los grandes, uno relativo).
+DIMENSION_TOLERANCE_CM = 2.0
+DIMENSION_TOLERANCE_PCT = 0.05
+
+
+def _accumulate_bbox(bbox_min, bbox_max, obj, piv):
+    """Actualiza (in-place) los acumuladores min/max con los vértices de
+    «obj» desplazados por su pivote absoluto «piv» (cm). Se llama pieza a
+    pieza, ANTES del siguiente _reset_scene(): guardar el bpy.types.Object
+    para leerlo más tarde no vale — read_factory_settings libera sus datos y
+    cualquier referencia Python queda con un StructRNA muerto."""
+    for v in obj.data.vertices:
+        x = v.co.x * 100.0 + piv[0]
+        y = v.co.y * 100.0 + piv[1]
+        z = v.co.z * 100.0 + piv[2]
+        bbox_min[0] = min(bbox_min[0], x)
+        bbox_min[1] = min(bbox_min[1], y)
+        bbox_min[2] = min(bbox_min[2], z)
+        bbox_max[0] = max(bbox_max[0], x)
+        bbox_max[1] = max(bbox_max[1], y)
+        bbox_max[2] = max(bbox_max[2], z)
+
+
+def main_animals():
+    if not os.path.isfile(FAUNA_MANIFEST_PATH):
+        print(f"[validate] ERROR: no existe {FAUNA_MANIFEST_PATH}. Ejecuta run_animals.py primero.")
+        sys.exit(1)
+
+    with open(FAUNA_MANIFEST_PATH, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    results = []
+    for entry in manifest['species']:
+        species = entry['species']
+        pieces = entry['pieces']
+        names = {p['name'] for p in pieces}
+        problems = []
+
+        # 1. coherencia del rig: exactamente una raíz, todo padre existe
+        roots = sum(1 for p in pieces if p['parent'] is None)
+        if roots != 1:
+            problems.append(f'{roots} piezas raíz (se esperaba exactamente 1)')
+        dangling = [p['name'] for p in pieces
+                    if p['parent'] is not None and p['parent'] not in names]
+        if dangling:
+            problems.append(f'piezas con padre inexistente: {dangling}')
+
+        bad_roles = {p['role'] for p in pieces} - FAUNA_ALLOWED_ROLES
+        if bad_roles:
+            problems.append(f'roles desconocidos: {sorted(bad_roles)}')
+
+        # 2. por pieza: reimporta y comprueba geometría/color/material, y
+        # acumula la posición absoluta (local_offset_cm de la raíz al hijo)
+        # para recalcular la caja del bounding box de la especie entera.
+        abs_by_name = {}
+        bbox_min = [float('inf')] * 3
+        bbox_max = [float('-inf')] * 3
+        total_tris = 0
+        expected_material = f'M_Fauna_{species}'
+        for p in pieces:
+            parent = p['parent']
+            local = p['local_offset_cm']
+            if parent is None:
+                abs_by_name[p['name']] = tuple(local)
+            elif parent in abs_by_name:
+                pa = abs_by_name[parent]
+                abs_by_name[p['name']] = tuple(pa[i] + local[i] for i in range(3))
+
+            _reset_scene()
+            fpath = os.path.join(FAUNA_DIR, p['file'])
+            if not os.path.isfile(fpath):
+                problems.append(f"pieza «{p['name']}»: fichero FBX no encontrado")
+                continue
+            meshes = _import_fbx(fpath)
+            if len(meshes) != 1:
+                problems.append(f"pieza «{p['name']}»: se esperaba 1 malla, hay {len(meshes)}")
+                continue
+            obj = meshes[0]
+            me = obj.data
+            me.calc_loop_triangles()
+            total_tris += len(me.loop_triangles)
+
+            bad_faces = _check_degenerate(obj)
+            if bad_faces:
+                problems.append(f"pieza «{p['name']}»: {bad_faces} caras degeneradas")
+            if 'Col' not in me.color_attributes:
+                problems.append(f"pieza «{p['name']}»: falta el atributo de color «Col»")
+            slot_names = {m.name.split('.')[0] for m in me.materials if m is not None}
+            if slot_names != {expected_material}:
+                problems.append(f"pieza «{p['name']}»: material {sorted(slot_names)} "
+                                 f"(se esperaba solo {{'{expected_material}'}})")
+
+            piv = abs_by_name.get(p['name'], (0.0, 0.0, 0.0))
+            _accumulate_bbox(bbox_min, bbox_max, obj, piv)
+
+        # 3. presupuesto de triángulos total de la especie
+        lo, hi = entry['triangle_budget']['min'], entry['triangle_budget']['max']
+        if hi > 0 and not (lo <= total_tris <= hi):
+            problems.append(f'triángulos totales {total_tris} fuera de presupuesto [{lo}, {hi}]')
+
+        # 4. dimensión recalculada frente a la anotada por run_animals.py
+        if bbox_min[0] == float('inf'):
+            dims_cm = (0.0, 0.0, 0.0)
+        else:
+            dims_cm = tuple(bbox_max[i] - bbox_min[i] for i in range(3))
+        recorded = entry['dimensions_cm']
+        for axis, value in zip('xyz', dims_cm):
+            rec = recorded[axis]
+            tol = max(DIMENSION_TOLERANCE_CM, rec * DIMENSION_TOLERANCE_PCT)
+            if abs(value - rec) > tol:
+                problems.append(f'dimensión {axis} recalculada {value:.1f} cm '
+                                 f'difiere de la anotada {rec} cm (tolerancia {tol:.1f})')
+
+        results.append((species, problems, total_tris, dims_cm, len(pieces)))
+
+    print('\n[validate] ==== Resultado (fauna) ====')
+    n_fail = 0
+    for species, problems, total_tris, dims_cm, piece_count in results:
+        if problems:
+            n_fail += 1
+            print(f'  FALLO {species}: ' + '; '.join(problems))
+        else:
+            print(f'  OK    {species}: {total_tris} tris en {piece_count} piezas, '
+                  f'dims_cm=({dims_cm[0]:.1f}, {dims_cm[1]:.1f}, {dims_cm[2]:.1f})')
+
+    total = len(results)
+    print(f'[validate] {total - n_fail}/{total} especies en verde.')
+    if n_fail:
+        print('[validate] VALIDACIÓN DE FAUNA FALLIDA')
+        sys.exit(1)
+    print('[validate] VALIDACIÓN DE FAUNA OK')
+
+
 if __name__ == '__main__':
     main()
     main_props()
+    main_animals()
