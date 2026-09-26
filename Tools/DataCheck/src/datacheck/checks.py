@@ -502,6 +502,44 @@ def check_survival(ds: DataSet, r: Report) -> None:
         v = _cpp_float(cpp, pat)
         if v is not None and v != bt.get(key):
             r.error(f"survival_needs.json: bodyTemperature.{key}={bt.get(key)} pero C++ dice {v}")
+    check_survival_body(doc, src, r)
+
+
+def _body_constants(node, path: str = "body"):
+    """Recorre «body» y devuelve (ruta, valor, cppConstant) de cada constante reflejada."""
+    if isinstance(node, dict):
+        if "cppConstant" in node and "value" in node:
+            yield path, node["value"], node["cppConstant"]
+            return
+        for key, child in node.items():
+            yield from _body_constants(child, f"{path}.{key}")
+
+
+def check_survival_body(doc: dict, src, r: Report) -> None:
+    body = doc.get("body")
+    if body is None:
+        return
+    path = src / "BodyModel.cpp"
+    if not path.exists():
+        r.warn("survival_needs.json: no se encuentra BodyModel.cpp; no se compara «body» con el C++")
+        return
+    cpp = path.read_text(encoding="utf-8")
+    for where, value, name in _body_constants(body):
+        if not _type_ok(value, (int, float)):
+            r.error(f"survival_needs.json {where}: value debe ser un número")
+            continue
+        v = _cpp_float(cpp, rf"constexpr float {name} = ([0-9.]+)f;")
+        if v is None:
+            r.error(f"survival_needs.json {where}: no existe la constante {name} en BodyModel.cpp")
+        elif v != value:
+            r.error(f"survival_needs.json {where}: value={value} pero {name}={v} en BodyModel.cpp")
+    events_body = _function_body(cpp, "float FBodyModel::MoraleEventDelta(")
+    for event, value in body.get("moraleEvents", {}).items():
+        m = re.search(rf"EMoraleEvent::{event}: return (-?[0-9.]+)f;", events_body)
+        if m is None:
+            r.error(f"survival_needs.json body.moraleEvents: EMoraleEvent::{event} no existe en BodyModel.cpp")
+        elif float(m.group(1)) != value:
+            r.error(f"survival_needs.json body.moraleEvents.{event}={value} pero BodyModel.cpp dice {m.group(1)}")
 
 
 # --------------------------------------------------------------------------- story y reglas

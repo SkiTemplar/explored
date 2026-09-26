@@ -4,6 +4,8 @@ Core/ExploredRandom.cpp
 Fauna/ProceduralGait.cpp
 Ocean/OceanWaves.cpp
 Ocean/OceanCurrents.cpp
+Survival/BodyModel.cpp
+Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp

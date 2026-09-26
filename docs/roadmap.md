@@ -27,7 +27,7 @@ compila y pasa sus tests en local.
 | Ocean | ✅ base | ✅ | ✅ | Flotabilidad para barcos (P-BOATS) |
 | Sky / tiempo | ✅ base | parcial | ✅ | Fases lunares en modelo (P-EVENTS) |
 | Weather | ✅ | ✅ | ✅ | |
-| Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto y HUD corporal (P-BODY) |
+| Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto, nutrición, caídas y señales corporales en modelo (`FBodyModel`, `FBodySignalsModel`); capa UE `UBodySignalsComponent` sin compilar (P-BODY) |
 | Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
 | Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
 | Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
@@ -62,7 +62,7 @@ compila y pasa sus tests en local.
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
-| P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
+| P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | en curso (nube/cuerpo-2026-09-26) |
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
 | P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | pendiente |
 | P-MUSIC | Director de música adaptativa por capas | pendiente |

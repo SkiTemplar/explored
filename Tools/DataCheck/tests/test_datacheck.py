@@ -205,6 +205,16 @@ def test_detecta_valor_inicial_distinto_del_cpp(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "animo", "SurvivalModel.h")
 
 
+def test_detecta_desfase_con_body_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["body"]["wounds"]["infectionHours"]["value"] = 99
+    assert any_error(errors_of(ds), "WoundInfectionHours")
+
+
+def test_detecta_evento_de_animo_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["body"]["moraleEvents"]["StormHit"] = 4
+    assert any_error(errors_of(ds), "StormHit")
+
+
 def test_detecta_fauna_terrestre(ds: DataSet) -> None:
     item(ds, "grasa")["nameEs"] = "Grasa de jabalí"
     assert any_error(errors_of(ds), "jabalí")
