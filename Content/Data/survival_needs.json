@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "units": {
+    "range": "todas las necesidades van de 0 a 100 (100 = satisfecho), salvo bodyTemperature en °C",
+    "initial": "valor al empezar la partida",
+    "hoursToEmpty": "horas de juego para vaciarse de 100 a 0 caminando en modo Superviviente (metabolismo 1.0)",
+    "item.nutrition*": "items.json usa una escala relativa 0-5 por unidad; el juego la convierte a puntos 0-100"
+  },
+  "source": "Espejo documentado de Source/Explored/Survival/SurvivalModel.{h,cpp}. Si cambias una constante en C++, actualiza este fichero: Tools/DataCheck lo compara.",
+  "needs": [
+    { "id": "hambre", "nameEs": "Hambre", "state": "Hunger", "initial": 85, "hoursToEmpty": 36, "cppConstant": "HungerHours",
+      "recoversWith": ["comida"], "atZero": "Menos energía máxima y 2 de salud por hora" },
+    { "id": "sed", "nameEs": "Sed", "state": "Thirst", "initial": 70, "hoursToEmpty": 20, "cppConstant": "ThirstHours",
+      "recoversWith": ["coco"], "atZero": "Visión borrosa y 5 de salud por hora" },
+    { "id": "sueno", "nameEs": "Sueño", "state": "Rest", "initial": 90, "hoursToEmpty": 30, "cppConstant": "RestHours",
+      "recoversWith": [], "atZero": "Agotamiento: torpeza, alucinaciones leves" },
+    { "id": "proteina", "nameEs": "Proteína", "state": "Protein", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",
+      "recoversWith": ["pescado", "marisco"], "atZero": "Menos energía máxima si la dieta media baja de 25" },
+    { "id": "energia_dieta", "nameEs": "Hidratos", "state": "Carbs", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",
+      "recoversWith": ["tuberculo", "fruta"], "atZero": "Menos energía máxima si la dieta media baja de 25" },
+    { "id": "vitamina_c", "nameEs": "Vitamina C", "state": "Vitamins", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",
+      "recoversWith": ["citrico", "fruta"], "atZero": "Escorbuto (pendiente en C++): encías, visión, sangrado leve" },
+    { "id": "animo", "nameEs": "Ánimo", "state": "Morale", "initial": 60, "hoursToEmpty": null, "cppConstant": null,
+      "recoversWith": [], "atZero": "Menos eficiencia de trabajo; nunca mata" },
+    { "id": "salud", "nameEs": "Salud", "state": "Health", "initial": 100, "hoursToEmpty": null, "cppConstant": null,
+      "recoversWith": ["medicinal"], "atZero": "Muerte (reaparición en fogata salvo en modo Náufrago)" }
+  ],
+  "sleepRecoveryHours": { "value": 6, "cppConstant": "SleepRecoveryHours" },
+  "bodyTemperature": { "initial": 37, "hypothermiaBelow": 35, "heatstrokeAbove": 39.5, "unit": "°C" },
+  "modeScale": { "Explorer": 0.6, "Survivor": 1.0, "Castaway": 1.35 },
+  "activityMetabolism": { "Resting": 0.8, "Walking": 1.0, "Sprinting": 1.8, "Swimming": 1.7, "Working": 1.5, "Sleeping": 0.5 }
+}
