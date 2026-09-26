@@ -14,6 +14,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <initializer_list>
@@ -687,6 +688,22 @@ private:
 };
 
 inline uint32 GetTypeHash(const FString& S) { return (uint32)std::hash<std::string>()(S.ToLower().Std()); }
+
+/**
+ * TCString/FCString (Misc/CString.h): solo las conversiones numéricas. Como en Unreal,
+ * Atod sigue a strtod (redondeo correcto, locale «C») y Atoi64 no detecta desbordamientos.
+ */
+template <typename T>
+struct TCString
+{
+	static double Atod(const T* S) { return S ? std::strtod(S, nullptr) : 0.0; }
+	static float Atof(const T* S) { return (float)Atod(S); }
+	static int32 Atoi(const T* S) { return S ? (int32)std::strtol(S, nullptr, 10) : 0; }
+	static int64 Atoi64(const T* S) { return S ? (int64)std::strtoll(S, nullptr, 10) : 0; }
+	static int32 Strlen(const T* S) { return S ? (int32)std::strlen(S) : 0; }
+};
+using FCString = TCString<TCHAR>;
+using FCStringAnsi = TCString<ANSICHAR>;
 
 enum EName { NAME_None };
 
