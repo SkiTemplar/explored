@@ -129,4 +129,15 @@ struct EXPLORED_API FSurvivalModel
 
 	/** Consumo de energía a corto plazo por segundo real de la actividad (valores de juego). */
 	static float EnergyDrainPerSecond(EActivity Activity, float CarriedWeightRatio);
+
+	/**
+	 * Oxígeno (0–100) consumido por segundo real en apnea (buceo, GDD §4.1).
+	 * LungCapacityRatio es la mejora de pulmones (1 = base; más alto aguanta
+	 * más); CarriedWeightRatio penaliza nadar cargado; bExerting es nadar con
+	 * esfuerzo (perseguir algo, luchar contra una corriente) bajo el agua.
+	 */
+	static float OxygenDrainPerSecond(float CarriedWeightRatio, float LungCapacityRatio, bool bExerting);
+
+	/** Oxígeno recuperado por segundo respirando en superficie; mejor pulmón, jadeo más corto. */
+	static float OxygenRecoveryPerSecond(float LungCapacityRatio);
 };

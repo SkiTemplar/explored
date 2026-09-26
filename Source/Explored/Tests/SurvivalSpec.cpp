@@ -139,6 +139,29 @@ void FSurvivalSpec::Define()
 		Simulate(S, Camp, 4.0f, ESurvivalMode::Survivor, Events);
 		TestTrue(TEXT("Más ánimo"), S.Morale > 45.0f);
 	});
+
+	It("aguanta la apnea base unos 40 s y se recupera en un puñado de segundos al respirar", [this]()
+	{
+		const float Drain = FSurvivalModel::OxygenDrainPerSecond(0.0f, 1.0f, false);
+		TestTrue(TEXT("Se gasta"), Drain > 0.0f);
+		const float HoldSeconds = 100.0f / Drain;
+		TestTrue(TEXT("Aguanta al menos media apnea razonable"), HoldSeconds > 25.0f && HoldSeconds < 55.0f);
+
+		const float Recovery = FSurvivalModel::OxygenRecoveryPerSecond(1.0f);
+		TestTrue(TEXT("Se recupera bastante más rápido de lo que se gasta"), Recovery > Drain * 5.0f);
+	});
+
+	It("el peso y el esfuerzo aceleran el consumo de oxígeno; el pulmón mejorado lo frena", [this]()
+	{
+		const float Base = FSurvivalModel::OxygenDrainPerSecond(0.0f, 1.0f, false);
+		const float Loaded = FSurvivalModel::OxygenDrainPerSecond(1.5f, 1.0f, false);
+		const float Exerting = FSurvivalModel::OxygenDrainPerSecond(0.0f, 1.0f, true);
+		const float BetterLungs = FSurvivalModel::OxygenDrainPerSecond(0.0f, 1.6f, false);
+
+		TestTrue(TEXT("Cargado gasta más"), Loaded > Base);
+		TestTrue(TEXT("Esforzándose gasta más"), Exerting > Base);
+		TestTrue(TEXT("Mejor pulmón gasta menos por segundo"), BetterLungs < Base);
+	});
 }
 
 #endif

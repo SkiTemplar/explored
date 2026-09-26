@@ -37,6 +37,9 @@ namespace
 	{
 		return FMath::Clamp(Value - PerHour * Hours, 0.0f, 100.0f);
 	}
+
+	// Apnea de referencia (segundos) con pulmón base (ratio 1), sin esfuerzo ni peso.
+	constexpr float BaseBreathHoldSeconds = 40.0f;
 }
 
 void FSurvivalState::AddCondition(ECondition C, float Hours)
@@ -98,6 +101,20 @@ float FSurvivalModel::EnergyDrainPerSecond(EActivity Activity, float CarriedWeig
 	case EActivity::Sleeping: return -20.0f;
 	default: return -8.0f; // Andar recupera, algo más despacio que descansar.
 	}
+}
+
+float FSurvivalModel::OxygenDrainPerSecond(float CarriedWeightRatio, float LungCapacityRatio, bool bExerting)
+{
+	const float Lung = FMath::Max(LungCapacityRatio, 0.1f);
+	const float Base = 100.0f / (BaseBreathHoldSeconds * Lung);
+	const float ExertionMul = bExerting ? 1.6f : 1.0f;
+	const float WeightMul = 1.0f + FMath::Max(0.0f, CarriedWeightRatio - 0.3f) * 0.8f;
+	return Base * ExertionMul * WeightMul;
+}
+
+float FSurvivalModel::OxygenRecoveryPerSecond(float LungCapacityRatio)
+{
+	return 45.0f * FMath::Max(LungCapacityRatio, 0.1f);
 }
 
 void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaHours, ESurvivalMode Mode,
