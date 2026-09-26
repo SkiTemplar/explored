@@ -27,22 +27,22 @@ Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI 
 |---|---|---|---|---|
 | WorldGen / Scatter | host ✅ | ✅ | — | Revisión: M6, M7, M9–M11 |
 | Ocean | host ✅ | ✅ | — | Flotabilidad de barcos (P-BOATS) |
-| Sky / Luna / eventos | host ✅ `FMoonModel`, `FWorldEventsModel` | UE ⚠ `UWorldEventsSubsystem` | #7 | Enganchar océano (bioluminiscencia, bajamar extrema), `M_Stars`, erupción, hoguera de señal, obsidiana |
-| Weather | host ✅ | ✅ | — | Categoría de ciclón en el modelo (la usa construcción) |
-| Survival / cuerpo | host ✅ `FSurvivalModel`, `FBodyModel`, `FBodySignalsModel` | UE ⚠ `UBodySignalsComponent`, reloj | integración | Material `M_PP_Body` en `build_materials.py`; muerte y reaparición; calor del fuego, sombrero y sueño como entradas |
+| Sky / Luna / eventos | host ✅ `FMoonModel`, `FWorldEventsModel` | UE ⚠ `UWorldEventsSubsystem` | #7 | Enganchar océano (bioluminiscencia, bajamar extrema), `M_Stars`, efectos de la erupción (temblor, ceniza) |
+| Weather | host ✅ | ✅ | — | Dirección del viento para los barcos |
+| Survival / cuerpo | host ✅ `FSurvivalModel`, `FBodyModel`, `FBodySignalsModel` | UE ⚠ `UBodySignalsComponent`, reloj | integración | Material `M_PP_Body` en `build_materials.py`; sombrero y sueño como entradas (no hay objeto de sombrero ni cama) |
 | Nado | host ✅ `FSwimModel` | UE ⚠ | #6 | Ajustar umbrales en PIE |
 | Interaction / Carry / Crafting | host ✅ `FInventoryModel` | UE ⚠ contenedores, angarillas | integración | Plantillas de fabricación para mochilas, cinturón y angarillas; vista 3D de la mochila |
-| Building | host ✅ `FBuildingModel` | UE ⚠ subsistema, pieza, vista previa | #11 | Consumir materiales (P-CARRY), importar mallas del kit, piezas de ventana/barandilla/hastial |
+| Building | host ✅ `FBuildingModel` | UE ⚠ subsistema, pieza, vista previa | #11 | Gastar los minutos de trabajo, importar mallas del kit, piezas de ventana/barandilla/hastial |
 | Farming | host ✅ `FFarmModel` | UE ⚠ `UFarmSubsystem`, `AExploredPlantActor` | #8 | Objeto de compost, gasto de agua al regar, parcelas desde construcción |
-| Cooking / fuego | host ✅ `FFireModel`, `FCookingModel` | UE ⚠ `AExploredFire` | #13 | Frescura en el inventario, calor → supervivencia, reaparición → GameMode |
-| Cartography | host ✅ `FCartographyModel` | UE ⚠ componente + `SExploredMapSheet` | #9 | Mapa en las manos, mirador → boceto, Los Dientes por islote |
-| Ruins / museo | host ✅ `FRuinsModel`, `FMuseumModel` | UE ⚠ subsistema + expositor | #12 | Actores de estatua/altar/canoa, `Notify*` desde la interacción, piezas de museo |
-| Boats | host ✅ `FBoatModel` | UE ⚠ `AExploredBoat` | integración | Malla del «Limón» y del astillero; marea en `AExploredOcean`; dirección del viento en el clima |
-| Fauna | host ✅ boids, cerebro marino, aparición, LOD | UE ⚠ gestor + criaturas | integración | Importar mallas de fauna y materiales animados por shader; daño → supervivencia |
+| Cooking / fuego | host ✅ `FFireModel`, `FCookingModel` | UE ⚠ `AExploredFire` | #13 | Frescura en el inventario |
+| Cartography | host ✅ `FCartographyModel` | UE ⚠ componente + `SExploredMapSheet` | #9 | Mapa en las manos (P-UI2), Los Dientes por islote |
+| Ruins / museo | host ✅ `FRuinsModel`, `FMuseumModel` | UE ⚠ subsistema + expositor | #12 | Mallas de estatua/altar/canoa (hoy marcadores `AExploredRuinElement`), piezas de museo |
+| Boats | host ✅ `FBoatModel` | UE ⚠ `AExploredBoat` | integración | Malla del «Limón» y astillero (que cree barcos con `bBuiltByPlayer`); marea en `AExploredOcean`; dirección del viento en el clima |
+| Fauna | host ✅ boids, cerebro marino, aparición, LOD | UE ⚠ gestor + criaturas | integración | Importar mallas de fauna y materiales animados por shader |
 | Fishing | host ✅ `FFishingModel`, tensión | UE ⚠ componente, trampas | integración | Aparejos como objetos; zonas de pesca legendaria; máscara de arrecife desde WorldGen |
-| Save | host ✅ formato, ranuras, deltas | UE ⚠ `UExploredSaveSubsystem` | #14 | Registrar las secciones de cada sistema (P-WIRE) |
-| Achievements | host ✅ `FAchievementsModel` | UE ⚠ subsistema + aviso | #10 | Que los sistemas reporten estadísticas (P-WIRE), pantalla de logros |
-| Audio / música | host ✅ `FMusicDirectorModel`, flauta | UE ⚠ `UExploredMusicSubsystem`, M5 | integración | Re-renderizar audio (`sfx_flute_note`); `NotifyDiscovery`/`SetDanger` desde los sistemas |
+| Save | host ✅ formato, ranuras, deltas | UE ⚠ `UExploredSaveSubsystem` | #14 | Recolección del scatter (capa `harvested`), objetos sueltos y contenedores del mundo, fichero de perfil |
+| Achievements | host ✅ `FAchievementsModel` | UE ⚠ subsistema + aviso | #10 | Pantalla de logros (P-UI2); `palms_climbed` y `albatros_parts_recovered` sin sistema que las informe |
+| Audio / música | host ✅ `FMusicDirectorModel`, flauta | UE ⚠ `UExploredMusicSubsystem`, M5 | integración | Re-renderizar audio (`sfx_flute_note`); objeto flauta y su entrada |
 | UI / frontend | host ✅ `SettingsLogic` | UE ⚠ H6, H7, M8, M11–M16 | #17 | Pantallas de mapa y museo, entrada «Logros» |
 | Localización | host ✅ selector ES/EN | catálogo + archivos de Unreal | integración | Compilar `.locres` en el editor; nombres de objetos por cultura en el registro |
 
@@ -69,7 +69,7 @@ Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI 
 | P-BODY | Heridas, escorbuto, nutrición, señales corporales | hecho, sin compilar (#17) |
 | P-MUSIC | Director de música adaptativa, flauta | hecho, sin compilar (#17) |
 | P-L10N | Catálogo ES/EN y exportación a Unreal | hecho (#17) |
-| P-WIRE | Conectar sistemas entre sí: secciones de guardado, estadísticas de logros, interacción con ruinas/mirador, calor del fuego → supervivencia, consumo de materiales | pendiente |
+| P-WIRE | Conectar sistemas entre sí: secciones de guardado, estadísticas de logros, interacción con ruinas/mirador, calor del fuego → supervivencia, consumo de materiales | hecho, sin compilar (`nube/conexion-2026-09-26`) |
 | P-UI2 | Pantallas: mapa en las manos, museo, logros, selector de ranura | pendiente |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |
 

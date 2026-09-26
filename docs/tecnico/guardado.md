@@ -160,6 +160,35 @@ Contrato:
 - Los callbacks corren en el hilo de juego, dentro de `SaveToSlot`/`LoadFromSlot`. Si
   capturan un `UObject`, que sea con `TWeakObjectPtr`.
 
+### Secciones registradas (P-WIRE)
+
+La conversión de cada estado plano está en `Save/SaveSystemStates.h` (`ExploredSaveStates`,
+con viajes de ida y vuelta en el host: `Explored.Save.Systems`).
+
+| Sección | Quién la registra | Qué guarda |
+|---|---|---|
+| `player` | `UExploredSaveSubsystem` | Posición, rotación del control y velocidad |
+| `achievements` | `UAchievementsSubsystem` | Perfil, partida, modo y logros. Al cargar, el perfil se **fusiona** (`MergeLoadedAchievements`: máximos, uniones) y nunca retrocede |
+| `building` | `UBuildingSubsystem` | `FBuildingSaveState` (bases y piezas); al cargar rehace los actores |
+| `farm` | `UFarmSubsystem` | `FFarmState` (parcelas, cultivos, espantapájaros) |
+| `ruins` | `URuinsSubsystem` | Elementos descubiertos, ruinas completas, tesoros y vitrinas |
+| `events` | `UWorldEventsSubsystem` | Resultados de un solo uso consumidos (ids de 64 bits) |
+| `time` | `UExploredWiringSubsystem` | Día, hora y estado del clima forzado |
+| `wiring` | `UExploredWiringSubsystem` | Día en que empezó la partida (`days_survived`) |
+| `progress` | `UExploredWiringSubsystem` | `FExploredProgress` (descubrimientos, piezas del Albatros, finales) |
+| `world` | `UExploredWiringSubsystem` | `FSaveWorldDeltas` (semilla + capas) |
+| `inventory` | `UExploredWiringSubsystem` | `FInventoryState` y cada instancia completa con sus piezas **aplanadas** (lista con el índice del padre, `FlattenItemTree`/`RebuildItemTrees`) |
+| `body` | `UExploredWiringSubsystem` | `FSurvivalState` completo (heridas, estados, escorbuto…) y modo |
+| `cartography` | `UExploredWiringSubsystem` | `FCartographyState` (trazos, bocetos, marcas, cobertura, tinta) |
+| `fishing` | `UExploredWiringSubsystem` | `FFishingSaveState`; al cargar vuelve a crear los actores de las trampas |
+| `cooking` | `UExploredWiringSubsystem` | Cada fuego por su posición: `FFireState`, olla y utensilio; los que no están en el mapa se crean |
+| `boats` | `UExploredWiringSubsystem` | Cada embarcación (las del mapa por nombre de actor; las construidas, `bBuiltByPlayer`, se vuelven a crear) |
+
+Las secciones del personaje (`inventory`, `body`, `cartography`) que llegan antes que él se
+guardan pendientes y se aplican en cuanto existe; si se guarda sin personaje, se conserva lo
+pendiente. Los subsistemas del mundo registran su sección en `Initialize` y la retiran en
+`Deinitialize`, con capturas `TWeakObjectPtr`.
+
 ### Tipos que se guardan solos
 
 `FSaveArchive::Write/Read/ReadOr` aceptan cualquier tipo con `TSaveTraits<T>`:
@@ -207,8 +236,9 @@ el jugador cambió. `FSaveScatterDeltas` guarda instancias procedurales retirada
   aplicarlos al regenerar una celda.
 
 `FSaveWorldDeltas` agrupa capas por nombre (`"harvested"`, `"destroyed"`…) y la semilla.
-La sección `"world"` todavía no está registrada: la registrará el scatter de vegetación cuando
-tenga recolección persistente.
+La sección `"world"` la registra `UExploredWiringSubsystem` (`GetWorldDeltas()`); hoy viaja
+sin capas porque el scatter de vegetación aún no tiene recolección: cuando la tenga, basta con
+`GetWorldDeltas().Layer("harvested").Add(Celda, Índice)` y aplicar `ForEach` al regenerar.
 
 ## Ranuras
 
@@ -251,9 +281,13 @@ planos a la espera de un componente de supervivencia en el personaje.
 
 ## Pendiente
 
-- Secciones de cada sistema: mundo (recolección del scatter), progreso (`FExploredProgress`),
-  hora y clima, construcción, huerto, cartografía, museo, cocina y eventos.
-- Llamar a `RequestAutosave` desde la cama y las hogueras cuando existan.
+- Recolección del scatter en la capa `harvested` de la sección `world` (no hay recolección aún).
+- Objetos sueltos en el mundo (`AExploredItemActor`) y contenedores del mundo: no se guardan.
+- El perfil de logros solo vive en las partidas (se fusiona al cargar); falta un fichero de
+  perfil propio para no perderlo sin cargar ninguna partida.
+- Las parcelas del huerto se identifican por el orden en que las registran sus actores.
+- Llamar a `RequestAutosave(ESaveTrigger::Sleep)` desde la cama cuando exista (las hogueras ya
+  llaman a `Campfire` al encenderse).
 - Selector de ranura en la UI (hoy «Guardar partida» usa `auto`).
 - La capa de Unreal está **sin compilar**: verificar en local con `Tools/build.ps1` y
   `Tools/test.ps1`.
