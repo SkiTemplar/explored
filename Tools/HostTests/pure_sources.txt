@@ -5,6 +5,7 @@ Fauna/ProceduralGait.cpp
 Ocean/OceanWaves.cpp
 Ocean/OceanCurrents.cpp
 Survival/SurvivalModel.cpp
+UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp
 WorldGen/PointsOfInterest.cpp
