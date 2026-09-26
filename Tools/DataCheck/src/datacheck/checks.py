@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import crafting
+from . import achievements, crafting
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -36,7 +36,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
+    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
 ]
 
 
@@ -553,5 +553,6 @@ def run_all(ds: DataSet) -> Report:
     check_meshes(ds, r)
     check_survival(ds, r)
     check_story(ds, r)
+    achievements.check_achievements(ds, r)
     check_forbidden_terms(ds, r)
     return r

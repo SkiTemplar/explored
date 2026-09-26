@@ -15,8 +15,9 @@ uv run pytest               # tests (datos reales + regresiones sintéticas)
 Qué comprueba:
 
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
-  `plants.json`, `building_pieces.json`, `survival_needs.json` y
-  `meshes_pendientes.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0…).
+  `plants.json`, `building_pieces.json`, `survival_needs.json`,
+  `meshes_pendientes.json` y `achievements.json` (campos, tipos, rangos: propiedades
+  0-5, pesos > 0…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
@@ -27,4 +28,9 @@ Qué comprueba:
   `meshes_pendientes.json`, y nada obsoleto puede quedarse allí.
 - **Espejo del C++**: `survival_needs.json` contra las constantes de
   `Source/Explored/Survival/SurvivalModel.{h,cpp}`.
+- **Logros (GDD §16)**: exactamente 30, ids ASCII únicos, textos en ES y EN, los
+  ejemplos del GDD presentes, condiciones con estadísticas conocidas y de tipo
+  compatible (la misma regla que `FAchievementsModel::Configure`), ids de conjuntos
+  admitidos (listas cerradas o `items`/`plants`/`building_pieces`), metas alcanzables,
+  y el catálogo de estadísticas igual al de `docs/tecnico/estadisticas.md`.
 - **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.
