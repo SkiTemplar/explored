@@ -1,8 +1,11 @@
 """
 Hierba y flor — Tools/Blender/assets/grass.py
 
-2 matas de hierba (tarjetas curvas) y 1 flor tropical.
-Presupuesto orientativo: < 600 triángulos.
+Segunda pasada de arte (2026-09-26): 2 matas de hierba alta (1-1,5 m) y una
+mata de hierba baja más ancha y densa, más la flor tropical. El triángulo
+por tarjeta no cambia con la longitud (solo escala el mundo, no la
+topología), así que «hierba alta» no dispara el presupuesto.
+Presupuesto orientativo: < 700 triángulos.
 """
 
 import os
@@ -15,13 +18,15 @@ import common as C  # noqa: E402
 CATEGORY = 'grass'
 
 VARIANTS = [
-    dict(name='GrassClumpA', index=1, seed=5001, kind='clump_a'),
-    dict(name='GrassClumpB', index=1, seed=5002, kind='clump_b'),
-    dict(name='FlowerTropical', index=1, seed=5003, kind='flower'),
+    dict(name='GrassTallA', index=1, seed=5001, kind='tall_a'),
+    dict(name='GrassTallB', index=1, seed=5002, kind='tall_b'),
+    dict(name='GrassLowWide', index=1, seed=5003, kind='low_wide'),
+    dict(name='FlowerTropical', index=1, seed=5004, kind='flower'),
 ]
 
 
-def _build_clump(rnd, n_blades, length_range, width_ratio, curve_ratio, spread):
+def _build_clump(rnd, n_blades, length_range, width_ratio, curve_ratio, spread,
+                  dark=(0.14, 0.32, 0.10), light=(0.34, 0.58, 0.22)):
     parts = []
     for i in range(n_blades):
         length = rnd.uniform(*length_range)
@@ -37,8 +42,8 @@ def _build_clump(rnd, n_blades, length_range, width_ratio, curve_ratio, spread):
         forward = C.Vector((rnd.uniform(-0.3, 0.3), rnd.uniform(-0.3, 0.3), math.sin(elevation)))
         C.orient_and_place(blade, origin, forward, C.Vector((0, 0, 1)))
         C.assign_materials(blade, ['M_Grass'])
-        C.set_vertex_colors(blade, C.tint_along_axis(
-            (0.20, 0.46, 0.15), 'y', 0.0, length, curve=0.8, jitter=0.05, rnd=rnd))
+        C.set_vertex_colors(blade, C.gradient_along_axis(
+            dark, light, 'y', 0.0, length, curve=0.8, jitter=0.04, rnd=rnd))
         parts.append(blade)
     return parts
 
@@ -51,7 +56,8 @@ def _build_flower(rnd, seed):
         curvature=stem_h * rnd.uniform(0.1, 0.25), n_points=4, bevel_resolution=2, rnd=rnd,
     )
     C.assign_materials(stem, ['M_Grass'])
-    C.set_vertex_colors(stem, C.constant_tint((0.22, 0.42, 0.16), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(stem, C.gradient_along_axis(
+        (0.14, 0.30, 0.10), (0.28, 0.46, 0.18), 'z', 0.0, stem_h, curve=1.0, jitter=0.02, rnd=rnd))
     parts.append(stem)
 
     n_petals = rnd.randint(5, 6)
@@ -82,12 +88,17 @@ def build(variant):
     rnd = C.seeded_rng(variant['seed'])
     kind = variant['kind']
 
-    if kind == 'clump_a':
-        parts = _build_clump(rnd, n_blades=rnd.randint(10, 14), length_range=(0.22, 0.38),
-                              width_ratio=0.045, curve_ratio=0.30, spread=0.07)
-    elif kind == 'clump_b':
-        parts = _build_clump(rnd, n_blades=rnd.randint(6, 9), length_range=(0.30, 0.48),
-                              width_ratio=0.06, curve_ratio=0.45, spread=0.05)
+    if kind == 'tall_a':
+        parts = _build_clump(rnd, n_blades=rnd.randint(9, 13), length_range=(1.0, 1.5),
+                              width_ratio=0.028, curve_ratio=0.28, spread=0.12)
+    elif kind == 'tall_b':
+        parts = _build_clump(rnd, n_blades=rnd.randint(7, 10), length_range=(1.1, 1.5),
+                              width_ratio=0.035, curve_ratio=0.4, spread=0.10,
+                              dark=(0.16, 0.30, 0.09), light=(0.40, 0.56, 0.20))
+    elif kind == 'low_wide':
+        parts = _build_clump(rnd, n_blades=rnd.randint(20, 28), length_range=(0.18, 0.32),
+                              width_ratio=0.075, curve_ratio=0.35, spread=0.22,
+                              dark=(0.15, 0.33, 0.11), light=(0.36, 0.60, 0.24))
     else:
         parts = _build_flower(rnd, variant['seed'])
 

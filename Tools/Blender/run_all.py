@@ -37,19 +37,23 @@ FAMILY_FOLDERS = {
     'shrub': 'Shrub',
     'rock': 'Rock',
     'grass': 'Grass',
+    'debris': 'Debris',
 }
 
-MODULE_NAMES = ['palm', 'jungle_tree', 'shrub', 'rock', 'grass']
+MODULE_NAMES = ['palm', 'jungle_tree', 'shrub', 'rock', 'grass', 'debris']
 
-# Presupuestos orientativos de triángulos (GDD §8 + encargo): se registran
-# en el manifest pero no bloquean la generación; validate.py es quien los
-# hace cumplir de verdad antes de dar el kit por bueno.
+# Presupuestos orientativos de triángulos (GDD §8 + encargo, ampliados en la
+# segunda pasada de arte: árbol gigante hasta 25k porque va con Nanite, y
+# sotobosque con más rango por la platanera/helecho arbóreo/bambú denso).
+# Se registran en el manifest pero no bloquean la generación; validate.py es
+# quien los hace cumplir de verdad antes de dar el kit por bueno.
 TRIANGLE_BUDGETS = {
     'palm': (3000, 6000),
-    'tree': (6000, 15000),
-    'shrub': (1000, 4000),
+    'tree': (6000, 25000),
+    'shrub': (1000, 9000),
     'rock': (1000, 3000),
-    'grass': (0, 600),
+    'grass': (0, 700),
+    'debris': (100, 4500),
 }
 
 

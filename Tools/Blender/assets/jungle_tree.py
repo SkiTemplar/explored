@@ -62,6 +62,7 @@ def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd):
         count=rnd.randint(2, 4), seed=seed,
         blob_scale_range=(0.5, 0.85), subdivisions=2, relax_iterations=2,
     )
+    C.assign_materials(lobe, ['M_Leaf'])
     _tint_canopy_part(lobe, rnd)
     return lobe
 
@@ -69,7 +70,7 @@ def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd):
 def _branch_system(top, base_radius, ref_height, rnd, seed,
                     n_main=(3, 5), main_len_ratio=(0.30, 0.50),
                     elevation_range=(20, 55), sub_prob=0.6, sub_count=(1, 2),
-                    sub_len_ratio=(0.40, 0.65)):
+                    sub_len_ratio=(0.40, 0.65), sub_elevation_range=(10, 45)):
     """Ramas principales desde el tercio superior del tronco, cada una con
     posibles subramas. Devuelve (partes_de_madera, lista_de_puntas) donde
     cada punta es (posición_mundo, dirección) lista para colgar una copa.
@@ -82,7 +83,7 @@ def _branch_system(top, base_radius, ref_height, rnd, seed,
         elevation = math.radians(rnd.uniform(*elevation_range))
         b_len = ref_height * rnd.uniform(*main_len_ratio)
         b_radius = base_radius * rnd.uniform(0.30, 0.48)
-        direction = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.3))
+        direction = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation)))
 
         branch, _ = C.make_curved_trunk(
             f'Branch_{i:02d}', height=b_len, base_radius=b_radius,
@@ -101,10 +102,10 @@ def _branch_system(top, base_radius, ref_height, rnd, seed,
             n_sub = rnd.randint(*sub_count)
             for j in range(n_sub):
                 s_ang = ang + rnd.uniform(-1.1, 1.1)
-                s_elev = math.radians(rnd.uniform(10, 45))
+                s_elev = math.radians(rnd.uniform(*sub_elevation_range))
                 s_len = b_len * rnd.uniform(*sub_len_ratio)
                 s_radius = b_radius * 0.55
-                s_dir = C.Vector((math.cos(s_ang), math.sin(s_ang), math.sin(s_elev) * 1.2))
+                s_dir = C.Vector((math.cos(s_ang), math.sin(s_ang), math.sin(s_elev)))
                 s_dir = (direction.normalized() * 0.5 + s_dir.normalized() * 0.85)
                 subbranch, _ = C.make_curved_trunk(
                     f'SubBranch_{i:02d}_{j:02d}', height=s_len, base_radius=s_radius,
@@ -186,7 +187,7 @@ def _big_leaf_crown(top, rnd, seed, n_leaves, leaf_len_range):
         leaf = C.make_leaf_blade(
             f'BigLeaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.34,
             width_tip=leaf_len * 0.10, curve_amount=leaf_len * 0.28,
-            segments=6, double_sided=False,
+            segments=7, double_sided=True,
         )
         ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.3, 0.3)
         elevation = rnd.uniform(math.radians(15), math.radians(55))
@@ -225,8 +226,9 @@ def build(variant):
         top = C.spline_point(height, 1.0, curvature, lean_dir)
         branch_parts, tips = _branch_system(
             top, base_radius, height, rnd, variant['seed'],
-            n_main=(4, 5), main_len_ratio=(0.30, 0.42), elevation_range=(15, 45),
-            sub_prob=0.85, sub_count=(2, 3), sub_len_ratio=(0.45, 0.7),
+            n_main=(4, 5), main_len_ratio=(0.22, 0.32), elevation_range=(4, 16),
+            sub_prob=0.85, sub_count=(2, 3), sub_len_ratio=(0.35, 0.5),
+            sub_elevation_range=(4, 14),
         )
         parts += branch_parts
 
@@ -315,16 +317,16 @@ def build(variant):
         top = C.spline_point(height, 1.0, curvature, lean_dir)
         branch_parts, tips = _branch_system(
             top, base_radius, height, rnd, variant['seed'],
-            n_main=(2, 3), main_len_ratio=(0.25, 0.40), elevation_range=(20, 50),
-            sub_prob=0.25, sub_count=(1, 1), sub_len_ratio=(0.5, 0.6),
+            n_main=(3, 4), main_len_ratio=(0.25, 0.40), elevation_range=(20, 50),
+            sub_prob=0.6, sub_count=(1, 2), sub_len_ratio=(0.5, 0.65),
         )
         parts += branch_parts
 
         parts += _big_leaf_crown(top, rnd, variant['seed'] + 9,
-                                  n_leaves=rnd.randint(5, 8), leaf_len_range=(0.7, 1.1))
+                                  n_leaves=rnd.randint(7, 10), leaf_len_range=(0.75, 1.15))
         for pos, _direction in tips:
             parts += _big_leaf_crown(pos, rnd, variant['seed'] + 19 + int(pos.z * 100),
-                                      n_leaves=rnd.randint(2, 3), leaf_len_range=(0.55, 0.85))
+                                      n_leaves=rnd.randint(3, 5), leaf_len_range=(0.6, 0.9))
 
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=55.0)

@@ -53,13 +53,13 @@ namespace
 		auto C = [](uint8 R, uint8 G, uint8 B) { return FLinearColor(FColor(R, G, B)); };
 		switch (Archetype)
 		{
-		case EIslandArchetype::Landing: return {C(232, 212, 172), C(92, 132, 60), C(124, 116, 104)};
-		case EIslandArchetype::Emerald: return {C(220, 200, 160), C(62, 118, 50), C(92, 100, 86)};
-		case EIslandArchetype::Smoke: return {C(70, 64, 62), C(104, 118, 58), C(58, 46, 44)};
+		case EIslandArchetype::Landing: return {C(232, 212, 172), C(104, 128, 70), C(124, 116, 104)};
+		case EIslandArchetype::Emerald: return {C(220, 200, 160), C(74, 112, 58), C(92, 100, 86)};
+		case EIslandArchetype::Smoke: return {C(70, 64, 62), C(100, 110, 64), C(58, 46, 44)};
 		case EIslandArchetype::Teeth: return {C(206, 196, 178), C(118, 140, 88), C(150, 148, 142)};
 		case EIslandArchetype::Mangrove: return {C(150, 134, 102), C(92, 116, 66), C(98, 96, 84)};
-		case EIslandArchetype::WhiteSands: return {C(246, 238, 220), C(112, 150, 72), C(196, 190, 176)};
-		case EIslandArchetype::Mesa: return {C(214, 190, 144), C(150, 146, 74), C(156, 122, 92)};
+		case EIslandArchetype::WhiteSands: return {C(246, 238, 220), C(116, 138, 78), C(196, 190, 176)};
+		case EIslandArchetype::Mesa: return {C(214, 190, 144), C(146, 138, 82), C(156, 122, 92)};
 		default: return {C(230, 210, 170), C(90, 150, 60), C(120, 115, 105)};
 		}
 	}

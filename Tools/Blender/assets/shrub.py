@@ -1,13 +1,18 @@
 """
 Sotobosque — Tools/Blender/assets/shrub.py
 
-4 plantas: helecho, arbusto de hoja ancha, taro (oreja de elefante) y
-bambú en mata. Presupuesto orientativo: 1 000-4 000 triángulos.
+Segunda pasada de arte (2026-09-26): 6 plantas — helecho arborescente,
+helecho de suelo (más grande y denso), platanera (con alguna hoja
+rasgada), monstera/oreja de elefante, arbusto con flores (heliconia/
+hibisco) y bambú en mata (más alto y denso). Presupuesto orientativo:
+1 000-9 000 triángulos.
 """
 
 import os
 import sys
 import math
+
+import bpy
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
@@ -15,130 +20,271 @@ import common as C  # noqa: E402
 CATEGORY = 'shrub'
 
 VARIANTS = [
-    dict(name='ShrubFern', index=1, seed=3001, kind='fern'),
-    dict(name='ShrubBroadleaf', index=1, seed=3002, kind='broadleaf'),
-    dict(name='ShrubTaro', index=1, seed=3003, kind='taro'),
-    dict(name='ShrubBamboo', index=1, seed=3004, kind='bamboo'),
+    dict(name='ShrubFernTree', index=1, seed=3001, kind='fern_tree'),
+    dict(name='ShrubFernGround', index=1, seed=3002, kind='fern_ground'),
+    dict(name='ShrubBanana', index=1, seed=3003, kind='banana'),
+    dict(name='ShrubMonstera', index=1, seed=3004, kind='monstera'),
+    dict(name='ShrubFlowering', index=1, seed=3005, kind='flowering'),
+    dict(name='ShrubBamboo', index=1, seed=3006, kind='bamboo'),
 ]
 
 
-def _build_fern(rnd, seed):
+def _tear_leaf_edges(obj, segments, rnd, tear_count=2, depth_ratio=0.5):
+    """Pellizca 1-2 vértices del borde hacia la nervadura central para
+    simular un desgarro de viento en una hoja grande (platanera): barato
+    (no añade triángulos) y evita geometría degenerada porque nunca cierra
+    del todo el hueco."""
+    verts = obj.data.vertices
+    rows = segments + 1
+    for _ in range(tear_count):
+        row = rnd.randint(1, max(1, rows - 2))
+        side = rnd.choice([0, 1])
+        idx = 2 * row + side
+        if idx < len(verts):
+            verts[idx].co.x *= (1.0 - depth_ratio)
+    obj.data.update()
+
+
+def _build_fern_tree(rnd, seed):
+    """Helecho arborescente: tronco fibroso de 2-4 m rematado por un
+    penacho de frondas, igual que una palmera pequeña pero con frondas más
+    finas, numerosas y menos rígidas."""
     parts = []
-    n_fronds = rnd.randint(11, 16)
-    length = rnd.uniform(0.35, 0.6)
+    height = rnd.uniform(2.0, 4.0)
+    base_radius = rnd.uniform(0.09, 0.14)
+    trunk, lean_dir = C.make_curved_trunk(
+        'Trunk', height, base_radius, base_radius * 0.85, curvature=height * 0.04,
+        n_points=7, bevel_resolution=3, wobble=height * 0.006, rnd=rnd,
+    )
+    C.add_ring_bumps(trunk, spacing=height / rnd.uniform(10, 14),
+                      amplitude=base_radius * 0.12, rnd=rnd, sharpness=4)
+    C.assign_materials(trunk, ['M_Bark'])
+    C.set_vertex_colors(trunk, C.bark_streaks_tint(
+        (0.14, 0.11, 0.08), (0.24, 0.19, 0.13), height, seed, streak_count=14))
+    parts.append(trunk)
+
+    crown = C.spline_point(height, 1.0, height * 0.04, lean_dir)
+    n_fronds = rnd.randint(12, 17)
+    frond_len = rnd.uniform(1.0, 1.7)
     for i in range(n_fronds):
-        ang = (2.0 * math.pi * i / n_fronds) + rnd.uniform(-0.35, 0.35)
+        ang = (2.0 * math.pi * i / n_fronds) + rnd.uniform(-0.25, 0.25)
+        elevation = rnd.uniform(math.radians(10), math.radians(45))
         frond = C.make_frond_object(
-            f'Frond_{i:02d}', length=length * rnd.uniform(0.8, 1.15),
-            width=length * 0.42, leaflet_count=rnd.randint(18, 24),
-            droop=length * rnd.uniform(0.05, 0.20), seed=seed * 10 + i,
-            curl=0.25, rachis_width_ratio=0.015,
+            f'Frond_{i:02d}', length=frond_len * rnd.uniform(0.85, 1.1),
+            width=frond_len * 0.30, leaflet_count=rnd.randint(22, 30),
+            droop=frond_len * rnd.uniform(0.30, 0.5), seed=seed * 10 + i,
+            curl=0.2, rachis_width_ratio=0.014,
         )
-        elevation = rnd.uniform(math.radians(15), math.radians(55))
-        forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.6))
-        C.orient_and_place(frond, C.Vector((0, 0, 0.02)), forward, C.Vector((0, 0, 1)))
+        forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.3))
+        C.orient_and_place(frond, crown, forward, C.Vector((0, 0, 1)))
+        dark = (0.075 + rnd.uniform(-0.01, 0.02), 0.20 + rnd.uniform(-0.02, 0.02), 0.07)
+        light = (0.20 + rnd.uniform(-0.02, 0.03), 0.36, 0.14)
         C.assign_materials(frond, ['M_Leaf'])
-        C.set_vertex_colors(frond, C.tint_along_axis(
-            (0.09, 0.30, 0.10), 'y', 0.0, length, curve=0.8, jitter=0.04, rnd=rnd))
+        C.set_vertex_colors(frond, C.gradient_along_axis(
+            dark, light, 'y', 0.0, frond_len, curve=0.8, jitter=0.03, rnd=rnd))
         parts.append(frond)
     return parts
 
 
-def _build_broadleaf(rnd, seed):
+def _build_fern_ground(rnd, seed):
+    """Helecho de suelo, ahora más grande y denso: 10-16 frondas de
+    0,8-1,5 m abriéndose en abanico desde un rizoma."""
     parts = []
+    n_fronds = rnd.randint(12, 16)
+    length = rnd.uniform(0.8, 1.5)
+    for i in range(n_fronds):
+        ang = (2.0 * math.pi * i / n_fronds) + rnd.uniform(-0.35, 0.35)
+        frond = C.make_frond_object(
+            f'Frond_{i:02d}', length=length * rnd.uniform(0.8, 1.15),
+            width=length * 0.40, leaflet_count=rnd.randint(20, 26),
+            droop=length * rnd.uniform(0.05, 0.20), seed=seed * 10 + i,
+            curl=0.25, rachis_width_ratio=0.014,
+        )
+        elevation = rnd.uniform(math.radians(15), math.radians(55))
+        forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.6))
+        C.orient_and_place(frond, C.Vector((0, 0, 0.02)), forward, C.Vector((0, 0, 1)))
+        dark = (0.08, 0.19 + rnd.uniform(-0.02, 0.02), 0.07)
+        light = (0.22, 0.37, 0.15)
+        C.assign_materials(frond, ['M_Leaf'])
+        C.set_vertex_colors(frond, C.gradient_along_axis(
+            dark, light, 'y', 0.0, length, curve=0.8, jitter=0.04, rnd=rnd))
+        parts.append(frond)
+    return parts
+
+
+def _build_banana(rnd, seed):
+    """Platanera: pseudotallo grueso y corto con 6-9 hojas enormes,
+    algunas rasgadas por el viento."""
+    parts = []
+    height = rnd.uniform(1.6, 2.4)
+    base_radius = rnd.uniform(0.14, 0.20)
     trunk, lean_dir = C.make_curved_trunk(
-        'Stem', height=rnd.uniform(0.5, 0.8), base_radius=rnd.uniform(0.02, 0.035),
-        tip_radius=rnd.uniform(0.008, 0.015), curvature=rnd.uniform(0.05, 0.12),
-        n_points=5, bevel_resolution=3, rnd=rnd,
+        'Pseudostem', height, base_radius, base_radius * 0.7, curvature=height * 0.03,
+        n_points=6, bevel_resolution=4, rnd=rnd,
     )
     C.assign_materials(trunk, ['M_Bark'])
-    C.set_vertex_colors(trunk, C.constant_tint((0.22, 0.16, 0.10), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(trunk, C.bark_streaks_tint(
+        (0.16, 0.20, 0.10), (0.30, 0.38, 0.20), height, seed, streak_count=16))
     parts.append(trunk)
 
-    n_leaves = rnd.randint(15, 21)
-    stem_top = trunk.dimensions.z
+    top = C.spline_point(height, 1.0, height * 0.03, lean_dir)
+    n_leaves = rnd.randint(6, 9)
     for i in range(n_leaves):
-        leaf_len = rnd.uniform(0.14, 0.24)
+        leaf_len = rnd.uniform(1.5, 2.5)
+        segments = 8
         leaf = C.make_leaf_blade(
-            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.55,
-            width_tip=leaf_len * 0.08, curve_amount=leaf_len * 0.3,
-            segments=6, double_sided=True,
+            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.34,
+            width_tip=leaf_len * 0.06, curve_amount=leaf_len * 0.30,
+            segments=segments, double_sided=False,
         )
-        ang = rnd.uniform(0, 2 * math.pi)
-        elevation = rnd.uniform(math.radians(10), math.radians(70))
-        origin = C.Vector((0, 0, rnd.uniform(stem_top * 0.35, stem_top * 0.95)))
+        if rnd.random() < 0.45:
+            _tear_leaf_edges(leaf, segments, rnd, tear_count=rnd.randint(1, 2),
+                              depth_ratio=rnd.uniform(0.35, 0.6))
+        ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.25, 0.25)
+        elevation = rnd.uniform(math.radians(15), math.radians(55))
         forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation)))
-        C.orient_and_place(leaf, origin, forward, C.Vector((0, 0, 1)))
+        C.orient_and_place(leaf, top, forward, C.Vector((0, 0, 1)))
+        dark = (0.08, 0.24 + rnd.uniform(-0.02, 0.02), 0.09)
+        light = (0.24, 0.42, 0.16)
         C.assign_materials(leaf, ['M_Leaf'])
-        C.set_vertex_colors(leaf, C.tint_along_axis(
-            (0.10, 0.33, 0.13), 'y', 0.0, leaf_len, curve=0.9, jitter=0.05, rnd=rnd))
+        C.set_vertex_colors(leaf, C.gradient_along_axis(
+            dark, light, 'y', 0.0, leaf_len, curve=1.0, jitter=0.03, rnd=rnd))
         parts.append(leaf)
     return parts
 
 
-def _build_taro(rnd, seed):
+def _build_monstera(rnd, seed):
+    """Monstera / oreja de elefante: 6-10 hojas grandes acorazonadas sobre
+    pecíolos largos (sin perforaciones reales: sería un booleano, se deja
+    como simplificación conocida — ver informe)."""
     parts = []
-    n_leaves = rnd.randint(3, 5)
+    n_leaves = rnd.randint(6, 10)
     for i in range(n_leaves):
-        petiole_h = rnd.uniform(0.35, 0.55)
+        petiole_h = rnd.uniform(0.45, 0.75)
         petiole, _ = C.make_curved_trunk(
-            f'Petiole_{i:02d}', height=petiole_h, base_radius=rnd.uniform(0.012, 0.02),
-            tip_radius=rnd.uniform(0.008, 0.014), curvature=petiole_h * rnd.uniform(0.15, 0.3),
+            f'Petiole_{i:02d}', height=petiole_h, base_radius=rnd.uniform(0.015, 0.024),
+            tip_radius=rnd.uniform(0.010, 0.016), curvature=petiole_h * rnd.uniform(0.15, 0.3),
             n_points=5, bevel_resolution=2, rnd=rnd,
         )
         C.assign_materials(petiole, ['M_Grass'])
-        C.set_vertex_colors(petiole, C.constant_tint((0.24, 0.40, 0.16), alpha=0.0, jitter=0.02, rnd=rnd))
+        C.set_vertex_colors(petiole, C.constant_tint((0.22, 0.38, 0.15), alpha=0.0, jitter=0.02, rnd=rnd))
         ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.3, 0.3)
         C.orient_and_place(petiole, C.Vector((0, 0, 0)),
                             C.Vector((math.cos(ang) * 0.3, math.sin(ang) * 0.3, 1.0)),
                             C.Vector((0, 0, 1)))
         parts.append(petiole)
 
-        leaf_len = rnd.uniform(0.35, 0.5)
+        leaf_len = rnd.uniform(0.6, 1.0)
         leaf = C.make_leaf_blade(
-            f'Blade_{i:02d}', length=leaf_len, width_base=leaf_len * 0.7,
-            width_tip=leaf_len * 0.55, curve_amount=leaf_len * 0.22,
+            f'Blade_{i:02d}', length=leaf_len, width_base=leaf_len * 0.72,
+            width_tip=leaf_len * 0.5, curve_amount=leaf_len * 0.22,
             segments=5, double_sided=False,
         )
         top = C.Vector((math.cos(ang) * petiole_h * 0.3, math.sin(ang) * petiole_h * 0.3, petiole_h))
         tilt = rnd.uniform(math.radians(30), math.radians(60))
         forward = C.Vector((math.cos(ang), math.sin(ang), -math.sin(tilt) * 0.3))
         C.orient_and_place(leaf, top, forward, C.Vector((0, 0, 1)))
+        dark = (0.075, 0.22 + rnd.uniform(-0.02, 0.02), 0.09)
+        light = (0.20, 0.40, 0.17)
         C.assign_materials(leaf, ['M_Leaf'])
-        C.set_vertex_colors(leaf, C.tint_along_axis(
-            (0.09, 0.34, 0.14), 'y', 0.0, leaf_len, curve=1.0, jitter=0.04, rnd=rnd))
+        C.set_vertex_colors(leaf, C.gradient_along_axis(
+            dark, light, 'y', 0.0, leaf_len, curve=1.0, jitter=0.04, rnd=rnd))
         parts.append(leaf)
     return parts
 
 
-def _build_bamboo(rnd, seed):
+def _build_flowering(rnd, seed):
+    """Arbusto con flores tipo heliconia/hibisco: base de hojas anchas y
+    una o dos espigas de brácteas rojas/amarillas apiladas en zigzag."""
     parts = []
-    n_culms = rnd.randint(4, 6)
-    for i in range(n_culms):
-        h = rnd.uniform(2.2, 3.6)
-        base_r = rnd.uniform(0.025, 0.045)
-        culm, lean_dir = C.make_curved_trunk(
-            f'Culm_{i:02d}', height=h, base_radius=base_r, tip_radius=base_r * 0.7,
-            curvature=h * rnd.uniform(0.03, 0.09), n_points=6, bevel_resolution=2,
-            wobble=h * 0.005, rnd=rnd,
+    trunk, lean_dir = C.make_curved_trunk(
+        'Stem', height=rnd.uniform(0.6, 0.9), base_radius=rnd.uniform(0.022, 0.032),
+        tip_radius=rnd.uniform(0.010, 0.016), curvature=rnd.uniform(0.06, 0.12),
+        n_points=5, bevel_resolution=3, rnd=rnd,
+    )
+    C.assign_materials(trunk, ['M_Bark'])
+    C.set_vertex_colors(trunk, C.constant_tint((0.20, 0.15, 0.10), alpha=0.0, jitter=0.02, rnd=rnd))
+    stem_top = trunk.dimensions.z
+    parts.append(trunk)
+
+    n_leaves = rnd.randint(9, 13)
+    for i in range(n_leaves):
+        leaf_len = rnd.uniform(0.30, 0.5)
+        leaf = C.make_leaf_blade(
+            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.30,
+            width_tip=leaf_len * 0.06, curve_amount=leaf_len * 0.25,
+            segments=6, double_sided=True,
         )
-        C.add_ring_bumps(culm, spacing=h / rnd.uniform(7, 10), amplitude=base_r * 0.35,
+        ang = rnd.uniform(0, 2 * math.pi)
+        elevation = rnd.uniform(math.radians(20), math.radians(60))
+        origin = C.Vector((0, 0, rnd.uniform(stem_top * 0.3, stem_top * 0.9)))
+        forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation)))
+        C.orient_and_place(leaf, origin, forward, C.Vector((0, 0, 1)))
+        dark = (0.07, 0.22, 0.09)
+        light = (0.18, 0.36, 0.15)
+        C.assign_materials(leaf, ['M_Leaf'])
+        C.set_vertex_colors(leaf, C.gradient_along_axis(
+            dark, light, 'y', 0.0, leaf_len, curve=0.9, jitter=0.03, rnd=rnd))
+        parts.append(leaf)
+
+    hue = rnd.choice([
+        ((0.42, 0.03, 0.02), (0.95, 0.55, 0.08)),   # rojo -> naranja/amarillo (heliconia)
+        ((0.55, 0.05, 0.10), (0.92, 0.20, 0.30)),   # rojo oscuro -> rojo vivo (hibisco)
+    ])
+    n_spikes = rnd.randint(2, 3)
+    for s in range(n_spikes):
+        spike_ang = rnd.uniform(0, 2 * math.pi)
+        spike_h = rnd.uniform(0.35, 0.55)
+        n_bracts = rnd.randint(5, 7)
+        for b in range(n_bracts):
+            t = b / max(1, n_bracts - 1)
+            bract_len = rnd.uniform(0.14, 0.22) * (1.0 - 0.25 * t)
+            bract = C.make_leaf_blade(
+                f'Bract_{s}_{b:02d}', length=bract_len, width_base=bract_len * 0.5,
+                width_tip=bract_len * 0.1, curve_amount=bract_len * 0.6, segments=3,
+                double_sided=True,
+            )
+            side = 1 if b % 2 == 0 else -1
+            origin = C.Vector((math.cos(spike_ang) * 0.02 * side, math.sin(spike_ang) * 0.02 * side,
+                                stem_top + spike_h * t))
+            forward = C.Vector((math.cos(spike_ang) * side, math.sin(spike_ang) * side, 0.35))
+            C.orient_and_place(bract, origin, forward, C.Vector((0, 0, 1)))
+            C.assign_materials(bract, ['M_Leaf'])
+            C.set_vertex_colors(bract, C.gradient_along_axis(
+                hue[0], hue[1], 'y', 0.0, bract_len, curve=1.0, jitter=0.02, rnd=rnd))
+            parts.append(bract)
+    return parts
+
+
+def _build_bamboo(rnd, seed):
+    """Mata de bambú más alta y densa: 12-20 cañas de 5-8 m."""
+    parts = []
+    n_culms = rnd.randint(12, 16)
+    for i in range(n_culms):
+        h = rnd.uniform(5.0, 8.0)
+        base_r = rnd.uniform(0.035, 0.06)
+        culm, lean_dir = C.make_curved_trunk(
+            f'Culm_{i:02d}', height=h, base_radius=base_r, tip_radius=base_r * 0.6,
+            curvature=h * rnd.uniform(0.02, 0.06), n_points=5, bevel_resolution=2,
+            wobble=h * 0.004, rnd=rnd,
+        )
+        C.add_ring_bumps(culm, spacing=h / rnd.uniform(9, 13), amplitude=base_r * 0.30,
                           rnd=rnd, sharpness=8)
         ang = rnd.uniform(0, 2 * math.pi)
-        r = rnd.uniform(0.0, 0.18)
-        culm.location = (math.cos(ang) * r, math.sin(ang) * r, 0)
+        r = rnd.uniform(0.0, 0.55)
+        offset = C.Vector((math.cos(ang) * r, math.sin(ang) * r, 0.0))
+        culm.location = offset
         C.select_only(culm)
-        import bpy
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         C.assign_materials(culm, ['M_Grass'])
-        C.set_vertex_colors(culm, C.tint_along_axis(
-            (0.55, 0.62, 0.28), 'z', 0.0, h, curve=1.0, jitter=0.04, rnd=rnd))
+        C.set_vertex_colors(culm, C.gradient_along_axis(
+            (0.42, 0.50, 0.20), (0.68, 0.72, 0.38), 'z', 0.0, h, curve=1.0, jitter=0.03, rnd=rnd))
         parts.append(culm)
 
-        top = C.spline_point(h, 1.0, h * 0.05, lean_dir) + C.Vector(culm.location)
-        n_leaves = rnd.randint(3, 6)
+        top = C.spline_point(h, 1.0, h * 0.04, lean_dir) + offset
+        n_leaves = rnd.randint(3, 5)
         for j in range(n_leaves):
-            leaf_len = rnd.uniform(0.18, 0.3)
+            leaf_len = rnd.uniform(0.22, 0.38)
             leaf = C.make_leaf_blade(
                 f'BambooLeaf_{i:02d}_{j:02d}', length=leaf_len, width_base=leaf_len * 0.16,
                 width_tip=leaf_len * 0.01, curve_amount=leaf_len * 0.35, segments=3,
@@ -148,16 +294,19 @@ def _build_bamboo(rnd, seed):
             forward = C.Vector((math.cos(lang), math.sin(lang), rnd.uniform(0.1, 0.5)))
             C.orient_and_place(leaf, top, forward, C.Vector((0, 0, 1)))
             C.assign_materials(leaf, ['M_Leaf'])
-            C.set_vertex_colors(leaf, C.tint_along_axis(
-                (0.20, 0.40, 0.15), 'y', 0.0, leaf_len, curve=0.9, jitter=0.03, rnd=rnd))
+            C.set_vertex_colors(leaf, C.gradient_along_axis(
+                (0.16, 0.32, 0.12), (0.34, 0.50, 0.20), 'y', 0.0, leaf_len,
+                curve=0.9, jitter=0.03, rnd=rnd))
             parts.append(leaf)
     return parts
 
 
 _BUILDERS = {
-    'fern': _build_fern,
-    'broadleaf': _build_broadleaf,
-    'taro': _build_taro,
+    'fern_tree': _build_fern_tree,
+    'fern_ground': _build_fern_ground,
+    'banana': _build_banana,
+    'monstera': _build_monstera,
+    'flowering': _build_flowering,
     'bamboo': _build_bamboo,
 }
 

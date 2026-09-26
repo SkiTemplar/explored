@@ -43,9 +43,28 @@ if LIB_DIR not in sys.path:
     sys.path.insert(0, LIB_DIR)
 import common as C  # noqa: E402
 
-ROW_ORDER = ['palm', 'tree', 'shrub', 'rock', 'grass']
-ROW_TARGET_HEIGHT = 2.0   # altura de referencia (m) a la que se normaliza cada fila
-ROW_DEPTH = 2.6           # separación en Y entre filas
+ROW_ORDER = ['palm', 'tree', 'shrub', 'rock', 'grass', 'debris']
+
+# Altura de referencia (m) a la que se normaliza cada fila. El árbol se deja
+# grande a propósito: es la familia con más detalle nuevo (ramificación real,
+# contrafuertes, raíces de manglar) y merece protagonismo en la lámina.
+ROW_TARGET_HEIGHT = {
+    'palm': 2.4,
+    'tree': 4.4,
+    'shrub': 1.7,
+    'rock': 0.9,
+    'grass': 0.6,
+    'debris': 0.9,
+}
+# Rocas y restos de suelo son mallas «tumbadas»: normalizarlas por su altura
+# Z las dispararía de tamaño (un tronco caído mide 0,5 m de alto pero 4 m de
+# largo). Se normalizan por su dimensión mayor en su lugar.
+ROW_SIZE_AXIS = {
+    'palm': 'z', 'tree': 'z', 'shrub': 'z', 'grass': 'z',
+    'rock': 'max', 'debris': 'max',
+}
+ROW_DEPTH = 7.0           # separación en Y entre filas (holgada: la fila del
+                          # árbol es ancha y no debe invadir la siguiente)
 ITEM_MARGIN = 0.5         # separación horizontal entre mallas de una misma fila
 
 
@@ -104,28 +123,35 @@ def main():
     max_row_width = 0.0
     n_rows = len(ROW_ORDER)
 
+    row_ys = []
     for row_i, cat in enumerate(ROW_ORDER):
         entries = by_category.get(cat, [])
         if not entries:
             continue
         row_y = row_i * ROW_DEPTH
+        row_ys.append(row_y)
+        target_height = ROW_TARGET_HEIGHT[cat]
+        axis = ROW_SIZE_AXIS[cat]
 
         # primera pasada: importar y medir para conocer el factor de escala
         # de normalización de la fila (todas las mallas de la fila comparten
         # el mismo factor, así que las proporciones relativas dentro de la
-        # familia se conservan).
+        # familia se conservan). El eje de medida depende de la categoría:
+        # 'z' para lo que crece hacia arriba, 'max' para lo que está tumbado
+        # (rocas, restos de suelo) y así no se dispara de tamaño.
         imported = []
-        tallest = 1e-6
+        biggest = 1e-6
         for entry in entries:
             obj = _import_and_fix_materials(entry)
             if obj is None:
                 continue
             bpy.context.view_layer.update()
             x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
-            tallest = max(tallest, z1 - z0)
+            metric = (z1 - z0) if axis == 'z' else max(x1 - x0, y1 - y0, z1 - z0)
+            biggest = max(biggest, metric)
             imported.append(obj)
 
-        scale_factor = ROW_TARGET_HEIGHT / tallest
+        scale_factor = target_height / biggest
 
         cursor_x = 0.0
         for obj in imported:
@@ -143,9 +169,10 @@ def main():
 
         max_row_width = max(max_row_width, cursor_x - ITEM_MARGIN)
 
-    total_depth = (n_rows - 1) * ROW_DEPTH
+    total_depth = row_ys[-1] if row_ys else 0.0
     center_x = max_row_width / 2.0
     center_y = total_depth / 2.0
+    max_target_height = max(ROW_TARGET_HEIGHT.get(c, 1.0) for c in ROW_ORDER if by_category.get(c))
 
     # --- suelo neutro ---
     bpy.ops.mesh.primitive_plane_add(size=1.0)
@@ -185,15 +212,15 @@ def main():
     fov = math.radians(48.0)
     aspect = 1600.0 / 900.0
     dist_for_width = (max_row_width / 2.0 + 1.0) / math.tan(fov / 2.0) / aspect
-    dist_for_depth = (total_depth + ROW_TARGET_HEIGHT * 2.0)
+    dist_for_depth = (total_depth + max_target_height * 2.0)
     distance = max(dist_for_width, dist_for_depth, 8.0)
 
-    cam_z = ROW_TARGET_HEIGHT * 1.6
+    cam_z = max_target_height * 1.4
     bpy.ops.object.camera_add(location=(center_x, -distance * 0.55, cam_z))
     cam = bpy.context.object
     cam.data.lens_unit = 'FOV'
     cam.data.angle = fov
-    _point_camera(cam, Vector((center_x, center_y, ROW_TARGET_HEIGHT * 0.35)))
+    _point_camera(cam, Vector((center_x, center_y, max_target_height * 0.3)))
     scene.camera = cam
 
     # --- render ---

@@ -14,6 +14,7 @@
 #include "UObject/ConstructorHelpers.h"
 
 #include "Sky/TimeOfDaySubsystem.h"
+#include "Weather/WeatherModel.h"
 
 namespace
 {
@@ -105,7 +106,7 @@ AExploredSkyController::AExploredSkyController()
 	PP.AutoExposureBias = 0.6f;
 	// Tono cálido, saturación algo alta y bloom suave: la isla debe invitar a explorar.
 	PP.bOverride_ColorSaturation = true;
-	PP.ColorSaturation = FVector4(1.12f, 1.12f, 1.12f, 1.0f);
+	PP.ColorSaturation = FVector4(1.02f, 1.02f, 1.02f, 1.0f);
 	PP.bOverride_ColorContrast = true;
 	PP.ColorContrast = FVector4(1.05f, 1.05f, 1.05f, 1.0f);
 	PP.bOverride_WhiteTemp = true;
@@ -159,6 +160,13 @@ void AExploredSkyController::Tick(float DeltaSeconds)
 	}
 }
 
+void AExploredSkyController::SetWeather(const FWeatherSample& Weather)
+{
+	CloudCover = Weather.CloudCover;
+	WeatherFog = Weather.Fog;
+	WeatherRain = Weather.Rain;
+}
+
 void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 {
 	const float DayOfYear = FMath::Fmod(TotalDays, static_cast<float>(ExploredSky::DaysPerYear));
@@ -175,7 +183,8 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 	// El Sol se apaga suavemente bajo el horizonte; la Luna toma el relevo.
 	const float SunUp = FMath::SmoothStep(-0.08f, 0.04f, SunZ);
 	const float MoonUp = FMath::SmoothStep(-0.05f, 0.08f, MoonZ);
-	Sun->SetIntensity(SunIlluminanceLux * SunUp);
+	// Las nubes densas tapan buena parte del Sol directo.
+	Sun->SetIntensity(SunIlluminanceLux * SunUp * (1.0f - 0.7f * FMath::Square(CloudCover)));
 	Sun->SetVisibility(SunUp > 0.001f);
 	// Atardecer más cálido.
 	Sun->SetTemperature(FMath::Lerp(3600.0f, 5900.0f, FMath::SmoothStep(0.0f, 0.35f, SunZ)));
@@ -192,6 +201,6 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 
 	// Noches más densas y frescas; niebla matinal suave.
 	const bool bMorning = Hours > 4.5f && Hours < 9.0f;
-	Fog->SetFogDensity(bMorning ? 0.006f : 0.0025f);
+	Fog->SetFogDensity((bMorning ? 0.006f : 0.0025f) + WeatherFog * 0.03f + WeatherRain * 0.006f);
 	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.45f, 0.6f, 0.75f), SunUp));
 }

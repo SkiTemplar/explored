@@ -29,6 +29,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	/** Nubosidad, lluvia y niebla del clima actual (las aplica en el siguiente fotograma). */
+	void SetWeather(const struct FWeatherSample& Weather);
+
 	/** Hora que se muestra en el editor (fuera de juego). */
 	UPROPERTY(EditAnywhere, Category = "Explored|Cielo", meta = (ClampMin = 0, ClampMax = 24))
 	float EditorHours = 16.5f;
@@ -44,6 +47,10 @@ protected:
 
 private:
 	void ApplyTime(float Hours, float TotalDays);
+
+	float CloudCover = 0.2f;
+	float WeatherFog = 0.0f;
+	float WeatherRain = 0.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Cielo")
 	TObjectPtr<UDirectionalLightComponent> Sun;

@@ -39,11 +39,12 @@ ALLOWED_MATERIALS = {'M_Bark', 'M_Leaf', 'M_Rock', 'M_Grass'}
 # Rangos plausibles de dimensiones por categoría, en cm. El eje relevante es
 # Z (altura) para todo salvo la roca, donde se usa la dimensión mayor.
 PLAUSIBLE_RANGES_CM = {
-    'palm':  ('z', 550.0, 1450.0),
-    'tree':  ('z', 450.0, 2500.0),
-    'shrub': ('z', 15.0, 420.0),
-    'rock':  ('max', 12.0, 170.0),
-    'grass': ('z', 4.0, 70.0),
+    'palm':   ('z', 550.0, 1450.0),
+    'tree':   ('z', 450.0, 3900.0),   # el gigante de dosel llega a 25-35 m (+ copa)
+    'shrub':  ('z', 15.0, 900.0),     # bambú denso hasta 8 m
+    'rock':   ('max', 12.0, 170.0),
+    'grass':  ('z', 4.0, 170.0),      # hierba alta hasta 1,5 m
+    'debris': ('max', 15.0, 650.0),   # troncos caídos tumbados, cocos sueltos
 }
 
 DEGENERATE_AREA_EPS = 1e-8  # m^2

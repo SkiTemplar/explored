@@ -63,6 +63,7 @@ FAMILY_FOLDERS = {
     'shrub': 'Shrub',
     'rock': 'Rock',
     'grass': 'Grass',
+    'debris': 'Debris',
 }
 
 # Nanite conviene sobre todo en la geometría más pesada del kit (rocas y
@@ -214,7 +215,7 @@ def main():
         if entry['category'] in NANITE_CATEGORIES:
             _enable_nanite(static_mesh)
 
-        if entry['category'] == 'rock':
+        if entry['category'] in ('rock', 'debris'):
             _add_simple_collision(static_mesh)
 
         unreal.EditorAssetLibrary.save_loaded_asset(static_mesh)

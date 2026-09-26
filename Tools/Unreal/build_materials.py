@@ -309,8 +309,8 @@ float3 tint = lerp(float3(0.75, 0.85, 1.0), float3(1.0, 0.9, 0.75), h2);
 
 // Vía Láctea: banda difusa inclinada.
 float band = exp(-pow(dot(dir, normalize(float3(0.3, 0.8, 0.52))) / 0.18, 2.0));
-float dust = frac(sin(dot(floor(dir * 60.0), float3(7.1, 3.3, 5.7))) * 9751.3);
-float3 milky = band * (0.35 + 0.65 * dust) * float3(0.55, 0.6, 0.8) * 0.18;
+float dust = 0.5 + 0.5 * sin(dir.x * 23.0 + sin(dir.y * 17.0) * 2.0) * sin(dir.y * 19.0 + dir.z * 13.0 + sin(dir.x * 31.0));
+float3 milky = band * (0.3 + 0.7 * dust * dust) * float3(0.55, 0.6, 0.8) * 0.06;
 
 float horizon = smoothstep(-0.02, 0.15, dir.z);
 return (star * twinkle * tint * (1.0 + 4.0 * h2) + milky) * horizon * Night * 6.0;
