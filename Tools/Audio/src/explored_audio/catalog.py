@@ -85,8 +85,9 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_ui_page_turn", "Efectos", False, ui.ui_page_turn))
     specs.append(SoundSpec("sfx_ui_discovery_notify", "Efectos", False, ui.ui_discovery_notify))
 
-    # Fauna (biblia de contenido §6), mas alla de las aves ya cubiertas arriba.
-    for species in ("monkey", "crocodile", "boar", "crab", "turtle"):
+    # Fauna marina y de orilla (biblia de contenido §6), mas alla de las aves.
+    # Sin fauna terrestre: el GDD la excluye (§10, §12).
+    for species in ("crab", "turtle"):
         for i in range(1, 4):
             specs.append(_fauna_spec(species, i))
 

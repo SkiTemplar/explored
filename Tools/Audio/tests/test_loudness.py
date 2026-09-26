@@ -25,7 +25,7 @@ def _expected_range(name: str) -> tuple[float, float]:
         return (-34.0, -16.0)
     if name.startswith("sfx_thunder"):
         return (-40.0, -24.0)
-    if name.startswith("sfx_bird") or name.startswith("sfx_monkey"):
+    if name.startswith("sfx_bird"):
         return (-18.0, -2.0)
     if name.startswith("sfx_ui"):
         return (-20.0, -6.0)

@@ -47,9 +47,16 @@ def test_ui_esperados(catalog):
 
 def test_fauna_esperada(catalog):
     names = {spec.name for spec in catalog}
-    for species in ("monkey", "crocodile", "boar", "crab", "turtle"):
+    for species in ("crab", "turtle"):
         for i in range(1, 4):
             assert f"sfx_{species}_{i:02d}" in names
+
+
+def test_sin_fauna_terrestre(catalog):
+    # GDD §10 y §12: el archipielago no tiene fauna terrestre.
+    for spec in catalog:
+        for species in ("monkey", "crocodile", "boar"):
+            assert species not in spec.name, f"{spec.name}: fauna terrestre en el catalogo"
 
 
 def test_herramientas_y_fabricacion_esperadas(catalog):

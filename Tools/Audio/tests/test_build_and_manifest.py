@@ -13,12 +13,12 @@ from explored_audio.constants import SAMPLE_RATE
 
 def test_build_all_escribe_wav_y_manifest_coherente(tmp_path):
     entries = build_all(output_root=tmp_path, verbose=False)
-    assert len(entries) == 137
+    assert len(entries) == 128
 
     manifest_path = tmp_path / "manifest.json"
     assert manifest_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["count"] == 137
+    assert manifest["count"] == 128
     assert manifest["sample_rate"] == SAMPLE_RATE
     assert manifest["bit_depth"] == 16
 

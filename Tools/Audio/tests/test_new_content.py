@@ -88,9 +88,6 @@ def test_guitarra_karplus_strong_es_determinista():
 
 def test_nuevos_sfx_duracion_esperada(specs_by_name):
     bounds = {
-        "sfx_monkey_01": (0.3, 2.0),
-        "sfx_crocodile_01": (0.8, 2.5),
-        "sfx_boar_01": (0.1, 1.0),
         "sfx_crab_01": (0.05, 1.0),
         "sfx_turtle_01": (0.5, 2.0),
         "sfx_carve_01": (0.5, 2.5),
