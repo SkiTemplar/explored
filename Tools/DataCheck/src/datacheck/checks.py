@@ -507,12 +507,9 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
-    "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-]
-ASCII_ID = re.compile(r"^[a-z0-9_]+$")
-# Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
-ALBATROS_ITEMS = {"chapa_fuselaje", "tubo_aluminio", "cable_electrico", "cinta_americana"}
+    displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
+    boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
+    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
