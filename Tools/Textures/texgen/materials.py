@@ -256,24 +256,40 @@ def garden_soil(size: int, seed: int) -> Material:
 
 
 def ash(size: int, seed: int) -> Material:
+    """Ceniza del Humo: dunas suaves con rizos de viento, costra cuarteada en zonas, pómez y
+    carbones sueltos. Paleta gris lavanda/cálida para que no se vea sucia."""
     u, v = uv_grid(size)
-    drift = unit(spectral_noise(size, seed + 1, 1, 6, 2.8), 2.2)
+    drift = unit(spectral_noise(size, seed + 1, 2, 7, 2.6), 2.2)
     warp = spectral_noise(size, seed + 2, 1, 4, 3.0)
-    rip = 0.5 + 0.5 * np.sin(2 * np.pi * (5 * v - 2 * u + 0.4 * warp))
-    powder = unit(spectral_noise(size, seed + 3, 20, 200, 1.4))
-    height = 0.6 * drift + 0.22 * rip * drift + 0.18 * powder
-    albedo = ramp(0.3 + 0.5 * height, [(0.0, "#4f4b4c"), (0.35, "#6c6766"), (0.65, "#8d8783"), (1.0, "#b6afa8")])
-    char = strokes(size, 30, seed + 4, length=0.3, width=0.12, keep=0.25)
-    albedo = mix_color(albedo, "#262223", char * 0.85)
-    pumice = scatter_dots(size, 22, seed + 5, radius=0.2, keep=0.15)
-    albedo = mix_color(albedo, "#c9c0b3", pumice["mask"] * 0.8)
-    height = np.maximum(height, pumice["mask"] * 0.8)
-    # Brasas casi apagadas: muy pocas y pequeñas, un guiño de color.
-    ember = scatter_dots(size, 19, seed + 6, radius=0.1, keep=0.05)
-    albedo = mix_color(albedo, "#c8542c", ember["mask"] * 0.8)
-    albedo = macro_variation(albedo, seed + 20, warm="#9b8378", cool="#7d8590", amount=0.18, value=0.09)
-    rough = 0.95 - 0.1 * char
-    return Material(albedo, height, rough, depth=0.016, ao_strength=0.9)
+    rip = 0.5 + 0.5 * np.sin(2 * np.pi * (11 * v - 3 * u + 0.25 * warp))
+    rip = rip ** 1.6 * smoothstep(0.25, 0.7, drift)
+    powder = unit(spectral_noise(size, seed + 3, 30, 300, 1.2))
+    # Costra: donde la ceniza se asentó con la lluvia se cuartea en polígonos.
+    crust_m = smoothstep(0.55, 0.7, unit(spectral_noise(size, seed + 7, 2, 9, 2.4), 2.0))
+    wu = u + 0.012 * spectral_noise(size, seed + 8, 4, 20, 2.0)
+    wv = v + 0.012 * spectral_noise(size, seed + 9, 4, 20, 2.0)
+    cr = voronoi(size, 16, 16, seed + 10, jitter=0.9, u=wu, v=wv)
+    crack = (1.0 - smoothstep(0.0, 0.06, cr["edge"])) * crust_m
+    curl = smoothstep(0.0, 0.35, cr["edge"]) * crust_m
+    height = 0.35 * drift + 0.12 * rip + 0.05 * powder + 0.12 * curl - 0.18 * crack
+    height = np.clip(height + 0.25, 0, 1)
+    albedo = ramp(0.42 + 0.22 * drift + 0.12 * rip,
+                  [(0.0, "#5e5a5c"), (0.4, "#7c7778"), (0.7, "#9c9693"), (1.0, "#bfb7ae")])
+    albedo = mix_color(albedo, "#a89c90", crust_m * (0.35 + 0.2 * cr["id"]))
+    albedo = mix_color(albedo, "#48424a", crack * 0.8)
+    albedo = albedo * (1.0 + 0.05 * (powder - 0.5))[..., None]
+    char = strokes(size, 26, seed + 4, length=0.3, width=0.14, keep=0.12)
+    albedo = mix_color(albedo, "#2f2a2e", char * 0.8)
+    pumice = scatter_dots(size, 14, seed + 5, radius=0.24, keep=0.14, vary=0.4)
+    pum_c = ramp(pumice["id"], [(0.0, "#c9bba6"), (1.0, "#e0d4c0")])
+    albedo = albedo + (pum_c - albedo) * (pumice["mask"] * 0.9)[..., None]
+    height = np.maximum(height, pumice["mask"] * (0.75 + 0.2 * powder))
+    # Brasas casi apagadas: muy pocas, un guiño de color cálido.
+    ember = scatter_dots(size, 17, seed + 6, radius=0.12, keep=0.04)
+    albedo = mix_color(albedo, "#d9602e", ember["mask"] * 0.85)
+    albedo = macro_variation(albedo, seed + 20, warm="#a88e80", cool="#848c98", amount=0.18, value=0.06)
+    rough = 0.94 - 0.08 * char - 0.06 * curl
+    return Material(albedo, height, rough, depth=0.014, ao_strength=0.9)
 
 
 # ---------------------------------------------------------------------------
@@ -526,34 +542,50 @@ def wood_planks(size: int, seed: int) -> Material:
     return Material(albedo, np.clip(height, 0, 1), rough, depth=0.012, ao_strength=1.0)
 
 
+def _facet_plane(vo: dict, seed_a: float, seed_b: float) -> np.ndarray:
+    """Plano inclinado por celda (pendiente aleatoria): caras planas tipo low-poly."""
+    a = np.mod(vo["id"] * seed_a, 1.0) - 0.5
+    b = np.mod(vo["id2"] * seed_b + vo["id"] * 3.1, 1.0) - 0.5
+    return vo["dx"] * a + vo["dy"] * b
+
+
 def stone_wall(size: int, seed: int) -> Material:
-    """Muro de piedra seca polinesio: basalto encajado, algún bloque de coral, musgo en juntas."""
+    """Muro de piedra seca polinesio: basalto facetado encajado, algún bloque de coral y
+    musgo que crece en las juntas (más por abajo de cada piedra, donde queda la humedad)."""
     u, v = uv_grid(size)
-    wu = u + 0.025 * spectral_noise(size, seed + 1, 2, 8, 2.2)
-    wv = v + 0.025 * spectral_noise(size, seed + 2, 2, 8, 2.2)
-    vo = voronoi(size, 6, 4, seed, jitter=0.75, u=wu, v=wv)
-    pillow = smoothstep(0.0, 0.32, vo["edge"]) ** 0.7
-    surf = unit(spectral_noise(size, seed + 3, 6, 150, 1.8))
-    tilt = vo["dx"] * (vo["id2"] - 0.5) * 0.3
-    height = pillow * (0.6 + 0.2 * vo["id"] + 0.15 * surf + tilt) + 0.05 * surf
+    wu = u + 0.02 * spectral_noise(size, seed + 1, 2, 8, 2.2)
+    wv = v + 0.02 * spectral_noise(size, seed + 2, 2, 8, 2.2)
+    vo = voronoi(size, 8, 6, seed, jitter=0.8, u=wu, v=wv)
+    chips = voronoi(size, 26, 20, seed + 11, jitter=0.9, u=wu, v=wv)
+    bevel = smoothstep(0.0, 0.22, vo["edge"]) ** 0.55
+    surf = unit(spectral_noise(size, seed + 3, 8, 160, 1.9))
+    facets = 0.5 * _facet_plane(vo, 17.3, 11.7) + 0.35 * _facet_plane(chips, 13.1, 29.7) / 3.0
+    height = bevel * (0.62 + 0.18 * vo["id"] + facets + 0.06 * surf)
     height = np.clip(height, 0, 1)
-    coral = vo["id2"] > 0.84
-    basalt = ramp(0.6 * vo["id"] + 0.4 * surf, [(0.0, "#3c3838"), (0.4, "#524c4b"), (0.75, "#696260"), (1.0, "#7f7671")])
-    coral_c = ramp(surf, [(0.0, "#a39880"), (0.6, "#c6bb9f"), (1.0, "#ddd3ba")])
-    albedo = np.where(coral[..., None], coral_c, basalt)
-    edge = np.clip(cavity(height, 0.008) * 6.0, -1, 1)
-    albedo = albedo * (1.0 + 0.3 * np.clip(edge, 0, 1))[..., None]
-    joint = 1.0 - smoothstep(0.02, 0.16, vo["edge"])
-    albedo = mix_color(albedo, "#2e251e", joint * 0.9)
-    moss_n = unit(spectral_noise(size, seed + 4, 3, 30, 1.8), 2.0)
+    coral = (vo["id2"] > 0.92)[..., None]
+    basalt = lerp(ramp(vo["id"], [(0.0, "#474a55"), (0.5, "#5a5658"), (1.0, "#6e6158")]),
+                  hex_rgb("#8a8580"), 0.25 * surf + 0.2 * np.clip(facets * 3.0, 0, 1))
+    coral_c = ramp(surf, [(0.0, "#8f8272"), (0.6, "#a8997f"), (1.0, "#bcae94")])
+    pores = scatter_dots(size, 90, seed + 12, radius=0.22, keep=0.6)["mask"]
+    coral_c = mix_color(coral_c, "#7a6b5c", pores * 0.45)
+    albedo = np.where(coral, coral_c, basalt)
+    height = height - pores * 0.04 * coral[..., 0]
+    edge = np.clip(cavity(height, 0.006) * 7.0, -1, 1)
+    albedo = albedo * (1.0 + 0.35 * np.clip(edge, 0, 1) - 0.15 * np.clip(-edge, 0, 1))[..., None]
+    joint = 1.0 - smoothstep(0.02, 0.14, vo["edge"])
+    albedo = mix_color(albedo, "#2b231d", joint * 0.9)
+    # El musgo prefiere la mitad baja de cada piedra (dy < 0: el punto queda por encima).
+    below = smoothstep(-0.1, 0.35, -vo["dy"])
+    moss_n = unit(spectral_noise(size, seed + 4, 1, 12, 2.0), 2.0)
     moss_fine = unit(spectral_noise(size, seed + 5, 25, 250, 1.2))
-    moss = smoothstep(0.35, 0.6, joint + (moss_n - 0.5) * 0.9 + (moss_fine - 0.5) * 0.35) * smoothstep(0.4, 0.6, moss_n)
-    moss_col = ramp(0.5 * moss_n + 0.5 * moss_fine, [(0.0, "#2f5421"), (0.5, "#4b7f2d"), (0.8, "#6f9f3f"), (1.0, "#9cc05a")])
-    albedo = albedo + (moss_col - albedo) * (moss * 0.9)[..., None]
-    height = np.maximum(height, moss * (0.2 + 0.25 * moss_fine))
-    albedo = macro_variation(albedo, seed + 20, warm="#8a6e5a", cool="#586470", amount=0.16, value=0.08)
-    rough = 0.8 - 0.1 * np.clip(edge, 0, 1) + 0.12 * moss
-    return Material(albedo, height, rough, depth=0.04, ao_strength=1.3)
+    grow = joint * 0.9 + below * (1.0 - bevel) * 0.6 + (moss_n - 0.5) * 1.0 + (moss_fine - 0.5) * 0.35
+    moss = smoothstep(0.45, 0.7, grow) * smoothstep(0.35, 0.55, moss_n)
+    moss_col = ramp(0.5 * moss_n + 0.5 * moss_fine, [(0.0, "#2f5a22"), (0.5, "#4d8a2e"), (0.8, "#72a83f"), (1.0, "#a3c85c")])
+    albedo = albedo + (moss_col - albedo) * (moss * 0.92)[..., None]
+    height = np.maximum(height, moss * (0.25 + 0.25 * moss_fine))
+    albedo = macro_variation(albedo, seed + 20, warm="#8e705a", cool="#5a6878", amount=0.2, value=0.1)
+    rough = 0.82 - 0.12 * np.clip(edge, 0, 1) + 0.1 * moss - 0.05 * coral[..., 0]
+    return Material(albedo, height, rough, depth=0.036, ao_strength=1.3)
 
 
 # ---------------------------------------------------------------------------
@@ -596,26 +628,33 @@ def canvas(size: int, seed: int) -> Material:
 
 
 def rope(size: int, seed: int) -> Material:
-    """Cuerda de 3 cabos; u = alrededor de la cuerda, v = a lo largo (UV de cilindro)."""
+    """Cuerda de 3 cabos; u = alrededor de la cuerda, v = a lo largo (UV de cilindro).
+    Cada cabo es un cilindro que asoma en diagonal; sus hilos giran al revés (torsión
+    contraria), dibujando arcos en «S» que son lo que hace que se lea como cuerda."""
     u, v = uv_grid(size)
     strands = 3
-    phase = strands * u + 5 * v + 0.13
+    phase = strands * u + 4 * v + 0.13
     x = phase - np.floor(phase)
-    prof = np.sqrt(np.clip(1.0 - (2.0 * x - 1.0) ** 2, 0, 1)) ** 0.7
-    # Hilos de cada cabo, retorcidos en sentido contrario.
-    yarn_phase = 14 * u - 22 * v
-    yarn = 0.5 + 0.5 * np.cos(2 * np.pi * (yarn_phase + 0.2 * x))
-    fuzz = unit(spectral_noise(size, seed + 1, 30, 500, 1.0))
-    height = 0.75 * prof + 0.15 * yarn * prof + 0.1 * fuzz
+    c = 2.0 * x - 1.0
+    prof = np.sqrt(np.clip(1.0 - c * c, 0, 1))
+    # Hilos: fase que cruza el cabo (frecuencias enteras) + curvatura por la sección redonda.
+    yarn_phase = 10 * u - 18 * v + 0.35 * c * c
+    yarn_x = yarn_phase - np.floor(yarn_phase)
+    yarn = np.sqrt(np.clip(1.0 - (2.0 * yarn_x - 1.0) ** 2, 0, 1))
+    fibre = unit(spectral_noise(size, seed + 1, 20, 400, 1.2, stretch=(1.0, 3.0), angle=-1.0))
+    fuzz = unit(spectral_noise(size, seed + 3, 60, 500, 0.9))
+    height = 0.7 * prof ** 0.8 + 0.2 * yarn * prof + 0.06 * fibre + 0.04 * fuzz
     idx = np.floor(phase).astype(np.int64) % strands
     tone = rng_table(seed + 2, strands)[idx]
-    albedo = ramp(0.45 * prof + 0.25 * yarn + 0.2 * fuzz + 0.1 * tone,
-                  [(0.0, "#5a4226"), (0.35, "#9a7746"), (0.7, "#c2a064"), (1.0, "#dfc38a")])
-    gap = smoothstep(0.3, 0.0, prof)
-    albedo = mix_color(albedo, "#3a2a17", gap * 0.8)
+    albedo = ramp(0.35 * prof + 0.3 * yarn * prof + 0.2 * fibre + 0.15 * tone,
+                  [(0.0, "#6a4b28"), (0.35, "#a27b44"), (0.7, "#c9a462"), (1.0, "#e6cc8e")])
+    groove = smoothstep(0.45, 0.0, prof)
+    albedo = mix_color(albedo, "#3d2a14", groove * 0.85)
+    albedo = mix_color(albedo, "#5d4221", (1.0 - yarn) * prof * 0.35)
+    albedo = mix_color(albedo, "#f1dfae", smoothstep(0.75, 1.0, fuzz) * 0.25)
     albedo = macro_variation(albedo, seed + 20, warm="#d6a860", cool="#a09a84", amount=0.12, value=0.06)
-    rough = 0.88 + 0.07 * fuzz
-    return Material(albedo, height, rough, depth=0.025, ao_strength=1.3)
+    rough = 0.86 + 0.08 * fuzz
+    return Material(albedo, height, rough, depth=0.03, ao_strength=1.4)
 
 
 def map_paper(size: int, seed: int) -> Material:
@@ -651,24 +690,34 @@ def map_paper(size: int, seed: int) -> Material:
 
 
 def bark(size: int, seed: int) -> Material:
-    """Corteza fisurada vertical (troncos, postes); v = a lo largo del tronco."""
+    """Corteza fisurada vertical (troncos, postes); v = a lo largo del tronco.
+    Placas alargadas (Voronoi anisótropo, 4:1) separadas por fisuras en V, con grietas
+    finas secundarias, fibra vertical, crestas curtidas más grises y liquen en manchas."""
     u, v = uv_grid(size)
-    wu = u + 0.02 * spectral_noise(size, seed + 1, 1, 8, 2.2, stretch=(1.0, 4.0))
+    wu = u + 0.018 * spectral_noise(size, seed + 1, 1, 10, 2.2, stretch=(1.0, 4.0))
     wv = v + 0.01 * spectral_noise(size, seed + 2, 1, 8, 2.2)
-    vo = voronoi(size, 8, 2, seed, jitter=0.85, u=wu, v=wv)
-    plate = smoothstep(0.0, 0.3, vo["edge"]) ** 0.7
-    fibre = unit(spectral_noise(size, seed + 3, 6, 300, 1.3, stretch=(1.0, 9.0)))
-    height = plate * (0.7 + 0.15 * vo["id"]) + 0.15 * fibre * plate + 0.05 * fibre
-    height = np.clip(height, 0, 1)
-    albedo = ramp(0.55 * plate + 0.3 * fibre + 0.15 * vo["id"],
-                  [(0.0, "#2f2117"), (0.3, "#5a3f2b"), (0.65, "#7e5c40"), (1.0, "#a2805d")])
-    edge = np.clip(cavity(height, 0.006) * 6.0, 0, 1)
-    albedo = albedo * (1.0 + 0.2 * edge)[..., None]
-    lichen = smoothstep(0.62, 0.75, unit(spectral_noise(size, seed + 4, 3, 30, 1.8), 2.0)) * plate
-    albedo = mix_color(albedo, "#7f9a52", lichen * 0.55 * (vo["id2"] > 0.45))
+    vo = voronoi(size, 12, 3, seed, jitter=0.9, u=wu, v=wv, isotropic=False)
+    fine = voronoi(size, 30, 6, seed + 5, jitter=0.9, u=wu, v=wv, isotropic=False)
+    plate = smoothstep(0.0, 0.4, vo["edge"]) ** 0.6
+    sub = smoothstep(0.0, 0.12, fine["edge"])
+    fibre = unit(spectral_noise(size, seed + 3, 6, 300, 1.3, stretch=(1.0, 10.0)))
+    dome = np.sqrt(np.clip(1.0 - (vo["dx"] * 1.6) ** 2, 0, 1))
+    height = plate * (0.55 + 0.15 * vo["id"] + 0.15 * dome) * (0.85 + 0.15 * sub) + 0.12 * fibre * plate
+    height = np.clip(height + 0.04 * fibre, 0, 1)
+    albedo = ramp(0.5 * plate + 0.25 * fibre + 0.15 * vo["id"] + 0.1 * sub,
+                  [(0.0, "#2e1d12"), (0.3, "#5b3b25"), (0.6, "#825a3a"), (0.85, "#a07a56"), (1.0, "#b39a7c")])
+    edge = np.clip(cavity(height, 0.005) * 6.0, 0, 1)
+    albedo = albedo * (1.0 + 0.22 * edge)[..., None]
+    # Crestas curtidas: lo más alto se agrisa (sol y lluvia).
+    albedo = mix_color(albedo, "#a59784", smoothstep(0.72, 0.9, height) * 0.45)
+    lichen_n = unit(spectral_noise(size, seed + 4, 2, 24, 1.8), 2.0)
+    lichen = smoothstep(0.66, 0.76, lichen_n) * plate
+    albedo = mix_color(albedo, "#8fae5c", lichen * 0.6)
+    dots = scatter_dots(size, 40, seed + 6, radius=0.3, keep=0.35)["mask"] * smoothstep(0.5, 0.65, lichen_n)
+    albedo = mix_color(albedo, "#d99a45", dots * plate * 0.7)
     albedo = macro_variation(albedo, seed + 20, warm="#9a6a44", cool="#6a6458", amount=0.16, value=0.08)
-    rough = 0.86 - 0.08 * edge
-    return Material(albedo, height, rough, depth=0.03, ao_strength=1.3)
+    rough = 0.86 - 0.1 * edge + 0.05 * lichen
+    return Material(albedo, height, rough, depth=0.035, ao_strength=1.4)
 
 
 # ---------------------------------------------------------------------------

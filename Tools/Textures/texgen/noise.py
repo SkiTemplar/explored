@@ -104,7 +104,8 @@ def sample(field: np.ndarray, u: np.ndarray, v: np.ndarray) -> np.ndarray:
     return a * (1 - ty) + b * ty
 
 
-def voronoi(size: int, nx: int, ny: int, seed: int, jitter: float = 0.85, u=None, v=None) -> dict:
+def voronoi(size: int, nx: int, ny: int, seed: int, jitter: float = 0.85, u=None, v=None,
+            isotropic: bool = True) -> dict:
     """Voronoi periódico sobre una rejilla nx × ny de puntos perturbados.
 
     Distancias en unidades de «celda media» (1 ≈ separación entre puntos). Devuelve:
@@ -112,6 +113,8 @@ def voronoi(size: int, nx: int, ny: int, seed: int, jitter: float = 0.85, u=None
       id: aleatorio [0, 1) por celda; id2: segundo aleatorio por celda;
       dx, dy: vector del píxel al punto más cercano (en unidades de celda).
     `u`, `v` opcionales permiten evaluar en coordenadas deformadas (domain warping).
+    `isotropic=False` mide en unidades de celda: con nx ≠ ny las celdas salen alargadas como
+    la rejilla (placas de corteza, vetas), y la búsqueda 3 × 3 sigue siendo exacta.
     """
     rng = np.random.default_rng(seed)
     offs = rng.random((ny, nx, 2))
@@ -124,8 +127,8 @@ def voronoi(size: int, nx: int, ny: int, seed: int, jitter: float = 0.85, u=None
     cx = np.floor(gx).astype(np.int64)
     cy = np.floor(gy).astype(np.int64)
     # Escala para que las distancias sean isótropas aun con celdas no cuadradas.
-    sx = np.sqrt(ny / nx)
-    sy = np.sqrt(nx / ny)
+    sx = np.sqrt(ny / nx) if isotropic else 1.0
+    sy = np.sqrt(nx / ny) if isotropic else 1.0
     f1 = np.full(gx.shape, np.inf)
     f2 = np.full(gx.shape, np.inf)
     cid = np.zeros(gx.shape)
