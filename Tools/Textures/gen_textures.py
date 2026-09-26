@@ -27,6 +27,8 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from texgen.legacy import LEGACY_KINDS, generate_legacy  # noqa: E402
@@ -45,15 +47,11 @@ def preview_card(name: str, maps: dict, seed: int) -> dict:
         lit = lit_preview(maps["BC"], maps["N"], arh[..., 0], arh[..., 1])
         thumbs = [maps["BC"], maps["N"] * 0.5 + 0.5, arh]
     elif "N" in maps:
-        import numpy as np
-
         water = np.broadcast_to(np.array([0.10, 0.42, 0.52]), maps["N"].shape).copy()
         lit = lit_preview(water, maps["N"], None, np.full(maps["N"].shape[:2], 0.08))
         thumbs = [maps["N"] * 0.5 + 0.5]
     else:
         m = maps["M"]
-        import numpy as np
-
         sea = np.array([0.12, 0.45, 0.55])
         foam = np.clip(m[..., 0] * 0.8 + m[..., 1] * 0.5 + m[..., 2] * 0.5, 0, 1)[..., None]
         lit = sea + (np.array([0.95, 0.97, 0.96]) - sea) * foam
