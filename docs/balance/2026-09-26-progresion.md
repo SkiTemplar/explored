@@ -37,8 +37,7 @@ Tiempos estimados si el jugador sigue la curva de la biblia (§5.1):
   recolector de lluvia. El cuello de botella es la fibra: unas 40 fibras para 20
   cordeles.
 - **Días 5–10:** hacha → madera. El cuello de botella son 112 kg de troncos: no
-  es viable sin las **angarillas** del GDD §8.2, que aún no tienen objeto ni
-  plantilla.
+  es viable sin las **angarillas** del GDD §8.2 (ver §5).
 - **Semanas 2–3:** piedra. Requiere el Humo o Los Dientes para el basalto y el
   manglar para la arcilla, así que llega de forma natural con la balsa.
 
@@ -87,3 +86,22 @@ cubre el hueco en Esmeralda.
 7. **Mallas:** 82 objetos usan un marcador de `/Engine/BasicShapes`, igual que
    26 piezas y 19 etapas de planta (`meshes_pendientes.json`). Las primeras que
    convendría generar son el limonero (4 etapas) y los kits de bambú.
+
+## 5. Angarillas (añadidas en datos)
+
+- **Objeto** `angarillas` (`items.json`): 4 kg, `DosManos`, 60 L, durabilidad 60,
+  etiquetas `contenedor` y `arrastre`. La malla es un marcador y está en
+  `meshes_pendientes.json`.
+- **Plantilla** `angarillas` (`templates.json`, verbo Atar, 3 slots): varales
+  (Largo ≥ 4 y Rígido ≥ 3), lecho (Fibroso ≥ 2) y unión (Ata ≥ 3).
+- **Cadena de referencia:** bambú grueso + liana → atado; atado + hoja de palma →
+  angarillas. Son 2 pasos y no hacen falta herramientas, así que las angarillas
+  están disponibles desde el día 1.
+- **Orden en el fichero:** va antes que `hacha` y `lanza`, porque empata con
+  ellas en slots. Las cadenas de CraftingSpec no llevan nada con Fibroso ≥ 2, así
+  que siguen dando hacha y lanza. DataCheck tiene un test de regresión para esto.
+  Con un tronco atado + hoja de palma sale una angarilla en vez de un hacha, y
+  eso es coherente.
+- **Pendiente en C++:** el arrastre no existe. *Propuesta:* capacidad de
+  4 objetos `DosManos` (4 troncos = 32 kg), a velocidad ×0,6 y sin poder nadar.
+  Así la cabaña de madera pasa de 14 viajes con troncos en brazos a 4.
