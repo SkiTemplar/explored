@@ -403,7 +403,9 @@ void AExploredCharacter::HandleDrop(const FInputActionValue&)
 
 void AExploredCharacter::HandleCombine(const FInputActionValue&)
 {
-	if (!Carry)
+	// Un objeto DosManos ocupa las dos manos con la misma instancia: no se
+	// combina consigo mismo (duplicaria su material en el resultado).
+	if (!Carry || Carry->IsHoldingTwoHandedItem())
 	{
 		return;
 	}

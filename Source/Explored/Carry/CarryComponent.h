@@ -69,6 +69,9 @@ public:
 	/** Directo, sin comprobar registro: lo usan las manos-en-pantalla y el HUD. */
 	const FItemInstance* GetHandItemPtr(EHand Hand) const;
 
+	/** Las dos manos sostienen el mismo objeto DosManos (no son dos piezas distintas). */
+	bool IsHoldingTwoHandedItem() const { return bHandsHoldTwoHandedItem; }
+
 	const TArray<FItemInstance>& GetPocketItems() const { return Pockets; }
 	const TArray<FItemInstance>& GetBeltItems() const { return Belt; }
 	const TArray<FItemInstance>& GetBackpackItems() const { return BackpackItems; }

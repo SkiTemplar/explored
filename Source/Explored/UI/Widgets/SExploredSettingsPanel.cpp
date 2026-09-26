@@ -262,7 +262,6 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildAudioTab()
 		return MakeRow(Label, SNew(SBox).WidthOverride(220.0f)
 			[
 				SNew(SSlider).Style(&S().SliderStyle())
-				.MinValue(0.0f).MaxValue(100.0f)
 				.Value_Lambda([GS, Channel]() { return GS->GetVolume(Channel) / 100.0f; })
 				.OnValueChanged_Lambda([GS, Channel](float V) { GS->SetVolume(Channel, V * 100.0f); })
 			]);

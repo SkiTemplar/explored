@@ -261,9 +261,12 @@ void USwimComponent::TickBreath(float DeltaTime)
 	{
 		const float Drain = FSurvivalModel::OxygenDrainPerSecond(GetCarriedWeightRatio(), LungCapacityRatio, bIsExertingUnderwater);
 		const float NewOxygen = FMath::Max(0.0f, Oxygen - Drain * DeltaTime);
-		if (!FMath::IsNearlyEqual(NewOxygen, Oxygen, 0.01f))
+		// Se escribe siempre: con un umbral, a FPS altos el paso por frame
+		// (Drain * DeltaTime) quedaba por debajo y el oxigeno no variaba nunca.
+		const bool bChanged = NewOxygen != Oxygen;
+		Oxygen = NewOxygen;
+		if (bChanged)
 		{
-			Oxygen = NewOxygen;
 			OnOxygenChanged.Broadcast(GetOxygen01());
 		}
 		if (Oxygen <= 0.0f)
@@ -280,9 +283,12 @@ void USwimComponent::TickBreath(float DeltaTime)
 		}
 		const float Recovery = FSurvivalModel::OxygenRecoveryPerSecond(LungCapacityRatio);
 		const float NewOxygen = FMath::Min(100.0f, Oxygen + Recovery * DeltaTime);
-		if (!FMath::IsNearlyEqual(NewOxygen, Oxygen, 0.01f))
+		// Igual que al consumir: sin umbral, para que la recuperacion no se
+		// detenga a FPS altos.
+		const bool bChanged = NewOxygen != Oxygen;
+		Oxygen = NewOxygen;
+		if (bChanged)
 		{
-			Oxygen = NewOxygen;
 			OnOxygenChanged.Broadcast(GetOxygen01());
 		}
 	}
