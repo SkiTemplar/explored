@@ -36,7 +36,7 @@ compila y pasa sus tests en local.
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
 | Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
 | Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
-| Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
+| Fauna | parcial | ✅ | parcial | Boids, bancos, bandadas, 7 cerebros, población y LOD; capa UE sin compilar (P-FAUNA, `docs/tecnico/fauna.md`) |
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
 | Save | stub | ❌ | stub | (P-SAVE) |
@@ -58,7 +58,7 @@ compila y pasa sus tests en local.
 | P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
 | P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | pendiente |
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
-| P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
+| P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | en curso (nube/fauna-2026-09-26) |
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
 | P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
