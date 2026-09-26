@@ -124,6 +124,38 @@ bool UCarryComponent::Drop(EHand Hand, FText& OutFailReason)
 	return true;
 }
 
+bool UCarryComponent::ConsumeOneFromHand(EHand Hand)
+{
+	if (bHandsHoldTwoHandedItem)
+	{
+		HandLeft = FItemInstance();
+		HandRight = FItemInstance();
+		bHandLeftFilled = false;
+		bHandRightFilled = false;
+		bHandsHoldTwoHandedItem = false;
+		OnCarryChanged.Broadcast();
+		return true;
+	}
+
+	const bool bFilled = (Hand == EHand::Left) ? bHandLeftFilled : bHandRightFilled;
+	if (!bFilled)
+	{
+		return false;
+	}
+	FItemInstance& HandRef = (Hand == EHand::Left) ? HandLeft : HandRight;
+	if (HandRef.Count > 1)
+	{
+		--HandRef.Count;
+	}
+	else
+	{
+		HandRef = FItemInstance();
+		if (Hand == EHand::Left) { bHandLeftFilled = false; } else { bHandRightFilled = false; }
+	}
+	OnCarryChanged.Broadcast();
+	return true;
+}
+
 bool UCarryComponent::StoreFromHand(EHand Hand, ECarrySlot Slot, FText& OutFailReason)
 {
 	if (bHandsHoldTwoHandedItem)

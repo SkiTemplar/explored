@@ -44,6 +44,13 @@ public:
 	bool SwapHands();
 
 	/**
+	 * Gasta una unidad del objeto de una mano (plantar una semilla, comer): si
+	 * era la última, la mano queda vacía. Un objeto DosManos vacía las dos.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
+	bool ConsumeOneFromHand(EHand Hand);
+
+	/**
 	 * Vacía las dos manos (las piezas ya se consumieron al fabricar) y coloca
 	 * el resultado en la mano libre, o en las dos si es DosManos. Lo usa
 	 * AExploredCharacter::HandleCombine tras UCraftingLibrary::Apply.

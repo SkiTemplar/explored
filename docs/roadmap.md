@@ -31,7 +31,7 @@ compila y pasa sus tests en local.
 | Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
 | Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
 | Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
-| Farming | ❌ | ❌ | ❌ | Datos en `plants.json` (P-FARM) |
+| Farming | en curso | ✅ | sin compilar | `FFarmModel` + `UFarmSubsystem` y `AExploredPlantActor`; verificar en local (P-FARM) |
 | Cooking | ❌ | ❌ | ❌ | (P-COOK) |
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
 | Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
@@ -52,7 +52,7 @@ compila y pasa sus tests en local.
 | P-HOST | Tests del host + CI | en curso (#5) |
 | P-SWIM | `FSwimModel`: estados con histéresis (H5), apnea por profundidad (H4), oxígeno a FPS altos (M1), corrientes como velocidad (M4) | pendiente |
 | P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | pendiente |
-| P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | pendiente |
+| P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | en curso (nube/huerto-2026-09-26) |
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
 | P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
 | P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
