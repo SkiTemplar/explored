@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "unreal-mcpython": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/Rodrigo/.ultron/tools/unreal-mcp/mcp-server",
+        "run",
+        "src/unreal_mcp/main.py"
+      ]
+    }
+  }
+}

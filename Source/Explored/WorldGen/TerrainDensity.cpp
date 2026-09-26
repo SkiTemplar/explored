@@ -211,12 +211,14 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	}
 	case EIslandArchetype::Mesa:
 	{
-		// Terrazas deformadas por ruido para que los escarpes serpenteen, con valles que las cortan.
-		const float Rise = SmoothStep(0.03f, 0.75f, U + 0.18f * N.Fbm2D(Q.X * 2.5f, Q.Y * 2.5f, 3));
-		const float Stepped = Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 3, 0.22f);
-		const float Valley = 1.0f - SmoothStep(0.02f, 0.12f, FMath::Abs(N.Fbm2D(Q.X * 2.0f + 70.0f, Q.Y * 2.0f, 3)));
-		const float Plateau = 5.0f * N.Fbm2D(Q.X * 7.0f, Q.Y * 7.0f, 4);
-		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped * (1.0f - 0.35f * Valley) + Plateau * Rise;
+		// Meseta redondeada con dos escalones blandos. El dominio se deforma con fuerza para que
+		// los escarpes serpenteen, y los barrancos son ramificados (ridged) en lugar de líneas.
+		const FVector2D W = N.Warp2D(Q.X * 1.3f + 30.0f, Q.Y * 1.3f, 0.6f, 3) / 1.3f;
+		const float Rise = SmoothStep(0.03f, 0.8f, U + 0.22f * N.Fbm2D(W.X * 2.2f, W.Y * 2.2f, 4));
+		const float Stepped = FMath::Lerp(Rise, Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 2, 0.3f), 0.7f);
+		const float Gully = FMath::Square(N.Ridged2D(W.X * 3.0f + 70.0f, W.Y * 3.0f, 4));
+		const float Plateau = 6.0f * N.Fbm2D(Q.X * 6.0f, Q.Y * 6.0f, 4);
+		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped * (1.0f - 0.3f * Gully * SmoothStep(0.05f, 0.4f, U)) + Plateau * Rise;
 		break;
 	}
 	case EIslandArchetype::Mangrove:

@@ -98,17 +98,20 @@ FTerrainMeshData FSurfaceNets::Polygonize(const FDensityGrid& Grid)
 	}
 
 	// 2) Un quad por arista propia que cruza la superficie.
-	auto EmitTriangle = [&Mesh](uint32 A, uint32 B, uint32 C, const FVector3f& Outward)
+	// La orientación se decide de forma combinatoria, no por la geometría de cada
+	// triángulo: en quads plegados (voladizos, crestas) el producto vectorial puede
+	// apuntar contra el eje y el triángulo quedaría invertido y descartado al renderizar.
+	// Para el orden de celdas usado abajo, el producto vectorial de un quad plano apunta
+	// hacia +Axis, así que coincide con el exterior cuando la muestra baja es sólida.
+	auto EmitTriangle = [&Mesh](uint32 A, uint32 B, uint32 C, bool bCrossAlongOutward)
 	{
 		const FVector3f& PA = Mesh.Positions[A];
 		const FVector3f& PB = Mesh.Positions[B];
 		const FVector3f& PC = Mesh.Positions[C];
-		const FVector3f Cross = FVector3f::CrossProduct(PB - PA, PC - PA);
-		if (Cross.SizeSquared() < 1e-10f)
+		if (FVector3f::CrossProduct(PB - PA, PC - PA).SizeSquared() < 1e-10f)
 		{
 			return; // Triángulo degenerado.
 		}
-		const bool bCrossAlongOutward = FVector3f::DotProduct(Cross, Outward) > 0.0f;
 		const bool bSwap = bCrossAlongOutward == bFrontFaceCrossOpposesNormal;
 		Mesh.Indices.Add(A);
 		Mesh.Indices.Add(bSwap ? C : B);
@@ -153,10 +156,20 @@ FTerrainMeshData FSurfaceNets::Polygonize(const FDensityGrid& Grid)
 					}
 
 					// El exterior (aire) está hacia la muestra con densidad positiva.
-					FVector3f Outward = FVector3f::ZeroVector;
-					Outward[Axis] = D0 < 0.0f ? 1.0f : -1.0f;
-					EmitTriangle(Quad[0], Quad[1], Quad[2], Outward);
-					EmitTriangle(Quad[0], Quad[2], Quad[3], Outward);
+					const bool bOutwardPositive = D0 < 0.0f;
+					// Diagonal más corta: evita triángulos alargados y pliegues.
+					const float Diag02 = FVector3f::DistSquared(Mesh.Positions[Quad[0]], Mesh.Positions[Quad[2]]);
+					const float Diag13 = FVector3f::DistSquared(Mesh.Positions[Quad[1]], Mesh.Positions[Quad[3]]);
+					if (Diag02 <= Diag13)
+					{
+						EmitTriangle(Quad[0], Quad[1], Quad[2], bOutwardPositive);
+						EmitTriangle(Quad[0], Quad[2], Quad[3], bOutwardPositive);
+					}
+					else
+					{
+						EmitTriangle(Quad[0], Quad[1], Quad[3], bOutwardPositive);
+						EmitTriangle(Quad[1], Quad[2], Quad[3], bOutwardPositive);
+					}
 				}
 			}
 		}

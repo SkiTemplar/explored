@@ -8,7 +8,9 @@
 			"Name": "Explored",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"AdditionalDependencies": [ "Engine" ]
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		},
 		{
 			"Name": "ExploredEditor",
@@ -17,10 +19,35 @@
 		}
 	],
 	"Plugins": [
-		{ "Name": "PythonScriptPlugin", "Enabled": true },
-		{ "Name": "EditorScriptingUtilities", "Enabled": true },
-		{ "Name": "ProceduralMeshComponent", "Enabled": true },
-		{ "Name": "GeometryScripting", "Enabled": true },
-		{ "Name": "ModelingToolsEditorMode", "Enabled": true, "TargetAllowList": [ "Editor" ] }
+		{
+			"Name": "PythonScriptPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "GeometryScripting",
+			"Enabled": true
+		},
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
+			"Name": "UnrealMCPython",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
 	]
 }
