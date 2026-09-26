@@ -525,7 +525,13 @@ return (dir * (sway + flutter) + float3(0, 0, -abs(sway) * 0.25)) * amount;
 """
 
 FOLIAGE_COLOR_HLSL = r"""
-float3 base = pow(saturate(VC), 2.2);
+// El color de vértice del kit de vegetación sale de Blender ya en espacio lineal
+// (Tools/Blender/lib/common.py: export_fbx usa colors_type='LINEAR' precisamente para
+// no tener que reconvertir). A diferencia del terreno (generado en C++ con paleta en
+// sRGB, que sí necesita pow(VC,2.2)), aplicar aquí la misma corrección de gamma sobre un
+// valor que YA es lineal lo oscurece dos veces: un verde razonable (p. ej. 0.3, 0.6, 0.15)
+// cae a (0.07, 0.31, 0.01), casi negro. Se usa el color de vértice tal cual.
+float3 base = saturate(VC);
 // Tinte por instancia: unas plantas algo más amarillas y otras más oscuras.
 float3 tintA = float3(1.10, 1.04, 0.80);
 float3 tintB = float3(0.82, 0.95, 0.90);
