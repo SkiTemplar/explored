@@ -7,7 +7,7 @@ revisa aquí es justo que las piezas encajen en la rejilla.
         [--mode=all|catalog|montage] [--materials=Palm,Wood] [--samples=24]
 
 Escribe en docs/art/modelos/:
-    kit-construccion-<material>.png  catálogo de las 12 piezas (4 x 3)
+    kit-construccion-<material>.png  catálogo de las 14 piezas (4 x 4)
     kit-construccion-montaje.png     una cabaña montada por material con las
                                      mismas medidas de rejilla (detecta piezas
                                      flotando, huecos y solapes).
@@ -190,7 +190,7 @@ def catalog(mat, samples, res):
         bpy.context.view_layer.update()
         x0, x1, y0, y1, z0, _ = _bounds(obj)
         cx = (col - (cols - 1) / 2) * cell_x
-        cy = (row - 1) * cell_y
+        cy = (row - (math.ceil(len(K.PIECES) / cols) - 1) / 2) * cell_y
         obj.location = (cx - (x0 + x1) / 2, cy - (y0 + y1) / 2, -z0)
         objs.append(obj)
     out = os.path.join(OUT_DIR, f'kit-construccion-{MAT_SLUG[mat]}.png')
@@ -229,6 +229,9 @@ def _house(mat, ox, oy):
     piece('Railing', (0, -G - H, zw))
     piece('RoofGable', (0, 0, zr))
     piece('RoofGable', (G, 0, zr))
+    # hastial solo en el testero oeste (sobre pared completa); el este queda
+    # abierto sobre la media pared del porche lateral
+    piece('Gable', (-H, 0, zr), 90)
 
 
 def montage(mats, samples, res):

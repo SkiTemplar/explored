@@ -84,6 +84,9 @@ PIECES = [
     ('Stairs', (100, 4000), True, False),
     ('Door', (60, 3000), False, True),
     ('Railing', (60, 3000), False, False),
+    # hastiales: al final para no mover las semillas de las piezas previas
+    ('Gable', (60, 4000), False, False),
+    ('GableShed', (60, 5000), False, False),
 ]
 
 VARIANTS = []
@@ -953,6 +956,133 @@ def _b_roof_corner(mat, rnd, name):
     pl.transform(swap)
     a.extend(pl)
     return a.finish(name)
+
+
+# ---------------------------------------------------------------------------
+# HASTIALES — cierran el triángulo que dejan los tejados en sus testeros.
+# Misma pared que las demás (corre a lo largo de X, pivote en el centro del
+# lado a z=0 = coronación de pared) recortada por el perfil del tejado.
+# ---------------------------------------------------------------------------
+GABLE_CLEAR = 0.03  # holgura vertical bajo la cobertura (sin z-fighting)
+
+
+def _clip_parts(p, planes):
+    """Recorta todas las piezas por los planos (co, normal) quedándose con
+    el semiespacio de detrás de la normal, y tapa los cortes. Cada pieza es
+    un volumen cerrado casi convexo, así que el borde de cada corte es un
+    polígono sencillo que holes_fill cierra bien. Las tapas copian el color
+    de vértice de la cara vecina (si no, salían negras)."""
+    for kind, objs in p.kinds.items():
+        keep = []
+        for o in objs:
+            bm = bmesh.new()
+            bm.from_mesh(o.data)
+            for co, no in planes:
+                geom = list(bm.verts) + list(bm.edges) + list(bm.faces)
+                bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no,
+                                       clear_outer=True, dist=1e-5)
+                if not bm.faces:
+                    break
+                old = set(bm.faces)
+                bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
+                col = bm.loops.layers.float_color.get('Col')
+                for f in bm.faces:
+                    if f in old:
+                        continue
+                    for lp in f.loops:
+                        src = next((l2 for l2 in lp.vert.link_loops if l2.face in old), None)
+                        if src is not None and col is not None:
+                            lp[col] = src[col]
+                        # la tapa hereda también el material de la vecina
+                    nb = next((l2.face for lp in f.loops for l2 in lp.vert.link_loops
+                               if l2.face in old), None)
+                    if nb is not None:
+                        f.material_index = nb.material_index
+                # los cortes por tiras subdivididas dejan varios vértices
+                # alineados en la tapa: triangularla y girar aristas evita
+                # triángulos de área nula (fallo de validate.py)
+                caps = [f for f in bm.faces if f not in old and len(f.verts) > 3]
+                if caps:
+                    tri = bmesh.ops.triangulate(bm, faces=caps, quad_method='BEAUTY',
+                                                ngon_method='BEAUTY')['faces']
+                    bmesh.ops.beautify_fill(bm, faces=tri, edges=list({e for f in tri for e in f.edges
+                                                                        if not e.is_boundary}))
+            bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-4)
+            # descarta astillas: lo que queda por debajo de 3 cm de alto o
+            # de 2 cm de ancho en la punta del triángulo
+            if bm.verts:
+                zs = [v.co.z for v in bm.verts]
+                xs = [v.co.x for v in bm.verts]
+            if not bm.faces or max(zs) - min(zs) < 0.03 or max(xs) - min(xs) < 0.02:
+                bm.free()
+                bpy.data.objects.remove(o, do_unlink=True)
+                continue
+            bm.to_mesh(o.data)
+            bm.free()
+            o.data.update()
+            keep.append(o)
+        p.kinds[kind] = keep
+
+
+def _rake_trim(mat, rnd, p0, p1, prefix):
+    """Remate que sigue la pendiente sobre el hastial (tapa los cortes)."""
+    p = Parts()
+    if mat == 'Palm':
+        p.add(_rod(f'{prefix}Rake', p0, p1, 0.045, 'M_Wood', _pick(rnd, 'branch'), rnd), 'pole')
+    elif mat == 'Bamboo':
+        p.add(_bamboo(f'{prefix}Rake', p0, p1, 0.045, rnd, segs=10), 'pole')
+    else:
+        # madera: tabla de canto; piedra: dintel inclinado de madera oscura,
+        # igual que los cabios del tejado de lajas
+        m, length = _axis_matrix(p0, p1)
+        t = WALL_T[mat] + 0.04
+        o = C.make_box(f'{prefix}Rake', (0.1, t, length), center=(0, 0, length / 2))
+        o.data.transform(m)
+        M.assign(o, ['M_Wood'])
+        _tint(o, _pick(rnd, 'wood_dark'), rnd)
+        p.add(o, 'wood')
+    return p
+
+
+def _gable_parts(mat, rnd, profile):
+    """profile: lista de (x, z) de la línea de tejado a lo largo de la pared
+    (x de -1 a +1). Se construye una pared de la altura máxima y se recorta
+    por cada tramo recto del perfil."""
+    top = max(z for _, z in profile)
+    p = _wall_parts(mat, rnd, top + 0.25, [])
+    planes = []
+    for (xa, za), (xb, zb) in zip(profile, profile[1:]):
+        d = Vector((xb - xa, 0.0, zb - za)).normalized()
+        n = Vector((-d.z, 0.0, d.x))  # normal hacia arriba del tramo
+        if n.z < 0:
+            n = -n
+        planes.append((Vector((xa, 0.0, za)), n))
+    _clip_parts(p, planes)
+    for i, ((xa, za), (xb, zb)) in enumerate(zip(profile, profile[1:])):
+        lift = 0.05
+        k = _rake_trim(mat, rnd, (xa, 0, za - lift), (xb, 0, zb - lift), f'K{i}')
+        # el remate no baja de la coronación: pivote en la base (z = 0)
+        _clip_parts(k, [(Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.0, -1.0)))])
+        p.extend(k)
+    return p
+
+
+@_register('Gable')
+def _b_gable(mat, rnd, name):
+    """Hastial para RoofGable: triángulo de 2 m de base y 0,70 m de alto.
+    Va bajo cada testero del tejado a dos aguas (girado 90°: la pared corre
+    a lo largo de Y del tejado, en x = ±1)."""
+    rise = HALF * math.tan(ROOF_PITCH) - GABLE_CLEAR
+    return _gable_parts(mat, rnd, [(-HALF, -GABLE_CLEAR), (0.0, rise), (HALF, -GABLE_CLEAR)]).finish(name)
+
+
+@_register('GableShed')
+def _b_gable_shed(mat, rnd, name):
+    """Hastial para RoofShed: triángulo rectángulo, bajo en -X y alto en +X
+    (1,40 m). Girado +90° queda con su +X hacia el +Y (lado alto) del
+    tejado a un agua; en ambos testeros (x = ±1) va con ese mismo giro."""
+    rise = GRID * math.tan(ROOF_PITCH) - GABLE_CLEAR
+    return _gable_parts(mat, rnd, [(-HALF, -GABLE_CLEAR), (HALF, rise)]).finish(name)
 
 
 # ---------------------------------------------------------------------------

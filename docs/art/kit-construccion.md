@@ -1,7 +1,7 @@
 # Kit de construcción modular de la base
 
 Generado por código en `Tools/Blender/props/kit_construccion.py` (Blender 5.2
-headless). 12 piezas × 4 materiales = **48 mallas**, exportadas por
+headless). 14 piezas × 4 materiales = **56 mallas**, exportadas por
 `run_props.py` a `Art/Export/Props/Kit<Material>/SM_Kit_<Material>_<Pieza>.fbx`
 (grupos `KitPalma`, `KitBambu`, `KitMadera`, `KitPiedra` en el manifiesto).
 
@@ -65,6 +65,20 @@ Todas las piezas tienen el pivote en su base:
   - *Esquina (limatesa)*: aleros en −Y y −X, punto alto en (+1, +1). Empalma en su
     borde +X con un tejado a un agua normal y en su borde +Y con uno girado −90°.
     Altura = tan 35° · min(x+1, y+1).
+- **Hastiales** (`Gable`, `GableShed`): cierran el triángulo que el tejado deja
+  en su testero. Como una pared (corren a lo largo de X local, pivote en el
+  centro del lado) pero con z = 0 en la **coronación de pared**, igual que los
+  tejados. Se colocan en el lado de la celda perpendicular a la cumbrera, girados
+  90°, sobre una pared completa.
+  - `Gable` (dos aguas): triángulo de 2 m × 0,67 m, vértice en x = 0.
+  - `GableShed` (un agua): triángulo rectángulo, bajo en −X, alto en +X
+    (1,37 m). Con el giro de +90° su +X apunta al lado alto (+Y) del tejado; en
+    los dos testeros va con el mismo giro.
+  - Quedan 3 cm por debajo de la cara inferior de la cobertura (sin
+    z-fighting) y llevan un remate de pendiente (rama, caña, tabla de canto o
+    dintel de madera en piedra) que tapa el corte. Se generan recortando la
+    pared genérica del material por el perfil del tejado, así que heredan su
+    aparejo (hiladas de piedra, filas de hoja, tablas, cañas).
 - **Escalera**: centro del arranque en z = 0, sube hacia +Y hasta (y = 4, z = 2,65).
 - **Puerta**: bisagra en x = 0, la hoja se extiende hacia +X; colocarla en
   (−0,48, 0) del hueco para que abra girando sobre Z.
@@ -93,9 +107,11 @@ paleta son **lineales**: un 0,8 lineal ya se ve casi blanco en el render.
 | Tejado (3 tipos) | 7 000 | ≤ 6 432 |
 | Escalera | 4 000 | ≤ 3 404 |
 | Puerta, barandilla | 3 000 | ≤ 2 264 |
+| Hastial dos aguas | 4 000 | 1 882 / 2 582 / 1 286 / 938 |
+| Hastial un agua | 5 000 | 2 690 / 2 892 / 1 236 / 1 648 |
 
 `validate.py` comprueba presupuesto, geometría degenerada, color de vértice «Col»
-y materiales estables (48/48 en verde a 2026-09-26).
+y materiales estables (56/56 del kit en verde a 2026-09-26; 154/154 props en total).
 
 ## Mobiliario de base (`mobiliario_base.py`, grupo `MobiliarioBase`)
 
