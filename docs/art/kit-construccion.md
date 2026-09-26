@@ -111,7 +111,7 @@ paleta son **lineales**: un 0,8 lineal ya se ve casi blanco en el render.
 | Hastial un agua | 5 000 | 2 690 / 2 892 / 1 236 / 1 648 |
 
 `validate.py` comprueba presupuesto, geometría degenerada, color de vértice «Col»
-y materiales estables (56/56 del kit en verde a 2026-09-26; 154/154 props en total).
+y materiales estables (56/56 del kit en verde a 2026-09-26; 161/161 props en total).
 
 ## Mobiliario de base (`mobiliario_base.py`, grupo `MobiliarioBase`)
 
@@ -129,6 +129,34 @@ biseles del kit. Pivote en la base.
 | `SM_Base_Smokehouse` | 2,7 × 2,7 × 2,8 m | Paredes de palma del kit (escaladas), fogón, respiradero |
 | `SM_Base_Dock` / `_DockEnd` | 2 × 4 m | Cubierta a **+2,0 m** sobre el pivote (fondo); se encadena en Y |
 | `SM_Base_GardenPlot_Logs` / `_Stones` | 2 × 2 m | Encaja en una celda de la rejilla |
+
+## Producción, huerto y estructura (`produccion_base.py`, grupo `ProduccionBase`)
+
+Lámina: `docs/art/modelos/produccion-base.png`. Piezas de
+`Content/Data/building_pieces.json` que seguían sin malla. Reutilizan
+primitivas, paletas y biseles del kit; pivote en la base, escala real.
+
+| Malla | Pieza de datos | Medidas aprox. | Notas |
+|---|---|---|---|
+| `SM_Base_WorkStone` | `piedra_trabajo` | 1,4 × 1,0 × 0,5 m | Basalto facetado con liquen, yunque, percutor, azuela a medio pulir, lascas |
+| `SM_Base_ClayOven` | `horno_barro` | Ø 1,9 × 1,5 m | Cúpula de barro con hollín en la boca, arco de adobe, brasas, respiradero |
+| `SM_Base_Chimney` | `chimenea` | 1,5 × 0,9 × 4,25 m | Hogar con boca y dintel, campana y cañón de sillarejo; va contra una pared |
+| `SM_Base_Loom` | `telar` | 1,3 × 0,9 × 1,7 m | Bastidor de bambú inclinado, urdimbre, tela a rayas, lanzadera, cesto |
+| `SM_Base_Trellis` | `espaldera` | 2,0 × 0,6 × 2,1 m | Celosía de bambú con maracuyá (hojas, flores y frutos); ocupa un lado de celda |
+| `SM_Base_LemonBed` | `arriate_limonero` | Ø 1,9 m | Anillo de piedras con tierra, alcorque y marca; el árbol va aparte (plants.json) |
+| `SM_Base_ChartTable` | `mesa_cartografia` | 1,6 × 1,0 × 0,92 m | Mapa pintado por vértice (islas, costa, rumbo), carta de varillas, rollos |
+
+La chimenea sube 4,25 m desde la cara del suelo: supera la cumbrera de un
+tejado a dos aguas (2,5 + 0,70 m) con margen. El cuerpo acaba en
+y = +0,45 (la repisa sobresale 6 cm más): esa cara va contra la pared.
+
+### Enlace con los datos
+
+`building_pieces.json` apunta ya a mallas existentes en las 26 piezas que
+estaban en `meshes_pendientes.json/buildingPieces` (estructura → kit modular
+`SM_Kit_<Material>_<Pieza>`; producción y huerto → `SM_Base_*`). `Tools/DataCheck`
+reconoce ahora los nombres del kit, que se generan cruzando `MATERIALS` ×
+`PIECES` en `kit_construccion.py`.
 
 ## Ruinas polinesias (`ruinas_polinesias.py`, grupos `RuinasMarae` y `RuinasTallas`)
 
