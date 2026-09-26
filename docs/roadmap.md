@@ -20,53 +20,57 @@ compila y pasa sus tests en local.
 
 ## Estado por sistema (GDD §17.2)
 
-| Módulo | Estado | Modelo puro | Capa UE | Notas |
+Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI en cada PR);
+**UE ⚠** = capa de Unreal escrita pero *sin compilar: verificar en local*.
+
+| Módulo | Modelo puro | Capa UE | PR | Pendiente |
 |---|---|---|---|---|
-| WorldGen | ✅ base | ✅ | ✅ | Arreglos pendientes M6, M7, M9–M11 de la revisión |
-| Scatter | ✅ base | ✅ | ✅ | Recolección persistente pendiente (P-SAVE) |
-| Ocean | ✅ base | ✅ | ✅ | Flotabilidad para barcos (P-BOATS) |
-| Sky / tiempo | ✅ base | parcial | ✅ | Fases lunares en modelo (P-EVENTS) |
-| Weather | ✅ | ✅ | ✅ | |
-| Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto y HUD corporal (P-BODY) |
-| Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
-| Nado | ✅ | ✅ | ✅ | `FSwimModel` + `SwimSpec`; H4, H5, M1, M4 y M15 arreglados (P-SWIM, capa UE sin compilar: verificar en local y ajustar umbrales en PIE) |
-| Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
-| Farming | en curso | ✅ | sin compilar | `FFarmModel` + `UFarmSubsystem` y `AExploredPlantActor`; verificar en local (P-FARM) |
-| Cooking | ❌ | ❌ | ❌ | (P-COOK) |
-| Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
-| Ruins / museo | ✅ modelo | ✅ | sin compilar | `FRuinsModel` + `FMuseumModel` con specs en el host; `URuinsSubsystem` y `UMuseumDisplayComponent` por verificar en local (P-RUINS) |
-| Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
-| Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
-| Fishing | ❌ | ❌ | ❌ | (P-FISH) |
-| Events | 🚧 modelo | ✅ | sin compilar | `FMoonModel` (Luna única de cielo, mareas y eventos) + `FWorldEventsModel`; `UWorldEventsSubsystem` avisa de inicio/fin. Enganches pendientes: océano (`GetBioluminescence`, `GetExtremeTideDrawdown`), cielo (lluvia de estrellas en `M_Stars`), cámara/partículas (`GetEruption`), hoguera de señal (`TryDropShipPackage`), obsidiana (`TryDepositObsidian`), P-SAVE (`FWorldEventsState`) (P-EVENTS) |
-| Save | stub | ❌ | stub | (P-SAVE) |
-| Achievements | parcial | ✅ | sin compilar | 30 logros en `achievements.json`; estadísticas en `docs/tecnico/estadisticas.md` (P-ACH) |
-| Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
-| UI / frontend | ✅ base | ajustes y navegación (`SettingsLogic`) | parcial | H6, H7, M8, M11–M14, M16 aplicados sin compilar; mapa y museo (P-UI) |
-| Localización | ❌ | — | ❌ | ES/EN (P-L10N) |
+| WorldGen / Scatter | host ✅ | ✅ | — | Revisión: M6, M7, M9–M11 |
+| Ocean | host ✅ | ✅ | — | Flotabilidad de barcos (P-BOATS) |
+| Sky / Luna / eventos | host ✅ `FMoonModel`, `FWorldEventsModel` | UE ⚠ `UWorldEventsSubsystem` | #7 | Enganchar océano (bioluminiscencia, bajamar extrema), `M_Stars`, erupción, hoguera de señal, obsidiana |
+| Weather | host ✅ | ✅ | — | Categoría de ciclón en el modelo (la usa construcción) |
+| Survival / cuerpo | host ✅ | parcial | — | P-BODY en curso |
+| Nado | host ✅ `FSwimModel` | UE ⚠ | #6 | Ajustar umbrales en PIE |
+| Interaction / Carry / Crafting | parcial | ✅ | — | P-CARRY en curso (retirar materiales, brújula y funda seca) |
+| Building | host ✅ `FBuildingModel` | UE ⚠ subsistema, pieza, vista previa | #11 | Consumir materiales (P-CARRY), importar mallas del kit, piezas de ventana/barandilla/hastial |
+| Farming | host ✅ `FFarmModel` | UE ⚠ `UFarmSubsystem`, `AExploredPlantActor` | #8 | Objeto de compost, gasto de agua al regar, parcelas desde construcción |
+| Cooking / fuego | host ✅ `FFireModel`, `FCookingModel` | UE ⚠ `AExploredFire` | #13 | Frescura en el inventario, calor → supervivencia, reaparición → GameMode |
+| Cartography | host ✅ `FCartographyModel` | UE ⚠ componente + `SExploredMapSheet` | #9 | Mapa en las manos, mirador → boceto, Los Dientes por islote |
+| Ruins / museo | host ✅ `FRuinsModel`, `FMuseumModel` | UE ⚠ subsistema + expositor | #12 | Actores de estatua/altar/canoa, `Notify*` desde la interacción, piezas de museo |
+| Boats | — | — | — | P-BOATS en curso |
+| Fauna | gait | — | — | P-FAUNA en curso |
+| Fishing | — | — | — | P-FISH en curso |
+| Save | host ✅ formato, ranuras, deltas | UE ⚠ `UExploredSaveSubsystem` | #14 | Registrar las secciones de cada sistema (P-WIRE) |
+| Achievements | host ✅ `FAchievementsModel` | UE ⚠ subsistema + aviso | #10 | Que los sistemas reporten estadísticas (P-WIRE), pantalla de logros |
+| Audio / música | — | parcial | — | P-MUSIC en curso |
+| UI / frontend | host ✅ `SettingsLogic` | UE ⚠ H6, H7, M8, M11–M16 | integración | Pantallas de mapa y museo, entrada «Logros» |
+| Localización | — | — | — | P-L10N en curso |
 
 ## Paquetes de trabajo
 
 | Id | Paquete | Estado |
 |---|---|---|
-| P-HOST | Tests del host + CI | en curso (#5) |
-| P-SWIM | `FSwimModel`: estados con histéresis (H5), apnea por profundidad (H4), oxígeno a FPS altos (M1), corrientes como velocidad (M4), tick del personaje al nadar (M15) | en curso (nube/nado-2026-09-26) |
-| P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | pendiente |
-| P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | en curso (nube/huerto-2026-09-26) |
-| P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
-| P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | en curso (nube/ruinas-2026-09-26) |
-| P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
-| P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | en curso (nube/eventos-2026-09-26) |
-| P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
-| P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
-| P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
-| P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
-| P-ACH | `FAchievementsModel`: 30 logros y estadísticas | en curso (nube/logros-2026-09-26) |
-| P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
-| P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
-| P-UI | Arreglos H2/H6/H7/M8/M11–M14 y pantallas de mapa y museo | en curso (nube/ui-2026-09-26) |
-| P-MUSIC | Director de música adaptativa por capas | pendiente |
-| P-L10N | Tabla de textos ES/EN y selector | pendiente |
+| P-HOST | Tests del host + CI | hecho (#5) |
+| P-SWIM | Nado en modelo puro; H4, H5, M1, M4, M15 | hecho, sin compilar (#6) |
+| P-EVENTS | Luna única + calendario de eventos | hecho, sin compilar (#7) |
+| P-FARM | Limonero y huerto | hecho, sin compilar (#8) |
+| P-MAP | Cartografía a mano | hecho, sin compilar (#9) |
+| P-ACH | 30 logros y estadísticas | hecho, sin compilar (#10) |
+| P-BUILD | Construcción por piezas, apoyo, integridad | hecho, sin compilar (#11) |
+| P-RUINS | Ruinas, wayfinding, tesoros, museo | hecho, sin compilar (#12) |
+| P-COOK | Fuego, cocina, conservación | hecho, sin compilar (#13) |
+| P-SAVE | Formato, ranuras, deltas | hecho, sin compilar (#14) |
+| P-UI | Arreglos de la revisión (H6, H7, M8, M11–M16, L3, L5, L6, L8) | hecho, sin compilar (rama `nube/ui-2026-09-26`, en la integración) |
+| P-INT | Rama de integración con todo lo anterior fusionado y resuelto | en curso (`nube/integracion-2026-09-26`) |
+| P-BOATS | Balsa → canoa → balancín → «Limón» | en curso |
+| P-FAUNA | Boids, fauna marina, percepción | en curso |
+| P-FISH | Pesca con tensión, nasas, pozas | en curso |
+| P-CARRY | Cinturón, bolsillos, mochila, contenedores, angarillas | en curso |
+| P-BODY | Heridas, escorbuto, nutrición, señales corporales | en curso |
+| P-MUSIC | Director de música adaptativa, flauta | en curso |
+| P-L10N | Catálogo ES/EN y exportación a Unreal | en curso |
+| P-WIRE | Conectar sistemas entre sí: secciones de guardado, estadísticas de logros, interacción con ruinas/mirador, calor del fuego → supervivencia, consumo de materiales | pendiente |
+| P-UI2 | Pantallas: mapa en las manos, museo, logros, selector de ranura | pendiente |
 | P-M9 | Equilibrado, rendimiento, empaquetado Win64 y página de tienda | pendiente |
 
 ## Lo que solo puede hacerse en local (con UE 5.6)
