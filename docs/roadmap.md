@@ -29,7 +29,7 @@ compila y pasa sus tests en local.
 | Weather | ✅ | ✅ | ✅ | |
 | Survival | ✅ modelo | ✅ | parcial | Heridas, escorbuto y HUD corporal (P-BODY) |
 | Interaction / Carry / Crafting | ✅ base | parcial | ✅ | Mochila 3D, cinturón, angarillas (P-CARRY) |
-| Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
+| Nado | ✅ | ✅ | ✅ | `FSwimModel` + `SwimSpec`; H4, H5, M1, M4 y M15 arreglados (P-SWIM, capa UE sin compilar: verificar en local y ajustar umbrales en PIE) |
 | Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
 | Farming | ❌ | ❌ | ❌ | Datos en `plants.json` (P-FARM) |
 | Cooking | ❌ | ❌ | ❌ | (P-COOK) |
@@ -50,7 +50,7 @@ compila y pasa sus tests en local.
 | Id | Paquete | Estado |
 |---|---|---|
 | P-HOST | Tests del host + CI | en curso (#5) |
-| P-SWIM | `FSwimModel`: estados con histéresis (H5), apnea por profundidad (H4), oxígeno a FPS altos (M1), corrientes como velocidad (M4) | pendiente |
+| P-SWIM | `FSwimModel`: estados con histéresis (H5), apnea por profundidad (H4), oxígeno a FPS altos (M1), corrientes como velocidad (M4), tick del personaje al nadar (M15) | en curso (nube/nado-2026-09-26) |
 | P-BUILD | `FBuildingModel`: piezas, encaje por rejilla y sockets, grafo de apoyo, integridad, daño por viento/ciclón, reparación, coste y herramientas desde `building_pieces.json` | pendiente |
 | P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | pendiente |
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
