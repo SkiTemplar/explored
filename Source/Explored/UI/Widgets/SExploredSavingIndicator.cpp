@@ -34,10 +34,10 @@ void SExploredSavingIndicator::Show(float Seconds)
 {
 	RemainingSeconds = Seconds;
 	SetVisibility(EVisibility::HitTestInvisible);
-	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredSavingIndicator::Tick));
+	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredSavingIndicator::HandleHideTick));
 }
 
-EActiveTimerReturnType SExploredSavingIndicator::Tick(double InCurrentTime, float InDeltaTime)
+EActiveTimerReturnType SExploredSavingIndicator::HandleHideTick(double InCurrentTime, float InDeltaTime)
 {
 	RemainingSeconds -= InDeltaTime;
 	if (RemainingSeconds <= 0.0f)

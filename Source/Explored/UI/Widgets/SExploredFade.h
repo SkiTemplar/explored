@@ -24,7 +24,10 @@ public:
 	bool IsFading() const { return bAnimating; }
 
 private:
-	EActiveTimerReturnType Tick(double InCurrentTime, float InDeltaTime);
+	// Nombre distinto de SWidget::Tick a propósito: esto no es un override,
+	// es el callback de RegisterActiveTimer (firma EActiveTimerReturnType(double,float),
+	// sin FGeometry) y llamarlo «Tick» solo oculta la función virtual real.
+	EActiveTimerReturnType HandleFadeTick(double InCurrentTime, float InDeltaTime);
 	virtual TOptional<EMouseCursor::Type> GetCursor() const override;
 
 	float Opacity = 0.0f;

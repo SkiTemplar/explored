@@ -15,7 +15,9 @@ public:
 	void Show(float Seconds = 1.6f);
 
 private:
-	EActiveTimerReturnType Tick(double InCurrentTime, float InDeltaTime);
+	// Nombre distinto de SWidget::Tick a propósito (ver SExploredFade): es el
+	// callback de RegisterActiveTimer, no un override.
+	EActiveTimerReturnType HandleHideTick(double InCurrentTime, float InDeltaTime);
 
 	float RemainingSeconds = 0.0f;
 };

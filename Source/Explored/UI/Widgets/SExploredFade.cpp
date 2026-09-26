@@ -33,7 +33,7 @@ void SExploredFade::FadeToBlack(float Seconds, TFunction<void()> OnDone)
 	Elapsed = 0.0f;
 	bAnimating = true;
 	PendingCallback = MoveTemp(OnDone);
-	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredFade::Tick));
+	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredFade::HandleFadeTick));
 }
 
 void SExploredFade::FadeFromBlack(float Seconds, TFunction<void()> OnDone)
@@ -44,10 +44,10 @@ void SExploredFade::FadeFromBlack(float Seconds, TFunction<void()> OnDone)
 	Elapsed = 0.0f;
 	bAnimating = true;
 	PendingCallback = MoveTemp(OnDone);
-	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredFade::Tick));
+	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SExploredFade::HandleFadeTick));
 }
 
-EActiveTimerReturnType SExploredFade::Tick(double InCurrentTime, float InDeltaTime)
+EActiveTimerReturnType SExploredFade::HandleFadeTick(double InCurrentTime, float InDeltaTime)
 {
 	if (!bAnimating)
 	{

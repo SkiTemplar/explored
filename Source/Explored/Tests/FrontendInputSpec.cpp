@@ -1,27 +1,52 @@
 #include "Misc/AutomationTest.h"
 
+#include "Engine/Engine.h"
+#include "Engine/LocalPlayer.h"
+#include "UObject/StrongObjectPtr.h"
+
 #include "UI/ExploredInputSettingsSubsystem.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(FExploredFrontendInputSpec, "Explored.Frontend.Input",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+	// UExploredInputSettingsSubsystem hereda de ULocalPlayerSubsystem, cuya
+	// UCLASS exige Within = LocalPlayer (y ULocalPlayer, a su vez, Within =
+	// Engine): NewObject<UExploredInputSettingsSubsystem>() sin ese outer
+	// crea el objeto dentro de un Package y dispara un ensure (ClassWithin
+	// inválido). Ninguno de los dos objetos se inicializa de verdad
+	// (LocalPlayer::Init, etc.); solo existen para darle al subsistema un
+	// outer del tipo que su reflection exige.
+	TStrongObjectPtr<ULocalPlayer> DummyLocalPlayer;
+	TStrongObjectPtr<UExploredInputSettingsSubsystem> Subsystem;
+
 END_DEFINE_SPEC(FExploredFrontendInputSpec)
 
 void FExploredFrontendInputSpec::Define()
 {
+	BeforeEach([this]()
+	{
+		DummyLocalPlayer = TStrongObjectPtr<ULocalPlayer>(NewObject<ULocalPlayer>(GEngine));
+		Subsystem = TStrongObjectPtr<UExploredInputSettingsSubsystem>(NewObject<UExploredInputSettingsSubsystem>(DummyLocalPlayer.Get()));
+	});
+
+	AfterEach([this]()
+	{
+		Subsystem.Reset();
+		DummyLocalPlayer.Reset();
+	});
+
 	Describe("UExploredInputSettingsSubsystem", [this]()
 	{
 		It("devuelve la tecla por defecto cuando no hay remapeo", [this]()
 		{
-			UExploredInputSettingsSubsystem* Subsystem = NewObject<UExploredInputSettingsSubsystem>();
 			Subsystem->RegisterAction(TEXT("Test_ActionA"), EKeys::SpaceBar);
 			TestEqual(TEXT("Tecla por defecto"), Subsystem->GetKeyFor(TEXT("Test_ActionA"), EKeys::SpaceBar), FKey(EKeys::SpaceBar));
 		});
 
 		It("cambia la tecla y dispara OnBindingsChanged", [this]()
 		{
-			UExploredInputSettingsSubsystem* Subsystem = NewObject<UExploredInputSettingsSubsystem>();
 			Subsystem->RegisterAction(TEXT("Test_ActionB"), EKeys::SpaceBar);
 
 			FName FiredFor = NAME_None;
@@ -41,7 +66,6 @@ void FExploredFrontendInputSpec::Define()
 
 		It("rechaza una tecla ya usada por otra acción registrada", [this]()
 		{
-			UExploredInputSettingsSubsystem* Subsystem = NewObject<UExploredInputSettingsSubsystem>();
 			Subsystem->RegisterAction(TEXT("Test_Jump"), EKeys::SpaceBar);
 			Subsystem->RegisterAction(TEXT("Test_Sprint"), EKeys::LeftShift);
 
@@ -56,7 +80,6 @@ void FExploredFrontendInputSpec::Define()
 
 		It("ResetKeyFor devuelve la tecla por defecto", [this]()
 		{
-			UExploredInputSettingsSubsystem* Subsystem = NewObject<UExploredInputSettingsSubsystem>();
 			Subsystem->RegisterAction(TEXT("Test_ActionC"), EKeys::SpaceBar);
 			Subsystem->SetKeyFor(TEXT("Test_ActionC"), EKeys::F);
 			Subsystem->ResetKeyFor(TEXT("Test_ActionC"));

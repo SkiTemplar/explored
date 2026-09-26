@@ -185,9 +185,13 @@ void UExploredGameUserSettings::SetLanguage(EExploredLanguage NewLanguage)
 void UExploredGameUserSettings::SetColorblindMode(EExploredColorblindMode NewMode)
 {
 	ColorblindMode = NewMode;
-	if (FSlateApplication::IsInitialized() && FSlateApplication::Get().GetRenderer().IsValid())
+	// FSlateApplication::GetRenderer() devuelve un FSlateRenderer* crudo (no un
+	// TSharedPtr), de ahí el chequeo por nulidad en vez de IsValid().
+	if (FSlateApplication::IsInitialized())
 	{
-		FSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(
-			ToEngineDeficiency(ColorblindMode), 10, true, false);
+		if (FSlateRenderer* Renderer = FSlateApplication::Get().GetRenderer())
+		{
+			Renderer->SetColorVisionDeficiencyType(ToEngineDeficiency(ColorblindMode), 10, true, false);
+		}
 	}
 }
