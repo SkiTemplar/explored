@@ -39,9 +39,11 @@ FORBIDDEN_TERMS = [
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
-    "artifacts.json", "ruins.json", "fuels.json", "recipes.json",
+    "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
+# Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
+ALBATROS_ITEMS = {"chapa_fuselaje", "tubo_aluminio", "cable_electrico", "cinta_americana"}
 
 
 @dataclass
@@ -98,6 +100,10 @@ class DataSet:
     @property
     def building(self) -> dict:
         return self.data.get("building_pieces.json", {"tiers": [], "pieces": []})
+
+    @property
+    def boats(self) -> list[dict]:
+        return self.data.get("boats.json", {}).get("boats", [])
 
     @property
     def item_ids(self) -> set[str]:
@@ -388,6 +394,103 @@ def _check_piece_cycles(pieces: dict[str, dict], r: Report) -> None:
         visit(pid, [])
 
 
+# --------------------------------------------------------------------------- embarcaciones
+
+
+def _cpp_enum(text: str, name: str) -> list[str]:
+    m = re.search(rf"enum class {name}\s*:\s*uint8\s*\{{(.*?)\}};", text, re.S)
+    if not m:
+        return []
+    body = re.sub(r"//[^\n]*", "", m.group(1))
+    names = [re.split(r"[\s=]", v.strip())[0] for v in body.split(",")]
+    return [n for n in names if n and n != "Count"]
+
+
+def _read_source(ds: DataSet, rel: str) -> str:
+    path = ds.repo_root / "Source" / "Explored" / rel
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def check_boats(ds: DataSet, r: Report, obtainable: set[str]) -> None:
+    doc = ds.data.get("boats.json")
+    if not doc:
+        return
+    boats = {b.get("id"): b for b in ds.boats}
+    if len(boats) != len(ds.boats):
+        r.error("boats.json: ids de embarcación duplicados")
+    pieces = {p.get("id") for p in ds.building.get("pieces", [])}
+
+    types_h = _read_source(ds, "Boats/BoatTypes.h")
+    model_cpp = _read_source(ds, "Boats/BoatModel.cpp")
+    progress_h = _read_source(ds, "Narrative/ExploredProgress.h")
+    cpp_types = _cpp_enum(types_h, "EBoatType")
+    ship_parts = set(_cpp_enum(progress_h, "EShipPart"))
+    if not cpp_types:
+        r.warn("boats.json: no se encuentra EBoatType en Boats/BoatTypes.h; no se compara con el C++")
+    cpp_meshes = {
+        m.group(1): m.group(2)
+        for m in re.finditer(r"case EBoatType::(\w+):(?:(?!break;).)*?D\.MeshName = TEXT\(\"([^\"]*)\"\)", model_cpp, re.S)
+    }
+
+    orders = sorted(b.get("order") for b in boats.values())
+    if orders != list(range(len(orders))):
+        r.error(f"boats.json: órdenes de progresión no consecutivos {orders}")
+    if cpp_types and sorted(b.get("type") for b in boats.values()) != sorted(cpp_types):
+        r.error(f"boats.json: los tipos deben ser exactamente los de EBoatType {cpp_types}")
+
+    for bid, b in boats.items():
+        if not isinstance(bid, str) or not re.fullmatch(r"[a-z0-9_]+", bid or ""):
+            r.error(f"boats.json: id inválido {bid!r} (minúsculas, dígitos y _)")
+            continue
+        for key in ("nameEs", "nameEn"):
+            if not isinstance(b.get(key), str) or not b[key]:
+                r.error(f"boats.json «{bid}»: falta {key}")
+        if b.get("station") not in pieces:
+            r.error(f"boats.json «{bid}»: estación «{b.get('station')}» no está en building_pieces.json")
+        if not b.get("cost"):
+            r.error(f"boats.json «{bid}»: sin coste")
+        for c in b.get("cost", []):
+            if c.get("item") not in ds.item_ids:
+                r.error(f"boats.json «{bid}»: ingrediente «{c.get('item')}» no está en items.json")
+            elif c["item"] not in obtainable:
+                r.error(f"boats.json «{bid}»: ingrediente «{c['item']}» no obtenible")
+            if not isinstance(c.get("count"), int) or not 1 <= c["count"] <= 50:
+                r.error(f"boats.json «{bid}»: count {c.get('count')!r} fuera de [1, 50]")
+        for tool in b.get("tools", []):
+            if tool not in ds.item_ids:
+                r.error(f"boats.json «{bid}»: herramienta «{tool}» no está en items.json")
+            elif tool not in obtainable:
+                r.error(f"boats.json «{bid}»: herramienta «{tool}» no obtenible")
+        req = b.get("requiresBoat")
+        if req is not None:
+            if req not in boats:
+                r.error(f"boats.json «{bid}»: requiere la embarcación «{req}», que no existe")
+            elif boats[req].get("order", 0) >= b.get("order", 0):
+                r.error(f"boats.json «{bid}»: requiere «{req}», que no va antes en la progresión")
+        elif b.get("consumesRequiredBoat"):
+            r.error(f"boats.json «{bid}»: consumesRequiredBoat sin requiresBoat")
+        bad_parts = set(b.get("requiresShipParts", [])) - ship_parts
+        if ship_parts and bad_parts:
+            r.error(f"boats.json «{bid}»: piezas del Albatros desconocidas {sorted(bad_parts)} (EShipPart)")
+        if not _type_ok(b.get("buildMinutes"), (int, float)) or not 1 <= b["buildMinutes"] <= 600:
+            r.error(f"boats.json «{bid}»: buildMinutes fuera de [1, 600]")
+        btype = b.get("type")
+        if btype in cpp_meshes and (cpp_meshes[btype] or None) != b.get("mesh"):
+            r.error(f"boats.json «{bid}»: mesh={b.get('mesh')!r} pero FBoatDefinition::MeshName dice {cpp_meshes[btype]!r}")
+
+    limon = next((b for b in boats.values() if b.get("type") == "Limon"), None)
+    if limon is None:
+        r.error("boats.json: falta el barco «Limón» (GDD §8.10)")
+    else:
+        if ship_parts and set(limon.get("requiresShipParts", [])) != ship_parts:
+            r.error("boats.json: el «Limón» debe exigir las cuatro piezas del Albatros (GDD §4.3)")
+        if not {c.get("item") for c in limon.get("cost", [])} & ALBATROS_ITEMS:
+            r.error("boats.json: el «Limón» debe usar material rescatado del Albatros (GDD §8.10)")
+    first = next((b for b in boats.values() if b.get("order") == 0), None)
+    if first is not None and first.get("type") != "Raft":
+        r.error("boats.json: la progresión empieza por la balsa (GDD §8.10)")
+
+
 # --------------------------------------------------------------------------- mallas
 
 
@@ -404,8 +507,12 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
-    displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays}
+    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
+    "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
+]
+ASCII_ID = re.compile(r"^[a-z0-9_]+$")
+# Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
+ALBATROS_ITEMS = {"chapa_fuselaje", "tubo_aluminio", "cable_electrico", "cinta_americana"}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
@@ -426,6 +533,9 @@ def check_meshes(ds: DataSet, r: Report) -> None:
         for s in pl.get("stages", []):
             if s.get("mesh") is not None and s["mesh"] not in known:
                 r.error(f"plants.json «{pl['id']}.{s['id']}»: malla {s['mesh']} no existe en Tools/Blender/props")
+    for b in ds.boats:
+        if b.get("mesh") is not None and b["mesh"] not in known:
+            r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
 
     pending = ds.data.get("meshes_pendientes.json", {})
     for group, expected in pending_expected(ds).items():
@@ -730,6 +840,7 @@ def run_all(ds: DataSet) -> Report:
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
     check_building(ds, r, obtainable)
+    check_boats(ds, r, obtainable)
     check_meshes(ds, r)
     check_survival(ds, r)
     check_cooking(ds, r)

@@ -821,6 +821,34 @@
       "mesh": null
     },
     {
+      "id": "astillero",
+      "nameEs": "Astillero",
+      "tier": "madera",
+      "category": "produccion",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 6
+        },
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 120,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
       "id": "cimiento_piedra",
       "nameEs": "Cimiento de piedra",
       "tier": "piedra",

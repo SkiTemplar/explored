@@ -1,5 +1,6 @@
 # Ficheros .cpp de Source/Explored que se compilan en el host (solo CoreMinimal, sin UObject).
 Achievements/AchievementsModel.cpp
+Boats/BoatModel.cpp
 Building/BuildingModel.cpp
 Cartography/CartographyModel.cpp
 Cartography/CoastlineTrace.cpp

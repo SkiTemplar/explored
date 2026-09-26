@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "units": {
+    "type": "nombre de EBoatType en Source/Explored/Boats/BoatTypes.h; la física (eslora, calado, velocidades, vela) vive solo en FBoatModel",
+    "order": "posición en la progresión del GDD §8.10 (balsa → canoa → balancín → «Limón»)",
+    "station": "pieza de building_pieces.json donde se construye",
+    "cost[].count": "unidades del objeto de items.json que se consumen",
+    "tools": "ids de items.json que el jugador debe llevar (no se consumen); deben ser fabricables",
+    "requiresBoat": "embarcación que debe existir antes; si consumesRequiredBoat es true, se transforma en esta",
+    "requiresShipParts": "piezas del Albatros recuperadas (EShipPart de Narrative/ExploredProgress.h, GDD §4.3)",
+    "buildMinutes": "minutos de juego de trabajo (actividad Working) con eficiencia 1.0",
+    "mesh": "nombre SM_ de Tools/Blender/props/boats.py (debe coincidir con FBoatDefinition::MeshName); null = pendiente"
+  },
+  "boats": [
+    {
+      "id": "balsa",
+      "type": "Raft",
+      "order": 0,
+      "nameEs": "Balsa",
+      "nameEn": "Raft",
+      "station": "astillero",
+      "cost": [
+        { "item": "tronco_pequeno", "count": 8 },
+        { "item": "liana", "count": 6 }
+      ],
+      "tools": ["hacha"],
+      "requiresBoat": null,
+      "consumesRequiredBoat": false,
+      "requiresShipParts": [],
+      "buildMinutes": 90,
+      "mesh": "SM_Raft"
+    },
+    {
+      "id": "canoa",
+      "type": "Canoe",
+      "order": 1,
+      "nameEs": "Canoa",
+      "nameEn": "Canoe",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_dura", "count": 6 },
+        { "item": "tronco_pequeno", "count": 2 },
+        { "item": "resina", "count": 3 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": ["hacha", "cuchillo"],
+      "requiresBoat": null,
+      "consumesRequiredBoat": false,
+      "requiresShipParts": [],
+      "buildMinutes": 240,
+      "mesh": "SM_Canoe"
+    },
+    {
+      "id": "canoa_balancin",
+      "type": "Outrigger",
+      "order": 2,
+      "nameEs": "Canoa con balancín y vela",
+      "nameEn": "Outrigger sailing canoe",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_blanda", "count": 2 },
+        { "item": "bambu_grueso", "count": 4 },
+        { "item": "palo_recto", "count": 2 },
+        { "item": "hoja_palma", "count": 12 },
+        { "item": "cuerda", "count": 6 },
+        { "item": "resina", "count": 2 }
+      ],
+      "tools": ["hacha", "cuchillo"],
+      "requiresBoat": "canoa",
+      "consumesRequiredBoat": true,
+      "requiresShipParts": [],
+      "buildMinutes": 180,
+      "mesh": "SM_Canoe_Outrigger"
+    },
+    {
+      "id": "barco_limon",
+      "type": "Limon",
+      "order": 3,
+      "nameEs": "Barco «Limón»",
+      "nameEn": "The Lemon",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_dura", "count": 16 },
+        { "item": "tronco_pequeno", "count": 6 },
+        { "item": "chapa_fuselaje", "count": 6 },
+        { "item": "tubo_aluminio", "count": 4 },
+        { "item": "cable_electrico", "count": 3 },
+        { "item": "cinta_americana", "count": 2 },
+        { "item": "cuerda", "count": 12 },
+        { "item": "resina", "count": 6 },
+        { "item": "hoja_palma", "count": 20 }
+      ],
+      "tools": ["hacha", "cuchillo", "martillo"],
+      "requiresBoat": "canoa_balancin",
+      "consumesRequiredBoat": false,
+      "requiresShipParts": ["Fuselage", "Wing", "Tail", "Engine"],
+      "buildMinutes": 600,
+      "mesh": null
+    }
+  ]
+}
