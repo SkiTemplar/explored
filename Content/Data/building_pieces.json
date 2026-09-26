@@ -14,12 +14,14 @@
       "id": "palma",
       "order": 0,
       "nameEs": "Hoja de palma",
+      "nameEn": "Palm leaf",
       "requiresTools": []
     },
     {
       "id": "bambu",
       "order": 1,
       "nameEs": "Bambú",
+      "nameEn": "Bamboo",
       "requiresTools": [
         "cuchillo"
       ]
@@ -28,6 +30,7 @@
       "id": "madera",
       "order": 2,
       "nameEs": "Madera",
+      "nameEn": "Wood",
       "requiresTools": [
         "hacha"
       ]
@@ -36,6 +39,7 @@
       "id": "piedra",
       "order": 3,
       "nameEs": "Piedra",
+      "nameEn": "Stone",
       "requiresTools": [
         "martillo"
       ]
@@ -45,6 +49,7 @@
     {
       "id": "refugio_inclinado",
       "nameEs": "Refugio inclinado",
+      "nameEn": "Lean-to shelter",
       "tier": "palma",
       "category": "especial",
       "cost": [
@@ -71,6 +76,7 @@
     {
       "id": "cama_hojas",
       "nameEs": "Cama de hojas",
+      "nameEn": "Leaf bed",
       "tier": "palma",
       "category": "mobiliario",
       "cost": [
@@ -93,6 +99,7 @@
     {
       "id": "fogata",
       "nameEs": "Fogata",
+      "nameEn": "Campfire",
       "tier": "palma",
       "category": "produccion",
       "cost": [
@@ -119,6 +126,7 @@
     {
       "id": "hoguera_senal",
       "nameEs": "Hoguera de señal",
+      "nameEn": "Signal fire",
       "tier": "palma",
       "category": "produccion",
       "cost": [
@@ -147,6 +155,7 @@
     {
       "id": "piedra_trabajo",
       "nameEs": "Piedra de trabajo",
+      "nameEn": "Work stone",
       "tier": "palma",
       "category": "produccion",
       "cost": [
@@ -169,6 +178,7 @@
     {
       "id": "suelo_palma",
       "nameEs": "Suelo de palma",
+      "nameEn": "Palm floor",
       "tier": "palma",
       "category": "estructura",
       "cost": [
@@ -195,6 +205,7 @@
     {
       "id": "pared_palma",
       "nameEs": "Pared de palma",
+      "nameEn": "Palm wall",
       "tier": "palma",
       "category": "estructura",
       "cost": [
@@ -221,6 +232,7 @@
     {
       "id": "techo_palma",
       "nameEs": "Techo de palma",
+      "nameEn": "Palm roof",
       "tier": "palma",
       "category": "estructura",
       "cost": [
@@ -247,6 +259,7 @@
     {
       "id": "puerta_palma",
       "nameEs": "Puerta de palma",
+      "nameEn": "Palm door",
       "tier": "palma",
       "category": "estructura",
       "cost": [
@@ -273,6 +286,7 @@
     {
       "id": "bancal",
       "nameEs": "Bancal",
+      "nameEn": "Garden bed",
       "tier": "palma",
       "category": "huerto",
       "cost": [
@@ -297,6 +311,7 @@
     {
       "id": "arriate_limonero",
       "nameEs": "Arriate del limonero",
+      "nameEn": "Lemon tree bed",
       "tier": "palma",
       "category": "huerto",
       "cost": [
@@ -321,6 +336,7 @@
     {
       "id": "suelo_bambu",
       "nameEs": "Suelo de bambú",
+      "nameEn": "Bamboo floor",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -345,6 +361,7 @@
     {
       "id": "pared_bambu",
       "nameEs": "Pared de bambú",
+      "nameEn": "Bamboo wall",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -373,6 +390,7 @@
     {
       "id": "techo_bambu",
       "nameEs": "Techo de bambú y palma",
+      "nameEn": "Bamboo and palm roof",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -401,6 +419,7 @@
     {
       "id": "puerta_bambu",
       "nameEs": "Puerta de bambú",
+      "nameEn": "Bamboo door",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -425,6 +444,7 @@
     {
       "id": "pilote_bambu",
       "nameEs": "Pilote de bambú",
+      "nameEn": "Bamboo stilt",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -449,6 +469,7 @@
     {
       "id": "escalera_bambu",
       "nameEs": "Escalera de bambú",
+      "nameEn": "Bamboo ladder",
       "tier": "bambu",
       "category": "estructura",
       "cost": [
@@ -477,6 +498,7 @@
     {
       "id": "secadero",
       "nameEs": "Secadero",
+      "nameEn": "Drying rack",
       "tier": "bambu",
       "category": "produccion",
       "cost": [
@@ -501,6 +523,7 @@
     {
       "id": "telar",
       "nameEs": "Telar de fibra",
+      "nameEn": "Fibre loom",
       "tier": "bambu",
       "category": "produccion",
       "cost": [
@@ -529,6 +552,7 @@
     {
       "id": "espaldera",
       "nameEs": "Espaldera",
+      "nameEn": "Trellis",
       "tier": "bambu",
       "category": "huerto",
       "cost": [
@@ -555,6 +579,7 @@
     {
       "id": "recolector_lluvia",
       "nameEs": "Recolector de lluvia",
+      "nameEn": "Rain catcher",
       "tier": "bambu",
       "category": "produccion",
       "cost": [
@@ -583,6 +608,7 @@
     {
       "id": "suelo_madera",
       "nameEs": "Suelo de madera",
+      "nameEn": "Wooden floor",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -611,6 +637,7 @@
     {
       "id": "pared_madera",
       "nameEs": "Pared de madera",
+      "nameEn": "Wooden wall",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -639,6 +666,7 @@
     {
       "id": "techo_madera",
       "nameEs": "Techo de madera y palma",
+      "nameEn": "Wood and palm roof",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -667,6 +695,7 @@
     {
       "id": "puerta_madera",
       "nameEs": "Puerta de madera",
+      "nameEn": "Wooden door",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -691,6 +720,7 @@
     {
       "id": "pilote_madera",
       "nameEs": "Pilote de madera",
+      "nameEn": "Wooden stilt",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -715,6 +745,7 @@
     {
       "id": "escalera_madera",
       "nameEs": "Escalera de madera",
+      "nameEn": "Wooden ladder",
       "tier": "madera",
       "category": "estructura",
       "cost": [
@@ -739,6 +770,7 @@
     {
       "id": "mesa_cartografia",
       "nameEs": "Mesa de cartografía",
+      "nameEn": "Chart table",
       "tier": "madera",
       "category": "mobiliario",
       "cost": [
@@ -765,6 +797,7 @@
     {
       "id": "estanteria_museo",
       "nameEs": "Estantería del museo",
+      "nameEn": "Museum shelf",
       "tier": "madera",
       "category": "museo",
       "cost": [
@@ -791,6 +824,7 @@
     {
       "id": "cimiento_piedra",
       "nameEs": "Cimiento de piedra",
+      "nameEn": "Stone foundation",
       "tier": "piedra",
       "category": "estructura",
       "cost": [
@@ -820,6 +854,7 @@
     {
       "id": "muro_piedra",
       "nameEs": "Muro de piedra seca",
+      "nameEn": "Dry-stone wall",
       "tier": "piedra",
       "category": "estructura",
       "cost": [
@@ -850,6 +885,7 @@
     {
       "id": "horno_barro",
       "nameEs": "Horno de barro",
+      "nameEn": "Clay oven",
       "tier": "piedra",
       "category": "produccion",
       "cost": [
@@ -880,6 +916,7 @@
     {
       "id": "chimenea",
       "nameEs": "Chimenea",
+      "nameEn": "Chimney",
       "tier": "piedra",
       "category": "estructura",
       "cost": [
