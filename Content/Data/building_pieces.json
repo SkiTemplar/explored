@@ -181,7 +181,7 @@
       "buildMinutes": 5,
       "integrity": 90,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Base_WorkStone"
     },
     {
       "id": "suelo_palma",
@@ -209,7 +209,7 @@
       "buildMinutes": 20,
       "integrity": 30,
       "maxCycloneCategory": 0,
-      "mesh": null
+      "mesh": "SM_Kit_Palm_Floor"
     },
     {
       "id": "pared_palma",
@@ -237,7 +237,7 @@
       "buildMinutes": 20,
       "integrity": 30,
       "maxCycloneCategory": 0,
-      "mesh": null
+      "mesh": "SM_Kit_Palm_Wall"
     },
     {
       "id": "techo_palma",
@@ -293,7 +293,7 @@
       "buildMinutes": 15,
       "integrity": 25,
       "maxCycloneCategory": 0,
-      "mesh": null
+      "mesh": "SM_Kit_Palm_Door"
     },
     {
       "id": "bancal",
@@ -319,7 +319,7 @@
       "buildMinutes": 30,
       "integrity": 50,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Base_GardenPlot_Logs"
     },
     {
       "id": "arriate_limonero",
@@ -345,7 +345,7 @@
       "buildMinutes": 30,
       "integrity": 80,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Base_LemonBed"
     },
     {
       "id": "suelo_bambu",
@@ -371,7 +371,7 @@
       "buildMinutes": 30,
       "integrity": 50,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_Floor"
     },
     {
       "id": "pared_bambu",
@@ -401,7 +401,7 @@
       "buildMinutes": 30,
       "integrity": 50,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_Wall"
     },
     {
       "id": "techo_bambu",
@@ -431,7 +431,7 @@
       "buildMinutes": 35,
       "integrity": 45,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_RoofGable"
     },
     {
       "id": "puerta_bambu",
@@ -457,7 +457,7 @@
       "buildMinutes": 20,
       "integrity": 40,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_Door"
     },
     {
       "id": "pilote_bambu",
@@ -483,7 +483,7 @@
       "buildMinutes": 15,
       "integrity": 45,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_Foundation"
     },
     {
       "id": "escalera_bambu",
@@ -513,7 +513,7 @@
       "buildMinutes": 20,
       "integrity": 40,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Kit_Bamboo_Stairs"
     },
     {
       "id": "secadero",
@@ -539,7 +539,7 @@
       "buildMinutes": 30,
       "integrity": 35,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Base_DryingRack"
     },
     {
       "id": "telar",
@@ -569,7 +569,7 @@
       "buildMinutes": 45,
       "integrity": 40,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Base_Loom"
     },
     {
       "id": "espaldera",
@@ -597,7 +597,7 @@
       "buildMinutes": 20,
       "integrity": 35,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Base_Trellis"
     },
     {
       "id": "recolector_lluvia",
@@ -627,7 +627,7 @@
       "buildMinutes": 25,
       "integrity": 35,
       "maxCycloneCategory": 1,
-      "mesh": null
+      "mesh": "SM_Base_RainCollector"
     },
     {
       "id": "suelo_madera",
@@ -717,7 +717,7 @@
       "buildMinutes": 50,
       "integrity": 65,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Kit_Wood_RoofGable"
     },
     {
       "id": "puerta_madera",
@@ -743,7 +743,7 @@
       "buildMinutes": 30,
       "integrity": 70,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Kit_Wood_Door"
     },
     {
       "id": "pilote_madera",
@@ -769,7 +769,7 @@
       "buildMinutes": 30,
       "integrity": 80,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Kit_Wood_Foundation"
     },
     {
       "id": "escalera_madera",
@@ -795,7 +795,7 @@
       "buildMinutes": 30,
       "integrity": 70,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Kit_Wood_Stairs"
     },
     {
       "id": "mesa_cartografia",
@@ -823,7 +823,7 @@
       "buildMinutes": 60,
       "integrity": 60,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Base_ChartTable"
     },
     {
       "id": "estanteria_museo",
@@ -851,7 +851,7 @@
       "buildMinutes": 40,
       "integrity": 60,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Base_DisplayShelf"
     },
     {
       "id": "astillero",
@@ -912,7 +912,7 @@
       "buildMinutes": 90,
       "integrity": 100,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Kit_Stone_Foundation"
     },
     {
       "id": "muro_piedra",
@@ -944,7 +944,7 @@
       "buildMinutes": 90,
       "integrity": 100,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Kit_Stone_Wall"
     },
     {
       "id": "horno_barro",
@@ -976,7 +976,7 @@
       "buildMinutes": 120,
       "integrity": 90,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Base_ClayOven"
     },
     {
       "id": "chimenea",
@@ -1005,7 +1005,7 @@
       "buildMinutes": 90,
       "integrity": 95,
       "maxCycloneCategory": 3,
-      "mesh": null
+      "mesh": "SM_Base_Chimney"
     }
   ]
 }

@@ -221,6 +221,13 @@ def test_detecta_malla_inventada(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "SM_Wall_Bamboo")
 
 
+def test_reconoce_mallas_del_kit_modular(real: DataSet) -> None:
+    from datacheck.checks import blender_mesh_names
+    names = blender_mesh_names(real.repo_root)
+    assert {"SM_Kit_Palm_Wall", "SM_Kit_Stone_Foundation", "SM_Kit_Bamboo_GableShed"} <= names
+    assert "SM_Kit_Palm_Nada" not in names
+
+
 def test_detecta_pendiente_obsoleto(ds: DataSet) -> None:
     ds.data["meshes_pendientes.json"]["items"].append("no_existe")
     assert any_error(errors_of(ds), "no_existe", "quítalo")
