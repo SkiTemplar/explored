@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "language": "es",
+  "characters": {
+    "ines": "Inés Vidal, piloto del hidroavión Albatros",
+    "canela": "Canela, la perra de Inés",
+    "elsa": "Dra. Elsa Halden, oceanógrafa y jefa de la expedición",
+    "tomas": "Tomás Ruiz, geólogo",
+    "mika": "Mika Aalto, radiotelegrafista",
+    "samuel": "Dr. Samuel Okafor, biólogo",
+    "lin": "Lin Wei, cartógrafa"
+  },
+  "ines_notes": [
+    {
+      "id": "ines_01", "island": "Landing", "place": "cabina del Albatros",
+      "title": "Día 1",
+      "text": "Si alguien lee esto: soy Inés Vidal, piloto del Albatros. Hemos amerizado en una laguna que no sale en ninguna carta. El pasajero está inconsciente, pero respira. Canela saltó al agua y nadó hacia la playa. Voy a por agua dulce y vuelvo enseguida. No te muevas."
+    },
+    {
+      "id": "ines_02", "island": "Landing", "place": "roca con forma de tortuga, en la playa",
+      "title": "Día 1, al atardecer",
+      "text": "Te he sacado del avión antes de que se hundiera del todo. Tienes un golpe feo en la frente. Te dejo el botiquín, tres cocos abiertos y el mechero junto a esta roca. Ni rastro de Canela. Si se acerca, háblale bajito: se asusta con los gritos."
+    },
+    {
+      "id": "ines_03", "island": "Landing", "place": "cima del cerro",
+      "title": "Día 2",
+      "text": "He subido al cerro para ver dónde estamos. Hay más islas. Siete, creo, y unos islotes que parecen dientes. Ninguna está en las cartas. Al acercarnos, la brújula giraba como loca; ahora vuelve a marcar el norte. No lo entiendo, y no me gusta no entender las cosas."
+    },
+    {
+      "id": "ines_04", "island": "Landing", "place": "astillero improvisado junto a la laguna",
+      "title": "Día 3",
+      "text": "Estoy atando una balsa con restos del ala y lianas. Tú sigues con fiebre, así que te he dejado agua hervida en la lata. Hiérvela siempre: la del arroyo me tuvo toda la noche con el estómago del revés. Mañana voy a la isla verde. Se ve una columna blanca. Puede que sea humo."
+    },
+    {
+      "id": "ines_05", "island": "Emerald", "place": "playa oeste de Esmeralda",
+      "title": "Día 4",
+      "text": "No era humo. Es el vapor de una cascada enorme. Y en el barro de la orilla, huellas de perro. ¡Canela está viva! La he visto un momento entre los helechos. No se ha dejado coger; cojea de una pata. Le he dejado pescado asado en una hoja."
+    },
+    {
+      "id": "ines_06", "island": "Emerald", "place": "campamento Halden I",
+      "title": "Día 5",
+      "text": "Un campamento abandonado. Tiendas podridas, ollas de hierro, latas de 1974. En una caja de madera pone FUNDACIÓN HALDEN — EXPEDICIÓN AL ARCHIPIÉLAGO SIN NOMBRE. Hay hojas de un diario desperdigadas. Me he quedado leyendo hasta que se hizo de noche."
+    },
+    {
+      "id": "ines_07", "island": "Emerald", "place": "cueva detrás de la cascada",
+      "title": "Día 6",
+      "text": "Detrás de la cascada hay una cueva y, en la roca, dibujos muy antiguos: espirales, canoas con dos cascos, estrellas unidas por líneas. Alguien estuvo aquí mucho antes que los de Halden. Alguien que llegó navegando."
+    },
+    {
+      "id": "ines_08", "island": "Emerald", "place": "claro del norte",
+      "title": "Día 7",
+      "text": "Tormenta toda la noche. He vuelto a perder a Canela. Si la encuentras tú: le gustan los cangrejos cocidos (aunque no debería comerlos) y duerme mejor junto al fuego. Tiene miedo de los truenos. Yo también, un poco."
+    },
+    {
+      "id": "ines_09", "island": "Mangrove", "place": "entrada del manglar",
+      "title": "Día 9",
+      "text": "El manglar huele a sal y a hojas podridas, y hay niebla a todas horas. Algo grande se mueve en los canales: solo he visto una espalda de piedra y dos ojos. No te acerques a la orilla al atardecer. Lo digo en serio."
+    },
+    {
+      "id": "ines_10", "island": "Mangrove", "place": "estación de radio Halden",
+      "title": "Día 10",
+      "text": "¡Una estación de radio! Los paneles están muertos, pero el generador de manivela todavía gira. Al conectar los auriculares he oído estática y, de vez en cuando, morse. Muy lento, siempre igual. Parece una baliza automática que lleva cincuenta años repitiendo lo mismo."
+    },
+    {
+      "id": "ines_11", "island": "WhiteSands", "place": "pecio del velero",
+      "title": "Día 12",
+      "text": "En el atolón hay un velero hundido de los sesenta, con lona buena y cabos. Me he cosido una vela para la balsa. Con viento del este llego a cualquier isla en una hora. Las tortugas salen a poner huevos cuando hay luna llena. Qué sitio más bonito para estar perdida."
+    },
+    {
+      "id": "ines_12", "island": "Smoke", "place": "falda del volcán",
+      "title": "Día 13",
+      "text": "El volcán ruge por las noches y huele a huevo podrido. Arriba, junto al cráter, hay una piedra enorme tallada como una rosa de los vientos, con agujeros alineados. Las marcas coinciden con las estrellas de la cueva de la cascada."
+    },
+    {
+      "id": "ines_13", "island": "Smoke", "place": "brújula estelar de la cumbre",
+      "title": "Día 14",
+      "text": "Creo que lo entiendo a medias: cada agujero de la rosa señala por dónde sale una estrella concreta en el horizonte. Es un mapa, pero no de tierra: de cielo. Con él se puede navegar de noche sin instrumentos. Quien lo talló sabía volver a casa."
+    },
+    {
+      "id": "ines_14", "island": "Mesa", "place": "observatorio de mareas",
+      "title": "Día 16",
+      "text": "El observatorio de mareas de Halden. Sus tablas predicen una «marea muerta» para dentro de pocas semanas: el mar se retirará kilómetros durante una noche. La doctora Halden escribió con letra nerviosa: «Entonces aparecerá. Tenemos que estar allí». No dice qué."
+    },
+    {
+      "id": "ines_15", "island": "Mesa", "place": "campamento Halden IV",
+      "title": "Día 17",
+      "text": "He vuelto a ver a Canela desde el acantilado. Está más delgada, pero anda bien. Cada tarde va hacia la isla del avión. Creo que te busca a ti. Siempre fue más lista que yo."
+    },
+    {
+      "id": "ines_16", "island": "Teeth", "place": "colonia de aves",
+      "title": "Día 19",
+      "text": "Los Dientes: miles de gaviotas y fragatas, y un ruido que no te deja pensar. Desde aquí se ve un barco en el horizonte cada pocos días. Siempre lejos, siempre de paso. Nunca mira hacia aquí."
+    },
+    {
+      "id": "ines_17", "island": "Teeth", "place": "escalera del faro",
+      "title": "Día 20",
+      "text": "He arreglado el farol del faro viejo con aceite de coco y una mecha de tela. Da una luz pobre, pero se ve desde lejos. Si el barco pasa de noche, me verán. Tienen que verme."
+    },
+    {
+      "id": "ines_18", "island": "Teeth", "place": "linterna del faro",
+      "title": "Día 21",
+      "text": "¡El barco! Lo he visto al anochecer, más cerca que nunca. He encendido el faro y voy a remar hacia ellos antes de que se alejen. Si esto sale mal, cuida de Canela. Si sale bien, volveré a por vosotros dos. Monta una baliza con las piezas del Albatros y enciéndela: estaré escuchando. — Inés"
+    }
+  ],
+  "halden_pages": [
+    {"id": "halden_01", "author": "elsa", "day": 1, "text": "Primer día en tierra. Cinco personas, un generador, dos toneladas de equipo y una pregunta: ¿por qué las mareas de este archipiélago no obedecen a ninguna tabla conocida? Mika ya ha montado la antena. Samuel ha desaparecido en la selva con su lupa. Buena señal."},
+    {"id": "halden_02", "author": "tomas", "day": 3, "text": "Todas las islas están en el borde de una caldera sumergida de unos ocho kilómetros. El volcán es la única boca activa. El fondo del centro está más alto de lo que debería: la caldera respira. Sube y baja."},
+    {"id": "halden_03", "author": "samuel", "day": 4, "text": "Catorce especies de aves en una mañana, tres que no reconozco. Los monos roban todo lo que brilla. Me han quitado un rollo de película y una cuchara. Les he perdonado la cuchara."},
+    {"id": "halden_04", "author": "lin", "day": 6, "text": "Mapa de la isla verde terminado. Las líneas de costa que dibujé el lunes no coinciden con las del jueves: la marea baja deja al descubierto bancos enteros. Voy a dibujar dos mapas, uno con marea alta y otro con marea baja."},
+    {"id": "halden_05", "author": "mika", "day": 7, "text": "La brújula se desvía seis grados cerca de la isla negra. Basalto magnético. También hay interferencias en la radio al atardecer. He instalado una baliza automática que transmite nuestra posición cada hora, por si acaso."},
+    {"id": "halden_06", "author": "elsa", "day": 9, "text": "Confirmado: además de las dos mareas diarias, hay una oscilación lenta de la cuenca entera, con un periodo de semanas. Cuando coincide con una marea viva de luna nueva y altas presiones, el agua sale de la caldera como de una bañera. Lo llamaremos «marea muerta»."},
+    {"id": "halden_07", "author": "samuel", "day": 11, "text": "Detrás de la cascada hay pinturas. Canoas de doble casco, espirales y hombres mirando al cielo. Esto no es anecdótico: alguien vivió aquí, o al menos volvía aquí. Elsa dice que me centre en los pájaros. Dejaré de hablar de ello en voz alta."},
+    {"id": "halden_08", "author": "tomas", "day": 12, "text": "Obsidiana en la ladera norte del volcán, tallada a golpes: puntas, raspadores y lascas. Muy antiguo. Samuel tenía razón y va a estar insoportable."},
+    {"id": "halden_09", "author": "lin", "day": 14, "text": "En la cumbre hay una piedra enorme, plana y tallada, con treinta y dos agujeros en círculo. No es un calendario: está orientada. He anotado los acimuts. Mañana subiré de noche para comprobar mi sospecha."},
+    {"id": "halden_10", "author": "lin", "day": 15, "text": "Era lo que pensaba. Cada agujero marca el punto del horizonte por donde sale o se pone una estrella brillante. Es una brújula estelar. Con ella y con las canciones adecuadas, un navegante podía ir y volver entre islas sin ver tierra. Me he quedado hasta el amanecer, muerta de frío y feliz."},
+    {"id": "halden_11", "author": "mika", "day": 17, "text": "Recibo fragmentos de una emisora comercial cuando el cielo está limpio. Nadie nos oye a nosotros. La antena es buena; el problema es el sitio. El archipiélago está en una especie de sombra: la caldera, el magnetismo, no lo sé."},
+    {"id": "halden_12", "author": "samuel", "day": 19, "text": "He encontrado el sitio donde desovan las tortugas. Esta noche, luna llena, he contado ciento doce. Las crías corren hacia el mar guiadas por el brillo del agua. Nunca he visto nada tan bonito ni tan frágil."},
+    {"id": "halden_13", "author": "elsa", "day": 21, "text": "Hemos construido un observatorio de mareas en la meseta: una varilla graduada, un reloj y mucha paciencia. Las predicciones cuadran. La próxima marea muerta será dentro de veinte días. Si Tomás está en lo cierto, el mar dejará al descubierto el centro de la caldera."},
+    {"id": "halden_14", "author": "tomas", "day": 22, "text": "En el centro de la caldera, a doce metros bajo el agua con marea normal, el sonar marca una meseta plana de arrecife fósil. Plana de verdad, como un suelo. Y encima hay algo con formas rectas."},
+    {"id": "halden_15", "author": "samuel", "day": 24, "text": "Una perra salvaje, flaca y color canela, lleva tres días siguiéndome a distancia. Le dejo restos de pescado. Hoy se ha dejado tocar la cabeza. No se lo he contado a nadie. (Nota posterior, con otra tinta: no puede ser la misma perra, claro. Pero me acuerdo de ella.)"},
+    {"id": "halden_16", "author": "mika", "day": 27, "text": "La baliza automática funciona con el generador de manivela y una batería. Si todo falla, seguirá transmitiendo mientras haya alguien que gire la manivela. He escrito la tabla de morse en la pared de la estación, para quien venga detrás."},
+    {"id": "halden_17", "author": "lin", "day": 29, "text": "He aprendido las canciones de las estrellas que Samuel ha reconstruido con los petroglifos. Cada isla tiene su estrella guía. Si se sigue la secuencia correcta de estrellas en la noche de la marea muerta, el camino lleva al centro de la caldera. Los antiguos lo sabían."},
+    {"id": "halden_18", "author": "elsa", "day": 31, "text": "El barómetro cae en picado y los pájaros vuelan hacia el interior. Mika dice que se acerca un ciclón. Hemos reforzado las tiendas y subido las lanchas. Si llega en la ventana de la marea muerta, perderemos la ocasión."},
+    {"id": "halden_19", "author": "tomas", "day": 33, "text": "El ciclón pasó sobre nosotros. Perdimos una lancha, la antena grande y media estación. Nadie herido. El manglar ha cambiado de forma. La marea muerta es dentro de ocho días."},
+    {"id": "halden_20", "author": "elsa", "day": 36, "text": "El barco de la Fundación viene a recogernos antes de lo previsto por la temporada de ciclones. Tenemos dos días. No llegaremos a ver la marea muerta. Estoy furiosa y aliviada a partes iguales."},
+    {"id": "halden_21", "author": "samuel", "day": 38, "text": "No voy a volver. Se lo he dicho a Elsa y no me ha discutido tanto como esperaba. Me quedo a esperar la marea muerta. Tengo semillas, anzuelos, libros y a la perra. Si el mar se abre, quiero estar allí para verlo."},
+    {"id": "halden_22", "author": "elsa", "day": 40, "text": "Última página antes de embarcar. Samuel se queda. Le dejo la radio de manivela, la mitad de las medicinas y mi respeto. Si alguien encuentra estas páginas: no es un abandono. Es una elección. La suya."},
+    {"id": "halden_23", "author": "samuel", "day": 49, "text": "La marea muerta. El mar se fue de verdad, rugiendo, y en el centro de la caldera apareció una isla de coral blanco con una plataforma de piedra y un cobertizo para canoas hecho de basalto. Los navegantes se reunían aquí. He caminado por ella a la luz de la luna, con la perra a mi lado, antes de que volviera el agua."},
+    {"id": "halden_24", "author": "samuel", "day": 400, "text": "No sé qué día es. He vivido bien. Siembro taro, pesco y sigo las estrellas. Cada vez que el mar se abre vuelvo a la isla blanca y grabo algo en la plataforma: un pájaro, una tortuga, esta vez un hombre y una perra. Si has llegado hasta aquí, siéntate un rato. Mira el cielo. No tengas prisa por irte."}
+  ],
+  "bottles": [
+    {"id": "bottle_01", "text": "A quien encuentre esta botella: me llamo Lucía, tengo nueve años y estoy de vacaciones en un barco muy grande. Si la encuentras, escríbeme. Mi dirección está detrás. (Detrás no hay nada: el agua se ha comido la tinta.)"},
+    {"id": "bottle_02", "text": "Receta de mi abuela para el pescado en hoja de plátano: sal, lima, un poco de ají y paciencia. Sobre todo paciencia. — M."},
+    {"id": "bottle_03", "text": "Querido yo del futuro: si estás leyendo esto, ya no estás mareado. Enhorabuena. Firmado: yo, mareado."},
+    {"id": "bottle_04", "text": "Coordenadas de un tesoro: tres pasos al norte del árbol más alto de la isla verde, al pie de la cascada. No digo que sea verdad. Solo digo que miréis."},
+    {"id": "bottle_05", "text": "Si oyes morse en la radio del manglar, no es un fantasma. Es una baliza vieja. Aunque, pensándolo bien, un fantasma también podría usar morse."},
+    {"id": "bottle_06", "text": "Día 3 de la regata. Hemos perdido el palo mayor y la dignidad. Seguimos riéndonos. — Tripulación del Gaviota Loca."},
+    {"id": "bottle_07", "text": "Los monos me han robado la brújula, las gafas y un calcetín. Solo uno. ¿Qué harán con un calcetín?"},
+    {"id": "bottle_08", "text": "La luna nueva hace brillar el mar en el manglar. Dibuja caminos. Síguelos si te atreves. — S. O."}
+  ],
+  "morse": [
+    {"id": "morse_01", "code": "HALDEN QTH ARCH LAT 12S", "meaning": "Posición de la expedición Halden (baliza automática de 1974)."},
+    {"id": "morse_02", "code": "MAREA MUERTA LUNA NUEVA", "meaning": "Aviso grabado por Mika: la marea muerta llega con luna nueva."},
+    {"id": "morse_03", "code": "CUEVA CASCADA MIRA ARRIBA", "meaning": "Pista hacia un petroglifo escondido."},
+    {"id": "morse_04", "code": "ESTRELLA GUIA VERDE ES ACHERNAR", "meaning": "La estrella guía de la isla verde."},
+    {"id": "morse_05", "code": "SAMUEL SIGUE AQUI", "meaning": "Mensaje añadido a mano a la baliza, años después."},
+    {"id": "morse_06", "code": "INES AQUI BARCO ALBA TE OIGO ENCIENDE BALIZA", "meaning": "Respuesta de Inés desde el barco que la rescató (solo tras activar la baliza)."}
+  ],
+  "petroglyph_themes": [
+    "Canoa de doble casco bajo una estrella", "Espiral de marea", "Tortuga con siete puntos (las siete islas)",
+    "Hombre mirando al cielo", "Pez volador", "Ballena con cría", "Fragata en vuelo", "Estrella de ocho brazos",
+    "Ola que se retira", "Isla que emerge", "Perro junto a un fuego", "Mano abierta", "Luna nueva",
+    "Cangrejo de los cocoteros", "Volcán con humo", "Camino de estrellas", "Cesta de pesca", "Tambor",
+    "Tiburón y círculo", "Tres canoas", "Palmera doblada por el viento", "Ojo", "Raíces de manglar",
+    "Serpiente de cielo", "Mono con fruta", "Cascada", "Pareja de aves", "Faro (grabado moderno, 1974)",
+    "Hombre y perra (grabado moderno)", "Sol naciente sobre el mar"
+  ],
+  "endings": {
+    "rescue": {
+      "title": "Rescate",
+      "text": "Al amanecer, el ruido de un rotor rompe el silencio del archipiélago. En la puerta del helicóptero, con el pelo lleno de sal y una sonrisa enorme, está Inés. Canela ladra como si el mundo se fuera a acabar."
+    },
+    "voyage": {
+      "title": "La Travesía",
+      "text": "La noche de la marea muerta sigues las estrellas de los antiguos navegantes. El mar se abre y la isla blanca te recibe. Desde allí, con la canoa, la vela y el cielo como único mapa, pones rumbo a casa. Hay cosas que solo se encuentran cuando dejas de buscarlas."
+    },
+    "stay": {
+      "title": "El que se queda",
+      "text": "Escuchas el helicóptero alejarse. Canela se tumba a tus pies junto al fuego. Mañana plantarás taro y bajará la marea. Quizá, algún día, grabarás en la piedra blanca un hombre y una perra, como hizo otro antes que tú."
+    }
+  }
+}

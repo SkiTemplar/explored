@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
+#include "AssetCompilingManager.h"
 #include "ShaderCompiler.h"
 #include "UnrealClient.h"
 
@@ -158,7 +159,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 
 void UExploredShotSubsystem::Tick(float DeltaTime)
 {
-	if (GShaderCompilingManager && GShaderCompilingManager->IsCompiling())
+	if ((GShaderCompilingManager && GShaderCompilingManager->IsCompiling()) || FAssetCompilingManager::Get().GetNumRemainingAssets() > 0)
 	{
 		return;
 	}
