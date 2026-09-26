@@ -10,14 +10,15 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
 import _materials as M  # noqa: E402
+import _shapes as S  # noqa: E402
 
 VARIANTS = [
     dict(name='Lighthouse_Tower_Ruin', seed=1101, builder='tower',
-         tri_budget=(150, 800), needs_collision=True, collision_complex=True),
+         tri_budget=(200, 1000), needs_collision=True, collision_complex=True),
     dict(name='Lighthouse_LanternRoom_Broken', seed=1102, builder='lantern_room',
-         tri_budget=(150, 800), needs_collision=True),
+         tri_budget=(150, 1800), needs_collision=True),
     dict(name='Lighthouse_SpiralStair_Fragment', seed=1103, builder='stair_fragment',
-         tri_budget=(40, 300), needs_collision=True),
+         tri_budget=(40, 900), needs_collision=True),
     dict(name='Lighthouse_BaseRubble', seed=1104, builder='rubble',
          tri_budget=(300, 1200), needs_collision=False),
 ]
@@ -37,8 +38,9 @@ def build(variant):
     return _BUILDERS[variant['builder']](variant, rnd)
 
 
-def _finish(parts, name):
+def _finish(parts, name, bevel_width=0.02):
     obj = C.join_objects(parts, name) if len(parts) > 1 else parts[0]
+    S.bevel_obj(obj, width=bevel_width, segments=2)
     C.shade_smooth_auto(obj, angle_deg=35.0)
     C.add_basic_uv(obj)
     return obj
@@ -59,16 +61,22 @@ def _drop_to_ground(obj):
     return obj
 
 
-def _finish_grounded(parts, name):
+def _finish_grounded(parts, name, bevel_width=0.02):
     obj = C.join_objects(parts, name) if len(parts) > 1 else parts[0]
     _drop_to_ground(obj)
+    S.bevel_obj(obj, width=bevel_width, segments=2)
     C.shade_smooth_auto(obj, angle_deg=35.0)
     C.add_basic_uv(obj)
     return obj
 
 
-_STONE = (0.52, 0.50, 0.46)
-_STONE_DARK = (0.30, 0.28, 0.25)
+# Piedra caliza/arenisca clara y calida al sol (nunca gris apagado): el
+# rango va de un sillar claro a uno mas tostado, con musgo vivo en parches
+# para el remate roto y los escombros.
+_STONE = (0.70, 0.55, 0.34)
+_STONE_LIGHT = (0.80, 0.66, 0.42)
+_STONE_DARK = (0.46, 0.35, 0.20)
+_MOSS = (0.35, 0.55, 0.15)
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +101,8 @@ def _build_tower(variant, rnd):
         parts.append(tramo)
 
     # perfil irregular del borde superior roto: bloques que sobresalen o
-    # faltan, en vez de un corte perfectamente limpio.
+    # faltan, en vez de un corte perfectamente limpio. Bloques algo mas
+    # gruesos que el original para que no se lean como palillos de piedra.
     n_shards = rnd.randint(6, 9)
     for i in range(n_shards):
         if rnd.random() < 0.4:
@@ -102,7 +111,7 @@ def _build_tower(variant, rnd):
         sx = math.cos(ang) * r1 * 0.9
         sy = math.sin(ang) * r1 * 0.9
         sh = rnd.uniform(0.15, 0.6)
-        shard = C.make_box(f'TopShard{i}', (0.5, 0.5, sh),
+        shard = C.make_box(f'TopShard{i}', (0.62, 0.62, sh),
                             center=(sx, sy, height + sh * 0.5 - rnd.uniform(0.0, 0.3)))
         parts.append(shard)
 
@@ -110,18 +119,29 @@ def _build_tower(variant, rnd):
     C.merge_by_distance(tower, dist=0.01)
     M.assign(tower, ['M_Stone'])
 
-    base_fn = C.constant_tint(_STONE, alpha=0.0, jitter=0.07, rnd=rnd)
+    # bandas de sillares en tonos calidos alternos + musgo vivo en el
+    # remate roto (parches organicos, no un tinte plano en toda la torre).
+    banded_fn = S.banded_tint(
+        [_STONE_LIGHT, _STONE, _STONE_DARK, _STONE, _STONE_LIGHT],
+        'z', 0.0, height, jitter=0.03, rnd=rnd)
+    moss_fn = S.weathered_tint(
+        _STONE_LIGHT, _MOSS, seed=variant['seed'] * 3, patchiness=2.0,
+        wear_amount=0.55, jitter=0.03, rnd=rnd)
 
     def _tower_color(v):
-        r, g, b, a = base_fn(v)
-        # franja de puerta: mas oscura, en la cara -Y de la base
+        if v.co.z > height * 0.78:
+            r, g, b, a = moss_fn(v)
+        else:
+            r, g, b, a = banded_fn(v)
+        # franja de puerta: mas oscura (recorte de sombra), en la cara -Y
+        # de la base, sin caer a un negro plano
         if v.co.z < tramo_h * 1.1 and v.co.y < -r0 * 0.5 and abs(v.co.x) < r0 * 0.35:
-            return (r * 0.4, g * 0.4, b * 0.4, a)
+            return (r * 0.45, g * 0.45, b * 0.45, a)
         return (r, g, b, a)
 
     C.set_vertex_colors(tower, _tower_color)
 
-    return _finish_grounded([tower], 'SM_' + variant['name'])
+    return _finish_grounded([tower], 'SM_' + variant['name'], bevel_width=0.05)
 
 
 # ---------------------------------------------------------------------------
@@ -133,18 +153,21 @@ def _build_lantern_room(variant, rnd):
     radius = 1.3
     post_h = 1.8
     n_posts = 8
+    post_radius = 0.045  # +28% sobre el original: lectura de cerca menos "alambre"
 
     posts = []
     for i in range(n_posts):
         ang = 2.0 * math.pi * i / n_posts
         px = math.cos(ang) * radius
         py = math.sin(ang) * radius
-        post = C.make_cylinder(f'Post{i}', radius=0.035, depth=post_h, segments=8,
+        post = C.make_cylinder(f'Post{i}', radius=post_radius, depth=post_h, segments=12,
                                 center=(px, py, post_h * 0.5))
         posts.append(post)
     post_grp = C.join_objects(posts, 'Posts')
     M.assign(post_grp, ['M_Metal'])
-    C.set_vertex_colors(post_grp, C.constant_tint((0.25, 0.22, 0.18), alpha=0.0, jitter=0.04, rnd=rnd))
+    C.set_vertex_colors(post_grp, S.weathered_tint(
+        (0.55, 0.54, 0.52), (0.48, 0.28, 0.15), seed=variant['seed'] * 2,
+        patchiness=4.0, wear_amount=0.4, jitter=0.03, rnd=rnd))
 
     glass_idx = rnd.sample(range(n_posts), k=rnd.randint(3, 4))
     panels = []
@@ -165,18 +188,20 @@ def _build_lantern_room(variant, rnd):
         panels.append(panel)
     panel_grp = C.join_objects(panels, 'Panels')
     M.assign(panel_grp, ['M_Glass'])
-    C.set_vertex_colors(panel_grp, C.constant_tint((0.6, 0.75, 0.7), alpha=0.3, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(panel_grp, C.constant_tint((0.55, 0.85, 0.80), alpha=0.45, jitter=0.02, rnd=rnd))
 
-    roof = C.make_cylinder('Roof', radius=radius * 1.05, depth=0.5, segments=n_posts,
-                            center=(0.0, 0.0, post_h + 0.25), cap_ends=True, radius2=0.05)
+    roof = C.make_cylinder('Roof', radius=radius * 1.05, depth=0.5, segments=16,
+                            center=(0.0, 0.0, post_h + 0.25), cap_ends=True, radius2=0.06)
     M.assign(roof, ['M_Metal'])
-    C.set_vertex_colors(roof, C.constant_tint((0.20, 0.19, 0.20), alpha=0.0, jitter=0.05, rnd=rnd))
+    C.set_vertex_colors(roof, S.weathered_tint(
+        (0.55, 0.54, 0.52), (0.48, 0.28, 0.15), seed=variant['seed'] * 5,
+        patchiness=3.5, wear_amount=0.4, jitter=0.03, rnd=rnd))
     C.select_only(roof)
     import bpy
     bpy.ops.transform.rotate(value=math.radians(12.0), orient_axis='X')
     bpy.ops.object.transform_apply(rotation=True)
 
-    return _finish_grounded([post_grp, panel_grp, roof], 'SM_' + variant['name'])
+    return _finish_grounded([post_grp, panel_grp, roof], 'SM_' + variant['name'], bevel_width=0.02)
 
 
 # ---------------------------------------------------------------------------
@@ -194,7 +219,9 @@ def _build_stair_fragment(variant, rnd):
     for i in range(n_steps):
         ang = i * ang_step
         z = i * step_h
-        step = C.make_box(f'Step{i}', (0.55, 0.30, step_h * 0.9),
+        # peldanos algo mas anchos/gruesos que el original: silueta menos
+        # "tecnica" de cerca.
+        step = C.make_box(f'Step{i}', (0.64, 0.36, step_h * 1.05),
                            center=(radius, 0.0, z + step_h * 0.45))
         C.select_only(step)
         import bpy
@@ -205,10 +232,11 @@ def _build_stair_fragment(variant, rnd):
     stair = C.join_objects(steps, 'Stair')
     C.merge_by_distance(stair, dist=0.005)
     M.assign(stair, ['M_Stone'])
-    C.set_vertex_colors(stair, C.gradient_along_axis(
-        _STONE_DARK, _STONE, 'z', 0.0, (n_steps - 1) * step_h, curve=1.0, jitter=0.06, rnd=rnd))
+    C.set_vertex_colors(stair, S.weathered_tint(
+        _STONE_LIGHT, _STONE_DARK, seed=variant['seed'], patchiness=2.5,
+        wear_amount=0.4, jitter=0.04, rnd=rnd))
 
-    return _finish_grounded([stair], 'SM_' + variant['name'])
+    return _finish_grounded([stair], 'SM_' + variant['name'], bevel_width=0.015)
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +261,8 @@ def _build_rubble(variant, rnd):
     rubble = C.join_objects(blobs, 'Rubble')
     C.merge_by_distance(rubble, dist=0.01)
     M.assign(rubble, ['M_Stone'])
-    C.set_vertex_colors(rubble, C.constant_tint(_STONE, alpha=0.0, jitter=0.06, rnd=rnd))
+    C.set_vertex_colors(rubble, S.weathered_tint(
+        _STONE_LIGHT, _MOSS, seed=variant['seed'] * 7, patchiness=2.8,
+        wear_amount=0.5, jitter=0.04, rnd=rnd))
 
-    return _finish_grounded([rubble], 'SM_' + variant['name'])
+    return _finish_grounded([rubble], 'SM_' + variant['name'], bevel_width=0.012)

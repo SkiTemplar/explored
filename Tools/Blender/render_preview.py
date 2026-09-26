@@ -246,16 +246,14 @@ def main():
 
 
 # ---------------------------------------------------------------------------
-# Lámina de contacto del kit de props (Tools/Blender/props/run_props.py).
-#
-# Duplica la lógica de layout de main() en vez de parametrizarla, a propósito:
-# main() es del kit de vegetación y otro agente puede estar tocando ficheros
-# vecinos en paralelo, así que se deja intacta y esta función vive aparte.
-# La única diferencia real es la fuente de materiales estables (7 del kit de
-# props, M.MATERIAL_NAMES de _materials.py, en vez de los 4 de C.MATERIAL_NAMES)
-# y que todas las filas se normalizan por su dimensión mayor: el kit de props
-# mezcla piezas de mano con estructuras enteras y no todas «crecen hacia
-# arriba» como la vegetación.
+# Láminas de contacto del kit de props (Tools/Blender/props/run_props.py),
+# UNA POR GRUPO NARRATIVO en vez de una sola rejilla de 11 filas: la primera
+# versión metía las 11 filas en una sola cámara lejana y el resultado era
+# ilegible (todo diminuto cerca del horizonte). Cada grupo se renderiza
+# ahora en su propia lámina, en rejilla de hasta 4 columnas si tiene más de
+# 4 props, con cámara en 3/4 MUY cerca del grupo (no de todo el kit) y luz
+# de sol cálida + cielo claro — se pidió explícitamente tras revisar la
+# primera lámina ("cámara lejana, todo diminuto... oscuro y apagado").
 # ---------------------------------------------------------------------------
 PROPS_DIR = os.path.join(BLENDER_DIR, 'props')
 if PROPS_DIR not in sys.path:
@@ -264,18 +262,18 @@ import _materials as PM  # noqa: E402
 
 EXPORT_DIR_PROPS = os.path.join(REPO_ROOT, 'Art', 'Export', 'Props')
 MANIFEST_PATH_PROPS = os.path.join(EXPORT_DIR_PROPS, 'manifest.json')
-PREVIEW_PATH_PROPS = os.path.join(EXPORT_DIR_PROPS, 'preview.png')
 
-ROW_ORDER_PROPS = [
+GROUP_ORDER_PROPS = [
     'Albatros', 'Faro', 'Baliza', 'Halden', 'BrujulaEstelar',
     'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
     'ObjetosPequenos',
 ]
-ROW_TARGET_HEIGHT_PROPS = {
-    'Albatros': 2.5, 'Faro': 2.5, 'Baliza': 1.5, 'Halden': 1.8,
-    'BrujulaEstelar': 1.8, 'Petroglifos': 1.0, 'Marae': 1.8, 'Pecio': 1.8,
-    'Embarcaciones': 1.8, 'Construccion': 1.5, 'ObjetosPequenos': 0.8,
+GROUP_TARGET_HEIGHT_PROPS = {
+    'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3, 'Halden': 1.6,
+    'BrujulaEstelar': 1.4, 'Petroglifos': 0.9, 'Marae': 1.4, 'Pecio': 1.4,
+    'Embarcaciones': 1.4, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
 }
+PROPS_GRID_MAX_COLS = 4
 
 
 def _import_and_fix_materials_props(entry):
@@ -299,119 +297,137 @@ def _import_and_fix_materials_props(entry):
     return obj
 
 
-def main_props():
-    with open(MANIFEST_PATH_PROPS, 'r', encoding='utf-8') as f:
-        manifest = json.load(f)
+def _render_props_group(entries, target_height, out_path, max_cols=PROPS_GRID_MAX_COLS):
+    """Una lámina cercana para UN grupo narrativo: rejilla de hasta
+    `max_cols` columnas (varias filas si el grupo tiene más props que eso).
 
+    Cada prop se normaliza a `target_height` por SU PROPIA dimensión mayor
+    (no una escala compartida derivada del miembro más grande del grupo):
+    un grupo como Albatros mezcla el avión entero (~11 m) con restos de
+    ~1-4 m, y una escala compartida dejaba los restos diminutos en la
+    esquina — exactamente el mismo ajuste que ya usa main_animals() para
+    fauna, por el mismo motivo. Esta lámina es solo para revisar la FORMA
+    y el color de cada prop de cerca, no la escala relativa entre ellos."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
 
-    by_group = {g: [] for g in ROW_ORDER_PROPS}
-    for entry in manifest['meshes']:
-        by_group.setdefault(entry['group'], []).append(entry)
+    imported = [_import_and_fix_materials_props(e) for e in entries]
+    imported = [o for o in imported if o is not None]
+    if not imported:
+        return False
+    bpy.context.view_layer.update()
 
-    max_row_width = 0.0
-    row_ys = []
-    for row_i, group in enumerate(ROW_ORDER_PROPS):
-        entries = by_group.get(group, [])
-        if not entries:
-            continue
-        row_y = row_i * ROW_DEPTH
-        row_ys.append(row_y)
-        target_height = ROW_TARGET_HEIGHT_PROPS[group]
+    n = len(imported)
+    # rejilla lo más cuadrada posible (nunca "N-1 completas + 1 suelta"):
+    # con pocas filas y una cámara en 3/4 baja, una fila casi vacía queda
+    # detrás de la columna 0 de la fila anterior y las dos piezas se
+    # superponen en pantalla por la perspectiva.
+    cols = min(max_cols, max(1, math.ceil(math.sqrt(n))))
+    rows = math.ceil(n / cols)
+    cell_x = target_height * 1.6
+    cell_y = target_height * 2.3  # más separación en profundidad que en anchura
 
-        imported = [_import_and_fix_materials_props(e) for e in entries]
-        imported = [o for o in imported if o is not None]
-        if not imported:
-            continue
+    for i, obj in enumerate(imported):
+        col, row = i % cols, i // cols
+        biggest = max(_bounds_world(obj)[1] - _bounds_world(obj)[0],
+                       _bounds_world(obj)[3] - _bounds_world(obj)[2],
+                       _bounds_world(obj)[5] - _bounds_world(obj)[4])
+        scale_factor = target_height / max(biggest, 1e-4)
+        obj.scale = (scale_factor, scale_factor, scale_factor)
         bpy.context.view_layer.update()
-        biggest = max((max(_bounds_world(o)[1] - _bounds_world(o)[0],
-                            _bounds_world(o)[3] - _bounds_world(o)[2],
-                            _bounds_world(o)[5] - _bounds_world(o)[4])
-                       for o in imported), default=1.0)
-        biggest = max(biggest, 1e-4)
+        x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
+        cx = (col - (cols - 1) / 2.0) * cell_x
+        cy = (row - (rows - 1) / 2.0) * cell_y
+        obj.location.x += -((x0 + x1) / 2.0) + cx
+        obj.location.y += -((y0 + y1) / 2.0) + cy
+        obj.location.z += -z0
+        bpy.context.view_layer.update()
 
-        scale_factor = target_height / biggest
-
-        cursor_x = 0.0
-        for obj in imported:
-            obj.scale = (scale_factor, scale_factor, scale_factor)
-            bpy.context.view_layer.update()
-            x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
-            width = x1 - x0
-
-            obj.location.x += -((x0 + x1) / 2.0) + cursor_x + width / 2.0
-            obj.location.y += -((y0 + y1) / 2.0) + row_y
-            obj.location.z += -z0
-            bpy.context.view_layer.update()
-
-            cursor_x += width + ITEM_MARGIN
-
-        max_row_width = max(max_row_width, cursor_x - ITEM_MARGIN)
-
-    total_depth = row_ys[-1] if row_ys else 0.0
-    center_x = max_row_width / 2.0
-    center_y = total_depth / 2.0
-    max_target_height = max(ROW_TARGET_HEIGHT_PROPS.get(g, 1.0) for g in ROW_ORDER_PROPS if by_group.get(g))
+    grid_w = cols * cell_x
+    grid_d = rows * cell_y
 
     bpy.ops.mesh.primitive_plane_add(size=1.0)
     ground = bpy.context.object
     ground.name = 'Ground'
-    ground.scale = (max_row_width * 0.85 + 4.0, total_depth * 1.15 + 8.0, 1.0)
-    ground.location = (center_x, center_y, 0.0)
+    ground.scale = (grid_w * 0.75 + 2.5, grid_d * 0.9 + 3.0, 1.0)
+    ground.location = (0.0, 0.0, 0.0)
     mat = bpy.data.materials.new('M_Ground')
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes.get('Principled BSDF')
-    bsdf.inputs['Base Color'].default_value = (0.64, 0.60, 0.52, 1.0)
-    bsdf.inputs['Roughness'].default_value = 0.95
+    # arena/tierra clara neutra en vez del gris apagado de la primera
+    # pasada: sube de valor y de saturación para que no absorba luz.
+    bsdf.inputs['Base Color'].default_value = (0.82, 0.78, 0.68, 1.0)
+    bsdf.inputs['Roughness'].default_value = 0.9
     ground.data.materials.append(mat)
 
-    bpy.ops.object.light_add(type='SUN', location=(center_x - max_row_width * 0.3, center_y - 5.0, 8.0))
+    # Sol cálido de tarde como luz clave (más energía y más cálido que la
+    # primera pasada) + relleno frío suave desde el otro lado + un rebote
+    # tenue desde abajo para que las caras en sombra no se vayan a negro.
+    bpy.ops.object.light_add(type='SUN', location=(-grid_w * 0.5, -grid_d * 1.2, target_height * 3.0))
     key = bpy.context.object
-    key.data.energy = 1.5
-    key.data.color = (1.0, 0.87, 0.64)
-    key.data.angle = math.radians(4.0)
-    _point_camera(key, Vector((center_x, center_y, 1.0)))
+    key.data.energy = 1.8
+    key.data.color = (1.0, 0.85, 0.62)
+    key.data.angle = math.radians(6.0)
+    _point_camera(key, Vector((0.0, 0.0, target_height * 0.35)))
 
-    bpy.ops.object.light_add(type='SUN', location=(center_x + max_row_width * 0.4, center_y + 4.0, 6.0))
+    bpy.ops.object.light_add(type='SUN', location=(grid_w * 0.6, grid_d * 0.6, target_height * 2.0))
     fill = bpy.context.object
-    fill.data.energy = 0.35
-    fill.data.color = (0.66, 0.79, 1.0)
-    _point_camera(fill, Vector((center_x, center_y, 1.0)))
+    fill.data.energy = 0.5
+    fill.data.color = (0.66, 0.78, 1.0)
+    _point_camera(fill, Vector((0.0, 0.0, target_height * 0.35)))
 
+    bpy.ops.object.light_add(type='SUN', location=(0.0, grid_d * 0.3, -target_height))
+    bounce = bpy.context.object
+    bounce.data.energy = 0.2
+    bounce.data.color = (0.9, 0.85, 0.75)
+    _point_camera(bounce, Vector((0.0, 0.0, target_height * 0.5)))
+
+    # Cielo claro (no el gris oscuro por defecto de un World vacío) pero sin
+    # sobreexponer los props de color pálido (piedra clara, lona crema): la
+    # primera versión de esta lámina (luces + fondo muy fuertes) los dejaba
+    # lavados casi a blanco puro en vez de leerse con su color.
     world = bpy.data.worlds.new('World')
     scene.world = world
     world.use_nodes = True
     bg = world.node_tree.nodes.get('Background')
-    bg.inputs['Color'].default_value = (0.80, 0.82, 0.84, 1.0)
-    bg.inputs['Strength'].default_value = 0.18
+    bg.inputs['Color'].default_value = (0.68, 0.78, 0.88, 1.0)
+    bg.inputs['Strength'].default_value = 0.55
 
-    # El kit de props tiene casi el doble de filas que el de vegetación
-    # (11 grupos frente a 6) con objetos mucho más dispares en tamaño real
-    # (un petroglifo de 20 cm y un fuselaje de 11 m en la misma lámina), así
-    # que esta cámara se aleja y se eleva más para abarcar todas las filas
-    # en vez de reutilizar la distancia ajustada para 6 filas de main().
-    fov = math.radians(60.0)
+    # Cámara en 3/4 MUY cerca de este grupo (no de todo el kit): el
+    # encuadre se ajusta al ancho/profundidad de ESTA rejilla, nunca a la
+    # del kit completo.
+    fov = math.radians(42.0)
     aspect = 1600.0 / 1200.0
-    dist_for_width = (max_row_width / 2.0 + 0.6) / math.tan(fov / 2.0) / aspect
-    distance = max(dist_for_width * 1.3, 16.0) + total_depth * 0.55
+    dist_for_width = (grid_w / 2.0 + 0.4) / math.tan(fov / 2.0) / aspect
+    distance = max(dist_for_width * 1.08, target_height * 1.6, grid_d * 0.9)
 
-    cam_z = max(total_depth * 0.32, max_target_height * 1.4)
-    look_y = center_y
-    bpy.ops.object.camera_add(location=(center_x, -distance * 0.5, cam_z))
+    az = math.radians(32.0)
+    cam_x = -math.sin(az) * distance
+    cam_y = -math.cos(az) * distance
+    # más elevada que una vista a la altura del ojo: con varias filas en
+    # profundidad, una cámara baja las apila unas sobre otras en pantalla
+    # por la perspectiva (parecía una sola pieza flotando encima de otra).
+    cam_z = target_height * 1.5 + grid_d * 0.25
+    bpy.ops.object.camera_add(location=(cam_x, cam_y, cam_z))
     cam = bpy.context.object
     cam.data.lens_unit = 'FOV'
     cam.data.angle = fov
-    _point_camera(cam, Vector((center_x, look_y, max_target_height * 0.2)))
+    _point_camera(cam, Vector((0.0, 0.0, target_height * 0.28)))
     scene.camera = cam
 
     scene.render.engine = 'BLENDER_EEVEE'
     scene.render.resolution_x = 1600
     scene.render.resolution_y = 1200
     scene.render.image_settings.file_format = 'PNG'
-    scene.render.filepath = PREVIEW_PATH_PROPS
+    scene.render.filepath = out_path
     try:
-        scene.eevee.use_raytracing = True
+        # el trazado de rayos (SSR/SSGI) de EEVEE Next hacía que un objeto
+        # metálico grande y brillante (p.ej. el domo de la sala de la
+        # lámpara del faro) sobreexpusiera TODA la lámina por luz
+        # rebotada — se detectó comparando la lámina de Faro (lavada casi
+        # a blanco) con las de Albatros/Halden (bien expuestas) con el
+        # mismo código de luces. Desactivarlo la deja consistente.
+        scene.eevee.use_raytracing = False
     except Exception:
         pass
     try:
@@ -420,7 +436,25 @@ def main_props():
         pass
 
     bpy.ops.render.render(write_still=True)
-    print(f'[render_preview] escrito {PREVIEW_PATH_PROPS}')
+    print(f'[render_preview] escrito {out_path}')
+    return True
+
+
+def main_props():
+    with open(MANIFEST_PATH_PROPS, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    by_group = {g: [] for g in GROUP_ORDER_PROPS}
+    for entry in manifest['meshes']:
+        by_group.setdefault(entry['group'], []).append(entry)
+
+    for group in GROUP_ORDER_PROPS:
+        entries = by_group.get(group, [])
+        if not entries:
+            continue
+        out_path = os.path.join(EXPORT_DIR_PROPS, f'preview_{group}.png')
+        _render_props_group(entries, GROUP_TARGET_HEIGHT_PROPS[group], out_path)
+
 
 
 if __name__ == '__main__':

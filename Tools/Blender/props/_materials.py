@@ -15,13 +15,23 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
 
 MATERIAL_DEFS = {
-    'M_Wood':   dict(base_color=(0.30, 0.19, 0.11), roughness=0.85, metallic=0.0),
-    'M_Metal':  dict(base_color=(0.32, 0.32, 0.34), roughness=0.40, metallic=0.85),
-    'M_Fabric': dict(base_color=(0.56, 0.53, 0.41), roughness=0.90, metallic=0.0),
-    'M_Stone':  dict(base_color=(0.35, 0.34, 0.32), roughness=0.88, metallic=0.0),
-    'M_Glass':  dict(base_color=(0.55, 0.78, 0.62), roughness=0.05, metallic=0.0, alpha_blend=True),
-    'M_Paper':  dict(base_color=(0.80, 0.74, 0.56), roughness=0.75, metallic=0.0),
-    'M_Leaf':   dict(base_color=(0.17, 0.35, 0.15), roughness=0.55, metallic=0.0),
+    # base_color se MULTIPLICA por el color de vertice en get_material_ext
+    # (Base = RGB constante x atributo «Col»): si aqui tambien va oscuro, el
+    # resultado final se oscurece dos veces y sale "apagado" aunque el color
+    # de vertice de cada pieza sea vivo (bug real detectado en la revision
+    # visual 2026-09-26: todo el kit salia oscuro y apagado). Por eso el
+    # color de CADA material vive casi blanco/neutro aqui, y es el color de
+    # vertice de cada builder el que aporta el tono real (madera calida,
+    # lona con color, piedra clara...); solo M_Glass e M_Metal llevan un
+    # ligero tinte propio porque no todas las piezas de vidrio/metal fijan
+    # tinte de vertice explicito.
+    'M_Wood':   dict(base_color=(1.00, 0.97, 0.90), roughness=0.75, metallic=0.0),
+    'M_Metal':  dict(base_color=(0.92, 0.93, 0.95), roughness=0.35, metallic=0.85),
+    'M_Fabric': dict(base_color=(1.00, 0.98, 0.94), roughness=0.85, metallic=0.0),
+    'M_Stone':  dict(base_color=(0.97, 0.95, 0.90), roughness=0.85, metallic=0.0),
+    'M_Glass':  dict(base_color=(0.80, 0.92, 0.85), roughness=0.05, metallic=0.0, alpha_blend=True),
+    'M_Paper':  dict(base_color=(1.00, 0.98, 0.92), roughness=0.7, metallic=0.0),
+    'M_Leaf':   dict(base_color=(0.95, 1.00, 0.85), roughness=0.5, metallic=0.0),
 }
 
 MATERIAL_NAMES = frozenset(MATERIAL_DEFS)

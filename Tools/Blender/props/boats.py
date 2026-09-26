@@ -13,18 +13,19 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
 import _materials as M  # noqa: E402
+import _shapes as S  # noqa: E402
 
 CATEGORY = 'boats'
 
 VARIANTS = [
     dict(name='Raft', seed=1801, builder='raft',
-         tri_budget=(500, 2000), needs_collision=True),
+         tri_budget=(500, 2600), needs_collision=True),
     dict(name='Canoe', seed=1802, builder='canoe',
-         tri_budget=(150, 600), needs_collision=True),
+         tri_budget=(150, 900), needs_collision=True),
     dict(name='Canoe_Outrigger', seed=1803, builder='canoe_outrigger',
-         tri_budget=(1000, 3500), needs_collision=True, collision_complex=True),
+         tri_budget=(1000, 4500), needs_collision=True, collision_complex=True),
     dict(name='Sail', seed=1804, builder='sail',
-         tri_budget=(5, 100), needs_collision=False),
+         tri_budget=(5, 150), needs_collision=False),
 ]
 
 _BUILDERS = {}
@@ -42,11 +43,28 @@ def build(variant):
     return _BUILDERS[variant['builder']](variant, rnd)
 
 
-def _finish(parts, name):
+def _finish(parts, name, bevel_width=0.015, bevel_segments=2):
+    """Une, bisela (redondea las aristas duras de las cajas: el look
+    "low-poly pero smooth, como animado" pedido en la revisión de arte) y
+    solo entonces sombrea suave + UV. El bisel debe ir ANTES de
+    shade_smooth_auto para que el ángulo de sombreado suave vea las caras
+    nuevas del bisel."""
     obj = C.join_objects(parts, name) if len(parts) > 1 else parts[0]
+    S.bevel_obj(obj, width=bevel_width, segments=bevel_segments, limit_angle_deg=35.0)
     C.shade_smooth_auto(obj, angle_deg=35.0)
     C.add_basic_uv(obj)
     return obj
+
+
+# Paleta viva: madera miel/caramelo cálida (nunca marrón-negro apagado) y
+# fibra/tela con color de verdad en vez de gris o beige plano.
+_WOOD_LIGHT = (0.62, 0.42, 0.20)
+_WOOD_MID = (0.54, 0.36, 0.17)
+_WOOD_DARK = (0.44, 0.28, 0.14)
+_ROPE_FIBER = (0.62, 0.42, 0.14)
+_HULL_TRIBAL = (0.68, 0.28, 0.12)
+_SAIL_CREAM = (0.85, 0.76, 0.55)
+_SAIL_STRIPE = (0.80, 0.58, 0.16)
 
 
 # ---------------------------------------------------------------------------
@@ -56,11 +74,12 @@ def _finish(parts, name):
 def _build_canoe_hull(rnd, length=4.0):
     """Casco excavado de un tronco: 5 tramos de make_cylinder (puntas
     ahusadas + cuerpo cilíndrico) unidos y reorientados en horizontal, con
-    el punto más bajo (quilla) en z=0."""
+    el punto más bajo (quilla) en z=0. Proporciones ~20% más rechonchas que
+    un diseño técnico realista para que se lea bonito y divertido de cerca."""
     segments = 16
-    tip_r = 0.05
-    mid_r = 0.16
-    hull_r = 0.28
+    tip_r = 0.06
+    mid_r = 0.20
+    hull_r = 0.34
     pieces_spec = [
         ('SternTip', tip_r, mid_r, 0.5),
         ('SternMid', mid_r, hull_r, 0.4),
@@ -86,8 +105,12 @@ def _build_canoe_hull(rnd, length=4.0):
     bpy.ops.object.transform_apply(location=True)
 
     M.assign(hull, ['M_Wood'])
-    C.set_vertex_colors(hull, C.gradient_along_axis(
-        (0.18, 0.11, 0.06), (0.40, 0.27, 0.15), 'z', 0.0, hull_r * 2.0, jitter=0.03, rnd=rnd))
+    # madera oscura tallada pero CÁLIDA + una franja de pintura tribal
+    # simple cerca de la proa (extremo "y" negativo tras la reorientación de
+    # arriba), para darle carácter de embarcación propia del jugador.
+    C.set_vertex_colors(hull, S.stripe_tint(
+        _WOOD_DARK, _HULL_TRIBAL, 'y', -length / 2.0, -length / 2.0 + 0.45,
+        jitter=0.03, rnd=rnd))
     return hull, hull_r
 
 
@@ -97,7 +120,7 @@ def _build_canoe_hull(rnd, length=4.0):
 @_register('raft')
 def _build_raft(variant, rnd):
     n_logs = 8
-    log_r = 0.085
+    log_r = 0.10
     log_len = 2.2
     width = 1.6
     spacing = width / n_logs
@@ -118,12 +141,12 @@ def _build_raft(variant, rnd):
     C.merge_by_distance(log_grp, dist=0.001)
     M.assign(log_grp, ['M_Wood'])
     C.set_vertex_colors(log_grp, C.gradient_along_axis(
-        (0.32, 0.21, 0.11), (0.46, 0.32, 0.18), 'z', 0.0, log_r * 2.0, jitter=0.03, rnd=rnd))
+        _WOOD_DARK, _WOOD_LIGHT, 'z', 0.0, log_r * 2.0, jitter=0.03, rnd=rnd))
 
     ropes = []
-    rope_r = 0.02
+    rope_r = 0.024
     for i, y in enumerate((-0.75, 0.75)):
-        rope = C.make_cylinder(f'Rope{i}', radius=rope_r, depth=width, segments=10,
+        rope = C.make_cylinder(f'Rope{i}', radius=rope_r, depth=width, segments=12,
                                 center=(0.0, 0.0, 0.0))
         C.select_only(rope)
         import bpy
@@ -134,9 +157,9 @@ def _build_raft(variant, rnd):
         ropes.append(rope)
     rope_grp = C.join_objects(ropes, 'Ropes')
     M.assign(rope_grp, ['M_Fabric'])
-    C.set_vertex_colors(rope_grp, C.constant_tint((0.16, 0.11, 0.07), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(rope_grp, C.constant_tint(_ROPE_FIBER, alpha=0.0, jitter=0.03, rnd=rnd))
 
-    return _finish([log_grp, rope_grp], 'SM_' + variant['name'])
+    return _finish([log_grp, rope_grp], 'SM_' + variant['name'], bevel_width=0.012)
 
 
 # ---------------------------------------------------------------------------
@@ -148,13 +171,13 @@ def _build_canoe(variant, rnd):
 
     thwarts = []
     for i, y in enumerate((-0.6, 0.6)):
-        t = C.make_box(f'Thwart{i}', (0.5, 0.04, 0.03), center=(0.0, y, hull_r * 2.0 - 0.02))
+        t = C.make_box(f'Thwart{i}', (0.5, 0.05, 0.036), center=(0.0, y, hull_r * 2.0 - 0.02))
         thwarts.append(t)
     thwart_grp = C.join_objects(thwarts, 'Thwarts')
     M.assign(thwart_grp, ['M_Wood'])
-    C.set_vertex_colors(thwart_grp, C.constant_tint((0.30, 0.20, 0.11), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(thwart_grp, C.constant_tint(_WOOD_MID, alpha=0.0, jitter=0.03, rnd=rnd))
 
-    return _finish([hull, thwart_grp], 'SM_' + variant['name'])
+    return _finish([hull, thwart_grp], 'SM_' + variant['name'], bevel_width=0.014)
 
 
 # ---------------------------------------------------------------------------
@@ -164,8 +187,8 @@ def _build_canoe(variant, rnd):
 def _build_canoe_outrigger(variant, rnd):
     hull, hull_r = _build_canoe_hull(rnd)
 
-    float_len, float_r, float_x = 3.0, 0.06, 1.2
-    float_obj = C.make_cylinder('Float', radius=float_r, depth=float_len, segments=10,
+    float_len, float_r, float_x = 3.0, 0.072, 1.2
+    float_obj = C.make_cylinder('Float', radius=float_r, depth=float_len, segments=14,
                                  center=(0.0, 0.0, 0.0))
     C.select_only(float_obj)
     import bpy
@@ -174,12 +197,12 @@ def _build_canoe_outrigger(variant, rnd):
     bpy.ops.transform.translate(value=(float_x, 0.0, float_r))
     bpy.ops.object.transform_apply(location=True)
     M.assign(float_obj, ['M_Wood'])
-    C.set_vertex_colors(float_obj, C.constant_tint((0.32, 0.22, 0.12), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(float_obj, C.constant_tint(_WOOD_MID, alpha=0.0, jitter=0.03, rnd=rnd))
 
     arm_len = float_x + 0.05
     arms = []
     for i, y in enumerate((-1.0, 1.0)):
-        arm = C.make_cylinder(f'Arm{i}', radius=0.02, depth=arm_len, segments=8,
+        arm = C.make_cylinder(f'Arm{i}', radius=0.024, depth=arm_len, segments=12,
                                center=(0.0, 0.0, 0.0))
         C.select_only(arm)
         import bpy
@@ -190,10 +213,10 @@ def _build_canoe_outrigger(variant, rnd):
         arms.append(arm)
     arm_grp = C.join_objects(arms, 'Arms')
     M.assign(arm_grp, ['M_Wood'])
-    C.set_vertex_colors(arm_grp, C.constant_tint((0.28, 0.19, 0.10), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(arm_grp, C.constant_tint(_WOOD_DARK, alpha=0.0, jitter=0.03, rnd=rnd))
 
-    mast, _lean = C.make_curved_trunk('Mast', height=2.5, base_radius=0.03, tip_radius=0.015,
-                                       curvature=0.04, n_points=6, bevel_resolution=2, rnd=rnd,
+    mast, _lean = C.make_curved_trunk('Mast', height=2.5, base_radius=0.036, tip_radius=0.018,
+                                       curvature=0.04, n_points=6, bevel_resolution=4, rnd=rnd,
                                        lean_dir=0.0)
     C.select_only(mast)
     import bpy
@@ -202,7 +225,7 @@ def _build_canoe_outrigger(variant, rnd):
     M.assign(mast, ['M_Wood'])
     mast_z0 = hull_r + 0.08
     C.set_vertex_colors(mast, C.gradient_along_axis(
-        (0.30, 0.20, 0.11), (0.44, 0.32, 0.19), 'z', mast_z0, mast_z0 + 2.5, jitter=0.02, rnd=rnd))
+        _WOOD_MID, _WOOD_LIGHT, 'z', mast_z0, mast_z0 + 2.5, jitter=0.02, rnd=rnd))
 
     fittings = []
     for i, y in enumerate((-1.0, 1.0)):
@@ -211,9 +234,10 @@ def _build_canoe_outrigger(variant, rnd):
         fittings.append(f)
     fitting_grp = C.join_objects(fittings, 'Fittings')
     M.assign(fitting_grp, ['M_Metal'])
-    C.set_vertex_colors(fitting_grp, C.constant_tint((0.35, 0.35, 0.37), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(fitting_grp, C.constant_tint((0.52, 0.49, 0.43), alpha=0.0, jitter=0.02, rnd=rnd))
 
-    return _finish([hull, float_obj, arm_grp, mast, fitting_grp], 'SM_' + variant['name'])
+    return _finish([hull, float_obj, arm_grp, mast, fitting_grp], 'SM_' + variant['name'],
+                    bevel_width=0.02)
 
 
 # ---------------------------------------------------------------------------
@@ -221,7 +245,7 @@ def _build_canoe_outrigger(variant, rnd):
 # ---------------------------------------------------------------------------
 @_register('sail')
 def _build_sail(variant, rnd):
-    height, width, thickness = 2.3, 1.1, 0.01
+    height, width, thickness = 2.3, 1.1, 0.012
     sail = C.make_box('Sail', (thickness, width, height), center=(0.0, 0.0, height / 2.0))
 
     me = sail.data
@@ -239,5 +263,8 @@ def _build_sail(variant, rnd):
     C.merge_by_distance(sail, dist=0.001)
 
     M.assign(sail, ['M_Fabric'])
-    C.set_vertex_colors(sail, C.constant_tint((0.78, 0.72, 0.56), alpha=0.0, jitter=0.03, rnd=rnd))
-    return _finish([sail], 'SM_' + variant['name'])
+    # crudo cálido con una franja de mostaza vertical: color de verdad, no
+    # un beige apagado.
+    C.set_vertex_colors(sail, S.stripe_tint(
+        _SAIL_CREAM, _SAIL_STRIPE, 'y', -0.20, 0.20, jitter=0.03, rnd=rnd))
+    return _finish([sail], 'SM_' + variant['name'], bevel_width=0.004)

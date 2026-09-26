@@ -1,7 +1,7 @@
 """
 small_items.py — objetos pequeños recogibles del inventario diegético.
 
-12 props: cuaderno de vuelo de Almudena, página suelta del diario Halden,
+12 props: cuaderno de vuelo de Inés, página suelta del diario Halden,
 botella con mensaje, radio del Albatros, batería, antena plegable, pistola
 de bengalas, brújula del Albatros, mochila, cámara desechable, termo y
 botiquín. Presupuesto: <800 triángulos cada uno (todos se quedan muy por
@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
 import _materials as M  # noqa: E402
+import _shapes as S  # noqa: E402
 
 CATEGORY = 'small_items'
 
@@ -26,21 +27,21 @@ VARIANTS = [
     dict(name='ItemMessageBottle', seed=3003, builder='bottle',
          tri_budget=(40, 800), needs_collision=True, interactable=True),
     dict(name='ItemAlbatrosRadio', seed=3004, builder='radio',
-         tri_budget=(40, 800), needs_collision=True, interactable=True),
+         tri_budget=(40, 900), needs_collision=True, interactable=True),
     dict(name='ItemBattery', seed=3005, builder='battery',
          tri_budget=(20, 400), needs_collision=True, interactable=True),
     dict(name='ItemFoldingAntenna', seed=3006, builder='antenna',
-         tri_budget=(20, 500), needs_collision=True, interactable=True),
+         tri_budget=(20, 1100), needs_collision=True, interactable=True),
     dict(name='ItemFlareGun', seed=3007, builder='flaregun',
          tri_budget=(40, 800), needs_collision=True, interactable=True),
     dict(name='ItemAlbatrosCompass', seed=3008, builder='compass',
-         tri_budget=(30, 500), needs_collision=True, interactable=True),
+         tri_budget=(30, 650), needs_collision=True, interactable=True),
     dict(name='ItemBackpack', seed=3009, builder='backpack',
-         tri_budget=(80, 1600), needs_collision=True, interactable=True),
+         tri_budget=(80, 5200), needs_collision=True, interactable=True),
     dict(name='ItemDisposableCamera', seed=3010, builder='camera',
          tri_budget=(30, 600), needs_collision=True, interactable=True),
     dict(name='ItemThermos', seed=3011, builder='thermos',
-         tri_budget=(30, 500), needs_collision=True, interactable=True),
+         tri_budget=(30, 650), needs_collision=True, interactable=True),
     dict(name='ItemMedkit', seed=3012, builder='medkit',
          tri_budget=(10, 700), needs_collision=True, interactable=True),
 ]
@@ -62,27 +63,31 @@ def build(variant):
 
 def _finish(parts, name):
     obj = C.join_objects(parts, name) if len(parts) > 1 else parts[0]
+    # bisel suave antes de sombrear: quita el aspecto "de caja" de los
+    # props de mano sin perder su forma (width pequeño: son objetos de
+    # pocos centimetros a decimetros).
+    S.bevel_obj(obj, width=0.004, segments=2, limit_angle_deg=40.0)
     C.shade_smooth_auto(obj, angle_deg=35.0)
     C.add_basic_uv(obj)
     return obj
 
 
 # ---------------------------------------------------------------------------
-# 1. Cuaderno de vuelo de Almudena (cuero marrón)
+# 1. Cuaderno de vuelo de Inés (cuero marrón cálido)
 # ---------------------------------------------------------------------------
 @_register('notebook')
 def _build_notebook(variant, rnd):
     cover = C.make_box('Cover', (0.14, 0.19, 0.018), center=(0.0, 0.0, 0.009))
     M.assign(cover, ['M_Fabric'])
-    C.set_vertex_colors(cover, C.constant_tint((0.30, 0.17, 0.09), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(cover, C.constant_tint((0.56, 0.34, 0.16), alpha=0.0, jitter=0.03, rnd=rnd))
 
     pages = C.make_box('Pages', (0.132, 0.178, 0.012), center=(0.0, -0.002, 0.021))
     M.assign(pages, ['M_Paper'])
-    C.set_vertex_colors(pages, C.constant_tint((0.82, 0.77, 0.62), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(pages, C.constant_tint((0.86, 0.80, 0.64), alpha=0.0, jitter=0.02, rnd=rnd))
 
     strap = C.make_box('Strap', (0.145, 0.015, 0.006), center=(0.0, 0.0, 0.031))
     M.assign(strap, ['M_Fabric'])
-    C.set_vertex_colors(strap, C.constant_tint((0.20, 0.11, 0.06), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(strap, C.constant_tint((0.40, 0.24, 0.12), alpha=0.0, jitter=0.02, rnd=rnd))
 
     return _finish([cover, pages, strap], 'SM_' + variant['name'])
 
@@ -134,10 +139,7 @@ def _build_bottle(variant, rnd):
     M.assign(scroll, ['M_Paper'])
     C.set_vertex_colors(scroll, C.constant_tint((0.83, 0.78, 0.60), alpha=0.0, jitter=0.02, rnd=rnd))
 
-    obj = C.join_objects([glass, cork, scroll], 'SM_' + variant['name'])
-    C.shade_smooth_auto(obj, angle_deg=30.0)
-    C.add_basic_uv(obj)
-    return obj
+    return _finish([glass, cork, scroll], 'SM_' + variant['name'])
 
 
 # ---------------------------------------------------------------------------
@@ -147,11 +149,11 @@ def _build_bottle(variant, rnd):
 def _build_radio(variant, rnd):
     body = C.make_box('Body', (0.20, 0.09, 0.13), center=(0.0, 0.0, 0.065))
     M.assign(body, ['M_Metal'])
-    C.set_vertex_colors(body, C.constant_tint((0.28, 0.29, 0.30), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(body, C.constant_tint((0.48, 0.49, 0.50), alpha=0.0, jitter=0.03, rnd=rnd))
 
     grille = C.make_box('Grille', (0.09, 0.005, 0.09), center=(0.045, -0.048, 0.075))
     M.assign(grille, ['M_Fabric'])
-    C.set_vertex_colors(grille, C.constant_tint((0.10, 0.10, 0.11), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(grille, C.constant_tint((0.22, 0.21, 0.20), alpha=0.0, jitter=0.02, rnd=rnd))
 
     knobs = []
     for i, x in enumerate((-0.06, -0.02)):
@@ -212,7 +214,8 @@ def _build_antenna(variant, rnd):
     obj = C.join_objects(segs + [base], 'SM_' + variant['name'])
     C.merge_by_distance(obj, dist=0.001)
     M.assign(obj, ['M_Metal'])
-    C.set_vertex_colors(obj, C.tint_along_axis((0.55, 0.55, 0.58), 'z', 0.0, z, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(obj, C.tint_along_axis((0.68, 0.68, 0.70), 'z', 0.0, z, jitter=0.03, rnd=rnd))
+    S.bevel_obj(obj, width=0.0015, segments=2, limit_angle_deg=40.0)
     C.shade_smooth_auto(obj, angle_deg=25.0)
     C.add_basic_uv(obj)
     return obj
@@ -225,7 +228,7 @@ def _build_antenna(variant, rnd):
 def _build_flaregun(variant, rnd):
     grip = C.make_box('Grip', (0.03, 0.045, 0.11), center=(0.0, 0.0, -0.05))
     M.assign(grip, ['M_Wood'])
-    C.set_vertex_colors(grip, C.constant_tint((0.34, 0.22, 0.12), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(grip, C.constant_tint((0.56, 0.36, 0.18), alpha=0.0, jitter=0.03, rnd=rnd))
 
     frame = C.make_box('Frame', (0.032, 0.05, 0.05), center=(0.0, 0.0, 0.0))
     barrel = C.make_cylinder('Barrel', radius=0.017, depth=0.14, segments=10,
@@ -239,7 +242,7 @@ def _build_flaregun(variant, rnd):
 
     metal = C.join_objects([frame, barrel, trigger], 'Metal')
     M.assign(metal, ['M_Metal'])
-    C.set_vertex_colors(metal, C.constant_tint((0.20, 0.20, 0.22), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(metal, C.constant_tint((0.38, 0.37, 0.36), alpha=0.0, jitter=0.03, rnd=rnd))
 
     return _finish([grip, metal], 'SM_' + variant['name'])
 
@@ -281,7 +284,7 @@ def _build_backpack(variant, rnd):
                         subdivisions=2, noise_scale=1.6, noise_strength=0.10,
                         scale=(0.72, 0.52, 1.0), relax_iterations=2)
     M.assign(body, ['M_Fabric'])
-    C.set_vertex_colors(body, C.constant_tint((0.30, 0.36, 0.19), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(body, C.constant_tint((0.44, 0.50, 0.26), alpha=0.0, jitter=0.03, rnd=rnd))
 
     pouches = []
     for side in (-1, 1):
@@ -291,11 +294,11 @@ def _build_backpack(variant, rnd):
         pouches.append(p)
     pouch_grp = C.join_objects(pouches, 'Pouches')
     M.assign(pouch_grp, ['M_Fabric'])
-    C.set_vertex_colors(pouch_grp, C.constant_tint((0.27, 0.33, 0.17), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(pouch_grp, C.constant_tint((0.40, 0.46, 0.24), alpha=0.0, jitter=0.03, rnd=rnd))
 
     flap = C.make_box('Flap', (0.20, 0.16, 0.05), center=(0.0, -0.11, 0.28))
     M.assign(flap, ['M_Fabric'])
-    C.set_vertex_colors(flap, C.constant_tint((0.26, 0.32, 0.16), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.set_vertex_colors(flap, C.constant_tint((0.40, 0.24, 0.14), alpha=0.0, jitter=0.02, rnd=rnd))
 
     straps = []
     for side in (-1, 1):
@@ -309,7 +312,7 @@ def _build_backpack(variant, rnd):
         straps.append(s)
     strap_grp = C.join_objects(straps, 'Straps')
     M.assign(strap_grp, ['M_Fabric'])
-    C.set_vertex_colors(strap_grp, C.constant_tint((0.20, 0.16, 0.10), alpha=0.0, jitter=0.03, rnd=rnd))
+    C.set_vertex_colors(strap_grp, C.constant_tint((0.42, 0.28, 0.15), alpha=0.0, jitter=0.03, rnd=rnd))
 
     buckles = []
     for i, z in enumerate((0.10, 0.20)):
