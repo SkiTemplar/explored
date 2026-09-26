@@ -62,7 +62,25 @@ def test_herramientas_y_fabricacion_esperadas(catalog):
 
 def test_construccion_esperada(catalog):
     names = {spec.name for spec in catalog}
-    assert {"sfx_build_place", "sfx_build_snap", "sfx_build_thatch"} <= names
+    assert {
+        "sfx_build_place", "sfx_build_snap", "sfx_build_thatch",
+        "sfx_build_hammer_01", "sfx_build_hammer_02", "sfx_build_dismantle",
+    } <= names
+
+
+def test_huerto_esperado(catalog):
+    names = {spec.name for spec in catalog}
+    assert {
+        "sfx_garden_dig_01", "sfx_garden_dig_02", "sfx_garden_dig_03",
+        "sfx_garden_water", "sfx_garden_harvest_01", "sfx_garden_harvest_02",
+    } <= names
+
+
+def test_cartografia_esperada(catalog):
+    names = {spec.name for spec in catalog}
+    assert {
+        "sfx_map_pen_scratch_01", "sfx_map_pen_scratch_02", "sfx_map_unfold", "sfx_map_stamp",
+    } <= names
 
 
 def test_agua_esperada(catalog):

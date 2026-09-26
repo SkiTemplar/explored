@@ -9,8 +9,8 @@ import numpy as np
 from explored_audio.constants import PEAK_CEILING_LINEAR, SAMPLE_RATE
 
 
-def test_catalogo_tiene_124_sonidos(catalog):
-    assert len(catalog) == 124
+def test_catalogo_tiene_137_sonidos(catalog):
+    assert len(catalog) == 137
 
 
 def test_nombres_unicos(catalog):
