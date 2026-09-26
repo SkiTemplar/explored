@@ -6,6 +6,11 @@ helecho de suelo (más grande y denso), platanera (con alguna hoja
 rasgada), monstera/oreja de elefante, arbusto con flores (heliconia/
 hibisco) y bambú en mata (más alto y denso). Presupuesto orientativo:
 1 000-9 000 triángulos.
+
+3ª pasada (encargo del autor, mejora de vegetación): añade pandano
+(Pandanus, roseta de hojas en espiral filotáctica sobre un tallo corto) y
+sube la densidad de folíolos/hojas del resto para que ninguna especie del
+kit se lea como «palo con pocas hojas sueltas».
 """
 
 import os
@@ -26,6 +31,7 @@ VARIANTS = [
     dict(name='ShrubMonstera', index=1, seed=3004, kind='monstera'),
     dict(name='ShrubFlowering', index=1, seed=3005, kind='flowering'),
     dict(name='ShrubBamboo', index=1, seed=3006, kind='bamboo'),
+    dict(name='ShrubPandanus', index=1, seed=3007, kind='pandanus'),
 ]
 
 
@@ -301,6 +307,44 @@ def _build_bamboo(rnd, seed):
     return parts
 
 
+def _build_pandanus(rnd, seed):
+    """Pandano (Pandanus, «palmera de tornillo»): roseta en espiral
+    filotáctica de hojas largas en espada sobre un tallo corto y grueso —
+    reconocible por la espiral, a diferencia del abanico plano de la
+    platanera o el penacho radial de la palmera."""
+    parts = []
+    stem_h = rnd.uniform(0.5, 0.9)
+    stem, lean_dir = C.make_curved_trunk(
+        'Stem', stem_h, rnd.uniform(0.10, 0.14), rnd.uniform(0.08, 0.11),
+        curvature=stem_h * 0.05, n_points=5, bevel_resolution=3, rnd=rnd,
+    )
+    C.assign_materials(stem, ['M_Bark'])
+    C.set_vertex_colors(stem, C.bark_streaks_tint(
+        (0.15, 0.12, 0.08), (0.27, 0.22, 0.14), stem_h, seed, streak_count=10))
+    parts.append(stem)
+
+    top = C.spline_point(stem_h, 1.0, stem_h * 0.05, lean_dir)
+    n_leaves = rnd.randint(22, 28)
+    golden_angle = math.pi * (3.0 - math.sqrt(5.0))  # ángulo áureo: espiral filotáctica
+    for i in range(n_leaves):
+        leaf_len = rnd.uniform(0.9, 1.5)
+        leaf = C.make_leaf_blade(
+            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.09,
+            width_tip=leaf_len * 0.015, curve_amount=leaf_len * 0.22,
+            segments=7, double_sided=True,
+        )
+        ang = i * golden_angle
+        elevation = rnd.uniform(math.radians(20), math.radians(50))
+        forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation)))
+        C.orient_and_place(leaf, top, forward, C.Vector((0, 0, 1)))
+        C.assign_materials(leaf, ['M_Leaf'])
+        C.set_vertex_colors(leaf, C.gradient_along_axis(
+            (0.09, 0.28, 0.11), (0.22, 0.46, 0.18), 'y', 0.0, leaf_len,
+            curve=0.85, jitter=0.03, rnd=rnd))
+        parts.append(leaf)
+    return parts
+
+
 _BUILDERS = {
     'fern_tree': _build_fern_tree,
     'fern_ground': _build_fern_ground,
@@ -308,6 +352,7 @@ _BUILDERS = {
     'monstera': _build_monstera,
     'flowering': _build_flowering,
     'bamboo': _build_bamboo,
+    'pandanus': _build_pandanus,
 }
 
 

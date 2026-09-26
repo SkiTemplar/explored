@@ -53,14 +53,28 @@ def _tint_canopy_part(obj, rnd):
                                                      curve=0.85, jitter=0.03, rnd=rnd))
 
 
-def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd):
-    """Un cúmulo de hoja irregular y algo aplanado (2-4 blobs fundidos),
-    con degradado propio de tono. Es la unidad que se reparte en las
-    puntas de las ramas para dar una copa en capas, no una esfera única."""
+def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd, lobe_tris=650):
+    """Un cúmulo de hoja frondoso, con degradado propio de tono. Es la
+    unidad que se reparte en las puntas de las ramas para dar una copa en
+    capas.
+
+    3ª pasada de arte: 2-4 blobs grandes se leía como «racimo de globos»;
+    subir a 7-11 blobs solapados (2ª pasada) mejoró la silueta pero seguía
+    leyéndose como bolas tocándose (cada esfera conserva su propio brillo
+    especular redondo). Fix real: fundir los blobs con un Remesh voxel
+    (fuse_blob_mass) en una única superficie continua antes de pintar/
+    asignar material — la copa pasa de «pool balls» a una masa de hoja
+    con lóbulos suaves. Además se agranda cada lóbulo (x1.9 en vez de
+    x1.35) para que los lóbulos de puntas de rama vecinas se solapen entre
+    sí y cubran los huecos de rama desnuda entre ellos — el render de
+    revisión mostraba 2-3 nubes de hoja sueltas separadas por ramas
+    visibles en vez de una copa continua."""
+    eff_radius_xy = radius_xy * 1.9
     lobe = C.make_canopy_blobs(
-        name, center=center, radius_xy=radius_xy, radius_z=radius_z * 0.6,
-        count=rnd.randint(2, 4), seed=seed,
-        blob_scale_range=(0.5, 0.85), subdivisions=2, relax_iterations=2,
+        name, center=center, radius_xy=eff_radius_xy, radius_z=radius_z * 0.85,
+        count=rnd.randint(7, 11), seed=seed,
+        blob_scale_range=(0.34, 0.52), subdivisions=2, relax_iterations=3,
+        voxel_remesh=eff_radius_xy * 0.16, target_tris=lobe_tris,
     )
     C.assign_materials(lobe, ['M_Leaf'])
     _tint_canopy_part(lobe, rnd)
@@ -288,16 +302,23 @@ def build(variant):
                                         seed=variant['seed'] + 5, count=rnd.randint(5, 7))
 
         top = C.spline_point(height, 1.0, curvature, lean_dir, z_offset=lift)
+        # 3ª pasada: n_main/sub_prob subidos (antes 3-4 ramas, 55% de
+        # subrama) -- con tan pocas puntas de rama, hasta con lóbulos
+        # grandes quedaban 2-3 nubes de hoja sueltas con ramas desnudas
+        # muy visibles entre ellas (el mismo problema de «piruleta» que en
+        # giant/wide, solo que aquí las pocas puntas estaban además muy
+        # separadas entre sí).
         branch_parts, tips = _branch_system(
             top, base_radius, height, rnd, variant['seed'],
-            n_main=(3, 4), main_len_ratio=(0.35, 0.55), elevation_range=(15, 45),
-            sub_prob=0.55, sub_count=(1, 2), sub_len_ratio=(0.45, 0.65),
+            n_main=(4, 6), main_len_ratio=(0.32, 0.50), elevation_range=(15, 45),
+            sub_prob=0.75, sub_count=(2, 3), sub_len_ratio=(0.45, 0.65),
         )
         parts += branch_parts
 
         for k, (pos, _direction) in enumerate(tips):
-            lobe = _canopy_lobe(f'Lobe_{k:02d}', pos, radius_xy=height * 0.16,
-                                 radius_z=height * 0.12, seed=variant['seed'] * 37 + k, rnd=rnd)
+            lobe = _canopy_lobe(f'Lobe_{k:02d}', pos, radius_xy=height * 0.20,
+                                 radius_z=height * 0.14, seed=variant['seed'] * 37 + k, rnd=rnd,
+                                 lobe_tris=260)
             parts.append(lobe)
 
     else:  # understory

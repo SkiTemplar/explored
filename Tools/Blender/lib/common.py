@@ -651,7 +651,8 @@ def make_frond_object(name, length, width, leaflet_count, droop, seed,
 
 def make_canopy_blobs(name, center, radius_xy, radius_z, count, seed,
                        blob_scale_range=(0.45, 0.7), noise_strength=0.16,
-                       subdivisions=2, relax_iterations=2):
+                       subdivisions=2, relax_iterations=2,
+                       voxel_remesh=None, target_tris=None):
     """Copa frondosa hecha de varios «blobs» de hoja (esferas deformadas)
     repartidos dentro de una elipse, para dar volumen real en vez de una
     sola esfera lisa (pide la sección 8 del GDD: siluetas orgánicas).
@@ -659,6 +660,14 @@ def make_canopy_blobs(name, center, radius_xy, radius_z, count, seed,
     El ruido se mantiene suave (noise_strength bajo + relax_iterations) a
     propósito: nada de picos puntiagudos, la copa debe leerse como
     cúmulos redondeados («low-poly pulido»), no como una piedra con hojas.
+
+    voxel_remesh (3ª pasada de arte): tamaño de voxel para fundir los blobs
+    solapados en una única superficie continua vía fuse_blob_mass — sin
+    esto, esferas que se tocan siguen leyéndose como bolas independientes
+    (cada una con su propio brillo especular) en vez de una masa de hoja,
+    que era exactamente la queja de «racimo de esferas tipo nube». Cuando
+    se pasa, target_tris decima el resultado de vuelta al presupuesto tras
+    la topología densa y regular que deja el remesh.
     """
     rnd = seeded_rng(seed)
     blobs = []
@@ -669,14 +678,50 @@ def make_canopy_blobs(name, center, radius_xy, radius_z, count, seed,
         cy = center[1] + math.sin(ang) * r
         cz = center[2] + rnd.uniform(-radius_z * 0.35, radius_z * 0.55)
         rad = radius_xy * rnd.uniform(*blob_scale_range)
+        # escala algo irregular en los 3 ejes (no solo aplastada en Z): un
+        # blob perfectamente esférico es lo que hace que un cúmulo de pocos
+        # blobs se lea como «racimo de globos» en vez de una masa de hoja.
         b = make_blob(f'{name}_blob{i}', (cx, cy, cz), rad, seed * 1000 + i,
                        subdivisions=subdivisions, noise_strength=noise_strength,
-                       scale=(1.0, 1.0, rnd.uniform(0.7, 1.0)),
+                       scale=(rnd.uniform(0.85, 1.25), rnd.uniform(0.85, 1.25),
+                              rnd.uniform(0.65, 0.95)),
                        relax_iterations=relax_iterations)
         blobs.append(b)
     canopy = join_objects(blobs, name)
     merge_by_distance(canopy, dist=0.01)
+    if voxel_remesh:
+        fuse_blob_mass(canopy, voxel_size=voxel_remesh, target_tris=target_tris)
     return canopy
+
+
+def fuse_blob_mass(obj, voxel_size, target_tris=None):
+    """Funde con un modificador Remesh (voxel) los blobs solapados de un
+    cúmulo de hoja en una única superficie continua: sin esto, esferas que
+    se tocan siguen leyéndose como bolas independientes (cada una conserva
+    su propio brillo especular redondo) en vez de una masa de hoja fundida
+    — la causa raíz del aspecto «racimo de globos» en las copas.
+
+    Aplica Decimate opcional para volver al presupuesto de triángulos tras
+    la topología densa y regular que deja el remesh voxel.
+
+    IMPORTANTE: llamar ANTES de pintar vertex colors o asignar material —
+    el remesh reconstruye la malla desde cero y descarta ambos.
+    """
+    select_only(obj)
+    mod = obj.modifiers.new('Fuse', type='REMESH')
+    mod.mode = 'VOXEL'
+    mod.voxel_size = voxel_size
+    mod.adaptivity = 0.0
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    if target_tris is not None:
+        tris = triangle_count(obj)
+        if tris > target_tris > 0:
+            ratio = max(0.02, min(1.0, target_tris / tris))
+            dec = obj.modifiers.new('FuseDecimate', type='DECIMATE')
+            dec.ratio = ratio
+            bpy.ops.object.modifier_apply(modifier=dec.name)
+    obj.data.update()
+    return obj
 
 
 def join_objects(objects, name):

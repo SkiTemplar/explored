@@ -45,9 +45,12 @@ def build(variant):
     crown_tangent = C.spline_tangent(height, 1.0, curvature, lean_dir)
 
     parts = [trunk]
-    n_fronds = rnd.randint(9, 12)
-    frond_length = height * rnd.uniform(0.34, 0.44)
-    frond_width = frond_length * rnd.uniform(0.34, 0.42)
+    # 2ª pasada de arte: 10-14 frondas (antes 9-12) más anchas y con más
+    # folíolos para que lean como una corona llena en vez de «farola con
+    # alambres» — el aviso del encargo de frondas demasiado finas.
+    n_fronds = rnd.randint(10, 14)
+    frond_length = height * rnd.uniform(0.38, 0.48)
+    frond_width = frond_length * rnd.uniform(0.42, 0.52)
 
     for i in range(n_fronds):
         ang = (2.0 * math.pi * i / n_fronds) + rnd.uniform(-0.25, 0.25)
@@ -56,7 +59,7 @@ def build(variant):
 
         frond = C.make_frond_object(
             f'Frond_{i:02d}', frond_length, frond_width,
-            leaflet_count=rnd.randint(40, 48), droop=droop,
+            leaflet_count=rnd.randint(48, 58), droop=droop,
             seed=variant['seed'] * 10 + i, curl=0.18,
         )
 
@@ -65,9 +68,12 @@ def build(variant):
         up = crown_tangent
         C.orient_and_place(frond, crown, forward, up)
         C.assign_materials(frond, ['M_Leaf'])
-        C.set_vertex_colors(frond, C.tint_along_axis(
-            (0.08, 0.30, 0.11), 'y', 0.0, frond_length, curve=0.8,
-            jitter=0.04, rnd=rnd))
+        # degradado real (no un tinte plano): más oscuro cerca del raquis,
+        # más claro y vivo hacia la punta -el «AO por vértice» que pide el
+        # encargo-, en vez de tint_along_axis (un único color + ruido).
+        C.set_vertex_colors(frond, C.gradient_along_axis(
+            (0.05, 0.22, 0.08), (0.16, 0.42, 0.15), 'y', 0.0, frond_length,
+            curve=0.75, jitter=0.03, rnd=rnd))
         parts.append(frond)
 
     if variant['has_coconuts']:
