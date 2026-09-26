@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from datacheck import crafting
-from datacheck.checks import DataSet, Report, check_building, check_crafting_reachability, run_all
+from datacheck import cooking, crafting
+from datacheck.checks import DataSet, Report, check_building, check_cooking, check_crafting_reachability, run_all
 
 
 @pytest.fixture(scope="module")
@@ -217,3 +217,66 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
+
+
+# --------------------------------------------------------------------------- fuego y cocina
+
+
+def cooking_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    check_cooking(ds, r)
+    return r.errors
+
+
+def recipe(ds: DataSet, rid: str) -> dict:
+    return next(r for r in ds.data["recipes.json"]["recipes"] if r["id"] == rid)
+
+
+def test_tablas_cpp_de_cocina_al_dia(real: DataSet) -> None:
+    for rel, text in cooking.generated_files(real.data).items():
+        assert (real.repo_root / rel).read_text(encoding="utf-8") == text, rel
+
+
+def test_detecta_inl_desactualizado(ds: DataSet) -> None:
+    ds.data["fuels.json"]["fuels"][0]["burnHours"] = 0.07
+    assert any_error(cooking_errors(ds), "FireData.inl", "--write-cooking")
+
+
+def test_detecta_combustible_que_no_arde(ds: DataSet) -> None:
+    ds.data["fuels.json"]["fuels"].append({"item": "canto_rodado", "burnHours": 1, "heat": 0.5, "tinder": False, "green": False})
+    assert any_error(cooking_errors(ds), "canto_rodado", "no es madera")
+
+
+def test_detecta_nivel_de_fuego_que_no_mejora(ds: DataSet) -> None:
+    ds.data["fuels.json"]["levels"][1]["heat"] = 0.5
+    assert any_error(cooking_errors(ds), "heat", "hoguera")
+
+
+def test_detecta_hervir_en_recipiente_no_estanco(ds: DataSet) -> None:
+    recipe(ds, "agua_hervida")["vessels"].append("espeto")
+    assert any_error(cooking_errors(ds), "agua_hervida", "no es estanco")
+
+
+def test_detecta_tecnica_desconocida(ds: DataSet) -> None:
+    recipe(ds, "pescado_asado")["technique"] = "freir"
+    assert any_error(cooking_errors(ds), "freir")
+
+
+def test_detecta_comida_sin_conservacion(ds: DataSet) -> None:
+    ds.data["recipes.json"]["foods"] = [f for f in ds.data["recipes.json"]["foods"] if f["item"] != "platano"]
+    assert any_error(cooking_errors(ds), "platano")
+
+
+def test_detecta_yuca_sin_toxicidad(ds: DataSet) -> None:
+    next(f for f in ds.data["recipes.json"]["foods"] if f["item"] == "yuca")["toxicity"] = 0
+    assert any_error(cooking_errors(ds), "yuca", "Toxico")
+
+
+def test_detecta_orden_de_conservacion_roto(ds: DataSet) -> None:
+    ds.data["recipes.json"]["preservation"]["stateHours"]["ahumado"] = 48
+    assert any_error(cooking_errors(ds), "crudo < cocinado")
+
+
+def test_detecta_hornear_fuera_del_horno(ds: DataSet) -> None:
+    recipe(ds, "vasija_barro")["minFireLevel"] = "hoguera"
+    assert any_error(cooking_errors(ds), "horno")

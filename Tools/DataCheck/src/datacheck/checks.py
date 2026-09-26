@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import crafting
+from . import cooking, crafting
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -36,7 +36,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
+    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "fuels.json", "recipes.json",
 ]
 
 
@@ -504,6 +504,18 @@ def check_survival(ds: DataSet, r: Report) -> None:
             r.error(f"survival_needs.json: bodyTemperature.{key}={bt.get(key)} pero C++ dice {v}")
 
 
+# --------------------------------------------------------------------------- fuego y cocina
+
+
+def check_cooking(ds: DataSet, r: Report) -> None:
+    piece_ids = {p.get("id") for p in ds.building.get("pieces", [])}
+    if "fuels.json" in ds.data:
+        cooking.check_fuels(ds.data["fuels.json"], ds.items, piece_ids, r.error)
+    if "recipes.json" in ds.data:
+        cooking.check_recipes(ds.data["recipes.json"], ds.items, piece_ids, r.error)
+    cooking.check_generated(ds.repo_root, ds.data, r.error)
+
+
 # --------------------------------------------------------------------------- story y reglas
 
 
@@ -552,6 +564,7 @@ def run_all(ds: DataSet) -> Report:
     check_building(ds, r, obtainable)
     check_meshes(ds, r)
     check_survival(ds, r)
+    check_cooking(ds, r)
     check_story(ds, r)
     check_forbidden_terms(ds, r)
     return r

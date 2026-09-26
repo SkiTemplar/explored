@@ -32,7 +32,7 @@ compila y pasa sus tests en local.
 | Nado | ✅ | ❌ | ✅ | Bugs H4, H5, M1, M4 → extraer a modelo (P-SWIM) |
 | Building | ❌ | ❌ | ❌ | Datos en `building_pieces.json` (P-BUILD) |
 | Farming | ❌ | ❌ | ❌ | Datos en `plants.json` (P-FARM) |
-| Cooking | ❌ | ❌ | ❌ | (P-COOK) |
+| Cooking | en curso | ✅ | sin compilar | Fuego, recetas y conservación desde `fuels.json`/`recipes.json` (P-COOK) |
 | Cartography | ❌ | ❌ | ❌ | Sistema central del juego (P-MAP) |
 | Ruins / museo | ❌ | ❌ | ❌ | Mallas ya generadas (P-RUINS) |
 | Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
@@ -55,7 +55,7 @@ compila y pasa sus tests en local.
 | P-FARM | `FFarmModel`: limonero y huerto por etapas y días, riego, estación, compost, cosecha desde `plants.json` | pendiente |
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
 | P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
-| P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
+| P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | en curso (nube/cocina-2026-09-26) |
 | P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | pendiente |
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |

@@ -1,4 +1,4 @@
-"""CLI: ``uv run datacheck [--strict] [--write-pending] [--quiet]``."""
+"""CLI: ``uv run datacheck [--strict] [--write-pending] [--write-cooking] [--quiet]``."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 
+from . import cooking
 from .checks import REPO_ROOT, DataSet, pending_expected, run_all
 
 
@@ -27,12 +28,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--strict", action="store_true", help="los avisos también fallan")
     parser.add_argument("--write-pending", action="store_true", help="regenera meshes_pendientes.json")
+    parser.add_argument("--write-cooking", action="store_true",
+                        help="regenera FireData.inl y CookingData.inl desde fuels.json, recipes.json e items.json")
     parser.add_argument("--quiet", action="store_true", help="no muestra la información de diseño")
     args = parser.parse_args(argv)
 
     ds = DataSet.load(REPO_ROOT)
     if args.write_pending:
         write_pending(ds)
+    if args.write_cooking:
+        for rel in cooking.write_generated(ds.repo_root, ds.data):
+            print(f"Escrito {rel.as_posix()}")
     report = run_all(ds)
 
     if not args.quiet:
