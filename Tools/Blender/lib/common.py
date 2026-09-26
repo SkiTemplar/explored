@@ -835,6 +835,149 @@ def make_tapered_capsule(name, direction, length, radii, segments=8,
 
 
 # ---------------------------------------------------------------------------
+# Geometría: mallas orgánicas vía modificador Skin (kit de fauna, 2ª pasada)
+# ---------------------------------------------------------------------------
+#
+# make_tapered_capsule (arriba) construye cápsulas a mano anillo a anillo:
+# rápido y predecible, pero cada pieza queda como un tubo de caras planas
+# con una costura visible donde encaja con la siguiente -el aspecto de
+# «palo segmentado» que el encargo pide sustituir-. El modificador Skin de
+# Blender resuelve exactamente este problema: a partir de un esqueleto de
+# vértices (un «palillo») con un radio por nodo, genera él solo una
+# superficie tubular YA suave y redondeada, con remates abombados
+# naturales y (más importante) RAMAS: si tres o más aristas comparten un
+# vértice (un pecho con dos patas y un cuello saliendo del mismo punto de
+# la columna), el modificador suelda esa unión en una sola superficie
+# continua sin costura, en vez de tres tubos que se tocan. Es la técnica
+# estándar para animales estilizados «tipo amigurumi» (low-poly pero con
+# siluetas redondeadas y adorables) que pide el encargo.
+#
+# Aquí se usa a nivel de PIEZA (cada hueso sigue siendo su propio objeto
+# con su propio pivote, para no romper el esqueleto de animals.json), no a
+# nivel de especie entera: build_blob_piece/build_capsule_piece/build_chain
+# (animals/rig.py) construyen cada esqueleto de Skin ligeramente más largo
+# de lo estrictamente necesario para que se HUNDA dentro de la pieza padre
+# en la articulación (solape), de forma que el remate redondeado que el
+# modificador pone en cada extremo quede oculto dentro del volumen de la
+# pieza vecina en vez de leerse como una costura.
+
+
+def make_skin_mesh(name, verts_local, edges, radii, subsurf_levels=1,
+                    decimate_ratio=None, root_indices=None):
+    """Malla orgánica a partir de un esqueleto de vértices: «verts_local»
+    (lista de (x, y, z) en metros, espacio local del objeto) y «edges»
+    (pares de índices) definen el «palillo»; «radii» es una lista paralela
+    a verts_local de radios elípticos (rx, ry) en metros para el
+    modificador Skin. subsurf_levels añade una Subdivision Surface antes
+    de aplicar ambos modificadores (mesh real); decimate_ratio (opcional)
+    recorta el resultado al presupuesto de triángulos después de subdividir
+    -el modificador Skin ya genera pocos triángulos por nodo, pero
+    subsurf los multiplica x4 por nivel-. root_indices marca nodos como
+    «raíz» (un remate más plano en vez de redondeado del todo; útil en el
+    extremo que se solapa dentro del padre, para que no añada un bulto
+    extra de más)."""
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in verts_local], [tuple(e) for e in edges], [])
+    me.update()
+    obj = bpy.data.objects.new(name, me)
+    link_object(obj)
+
+    # el layer «skin_vertices» no existe en la malla hasta que el objeto
+    # tiene un modificador Skin (se crea perezosamente); por eso el
+    # modificador se añade ANTES de poder tocar los radios por nodo.
+    select_only(obj)
+    skin_mod = obj.modifiers.new('Skin', 'SKIN')
+
+    roots = root_indices or set()
+    for i, r in enumerate(radii):
+        rx, ry = r if isinstance(r, (tuple, list)) else (r, r)
+        sv = me.skin_vertices[0].data[i]
+        sv.radius = (rx, ry)
+        if i in roots:
+            sv.use_root = True
+
+    sub_mod = None
+    if subsurf_levels > 0:
+        sub_mod = obj.modifiers.new('Subsurf', 'SUBSURF')
+        sub_mod.levels = subsurf_levels
+        sub_mod.render_levels = subsurf_levels
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=skin_mod.name)
+    if sub_mod is not None:
+        bpy.ops.object.modifier_apply(modifier=sub_mod.name)
+
+    if decimate_ratio is not None and decimate_ratio < 1.0:
+        dec = obj.modifiers.new('Decimate', 'DECIMATE')
+        dec.ratio = decimate_ratio
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=dec.name)
+
+    return obj
+
+
+def make_skin_capsule(name, direction, length, radii, subsurf_levels=1,
+                       decimate_ratio=None, root_start=False, root_end=False,
+                       up_hint=None):
+    """Sustituye a make_tapered_capsule pieza a pieza: «radii» es una lista
+    de 2 o más radios (float o (rx, ry)) muestreados a intervalos
+    regulares entre el origen (pivote) y la punta a lo largo de
+    «direction», igual que antes -mismo contrato-, pero cada muestra es
+    ahora un nodo del esqueleto de Skin en vez de un anillo de vértices
+    hecho a mano, así que las transiciones de grosor quedan suaves y los
+    remates redondeados por construcción. «up_hint» no cambia el resultado
+    -el modificador Skin no expone control de «roll» por Python-; se
+    conserva solo para no romper firmas de llamada existentes."""
+    fwd = Vector(direction)
+    if fwd.length < 1e-8:
+        fwd = Vector((0.0, 0.0, 1.0))
+    fwd.normalize()
+    n = len(radii)
+    verts = [tuple(fwd * (length * i / (n - 1))) for i in range(n)]
+    edges = [(i, i + 1) for i in range(n - 1)]
+    roots = set()
+    if root_start:
+        roots.add(0)
+    if root_end:
+        roots.add(n - 1)
+    return make_skin_mesh(name, verts, edges, radii, subsurf_levels=subsurf_levels,
+                           decimate_ratio=decimate_ratio, root_indices=roots)
+
+
+def make_skin_blob(name, center, radii, subsurf_levels=2, decimate_ratio=None,
+                    extra_nodes=None, axis='x', end_taper=0.6):
+    """Bulto orgánico (cuerpo, cabeza, caparazón...): una cadena de 3 nodos
+    de Skin a lo largo de «axis» (por defecto X, «adelante» en todo el kit)
+    centrada en «center» (metros), con el nodo central al radio elíptico
+    pleno «radii»=(rx, ry, rz) -rx controla la separación entre nodos
+    (medio «largo» del bulto), (ry, rz) son ancho y alto de la sección- y
+    los dos nodos de los extremos a «end_taper» de ese radio, para un
+    bulto alargado y redondeado sin las esquinas picudas de un único nodo
+    aislado (el modificador Skin no da un control de «radio en el eje del
+    hueso» independiente para un nodo sin aristas, así que un solo nodo
+    con radios muy distintos en cada eje degenera en un cono en vez de un
+    esferoide). «extra_nodes» (opcional) es una lista de (offset_xyz,
+    (rx, ry, rz)) para añadir bultos secundarios soldados al nodo CENTRAL
+    -por ejemplo el morro de un perro saliendo del cráneo- en una única
+    superficie continua, en vez de la unión visible entre dos blobs
+    separados de make_blob."""
+    rx, ry, rz = radii
+    ax = {'x': Vector((1, 0, 0)), 'y': Vector((0, 1, 0)), 'z': Vector((0, 0, 1))}[axis]
+    c = Vector(center)
+    verts = [tuple(c - ax * rx), tuple(c), tuple(c + ax * rx)]
+    radii_list = [(ry * end_taper, rz * end_taper), (ry, rz), (ry * end_taper, rz * end_taper)]
+    edges = [(0, 1), (1, 2)]
+    if extra_nodes:
+        for offset, r2 in extra_nodes:
+            idx = len(verts)
+            verts.append(tuple(c + Vector(offset)))
+            r2x, r2y, r2z = r2
+            radii_list.append((r2y, r2z))
+            edges.append((1, idx))
+    return make_skin_mesh(name, verts, edges, radii_list, subsurf_levels=subsurf_levels,
+                           decimate_ratio=decimate_ratio)
+
+
+# ---------------------------------------------------------------------------
 # Ojos pintados (kit de fauna): bulto de geometría + color de vértice negro
 # ---------------------------------------------------------------------------
 
@@ -854,16 +997,26 @@ def add_eyes(obj, eye_centers, eye_radius, subdivisions=1, seed=0):
     return merged
 
 
-def with_eye_dots(base_fn, eye_centers, eye_radius, eye_color=(0.02, 0.02, 0.03)):
+def with_eye_dots(base_fn, eye_centers, eye_radius, eye_color=(0.02, 0.02, 0.03),
+                   highlight_color=(0.92, 0.92, 0.94), highlight_ratio=0.32):
     """Envuelve un color_fn: pinta casi negros los vértices a distancia
     <= eye_radius de cualquier centro en «eye_centers» (los bultos que
-    añade add_eyes), delegando en base_fn para el resto de la pieza. El
-    canal alfa de los ojos se deja a 0.0 (sin uso en piezas de fauna salvo
-    en los nadadores de una sola malla, donde alpha ya codifica la
-    posición en la columna y las mallas de nadador no llevan add_eyes)."""
+    añade add_eyes), delegando en base_fn para el resto de la pieza. Añade
+    además un pequeño «brillo» (catchlight) casi blanco desplazado hacia
+    arriba y adelante en cada ojo -el toque de vida que pide un estilo
+    «animado, adorable» en vez de un punto negro plano-. El canal alfa de
+    los ojos se deja a 0.0 (sin uso en piezas de fauna salvo en los
+    nadadores de una sola malla, donde alpha ya codifica la posición en
+    la columna y las mallas de nadador no llevan add_eyes)."""
     centers = [Vector(c) for c in eye_centers]
+    hl_offset = Vector((eye_radius * 0.30, 0.0, eye_radius * 0.40))
+    hl_radius = eye_radius * highlight_ratio
+    hl_centers = [c + hl_offset for c in centers]
 
     def fn(v):
+        for hc in hl_centers:
+            if (v.co - hc).length <= hl_radius:
+                return (*highlight_color, 0.0)
         for c in centers:
             if (v.co - c).length <= eye_radius:
                 return (*eye_color, 0.0)

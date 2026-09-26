@@ -29,11 +29,10 @@ VARIANTS = [
         neck_len_cm=3.5, neck_dir=(0.60, 0.0, 0.70), neck_radii_cm=[2.6, 2.4],
         beak_len_cm=3.8, beak_dir=(0.95, 0.0, -0.15),
         beak_radii_cm=[(0.9, 0.7), (0.25, 0.2)], beak_color=(0.95, 0.75, 0.20),
-        eye_offset_cm=(2.6, 1.8, 0.6), eye_radius_cm=0.30,
+        eye_offset_cm=(2.6, 3.06, 1.0), eye_radius_cm=0.30,
         leg_upper_cm=5.5, leg_lower_cm=5.0, leg_radius=0.55, leg_color=(0.85, 0.35, 0.20),
-        wing_upper_cm=13.0, wing_lower_cm=15.0,
-        wing_radii_cm=[[(2.6, 0.8), (1.8, 0.6)], [(1.8, 0.6), (0.6, 0.3)]],
-        wing_dir_upper=(-0.30, 1.0, 0.15), wing_dir_lower=(-0.85, 0.55, -0.05),
+        wing_len_cm=28.0, wing_width_base_cm=5.2, wing_width_tip_cm=1.2,
+        wing_dir=(-0.75, 0.55, 0.10),
         tail_len_cm=8.0, tail_radii_cm=[(3.0, 0.6), (1.0, 0.3)], tail_dir=(-1.0, 0.0, 0.05),
         stride_length_cm=14.0, total_length_cm=45.0,
         habitat='Costa', behavior='Bandadas, roban pescado',
@@ -47,11 +46,10 @@ VARIANTS = [
         neck_len_cm=3.0, neck_dir=(0.60, 0.0, 0.70), neck_radii_cm=[2.2, 2.0],
         beak_len_cm=5.5, beak_dir=(0.95, 0.0, -0.25),
         beak_radii_cm=[(0.7, 0.55), (0.15, 0.15)], beak_color=(0.15, 0.12, 0.10),
-        eye_offset_cm=(2.2, 1.5, 0.5), eye_radius_cm=0.26,
+        eye_offset_cm=(2.2, 2.55, 0.8), eye_radius_cm=0.26,
         leg_upper_cm=3.0, leg_lower_cm=2.8, leg_radius=0.40, leg_color=(0.15, 0.12, 0.10),
-        wing_upper_cm=22.0, wing_lower_cm=26.0,
-        wing_radii_cm=[[(3.6, 0.9), (2.4, 0.6)], [(2.4, 0.6), (0.7, 0.3)]],
-        wing_dir_upper=(-0.20, 1.0, 0.20), wing_dir_lower=(-0.70, 0.65, -0.05),
+        wing_len_cm=48.0, wing_width_base_cm=7.2, wing_width_tip_cm=1.4,
+        wing_dir=(-0.70, 0.60, 0.15),
         tail_len_cm=16.0, tail_radii_cm=[(2.6, 0.5), (0.6, 0.2)], tail_dir=(-1.0, 0.0, 0.0),
         stride_length_cm=8.0, total_length_cm=40.0,
         habitat='Los Dientes', behavior='Planea en térmicas',
@@ -65,11 +63,10 @@ VARIANTS = [
         neck_len_cm=1.8, neck_dir=(0.50, 0.0, 0.75), neck_radii_cm=[2.0, 1.9],
         beak_len_cm=2.0, beak_dir=(0.9, 0.0, -0.4),
         beak_radii_cm=[(1.1, 0.9), (0.3, 0.5)], beak_color=(0.12, 0.10, 0.09),
-        eye_offset_cm=(2.0, 1.5, 0.6), eye_radius_cm=0.28,
+        eye_offset_cm=(2.0, 2.55, 0.9), eye_radius_cm=0.28,
         leg_upper_cm=2.6, leg_lower_cm=2.4, leg_radius=0.42, leg_color=(0.45, 0.40, 0.30),
-        wing_upper_cm=9.0, wing_lower_cm=10.0,
-        wing_radii_cm=[[(2.0, 0.6), (1.5, 0.45)], [(1.5, 0.45), (0.5, 0.25)]],
-        wing_dir_upper=(-0.25, 1.0, 0.15), wing_dir_lower=(-0.80, 0.55, -0.05),
+        wing_len_cm=19.0, wing_width_base_cm=4.0, wing_width_tip_cm=1.0,
+        wing_dir=(-0.75, 0.55, 0.10),
         tail_len_cm=13.0, tail_radii_cm=[(1.8, 0.4), (0.7, 0.15)], tail_dir=(-1.0, 0.0, -0.05),
         stride_length_cm=6.0, total_length_cm=30.0,
         habitat='Selva', behavior='Grupos ruidosos, imitan sonidos',
@@ -83,11 +80,10 @@ VARIANTS = [
         neck_len_cm=1.6, neck_dir=(0.50, 0.0, 0.75), neck_radii_cm=[2.1, 2.0],
         beak_len_cm=15.0, beak_dir=(0.95, 0.0, -0.05),
         beak_radii_cm=[(1.1, 2.2), (0.25, 0.5)], beak_color=(0.95, 0.65, 0.05),
-        eye_offset_cm=(2.0, 1.6, 0.6), eye_radius_cm=0.30,
+        eye_offset_cm=(2.0, 2.72, 0.9), eye_radius_cm=0.30,
         leg_upper_cm=3.2, leg_lower_cm=3.0, leg_radius=0.48, leg_color=(0.25, 0.45, 0.55),
-        wing_upper_cm=8.0, wing_lower_cm=9.0,
-        wing_radii_cm=[[(1.8, 0.55), (1.3, 0.4)], [(1.3, 0.4), (0.45, 0.2)]],
-        wing_dir_upper=(-0.25, 1.0, 0.15), wing_dir_lower=(-0.80, 0.55, -0.05),
+        wing_len_cm=17.0, wing_width_base_cm=3.6, wing_width_tip_cm=0.9,
+        wing_dir=(-0.75, 0.55, 0.10),
         tail_len_cm=10.0, tail_radii_cm=[(1.6, 0.4), (0.6, 0.15)], tail_dir=(-1.0, 0.0, 0.10),
         stride_length_cm=7.0, total_length_cm=32.0,
         habitat='Selva', behavior='Solitario, come fruta',
@@ -101,11 +97,10 @@ VARIANTS = [
         neck_len_cm=4.5, neck_dir=(0.55, 0.0, 0.80), neck_radii_cm=[2.0, 1.9],
         beak_len_cm=1.6, beak_dir=(0.9, 0.0, -0.25),
         beak_radii_cm=[(0.6, 0.5), (0.15, 0.15)], beak_color=(0.85, 0.65, 0.20),
-        eye_offset_cm=(1.8, 1.4, 0.5), eye_radius_cm=0.25,
+        eye_offset_cm=(1.8, 2.38, 0.8), eye_radius_cm=0.25,
         leg_upper_cm=5.5, leg_lower_cm=5.0, leg_radius=0.62, leg_color=(0.80, 0.65, 0.35),
-        wing_upper_cm=7.0, wing_lower_cm=7.5,
-        wing_radii_cm=[[(2.2, 0.7), (1.6, 0.5)], [(1.6, 0.5), (0.55, 0.25)]],
-        wing_dir_upper=(-0.25, 1.0, 0.10), wing_dir_lower=(-0.80, 0.55, -0.05),
+        wing_len_cm=14.5, wing_width_base_cm=4.4, wing_width_tip_cm=1.1,
+        wing_dir=(-0.75, 0.55, 0.05),
         tail_len_cm=9.0, tail_radii_cm=[(2.4, 0.6), (1.0, 0.3)], tail_dir=(-0.6, 0.0, 0.85),
         stride_length_cm=12.0, total_length_cm=38.0,
         habitat='Selva baja', behavior='Huye, se puede domesticar',
@@ -126,9 +121,8 @@ def _build_head(species, cfg, body_color_fn, seed):
 
     hx, hy, hz = cfg['head_radii_cm']
     ox, oy, oz = cfg['head_offset_cm']
-    head_obj = C.make_blob(f'{species}_Head', tuple(v / 100.0 for v in (ox, oy, oz)), 1.0,
-                            seed=seed, subdivisions=2, noise_strength=0.03,
-                            scale=(hx / 100.0, hy / 100.0, hz / 100.0), relax_iterations=1)
+    head_obj = C.make_skin_blob('Head', tuple(v / 100.0 for v in (ox, oy, oz)),
+                                 (hx / 100.0, hy / 100.0, hz / 100.0), subsurf_levels=2)
     eye_off = cfg['eye_offset_cm']
     eyeL, eyeR = eye_off, (eye_off[0], -eye_off[1], eye_off[2])
     head_obj, eye_centers = rig.attach_eyes(head_obj, [eyeL, eyeR], cfg['eye_radius_cm'], seed=seed)
@@ -165,22 +159,24 @@ def _legs(species, cfg, color_fn):
 
 
 def _wings(species, cfg, color_fn):
+    """Ala como UNA «hoja» orgánica (rig.build_blade_piece) en vez de una
+    cadena de cápsulas: se lee como un ala plegada de verdad -perfil
+    curvo, silueta ancha en la base y afilada en la punta- en lugar del
+    «palillo» que criticó el encargo. Una sola pieza por ala (no
+    upper/lower): ProceduralGait.h anima el aleteo completo con
+    WingFlap/WingFold, no por segmento."""
     body_rx, body_ry, body_rz = cfg['body_radii_cm']
     hip_h = cfg['hip_height_cm']
-    upper, lower = cfg['wing_upper_cm'], cfg['wing_lower_cm']
-    prof_upper, prof_lower = cfg['wing_radii_cm']
-    d_up = tuple(C.Vector(cfg['wing_dir_upper']).normalized())
-    d_lo = tuple(C.Vector(cfg['wing_dir_lower']).normalized())
+    d = cfg['wing_dir']
     pieces = []
     for side, sign in (('L', 1.0), ('R', -1.0)):
         shoulder = (body_rx * 0.20, sign * body_ry * 0.90, hip_h + body_rz * 0.30)
-        dirs = [(d_up[0], d_up[1] * sign, d_up[2]), (d_lo[0], d_lo[1] * sign, d_lo[2])]
-        chain = rig.build_chain(
-            [f'Wing{side}_Upper', f'Wing{side}_Lower'], 'Body', shoulder, 'wing', species,
-            directions=dirs, lengths_cm=[upper, lower],
-            radii_profiles_cm=[prof_upper, prof_lower],
-            color_fn=color_fn, segments=6)
-        pieces.extend(chain)
+        d_side = (d[0], d[1] * sign, d[2])
+        piece = rig.build_blade_piece(
+            f'Wing{side}', 'Body', shoulder, 'wing', species, d_side, (0.0, 1.0, 0.0),
+            cfg['wing_len_cm'], cfg['wing_width_base_cm'], cfg['wing_width_tip_cm'],
+            cfg['wing_width_base_cm'] * 0.15, color_fn)
+        pieces.append(piece)
     return pieces
 
 

@@ -27,7 +27,7 @@ VARIANTS = [
         color=(0.22, 0.38, 0.20), color_dark=(0.10, 0.20, 0.10),
         head_radii_cm=(9.0, 7.0, 7.0), head_offset_cm=(4.0, 0.0, 0.5),
         neck_len_cm=10.0, neck_dir=(0.85, 0.0, 0.35), neck_radii_cm=[5.5, 5.0],
-        eye_offset_cm=(5.5, 4.0, 1.2), eye_radius_cm=0.7,
+        eye_offset_cm=(5.5, 5.95, 1.8), eye_radius_cm=0.7,
         flipper_front_upper_cm=32.0, flipper_front_lower_cm=28.0,
         flipper_front_radii_cm=[[(9.0, 2.2), (7.0, 1.8)], [(7.0, 1.8), (2.5, 1.0)]],
         flipper_front_dir_upper=(0.15, 1.0, -0.15), flipper_front_dir_lower=(-0.10, 0.90, -0.30),
@@ -53,9 +53,8 @@ def _build_head(species, cfg, body_color_fn, seed):
     head_pivot = tuple(neck_pivot[i] + d_neck[i] * cfg['neck_len_cm'] for i in range(3))
 
     hx, hy, hz = cfg['head_radii_cm']
-    head_obj = C.make_blob(f'{species}_Head', (0.0, 0.0, 0.0), 1.0, seed=seed, subdivisions=2,
-                            noise_strength=0.03, scale=(hx / 100.0, hy / 100.0, hz / 100.0),
-                            relax_iterations=1)
+    head_obj = C.make_skin_blob('Head', (0.0, 0.0, 0.0), (hx / 100.0, hy / 100.0, hz / 100.0),
+                                 subsurf_levels=2)
     eye_off = cfg['eye_offset_cm']
     eyeL, eyeR = eye_off, (eye_off[0], -eye_off[1], eye_off[2])
     head_obj, eye_centers = rig.attach_eyes(head_obj, [eyeL, eyeR], cfg['eye_radius_cm'], seed=seed)

@@ -30,12 +30,12 @@ VARIANTS = [
         neck_len_cm=1.0, neck_dir=(0.50, 0.0, 0.60), neck_radii_cm=[1.6, 1.5],
         snout_len_cm=1.2, snout_dir=(0.9, 0.0, -0.2),
         snout_radii_cm=[(0.8, 0.7), (0.4, 0.4)],
-        ear_len_cm=2.2, ear_radii_cm=[(1.3, 0.4), (0.6, 0.2)], ear_dir=(-0.10, 1.0, 0.40),
-        eye_offset_cm=(1.6, 1.0, 0.3), eye_radius_cm=0.22,
+        ear_len_cm=2.2, ear_width_base_cm=2.2, ear_width_tip_cm=0.8, ear_curve_cm=0.3,
+        ear_dir=(-0.10, 1.0, 0.40),
+        eye_offset_cm=(1.6, 1.87, 0.5), eye_radius_cm=0.22,
         leg_upper_cm=2.0, leg_lower_cm=1.8, leg_radius=0.35,
-        wing_upper_cm=9.0, wing_lower_cm=11.0,
-        wing_radii_cm=[[(1.6, 0.25), (1.1, 0.20)], [(1.1, 0.20), (0.4, 0.15)]],
-        wing_dir_upper=(-0.15, 1.0, -0.10), wing_dir_lower=(-0.55, 0.75, -0.50),
+        wing_len_cm=20.0, wing_width_base_cm=3.2, wing_width_tip_cm=0.8,
+        wing_dir=(-0.35, 1.0, -0.30),
         stride_length_cm=4.0, total_length_cm=14.0,
         habitat='Cuevas', behavior='Salen al atardecer',
         use='Guano', diet='frugívoro',
@@ -54,9 +54,8 @@ def _build_head(species, cfg, body_color_fn, seed):
     head_pivot = tuple(neck_pivot[i] + d_neck[i] * cfg['neck_len_cm'] for i in range(3))
 
     hx, hy, hz = cfg['head_radii_cm']
-    head_obj = C.make_blob(f'{species}_Head', (0.0, 0.0, 0.0), 1.0, seed=seed, subdivisions=2,
-                            noise_strength=0.03, scale=(hx / 100.0, hy / 100.0, hz / 100.0),
-                            relax_iterations=1)
+    head_obj = C.make_skin_blob('Head', (0.0, 0.0, 0.0), (hx / 100.0, hy / 100.0, hz / 100.0),
+                                 subsurf_levels=2)
     eye_off = cfg['eye_offset_cm']
     eyeL, eyeR = eye_off, (eye_off[0], -eye_off[1], eye_off[2])
     head_obj, eye_centers = rig.attach_eyes(head_obj, [eyeL, eyeR], cfg['eye_radius_cm'], seed=seed)
@@ -71,14 +70,15 @@ def _build_head(species, cfg, body_color_fn, seed):
                                      body_color_fn, segments=6)
 
     ear_pieces = []
-    d_ear = tuple(C.Vector(cfg['ear_dir']).normalized())
+    d_ear = cfg['ear_dir']
     for side, sign in (('EarL', 1.0), ('EarR', -1.0)):
         pivot = (head_pivot[0] - hx * 0.1, sign * hy * 0.7, head_pivot[2] + hz * 0.6)
         dir_side = (d_ear[0], d_ear[1] * sign, d_ear[2])
-        obj = C.make_tapered_capsule(f'{species}_{side}', dir_side, cfg['ear_len_cm'] / 100.0,
-                                      [(r[0] / 100.0, r[1] / 100.0) for r in cfg['ear_radii_cm']],
-                                      segments=6, cap_start=True, cap_end=True)
-        ear_pieces.append(rig.finalize_piece(side, 'Head', pivot, 'ear', obj, species, body_color_fn))
+        piece = rig.build_blade_piece(
+            side, 'Head', pivot, 'ear', species, dir_side, (1.0, 0.0, 0.0),
+            cfg['ear_len_cm'], cfg['ear_width_base_cm'], cfg['ear_width_tip_cm'],
+            cfg['ear_curve_cm'], body_color_fn, segments=5)
+        ear_pieces.append(piece)
 
     return [neck, head, snout] + ear_pieces, head_pivot
 
@@ -103,22 +103,21 @@ def _legs(species, cfg, color_fn):
 
 
 def _wings(species, cfg, color_fn):
+    """Ala membranosa como UNA «hoja» orgánica (rig.build_blade_piece): el
+    dedo/brazo alar se lee como una membrana de verdad en vez del
+    «palillo» que criticó el encargo."""
     body_rx, body_ry, body_rz = cfg['body_radii_cm']
     hip_h = cfg['hip_height_cm']
-    upper, lower = cfg['wing_upper_cm'], cfg['wing_lower_cm']
-    prof_upper, prof_lower = cfg['wing_radii_cm']
-    d_up = tuple(C.Vector(cfg['wing_dir_upper']).normalized())
-    d_lo = tuple(C.Vector(cfg['wing_dir_lower']).normalized())
+    d = cfg['wing_dir']
     pieces = []
     for side, sign in (('L', 1.0), ('R', -1.0)):
         shoulder = (body_rx * 0.15, sign * body_ry * 0.85, hip_h + body_rz * 0.25)
-        dirs = [(d_up[0], d_up[1] * sign, d_up[2]), (d_lo[0], d_lo[1] * sign, d_lo[2])]
-        chain = rig.build_chain(
-            [f'Wing{side}_Upper', f'Wing{side}_Lower'], 'Body', shoulder, 'wing', species,
-            directions=dirs, lengths_cm=[upper, lower],
-            radii_profiles_cm=[prof_upper, prof_lower],
-            color_fn=color_fn, segments=6)
-        pieces.extend(chain)
+        d_side = (d[0], d[1] * sign, d[2])
+        piece = rig.build_blade_piece(
+            f'Wing{side}', 'Body', shoulder, 'wing', species, d_side, (0.0, 1.0, 0.0),
+            cfg['wing_len_cm'], cfg['wing_width_base_cm'], cfg['wing_width_tip_cm'],
+            cfg['wing_width_base_cm'] * 0.15, color_fn)
+        pieces.append(piece)
     return pieces
 
 

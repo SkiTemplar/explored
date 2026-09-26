@@ -58,10 +58,10 @@ MODULE_NAMES = [
 # piezas, LOD0). Orientativo aquí (solo se avisa); validate.py es quien lo
 # hace cumplir de verdad antes de dar el kit por bueno.
 TRIANGLE_BUDGET_BY_CATEGORY = {
-    'quadruped': (450, 7000),
+    'quadruped': (1200, 7000),
     'arthropod': (500, 4000),
     'cephalopod': (500, 4000),
-    'jellyfish': (150, 2500),
+    'jellyfish': (300, 4200),
     'reptile': (400, 7000),
     'serpent': (300, 3000),
     'bird': (400, 3500),

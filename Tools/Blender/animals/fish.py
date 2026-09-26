@@ -170,11 +170,23 @@ VARIANTS = [
 
 
 def _fin_piece(name, parent, pivot_cm, role, species, direction, length_cm, radii_cm,
-               color_fn, segments=6, up_hint=None):
-    radii_m = [(r[0] / 100.0, r[1] / 100.0) for r in radii_cm]
-    obj = C.make_tapered_capsule(name, direction, length_cm / 100.0, radii_m,
-                                  segments=segments, cap_start=True, cap_end=True, up_hint=up_hint)
-    return rig.finalize_piece(name, parent, pivot_cm, role, obj, species, color_fn)
+               color_fn, flatten='vertical'):
+    """Aleta/aleta caudal como una «hoja» orgánica (rig.build_blade_piece)
+    en vez de una cápsula elíptica: se lee como una aleta de verdad -perfil
+    curvo y borde afilado- en lugar del «palillo» plano que criticó el
+    encargo. «radii_cm» sigue siendo el perfil de 2 puntos (rx, ry) en la
+    base y la punta -mismo dato que antes-: el ancho de la hoja en cada
+    extremo es 2×max(rx, ry) (la dimensión de «envergadura» siempre fue la
+    grande de las dos, la pequeña es la que se aplanaba). «flatten»
+    ('vertical'|'horizontal') elige el up_hint para que la envergadura
+    quede en pie (aleta de pez/tiburón) o tumbada de lado (aleta de
+    mamífero: pectoral o cola de delfín/ballena)."""
+    width_base = 2.0 * max(radii_cm[0])
+    width_tip = 2.0 * max(radii_cm[-1])
+    up_hint = (0.0, 1.0, 0.0) if flatten == 'vertical' else (0.0, 0.0, 1.0)
+    curve_cm = max(width_base, width_tip) * 0.12
+    return rig.build_blade_piece(name, parent, pivot_cm, role, species, direction, up_hint,
+                                  length_cm, width_base, width_tip, curve_cm, color_fn)
 
 
 def _torpedo_body(species, cfg, seed):
@@ -192,9 +204,12 @@ def _torpedo_body(species, cfg, seed):
     # pieza («X adelante» de rig.py). El pivote de Body ES el morro (una
     # cápsula crece desde su pivote, no está centrada como un blob), así que
     # dorsal/pectoral/aleta caudal se anclan con offsets negativos en X.
-    radii_m = [(r[0] / 100.0, r[1] / 100.0) for r in profile]
-    body_obj = C.make_tapered_capsule('Body', (-1.0, 0.0, 0.0), length / 100.0, radii_m,
-                                       segments=10, cap_start=True, cap_end=True, dome=0.5)
+    # Vía Skin (rig.skin_chain) en vez de anillos hechos a mano: el mismo
+    # perfil de N puntos da ahora un torpedo con transiciones suaves y sin
+    # facetas duras.
+    body_obj = rig.skin_chain((-1.0, 0.0, 0.0), length, profile,
+                               overlap_start=False, overlap_end=False)
+    body_obj.name = 'Body'
     eye_off = cfg['eye_offset_cm']
     eye_r = cfg['eye_radius_cm']
     body_obj, eye_centers = rig.attach_eyes(
@@ -213,9 +228,8 @@ def _disc_body(species, cfg, seed):
     body_fn = C.gradient_along_axis(cfg['color'], cfg['color_dark'], 'z',
                                      -rz / 100.0, rz / 100.0, curve=1.0, jitter=0.02, rnd=rnd)
     body_pivot = (0.0, 0.0, hip_h)
-    body_obj = C.make_blob('Body', (0.0, 0.0, 0.0), 1.0, seed=seed, subdivisions=2,
-                            noise_strength=0.04, scale=(rx / 100.0, ry / 100.0, rz / 100.0),
-                            relax_iterations=2)
+    body_obj = C.make_skin_blob('Body', (0.0, 0.0, 0.0), (rx / 100.0, ry / 100.0, rz / 100.0),
+                                 subsurf_levels=2, axis='y')
     eye_off = cfg['eye_offset_cm']
     eye_r = cfg['eye_radius_cm']
     body_obj, eye_centers = rig.attach_eyes(
@@ -259,7 +273,7 @@ def build(variant):
             pivot = (-length * dorsal['t'], 0.0, body_pivot[2] + top_r * 0.85)
             fin = _fin_piece('Dorsal', 'Body', pivot, 'fin', species,
                               tuple(C.Vector(dorsal['dir']).normalized()),
-                              dorsal['len_cm'], dorsal['radii_cm'], body_fn, segments=5)
+                              dorsal['len_cm'], dorsal['radii_cm'], body_fn)
             pieces.append(fin)
 
         pectoral = cfg.get('pectoral')
@@ -271,7 +285,7 @@ def build(variant):
                 d_side = (d[0], d[1] * sign, d[2])
                 fin = _fin_piece(f'Pectoral{side}', 'Body', pivot, 'fin', species,
                                   tuple(C.Vector(d_side).normalized()),
-                                  pectoral['len_cm'], pectoral['radii_cm'], body_fn, segments=5)
+                                  pectoral['len_cm'], pectoral['radii_cm'], body_fn)
                 pieces.append(fin)
 
         flipper = cfg.get('flipper')
@@ -283,7 +297,7 @@ def build(variant):
                 d_side = (d[0], d[1] * sign, d[2])
                 fin = _fin_piece(f'Flipper{side}', 'Body', pivot, 'flipper', species,
                                   tuple(C.Vector(d_side).normalized()),
-                                  flipper['len_cm'], flipper['radii_cm'], body_fn, segments=6)
+                                  flipper['len_cm'], flipper['radii_cm'], body_fn)
                 pieces.append(fin)
 
         flipper_chain = cfg.get('flipper_chain')
@@ -304,10 +318,11 @@ def build(variant):
 
         tail_fin = cfg['tail_fin']
         tail_pivot = (-length, 0.0, body_pivot[2])
+        is_mammal_fluke = tail_fin.get('up_hint') is not None
         fin = _fin_piece('TailFin', 'Body', tail_pivot, 'tail', species,
                           tuple(C.Vector(tail_fin['dir']).normalized()),
-                          tail_fin['len_cm'], tail_fin['radii_cm'], body_fn, segments=6,
-                          up_hint=tail_fin.get('up_hint'))
+                          tail_fin['len_cm'], tail_fin['radii_cm'], body_fn,
+                          flatten='horizontal' if is_mammal_fluke else 'vertical')
         pieces.append(fin)
 
     locomotion = dict(type=cfg.get('locomotion_type', 'swimmer'),
