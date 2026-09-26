@@ -126,6 +126,15 @@ def _import_mesh(fbx_path, dest_path, mesh_name):
     """Importa un FBX como AssetImportTask automatizado. Devuelve el
     StaticMesh importado, o None si algo falló (se deja log de error, no
     se interrumpe el resto del lote)."""
+    # Reimportar sobre un asset ya existente reutiliza los ajustes de import
+    # GUARDADOS en su AssetImportData (incluida la escala) e ignora los de
+    # esta tarea nueva: sin borrarlo antes, un cambio en import_uniform_scale
+    # (o cualquier otra opción de import_mesh.py) no llega a aplicarse nunca
+    # a una malla que ya se había importado una vez.
+    full_path = f'{dest_path}/{mesh_name}'
+    if unreal.EditorAssetLibrary.does_asset_exist(full_path):
+        unreal.EditorAssetLibrary.delete_asset(full_path)
+
     task = unreal.AssetImportTask()
     task.set_editor_property('filename', fbx_path)
     task.set_editor_property('destination_path', dest_path)
@@ -146,6 +155,14 @@ def _import_mesh(fbx_path, dest_path, mesh_name):
     smi.set_editor_property('auto_generate_collision', False)
     smi.set_editor_property('vertex_color_import_option',
                              unreal.VertexColorImportOption.REPLACE)
+    # Sin esto, el importador de FBX de UE 5.6 ignora la unidad real del
+    # fichero (Tools/Blender/lib/common.py exporta con apply_unit_scale=True,
+    # 1 m Blender = 100 uu Unreal, verificado reimportando el FBX en Blender:
+    # una palmera de 8,69 x 8,91 x 10,49 m) y deja la malla en centímetros
+    # numéricamente iguales a los metros de origen: una palmera de ~10 m
+    # queda de ~10 cm, invisible a la distancia normal de juego. Forzando el
+    # factor de escala de importación se corrige ese «~100x» que faltaba.
+    smi.set_editor_property('import_uniform_scale', 100.0)
 
     task.set_editor_property('options', options)
 

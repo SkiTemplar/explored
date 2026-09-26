@@ -15,10 +15,12 @@
 #include "UnrealClient.h"
 #include "WorldPartition/WorldPartitionSubsystem.h"
 
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Explored.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/ExploredVegetationCell.h"
 #include "WorldGen/TerrainDensity.h"
 
 namespace
@@ -231,6 +233,28 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 {
 	const FExploredShot& Shot = Shots[Index];
 	UWorld* World = GetWorld();
+
+	if (Index == 0)
+	{
+		// Diagnóstico puntual: ¿existen de verdad las celdas de vegetación y sus instancias
+		// en el mundo de juego en ejecución, o algo las quita/oculta solo en -game?
+		int32 Cells = 0;
+		int64 TotalInstances = 0;
+		for (TActorIterator<AExploredVegetationCell> It(World); It; ++It)
+		{
+			++Cells;
+			TArray<UHierarchicalInstancedStaticMeshComponent*> Comps;
+			It->GetComponents(Comps);
+			for (const UHierarchicalInstancedStaticMeshComponent* Comp : Comps)
+			{
+				if (Comp)
+				{
+					TotalInstances += Comp->GetInstanceCount();
+				}
+			}
+		}
+		UE_LOG(LogExplored, Display, TEXT("[Shots] Vegetación en el mundo de juego: %d celdas, %lld instancias"), Cells, TotalInstances);
+	}
 
 	if (!Camera)
 	{
