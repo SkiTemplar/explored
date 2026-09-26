@@ -5,7 +5,8 @@
     "harvest.everyDays": "días de juego entre cosechas en la etapa final",
     "harvest.min / harvest.max": "unidades del objeto cosechado por cosecha",
     "waterPerDay": "riegos al día necesarios (0 = basta la lluvia de la estación)",
-    "seasons": "estaciones en que se puede plantar: seca, primeras_lluvias, monzon, ciclones"
+    "seasons": "estaciones en que se puede plantar: seca, primeras_lluvias, monzon, ciclones",
+    "birdsEat": "las aves picotean la fruta si no hay espantapájaros cerca (opcional, false por defecto)"
   },
   "plants": [
     {
@@ -31,6 +32,7 @@
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
       "waterPerDay": 1,
+      "birdsEat": true,
       "stages": [
         { "id": "hijuelo", "nameEs": "Hijuelo", "days": 3, "mesh": null },
         { "id": "planta_joven", "nameEs": "Planta joven", "days": 5, "mesh": null },
@@ -87,6 +89,7 @@
       "requiresPiece": "espaldera",
       "seasons": ["primeras_lluvias", "monzon"],
       "waterPerDay": 1,
+      "birdsEat": true,
       "stages": [
         { "id": "brote", "nameEs": "Brote", "days": 3, "mesh": null },
         { "id": "trepadora", "nameEs": "Trepadora en la espaldera", "days": 5, "mesh": null },

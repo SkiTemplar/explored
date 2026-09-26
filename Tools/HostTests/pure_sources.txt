@@ -2,6 +2,7 @@
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Events/WorldEventsModel.cpp
+Farming/FarmModel.cpp
 Fauna/ProceduralGait.cpp
 Ocean/OceanCurrents.cpp
 Ocean/OceanWaves.cpp

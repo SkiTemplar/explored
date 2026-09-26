@@ -7,5 +7,6 @@ Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
+Tests/FarmSpec.cpp
 Tests/GaitSpec.cpp
 Tests/VegetationScatterSpec.cpp

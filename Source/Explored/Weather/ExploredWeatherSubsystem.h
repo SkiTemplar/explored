@@ -32,6 +32,8 @@ public:
 
 	/** Semilla del clima del mundo (la usa FWorldEventsModel para ver el mismo cielo). */
 	static uint32 GetWorldWeatherSeed();
+	/** Planificador determinista (lo usa el huerto para la lluvia de días que no se han jugado). */
+	const FWeatherModel* GetModel() const { return Model.Get(); }
 
 	/** Fuerza un estado durante un tiempo (depuración y eventos de guion). Duración en horas de juego. */
 	void ForceState(EWeatherState InState, float DurationHours);
