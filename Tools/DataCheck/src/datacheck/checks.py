@@ -23,6 +23,8 @@ SIZES = {"Pequeno", "Mediano", "Grande", "DosManos"}
 # Verbos que exige ItemsSpec.cpp (biblia §2.2).
 REQUIRED_VERBS = {"Golpear", "Tallar", "Atar", "Pegar", "Afilar", "Trenzar", "Machacar", "Raspar"}
 SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
+# Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
+BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
@@ -342,6 +344,13 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
             r.error(f"building_pieces.json «{pid}»: integrity fuera de [1, 100]")
         if p.get("maxCycloneCategory") not in (0, 1, 2, 3):
             r.error(f"building_pieces.json «{pid}»: maxCycloneCategory fuera de 0-3")
+        # Encaje en la rejilla: lo lee FBuildingModel (ParseBuildSocket) y sin él la pieza no se coloca.
+        if p.get("socket") not in BUILDING_SOCKETS:
+            r.error(f"building_pieces.json «{pid}»: socket {p.get('socket')!r} no es uno de {sorted(BUILDING_SOCKETS)}")
+        if "respawnPoint" in p and not isinstance(p["respawnPoint"], bool):
+            r.error(f"building_pieces.json «{pid}»: respawnPoint debe ser true o false")
+    if not any(p.get("respawnPoint") is True for p in pieces.values()):
+        r.error("building_pieces.json: ninguna pieza es punto de reaparición (GDD §8.6: las fogatas encendidas)")
     # Tier de una pieza estructural nunca por debajo de lo que aguanta: piedra ≥ madera ≥ ...
     by_tier: dict[str, list[int]] = {}
     for p in pieces.values():

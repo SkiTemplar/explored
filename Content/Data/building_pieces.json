@@ -7,7 +7,9 @@
     "buildMinutes": "minutos de juego de trabajo (actividad Working) con eficiencia 1.0",
     "integrity": "puntos de integridad 1-100 antes de romperse (GDD §8.6)",
     "maxCycloneCategory": "categoría de ciclón (0-3) que aguanta sin daño si está bien apoyada; 0 = cae con cualquier galerna",
-    "mesh": "nombre SM_ generado por Tools/Blender/props; null = pendiente (ver meshes_pendientes.json)"
+    "mesh": "nombre SM_ generado por Tools/Blender/props; null = pendiente (ver meshes_pendientes.json)",
+    "socket": "encaje en la rejilla de 2 m (docs/art/kit-construccion.md): pilar (esquina, sobre terreno), suelo, pared, puerta (lado), techo, escalera (dos celdas), mueble (sobre suelo o terreno), terreno (solo sobre terreno)",
+    "respawnPoint": "true si, encendida, es punto de reaparición (GDD §8.6); por defecto false"
   },
   "tiers": [
     {
@@ -47,6 +49,7 @@
       "nameEs": "Refugio inclinado",
       "tier": "palma",
       "category": "especial",
+      "socket": "terreno",
       "cost": [
         {
           "item": "palo_recto",
@@ -73,6 +76,7 @@
       "nameEs": "Cama de hojas",
       "tier": "palma",
       "category": "mobiliario",
+      "socket": "mueble",
       "cost": [
         {
           "item": "hoja_palma",
@@ -95,6 +99,7 @@
       "nameEs": "Fogata",
       "tier": "palma",
       "category": "produccion",
+      "socket": "terreno",
       "cost": [
         {
           "item": "canto_rodado",
@@ -114,13 +119,15 @@
       "buildMinutes": 10,
       "integrity": 30,
       "maxCycloneCategory": 0,
-      "mesh": "SM_Campfire"
+      "mesh": "SM_Campfire",
+      "respawnPoint": true
     },
     {
       "id": "hoguera_senal",
       "nameEs": "Hoguera de señal",
       "tier": "palma",
       "category": "produccion",
+      "socket": "terreno",
       "cost": [
         {
           "item": "rama_seca",
@@ -149,6 +156,7 @@
       "nameEs": "Piedra de trabajo",
       "tier": "palma",
       "category": "produccion",
+      "socket": "mueble",
       "cost": [
         {
           "item": "piedra_plana",
@@ -171,6 +179,7 @@
       "nameEs": "Suelo de palma",
       "tier": "palma",
       "category": "estructura",
+      "socket": "suelo",
       "cost": [
         {
           "item": "hoja_palma",
@@ -197,6 +206,7 @@
       "nameEs": "Pared de palma",
       "tier": "palma",
       "category": "estructura",
+      "socket": "pared",
       "cost": [
         {
           "item": "hoja_palma",
@@ -223,6 +233,7 @@
       "nameEs": "Techo de palma",
       "tier": "palma",
       "category": "estructura",
+      "socket": "techo",
       "cost": [
         {
           "item": "hoja_palma",
@@ -249,6 +260,7 @@
       "nameEs": "Puerta de palma",
       "tier": "palma",
       "category": "estructura",
+      "socket": "puerta",
       "cost": [
         {
           "item": "hoja_palma",
@@ -275,6 +287,7 @@
       "nameEs": "Bancal",
       "tier": "palma",
       "category": "huerto",
+      "socket": "terreno",
       "cost": [
         {
           "item": "palo_recto",
@@ -299,6 +312,7 @@
       "nameEs": "Arriate del limonero",
       "tier": "palma",
       "category": "huerto",
+      "socket": "terreno",
       "cost": [
         {
           "item": "canto_rodado",
@@ -323,6 +337,7 @@
       "nameEs": "Suelo de bambú",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "suelo",
       "cost": [
         {
           "item": "bambu_grueso",
@@ -347,6 +362,7 @@
       "nameEs": "Pared de bambú",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "pared",
       "cost": [
         {
           "item": "bambu_grueso",
@@ -375,6 +391,7 @@
       "nameEs": "Techo de bambú y palma",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "techo",
       "cost": [
         {
           "item": "bambu_fino",
@@ -403,6 +420,7 @@
       "nameEs": "Puerta de bambú",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "puerta",
       "cost": [
         {
           "item": "bambu_fino",
@@ -427,6 +445,7 @@
       "nameEs": "Pilote de bambú",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "pilar",
       "cost": [
         {
           "item": "bambu_grueso",
@@ -451,6 +470,7 @@
       "nameEs": "Escalera de bambú",
       "tier": "bambu",
       "category": "estructura",
+      "socket": "escalera",
       "cost": [
         {
           "item": "bambu_grueso",
@@ -479,6 +499,7 @@
       "nameEs": "Secadero",
       "tier": "bambu",
       "category": "produccion",
+      "socket": "mueble",
       "cost": [
         {
           "item": "bambu_fino",
@@ -503,6 +524,7 @@
       "nameEs": "Telar de fibra",
       "tier": "bambu",
       "category": "produccion",
+      "socket": "mueble",
       "cost": [
         {
           "item": "bambu_fino",
@@ -531,6 +553,7 @@
       "nameEs": "Espaldera",
       "tier": "bambu",
       "category": "huerto",
+      "socket": "terreno",
       "cost": [
         {
           "item": "bambu_fino",
@@ -557,6 +580,7 @@
       "nameEs": "Recolector de lluvia",
       "tier": "bambu",
       "category": "produccion",
+      "socket": "mueble",
       "cost": [
         {
           "item": "bambu_grueso",
@@ -585,6 +609,7 @@
       "nameEs": "Suelo de madera",
       "tier": "madera",
       "category": "estructura",
+      "socket": "suelo",
       "cost": [
         {
           "item": "tronco_pequeno",
@@ -613,6 +638,7 @@
       "nameEs": "Pared de madera",
       "tier": "madera",
       "category": "estructura",
+      "socket": "pared",
       "cost": [
         {
           "item": "tronco_pequeno",
@@ -641,6 +667,7 @@
       "nameEs": "Techo de madera y palma",
       "tier": "madera",
       "category": "estructura",
+      "socket": "techo",
       "cost": [
         {
           "item": "madera_dura",
@@ -669,6 +696,7 @@
       "nameEs": "Puerta de madera",
       "tier": "madera",
       "category": "estructura",
+      "socket": "puerta",
       "cost": [
         {
           "item": "madera_dura",
@@ -693,6 +721,7 @@
       "nameEs": "Pilote de madera",
       "tier": "madera",
       "category": "estructura",
+      "socket": "pilar",
       "cost": [
         {
           "item": "tronco_pequeno",
@@ -717,6 +746,7 @@
       "nameEs": "Escalera de madera",
       "tier": "madera",
       "category": "estructura",
+      "socket": "escalera",
       "cost": [
         {
           "item": "madera_dura",
@@ -741,6 +771,7 @@
       "nameEs": "Mesa de cartografía",
       "tier": "madera",
       "category": "mobiliario",
+      "socket": "mueble",
       "cost": [
         {
           "item": "madera_dura",
@@ -767,6 +798,7 @@
       "nameEs": "Estantería del museo",
       "tier": "madera",
       "category": "museo",
+      "socket": "mueble",
       "cost": [
         {
           "item": "madera_dura",
@@ -793,6 +825,7 @@
       "nameEs": "Cimiento de piedra",
       "tier": "piedra",
       "category": "estructura",
+      "socket": "pilar",
       "cost": [
         {
           "item": "basalto",
@@ -822,6 +855,7 @@
       "nameEs": "Muro de piedra seca",
       "tier": "piedra",
       "category": "estructura",
+      "socket": "pared",
       "cost": [
         {
           "item": "basalto",
@@ -852,6 +886,7 @@
       "nameEs": "Horno de barro",
       "tier": "piedra",
       "category": "produccion",
+      "socket": "terreno",
       "cost": [
         {
           "item": "arcilla_roja",
@@ -882,6 +917,7 @@
       "nameEs": "Chimenea",
       "tier": "piedra",
       "category": "estructura",
+      "socket": "mueble",
       "cost": [
         {
           "item": "basalto",
