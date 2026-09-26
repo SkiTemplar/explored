@@ -16,6 +16,7 @@ Tests/LocalizationSpec.cpp
 Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
+Tests/MusicDirectorSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RuinsSpec.cpp
 Tests/SaveArchiveSpec.cpp

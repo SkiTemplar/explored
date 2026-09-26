@@ -190,6 +190,7 @@ struct FMath
 	static double FloorToDouble(double V) { return std::floor(V); }
 	static double FloorToFloat(double V) { return std::floor(V); }
 	static float CeilToFloat(float V) { return std::ceil(V); }
+	static double CeilToDouble(double V) { return std::ceil(V); }
 	static float RoundToFloat(float V) { return std::floor(V + 0.5f); }
 	static double RoundToDouble(double V) { return std::floor(V + 0.5); }
 	static int32 FloorToInt32(float V) { return (int32)std::floor(V); }
