@@ -23,12 +23,12 @@ namespace InventoryTest
 		return Item;
 	}
 
-	FInventoryItem Coco(FInventoryModel& M) { return Make(M, TEXT("coco_maduro"), 1.2f, 1.5f, EInventorySize::Pequeno, { FName(TEXT("comida")), FName(TEXT("coco")) }); }
-	FInventoryItem Piedra(FInventoryModel& M) { return Make(M, TEXT("basalto"), 1.5f, 0.6f, EInventorySize::Pequeno, { FName(TEXT("piedra")) }); }
+	FInventoryItem Coco(FInventoryModel& M) { return Make(M, TEXT("coco_maduro"), 0.6f, 0.6f, EInventorySize::Pequeno, { FName(TEXT("comida")), FName(TEXT("coco")) }); }
+	FInventoryItem Piedra(FInventoryModel& M) { return Make(M, TEXT("basalto"), 1.0f, 0.4f, EInventorySize::Pequeno, { FName(TEXT("piedra")) }); }
 	FInventoryItem Tronco(FInventoryModel& M) { return Make(M, TEXT("tronco_pequeno"), 8.0f, 6.0f, EInventorySize::DosManos, { FName(TEXT("madera")) }); }
 	FInventoryItem Hacha(FInventoryModel& M) { return Make(M, TEXT("hacha"), 1.0f, 1.0f, EInventorySize::Mediano, { FName(TEXT("herramienta")), FName(TEXT("corte")) }); }
 	FInventoryItem Cuchillo(FInventoryModel& M) { return Make(M, TEXT("cuchillo"), 0.3f, 0.2f, EInventorySize::Pequeno, { FName(TEXT("herramienta")), FName(TEXT("corte")) }); }
-	FInventoryItem Palo(FInventoryModel& M) { return Make(M, TEXT("palo_recto"), 0.6f, 1.0f, EInventorySize::Mediano, { FName(TEXT("madera")) }); }
+	FInventoryItem Palo(FInventoryModel& M) { return Make(M, TEXT("palo_recto"), 0.5f, 0.6f, EInventorySize::Mediano, { FName(TEXT("madera")), FName(TEXT("mango")) }); }
 	FInventoryItem Brujula(FInventoryModel& M) { return Make(M, TEXT("brujula"), 0.1f, 0.05f, EInventorySize::Pequeno, { FName(TEXT("rescatado")), FName(TEXT("instrumento")), FName(TEXT("brujula")) }); }
 	FInventoryItem Cerillas(FInventoryModel& M) { return Make(M, TEXT("cerillas"), 0.02f, 0.02f, EInventorySize::Pequeno, { FName(TEXT("rescatado")), FName(TEXT("fuego")) }); }
 	FInventoryItem Bolsa(FInventoryModel& M) { return Make(M, TEXT("bolsa_impermeable"), 0.1f, 0.3f, EInventorySize::Pequeno, { FName(TEXT("contenedor")), FName(TEXT("impermeable")) }); }
@@ -216,14 +216,14 @@ void FInventorySpec::Define()
 			FInventoryModel Model;
 			EInventoryFail Fail = EInventoryFail::None;
 			// Como CarrySpec: dos cocos por peso aunque el volumen dé para diez.
-			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 1.5f * 10.0f, 1.2f * 2.5f, Fail));
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 0.6f * 10.0f, 0.6f * 2.5f, Fail));
 			TestTrue(TEXT("Coco 1"), PickAndStore(Model, Coco(Model), EInventorySlot::Backpack, Fail));
 			TestTrue(TEXT("Coco 2"), PickAndStore(Model, Coco(Model), EInventorySlot::Backpack, Fail));
 			TestFalse(TEXT("Coco 3 pesa demasiado"), PickAndStore(Model, Coco(Model), EInventorySlot::Backpack, Fail));
 			TestTrue(TEXT("Motivo peso"), Fail == EInventoryFail::TooHeavy);
 
 			FInventoryModel ByVolume;
-			ByVolume.SetCustomBackpack(true, 2.0f, 50.0f, Fail);
+			ByVolume.SetCustomBackpack(true, 1.0f, 50.0f, Fail);
 			TestTrue(TEXT("Un palo entra"), PickAndStore(ByVolume, Palo(ByVolume), EInventorySlot::Backpack, Fail));
 			TestFalse(TEXT("Otro coco no cabe"), PickAndStore(ByVolume, Coco(ByVolume), EInventorySlot::Backpack, Fail));
 			TestTrue(TEXT("Motivo volumen"), Fail == EInventoryFail::NoRoom);
@@ -252,7 +252,8 @@ void FInventorySpec::Define()
 
 			const float ComfortBefore = Model.GetComfortableCapacityKg();
 			const float WeightBefore = Model.GetContainer(EInventorySlot::Backpack)->Spec.MaxWeightKg;
-			Model.Move(Albatros.InstanceId, EInventorySlot::Sledge, Fail); // sin angarillas: no se mueve
+			TestFalse(TEXT("Sin angarillas no hay dónde arrastrarla"), Model.Move(Albatros.InstanceId, EInventorySlot::Sledge, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::NoSledge);
 			FInventoryItem Dropped;
 			Model.RemoveFromHand(Hand, Dropped, Fail);
 			EquipBackpack(Model, MochilaCuero(Model));
@@ -264,13 +265,19 @@ void FInventorySpec::Define()
 		{
 			FInventoryModel Model;
 			EInventoryFail Fail = EInventoryFail::None;
-			Model.SetCustomBackpack(true, 100.0f, 100.0f, Fail);
+			EquipBackpack(Model, MochilaCuero(Model));
 			for (int32 Index = 0; Index < 15; ++Index)
 			{
-				PickAndStore(Model, Coco(Model), EInventorySlot::Backpack, Fail); // 18 kg, 22,5 l
+				TestTrue(TEXT("Piedra a la mochila de cuero"), PickAndStore(Model, Piedra(Model), EInventorySlot::Backpack, Fail)); // 15 kg
 			}
+			const FInventoryItem Small = MochilaAlbatros(Model);
+			Model.PickUp(Small, Fail);
 			const FInventoryState Before = Model.GetState();
-			TestFalse(TEXT("La mochila a medida no se cambia por una con objeto"), Model.SetCustomBackpack(false, 0.0f, 0.0f, Fail));
+			TestFalse(TEXT("15 kg no caben en la del Albatros (10 kg)"), Model.EquipFromHand(Model.FindItem(Small.InstanceId), Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::TooHeavy);
+			TestTrue(TEXT("Nada ha cambiado"), Model.GetState() == Before);
+
+			TestFalse(TEXT("Llena no se quita"), Model.UnequipBackpack(EInventorySlot::HandRight, Fail));
 			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::ContainerNotEmpty);
 			TestTrue(TEXT("Nada ha cambiado"), Model.GetState() == Before);
 		});
@@ -395,7 +402,7 @@ void FInventorySpec::Define()
 				++Stored;
 			}
 			TestTrue(TEXT("Se para en el doble de lo cómodo"), Fail == EInventoryFail::OverCarryLimit);
-			TestEqual(TEXT("20 piedras de 1,5 kg = 30 kg"), Stored, 20);
+			TestEqual(TEXT("30 piedras de 1 kg = 30 kg"), Stored, 30);
 			TestTrue(TEXT("Sobrecargado anda más lento"), Heavy.GetMoveSpeedMultiplier() < 1.0f);
 			TestTrue(TEXT("Y hace más ruido"), Heavy.GetNoiseLevel() > Model.GetNoiseLevel());
 		});
