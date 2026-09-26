@@ -17,8 +17,9 @@ Qué comprueba:
 
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
-  `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`
-  y `boats.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII sin tildes…).
+  `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
+  `boats.json` y `fish.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
@@ -51,4 +52,7 @@ Qué comprueba:
 - **Astillero** (`boats.json`): progresión balsa → canoa → balancín → «Limón», estación
   existente, ingredientes y herramientas obtenibles, y el «Limón» con las cuatro piezas
   del Albatros y material rescatado (GDD §4.3, §8.10).
+- **Pesca**: `fish.json` contra las tablas de `Source/Explored/Fishing/FishingModel.cpp`
+  (especies, legendarias y trampas); 11 peces de caña + langosta, 5 legendarias, y que
+  capturas, cebos, recompensas, trampas, pozas y despiece existan en `items.json`.
 - **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.

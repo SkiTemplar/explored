@@ -20,6 +20,7 @@
 #include "Carry/CarryComponent.h"
 #include "Cartography/CartographyComponent.h"
 #include "Crafting/CraftingLibrary.h"
+#include "Fishing/FishingComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -114,6 +115,7 @@ AExploredCharacter::AExploredCharacter()
 	Cartography = CreateDefaultSubobject<UCartographyComponent>(TEXT("Cartography"));
 	BuildPreview = CreateDefaultSubobject<UBuildPreviewComponent>(TEXT("BuildPreview"));
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
+	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
 
 	bUseControllerRotationYaw = true;
 
@@ -417,6 +419,9 @@ void AExploredCharacter::BuildInputAssets()
 	DiveAction = MakeAction(this, TEXT("IA_Dive"), EInputActionValueType::Boolean);
 	// Reloj de pulsera: mantener para levantar la muñeca y ver la hora (GDD §8.3).
 	WatchAction = MakeAction(this, TEXT("IA_Watch"), EInputActionValueType::Boolean);
+	// Pesca (GDD §8.9): lanzar o recoger, y eje de sedal (recoger / soltar) en la pelea.
+	FishAction = MakeAction(this, TEXT("IA_Fish"), EInputActionValueType::Boolean);
+	ReelAction = MakeAction(this, TEXT("IA_Reel"), EInputActionValueType::Axis1D);
 
 #if !UE_BUILD_SHIPPING
 	// M12: E/Q de subir y bajar en vuelo viven en un contexto aparte que solo se
@@ -487,9 +492,18 @@ void AExploredCharacter::RebuildKeyMappings()
 	MapKey(MappingContext, CombineAction, EKeys::Gamepad_FaceButton_Top);
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Gamepad_Special_Left);
 
-	// Reloj de pulsera (fijo, fuera de la tabla de remapeo).
-	MapKey(MappingContext, WatchAction, EKeys::T);
+	// Reloj de pulsera (fijo, fuera de la tabla de remapeo). H de «hora»: la T es
+	// para soltar sedal al pescar.
+	MapKey(MappingContext, WatchAction, EKeys::H);
 	MapKey(MappingContext, WatchAction, EKeys::Gamepad_DPad_Up);
+
+	// Pesca (fijo): F lanza o recoge; R recoge sedal y T lo suelta en la pelea. El
+	// contexto de construcción también usa R, pero no la consume.
+	MapKey(MappingContext, FishAction, EKeys::F);
+	MapKey(MappingContext, ReelAction, EKeys::R);
+	MapKey(MappingContext, ReelAction, EKeys::T, true);
+	MapKey(MappingContext, ReelAction, EKeys::Gamepad_RightTriggerAxis);
+	MapKey(MappingContext, ReelAction, EKeys::Gamepad_LeftTriggerAxis, true);
 
 #if !UE_BUILD_SHIPPING
 	MapKey(MappingContext, FlyAction, EKeys::F8);
@@ -547,6 +561,9 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 	Input->BindAction(WatchAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleWatchStarted);
 	Input->BindAction(WatchAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleWatchCompleted);
+	Input->BindAction(FishAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleFish);
+	Input->BindAction(ReelAction, ETriggerEvent::Triggered, this, &AExploredCharacter::HandleReel);
+	Input->BindAction(ReelAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleReelCompleted);
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -678,12 +695,21 @@ void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 	{
 		return;
 	}
+	// Pescando, los gatillos del mando son el eje del sedal (IA_Reel): no usar la mano.
+	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
+	{
+		return;
+	}
 	// «Clic izquierdo = usar la mano derecha» (encargo, punto 5).
 	UseHand(EHand::Right);
 }
 
 void AExploredCharacter::HandleUseSecondary(const FInputActionValue&)
 {
+	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
+	{
+		return;
+	}
 	// «Clic derecho = usar la mano izquierda» (encargo, punto 5).
 	UseHand(EHand::Left);
 }
@@ -799,5 +825,37 @@ void AExploredCharacter::HandleWatchCompleted(const FInputActionValue&)
 	if (Body)
 	{
 		Body->SetWristWatchRaised(false);
+	}
+}
+
+void AExploredCharacter::HandleFish(const FInputActionValue&)
+{
+	if (!Fishing)
+	{
+		return;
+	}
+	if (Fishing->GetSessionState() == EFishingSessionState::Idle)
+	{
+		Fishing->StartCast();
+	}
+	else
+	{
+		Fishing->Cancel();
+	}
+}
+
+void AExploredCharacter::HandleReel(const FInputActionValue& Value)
+{
+	if (Fishing)
+	{
+		Fishing->SetReelInput(Value.Get<float>());
+	}
+}
+
+void AExploredCharacter::HandleReelCompleted(const FInputActionValue&)
+{
+	if (Fishing)
+	{
+		Fishing->SetReelInput(0.0f);
 	}
 }

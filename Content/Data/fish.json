@@ -1,0 +1,1143 @@
+{
+  "version": 1,
+  "note": "Espejo de las tablas de Source/Explored/Fishing/FishingModel.cpp (FFishingModel). Tools/DataCheck comprueba que coinciden y que todos los ids existen en items.json.",
+  "units": {
+    "depthM": "profundidad del fondo en el sitio (m) en que pica con caña",
+    "bitesPerMinute": "picadas por minuto real en condiciones ideales",
+    "periods / tide / moon / baits": "multiplicadores de la tasa de picada (1 neutro, 0 nunca)",
+    "strengthKgf": "tirón de una arrancada de un ejemplar mediano (kgf)",
+    "staminaSeconds": "aguante en la pelea con la caña",
+    "perHour": "probabilidad aproximada por hora de juego de que caiga en la trampa",
+    "capacity": "capturas máximas que caben en la trampa"
+  },
+  "baits": {
+    "lombriz": "lombriz",
+    "visceras_pescado": "visceras_pescado",
+    "fruta_fermentada": "fruta_fermentada",
+    "cangrejo": "cangrejo",
+    "senuelo_tallado": "senuelo_tallado"
+  },
+  "species": [
+    {
+      "id": "pez_loro",
+      "nameEs": "Pez loro",
+      "habitats": [
+        "arrecife"
+      ],
+      "methods": [
+        "cana",
+        "arpon",
+        "red",
+        "trampa"
+      ],
+      "depthM": [
+        1.0,
+        20.0
+      ],
+      "bitesPerMinute": 0.6,
+      "weightKg": [
+        0.8,
+        3.0
+      ],
+      "strengthKgf": 2.5,
+      "staminaSeconds": 8.0,
+      "aggression": 0.4,
+      "wariness": 0.6,
+      "periods": {
+        "amanecer": 0.6,
+        "dia": 1.0,
+        "atardecer": 0.5,
+        "noche": 0.02
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.15,
+        "lombriz": 0.4,
+        "visceras_pescado": 0.2,
+        "fruta_fermentada": 1.0,
+        "cangrejo": 0.3,
+        "senuelo_tallado": 0.1
+      },
+      "seaStateSensitivity": 0.6,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.4,
+        "oilRatio": 0.01
+      }
+    },
+    {
+      "id": "pez_cirujano",
+      "nameEs": "Pez cirujano",
+      "habitats": [
+        "arrecife",
+        "laguna"
+      ],
+      "methods": [
+        "cana",
+        "arpon",
+        "red",
+        "trampa"
+      ],
+      "depthM": [
+        0.5,
+        15.0
+      ],
+      "bitesPerMinute": 0.8,
+      "weightKg": [
+        0.3,
+        1.2
+      ],
+      "strengthKgf": 1.5,
+      "staminaSeconds": 5.0,
+      "aggression": 0.4,
+      "wariness": 0.5,
+      "periods": {
+        "amanecer": 0.7,
+        "dia": 1.0,
+        "atardecer": 0.6,
+        "noche": 0.02
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.15,
+        "lombriz": 0.6,
+        "visceras_pescado": 0.3,
+        "fruta_fermentada": 0.8,
+        "cangrejo": 0.2,
+        "senuelo_tallado": 0.1
+      },
+      "seaStateSensitivity": 0.6,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.35,
+        "oilRatio": 0.01
+      }
+    },
+    {
+      "id": "pargo",
+      "nameEs": "Pargo",
+      "habitats": [
+        "arrecife",
+        "talud"
+      ],
+      "methods": [
+        "cana",
+        "arpon"
+      ],
+      "depthM": [
+        5.0,
+        60.0
+      ],
+      "bitesPerMinute": 0.5,
+      "weightKg": [
+        1.0,
+        6.0
+      ],
+      "strengthKgf": 3.5,
+      "staminaSeconds": 10.0,
+      "aggression": 0.5,
+      "wariness": 0.5,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.4,
+        "atardecer": 1.0,
+        "noche": 0.8
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1.2,
+        "creciente": 1.0,
+        "llena": 0.8,
+        "menguante": 1.0
+      },
+      "baits": {
+        "sin_cebo": 0.15,
+        "lombriz": 0.7,
+        "visceras_pescado": 0.9,
+        "fruta_fermentada": 0.1,
+        "cangrejo": 1.0,
+        "senuelo_tallado": 0.5
+      },
+      "seaStateSensitivity": 0.4,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.42,
+        "oilRatio": 0.015
+      }
+    },
+    {
+      "id": "mero",
+      "nameEs": "Mero",
+      "habitats": [
+        "arrecife",
+        "talud"
+      ],
+      "methods": [
+        "cana",
+        "arpon"
+      ],
+      "depthM": [
+        5.0,
+        60.0
+      ],
+      "bitesPerMinute": 0.25,
+      "weightKg": [
+        3.0,
+        18.0
+      ],
+      "strengthKgf": 8.0,
+      "staminaSeconds": 14.0,
+      "aggression": 0.5,
+      "wariness": 0.7,
+      "periods": {
+        "amanecer": 0.9,
+        "dia": 0.3,
+        "atardecer": 1.0,
+        "noche": 0.6
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1.2,
+        "creciente": 1.0,
+        "llena": 0.8,
+        "menguante": 1.0
+      },
+      "baits": {
+        "sin_cebo": 0.1,
+        "lombriz": 0.3,
+        "visceras_pescado": 0.8,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 1.0,
+        "senuelo_tallado": 0.3
+      },
+      "seaStateSensitivity": 0.3,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.4,
+        "oilRatio": 0.02
+      }
+    },
+    {
+      "id": "salmonete",
+      "nameEs": "Salmonete",
+      "habitats": [
+        "laguna"
+      ],
+      "methods": [
+        "cana",
+        "arpon",
+        "red",
+        "trampa"
+      ],
+      "depthM": [
+        0.5,
+        8.0
+      ],
+      "bitesPerMinute": 0.9,
+      "weightKg": [
+        0.2,
+        0.7
+      ],
+      "strengthKgf": 0.8,
+      "staminaSeconds": 4.0,
+      "aggression": 0.4,
+      "wariness": 0.4,
+      "periods": {
+        "amanecer": 0.8,
+        "dia": 1.0,
+        "atardecer": 0.7,
+        "noche": 0.1
+      },
+      "tide": {
+        "bajamar": 0.4,
+        "llenante": 0.9,
+        "pleamar": 1.2,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.2,
+        "lombriz": 1.0,
+        "visceras_pescado": 0.5,
+        "fruta_fermentada": 0.1,
+        "cangrejo": 0.4,
+        "senuelo_tallado": 0.0
+      },
+      "seaStateSensitivity": 0.7,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.35,
+        "oilRatio": 0.01
+      }
+    },
+    {
+      "id": "pez_ballesta",
+      "nameEs": "Pez ballesta",
+      "habitats": [
+        "arrecife"
+      ],
+      "methods": [
+        "cana",
+        "arpon",
+        "trampa"
+      ],
+      "depthM": [
+        2.0,
+        25.0
+      ],
+      "bitesPerMinute": 0.5,
+      "weightKg": [
+        0.5,
+        2.5
+      ],
+      "strengthKgf": 3.0,
+      "staminaSeconds": 9.0,
+      "aggression": 0.5,
+      "wariness": 0.3,
+      "periods": {
+        "amanecer": 0.6,
+        "dia": 1.0,
+        "atardecer": 0.6,
+        "noche": 0.02
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.15,
+        "lombriz": 0.6,
+        "visceras_pescado": 0.5,
+        "fruta_fermentada": 0.2,
+        "cangrejo": 1.0,
+        "senuelo_tallado": 0.2
+      },
+      "seaStateSensitivity": 0.5,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.33,
+        "oilRatio": 0.01
+      }
+    },
+    {
+      "id": "barracuda",
+      "nameEs": "Barracuda",
+      "habitats": [
+        "laguna",
+        "arrecife"
+      ],
+      "methods": [
+        "cana",
+        "arpon"
+      ],
+      "depthM": [
+        1.0,
+        30.0
+      ],
+      "bitesPerMinute": 0.3,
+      "weightKg": [
+        2.0,
+        10.0
+      ],
+      "strengthKgf": 6.0,
+      "staminaSeconds": 10.0,
+      "aggression": 0.7,
+      "wariness": 0.6,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.7,
+        "atardecer": 1.0,
+        "noche": 0.3
+      },
+      "tide": {
+        "bajamar": 0.4,
+        "llenante": 0.9,
+        "pleamar": 1.2,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.05,
+        "lombriz": 0.1,
+        "visceras_pescado": 0.7,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.3,
+        "senuelo_tallado": 1.0
+      },
+      "seaStateSensitivity": 0.4,
+      "rainAffinity": 0.3,
+      "butcher": {
+        "filletRatio": 0.45,
+        "oilRatio": 0.02
+      }
+    },
+    {
+      "id": "jurel",
+      "nameEs": "Jurel",
+      "habitats": [
+        "arrecife",
+        "talud"
+      ],
+      "methods": [
+        "cana",
+        "arpon",
+        "trampa"
+      ],
+      "depthM": [
+        2.0,
+        80.0
+      ],
+      "bitesPerMinute": 0.4,
+      "weightKg": [
+        1.0,
+        8.0
+      ],
+      "strengthKgf": 5.0,
+      "staminaSeconds": 12.0,
+      "aggression": 0.7,
+      "wariness": 0.5,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.5,
+        "atardecer": 1.0,
+        "noche": 0.2
+      },
+      "tide": {
+        "bajamar": 0.9,
+        "llenante": 1.1,
+        "pleamar": 1.0,
+        "vaciante": 1.1
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.05,
+        "lombriz": 0.2,
+        "visceras_pescado": 0.8,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.4,
+        "senuelo_tallado": 1.0
+      },
+      "seaStateSensitivity": 0.3,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.45,
+        "oilRatio": 0.04
+      }
+    },
+    {
+      "id": "bonito",
+      "nameEs": "Bonito",
+      "habitats": [
+        "talud",
+        "profundo"
+      ],
+      "methods": [
+        "cana"
+      ],
+      "depthM": [
+        20.0,
+        3000.0
+      ],
+      "bitesPerMinute": 0.5,
+      "weightKg": [
+        2.0,
+        7.0
+      ],
+      "strengthKgf": 6.0,
+      "staminaSeconds": 16.0,
+      "aggression": 0.8,
+      "wariness": 0.4,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.4,
+        "atardecer": 0.9,
+        "noche": 0.1
+      },
+      "tide": {
+        "bajamar": 0.9,
+        "llenante": 1.1,
+        "pleamar": 1.0,
+        "vaciante": 1.1
+      },
+      "moon": {
+        "nueva": 0.9,
+        "creciente": 1.0,
+        "llena": 1.2,
+        "menguante": 1.0
+      },
+      "baits": {
+        "sin_cebo": 0.05,
+        "lombriz": 0.1,
+        "visceras_pescado": 0.6,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.2,
+        "senuelo_tallado": 1.0
+      },
+      "seaStateSensitivity": 0.2,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.5,
+        "oilRatio": 0.05
+      }
+    },
+    {
+      "id": "dorado",
+      "nameEs": "Dorado",
+      "habitats": [
+        "profundo"
+      ],
+      "methods": [
+        "cana"
+      ],
+      "depthM": [
+        60.0,
+        3000.0
+      ],
+      "bitesPerMinute": 0.35,
+      "weightKg": [
+        5.0,
+        18.0
+      ],
+      "strengthKgf": 9.0,
+      "staminaSeconds": 20.0,
+      "aggression": 0.8,
+      "wariness": 0.3,
+      "periods": {
+        "amanecer": 0.8,
+        "dia": 1.0,
+        "atardecer": 0.7,
+        "noche": 0.05
+      },
+      "tide": {
+        "bajamar": 0.9,
+        "llenante": 1.1,
+        "pleamar": 1.0,
+        "vaciante": 1.1
+      },
+      "moon": {
+        "nueva": 1,
+        "creciente": 1,
+        "llena": 1,
+        "menguante": 1
+      },
+      "baits": {
+        "sin_cebo": 0.05,
+        "lombriz": 0.1,
+        "visceras_pescado": 0.5,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.2,
+        "senuelo_tallado": 1.0
+      },
+      "seaStateSensitivity": 0.2,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.5,
+        "oilRatio": 0.03
+      }
+    },
+    {
+      "id": "atun",
+      "nameEs": "Atún",
+      "habitats": [
+        "profundo"
+      ],
+      "methods": [
+        "cana"
+      ],
+      "depthM": [
+        80.0,
+        3000.0
+      ],
+      "bitesPerMinute": 0.2,
+      "weightKg": [
+        10.0,
+        40.0
+      ],
+      "strengthKgf": 14.0,
+      "staminaSeconds": 30.0,
+      "aggression": 0.8,
+      "wariness": 0.5,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.4,
+        "atardecer": 1.0,
+        "noche": 0.2
+      },
+      "tide": {
+        "bajamar": 0.9,
+        "llenante": 1.1,
+        "pleamar": 1.0,
+        "vaciante": 1.1
+      },
+      "moon": {
+        "nueva": 0.9,
+        "creciente": 1.0,
+        "llena": 1.2,
+        "menguante": 1.0
+      },
+      "baits": {
+        "sin_cebo": 0.02,
+        "lombriz": 0.0,
+        "visceras_pescado": 0.7,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.2,
+        "senuelo_tallado": 1.0
+      },
+      "seaStateSensitivity": 0.15,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.55,
+        "oilRatio": 0.06
+      }
+    },
+    {
+      "id": "langosta",
+      "nameEs": "Langosta de arrecife",
+      "habitats": [
+        "arrecife"
+      ],
+      "methods": [
+        "arpon",
+        "trampa",
+        "mano"
+      ],
+      "depthM": [
+        2.0,
+        25.0
+      ],
+      "bitesPerMinute": 0.3,
+      "weightKg": [
+        0.5,
+        2.5
+      ],
+      "strengthKgf": 0.0,
+      "staminaSeconds": 0.0,
+      "aggression": 0.0,
+      "wariness": 0.6,
+      "periods": {
+        "amanecer": 0.3,
+        "dia": 0.05,
+        "atardecer": 0.5,
+        "noche": 1.0
+      },
+      "tide": {
+        "bajamar": 0.5,
+        "llenante": 1.2,
+        "pleamar": 0.9,
+        "vaciante": 1.0
+      },
+      "moon": {
+        "nueva": 1.2,
+        "creciente": 1.0,
+        "llena": 0.8,
+        "menguante": 1.0
+      },
+      "baits": {
+        "sin_cebo": 0.0,
+        "lombriz": 0.0,
+        "visceras_pescado": 0.0,
+        "fruta_fermentada": 0.0,
+        "cangrejo": 0.0,
+        "senuelo_tallado": 0.0
+      },
+      "seaStateSensitivity": 0.5,
+      "rainAffinity": 0.0,
+      "butcher": {
+        "filletRatio": 0.0,
+        "oilRatio": 0.0
+      }
+    }
+  ],
+  "legendary": [
+    {
+      "id": "el_viejo",
+      "nameEs": "El Viejo",
+      "spot": "cueva_arenas_blancas",
+      "methods": [
+        "cana"
+      ],
+      "requiresBoat": false,
+      "spooksEasily": false,
+      "weightKg": [
+        60.0,
+        90.0
+      ],
+      "strengthKgf": 15.0,
+      "staminaSeconds": 45.0,
+      "wariness": 0.4,
+      "perMinute": 0.012,
+      "aggression": 0.6,
+      "rockAbrasionPerSecond": 0.08,
+      "harpoonHits": 1,
+      "periods": {
+        "amanecer": 0.8,
+        "dia": 0.3,
+        "atardecer": 1.0,
+        "noche": 0.8
+      },
+      "filletRatio": 0.35,
+      "rewards": [
+        "trofeo_el_viejo"
+      ]
+    },
+    {
+      "id": "sombra",
+      "nameEs": "Sombra",
+      "spot": "canal_profundo",
+      "methods": [
+        "arpon"
+      ],
+      "requiresBoat": true,
+      "spooksEasily": false,
+      "weightKg": [
+        250.0,
+        400.0
+      ],
+      "strengthKgf": 30.0,
+      "staminaSeconds": 60.0,
+      "wariness": 0.2,
+      "perMinute": 0.01,
+      "aggression": 0.6,
+      "rockAbrasionPerSecond": 0.0,
+      "harpoonHits": 3,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.6,
+        "atardecer": 1.0,
+        "noche": 0.8
+      },
+      "filletRatio": 0.3,
+      "rewards": [
+        "dientes_sombra"
+      ]
+    },
+    {
+      "id": "manta_negra",
+      "nameEs": "La Manta Negra",
+      "spot": "bajios_manglar",
+      "methods": [
+        "arpon"
+      ],
+      "requiresBoat": false,
+      "spooksEasily": false,
+      "weightKg": [
+        120.0,
+        200.0
+      ],
+      "strengthKgf": 20.0,
+      "staminaSeconds": 50.0,
+      "wariness": 0.6,
+      "perMinute": 0.01,
+      "aggression": 0.6,
+      "rockAbrasionPerSecond": 0.0,
+      "harpoonHits": 2,
+      "periods": {
+        "amanecer": 0.8,
+        "dia": 1.0,
+        "atardecer": 0.8,
+        "noche": 0.3
+      },
+      "filletRatio": 0.25,
+      "rewards": [
+        "aguijon_manta_negra"
+      ]
+    },
+    {
+      "id": "el_errante",
+      "nameEs": "El Errante",
+      "spot": "arrecife_arenas_blancas",
+      "methods": [
+        "arpon",
+        "cana"
+      ],
+      "requiresBoat": false,
+      "spooksEasily": true,
+      "weightKg": [
+        40.0,
+        60.0
+      ],
+      "strengthKgf": 11.0,
+      "staminaSeconds": 35.0,
+      "wariness": 0.9,
+      "perMinute": 0.01,
+      "aggression": 0.6,
+      "rockAbrasionPerSecond": 0.0,
+      "harpoonHits": 1,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.6,
+        "atardecer": 1.0,
+        "noche": 0.3
+      },
+      "filletRatio": 0.35,
+      "rewards": [
+        "piel_el_errante"
+      ]
+    },
+    {
+      "id": "rey_de_plata",
+      "nameEs": "El Rey de Plata",
+      "spot": "mar_abierto",
+      "methods": [
+        "cana"
+      ],
+      "requiresBoat": true,
+      "spooksEasily": false,
+      "weightKg": [
+        80.0,
+        150.0
+      ],
+      "strengthKgf": 13.0,
+      "staminaSeconds": 60.0,
+      "wariness": 0.4,
+      "perMinute": 0.01,
+      "aggression": 0.9,
+      "rockAbrasionPerSecond": 0.0,
+      "harpoonHits": 1,
+      "periods": {
+        "amanecer": 1.0,
+        "dia": 0.5,
+        "atardecer": 1.0,
+        "noche": 0.3
+      },
+      "filletRatio": 0.5,
+      "rewards": [
+        "sedal_legendario",
+        "anzuelo_legendario"
+      ]
+    }
+  ],
+  "traps": {
+    "nasa": {
+      "capacity": 4,
+      "catches": [
+        {
+          "item": "salmonete",
+          "habitats": [
+            "laguna",
+            "orilla"
+          ],
+          "perHour": 0.018,
+          "nightMultiplier": 0.6,
+          "favouriteBait": "lombriz",
+          "weightKg": [
+            0.2,
+            0.7
+          ]
+        },
+        {
+          "item": "pez_cirujano",
+          "habitats": [
+            "laguna",
+            "arrecife"
+          ],
+          "perHour": 0.014,
+          "nightMultiplier": 0.5,
+          "favouriteBait": "fruta_fermentada",
+          "weightKg": [
+            0.3,
+            1.2
+          ]
+        },
+        {
+          "item": "pez_loro",
+          "habitats": [
+            "arrecife"
+          ],
+          "perHour": 0.009,
+          "nightMultiplier": 0.4,
+          "favouriteBait": "fruta_fermentada",
+          "weightKg": [
+            0.8,
+            2.0
+          ]
+        },
+        {
+          "item": "pez_ballesta",
+          "habitats": [
+            "arrecife"
+          ],
+          "perHour": 0.007,
+          "nightMultiplier": 0.4,
+          "favouriteBait": "cangrejo",
+          "weightKg": [
+            0.5,
+            2.0
+          ]
+        },
+        {
+          "item": "langosta",
+          "habitats": [
+            "arrecife"
+          ],
+          "perHour": 0.011,
+          "nightMultiplier": 2.5,
+          "favouriteBait": "visceras_pescado",
+          "weightKg": [
+            0.5,
+            2.5
+          ]
+        },
+        {
+          "item": "pulpo",
+          "habitats": [
+            "arrecife",
+            "orilla"
+          ],
+          "perHour": 0.007,
+          "nightMultiplier": 1.5,
+          "favouriteBait": "cangrejo",
+          "weightKg": [
+            0.5,
+            2.5
+          ]
+        },
+        {
+          "item": "cangrejo",
+          "habitats": [
+            "orilla",
+            "laguna"
+          ],
+          "perHour": 0.011,
+          "nightMultiplier": 1.5,
+          "favouriteBait": "visceras_pescado",
+          "weightKg": [
+            0.15,
+            0.4
+          ]
+        }
+      ]
+    },
+    "trampa_cangrejos": {
+      "capacity": 3,
+      "catches": [
+        {
+          "item": "cangrejo",
+          "habitats": [
+            "orilla",
+            "laguna"
+          ],
+          "perHour": 0.028,
+          "nightMultiplier": 1.5,
+          "favouriteBait": "visceras_pescado",
+          "weightKg": [
+            0.15,
+            0.4
+          ]
+        },
+        {
+          "item": "cangrejo_cocotero",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.009,
+          "nightMultiplier": 2.5,
+          "favouriteBait": "fruta_fermentada",
+          "weightKg": [
+            1.0,
+            3.0
+          ]
+        },
+        {
+          "item": "pulpo",
+          "habitats": [
+            "orilla",
+            "laguna"
+          ],
+          "perHour": 0.005,
+          "nightMultiplier": 1.5,
+          "favouriteBait": "cangrejo",
+          "weightKg": [
+            0.5,
+            2.0
+          ]
+        },
+        {
+          "item": "langosta",
+          "habitats": [
+            "laguna"
+          ],
+          "perHour": 0.004,
+          "nightMultiplier": 2.0,
+          "favouriteBait": "visceras_pescado",
+          "weightKg": [
+            0.5,
+            2.0
+          ]
+        }
+      ]
+    },
+    "corral_piedras": {
+      "capacity": 6,
+      "catches": [
+        {
+          "item": "salmonete",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.05,
+          "nightMultiplier": 1.0,
+          "favouriteBait": null,
+          "weightKg": [
+            0.2,
+            0.7
+          ]
+        },
+        {
+          "item": "pez_cirujano",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.035,
+          "nightMultiplier": 1.0,
+          "favouriteBait": null,
+          "weightKg": [
+            0.3,
+            1.2
+          ]
+        },
+        {
+          "item": "pez_loro",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.018,
+          "nightMultiplier": 1.0,
+          "favouriteBait": null,
+          "weightKg": [
+            0.8,
+            2.0
+          ]
+        },
+        {
+          "item": "jurel",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.011,
+          "nightMultiplier": 1.0,
+          "favouriteBait": null,
+          "weightKg": [
+            0.5,
+            2.0
+          ]
+        },
+        {
+          "item": "cangrejo",
+          "habitats": [
+            "orilla"
+          ],
+          "perHour": 0.014,
+          "nightMultiplier": 1.0,
+          "favouriteBait": null,
+          "weightKg": [
+            0.15,
+            0.4
+          ]
+        }
+      ]
+    }
+  },
+  "tidePool": {
+    "openBelowTideLevel": -0.55,
+    "catches": [
+      {
+        "item": "cangrejo",
+        "weight": 0.35,
+        "weightKg": [
+          0.15,
+          0.4
+        ]
+      },
+      {
+        "item": "lapa",
+        "weight": 0.3,
+        "weightKg": [
+          0.02,
+          0.06
+        ]
+      },
+      {
+        "item": "erizo",
+        "weight": 0.2,
+        "weightKg": [
+          0.1,
+          0.3
+        ]
+      },
+      {
+        "item": "pulpo",
+        "weight": 0.15,
+        "weightKg": [
+          0.5,
+          2.0
+        ]
+      }
+    ]
+  },
+  "butchery": {
+    "rawSpoilDays": 1.0,
+    "yields": [
+      "filete_pescado",
+      "espina_pescado",
+      "piel_pescado",
+      "visceras_pescado",
+      "aceite_pescado"
+    ]
+  }
+}

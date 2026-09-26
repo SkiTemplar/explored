@@ -78,6 +78,12 @@ void UBuildPreviewComponent::SetupInput(UEnhancedInputComponent* Input)
 		BuildContext->MapKey(ConfirmAction, EKeys::LeftMouseButton);
 		BuildContext->MapKey(NextAction, EKeys::X);
 		BuildContext->MapKey(PreviousAction, EKeys::Z);
+		// El contexto está siempre activo: fuera del modo construcción R, Z y X no
+		// deben tapar otras acciones (R recoge sedal al pescar). Sus manejadores ya
+		// no hacen nada si el modo está apagado.
+		RotateAction->bConsumeInput = false;
+		NextAction->bConsumeInput = false;
+		PreviousAction->bConsumeInput = false;
 	}
 
 	const APawn* Pawn = Cast<APawn>(GetOwner());

@@ -606,6 +606,295 @@
 }
 {
 	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("pez_loro"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 14.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("pez_cirujano"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 12.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 16.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("pargo"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 16.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("mero"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 22.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 32.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("salmonete"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 11.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 16.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("pez_ballesta"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 13.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.2f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("barracuda"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 18.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.25f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("jurel"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 17.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 8.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("bonito"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 18.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 32.0f;
+	F.Effects.Carbs = 8.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("dorado"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 23.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 32.0f;
+	F.Effects.Carbs = 8.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("atun"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 30.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 40.0f;
+	F.Effects.Carbs = 8.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("filete_pescado"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("pescado"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("pescado")));
+	F.Effects.Food = 10.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.15f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("langosta"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("marisco"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("marisco")));
+	F.Effects.Food = 13.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.3f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("lapa"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("marisco"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("marisco")));
+	F.Effects.Food = 9.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 8.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.3f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("erizo"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("marisco"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("marisco")));
+	F.Effects.Food = 10.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 8.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 8.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.3f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("pulpo"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("marisco"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("marisco")));
+	F.Effects.Food = 13.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.3f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("cangrejo_cocotero"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("marisco"));
+	F.Tags.Add(FName(TEXT("comida")));
+	F.Tags.Add(FName(TEXT("marisco")));
+	F.Effects.Food = 15.0f;
+	F.Effects.Water = 1.0f;
+	F.Effects.Protein = 24.0f;
+	F.Effects.Carbs = 8.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = -2.0f;
+	F.Effects.Toxicity = 0.3f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
 	F.ItemId = FName(TEXT("huevo"));
 	F.State = EFoodState::Raw;
 	F.Family = FName(TEXT("huevo"));

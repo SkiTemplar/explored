@@ -9,6 +9,7 @@ Tests/CookingSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
+Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp

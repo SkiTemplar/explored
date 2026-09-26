@@ -13,6 +13,7 @@ class UCameraComponent;
 class UCarryComponent;
 class UCartographyComponent;
 class UExploredInputSettingsSubsystem;
+class UFishingComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
@@ -61,6 +62,8 @@ public:
 	UBuildPreviewComponent* GetBuildPreviewComponent() const { return BuildPreview; }
 	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
 	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
+	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
+	UFishingComponent* GetFishingComponent() const { return Fishing; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -112,6 +115,9 @@ private:
 	void HandleDiveCompleted(const FInputActionValue& Value);
 	void HandleWatchStarted(const FInputActionValue& Value);
 	void HandleWatchCompleted(const FInputActionValue& Value);
+	void HandleFish(const FInputActionValue& Value);
+	void HandleReel(const FInputActionValue& Value);
+	void HandleReelCompleted(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 	/** Andar o correr, por el multiplicador de carga de UCarryComponent. */
@@ -148,6 +154,8 @@ private:
 	/** Cuerpo como HUD: supervivencia, señales corporales y reloj de pulsera (GDD §8.3). */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
 	TObjectPtr<UBodySignalsComponent> Body;
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Pesca")
+	TObjectPtr<UFishingComponent> Fishing;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -201,6 +209,10 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> WatchAction;
+	TObjectPtr<UInputAction> FishAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> ReelAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;

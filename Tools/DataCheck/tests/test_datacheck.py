@@ -505,3 +505,35 @@ def test_detecta_tipo_de_barco_desconocido(ds: DataSet) -> None:
 def test_detecta_astillero_inexistente(ds: DataSet) -> None:
     boat(ds, "balsa")["station"] = "dique_seco"
     assert any_error(errors_of(ds), "dique_seco")
+
+
+# --------------------------------------------------------------------------- pesca
+
+
+def fish(ds: DataSet) -> dict:
+    return ds.data["fish.json"]
+
+
+def test_pesca_captura_sin_objeto(ds: DataSet) -> None:
+    ds.items.remove(item(ds, "pargo"))
+    assert any_error(errors_of(ds), "fish.json «pargo»", "items.json")
+
+
+def test_pesca_recompensa_legendaria_inexistente(ds: DataSet) -> None:
+    fish(ds)["legendary"][0]["rewards"] = ["trofeo_de_oro"]
+    assert any_error(errors_of(ds), "trofeo_de_oro")
+
+
+def test_pesca_desincronizada_del_cpp(ds: DataSet) -> None:
+    next(s for s in fish(ds)["species"] if s["id"] == "atun")["strengthKgf"] = 99.0
+    assert any_error(errors_of(ds), "fish.json «atun»", "FishingModel.cpp")
+
+
+def test_pesca_trampa_desincronizada_del_cpp(ds: DataSet) -> None:
+    fish(ds)["traps"]["nasa"]["catches"][0]["perHour"] = 0.5
+    assert any_error(errors_of(ds), "trampa «nasa»", "FishingModel.cpp")
+
+
+def test_pesca_once_peces(ds: DataSet) -> None:
+    fish(ds)["species"] = [s for s in fish(ds)["species"] if s["id"] != "dorado"]
+    assert any_error(errors_of(ds), "11")

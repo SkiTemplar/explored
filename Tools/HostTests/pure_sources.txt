@@ -8,8 +8,8 @@ Cartography/CoastlineTrace.cpp
 Cartography/MapStroke.cpp
 Cooking/CookingModel.cpp
 Cooking/FireModel.cpp
-Core/ExploredNoise.cpp
 Core/ExploredLocalization.cpp
+Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Events/WorldEventsModel.cpp
 Farming/FarmModel.cpp
@@ -20,6 +20,8 @@ Fauna/FaunaSpawning.cpp
 Fauna/FaunaTypes.cpp
 Fauna/MarineCreatureBrain.cpp
 Fauna/ProceduralGait.cpp
+Fishing/FishingModel.cpp
+Fishing/FishingTension.cpp
 Ocean/OceanCurrents.cpp
 Ocean/OceanWaves.cpp
 Player/SwimModel.cpp
