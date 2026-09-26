@@ -204,8 +204,13 @@ void AExploredPlayerController::ShowMainMenu()
 
 void AExploredPlayerController::ContinueGame()
 {
-	// TODO(equipo de guardado): sustituir por la carga real del USaveGame
-	// (semilla, deltas del mundo, jugador y progreso) antes de entrar a jugar.
+	// Carga la ranura más reciente: cada sistema recibe su sección y el
+	// personaje vuelve a su posición (ver UExploredSaveSubsystem). Si no hay
+	// ninguna legible, se entra a jugar tal cual.
+	if (UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
+	{
+		SaveSubsystem->LoadContinueGame();
+	}
 	if (!FadeWidget.IsValid())
 	{
 		SetUIMode(EExploredUIMode::Playing);

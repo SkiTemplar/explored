@@ -39,7 +39,7 @@ compila y pasa sus tests en local.
 | Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
 | Events | ❌ | ❌ | ❌ | (P-EVENTS) |
-| Save | stub | ❌ | stub | (P-SAVE) |
+| Save | en curso | ✅ | sin compilar | Núcleo puro en `Source/Explored/Save` (formato, ranuras, deltas); faltan las secciones de cada sistema (P-SAVE) |
 | Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
 | Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
 | UI / frontend | ✅ base | — | parcial | Bugs H2, H6, H7, M8, M11–M14; mapa y museo (P-UI) |
@@ -60,7 +60,7 @@ compila y pasa sus tests en local.
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
-| P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | pendiente |
+| P-SAVE | Archivo de guardado versionado: semilla + deltas del mundo + jugador + progreso; 3 ranuras + copia + autoguardado | en curso (nube/guardado-2026-09-26) |
 | P-ACH | `FAchievementsModel`: 30 logros y estadísticas | pendiente |
 | P-BODY | Heridas, escorbuto, nutrición y señales corporales del HUD | pendiente |
 | P-CARRY | Cinturón, mochila con volumen, contenedores del mundo, angarillas | pendiente |
