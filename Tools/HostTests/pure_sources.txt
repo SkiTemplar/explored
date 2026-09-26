@@ -2,6 +2,8 @@
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Fauna/ProceduralGait.cpp
+Fishing/FishingModel.cpp
+Fishing/FishingTension.cpp
 Ocean/OceanWaves.cpp
 Ocean/OceanCurrents.cpp
 Survival/SurvivalModel.cpp

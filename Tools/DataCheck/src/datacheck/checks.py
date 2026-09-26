@@ -36,7 +36,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
+    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "fish.json",
 ]
 
 
@@ -504,6 +504,134 @@ def check_survival(ds: DataSet, r: Report) -> None:
             r.error(f"survival_needs.json: bodyTemperature.{key}={bt.get(key)} pero C++ dice {v}")
 
 
+# --------------------------------------------------------------------------- pesca
+
+FISH_HABITATS = {"orilla", "laguna", "arrecife", "talud", "profundo"}
+FISH_METHODS = {"cana", "arpon", "red", "trampa", "mano"}
+FISH_TRAPS = {"nasa", "trampa_cangrejos", "corral_piedras"}
+FISH_CPP = Path("Source") / "Explored" / "Fishing" / "FishingModel.cpp"
+FISH_TRAP_KINDS = {"Nasa": "nasa", "CrabTrap": "trampa_cangrejos", "StoneCorral": "corral_piedras"}
+
+
+def _cpp_calls(text: str, fn: str) -> dict[str, list[str]]:
+    """Argumentos de cada llamada «fn(TEXT("id"), ...)» del C++, por id."""
+    calls = {}
+    for m in re.finditer(rf'{fn}\(TEXT\("(\w+)"\),(.*?)\);', text, re.S):
+        calls[m.group(1)] = [a.strip() for a in m.group(2).split(",")]
+    return calls
+
+
+def _cpp_num(arg: str) -> float:
+    return float(arg.rstrip("f"))
+
+
+def _check_fish_species(doc: dict, ids: set[str], items: dict[str, dict], r: Report) -> None:
+    bait_keys = {"sin_cebo"} | set(doc.get("baits", {}))
+    species = doc.get("species", [])
+    rod_fish = [s for s in species if "cana" in s.get("methods", [])]
+    if len(rod_fish) != 11:
+        r.error(f"fish.json: {len(rod_fish)} peces de caña; el GDD §8.8 fija 11")
+    if "langosta" not in {s.get("id") for s in species}:
+        r.error("fish.json: falta la langosta de arrecife (GDD §8.8)")
+    for s in species:
+        sid = s.get("id")
+        if sid not in ids:
+            r.error(f"fish.json «{sid}»: la captura no está en items.json")
+        elif "comida" not in items[sid].get("tags", []):
+            r.error(f"fish.json «{sid}»: la captura debe tener la etiqueta comida")
+        if not set(s.get("habitats", [])) or set(s.get("habitats", [])) - FISH_HABITATS:
+            r.error(f"fish.json «{sid}»: hábitats inválidos {s.get('habitats')}")
+        if not set(s.get("methods", [])) or set(s.get("methods", [])) - FISH_METHODS:
+            r.error(f"fish.json «{sid}»: métodos inválidos {s.get('methods')}")
+        for key in ("depthM", "weightKg"):
+            lo, hi = (list(s.get(key) or []) + [0, 0])[:2]
+            if not (_type_ok(lo, (int, float)) and _type_ok(hi, (int, float)) and 0 < lo < hi):
+                r.error(f"fish.json «{sid}»: {key} {s.get(key)} no es un rango [min < max] positivo")
+        for group in ("periods", "tide", "moon", "baits"):
+            for k, v in s.get(group, {}).items():
+                if not _type_ok(v, (int, float)) or not 0 <= v <= 3:
+                    r.error(f"fish.json «{sid}».{group}.{k}={v!r} fuera de [0, 3]")
+        for k in s.get("baits", {}):
+            if k not in bait_keys:
+                r.error(f"fish.json «{sid}»: cebo desconocido «{k}»")
+
+
+def _check_fish_mirror(ds: DataSet, doc: dict, r: Report) -> None:
+    """Espejo del C++: ids y números de las tablas de FFishingModel."""
+    cpp_path = ds.repo_root / FISH_CPP
+    if not cpp_path.exists():
+        r.warn("fish.json: no se encuentra FishingModel.cpp; no se compara con el C++")
+        return
+    cpp = cpp_path.read_text(encoding="utf-8")
+    cpp_species = _cpp_calls(cpp, "MakeSpecies")
+    json_species = {s.get("id"): s for s in doc.get("species", [])}
+    for sid in sorted(set(cpp_species) ^ set(json_species)):
+        r.error(f"fish.json: la especie «{sid}» no coincide entre fish.json y FishingModel.cpp")
+    for sid in sorted(set(cpp_species) & set(json_species)):
+        n = [_cpp_num(a) for a in cpp_species[sid][-9:]]
+        s = json_species[sid]
+        expected = [*s.get("depthM", []), s.get("bitesPerMinute"), *s.get("weightKg", []),
+                    s.get("strengthKgf"), s.get("staminaSeconds"), s.get("aggression"), s.get("wariness")]
+        if n != expected:
+            r.error(f"fish.json «{sid}»: números distintos de FishingModel.cpp ({expected} frente a {n})")
+    cpp_legends = _cpp_calls(cpp, "MakeLegend")
+    json_legends = {leg.get("id") for leg in doc.get("legendary", [])}
+    for lid in sorted(set(cpp_legends) ^ json_legends):
+        r.error(f"fish.json: la legendaria «{lid}» no coincide entre fish.json y FishingModel.cpp")
+    cpp_traps = {(FISH_TRAP_KINDS.get(m.group(1)), m.group(2), float(m.group(3)))
+                 for m in re.finditer(r'\{ ETrapKind::(\w+), TEXT\("(\w+)"\), [^{}]*?, ([\d.]+)f, [\d.]+f, EFishBait', cpp)}
+    json_traps = {(k, c.get("item"), c.get("perHour"))
+                  for k, t in doc.get("traps", {}).items() for c in t.get("catches", [])}
+    for kind, item_id, rate in sorted(cpp_traps ^ json_traps, key=str):
+        r.error(f"fish.json: trampa «{kind}» «{item_id}» ({rate}/h) no coincide con FishingModel.cpp")
+
+
+def check_fish(ds: DataSet, r: Report) -> None:
+    doc = ds.data.get("fish.json")
+    if not doc:
+        return
+    ids = ds.item_ids
+    items = {i["id"]: i for i in ds.items}
+    for key, item_id in doc.get("baits", {}).items():
+        if item_id not in ids:
+            r.error(f"fish.json baits.{key}: «{item_id}» no está en items.json")
+    _check_fish_species(doc, ids, items, r)
+
+    legendary = doc.get("legendary", [])
+    if len(legendary) != 5:
+        r.error(f"fish.json: {len(legendary)} legendarias; la biblia §4.6 fija 5")
+    for leg in legendary:
+        if not leg.get("rewards"):
+            r.error(f"fish.json legendaria «{leg.get('id')}»: sin recompensa")
+        for reward in leg.get("rewards", []):
+            if reward not in ids:
+                r.error(f"fish.json legendaria «{leg.get('id')}»: recompensa «{reward}» no está en items.json")
+        if not leg.get("spot"):
+            r.error(f"fish.json legendaria «{leg.get('id')}»: sin sitio")
+
+    traps = doc.get("traps", {})
+    if set(traps) != FISH_TRAPS:
+        r.error(f"fish.json: trampas {sorted(traps)}; se esperan {sorted(FISH_TRAPS)}")
+    for kind, trap in traps.items():
+        if not isinstance(trap.get("capacity"), int) or trap["capacity"] < 1:
+            r.error(f"fish.json trampa «{kind}»: capacidad inválida")
+        for c in trap.get("catches", []):
+            if c.get("item") not in ids:
+                r.error(f"fish.json trampa «{kind}»: «{c.get('item')}» no está en items.json")
+            if not _type_ok(c.get("perHour"), (int, float)) or not 0 < c["perHour"] <= 1:
+                r.error(f"fish.json trampa «{kind}» «{c.get('item')}»: perHour fuera de (0, 1]")
+            bait = c.get("favouriteBait")
+            if bait is not None and bait not in ids:
+                r.error(f"fish.json trampa «{kind}»: cebo «{bait}» no está en items.json")
+    for c in doc.get("tidePool", {}).get("catches", []):
+        if c.get("item") not in ids:
+            r.error(f"fish.json poza: «{c.get('item')}» no está en items.json")
+    for y in doc.get("butchery", {}).get("yields", []):
+        if y not in ids:
+            r.error(f"fish.json despiece: «{y}» no está en items.json")
+    _check_fish_mirror(ds, doc, r)
+
+
 # --------------------------------------------------------------------------- story y reglas
 
 
@@ -553,5 +681,6 @@ def run_all(ds: DataSet) -> Report:
     check_meshes(ds, r)
     check_survival(ds, r)
     check_story(ds, r)
+    check_fish(ds, r)
     check_forbidden_terms(ds, r)
     return r
