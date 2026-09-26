@@ -63,7 +63,7 @@ namespace AchievementsSpecDetail
 				FCond::Contains(TEXT("building_pieces_built"), TEXT("techo_palma")) })),
 			Achievement(TEXT("un_ano_de_islas"), FCond::AtLeast(TEXT("days_survived"), 32), { TEXT("Survivor"), TEXT("Castaway") }),
 			Achievement(TEXT("limon_zarpa"), FCond::All({
-				FCond::Contains(TEXT("boats_built"), TEXT("limon")),
+				FCond::Contains(TEXT("boats_built"), TEXT("barco_limon")),
 				FCond::Flag(TEXT("hidden_island_reached")) })),
 			Achievement(TEXT("naufrago_de_verdad"), FCond::Flag(TEXT("hidden_island_reached")), { TEXT("Castaway") }),
 			Achievement(TEXT("sin_mapa"), FCond::All({
@@ -249,7 +249,7 @@ void FAchievementsSpec::Define()
 			Model.Report(TEXT("hidden_island_reached"));
 			TestFalse(TEXT("Llegar en canoa no vale"), Model.IsUnlocked(TEXT("limon_zarpa")));
 			Model.BeginRun(TEXT("Survivor"));
-			Model.ReportItem(TEXT("boats_built"), TEXT("limon"));
+			Model.ReportItem(TEXT("boats_built"), TEXT("barco_limon"));
 			TestTrue(TEXT("Con el «Limón»"), Has(Model.Report(TEXT("hidden_island_reached")), TEXT("limon_zarpa")));
 		});
 	});

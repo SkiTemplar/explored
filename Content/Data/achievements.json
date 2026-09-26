@@ -76,8 +76,8 @@
       "kind": "set",
       "scope": "profile",
       "reportedBy": "P-EVENTS",
-      "descriptionEs": "Eventos del mundo presenciados (GDD §9.3).",
-      "values": ["desove_tortugas", "lluvia_estrellas", "bioluminiscencia", "paso_ballenas", "barco_horizonte", "erupcion", "marea_viva_extrema"]
+      "descriptionEs": "Eventos del mundo presenciados (GDD §9.3; LexToString de EWorldEventType).",
+      "values": ["TurtleNesting", "TurtleHatchlings", "Bioluminescence", "MeteorShower", "WhalePassage", "ShipOnHorizon", "MinorEruption", "ExtremeSpringTide"]
     },
     {
       "id": "cyclones_survived_intact",
@@ -143,8 +143,8 @@
       "kind": "set",
       "scope": "run",
       "reportedBy": "P-RUINS",
-      "descriptionEs": "Técnicas de navegación ancestral aprendidas (GDD §6.2).",
-      "values": ["camino_estrellas", "lectura_oleaje", "aves_atardecer", "nubes_fijas", "color_agua"]
+      "descriptionEs": "Técnicas de navegación ancestral aprendidas (GDD §6.2; ids de ruins.json).",
+      "values": ["star_path", "swell_reading", "birds_at_dusk", "fixed_clouds", "water_colour"]
     },
     {
       "id": "albatros_parts_recovered",
@@ -182,8 +182,8 @@
       "kind": "set",
       "scope": "run",
       "reportedBy": "P-BOATS",
-      "descriptionEs": "Embarcaciones terminadas en el astillero.",
-      "values": ["balsa", "canoa", "canoa_balancin", "limon"]
+      "descriptionEs": "Embarcaciones terminadas en el astillero (ids de boats.json).",
+      "values": ["balsa", "canoa", "canoa_balancin", "barco_limon"]
     },
     {
       "id": "hidden_island_reached",
@@ -403,7 +403,7 @@
       "descriptionEn": "Watch the sea light up with bioluminescence.",
       "hidden": false,
       "icon": "ola",
-      "condition": {"stat": "events_witnessed", "contains": "bioluminiscencia"}
+      "condition": {"stat": "events_witnessed", "contains": "Bioluminescence"}
     },
     {
       "id": "madrugada_de_tortugas",
@@ -413,7 +413,7 @@
       "descriptionEn": "Watch the turtle hatchlings make their way to the sea.",
       "hidden": false,
       "icon": "tortuga",
-      "condition": {"stat": "events_witnessed", "contains": "desove_tortugas"}
+      "condition": {"stat": "events_witnessed", "contains": "TurtleNesting"}
     },
     {
       "id": "canto_de_ballenas",
@@ -423,7 +423,7 @@
       "descriptionEn": "Spot the whales passing by.",
       "hidden": false,
       "icon": "ballena",
-      "condition": {"stat": "events_witnessed", "contains": "paso_ballenas"}
+      "condition": {"stat": "events_witnessed", "contains": "WhalePassage"}
     },
     {
       "id": "deseos_a_punados",
@@ -433,7 +433,7 @@
       "descriptionEn": "Stay up through a night of shooting stars.",
       "hidden": true,
       "icon": "estrella",
-      "condition": {"stat": "events_witnessed", "contains": "lluvia_estrellas"}
+      "condition": {"stat": "events_witnessed", "contains": "MeteorShower"}
     },
     {
       "id": "melodia_junto_al_fuego",
@@ -473,7 +473,7 @@
       "descriptionEn": "Build the boat «Limón» and sail her to the hidden island.",
       "hidden": false,
       "icon": "barco",
-      "condition": {"all": [{"stat": "boats_built", "contains": "limon"}, {"flag": "hidden_island_reached"}]}
+      "condition": {"all": [{"stat": "boats_built", "contains": "barco_limon"}, {"flag": "hidden_island_reached"}]}
     },
     {
       "id": "naufrago_de_verdad",
