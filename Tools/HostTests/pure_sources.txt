@@ -1,5 +1,6 @@
 # Ficheros .cpp de Source/Explored que se compilan en el host (solo CoreMinimal, sin UObject).
 Core/ExploredNoise.cpp
+Core/ExploredLocalization.cpp
 Core/ExploredRandom.cpp
 Fauna/ProceduralGait.cpp
 Ocean/OceanWaves.cpp

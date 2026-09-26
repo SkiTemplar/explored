@@ -6,3 +6,4 @@ Tests/OceanCurrentsSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/GaitSpec.cpp
 Tests/VegetationScatterSpec.cpp
+Tests/LocalizationSpec.cpp
