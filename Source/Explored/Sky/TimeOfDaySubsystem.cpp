@@ -35,12 +35,12 @@ namespace ExploredSky
 
 	float MoonPhase(float TotalDays)
 	{
-		return FMath::Fmod(TotalDays / DaysPerLunarCycle, 1.0f);
+		return FMoonModel::Phase(TotalDays);
 	}
 
 	float MoonIllumination(float Phase)
 	{
-		return 0.5f * (1.0f - FMath::Cos(UE_TWO_PI * Phase));
+		return FMoonModel::Illumination(Phase);
 	}
 }
 

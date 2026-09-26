@@ -1,15 +1,17 @@
 # Ficheros .cpp de Source/Explored que se compilan en el host (solo CoreMinimal, sin UObject).
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
+Events/WorldEventsModel.cpp
 Fauna/ProceduralGait.cpp
-Ocean/OceanWaves.cpp
 Ocean/OceanCurrents.cpp
+Ocean/OceanWaves.cpp
 Player/SwimModel.cpp
+Sky/MoonModel.cpp
 Survival/SurvivalModel.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp
 WorldGen/PointsOfInterest.cpp
 WorldGen/SurfaceNets.cpp
-WorldGen/TerrainDensity.cpp
 WorldGen/TerrainChunkBuilder.cpp
+WorldGen/TerrainDensity.cpp
 WorldGen/VegetationScatter.cpp

@@ -28,6 +28,11 @@ void UExploredWeatherSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Model = MakeUnique<FWeatherModel>(WeatherSeed);
 }
 
+uint32 UExploredWeatherSubsystem::GetWorldWeatherSeed()
+{
+	return WeatherSeed;
+}
+
 void UExploredWeatherSubsystem::ForceState(EWeatherState InState, float DurationHours)
 {
 	const UTimeOfDaySubsystem* Time = GetWorld()->GetSubsystem<UTimeOfDaySubsystem>();

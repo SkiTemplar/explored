@@ -38,7 +38,7 @@ compila y pasa sus tests en local.
 | Boats | ❌ | ❌ | ❌ | Mallas en `Tools/Blender/props/boats.py` (P-BOATS) |
 | Fauna | parcial | gait | ❌ | Bandadas, bancos, tiburones (P-FAUNA) |
 | Fishing | ❌ | ❌ | ❌ | (P-FISH) |
-| Events | ❌ | ❌ | ❌ | (P-EVENTS) |
+| Events | 🚧 modelo | ✅ | sin compilar | `FMoonModel` (Luna única de cielo, mareas y eventos) + `FWorldEventsModel`; `UWorldEventsSubsystem` avisa de inicio/fin. Enganches pendientes: océano (`GetBioluminescence`, `GetExtremeTideDrawdown`), cielo (lluvia de estrellas en `M_Stars`), cámara/partículas (`GetEruption`), hoguera de señal (`TryDropShipPackage`), obsidiana (`TryDepositObsidian`), P-SAVE (`FWorldEventsState`) (P-EVENTS) |
 | Save | stub | ❌ | stub | (P-SAVE) |
 | Achievements | ❌ | ❌ | ❌ | 30 logros (P-ACH) |
 | Audio | ✅ base | — | parcial | Música adaptativa en juego (P-MUSIC) |
@@ -56,7 +56,7 @@ compila y pasa sus tests en local.
 | P-MAP | `FCartographyModel`: trazo de costa con temblor, brújula, bocetos de mirador que se confirman al recorrer, marcas y sellos, catalejo, sextante, mojado y copia en limpio | pendiente |
 | P-RUINS | `FRuinsModel` + `FMuseumModel`: ruinas completadas → técnicas de wayfinding, caminos de estrellas, tesoros, catálogo, exposición | pendiente |
 | P-COOK | `FCookingModel`: niveles de fuego, vasijas, recetas, técnicas, conservación y deterioro | pendiente |
-| P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | pendiente |
+| P-EVENTS | `FWorldEventsModel`: fases lunares (12 días), desove, lluvia de estrellas, ballenas, barco en el horizonte, erupción, marea viva extrema | en curso (nube/eventos-2026-09-26) |
 | P-BOATS | `FBoatModel`: flotación, remo, vela con viento aparente, balsa → canoa → balancín → «Limón» | pendiente |
 | P-FAUNA | `FFlockModel` (boids) + máquinas de estados de fauna marina y percepción | pendiente |
 | P-FISH | `FFishingModel`: minijuego de tensión, nasas y trampas | pendiente |
