@@ -68,7 +68,7 @@ void AExploredPlayerController::BeginPlay()
 
 	if (UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
 	{
-		SaveSubsystem->OnSaveCompleted.AddLambda([this]()
+		SaveSubsystem->OnSaveCompleted.AddWeakLambda(this, [this]()
 		{
 			if (SavingIndicator.IsValid())
 			{
@@ -136,7 +136,12 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 			InputMode.SetWidgetToFocus(CurrentOverlay);
 		}
 		SetInputMode(InputMode);
-		SetViewTarget(FindOrSpawnMenuCamera());
+		// En pausa se congela la vista del juego: la camara de menu solo tiene
+		// sentido en el menu principal (con el mundo pausado ni siquiera se colocaria).
+		if (NewMode == EExploredUIMode::Menu)
+		{
+			SetViewTarget(FindOrSpawnMenuCamera());
+		}
 	}
 }
 

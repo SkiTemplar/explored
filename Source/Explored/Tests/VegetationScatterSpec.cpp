@@ -30,8 +30,16 @@ void FVegetationScatterSpec::Define()
 		const FScatterResult A = FVegetationScatter::Generate(*Density, Rules, Region, 7);
 		const FScatterResult B = FVegetationScatter::Generate(*Density, Rules, Region, 7);
 		TestEqual(TEXT("Mismo total"), A.Total(), B.Total());
+		if (!TestEqual(TEXT("Mismo número de reglas"), A.PerRule.Num(), B.PerRule.Num()))
+		{
+			return;
+		}
 		for (int32 R = 0; R < A.PerRule.Num(); ++R)
 		{
+			if (!TestEqual(TEXT("Mismo número por regla"), A.PerRule[R].Num(), B.PerRule[R].Num()))
+			{
+				return;
+			}
 			for (int32 I = 0; I < A.PerRule[R].Num(); ++I)
 			{
 				if (!A.PerRule[R][I].Transform.Equals(B.PerRule[R][I].Transform))

@@ -264,7 +264,10 @@ bool UCarryComponent::ReplaceHandsWithCraftResult(const FItemInstance& Result, F
 
 	const UItemRegistrySubsystem* Registry = GetRegistry();
 	const bool bTwoHanded = Registry && Registry->GetEffectiveSize(Result) == EItemSize::DosManos;
-	return PlaceInFreeHand(Result, bTwoHanded, OutFailReason);
+	const bool bPlaced = PlaceInFreeHand(Result, bTwoHanded, OutFailReason);
+	// Las manos han cambiado aunque no se haya podido colocar el resultado.
+	OnCarryChanged.Broadcast();
+	return bPlaced;
 }
 
 bool UCarryComponent::SwapHands()

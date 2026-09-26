@@ -88,3 +88,20 @@ def lufs_approx(x: np.ndarray) -> float:
     if weighted_mean_sq <= 1e-12:
         return -120.0
     return -0.691 + 10.0 * np.log10(weighted_mean_sq)
+
+
+def k_weighted_momentary_max(x: np.ndarray, window_s: float = 0.1, sr: int = 48_000) -> float:
+    """Maximo de sonoridad momentanea (ventana deslizante de `window_s`,
+    K-weighting BS.1770) de una señal mono, en LUFS aproximados.
+
+    Para transitorios cortos (pasos, golpes) es mas representativo de lo que
+    se oye que `lufs_approx`, que promedia tambien la cola y el silencio."""
+    weighted_sq = _k_weight(x) ** 2
+    win = max(int(window_s * sr), 1)
+    if len(weighted_sq) <= win:
+        mean_sq = float(np.mean(weighted_sq))
+    else:
+        mean_sq = float(np.max(np.convolve(weighted_sq, np.ones(win) / win, mode="valid")))
+    if mean_sq <= 1e-12:
+        return -120.0
+    return -0.691 + 10.0 * np.log10(mean_sq)

@@ -68,6 +68,8 @@ bool UTimeOfDaySubsystem::DoesSupportWorldType(const EWorldType::Type WorldType)
 
 void UTimeOfDaySubsystem::SetTime(int32 InDay, float InHours)
 {
-	Day = FMath::Max(0, InDay);
-	Hours = FMath::Fmod(FMath::Max(0.0f, InHours), 24.0f);
+	// Las horas >= 24 pasan al dia siguiente en vez de perderse.
+	const float ClampedHours = FMath::Max(0.0f, InHours);
+	Day = FMath::Max(0, InDay) + FMath::FloorToInt32(ClampedHours / 24.0f);
+	Hours = FMath::Fmod(ClampedHours, 24.0f);
 }
