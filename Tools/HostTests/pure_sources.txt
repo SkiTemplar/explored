@@ -4,6 +4,10 @@ Core/ExploredRandom.cpp
 Fauna/ProceduralGait.cpp
 Ocean/OceanWaves.cpp
 Ocean/OceanCurrents.cpp
+Save/SaveFormat.cpp
+Save/SaveSlots.cpp
+Save/SaveValue.cpp
+Save/SaveWorldDeltas.cpp
 Survival/SurvivalModel.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp
