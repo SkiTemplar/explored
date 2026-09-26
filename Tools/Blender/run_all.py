@@ -107,5 +107,17 @@ def main():
     print(f"[run_all] manifest escrito en {manifest_path} ({len(manifest)} mallas)")
 
 
+def _run_props_kit():
+    """Encadena el kit de props narrativos (Tools/Blender/props/run_props.py)
+    tras el de vegetación, para que `run_all.py` sea el único comando que
+    regenera todo el contenido de malla del proyecto (GDD §12.3)."""
+    props_dir = os.path.join(BLENDER_DIR, 'props')
+    if props_dir not in sys.path:
+        sys.path.insert(0, props_dir)
+    run_props = _import_or_reload('run_props')
+    run_props.main()
+
+
 if __name__ == '__main__':
     main()
+    _run_props_kit()

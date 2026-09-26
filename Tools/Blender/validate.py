@@ -49,6 +49,35 @@ PLAUSIBLE_RANGES_CM = {
 
 DEGENERATE_AREA_EPS = 1e-8  # m^2
 
+# ---------------------------------------------------------------------------
+# Kit de props narrativos (Tools/Blender/props/run_props.py), validado con las
+# mismas comprobaciones 1/2/4/5 de arriba (presupuesto, geometría degenerada,
+# color de vértice, materiales estables); el rango plausible se agrupa por
+# `entry['group']` en vez de `entry['category']` y no se exige watertight
+# (no hay ninguna categoría de prop pensada como volumen cerrado).
+# ---------------------------------------------------------------------------
+EXPORT_DIR_PROPS = os.path.join(REPO_ROOT, 'Art', 'Export', 'Props')
+MANIFEST_PATH_PROPS = os.path.join(EXPORT_DIR_PROPS, 'manifest.json')
+
+ALLOWED_MATERIALS_PROPS = {'M_Wood', 'M_Metal', 'M_Fabric', 'M_Stone', 'M_Glass', 'M_Paper', 'M_Leaf'}
+
+# Rango plausible por grupo narrativo, dimensión mayor del bounding box en cm
+# (los grupos mezclan piezas sueltas pequeñas con estructuras grandes, así
+# que el rango es deliberadamente ancho por grupo).
+PLAUSIBLE_RANGES_CM_PROPS = {
+    'Albatros':        (100.0, 1200.0),   # restos sueltos ~1 m .. avión entero ~11-12 m
+    'Faro':            (30.0, 1400.0),    # escombro suelto .. torre entera
+    'Halden':          (30.0, 900.0),     # herramienta de mano .. caseta con mástil
+    'BrujulaEstelar':  (40.0, 600.0),
+    'Petroglifos':     (20.0, 200.0),
+    'Marae':           (40.0, 700.0),
+    'Pecio':           (30.0, 800.0),
+    'Baliza':          (30.0, 300.0),
+    'ObjetosPequenos': (2.0, 90.0),
+    'Embarcaciones':   (60.0, 500.0),
+    'Construccion':    (2.0, 300.0),
+}
+
 
 def _import_fbx(filepath):
     before = set(bpy.data.objects.keys())
@@ -170,5 +199,79 @@ def main():
     print('[validate] VALIDACIÓN OK')
 
 
+def main_props():
+    if not os.path.isfile(MANIFEST_PATH_PROPS):
+        print(f"[validate] ERROR: no existe {MANIFEST_PATH_PROPS}. Ejecuta run_props.py primero.")
+        sys.exit(1)
+
+    with open(MANIFEST_PATH_PROPS, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    results = []
+    for entry in manifest['meshes']:
+        _reset_scene()
+        fpath = os.path.join(EXPORT_DIR_PROPS, entry['file'])
+        problems = []
+
+        if not os.path.isfile(fpath):
+            problems.append('fichero FBX no encontrado')
+            results.append((entry['name'], problems))
+            continue
+
+        meshes = _import_fbx(fpath)
+        if len(meshes) != 1:
+            problems.append(f'se esperaba 1 objeto de malla al reimportar, hay {len(meshes)}')
+            results.append((entry['name'], problems))
+            continue
+        obj = meshes[0]
+        me = obj.data
+
+        me.calc_loop_triangles()
+        tris = len(me.loop_triangles)
+        lo, hi = entry['triangle_budget']['min'], entry['triangle_budget']['max']
+        if hi > 0 and not (lo <= tris <= hi):
+            problems.append(f'triángulos {tris} fuera de presupuesto [{lo}, {hi}]')
+
+        bad_faces = _check_degenerate(obj)
+        if bad_faces:
+            problems.append(f'{bad_faces} caras con área ~0 (geometría degenerada)')
+
+        v_min, v_max = PLAUSIBLE_RANGES_CM_PROPS[entry['group']]
+        dims_cm = (obj.dimensions.x * 100.0, obj.dimensions.y * 100.0, obj.dimensions.z * 100.0)
+        value = max(dims_cm)
+        if not (v_min <= value <= v_max):
+            problems.append(f'dimensión máxima={value:.1f} cm fuera de rango plausible [{v_min}, {v_max}]')
+
+        if 'Col' not in me.color_attributes:
+            problems.append('falta el atributo de color de vértice «Col»')
+
+        slot_names = {m.name.split('.')[0] for m in me.materials if m is not None}
+        extra = slot_names - ALLOWED_MATERIALS_PROPS
+        if extra:
+            problems.append(f'slots de material fuera del kit estable de props: {sorted(extra)}')
+
+        results.append((entry['name'], problems, tris, dims_cm))
+
+    print('\n[validate] ==== Resultado (props) ====')
+    n_fail = 0
+    for row in results:
+        name = row[0]
+        problems = row[1]
+        if problems:
+            n_fail += 1
+            print(f'  FALLO {name}: ' + '; '.join(problems))
+        else:
+            tris, dims_cm = row[2], row[3]
+            print(f'  OK    {name}: {tris} tris, dims_cm=({dims_cm[0]:.1f}, {dims_cm[1]:.1f}, {dims_cm[2]:.1f})')
+
+    total = len(results)
+    print(f'[validate] {total - n_fail}/{total} props en verde.')
+    if n_fail:
+        print('[validate] VALIDACIÓN DE PROPS FALLIDA')
+        sys.exit(1)
+    print('[validate] VALIDACIÓN DE PROPS OK')
+
+
 if __name__ == '__main__':
     main()
+    main_props()
