@@ -632,7 +632,12 @@ void AExploredCharacter::HandleToggleFly(const FInputActionValue&)
 {
 #if !UE_BUILD_SHIPPING
 	bIsDebugFlying = !bIsDebugFlying;
-	GetCharacterMovement()->SetMovementMode(bIsDebugFlying ? MOVE_Flying : MOVE_Falling);
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	// L7: el nado reutiliza MOVE_Flying y deja su velocidad y su gravedad; el vuelo de
+	// depuración las vuelve a poner al activarse y la gravedad normal al soltarlo.
+	Movement->MaxFlySpeed = DebugFlySpeed;
+	Movement->GravityScale = bIsDebugFlying ? 0.0f : 1.0f;
+	Movement->SetMovementMode(bIsDebugFlying ? MOVE_Flying : MOVE_Falling);
 	SetActorEnableCollision(!bIsDebugFlying);
 	SetDebugMappingActive(bIsDebugFlying);
 #endif
@@ -764,7 +769,7 @@ void AExploredCharacter::HandleCombine(const FInputActionValue&)
 		return;
 	}
 
-	const TArray<FName> Verbs = UCraftingLibrary::FindActions(Left, Right);
+	const TArray<FName> Verbs = UCraftingLibrary::FindActionsInWorld(this, Left, Right);
 	if (Verbs.Num() == 0)
 	{
 		return;
@@ -777,7 +782,7 @@ void AExploredCharacter::HandleCombine(const FInputActionValue&)
 	// FindActions ya deja listos los candidatos para esa pantalla futura.
 	FItemInstance Result;
 	FText FailReason;
-	if (UCraftingLibrary::Apply(Left, Right, Verbs[0], Result, FailReason))
+	if (UCraftingLibrary::ApplyInWorld(this, Left, Right, Verbs[0], Result, FailReason))
 	{
 		Carry->ReplaceHandsWithCraftResult(Result, FailReason);
 	}

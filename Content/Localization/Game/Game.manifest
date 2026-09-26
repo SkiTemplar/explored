@@ -266,7 +266,7 @@
 					"Keys": [
 						{
 							"Key": "Crafting_NoMatch",
-							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 216"
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 238"
 						}
 					]
 				},
@@ -398,7 +398,7 @@
 					"Keys": [
 						{
 							"Key": "Crafting_NeedTwo",
-							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 187"
+							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 209"
 						}
 					]
 				},

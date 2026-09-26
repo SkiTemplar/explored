@@ -25,7 +25,7 @@ Leyenda: **host ✅** = modelo puro con specs en verde en `Tools/HostTests` (CI 
 
 | Módulo | Modelo puro | Capa UE | PR | Pendiente |
 |---|---|---|---|---|
-| WorldGen / Scatter | host ✅ | ✅ | — | Revisión: M6, M7, M9–M11 |
+| WorldGen / Scatter | host ✅ | ✅ | — | Revisión: M6, M7, M9 (orden de MSVC), M11 |
 | Ocean | host ✅ | ✅ | — | Flotabilidad de barcos (P-BOATS) |
 | Sky / Luna / eventos | host ✅ `FMoonModel`, `FWorldEventsModel` | UE ⚠ `UWorldEventsSubsystem` | #7 | Enganchar océano (bioluminiscencia, bajamar extrema), `M_Stars`, efectos de la erupción (temblor, ceniza) |
 | Weather | host ✅ | ✅ | — | Dirección del viento para los barcos |

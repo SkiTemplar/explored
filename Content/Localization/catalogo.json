@@ -406,7 +406,7 @@
 			"en": "You need something in each hand.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Crafting/CraftingLibrary.cpp:187"
+				"Source/Explored/Crafting/CraftingLibrary.cpp:209"
 			]
 		},
 		{
@@ -416,7 +416,7 @@
 			"en": "These don't go together that way.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Crafting/CraftingLibrary.cpp:216"
+				"Source/Explored/Crafting/CraftingLibrary.cpp:238"
 			]
 		},
 		{
@@ -426,7 +426,8 @@
 			"en": "The item registry isn't available.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Crafting/CraftingLibrary.cpp:33"
+				"Source/Explored/Crafting/CraftingLibrary.cpp:33",
+				"Source/Explored/Crafting/CraftingLibrary.cpp:55"
 			]
 		},
 		{
