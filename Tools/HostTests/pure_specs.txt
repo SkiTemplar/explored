@@ -5,4 +5,5 @@ Tests/WorldGenSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/GaitSpec.cpp
+Tests/MusicDirectorSpec.cpp
 Tests/VegetationScatterSpec.cpp
