@@ -8,7 +8,8 @@ struct FArchipelagoLayout;
  * Marea del archipiélago: dos pleamares al día (GDD §5.1), con las mareas
  * vivas (más fuertes) en luna nueva y llena, y las muertas en cuarto
  * creciente/menguante. Funciones puras y testeables sin mundo; quien las
- * usa inyecta los días totales y la fase lunar de UTimeOfDaySubsystem.
+ * usa inyecta los días totales y la fase lunar de UTimeOfDaySubsystem, que
+ * sale de FMoonModel (la misma Luna que ven el cielo y los eventos).
  */
 struct EXPLORED_API FOceanTide
 {
@@ -31,6 +32,9 @@ struct EXPLORED_API FOceanTide
 	 * ExploredSky::MoonPhase).
 	 */
 	static float SpringNeapFactor(float MoonPhase01);
+
+	/** SpringNeapFactor con la fase de FMoonModel en ese instante (días totales de juego). */
+	static float SpringNeapFactorAt(float TotalDays);
 };
 
 /** Estrecho navegable entre dos islas consecutivas de la cadena volcánica (centímetros, espacio de mundo). */
