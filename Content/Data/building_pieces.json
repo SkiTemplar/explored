@@ -825,6 +825,7 @@
       "nameEs": "Astillero",
       "tier": "madera",
       "category": "produccion",
+      "socket": "terreno",
       "cost": [
         {
           "item": "tronco_pequeno",
