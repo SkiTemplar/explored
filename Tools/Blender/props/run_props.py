@@ -52,6 +52,9 @@ MODULE_GROUPS = [
     ('small_items', 'ObjetosPequenos'),
     ('boats', 'Embarcaciones'),
     ('building_kit', 'Construccion'),
+    # kit modular de la base: una carpeta por material (KitPalma, KitBambu,
+    # KitMadera, KitPiedra), que cada variante declara en su clave 'group'.
+    ('kit_construccion', 'KitConstruccion'),
 ]
 
 
@@ -77,14 +80,17 @@ def main():
     module_filter = _parse_module_filter()
     manifest = []
 
-    for mod_name, group_folder in MODULE_GROUPS:
+    for mod_name, default_group in MODULE_GROUPS:
         if module_filter is not None and mod_name not in module_filter:
             continue
         mod = _import_or_reload(mod_name)
-        out_dir = os.path.join(EXPORT_DIR, group_folder)
-        os.makedirs(out_dir, exist_ok=True)
 
         for variant in mod.VARIANTS:
+            # un módulo puede repartir sus variantes en varios grupos
+            # (p.ej. el kit modular, un grupo por material)
+            group_folder = variant.get('group', default_group)
+            out_dir = os.path.join(EXPORT_DIR, group_folder)
+            os.makedirs(out_dir, exist_ok=True)
             C.reset_scene()
             obj = mod.build(variant)
 
@@ -124,6 +130,7 @@ def main():
             with open(manifest_path, 'r', encoding='utf-8') as f:
                 prev = json.load(f).get('meshes', [])
         touched_groups = {g for m, g in MODULE_GROUPS if m in module_filter}
+        touched_groups |= {e['group'] for e in manifest}
         prev_kept = [e for e in prev if e['group'] not in touched_groups]
         manifest = prev_kept + manifest
 

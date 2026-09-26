@@ -76,6 +76,12 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'ObjetosPequenos': (2.0, 90.0),
     'Embarcaciones':   (60.0, 500.0),
     'Construccion':    (2.0, 300.0),
+    # kit modular (rejilla de 2 m): pilote de 0.6 m .. escalera de 4 m y
+    # tejados de 2 m + alero
+    'KitPalma':        (40.0, 450.0),
+    'KitBambu':        (40.0, 450.0),
+    'KitMadera':       (40.0, 450.0),
+    'KitPiedra':       (40.0, 450.0),
 }
 
 
