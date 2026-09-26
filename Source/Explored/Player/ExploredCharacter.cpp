@@ -46,13 +46,21 @@ namespace
 	}
 }
 
+namespace ExploredCharacterDetail
+{
+	// En tierra basta con 30 Hz para el balanceo de las manos; nadando la cámara
+	// se orienta a mano en Tick y tiene que ir a la frecuencia de pantalla (M15).
+	constexpr float LandTickInterval = 1.0f / 30.0f;
+	constexpr float SwimTickInterval = 0.0f;
+}
+
 AExploredCharacter::AExploredCharacter()
 {
 	// Excepción deliberada: el balanceo de las manos (punto 6 del encargo de
 	// M2) necesita un seno por fotograma. Es la única razón para tener tick
 	// en el personaje; todo lo demás sigue dirigido por eventos y delegados.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 1.0f / 30.0f;
+	PrimaryActorTick.TickInterval = ExploredCharacterDetail::LandTickInterval;
 
 	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
 
@@ -120,7 +128,19 @@ void AExploredCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	const EWaterState WaterState = Swim ? Swim->GetWaterState() : EWaterState::OnLand;
-	if (WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving)
+	const bool bSwimming = WaterState == EWaterState::Swimming || WaterState == EWaterState::Diving;
+
+	// Nadando, la rotación de la cámara se fija aquí cada fotograma: a 30 Hz se nota
+	// a tirones con FPS altos (M15). Se cambia solo en la transición.
+	const float DesiredTickInterval = bSwimming
+		? ExploredCharacterDetail::SwimTickInterval
+		: ExploredCharacterDetail::LandTickInterval;
+	if (!FMath::IsNearlyEqual(GetActorTickInterval(), DesiredTickInterval))
+	{
+		SetActorTickInterval(DesiredTickInterval);
+	}
+
+	if (bSwimming)
 	{
 		// Brazadas: la fase la lleva USwimComponent (avanza con la velocidad de nado);
 		// aquí solo se traduce en el vaivén de las manos, mucho más amplio que al andar.

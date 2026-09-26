@@ -1,6 +1,8 @@
 #include "Player/SwimComponent.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -8,18 +10,21 @@
 
 #include "Carry/CarryComponent.h"
 #include "Ocean/ExploredOcean.h"
+#include "Player/SwimModel.h"
 #include "Sky/TimeOfDaySubsystem.h"
-#include "Survival/SurvivalModel.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/ArchipelagoLayout.h"
 
-namespace
+namespace SwimComponentDetail
 {
-	// El material nada en superficie con la cabeza fuera; la cámara queda a esta altura de la ola.
-	constexpr float EyeOffsetCm = 40.0f;
-	constexpr float BuoyancyRiseSpeedCm = 60.0f;
 	constexpr float OceanSearchIntervalSeconds = 2.0f;
 }
+
+// GetWaterState convierte ESwimState (modelo puro) en el UENUM por su valor.
+static_assert(static_cast<uint8>(ESwimState::OnLand) == static_cast<uint8>(EWaterState::OnLand), "ESwimState y EWaterState deben coincidir");
+static_assert(static_cast<uint8>(ESwimState::Wading) == static_cast<uint8>(EWaterState::Wading), "ESwimState y EWaterState deben coincidir");
+static_assert(static_cast<uint8>(ESwimState::Swimming) == static_cast<uint8>(EWaterState::Swimming), "ESwimState y EWaterState deben coincidir");
+static_assert(static_cast<uint8>(ESwimState::Diving) == static_cast<uint8>(EWaterState::Diving), "ESwimState y EWaterState deben coincidir");
 
 USwimComponent::USwimComponent()
 {
@@ -63,14 +68,29 @@ AExploredOcean* USwimComponent::FindOcean() const
 	return Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(GetWorld(), AExploredOcean::StaticClass()));
 }
 
-float USwimComponent::GetCarriedWeightRatio() const
+float USwimComponent::GetCarriedWeightKg() const
 {
 	const UCarryComponent* CarryPtr = Carry.Get();
-	if (!CarryPtr || ComfortableWeightKg <= 0.0f)
-	{
-		return 0.0f;
-	}
-	return CarryPtr->GetTotalWeight() / ComfortableWeightKg;
+	return CarryPtr ? CarryPtr->GetTotalWeight() : 0.0f;
+}
+
+FSwimTuning USwimComponent::MakeTuning() const
+{
+	FSwimTuning Tuning;
+	Tuning.SwimDepthCm = SwimDepthCm;
+	Tuning.SwimExitHysteresisCm = SwimExitHysteresisCm;
+	Tuning.FloatCenterDepthCm = FloatCenterDepthCm;
+	Tuning.HeadHeightCm = HeadHeightCm;
+	Tuning.HeadSurfaceHysteresisCm = HeadSurfaceHysteresisCm;
+	Tuning.SwimSpeed = SwimSpeed;
+	Tuning.DiveSpeed = DiveSpeed;
+	Tuning.BuoyancyRiseSpeedCm = BuoyancyRiseSpeedCm;
+	Tuning.SwimBrakingDeceleration = SwimBrakingDeceleration;
+	Tuning.ComfortableWeightKg = ComfortableWeightKg;
+	Tuning.StrokeFrequency = StrokeFrequency;
+	Tuning.GaspThreshold = GaspThreshold;
+	Tuning.DrowningDamagePerSecond = DrowningDamagePerSecond;
+	return Tuning;
 }
 
 void USwimComponent::PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef) const
@@ -87,150 +107,121 @@ void USwimComponent::PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef) con
 	}
 }
 
-void USwimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+AExploredOcean* USwimComponent::ResolveOcean(float DeltaTime)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	UpdateWaterState(DeltaTime);
-	ApplySwimMovement(DeltaTime);
-	TickBreath(DeltaTime);
-}
-
-void USwimComponent::UpdateWaterState(float DeltaTime)
-{
-	ACharacter* Character = Cast<ACharacter>(GetOwner());
-	UCapsuleComponent* Capsule = Character ? Character->GetCapsuleComponent() : nullptr;
-	if (!Character || !Capsule)
-	{
-		State = EWaterState::OnLand;
-		return;
-	}
-
 	AExploredOcean* OceanActor = Ocean.Get();
 	if (!OceanActor)
 	{
 		TimeSinceOceanSearch -= DeltaTime;
 		if (TimeSinceOceanSearch <= 0.0f)
 		{
-			TimeSinceOceanSearch = OceanSearchIntervalSeconds;
+			TimeSinceOceanSearch = SwimComponentDetail::OceanSearchIntervalSeconds;
 			OceanActor = FindOcean();
 			Ocean = OceanActor;
 		}
-		if (!OceanActor)
+	}
+	return OceanActor;
+}
+
+FVector2D USwimComponent::SampleCurrent(const FVector& Location) const
+{
+	if (Straits.Num() == 0)
+	{
+		return FVector2D::ZeroVector;
+	}
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	const UExploredWeatherSubsystem* WeatherSys = World ? World->GetSubsystem<UExploredWeatherSubsystem>() : nullptr;
+	const float TotalDays = Time ? Time->GetTotalDays() : 0.0f;
+	const float MoonPhase01 = Time ? Time->GetMoonPhase() : 0.0f;
+	const float Wind01 = WeatherSys ? WeatherSys->GetCurrent().Wind : 0.2f;
+	return FOceanCurrents::CurrentAt(Straits, FVector2D(Location.X, Location.Y),
+		FOceanTide::Flow(TotalDays), FOceanTide::SpringNeapFactor(MoonPhase01), Wind01);
+}
+
+void USwimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	const UCapsuleComponent* Capsule = Character ? Character->GetCapsuleComponent() : nullptr;
+	const UCharacterMovementComponent* Movement = Character ? Character->GetCharacterMovement() : nullptr;
+	AExploredOcean* OceanActor = (Character && Capsule) ? ResolveOcean(DeltaTime) : nullptr;
+
+	FSwimInputs In;
+	In.bDiveHeld = bDiveHeld;
+	In.CarriedWeightKg = GetCarriedWeightKg();
+	In.LungCapacityRatio = LungCapacityRatio;
+	if (Character && Capsule && OceanActor)
+	{
+		const FVector Location = Character->GetActorLocation();
+		In.bHasWater = true;
+		In.WaterZ = OceanActor->GetWaterHeightAt(Location);
+		In.CenterZ = static_cast<float>(Location.Z);
+		In.HalfHeight = Capsule->GetScaledCapsuleHalfHeight();
+		In.Velocity = Movement ? Movement->Velocity : FVector::ZeroVector;
+		// La corriente solo arrastra a quien nada; muestrearla en seco sería trabajo perdido.
+		if (Model.IsSwimming() || In.WaterZ - (In.CenterZ - In.HalfHeight) >= SwimDepthCm)
 		{
-			State = EWaterState::OnLand;
-			return;
+			In.CurrentCmPerSecond = SampleCurrent(Location);
 		}
 	}
 
-	UCharacterMovementComponent* Movement = Character->GetCharacterMovement();
-	const FVector Location = Character->GetActorLocation();
-	const float HalfHeight = Capsule->GetScaledCapsuleHalfHeight();
-	const float FootZ = Location.Z - HalfHeight;
-	const float WaterZ = OceanActor->GetWaterHeightAt(Location);
-	const float Coverage = WaterZ - FootZ; // cm de agua por encima de los pies.
+	const FSwimStep Step = Model.Tick(MakeTuning(), In, DeltaTime);
+	ApplyStep(Step, DeltaTime);
+}
 
-	const bool bWasSwimmingOrDiving = State == EWaterState::Swimming || State == EWaterState::Diving;
+void USwimComponent::ApplyStep(const FSwimStep& Step, float DeltaTime)
+{
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	UCharacterMovementComponent* Movement = Character ? Character->GetCharacterMovement() : nullptr;
 
-	if (Coverage <= 0.0f || Coverage < SwimDepthCm)
+	// Modo de movimiento: el modelo ya aplica la histéresis (H5), así que la
+	// zambullida suena una sola vez al entrar y no en cada valle de ola.
+	if (Step.bSwimming)
 	{
-		// En tierra o vadeando: sigue de pie, se deja el movimiento normal al CharacterMovementComponent.
-		if (bWasSwimmingOrDiving && Movement && Movement->MovementMode == MOVE_Flying)
+		if (Movement && Movement->MovementMode != MOVE_Flying)
 		{
-			Movement->SetMovementMode(MOVE_Falling);
-			Movement->GravityScale = 1.0f;
+			Movement->SetMovementMode(MOVE_Flying);
+			Movement->GravityScale = 0.0f;
 		}
-		State = Coverage <= 0.0f ? EWaterState::OnLand : EWaterState::Wading;
-		return;
-	}
-
-	// Agua lo bastante profunda para no hacer pie: nada o bucea, según la tecla mantenida.
-	State = bDiveHeld ? EWaterState::Diving : EWaterState::Swimming;
-	if (Movement && Movement->MovementMode != MOVE_Flying)
-	{
-		Movement->SetMovementMode(MOVE_Flying);
-		Movement->GravityScale = 0.0f;
-		if (!bWasSwimmingOrDiving)
+		if (Step.bEnteredWater)
 		{
 			OnDiveSplash.Broadcast();
 			PlayOneShot(DiveSplashSound);
 		}
 	}
-}
-
-void USwimComponent::ApplySwimMovement(float DeltaTime)
-{
-	ACharacter* Character = Cast<ACharacter>(GetOwner());
-	if (State != EWaterState::Swimming && State != EWaterState::Diving)
+	else if (Step.bLeftWater && Movement && Movement->MovementMode == MOVE_Flying)
 	{
-		WaveTilt = FMath::RInterpTo(WaveTilt, FRotator::ZeroRotator, DeltaTime, 4.0f);
-		StrokePhase = 0.0f;
-		bIsExertingUnderwater = false;
-		return;
-	}
-	if (!Character)
-	{
-		return;
+		// En tierra o vadeando: sigue de pie, se deja el movimiento normal al CharacterMovementComponent.
+		Movement->SetMovementMode(MOVE_Falling);
+		Movement->GravityScale = 1.0f;
 	}
 
-	UCharacterMovementComponent* Movement = Character->GetCharacterMovement();
-	AExploredOcean* OceanActor = Ocean.Get();
-	if (!Movement || !OceanActor)
+	if (Step.bSwimming && Character && Movement)
 	{
-		return;
-	}
+		Movement->MaxFlySpeed = Step.MaxSpeed;
+		Movement->BrakingDecelerationFlying = Step.BrakingDeceleration;
+		Movement->Velocity = Step.Velocity;
 
-	const FVector Location = Character->GetActorLocation();
-	const float WeightRatio = GetCarriedWeightRatio();
-	// Cargar de más cansa y hunde al nadar (GDD §4.1): menos velocidad máxima.
-	const float Fatigue = FMath::Clamp(1.0f - WeightRatio * 0.35f, 0.35f, 1.0f);
-	Movement->MaxFlySpeed = (State == EWaterState::Diving ? DiveSpeed : SwimSpeed) * Fatigue;
-	Movement->BrakingDecelerationFlying = 900.0f;
+		// La corriente arrastra como desplazamiento (M4): sumada a la velocidad
+		// como aceleración, el frenado en vuelo la anulaba.
+		if (!Step.CurrentOffset.IsNearlyZero())
+		{
+			Character->AddActorWorldOffset(FVector(Step.CurrentOffset.X, Step.CurrentOffset.Y, 0.0), true);
+		}
 
-	FVector Velocity = Movement->Velocity;
-	const float WaterZ = OceanActor->GetWaterHeightAt(Location);
-	if (State == EWaterState::Swimming)
-	{
-		// Flota a la altura de la ola bajo el jugador, con la cabeza fuera.
-		const float DesiredVelZ = FMath::Clamp((WaterZ - EyeOffsetCm - Location.Z) * 6.0f, -300.0f, 300.0f);
-		Velocity.Z = FMath::FInterpTo(Velocity.Z, DesiredVelZ, DeltaTime, 3.0f);
-	}
-	else
-	{
-		// Bucear es mantener la tecla para bajar; soltarla deja que el pulmón empuje hacia arriba.
-		const float DesiredVelZ = bDiveHeld ? -DiveSpeed * 0.6f : BuoyancyRiseSpeedCm;
-		Velocity.Z = FMath::FInterpTo(Velocity.Z, DesiredVelZ, DeltaTime, 2.0f);
-	}
-
-	if (Straits.Num() > 0)
-	{
-		const UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
-		const UExploredWeatherSubsystem* WeatherSys = GetWorld() ? GetWorld()->GetSubsystem<UExploredWeatherSubsystem>() : nullptr;
-		const float TotalDays = Time ? Time->GetTotalDays() : 0.0f;
-		const float MoonPhase01 = Time ? Time->GetMoonPhase() : 0.0f;
-		const float Wind01 = WeatherSys ? WeatherSys->GetCurrent().Wind : 0.2f;
-		const FVector2D Current = FOceanCurrents::CurrentAt(Straits, FVector2D(Location.X, Location.Y),
-			FOceanTide::Flow(TotalDays), FOceanTide::SpringNeapFactor(MoonPhase01), Wind01);
-		Velocity.X += Current.X * DeltaTime;
-		Velocity.Y += Current.Y * DeltaTime;
-	}
-	Movement->Velocity = Velocity;
-	bIsExertingUnderwater = Velocity.Size2D() > SwimSpeed * 0.5f;
-
-	// Brazadas: fase continua con la velocidad; el personaje la usa para animar las manos.
-	const float SpeedRatio = FMath::Clamp(Velocity.Size2D() / FMath::Max(SwimSpeed, 1.0f), 0.0f, 1.2f);
-	if (SpeedRatio > KINDA_SMALL_NUMBER)
-	{
-		const float Prev = StrokePhase;
-		StrokePhase = FMath::Fmod(StrokePhase + DeltaTime * SpeedRatio * StrokeFrequency, 1.0f);
-		if (StrokePhase < Prev && SwimStrokeSounds.Num() > 0)
+		if (Step.bStrokeCompleted && SwimStrokeSounds.Num() > 0)
 		{
 			PlayOneShot(SwimStrokeSounds[FMath::RandRange(0, SwimStrokeSounds.Num() - 1)]);
 		}
 	}
 
-	if (State == EWaterState::Swimming)
+	AExploredOcean* OceanActor = Ocean.Get();
+	if (Model.GetState() == ESwimState::Swimming && Character && OceanActor)
 	{
 		// La cámara siente la pendiente de la ola bajo el jugador; bajo el agua no hay oleaje que sentir.
+		const FVector Location = Character->GetActorLocation();
 		const FVector Normal = OceanActor->GetWaterNormalAt(Location);
 		const FVector Right = Character->GetActorRightVector();
 		const FVector Forward = Character->GetActorForwardVector();
@@ -239,9 +230,19 @@ void USwimComponent::ApplySwimMovement(float DeltaTime)
 		const FRotator TargetTilt(FMath::RadiansToDegrees(-PitchRad), 0.0f, FMath::RadiansToDegrees(RollRad));
 		WaveTilt = FMath::RInterpTo(WaveTilt, TargetTilt, DeltaTime, 2.0f);
 	}
-	else
+	else if (Model.GetState() == ESwimState::Diving)
 	{
 		WaveTilt = FMath::RInterpTo(WaveTilt, FRotator::ZeroRotator, DeltaTime, 2.0f);
+	}
+	else
+	{
+		WaveTilt = FMath::RInterpTo(WaveTilt, FRotator::ZeroRotator, DeltaTime, 4.0f);
+	}
+
+	// Burbujas solo con la cabeza bajo el agua (antes sonaban también al mantener
+	// la tecla de bucear en la superficie).
+	if (Model.IsHeadUnderwater())
+	{
 		BubbleTimer -= DeltaTime;
 		if (BubbleTimer <= 0.0f)
 		{
@@ -252,45 +253,19 @@ void USwimComponent::ApplySwimMovement(float DeltaTime)
 			}
 		}
 	}
-}
 
-void USwimComponent::TickBreath(float DeltaTime)
-{
-	const bool bSubmerged = State == EWaterState::Diving;
-	if (bSubmerged)
+	// Apnea: el modelo decide; aquí solo se emiten los eventos.
+	if (Step.bOxygenChanged)
 	{
-		const float Drain = FSurvivalModel::OxygenDrainPerSecond(GetCarriedWeightRatio(), LungCapacityRatio, bIsExertingUnderwater);
-		const float NewOxygen = FMath::Max(0.0f, Oxygen - Drain * DeltaTime);
-		// Se escribe siempre: con un umbral, a FPS altos el paso por frame
-		// (Drain * DeltaTime) quedaba por debajo y el oxigeno no variaba nunca.
-		const bool bChanged = NewOxygen != Oxygen;
-		Oxygen = NewOxygen;
-		if (bChanged)
-		{
-			OnOxygenChanged.Broadcast(GetOxygen01());
-		}
-		if (Oxygen <= 0.0f)
-		{
-			OnDrowningDamage.Broadcast(DrowningDamagePerSecond);
-		}
+		OnOxygenChanged.Broadcast(GetOxygen01());
 	}
-	else
+	if (Step.DrowningDamagePerSecond > 0.0f)
 	{
-		if (bWasSubmergedLastTick && Oxygen < GaspThreshold)
-		{
-			OnGaspForAir.Broadcast();
-			PlayOneShot(GaspSound);
-		}
-		const float Recovery = FSurvivalModel::OxygenRecoveryPerSecond(LungCapacityRatio);
-		const float NewOxygen = FMath::Min(100.0f, Oxygen + Recovery * DeltaTime);
-		// Igual que al consumir: sin umbral, para que la recuperacion no se
-		// detenga a FPS altos.
-		const bool bChanged = NewOxygen != Oxygen;
-		Oxygen = NewOxygen;
-		if (bChanged)
-		{
-			OnOxygenChanged.Broadcast(GetOxygen01());
-		}
+		OnDrowningDamage.Broadcast(Step.DrowningDamagePerSecond);
 	}
-	bWasSubmergedLastTick = bSubmerged;
+	if (Step.bGasp)
+	{
+		OnGaspForAir.Broadcast();
+		PlayOneShot(GaspSound);
+	}
 }
