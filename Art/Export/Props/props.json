@@ -1,0 +1,259 @@
+{
+  "generated_by": "Tools/Blender/props/run_props.py",
+  "prop_count": 23,
+  "props": [
+    {
+      "id": "SM_CliffWall_Basalt01",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Basalt01.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 1985.7,
+        "y": 879.2,
+        "z": 1769.7
+      },
+      "triangles": 3616
+    },
+    {
+      "id": "SM_CliffWall_Basalt02",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Basalt02.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 2313.7,
+        "y": 793.7,
+        "z": 1326.9
+      },
+      "triangles": 3388
+    },
+    {
+      "id": "SM_CliffWall_Sandstone01",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone01.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 1579.3,
+        "y": 1055.3,
+        "z": 2209.3
+      },
+      "triangles": 4010
+    },
+    {
+      "id": "SM_CliffWall_Sandstone02",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone02.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 2651.9,
+        "y": 643.5,
+        "z": 978.4
+      },
+      "triangles": 3530
+    },
+    {
+      "id": "SM_CliffSpur01",
+      "file": "AcantiladoFormaciones/SM_CliffSpur01.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 954.5,
+        "y": 641.4,
+        "z": 1327.3
+      },
+      "triangles": 3860
+    },
+    {
+      "id": "SM_CliffSpur02",
+      "file": "AcantiladoFormaciones/SM_CliffSpur02.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 705.5,
+        "y": 467.1,
+        "z": 1007.6
+      },
+      "triangles": 3994
+    },
+    {
+      "id": "SM_CliffSpur03",
+      "file": "AcantiladoFormaciones/SM_CliffSpur03.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 871.3,
+        "y": 563.4,
+        "z": 1557.7
+      },
+      "triangles": 3574
+    },
+    {
+      "id": "SM_SeaStack01",
+      "file": "AcantiladoFormaciones/SM_SeaStack01.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 1008.1,
+        "y": 997.5,
+        "z": 1930.0
+      },
+      "triangles": 814
+    },
+    {
+      "id": "SM_SeaStack02",
+      "file": "AcantiladoFormaciones/SM_SeaStack02.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 1215.0,
+        "y": 1174.8,
+        "z": 2500.6
+      },
+      "triangles": 920
+    },
+    {
+      "id": "SM_SeaArch01",
+      "file": "AcantiladoFormaciones/SM_SeaArch01.fbx",
+      "group": "AcantiladoFormaciones",
+      "dimensions_cm": {
+        "x": 1987.4,
+        "y": 658.1,
+        "z": 2237.6
+      },
+      "triangles": 3158
+    },
+    {
+      "id": "SM_LimestoneSlab01",
+      "file": "AcantiladoBloques/SM_LimestoneSlab01.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 345.4,
+        "y": 389.1,
+        "z": 41.6
+      },
+      "triangles": 184
+    },
+    {
+      "id": "SM_LimestoneSlab02",
+      "file": "AcantiladoBloques/SM_LimestoneSlab02.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 269.7,
+        "y": 305.5,
+        "z": 30.9
+      },
+      "triangles": 212
+    },
+    {
+      "id": "SM_LimestoneSlab03",
+      "file": "AcantiladoBloques/SM_LimestoneSlab03.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 485.7,
+        "y": 430.3,
+        "z": 42.4
+      },
+      "triangles": 204
+    },
+    {
+      "id": "SM_RockBoulder01",
+      "file": "AcantiladoBloques/SM_RockBoulder01.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 306.5,
+        "y": 238.3,
+        "z": 234.0
+      },
+      "triangles": 218
+    },
+    {
+      "id": "SM_RockBoulder02",
+      "file": "AcantiladoBloques/SM_RockBoulder02.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 328.5,
+        "y": 399.5,
+        "z": 347.3
+      },
+      "triangles": 270
+    },
+    {
+      "id": "SM_RockBoulder03",
+      "file": "AcantiladoBloques/SM_RockBoulder03.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 527.4,
+        "y": 423.9,
+        "z": 297.7
+      },
+      "triangles": 246
+    },
+    {
+      "id": "SM_RockBoulder04",
+      "file": "AcantiladoBloques/SM_RockBoulder04.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 545.0,
+        "y": 502.8,
+        "z": 400.6
+      },
+      "triangles": 276
+    },
+    {
+      "id": "SM_RockCobble01",
+      "file": "AcantiladoBloques/SM_RockCobble01.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 44.6,
+        "y": 45.8,
+        "z": 39.4
+      },
+      "triangles": 220
+    },
+    {
+      "id": "SM_RockCobble02",
+      "file": "AcantiladoBloques/SM_RockCobble02.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 81.5,
+        "y": 80.8,
+        "z": 59.4
+      },
+      "triangles": 246
+    },
+    {
+      "id": "SM_RockCobble03",
+      "file": "AcantiladoBloques/SM_RockCobble03.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 93.8,
+        "y": 99.5,
+        "z": 98.7
+      },
+      "triangles": 258
+    },
+    {
+      "id": "SM_RockCobble04",
+      "file": "AcantiladoBloques/SM_RockCobble04.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 125.6,
+        "y": 156.7,
+        "z": 119.7
+      },
+      "triangles": 196
+    },
+    {
+      "id": "SM_RockCobble05",
+      "file": "AcantiladoBloques/SM_RockCobble05.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 198.6,
+        "y": 148.4,
+        "z": 144.1
+      },
+      "triangles": 224
+    },
+    {
+      "id": "SM_RockCobble06",
+      "file": "AcantiladoBloques/SM_RockCobble06.fbx",
+      "group": "AcantiladoBloques",
+      "dimensions_cm": {
+        "x": 166.8,
+        "y": 217.1,
+        "z": 152.4
+      },
+      "triangles": 214
+    }
+  ]
+}

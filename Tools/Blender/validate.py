@@ -88,6 +88,10 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'RuinasTallas':    (80.0, 700.0),    # losa grabada 1,4 m .. canoa doble 6,5 m
     'Tesoros':         (5.0, 200.0),     # anzuelo ~10 cm .. remo ceremonial ~1,7 m
     'Items':           (5.0, 250.0),     # lasca ~8 cm .. lanza 2 m / hoja de palma 1,7 m
+    # kit de rocas y acantilados: formaciones grandes (paredes, espolones,
+    # farallones, arco) hasta ~26 m; bloques/cantos/losas sueltos hasta ~5,5 m
+    'AcantiladoFormaciones': (400.0, 2750.0),
+    'AcantiladoBloques':     (30.0, 650.0),
 }
 
 

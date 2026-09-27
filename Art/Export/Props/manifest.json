@@ -1,0 +1,535 @@
+{
+  "generated_by": "Tools/Blender/props/run_props.py",
+  "mesh_count": 23,
+  "meshes": [
+    {
+      "name": "SM_CliffWall_Basalt01",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Basalt01.fbx",
+      "seed": 8001,
+      "triangles": 3616,
+      "triangle_budget": {
+        "min": 2500,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1985.7,
+        "y": 879.2,
+        "z": 1769.7
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffWall_Basalt02",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Basalt02.fbx",
+      "seed": 8002,
+      "triangles": 3388,
+      "triangle_budget": {
+        "min": 2500,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 2313.7,
+        "y": 793.7,
+        "z": 1326.9
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffWall_Sandstone01",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone01.fbx",
+      "seed": 8003,
+      "triangles": 4010,
+      "triangle_budget": {
+        "min": 2500,
+        "max": 9500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1579.3,
+        "y": 1055.3,
+        "z": 2209.3
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffWall_Sandstone02",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone02.fbx",
+      "seed": 8004,
+      "triangles": 3530,
+      "triangle_budget": {
+        "min": 2500,
+        "max": 9500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 2651.9,
+        "y": 643.5,
+        "z": 978.4
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffSpur01",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffSpur01.fbx",
+      "seed": 8101,
+      "triangles": 3860,
+      "triangle_budget": {
+        "min": 1200,
+        "max": 5500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 954.5,
+        "y": 641.4,
+        "z": 1327.3
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffSpur02",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffSpur02.fbx",
+      "seed": 8102,
+      "triangles": 3994,
+      "triangle_budget": {
+        "min": 1200,
+        "max": 5500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 705.5,
+        "y": 467.1,
+        "z": 1007.6
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_CliffSpur03",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_CliffSpur03.fbx",
+      "seed": 8103,
+      "triangles": 3574,
+      "triangle_budget": {
+        "min": 1200,
+        "max": 5500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 871.3,
+        "y": 563.4,
+        "z": 1557.7
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_SeaStack01",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_SeaStack01.fbx",
+      "seed": 8201,
+      "triangles": 814,
+      "triangle_budget": {
+        "min": 500,
+        "max": 2500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1008.1,
+        "y": 997.5,
+        "z": 1930.0
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_SeaStack02",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_SeaStack02.fbx",
+      "seed": 8202,
+      "triangles": 920,
+      "triangle_budget": {
+        "min": 500,
+        "max": 2800,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1215.0,
+        "y": 1174.8,
+        "z": 2500.6
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_SeaArch01",
+      "group": "AcantiladoFormaciones",
+      "file": "AcantiladoFormaciones/SM_SeaArch01.fbx",
+      "seed": 8301,
+      "triangles": 3158,
+      "triangle_budget": {
+        "min": 1800,
+        "max": 6000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1987.4,
+        "y": 658.1,
+        "z": 2237.6
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_LimestoneSlab01",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_LimestoneSlab01.fbx",
+      "seed": 8401,
+      "triangles": 184,
+      "triangle_budget": {
+        "min": 80,
+        "max": 600,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 345.4,
+        "y": 389.1,
+        "z": 41.6
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_LimestoneSlab02",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_LimestoneSlab02.fbx",
+      "seed": 8402,
+      "triangles": 212,
+      "triangle_budget": {
+        "min": 80,
+        "max": 600,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 269.7,
+        "y": 305.5,
+        "z": 30.9
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_LimestoneSlab03",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_LimestoneSlab03.fbx",
+      "seed": 8403,
+      "triangles": 204,
+      "triangle_budget": {
+        "min": 80,
+        "max": 600,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 485.7,
+        "y": 430.3,
+        "z": 42.4
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockBoulder01",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockBoulder01.fbx",
+      "seed": 8501,
+      "triangles": 218,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 306.5,
+        "y": 238.3,
+        "z": 234.0
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockBoulder02",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockBoulder02.fbx",
+      "seed": 8502,
+      "triangles": 270,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 328.5,
+        "y": 399.5,
+        "z": 347.3
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockBoulder03",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockBoulder03.fbx",
+      "seed": 8503,
+      "triangles": 246,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 527.4,
+        "y": 423.9,
+        "z": 297.7
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockBoulder04",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockBoulder04.fbx",
+      "seed": 8504,
+      "triangles": 276,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 545.0,
+        "y": 502.8,
+        "z": 400.6
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble01",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble01.fbx",
+      "seed": 8601,
+      "triangles": 220,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 44.6,
+        "y": 45.8,
+        "z": 39.4
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble02",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble02.fbx",
+      "seed": 8602,
+      "triangles": 246,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 81.5,
+        "y": 80.8,
+        "z": 59.4
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble03",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble03.fbx",
+      "seed": 8603,
+      "triangles": 258,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 93.8,
+        "y": 99.5,
+        "z": 98.7
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble04",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble04.fbx",
+      "seed": 8604,
+      "triangles": 196,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 125.6,
+        "y": 156.7,
+        "z": 119.7
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble05",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble05.fbx",
+      "seed": 8605,
+      "triangles": 224,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 198.6,
+        "y": 148.4,
+        "z": 144.1
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_RockCobble06",
+      "group": "AcantiladoBloques",
+      "file": "AcantiladoBloques/SM_RockCobble06.fbx",
+      "seed": 8606,
+      "triangles": 214,
+      "triangle_budget": {
+        "min": 120,
+        "max": 500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 166.8,
+        "y": 217.1,
+        "z": 152.4
+      },
+      "material_slots": [
+        "M_Stone"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    }
+  ]
+}

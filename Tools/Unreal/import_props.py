@@ -25,6 +25,14 @@ import import_meshes as kit  # noqa: E402 - necesita el sys.path de arriba
 EXPORT_DIR = os.path.join(kit.REPO_ROOT, 'Art', 'Export', 'Props')
 MANIFEST_PATH = os.path.join(EXPORT_DIR, 'manifest.json')
 
+# Nanite conviene en la geometria mas pesada del kit de rocas y acantilados
+# (paredes/espolones/farallones/arco son piezas de mundo grandes con
+# densidad razonable, ver Tools/Blender/props/rocks_cliffs.py); mismo
+# criterio que NANITE_CATEGORIES en import_meshes.py para rock/tree. Los
+# bloques/cantos/losas sueltas (AcantiladoBloques) son demasiado ligeros
+# para que compense.
+NANITE_GROUPS = {'AcantiladoFormaciones'}
+
 
 def _use_complex_collision(static_mesh):
     body_setup = static_mesh.get_editor_property('body_setup')
@@ -48,6 +56,9 @@ def _import_entry(entry):
             _use_complex_collision(static_mesh)
         else:
             kit._add_simple_collision(static_mesh)
+
+    if entry['group'] in NANITE_GROUPS:
+        kit._enable_nanite(static_mesh)
 
     unreal.EditorAssetLibrary.save_loaded_asset(static_mesh)
     return True
