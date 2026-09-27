@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from . import photobash
+from .palette import TERRAIN_TARGETS, harmonize_albedo
 from .noise import (
     ambient_occlusion,
     blur,
@@ -1360,9 +1361,12 @@ def generate(name: str, size: int, seed: int | None = None) -> dict[str, np.ndar
     if seed is None:
         seed = default_seed(name)
     out = spec.fn(size, seed)
-    if isinstance(out, Material):
-        return out.finish()
-    return {k: out[k] for k in spec.outputs}
+    maps = out.finish() if isinstance(out, Material) else {k: out[k] for k in spec.outputs}
+    if name in TERRAIN_TARGETS:
+        # Terreno armonizado con la paleta low poly (texgen/palette.py): mismo tono medio y
+        # croma que los props de los packs CC0; el detalle y el tileado no cambian.
+        maps["BC"] = harmonize_albedo(maps["BC"], name)
+    return maps
 
 
 def default_seed(name: str) -> int:
