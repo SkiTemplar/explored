@@ -16,6 +16,15 @@ Plugins/*/Intermediate/
 
 # Salidas generadas por las herramientas (se regeneran; no se versionan)
 Art/Export/Textures/
+Art/Export/Packs/
+Art/Packs/
+
+# Mundo horneado por ExploredWorldGen (se regenera con Tools/worldgen.ps1 -Mode bake).
+# Con World Partition y OFPA cada actor es un paquete propio: miles de ficheros.
+Content/Maps/
+Content/World/
+Content/__ExternalActors__/
+Content/__ExternalObjects__/
 
 # Python / herramientas
 .venv/
