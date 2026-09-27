@@ -20,6 +20,8 @@ import _materials as M  # noqa: E402
 import _shapes as S  # noqa: E402
 import kit_construccion as K  # noqa: E402
 
+import bmesh  # noqa: E402
+import bpy  # noqa: E402
 from mathutils import Matrix  # noqa: E402
 
 CATEGORY = 'base_furniture'
@@ -45,6 +47,8 @@ VARIANTS = [
     dict(name='Base_GardenPlot_Logs', seed=2810, builder='plot_logs', tri_budget=(200, 6000),
          interactable=True),
     dict(name='Base_GardenPlot_Stones', seed=2811, builder='plot_stones', tri_budget=(200, 7000),
+         interactable=True),
+    dict(name='Base_MuseumPanel', seed=2812, builder='museum_panel', tri_budget=(200, 6000),
          interactable=True),
 ]
 for _v in VARIANTS:
@@ -217,6 +221,109 @@ def _b_display_shelf(v, rnd, name):
         x = -Wx / 2 + 0.1 + i * (Wx - 0.2) / 8
         p.add(K._box(f'Tooth{i}', (0.08, 0.05, 0.08), (x, -D / 2 + 0.02, H + 0.1), 'M_Wood',
                      _pick(rnd, 'wood_dark'), rnd), 'wood')
+    return p.finish(name)
+
+
+# ---------------------------------------------------------------------------
+# Panel de pared del museo: bastidor de 2 m (un lado de celda) apoyado contra
+# la pared, con estera de fondo y dos ganchos para colgar UN tesoro grande
+# (remo, tapa, carta). El hueco de artifacts.json va a (0, -6, 110) cm.
+# ---------------------------------------------------------------------------
+@_register('museum_panel')
+def _b_museum_panel(v, rnd, name):
+    p = K.Parts()
+    Wx, H = 1.9, 2.05
+    z0, z1 = 0.42, 1.8
+    for i, x in enumerate((-Wx / 2, Wx / 2)):
+        p.add(K._box(f'Post{i}', (0.09, 0.09, H), (x, 0.0, H / 2), 'M_Wood', _pick(rnd, 'wood_dark'), rnd), 'wood')
+        p.add(K._box(f'Foot{i}', (0.16, 0.2, 0.06), (x, -0.02, 0.03), 'M_Wood', _pick(rnd, 'wood_dark'), rnd), 'wood')
+    for i, z in enumerate((z0 - 0.03, z1 + 0.03)):
+        p.add(K._box(f'Rail{i}', (Wx, 0.08, 0.07), (0, 0.0, z), 'M_Wood', _pick(rnd, 'wood'), rnd), 'wood')
+    # tablero de fondo (tablas verticales) y estera trenzada delante
+    n = 7
+    for i in range(n):
+        x = -Wx / 2 + 0.045 + (i + 0.5) * (Wx - 0.09) / n
+        p.add(K._box(f'Board{i}', ((Wx - 0.09) / n - 0.006, 0.03, z1 - z0), (x, 0.02, (z0 + z1) / 2), 'M_Wood',
+                     _pick(rnd, 'wood'), rnd), 'wood')
+    # estera de palma trenzada en damero (tiras claras y oscuras alternas,
+    # con el relieve del trenzado en la propia malla)
+    mx0, mx1, mz0, mz1 = -Wx / 2 + 0.07, Wx / 2 - 0.07, z0 + 0.03, z1 - 0.03
+    nx, nz = 30, 20
+    bm = bmesh.new()
+    grid = [[bm.verts.new((mx0 + (mx1 - mx0) * i / nx, 0.0, mz0 + (mz1 - mz0) * j / nz)) for j in range(nz + 1)]
+            for i in range(nx + 1)]
+    for i in range(nx):
+        for j in range(nz):
+            bm.faces.new((grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]))
+    for i in range(nx + 1):
+        for j in range(nz + 1):
+            grid[i][j].co.y = -0.006 * (1 + math.sin(i * math.pi / 2) * math.sin(j * math.pi / 2))
+    me = bpy.data.meshes.new('Mat')
+    bm.to_mesh(me)
+    bm.free()
+    mat = bpy.data.objects.new('Mat', me)
+    C.link_object(mat)
+    mod = mat.modifiers.new('Solid', 'SOLIDIFY')
+    mod.thickness = 0.008
+    C.select_only(mat)
+    bpy.context.view_layer.objects.active = mat
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    M.assign(mat, ['M_Leaf'])
+    cell_w, cell_h = (mx1 - mx0) / (nx / 2), (mz1 - mz0) / (nz / 2)
+
+    def weave(vv):
+        ci, cj = int((vv.co.x - mx0) / cell_w + 1e-4), int((vv.co.z - mz0) / cell_h + 1e-4)
+        c = PAL['thatch'][2] if (ci + cj) % 2 else PAL['thatch'][1]
+        if (ci // 3 + cj // 3) % 2 and (ci + cj) % 2 == 0:
+            c = PAL['tapa'][0]  # rombos rojos teñidos en el trenzado
+        return (c[0], c[1], c[2], 0.0)
+    C.set_vertex_colors(mat, weave)
+    p.add(mat, 'none')
+    # ganchos: tacos de madera que salen y se levantan en la punta
+    for sx in (-1, 1):
+        x = sx * 0.55
+        p.add(K._rod(f'Peg{sx}', (x, 0.0, 1.06), (x, -0.13, 1.06), 0.026, 'M_Wood', _pick(rnd, 'wood_dark'), rnd,
+                     segs=8), 'pole')
+        p.add(K._rod(f'PegTip{sx}', (x, -0.13, 1.04), (x, -0.14, 1.14), 0.024, 'M_Wood', _pick(rnd, 'wood_dark'),
+                     rnd, segs=8), 'pole')
+        for k in range(3):
+            ring = C.make_cylinder(f'PegLash{sx}{k}', radius=0.032, depth=0.014, segments=8, center=(0, 0, 0))
+            ring.data.transform(Matrix.Translation((x, -0.02 - k * 0.014, 1.06)) @ Matrix.Rotation(math.pi / 2, 4, 'X'))
+            M.assign(ring, ['M_Fabric'])
+            C.set_vertex_colors(ring, C.constant_tint(PAL['tapa'][0] if k % 2 else PAL['fabric'][0], jitter=0.02,
+                                                      rnd=rnd))
+            p.add(ring, 'none')
+    # cresta: dientes tallados y disco estelar en el centro (motivo navegante)
+    p.add(K._box('Cap', (Wx + 0.14, 0.12, 0.06), (0, 0.0, H + 0.03), 'M_Wood', _pick(rnd, 'wood_dark'), rnd), 'wood')
+    for i in range(10):
+        x = -Wx / 2 + 0.08 + i * (Wx - 0.16) / 9
+        if abs(x) < 0.2:
+            continue
+        tooth = C.make_cylinder(f'Tooth{i}', radius=0.05, depth=0.1, segments=4, center=(x, -0.02, H + 0.11),
+                                radius2=0.004)
+        tooth.data.transform(Matrix.Translation((x, 0, 0)) @ Matrix.Rotation(math.pi / 4, 4, 'Z')
+                             @ Matrix.Translation((-x, 0, 0)))
+        M.assign(tooth, ['M_Wood'])
+        K._tint(tooth, _pick(rnd, 'wood'), rnd)
+        p.add(tooth, 'none')
+    star_m = Matrix.Translation((0, -0.02, H + 0.2)) @ Matrix.Rotation(math.pi / 2, 4, 'X')
+    disc = C.make_cylinder('Star', radius=0.15, depth=0.04, segments=20, center=(0, 0, 0))
+    disc.data.transform(star_m)
+    M.assign(disc, ['M_Wood'])
+    K._tint(disc, _pick(rnd, 'wood_dark'), rnd)
+    for i in range(8):
+        L = 0.13 if i % 2 == 0 else 0.095
+        ray = C.make_box(f'Ray{i}', (0.022, L, 0.014), center=(0, L / 2, 0.024))
+        ray.data.transform(star_m @ Matrix.Rotation(i * math.pi / 4, 4, 'Z'))
+        M.assign(ray, ['M_Wood'])
+        K._tint(ray, PAL['tapa'][1], rnd)
+        p.add(ray, 'none')
+    eye = C.make_cylinder('StarEye', radius=0.035, depth=0.02, segments=12, center=(0, 0, 0.03))
+    eye.data.transform(star_m)
+    M.assign(eye, ['M_Fabric'])
+    K._tint(eye, PAL['tapa'][0], rnd)
+    p.add(eye, 'soft')
+    p.add(disc, 'soft')
     return p.finish(name)
 
 
