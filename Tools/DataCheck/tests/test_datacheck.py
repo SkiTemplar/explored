@@ -17,7 +17,9 @@ from datacheck.checks import (
 
 
 from datacheck import cooking, crafting
-from datacheck.checks import DataSet, Report, check_building, check_cooking, check_crafting_reachability, run_all
+from datacheck.checks import (
+    DataSet, Report, check_building, check_cooking, check_crafting_reachability, check_gdd_food_coverage, run_all,
+)
 
 
 @pytest.fixture(scope="module")
@@ -591,3 +593,29 @@ def test_detecta_tecnica_con_id_distinto_de_ruins(ds: DataSet) -> None:
     techniques = next(s for s in stats if s["id"] == "wayfinding_techniques")
     techniques["values"] = ["camino_estrellas", "lectura_oleaje", "aves_atardecer", "nubes_fijas", "color_agua"]
     assert any_error(errors_of(ds), "wayfinding_techniques", "ruins.json")
+
+
+def _food_notes(ds: DataSet) -> list[str]:
+    r = Report()
+    check_gdd_food_coverage(ds, r)
+    return r.info
+
+
+def test_cobertura_gdd_comida_es_nota_no_error(real_report: Report) -> None:
+    assert not any("GDD §8.8" in e for e in real_report.errors + real_report.warnings)
+
+
+def test_detecta_comida_del_gdd_que_desaparece(ds: DataSet) -> None:
+    ds.data["items.json"] = [i for i in ds.items if i["id"] != "taro"]
+    assert any("taro" in n for n in _food_notes(ds))
+
+
+def test_cuenta_setas_por_tipo(ds: DataSet) -> None:
+    notes = _food_notes(ds)
+    assert any("comestible 1/2" in n and "toxica 0/2" in n and "alucinogena 0/1" in n for n in notes)
+    ds.data["items.json"] = ds.items + [
+        {"id": f"seta_{k}{n}", "tags": ["comida", "seta"] + (["alucinogena"] if k == "a" else []),
+         "properties": [{"name": "Toxico", "value": 3}] if k == "t" else []}
+        for k, n in (("c", 1), ("t", 1), ("t", 2), ("a", 1))
+    ]
+    assert not any("setas" in n for n in _food_notes(ds))

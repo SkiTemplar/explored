@@ -56,3 +56,6 @@ Qué comprueba:
   (especies, legendarias y trampas); 11 peces de caña + langosta, 5 legendarias, y que
   capturas, cebos, recompensas, trampas, pozas y despiece existan en `items.json`.
 - **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.
+- **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que
+  falta en `items.json` y setas por tipo (2 comestibles, 2 tóxicas por `Toxico`,
+  1 con etiqueta `alucinogena`). Ver `docs/balance/2026-09-27-comida-recoleccion.md`.

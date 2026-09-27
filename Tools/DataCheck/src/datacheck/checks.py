@@ -1002,6 +1002,45 @@ def check_forbidden_terms(ds: DataSet, r: Report) -> None:
                 r.error(f"{name}: contiene «{term}», eliminado por el GDD §10/§12")
 
 
+# GDD §8.8 (recolección y mar): nombre del GDD -> ids de items.json que lo cubren.
+GDD_FOOD = {
+    "coco": ("coco_verde", "coco_maduro"), "plátano": ("platano",), "mango": ("mango_fruta",),
+    "papaya": ("papaya",), "carambola": ("carambola",), "guayaba": ("guayaba",),
+    "fruta del pan": ("fruta_pan",), "taro": ("taro",), "yuca": ("yuca",), "batata": ("batata",),
+    "miel": ("miel",), "huevos de gaviota": ("huevo",), "algas": ("alga_comestible",),
+    "cangrejos": ("cangrejo",), "lapas": ("lapa",), "erizos": ("erizo",), "pulpo": ("pulpo",),
+    "langosta de arrecife": ("langosta",),
+}
+# GDD §8.8: setas (2 comestibles, 2 tóxicas, 1 alucinógena).
+GDD_MUSHROOMS = {"comestible": 2, "toxica": 2, "alucinogena": 1}
+
+
+def _mushroom_kind(item: dict) -> str:
+    if "alucinogena" in item.get("tags", []):
+        return "alucinogena"
+    toxic = any(p["name"] == "Toxico" and p["value"] > 0 for p in item.get("properties", []))
+    return "toxica" if toxic else "comestible"
+
+
+def check_gdd_food_coverage(ds: DataSet, r: Report) -> None:
+    """Comida del GDD §8.8 que aún falta en items.json (nota, no error).
+
+    Añadir una comida obliga a darla de alta en recipes.json/foods y a regenerar
+    CookingData.inl, así que el hueco se deja visible en vez de bloquear.
+    """
+    ids = {i["id"] for i in ds.items}
+    missing = [name for name, cands in GDD_FOOD.items() if not ids.intersection(cands)]
+    if missing:
+        r.info.append(f"items.json: falta comida del GDD §8.8: {', '.join(missing)}")
+    counts = {k: 0 for k in GDD_MUSHROOMS}
+    for item in ds.items:
+        if "seta" in item.get("tags", []):
+            counts[_mushroom_kind(item)] += 1
+    short = [f"{k} {counts[k]}/{n}" for k, n in GDD_MUSHROOMS.items() if counts[k] < n]
+    if short:
+        r.info.append(f"items.json: setas por debajo del GDD §8.8: {', '.join(short)}")
+
+
 # --------------------------------------------------------------------------- entrada
 
 
@@ -1025,4 +1064,5 @@ def run_all(ds: DataSet) -> Report:
     check_artifacts(ds, r)
     check_fish(ds, r)
     check_forbidden_terms(ds, r)
+    check_gdd_food_coverage(ds, r)
     return r
