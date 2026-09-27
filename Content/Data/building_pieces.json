@@ -630,6 +630,36 @@
       "mesh": "SM_Base_RainCollector"
     },
     {
+      "id": "catre_bambu",
+      "nameEs": "Catre de bambú",
+      "nameEn": "Bamboo cot",
+      "tier": "bambu",
+      "category": "mobiliario",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 8
+        },
+        {
+          "item": "cordel",
+          "count": 4
+        },
+        {
+          "item": "hoja_palma",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 35,
+      "maxCycloneCategory": 1,
+      "mesh": "SM_Base_Bed"
+    },
+    {
       "id": "suelo_madera",
       "nameEs": "Suelo de madera",
       "nameEn": "Wooden floor",
@@ -951,6 +981,72 @@
       "integrity": 40,
       "maxCycloneCategory": 1,
       "mesh": null
+    },
+    {
+      "id": "muelle",
+      "nameEs": "Muelle",
+      "nameEn": "Jetty",
+      "tier": "madera",
+      "category": "exterior",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        },
+        {
+          "item": "resina",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 90,
+      "integrity": 70,
+      "maxCycloneCategory": 1,
+      "mesh": "SM_Base_Dock"
+    },
+    {
+      "id": "muelle_final",
+      "nameEs": "Final de muelle",
+      "nameEn": "Jetty end",
+      "tier": "madera",
+      "category": "exterior",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 2
+        },
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 3
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [
+        "muelle"
+      ],
+      "buildMinutes": 60,
+      "integrity": 70,
+      "maxCycloneCategory": 1,
+      "mesh": "SM_Base_DockEnd"
     },
     {
       "id": "cimiento_piedra",
