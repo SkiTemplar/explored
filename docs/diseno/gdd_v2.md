@@ -86,8 +86,8 @@ Sección nueva: qué hace que el archipiélago se sienta habitado y no decorado.
 | Flora reactiva | Hierba que se aparta al pasar, palmeras que se doblan en el ciclón, quemado que rebrota | Ya implementado (`VegetationScatter`, `Weather`) |
 | Mundo interactivo | Todo árbol se tala y cae según el golpe y la pendiente; el tocón rebrota salvo que se arranque; ramas sueltas bajo los árboles | `WorldGen` (§3.12, modelos puros hechos) |
 | Día/noche, estaciones, marea | Cambian qué se puede hacer, no solo cómo se ve: pesca, mareas que abren pasos, mina que se inunda con la crecida | `Sky`, `Weather`, `Events`, `Ocean` (ya implementado) |
-| Pueblo con horario | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
-| Piratas que patrullan | Rutas de patrulla y asaltos programados, no solo reactivos | `Raiders` (§3.8, nuevo) |
+| Pueblo con horario **[F3]** | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
+| Piratas que patrullan **[F3]** | Rutas de patrulla y asaltos programados, no solo reactivos (las piezas de muralla que se defienden de ellos llegan antes, en fase 2, §3.8) | `Raiders` (§3.8, nuevo) |
 | Rastros del pasado | Campamentos Halden, pecios, petroglifos: cuentan historia por lo que dejan, nunca por texto largo | Ya implementado (`Ruins`, `Narrative`) |
 
 ---
