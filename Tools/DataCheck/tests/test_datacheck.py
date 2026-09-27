@@ -642,6 +642,16 @@ def test_cuenta_setas_por_tipo(ds: DataSet) -> None:
     assert not any("setas" in n for n in _food_notes(ds))
 
 
+def test_estratos_de_mineria_del_gdd_v2(real_report: Report) -> None:
+    assert not any("GDD v2 §3.4" in e for e in real_report.errors)
+    assert any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
+
+
+def test_detecta_estrato_de_mineria_que_desaparece(ds: DataSet) -> None:
+    ds.data["items.json"] = [i for i in ds.items if i["id"] != "hierro_meteorito"]
+    assert any_error(errors_of(ds), "hierro de meteorito", "GDD v2")
+
+
 # --------------------------------------------------------------------------- música (GDD §14.3)
 
 from datacheck import music
