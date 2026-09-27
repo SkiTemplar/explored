@@ -361,22 +361,111 @@ def amb_stream(name: str) -> np.ndarray:
     return seamless_loop(stereo, loop_len, fade_len)
 
 
+def _leaf_tap(rng: np.random.Generator, size: float) -> np.ndarray:
+    """Una gota contra una hoja ancha de la selva (platanera, taro, palma).
+
+    Tres capas: el chasquido del impacto (1-2 ms, por encima de 2,5 kHz), la
+    lamina de la hoja que vibra un instante con modos inarmonicos (mas grave y
+    larga cuanto mayor es la hoja, `size` en 0..1) y la salpicadura, uno a tres
+    microimpactos unos milisegundos despues cuando la gota se rompe."""
+    dur = 0.03 + 0.06 * size
+    dn = int(dur * SR)
+    out = np.zeros(dn)
+
+    click_len = max(int(rng.uniform(0.0008, 0.002) * SR), 16)
+    click = static_filter(rng.standard_normal(click_len), SR, fc=rng.uniform(2500.0, 5000.0), q=0.7, kind="highpass")
+    click = static_filter(click, SR, fc=9000.0, q=0.7, kind="lowpass")
+    out[:click_len] += click * np.exp(-np.arange(click_len) / SR / 0.0005) * 0.7
+
+    f0 = (1500.0 - 900.0 * size) * rng.uniform(0.85, 1.15)
+    tau = 0.005 + 0.016 * size
+    body = modal_hit(
+        SR, dur, base_freq=f0,
+        mode_ratios=[1.0, rng.uniform(2.1, 2.5), rng.uniform(3.6, 4.2)],
+        mode_dampings_s=[tau, tau * 0.6, tau * 0.35], mode_amps=[1.0, 0.5, 0.25],
+    )
+    out += body[:dn] * (0.08 + 0.12 * size)
+
+    for _ in range(int(rng.integers(1, 4))):
+        pos = int(rng.uniform(0.002, 0.009) * SR)
+        glen = max(int(rng.uniform(0.0005, 0.0015) * SR), 12)
+        if pos + glen < dn:
+            spray = static_filter(rng.standard_normal(glen), SR, fc=rng.uniform(4000.0, 8000.0), q=1.5, kind="bandpass")
+            out[pos : pos + glen] += spray * np.hanning(glen) * rng.uniform(0.15, 0.4)
+    return out
+
+
+def _leaf_drip(rng: np.random.Generator) -> np.ndarray:
+    """Goteron que se desprende de la punta de una hoja y cae uno o dos metros:
+    golpea una hoja baja (mas grave y con mas cuerpo que una gota de lluvia),
+    un charco (burbuja de Minnaert) o la hojarasca (golpe sordo)."""
+    kind = rng.random()
+    if kind < 0.3:
+        return _water_drop(rng) * 0.8
+    if kind < 0.5:
+        dn = int(rng.uniform(0.02, 0.04) * SR)
+        thud = static_filter(rng.standard_normal(dn), SR, fc=rng.uniform(500.0, 900.0), q=0.8, kind="lowpass")
+        return thud * np.exp(-np.arange(dn) / SR / 0.006) * 1.2
+    return _leaf_tap(rng, rng.uniform(0.8, 1.0)) * 1.3
+
+
+def _scatter_events(
+    n: int,
+    rng: np.random.Generator,
+    rate_track: np.ndarray,
+    make_event,
+    level_db: tuple[float, float],
+) -> list[tuple[int, np.ndarray]]:
+    """Eventos de Poisson con ritmo variable (por aclarado desde el maximo de
+    `rate_track`, en eventos/s) y nivel log-uniforme en `level_db`: muchas
+    gotas lejanas y debiles y pocas cercanas y fuertes, como en la realidad."""
+    max_rate = float(rate_track.max())
+    events = []
+    for pos, _ in place_grains(n, SR, rng, max_rate, jitter=1.0):
+        if rng.random() * max_rate > rate_track[pos]:
+            continue
+        level = 10.0 ** (rng.uniform(*level_db) / 20.0)
+        events.append((pos, make_event(rng) * level))
+    return events
+
+
 def amb_rain_on_leaves(name: str) -> np.ndarray:
-    """Lluvia sobre el dosel de la selva: mas repiqueteo agudo y resonante
-    que `amb_rain_light`/`amb_rain_heavy` (las hojas dispersan cada gota en
-    varios impactos), con goterones ocasionales cayendo de las puntas de las
-    hojas."""
+    """Lluvia sobre el dosel de la selva, oida desde debajo.
+
+    A diferencia de `amb_rain_light`/`amb_rain_heavy` (siseo de gotas contra
+    el suelo), aqui cada gota es un golpe discreto contra una hoja ancha: un
+    chasquido agudo seguido del «toc» breve de la lamina (ver `_leaf_tap`).
+    Capas:
+    - repiqueteo cercano: gotas sueltas, cada una en su punto del estereo;
+    - repiqueteo lejano: mucho mas denso y debil, decorrelado, con el lavado
+      de la lluvia sobre el resto del bosque;
+    - goterones de las puntas de las hojas (`_leaf_drip`), que se disparan en
+      cascada cuando una racha sacude el dosel, junto con un siseo de hojas.
+    La intensidad de la lluvia sube y baja despacio."""
     rng = rng_for(name)
     n, loop_len, fade_len = _lens(34.0, 4.0)
 
-    patter = render_noise_grains(n, SR, rng, rate_hz=70.0, grain_len_s_range=(0.006, 0.018), band_hz_range=(3000, 9000), q=2.4, amp_scale=0.45)
-    drips = render_noise_grains(n, SR, rng, rate_hz=3.5, grain_len_s_range=(0.02, 0.05), band_hz_range=(1200, 3200), q=1.6, amp_scale=0.7)
-    canopy = static_filter(pink_noise(n, rng), SR, fc=2500, q=0.6, kind="lowpass")
-    canopy = static_filter(canopy, SR, fc=500, q=0.6, kind="highpass")
-    amp = smooth_random_walk(n, rng, smoothing_hz=0.12, sr=SR, low=0.5, high=0.85)
+    intensity = smooth_random_walk(n, rng, smoothing_hz=0.05, sr=SR, low=0.55, high=1.0)
+    gust = smooth_random_walk(n, rng, smoothing_hz=0.12, sr=SR, low=0.0, high=1.0) ** 3.0
 
-    mono = patter + drips * 0.5 + canopy * amp * 0.3
-    stereo = decorrelate(mono, rng, SR, spread_ms=16)
+    far = np.zeros(n)
+    for pos, event in _scatter_events(n, rng, 170.0 * intensity, lambda r: _leaf_tap(r, r.uniform(0.0, 1.0)), (-30.0, -12.0)):
+        end = min(pos + len(event), n)
+        far[pos:end] += event[: end - pos]
+    far = static_filter(far, SR, fc=9000, q=0.6, kind="lowpass")
+    wash = static_filter(pink_noise(n, rng), SR, fc=1400, q=0.6, kind="highpass")
+    wash = static_filter(wash, SR, fc=7500, q=0.6, kind="lowpass")
+    rustle = static_filter(pink_noise(n, rng), SR, fc=2500, q=0.7, kind="highpass")
+    bed = far + wash * intensity * 0.1 + rustle * gust * 0.08
+    stereo = decorrelate(bed, rng, SR, spread_ms=18)
+
+    near_rate = 22.0 * intensity
+    for pos, event in _scatter_events(n, rng, near_rate, lambda r: _leaf_tap(r, r.uniform(0.2, 1.0)), (-28.0, -8.0)):
+        _add_panned(stereo, event, pos, rng.uniform(-0.9, 0.9))
+    drip_rate = 1.2 + 12.0 * gust
+    for pos, event in _scatter_events(n, rng, drip_rate, _leaf_drip, (-24.0, -10.0)):
+        _add_panned(stereo, event, pos, rng.uniform(-0.8, 0.8))
+
     return seamless_loop(stereo, loop_len, fade_len)
 
 

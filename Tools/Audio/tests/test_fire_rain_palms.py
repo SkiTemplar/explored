@@ -75,3 +75,23 @@ def test_viento_en_palmeras_suena_a_hojas(rendered):
     assert _band_share(palms, 2000.0, 6000.0) >= 2.0 * _band_share(wind, 2000.0, 6000.0)
     # Y las rachas se oyen: la sonoridad por segundo varia mas que en el viento solo.
     assert np.std(_envelope_db(palms, 1.0)) > np.std(_envelope_db(wind, 1.0))
+
+
+def test_lluvia_en_hojas_son_gotas_discretas(rendered):
+    leaves = rendered["amb_rain_on_leaves"]
+    # Cada gota contra una hoja es un golpe que sobresale del lavado de fondo
+    # (la version anterior era ruido rosa filtrado: unos 5 dB de margen).
+    env = _envelope_db(leaves, 0.005)
+    assert np.percentile(env, 99.5) - np.median(env) >= 10.0
+    # El «toc» de la lamina y el chasquido del impacto viven en 0,6-6 kHz.
+    assert _band_share(leaves, 600.0, 6000.0) >= 0.6
+    assert _band_share(leaves, 20.0, 200.0) <= 0.05
+
+
+def test_lluvia_en_hojas_tiene_cascadas_con_las_rachas(rendered):
+    # Las rachas sacuden el dosel y sueltan goterones: la sonoridad por segundo
+    # varia claramente mas que en la lluvia sobre el suelo.
+    leaves = rendered["amb_rain_on_leaves"]
+    light = rendered["amb_rain_light"]
+    assert np.std(_envelope_db(leaves, 1.0)) >= 1.0
+    assert np.std(_envelope_db(leaves, 1.0)) > 1.5 * np.std(_envelope_db(light, 1.0))
