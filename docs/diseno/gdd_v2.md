@@ -84,6 +84,7 @@ Sección nueva: qué hace que el archipiélago se sienta habitado y no decorado.
 | Fauna salvaje con rutina | Animales terrestres y marinos con horario propio (pastan, beben, duermen), huyen o cargan según especie | `Fauna` (§3.7) |
 | Aves e insectos | Bandadas en vuelo, enjambres de abejas, luciérnagas, mariposas — ambiente con movimiento constante | `Fauna` (boids ya existentes) |
 | Flora reactiva | Hierba que se aparta al pasar, palmeras que se doblan en el ciclón, quemado que rebrota | Ya implementado (`VegetationScatter`, `Weather`) |
+| Mundo interactivo | Todo árbol se tala y cae según el golpe y la pendiente; el tocón rebrota salvo que se arranque; ramas sueltas bajo los árboles | `WorldGen` (§3.12, modelos puros hechos) |
 | Día/noche, estaciones, marea | Cambian qué se puede hacer, no solo cómo se ve: pesca, mareas que abren pasos, mina que se inunda con la crecida | `Sky`, `Weather`, `Events`, `Ocean` (ya implementado) |
 | Pueblo con horario | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
 | Piratas que patrullan | Rutas de patrulla y asaltos programados, no solo reactivos | `Raiders` (§3.8, nuevo) |
@@ -386,6 +387,70 @@ catálogo y la misma vitrina.
 - **Riesgos técnicos:** ninguno nuevo; `FRuinsModel`/`FMuseumModel` ya con specs en
   host verdes.
 - **Dependencias:** `Ruins`, `Mining` (nueva fuente), `Building` (vitrinas).
+
+### 3.12 Mundo interactivo: tala universal **[director, 2026-09-27]**
+
+Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
+forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
+vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
+
+- **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
+  el bosque se regenere sin necesitar reglas especiales.
+- **Reglas:**
+  - **Golpes según la herramienta.** Se puede talar a mano, con algo contundente o con
+    filo. La pala no tala, pero arranca tocones y desbroza arbustos. Mezclar
+    herramientas a mitad de tala suma fracciones del trabajo: cada golpe aporta
+    1/N del total, así que 2 de 4 con hacha más 4 de 8 a mano tumban la palmera.
+  - **Qué suelta y dónde cae.** Los troncos quedan repartidos a lo largo del tronco
+    caído (en su 80 % inferior). Las ramas y las hojas caen en la copa, y los frutos,
+    en el radio de la copa. Mientras se golpea se siguen soltando los `PerHitDrops` de
+    la recolección.
+  - **Dirección de caída.** El árbol cae hacia donde empujan los golpes, es decir,
+    hacia el lado contrario al jugador, pero la pendiente tira cuesta abajo. Las dos
+    fuerzas pesan igual con unos 27° de pendiente (peso 2 × tangente). Con más
+    pendiente cae cuesta abajo aunque se golpee desde abajo. Si los golpes se anulan
+    en terreno llano, cae hacia una dirección fija de cada ejemplar.
+  - **Tocón.**
+    - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
+      hasta adulto y entonces se puede volver a talar.
+    - Si se arranca con pala (tocón o brote), no vuelve nunca. Es la única forma de
+      deforestar para siempre y sustituye a la regla anterior de que los árboles
+      grandes no rebrotaban.
+    - El arbusto no cae: se desbroza en el sitio.
+  - **Ramas sueltas.** Bajo cada ejemplar en pie se encuentran ramas en el suelo (hojas
+    secas bajo las palmeras). Se recogen a mano y reaparecen a su ritmo hasta llenar la
+    capacidad. Con la celda llena no se acumula nada, así que no aparece una ráfaga de
+    ramas al volver. Un tocón no da ramas: un bosque talado se queda sin leña fácil.
+
+  | Especie | Mano / contundente / filo | Altura (m) | Copa (m) | Rebrote + adulto (días) | Pala para arrancar | Ramas del suelo (máx., por día) |
+  |---|---|---|---|---|---|---|
+  | Palmera (`Palm`) | 8 / 7 / 4 | 9 | 3 | 12 + 30 | 4 | 2, 0,5 (hoja de palma) |
+  | Gigante (`JungleGiant`) | 14 / 12 / 6 | 22 | 6 | 20 + 60 | 8 | 4, 1,5 |
+  | Copa ancha (`JungleWide`) | 11 / 10 / 5 | 14 | 7 | 15 + 45 | 6 | 4, 1,2 |
+  | Manglar (`Mangrove`) | 9 / 8 / 4 | 7 | 4 | 20 + 30 | 5 | 2, 0,6 |
+  | Sotobosque (`Understory`) | 5 / 4 / 3 | 5 | 2 | 10 + 12 | 3 | 2, 0,8 |
+  | Arbusto (`Shrub`) | 1 / 1 / 1 (y pala 1) | — | 1 | 3 + 2 | 1 | 1, 0,3 |
+
+  Los golpes a mano y con filo son los mismos que en `FHarvestModel`, y hay un spec
+  que lo comprueba. Rendimiento al caer:
+  - **Gigante:** 2–3 troncos, 1–2 de madera dura, 1–2 de corteza, 0–1 de resina y 2–4
+    ramas secas.
+  - **Palmera:** 1 tronco, 2–4 hojas, 0–2 de fibra, 1–3 cocos maduros, 0–2 verdes y 0–1
+    cáscaras.
+  - **Resto de especies:** ver `FFellingModel::DefaultProfiles`.
+- **Progresión:** al principio se tala a mano y se recogen ramas del suelo. Con el hacha
+  se tala en la mitad de golpes, y con la pala se despeja terreno para siempre (huerto,
+  base, astillero).
+- **Interfaz:** sin barra de progreso. El árbol tiembla más con cada golpe y cruje en el
+  penúltimo. El brote se ve crecer.
+- **Riesgos técnicos:**
+  - Guardar la hora de tala de cada tocón exige una sección nueva, porque los deltas
+    actuales no tienen tiempo.
+  - La caída es un actor temporal, no física.
+  - Ver `docs/tecnico/tala-integracion.md`.
+- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
+  `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
+  herramienta).
 
 ---
 
