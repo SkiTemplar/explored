@@ -119,8 +119,17 @@ def _build_fern_ground(rnd, seed):
 
 
 def _build_banana(rnd, seed):
-    """Platanera: pseudotallo grueso y corto con 6-9 hojas enormes,
-    algunas rasgadas por el viento."""
+    """Platanera: pseudotallo grueso y corto con una mata REDONDEADA de
+    10-14 hojas anchas en abanico (algunas rasgadas por el viento).
+
+    2ª pasada de arte (encargo 2026-09-27: el «arbusto en V» rechazado):
+    con 6-9 hojas de anchura moderada (0.34x su longitud) repartidas en
+    círculo completo, desde CUALQUIER cámara fija la mayoría quedan casi
+    de canto (tarjetas planas de un solo lado, double_sided=False) y se
+    vuelven casi invisibles — solo se leían 1-2 hojas de frente, en forma
+    de V. Ahora las hojas son mucho más anchas (0.62x), van a dos alturas
+    del pseudotallo (rosetón, no un único punto) y son de dos caras, para
+    que la silueta se lea llena y redondeada desde cualquier ángulo."""
     parts = []
     height = rnd.uniform(1.6, 2.4)
     base_radius = rnd.uniform(0.14, 0.20)
@@ -133,25 +142,30 @@ def _build_banana(rnd, seed):
         (0.16, 0.20, 0.10), (0.30, 0.38, 0.20), height, seed, streak_count=16))
     parts.append(trunk)
 
-    top = C.spline_point(height, 1.0, height * 0.03, lean_dir)
-    n_leaves = rnd.randint(6, 9)
+    n_leaves = rnd.randint(10, 14)
     for i in range(n_leaves):
-        leaf_len = rnd.uniform(1.5, 2.5)
+        leaf_len = rnd.uniform(1.4, 2.3)
         segments = 8
         leaf = C.make_leaf_blade(
-            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.34,
-            width_tip=leaf_len * 0.06, curve_amount=leaf_len * 0.30,
-            segments=segments, double_sided=False, uv_cell='banana_leaf',
+            f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.62,
+            width_tip=leaf_len * 0.08, curve_amount=leaf_len * 0.34,
+            segments=segments, double_sided=True, uv_cell='banana_leaf',
         )
-        if rnd.random() < 0.45:
-            _tear_leaf_edges(leaf, segments, rnd, tear_count=rnd.randint(1, 2),
-                              depth_ratio=rnd.uniform(0.35, 0.6))
-        ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.25, 0.25)
-        elevation = rnd.uniform(math.radians(15), math.radians(55))
+        if rnd.random() < 0.4:
+            _tear_leaf_edges(leaf, segments, rnd, tear_count=1,
+                              depth_ratio=rnd.uniform(0.25, 0.4))
+        t_stem = rnd.uniform(0.75, 1.0)
+        origin = C.spline_point(height, t_stem, height * 0.03, lean_dir)
+        ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.2, 0.2)
+        # elevación con caída: la mitad más nueva del rosetón se abre hacia
+        # arriba, la otra mitad ya cuelga hacia fuera/abajo por su propio
+        # peso -silueta redondeada tipo fuente, no un candelabro apuntando
+        # todo hacia arriba.
+        elevation = rnd.uniform(math.radians(-18), math.radians(38))
         forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation)))
-        C.orient_and_place(leaf, top, forward, C.Vector((0, 0, 1)))
-        dark = (0.08, 0.24 + rnd.uniform(-0.02, 0.02), 0.09)
-        light = (0.24, 0.42, 0.16)
+        C.orient_and_place(leaf, origin, forward, C.Vector((0, 0, 1)))
+        dark = (0.07, 0.22 + rnd.uniform(-0.02, 0.02), 0.08)
+        light = (0.26, 0.56, 0.16)
         C.assign_materials(leaf, ['M_Leaf'])
         C.set_vertex_colors(leaf, C.gradient_along_axis(
             dark, light, 'y', 0.0, leaf_len, curve=1.0, jitter=0.03, rnd=rnd))
