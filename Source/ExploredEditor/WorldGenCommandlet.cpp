@@ -561,7 +561,7 @@ namespace
 					Cell->SetFolderPath(FName(TEXT("Vegetation")));
 				}
 				UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh, Rules[R].Species,
-					!Rules[R].bNoCollision, Rules[R].CullDistance);
+					!Rules[R].bNoCollision, Rules[R].CullDistance, Rules[R].bCastShadow);
 				Component->AddInstance(Instance.Transform, true);
 			}
 		}

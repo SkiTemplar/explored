@@ -52,6 +52,8 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MaxScale = 1.25f;
 		R.Sink = 0.4f;
 		R.LeanTowardsSea = 14.0f;
+		// Palmera aislada y reconocible en la silueta de la costa: se deja ver de lejos.
+		R.CullDistance = 600.0f;
 		Rules.Add(R);
 	}
 	// Gigantes del dosel: pocos y dispersos, sobre todo en Esmeralda.
@@ -67,6 +69,8 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinScale = 0.8f;
 		R.MaxScale = 1.15f;
 		R.Sink = 0.8f;
+		// El árbol más alto del dosel: define el perfil de la isla desde lejos.
+		R.CullDistance = 900.0f;
 		Rules.Add(R);
 	}
 	// Árboles de copa ancha: el grueso de la selva.
@@ -82,6 +86,9 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinScale = 0.75f;
 		R.MaxScale = 1.25f;
 		R.Sink = 0.6f;
+		// El grueso de la masa forestal: el mayor número de instancias entre los árboles, de
+		// ahí que se corte antes que los gigantes o las palmeras.
+		R.CullDistance = 700.0f;
 		Rules.Add(R);
 	}
 	// Manglar: en la orilla y los canales del Manglar de las Voces.
@@ -97,6 +104,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinScale = 0.8f;
 		R.MaxScale = 1.3f;
 		R.Sink = 0.2f;
+		R.CullDistance = 500.0f;
 		Rules.Add(R);
 	}
 	// Árboles de sotobosque: rellenan bajo el dosel.
@@ -129,7 +137,9 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MaxScale = 1.2f;
 		R.AlignToNormal = 0.9f;
 		R.Sink = 0.1f;
-		R.CullDistance = 250.0f;
+		// Clutter pequeño sin silueta propia: se corta pronto y no aporta a las sombras.
+		R.CullDistance = 110.0f;
+		R.bCastShadow = false;
 		Rules.Add(R);
 	}
 	// Sotobosque: helechos, arbustos y hojas grandes, muy denso en la selva.
@@ -146,7 +156,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MaxScale = 1.4f;
 		R.AlignToNormal = 0.4f;
 		R.Sink = 0.1f;
-		R.CullDistance = 220.0f;
+		R.CullDistance = 120.0f;
 		Rules.Add(R);
 	}
 	// Hierba y flores: praderas y claros.
@@ -165,6 +175,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.Sink = 0.05f;
 		R.bNoCollision = true;
 		R.CullDistance = 90.0f;
+		R.bCastShadow = false;
 		Rules.Add(R);
 	}
 	// Rocas: laderas, playas y los islotes; siguen la pendiente.
@@ -181,6 +192,9 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MaxScale = 2.2f;
 		R.AlignToNormal = 0.8f;
 		R.Sink = 0.5f;
+		// Las rocas van de cantos rodados a peñascos de isla; sin cota se quedaban siempre
+		// visibles (la regla no tenía CullDistance).
+		R.CullDistance = 400.0f;
 		Rules.Add(R);
 	}
 	return Rules;

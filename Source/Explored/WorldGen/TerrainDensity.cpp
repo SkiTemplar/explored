@@ -592,7 +592,9 @@ namespace
 		FSurfaceWeights W;
 		const float SandLine = 2.2f + 1.2f * Variation;
 		W.Sand = 1.0f - SmoothStep(SandLine - 0.8f, SandLine + 0.8f, Z);
-		W.Rock = 1.0f - SmoothStep(0.55f, 0.78f, NormalZ);
+		// En el trópico la selva se agarra a laderas muy empinadas: roca desnuda solo por encima de
+		// unos 52° y del todo a partir de 65°.
+		W.Rock = 1.0f - SmoothStep(0.42f, 0.62f, NormalZ);
 		// Interior de cuevas y voladizos: roca.
 		if (Z < ColumnHeight - 2.0f)
 		{
@@ -617,7 +619,7 @@ namespace
 		case EIslandArchetype::Mangrove: return 0.8f;
 		case EIslandArchetype::Landing: return 0.55f;
 		case EIslandArchetype::Smoke: return 0.35f;
-		case EIslandArchetype::Mesa: return 0.2f;
+		case EIslandArchetype::Mesa: return 0.7f;
 		default: return 0.15f;
 		}
 	}

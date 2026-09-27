@@ -174,6 +174,8 @@ def _import_mesh(fbx_path, dest_path, mesh_name):
 
     smi = options.static_mesh_import_data
     smi.set_editor_property('combine_meshes', True)
+    # Las copas llevan normales esféricas hechas en Blender: recalcularlas destruye su luz suave.
+    smi.set_editor_property('normal_import_method', unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS)
     smi.set_editor_property('generate_lightmap_u_vs', True)
     smi.set_editor_property('auto_generate_collision', False)
     smi.set_editor_property('vertex_color_import_option',

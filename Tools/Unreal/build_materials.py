@@ -693,7 +693,8 @@ def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
     if two_sided_foliage:
         sss = expr(m, unreal.MaterialExpressionMultiply, -400, 200)
         k = expr(m, unreal.MaterialExpressionConstant3Vector, -600, 250)
-        k.set_editor_property("constant", unreal.LinearColor(0.9, 1.0, 0.45, 1.0))
+        # Transmisión contenida: con más, las copas vistas a contraluz desde abajo se lavaban a blanco.
+        k.set_editor_property("constant", unreal.LinearColor(0.35, 0.45, 0.12, 1.0))
         connect(color, "", sss, "A")
         connect(k, "", sss, "B")
         to_property(sss, "", unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
@@ -710,7 +711,7 @@ def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
     rim_tint.set_editor_property("constant", unreal.LinearColor(1.0, 0.86, 0.6, 1.0))
     rim_amount = expr(m, unreal.MaterialExpressionScalarParameter, -700, 750)
     rim_amount.set_editor_property("parameter_name", "RimIntensity")
-    rim_amount.set_editor_property("default_value", 0.22)
+    rim_amount.set_editor_property("default_value", 0.07)
     rim_colored = expr(m, unreal.MaterialExpressionMultiply, -300, 650)
     connect(fresnel, "", rim_colored, "A")
     connect(rim_tint, "", rim_colored, "B")
