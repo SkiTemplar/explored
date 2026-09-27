@@ -115,3 +115,18 @@ def test_sand_wet_moisture_follows_the_shoreline(generated):
     du = np.abs(np.diff(mid, axis=1)).mean()
     dv = np.abs(np.diff(mid, axis=0)).mean()
     assert dv > 1.25 * du, f"humedad sin dirección de orilla: dv/du = {dv / du:.2f}"
+
+
+def test_grass_reads_as_blades_not_blotches(generated):
+    """El césped antiguo (LIC) era pelusa difuminada con una mancha por tile que se veía
+    repetida: el detalle de hoja (≈1 cm–10 cm) tiene que dominar sobre la mancha macro."""
+    from texgen.noise import blur
+    bc = generated["Grass"]["BC"]
+    r, g, b = mean_rgb(generated, "Grass")
+    assert g > r > b, f"césped no verde vivo: {r:.3f} {g:.3f} {b:.3f}"
+    lum = bc @ LUMA
+    fine = (lum - blur(lum, 0.01)).std() / lum.mean()
+    macro = blur(lum, 0.08).std() / lum.mean()
+    assert fine > 0.08, f"sin hojas legibles (detalle fino {fine:.3f})"
+    assert fine > 2.5 * macro, f"la mancha macro domina ({macro:.3f} frente a {fine:.3f})"
+    assert (lum < 0.1).mean() < 0.01, "huecos casi negros entre matas"

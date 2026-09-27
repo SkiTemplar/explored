@@ -75,6 +75,9 @@ MODULE_GROUPS = [
     ('items_pescados', 'Items'),
     ('items_despojos', 'Items'),
     ('items_orilla', 'Items'),
+    ('items_cocina', 'Items'),
+    ('items_legendarios', 'Items'),
+    ('items_botica', 'Items'),
 ]
 
 

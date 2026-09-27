@@ -7,6 +7,8 @@ Materiales:
     /Game/Materials/M_Terrain  color por vértice (sRGB) con variación procedural y roca en alfa.
     /Game/Materials/M_Ocean    Single Layer Water con olas de Gerstner (mismas que FOceanWaves).
     /Game/Materials/M_Stars    cúpula de estrellas aditiva controlada por el parámetro «Night».
+    /Game/Materials/M_PP_Body  postproceso del cuerpo: viñeta (color y fuerza) y desaturación
+                                según FBodySignals (VignetteAmount, TintColor, DesaturationAmount).
 """
 
 import unreal
@@ -81,7 +83,10 @@ MESH_USAGES = (
 
 
 def finish(material):
-    if material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE:
+    # Los flags de uso (Nanite, instanciado) son de material de superficie: en un postproceso
+    # (M_PP_Body) set_material_usage no aplica y solo ensuciaría el log.
+    is_surface = material.get_editor_property("material_domain") == unreal.MaterialDomain.MD_SURFACE
+    if is_surface and material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE:
         for usage in MESH_USAGES:
             MEL.set_material_usage(material, usage)
     MEL.recompile_material(material)
@@ -354,21 +359,40 @@ return normalize(n + float3(detail, 0.0));
 """
 
 # Espuma de cresta: donde la ola de Gerstner sube más, whitecaps que crecen con el mar de fondo.
+# Además, subsuperficie de cresta: verde turquesa translúcido cuando la cara de la ola que da la
+# espalda al sol queda entre la cámara y el sol (luz "wrap" clásica de translucencia barata).
+# Sale en un único FLOAT4 para no repetir la suma de Gerstner en un segundo nodo Custom:
+# .r = máscara de cresta (alimenta la espuma), .gba = color emisivo de subsuperficie ya ponderado.
 OCEAN_CREST_HLSL = GERSTNER_COMMON + r"""
-float crest = smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55));
-return saturate(crest) * saturate(SeaState * 1.4);
+float crest = saturate(smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55))) * saturate(SeaState * 1.4);
+
+float3 n = normalize(cross(tangent, binormal));
+float3 camDir = normalize(V);
+float3 lightDir = normalize(L);
+// Cámara y sol enfrentados a través de la cresta: dot(camDir, lightDir) cercano a -1.
+float backlight = saturate(-dot(camDir, lightDir));
+// Más fuerte en la cara de la ola que mira hacia el sol desde atrás (normal opuesta a la luz).
+float facing = saturate(dot(n, lightDir) * -0.5 + 0.5);
+float sss = crest * backlight * facing;
+float3 sssColor = sss * SubsurfaceColor * SubsurfaceStrength;
+return float4(crest, sssColor);
 """
 
 # Espuma de orilla (late con las olas: avanza y se retira) y líneas de brillo que se desplazan.
-# D = profundidad real del agua (SceneDepth - PixelDepth): 0 en la orilla, crece mar adentro.
+# D = aproximación de la profundidad de agua (DistanceToNearestSurface, ver build_ocean): 0 en la
+# orilla, crece mar adentro. Es un campo de distancias por voxels (Global Distance Field), así que
+# sus escalones se notan como un borde de costa con "dientes"; se dithera con un hash de P para que
+# ese escalón deje de leerse como una línea recta y quede dentro del ruido del propio patrón de espuma.
 OCEAN_FOAM_HLSL = r"""
+float ditherFoam = frac(sin(dot(P.xy, float2(12.9898, 78.233))) * 43758.5453) - 0.5;
+float Dd = max(D + ditherFoam * 60.0, 0.0);
 float2 uv = P.xy / 900.0;
 float n1 = Texture2DSample(Foam, FoamSampler, uv + T * float2(0.010, 0.004)).r;
 float n2 = Texture2DSample(Foam, FoamSampler, uv * 1.9 - T * float2(0.006, 0.012)).r;
 float pattern = saturate(n1 * 0.6 + n2 * 0.4);
 float wave = 0.5 + 0.5 * sin(T * 6.2831853 / 5.0);
 float band = (35.0 + 85.0 * wave) * (0.6 + 0.6 * SeaState);
-float shore = 1.0 - saturate(D / max(band, 1.0));
+float shore = 1.0 - saturate(Dd / max(band, 1.0));
 float foam = saturate(shore * shore * (0.45 + 0.7 * pattern));
 float glint = step(0.965, sin(dot(P.xy, float2(0.004, 0.0027)) + T * 0.9) * (0.55 + 0.45 * pattern));
 return float2(foam, glint * (0.5 + 0.5 * SeaState));
@@ -445,14 +469,40 @@ def build_ocean():
     connect(ripple_strength, "", normal, "RippleStrength")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
-    crest = custom(m, -1000, 950, OCEAN_CREST_HLSL, gerstner_inputs + ["SeaState"],
-                   unreal.CustomMaterialOutputType.CMOT_FLOAT1, "CrestFoam")
+    # Sol real de la escena (mismo Directional Light que orbita en ExploredSkyController) y
+    # dirección de cámara, para el retro-iluminado de la subsuperficie en OCEAN_CREST_HLSL.
+    cam_vector = expr(m, unreal.MaterialExpressionCameraVectorWS, -1600, 900)
+    light_dir = expr(m, unreal.MaterialExpressionSkyAtmosphereLightDirection, -1600, 1000)
+    sss_color = expr(m, unreal.MaterialExpressionVectorParameter, -1600, 1100)
+    sss_color.set_editor_property("parameter_name", "SubsurfaceColor")
+    sss_color.set_editor_property("default_value", unreal.LinearColor(0.25, 0.95, 0.55, 1.0))
+    sss_strength = expr(m, unreal.MaterialExpressionScalarParameter, -1600, 1180)
+    sss_strength.set_editor_property("parameter_name", "SubsurfaceStrength")
+    sss_strength.set_editor_property("default_value", 1.4)
+
+    crest = custom(m, -1000, 950, OCEAN_CREST_HLSL,
+                   gerstner_inputs + ["SeaState", "V", "L", "SubsurfaceColor", "SubsurfaceStrength"],
+                   unreal.CustomMaterialOutputType.CMOT_FLOAT4, "CrestFoamAndSSS")
     wire_gerstner(crest)
     connect(sea_state, "", crest, "SeaState")
+    connect(cam_vector, "", crest, "V")
+    connect(light_dir, "", crest, "L")
+    connect(sss_color, "", crest, "SubsurfaceColor")
+    connect(sss_strength, "", crest, "SubsurfaceStrength")
+
+    crest_mask = expr(m, unreal.MaterialExpressionComponentMask, -750, 900)
+    crest_mask.set_editor_property("r", True)
+    connect(crest, "", crest_mask, "")
+    crest_sss = expr(m, unreal.MaterialExpressionComponentMask, -750, 990)
+    for channel in ("g", "b", "a"):
+        crest_sss.set_editor_property(channel, True)
+    connect(crest, "", crest_sss, "")
 
     # Aproximación de la profundidad de agua: distancia (cm) al campo de distancia del terreno
     # más cercano desde la posición de la propia superficie. Cerca de la orilla esa distancia
-    # es pequeña (el fondo está justo debajo); mar adentro crece con la profundidad real.
+    # es pequeña (el fondo está justo debajo); mar adentro crece con la profundidad real. Es un
+    # campo por voxels (Global Distance Field): sin ditherar, sus escalones se leen como rayas
+    # rectas paralelas en el color del agua. Se compensa en los propios nodos que la consumen.
     foam_tex = texture_object(m, "/Game/Generated/Textures/T_WaterFoam", -1600, 1450)
     water_depth = expr(m, unreal.MaterialExpressionDistanceToNearestSurface, -1000, 1450)
 
@@ -475,15 +525,23 @@ def build_ocean():
 
     total_foam = expr(m, unreal.MaterialExpressionMax, -150, 1350)
     connect(foam_mask, "", total_foam, "A")
-    connect(crest, "", total_foam, "B")
+    connect(crest_mask, "", total_foam, "B")
 
-    # Factores de mezcla por profundidad: 0 en la laguna somera, 1 en el talud profundo.
-    t1 = custom(m, -800, 300, "return saturate((D - 100.0) / 250.0);", ["D"],
-               unreal.CustomMaterialOutputType.CMOT_FLOAT1, "ShallowToMid")
+    # Factores de mezcla por profundidad: 0 en la laguna somera, 1 en el talud profundo. Bandas
+    # más anchas que antes y ditheradas con un hash de la posición para que el escalón del campo
+    # de distancia (voxelado) no se lea como una raya recta repetida por toda la superficie.
+    t1 = custom(m, -800, 300, r"""
+float dith = frac(sin(dot(P.xy, float2(12.9898, 78.233))) * 43758.5453) - 0.5;
+return saturate((D + dith * 220.0 - 100.0) / 450.0);
+""", ["D", "P"], unreal.CustomMaterialOutputType.CMOT_FLOAT1, "ShallowToMid")
     connect(water_depth, "", t1, "D")
-    t2 = custom(m, -800, 400, "return saturate((D - 900.0) / 900.0);", ["D"],
-               unreal.CustomMaterialOutputType.CMOT_FLOAT1, "MidToDeep")
+    connect(wp, "", t1, "P")
+    t2 = custom(m, -800, 400, r"""
+float dith = frac(sin(dot(P.xy, float2(39.3468, 11.135)) + 7.0) * 24634.6345) - 0.5;
+return saturate((D + dith * 260.0 - 900.0) / 1400.0);
+""", ["D", "P"], unreal.CustomMaterialOutputType.CMOT_FLOAT1, "MidToDeep")
     connect(water_depth, "", t2, "D")
+    connect(wp, "", t2, "P")
 
     # Color por profundidad: laguna turquesa -> arrecife azul -> talud azul profundo.
     def blend3(name, color_a, color_b, color_c, x, y):
@@ -507,8 +565,15 @@ def build_ocean():
         return lerp2
 
     base_blend = blend3("BaseColor", (0.30, 0.86, 0.80), (0.05, 0.45, 0.62), (0.02, 0.10, 0.22), -700, -450)
-    scatter_blend = blend3("Scattering", (0.02, 0.14, 0.13), (0.012, 0.07, 0.075), (0.004, 0.03, 0.045), -700, 100)
-    absorb_blend = blend3("Absorption", (0.20, 0.05, 0.02), (0.42, 0.075, 0.05), (0.65, 0.20, 0.10), -700, 700)
+    # Scattering + Absorption son la extinción real (1/cm) que usa el compositing de Single Layer
+    # Water para el color transmitido del fondo: los valores previos (p. ej. Absorption R=0.20 en
+    # la orilla) daban una longitud de atenuación de ~5 cm, así que el agua se volvía opaca a
+    # centímetros de la orilla y el fondo dejaba de verse pase lo que pasara con BaseColor/D.
+    # Se bajan un orden de magnitud en la franja somera (longitud de atenuación ~1-2 m: se ve la
+    # arena de los bajíos) y se suavizan las otras dos franjas para una transición continua hasta
+    # el talud, que sigue siendo opaco a pocos centímetros como corresponde al azul profundo.
+    scatter_blend = blend3("Scattering", (0.002, 0.004, 0.004), (0.010, 0.014, 0.013), (0.020, 0.030, 0.035), -700, 100)
+    absorb_blend = blend3("Absorption", (0.006, 0.0025, 0.0015), (0.020, 0.012, 0.007), (0.090, 0.050, 0.025), -700, 700)
 
     foam_color = expr(m, unreal.MaterialExpressionVectorParameter, -150, -300)
     foam_color.set_editor_property("parameter_name", "FoamColor")
@@ -529,7 +594,12 @@ def build_ocean():
     glint_emissive = expr(m, unreal.MaterialExpressionMultiply, 100, -180)
     connect(glint_color, "", glint_emissive, "A")
     connect(glint_amount, "", glint_emissive, "B")
-    to_property(glint_emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+
+    # Brillo del sol (glint) + subsuperficie de cresta (crest_sss) comparten la emisiva.
+    total_emissive = expr(m, unreal.MaterialExpressionAdd, 220, -60)
+    connect(glint_emissive, "", total_emissive, "A")
+    connect(crest_sss, "", total_emissive, "B")
+    to_property(total_emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
 
     rough_calm = expr(m, unreal.MaterialExpressionConstant, -150, 20)
     rough_calm.set_editor_property("r", 0.05)
@@ -597,6 +667,64 @@ def build_stars():
     connect(cv, "", body, "CV")
     connect(t, "", body, "T")
     connect(night, "", body, "Night")
+    to_property(body, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(m)
+
+
+# ---------------------------------------------------------------------------
+# Postproceso del cuerpo (UBodySignalsComponent, docs/tecnico/cuerpo.md)
+# ---------------------------------------------------------------------------
+
+PP_BODY_HLSL = r"""
+// Viñeta y desaturación de FBodySignals (docs/tecnico/cuerpo.md): sin iconos, el jugador
+// diagnostica por sensaciones (GDD §8.3). UBodySignalsComponent::ApplyPostProcess fija
+// BodyVignette, BodyVignetteTint y BodyDesaturation cada fotograma en el MID de esta
+// instancia; aquí solo se declara el grafo con sus valores neutros (0 = pantalla limpia).
+// BodyBlur, BodyBleedPulse, BodyHeartRateHz y BodyHallucination también los fija el
+// componente pero no están conectados todavía (SetParameterValue sobre un nombre que el
+// material no declara no falla: queda para un siguiente hito de postproceso).
+float3 base = SceneColor;
+float gray = dot(base, float3(0.299, 0.587, 0.114));
+float3 desaturated = lerp(base, float3(gray, gray, gray), saturate(BodyDesaturation));
+
+// Distancia al centro en UV de pantalla, 0 en el centro y ~1 ya en la esquina.
+float2 centered = ScreenUV - float2(0.5, 0.5);
+float dist = length(centered) * 1.4142135;
+float vignetteMask = saturate(pow(dist, 2.2) * BodyVignette);
+
+return lerp(desaturated, BodyVignetteTint, vignetteMask);
+"""
+
+
+def build_pp_body():
+    m = recreate_material("M_PP_Body")
+    m.set_editor_property("material_domain", unreal.MaterialDomain.MD_POST_PROCESS)
+    m.set_editor_property("blendable_location", unreal.BlendableLocation.BL_AFTER_TONEMAPPING)
+
+    scene_color = expr(m, unreal.MaterialExpressionSceneTexture, -700, 0)
+    scene_color.set_editor_property("scene_texture_id", unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0)
+
+    screen_pos = expr(m, unreal.MaterialExpressionScreenPosition, -700, 200)
+
+    vignette_param = expr(m, unreal.MaterialExpressionScalarParameter, -700, 380)
+    vignette_param.set_editor_property("parameter_name", "BodyVignette")
+    vignette_param.set_editor_property("default_value", 0.0)
+
+    desaturation_param = expr(m, unreal.MaterialExpressionScalarParameter, -700, 480)
+    desaturation_param.set_editor_property("parameter_name", "BodyDesaturation")
+    desaturation_param.set_editor_property("default_value", 0.0)
+
+    tint_param = expr(m, unreal.MaterialExpressionVectorParameter, -700, 580)
+    tint_param.set_editor_property("parameter_name", "BodyVignetteTint")
+    tint_param.set_editor_property("default_value", unreal.LinearColor(0.0, 0.0, 0.0, 1.0))
+
+    body = custom(m, -350, 200, PP_BODY_HLSL, ["SceneColor", "ScreenUV", "BodyVignette", "BodyDesaturation", "BodyVignetteTint"],
+                  unreal.CustomMaterialOutputType.CMOT_FLOAT3, "BodyPostProcess")
+    connect(scene_color, "Color", body, "SceneColor")
+    connect(screen_pos, "ViewportUV", body, "ScreenUV")
+    connect(vignette_param, "", body, "BodyVignette")
+    connect(desaturation_param, "", body, "BodyDesaturation")
+    connect(tint_param, "", body, "BodyVignetteTint")
     to_property(body, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     finish(m)
 
@@ -840,6 +968,7 @@ def main():
     build_terrain()
     build_ocean()
     build_stars()
+    build_pp_body()
     build_vegetation_materials()
 
 

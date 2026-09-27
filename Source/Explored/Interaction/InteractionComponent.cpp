@@ -6,8 +6,10 @@
 #include "Engine/HitResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Components/PrimitiveComponent.h"
 #include "Interaction/ExploredInteractable.h"
 #include "Items/ExploredItemActor.h"
+#include "WorldGen/ExploredVegetationCell.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -48,14 +50,26 @@ void UInteractionComponent::UpdateFocus()
 
 	FHitResult Hit;
 	AActor* NewFocus = nullptr;
+	UPrimitiveComponent* NewComponent = nullptr;
+	int32 NewInstanceIndex = INDEX_NONE;
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
 	{
 		if (AActor* HitActor = Hit.GetActor())
 		{
+			// Hit.Item es el índice de instancia cuando el componente golpeado es un HISM
+			// (vegetación y rocas: muchas instancias, un único actor «celda»). Se fija ANTES
+			// de preguntar CanInteract: AExploredVegetationCell lo necesita para saber a qué
+			// instancia responde (una celda entera no es «interactuable» en bloque).
+			if (AExploredVegetationCell* VegetationCell = Cast<AExploredVegetationCell>(HitActor))
+			{
+				VegetationCell->SetInteractionFocus(Hit.Component.Get(), Hit.Item);
+			}
 			if (HitActor->GetClass()->ImplementsInterface(UExploredInteractable::StaticClass())
 				&& IExploredInteractable::Execute_CanInteract(HitActor, Owner))
 			{
 				NewFocus = HitActor;
+				NewComponent = Hit.Component.Get();
+				NewInstanceIndex = Hit.Item;
 			}
 		}
 	}
@@ -64,7 +78,11 @@ void UInteractionComponent::UpdateFocus()
 	// NewFocus (null) coincidía con él, así que nunca se avisaba de la pérdida
 	// de foco. bHasFocus recuerda que el último aviso fue «hay foco».
 	const bool bLostStaleFocus = !NewFocus && bHasFocus && !FocusedActor.IsValid();
-	if (NewFocus == FocusedActor.Get() && !bLostStaleFocus)
+	// Con HISM (vegetación, rocas) el actor no cambia entre instancias distintas de la misma
+	// celda: sin comparar también instancia, apuntar a otra palmera del mismo grupo no
+	// refrescaría los verbos ni el foco para UHarvestSubsystem.
+	const bool bSameFocus = NewFocus == FocusedActor.Get() && NewInstanceIndex == FocusedInstanceIndex;
+	if (bSameFocus && !bLostStaleFocus)
 	{
 		return;
 	}
@@ -75,6 +93,8 @@ void UInteractionComponent::UpdateFocus()
 	}
 
 	FocusedActor = NewFocus;
+	FocusedComponent = NewComponent;
+	FocusedInstanceIndex = NewInstanceIndex;
 	bHasFocus = NewFocus != nullptr;
 	CurrentVerbs.Reset();
 

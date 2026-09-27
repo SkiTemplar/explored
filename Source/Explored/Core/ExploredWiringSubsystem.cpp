@@ -9,6 +9,7 @@
 #include "Subsystems/SubsystemCollection.h"
 
 #include "Achievements/AchievementsSubsystem.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Audio/ExploredMusicSubsystem.h"
 #include "Boats/ExploredBoat.h"
 #include "Building/BuildingModel.h"
@@ -23,7 +24,9 @@
 #include "Fishing/ExploredFishingSubsystem.h"
 #include "Fishing/ExploredTrap.h"
 #include "Fishing/FishingComponent.h"
+#include "GameFramework/PlayerStart.h"
 #include "Items/ExploredItemActor.h"
+#include "Items/ItemRegistrySubsystem.h"
 #include "Items/ItemTypes.h"
 #include "Player/ExploredCharacter.h"
 #include "Player/SwimComponent.h"
@@ -33,6 +36,7 @@
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
+#include "WorldGen/ExploredVegetationCell.h"
 
 namespace ExploredWiringDetail
 {
@@ -225,6 +229,14 @@ float UExploredWiringSubsystem::GetTotalDays() const
 	return Time ? Time->GetTotalDays() : 0.0f;
 }
 
+UExploredWiringSubsystem* UExploredWiringSubsystem::Get(const UObject* WorldContextObject)
+{
+	const UWorld* World = (GEngine && WorldContextObject)
+		? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull)
+		: nullptr;
+	return World ? World->GetSubsystem<UExploredWiringSubsystem>() : nullptr;
+}
+
 AExploredCharacter* UExploredWiringSubsystem::GetPlayerCharacter() const
 {
 	const UWorld* World = GetWorld();
@@ -234,6 +246,10 @@ AExploredCharacter* UExploredWiringSubsystem::GetPlayerCharacter() const
 
 void UExploredWiringSubsystem::Tick(float DeltaTime)
 {
+	// El rebrote de sesión necesita granularidad fina para no notarse a saltos; el resto del
+	// muestreo (cuerpo, clima, descubrimientos...) va a la cadencia más gorda de siempre.
+	TickVegetationRegrowth(DeltaTime);
+
 	SampleTimer -= DeltaTime;
 	if (SampleTimer > 0.0f)
 	{
@@ -258,6 +274,7 @@ void UExploredWiringSubsystem::Sample(float DeltaSeconds)
 	}
 	BindFaunaManager();
 	ApplyPendingPawnSections();
+	SpawnLandingStarterKitIfNeeded();
 
 	const float Days = GetTotalDays();
 	if (RunStartDays < 0.0f)
@@ -617,6 +634,42 @@ void UExploredWiringSubsystem::UpdateStorms(float GameHours)
 	}
 }
 
+void UExploredWiringSubsystem::SpawnLandingStarterKitIfNeeded()
+{
+	if (bStarterKitSpawned)
+	{
+		return;
+	}
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	APlayerStart* Start = nullptr;
+	for (TActorIterator<APlayerStart> It(World); It; ++It)
+	{
+		Start = *It;
+		break;
+	}
+	if (!Start)
+	{
+		// El nivel horneado todavía no ha terminado de aparecer; se reintenta en el próximo Sample.
+		return;
+	}
+	bStarterKitSpawned = true;
+
+	const FVector WreckCenter = Start->GetActorLocation() + Start->GetActorForwardVector() * 300.0;
+	SpawnItemsAround(WreckCenter, TEXT("cuchillo"), 1, 80.0f);
+	SpawnItemsAround(WreckCenter, TEXT("cantimplora"), 1, 80.0f);
+
+	const FVector AroundSpawn = Start->GetActorLocation();
+	SpawnItemsAround(AroundSpawn, TEXT("coco_maduro"), 3, 450.0f);
+	SpawnItemsAround(AroundSpawn, TEXT("palo_recto"), 4, 450.0f);
+	SpawnItemsAround(AroundSpawn, TEXT("rama_seca"), 3, 450.0f);
+	SpawnItemsAround(AroundSpawn, TEXT("canto_rodado"), 3, 450.0f);
+	SpawnItemsAround(AroundSpawn, TEXT("piedra_plana"), 2, 450.0f);
+}
+
 void UExploredWiringSubsystem::SpawnItemsAround(const FVector& Center, FName ItemId, int32 Count, float RadiusCm) const
 {
 	UWorld* World = GetWorld();
@@ -637,6 +690,249 @@ void UExploredWiringSubsystem::SpawnItemsAround(const FVector& Center, FName Ite
 			Instance.DefinitionId = ItemId;
 			Item->InitializeFromInstance(Instance);
 		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Recolección de vegetación y rocas (P-HARVEST)
+// ---------------------------------------------------------------------------
+
+void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent& Component)
+{
+	if (VegetationDeltasAppliedCells.Contains(Cell.CellCoord))
+	{
+		return;
+	}
+	VegetationDeltasAppliedCells.Add(Cell.CellCoord);
+
+	// Una celda agrupa varias especies (un HISM por malla): cada una tiene su propia capa de
+	// deltas, con nombre el del componente (estable entre partidas, ver ExploredVegetationCell.cpp
+	// GetOrCreateComponent), porque los índices de instancia no se comparten entre componentes.
+	for (const auto& Pair : Cell.GetComponentSpecies())
+	{
+		UHierarchicalInstancedStaticMeshComponent* CellComponent = Pair.Key;
+		if (!CellComponent)
+		{
+			continue;
+		}
+		const FSaveScatterDeltas* Layer = WorldDeltas.FindLayer(CellComponent->GetFName());
+		const FSaveIndexSet* Indices = Layer ? Layer->FindCell(Cell.CellCoord) : nullptr;
+		if (!Indices)
+		{
+			continue;
+		}
+		for (const int32 Index : Indices->ToArray())
+		{
+			if (Index < 0 || Index >= CellComponent->GetInstanceCount())
+			{
+				continue;
+			}
+			FVegetationInstanceKey Key{ Cell.CellCoord, CellComponent->GetFName(), Index };
+			FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
+			if (State.bHidden)
+			{
+				continue;
+			}
+			HideVegetationInstance(*CellComponent, Index, State);
+			// Ya venía talada de la partida guardada: sin rebrote de sesión (se persistió
+			// precisamente porque su especie no rebrota, ver HarvestInstance).
+			State.RegrowRemainingSeconds = -1.0f;
+			State.Hits = 1;
+		}
+	}
+}
+
+void UExploredWiringSubsystem::HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const
+{
+	FTransform Original;
+	Component.GetInstanceTransform(InstanceIndex, Original, true);
+	OutState.OriginalTransform = Original;
+	OutState.Component = &Component;
+	OutState.bHidden = true;
+
+	FTransform Hidden = Original;
+	Hidden.SetScale3D(FVector::ZeroVector);
+	// HISM no permite quitar una única instancia sin desplazar los índices de las demás (rompería
+	// cualquier progreso o delta guardado con índices más altos); se oculta a escala cero y sin
+	// colisión de la forma en su lugar. UpdateInstanceTransform con bTeleport evita el rastro físico.
+	Component.UpdateInstanceTransform(InstanceIndex, Hidden, true, true, true);
+}
+
+void UExploredWiringSubsystem::TickVegetationRegrowth(float DeltaSeconds)
+{
+	if (VegetationRuntime.Num() == 0)
+	{
+		return;
+	}
+	for (auto& Pair : VegetationRuntime)
+	{
+		FVegetationRuntimeState& State = Pair.Value;
+		if (!State.bHidden || State.RegrowRemainingSeconds < 0.0f)
+		{
+			continue;
+		}
+		State.RegrowRemainingSeconds -= DeltaSeconds;
+		if (State.RegrowRemainingSeconds > 0.0f)
+		{
+			continue;
+		}
+		UHierarchicalInstancedStaticMeshComponent* Component = State.Component.Get();
+		if (Component)
+		{
+			Component->UpdateInstanceTransform(Pair.Key.Index, State.OriginalTransform, true, true, true);
+		}
+		State.bHidden = false;
+		State.Hits = 0;
+		State.RegrowRemainingSeconds = -1.0f;
+	}
+}
+
+bool UExploredWiringSubsystem::HasHarvestTool(const AActor* Instigator, FName RequiredTag) const
+{
+	if (RequiredTag.IsNone())
+	{
+		return true;
+	}
+	const AExploredCharacter* Character = Cast<AExploredCharacter>(Instigator);
+	const UCarryComponent* Carry = Character ? Character->GetCarryComponent() : nullptr;
+	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
+	if (!Carry || !Registry)
+	{
+		return false;
+	}
+	for (const EHand Hand : { EHand::Left, EHand::Right })
+	{
+		FItemInstance HandItem;
+		if (Carry->GetHandItem(Hand, HandItem) && ItemEffective::HasTag(HandItem, RequiredTag, Registry->GetItems()))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UExploredWiringSubsystem::GetHarvestVerbs(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, TArray<FText>& OutVerbs) const
+{
+	if (!Component || InstanceIndex == INDEX_NONE)
+	{
+		return;
+	}
+	const FName Species = Cell.GetSpecies(Component);
+	const FHarvestSpeciesRule* Rule = FHarvestModel::FindRule(HarvestRules, Species);
+	if (!Rule)
+	{
+		return;
+	}
+
+	const bool bHasTool = HasHarvestTool(GetPlayerCharacter(), Rule->RequiredToolTag);
+	const int32 Required = FHarvestModel::HitsRequired(*Rule, bHasTool);
+	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
+	const FVegetationRuntimeState* State = VegetationRuntime.Find(Key);
+	const int32 CurrentHits = State ? State->Hits : 0;
+
+	FText Verb;
+	if (Required <= 1)
+	{
+		Verb = NSLOCTEXT("ExploredHarvest", "VerbGather", "Recoger");
+	}
+	else if (Species == FName(TEXT("Rock")))
+	{
+		Verb = NSLOCTEXT("ExploredHarvest", "VerbMine", "Picar");
+	}
+	else
+	{
+		Verb = NSLOCTEXT("ExploredHarvest", "VerbChop", "Talar");
+	}
+
+	if (Required > 1)
+	{
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("Verb"), Verb);
+		Args.Add(TEXT("Hits"), CurrentHits);
+		Args.Add(TEXT("Required"), Required);
+		Verb = FText::Format(NSLOCTEXT("ExploredHarvest", "VerbProgress", "{Verb} ({Hits}/{Required})"), Args);
+	}
+	OutVerbs.Add(Verb);
+}
+
+bool UExploredWiringSubsystem::CanHarvestInstance(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex) const
+{
+	if (!Component || InstanceIndex == INDEX_NONE)
+	{
+		return false;
+	}
+	const FName Species = Cell.GetSpecies(Component);
+	if (Species.IsNone() || !FHarvestModel::FindRule(HarvestRules, Species))
+	{
+		return false;
+	}
+	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
+	if (const FVegetationRuntimeState* State = VegetationRuntime.Find(Key))
+	{
+		// Talada (permanente o a la espera de rebrotar): no se puede volver a golpear.
+		return !State->bHidden;
+	}
+	return true;
+}
+
+void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, AActor* Instigator)
+{
+	if (!Component || InstanceIndex == INDEX_NONE)
+	{
+		return;
+	}
+	EnsureVegetationDeltasApplied(Cell, *Component);
+	if (!CanHarvestInstance(Cell, Component, InstanceIndex))
+	{
+		return;
+	}
+	const FName Species = Cell.GetSpecies(Component);
+	const FHarvestSpeciesRule* Rule = FHarvestModel::FindRule(HarvestRules, Species);
+	if (!Rule)
+	{
+		return;
+	}
+
+	const bool bHasTool = HasHarvestTool(Instigator, Rule->RequiredToolTag);
+	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
+	FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
+
+	bool bFelled = false;
+	State.Hits = FHarvestModel::ApplyHit(*Rule, State.Hits, bHasTool, bFelled);
+
+	FTransform InstanceTransform;
+	Component->GetInstanceTransform(InstanceIndex, InstanceTransform, true);
+	const FVector DropLocation = InstanceTransform.GetLocation();
+
+	for (const FHarvestDrop& Drop : FHarvestModel::RollDrops(Rule->PerHitDrops, HarvestRandom))
+	{
+		SpawnItemsAround(DropLocation, Drop.ItemId, Drop.MinCount, 60.0f);
+	}
+
+	if (!bFelled)
+	{
+		return;
+	}
+
+	for (const FHarvestDrop& Drop : FHarvestModel::RollDrops(Rule->FellDrops, HarvestRandom))
+	{
+		SpawnItemsAround(DropLocation, Drop.ItemId, Drop.MinCount, 110.0f);
+	}
+
+	HideVegetationInstance(*Component, InstanceIndex, State);
+	if (Rule->RegrowHours > 0.0f)
+	{
+		// Simplificación deliberada: el rebrote es de sesión, en segundos reales (1 h de
+		// juego ≈ 60 s reales de espera), y no se guarda instancia a instancia — el formato de
+		// guardado (FSaveScatterDeltas) es un conjunto de índices sin marca de tiempo. Por eso
+		// estas especies NO se añaden a WorldDeltas: si la partida se recarga antes de que
+		// rebrote en esta sesión, aparecen disponibles de nuevo en vez de seguir taladas.
+		State.RegrowRemainingSeconds = Rule->RegrowHours * 60.0f;
+	}
+	else
+	{
+		State.RegrowRemainingSeconds = -1.0f;
+		WorldDeltas.Layer(Component->GetFName()).Add(Cell.CellCoord, InstanceIndex);
 	}
 }
 
@@ -969,12 +1265,18 @@ void UExploredWiringSubsystem::LoadClock(const FSaveArchive& Ar)
 void UExploredWiringSubsystem::SaveWiring(FSaveArchive& Ar) const
 {
 	Ar.Write(TEXT("runStartDays"), RunStartDays);
+	Ar.Write(TEXT("starterKitSpawned"), bStarterKitSpawned);
 }
 
 void UExploredWiringSubsystem::LoadWiring(const FSaveArchive& Ar)
 {
 	RunStartDays = -1.0f;
 	Ar.Read(TEXT("runStartDays"), RunStartDays);
+	// Sin la clave (partida nueva, o guardada antes de que existiera este reparto) se entrega
+	// el salvamento de Landing: en una partida ya empezada es una vez de más junto al
+	// PlayerStart, no una regresión.
+	bStarterKitSpawned = false;
+	Ar.Read(TEXT("starterKitSpawned"), bStarterKitSpawned);
 	LastDaysReported = -1;
 	Odometer.Reset();
 	CycloneWatch = ExploredLinks::FCycloneWatch();
@@ -1033,6 +1335,12 @@ void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 	{
 		WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;
 	}
+	// Misma semilla, mismas tiradas de recolección (biblia: determinismo por semilla).
+	HarvestRandom = FExploredRandom(static_cast<uint64>(WorldDeltas.Seed) ^ 0x9E3779B97F4A7C15ULL);
+	// Los deltas de vegetación de la partida que se acaba de cargar todavía no se han aplicado
+	// a ninguna celda: EnsureVegetationDeltasApplied los aplicará la primera vez que se toque cada una.
+	VegetationDeltasAppliedCells.Reset();
+	VegetationRuntime.Reset();
 }
 
 // --- Personaje: inventario, cuerpo y mapa ---------------------------------------

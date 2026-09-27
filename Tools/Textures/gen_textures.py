@@ -43,9 +43,13 @@ def preview_card(name: str, maps: dict, seed: int) -> dict:
     spec = MATERIALS[name]
     info = f"{spec.tile_m:g} m/tile · semilla {seed}"
     if "BC" in maps:
-        arh = maps["ARH"]
-        lit = lit_preview(maps["BC"], maps["N"], arh[..., 0], arh[..., 1])
-        thumbs = [maps["BC"], maps["N"] * 0.5 + 0.5, arh]
+        # FoliageAtlas trae BC RGBA (A = recorte) + N sin ARH: se previsualiza el RGB con
+        # AO 1 y rugosidad por defecto.
+        arh = maps.get("ARH")
+        bc = maps["BC"][..., :3]
+        lit = lit_preview(bc, maps["N"], None if arh is None else arh[..., 0],
+                          None if arh is None else arh[..., 1])
+        thumbs = [bc, maps["N"] * 0.5 + 0.5] + ([] if arh is None else [arh])
     elif "N" in maps:
         water = np.broadcast_to(np.array([0.10, 0.42, 0.52]), maps["N"].shape).copy()
         lit = lit_preview(water, maps["N"], None, np.full(maps["N"].shape[:2], 0.08))

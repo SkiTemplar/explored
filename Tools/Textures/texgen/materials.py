@@ -198,55 +198,106 @@ def sand_wet(size: int, seed: int) -> Material:
     return Material(albedo, height, rough, depth=0.006, ao_strength=0.8)
 
 
-def grass(size: int, seed: int) -> Material:
-    """Césped pintado visto desde arriba: pinceladas direccionales blandas de 2-4 cm que
-    siguen una dirección de flujo coherente localmente (nunca celdas ni contornos cerrados),
-    con poco contraste entre matas y una deriva de tono a gran escala entre amarillento
-    cálido y azulado frío. Estilo Sea of Thieves: legible como césped a 3-5 m, no como
-    escamas ni briznas realistas."""
-    u, v = uv_grid(size)
-    # Dirección de la brocha: campo de muy baja frecuencia, coherente en cada zona.
-    flow = 0.6 + 1.3 * spectral_noise(size, seed + 1, 1, 3, 2.6)
-    ca, sa = np.cos(flow), np.sin(flow)
-    # Integración tipo LIC a lo largo del flujo: un grano fino se difumina siguiendo la
-    # dirección local, lo que dibuja vetas de pincelada blandas sin geometría de celda.
-    grain = spectral_noise(size, seed + 2, 10, 90, 1.4)
-    step = 0.009  # ~1.3 cm en un tile de 1.5 m: pinceladas de 2-4 cm de largo total
-    acc = grain.copy()
-    wsum = 1.0
-    for k in range(1, 7):
-        du, dv = ca * step * k, sa * step * k
-        acc = acc + sample(grain, np.mod(u + du, 1.0), np.mod(v + dv, 1.0))
-        acc = acc + sample(grain, np.mod(u - du, 1.0), np.mod(v - dv, 1.0))
-        wsum += 2.0
-    brush = unit(acc / wsum, 1.4)
-    # Bulto blando de mata: variación grande y suave, sin bordes duros.
-    clump = unit(spectral_noise(size, seed + 3, 2, 7, 2.0), 1.8)
-    height = np.clip(0.5 + 0.3 * (brush - 0.5) + 0.25 * (clump - 0.5), 0.0, 1.0)
+def _grass_tufts(size: int, n: int, seed: int, radius: float, blades: tuple[int, int],
+                 u: np.ndarray, v: np.ndarray, lean: np.ndarray) -> dict:
+    """Matas vistas desde arriba: una roseta por celda de Voronoi (n × n) de hojas en lanza
+    que salen del centro, se estrechan hasta la punta y se curvan un poco. Las hojas se
+    abren en abanico (~240°) hacia `lean` (ángulo por píxel, campo lento: hierba peinada
+    por el viento), no en estrella de 360°. `radius` en unidades de celda. La mata se desvanece al acercarse a la junta de celdas (edge), así
+    que nunca se ve el polígono del Voronoi. Devuelve máscara, altura, t (0 base, 1 punta)
+    y el id de hoja (tono por hoja)."""
+    vo = voronoi(size, n, n, seed, jitter=0.85, u=u, v=v)
+    rx, ry = -vo["dx"], -vo["dy"]
+    r = np.hypot(rx, ry) + 1e-6
+    th = np.arctan2(ry, rx)
+    alive = vo["id2"] < 0.9
+    k_max = blades[1]
+    tab = rng_table(seed + 7, n * n + 1, k_max, 4)
+    cell = np.minimum((vo["id"] * (n * n)).astype(np.int64), n * n)
+    nb = blades[0] + (vo["id2"] * 97 % 1.0 * (blades[1] - blades[0] + 1)).astype(np.int64)
+    rad = radius * (0.75 + 0.5 * vo["id"])
+    mask = np.zeros(r.shape)
+    height = np.zeros(r.shape)
+    tt = np.zeros(r.shape)
+    bid = np.zeros(r.shape)
+    # Dirección de la mata = campo lento muestreado en su centro (misma para toda la mata).
+    cu = np.mod(u + vo["dx"] / n, 1.0)
+    cv = np.mod(v + vo["dy"] / n, 1.0)
+    rot = sample(lean, cu, cv) + (vo["id"] - 0.5) * 0.8
+    for k in range(k_max):
+        on = (k < nb) & alive
+        j = tab[cell, k]
+        length = rad * (0.6 + 0.4 * j[..., 0])
+        fan = (k + 0.5 + 0.6 * (j[..., 1] - 0.5)) / np.maximum(nb, 1) - 0.5
+        phi = rot + fan * 4.2
+        curl = (j[..., 2] - 0.5) * 1.6
+        ang = np.mod(th - phi - curl * r / length + np.pi, 2 * np.pi) - np.pi
+        t = np.clip(r / length, 0.0, 1.0)
+        d = r * np.abs(np.sin(np.clip(ang, -np.pi / 2, np.pi / 2)))
+        d = np.where(np.abs(ang) < np.pi / 2, d, 9.0)
+        hw = length * (0.15 + 0.07 * j[..., 3]) * (1.0 - t) ** 0.7 * smoothstep(0.0, 0.18, t) + 1e-4
+        prof = np.clip(1.0 - (d / hw) ** 2, 0.0, 1.0) * (r < length) * on
+        # Soft edge (anti-aliasing) of the blade.
+        m = smoothstep(0.0, 0.25, prof)
+        h = (0.45 + 0.55 * np.sin(np.pi * 0.5 * np.minimum(t * 1.4, 1.0))) * np.sqrt(prof)
+        take = h > height
+        mask = np.maximum(mask, m)
+        tt = np.where(take, t, tt)
+        bid = np.where(take, j[..., 0] * 0.6 + j[..., 3] * 0.4, bid)
+        height = np.maximum(height, h)
+    fade = smoothstep(0.0, 0.45, vo["edge"]) ** 0.7
+    return {"mask": mask * fade, "height": height * fade, "t": tt, "bid": bid, "id": vo["id"]}
 
-    albedo = ramp(height, [(0.0, "#2c4c24"), (0.35, "#3f7530"), (0.65, "#5a9c43"), (1.0, "#82bd58")])
-    # Deriva de tono a gran escala: zonas cálidas amarillentas y zonas frías azuladas, sin
-    # bordes (mismo campo de baja frecuencia en las dos direcciones, no una celda).
-    hue = unit(spectral_noise(size, seed + 4, 1, 3, 2.4), 2.2)
-    warm = ramp(height, [(0.0, "#3a5a1c"), (0.5, "#8aa22e"), (1.0, "#d6d968")])
-    cool = ramp(height, [(0.0, "#173c34"), (0.5, "#2f7a63"), (1.0, "#79c4a6")])
-    tint = lerp(cool, warm, hue)
-    albedo = albedo * 0.55 + tint * 0.45
-    # Pinceladas: variación suave de brillo/sombra siguiendo la brocha, poco contraste.
-    albedo = mix_color(albedo, "#cfe08a", smoothstep(0.66, 0.92, brush) * 0.16)
-    albedo = mix_color(albedo, "#1f3a1a", smoothstep(0.34, 0.08, brush) * 0.14)
-    # Florecillas: pocas, pequeñas, blancas o amarillas con centro amarillo.
-    fl = scatter_dots(size, 11, seed + 5, radius=0.09, keep=0.1)
-    petal = np.where(fl["id"] > 0.5, 1.0, 0.0)[..., None]
-    fl_col = petal * hex_rgb("#fbf6e6") + (1 - petal) * hex_rgb("#ffd84a")
-    core = (1.0 - smoothstep(0.02, 0.04, fl["f1"])) * (fl["mask"] > 0)
-    albedo = albedo + (fl_col - albedo) * fl["mask"][..., None]
-    albedo = mix_color(albedo, "#e8a326", core * 1.0)
-    height = np.maximum(height, fl["mask"] * 0.98)
-    albedo = macro_variation(albedo, seed + 20, warm="#c8d65a", cool="#4d9a6a", amount=0.2, value=0.08)
-    height = blur(height, 0.0009)
-    rough = 0.78 - 0.12 * height
-    return Material(albedo, height, rough, depth=0.011, ao_strength=0.65)
+
+def grass(size: int, seed: int) -> Material:
+    """Césped pintado visto desde arriba: matas en roseta de hojas en lanza (4 capas de
+    densidad creciente, las grandes encima) sobre un fondo de hierba corta más oscura (nunca
+    negra). Cada hoja va de verde hondo en la base a verde lima/amarillo en la punta, con
+    tono propio por hoja y por mata; florecillas de 5 pétalos escasas. Sin manchas grandes:
+    la deriva de tono es suave y la da macro_variation."""
+    u, v = uv_grid(size)
+    wu = u + 0.006 * spectral_noise(size, seed + 1, 3, 12, 2.0)
+    wv = v + 0.006 * spectral_noise(size, seed + 2, 3, 12, 2.0)
+    fine = unit(spectral_noise(size, seed + 3, 30, 200, 1.2))
+    soft = unit(spectral_noise(size, seed + 4, 2, 8, 2.0), 2.0)
+    # Fondo: hierba corta, apenas pinceladas, verde medio-oscuro.
+    height = 0.12 + 0.1 * fine + 0.06 * soft
+    albedo = ramp(0.35 * fine + 0.65 * soft, [(0.0, "#315f27"), (0.5, "#3f7732"), (1.0, "#528c3a")])
+    lean = 2 * np.pi * spectral_noise(size, seed + 6, 1, 3, 2.5) * 0.35 + 1.2
+    blade_lo = [hex_rgb("#326a2a"), hex_rgb("#2f6a3c")]
+    blade_hi = [hex_rgb("#a4d25a"), hex_rgb("#7cc96c")]
+    # (celdas, radio, hojas por mata, elevación de la capa)
+    layers = [(31, 0.55, (4, 6), 0.06), (23, 0.58, (5, 7), 0.12), (17, 0.6, (5, 7), 0.19),
+              (13, 0.6, (6, 8), 0.26), (9, 0.55, (6, 8), 0.34)]
+    for i, (n, rad, nb, lift) in enumerate(layers):
+        tf = _grass_tufts(size, n, seed + 30 + 11 * i, rad, nb, wu, wv, lean)
+        h = lift + 0.55 * tf["height"]
+        w = np.clip(tf["mask"] * smoothstep(-0.02, 0.04, h - height), 0.0, 1.0)
+        # Tono por mata (cálido ↔ frío) y por hoja (más clara/oscura).
+        warm = tf["id"]
+        lo = lerp(blade_lo[1], blade_lo[0], warm)
+        hi = lerp(blade_hi[1], blade_hi[0], warm) * (0.88 + 0.2 * tf["bid"])[..., None]
+        t = tf["t"][..., None]
+        col = lo + (hi - lo) * (0.15 + 0.85 * t ** 0.8)
+        # Nervio central algo más claro: da lectura de hoja sin dibujar contorno.
+        col = col * (0.92 + 0.12 * np.clip(tf["height"] / 0.9, 0, 1))[..., None]
+        albedo = albedo + (col - albedo) * w[..., None]
+        height = height + (h - height) * w
+    # Florecillas: pocas, 5 pétalos blancos o amarillos con centro naranja.
+    fl = voronoi(size, 9, 9, seed + 5, jitter=0.8)
+    fr = fl["f1"] / 0.13
+    petals = 0.72 + 0.28 * np.cos(5 * (np.arctan2(fl["dy"], fl["dx"]) + fl["id"] * 6.28))
+    alive = (fl["id2"] < 0.14)
+    flower = (1.0 - smoothstep(petals * 0.8, petals, fr)) * alive
+    core = (1.0 - smoothstep(0.25, 0.38, fr)) * alive
+    fl_col = np.where((fl["id"] > 0.45)[..., None], hex_rgb("#fbf6e6"), hex_rgb("#ffd84a"))
+    albedo = albedo + (fl_col - albedo) * flower[..., None]
+    albedo = mix_color(albedo, "#e89426", core)
+    height = np.maximum(height, flower * (0.8 + 0.15 * (1 - fr)))
+    albedo = macro_variation(albedo, seed + 20, warm="#c8d65a", cool="#4d9a6a", amount=0.2, value=0.1)
+    height = np.clip(blur(height, 0.0006), 0.0, 1.0)
+    rough = 0.8 - 0.12 * height - 0.1 * flower
+    return Material(albedo, height, rough, depth=0.012, ao_strength=0.9)
 
 
 def moss(size: int, seed: int) -> Material:
