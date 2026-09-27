@@ -12,6 +12,7 @@ Tests/FireSpec.cpp
 Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/FellingModelSpec.cpp
+Tests/GroundBranchModelSpec.cpp
 Tests/HarvestModelSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp
