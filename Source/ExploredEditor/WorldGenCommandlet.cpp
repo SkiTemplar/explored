@@ -153,6 +153,8 @@ namespace
 		TVertexInstanceAttributesRef<FVector3f> Normals = Attributes.GetVertexInstanceNormals();
 		TVertexInstanceAttributesRef<FVector4f> Colors = Attributes.GetVertexInstanceColors();
 		TVertexInstanceAttributesRef<FVector2f> UVs = Attributes.GetVertexInstanceUVs();
+		// UV0: coordenadas de mundo; UV1 y UV2: pesos de capa (arena, hojarasca) y (roca, volcánico).
+		UVs.SetNumChannels(3);
 		Attributes.GetPolygonGroupMaterialSlotNames();
 
 		Description.ReserveNewVertices(Mesh.Positions.Num());
@@ -175,6 +177,9 @@ namespace
 			// UV en metros del mundo / 4 para texturas de detalle.
 			const FVector3f WorldMeters = Mesh.Positions[I] / 100.0f + FVector3f(ChunkOriginMeters);
 			UVs.Set(Instance, 0, FVector2f(WorldMeters.X, WorldMeters.Y) / 4.0f);
+			const FVector4f L = Mesh.Layers.IsValidIndex(I) ? Mesh.Layers[I] : FVector4f(0.0f, 0.0f, C.A, 0.5f);
+			UVs.Set(Instance, 1, FVector2f(L.X, L.Y));
+			UVs.Set(Instance, 2, FVector2f(L.Z, L.W));
 			Instances.Add(Instance);
 		}
 
@@ -237,6 +242,8 @@ namespace
 				FLinearColor Color = Density.SurfaceColor(World, FVector::UpVector);
 				Color.A = 0.0f;
 				Mesh.Colors.Add(Color);
+				// Fondo marino: todo arena, con el carácter volcánico de la isla más cercana.
+				Mesh.Layers.Add(FVector4f(1.0f, 0.0f, 0.0f, Density.SurfaceLayers(World, FVector::UpVector).W));
 			}
 		}
 		for (int32 J = 0; J + 1 < Count; ++J)

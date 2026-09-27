@@ -213,9 +213,13 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	{
 		// Meseta redondeada con dos escalones blandos. El dominio se deforma con fuerza para que
 		// los escarpes serpenteen, y los barrancos son ramificados (ridged) en lugar de líneas.
-		const FVector2D W = N.Warp2D(Q.X * 1.3f + 30.0f, Q.Y * 1.3f, 0.6f, 3) / 1.3f;
-		const float Rise = SmoothStep(0.03f, 0.8f, U + 0.22f * N.Fbm2D(W.X * 2.2f, W.Y * 2.2f, 4));
-		const float Stepped = FMath::Lerp(Rise, Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 2, 0.3f), 0.7f);
+		// Encima, un segundo warp de alta frecuencia quiebra el contorno del escarpe en entrantes y
+		// espolones, y los escalones son abruptos: el perfil de cortado lo termina la densidad 3D.
+		FVector2D W = N.Warp2D(Q.X * 1.3f + 30.0f, Q.Y * 1.3f, 0.6f, 3) / 1.3f;
+		W += 0.06f * FVector2D(N.Fbm2D(Q.X * 9.0f + 13.0f, Q.Y * 9.0f, 3), N.Fbm2D(Q.X * 9.0f, Q.Y * 9.0f - 17.0f, 3));
+		const float Edge = 0.22f * N.Fbm2D(W.X * 2.2f, W.Y * 2.2f, 4) + 0.07f * N.Ridged2D(W.X * 7.0f - 9.0f, W.Y * 7.0f, 3);
+		const float Rise = SmoothStep(0.03f, 0.8f, U + Edge);
+		const float Stepped = FMath::Lerp(Rise, Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 2, 0.12f), 0.85f);
 		const float Gully = FMath::Square(N.Ridged2D(W.X * 3.0f + 70.0f, W.Y * 3.0f, 4));
 		const float Plateau = 6.0f * N.Fbm2D(Q.X * 6.0f, Q.Y * 6.0f, 4);
 		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped * (1.0f - 0.3f * Gully * SmoothStep(0.05f, 0.4f, U)) + Plateau * Rise;
@@ -358,11 +362,41 @@ float FTerrainDensity::DensityWithColumn(const FVector& P, const FTerrainColumn&
 		D += RockMask * OverhangAmplitude * OverhangNoise.Fbm3D(P.X / 16.0f, P.Y / 16.0f, P.Z / 10.0f, 3);
 	}
 
+	if (Column.IslandIndex != INDEX_NONE && Layout.Islands[Column.IslandIndex].Archetype == EIslandArchetype::Mesa)
+	{
+		D += MesaStrata(P, Column.Height, D);
+	}
+
 	if (!Caves.IsEmpty())
 	{
 		D = FMath::Max(D, -CaveCarve(P));
 	}
 	return D;
+}
+
+float FTerrainDensity::MesaStrata(const FVector& P, float ColumnHeight, float D) const
+{
+	// Solo junto a la superficie y lejos de la playa; el total queda dentro del margen de HeightBounds.
+	const float Mask = SmoothStep(4.0f, 10.0f, ColumnHeight) * (1.0f - SmoothStep(3.0f, 6.0f, FMath::Abs(D)));
+	if (Mask <= 0.0f)
+	{
+		return 0.0f;
+	}
+
+	// Estratos de ~3 m, ondulados y algo buzados, que alternan roca dura (sobresale en cornisa)
+	// y blanda (se retira). La dureza cambia de una capa a otra para que no se repitan.
+	const float Dip = 1.6f * DetailNoise.Fbm2D(P.X / 45.0f + 7.0f, P.Y / 45.0f, 2) + 0.012f * P.X;
+	const float Layer = (P.Z + Dip) / 3.1f;
+	const float Index = FMath::FloorToFloat(Layer);
+	const float F = Layer - Index;
+	const float Hardness = 0.55f + 0.45f * ExploredHash::ToUnitFloat(ExploredHash::Hash32(static_cast<uint32>(Index + 1000.0f)));
+	const float Ledge = SmoothStep(0.0f, 0.1f, F) * (1.0f - SmoothStep(0.42f, 0.6f, F));
+	float S = FMath::Lerp(0.9f, -2.2f * Hardness, Ledge);
+
+	// Canales verticales de erosión: ruido estirado en Z cuyas crestas estrechas excavan la pared.
+	const float Groove = 1.0f - FMath::Abs(OverhangNoise.Fbm3D(P.X / 4.5f + 31.0f, P.Y / 4.5f, P.Z / 28.0f, 3));
+	S += 0.7f * SmoothStep(0.8f, 0.96f, Groove);
+	return S * Mask;
 }
 
 float FTerrainDensity::Density(const FVector& P) const
@@ -468,6 +502,83 @@ void FTerrainDensity::BuildCaves()
 	}
 }
 
+namespace
+{
+	struct FSurfaceWeights
+	{
+		float Sand = 0.0f;
+		float Rock = 0.0f;
+		float Grass = 1.0f;
+	};
+
+	/** Arena cerca del agua, roca en pendiente o bajo tierra, hierba en el resto. */
+	FSurfaceWeights ComputeSurfaceWeights(EIslandArchetype Archetype, float Z, float ColumnHeight, float NormalZ, float Variation)
+	{
+		FSurfaceWeights W;
+		const float SandLine = 2.2f + 1.2f * Variation;
+		W.Sand = 1.0f - SmoothStep(SandLine - 0.8f, SandLine + 0.8f, Z);
+		W.Rock = 1.0f - SmoothStep(0.55f, 0.78f, NormalZ);
+		// Interior de cuevas y voladizos: roca.
+		if (Z < ColumnHeight - 2.0f)
+		{
+			W.Rock = 1.0f;
+		}
+		if (Archetype == EIslandArchetype::Smoke)
+		{
+			// Ladera alta volcánica: roca y ceniza.
+			W.Rock = FMath::Max(W.Rock, SmoothStep(120.0f, 220.0f, Z));
+		}
+		W.Sand *= 1.0f - W.Rock;
+		W.Grass = FMath::Max(0.0f, 1.0f - W.Sand - W.Rock);
+		return W;
+	}
+
+	/** Cuánto del suelo no rocoso es hojarasca de selva en lugar de hierba abierta. */
+	float ForestFloorAmount(EIslandArchetype Archetype)
+	{
+		switch (Archetype)
+		{
+		case EIslandArchetype::Emerald: return 0.85f;
+		case EIslandArchetype::Mangrove: return 0.8f;
+		case EIslandArchetype::Landing: return 0.55f;
+		case EIslandArchetype::Smoke: return 0.35f;
+		case EIslandArchetype::Mesa: return 0.2f;
+		default: return 0.15f;
+		}
+	}
+
+	/** Roca y arena volcánicas (basalto, ceniza) frente a coralinas (caliza, arena blanca). */
+	float VolcanicAmount(EIslandArchetype Archetype)
+	{
+		switch (Archetype)
+		{
+		case EIslandArchetype::Smoke: return 1.0f;
+		case EIslandArchetype::Emerald: return 0.8f;
+		case EIslandArchetype::Landing: return 0.7f;
+		case EIslandArchetype::Mangrove: return 0.5f;
+		case EIslandArchetype::Mesa: return 0.3f;
+		default: return 0.0f;
+		}
+	}
+}
+
+FVector4f FTerrainDensity::SurfaceLayers(const FVector& P, const FVector& InNormal) const
+{
+	const FTerrainColumn Column = SampleColumn(P.X, P.Y);
+	const EIslandArchetype Archetype = Column.IslandIndex != INDEX_NONE
+		? Layout.Islands[Column.IslandIndex].Archetype
+		: EIslandArchetype::Landing;
+	const float Variation = DetailNoise.Fbm2D(P.X / 30.0f + 100.0f, P.Y / 30.0f, 3);
+	const FSurfaceWeights W = ComputeSurfaceWeights(Archetype, P.Z, Column.Height, InNormal.Z, Variation);
+
+	// Manchas de hojarasca y claros de hierba: ruido de baja frecuencia sobre la proporción de la isla,
+	// con la hojarasca desapareciendo en las cumbres altas y expuestas.
+	const float Patches = DetailNoise.Fbm2D(P.X / 55.0f - 40.0f, P.Y / 55.0f + 17.0f, 3);
+	const float Forest = FMath::Clamp(ForestFloorAmount(Archetype) + 0.45f * Patches, 0.0f, 1.0f)
+		* (1.0f - SmoothStep(140.0f, 260.0f, P.Z));
+	return FVector4f(W.Sand, W.Grass * Forest, W.Rock, VolcanicAmount(Archetype));
+}
+
 FLinearColor FTerrainDensity::SurfaceColor(const FVector& P, const FVector& InNormal) const
 {
 	const FTerrainColumn Column = SampleColumn(P.X, P.Y);
@@ -479,22 +590,10 @@ FLinearColor FTerrainDensity::SurfaceColor(const FVector& P, const FVector& InNo
 	const float Variation = DetailNoise.Fbm2D(P.X / 30.0f + 100.0f, P.Y / 30.0f, 3);
 	const float Z = P.Z;
 
-	// Pesos: arena cerca del agua, roca en pendiente o bajo tierra, hierba en el resto.
-	const float SandLine = 2.2f + 1.2f * Variation;
-	float Sand = 1.0f - SmoothStep(SandLine - 0.8f, SandLine + 0.8f, Z);
-	float Rock = 1.0f - SmoothStep(0.55f, 0.78f, InNormal.Z);
-	// Interior de cuevas y voladizos: roca.
-	if (Z < Column.Height - 2.0f)
-	{
-		Rock = 1.0f;
-	}
-	if (Archetype == EIslandArchetype::Smoke)
-	{
-		// Ladera alta volcánica: roca y ceniza.
-		Rock = FMath::Max(Rock, SmoothStep(120.0f, 220.0f, Z));
-	}
-	Sand *= 1.0f - Rock;
-	const float Grass = FMath::Max(0.0f, 1.0f - Sand - Rock);
+	const FSurfaceWeights W = ComputeSurfaceWeights(Archetype, Z, Column.Height, InNormal.Z, Variation);
+	const float Sand = W.Sand;
+	const float Rock = W.Rock;
+	const float Grass = W.Grass;
 
 	FLinearColor Color = Palette.Sand * Sand + Palette.Grass * Grass + Palette.Rock * Rock;
 

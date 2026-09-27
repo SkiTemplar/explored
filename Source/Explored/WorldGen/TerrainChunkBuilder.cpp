@@ -39,6 +39,7 @@ FTerrainMeshData FTerrainChunkBuilder::Build(const FTerrainDensity& Density, con
 	FTerrainMeshData Mesh = FSurfaceNets::Polygonize(Grid);
 	Mesh.Normals.SetNumUninitialized(Mesh.Positions.Num());
 	Mesh.Colors.SetNumUninitialized(Mesh.Positions.Num());
+	Mesh.Layers.SetNumUninitialized(Mesh.Positions.Num());
 
 	const float NormalStep = Voxel * 0.5f;
 	for (int32 I = 0; I < Mesh.Positions.Num(); ++I)
@@ -47,6 +48,7 @@ FTerrainMeshData FTerrainChunkBuilder::Build(const FTerrainDensity& Density, con
 		const FVector Normal = Density.Normal(World, NormalStep);
 		Mesh.Normals[I] = FVector3f(Normal);
 		Mesh.Colors[I] = Density.SurfaceColor(World, Normal);
+		Mesh.Layers[I] = Density.SurfaceLayers(World, Normal);
 		// Metros → centímetros, relativo al origen del chunk.
 		Mesh.Positions[I] = FVector3f((World - Origin) * 100.0);
 	}

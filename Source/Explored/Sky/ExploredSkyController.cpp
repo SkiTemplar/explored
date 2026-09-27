@@ -65,8 +65,8 @@ AExploredSkyController::AExploredSkyController()
 
 	Atmosphere = CreateDefaultSubobject<USkyAtmosphereComponent>(TEXT("Atmosphere"));
 	Atmosphere->SetupAttachment(Root);
-	// Aire tropical algo más húmedo: más Mie y un azul algo más profundo.
-	Atmosphere->MieScatteringScale = 0.006f;
+	// Aire tropical limpio: poco Mie para un azul profundo y saturado sin velo blanquecino.
+	Atmosphere->MieScatteringScale = 0.0042f;
 	Atmosphere->MieAnisotropy = 0.82f;
 	Atmosphere->RayleighScatteringScale = 0.0331f;
 	Atmosphere->MultiScatteringFactor = 1.2f;
@@ -76,19 +76,20 @@ AExploredSkyController::AExploredSkyController()
 	SkyLight->SetMobility(EComponentMobility::Movable);
 	SkyLight->bRealTimeCapture = true;
 	SkyLight->SourceType = SLS_CapturedScene;
-	SkyLight->Intensity = 1.0f;
+	SkyLight->Intensity = 0.85f;
 	SkyLight->bLowerHemisphereIsBlack = false;
 	SkyLight->LowerHemisphereColor = FLinearColor(0.02f, 0.05f, 0.06f);
 
 	Fog = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("Fog"));
 	Fog->SetupAttachment(Root);
-	Fog->SetFogDensity(0.0025f);
+	// Niebla solo en la lejanía: las islas cercanas conservan contraste y color.
+	Fog->SetFogDensity(0.0012f);
 	Fog->SetFogHeightFalloff(0.2f);
 	Fog->SetVolumetricFog(true);
 	Fog->VolumetricFogScatteringDistribution = 0.75f;
 	Fog->VolumetricFogExtinctionScale = 0.6f;
 	Fog->SetVolumetricFogDistance(9000.0f);
-	Fog->SetStartDistance(3000.0f);
+	Fog->SetStartDistance(20000.0f);
 
 	Clouds = CreateDefaultSubobject<UVolumetricCloudComponent>(TEXT("Clouds"));
 	Clouds->SetupAttachment(Root);
@@ -119,11 +120,18 @@ AExploredSkyController::AExploredSkyController()
 	PP.AutoExposureSpeedDown = 3.0f;
 	PP.bOverride_AutoExposureBias = true;
 	PP.AutoExposureBias = 0.6f;
-	// Tono cálido, saturación algo alta y bloom suave: la isla debe invitar a explorar.
+	// Grading estilizado (referencia: Sea of Thieves): color saturado, contraste marcado,
+	// sombras frías y luces cálidas. El tonemapper filmico desatura, de ahí la saturación alta.
 	PP.bOverride_ColorSaturation = true;
-	PP.ColorSaturation = FVector4(1.02f, 1.02f, 1.02f, 1.0f);
+	PP.ColorSaturation = FVector4(1.16f, 1.16f, 1.16f, 1.0f);
 	PP.bOverride_ColorContrast = true;
-	PP.ColorContrast = FVector4(1.05f, 1.05f, 1.05f, 1.0f);
+	PP.ColorContrast = FVector4(1.12f, 1.12f, 1.12f, 1.0f);
+	PP.bOverride_ColorGainShadows = true;
+	PP.ColorGainShadows = FVector4(0.9f, 0.97f, 1.1f, 1.0f);
+	PP.bOverride_ColorSaturationShadows = true;
+	PP.ColorSaturationShadows = FVector4(1.1f, 1.1f, 1.1f, 1.0f);
+	PP.bOverride_ColorGainHighlights = true;
+	PP.ColorGainHighlights = FVector4(1.04f, 1.01f, 0.95f, 1.0f);
 	PP.bOverride_ColorGain = true;
 	PP.ColorGain = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	PP.bOverride_WhiteTemp = true;
@@ -133,12 +141,12 @@ AExploredSkyController::AExploredSkyController()
 	PP.bOverride_VignetteIntensity = true;
 	PP.VignetteIntensity = 0.3f;
 	PP.bOverride_SceneFringeIntensity = true;
-	PP.SceneFringeIntensity = 0.15f;
+	PP.SceneFringeIntensity = 0.0f;
 	PP.bOverride_LumenSceneLightingQuality = true;
 	PP.LumenSceneLightingQuality = 1.0f;
 	// AO de contacto explícito: raíces de árboles, rocas y pliegues del terreno con algo de peso.
 	PP.bOverride_AmbientOcclusionIntensity = true;
-	PP.AmbientOcclusionIntensity = 0.6f;
+	PP.AmbientOcclusionIntensity = 0.75f;
 	PP.bOverride_AmbientOcclusionRadius = true;
 	PP.AmbientOcclusionRadius = 120.0f;
 
@@ -225,13 +233,13 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 	// Noches más densas y frescas; niebla matinal suave. L3: la niebla matinal
 	// entra y sale con SmoothStep (antes era un escalón ×2,4 a las 4:30 y a las 9:00).
 	const float Morning = FMath::SmoothStep(4.0f, 5.5f, Hours) * (1.0f - FMath::SmoothStep(8.0f, 9.5f, Hours));
-	Fog->SetFogDensity(FMath::Lerp(0.0025f, 0.006f, Morning) + WeatherFog * 0.03f + WeatherRain * 0.006f);
-	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.45f, 0.6f, 0.75f), SunUp));
+	Fog->SetFogDensity(FMath::Lerp(0.0012f, 0.005f, Morning) + WeatherFog * 0.03f + WeatherRain * 0.006f);
+	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.32f, 0.52f, 0.8f), SunUp));
 
 	// Centro del histograma (estrecho, ver constructor) según la hora: casi fijo, sin la
 	// «respiración» de un rango automático amplio al girar la cámara.
 	FPostProcessSettings& PP = PostProcess->Settings;
-	PP.AutoExposureBias = FMath::Lerp(0.15f, 0.7f, SunUp);
+	PP.AutoExposureBias = FMath::Lerp(0.15f, 0.3f, SunUp);
 
 	// Hora dorada: al ras del horizonte, con el Sol todavía visible, un grading más cálido y
 	// vivo y algo más de bloom (los atardeceres deben ser espectaculares).

@@ -204,6 +204,13 @@ using FVector2D = TVector2<double>;
 using FVector2d = TVector2<double>;
 using FVector2f = TVector2<float>;
 
+struct FVector4f
+{
+	float X = 0, Y = 0, Z = 0, W = 0;
+	FVector4f() = default;
+	FVector4f(float InX, float InY, float InZ, float InW) : X(InX), Y(InY), Z(InZ), W(InW) {}
+};
+
 struct FIntVector
 {
 	int32 X = 0, Y = 0, Z = 0;

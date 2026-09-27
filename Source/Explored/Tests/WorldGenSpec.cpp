@@ -250,6 +250,34 @@ void FWorldGenSpec::Define()
 			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
 			TestTrue(TEXT("Hay cuevas"), Density.GetCaves().Num() >= 8);
 		});
+
+		It("reparte las capas de textura: arena en la orilla, roca en los cortados y nunca más del 100 %", [this]()
+		{
+			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
+			const FVector Up = FVector::UpVector;
+			const FVector Cliff = FVector(1.0, 0.0, 0.2).GetSafeNormal();
+
+			const FVector4f Beach = Density.SurfaceLayers(FVector(2950.0, 2950.0, 0.3), Up);
+			TestTrue(TEXT("Arena en la línea de costa"), Beach.X > 0.8f);
+			const FVector4f Wall = Density.SurfaceLayers(FVector(2950.0, 2950.0, 40.0), Cliff);
+			TestTrue(TEXT("Roca en pendiente fuerte"), Wall.Z > 0.95f);
+
+			for (const FIslandDesc& I : Density.GetLayout().Islands)
+			{
+				const FVector P(I.Center.X, I.Center.Y, 12.0);
+				const FVector4f L = Density.SurfaceLayers(P, Up);
+				const float Sum = L.X + L.Y + L.Z;
+				if (Sum > 1.001f || L.X < 0.0f || L.Y < 0.0f || L.Z < 0.0f || L.W < 0.0f || L.W > 1.0f)
+				{
+					AddError(FString::Printf(TEXT("%s: capas fuera de rango (%.2f, %.2f, %.2f, %.2f)"),
+						LexToString(I.Archetype), L.X, L.Y, L.Z, L.W));
+				}
+				if (I.Archetype == EIslandArchetype::Smoke)
+				{
+					TestEqual(TEXT("La Humeante es volcánica"), L.W, 1.0f);
+				}
+			}
+		});
 	});
 
 	Describe("FSurfaceNets", [this]()

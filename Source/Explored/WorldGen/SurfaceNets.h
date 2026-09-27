@@ -37,6 +37,8 @@ struct EXPLORED_API FTerrainMeshData
 	TArray<FVector3f> Positions;
 	TArray<FVector3f> Normals;
 	TArray<FLinearColor> Colors;
+	/** Pesos de capa de textura por vértice (ver FTerrainDensity::SurfaceLayers); puede ir vacío. */
+	TArray<FVector4f> Layers;
 	TArray<uint32> Indices;
 
 	bool IsEmpty() const { return Indices.IsEmpty(); }

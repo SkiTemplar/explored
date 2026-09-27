@@ -11,6 +11,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
 #include "AssetCompilingManager.h"
+#include "ContentStreaming.h"
 #include "ShaderCompiler.h"
 #include "UnrealClient.h"
 #include "WorldPartition/WorldPartitionSubsystem.h"
@@ -29,6 +30,8 @@ namespace
 	constexpr float SettleSeconds = 4.0f;
 	/** Espera inicial tras terminar los shaders (streaming de Nanite y distance fields). */
 	constexpr float WarmupSeconds = 8.0f;
+	/** Espera máxima adicional a que el streaming de texturas alcance los mips pedidos. */
+	constexpr float MaxStreamingWaitSeconds = 20.0f;
 }
 
 bool UExploredShotSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -328,7 +331,9 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		return;
 	}
 
-	if (!bRequested && Timer >= SettleSeconds)
+	// Sin esperar al streaming, las texturas del terreno se capturan con los mips más bajos.
+	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
+	if (!bRequested && Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds))
 	{
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, false, false);

@@ -103,7 +103,7 @@ float s1 = 1.0 / 2.7;
 float s2 = 1.0 / 11.0;
 """
 
-TERRAIN_COLOR_HLSL = TRIPLANAR_COMMON + r"""
+ROCK_COLOR_HLSL = TRIPLANAR_COMMON + r"""
 float4 d1 = Texture2DSample(Detail, DetailSampler, p.yz * s1) * w.x
           + Texture2DSample(Detail, DetailSampler, p.xz * s1) * w.y
           + Texture2DSample(Detail, DetailSampler, p.xy * s1) * w.z;
@@ -140,7 +140,7 @@ if (depthM > 0.0)
 return color;
 """
 
-TERRAIN_NORMAL_HLSL = TRIPLANAR_COMMON + r"""
+ROCK_NORMAL_HLSL = TRIPLANAR_COMMON + r"""
 float2 nx = Texture2DSample(NormalTex, NormalTexSampler, p.yz * s1).rg * 2.0 - 1.0;
 float2 ny = Texture2DSample(NormalTex, NormalTexSampler, p.xz * s1).rg * 2.0 - 1.0;
 float2 nz = Texture2DSample(NormalTex, NormalTexSampler, p.xy * s1).rg * 2.0 - 1.0;
@@ -163,60 +163,141 @@ def texture_object(material, path: str, x: int, y: int):
     return node
 
 
+# Capas del terreno: nombre de la entrada HLSL -> textura. BC en sRGB, N normal en espacio tangente.
+TERRAIN_LAYERS = {
+    "SandBC": "T_SandDry_BC", "SandN": "T_SandDry_N",
+    "WetBC": "T_SandWet_BC", "WetN": "T_SandWet_N",
+    "AshBC": "T_Ash_BC", "AshN": "T_Ash_N",
+    "GrassBC": "T_Grass_BC", "GrassN": "T_Grass_N",
+    "ForestBC": "T_ForestFloor_BC", "ForestN": "T_ForestFloor_N",
+    "BasaltBC": "T_VolcanicRock_BC", "BasaltN": "T_VolcanicRock_N",
+    "LimeBC": "T_Limestone_BC", "LimeN": "T_Limestone_N",
+}
+
+# Mezcla de capas. Los pesos vienen de FTerrainDensity::SurfaceLayers vía UV1 (arena, hojarasca) y
+# UV2 (roca, volcánico); la hierba es el resto. El suelo blando se proyecta desde arriba y la roca en
+# triplanar. Cada capa se muestrea a dos escalas (una girada) para romper la repetición, y la mezcla
+# usa la altura aproximada (luminancia) para que la hierba asome entre la arena en vez de fundirse.
+# La salida es float4: RGB = color base, A = rugosidad.
+TERRAIN_LAYERS_COMMON = TRIPLANAR_COMMON + r"""
+// Con 15 texturas no caben los samplers propios (16 por material, contando los del motor):
+// todas se leen con el sampler compartido de mundo.
+#define SHARED Material.Wrap_WorldGroupSettings
+float2 top = p.xy;
+float2x2 rot = float2x2(0.8, -0.6, 0.6, 0.8);
+float sandW = saturate(L1.x);
+float forestW = saturate(L1.y);
+float rockW = saturate(L2.x);
+float volcanic = saturate(L2.y);
+float grassW = saturate(1.0 - sandW - forestW - rockW);
+float depthM = -min(WP.z / 100.0, 0.0);
+float wetW = saturate((0.6 - WP.z / 100.0) / 0.8) * sandW;
+"""
+
+TERRAIN_COLOR_HLSL = TERRAIN_LAYERS_COMMON + r"""
+#define TOP2(T, S) lerp(Texture2DSample(T, SHARED, top / S), Texture2DSample(T, SHARED, mul(rot, top) / (S * 2.7)), 0.35)
+#define TRI(T, S) (Texture2DSample(T, SHARED, p.yz / S) * w.x + Texture2DSample(T, SHARED, p.xz / S) * w.y + Texture2DSample(T, SHARED, p.xy / S) * w.z)
+
+float4 sandDry = lerp(TOP2(SandBC, 3.2), TOP2(AshBC, 3.0), smoothstep(0.75, 1.0, volcanic));
+float4 sand = lerp(sandDry, TOP2(WetBC, 3.2), saturate(wetW * 1.4));
+float4 grass = TOP2(GrassBC, 2.4);
+float4 forest = TOP2(ForestBC, 2.8);
+float4 rock = lerp(TRI(LimeBC, 4.5), TRI(BasaltBC, 4.0), volcanic);
+
+// Mezcla por altura: la luminancia hace de mapa de alturas aproximado.
+float hS = dot(sand.rgb, 0.33) + sandW * 1.2;
+float hG = dot(grass.rgb, 0.33) + grassW * 1.2;
+float hF = dot(forest.rgb, 0.33) + forestW * 1.2;
+float hR = dot(rock.rgb, 0.33) + rockW * 1.4;
+float hMax = max(max(hS, hG), max(hF, hR)) - 0.25;
+float4 b = float4(max(hS - hMax, 0.0), max(hG - hMax, 0.0), max(hF - hMax, 0.0), max(hR - hMax, 0.0));
+b /= max(b.x + b.y + b.z + b.w, 1e-4);
+float3 color = sand.rgb * b.x + grass.rgb * b.y + forest.rgb * b.z + rock.rgb * b.w;
+
+// Tinte suave por isla (color de vértice) y variación macro para que no se vea el mosaico a distancia.
+float3 vc = saturate(VC.rgb);
+float3 hue = vc / max(dot(vc, 0.3333), 0.03);
+color *= lerp(1.0.xxx, hue, 0.18);
+float4 macro = Texture2DSample(Detail, SHARED, p.xy / 70.0 + 0.37);
+color *= lerp(0.85, 1.1, macro.g) * lerp(float3(0.96, 1.0, 1.03), float3(1.05, 1.0, 0.94), macro.r);
+
+// Fondo marino: más oscuro y azulado con la profundidad; cáusticas en someros.
+if (depthM > 0.0)
+{
+    color *= lerp(1.0.xxx, float3(0.55, 0.68, 0.72), saturate(depthM / 22.0));
+    float2 cp = WP.xy / 220.0;
+    float c1 = sin(cp.x * 2.4 + sin(cp.y * 1.7 + Time * 0.35) * 1.6 + Time * 0.6);
+    float c2 = sin(cp.y * 2.1 - sin(cp.x * 1.9 - Time * 0.28) * 1.6 - Time * 0.5);
+    color += saturate(c1 * c2) * exp(-depthM / 9.0) * 0.22 * float3(0.7, 0.95, 0.9);
+}
+float rough = 0.88 * b.x + 0.92 * b.y + 0.9 * b.z + 0.78 * b.w;
+rough = lerp(rough, 0.3, saturate(wetW * 1.4) * b.x);
+return float4(color, rough);
+"""
+
+TERRAIN_NORMAL_HLSL = TERRAIN_LAYERS_COMMON + r"""
+#define TOPN(T, S) (Texture2DSample(T, SHARED, top / S).rg * 2.0 - 1.0)
+#define TRIN(T, S, AXIS) (Texture2DSample(T, SHARED, AXIS / S).rg * 2.0 - 1.0)
+
+float2 nSoft = TOPN(SandN, 3.2) * sandW + TOPN(GrassN, 2.4) * grassW + TOPN(ForestN, 2.8) * forestW;
+float2 rx = lerp(TRIN(LimeN, 4.5, p.yz), TRIN(BasaltN, 4.0, p.yz), volcanic);
+float2 ry = lerp(TRIN(LimeN, 4.5, p.xz), TRIN(BasaltN, 4.0, p.xz), volcanic);
+float2 rz = lerp(TRIN(LimeN, 4.5, p.xy), TRIN(BasaltN, 4.0, p.xy), volcanic);
+// Perturbación por eje de proyección (estilo «whiteout» simplificado), en espacio de mundo.
+float3 perturbRock = float3(0.0, rx.x, rx.y) * w.x + float3(ry.x, 0.0, ry.y) * w.y + float3(rz.x, rz.y, 0.0) * w.z;
+float3 perturb = float3(nSoft, 0.0) * 0.8 + perturbRock * rockW * 1.1;
+return normalize(n + perturb);
+"""
+
+
 def build_terrain():
     m = recreate_material("M_Terrain")
     m.set_editor_property("tangent_space_normal", False)
 
-    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
-    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1100, 200)
-    vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1100, 300)
-    detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1100, 420)
-    normal_tex = texture_object(m, "/Game/Generated/Textures/T_TerrainNormal", -1100, 620)
-    time = expr(m, unreal.MaterialExpressionTime, -1100, 780)
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1400, 0)
+    wp = expr(m, unreal.MaterialExpressionWorldPosition, -1400, 100)
+    vn = expr(m, unreal.MaterialExpressionVertexNormalWS, -1400, 200)
+    uv1 = expr(m, unreal.MaterialExpressionTextureCoordinate, -1400, 300)
+    uv1.set_editor_property("coordinate_index", 1)
+    uv2 = expr(m, unreal.MaterialExpressionTextureCoordinate, -1400, 400)
+    uv2.set_editor_property("coordinate_index", 2)
+    time = expr(m, unreal.MaterialExpressionTime, -1400, 500)
+    detail = texture_object(m, "/Game/Generated/Textures/T_TerrainDetail", -1400, 600)
 
-    append = expr(m, unreal.MaterialExpressionAppendVector, -850, 0)
-    connect(vc, "", append, "A")
-    connect(vc, "A", append, "B")
+    layers = {}
+    for i, (pin, texture) in enumerate(TERRAIN_LAYERS.items()):
+        layers[pin] = texture_object(m, f"/Game/Generated/Textures/{texture}", -1700, i * 110)
 
-    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail", "Time"],
-                   unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainColor")
-    connect(append, "", color, "VC")
-    connect(wp, "", color, "WP")
-    connect(vn, "", color, "VN")
-    connect(detail, "", color, "Detail")
-    connect(time, "", color, "Time")
-    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    base_pins = [pin for pin in TERRAIN_LAYERS if pin.endswith("BC")]
+    normal_pins = [pin for pin in TERRAIN_LAYERS if pin.endswith("N")]
 
-    normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"],
+    color = custom(m, -700, 0, TERRAIN_COLOR_HLSL,
+                   ["VC", "WP", "VN", "L1", "L2", "Time", "Detail"] + base_pins,
+                   unreal.CustomMaterialOutputType.CMOT_FLOAT4, "TerrainColor")
+    for pin, node in (("VC", vc), ("WP", wp), ("VN", vn), ("L1", uv1), ("L2", uv2), ("Time", time), ("Detail", detail)):
+        connect(node, "", color, pin)
+    for pin in base_pins:
+        connect(layers[pin], "", color, pin)
+
+    rgb = expr(m, unreal.MaterialExpressionComponentMask, -400, 0)
+    for channel in ("r", "g", "b"):
+        rgb.set_editor_property(channel, True)
+    connect(color, "", rgb, "")
+    to_property(rgb, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = expr(m, unreal.MaterialExpressionComponentMask, -400, 120)
+    rough.set_editor_property("a", True)
+    connect(color, "", rough, "")
+    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+
+    normal = custom(m, -700, 500, TERRAIN_NORMAL_HLSL, ["WP", "VN", "L1", "L2"] + normal_pins,
                     unreal.CustomMaterialOutputType.CMOT_FLOAT3, "TerrainNormal")
-    connect(wp, "", normal, "WP")
-    connect(vn, "", normal, "VN")
-    connect(normal_tex, "", normal, "NormalTex")
-    connect(vc, "A", normal, "Rock")
+    for pin, node in (("WP", wp), ("VN", vn), ("L1", uv1), ("L2", uv2)):
+        connect(node, "", normal, pin)
+    for pin in normal_pins:
+        connect(layers[pin], "", normal, pin)
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
-    # Arena mojada junto a la orilla (mismo umbral que FTerrainDensity::SurfaceColor): brillo sutil.
-    rough = expr(m, unreal.MaterialExpressionLinearInterpolate, -300, 700)
-    c_soft = expr(m, unreal.MaterialExpressionConstant, -500, 700)
-    c_soft.set_editor_property("r", 0.82)
-    c_rock = expr(m, unreal.MaterialExpressionConstant, -500, 780)
-    c_rock.set_editor_property("r", 0.72)
-    connect(c_soft, "", rough, "A")
-    connect(c_rock, "", rough, "B")
-    connect(vc, "A", rough, "Alpha")
-
-    wet = custom(m, -300, 900, "return saturate(1.0 - abs(WP.z) / 70.0);",
-                ["WP"], unreal.CustomMaterialOutputType.CMOT_FLOAT1, "WetSand")
-    connect(wp, "", wet, "WP")
-    rough_wet = expr(m, unreal.MaterialExpressionLinearInterpolate, -100, 750)
-    connect(rough, "", rough_wet, "A")
-    wet_value = expr(m, unreal.MaterialExpressionConstant, -300, 980)
-    wet_value.set_editor_property("r", 0.35)
-    connect(wet_value, "", rough_wet, "B")
-    connect(wet, "", rough_wet, "Alpha")
-    to_property(rough_wet, "", unreal.MaterialProperty.MP_ROUGHNESS)
-
-    spec = expr(m, unreal.MaterialExpressionConstant, -300, 1080)
+    spec = expr(m, unreal.MaterialExpressionConstant, -400, 300)
     spec.set_editor_property("r", 0.35)
     to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     finish(m)
@@ -647,7 +728,7 @@ def build_rock():
     connect(vc, "", append, "A")
     connect(one, "", append, "B")  # Alfa = 1: se trata todo como roca.
 
-    color = custom(m, -500, 0, TERRAIN_COLOR_HLSL, ["VC", "WP", "VN", "Detail", "Time"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockColor")
+    color = custom(m, -500, 0, ROCK_COLOR_HLSL, ["VC", "WP", "VN", "Detail", "Time"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockColor")
     connect(append, "", color, "VC")
     connect(wp, "", color, "WP")
     connect(vn, "", color, "VN")
@@ -655,7 +736,7 @@ def build_rock():
     connect(time, "", color, "Time")
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
-    normal = custom(m, -500, 400, TERRAIN_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockNormal")
+    normal = custom(m, -500, 400, ROCK_NORMAL_HLSL, ["WP", "VN", "NormalTex", "Rock"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "RockNormal")
     connect(wp, "", normal, "WP")
     connect(vn, "", normal, "VN")
     connect(normal_tex, "", normal, "NormalTex")

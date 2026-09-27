@@ -49,6 +49,14 @@ public:
 	/** Color de superficie (RGB lineal) y máscara de roca en alfa. */
 	FLinearColor SurfaceColor(const FVector& P, const FVector& Normal) const;
 
+	/**
+	 * Pesos de las capas de textura del material del terreno, cada uno en 0..1:
+	 * X = arena, Y = suelo de selva (hojarasca), Z = roca, W = carácter volcánico
+	 * (1 = basalto y ceniza, 0 = caliza y arena blanca). La hierba es el resto
+	 * (1 - X - Y - Z). Coherente con SurfaceColor, que da el tinte por isla.
+	 */
+	FVector4f SurfaceLayers(const FVector& P, const FVector& Normal) const;
+
 	/** Rango de altura posible dentro de un rectángulo, con margen para cuevas y ruido 3D. */
 	void HeightBounds(const FBox2D& Rect, float SampleSpacing, float& OutMin, float& OutMax) const;
 
@@ -61,6 +69,8 @@ public:
 private:
 	float IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const;
 	float CaveCarve(const FVector& P) const;
+	/** Relieve de cortado de la isla de mesetas: estratos que sobresalen o se retiran y canales verticales. */
+	float MesaStrata(const FVector& P, float ColumnHeight, float D) const;
 	void BuildCaves();
 
 	FArchipelagoLayout Layout;
