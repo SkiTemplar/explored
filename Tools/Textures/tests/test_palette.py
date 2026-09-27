@@ -46,3 +46,17 @@ def test_wood_planks_are_warm_with_board_variety(generated):
     size = bc.shape[0]
     rows = [np.median(bc[int((k + 0.5 - 0.29) / 6 * size) % size].mean(axis=-1)) for k in range(6)]
     assert np.ptp(rows) > 0.03, "todas las tablas del mismo tono"
+
+
+def test_palm_thatch_is_warm_straw_made_of_hanging_strands(generated):
+    bc = generated["PalmThatch"]["BC"]
+    r, g, b = bc.reshape(-1, 3).mean(axis=0)
+    assert r > g > b and r - b > 0.2, f"paja no cálida: {r:.3f} {g:.3f} {b:.3f}"
+    # Hebras que cuelgan: el color cambia mucho más de una hebra a otra (a lo largo de u)
+    # que a lo largo de la hebra (v). Las «escamas» anchas de antes daban ~3; hoy ~5.5.
+    lum = bc @ np.array([0.2126, 0.7152, 0.0722])
+    du = np.abs(np.diff(lum, axis=1)).mean()
+    dv = np.abs(np.diff(lum, axis=0)).mean()
+    assert du > 4.0 * dv, f"no se leen hebras: du/dv = {du / dv:.2f}"
+    # Poco hueco oscuro entre hebras (el techo cubre, no es una cortina rala).
+    assert (lum < 0.2).mean() < 0.08

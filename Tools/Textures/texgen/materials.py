@@ -509,52 +509,102 @@ def limestone(size: int, seed: int) -> Material:
 # Construcción
 # ---------------------------------------------------------------------------
 
+def _thatch_strands(u, rv, rows, n, seed, t_off, shift, width_k, lift=0.0):
+    """Una capa de hebras de la hilera `floor(rv) - t_off` (t = distancia bajo su atadura, en
+    hileras; `lift` lo sube sin cambiar de hilera): devuelve (dentro, t, largo, tabla, across)."""
+    r_idx = (np.floor(rv).astype(np.int64) - t_off) % rows
+    t = rv - np.floor(rv) + t_off - lift
+    tab = rng_table(seed, rows, n, 6)
+    row_off = rng_table(seed + 1, rows)[r_idx]
+    lean = (rng_table(seed + 2, rows)[r_idx] - 0.5) * 0.9
+    # Hebra: se inclina un poco con la hilera y se curva al colgar (más cuanto más baja).
+    cu = u * n + row_off * n + shift + lean * t
+    col0 = np.floor(cu).astype(np.int64) % n
+    r = tab[r_idx, col0]
+    cu = cu + (r[..., 4] - 0.5) * 0.9 * t * t
+    col = np.floor(cu).astype(np.int64) % n
+    r = tab[r_idx, col]
+    x = cu - np.floor(cu)
+    length = 1.38 + 0.42 * r[..., 0]
+    s = np.clip(t / length, 0.0, 1.0)
+    width = width_k * (0.8 + 0.35 * r[..., 1]) * (1.0 - 0.3 * s)
+    # Punta afilada en el último 25 % del largo, a veces rasgada en dos.
+    width = width * np.sqrt(np.clip((length - t) / 0.3, 0.0, 1.0))
+    off = x - 0.5 - (r[..., 2] - 0.5) * 0.2
+    split = (r[..., 5] < 0.3) & (t > length - 0.28)
+    off = np.where(split, np.abs(off) - width * 0.45, off)
+    width = np.where(split, width * 0.5, width)
+    across = np.abs(off) / np.maximum(width, 1e-4)
+    inside = (across < 1.0) & (t < length) & (t >= 0.0)
+    return inside, t, length, r, across
+
+
 def palm_thatch(size: int, seed: int) -> Material:
-    """Techo de hojas de palma en hileras solapadas (tejas vegetales); v = pendiente abajo."""
+    """Techo de hoja de palma: hileras solapadas de hebras largas y estrechas que cuelgan
+    (cada hilera tapa la parte alta de la de abajo), puntas desiguales y a veces rasgadas,
+    tono por hebra (paja dorada, alguna aún verde, alguna tostada); v = pendiente abajo."""
     u, v = uv_grid(size)
-    rows, per_row = 7, 22
+    rows, n = 6, 34
     # Las hileras no son reglas: el borde de cada una ondula (atado a mano) a lo largo de u.
     sag = spectral_noise(size, seed + 4, 1, 3, 3.0, stretch=(1.0, 4.0))
-    rv = v * rows + 0.37 + 0.07 * sag
-    row = np.floor(rv).astype(np.int64) % rows
-    t = rv - np.floor(rv)
-    tab = rng_table(seed, rows, per_row, 4)
-    row_off = rng_table(seed + 1, rows)[row]
-    slant = (rng_table(seed + 2, rows)[row] - 0.5) * 0.5
-    cu = u * per_row + row_off * per_row + slant * t
-    col = np.floor(cu).astype(np.int64) % per_row
-    x = cu - np.floor(cu)
-    r = tab[row, col]
-    width = 0.52 * (1.0 - 0.4 * t ** 2) * (0.85 + 0.15 * r[..., 0])
-    length = 0.85 + 0.15 * r[..., 2]
-    # Punta redondeada-afilada: la hoja se estrecha en el último 20 % de su largo.
-    width = width * np.sqrt(np.clip((length - t) / 0.2, 0.02, 1.0))
-    across = np.abs(x - 0.5 - (r[..., 1] - 0.5) * 0.08) / width
-    inside = (across < 1.0) & (t < length)
-    tip = smoothstep(length, length - 0.1, t)
-    prof = np.sqrt(np.clip(1.0 - across ** 2, 0, 1))
-    midrib = np.exp(-(across / 0.12) ** 2)
-    fibers = unit(spectral_noise(size, seed + 3, 8, 300, 1.2, stretch=(1.0, 7.0)))
-    leaf_h = 0.35 + 0.45 * t + 0.12 * prof + 0.06 * midrib + 0.05 * fibers
-    under_h = 0.1 + 0.25 * t
-    height = np.where(inside, leaf_h * (0.6 + 0.4 * tip), under_h)
-    tone = r[..., 3]
-    straw = ramp(0.25 + 0.45 * t + 0.3 * fibers,
-                 [(0.0, "#8d6a30"), (0.35, "#b28b3f"), (0.7, "#d3ad5c"), (1.0, "#e7cd86")])
-    green = ramp(0.25 + 0.45 * t + 0.3 * fibers, [(0.0, "#6f7a31"), (0.5, "#9aa447"), (1.0, "#c3c36a")])
-    brown = ramp(0.25 + 0.45 * t + 0.3 * fibers, [(0.0, "#6b4a28"), (0.5, "#8d6638"), (1.0, "#b08650")])
-    col_leaf = np.where((tone > 0.82)[..., None], green, np.where((tone < 0.14)[..., None], brown, straw))
-    col_leaf = mix_color(col_leaf, "#f1dea0", midrib * 0.3)
-    col_leaf = mix_color(col_leaf, "#6e5028", (1.0 - tip) * 0.5)
-    under = ramp(t, [(0.0, "#2c2112"), (1.0, "#5a4424")])
-    albedo = np.where(inside[..., None], col_leaf, under)
-    # Sombra bajo la hilera superior (la parte alta de cada hilera queda tapada).
-    shade = smoothstep(0.0, 0.3, t)
-    albedo = albedo * (0.72 + 0.28 * shade)[..., None]
-    albedo = macro_variation(albedo, seed + 20, warm="#e0b060", cool="#9aa070", amount=0.18, value=0.08)
-    height = blur(height, 0.0008)
-    rough = np.where(inside, 0.72 - 0.08 * midrib, 0.95)
-    return Material(albedo, height, rough, depth=0.02, ao_strength=1.2)
+    rv = v * rows + 0.37 + 0.09 * sag
+    fibers = unit(spectral_noise(size, seed + 3, 10, 360, 1.1, stretch=(1.0, 9.0)))
+    fine = unit(spectral_noise(size, seed + 5, 40, 480, 0.8, stretch=(1.0, 14.0)))
+
+    # Capas de delante a atrás: hilera de arriba (cuelga sobre esta), hilera propia
+    # (dos capas desfasadas media hebra para que no queden huecos).
+    layers = [
+        _thatch_strands(u, rv, rows, n, seed + 10, 1, 0.0, 0.40),
+        _thatch_strands(u, rv, rows, n, seed + 11, 1, 0.5, 0.40),
+        _thatch_strands(u, rv, rows, n, seed + 10, 0, 0.0, 0.40),
+        _thatch_strands(u, rv, rows, n, seed + 11, 0, 0.5, 0.40),
+    ]
+    height = 0.05 + 0.12 * (rv - np.floor(rv))
+    albedo = ramp(rv - np.floor(rv), [(0.0, "#2e2213"), (1.0, "#4d3a1f")])
+    covered = np.zeros((size, size), dtype=bool)
+    own = np.zeros((size, size), dtype=bool)
+    rough = np.full((size, size), 0.95)
+    for li, (inside, t, length, r, across) in enumerate(layers):
+        vis = inside & ~covered
+        s = np.clip(t / length, 0.0, 1.0)
+        prof = np.sqrt(np.clip(1.0 - across ** 2, 0.0, 1.0))
+        midrib = np.exp(-(across / 0.18) ** 2)
+        back = li % 2  # capa trasera de cada hilera, algo más hundida y oscura
+        h = 0.2 + 0.55 * (t / 2.0) + 0.1 * prof + 0.04 * midrib + 0.04 * fibers - 0.05 * back
+        h = h + 0.06 * smoothstep(length - 0.35, length, t)  # la punta monta sobre la hilera de abajo
+        tone = r[..., 3]
+        k = 0.2 + 0.35 * s + 0.3 * fibers + 0.15 * fine + 0.15 * (r[..., 1] - 0.5)
+        straw = ramp(k, [(0.0, "#9a7433"), (0.35, "#c49a45"), (0.7, "#e0bb62"), (1.0, "#f0d893")])
+        gold = ramp(k, [(0.0, "#a0702a"), (0.4, "#cf9738"), (0.8, "#e8b454"), (1.0, "#f3cf7c")])
+        green = ramp(k, [(0.0, "#6f7c2e"), (0.5, "#9fac45"), (1.0, "#c9cd6e")])
+        brown = ramp(k, [(0.0, "#6c4a26"), (0.5, "#936a39"), (1.0, "#b98e57")])
+        c = np.where((tone < 0.45)[..., None], straw, gold)
+        c = np.where((tone > 0.9)[..., None], green, c)
+        c = np.where((tone < 0.1)[..., None], brown, c)
+        c = mix_color(c, "#f6e6ae", midrib * 0.22)
+        # Borde de la hebra algo más oscuro (se lee cada hebra) y punta seca más gris-tostada.
+        c = c * (0.8 + 0.2 * prof)[..., None]
+        c = mix_color(c, "#a58a5c", smoothstep(length - 0.4, length, t) * 0.35)
+        c = c * (0.93 - 0.1 * back)
+        albedo = np.where(vis[..., None], c, albedo)
+        height = np.where(vis, h, height)
+        rough = np.where(vis, 0.62 + 0.12 * (1.0 - fibers) - 0.06 * midrib, rough)
+        if li >= 2:
+            own |= vis
+        covered |= inside
+    # Lo que asoma de cada hilera queda bajo las puntas de la de arriba: sombra proyectada
+    # (las puntas de arriba, un poco más arriba, tapan la luz) y penumbra junto a la atadura.
+    cast = np.zeros((size, size))
+    for lift, w in ((0.05, 0.5), (0.12, 0.3), (0.22, 0.2)):
+        for sd, sh in ((seed + 10, 0.0), (seed + 11, 0.5)):
+            cast = cast + w * 0.5 * _thatch_strands(u, rv, rows, n, sd, 1, sh, 0.40, lift)[0]
+    # Sin desenfoque: difuminaría la sombra hacia la hilera de arriba y marcaría una raya.
+    t0 = rv - np.floor(rv)
+    lit = (0.7 + 0.3 * smoothstep(0.0, 0.8, t0)) * (1.0 - 0.3 * np.clip(cast, 0.0, 1.0))
+    albedo = albedo * np.where(own, lit, 1.0)[..., None]
+    albedo = macro_variation(albedo, seed + 20, warm="#e8b85c", cool="#a2a878", amount=0.18, value=0.08)
+    height = blur(height, 0.0007)
+    return Material(albedo, height, rough, depth=0.024, ao_strength=1.2)
 
 
 def palm_weave(size: int, seed: int) -> Material:
@@ -961,7 +1011,7 @@ MATERIALS: dict[str, Spec] = {
         Spec("Ash", ash, 2.0, "Ceniza volcánica (isla del Humo), con carbones y pómez."),
         Spec("VolcanicRock", volcanic_rock, 3.0, "Basalto en losas facetadas con vesículas y óxido."),
         Spec("Limestone", limestone, 3.0, "Caliza clara estratificada con líquenes (Dientes)."),
-        Spec("PalmThatch", palm_thatch, 1.0, "Techo de hojas de palma en hileras; v = pendiente abajo."),
+        Spec("PalmThatch", palm_thatch, 1.0, "Techo de hebras de palma en hileras solapadas; v = pendiente abajo."),
         Spec("PalmWeave", palm_weave, 0.6, "Estera trenzada de palma en diagonal (paredes, techos)."),
         Spec("Bamboo", bamboo, 1.0, "Cañas de bambú juntas; v = a lo largo de la caña."),
         Spec("WoodPlanks", wood_planks, 2.0, "Tablones con juntas escalonadas y clavos; u = a lo largo."),
