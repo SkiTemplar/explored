@@ -153,10 +153,12 @@ private:
 	void SpawnLandingStarterKitIfNeeded();
 
 	// --- Recolección de vegetación y rocas --------------------------------------
-	/** La primera vez que se toca una celda en la sesión, oculta las instancias que ya venían taladas en la partida. */
-	void EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent& Component);
+	/** Una vez por carga: oculta en todas las celdas del mapa lo que ya venía talado en la partida. */
+	void ApplyVegetationDeltasIfNeeded();
+	/** Oculta en esta celda las instancias que ya venían taladas en la partida (una sola vez por celda y carga). */
+	void EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell);
 	void HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const;
-	void TickVegetationRegrowth(float DeltaSeconds);
+	void TickVegetationRegrowth();
 	/** true si Instigator lleva RequiredTag en una mano (NAME_None = no hace falta ninguna herramienta). */
 	bool HasHarvestTool(const AActor* Instigator, FName RequiredTag) const;
 
@@ -185,6 +187,8 @@ private:
 	TMap<FVegetationInstanceKey, FVegetationRuntimeState> VegetationRuntime;
 	/** Celdas cuyos deltas guardados ya se aplicaron esta sesión (ver EnsureVegetationDeltasApplied). */
 	TSet<FIntPoint> VegetationDeltasAppliedCells;
+	/** false tras cada LoadWorld: el próximo Sample recorre todas las celdas (ApplyVegetationDeltasIfNeeded). */
+	bool bVegetationDeltasApplied = false;
 	/** Semilla propia para las tiradas de recolección; se realinea con WorldDeltas.Seed al cargar. */
 	FExploredRandom HarvestRandom = FExploredRandom(0x9E3779B97F4A7C15ULL);
 
