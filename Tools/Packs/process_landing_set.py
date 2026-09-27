@@ -1,25 +1,31 @@
-"""Procesa el set de vegetacion de Landing: normaliza escala/pivote, aplica la
-paleta compartida y exporta a Art/Export/Meshes/LowPoly/<Slot>/.
+"""Procesa el set de vegetacion de Landing: normaliza escala/pivote y exporta
+a Art/Export/Meshes/LowPoly/<Slot>/.
 
 Blender headless (no abre ventana):
     "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe" ^
         --background --factory-startup --python Tools/Packs/process_landing_set.py
 
-Fuente: Kenney Nature Kit + Kenney Survival Kit (CC0), descargados por
-download_packs.py a Tools/Packs/.cache/. Paleta: Tools/Packs/palette_lowpoly.png
-(generada por make_palette.py). Ver Tools/Packs/packs.json para la licencia y
-que malla de cada pack se usa para que slot del scatter.
+Fuentes (v2, tras el rechazo del director sobre el primer pase con Kenney
+Nature Kit para arboles/palmeras/arbustos):
+  - Quaternius, via Poly Pizza (CC0, descargados por download_polypizza.py a
+    Tools/Packs/.cache/quaternius-polypizza/): palmeras, arboles de copa
+    ancha, arbustos, helechos, hierba y flores. Se importan como .glb y se
+    conserva su material nativo (atlas con degradado base oscura/punta
+    clara ya horneado) sin tocarlo: el primer pase remapeaba todo a un
+    color plano por pieza y eso fue justo lo que se rechazo como "cutre".
+  - Kenney Nature Kit + Survival Kit (CC0, download_packs.py), solo para lo
+    que el director pidio mantener: rocas de orilla, troncos/ramas caidas y
+    setas. Estas SI se remapean a Tools/Packs/palette_lowpoly.png (paleta
+    plana): son props pequenos y solidos, no follaje, donde un color plano
+    no lee como generico.
 
-Convencion de mallas: <Categoria>/<Nombre> donde Categoria coincide con
-FScatterRule.ManifestCategory (Source/Explored/WorldGen/VegetationScatter.cpp)
-y Nombre lleva el filtro esperado por NameFilter cuando aplica (ver mapping.md
-en esta misma carpeta). Este set queda en LowPoly/ como comparativa: no toca
-el manifest.json en produccion (Art/Export/Meshes/manifest.json), que sigue
-generado por Tools/Blender/run_all.py.
+Ver Tools/Packs/packs.json para licencia, autor y URL verificable de cada
+modelo, y Tools/Packs/mapping.md para como encajan estos slots con
+FScatterRule.ManifestCategory (Source/Explored/WorldGen/VegetationScatter.cpp).
+Este set queda en LowPoly/ como comparativa: no toca el manifest.json de
+produccion (generado por Tools/Blender/run_all.py).
 """
 import json
-import math
-import os
 import sys
 from pathlib import Path
 
@@ -29,13 +35,16 @@ from mathutils import Vector
 TOOLS_PACKS = Path(__file__).resolve().parent
 REPO_ROOT = TOOLS_PACKS.parents[1]
 CACHE_DIR = TOOLS_PACKS / ".cache"
+CACHE_DIR_POLYPIZZA = CACHE_DIR / "quaternius-polypizza"
 PALETTE_PNG = TOOLS_PACKS / "palette_lowpoly.png"
 OUT_DIR = REPO_ROOT / "Art" / "Export" / "Meshes" / "LowPoly"
 
 sys.path.insert(0, str(TOOLS_PACKS))
 from make_palette import SWATCHES, cell_uv_center  # noqa: E402
 
-# material de origen (Kenney OBJ/FBX) -> nombre de swatch en la paleta.
+# material de origen (Kenney OBJ) -> nombre de swatch en la paleta plana.
+# Solo se usa para las entradas kind="obj" (rocas, troncos, setas): el
+# follaje (kind="glb", Quaternius) conserva su propio material.
 ROLE_BY_MATERIAL = {
     "leafsGreen": "LeafMid",
     "grass": "GrassGreen",
@@ -45,7 +54,8 @@ ROLE_BY_MATERIAL = {
     "colorRed": "FlowerRed",
     "colorYellow": "FlowerYellow",
     "colorPurple": "FlowerPurple",
-    "_defaultMat": "LeafMid",
+    "colorTan": "BarkPale",
+    "_defaultMat": "FlowerWhite",  # tallo/base pálida (p.ej. de las setas), no follaje
 }
 
 # name -> (row, col) desde SWATCHES (name, rgb) -> construimos el indice inverso.
@@ -58,72 +68,62 @@ def role_uv(role: str) -> tuple:
 
 
 # ---------------------------------------------------------------------------
-# Manifiesto de origen -> slot. metric='height' normaliza por Z; 'length' por
-# la mayor dimension horizontal (troncos y ramas tumbados). force_role fija
-# una unica swatch para mallas que llegan con textura UV propia (colormap.png
-# del Survival Kit) en vez de materiales con Kd por nombre.
+# Manifiesto de origen -> slot. kind="glb" (Quaternius/Poly Pizza, material
+# nativo) o kind="obj" (Kenney, remapeado a la paleta plana). metric='height'
+# normaliza por Z; 'length' por la mayor dimension horizontal (troncos/ramas
+# tumbados). force_role fija una unica swatch (solo obj).
 # ---------------------------------------------------------------------------
 ENTRIES = [
-    # --- Palmeras cocoteras: 15-25 m, 4 variantes, una curvada -------------
-    dict(slot="Palm", name="SM_LowPolyPalmShort_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_palmShort.obj", metric="height", target=15.0),
-    dict(slot="Palm", name="SM_LowPolyPalmTall_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_palmTall.obj", metric="height", target=22.0),
-    dict(slot="Palm", name="SM_LowPolyPalmDetailedTall_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_palmDetailedTall.obj", metric="height", target=25.0),
-    dict(slot="Palm", name="SM_LowPolyPalmBend_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_palmBend.obj", metric="height", target=18.0),
-    # --- Arboles de selva de copa ancha -------------------------------------
-    dict(slot="JungleWide", name="SM_LowPolyJungleWidePlateau_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_plateau.obj", metric="height", target=18.0),
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideFat_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_fat.obj", metric="height", target=14.0),
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideDetailed_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/tree_detailed.obj", metric="height", target=16.0),
-    # --- Arbustos ------------------------------------------------------------
-    dict(slot="Shrub", name="SM_LowPolyShrubLarge_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/plant_bushLarge.obj", metric="height", target=2.2),
-    dict(slot="Shrub", name="SM_LowPolyShrubDetailed_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/plant_bushDetailed.obj", metric="height", target=1.6),
-    dict(slot="Shrub", name="SM_LowPolyShrub_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/plant_bush.obj", metric="height", target=1.2),
-    # --- Helechos (sustituto documentado: Kenney no trae "fern" explicito) --
-    dict(slot="Fern", name="SM_LowPolyFernTall_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/plant_flatTall.obj", metric="height", target=0.9),
-    dict(slot="Fern", name="SM_LowPolyFernSmall_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/plant_bushSmall.obj", metric="height", target=0.6),
-    # --- Hierba en matas -------------------------------------------------------
-    dict(slot="Grass", name="SM_LowPolyGrassClumpLarge_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/grass_large.obj", metric="height", target=0.6),
-    dict(slot="Grass", name="SM_LowPolyGrassClumpLeafs_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/grass_leafsLarge.obj", metric="height", target=0.5),
-    # --- Flores ------------------------------------------------------------
-    dict(slot="Flower", name="SM_LowPolyFlowerRed_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/flower_redA.obj", metric="height", target=0.35),
-    dict(slot="Flower", name="SM_LowPolyFlowerYellow_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/flower_yellowA.obj", metric="height", target=0.35),
-    dict(slot="Flower", name="SM_LowPolyFlowerPurple_01", pack="kenney-nature-kit",
-         src="Models/OBJ format/flower_purpleA.obj", metric="height", target=0.35),
-    # --- Rocas de orilla -----------------------------------------------------
-    dict(slot="Rock", name="SM_LowPolyRockShoreA_01", pack="kenney-nature-kit",
+    # --- Palmeras cocoteras: 15-25 m, 4 variantes (Quaternius/Poly Pizza) ---
+    dict(slot="Palm", name="SM_LowPolyPalmA_01", kind="glb", src="palm_a.glb", metric="height", target=18.0),
+    dict(slot="Palm", name="SM_LowPolyPalmB_01", kind="glb", src="palm_b.glb", metric="height", target=22.0),
+    dict(slot="Palm", name="SM_LowPolyPalmC_01", kind="glb", src="palm_c.glb", metric="height", target=25.0),
+    dict(slot="Palm", name="SM_LowPolyPalmD_01", kind="glb", src="palm_d.glb", metric="height", target=15.0),
+    # --- Arboles de selva de copa ancha (Quaternius/Poly Pizza) -------------
+    dict(slot="JungleWide", name="SM_LowPolyJungleWideA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=16.0),
+    dict(slot="JungleWide", name="SM_LowPolyJungleWideB_01", kind="glb", src="jungle_wide_b.glb", metric="height", target=18.0),
+    dict(slot="JungleWide", name="SM_LowPolyJungleWideC_01", kind="glb", src="jungle_wide_c.glb", metric="height", target=14.0),
+    dict(slot="JungleWide", name="SM_LowPolyJungleWideD_01", kind="glb", src="jungle_wide_d.glb", metric="height", target=17.0),
+    # --- Arbustos (Quaternius/Poly Pizza) -----------------------------------
+    dict(slot="Shrub", name="SM_LowPolyShrubA_01", kind="glb", src="shrub_a.glb", metric="height", target=1.4),
+    dict(slot="Shrub", name="SM_LowPolyShrubB_01", kind="glb", src="shrub_b.glb", metric="height", target=1.0),
+    dict(slot="Shrub", name="SM_LowPolyShrubFlowering_01", kind="glb", src="shrub_flowering.glb", metric="height", target=1.6),
+    dict(slot="Shrub", name="SM_LowPolyShrubBanana_01", kind="glb", src="shrub_banana.glb", metric="height", target=2.0),
+    # --- Helechos / sotobosque (Quaternius/Poly Pizza) ----------------------
+    dict(slot="Fern", name="SM_LowPolyFernA_01", kind="glb", src="fern_a.glb", metric="height", target=0.7),
+    dict(slot="Fern", name="SM_LowPolyFernB_01", kind="glb", src="fern_b.glb", metric="height", target=0.55),
+    # --- Hierba en matas (Quaternius/Poly Pizza) ----------------------------
+    dict(slot="Grass", name="SM_LowPolyGrassA_01", kind="glb", src="grass_a.glb", metric="height", target=0.4),
+    dict(slot="Grass", name="SM_LowPolyGrassB_01", kind="glb", src="grass_b.glb", metric="height", target=0.55),
+    dict(slot="Grass", name="SM_LowPolyGrassC_01", kind="glb", src="grass_c.glb", metric="height", target=0.35),
+    # --- Flores (Quaternius/Poly Pizza) -------------------------------------
+    dict(slot="Flower", name="SM_LowPolyFlowerA_01", kind="glb", src="flower_a.glb", metric="height", target=0.3),
+    dict(slot="Flower", name="SM_LowPolyFlowerB_01", kind="glb", src="flower_b.glb", metric="height", target=0.4),
+    dict(slot="Flower", name="SM_LowPolyFlowerC_01", kind="glb", src="flower_c.glb", metric="height", target=0.3),
+    # --- Rocas de orilla (Kenney, mantenidas por peticion del director) ----
+    dict(slot="Rock", name="SM_LowPolyRockShoreA_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallA.obj", metric="height", target=0.4),
-    dict(slot="Rock", name="SM_LowPolyRockShoreB_01", pack="kenney-nature-kit",
+    dict(slot="Rock", name="SM_LowPolyRockShoreB_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallB.obj", metric="height", target=0.5),
-    dict(slot="Rock", name="SM_LowPolyRockShoreC_01", pack="kenney-nature-kit",
+    dict(slot="Rock", name="SM_LowPolyRockShoreC_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallC.obj", metric="height", target=0.35),
-    dict(slot="Rock", name="SM_LowPolyRockSandA_01", pack="kenney-survival-kit",
+    dict(slot="Rock", name="SM_LowPolyRockSandA_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/rock-sand-a.obj", metric="height", target=0.6, force_role="RockGrey"),
-    dict(slot="Rock", name="SM_LowPolyRockSandB_01", pack="kenney-survival-kit",
+    dict(slot="Rock", name="SM_LowPolyRockSandB_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/rock-sand-b.obj", metric="height", target=0.5, force_role="RockGrey"),
-    # --- Troncos y ramas caidas (recolectables) -----------------------------
-    dict(slot="Debris", name="SM_LowPolyLog_01", pack="kenney-nature-kit",
+    # --- Troncos, ramas caidas y setas (Kenney, mantenidas) -----------------
+    dict(slot="Debris", name="SM_LowPolyLog_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/log.obj", metric="length", target=2.5),
-    dict(slot="Debris", name="SM_LowPolyLogLarge_01", pack="kenney-nature-kit",
+    dict(slot="Debris", name="SM_LowPolyLogLarge_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/log_large.obj", metric="length", target=4.0),
-    dict(slot="Debris", name="SM_LowPolyStump_01", pack="kenney-nature-kit",
+    dict(slot="Debris", name="SM_LowPolyStump_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/stump_round.obj", metric="height", target=0.8),
-    dict(slot="Debris", name="SM_LowPolyBranch_01", pack="kenney-survival-kit",
+    dict(slot="Debris", name="SM_LowPolyBranch_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/tree-log-small.obj", metric="length", target=1.2, force_role="BarkWarm"),
+    dict(slot="Debris", name="SM_LowPolyMushroomRed_01", kind="obj", pack="kenney-nature-kit",
+         src="Models/OBJ format/mushroom_red.obj", metric="height", target=0.35),
+    dict(slot="Debris", name="SM_LowPolyMushroomTan_01", kind="obj", pack="kenney-nature-kit",
+         src="Models/OBJ format/mushroom_tan.obj", metric="height", target=0.3),
 ]
 
 
@@ -159,42 +159,69 @@ def get_palette_material():
     return mat
 
 
-def import_fbx(path: Path):
-    """Importa el .obj de origen (los .fbx de Kenney son ASCII: Blender 5.x
-    dejo de soportarlos como importador nativo). El nombre de la funcion se
-    mantiene por lo que hace en el pipeline, no por el formato de entrada."""
-    before = set(bpy.data.objects.keys())
-    bpy.ops.wm.obj_import(filepath=str(path), forward_axis='NEGATIVE_Z', up_axis='Y')
-    after = [o for o in bpy.data.objects if o.name not in before]
+def _finish_import(after, before):
+    """Comun a import_obj/import_glb: une las mallas nuevas si son varias,
+    quita lo que no sea malla (vacios, camaras) y hornea rotacion/escala/
+    parentesco para que local == world de aqui en adelante.
+
+    Algunos .glb de Quaternius (p.ej. las flores, que llegan como 5-7
+    "clumps" separados) traen varias mallas colgadas del mismo RootNode.
+    bpy.ops.object.join() libera las que no son la activa: sus referencias
+    de Python en «after» quedan invalidas (ReferenceError al tocarlas), asi
+    que la limpieza de vacios se hace por NOMBRE contra bpy.data.objects
+    tras el join, nunca reutilizando esas referencias."""
+    after_names = [o.name for o in after]
     meshes = [o for o in after if o.type == 'MESH']
     if not meshes:
-        raise RuntimeError(f"sin objetos de malla tras importar {path}")
-    if len(meshes) > 1:
-        bpy.ops.object.select_all(action='DESELECT')
-        for o in meshes:
-            o.select_set(True)
-        bpy.context.view_layer.objects.active = meshes[0]
-        bpy.ops.object.join()
-        meshes = [bpy.context.view_layer.objects.active]
-    # limpia objetos no-malla que haya podido traer el FBX (vacios, camaras...)
-    for o in after:
-        if o.type != 'MESH' and o.name in bpy.data.objects:
-            bpy.data.objects.remove(o, do_unlink=True)
+        raise RuntimeError("sin objetos de malla tras importar")
 
-    obj = meshes[0]
-    # El importador de OBJ deja la conversion Y-up -> Z-up como una ROTACION a
-    # nivel de objeto (no la hornea en los vertices). Object.dimensions en
-    # Blender es local (bound_box local * scale, ignora esa rotacion), asi que
-    # sin hornearla aqui, dims.z de un arbol da su radio de copa (eje local
-    # sin rotar) en vez de su altura real. Se hornea ya mismo para que local
-    # == world de aqui en adelante y normalize_scale_and_pivot lea el eje que
-    # toca.
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in meshes:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+    if len(meshes) > 1:
+        bpy.ops.object.join()
+    active_name = bpy.context.view_layer.objects.active.name
+
+    for name in after_names:
+        if name == active_name:
+            continue
+        stale = bpy.data.objects.get(name)
+        if stale is not None:
+            bpy.data.objects.remove(stale, do_unlink=True)
+
+    obj = bpy.data.objects[active_name]
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.context.view_layer.update()
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     return obj
+
+
+def import_obj(path: Path):
+    """Importa un .obj de Kenney (sus .fbx son ASCII: Blender 5.x dejo de
+    soportarlos). El importador deja la conversion Y-up -> Z-up como una
+    ROTACION a nivel de objeto (no la hornea en los vertices), y
+    Object.dimensions en Blender es local (bound_box local * scale, ignora
+    esa rotacion): sin hornearla, dims.z de un arbol da su radio de copa en
+    vez de su altura real. _finish_import se encarga de hornearla."""
+    before = set(bpy.data.objects.keys())
+    bpy.ops.wm.obj_import(filepath=str(path), forward_axis='NEGATIVE_Z', up_axis='Y')
+    after = [o for o in bpy.data.objects if o.name not in before]
+    return _finish_import(after, before)
+
+
+def import_glb(path: Path):
+    """Importa un .glb de Quaternius (via Poly Pizza). Llegan colgados de un
+    Empty 'RootNode' con object.scale=100 (malla modelada en cm, reescalada
+    a metros por el objeto, no por los vertices): _finish_import limpia el
+    parentesco conservando la transform mundial y hornea esa escala."""
+    before = set(bpy.data.objects.keys())
+    bpy.ops.import_scene.gltf(filepath=str(path))
+    after = [o for o in bpy.data.objects if o.name not in before]
+    return _finish_import(after, before)
 
 
 def remap_to_palette(obj, force_role: str | None):
@@ -279,12 +306,17 @@ def main():
     results = []
     for entry in ENTRIES:
         reset_scene()
-        src_path = CACHE_DIR / entry["pack"] / entry["src"]
+        if entry["kind"] == "glb":
+            src_path = CACHE_DIR_POLYPIZZA / entry["src"]
+        else:
+            src_path = CACHE_DIR / entry["pack"] / entry["src"]
         if not src_path.exists():
             print(f"[skip] {entry['name']}: no existe {src_path} (¿bajaste el pack?)")
             continue
-        obj = import_fbx(src_path)
-        remap_to_palette(obj, entry.get("force_role"))
+
+        obj = import_glb(src_path) if entry["kind"] == "glb" else import_obj(src_path)
+        if entry["kind"] == "obj":
+            remap_to_palette(obj, entry.get("force_role"))
         normalize_scale_and_pivot(obj, entry["metric"], entry["target"])
         out_path = OUT_DIR / entry["slot"] / f"{entry['name']}.fbx"
         export_fbx(obj, out_path)
@@ -293,7 +325,7 @@ def main():
         dims = obj.dimensions
         results.append(dict(
             name=entry["name"], slot=entry["slot"], file=f"{entry['slot']}/{entry['name']}.fbx",
-            source_pack=entry["pack"], source_file=entry["src"], triangles=tris,
+            source_kind=entry["kind"], source_file=entry["src"], triangles=tris,
             dimensions_m={"x": round(dims.x, 3), "y": round(dims.y, 3), "z": round(dims.z, 3)},
         ))
         print(f"[ok] {entry['name']}: {tris} tris, dims={dims.x:.2f}x{dims.y:.2f}x{dims.z:.2f} m -> {out_path}")

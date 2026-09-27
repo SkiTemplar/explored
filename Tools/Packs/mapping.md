@@ -29,9 +29,13 @@ Para activar este set en produccion habria que:
    directamente: ver `ResolveScatterMeshes` en
    `Source/ExploredEditor/WorldGenCommandlet.cpp`).
 3. Revalidar con `Tools/Blender/validate.py` — ojo: exige el set de
-   materiales `{M_Bark, M_Leaf, M_Rock, M_Grass}`; este set usa un unico
-   material compartido `M_LowPoly_Palette`, habria que adaptar el validador o
-   remapear a los nombres canonicos antes de integrarlo.
+   materiales `{M_Bark, M_Leaf, M_Rock, M_Grass}`. Desde el v2 (Quaternius
+   via Poly Pizza para follaje, ver `packs.json`) esto ya no es un unico
+   material compartido: `Palm/JungleWide/Shrub/Fern/Grass/Flower` conservan
+   el material nativo de cada `.glb` (atlas con degradado propio, sin
+   tocar), y solo `Rock/Debris` (Kenney, `.obj`) siguen remapeados al
+   material plano `M_LowPoly_Palette`. Habria que adaptar el validador o
+   remapear ambos grupos a los nombres canonicos antes de integrarlo.
 
 Esta tarea no hace ese ultimo paso a proposito (el encargo pide exportar y
 renderizar una comparativa, no sustituir el pipeline en caliente mientras hay
