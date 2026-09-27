@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "note": "Catálogo narrativo de lugares de interés con nombre (docs/diseno/exploracion.md). Complementa a FPoiLayout (WorldGen/PointsOfInterest.h) y a FRuinsLayout (Ruins/RuinsModel.h) sin sustituirlos: linkedPoi enlaza con un punto ya colocado por el mundo; vacío significa pendiente de colocar. Lo parsea Exploration/ExplorationContentLoader.cpp y lo valida FExplorationCatalog::Validate (Exploration/ExplorationContentModel.h). Solo la isla del Amaraje (Landing) está completa por ahora: es la porción vertical prioritaria (docs/diseno/exploracion.md §Priorización).",
+  "kinds": [
+    { "id": "cala", "nameEs": "Cala", "nameEn": "Cove" },
+    { "id": "cueva", "nameEs": "Cueva", "nameEn": "Cave" },
+    { "id": "mirador", "nameEs": "Mirador", "nameEn": "Viewpoint" },
+    { "id": "naufragio", "nameEs": "Naufragio", "nameEn": "Wreckage" },
+    { "id": "ruina", "nameEs": "Ruina", "nameEn": "Ruin" },
+    { "id": "cascada", "nameEs": "Cascada", "nameEn": "Waterfall" },
+    { "id": "arco_marino", "nameEs": "Arco marino", "nameEn": "Sea arch" },
+    { "id": "poza", "nameEs": "Poza de marea", "nameEn": "Tide pool" },
+    { "id": "jardin_coral", "nameEs": "Jardín de coral", "nameEn": "Coral garden" },
+    { "id": "cumbre", "nameEs": "Cumbre", "nameEn": "Summit" },
+    { "id": "campamento", "nameEs": "Campamento", "nameEn": "Camp" },
+    { "id": "recurso", "nameEs": "Recurso", "nameEn": "Resource" }
+  ],
+  "islands": [
+    {
+      "id": "landing",
+      "landmarks": [
+        {
+          "id": "landing_laguna_amaraje",
+          "kind": "naufragio",
+          "nameEs": "Laguna del Amaraje",
+          "nameEn": "Splashdown Lagoon",
+          "angleDeg": 0.0,
+          "distanceFrac": 0.58,
+          "linkedPoi": "WreckFuselage",
+          "mapMark": "wreck",
+          "accessEs": "Bucear en el centro de la laguna protegida",
+          "rewardEs": "Piezas del fuselaje para el barco «Limón»"
+        },
+        {
+          "id": "landing_playa_ala_rota",
+          "kind": "naufragio",
+          "nameEs": "Playa del Ala Rota",
+          "nameEn": "Broken Wing Beach",
+          "angleDeg": 180.0,
+          "distanceFrac": 1.0,
+          "linkedPoi": "WreckWing",
+          "mapMark": "wreck",
+          "accessEs": "Caminar por la costa opuesta a la laguna",
+          "rewardEs": "Mochila de fibra y tela de paracaídas"
+        },
+        {
+          "id": "landing_poza_marea_baja",
+          "kind": "poza",
+          "nameEs": "Poza de la Marea Baja",
+          "nameEn": "Low-Tide Pool",
+          "angleDeg": 90.0,
+          "distanceFrac": 1.0,
+          "linkedPoi": "TidePool",
+          "mapMark": "resource",
+          "accessEs": "Solo queda al descubierto con la bajamar",
+          "rewardEs": "Cangrejos, erizos y pulpo sin nasa"
+        },
+        {
+          "id": "landing_mirador_cresta",
+          "kind": "mirador",
+          "nameEs": "Mirador de la Cresta",
+          "nameEn": "Ridge Viewpoint",
+          "angleDeg": 0.0,
+          "distanceFrac": 0.1,
+          "linkedPoi": "view_Landing",
+          "mapMark": "",
+          "accessEs": "Subir a la parte más alta de la isla",
+          "rewardEs": "Boceto del contorno de la isla y de las cercanas"
+        },
+        {
+          "id": "landing_marae_palmeral",
+          "kind": "ruina",
+          "nameEs": "Marae del Palmeral",
+          "nameEn": "Palm Grove Marae",
+          "angleDeg": 250.0,
+          "distanceFrac": 0.4,
+          "linkedPoi": "ruin_landing",
+          "mapMark": "ruin",
+          "accessEs": "Tierra adentro, entre las palmeras, lejos de la costa",
+          "rewardEs": "Una técnica de wayfinding y dos petroglifos"
+        },
+        {
+          "id": "landing_cueva_sextante",
+          "kind": "cueva",
+          "nameEs": "Cueva del Sextante",
+          "nameEn": "Sextant Cave",
+          "angleDeg": 30.0,
+          "distanceFrac": 0.65,
+          "linkedPoi": "",
+          "mapMark": "cave",
+          "accessEs": "Entrada semihundida junto a la laguna; solo con la marea baja (nuevo POI, pendiente de anclar en FPoiLayout)",
+          "rewardEs": "Sextante: marca coordenadas exactas en mar abierto (GDD §5.5)"
+        }
+      ]
+    }
+  ]
+}
