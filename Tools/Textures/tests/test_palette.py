@@ -3,6 +3,8 @@
 
 import numpy as np
 
+LUMA = np.array([0.2126, 0.7152, 0.0722])
+
 
 def mean_rgb(generated, name):
     return generated[name]["BC"].reshape(-1, 3).mean(axis=0)
@@ -90,3 +92,26 @@ def test_canvas_is_light_cream_with_a_sewn_seam(generated):
     rows = h.mean(axis=1)
     seam = rows[int(0.37 * size)]
     assert seam > np.median(rows) + 0.05, "no hay costura legible"
+
+
+def test_sand_wet_is_clean_warm_and_darker_than_dry(generated):
+    """La arena mojada se veía como barro de camuflaje (un tercio del tile por debajo de
+    luma 0.45, manchas de umbral duro). Tiene que ser la misma arena, empapada."""
+    lum_w = generated["SandWet"]["BC"] @ LUMA
+    lum_d = generated["SandDry"]["BC"] @ LUMA
+    r, g, b = mean_rgb(generated, "SandWet")
+    assert r > g > b, f"arena mojada no cálida: {r:.3f} {g:.3f} {b:.3f}"
+    assert 0.45 < lum_w.mean() < 0.7
+    assert lum_d.mean() - lum_w.mean() > 0.15, "no se distingue de la arena seca"
+    assert (lum_w < 0.45).mean() < 0.05, "manchas oscuras de barro"
+
+
+def test_sand_wet_moisture_follows_the_shoreline(generated):
+    """La humedad va en bandas de resaca paralelas a la orilla (a lo largo de u): a escala
+    media la luminancia cambia más a lo largo de v que de u (antes, manchas isótropas)."""
+    from texgen.noise import blur
+
+    mid = blur(generated["SandWet"]["BC"] @ LUMA, 0.03)
+    du = np.abs(np.diff(mid, axis=1)).mean()
+    dv = np.abs(np.diff(mid, axis=0)).mean()
+    assert dv > 1.25 * du, f"humedad sin dirección de orilla: dv/du = {dv / du:.2f}"

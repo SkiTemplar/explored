@@ -365,3 +365,37 @@ Regenerar:
 y `preview_kit.py -- --mode=tiles --module=items_frutas --out=items-frutas --cols=5 --res=1600x1280`.
 `preview_kit.py` fija ahora `clip_start = 5 mm` en la cámara de la tesela (con el
 recorte por defecto de 10 cm la cámara cortaba los objetos de 5 cm).
+
+### Despojos de caza y pesca, y materiales de orilla (`items_despojos.py`, `items_orilla.py`)
+
+Láminas: `docs/art/modelos/items-despojos.png` e `items-orilla.png`. Objetos sueltos
+con el pivote en la base, centrados en XY y tumbados a lo largo de +X. La grasa y
+las vísceras se apoyan en un trozo de hoja de plátano (se leen como comida/cebo y no
+como una mancha en el suelo); arena y sal son el montoncito que se recoge.
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Item_Tendon` | 26 cm | Madeja de cinco hebras ámbar retorcidas en S, deshilachada en un extremo y ligada en el otro |
+| `SM_Item_PielBruto` | 50 × 38 cm | Piel de tiburón abierta: lomo pizarra verdoso, vientre crema, bordes abarquillados con la carne rosada |
+| `SM_Item_CueroCurtido` | 30 cm | Rollo en espiral de cuero pardo rojizo con el canto claro; dos vueltas de cordel que abrazan la solapa |
+| `SM_Item_Grasa` | 20 cm | Taco marfil con vetas rosadas y capa de carne roja en la base, sobre hoja de plátano |
+| `SM_Item_Plumas` | 30 cm | Abanico de cinco plumas (piquero blanca/negra, rabijunco roja, parda barrada) atadas en rojo |
+| `SM_Item_EspinaPescado` | 20 cm | Espina clásica: columna con vértebras, siete pares de costillas, cráneo con ojo y cola en abanico |
+| `SM_Item_PielPescado` | 26 cm | Tira algo retorcida: lomo azul, franja dorada, flanco plata con escamas en rombo, carne rosa debajo |
+| `SM_Item_ViscerasPescado` | 20 cm | Tripa enroscada, hígado granate, huevas naranja y vejiga nacarada sobre hoja |
+| `SM_Item_Lombriz` | 12 cm | En S, anillos marcados y clitelo claro |
+| `SM_Item_AceitePescado` | 20 cm | Canuto de bambú con tapón de hoja atado, chorretones ámbar y asa de cordel |
+| `SM_Item_HojaPlatano` | 1,07 m | Limbo con nervios en diagonal, desgarros hasta el borde, nervio central claro y pecíolo cortado |
+| `SM_Item_Musgo` | 15 cm | Cojín de matas verde vivo con puntas amarillas, cápsulas en tallito rojizo, costra de tierra |
+| `SM_Item_AlgodonSilvestre` | 22 cm | Ramita con tres cápsulas reventadas: valvas pardas en estrella y copos de cuatro lóbulos |
+| `SM_Item_Arena` | Ø 15 cm | Montón dorado con granos oscuros y trocitos de concha y coral |
+| `SM_Item_SalMarina` | 11 cm | Costra rota con un montón de cristales cúbicos blancos y rosados (cajas redondeadas, sin bisel: el bisel dejaba caras degeneradas) |
+| `SM_Item_Azufre` | 10 cm | Terrón amarillo limón facetado con drusa de cristales y costra ocre en la base |
+| `SM_Item_Caracola` | 20 cm | Tritón (pū): espira de 4,6 vueltas con cordones y nódulos, medias lunas pardas, boca ovalada con labio dentado que se mete hacia el interior naranja, boquilla limada |
+| `SM_Item_EsponjaMar` | 13 cm | Bola aplastada ocre con poros hundidos y tres ósculos |
+| `SM_Item_AlgaFibra` | 33 cm | Seis cintas onduladas oliva con puntas doradas, atadas con otra tira |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_despojos,items_orilla`
+y `preview_kit.py -- --mode=tiles --module=items_despojos --out=items-despojos --cols=5 --res=1600x640`
+(`items_orilla` igual).

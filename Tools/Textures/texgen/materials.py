@@ -142,56 +142,57 @@ def sand_dry(size: int, seed: int) -> Material:
 
 
 def sand_wet(size: int, seed: int) -> Material:
-    """Arena mojada de orilla: caramelo saturado (no gris), más oscura y fría que la seca;
-    rizos lavados, marcas de resaca, agujeritos de cangrejo y alguna concha. El agua se
-    insinúa como humedad difusa (sin manchas grandes que se repitan a la vista) y algún
-    reflejo pintado pequeño, irregular y suave — nunca un charco-mancha uniforme."""
+    """Arena mojada de orilla: la misma arena que la seca pero empapada — más oscura, algo
+    más saturada y fría (tostado oliva, nunca barro marrón ni gris). La humedad se lee en
+    bandas paralelas a la orilla (a lo largo de u) que deja cada resaca al retirarse: un
+    frente de espuma fino, detrás una franja brillante aún encharcada y luego la arena que
+    ya escurrió, algo más clara. Rizos lavados muy suaves, agujeritos de cangrejo y alguna
+    concha. Sin manchas de humedad de umbral duro: se veían como camuflaje sucio."""
     u, v, height, rip, zones, fine, grain = _sand_base(size, seed, 0.3)
     height = blur(height, 0.0015)
-    # Humedad: campo de frecuencia media (no 1-2 manchas grandes) que oscurece y enfría.
-    puddle_n = unit(spectral_noise(size, seed + 8, 3, 12, 2.2), 2.0)
-    soak = smoothstep(0.55, 0.78, puddle_n + 0.1 * (0.5 - height))
-    height = height * (1.0 - 0.15 * smoothstep(0.72, 0.88, puddle_n))
-    t = 0.2 + 0.5 * rip * (0.4 + 0.6 * zones) + 0.3 * fine
-    albedo = ramp(t, [(0.0, "#78543a"), (0.4, "#8f6c48"), (0.75, "#a3835c"), (1.0, "#b4926c")])
-    # Tinte frío uniforme (toda la textura, no solo la humedad) para que se note el
-    # contraste con la arena seca cálida.
-    albedo = mix_color(albedo, "#748a86", np.full_like(rip, 0.16))
-    albedo = mix_color(albedo, "#5e4230", soak * 0.38)
-    # Reflejos pintados: brillos pequeños, irregulares y dispersos (varios por tile, no una
-    # mancha grande que se note al repetir 2x2), solo donde ya hay humedad.
-    gu = u + 0.05 * spectral_noise(size, seed + 16, 2, 8, 2.0)
-    gv = v + 0.05 * spectral_noise(size, seed + 17, 2, 8, 2.0)
-    glints = scatter_dots(size, 15, seed + 13, radius=0.11, keep=0.4, vary=0.7, u=gu, v=gv)
-    glint = glints["mask"] * smoothstep(0.4, 0.78, puddle_n)
-    sky = ramp(unit(spectral_noise(size, seed + 18, 1, 4, 2.0)), [(0.0, "#a8c2ba"), (1.0, "#d8ece6")])
-    albedo = albedo + (sky - albedo) * (glint * 0.6)[..., None]
-    height = height - 0.02 * glint
-    # Marcas de resaca: líneas finas y onduladas que dejó la espuma al retirarse.
+    # Resaca: fase ondulada a lo largo de v (3 lenguas por tile), con avance irregular.
     swash_warp = spectral_noise(size, seed + 9, 1, 5, 2.6)
-    swash_phase = 3 * v + 0.45 * swash_warp + 0.06 * spectral_noise(size, seed + 11, 3, 12, 2.0)
-    line = np.abs(np.mod(swash_phase, 1.0) - 0.5) * 2.0
-    froth = (1.0 - smoothstep(0.0, 0.035, 1.0 - line)) * smoothstep(0.4, 0.7, unit(
-        spectral_noise(size, seed + 10, 2, 10, 2.0), 2.0))
+    swash_phase = 3 * v + 0.2 * swash_warp + 0.04 * spectral_noise(size, seed + 11, 3, 12, 2.0)
+    s = np.mod(swash_phase, 1.0)
+    line = np.abs(s - 0.5) * 2.0
+    reach = smoothstep(0.35, 0.7, unit(spectral_noise(size, seed + 10, 2, 10, 2.0), 2.0))
+    froth = (1.0 - smoothstep(0.0, 0.035, 1.0 - line)) * reach
     froth = froth * (0.6 + 0.4 * unit(spectral_noise(size, seed + 12, 30, 300, 1.0)))
-    # Por detrás de cada marca, una banda algo más clara donde la arena ya escurrió.
-    drained = smoothstep(0.55, 0.95, np.mod(swash_phase, 1.0)) * (1.0 - soak)
-    albedo = mix_color(albedo, "#dfbd88", drained * 0.25)
-    albedo = mix_color(albedo, "#f4efe2", froth * 0.75)
+    # Tras el frente (la línea de espuma, en s = 0), película de agua que se va secando:
+    # de brillante y oscura junto a la espuma a mate y más clara lejos de ella.
+    behind = s
+    film = smoothstep(0.0, 0.02, behind) * (1.0 - smoothstep(0.02, 0.4, behind)) * (0.3 + 0.7 * reach)
+    drained = smoothstep(0.45, 0.95, behind)
+    # Humedad de fondo: solo una deriva muy suave, sin umbral (no hace manchas).
+    damp = unit(spectral_noise(size, seed + 8, 1, 5, 2.4), 2.2)
+    height = height * (1.0 - 0.35 * film)
+    t = 0.3 + 0.4 * rip * (0.4 + 0.6 * zones) + 0.3 * fine
+    albedo = ramp(t, [(0.0, "#a07a4c"), (0.4, "#b08a5a"), (0.75, "#bf9a68"), (1.0, "#cba877")])
+    albedo = mix_color(albedo, "#7c8c84", np.full_like(rip, 0.07))
+    albedo = mix_color(albedo, "#7a6246", 0.08 + 0.16 * damp)
+    albedo = mix_color(albedo, "#6e604c", film * 0.3)
+    albedo = mix_color(albedo, "#c9ae84", drained * 0.22)
+    # Reflejo de cielo pintado en la película de agua: suave, a trazos a lo largo de u.
+    sheen_n = unit(spectral_noise(size, seed + 18, 2, 10, 2.0), 2.0)
+    streak = unit(spectral_noise(size, seed + 19, 4, 24, 1.6) , 2.0)
+    sheen = film * smoothstep(0.45, 0.85, sheen_n) * smoothstep(0.35, 0.75, streak)
+    sky = ramp(unit(spectral_noise(size, seed + 17, 1, 4, 2.0)), [(0.0, "#a9c6c0"), (1.0, "#d9eeea")])
+    albedo = albedo + (sky - albedo) * (sheen * 0.45)[..., None]
+    albedo = mix_color(albedo, "#f3efe3", froth * 0.8)
     height = height + 0.05 * froth
     # Agujeritos de cangrejo/pulga de mar con su anillo de bolitas, y conchas sueltas.
     holes = scatter_dots(size, 11, seed + 14, radius=0.07, keep=0.3)
     ring = scatter_dots(size, 11, seed + 14, radius=0.2, keep=0.3)["mask"] - holes["mask"]
     shells = scatter_dots(size, 8, seed + 15, radius=0.11, keep=0.12, vary=0.3)
     height = height - 0.2 * holes["mask"] + 0.06 * ring + 0.1 * shells["mask"]
-    albedo = mix_color(albedo, "#6b4a2b", holes["mask"] * 0.8)
-    albedo = mix_color(albedo, "#c69a62", np.clip(ring, 0, 1) * 0.35)
+    albedo = mix_color(albedo, "#5d4a36", holes["mask"] * 0.75)
+    albedo = mix_color(albedo, "#b99a70", np.clip(ring, 0, 1) * 0.35)
     shell_col = lerp(hex_rgb("#eec3ad"), hex_rgb("#f6e2c8"), shells["id"])
     albedo = albedo + (shell_col - albedo) * shells["mask"][..., None]
-    albedo = mix_color(albedo, "#7d5a3a", smoothstep(2.4, 3.3, grain) * 0.3)
-    albedo = macro_variation(albedo, seed + 20, warm="#f0b878", cool="#c9c2ab", amount=0.14, value=0.06)
-    rough = np.clip(0.6 - 0.2 * soak - 0.35 * glint + 0.2 * froth + 0.08 * (fine - 0.5)
-                    + 0.3 * shells["mask"], 0.08, 1.0)
+    albedo = mix_color(albedo, "#7a6247", smoothstep(2.6, 3.4, grain) * 0.15)
+    albedo = macro_variation(albedo, seed + 20, warm="#e8b880", cool="#b9c2b0", amount=0.14, value=0.06)
+    rough = np.clip(0.62 - 0.1 * damp - 0.4 * film - 0.2 * sheen + 0.25 * froth
+                    + 0.08 * (fine - 0.5) + 0.3 * shells["mask"], 0.06, 1.0)
     return Material(albedo, height, rough, depth=0.006, ao_strength=0.8)
 
 
@@ -452,10 +453,10 @@ def ash(size: int, seed: int) -> Material:
 # ---------------------------------------------------------------------------
 
 def volcanic_rock(size: int, seed: int) -> dict[str, np.ndarray]:
-    """Basalto gris violáceo: fotografía CC0 de Poly Haven ('Dark Rock', Amal Kumar)
+    """Basalto gris violáceo: fotografía CC0 de Poly Haven ('Rock Face 03', Dario Barresi)
     estilizada a óleo cartoon. Ver `texgen/photobash.py` y la atribución en
     `docs/art/texturas.md`. `seed` no se usa (la fuente no es aleatoria)."""
-    return photobash.photobash_rock("dark_rock", size, photobash.VOLCANIC_STYLE, seed)
+    return photobash.photobash_rock("rock_face_03", size, photobash.VOLCANIC_STYLE, seed)
 
 
 def limestone(size: int, seed: int) -> dict[str, np.ndarray]:
@@ -1270,13 +1271,13 @@ MATERIALS: dict[str, Spec] = {
     s.name: s
     for s in [
         Spec("SandDry", sand_dry, 2.0, "Arena seca de playa y dunas (Amaraje, Arenas Blancas)."),
-        Spec("SandWet", sand_wet, 2.0, "Arena mojada de la franja de orilla, con charcos brillantes."),
+        Spec("SandWet", sand_wet, 2.0, "Arena mojada de orilla en bandas de resaca; u paralelo a la costa."),
         Spec("Grass", grass, 1.5, "Suelo de hierba corta con matas y florecillas."),
         Spec("Moss", moss, 1.0, "Musgo en cojines para ruinas, rocas y suelo de selva."),
         Spec("GardenSoil", garden_soil, 2.0, "Tierra de huerto labrada en surcos (eje u)."),
         Spec("ForestFloor", forest_floor, 1.5, "Hojarasca del suelo de selva con ramitas y brotes."),
         Spec("Ash", ash, 2.0, "Ceniza volcánica (isla del Humo), con carbones y pómez."),
-        Spec("VolcanicRock", volcanic_rock, 3.0, "Basalto en losas facetadas con vesículas y óxido."),
+        Spec("VolcanicRock", volcanic_rock, 3.0, "Basalto fotobasheado (rock_face_03) en planos pintados."),
         Spec("Limestone", limestone, 3.0, "Caliza clara estratificada con líquenes (Dientes)."),
         Spec("PalmThatch", palm_thatch, 1.0, "Techo de hebras de palma en hileras solapadas; v = pendiente abajo."),
         Spec("PalmWeave", palm_weave, 0.6, "Estera trenzada de palma en diagonal (paredes, techos)."),
