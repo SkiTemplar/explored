@@ -137,6 +137,9 @@ def _stage(extent_x, extent_y, center, cam_loc, cam_target, fov_deg, out_path, s
     cam = bpy.context.object
     cam.data.lens_unit = 'FOV'
     cam.data.angle = math.radians(fov_deg)
+    # objetos de 5 cm: la cámara de la tesela queda a ~13 cm y el recorte
+    # por defecto (10 cm) abría un agujero en la malla
+    cam.data.clip_start = 0.005
     scene.camera = cam
     rx, ry = (int(x) for x in res.split('x'))
     scene.render.resolution_x = rx

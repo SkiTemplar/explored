@@ -67,6 +67,7 @@ MODULE_GROUPS = [
     ('items_rescatados', 'Items'),
     ('items_recursos', 'Items'),
     ('items_armas', 'Items'),
+    ('items_frutas', 'Items'),
 ]
 
 
