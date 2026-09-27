@@ -71,7 +71,19 @@ def to_property(src, src_out: str, prop):
         raise RuntimeError(f"No se pudo conectar {src.get_name()}.{src_out} -> {prop}")
 
 
+MESH_USAGES = (
+    # Terreno, árboles y rocas usan Nanite: sin este flag el juego (no el editor) sustituye el
+    # material por el Default Material y lo avisa solo en el log («missing bUsedWithNanite»).
+    unreal.MaterialUsage.MATUSAGE_NANITE,
+    # La vegetación dispersa se dibuja con componentes instanciados.
+    unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES,
+)
+
+
 def finish(material):
+    if material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE:
+        for usage in MESH_USAGES:
+            MEL.set_material_usage(material, usage)
     MEL.recompile_material(material)
     unreal.EditorAssetLibrary.save_loaded_asset(material)
     unreal.log(f"[Explored] Material listo: {material.get_path_name()}")

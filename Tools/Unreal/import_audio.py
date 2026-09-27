@@ -174,7 +174,20 @@ def _import_one(entry: dict, source_root: Path, asset_tools: "unreal.AssetTools"
     return asset
 
 
+def _load_audio_decoders() -> None:
+    """Carga el decodificador BINKA, que el commandlet no inicializa por no crear dispositivo de audio.
+
+    Sin él, cada importación dispara un ensure en SoundWave.cpp («Decoder for AudioFormat
+    'BINKA' not found») y el commandlet termina con código 1 aunque todo se haya importado.
+    """
+    try:
+        unreal.load_module("BinkAudioDecoder")
+    except Exception as error:  # pragma: no cover - depende de la version del motor
+        unreal.log_warning(f"[import_audio] no se pudo cargar BinkAudioDecoder ({error}).")
+
+
 def main() -> int:
+    _load_audio_decoders()
     manifest_path = _manifest_path()
     entries = _load_manifest(manifest_path)
     source_root = manifest_path.parent

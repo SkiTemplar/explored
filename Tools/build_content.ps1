@@ -3,6 +3,8 @@
 # Uso: Tools\build_content.ps1 [-Skip textures,meshes,audio,import,materials,world]
 param([string[]]$Skip = @())
 . "$PSScriptRoot\common.ps1"
+# Con `powershell -File` la lista llega como una sola cadena "a,b": se separa aquí.
+$Skip = @($Skip | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 
 function Step([string]$Name, [scriptblock]$Body) {
     if ($Skip -contains $Name) { Write-Host "== $Name (omitido)"; return }
@@ -29,6 +31,7 @@ try {
     Step 'import' {
         & "$PSScriptRoot\unreal_python.ps1" -Script Tools/Unreal/import_textures.py
         & "$PSScriptRoot\unreal_python.ps1" -Script Tools/Unreal/import_meshes.py
+        & "$PSScriptRoot\unreal_python.ps1" -Script Tools/Unreal/import_props.py
         & "$PSScriptRoot\unreal_python.ps1" -Script Tools/Unreal/import_audio.py
     }
     Step 'materials' {

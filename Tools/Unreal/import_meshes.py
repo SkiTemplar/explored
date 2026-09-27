@@ -77,6 +77,15 @@ MATERIAL_DEFS = {
     'M_Leaf':  dict(base_color=(0.07, 0.26, 0.10), roughness=0.5),
     'M_Rock':  dict(base_color=(0.36, 0.35, 0.33), roughness=0.85),
     'M_Grass': dict(base_color=(0.18, 0.42, 0.14), roughness=0.55),
+    # Slots del kit de props (Tools/Blender/props, importado por import_props.py).
+    # El color real lo pone el color de vértice: la base es casi blanca para no
+    # oscurecerlo y solo matiza el material.
+    'M_Wood':   dict(base_color=(0.95, 0.90, 0.85), roughness=0.8),
+    'M_Stone':  dict(base_color=(0.92, 0.92, 0.90), roughness=0.9),
+    'M_Metal':  dict(base_color=(0.90, 0.90, 0.92), roughness=0.45),
+    'M_Fabric': dict(base_color=(0.95, 0.93, 0.90), roughness=0.95),
+    'M_Paper':  dict(base_color=(0.97, 0.95, 0.90), roughness=0.9),
+    'M_Glass':  dict(base_color=(0.80, 0.90, 0.95), roughness=0.1),
 }
 
 
@@ -181,18 +190,18 @@ def _assign_materials(static_mesh, slot_names):
     Blender). Usa EditorStaticMeshLibrary.set_material; si esa función no
     existe con ese nombre exacto en 5.6, cae a reescribir la lista
     static_materials directamente."""
+    # EditorStaticMeshLibrary.set_material (deprecado en 5.6) no falla pero tampoco asigna:
+    # las mallas quedaban con WorldGridMaterial. StaticMesh.set_material sí lo hace.
     materials = [_ensure_material(name) for name in slot_names]
-    for i, mat in enumerate(materials):
-        try:
-            unreal.EditorStaticMeshLibrary.set_material(static_mesh, i, mat)
-        except AttributeError:
-            static_materials = static_mesh.get_editor_property('static_materials')
-            if i < len(static_materials):
-                static_materials[i].set_editor_property('material_interface', mat)
-                static_mesh.set_editor_property('static_materials', static_materials)
-            else:
-                unreal.log_warning(
-                    f'[import_meshes] slot {i} fuera de rango en {static_mesh.get_name()}')
+    slot_count = len(static_mesh.get_editor_property('static_materials'))
+    if slot_count != len(materials):
+        unreal.log_warning(f'[import_meshes] {static_mesh.get_name()}: {slot_count} slots en la malla, '
+                           f'{len(materials)} en el manifiesto')
+    for i, mat in enumerate(materials[:slot_count]):
+        static_mesh.set_material(i, mat)
+    assigned = [static_mesh.get_material(i) for i in range(slot_count)]
+    if any(a is None or a.get_name() == 'WorldGridMaterial' for a in assigned):
+        unreal.log_error(f'[import_meshes] {static_mesh.get_name()}: material sin asignar')
 
 
 def _enable_nanite(static_mesh):
