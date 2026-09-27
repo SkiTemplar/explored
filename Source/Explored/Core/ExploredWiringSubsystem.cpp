@@ -34,6 +34,7 @@
 #include "Save/SaveSystemStates.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Survival/BodySignalsComponent.h"
+#include "UI/ExploredPlayerController.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/ExploredVegetationCell.h"
@@ -248,7 +249,7 @@ void UExploredWiringSubsystem::Tick(float DeltaTime)
 {
 	// El rebrote de sesión necesita granularidad fina para no notarse a saltos; el resto del
 	// muestreo (cuerpo, clima, descubrimientos...) va a la cadencia más gorda de siempre.
-	TickVegetationRegrowth(DeltaTime);
+	TickVegetationRegrowth();
 
 	SampleTimer -= DeltaTime;
 	if (SampleTimer > 0.0f)
@@ -275,6 +276,7 @@ void UExploredWiringSubsystem::Sample(float DeltaSeconds)
 	BindFaunaManager();
 	ApplyPendingPawnSections();
 	SpawnLandingStarterKitIfNeeded();
+	ApplyVegetationDeltasIfNeeded();
 
 	const float Days = GetTotalDays();
 	if (RunStartDays < 0.0f)
@@ -656,6 +658,16 @@ void UExploredWiringSubsystem::SpawnLandingStarterKitIfNeeded()
 		// El nivel horneado todavía no ha terminado de aparecer; se reintenta en el próximo Sample.
 		return;
 	}
+	// El mapa de juego es también el del menú principal y el menú no pausa: sin esto el kit
+	// aparecía a los 0,25 s de estar en el menú, antes de que «Continuar»/«Cargar» leyera
+	// starterKitSpawned, y cada carga dejaba un cuchillo y una cantimplora más en Landing.
+	if (const AExploredPlayerController* PC = Cast<AExploredPlayerController>(World->GetFirstPlayerController()))
+	{
+		if (PC->GetUIMode() == EExploredUIMode::Menu)
+		{
+			return;
+		}
+	}
 	bStarterKitSpawned = true;
 
 	const FVector WreckCenter = Start->GetActorLocation() + Start->GetActorForwardVector() * 300.0;
@@ -697,7 +709,27 @@ void UExploredWiringSubsystem::SpawnItemsAround(const FVector& Center, FName Ite
 // Recolección de vegetación y rocas (P-HARVEST)
 // ---------------------------------------------------------------------------
 
-void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent& Component)
+void UExploredWiringSubsystem::ApplyVegetationDeltasIfNeeded()
+{
+	if (bVegetationDeltasApplied)
+	{
+		return;
+	}
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	bVegetationDeltasApplied = true;
+	// Las celdas están horneadas en el mapa (sin World Partition): todas existen ya aquí. Sin esta
+	// pasada, lo talado de la partida guardada solo desaparecía al golpear otra planta de su celda.
+	for (TActorIterator<AExploredVegetationCell> It(World); It; ++It)
+	{
+		EnsureVegetationDeltasApplied(**It);
+	}
+}
+
+void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell)
 {
 	if (VegetationDeltasAppliedCells.Contains(Cell.CellCoord))
 	{
@@ -736,7 +768,7 @@ void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetation
 			HideVegetationInstance(*CellComponent, Index, State);
 			// Ya venía talada de la partida guardada: sin rebrote de sesión (se persistió
 			// precisamente porque su especie no rebrota, ver HarvestInstance).
-			State.RegrowRemainingSeconds = -1.0f;
+			State.RegrowAtDays = -1.0f;
 			State.Hits = 1;
 		}
 	}
@@ -758,21 +790,17 @@ void UExploredWiringSubsystem::HideVegetationInstance(UHierarchicalInstancedStat
 	Component.UpdateInstanceTransform(InstanceIndex, Hidden, true, true, true);
 }
 
-void UExploredWiringSubsystem::TickVegetationRegrowth(float DeltaSeconds)
+void UExploredWiringSubsystem::TickVegetationRegrowth()
 {
 	if (VegetationRuntime.Num() == 0)
 	{
 		return;
 	}
+	const float Days = GetTotalDays();
 	for (auto& Pair : VegetationRuntime)
 	{
 		FVegetationRuntimeState& State = Pair.Value;
-		if (!State.bHidden || State.RegrowRemainingSeconds < 0.0f)
-		{
-			continue;
-		}
-		State.RegrowRemainingSeconds -= DeltaSeconds;
-		if (State.RegrowRemainingSeconds > 0.0f)
+		if (!State.bHidden || State.RegrowAtDays < 0.0f || Days < State.RegrowAtDays)
 		{
 			continue;
 		}
@@ -783,7 +811,7 @@ void UExploredWiringSubsystem::TickVegetationRegrowth(float DeltaSeconds)
 		}
 		State.bHidden = false;
 		State.Hits = 0;
-		State.RegrowRemainingSeconds = -1.0f;
+		State.RegrowAtDays = -1.0f;
 	}
 }
 
@@ -803,7 +831,11 @@ bool UExploredWiringSubsystem::HasHarvestTool(const AActor* Instigator, FName Re
 	for (const EHand Hand : { EHand::Left, EHand::Right })
 	{
 		FItemInstance HandItem;
-		if (Carry->GetHandItem(Hand, HandItem) && ItemEffective::HasTag(HandItem, RequiredTag, Registry->GetItems()))
+		// «Filo» y «Contundente» son propiedades de items.json (canto_rodado, lascas, pedernal y las
+		// piezas de un compuesto), no etiquetas: se acepta cualquiera de las dos cosas.
+		if (Carry->GetHandItem(Hand, HandItem)
+			&& (ItemEffective::GetProperty(HandItem, RequiredTag, Registry->GetItems()) > 0.0f
+				|| ItemEffective::HasTag(HandItem, RequiredTag, Registry->GetItems())))
 		{
 			return true;
 		}
@@ -881,7 +913,7 @@ void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UH
 	{
 		return;
 	}
-	EnsureVegetationDeltasApplied(Cell, *Component);
+	EnsureVegetationDeltasApplied(Cell);
 	if (!CanHarvestInstance(Cell, Component, InstanceIndex))
 	{
 		return;
@@ -922,16 +954,16 @@ void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UH
 	HideVegetationInstance(*Component, InstanceIndex, State);
 	if (Rule->RegrowHours > 0.0f)
 	{
-		// Simplificación deliberada: el rebrote es de sesión, en segundos reales (1 h de
-		// juego ≈ 60 s reales de espera), y no se guarda instancia a instancia — el formato de
+		// Simplificación deliberada: el rebrote es de sesión, en horas de juego (sigue la duración
+		// del día elegida en ajustes y el sueño), y no se guarda instancia a instancia — el formato de
 		// guardado (FSaveScatterDeltas) es un conjunto de índices sin marca de tiempo. Por eso
 		// estas especies NO se añaden a WorldDeltas: si la partida se recarga antes de que
 		// rebrote en esta sesión, aparecen disponibles de nuevo en vez de seguir taladas.
-		State.RegrowRemainingSeconds = Rule->RegrowHours * 60.0f;
+		State.RegrowAtDays = GetTotalDays() + Rule->RegrowHours / 24.0f;
 	}
 	else
 	{
-		State.RegrowRemainingSeconds = -1.0f;
+		State.RegrowAtDays = -1.0f;
 		WorldDeltas.Layer(Component->GetFName()).Add(Cell.CellCoord, InstanceIndex);
 	}
 }
@@ -1337,10 +1369,19 @@ void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 	}
 	// Misma semilla, mismas tiradas de recolección (biblia: determinismo por semilla).
 	HarvestRandom = FExploredRandom(static_cast<uint64>(WorldDeltas.Seed) ^ 0x9E3779B97F4A7C15ULL);
-	// Los deltas de vegetación de la partida que se acaba de cargar todavía no se han aplicado
-	// a ninguna celda: EnsureVegetationDeltasApplied los aplicará la primera vez que se toque cada una.
+	// Lo ocultado antes de esta carga (menú, otra partida en el mismo mapa) vuelve a su sitio;
+	// los deltas de la partida cargada los aplica ApplyVegetationDeltasIfNeeded en el próximo Sample.
+	for (const auto& Pair : VegetationRuntime)
+	{
+		UHierarchicalInstancedStaticMeshComponent* Component = Pair.Value.Component.Get();
+		if (Pair.Value.bHidden && Component)
+		{
+			Component->UpdateInstanceTransform(Pair.Key.Index, Pair.Value.OriginalTransform, true, true, true);
+		}
+	}
 	VegetationDeltasAppliedCells.Reset();
 	VegetationRuntime.Reset();
+	bVegetationDeltasApplied = false;
 }
 
 // --- Personaje: inventario, cuerpo y mapa ---------------------------------------

@@ -34,8 +34,8 @@ struct EXPLORED_API FVegetationRuntimeState
 {
 	int32 Hits = 0;
 	bool bHidden = false;
-	/** < 0 = no rebrota en esta sesión (o no está oculta). Cuenta atrás en segundos reales. */
-	float RegrowRemainingSeconds = -1.0f;
+	/** Día total de juego (UTimeOfDaySubsystem) en que rebrota; < 0 = no rebrota en esta sesión (o no está oculta). */
+	float RegrowAtDays = -1.0f;
 	FTransform OriginalTransform;
 	TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent> Component;
 };

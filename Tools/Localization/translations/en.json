@@ -67,6 +67,12 @@
 		"Verb_TidePool": { "es": "Marisquear", "en": "Forage the pool" },
 		"Verb_Water": { "es": "Regar", "en": "Water" }
 	},
+	"ExploredHarvest": {
+		"VerbGather": { "es": "Recoger", "en": "Gather" },
+		"VerbMine": { "es": "Picar", "en": "Mine" },
+		"VerbChop": { "es": "Talar", "en": "Chop" },
+		"VerbProgress": { "es": "{Verb} ({Hits}/{Required})", "en": "{Verb} ({Hits}/{Required})" }
+	},
 	"ExploredUI": {
 		"Title": { "es": "EXPLORED", "en": "EXPLORED" },
 		"Subtitle": { "es": "Un archipiélago que no aparece en ningún mapa", "en": "An archipelago on no map" },
@@ -289,7 +295,7 @@
 		"CondInfection": { "es": "Herida infectada", "en": "Infected wound" },
 		"CondSprain": { "es": "Esguince", "en": "Sprain" },
 		"CondScurvy": { "es": "Escorbuto", "en": "Scurvy" },
-		"CondOpenWounds": { "es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar", "en": "{Count} {Count}|plural(one=wound,other=wounds) unbandaged" }
+		"CondOpenWounds": { "es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar", "en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)" }
 	},
 	"ExploredBuilding": {
 		"InvalidRotation": { "es": "Giro no válido", "en": "Invalid rotation" },

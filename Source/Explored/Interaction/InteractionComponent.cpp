@@ -81,7 +81,10 @@ void UInteractionComponent::UpdateFocus()
 	// Con HISM (vegetación, rocas) el actor no cambia entre instancias distintas de la misma
 	// celda: sin comparar también instancia, apuntar a otra palmera del mismo grupo no
 	// refrescaría los verbos ni el foco para UHarvestSubsystem.
-	const bool bSameFocus = NewFocus == FocusedActor.Get() && NewInstanceIndex == FocusedInstanceIndex;
+	// Se compara también el componente: una celda tiene un HISM por especie y el mismo índice
+	// puede existir en dos de ellos (palmera 12 y roca 12).
+	const bool bSameFocus = NewFocus == FocusedActor.Get() && NewComponent == FocusedComponent.Get()
+		&& NewInstanceIndex == FocusedInstanceIndex;
 	if (bSameFocus && !bLostStaleFocus)
 	{
 		return;
@@ -122,5 +125,16 @@ bool UInteractionComponent::InteractWithFocus()
 		return false;
 	}
 	IExploredInteractable::Execute_Interact(Focus, GetOwner());
+	// Con el mismo foco UpdateFocus no vuelve a pedir los verbos: sin esto el progreso de tala
+	// («Talar (1/4)») se quedaba en el valor del primer vistazo durante todos los golpes.
+	if (FocusedActor.IsValid())
+	{
+		CurrentVerbs.Reset();
+		IExploredInteractable::Execute_GetContextVerbs(FocusedActor.Get(), CurrentVerbs);
+		if (CurrentVerbs.Num() > 3)
+		{
+			CurrentVerbs.SetNum(3);
+		}
+	}
 	return true;
 }
