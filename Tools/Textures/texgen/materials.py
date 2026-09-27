@@ -451,37 +451,58 @@ def volcanic_rock(size: int, seed: int) -> Material:
 
 
 def limestone(size: int, seed: int) -> Material:
+    """Caliza cartoon: bancos estratificados en losas grandes de cantos redondeados (juntas
+    anchas y suaves, sin red de grietas finas), caras algo facetadas, alveolos de disolución
+    (karst) en racimos y costras de liquen naranja/salvia. Clara y cálida, no sucia."""
     u, v = uv_grid(size)
     warp = spectral_noise(size, seed + 1, 1, 6, 2.5)
-    strata_phase = 6 * v + 0.25 * warp + 0.17
+    strata_phase = 4 * v + 0.2 * warp + 0.17
     s = np.mod(strata_phase, 1.0)
-    terrace = smoothstep(0.0, 0.18, s) * (1.0 - 0.35 * s)
-    wu = u + 0.015 * spectral_noise(size, seed + 2, 2, 10, 2.0)
-    wv = v + 0.015 * spectral_noise(size, seed + 3, 2, 10, 2.0)
-    blocks = voronoi(size, 4, 3, seed + 4, jitter=0.85, u=wu, v=wv)
-    crack = smoothstep(0.0, 0.04, blocks["edge"])
-    body = unit(spectral_noise(size, seed + 5, 3, 80, 2.0))
-    pits = scatter_dots(size, 46, seed + 6, radius=0.26, keep=0.22, vary=0.7)["mask"]
-    height = 0.35 * terrace + 0.35 * body + 0.2 * blocks["id"] + 0.1
-    height = height * (0.35 + 0.65 * crack) - 0.12 * pits
-    height = np.clip(height, 0, 1)
-    albedo = ramp(0.5 * body + 0.3 * terrace + 0.2 * blocks["id"],
-                  [(0.0, "#a99f89"), (0.35, "#c6bca3"), (0.7, "#ddd5bf"), (1.0, "#f0eadb")])
-    band = smoothstep(0.85, 1.0, np.cos(2 * np.pi * strata_phase * 2.0))
-    albedo = mix_color(albedo, "#b49e7d", band * 0.3)
-    albedo = mix_color(albedo, "#857a67", (1.0 - crack) * 0.5)
-    albedo = mix_color(albedo, "#9c917c", pits * 0.3)
-    lichen_n = unit(spectral_noise(size, seed + 7, 3, 20, 1.8), 2.0)
-    lichen_fine = unit(spectral_noise(size, seed + 8, 30, 200, 1.0))
-    lichen = smoothstep(0.74, 0.79, lichen_n + 0.08 * (lichen_fine - 0.5)) * crack
-    lich2 = smoothstep(0.76, 0.8, 1.0 - lichen_n + 0.08 * (lichen_fine - 0.5)) * crack
-    albedo = mix_color(albedo, "#dca544", lichen * 0.75)
-    albedo = mix_color(albedo, "#9fb07a", lich2 * 0.6)
+    # Cada banco: sube suave y baja poco a poco hasta el siguiente (repisas, no rayas); vale 0
+    # en s = 0 y s = 1 para que no haya escalón (salía como una línea fina).
+    ledge = smoothstep(0.0, 0.35, s) * np.sqrt(1.0 - s)
+    wu = u + 0.02 * spectral_noise(size, seed + 2, 2, 8, 2.2)
+    wv = v + 0.02 * spectral_noise(size, seed + 3, 2, 8, 2.2)
+    blocks = voronoi(size, 4, 4, seed + 4, jitter=0.8, u=wu, v=wv)
+    round_edge = smoothstep(0.0, 0.14, blocks["edge"]) ** 0.6
+    joint = 1.0 - smoothstep(0.0, 0.05, blocks["edge"])
+    facets = _facet_plane(blocks, 19.1, 7.3)
+    body = unit(spectral_noise(size, seed + 5, 3, 60, 2.0))
+    fine = unit(spectral_noise(size, seed + 9, 40, 300, 1.0))
+    # Alveolos de disolución: hoyuelos redondos en racimos (no un colador uniforme).
+    cluster = smoothstep(0.45, 0.75, unit(spectral_noise(size, seed + 10, 2, 7, 2.0), 2.0))
+    pits_a = scatter_dots(size, 30, seed + 6, radius=0.34, keep=0.5, vary=0.6)
+    pits_b = scatter_dots(size, 64, seed + 11, radius=0.3, keep=0.2, vary=0.5)
+    pit_depth = np.maximum(pits_a["mask"] * cluster, pits_b["mask"] * (0.25 + 0.75 * cluster))
+    pit_depth = pit_depth * round_edge
+    height = round_edge * (0.5 + 0.1 * ledge + 0.4 * facets + 0.1 * blocks["id"]
+                           + 0.08 * body + 0.02 * fine)
+    height = np.clip(height - 0.1 * pit_depth, 0, 1)
+    shade = np.clip(facets * 2.5, -1, 1)
+    albedo = ramp(0.5 + 0.35 * (body - 0.5) + 0.3 * shade + 0.25 * (blocks["id"] - 0.5) + 0.1 * ledge,
+                  [(0.0, "#b3a489"), (0.35, "#cfc2a3"), (0.7, "#e3d8bc"), (1.0, "#f3ecd9")])
+    # Bandas de estrato algo más ocres y un tono por losa (bloques más grises o más cremas).
+    band = smoothstep(0.75, 1.0, np.cos(2 * np.pi * (strata_phase + 0.1)))
+    albedo = mix_color(albedo, "#c9ae84", band * 0.35)
+    albedo = lerp(albedo, albedo * np.array([0.95, 0.98, 1.03]), smoothstep(0.6, 0.9, blocks["id2"]))
     edge = np.clip(cavity(height, 0.006) * 8.0, -1, 1)
-    albedo = albedo * (1.0 + 0.12 * edge)[..., None]
+    albedo = albedo * (1.0 + 0.2 * np.clip(edge, 0, 1) - 0.12 * np.clip(-edge, 0, 1))[..., None]
+    albedo = mix_color(albedo, "#968a76", joint * 0.45)
+    albedo = mix_color(albedo, "#a8987c", pit_depth * 0.45)
+    # Liquen: costras con borde neto sobre las caras, más hacia los cantos húmedos.
+    lichen_n = unit(spectral_noise(size, seed + 7, 2, 16, 1.8), 2.0)
+    lichen_fine = unit(spectral_noise(size, seed + 8, 20, 160, 1.0))
+    near = 1.0 - smoothstep(0.05, 0.4, blocks["edge"])
+    lt = lichen_n + 0.1 * (lichen_fine - 0.5) + 0.12 * near
+    lichen = smoothstep(0.84, 0.88, lt) * round_edge
+    lich2 = smoothstep(0.85, 0.89, 1.0 - lichen_n + 0.1 * (lichen_fine - 0.5) + 0.1 * near) * round_edge
+    albedo = mix_color(albedo, "#e0a646", lichen * 0.8)
+    albedo = mix_color(albedo, "#a3b47e", lich2 * 0.65)
+    albedo = mix_color(albedo, "#f7f1de", smoothstep(0.35, 0.8, lichen_fine) * smoothstep(0.7, 1.0, body) * 0.15)
     albedo = macro_variation(albedo, seed + 20, warm="#e8cf9e", cool="#b9c0c2", amount=0.18, value=0.07)
-    rough = 0.86 - 0.08 * np.clip(edge, 0, 1) - 0.05 * lichen
-    return Material(albedo, height, rough, depth=0.022, ao_strength=1.1)
+    height = np.clip(height + 0.03 * (lichen + lich2), 0, 1)
+    rough = 0.84 - 0.1 * np.clip(edge, 0, 1) + 0.06 * pit_depth - 0.06 * lichen
+    return Material(albedo, height, rough, depth=0.026, ao_strength=1.0)
 
 
 # ---------------------------------------------------------------------------
@@ -615,56 +636,82 @@ def bamboo(size: int, seed: int) -> Material:
 
 
 def wood_planks(size: int, seed: int) -> Material:
-    """Tablones horizontales con juntas escalonadas; u = a lo largo de la tabla."""
+    """Tablones horizontales largos (1 o 2 juntas por hilera, escalonadas); u = a lo largo.
+    Veta de corte plano en arcos («catedral») que rodea los nudos, o recta en las tablas de
+    corte radial; tono por tabla (miel, caramelo, rojizo, alguna gastada por el sol), cantos
+    redondeados que atrapan la luz y juntas marrón oscuro, nunca negras."""
     u, v = uv_grid(size)
-    rows = 5
+    rows = 6
     rv = v * rows + 0.29
     row = np.floor(rv).astype(np.int64) % rows
     y = rv - np.floor(rv)
     tab = rng_table(seed, rows, 8)
     s0 = tab[row, 0]
-    s1 = np.mod(s0 + 0.38 + 0.24 * tab[row, 1], 1.0)
-    in_second = np.mod(u - s0, 1.0) >= np.mod(s1 - s0, 1.0)
+    two = tab[row, 2] < 0.6
+    s1 = np.where(two, np.mod(s0 + 0.35 + 0.3 * tab[row, 1], 1.0), s0)
+    lu = np.mod(u - s0, 1.0)
+    seg = np.where(two, np.mod(s1 - s0, 1.0), 1.0)
+    in_second = two & (lu >= seg)
+    start = np.where(in_second, seg, 0.0)
+    length = np.where(in_second, 1.0 - seg, seg)
+    ul = (lu - start) / length  # 0..1 a lo largo de la tabla
     board = row * 2 + in_second.astype(np.int64)
-    btab = rng_table(seed + 1, rows * 2, 6)
-    br = btab[board]
+    br = rng_table(seed + 1, rows * 2, 8)[board]
 
     def wrap_dist(a, b):
         d = np.abs(a - b)
         return np.minimum(d, 1.0 - d)
 
-    seam_d = np.minimum(wrap_dist(u, s0), wrap_dist(u, s1))
-    bevel = smoothstep(0.0, 0.07, y) * smoothstep(0.0, 0.07, 1.0 - y) * smoothstep(0.0, 0.006, seam_d)
-    long_n = spectral_noise(size, seed + 2, 1, 60, 1.8, stretch=(10.0, 1.0))
-    knots = scatter_dots(size, 7, seed + 3, radius=0.35, keep=0.35)
-    knot_pull = np.exp(-(knots["f1"] / 0.18) ** 2) * knots["alive"]
-    grain_phase = y * (1.4 + br[..., 0]) + br[..., 1] * 7.0 + 0.35 * long_n + 0.9 * knot_pull
-    rings = np.mod(grain_phase * 5.0, 1.0)
-    late = smoothstep(0.55, 0.9, rings) * smoothstep(1.0, 0.92, rings)
-    fibre = unit(spectral_noise(size, seed + 4, 10, 400, 1.0, stretch=(12.0, 1.0)))
-    height = 0.75 * bevel + 0.08 * (1.0 - late) + 0.06 * fibre + 0.08 * br[..., 2] * bevel
-    base_t = 0.15 + 0.55 * br[..., 3] + 0.2 * fibre + 0.1 * (1.0 - rings)
-    albedo = ramp(base_t, [(0.0, "#6a4228"), (0.35, "#8d5e3a"), (0.7, "#b0804f"), (1.0, "#caa06a")])
-    albedo = lerp(albedo, albedo * np.array([0.92, 0.95, 1.0]), br[..., 4])
-    albedo = mix_color(albedo, "#553520", late * 0.55)
-    knot_core = (1.0 - smoothstep(0.03, 0.07, knots["f1"])) * knots["alive"]
-    albedo = mix_color(albedo, "#4a2a15", knot_core * 0.9)
-    # Clavos junto a las juntas.
+    seam_d = np.minimum(wrap_dist(u, s0), np.where(two, wrap_dist(u, s1), 1.0))
+    rnd = smoothstep(0.0, 0.12, y) * smoothstep(0.0, 0.12, 1.0 - y) * smoothstep(0.0, 0.01, seam_d)
+    bevel = np.sqrt(rnd)
+    knots = scatter_dots(size, 6, seed + 3, radius=0.3, keep=0.4)
+    kd = knots["f1"]
+    knot_pull = np.exp(-(kd / 0.16) ** 2) * knots["alive"]
+    long_n = spectral_noise(size, seed + 2, 1, 40, 1.8, stretch=(8.0, 1.0))
+    # Arcos de catedral: parábola centrada en la tabla; plana en las de corte radial.
+    world_len = length * rows  # largo de la tabla en anchos de tabla
+    bend = np.where(br[..., 5] < 0.3, 0.0, 0.15 + 0.35 * br[..., 6])
+    xc = (ul - (0.3 + 0.4 * br[..., 7])) * world_len
+    t = (y - 0.2 - 0.6 * br[..., 0]) + bend * 0.12 * xc ** 2 / (1.0 + 0.05 * xc ** 2)
+    grain_phase = t * (3.5 + 2.5 * br[..., 1]) + 0.25 * long_n + 1.2 * knot_pull + br[..., 2] * 5.0
+    rings = np.mod(grain_phase, 1.0)
+    late = smoothstep(0.62, 0.8, rings) * smoothstep(1.0, 0.86, rings)
+    fibre = unit(spectral_noise(size, seed + 4, 10, 400, 1.0, stretch=(14.0, 1.0)))
+    height = 0.8 * bevel + 0.05 * (1.0 - late) + 0.04 * fibre + 0.06 * br[..., 3] * bevel
+    # Tono por tabla: miel, caramelo, rojizo; ~15 % gastadas por el sol (más gris plata).
+    tone = br[..., 4]
+    honey = ramp(0.2 + 0.5 * fibre + 0.3 * (1.0 - late), [(0.0, "#9a6536"), (0.5, "#c08a4e"), (1.0, "#dcad6c")])
+    caramel = ramp(0.2 + 0.5 * fibre + 0.3 * (1.0 - late), [(0.0, "#80492a"), (0.5, "#a4653a"), (1.0, "#c4884f")])
+    red = ramp(0.2 + 0.5 * fibre + 0.3 * (1.0 - late), [(0.0, "#7a3f2a"), (0.5, "#9c5638"), (1.0, "#b8744c")])
+    albedo = lerp(honey, caramel, smoothstep(0.3, 0.45, tone))
+    albedo = lerp(albedo, red, smoothstep(0.7, 0.85, tone))
+    weathered = smoothstep(0.85, 0.9, br[..., 3])
+    albedo = lerp(albedo, albedo.mean(axis=-1, keepdims=True) * np.array([1.05, 1.0, 0.95]) + 0.08,
+                  weathered * 0.55)
+    albedo = mix_color(albedo, "#5e3620", late * 0.45)
+    ring_d = kd / 0.07
+    knot_core = (1.0 - smoothstep(0.35, 0.6, ring_d)) * knots["alive"]
+    knot_ring = np.exp(-((ring_d - 0.75) / 0.12) ** 2) * knots["alive"]
+    albedo = mix_color(albedo, "#5a321b", knot_core * 0.85)
+    albedo = mix_color(albedo, "#6e4125", knot_ring * 0.5)
+    height = height - 0.05 * knot_core
+    # Clavos a ambos lados de cada junta.
     nails = np.zeros_like(u)
-    for s in (s0, s1):
+    for s, on in ((s0, np.ones_like(two)), (s1, two)):
         for side in (-1.0, 1.0):
-            nu = s + side * 0.018
-            for ny in (0.28, 0.72):
-                d = np.hypot(wrap_dist(u, nu) * rows, (y - ny) * 1.0) * 1.0
-                nails = np.maximum(nails, 1.0 - smoothstep(0.018, 0.03, d))
-    albedo = mix_color(albedo, "#3d3432", nails * 0.9)
-    height = height - 0.08 * nails
-    albedo = mix_color(albedo, "#2a1a10", (1.0 - bevel) * 0.8)
+            nu = s + side * 0.02
+            for ny in (0.3, 0.7):
+                d = np.hypot(wrap_dist(u, nu) * rows, (y - ny))
+                nails = np.maximum(nails, (1.0 - smoothstep(0.022, 0.034, d)) * on)
+    albedo = mix_color(albedo, "#4a4447", nails * 0.9)
+    height = height - 0.06 * nails
+    albedo = mix_color(albedo, "#3a2414", (1.0 - rnd) ** 1.5 * 0.8)
     edge = np.clip(cavity(height, 0.004) * 6.0, 0, 1)
-    albedo = albedo * (1.0 + 0.15 * edge)[..., None]
-    albedo = macro_variation(albedo, seed + 20, warm="#d08a4c", cool="#8a7560", amount=0.16, value=0.08)
-    rough = 0.72 + 0.1 * late + 0.15 * (1.0 - bevel) - 0.35 * nails
-    return Material(albedo, np.clip(height, 0, 1), rough, depth=0.012, ao_strength=1.0)
+    albedo = albedo * (1.0 + 0.22 * edge)[..., None]
+    albedo = macro_variation(albedo, seed + 20, warm="#d08a4c", cool="#8a7560", amount=0.14, value=0.07)
+    rough = 0.66 + 0.1 * late + 0.2 * (1.0 - rnd) + 0.12 * weathered - 0.35 * nails
+    return Material(albedo, np.clip(height, 0, 1), rough, depth=0.014, ao_strength=1.0)
 
 
 def stone_wall(size: int, seed: int) -> Material:
