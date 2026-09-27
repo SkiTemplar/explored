@@ -17,7 +17,8 @@ cd Tools/Textures && uv run --with numpy --with pillow --with pytest python -m p
 
 Hoja de contacto actual: [`texturas-2026-09-27.png`](texturas-2026-09-27.png): vista iluminada
 en 2×2 para comprobar el tileado y, debajo, la misma vista **en 4×4 reducida** (cómo se ve a
-media distancia: delata la repetición) + miniaturas BC / N / ARH.
+media distancia: delata la repetición) + miniaturas BC / N / ARH. Si pasa de ~1.9 MB se guarda con 6 (o 5) bits por canal: una
+paleta global de 256 colores falseaba los tonos.
 
 ## Estilo
 
@@ -47,9 +48,9 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | `SandWet` | 2 m | Franja de orilla: caramelo saturado (no gris), rizos lavados, arena empapada alrededor de láminas de agua brillantes (rugosidad ~0.2, tinte leve de cielo), marcas de resaca con banda escurrida detrás, agujeritos de cangrejo y alguna concha. |
 | `Grass` | 1.5 m | Césped cartoon: 7 capas de hojas afiladas que siguen un flujo suave + florecillas. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
-| `GardenSoil` | 2 m | Tierra de huerto labrada: surcos en el eje u, terrones, paja, surcos más húmedos. |
+| `GardenSoil` | 2 m | Tierra de huerto labrada: 5 camellones anchos y redondeados a lo largo de u (algo ondulados, anchura por hilera) entre surcos estrechos húmedos; terrones redondos en las laderas, migas, pocas pajas y guijarros y algún brote de dos hojitas. Cacao cálido (nunca negro ni gris). |
 | `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 6 capas de hojas caídas en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
-| `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda con rizos de viento asimétricos, placas de costra grandes y biseladas (bandejas, no garabatos de grietas), pómez con volumen y poros, pocos carbones angulosos y alguna brasa con halo. |
+| `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda (sin valles oscuros) con rizos de viento bien legibles, pocas placas de costra claras y biseladas con juntas suaves, pómez con volumen y poros, carbones escasos y alguna brasa con halo. |
 | `VolcanicRock` | 3 m | Basalto pizarra azulado/violeta en bloques de ~60 cm con caras facetadas (low-poly) y cantos biselados que atrapan la luz, juntas estrechas, vesículas en racimos, óxido cálido cerca de las juntas y granos de olivino. |
 | `Limestone` | 3 m | Caliza clara crema en losas grandes de canto redondeado y caras algo facetadas (low-poly), repisas de estrato suaves (sin grietas finas oscuras), alveolos de disolución en racimos y costras de liquen naranja/salvia con borde neto. |
 | `PalmThatch` | 1 m | Techo de hoja de palma: 6 hileras de hebras largas y estrechas que cuelgan (dos capas desfasadas, sin huecos); cada hilera tapa la atadura de la de abajo y proyecta sombra con sus puntas desiguales, a veces rasgadas; tono por hebra (paja, dorado, ~10 % aún verdes, alguna tostada) y borde de hilera que ondula (atado a mano); **v = pendiente abajo**. |
@@ -57,7 +58,7 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
 | `WoodPlanks` | 2 m | Tablones largos (6 hileras, 1 o 2 juntas escalonadas), veta en arcos de corte plano que rodea los nudos (o recta), tono por tabla (miel, caramelo, rojizo, ~15 % gastadas por el sol), cantos redondeados y clavos; **u = a lo largo de la tabla**. |
 | `StoneWall` | 2.5 m | Muro polinesio de piedra seca: basalto encajado con caras planas (low-poly), algún bloque de coral poroso, musgo en juntas y en la mitad baja de cada piedra. |
-| `Canvas` | 0.5 m | Lona de vela/toldo: tafetán de 44 hilos/tile con matiz por hilo, zonas descoloridas por el sol y pocas manchas de sal con cerco fino. |
+| `Canvas` | 0.5 m | Lona de vela/toldo: tafetán de 44 hilos/tile con matiz por hilo, una costura de paño a lo largo de u (solape elevado con sombra y doble pespunte, en v ≈ 0.37), descolorido del sol en bandas suaves y motas de sal; sin manchas grandes (se veían repetidas). Orienta u a lo largo de los paños. |
 | `Rope` | 0.25 m | Cuerda de 3 cabos redondos con hilos en torsión contraria (arcos en «S»): **u = alrededor, v = a lo largo** (UV de cilindro). |
 | `MapPaper` | 0.6 m | Papel del mapa: fibras cortas y largas, pulpa, ondulación, pocas manchas de agua de borde irregular con cerco, foxing de tamaño variable. |
 | `Bark` | 1.5 m | Corteza de placas alargadas (4:1) con fisuras en V, grietas finas, crestas curtidas y liquen; **v = a lo largo**. |
@@ -147,5 +148,5 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    salir del generador) y que la variación macro del albedo
    esté en rango (`tests/test_macro.py`: ni plano a lo lejos ni manchas que dominen el
    tile); `tests/test_palette.py` fija la intención de color de algunos materiales (basalto
-   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y crema, tablones cálidos con tono distinto por hilera, techo de paja cálido hecho de hebras y no de escamas); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
+   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y crema, tablones cálidos con tono distinto por hilera, techo de paja cálido hecho de hebras y no de escamas, tierra de huerto cacao que no llega a casi negro y se lee en hileras, lona clara con costura); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
    darlo por bueno.
