@@ -490,12 +490,20 @@ def build_ocean():
     connect(sss_color, "", crest, "SubsurfaceColor")
     connect(sss_strength, "", crest, "SubsurfaceStrength")
 
+    # ComponentMask no arranca en todo-False: por defecto trae los 4 canales a True, así que hay
+    # que apagar explícitamente los que no tocan a cada máscara (no basta con encender los que sí).
+    # Sin esto crest_mask y crest_sss salían los dos como float4 (r,g,b,a=True), y el Add de más
+    # abajo (glint_emissive + crest_sss) exigía el mismo número de componentes en A y B: con
+    # crest_sss a 4 canales y glint_emissive a 3, el material no compilaba («Arithmetic between
+    # types float3 and float4 are undefined») y todo el océano caía al Default Material — la
+    # superficie entera salía como un color plano sin agua.
     crest_mask = expr(m, unreal.MaterialExpressionComponentMask, -750, 900)
-    crest_mask.set_editor_property("r", True)
+    for channel in ("r", "g", "b", "a"):
+        crest_mask.set_editor_property(channel, channel == "r")
     connect(crest, "", crest_mask, "")
     crest_sss = expr(m, unreal.MaterialExpressionComponentMask, -750, 990)
-    for channel in ("g", "b", "a"):
-        crest_sss.set_editor_property(channel, True)
+    for channel in ("r", "g", "b", "a"):
+        crest_sss.set_editor_property(channel, channel != "r")
     connect(crest, "", crest_sss, "")
 
     # Aproximación de la profundidad de agua: distancia (cm) al campo de distancia del terreno
@@ -591,8 +599,20 @@ return saturate((D + dith * 260.0 - 900.0) / 1400.0);
     glint_amount = expr(m, unreal.MaterialExpressionMultiply, -150, -60)
     connect(glint_mask, "", glint_amount, "A")
     glint_amount.set_editor_property("const_b", 0.6)
+    # El pin por defecto de un VectorParameter arrastra el alfa (float4) y el Add de más abajo
+    # exige que A y B tengan el mismo número de componentes que crest_sss (float3, viene de un
+    # ComponentMask a 3 canales). Sin este truncado a propósito el material no compilaba
+    # («Arithmetic between types float3 and float4 are undefined») y todo el océano caía al
+    # Default Material: la superficie entera salía como un color plano sin agua. VectorParameter
+    # no tiene salida nombrada "RGB" (a diferencia de un TextureSample): hace falta un
+    # ComponentMask explícito para truncar a 3 canales.
+    glint_color_rgb = expr(m, unreal.MaterialExpressionComponentMask, -20, -180)
+    for channel in ("r", "g", "b"):
+        glint_color_rgb.set_editor_property(channel, True)
+    connect(glint_color, "", glint_color_rgb, "")
+
     glint_emissive = expr(m, unreal.MaterialExpressionMultiply, 100, -180)
-    connect(glint_color, "", glint_emissive, "A")
+    connect(glint_color_rgb, "", glint_emissive, "A")
     connect(glint_amount, "", glint_emissive, "B")
 
     # Brillo del sol (glint) + subsuperficie de cresta (crest_sss) comparten la emisiva.
