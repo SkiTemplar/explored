@@ -531,12 +531,19 @@ FOLIAGE_COLOR_HLSL = r"""
 // sRGB, que sí necesita pow(VC,2.2)), aplicar aquí la misma corrección de gamma sobre un
 // valor que YA es lineal lo oscurece dos veces: un verde razonable (p. ej. 0.3, 0.6, 0.15)
 // cae a (0.07, 0.31, 0.01), casi negro. Se usa el color de vértice tal cual.
+//
+// «Detail» es el RGB de T_FoliageAtlas_BC (Tools/Textures/texgen/materials.py:
+// foliage_atlas) muestreado con la UV real de cada tarjeta de hoja/fronda/pétalo:
+// a diferencia del antiguo T_LeafNoise (un patrón sin silueta, solo variación), esta
+// textura lleva nervadura/veteado/AO por hoja de verdad, así que su multiplicador se
+// deja con más rango (antes 0.88-1.08 / 0.94-1.04, casi imperceptible) para que esa
+// forma se LEA en el render en vez de quedar aplastada por el tinte de vértice.
 float3 base = saturate(VC);
 // Tinte por instancia: unas plantas algo más amarillas y otras más oscuras.
-float3 tintA = float3(1.10, 1.04, 0.80);
-float3 tintB = float3(0.82, 0.95, 0.90);
+float3 tintA = float3(1.22, 1.06, 0.62);
+float3 tintB = float3(0.72, 0.98, 1.10);
 float3 color = base * lerp(tintA, tintB, R) * lerp(0.85, 1.1, frac(R * 7.31));
-color *= lerp(0.88, 1.08, Noise.r) * lerp(0.94, 1.04, Noise.b);
+color *= lerp(0.72, 1.25, Detail.r) * lerp(0.85, 1.12, Detail.b);
 return color;
 """
 
@@ -553,6 +560,13 @@ def rebuild_material(path: str, name: str) -> unreal.Material:
 
 
 def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
+    """M_Leaf / M_Grass: Masked, con OpacityMask + Normal de
+    T_FoliageAtlas_BC/_N (Tools/Textures/texgen/materials.py, generado por
+    `gen_textures.py --only FoliageAtlas`) — cada tarjeta de hoja/fronda/
+    pétalo del kit de Blender (Tools/Blender/lib/common.py: make_leaf_blade/
+    make_frond_object/make_leaf_cluster_cards) lleva UV apuntando a la celda
+    del atlas que le corresponde, así que el recorte alfa cae justo sobre la
+    silueta en vez de un cuadrado sólido."""
     m = rebuild_material(GENERATED_MATERIALS, name)
     if two_sided_foliage:
         m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
@@ -560,20 +574,28 @@ def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
     else:
         m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
         m.set_editor_property("two_sided", False)
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    m.set_editor_property("opacity_mask_clip_value", 0.35)
 
     vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
     rnd = expr(m, unreal.MaterialExpressionPerInstanceRandom, -1100, 150)
     uv = expr(m, unreal.MaterialExpressionTextureCoordinate, -1300, 300)
-    noise_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 300)
-    noise_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_LeafNoise"))
-    noise_tex.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
-    connect(uv, "", noise_tex, "UVs")
+    atlas_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 300)
+    atlas_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_FoliageAtlas_BC"))
+    connect(uv, "", atlas_tex, "UVs")
 
-    color = custom(m, -700, 0, FOLIAGE_COLOR_HLSL, ["VC", "R", "Noise"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "FoliageColor")
+    color = custom(m, -700, 0, FOLIAGE_COLOR_HLSL, ["VC", "R", "Detail"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "FoliageColor")
     connect(vc, "", color, "VC")
     connect(rnd, "", color, "R")
-    connect(noise_tex, "RGBA", color, "Noise")
+    connect(atlas_tex, "RGB", color, "Detail")
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    to_property(atlas_tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+
+    normal_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 380)
+    normal_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_FoliageAtlas_N"))
+    normal_tex.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+    connect(uv, "", normal_tex, "UVs")
+    to_property(normal_tex, "RGB", unreal.MaterialProperty.MP_NORMAL)
 
     if two_sided_foliage:
         sss = expr(m, unreal.MaterialExpressionMultiply, -400, 200)
@@ -619,6 +641,60 @@ def build_foliage(name: str, wind_strength: float, two_sided_foliage: bool):
     finish(m)
 
 
+BARK_COLOR_HLSL = r"""
+// VC ya trae el veteado/streaks por instancia (Tools/Blender/lib/common.py:
+// bark_streaks_tint), en espacio lineal igual que FOLIAGE_COLOR_HLSL. BC es el
+// detalle real de corteza (T_BarkTropical_BC, textura tileable fisurada con placas y
+// liquen — Tools/Textures/texgen/materials.py: bark()), AO su oclusión (canal R
+// de T_BarkTropical_ARH). Igual que en el follaje, VC fija el tono por instancia y BC
+// aporta el detalle de superficie: sin BC el tronco es un cilindro de un marrón
+// plano, exactamente la «cutrada poligonal» que pedía sustituir el encargo.
+float3 col = saturate(VC) * (BC * 0.75 + 0.25) * lerp(0.65, 1.0, AO);
+return col;
+"""
+
+
+def build_bark():
+    """M_Bark: opaco, con la corteza tileable T_BarkTropical_BC/_N/_ARH —
+    variante «pintada a mano» (más saturada, con cuantización suave de
+    valor) del mismo generador que usa el kit de props para troncos/postes,
+    Tools/Textures/texgen/materials.py: bark()/bark_tropical() — multiplicada
+    por el veteado de color de vértice. Los troncos/ramas/raíces del kit de
+    vegetación llevan UV cilíndrica real (Tools/Blender/lib/common.py:
+    cylindrical_bark_uv, dentro de make_curved_trunk) en vez del color de
+    vértice puro de antes."""
+    m = rebuild_material(GENERATED_MATERIALS, "M_Bark")
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    m.set_editor_property("two_sided", False)
+
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 0)
+    uv = expr(m, unreal.MaterialExpressionTextureCoordinate, -1300, 300)
+
+    bc_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 300)
+    bc_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_BarkTropical_BC"))
+    connect(uv, "", bc_tex, "UVs")
+
+    arh_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 480)
+    arh_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_BarkTropical_ARH"))
+    arh_tex.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
+    connect(uv, "", arh_tex, "UVs")
+
+    n_tex = expr(m, unreal.MaterialExpressionTextureSample, -1100, 660)
+    n_tex.set_editor_property("texture", unreal.EditorAssetLibrary.load_asset("/Game/Generated/Textures/T_BarkTropical_N"))
+    n_tex.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+    connect(uv, "", n_tex, "UVs")
+    to_property(n_tex, "RGB", unreal.MaterialProperty.MP_NORMAL)
+
+    color = custom(m, -700, 0, BARK_COLOR_HLSL, ["VC", "BC", "AO"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "BarkColor")
+    connect(vc, "", color, "VC")
+    connect(bc_tex, "RGB", color, "BC")
+    connect(arh_tex, "R", color, "AO")
+    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    to_property(arh_tex, "G", unreal.MaterialProperty.MP_ROUGHNESS)
+    finish(m)
+
+
 def build_rock():
     m = rebuild_material(GENERATED_MATERIALS, "M_Rock")
     m.set_editor_property("tangent_space_normal", False)
@@ -659,7 +735,7 @@ def build_rock():
 def build_vegetation_materials():
     build_foliage("M_Leaf", wind_strength=0.35, two_sided_foliage=True)
     build_foliage("M_Grass", wind_strength=0.25, two_sided_foliage=True)
-    build_foliage("M_Bark", wind_strength=0.0, two_sided_foliage=False)
+    build_bark()
     build_rock()
 
 
