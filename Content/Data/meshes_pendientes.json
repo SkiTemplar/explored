@@ -165,9 +165,7 @@
     "taro.hojas_grandes",
     "taro.listo"
   ],
-  "museumDisplays": [
-    "panel_museo"
-  ],
+  "museumDisplays": [],
   "boats": [
     "barco_limon"
   ]
