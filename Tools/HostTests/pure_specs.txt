@@ -1,5 +1,6 @@
 # Automation Specs de Source/Explored/Tests que también se ejecutan en el host (solo modelos puros).
 Tests/AchievementsSpec.cpp
+Tests/BeachDebrisSpec.cpp
 Tests/BoatSpec.cpp
 Tests/BodySpec.cpp
 Tests/BoidsSpec.cpp
@@ -10,6 +11,7 @@ Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
+Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/HarvestModelSpec.cpp

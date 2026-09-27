@@ -44,6 +44,8 @@ UI/ScreensLogic.cpp
 UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
 WorldGen/ArchipelagoLayout.cpp
+WorldGen/BeachDebrisModel.cpp
+WorldGen/FormationPlacementModel.cpp
 WorldGen/PointsOfInterest.cpp
 WorldGen/SurfaceNets.cpp
 WorldGen/TerrainChunkBuilder.cpp

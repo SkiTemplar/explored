@@ -17,7 +17,7 @@ namespace ExplorationContentModelDetail
 		static const TArray<FName> Kinds = {
 			TEXT("cala"), TEXT("cueva"), TEXT("mirador"), TEXT("naufragio"), TEXT("ruina"),
 			TEXT("cascada"), TEXT("arco_marino"), TEXT("poza"), TEXT("jardin_coral"),
-			TEXT("cumbre"), TEXT("campamento"), TEXT("recurso"),
+			TEXT("cumbre"), TEXT("campamento"), TEXT("recurso"), TEXT("vista"),
 		};
 		return Kinds;
 	}

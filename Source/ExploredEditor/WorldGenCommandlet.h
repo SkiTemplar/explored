@@ -11,6 +11,7 @@
  *   UnrealEditor-Cmd Explored.uproject -run=ExploredWorldGen -mode=preview [-seed=N] [-size=1024]
  *   UnrealEditor-Cmd Explored.uproject -run=ExploredWorldGen -mode=bake [-seed=N] [-voxel=2] [-cells=32]
  *     [-region=X0,Y0,X1,Y1]  (en metros; por defecto, el mundo entero)
+ *     [-novegetation] [-noformations]  (omiten SpawnVegetation / SpawnFormations en ComposeMap)
  */
 UCLASS()
 class UExploredWorldGenCommandlet : public UCommandlet

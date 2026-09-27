@@ -21,7 +21,7 @@ struct EXPLORED_API FExplorationLandmark
 	FName Id;
 	/** Isla a la que pertenece: «landing», «emerald», «smoke», «teeth», «mangrove», «whitesands», «mesa». */
 	FName IslandId;
-	/** Tipo de lugar: «cala», «cueva», «mirador», «naufragio», «ruina», «cascada», «arco_marino», «poza», «jardin_coral», «cumbre», «campamento» o «recurso». */
+	/** Tipo de lugar: «cala», «cueva», «mirador», «naufragio», «ruina», «cascada», «arco_marino», «poza», «jardin_coral», «cumbre», «campamento», «recurso» o «vista». */
 	FName Kind;
 	FString NameEs;
 	FString NameEn;

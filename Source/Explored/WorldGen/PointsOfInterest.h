@@ -25,6 +25,7 @@ enum class EPoiType : uint8
 	TidePool,         // Pozas de marea.
 	Bottle,           // Objeto de colección hallado en la playa.
 	Petroglyph,       // Petroglifo (motivo del pueblo navegante, wayfinding).
+	SextantCave,      // Cueva del Sextante (Landing): entrada semihundida junto a la laguna, solo con marea baja.
 	Count
 };
 

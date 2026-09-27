@@ -25,6 +25,7 @@ const TCHAR* LexToString(EPoiType Type)
 	case EPoiType::TidePool: return TEXT("TidePool");
 	case EPoiType::Bottle: return TEXT("Bottle");
 	case EPoiType::Petroglyph: return TEXT("Petroglyph");
+	case EPoiType::SextantCave: return TEXT("SextantCave");
 	default: return TEXT("Unknown");
 	}
 }
@@ -180,6 +181,27 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		if (FindBeach(Density, Island, Island.Rotation + UE_HALF_PI, Beach))
 		{
 			Add(EPoiType::TidePool, LandingIndex, Beach, 0.0f);
+		}
+
+		// Cueva del Sextante: entrada semihundida junto a la laguna, solo con marea baja
+		// (docs/diseno/exploracion.md §1.1, Content/Data/exploration.json: angleDeg 30, distanceFrac 0.65).
+		// Franja de altura más baja que FindBeach (que exige 1.2-3 m): la boca queda casi a ras de
+		// agua a propósito.
+		{
+			const float Angle = FMath::DegreesToRadians(30.0f);
+			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+			for (float R = Island.Radius * 0.5f; R <= Island.Radius * 0.85f; R += 2.0f)
+			{
+				const FVector2D P = Island.Center + Dir * R;
+				const float H = Density.SampleColumn(P.X, P.Y).Height;
+				if (H > -0.8f && H < 1.6f)
+				{
+					const FVector Cave = OnSurface(Density, P.X, P.Y);
+					Add(EPoiType::SextantCave, LandingIndex, Cave, YawTowards(Cave, Island.Center) + 180.0f,
+						NAME_None, Cave.Z < 0.2f);
+					break;
+				}
+			}
 		}
 	}
 

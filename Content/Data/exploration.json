@@ -13,7 +13,8 @@
     { "id": "jardin_coral", "nameEs": "Jardín de coral", "nameEn": "Coral garden" },
     { "id": "cumbre", "nameEs": "Cumbre", "nameEn": "Summit" },
     { "id": "campamento", "nameEs": "Campamento", "nameEn": "Camp" },
-    { "id": "recurso", "nameEs": "Recurso", "nameEn": "Resource" }
+    { "id": "recurso", "nameEs": "Recurso", "nameEn": "Resource" },
+    { "id": "vista", "nameEs": "Vista", "nameEn": "Vista" }
   ],
   "islands": [
     {
@@ -86,10 +87,44 @@
           "nameEn": "Sextant Cave",
           "angleDeg": 30.0,
           "distanceFrac": 0.65,
-          "linkedPoi": "",
+          "linkedPoi": "SextantCave",
           "mapMark": "cave",
-          "accessEs": "Entrada semihundida junto a la laguna; solo con la marea baja (nuevo POI, pendiente de anclar en FPoiLayout)",
+          "accessEs": "Entrada semihundida junto a la laguna; solo con la marea baja",
           "rewardEs": "Sextante: marca coordenadas exactas en mar abierto (GDD §5.5)"
+        }
+      ]
+    },
+    {
+      "id": "teeth",
+      "landmarks": [
+        {
+          "id": "teeth_arco_centinela",
+          "kind": "arco_marino",
+          "nameEs": "Arco del Centinela",
+          "nameEn": "Sentinel Arch",
+          "angleDeg": 0.0,
+          "distanceFrac": 1.0,
+          "linkedPoi": "",
+          "mapMark": "danger",
+          "accessEs": "Rodear en canoa o a nado en bajamar, en el cabo con la cueva-arco ya tallada",
+          "rewardEs": "Vista y atajo entre dos calas; hito de navegación reconocible desde el mar"
+        }
+      ]
+    },
+    {
+      "id": "mesa",
+      "landmarks": [
+        {
+          "id": "mesa_farallones_paso",
+          "kind": "vista",
+          "nameEs": "Farallones del Paso",
+          "nameEn": "Passage Stacks",
+          "angleDeg": 0.0,
+          "distanceFrac": 1.1,
+          "linkedPoi": "",
+          "mapMark": "danger",
+          "accessEs": "Rodear en canoa los cayos rocosos de la costa exterior",
+          "rewardEs": "Hito de navegación, sin recurso"
         }
       ]
     }

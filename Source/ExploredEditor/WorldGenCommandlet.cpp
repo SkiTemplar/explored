@@ -32,6 +32,9 @@
 
 #include "Explored.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/BeachDebrisModel.h"
+#include "WorldGen/FormationPlacementModel.h"
+#include "WorldGen/PointsOfInterest.h"
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
 #include "WorldGen/ExploredVegetationCell.h"
@@ -804,7 +807,285 @@ namespace
 		UE_LOG(LogExplored, Display, TEXT("Vegetación repartida en %d celdas"), Cells.Num());
 	}
 
-	int32 ComposeMap(const FTerrainDensity& Density, const TArray<FTerrainPiece>& Terrain, bool bVegetation)
+	// ------------------------------------------------------------------
+	// Formaciones rocosas y microdetalle de playa (docs/diseno/exploracion.md §4.3-4.4)
+	// ------------------------------------------------------------------
+	// Bloque aislado a propósito: un único punto de entrada, SpawnFormations(...), llamado una
+	// vez desde ComposeMap (ver más abajo). Otro agente está migrando este commandlet a World
+	// Partition; mover o adaptar este bloque no debería tocar nada de lo de arriba. Reutiliza el
+	// mismo esquema de celdas de 512 m por malla (AExploredVegetationCell) que SpawnVegetation,
+	// sin compartir su TMap de celdas: las formaciones y la vegetación pueden vivir en actores de
+	// celda distintos sin que eso cambie el resultado.
+
+	struct FPropManifestEntry
+	{
+		FString Name;
+		FString Group;
+		FSoftObjectPath Path;
+	};
+
+	/** Lee Art/Export/Props/manifest.json y resuelve cada malla ya importada en /Game/Generated/Meshes/<grupo>/<nombre>. */
+	TArray<FPropManifestEntry> LoadPropManifest()
+	{
+		TArray<FPropManifestEntry> Entries;
+		const FString ManifestPath = FPaths::ProjectDir() / TEXT("Art/Export/Props/manifest.json");
+		FString Text;
+		if (!FFileHelper::LoadFileToString(Text, *ManifestPath))
+		{
+			UE_LOG(LogExplored, Warning, TEXT("No hay manifest de props en %s: sin formaciones"), *ManifestPath);
+			return Entries;
+		}
+		TSharedPtr<FJsonValue> Root;
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+		if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
+		{
+			UE_LOG(LogExplored, Error, TEXT("Manifest de props inválido"));
+			return Entries;
+		}
+		TArray<TSharedPtr<FJsonValue>> List;
+		if (Root->Type == EJson::Object && Root->AsObject()->HasField(TEXT("meshes")))
+		{
+			List = Root->AsObject()->GetArrayField(TEXT("meshes"));
+		}
+		else if (Root->Type == EJson::Array)
+		{
+			List = Root->AsArray();
+		}
+
+		IAssetRegistry& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
+		Registry.ScanPathsSynchronous({TEXT("/Game/Generated/Meshes")}, true);
+		TArray<FAssetData> Imported;
+		Registry.GetAssetsByPath(FName(TEXT("/Game/Generated/Meshes")), Imported, true);
+
+		for (const TSharedPtr<FJsonValue>& Item : List)
+		{
+			const TSharedPtr<FJsonObject> Obj = Item->AsObject();
+			if (!Obj)
+			{
+				continue;
+			}
+			const FString Name = Obj->GetStringField(TEXT("name"));
+			const FString Group = Obj->GetStringField(TEXT("group"));
+			const FAssetData* Asset = Imported.FindByPredicate([&Name](const FAssetData& A)
+			{
+				return A.AssetName.ToString() == Name;
+			});
+			if (!Asset)
+			{
+				UE_LOG(LogExplored, Warning, TEXT("Malla de props %s no importada"), *Name);
+				continue;
+			}
+			Entries.Add({Name, Group, Asset->GetSoftObjectPath()});
+		}
+		return Entries;
+	}
+
+	/** Malla candidata para una instancia, por grupo del manifiesto y filtro de subcadena en el nombre. */
+	UStaticMesh* ResolveFormationMesh(const TArray<FPropManifestEntry>& Manifest, const FFormationInstance& Instance,
+		TSet<FString>& WarnedOnce)
+	{
+		TArray<const FPropManifestEntry*> Candidates;
+		const FString Group = Instance.ManifestGroup.ToString();
+		const FString Filter = Instance.MeshFilter.ToString();
+		for (const FPropManifestEntry& Entry : Manifest)
+		{
+			if (Entry.Group == Group && (Filter.IsEmpty() || Entry.Name.Contains(Filter)))
+			{
+				Candidates.Add(&Entry);
+			}
+		}
+		if (Candidates.IsEmpty())
+		{
+			const FString Key = Group + TEXT("/") + Filter;
+			if (!WarnedOnce.Contains(Key))
+			{
+				UE_LOG(LogExplored, Warning, TEXT("Sin mallas para %s: se omite esa formación"), *Key);
+				WarnedOnce.Add(Key);
+			}
+			return nullptr;
+		}
+		const int32 Index = static_cast<int32>(static_cast<uint32>(Instance.VariantIndex) % static_cast<uint32>(Candidates.Num()));
+		return Cast<UStaticMesh>(Candidates[Index]->Path.TryLoad());
+	}
+
+	/** Reglas de microdetalle de playa con sus mallas resueltas contra Art/Export/Meshes/manifest.json (mismo patrón que ResolveScatterMeshes). */
+	void ResolveBeachDebrisMeshes(TArray<FBeachDebrisRule>& Rules)
+	{
+		const FString ManifestPath = FPaths::ProjectDir() / TEXT("Art/Export/Meshes/manifest.json");
+		FString Text;
+		if (!FFileHelper::LoadFileToString(Text, *ManifestPath))
+		{
+			return;
+		}
+		TSharedPtr<FJsonValue> Root;
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+		if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
+		{
+			return;
+		}
+		TArray<TSharedPtr<FJsonValue>> Entries;
+		if (Root->Type == EJson::Array)
+		{
+			Entries = Root->AsArray();
+		}
+		else if (Root->Type == EJson::Object && Root->AsObject()->HasField(TEXT("meshes")))
+		{
+			Entries = Root->AsObject()->GetArrayField(TEXT("meshes"));
+		}
+
+		IAssetRegistry& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
+		Registry.ScanPathsSynchronous({TEXT("/Game/Generated/Meshes")}, true);
+		TArray<FAssetData> Imported;
+		Registry.GetAssetsByPath(FName(TEXT("/Game/Generated/Meshes")), Imported, true);
+
+		for (const TSharedPtr<FJsonValue>& Entry : Entries)
+		{
+			const TSharedPtr<FJsonObject> Obj = Entry->AsObject();
+			if (!Obj)
+			{
+				continue;
+			}
+			const FString Name = Obj->GetStringField(TEXT("name"));
+			const FString Category = Obj->GetStringField(TEXT("category"));
+			const FAssetData* Asset = Imported.FindByPredicate([&Name](const FAssetData& A)
+			{
+				return A.AssetName.ToString() == Name;
+			});
+			if (!Asset)
+			{
+				continue;
+			}
+			for (FBeachDebrisRule& Rule : Rules)
+			{
+				if (Rule.ManifestCategory == Category && (Rule.NameFilter.IsEmpty() || Name.Contains(Rule.NameFilter)))
+				{
+					Rule.Meshes.Add(Asset->GetSoftObjectPath());
+				}
+			}
+		}
+	}
+
+	AExploredVegetationCell* GetOrCreateFormationCell(UWorld* World, TMap<FIntPoint, AExploredVegetationCell*>& Cells,
+		const FVector& LocationCm, float CellSizeCm)
+	{
+		const FIntPoint Key(FMath::FloorToInt32(LocationCm.X / CellSizeCm), FMath::FloorToInt32(LocationCm.Y / CellSizeCm));
+		AExploredVegetationCell*& Cell = Cells.FindOrAdd(Key);
+		if (!Cell)
+		{
+			const FVector CellOrigin(Key.X * CellSizeCm + CellSizeCm * 0.5f, Key.Y * CellSizeCm + CellSizeCm * 0.5f, 0.0f);
+			Cell = World->SpawnActor<AExploredVegetationCell>(CellOrigin, FRotator::ZeroRotator);
+			Cell->CellCoord = Key;
+			Cell->SetActorLabel(FString::Printf(TEXT("Formations_%d_%d"), Key.X, Key.Y));
+			Cell->SetFolderPath(FName(TEXT("Formations")));
+		}
+		return Cell;
+	}
+
+	/** Distancia de corte por tipo: los hitos grandes (paredes, arco, farallones) se dejan ver de más lejos. */
+	float CullDistanceForKind(EFormationKind Kind)
+	{
+		switch (Kind)
+		{
+		case EFormationKind::CliffWall:
+		case EFormationKind::SeaArch:
+		case EFormationKind::SeaStack:
+			return 700.0f;
+		case EFormationKind::CliffSpur:
+			return 550.0f;
+		default:
+			return 350.0f; // Boulder, Cobble, LimestoneSlab.
+		}
+	}
+
+	/**
+	 * Formaciones rocosas (paredes, espolones, farallones, arco marino, bloques y losas) y
+	 * microdetalle de playa. Único punto de entrada de este bloque: se llama una vez desde
+	 * ComposeMap. No falla si faltan los manifiestos o las mallas; avisa y sigue.
+	 */
+	void SpawnFormations(UWorld* World, const FTerrainDensity& Density)
+	{
+		const double Start = FPlatformTime::Seconds();
+		constexpr float CellSizeCm = 51200.0f; // mismas celdas de 512 m que la vegetación.
+
+		// Puntos protegidos: el spawn de Landing y todos los puntos de interés ya colocados, para
+		// no tapar ni el aterrizaje ni ningún hito jugable (no hay un sistema de rutas aparte que
+		// proteger todavía; FindBeach/FindInland resuelven sobre el terreno, no sobre trazos fijos).
+		TArray<FVector> AvoidPoints;
+		AvoidPoints.Add(FindSpawnPoint(Density));
+		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		{
+			AvoidPoints.Add(Poi.Location);
+		}
+
+		const uint32 Seed = Density.GetLayout().Seed;
+		const TArray<FFormationInstance> Formations = FFormationPlacementModel::Generate(Density, Seed, AvoidPoints);
+
+		TArray<FBeachDebrisRule> BeachRules = FBeachDebrisModel::DefaultRules();
+		ResolveBeachDebrisMeshes(BeachRules);
+		BeachRules.RemoveAll([](const FBeachDebrisRule& R) { return R.Meshes.IsEmpty(); }); // conchas y algas, sin malla todavía.
+		const TArray<FBeachDebrisInstance> BeachDebris = BeachRules.IsEmpty()
+			? TArray<FBeachDebrisInstance>()
+			: FBeachDebrisModel::Generate(Density, BeachRules, Seed, AvoidPoints);
+
+		const TArray<FPropManifestEntry> PropManifest = LoadPropManifest();
+		TSet<FString> WarnedOnce;
+		TMap<FIntPoint, AExploredVegetationCell*> Cells;
+
+		int32 SpawnedFormations = 0;
+		for (const FFormationInstance& Instance : Formations)
+		{
+			UStaticMesh* Mesh = ResolveFormationMesh(PropManifest, Instance, WarnedOnce);
+			if (!Mesh)
+			{
+				continue;
+			}
+			AExploredVegetationCell* Cell = GetOrCreateFormationCell(World, Cells, Instance.Transform.GetLocation(), CellSizeCm);
+			UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh,
+				FName(LexToString(Instance.Kind)), /*bCollision=*/true, CullDistanceForKind(Instance.Kind), /*bCastShadow=*/true);
+			Component->AddInstance(Instance.Transform, true);
+			++SpawnedFormations;
+		}
+
+		int32 SpawnedBeachDebris = 0;
+		for (const FBeachDebrisInstance& Instance : BeachDebris)
+		{
+			const FBeachDebrisRule* Rule = BeachRules.FindByPredicate([&Instance](const FBeachDebrisRule& R)
+			{
+				return R.Species == Instance.Species;
+			});
+			if (!Rule || !Rule->Meshes.IsValidIndex(Instance.MeshIndex))
+			{
+				continue;
+			}
+			UStaticMesh* Mesh = Cast<UStaticMesh>(Rule->Meshes[Instance.MeshIndex].TryLoad());
+			if (!Mesh)
+			{
+				continue;
+			}
+			AExploredVegetationCell* Cell = GetOrCreateFormationCell(World, Cells, Instance.Transform.GetLocation(), CellSizeCm);
+			// Clutter pequeño: sin colisión ni sombra propia, se corta pronto (igual que Debris en VegetationScatter).
+			UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh, Instance.Species,
+				/*bCollision=*/false, /*CullDistanceMeters=*/110.0f, /*bCastShadow=*/false);
+			Component->AddInstance(Instance.Transform, true);
+			++SpawnedBeachDebris;
+		}
+
+		for (const auto& Pair : Cells)
+		{
+			for (UActorComponent* C : Pair.Value->GetComponents())
+			{
+				if (UHierarchicalInstancedStaticMeshComponent* H = Cast<UHierarchicalInstancedStaticMeshComponent>(C))
+				{
+					H->BuildTreeIfOutdated(false, true);
+				}
+			}
+		}
+
+		UE_LOG(LogExplored, Display, TEXT("Formaciones: %d rocas + %d microdetalle de playa en %d celdas (%.1f s)"),
+			SpawnedFormations, SpawnedBeachDebris, Cells.Num(), FPlatformTime::Seconds() - Start);
+	}
+
+	int32 ComposeMap(const FTerrainDensity& Density, const TArray<FTerrainPiece>& Terrain, bool bVegetation, bool bFormations)
 	{
 		// El mapa se recrea desde cero para que el proceso sea idempotente.
 		UPackage* MapPackage = CreatePackage(MapPath);
@@ -848,6 +1129,10 @@ namespace
 		if (bVegetation)
 		{
 			SpawnVegetation(World, Density, Spawn);
+		}
+		if (bFormations)
+		{
+			SpawnFormations(World, Density);
 		}
 
 		SaveExternalActorPackages(World);
@@ -913,7 +1198,8 @@ int32 UExploredWorldGenCommandlet::Main(const FString& Params)
 			}
 		}
 		const bool bVegetation = !FParse::Param(*Params, TEXT("novegetation"));
-		return ComposeMap(Density, FindTerrainPieces(Settings), bVegetation);
+		const bool bFormations = !FParse::Param(*Params, TEXT("noformations"));
+		return ComposeMap(Density, FindTerrainPieces(Settings), bVegetation, bFormations);
 	}
 
 	UE_LOG(LogExplored, Error, TEXT("Modo desconocido: %s"), *Mode);
