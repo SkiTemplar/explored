@@ -533,22 +533,26 @@ def _render_vegetation_group(entries, target_height, out_path, max_cols=4):
     bsdf.inputs['Roughness'].default_value = 0.92
     ground.data.materials.append(mat)
 
+    # Sol tropical claro y DOMINANTE, con poca ambiental gris (encargo
+    # 2026-09-27, 4ª pasada: "revísalo con una luz de sol clara... porque
+    # esa luz engaña" — el cielo gris plano de antes oscurecía y
+    # deslavaba el color real de las masas de copa).
     bpy.ops.object.light_add(type='SUN', location=(-grid_w * 0.5, -grid_d * 1.2, target_height * 3.0))
     key = bpy.context.object
-    key.data.energy = 2.2
-    key.data.color = (1.0, 0.88, 0.66)
-    key.data.angle = math.radians(6.0)
+    key.data.energy = 2.8
+    key.data.color = (1.0, 0.93, 0.80)
+    key.data.angle = math.radians(4.0)
     _point_camera(key, Vector((0.0, 0.0, target_height * 0.35)))
 
     bpy.ops.object.light_add(type='SUN', location=(grid_w * 0.6, grid_d * 0.6, target_height * 2.0))
     fill = bpy.context.object
-    fill.data.energy = 0.6
-    fill.data.color = (0.62, 0.80, 1.0)
+    fill.data.energy = 0.35
+    fill.data.color = (0.65, 0.80, 1.0)
     _point_camera(fill, Vector((0.0, 0.0, target_height * 0.35)))
 
     bpy.ops.object.light_add(type='SUN', location=(0.0, grid_d * 0.3, -target_height))
     bounce = bpy.context.object
-    bounce.data.energy = 0.2
+    bounce.data.energy = 0.15
     bounce.data.color = (0.85, 0.9, 0.75)
     _point_camera(bounce, Vector((0.0, 0.0, target_height * 0.5)))
 
@@ -556,8 +560,8 @@ def _render_vegetation_group(entries, target_height, out_path, max_cols=4):
     scene.world = world
     world.use_nodes = True
     bg = world.node_tree.nodes.get('Background')
-    bg.inputs['Color'].default_value = (0.55, 0.70, 0.85, 1.0)
-    bg.inputs['Strength'].default_value = 0.45
+    bg.inputs['Color'].default_value = (0.55, 0.75, 0.98, 1.0)
+    bg.inputs['Strength'].default_value = 0.22
 
     fov = math.radians(42.0)
     aspect = 1600.0 / 1200.0
@@ -676,14 +680,14 @@ def build_scatter_clearing():
 
     bpy.ops.object.light_add(type='SUN', location=(-8.0, -10.0, 16.0))
     key = bpy.context.object
-    key.data.energy = 3.2
-    key.data.color = (1.0, 0.86, 0.60)
-    key.data.angle = math.radians(5.0)
+    key.data.energy = 4.5
+    key.data.color = (1.0, 0.93, 0.78)
+    key.data.angle = math.radians(4.0)
     _point_camera(key, Vector((0.0, 2.0, 3.0)))
 
     bpy.ops.object.light_add(type='SUN', location=(10.0, 6.0, 10.0))
     fill = bpy.context.object
-    fill.data.energy = 0.7
+    fill.data.energy = 0.4
     fill.data.color = (0.60, 0.78, 1.0)
     _point_camera(fill, Vector((0.0, 2.0, 3.0)))
 
@@ -691,8 +695,8 @@ def build_scatter_clearing():
     scene.world = world
     world.use_nodes = True
     bg = world.node_tree.nodes.get('Background')
-    bg.inputs['Color'].default_value = (0.55, 0.72, 0.88, 1.0)
-    bg.inputs['Strength'].default_value = 0.5
+    bg.inputs['Color'].default_value = (0.55, 0.75, 0.95, 1.0)
+    bg.inputs['Strength'].default_value = 0.25
 
     fov = math.radians(62.0)
     bpy.ops.object.camera_add(location=(0.0, -11.0, 2.0))

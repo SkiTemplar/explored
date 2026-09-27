@@ -43,37 +43,64 @@ _CANOPY_CELLS = ('leaf_a', 'leaf_b', 'leaf_small_round', 'leaf_serrated')
 
 
 def _mass_palette(rnd):
-    """Paleta oscuro-frío (abajo/dentro) -> claro-cálido (arriba/fuera) de
-    UNA masa de copa — ver make_canopy_mass. Variación cálida/fría entre
-    masas para que la copa entera no sea un único verde plano."""
-    if rnd.random() < 0.55:
-        warm = rnd.uniform(0.0, 0.06)
-        dark = (0.02 + warm * 0.4, 0.15 + rnd.uniform(-0.01, 0.02), 0.05)
-        light = (0.22 + warm * 0.9, 0.56 + rnd.uniform(-0.03, 0.04), 0.14 + warm * 0.2)
-    else:
-        cool = rnd.uniform(0.0, 0.05)
-        dark = (0.015, 0.13 + rnd.uniform(-0.01, 0.02), 0.09 + cool)
-        light = (0.13, 0.42 + rnd.uniform(-0.03, 0.03), 0.30 + cool * 1.4)
+    """Degradado abajo/dentro (verde azulado, frío) -> arriba/fuera (verde
+    amarillento vivo, cálido) de UNA masa de copa — 4ª pasada de arte,
+    encargo 2026-09-27: «la parte superior en verde amarillento vivo, la
+    inferior en verde azulado, y menos negro en el conjunto» (la 3ª pasada
+    alternaba masas enteras cálidas U frías, y se iba a un R/B cercanos a
+    0 en la base, demasiado oscuro bajo el cielo gris de revisión)."""
+    # R se mantiene siempre bien por detrás de G en las dos paradas del
+    # degradado: R alto (la versión anterior llegaba a 0.46-0.51) es lo
+    # que hacía leer khaki/amarillo reseco en vez de verde vivo bajo un
+    # sol fuerte — R solo sube para dar CALIDEZ, nunca para competir con G.
+    cool = rnd.uniform(-0.01, 0.02)
+    dark = (0.055 + cool * 0.3, 0.20 + rnd.uniform(-0.015, 0.02), 0.16 + cool)
+    warm = rnd.uniform(0.0, 0.05)
+    light = (0.30 + warm, 0.66 + rnd.uniform(-0.02, 0.03), 0.13 + warm * 0.3)
     return dark, light
 
 
-def _build_canopy(tips, rnd, seed, radius_range, target_tris=1800, max_masses=9):
-    """Construye UNA masa por punta de rama (tips: lista de (pos, dirección)),
-    hasta `max_masses`, con oclusión acumulada entre masas ya colocadas
-    (`neighbors`, ver make_canopy_mass/_mass_color_fn)."""
+def _build_canopy(tips, rnd, seed, radius_range, target_tris=1800, max_masses=9,
+                   inward_pull=0.24, aspect_xy=1.6):
+    """Construye UNA masa elipsoide por punta de rama (tips: lista de
+    (pos, dirección)), hasta `max_masses`, con oclusión acumulada entre
+    masas ya colocadas (`neighbors`, ver make_canopy_mass/_mass_color_fn).
+
+    4ª pasada de arte (encargo 2026-09-27: «bolas sueltas en un palo, casi
+    perfectas» en vez de una nube con lóbulos): el centro de cada masa se
+    acerca `inward_pull` hacia el centroide de TODAS las puntas de rama de
+    la copa — así las masas vecinas se solapan un 30-50% en vez de solo
+    tocarse (una copa es una nube única con lóbulos, no un racimo), y de
+    paso la punta de la rama (que se queda en `pos`, sin mover) acaba más
+    enterrada dentro de su masa en vez de asomar el corte. Una masa
+    -normalmente la de la rama más gruesa- sale un 25-45% más grande que
+    las demás para romper la simetría de «racimo de uvas de tamaño
+    uniforme»."""
+    tips = tips[:max_masses]
+    if not tips:
+        return []
+    centroid = C.Vector((0.0, 0.0, 0.0))
+    for pos, _d in tips:
+        centroid += pos
+    centroid /= len(tips)
+
+    dominant_i = rnd.randrange(len(tips))
     masses = []
-    records = []  # (centro, radio) de las masas ya construidas, para el AO
-    for k, (pos, direction) in enumerate(tips[:max_masses]):
+    records = []  # (centro, radio_efectivo) de las masas ya construidas, para el AO
+    for k, (pos, direction) in enumerate(tips):
+        center = pos.lerp(centroid, inward_pull)
         radius = rnd.uniform(*radius_range)
+        if k == dominant_i:
+            radius *= rnd.uniform(1.25, 1.45)
         out_hint = C.Vector((direction.x, direction.y, 0.0))
         dark, light = _mass_palette(rnd)
         mass = C.make_canopy_mass(
-            f'Mass_{k:02d}', center=pos, radius=radius, seed=seed * 37 + k,
+            f'Mass_{k:02d}', center=center, radius=radius, seed=seed * 37 + k,
             up_hint=(0.0, 0.0, 1.0), out_hint=out_hint,
             dark_cool=dark, light_warm=light, cell_names=_CANOPY_CELLS,
-            target_tris=target_tris, neighbors=list(records),
+            target_tris=target_tris, neighbors=list(records), aspect_xy=aspect_xy,
         )
-        records.append((pos, radius))
+        records.append((center, radius * aspect_xy))
         masses.append(mass)
     return masses
 
@@ -193,18 +220,18 @@ def build(variant):
         upper_attach = C.spline_point(height, 0.92, curvature, lean_dir, s_curve=s_curve)
         lower_parts, lower_tips = _branch_tier(
             lower_attach, base_radius, rnd, variant['seed'] + 1, n=3,
-            len_range=(height * 0.20, height * 0.27), elevation_range=(10, 22),
+            len_range=(height * 0.17, height * 0.23), elevation_range=(10, 22),
             radius_ratio=(0.42, 0.56),
         )
         upper_parts, upper_tips = _branch_tier(
             upper_attach, base_radius, rnd, variant['seed'] + 2, n=4,
-            len_range=(height * 0.12, height * 0.18), elevation_range=(2, 12),
+            len_range=(height * 0.10, height * 0.15), elevation_range=(2, 12),
             radius_ratio=(0.30, 0.44), ang_offset=math.pi / 4.0,
         )
         parts += lower_parts + upper_parts
 
         masses = _build_canopy(lower_tips + upper_tips, rnd, variant['seed'],
-                                radius_range=(2.6, 3.8), target_tris=3200, max_masses=9)
+                                radius_range=(2.8, 4.1), target_tris=4200, max_masses=9)
         all_masses += masses
 
     elif kind == 'wide':
@@ -231,13 +258,13 @@ def build(variant):
         attach = C.spline_point(height, 0.52, curvature, lean_dir, s_curve=s_curve)
         branch_parts, tips = _branch_tier(
             attach, base_radius, rnd, variant['seed'] + 1, n=6,
-            len_range=(height * 0.42, height * 0.60), elevation_range=(8, 24),
+            len_range=(height * 0.34, height * 0.48), elevation_range=(8, 24),
             radius_ratio=(0.38, 0.52),
         )
         parts += branch_parts
 
         masses = _build_canopy(tips, rnd, variant['seed'],
-                                radius_range=(2.0, 3.0), target_tris=2600, max_masses=9)
+                                radius_range=(2.3, 3.3), target_tris=3400, max_masses=9)
         all_masses += masses
 
     elif kind == 'mangrove':
@@ -265,13 +292,13 @@ def build(variant):
         attach = C.spline_point(height, 0.72, curvature, lean_dir, z_offset=lift, s_curve=s_curve)
         branch_parts, tips = _branch_tier(
             attach, base_radius, rnd, variant['seed'] + 1, n=5,
-            len_range=(height * 0.32, height * 0.46), elevation_range=(14, 36),
+            len_range=(height * 0.26, height * 0.37), elevation_range=(14, 36),
             radius_ratio=(0.36, 0.50),
         )
         parts += branch_parts
 
         masses = _build_canopy(tips, rnd, variant['seed'],
-                                radius_range=(1.5, 2.2), target_tris=2000, max_masses=9)
+                                radius_range=(1.7, 2.4), target_tris=2600, max_masses=9)
         all_masses += masses
 
     else:  # understory
@@ -294,7 +321,7 @@ def build(variant):
         top = C.spline_point(height, 1.0, curvature, lean_dir, s_curve=s_curve)
         branch_parts, tips = _branch_tier(
             top, base_radius, rnd, variant['seed'] + 1, n=4,
-            len_range=(height * 0.22, height * 0.32), elevation_range=(26, 55),
+            len_range=(height * 0.18, height * 0.26), elevation_range=(26, 55),
             radius_ratio=(0.34, 0.48),
         )
         parts += branch_parts
@@ -303,7 +330,7 @@ def build(variant):
         tips_with_center = [(top, C.Vector((0.0, 0.0, 1.0)))] + tips
 
         masses = _build_canopy(tips_with_center, rnd, variant['seed'],
-                                radius_range=(0.95, 1.5), target_tris=1300, max_masses=9)
+                                radius_range=(1.05, 1.6), target_tris=1650, max_masses=9)
         all_masses += masses
 
     wood = C.join_objects(parts, 'SM_' + variant['name'] + '_Wood')
