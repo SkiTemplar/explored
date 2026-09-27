@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 598,
+		"total": 602,
 		"cpp": 286,
-		"datos": 312,
+		"datos": 316,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3598,6 +3598,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "caliza.nameEs",
+			"es": "Caliza",
+			"en": "Limestone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «caliza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cangrejo.nameEs",
 			"es": "Cangrejo",
 			"en": "Crab",
@@ -3798,6 +3808,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "cristal_cuarzo.nameEs",
+			"es": "Cristal de cuarzo",
+			"en": "Quartz crystal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cristal_cuarzo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cuchillo.nameEs",
 			"es": "Cuchillo",
 			"en": "Knife",
@@ -3974,6 +3994,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «hacha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hierro_meteorito.nameEs",
+			"es": "Hierro de meteorito",
+			"en": "Meteoric iron",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hierro_meteorito» nameEs/nameEn"
 			]
 		},
 		{
@@ -4234,6 +4264,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «mero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mineral_cobre.nameEs",
+			"es": "Mineral de cobre",
+			"en": "Copper ore",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mineral_cobre» nameEs/nameEn"
 			]
 		},
 		{
