@@ -1,15 +1,17 @@
 # EXPLORED — Biblia de diseño: índice
 
-Versión 1 · 2026-09-27 · Punto de entrada a `docs/diseno/biblia/`. Escrito tras revisar
+Versión 2 · 2026-09-27 · Punto de entrada a `docs/diseno/biblia/`. Escrito tras revisar
 las 7 secciones enteras contra `docs/diseno/gdd_v2.md` y resolver las contradicciones
-encontradas entre ellas (ver «Contradicciones resueltas» más abajo).
+encontradas entre ellas (ver «Contradicciones resueltas» más abajo). La versión 2 añade
+la **sección 08, cooperativo y red**, por decisión del director de la tarde del
+2026-09-27.
 
 ## Precedencia
 
 **El GDD manda en el alcance; la biblia manda en el detalle.** `docs/diseno/gdd_v2.md`
 decide qué entra en cada fase (acceso anticipado, F2, F3), qué pilares rigen el juego y
 qué se descarta explícitamente (la regla «todo por código», «sin fauna terrestre»). Las
-7 secciones de esta biblia desarrollan **cómo** funciona cada sistema una vez el GDD ya
+8 secciones de esta biblia desarrollan **cómo** funciona cada sistema una vez el GDD ya
 decidió que existe: números exactos, fórmulas, ids de objeto, textos ES/EN, pantallas.
 Si una sección de la biblia y el GDD chocan en una cifra o un nombre, gana la biblia
 (está escrita después y más cerca del código real); si chocan en si algo entra o no en
@@ -28,6 +30,22 @@ marcada `[Decisión]`.
 | 05 | `05-navegantes-piratas-y-combate.md` | Por qué hay personajes humanos visibles (pivote de producción, packs CC0 con esqueleto Mixamo), navegantes del arrecife (cultura, trueque, reputación), piratas (tipos, IA, asaltos, botín), combate (reutiliza Salud/heridas de 01, sin barra nueva), defensa de base, fauna peligrosa. | El trueque nunca es un menú de tienda: es un objeto en la mano igual que cualquier otra interacción; los aldeanos son invulnerables por diseño, nunca «matables por accidente». |
 | 06 | `06-interfaces.md` | Principios de UI (diegético, umbral 55 %, máximo tres verbos, papel y tinta), guía visual (tipografía, paleta, iconografía), las 16 pantallas del juego con wireframe/textos ES-EN/sonido, accesibilidad completa. | Nunca hay minimapo ni HUD de sistema; el diario/bitácora/museo son un único sistema (Museo + «Rumbos» del mapa), no tres pantallas; el trueque de F3 es una extensión del prompt de contexto, no una pantalla de tienda. |
 | 07 | `07-logros-museo-y-textos.md` | Guía de estilo anti-IA (obligatoria para todo texto de cara al jugador de las 7 secciones), 54 logros de Steam, el museo y sus 7 colecciones, el diario del jugador, la localización ES→EN completa (proceso, glosario de 66 términos, formato). | La guía anti-IA de §1 es la norma que rige el resto de la biblia — aplicada ya en esta revisión a las 7 secciones (ver abajo); «artefactos» y «tesoros» son el mismo catálogo, no dos. |
+| 08 | `08-cooperativo-y-red.md` | Cooperativo de 2 a 4 jugadores con servidor de escucha por Steam: modelo de autoridad, replicación sistema por sistema, presupuesto de ancho de banda, sesiones y guardado, reglas de diseño del coop, interfaces nuevas con textos ES/EN, matriz de pruebas, riesgos y plan de migración con coste en días de agente. | Servidor autoritativo sin excepciones: el cliente solo predice su movimiento y el efecto audiovisual de las acciones instantáneas; el mundo es del anfitrión y el cuerpo es de cada jugador; el mapa dibujado se comparte; sin migración de anfitrión en acceso anticipado. |
+
+## Cooperativo — decisión nueva del 2026-09-27 (tarde)
+
+Encargo del director después de cerrar las 7 primeras secciones: **el juego tendrá
+cooperativo de 2 a 4 jugadores en el acceso anticipado**, con servidor de escucha a
+través de Steam (Online Subsystem Steam + Steam Sockets). Se decide antes de escribir la
+mayoría de los sistemas que faltan para que cada uno nazca con la autoridad en el
+servidor, en vez de reconvertirlos todos al final.
+
+Esto **deroga** la regla «sin multijugador» de `gdd_v2.md` §7.2, que era una regla de
+producción del GDD v3 heredada sin revisar. Es la única derogación de esta revisión, y
+está anotada en el propio GDD (§6.2 y §7.2). El estado de partida es duro y se dice tal
+cual en la sección 08: hoy no hay **ni una línea** de replicación en `Source/`, y el
+coste estimado del cooperativo es de **69 días de agente** repartidos de H0 a H5
+(08 §9.3), con los cimientos —y solo los cimientos— en H0.
 
 ## Contradicciones encontradas y resueltas
 
@@ -87,7 +105,8 @@ ficción (ahogo).
 
 - `00-TODO.md` — lista maestra de todo lo que falta para el juego completo, agrupada
   por hitos de ejecución (H0–H5, F2, F3), con verificación contra el código real del
-  árbol principal.
+  árbol principal. **207 casillas** al cerrar esta revisión (9 hechas, 198 pendientes),
+  de las cuales 43 son de red y cooperativo.
 - `docs/diseno/gdd_v2.md` — documento rector (alcance, fases, pilares, producción).
 - `docs/design/biblia-de-contenido.md` — catálogo de objetos, propiedades y verbos
   (documento anterior, complementario, sin cambios de esta revisión).

@@ -17,15 +17,22 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 3 | 29 | 32 |
-| H1 — Mundo interactivo | 1 | 26 | 27 |
-| H2 — Minería y construcción | 2 | 22 | 24 |
-| H3 — Mar y barcos | 1 | 10 | 11 |
-| H4 — Contenido de acceso anticipado | 0 | 14 | 14 |
-| H5 — Lanzamiento del acceso anticipado | 1 | 15 | 16 |
-| F2 | 1 | 14 | 15 |
-| F3 | 0 | 25 | 25 |
-| **Total** | **9** | **155** | **164** |
+| H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
+| H1 — Mundo interactivo | 1 | 35 | 36 |
+| H2 — Minería y construcción | 2 | 29 | 31 |
+| H3 — Mar y barcos | 1 | 13 | 14 |
+| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
+| H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
+| F2 | 1 | 15 | 16 |
+| F3 | 0 | 27 | 27 |
+| **Total** | **9** | **198** | **207** |
+
+Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
+a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
+jugadores con servidor de escucha por Steam en el acceso anticipado. El diseño completo
+está en `08-cooperativo-y-red.md`; el coste estimado de esas casillas es de **69 días de
+agente** (§9.3 de esa sección). Ninguna está hecha: hoy no hay una sola línea de
+replicación en `Source/`.
 
 ---
 
@@ -141,6 +148,58 @@ salir de la isla.
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
 
+### Red y cooperativo — cimientos (biblia 08)
+
+Orden obligatorio: nada de lo de abajo se toca antes de que la tercera casilla
+(`GameState`/`PlayerState`) y la cuarta (reparto de `ExploredWiringSubsystem`) estén en
+verde en local. Criterio de salida de red de H0: las filas **1, 2 y 5** de la matriz de
+biblia 08 §7.3 pasan en condiciones «Normal».
+
+- [ ] `Explored.Build.cs`: añadir `OnlineSubsystem`, `OnlineSubsystemSteam`,
+      `OnlineSubsystemUtils`, `SteamSockets`, `NetCore`; `Config/DefaultEngine.ini`: el
+      bloque de `NetDriverDefinitions`, `[/Script/OnlineSubsystemSteam]` con
+      `SteamDevAppId=480` y los tres topes de tasa (`32000` B/s, `NetServerMaxTickRate=30`).
+      Verificable: el editor arranca y `Play As Listen Server` con 2 clientes conecta.
+      *(biblia 08 §1.1)*
+- [ ] `Core`: nuevo `UExploredSessionSubsystem` (`GameInstance`): crear sesión con
+      `bUseLobbiesIfAvailable`, aforo 2–4, privacidad «Solo por invitación»/«Amigos»/
+      «En solitario», clave `EXPLORED_WORLD = <WorldId>`, aceptar invitación de Steam.
+      *(biblia 08 §4.1, §4.2)*
+- [ ] `Core`: nuevos `AExploredGameState` (reloj, clima, semilla, `WorldId`, aforo,
+      escalado por jugadores) y `AExploredPlayerState` (nombre visible, `SteamID64`, tono
+      de tinta del mapa, estado `Derribado`, ping). *(biblia 08 §2.1)*
+- [ ] `Core/ExploredWiringSubsystem`: eliminar `GetPlayerCharacter()`
+      (`ExploredWiringSubsystem.cpp:241`) y mover `Sample`/`UpdateBody`/`UpdatePlace`/
+      `UpdateBoat`/`UpdateDanger` a un `UExploredPlayerLinksComponent` nuevo por
+      personaje; el subsistema pasa a iterar `GameState->PlayerArray`. Verificable: dos
+      personajes en PIE tienen necesidades y lugar independientes. *(biblia 08 §2.1)*
+- [ ] Sustituir los 8 usos de `UGameplayStatics::GetPlayerController/GetPlayerPawn(…, 0)`
+      (`ExploredAmbienceSubsystem`, `ExploredMusicSubsystem`, `ExploredOcean`,
+      `ExploredSkyController`, `ExploredPlantActor`, `ExploredFaunaManager`,
+      `ExploredShotSubsystem`) por el jugador **local** de cada cliente.
+      *(biblia 08 §2.1)*
+- [ ] `Player/ExploredCharacter`: movimiento replicado con predicción y corrección
+      (`NetworkSmoothingMode = Exponential` para pawns ajenos, corrección invisible por
+      debajo de 8 cm); `USwimComponent` pasa a `CustomMovementMode` para que el servidor
+      lo vea. *(biblia 08 §1.2)*
+- [ ] `Interaction/InteractionComponent`: `Server_Interact` con validación de distancia
+      (250 cm + 50 de margen), línea de visión trazada en el servidor, cadencia mínima de
+      0,25 s, ventana de gracia de 250 ms y tope de 20 acciones válidas/s por jugador.
+      El cliente reproduce solo animación y sonido, nunca el efecto. *(biblia 08 §1.2)*
+- [ ] `Survival`: replicar el cuerpo propio a 1 Hz con `COND_OwnerOnly` (24 B: 8
+      necesidades a `uint8`, máscara de 19 estados, hasta 4 heridas de 3 B) y 2 B a
+      0,5 Hz a los demás (salud + banderas visibles). *(biblia 08 §2.9)*
+- [ ] `UI`: nuevo `SExploredCoopLobby` (cuatro renglones, «Invitar por Steam»,
+      privacidad, aforo) y avisos de entrada/salida en la cola del HUD, con los textos
+      ES/EN de biblia 08 §6.1–§6.2 y §6.5. *(biblia 08 §6)*
+- [ ] `Debug`: comando `Explored.NetBudget` que vuelca a CSV los kbps por canal y por
+      cliente cada segundo (es la herramienta con la que se verifica el objetivo de
+      ancho de banda, no una estimación). *(biblia 08 §3)*
+- [ ] `Tools/net-test.ps1` (nuevo): arranca PIE como servidor de escucha con 2 o 4
+      clientes, aplica los perfiles «Normal»/«Mala»/«Horrible» de `net pktlag`/
+      `pktlagvariance`/`pktloss`/`pktorder` y recoge el CSV de `Explored.NetBudget`.
+      *(biblia 08 §7.1, §7.2)*
+
 ### Pantallas y HUD de la partida (bucle básico)
 
 - [ ] Implementar la pantalla de Muerte: nuevo widget `SExploredDeathScreen`,
@@ -236,6 +295,48 @@ posterior.
       posan) con LOD (`FFaunaLod` ya existente) y navegación invalidada por chunk
       minado. *(biblia 02 §11)*
 
+### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
+
+- [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
+      13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
+      Coalescencia a 10 Hz. *(biblia 08 §2.4)*
+- [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
+      (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`
+      (FNV-1a de 64 bits) en el saludo de conexión, con rechazo y el texto de biblia 08
+      §6.5 si no coincide. *(biblia 08 §2.4)*
+- [ ] `Carry/ExploredContainer`: el contenido no se replica hasta abrir el cofre
+      (`Server_SubscribeContainer`, baja al cerrar); la carrera de dos jugadores sobre el
+      mismo hueco se resuelve con `EInventoryFail::NotFound`, sin bloqueos.
+      *(biblia 08 §2.4)*
+- [ ] `Items/ExploredItemActor`: `bReplicateMovement` a 10 Hz, dormir el cuerpo físico a
+      los 3 s de quietud (y dejar de replicar), `NetCullDistanceSquared` 6 000 cm y tope
+      de 32 objetos sueltos despiertos a la vez. *(biblia 08 §2.5)*
+- [ ] `WorldGen/VegetationHarvestState`: estado por instancia replicado como
+      `FFastArraySerializer` (clave de 7 B: celda + especie + índice; estado de 3 B:
+      etapa, golpes, día de rebrote ×4), tope de 4096 entradas con compactación a
+      snapshot por celda reusando `FSaveIndexSet::Encode`. Progreso de tala solo a
+      clientes a < 60 m. *(biblia 08 §2.3)*
+- [ ] `Fauna`: anclas por grupo cada 2 s (10 B: id, centroide cuantizado, estado) para la
+      fauna de ambiente que cada cliente simula en local, y actores replicados (14 B) para
+      la terrestre cazable, con el tope duro de 12 a 10 Hz + 24 a 2 Hz enganchado a
+      `FFaunaLod`. `ReefSharkAttackRoll` solo en el servidor, una tirada por nadador.
+      *(biblia 08 §2.7)*
+- [ ] `Sky`/`Weather`: replicar los 11 B de reloj, estación, viento, lluvia, mar y
+      tormenta a 0,2 Hz en el `GameState`; el cliente avanza su reloj local y corrige con
+      `TimeScale` entre 0,95 y 1,05, con salto duro solo por encima de 6 minutos de juego
+      de error. Olas, mareas y corrientes se calculan en local. *(biblia 08 §2.8)*
+- [ ] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
+      (`TimeScale` ×120 solo con todos acostados, vuelta a ×1 al levantarse uno,
+      conservando las horas ganadas) y `Derribado` (90 s, reanimación de 6 s o 3 s con
+      medicina, alta al 25 % de salud y ánimo −6, tope de 2 reanimaciones por día, sin
+      `Derribado` en Náufrago). *(biblia 08 §5.1, §5.2)*
+- [ ] `UI`: `SExploredPlayerList` como pestaña de `SExploredPauseMenu` (tinta, nombre,
+      retardo, expulsar), nombres sobre la cabeza (hasta 60 m, desvanecido 45–60 m, sin
+      verse a través del terreno, sin barra de vida), rueda de ping de tres opciones
+      (`Q`, marca de 8 s, 1 cada 3 s, dibujada también en el mapa) y pestaña de ajustes
+      de red con los cinco ajustes y los textos ES/EN de biblia 08 §6.3–§6.8.
+      *(biblia 08 §6)*
+
 ### Tests
 
 - [ ] `Tests`: extender `CarrySpec.cpp` con el apilado de inventario; añadir specs de
@@ -316,6 +417,41 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de medir contra el objetivo de rendimiento de H0, no de implementar desde cero.
       *(verificado: `Source/ExploredEditor/WorldGenCommandlet.cpp:135-244`)*
 
+### Red y cooperativo — terreno, construcción y arena (biblia 08)
+
+El sistema de red más caro y el de más riesgo. Criterio de salida de red de H2: las
+filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
+
+- [ ] `WorldGen`: `FExploredTerrainDeltaPacket` — cabecera de 9 B (versión + chunk) y
+      tramos de `uint16` inicio + `uint8` cuenta + `int16` por muestra en milímetros, con
+      tope duro de 512 B por paquete. Spec de host: ida y vuelta sin pérdida, fusión de
+      dos paquetes del mismo chunk idempotente y conmutativa, paquete truncado o
+      manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
+- [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
+      muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
+      para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.
+      *(biblia 08 §2.2)*
+- [ ] `WorldGen`: aplicar los deltas recibidos al `FTerrainEditModel` del cliente y
+      remallar con `FTerrainChunkBuilder::Build` coalescido a 250 ms por chunk; el cliente
+      nunca aplica su propia edición antes de recibirla del servidor. *(biblia 08 §2.2)*
+- [ ] `WorldGen`: comprobación de integridad — `uint32` FNV-1a por chunk editado visible
+      cada 30 s, y petición del chunk completo (mismo formato de tramos que
+      `FTerrainEditModel::ToValue`) cuando no coincide o cuando se entra en un chunk nunca
+      recibido. *(biblia 08 §2.2)*
+- [ ] `Building`: colocación autoritativa (`Server_PlacePiece` que valida encaje, rejilla
+      de 2 m, materiales en la copia del servidor y `RecomputeStability` antes de generar
+      el actor); el fantasma de `UBuildPreviewComponent` queda puramente local;
+      `CollapseUnsupported` y la degradación por clima solo en el servidor.
+      *(biblia 08 §2.10)*
+- [ ] `WorldGen`: arena viva simulada **solo en el servidor** — revisión limitada a chunks
+      a menos de 80 m de algún jugador (con un máximo de 4 iteraciones acumuladas al
+      acercarse), tope de 64 celdas movidas por segundo y por chunk, y salida por la cola
+      de terreno con prioridad más baja que las ediciones del jugador. *(biblia 08 §2.6)*
+- [ ] Medir la compresión real de los deltas de terreno con `OodleNetwork` y entrenar el
+      diccionario (`Tools/net-dictionary.ps1`, nuevo) sobre una captura de 10 min de
+      minería; anotar el factor en `docs/tecnico/red.md`. Si no llega a ×2, bajar el tope
+      de la cola en vez de tocar el diseño. *(biblia 08 §2.2, §3)*
+
 ---
 
 ## H3 — Mar y barcos
@@ -349,6 +485,23 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       `boats.json` — solo falta el mesh `SM_Limon`. *(biblia 03 §3.8 TODO — [F3])*
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el
       invariante «ninguna plantilla produce un objeto sin malla». *(biblia 05 §Tests)*
+
+### Red y cooperativo — barcos (biblia 08)
+
+- [ ] `Boats`: `FExploredBoatNetState` de 19 B a 20 Hz (posición cuantizada, velocidad,
+      rumbo, escora, vela y trimado, agua embarcada, integridad) + `Server_SetBoatControls`
+      de 4 B a 20 Hz desde el timonel; el cliente extrapola con el mismo
+      `FBoatModel::Step` y corrige hacia el estado recibido en 200 ms.
+      `NetCullDistanceSquared` 25 000 cm. Olas y corrientes **no se replican**.
+      *(biblia 08 §2.5)*
+- [ ] `Boats`: pasajeros con `AttachToActor` replicado, aforo por plano canónico (balsa 2,
+      canoa 2, canoa con balancín 3, «Limón» 4 — al lleno el verbo «Subir» no se ofrece),
+      timón cedible con el verbo de interacción sobre el asiento y liberado si el timonel
+      se desconecta. Los 75 kg de `CrewMassKg` por tripulante cuentan de verdad en
+      `TotalMassKg`. *(biblia 08 §5.4)*
+- [ ] Pasar la fila 8 de la matriz de biblia 08 §7.3 (cuatro jugadores en la canoa con
+      balancín, mar de ciclón, uno achicando) en «Normal» y «Mala»: escora y anegamiento
+      idénticos en las cuatro pantallas y por debajo de 256 kbps. *(biblia 08 §7.3)*
 
 ---
 
@@ -396,6 +549,37 @@ datos todavía.
 - [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
       materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
       (GDD §7.1). *(GDD §7.1)*
+
+### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
+
+- [ ] `Cartography`: mover `UCartographyComponent` del personaje a un
+      `UExploredCartographySubsystem` del mundo, con el `FCartographyModel` autoritativo en
+      el servidor; trazos replicados como polilíneas (`uint8` autor + `uint8` cuenta +
+      puntos de 2 B). El mapa dibujado pasa a ser **uno por mundo**. *(biblia 08 §5.3, §2.11)*
+- [ ] `Cartography`/`UI`: tono de tinta por jugador (anfitrión `#2B2016`, sepia `#3A2F1E`,
+      azul `#243447`, granate `#3E2A2A`) y marca de ping dibujada sobre la hoja mientras
+      dura. Los instrumentos (reloj, brújula, catalejo, sextante) siguen siendo objetos
+      individuales de inventario. *(biblia 08 §5.3)*
+- [ ] `Save`: las secciones `"inventory"` y `"body"` pasan a una por `SteamID64` bajo
+      `"players"`, más una sección nueva `"coop"` (`WorldId`, aforo, último visto, tinta
+      asignada, reanimaciones del día); una partida antigua de un jugador se lee como el
+      jugador del anfitrión. *(biblia 08 §4.4)*
+- [ ] `Save`: perfil de invitado en `Saved/SaveGames/Coop/<SteamID64>/<WorldId>.sav` con
+      **solo** cuerpo, inventario, diario y estadísticas de logro (nunca estado del mundo),
+      escrito en cada autoguardado del anfitrión y al salir limpiamente; al volver al mismo
+      `WorldId` manda la copia del anfitrión, y en un mundo distinto se empieza con el kit
+      de inicio. *(biblia 08 §4.4)*
+- [ ] `Core`: unirse en caliente con el presupuesto de biblia 08 §4.3 (saludo, semilla y
+      reloj, personaje, mundo a < 120/200 m, resto; objetivo por debajo de 20 s sin tirón
+      para los que ya estaban), y los tres caminos de salida del anfitrión: cierre ordenado
+      con 10 s de cuenta atrás y autoguardado, caída con 3 reintentos en 30 s, y expulsión
+      con confirmación. Autoguardado nuevo al entrar o salir un jugador y cada 5 minutos
+      con más de uno conectado. *(biblia 08 §4.3, §4.5)*
+- [ ] `Achievements`: campo `coopScope` (`"actor"`/`"world"`/`"witness"`, radio de 50 m
+      para el tercero) en los 54 logros de `achievements.json`, bandera compartida en el
+      `GameState` para los logros de restricción, y escalado por número de jugadores de
+      biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
+      *(biblia 08 §5.6, §5.7)*
 
 ---
 
@@ -448,6 +632,19 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] QA de cierre: pasar `Tools/HostTests/run.sh` (specs de host) y
       `Tools/test.ps1` (Automation Tests del editor) en verde antes de empaquetar.
       *(CLAUDE.md del proyecto, «Tests»)*
+- [ ] Red: pasar las 16 filas de la matriz de biblia 08 §7.3 en «Limpia», «Normal» y
+      «Mala», y las 16 en «Horrible» sin corrupción de mundo ni desconexión silenciosa.
+      *(biblia 08 §7.3)*
+- [ ] Red: verificar con el CSV de `Explored.NetBudget` el objetivo de **menos de 64 kbps
+      por cliente en reposo** y **menos de 256 kbps en pico** con 4 jugadores, sobre las 16
+      filas de la matriz. Criterio de salida, no estimación. *(biblia 08 §3)*
+- [ ] Red: ajustar con datos de la beta cerrada las cifras de biblia 08 §5 (×120 al dormir,
+      90 s y 6/3 s de `Derribado`, y el escalado de vetas, fauna y asaltos por número de
+      jugadores). Están escritas con número justo para poder moverlas de una en una.
+      *(biblia 08 §5.1, §5.2, §5.6)*
+- [ ] Red: sustituir `SteamDevAppId=480` por el AppId real de Steam y verificar invitación,
+      entrada en caliente y relay desde dos redes domésticas distintas antes de abrir el
+      acceso anticipado. *(biblia 08 §1.1, §4.2)*
 - [x] Modo bench (`-ExploredBench`, `ExploredShotSubsystem::bBenchMode`) y script
       `Tools/bench.ps1` ya existen para medir tiempo de frame — falta el objetivo
       verificado, no la herramienta. *(verificado:
@@ -499,6 +696,10 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño de armadura nueva
       rompe el invariante «ninguna plantilla produce un objeto sin malla».
       *(biblia 05 §Tests)*
+- [ ] Red: `Tramway` autoritativo en el servidor — vagón sobre spline simulado solo en el
+      servidor y replicado como estado (posición sobre el tramo + velocidad, 6 B a 10 Hz);
+      un tramo cuyo terreno se reedita por debajo se marca «dañado» y no navegable hasta
+      repararlo, igual que una pieza de construcción. *(biblia 08 §1.3, biblia 02 §9)*
 - [x] Estratos de caliza (La Meseta) ya diseñados en la tabla de materiales de biblia 02
       §2.3, pendientes solo de que la propia isla entre en F2 — no de una mecánica
       nueva. *(biblia 02 §2.3, GDD §4)*
@@ -571,6 +772,15 @@ asaltos), isla oculta y final.
       logros `primer_trueque`, `aliado_de_facto`, `otra_forma_de_aprender`,
       `sin_disparar_una_flecha`, `asalto_repelido`, `campamento_tomado`.
       *(biblia 07 §2.1, §2.3)*
+- [ ] Red: `Raiders` y `Villages` autoritativos en el servidor — percepción, patrulla y
+      asalto solo en el servidor (reutilizan la fauna terrestre replicada de biblia 08
+      §2.7, mismo tope y mismo LOD), con el escalado por número de jugadores de biblia 08
+      §5.6: asaltantes `×(1 + 0,4·(N−1))` sobre la base de 5 (7/9/11 con 2/3/4 jugadores) y
+      categoría **+1** por cada 2 jugadores por encima de 1; la frecuencia no escala.
+      *(biblia 08 §5.6, §1.3)*
+- [ ] Red: logros de restricción en cooperativo (`sin_disparar_una_flecha` y similares) con
+      la bandera compartida del `GameState`: si cualquier jugador rompe la restricción, se
+      apaga para todos en esa partida. *(biblia 08 §5.7)*
 
 ---
 

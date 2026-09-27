@@ -1,6 +1,11 @@
 # EXPLORED — Documento de diseño del juego (GDD v2)
 
-Versión 2 · 2026-09-27 · Unreal Engine 5.6 · Windows (objetivo: Steam)
+Versión 2.1 · 2026-09-27 · Unreal Engine 5.6 · Windows (objetivo: Steam)
+
+> Revisión 2.1 (tarde del 2026-09-27): el acceso anticipado incluye **cooperativo de 2 a
+> 4 jugadores** con servidor de escucha por Steam (§6.2), y la regla «sin multijugador»
+> de §7.2 queda derogada. Diseño completo en
+> `docs/diseno/biblia/08-cooperativo-y-red.md`.
 
 Sustituye a `docs/superpowers/specs/2026-09-26-explored-design.md` (v3) como documento
 rector. Complementa y no repite `docs/design/biblia-de-contenido.md` (catálogo de
@@ -582,6 +587,17 @@ tesoro, todo en Landing, sin salir de la isla.
   anticipado.
 - Fauna marina completa (ya implementada) y una primera pasada de fauna salvaje
   terrestre (§3.7) en las islas disponibles.
+- **Cooperativo de 2 a 4 jugadores [director, 2026-09-27]**, con **servidor de escucha**
+  (uno de los jugadores hospeda) a través de Steam (Online Subsystem Steam + Steam
+  Sockets): servidor autoritativo, invitación y entrada en caliente desde la
+  superposición de Steam, guardado del mundo en la partida del anfitrión y personaje e
+  inventario propios de cada invitado. Diseño completo, con números y plan de migración,
+  en `docs/diseno/biblia/08-cooperativo-y-red.md`. Esta decisión **deroga** la regla «sin
+  multijugador» de §7.2. Estado de partida, sin maquillar: hoy no hay ninguna replicación
+  en `Source/`, y el coste estimado es de **69 días de agente** repartidos de H0 a H5
+  (biblia 08 §9.3), con los cimientos en H0. Se decide ahora, y no más tarde, para que
+  todo sistema nuevo nazca con la autoridad en el servidor en vez de reconvertirse dos
+  veces.
 
 **No entra** (fases posteriores, dentro del propio ciclo de acceso anticipado antes de
 la versión 1.0):
@@ -623,9 +639,17 @@ romper la paleta por isla.
 
 ### 7.2 Reglas de producción que se mantienen
 
-- Sin personajes humanos animados en pantalla, sin diálogos, sin multijugador, sin
-  cinemáticas pregrabadas (GDD v3 §12, sin cambios: el pueblo del arrecife y los
+- Sin diálogos y sin cinemáticas pregrabadas (GDD v3 §12: el pueblo del arrecife y los
   piratas se comunican por gesto y comportamiento, nunca por texto largo ni voz).
+  «Sin personajes humanos animados en pantalla» ya quedó descartado en §3.6 y en la
+  biblia 05 §0 (packs CC0 con esqueleto Mixamo, fase 3).
+- **«Sin multijugador» queda derogado [director, 2026-09-27].** Era una regla de
+  producción heredada del GDD v3 §12, no un pilar de diseño. El juego tendrá cooperativo
+  de 2 a 4 jugadores con servidor de escucha por Steam en el acceso anticipado (§6.2);
+  el diseño entero está en `docs/diseno/biblia/08-cooperativo-y-red.md`. Lo que sí se
+  mantiene de esa regla es el espíritu: **nada de servidores dedicados, ni sesiones
+  públicas, ni chat de texto propio** (Steam ya da voz y texto en su superposición, y el
+  juego solo añade un ping diegético de posición, biblia 08 §6.4).
 - Pipeline reproducible por script (`Tools/build_content.ps1`) para todo lo que sigue
   siendo generado (texturas, audio, música, terreno).
 
@@ -694,6 +718,8 @@ riesgo técnico de todo el documento (ver §8).
 | Fauna terrestre con rig (§3.6, §3.7) añade coste de animación y de navegación sobre terreno que cambia | Rendimiento | LOD de IA agresivo (patrón ya usado en fauna marina), tope de animales vivos por base, invalidación de navegación solo en el chunk afectado. |
 | El pueblo del arrecife cae en el tópico de «isleños místicos» o «recurso narrativo del náufrago blanco» | Sensibilidad cultural | Es un pueblo **ficticio**, nunca atado a una cultura real concreta; se trata con el mismo respeto que las ruinas del pueblo navegante ya reciben en el GDD v3 (§6, sin lore largo ni caricatura); el jugador nunca «gana» contra ellos ni hay misión de conquista; su reputación se gana respetando su tierra, no completando una lista de favores coloniales. Revisión de sensibilidad como parte del criterio de salida de la fase 3 (§6.2), no como nota a posteriori. |
 | Descartar «sin fauna terrestre / sin esqueleto» (§3.6) puede reabrir el riesgo de producción que motivó la regla original | Originalidad/producción | El riesgo original era el coste de producir modelos y rig propios; usar packs CC0 ya terminados y probados (Quaternius) mantiene esa misma cautela con otra vía de producción. Se documenta como pivote razonado (§3.6). |
+| El cooperativo (§6.2) se come el presupuesto de H0–H5 y retrasa el acceso anticipado | Alcance | 69 días de agente estimados y repartidos por hito (biblia 08 §9.3), con **solo los cimientos** en H0: Steam, `GameState`/`PlayerState`, el reparto del jugador único, movimiento e interacción autoritativa. Ningún sistema se replica antes de estar terminado en solitario, y todo sistema nuevo nace con la autoridad en el servidor para no pagarlo dos veces. |
+| El terreno replicado desincroniza y el mundo deja de ser el mismo en dos máquinas | Técnico | El formato de deltas de `FTerrainEditModel` guarda muestras, no operaciones, así que la fusión es idempotente y conmutativa (biblia 08 §2.2); comprobación de 4 bytes por chunk cada 30 s y petición del chunk completo al menor desacuerdo; una fila de la matriz de pruebas es una sesión de 2 h con 4 jugadores vigilando esa comprobación. |
 | El juego se parece a Valheim/Raft/Subnautica sin una identidad propia clara | Originalidad | Los rasgos originales se mantienen intactos y se refuerzan como columna vertebral: cartografía a mano (única entre las referencias), navegación polinesia aprendida en ruinas, museo de tesoros, barco «Limón» y dedicatoria a Almudena. Minería y pueblo se diseñan como extensión del pilar «transformar la isla», no como sistemas calcados de otro juego. |
 | Trueque sin tabla de precios fija puede sentirse arbitrario o injusto para el jugador | Diseño/economía | El valor depende de la necesidad real del pueblo (visible: piden lo que les falta) y de la reputación, ambas legibles sin números — coherente con la regla anti-agobio de la biblia (§8.3, sin iconos ni barras). Ajuste fino en playtesting de la fase 3. |
 
@@ -709,5 +735,7 @@ terreno), `docs/art/texturas.md` (precedente de CC0 ya en uso),
 (arquitectura real del terreno volumétrico).
 
 **Descartado explícitamente:** la regla del GDD v3 de «todo el contenido visual hecho
-por código, sin ningún asset externo» (§7.1) y la regla de «sin fauna terrestre, sin
-animación por esqueleto» (§3.6, §3.7).
+por código, sin ningún asset externo» (§7.1), la regla de «sin fauna terrestre, sin
+animación por esqueleto» (§3.6, §3.7) y la regla de «sin multijugador» (§7.2, derogada
+por la decisión del director del 2026-09-27; ver §6.2 y
+`docs/diseno/biblia/08-cooperativo-y-red.md`).
