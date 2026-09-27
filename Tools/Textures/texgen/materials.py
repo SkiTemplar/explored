@@ -954,6 +954,303 @@ def bark(size: int, seed: int) -> Material:
     return Material(albedo, height, rough, depth=0.035, ao_strength=1.4)
 
 
+def bark_tropical(size: int, seed: int) -> Material:
+    """Variante «pintada a mano» de bark() SOLO para el kit de vegetación
+    (M_Bark en Tools/Unreal/build_materials.py: build_bark) — no toca bark(),
+    que sigue usando el kit de props (troncos/postes de construcción) sin
+    cambios. Misma fisura/liquen/placas, con más saturación y una
+    cuantización suave del valor (cel-shading parcial) para dejar de leerse
+    como una textura PBR realista y pasar al estilo cartoon (Sea of Thieves)
+    que pidió la dirección de arte el 2026-09-27."""
+    mat = bark(size, seed)
+    albedo = mat.albedo
+    mean = albedo.mean(axis=-1, keepdims=True)
+    albedo = np.clip(mean + (albedo - mean) * 1.30, 0.0, 1.0)
+    luma = albedo[..., 0] * 0.299 + albedo[..., 1] * 0.587 + albedo[..., 2] * 0.114
+    banded = np.round(luma * 5.0) / 5.0
+    scale = (banded / np.maximum(luma, 1e-4))[..., None]
+    posterized = np.clip(albedo * scale, 0.0, 1.0)
+    albedo = albedo * 0.55 + posterized * 0.45
+    return Material(albedo, mat.height, mat.rough, depth=mat.depth,
+                     ao=mat.ao, ao_strength=mat.ao_strength)
+
+
+# ---------------------------------------------------------------------------
+# Follaje (cards con alfa): atlas de hojas/frondas/hierba/flores
+# ---------------------------------------------------------------------------
+#
+# A diferencia del resto del fichero (materiales tileables PBR completos con
+# BC/N/ARH), este es un ATLAS de siluetas recortadas por alfa para el kit de
+# vegetación de Tools/Blender/assets/*.py: cada celda de una rejilla FOLIAGE_COLS
+# x FOLIAGE_ROWS contiene una hoja/fronda/pétalo distinta con su propio
+# recorte alfa, en vez de un patrón que se repite infinitamente. Solo produce
+# BC (RGBA, alfa = máscara de recorte) y N (normal); el material de Unreal
+# (Tools/Unreal/build_materials.py, build_foliage) lee BC.rgb como detalle
+# multiplicativo sobre el color de vértice (igual que hacía antes con
+# T_LeafNoise) y BC.a como OpacityMask.
+#
+# Convención de coordenadas por celda: t=0 en la base de la hoja/pétalo,
+# t=1 en la punta (mismo sentido que «v» de una tarjeta de hoja en Blender,
+# ver Tools/Blender/lib/common.py: ATLAS_CELLS). Como la imagen se guarda con
+# la fila 0 arriba y Blender muestrea v=0 en la fila de ABAJO de la imagen,
+# la punta (t=1) se dibuja arriba de cada celda y la base (t=0) abajo — así
+# v=0..1 de la malla cae directamente sobre t=0..1 sin voltear nada.
+#
+# El color se mantiene deliberadamente claro/desaturado (nunca el verde final
+# del juego): common.py multiplica esta textura por el color de vértice, que
+# es quien de verdad fija la paleta tropical saturada por instancia. Si este
+# atlas llevase ya el verde final, el resultado sería un doble oscurecido.
+
+FOLIAGE_COLS = 4
+FOLIAGE_ROWS = 4
+
+# Debe coincidir exactamente con ATLAS_CELLS en Tools/Blender/lib/common.py
+# (dos entornos de Python separados -Blender embebido vs. uv run- que no se
+# pueden importar entre sí, así que la tabla vive duplicada a propósito; si
+# se cambia aquí, cambiar también allí).
+FOLIAGE_LAYOUT = [
+    ['leaf_a', 'leaf_b', 'leaf_serrated', 'frond_leaflet'],
+    ['banana_leaf', 'monstera_leaf', 'bamboo_leaf', 'pandanus_leaf'],
+    ['grass_blade_a', 'grass_blade_b', 'fern_leaflet', 'shrub_flower_leaf'],
+    ['flower_petal', 'flower_bud', 'stem_swatch', 'leaf_small_round'],
+]
+
+# Parámetros por celda. peak_t/rise_pow/fall_pow definen la silueta (ver
+# _leaf_profile); width es el semiancho máximo (fracción del semiancho de
+# celda, 1.0 = toca el borde); base_hex/tip_hex son el degradado a lo largo
+# de t (claros a propósito, ver nota de arriba); serration/spines dan borde
+# irregular; holes (solo monstera) recorta fenestraciones; solid = celda
+# opaca sin silueta (para raquis/pecíolos/tallos que comparten material con
+# las hojas pero no deben recortarse).
+## Paleta 2ª pasada (dirección de arte «cartoon Sea of Thieves», Rodrigo
+## 2026-09-27): tonos mucho más saturados y con más salto de valor
+## base->punta que la 1ª pasada (demasiado oliva/gris, se leía «lavado»).
+## Casi todas las celdas de hoja van de un verde profundo y algo frío en la
+## base a un verde-amarillo vivo e iluminado en la punta — el propio
+## degradado ya lee como «luz cálida arriba, sombra fría abajo» sin
+## necesitar más lógica; el tinte por instancia (VC + tintA/tintB en
+## Tools/Unreal/build_materials.py: FOLIAGE_COLOR_HLSL) añade encima la
+## variación cálida/fría planta a planta.
+_FOLIAGE_CELL_CFG = {
+    'leaf_a': dict(peak_t=0.32, rise_pow=0.55, fall_pow=1.7, width=0.82,
+                   base_hex='#1f3a14', tip_hex='#9ed24c', vein_freq=16.0, vein_strength=0.14,
+                   midrib_width=0.05, midrib_strength=0.16, serration=0.0, edge_soft=0.02),
+    'leaf_b': dict(peak_t=0.40, rise_pow=0.7, fall_pow=1.5, width=0.70,
+                   base_hex='#1a3312', tip_hex='#8ac93f', vein_freq=13.0, vein_strength=0.12,
+                   midrib_width=0.045, midrib_strength=0.14, serration=0.0, edge_soft=0.022),
+    'leaf_serrated': dict(peak_t=0.38, rise_pow=0.6, fall_pow=1.6, width=0.75,
+                           base_hex='#1d3c17', tip_hex='#93c945', vein_freq=15.0, vein_strength=0.14,
+                           midrib_width=0.045, midrib_strength=0.15, serration=0.045, serr_freq=26.0,
+                           edge_soft=0.018),
+    'frond_leaflet': dict(peak_t=0.18, rise_pow=0.35, fall_pow=1.15, width=0.40,
+                           base_hex='#1c3a1c', tip_hex='#86c24d', vein_freq=4.0, vein_strength=0.06,
+                           midrib_width=0.10, midrib_strength=0.18, serration=0.0, edge_soft=0.03),
+    'banana_leaf': dict(peak_t=0.5, rise_pow=0.9, fall_pow=0.95, width=0.92,
+                         base_hex='#255019', tip_hex='#b8e058', vein_freq=22.0, vein_strength=0.16,
+                         midrib_width=0.035, midrib_strength=0.18, serration=0.02, serr_freq=60.0,
+                         edge_soft=0.02, tears=True),
+    'monstera_leaf': dict(peak_t=0.52, rise_pow=0.85, fall_pow=1.0, width=0.90,
+                           base_hex='#0f2a16', tip_hex='#3f8a44', vein_freq=18.0, vein_strength=0.16,
+                           midrib_width=0.04, midrib_strength=0.16, serration=0.05, serr_freq=10.0,
+                           edge_soft=0.02, holes=True),
+    'bamboo_leaf': dict(peak_t=0.12, rise_pow=0.3, fall_pow=1.1, width=0.32,
+                         base_hex='#2c4d18', tip_hex='#d3ec6e', vein_freq=3.0, vein_strength=0.05,
+                         midrib_width=0.06, midrib_strength=0.12, serration=0.0, edge_soft=0.03),
+    'pandanus_leaf': dict(peak_t=0.10, rise_pow=0.25, fall_pow=1.05, width=0.30,
+                           base_hex='#0f3c38', tip_hex='#5fc494', vein_freq=2.0, vein_strength=0.04,
+                           midrib_width=0.08, midrib_strength=0.16, serration=0.10, serr_freq=34.0,
+                           spines=True, edge_soft=0.025),
+    'grass_blade_a': dict(peak_t=0.10, rise_pow=0.3, fall_pow=1.2, width=0.34,
+                           base_hex='#2c5012', tip_hex='#d6ec6e', vein_freq=2.0, vein_strength=0.04,
+                           midrib_width=0.10, midrib_strength=0.10, serration=0.0, edge_soft=0.035),
+    'grass_blade_b': dict(peak_t=0.14, rise_pow=0.35, fall_pow=1.3, width=0.45,
+                           base_hex='#305711', tip_hex='#e4f284', vein_freq=1.5, vein_strength=0.03,
+                           midrib_width=0.09, midrib_strength=0.09, serration=0.0, edge_soft=0.035),
+    'fern_leaflet': dict(peak_t=0.4, rise_pow=0.6, fall_pow=1.4, width=0.60,
+                          base_hex='#163a1c', tip_hex='#78c150', vein_freq=10.0, vein_strength=0.11,
+                          midrib_width=0.06, midrib_strength=0.15, serration=0.09, serr_freq=22.0,
+                          edge_soft=0.02),
+    'shrub_flower_leaf': dict(peak_t=0.34, rise_pow=0.55, fall_pow=1.6, width=0.78,
+                               base_hex='#1e4318', tip_hex='#96cc4c', vein_freq=14.0, vein_strength=0.13,
+                               midrib_width=0.045, midrib_strength=0.15, serration=0.03, serr_freq=30.0,
+                               edge_soft=0.02),
+    'leaf_small_round': dict(peak_t=0.55, rise_pow=1.0, fall_pow=1.0, width=0.85,
+                              base_hex='#204119', tip_hex='#a0d158', vein_freq=12.0, vein_strength=0.11,
+                              midrib_width=0.05, midrib_strength=0.13, serration=0.0, edge_soft=0.025),
+    'flower_petal': dict(peak_t=0.6, rise_pow=0.5, fall_pow=1.1, width=0.65,
+                          base_hex='#f0e2d4', tip_hex='#fffaf0', vein_freq=6.0, vein_strength=0.04,
+                          midrib_width=0.05, midrib_strength=0.06, serration=0.0, edge_soft=0.03),
+    'flower_bud': dict(peak_t=0.5, rise_pow=1.0, fall_pow=1.0, width=0.55,
+                        base_hex='#c3d888', tip_hex='#f2f6da', vein_freq=4.0, vein_strength=0.02,
+                        midrib_width=0.08, midrib_strength=0.04, serration=0.0, edge_soft=0.03),
+    'stem_swatch': dict(solid=True, base_hex='#3f4d1e', tip_hex='#6d7a30'),
+}
+
+
+def _leaf_profile(t: np.ndarray, peak_t: float, rise_pow: float, fall_pow: float) -> np.ndarray:
+    """Envolvente de anchura 0->pico->0 a lo largo de t (0 base, 1 punta): un
+    lóbulo tipo coseno a cada lado de `peak_t` (0 en los extremos, 1 en el
+    pico), con exponente independiente por lado — a diferencia de una simple
+    potencia de t/peak_t (que se queda pegada cerca de 1 en casi todo el
+    rango y solo se ahúsa en el último tramo, dejando un rectángulo con las
+    esquinas redondeadas en vez de una silueta de hoja), el coseno se estrecha
+    de forma continua en TODO el recorrido."""
+    tt = np.clip(t, 0.0, 1.0)
+    peak_t = min(max(peak_t, 1e-3), 1.0 - 1e-3)
+    s = np.where(tt < peak_t, tt / peak_t, (1.0 - tt) / (1.0 - peak_t))
+    s = np.clip(s, 0.0, 1.0)
+    lobe = np.sin(0.5 * np.pi * s)
+    power = np.where(tt < peak_t, rise_pow, fall_pow)
+    return lobe ** power
+
+
+def _painterly_stylize(rgb: np.ndarray, t: np.ndarray, x: np.ndarray, seed: int,
+                        bands: float = 4.5, posterize_mix: float = 0.5,
+                        stroke_strength: float = 0.10, sat_boost: float = 1.28) -> np.ndarray:
+    """Pasada «pintado a mano» sobre un color ya calculado: cuantiza el valor
+    en unas pocas bandas (mismo espíritu que un cel-shading suave, mezclado
+    solo al 50% para que no quede plano del todo), sube la saturación, y
+    superpone pinceladas direccionales (un único seno de fase combinada
+    t+x, NUNCA el producto de dos senos ortogonales — ver la nota de
+    vetas/fine más abajo sobre por qué eso aliasa en tablero de ajedrez).
+    Sustituye el aspecto «render procedural liso» por trazo visible, que es
+    justo lo que pidió la dirección de arte (cartoon Sea of Thieves) el
+    2026-09-27 para dejar de leerse como una textura fotográfica."""
+    luma = rgb[:, 0] * 0.299 + rgb[:, 1] * 0.587 + rgb[:, 2] * 0.114
+    banded = np.round(luma * bands) / bands
+    scale = (banded / np.maximum(luma, 1e-4))[:, None]
+    posterized = np.clip(rgb * scale, 0.0, 1.0)
+    rgb = rgb * (1.0 - posterize_mix) + posterized * posterize_mix
+
+    mean = rgb.mean(axis=-1, keepdims=True)
+    rgb = np.clip(mean + (rgb - mean) * sat_boost, 0.0, 1.0)
+
+    stroke = (np.sin(t * 22.0 + x * 5.0 + seed) * 0.6
+              + np.sin(t * 47.0 - x * 13.0 + seed * 1.9) * 0.4)
+    rgb = np.clip(rgb * (1.0 + stroke_strength * stroke[:, None]), 0.0, 1.0)
+    return rgb
+
+
+def _render_foliage_cell(name: str, t: np.ndarray, x: np.ndarray, seed: int):
+    """Renderiza UNA celda del atlas ya aplanada a 1D (t, x son arrays 1D de
+    los píxeles que caen en esa celda). Devuelve (alpha, rgb[N,3], height)."""
+    cfg = _FOLIAGE_CELL_CFG[name]
+    rng_phase = (seed * 12.9898) % (2.0 * np.pi)
+
+    if cfg.get('solid'):
+        # Tallo/raquis/pecíolo: celda opaca sin silueta, con veteado sutil
+        # para que no se vea como un plástico perfectamente liso. Fase
+        # combinada en un solo seno (no el producto de dos ejes ortogonales,
+        # que aliasa en un patrón de tablero de ajedrez a esta frecuencia).
+        noise = np.sin(t * 9.0 + x * 5.0 + seed)
+        base = hex_rgb(cfg['base_hex'])
+        tip = hex_rgb(cfg['tip_hex'])
+        rgb = base + (tip - base) * (0.5 + 0.5 * noise)[:, None]
+        rgb = _painterly_stylize(rgb, t, x, seed, bands=3.5, posterize_mix=0.4, stroke_strength=0.07)
+        alpha = np.ones_like(t)
+        height = 0.5 + 0.08 * noise
+        return alpha, np.clip(rgb, 0, 1), height
+
+    half_width = cfg['width'] * _leaf_profile(t, cfg['peak_t'], cfg['rise_pow'], cfg['fall_pow'])
+
+    serration = cfg.get('serration', 0.0)
+    if serration > 0.0:
+        freq = cfg.get('serr_freq', 20.0)
+        ripple = np.sin(t * freq * 2.0 * np.pi + rng_phase)
+        half_width = half_width * (1.0 - serration * 0.5 * (1.0 - ripple))
+
+    if cfg.get('spines'):
+        freq = cfg.get('serr_freq', 30.0)
+        phase = np.mod(t * freq + 0.5, 1.0)
+        pulse = np.clip(1.0 - np.abs(phase - 0.5) * 10.0, 0.0, 1.0) ** 3
+        half_width = half_width * (1.0 - 0.35 * pulse)
+
+    dist = half_width - np.abs(x)
+    edge_soft = max(cfg.get('edge_soft', 0.02), 1e-4)
+    alpha = np.clip(0.5 + dist / (2.0 * edge_soft), 0.0, 1.0)
+
+    if cfg.get('tears'):
+        # Desgarros de viento: 2 cuñas estrechas cortadas desde un borde
+        # hacia la nervadura (platanera), nunca cerrando el hueco del todo.
+        tear_rng = np.random.default_rng(seed + 777)
+        for _ in range(tear_rng.integers(1, 3)):
+            t0 = tear_rng.uniform(0.25, 0.85)
+            side = tear_rng.choice([-1.0, 1.0])
+            depth = tear_rng.uniform(0.35, 0.7)
+            band = np.exp(-((t - t0) / 0.03) ** 2)
+            cut = (side * x > half_width * (1.0 - depth)) & (side * x < half_width)
+            alpha = np.where(cut & (band > 0.3), alpha * (1.0 - band), alpha)
+
+    if cfg.get('holes'):
+        hole_rng = np.random.default_rng(seed + 555)
+        n_holes = hole_rng.integers(3, 6)
+        for _ in range(n_holes):
+            side = hole_rng.choice([-1.0, 1.0])
+            ht = hole_rng.uniform(0.22, 0.82)
+            hx = side * hole_rng.uniform(0.28, 0.62) * cfg['width']
+            hr_t = hole_rng.uniform(0.05, 0.09)
+            hr_x = hole_rng.uniform(0.05, 0.10)
+            d = np.sqrt(((t - ht) / hr_t) ** 2 + ((x - hx) / hr_x) ** 2)
+            alpha = alpha * smoothstep(0.7, 1.15, d)
+
+    base = hex_rgb(cfg['base_hex'])
+    tip = hex_rgb(cfg['tip_hex'])
+    rgb = base + (tip - base) * t[:, None]
+
+    midrib_w = cfg.get('midrib_width', 0.05)
+    midrib = np.exp(-(x ** 2) / (2.0 * midrib_w ** 2))
+    rgb = rgb + cfg.get('midrib_strength', 0.1) * midrib[:, None]
+
+    # Nervadura pinnada: líneas diagonales que se alejan de la nervadura
+    # central según |x| avanza, con una ligera deriva en t (fase combinada
+    # en un único seno, no el producto sin(x)*cos(t) — ese producto forma
+    # una rejilla/tablero de ajedrez en vez de vetas paralelas).
+    veins = 0.5 + 0.5 * np.sin((np.abs(x) * cfg.get('vein_freq', 12.0) + t * 2.5) * np.pi)
+    vein_mask = (np.abs(x) > midrib_w * 1.4).astype(np.float64)
+    rgb = rgb * (1.0 - cfg.get('vein_strength', 0.08) * veins[:, None] * vein_mask[:, None])
+
+    fine = np.sin(t * 8.0 + x * 6.0 + seed * 0.7)
+    rgb = rgb * (1.0 + 0.035 * fine[:, None])
+
+    dome = np.clip(1.0 - (x / np.maximum(half_width, 1e-3)) ** 2, 0.0, 1.0)
+    height = alpha * (0.35 + 0.55 * dome) + midrib * 0.45 * alpha + 0.03 * fine
+
+    rgb = _painterly_stylize(np.clip(rgb, 0.0, 1.0), t, x, seed)
+    return np.clip(alpha, 0.0, 1.0), np.clip(rgb, 0.0, 1.0), np.clip(height, 0.0, 1.0)
+
+
+def foliage_atlas(size: int, seed: int) -> dict[str, np.ndarray]:
+    """Atlas 4x4 de hojas/frondas/hierba/flores recortadas por alfa (BC+N).
+    Consumido por Tools/Blender/lib/common.py (UV de cada tarjeta apunta a
+    su celda) y por Tools/Unreal/build_materials.py (M_Leaf/M_Grass Masked)."""
+    u, v = uv_grid(size)  # v crece hacia abajo de la imagen (fila 0 = arriba)
+    col = np.floor(u * FOLIAGE_COLS).astype(np.int64)
+    row = np.floor(v * FOLIAGE_ROWS).astype(np.int64)
+    local_u = np.mod(u * FOLIAGE_COLS, 1.0)
+    local_v_img = np.mod(v * FOLIAGE_ROWS, 1.0)
+    t_full = 1.0 - local_v_img
+    x_full = (local_u - 0.5) * 2.0
+
+    albedo = np.zeros((size, size, 3))
+    alpha = np.zeros((size, size))
+    height = np.zeros((size, size))
+
+    for r_i, names_row in enumerate(FOLIAGE_LAYOUT):
+        for c_i, cell_name in enumerate(names_row):
+            mask = (col == c_i) & (row == r_i)
+            if not np.any(mask):
+                continue
+            a_c, rgb_c, h_c = _render_foliage_cell(cell_name, t_full[mask], x_full[mask],
+                                                     seed + r_i * FOLIAGE_COLS + c_i)
+            alpha[mask] = a_c
+            albedo[mask] = rgb_c
+            height[mask] = h_c
+
+    normal = height_to_normal(height, depth=0.05)
+    bc = np.concatenate([np.clip(albedo, 0.0, 1.0), np.clip(alpha, 0.0, 1.0)[..., None]], axis=-1)
+    return {"BC": bc, "N": normal}
+
+
 # ---------------------------------------------------------------------------
 # Agua
 # ---------------------------------------------------------------------------
@@ -1020,6 +1317,13 @@ MATERIALS: dict[str, Spec] = {
         Spec("Rope", rope, 0.25, "Cuerda de 3 cabos; u alrededor, v a lo largo."),
         Spec("MapPaper", map_paper, 0.6, "Papel envejecido del mapa y la UI."),
         Spec("Bark", bark, 1.5, "Corteza fisurada para troncos y postes; v = a lo largo."),
+        Spec("BarkTropical", bark_tropical, 1.5,
+             "Variante pintada a mano de Bark, solo para troncos del kit de vegetación "
+             "(cartoon Sea of Thieves); v = a lo largo."),
+        Spec("FoliageAtlas", foliage_atlas, 1.0,
+             "Atlas 4x4 de hojas/frondas/hierba/flores recortadas por alfa para cards de "
+             "follaje (kit de vegetación); t=0 base/t=1 punta por celda.",
+             outputs=("BC", "N")),
         Spec("WaterWaves", water_waves, 6.0, "Normal de oleaje fino direccional.", outputs=("N",)),
         Spec("SeaFoam", water_foam, 6.0, "Espuma: R encaje, G burbujas, B masa, A estelas.", outputs=("M",)),
     ]
