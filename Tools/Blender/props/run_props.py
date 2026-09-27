@@ -59,6 +59,14 @@ MODULE_GROUPS = [
     ('produccion_base', 'ProduccionBase'),
     ('ruinas_polinesias', 'Ruinas'),  # grupos RuinasMarae / RuinasTallas por variante
     ('tesoros', 'Tesoros'),
+    # objetos de inventario de items.json (SM_Item_<Id>): herramientas y materiales
+    ('items_herramientas', 'Items'),
+    ('items_materiales', 'Items'),
+    ('items_contenedores', 'Items'),
+    ('items_naturales', 'Items'),
+    ('items_rescatados', 'Items'),
+    ('items_recursos', 'Items'),
+    ('items_armas', 'Items'),
 ]
 
 

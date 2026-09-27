@@ -229,3 +229,107 @@ Lámina: `docs/art/modelos/tesoros-unicos.png` (modo `tiles` de
 
 Regenerar la lámina:
 `blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=tesoros --out=tesoros-unicos --only=<nombres separados por comas>`
+
+## Objetos de inventario (`items_herramientas.py`, `items_materiales.py`, `items_contenedores.py`, `items_naturales.py`, grupo `Items`)
+
+Mallas propias para los objetos de `items.json` que usaban un marcador de
+`/Engine/BasicShapes`. Convención (ver `props/_items.py`):
+
+- Nombre `SM_Item_<IdEnPascalCase>` (`lasca_obsidiana` → `SM_Item_LascaObsidiana`);
+  `meshPath` = `/Game/Generated/Meshes/Items/SM_Item_<Id>.SM_Item_<Id>` (carpeta
+  del grupo `Items` de `run_props.py`, como el resto de props; es lo que acepta
+  DataCheck).
+- Escala real en metros. Materiales sueltos: pivote en la base, centrados en XY,
+  tumbados a lo largo de +X.
+- **Herramientas: pivote = socket de mano.** El origen es el centro del puño, el
+  mango va por +Z (cabeza/punta hacia +Z) y el filo o la cara de golpe mira a +X.
+  Se enganchan a `hand_r` con transformación relativa identidad.
+- Los helpers comunes (palo torcido, atadura en hélice, lasca con cicatrices de
+  talla, valva de almeja, hoja lanceolada, torno `lathe` con media vuelta
+  opcional, caja redondeada `soft_box`, damero/relieve de cestería) viven en
+  `_items.py`.
+- Contenedores y mochilas: pivote en la base, de pie, con la espalda (tirantes)
+  hacia -Y; las angarillas con las varas a lo largo de +X.
+
+Láminas (modo `tiles`, cada pieza sola a cámara cercana 3/4):
+`docs/art/modelos/items-herramientas.png` y `docs/art/modelos/items-materiales.png`.
+
+| Malla | Tamaño | Agarre / notas |
+|---|---|---|
+| `SM_Item_Cuchillo` | 26 cm | Centro del mango; hoja de pedernal tallada, resina y atadura roja |
+| `SM_Item_Hacha` | 55 cm | A 12 cm del extremo; cabeza de piedra verde pulida atada en X |
+| `SM_Item_Lanza` | 2,05 m | A 0,75 m del regatón quemado; asta de bambú, punta de obsidiana |
+| `SM_Item_Pala` | 1,17 m | Mano alta bajo la muletilla; valva de almeja gigante abajo (-Z), cóncava a +X |
+| `SM_Item_Estaca` | 62 cm | A 20 cm del extremo romo; punta endurecida al fuego |
+| `SM_Item_Martillo` | 40 cm | A 9 cm del extremo; canto rodado con veta de cuarzo atado en X |
+| `SM_Item_Antorcha` | 60 cm | A 14 cm del extremo; haz de fibra y paja con resina arriba (la llama es VFX) |
+| `SM_Item_LascaObsidiana` / `Pedernal` / `Tallada` | 7-10 cm | Tumbadas; cara dorsal con cicatrices y aristas claras, bulbo ventral, córtex |
+| `SM_Item_RamaSeca` / `RamaVerde` | 0,8-1,1 m | Rama torcida con ramitas; la verde con hojas |
+| `SM_Item_PaloRecto` | 1,1 m | Descortezado a medias |
+| `SM_Item_TroncoPequeno` | 1,1 m × Ø 20 cm | Corteza con surcos, muñón de rama, cortes con anillos |
+| `SM_Item_BambuFino` / `BambuGrueso` | 1,3 m / 1 m | Nudos marcados; el grueso hueco con los cortes abiertos |
+| `SM_Item_FibraCoco` | 28 cm | Manojo atado por el centro |
+| `SM_Item_Cordel` / `SM_Item_Liana` | Ø 16 / 40 cm | Rollos con cabo suelto; cordel con rayas de torsión, liana con hojas |
+| `SM_Item_HojaPalma` | 1,5 m | Fronda con pecíolo cortado y 22 pares de folíolos |
+| `SM_Item_CantoRodado` / `SM_Item_Pedernal` | 14 cm | Canto con veta de cuarzo / nódulo con cara lascada |
+| `SM_Item_Cesta` | Ø 29 × 19 cm | Hoja trenzada en damero con relieve, borde de cordel, dos asas de lazo |
+| `SM_Item_RecipienteCoco` | Ø 14 cm | Medio coco pulido: fibra parda fuera, pulpa blanca dentro, aro de cordel |
+| `SM_Item_VasijaBarro` | 24 cm | Terracota con manchas de cocción, banda de trazos de engobe, cordel al cuello |
+| `SM_Item_Cantimplora` | 23 cm | Rescatada: funda de lona oliva con broches, tapón de latón con cadenita, asa |
+| `SM_Item_BolsaImpermeable` | 27 cm | Rescatada: lona roja, cierre enrollado azul marino con hebilla, cinta crema |
+| `SM_Item_Mochila` | 45 cm | Del Albatros: lona ocre, solapa con correas y hebillas, bolsillo con parche azul |
+| `SM_Item_MochilaFibra` | 40 cm | Saco ovalado de fibra de coco trenzada, cordón fruncido, tirantes de cuerda |
+| `SM_Item_MochilaCueroBambu` | 67 cm | Armazón de bambú atado, saco de cuero con costuras y botón de hueso, estera enrollada |
+| `SM_Item_CinturonCuero` | Ø 23 cm | Enrollado de canto, hebilla de hueso, dos enganches de madera |
+| `SM_Item_Angarillas` | 2,3 × 0,68 m | Dos varas, cuatro travesaños atados en X, lecho de cuerda en rombos |
+| `SM_Item_HuesoLargo` / `HuesoPequeno` | 36 / 12 cm | Fémur con cabeza y cóndilos / astilla aguzada (punzón) |
+| `SM_Item_ConchaGrande` / `ConchaPequena` | 30 / 6 cm | Valva de tridacna boca arriba con borde violeta / berberecho naranja boca abajo |
+| `SM_Item_YescaHongo` | 14 cm | Hongo yesquero en media luna: escalones ocres y pardos, poros crema debajo |
+| `SM_Item_Corteza` | 42 cm | Tira abarquillada boca abajo: surcos oscuros fuera, fibra clara dentro |
+| `SM_Item_Cuerda` | Ø 31 cm | Rollo de cuerda gruesa con chicote rematado en rojo |
+| `SM_Item_PiedraPlana` / `Obsidiana` | 20 / 11 cm | Laja de río con veta de cuarzo / nódulo negro violáceo con fracturas y córtex |
+| `SM_Item_CascaraCoco` | 14 cm | Media cáscara con el borde roto y restos de fibra, ladeada |
+
+Láminas nuevas: `docs/art/modelos/items-contenedores.png` y `docs/art/modelos/items-naturales.png`.
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_herramientas,items_materiales,items_contenedores,items_naturales`
+y la lámina con
+`blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=items_herramientas --out=items-herramientas --cols=5 --res=1600x800`
+(`preview_rot_z` en la variante gira la pieza solo en la lámina).
+
+### Rescatados, recursos y armas (`items_rescatados.py`, `items_recursos.py`, `items_armas.py`)
+
+Láminas: `docs/art/modelos/items-rescatados.png`, `items-recursos.png` e `items-armas.png`.
+La chapa y el tubo llevan la librea del Albatros (crema, franja roja, filete dorado)
+con material **no metálico** (`M_Paper`): con `M_Metal` el crema se leía gris
+azulado; el aluminio desnudo lo dan los desconchones y los remaches.
+`preview_rot_x` / `preview_rot_y` giran una pieza solo en la lámina (la flecha se
+tumba para no salir diminuta).
+
+| Malla | Tamaño | Agarre / notas |
+|---|---|---|
+| `SM_Item_Brujula` | Ø 5 cm | Latón, tapa abierta con espejo hacia -Y, esfera con rosa y aguja roja/crema, argolla |
+| `SM_Item_CableElectrico` | Ø 17 cm | Rollo rojo de 4-5 vueltas con cabos y cobre pelado en abanico |
+| `SM_Item_Cerillas` | 8 cm | Caja amarilla con franja roja/azul y raspador, cajón abierto con cabezas, dos sueltas (una gastada) |
+| `SM_Item_ChapaFuselaje` | 55 × 38 cm | Curvada, borde desgarrado, esquina doblada, dos filas de remaches, imprimación verde por dentro |
+| `SM_Item_CintaAmericana` | Ø 10 cm | Cinta verde oliva, canuto de cartón, lengüeta despegada |
+| `SM_Item_TuboAluminio` | 80 cm | Tirante de ala combado y abollado, herraje aplastado con perno y tuercas, extremo roto |
+| `SM_Item_MaderaNaufragio` | 86 cm | Tablón con pintura azul, clavos con óxido, extremo astillado, bellotas de mar |
+| `SM_Item_MaderaBlanda` | 50 cm | Cuarto de tronco de balsa: rajas crema rosado, corteza con liquen |
+| `SM_Item_MaderaDura` | 56 cm | Guayabo: corteza jaspeada canela/oliva, muñón, cortes con duramen rojizo |
+| `SM_Item_MaderaFlotante` | 72 cm | Horquilla pulida color miel con grietas, puntas romas |
+| `SM_Item_VaraFlexible` | 1,4 m | Media caña de bambú combada en planta, nudos, extremo atado |
+| `SM_Item_Basalto` | 15 cm | Trozo de columna hexagonal con fractura inclinada, pátina de óxido y vacuolas |
+| `SM_Item_Arenisca` | 19 cm | Laja de estratos ocres, cara de afilar más clara |
+| `SM_Item_ArcillaRoja` | 13 cm | Pella aplastada con dos huellas de pulgar, borde secándose |
+| `SM_Item_CarbonVegetal` | 14 cm | Tres trozos con grietas en damero y cortes anillados |
+| `SM_Item_Resina` | 13 cm | Tres lágrimas de ámbar sobre una lasca de corteza |
+| `SM_Item_Arco` | 1,24 m | **Socket:** centro de la empuñadura; palas por ±Z, espalda +X, cuerda a -X (fiador ~13 cm) |
+| `SM_Item_Flecha` | 77 cm | **Socket:** culatín (z = 0); punta de obsidiana en +Z, pluma guía roja hacia -X |
+| `SM_Item_SenueloTallado` | 10 cm | Pececillo pintado tumbado de costado, anzuelo de hueso, ojal de cordel |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_rescatados,items_recursos,items_armas`
+y `preview_kit.py -- --mode=tiles --module=items_rescatados --out=items-rescatados --cols=4 --res=1600x800`
+(`items_recursos` igual; `items_armas` con `--cols=3 --res=1500x500`).
