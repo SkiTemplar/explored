@@ -1150,7 +1150,9 @@ def _b_cangrejo(v, rnd, name):
     rojo anaranjado con motas claras, ocho patas articuladas en rodilla y
     dos pinzas gruesas, ojos en pedúnculo; vientre azul pálido."""
     p = K.Parts()
-    red, orange, belly = (0.72, 0.12, 0.04), (0.92, 0.42, 0.08), (0.45, 0.62, 0.78)
+    # crab_pal/char: paleta cocida del cangrejo asado (items_cocina.py), misma malla
+    red, orange, belly = v.get('crab_pal', ((0.72, 0.12, 0.04), (0.92, 0.42, 0.08), (0.45, 0.62, 0.78)))
+    char = v.get('char', 0.0)
     W, D, H = 0.075, 0.06, 0.022
     cz = 0.022
     shell = C.make_blob('Shell', (0, 0, 0), 1.0, v['seed'], subdivisions=4, noise_strength=0.0)
@@ -1167,6 +1169,8 @@ def _b_cangrejo(v, rnd, name):
             return belly
         c = I.lerp3(red, orange, _smoothstep(-0.2, 0.6, I.noise3(co, 45, 3.0)))
         c = I.lerp3(c, (0.98, 0.78, 0.45), _spots(co.x * 10, co.y * 10, 6, 6, 0.12, 2) * 0.7)
+        if char:
+            c = I.lerp3(c, FPAL['cooked_char'], _smoothstep(0.25, 0.55, I.noise3(co, 60, 9.0)) * char)
         return I.lerp3(c, (0.35, 0.03, 0.02), _smoothstep(0.85, 1.0, abs(co.y) / (W / 2)))
     I.color_fn(shell, sc, rnd, 0.01)
     p.add(shell, 'none')
