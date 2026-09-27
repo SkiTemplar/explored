@@ -24,7 +24,7 @@ def channels(arr: np.ndarray):
         yield c, arr[..., c]
 
 
-@pytest.mark.parametrize("name", list(MATERIALS))
+@pytest.mark.parametrize("name", [n for n, s in MATERIALS.items() if s.tileable])
 def test_material_maps_tile_without_seams(generated, name):
     for suffix, arr in generated[name].items():
         for c, ch in channels(arr):
@@ -33,7 +33,7 @@ def test_material_maps_tile_without_seams(generated, name):
                 assert r < MAX_SEAM_RATIO, f"{name}_{suffix} canal {c} eje {axis}: costura {r:.2f}"
 
 
-@pytest.mark.parametrize("name", list(MATERIALS))
+@pytest.mark.parametrize("name", [n for n, s in MATERIALS.items() if s.tileable])
 def test_encoded_png_tiles_without_seams(generated, name):
     """Lo mismo tras cuantizar a 8 bits, que es lo que llega a Unreal."""
     from texgen.output import encode

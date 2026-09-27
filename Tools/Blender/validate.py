@@ -40,7 +40,9 @@ ALLOWED_MATERIALS = {'M_Bark', 'M_Leaf', 'M_Rock', 'M_Grass'}
 # Z (altura) para todo salvo la roca, donde se usa la dimensión mayor.
 PLAUSIBLE_RANGES_CM = {
     'palm':   ('z', 550.0, 1450.0),
-    'tree':   ('z', 450.0, 3900.0),   # el gigante de dosel llega a 25-35 m (+ copa)
+    'tree':   ('z', 450.0, 4300.0),   # el gigante de dosel llega a 25-35 m + copa grande
+                                       # (cartoon Sea of Thieves, 2026-09-27: copas más
+                                       # voluminosas a propósito, ver make_leaf_cluster_cards)
     'shrub':  ('z', 15.0, 900.0),     # bambú denso hasta 8 m
     'rock':   ('max', 12.0, 170.0),
     'grass':  ('z', 4.0, 170.0),      # hierba alta hasta 1,5 m
@@ -88,6 +90,10 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'RuinasTallas':    (80.0, 700.0),    # losa grabada 1,4 m .. canoa doble 6,5 m
     'Tesoros':         (5.0, 200.0),     # anzuelo ~10 cm .. remo ceremonial ~1,7 m
     'Items':           (5.0, 250.0),     # lasca ~8 cm .. lanza 2 m / hoja de palma 1,7 m
+    # kit de rocas y acantilados: formaciones grandes (paredes, espolones,
+    # farallones, arco) hasta ~26 m; bloques/cantos/losas sueltos hasta ~5,5 m
+    'AcantiladoFormaciones': (400.0, 2750.0),
+    'AcantiladoBloques':     (30.0, 650.0),
 }
 
 

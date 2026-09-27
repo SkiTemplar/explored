@@ -106,6 +106,13 @@ def _import_and_fix_materials(entry):
     obj.data.materials.clear()
     for slot_name in entry['material_slots']:
         obj.data.materials.append(C.get_material(slot_name))
+    # El material «__fbx_import» apartado arriba (y la Image Texture que el
+    # importador FBX resuelve y carga colgada de él, aparte de la que ya
+    # cachea C.get_material) queda huérfano justo aquí. Purgar ahora, no al
+    # final de la lámina: en una rejilla de varias mallas se iban
+    # acumulando fichero a fichero hasta agotar la memoria de texturas de
+    # la GPU («Failed to create GPU texture», materiales a magenta).
+    C.purge_orphans()
     return obj
 
 
@@ -268,6 +275,7 @@ GROUP_ORDER_PROPS = [
     'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
     'ObjetosPequenos', 'KitPalma', 'KitBambu', 'KitMadera', 'KitPiedra',
     'MobiliarioBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
+    'AcantiladoFormaciones', 'AcantiladoBloques',
 ]
 GROUP_TARGET_HEIGHT_PROPS = {
     'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3, 'Halden': 1.6,
@@ -276,6 +284,10 @@ GROUP_TARGET_HEIGHT_PROPS = {
     'KitPalma': 1.4, 'KitBambu': 1.4, 'KitMadera': 1.4, 'KitPiedra': 1.4,
     'MobiliarioBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
     'Tesoros': 0.7, 'Items': 0.7,
+    # cada prop se normaliza a esta altura por SU PROPIA dimension mayor
+    # (ver _render_props_group): formaciones grandes vs. bloques sueltos
+    # solo necesitan alturas de encuadre distintas, no un rango real.
+    'AcantiladoFormaciones': 2.2, 'AcantiladoBloques': 1.0,
 }
 PROPS_GRID_MAX_COLS = 4
 
@@ -298,6 +310,7 @@ def _import_and_fix_materials_props(entry):
     obj.data.materials.clear()
     for slot_name in entry['material_slots']:
         obj.data.materials.append(PM.get_material(slot_name))
+    C.purge_orphans()  # ver nota en _import_and_fix_materials
     return obj
 
 
@@ -444,6 +457,280 @@ def _render_props_group(entries, target_height, out_path, max_cols=PROPS_GRID_MA
     return True
 
 
+# ---------------------------------------------------------------------------
+# Hojas de contacto de vegetación (verificación del encargo de rehacer el
+# kit desde cero): una lámina cercana POR FAMILIA en vez de la rejilla
+# lejana de main() (pensada para ver el conjunto, no el detalle de cada
+# hoja/tarjeta) + una escena de conjunto («claro de selva»). Van a
+# docs/art/vegetacion/, no a Art/Export/ (que no se versiona): son la
+# evidencia visual del informe, deben sobrevivir en el repo.
+# ---------------------------------------------------------------------------
+DOCS_ART_DIR = os.path.join(REPO_ROOT, 'docs', 'art', 'vegetacion')
+VEG_CONTACT_ROWS = ['palm', 'tree', 'shrub', 'grass', 'debris']
+VEG_CONTACT_HEIGHT = {'palm': 3.0, 'tree': 3.0, 'shrub': 2.2, 'grass': 1.4, 'debris': 1.6}
+
+
+def main_contact_sheets():
+    os.makedirs(DOCS_ART_DIR, exist_ok=True)
+    with open(MANIFEST_PATH, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    by_category = {}
+    for entry in manifest['meshes']:
+        by_category.setdefault(entry['category'], []).append(entry)
+
+    for cat in VEG_CONTACT_ROWS:
+        entries = by_category.get(cat, [])
+        if not entries:
+            continue
+        out_path = os.path.join(DOCS_ART_DIR, f'hoja_contacto_{cat}.png')
+        _render_vegetation_group(entries, VEG_CONTACT_HEIGHT[cat], out_path)
+
+
+def _render_vegetation_group(entries, target_height, out_path, max_cols=4):
+    """Lámina cercana de UNA familia de vegetación: misma lógica de rejilla/
+    cámara/luces que _render_props_group (grid cuadrada, 3/4 cerca, sol
+    cálido + relleno frío + rebote), pero reimportando con
+    _import_and_fix_materials (reconstruye M_Leaf/M_Grass/M_Bark ya
+    texturizados con C.get_material en vez de los genéricos del FBX)."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    scene = bpy.context.scene
+
+    imported = [_import_and_fix_materials(e) for e in entries]
+    imported = [o for o in imported if o is not None]
+    if not imported:
+        return False
+    bpy.context.view_layer.update()
+
+    n = len(imported)
+    cols = min(max_cols, max(1, math.ceil(math.sqrt(n))))
+    rows = math.ceil(n / cols)
+    cell_x = target_height * 1.6
+    cell_y = target_height * 2.3
+
+    for i, obj in enumerate(imported):
+        col, row = i % cols, i // cols
+        b = _bounds_world(obj)
+        biggest = max(b[1] - b[0], b[3] - b[2], b[5] - b[4])
+        scale_factor = target_height / max(biggest, 1e-4)
+        obj.scale = (scale_factor, scale_factor, scale_factor)
+        bpy.context.view_layer.update()
+        x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
+        cx = (col - (cols - 1) / 2.0) * cell_x
+        cy = (row - (rows - 1) / 2.0) * cell_y
+        obj.location.x += -((x0 + x1) / 2.0) + cx
+        obj.location.y += -((y0 + y1) / 2.0) + cy
+        obj.location.z += -z0
+        bpy.context.view_layer.update()
+
+    grid_w = cols * cell_x
+    grid_d = rows * cell_y
+
+    bpy.ops.mesh.primitive_plane_add(size=1.0)
+    ground = bpy.context.object
+    ground.name = 'Ground'
+    ground.scale = (grid_w * 0.75 + 2.5, grid_d * 0.9 + 3.0, 1.0)
+    ground.location = (0.0, 0.0, 0.0)
+    mat = bpy.data.materials.new('M_Ground')
+    mat.use_nodes = True
+    bsdf = mat.node_tree.nodes.get('Principled BSDF')
+    bsdf.inputs['Base Color'].default_value = (0.36, 0.30, 0.20, 1.0)  # tierra de selva, no arena
+    bsdf.inputs['Roughness'].default_value = 0.92
+    ground.data.materials.append(mat)
+
+    # Sol tropical claro y DOMINANTE, con poca ambiental gris (encargo
+    # 2026-09-27, 4ª pasada: "revísalo con una luz de sol clara... porque
+    # esa luz engaña" — el cielo gris plano de antes oscurecía y
+    # deslavaba el color real de las masas de copa).
+    bpy.ops.object.light_add(type='SUN', location=(-grid_w * 0.5, -grid_d * 1.2, target_height * 3.0))
+    key = bpy.context.object
+    key.data.energy = 2.8
+    key.data.color = (1.0, 0.93, 0.80)
+    key.data.angle = math.radians(4.0)
+    _point_camera(key, Vector((0.0, 0.0, target_height * 0.35)))
+
+    bpy.ops.object.light_add(type='SUN', location=(grid_w * 0.6, grid_d * 0.6, target_height * 2.0))
+    fill = bpy.context.object
+    fill.data.energy = 0.35
+    fill.data.color = (0.65, 0.80, 1.0)
+    _point_camera(fill, Vector((0.0, 0.0, target_height * 0.35)))
+
+    bpy.ops.object.light_add(type='SUN', location=(0.0, grid_d * 0.3, -target_height))
+    bounce = bpy.context.object
+    bounce.data.energy = 0.15
+    bounce.data.color = (0.85, 0.9, 0.75)
+    _point_camera(bounce, Vector((0.0, 0.0, target_height * 0.5)))
+
+    world = bpy.data.worlds.new('World')
+    scene.world = world
+    world.use_nodes = True
+    bg = world.node_tree.nodes.get('Background')
+    bg.inputs['Color'].default_value = (0.55, 0.75, 0.98, 1.0)
+    bg.inputs['Strength'].default_value = 0.22
+
+    fov = math.radians(42.0)
+    aspect = 1600.0 / 1200.0
+    dist_for_width = (grid_w / 2.0 + 0.4) / math.tan(fov / 2.0) / aspect
+    distance = max(dist_for_width * 1.08, target_height * 1.6, grid_d * 0.9)
+
+    az = math.radians(28.0)
+    cam_x = -math.sin(az) * distance
+    cam_y = -math.cos(az) * distance
+    cam_z = target_height * 1.35 + grid_d * 0.22
+    bpy.ops.object.camera_add(location=(cam_x, cam_y, cam_z))
+    cam = bpy.context.object
+    cam.data.lens_unit = 'FOV'
+    cam.data.angle = fov
+    _point_camera(cam, Vector((0.0, 0.0, target_height * 0.30)))
+    scene.camera = cam
+
+    scene.render.engine = 'BLENDER_EEVEE'
+    scene.render.resolution_x = 1600
+    scene.render.resolution_y = 1200
+    scene.render.image_settings.file_format = 'PNG'
+    scene.render.filepath = out_path
+    try:
+        scene.eevee.use_raytracing = False
+    except Exception:
+        pass
+    try:
+        scene.eevee.taa_render_samples = 64
+    except Exception:
+        pass
+
+    bpy.ops.render.render(write_still=True)
+    print(f'[render_preview] escrito {out_path}')
+    return True
+
+
+def build_scatter_clearing():
+    """Escena de conjunto: un claro de selva con 10-20 plantas mezcladas
+    (palmeras, árboles, arbustos, hierba, restos de suelo) sobre un suelo de
+    tierra/hierba, luz de sol tropical — la lámina que de verdad responde a
+    «¿esto se ve bien junto, como en el juego?» en vez de piezas aisladas."""
+    os.makedirs(DOCS_ART_DIR, exist_ok=True)
+    with open(MANIFEST_PATH, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+    by_name = {e['name']: e for e in manifest['meshes']}
+
+    # Composición a mano: 1-2 árboles de fondo, una palmera protagonista,
+    # sotobosque variado y hierba/restos en primer plano — no un grid, una
+    # escena con profundidad de campo compositiva (cerca grande, lejos chico).
+    placements = [
+        # (nombre_malla, x, y, escala_altura_m)
+        ('SM_JungleTreeWide_01', -3.2, 7.0, 9.5),
+        ('SM_JungleTreeUnderstory_01', 3.8, 5.5, 3.4),
+        ('SM_PalmCoconut_01', 1.2, 2.6, 6.5),
+        ('SM_PalmCoconut_02', -4.5, 3.4, 5.4),
+        ('SM_ShrubBanana_01', -1.5, 0.9, 2.1),
+        ('SM_ShrubMonstera_01', 2.0, -0.2, 0.9),
+        ('SM_ShrubFernTree_01', 4.2, 1.6, 2.8),
+        ('SM_ShrubFlowering_01', -2.8, -0.6, 1.1),
+        ('SM_ShrubPandanus_01', 3.0, -1.2, 1.6),
+        ('SM_ShrubBamboo_01', -5.2, 2.6, 4.4),
+        ('SM_GrassTallA_01', 0.5, -1.4, 1.3),
+        ('SM_GrassTallB_01', -0.8, -0.9, 1.4),
+        ('SM_GrassLowWide_01', 1.8, -1.8, 0.3),
+        ('SM_FlowerTropical_01', -0.2, -2.0, 0.22),
+        ('SM_FlowerTropical_01', 1.2, -1.6, 0.24),
+        ('SM_DebrisLogMoss_01', -1.0, -2.3, 0.55),
+        ('SM_DebrisStump_01', 2.5, -2.5, 0.6),
+        ('SM_DebrisCoconuts_01', 0.2, -1.1, 0.22),
+    ]
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    scene = bpy.context.scene
+    rng_seed = 7
+
+    import random as _random
+    rnd = _random.Random(rng_seed)
+
+    imported = []
+    for mesh_name, px, py, target_h in placements:
+        entry = by_name.get(mesh_name)
+        if entry is None:
+            continue
+        obj = _import_and_fix_materials(entry)
+        if obj is None:
+            continue
+        bpy.context.view_layer.update()
+        x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
+        biggest_z = max(z1 - z0, 1e-4)
+        scale_factor = target_h / biggest_z
+        obj.scale = (scale_factor, scale_factor, scale_factor)
+        obj.rotation_euler.z = rnd.uniform(0.0, 6.28318)
+        bpy.context.view_layer.update()
+        x0, x1, y0, y1, z0, z1 = _bounds_world(obj)
+        obj.location.x += -((x0 + x1) / 2.0) + px
+        obj.location.y += -((y0 + y1) / 2.0) + py
+        obj.location.z += -z0
+        bpy.context.view_layer.update()
+        imported.append(obj)
+
+    if not imported:
+        print('[render_preview] build_scatter_clearing: nada que renderizar')
+        return False
+
+    bpy.ops.mesh.primitive_plane_add(size=1.0)
+    ground = bpy.context.object
+    ground.name = 'Ground'
+    ground.scale = (14.0, 14.0, 1.0)
+    ground.location = (0.0, 2.0, 0.0)
+    mat = bpy.data.materials.new('M_Ground')
+    mat.use_nodes = True
+    bsdf = mat.node_tree.nodes.get('Principled BSDF')
+    bsdf.inputs['Base Color'].default_value = (0.20, 0.28, 0.10, 1.0)
+    bsdf.inputs['Roughness'].default_value = 0.95
+    ground.data.materials.append(mat)
+
+    bpy.ops.object.light_add(type='SUN', location=(-8.0, -10.0, 16.0))
+    key = bpy.context.object
+    key.data.energy = 4.5
+    key.data.color = (1.0, 0.93, 0.78)
+    key.data.angle = math.radians(4.0)
+    _point_camera(key, Vector((0.0, 2.0, 3.0)))
+
+    bpy.ops.object.light_add(type='SUN', location=(10.0, 6.0, 10.0))
+    fill = bpy.context.object
+    fill.data.energy = 0.4
+    fill.data.color = (0.60, 0.78, 1.0)
+    _point_camera(fill, Vector((0.0, 2.0, 3.0)))
+
+    world = bpy.data.worlds.new('World')
+    scene.world = world
+    world.use_nodes = True
+    bg = world.node_tree.nodes.get('Background')
+    bg.inputs['Color'].default_value = (0.55, 0.75, 0.95, 1.0)
+    bg.inputs['Strength'].default_value = 0.25
+
+    fov = math.radians(62.0)
+    bpy.ops.object.camera_add(location=(0.0, -11.0, 2.0))
+    cam = bpy.context.object
+    cam.data.lens_unit = 'FOV'
+    cam.data.angle = fov
+    _point_camera(cam, Vector((0.0, 3.5, 3.6)))
+    scene.camera = cam
+
+    scene.render.engine = 'BLENDER_EEVEE'
+    scene.render.resolution_x = 1920
+    scene.render.resolution_y = 1080
+    scene.render.image_settings.file_format = 'PNG'
+    out_path = os.path.join(DOCS_ART_DIR, 'escena_claro_selva.png')
+    scene.render.filepath = out_path
+    try:
+        scene.eevee.use_raytracing = True
+    except Exception:
+        pass
+    try:
+        scene.eevee.taa_render_samples = 96
+    except Exception:
+        pass
+
+    bpy.ops.render.render(write_still=True)
+    print(f'[render_preview] escrito {out_path}')
+    return True
+
+
 def main_props():
     with open(MANIFEST_PATH_PROPS, 'r', encoding='utf-8') as f:
         manifest = json.load(f)
@@ -463,4 +750,6 @@ def main_props():
 
 if __name__ == '__main__':
     main()
+    main_contact_sheets()
+    build_scatter_clearing()
     main_props()

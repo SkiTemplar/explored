@@ -27,9 +27,12 @@ def build(variant):
     rnd = C.seeded_rng(variant['seed'])
 
     height = rnd.uniform(6.5, 10.5)
-    base_radius = rnd.uniform(0.16, 0.22)
+    # 3ª pasada de arte (cartoon Sea of Thieves, 2026-09-27): tronco más
+    # grueso y curva más pronunciada — silueta exagerada y legible, no un
+    # poste fino con hojas encima.
+    base_radius = rnd.uniform(0.20, 0.28)
     tip_radius = base_radius * rnd.uniform(0.32, 0.42)
-    curvature = height * rnd.uniform(0.10, 0.24) * rnd.choice((-1.0, 1.0))
+    curvature = height * rnd.uniform(0.16, 0.34) * rnd.choice((-1.0, 1.0))
 
     trunk, lean_dir = C.make_curved_trunk(
         'Trunk', height, base_radius, tip_radius, curvature,
@@ -50,12 +53,15 @@ def build(variant):
     # alambres» — el aviso del encargo de frondas demasiado finas.
     n_fronds = rnd.randint(10, 14)
     frond_length = height * rnd.uniform(0.38, 0.48)
-    frond_width = frond_length * rnd.uniform(0.42, 0.52)
+    # 3ª pasada de arte: frondas más anchas y con más arqueo (droop) para
+    # una corona amplia y arqueada en vez de plana — el «abanico ancho»
+    # que pide el estilo cartoon.
+    frond_width = frond_length * rnd.uniform(0.55, 0.70)
 
     for i in range(n_fronds):
         ang = (2.0 * math.pi * i / n_fronds) + rnd.uniform(-0.25, 0.25)
         elevation = rnd.uniform(math.radians(8), math.radians(35))  # sobre la horizontal
-        droop = frond_length * rnd.uniform(0.45, 0.65)
+        droop = frond_length * rnd.uniform(0.55, 0.80)
 
         frond = C.make_frond_object(
             f'Frond_{i:02d}', frond_length, frond_width,
@@ -72,7 +78,7 @@ def build(variant):
         # más claro y vivo hacia la punta -el «AO por vértice» que pide el
         # encargo-, en vez de tint_along_axis (un único color + ruido).
         C.set_vertex_colors(frond, C.gradient_along_axis(
-            (0.05, 0.22, 0.08), (0.16, 0.42, 0.15), 'y', 0.0, frond_length,
+            (0.03, 0.22, 0.06), (0.24, 0.66, 0.18), 'y', 0.0, frond_length,
             curve=0.75, jitter=0.03, rnd=rnd))
         parts.append(frond)
 
@@ -89,9 +95,9 @@ def build(variant):
             C.assign_materials(coco, ['M_Bark'])
             C.set_vertex_colors(coco, C.constant_tint((0.30, 0.24, 0.15), alpha=0.0,
                                                         jitter=0.02, rnd=rnd))
+            C.add_basic_uv(coco)  # blob suelto: sin UV propia, ver nota de set_uv_from_fn
             parts.append(coco)
 
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=42.0)
-    C.add_basic_uv(obj)
     return obj

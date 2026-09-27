@@ -11,8 +11,19 @@ AExploredVegetationCell::AExploredVegetationCell()
 	SetRootComponent(Root);
 }
 
+namespace
+{
+	/**
+	 * Distancia a la que se deja de evaluar el World Position Offset (balanceo del
+	 * viento de M_Leaf / M_Grass, ver Tools/Unreal/build_materials.py::build_foliage).
+	 * Por debajo de esta distancia el balanceo no se aprecia y solo cuesta vértices;
+	 * en mallas sin WPO (M_Bark) el ajuste no tiene efecto alguno.
+	 */
+	constexpr float WindWPODisableDistanceCm = 3000.0f;
+}
+
 UHierarchicalInstancedStaticMeshComponent* AExploredVegetationCell::GetOrCreateComponent(UStaticMesh* Mesh,
-	FName Species, bool bCollision, float CullDistanceMeters)
+	FName Species, bool bCollision, float CullDistanceMeters, bool bCastShadow)
 {
 	for (const auto& Pair : ComponentSpecies)
 	{
@@ -30,8 +41,9 @@ UHierarchicalInstancedStaticMeshComponent* AExploredVegetationCell::GetOrCreateC
 	Component->SetupAttachment(GetRootComponent());
 	Component->SetCollisionEnabled(bCollision ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 	Component->SetCollisionProfileName(bCollision ? UCollisionProfile::BlockAll_ProfileName : UCollisionProfile::NoCollision_ProfileName);
-	Component->SetCastShadow(true);
+	Component->SetCastShadow(bCastShadow);
 	Component->bAffectDistanceFieldLighting = bCollision;
+	Component->WorldPositionOffsetDisableDistance = WindWPODisableDistanceCm;
 	if (CullDistanceMeters > 0.0f)
 	{
 		Component->SetCullDistances(static_cast<int32>(CullDistanceMeters * 80.0f), static_cast<int32>(CullDistanceMeters * 100.0f));

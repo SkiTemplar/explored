@@ -2,6 +2,7 @@
 
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
+#include "CoreGlobals.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
@@ -24,6 +25,13 @@
 #include "WorldGen/ExploredVegetationCell.h"
 #include "WorldGen/TerrainDensity.h"
 
+// Contadores de RenderCore/RHI que alimentan el HUD de «stat unit»/«stat gpu» (ciclos del último
+// fotograma, ver RenderTimer.h): se leen directamente para volcarlos a texto en -ExploredBench sin
+// depender de capturar el overlay en pantalla. La API de GPU en crudo (GGPUFrameTime) está
+// deprecada desde 5.6 a favor de RHIGetGPUFrameCycles().
+#include "DynamicRHI.h"
+#include "RenderTimer.h"
+
 namespace
 {
 	/** Segundos de espera en cada vista para que Lumen y la exposición converjan. */
@@ -40,7 +48,8 @@ bool UExploredShotSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 	return false;
 #else
 	return FParse::Param(FCommandLine::Get(), TEXT("ExploredShots")) ||
-		FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));
+		FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots=")) ||
+		FParse::Param(FCommandLine::Get(), TEXT("ExploredBench"));
 #endif
 }
 
@@ -52,7 +61,9 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 		return;
 	}
 
-	FString Set = TEXT("all");
+	bBenchMode = FParse::Param(FCommandLine::Get(), TEXT("ExploredBench"));
+
+	FString Set = bBenchMode ? TEXT("bench") : TEXT("all");
 	FParse::Value(FCommandLine::Get(), TEXT("ExploredShots="), Set);
 	OutputDir = FPaths::ProjectSavedDir() / TEXT("Shots");
 	FParse::Value(FCommandLine::Get(), TEXT("ShotsDir="), OutputDir);
@@ -83,8 +94,9 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 {
 	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 	const bool bAll = Set == TEXT("all");
+	const bool bBench = Set == TEXT("bench");
 
-	if (bAll || Set == TEXT("spawn"))
+	if (bAll || bBench || Set == TEXT("spawn"))
 	{
 		for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
 		{
@@ -119,6 +131,24 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Hours = 16.0f;
 			Shots.Add(Shot);
 		}
+
+		// Vista cercana y oblicua del macizo kárstico (La Meseta): a poca distancia del agua
+		// y mirando de refilón a la pared, para revisar de cerca la erosión (barrancos,
+		// taludes, muesca de marea) en vez del silueteado general del resto de islas.
+		if (const FIslandDesc* Karst = Density.GetLayout().FindIsland(EIslandArchetype::Mesa))
+		{
+			const float Angle = Karst->Rotation + 2.3f;
+			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+			const FVector2D Cam2D = Karst->Center + Dir * Karst->Radius * 0.85f;
+			const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 10.0f;
+			FExploredShot Shot;
+			Shot.Name = TEXT("island_Mesa_close");
+			Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
+			const FVector Target(Karst->Center.X * 100.0, Karst->Center.Y * 100.0, Karst->MaxHeight * 55.0);
+			Shot.Rotation = (Target - Shot.Location).Rotation();
+			Shot.Hours = 16.5f;
+			Shots.Add(Shot);
+		}
 	}
 
 	if (bAll || Set == TEXT("day"))
@@ -138,7 +168,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
-	if (bAll || Set == TEXT("water"))
+	if (bAll || bBench || Set == TEXT("water"))
 	{
 		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
 		// Mismo sector que «day» (donde se sabe que hay playa despejada cerca), con un ángulo
@@ -188,7 +218,9 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 
 		// Bajo el agua: bien pasada la orilla, dentro de la laguna, mirando hacia la
-		// superficie iluminada.
+		// superficie iluminada. No forma parte de las tres posiciones de -ExploredBench
+		// (orilla ya cubre la escena de costa; el benchmark quiere spawn/aérea/orilla).
+		if (bAll || Set == TEXT("water"))
 		{
 			const FVector2D CamXY = Landing->Center + ShoreDir * (ShoreR + 50.0f);
 			const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
@@ -203,7 +235,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
-	if (bAll || Set == TEXT("aerial"))
+	if (bAll || bBench || Set == TEXT("aerial"))
 	{
 		FExploredShot Shot;
 		Shot.Name = TEXT("aerial");
@@ -335,6 +367,10 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
 	if (!bRequested && Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds))
 	{
+		if (bBenchMode)
+		{
+			LogBenchSample(Current);
+		}
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, false, false);
 		bRequested = true;
@@ -354,6 +390,44 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 			return;
 		}
 		BeginShot(Current);
+	}
+}
+
+void UExploredShotSubsystem::LogBenchSample(int32 Index)
+{
+	UWorld* World = GetWorld();
+	const FExploredShot& Shot = Shots[Index];
+	// GStartTime: FPlatformTime::Seconds() en el arranque del proceso (CoreGlobals.h); la resta
+	// da el tiempo de carga real hasta que esta vista está lista para medir.
+	const double SecondsSinceStart = FPlatformTime::Seconds() - GStartTime;
+
+	// r.Nanite.ShowStats escribe su resumen (clusters/triángulos visibles) al log la primera vez
+	// que se ejecuta tras cambiar de vista; stat gpu/unit no hace falta activarlos para leer los
+	// contadores de RenderCore de abajo, pero se dejan encendidos para quien mire las capturas.
+	if (GEngine)
+	{
+		GEngine->Exec(World, TEXT("stat unit"));
+		GEngine->Exec(World, TEXT("stat gpu"));
+		GEngine->Exec(World, TEXT("stat rhi"));
+		GEngine->Exec(World, TEXT("stat streaming"));
+		GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));
+	}
+
+	// Los contadores de RenderTimer.h están en ciclos de FPlatformTime; RHIGetGPUFrameCycles() es
+	// la sustituta no deprecada de GGPUFrameTime para el tiempo de GPU del último fotograma.
+	UE_LOG(LogExplored, Display,
+		TEXT("[Bench] %s: %.1f s desde el arranque · GameThread=%.2f ms RenderThread=%.2f ms RHIThread=%.2f ms GPU=%.2f ms"),
+		*Shot.Name, SecondsSinceStart,
+		FPlatformTime::ToMilliseconds(GGameThreadTime), FPlatformTime::ToMilliseconds(GRenderThreadTime),
+		FPlatformTime::ToMilliseconds(GRHIThreadTime), FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
+
+	// memreport -full escribe un .memreport con marca de tiempo en Saved/Profiling/MemReports/
+	// (desglose de streaming de texturas: pool pedido/usado) que pide la medición de VRAM. El
+	// nombre de archivo lo decide el motor (no admite -name=): la línea de arriba, con el nombre
+	// de la vista, es la referencia para casarlo por hora de log.
+	if (GEngine)
+	{
+		GEngine->Exec(World, TEXT("memreport -full"));
 	}
 }
 

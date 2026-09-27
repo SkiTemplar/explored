@@ -11,7 +11,7 @@ enum class EIslandArchetype : uint8
 	Teeth,       // Los Dientes: islotes rocosos y acantilados.
 	Mangrove,    // Manglar de las Voces: llano, canales.
 	WhiteSands,  // Arenas Blancas: atolón con laguna.
-	Mesa,        // La Meseta: pradera alta en terrazas.
+	Mesa,        // La Meseta: macizo kárstico de caliza, cresta irregular y farallones sueltos.
 	Count
 };
 

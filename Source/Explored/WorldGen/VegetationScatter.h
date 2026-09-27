@@ -35,8 +35,10 @@ struct EXPLORED_API FScatterRule
 	float LeanTowardsSea = 0.0f;
 	/** Sin colisión (hierba, helechos pequeños). */
 	bool bNoCollision = false;
-	/** Distancia de desaparición en metros (0 = siempre visible). */
+	/** Distancia de desaparición en metros (0 = siempre visible; evitarlo salvo casos puntuales). */
 	float CullDistance = 0.0f;
+	/** Sombra dinámica; false para clutter pequeño (hierba, restos) que no aporta silueta. */
+	bool bCastShadow = true;
 };
 
 /** Instancia resultante (transformación en centímetros, espacio de mundo). */

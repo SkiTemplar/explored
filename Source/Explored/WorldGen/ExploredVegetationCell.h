@@ -23,7 +23,7 @@ public:
 
 	/** Crea (o reutiliza) el HISM de una malla. Solo en horneado. */
 	UHierarchicalInstancedStaticMeshComponent* GetOrCreateComponent(UStaticMesh* Mesh, FName Species,
-		bool bCollision, float CullDistanceMeters);
+		bool bCollision, float CullDistanceMeters, bool bCastShadow = true);
 
 	/** Especie de un componente de esta celda. */
 	FName GetSpecies(const UHierarchicalInstancedStaticMeshComponent* Component) const;

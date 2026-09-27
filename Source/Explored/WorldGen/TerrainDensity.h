@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/TerrainErosion.h"
 
 /** Cueva o arco: cápsula deformada que se excava en el terreno. Metros. */
 struct EXPLORED_API FCaveDesc
@@ -69,8 +70,6 @@ public:
 private:
 	float IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const;
 	float CaveCarve(const FVector& P) const;
-	/** Relieve de cortado de la isla de mesetas: estratos que sobresalen o se retiran y canales verticales. */
-	float MesaStrata(const FVector& P, float ColumnHeight, float D) const;
 	void BuildCaves();
 
 	FArchipelagoLayout Layout;
@@ -78,4 +77,13 @@ private:
 	FExploredNoise FloorNoise;
 	FExploredNoise DetailNoise;
 	FExploredNoise OverhangNoise;
+
+	/**
+	 * Rejilla de alturas erosionada del macizo kárstico (isla Mesa), en coordenadas Q
+	 * locales normalizadas por el radio de la isla. Null si el layout no tiene esa isla.
+	 * Se calcula una vez por semilla de isla y se comparte entre instancias de
+	 * FTerrainDensity (la erosión no es gratis, ver TerrainDensity.cpp); el puntero en sí
+	 * es const y se fija en el constructor, así que no rompe la inmutabilidad de la clase.
+	 */
+	TSharedPtr<const FErosionHeightGrid> KarstGrid;
 };

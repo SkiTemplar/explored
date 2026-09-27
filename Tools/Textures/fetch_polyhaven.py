@@ -1,7 +1,7 @@
 """CLI: descarga texturas CC0 de Poly Haven a la caché local (ver `texgen/polyhaven.py`).
 
 Uso (desde la raíz del repositorio):
-    uv run python Tools/Textures/fetch_polyhaven.py dark_rock marble_cliff_04
+    uv run python Tools/Textures/fetch_polyhaven.py rock_face_03 marble_cliff_04
 """
 
 from __future__ import annotations
