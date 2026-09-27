@@ -111,7 +111,7 @@ paleta son **lineales**: un 0,8 lineal ya se ve casi blanco en el render.
 | Hastial un agua | 5 000 | 2 690 / 2 892 / 1 236 / 1 648 |
 
 `validate.py` comprueba presupuesto, geometría degenerada, color de vértice «Col»
-y materiales estables (56/56 del kit en verde a 2026-09-26; 161/161 props en total).
+y materiales estables (56/56 del kit en verde a 2026-09-26; 169/169 props en total a 2026-09-27).
 
 ## Mobiliario de base (`mobiliario_base.py`, grupo `MobiliarioBase`)
 
@@ -129,6 +129,7 @@ biseles del kit. Pivote en la base.
 | `SM_Base_Smokehouse` | 2,7 × 2,7 × 2,8 m | Paredes de palma del kit (escaladas), fogón, respiradero |
 | `SM_Base_Dock` / `_DockEnd` | 2 × 4 m | Cubierta a **+2,0 m** sobre el pivote (fondo); se encadena en Y |
 | `SM_Base_GardenPlot_Logs` / `_Stones` | 2 × 2 m | Encaja en una celda de la rejilla |
+| `SM_Base_MuseumPanel` | 2,06 × 0,24 × 2,4 m | Panel de pared del museo (`panel_museo`): bastidor de un lado de celda, estera trenzada en damero con rombos teñidos, dos ganchos a z 1,06 m (hueco Grande en (0, −6, 110) cm) y disco estelar en la cresta. Frente en −Y, la cara +Y va contra la pared |
 
 ## Producción, huerto y estructura (`produccion_base.py`, grupo `ProduccionBase`)
 
@@ -209,3 +210,22 @@ reconozca a cualquier tamaño. Todas interactuables (se exponen en
 | `SM_Treasure_StickChart` | 82 cm | Rejilla de varillas, frentes de oleaje curvos, conchas = islas |
 | `SM_Treasure_CeremonialPaddle` | 1,7 m | Tumbado; hoja con bandas de dientes y ojo estelar |
 | `SM_Treasure_Tapa` | 1,2 × 0,85 m | Tela de corteza ondulada con marco y rombos pintados |
+
+### Piezas únicas y raras
+
+Lámina: `docs/art/modelos/tesoros-unicos.png` (modo `tiles` de
+`preview_kit.py`: cada pieza sola a cámara cercana 3/4). Los siete tesoros de
+`artifacts.json` que compartían malla con su versión común tienen ahora la suya:
+
+| Malla | Tesoro | Tamaño | Notas |
+|---|---|---|---|
+| `SM_Treasure_FishHook_Whalebone` | `anzuelo_ceremonial` | 19 cm | Hueso de ballena sin lengüeta, muescas, borla roja y cabecita del pueblo que mira arriba |
+| `SM_Treasure_Breastplate_Pearl` | `pectoral_nacar` | 30 cm | Media luna de nácar de labio negro (irisado rosa/oro/verde agua), fila incisa, 5 dientes de hueso, cordón |
+| `SM_Treasure_TurtlePendant` | `colgante_carey` | 20 cm | Tortuga de carey (placas y moteado ámbar), cordón con cuentas |
+| `SM_Treasure_StoneFigure_SkyGazer` | `figura_mira_cielo` | 22 cm | Basalto arrodillado, cabeza atrás, alza el disco estelar; algas y coral (ruina sumergida) |
+| `SM_Treasure_StickChart_Swell` | `carta_oleaje` | 99 cm | Marco hexagonal, 3 ejes, frentes de mar de fondo y anillos de rebote en 7 islas (la central de nácar) |
+| `SM_Treasure_Tapa_Stars` | `tapa_estrellas` | 1,3 × 0,9 m | Fondo oscuro, 7 estrellas de rumbo de 8 puntas, orla de dientes, banda de olas, esquina doblada |
+| `SM_Treasure_Paddle_DoubleCanoe` | `remo_canoa_doble` | 1,97 m | Remo de gobierno: hoja de laurel con nervio, canoa doble pintada, bellotas de mar |
+
+Regenerar la lámina:
+`blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=tesoros --out=tesoros-unicos --only=<nombres separados por comas>`

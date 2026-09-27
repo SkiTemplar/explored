@@ -329,7 +329,7 @@ public:
 	int32 Add(T&& V) { CheckAddress(&V); Data.push_back(std::move(V)); return Num() - 1; }
 	template <typename... A> int32 Emplace(A&&... Args) { Data.emplace_back(std::forward<A>(Args)...); return Num() - 1; }
 	template <typename... A> T& Emplace_GetRef(A&&... Args) { Data.emplace_back(std::forward<A>(Args)...); return Data.back(); }
-	T& Add_GetRef(const T& V) { Data.push_back(V); return Data.back(); }
+	T& Add_GetRef(const T& V) { CheckAddress(&V); Data.push_back(V); return Data.back(); }
 	int32 AddUnique(const T& V) { const int32 I = Find(V); return I != INDEX_NONE ? I : Add(V); }
 	int32 AddUninitialized(int32 Count = 1) { const int32 I = Num(); Data.resize(Data.size() + (size_t)Count); return I; }
 	int32 AddZeroed(int32 Count = 1) { const int32 I = Num(); Data.resize(Data.size() + (size_t)Count, T{}); return I; }

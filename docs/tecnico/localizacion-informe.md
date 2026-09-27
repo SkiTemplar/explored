@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 592 |
+| Textos en el catálogo | 594 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 286 |
-| … de `Content/Data` (campos bilingües) | 306 |
+| … de `Content/Data` (campos bilingües) | 308 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 0 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
 | Literales para revisar | 64 |
-| Errores / avisos | 0 / 24 |
+| Errores / avisos | 0 / 25 |
 
 ## Literales del C++
 
@@ -112,7 +112,7 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (24)
+## Avisos (25)
 
 - translations/en.json: Explored,Carry_NoRegistry no aparece en el código (¿clave renombrada o borrada?)
 - Source/Explored/Building/BuildingSubsystem.cpp:277: ExploredBuilding,Occupied: el inglés (26 car.) es más de 1.3× el español (15); comprueba que cabe
@@ -137,4 +137,5 @@ Ninguno.
 - Content/Data/plants.json «platanera» nameEs/nameEn: Data.plants.plants,platanera.nameEs: el inglés (12 car.) es más de 1.3× el español (9); comprueba que cabe
 - Content/Data/plants.json «batata» nameEs/nameEn: Data.plants.plants,batata.nameEs: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
 - Content/Data/plants.json «maracuya» nameEs/nameEn: Data.plants.plants,maracuya.nameEs: el inglés (13 car.) es más de 1.3× el español (8); comprueba que cabe
+- Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn: Data.building_pieces.pieces,vitrina_museo.nameEs: el inglés (12 car.) es más de 1.3× el español (7); comprueba que cabe
 - Content/Data/story_es.json «6» petroglyph_themes/petroglyph_themes_en: Data.story_es.petroglyph_themes,06: el inglés (21 car.) es más de 1.3× el español (16); comprueba que cabe
