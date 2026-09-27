@@ -159,6 +159,7 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_drink", "Efectos", False, body.drink))
     specs.append(SoundSpec("sfx_breath_tired", "Efectos", False, body.breath_tired))
     specs.append(SoundSpec("sfx_heartbeat_low_loop", "Efectos", True, body.heartbeat_low))
+    specs.append(SoundSpec("sfx_stomach_growl", "Efectos", False, body.stomach_growl))
 
     # Musica adaptativa (§9.3): la genera `music.compose`, aqui solo se cablea
     # en el catalogo para que pase por el mismo postproceso, exportacion y

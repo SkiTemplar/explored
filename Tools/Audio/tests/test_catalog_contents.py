@@ -108,6 +108,7 @@ def test_cuerpo_esperado(catalog):
     names = {spec.name for spec in catalog}
     assert {
         "sfx_eat_01", "sfx_eat_02", "sfx_drink", "sfx_breath_tired", "sfx_heartbeat_low_loop",
+        "sfx_stomach_growl",
     } <= names
 
 

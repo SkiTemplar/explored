@@ -64,7 +64,7 @@ y la tiritona; con «desactivar destellos», `BodyBleedPulse`. Aún no hay ajust
 |---|---|---|
 | Latido (bucle) | `/Game/Generated/Audio/Efectos/sfx_heartbeat_low_loop` | existe en `Tools/Audio` |
 | Respiración | `/Game/Generated/Audio/Efectos/sfx_breath_tired` | existe en `Tools/Audio` |
-| Estómago | `/Game/Generated/Audio/Efectos/sfx_stomach_growl` | **pendiente** de generar |
+| Estómago | `/Game/Generated/Audio/Efectos/sfx_stomach_growl` | existe en `Tools/Audio` |
 
 El componente los crea como sonidos 2D propios (no pasa por
 `UExploredAmbienceSubsystem`, que solo mezcla capas de entorno).
