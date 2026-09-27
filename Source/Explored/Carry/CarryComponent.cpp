@@ -242,6 +242,10 @@ bool UCarryComponent::TryPickUp(AExploredItemActor* ItemActor, FText& OutFailRea
 	Payloads.Add(Record.InstanceId, Instance);
 	ItemActor->Destroy();
 	SyncFromModel();
+	if (const UItemRegistrySubsystem* Registry = GetRegistry())
+	{
+		OnItemPickedUp.Broadcast(Registry->GetDisplayName(Instance));
+	}
 	return true;
 }
 

@@ -1,7 +1,10 @@
 #include "WorldGen/ExploredVegetationCell.h"
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/StaticMesh.h"
+
+#include "Core/ExploredWiringSubsystem.h"
 
 AExploredVegetationCell::AExploredVegetationCell()
 {
@@ -64,4 +67,35 @@ FName AExploredVegetationCell::GetSpecies(const UHierarchicalInstancedStaticMesh
 		}
 	}
 	return NAME_None;
+}
+
+void AExploredVegetationCell::SetInteractionFocus(UPrimitiveComponent* Component, int32 InstanceIndex)
+{
+	FocusedComponent = Component;
+	FocusedInstanceIndex = InstanceIndex;
+}
+
+void AExploredVegetationCell::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const
+{
+	UHierarchicalInstancedStaticMeshComponent* Component = Cast<UHierarchicalInstancedStaticMeshComponent>(FocusedComponent.Get());
+	if (UExploredWiringSubsystem* Wiring = UExploredWiringSubsystem::Get(this))
+	{
+		Wiring->GetHarvestVerbs(*this, Component, FocusedInstanceIndex, OutVerbs);
+	}
+}
+
+bool AExploredVegetationCell::CanInteract_Implementation(AActor* InInstigator) const
+{
+	UHierarchicalInstancedStaticMeshComponent* Component = Cast<UHierarchicalInstancedStaticMeshComponent>(FocusedComponent.Get());
+	const UExploredWiringSubsystem* Wiring = UExploredWiringSubsystem::Get(this);
+	return Wiring && Wiring->CanHarvestInstance(*this, Component, FocusedInstanceIndex);
+}
+
+void AExploredVegetationCell::Interact_Implementation(AActor* InInstigator)
+{
+	UHierarchicalInstancedStaticMeshComponent* Component = Cast<UHierarchicalInstancedStaticMeshComponent>(FocusedComponent.Get());
+	if (UExploredWiringSubsystem* Wiring = UExploredWiringSubsystem::Get(this))
+	{
+		Wiring->HarvestInstance(*this, Component, FocusedInstanceIndex, InInstigator);
+	}
 }
