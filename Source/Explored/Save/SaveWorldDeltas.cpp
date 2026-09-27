@@ -590,6 +590,12 @@ void FSaveWorldDeltas::Merge(const FSaveWorldDeltas& Other)
 	{
 		Layers.FindOrAdd(Pair.Key).Merge(Pair.Value);
 	}
+	// Las ediciones de terreno no se pueden unir muestra a muestra sin el campo base:
+	// se conserva la propia y solo se adopta la otra si aquí no hay ninguna.
+	if (Terrain.IsNull())
+	{
+		Terrain = Other.Terrain;
+	}
 }
 
 void FSaveWorldDeltas::Save(FSaveArchive& Ar) const
@@ -604,12 +610,20 @@ void FSaveWorldDeltas::Save(FSaveArchive& Ar) const
 		}
 	}
 	Ar.SetValue(TEXT("layers"), MoveTemp(LayersValue));
+	if (!Terrain.IsNull())
+	{
+		Ar.SetValue(TEXT("terrain"), Terrain);
+	}
 }
 
 void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
 {
 	*this = FSaveWorldDeltas();
 	Ar.Read(TEXT("seed"), Seed);
+	if (const FSaveValue* TerrainValue = Ar.FindValue(TEXT("terrain")))
+	{
+		Terrain = *TerrainValue;
+	}
 	const FSaveValue* LayersValue = Ar.FindValue(TEXT("layers"));
 	if (!LayersValue || !LayersValue->IsObject())
 	{
@@ -628,7 +642,7 @@ void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
 
 bool FSaveWorldDeltas::operator==(const FSaveWorldDeltas& Other) const
 {
-	if (Seed != Other.Seed)
+	if (Seed != Other.Seed || Terrain != Other.Terrain)
 	{
 		return false;
 	}
