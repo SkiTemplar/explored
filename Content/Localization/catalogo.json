@@ -9,7 +9,7 @@
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
-		"revisar": 70
+		"revisar": 71
 	},
 	"entries": [
 		{
@@ -787,7 +787,7 @@
 			"en": "Chop",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:844"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:876"
 			]
 		},
 		{
@@ -797,7 +797,7 @@
 			"en": "Gather",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:836"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:868"
 			]
 		},
 		{
@@ -807,7 +807,7 @@
 			"en": "Mine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:840"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:872"
 			]
 		},
 		{
@@ -817,7 +817,7 @@
 			"en": "{Verb} ({Hits}/{Required})",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:853"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:885"
 			]
 		},
 		{
@@ -1130,7 +1130,7 @@
 			"namespace": "ExploredUI",
 			"key": "CondOpenWounds",
 			"es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar",
-			"en": "{Count} {Count}|plural(one=wound,other=wounds) unbandaged",
+			"en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/ExploredHUD.cpp:302"
