@@ -197,7 +197,7 @@ def flake(name, length, width, thick, seed, point=0.7, scars=7, scar_depth=0.4):
     return o
 
 
-def clam_shell(name, width, height, depth, ribs=5, thick=0.006, segs_u=22, segs_v=8, scallop=0.06):
+def clam_shell(name, width, height, depth, ribs=5, thick=0.006, segs_u=22, segs_v=8, scallop=0.06, rib_depth=0.22):
     """Valva de almeja gigante (Tridacna): abanico con costillas onduladas y
     borde festoneado. Charnela en el origen, crece hacia +Z, convexa hacia
     -Y (cara exterior), con grosor real (solidify)."""
@@ -216,7 +216,7 @@ def clam_shell(name, width, height, depth, ribs=5, thick=0.006, segs_u=22, segs_
             x = math.sin(th) * r * width / 2 / math.sin(spread)
             z = math.cos(th) * r * height
             bulge = depth * (1 - u * u) ** 0.7 * math.sin(min(1.0, v * 1.15) * math.pi * 0.62)
-            rib = depth * 0.22 * wave * v
+            rib = depth * rib_depth * wave * v
             row.append(bm.verts.new((x, -(bulge + rib), z)))
         grid.append(row)
     for j in range(segs_v):
@@ -296,3 +296,144 @@ def ground_centered(obj):
     ys = [v.co.y for v in obj.data.vertices]
     zs = [v.co.z for v in obj.data.vertices]
     return pivot_at(obj, ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, min(zs)))
+
+
+# ---------------------------------------------------------------------------
+# helpers de contenedores (items_contenedores.py, items_naturales.py)
+# ---------------------------------------------------------------------------
+def lathe(name, prof, segs=24, sx=1.0, sy=1.0, arc=None):
+    """Sólido de revolución alrededor de Z a partir de un perfil (r, z).
+    Si el primer/último punto tiene r = 0 se cierra con un polo (abanico de
+    triángulos). Un perfil que sube por fuera, pasa el labio y baja por
+    dentro hasta el eje da un recipiente cerrado con pared de grosor real.
+    sx/sy aplastan la sección (ovalada). El índice de vértice sigue
+    anillo * segs + k (el polo inicial, si lo hay, va el primero).
+    `arc` (radianes, < 2π) gira solo ese ángulo desde +X y cierra el corte
+    con una cara plana triangulada (media luna de un hongo yesquero); en
+    ese caso cada anillo tiene segs + 1 vértices."""
+    import bmesh
+    bm = bmesh.new()
+    closed = arc is None
+    npts = segs if closed else segs + 1
+    step = (2 * math.pi / segs) if closed else (arc / segs)
+    rings = []
+    poles = {}
+    for j, (r, z) in enumerate(prof):
+        if r <= 1e-6 and j in (0, len(prof) - 1):
+            poles[j] = bm.verts.new((0.0, 0.0, z))
+            rings.append(None)
+            continue
+        rings.append([bm.verts.new((math.cos(step * k) * r * sx, math.sin(step * k) * r * sy, z))
+                      for k in range(npts)])
+    for j in range(len(prof) - 1):
+        a, b = rings[j], rings[j + 1]
+        for k in range(segs):
+            k2 = (k + 1) % npts
+            if a is None:
+                bm.faces.new((poles[j], b[k], b[k2]))
+            elif b is None:
+                bm.faces.new((a[k], poles[j + 1], a[k2]))
+            else:
+                bm.faces.new((a[k], b[k], b[k2], a[k2]))
+    if not closed:
+        boundary = [e for e in bm.edges if e.is_boundary]
+        res = bmesh.ops.holes_fill(bm, edges=boundary, sides=0)
+        bmesh.ops.triangulate(bm, faces=res['faces'])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    C.link_object(o)
+    return o
+
+
+def soft_box(name, size, center=(0.0, 0.0, 0.0), roundness=0.35, cuts=4):
+    """Caja de esquinas redondeadas (almohadilla de lona, cuero, bloque):
+    cubo subdividido proyectado sobre una caja con esquinas de radio
+    `roundness` (0..1, fracción de la media arista). Escala real `size`."""
+    import bmesh
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=2.0)
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=cuts, use_grid_fill=True)
+    inner = 1.0 - roundness
+    for v in bm.verts:
+        c = Vector(v.co)
+        q = Vector((max(-inner, min(inner, c.x)), max(-inner, min(inner, c.y)), max(-inner, min(inner, c.z))))
+        d = c - q
+        if d.length > 1e-6:
+            c = q + d.normalized() * roundness
+        v.co = Vector((c.x * size[0] / 2 + center[0], c.y * size[1] / 2 + center[1], c.z * size[2] / 2 + center[2]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    C.link_object(o)
+    return o
+
+
+def weave_col(a, b, n_around, pitch, z0=0.0, cx=0.0, cy=0.0, blend=0.15):
+    """Color de cestería: damero de tiras (n_around tiras en la vuelta, alto
+    `pitch`) alrededor del eje Z que pasa por (cx, cy)."""
+    def f(co):
+        ang = (math.atan2(co.y - cy, co.x - cx) / (2 * math.pi) + 0.5) * n_around
+        row = (co.z - z0) / pitch
+        chk = (int(math.floor(ang)) + int(math.floor(row))) % 2
+        # dentro de cada tira, un poco más oscuro en los bordes (volumen)
+        edge = abs((ang % 1.0) - 0.5) * 2 if chk else abs((row % 1.0) - 0.5) * 2
+        c = b if chk else a
+        return lerp3(c, lerp3(c, (0.05, 0.03, 0.01), 0.6), max(0.0, edge - 0.6) / 0.4 * blend * 3)
+    return f
+
+
+def weave_bump(o, n_around, pitch, amp, z0=0.0, zmin=-1e9, zmax=1e9, cx=0.0, cy=0.0):
+    """Relieve de trenzado: empuja hacia fuera (radial en XY) las casillas
+    pares del damero de weave_col."""
+    for v in o.data.vertices:
+        co = v.co
+        if not (zmin <= co.z <= zmax):
+            continue
+        d = Vector((co.x - cx, co.y - cy, 0.0))
+        if d.length < 1e-5:
+            continue
+        ang = (math.atan2(d.y, d.x) / (2 * math.pi) + 0.5) * n_around
+        row = (co.z - z0) / pitch
+        s = math.sin(ang * math.pi) * math.sin(row * math.pi)
+        v.co += d.normalized() * amp * s
+    o.data.update()
+
+
+def smooth_profile(pts, per_seg=3):
+    """Remuestrea un perfil (r, z) con Catmull-Rom (per_seg puntos por
+    tramo) para que el torno tenga anillos suficientes donde se pintan
+    bandas finas, sin perder los puntos de control."""
+    out = []
+    n = len(pts)
+    for i in range(n - 1):
+        p0 = pts[max(i - 1, 0)]
+        p1, p2 = pts[i], pts[i + 1]
+        p3 = pts[min(i + 2, n - 1)]
+        for s in range(per_seg):
+            t = s / per_seg
+            t2, t3 = t * t, t * t * t
+            out.append(tuple(0.5 * ((2 * p1[k]) + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2
+                                    + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3) for k in range(2)))
+    out.append(pts[-1])
+    return [(max(0.0, r), z) for r, z in out]
+
+
+def lathe_ring(v_index, segs, has_pole=True):
+    """Índice de punto del perfil al que pertenece un vértice de lathe()."""
+    if has_pole:
+        return 0 if v_index == 0 else (v_index - 1) // segs + 1
+    return v_index // segs
+
+
+def smooth_all(obj):
+    """Sombreado suave en toda la malla, borrando las aristas marcadas como
+    duras por finish() (conchas y piezas orgánicas de costillas suaves)."""
+    C.select_only(obj)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.shade_smooth(keep_sharp_edges=False)
+    return obj

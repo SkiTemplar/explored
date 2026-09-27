@@ -62,6 +62,8 @@ MODULE_GROUPS = [
     # objetos de inventario de items.json (SM_Item_<Id>): herramientas y materiales
     ('items_herramientas', 'Items'),
     ('items_materiales', 'Items'),
+    ('items_contenedores', 'Items'),
+    ('items_naturales', 'Items'),
 ]
 
 

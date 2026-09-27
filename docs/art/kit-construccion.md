@@ -230,7 +230,7 @@ Lámina: `docs/art/modelos/tesoros-unicos.png` (modo `tiles` de
 Regenerar la lámina:
 `blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=tesoros --out=tesoros-unicos --only=<nombres separados por comas>`
 
-## Objetos de inventario (`items_herramientas.py`, `items_materiales.py`, grupo `Items`)
+## Objetos de inventario (`items_herramientas.py`, `items_materiales.py`, `items_contenedores.py`, `items_naturales.py`, grupo `Items`)
 
 Mallas propias para los objetos de `items.json` que usaban un marcador de
 `/Engine/BasicShapes`. Convención (ver `props/_items.py`):
@@ -245,7 +245,11 @@ Mallas propias para los objetos de `items.json` que usaban un marcador de
   mango va por +Z (cabeza/punta hacia +Z) y el filo o la cara de golpe mira a +X.
   Se enganchan a `hand_r` con transformación relativa identidad.
 - Los helpers comunes (palo torcido, atadura en hélice, lasca con cicatrices de
-  talla, valva de almeja, hoja lanceolada) viven en `_items.py`.
+  talla, valva de almeja, hoja lanceolada, torno `lathe` con media vuelta
+  opcional, caja redondeada `soft_box`, damero/relieve de cestería) viven en
+  `_items.py`.
+- Contenedores y mochilas: pivote en la base, de pie, con la espalda (tirantes)
+  hacia -Y; las angarillas con las varas a lo largo de +X.
 
 Láminas (modo `tiles`, cada pieza sola a cámara cercana 3/4):
 `docs/art/modelos/items-herramientas.png` y `docs/art/modelos/items-materiales.png`.
@@ -268,9 +272,28 @@ Láminas (modo `tiles`, cada pieza sola a cámara cercana 3/4):
 | `SM_Item_Cordel` / `SM_Item_Liana` | Ø 16 / 40 cm | Rollos con cabo suelto; cordel con rayas de torsión, liana con hojas |
 | `SM_Item_HojaPalma` | 1,5 m | Fronda con pecíolo cortado y 22 pares de folíolos |
 | `SM_Item_CantoRodado` / `SM_Item_Pedernal` | 14 cm | Canto con veta de cuarzo / nódulo con cara lascada |
+| `SM_Item_Cesta` | Ø 29 × 19 cm | Hoja trenzada en damero con relieve, borde de cordel, dos asas de lazo |
+| `SM_Item_RecipienteCoco` | Ø 14 cm | Medio coco pulido: fibra parda fuera, pulpa blanca dentro, aro de cordel |
+| `SM_Item_VasijaBarro` | 24 cm | Terracota con manchas de cocción, banda de trazos de engobe, cordel al cuello |
+| `SM_Item_Cantimplora` | 23 cm | Rescatada: funda de lona oliva con broches, tapón de latón con cadenita, asa |
+| `SM_Item_BolsaImpermeable` | 27 cm | Rescatada: lona roja, cierre enrollado azul marino con hebilla, cinta crema |
+| `SM_Item_Mochila` | 45 cm | Del Albatros: lona ocre, solapa con correas y hebillas, bolsillo con parche azul |
+| `SM_Item_MochilaFibra` | 40 cm | Saco ovalado de fibra de coco trenzada, cordón fruncido, tirantes de cuerda |
+| `SM_Item_MochilaCueroBambu` | 67 cm | Armazón de bambú atado, saco de cuero con costuras y botón de hueso, estera enrollada |
+| `SM_Item_CinturonCuero` | Ø 23 cm | Enrollado de canto, hebilla de hueso, dos enganches de madera |
+| `SM_Item_Angarillas` | 2,3 × 0,68 m | Dos varas, cuatro travesaños atados en X, lecho de cuerda en rombos |
+| `SM_Item_HuesoLargo` / `HuesoPequeno` | 36 / 12 cm | Fémur con cabeza y cóndilos / astilla aguzada (punzón) |
+| `SM_Item_ConchaGrande` / `ConchaPequena` | 30 / 6 cm | Valva de tridacna boca arriba con borde violeta / berberecho naranja boca abajo |
+| `SM_Item_YescaHongo` | 14 cm | Hongo yesquero en media luna: escalones ocres y pardos, poros crema debajo |
+| `SM_Item_Corteza` | 42 cm | Tira abarquillada boca abajo: surcos oscuros fuera, fibra clara dentro |
+| `SM_Item_Cuerda` | Ø 31 cm | Rollo de cuerda gruesa con chicote rematado en rojo |
+| `SM_Item_PiedraPlana` / `Obsidiana` | 20 / 11 cm | Laja de río con veta de cuarzo / nódulo negro violáceo con fracturas y córtex |
+| `SM_Item_CascaraCoco` | 14 cm | Media cáscara con el borde roto y restos de fibra, ladeada |
+
+Láminas nuevas: `docs/art/modelos/items-contenedores.png` y `docs/art/modelos/items-naturales.png`.
 
 Regenerar:
-`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_herramientas,items_materiales`
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_herramientas,items_materiales,items_contenedores,items_naturales`
 y la lámina con
 `blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=items_herramientas --out=items-herramientas --cols=5 --res=1600x800`
 (`preview_rot_z` en la variante gira la pieza solo en la lámina).
