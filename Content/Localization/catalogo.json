@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 594,
+		"total": 597,
 		"cpp": 286,
-		"datos": 308,
+		"datos": 311,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -2928,6 +2928,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "catre_bambu.nameEs",
+			"es": "Catre de bambú",
+			"en": "Bamboo cot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «catre_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "chimenea.nameEs",
 			"es": "Chimenea",
 			"en": "Chimney",
@@ -3024,6 +3034,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «mesa_cartografia» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "muelle.nameEs",
+			"es": "Muelle",
+			"en": "Jetty",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «muelle» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "muelle_final.nameEs",
+			"es": "Final de muelle",
+			"en": "Jetty end",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «muelle_final» nameEs/nameEn"
 			]
 		},
 		{
