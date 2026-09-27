@@ -1,6 +1,7 @@
 #include "WorldGen/TerrainDensity.h"
 
 #include "Core/ExploredRandom.h"
+#include "Misc/ScopeLock.h"
 
 namespace
 {
@@ -13,15 +14,6 @@ namespace
 	{
 		const float T = FMath::Clamp((X - A) / (B - A), 0.0f, 1.0f);
 		return T * T * (3.0f - 2.0f * T);
-	}
-
-	/** Terrazas suaves: cuantiza V en Steps escalones con transiciones de anchura Softness. */
-	float Terrace(float V, int32 Steps, float Softness)
-	{
-		const float Scaled = V * Steps;
-		const float Base = FMath::FloorToFloat(Scaled);
-		const float Frac = Scaled - Base;
-		return (Base + SmoothStep(0.5f - Softness, 0.5f + Softness, Frac)) / Steps;
 	}
 
 	/** Mínimo suave polinómico: une dos siluetas sin arista en la junta. */
@@ -106,9 +98,113 @@ namespace
 		case EIslandArchetype::Teeth: return {C(206, 196, 178), C(118, 140, 88), C(150, 148, 142)};
 		case EIslandArchetype::Mangrove: return {C(150, 134, 102), C(92, 116, 66), C(98, 96, 84)};
 		case EIslandArchetype::WhiteSands: return {C(246, 238, 220), C(116, 138, 78), C(196, 190, 176)};
-		case EIslandArchetype::Mesa: return {C(214, 190, 144), C(146, 138, 82), C(156, 122, 92)};
+		// Caliza kárstica: roca gris pálida (no el pardo rocoso genérico) y selva más
+		// saturada en las laderas, como en los farallones de piedra caliza tropicales.
+		case EIslandArchetype::Mesa: return {C(214, 190, 144), C(104, 132, 62), C(184, 180, 168)};
 		default: return {C(230, 210, 170), C(90, 150, 60), C(120, 115, 105)};
 		}
+	}
+}
+
+namespace
+{
+	// --- Macizo kárstico (isla Mesa): forma base + erosión hidráulica/térmica -----------
+	//
+	// El estilo de referencia es El Nido / bahía de Ha Long: un macizo de caliza con
+	// cresta muy irregular (varias cumbres, nunca una meseta plana), laderas empinadas
+	// cubiertas de selva y paredes casi verticales solo en algunos tramos. La forma base
+	// de abajo solo coloca esas cumbres de forma determinista por semilla; el tallado de
+	// barrancos, taludes de derrubios y canales lo hace después FTerrainErosionModel.
+
+	/** Resolución de la rejilla de erosión (celdas por lado). */
+	constexpr int32 KarstGridResolution = 420;
+	/** Semiancho, en radios de isla, de la zona Q que cubre la rejilla. */
+	constexpr float KarstQExtent = 1.3f;
+
+	/** Perfil base (antes de erosionar) del macizo: cresta irregular con 2-4 cumbres y
+	 * espolones deterministas por semilla, sin mesetas ni escalones repetidos. Devuelve
+	 * un factor que se multiplica por la altura máxima de la isla. */
+	float KarstMassifShape(uint32 IslandSeed, const FExploredNoise& N, float Qx, float Qy)
+	{
+		const float R = FMath::Sqrt(Qx * Qx + Qy * Qy);
+		const FVector2D Warped = N.Warp2D(Qx * 1.1f + 30.0f, Qy * 1.1f, 0.55f, 3) / 1.1f;
+		const float U = FMath::Max(0.0f, 1.0f - R);
+		const float Rise = FMath::Pow(SmoothStep(0.02f, 0.95f, U), 1.2f);
+		const float Ridged = N.Ridged2D(Warped.X * 2.0f + 10.0f, Warped.Y * 2.0f, 5);
+
+		// 2-4 cumbres a lo largo de una cresta que cruza la isla: posición, radio y fuerza
+		// deterministas por semilla (cada macizo kárstico es distinto, no coordenadas fijas).
+		float PeakBoost = 0.0f;
+		const int32 PeakCount = 2 + static_cast<int32>(ExploredHash::Hash32(IslandSeed ^ 0x9C3u) % 3u);
+		for (int32 P = 0; P < PeakCount; ++P)
+		{
+			const float Along = FMath::Lerp(-0.5f, 0.5f, ExploredHash::ToUnitFloat(ExploredHash::Hash2D(IslandSeed, P, 0x50)));
+			const float Across = FMath::Lerp(-0.22f, 0.22f, ExploredHash::ToUnitFloat(ExploredHash::Hash2D(IslandSeed, P, 0x51)));
+			const float PeakRadius = FMath::Lerp(0.24f, 0.42f, ExploredHash::ToUnitFloat(ExploredHash::Hash2D(IslandSeed, P, 0x52)));
+			const float PeakStrength = FMath::Lerp(0.5f, 1.0f, ExploredHash::ToUnitFloat(ExploredHash::Hash2D(IslandSeed, P, 0x53)));
+			const float D = FVector2D::Distance(FVector2D(Qx, Qy), FVector2D(Along, Across)) / PeakRadius;
+			PeakBoost = FMath::Max(PeakBoost, PeakStrength * FMath::Square(FMath::Max(0.0f, 1.0f - D)));
+		}
+		return Rise * (0.4f + 0.35f * Ridged + 0.55f * PeakBoost);
+	}
+
+	/** Erosiona (una vez por semilla de isla) y devuelve la rejilla de alturas del macizo
+	 * kárstico, en coordenadas Q locales normalizadas por el radio. Comparte el resultado
+	 * entre todas las instancias de FTerrainDensity construidas con la misma semilla de
+	 * isla: cada construcción independiente de la misma isla (subsistemas de cartografía,
+	 * ruinas, cámara de capturas...) paga el coste una sola vez por proceso. Medido: unos
+	 * 0,35 s en una rejilla de 420x420 en Development x64 (ver Tools/HostTests).
+	 */
+	TSharedPtr<const FErosionHeightGrid> GetOrBuildKarstGrid(const FIslandDesc& Island)
+	{
+		static FCriticalSection Mutex;
+		static TMap<uint32, TSharedPtr<const FErosionHeightGrid>> Cache;
+
+		FScopeLock Lock(&Mutex);
+		if (const TSharedPtr<const FErosionHeightGrid>* Found = Cache.Find(Island.Seed))
+		{
+			return *Found;
+		}
+
+		TSharedPtr<FErosionHeightGrid> Grid = MakeShared<FErosionHeightGrid>();
+		Grid->Init(KarstGridResolution, KarstGridResolution, 0.0f);
+		const FExploredNoise N(Island.Seed);
+		const float Step = (2.0f * KarstQExtent) / (KarstGridResolution - 1);
+		for (int32 Gy = 0; Gy < KarstGridResolution; ++Gy)
+		{
+			for (int32 Gx = 0; Gx < KarstGridResolution; ++Gx)
+			{
+				const float Qx = -KarstQExtent + Gx * Step;
+				const float Qy = -KarstQExtent + Gy * Step;
+				Grid->At(Gx, Gy) = KarstMassifShape(Island.Seed, N, Qx, Qy) * Island.MaxHeight;
+			}
+		}
+
+		FErosionParams Params;
+		Params.Seed = Island.Seed;
+		Params.CellSizeMeters = (2.0f * KarstQExtent * Island.Radius) / KarstGridResolution;
+		Params.DropletCount = 20000;
+		Params.MaxDropletLifetime = 32;
+		Params.ErosionRadius = 3;
+		Params.ThermalIterations = 60;
+		Params.TalusAngleTangent = 0.85f; // Caliza: laderas empinadas, no un talud arenoso.
+		Params.ThermalTransferRate = 0.5f;
+		FTerrainErosionModel::Erode(*Grid, Params);
+
+		TSharedPtr<const FErosionHeightGrid> Result = Grid;
+		Cache.Add(Island.Seed, Result);
+		return Result;
+	}
+
+	/** Altura del macizo ya erosionado en Q local (bilineal); 0 fuera de la rejilla. */
+	float SampleKarstGrid(const FErosionHeightGrid& Grid, float Qx, float Qy)
+	{
+		if (FMath::Abs(Qx) >= KarstQExtent || FMath::Abs(Qy) >= KarstQExtent)
+		{
+			return 0.0f;
+		}
+		const float Step = (2.0f * KarstQExtent) / (KarstGridResolution - 1);
+		return Grid.Sample((Qx + KarstQExtent) / Step, (Qy + KarstQExtent) / Step);
 	}
 }
 
@@ -119,6 +215,10 @@ FTerrainDensity::FTerrainDensity(const FArchipelagoLayout& InLayout)
 	, OverhangNoise(InLayout.Seed ^ 0x2C1B3C6Du)
 {
 	BuildCaves();
+	if (const FIslandDesc* Karst = Layout.FindIsland(EIslandArchetype::Mesa))
+	{
+		KarstGrid = GetOrBuildKarstGrid(*Karst);
+	}
 }
 
 float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const
@@ -211,18 +311,12 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	}
 	case EIslandArchetype::Mesa:
 	{
-		// Meseta redondeada con dos escalones blandos. El dominio se deforma con fuerza para que
-		// los escarpes serpenteen, y los barrancos son ramificados (ridged) en lugar de líneas.
-		// Encima, un segundo warp de alta frecuencia quiebra el contorno del escarpe en entrantes y
-		// espolones, y los escalones son abruptos: el perfil de cortado lo termina la densidad 3D.
-		FVector2D W = N.Warp2D(Q.X * 1.3f + 30.0f, Q.Y * 1.3f, 0.6f, 3) / 1.3f;
-		W += 0.06f * FVector2D(N.Fbm2D(Q.X * 9.0f + 13.0f, Q.Y * 9.0f, 3), N.Fbm2D(Q.X * 9.0f, Q.Y * 9.0f - 17.0f, 3));
-		const float Edge = 0.22f * N.Fbm2D(W.X * 2.2f, W.Y * 2.2f, 4) + 0.07f * N.Ridged2D(W.X * 7.0f - 9.0f, W.Y * 7.0f, 3);
-		const float Rise = SmoothStep(0.03f, 0.8f, U + Edge);
-		const float Stepped = FMath::Lerp(Rise, Terrace(FMath::Clamp(Rise, 0.0f, 1.0f), 2, 0.12f), 0.85f);
-		const float Gully = FMath::Square(N.Ridged2D(W.X * 3.0f + 70.0f, W.Y * 3.0f, 4));
-		const float Plateau = 6.0f * N.Fbm2D(Q.X * 6.0f, Q.Y * 6.0f, 4);
-		Land = 1.6f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Stepped * (1.0f - 0.3f * Gully * SmoothStep(0.05f, 0.4f, U)) + Plateau * Rise;
+		// Macizo kárstico (El Nido / Ha Long): la forma viene de una rejilla erosionada por
+		// FTerrainErosionModel (ver GetOrBuildKarstGrid más arriba), no de ruido evaluado al
+		// vuelo. Si por lo que sea no hay rejilla (no debería pasar: se construye para toda
+		// isla Mesa), cae a un macizo sin erosionar en vez de dejar un agujero en el mundo.
+		const float Eroded = KarstGrid ? SampleKarstGrid(*KarstGrid, Q.X, Q.Y) : KarstMassifShape(Island.Seed, N, Q.X, Q.Y) * Hmax;
+		Land = 1.8f * SmoothStep(-0.02f, 0.06f, U) + Eroded;
 		break;
 	}
 	case EIslandArchetype::Mangrove:
@@ -362,9 +456,15 @@ float FTerrainDensity::DensityWithColumn(const FVector& P, const FTerrainColumn&
 		D += RockMask * OverhangAmplitude * OverhangNoise.Fbm3D(P.X / 16.0f, P.Y / 16.0f, P.Z / 10.0f, 3);
 	}
 
-	if (Column.IslandIndex != INDEX_NONE && Layout.Islands[Column.IslandIndex].Archetype == EIslandArchetype::Mesa)
+	// Muesca de marea en los farallones de caliza (macizo kárstico): un socavón festoneado
+	// justo sobre el nivel del mar, solo donde ya hay pared vertical alta y cerca de la
+	// superficie, así que no añade coste en el resto del mundo ni bajo tierra.
+	if (RockMask > 0.5f && Column.Height < 40.0f && FMath::Abs(D) < OverhangAmplitude * 4.0f
+		&& Column.IslandIndex != INDEX_NONE && Layout.Islands[Column.IslandIndex].Archetype == EIslandArchetype::Mesa)
 	{
-		D += MesaStrata(P, Column.Height, D);
+		const float Waterline = FMath::Abs(P.Z - 0.6f);
+		const float NotchWidth = 1.3f + 0.5f * OverhangNoise.Fbm2D(P.X / 6.0f, P.Y / 6.0f, 2);
+		D += (1.0f - SmoothStep(0.0f, NotchWidth, Waterline)) * 1.8f;
 	}
 
 	if (!Caves.IsEmpty())
@@ -372,31 +472,6 @@ float FTerrainDensity::DensityWithColumn(const FVector& P, const FTerrainColumn&
 		D = FMath::Max(D, -CaveCarve(P));
 	}
 	return D;
-}
-
-float FTerrainDensity::MesaStrata(const FVector& P, float ColumnHeight, float D) const
-{
-	// Solo junto a la superficie y lejos de la playa; el total queda dentro del margen de HeightBounds.
-	const float Mask = SmoothStep(4.0f, 10.0f, ColumnHeight) * (1.0f - SmoothStep(3.0f, 6.0f, FMath::Abs(D)));
-	if (Mask <= 0.0f)
-	{
-		return 0.0f;
-	}
-
-	// Estratos de ~3 m, ondulados y algo buzados, que alternan roca dura (sobresale en cornisa)
-	// y blanda (se retira). La dureza cambia de una capa a otra para que no se repitan.
-	const float Dip = 1.6f * DetailNoise.Fbm2D(P.X / 45.0f + 7.0f, P.Y / 45.0f, 2) + 0.012f * P.X;
-	const float Layer = (P.Z + Dip) / 3.1f;
-	const float Index = FMath::FloorToFloat(Layer);
-	const float F = Layer - Index;
-	const float Hardness = 0.55f + 0.45f * ExploredHash::ToUnitFloat(ExploredHash::Hash32(static_cast<uint32>(Index + 1000.0f)));
-	const float Ledge = SmoothStep(0.0f, 0.1f, F) * (1.0f - SmoothStep(0.42f, 0.6f, F));
-	float S = FMath::Lerp(0.9f, -2.2f * Hardness, Ledge);
-
-	// Canales verticales de erosión: ruido estirado en Z cuyas crestas estrechas excavan la pared.
-	const float Groove = 1.0f - FMath::Abs(OverhangNoise.Fbm3D(P.X / 4.5f + 31.0f, P.Y / 4.5f, P.Z / 28.0f, 3));
-	S += 0.7f * SmoothStep(0.8f, 0.96f, Groove);
-	return S * Mask;
 }
 
 float FTerrainDensity::Density(const FVector& P) const

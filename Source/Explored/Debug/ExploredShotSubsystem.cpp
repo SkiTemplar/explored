@@ -119,6 +119,24 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Hours = 16.0f;
 			Shots.Add(Shot);
 		}
+
+		// Vista cercana y oblicua del macizo kárstico (La Meseta): a poca distancia del agua
+		// y mirando de refilón a la pared, para revisar de cerca la erosión (barrancos,
+		// taludes, muesca de marea) en vez del silueteado general del resto de islas.
+		if (const FIslandDesc* Karst = Density.GetLayout().FindIsland(EIslandArchetype::Mesa))
+		{
+			const float Angle = Karst->Rotation + 2.3f;
+			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+			const FVector2D Cam2D = Karst->Center + Dir * Karst->Radius * 0.85f;
+			const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 10.0f;
+			FExploredShot Shot;
+			Shot.Name = TEXT("island_Mesa_close");
+			Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
+			const FVector Target(Karst->Center.X * 100.0, Karst->Center.Y * 100.0, Karst->MaxHeight * 55.0);
+			Shot.Rotation = (Target - Shot.Location).Rotation();
+			Shot.Hours = 16.5f;
+			Shots.Add(Shot);
+		}
 	}
 
 	if (bAll || Set == TEXT("day"))

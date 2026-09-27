@@ -25,7 +25,9 @@ namespace
 	const FArchetypeTemplate ChainTemplates[] = {
 		{EIslandArchetype::Smoke, 600.0f, 680.0f, 380.0f, 440.0f, 0, 0, 1, 2},
 		{EIslandArchetype::Emerald, 640.0f, 720.0f, 160.0f, 200.0f, 2, 3, 1, 2},
-		{EIslandArchetype::Mesa, 580.0f, 660.0f, 230.0f, 280.0f, 1, 2, 1, 2},
+		// El macizo kárstico lleva más cayos que el resto: torres y farallones sueltos
+		// alrededor, como en El Nido / la bahía de Ha Long.
+		{EIslandArchetype::Mesa, 580.0f, 660.0f, 230.0f, 280.0f, 1, 2, 2, 5},
 		{EIslandArchetype::Landing, 480.0f, 540.0f, 45.0f, 65.0f, 1, 2, 2, 3},
 		{EIslandArchetype::Mangrove, 460.0f, 540.0f, 10.0f, 16.0f, 2, 3, 2, 4},
 		{EIslandArchetype::Teeth, 380.0f, 440.0f, 70.0f, 100.0f, 0, 0, 0, 0},
