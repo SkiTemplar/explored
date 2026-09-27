@@ -20,10 +20,10 @@ uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2
 cd Tools/Textures && uv run --with numpy --with pillow --with pytest python -m pytest -q tests
 ```
 
-Hoja de contacto actual: [`texturas-2026-09-27b.png`](texturas-2026-09-27b.png) (pase de
-estilo pintado a mano en arena, ceniza, hierba, hojarasca y roca — ver más abajo);
-[`texturas-2026-09-27.png`](texturas-2026-09-27.png) queda como referencia del resto del
-catálogo. Vista iluminada en 2×2 para comprobar el tileado y, debajo, la misma vista **en
+Hoja de contacto actual: [`texturas-2026-09-27c.png`](texturas-2026-09-27c.png) (catálogo
+completo: arena mojada en bandas de resaca, basalto nuevo y roca con Kuwahara suave);
+[`texturas-2026-09-27b.png`](texturas-2026-09-27b.png) y
+[`texturas-2026-09-27.png`](texturas-2026-09-27.png) quedan como referencia histórica. Vista iluminada en 2×2 para comprobar el tileado y, debajo, la misma vista **en
 4×4 reducida** (cómo se ve a media distancia: delata la repetición) + miniaturas BC / N /
 ARH. Si pasa de ~1.9 MB se guarda con 6 (o 5) bits por canal: una paleta global de 256
 colores falseaba los tonos.
@@ -53,13 +53,13 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | Material | Tile | Uso y notas |
 |---|---|---|
 | `SandDry` | 2 m | Arena seca cartoon: crema cálida en pinceladas amplias de ondulación eólica; grano y conchas sueltas como acento discreto (no pimienta fotográfica), sin grietas. |
-| `SandWet` | 2 m | Franja de orilla, notablemente más oscura y fría que la seca (tinte gris-verdoso uniforme): humedad difusa de frecuencia media (nunca 1-2 manchas grandes que se repitan al ver el tile en 2×2), reflejos pequeños, irregulares y dispersos con tinte de cielo, marcas de resaca con banda escurrida detrás, agujeritos de cangrejo y alguna concha. |
+| `SandWet` | 2 m | Franja de orilla: la misma arena que `SandDry` pero empapada — caramelo tostado, ~0.2 de luma más oscura y apenas más fría (nunca barro marrón ni gris). La humedad va en **bandas de resaca paralelas a la orilla (a lo largo de u)**: frente fino de espuma, detrás una película de agua oscura y brillante (rugosidad baja, reflejo de cielo a trazos) que se va secando hasta una franja escurrida más clara. Sin manchas de umbral duro (se leían como camuflaje sucio). Agujeritos de cangrejo y alguna concha. **Orienta u paralelo a la línea de costa.** |
 | `Grass` | 1.5 m | Césped pintado visto desde arriba: pinceladas direccionales blandas de 2-4 cm (integración tipo LIC a lo largo de un campo de flujo de baja frecuencia, sin geometría de celda ni contornos cerrados) con poco contraste entre matas y una deriva de tono a gran escala entre amarillento cálido y azulado frío, + florecillas. Legible como césped pintado a 3-5 m. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
 | `GardenSoil` | 2 m | Tierra de huerto labrada: 5 camellones anchos y redondeados a lo largo de u (algo ondulados, anchura por hilera) entre surcos estrechos húmedos; terrones redondos en las laderas, migas, pocas pajas y guijarros y algún brote de dos hojitas. Cacao cálido (nunca negro ni gris). |
 | `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 5 capas de hojas grandes y legibles en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
 | `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda cálido (sin valles oscuros) con rizos de viento legibles y grumos redondeados y sueltos donde la lluvia apelmazó la ceniza (nunca una red de grietas ni losetas), pómez con volumen y poros, carbones escasos y alguna brasa con halo. |
-| `VolcanicRock` | 3 m | Basalto gris violáceo oscuro, **fotobasheado** (Poly Haven CC0 `dark_rock`) — formas de roca real, nunca una rejilla; ver más abajo. |
+| `VolcanicRock` | 3 m | Basalto gris violáceo oscuro, **fotobasheado** (Poly Haven CC0 `rock_face_03`: caras fracturadas grandes) con el tono gobernado por la altura real y escalonado en 5 bandas suaves (planos pintados low-poly); ver más abajo. En la vista 4×4 se intuye su grieta diagonal: en paredes grandes usa la segunda lectura girada de «Romper la repetición». |
 | `Limestone` | 3 m | Caliza gris kárstica con acanaladuras y chorreones oscuros y toques ocres (referencia El Nido / Ha Long, **no crema**), **fotobasheada** (Poly Haven CC0 `marble_cliff_04`); ver más abajo. |
 | `PalmThatch` | 1 m | Techo de hoja de palma: 6 hileras de hebras largas y estrechas que cuelgan (dos capas desfasadas, sin huecos); cada hilera tapa la atadura de la de abajo y proyecta sombra con sus puntas desiguales, a veces rasgadas; tono por hebra (paja, dorado, ~10 % aún verdes, alguna tostada) y borde de hilera que ondula (atado a mano); **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
@@ -93,7 +93,7 @@ un pin Normal estándar sin invertir el verde.
 
 | Material | Asset Poly Haven | Autor | Licencia |
 |---|---|---|---|
-| `VolcanicRock` | [`dark_rock`](https://polyhaven.com/a/dark_rock) | Amal Kumar | CC0 |
+| `VolcanicRock` | [`rock_face_03`](https://polyhaven.com/a/rock_face_03) | Dario Barresi (foto), Rico Cilliers (procesado) | CC0 |
 | `Limestone` | [`marble_cliff_04`](https://polyhaven.com/a/marble_cliff_04) | Amal Kumar | CC0 |
 
 `Tools/Textures/fetch_polyhaven.py <asset>...` descarga diffuse/displacement/AO/roughness
@@ -108,14 +108,21 @@ rompe el tileado del original):
 1. Redimensiona a `size` px.
 2. **Delit**: divide por una versión muy desenfocada de su propia luminancia para quitar
    la iluminación desigual de la foto (deja el relieve, no el sol de cuando se tomó).
-3. **Filtro de Kuwahara** (4 cuadrantes, con envoltura periódica): en cada píxel, la media
-   del cuadrante de menor varianza — el efecto óleo (bordes vivos, interior liso) que da
-   el aspecto pintado a mano, sin el ruido de alta frecuencia de una foto real.
+3. **Filtro de Kuwahara generalizado** (Papari et al., envoltura periódica): 8 ventanas
+   gaussianas desplazadas `radius` px en círculo, mezcladas con peso var^(-q/2) — el
+   efecto óleo (bordes vivos, interior liso) que da el aspecto pintado a mano. El Kuwahara
+   clásico de 4 cuadrados con `argmin` dejaba «brochazos» rectangulares que se leían como
+   una rejilla de manchas; el suave no. (Antes, el basalto salía de `dark_rock`, que es
+   mármol serrado con estratos horizontales rectos: de ahí las rayas.)
 4. Paleta propia por `ramp()` sobre la luminancia ya delit (mismo mecanismo que el resto
    de materiales procedurales), con un resto de la crominancia original a baja opacidad
    para que no quede un degradado sintético; vetas oscuras en las grietas (con la AO real
    de la foto, reforzada) y luz en los cantos salientes (cavidad de la altura); en la
-   caliza, un acento ocre donde la foto ya era cálida (óxido/liquen).
+   caliza, un acento ocre donde la foto ya era cálida (óxido/liquen). Con
+   `RockStyle.height_tone` la altura real (desenfocada) pesa en el tono — caras altas
+   claras, huecos oscuros — para que se lean las formas grandes y no el moteado de la
+   foto; con `RockStyle.bands`, `soft_bands()` escalona el tono en planos casi
+   constantes (basalto: 5 bandas; la caliza no las usa, se ensuciaba).
 5. `macro_variation()` al final, la misma función y cantidad que usa cada material
    procedural (validada por `tests/test_macro.py`), en vez de fiarse del contraste propio
    de la foto de origen.
