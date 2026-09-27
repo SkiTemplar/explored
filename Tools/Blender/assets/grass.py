@@ -26,14 +26,15 @@ VARIANTS = [
 
 
 def _build_clump(rnd, n_blades, length_range, width_ratio, curve_ratio, spread,
-                  dark=(0.14, 0.32, 0.10), light=(0.34, 0.58, 0.22)):
+                  dark=(0.14, 0.32, 0.10), light=(0.34, 0.58, 0.22),
+                  cell_names=('grass_blade_a', 'grass_blade_b')):
     parts = []
     for i in range(n_blades):
         length = rnd.uniform(*length_range)
         blade = C.make_leaf_blade(
             f'Blade_{i:02d}', length=length, width_base=length * width_ratio,
             width_tip=length * width_ratio * 0.05, curve_amount=length * curve_ratio,
-            segments=5, double_sided=False,
+            segments=5, double_sided=False, uv_cell=rnd.choice(cell_names),
         )
         ang = rnd.uniform(0, 2 * math.pi)
         r = rnd.uniform(0.0, spread)
@@ -54,6 +55,7 @@ def _build_flower(rnd, seed):
     stem, _ = C.make_curved_trunk(
         'Stem', height=stem_h, base_radius=0.01, tip_radius=0.006,
         curvature=stem_h * rnd.uniform(0.1, 0.25), n_points=4, bevel_resolution=2, rnd=rnd,
+        uv_rect=C.atlas_uv_rect('stem_swatch'),  # material M_Grass: ver nota de uv_rect
     )
     C.assign_materials(stem, ['M_Grass'])
     C.set_vertex_colors(stem, C.gradient_along_axis(
@@ -67,7 +69,7 @@ def _build_flower(rnd, seed):
         petal = C.make_leaf_blade(
             f'Petal_{i:02d}', length=petal_len, width_base=petal_len * 0.55,
             width_tip=petal_len * 0.15, curve_amount=petal_len * 0.35, segments=2,
-            double_sided=False,
+            double_sided=False, uv_cell='flower_petal',
         )
         ang = (2.0 * math.pi * i / n_petals) + rnd.uniform(-0.08, 0.08)
         forward = C.Vector((math.cos(ang), math.sin(ang), 0.35))
@@ -80,6 +82,7 @@ def _build_flower(rnd, seed):
                         subdivisions=1, noise_strength=0.05)
     C.assign_materials(core, ['M_Leaf'])
     C.set_vertex_colors(core, C.constant_tint((0.85, 0.72, 0.12), alpha=0.0, jitter=0.02, rnd=rnd))
+    C.sphere_uv_into_cell(core, 'stem_swatch')  # M_Leaf Masked: celda opaca, ver nota
     parts.append(core)
     return parts
 
@@ -104,5 +107,4 @@ def build(variant):
 
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=50.0)
-    C.add_basic_uv(obj)
     return obj

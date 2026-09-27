@@ -70,6 +70,20 @@ FAMILY_FOLDERS = {
 # árboles/palmeras con más triángulos); el sotobosque y la hierba no lo
 # necesitan pero activarlo no hace daño si el responsable prefiere
 # uniformidad. Se deja limitado a rock+tree por presupuesto de build time.
+#
+# 'tree' usa Nanite con M_Leaf en modo Masked (Tools/Unreal/build_materials.py:
+# build_foliage) desde la reconstrucción del kit de follaje con cards con alfa.
+# Nanite soporta materiales Masked desde UE5.1, pero cada tarjeta cortada cuesta
+# más que una opaca (el pixel shader tiene que evaluar el recorte por
+# muestra en la fase de visibilidad). Se mantiene tree en Nanite a propósito:
+# el coste real está en el TRONCO (miles de triángulos opacos por árbol, el
+# motivo original de activarlo), no en las copas — el kit limita las copas a
+# unas pocas decenas de tarjetas por lóbulo (ver
+# Tools/Blender/lib/common.py: make_leaf_cluster_cards, target_tris por lóbulo)
+# en vez de cientos, precisamente para no disparar el overdraw Masked+Nanite.
+# 'palm'/'shrub'/'grass' NO se activan: son mayoritariamente M_Leaf/M_Grass
+# Masked con presupuestos de triángulo bajos (grass: <700), así que el ahorro
+# de Nanite ahí no compensa el coste de recorte por instancia.
 NANITE_CATEGORIES = {'rock', 'tree'}
 
 MATERIAL_DEFS = {

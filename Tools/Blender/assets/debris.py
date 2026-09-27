@@ -175,6 +175,7 @@ def _build_coconuts(rnd, seed):
         husked = rnd.random() < 0.4
         base = (0.42, 0.36, 0.22) if husked else (0.28, 0.20, 0.13)
         C.set_vertex_colors(coco, C.constant_tint(base, alpha=0.0, jitter=0.03, rnd=rnd))
+        C.add_basic_uv(coco)  # blob suelto: sin UV propia, M_Bark no es Masked (seguro)
         parts.append(coco)
     return parts
 
@@ -192,5 +193,4 @@ def build(variant):
     parts = _BUILDERS[variant['kind']](rnd, variant['seed'])
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=45.0)
-    C.add_basic_uv(obj)
     return obj

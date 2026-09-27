@@ -40,7 +40,9 @@ ALLOWED_MATERIALS = {'M_Bark', 'M_Leaf', 'M_Rock', 'M_Grass'}
 # Z (altura) para todo salvo la roca, donde se usa la dimensión mayor.
 PLAUSIBLE_RANGES_CM = {
     'palm':   ('z', 550.0, 1450.0),
-    'tree':   ('z', 450.0, 3900.0),   # el gigante de dosel llega a 25-35 m (+ copa)
+    'tree':   ('z', 450.0, 4300.0),   # el gigante de dosel llega a 25-35 m + copa grande
+                                       # (cartoon Sea of Thieves, 2026-09-27: copas más
+                                       # voluminosas a propósito, ver make_leaf_cluster_cards)
     'shrub':  ('z', 15.0, 900.0),     # bambú denso hasta 8 m
     'rock':   ('max', 12.0, 170.0),
     'grass':  ('z', 4.0, 170.0),      # hierba alta hasta 1,5 m

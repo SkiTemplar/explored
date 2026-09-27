@@ -1,0 +1,560 @@
+{
+  "generated_by": "Tools/Blender/run_all.py",
+  "mesh_count": 27,
+  "meshes": [
+    {
+      "name": "SM_PalmCoconut_01",
+      "file": "Palm/SM_PalmCoconut_01.fbx",
+      "category": "palm",
+      "seed": 1001,
+      "triangles": 5032,
+      "triangle_budget": {
+        "min": 3000,
+        "max": 6000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1159.2,
+        "y": 1198.0,
+        "z": 1086.8
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_PalmCoconut_02",
+      "file": "Palm/SM_PalmCoconut_02.fbx",
+      "category": "palm",
+      "seed": 1002,
+      "triangles": 5060,
+      "triangle_budget": {
+        "min": 3000,
+        "max": 6000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1211.0,
+        "y": 1200.8,
+        "z": 946.8
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_PalmCoconut_03",
+      "file": "Palm/SM_PalmCoconut_03.fbx",
+      "category": "palm",
+      "seed": 1003,
+      "triangles": 4412,
+      "triangle_budget": {
+        "min": 3000,
+        "max": 6000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1109.8,
+        "y": 1101.8,
+        "z": 926.0
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_JungleTreeGiant_01",
+      "file": "JungleTree/SM_JungleTreeGiant_01.fbx",
+      "category": "tree",
+      "seed": 2001,
+      "triangles": 15444,
+      "triangle_budget": {
+        "min": 6000,
+        "max": 25000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1899.0,
+        "y": 1840.8,
+        "z": 3336.7
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_JungleTreeWide_01",
+      "file": "JungleTree/SM_JungleTreeWide_01.fbx",
+      "category": "tree",
+      "seed": 2002,
+      "triangles": 12780,
+      "triangle_budget": {
+        "min": 6000,
+        "max": 25000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 2147.7,
+        "y": 2168.4,
+        "z": 1650.0
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_JungleTreeMangrove_01",
+      "file": "JungleTree/SM_JungleTreeMangrove_01.fbx",
+      "category": "tree",
+      "seed": 2003,
+      "triangles": 16124,
+      "triangle_budget": {
+        "min": 6000,
+        "max": 25000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1068.2,
+        "y": 1324.6,
+        "z": 1626.8
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_JungleTreeUnderstory_01",
+      "file": "JungleTree/SM_JungleTreeUnderstory_01.fbx",
+      "category": "tree",
+      "seed": 2004,
+      "triangles": 8028,
+      "triangle_budget": {
+        "min": 6000,
+        "max": 25000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 568.0,
+        "y": 614.2,
+        "z": 1014.0
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubFernTree_01",
+      "file": "Shrub/SM_ShrubFernTree_01.fbx",
+      "category": "shrub",
+      "seed": 3001,
+      "triangles": 2604,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 264.7,
+        "y": 245.2,
+        "z": 310.8
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubFernGround_01",
+      "file": "Shrub/SM_ShrubFernGround_01.fbx",
+      "category": "shrub",
+      "seed": 3002,
+      "triangles": 1420,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 239.7,
+        "y": 272.3,
+        "z": 105.3
+      },
+      "material_slots": [
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubBanana_01",
+      "file": "Shrub/SM_ShrubBanana_01.fbx",
+      "category": "shrub",
+      "seed": 3003,
+      "triangles": 1300,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 324.7,
+        "y": 326.7,
+        "z": 327.7
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubMonstera_01",
+      "file": "Shrub/SM_ShrubMonstera_01.fbx",
+      "category": "shrub",
+      "seed": 3004,
+      "triangles": 4806,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 221.6,
+        "y": 230.3,
+        "z": 76.7
+      },
+      "material_slots": [
+        "M_Grass",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubFlowering_01",
+      "file": "Shrub/SM_ShrubFlowering_01.fbx",
+      "category": "shrub",
+      "seed": 3005,
+      "triangles": 1100,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 70.6,
+        "y": 58.5,
+        "z": 142.0
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubBamboo_01",
+      "file": "Shrub/SM_ShrubBamboo_01.fbx",
+      "category": "shrub",
+      "seed": 3006,
+      "triangles": 8714,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 137.8,
+        "y": 136.6,
+        "z": 810.1
+      },
+      "material_slots": [
+        "M_Grass",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_ShrubPandanus_01",
+      "file": "Shrub/SM_ShrubPandanus_01.fbx",
+      "category": "shrub",
+      "seed": 3007,
+      "triangles": 1412,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 9000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 202.9,
+        "y": 218.9,
+        "z": 186.0
+      },
+      "material_slots": [
+        "M_Bark",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_RockBoulder_01",
+      "file": "Rock/SM_RockBoulder_01.fbx",
+      "category": "rock",
+      "seed": 4001,
+      "triangles": 1280,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 82.1,
+        "y": 79.2,
+        "z": 70.5
+      },
+      "material_slots": [
+        "M_Rock"
+      ]
+    },
+    {
+      "name": "SM_RockFlat_01",
+      "file": "Rock/SM_RockFlat_01.fbx",
+      "category": "rock",
+      "seed": 4002,
+      "triangles": 1200,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 85.8,
+        "y": 66.1,
+        "z": 22.1
+      },
+      "material_slots": [
+        "M_Rock"
+      ]
+    },
+    {
+      "name": "SM_RockBasalt_01",
+      "file": "Rock/SM_RockBasalt_01.fbx",
+      "category": "rock",
+      "seed": 4003,
+      "triangles": 1200,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 41.6,
+        "y": 37.8,
+        "z": 84.5
+      },
+      "material_slots": [
+        "M_Rock"
+      ]
+    },
+    {
+      "name": "SM_RockBeach_01",
+      "file": "Rock/SM_RockBeach_01.fbx",
+      "category": "rock",
+      "seed": 4004,
+      "triangles": 1280,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 58.9,
+        "y": 49.3,
+        "z": 27.6
+      },
+      "material_slots": [
+        "M_Rock"
+      ]
+    },
+    {
+      "name": "SM_RockVolcanic_01",
+      "file": "Rock/SM_RockVolcanic_01.fbx",
+      "category": "rock",
+      "seed": 4005,
+      "triangles": 1280,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 99.1,
+        "y": 89.4,
+        "z": 86.9
+      },
+      "material_slots": [
+        "M_Rock"
+      ]
+    },
+    {
+      "name": "SM_GrassTallA_01",
+      "file": "Grass/SM_GrassTallA_01.fbx",
+      "category": "grass",
+      "seed": 5001,
+      "triangles": 130,
+      "triangle_budget": {
+        "min": 0,
+        "max": 700,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 29.8,
+        "y": 30.5,
+        "z": 154.6
+      },
+      "material_slots": [
+        "M_Grass"
+      ]
+    },
+    {
+      "name": "SM_GrassTallB_01",
+      "file": "Grass/SM_GrassTallB_01.fbx",
+      "category": "grass",
+      "seed": 5002,
+      "triangles": 90,
+      "triangle_budget": {
+        "min": 0,
+        "max": 700,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 60.9,
+        "y": 77.7,
+        "z": 156.7
+      },
+      "material_slots": [
+        "M_Grass"
+      ]
+    },
+    {
+      "name": "SM_GrassLowWide_01",
+      "file": "Grass/SM_GrassLowWide_01.fbx",
+      "category": "grass",
+      "seed": 5003,
+      "triangles": 220,
+      "triangle_budget": {
+        "min": 0,
+        "max": 700,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 39.2,
+        "y": 41.9,
+        "z": 33.4
+      },
+      "material_slots": [
+        "M_Grass"
+      ]
+    },
+    {
+      "name": "SM_FlowerTropical_01",
+      "file": "Grass/SM_FlowerTropical_01.fbx",
+      "category": "grass",
+      "seed": 5004,
+      "triangles": 440,
+      "triangle_budget": {
+        "min": 0,
+        "max": 700,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 15.4,
+        "y": 14.0,
+        "z": 27.5
+      },
+      "material_slots": [
+        "M_Grass",
+        "M_Leaf"
+      ]
+    },
+    {
+      "name": "SM_DebrisLogMoss_01",
+      "file": "Debris/SM_DebrisLogMoss_01.fbx",
+      "category": "debris",
+      "seed": 6001,
+      "triangles": 1172,
+      "triangle_budget": {
+        "min": 100,
+        "max": 4500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 62.7,
+        "y": 435.9,
+        "z": 53.5
+      },
+      "material_slots": [
+        "M_Bark"
+      ]
+    },
+    {
+      "name": "SM_DebrisStump_01",
+      "file": "Debris/SM_DebrisStump_01.fbx",
+      "category": "debris",
+      "seed": 6002,
+      "triangles": 726,
+      "triangle_budget": {
+        "min": 100,
+        "max": 4500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 46.4,
+        "y": 47.2,
+        "z": 71.6
+      },
+      "material_slots": [
+        "M_Bark"
+      ]
+    },
+    {
+      "name": "SM_DebrisBranch_01",
+      "file": "Debris/SM_DebrisBranch_01.fbx",
+      "category": "debris",
+      "seed": 6003,
+      "triangles": 1352,
+      "triangle_budget": {
+        "min": 100,
+        "max": 4500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 214.2,
+        "y": 144.2,
+        "z": 58.6
+      },
+      "material_slots": [
+        "M_Bark"
+      ]
+    },
+    {
+      "name": "SM_DebrisCoconuts_01",
+      "file": "Debris/SM_DebrisCoconuts_01.fbx",
+      "category": "debris",
+      "seed": 6004,
+      "triangles": 400,
+      "triangle_budget": {
+        "min": 100,
+        "max": 4500,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 39.2,
+        "y": 87.8,
+        "z": 24.8
+      },
+      "material_slots": [
+        "M_Bark"
+      ]
+    }
+  ]
+}
