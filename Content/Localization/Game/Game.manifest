@@ -255,7 +255,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TwoHandedNoStore",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 310"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 314"
 						}
 					]
 				},
@@ -442,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 273"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 277"
 						}
 					]
 				},
@@ -855,6 +855,55 @@
 						{
 							"Key": "Occupied",
 							"Path": "Source/Explored/Building/BuildingSubsystem.cpp - line 277"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredHarvest",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Picar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbMine",
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 840"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recoger"
+					},
+					"Keys": [
+						{
+							"Key": "VerbGather",
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 836"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Talar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbChop",
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 844"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{Verb} ({Hits}/{Required})"
+					},
+					"Keys": [
+						{
+							"Key": "VerbProgress",
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 853"
 						}
 					]
 				}
@@ -1577,12 +1626,45 @@
 				},
 				{
 					"Source": {
+						"Text": "Energía"
+					},
+					"Keys": [
+						{
+							"Key": "NeedEnergy",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 241"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "English"
 					},
 					"Keys": [
 						{
 							"Key": "LangEn",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 469"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Escorbuto"
+					},
+					"Keys": [
+						{
+							"Key": "CondScurvy",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 295"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esguince"
+					},
+					"Keys": [
+						{
+							"Key": "CondSprain",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 289"
 						}
 					]
 				},
@@ -1604,7 +1686,7 @@
 					"Keys": [
 						{
 							"Key": "FishingWaiting",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 124"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 131"
 						}
 					]
 				},
@@ -1627,6 +1709,17 @@
 						{
 							"Key": "MuseumExhibited",
 							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 128"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Fiebre"
+					},
+					"Keys": [
+						{
+							"Key": "CondFever",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 281"
 						}
 					]
 				},
@@ -1719,6 +1812,28 @@
 						{
 							"Key": "MuseumFound",
 							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 129"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Hambre"
+					},
+					"Keys": [
+						{
+							"Key": "NeedHunger",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 239"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Herida infectada"
+					},
+					"Keys": [
+						{
+							"Key": "CondInfection",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 285"
 						}
 					]
 				},
@@ -2352,6 +2467,17 @@
 				},
 				{
 					"Source": {
+						"Text": "Quemadura solar"
+					},
+					"Keys": [
+						{
+							"Key": "CondSunBurn",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 277"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Radio de {0} m"
 					},
 					"Keys": [
@@ -2391,6 +2517,17 @@
 						{
 							"Key": "MapTabRecipes",
 							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 296"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recogido: {Item}"
+					},
+					"Keys": [
+						{
+							"Key": "PickedUpItem",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 169"
 						}
 					]
 				},
@@ -2528,12 +2665,34 @@
 				},
 				{
 					"Source": {
+						"Text": "Sangrando"
+					},
+					"Keys": [
+						{
+							"Key": "CondBleeding",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 273"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sed"
+					},
+					"Keys": [
+						{
+							"Key": "NeedThirst",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 240"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
 					},
 					"Keys": [
 						{
 							"Key": "FishingLineOut",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 137"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 144"
 						}
 					]
 				},
@@ -2653,6 +2812,10 @@
 					},
 					"Keys": [
 						{
+							"Key": "NeedRest",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 242"
+						},
+						{
 							"Key": "WatchRest",
 							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 56"
 						}
@@ -2677,6 +2840,17 @@
 						{
 							"Key": "TextSize",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 487"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Temperatura"
+					},
+					"Keys": [
+						{
+							"Key": "NeedWarmth",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 243"
 						}
 					]
 				},
@@ -2863,7 +3037,7 @@
 					"Keys": [
 						{
 							"Key": "InteractPrompt",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 82"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 89"
 						}
 					]
 				},
@@ -3084,6 +3258,17 @@
 						{
 							"Key": "MapSelectedMark",
 							"Path": "Source/Explored/UI/Widgets/SExploredMapInHands.cpp - line 768"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar"
+					},
+					"Keys": [
+						{
+							"Key": "CondOpenWounds",
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 302"
 						}
 					]
 				},

@@ -707,6 +707,47 @@
 			]
 		},
 		{
+			"Namespace": "ExploredHarvest",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Talar"
+					},
+					"Translation": {
+						"Text": "Chop"
+					},
+					"Key": "VerbChop"
+				},
+				{
+					"Source": {
+						"Text": "Recoger"
+					},
+					"Translation": {
+						"Text": "Gather"
+					},
+					"Key": "VerbGather"
+				},
+				{
+					"Source": {
+						"Text": "Picar"
+					},
+					"Translation": {
+						"Text": "Mine"
+					},
+					"Key": "VerbMine"
+				},
+				{
+					"Source": {
+						"Text": "{Verb} ({Hits}/{Required})"
+					},
+					"Translation": {
+						"Text": "{Verb} ({Hits}/{Required})"
+					},
+					"Key": "VerbProgress"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredUI",
 			"Children": [
 				{
@@ -951,6 +992,69 @@
 						"Text": "Colour-blind mode"
 					},
 					"Key": "Colorblind"
+				},
+				{
+					"Source": {
+						"Text": "Sangrando"
+					},
+					"Translation": {
+						"Text": "Bleeding"
+					},
+					"Key": "CondBleeding"
+				},
+				{
+					"Source": {
+						"Text": "Fiebre"
+					},
+					"Translation": {
+						"Text": "Fever"
+					},
+					"Key": "CondFever"
+				},
+				{
+					"Source": {
+						"Text": "Herida infectada"
+					},
+					"Translation": {
+						"Text": "Infected wound"
+					},
+					"Key": "CondInfection"
+				},
+				{
+					"Source": {
+						"Text": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar"
+					},
+					"Translation": {
+						"Text": "{Count} {Count}|plural(one=wound,other=wounds) unbandaged"
+					},
+					"Key": "CondOpenWounds"
+				},
+				{
+					"Source": {
+						"Text": "Escorbuto"
+					},
+					"Translation": {
+						"Text": "Scurvy"
+					},
+					"Key": "CondScurvy"
+				},
+				{
+					"Source": {
+						"Text": "Esguince"
+					},
+					"Translation": {
+						"Text": "Sprain"
+					},
+					"Key": "CondSprain"
+				},
+				{
+					"Source": {
+						"Text": "Quemadura solar"
+					},
+					"Translation": {
+						"Text": "Sunburn"
+					},
+					"Key": "CondSunBurn"
 				},
 				{
 					"Source": {
@@ -1845,6 +1949,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Energía"
+					},
+					"Translation": {
+						"Text": "Energy"
+					},
+					"Key": "NeedEnergy"
+				},
+				{
+					"Source": {
 						"Text": "regular"
 					},
 					"Translation": {
@@ -1863,12 +1976,48 @@
 				},
 				{
 					"Source": {
+						"Text": "Hambre"
+					},
+					"Translation": {
+						"Text": "Hunger"
+					},
+					"Key": "NeedHunger"
+				},
+				{
+					"Source": {
 						"Text": "mal"
 					},
 					"Translation": {
 						"Text": "bad"
 					},
 					"Key": "NeedLow"
+				},
+				{
+					"Source": {
+						"Text": "Sueño"
+					},
+					"Translation": {
+						"Text": "Sleep"
+					},
+					"Key": "NeedRest"
+				},
+				{
+					"Source": {
+						"Text": "Sed"
+					},
+					"Translation": {
+						"Text": "Thirst"
+					},
+					"Key": "NeedThirst"
+				},
+				{
+					"Source": {
+						"Text": "Temperatura"
+					},
+					"Translation": {
+						"Text": "Temperature"
+					},
+					"Key": "NeedWarmth"
 				},
 				{
 					"Source": {
@@ -1932,6 +2081,15 @@
 						"Text": "Paused"
 					},
 					"Key": "Paused"
+				},
+				{
+					"Source": {
+						"Text": "Recogido: {Item}"
+					},
+					"Translation": {
+						"Text": "Picked up: {Item}"
+					},
+					"Key": "PickedUpItem"
 				},
 				{
 					"Source": {
