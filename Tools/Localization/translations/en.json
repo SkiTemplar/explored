@@ -276,7 +276,20 @@
 		"SlotsOverwrite": { "es": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad.", "en": "Overwrite {0}? The previous game is kept as a backup." },
 		"SlotsConfirmOverwrite": { "es": "Sobrescribir", "en": "Overwrite" },
 		"SlotsSaved": { "es": "Partida guardada en la {0}.", "en": "Game saved in {0}." },
-		"SlotsSaveFailed": { "es": "No se pudo guardar la partida.", "en": "The game couldn't be saved." }
+		"SlotsSaveFailed": { "es": "No se pudo guardar la partida.", "en": "The game couldn't be saved." },
+		"PickedUpItem": { "es": "Recogido: {Item}", "en": "Picked up: {Item}" },
+		"NeedHunger": { "es": "Hambre", "en": "Hunger" },
+		"NeedThirst": { "es": "Sed", "en": "Thirst" },
+		"NeedEnergy": { "es": "Energía", "en": "Energy" },
+		"NeedRest": { "es": "Sueño", "en": "Sleep" },
+		"NeedWarmth": { "es": "Temperatura", "en": "Temperature" },
+		"CondBleeding": { "es": "Sangrando", "en": "Bleeding" },
+		"CondSunBurn": { "es": "Quemadura solar", "en": "Sunburn" },
+		"CondFever": { "es": "Fiebre", "en": "Fever" },
+		"CondInfection": { "es": "Herida infectada", "en": "Infected wound" },
+		"CondSprain": { "es": "Esguince", "en": "Sprain" },
+		"CondScurvy": { "es": "Escorbuto", "en": "Scurvy" },
+		"CondOpenWounds": { "es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar", "en": "{Count} {Count}|plural(one=wound,other=wounds) unbandaged" }
 	},
 	"ExploredBuilding": {
 		"InvalidRotation": { "es": "Giro no válido", "en": "Invalid rotation" },
@@ -291,5 +304,11 @@
 		"UnknownInstance": { "es": "Esa pieza ya no existe", "en": "That piece no longer exists" },
 		"UnknownPiece": { "es": "Pieza desconocida", "en": "Unknown piece" },
 		"Unstable": { "es": "Demasiado lejos de un apoyo", "en": "Too far from a support" }
+	},
+	"ExploredHarvest": {
+		"VerbGather": { "es": "Recoger", "en": "Gather" },
+		"VerbMine": { "es": "Picar", "en": "Mine" },
+		"VerbChop": { "es": "Talar", "en": "Chop" },
+		"VerbProgress": { "es": "{Verb} ({Hits}/{Required})", "en": "{Verb} ({Hits}/{Required})" }
 	}
 }

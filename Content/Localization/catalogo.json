@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 598,
-		"cpp": 286,
-		"datos": 312,
+		"total": 619,
+		"cpp": 303,
+		"datos": 316,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -139,10 +139,10 @@
 			"en": "That hand is empty.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:273",
-				"Source/Explored/Carry/CarryComponent.cpp:302",
-				"Source/Explored/Carry/CarryComponent.cpp:424",
-				"Source/Explored/Carry/CarryComponent.cpp:585"
+				"Source/Explored/Carry/CarryComponent.cpp:277",
+				"Source/Explored/Carry/CarryComponent.cpp:306",
+				"Source/Explored/Carry/CarryComponent.cpp:428",
+				"Source/Explored/Carry/CarryComponent.cpp:589"
 			]
 		},
 		{
@@ -184,8 +184,8 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Carry/CarryComponent.cpp:110",
-				"Source/Explored/Carry/CarryComponent.cpp:323",
-				"Source/Explored/Carry/CarryComponent.cpp:610"
+				"Source/Explored/Carry/CarryComponent.cpp:327",
+				"Source/Explored/Carry/CarryComponent.cpp:614"
 			]
 		},
 		{
@@ -236,7 +236,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Carry/CarryComponent.cpp:156",
-				"Source/Explored/Carry/CarryComponent.cpp:501"
+				"Source/Explored/Carry/CarryComponent.cpp:505"
 			]
 		},
 		{
@@ -356,7 +356,7 @@
 			"en": "That takes both hands; it can't be stowed.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:310"
+				"Source/Explored/Carry/CarryComponent.cpp:314"
 			]
 		},
 		{
@@ -781,6 +781,46 @@
 			]
 		},
 		{
+			"namespace": "ExploredHarvest",
+			"key": "VerbChop",
+			"es": "Talar",
+			"en": "Chop",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:844"
+			]
+		},
+		{
+			"namespace": "ExploredHarvest",
+			"key": "VerbGather",
+			"es": "Recoger",
+			"en": "Gather",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:836"
+			]
+		},
+		{
+			"namespace": "ExploredHarvest",
+			"key": "VerbMine",
+			"es": "Picar",
+			"en": "Mine",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:840"
+			]
+		},
+		{
+			"namespace": "ExploredHarvest",
+			"key": "VerbProgress",
+			"es": "{Verb} ({Hits}/{Required})",
+			"en": "{Verb} ({Hits}/{Required})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:853"
+			]
+		},
+		{
 			"namespace": "ExploredUI",
 			"key": "AchievementDone",
 			"es": "Conseguido",
@@ -1058,6 +1098,76 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "CondBleeding",
+			"es": "Sangrando",
+			"en": "Bleeding",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:273"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondFever",
+			"es": "Fiebre",
+			"en": "Fever",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:281"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondInfection",
+			"es": "Herida infectada",
+			"en": "Infected wound",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:285"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondOpenWounds",
+			"es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar",
+			"en": "{Count} {Count}|plural(one=wound,other=wounds) unbandaged",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:302"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondScurvy",
+			"es": "Escorbuto",
+			"en": "Scurvy",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:295"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondSprain",
+			"es": "Esguince",
+			"en": "Sprain",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:289"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CondSunBurn",
+			"es": "Quemadura solar",
+			"en": "Sunburn",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:277"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "Continue",
 			"es": "Continuar",
 			"en": "Continue",
@@ -1196,7 +1306,7 @@
 			"en": "Line out: {0} m · [R] reel in · [T] let out",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:137"
+				"Source/Explored/UI/ExploredHUD.cpp:144"
 			]
 		},
 		{
@@ -1206,7 +1316,7 @@
 			"en": "Waiting for a bite… [F] reel in",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:124"
+				"Source/Explored/UI/ExploredHUD.cpp:131"
 			]
 		},
 		{
@@ -1266,7 +1376,7 @@
 			"en": "[{Key}] {Actions}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:82"
+				"Source/Explored/UI/ExploredHUD.cpp:89"
 			],
 			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
 		},
@@ -2057,6 +2167,16 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "NeedEnergy",
+			"es": "Energía",
+			"en": "Energy",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:241"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "NeedFair",
 			"es": "regular",
 			"en": "so-so",
@@ -2077,12 +2197,52 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "NeedHunger",
+			"es": "Hambre",
+			"en": "Hunger",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:239"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "NeedLow",
 			"es": "mal",
 			"en": "bad",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:120"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedRest",
+			"es": "Sueño",
+			"en": "Sleep",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:242"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedThirst",
+			"es": "Sed",
+			"en": "Thirst",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:240"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "NeedWarmth",
+			"es": "Temperatura",
+			"en": "Temperature",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:243"
 			]
 		},
 		{
@@ -2153,6 +2313,16 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:44"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PickedUpItem",
+			"es": "Recogido: {Item}",
+			"en": "Picked up: {Item}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:169"
 			]
 		},
 		{
@@ -3598,6 +3768,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "caliza.nameEs",
+			"es": "Caliza",
+			"en": "Limestone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «caliza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cangrejo.nameEs",
 			"es": "Cangrejo",
 			"en": "Crab",
@@ -3798,6 +3978,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "cristal_cuarzo.nameEs",
+			"es": "Cristal de cuarzo",
+			"en": "Quartz crystal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cristal_cuarzo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cuchillo.nameEs",
 			"es": "Cuchillo",
 			"en": "Knife",
@@ -3974,6 +4164,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «hacha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hierro_meteorito.nameEs",
+			"es": "Hierro de meteorito",
+			"en": "Meteoric iron",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hierro_meteorito» nameEs/nameEn"
 			]
 		},
 		{
@@ -4234,6 +4434,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «mero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "mineral_cobre.nameEs",
+			"es": "Mineral de cobre",
+			"en": "Copper ore",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «mineral_cobre» nameEs/nameEn"
 			]
 		},
 		{

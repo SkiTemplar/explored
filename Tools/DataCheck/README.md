@@ -24,6 +24,9 @@ Qué comprueba:
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
   Si una planta tiene `birdsEat`, debe existir la pieza `espantapajaros`
   (`FFarmModel::ScarecrowRadius`, GDD §8.7).
+- **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
+  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`;
+  nota mientras falte la plantilla del pico.
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).

@@ -1056,6 +1056,34 @@ def check_gdd_food_coverage(ds: DataSet, r: Report) -> None:
         r.info.append(f"items.json: setas por debajo del GDD §8.8: {', '.join(short)}")
 
 
+# GDD v2 §3.4 (estratos de minería): nombre del GDD -> ids de items.json que lo cubren.
+GDD_MINING = {
+    "tierra y arena": ("arena",), "arcilla": ("arcilla_roja",), "caliza": ("caliza",),
+    "basalto": ("basalto",), "obsidiana": ("obsidiana",), "veta de cobre": ("mineral_cobre",),
+    "hierro de meteorito": ("hierro_meteorito",), "azufre": ("azufre",),
+    "cristal": ("cristal_cuarzo",),
+}
+# GDD v2 §3.4: herramientas mínimas por dureza (1 pala tosca, 2 pico de piedra, 3 tallado, 4 obsidiana).
+MINING_TOOLS = ("pala", "pico")
+
+
+def check_gdd_mining(ds: DataSet, r: Report) -> None:
+    """Cada estrato del GDD v2 §3.4 deja un objeto en items.json (error si falta).
+
+    El pico aún no tiene plantilla: toda cabeza de pico (Punta o Contundente con Rigido)
+    la captura antes «hacha», así que queda como nota hasta decidir la regla
+    (docs/balance/2026-09-27-mineria.md).
+    """
+    ids = {i["id"] for i in ds.items}
+    for name, cands in GDD_MINING.items():
+        if not ids.intersection(cands):
+            r.error(f"items.json: falta el estrato «{name}» del GDD v2 §3.4 ({' o '.join(cands)})")
+    templates = {t.get("resultDefinitionId") for t in ds.templates}
+    missing = [t for t in MINING_TOOLS if t not in templates]
+    if missing:
+        r.info.append(f"templates.json: sin plantilla para herramientas de minería del GDD v2 §3.4: {', '.join(missing)}")
+
+
 # --------------------------------------------------------------------------- entrada
 
 
@@ -1081,4 +1109,5 @@ def run_all(ds: DataSet) -> Report:
     music.check_music(ds, r)
     check_forbidden_terms(ds, r)
     check_gdd_food_coverage(ds, r)
+    check_gdd_mining(ds, r)
     return r
