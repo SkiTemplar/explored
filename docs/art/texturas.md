@@ -20,8 +20,9 @@ uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2
 cd Tools/Textures && uv run --with numpy --with pillow --with pytest python -m pytest -q tests
 ```
 
-Hoja de contacto actual: [`texturas-2026-09-27c.png`](texturas-2026-09-27c.png) (catálogo
-completo: arena mojada en bandas de resaca, basalto nuevo y roca con Kuwahara suave);
+Hoja de contacto actual: [`texturas-2026-09-27d.png`](texturas-2026-09-27d.png) (catálogo
+completo con el césped nuevo en matas); [`texturas-2026-09-27c.png`](texturas-2026-09-27c.png)
+(arena mojada en bandas de resaca, basalto nuevo y roca con Kuwahara suave),
 [`texturas-2026-09-27b.png`](texturas-2026-09-27b.png) y
 [`texturas-2026-09-27.png`](texturas-2026-09-27.png) quedan como referencia histórica. Vista iluminada en 2×2 para comprobar el tileado y, debajo, la misma vista **en
 4×4 reducida** (cómo se ve a media distancia: delata la repetición) + miniaturas BC / N /
@@ -54,7 +55,7 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 |---|---|---|
 | `SandDry` | 2 m | Arena seca cartoon: crema cálida en pinceladas amplias de ondulación eólica; grano y conchas sueltas como acento discreto (no pimienta fotográfica), sin grietas. |
 | `SandWet` | 2 m | Franja de orilla: la misma arena que `SandDry` pero empapada — caramelo tostado, ~0.2 de luma más oscura y apenas más fría (nunca barro marrón ni gris). La humedad va en **bandas de resaca paralelas a la orilla (a lo largo de u)**: frente fino de espuma, detrás una película de agua oscura y brillante (rugosidad baja, reflejo de cielo a trazos) que se va secando hasta una franja escurrida más clara. Sin manchas de umbral duro (se leían como camuflaje sucio). Agujeritos de cangrejo y alguna concha. **Orienta u paralelo a la línea de costa.** |
-| `Grass` | 1.5 m | Césped pintado visto desde arriba: pinceladas direccionales blandas de 2-4 cm (integración tipo LIC a lo largo de un campo de flujo de baja frecuencia, sin geometría de celda ni contornos cerrados) con poco contraste entre matas y una deriva de tono a gran escala entre amarillento cálido y azulado frío, + florecillas. Legible como césped pintado a 3-5 m. |
+| `Grass` | 1.5 m | Césped pintado visto desde arriba: **matas en roseta** de hojas en lanza (5 capas de Voronoi de 9 a 31 celdas/tile, las matas grandes encima, cada una desvanecida antes de la junta de celda para que nunca se vea el polígono) abiertas en abanico de ~240° hacia un campo de inclinación lento (hierba peinada por el viento, no estrellas). Cada hoja va de verde hondo en la base a lima/amarillo en la punta, con tono por mata (cálido ↔ frío) y por hoja; el fondo entre matas es hierba corta verde medio, nunca negra. Florecillas de 5 pétalos escasas. Sin manchas grandes: el LIC anterior daba una mancha por tile que se veía repetida. ~17 s a 1024 y ~100 s a 2048. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
 | `GardenSoil` | 2 m | Tierra de huerto labrada: 5 camellones anchos y redondeados a lo largo de u (algo ondulados, anchura por hilera) entre surcos estrechos húmedos; terrones redondos en las laderas, migas, pocas pajas y guijarros y algún brote de dos hojitas. Cacao cálido (nunca negro ni gris). |
 | `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 5 capas de hojas grandes y legibles en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
@@ -207,7 +208,9 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y
    cálida (no fría/azulada), tablones cálidos con tono distinto por hilera, techo de paja
    cálido hecho de hebras y no de escamas, tierra de huerto cacao que no llega a casi
-   negro y se lee en hileras, lona clara con costura); genera la hoja de contacto y
+   negro y se lee en hileras, lona clara con costura, césped donde el detalle de hoja domina
+   sobre la mancha macro); `tests/test_sheet.py` comprueba que la hoja de contacto monta
+   una tarjeta para cada material (también `FoliageAtlas`, con BC RGBA y sin ARH); genera la hoja de contacto y
    **mírala** (sobre todo la miniatura 4×4) antes de darlo por bueno. `VolcanicRock` y
    `Limestone` son la excepción (fotobasheados, no `def`+`ramp` puros): ver «Roca
    fotobasheada» más arriba.
