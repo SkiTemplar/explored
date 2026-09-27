@@ -9,6 +9,9 @@ Materiales:
     /Game/Materials/M_Stars    cúpula de estrellas aditiva controlada por el parámetro «Night».
     /Game/Materials/M_PP_Body  postproceso del cuerpo: viñeta (color y fuerza) y desaturación
                                 según FBodySignals (VignetteAmount, TintColor, DesaturationAmount).
+    /Game/Generated/Materials/M_LowPoly  maestro de los packs CC0 low poly: color del atlas de
+                                paleta T_Palette_<Isla> (parámetro «Palette») y una instancia
+                                MI_LowPoly_<Isla> por isla. Ver docs/art/paleta.md.
 """
 
 import unreal
@@ -956,6 +959,83 @@ def build_rock():
     finish(m)
 
 
+# ---------------------------------------------------------------------------
+# Low poly (packs CC0: Kenney, KayKit, Quaternius) — atlas de paleta por isla
+# ---------------------------------------------------------------------------
+
+# Rutas literales (tests/test_contract.py las busca con una regex; no uses f-strings aquí).
+PALETTE_TEXTURES = {
+    "Landing": "/Game/Generated/Textures/T_Palette_Landing",
+    "Esmeralda": "/Game/Generated/Textures/T_Palette_Esmeralda",
+    "Humo": "/Game/Generated/Textures/T_Palette_Humo",
+    "Dientes": "/Game/Generated/Textures/T_Palette_Dientes",
+}
+
+LOWPOLY_COLOR_HLSL = r"""
+// Atlas de paleta (Tools/Textures/texgen/palette.py): celdas de 32 px con 4 px de margen.
+// Con mips por promedio 2×2, el bilineal de un punto dentro de la zona útil de la celda no
+// toca la vecina hasta el mip 3; se limita ahí (MaxMip) para objetos lejanos.
+float lod = min(Palette.CalculateLevelOfDetail(PaletteSampler, UV), MaxMip);
+float3 c = Texture2DSampleLevel(Palette, PaletteSampler, UV, lod).rgb;
+// Packs que traen color por vértice (algunos de Kenney): se multiplica si UseVertexColor = 1.
+return c * lerp(1.0.xxx, saturate(VC.rgb), UseVertexColor);
+"""
+
+
+def build_lowpoly():
+    """M_LowPoly + MI_LowPoly_<Isla>. Las mallas de los packs llevan UV0 apuntando a su celda
+    del atlas (u = centro de columna, v dentro de la celda; ver paleta.json)."""
+    m = rebuild_material(GENERATED_MATERIALS, "M_LowPoly")
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+
+    palette = expr(m, unreal.MaterialExpressionTextureObjectParameter, -1100, 0)
+    palette.set_editor_property("parameter_name", "Palette")
+    default_palette = unreal.EditorAssetLibrary.load_asset(PALETTE_TEXTURES["Landing"])
+    if default_palette is None:
+        raise RuntimeError("Falta T_Palette_Landing; ejecuta Tools/Textures/gen_textures.py e import_textures.py")
+    palette.set_editor_property("texture", default_palette)
+    uv = expr(m, unreal.MaterialExpressionTextureCoordinate, -1100, 200)
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -1100, 300)
+    max_mip = expr(m, unreal.MaterialExpressionScalarParameter, -1100, 450)
+    max_mip.set_editor_property("parameter_name", "MaxMip")
+    max_mip.set_editor_property("default_value", 3.0)
+    use_vc = expr(m, unreal.MaterialExpressionScalarParameter, -1100, 550)
+    use_vc.set_editor_property("parameter_name", "UseVertexColor")
+    use_vc.set_editor_property("default_value", 0.0)
+
+    color = custom(m, -700, 0, LOWPOLY_COLOR_HLSL, ["Palette", "UV", "VC", "MaxMip", "UseVertexColor"],
+                   unreal.CustomMaterialOutputType.CMOT_FLOAT3, "LowPolyColor")
+    for pin, node in (("Palette", palette), ("UV", uv), ("VC", vc), ("MaxMip", max_mip), ("UseVertexColor", use_vc)):
+        connect(node, "", color, pin)
+    to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    rough = expr(m, unreal.MaterialExpressionScalarParameter, -400, 300)
+    rough.set_editor_property("parameter_name", "Roughness")
+    rough.set_editor_property("default_value", 0.85)
+    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    spec = expr(m, unreal.MaterialExpressionConstant, -400, 400)
+    spec.set_editor_property("r", 0.3)
+    to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+    finish(m)
+
+    # Una instancia por isla: el «parámetro de isla» es la textura de paleta.
+    for island, texture_path in PALETTE_TEXTURES.items():
+        name = f"MI_LowPoly_{island}"
+        full = f"{GENERATED_MATERIALS}/{name}"
+        if unreal.EditorAssetLibrary.does_asset_exist(full):
+            mi = unreal.EditorAssetLibrary.load_asset(full)
+        else:
+            mi = ASSET_TOOLS.create_asset(name, GENERATED_MATERIALS, unreal.MaterialInstanceConstant,
+                                          unreal.MaterialInstanceConstantFactoryNew())
+        MEL.set_material_instance_parent(mi, m)
+        texture = unreal.EditorAssetLibrary.load_asset(texture_path)
+        if texture is None:
+            raise RuntimeError(f"Falta la textura {texture_path}; ejecuta Tools/Unreal/import_textures.py")
+        MEL.set_material_instance_texture_parameter_value(mi, "Palette", texture)
+        unreal.EditorAssetLibrary.save_loaded_asset(mi)
+        unreal.log(f"[Explored] Instancia lista: {full}")
+
+
 def build_vegetation_materials():
     build_foliage("M_Leaf", wind_strength=0.35, two_sided_foliage=True)
     build_foliage("M_Grass", wind_strength=0.25, two_sided_foliage=True)
@@ -970,6 +1050,7 @@ def main():
     build_stars()
     build_pp_body()
     build_vegetation_materials()
+    build_lowpoly()
 
 
 main()
