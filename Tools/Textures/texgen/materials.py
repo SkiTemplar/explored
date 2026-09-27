@@ -67,6 +67,8 @@ class Spec:
     tile_m: float
     use: str
     outputs: tuple[str, ...] = ("BC", "N", "ARH")
+    # False para atlas de celdas recortadas (no se repiten: cada card usa una celda).
+    tileable: bool = True
     extra: dict = field(default_factory=dict)
 
 
@@ -1294,7 +1296,7 @@ MATERIALS: dict[str, Spec] = {
         Spec("FoliageAtlas", foliage_atlas, 1.0,
              "Atlas 4x4 de hojas/frondas/hierba/flores recortadas por alfa para cards de "
              "follaje (kit de vegetación); t=0 base/t=1 punta por celda.",
-             outputs=("BC", "N")),
+             outputs=("BC", "N"), tileable=False),
         Spec("WaterWaves", water_waves, 6.0, "Normal de oleaje fino direccional.", outputs=("N",)),
         Spec("SeaFoam", water_foam, 6.0, "Espuma: R encaje, G burbujas, B masa, A estelas.", outputs=("M",)),
     ]

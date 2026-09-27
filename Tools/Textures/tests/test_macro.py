@@ -12,7 +12,7 @@ LUMA = np.array([0.2126, 0.7152, 0.0722])
 MACRO_MIN, MACRO_MAX = 0.015, 0.12
 
 
-@pytest.mark.parametrize("name", [n for n, s in MATERIALS.items() if "BC" in s.outputs])
+@pytest.mark.parametrize("name", [n for n, s in MATERIALS.items() if "BC" in s.outputs and s.tileable])
 def test_albedo_has_moderate_macro_variation(generated, name):
     lum = generated[name]["BC"] @ LUMA
     macro = blur(lum, 0.08).std() / lum.mean()
