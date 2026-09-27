@@ -704,3 +704,28 @@ def test_musica_descubrimiento_largo(ds: DataSet) -> None:
 def test_musica_flauta_con_notas_de_mas(ds: DataSet) -> None:
     ds.data["music_layers.json"]["flute"]["semitones"] = [0, 2, 4, 5, 7, 9]
     assert any_error(music_errors(ds), "NumNotes")
+
+
+# --------------------------------------------------------------------------- mobiliario de base sin pieza
+
+def _idle_base_note(report: Report) -> str:
+    return next((n for n in report.info if "mallas de base sin pieza" in n), "")
+
+
+def test_catre_y_muelle_usan_mallas_existentes(real: DataSet) -> None:
+    meshes = {p["id"]: p["mesh"] for p in real.building["pieces"]}
+    assert meshes["catre_bambu"] == "SM_Base_Bed"
+    assert meshes["muelle"] == "SM_Base_Dock"
+    assert meshes["muelle_final"] == "SM_Base_DockEnd"
+    assert "muelle" in piece(real, "muelle_final")["requiresPieces"]
+
+
+def test_malla_de_base_sin_pieza_es_nota_no_error(real_report: Report) -> None:
+    note = _idle_base_note(real_report)
+    assert "SM_Base_Bed" not in note and "SM_Base_Dock," not in note
+    assert not any("mallas de base sin pieza" in e for e in real_report.errors + real_report.warnings)
+
+
+def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
+    ds.data["building_pieces.json"]["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "catre_bambu"]
+    assert "SM_Base_Bed" in _idle_base_note(run_all(ds))

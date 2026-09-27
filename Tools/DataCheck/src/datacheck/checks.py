@@ -545,6 +545,15 @@ def check_meshes(ds: DataSet, r: Report) -> None:
         if b.get("mesh") is not None and b["mesh"] not in known:
             r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
 
+    # Mobiliario de la base ya modelado (SM_Base_*) que ninguna pieza usa: es
+    # contenido listo que el jugador no puede construir. Nota, no error: puede
+    # faltar un sistema (p. ej. el banco de chatarra) antes de darlo de alta.
+    used = {p.get("mesh") for p in ds.building.get("pieces", [])}
+    used |= {d.get("mesh") for d in ds.data.get("artifacts.json", {}).get("displays", [])}
+    idle = sorted(n for n in known if n.startswith("SM_Base_") and n not in used)
+    if idle:
+        r.info.append(f"building_pieces.json: mallas de base sin pieza construible: {', '.join(idle)}")
+
     pending = ds.data.get("meshes_pendientes.json", {})
     for group, expected in pending_expected(ds).items():
         listed = {e.get("id") if isinstance(e, dict) else e for e in pending.get(group, [])}

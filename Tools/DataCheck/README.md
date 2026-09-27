@@ -28,6 +28,7 @@ Qué comprueba:
 - **Mallas**: `meshPath` de `/Engine/BasicShapes` o `SM_*` generados por
   `Tools/Blender/props`; todo marcador o `null` debe estar en
   `meshes_pendientes.json`, y nada obsoleto puede quedarse allí.
+  Nota (no error) con las `SM_Base_*` de mobiliario sin ninguna pieza construible.
 - **Espejo del C++**: `survival_needs.json` contra las constantes de
   `Source/Explored/Survival/SurvivalModel.{h,cpp}`; `ruins.json` y `artifacts.json`
   contra los ids de `LexToString` y las constantes de `Source/Explored/Ruins/*Model.{h,cpp}`
