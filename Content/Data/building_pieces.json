@@ -920,7 +920,7 @@
       "buildMinutes": 25,
       "integrity": 55,
       "maxCycloneCategory": 2,
-      "mesh": null
+      "mesh": "SM_Base_MuseumPanel"
     },
     {
       "id": "astillero",
