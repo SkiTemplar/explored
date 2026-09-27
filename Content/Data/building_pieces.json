@@ -854,6 +854,75 @@
       "mesh": "SM_Base_DisplayShelf"
     },
     {
+      "id": "vitrina_museo",
+      "nameEs": "Vitrina",
+      "nameEn": "Display case",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 2
+        },
+        {
+          "item": "bambu_fino",
+          "count": 4
+        },
+        {
+          "item": "resina",
+          "count": 2
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha",
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 35,
+      "integrity": 50,
+      "maxCycloneCategory": 2,
+      "mesh": "SM_Base_DisplayCase"
+    },
+    {
+      "id": "panel_museo",
+      "nameEs": "Panel de pared del museo",
+      "nameEn": "Museum wall panel",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_blanda",
+          "count": 3
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        },
+        {
+          "item": "resina",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [
+        "pared_madera"
+      ],
+      "buildMinutes": 25,
+      "integrity": 55,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
       "id": "astillero",
       "nameEs": "Astillero",
       "nameEn": "Shipyard",

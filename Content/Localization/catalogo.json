@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 592,
+		"total": 594,
 		"cpp": 286,
-		"datos": 306,
+		"datos": 308,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3038,6 +3038,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "panel_museo.nameEs",
+			"es": "Panel de pared del museo",
+			"en": "Museum wall panel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «panel_museo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "pared_bambu.nameEs",
 			"es": "Pared de bambú",
 			"en": "Bamboo wall",
@@ -3224,6 +3234,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «telar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "vitrina_museo.nameEs",
+			"es": "Vitrina",
+			"en": "Display case",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn"
 			]
 		},
 		{

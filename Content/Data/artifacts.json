@@ -150,7 +150,7 @@
       "id": "vitrina_museo",
       "nameEs": "Vitrina",
       "nameEn": "Display case",
-      "piece": null,
+      "piece": "vitrina_museo",
       "mesh": "SM_Base_DisplayCase",
       "slots": [
         {
@@ -167,7 +167,7 @@
       "id": "panel_museo",
       "nameEs": "Panel de pared del museo",
       "nameEn": "Museum wall panel",
-      "piece": null,
+      "piece": "panel_museo",
       "mesh": null,
       "slots": [
         {
