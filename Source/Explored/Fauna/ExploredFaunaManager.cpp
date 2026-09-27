@@ -402,6 +402,10 @@ void AExploredFaunaManager::SpawnGroup(const FFaunaSpawn& Spawn, const FIntPoint
 		{
 			Entry.Anim.Add({FFaunaAnimation::InitialPhase(Spawn.Seed + I)});
 		}
+		// Las instancias nacen en el origen del mundo: se colocan ya, sin
+		// esperar al primer tick con LodDelta > 0 (en Frozen no llega nunca).
+		WriteInstances(GroupComponents.IsValidIndex(Entry.ComponentIndex) ? GroupComponents[Entry.ComponentIndex].Get() : nullptr,
+			Entry.Model.GetBoids(), Entry.Species, Entry.Anim, 0.0f);
 		return;
 	}
 
@@ -426,6 +430,10 @@ void AExploredFaunaManager::SpawnGroup(const FFaunaSpawn& Spawn, const FIntPoint
 		{
 			Entry.Anim.Add({FFaunaAnimation::InitialPhase(Spawn.Seed + I)});
 		}
+		// Las instancias nacen en el origen del mundo: se colocan ya, sin
+		// esperar al primer tick con LodDelta > 0 (en Frozen no llega nunca).
+		WriteInstances(GroupComponents.IsValidIndex(Entry.ComponentIndex) ? GroupComponents[Entry.ComponentIndex].Get() : nullptr,
+			Entry.Model.GetBoids(), Entry.Species, Entry.Anim, 0.0f);
 		return;
 	}
 

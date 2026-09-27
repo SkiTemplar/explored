@@ -501,6 +501,10 @@ void UFarmSubsystem::LoadSaveState(const FFarmState& InState)
 	if (Model)
 	{
 		Model->SetState(InState);
+		// La lluvia medida en la sesión descartada no riega la partida cargada.
+		LiveRainHours = 0.0f;
+		LiveRainDay = INDEX_NONE;
+		LastTotalDays = -1.0f;
 		OnPlotChanged.Broadcast(INDEX_NONE);
 	}
 }

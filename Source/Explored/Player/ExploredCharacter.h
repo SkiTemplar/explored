@@ -209,6 +209,8 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> WatchAction;
+
+	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> FishAction;
 
 	UPROPERTY(Transient)

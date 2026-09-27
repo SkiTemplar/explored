@@ -104,7 +104,12 @@ void URuinsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 					FRuinsState RuinsState;
 					FMuseumState MuseumState;
 					ExploredSaveStates::LoadRuins(Ar, RuinsState, MuseumState);
-					Self->LoadSavedState(RuinsState, MuseumState);
+					// Sin sección (partida anterior a las ruinas) se conservan los
+					// muebles del museo que ya registró el nivel.
+					if (!Ar.IsEmpty())
+					{
+						Self->LoadSavedState(RuinsState, MuseumState);
+					}
 				}
 			});
 	}

@@ -1171,6 +1171,11 @@ void UExploredWiringSubsystem::ApplyPendingPawnSections()
 			ESurvivalMode Mode = Body->GetModeSettings().Mode;
 			ExploredSaveStates::LoadSurvival(PendingBody.GetValue(), State, Mode);
 			Body->RestoreSurvival(State, Mode);
+			// La fauna se enlazó con el modo por defecto: el cargado manda (GDD §11).
+			if (AExploredFaunaManager* Fauna = BoundFauna.Get())
+			{
+				Fauna->SetPeaceful(Body->GetModeSettings().Mode == ESurvivalMode::Explorer);
+			}
 		}
 		PendingBody.Reset();
 	}

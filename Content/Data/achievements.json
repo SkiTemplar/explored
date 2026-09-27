@@ -413,7 +413,7 @@
       "descriptionEn": "Watch the turtle hatchlings make their way to the sea.",
       "hidden": false,
       "icon": "tortuga",
-      "condition": {"stat": "events_witnessed", "contains": "TurtleNesting"}
+      "condition": {"stat": "events_witnessed", "contains": "TurtleHatchlings"}
     },
     {
       "id": "canto_de_ballenas",
