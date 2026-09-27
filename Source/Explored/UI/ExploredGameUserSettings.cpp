@@ -81,14 +81,12 @@ void UExploredGameUserSettings::SetToDefaults()
 {
 	Super::SetToDefaults();
 
-	// Super::SetToDefaults() deja los grupos de escalabilidad (sg.*) en Épico (3): es el nivel más
-	// caro (Lumen a resolución de sondas máxima, reflejos a downsample=1, VSM sin bias de resolución,
-	// niebla volumétrica a grid de 8 px, TSR.History.ScreenPercentage=200 — pensado para capturas,
-	// no para juego en tiempo real) y no depende de la GPU real del jugador: sin un
-	// RunHardwareBenchmark() en el arranque, todo el mundo recibe Épico de fábrica, incluida una GPU
-	// media. Alto (2) es el nivel que Epic ya calibra para tarjetas de gama media/alta (Lumen a
-	// downsample=32, reflejos a downsample=2, niebla a grid de 16 px, TSR sin sobremuestreo de
-	// historial) y es el que se mide en Tools/bench.ps1. El jugador lo sigue pudiendo subir a mano.
+	// SetToDefaults() solo corre cuando el jugador pulsa «restaurar valores predeterminados» en el
+	// menú de Opciones (el arranque en frío nunca la llama: LoadSettings() lee Saved/Config o, si no
+	// existe, cae directo en el nivel que ya trae compilado UGameUserSettings — Épico/3 — sin pasar
+	// por aquí). El default de fábrica real está en Config/DefaultGameUserSettings.ini
+	// ([ScalabilityGroups] a Alto/2); este SetOverallScalabilityLevel solo mantiene «restaurar
+	// predeterminados» consistente con esa misma elección en vez de devolver al jugador a Épico.
 	SetOverallScalabilityLevel(2);
 
 	using namespace ExploredSettingsLogic;
