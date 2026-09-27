@@ -47,6 +47,7 @@ WorldGen/PointsOfInterest.cpp
 WorldGen/SurfaceNets.cpp
 WorldGen/TerrainChunkBuilder.cpp
 WorldGen/TerrainDensity.cpp
+WorldGen/TerrainEditModel.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
