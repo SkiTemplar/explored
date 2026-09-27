@@ -37,6 +37,12 @@ albedo nunca llega a negro ni blanco puros (0.035–0.95), la AO tiene suelo en 
 ensuciar, y cada textura trae **variación macro** (1–3 ciclos por tile, más cálida/fría y
 más clara/oscura) para que la repetición no se note a media distancia.
 
+**Armonía con la paleta low poly.** El albedo de `SandDry`, `SandWet`, `Grass`,
+`VolcanicRock`, `Limestone` y `Ash` sale armonizado con [`paleta.md`](paleta.md): su media
+Oklab se lleva al tono y croma de la fila `terreno` de la paleta (el detalle y el tileado no
+cambian), para que el terreno no desentone junto a los props de los packs CC0. El cambio
+más visible es la hierba, que baja de croma 0.14 a 0.115.
+
 ## Convenciones
 
 | Sufijo | Contenido | Importación |
@@ -190,6 +196,43 @@ convención actual o simplemente ajusta `RippleStrength`). `T_SeaFoam_M` puede s
 `T_WaterFoam` en `OCEAN_FOAM_HLSL`: `pattern = saturate(f.r * 0.6 + f.b * 0.4)` para la
 orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
 
+## Atlas de paleta y `M_LowPoly` (packs CC0)
+
+Los packs low poly (Kenney, KayKit, Quaternius) no usan estos juegos PBR: se colorean con
+un atlas de paleta por isla, `T_Palette_<Isla>` (`Landing`, `Esmeralda`, `Humo`, `Dientes`),
+definido en [`paleta.md`](paleta.md) y generado por `gen_palette.py` / `gen_textures.py`.
+Los nombres de textura existentes **no cambian**: el atlas es una textura nueva y el
+terreno armonizado conserva `T_SandDry_BC`, `T_Grass_BC`, etc. (mismos canales y resolución).
+
+1. `gen_textures.py` escribe `T_Palette_<Isla>.png` y los registra en `textures.json` con
+   `kind: "palette"`. `import_textures.py` los importa en sRGB, `TC_EditorIcon` (RGBA8 sin
+   compresión por bloques), `TMGS_SimpleAverage`, `TF_Bilinear` y sin streaming.
+2. `build_materials.py › build_lowpoly()` crea `/Game/Generated/Materials/M_LowPoly`:
+   - `TextureObjectParameter` **`Palette`** (por defecto `T_Palette_Landing`): el parámetro
+     de isla.
+   - Nodo Custom que muestrea con UV0 limitando el mip a **`MaxMip`** (3, ver «sin mip
+     bleeding» en `paleta.md`):
+     ```hlsl
+     float lod = min(Palette.CalculateLevelOfDetail(PaletteSampler, UV), MaxMip);
+     float3 c = Texture2DSampleLevel(Palette, PaletteSampler, UV, lod).rgb;
+     return c * lerp(1.0.xxx, saturate(VC.rgb), UseVertexColor);
+     ```
+   - `UseVertexColor` (0 por defecto) multiplica por el color de vértice para los packs
+     que lo traen; `Roughness` 0.85, especular 0.3. Uso Nanite e instanciado como el resto
+     (`finish`).
+   - Una instancia por isla, `MI_LowPoly_<Isla>`, con su `T_Palette_<Isla>` en `Palette`.
+     Un prop se coloca con la instancia de su isla; si un actor tiene que cambiar de isla
+     en tiempo de ejecución, basta un `MaterialInstanceDynamic` que cambie `Palette`.
+3. Las mallas de los packs llevan UV0 dentro de su celda (`paleta.json`: `uv` para el color
+   exacto, `v_rango` para el degradado). El remapeo por nombre de material está pendiente;
+   `alias_packs` da la correspondencia propuesta.
+
+Los paths de `build_lowpoly()` están escritos literales (`PALETTE_TEXTURES`) para que
+`tests/test_contract.py` los valide contra el generador.
+
+**Pendiente de verificar en Unreal** (en la nube no hay editor): la compilación del nodo
+Custom y las propiedades de importación (`mip_gen_settings`, `filter`, `never_stream`).
+
 ## Añadir un material
 
 1. Escribe `def mi_material(size, seed) -> Material` en `texgen/materials.py` usando las
@@ -209,7 +252,8 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    cálida (no fría/azulada), tablones cálidos con tono distinto por hilera, techo de paja
    cálido hecho de hebras y no de escamas, tierra de huerto cacao que no llega a casi
    negro y se lee en hileras, lona clara con costura, césped donde el detalle de hoja domina
-   sobre la mancha macro); `tests/test_sheet.py` comprueba que la hoja de contacto monta
+   sobre la mancha macro); `tests/test_palette_atlas.py` cubre la paleta, el atlas y la armonización del terreno;
+`tests/test_sheet.py` comprueba que la hoja de contacto monta
    una tarjeta para cada material (también `FoliageAtlas`, con BC RGBA y sin ARH); genera la hoja de contacto y
    **mírala** (sobre todo la miniatura 4×4) antes de darlo por bueno. `VolcanicRock` y
    `Limestone` son la excepción (fotobasheados, no `def`+`ramp` puros): ver «Roca
