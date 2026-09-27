@@ -7,110 +7,110 @@
       "file": "AcantiladoFormaciones/SM_CliffWall_Basalt01.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 1985.7,
-        "y": 879.2,
-        "z": 1769.7
+        "x": 1800.0,
+        "y": 699.8,
+        "z": 1600.3
       },
-      "triangles": 3616
+      "triangles": 9702
     },
     {
       "id": "SM_CliffWall_Basalt02",
       "file": "AcantiladoFormaciones/SM_CliffWall_Basalt02.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 2313.7,
-        "y": 793.7,
-        "z": 1326.9
+        "x": 2199.6,
+        "y": 600.0,
+        "z": 1199.7
       },
-      "triangles": 3388
+      "triangles": 3874
     },
     {
       "id": "SM_CliffWall_Sandstone01",
       "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone01.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 1579.3,
-        "y": 1055.3,
-        "z": 2209.3
+        "x": 1400.0,
+        "y": 800.5,
+        "z": 1999.1
       },
-      "triangles": 4010
+      "triangles": 7984
     },
     {
       "id": "SM_CliffWall_Sandstone02",
       "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone02.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 2651.9,
-        "y": 643.5,
-        "z": 978.4
+        "x": 2500.0,
+        "y": 500.0,
+        "z": 899.8
       },
-      "triangles": 3530
+      "triangles": 3170
     },
     {
       "id": "SM_CliffSpur01",
       "file": "AcantiladoFormaciones/SM_CliffSpur01.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 954.5,
-        "y": 641.4,
-        "z": 1327.3
+        "x": 900.0,
+        "y": 500.1,
+        "z": 1199.9
       },
-      "triangles": 3860
+      "triangles": 9262
     },
     {
       "id": "SM_CliffSpur02",
       "file": "AcantiladoFormaciones/SM_CliffSpur02.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 705.5,
-        "y": 467.1,
-        "z": 1007.6
+        "x": 700.0,
+        "y": 400.2,
+        "z": 899.4
       },
-      "triangles": 3994
+      "triangles": 6880
     },
     {
       "id": "SM_CliffSpur03",
       "file": "AcantiladoFormaciones/SM_CliffSpur03.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 871.3,
-        "y": 563.4,
-        "z": 1557.7
+        "x": 799.9,
+        "y": 449.8,
+        "z": 1399.1
       },
-      "triangles": 3574
+      "triangles": 4570
     },
     {
       "id": "SM_SeaStack01",
       "file": "AcantiladoFormaciones/SM_SeaStack01.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 1008.1,
-        "y": 997.5,
-        "z": 1930.0
+        "x": 650.0,
+        "y": 599.7,
+        "z": 1799.6
       },
-      "triangles": 814
+      "triangles": 5846
     },
     {
       "id": "SM_SeaStack02",
       "file": "AcantiladoFormaciones/SM_SeaStack02.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 1215.0,
-        "y": 1174.8,
-        "z": 2500.6
+        "x": 760.0,
+        "y": 748.2,
+        "z": 2394.1
       },
-      "triangles": 920
+      "triangles": 482
     },
     {
       "id": "SM_SeaArch01",
       "file": "AcantiladoFormaciones/SM_SeaArch01.fbx",
       "group": "AcantiladoFormaciones",
       "dimensions_cm": {
-        "x": 1987.4,
-        "y": 658.1,
-        "z": 2237.6
+        "x": 2000.0,
+        "y": 700.0,
+        "z": 1996.7
       },
-      "triangles": 3158
+      "triangles": 5654
     },
     {
       "id": "SM_LimestoneSlab01",

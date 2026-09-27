@@ -1,10 +1,15 @@
 """
 _cliffkit.py — utilidades compartidas del kit de rocas y acantilados
-(Tools/Blender/props/rocks_cliffs.py): anillos de radio irregular para
-columnas rocosas, paredes de acantilado por estratos con grietas
-verticales, puentes de arco curvados y el tinte de vertice comun del kit
-(bandas de estrato, grietas oscurecidas, base humeda y una falsa oclusion
-ambiental por normal que marca las aristas).
+(Tools/Blender/props/rocks_cliffs.py) para las piezas APROBADAS de
+AcantiladoBloques: bloques/cantos (envolvente convexa de puntos en espiral
+de Fibonacci) y losas de caliza (anillo irregular extruido), mas
+`finish_rock`/`rock_tint`, compartidos con las piezas de AcantiladoFormaciones
+basadas en escaneo (ver _cliffscan.py).
+
+Las paredes/espolones/farallones/arco procedurales por bmesh que vivian
+aqui se rechazaron en la revision de arte 2026-09-27 ("se leen como
+geometria procedural, no rocas naturales") y se sustituyeron por el
+pipeline de _cliffscan.py (escaneos CC0 de Poly Haven estilizados).
 
 Vive en Tools/Blender/props/ (no toca common.py, _shapes.py ni ningun
 fichero de vegetacion: es aditivo, solo para este kit, igual que
@@ -22,7 +27,7 @@ import _shapes as S  # noqa: E402
 
 import bmesh  # noqa: E402
 import bpy  # noqa: E402
-from mathutils import Matrix, Vector, noise as mnoise  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -53,228 +58,8 @@ def bridge_rings(bm, ring_a, ring_b):
     return faces
 
 
-def cap_peak(bm, ring, z_tip, rnd, peak_jitter=0.3):
-    """Tapa un anillo con un pico quebrado (vertice central desplazado, no
-    un cono perfecto): remate de farallon o espolon."""
-    cx = sum(v.co.x for v in ring) / len(ring)
-    cy = sum(v.co.y for v in ring) / len(ring)
-    tip = bm.verts.new(Vector((cx + rnd.uniform(-peak_jitter, peak_jitter),
-                                cy + rnd.uniform(-peak_jitter, peak_jitter), z_tip)))
-    n = len(ring)
-    for i in range(n):
-        j = (i + 1) % n
-        bm.faces.new((ring[i], ring[j], tip))
-    return tip
-
-
 def cap_flat(bm, ring):
     bm.faces.new(ring)
-
-
-def build_irregular_column(name, seed, height, base_radius, tip_radius, sides=9,
-                            segments=8, radius_jitter=0.22, waist=0.0, twist=0.0,
-                            taper_curve=1.0, peak=True, z_offset=0.0):
-    """Columna rocosa irregular (farallon, espolon o pilar de arco): pila de
-    anillos de radio variable entre base_radius y tip_radius, con un pico
-    quebrado arriba (o una tapa plana si peak=False, para un pilar que
-    sigue hacia el puente de un arco)."""
-    rnd = random.Random(seed)
-    bm = bmesh.new()
-    rings = []
-    for s in range(segments + 1):
-        t = s / segments
-        z = height * t + z_offset
-        radius = base_radius + (tip_radius - base_radius) * (t ** taper_curve)
-        radius *= 1.0 - waist * math.sin(t * math.pi)
-        ring = ring_verts(bm, z, radius, sides, rnd, radius_jitter=radius_jitter,
-                           angle_offset=twist * t)
-        rings.append(ring)
-    for a, b in zip(rings[:-1], rings[1:]):
-        bridge_rings(bm, a, b)
-    if peak:
-        cap_peak(bm, rings[-1], height + z_offset + tip_radius * rnd.uniform(0.4, 0.9), rnd)
-    else:
-        cap_flat(bm, rings[-1])
-    cap_flat(bm, list(reversed(rings[0])))
-
-    bm.normal_update()
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    obj = bpy.data.objects.new(name, me)
-    C.link_object(obj)
-    return obj
-
-
-def column_top_center(height, tip_radius, z_offset=0.0):
-    """Punto aproximado del remate superior de una columna sin pico (peak=False),
-    para anclar ahi un puente de arco."""
-    return Vector((0.0, 0.0, height + z_offset))
-
-
-# ---------------------------------------------------------------------------
-# Paredes de acantilado por estratos (bmesh en rejilla: cara frontal con
-# saliente/retranqueo por banda + grietas verticales, trasera plana o
-# concava, lados y remates cerrando el volumen).
-# ---------------------------------------------------------------------------
-
-def build_strata_wall(name, seed, width, height, depth, n_bands=7,
-                       band_offset=None, x_segments=16, z_segments=18,
-                       crack_count=3, crack_depth=0.42, crack_width=0.35,
-                       top_jag=1.2, base_jag=0.9, side_jag=0.9,
-                       noise_scale=0.55, noise_strength=0.045,
-                       concave_back=0.0, taper=0.0, lean=0.0):
-    """Pared/espolon de acantilado: rejilla XZ desplazada en Y por bandas
-    horizontales (estratos que sobresalen o se retiran a saltos, no un
-    degradado) mas grietas verticales que hunden columnas concretas.
-    `taper` estrecha la anchura con la altura (0 = pared recta, >0 =
-    espolon que se afila); `lean` desplaza el eje lateralmente con la
-    altura. La cara trasera (-Y) se deja simple (plana o concava con
-    `concave_back`) porque va hundida en el terreno."""
-    rnd = random.Random(seed)
-    offset3 = Vector((rnd.uniform(-90, 90), rnd.uniform(-90, 90), rnd.uniform(-90, 90)))
-
-    # saliente/retranqueo por banda relativo al grosor de la pared: un valor
-    # absoluto fijo se notaba demasiado poco en paredes gruesas y demasiado
-    # en las finas (estratos "marcados" pide ~20-30% del grosor por salto).
-    if band_offset is None:
-        band_offset = depth * 0.4
-
-    band_shift = [0.0]
-    for _ in range(1, n_bands):
-        band_shift.append(band_shift[-1] + rnd.uniform(-band_offset, band_offset) * 0.6)
-    mean_shift = sum(band_shift) / len(band_shift)
-    band_shift = [s - mean_shift for s in band_shift]
-
-    n_cracks = max(1, crack_count)
-    crack_xs = sorted(rnd.uniform(-width * 0.4, width * 0.4) for _ in range(n_cracks))
-
-    def crack_amount(x, t):
-        amt = 0.0
-        for cx in crack_xs:
-            d = abs(x - cx)
-            amt = max(amt, math.exp(-(d / crack_width) ** 2))
-        # se cierra cerca de la cresta y de la base para no partir la silueta
-        fade = min(1.0, t / 0.12) * min(1.0, (1.0 - t) / 0.12)
-        return amt * max(0.0, fade)
-
-    bm = bmesh.new()
-    grid = [[None] * (z_segments + 1) for _ in range(x_segments + 1)]
-    for i in range(x_segments + 1):
-        u = i / x_segments
-        for j in range(z_segments + 1):
-            t = j / z_segments
-            z = height * t
-            half_w = (width * 0.5) * (1.0 - taper * t)
-            cx = lean * t
-            x = cx + (-half_w + width * (1.0 - taper * t) * u)
-
-            band = min(n_bands - 1, int(t * n_bands))
-            y = depth * 0.5 + band_shift[band]
-            y += mnoise.noise(Vector((x, 0.0, z)) * noise_scale + offset3) * noise_strength * depth
-            y -= crack_amount(x, t) * crack_depth * depth
-
-            dx = dz = 0.0
-            if j == z_segments:
-                dz = rnd.uniform(-top_jag, top_jag) * (height / z_segments)
-                dx = rnd.uniform(-0.5, 0.5)
-            elif j == 0:
-                dz = -abs(rnd.uniform(0.0, base_jag)) * (height / z_segments)
-            if i in (0, x_segments):
-                dx += rnd.uniform(-side_jag, side_jag)
-
-            grid[i][j] = bm.verts.new(Vector((x + dx, y, z + dz)))
-
-    for i in range(x_segments):
-        for j in range(z_segments):
-            a, b, c, d = grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]
-            bm.faces.new((a, b, c, d))
-
-    back = [[None] * (z_segments + 1) for _ in range(x_segments + 1)]
-    for i in range(x_segments + 1):
-        u = i / x_segments
-        for j in range(z_segments + 1):
-            t = j / z_segments
-            fx, fz = grid[i][j].co.x, grid[i][j].co.z
-            bulge = concave_back * depth * (1.0 - (2.0 * u - 1.0) ** 2) if concave_back else 0.0
-            back[i][j] = bm.verts.new(Vector((fx, -depth * 0.5 + bulge, fz)))
-
-    for i in range(x_segments):
-        for j in range(z_segments):
-            a, b, c, d = back[i][j], back[i + 1][j], back[i + 1][j + 1], back[i][j + 1]
-            bm.faces.new((d, c, b, a))  # orden invertido: normal hacia -Y
-
-    for j in range(z_segments):
-        bm.faces.new((grid[0][j], back[0][j], back[0][j + 1], grid[0][j + 1]))
-        bm.faces.new((back[x_segments][j], grid[x_segments][j],
-                       grid[x_segments][j + 1], back[x_segments][j + 1]))
-
-    for i in range(x_segments):
-        bm.faces.new((grid[i][z_segments], grid[i + 1][z_segments],
-                       back[i + 1][z_segments], back[i][z_segments]))
-        bm.faces.new((back[i][0], back[i + 1][0], grid[i + 1][0], grid[i][0]))
-
-    bm.normal_update()
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    obj = bpy.data.objects.new(name, me)
-    C.link_object(obj)
-
-    # la cara detallada se construyo mirando a +Y; el resto del kit de props
-    # (p.ej. petroglyphs.py) presenta su cara frontal hacia -Y para la
-    # camara fija de render_preview.py / preview_kit.py, asi que se espeja
-    # en Y (con flip_normals para no invertir el sombreado) en vez de
-    # duplicar toda la logica de bandas/grietas con los signos cambiados.
-    obj.data.transform(Matrix.Scale(-1.0, 4, Vector((0.0, 1.0, 0.0))))
-    obj.data.flip_normals()
-    obj.data.update()
-    return obj, crack_xs
-
-
-# ---------------------------------------------------------------------------
-# Arco marino: curva Bezier biselada con perfil en arco (no recto), misma
-# tecnica que common.make_curved_trunk pero en el plano vertical.
-# ---------------------------------------------------------------------------
-
-def build_arch_bridge(name, seed, p0, p1, rise, base_radius, tip_radius=None,
-                       n_points=9, bevel_resolution=4, wobble=0.0):
-    rnd = random.Random(seed)
-    tip_radius = base_radius if tip_radius is None else tip_radius
-    p0, p1 = Vector(p0), Vector(p1)
-
-    curve_data = bpy.data.curves.new(name + '_curve', type='CURVE')
-    curve_data.dimensions = '3D'
-    curve_data.resolution_u = 10
-    spline = curve_data.splines.new('BEZIER')
-    spline.bezier_points.add(n_points - 1)
-
-    ratio = tip_radius / base_radius if base_radius > 0 else 1.0
-    for i, bp in enumerate(spline.bezier_points):
-        t = i / (n_points - 1)
-        pos = p0.lerp(p1, t)
-        pos.z += rise * math.sin(t * math.pi)
-        wob = wobble * math.sin(t * math.pi * 3.1)
-        pos.x += rnd.uniform(-wob, wob)
-        pos.y += rnd.uniform(-wob, wob)
-        bp.co = pos
-        bp.handle_left_type = 'AUTO'
-        bp.handle_right_type = 'AUTO'
-        # mas grueso en la clave (centro) que en los arranques: perfil de
-        # arco natural, no un tubo de grosor constante.
-        arch_t = math.sin(t * math.pi)
-        bp.radius = (1.0 - t * (1.0 - ratio)) * (0.85 + 0.25 * arch_t)
-
-    curve_data.bevel_depth = base_radius
-    curve_data.bevel_resolution = bevel_resolution
-    curve_data.fill_mode = 'FULL'
-    curve_data.use_fill_caps = True
-
-    obj = bpy.data.objects.new(name, curve_data)
-    C.link_object(obj)
-    C.select_only(obj)
-    bpy.ops.object.convert(target='MESH')
-    return obj
 
 
 # ---------------------------------------------------------------------------
@@ -339,25 +124,6 @@ def build_slab(name, seed, radius, thickness, sides=10, radius_jitter=0.26):
     bm.free()
     obj = bpy.data.objects.new(name, me)
     C.link_object(obj)
-    return obj
-
-
-# ---------------------------------------------------------------------------
-# Cornisas: repisas finas adosadas a una pared, ancladas a su superficie
-# frontal en una banda de altura concreta.
-# ---------------------------------------------------------------------------
-
-def build_ledge(name, seed, width, out_depth, thickness, front_y):
-    """front_y es la coordenada de la cara frontal de la pared (negativa:
-    ver la nota de espejo en build_strata_wall); la repisa sobresale hacia
-    -Y, alejandose del bloque de la pared."""
-    rnd = random.Random(seed)
-    obj = C.make_box(name, (width, out_depth, thickness),
-                      center=(0.0, front_y - out_depth * 0.5, 0.0))
-    C.select_only(obj)
-    bpy.ops.transform.rotate(value=rnd.uniform(-0.05, 0.05), orient_axis='Z')
-    bpy.ops.transform.rotate(value=rnd.uniform(-0.06, 0.02), orient_axis='X')
-    bpy.ops.object.transform_apply(rotation=True)
     return obj
 
 

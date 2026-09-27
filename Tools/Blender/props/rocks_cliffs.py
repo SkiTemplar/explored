@@ -1,20 +1,29 @@
 """
 rocks_cliffs.py — kit de rocas y acantilados de «Explored»: paredes de
-acantilado con estratos y grietas, espolones, farallones, un arco marino,
-bloques caidos, cantos y losas de caliza. Se coloca sobre el terreno
-volumetrico en las laderas empinadas para que los cortados dejen de
-parecer terreno liso (encargo de arte 2026-09-27).
+acantilado, espolones, farallones, un arco marino, bloques caidos, cantos
+y losas de caliza. Se coloca sobre el terreno volumetrico en las laderas
+empinadas para que los cortados dejen de parecer terreno liso (encargo de
+arte 2026-09-27; AcantiladoFormaciones rehecho el mismo dia tras rechazo
+en revision — ver _cliffscan.py).
 
-Direccion de arte: cartoon tipo Sea of Thieves — roca facetada en planos
-grandes con bordes biselados que atrapan la luz, estratos marcados,
-siluetas quebradas (nunca paredes planas ni simetricas) y color de vertice
-que oscurece grietas/huecos (AO pintado) y aclara las aristas. El color
-real de superficie lo pone el material triplanar M_Stone en Unreal; el
-color de vertice de aqui es la capa de sombreado/AO sobre ese material,
-igual que en el resto del kit de props.
+Direccion de arte: cartoon tipo Sea of Thieves, referencia caliza gris
+karstica (El Nido / Ha Long) para las formaciones grandes — roca facetada
+en planos grandes con bordes biselados que atrapan la luz, siluetas
+quebradas (nunca paredes planas ni simetricas) y color de vertice que
+oscurece grietas/huecos (AO real horneado) y aclara las aristas. El color
+de superficie final lo pone el material triplanar M_Stone en Unreal; el
+color de vertice de aqui es la capa de sombreado/AO sobre ese material.
+
+Dos pipelines conviven en este fichero:
+- AcantiladoBloques (bloques, cantos, losas): geometria 100% procedural en
+  _cliffkit.py, aprobada tal cual en la revision de arte.
+- AcantiladoFormaciones (paredes, espolones, farallones, arco): escaneos
+  CC0 de Poly Haven estilizados en _cliffscan.py (voxel remesh + decimate
+  planar + bisel) — la version procedural por bmesh se rechazo por leerse
+  como geometria generada, no roca natural.
 
 Vive en Tools/Blender/props/ (no toca common.py, _shapes.py ni ningun
-fichero de vegetacion). Utilidades propias en _cliffkit.py.
+fichero de vegetacion).
 """
 
 import os
@@ -24,59 +33,78 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
 import _materials as M  # noqa: E402
 import _cliffkit as K  # noqa: E402
+import _cliffscan as SC  # noqa: E402
 
-from mathutils import Matrix  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Paletas (tinte de vertice; el albedo real es el M_Stone triplanar de Unreal)
 # ---------------------------------------------------------------------------
-_SANDSTONE = (0.50, 0.42, 0.32)   # arenisca/toba calida, tono base del archipielago
-_BASALT = (0.20, 0.19, 0.19)      # basalto gris-negro volcanico
-_LIMESTONE = (0.80, 0.75, 0.65)   # caliza clara y calida
+_SANDSTONE = (0.50, 0.42, 0.32)   # arenisca/toba calida — SOLO AcantiladoBloques (aprobado, no tocar)
+_BASALT = (0.20, 0.19, 0.19)      # basalto gris-negro volcanico (variedad oscura, ambos grupos)
+_LIMESTONE = (0.80, 0.75, 0.65)   # caliza clara y calida — SOLO AcantiladoBloques (aprobado, no tocar)
+_KARST = (0.58, 0.57, 0.52)       # caliza gris karstica (El Nido / Ha Long) — SOLO AcantiladoFormaciones
 _WET_DARK = (0.09, 0.09, 0.11)
-_CRACK_DARK = (0.05, 0.04, 0.04)
 
 GROUP_FORMACIONES = 'AcantiladoFormaciones'
 GROUP_BLOQUES = 'AcantiladoBloques'
 
 VARIANTS = [
     # -- Paredes de acantilado (8-20 m alto, 10-25 m ancho) -----------------
+    # A partir de escaneos CC0 de Poly Haven (ver _cliffscan.py y
+    # docs/art/rocas/README.md para la atribucion): voxel remesh + decimate
+    # planar + bisel, nunca la geometria fotogrametrica en crudo.
     dict(name='CliffWall_Basalt01', seed=8001, kind='wall', group=GROUP_FORMACIONES,
-         width=18.0, height=16.0, depth=7.0, n_bands=7, crack_count=3,
-         palette=_BASALT, n_ledges=2, tri_budget=(2500, 9000)),
+         width=18.0, height=16.0, depth=7.0,
+         sources=[
+             dict(id='namaqualand_cliff_01', width_frac=0.60, x_frac=-0.22),
+             dict(id='namaqualand_cliff_01', width_frac=0.60, x_frac=0.24, mirror=True),
+         ],
+         palette=_BASALT, tri_budget=(2000, 14000)),
     dict(name='CliffWall_Basalt02', seed=8002, kind='wall', group=GROUP_FORMACIONES,
-         width=22.0, height=12.0, depth=6.0, n_bands=6, crack_count=4,
-         palette=_BASALT, n_ledges=1, tri_budget=(2500, 9000)),
+         width=22.0, height=12.0, depth=6.0,
+         sources=[dict(id='namaqualand_cliff_02', width_frac=1.0, x_frac=0.0)],
+         palette=_BASALT, tri_budget=(2000, 14000)),
     dict(name='CliffWall_Sandstone01', seed=8003, kind='wall', group=GROUP_FORMACIONES,
-         width=14.0, height=20.0, depth=8.0, n_bands=9, crack_count=2,
-         palette=_SANDSTONE, n_ledges=3, concave_back=0.15, tri_budget=(2500, 9500)),
+         width=14.0, height=20.0, depth=8.0,
+         sources=[
+             dict(id='namaqualand_cliff_01', width_frac=0.68, x_frac=-0.16),
+             dict(id='namaqualand_boulder_02', width_frac=0.55, x_frac=0.30, mirror=True),
+         ],
+         palette=_KARST, tri_budget=(2000, 14000)),
     dict(name='CliffWall_Sandstone02', seed=8004, kind='wall', group=GROUP_FORMACIONES,
-         width=25.0, height=9.0, depth=5.0, n_bands=5, crack_count=5,
-         palette=_SANDSTONE, n_ledges=1, tri_budget=(2500, 9500)),
+         width=25.0, height=9.0, depth=5.0,
+         sources=[dict(id='coastal_cliff_04', width_frac=1.0, x_frac=0.0)],
+         palette=_KARST, tri_budget=(2000, 14000)),
 
     # -- Espolones (salientes que rompen la linea recta del cortado) --------
     dict(name='CliffSpur01', seed=8101, kind='wall', group=GROUP_FORMACIONES,
-         width=9.0, height=12.0, depth=5.0, n_bands=5, crack_count=2,
-         palette=_SANDSTONE, n_ledges=1, taper=0.55, lean=1.6, tri_budget=(1200, 5500)),
+         width=9.0, height=12.0, depth=5.0,
+         sources=[dict(id='namaqualand_cliff_01', width_frac=1.0, x_frac=0.0)],
+         palette=_KARST, tri_budget=(1000, 15000)),
     dict(name='CliffSpur02', seed=8102, kind='wall', group=GROUP_FORMACIONES,
-         width=7.0, height=9.0, depth=4.0, n_bands=4, crack_count=2,
-         palette=_BASALT, n_ledges=0, taper=0.65, lean=-1.1, tri_budget=(1200, 5500)),
+         width=7.0, height=9.0, depth=4.0,
+         sources=[dict(id='namaqualand_boulder_02', width_frac=1.0, x_frac=0.0)],
+         palette=_BASALT, tri_budget=(1000, 15000)),
     dict(name='CliffSpur03', seed=8103, kind='wall', group=GROUP_FORMACIONES,
-         width=8.0, height=14.0, depth=4.5, n_bands=6, crack_count=3,
-         palette=_SANDSTONE, n_ledges=1, taper=0.5, lean=0.9, tri_budget=(1200, 5500)),
+         width=8.0, height=14.0, depth=4.5,
+         sources=[dict(id='namaqualand_cliff_02', width_frac=1.0, x_frac=0.0)],
+         palette=_KARST, tri_budget=(1000, 15000)),
 
-    # -- Farallones (agujas marinas, 10-25 m) --------------------------------
+    # -- Farallones (agujas marinas, 10-25 m): un escaneo estirado en vertical
     dict(name='SeaStack01', seed=8201, kind='stack', group=GROUP_FORMACIONES,
-         height=18.0, base_radius=4.5, tip_radius=1.8, sides=11, segments=11,
-         waist=0.18, twist=0.3, palette=_SANDSTONE, tri_budget=(500, 2500)),
+         source='namaqualand_boulder_02', width=6.5, depth=6.0, height=18.0,
+         palette=_KARST, tri_budget=(400, 9000)),
     dict(name='SeaStack02', seed=8202, kind='stack', group=GROUP_FORMACIONES,
-         height=24.0, base_radius=5.5, tip_radius=1.4, sides=12, segments=12,
-         waist=0.24, twist=-0.4, palette=_BASALT, tri_budget=(500, 2800)),
+         source='moon_rock_01', lod='LOD1', width=8.0, depth=7.5, height=24.0,
+         palette=_BASALT, tri_budget=(400, 9000)),
 
-    # -- Arco marino (~20 m) --------------------------------------------------
+    # -- Arco marino (~20 m): booleano de un tunel a traves de un bloque
+    # de escaneo grande, no un tubo aparte.
     dict(name='SeaArch01', seed=8301, kind='arch', group=GROUP_FORMACIONES,
-         pier_height=13.0, span=14.0, rise=7.0, base_radius=2.6, tip_radius=2.1,
-         palette=_SANDSTONE, tri_budget=(1800, 6000)),
+         source='coastal_cliff_04', width=20.0, height=20.0, depth=7.0,
+         span=12.0, leg_inset=0.0, pier_z_frac=0.3, rise=7.0,
+         palette=_KARST, tri_budget=(1200, 16000)),
 
     # -- Losas planas de caliza ------------------------------------------------
     dict(name='LimestoneSlab01', seed=8401, kind='slab', group=GROUP_BLOQUES,
@@ -127,118 +155,133 @@ def build(variant):
 
 
 # ---------------------------------------------------------------------------
-# Paredes y espolones (build_strata_wall)
+# Paredes y espolones: escaneos CC0 estilizados (_cliffscan.fuse_and_stylize),
+# no geometria procedural. Rechazado en revision de arte 2026-09-27: la
+# version por bmesh se leia como "extrusion en diente de sierra".
 # ---------------------------------------------------------------------------
+def _place_source_piece(src):
+    obj = SC.import_scan(src['id'], lod_substring=src.get('lod'))
+    SC.center_and_ground(obj)
+    SC.predecimate_if_heavy(obj)
+    if src.get('mirror'):
+        obj.data.transform(Matrix.Scale(-1.0, 4, Vector((1.0, 0.0, 0.0))))
+        obj.data.flip_normals()
+        obj.data.update()
+    return obj
+
+
 @_register('wall')
 def _build_wall(v, rnd):
-    obj, crack_xs = K.build_strata_wall(
-        'Wall', seed=v['seed'], width=v['width'], height=v['height'], depth=v['depth'],
-        n_bands=v['n_bands'], crack_count=v['crack_count'],
-        concave_back=v.get('concave_back', 0.0),
-        taper=v.get('taper', 0.0), lean=v.get('lean', 0.0),
-    )
+    W, H, D = v['width'], v['height'], v['depth']
+    sources = v['sources']
+    pieces = []
+    for src in sources:
+        obj = _place_source_piece(src)
+        # SOLO un escalado UNIFORME suave aqui (mantiene la proporcion
+        # natural del escaneo). Un escaneo es una lamina fotogrametrica
+        # ABIERTA (sin trasera, ver _cliffscan.py); deformarla de forma no
+        # uniforme y fuerte ANTES del voxel remesh la pliega sobre si misma
+        # y el remesh sale hecho fragmentos sueltos (roto en la revision
+        # visual). El ajuste de tamano final, anisotropo, se aplica DESPUES
+        # de fundir/limpiar, sobre un solido ya cerrado — ahi si es seguro.
+        rough_w = W * src['width_frac'] * (1.22 if len(sources) > 1 else 1.0)
+        SC.fit_dimensions(obj, target_x=rough_w, uniform=True)
+        cx = W * src['x_frac']
+        obj.data.transform(Matrix.Translation((cx, rnd.uniform(-D * 0.1, D * 0.1), 0.0)))
+        obj.data.update()
+        pieces.append(obj)
 
-    parts = [obj]
-    n_ledges = v.get('n_ledges', 0)
-    for i in range(n_ledges):
-        band_t = rnd.uniform(0.25, 0.8)
-        z = v['height'] * band_t
-        ledge_w = v['width'] * rnd.uniform(0.14, 0.24)
-        x = rnd.uniform(-v['width'] * 0.5 + ledge_w, v['width'] * 0.5 - ledge_w)
-        ledge = K.build_ledge(f'Ledge{i}', v['seed'] + 100 + i, width=ledge_w,
-                               out_depth=v['depth'] * rnd.uniform(0.18, 0.32),
-                               thickness=v['height'] * 0.03, front_y=-v['depth'] * 0.5)
-        ledge.data.transform(Matrix.Translation((x, 0.0, z)))
-        ledge.data.update()
-        parts.append(ledge)
+    # varias piezas solapadas generan mas superficie a resolver que una
+    # sola: divisor de voxel mas bajo (voxel mas grueso) para que el
+    # recuento de tris no se dispare al combinarlas.
+    divisions = 30.0 if len(pieces) > 1 else 40.0
+    voxel_size = SC.auto_voxel_size(pieces, divisions=divisions)
+    merged = SC.fuse_and_stylize(pieces, voxel_size=voxel_size, planar_angle_deg=17.0,
+                                  smooth_factor=0.3, smooth_iterations=1, name='Wall')
+    SC.center_and_ground(merged)
+    SC.fit_dimensions(merged, target_x=W, target_y=D, target_z=H)
+    SC.cleanup_mesh(merged)
 
-    merged = C.join_objects(parts, 'Wall') if len(parts) > 1 else parts[0]
-    C.merge_by_distance(merged, dist=0.01)
-
+    ao = SC.bake_cavity_ao(merged)
     M.assign(merged, ['M_Stone'])
-    C.set_vertex_colors(merged, K.rock_tint(
-        v['palette'], v['seed'], rnd, height=v['height'], band_count=v['n_bands'],
-        crack_positions=crack_xs, crack_width=0.4, wet_height=v['height'] * 0.08,
-        dark_rgb=_CRACK_DARK,
-    ))
+    C.set_vertex_colors(merged, SC.scan_rock_tint(
+        v['palette'], ao, v['seed'], rnd, height=H, wet_height=H * 0.1, dark_rgb=_WET_DARK))
 
-    bevel_w = max(0.08, min(0.4, v['depth'] * 0.035))
+    bevel_w = max(0.10, min(0.4, D * 0.045))
     return K.finish_rock(merged, 'SM_' + v['name'], bevel_width=bevel_w,
-                          bevel_segments=2, bevel_angle_deg=38.0, smooth_angle_deg=24.0)
+                          bevel_segments=2, bevel_angle_deg=36.0, smooth_angle_deg=22.0)
 
 
 # ---------------------------------------------------------------------------
-# Farallones (columnas irregulares)
+# Farallones: un escaneo estirado en vertical (anisotropo, a proposito) y
+# refundido con voxel remesh para que el estiramiento no se lea como una
+# roca "chiclosa" sino como facetas grandes reales.
 # ---------------------------------------------------------------------------
 @_register('stack')
 def _build_stack(v, rnd):
-    obj = K.build_irregular_column(
-        'Stack', seed=v['seed'], height=v['height'], base_radius=v['base_radius'],
-        tip_radius=v['tip_radius'], sides=v['sides'], segments=v['segments'],
-        radius_jitter=0.24, waist=v.get('waist', 0.0), twist=v.get('twist', 0.0),
-        taper_curve=1.3, peak=True,
-    )
-    C.displace_mesh_noise(obj, v['seed'], strength=v['base_radius'] * 0.10,
-                           scale=1.6 / max(v['base_radius'], 0.5), octaves=2)
+    obj = SC.import_scan(v['source'], lod_substring=v.get('lod'))
+    SC.center_and_ground(obj)
+    SC.predecimate_if_heavy(obj)
 
-    M.assign(obj, ['M_Stone'])
-    C.set_vertex_colors(obj, K.rock_tint(
-        v['palette'], v['seed'], rnd, height=v['height'], band_count=8,
-        wet_height=v['height'] * 0.1, dark_rgb=_WET_DARK,
-    ))
+    voxel_size = SC.auto_voxel_size([obj], divisions=32.0)
+    merged = SC.fuse_and_stylize([obj], voxel_size=voxel_size, planar_angle_deg=16.0,
+                                  smooth_factor=0.3, smooth_iterations=1, name='Stack')
+    SC.center_and_ground(merged)
+    # el estiramiento vertical (anisotropo, deliberado: "exagera... estira
+    # en vertical los farallones") se aplica AQUI, sobre el solido ya
+    # fundido y limpio — nunca antes del remesh (ver nota en _build_wall).
+    SC.fit_dimensions(merged, target_x=v['width'], target_y=v['depth'], target_z=v['height'])
 
-    bevel_w = max(0.08, min(0.35, v['base_radius'] * 0.07))
-    return K.finish_rock(obj, 'SM_' + v['name'], bevel_width=bevel_w,
-                          bevel_segments=2, bevel_angle_deg=38.0, smooth_angle_deg=25.0)
+    # notch de marea en la base (referencia caliza karstica El Nido/Ha Long):
+    # la disolucion por oleaje socava el pie del farallon.
+    SC.carve_tide_notch(merged, z0=v['height'] * 0.02, z1=v['height'] * 0.10, pinch=0.4)
+    SC.cleanup_mesh(merged)
+
+    ao = SC.bake_cavity_ao(merged)
+    M.assign(merged, ['M_Stone'])
+    C.set_vertex_colors(merged, SC.scan_rock_tint(
+        v['palette'], ao, v['seed'], rnd, height=v['height'], wet_height=v['height'] * 0.12,
+        dark_rgb=_WET_DARK))
+
+    bevel_w = max(0.10, min(0.35, v['width'] * 0.045))
+    return K.finish_rock(merged, 'SM_' + v['name'], bevel_width=bevel_w,
+                          bevel_segments=2, bevel_angle_deg=36.0, smooth_angle_deg=22.0)
 
 
 # ---------------------------------------------------------------------------
-# Arco marino: dos pilares + puente curvado
+# Arco marino: booleano de un tunel curvado a traves de un bloque de
+# escaneo real ya estilizado, de una sola pieza (no un tubo aparte).
 # ---------------------------------------------------------------------------
 @_register('arch')
 def _build_arch(v, rnd):
-    span = v['span']
-    pier_h = v['pier_height']
-    base_r = v['base_radius']
-    tip_r = v['tip_radius']
+    W, H, D = v['width'], v['height'], v['depth']
 
-    left = K.build_irregular_column(
-        'PierL', seed=v['seed'] + 1, height=pier_h, base_radius=base_r * 1.15,
-        tip_radius=tip_r, sides=9, segments=7, radius_jitter=0.2,
-        waist=0.12, twist=0.15, taper_curve=1.1, peak=False,
+    host = SC.import_scan(v['source'])
+    SC.center_and_ground(host)
+    SC.predecimate_if_heavy(host)
+
+    voxel_size = SC.auto_voxel_size([host])
+    merged = SC.fuse_and_stylize([host], voxel_size=voxel_size, planar_angle_deg=13.0,
+                                  smooth_factor=0.3, smooth_iterations=1, name='ArchHost')
+    SC.center_and_ground(merged)
+    SC.fit_dimensions(merged, target_x=W, target_y=D, target_z=H)
+
+    pier_z = H * v.get('pier_z_frac', 0.32)
+    SC.boolean_arch_negative_cut(
+        merged, span=v['span'], pier_z=pier_z, rise=v['rise'],
+        leg_inset=v['leg_inset'], extrude_depth=D * 1.6,
+        wobble=D * 0.06, seed=v['seed'],
     )
-    left.data.transform(Matrix.Translation((-span * 0.5, 0.0, 0.0)))
-    left.data.update()
+    SC.cleanup_mesh(merged)
 
-    right = K.build_irregular_column(
-        'PierR', seed=v['seed'] + 2, height=pier_h * rnd.uniform(0.9, 1.05),
-        base_radius=base_r, tip_radius=tip_r * rnd.uniform(0.9, 1.1), sides=9,
-        segments=7, radius_jitter=0.2, waist=0.14, twist=-0.2, taper_curve=1.1,
-        peak=False,
-    )
-    right.data.transform(Matrix.Translation((span * 0.5, 0.0, 0.0)))
-    right.data.update()
-
-    bridge = K.build_arch_bridge(
-        'Bridge', seed=v['seed'] + 3,
-        p0=(-span * 0.5, 0.0, pier_h), p1=(span * 0.5, 0.0, pier_h * rnd.uniform(0.9, 1.05)),
-        rise=v['rise'], base_radius=tip_r, tip_radius=tip_r * 0.85, wobble=0.25,
-    )
-
-    merged = C.join_objects([left, right, bridge], 'Arch')
-    C.merge_by_distance(merged, dist=0.02)
-    C.displace_mesh_noise(merged, v['seed'], strength=base_r * 0.08,
-                           scale=1.3 / max(base_r, 0.5), octaves=2)
-
+    ao = SC.bake_cavity_ao(merged)
     M.assign(merged, ['M_Stone'])
-    C.set_vertex_colors(merged, K.rock_tint(
-        v['palette'], v['seed'], rnd, height=pier_h + v['rise'], band_count=6,
-        wet_height=(pier_h + v['rise']) * 0.12, dark_rgb=_WET_DARK,
-    ))
+    C.set_vertex_colors(merged, SC.scan_rock_tint(
+        v['palette'], ao, v['seed'], rnd, height=H, wet_height=H * 0.15, dark_rgb=_WET_DARK))
 
-    bevel_w = max(0.08, min(0.3, base_r * 0.08))
+    bevel_w = max(0.10, min(0.35, D * 0.05))
     return K.finish_rock(merged, 'SM_' + v['name'], bevel_width=bevel_w,
-                          bevel_segments=2, bevel_angle_deg=38.0, smooth_angle_deg=25.0)
+                          bevel_segments=2, bevel_angle_deg=36.0, smooth_angle_deg=22.0)
 
 
 # ---------------------------------------------------------------------------

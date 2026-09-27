@@ -7,16 +7,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffWall_Basalt01.fbx",
       "seed": 8001,
-      "triangles": 3616,
+      "triangles": 9702,
       "triangle_budget": {
-        "min": 2500,
-        "max": 9000,
+        "min": 2000,
+        "max": 14000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1985.7,
-        "y": 879.2,
-        "z": 1769.7
+        "x": 1800.0,
+        "y": 699.8,
+        "z": 1600.3
       },
       "material_slots": [
         "M_Stone"
@@ -30,16 +30,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffWall_Basalt02.fbx",
       "seed": 8002,
-      "triangles": 3388,
+      "triangles": 3874,
       "triangle_budget": {
-        "min": 2500,
-        "max": 9000,
+        "min": 2000,
+        "max": 14000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 2313.7,
-        "y": 793.7,
-        "z": 1326.9
+        "x": 2199.6,
+        "y": 600.0,
+        "z": 1199.7
       },
       "material_slots": [
         "M_Stone"
@@ -53,16 +53,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone01.fbx",
       "seed": 8003,
-      "triangles": 4010,
+      "triangles": 7984,
       "triangle_budget": {
-        "min": 2500,
-        "max": 9500,
+        "min": 2000,
+        "max": 14000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1579.3,
-        "y": 1055.3,
-        "z": 2209.3
+        "x": 1400.0,
+        "y": 800.5,
+        "z": 1999.1
       },
       "material_slots": [
         "M_Stone"
@@ -76,16 +76,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffWall_Sandstone02.fbx",
       "seed": 8004,
-      "triangles": 3530,
+      "triangles": 3170,
       "triangle_budget": {
-        "min": 2500,
-        "max": 9500,
+        "min": 2000,
+        "max": 14000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 2651.9,
-        "y": 643.5,
-        "z": 978.4
+        "x": 2500.0,
+        "y": 500.0,
+        "z": 899.8
       },
       "material_slots": [
         "M_Stone"
@@ -99,16 +99,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffSpur01.fbx",
       "seed": 8101,
-      "triangles": 3860,
+      "triangles": 9262,
       "triangle_budget": {
-        "min": 1200,
-        "max": 5500,
+        "min": 1000,
+        "max": 15000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 954.5,
-        "y": 641.4,
-        "z": 1327.3
+        "x": 900.0,
+        "y": 500.1,
+        "z": 1199.9
       },
       "material_slots": [
         "M_Stone"
@@ -122,16 +122,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffSpur02.fbx",
       "seed": 8102,
-      "triangles": 3994,
+      "triangles": 6880,
       "triangle_budget": {
-        "min": 1200,
-        "max": 5500,
+        "min": 1000,
+        "max": 15000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 705.5,
-        "y": 467.1,
-        "z": 1007.6
+        "x": 700.0,
+        "y": 400.2,
+        "z": 899.4
       },
       "material_slots": [
         "M_Stone"
@@ -145,16 +145,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_CliffSpur03.fbx",
       "seed": 8103,
-      "triangles": 3574,
+      "triangles": 4570,
       "triangle_budget": {
-        "min": 1200,
-        "max": 5500,
+        "min": 1000,
+        "max": 15000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 871.3,
-        "y": 563.4,
-        "z": 1557.7
+        "x": 799.9,
+        "y": 449.8,
+        "z": 1399.1
       },
       "material_slots": [
         "M_Stone"
@@ -168,16 +168,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_SeaStack01.fbx",
       "seed": 8201,
-      "triangles": 814,
+      "triangles": 5846,
       "triangle_budget": {
-        "min": 500,
-        "max": 2500,
+        "min": 400,
+        "max": 9000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1008.1,
-        "y": 997.5,
-        "z": 1930.0
+        "x": 650.0,
+        "y": 599.7,
+        "z": 1799.6
       },
       "material_slots": [
         "M_Stone"
@@ -191,16 +191,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_SeaStack02.fbx",
       "seed": 8202,
-      "triangles": 920,
+      "triangles": 482,
       "triangle_budget": {
-        "min": 500,
-        "max": 2800,
+        "min": 400,
+        "max": 9000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1215.0,
-        "y": 1174.8,
-        "z": 2500.6
+        "x": 760.0,
+        "y": 748.2,
+        "z": 2394.1
       },
       "material_slots": [
         "M_Stone"
@@ -214,16 +214,16 @@
       "group": "AcantiladoFormaciones",
       "file": "AcantiladoFormaciones/SM_SeaArch01.fbx",
       "seed": 8301,
-      "triangles": 3158,
+      "triangles": 5654,
       "triangle_budget": {
-        "min": 1800,
-        "max": 6000,
+        "min": 1200,
+        "max": 16000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1987.4,
-        "y": 658.1,
-        "z": 2237.6
+        "x": 2000.0,
+        "y": 700.0,
+        "z": 1996.7
       },
       "material_slots": [
         "M_Stone"
