@@ -60,3 +60,33 @@ def test_palm_thatch_is_warm_straw_made_of_hanging_strands(generated):
     assert du > 4.0 * dv, f"no se leen hebras: du/dv = {du / dv:.2f}"
     # Poco hueco oscuro entre hebras (el techo cubre, no es una cortina rala).
     assert (lum < 0.2).mean() < 0.08
+
+
+def test_garden_soil_is_warm_cocoa_not_near_black(generated):
+    bc = generated["GardenSoil"]["BC"]
+    r, g, b = bc.reshape(-1, 3).mean(axis=0)
+    assert r > g > b and r - b > 0.15, f"tierra no cálida: {r:.3f} {g:.3f} {b:.3f}"
+    # Los surcos oscurecen, pero la tierra de antes era casi negra (media ~0.2) y se veía sucia.
+    lum = bc @ np.array([0.2126, 0.7152, 0.0722])
+    assert lum.mean() > 0.27, f"tierra demasiado oscura: {lum.mean():.3f}"
+    assert (lum < 0.16).mean() < 0.03
+
+
+def test_garden_soil_reads_as_rows_along_u(generated):
+    # Camellones a lo largo de u: la altura cambia mucho más en v que en u.
+    h = generated["GardenSoil"]["ARH"][..., 2]
+    across = np.abs(np.diff(h.mean(axis=1))).sum()
+    along = np.abs(np.diff(h.mean(axis=0))).sum()
+    assert across > 3.0 * along, f"no se leen hileras: {across:.2f} vs {along:.2f}"
+
+
+def test_canvas_is_light_cream_with_a_sewn_seam(generated):
+    bc = generated["Canvas"]["BC"]
+    r, g, b = bc.reshape(-1, 3).mean(axis=0)
+    assert (r + g + b) / 3 > 0.62 and r > b, f"lona oscura o fría: {r:.3f} {g:.3f} {b:.3f}"
+    # La costura de paño (en v ≈ 0.37) sube la altura media de sus filas.
+    h = generated["Canvas"]["ARH"][..., 2]
+    size = h.shape[0]
+    rows = h.mean(axis=1)
+    seam = rows[int(0.37 * size)]
+    assert seam > np.median(rows) + 0.05, "no hay costura legible"
