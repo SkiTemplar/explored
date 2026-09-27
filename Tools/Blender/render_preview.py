@@ -268,6 +268,7 @@ GROUP_ORDER_PROPS = [
     'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
     'ObjetosPequenos', 'KitPalma', 'KitBambu', 'KitMadera', 'KitPiedra',
     'MobiliarioBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
+    'AcantiladoFormaciones', 'AcantiladoBloques',
 ]
 GROUP_TARGET_HEIGHT_PROPS = {
     'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3, 'Halden': 1.6,
@@ -276,6 +277,10 @@ GROUP_TARGET_HEIGHT_PROPS = {
     'KitPalma': 1.4, 'KitBambu': 1.4, 'KitMadera': 1.4, 'KitPiedra': 1.4,
     'MobiliarioBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
     'Tesoros': 0.7, 'Items': 0.7,
+    # cada prop se normaliza a esta altura por SU PROPIA dimension mayor
+    # (ver _render_props_group): formaciones grandes vs. bloques sueltos
+    # solo necesitan alturas de encuadre distintas, no un rango real.
+    'AcantiladoFormaciones': 2.2, 'AcantiladoBloques': 1.0,
 }
 PROPS_GRID_MAX_COLS = 4
 

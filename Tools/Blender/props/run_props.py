@@ -59,6 +59,10 @@ MODULE_GROUPS = [
     ('produccion_base', 'ProduccionBase'),
     ('ruinas_polinesias', 'Ruinas'),  # grupos RuinasMarae / RuinasTallas por variante
     ('tesoros', 'Tesoros'),
+    # kit de rocas y acantilados: grupos AcantiladoFormaciones (paredes,
+    # espolones, farallones, arco) y AcantiladoBloques (bloques, cantos,
+    # losas) por variante.
+    ('rocks_cliffs', 'AcantiladoFormaciones'),
     # objetos de inventario de items.json (SM_Item_<Id>): herramientas y materiales
     ('items_herramientas', 'Items'),
     ('items_materiales', 'Items'),
