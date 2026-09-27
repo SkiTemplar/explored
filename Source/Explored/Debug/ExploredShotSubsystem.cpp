@@ -31,6 +31,7 @@
 // deprecada desde 5.6 a favor de RHIGetGPUFrameCycles().
 #include "DynamicRHI.h"
 #include "RenderTimer.h"
+#include "RHIStats.h"
 
 namespace
 {
@@ -413,13 +414,24 @@ void UExploredShotSubsystem::LogBenchSample(int32 Index)
 		GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));
 	}
 
+	// VRAM de texturas (RHI): la parte dominante del presupuesto de vídeo en este proyecto
+	// (terreno Nanite + vegetación HISM son mallas, pero sus materiales tiran de un atlas de
+	// texturas grande). No sustituye a memreport -full de abajo (que desglosa por streaming pool),
+	// pero da una cifra directa en la misma línea que el resto del bench, sin parsear otro fichero.
+	FTextureMemoryStats TextureMemoryStats;
+	RHIGetTextureMemoryStats(TextureMemoryStats);
+	const double TextureVRAMUsedMB = (TextureMemoryStats.StreamingMemorySize + TextureMemoryStats.NonStreamingMemorySize) / (1024.0 * 1024.0);
+	const double TexturePoolMB = TextureMemoryStats.TexturePoolSize / (1024.0 * 1024.0);
+
 	// Los contadores de RenderTimer.h están en ciclos de FPlatformTime; RHIGetGPUFrameCycles() es
 	// la sustituta no deprecada de GGPUFrameTime para el tiempo de GPU del último fotograma.
 	UE_LOG(LogExplored, Display,
-		TEXT("[Bench] %s: %.1f s desde el arranque · GameThread=%.2f ms RenderThread=%.2f ms RHIThread=%.2f ms GPU=%.2f ms"),
+		TEXT("[Bench] %s: %.1f s desde el arranque · GameThread=%.2f ms RenderThread=%.2f ms RHIThread=%.2f ms GPU=%.2f ms · ")
+		TEXT("VRAM texturas=%.1f MB (pool=%.1f MB)"),
 		*Shot.Name, SecondsSinceStart,
 		FPlatformTime::ToMilliseconds(GGameThreadTime), FPlatformTime::ToMilliseconds(GRenderThreadTime),
-		FPlatformTime::ToMilliseconds(GRHIThreadTime), FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
+		FPlatformTime::ToMilliseconds(GRHIThreadTime), FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()),
+		TextureVRAMUsedMB, TexturePoolMB);
 
 	// memreport -full escribe un .memreport con marca de tiempo en Saved/Profiling/MemReports/
 	// (desglose de streaming de texturas: pool pedido/usado) que pide la medición de VRAM. El

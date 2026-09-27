@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/TimerHandle.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "Save/SaveFormat.h"
@@ -125,4 +126,8 @@ private:
 	double LastAutosaveSeconds = -1.0;
 
 	FDelegateHandle PostLoadMapHandle;
+
+	/** Sondea IsStreamingCompleted() tras teleportar al punto guardado antes de mostrar al
+	 * personaje; ver ApplyPendingPlayer. */
+	FTimerHandle StreamingRevealHandle;
 };

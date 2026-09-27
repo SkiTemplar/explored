@@ -1,6 +1,7 @@
 #include "UI/ExploredMenuCamera.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/WorldPartitionStreamingSourceComponent.h"
 
 AExploredMenuCamera::AExploredMenuCamera()
 {
@@ -8,6 +9,11 @@ AExploredMenuCamera::AExploredMenuCamera()
 	// mientras el jugador está en el menú; el resto del juego no tiene tick.
 	PrimaryActorTick.bCanEverTick = true;
 	GetCameraComponent()->SetFieldOfView(65.0f);
+
+	// Sigue GetActorLocation() cada vez que World Partition actualiza sus fuentes de streaming
+	// (no hace falta que el componente tickee); con Shapes vacío usa una esfera del radio de
+	// carga de cada grid centrada en la cámara, que barre la órbita entera con ella.
+	StreamingSource = CreateDefaultSubobject<UWorldPartitionStreamingSourceComponent>(TEXT("StreamingSource"));
 }
 
 void AExploredMenuCamera::Tick(float DeltaTime)

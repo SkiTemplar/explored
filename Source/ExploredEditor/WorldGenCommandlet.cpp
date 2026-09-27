@@ -23,6 +23,12 @@
 #include "StaticMeshAttributes.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+#include "UObject/UnrealType.h"
+#include "WorldPartition/HLOD/HLODLayer.h"
+#include "WorldPartition/HLOD/IWorldPartitionHLODUtilities.h"
+#include "WorldPartition/HLOD/IWorldPartitionHLODUtilitiesModule.h"
+#include "WorldPartition/WorldPartition.h"
+#include "WorldPartition/WorldPartitionRuntimeSpatialHash.h"
 
 #include "Explored.h"
 #include "WorldGen/ArchipelagoLayout.h"
@@ -61,6 +67,212 @@ namespace
 			UE_LOG(LogExplored, Error, TEXT("No se pudo guardar %s (código %d)"), *Filename, static_cast<int32>(Result.Result));
 			return false;
 		}
+		return true;
+	}
+
+	/**
+	 * Convierte todos los actores del nivel a paquetes externos (One File Per Actor) y los guarda
+	 * uno a uno. `bUseExternalActors=true` en el nivel solo afecta a como se comportan los actores
+	 * que se creen desde ahora (no re-empaqueta los que ya existen) y, aunque lo hiciera, guardar
+	 * el paquete del mapa NO guarda los paquetes de los actores externos: cada uno vive en su
+	 * propio UPackage y hay que guardarlo aparte, o el mapa se queda sin terreno ni vegetación al
+	 * volver a abrirlo. Mismo patrón que UWorldPartitionConvertCommandlet::PrepareStreamingLevelForConversion.
+	 */
+	void SaveExternalActorPackages(UWorld* World)
+	{
+		World->PersistentLevel->ConvertAllActorsToPackaging(true);
+
+		int32 TotalActors = 0;
+		TArray<UPackage*> ActorPackages;
+		for (AActor* Actor : World->PersistentLevel->Actors)
+		{
+			if (!Actor)
+			{
+				continue;
+			}
+			++TotalActors;
+			if (Actor->IsPackageExternal())
+			{
+				Actor->MarkPackageDirty();
+				ActorPackages.Add(Actor->GetExternalPackage());
+			}
+		}
+		UE_LOG(LogExplored, Display, TEXT("OFPA: %d/%d actores externalizados"), ActorPackages.Num(), TotalActors);
+		if (ActorPackages.Num() > 0)
+		{
+			const FString SampleFile = FPackageName::LongPackageNameToFilename(ActorPackages[0]->GetName(), FPackageName::GetAssetPackageExtension());
+			UE_LOG(LogExplored, Display, TEXT("OFPA: paquete de ejemplo %s -> %s"), *ActorPackages[0]->GetName(), *SampleFile);
+		}
+
+		int32 SaveFailures = 0;
+		for (UPackage* ActorPackage : ActorPackages)
+		{
+			const FString Filename = FPackageName::LongPackageNameToFilename(ActorPackage->GetName(), FPackageName::GetAssetPackageExtension());
+			FSavePackageArgs Args;
+			Args.TopLevelFlags = RF_Standalone;
+			Args.SaveFlags = SAVE_Async | SAVE_NoError;
+			Args.Error = GError;
+			const FSavePackageResultStruct Result = UPackage::Save(ActorPackage, nullptr, *Filename, Args);
+			if (Result.Result != ESavePackageResult::Success)
+			{
+				++SaveFailures;
+				UE_LOG(LogExplored, Error, TEXT("No se pudo guardar el actor externo %s (código %d)"), *Filename, static_cast<int32>(Result.Result));
+			}
+		}
+		UPackage::WaitForAsyncFileWrites();
+		UE_LOG(LogExplored, Display, TEXT("Guardados %d paquetes de actores externos (OFPA), %d fallos"),
+			ActorPackages.Num() - SaveFailures, SaveFailures);
+	}
+
+	// ------------------------------------------------------------------
+	// World Partition: grids de streaming y capas HLOD.
+	// ------------------------------------------------------------------
+
+	const TCHAR* TerrainGridName = TEXT("MainGrid");
+	const TCHAR* VegetationGridName = TEXT("VegetationGrid");
+	const TCHAR* HLODFolder = TEXT("/Game/World/HLOD");
+
+	// Celdas de 384 m (dentro de los 256-512 m pedidos) y 1,2 km de rango de carga: con un
+	// archipiélago de 6x6 km (WorldHalfExtent=3000 m) da una rejilla de ~16x16 celdas.
+	constexpr int32 TerrainCellSizeCm = 38400;
+	constexpr double TerrainLoadingRangeCm = 120000.0;
+
+	// 512 m: mismo tamaño que las celdas de instancias que ya usa SpawnVegetation (CellSizeCm de
+	// abajo), así una celda de streaming cubre exactamente un AExploredVegetationCell. Rango de
+	// carga algo mayor que el del terreno: los HISM tardan un fotograma en construir el árbol de
+	// culling tras transmitirse.
+	constexpr int32 VegetationCellSizeCm = 51200;
+	constexpr double VegetationLoadingRangeCm = 140000.0;
+
+	// El HLOD debe recoger el testigo justo donde termina el rango de carga del grid base (si
+	// fuera menor, habría un hueco sin terreno fino NI HLOD). Terreno: una única celda HLOD mayor
+	// que el mundo entero (silueta de todas las islas siempre cargada desde cualquier punto,
+	// incluida la cámara del menú, que orbita a 3 km de radio). Vegetación: HLOD por instancing
+	// hasta 3 km; más allá, la silueta del terreno ya lleva el peso del horizonte.
+	constexpr int32 TerrainHLODCellSizeCm = 640000;
+	constexpr double TerrainHLODLoadingRangeCm = 640000.0;
+	constexpr int32 VegetationHLODCellSizeCm = 102400;
+	constexpr double VegetationHLODLoadingRangeCm = 300000.0;
+
+	/** Radio alrededor del punto de aparición que se mantiene siempre cargado
+	 * (bIsSpatiallyLoaded=false): el jugador aparece ahí antes de que exista ninguna fuente de
+	 * streaming que dispare la celda, así que no puede depender de ella. */
+	constexpr double LandingSafetyRadiusCm = 40000.0;
+
+	/**
+	 * Accede a una UPROPERTY aunque sea C++ private (Grids de UWorldPartitionRuntimeSpatialHash,
+	 * CellSize/LoadingRange de UHLODLayer no tienen setter público fuera del editor de detalles).
+	 * La reflexión de Unreal no comprueba visibilidad de C++, solo el offset real en memoria del
+	 * UPROPERTY, así que esto es seguro siempre que el nombre y el tipo coincidan exactamente con
+	 * los del header del motor.
+	 */
+	template <typename T>
+	T& AccessPrivateProperty(UObject* Object, const TCHAR* PropertyName)
+	{
+		FProperty* Property = Object->GetClass()->FindPropertyByName(PropertyName);
+		checkf(Property, TEXT("%s no tiene la propiedad %s"), *Object->GetClass()->GetName(), PropertyName);
+		return *Property->ContainerPtrToValuePtr<T>(Object);
+	}
+
+	/** Crea (o reutiliza) una capa HLOD guardada en disco con el tipo y el grid indicados. */
+	UHLODLayer* CreateHLODLayer(const FString& Name, EHLODLayerType LayerType, int32 CellSize, double LoadingRange)
+	{
+		const FString PackageName = FString::Printf(TEXT("%s/%s"), HLODFolder, *Name);
+		UPackage* Package = CreatePackage(*PackageName);
+		Package->FullyLoad();
+
+		UHLODLayer* Layer = NewObject<UHLODLayer>(Package, *Name, RF_Public | RF_Standalone);
+		Layer->SetLayerType(LayerType);
+		Layer->SetIsSpatiallyLoaded(true);
+		AccessPrivateProperty<int32>(Layer, TEXT("CellSize")) = CellSize;
+		AccessPrivateProperty<double>(Layer, TEXT("LoadingRange")) = LoadingRange;
+
+		// HLODBuilderSettings (el objeto que de verdad decide cómo fusiona/instancia el HLOD) lo crea
+		// UHLODLayer::PostLoad() según LayerType, pero solo se dispara al cargar de disco y además es
+		// privado. Aquí el asset se configura y guarda en la misma pasada sin recargarlo, así que se
+		// llama a mano al mismo módulo que usa ese PostLoad() por debajo.
+		if (IWorldPartitionHLODUtilitiesModule* HLODUtilitiesModule =
+			FModuleManager::Get().LoadModulePtr<IWorldPartitionHLODUtilitiesModule>(TEXT("WorldPartitionHLODUtilities")))
+		{
+			if (IWorldPartitionHLODUtilities* HLODUtilities = HLODUtilitiesModule->GetUtilities())
+			{
+				AccessPrivateProperty<TObjectPtr<UHLODBuilderSettings>>(Layer, TEXT("HLODBuilderSettings")) =
+					HLODUtilities->CreateHLODBuilderSettings(Layer);
+			}
+		}
+		else
+		{
+			UE_LOG(LogExplored, Warning, TEXT("No se pudo cargar WorldPartitionHLODUtilities: %s sin HLODBuilderSettings explícito"), *Name);
+		}
+
+		Layer->MarkPackageDirty();
+		SavePackageToDisk(Package, Layer, false);
+		return Layer;
+	}
+
+	/**
+	 * Configura el mapa como World Partition: grid de terreno (MainGrid) y de vegetación
+	 * (VegetationGrid) con celdas y rango de carga acordes al tamaño del archipiélago, más sus
+	 * capas HLOD (terreno fusionado/simplificado, vegetación por instancing) para que el
+	 * horizonte no desaparezca cuando esas celdas se descargan.
+	 */
+	bool SetupWorldPartition(UWorld* World)
+	{
+		// No se deja que UWorldFactory cree el World Partition (Factory->bCreateWorldPartition):
+		// en este motor/proyecto el UWorldPartitionRuntimeHash por defecto es
+		// UWorldPartitionRuntimeHashSet (el nuevo esquema orientado a capas HLOD, UE 5.4+), no
+		// UWorldPartitionRuntimeSpatialHash (grid clásico de Grids[]/CellSize/LoadingRange) sobre
+		// el que está escrito el resto de esta función. Se crea aquí a mano, pidiendo la clase
+		// clásica explícitamente.
+		World->PersistentLevel->bUseExternalActors = true;
+		UWorldPartition* Partition = UWorldPartition::CreateOrRepairWorldPartition(
+			World->GetWorldSettings(), nullptr, UWorldPartitionRuntimeSpatialHash::StaticClass());
+		if (!Partition)
+		{
+			UE_LOG(LogExplored, Error, TEXT("CreateOrRepairWorldPartition no devolvió World Partition"));
+			return false;
+		}
+		Partition->bEnableStreaming = true;
+
+		UWorldPartitionRuntimeSpatialHash* RuntimeHash = Cast<UWorldPartitionRuntimeSpatialHash>(Partition->RuntimeHash);
+		if (!RuntimeHash)
+		{
+			UE_LOG(LogExplored, Error, TEXT("RuntimeHash no es UWorldPartitionRuntimeSpatialHash (clase %s)"),
+				Partition->RuntimeHash ? *Partition->RuntimeHash->GetClass()->GetName() : TEXT("null"));
+			return false;
+		}
+
+		UHLODLayer* HLODTerrain = CreateHLODLayer(TEXT("HLOD_Terrain"), EHLODLayerType::MeshMerge,
+			TerrainHLODCellSizeCm, TerrainHLODLoadingRangeCm);
+		UHLODLayer* HLODVegetation = CreateHLODLayer(TEXT("HLOD_Vegetation"), EHLODLayerType::Instancing,
+			VegetationHLODCellSizeCm, VegetationHLODLoadingRangeCm);
+
+		FSpatialHashRuntimeGrid MainGrid;
+		MainGrid.GridName = FName(TerrainGridName);
+		MainGrid.CellSize = TerrainCellSizeCm;
+		MainGrid.LoadingRange = TerrainLoadingRangeCm;
+		MainGrid.DebugColor = FLinearColor(0.2f, 0.55f, 0.2f);
+		MainGrid.HLODLayer = HLODTerrain;
+
+		FSpatialHashRuntimeGrid VegetationGrid;
+		VegetationGrid.GridName = FName(VegetationGridName);
+		VegetationGrid.CellSize = VegetationCellSizeCm;
+		VegetationGrid.LoadingRange = VegetationLoadingRangeCm;
+		VegetationGrid.DebugColor = FLinearColor(0.1f, 0.4f, 0.1f);
+		VegetationGrid.HLODLayer = HLODVegetation;
+
+		AccessPrivateProperty<TArray<FSpatialHashRuntimeGrid>>(RuntimeHash, TEXT("Grids")) = {MainGrid, VegetationGrid};
+		Partition->SetDefaultHLODLayer(HLODTerrain);
+
+		// GetNumGrids() cuenta StreamingGrids (se genera al transmitir/cocinar, todavía vacío aquí),
+		// no Grids; se relee la propiedad de configuración para confirmar que el array de arriba
+		// cuajó de verdad.
+		const int32 ConfiguredGrids = AccessPrivateProperty<TArray<FSpatialHashRuntimeGrid>>(RuntimeHash, TEXT("Grids")).Num();
+		UE_LOG(LogExplored, Display,
+			TEXT("World Partition: %s cell=%dm range=%.0fm · %s cell=%dm range=%.0fm (Grids configurados=%d)"),
+			TerrainGridName, TerrainCellSizeCm / 100, TerrainLoadingRangeCm / 100.0,
+			VegetationGridName, VegetationCellSizeCm / 100, VegetationLoadingRangeCm / 100.0,
+			ConfiguredGrids);
 		return true;
 	}
 
@@ -261,7 +473,7 @@ namespace
 		return Mesh;
 	}
 
-	void SpawnMeshActor(UWorld* World, UStaticMesh* Mesh, const FVector& LocationCm, const FString& Label)
+	void SpawnMeshActor(UWorld* World, UStaticMesh* Mesh, const FVector& LocationCm, const FString& Label, bool bAlwaysLoaded = false)
 	{
 		FActorSpawnParameters Params;
 		Params.Name = MakeUniqueObjectName(World->PersistentLevel, AStaticMeshActor::StaticClass(), FName(*Label));
@@ -271,6 +483,10 @@ namespace
 		Actor->Tags.Add(TerrainTag);
 		Actor->SetActorLabel(Label);
 		Actor->SetFolderPath(FName(TEXT("Terrain")));
+		if (bAlwaysLoaded)
+		{
+			Actor->SetIsSpatiallyLoaded(false);
+		}
 	}
 
 	void SpawnOptional(UWorld* World, const TCHAR* ClassPath, const FVector& Location, const TCHAR* Label)
@@ -283,6 +499,8 @@ namespace
 		}
 		AActor* Actor = World->SpawnActor<AActor>(Class, Location, FRotator::ZeroRotator);
 		Actor->SetActorLabel(Label);
+		// Cielo, océano y otros actores globales: siempre cargados, no dependen del streaming.
+		Actor->SetIsSpatiallyLoaded(false);
 	}
 
 	FVector FindSpawnPoint(const FTerrainDensity& Density)
@@ -516,7 +734,7 @@ namespace
 		}
 	}
 
-	void SpawnVegetation(UWorld* World, const FTerrainDensity& Density)
+	void SpawnVegetation(UWorld* World, const FTerrainDensity& Density, const FVector& SpawnLocationCm)
 	{
 		TArray<FScatterRule> Rules = FVegetationScatter::DefaultRules();
 		ResolveScatterMeshes(Rules);
@@ -559,6 +777,14 @@ namespace
 					Cell->CellCoord = Key;
 					Cell->SetActorLabel(FString::Printf(TEXT("Vegetation_%d_%d"), Key.X, Key.Y));
 					Cell->SetFolderPath(FName(TEXT("Vegetation")));
+					Cell->SetRuntimeGrid(FName(VegetationGridName));
+					if (FVector::DistXY(CellOrigin, SpawnLocationCm) < LandingSafetyRadiusCm)
+					{
+						// Celda de vegetación de la playa de aparición: siempre cargada, igual que
+						// el terreno de esa zona (ver ComposeMap), para que el jugador no vea
+						// vegetación apareciendo de golpe en su primer segundo de juego.
+						Cell->SetIsSpatiallyLoaded(false);
+					}
 				}
 				UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh, Rules[R].Species,
 					!Rules[R].bNoCollision, Rules[R].CullDistance, Rules[R].bCastShadow);
@@ -585,24 +811,46 @@ namespace
 		UWorldFactory* Factory = NewObject<UWorldFactory>();
 		Factory->WorldType = EWorldType::Editor;
 		Factory->bInformEngineOfWorld = true;
+		// World Partition se crea a mano en SetupWorldPartition, forzando la clase clásica de
+		// RuntimeHash (ver el comentario allí); aquí se deja desactivado para que el factory no cree
+		// primero uno con la clase por defecto del proyecto.
 		Factory->bCreateWorldPartition = false;
 		UWorld* World = CastChecked<UWorld>(Factory->FactoryCreateNew(UWorld::StaticClass(), MapPackage,
 			FName(TEXT("Archipelago")), RF_Public | RF_Standalone, nullptr, GWarn));
 
-		for (const FTerrainPiece& Piece : Terrain)
+		if (!SetupWorldPartition(World))
 		{
-			SpawnMeshActor(World, Piece.Mesh, Piece.LocationCm, Piece.Mesh->GetName());
+			World->DestroyWorld(false);
+			return 1;
 		}
 
+		// El punto de aparición hace falta antes de repartir terreno y vegetación: la burbuja de
+		// LandingSafetyRadiusCm alrededor de él se marca siempre cargada (bIsSpatiallyLoaded=false)
+		// porque el jugador aparece ahí antes de que ninguna fuente de streaming la reclame.
 		const FVector Spawn = FindSpawnPoint(Density) * 100.0;
+
+		for (const FTerrainPiece& Piece : Terrain)
+		{
+			const FString Name = Piece.Mesh->GetName();
+			// El fondo marino grueso ("SM_Terrain_DeepFloor") cubre el mundo entero con una sola
+			// malla: se deja siempre cargado como red de seguridad, para que el jugador nunca caiga
+			// al vacío mientras el trozo de terreno fino de su zona todavía está transmitiéndose
+			// (p. ej. al cargar una partida guardada lejos del punto de aparición; ver
+			// UExploredSaveSubsystem::ApplyPendingPlayer).
+			const bool bAlwaysLoaded = Name == TEXT("SM_Terrain_DeepFloor") ||
+				FVector::DistXY(Piece.LocationCm, Spawn) < LandingSafetyRadiusCm;
+			SpawnMeshActor(World, Piece.Mesh, Piece.LocationCm, Name, bAlwaysLoaded);
+		}
+
 		World->SpawnActor<APlayerStart>(Spawn, FRotator::ZeroRotator)->SetActorLabel(TEXT("PlayerStart"));
 		SpawnOptional(World, TEXT("/Script/Explored.ExploredSkyController"), FVector(0, 0, 10000), TEXT("Sky"));
 		SpawnOptional(World, TEXT("/Script/Explored.ExploredOcean"), FVector::ZeroVector, TEXT("Ocean"));
 		if (bVegetation)
 		{
-			SpawnVegetation(World, Density);
+			SpawnVegetation(World, Density, Spawn);
 		}
 
+		SaveExternalActorPackages(World);
 		const bool bSaved = SavePackageToDisk(MapPackage, World, true);
 		World->DestroyWorld(false);
 		UE_LOG(LogExplored, Display, TEXT("Mapa %s con %d piezas de terreno"), bSaved ? TEXT("guardado") : TEXT("NO guardado"), Terrain.Num());

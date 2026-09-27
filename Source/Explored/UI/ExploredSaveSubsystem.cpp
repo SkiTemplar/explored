@@ -11,8 +11,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Subsystems/SubsystemCollection.h"
+#include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldPartition/WorldPartitionSubsystem.h"
 
 namespace ExploredSaveDisk
 {
@@ -285,13 +287,44 @@ void UExploredSaveSubsystem::ApplyPendingPlayer()
 	UGameInstance* GameInstance = GetGameInstance();
 	APlayerController* Controller = GameInstance ? GameInstance->GetFirstLocalPlayerController() : nullptr;
 	APawn* Pawn = Controller ? Controller->GetPawn() : nullptr;
-	if (!Pawn)
+	UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+	if (!Pawn || !World)
 	{
 		return;
 	}
 	Pawn->SetActorLocation(PlayerState.Location, /*bSweep*/ false, nullptr, ETeleportType::TeleportPhysics);
 	Controller->SetControlRotation(PlayerState.ControlRotation);
 	bPlayerPending = false;
+
+	// El punto guardado puede caer en cualquier lugar de los 6x6 km del archipiélago: con World
+	// Partition, el terreno y la vegetación de esa zona pueden tardar unos fotogramas en
+	// transmitirse tras el teleport de arriba (SM_Terrain_DeepFloor, siempre cargado, evita que se
+	// caiga al vacío mientras tanto, pero se vería el suelo grueso de repuesto en vez del terreno
+	// real). Se oculta al personaje hasta que el streaming de su celda termine, con un margen de
+	// seguridad por si nunca converge (misma idea que UExploredShotSubsystem::Tick).
+	Pawn->SetActorHiddenInGame(true);
+	World->GetTimerManager().ClearTimer(StreamingRevealHandle);
+	const double Deadline = FPlatformTime::Seconds() + 5.0;
+	TWeakObjectPtr<APawn> WeakPawn(Pawn);
+	TWeakObjectPtr<UWorld> WeakWorld(World);
+	TWeakObjectPtr<UExploredSaveSubsystem> WeakThis(this);
+	World->GetTimerManager().SetTimer(StreamingRevealHandle, FTimerDelegate::CreateLambda([WeakThis, WeakPawn, WeakWorld, Deadline]()
+	{
+		UExploredSaveSubsystem* Self = WeakThis.Get();
+		UWorld* TimerWorld = WeakWorld.Get();
+		APawn* TimerPawn = WeakPawn.Get();
+		if (!Self || !TimerWorld || !TimerPawn)
+		{
+			return;
+		}
+		const UWorldPartitionSubsystem* Partition = TimerWorld->GetSubsystem<UWorldPartitionSubsystem>();
+		const bool bReady = !Partition || Partition->IsStreamingCompleted();
+		if (bReady || FPlatformTime::Seconds() >= Deadline)
+		{
+			TimerPawn->SetActorHiddenInGame(false);
+			TimerWorld->GetTimerManager().ClearTimer(Self->StreamingRevealHandle);
+		}
+	}), 0.1f, true);
 }
 
 void UExploredSaveSubsystem::HandlePostLoadMap(UWorld* LoadedWorld)
