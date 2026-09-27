@@ -24,6 +24,15 @@ if ($Mode -eq 'hlod') {
     exit 0
 }
 
+if ($Mode -in 'bake', 'map') {
+    # El mapa se recrea desde cero: los paquetes OFPA del horneado anterior (un .uasset por actor,
+    # con GUID nuevo en cada horneado) quedarían huérfanos y World Partition los cargaría duplicados.
+    foreach ($dir in 'Content\__ExternalActors__\Maps\Archipelago', 'Content\__ExternalObjects__\Maps\Archipelago') {
+        $path = Join-Path $ProjectRoot $dir
+        if (Test-Path $path) { Remove-Item -Recurse -Force $path }
+    }
+}
+
 $cmdArgs = @($UProject, '-run=ExploredWorldGen', "-mode=$Mode", "-seed=$Seed",
     '-unattended', '-nosplash', '-nopause', '-stdout', '-FullStdOutLogOutput')
 if ($Extra) { $cmdArgs += $Extra.Split(' ') }

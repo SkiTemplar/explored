@@ -81,12 +81,12 @@ namespace
 	 * propio UPackage y hay que guardarlo aparte, o el mapa se queda sin terreno ni vegetación al
 	 * volver a abrirlo. Mismo patrón que UWorldPartitionConvertCommandlet::PrepareStreamingLevelForConversion.
 	 */
-	void SaveExternalActorPackages(UWorld* World)
+	bool SaveExternalActorPackages(UWorld* World)
 	{
 		World->PersistentLevel->ConvertAllActorsToPackaging(true);
 
 		int32 TotalActors = 0;
-		TArray<UPackage*> ActorPackages;
+		TArray<AActor*> ExternalActors;
 		for (AActor* Actor : World->PersistentLevel->Actors)
 		{
 			if (!Actor)
@@ -97,34 +97,38 @@ namespace
 			if (Actor->IsPackageExternal())
 			{
 				Actor->MarkPackageDirty();
-				ActorPackages.Add(Actor->GetExternalPackage());
+				ExternalActors.Add(Actor);
 			}
 		}
-		UE_LOG(LogExplored, Display, TEXT("OFPA: %d/%d actores externalizados"), ActorPackages.Num(), TotalActors);
-		if (ActorPackages.Num() > 0)
-		{
-			const FString SampleFile = FPackageName::LongPackageNameToFilename(ActorPackages[0]->GetName(), FPackageName::GetAssetPackageExtension());
-			UE_LOG(LogExplored, Display, TEXT("OFPA: paquete de ejemplo %s -> %s"), *ActorPackages[0]->GetName(), *SampleFile);
-		}
+		UE_LOG(LogExplored, Display, TEXT("OFPA: %d/%d actores externalizados"), ExternalActors.Num(), TotalActors);
 
+		// El actor se pasa como Base: los actores no llevan RF_Standalone, así que filtrar por
+		// TopLevelFlags=RF_Standalone sin Base deja el paquete sin objeto raíz y el guardado falla
+		// (ESavePackageResult::Error) sin decir por qué. Guardado síncrono y sin SAVE_NoError para
+		// que cualquier fallo real llegue al log.
 		int32 SaveFailures = 0;
-		for (UPackage* ActorPackage : ActorPackages)
+		for (AActor* Actor : ExternalActors)
 		{
+			UPackage* ActorPackage = Actor->GetExternalPackage();
 			const FString Filename = FPackageName::LongPackageNameToFilename(ActorPackage->GetName(), FPackageName::GetAssetPackageExtension());
 			FSavePackageArgs Args;
-			Args.TopLevelFlags = RF_Standalone;
-			Args.SaveFlags = SAVE_Async | SAVE_NoError;
-			Args.Error = GError;
-			const FSavePackageResultStruct Result = UPackage::Save(ActorPackage, nullptr, *Filename, Args);
+			Args.TopLevelFlags = RF_NoFlags;
+			Args.SaveFlags = SAVE_None;
+			Args.Error = GWarn;
+			const FSavePackageResultStruct Result = UPackage::Save(ActorPackage, Actor, *Filename, Args);
 			if (Result.Result != ESavePackageResult::Success)
 			{
 				++SaveFailures;
-				UE_LOG(LogExplored, Error, TEXT("No se pudo guardar el actor externo %s (código %d)"), *Filename, static_cast<int32>(Result.Result));
+				if (SaveFailures <= 10)
+				{
+					UE_LOG(LogExplored, Error, TEXT("No se pudo guardar el actor externo %s (%s, código %d)"),
+						*Filename, *Actor->GetActorLabel(), static_cast<int32>(Result.Result));
+				}
 			}
 		}
-		UPackage::WaitForAsyncFileWrites();
 		UE_LOG(LogExplored, Display, TEXT("Guardados %d paquetes de actores externos (OFPA), %d fallos"),
-			ActorPackages.Num() - SaveFailures, SaveFailures);
+			ExternalActors.Num() - SaveFailures, SaveFailures);
+		return SaveFailures == 0;
 	}
 
 	// ------------------------------------------------------------------
@@ -1135,8 +1139,8 @@ namespace
 			SpawnFormations(World, Density);
 		}
 
-		SaveExternalActorPackages(World);
-		const bool bSaved = SavePackageToDisk(MapPackage, World, true);
+		const bool bActorsSaved = SaveExternalActorPackages(World);
+		const bool bSaved = SavePackageToDisk(MapPackage, World, true) && bActorsSaved;
 		World->DestroyWorld(false);
 		UE_LOG(LogExplored, Display, TEXT("Mapa %s con %d piezas de terreno"), bSaved ? TEXT("guardado") : TEXT("NO guardado"), Terrain.Num());
 		return bSaved ? 0 : 1;
