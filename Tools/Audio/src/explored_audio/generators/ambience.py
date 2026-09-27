@@ -8,6 +8,8 @@ cierra con `seamless_loop` (ver `loop.py`): así el bucle no tiene clic.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 
 from ..constants import SAMPLE_RATE
@@ -41,49 +43,165 @@ def _wave_envelope(n: int, rng: np.random.Generator, rate_hz: float, dur_range: 
     return np.clip(env, 0.0, None)
 
 
-def amb_ocean_calm(name: str) -> np.ndarray:
+@dataclass(frozen=True)
+class _SurfStyle:
+    """Caracter de una orilla: cada cuanto rompe una ola y con que fuerza."""
+
+    gap_s: tuple[float, float]  # hueco entre olas sucesivas
+    approach_s: tuple[float, float]  # la ola que se acerca y crece
+    attack_s: tuple[float, float]  # rompiente: de nada al maximo
+    wash_s: tuple[float, float]  # espuma que sube por la arena
+    backwash_s: tuple[float, float]  # resaca que se retira
+    crash_top_hz: float  # brillo del golpe de la rompiente
+    thump: float  # golpe grave de la masa de agua (0 = orilla mansa)
+    foam: float  # densidad del burbujeo de la espuma
+    foam_level: float  # nivel de la espuma frente al golpe
+    size: tuple[float, float]  # amplitud relativa de cada ola
+
+
+_CALM = _SurfStyle(
+    gap_s=(4.2, 7.0), approach_s=(1.4, 2.4), attack_s=(0.18, 0.35),
+    wash_s=(1.8, 2.8), backwash_s=(1.8, 2.8), crash_top_hz=3200.0,
+    thump=0.0, foam=0.8, foam_level=0.18, size=(0.45, 1.0),
+)
+_ROUGH = _SurfStyle(
+    gap_s=(3.2, 6.0), approach_s=(1.0, 1.8), attack_s=(0.05, 0.12),
+    wash_s=(2.4, 3.6), backwash_s=(1.8, 3.0), crash_top_hz=7000.0,
+    thump=1.0, foam=1.3, foam_level=0.28, size=(0.6, 1.0),
+)
+
+
+def _foam_fizz(n: int, rng: np.random.Generator, density: float) -> np.ndarray:
+    """Burbujeo de espuma: chasquidos diminutos de 2-9 kHz muy seguidos. La
+    densidad y el brillo de cada chasquido varian al azar, no es un siseo."""
+    hiss = static_filter(rng.standard_normal(n), SR, fc=2400, q=0.6, kind="highpass")
+    hiss = static_filter(hiss, SR, fc=6500, q=0.6, kind="lowpass")
+    # Moduladora a saltos: ruido paso bajo elevado a una potencia alta deja
+    # picos cortos y aislados (cada pico es una burbuja que revienta).
+    crackle = static_filter(rng.standard_normal(n), SR, fc=140.0 * density, q=0.5, kind="lowpass")
+    crackle = np.abs(crackle) / (np.std(crackle) + 1e-9)
+    return hiss * crackle**1.6
+
+
+def _surf_wave(rng: np.random.Generator, style: _SurfStyle) -> tuple[np.ndarray, int]:
+    """Una ola completa (mono) y la muestra donde rompe dentro del evento."""
+    approach = int(rng.uniform(*style.approach_s) * SR)
+    attack = int(rng.uniform(*style.attack_s) * SR)
+    wash = int(rng.uniform(*style.wash_s) * SR)
+    backwash = int(rng.uniform(*style.backwash_s) * SR)
+    n = approach + attack + wash + backwash
+    t_break = approach + attack
+    size = rng.uniform(*style.size)
+
+    # 1. La ola se acerca: rumor medio-grave que crece y se abre.
+    grow = np.zeros(n)
+    grow[:t_break] = np.linspace(0.0, 1.0, t_break) ** 2.5
+    grow[t_break:] = np.exp(-np.arange(n - t_break) / (0.35 * SR))
+    body_cut = np.full(n, 350.0)
+    body_cut[:t_break] = 250.0 + 900.0 * np.linspace(0.0, 1.0, t_break) ** 2
+    body = time_varying_filter(pink_noise(n, rng), SR, body_cut, q=0.7, kind="lowpass")
+    body *= grow * 0.35
+
+    # 2. Rompiente: ruido ancho que se enciende en `attack` y cae deprisa;
+    # el corte baja a la vez que el nivel (el golpe es lo mas brillante).
+    crash_env = np.zeros(n)
+    crash_env[approach:t_break] = np.linspace(0.0, 1.0, attack) ** 1.5
+    tail = n - t_break
+    crash_env[t_break:] = np.exp(-np.arange(tail) / (0.3 * wash))
+    crash_cut = np.full(n, 600.0)
+    crash_cut[approach:] = 600.0 + (style.crash_top_hz - 600.0) * np.clip(crash_env[approach:], 0.0, 1.0)
+    crash = time_varying_filter(pink_noise(n, rng), SR, crash_cut, q=0.6, kind="lowpass")
+    crash = static_filter(crash, SR, fc=160, q=0.6, kind="highpass") * crash_env * 0.6
+
+    # Golpe grave de la masa de agua (solo en mar de fondo).
+    thump = np.zeros(n)
+    if style.thump > 0.0:
+        thump_env = np.zeros(n)
+        thump_env[approach:t_break] = np.linspace(0.0, 1.0, attack)
+        thump_env[t_break:] = np.exp(-np.arange(tail) / (0.25 * SR))
+        thump = static_filter(brown_noise(n, rng, leak=0.995), SR, fc=110, q=0.8, kind="lowpass")
+        thump *= thump_env * style.thump * 0.9
+
+    # 3. Espuma que sube por la arena: burbujeo que arranca con la rompiente
+    # y se apaga con la subida.
+    wash_env = np.zeros(n)
+    rise = max(int(0.12 * SR), 1)
+    wash_env[t_break : t_break + rise] = np.linspace(0.0, 1.0, rise)
+    decay_len = n - t_break - rise
+    wash_env[t_break + rise :] = np.exp(-np.arange(decay_len) / (0.5 * (wash + backwash * 0.5)))
+    foam = _foam_fizz(n, rng, style.foam) * wash_env * style.foam_level
+
+    # 4. Resaca: siseo de agua que se retira por la arena, cada vez mas sordo.
+    back_env = np.zeros(n)
+    b0 = t_break + wash // 2
+    blen = n - b0
+    back_env[b0:] = np.sin(np.linspace(0.0, np.pi, blen)) ** 1.5
+    back_cut = np.full(n, 800.0)
+    back_cut[b0:] = np.linspace(2600.0, 700.0, blen)
+    backwash_noise = static_filter(rng.standard_normal(n), SR, fc=400, q=0.6, kind="highpass")
+    backwash_noise = time_varying_filter(backwash_noise, SR, back_cut, q=0.8, kind="lowpass")
+    backwash_noise *= back_env * 0.4
+
+    wave = body + crash + thump + foam + backwash_noise
+    # Cierre suave: sin el, la cola de la espuma se cortaba en seco.
+    fade = min(int(0.8 * SR), n)
+    wave[n - fade :] *= np.linspace(1.0, 0.0, fade) ** 2
+    # Hueco final para que la reverberacion se apague sin cortarse.
+    return np.concatenate([wave * size, np.zeros(int(0.6 * SR))]), t_break
+
+
+def _surf(name: str, style: _SurfStyle, bed_level: float, reverb_room: float) -> np.ndarray:
     rng = rng_for(name)
     n, loop_len, fade_len = _lens(42.0, 5.0)
 
-    rumble = static_filter(brown_noise(n, rng, leak=0.9995), SR, fc=90, q=0.7, kind="lowpass")
-    swell = smooth_random_walk(n, rng, smoothing_hz=0.045, sr=SR, low=0.55, high=1.0)
+    # Lecho: mar de fondo lejano, siempre presente, que respira despacio.
+    swell = smooth_random_walk(n, rng, smoothing_hz=0.05, sr=SR, low=0.6, high=1.0)
+    rumble = static_filter(brown_noise(n, rng, leak=0.9995), SR, fc=120, q=0.7, kind="lowpass")
+    distant = static_filter(pink_noise(n, rng), SR, fc=900, q=0.7, kind="lowpass")
+    distant = static_filter(distant, SR, fc=150, q=0.7, kind="highpass")
+    bed = (rumble * 0.5 + distant * 0.25) * swell * bed_level
+    bed = schroeder_reverb(bed, SR, room_size=reverb_room, damping=0.5, wet=0.08)
+    stereo = decorrelate(bed, rng, SR, spread_ms=18)
 
-    hiss = pink_noise(n, rng)
-    surf = static_filter(hiss, SR, fc=2200, q=0.7, kind="lowpass")
-    surf = static_filter(surf, SR, fc=180, q=0.7, kind="highpass")
-    wave_env = _wave_envelope(n, rng, rate_hz=0.15, dur_range=(2.5, 5.0))
-    cutoff_track = 900.0 + wave_env * 2800.0
-    surf = time_varying_filter(surf, SR, cutoff_track, q=0.8, kind="lowpass")
+    # Rumor de orilla continuo: agua que se mueve sobre la arena entre ola y
+    # ola. Sin el, el mar quedaba mudo en los huecos (-40 dB entre olas).
+    lap = static_filter(pink_noise(n, rng), SR, fc=700, q=0.6, kind="highpass")
+    lap = static_filter(lap, SR, fc=4500, q=0.6, kind="lowpass")
+    lap *= smooth_random_walk(n, rng, smoothing_hz=0.25, sr=SR, low=0.4, high=1.0) * bed_level * 0.12
+    lap_side = static_filter(np.roll(lap, int(0.011 * SR)), SR, fc=900, q=0.7, kind="highpass")
+    stereo += np.stack([lap + 0.7 * lap_side, lap - 0.7 * lap_side])
 
-    mono = rumble * 0.45 * swell + surf * (0.35 + 0.9 * wave_env)
-    mono = schroeder_reverb(mono, SR, room_size=0.3, damping=0.5, wet=0.08)
-    stereo = decorrelate(mono, rng, SR, spread_ms=18)
+    # Olas: cada una rompe en un punto distinto de la orilla (pan) y su
+    # espuma se abre hacia los lados al subir por la arena.
+    t = rng.uniform(0.0, style.gap_s[0]) * SR
+    while t < n:
+        wave, t_break = _surf_wave(rng, style)
+        start = int(t)
+        pan = rng.uniform(-0.55, 0.55)
+        wet = schroeder_reverb(wave, SR, room_size=reverb_room, damping=0.45, wet=0.12)
+        # Cada ola tiene anchura propia (graves en fase, agudos decorrelados)
+        # y se coloca en su punto de la orilla; la espuma se abre hacia el
+        # lado contrario mientras sube por la arena.
+        side = static_filter(np.roll(wet, int(0.007 * SR)), SR, fc=350, q=0.7, kind="highpass") * 0.6
+        end = min(start + len(wet), n)
+        seg = np.stack([wet + side, wet - side])[:, : end - start]
+        spread = np.clip((np.arange(seg.shape[-1]) - t_break) / (1.5 * SR), 0.0, 1.0)
+        pos = pan * (1.0 - 0.6 * spread)
+        angle = (pos + 1.0) * np.pi / 4.0
+        stereo[0, start:end] += seg[0] * np.cos(angle) * np.sqrt(2.0)
+        stereo[1, start:end] += seg[1] * np.sin(angle) * np.sqrt(2.0)
+        t += rng.uniform(*style.gap_s) * SR
     return seamless_loop(stereo, loop_len, fade_len)
+
+
+def amb_ocean_calm(name: str) -> np.ndarray:
+    """Orilla de laguna: olas pequeñas que rompen suave y espumean en la arena."""
+    return _surf(name, _CALM, bed_level=0.3, reverb_room=0.3)
 
 
 def amb_ocean_rough(name: str) -> np.ndarray:
-    rng = rng_for(name)
-    n, loop_len, fade_len = _lens(42.0, 5.0)
-
-    rumble = static_filter(brown_noise(n, rng, leak=0.9993), SR, fc=110, q=0.8, kind="lowpass")
-    swell = smooth_random_walk(n, rng, smoothing_hz=0.09, sr=SR, low=0.7, high=1.15)
-
-    hiss = pink_noise(n, rng)
-    surf = static_filter(hiss, SR, fc=3200, q=0.7, kind="lowpass")
-    surf = static_filter(surf, SR, fc=160, q=0.6, kind="highpass")
-    wave_env = _wave_envelope(n, rng, rate_hz=0.35, dur_range=(1.6, 3.4))
-    cutoff_track = 1400.0 + wave_env * 4200.0
-    surf = time_varying_filter(surf, SR, cutoff_track, q=0.7, kind="lowpass")
-
-    whitecaps = render_noise_grains(
-        n, SR, rng, rate_hz=1.4, grain_len_s_range=(0.3, 0.8),
-        band_hz_range=(1500, 5500), q=0.6, amp_scale=0.6,
-    )
-
-    mono = rumble * 0.55 * swell + surf * (0.5 + 1.1 * wave_env) + whitecaps
-    mono = schroeder_reverb(mono, SR, room_size=0.4, damping=0.4, wet=0.1)
-    stereo = decorrelate(mono, rng, SR, spread_ms=22)
-    return seamless_loop(stereo, loop_len, fade_len)
+    """Mar de fondo: rompientes con golpe grave, espuma larga y resaca."""
+    return _surf(name, _ROUGH, bed_level=0.5, reverb_room=0.4)
 
 
 def amb_wind_light(name: str) -> np.ndarray:
