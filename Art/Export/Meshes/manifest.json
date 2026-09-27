@@ -70,16 +70,16 @@
       "file": "JungleTree/SM_JungleTreeGiant_01.fbx",
       "category": "tree",
       "seed": 2001,
-      "triangles": 16844,
+      "triangles": 17028,
       "triangle_budget": {
         "min": 6000,
         "max": 25000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 2132.3,
-        "y": 2153.6,
-        "z": 3184.4
+        "x": 2093.2,
+        "y": 2005.4,
+        "z": 3338.9
       },
       "material_slots": [
         "M_Bark",
@@ -91,16 +91,16 @@
       "file": "JungleTree/SM_JungleTreeWide_01.fbx",
       "category": "tree",
       "seed": 2002,
-      "triangles": 13980,
+      "triangles": 14160,
       "triangle_budget": {
         "min": 6000,
         "max": 25000,
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 2055.5,
-        "y": 2342.2,
-        "z": 1650.0
+        "x": 2113.3,
+        "y": 1976.9,
+        "z": 1777.0
       },
       "material_slots": [
         "M_Bark",
@@ -119,9 +119,9 @@
         "in_budget": true
       },
       "dimensions_cm": {
-        "x": 1186.3,
-        "y": 1550.8,
-        "z": 1654.1
+        "x": 1469.1,
+        "y": 1486.9,
+        "z": 1659.6
       },
       "material_slots": [
         "M_Bark",

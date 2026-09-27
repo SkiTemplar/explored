@@ -653,6 +653,60 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     return obj, lean_dir
 
 
+def make_buttress_root(name, attach_height, ground_depth, width_base, width_tip, ang,
+                        rnd, seed, thickness=0.35, s_curve_amt=None, segments=6,
+                        bark_v_tile_m=1.4):
+    """Contrafuerte tabular (raíz de tablón de ceiba/kapok): una tarjeta
+    curvada (make_leaf_blade) que crece del punto de anclaje en el tronco
+    (`attach_height`, estrecha: `width_base`) hasta un punto en el suelo
+    `ground_depth` metros POR DEBAJO de Z=0 (ancha: `width_tip`),
+    abriéndose hacia fuera por el camino — para que entre en el suelo con
+    cualquier pendiente en vez de quedar flotando como una «pata de araña»
+    sobre el terreno (encargo 2026-09-27). Un Solidify real le da
+    `thickness` (0,25-0,5 m) en el eje TANGENCIAL (perpendicular a `ang`,
+    ver la nota de vectores abajo): un volumen de verdad, no una tarjeta
+    de grosor cero.
+
+    Base de vectores: al colocar la tarjeta con orient_and_place(forward,
+    up=tangencial), como el tangencial ya es exactamente perpendicular a
+    `forward` (que vive en el plano radial-vertical que define `ang`), la
+    base ortonormal que calcula orient_and_place cae limpia: el eje Z
+    local (así, el grosor que añade Solidify) queda EXACTO en la
+    tangencial, y el ancho de la tarjeta (eje X local, `width_base` ->
+    `width_tip`) queda EXACTO en el plano radial-vertical -el «alto»
+    visible del tablón visto de frente-. No hace falta aplastar nada
+    después (a diferencia de un bisel circular): la tarjeta ya nace con
+    la sección correcta."""
+    if s_curve_amt is None:
+        s_curve_amt = (attach_height + ground_depth) * rnd.uniform(0.05, 0.12)
+        if rnd.random() < 0.5:
+            s_curve_amt = -s_curve_amt
+    outward = ground_depth * rnd.uniform(0.8, 1.2)
+    tangent = Vector((-math.sin(ang), math.cos(ang), 0.0))
+    radial = Vector((math.cos(ang), math.sin(ang), 0.0))
+
+    attach_pt = radial * (width_base * 0.3) + Vector((0.0, 0.0, attach_height))
+    ground_pt = radial * outward + Vector((0.0, 0.0, -ground_depth))
+    direction = ground_pt - attach_pt
+    total_len = direction.length
+    forward = direction.normalized()
+
+    card = make_leaf_blade(
+        name, length=total_len, width_base=width_base, width_tip=width_tip,
+        curve_amount=s_curve_amt, segments=segments, double_sided=False,
+        uv_v_repeat=max(total_len / bark_v_tile_m, 1.0),
+    )
+    select_only(card)
+    mod = card.modifiers.new('Thickness', 'SOLIDIFY')
+    mod.thickness = thickness
+    mod.offset = 0.0
+    bpy.context.view_layer.objects.active = card
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+    orient_and_place(card, attach_pt, forward, tangent)
+    return card
+
+
 def spline_point(height, t, curvature, lean_dir, z_offset=0.0, s_curve=0.0):
     """Punto (Vector) sobre el mismo perfil de curvatura que make_curved_trunk
     (incluido el término s_curve, si el tronco lo usa), útil para anclar
