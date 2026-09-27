@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting
+from . import achievements, cooking, crafting, music
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -40,7 +40,7 @@ DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json",
+    "fish.json", "music_layers.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -545,6 +545,15 @@ def check_meshes(ds: DataSet, r: Report) -> None:
         if b.get("mesh") is not None and b["mesh"] not in known:
             r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
 
+    # Mobiliario de la base ya modelado (SM_Base_*) que ninguna pieza usa: es
+    # contenido listo que el jugador no puede construir. Nota, no error: puede
+    # faltar un sistema (p. ej. el banco de chatarra) antes de darlo de alta.
+    used = {p.get("mesh") for p in ds.building.get("pieces", [])}
+    used |= {d.get("mesh") for d in ds.data.get("artifacts.json", {}).get("displays", [])}
+    idle = sorted(n for n in known if n.startswith("SM_Base_") and n not in used)
+    if idle:
+        r.info.append(f"building_pieces.json: mallas de base sin pieza construible: {', '.join(idle)}")
+
     pending = ds.data.get("meshes_pendientes.json", {})
     for group, expected in pending_expected(ds).items():
         listed = {e.get("id") if isinstance(e, dict) else e for e in pending.get(group, [])}
@@ -1002,6 +1011,45 @@ def check_forbidden_terms(ds: DataSet, r: Report) -> None:
                 r.error(f"{name}: contiene «{term}», eliminado por el GDD §10/§12")
 
 
+# GDD §8.8 (recolección y mar): nombre del GDD -> ids de items.json que lo cubren.
+GDD_FOOD = {
+    "coco": ("coco_verde", "coco_maduro"), "plátano": ("platano",), "mango": ("mango_fruta",),
+    "papaya": ("papaya",), "carambola": ("carambola",), "guayaba": ("guayaba",),
+    "fruta del pan": ("fruta_pan",), "taro": ("taro",), "yuca": ("yuca",), "batata": ("batata",),
+    "miel": ("miel",), "huevos de gaviota": ("huevo",), "algas": ("alga_comestible",),
+    "cangrejos": ("cangrejo",), "lapas": ("lapa",), "erizos": ("erizo",), "pulpo": ("pulpo",),
+    "langosta de arrecife": ("langosta",),
+}
+# GDD §8.8: setas (2 comestibles, 2 tóxicas, 1 alucinógena).
+GDD_MUSHROOMS = {"comestible": 2, "toxica": 2, "alucinogena": 1}
+
+
+def _mushroom_kind(item: dict) -> str:
+    if "alucinogena" in item.get("tags", []):
+        return "alucinogena"
+    toxic = any(p["name"] == "Toxico" and p["value"] > 0 for p in item.get("properties", []))
+    return "toxica" if toxic else "comestible"
+
+
+def check_gdd_food_coverage(ds: DataSet, r: Report) -> None:
+    """Comida del GDD §8.8 que aún falta en items.json (nota, no error).
+
+    Añadir una comida obliga a darla de alta en recipes.json/foods y a regenerar
+    CookingData.inl, así que el hueco se deja visible en vez de bloquear.
+    """
+    ids = {i["id"] for i in ds.items}
+    missing = [name for name, cands in GDD_FOOD.items() if not ids.intersection(cands)]
+    if missing:
+        r.info.append(f"items.json: falta comida del GDD §8.8: {', '.join(missing)}")
+    counts = {k: 0 for k in GDD_MUSHROOMS}
+    for item in ds.items:
+        if "seta" in item.get("tags", []):
+            counts[_mushroom_kind(item)] += 1
+    short = [f"{k} {counts[k]}/{n}" for k, n in GDD_MUSHROOMS.items() if counts[k] < n]
+    if short:
+        r.info.append(f"items.json: setas por debajo del GDD §8.8: {', '.join(short)}")
+
+
 # --------------------------------------------------------------------------- entrada
 
 
@@ -1024,5 +1072,7 @@ def run_all(ds: DataSet) -> Report:
     check_ruins(ds, r)
     check_artifacts(ds, r)
     check_fish(ds, r)
+    music.check_music(ds, r)
     check_forbidden_terms(ds, r)
+    check_gdd_food_coverage(ds, r)
     return r
