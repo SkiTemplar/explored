@@ -4,6 +4,7 @@
 #include "Misc/Optional.h"
 #include "Subsystems/WorldSubsystem.h"
 
+#include "Core/ExploredRandom.h"
 #include "Core/SystemLinks.h"
 #include "Events/WorldEventsModel.h"
 #include "Fauna/FaunaTypes.h"
@@ -14,13 +15,17 @@
 #include "Survival/SurvivalModel.h"
 #include "UI/ExploredGameplayMode.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/HarvestModel.h"
+#include "WorldGen/VegetationHarvestState.h"
 
 #include "ExploredWiringSubsystem.generated.h"
 
 class AExploredBoat;
 class AExploredCharacter;
 class AExploredFaunaManager;
+class AExploredVegetationCell;
 class UExploredSaveSubsystem;
+class UHierarchicalInstancedStaticMeshComponent;
 
 /**
  * Conexión entre sistemas (paquete P-WIRE). Cada sistema expone ganchos que no
@@ -56,6 +61,16 @@ public:
 	virtual void Deinitialize() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
+
+	static UExploredWiringSubsystem* Get(const UObject* WorldContextObject);
+
+	// --- Recolección de vegetación y rocas (P-HARVEST) --------------------------
+	// Lo llama AExploredVegetationCell::GetContextVerbs_Implementation / CanInteract_Implementation /
+	// Interact_Implementation con la instancia exacta que fijó SetInteractionFocus.
+
+	void GetHarvestVerbs(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, TArray<FText>& OutVerbs) const;
+	bool CanHarvestInstance(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex) const;
+	void HarvestInstance(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, AActor* Instigator);
 
 	/** Progreso de exploración de la partida (petroglifos, miradores, piezas del Albatros...). */
 	FExploredProgress& GetProgress() { return Progress; }
@@ -127,6 +142,24 @@ private:
 	void NotifyDiscovery(bool bMorale = true) const;
 	float GetTotalDays() const;
 
+	/**
+	 * Arranque de partida nueva en Landing (GDD): un cuchillo y una cantimplora de
+	 * salvamento junto al PlayerStart, con cocos, palos y piedras sueltos alrededor
+	 * para poder fabricar, encender fuego y beber en los primeros minutos. Una sola
+	 * vez por partida (bStarterKitSpawned, sección «wiring»): «Continuar» no repite
+	 * el reparto. Sin malla de restos del avión propia (no hay Content en este
+	 * cambio): el salvamento son los objetos, no un decorado.
+	 */
+	void SpawnLandingStarterKitIfNeeded();
+
+	// --- Recolección de vegetación y rocas --------------------------------------
+	/** La primera vez que se toca una celda en la sesión, oculta las instancias que ya venían taladas en la partida. */
+	void EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent& Component);
+	void HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const;
+	void TickVegetationRegrowth(float DeltaSeconds);
+	/** true si Instigator lleva RequiredTag en una mano (NAME_None = no hace falta ninguna herramienta). */
+	bool HasHarvestTool(const AActor* Instigator, FName RequiredTag) const;
+
 	void HandleSurvivalEvent(ESurvivalEvent Event);
 	void HandleRuinDiscovery(FName ElementId, const FRuinDiscovery& Result);
 	void HandleMuseumChanged();
@@ -146,6 +179,14 @@ private:
 
 	FSaveWorldDeltas WorldDeltas;
 	FArchipelagoLayout Layout;
+
+	// --- Recolección de vegetación y rocas --------------------------------------
+	TArray<FHarvestSpeciesRule> HarvestRules = FHarvestModel::DefaultRules();
+	TMap<FVegetationInstanceKey, FVegetationRuntimeState> VegetationRuntime;
+	/** Celdas cuyos deltas guardados ya se aplicaron esta sesión (ver EnsureVegetationDeltasApplied). */
+	TSet<FIntPoint> VegetationDeltasAppliedCells;
+	/** Semilla propia para las tiradas de recolección; se realinea con WorldDeltas.Seed al cargar. */
+	FExploredRandom HarvestRandom = FExploredRandom(0x9E3779B97F4A7C15ULL);
 
 	/** Secciones del personaje que llegaron antes de que existiera. */
 	TOptional<FSaveArchive> PendingInventory;
@@ -170,6 +211,7 @@ private:
 	/** Día total en que empezó la partida (para «days_survived»); < 0 = aún no se sabe. */
 	float RunStartDays = -1.0f;
 	float LastSampleDays = -1.0f;
+	bool bStarterKitSpawned = false;
 	float MaxDiveReportedM = 0.0f;
 	int32 LastDaysReported = -1;
 	float SampleTimer = 0.0f;
