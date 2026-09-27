@@ -278,7 +278,10 @@ def _sea() -> tuple:
     add_pad(tracks, "pad", root_freq, beats_per_bar, 0, prog, vel=0.38)
     add_bass(tracks, root_freq, beats_per_bar, 0, prog, vel=0.55)
 
-    arp = Track(instrument="kalimba", humanize_timing_s=0.02)
+    # Ukelele en vez de kalimba para el arpegio de mar abierto: es el timbre
+    # mas identificado con "archipielago tropical" del set acustico, y esta
+    # pieza es la unica ambientada realmente en el agua.
+    arp = Track(instrument="ukulele", humanize_timing_s=0.02)
     d0, d1, d2 = 0, 2, 4
     for bar in range(bars):
         base = bar * beats_per_bar
@@ -422,11 +425,15 @@ def _finale(variant: str) -> tuple:
 
 
 def _menu() -> tuple:
+    """Menu: piano en vez de kalimba para el leitmotiv -es la pantalla mas
+    "de sala de estar" del juego, sin diegesis que la ate a un instrumento de
+    isla, y el piano es el timbre mas idiomatico de "musica clasica suave"
+    del encargo para una portada."""
     bpm, beats_per_bar = 72, 4
     tracks: list[Track] = []
     for p in range(2):
         bar_offset = p * 8
-        add_melody_phrase(tracks, "kalimba", ROOT, "minor_pentatonic", beats_per_bar, bar_offset, vel_scale=0.8)
+        add_melody_phrase(tracks, "piano", ROOT, "minor_pentatonic", beats_per_bar, bar_offset, vel_scale=0.8)
         add_pad(tracks, "pad", ROOT, beats_per_bar, bar_offset, DEFAULT_PROGRESSION, vel=0.36)
     return tracks, [], 16, bpm, beats_per_bar, 0.4, 0.75
 
@@ -453,9 +460,11 @@ def flute_note_sample(name: str = FLUTE_SAMPLE_NAME) -> np.ndarray:
     from .sequencer import render_flute_phrase
 
     rng = rng_for(name)
-    # Velocidad 0.45: deja la nota en torno a -15 LUFS, dentro del rango de
-    # los efectos cortos (test_loudness) y a la altura de la musica.
-    notes = [(0.0, FLUTE_NOTE_BEATS, FLUTE_SAMPLE_FREQ, 0.45)]
+    # Velocidad 0.85: con el soundfont acustico (mas comedido que el
+    # oscilador sintetizado que tenia antes esta nota) deja la nota en torno a
+    # -28 LUFS, dentro del rango de los efectos cortos (test_loudness) con
+    # margen de sobra a ambos lados tras la humanizacion de velocidad.
+    notes = [(0.0, FLUTE_NOTE_BEATS, FLUTE_SAMPLE_FREQ, 0.85)]
     audio, _start = render_flute_phrase(notes, FLUTE_NOTE_BPM, SR, rng)
     # Cola corta: la nota termina en silencio aunque el juego la corte antes.
     fade_n = min(int(0.12 * SR), audio.shape[-1] // 4)
