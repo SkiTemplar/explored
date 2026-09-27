@@ -229,3 +229,48 @@ Lámina: `docs/art/modelos/tesoros-unicos.png` (modo `tiles` de
 
 Regenerar la lámina:
 `blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=tesoros --out=tesoros-unicos --only=<nombres separados por comas>`
+
+## Objetos de inventario (`items_herramientas.py`, `items_materiales.py`, grupo `Items`)
+
+Mallas propias para los objetos de `items.json` que usaban un marcador de
+`/Engine/BasicShapes`. Convención (ver `props/_items.py`):
+
+- Nombre `SM_Item_<IdEnPascalCase>` (`lasca_obsidiana` → `SM_Item_LascaObsidiana`);
+  `meshPath` = `/Game/Generated/Meshes/Items/SM_Item_<Id>.SM_Item_<Id>` (carpeta
+  del grupo `Items` de `run_props.py`, como el resto de props; es lo que acepta
+  DataCheck).
+- Escala real en metros. Materiales sueltos: pivote en la base, centrados en XY,
+  tumbados a lo largo de +X.
+- **Herramientas: pivote = socket de mano.** El origen es el centro del puño, el
+  mango va por +Z (cabeza/punta hacia +Z) y el filo o la cara de golpe mira a +X.
+  Se enganchan a `hand_r` con transformación relativa identidad.
+- Los helpers comunes (palo torcido, atadura en hélice, lasca con cicatrices de
+  talla, valva de almeja, hoja lanceolada) viven en `_items.py`.
+
+Láminas (modo `tiles`, cada pieza sola a cámara cercana 3/4):
+`docs/art/modelos/items-herramientas.png` y `docs/art/modelos/items-materiales.png`.
+
+| Malla | Tamaño | Agarre / notas |
+|---|---|---|
+| `SM_Item_Cuchillo` | 26 cm | Centro del mango; hoja de pedernal tallada, resina y atadura roja |
+| `SM_Item_Hacha` | 55 cm | A 12 cm del extremo; cabeza de piedra verde pulida atada en X |
+| `SM_Item_Lanza` | 2,05 m | A 0,75 m del regatón quemado; asta de bambú, punta de obsidiana |
+| `SM_Item_Pala` | 1,17 m | Mano alta bajo la muletilla; valva de almeja gigante abajo (-Z), cóncava a +X |
+| `SM_Item_Estaca` | 62 cm | A 20 cm del extremo romo; punta endurecida al fuego |
+| `SM_Item_Martillo` | 40 cm | A 9 cm del extremo; canto rodado con veta de cuarzo atado en X |
+| `SM_Item_Antorcha` | 60 cm | A 14 cm del extremo; haz de fibra y paja con resina arriba (la llama es VFX) |
+| `SM_Item_LascaObsidiana` / `Pedernal` / `Tallada` | 7-10 cm | Tumbadas; cara dorsal con cicatrices y aristas claras, bulbo ventral, córtex |
+| `SM_Item_RamaSeca` / `RamaVerde` | 0,8-1,1 m | Rama torcida con ramitas; la verde con hojas |
+| `SM_Item_PaloRecto` | 1,1 m | Descortezado a medias |
+| `SM_Item_TroncoPequeno` | 1,1 m × Ø 20 cm | Corteza con surcos, muñón de rama, cortes con anillos |
+| `SM_Item_BambuFino` / `BambuGrueso` | 1,3 m / 1 m | Nudos marcados; el grueso hueco con los cortes abiertos |
+| `SM_Item_FibraCoco` | 28 cm | Manojo atado por el centro |
+| `SM_Item_Cordel` / `SM_Item_Liana` | Ø 16 / 40 cm | Rollos con cabo suelto; cordel con rayas de torsión, liana con hojas |
+| `SM_Item_HojaPalma` | 1,5 m | Fronda con pecíolo cortado y 22 pares de folíolos |
+| `SM_Item_CantoRodado` / `SM_Item_Pedernal` | 14 cm | Canto con veta de cuarzo / nódulo con cara lascada |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_herramientas,items_materiales`
+y la lámina con
+`blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=items_herramientas --out=items-herramientas --cols=5 --res=1600x800`
+(`preview_rot_z` en la variante gira la pieza solo en la lámina).

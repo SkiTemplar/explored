@@ -87,6 +87,7 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'RuinasMarae':     (80.0, 900.0),    # enlosado 2 m .. marae grande ~8,5 m
     'RuinasTallas':    (80.0, 700.0),    # losa grabada 1,4 m .. canoa doble 6,5 m
     'Tesoros':         (5.0, 200.0),     # anzuelo ~10 cm .. remo ceremonial ~1,7 m
+    'Items':           (5.0, 250.0),     # lasca ~8 cm .. lanza 2 m / hoja de palma 1,7 m
 }
 
 
