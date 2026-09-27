@@ -7,6 +7,8 @@ Materiales:
     /Game/Materials/M_Terrain  color por vértice (sRGB) con variación procedural y roca en alfa.
     /Game/Materials/M_Ocean    Single Layer Water con olas de Gerstner (mismas que FOceanWaves).
     /Game/Materials/M_Stars    cúpula de estrellas aditiva controlada por el parámetro «Night».
+    /Game/Materials/M_PP_Body  postproceso del cuerpo: viñeta (color y fuerza) y desaturación
+                                según FBodySignals (VignetteAmount, TintColor, DesaturationAmount).
 """
 
 import unreal
@@ -81,7 +83,10 @@ MESH_USAGES = (
 
 
 def finish(material):
-    if material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE:
+    # Los flags de uso (Nanite, instanciado) son de material de superficie: en un postproceso
+    # (M_PP_Body) set_material_usage no aplica y solo ensuciaría el log.
+    is_surface = material.get_editor_property("material_domain") == unreal.MaterialDomain.MD_SURFACE
+    if is_surface and material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE:
         for usage in MESH_USAGES:
             MEL.set_material_usage(material, usage)
     MEL.recompile_material(material)
@@ -667,6 +672,64 @@ def build_stars():
 
 
 # ---------------------------------------------------------------------------
+# Postproceso del cuerpo (UBodySignalsComponent, docs/tecnico/cuerpo.md)
+# ---------------------------------------------------------------------------
+
+PP_BODY_HLSL = r"""
+// Viñeta y desaturación de FBodySignals (docs/tecnico/cuerpo.md): sin iconos, el jugador
+// diagnostica por sensaciones (GDD §8.3). UBodySignalsComponent::ApplyPostProcess fija
+// BodyVignette, BodyVignetteTint y BodyDesaturation cada fotograma en el MID de esta
+// instancia; aquí solo se declara el grafo con sus valores neutros (0 = pantalla limpia).
+// BodyBlur, BodyBleedPulse, BodyHeartRateHz y BodyHallucination también los fija el
+// componente pero no están conectados todavía (SetParameterValue sobre un nombre que el
+// material no declara no falla: queda para un siguiente hito de postproceso).
+float3 base = SceneColor;
+float gray = dot(base, float3(0.299, 0.587, 0.114));
+float3 desaturated = lerp(base, float3(gray, gray, gray), saturate(BodyDesaturation));
+
+// Distancia al centro en UV de pantalla, 0 en el centro y ~1 ya en la esquina.
+float2 centered = ScreenUV - float2(0.5, 0.5);
+float dist = length(centered) * 1.4142135;
+float vignetteMask = saturate(pow(dist, 2.2) * BodyVignette);
+
+return lerp(desaturated, BodyVignetteTint, vignetteMask);
+"""
+
+
+def build_pp_body():
+    m = recreate_material("M_PP_Body")
+    m.set_editor_property("material_domain", unreal.MaterialDomain.MD_POST_PROCESS)
+    m.set_editor_property("blendable_location", unreal.BlendableLocation.BL_AFTER_TONEMAPPING)
+
+    scene_color = expr(m, unreal.MaterialExpressionSceneTexture, -700, 0)
+    scene_color.set_editor_property("scene_texture_id", unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0)
+
+    screen_pos = expr(m, unreal.MaterialExpressionScreenPosition, -700, 200)
+
+    vignette_param = expr(m, unreal.MaterialExpressionScalarParameter, -700, 380)
+    vignette_param.set_editor_property("parameter_name", "BodyVignette")
+    vignette_param.set_editor_property("default_value", 0.0)
+
+    desaturation_param = expr(m, unreal.MaterialExpressionScalarParameter, -700, 480)
+    desaturation_param.set_editor_property("parameter_name", "BodyDesaturation")
+    desaturation_param.set_editor_property("default_value", 0.0)
+
+    tint_param = expr(m, unreal.MaterialExpressionVectorParameter, -700, 580)
+    tint_param.set_editor_property("parameter_name", "BodyVignetteTint")
+    tint_param.set_editor_property("default_value", unreal.LinearColor(0.0, 0.0, 0.0, 1.0))
+
+    body = custom(m, -350, 200, PP_BODY_HLSL, ["SceneColor", "ScreenUV", "BodyVignette", "BodyDesaturation", "BodyVignetteTint"],
+                  unreal.CustomMaterialOutputType.CMOT_FLOAT3, "BodyPostProcess")
+    connect(scene_color, "Color", body, "SceneColor")
+    connect(screen_pos, "ViewportUV", body, "ScreenUV")
+    connect(vignette_param, "", body, "BodyVignette")
+    connect(desaturation_param, "", body, "BodyDesaturation")
+    connect(tint_param, "", body, "BodyVignetteTint")
+    to_property(body, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(m)
+
+
+# ---------------------------------------------------------------------------
 # Vegetación y rocas (se reconstruyen en su sitio para conservar las referencias)
 # ---------------------------------------------------------------------------
 
@@ -905,6 +968,7 @@ def main():
     build_terrain()
     build_ocean()
     build_stars()
+    build_pp_body()
     build_vegetation_materials()
 
 
