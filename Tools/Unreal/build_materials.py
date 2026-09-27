@@ -699,7 +699,7 @@ return lerp(desaturated, BodyVignetteTint, vignetteMask);
 def build_pp_body():
     m = recreate_material("M_PP_Body")
     m.set_editor_property("material_domain", unreal.MaterialDomain.MD_POST_PROCESS)
-    m.set_editor_property("blendable_location", unreal.BlendableLocation.BL_AFTER_TONEMAPPING)
+    m.set_editor_property("blendable_location", unreal.BlendableLocation.BL_SCENE_COLOR_AFTER_TONEMAPPING)
 
     scene_color = expr(m, unreal.MaterialExpressionSceneTexture, -700, 0)
     scene_color.set_editor_property("scene_texture_id", unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0)
