@@ -39,19 +39,22 @@ def _in_scale(freq: float) -> bool:
     return abs(semis - nearest) < 0.3 and nearest % 12 in _SCALE_SEMITONES
 
 
-def _dominant_pitches(x: np.ndarray, count: int = 3) -> list[float]:
+def _dominant_pitches(x: np.ndarray, count: int = 4) -> list[float]:
+    # Solo los picos de al menos un 30 % del maximo: las notas de 50-100 ms
+    # tienen lobulos laterales a ~60 Hz que no son notas.
     n_fft = 2**18
     spectrum = np.abs(np.fft.rfft(x, n_fft))
     freqs = np.fft.rfftfreq(n_fft, 1.0 / SR)
-    peaks, _ = find_peaks(spectrum, distance=int(60 / (SR / n_fft)))
+    peaks, _ = find_peaks(spectrum, height=0.3 * spectrum.max(), distance=int(60 / (SR / n_fft)))
     peaks = peaks[np.argsort(spectrum[peaks])[::-1][:count]]
     return [float(freqs[p]) for p in peaks]
 
 
 def test_la_interfaz_suena_en_la_escala_de_la_musica(rendered):
     for name in UI_NAMES:
-        # Una sola nota de 45-60 ms tiene lobulos laterales anchos: basta su pico.
-        count = 1 if name in ("sfx_ui_click", "sfx_ui_hover") else 3
+        # El click cae de afinacion en sus primeros 4 ms a proposito (el
+        # contacto): esa caida ensancha el espectro por arriba; basta su pico.
+        count = 1 if name == "sfx_ui_click" else 4
         for freq in _dominant_pitches(rendered[name], count):
             assert _in_scale(freq), f"{name}: {freq:.0f} Hz fuera de re menor pentatonica"
 

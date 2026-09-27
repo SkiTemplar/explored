@@ -114,7 +114,7 @@ def ui_page_turn(name: str) -> np.ndarray:
     """Pasar pagina: dos toques rapidos y flojos que bajan (do6 -> la5)."""
     rng = rng_for(name)
     return 0.9 * _mix(0.12, [
-        (0.0, 0.5 * _tine(_C6, 0.05, 0.014, rng, brightness=0.7, chirp=0.15)),
+        (0.0, 0.5 * _tine(_C6, 0.05, 0.014, rng, brightness=0.7)),
         (0.028, 0.7 * _tine(_A5, 0.092, 0.024, rng, brightness=0.6)),
     ])
 
