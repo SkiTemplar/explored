@@ -168,7 +168,7 @@
       "nameEs": "Panel de pared del museo",
       "nameEn": "Museum wall panel",
       "piece": "panel_museo",
-      "mesh": null,
+      "mesh": "SM_Base_MuseumPanel",
       "slots": [
         {
           "maxSize": "Grande",
@@ -210,7 +210,7 @@
       "provenance": "cueva_ritual",
       "rarity": "raro",
       "size": "Pequeno",
-      "mesh": "SM_Treasure_FishHook_Bone"
+      "mesh": "SM_Treasure_FishHook_Whalebone"
     },
     {
       "id": "colgante_concha",
@@ -240,7 +240,7 @@
       "provenance": "ruina_sumergida",
       "rarity": "raro",
       "size": "Pequeno",
-      "mesh": "SM_Treasure_ShellPendant"
+      "mesh": "SM_Treasure_Breastplate_Pearl"
     },
     {
       "id": "colgante_carey",
@@ -250,7 +250,7 @@
       "provenance": "pecio",
       "rarity": "raro",
       "size": "Pequeno",
-      "mesh": "SM_Treasure_ShellPendant"
+      "mesh": "SM_Treasure_TurtlePendant"
     },
     {
       "id": "figura_navegante",
@@ -280,7 +280,7 @@
       "provenance": "ruina_sumergida",
       "rarity": "unico",
       "size": "Mediano",
-      "mesh": "SM_Treasure_StoneFigure_Navigator"
+      "mesh": "SM_Treasure_StoneFigure_SkyGazer"
     },
     {
       "id": "carta_varillas",
@@ -300,7 +300,7 @@
       "provenance": "pecio",
       "rarity": "unico",
       "size": "Mediano",
-      "mesh": "SM_Treasure_StickChart"
+      "mesh": "SM_Treasure_StickChart_Swell"
     },
     {
       "id": "tapa_pintada",
@@ -320,7 +320,7 @@
       "provenance": "marae",
       "rarity": "unico",
       "size": "Grande",
-      "mesh": "SM_Treasure_Tapa"
+      "mesh": "SM_Treasure_Tapa_Stars"
     },
     {
       "id": "remo_ceremonial",
@@ -340,7 +340,7 @@
       "provenance": "ruina_sumergida",
       "rarity": "unico",
       "size": "Grande",
-      "mesh": "SM_Treasure_CeremonialPaddle"
+      "mesh": "SM_Treasure_Paddle_DoubleCanoe"
     }
   ]
 }

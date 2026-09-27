@@ -91,7 +91,7 @@ def _frame(cam, loc, target, objs, margin=0.04):
         return True
 
     for _ in range(3):
-        dist = 2.0
+        dist = 0.05
         while dist < 400.0:
             cam.location = target + direction * dist
             _look_at(cam, target)
@@ -244,13 +244,14 @@ def montage(mats, samples, res):
     _stage(w + 16, 26, (0, 0), (-w * 0.28, -w * 0.78, w * 0.3), (0.0, 0.0, 1.6), 42, out, samples, res)
 
 
-def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None, normalize=None):
+def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None, normalize=None, only=None):
     """Lámina a escala real de todas las variantes de un módulo de props,
     en rejilla cuyas columnas/filas se dimensionan por las cajas reales."""
     import importlib
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mod = importlib.import_module(mod_name)
-    objs = [mod.build(v) for v in mod.VARIANTS if group is None or v.get('group') == group]
+    objs = [mod.build(v) for v in mod.VARIANTS if (group is None or v.get('group') == group)
+            and (only is None or v['name'] in only)]
     bpy.context.view_layer.update()
     if normalize:
         # objetos pequeños (tesoros de 10 cm junto a un remo de 1,6 m): cada
@@ -276,6 +277,56 @@ def module_sheet(mod_name, slug, samples, res, cols=4, gap=1.2, group=None, norm
            samples, res)
 
 
+def module_tiles(mod_name, slug, samples, res, cols=4, group=None, only=None):
+    """Lámina en mosaico: cada variante se renderiza SOLA a cámara cercana
+    3/4 (encuadre mínimo) en una tesela y se componen en rejilla. Para
+    objetos pequeños o muy alargados que en una lámina conjunta salen
+    diminutos (tesoros de 10 cm junto a un remo de 2 m)."""
+    import importlib
+    import tempfile
+    import numpy as np
+    mod = importlib.import_module(mod_name)
+    variants = [v for v in mod.VARIANTS if (group is None or v.get('group') == group)
+                and (only is None or v['name'] in only)]
+    rows = math.ceil(len(variants) / cols)
+    W, H = (int(x) for x in res.split('x'))
+    tw, th = W // cols, H // rows
+    sheet = np.zeros((rows * th, cols * tw, 4), dtype=np.float32)
+    sheet[..., :3] = (0.55, 0.45, 0.30)
+    sheet[..., 3] = 1.0
+    tmp = tempfile.mkdtemp()
+    for i, v in enumerate(variants):
+        bpy.ops.wm.read_factory_settings(use_empty=True)
+        o = mod.build(v)
+        bpy.context.view_layer.update()
+        x0, x1, y0, y1, z0, _ = _bounds(o)
+        ext = max(x1 - x0, y1 - y0)
+        o.location = (-(x0 + x1) / 2, -(y0 + y1) / 2, -z0)
+        path = os.path.join(tmp, f'{i}.png')
+        _stage(ext * 4 + 1, ext * 4 + 1, (0, 0), (-0.8 * ext, -2.0 * ext, 1.5 * ext), (0, 0, 0), 40, path,
+               samples, f'{tw}x{th}')
+        img = bpy.data.images.load(path, check_existing=False)
+        w, h = img.size
+        px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
+        bpy.data.images.remove(img)
+        if i == 0:
+            # teselas vacías del color de la arena renderizada
+            sheet[..., :3] = px[4, 4, :3]
+        c, r = i % cols, rows - 1 - i // cols  # las filas de bpy van de abajo arriba
+        sheet[r * th:r * th + min(h, th), c * tw:c * tw + min(w, tw)] = px[:th, :tw]
+        # separación fina entre teselas
+        sheet[r * th:(r + 1) * th, c * tw:c * tw + 2, :3] = 0.2
+        sheet[r * th:r * th + 2, c * tw:(c + 1) * tw, :3] = 0.2
+    out = os.path.join(OUT_DIR, f'{slug}.png')
+    img = bpy.data.images.new('Sheet', cols * tw, rows * th)
+    img.pixels = sheet.ravel()
+    img.filepath_raw = out
+    img.file_format = 'PNG'
+    img.save()
+    _shrink_png(out)
+    print(f'[preview_kit] escrito {out} ({os.path.getsize(out) // 1024} KB)')
+
+
 def main():
     o = _args()
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -286,9 +337,14 @@ def main():
             catalog(m, samples, o['res'])
     if o['mode'] in ('all', 'montage'):
         montage(mats, samples, o['res'])
+    if o['mode'] == 'tiles':
+        module_tiles(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')), group=o.get('group'),
+                     only=set(o['only'].split(',')) if o.get('only') else None)
     if o['mode'] == 'module':
         module_sheet(o['module'], o['out'], samples, o['res'], cols=int(o.get('cols', '4')), group=o.get('group'),
-                     normalize=float(o['normalize']) if o.get('normalize') else None)
+                     gap=float(o.get('gap', '1.2')),
+                     normalize=float(o['normalize']) if o.get('normalize') else None,
+                     only=set(o['only'].split(',')) if o.get('only') else None)
 
 
 if __name__ == '__main__':
