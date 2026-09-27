@@ -141,21 +141,31 @@ def sand_dry(size: int, seed: int) -> Material:
 
 
 def sand_wet(size: int, seed: int) -> Material:
-    """Arena mojada de orilla: caramelo saturado (no gris), rizos lavados, láminas de agua
-    que reflejan el cielo, marcas de resaca, agujeritos de cangrejo y alguna concha."""
+    """Arena mojada de orilla: caramelo saturado (no gris), más oscura y fría que la seca;
+    rizos lavados, marcas de resaca, agujeritos de cangrejo y alguna concha. El agua se
+    insinúa como humedad difusa (sin manchas grandes que se repitan a la vista) y algún
+    reflejo pintado pequeño, irregular y suave — nunca un charco-mancha uniforme."""
     u, v, height, rip, zones, fine, grain = _sand_base(size, seed, 0.3)
     height = blur(height, 0.0015)
-    # Láminas de agua: zonas bajas y lisas (charcos) con borde suave de arena empapada.
-    puddle_n = unit(spectral_noise(size, seed + 8, 1, 6, 2.2), 2.0)
-    soak = smoothstep(0.58, 0.76, puddle_n + 0.12 * (0.5 - height))
-    puddle = smoothstep(0.76, 0.88, puddle_n + 0.12 * (0.5 - height))
-    height = height * (1.0 - 0.6 * puddle)
+    # Humedad: campo de frecuencia media (no 1-2 manchas grandes) que oscurece y enfría.
+    puddle_n = unit(spectral_noise(size, seed + 8, 3, 12, 2.2), 2.0)
+    soak = smoothstep(0.55, 0.78, puddle_n + 0.1 * (0.5 - height))
+    height = height * (1.0 - 0.15 * smoothstep(0.72, 0.88, puddle_n))
     t = 0.2 + 0.5 * rip * (0.4 + 0.6 * zones) + 0.3 * fine
-    albedo = ramp(t, [(0.0, "#8c6440"), (0.4, "#a67c50"), (0.75, "#bb9564"), (1.0, "#cca878")])
-    # La arena empapada se oscurece y enfría; el charco toma el cielo como un brillo pintado.
-    albedo = mix_color(albedo, "#7c5636", soak * 0.4)
-    sky = ramp(unit(spectral_noise(size, seed + 13, 1, 4, 2.0)), [(0.0, "#a8c2ba"), (1.0, "#d8ece6")])
-    albedo = albedo + (sky - albedo) * (puddle * 0.55)[..., None]
+    albedo = ramp(t, [(0.0, "#78543a"), (0.4, "#8f6c48"), (0.75, "#a3835c"), (1.0, "#b4926c")])
+    # Tinte frío uniforme (toda la textura, no solo la humedad) para que se note el
+    # contraste con la arena seca cálida.
+    albedo = mix_color(albedo, "#748a86", np.full_like(rip, 0.16))
+    albedo = mix_color(albedo, "#5e4230", soak * 0.38)
+    # Reflejos pintados: brillos pequeños, irregulares y dispersos (varios por tile, no una
+    # mancha grande que se note al repetir 2x2), solo donde ya hay humedad.
+    gu = u + 0.05 * spectral_noise(size, seed + 16, 2, 8, 2.0)
+    gv = v + 0.05 * spectral_noise(size, seed + 17, 2, 8, 2.0)
+    glints = scatter_dots(size, 15, seed + 13, radius=0.11, keep=0.4, vary=0.7, u=gu, v=gv)
+    glint = glints["mask"] * smoothstep(0.4, 0.78, puddle_n)
+    sky = ramp(unit(spectral_noise(size, seed + 18, 1, 4, 2.0)), [(0.0, "#a8c2ba"), (1.0, "#d8ece6")])
+    albedo = albedo + (sky - albedo) * (glint * 0.6)[..., None]
+    height = height - 0.02 * glint
     # Marcas de resaca: líneas finas y onduladas que dejó la espuma al retirarse.
     swash_warp = spectral_noise(size, seed + 9, 1, 5, 2.6)
     swash_phase = 3 * v + 0.45 * swash_warp + 0.06 * spectral_noise(size, seed + 11, 3, 12, 2.0)
@@ -179,43 +189,48 @@ def sand_wet(size: int, seed: int) -> Material:
     albedo = albedo + (shell_col - albedo) * shells["mask"][..., None]
     albedo = mix_color(albedo, "#7d5a3a", smoothstep(2.4, 3.3, grain) * 0.3)
     albedo = macro_variation(albedo, seed + 20, warm="#f0b878", cool="#c9c2ab", amount=0.14, value=0.06)
-    rough = np.clip(0.6 - 0.2 * soak - 0.35 * puddle + 0.2 * froth + 0.08 * (fine - 0.5)
+    rough = np.clip(0.6 - 0.2 * soak - 0.35 * glint + 0.2 * froth + 0.08 * (fine - 0.5)
                     + 0.3 * shells["mask"], 0.08, 1.0)
     return Material(albedo, height, rough, depth=0.006, ao_strength=0.8)
 
 
 def grass(size: int, seed: int) -> Material:
-    """Césped cartoon visto desde arriba: mechones pintados a mano (no briznas realistas),
-    en 2–3 verdes saturados (base, uno cálido amarillento y uno frío azulado) con sombra
-    marcada entre mechones. Estilo Sea of Thieves / Genshin: formas grandes y legibles."""
+    """Césped pintado visto desde arriba: pinceladas direccionales blandas de 2-4 cm que
+    siguen una dirección de flujo coherente localmente (nunca celdas ni contornos cerrados),
+    con poco contraste entre matas y una deriva de tono a gran escala entre amarillento
+    cálido y azulado frío. Estilo Sea of Thieves: legible como césped a 3-5 m, no como
+    escamas ni briznas realistas."""
     u, v = uv_grid(size)
-    # Los mechones no van en rejilla perfecta: el dominio se deforma un poco.
-    wu = u + 0.035 * spectral_noise(size, seed + 1, 1, 4, 2.2)
-    wv = v + 0.035 * spectral_noise(size, seed + 2, 1, 4, 2.2)
-    clumps = voronoi(size, 9, 9, seed, jitter=0.95, u=wu, v=wv)
-    sub = voronoi(size, 20, 20, seed + 3, jitter=0.9, u=wu, v=wv)
-    # Silueta "mordida" a pinceladas en vez de un disco limpio.
-    bite = 0.16 * unit(spectral_noise(size, seed + 4, 6, 40, 1.6), 2.0)
-    radius = 0.62 - bite
-    dome = np.clip(1.0 - (clumps["f1"] / radius) ** 2, 0.0, 1.0) ** 0.6
-    sub_dome = np.clip(1.0 - (sub["f1"] / 0.66) ** 2, 0.0, 1.0) ** 0.7
-    fine = unit(spectral_noise(size, seed + 8, 20, 150, 1.4))
-    height = 0.58 * dome + 0.3 * sub_dome + 0.12 * fine
-    # Sombra ancha en las juntas entre mechones (hueco pintado, no una raya fina).
-    valley = 1.0 - smoothstep(0.0, 0.42, clumps["edge"])
+    # Dirección de la brocha: campo de muy baja frecuencia, coherente en cada zona.
+    flow = 0.6 + 1.3 * spectral_noise(size, seed + 1, 1, 3, 2.6)
+    ca, sa = np.cos(flow), np.sin(flow)
+    # Integración tipo LIC a lo largo del flujo: un grano fino se difumina siguiendo la
+    # dirección local, lo que dibuja vetas de pincelada blandas sin geometría de celda.
+    grain = spectral_noise(size, seed + 2, 10, 90, 1.4)
+    step = 0.009  # ~1.3 cm en un tile de 1.5 m: pinceladas de 2-4 cm de largo total
+    acc = grain.copy()
+    wsum = 1.0
+    for k in range(1, 7):
+        du, dv = ca * step * k, sa * step * k
+        acc = acc + sample(grain, np.mod(u + du, 1.0), np.mod(v + dv, 1.0))
+        acc = acc + sample(grain, np.mod(u - du, 1.0), np.mod(v - dv, 1.0))
+        wsum += 2.0
+    brush = unit(acc / wsum, 1.4)
+    # Bulto blando de mata: variación grande y suave, sin bordes duros.
+    clump = unit(spectral_noise(size, seed + 3, 2, 7, 2.0), 1.8)
+    height = np.clip(0.5 + 0.3 * (brush - 0.5) + 0.25 * (clump - 0.5), 0.0, 1.0)
 
-    albedo = ramp(height, [(0.0, "#20401c"), (0.35, "#356b2a"), (0.7, "#5b9c3e"), (1.0, "#8cca57")])
-    tone = clumps["id"]
-    warm_m = smoothstep(0.66, 0.86, tone) * smoothstep(0.2, 0.55, height)
-    cool_m = smoothstep(0.34, 0.14, tone) * smoothstep(0.2, 0.55, height)
-    albedo = mix_color(albedo, "#c7c94f", warm_m * 0.55)
-    albedo = mix_color(albedo, "#276a58", cool_m * 0.5)
-    # Pinceladas dentro del mechón: bandas alargadas más claras y más oscuras (brocha, no hebra).
-    strokes_n = unit(spectral_noise(size, seed + 12, 4, 10, 1.8, stretch=(1.0, 3.0)))
-    top_mask = smoothstep(0.4, 0.9, height)
-    albedo = mix_color(albedo, "#a9d66a", smoothstep(0.62, 0.85, strokes_n) * top_mask * 0.22)
-    albedo = mix_color(albedo, "#204018", smoothstep(0.15, 0.02, strokes_n) * top_mask * 0.16)
-    albedo = mix_color(albedo, "#16300f", valley * 0.55)
+    albedo = ramp(height, [(0.0, "#2c4c24"), (0.35, "#3f7530"), (0.65, "#5a9c43"), (1.0, "#82bd58")])
+    # Deriva de tono a gran escala: zonas cálidas amarillentas y zonas frías azuladas, sin
+    # bordes (mismo campo de baja frecuencia en las dos direcciones, no una celda).
+    hue = unit(spectral_noise(size, seed + 4, 1, 3, 2.4), 2.2)
+    warm = ramp(height, [(0.0, "#3a5a1c"), (0.5, "#8aa22e"), (1.0, "#d6d968")])
+    cool = ramp(height, [(0.0, "#173c34"), (0.5, "#2f7a63"), (1.0, "#79c4a6")])
+    tint = lerp(cool, warm, hue)
+    albedo = albedo * 0.55 + tint * 0.45
+    # Pinceladas: variación suave de brillo/sombra siguiendo la brocha, poco contraste.
+    albedo = mix_color(albedo, "#cfe08a", smoothstep(0.66, 0.92, brush) * 0.16)
+    albedo = mix_color(albedo, "#1f3a1a", smoothstep(0.34, 0.08, brush) * 0.14)
     # Florecillas: pocas, pequeñas, blancas o amarillas con centro amarillo.
     fl = scatter_dots(size, 11, seed + 5, radius=0.09, keep=0.1)
     petal = np.where(fl["id"] > 0.5, 1.0, 0.0)[..., None]
@@ -225,9 +240,9 @@ def grass(size: int, seed: int) -> Material:
     albedo = mix_color(albedo, "#e8a326", core * 1.0)
     height = np.maximum(height, fl["mask"] * 0.98)
     albedo = macro_variation(albedo, seed + 20, warm="#c8d65a", cool="#4d9a6a", amount=0.2, value=0.08)
-    height = blur(height, 0.0018)
+    height = blur(height, 0.0009)
     rough = 0.78 - 0.12 * height
-    return Material(albedo, height, rough, depth=0.007, ao_strength=0.75)
+    return Material(albedo, height, rough, depth=0.011, ao_strength=0.65)
 
 
 def moss(size: int, seed: int) -> Material:
@@ -434,121 +449,106 @@ def ash(size: int, seed: int) -> Material:
 # Rocas
 # ---------------------------------------------------------------------------
 
-def volcanic_rock(size: int, seed: int) -> Material:
-    """Basalto cartoon: bloques grandes facetados (low-poly suave) con cantos biselados que
-    atrapan la luz, juntas profundas pero estrechas, vesículas en racimos, óxido cálido en
-    las juntas y algún grano de olivino. Pizarra azulada/violeta, no marrón barro."""
+def _strata_blocks(size: int, seed: int, bands: int, nx: int, jitter: float,
+                    dip_amount: float):
+    """Bloques alargados en horizontal (Voronoi anisótropo) para roca en estratos: bandas
+    de grosor desigual cortadas por fracturas verticales espaciadas, nunca celdas
+    redondeadas. Ondulan y buzan un poco para que no salgan como renglones perfectos.
+    Devuelve (blocks, s) con `s` la fase continua dentro de banda (0 arriba, 1 abajo),
+    independiente de las fracturas, para pintar arista superior clara + sombra bajo cornisa."""
     u, v = uv_grid(size)
-    wu = u + 0.012 * spectral_noise(size, seed + 1, 2, 8, 2.2)
-    wv = v + 0.012 * spectral_noise(size, seed + 2, 2, 8, 2.2)
-    vo = voronoi(size, 5, 5, seed, jitter=0.85, u=wu, v=wv)
-    sub = voronoi(size, 14, 14, seed + 3, jitter=0.9, u=wu, v=wv)
-    bevel_sharp = smoothstep(0.0, 0.32, vo["edge"]) ** 0.5
-    # Algunas juntas se funden en un plano mayor (facetas grandes) y otras se abren como
-    # grieta: sin esto, cada celda se biselaba por igual y se leía como suelo de losetas.
-    seam = unit(spectral_noise(size, seed + 18, 1, 4, 2.0))
-    bevel = np.clip(bevel_sharp + (1.0 - bevel_sharp) * (1.0 - seam) * 0.92, 0.0, 1.0)
-    sub_bevel = smoothstep(0.0, 0.1, sub["edge"])
-    facets = 0.55 * _facet_plane(vo, 17.3, 11.7) + 0.12 * _facet_plane(sub, 13.1, 29.7)
+    # Ondulación y buzamiento discretos: lo bastante suaves para no partir la banda en
+    # blobs (con jitter bajo, la celda del Voronoi sigue siendo un bloque rectangular).
+    undulate = 0.018 * spectral_noise(size, seed + 1, 1, 3, 2.4)
+    # Buzamiento leve: una onda (periódica, nunca una rampa lineal — rompería el tileado).
+    dip = dip_amount * np.sin(2.0 * np.pi * u) * (0.6 + 0.6 * unit(spectral_noise(size, seed + 12, 1, 2, 2.0)))
+    wu = u + 0.007 * spectral_noise(size, seed + 2, 2, 8, 2.2)
+    wv = v + undulate + dip
+    blocks = voronoi(size, nx, bands, seed, jitter=jitter, u=wu, v=wv, isotropic=False)
+    s = np.mod(bands * wv + 0.13, 1.0)
+    return blocks, s, wu, wv
+
+
+def volcanic_rock(size: int, seed: int) -> Material:
+    """Basalto en estratos: bandas horizontales de grosor desigual (0.3-1 m), cortadas por
+    fracturas verticales espaciadas en bloques alargados en horizontal (nunca celdas
+    redondeadas), que ondulan y buzan un poco. Cada banda lleva una arista superior clara y
+    sombra bajo la cornisa. Gris violáceo con algunas columnas, vesículas y óxido."""
+    blocks, s, wu, wv = _strata_blocks(size, seed, bands=6, nx=4, jitter=0.3, dip_amount=0.02)
+    bevel = smoothstep(0.0, 0.14, blocks["edge"]) ** 0.5
+    facets = _facet_plane(blocks, 17.3, 11.7) * 0.35
+    # Arista superior clara justo en s = 0 y sombra bajo esa cornisa (independiente de las
+    # fracturas verticales: se repite igual banda tras banda aunque cambien los bloques).
+    rim = np.exp(-(s / 0.05) ** 2) * 0.9
+    shadow = smoothstep(0.0, 0.1, s) * (1.0 - smoothstep(0.1, 0.32, s))
     surf = unit(spectral_noise(size, seed + 4, 10, 140, 1.6))
-    height = bevel * (0.62 + 0.14 * vo["id"] + facets + 0.02 * sub_bevel + 0.05 * surf)
+    height = bevel * (0.6 + facets + 0.05 * surf) + 0.12 * rim - 0.14 * shadow
     # Vesículas en racimos (el gas sube en bolsas), no un colador uniforme.
     cluster = smoothstep(0.5, 0.75, unit(spectral_noise(size, seed + 8, 2, 8, 2.0), 2.0))
-    ves = scatter_dots(size, 48, seed + 5, radius=0.24, keep=0.55, vary=0.5)
-    ves2 = scatter_dots(size, 20, seed + 6, radius=0.2, keep=0.25, vary=0.4)
-    pits = np.maximum(ves["mask"] * cluster, ves2["mask"] * (0.3 + 0.7 * cluster)) * bevel
-    height = np.clip(height - 0.07 * pits, 0, 1)
-    # Luz pintada arriba, sombra abajo de cada plano (además del tono aleatorio por faceta):
-    # dy > 0 es la mitad del bloque más cercana a la parte de arriba del tile.
-    vlight = np.clip(vo["dy"] * 1.4, -1, 1)
-    shade = np.clip(facets * 2.0 + 0.6 * vlight, -1, 1)
-    albedo = ramp(0.45 + 0.18 * (vo["id"] - 0.5) + 0.4 * shade + 0.15 * (surf - 0.5),
-                  [(0.0, "#343347"), (0.35, "#454559"), (0.65, "#5a5868"), (1.0, "#757080")])
-    albedo = lerp(albedo, ramp(sub["id"], [(0.0, "#4a4a5e"), (1.0, "#625c66")]), 0.18)
-    edge = np.clip(cavity(height, 0.005) * 8.0, -1, 1)
-    albedo = albedo * (1.0 + 0.3 * np.clip(edge, 0, 1) - 0.16 * np.clip(-edge, 0, 1))[..., None]
-    # Junta apenas insinuada donde de verdad se abre grieta (no un grout uniforme).
-    joint = (1.0 - smoothstep(0.0, 0.14, vo["edge"])) * seam
-    # Óxido cálido que baja desde las juntas y en manchas grandes (color, no suciedad).
+    ves = scatter_dots(size, 46, seed + 5, radius=0.22, keep=0.5, vary=0.5)
+    pits = ves["mask"] * cluster * bevel
+    height = np.clip(height - 0.06 * pits, 0, 1)
+    albedo = ramp(0.45 + 0.3 * (blocks["id"] - 0.5) + 0.1 * (surf - 0.5),
+                  [(0.0, "#39384c"), (0.35, "#48475d"), (0.65, "#5d5b70"), (1.0, "#79768a")])
+    albedo = mix_color(albedo, "#c9c3d8", rim * 0.7)
+    albedo = mix_color(albedo, "#201f2c", shadow * 0.55)
+    albedo = mix_color(albedo, "#2a2835", pits * 0.55)
+    # Columnas: unas pocas fracturas casi verticales, finas y espaciadas, que atraviesan
+    # varias bandas (trazo disperso, no una rejilla: evita formas ovaladas artificiales).
+    columns = strokes(size, 6, seed + 6, length=0.95, width=0.012, keep=0.4,
+                       angle_bias=np.pi / 2, spread=0.25)
+    albedo = mix_color(albedo, "#2c2a3a", columns * bevel * 0.22)
+    # Óxido cálido cerca de las fracturas (color, no suciedad).
     rust_n = unit(spectral_noise(size, seed + 7, 1, 6, 2.2), 2.0)
-    near = 1.0 - smoothstep(0.0, 0.3, vo["edge"])
-    rust = smoothstep(0.55, 0.85, rust_n * 0.8 + near * 0.3) * bevel
-    albedo = mix_color(albedo, "#a0603e", rust * 0.4)
-    albedo = mix_color(albedo, "#262431", joint * 0.22)
-    albedo = mix_color(albedo, "#2a2835", pits * 0.6)
-    oliv = scatter_dots(size, 70, seed + 9, radius=0.18, keep=0.08)["mask"] * bevel
-    albedo = mix_color(albedo, "#8a9a4a", oliv * 0.8)
-    # Vetas: trazos minerales claros que marcan estratos sobre las caras (no oscurecen).
-    vein = strokes(size, 6, seed + 15, length=0.85, width=0.022, keep=0.55, spread=2.6)
-    albedo = mix_color(albedo, "#8f8ba0", vein * bevel * 0.4)
+    near = 1.0 - smoothstep(0.0, 0.25, blocks["edge"])
+    rust = smoothstep(0.6, 0.85, rust_n * 0.8 + near * 0.3) * bevel
+    albedo = mix_color(albedo, "#9a5c3c", rust * 0.35)
+    oliv = scatter_dots(size, 60, seed + 9, radius=0.16, keep=0.06)["mask"] * bevel
+    albedo = mix_color(albedo, "#8a9a4a", oliv * 0.7)
     albedo = macro_variation(albedo, seed + 20, warm="#7a5a52", cool="#4f5a78", amount=0.2, value=0.08)
-    rough = 0.8 - 0.14 * np.clip(edge, 0, 1) + 0.1 * pits - 0.15 * oliv
-    return Material(albedo, height, rough, depth=0.032, ao_strength=1.2)
+    rough = 0.82 - 0.1 * rim + 0.08 * pits - 0.12 * oliv
+    return Material(albedo, height, rough, depth=0.03, ao_strength=1.15)
 
 
 def limestone(size: int, seed: int) -> Material:
-    """Caliza cartoon: bancos estratificados en losas grandes de cantos redondeados (juntas
-    anchas y suaves, sin red de grietas finas), caras algo facetadas, alveolos de disolución
-    (karst) en racimos y costras de liquen naranja/salvia. Clara y cálida, no sucia."""
-    u, v = uv_grid(size)
-    warp = spectral_noise(size, seed + 1, 1, 6, 2.5)
-    strata_phase = 4 * v + 0.2 * warp + 0.17
-    s = np.mod(strata_phase, 1.0)
-    # Cada banco: sube suave y baja poco a poco hasta el siguiente (repisas, no rayas); vale 0
-    # en s = 0 y s = 1 para que no haya escalón (salía como una línea fina).
-    ledge = smoothstep(0.0, 0.35, s) * np.sqrt(1.0 - s)
-    wu = u + 0.02 * spectral_noise(size, seed + 2, 2, 8, 2.2)
-    wv = v + 0.02 * spectral_noise(size, seed + 3, 2, 8, 2.2)
-    blocks = voronoi(size, 4, 4, seed + 4, jitter=0.8, u=wu, v=wv)
-    round_edge_sharp = smoothstep(0.0, 0.24, blocks["edge"]) ** 0.5
-    # Algunas juntas se funden en una losa mayor y otras quedan abiertas: si todas biselan
-    # por igual, el suelo se lee como losetas de baño en vez de un banco de roca.
-    seam = unit(spectral_noise(size, seed + 19, 1, 4, 2.0))
-    round_edge = np.clip(round_edge_sharp + (1.0 - round_edge_sharp) * (1.0 - seam) * 0.92, 0.0, 1.0)
-    joint = (1.0 - smoothstep(0.0, 0.1, blocks["edge"])) * seam
-    facets = _facet_plane(blocks, 19.1, 7.3)
+    """Caliza en estratos: bandas horizontales de grosor desigual, cortadas por fracturas
+    verticales espaciadas en bloques alargados en horizontal (nunca celdas redondeadas),
+    que ondulan y buzan un poco. Arista superior clara y sombra bajo la cornisa. Crema y
+    ocre cálido con vetas, alveolos de disolución (karst) y liquen naranja/salvia."""
+    blocks, s, wu, wv = _strata_blocks(size, seed + 4, bands=5, nx=4, jitter=0.3, dip_amount=0.018)
+    round_edge = smoothstep(0.0, 0.16, blocks["edge"]) ** 0.5
+    facets = _facet_plane(blocks, 19.1, 7.3) * 0.3
+    rim = np.exp(-(s / 0.06) ** 2) * 0.85
+    shadow = smoothstep(0.0, 0.1, s) * (1.0 - smoothstep(0.1, 0.3, s))
     body = unit(spectral_noise(size, seed + 5, 3, 60, 2.0))
     fine = unit(spectral_noise(size, seed + 9, 40, 300, 1.0))
     # Alveolos de disolución: hoyuelos redondos en racimos (no un colador uniforme).
     cluster = smoothstep(0.45, 0.75, unit(spectral_noise(size, seed + 10, 2, 7, 2.0), 2.0))
-    pits_a = scatter_dots(size, 30, seed + 6, radius=0.34, keep=0.5, vary=0.6)
-    pits_b = scatter_dots(size, 64, seed + 11, radius=0.3, keep=0.2, vary=0.5)
-    pit_depth = np.maximum(pits_a["mask"] * cluster, pits_b["mask"] * (0.25 + 0.75 * cluster))
-    pit_depth = pit_depth * round_edge
-    height = round_edge * (0.5 + 0.1 * ledge + 0.4 * facets + 0.1 * blocks["id"]
-                           + 0.08 * body + 0.02 * fine)
-    height = np.clip(height - 0.1 * pit_depth, 0, 1)
-    # Luz pintada arriba, sombra abajo de cada losa, sumada al tono aleatorio por faceta.
-    vlight = np.clip(blocks["dy"] * 1.3, -1, 1)
-    shade = np.clip(facets * 1.8 + 0.55 * vlight, -1, 1)
-    albedo = ramp(0.5 + 0.18 * (body - 0.5) + 0.35 * shade + 0.15 * (blocks["id"] - 0.5) + 0.1 * ledge,
-                  [(0.0, "#b3a489"), (0.35, "#cfc2a3"), (0.7, "#e3d8bc"), (1.0, "#f3ecd9")])
-    # Bandas de estrato algo más ocres y un tono por losa (bloques más grises o más cremas).
-    band = smoothstep(0.75, 1.0, np.cos(2 * np.pi * (strata_phase + 0.1)))
-    albedo = mix_color(albedo, "#c9ae84", band * 0.35)
-    albedo = lerp(albedo, albedo * np.array([0.95, 0.98, 1.03]), smoothstep(0.6, 0.9, blocks["id2"]))
-    edge = np.clip(cavity(height, 0.006) * 8.0, -1, 1)
-    albedo = albedo * (1.0 + 0.14 * np.clip(edge, 0, 1) - 0.08 * np.clip(-edge, 0, 1))[..., None]
-    # Junta apenas insinuada: losas grandes que se leen como roca, no como suelo de losetas.
-    albedo = mix_color(albedo, "#968a76", joint * 0.2)
+    pits_a = scatter_dots(size, 26, seed + 6, radius=0.3, keep=0.4, vary=0.6)
+    pits_b = scatter_dots(size, 56, seed + 11, radius=0.26, keep=0.16, vary=0.5)
+    pit_depth = np.maximum(pits_a["mask"] * cluster, pits_b["mask"] * (0.25 + 0.75 * cluster)) * round_edge
+    height = round_edge * (0.55 + facets + 0.08 * body + 0.02 * fine) + 0.1 * rim - 0.12 * shadow
+    height = np.clip(height - 0.08 * pit_depth, 0, 1)
+    albedo = ramp(0.5 + 0.22 * (body - 0.5) + 0.15 * (blocks["id"] - 0.5),
+                  [(0.0, "#b8a687"), (0.35, "#d3c39f"), (0.7, "#e7dbba"), (1.0, "#f5efdc")])
+    albedo = mix_color(albedo, "#fbf5e4", rim * 0.6)
+    albedo = mix_color(albedo, "#8f8066", shadow * 0.32)
     albedo = mix_color(albedo, "#a8987c", pit_depth * 0.4)
-    # Vetas de estrato: trazos minerales ocres, claros (nunca oscurecen), casi horizontales.
-    vein = strokes(size, 5, seed + 16, length=0.9, width=0.018, keep=0.35, angle_bias=0.0, spread=0.5)
-    albedo = mix_color(albedo, "#d9bd86", vein * round_edge * 0.3)
-    # Liquen: costras con borde neto sobre las caras, más hacia los cantos húmedos.
+    # Vetas ocres, casi horizontales, que cruzan varios bloques de una misma banda.
+    veins = voronoi(size, 7, 5, seed + 14, jitter=0.4, u=wu, v=wv, isotropic=False)
+    vein_line = 1.0 - smoothstep(0.0, 0.045, veins["edge"])
+    albedo = mix_color(albedo, "#c39a5c", vein_line * 0.3)
+    # Liquen: costras con borde neto, más hacia los cantos húmedos.
     lichen_n = unit(spectral_noise(size, seed + 7, 2, 16, 1.8), 2.0)
-    lichen_fine = unit(spectral_noise(size, seed + 8, 20, 160, 1.0))
-    near = 1.0 - smoothstep(0.05, 0.4, blocks["edge"])
-    lt = lichen_n + 0.1 * (lichen_fine - 0.5) + 0.12 * near
-    lichen = smoothstep(0.84, 0.88, lt) * round_edge
-    lich2 = smoothstep(0.85, 0.89, 1.0 - lichen_n + 0.1 * (lichen_fine - 0.5) + 0.1 * near) * round_edge
-    albedo = mix_color(albedo, "#e0a646", lichen * 0.8)
-    albedo = mix_color(albedo, "#a3b47e", lich2 * 0.65)
-    albedo = mix_color(albedo, "#f7f1de", smoothstep(0.35, 0.8, lichen_fine) * smoothstep(0.7, 1.0, body) * 0.15)
-    albedo = macro_variation(albedo, seed + 20, warm="#e8cf9e", cool="#b9c0c2", amount=0.18, value=0.07)
+    near = 1.0 - smoothstep(0.05, 0.35, blocks["edge"])
+    lichen = smoothstep(0.82, 0.87, lichen_n + 0.12 * near) * round_edge
+    lich2 = smoothstep(0.83, 0.88, 1.0 - lichen_n + 0.1 * near) * round_edge
+    albedo = mix_color(albedo, "#e0a646", lichen * 0.75)
+    albedo = mix_color(albedo, "#a3b47e", lich2 * 0.6)
+    albedo = macro_variation(albedo, seed + 20, warm="#e8cf9e", cool="#c7b48c", amount=0.16, value=0.06)
     height = np.clip(height + 0.03 * (lichen + lich2), 0, 1)
-    rough = 0.84 - 0.1 * np.clip(edge, 0, 1) + 0.06 * pit_depth - 0.06 * lichen
-    return Material(albedo, height, rough, depth=0.026, ao_strength=1.0)
+    rough = 0.85 - 0.06 * rim + 0.06 * pit_depth - 0.05 * lichen
+    return Material(albedo, height, rough, depth=0.024, ao_strength=1.05)
 
 
 # ---------------------------------------------------------------------------
