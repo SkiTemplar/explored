@@ -123,7 +123,7 @@ AExploredSkyController::AExploredSkyController()
 	// Grading estilizado (referencia: Sea of Thieves): color saturado, contraste marcado,
 	// sombras frías y luces cálidas. El tonemapper filmico desatura, de ahí la saturación alta.
 	PP.bOverride_ColorSaturation = true;
-	PP.ColorSaturation = FVector4(1.16f, 1.16f, 1.16f, 1.0f);
+	PP.ColorSaturation = FVector4(1.08f, 1.08f, 1.08f, 1.0f);
 	PP.bOverride_ColorContrast = true;
 	PP.ColorContrast = FVector4(1.12f, 1.12f, 1.12f, 1.0f);
 	PP.bOverride_ColorGainShadows = true;
@@ -131,11 +131,11 @@ AExploredSkyController::AExploredSkyController()
 	PP.bOverride_ColorSaturationShadows = true;
 	PP.ColorSaturationShadows = FVector4(1.1f, 1.1f, 1.1f, 1.0f);
 	PP.bOverride_ColorGainHighlights = true;
-	PP.ColorGainHighlights = FVector4(1.04f, 1.01f, 0.95f, 1.0f);
+	PP.ColorGainHighlights = FVector4(1.01f, 1.0f, 0.98f, 1.0f);
 	PP.bOverride_ColorGain = true;
 	PP.ColorGain = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	PP.bOverride_WhiteTemp = true;
-	PP.WhiteTemp = 6200.0f;
+	PP.WhiteTemp = 6500.0f;
 	PP.bOverride_BloomIntensity = true;
 	PP.BloomIntensity = 0.45f;
 	PP.bOverride_VignetteIntensity = true;
