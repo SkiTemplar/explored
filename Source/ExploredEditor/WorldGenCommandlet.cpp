@@ -785,6 +785,11 @@ namespace
 					Cell->SetActorLabel(FString::Printf(TEXT("Vegetation_%d_%d"), Key.X, Key.Y));
 					Cell->SetFolderPath(FName(TEXT("Vegetation")));
 					Cell->SetRuntimeGrid(FName(VegetationGridName));
+					// La capa HLOD va por actor: sin esto hereda la capa por defecto del mapa
+					// (HLOD_Terrain, fusión de mallas) y el builder fusiona cientos de miles de
+					// instancias por celda (~3 min cada una) en vez de instanciarlas.
+					Cell->SetHLODLayer(FindObject<UHLODLayer>(nullptr,
+						*FString::Printf(TEXT("%s/HLOD_Vegetation.HLOD_Vegetation"), HLODFolder)));
 					if (FVector::DistXY(CellOrigin, SpawnLocationCm) < LandingSafetyRadiusCm)
 					{
 						// Celda de vegetación de la playa de aparición: siempre cargada, igual que
