@@ -205,6 +205,18 @@ float wetW = saturate((0.6 - WP.z / 100.0) / 0.8) * sandW;
 TERRAIN_COLOR_HLSL = TERRAIN_LAYERS_COMMON + r"""
 #define TOP2(T, S) lerp(Texture2DSample(T, SHARED, top / S), Texture2DSample(T, SHARED, mul(rot, top) / (S * 2.7)), 0.35)
 #define TRI(T, S) (Texture2DSample(T, SHARED, p.yz / S) * w.x + Texture2DSample(T, SHARED, p.xz / S) * w.y + Texture2DSample(T, SHARED, p.xy / S) * w.z)
+// Igual que TOP2 pero por eje triplanar: mezcla la muestra base con una segunda girada y a otra
+// escala para romper la repetición. Solo para BasaltBC (ver más abajo): a la escala de tile de la
+// roca volcánica (4 m), la fotografía fotobasheada con paleta escalonada en 5 bandas (más «planos
+// de tono» que una roca continua, ver VOLCANIC_STYLE en texgen/photobash.py) repite su patrón de
+// bandas de forma idéntica en cada tile y en las tres proyecciones triplanares comparten fase en
+// los ejes que cruzan por la misma coordenada de mundo (yz y xz comparten Z): en formas redondeadas
+// como una cumbre, donde dos proyecciones pesan parecido, esa repetición sincronizada se lee como
+// una rejilla/cuadrícula regular en vez de roca natural.
+#define TRI2(T, S) ( \
+    lerp(Texture2DSample(T, SHARED, p.yz / S), Texture2DSample(T, SHARED, mul(rot, p.yz) / (S * 2.7)), 0.35) * w.x + \
+    lerp(Texture2DSample(T, SHARED, p.xz / S), Texture2DSample(T, SHARED, mul(rot, p.xz) / (S * 2.7)), 0.35) * w.y + \
+    lerp(Texture2DSample(T, SHARED, p.xy / S), Texture2DSample(T, SHARED, mul(rot, p.xy) / (S * 2.7)), 0.35) * w.z )
 
 float4 sandDry = lerp(TOP2(SandBC, 3.2), TOP2(AshBC, 3.0), smoothstep(0.75, 1.0, volcanic));
 float4 sand = lerp(sandDry, TOP2(WetBC, 3.2), saturate(wetW * 1.4));
@@ -212,7 +224,7 @@ float4 grass = TOP2(GrassBC, 2.4);
 // La hojarasca pintada sale otoñal y demasiado saturada: bajo dosel tropical es marrón oscuro verdoso.
 float4 forest = TOP2(ForestBC, 2.8);
 forest.rgb = lerp(dot(forest.rgb, float3(0.3, 0.59, 0.11)).xxx, forest.rgb, 0.55) * float3(0.62, 0.66, 0.5);
-float4 rock = lerp(TRI(LimeBC, 4.5), TRI(BasaltBC, 4.0), volcanic);
+float4 rock = lerp(TRI(LimeBC, 4.5), TRI2(BasaltBC, 4.0), volcanic);
 
 // Mezcla por altura: la luminancia hace de mapa de alturas aproximado.
 float hS = dot(sand.rgb, 0.33) + sandW * 1.2;
@@ -367,7 +379,15 @@ return normalize(n + float3(detail, 0.0));
 # Sale en un único FLOAT4 para no repetir la suma de Gerstner en un segundo nodo Custom:
 # .r = máscara de cresta (alimenta la espuma), .gba = color emisivo de subsuperficie ya ponderado.
 OCEAN_CREST_HLSL = GERSTNER_COMMON + r"""
-float crest = saturate(smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55))) * saturate(SeaState * 1.4);
+// La altura de cresta normalizada (offset.z / sumAmp) no depende de SeaState: la suma de las 4
+// olas de Gerstner siempre tiene picos y valles aunque el mar esté en calma (SeaState baja solo
+// encoge la amplitud real, no la forma relativa). Con «saturate(SeaState * 1.4)» como único freno,
+// un SeaState de reposo (0.15) ya deja pasar un 21% de opacidad de espuma en cada pico — como las
+// olas de fondo son solo 4 direcciones coherentes, esos picos se alinean en frentes anchos y se leen
+// como bandas blancas paralelas por todo el océano, no solo cerca de la costa. El mar en calma real
+// no hace whitecaps: se retrasa el arranque a partir de SeaState~0.3 (mar picado, Beaufort 3+) para
+// que a 0.15 la máscara de cresta salga a 0 y solo dejen espuma visible la orilla y la marejada.
+float crest = saturate(smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55))) * saturate((SeaState - 0.3) * 3.0);
 
 float3 n = normalize(cross(tangent, binormal));
 float3 camDir = normalize(V);
