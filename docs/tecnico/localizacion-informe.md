@@ -14,7 +14,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 | Claves propuestas pendientes de integrar | 0 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
-| Literales para revisar | 64 |
+| Literales para revisar | 70 |
 | Errores / avisos | 0 / 25 |
 
 ## Literales del C++
@@ -32,7 +32,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (64)
+### Revisar (70)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -71,6 +71,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Cooking/CookingModel.cpp:264` | `No cabe tanto en %s.` | `OutFailReason = FString::Printf(TEXT("No cabe tanto en %s."), *Vessel->NameEs);` |
 | `Source/Explored/Cooking/CookingModel.cpp:270` | `Hace falta un recipiente que no pierda agua.` | `OutFailReason = TEXT("Hace falta un recipiente que no pierda agua.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:280` | `Así no se puede %s.` | `OutFailReason = FString::Printf(TEXT("Así no se puede %s."), LexToString(Technique));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:409` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:410` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:411` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:412` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:413` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:430` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
 | `Source/Explored/Fishing/FishingModel.cpp:70` | `Pez loro` | `FFishSpecies S = MakeSpecies(TEXT("pez_loro"), TEXT("Pez loro"), FishBit(EHab::Reef), Rod \| Spear \| Net \| Trap,` |
 | `Source/Explored/Fishing/FishingModel.cpp:80` | `Pez cirujano` | `FFishSpecies S = MakeSpecies(TEXT("pez_cirujano"), TEXT("Pez cirujano"), FishBit(EHab::Reef) \| FishBit(EHab::Lagoon),` |
 | `Source/Explored/Fishing/FishingModel.cpp:124` | `Pez ballesta` | `FFishSpecies S = MakeSpecies(TEXT("pez_ballesta"), TEXT("Pez ballesta"), FishBit(EHab::Reef), Rod \| Spear \| Trap,` |
