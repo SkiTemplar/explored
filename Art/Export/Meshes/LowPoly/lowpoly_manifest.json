@@ -1,0 +1,344 @@
+{
+  "generated_by": "Tools/Packs/process_landing_set.py",
+  "mesh_count": 26,
+  "meshes": [
+    {
+      "name": "SM_LowPolyPalmShort_01",
+      "slot": "Palm",
+      "file": "Palm/SM_LowPolyPalmShort_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_palmShort.obj",
+      "triangles": 190,
+      "dimensions_m": {
+        "x": 14.689,
+        "y": 14.689,
+        "z": 15.0
+      }
+    },
+    {
+      "name": "SM_LowPolyPalmTall_01",
+      "slot": "Palm",
+      "file": "Palm/SM_LowPolyPalmTall_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_palmTall.obj",
+      "triangles": 190,
+      "dimensions_m": {
+        "x": 16.785,
+        "y": 16.785,
+        "z": 22.0
+      }
+    },
+    {
+      "name": "SM_LowPolyPalmDetailedTall_01",
+      "slot": "Palm",
+      "file": "Palm/SM_LowPolyPalmDetailedTall_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_palmDetailedTall.obj",
+      "triangles": 336,
+      "dimensions_m": {
+        "x": 18.166,
+        "y": 18.166,
+        "z": 25.0
+      }
+    },
+    {
+      "name": "SM_LowPolyPalmBend_01",
+      "slot": "Palm",
+      "file": "Palm/SM_LowPolyPalmBend_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_palmBend.obj",
+      "triangles": 118,
+      "dimensions_m": {
+        "x": 12.203,
+        "y": 13.211,
+        "z": 18.0
+      }
+    },
+    {
+      "name": "SM_LowPolyJungleWidePlateau_01",
+      "slot": "JungleWide",
+      "file": "JungleWide/SM_LowPolyJungleWidePlateau_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_plateau.obj",
+      "triangles": 215,
+      "dimensions_m": {
+        "x": 8.814,
+        "y": 9.436,
+        "z": 18.0
+      }
+    },
+    {
+      "name": "SM_LowPolyJungleWideFat_01",
+      "slot": "JungleWide",
+      "file": "JungleWide/SM_LowPolyJungleWideFat_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_fat.obj",
+      "triangles": 50,
+      "dimensions_m": {
+        "x": 9.188,
+        "y": 7.957,
+        "z": 14.0
+      }
+    },
+    {
+      "name": "SM_LowPolyJungleWideDetailed_01",
+      "slot": "JungleWide",
+      "file": "JungleWide/SM_LowPolyJungleWideDetailed_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/tree_detailed.obj",
+      "triangles": 402,
+      "dimensions_m": {
+        "x": 10.172,
+        "y": 9.146,
+        "z": 16.0
+      }
+    },
+    {
+      "name": "SM_LowPolyShrubLarge_01",
+      "slot": "Shrub",
+      "file": "Shrub/SM_LowPolyShrubLarge_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/plant_bushLarge.obj",
+      "triangles": 30,
+      "dimensions_m": {
+        "x": 3.39,
+        "y": 3.04,
+        "z": 2.2
+      }
+    },
+    {
+      "name": "SM_LowPolyShrubDetailed_01",
+      "slot": "Shrub",
+      "file": "Shrub/SM_LowPolyShrubDetailed_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/plant_bushDetailed.obj",
+      "triangles": 52,
+      "dimensions_m": {
+        "x": 2.675,
+        "y": 2.675,
+        "z": 1.6
+      }
+    },
+    {
+      "name": "SM_LowPolyShrub_01",
+      "slot": "Shrub",
+      "file": "Shrub/SM_LowPolyShrub_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/plant_bush.obj",
+      "triangles": 16,
+      "dimensions_m": {
+        "x": 1.944,
+        "y": 1.944,
+        "z": 1.2
+      }
+    },
+    {
+      "name": "SM_LowPolyFernTall_01",
+      "slot": "Fern",
+      "file": "Fern/SM_LowPolyFernTall_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/plant_flatTall.obj",
+      "triangles": 18,
+      "dimensions_m": {
+        "x": 0.86,
+        "y": 0.86,
+        "z": 0.9
+      }
+    },
+    {
+      "name": "SM_LowPolyFernSmall_01",
+      "slot": "Fern",
+      "file": "Fern/SM_LowPolyFernSmall_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/plant_bushSmall.obj",
+      "triangles": 8,
+      "dimensions_m": {
+        "x": 1.109,
+        "y": 0.974,
+        "z": 0.6
+      }
+    },
+    {
+      "name": "SM_LowPolyGrassClumpLarge_01",
+      "slot": "Grass",
+      "file": "Grass/SM_LowPolyGrassClumpLarge_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/grass_large.obj",
+      "triangles": 112,
+      "dimensions_m": {
+        "x": 0.966,
+        "y": 0.964,
+        "z": 0.6
+      }
+    },
+    {
+      "name": "SM_LowPolyGrassClumpLeafs_01",
+      "slot": "Grass",
+      "file": "Grass/SM_LowPolyGrassClumpLeafs_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/grass_leafsLarge.obj",
+      "triangles": 72,
+      "dimensions_m": {
+        "x": 1.67,
+        "y": 1.71,
+        "z": 0.5
+      }
+    },
+    {
+      "name": "SM_LowPolyFlowerRed_01",
+      "slot": "Flower",
+      "file": "Flower/SM_LowPolyFlowerRed_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/flower_redA.obj",
+      "triangles": 56,
+      "dimensions_m": {
+        "x": 0.19,
+        "y": 0.217,
+        "z": 0.35
+      }
+    },
+    {
+      "name": "SM_LowPolyFlowerYellow_01",
+      "slot": "Flower",
+      "file": "Flower/SM_LowPolyFlowerYellow_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/flower_yellowA.obj",
+      "triangles": 56,
+      "dimensions_m": {
+        "x": 0.289,
+        "y": 0.329,
+        "z": 0.35
+      }
+    },
+    {
+      "name": "SM_LowPolyFlowerPurple_01",
+      "slot": "Flower",
+      "file": "Flower/SM_LowPolyFlowerPurple_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/flower_purpleA.obj",
+      "triangles": 56,
+      "dimensions_m": {
+        "x": 0.23,
+        "y": 0.261,
+        "z": 0.35
+      }
+    },
+    {
+      "name": "SM_LowPolyRockShoreA_01",
+      "slot": "Rock",
+      "file": "Rock/SM_LowPolyRockShoreA_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/rock_smallA.obj",
+      "triangles": 16,
+      "dimensions_m": {
+        "x": 0.755,
+        "y": 0.755,
+        "z": 0.4
+      }
+    },
+    {
+      "name": "SM_LowPolyRockShoreB_01",
+      "slot": "Rock",
+      "file": "Rock/SM_LowPolyRockShoreB_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/rock_smallB.obj",
+      "triangles": 24,
+      "dimensions_m": {
+        "x": 1.02,
+        "y": 1.02,
+        "z": 0.5
+      }
+    },
+    {
+      "name": "SM_LowPolyRockShoreC_01",
+      "slot": "Rock",
+      "file": "Rock/SM_LowPolyRockShoreC_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/rock_smallC.obj",
+      "triangles": 16,
+      "dimensions_m": {
+        "x": 1.029,
+        "y": 1.029,
+        "z": 0.35
+      }
+    },
+    {
+      "name": "SM_LowPolyRockSandA_01",
+      "slot": "Rock",
+      "file": "Rock/SM_LowPolyRockSandA_01.fbx",
+      "source_pack": "kenney-survival-kit",
+      "source_file": "Models/OBJ format/rock-sand-a.obj",
+      "triangles": 92,
+      "dimensions_m": {
+        "x": 0.848,
+        "y": 0.74,
+        "z": 0.6
+      }
+    },
+    {
+      "name": "SM_LowPolyRockSandB_01",
+      "slot": "Rock",
+      "file": "Rock/SM_LowPolyRockSandB_01.fbx",
+      "source_pack": "kenney-survival-kit",
+      "source_file": "Models/OBJ format/rock-sand-b.obj",
+      "triangles": 180,
+      "dimensions_m": {
+        "x": 0.891,
+        "y": 0.88,
+        "z": 0.5
+      }
+    },
+    {
+      "name": "SM_LowPolyLog_01",
+      "slot": "Debris",
+      "file": "Debris/SM_LowPolyLog_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/log.obj",
+      "triangles": 100,
+      "dimensions_m": {
+        "x": 0.824,
+        "y": 2.5,
+        "z": 0.61
+      }
+    },
+    {
+      "name": "SM_LowPolyLogLarge_01",
+      "slot": "Debris",
+      "file": "Debris/SM_LowPolyLogLarge_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/log_large.obj",
+      "triangles": 96,
+      "dimensions_m": {
+        "x": 4.0,
+        "y": 2.197,
+        "z": 1.667
+      }
+    },
+    {
+      "name": "SM_LowPolyStump_01",
+      "slot": "Debris",
+      "file": "Debris/SM_LowPolyStump_01.fbx",
+      "source_pack": "kenney-nature-kit",
+      "source_file": "Models/OBJ format/stump_round.obj",
+      "triangles": 56,
+      "dimensions_m": {
+        "x": 1.245,
+        "y": 1.437,
+        "z": 0.8
+      }
+    },
+    {
+      "name": "SM_LowPolyBranch_01",
+      "slot": "Debris",
+      "file": "Debris/SM_LowPolyBranch_01.fbx",
+      "source_pack": "kenney-survival-kit",
+      "source_file": "Models/OBJ format/tree-log-small.obj",
+      "triangles": 88,
+      "dimensions_m": {
+        "x": 0.461,
+        "y": 1.2,
+        "z": 0.512
+      }
+    }
+  ]
+}
