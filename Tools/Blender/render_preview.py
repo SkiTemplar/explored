@@ -106,6 +106,13 @@ def _import_and_fix_materials(entry):
     obj.data.materials.clear()
     for slot_name in entry['material_slots']:
         obj.data.materials.append(C.get_material(slot_name))
+    # El material «__fbx_import» apartado arriba (y la Image Texture que el
+    # importador FBX resuelve y carga colgada de él, aparte de la que ya
+    # cachea C.get_material) queda huérfano justo aquí. Purgar ahora, no al
+    # final de la lámina: en una rejilla de varias mallas se iban
+    # acumulando fichero a fichero hasta agotar la memoria de texturas de
+    # la GPU («Failed to create GPU texture», materiales a magenta).
+    C.purge_orphans()
     return obj
 
 
@@ -298,6 +305,7 @@ def _import_and_fix_materials_props(entry):
     obj.data.materials.clear()
     for slot_name in entry['material_slots']:
         obj.data.materials.append(PM.get_material(slot_name))
+    C.purge_orphans()  # ver nota en _import_and_fix_materials
     return obj
 
 

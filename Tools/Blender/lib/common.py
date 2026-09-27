@@ -60,9 +60,21 @@ def purge_orphans():
     Necesario porque el proceso de Blender se reutiliza entre familias dentro
     de la misma invocación de run_all.py: sin purgar, los nombres de malla
     se van acumulando con sufijos .001, .002...
+
+    bpy.data.materials faltaba en el barrido original (el docstring ya lo
+    prometía, el código no lo hacía): render_preview.py aparta el material
+    de cada FBX reimportado con `m.name += '__fbx_import'` para dejar el
+    nombre real libre para C.get_material(), pero ese material huérfano (y
+    la Image Texture que trae colgada, que el importador FBX resuelve y
+    carga aparte de la que ya cachea get_material) nunca llegaba a 0
+    usuarios de verdad reconocido por esta función — se iban acumulando
+    fichero a fichero hasta agotar la memoria de texturas de la GPU
+    («Failed to create GPU texture», materiales a magenta) en láminas con
+    muchas mallas. Van primero los materiales para que sus imágenes queden
+    en 0 usuarios en la MISMA pasada y el orden de la tupla no importe.
     """
-    for coll in (bpy.data.objects, bpy.data.meshes, bpy.data.curves,
-                 bpy.data.images):
+    for coll in (bpy.data.materials, bpy.data.objects, bpy.data.meshes,
+                 bpy.data.curves, bpy.data.images):
         for block in list(coll):
             if block.users == 0:
                 try:
@@ -118,17 +130,39 @@ MATERIAL_NAMES = frozenset(_MATERIAL_DEFS.keys())
 def _load_texture(stem, non_color=False):
     """Carga (o reutiliza) Art/Export/Textures/<stem>.png como bpy.data.images.
     Devuelve None si el fichero no existe todavía (ver nota de
-    _TEXTURED_MATERIALS)."""
+    _TEXTURED_MATERIALS).
+
+    Causa real de un bug detectado en render_preview.py (magenta + «Failed
+    to create GPU texture» en el log, en láminas de varias mallas
+    reimportadas de FBX): export_fbx usa path_mode='STRIP', que deja en el
+    FBX una referencia de textura sin ruta absoluta pero SIN quitarla del
+    todo — al reimportar ese FBX (render_preview.py: _import_and_fix_materials,
+    ANTES de sustituir los materiales por los de verdad), el propio
+    importador FBX de Blender resuelve esa referencia y crea un
+    bpy.data.images con el MISMO NOMBRE (p.ej. «T_BarkTropical_N») pero sin
+    búfer de píxeles (has_data=False, carga diferida que nunca se
+    completa). El chequeo de caché de abajo comparaba por NOMBRE además de
+    por ruta, así que devolvía ese «cascarón» vacío del importador FBX en
+    vez de cargar el PNG de verdad — de ahí que solo fallase una textura de
+    cada material (la que el importador FBX SÍ había adelantado a resolver
+    por nombre) y no las demás. Comparar solo por ruta absoluta exacta
+    evita ese falso positivo: el cascarón del importador nunca tiene esa
+    ruta (STRIP no la conserva), así que bpy.data.images.load() crea un
+    datablock nuevo y limpio (con sufijo .001 si hace falta) en vez de
+    reutilizar el cascarón. `img.pixels[0]` fuerza además la decodificación
+    síncrona del búfer ahí mismo, antes de que ningún material la use."""
     path = os.path.join(TEXTURES_DIR, stem + '.png')
     if not os.path.isfile(path):
         return None
     for img in bpy.data.images:
-        if img.filepath == path or img.name == stem:
+        if img.filepath == path and img.has_data:
             return img
     img = bpy.data.images.load(path)
     img.name = stem
     if non_color:
         img.colorspace_settings.name = 'Non-Color'
+    if not img.has_data:
+        _ = img.pixels[0]
     return img
 
 
@@ -547,7 +581,7 @@ def cylindrical_bark_uv(obj, v_tile_m=1.6, uv_rect=None):
 def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
                        n_points=8, bevel_resolution=3, lean_dir=None,
                        wobble=0.0, rnd=None, z_offset=0.0, bark_v_tile_m=1.6,
-                       uv_rect=None):
+                       uv_rect=None, s_curve=0.0, base_flare=1.0):
     """Crea un tronco/rama/liana curvado biselando una curva Bezier.
 
     curvature: desplazamiento lateral máximo (m) alcanzado en la punta,
@@ -566,6 +600,16 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     bambú, pecíolos): ver la nota de cylindrical_bark_uv, sin esto la UV
     cilíndrica caería en celdas de hoja arbitrarias del atlas Masked y el
     recorte alfa dejaría agujeros en el tallo.
+    s_curve: desplazamiento lateral (m) PERPENDICULAR a `lean_dir`, con un
+    seno que vale 0 en la base y la punta y máximo a media altura — un
+    verdadero «palillo doblado» en S en vez del único lado monótono de
+    `curvature` (encargo 2026-09-27: troncos gruesos y curvados, no
+    palillos rectos con una sola inclinación).
+    base_flare: multiplicador del radio en la base (>1 = ensanchada), que
+    decae exponencialmente hacia el radio normal en el primer ~15% de la
+    altura — el ensanche de la base de un árbol grande de dosel, además de
+    (no en vez de) las raíces tabulares/contrafuertes que añade el
+    llamador como piezas aparte.
     """
     if rnd is None:
         rnd = random.Random(0)
@@ -579,19 +623,22 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     spline.bezier_points.add(n_points - 1)
 
     dir_x, dir_y = math.cos(lean_dir), math.sin(lean_dir)
+    perp_x, perp_y = -dir_y, dir_x
     radius_ratio = tip_radius / base_radius if base_radius > 0 else 1.0
 
     for i, bp in enumerate(spline.bezier_points):
         t = i / (n_points - 1)
         z = height * t + z_offset
         bend = curvature * (t ** 1.6)
+        s_wave = s_curve * math.sin(t * math.pi)
         wob = wobble * math.sin(t * math.pi * 2.3) * (1.0 - t)
-        x = dir_x * bend + rnd.uniform(-wob, wob)
-        y = dir_y * bend + rnd.uniform(-wob, wob)
+        x = dir_x * bend + perp_x * s_wave + rnd.uniform(-wob, wob)
+        y = dir_y * bend + perp_y * s_wave + rnd.uniform(-wob, wob)
         bp.co = Vector((x, y, z))
         bp.handle_left_type = 'AUTO'
         bp.handle_right_type = 'AUTO'
-        bp.radius = 1.0 - t * (1.0 - radius_ratio)
+        flare_bump = (base_flare - 1.0) * math.exp(-t * 14.0)
+        bp.radius = (1.0 - t * (1.0 - radius_ratio)) + flare_bump
 
     curve_data.bevel_depth = base_radius
     curve_data.bevel_resolution = bevel_resolution
@@ -606,19 +653,23 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     return obj, lean_dir
 
 
-def spline_point(height, t, curvature, lean_dir, z_offset=0.0):
-    """Punto (Vector) sobre el mismo perfil de curvatura que make_curved_trunk,
-    útil para anclar hojas/ramas a lo largo de un tronco sin duplicar curvas."""
+def spline_point(height, t, curvature, lean_dir, z_offset=0.0, s_curve=0.0):
+    """Punto (Vector) sobre el mismo perfil de curvatura que make_curved_trunk
+    (incluido el término s_curve, si el tronco lo usa), útil para anclar
+    hojas/ramas a lo largo de un tronco sin duplicar curvas."""
     bend = curvature * (t ** 1.6)
+    s_wave = s_curve * math.sin(t * math.pi)
     z = height * t + z_offset
-    x = math.cos(lean_dir) * bend
-    y = math.sin(lean_dir) * bend
+    dir_x, dir_y = math.cos(lean_dir), math.sin(lean_dir)
+    perp_x, perp_y = -dir_y, dir_x
+    x = dir_x * bend + perp_x * s_wave
+    y = dir_y * bend + perp_y * s_wave
     return Vector((x, y, z))
 
 
-def spline_tangent(height, t, curvature, lean_dir, dt=1e-3, z_offset=0.0):
-    p0 = spline_point(height, max(0.0, t - dt), curvature, lean_dir, z_offset)
-    p1 = spline_point(height, min(1.0, t + dt), curvature, lean_dir, z_offset)
+def spline_tangent(height, t, curvature, lean_dir, dt=1e-3, z_offset=0.0, s_curve=0.0):
+    p0 = spline_point(height, max(0.0, t - dt), curvature, lean_dir, z_offset, s_curve)
+    p1 = spline_point(height, min(1.0, t + dt), curvature, lean_dir, z_offset, s_curve)
     d = (p1 - p0)
     if d.length > 1e-8:
         d.normalize()
@@ -1011,6 +1062,140 @@ def make_leaf_cluster_cards(name, center, radius_xy, radius_z, seed,
         orient_and_place(card, card_center, growth, normal_dir)
         parts.append(card)
     return join_objects(parts, name)
+
+
+def set_spherical_normals(obj, center):
+    """Normales esféricas: sustituye las normales reales (facetadas por el
+    ruido de la superficie) por normal(v.co - center) por vértice — el
+    truco clave del follaje estilizado (Sea of Thieves/Genshin/Tchia,
+    encargo 2026-09-27): la luz se reparte como en una esfera lisa, suave y
+    redondeada, en vez de romperse en facetas caóticas sobre el ruido de
+    superficie. `center` está en el mismo espacio local que v.co (las
+    masas de copa, como los blobs de siempre, se construyen ya en su
+    posición absoluta dentro del árbol, sin reorientar el objeto después).
+    Sobrevive la ida y vuelta por FBX (verificado exportando/reimportando:
+    error < 0.0002 por normal)."""
+    me = obj.data
+    c = Vector(center)
+    normals = []
+    for v in me.vertices:
+        d = v.co - c
+        if d.length < 1e-6:
+            d = Vector((0.0, 0.0, 1.0))
+        normals.append(d.normalized())
+    me.normals_split_custom_set_from_vertices(normals)
+
+
+def _mass_color_fn(center, radius, up_hint, out_hint, dark_cool, light_warm,
+                    neighbors, jitter, rnd):
+    """color_fn de una masa de copa: degradado según cuánto mira un vértice
+    hacia arriba+hacia fuera del árbol (claro/cálido) frente a
+    abajo+hacia dentro (oscuro/frío), con oclusión barata donde esta masa
+    se solapa con una vecina (`neighbors`: lista de (centro, radio))."""
+    c = Vector(center)
+    up = Vector(up_hint).normalized()
+    out = Vector(out_hint).normalized() if Vector(out_hint).length > 1e-6 else up
+    cache = {}
+
+    def fn(v):
+        if v.index not in cache:
+            d = v.co - c
+            dl = d.length
+            dirn = d.normalized() if dl > 1e-6 else up
+            t = 0.5 + 0.5 * (dirn.dot(up) * 0.6 + dirn.dot(out) * 0.4)
+            t = max(0.0, min(1.0, t))
+            ao = 1.0
+            for nc, nr in neighbors:
+                dist = (v.co - Vector(nc)).length
+                overlap = (nr + radius) - dist
+                if overlap > 0.0:
+                    ao = min(ao, max(0.35, 1.0 - overlap / max(radius * 0.6, 1e-4)))
+            j = rnd.uniform(-jitter, jitter)
+            cache[v.index] = (t, ao, j)
+        t, ao, j = cache[v.index]
+        r = max(0.0, min(1.0, (dark_cool[0] + (light_warm[0] - dark_cool[0]) * t) * ao + j))
+        g = max(0.0, min(1.0, (dark_cool[1] + (light_warm[1] - dark_cool[1]) * t) * ao + j))
+        b = max(0.0, min(1.0, (dark_cool[2] + (light_warm[2] - dark_cool[2]) * t) * ao + j))
+        return (r, g, b, 1.0)
+    return fn
+
+
+def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hint=None,
+                      dark_cool=(0.035, 0.14, 0.10), light_warm=(0.34, 0.62, 0.16),
+                      cell_names=('leaf_a', 'leaf_b', 'leaf_small_round'),
+                      target_tris=1400, tris_per_card=4, card_size_ratio=(0.22, 0.36),
+                      neighbors=None, subdivisions=2, noise_strength=0.16, max_cards=380):
+    """UNA masa/racimo de copa: esferoide deformado con ruido suave
+    (make_blob) que aporta el VOLUMEN y las normales esféricas (la
+    silueta redondeada con luz limpia), más tarjetas de hoja pequeñas
+    -escamas- ancladas SOBRE su superficie (nunca sueltas cruzándose al
+    azar) para el detalle de silueta recortada. Reemplaza a
+    make_leaf_cluster_cards para copas de árbol (esa técnica, cards
+    flotando dentro de una elipse sin superficie que las sostenga, se
+    leía como una nube de esquirlas sin masa legible — encargo
+    2026-09-27). 4-9 de estas masas por árbol, en pisos distintos con
+    huecos entre ellas, es la copa completa (ver jungle_tree.py).
+
+    `neighbors`: lista de (centro, radio) de OTRAS masas del mismo árbol
+    ya colocadas, para la oclusión barata donde se tocan (ver
+    _mass_color_fn). `out_hint`: dirección horizontal hacia fuera del eje
+    del árbol (por defecto, se deriva de `center` respecto al origen)."""
+    rnd = seeded_rng(seed)
+    center_v = Vector(center)
+    if out_hint is None:
+        out_hint = Vector((center_v.x, center_v.y, 0.0))
+        if out_hint.length < 1e-4:
+            out_hint = Vector((1.0, 0.0, 0.0))
+    neighbors = neighbors or []
+
+    blob = make_blob(f'{name}_core', center_v, radius, seed=seed,
+                      subdivisions=subdivisions, noise_scale=1.6,
+                      noise_strength=noise_strength, relax_iterations=2)
+    sphere_uv_into_cell(blob, 'stem_swatch')
+
+    n_cards = max(60, min(max_cards, int(target_tris * 0.72 / max(tris_per_card, 1))))
+    cards = []
+    for i in range(n_cards):
+        # muestreo uniforme en la esfera (vector gaussiano normalizado).
+        d = Vector((rnd.gauss(0.0, 1.0), rnd.gauss(0.0, 1.0), rnd.gauss(0.0, 1.0)))
+        if d.length < 1e-6:
+            continue
+        d.normalize()
+        anchor = center_v + d * (radius * rnd.uniform(0.90, 1.04))
+        roll = rnd.uniform(0.0, 2.0 * math.pi)
+        seed_dir = Vector((math.cos(roll), math.sin(roll), rnd.uniform(-0.5, 0.5)))
+        tangential = seed_dir - d * d.dot(seed_dir)
+        if tangential.length < 1e-4:
+            tangential = Vector((1.0, 0.0, 0.0)) - d * d.x
+        tangential.normalize()
+        growth = (tangential * 0.85 + Vector((0.0, 0.0, -0.25))).normalized()
+
+        size = radius * rnd.uniform(*card_size_ratio)
+        aspect = rnd.uniform(0.55, 0.85)
+        cell = rnd.choice(cell_names)
+        card = make_leaf_blade(
+            f'{name}_s{i:03d}', length=size, width_base=size * aspect * rnd.uniform(0.6, 0.85),
+            width_tip=size * aspect * 0.12, curve_amount=size * rnd.uniform(0.05, 0.16),
+            segments=1, double_sided=True, uv_cell=cell,
+        )
+        orient_and_place(card, anchor, growth, d)
+        cards.append(card)
+
+    mass = join_objects([blob] + cards, name)
+    merge_by_distance(mass, dist=0.0005)
+    set_spherical_normals(mass, center_v)
+    # shade_smooth() simple (NO shade_smooth_auto/shade_smooth_by_angle): esa
+    # variante hornea un modificador de Geometry Nodes que RECALCULA las
+    # normales por ángulo y sobrescribiría las esféricas que se acaban de
+    # asignar. El llamador debe evitar además llamar a shade_smooth_auto
+    # sobre un objeto que ya incluya masas (unir madera y masas en pasadas
+    # separadas — ver jungle_tree.py: build()).
+    select_only(mass)
+    bpy.ops.object.shade_smooth()
+    assign_materials(mass, ['M_Leaf'])
+    set_vertex_colors(mass, _mass_color_fn(center_v, radius, up_hint, out_hint,
+                                            dark_cool, light_warm, neighbors, 0.025, rnd))
+    return mass
 
 
 def make_canopy_blobs(name, center, radius_xy, radius_z, count, seed,
