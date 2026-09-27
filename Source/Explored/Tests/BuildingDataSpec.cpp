@@ -48,8 +48,13 @@ void FBuildingDataSpec::Define()
 			TestEqual(TEXT("Encaje de pared"), Wall->Socket, EBuildSocket::Wall);
 			TestEqual(TEXT("Malla"), Wall->Mesh, FName(TEXT("SM_Wall_Wood")));
 		}
-		const FBuildingPieceDef* Pending = Catalog.FindPiece(TEXT("suelo_bambu"));
-		if (TestNotNull(TEXT("Suelo de bambú"), Pending))
+		const FBuildingPieceDef* BambooFloor = Catalog.FindPiece(TEXT("suelo_bambu"));
+		if (TestNotNull(TEXT("Suelo de bambú"), BambooFloor))
+		{
+			TestEqual(TEXT("Malla del kit modular"), BambooFloor->Mesh, FName(TEXT("SM_Kit_Bamboo_Floor")));
+		}
+		const FBuildingPieceDef* Pending = Catalog.FindPiece(TEXT("astillero"));
+		if (TestNotNull(TEXT("Astillero"), Pending))
 		{
 			TestTrue(TEXT("\"mesh\": null queda sin malla"), Pending->Mesh.IsNone());
 		}

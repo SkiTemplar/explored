@@ -126,7 +126,8 @@ void FAchievementsSpec::Define()
 				Achievement(TEXT("a"), FCond::AtLeast(TEXT("fires_lit"), 1)),
 				Achievement(TEXT("a"), FCond::AtLeast(TEXT("fires_lit"), 2)) }, Error));
 			TArray<FAchievementStatDef> Stats = MakeStats();
-			Stats.Add(Stats[0]);
+			const FAchievementStatDef Duplicate = Stats[0];
+			Stats.Add(Duplicate);
 			TestFalse(TEXT("Estadística repetida"), Other.Configure(Stats, {}, Error));
 		});
 

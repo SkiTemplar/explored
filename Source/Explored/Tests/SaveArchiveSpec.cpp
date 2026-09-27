@@ -270,9 +270,9 @@ void FSaveArchiveSpec::Define()
 				Deep.AppendChar(TEXT('['));
 			}
 			Bad.Add(Deep);
-			FString WithNull = TEXT("[1,");
-			WithNull.AppendChar(static_cast<TCHAR>(0));
-			WithNull += TEXT("2]");
+			// AppendChar descarta el carácter nulo en UE: se escribe directamente en el buffer.
+			FString WithNull = TEXT("[1,x2]");
+			WithNull[3] = static_cast<TCHAR>(0);
 			Bad.Add(WithNull);
 
 			for (const FString& Text : Bad)

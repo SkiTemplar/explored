@@ -1,4 +1,4 @@
-#include "Misc/AutomationTest.h"
+﻿#include "Misc/AutomationTest.h"
 
 #include "Ruins/RuinsModel.h"
 #include "WorldGen/ArchipelagoLayout.h"
@@ -430,7 +430,8 @@ void FRuinsSpec::Define()
 			// Un guardado con basura: ids desconocidos, repetidos y una ruina que no está completa.
 			FRuinsState Dirty = Model.GetState();
 			Dirty.DiscoveredElements.Add(TEXT("petro_99"));
-			Dirty.DiscoveredElements.Add(Dirty.DiscoveredElements[0]);
+			const FName RepeatedElement = Dirty.DiscoveredElements[0];
+			Dirty.DiscoveredElements.Add(RepeatedElement);
 			Dirty.CompletedSites.Add(Ruins.Sites[4].Id);
 			Dirty.CompletedSites.Add(TEXT("ruin_atlantis"));
 			FRuinsModel Clean(Ruins);

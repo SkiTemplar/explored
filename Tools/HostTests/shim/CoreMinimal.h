@@ -318,8 +318,15 @@ public:
 	T& Top() { return Last(); }
 	const T& Top() const { return Last(); }
 
-	int32 Add(const T& V) { Data.push_back(V); return Num() - 1; }
-	int32 Add(T&& V) { Data.push_back(std::move(V)); return Num() - 1; }
+	// Igual que TArray::CheckAddress en UE: añadir un elemento del propio array es un
+	// assert fatal en el editor (la referencia se invalida al realojar).
+	void CheckAddress(const T* Addr) const
+	{
+		const std::less<const T*> Less;
+		check(Data.empty() || Less(Addr, Data.data()) || !Less(Addr, Data.data() + Data.capacity()));
+	}
+	int32 Add(const T& V) { CheckAddress(&V); Data.push_back(V); return Num() - 1; }
+	int32 Add(T&& V) { CheckAddress(&V); Data.push_back(std::move(V)); return Num() - 1; }
 	template <typename... A> int32 Emplace(A&&... Args) { Data.emplace_back(std::forward<A>(Args)...); return Num() - 1; }
 	template <typename... A> T& Emplace_GetRef(A&&... Args) { Data.emplace_back(std::forward<A>(Args)...); return Data.back(); }
 	T& Add_GetRef(const T& V) { Data.push_back(V); return Data.back(); }
@@ -334,7 +341,7 @@ public:
 	template <typename C> void Append(const C& Other) { for (const auto& V : Other) { Data.push_back(V); } }
 	void Append(std::initializer_list<T> Other) { Data.insert(Data.end(), Other); }
 	void Append(const T* Ptr, int32 Count) { Data.insert(Data.end(), Ptr, Ptr + Count); }
-	int32 Insert(const T& V, int32 Index) { Data.insert(Data.begin() + Index, V); return Index; }
+	int32 Insert(const T& V, int32 Index) { CheckAddress(&V); Data.insert(Data.begin() + Index, V); return Index; }
 	void Init(const T& V, int32 Count) { Data.assign((size_t)Count, V); }
 	void SetNum(int32 N, bool = true) { Data.resize((size_t)N); }
 	void SetNumZeroed(int32 N, bool = true) { Data.resize((size_t)N, T{}); }
@@ -629,7 +636,8 @@ public:
 	FString& operator+=(const FString& O) { Str += O.Str; return *this; }
 	FString& operator+=(const char* O) { Str += O; return *this; }
 	FString& operator+=(char C) { Str += C; return *this; }
-	FString& AppendChar(char C) { Str += C; return *this; }
+	// Como en UE: el carácter nulo no se añade.
+	FString& AppendChar(char C) { if (C != 0) { Str += C; } return *this; }
 	FString& Append(const FString& O) { Str += O.Str; return *this; }
 	friend FString operator+(const FString& A, const FString& B) { return FString(A.Str + B.Str); }
 	friend FString operator+(const FString& A, const char* B) { return FString(A.Str + B); }
