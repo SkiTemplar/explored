@@ -16,6 +16,8 @@ class AExploredSledge;
 class UItemRegistrySubsystem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCarryChanged);
+/** Se dispara al recoger algo del mundo con éxito, para el aviso flotante del HUD. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemPickedUp, FText, DisplayName);
 
 /**
  * Manos, bolsillos, cinturón, bolsa estanca, mochila y angarillas del jugador
@@ -215,6 +217,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Explored|Carga")
 	FOnCarryChanged OnCarryChanged;
+
+	/** Recogida del mundo con éxito (no se dispara al mover cosas entre manos y bolsillos). */
+	UPROPERTY(BlueprintAssignable, Category = "Explored|Carga")
+	FOnItemPickedUp OnItemPickedUp;
 
 	static constexpr int32 MaxPocketSlots = FInventoryModel::PocketSlots;
 	static constexpr int32 MaxBeltSlots = FInventoryModel::BaseBeltHooks;
