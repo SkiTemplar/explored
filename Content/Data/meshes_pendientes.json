@@ -2,14 +2,41 @@
   "version": 1,
   "note": "Objetos, piezas y etapas que usan un marcador de /Engine/BasicShapes o mesh null. Lo mantiene Tools/DataCheck (uv run datacheck --write-pending); quita la entrada al añadir su script en Tools/Blender.",
   "items": [
+    "ancla_piedra",
+    "anzuelo",
+    "azada",
     "caliza",
+    "cana_pesca",
+    "capa_impermeable",
+    "cincel",
     "cristal_cuarzo",
+    "farol",
+    "filtro_agua",
+    "garfio",
     "hierro_meteorito",
-    "mineral_cobre"
+    "honda",
+    "hoz",
+    "lampara_aceite_coco",
+    "mineral_cobre",
+    "odre_piel",
+    "pico",
+    "red_mano",
+    "remo",
+    "ropa_abrigo",
+    "sandalias",
+    "sierra",
+    "sombrero_palma",
+    "trampa_lazo"
   ],
   "buildingPieces": [
     "astillero",
-    "espantapajaros"
+    "colector_lluvia",
+    "destilador_solar",
+    "espantapajaros",
+    "hamaca",
+    "nasa",
+    "trampa_cangrejos",
+    "trampa_caida"
   ],
   "plantStages": [
     "batata.brote",

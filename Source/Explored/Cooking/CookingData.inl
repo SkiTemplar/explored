@@ -54,6 +54,25 @@
 	V.MaxUses = 0;
 }
 {
+	FCookVesselDef& V = D.Vessels.AddDefaulted_GetRef();
+	V.Id = FName(TEXT("filtro"));
+	V.NameEs = TEXT("Filtro de agua");
+	V.ItemIds.Add(FName(TEXT("filtro_agua")));
+	V.PieceId = FName(NAME_None);
+	V.Capacity = 2;
+	V.bWatertight = false;
+	V.MaxUses = 30;
+}
+{
+	FCookVesselDef& V = D.Vessels.AddDefaulted_GetRef();
+	V.Id = FName(TEXT("destilador"));
+	V.NameEs = TEXT("Destilador solar");
+	V.PieceId = FName(TEXT("destilador_solar"));
+	V.Capacity = 2;
+	V.bWatertight = true;
+	V.MaxUses = 0;
+}
+{
 	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
 	R.Id = FName(TEXT("agua_hervida"));
 	R.NameEs = TEXT("Agua hervida");
@@ -375,6 +394,42 @@
 	R.ResultItemId = FName(TEXT("carbon_vegetal"));
 	R.ResultCount = 2;
 	R.CookMinutes = 240.0f;
+	R.BurnAfterMinutes = -1.0f;
+}
+{
+	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
+	R.Id = FName(TEXT("agua_filtrada"));
+	R.NameEs = TEXT("Agua filtrada");
+	R.Technique = ECookTechnique::Dry;
+	R.Vessels.Add(FName(TEXT("filtro")));
+	R.MinFireLevel = EFireLevel::Fogata;
+	{
+		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
+		Q.ItemId = FName(TEXT("agua_sin_tratar"));
+		Q.Tag = FName(NAME_None);
+		Q.Count = 1;
+	}
+	R.ResultItemId = FName(TEXT("agua_hervida"));
+	R.ResultCount = 1;
+	R.CookMinutes = 5.0f;
+	R.BurnAfterMinutes = -1.0f;
+}
+{
+	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
+	R.Id = FName(TEXT("agua_destilada"));
+	R.NameEs = TEXT("Agua destilada al sol");
+	R.Technique = ECookTechnique::Dry;
+	R.Vessels.Add(FName(TEXT("destilador")));
+	R.MinFireLevel = EFireLevel::Fogata;
+	{
+		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
+		Q.ItemId = FName(TEXT("agua_mar"));
+		Q.Tag = FName(NAME_None);
+		Q.Count = 1;
+	}
+	R.ResultItemId = FName(TEXT("agua_hervida"));
+	R.ResultCount = 1;
+	R.CookMinutes = 300.0f;
 	R.BurnAfterMinutes = -1.0f;
 }
 {

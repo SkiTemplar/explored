@@ -22,7 +22,11 @@
     { "id": "bandeja", "nameEs": "Piedra plana o concha", "items": ["piedra_plana", "concha_grande"], "piece": null,
       "capacity": 1, "watertight": false, "maxUses": 0 },
     { "id": "secadero", "nameEs": "Secadero y ahumadero", "items": [], "piece": "secadero",
-      "capacity": 6, "watertight": false, "maxUses": 0 }
+      "capacity": 6, "watertight": false, "maxUses": 0 },
+    { "id": "filtro", "nameEs": "Filtro de agua", "items": ["filtro_agua"], "piece": null,
+      "capacity": 2, "watertight": false, "maxUses": 30 },
+    { "id": "destilador", "nameEs": "Destilador solar", "items": [], "piece": "destilador_solar",
+      "capacity": 2, "watertight": true, "maxUses": 0 }
   ],
   "recipes": [
     { "id": "agua_hervida", "nameEs": "Agua hervida", "technique": "hervir", "vessels": ["olla_coco", "vasija_barro"], "minFireLevel": "fogata",
@@ -56,7 +60,11 @@
     { "id": "vasija_barro", "nameEs": "Vasija de barro cocido", "technique": "hornear", "vessels": [], "minFireLevel": "horno_arcilla",
       "ingredients": [ { "item": "arcilla_roja", "count": 2 } ], "result": "vasija_barro", "resultCount": 1, "cookMinutes": 180, "burnAfterMinutes": null },
     { "id": "carbon_vegetal", "nameEs": "Carbón vegetal", "technique": "hornear", "vessels": [], "minFireLevel": "horno_arcilla",
-      "ingredients": [ { "item": "tronco_pequeno", "count": 1 } ], "result": "carbon_vegetal", "resultCount": 2, "cookMinutes": 240, "burnAfterMinutes": null }
+      "ingredients": [ { "item": "tronco_pequeno", "count": 1 } ], "result": "carbon_vegetal", "resultCount": 2, "cookMinutes": 240, "burnAfterMinutes": null },
+    { "id": "agua_filtrada", "nameEs": "Agua filtrada", "technique": "secar", "vessels": ["filtro"], "minFireLevel": null,
+      "ingredients": [ { "item": "agua_sin_tratar", "count": 1 } ], "result": "agua_hervida", "resultCount": 1, "cookMinutes": 5, "burnAfterMinutes": null },
+    { "id": "agua_destilada", "nameEs": "Agua destilada al sol", "technique": "secar", "vessels": ["destilador"], "minFireLevel": null,
+      "ingredients": [ { "item": "agua_mar", "count": 1 } ], "result": "agua_hervida", "resultCount": 1, "cookMinutes": 300, "burnAfterMinutes": null }
   ],
   "improvised": { "technique": "guisar", "result": "guiso_improvisado", "cookMinutes": 45, "burnAfterMinutes": 30,
     "efficiency": 0.9, "warmth": 4, "morale": 2 },

@@ -1203,6 +1203,117 @@
       "integrity": 95,
       "maxCycloneCategory": 3,
       "mesh": "SM_Base_Chimney"
+    },
+    {
+      "id": "colector_lluvia",
+      "nameEs": "Colector de lluvia",
+      "nameEn": "Rain collector",
+      "tier": "bambu",
+      "category": "agua",
+      "socket": "mueble",
+      "cost": [
+        { "item": "bambu_grueso", "count": 2 },
+        { "item": "hoja_palma", "count": 3 },
+        { "item": "cordel", "count": 2 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 25,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
+      "id": "destilador_solar",
+      "nameEs": "Destilador solar",
+      "nameEn": "Solar still",
+      "tier": "bambu",
+      "category": "agua",
+      "socket": "terreno",
+      "cost": [
+        { "item": "hoja_platano", "count": 4 },
+        { "item": "cascara_coco", "count": 1 },
+        { "item": "arena", "count": 3 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "nasa",
+      "nameEs": "Nasa",
+      "nameEn": "Fish trap",
+      "tier": "bambu",
+      "category": "pesca",
+      "socket": "terreno",
+      "cost": [
+        { "item": "bambu_fino", "count": 5 },
+        { "item": "cordel", "count": 3 }
+      ],
+      "tools": [ "cuchillo" ],
+      "requiresPieces": [],
+      "buildMinutes": 25,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "trampa_cangrejos",
+      "nameEs": "Trampa de cangrejos",
+      "nameEn": "Crab trap",
+      "tier": "bambu",
+      "category": "pesca",
+      "socket": "terreno",
+      "cost": [
+        { "item": "bambu_fino", "count": 3 },
+        { "item": "liana", "count": 2 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 10,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "trampa_caida",
+      "nameEs": "Trampa de caída",
+      "nameEn": "Pit trap",
+      "tier": "madera",
+      "category": "caza",
+      "socket": "terreno",
+      "cost": [
+        { "item": "tronco_pequeno", "count": 2 },
+        { "item": "estaca", "count": 4 },
+        { "item": "cordel", "count": 2 }
+      ],
+      "tools": [ "pala" ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
+      "id": "hamaca",
+      "nameEs": "Hamaca",
+      "nameEn": "Hammock",
+      "tier": "bambu",
+      "category": "descanso",
+      "socket": "mueble",
+      "cost": [
+        { "item": "cuerda", "count": 4 },
+        { "item": "bambu_fino", "count": 2 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 30,
+      "maxCycloneCategory": 1,
+      "mesh": null
     }
   ]
 }

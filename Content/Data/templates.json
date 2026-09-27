@@ -211,5 +211,242 @@
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 }, { "property": "Punta", "min": 1 } ] },
 			{ "role": "Abrasivo", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 2 } ] }
 		]
+	},
+	{
+		"id": "pico", "nameEs": "Pico", "nameEn": "Pickaxe",
+		"verbs": ["Atar", "Pegar"],
+		"resultDefinitionId": "pico",
+		"nameTemplate": "Pico de {0} con mango de {1}, atado con {2}", "nameTemplateEn": "{0} pick with a {1} handle, lashed with {2}",
+		"baseMaxDurability": 55,
+		"slots": [
+			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "hoz_atada", "nameEs": "Hoz atada", "nameEn": "Bound sickle",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "hoz",
+		"nameTemplate": "Hoz de {0} con mango de {1}, atada con {2}", "nameTemplateEn": "{0} sickle with a {1} handle, lashed with {2}",
+		"baseMaxDurability": 30,
+		"slots": [
+			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 1 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "azada_atada", "nameEs": "Azada atada", "nameEn": "Bound hoe",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "azada",
+		"nameTemplate": "Azada de {0} con mango de {1}", "nameTemplateEn": "{0} hoe with a {1} handle",
+		"baseMaxDurability": 40,
+		"slots": [
+			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "cincel_por_tallado", "nameEs": "Cincel por tallado", "nameEn": "Carved chisel",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "cincel",
+		"nameTemplate": "Cincel de {0} con mango de {1}", "nameTemplateEn": "{0} chisel with a {1} handle",
+		"baseMaxDurability": 25,
+		"slots": [
+			{ "role": "HojaFina", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "sierra_por_tallado", "nameEs": "Sierra por tallado", "nameEn": "Carved saw",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "sierra",
+		"nameTemplate": "Sierra de {0} con mango de {1}", "nameTemplateEn": "{0} saw with a {1} handle",
+		"baseMaxDurability": 35,
+		"slots": [
+			{ "role": "Dientes", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 } ] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 1 }, { "property": "Rigido", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "garfio_por_atado", "nameEs": "Garfio con cuerda", "nameEn": "Grappling hook",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "garfio",
+		"nameTemplate": "Garfio de {0} con {1}", "nameTemplateEn": "{0} hook with {1}",
+		"baseMaxDurability": 30,
+		"slots": [
+			{ "role": "Gancho", "requireAll": true, "requirements": [ { "property": "Punta", "min": 3 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "remo_por_atado", "nameEs": "Remo atado", "nameEn": "Bound paddle",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "remo",
+		"nameTemplate": "Remo de {0}, atado con {1}", "nameTemplateEn": "{0} paddle, lashed with {1}",
+		"baseMaxDurability": 40,
+		"slots": [
+			{ "role": "Pala", "requireAll": false, "requirements": [ { "property": "Flota", "min": 2 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "ancla_por_atado", "nameEs": "Ancla de piedra", "nameEn": "Stone anchor",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "ancla_piedra",
+		"nameTemplate": "Ancla de {0}, atada con {1}", "nameTemplateEn": "{0} anchor, lashed with {1}",
+		"baseMaxDurability": 60,
+		"slots": [
+			{ "role": "Peso", "requireAll": true, "requirements": [ { "property": "Pesado", "min": 2 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Amarre", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "trampa_lazo_atada", "nameEs": "Trampa de lazo", "nameEn": "Snare trap",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "trampa_lazo",
+		"nameTemplate": "Trampa de lazo de {0}", "nameTemplateEn": "{0} snare trap",
+		"baseMaxDurability": 10,
+		"slots": [
+			{ "role": "Lazo", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Anclaje", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "farol_por_atado", "nameEs": "Farol", "nameEn": "Lantern",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "farol",
+		"nameTemplate": "Farol reforzado con {1}", "nameTemplateEn": "Lantern reinforced with {1}",
+		"baseMaxDurability": 50,
+		"slots": [
+			{ "role": "Fuente", "requireAll": false, "requirements": [], "tags": ["luz"] },
+			{ "role": "Proteccion", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "lampara_por_atado", "nameEs": "Lámpara de aceite de coco", "nameEn": "Coconut oil lamp",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "lampara_aceite_coco",
+		"nameTemplate": "Lámpara de {0} con mecha de {1}", "nameTemplateEn": "{0} lamp with a {1} wick",
+		"baseMaxDurability": 60,
+		"slots": [
+			{ "role": "Recipiente", "requireAll": false, "requirements": [ { "property": "Recipiente", "min": 1 } ] },
+			{ "role": "Mecha", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "sombrero_atado", "nameEs": "Sombrero de hoja de palma", "nameEn": "Palm leaf hat",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "sombrero_palma",
+		"nameTemplate": "Sombrero de {0}", "nameTemplateEn": "{0} hat",
+		"baseMaxDurability": 15,
+		"slots": [
+			{ "role": "Hojas", "requireAll": false, "requirements": [], "tags": ["techado"] },
+			{ "role": "Atado", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "capa_atada", "nameEs": "Capa impermeable", "nameEn": "Waterproof cape",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "capa_impermeable",
+		"nameTemplate": "Capa de {0}", "nameTemplateEn": "{0} cape",
+		"baseMaxDurability": 15,
+		"slots": [
+			{ "role": "Cobertura", "requireAll": false, "requirements": [ { "property": "Impermeable", "min": 2 } ] },
+			{ "role": "Atado", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "odre_por_atado", "nameEs": "Odre de piel", "nameEn": "Waterskin",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "odre_piel",
+		"nameTemplate": "Odre de {0}", "nameTemplateEn": "{0} waterskin",
+		"baseMaxDurability": 25,
+		"slots": [
+			{ "role": "Piel", "requireAll": false, "requirements": [ { "property": "Impermeable", "min": 1 } ] },
+			{ "role": "Ligadura", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "filtro_por_atado", "nameEs": "Filtro de agua", "nameEn": "Water filter",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "filtro_agua",
+		"nameTemplate": "Filtro de agua de {1}", "nameTemplateEn": "{1} water filter",
+		"baseMaxDurability": 20,
+		"slots": [
+			{ "role": "Recipiente", "requireAll": false, "requirements": [ { "property": "Recipiente", "min": 1 } ] },
+			{ "role": "Filtrante", "requireAll": false, "requirements": [], "tags": ["filtrante"] }
+		]
+	},
+	{
+		"id": "sandalias_atadas", "nameEs": "Sandalias atadas", "nameEn": "Bound sandals",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "sandalias",
+		"nameTemplate": "Sandalias de {0}", "nameTemplateEn": "{0} sandals",
+		"baseMaxDurability": 20,
+		"slots": [
+			{ "role": "Suela", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 1 } ] },
+			{ "role": "Atado", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "ropa_abrigo_atada", "nameEs": "Ropa de abrigo atada", "nameEn": "Bound warm clothing",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "ropa_abrigo",
+		"nameTemplate": "Ropa de abrigo de {0}", "nameTemplateEn": "{0} warm clothing",
+		"baseMaxDurability": 25,
+		"slots": [
+			{ "role": "Aislante", "requireAll": false, "requirements": [ { "property": "Aislante", "min": 1 } ] },
+			{ "role": "Atado", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "anzuelo_por_tallado", "nameEs": "Anzuelo por tallado", "nameEn": "Carved fish hook",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "anzuelo",
+		"nameTemplate": "Anzuelo de {1}", "nameTemplateEn": "{1} fish hook",
+		"baseMaxDurability": 12,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Nucleo", "requireAll": false, "requirements": [ { "property": "Punta", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "cana_por_atado", "nameEs": "Caña de pescar", "nameEn": "Fishing rod",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "cana_pesca",
+		"nameTemplate": "Caña de {0} con sedal de {1}", "nameTemplateEn": "{0} rod with a {1} line",
+		"baseMaxDurability": 30,
+		"slots": [
+			{ "role": "Vara", "requireAll": true, "requirements": [ { "property": "Largo", "min": 3 }, { "property": "Flexible", "min": 2 } ] },
+			{ "role": "Sedal", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "red_mano_trenzada", "nameEs": "Red de mano", "nameEn": "Hand net",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "red_mano",
+		"nameTemplate": "Red de {0}", "nameTemplateEn": "{0} hand net",
+		"baseMaxDurability": 25,
+		"slots": [
+			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "Aro", "requireAll": true, "requirements": [ { "property": "Rigido", "min": 2 }, { "property": "Largo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "honda_trenzada", "nameEs": "Honda", "nameEn": "Sling",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "honda",
+		"nameTemplate": "Honda de {0}", "nameTemplateEn": "{0} sling",
+		"baseMaxDurability": 15,
+		"slots": [
+			{ "role": "Bolsillo", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
+			{ "role": "CorreaA", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "CorreaB", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
 	}
 ]
