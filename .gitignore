@@ -29,6 +29,8 @@ __pycache__/
 Thumbs.db
 
 compile_commands.json
+# Cubre también Tools/Textures/.cache/polyhaven/ (originales CC0 descargados por
+# fetch_polyhaven.py para las rocas fotobasheadas; ver docs/art/texturas.md).
 .cache/
 
 .claude/worktrees/

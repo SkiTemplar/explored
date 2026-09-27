@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from . import photobash
 from .noise import (
     ambient_occlusion,
     blur,
@@ -446,109 +447,23 @@ def ash(size: int, seed: int) -> Material:
 
 
 # ---------------------------------------------------------------------------
-# Rocas
+# Rocas — fotobasheadas (ver texgen/photobash.py): a la escala de tile de Explored
+# (3 m), cualquier rejilla procedural —por irregular que sea— delataba una rejilla.
 # ---------------------------------------------------------------------------
 
-def _strata_blocks(size: int, seed: int, bands: int, nx: int, jitter: float,
-                    dip_amount: float):
-    """Bloques alargados en horizontal (Voronoi anisótropo) para roca en estratos: bandas
-    de grosor desigual cortadas por fracturas verticales espaciadas, nunca celdas
-    redondeadas. Ondulan y buzan un poco para que no salgan como renglones perfectos.
-    Devuelve (blocks, s) con `s` la fase continua dentro de banda (0 arriba, 1 abajo),
-    independiente de las fracturas, para pintar arista superior clara + sombra bajo cornisa."""
-    u, v = uv_grid(size)
-    # Ondulación y buzamiento discretos: lo bastante suaves para no partir la banda en
-    # blobs (con jitter bajo, la celda del Voronoi sigue siendo un bloque rectangular).
-    undulate = 0.018 * spectral_noise(size, seed + 1, 1, 3, 2.4)
-    # Buzamiento leve: una onda (periódica, nunca una rampa lineal — rompería el tileado).
-    dip = dip_amount * np.sin(2.0 * np.pi * u) * (0.6 + 0.6 * unit(spectral_noise(size, seed + 12, 1, 2, 2.0)))
-    wu = u + 0.007 * spectral_noise(size, seed + 2, 2, 8, 2.2)
-    wv = v + undulate + dip
-    blocks = voronoi(size, nx, bands, seed, jitter=jitter, u=wu, v=wv, isotropic=False)
-    s = np.mod(bands * wv + 0.13, 1.0)
-    return blocks, s, wu, wv
+def volcanic_rock(size: int, seed: int) -> dict[str, np.ndarray]:
+    """Basalto gris violáceo: fotografía CC0 de Poly Haven ('Dark Rock', Amal Kumar)
+    estilizada a óleo cartoon. Ver `texgen/photobash.py` y la atribución en
+    `docs/art/texturas.md`. `seed` no se usa (la fuente no es aleatoria)."""
+    return photobash.photobash_rock("dark_rock", size, photobash.VOLCANIC_STYLE, seed)
 
 
-def volcanic_rock(size: int, seed: int) -> Material:
-    """Basalto en estratos: bandas horizontales de grosor desigual (0.3-1 m), cortadas por
-    fracturas verticales espaciadas en bloques alargados en horizontal (nunca celdas
-    redondeadas), que ondulan y buzan un poco. Cada banda lleva una arista superior clara y
-    sombra bajo la cornisa. Gris violáceo con algunas columnas, vesículas y óxido."""
-    blocks, s, wu, wv = _strata_blocks(size, seed, bands=6, nx=4, jitter=0.3, dip_amount=0.02)
-    bevel = smoothstep(0.0, 0.14, blocks["edge"]) ** 0.5
-    facets = _facet_plane(blocks, 17.3, 11.7) * 0.35
-    # Arista superior clara justo en s = 0 y sombra bajo esa cornisa (independiente de las
-    # fracturas verticales: se repite igual banda tras banda aunque cambien los bloques).
-    rim = np.exp(-(s / 0.05) ** 2) * 0.9
-    shadow = smoothstep(0.0, 0.1, s) * (1.0 - smoothstep(0.1, 0.32, s))
-    surf = unit(spectral_noise(size, seed + 4, 10, 140, 1.6))
-    height = bevel * (0.6 + facets + 0.05 * surf) + 0.12 * rim - 0.14 * shadow
-    # Vesículas en racimos (el gas sube en bolsas), no un colador uniforme.
-    cluster = smoothstep(0.5, 0.75, unit(spectral_noise(size, seed + 8, 2, 8, 2.0), 2.0))
-    ves = scatter_dots(size, 46, seed + 5, radius=0.22, keep=0.5, vary=0.5)
-    pits = ves["mask"] * cluster * bevel
-    height = np.clip(height - 0.06 * pits, 0, 1)
-    albedo = ramp(0.45 + 0.3 * (blocks["id"] - 0.5) + 0.1 * (surf - 0.5),
-                  [(0.0, "#39384c"), (0.35, "#48475d"), (0.65, "#5d5b70"), (1.0, "#79768a")])
-    albedo = mix_color(albedo, "#c9c3d8", rim * 0.7)
-    albedo = mix_color(albedo, "#201f2c", shadow * 0.55)
-    albedo = mix_color(albedo, "#2a2835", pits * 0.55)
-    # Columnas: unas pocas fracturas casi verticales, finas y espaciadas, que atraviesan
-    # varias bandas (trazo disperso, no una rejilla: evita formas ovaladas artificiales).
-    columns = strokes(size, 6, seed + 6, length=0.95, width=0.012, keep=0.4,
-                       angle_bias=np.pi / 2, spread=0.25)
-    albedo = mix_color(albedo, "#2c2a3a", columns * bevel * 0.22)
-    # Óxido cálido cerca de las fracturas (color, no suciedad).
-    rust_n = unit(spectral_noise(size, seed + 7, 1, 6, 2.2), 2.0)
-    near = 1.0 - smoothstep(0.0, 0.25, blocks["edge"])
-    rust = smoothstep(0.6, 0.85, rust_n * 0.8 + near * 0.3) * bevel
-    albedo = mix_color(albedo, "#9a5c3c", rust * 0.35)
-    oliv = scatter_dots(size, 60, seed + 9, radius=0.16, keep=0.06)["mask"] * bevel
-    albedo = mix_color(albedo, "#8a9a4a", oliv * 0.7)
-    albedo = macro_variation(albedo, seed + 20, warm="#7a5a52", cool="#4f5a78", amount=0.2, value=0.08)
-    rough = 0.82 - 0.1 * rim + 0.08 * pits - 0.12 * oliv
-    return Material(albedo, height, rough, depth=0.03, ao_strength=1.15)
-
-
-def limestone(size: int, seed: int) -> Material:
-    """Caliza en estratos: bandas horizontales de grosor desigual, cortadas por fracturas
-    verticales espaciadas en bloques alargados en horizontal (nunca celdas redondeadas),
-    que ondulan y buzan un poco. Arista superior clara y sombra bajo la cornisa. Crema y
-    ocre cálido con vetas, alveolos de disolución (karst) y liquen naranja/salvia."""
-    blocks, s, wu, wv = _strata_blocks(size, seed + 4, bands=5, nx=4, jitter=0.3, dip_amount=0.018)
-    round_edge = smoothstep(0.0, 0.16, blocks["edge"]) ** 0.5
-    facets = _facet_plane(blocks, 19.1, 7.3) * 0.3
-    rim = np.exp(-(s / 0.06) ** 2) * 0.85
-    shadow = smoothstep(0.0, 0.1, s) * (1.0 - smoothstep(0.1, 0.3, s))
-    body = unit(spectral_noise(size, seed + 5, 3, 60, 2.0))
-    fine = unit(spectral_noise(size, seed + 9, 40, 300, 1.0))
-    # Alveolos de disolución: hoyuelos redondos en racimos (no un colador uniforme).
-    cluster = smoothstep(0.45, 0.75, unit(spectral_noise(size, seed + 10, 2, 7, 2.0), 2.0))
-    pits_a = scatter_dots(size, 26, seed + 6, radius=0.3, keep=0.4, vary=0.6)
-    pits_b = scatter_dots(size, 56, seed + 11, radius=0.26, keep=0.16, vary=0.5)
-    pit_depth = np.maximum(pits_a["mask"] * cluster, pits_b["mask"] * (0.25 + 0.75 * cluster)) * round_edge
-    height = round_edge * (0.55 + facets + 0.08 * body + 0.02 * fine) + 0.1 * rim - 0.12 * shadow
-    height = np.clip(height - 0.08 * pit_depth, 0, 1)
-    albedo = ramp(0.5 + 0.22 * (body - 0.5) + 0.15 * (blocks["id"] - 0.5),
-                  [(0.0, "#b8a687"), (0.35, "#d3c39f"), (0.7, "#e7dbba"), (1.0, "#f5efdc")])
-    albedo = mix_color(albedo, "#fbf5e4", rim * 0.6)
-    albedo = mix_color(albedo, "#8f8066", shadow * 0.32)
-    albedo = mix_color(albedo, "#a8987c", pit_depth * 0.4)
-    # Vetas ocres, casi horizontales, que cruzan varios bloques de una misma banda.
-    veins = voronoi(size, 7, 5, seed + 14, jitter=0.4, u=wu, v=wv, isotropic=False)
-    vein_line = 1.0 - smoothstep(0.0, 0.045, veins["edge"])
-    albedo = mix_color(albedo, "#c39a5c", vein_line * 0.3)
-    # Liquen: costras con borde neto, más hacia los cantos húmedos.
-    lichen_n = unit(spectral_noise(size, seed + 7, 2, 16, 1.8), 2.0)
-    near = 1.0 - smoothstep(0.05, 0.35, blocks["edge"])
-    lichen = smoothstep(0.82, 0.87, lichen_n + 0.12 * near) * round_edge
-    lich2 = smoothstep(0.83, 0.88, 1.0 - lichen_n + 0.1 * near) * round_edge
-    albedo = mix_color(albedo, "#e0a646", lichen * 0.75)
-    albedo = mix_color(albedo, "#a3b47e", lich2 * 0.6)
-    albedo = macro_variation(albedo, seed + 20, warm="#e8cf9e", cool="#c7b48c", amount=0.16, value=0.06)
-    height = np.clip(height + 0.03 * (lichen + lich2), 0, 1)
-    rough = 0.85 - 0.06 * rim + 0.06 * pit_depth - 0.05 * lichen
-    return Material(albedo, height, rough, depth=0.024, ao_strength=1.05)
+def limestone(size: int, seed: int) -> dict[str, np.ndarray]:
+    """Caliza gris kárstica con vetas oscuras y toques ocres (referencia: El Nido / Ha
+    Long, no crema): fotografía CC0 de Poly Haven ('Marble Cliff 04', Amal Kumar)
+    estilizada a óleo cartoon. Ver `texgen/photobash.py` y la atribución en
+    `docs/art/texturas.md`. `seed` no se usa (la fuente no es aleatoria)."""
+    return photobash.photobash_rock("marble_cliff_04", size, photobash.LIMESTONE_STYLE, seed)
 
 
 # ---------------------------------------------------------------------------

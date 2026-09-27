@@ -1,9 +1,14 @@
 # Texturas procedurales
 
-Todas las texturas salen de `Tools/Textures/gen_textures.py` (Python + numpy + pillow, sin
-imágenes externas) y son **periódicas**: se repiten sin costura en u y v. La salida va a
+Todas las texturas salen de `Tools/Textures/gen_textures.py` (Python + numpy + pillow) y
+son **periódicas**: se repiten sin costura en u y v. La salida va a
 `Art/Export/Textures/` (no se versiona) y `Tools/Unreal/import_textures.py` las importa a
 `/Game/Generated/Textures`.
+
+Excepción: `VolcanicRock` y `Limestone` no son procedurales — a la escala de tile de
+Explored (3 m) cualquier rejilla, por irregular que fuera, delataba una rejilla. Se
+**fotobashean** a partir de fotografías CC0 de Poly Haven estilizadas a óleo cartoon; ver
+[«Roca fotobasheada»](#roca-fotobasheada-volcanicrock-limestone) más abajo.
 
 ```bash
 # Todo a 1024 px (unos 2 min; el legado tarda ~20 s)
@@ -54,8 +59,8 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | `GardenSoil` | 2 m | Tierra de huerto labrada: 5 camellones anchos y redondeados a lo largo de u (algo ondulados, anchura por hilera) entre surcos estrechos húmedos; terrones redondos en las laderas, migas, pocas pajas y guijarros y algún brote de dos hojitas. Cacao cálido (nunca negro ni gris). |
 | `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 5 capas de hojas grandes y legibles en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
 | `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda cálido (sin valles oscuros) con rizos de viento legibles y grumos redondeados y sueltos donde la lluvia apelmazó la ceniza (nunca una red de grietas ni losetas), pómez con volumen y poros, carbones escasos y alguna brasa con halo. |
-| `VolcanicRock` | 3 m | Basalto gris violáceo en **estratos**: bandas horizontales de grosor desigual (0.3-1 m) cortadas por fracturas verticales espaciadas en bloques alargados en horizontal (nunca celdas redondeadas ni adoquines), que ondulan y buzan un poco. Cada banda lleva una arista superior clara y sombra bajo la cornisa, vesículas en racimos, algunas columnas casi verticales y óxido cálido cerca de las fracturas. |
-| `Limestone` | 3 m | Caliza crema y ocre cálido en **estratos**, misma estructura que el basalto (bandas horizontales de grosor desigual, fracturas verticales espaciadas, bloques alargados, ondulan y buzan): arista superior clara y sombra bajo la cornisa, vetas ocres casi horizontales, alveolos de disolución en racimos y costras de liquen naranja/salvia con borde neto. |
+| `VolcanicRock` | 3 m | Basalto gris violáceo oscuro, **fotobasheado** (Poly Haven CC0 `dark_rock`) — formas de roca real, nunca una rejilla; ver más abajo. |
+| `Limestone` | 3 m | Caliza gris kárstica con acanaladuras y chorreones oscuros y toques ocres (referencia El Nido / Ha Long, **no crema**), **fotobasheada** (Poly Haven CC0 `marble_cliff_04`); ver más abajo. |
 | `PalmThatch` | 1 m | Techo de hoja de palma: 6 hileras de hebras largas y estrechas que cuelgan (dos capas desfasadas, sin huecos); cada hilera tapa la atadura de la de abajo y proyecta sombra con sus puntas desiguales, a veces rasgadas; tono por hebra (paja, dorado, ~10 % aún verdes, alguna tostada) y borde de hilera que ondula (atado a mano); **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
@@ -80,6 +85,47 @@ comprueban nombres y canales. Ojo: `T_TerrainNormal` y `T_WaterRipple` tienen el
 convención OpenGL (a pesar de lo que decía el comentario antiguo). No importa mientras
 `M_Terrain`/`M_Ocean` los lean con su HLSL propio (`.rg * 2 - 1`), pero no los conectes a
 un pin Normal estándar sin invertir el verde.
+
+## Roca fotobasheada (VolcanicRock, Limestone)
+
+`VolcanicRock` y `Limestone` parten de fotografías **CC0** (dominio público) de
+[Poly Haven](https://polyhaven.com) en vez de ruido procedural:
+
+| Material | Asset Poly Haven | Autor | Licencia |
+|---|---|---|---|
+| `VolcanicRock` | [`dark_rock`](https://polyhaven.com/a/dark_rock) | Amal Kumar | CC0 |
+| `Limestone` | [`marble_cliff_04`](https://polyhaven.com/a/marble_cliff_04) | Amal Kumar | CC0 |
+
+`Tools/Textures/fetch_polyhaven.py <asset>...` descarga diffuse/displacement/AO/roughness
+a 2k PNG a `Tools/Textures/.cache/polyhaven/<asset>/` (caché **fuera de git**, cubierta por
+el `.cache/` de `.gitignore`; `gen_textures.py` no la rellena sola — ejecuta el script una
+vez tras clonar si vas a regenerar estos dos materiales). La API pública de Poly Haven
+(`GET /files/<id>`) da la URL de descarga por mapa y resolución; todos sus assets son CC0.
+
+`texgen/photobash.py` las estiliza a óleo cartoon, con borde periódico en cada paso (no
+rompe el tileado del original):
+
+1. Redimensiona a `size` px.
+2. **Delit**: divide por una versión muy desenfocada de su propia luminancia para quitar
+   la iluminación desigual de la foto (deja el relieve, no el sol de cuando se tomó).
+3. **Filtro de Kuwahara** (4 cuadrantes, con envoltura periódica): en cada píxel, la media
+   del cuadrante de menor varianza — el efecto óleo (bordes vivos, interior liso) que da
+   el aspecto pintado a mano, sin el ruido de alta frecuencia de una foto real.
+4. Paleta propia por `ramp()` sobre la luminancia ya delit (mismo mecanismo que el resto
+   de materiales procedurales), con un resto de la crominancia original a baja opacidad
+   para que no quede un degradado sintético; vetas oscuras en las grietas (con la AO real
+   de la foto, reforzada) y luz en los cantos salientes (cavidad de la altura); en la
+   caliza, un acento ocre donde la foto ya era cálida (óxido/liquen).
+5. `macro_variation()` al final, la misma función y cantidad que usa cada material
+   procedural (validada por `tests/test_macro.py`), en vez de fiarse del contraste propio
+   de la foto de origen.
+6. Altura = displacement delit y suavizado; la normal sale de una versión de la altura
+   con más desenfoque todavía, para que case con las formas grandes y no con los poros de
+   la foto de origen.
+
+`Tools/Unreal/build_materials.py` y `Tools/Blender` no cambian: `photobash_rock()` deja
+los mismos `T_VolcanicRock_*` / `T_Limestone_*` (mismos nombres, resolución y canales) que
+antes generaba el código procedural.
 
 ## Cómo conectarlas en los materiales
 
@@ -151,5 +197,10 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    salir del generador) y que la variación macro del albedo
    esté en rango (`tests/test_macro.py`: ni plano a lo lejos ni manchas que dominen el
    tile); `tests/test_palette.py` fija la intención de color de algunos materiales (basalto
-   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y crema, tablones cálidos con tono distinto por hilera, techo de paja cálido hecho de hebras y no de escamas, tierra de huerto cacao que no llega a casi negro y se lee en hileras, lona clara con costura); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
-   darlo por bueno.
+   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y
+   cálida (no fría/azulada), tablones cálidos con tono distinto por hilera, techo de paja
+   cálido hecho de hebras y no de escamas, tierra de huerto cacao que no llega a casi
+   negro y se lee en hileras, lona clara con costura); genera la hoja de contacto y
+   **mírala** (sobre todo la miniatura 4×4) antes de darlo por bueno. `VolcanicRock` y
+   `Limestone` son la excepción (fotobasheados, no `def`+`ramp` puros): ver «Roca
+   fotobasheada» más arriba.
