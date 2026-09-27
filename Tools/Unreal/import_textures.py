@@ -25,11 +25,16 @@ KIND_COMPRESSION = {
     "color": unreal.TextureCompressionSettings.TC_DEFAULT,
     "normal": unreal.TextureCompressionSettings.TC_NORMALMAP,
     "masks": unreal.TextureCompressionSettings.TC_MASKS,
+    # Atlas de paleta (T_Palette_<Isla>): RGBA8 sin compresión por bloques. BC1 comprime en
+    # bloques de 4×4 y en los mips con celdas de menos de 4 px mezclaría colores de celdas
+    # vecinas. Ver docs/art/paleta.md.
+    "palette": unreal.TextureCompressionSettings.TC_EDITOR_ICON,
 }
 
 
 def load_manifest() -> dict:
-    """textures.json: nombre -> {kind: color|normal|masks, srgb}. Cubre T_<Material>_BC/_N/_ARH."""
+    """textures.json: nombre -> {kind: color|normal|masks|palette, srgb}. Cubre T_<Material>_BC/_N/_ARH
+    y T_Palette_<Isla>."""
     path = os.path.join(SOURCE_DIR, "textures.json")
     if not os.path.isfile(path):
         return {}
@@ -55,6 +60,12 @@ def import_texture(path: str, settings: dict) -> None:
     srgb, compression = settings.get(name, (True, unreal.TextureCompressionSettings.TC_DEFAULT))
     texture.set_editor_property("srgb", srgb)
     texture.set_editor_property("compression_settings", compression)
+    if name.startswith("T_Palette_"):
+        # Mips por promedio 2×2: con celdas de 32 px alineadas, ningún mip hasta el 5 mezcla
+        # celdas. Bilineal (no trilineal-aniso de más) y sin streaming: es 1 MB y lo usa todo.
+        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_SIMPLE_AVERAGE)
+        texture.set_editor_property("filter", unreal.TextureFilter.TF_BILINEAR)
+        texture.set_editor_property("never_stream", True)
     if compression == unreal.TextureCompressionSettings.TC_NORMALMAP:
         # Los juegos nuevos (_N) ya salen en convención DirectX; los legado los lee HLSL propio.
         texture.set_editor_property("flip_green_channel", False)
