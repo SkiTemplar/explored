@@ -26,9 +26,23 @@ Convenciones del kit:
 import bpy
 import bmesh
 import math
+import os
 import random
 from mathutils import Vector, Matrix
 from mathutils import noise as mnoise
+
+# ---------------------------------------------------------------------------
+# Texturas generadas (Tools/Textures/gen_textures.py --only FoliageAtlas BarkTropical)
+# ---------------------------------------------------------------------------
+#
+# common.py corre dentro del Python embebido de Blender, un proceso e
+# intérprete totalmente distintos del `uv run` que genera las texturas
+# (Tools/Textures/texgen/materials.py): no se pueden importar entre sí. Las
+# constantes de abajo son la mitad «consumidora» de ese contrato; la mitad
+# «productora» vive en texgen/materials.py (FOLIAGE_LAYOUT/_FOLIAGE_CELL_CFG)
+# y debe mantenerse en el mismo orden si cambia.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+TEXTURES_DIR = os.path.join(REPO_ROOT, 'Art', 'Export', 'Textures')
 
 # ---------------------------------------------------------------------------
 # Gestión de escena
@@ -85,7 +99,37 @@ _MATERIAL_DEFS = {
     'M_Grass': dict(base_color=(0.18, 0.42, 0.14, 1.0), roughness=0.55),
 }
 
+# M_Leaf/M_Grass leen el atlas de follaje (recorte alfa); M_Bark lee la
+# corteza tileable. Ambos juegos los genera
+# `uv run --with numpy --with pillow python Tools/Textures/gen_textures.py
+#  --only FoliageAtlas BarkTropical` (ver Tools/Textures/texgen/materials.py). Si el
+# fichero no existe todavía (kit sin generar), get_material() cae al color
+# plano de _MATERIAL_DEFS en vez de reventar, para no bloquear otros scripts
+# del repo (props/fauna) que también llaman a C.get_material.
+_TEXTURED_MATERIALS = {
+    'M_Leaf':  dict(bc='T_FoliageAtlas_BC', n='T_FoliageAtlas_N', masked=True),
+    'M_Grass': dict(bc='T_FoliageAtlas_BC', n='T_FoliageAtlas_N', masked=True),
+    'M_Bark':  dict(bc='T_BarkTropical_BC', n='T_BarkTropical_N', masked=False),
+}
+
 MATERIAL_NAMES = frozenset(_MATERIAL_DEFS.keys())
+
+
+def _load_texture(stem, non_color=False):
+    """Carga (o reutiliza) Art/Export/Textures/<stem>.png como bpy.data.images.
+    Devuelve None si el fichero no existe todavía (ver nota de
+    _TEXTURED_MATERIALS)."""
+    path = os.path.join(TEXTURES_DIR, stem + '.png')
+    if not os.path.isfile(path):
+        return None
+    for img in bpy.data.images:
+        if img.filepath == path or img.name == stem:
+            return img
+    img = bpy.data.images.load(path)
+    img.name = stem
+    if non_color:
+        img.colorspace_settings.name = 'Non-Color'
+    return img
 
 
 def get_material(name):
@@ -93,13 +137,18 @@ def get_material(name):
 
     El color de vértice «Col» multiplica al color base para dar variación
     de tono por instancia; el canal alfa no se usa en el shading de
-    previsualización (solo sirve como máscara de viento para Unreal).
+    previsualización (solo sirve como máscara de viento para Unreal). Para
+    M_Leaf/M_Grass/M_Bark el «color base» es la textura correspondiente
+    (atlas de follaje o corteza tileable) en vez de un ShaderNodeRGB
+    constante, si ya se generó (ver _load_texture); si no, cae al color
+    plano de siempre.
     """
     if name in bpy.data.materials:
         return bpy.data.materials[name]
     if name not in _MATERIAL_DEFS:
         raise ValueError(f"Material desconocido: {name}")
     cfg = _MATERIAL_DEFS[name]
+    tex_cfg = _TEXTURED_MATERIALS.get(name)
 
     mat = bpy.data.materials.new(name=name)
     mat.use_nodes = True
@@ -110,19 +159,47 @@ def get_material(name):
     attr.attribute_name = 'Col'
     attr.attribute_type = 'GEOMETRY'
 
-    base = nt.nodes.new('ShaderNodeRGB')
-    base.outputs[0].default_value = cfg['base_color']
+    bc_image = _load_texture(tex_cfg['bc']) if tex_cfg else None
+
+    if bc_image is not None:
+        tex_node = nt.nodes.new('ShaderNodeTexImage')
+        tex_node.image = bc_image
+        base_color_out = tex_node.outputs['Color']
+    else:
+        base = nt.nodes.new('ShaderNodeRGB')
+        base.outputs[0].default_value = cfg['base_color']
+        base_color_out = base.outputs[0]
 
     mix = nt.nodes.new('ShaderNodeMixRGB')
     mix.blend_type = 'MULTIPLY'
     mix.inputs['Fac'].default_value = 1.0
-    nt.links.new(base.outputs[0], mix.inputs['Color1'])
+    nt.links.new(base_color_out, mix.inputs['Color1'])
     nt.links.new(attr.outputs['Color'], mix.inputs['Color2'])
     nt.links.new(mix.outputs[0], bsdf.inputs['Base Color'])
 
     bsdf.inputs['Roughness'].default_value = cfg['roughness']
     if 'Metallic' in bsdf.inputs:
         bsdf.inputs['Metallic'].default_value = 0.0
+
+    if bc_image is not None and tex_cfg.get('masked'):
+        # Recorte alfa (mismo umbral que opacity_mask_clip_value en
+        # Tools/Unreal/build_materials.py) + doble cara, para que la
+        # previsualización EEVEE se lea igual que el Masked de Unreal.
+        mat.blend_method = 'CLIP'
+        mat.alpha_threshold = 0.35
+        mat.use_backface_culling = False
+        if 'Alpha' in bsdf.inputs:
+            nt.links.new(tex_node.outputs['Alpha'], bsdf.inputs['Alpha'])
+
+    n_image = _load_texture(tex_cfg['n'], non_color=True) if tex_cfg else None
+    if n_image is not None and 'Normal' in bsdf.inputs:
+        n_tex = nt.nodes.new('ShaderNodeTexImage')
+        n_tex.image = n_image
+        n_tex.interpolation = 'Linear'
+        norm_map = nt.nodes.new('ShaderNodeNormalMap')
+        nt.links.new(n_tex.outputs['Color'], norm_map.inputs['Color'])
+        nt.links.new(norm_map.outputs['Normal'], bsdf.inputs['Normal'])
+
     return mat
 
 
@@ -304,12 +381,173 @@ def add_basic_uv(obj, method='SMART'):
 
 
 # ---------------------------------------------------------------------------
+# UVs del atlas de follaje (T_FoliageAtlas_BC/_N) y de la corteza tileable
+# (T_BarkTropical_BC/_N/_ARH)
+# ---------------------------------------------------------------------------
+#
+# ATLAS_LAYOUT debe coincidir EXACTAMENTE con FOLIAGE_LAYOUT en
+# Tools/Textures/texgen/materials.py (mismo orden fila/columna); es la mitad
+# «consumidora» del contrato documentado ahí. Cada malla de hoja/fronda/
+# hierba/flor asigna su UV a una de estas celdas en vez de un smart-unwrap
+# genérico, para que el recorte alfa (OpacityMask en Unreal) caiga justo
+# sobre la silueta y no sobre un trozo cualquiera de la imagen.
+ATLAS_COLS = 4
+ATLAS_ROWS = 4
+ATLAS_LAYOUT = [
+    ['leaf_a', 'leaf_b', 'leaf_serrated', 'frond_leaflet'],
+    ['banana_leaf', 'monstera_leaf', 'bamboo_leaf', 'pandanus_leaf'],
+    ['grass_blade_a', 'grass_blade_b', 'fern_leaflet', 'shrub_flower_leaf'],
+    ['flower_petal', 'flower_bud', 'stem_swatch', 'leaf_small_round'],
+]
+_ATLAS_CELL_POS = {name: (r, c) for r, row in enumerate(ATLAS_LAYOUT) for c, name in enumerate(row)}
+# Nombres que no recortan alfa (celdas 'solid' en texgen): tallos, raquis,
+# pecíolos. Compartir el mismo atlas/material que las hojas evita un slot de
+# material adicional solo para geometría que no necesita máscara.
+ATLAS_OPAQUE_CELLS = frozenset({'stem_swatch'})
+
+
+def atlas_uv_rect(cell_name):
+    """(u0, v0, u1, v1) en convención de Blender (v=0 abajo de la imagen)
+    para la celda `cell_name`. t=0 (base de la hoja) cae en v=0 de la celda
+    y t=1 (punta) en v=1: la imagen se genera con la fila 0 arriba, así que
+    hay que invertir la fila al pasar a V de Blender (v=0 = última fila)."""
+    row, col = _ATLAS_CELL_POS[cell_name]
+    u0 = col / ATLAS_COLS
+    u1 = (col + 1) / ATLAS_COLS
+    v0 = (ATLAS_ROWS - row - 1) / ATLAS_ROWS
+    v1 = (ATLAS_ROWS - row) / ATLAS_ROWS
+    return (u0, v0, u1, v1)
+
+
+def sphere_uv_into_cell(obj, cell_name):
+    """UV esférica barata (ángulos alrededor de Z y de la horizontal,
+    envueltos con módulo) remapeada dentro de UNA celda del atlas de
+    follaje. Para blobs pequeños (make_blob) que llevan material M_Leaf/
+    M_Grass Masked — p. ej. el centro de la flor de grass.py: un
+    add_basic_uv (smart-project) genérico ahí caería en coordenadas
+    arbitrarias del atlas y, al ser Masked, el recorte alfa dejaría
+    agujeros donde la UV muestreara una zona transparente de alguna hoja.
+    Usa siempre una celda 'solid' (p.ej. 'stem_swatch'): no hace falta
+    corregir costura porque esa celda es un veteado uniforme sin silueta."""
+    me = obj.data
+    if 'UVMap' in me.uv_layers:
+        me.uv_layers.remove(me.uv_layers['UVMap'])
+    uv_layer = me.uv_layers.new(name='UVMap')
+    u0, v0, u1, v1 = atlas_uv_rect(cell_name)
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            vtx = me.vertices[me.loops[li].vertex_index]
+            u_full = (math.atan2(vtx.co.y, vtx.co.x) + math.pi) / (2.0 * math.pi)
+            v_full = (math.atan2(vtx.co.z, math.hypot(vtx.co.x, vtx.co.y)) + math.pi / 2.0) / math.pi
+            uv_layer.data[li].uv = (u0 + (u_full % 1.0) * (u1 - u0), v0 + (v_full % 1.0) * (v1 - v0))
+
+
+def set_uv_from_fn(obj, uv_fn, layer_name='UVMap'):
+    """Asigna un layer de UV (creándolo si falta) evaluando `uv_fn(vertex) ->
+    (u, v)` por loop — mismo patrón que set_vertex_colors, para que cada
+    malla de card/tronco lleve la UV correcta ANTES de unirse al resto (una
+    vez unidas todas las piezas del árbol/palmera/arbusto en un único
+    objeto, add_basic_uv ya no se usa para follaje/corteza: solo queda como
+    red de seguridad para piezas sueltas sin UV propia, p. ej. los blobs de
+    coco)."""
+    me = obj.data
+    if layer_name in me.uv_layers:
+        me.uv_layers.remove(me.uv_layers[layer_name])
+    uv_layer = me.uv_layers.new(name=layer_name)
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            loop = me.loops[li]
+            v = me.vertices[loop.vertex_index]
+            uv_layer.data[li].uv = uv_fn(v)
+    me.uv_layers.active = uv_layer
+
+
+def leaf_card_uv_fn(length, width_at_t_fn, uv_rect=None, v_repeat=1.0):
+    """UV para una tarjeta construida a lo largo de +Y (make_leaf_blade):
+    v = t (0 base, 1 punta) a lo largo de Y; u = 0.5 + x_local/anchura(t) en
+    [0, 1] a lo largo de X. Si `uv_rect` es None (fins de raíz/tocón en
+    M_Bark), se deja como una franja 0..1 en u con `v_repeat` repeticiones en
+    v para que la corteza tileable no salga estirada en piezas altas."""
+    def fn(v):
+        t = height_mask(v.co.y, 0.0, length, curve=1.0) if length > 0 else 0.0
+        w = max(width_at_t_fn(t), 1e-6)
+        u_local = 0.5 + (v.co.x / w)
+        u_local = min(1.0, max(0.0, u_local))
+        if uv_rect is None:
+            return (u_local, t * v_repeat)
+        u0, v0, u1, v1 = uv_rect
+        return (u0 + u_local * (u1 - u0), v0 + t * (v1 - v0))
+    return fn
+
+
+def cylindrical_bark_uv(obj, v_tile_m=1.6, uv_rect=None):
+    """UV cilíndrica para troncos/ramas/lianas construidos con
+    make_curved_trunk: u = ángulo alrededor del eje de la curva (0..1),
+    v = altura local en metros / v_tile_m (para que T_BarkTropical_* repita cada
+    v_tile_m metros en vez de salir estirada en un tronco de 30 m). Debe
+    llamarse ANTES de reorientar el objeto (orient_and_place_zaxis aplica la
+    transformación y hornea vertex.co a coordenadas de mundo, momento en el
+    que el eje Z local ya no es «a lo largo del tronco»): por eso vive
+    dentro de make_curved_trunk, no como un paso aparte.
+
+    uv_rect (u0, v0, u1, v1): en vez de la franja tileable 0..1 de M_Bark,
+    envuelve u y v en [0, 1) y los remapea dentro de esa celda del atlas de
+    follaje (p.ej. atlas_uv_rect('stem_swatch')) — para tallos/cañas/
+    pecíolos finos que llevan material M_Leaf/M_Grass (Masked) en vez de
+    M_Bark: sin esto, la UV cilíndrica normal caería en celdas de hoja
+    arbitrarias del atlas y el recorte alfa dejaría agujeros en el tallo.
+    Al envolver por vértice (no por cara, a diferencia de la rama tileable
+    de abajo) puede quedar una costura visible en el ángulo de arranque;
+    aceptable para geometría fina vista de lejos, y siempre opaca (celda
+    'solid') así que nunca desaparece un trozo del tallo.
+
+    Corrige el salto de costura (ángulo -pi -> +pi, que de otro modo
+    estiraría una cara entera de un extremo a otro de la textura) trayendo
+    cada loop de una cara a la rama continua más cercana al primer loop de
+    esa misma cara."""
+    me = obj.data
+    if 'UVMap' in me.uv_layers:
+        me.uv_layers.remove(me.uv_layers['UVMap'])
+    uv_layer = me.uv_layers.new(name='UVMap')
+
+    if uv_rect is not None:
+        u0, v0, u1, v1 = uv_rect
+        for poly in me.polygons:
+            for li in poly.loop_indices:
+                vtx = me.vertices[me.loops[li].vertex_index]
+                ang = math.atan2(vtx.co.y, vtx.co.x)
+                u_full = (ang + math.pi) / (2.0 * math.pi)
+                v_full = vtx.co.z / v_tile_m
+                u = u0 + (u_full % 1.0) * (u1 - u0)
+                v = v0 + (v_full % 1.0) * (v1 - v0)
+                uv_layer.data[li].uv = (u, v)
+        return
+
+    for poly in me.polygons:
+        us, vs = [], []
+        for li in poly.loop_indices:
+            vtx = me.vertices[me.loops[li].vertex_index]
+            ang = math.atan2(vtx.co.y, vtx.co.x)
+            us.append((ang + math.pi) / (2.0 * math.pi))
+            vs.append(vtx.co.z / v_tile_m)
+        base = us[0]
+        for i, li in enumerate(poly.loop_indices):
+            u = us[i]
+            if u - base > 0.5:
+                u -= 1.0
+            elif u - base < -0.5:
+                u += 1.0
+            uv_layer.data[li].uv = (u, vs[i])
+
+
+# ---------------------------------------------------------------------------
 # Geometría: troncos, ramas y lianas curvadas (curva Bezier -> malla)
 # ---------------------------------------------------------------------------
 
 def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
                        n_points=8, bevel_resolution=3, lean_dir=None,
-                       wobble=0.0, rnd=None, z_offset=0.0):
+                       wobble=0.0, rnd=None, z_offset=0.0, bark_v_tile_m=1.6,
+                       uv_rect=None):
     """Crea un tronco/rama/liana curvado biselando una curva Bezier.
 
     curvature: desplazamiento lateral máximo (m) alcanzado en la punta,
@@ -318,6 +556,16 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     z_offset: sube el arranque del tronco esa distancia en Z sin afectar a
     la curvatura (para troncos de manglar que arrancan por encima del
     suelo, levantados por sus raíces zancudas).
+    bark_v_tile_m: cada cuántos metros de altura repite T_BarkTropical_* (ver
+    cylindrical_bark_uv) — se asigna aquí, ANTES de que el llamador pueda
+    reorientar el objeto con orient_and_place_zaxis (esa función hornea la
+    transformación en vertex.co, momento en el que «Z local» deja de ser
+    «a lo largo del tronco»).
+    uv_rect: pásalo (p.ej. atlas_uv_rect('stem_swatch')) cuando esta pieza
+    vaya a llevar material M_Leaf/M_Grass en vez de M_Bark (tallos, cañas de
+    bambú, pecíolos): ver la nota de cylindrical_bark_uv, sin esto la UV
+    cilíndrica caería en celdas de hoja arbitrarias del atlas Masked y el
+    recorte alfa dejaría agujeros en el tallo.
     """
     if rnd is None:
         rnd = random.Random(0)
@@ -354,6 +602,7 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     link_object(obj)
     select_only(obj)
     bpy.ops.object.convert(target='MESH')
+    cylindrical_bark_uv(obj, v_tile_m=bark_v_tile_m, uv_rect=uv_rect)
     return obj, lean_dir
 
 
@@ -383,12 +632,19 @@ def spline_tangent(height, t, curvature, lean_dir, dt=1e-3, z_offset=0.0):
 # ---------------------------------------------------------------------------
 
 def make_leaf_blade(name, length, width_base, width_tip, curve_amount,
-                     segments=6, bend_axis='X', double_sided=True):
+                     segments=6, bend_axis='X', double_sided=True,
+                     uv_cell=None, uv_v_repeat=3.0):
     """Tarjeta alargada curvada (hoja de palma/plátano, hierba, pétalo).
 
     Se construye a lo largo de +Y (longitud) con la anchura en X y la
     curvatura hacia -Z o +Z según bend_axis/curve_amount. El origen queda
     en la base (0,0,0) para poder rotarla y anclarla con facilidad.
+
+    uv_cell: nombre de una celda de ATLAS_LAYOUT (p.ej. 'leaf_a',
+    'monstera_leaf'...) para que el material Masked de Unreal recorte esta
+    tarjeta con la silueta de esa hoja; None dibuja una franja 0..1 en U con
+    `uv_v_repeat` repeticiones en V (para M_Bark tileable: raíces tabulares,
+    aletas de tocón), sin recorte alfa.
     """
     bm = bmesh.new()
     verts_top = []
@@ -418,6 +674,12 @@ def make_leaf_blade(name, length, width_base, width_tip, curve_amount,
     bm.free()
     obj = bpy.data.objects.new(name, me)
     link_object(obj)
+
+    def _width_at(t):
+        return width_base + (width_tip - width_base) * t
+
+    uv_rect = atlas_uv_rect(uv_cell) if uv_cell else None
+    set_uv_from_fn(obj, leaf_card_uv_fn(length, _width_at, uv_rect=uv_rect, v_repeat=uv_v_repeat))
     return obj
 
 
@@ -576,10 +838,16 @@ def add_ring_bumps(obj, spacing, amplitude, rnd=None, sharpness=6):
     me.update()
 
 
-def _add_leaflet(bm, origin, forward, right, up, length, width, curve, rnd):
+def _add_leaflet(bm, uv_layer, uv_rect, origin, forward, right, up, length, width, curve, rnd):
     """Añade un folíolo (mini-hoja lanceolada) de 4 triángulos a un bmesh:
     un punto de anclaje, dos secciones intermedias (la más ancha) y una
-    punta, con caída (curve) hacia -up. Uso interno de make_frond_object."""
+    punta, con caída (curve) hacia -up. Uso interno de make_frond_object.
+
+    UV: t=0 en el anclaje (v_o) -> t=1 en la punta (v_t), x=0 en el eje
+    central -> ±1 en los bordes (v_al/v_ar, v_bl/v_br) — la misma
+    parametrización (t, x) que usa texgen para pintar la celda
+    'frond_leaflet' del atlas, así el recorte alfa cae justo en la silueta.
+    """
     forward = Vector(forward).normalized()
     right = Vector(right)
     up = Vector(up)
@@ -597,14 +865,23 @@ def _add_leaflet(bm, origin, forward, right, up, length, width, curve, rnd):
     v_br = bm.verts.new(mid_b + right * (w_b * 0.5))
     v_t = bm.verts.new(tip)
 
-    bm.faces.new((v_o, v_al, v_ar))
-    bm.faces.new((v_al, v_bl, v_br, v_ar))
-    bm.faces.new((v_bl, v_t, v_br))
+    f1 = bm.faces.new((v_o, v_al, v_ar))
+    f2 = bm.faces.new((v_al, v_bl, v_br, v_ar))
+    f3 = bm.faces.new((v_bl, v_t, v_br))
+
+    u0, v0, u1, v1 = uv_rect
+    local_uv = {v_o: (0.5, 0.0), v_al: (0.0, 0.35), v_ar: (1.0, 0.35),
+                v_bl: (0.0, 0.70), v_br: (1.0, 0.70), v_t: (0.5, 1.0)}
+    for face in (f1, f2, f3):
+        for loop in face.loops:
+            lu, lt = local_uv[loop.vert]
+            loop[uv_layer].uv = (u0 + lu * (u1 - u0), v0 + lt * (v1 - v0))
 
 
 def make_frond_object(name, length, width, leaflet_count, droop, seed,
                        curl=0.15, leaflet_len_ratio=0.55, leaflet_curve=0.35,
-                       rachis_width_ratio=0.02):
+                       rachis_width_ratio=0.02, leaflet_uv_cell='frond_leaflet',
+                       rachis_uv_cell='stem_swatch'):
     """Fronda pinnada genérica (hoja de palmera o helecho): un raquis
     central que se curva hacia abajo (droop) con folíolos alternos a ambos
     lados. Construida en espacio local con el raquis creciendo en +Y desde
@@ -612,6 +889,10 @@ def make_frond_object(name, length, width, leaflet_count, droop, seed,
     """
     rnd = seeded_rng(seed)
     bm = bmesh.new()
+    uv_layer = bm.loops.layers.uv.new('UVMap')
+
+    rachis_rect = atlas_uv_rect(rachis_uv_cell)
+    ru0, rv0, ru1, rv1 = rachis_rect
 
     rachis_w = max(0.003, width * rachis_width_ratio)
     n_seg = 10
@@ -624,8 +905,14 @@ def make_frond_object(name, length, width, leaflet_count, droop, seed,
         left_v.append(bm.verts.new(Vector((-w * 0.5, y, z))))
         right_v.append(bm.verts.new(Vector((w * 0.5, y, z))))
     for i in range(n_seg):
-        bm.faces.new((left_v[i], right_v[i], right_v[i + 1], left_v[i + 1]))
+        f = bm.faces.new((left_v[i], right_v[i], right_v[i + 1], left_v[i + 1]))
+        t0, t1 = i / n_seg, (i + 1) / n_seg
+        uvs = {left_v[i]: (ru0, rv0 + t0 * (rv1 - rv0)), right_v[i]: (ru1, rv0 + t0 * (rv1 - rv0)),
+               right_v[i + 1]: (ru1, rv0 + t1 * (rv1 - rv0)), left_v[i + 1]: (ru0, rv0 + t1 * (rv1 - rv0))}
+        for loop in f.loops:
+            loop[uv_layer].uv = uvs[loop.vert]
 
+    leaflet_rect = atlas_uv_rect(leaflet_uv_cell)
     leaflet_len = width * leaflet_len_ratio
     n_pairs = max(1, leaflet_count // 2)
     for i in range(n_pairs):
@@ -637,8 +924,8 @@ def make_frond_object(name, length, width, leaflet_count, droop, seed,
             right = Vector((float(side), 0.0, 0.0))
             forward = Vector((side * 0.35, 0.55, -0.25))
             up = Vector((0.0, 0.0, 1.0))
-            _add_leaflet(bm, origin, forward, right, up, leaflet_len, width * 0.24,
-                         leaflet_curve, rnd)
+            _add_leaflet(bm, uv_layer, leaflet_rect, origin, forward, right, up,
+                         leaflet_len, width * 0.24, leaflet_curve, rnd)
 
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     me = bpy.data.meshes.new(name)
@@ -649,11 +936,94 @@ def make_frond_object(name, length, width, leaflet_count, droop, seed,
     return obj
 
 
+def make_leaf_cluster_cards(name, center, radius_xy, radius_z, seed,
+                             cell_names=('leaf_a', 'leaf_b', 'leaf_small_round'),
+                             target_tris=650, tris_per_card=4, size_range=(0.34, 0.62),
+                             min_count=16, max_count=90):
+    """Cúmulo de hoja hecho de TARJETAS con textura alfa («leaf cards»,
+    la técnica estándar de Sea of Thieves/Journey to the Savage Planet/
+    Tchia para copas de árbol), no un volumen sólido de blobs fundidos: es
+    el reemplazo directo de make_canopy_blobs+fuse_blob_mass, pensado para
+    quitar el aspecto de «piruleta» (bola de volumen verde) que pedía
+    sustituir el encargo. Reparte `count` tarjetas de make_leaf_blade dentro
+    de una elipse alrededor de `center`, cada una con una celda de hoja del
+    atlas elegida al azar de `cell_names`. `count` se deriva del presupuesto
+    de triángulos del lóbulo (`target_tris` / `tris_per_card`, con
+    segments=1 double_sided son 4 tris por tarjeta) en vez de fijarse a
+    mano: tarjetas pequeñas y numerosas (en vez de pocas y grandes) para que
+    se solapen y lean como una masa de hoja llena, no como unas pocas púas
+    sueltas.
+
+    Orientación (fix de la 1ª pasada, que se leía como «erizo de mar»): el
+    eje de CRECIMIENTO de una tarjeta (base->punta, `forward` en
+    orient_and_place) se mapea a local +Y, y la CARA/normal de la tarjeta
+    (de donde sale la luz reflejada) es aproximadamente local +Z, que
+    orient_and_place deriva del parámetro `up`. La 1ª pasada apuntaba
+    `forward` hacia fuera del centro del cúmulo -cada tarjeta como una
+    aguja radiando hacia fuera, punta primero- en vez de apuntar la CARA
+    hacia fuera con la punta cayendo tangencialmente como una hoja real
+    colgando de una rama: aquí `up` (=cara/normal) es quien apunta hacia
+    fuera+arriba, y `forward` (=crecimiento) es tangencial a esa normal con
+    una ligera caída hacia abajo, como tejas/escamas sobre una superficie
+    redondeada en vez de púas."""
+    rnd = seeded_rng(seed)
+    count = max(min_count, min(max_count, int(target_tris / max(tris_per_card, 1))))
+    center_v = Vector(center)
+    parts = []
+    for i in range(count):
+        ang = rnd.uniform(0.0, 2.0 * math.pi)
+        r = radius_xy * math.sqrt(rnd.uniform(0.08, 1.0))
+        cx = center_v.x + math.cos(ang) * r
+        cy = center_v.y + math.sin(ang) * r
+        cz = center_v.z + rnd.uniform(-radius_z * 0.62, radius_z * 0.70)
+        card_center = Vector((cx, cy, cz))
+
+        outward = card_center - center_v
+        if outward.length < 1e-4:
+            outward = Vector((rnd.uniform(-1.0, 1.0), rnd.uniform(-1.0, 1.0), 0.3))
+        outward.normalize()
+        jitter = Vector((rnd.uniform(-0.3, 0.3), rnd.uniform(-0.3, 0.3), rnd.uniform(-0.15, 0.25)))
+        normal_dir = (outward * 0.7 + Vector((0.0, 0.0, 1.0)) * 0.45 + jitter)
+        if normal_dir.length < 1e-4:
+            normal_dir = Vector((0.0, 0.0, 1.0))
+        normal_dir.normalize()
+
+        # Crecimiento tangencial a normal_dir (aleatorio, con una leve caída
+        # hacia abajo tipo «hoja colgando»), no radial.
+        seed_dir = Vector((rnd.uniform(-1.0, 1.0), rnd.uniform(-1.0, 1.0), rnd.uniform(-1.0, 1.0)))
+        tangential = seed_dir - normal_dir * normal_dir.dot(seed_dir)
+        if tangential.length < 1e-4:
+            tangential = Vector((1.0, 0.0, 0.0)) - normal_dir * normal_dir.x
+        tangential.normalize()
+        growth = (tangential * 0.8 + Vector((0.0, 0.0, -0.35)))
+        if growth.length < 1e-4:
+            growth = tangential
+        growth.normalize()
+
+        size = radius_xy * rnd.uniform(*size_range)
+        aspect = rnd.uniform(0.5, 0.85)
+        cell = rnd.choice(cell_names)
+        card = make_leaf_blade(
+            f'{name}_c{i:02d}', length=size, width_base=size * aspect * rnd.uniform(0.55, 0.80),
+            width_tip=size * aspect * 0.10, curve_amount=size * rnd.uniform(0.06, 0.22),
+            segments=1, double_sided=True, uv_cell=cell,
+        )
+        orient_and_place(card, card_center, growth, normal_dir)
+        parts.append(card)
+    return join_objects(parts, name)
+
+
 def make_canopy_blobs(name, center, radius_xy, radius_z, count, seed,
                        blob_scale_range=(0.45, 0.7), noise_strength=0.16,
                        subdivisions=2, relax_iterations=2,
                        voxel_remesh=None, target_tris=None):
-    """Copa frondosa hecha de varios «blobs» de hoja (esferas deformadas)
+    """DEPRECADO para copas de árbol (ver make_leaf_cluster_cards arriba):
+    esta función producía «piruletas» (bola de volumen verde), exactamente
+    lo que el encargo pidió eliminar. Se conserva sin usar por si algún kit
+    hermano necesita un blob orgánico sólido (p. ej. rocas cubiertas de
+    musgo), no por compatibilidad con vegetación.
+
+    Copa frondosa hecha de varios «blobs» de hoja (esferas deformadas)
     repartidos dentro de una elipse, para dar volumen real en vez de una
     sola esfera lisa (pide la sección 8 del GDD: siluetas orgánicas).
 
@@ -1079,6 +1449,15 @@ def export_fbx(filepath, objects):
           por shade_smooth_auto en vez de recalcularlas por smoothing group.
         - colors_type='LINEAR' porque el atributo «Col» se escribe ya en
           espacio lineal (no es una textura sRGB que haya que reconvertir).
+        - path_mode='STRIP' (no 'COPY'): desde que M_Leaf/M_Grass/M_Bark
+          llevan Image Texture reales (common.py: get_material carga
+          T_FoliageAtlas_*/T_BarkTropical_* si existen, para que la
+          previsualización EEVEE se vea igual que Unreal), 'COPY' copiaba
+          esas PNG a un «<malla>.fbm/» por cada FBX exportado -+12 MB por
+          árbol, solo duplicados del mismo fichero-. Unreal nunca lee esas
+          texturas del FBX (import_meshes.py usa import_materials=False,
+          import_textures=False y reconstruye los materiales aparte desde
+          Art/Export/Textures/), así que no hace falta ni la ruta.
     """
     for o in bpy.context.selected_objects:
         o.select_set(False)
@@ -1103,7 +1482,7 @@ def export_fbx(filepath, objects):
         use_triangles=True,
         use_tspace=True,
         bake_anim=False,
-        path_mode='COPY',
+        path_mode='STRIP',
         embed_textures=False,
     )
 
