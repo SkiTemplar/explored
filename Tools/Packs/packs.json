@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "note": "Packs CC0 de terceros (GDD v2 §7.1). Los descarga y verifica fetch_packs.py en Art/Packs/ (ignorado en git); nunca se versionan. license.verifiedOn: fecha en que se leyó la licencia en la página oficial del autor; license.evidence: texto literal encontrado allí y en el fichero de licencia del zip.",
+  "packs": [
+    {
+      "id": "kenney_survival_kit",
+      "name": "Survival Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/survival-kit",
+      "version": "2.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/survival-kit/4065a8185b-1712149243/kenney_survival-kit.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "glb",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "c3586341b5932c87eb43d75d915434f47daed168b17ed36a03e8ca9977c7443e"
+    },
+    {
+      "id": "kenney_food_kit",
+      "name": "Food Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/food-kit",
+      "version": "2.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/food-kit/83086fa91c-1719418518/kenney_food-kit.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "glb",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "cdad90853682499b94c9fda2f87678b24bfd8f3264e0ed323f6b6a27fd7c6f6f",
+      "note": "Preparado para comida y huerto (prioridad 3); aún sin entradas en el catálogo."
+    },
+    {
+      "id": "kaykit_rpg_tools_bits",
+      "name": "KayKit RPG Tools Bits (Free)",
+      "author": "Kay Lousberg",
+      "page": "https://kaylousberg.itch.io/rpg-tools-bits",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://kaylousberg.itch.io/rpg-tools-bits",
+        "uploadId": 15653196
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Página itch.io: «(CC0 Licensed)» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Free» (precio libre, mínimo 0). License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "a17c2a54df93d525e90d960baf3c68638defb4f424e204ceead6ea1f89e9c7dd"
+    },
+    {
+      "id": "kaykit_resource_bits",
+      "name": "KayKit Resource Bits (Free)",
+      "author": "Kay Lousberg",
+      "page": "https://kaylousberg.itch.io/resource-bits",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://kaylousberg.itch.io/resource-bits",
+        "uploadId": 13266824
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Página itch.io: «(CC0 Licensed)» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Free» (precio libre, mínimo 0). License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "7056f1310896a4612a67703fd6d5af389fcccdeb46df0a89e2322aa8e3bcfcf7"
+    },
+    {
+      "id": "quaternius_farm_animals",
+      "name": "Farm Animals Animated",
+      "author": "Quaternius",
+      "page": "https://quaternius.itch.io/lowpoly-animated-animals",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://quaternius.itch.io/lowpoly-animated-animals",
+        "uploadId": 1126158
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Página itch.io: «CC0 License» y metadato de licencia «Creative Commons Zero v1.0 Universal». El zip no trae fichero de licencia: la única prueba es la página del autor."
+      },
+      "formats": [
+        "fbx",
+        "blend",
+        "obj"
+      ],
+      "sha256": "b4bc5f209368cafc21962934e7d676cf1cfb1f746a363086cd9f45c4385db70e",
+      "note": "Preparado para la fauna (prioridad 4); aún sin entradas en el catálogo (ver PR)."
+    }
+  ]
+}
