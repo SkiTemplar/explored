@@ -7,12 +7,13 @@ from pathlib import Path
 from texgen.legacy import LEGACY_NAMES
 from texgen.materials import MATERIALS
 from texgen.output import texture_name
+from texgen.palette import PALETTE_TEXTURES
 
 BUILD_MATERIALS = Path(__file__).resolve().parents[2] / "Unreal" / "build_materials.py"
 
 
 def generated_names() -> set[str]:
-    names = set(LEGACY_NAMES)
+    names = set(LEGACY_NAMES) | set(PALETTE_TEXTURES)
     for name, spec in MATERIALS.items():
         names.update(texture_name(name, suffix) for suffix in spec.outputs)
     return names
