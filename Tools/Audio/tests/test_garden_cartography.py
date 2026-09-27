@@ -50,6 +50,36 @@ def test_regar_es_continuo_y_de_medios(rendered):
     assert _band_share(audio, 300.0, 4000.0) >= 0.5
 
 
+def test_regar_son_gotas_con_borboteo_y_no_un_soplido(rendered):
+    """El agua son muchas gotas, no ruido filtrado en una banda estrecha:
+    espectro plano (sin octava que acapare la energia), envolvente granulada a
+    2 ms (impactos discretos) y el grave latiendo al ritmo del borboteo del
+    recipiente (4-7 glups por segundo mientras se vierte)."""
+    audio = rendered["sfx_garden_water"]
+    freqs, psd = signal.welch(audio, SAMPLE_RATE, nperseg=4096)
+    band = (freqs > 300.0) & (freqs < 8000.0)
+    flatness = np.exp(np.mean(np.log(psd[band] + 1e-20))) / np.mean(psd[band])
+    assert flatness >= 0.25, f"planitud {flatness:.2f}"
+    octaves = [(250.0, 500.0), (500.0, 1000.0), (1000.0, 2000.0), (2000.0, 4000.0)]
+    assert max(_band_share(audio, lo, hi) for lo, hi in octaves) <= 0.45
+
+    win = int(0.002 * SAMPLE_RATE)
+    env = np.sqrt(np.convolve(audio ** 2, np.ones(win) / win, mode="same"))[::win]
+    mid = env[len(env) // 4 : 3 * len(env) // 4]
+    assert mid.std() / mid.mean() >= 0.38
+
+    sos = signal.butter(4, [150.0, 500.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    low = signal.sosfiltfilt(sos, audio)
+    hop = int(0.01 * SAMPLE_RATE)
+    low_env = np.sqrt(np.convolve(low ** 2, np.ones(hop) / hop, mode="same"))[::hop]
+    pour = low_env[20 : int(0.75 * len(low_env))]
+    mod = np.abs(np.fft.rfft((pour - pour.mean()) * np.hanning(len(pour))))
+    mod_freqs = np.fft.rfftfreq(len(pour), 0.01)
+    search = (mod_freqs > 2.0) & (mod_freqs < 12.0)
+    peak = mod_freqs[search][np.argmax(mod[search])]
+    assert 3.5 <= peak <= 7.5, f"el borboteo late a {peak:.1f} Hz"
+
+
 def test_pluma_es_aguda_y_discreta(rendered):
     """Friccion del plumin: casi toda la energia sobre 2 kHz, sin siseo por
     encima de 10 kHz dominante, y mas baja que un golpe de herramienta."""
