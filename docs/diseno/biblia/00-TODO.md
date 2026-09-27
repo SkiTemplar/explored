@@ -1,0 +1,583 @@
+# EXPLORED — Lista maestra de TODO
+
+Versión 1 · 2026-09-27 · Fusiona los «TODO de implementación» de las 7 secciones de la
+biblia (`01`–`07`), añade lo transversal que no tenía dueño (rendimiento, arte, audio,
+terreno editable en runtime, empaquetado y salida a mercado) y lo agrupa por hitos en
+orden de ejecución. Cada casilla indica el sistema o fichero al que toca y la sección de
+la biblia (o el GDD) de la que sale. `[x]` se ha verificado con grep contra el `main` del
+árbol principal (`C:\Users\Rodrigo\PERSONAL\ProyectosPersonales\Explored\Explored`), no
+se ha supuesto; `[ ]` es lo que falta o no se ha podido confirmar en el código.
+
+Aviso heredado de `docs/roadmap.md` y GDD §8: varios sistemas ya escritos en `main`
+llevan tiempo «sin compilar en local» (17 según el roadmap al cierre de esta biblia). Un
+`[x]` aquí certifica que el código **existe**, no que compila o que está verificado en
+PIE — la verificación de compilación es tarea propia de H0/H1, ya listada abajo.
+
+## Recuento de casillas por hito
+
+| Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
+|---|---|---|---|
+| H0 — Porción vertical jugable en Landing | 3 | 29 | 32 |
+| H1 — Mundo interactivo | 1 | 26 | 27 |
+| H2 — Minería y construcción | 2 | 22 | 24 |
+| H3 — Mar y barcos | 1 | 10 | 11 |
+| H4 — Contenido de acceso anticipado | 0 | 14 | 14 |
+| H5 — Lanzamiento del acceso anticipado | 1 | 15 | 16 |
+| F2 | 1 | 14 | 15 |
+| F3 | 0 | 25 | 25 |
+| **Total** | **9** | **155** | **164** |
+
+---
+
+## H0 — Porción vertical jugable en Landing
+
+Criterio de salida (GDD §6.1): aterrizar, sobrevivir, construir, cavar un agujero que
+se queda cavado al recargar, cartografiar y encontrar un tesoro, todo en Landing, sin
+salir de la isla.
+
+### Cuerpo y supervivencia
+
+- [ ] `Survival`: añadir `ECondition::ContactBurn` (quemadura de contacto) — daño
+      instantáneo 8 pts + herida de profundidad 0.4 que no sangra ni se infecta,
+      cicatriza en 24 h (12 h con gel de aloe). *(biblia 01 §6.8)*
+- [ ] `Survival`/`Items`: dar a los ítems de gel de aloe la propiedad `Cures` sobre
+      `ContactBurn` además de `SunBurn`, con el multiplicador ×0.5 al tiempo de
+      cicatrización de esa herida. *(biblia 01 §6.8)*
+- [ ] `Player/SwimComponent`: enganchar el delegado de daño por ahogo
+      (`OnDrowningDamage`) a `BodySignalsComponent::GetMutableSurvivalState().Health` —
+      hoy el delegado existe pero nadie aplica el daño. *(biblia 01 §6.15)*
+- [ ] `Survival`/`Player`: confirmar y, si hace falta, ajustar el punto de aparición
+      inicial fijo en Isla del Amaraje con el kit cerrado (mochila, reloj, gafas de sol
+      puestos; mechero, navaja rota, botiquín, manual, cantimplora en el fuselaje) —
+      `SpawnLandingStarterKitIfNeeded` ya existe en `ExploredWiringSubsystem`, verificar
+      que su contenido coincide con la lista. *(biblia 01 §4)*
+- [ ] `Survival`: fijar `Wetness = 1.0` como valor inicial explícito de
+      `FSurvivalState` al arrancar una partida nueva — hoy la struct usa `0.0` por
+      defecto. *(biblia 01 §4)*
+- [ ] `Survival`/`UI`: implementar los avisos interiores ES/EN de 01 §6 como líneas de
+      voz interna (subtítulo opcional) enganchadas a los eventos de `ESurvivalEvent` y a
+      los cruces de umbral de cada estado. *(biblia 01 §6, 06 §3.1)*
+- [ ] `Core/SystemLinks`: documentar en código (comentario junto a `HasPermadeath`) que
+      el modo Personalizado une «necesidades pueden matar» y «permadeath» en un único
+      interruptor de «modo duro». *(biblia 01 §8)*
+- [ ] `Save`/`GameMode`/`Carry`: confirmar en código que `HandlePlayerDeath` nunca vacía
+      el inventario en Explorador/Superviviente/Personalizado, y aplicar el golpe de
+      ánimo −6 (`moraleEvents.Injured`, ya existe) al reaparecer. *(biblia 01 §7, 03 §1.7)*
+- [x] Salud, heridas y sangrado (`FWound`, `TreatWounds`) ya implementados en
+      `BodyModel.{h,cpp}` — base sobre la que se engancha `ContactBurn`.
+      *(verificado: `Source/Explored/Survival/BodyModel.h`)*
+
+### Crafteo e inventario
+
+- [ ] `Items`/`Templates`: añadir el item `pico` y su plantilla a
+      `Content/Data/items.json`/`templates.json` — Cabeza (Contundente≥3 o Rígido≥3),
+      Mango (Largo≥2, Rígido≥3), Unión (Ata≥2 o Adhesivo≥2), `baseMaxDurability` 55.
+      Bloqueante para la minería manual de Landing. *(biblia 02 §2.2, 03 §2.1 — definición
+      única tras resolver la contradicción con la versión antigua de 03)*
+- [ ] `Items`: añadir a `items.json` las medicinas nuevas que exige la porción vertical:
+      `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`,
+      `ferula_bambu`, `gel_aloe`. *(biblia 03 §3.6)*
+- [ ] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg),
+      `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en
+      `UCarryComponent::SetCustomBackpack`, que hoy solo recibe volumen/peso del objeto.
+      *(biblia 03 §1.1)*
+- [ ] `Building`: añadir a `building_pieces.json` las piezas de almacenamiento
+      `cesta_almacen`, `estanteria_almacen`, `arcon` — sin ellas ni el refugio→cabaña de
+      Landing tiene sentido. *(biblia 03 §1.4)*
+- [ ] `AExploredCharacter::HandleCombine`: cuando `Verbs.Num() > 1`, no aplicar
+      `Verbs[0]` de inmediato — abrir la lista de verbos candidatos y esperar
+      confirmación o expiración (4 s). *(biblia 06 §2.6)*
+- [ ] Crear el widget `SExploredCraftChoice` (hasta 3 filas, tecla/botón + nombre de
+      verbo, sin vista previa del resultado, expiración automática). *(biblia 06 §2.6)*
+
+### Minería y terreno (pipeline mínimo para la cueva de Landing)
+
+- [ ] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
+      `FTerrainDensity`. *(GDD §7.3 punto 1, biblia 02 §7.3)*
+- [ ] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
+      de evaluar el ruido procedural. *(GDD §7.3 punto 1)*
+- [ ] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados
+      por una edición. *(GDD §7.3 punto 3)*
+- [ ] `WorldGen`: implementar el picado por esfera (radio y tiempo por golpe según
+      herramienta/estrato, tabla de biblia 02 §2.3) para tierra/arena/arcilla (dureza 1,
+      pala tosca) — el resto de estratos no hace falta para Landing. *(biblia 02 §2)*
+- [ ] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
+      mismo patrón que `FSaveScatterDeltas`) — condición dura del criterio de salida
+      («se queda cavado al recargar la partida»). *(GDD §7.3 punto 2, biblia 02 §2.8)*
+- [ ] `Cartography`: hoja subterránea por sistema de galerías, generada bajo demanda al
+      entrar la primera vez, para la cueva pequeña de Landing. *(GDD §3.2)*
+- [ ] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
+      `items.json`. *(biblia 02 §2.7)*
+
+### Tala y recolección
+
+- [ ] `WorldGen/HarvestModel`: revisar la tabla de especies talables de biblia 02 §1.2
+      (golpes, tiempo, botín, altura) contra las reglas reales de `HarvestModel.cpp`
+      (hoy usa `HitsBareHands`/`HitsWithTool` por especie genérica `Palm`/`JungleGiant`/
+      `JungleWide`/`Mangrove`, no la tabla por herramienta de la biblia) y decidir cuál
+      manda antes de tocar el código. *(biblia 02 §1.2)*
+- [ ] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
+      ligera/terreno al talar. *(biblia 02 §1.2)*
+- [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
+      según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
+      `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
+      diseño nueva de la biblia, pendiente de aplicar al código. *(biblia 02 §1.2, 02 §1.6)*
+- [ ] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
+      tope 6). *(biblia 02 §1.3)*
+- [x] Tala de la Palmera de coco ya suelta `coco_maduro` ×1-3 al caer (no un mix de
+      `coco_verde`/`coco_maduro`) — corregido en la tabla de biblia 02 §1.2 para que
+      coincida con `HarvestModel.cpp::Palm.FellDrops`.
+      *(verificado: `Source/Explored/WorldGen/HarvestModel.cpp:29`)*
+- [ ] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
+      copa de una palmera trepada (§13.1 nueva de escalada), sin golpe ni herramienta,
+      distinto del `coco_maduro` que suelta la tala. *(biblia 02 §13.1, §1.2)*
+
+### Granja (huerto y limonero de Landing)
+
+- [ ] Confirmar que `FarmModel`/`plants.json` ya cubren riego y ventana de estaciones tal
+      como se documenta en biblia 02 §10.1 (sin cambios esperados; solo verificación).
+      *(biblia 02 §10.1)*
+- [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
+      con etapas estáticas por días, estación y riego.
+      *(verificado: `Content/Data/plants.json`)*
+
+### Pantallas y HUD de la partida (bucle básico)
+
+- [ ] Implementar la pantalla de Muerte: nuevo widget `SExploredDeathScreen`,
+      disparado al llegar `FSurvivalState::Health` a 0; tres opciones (dos en Náufrago).
+      *(biblia 06 §2.13)*
+- [ ] Implementar la transición de Dormir: interactuable «Dormir» en piezas de
+      cama/refugio, `SExploredFade` con etiqueta de hora, avance acelerado del reloj y
+      cancelación con recuperación proporcional. *(biblia 06 §2.12)*
+
+---
+
+## H1 — Mundo interactivo
+
+Sistemas que dan vida al archipiélago entero (fuego, escalada, combate básico, fauna,
+accesibilidad, HUD general) sin depender de una isla o mecánica concreta de fase
+posterior.
+
+### Escalada (mecánica nueva completa)
+
+- [ ] `Player`: verbo contextual «Trepar» sobre palmeras (`Palm` en
+      `HarvestModel.cpp`), subida a 0,7 m/s sin herramienta / 1,3 m/s con
+      `pie_de_palmera`, coste de Energía −9×peso / −6×peso por segundo.
+      *(biblia 02 §13.1)*
+- [ ] `Items`/`Templates`: nuevo item `pie_de_palmera` (`cuerda` ×1) en `items.json`.
+      *(biblia 02 §13.1)*
+- [ ] `Player`/`WorldGen`: escalada de roca sobre pendiente > 60°, tope de 3 m sin
+      herramienta; caída y esguince al agotar Energía, reutilizando el sistema de
+      caída/esguince ya existente (`SprainFallHeight`, biblia 01 §6.13).
+      *(biblia 02 §13.2)*
+- [ ] `Player`: animación de trepa en primera persona con manos visibles y bamboleo de
+      cámara simple, con «Reducir movimiento» aplicado igual que el resto de cámara.
+      *(biblia 02 §13.5, 06 §3.4)*
+
+### Fuego y clima
+
+- [ ] `Weather`/`WorldGen`: contagio de fuego entre celdas de vegetación (45 %/s en
+      seco, −70 % en estaciones húmedas, ±25 % por viento). *(biblia 02 §6)*
+- [ ] `WorldGen`: rebrote de zona quemada (12 días hierba, 25 días arbustos),
+      compartiendo temporizador con el rebrote de tala. *(biblia 02 §6)*
+
+### Combate y fauna peligrosa (sistema, no contenido de fase 3)
+
+- [ ] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la
+      propiedad real Filo/Punta/Contundente del objeto. *(biblia 05 §3.0)*
+- [ ] Apertura de corte con profundidad = propiedad ÷ 5, enganchada al sistema `wounds`
+      ya existente en `BodyModel` (sin una segunda barra de heridas). *(biblia 05 §3.0)*
+- [ ] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph
+      1.2 s) como variantes de la misma acción de ataque. *(biblia 05 §3.1)*
+- [ ] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s. *(biblia 05 §3.1)*
+- [ ] Caída de precisión del arco por distancia (100/70/40/0 %). *(biblia 05 §3.2)*
+- [ ] `Fauna`: estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los
+      cocoteros. *(biblia 05 §5)*
+- [ ] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
+      tigre «Sombra» ya descrito en la biblia de contenido §4.6. *(biblia 05 §5)*
+
+### Inventario y UI general
+
+- [ ] `Carry`/`InventoryModel`: implementar el apilado de hasta 10 unidades por hueco
+      para objetos sin `maxDurability` ni `LiquidCapacityLiters` — hoy `FInventoryEntry`
+      es un objeto por hueco. *(biblia 03 §1.3)*
+- [ ] `BuildPreviewComponent::SetupInput`: añadir mapeo de mando (`LB` entra/sale, `RB`
+      rota, D-Pad cicla pieza, Face Bottom confirma) — hoy solo tecla/ratón.
+      *(biblia 06 §2.7)*
+- [ ] Añadir trama de rayas diagonales (además del rojo) al material del fantasma de
+      construcción sin apoyo suficiente. *(biblia 06 §2.7, §3.2)*
+- [ ] Añadir mapeo de mando para `IA_Fish` (hoy solo tecla `F` para lanzar/recoger).
+      *(biblia 06 §2.4, TODO)*
+- [ ] Sustituir la etiqueta de mano por el dial de brújula cuando la mano lleva el
+      objeto «Brújula». *(biblia 06 §2.4)*
+- [ ] Añadir texto de apoyo a la barra de tensión de pesca («A punto de romperse») para
+      no depender solo del degradado verde→rojo. *(biblia 06 §2.4, §3.2)*
+- [ ] Subtítulos de eventos sonoros (`[cuerno pirata a lo lejos]`, `[la vela cruje]`,
+      etc.) enrutados por `bSubtitlesEnabled` a la cola de notificaciones del HUD.
+      *(biblia 06 §3.1)*
+- [ ] Aplicar el multiplicador de `EExploredTextSize` de forma centralizada a los
+      estilos de Slate, no por widget. *(biblia 06 §3.3)*
+- [ ] `bReduceMotion`: cablear a `bCameraBobEnabled`, al rebote del aviso de logro, al
+      pulso de opacidad del fantasma de construcción y a la easing de apertura de menús
+      — el ajuste existe, falta el consumidor en los cuatro sitios. *(biblia 06 §3.4)*
+- [ ] `bDisableFlashing`: cablear al flash de la cámara desechable, al parpadeo de rayo
+      de `Weather` y a cualquier destello de pantalla completa por daño.
+      *(biblia 06 §3.4)*
+- [ ] Confirmar en playtesting si «Mochila» debe ser alternable o de mantener pulsado
+      (hoy `bBackpackOpen` es un alternador simple). *(biblia 06 §2.5)*
+- [x] Umbral del 55 % para barras de necesidad, máximo tres verbos de contexto y
+      «papel y tinta» como piel única ya implementados y verificados en código.
+      *(verificado: `Source/Explored/UI/ExploredHUD.cpp:248`,
+      `Source/Explored/Interaction/InteractionComponent.cpp:111-114`)*
+
+### Fauna terrestre (sistema, primera pasada)
+
+- [ ] `Fauna`: primera pasada de fauna salvaje terrestre (cerdo, cabra, aves que se
+      posan) con LOD (`FFaunaLod` ya existente) y navegación invalidada por chunk
+      minado. *(biblia 02 §11)*
+
+### Tests
+
+- [ ] `Tests`: extender `CarrySpec.cpp` con el apilado de inventario; añadir specs de
+      host para `ContactBurn` (patrón de `BodySpec.cpp`). *(biblia 01 §Tests, 03 §Tests)*
+
+---
+
+## H2 — Minería y construcción
+
+Estratos más allá de tierra/arena, riesgos de mina completos, fundición, transporte de
+mineral y las piezas de construcción avanzadas que dependen de ellos.
+
+- [ ] `WorldGen`: extender el picado por esfera a caliza, basalto, veta de cobre, hierro
+      de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
+      la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
+      −15 durabilidad). *(biblia 02 §2)*
+- [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
+      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
+- [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
+      de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
+- [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
+      (1 m/40 s sin sellar) y crecida de monzón (30 % durante la estación).
+      *(biblia 02 §2.4)*
+- [ ] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos
+      subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` mayores, con
+      radio de exclusión de 1,5 m alrededor de un tesoro. *(biblia 02 §2.5, §12)*
+- [ ] Prueba de estrés de guardado de minería extensa antes de M3. *(GDD §7.4, biblia
+      02 §2 TODO)*
+- [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
+      sobre camino terminado). *(biblia 02 §3)*
+- [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
+      revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
+- [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
+      (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
+- [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
+      en 1 m). *(biblia 02 §5.3)*
+- [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
+      `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
+      `carretilla`. *(biblia 03 §3.2–3.4)*
+- [ ] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor
+      propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras
+      enganchada). *(biblia 03 §1.5)*
+- [ ] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
+      `yunque`, con su coste. *(biblia 03 §2.2)*
+- [ ] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4); recetas de
+      fundición en un fichero nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
+      de lava del Humo tiene una boca visible desde el marae de la cumbre, para que las
+      ruinas queden junto a una entrada real. *(biblia 04 §7.1 TODO)*
+- [ ] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de
+      colocación con el pico equipado como herramienta de golpeo, para ampliar la
+      escalada de roca más allá de 3 m. *(biblia 02 §13.4 — director, 2026-09-27)*
+- [ ] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
+      *(biblia 02 §13.3)*
+- [ ] Confirmar en pipeline de terreno editable en runtime el recorrido completo
+      capa-de-ediciones → remallado → guardado → hoja subterránea del mapa, de extremo a
+      extremo (GDD §7.3: `FTerrainDensity` + `FTerrainEdits` + `FSurfaceNets`, **no**
+      `UDynamicMeshComponent` — el proyecto ya tiene su propio pipeline volumétrico
+      procedural y no usa el componente genérico de Unreal). *(GDD §7.3, §7.4)*
+- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
+      para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
+      al menos una isla en AA. *(biblia 03 §Tests)*
+- [ ] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
+      `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
+      `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
+      *(biblia 07 §2.1)*
+- [ ] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
+      `buscador_de_vetas`, `filo_de_obsidiana`, `topo_de_isla`, `el_aire_que_falta`,
+      `viga_a_tiempo`. *(biblia 07 §2.3)*
+- [ ] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
+      *(biblia 07 §2.3)*
+- [x] `FBuildingModel::RecomputeStability` y el sistema de integridad/encaje de piezas
+      ya implementados — base sobre la que se añaden `viga_apoyo` y `tablon_contencion`.
+      *(verificado: `Source/Explored/Building/BuildingModel.{h,cpp}`)*
+- [x] World Partition + capas HLOD ya configuradas por
+      `WorldGenCommandlet::SetupWorldPartition`/`CreateHLODLayer` (terreno: celda única
+      de 6,4 km; vegetación: HLOD por instancing a 1024 m/3000 m de rango) — pendiente
+      de medir contra el objetivo de rendimiento de H0, no de implementar desde cero.
+      *(verificado: `Source/ExploredEditor/WorldGenCommandlet.cpp:135-244`)*
+
+---
+
+## H3 — Mar y barcos
+
+- [ ] `Boats`: piezas de casco (quilla, cuaderna, tablón, cubierta, mástil, vela,
+      balancín, timón, banco de remo, amarre) en un nuevo `Content/Data/boat_pieces.json`.
+      *(biblia 02 §8.1)*
+- [ ] `Boats/BoatModel`: sustituir la tabla fija por `EBoatType` por el cálculo de
+      `TotalMassKg`/`EquilibriumDraftCm`/`SwampWaterKg`/escora a partir de las piezas
+      ancladas. *(biblia 02 §8.2)*
+- [ ] `Boats`: integridad por unión cuaderna–tablón, daño por impacto sobre
+      `SafeImpactSpeedCmS`, vía de agua por brecha (0,5 L/s). *(biblia 02 §8.3)*
+- [ ] `Boats`: botadura sobre rodillos en tierra (8 s/tonelada) y deriva por corriente si
+      no está amarrado en el agua. *(biblia 02 §8.4)*
+- [ ] `Boats`: actualizar `boats.json` para que los cuatro planos canónicos listen piezas
+      en vez de un coste plano. *(biblia 02 §8.4)*
+- [ ] Diseñar y cablear la fila de «Estado del barco» del HUD: nueva
+      `AExploredHUD::DrawBoatStatus`, solo mientras se está a bordo y solo si hay algo
+      urgente (vela mal trimada, casco <40 %, haciendo agua, capotado).
+      *(biblia 06 §2.4)*
+- [ ] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
+      *(biblia 07 §2.3)*
+- [x] `FBoatModel` con `TotalMassKg`, `EquilibriumDraftCm`, `SwampWaterKg`,
+      `MaxAbsRollDeg`, `ApplyDamage` ya implementado — base sobre la que se calculan las
+      nuevas piezas de casco. *(verificado: referencia citada en biblia 02 §8, código en
+      `Source/Explored/Boats/BoatModel.h`)*
+- [ ] Pendiente de siempre (roadmap): malla del barco «Limón» y astillero final.
+      *(GDD §3.10)*
+- [ ] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts`
+      (`Fuselage`, `Wing`, `Tail`, `Engine`) y consume `canoa_balancin` como indica
+      `boats.json` — solo falta el mesh `SM_Limon`. *(biblia 03 §3.8 TODO — [F3])*
+- [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el
+      invariante «ninguna plantilla produce un objeto sin malla». *(biblia 05 §Tests)*
+
+---
+
+## H4 — Contenido de acceso anticipado
+
+Rellenar Landing, Esmeralda, Isla del Humo y Los Dientes (las 3–4 islas del acceso
+anticipado, GDD §6.2) con el contenido que la biblia ya diseñó pero que no existe en
+datos todavía.
+
+- [ ] `Content/Data/`: crear `halden_diaries.json` (id, texto ES/EN, isla, POI asociado)
+      con las 5 entradas de la biblia 04 §7.1; añadir su parseo a `RuinsSubsystem` o a
+      un `HaldenLoreSubsystem` nuevo, con check en `Tools/DataCheck`. *(biblia 04 §7.1)*
+- [ ] `Fauna/FaunaTypes.h`: añadir `EFaunaSpecies::WildBoar` y `EFaunaSpecies::WildGoat`
+      y sus reglas de aparición (Esmeralda para el jabalí). *(biblia 04 §2.2)*
+- [ ] `Content/Data/ruins.json`: asignar `Teaches` y `StarPathTarget` a los 8 `sites`
+      según biblia 04 §2 (Landing→Esmeralda, Brújula del Humo→Los Dientes, y las
+      técnicas globales del resto). *(biblia 04 §7.2)*
+- [ ] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato a las
+      6 pistas en prosa de biblia 04 §6. *(biblia 04 §6)*
+- [ ] Landing: confirmar en `PointsOfInterest.cpp` que `SextantCave` solo es accesible
+      con `FOceanTide::Level < 0` (bajamar). *(biblia 04 §2.1)*
+- [ ] `Villages` (stub, sin bloquear H0-H4): dejar preparado el punto de extensión
+      «reputación alta enseña una plantilla de herramienta de cobre» para cuando
+      `Villages` exista en F3. *(biblia 03 §2.3)*
+- [ ] `Fauna`: extender la primera pasada de fauna salvaje terrestre a cabra montés en
+      La Meseta cuando esa isla entre en su parche de contenido. *(biblia 04 §2.7)*
+- [ ] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
+      reunir los tres anzuelos del pueblo navegante) y `bajo_el_templo` («Bajo el
+      templo», tesoro en templo enterrado) junto a su stat `underground_treasure_found`
+      y `artifact_ids_found`. *(biblia 07 §2.1, §2.3)*
+- [ ] `Building`: añadir a `building_pieces.json` las piezas de museo nuevas:
+      `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`,
+      `vitrina_minerales`, `panel_fosiles` (categoría `museo`). *(biblia 07 §3.3)*
+- [ ] Crear `Content/Data/shells.json`, `herbarium.json`, `insects.json` y
+      `fossils.json` con las piezas listadas en biblia 07 §3.6, patrón bilingüe
+      `nameEs`/`nameEn`. *(biblia 07 §3.6)*
+- [ ] Añadir el subconjunto «tesoros» a `artifacts.json` como consulta derivada
+      (`rarity` en `["raro", "unico"]`), sin duplicar el catálogo. *(biblia 07 §3.2)*
+- [ ] Crear `Content/Data/journal_entries.json` (`id`, `trigger`, `textEs`, `textEn`,
+      marcador `{Day}`) con las 15 entradas de biblia 07 §4.2. *(biblia 07 §4.1)*
+- [ ] Arte: material del terreno con `Roughness` 0,85–0,95, sin especular en arena seca,
+      arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
+      de detalle con la paleta low poly; comprobar con capturas antes/después
+      (`M_Terrain.uasset` ya existe, hoy se ve brillante). *(director, 2026-09-27)*
+- [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
+      materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
+      (GDD §7.1). *(GDD §7.1)*
+
+---
+
+## H5 — Lanzamiento del acceso anticipado
+
+Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
+
+- [ ] Añadir el campo `phase` (`"AA"`/`"F2"`/`"F3"`) a los 30 logros ya existentes en
+      `achievements.json` y a los 24 nuevos, con los valores de biblia 07 §2.2–2.3.
+      *(biblia 07 §2.1)*
+- [ ] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
+      de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2)*
+- [ ] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
+      (absurdos/graciosos, §2.3 «humor», máximo 3 de 54) con su stat
+      `coconuts_opened`/`crab_stole_item`. *(biblia 07 §2.3)*
+- [ ] Añadir el logro candidato `museo_completo` a una revisión posterior de
+      `achievements.json` cuando el total lo permita sin salir del rango 40–60, o como
+      contenido post-lanzamiento. *(biblia 07 §3.4)*
+- [ ] Añadir las 66 entradas del glosario ES/EN de biblia 07 §5.2 a
+      `docs/tecnico/localizacion.md` o a un glosario propio referenciado desde ahí.
+      *(biblia 07 §5.2)*
+- [ ] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de
+      plural ICU (`{Count}|plural(...)`), hoy no verificados por el chequeo de
+      marcadores. *(biblia 07 §5.3)*
+- [ ] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de
+      datos nuevo de esta lista en cuanto exista, antes de darlo por escrito definitivo.
+      *(biblia 07 §5.1)*
+- [ ] Pasar cada logro, ficha de museo y entrada de diario por el checklist anti-IA de
+      biblia 07 §1.5 una segunda vez en revisión de contenido. *(biblia 07 §1.5)*
+- [ ] Rendimiento: verificar 60 fps a 1080p con menos de 6,5 GB de VRAM en Landing
+      (objetivo de H0) y en el resto de islas del acceso anticipado, sin tirones al
+      cargar/descargar celdas de World Partition; medir el tiempo de frame con el modo
+      bench ya existente (`-ExploredBench`, `Tools/bench.ps1`). *(director, 2026-09-27;
+      infraestructura de medida ya existe, el objetivo en sí no está verificado)*
+- [ ] Audio: pipeline de música y efectos con soundfont acústico (sin sintetizador
+      genérico), coherente con el director de música adaptativa y la flauta ya
+      implementados (`docs/roadmap.md`, P-MUSIC) — hoy no hay soundfont en
+      `Tools/Audio`. *(GDD §7.2, transversal)*
+- [ ] Empaquetado Win64 reproducible (`Tools/build.ps1` ya existe genérico; falta el
+      paso de empaquetado final con configuración Shipping y verificación de tamaño de
+      build). *(GDD §7.2, `docs/roadmap.md` P-M9)*
+- [ ] Página de Steam: capturas, descripción, tráiler corto — sin ninguna de las tres
+      preparada hoy. *(`docs/roadmap.md` P-M9)*
+- [ ] Tráiler de lanzamiento del acceso anticipado (30–60 s, sin cinemáticas
+      pregrabadas del propio juego: montaje de capturas en PIE, coherente con «sin
+      cinemáticas» del pilar 5). *(GDD §7.2)*
+- [ ] Beta cerrada: reclutar y correr al menos una ronda antes de abrir el acceso
+      anticipado, con foco en el pipeline de minería (mayor riesgo técnico, GDD §8) y en
+      el rendimiento de H0–H3. *(GDD §8, transversal)*
+- [ ] QA de cierre: pasar `Tools/HostTests/run.sh` (specs de host) y
+      `Tools/test.ps1` (Automation Tests del editor) en verde antes de empaquetar.
+      *(CLAUDE.md del proyecto, «Tests»)*
+- [x] Modo bench (`-ExploredBench`, `ExploredShotSubsystem::bBenchMode`) y script
+      `Tools/bench.ps1` ya existen para medir tiempo de frame — falta el objetivo
+      verificado, no la herramienta. *(verificado:
+      `Source/Explored/Debug/ExploredShotSubsystem.h:28-64`, `Tools/bench.ps1`)*
+
+---
+
+## F2
+
+Raíles y vagones, animales domésticos, murallas y defensas (piezas, sin IA de asalto),
+resto de islas (Manglar, Arenas Blancas, Meseta completa).
+
+- [ ] `Fauna`: extensión a especies terrestres domésticas (gallina, cerdo, cabra) con
+      packs CC0 riggeados (Quaternius). *(biblia 02 §10.2)*
+- [ ] `Building`: piezas de corral (gallinero, pocilga, corral genérico) con tope de 8
+      animales vivos por base. *(biblia 02 §10.2)*
+- [ ] `Fauna`: reproducción por pares (15 %/día), cría a adulto en 6 días, regla de
+      vuelta a salvaje tras 2 días sin comida. *(biblia 02 §10.2)*
+- [ ] Nuevo módulo `Tramway`: pieza de vía (socket `via`), grafo de tramos, vagón sobre
+      spline con colisión contra terreno editable. *(biblia 02 §9, 03 §3.9)*
+- [ ] `Building`: torno horizontal y ascensor de pozo como piezas de producción.
+      *(biblia 02 §9)*
+- [ ] Prototipo de PIE del sistema de raíles antes de comprometer alcance (coste real no
+      verificado). *(GDD §3.5, biblia 02 §9 TODO)*
+- [ ] `Building`: añadir `rail_recto`, `rail_curvo`, `cambio_agujas`, `vagon`,
+      `torno_cuerda`, `ascensor_pozo`, `muralla_piedra`, `torre_defensa`,
+      `cerca_estacas`, `empalizada`, `torre_vigia`, `gallinero`, `pocilga`, `corral` a
+      `building_pieces.json` — verificado: hoy no existe ningún id de muralla ni de
+      raíl en el fichero. *(biblia 03 §3.7, §3.9, 05 §4.1, 07 §2.1 — verificado:
+      `Content/Data/building_pieces.json` sin coincidencias de `muralla`/`empalizada`/
+      `torre_defensa`)*
+- [ ] `Building`: trampas de defensa (estacas ocultas) como pieza colocable con verbo
+      «Rearmar». *(biblia 05 §4.2)*
+- [ ] Tres piezas de armadura nuevas (coraza de cuero, peto de placas) en
+      `items.json`/`templates.json`, más el trofeo único «Piel de tiburón curtida» de
+      «El Errante». *(biblia 05 §3.4)*
+- [ ] `Source/Explored/WorldGen/`: extender `FormationPlacementModel`/`TerrainDensity`
+      con el carving de cenote y río subterráneo navegable para La Meseta.
+      *(biblia 04 §2.7 TODO)*
+- [ ] Nuevo módulo `Villages`: ubicar la sede en La Meseta y el campamento estacional en
+      Arenas Blancas; sección de guardado `reputation`. *(biblia 04 §2.6–2.7, GDD §3.9)*
+- [ ] `Content/Data/`: dar de alta en `items.json`/`templates.json` los recursos
+      exclusivos de Manglar (arcilla, junco), Arenas Blancas (conchas raras, velas de
+      lona) y La Meseta (caliza, cultivos) si aún no existen. *(biblia 04 §2.5–2.7)*
+- [ ] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
+      `livestock_species_raised`, `eggs_collected`, y los logros
+      `primer_tren_de_isla`, `primera_empalizada`, `muralla_de_piedra`,
+      `primera_pareja`, `corral_completo`, `huevos_por_docenas`. *(biblia 07 §2.1, §2.3)*
+- [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño de armadura nueva
+      rompe el invariante «ninguna plantilla produce un objeto sin malla».
+      *(biblia 05 §Tests)*
+- [x] Estratos de caliza (La Meseta) ya diseñados en la tabla de materiales de biblia 02
+      §2.3, pendientes solo de que la propia isla entre en F2 — no de una mecánica
+      nueva. *(biblia 02 §2.3, GDD §4)*
+
+---
+
+## F3
+
+Pueblo del arrecife (comercio y reputación), conflicto pirata completo (patrullas y
+asaltos), isla oculta y final.
+
+- [ ] Importar un esqueleto humanoide compatible con Mixamo (pack CC0/licencia
+      permisiva, tipo KayKit Adventurers) y verificar el retargeting con el IK
+      Retargeter de UE5. *(biblia 05 §0)*
+- [ ] Retargetear 10 animaciones de Mixamo (ralentí, caminar, trabajar, saludar,
+      ofrecer, huir, ataque cuerpo a cuerpo, disparo de arco, reacción a impacto,
+      caída) sobre el esqueleto elegido. *(biblia 05 §0)*
+- [ ] Modelar/ajustar la cara low-poly sin rig facial y validar legibilidad de silueta a
+      20 m. *(biblia 05 §0)*
+- [ ] Crear dos paletas de material (navegantes: paño/tierra; piratas: cuero
+      oscuro/metal) sobre la misma malla base. *(biblia 05 §0)*
+- [ ] Nuevo módulo `Villages`: spawn de la aldea (Arenas Blancas, 10 NPC) y el puesto de
+      trueque (La Meseta, 4 NPC). *(biblia 05 §1.1)*
+- [ ] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
+      *(biblia 05 §1.5)*
+- [ ] Prop nuevo «tablón de peticiones» (malla + rotación de icono cada 4 días)
+      reutilizando `story_es.json.petroglyph_themes`. *(biblia 05 §1.3)*
+- [ ] Lógica de trueque: valor 1–5 por objeto × tasa de reputación, ventana horaria
+      8:00–18:00. *(biblia 05 §1.4)*
+- [ ] Enganchar «devolver objeto ritual» a `Ruins` (+5 reputación, sin trueque de por
+      medio). *(biblia 05 §1.5)*
+- [ ] Wayfinding enseñado por el guardián del marae con reputación ≥70, sin duplicar
+      entre Arenas Blancas y La Meseta. *(biblia 05 §1.6)*
+- [ ] Aldeanos invulnerables al daño de arma (solo huida + penalización de reputación).
+      *(biblia 05 §1.5)*
+- [ ] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
+      *(biblia 05 §1.5)*
+- [ ] Especificar e implementar la pantalla de trueque (§2.11 de biblia 06): prompt de
+      contexto «Ofrecer {objeto}», sin menú de tienda ni barra de reputación en pantalla.
+      *(biblia 06 §2.11)*
+- [ ] Nuevo módulo `Raiders`: percepción reutilizando `Fauna`, patrulla por semilla entre
+      los dos campamentos, 4 tipos de pirata con sus daños y vidas. *(biblia 05 §2.1–2.2)*
+- [ ] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de
+      biblia 05 §2.3. *(biblia 05 §2.3)*
+- [ ] Programador de asaltos: categoría según Amenaza, condición de recursos
+      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)*
+- [ ] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes,
+      Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
+      *(biblia 05 §2.5)*
+- [ ] Dos plantillas de barco pirata (Piragua de asalto, Balandra negra) sobre el mismo
+      `FBoatModel` del resto de embarcaciones. *(biblia 05 §2.5)*
+- [ ] Botín: skin «Machete pirata» y accesorio cosmético único «Capa de vigía» al
+      derrotar a un Capitán. *(biblia 05 §2.6)*
+- [ ] Daño a estructuras por tipo de atacante, incluida la propagación «ardiendo» sobre
+      piezas inflamables y su apagado con agua/arena. *(biblia 05 §4.3)*
+- [ ] Nuevo módulo `Raiders`: escondite pirata en el islote secundario de Los Dientes;
+      rutas de patrulla cerca de Arenas Blancas y La Meseta. *(biblia 04 §2.4 TODO)*
+- [ ] `Ruins/RuinsModel`: confirmar que `HiddenIslandIndex` exige `RequiredStarPaths = 3`
+      de los 4 caminos disponibles, no los 4 completos. *(biblia 04 §2.8 TODO)*
+- [ ] `Ruins`/`Artifacts`: cablear el examen de `figura_navegante`, `figura_gemelos`,
+      `figura_mira_cielo`, `carta_varillas`, `carta_oleaje`, `tapa_estrellas` a las
+      técnicas de wayfinding (hoy `artifacts.json` no tiene ese vínculo por artefacto
+      individual). *(biblia 03 §3.10 TODO)*
+- [ ] Arte: el pueblo del arrecife y el campamento pirata necesitan asset propio (marae
+      «vivo» con estructuras ligeras); no reutilizar directamente las piezas de ruina
+      (deben leerse como abandonadas). *(biblia 04 §2.8 TODO, GDD §7.1)*
+- [ ] Añadir a `achievements.json` los stats `barter_trades_completed`,
+      `reputation_village_tier`, `wayfinding_taught_by_village`,
+      `village_defended_from_raid`, `raids_defended`, `raider_camps_defeated`, y los
+      logros `primer_trueque`, `aliado_de_facto`, `otra_forma_de_aprender`,
+      `sin_disparar_una_flecha`, `asalto_repelido`, `campamento_tomado`.
+      *(biblia 07 §2.1, §2.3)*
+
+---
+
+## Fuentes
+
+`docs/diseno/gdd_v2.md`, `docs/diseno/biblia/{01..07}-*.md` (sus respectivos «TODO de
+implementación»), `docs/roadmap.md` (estado de compilación/implementación citado como
+contexto), y grep directo contra
+`C:\Users\Rodrigo\PERSONAL\ProyectosPersonales\Explored\Explored` (main) para cada
+`[x]`/verificación de ausencia citada arriba.
