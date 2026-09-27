@@ -619,7 +619,7 @@ namespace
 		case EIslandArchetype::Mangrove: return 0.8f;
 		case EIslandArchetype::Landing: return 0.55f;
 		case EIslandArchetype::Smoke: return 0.35f;
-		case EIslandArchetype::Mesa: return 0.7f;
+		case EIslandArchetype::Mesa: return 0.45f;
 		default: return 0.15f;
 		}
 	}

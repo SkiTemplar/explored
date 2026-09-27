@@ -201,7 +201,9 @@ TERRAIN_COLOR_HLSL = TERRAIN_LAYERS_COMMON + r"""
 float4 sandDry = lerp(TOP2(SandBC, 3.2), TOP2(AshBC, 3.0), smoothstep(0.75, 1.0, volcanic));
 float4 sand = lerp(sandDry, TOP2(WetBC, 3.2), saturate(wetW * 1.4));
 float4 grass = TOP2(GrassBC, 2.4);
+// La hojarasca pintada sale otoñal y demasiado saturada: bajo dosel tropical es marrón oscuro verdoso.
 float4 forest = TOP2(ForestBC, 2.8);
+forest.rgb = lerp(dot(forest.rgb, float3(0.3, 0.59, 0.11)).xxx, forest.rgb, 0.55) * float3(0.62, 0.66, 0.5);
 float4 rock = lerp(TRI(LimeBC, 4.5), TRI(BasaltBC, 4.0), volcanic);
 
 // Mezcla por altura: la luminancia hace de mapa de alturas aproximado.

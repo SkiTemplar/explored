@@ -45,7 +45,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinHeight = 1.4f;
 		R.MaxHeight = 14.0f;
 		R.MinNormalZ = 0.82f;
-		R.Spacing = 7.0f;
+		R.Spacing = 10.0f;
 		R.ClusterScale = 45.0f;
 		R.ClusterThreshold = -0.15f;
 		R.MinScale = 0.85f;
@@ -80,7 +80,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinHeight = 4.0f;
 		R.MaxHeight = 200.0f;
 		R.MinNormalZ = 0.72f;
-		R.Spacing = 12.0f;
+		R.Spacing = 16.0f;
 		R.ClusterScale = 90.0f;
 		R.ClusterThreshold = -0.35f;
 		R.MinScale = 0.75f;
@@ -114,7 +114,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinHeight = 3.0f;
 		R.MaxHeight = 160.0f;
 		R.MinNormalZ = 0.7f;
-		R.Spacing = 7.0f;
+		R.Spacing = 12.0f;
 		R.ClusterScale = 60.0f;
 		R.ClusterThreshold = -0.25f;
 		R.MinScale = 0.8f;
@@ -149,7 +149,7 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinHeight = 2.2f;
 		R.MaxHeight = 220.0f;
 		R.MinNormalZ = 0.65f;
-		R.Spacing = 3.2f;
+		R.Spacing = 4.2f;
 		R.ClusterScale = 25.0f;
 		R.ClusterThreshold = -0.3f;
 		R.MinScale = 0.7f;
