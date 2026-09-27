@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 597,
+		"total": 598,
 		"cpp": 286,
-		"datos": 311,
+		"datos": 312,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
-		"revisar": 64
+		"revisar": 70
 	},
 	"entries": [
 		{
@@ -2984,6 +2984,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «espaldera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "espantapajaros.nameEs",
+			"es": "Espantapájaros",
+			"en": "Scarecrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «espantapajaros» nameEs/nameEn"
 			]
 		},
 		{

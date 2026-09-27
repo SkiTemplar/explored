@@ -22,6 +22,8 @@ Qué comprueba:
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
+  Si una planta tiene `birdsEat`, debe existir la pieza `espantapajaros`
+  (`FFarmModel::ScarecrowRadius`, GDD §8.7).
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).

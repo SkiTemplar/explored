@@ -22,7 +22,8 @@
     "trofeo_el_viejo"
   ],
   "buildingPieces": [
-    "astillero"
+    "astillero",
+    "espantapajaros"
   ],
   "plantStages": [
     "batata.brote",
