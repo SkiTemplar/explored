@@ -104,13 +104,18 @@ struct TSaveTraits<FSaveScatterDeltas>
 };
 
 /**
- * Sección «world»: semilla + deltas por capa («harvested», «destroyed»…). Cada
- * sistema que genera instancias procedurales elige su capa por nombre.
+ * Sección «world»: semilla + deltas por capa («harvested», «destroyed»…) + ediciones
+ * del terreno. Cada sistema que genera instancias procedurales elige su capa por nombre.
  */
 struct EXPLORED_API FSaveWorldDeltas
 {
 	int64 Seed = 0;
 	TMap<FName, FSaveScatterDeltas> Layers;
+	/**
+	 * Capa «terrain»: ediciones del terreno volumétrico (pico, pala, escaleras) tal como
+	 * las serializa FTerrainEditModel::ToValue. Opaca para el guardado; nulo si no hay.
+	 */
+	FSaveValue Terrain;
 
 	FSaveScatterDeltas& Layer(FName Name) { return Layers.FindOrAdd(Name); }
 	const FSaveScatterDeltas* FindLayer(FName Name) const { return Layers.Find(Name); }

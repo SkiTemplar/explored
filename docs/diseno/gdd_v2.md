@@ -200,6 +200,55 @@ mapa.
     parten del mismo `FCaveDesc` (cápsula deformada) que ya usa el terreno para cuevas
     y arcos de superficie; lo nuevo es su tamaño, profundidad y contenido, no el
     mecanismo.
+- **Herramientas y números [aprobado por Rodrigo 2026-09-27]** (modelo puro
+  `FTerrainEditModel`, spec `Explored.TerrainEdit`; integración en
+  `docs/tecnico/terreno-editable.md`):
+  - **Pico: ahuecar de forma progresiva.** Cada golpe (0,9 s) resta densidad con un
+    pincel esférico **irregular** (radio 0,5 m ± 20 %, forma distinta en cada golpe) cuyo
+    centro entra 15 cm en la pared en la dirección del golpe. Lo que arranca se divide
+    por la dureza. Si la herramienta no llega al material, el pico **rebota** y no hay
+    cambio. Así se cavan minas, túneles y escaleras.
+
+    | Material (modelo) | Estratos del GDD | Dureza | Herramienta mínima | Golpes/m³ con la mínima | s/m³ |
+    |---|---|---|---|---|---|
+    | Arena | Arena | 0,75 | Pala tosca (1) | 6 | 5,4 |
+    | Tierra | Tierra, arcilla, azufre | 1 | Pala tosca (1) | 6 | 5,4 |
+    | Caliza | Caliza, veta de cobre | 2 | Pico de piedra (2) | 12 | 10,8 |
+    | Basalto | Basalto, hierro de meteorito | 3 | Pico tallado (3) | 18 | 16,2 |
+    | Obsidiana | Obsidiana, cristal | 4 | Pico de obsidiana/rescatado (4) | 24 | 21,6 |
+
+    Regla: 6 × dureza golpes por m³ con la herramienta mínima, y ÷ 1,5 por cada nivel de
+    herramienta por encima. **Nunca bajan de 6 golpes/m³**, porque en blando el límite es
+    el tamaño del hueco (≈ 0,17 m³ por golpe), no la dureza: para mover tierra se usa
+    la pala. Ejemplos: una galería de 1 × 2 × 5 m en basalto con pico tallado lleva
+    180 golpes (≈ 2 min 42 s); en caliza con pico tallado, 80 golpes (≈ 1 min 12 s).
+  - **Pala: caminos que parecen caminos.** Cada pasada (1,2 s) lleva el terreno hacia
+    un plano objetivo, el de los pies del jugador, que puede inclinarse para hacer
+    rampas. Dentro de 1 m de radio alcanza el plano. Entre 1 y 1,75 m hace una
+    transición suave (smoothstep) y más allá no cambia nada. Solo actúa a ±1 m del plano
+    (una pala no arrasa un cerro) y mueve como mucho 25 cm por pasada en tierra (33 cm en
+    arena). Corta lo que sobresale y **rellena lo que falta solo con la tierra que se
+    lleva** más la que corta en esa misma pasada. Cada pasada **compacta** (+34 %): con
+    2 pasadas la franja es **camino** (capa de superficie propia) y con 3 queda
+    totalmente compactada. Un camino compactado es un 50 % más duro de cavar. Picar o
+    echar tierra encima deshace el camino de esa columna. Solo funciona en arena, tierra
+    y arcilla; en caliza o roca, la pala rebota.
+  - **Transportar y echar tierra.** Todo lo que se arranca sale en m³ exactos
+    (`VolumeRemoved`) y se puede volver a colocar: echar tierra rellena una esfera de
+    0,5 m hasta agotar lo que se lleva. **El volumen se conserva:** cavar y volver a
+    echar la misma tierra deja el mismo sólido, y nunca se coloca más de lo que se lleva
+    (lo comprueba el spec).
+  - **Escaleras picadas.** El jugador marca el arranque y la dirección, y la escalera
+    se ajusta a una **rejilla de 30 cm**: origen en múltiplos de 30 cm, 8 rumbos como el
+    kit de construcción, contrahuella de 15, 30 (por defecto) o 45 cm (sube por una
+    ladera o baja a una mina), huella de 30 a 90 cm, ancho de 0,6 a 3 m (1 m por
+    defecto), altura libre de 1,8 a 3 m (2,2 m por defecto; en ladera empinada o bajo
+    tierra la escalera es un túnel) y hasta 64 peldaños. Tallarla cuesta golpes: cada
+    golpe sobre la escalera marcada arranca como mucho el volumen de un golpe de pico en
+    ese material, y la escalera se va definiendo poco a poco hasta quedar completa.
+  - **Persistencia.** Todo queda en la capa `"terrain"` de la sección `world` del
+    guardado (deltas por chunk de 8 m en milímetros enteros). Un agujero sigue cavado
+    al recargar la partida (criterio de salida de §6.1).
 - **Progresión:** pala tosca (tierra/arcilla) → pico de piedra (caliza, cobre) → pico
   tallado (basalto, hierro) → pico de obsidiana/rescatado (obsidiana, cristal, minas
   profundas con más riesgo de derrumbe y aire viciado).
@@ -589,13 +638,12 @@ estado, seguro entre hilos. No hay ninguna rejilla de vóxel almacenada hoy: cad
 consulta de densidad se recalcula. Minar exige romper esa pureza sin perder sus
 garantías de rendimiento:
 
-1. **Capa de ediciones.** Nueva estructura `FTerrainEdits` (por chunk, dispersa):
-   lista de operaciones locales (esfera/cápsula de resta o suma de densidad, con
-   posición, radio y semilla de la herramienta) aplicadas **encima** de la densidad
-   procedural pura. `FTerrainDensity::Density(P)` pasa a consultar primero si `P` cae
-   dentro del radio de alguna edición cercana antes de evaluar el ruido — el caso
-   común (terreno no tocado) no paga coste extra si el chequeo de proximidad es
-   barato (rejilla dispersa por chunk, no una lista global).
+1. **Capa de ediciones.** `FTerrainEditModel` (hecho, con spec en el host): deltas
+   de densidad dispersos por chunk de 8 m sobre una rejilla de 0,25 m, aplicados
+   **encima** de la densidad procedural pura (se guardan muestras editadas, no
+   operaciones, así que el coste de consulta no crece con el número de golpes).
+   `FTerrainDensity` no cambia: el remallado lee base + delta con
+   `FTerrainEditModel::BuildChunkGrid`, y el terreno no tocado no paga nada.
 2. **Persistencia en el guardado.** Mismo patrón que `FSaveScatterDeltas`
    (`docs/tecnico/guardado.md`): las ediciones se guardan como deltas por celda de
    chunk, no como un vóxel completo por chunk — coherente con el criterio ya usado
