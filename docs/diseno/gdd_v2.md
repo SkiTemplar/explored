@@ -90,6 +90,7 @@ Sección nueva: qué hace que el archipiélago se sienta habitado y no decorado.
 | Aves e insectos | Bandadas en vuelo, enjambres de abejas, luciérnagas, mariposas — ambiente con movimiento constante | `Fauna` (boids ya existentes) |
 | Flora reactiva | Hierba que se aparta al pasar, palmeras que se doblan en el ciclón, quemado que rebrota | Ya implementado (`VegetationScatter`, `Weather`) |
 | Mundo interactivo | Todo árbol se tala y cae según el golpe y la pendiente; el tocón rebrota salvo que se arranque; ramas sueltas bajo los árboles | `WorldGen` (§3.12, modelos puros hechos) |
+| Arena viva | La arena se cava y se apila, se derrumba a su ángulo de reposo (más empinada si está mojada) y las olas borran hoyos y montones en la orilla; las estructuras la sujetan | `WorldGen` (§3.13, modelo puro hecho) |
 | Día/noche, estaciones, marea | Cambian qué se puede hacer, no solo cómo se ve: pesca, mareas que abren pasos, mina que se inunda con la crecida | `Sky`, `Weather`, `Events`, `Ocean` (ya implementado) |
 | Pueblo con horario **[F3]** | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
 | Piratas que patrullan **[F3]** | Rutas de patrulla y asaltos programados, no solo reactivos (las piezas de muralla que se defienden de ellos llegan antes, en fase 2, §3.8) | `Raiders` (§3.8, nuevo) |
@@ -446,7 +447,7 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas y otras interacciones naturales.
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -505,6 +506,79 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
 - **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
+
+---
+
+### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**
+
+Segunda mecánica del principio «el mundo entero es interactivo y se comporta de forma
+natural». La playa deja de ser un decorado: se cava, se apila y reacciona.
+
+- **Objetivo:** que cavar en la playa se sienta como en una playa de verdad (el hoyo
+  se desmorona, el montón se escurre, la marea lo borra) sin pagar el coste de la
+  edición volumétrica de §3.4.
+- **Reglas:**
+  - **Solo la capa de superficie.** La arena es un campo de alturas de deltas sobre el
+    suelo de la isla: una columna cada 0,25 m, chunks de 8 m (la misma rejilla que la
+    edición volumétrica). Bajo la arena hay roca: como mucho se cava **1,5 m**, y un
+    montón no pasa de **2 m** sobre el suelo original. Túneles y cuevas siguen siendo
+    cosa del pico (§3.4).
+  - **Pala.** Cada pasada es un cono de 0,6 m de radio y 15 cm en el centro. Lo cavado
+    va al cubo como arena, que tiene masa exacta. Al apilar se echa lo que se lleva y
+    nada más.
+  - **La arena no desaparece.** Todo movimiento es un traspaso entre columnas vecinas,
+    así que la arena total solo cambia con lo que la pala saca o echa. Un hoyo junto al
+    agua se rellena con la arena de alrededor, no con arena nueva.
+  - **Ángulo de reposo.** Si el desnivel entre dos columnas pasa del reposo, la arena
+    resbala: **34°** seca (168 mm por celda) y **45°** húmeda (249 mm). Está húmeda la
+    arena hasta **0,6 m** por encima del agua y toda la arena mientras llueve. Al secarse
+    (baja la marea, deja de llover) lo que estaba a 45° se vuelve a derrumbar hasta 34°.
+    Cada paso de 100 ms mueve 1/5 del exceso, así que un montón tarda unos segundos en
+    asentarse: se ve escurrir.
+  - **Lo natural no se derrumba solo.** El umbral nunca es menor que la pendiente del
+    suelo original: una duna generada a 50° se queda como está. Solo se mueve la arena
+    que ha tocado el jugador (o lo que esta arrastra).
+  - **Olas en la franja intermareal.** Desde 1,5 m por debajo del agua hasta 1 m por
+    encima, las olas reparten la arena movida entre columnas vecinas. El efecto es
+    máximo en la línea del agua (8 % de la diferencia por paso) y decae de forma lineal
+    hasta cero a 1 m de altura. Números de referencia: un hoyo de 30 cm en la línea del
+    agua pierde más de la mitad de su profundidad en 6 s (queda en unos 8 cm); a 0,7 m
+    sobre el agua, en ese tiempo aún le quedan unos 16 cm. Al subir la marea, la arena editada que queda dentro de la franja se
+    despierta y las olas empiezan a borrarla.
+  - **Estructuras.** Tablones, pilotes, muelles y sacos **anclan** sus columnas: la pala
+    no las cava y la arena no entra ni sale de ellas. Además, la arena de alrededor (una
+    columna) aguanta hasta **60°** y las olas le afectan a un 25 %. Así, un saco o un
+    pilote sujeta una zanja o un muro de arena, y un muelle no se queda descalzado con
+    la primera marea. Al quitar la estructura, la arena que sujetaba se suelta.
+- **Números:** `FSandModel` en `Source/Explored/WorldGen/SandModel.h`.
+
+  | Qué | Valor |
+  |---|---|
+  | Rejilla / chunk | 0,25 m / 8 m (32 columnas) |
+  | Capa de arena / montón máximo | 1,5 m / 2 m |
+  | Reposo seco / húmedo / junto a estructura | 34° / 45° / 60° |
+  | Franja húmeda sobre el agua | 0,6 m |
+  | Franja de olas | −1,5 m … +1 m respecto al agua |
+  | Olas en la línea del agua / junto a estructura | 8 % por paso / ×0,25 |
+  | Paso de simulación | 100 ms fijos (máximo 20 por fotograma) |
+  | Radio activo alrededor de cada jugador | 24 m |
+  | Tope de columnas simuladas por paso | 4 096 (primero las más cercanas) |
+
+- **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo
+  tierra, zanjas de drenaje, rampas de arena para botar balsas). Los sacos de
+  arena, más adelante, sirven para construir muros y diques que las olas no borran.
+- **Interfaz:** ninguna. La arena se ve escurrir y oscurecerse al mojarse.
+- **Coste:** solo se simulan las columnas **sucias** (tocadas, o vecinas de algo que se
+  ha movido) a menos de 24 m de un jugador. Lo demás queda dormido con su estado y
+  sigue pendiente hasta que alguien vuelve. Un montón asentado cuesta cero.
+- **Riesgos técnicos:**
+  - Casar la malla de la arena con el terreno volumétrico: ver
+    `docs/tecnico/arena-viva.md`.
+  - Si la marea sube mientras nadie está cerca, la arena de esa playa no se entera
+    hasta que llegue alguien. Es invisible para el jugador, porque nadie lo ve pasar.
+- **Dependencias:** `WorldGen` (`FSandModel`, `FTerrainDensity` como suelo base),
+  `Ocean` (`FOceanTide`), `Weather` (lluvia), `Building` (anclajes), `Save` (capa
+  `sand`).
 
 ---
 
