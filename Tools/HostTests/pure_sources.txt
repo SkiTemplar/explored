@@ -50,3 +50,4 @@ WorldGen/TerrainDensity.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
+WorldGen/GroundBranchModel.cpp
