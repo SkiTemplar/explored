@@ -404,12 +404,17 @@ void UExploredShotSubsystem::LogBenchSample(int32 Index)
 	// r.Nanite.ShowStats escribe su resumen (clusters/triángulos visibles) al log la primera vez
 	// que se ejecuta tras cambiar de vista; stat gpu/unit no hace falta activarlos para leer los
 	// contadores de RenderCore de abajo, pero se dejan encendidos para quien mire las capturas.
-	if (GEngine)
+	// «stat X» es un interruptor: se activa una sola vez, o la segunda vista lo apagaría.
+	if (GEngine && !bBenchStatsEnabled)
 	{
 		GEngine->Exec(World, TEXT("stat unit"));
 		GEngine->Exec(World, TEXT("stat gpu"));
 		GEngine->Exec(World, TEXT("stat rhi"));
 		GEngine->Exec(World, TEXT("stat streaming"));
+		bBenchStatsEnabled = true;
+	}
+	if (GEngine)
+	{
 		GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));
 	}
 

@@ -60,6 +60,8 @@ private:
 
 	/** «-ExploredBench»: vuelca cifras de rendimiento a Saved/Logs en vez de (o además de) capturas. */
 	bool bBenchMode = false;
+	/** Los «stat» del modo bench ya están encendidos (son interruptores: no repetir). */
+	bool bBenchStatsEnabled = false;
 
 	UPROPERTY(Transient)
 	TObjectPtr<ACameraActor> Camera;

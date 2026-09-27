@@ -16,7 +16,7 @@ namespace
 	/**
 	 * Distancia a la que se deja de evaluar el World Position Offset (balanceo del
 	 * viento de M_Leaf / M_Grass, ver Tools/Unreal/build_materials.py::build_foliage).
-	 * Por debajo de esta distancia el balanceo no se aprecia y solo cuesta vértices;
+	 * Más allá de esta distancia el balanceo no se aprecia y solo cuesta vértices;
 	 * en mallas sin WPO (M_Bark) el ajuste no tiene efecto alguno.
 	 */
 	constexpr float WindWPODisableDistanceCm = 3000.0f;
