@@ -1,26 +1,7 @@
 {
   "version": 1,
   "note": "Objetos, piezas y etapas que usan un marcador de /Engine/BasicShapes o mesh null. Lo mantiene Tools/DataCheck (uv run datacheck --write-pending); quita la entrada al añadir su script en Tools/Blender.",
-  "items": [
-    "agua_hervida",
-    "agua_mar",
-    "agua_sin_tratar",
-    "aguijon_manta_negra",
-    "anzuelo_legendario",
-    "cangrejo_caparazon",
-    "cangrejo_cocotero",
-    "dientes_sombra",
-    "estofado_pescado",
-    "guiso_improvisado",
-    "hijuelo_platano",
-    "pasta_medicinal",
-    "piel_el_errante",
-    "planta_medicinal_aloe",
-    "pulpo",
-    "sedal_legendario",
-    "sopa_pescado",
-    "trofeo_el_viejo"
-  ],
+  "items": [],
   "buildingPieces": [
     "astillero"
   ],
