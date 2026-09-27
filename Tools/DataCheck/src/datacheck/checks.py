@@ -680,7 +680,8 @@ def check_artifacts(ds: DataSet, r: Report) -> None:
         for i, slot in enumerate(slots):
             if slot.get("maxSize") not in sizes:
                 r.error(f"artifacts.json/displays «{did}»[{i}]: maxSize {slot.get('maxSize')!r} no es {sorted(sizes)}")
-            else:
+            elif piece_id in pieces:
+                # solo cuentan los muebles que el jugador puede construir
                 largest_slot = max(largest_slot, SIZE_ORDER.get(slot["maxSize"], -1))
             off = slot.get("offsetCm")
             if not (isinstance(off, list) and len(off) == 3 and all(_type_ok(v, (int, float)) and abs(v) <= 400 for v in off)):
@@ -703,7 +704,7 @@ def check_artifacts(ds: DataSet, r: Report) -> None:
         if a.get("size") not in sizes:
             r.error(f"artifacts.json «{aid}»: size {a.get('size')!r} no es {sorted(sizes)}")
         elif SIZE_ORDER.get(a["size"], 99) > largest_slot:
-            r.error(f"artifacts.json «{aid}»: tamaño {a['size']} sin ningún hueco donde exponerlo")
+            r.error(f"artifacts.json «{aid}»: tamaño {a['size']} sin ningún hueco construible donde exponerlo")
         if a.get("mesh") not in known_meshes:
             r.error(f"artifacts.json «{aid}»: malla {a.get('mesh')!r} no existe en Tools/Blender/props")
     for missing in sorted(kinds - {a.get("kind") for a in artifacts}):

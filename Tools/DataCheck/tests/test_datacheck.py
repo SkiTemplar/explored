@@ -404,6 +404,23 @@ def test_detecta_tesoro_que_no_cabe_en_ningun_mueble(ds: DataSet) -> None:
     assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco")
 
 
+def test_detecta_tesoro_grande_sin_mueble_construible(ds: DataSet) -> None:
+    # regresión: el panel de pared existía en artifacts.json sin pieza en
+    # building_pieces.json, así que los tesoros grandes no se podían exponer
+    for d in ds.data["artifacts.json"]["displays"]:
+        if d["id"] == "panel_museo":
+            d["piece"] = None
+    assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco construible")
+
+
+def test_muebles_del_museo_son_piezas_construibles(ds: DataSet) -> None:
+    pieces = {p["id"]: p for p in ds.building["pieces"]}
+    for d in ds.data["artifacts.json"]["displays"]:
+        assert d["piece"] in pieces, d["id"]
+        assert pieces[d["piece"]]["category"] == "museo"
+        assert pieces[d["piece"]]["mesh"] == d["mesh"], d["id"]
+
+
 def test_detecta_mueble_con_pieza_inexistente(ds: DataSet) -> None:
     ds.data["artifacts.json"]["displays"][1]["piece"] = "vitrina_de_oro"
     assert any_error(artifacts_errors(ds), "vitrina_de_oro")
