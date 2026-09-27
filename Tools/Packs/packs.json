@@ -1,0 +1,71 @@
+{
+  "generated_by": "Tools/Packs (download_packs.py + download_polypizza.py)",
+  "notes": "v2 (2026-09-27, tras rechazo del director sobre el primer pase con Kenney Nature Kit para follaje: 'copas en bloques/bolas, troncos planos en zigzag, arena y cielo grises, sin degradado, densidad de pared'). Follaje (palmeras, arboles de copa ancha, arbustos, helechos, hierba, flores) sustituido por modelos de Quaternius alojados en Poly Pizza (CC0, material nativo con degradado base oscura/punta clara ya horneado, sin remapear). Kenney se mantiene solo para lo que el director pidio conservar: rocas de orilla, troncos/ramas caidas y setas -props pequenos y solidos donde un color plano no lee como generico-.",
+  "packs": [
+    {
+      "id": "quaternius-polypizza",
+      "name": "Quaternius (via Poly Pizza)",
+      "license": "CC0 1.0 Universal (verificada modelo a modelo por download_polypizza.py antes de bajar cada uno; el script aborta esa descarga si el autor o la licencia no coinciden)",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://poly.pizza/u/Quaternius",
+      "download_method": "Sin API key: la pagina de cada modelo (https://poly.pizza/m/<publicID>) incrusta el JSON de estado del servidor con la licencia, el autor y la URL directa del .glb en static.poly.pizza; download_polypizza.py scrapea esa pagina. La API REST de poly.pizza (api.poly.pizza) SI exige API key -no se uso-.",
+      "selection_method": "Busqueda por texto (palm tree, tree, bush, fern, flower, grass...) en https://poly.pizza/search/<query>, filtrado por creador=Quaternius; los candidatos con licencia CC0 se volcaron a una hoja de contacto de miniaturas (Tools/Packs, script ad-hoc no versionado) para elegir a ojo cuales tenian siluetas organicas y degradado de color antes de descargarlos.",
+      "downloaded": true,
+      "used_for": [
+        {"slot": "Palm", "models": ["palm_a.glb (A6cKJYFsIb)", "palm_b.glb (DsrrAYmucG)", "palm_c.glb (P0tgwyXBgr)", "palm_d.glb (nr1B5DbICA)"], "note": "palmeras cocoteras 15-25 m"},
+        {"slot": "JungleWide", "models": ["jungle_wide_a.glb (i4QMw4L64D)", "jungle_wide_b.glb (qZtx0AHhcy)", "jungle_wide_c.glb (9nvGuZlbpE)", "jungle_wide_d.glb (YWjGDJ9F7g)"], "note": "arboles de copa ancha, 14-18 m"},
+        {"slot": "Shrub", "models": ["shrub_a.glb (ooG6CkLyE8)", "shrub_b.glb (92EytlU1El)", "shrub_flowering.glb (U1ymDy8tbY)", "shrub_banana.glb (ruOFtE0B6Z)"]},
+        {"slot": "Fern", "models": ["fern_a.glb (jqcanvH7D6)", "fern_b.glb (xH5gNlQxAZ)"]},
+        {"slot": "Grass", "models": ["grass_a.glb (iw6l7gqcdQ)", "grass_b.glb (JSIYtscPmP)", "grass_c.glb (vUJjrRsFp4)"]},
+        {"slot": "Flower", "models": ["flower_a.glb (NBUxHir6FJ)", "flower_b.glb (hfPzQAedOe)", "flower_c.glb (dOO6kMDd8L)"]}
+      ]
+    },
+    {
+      "id": "kenney-nature-kit",
+      "name": "Kenney Nature Kit",
+      "license": "CC0 1.0 Universal",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://kenney.nl/assets/nature-kit",
+      "download_url": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "version_note": "zip servido el 2026-09-27 (hash de fichero 37ac38a37b, timestamp 1677698939 en la URL de Kenney; el sitio no publica un numero de version aparte)",
+      "downloaded": true,
+      "used_for": [
+        {"slot": "Rock", "models": ["rock_smallA.obj", "rock_smallB.obj", "rock_smallC.obj"], "note": "rocas de orilla, mantenidas por peticion del director"},
+        {"slot": "Debris", "models": ["log.obj", "log_large.obj", "stump_round.obj", "mushroom_red.obj", "mushroom_tan.obj"], "note": "troncos, ramas caidas y setas, mantenidos por peticion del director"}
+      ]
+    },
+    {
+      "id": "kenney-survival-kit",
+      "name": "Kenney Survival Kit",
+      "license": "CC0 1.0 Universal",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://kenney.nl/assets/survival-kit",
+      "download_url": "https://kenney.nl/media/pages/assets/survival-kit/4065a8185b-1712149243/kenney_survival-kit.zip",
+      "version_note": "zip servido el 2026-09-27 (hash 4065a8185b, timestamp 1712149243 en la URL)",
+      "downloaded": true,
+      "used_for": [
+        {"slot": "Rock", "models": ["rock-sand-a.obj", "rock-sand-b.obj"], "note": "rocas de arena; usan textura colormap.png propia, se fuerza swatch RockGrey (ver force_role en process_landing_set.py)"},
+        {"slot": "Debris", "models": ["tree-log-small.obj"], "note": "rama caida; se fuerza swatch BarkWarm"}
+      ]
+    }
+  ],
+  "blocked_manual_download": [
+    {
+      "id": "quaternius-ultimate-stylized-nature-gdrive",
+      "name": "Quaternius - Ultimate Stylized Nature Pack (paquete oficial completo, no via Poly Pizza)",
+      "license": "CC0 1.0 Universal",
+      "source_page": "https://quaternius.com/packs/ultimatestylizednature.html",
+      "download_url": "https://drive.google.com/drive/folders/1IV3bXHzkNvuNWFHPi4KPx-G4ghuxIuT-",
+      "blocked_reason": "Reparto por carpeta de Google Drive: requiere sesion de navegador para bajar la carpeta completa. Superado en la practica: los modelos individuales de Quaternius SI estan accesibles sin login a traves de Poly Pizza (ver el pack 'quaternius-polypizza' arriba), que es la ruta que se uso.",
+      "note": "Se deja documentado por si hace falta el paquete oficial completo con mas variantes de las que Poly Pizza tiene indexadas."
+    },
+    {
+      "id": "kaykit",
+      "name": "KayKit (varios packs de naturaleza/props)",
+      "license": "Ver cada pack en itch.io (la mayoria CC0/uso libre con atribucion opcional)",
+      "source_page": "https://kaykit.itch.io",
+      "blocked_reason": "itch.io exige cuenta/login incluso para reclamar packs gratuitos por script.",
+      "note": "No hizo falta: Quaternius via Poly Pizza cubrio follaje organico con degradado, y Kenney el resto de props pequenos que pidio el director."
+    }
+  ]
+}
