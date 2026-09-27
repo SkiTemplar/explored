@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # Sufijo -> (clase de textura para Unreal, sRGB)
 KINDS = {
@@ -130,7 +130,10 @@ def contact_sheet(cards: list[dict], path: Path, title: str, cols: int = 5, big:
             sheet.paste(_thumb(th, small), (cx + (j + 1) * small, cy + label_h + big))
     path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(path, optimize=True)
-    if path.stat().st_size > 1_900_000:
-        # Límite de 2 MB para versionarla: paleta de 256 colores con difuminado.
-        sheet.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG).save(path, optimize=True)
+    # Límite de 2 MB para versionarla: se recorta precisión por canal (6 y luego 5 bits). Una
+    # paleta global de 256 colores falseaba tonos (manchas verdosas en la arena mojada).
+    for bits in (6, 5):
+        if path.stat().st_size <= 1_900_000:
+            break
+        ImageOps.posterize(sheet, bits).save(path, optimize=True)
     return path
