@@ -348,6 +348,38 @@
       "mesh": "SM_Base_LemonBed"
     },
     {
+      "id": "espantapajaros",
+      "nameEs": "Espantapájaros",
+      "nameEn": "Scarecrow",
+      "tier": "palma",
+      "category": "huerto",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 2
+        },
+        {
+          "item": "hoja_palma",
+          "count": 4
+        },
+        {
+          "item": "liana",
+          "count": 1
+        },
+        {
+          "item": "concha_pequena",
+          "count": 4
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 10,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "mesh": null
+    },
+    {
       "id": "suelo_bambu",
       "nameEs": "Suelo de bambú",
       "nameEn": "Bamboo floor",
