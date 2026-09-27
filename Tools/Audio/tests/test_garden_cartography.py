@@ -85,3 +85,32 @@ def test_sello_y_desmontar_tienen_golpe_grave(rendered):
 
 def test_desplegar_mapa_es_crujido_de_papel(rendered):
     assert _band_share(rendered["sfx_map_unfold"], 1500.0, 12000.0) >= 0.5
+
+
+def test_pluma_sigue_el_gesto_de_la_mano(rendered):
+    """Adherencia-deslizamiento: la sonoridad sube y baja con la rapidez del
+    plumin, que cae en cada cambio de sentido de la letra (la envolvente se
+    hunde varias veces dentro de cada trazo, no es un siseo plano), y el
+    brillo sube con ella. La energia no se concentra en una sola banda
+    estrecha del plumin."""
+    frame = int(0.01 * SAMPLE_RATE)
+    for i in (1, 2):
+        audio = rendered[f"sfx_map_pen_scratch_{i:02d}"]
+        frames = audio[: len(audio) // frame * frame].reshape(-1, frame)
+        rms = np.sqrt((frames ** 2).mean(axis=1))
+        # Profundidad de la modulacion rapida dentro de los trazos: la sonoridad
+        # de cada tramo de 10 ms frente a su media movil de 0,21 s, solo donde
+        # la pluma esta apoyada (las pausas entre trazos no cuentan).
+        smooth = np.convolve(rms, np.ones(21) / 21, mode="same")
+        active = smooth > 0.3 * smooth.max()
+        depth = float((rms[active] / smooth[active]).std())
+        assert depth >= 0.6, f"pluma {i}: sonoridad plana dentro del trazo ({depth:.2f})"
+
+        loud = rms > 0.2 * rms.max()
+        f = np.fft.rfftfreq(frame, 1.0 / SAMPLE_RATE)
+        power = np.abs(np.fft.rfft(frames[loud] * np.hanning(frame), axis=1)) ** 2
+        centroid = (power * f).sum(axis=1) / power.sum(axis=1)
+        assert np.corrcoef(rms[loud], centroid)[0, 1] > 0.1
+
+        assert _band_share(audio, 4000.0, 7000.0) <= 0.65
+        assert _band_share(audio, 2000.0, 4000.0) >= 0.2

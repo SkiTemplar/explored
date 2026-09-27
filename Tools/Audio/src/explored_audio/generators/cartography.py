@@ -16,6 +16,8 @@ from ..noise import pink_noise
 from ..rng import rng_for
 
 SR = SAMPLE_RATE
+# Ganancia de la pluma, calibrada para quedar en torno a -24 LUFS.
+GAIN_PEN = 1.15
 
 
 def _place(out: np.ndarray, x: np.ndarray, pos: int) -> None:
@@ -38,31 +40,90 @@ def _crackle(n: int, rng: np.random.Generator, density: np.ndarray, band=(1500.0
     return out
 
 
+def _pen_gesture(rng: np.random.Generator, kind: str) -> np.ndarray:
+    """Rapidez del plumin (0-1) a lo largo de un trazo, a partir de una
+    trayectoria 2D. Al escribir la mano oscila a 5-7 Hz (cada letra es ida y
+    vuelta) y la rapidez cae casi a cero en cada cambio de sentido: eso es lo
+    que da el "scritch-scritch" de la escritura. Al sombrear la oscilacion es
+    mas rapida y recta; una linea de costa es un avance lento que serpentea."""
+    if kind == "linea":
+        dur = rng.uniform(0.35, 0.7)
+        osc_hz, osc_amp, drift = rng.uniform(1.2, 2.5), 0.35, 1.0
+    elif kind == "sombreado":
+        dur = rng.uniform(0.3, 0.55)
+        osc_hz, osc_amp, drift = rng.uniform(7.0, 9.5), 1.6, 0.1
+    else:  # escritura
+        dur = rng.uniform(0.25, 0.55)
+        osc_hz, osc_amp, drift = rng.uniform(5.0, 7.0), 1.1, 0.45
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    # El ritmo de la mano no es un metronomo: la fase acumula una frecuencia que deriva.
+    freq = osc_hz * smooth_random_walk(n, rng, smoothing_hz=3.0, sr=SR, low=0.85, high=1.15)
+    phase = 2.0 * np.pi * np.cumsum(freq) / SR + rng.uniform(0.0, 2.0 * np.pi)
+    vx = drift + osc_amp * np.cos(phase)
+    vy = 0.35 * osc_amp * np.sin(2.0 * phase + rng.uniform(0.0, np.pi)) + 0.15 * np.sin(2.0 * np.pi * 1.3 * t)
+    speed = np.hypot(vx, vy)
+    speed /= speed.max() + 1e-12
+    # Apoyar y levantar la pluma: la presion entra y sale en unos milisegundos.
+    press = fit_length(ar_envelope(SR, 0.012, 0.03, hold_s=max(dur - 0.042, 0.0), shape=1.0), n)
+    return speed * press
+
+
+def _stick_slip(speed: np.ndarray, rng: np.random.Generator, max_rate_hz: float) -> np.ndarray:
+    """Tren de impulsos de adherencia-deslizamiento: el plumin se engancha en
+    una fibra y salta a la siguiente. Los saltos por segundo son proporcionales
+    a la rapidez (fibras cruzadas por segundo), con separacion irregular porque
+    las fibras no estan en rejilla, y cada salto es mas fuerte cuanto mas rapido."""
+    n = len(speed)
+    jitter = rng.uniform(0.55, 1.45, n)
+    phase = np.cumsum(max_rate_hz * speed * jitter) / SR
+    idx = np.nonzero(np.diff(np.floor(phase)) > 0)[0] + 1
+    out = np.zeros(n)
+    out[idx] = speed[idx] ** 1.3 * rng.uniform(0.4, 1.0, len(idx)) * rng.choice([-1.0, 1.0], len(idx))
+    return out
+
+
 def map_pen_scratch(name: str) -> np.ndarray:
-    """Pluma sobre papel: 3-6 trazos. Cada trazo es friccion aguda cuya
-    intensidad sigue la velocidad del gesto (arranca, acelera, frena) con la
-    resonancia del plumin moviendose un poco y el grano de la fibra encima."""
+    """Pluma sobre papel: una frase de 3-5 trazos (escribir, sombrear o tirar
+    una linea de costa) separados por pausas en las que la pluma se levanta.
+
+    Modelo fisico: el ruido no es un siseo continuo, es adherencia-
+    deslizamiento del plumin contra las fibras. La tasa de saltos y su fuerza
+    siguen la rapidez del gesto (cae a casi cero en cada cambio de sentido, de
+    ahi la modulacion a 5-9 Hz de la escritura) y excitan dos resonancias
+    anchas: el plumin metalico (3-5 kHz) y la hoja apoyada en la mesa
+    (2-3 kHz). Encima, el roce de la fibra, cuyo brillo sube con la rapidez,
+    y el grano de crujidos del papel."""
     rng = rng_for(name)
     pieces = [np.zeros(int(0.01 * SR))]
-    for _ in range(int(rng.integers(3, 7))):
-        dur = rng.uniform(0.12, 0.45)
-        n = int(dur * SR)
-        t = np.linspace(0.0, 1.0, n)
-        speed = np.sin(np.pi * t) ** 0.8 * smooth_random_walk(n, rng, smoothing_hz=25.0, sr=SR, low=0.6, high=1.0)
-        friction = static_filter(rng.standard_normal(n), SR, fc=2800.0, q=0.7, kind="highpass")
-        nib_fc = smooth_random_walk(n, rng, smoothing_hz=6.0, sr=SR, low=4200.0, high=6500.0)
-        nib = time_varying_filter(rng.standard_normal(n), SR, nib_fc, q=4.0, kind="bandpass")
-        fibre = _crackle(n, rng, 400.0 * speed, band=(3000.0, 9000.0))
-        stroke = (friction * 0.08 + nib * 0.35) * speed + fibre * 0.3
+    kinds = ["escritura", "escritura", "sombreado", "linea"]
+    for _ in range(int(rng.integers(3, 6))):
+        kind = kinds[int(rng.integers(0, len(kinds)))]
+        speed = _pen_gesture(rng, kind)
+        n = len(speed)
+
+        slips = _stick_slip(speed, rng, max_rate_hz=rng.uniform(900.0, 1400.0))
+        nib = static_filter(slips, SR, fc=rng.uniform(3200.0, 4800.0), q=1.6, kind="bandpass")
+        sheet = static_filter(slips, SR, fc=rng.uniform(2100.0, 2800.0), q=1.2, kind="bandpass")
+        # Roce continuo de la fibra: mas brillante cuanto mas rapido va el plumin.
+        rub_fc = 2600.0 + 3800.0 * speed
+        rub = time_varying_filter(rng.standard_normal(n), SR, rub_fc, q=0.9, kind="bandpass")
+        fibre = _crackle(n, rng, 500.0 * speed, band=(2500.0, 7500.0))
+
+        # A mas rapidez los saltos son mas bruscos y domina el plumin sobre la hoja: brilla.
+        # La fibra tambien cruje mas fuerte cuanto mas rapido se la rasga.
+        stroke = nib * (0.3 + 1.3 * speed) + sheet * (1.0 - 0.6 * speed) + (rub * 0.12 + fibre * 0.4) * speed
         # El papel absorbe lo mas agudo: sin esto domina un siseo de 10 kHz.
-        stroke = static_filter(stroke, SR, fc=8500.0, q=0.707, kind="lowpass")
+        stroke = static_filter(stroke, SR, fc=8000.0, q=0.707, kind="lowpass")
+        stroke = static_filter(stroke, SR, fc=1500.0, q=0.707, kind="highpass")
         # Toque del plumin al apoyarse: un clic seco al principio del trazo.
         touch_n = int(0.004 * SR)
-        stroke[:touch_n] += static_filter(rng.standard_normal(touch_n), SR, fc=3500.0, q=1.0, kind="bandpass") * np.exp(-np.arange(touch_n) / touch_n * 4) * 0.6
+        stroke[:touch_n] += static_filter(rng.standard_normal(touch_n), SR, fc=3500.0, q=1.0, kind="bandpass") * np.exp(-np.arange(touch_n) / touch_n * 4) * 0.35
         pieces.append(stroke)
-        pieces.append(np.zeros(int(rng.uniform(0.06, 0.18) * SR)))
-    # Gesto discreto: queda por debajo de las herramientas.
-    return np.concatenate(pieces) * 0.85
+        pieces.append(np.zeros(int(rng.uniform(0.07, 0.2) * SR)))
+    out = np.concatenate(pieces)
+    # Gesto discreto: por debajo de las herramientas (~ -24 LUFS, como antes).
+    return out * GAIN_PEN
 
 
 def map_unfold(name: str) -> np.ndarray:
