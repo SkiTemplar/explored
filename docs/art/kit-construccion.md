@@ -399,3 +399,55 @@ Regenerar:
 `blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_despojos,items_orilla`
 y `preview_kit.py -- --mode=tiles --module=items_despojos --out=items-despojos --cols=5 --res=1600x640`
 (`items_orilla` igual).
+
+### Agua, platos cocinados y últimos mariscos (`items_cocina.py`)
+
+Lámina: `docs/art/modelos/items-cocina.png`. Pivote en la base, centrados en XY. El
+agua se distingue por recipiente y color; el cangrejo asado es **la misma malla**
+que `SM_Item_Cangrejo` (misma semilla) con la paleta cocida (`crab_pal`/`char` en la
+variante) servida sobre hoja de plátano.
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Item_AguaSinTratar` | Ø 14 cm | Medio coco con agua turbia verde parda, hojita seca y motas |
+| `SM_Item_AguaHervida` | Ø 13 cm | Cuenco de barro con agua clara azul y un collar de burbujitas |
+| `SM_Item_AguaMar` | 11 cm | Canuto de bambú con agua turquesa, espuma y costra de sal en el labio |
+| `SM_Item_SopaPescado` | Ø 17 cm | Cuenco de barro, caldo dorado con ojos de grasa, tacos de pescado, hierbas y una cola asomando |
+| `SM_Item_EstofadoPescado` | 29 cm | Kumete ovalado de madera con orejetas, estofado espeso abombado (pescado, taro, batata) y cuchara apoyada en el borde |
+| `SM_Item_GuisoImprovisado` | Ø 14 cm | Medio coco de borde roto, caldo pardo verdoso con rodajas de batata, taro y hojas |
+| `SM_Item_CangrejoCaparazon` | 21 cm | Cangrejo escarlata con quemaduras de brasa sobre hoja de plátano |
+| `SM_Item_Pulpo` | 37 cm | Manto granate con motas, ojos con pupila en barra, ocho brazos enroscados con cara de ventosas rosa |
+| `SM_Item_CangrejoCocotero` | 44 cm | Caparazón violeta, pinza izquierda enorme, patas violeta → naranja, abdomen plegado y antenas rojas |
+
+### Recompensas legendarias (`items_legendarios.py`)
+
+Lámina: `docs/art/modelos/items-legendarios.png`. Piezas planas (dientes, aguijón,
+nácar) con `_flat_piece`: contorno 2D con filo en el borde y grosor biconvexo.
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Item_TrofeoElViejo` | 1,2 m | El mero de `items_pescados` ×1,35 en un tablero con marco, dos zapatas, espigas y cordel de colgar (de pie) |
+| `SM_Item_DientesSombra` | 17 cm | Cinco dientes de tiburón tigre (cresta de gallo con sierra) ensartados en cordel rojo con nudos |
+| `SM_Item_AguijonMantaNegra` | 26 cm | Púa negro violácea con sierra clara vuelta hacia atrás, base con muñón de piel y ligadura roja |
+| `SM_Item_PielElErrante` | 41 cm | Piel de tiburón verde azulada con tres cicatrices claras, la cabeza doblada enseña la cara curtida; tira de cuero |
+| `SM_Item_SedalLegendario` | 19 cm | Carrete tallado con incrustaciones de nácar, hilo plata azulado con hebra dorada y cabo suelto con palito de hueso |
+| `SM_Item_AnzueloLegendario` | 15 cm | Pā: caña de nácar tornasolado, punta de hueso en U atada en rojo, penacho de fibras y ojal con sedal |
+
+### Plantas sueltas y remedios (`items_botica.py`)
+
+Lámina: `docs/art/modelos/items-botica.png`.
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Item_HijueloPlatano` | 64 cm | Cormo con cicatrices anilladas y raíces cortadas, pseudotallo con manchas vinosas, dos hojas en espada y una en cigarro |
+| `SM_Item_PlantaMedicinalAloe` | 35 cm | Roseta de 14 hojas carnosas jade con motas claras y puntas cobrizas sobre cepellón con raicillas |
+| `SM_Item_PastaMedicinal` | 23 cm | Valva acanalada con pasta verde en remolino y un trozo de hoja de aloe abierta con gel |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_cocina,items_legendarios,items_botica`
+y `preview_kit.py -- --mode=tiles --module=items_cocina --out=items-cocina --cols=3 --res=1500x1200 --samples=16`
+(`items_legendarios` con `--res=1500x800`, `items_botica` con `--res=1500x520`).
+
+Con este lote `meshes_pendientes.json/items` queda **vacío**: ningún objeto de
+`items.json` usa ya `/Engine/BasicShapes/*`. Quedan las 19 fases de plantas del
+huerto, el «Limón» (`barco_limon`) y el astillero.
