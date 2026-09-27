@@ -208,6 +208,22 @@ def test_detecta_planta_sin_pieza(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "invernadero")
 
 
+def test_detecta_aves_sin_espantapajaros(ds: DataSet) -> None:
+    ds.building["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "espantapajaros"]
+    assert any_error(errors_of(ds), "birdsEat", "espantapajaros")
+
+
+def test_detecta_birdseat_no_booleano(ds: DataSet) -> None:
+    ds.data["plants.json"]["plants"][1]["birdsEat"] = "si"
+    assert any_error(errors_of(ds), "birdsEat debe ser")
+
+
+def test_espantapajaros_en_el_primer_tier(real: DataSet) -> None:
+    # Las aves picotean desde el primer bancal: el remedio no puede esperar a otro tier.
+    p = next(p for p in real.building["pieces"] if p["id"] == "espantapajaros")
+    assert p["tier"] == "palma" and p["category"] == "huerto" and p["tools"] == []
+
+
 def test_detecta_limonero_arrancable(ds: DataSet) -> None:
     ds.data["plants.json"]["plants"][0]["neverRemoved"] = False
     assert any_error(errors_of(ds), "neverRemoved")

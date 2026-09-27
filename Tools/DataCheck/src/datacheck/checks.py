@@ -25,6 +25,8 @@ REQUIRED_VERBS = {"Golpear", "Tallar", "Atar", "Pegar", "Afilar", "Trenzar", "Ma
 SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 # Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
 BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
+# Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
+SCARECROW_PIECE = "espantapajaros"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
@@ -301,6 +303,10 @@ def check_plants(ds: DataSet, r: Report, obtainable: set[str]) -> None:
             r.error(f"plants.json «{pid}»: cosecha min/max inválidos ({h.get('min')}, {h.get('max')})")
         if not _type_ok(h.get("everyDays"), (int, float)) or h.get("everyDays") < 0:
             r.error(f"plants.json «{pid}»: everyDays inválido")
+        if "birdsEat" in plant and not isinstance(plant["birdsEat"], bool):
+            r.error(f"plants.json «{pid}»: birdsEat debe ser true o false")
+        elif plant.get("birdsEat") and SCARECROW_PIECE not in piece_ids:
+            r.error(f"plants.json «{pid}»: birdsEat sin pieza «{SCARECROW_PIECE}» en building_pieces.json (GDD §8.7)")
         if pid == "limonero":
             has_lemon_tree = True
             if not plant.get("neverRemoved"):
