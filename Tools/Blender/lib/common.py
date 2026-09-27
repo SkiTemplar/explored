@@ -1064,25 +1064,33 @@ def make_leaf_cluster_cards(name, center, radius_xy, radius_z, seed,
     return join_objects(parts, name)
 
 
-def set_spherical_normals(obj, center):
-    """Normales esféricas: sustituye las normales reales (facetadas por el
-    ruido de la superficie) por normal(v.co - center) por vértice — el
-    truco clave del follaje estilizado (Sea of Thieves/Genshin/Tchia,
-    encargo 2026-09-27): la luz se reparte como en una esfera lisa, suave y
-    redondeada, en vez de romperse en facetas caóticas sobre el ruido de
-    superficie. `center` está en el mismo espacio local que v.co (las
-    masas de copa, como los blobs de siempre, se construyen ya en su
-    posición absoluta dentro del árbol, sin reorientar el objeto después).
-    Sobrevive la ida y vuelta por FBX (verificado exportando/reimportando:
-    error < 0.0002 por normal)."""
+def set_spherical_normals(obj, center, scale=(1.0, 1.0, 1.0)):
+    """Normales esféricas (o de elipsoide, con `scale`): sustituye las
+    normales reales (facetadas por el ruido de la superficie) por la
+    normal implícita de la cuádrica -normalize((v.co-center)/scale²)- por
+    vértice — el truco clave del follaje estilizado (Sea of Thieves/
+    Genshin/Tchia, encargo 2026-09-27): la luz se reparte como en un sólido
+    liso, suave y redondeado, en vez de romperse en facetas caóticas sobre
+    el ruido de superficie. Con scale=(1,1,1) es una esfera pura; con
+    scale=(sx,sy,sz) distinto es la normal correcta de un elipsoide
+    achatado (4ª pasada de arte, 2026-09-27: masas más anchas que altas en
+    vez de bolas), NO la aproximación (normalize(v.co-center) sin más
+    daría una normal ligeramente incorrecta en un elipsoide, notable en
+    los polos achatados). `center` está en el mismo espacio local que
+    v.co (las masas de copa, como los blobs de siempre, se construyen ya
+    en su posición absoluta dentro del árbol, sin reorientar el objeto
+    después). Sobrevive la ida y vuelta por FBX (verificado exportando/
+    reimportando: error < 0.0002 por normal)."""
     me = obj.data
     c = Vector(center)
+    sx, sy, sz = scale
     normals = []
     for v in me.vertices:
         d = v.co - c
-        if d.length < 1e-6:
-            d = Vector((0.0, 0.0, 1.0))
-        normals.append(d.normalized())
+        g = Vector((d.x / (sx * sx), d.y / (sy * sy), d.z / (sz * sz)))
+        if g.length < 1e-6:
+            g = Vector((0.0, 0.0, 1.0))
+        normals.append(g.normalized())
     me.normals_split_custom_set_from_vertices(normals)
 
 
@@ -1120,26 +1128,46 @@ def _mass_color_fn(center, radius, up_hint, out_hint, dark_cool, light_warm,
     return fn
 
 
-def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hint=None,
-                      dark_cool=(0.035, 0.14, 0.10), light_warm=(0.34, 0.62, 0.16),
-                      cell_names=('leaf_a', 'leaf_b', 'leaf_small_round'),
-                      target_tris=1400, tris_per_card=4, card_size_ratio=(0.22, 0.36),
-                      neighbors=None, subdivisions=2, noise_strength=0.16, max_cards=380):
-    """UNA masa/racimo de copa: esferoide deformado con ruido suave
-    (make_blob) que aporta el VOLUMEN y las normales esféricas (la
-    silueta redondeada con luz limpia), más tarjetas de hoja pequeñas
-    -escamas- ancladas SOBRE su superficie (nunca sueltas cruzándose al
-    azar) para el detalle de silueta recortada. Reemplaza a
-    make_leaf_cluster_cards para copas de árbol (esa técnica, cards
-    flotando dentro de una elipse sin superficie que las sostenga, se
-    leía como una nube de esquirlas sin masa legible — encargo
-    2026-09-27). 4-9 de estas masas por árbol, en pisos distintos con
-    huecos entre ellas, es la copa completa (ver jungle_tree.py).
+def _ellipsoid_dir(d, sx, sy, sz_top, sz_bottom):
+    """Punto en la superficie de un «elipsoide de dos radios en Z» (más
+    achatado por debajo del ecuador que por encima -base plana, cima
+    abombada-) en la dirección unitaria `d`, y su normal analítica. Vale
+    tanto para anclar una tarjeta en la superficie como para colocar un
+    vértice del núcleo (make_canopy_mass, 4ª pasada de arte 2026-09-27:
+    «elipsoides achatados, más anchos que altos, base plana»)."""
+    sz = sz_top if d.z >= 0.0 else sz_bottom
+    surf = Vector((d.x * sx, d.y * sy, d.z * sz))
+    normal = Vector((d.x / sx, d.y / sy, d.z / sz))
+    if normal.length < 1e-6:
+        normal = Vector((0.0, 0.0, 1.0))
+    return surf, normal.normalized()
 
-    `neighbors`: lista de (centro, radio) de OTRAS masas del mismo árbol
-    ya colocadas, para la oclusión barata donde se tocan (ver
-    _mass_color_fn). `out_hint`: dirección horizontal hacia fuera del eje
-    del árbol (por defecto, se deriva de `center` respecto al origen)."""
+
+def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hint=None,
+                      dark_cool=(0.09, 0.22, 0.20), light_warm=(0.46, 0.66, 0.22),
+                      cell_names=('leaf_a', 'leaf_b', 'leaf_small_round'),
+                      target_tris=1400, tris_per_card=4, card_size_ratio=(0.30, 0.48),
+                      neighbors=None, subdivisions=2, noise_strength=0.13, max_cards=480,
+                      aspect_xy=1.6, aspect_z_top=0.95, aspect_z_bottom=0.55):
+    """UNA masa/lóbulo de copa: elipsoide achatado (más ancho que alto,
+    base plana / cima abombada — `aspect_xy` sobre el radio en horizontal,
+    `aspect_z_top`/`aspect_z_bottom` en vertical por encima/por debajo del
+    ecuador) deformado con ruido suave (make_blob) que aporta el VOLUMEN y
+    las normales de elipsoide (la silueta redondeada con luz limpia, ver
+    set_spherical_normals), más tarjetas de hoja -escamas- ANCLADAS SOBRE
+    su superficie (nunca sueltas cruzándose al azar) para el detalle de
+    silueta recortada. Reemplaza a make_leaf_cluster_cards para copas de
+    árbol (esa técnica, cards flotando dentro de una elipse sin superficie
+    que las sostenga, se leía como una nube de esquirlas sin masa legible
+    — encargo 2026-09-27). 4-9 de estas masas por árbol SOLAPADAS un
+    30-50% (ver _build_canopy en jungle_tree.py) para que la copa entera
+    lea como una única nube con lóbulos, no un racimo de bolas sueltas —
+    4ª pasada de arte, 2026-09-27.
+
+    `neighbors`: lista de (centro, radio_efectivo) de OTRAS masas del
+    mismo árbol ya colocadas, para la oclusión barata donde se solapan
+    (ver _mass_color_fn). `out_hint`: dirección horizontal hacia fuera del
+    eje del árbol (por defecto, se deriva de `center` respecto al origen)."""
     rnd = seeded_rng(seed)
     center_v = Vector(center)
     if out_hint is None:
@@ -1147,28 +1175,43 @@ def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hi
         if out_hint.length < 1e-4:
             out_hint = Vector((1.0, 0.0, 0.0))
     neighbors = neighbors or []
+    sx = sy = aspect_xy
 
-    blob = make_blob(f'{name}_core', center_v, radius, seed=seed,
+    blob = make_blob(f'{name}_core', (0.0, 0.0, 0.0), radius, seed=seed,
                       subdivisions=subdivisions, noise_scale=1.6,
                       noise_strength=noise_strength, relax_iterations=2)
+    me = blob.data
+    for v in me.vertices:
+        d = v.co.normalized() if v.co.length > 1e-6 else Vector((0.0, 0.0, 1.0))
+        t = v.co.length / max(radius, 1e-6)  # ~1.0 en la superficie sin ruido
+        surf, _n = _ellipsoid_dir(d, sx, sy, aspect_z_top, aspect_z_bottom)
+        v.co = surf * t + center_v
+    me.update()
     sphere_uv_into_cell(blob, 'stem_swatch')
 
-    n_cards = max(60, min(max_cards, int(target_tris * 0.72 / max(tris_per_card, 1))))
+    n_cards = max(50, min(max_cards, int(target_tris * 0.88 / max(tris_per_card, 1))))
     cards = []
     for i in range(n_cards):
-        # muestreo uniforme en la esfera (vector gaussiano normalizado).
+        # muestreo uniforme en la esfera (vector gaussiano normalizado),
+        # remapeado a la superficie del elipsoide de dos radios en Z.
         d = Vector((rnd.gauss(0.0, 1.0), rnd.gauss(0.0, 1.0), rnd.gauss(0.0, 1.0)))
         if d.length < 1e-6:
             continue
         d.normalize()
-        anchor = center_v + d * (radius * rnd.uniform(0.90, 1.04))
+        surf, normal_dir = _ellipsoid_dir(d, sx, sy, aspect_z_top, aspect_z_bottom)
+        anchor = center_v + surf * (radius * rnd.uniform(0.92, 1.05))
+
         roll = rnd.uniform(0.0, 2.0 * math.pi)
         seed_dir = Vector((math.cos(roll), math.sin(roll), rnd.uniform(-0.5, 0.5)))
-        tangential = seed_dir - d * d.dot(seed_dir)
+        tangential = seed_dir - normal_dir * normal_dir.dot(seed_dir)
         if tangential.length < 1e-4:
-            tangential = Vector((1.0, 0.0, 0.0)) - d * d.x
+            tangential = Vector((1.0, 0.0, 0.0)) - normal_dir * normal_dir.x
         tangential.normalize()
-        growth = (tangential * 0.85 + Vector((0.0, 0.0, -0.25))).normalized()
+        # menos aleatoriedad de la cuenta que en la 3ª pasada (0.85/-0.25):
+        # tarjetas más alineadas con la normal de la superficie -contorno
+        # limpio en el flequillo, «silueta de hojas», no pelusa de
+        # triángulos sueltos apuntando en cualquier dirección.
+        growth = (tangential * 0.7 + Vector((0.0, 0.0, -0.30))).normalized()
 
         size = radius * rnd.uniform(*card_size_ratio)
         aspect = rnd.uniform(0.55, 0.85)
@@ -1178,12 +1221,15 @@ def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hi
             width_tip=size * aspect * 0.12, curve_amount=size * rnd.uniform(0.05, 0.16),
             segments=1, double_sided=True, uv_cell=cell,
         )
-        orient_and_place(card, anchor, growth, d)
+        orient_and_place(card, anchor, growth, normal_dir)
         cards.append(card)
 
     mass = join_objects([blob] + cards, name)
     merge_by_distance(mass, dist=0.0005)
-    set_spherical_normals(mass, center_v)
+    # aproxima la normal de todo el elipsoide (arriba+abajo) con el radio
+    # de la mitad de arriba: la costura en el ecuador queda ligeramente
+    # imperfecta pero imperceptible en un render estilizado.
+    set_spherical_normals(mass, center_v, scale=(radius * sx, radius * sy, radius * aspect_z_top))
     # shade_smooth() simple (NO shade_smooth_auto/shade_smooth_by_angle): esa
     # variante hornea un modificador de Geometry Nodes que RECALCULA las
     # normales por ángulo y sobrescribiría las esféricas que se acaban de
@@ -1193,8 +1239,8 @@ def make_canopy_mass(name, center, radius, seed, up_hint=(0.0, 0.0, 1.0), out_hi
     select_only(mass)
     bpy.ops.object.shade_smooth()
     assign_materials(mass, ['M_Leaf'])
-    set_vertex_colors(mass, _mass_color_fn(center_v, radius, up_hint, out_hint,
-                                            dark_cool, light_warm, neighbors, 0.025, rnd))
+    set_vertex_colors(mass, _mass_color_fn(center_v, radius * aspect_xy, up_hint, out_hint,
+                                            dark_cool, light_warm, neighbors, 0.02, rnd))
     return mass
 
 
