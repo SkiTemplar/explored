@@ -15,10 +15,13 @@ uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2
 cd Tools/Textures && uv run --with numpy --with pillow --with pytest python -m pytest -q tests
 ```
 
-Hoja de contacto actual: [`texturas-2026-09-27.png`](texturas-2026-09-27.png): vista iluminada
-en 2×2 para comprobar el tileado y, debajo, la misma vista **en 4×4 reducida** (cómo se ve a
-media distancia: delata la repetición) + miniaturas BC / N / ARH. Si pasa de ~1.9 MB se guarda con 6 (o 5) bits por canal: una
-paleta global de 256 colores falseaba los tonos.
+Hoja de contacto actual: [`texturas-2026-09-27b.png`](texturas-2026-09-27b.png) (pase de
+estilo pintado a mano en arena, ceniza, hierba, hojarasca y roca — ver más abajo);
+[`texturas-2026-09-27.png`](texturas-2026-09-27.png) queda como referencia del resto del
+catálogo. Vista iluminada en 2×2 para comprobar el tileado y, debajo, la misma vista **en
+4×4 reducida** (cómo se ve a media distancia: delata la repetición) + miniaturas BC / N /
+ARH. Si pasa de ~1.9 MB se guarda con 6 (o 5) bits por canal: una paleta global de 256
+colores falseaba los tonos.
 
 ## Estilo
 
@@ -44,15 +47,15 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 
 | Material | Tile | Uso y notas |
 |---|---|---|
-| `SandDry` | 2 m | Arena seca de playa/dunas: rizos eólicos asimétricos, granos, conchas y guijarros. |
-| `SandWet` | 2 m | Franja de orilla: caramelo saturado (no gris), rizos lavados, arena empapada alrededor de láminas de agua brillantes (rugosidad ~0.2, tinte leve de cielo), marcas de resaca con banda escurrida detrás, agujeritos de cangrejo y alguna concha. |
-| `Grass` | 1.5 m | Césped cartoon: 7 capas de hojas afiladas que siguen un flujo suave + florecillas. |
+| `SandDry` | 2 m | Arena seca cartoon: crema cálida en pinceladas amplias de ondulación eólica; grano y conchas sueltas como acento discreto (no pimienta fotográfica), sin grietas. |
+| `SandWet` | 2 m | Franja de orilla, más oscura y fría que la seca: láminas de agua lisas con un brillo pintado (tinte de cielo turquesa), marcas de resaca con banda escurrida detrás, agujeritos de cangrejo y alguna concha. |
+| `Grass` | 1.5 m | Césped cartoon visto desde arriba: mechones pintados a mano (Voronoi, no briznas) en 2–3 verdes saturados — base, un vuelco cálido amarillento y uno frío azulado — con sombra ancha entre mechones y pinceladas de luz/sombra dentro de cada mata, estilo Sea of Thieves / Genshin, + florecillas. |
 | `Moss` | 1 m | Musgo en cojines (ruinas, rocas, suelo de selva). |
 | `GardenSoil` | 2 m | Tierra de huerto labrada: 5 camellones anchos y redondeados a lo largo de u (algo ondulados, anchura por hilera) entre surcos estrechos húmedos; terrones redondos en las laderas, migas, pocas pajas y guijarros y algún brote de dos hojitas. Cacao cálido (nunca negro ni gris). |
-| `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 6 capas de hojas caídas en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
-| `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda (sin valles oscuros) con rizos de viento bien legibles, pocas placas de costra claras y biseladas con juntas suaves, pómez con volumen y poros, carbones escasos y alguna brasa con halo. |
-| `VolcanicRock` | 3 m | Basalto pizarra azulado/violeta en bloques de ~60 cm con caras facetadas (low-poly) y cantos biselados que atrapan la luz, juntas estrechas, vesículas en racimos, óxido cálido cerca de las juntas y granos de olivino. |
-| `Limestone` | 3 m | Caliza clara crema en losas grandes de canto redondeado y caras algo facetadas (low-poly), repisas de estrato suaves (sin grietas finas oscuras), alveolos de disolución en racimos y costras de liquen naranja/salvia con borde neto. |
+| `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 5 capas de hojas grandes y legibles en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
+| `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda cálido (sin valles oscuros) con rizos de viento legibles y grumos redondeados y sueltos donde la lluvia apelmazó la ceniza (nunca una red de grietas ni losetas), pómez con volumen y poros, carbones escasos y alguna brasa con halo. |
+| `VolcanicRock` | 3 m | Basalto pizarra azulado/violeta en planos facetados (low-poly) de ~60 cm con luz pintada arriba y sombra abajo de cada plano; algunas juntas se funden en facetas mayores y otras se abren como grieta (no todas biseladas por igual: rompe el aspecto de suelo de losetas), vesículas en racimos, vetas minerales claras, óxido cálido cerca de las juntas y granos de olivino. |
+| `Limestone` | 3 m | Caliza clara crema en losas grandes de canto redondeado y caras algo facetadas (low-poly) con luz arriba y sombra abajo, repisas de estrato marcadas y vetas ocres casi horizontales, alveolos de disolución en racimos y costras de liquen naranja/salvia con borde neto; juntas apenas insinuadas y parcialmente fundidas, no una red de losetas. |
 | `PalmThatch` | 1 m | Techo de hoja de palma: 6 hileras de hebras largas y estrechas que cuelgan (dos capas desfasadas, sin huecos); cada hilera tapa la atadura de la de abajo y proyecta sombra con sus puntas desiguales, a veces rasgadas; tono por hebra (paja, dorado, ~10 % aún verdes, alguna tostada) y borde de hilera que ondula (atado a mano); **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
