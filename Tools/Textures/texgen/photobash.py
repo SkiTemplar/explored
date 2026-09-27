@@ -10,8 +10,9 @@ Pipeline, todo con borde periódico (mantiene el tileado del original):
   1. Cargar diffuse/displacement/AO/roughness a `size` px.
   2. «Delit»: dividir por una versión muy desenfocada de la propia luminancia para quitar
      la iluminación desigual de la foto (deja solo relieve medio/fino).
-  3. Filtro de Kuwahara (4 cuadrantes, óleo): quita el detalle de alta frecuencia
-     conservando bordes vivos — el aspecto pintado a mano.
+  3. Filtro de Kuwahara generalizado (8 ventanas gaussianas, peso suave por varianza,
+     óleo): quita el detalle de alta frecuencia conservando bordes vivos — el aspecto
+     pintado a mano, sin los brochazos cuadrados del Kuwahara clásico.
   4. Paleta propia por `ramp()` sobre la luminancia ya delit, con un resto de la
      crominancia original de baja opacidad para que no quede un degradado sintético
      plano; vetas oscuras en las grietas (AO real) y aristas claras (cavidad de la
@@ -49,11 +50,13 @@ class RockStyle:
     depth: float
     rough_lo: float
     rough_hi: float
+    height_tone: float = 0.0  # cuánto manda la altura real (formas grandes) sobre la luminancia
+    bands: int = 0  # >0: escalonado suave del tono en tantas bandas (caras planas pintadas)
 
 
 # Gris kárstico con vetas oscuras y toques ocres — referencia El Nido / Ha Long, no crema.
 LIMESTONE_STYLE = RockStyle(
-    stops=[(0.0, "#5f6260"), (0.35, "#868985"), (0.65, "#aeb0ab"), (1.0, "#dcded7")],
+    stops=[(0.0, "#6b6e6b"), (0.35, "#8c8f8a"), (0.65, "#aeb0ab"), (1.0, "#dcded7")],
     vein="#2c2a28",
     warm_accent="#a9793c",
     macro_warm="#c7b98e",
@@ -62,6 +65,7 @@ LIMESTONE_STYLE = RockStyle(
     depth=0.028,
     rough_lo=0.5,
     rough_hi=0.92,
+    height_tone=0.3,
 )
 
 # Basalto gris violáceo oscuro.
@@ -72,9 +76,11 @@ VOLCANIC_STYLE = RockStyle(
     macro_warm="#7a5a52",
     macro_cool="#4f5a78",
     chroma=0.12,
-    depth=0.034,
+    depth=0.045,
     rough_lo=0.55,
     rough_hi=0.95,
+    height_tone=0.55,
+    bands=5,
 )
 
 
@@ -98,6 +104,18 @@ def _cavity(height: np.ndarray, radius: float) -> np.ndarray:
     return height - blur(height, radius)
 
 
+def soft_bands(t: np.ndarray, n: int, softness: float = 0.3) -> np.ndarray:
+    """Escalonado suave de `t` (0-1) en `n` bandas: planos de tono casi constante unidos
+    por transiciones cortas (el «cel shading» pintado de las caras de roca low-poly)."""
+    x = np.clip(t, 0.0, 1.0) * n
+    k = np.floor(x)
+    f = x - k
+    edge = 0.5 * softness
+    step = np.clip((f - (0.5 - edge)) / (2.0 * edge), 0.0, 1.0)
+    step = step * step * (3.0 - 2.0 * step)
+    return np.clip((k + step) / n, 0.0, 1.0)
+
+
 def _percentile_stretch(field: np.ndarray, lo: float = 2.0, hi: float = 98.0) -> np.ndarray:
     a, b = np.percentile(field, [lo, hi])
     if b - a < 1e-6:
@@ -105,45 +123,37 @@ def _percentile_stretch(field: np.ndarray, lo: float = 2.0, hi: float = 98.0) ->
     return np.clip((field - a) / (b - a), 0.0, 1.0)
 
 
-def _integral(padded: np.ndarray) -> np.ndarray:
-    ii = np.cumsum(np.cumsum(padded, axis=0), axis=1)
-    pad = [(1, 0), (1, 0)] + [(0, 0)] * (padded.ndim - 2)
-    return np.pad(ii, pad)
+def _shift(field: np.ndarray, dy: int, dx: int) -> np.ndarray:
+    """Desplazamiento periódico: el valor en (y, x) pasa a ser el de (y + dy, x + dx)."""
+    return np.roll(field, (-dy, -dx), axis=(0, 1))
 
 
-def _quad_sum(ii: np.ndarray, h: int, w: int, r0: int, c0: int, win: int) -> np.ndarray:
-    br = ii[r0 + win:r0 + win + h, c0 + win:c0 + win + w, ...]
-    tl = ii[r0:r0 + h, c0:c0 + w, ...]
-    tr = ii[r0:r0 + h, c0 + win:c0 + win + w, ...]
-    bl = ii[r0 + win:r0 + win + h, c0:c0 + w, ...]
-    return br - tr - bl + tl
-
-
-def kuwahara_periodic(rgb: np.ndarray, radius: int) -> np.ndarray:
-    """Filtro de Kuwahara (4 cuadrantes de (radius+1)²) con borde periódico: en cada
-    píxel, la media del cuadrante de menor varianza — el efecto óleo (bordes vivos,
-    interior liso) que da el aspecto pintado a mano. `radius` en píxeles."""
+def kuwahara_periodic(rgb: np.ndarray, radius: int, sectors: int = 8, q: float = 6.0) -> np.ndarray:
+    """Kuwahara generalizado y suave (Papari et al.), con borde periódico: en cada píxel,
+    media de `sectors` ventanas gaussianas desplazadas `radius` px en direcciones
+    repartidas en círculo, ponderadas por var^(-q/2). Da el efecto óleo (bordes vivos,
+    interior liso) sin los «brochazos» rectangulares del Kuwahara clásico de 4 cuadrados
+    con `argmin` (que se leían como una rejilla de manchas cuadradas en la roca)."""
     if radius < 1:
         return rgb
-    h, w = rgb.shape[:2]
-    win = radius + 1
+    size = rgb.shape[0]
+    sigma = 0.7 * radius / size  # blur() trabaja en unidades de tile
     lum = rgb @ LUMA
-    lum_p = np.pad(lum, [(radius, radius), (radius, radius)], mode="wrap")
-    rgb_p = np.pad(rgb, [(radius, radius), (radius, radius), (0, 0)], mode="wrap")
-    ii_l = _integral(lum_p)
-    ii_l2 = _integral(lum_p ** 2)
-    ii_c = _integral(rgb_p)
-    count = float(win * win)
-    variances = []
-    means = []
-    for r0, c0 in ((0, 0), (0, radius), (radius, 0), (radius, radius)):
-        s = _quad_sum(ii_l, h, w, r0, c0, win) / count
-        s2 = _quad_sum(ii_l2, h, w, r0, c0, win) / count
-        variances.append(np.clip(s2 - s * s, 0.0, None))
-        means.append(_quad_sum(ii_c, h, w, r0, c0, win) / count)
-    best = np.argmin(np.stack(variances, axis=0), axis=0)
-    mean_stack = np.stack(means, axis=0)
-    return np.take_along_axis(mean_stack, best[None, ..., None], axis=0)[0]
+    m_rgb = blur(rgb, sigma)
+    m_l = blur(lum, sigma)
+    m_l2 = blur(lum * lum, sigma)
+    means, logw = [], []
+    for k in range(sectors):
+        a = 2.0 * np.pi * (k + 0.5) / sectors
+        dy, dx = round(radius * np.sin(a)), round(radius * np.cos(a))
+        mu = _shift(m_l, dy, dx)
+        var = np.clip(_shift(m_l2, dy, dx) - mu * mu, 0.0, None)
+        means.append(_shift(m_rgb, dy, dx))
+        logw.append(-0.5 * q * np.log(var + 1e-5))
+    logw = np.stack(logw, axis=0)
+    w = np.exp(logw - logw.max(axis=0, keepdims=True))
+    w /= w.sum(axis=0, keepdims=True)
+    return np.einsum("khw,khwc->hwc", w, np.stack(means, axis=0))
 
 
 def photobash_rock(asset: str, size: int, style: RockStyle, seed: int = 0) -> dict[str, np.ndarray]:
@@ -163,6 +173,13 @@ def photobash_rock(asset: str, size: int, style: RockStyle, seed: int = 0) -> di
     flat = diff_k * (0.5 / np.clip(broad, 0.08, None))[..., None]
     flat = np.clip(flat, 0.0, 1.4)
     t = _percentile_stretch(flat @ LUMA)
+    if style.height_tone > 0.0:
+        # Volumen legible: las caras altas de la roca más claras y los huecos más oscuros,
+        # para que se lean las formas grandes y no solo el moteado de la foto.
+        form = _percentile_stretch(blur(disp, 0.004))
+        t = _percentile_stretch((1.0 - style.height_tone) * t + style.height_tone * form)
+    if style.bands > 0:
+        t = 0.45 * t + 0.55 * soft_bands(t, style.bands)
 
     albedo = ramp(t, style.stops)
     # Resto de la crominancia original (poca) para que no sea un degradado sintético.

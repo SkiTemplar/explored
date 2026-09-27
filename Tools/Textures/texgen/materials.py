@@ -452,10 +452,10 @@ def ash(size: int, seed: int) -> Material:
 # ---------------------------------------------------------------------------
 
 def volcanic_rock(size: int, seed: int) -> dict[str, np.ndarray]:
-    """Basalto gris violáceo: fotografía CC0 de Poly Haven ('Dark Rock', Amal Kumar)
+    """Basalto gris violáceo: fotografía CC0 de Poly Haven ('Rock Face 03', Dario Barresi)
     estilizada a óleo cartoon. Ver `texgen/photobash.py` y la atribución en
     `docs/art/texturas.md`. `seed` no se usa (la fuente no es aleatoria)."""
-    return photobash.photobash_rock("dark_rock", size, photobash.VOLCANIC_STYLE, seed)
+    return photobash.photobash_rock("rock_face_03", size, photobash.VOLCANIC_STYLE, seed)
 
 
 def limestone(size: int, seed: int) -> dict[str, np.ndarray]:
@@ -979,7 +979,7 @@ MATERIALS: dict[str, Spec] = {
         Spec("GardenSoil", garden_soil, 2.0, "Tierra de huerto labrada en surcos (eje u)."),
         Spec("ForestFloor", forest_floor, 1.5, "Hojarasca del suelo de selva con ramitas y brotes."),
         Spec("Ash", ash, 2.0, "Ceniza volcánica (isla del Humo), con carbones y pómez."),
-        Spec("VolcanicRock", volcanic_rock, 3.0, "Basalto en losas facetadas con vesículas y óxido."),
+        Spec("VolcanicRock", volcanic_rock, 3.0, "Basalto fotobasheado (rock_face_03) en planos pintados."),
         Spec("Limestone", limestone, 3.0, "Caliza clara estratificada con líquenes (Dientes)."),
         Spec("PalmThatch", palm_thatch, 1.0, "Techo de hebras de palma en hileras solapadas; v = pendiente abajo."),
         Spec("PalmWeave", palm_weave, 0.6, "Estera trenzada de palma en diagonal (paredes, techos)."),
