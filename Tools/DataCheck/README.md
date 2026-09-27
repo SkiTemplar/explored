@@ -18,7 +18,7 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json` y `fish.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json` y `music_layers.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -55,6 +55,13 @@ Qué comprueba:
 - **Pesca**: `fish.json` contra las tablas de `Source/Explored/Fishing/FishingModel.cpp`
   (especies, legendarias y trampas); 11 peces de caña + langosta, 5 legendarias, y que
   capturas, cebos, recompensas, trampas, pozas y despiece existan en `items.json`.
+- **Música (GDD §14.3)**: `music_layers.json` contra `Audio/MusicDirectorModel.{h,cpp}`:
+  papeles de `RoleKeys` (el lector ignora los desconocidos), los que exige
+  `FMusicCatalog::Validate`, una pieza de exploración por isla de `IslandKeys`, variaciones
+  diurnas (la propia primero, solo exploración), finales de `FinaleKey` con el de por defecto,
+  bucles con compases enteros, `seconds_per_bar`/`duration_s` coherentes con el tempo,
+  descubrimientos ≤ 5 s y la flauta con `FFluteModel::NumNotes` notas. Los finales distintos
+  del «Limón» quedan como nota (GDD §2: sin finales narrativos).
 - **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.
 - **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que
   falta en `items.json` y setas por tipo (2 comestibles, 2 tóxicas por `Toxico`,
