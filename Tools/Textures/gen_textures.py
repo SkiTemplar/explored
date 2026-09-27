@@ -17,6 +17,8 @@ Salida en Art/Export/Textures/ (no se versiona):
     T_<Material>_N.png   normal en espacio tangente, convención DirectX (la de Unreal).
     T_<Material>_ARH.png R oclusión, G rugosidad, B altura (lineal).
     T_WaterWaves_N.png, T_SeaFoam_M.png (RGBA de máscaras de espuma).
+  Paleta low poly (ver docs/art/paleta.md; también con gen_palette.py):
+    T_Palette_<Isla>.png atlas 512×512 de colores con degradado para M_LowPoly (sRGB, sin compresión).
   textures.json          manifiesto nombre -> {kind, srgb} que usa import_textures.py.
 """
 
@@ -33,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from texgen.legacy import LEGACY_KINDS, generate_legacy  # noqa: E402
 from texgen.materials import MATERIALS, default_seed, generate  # noqa: E402
+from texgen.palette import PALETTE_TEXTURES  # noqa: E402
 from texgen.output import KINDS, contact_sheet, lit_preview, texture_name, write_manifest, write_maps  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,6 +73,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--no-legacy", action="store_true", help="no regenerar las texturas legado")
     ap.add_argument("--sheet", type=Path, help="escribe una hoja de contacto PNG en esta ruta")
+    ap.add_argument("--no-palette", action="store_true", help="no escribir los atlas T_Palette_<Isla>")
     ap.add_argument("--seed", type=int, help="semilla global (por defecto, una estable por material)")
     args = ap.parse_args(argv)
 
@@ -88,6 +92,14 @@ def main(argv: list[str] | None = None) -> None:
             print(f"[texturas] {args.out / name}.png")
     for name, (kind, srgb) in LEGACY_KINDS.items():
         manifest[name] = {"kind": kind, "srgb": srgb}
+
+    for name in PALETTE_TEXTURES:
+        manifest[name] = {"kind": "palette", "srgb": True}
+    if not args.no_palette:
+        from gen_palette import write_atlases
+
+        for path in write_atlases(args.out):
+            print(f"[texturas] {path}")
 
     cards = []
     for name in MATERIALS:
