@@ -135,26 +135,31 @@ def _branch_tier(attach, base_radius, rnd, seed, n, len_range, elevation_range,
     return parts, tips
 
 
-def _buttress_roots(trunk_radius, rnd, seed, count, height_ratio=(3.6, 5.2)):
-    """Raíces tabulares: aletas planas y curvadas que suben desde el suelo
-    y se estrechan hacia el tronco (dosel alto de selva). height_ratio se
-    aplica sobre el radio del tronco: cuanto más grueso, más altas."""
+def _buttress_roots(trunk_radius, rnd, seed, count, attach_range=(1.5, 3.0),
+                     depth_range=(0.9, 1.2)):
+    """Contrafuertes tabulares (raíz de tablón, ceiba/kapok): 4-6 aletas
+    GRUESAS (make_buttress_root, común.py) que nacen pegadas al tronco a
+    1,5-3 m de altura y se ensanchan bajando hasta terminar por debajo de
+    Z=0 -0,9-1,2 m bajo tierra-, para que entren en el suelo con cualquier
+    pendiente en vez de quedar flotando por encima como patas de araña
+    (2ª corrección de raíces, encargo 2026-09-27; la 1ª versión eran
+    tarjetas planas de grosor cero que arrancaban en Z=0)."""
     fins = []
-    fin_height = trunk_radius * rnd.uniform(*height_ratio)
     for i in range(count):
         ang = (2.0 * math.pi * i / count) + rnd.uniform(-0.15, 0.15)
-        fin_width_ground = trunk_radius * rnd.uniform(1.7, 2.6)
-        fin = C.make_leaf_blade(
-            f'Root_{i:02d}', length=fin_height, width_base=fin_width_ground,
-            width_tip=trunk_radius * 0.12, curve_amount=fin_height * 0.30,
-            segments=5, double_sided=False,
+        attach_height = rnd.uniform(*attach_range)
+        ground_depth = rnd.uniform(*depth_range)
+        width_base = trunk_radius * rnd.uniform(0.25, 0.45)
+        width_tip = trunk_radius * rnd.uniform(1.6, 2.4)
+        fin = C.make_buttress_root(
+            f'Root_{i:02d}', attach_height=attach_height, ground_depth=ground_depth,
+            width_base=width_base, width_tip=width_tip, ang=ang,
+            rnd=rnd, seed=seed + i, thickness=rnd.uniform(0.25, 0.5), segments=5,
         )
-        forward = C.Vector((0.0, 0.0, 1.0))
-        up = C.Vector((math.cos(ang), math.sin(ang), 0.12))
-        C.orient_and_place(fin, C.Vector((0, 0, 0)), forward, up)
         C.assign_materials(fin, ['M_Bark'])
         C.set_vertex_colors(fin, C.bark_streaks_tint(
-            (0.13, 0.09, 0.06), (0.24, 0.17, 0.10), fin_height, seed + i, streak_count=4))
+            (0.13, 0.09, 0.06), (0.24, 0.17, 0.10),
+            attach_height + ground_depth, seed + i, streak_count=4))
         fins.append(fin)
     return fins
 
@@ -162,16 +167,21 @@ def _buttress_roots(trunk_radius, rnd, seed, count, height_ratio=(3.6, 5.2)):
 def _mangrove_stilt_roots(lift_height, spread, base_radius, rnd, seed, count):
     """Raíces zancudas en arco: piernas curvadas que salen de la parte
     alta del tocón y bajan y se abren hasta el suelo, levantando el tronco
-    visible del suelo (característica de Rhizophora)."""
+    visible del suelo (característica de Rhizophora). El punto de destino
+    en el suelo va 0,4-0,65 m por debajo de Z=0 (antes exactamente en
+    Z=0: con pendiente de terreno de hasta 20-25° la pierna quedaba al
+    aire en vez de entrar en tierra — misma corrección que los
+    contrafuertes del dosel alto, encargo 2026-09-27)."""
     legs = []
     for i in range(count):
         ang = (2.0 * math.pi * i / count) + rnd.uniform(-0.2, 0.2)
         attach_h = lift_height * rnd.uniform(0.6, 0.95)
         attach = C.Vector((math.cos(ang) * base_radius * 0.55,
                             math.sin(ang) * base_radius * 0.55, attach_h))
-        ground = C.Vector((math.cos(ang) * spread, math.sin(ang) * spread, 0.0))
+        ground_depth = rnd.uniform(0.4, 0.65)
+        ground = C.Vector((math.cos(ang) * spread, math.sin(ang) * spread, -ground_depth))
         direction = ground - attach
-        leg_len = direction.length * rnd.uniform(1.08, 1.25)
+        leg_len = direction.length * rnd.uniform(1.05, 1.15)
         leg_radius = base_radius * rnd.uniform(0.16, 0.24)
 
         leg, _ = C.make_curved_trunk(
@@ -214,7 +224,8 @@ def build(variant):
         parts.append(trunk)
 
         parts += _buttress_roots(base_radius, rnd, variant['seed'] + 5,
-                                  count=rnd.randint(6, 8), height_ratio=(4.4, 5.8))
+                                  count=rnd.randint(5, 6), attach_range=(1.8, 3.0),
+                                  depth_range=(1.0, 1.2))
 
         lower_attach = C.spline_point(height, 0.58, curvature, lean_dir, s_curve=s_curve)
         upper_attach = C.spline_point(height, 0.92, curvature, lean_dir, s_curve=s_curve)
@@ -253,7 +264,8 @@ def build(variant):
         parts.append(trunk)
 
         parts += _buttress_roots(base_radius, rnd, variant['seed'] + 5,
-                                  count=rnd.randint(3, 5), height_ratio=(2.8, 3.8))
+                                  count=rnd.randint(4, 5), attach_range=(1.5, 2.6),
+                                  depth_range=(0.9, 1.15))
 
         attach = C.spline_point(height, 0.52, curvature, lean_dir, s_curve=s_curve)
         branch_parts, tips = _branch_tier(
