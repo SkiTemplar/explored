@@ -12,7 +12,7 @@ namespace
 		return Yield;
 	}
 
-	FHarvestDrop MakeDrop(const TCHAR* ItemId, int32 MinCount, int32 MaxCount)
+	FHarvestDrop MakeUprootDrop(const TCHAR* ItemId, int32 MinCount, int32 MaxCount)
 	{
 		FHarvestDrop Drop;
 		Drop.ItemId = FName(ItemId);
@@ -68,7 +68,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		P.StumpRegrowDays = 12;
 		P.SaplingToMatureDays = 30;
 		P.UprootShovelHits = 4;
-		P.UprootDrops = { MakeDrop(TEXT("fibra_coco"), 1, 2) };
+		P.UprootDrops = { MakeUprootDrop(TEXT("fibra_coco"), 1, 2) };
 		P.GroundBranchCapacity = 2;
 		P.GroundBranchPerDayMilli = 500; // una hoja seca cada dos días
 		P.GroundBranchItem = FName(TEXT("hoja_palma"));
@@ -93,7 +93,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		P.StumpRegrowDays = 20;
 		P.SaplingToMatureDays = 60;
 		P.UprootShovelHits = 8;
-		P.UprootDrops = { MakeDrop(TEXT("madera_dura"), 0, 1), MakeDrop(TEXT("rama_seca"), 1, 2) };
+		P.UprootDrops = { MakeUprootDrop(TEXT("madera_dura"), 0, 1), MakeUprootDrop(TEXT("rama_seca"), 1, 2) };
 		P.GroundBranchCapacity = 4;
 		P.GroundBranchPerDayMilli = 1500;
 		P.GroundBranchItem = FName(TEXT("rama_seca"));
@@ -117,7 +117,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		P.StumpRegrowDays = 15;
 		P.SaplingToMatureDays = 45;
 		P.UprootShovelHits = 6;
-		P.UprootDrops = { MakeDrop(TEXT("rama_seca"), 1, 2) };
+		P.UprootDrops = { MakeUprootDrop(TEXT("rama_seca"), 1, 2) };
 		P.GroundBranchCapacity = 4;
 		P.GroundBranchPerDayMilli = 1200;
 		P.GroundBranchItem = FName(TEXT("rama_seca"));
@@ -140,7 +140,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		P.StumpRegrowDays = 20;
 		P.SaplingToMatureDays = 30;
 		P.UprootShovelHits = 5;
-		P.UprootDrops = { MakeDrop(TEXT("madera_flotante"), 0, 1) };
+		P.UprootDrops = { MakeUprootDrop(TEXT("madera_flotante"), 0, 1) };
 		P.GroundBranchCapacity = 2;
 		P.GroundBranchPerDayMilli = 600;
 		P.GroundBranchItem = FName(TEXT("rama_seca"));
@@ -164,7 +164,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		P.StumpRegrowDays = 10;
 		P.SaplingToMatureDays = 12;
 		P.UprootShovelHits = 3;
-		P.UprootDrops = { MakeDrop(TEXT("rama_seca"), 1, 1) };
+		P.UprootDrops = { MakeUprootDrop(TEXT("rama_seca"), 1, 1) };
 		P.GroundBranchCapacity = 2;
 		P.GroundBranchPerDayMilli = 800;
 		P.GroundBranchItem = FName(TEXT("rama_seca"));
