@@ -18,18 +18,55 @@ SR = SAMPLE_RATE
 
 
 def build_place(name: str) -> np.ndarray:
-    """Encajar una pieza de madera: golpe sordo (modal grave) mas un crujido
-    breve de asentamiento."""
+    """Encajar una pieza de madera en su sitio. La pieza no cae de una vez:
+    toca con un canto, bascula y asienta con un segundo golpe mas flojo
+    20-60 ms despues. Cada contacto es un chasquido corto de madera contra
+    madera, los modos de flexion de la viga (razones de barra libre 1 :
+    2,76 : 5,4 : 8,9, a 180-260 Hz) y un golpe grave de la estructura que
+    la recibe. Al final la union cruje un poco al cargar el peso: unos
+    pocos micro-deslizamientos a traves de la resonancia de la fibra.
+
+    Antes era un modal de 140-200 Hz con un 83 % de la energia por debajo
+    de 150 Hz: en altavoces pequeños casi no se oia y sonaba a bombo, no a
+    madera."""
     rng = rng_for(name)
-    dur = rng.uniform(0.35, 0.5)
+    dur = rng.uniform(0.42, 0.52)
     n = int(dur * SR)
-    thud = modal_hit(
-        SR, dur, base_freq=rng.uniform(140, 200),
-        mode_ratios=[1.0, 2.3, 3.6], mode_dampings_s=[0.05, 0.03, 0.02],
-        mode_amps=[1.0, 0.4, 0.2], rng=rng, detune=0.02,
-    )
-    creak = render_noise_grains(n, SR, rng, rate_hz=20.0, grain_len_s_range=(0.01, 0.03), band_hz_range=(500, 2000), q=1.0, amp_scale=0.25)
-    return thud * 0.75 + creak
+    out = np.zeros(n)
+    beam_freq = rng.uniform(180.0, 260.0)
+    settle_s = rng.uniform(0.02, 0.06)
+    for k, (pos_s, force) in enumerate(((0.0, 1.0), (settle_s, rng.uniform(0.4, 0.55)))):
+        body = modal_hit(
+            SR, 0.3, base_freq=beam_freq * (1.0 + 0.03 * k),
+            mode_ratios=[1.0, 2.76, 5.4, 8.9],
+            mode_dampings_s=[0.055, 0.03, 0.014, 0.006],
+            mode_amps=[1.0, 0.6, 0.3, 0.12], rng=rng, detune=0.02,
+        )
+        thump = modal_hit(SR, 0.15, base_freq=rng.uniform(95.0, 125.0), mode_ratios=[1.0], mode_dampings_s=[0.03], mode_amps=[1.0])
+        click_n = int(0.004 * SR)
+        click = static_filter(rng.standard_normal(click_n), SR, fc=2500.0, q=0.7, kind="highpass") * np.exp(-np.arange(click_n) / SR / 0.0008)
+        pos = int(pos_s * SR)
+        _place(out, body * 0.62 * force, pos)
+        _place(out, thump * 0.3 * force, pos)
+        _place(out, click * 0.45 * force, pos)
+
+    creak_start = int((settle_s + rng.uniform(0.07, 0.12)) * SR)
+    t = creak_start
+    for _ in range(int(rng.integers(4, 8))):
+        tick = modal_hit(
+            SR, 0.03, base_freq=rng.uniform(900.0, 1500.0),
+            mode_ratios=[1.0, 2.3], mode_dampings_s=[0.006, 0.003],
+            mode_amps=[1.0, 0.4], rng=rng, detune=0.05,
+        )
+        _place(out, tick * rng.uniform(0.06, 0.12), t)
+        t += int(rng.uniform(0.012, 0.03) * SR)
+
+    # Los senos amortiguados que arrancan en fase cero dejan continua; sin
+    # este filtro, `remove_dc` la convertiria en un escalon al final.
+    out = static_filter(out, SR, fc=40.0, q=0.707, kind="highpass")
+    fade_n = int(0.03 * SR)
+    out[-fade_n:] *= np.linspace(1.0, 0.0, fade_n) ** 2
+    return out
 
 
 def build_snap(name: str) -> np.ndarray:
