@@ -297,3 +297,39 @@ Regenerar:
 y la lámina con
 `blender -b --factory-startup --python Tools/Blender/props/preview_kit.py -- --mode=tiles --module=items_herramientas --out=items-herramientas --cols=5 --res=1600x800`
 (`preview_rot_z` en la variante gira la pieza solo en la lámina).
+
+### Rescatados, recursos y armas (`items_rescatados.py`, `items_recursos.py`, `items_armas.py`)
+
+Láminas: `docs/art/modelos/items-rescatados.png`, `items-recursos.png` e `items-armas.png`.
+La chapa y el tubo llevan la librea del Albatros (crema, franja roja, filete dorado)
+con material **no metálico** (`M_Paper`): con `M_Metal` el crema se leía gris
+azulado; el aluminio desnudo lo dan los desconchones y los remaches.
+`preview_rot_x` / `preview_rot_y` giran una pieza solo en la lámina (la flecha se
+tumba para no salir diminuta).
+
+| Malla | Tamaño | Agarre / notas |
+|---|---|---|
+| `SM_Item_Brujula` | Ø 5 cm | Latón, tapa abierta con espejo hacia -Y, esfera con rosa y aguja roja/crema, argolla |
+| `SM_Item_CableElectrico` | Ø 17 cm | Rollo rojo de 4-5 vueltas con cabos y cobre pelado en abanico |
+| `SM_Item_Cerillas` | 8 cm | Caja amarilla con franja roja/azul y raspador, cajón abierto con cabezas, dos sueltas (una gastada) |
+| `SM_Item_ChapaFuselaje` | 55 × 38 cm | Curvada, borde desgarrado, esquina doblada, dos filas de remaches, imprimación verde por dentro |
+| `SM_Item_CintaAmericana` | Ø 10 cm | Cinta verde oliva, canuto de cartón, lengüeta despegada |
+| `SM_Item_TuboAluminio` | 80 cm | Tirante de ala combado y abollado, herraje aplastado con perno y tuercas, extremo roto |
+| `SM_Item_MaderaNaufragio` | 86 cm | Tablón con pintura azul, clavos con óxido, extremo astillado, bellotas de mar |
+| `SM_Item_MaderaBlanda` | 50 cm | Cuarto de tronco de balsa: rajas crema rosado, corteza con liquen |
+| `SM_Item_MaderaDura` | 56 cm | Guayabo: corteza jaspeada canela/oliva, muñón, cortes con duramen rojizo |
+| `SM_Item_MaderaFlotante` | 72 cm | Horquilla pulida color miel con grietas, puntas romas |
+| `SM_Item_VaraFlexible` | 1,4 m | Media caña de bambú combada en planta, nudos, extremo atado |
+| `SM_Item_Basalto` | 15 cm | Trozo de columna hexagonal con fractura inclinada, pátina de óxido y vacuolas |
+| `SM_Item_Arenisca` | 19 cm | Laja de estratos ocres, cara de afilar más clara |
+| `SM_Item_ArcillaRoja` | 13 cm | Pella aplastada con dos huellas de pulgar, borde secándose |
+| `SM_Item_CarbonVegetal` | 14 cm | Tres trozos con grietas en damero y cortes anillados |
+| `SM_Item_Resina` | 13 cm | Tres lágrimas de ámbar sobre una lasca de corteza |
+| `SM_Item_Arco` | 1,24 m | **Socket:** centro de la empuñadura; palas por ±Z, espalda +X, cuerda a -X (fiador ~13 cm) |
+| `SM_Item_Flecha` | 77 cm | **Socket:** culatín (z = 0); punta de obsidiana en +Z, pluma guía roja hacia -X |
+| `SM_Item_SenueloTallado` | 10 cm | Pececillo pintado tumbado de costado, anzuelo de hueso, ojal de cordel |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_rescatados,items_recursos,items_armas`
+y `preview_kit.py -- --mode=tiles --module=items_rescatados --out=items-rescatados --cols=4 --res=1600x800`
+(`items_recursos` igual; `items_armas` con `--cols=3 --res=1500x500`).

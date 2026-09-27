@@ -299,8 +299,9 @@ def module_tiles(mod_name, slug, samples, res, cols=4, group=None, only=None):
         bpy.ops.wm.read_factory_settings(use_empty=True)
         o = mod.build(v)
         # giro opcional SOLO para la lámina (p.ej. la pala, cuya hoja mira
-        # a +X por convención de socket y se vería de canto)
-        o.rotation_euler.z = v.get('preview_rot_z', 0.0)
+        # a +X por convención de socket y se vería de canto, o la flecha,
+        # que de pie sale diminuta y se tumba con preview_rot_y)
+        o.rotation_euler = (v.get('preview_rot_x', 0.0), v.get('preview_rot_y', 0.0), v.get('preview_rot_z', 0.0))
         bpy.context.view_layer.update()
         x0, x1, y0, y1, z0, _ = _bounds(o)
         ext = max(x1 - x0, y1 - y0)

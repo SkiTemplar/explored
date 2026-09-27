@@ -437,3 +437,42 @@ def smooth_all(obj):
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.shade_smooth(keep_sharp_edges=False)
     return obj
+
+
+# ---------------------------------------------------------------------------
+# helpers de barras y perfiles (items_rescatados.py, items_recursos.py)
+# ---------------------------------------------------------------------------
+def rrect(w, t, r, corner_segs=3, side_pts=2):
+    """Perfil de rectángulo redondeado (ancho `w` en el primer eje, alto
+    `t` en el segundo, radio de esquina `r` ABSOLUTO) como lista de
+    (u, v) en sentido antihorario. `side_pts` puntos intermedios por lado
+    recto, para poder pintar bandas finas en las caras."""
+    r = min(r, w / 2 * 0.99, t / 2 * 0.99)
+    hu, hv = w / 2 - r, t / 2 - r
+    corners = [(hu, hv, 0.0), (-hu, hv, math.pi / 2), (-hu, -hv, math.pi), (hu, -hv, 1.5 * math.pi)]
+    pts = []
+    for ci, (cu, cv, a0) in enumerate(corners):
+        for k in range(corner_segs + 1):
+            a = a0 + (math.pi / 2) * k / corner_segs
+            pts.append((cu + math.cos(a) * r, cv + math.sin(a) * r))
+        # lado recto hasta la siguiente esquina
+        nu, nv, na = corners[(ci + 1) % 4]
+        end = (pts[-1][0], pts[-1][1])
+        nxt = (nu + math.cos(na) * r, nv + math.sin(na) * r)
+        for s in range(1, side_pts + 1):
+            f = s / (side_pts + 1)
+            pts.append((end[0] + (nxt[0] - end[0]) * f, end[1] + (nxt[1] - end[1]) * f))
+    return pts
+
+
+def loft_x(name, xs, section, cap=True):
+    """Barra a lo largo de +X: `section(x)` devuelve la lista de puntos
+    (y, z) de la sección en esa x (todas con el mismo número de puntos).
+    El índice de vértice sigue anillo * n + k, útil para pintar."""
+    rings = [[Vector((x, y, z)) for (y, z) in section(x)] for x in xs]
+    return C.ring_loft(name, rings, cap_start=cap, cap_end=cap)
+
+
+def noise3(co, scale, seed=0.0):
+    """Ruido Perlin -1..1 en una posición (para manchas y vetas)."""
+    return mnoise.noise(Vector((co.x * scale + seed, co.y * scale - seed * 0.7, co.z * scale + seed * 1.3)))

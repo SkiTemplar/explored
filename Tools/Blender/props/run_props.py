@@ -64,6 +64,9 @@ MODULE_GROUPS = [
     ('items_materiales', 'Items'),
     ('items_contenedores', 'Items'),
     ('items_naturales', 'Items'),
+    ('items_rescatados', 'Items'),
+    ('items_recursos', 'Items'),
+    ('items_armas', 'Items'),
 ]
 
 
