@@ -8,7 +8,7 @@ namespace
 {
 	using E = EIslandArchetype;
 
-	FBeachDebrisRule MakeRule(const TCHAR* Species, const TCHAR* Category, const TCHAR* Filter,
+	FBeachDebrisRule MakeDebrisRule(const TCHAR* Species, const TCHAR* Category, const TCHAR* Filter,
 		std::initializer_list<TPair<EIslandArchetype, float>> Weights)
 	{
 		FBeachDebrisRule Rule;
@@ -34,7 +34,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 
 	// Cocos sueltos, como los que caen de las palmeras de la costa.
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("BeachCoconut"), TEXT("palm"), TEXT("Coconut"),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("BeachCoconut"), TEXT("palm"), TEXT("Coconut"),
 			{{E::Landing, 1.0f}, {E::WhiteSands, 1.0f}, {E::Emerald, 0.5f}, {E::Mesa, 0.3f}, {E::Teeth, 0.2f}, {E::Smoke, 0.15f}, {E::Mangrove, 0.15f}});
 		R.MinScale = 0.7f;
 		R.MaxScale = 1.1f;
@@ -42,7 +42,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 	}
 	// Montoncitos de cocos ya varados (malla de detrito agrupada).
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("BeachCoconutPile"), TEXT("debris"), TEXT("Coconuts"),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("BeachCoconutPile"), TEXT("debris"), TEXT("Coconuts"),
 			{{E::Landing, 0.8f}, {E::WhiteSands, 0.9f}, {E::Emerald, 0.4f}, {E::Mesa, 0.25f}});
 		R.MinScale = 0.8f;
 		R.MaxScale = 1.2f;
@@ -50,7 +50,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 	}
 	// Troncos a la deriva, tumbados en la arena.
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("Driftwood"), TEXT("debris"), TEXT("LogMoss"),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("Driftwood"), TEXT("debris"), TEXT("LogMoss"),
 			{{E::Landing, 0.7f}, {E::WhiteSands, 0.6f}, {E::Mangrove, 0.7f}, {E::Emerald, 0.4f}, {E::Mesa, 0.3f}, {E::Teeth, 0.35f}, {E::Smoke, 0.2f}});
 		R.AlignToNormal = 1.0f;
 		R.MinScale = 0.6f;
@@ -59,7 +59,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 	}
 	// Ramas menores, mezcladas con los troncos.
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("DriftBranch"), TEXT("debris"), TEXT("Branch"),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("DriftBranch"), TEXT("debris"), TEXT("Branch"),
 			{{E::Landing, 0.5f}, {E::WhiteSands, 0.4f}, {E::Mangrove, 0.5f}, {E::Emerald, 0.3f}, {E::Teeth, 0.25f}});
 		R.AlignToNormal = 0.8f;
 		R.MinScale = 0.6f;
@@ -71,7 +71,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 	// manifiesto; el horneado la descarta mientras Meshes esté vacío (igual que cualquier
 	// FScatterRule sin candidatos).
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("Shell"), TEXT("shell"), TEXT(""),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("Shell"), TEXT("shell"), TEXT(""),
 			{{E::Landing, 1.0f}, {E::WhiteSands, 1.0f}, {E::Emerald, 0.5f}, {E::Mesa, 0.4f}, {E::Teeth, 0.4f}, {E::Smoke, 0.2f}, {E::Mangrove, 0.2f}});
 		R.MinScale = 0.5f;
 		R.MaxScale = 1.0f;
@@ -79,7 +79,7 @@ TArray<FBeachDebrisRule> FBeachDebrisModel::DefaultRules()
 	}
 	// Algas: sin malla todavía, mismo motivo que las conchas.
 	{
-		FBeachDebrisRule R = MakeRule(TEXT("Seaweed"), TEXT("seaweed"), TEXT(""),
+		FBeachDebrisRule R = MakeDebrisRule(TEXT("Seaweed"), TEXT("seaweed"), TEXT(""),
 			{{E::Landing, 0.7f}, {E::WhiteSands, 0.6f}, {E::Mangrove, 0.8f}, {E::Emerald, 0.4f}, {E::Mesa, 0.3f}, {E::Teeth, 0.5f}});
 		R.AlignToNormal = 1.0f;
 		R.MinScale = 0.6f;
