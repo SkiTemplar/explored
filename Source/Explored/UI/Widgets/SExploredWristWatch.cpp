@@ -68,10 +68,10 @@ void SExploredWristWatch::Construct(const FArguments& InArgs)
 TSharedRef<SWidget> SExploredWristWatch::MakeNeedRow(const FText& Label, ENeedLevel FWristWatchReadout::* Field)
 {
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	TWeakPtr<SExploredWristWatch> WeakThis = SharedThis(this);
-	auto Level = [WeakThis, Field]()
+	TWeakPtr<SExploredWristWatch> WeakSelf = SharedThis(this);
+	auto Level = [WeakSelf, Field]()
 	{
-		const TSharedPtr<SExploredWristWatch> Pinned = WeakThis.Pin();
+		const TSharedPtr<SExploredWristWatch> Pinned = WeakSelf.Pin();
 		return Pinned.IsValid() ? Pinned->Readout.Get().*Field : ENeedLevel::Good;
 	};
 

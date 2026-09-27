@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 590,
+		"total": 592,
 		"cpp": 286,
-		"datos": 304,
+		"datos": 306,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -5424,6 +5424,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «afilar_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "angarillas.nameEs",
+			"es": "Angarillas",
+			"en": "Travois",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «angarillas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "angarillas.nameTemplate",
+			"es": "Angarillas de {0}",
+			"en": "{0} travois",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «angarillas» nameTemplate/nameTemplateEn"
 			]
 		},
 		{

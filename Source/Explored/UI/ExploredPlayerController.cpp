@@ -509,8 +509,8 @@ void AExploredPlayerController::RequestSaveGame()
 
 void AExploredPlayerController::OpenMap()
 {
-	const AExploredCharacter* Character = Cast<AExploredCharacter>(GetPawn());
-	UCartographyComponent* Cartography = Character ? Character->GetCartographyComponent() : nullptr;
+	const AExploredCharacter* OwnerCharacter = Cast<AExploredCharacter>(GetPawn());
+	UCartographyComponent* Cartography = OwnerCharacter ? OwnerCharacter->GetCartographyComponent() : nullptr;
 	if (!Cartography)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Explored] No hay mapa que sacar: el peón no tiene UCartographyComponent"));

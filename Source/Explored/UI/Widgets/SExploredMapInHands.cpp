@@ -91,29 +91,29 @@ void SExploredMapInHands::Construct(const FArguments& InArgs)
 	StatusText = NSLOCTEXT("ExploredUI", "MapHintPlace", "Pulsa en la hoja para poner la marca.");
 
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	const TWeakPtr<SExploredMapInHands> WeakThis = SharedThis(this);
+	const TWeakPtr<SExploredMapInHands> WeakSelf = SharedThis(this);
 
 	Sheet = SNew(SExploredMapSheet)
 		.Cartography(Cartography)
 		.bInteractive(true)
-		.ViewCenter_Lambda([WeakThis]()
+		.ViewCenter_Lambda([WeakSelf]()
 		{
-			const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+			const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 			return Pinned.IsValid() ? Pinned->View.Center : FVector2D(0.5, 0.5);
 		})
-		.ViewSize_Lambda([WeakThis]()
+		.ViewSize_Lambda([WeakSelf]()
 		{
-			const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+			const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 			return Pinned.IsValid() ? static_cast<float>(Pinned->View.Size) : 1.0f;
 		})
-		.ShowWayfinding_Lambda([WeakThis]()
+		.ShowWayfinding_Lambda([WeakSelf]()
 		{
-			const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+			const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 			return Pinned.IsValid() && Pinned->bShowWayfinding;
 		})
-		.SelectedMark_Lambda([WeakThis]()
+		.SelectedMark_Lambda([WeakSelf]()
 		{
-			const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+			const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 			return Pinned.IsValid() ? Pinned->SelectedMark : int32(INDEX_NONE);
 		})
 		.OnViewRequested(FOnMapSheetViewRequested::CreateSP(this, &SExploredMapInHands::HandleViewRequested))
@@ -299,9 +299,9 @@ TSharedRef<SWidget> SExploredMapInHands::BuildNotebook()
 		+ SVerticalBox::Slot().FillHeight(1.0f).Padding(FMargin(0.0f, 10.0f))
 		[
 			SAssignNew(Pages, SWidgetSwitcher)
-			.WidgetIndex_Lambda([WeakThis = TWeakPtr<SExploredMapInHands>(SharedThis(this))]()
+			.WidgetIndex_Lambda([WeakSelf = TWeakPtr<SExploredMapInHands>(SharedThis(this))]()
 			{
-				const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+				const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 				return Pinned.IsValid() ? Pinned->ActiveTab : 0;
 			})
 			+ SWidgetSwitcher::Slot() [ BuildMarksPage() ]
@@ -454,7 +454,7 @@ TSharedRef<SWidget> SExploredMapInHands::BuildWayfindingPage()
 {
 	using namespace ExploredMapInHandsDetail;
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	const TWeakPtr<SExploredMapInHands> WeakThis = SharedThis(this);
+	const TWeakPtr<SExploredMapInHands> WeakSelf = SharedThis(this);
 
 	TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
 	for (const FWayfindingAnnotation& Annotation : Annotations)
@@ -502,14 +502,14 @@ TSharedRef<SWidget> SExploredMapInHands::BuildWayfindingPage()
 		[
 			SNew(SCheckBox)
 			.Style(&Style.CheckBoxStyle())
-			.IsChecked_Lambda([WeakThis]()
+			.IsChecked_Lambda([WeakSelf]()
 			{
-				const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin();
+				const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin();
 				return Pinned.IsValid() && Pinned->bShowWayfinding ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 			})
-			.OnCheckStateChanged_Lambda([WeakThis](ECheckBoxState State)
+			.OnCheckStateChanged_Lambda([WeakSelf](ECheckBoxState State)
 			{
-				if (const TSharedPtr<SExploredMapInHands> Pinned = WeakThis.Pin())
+				if (const TSharedPtr<SExploredMapInHands> Pinned = WeakSelf.Pin())
 				{
 					Pinned->bShowWayfinding = State == ECheckBoxState::Checked;
 				}

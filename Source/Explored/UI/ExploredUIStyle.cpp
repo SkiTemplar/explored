@@ -45,11 +45,11 @@ FExploredUIStyle::FExploredUIStyle()
 	CheckBoxStyleValue.SetCheckedPressedImage(CheckedBrush);
 
 	static const FSlateRoundedBoxBrush BarBrush(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), 3.0f, FVector2D(1.0f, 6.0f));
-	static const FSlateRoundedBoxBrush ThumbBrush(ColorAccent(), 8.0f, FVector2D(16.0f, 16.0f));
+	static const FSlateRoundedBoxBrush SliderThumbBrush(ColorAccent(), 8.0f, FVector2D(16.0f, 16.0f));
 	SliderStyleValue.SetNormalBarImage(BarBrush);
 	SliderStyleValue.SetHoveredBarImage(BarBrush);
-	SliderStyleValue.SetNormalThumbImage(ThumbBrush);
-	SliderStyleValue.SetHoveredThumbImage(ThumbBrush);
+	SliderStyleValue.SetNormalThumbImage(SliderThumbBrush);
+	SliderStyleValue.SetHoveredThumbImage(SliderThumbBrush);
 	SliderStyleValue.SetBarThickness(6.0f);
 
 	static const FSlateRoundedBoxBrush ScrollThumbBrush(ColorAccentDim(), 3.0f);

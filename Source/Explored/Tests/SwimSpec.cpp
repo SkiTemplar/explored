@@ -258,7 +258,7 @@ void FSwimSpec::Define()
 					TestEqual(TEXT("La corriente no se suma a la velocidad Y"), Step.Velocity.Y, 0.0, 1e-9);
 				}
 				// En 1 s arrastra exactamente la corriente en cm/s, sin importar el frenado ni los FPS.
-				TestEqual(TEXT("Arrastre de 1 s"), Drift, Current, 1e-2f);
+				TestTrue(TEXT("Arrastre de 1 s"), Drift.Equals(Current, 1e-2));
 			}
 
 			FSwimModel OnLand;

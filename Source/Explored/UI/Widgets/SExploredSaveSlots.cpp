@@ -33,11 +33,11 @@ void SExploredSaveSlots::Construct(const FArguments& InArgs)
 	BackButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Back", "Volver"),
 		FOnClicked::CreateSP(this, &SExploredSaveSlots::HandleBack), false);
 
-	const TWeakPtr<SExploredSaveSlots> WeakThis = SharedThis(this);
+	const TWeakPtr<SExploredSaveSlots> WeakSelf = SharedThis(this);
 	TSharedRef<SWidget> Body = SNew(SWidgetSwitcher)
-		.WidgetIndex_Lambda([WeakThis]()
+		.WidgetIndex_Lambda([WeakSelf]()
 		{
-			const TSharedPtr<SExploredSaveSlots> Pinned = WeakThis.Pin();
+			const TSharedPtr<SExploredSaveSlots> Pinned = WeakSelf.Pin();
 			return Pinned.IsValid() && !Pinned->PendingOverwrite.IsEmpty() ? 1 : 0;
 		})
 		+ SWidgetSwitcher::Slot()
@@ -55,9 +55,9 @@ void SExploredSaveSlots::Construct(const FArguments& InArgs)
 			BuildConfirm()
 		];
 
-	const TAttribute<FText> Subtitle = TAttribute<FText>::CreateLambda([WeakThis]()
+	const TAttribute<FText> Subtitle = TAttribute<FText>::CreateLambda([WeakSelf]()
 	{
-		const TSharedPtr<SExploredSaveSlots> Pinned = WeakThis.Pin();
+		const TSharedPtr<SExploredSaveSlots> Pinned = WeakSelf.Pin();
 		return Pinned.IsValid() ? Pinned->StatusText : FText::GetEmpty();
 	});
 
@@ -185,7 +185,7 @@ TSharedRef<SWidget> SExploredSaveSlots::BuildRow(const ExploredScreens::FSaveSlo
 TSharedRef<SWidget> SExploredSaveSlots::BuildConfirm()
 {
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	const TWeakPtr<SExploredSaveSlots> WeakThis = SharedThis(this);
+	const TWeakPtr<SExploredSaveSlots> WeakSelf = SharedThis(this);
 
 	CancelButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "SlotsCancel", "Cancelar"),
 		FOnClicked::CreateSP(this, &SExploredSaveSlots::HandleCancelOverwrite), false);
@@ -197,9 +197,9 @@ TSharedRef<SWidget> SExploredSaveSlots::BuildConfirm()
 			+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 20.0f))
 			[
 				SNew(STextBlock)
-				.Text_Lambda([WeakThis]()
+				.Text_Lambda([WeakSelf]()
 				{
-					const TSharedPtr<SExploredSaveSlots> Pinned = WeakThis.Pin();
+					const TSharedPtr<SExploredSaveSlots> Pinned = WeakSelf.Pin();
 					if (!Pinned.IsValid())
 					{
 						return FText::GetEmpty();
