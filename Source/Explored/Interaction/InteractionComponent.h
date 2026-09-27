@@ -6,6 +6,7 @@
 #include "InteractionComponent.generated.h"
 
 class UCameraComponent;
+class UPrimitiveComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFocusChanged, AActor*, NewFocus);
 
@@ -26,6 +27,15 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Interacción")
 	AActor* GetFocusedActor() const { return FocusedActor.Get(); }
+
+	/**
+	 * Componente e instancia exactos que golpeó la traza (relevante cuando el
+	 * foco es un UHierarchicalInstancedStaticMeshComponent, p. ej. vegetación
+	 * o rocas: muchas instancias comparten un único actor «celda»). Instancia
+	 * -1 si el foco no viene de un HISM.
+	 */
+	UPrimitiveComponent* GetFocusedComponent() const { return FocusedComponent.Get(); }
+	int32 GetFocusedInstanceIndex() const { return FocusedInstanceIndex; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Interacción")
 	TArray<FText> GetContextVerbs() const { return CurrentVerbs; }
@@ -51,6 +61,11 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<AActor> FocusedActor;
+
+	UPROPERTY()
+	TWeakObjectPtr<UPrimitiveComponent> FocusedComponent;
+
+	int32 FocusedInstanceIndex = INDEX_NONE;
 
 	/** true si el último OnFocusChanged emitido fue con un actor (ver L5 en UpdateFocus). */
 	bool bHasFocus = false;
