@@ -51,11 +51,11 @@ que no hay que tocar `import_textures.py` al añadir materiales.
 | `ForestFloor` | 1.5 m | Hojarasca del suelo de selva: 6 capas de hojas caídas en lanza (ocre, teja, marrón y ~10 % aún verdes) con nervio central y borde algo curvado; las capas de abajo más oscuras (profundidad sin negro), ramitas y tierra en los huecos. |
 | `Ash` | 2 m | Ceniza del Humo: mantos claros gris lavanda con rizos de viento asimétricos, placas de costra grandes y biseladas (bandejas, no garabatos de grietas), pómez con volumen y poros, pocos carbones angulosos y alguna brasa con halo. |
 | `VolcanicRock` | 3 m | Basalto pizarra azulado/violeta en bloques de ~60 cm con caras facetadas (low-poly) y cantos biselados que atrapan la luz, juntas estrechas, vesículas en racimos, óxido cálido cerca de las juntas y granos de olivino. |
-| `Limestone` | 3 m | Caliza estratificada clara con poros y líquenes naranja/salvia. |
+| `Limestone` | 3 m | Caliza clara crema en losas grandes de canto redondeado y caras algo facetadas (low-poly), repisas de estrato suaves (sin grietas finas oscuras), alveolos de disolución en racimos y costras de liquen naranja/salvia con borde neto. |
 | `PalmThatch` | 1 m | Techo de hojas de palma en hileras solapadas cuyo borde ondula suavemente (atado a mano, no a regla); **v = pendiente abajo**. |
 | `PalmWeave` | 0.6 m | Estera de palma trenzada en diagonal (paredes, techos interiores, cestos). |
 | `Bamboo` | 1 m | Cañas juntas con nudos; **v = a lo largo de la caña**; brillo (rugosidad ~0.4). |
-| `WoodPlanks` | 2 m | Tablones con juntas escalonadas, nudos y clavos; **u = a lo largo de la tabla**. |
+| `WoodPlanks` | 2 m | Tablones largos (6 hileras, 1 o 2 juntas escalonadas), veta en arcos de corte plano que rodea los nudos (o recta), tono por tabla (miel, caramelo, rojizo, ~15 % gastadas por el sol), cantos redondeados y clavos; **u = a lo largo de la tabla**. |
 | `StoneWall` | 2.5 m | Muro polinesio de piedra seca: basalto encajado con caras planas (low-poly), algún bloque de coral poroso, musgo en juntas y en la mitad baja de cada piedra. |
 | `Canvas` | 0.5 m | Lona de vela/toldo: tafetán de 44 hilos/tile con matiz por hilo, zonas descoloridas por el sol y pocas manchas de sal con cerco fino. |
 | `Rope` | 0.25 m | Cuerda de 3 cabos redondos con hilos en torsión contraria (arcos en «S»): **u = alrededor, v = a lo largo** (UV de cilindro). |
@@ -147,5 +147,5 @@ orilla y `f.g` (burbujas) / `f.a` (estelas) para detalle en crestas.
    salir del generador) y que la variación macro del albedo
    esté en rango (`tests/test_macro.py`: ni plano a lo lejos ni manchas que dominen el
    tile); `tests/test_palette.py` fija la intención de color de algunos materiales (basalto
-   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
+   azulado y no marrón barro, hojarasca cálida, ceniza clara y neutra, caliza clara y crema, tablones cálidos con tono distinto por hilera); genera la hoja de contacto y **mírala** (sobre todo la miniatura 4×4) antes de
    darlo por bueno.
