@@ -124,7 +124,7 @@ void FFellingModelSpec::Define()
 			FFellingProgress Progress;
 			TestFalse(TEXT("la pala no tala"), FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Shovel, FVector2D(1.0, 0.0)));
 			TestEqual(TEXT("sin trabajo"), Progress.Work, 0);
-			TestEqual(TEXT("sin empuje"), Progress.Push, FVector2D::ZeroVector);
+			TestTrue(TEXT("sin empuje"), Progress.Push.IsZero());
 			while (!FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0))) {}
 			TestFalse(TEXT("un golpe más no cae otra vez"), FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0)));
 			TestEqual(TEXT("trabajo saturado"), Progress.Work, FFellingModel::WorkToFell);
@@ -138,7 +138,7 @@ void FFellingModelSpec::Define()
 			FFellingProgress Progress;
 			const FFellingProfile& Palm = Get(TEXT("Palm"));
 			for (int32 i = 0; i < 4; ++i) { FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(0.0, -3.0)); }
-			TestEqual(TEXT("hacia -Y"), FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 7u), FVector2D(0.0, -1.0), 1.0e-6f);
+			TestTrue(TEXT("hacia -Y"), FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 7u).Equals(FVector2D(0.0, -1.0), 1.0e-6));
 		});
 
 		It("en pendiente fuerte manda la pendiente aunque se golpee desde abajo", [this]()
@@ -173,7 +173,7 @@ void FFellingModelSpec::Define()
 			const FVector2D B = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 42u);
 			const FVector2D C = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 43u);
 			TestEqual(TEXT("unitaria (no NaN ni cero)"), A.Size(), 1.0, 1.0e-6);
-			TestEqual(TEXT("misma semilla, misma dirección"), A, B);
+			TestTrue(TEXT("misma semilla, misma dirección"), A == B);
 			TestTrue(TEXT("otra semilla, otra dirección"), !A.Equals(C, 1.0e-3));
 		});
 	});
@@ -260,7 +260,7 @@ void FFellingModelSpec::Define()
 			}
 		});
 
-		It("aguanta una dirección nula o NaN-libre y un perfil vacío sin soltar nada raro", [this]()
+		It("aguanta una dirección de caída nula y un perfil vacío", [this]()
 		{
 			FFellingProfile Empty;
 			FExploredRandom Random(1);
@@ -296,11 +296,11 @@ void FFellingModelSpec::Define()
 	{
 		It("usa suelo, no truncamiento, y el borde exacto pertenece a la celda de la derecha", [this]()
 		{
-			TestEqual(TEXT("-0,5 → -1"), FFellingModel::CellOf(FVector2D(-0.5, -0.5), 100.0), FIntPoint(-1, -1));
-			TestEqual(TEXT("-100 → -1"), FFellingModel::CellOf(FVector2D(-100.0, 0.0), 100.0), FIntPoint(-1, 0));
-			TestEqual(TEXT("-100,001 → -2"), FFellingModel::CellOf(FVector2D(-100.001, 0.0), 100.0), FIntPoint(-2, 0));
-			TestEqual(TEXT("100 → 1"), FFellingModel::CellOf(FVector2D(100.0, 99.999), 100.0), FIntPoint(1, 0));
-			TestEqual(TEXT("tamaño de celda inválido → origen"), FFellingModel::CellOf(FVector2D(5000.0, 5000.0), 0.0), FIntPoint(0, 0));
+			TestTrue(TEXT("-0,5 → -1"), FFellingModel::CellOf(FVector2D(-0.5, -0.5), 100.0) == FIntPoint(-1, -1));
+			TestTrue(TEXT("-100 → -1"), FFellingModel::CellOf(FVector2D(-100.0, 0.0), 100.0) == FIntPoint(-1, 0));
+			TestTrue(TEXT("-100,001 → -2"), FFellingModel::CellOf(FVector2D(-100.001, 0.0), 100.0) == FIntPoint(-2, 0));
+			TestTrue(TEXT("100 → 1"), FFellingModel::CellOf(FVector2D(100.0, 99.999), 100.0) == FIntPoint(1, 0));
+			TestTrue(TEXT("tamaño de celda inválido → origen"), FFellingModel::CellOf(FVector2D(5000.0, 5000.0), 0.0) == FIntPoint(0, 0));
 		});
 	});
 
