@@ -32,8 +32,9 @@ import numpy as np
 from PIL import Image
 
 from .noise import blur, height_to_normal, macro_variation, mix_color, ramp
+from .polyhaven import fetch
 
-CACHE = Path(__file__).resolve().parent.parent / ".cache" / "polyhaven"
+from .polyhaven import CACHE
 LUMA = np.array([0.2126, 0.7152, 0.0722])
 
 
@@ -147,7 +148,7 @@ def kuwahara_periodic(rgb: np.ndarray, radius: int) -> np.ndarray:
 
 def photobash_rock(asset: str, size: int, style: RockStyle, seed: int = 0) -> dict[str, np.ndarray]:
     """Genera BC/N/ARH a partir de la caché de `asset` (ver `fetch_polyhaven.py`)."""
-    cache = CACHE / asset
+    cache = fetch(asset, CACHE)
     diff = _load(cache / "diff_2k.png", size, color=True)
     disp = _load(cache / "disp_2k.png", size, color=False)
     ao_src = _load(cache / "ao_2k.png", size, color=False)
