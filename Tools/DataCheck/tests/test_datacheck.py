@@ -236,8 +236,10 @@ def test_detecta_pendiente_obsoleto(ds: DataSet) -> None:
 
 
 def test_detecta_pendiente_que_falta(ds: DataSet) -> None:
-    ds.data["meshes_pendientes.json"]["items"].remove("limon")
-    assert any_error(errors_of(ds), "falta «limon»")
+    # cualquier objeto que siga pendiente (la lista se vacía lote a lote)
+    victim = ds.data["meshes_pendientes.json"]["items"][0]
+    ds.data["meshes_pendientes.json"]["items"].remove(victim)
+    assert any_error(errors_of(ds), f"falta «{victim}»")
 
 
 def test_detecta_desfase_con_survival_cpp(ds: DataSet) -> None:

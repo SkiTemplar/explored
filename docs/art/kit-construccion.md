@@ -333,3 +333,35 @@ Regenerar:
 `blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_rescatados,items_recursos,items_armas`
 y `preview_kit.py -- --mode=tiles --module=items_rescatados --out=items-rescatados --cols=4 --res=1600x800`
 (`items_recursos` igual; `items_armas` con `--cols=3 --res=1500x500`).
+
+### Comida vegetal y huevos (`items_frutas.py`)
+
+Lámina: `docs/art/modelos/items-frutas.png`. Objetos sueltos con el pivote en la
+base, centrados en XY y tumbados en su postura de reposo. **Crudo y cocinado son
+la misma malla** con otra paleta de color de vértice (`cooked=True` en la
+variante, misma semilla); el taro hervido va además pelado (sin muñón ni raíces).
+
+| Malla | Tamaño | Notas |
+|---|---|---|
+| `SM_Item_CocoVerde` | 26 cm | Ovoide de tres caras, verde con aristas claras, cáliz de tres sépalos |
+| `SM_Item_CocoMaduro` | 15 cm | Nuez pelada con vetas de fibra, tres ojos y mechón en el polo |
+| `SM_Item_Platano` | 18 cm | Sección de cinco caras, pedúnculo verde y punta negra, pecas |
+| `SM_Item_MangoFruta` | 13 cm | Arriñonado, verde → amarillo con rubor rojo |
+| `SM_Item_Limon` | 9,5 cm | Pezones en los polos, piel de poros y hoja en el rabillo |
+| `SM_Item_LimaSilvestre` | 5 cm | Casi esférica, verde con la cara de apoyo pálida |
+| `SM_Item_Maracuya` | 8,5 cm | Morada, arrugada y con motas claras |
+| `SM_Item_Pina` | 32 cm | De pie; ojos en doble espiral (8 hélices) y corona de 18 hojas en tres pisos |
+| `SM_Item_Batata` / `…Asada` | 23 cm | Huso granate con raicillas / piel tostada con carbón y grieta naranja |
+| `SM_Item_Taro` / `…Hervido` | 11 cm | Cormo anillado con yema rosada / pelado, lila con motas moradas |
+| `SM_Item_Yuca` / `…Cocida` | 32 cm | Raíz ahusada con corteza anillada y corte blanco / pelada, amarillo cera |
+| `SM_Item_SetaComestible` | 8 cm | Dos setas: sombrero anaranjado, láminas crema |
+| `SM_Item_Huevo` / `…Brasa` | 6,5 cm | Huevo de ave marina verde agua con motas / tostado con hollín |
+| `SM_Item_FrutaSeca` | 9 cm | Cinco tiras ámbar arrugadas y apiladas |
+| `SM_Item_FrutaFermentada` | 11 cm | Fruta blanda aplastada con magulladuras y espuma en la raja |
+| `SM_Item_ComidaQuemada` | 11 cm | Pegote carbonizado y dos migas, grietas de brasa |
+
+Regenerar:
+`blender -b --factory-startup --python Tools/Blender/props/run_props.py -- --modules=items_frutas`
+y `preview_kit.py -- --mode=tiles --module=items_frutas --out=items-frutas --cols=5 --res=1600x1280`.
+`preview_kit.py` fija ahora `clip_start = 5 mm` en la cámara de la tesela (con el
+recorte por defecto de 10 cm la cámara cortaba los objetos de 5 cm).
