@@ -36,12 +36,22 @@ VARIANTS = [
 
 
 def _leaf_palette(rnd):
-    """Paleta natural y ligeramente cálida (nunca verde saturado plano):
-    base oscura y olivácea, punta más clara y algo más cálida, con
-    variación aleatoria pequeña para que cada cúmulo no sea idéntico."""
-    warm = rnd.uniform(-0.02, 0.05)
-    dark = (0.085 + warm * 0.6, 0.185 + rnd.uniform(-0.02, 0.015), 0.065 + warm * 0.25)
-    light = (0.23 + warm, 0.38 + rnd.uniform(-0.03, 0.03), 0.14 + warm * 0.4)
+    """Paleta de hoja saturada con variación cálida/fría (dirección de arte
+    cartoon Sea of Thieves, 2026-09-27: «evita el verde pálido y lavado»).
+    Cada cúmulo tira a cálido-soleado (verde-amarillo vivo) o a
+    frío-sombrío (verde-azulado profundo) en vez de un oliva gris uniforme;
+    base siempre bastante más oscura que la punta para que el degradado
+    lea como luz real, no como un tinte plano."""
+    if rnd.random() < 0.55:
+        # cálido-soleado: verde-lima, NUNCA cruza a caqui/marrón (G se
+        # mantiene siempre bastante por delante de R).
+        warm = rnd.uniform(0.0, 0.06)
+        dark = (0.02 + warm * 0.4, 0.17 + rnd.uniform(-0.015, 0.02), 0.02)
+        light = (0.20 + warm * 0.9, 0.62 + rnd.uniform(-0.03, 0.04), 0.08 + warm * 0.2)
+    else:
+        cool = rnd.uniform(0.0, 0.06)
+        dark = (0.02, 0.15 + rnd.uniform(-0.015, 0.02), 0.06 + cool)
+        light = (0.14, 0.46 + rnd.uniform(-0.03, 0.03), 0.28 + cool * 1.5)
     return dark, light
 
 
@@ -53,28 +63,29 @@ def _tint_canopy_part(obj, rnd):
                                                      curve=0.85, jitter=0.03, rnd=rnd))
 
 
-def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd, lobe_tris=650):
-    """Un cúmulo de hoja frondoso, con degradado propio de tono. Es la
-    unidad que se reparte en las puntas de las ramas para dar una copa en
-    capas.
+_CANOPY_CELLS = ('leaf_small_round', 'leaf_small_round', 'leaf_a', 'leaf_a', 'leaf_b', 'leaf_serrated')
 
-    3ª pasada de arte: 2-4 blobs grandes se leía como «racimo de globos»;
-    subir a 7-11 blobs solapados (2ª pasada) mejoró la silueta pero seguía
-    leyéndose como bolas tocándose (cada esfera conserva su propio brillo
-    especular redondo). Fix real: fundir los blobs con un Remesh voxel
-    (fuse_blob_mass) en una única superficie continua antes de pintar/
-    asignar material — la copa pasa de «pool balls» a una masa de hoja
-    con lóbulos suaves. Además se agranda cada lóbulo (x1.9 en vez de
-    x1.35) para que los lóbulos de puntas de rama vecinas se solapen entre
-    sí y cubran los huecos de rama desnuda entre ellos — el render de
-    revisión mostraba 2-3 nubes de hoja sueltas separadas por ramas
-    visibles en vez de una copa continua."""
-    eff_radius_xy = radius_xy * 1.9
-    lobe = C.make_canopy_blobs(
-        name, center=center, radius_xy=eff_radius_xy, radius_z=radius_z * 0.85,
-        count=rnd.randint(7, 11), seed=seed,
-        blob_scale_range=(0.34, 0.52), subdivisions=2, relax_iterations=3,
-        voxel_remesh=eff_radius_xy * 0.16, target_tris=lobe_tris,
+
+def _canopy_lobe(name, center, radius_xy, radius_z, seed, rnd, lobe_tris=650):
+    """Un cúmulo de hoja hecho de TARJETAS con textura alfa (make_leaf_cluster_cards),
+    con degradado propio de tono. Es la unidad que se reparte en las puntas
+    de las ramas para dar una copa en capas.
+
+    4ª pasada de arte (encargo «no me hagas cutradas poligonales»): las tres
+    pasadas anteriores giraron en torno a blobs fundidos con Remesh voxel
+    (make_canopy_blobs+fuse_blob_mass) — de «racimo de globos» a una masa
+    lisa, pero seguía siendo un VOLUMEN SÓLIDO verde sin textura, la
+    «piruleta» que el encargo pidió eliminar explícitamente. El reemplazo de
+    raíz es la técnica estándar de card-based foliage (Sea of Thieves,
+    Tchia, Journey to the Savage Planet): decenas de tarjetas con textura de
+    hoja y alfa recortado alrededor de la punta de cada rama, nunca un
+    volumen. Se mantiene el radio ampliado (x1.6) para que los lóbulos de
+    puntas de rama vecinas se solapen y cubran los huecos de rama desnuda
+    entre ellos."""
+    eff_radius_xy = radius_xy * 1.8
+    lobe = C.make_leaf_cluster_cards(
+        name, center=center, radius_xy=eff_radius_xy, radius_z=radius_z * 0.9,
+        seed=seed, cell_names=_CANOPY_CELLS, target_tris=lobe_tris,
     )
     C.assign_materials(lobe, ['M_Leaf'])
     _tint_canopy_part(lobe, rnd)
@@ -201,7 +212,7 @@ def _big_leaf_crown(top, rnd, seed, n_leaves, leaf_len_range):
         leaf = C.make_leaf_blade(
             f'BigLeaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.34,
             width_tip=leaf_len * 0.10, curve_amount=leaf_len * 0.28,
-            segments=7, double_sided=True,
+            segments=7, double_sided=True, uv_cell=rnd.choice(('leaf_a', 'leaf_b')),
         )
         ang = (2.0 * math.pi * i / n_leaves) + rnd.uniform(-0.3, 0.3)
         elevation = rnd.uniform(math.radians(15), math.radians(55))
@@ -222,9 +233,9 @@ def build(variant):
 
     if kind == 'giant':
         height = rnd.uniform(25.0, 35.0)
-        base_radius = rnd.uniform(0.32, 0.48)          # ~64-96 cm de diámetro
-        tip_radius = base_radius * 0.42
-        curvature = height * rnd.uniform(0.015, 0.04)
+        base_radius = rnd.uniform(0.40, 0.60)          # ~80-120 cm de diámetro: silueta
+        tip_radius = base_radius * 0.42                # exagerada (cartoon), no un poste fino
+        curvature = height * rnd.uniform(0.03, 0.07)
         trunk, lean_dir = C.make_curved_trunk(
             'Trunk', height, base_radius, tip_radius, curvature,
             n_points=10, bevel_resolution=6, wobble=height * 0.006, rnd=rnd,
@@ -253,9 +264,9 @@ def build(variant):
 
     elif kind == 'wide':
         height = rnd.uniform(12.0, 18.0)
-        base_radius = rnd.uniform(0.22, 0.34)
+        base_radius = rnd.uniform(0.28, 0.44)
         tip_radius = base_radius * 0.5
-        curvature = height * rnd.uniform(0.03, 0.07)
+        curvature = height * rnd.uniform(0.05, 0.10)
         trunk, lean_dir = C.make_curved_trunk(
             'Trunk', height, base_radius, tip_radius, curvature,
             n_points=8, bevel_resolution=5, wobble=height * 0.008, rnd=rnd,
@@ -284,9 +295,9 @@ def build(variant):
     elif kind == 'mangrove':
         lift = rnd.uniform(1.2, 2.2)
         height = rnd.uniform(9.0, 13.0)
-        base_radius = rnd.uniform(0.16, 0.24)
+        base_radius = rnd.uniform(0.20, 0.30)
         tip_radius = base_radius * 0.5
-        curvature = height * rnd.uniform(0.04, 0.09)
+        curvature = height * rnd.uniform(0.06, 0.13)
         trunk, lean_dir = C.make_curved_trunk(
             'Trunk', height, base_radius, tip_radius, curvature,
             n_points=7, bevel_resolution=4, wobble=height * 0.008, rnd=rnd,
@@ -323,9 +334,9 @@ def build(variant):
 
     else:  # understory
         height = rnd.uniform(6.0, 9.0)
-        base_radius = rnd.uniform(0.07, 0.11)
+        base_radius = rnd.uniform(0.09, 0.14)
         tip_radius = base_radius * 0.55
-        curvature = height * rnd.uniform(0.05, 0.11)
+        curvature = height * rnd.uniform(0.07, 0.15)
         trunk, lean_dir = C.make_curved_trunk(
             'Trunk', height, base_radius, tip_radius, curvature,
             n_points=6, bevel_resolution=3, wobble=height * 0.01, rnd=rnd,
@@ -351,5 +362,4 @@ def build(variant):
 
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=55.0)
-    C.add_basic_uv(obj)
     return obj

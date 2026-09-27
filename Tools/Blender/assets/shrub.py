@@ -79,7 +79,7 @@ def _build_fern_tree(rnd, seed):
             f'Frond_{i:02d}', length=frond_len * rnd.uniform(0.85, 1.1),
             width=frond_len * 0.30, leaflet_count=rnd.randint(22, 30),
             droop=frond_len * rnd.uniform(0.30, 0.5), seed=seed * 10 + i,
-            curl=0.2, rachis_width_ratio=0.014,
+            curl=0.2, rachis_width_ratio=0.014, leaflet_uv_cell='fern_leaflet',
         )
         forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.3))
         C.orient_and_place(frond, crown, forward, C.Vector((0, 0, 1)))
@@ -104,7 +104,7 @@ def _build_fern_ground(rnd, seed):
             f'Frond_{i:02d}', length=length * rnd.uniform(0.8, 1.15),
             width=length * 0.40, leaflet_count=rnd.randint(20, 26),
             droop=length * rnd.uniform(0.05, 0.20), seed=seed * 10 + i,
-            curl=0.25, rachis_width_ratio=0.014,
+            curl=0.25, rachis_width_ratio=0.014, leaflet_uv_cell='fern_leaflet',
         )
         elevation = rnd.uniform(math.radians(15), math.radians(55))
         forward = C.Vector((math.cos(ang), math.sin(ang), math.sin(elevation) * 1.6))
@@ -141,7 +141,7 @@ def _build_banana(rnd, seed):
         leaf = C.make_leaf_blade(
             f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.34,
             width_tip=leaf_len * 0.06, curve_amount=leaf_len * 0.30,
-            segments=segments, double_sided=False,
+            segments=segments, double_sided=False, uv_cell='banana_leaf',
         )
         if rnd.random() < 0.45:
             _tear_leaf_edges(leaf, segments, rnd, tear_count=rnd.randint(1, 2),
@@ -171,6 +171,7 @@ def _build_monstera(rnd, seed):
             f'Petiole_{i:02d}', height=petiole_h, base_radius=rnd.uniform(0.015, 0.024),
             tip_radius=rnd.uniform(0.010, 0.016), curvature=petiole_h * rnd.uniform(0.15, 0.3),
             n_points=5, bevel_resolution=2, rnd=rnd,
+            uv_rect=C.atlas_uv_rect('stem_swatch'),  # material M_Grass: ver nota de uv_rect
         )
         C.assign_materials(petiole, ['M_Grass'])
         C.set_vertex_colors(petiole, C.constant_tint((0.22, 0.38, 0.15), alpha=0.0, jitter=0.02, rnd=rnd))
@@ -184,7 +185,7 @@ def _build_monstera(rnd, seed):
         leaf = C.make_leaf_blade(
             f'Blade_{i:02d}', length=leaf_len, width_base=leaf_len * 0.72,
             width_tip=leaf_len * 0.5, curve_amount=leaf_len * 0.22,
-            segments=5, double_sided=False,
+            segments=5, double_sided=False, uv_cell='monstera_leaf',
         )
         top = C.Vector((math.cos(ang) * petiole_h * 0.3, math.sin(ang) * petiole_h * 0.3, petiole_h))
         tilt = rnd.uniform(math.radians(30), math.radians(60))
@@ -219,7 +220,7 @@ def _build_flowering(rnd, seed):
         leaf = C.make_leaf_blade(
             f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.30,
             width_tip=leaf_len * 0.06, curve_amount=leaf_len * 0.25,
-            segments=6, double_sided=True,
+            segments=6, double_sided=True, uv_cell='shrub_flower_leaf',
         )
         ang = rnd.uniform(0, 2 * math.pi)
         elevation = rnd.uniform(math.radians(20), math.radians(60))
@@ -248,7 +249,7 @@ def _build_flowering(rnd, seed):
             bract = C.make_leaf_blade(
                 f'Bract_{s}_{b:02d}', length=bract_len, width_base=bract_len * 0.5,
                 width_tip=bract_len * 0.1, curve_amount=bract_len * 0.6, segments=3,
-                double_sided=True,
+                double_sided=True, uv_cell='flower_petal',
             )
             side = 1 if b % 2 == 0 else -1
             origin = C.Vector((math.cos(spike_ang) * 0.02 * side, math.sin(spike_ang) * 0.02 * side,
@@ -273,6 +274,7 @@ def _build_bamboo(rnd, seed):
             f'Culm_{i:02d}', height=h, base_radius=base_r, tip_radius=base_r * 0.6,
             curvature=h * rnd.uniform(0.02, 0.06), n_points=5, bevel_resolution=2,
             wobble=h * 0.004, rnd=rnd,
+            uv_rect=C.atlas_uv_rect('stem_swatch'),  # material M_Grass: ver nota de uv_rect
         )
         C.add_ring_bumps(culm, spacing=h / rnd.uniform(9, 13), amplitude=base_r * 0.30,
                           rnd=rnd, sharpness=8)
@@ -294,7 +296,7 @@ def _build_bamboo(rnd, seed):
             leaf = C.make_leaf_blade(
                 f'BambooLeaf_{i:02d}_{j:02d}', length=leaf_len, width_base=leaf_len * 0.16,
                 width_tip=leaf_len * 0.01, curve_amount=leaf_len * 0.35, segments=3,
-                double_sided=False,
+                double_sided=False, uv_cell='bamboo_leaf',
             )
             lang = rnd.uniform(0, 2 * math.pi)
             forward = C.Vector((math.cos(lang), math.sin(lang), rnd.uniform(0.1, 0.5)))
@@ -331,7 +333,7 @@ def _build_pandanus(rnd, seed):
         leaf = C.make_leaf_blade(
             f'Leaf_{i:02d}', length=leaf_len, width_base=leaf_len * 0.09,
             width_tip=leaf_len * 0.015, curve_amount=leaf_len * 0.22,
-            segments=7, double_sided=True,
+            segments=7, double_sided=True, uv_cell='pandanus_leaf',
         )
         ang = i * golden_angle
         elevation = rnd.uniform(math.radians(20), math.radians(50))
@@ -361,5 +363,4 @@ def build(variant):
     parts = _BUILDERS[variant['kind']](rnd, variant['seed'])
     obj = C.join_objects(parts, 'SM_' + variant['name'])
     C.shade_smooth_auto(obj, angle_deg=45.0)
-    C.add_basic_uv(obj)
     return obj
