@@ -101,7 +101,8 @@ namespace ExploredSettingsLogic
 
 	/**
 	 * Teclas fijas que no se pueden asignar a una acción remapeable: el
-	 * movimiento (WASD), Escape (pausa/volver), M (mapa) y F8 (vuelo de depuración).
+	 * movimiento (WASD), Escape (pausa/volver), M (mapa), F8 (vuelo de depuración),
+	 * H (reloj), F/R/T (pesca y sedal), y B/R/X/Z de construcción y del barco.
 	 */
 	EXPLORED_API bool IsReservedKey(FName KeyName);
 

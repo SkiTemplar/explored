@@ -105,7 +105,10 @@ namespace ExploredSettingsLogic
 	{
 		static const TArray<FName> Reserved = {
 			FName(TEXT("W")), FName(TEXT("A")), FName(TEXT("S")), FName(TEXT("D")),
-			FName(TEXT("Escape")), FName(TEXT("M")), FName(TEXT("F8"))
+			FName(TEXT("Escape")), FName(TEXT("M")), FName(TEXT("F8")),
+			// Fijas del personaje (reloj, pesca, sedal), de construcción y del barco.
+			FName(TEXT("H")), FName(TEXT("F")), FName(TEXT("R")), FName(TEXT("T")),
+			FName(TEXT("B")), FName(TEXT("X")), FName(TEXT("Z"))
 		};
 		return Reserved.Contains(KeyName);
 	}

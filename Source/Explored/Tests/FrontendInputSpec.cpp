@@ -60,9 +60,9 @@ void FExploredFrontendInputSpec::Define()
 				++FireCount;
 			});
 
-			const bool bChanged = Subsystem->SetKeyFor(TEXT("Test_ActionB"), EKeys::F);
+			const bool bChanged = Subsystem->SetKeyFor(TEXT("Test_ActionB"), EKeys::K);
 			TestTrue(TEXT("El cambio se acepta"), bChanged);
-			TestEqual(TEXT("La tecla efectiva es la nueva"), Subsystem->GetKeyFor(TEXT("Test_ActionB"), EKeys::SpaceBar), FKey(EKeys::F));
+			TestEqual(TEXT("La tecla efectiva es la nueva"), Subsystem->GetKeyFor(TEXT("Test_ActionB"), EKeys::SpaceBar), FKey(EKeys::K));
 			TestEqual(TEXT("El delegado se dispara una vez"), FireCount, 1);
 			TestEqual(TEXT("El delegado reporta la acción correcta"), FiredFor, FName(TEXT("Test_ActionB")));
 		});
@@ -95,13 +95,13 @@ void FExploredFrontendInputSpec::Define()
 			Subsystem->RegisterAction(TEXT("Test_Interact"), EKeys::E);
 			Subsystem->RegisterAction(TEXT("Test_Jump2"), EKeys::SpaceBar);
 			TestEqual(TEXT("E la usa interactuar"), Subsystem->GetConflictFor(TEXT("Test_Jump2"), EKeys::E), FName(TEXT("Test_Interact")));
-			TestTrue(TEXT("F está libre"), Subsystem->GetConflictFor(TEXT("Test_Jump2"), EKeys::F).IsNone());
+			TestTrue(TEXT("K está libre"), Subsystem->GetConflictFor(TEXT("Test_Jump2"), EKeys::K).IsNone());
 		});
 
 		It("ResetKeyFor devuelve la tecla por defecto", [this]()
 		{
 			Subsystem->RegisterAction(TEXT("Test_ActionC"), EKeys::SpaceBar);
-			Subsystem->SetKeyFor(TEXT("Test_ActionC"), EKeys::F);
+			Subsystem->SetKeyFor(TEXT("Test_ActionC"), EKeys::K);
 			Subsystem->ResetKeyFor(TEXT("Test_ActionC"));
 			TestEqual(TEXT("Vuelve a la tecla por defecto"), Subsystem->GetKeyFor(TEXT("Test_ActionC"), EKeys::SpaceBar), FKey(EKeys::SpaceBar));
 		});

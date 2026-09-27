@@ -166,7 +166,7 @@ void FExploredSettingsLogicSpec::Define()
 		It("acepta una tecla libre y la tecla que la acción ya tiene", [this]()
 		{
 			const TArray<FKeyBinding> Bindings = DefaultBindings();
-			TestEqual(TEXT("F libre"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("F"))).Result, ERemapCheck::Ok);
+			TestEqual(TEXT("K libre"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("K"))).Result, ERemapCheck::Ok);
 			TestEqual(TEXT("Misma tecla"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("SpaceBar"))).Result, ERemapCheck::Ok);
 			TestEqual(TEXT("Botón lateral del ratón"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("ThumbMouseButton"))).Result, ERemapCheck::Ok);
 		});
@@ -176,6 +176,8 @@ void FExploredSettingsLogicSpec::Define()
 			const TArray<FKeyBinding> Bindings = DefaultBindings();
 			TestEqual(TEXT("W es de movimiento"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("W"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Escape es del menú"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("Escape"))).Result, ERemapCheck::ReservedKey);
+			TestEqual(TEXT("F es de la caña"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("F"))).Result, ERemapCheck::ReservedKey);
+			TestEqual(TEXT("B es de construcción y del barco"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("B"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Sin tecla"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName()).Result, ERemapCheck::InvalidKey);
 		});
 
@@ -186,11 +188,11 @@ void FExploredSettingsLogicSpec::Define()
 			{
 				if (Binding.ActionName == FName(TEXT("IA_Interact")))
 				{
-					Binding.Key = FName(TEXT("F"));
+					Binding.Key = FName(TEXT("K"));
 				}
 			}
 			TestEqual(TEXT("E ya está libre"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("E"))).Result, ERemapCheck::Ok);
-			TestEqual(TEXT("F la tiene interactuar"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("F"))).Result, ERemapCheck::InUse);
+			TestEqual(TEXT("K la tiene interactuar"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("K"))).Result, ERemapCheck::InUse);
 		});
 	});
 
