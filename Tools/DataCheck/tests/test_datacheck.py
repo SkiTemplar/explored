@@ -252,9 +252,12 @@ def test_detecta_pendiente_obsoleto(ds: DataSet) -> None:
 
 
 def test_detecta_pendiente_que_falta(ds: DataSet) -> None:
-    # cualquier objeto que siga pendiente (la lista se vacía lote a lote)
-    victim = ds.data["meshes_pendientes.json"]["items"][0]
-    ds.data["meshes_pendientes.json"]["items"].remove(victim)
+    # cualquier entrada que siga pendiente, del grupo que sea (las listas se
+    # vacían lote a lote: la de items ya quedó a cero)
+    pending = ds.data["meshes_pendientes.json"]
+    group = next(g for g, v in pending.items() if isinstance(v, list) and v)
+    victim = pending[group][0]
+    pending[group].remove(victim)
     assert any_error(errors_of(ds), f"falta «{victim}»")
 
 
