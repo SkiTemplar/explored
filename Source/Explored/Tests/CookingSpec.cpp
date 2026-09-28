@@ -94,6 +94,25 @@ void FCookingSpec::Define()
 			}
 		});
 
+		It("una receta con una cantidad enorme no reserva memoria ni casa", [this]()
+		{
+			FCookingData Data = FCookingData::Default();
+			FCookRecipeDef& Huge = Data.Recipes.AddDefaulted_GetRef();
+			Huge.Id = TEXT("receta_rota");
+			Huge.Technique = ECookTechnique::Roast;
+			FCookIngredientReq& Req = Huge.Ingredients.AddDefaulted_GetRef();
+			Req.ItemId = TEXT("pescado_arrecife");
+			Req.Count = 1000000000;
+			FCookIngredientReq& Other = Huge.Ingredients.AddDefaulted_GetRef();
+			Other.ItemId = TEXT("pescado_arrecife");
+			Other.Count = 2000000000;
+			Huge.ResultItemId = TEXT("pescado_asado");
+			// Sin el recuento previo esto añadía 3e9 punteros (y desbordaba int32) en cada búsqueda.
+			const FCookRecipeDef* Found = FCookingModel::FindRecipe(Data, ECookTechnique::Roast, TEXT("espeto"),
+				Ingredients({TEXT("pescado_arrecife")}), EFireLevel::Fogata);
+			TestTrue(TEXT("Sigue casando la receta buena"), Found && Found->Id != Huge.Id);
+		});
+
 		It("gana la receta con más ingredientes: pescado, tubérculo y agua en vasija es estofado", [this]()
 		{
 			const FCookingData& Data = FCookingData::Default();

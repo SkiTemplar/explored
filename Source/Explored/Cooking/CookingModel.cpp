@@ -64,6 +64,17 @@ namespace CookingModelDetail
 
 	bool RecipeMatches(const FCookingData& Data, const FCookRecipeDef& Recipe, const TArray<FCookIngredient>& Ingredients)
 	{
+		// Se cuentan los huecos antes de reservarlos: un Count enorme en recipes.json (1e9)
+		// reservaba gigas de punteros en cada búsqueda. En int64 para que la suma no desborde.
+		int64 Units = 0;
+		for (const FCookIngredientReq& Req : Recipe.Ingredients)
+		{
+			Units += FMath::Max(0, Req.Count);
+		}
+		if (Units != Ingredients.Num())
+		{
+			return false;
+		}
 		TArray<const FCookIngredientReq*> Slots;
 		for (const FCookIngredientReq& Req : Recipe.Ingredients)
 		{
