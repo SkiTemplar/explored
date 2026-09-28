@@ -23,6 +23,8 @@ namespace BodyModelDetail
 
 	// Caídas.
 	constexpr float SafeFallHeight = 3.0f;
+	/** Tope de altura para el cálculo: más ya es mortal en cualquier superficie. */
+	constexpr float MaxFallHeightM = 1000.0f;
 	constexpr float FallDamageScale = 4.0f;
 	constexpr float FallDamageExponent = 1.6f;
 	constexpr float SprainFallHeight = 4.5f;
@@ -150,6 +152,8 @@ FFallResult FBodyModel::FallDamage(float HeightM, ELandingSurface Surface)
 	{
 		return Result;
 	}
+	// Por encima de cualquier caída posible el daño ya es mortal; sin tope, Pow daría infinito.
+	HeightM = FMath::Min(HeightM, MaxFallHeightM);
 	if (Surface == ELandingSurface::Water)
 	{
 		// El agua amortigua: solo duelen los saltos muy altos, y como caer desde menos altura.

@@ -277,6 +277,11 @@ void FBodySpec::Define()
 				const FFallResult R = FBodyModel::FallDamage(Bad, ELandingSurface::Rock);
 				TestTrue(TEXT("Altura no finita: sin daño ni esguince"), R.Damage == 0.0f && R.SprainHours == 0.0f);
 			}
+			for (const ELandingSurface Surface : { ELandingSurface::Rock, ELandingSurface::Water })
+			{
+				const FFallResult Huge = FBodyModel::FallDamage(1.0e30f, Surface);
+				TestTrue(TEXT("Altura enorme: daño finito y mortal"), FMath::IsFinite(Huge.Damage) && Huge.Damage >= 100.0f);
+			}
 		});
 
 		It("tuercen el tobillo desde unos 4.5 m y la férula lo cura", [this]()
