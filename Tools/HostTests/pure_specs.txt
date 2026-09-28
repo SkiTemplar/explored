@@ -2,6 +2,7 @@
 Tests/AchievementsSpec.cpp
 Tests/BeachDebrisSpec.cpp
 Tests/BoatSpec.cpp
+Tests/HullAssemblyModelSpec.cpp
 Tests/BodySpec.cpp
 Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
