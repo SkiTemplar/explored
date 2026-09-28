@@ -138,6 +138,11 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 {
 	const FArchipelagoLayout& Layout = Density.GetLayout();
 	TArray<FPointOfInterest> Out;
+	// Sin islas no hay dónde poner nada (y las botellas harían RangeInt(0, -1)).
+	if (Layout.Islands.Num() == 0)
+	{
+		return Out;
+	}
 	FExploredRandom Rng(static_cast<uint64>(Layout.Seed) ^ 0x901CAFEULL);
 
 	auto Add = [&Out](EPoiType Type, int32 Island, const FVector& Location, float Yaw, FName Content = NAME_None, bool bUnderwater = false)

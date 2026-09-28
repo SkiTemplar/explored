@@ -189,6 +189,13 @@ Cabecera 9 B + 3 B por tramo + 2 B por muestra. **Tope duro por paquete: 512 byt
 (≈ 240 muestras), por debajo de `MaxPacketSize` para que nunca fragmente. Una edición
 más grande se parte en varios paquetes del mismo chunk, en orden.
 
+Implementado y probado en el host: `FTerrainDeltaCodecModel` (códec, `DecodeAndApply`
+atómico), `FTerrainDeltaQueueModel` (la cola de abajo) y `FTerrainChunkChecksumModel` (la
+comprobación de cada 30 s). **Límite del `int16`:** un delta de más de ±32,767 m no cabe.
+Como la densidad base es una distancia a la superficie, una galería a más de ~32 m de
+profundidad lo supera; el códec rechaza esas muestras y las cuenta en vez de truncarlas.
+Pendiente de decidir: acotar el delta en `FTerrainEditModel` o subir de formato.
+
 **Versión 2, con capa** (para la arena de §2.6, que no es densidad sino un campo de
 alturas de 32×32 columnas por chunk de 8 m; ver 02 §5.1):
 

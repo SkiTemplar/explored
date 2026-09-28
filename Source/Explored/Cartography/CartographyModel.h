@@ -197,6 +197,8 @@ public:
 	static constexpr float InkRunThreshold = 0.5f;
 	static constexpr float InkRunSeconds = 30.0f;
 	static constexpr float InkFadePerRun = 0.8f;
+	/** Pasadas de tinta corrida como mucho en un solo TickWetness (con 4 ya está todo emborronado). */
+	static constexpr int32 MaxInkRunsPerTick = 4;
 	static constexpr float InkFloor = 0.15f;
 	static constexpr float LegibleInk = 0.35f;
 

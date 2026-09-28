@@ -50,7 +50,10 @@ struct EXPLORED_API FTerrainEditResult
 	/** Sólido añadido (tierra que sale del inventario). */
 	double VolumeAdded = 0.0;
 	int32 SamplesChanged = 0;
-	/** La herramienta no puede con el material: no se ha tocado nada. */
+	/**
+	 * No se ha tocado nada: la herramienta no puede con el material o la edición no es
+	 * válida (valores no finitos, fuera del mundo o más grande que cualquier herramienta).
+	 */
 	bool bRejected = false;
 
 	bool Changed() const { return SamplesChanged > 0; }
@@ -66,6 +69,21 @@ struct EXPLORED_API FPickaxeHit
 	int32 ToolTier = 2;
 	/** Semilla de la forma irregular del hueco (p. ej. contador de golpes del jugador). */
 	uint32 Seed = 0;
+};
+
+/**
+ * Picado por esfera (biblia 02 §2.1): vacía la esfera centrada en el punto de impacto
+ * hasta el tope de volumen del golpe. El radio lo pone la herramienta, no el material;
+ * lo que arranca cada golpe lo acota MaxVolume (golpes por m³ del material). Metros.
+ */
+struct EXPLORED_API FSphereDig
+{
+	FVector Center = FVector::ZeroVector;
+	float Radius = 0.4f;
+	ETerrainMaterial Material = ETerrainMaterial::Tierra;
+	int32 ToolTier = 1;
+	/** Sólido máximo que arranca este golpe (m³); 0 = la esfera entera. */
+	double MaxVolume = 0.0;
 };
 
 /** Una pasada de pala: aplana hacia un plano con borde suave, compacta y marca camino. */
@@ -165,6 +183,24 @@ public:
 	static constexpr float CompactedHardnessBonus = 0.5f;
 	/** Rejilla de las escaleras: origen y huella en múltiplos de 30 cm, contrahuella de 15 en 15 cm. */
 	static constexpr float StairGrid = 0.3f;
+	/** Topes de las escaleras (los mismos a los que ajusta SnapStairs). */
+	static constexpr int32 MaxStairSteps = 64;
+	static constexpr float MaxStairRise = 0.45f;
+	static constexpr float MaxStairRun = 0.9f;
+	static constexpr float MaxStairWidth = 3.0f;
+	static constexpr float MaxStairHeadroom = 3.0f;
+
+	/**
+	 * Límites de validez de una edición. Una petición que llega de otro jugador (cooperativo)
+	 * o de un fallo aguas arriba no puede colgar la partida ni escribir deltas en muestras
+	 * que luego el guardado rechaza: se rechaza entera.
+	 * - Todas las coordenadas, dentro de ±MaxWorldCoordinate (el archipiélago mide unos
+	 *   pocos km; así las muestras globales caben de sobra en int32).
+	 * - Radio, borde y alcance de la pala y radio de echar tierra, hasta MaxBrushExtent
+	 *   (unas 2,5 veces lo que usa el diseño): acota las muestras que recorre una llamada.
+	 */
+	static constexpr double MaxWorldCoordinate = 100000.0;
+	static constexpr float MaxBrushExtent = 4.0f;
 
 	static const FTerrainMaterialInfo& MaterialInfo(ETerrainMaterial Material);
 	/** Golpes por m³ de diseño: 6 × dureza con la herramienta mínima, ÷ 1,5 por nivel extra, nunca menos de 6; 0 si no puede. */
@@ -172,7 +208,7 @@ public:
 	/** Multiplicador de lo que arranca un golpe (0 si la herramienta no llega al material). */
 	static float ToolFactor(ETerrainMaterial Material, int32 ToolTier);
 	static float Occupancy(float Density, float CellSize);
-	/** Escalera ajustada a la rejilla de diseño; devuelve false si la dirección es degenerada. */
+	/** Escalera ajustada a la rejilla de diseño; devuelve false si la dirección es degenerada o hay valores no finitos. */
 	static bool SnapStairs(const FStairCarve& In, FStairCarve& Out);
 
 	explicit FTerrainEditModel(const FTerrainEditSettings& InSettings = FTerrainEditSettings());
@@ -182,8 +218,16 @@ public:
 	FTerrainEditResult Pickaxe(const FPickaxeHit& Hit, FBaseDensity Base);
 	FTerrainEditResult Shovel(const FShovelStroke& Stroke, FBaseDensity Base);
 	FTerrainEditResult PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base);
-	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla). */
+	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes. */
 	FTerrainEditResult CarveStairs(const FStairCarve& Stairs, FBaseDensity Base);
+	/**
+	 * Vacía una esfera hasta MaxVolume: lleva cada muestra a la distancia con signo a la
+	 * esfera (aire dentro). Toca solo muestras a menos de SphereDigReach(Radius) del centro.
+	 * Rebota si la herramienta no llega.
+	 */
+	FTerrainEditResult DigSphere(const FSphereDig& Dig, FBaseDensity Base);
+	/** Alcance de DigSphere: el radio más media celda de corteza, donde la ocupación aún es < 1. */
+	float SphereDigReach(float Radius) const { return Radius + 0.5f * Settings.CellSize; }
 
 	// --- Consultas ---
 
@@ -195,12 +239,30 @@ public:
 	float SampleDensity(const FIntVector& Global, FBaseDensity Base) const;
 	/** Densidad en cualquier punto: base + delta interpolado trilinealmente. */
 	float Density(const FVector& P, FBaseDensity Base) const;
+	/**
+	 * Delta interpolado en P (metros) sin evaluar el campo base. Devuelve false (y Out = 0)
+	 * si ninguna de las 8 muestras vecinas está editada: el caso normal, que cuesta una sola
+	 * búsqueda en el mapa de chunks cuando P no está junto al borde de un chunk.
+	 */
+	bool DeltaAt(const FVector& P, float& OutDelta) const;
 	/** Sólido (m³) de las muestras de la rejilla dentro de la caja. */
 	double SolidVolume(const FBox& Box, FBaseDensity Base) const;
 	/** Rejilla lista para `FSurfaceNets::Polygonize` del chunk de edición (N + 2 muestras por eje). */
 	void BuildChunkGrid(const FIntVector& Chunk, FBaseDensity Base, FDensityGrid& Out) const;
 	/** Chunks de edición que leen la muestra (1, 2, 4 u 8). */
 	void ChunksReadingSample(const FIntVector& Global, TArray<FIntVector>& Out) const;
+	/**
+	 * Chunks de edición que leen alguna muestra a distancia < Radius del centro, ordenados
+	 * por (Z, Y, X) y sin repetir: lo que una esfera de ese radio puede ensuciar como mucho,
+	 * incluida la que cruza un borde (2 chunks), una arista (4) o una esquina (8).
+	 */
+	void ChunksTouchedBySphere(const FVector& Center, float Radius, TArray<FIntVector>& Out) const;
+	/**
+	 * FNV-1a de las muestras editadas del chunk, como pares (índice local, delta en mm) en
+	 * int32 little-endian y en orden de índice. Comprobación de integridad de biblia 08 §2.2:
+	 * servidor y cliente con el mismo chunk dan el mismo número; 0x811C9DC5 si no hay nada.
+	 */
+	uint32 ChunkChecksum(const FIntVector& Chunk) const;
 
 	/** Compactación 0–100 de la columna que contiene (X, Y). */
 	int32 Compaction(double X, double Y) const;
@@ -216,12 +278,28 @@ public:
 
 	// --- Guardado ---
 
+	/** Versión que escribe ToValue por defecto. FromValue lee la 1 y la 2. */
+	static constexpr int32 SaveVersion = 2;
+
 	/**
-	 * {"v":1,"cell":0.25,"n":32,"chunks":[[CX,CY,CZ,[Inicio,Cuenta,d…,Inicio,Cuenta,d…]],…],
-	 *  "paths":[X,Y,C,…]}. Chunks, tramos y columnas en orden determinista.
+	 * Versión 1, en texto: {"v":1,"cell":0.25,"n":32,
+	 *  "chunks":[[CX,CY,CZ,[Inicio,Cuenta,d…,Inicio,Cuenta,d…]],…], "paths":[X,Y,C,…]}.
+	 *
+	 * Versión 2, binaria en base64 (≈ 1,3 B por muestra en una mina):
+	 *  {"v":2,"cell":0.25,"n":32,"samples":S,"columns":C,"chunks":"<b64>","paths":"<b64>"}.
+	 *  - chunks: varint NumChunks y, por chunk, ΔCX ΔCY ΔCZ (zigzag, respecto al chunk
+	 *    anterior), varint NumTramos y, por tramo, varint Hueco (Inicio − fin del tramo
+	 *    anterior), varint Cuenta − 1 y Cuenta deltas en mm como diferencia zigzag con el
+	 *    anterior del chunk. Ningún delta es 0.
+	 *  - paths: varint NumColumnas y, por columna, ΔX ΔY (zigzag) y la compactación (1–100).
+	 *  - samples y columns repiten los totales: un blob truncado que aún se lea no cuadra.
+	 * Chunks, tramos y columnas en orden determinista: el mismo estado da el mismo texto.
 	 */
-	FSaveValue ToValue() const;
-	/** Sustituye el contenido; devuelve false (y queda vacío) si el valor no es válido o es de otra rejilla. */
+	FSaveValue ToValue(int32 Version = SaveVersion) const;
+	/**
+	 * Sustituye el contenido; devuelve false (y queda vacío) si el valor no es válido, está
+	 * truncado, es de otra rejilla o de una versión desconocida. Nunca lee fuera del valor.
+	 */
 	bool FromValue(const FSaveValue& Value);
 
 	bool operator==(const FTerrainEditModel& Other) const;
@@ -253,6 +331,8 @@ private:
 	float ScaleToVolume(const TArray<FProposal>& Proposals, double Limit) const;
 	void Commit(const TArray<FProposal>& Proposals, float Scale, FTerrainEditResult& Result);
 	void SetDeltaMm(const FIntVector& Global, int32 DeltaMm);
+	bool FromValueV1(const FSaveValue& Value, int32 N);
+	bool FromValueV2(const FSaveValue& Value, int32 N);
 	int32 GetDeltaMm(const FIntVector& Global) const;
 	FIntPoint ColumnOf(double X, double Y) const;
 	void AddCompaction(const FVector& Center, float Radius, int32 Amount);

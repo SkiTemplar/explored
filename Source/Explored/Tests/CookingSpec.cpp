@@ -2,6 +2,8 @@
 
 #include "Cooking/CookingModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace CookingTest
@@ -90,6 +92,25 @@ void FCookingSpec::Define()
 				TestTrue(FString::Printf(TEXT("«%s»: resultado y utensilios existen"), *Recipe.Id.ToString()),
 					!Recipe.ResultItemId.IsNone() && !Recipe.Vessels.ContainsByPredicate([&Data](FName V) { return Data.FindVessel(V) == nullptr; }));
 			}
+		});
+
+		It("una receta con una cantidad enorme no reserva memoria ni casa", [this]()
+		{
+			FCookingData Data = FCookingData::Default();
+			FCookRecipeDef& Huge = Data.Recipes.AddDefaulted_GetRef();
+			Huge.Id = TEXT("receta_rota");
+			Huge.Technique = ECookTechnique::Roast;
+			FCookIngredientReq& Req = Huge.Ingredients.AddDefaulted_GetRef();
+			Req.ItemId = TEXT("pescado_arrecife");
+			Req.Count = 1000000000;
+			FCookIngredientReq& Other = Huge.Ingredients.AddDefaulted_GetRef();
+			Other.ItemId = TEXT("pescado_arrecife");
+			Other.Count = 2000000000;
+			Huge.ResultItemId = TEXT("pescado_asado");
+			// Sin el recuento previo esto añadía 3e9 punteros (y desbordaba int32) en cada búsqueda.
+			const FCookRecipeDef* Found = FCookingModel::FindRecipe(Data, ECookTechnique::Roast, TEXT("espeto"),
+				Ingredients({TEXT("pescado_arrecife")}), EFireLevel::Fogata);
+			TestTrue(TEXT("Sigue casando la receta buena"), Found && Found->Id != Huge.Id);
 		});
 
 		It("gana la receta con más ingredientes: pescado, tubérculo y agua en vasija es estofado", [this]()
@@ -199,6 +220,30 @@ void FCookingSpec::Define()
 			TestTrue(TEXT("Baja el ánimo"), Out.Effects.Morale < 0.0f);
 		});
 
+		It("un paso NaN no atasca la olla y una olla cargada con NaN se sanea", [this]()
+		{
+			const FCookingData& Data = FCookingData::Default();
+			FCookingPot Pot;
+			FString Reason;
+			TestTrue(TEXT("Empieza"), FCookingModel::StartPot(Pot, Data, ECookTechnique::Roast, TEXT("espeto"),
+				Ingredients({TEXT("pescado_arrecife")}), EFireLevel::Fogata, Reason));
+			const float Cook = FCookingModel::CookMinutesFor(Pot, Data);
+			FCookEnvironment Env = GoodFire();
+			Env.FireHeat = FCookingModel::ReferenceHeat;
+			FCookingModel::TickPot(Pot, Data, Env, std::numeric_limits<float>::quiet_NaN());
+			TestEqual(TEXT("Sin progreso"), Pot.ProgressMinutes, 0.0f);
+			FCookingModel::TickPot(Pot, Data, Env, Cook + 1.0f);
+			TestTrue(TEXT("Se hace"), Pot.Status == EPotStatus::Done);
+
+			FCookingPot Loaded = Pot;
+			Loaded.Status = EPotStatus::Cooking;
+			Loaded.ProgressMinutes = std::numeric_limits<float>::quiet_NaN();
+			FCookingModel::SanitizePot(Loaded);
+			TestEqual(TEXT("Progreso saneado"), Loaded.ProgressMinutes, 0.0f);
+			FCookingModel::TickPot(Loaded, Data, Env, Cook + 1.0f);
+			TestTrue(TEXT("La olla cargada también se hace"), Loaded.Status == EPotStatus::Done);
+		});
+
 		It("sin calor no avanza y en brasas va más despacio que en una hoguera", [this]()
 		{
 			FCookEnvironment Cold;
@@ -281,6 +326,13 @@ void FCookingSpec::Define()
 
 			FCookingModel::Age(Fish, Life * 2.0f);
 			TestEqual(TEXT("Podrido del todo"), FCookingModel::CurrentEffects(Data, Fish).Toxicity, Data.Preservation.RottenToxicity);
+
+			FFoodFreshness Broken;
+			Broken.ItemId = TEXT("pescado_asado");
+			FCookingModel::Age(Broken, std::numeric_limits<float>::quiet_NaN());
+			FCookingModel::Age(Broken, Life * 1.1f, std::numeric_limits<float>::quiet_NaN());
+			TestTrue(TEXT("Paso o almacenaje NaN no la conservan para siempre"),
+				FCookingModel::GetFreshness(Data, Broken) == EFreshness::Spoiled);
 
 			FFoodFreshness Sealed;
 			Sealed.ItemId = TEXT("pescado_asado");

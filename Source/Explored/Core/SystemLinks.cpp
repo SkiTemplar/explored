@@ -43,7 +43,8 @@ namespace ExploredLinks
 	{
 		InOut.FireHeat = FMath::Max(InOut.FireHeat, FMath::Clamp(Links.FireHeat, 0.0f, 1.0f));
 		InOut.bSheltered = InOut.bSheltered || Links.bBuildingShelter;
-		InOut.CarriedWeightRatio = FMath::Max(0.0f, Links.CarriedWeightRatio);
+		// Max(0, NaN) devuelve NaN: una carga no finita cuenta como nada.
+		InOut.CarriedWeightRatio = FMath::IsFinite(Links.CarriedWeightRatio) ? FMath::Max(0.0f, Links.CarriedWeightRatio) : 0.0f;
 		InOut.bPlayingMusic = Links.bPlayingMusic;
 		InOut.bHasHat = InOut.bHasHat || Links.bHasHat;
 	}
@@ -266,7 +267,17 @@ namespace ExploredLinks
 
 	int32 DaysSurvived(float TotalDays, float RunStartDays)
 	{
-		return FMath::Max(0, FMath::FloorToInt(TotalDays - RunStartDays));
+		// FloorToInt de un valor no finito o fuera de int32 es UB (llega del reloj guardado).
+		const float Days = TotalDays - RunStartDays;
+		if (!FMath::IsFinite(Days) || Days <= 0.0f)
+		{
+			return 0;
+		}
+		if (Days >= 2147483648.0f)
+		{
+			return TNumericLimits<int32>::Max();
+		}
+		return FMath::FloorToInt(Days);
 	}
 
 	int32 FSailingOdometer::Step(const FVector2D& PositionCm, bool bUnderSail)
@@ -279,7 +290,8 @@ namespace ExploredLinks
 		if (bHasLast)
 		{
 			const double StepCm = FVector2D::Distance(PositionCm, Last);
-			if (StepCm <= MaxStepCm)
+			// Con matemáticas rápidas «NaN <= MaxStepCm» puede darse por cierto y luego FloorToInt(NaN).
+			if (FMath::IsFinite(StepCm) && StepCm <= MaxStepCm)
 			{
 				PendingCm += StepCm;
 			}

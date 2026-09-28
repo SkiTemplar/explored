@@ -10,14 +10,14 @@
     "cristal_cuarzo",
     "hierro_meteorito",
     "mineral_cobre",
-    "pico",
-    "tierra_suelta"
+    "pico"
   ],
   "buildingPieces": [
     "astillero",
     "banco_chatarra",
     "espantapajaros",
-    "pila_compost"
+    "pila_compost",
+    "viga_apoyo"
   ],
   "plantStages": [
     "batata.brote",
