@@ -3,6 +3,7 @@
 #include <limits>
 
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/PointsOfInterest.h"
 #include "WorldGen/SurfaceNets.h"
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
@@ -242,6 +243,15 @@ void FWorldGenSpec::Define()
 			const float LowPeak = Peak(Low, *Official.FindIsland(EIslandArchetype::Mesa));
 			const float HighPeak = Peak(High, *TallMesa);
 			TestTrue(*FString::Printf(TEXT("el doble de alto sube la cumbre (%.1f → %.1f)"), LowPeak, HighPeak), HighPeak > LowPeak * 1.4f);
+		});
+
+		It("un layout sin islas no tiene puntos de interés", [this]()
+		{
+			FArchipelagoLayout Empty;
+			Empty.Seed = 1u;
+			const FTerrainDensity Density(Empty);
+			// Antes las botellas pedían RangeInt(0, -1): check en desarrollo y % 0 en Shipping.
+			TestEqual(TEXT("ninguno"), FPoiLayout::Generate(Density).Num(), 0);
 		});
 
 		It("tiene tierra emergida cerca del centro de cada isla alta", [this]()
