@@ -57,5 +57,6 @@ WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
 WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
+WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 Tramway/TramwayModel.cpp

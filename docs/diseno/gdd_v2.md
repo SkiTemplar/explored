@@ -90,6 +90,7 @@ Sección nueva: qué hace que el archipiélago se sienta habitado y no decorado.
 | Aves e insectos | Bandadas en vuelo, enjambres de abejas, luciérnagas, mariposas — ambiente con movimiento constante | `Fauna` (boids ya existentes) |
 | Flora reactiva | Hierba que se aparta al pasar, palmeras que se doblan en el ciclón, quemado que rebrota | Ya implementado (`VegetationScatter`, `Weather`) |
 | Mundo interactivo | Todo árbol se tala y cae según el golpe y la pendiente; el tocón rebrota salvo que se arranque; ramas sueltas bajo los árboles | `WorldGen` (§3.12, modelos puros hechos) |
+| Arena viva | La arena se cava y se apila, se derrumba a su ángulo de reposo (más empinada si está mojada) y las olas borran hoyos y montones en la orilla; las estructuras la sujetan | `WorldGen` (§3.13, modelo puro hecho) |
 | Día/noche, estaciones, marea | Cambian qué se puede hacer, no solo cómo se ve: pesca, mareas que abren pasos, mina que se inunda con la crecida | `Sky`, `Weather`, `Events`, `Ocean` (ya implementado) |
 | Pueblo con horario **[F3]** | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
 | Piratas que patrullan **[F3]** | Rutas de patrulla y asaltos programados, no solo reactivos (las piezas de muralla que se defienden de ellos llegan antes, en fase 2, §3.8) | `Raiders` (§3.8, nuevo) |
@@ -491,7 +492,7 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas y otras interacciones naturales.
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -550,6 +551,99 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
 - **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
+
+### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**
+
+Segunda mecánica del principio «el mundo entero es interactivo y se comporta de forma
+natural». La playa deja de ser un decorado: se cava, se apila y reacciona. **Manda la
+biblia:** las reglas son las de `biblia/02-mecanicas-del-mundo.md` §5 y los presupuestos,
+los de `biblia/08-cooperativo-y-red.md` §2.6 (la capa de alturas propia y la rampa del
+oleaje están anotadas allí como decisiones del director). Esta sección solo añade el
+tamaño de la rejilla, la capa de arena y las pasadas por revisión.
+
+- **Objetivo:** que cavar en la playa se sienta como en una playa de verdad (el hoyo
+  se desmorona, el montón se escurre, la marea lo borra con el paso de los días) sin
+  pagar el coste de la edición volumétrica de §3.4.
+- **Reglas:**
+  - **Solo la capa de superficie.** La arena es un campo de alturas de deltas sobre el
+    suelo de la isla: una columna cada 0,25 m, chunks de 8 m (la misma rejilla que la
+    edición volumétrica). Bajo la arena hay roca: como mucho se cava **1,5 m**, y un
+    montón no pasa de **2 m** sobre el suelo original. Túneles y cuevas siguen siendo
+    cosa del pico (§3.4).
+  - **Pala.** Cada pasada es un cono de 0,6 m de radio y 15 cm en el centro (unos
+    0,06 m³). Lo cavado va al cubo como arena, que tiene masa exacta. Al apilar se echa
+    lo que se lleva y nada más.
+  - **La arena no desaparece.** La avalancha es un traspaso entre columnas vecinas. El
+    oleaje cambia arena con el **banco del mar** (la arena en suspensión de la resaca):
+    lo que alisa de un montón va al banco y lo que rellena un hoyo sale de él. La suma
+    «arena de la playa + banco del mar» solo cambia con lo que la pala saca o echa.
+  - **Ángulo de reposo (biblia 02 §5.1).** **Una revisión por segundo** por chunk
+    activo. Si el desnivel entre dos columnas pasa del reposo, la arena resbala: **34°**
+    seca (168 mm por celda) y **45°** húmeda (249 mm). Está húmeda toda la arena a la
+    altura de la pleamar del día o por debajo, y toda la arena mientras llueve. Al
+    secarse (baja la pleamar con la luna, deja de llover), lo que estaba a 45° se vuelve
+    a derrumbar hasta 34°. Cada revisión hace hasta 4 pasadas de ¼ del exceso. Una
+    palada se asienta en 1–2 s, un montón de 1 m³ en unos pocos segundos y uno de
+    2,5 m³ en unos 25 s, porque lo frena el tope de red: se ve escurrir.
+  - **Lo natural no se derrumba solo.** El umbral nunca es menor que la pendiente del
+    suelo original: una duna generada a 50° se queda como está. Solo se mueve la arena
+    que ha tocado el jugador (o lo que esta arrastra).
+  - **Relleno por oleaje (biblia 02 §5.2).** No es continuo: se resuelve **una vez por
+    medio ciclo de marea** (~6 h de juego), en toda la isla. Cada columna editada cuya
+    altura original está bajo la pleamar vuelve **hacia su altura original** (los hoyos
+    se rellenan y los montones se alisan):
+    - **20 %** por medio ciclo en la línea de pleamar, creciendo en línea recta hacia el
+      agua hasta el **60 %** en la línea de bajamar y por debajo;
+    - en marea viva, **+15 puntos** en todas partes (**35 %** en la pleamar, 75 % en la
+      bajamar);
+    - un resto de **2 cm** o menos lo remata la última onda.
+    Con estos números, un hoyo bajo la bajamar se cierra del todo en **2–3 ciclos**: uno
+    de 30 cm en 1,5 ciclos y el más hondo posible (1,5 m) en 2,5. Entre medio ciclo y
+    medio ciclo, un hoyo en la orilla se queda como está: la marea lo borra con los días,
+    no con los segundos.
+  - **Anclaje (biblia 02 §5.3).** El tablón de contención, los pilotes, los muelles y
+    los sacos sujetan toda la arena a **1 m** o menos de su huella (distancia real, con
+    las esquinas redondas). Esa arena no desliza y el oleaje no la rellena mientras la
+    pieza siga en pie; la de fuera sí puede caer contra ella. La pala no cava bajo la
+    huella. Al quitar la pieza, la arena que sujetaba se suelta y se derrumba a 34°.
+    Dos piezas que se solapan sujetan hasta que se quitan las dos.
+- **Números:** `FSandModel` en `Source/Explored/WorldGen/SandModel.h`.
+
+  | Qué | Valor | Fuente |
+  |---|---|---|
+  | Rejilla / chunk | 0,25 m / 8 m (32 columnas) | este GDD |
+  | Capa de arena / montón máximo | 1,5 m / 2 m | este GDD |
+  | Reposo seco / húmedo | 34° / 45° | biblia 02 §5.1 |
+  | Revisión de pendiente | 1 por segundo, 4 pasadas de ¼ del exceso | biblia 02 §5.1 / este GDD |
+  | Relleno por medio ciclo, pleamar → bajamar | 20 % → 60 % | biblia 02 §5.2 |
+  | Marea viva | +15 puntos (35 % en la pleamar) | biblia 02 §5.2 |
+  | Remate del oleaje | ≤ 2 cm | biblia 02 §5.2 |
+  | Arena sujeta por una estructura | ≤ 1 m de la huella | biblia 02 §5.3 |
+  | Radio activo alrededor de cada jugador | 80 m hasta el borde del chunk | biblia 08 §2.6 |
+  | Tope de columnas cambiadas | 64 por chunk y revisión | biblia 08 §2.6 |
+  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta | biblia 08 §2.6 |
+  | Paquete de red | versión 2, capa 1, ≤ 512 B | biblia 08 §2.2 |
+
+- **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo
+  tierra, zanjas de drenaje, rampas de arena para botar balsas). El tablón de
+  contención (tier `bambu`) y los sacos de arena, más adelante, sirven para muros,
+  diques y muelles que la marea no borra.
+- **Interfaz:** ninguna. La arena se ve escurrir y oscurecerse al mojarse.
+- **Coste:** solo lo simula el servidor, y solo en los chunks a menos de 80 m de algún
+  jugador. Dentro de ellos solo se revisan las columnas **sucias** (tocadas, o vecinas
+  de algo que se ha movido). Fuera, la arena se congela con su estado y cuenta las
+  revisiones que se salta; al volver alguien, las recupera de golpe (4 como máximo) y
+  después sigue a su ritmo, sin recordar el resto del tiempo perdido. Un montón asentado cuesta cero. El medio ciclo de marea toca solo las
+  columnas editadas, una vez cada 10 minutos reales.
+- **Riesgos técnicos:**
+  - Casar la malla de la arena con el terreno volumétrico: ver
+    `docs/tecnico/arena-viva.md`.
+  - Si la pleamar del día cambia mientras nadie está cerca, la arena de esa playa no
+    se entera hasta que llegue alguien. Es invisible para el jugador, porque nadie lo ve
+    pasar. El relleno por oleaje sí llega a toda la isla.
+- **Dependencias:** `WorldGen` (`FSandModel`, `FTerrainDensity` como suelo base),
+  `Ocean` (`FOceanTide`: pleamar, bajamar y marea viva), `Weather` (lluvia),
+  `Building` (anclajes), `Save` (capa `sand`).
 
 ### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
 
