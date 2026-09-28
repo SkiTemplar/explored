@@ -818,6 +818,7 @@ void FTerrainEditModelSpec::Define()
 				Carve([](FStairCarve& S) { S.Start.Z = std::numeric_limits<double>::quiet_NaN(); }),
 				Carve([](FStairCarve& S) { S.Direction = FVector(std::numeric_limits<double>::infinity(), 0.0, 0.0); }),
 				Carve([](FStairCarve& S) { S.MaxVolume = std::numeric_limits<double>::quiet_NaN(); }),
+				Carve([](FStairCarve& S) { S.MaxVolume = -1.0; }),
 			};
 			for (const FStairCarve& S : Bad)
 			{

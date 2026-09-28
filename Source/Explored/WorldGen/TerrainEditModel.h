@@ -115,7 +115,7 @@ struct EXPLORED_API FStairCarve
 	float Headroom = 2.2f;
 	ETerrainMaterial Material = ETerrainMaterial::Tierra;
 	int32 ToolTier = 2;
-	/** Sólido máximo que arranca esta llamada (m³); 0 = sin tope. Tallar cuesta golpes. */
+	/** Sólido máximo que arranca esta llamada (m³); 0 = sin tope, negativo = petición inválida. Tallar cuesta golpes. */
 	double MaxVolume = 0.0;
 };
 

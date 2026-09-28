@@ -651,7 +651,7 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
 		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack
 		|| !(Stairs.Headroom > 0.0f) || Stairs.Headroom > MaxStairHeadroom + Slack
-		|| !FMath::IsFinite(Stairs.MaxVolume))
+		|| !FMath::IsFinite(Stairs.MaxVolume) || Stairs.MaxVolume < 0.0)
 	{
 		Result.bRejected = true;
 		return Result;
