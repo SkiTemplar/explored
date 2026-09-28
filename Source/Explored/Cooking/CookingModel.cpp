@@ -337,9 +337,23 @@ float FCookingModel::BurnAfterMinutesFor(const FCookingPot& Pot, const FCookingD
 	return Recipe ? Recipe->BurnAfterMinutes : Data.Improvised.BurnAfterMinutes;
 }
 
+void FCookingModel::SanitizePot(FCookingPot& Pot)
+{
+	if (static_cast<uint8>(Pot.Status) > static_cast<uint8>(EPotStatus::Burnt))
+	{
+		Pot.Status = EPotStatus::Empty;
+	}
+	if (static_cast<uint8>(Pot.Technique) >= static_cast<uint8>(ECookTechnique::Count))
+	{
+		Pot.Technique = ECookTechnique::Roast;
+	}
+	Pot.ProgressMinutes = FMath::IsFinite(Pot.ProgressMinutes) ? FMath::Max(Pot.ProgressMinutes, 0.0f) : 0.0f;
+}
+
 void FCookingModel::TickPot(FCookingPot& Pot, const FCookingData& Data, const FCookEnvironment& Env, float DeltaMinutes)
 {
-	if (DeltaMinutes <= 0.0f || Pot.Status == EPotStatus::Empty || Pot.Status == EPotStatus::Burnt)
+	// NaN pasaría el guarda `<= 0` y dejaría el progreso en NaN (la olla no terminaría nunca).
+	if (!FMath::IsFinite(DeltaMinutes) || DeltaMinutes <= 0.0f || Pot.Status == EPotStatus::Empty || Pot.Status == EPotStatus::Burnt)
 	{
 		return;
 	}
@@ -450,11 +464,14 @@ EFreshness FCookingModel::GetFreshness(const FCookingData& Data, const FFoodFres
 
 void FCookingModel::Age(FFoodFreshness& Food, float DeltaHours, float StorageFactor)
 {
-	if (DeltaHours <= 0.0f)
+	// NaN pasaría el guarda `<= 0` y Max(0, NaN) deja NaN: la comida no se estropearía nunca.
+	if (!FMath::IsFinite(DeltaHours) || DeltaHours <= 0.0f)
 	{
 		return;
 	}
-	Food.AgeHours += DeltaHours * FMath::Max(0.0f, StorageFactor);
+	// Un almacenaje no finito cuenta como al aire (1).
+	const float Storage = FMath::IsFinite(StorageFactor) ? FMath::Max(0.0f, StorageFactor) : 1.0f;
+	Food.AgeHours += DeltaHours * Storage;
 	if (Food.HoursSinceCooked >= 0.0f)
 	{
 		Food.HoursSinceCooked += DeltaHours;

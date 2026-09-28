@@ -584,6 +584,7 @@ namespace ExploredSaveStates
 			Pot.Read(TEXT("recipe"), OutFire.Pot.RecipeId);
 			Pot.Read(TEXT("ingredients"), OutFire.Pot.IngredientIds);
 			Pot.Read(TEXT("progressMinutes"), OutFire.Pot.ProgressMinutes);
+			FCookingModel::SanitizePot(OutFire.Pot);
 		}
 	}
 
