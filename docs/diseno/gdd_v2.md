@@ -252,6 +252,11 @@ mapa.
     tierra la escalera es un túnel) y hasta 64 peldaños. Tallarla cuesta golpes: cada
     golpe sobre la escalera marcada arranca como mucho el volumen de un golpe de pico en
     ese material, y la escalera se va definiendo poco a poco hasta quedar completa.
+  - **Peticiones imposibles.** Si una edición llega con valores no finitos, fuera del
+    mundo, con una pala o un montón de tierra de más de 4 m de radio o con una escalera
+    que pasa de los topes anteriores, no se toca nada y la herramienta rebota, igual que
+    contra un material demasiado duro. Así ni un fallo ni un cliente del cooperativo
+    pueden colgar la partida o estropear el guardado del terreno.
   - **Persistencia.** Todo queda en la capa `"terrain"` de la sección `world` del
     guardado (deltas por chunk de 8 m en milímetros enteros). Un agujero sigue cavado
     al recargar la partida (criterio de salida de §6.1).

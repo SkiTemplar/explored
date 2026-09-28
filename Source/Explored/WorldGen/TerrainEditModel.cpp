@@ -77,6 +77,24 @@ namespace TerrainEditDetail
 		return true;
 	}
 
+	bool IsFiniteVector(const FVector& V)
+	{
+		return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z);
+	}
+
+	/** Punto finito y dentro del mundo: sus muestras globales caben en int32 con holgura. */
+	bool InWorld(const FVector& P)
+	{
+		const double Max = FTerrainEditModel::MaxWorldCoordinate;
+		return IsFiniteVector(P) && FMath::Abs(P.X) <= Max && FMath::Abs(P.Y) <= Max && FMath::Abs(P.Z) <= Max;
+	}
+
+	/** Medida de pincel finita y no mayor que la de ninguna herramienta. */
+	bool ValidExtent(float Value)
+	{
+		return FMath::IsFinite(Value) && Value <= FTerrainEditModel::MaxBrushExtent;
+	}
+
 	float SnapTo(float Value, float Step)
 	{
 		return FMath::RoundToFloat(Value / Step) * Step;
@@ -124,7 +142,9 @@ float FTerrainEditModel::Occupancy(float Density, float CellSize)
 bool FTerrainEditModel::SnapStairs(const FStairCarve& In, FStairCarve& Out)
 {
 	const FVector2D Flat(In.Direction.X, In.Direction.Y);
-	if (Flat.Size() < 1.0e-3)
+	if (!TerrainEditDetail::InWorld(In.Start) || !TerrainEditDetail::IsFiniteVector(In.Direction)
+		|| !FMath::IsFinite(In.StepRise) || !FMath::IsFinite(In.StepRun) || !FMath::IsFinite(In.Width)
+		|| !FMath::IsFinite(In.Headroom) || Flat.Size() < 1.0e-3)
 	{
 		return false;
 	}
@@ -147,9 +167,9 @@ bool FTerrainEditModel::SnapStairs(const FStairCarve& In, FStairCarve& Out)
 	const float Rise = FMath::Clamp(TerrainEditDetail::SnapTo(FMath::Abs(In.StepRise), HalfGrid), HalfGrid, 3.0f * HalfGrid);
 	Out.StepRise = In.StepRise < 0.0f ? -Rise : Rise;
 	Out.StepRun = FMath::Clamp(TerrainEditDetail::SnapTo(In.StepRun, HalfGrid), StairGrid, 3.0f * StairGrid);
-	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, 64);
-	Out.Width = FMath::Clamp(In.Width, 0.6f, 3.0f);
-	Out.Headroom = FMath::Clamp(In.Headroom, 1.8f, 3.0f);
+	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, MaxStairSteps);
+	Out.Width = FMath::Clamp(In.Width, 0.6f, MaxStairWidth);
+	Out.Headroom = FMath::Clamp(In.Headroom, 1.8f, MaxStairHeadroom);
 	return true;
 }
 
@@ -458,7 +478,8 @@ FTerrainEditResult FTerrainEditModel::Pickaxe(const FPickaxeHit& Hit, FBaseDensi
 {
 	FTerrainEditResult Result;
 	const FTerrainMaterialInfo& Info = MaterialInfo(Hit.Material);
-	if (Hit.ToolTier < Info.MinToolTier)
+	if (Hit.ToolTier < Info.MinToolTier || !TerrainEditDetail::InWorld(Hit.ImpactPoint)
+		|| !TerrainEditDetail::IsFiniteVector(Hit.Direction))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -507,7 +528,9 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 {
 	FTerrainEditResult Result;
 	const float Factor = ToolFactor(Stroke.Material, Stroke.ToolTier);
-	if (Factor <= 0.0f)
+	if (Factor <= 0.0f || !TerrainEditDetail::InWorld(Stroke.Center) || !TerrainEditDetail::IsFiniteVector(Stroke.PlaneNormal)
+		|| !TerrainEditDetail::ValidExtent(Stroke.Radius) || !TerrainEditDetail::ValidExtent(Stroke.EdgeWidth)
+		|| !TerrainEditDetail::ValidExtent(Stroke.VerticalReach) || !FMath::IsFinite(Stroke.SoilBudget))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -584,6 +607,12 @@ FTerrainEditResult FTerrainEditModel::PlaceSoil(const FSoilPlacement& Placement,
 	{
 		return Result;
 	}
+	if (!FMath::IsFinite(Placement.SoilBudget) || !TerrainEditDetail::ValidExtent(Placement.Radius)
+		|| !TerrainEditDetail::InWorld(Placement.Center))
+	{
+		Result.bRejected = true;
+		return Result;
+	}
 	const float Reach = Placement.Radius + Settings.CellSize;
 	TArray<FProposal> Proposals;
 	ForEachSampleInBox(FBox(Placement.Center - FVector(Reach), Placement.Center + FVector(Reach)),
@@ -612,8 +641,16 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 {
 	FTerrainEditResult Result;
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
-	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || Flat.SizeSquared() < 1.0e-6
-		|| Stairs.NumSteps < 1 || Stairs.StepRun <= 0.0f || Stairs.Width <= 0.0f || Stairs.Headroom <= 0.0f)
+	// Holgura para los valores que SnapStairs deja justo en el tope (0,45 = 3 × 0,15 en float).
+	static constexpr float Slack = 1.0e-4f;
+	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || !TerrainEditDetail::InWorld(Stairs.Start)
+		|| !TerrainEditDetail::IsFiniteVector(Stairs.Direction) || Flat.SizeSquared() < 1.0e-6
+		|| Stairs.NumSteps < 1 || Stairs.NumSteps > MaxStairSteps
+		|| !(Stairs.StepRun > 0.0f) || Stairs.StepRun > MaxStairRun + Slack
+		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
+		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack
+		|| !(Stairs.Headroom > 0.0f) || Stairs.Headroom > MaxStairHeadroom + Slack
+		|| !FMath::IsFinite(Stairs.MaxVolume))
 	{
 		Result.bRejected = true;
 		return Result;

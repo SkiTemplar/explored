@@ -56,6 +56,8 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
 | `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
 | `lote5-fauna` | Cerdo salvaje de Esmeralda con rig y 6 acciones (Quaternius Farm Animals) | `docs/art/packs/lote5-fauna.png` |
+| `lote6-mineria` | Pico (KayKit RPG Tools), canto rodado y caliza (Quaternius Stylized Nature MegaKit) | `docs/art/packs/lote6-mineria.png` |
+| `lote7-cuarzo-taro` | Cristal de cuarzo (Quaternius Ultimate Platformer) y tres fases del taro (Quaternius Ultimate Nature) | `docs/art/packs/lote7-cuarzo-taro.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
@@ -67,6 +69,21 @@ Huerto (prioridad 3): las etapas son `kind: planta` con id `<planta>.<etapa>` de
 trepadora de espaldera): siguen en `pending`. El follaje de Quaternius Stylized Nature
 MegaKit usa texturas de hojas con alfa y no se puede recolorear por cara; de ese pack solo
 interesan los cantos (`Pebble_Round_*`), pendientes de revisar para `canto_rodado`.
+
+Minería (lote 6): los cantos y rocas de Quaternius traen musgo en la cara de abajo; se
+recolorean enteros a una sola muestra (`piedra.canto`, `piedra.caliza`). Las piedras de
+Kenney Nature y Survival (16-44 triángulos) quedan toscas al lado de KayKit. KayKit
+Furniture Bits y Restaurant Bits se añadieron al manifiesto y se revisaron: no traen cesta,
+y sus tarros no sirven de vasija. Siguen sin candidato `cristal_cuarzo`, `canto_aguzado`,
+`basalto_tallado` y `tierra_suelta`.
+
+Cuarzo y taro (lote 7): el Ultimate Nature Pack de Quaternius, a diferencia del Stylized
+Nature MegaKit, colorea el follaje con materiales planos, así que se recolorea por cara.
+`Plant_4` (hojas anchas sobre peciolo largo) cubre las tres fases del taro con la misma
+silueta: brote a 0,3 m en hoja clara, hojas grandes a 0,9 m y listo a 0,8 m en hierba seca
+(hojas que amarillean). `Gem_Blue` del Ultimate Platformer es un prisma hexagonal con
+puntas, la forma del cuarzo. El cangrejo de ese pack es un enemigo con cara y se descarta;
+ningún pack reproducible trae cangrejo cocotero ni gaviota (fauna de Landing).
 
 ## Fauna con esqueleto
 
