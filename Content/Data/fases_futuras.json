@@ -113,9 +113,9 @@
 			{ "id": "metal_trabajado", "nameEs": "Metal trabajado", "value": 5, "items": ["chapa_fuselaje", "tubo_aluminio", "lingote_hierro", "clavos"] }
 		],
 		"offers": [
-			{ "item": "batata_violeta", "value": 2, "minTier": "neutral" },
-			{ "item": "ceramica_decorada", "value": 2, "minTier": "neutral" },
-			{ "item": "sal_refinada", "value": 2, "minTier": "neutral" },
+			{ "item": "batata_violeta", "value": 2, "minTier": "cauta" },
+			{ "item": "ceramica_decorada", "value": 2, "minTier": "cauta" },
+			{ "item": "sal_refinada", "value": 2, "minTier": "cauta" },
 			{ "item": "cuerda", "value": 3, "minTier": "neutral" },
 			{ "item": "vela_lona_reforzada", "value": 3, "minTier": "neutral" },
 			{ "item": "tabla_mareas", "value": 3, "minTier": "neutral" },
