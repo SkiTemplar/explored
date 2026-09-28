@@ -4,6 +4,8 @@ Uso (desde la raíz del repositorio):
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2048 --only SandDry Grass
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --sheet docs/art/texturas-AAAA-MM-DD.png
+    uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --no-legacy --only-stylized \
+        --stylized-sheets docs/art
 
 Salida en Art/Export/Textures/ (no se versiona):
   Legado (las usa hoy build_materials.py; no cambian):
@@ -12,7 +14,7 @@ Salida en Art/Export/Textures/ (no se versiona):
     T_LeafNoise.png      variación para hojas (R ruido, G venas, B moteado, A máscara de borde).
     T_WaterFoam.png      patrón de espuma del océano (gris).
     T_WaterRipple.png    normales de oleaje fino del océano.
-  Juegos PBR estilizados (ver docs/art/texturas.md):
+  Juegos PBR estilizados (ver docs/art/texturas.md; el terreno sale de texgen/stylized.py):
     T_<Material>_BC.png  color base sRGB.
     T_<Material>_N.png   normal en espacio tangente, convención DirectX (la de Unreal).
     T_<Material>_ARH.png R oclusión, G rugosidad, B altura (lineal).
@@ -36,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from texgen.legacy import LEGACY_KINDS, generate_legacy  # noqa: E402
 from texgen.materials import MATERIALS, default_seed, generate  # noqa: E402
 from texgen.palette import PALETTE_TEXTURES  # noqa: E402
+from texgen.stylized import STYLIZED  # noqa: E402
 from texgen.output import KINDS, contact_sheet, lit_preview, texture_name, write_manifest, write_maps  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -75,11 +78,17 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--sheet", type=Path, help="escribe una hoja de contacto PNG en esta ruta")
     ap.add_argument("--no-palette", action="store_true", help="no escribir los atlas T_Palette_<Isla>")
     ap.add_argument("--seed", type=int, help="semilla global (por defecto, una estable por material)")
+    ap.add_argument("--only-stylized", action="store_true",
+                    help=f"solo el juego estilizado del terreno ({', '.join(STYLIZED)})")
+    ap.add_argument("--stylized-sheets", type=Path,
+                    help="escribe una hoja de contacto por material estilizado en este directorio")
     args = ap.parse_args(argv)
 
     if args.size & (args.size - 1) or args.size < 64:
         ap.error("--size debe ser potencia de 2 (>= 64)")
-    names = args.only or list(MATERIALS)
+    if args.only and args.only_stylized:
+        ap.error("--only y --only-stylized no se combinan")
+    names = list(STYLIZED) if args.only_stylized else (args.only or list(MATERIALS))
     unknown = [n for n in names if n not in MATERIALS]
     if unknown:
         ap.error(f"materiales desconocidos: {unknown}; hay {list(MATERIALS)}")
@@ -114,6 +123,12 @@ def main(argv: list[str] | None = None) -> None:
         print(f"[texturas] {name}: {', '.join(written)} ({time.perf_counter() - t0:.1f} s)")
         if args.sheet:
             cards.append(preview_card(name, maps, seed))
+        if args.stylized_sheets and name in STYLIZED:
+            from texgen.stylized_sheet import material_sheet, sheet_path
+
+            spec = MATERIALS[name]
+            path = material_sheet(name, maps, seed, spec.tile_m, spec.use, sheet_path(args.stylized_sheets, name))
+            print(f"[texturas] hoja de {name}: {path} ({path.stat().st_size / 1e6:.2f} MB)")
     write_manifest(args.out, manifest)
 
     if args.sheet:
