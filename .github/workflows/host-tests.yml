@@ -15,12 +15,15 @@ jobs:
         run: Tools/HostTests/run.sh
       - name: Tests de modelos puros con ASan/UBSan
         run: HOST_TESTS_SANITIZE=ON Tools/HostTests/run.sh
+      - name: Tests de modelos puros con matemáticas rápidas (como el editor)
+        run: HOST_TESTS_FASTMATH=ON Tools/HostTests/run.sh
 
   # Cada herramienta de Tools/ con su propio pyproject y uv.lock: ruff, basedpyright y
   # pytest con cobertura mínima del 80 % (fail_under en su pyproject).
   python-tools:
     name: python (${{ matrix.tool }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -34,6 +37,8 @@ jobs:
             python: "3.11"
           - tool: Audio
             python: "3.11"
+            # La música se renderiza con FluidSynth; music/soundfont.py solo lo descarga en Windows.
+            apt: fluidsynth
           - tool: DataCheck
             python: "3.11"
             extra: uv run datacheck --strict
@@ -57,6 +62,15 @@ jobs:
       - name: EGL de Mesa para renderizar con Workbench sin GPU
         if: matrix.egl
         run: sudo apt-get update -q && sudo apt-get install -y -q libegl1 libegl-mesa0 libgl1-mesa-dri
+      - name: Paquetes del sistema de la herramienta
+        if: matrix.apt
+        run: sudo apt-get update -q && sudo apt-get install -y -q ${{ matrix.apt }}
+      - name: Caché del soundfont (se descarga y se verifica por SHA256 la primera vez)
+        if: matrix.tool == 'Audio'
+        uses: actions/cache@v4
+        with:
+          path: Tools/Audio/.cache
+          key: audio-soundfont-${{ hashFiles('Tools/Audio/src/explored_audio/music/soundfont.py') }}
       - name: Dependencias
         run: uv sync --locked ${{ matrix.groups }}
       - name: ruff

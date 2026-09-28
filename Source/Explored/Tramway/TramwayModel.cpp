@@ -112,9 +112,13 @@ FVector FTramwayModel::NodePosition(const FIntVector& Node) const
 
 FIntVector FTramwayModel::SnapNode(const FVector& World) const
 {
+	// Se acota antes de convertir: RoundToInt32 de NaN o de 1e30 es UB. Lo no finito da 0.
+	const auto Snap = [](double V)
+	{
+		return FMath::IsFinite(V) ? FMath::RoundToInt32(FMath::Clamp(V, -1.0e9, 1.0e9)) : 0;
+	};
 	const FVector L = World - Settings.Origin;
-	return FIntVector(FMath::RoundToInt32(L.X / Settings.CellSize), FMath::RoundToInt32(L.Y / Settings.CellSize),
-		FMath::RoundToInt32(L.Z / Settings.HeightStep));
+	return FIntVector(Snap(L.X / Settings.CellSize), Snap(L.Y / Settings.CellSize), Snap(L.Z / Settings.HeightStep));
 }
 
 float FTramwayModel::MaxSlopeDegrees() const
@@ -394,7 +398,7 @@ void FTramwayModel::SetDamaged(const FIntVector& A, const FIntVector& B, bool bD
 TArray<TPair<FIntVector, FIntVector>> FTramwayModel::DamageInSphere(const FVector& Center, float Radius)
 {
 	TArray<TPair<FIntVector, FIntVector>> Out;
-	if (!(Radius > 0.0f) || !FMath::IsFinite(Center.X) || !FMath::IsFinite(Center.Y) || !FMath::IsFinite(Center.Z))
+	if (!FMath::IsFinite(Radius) || Radius <= 0.0f || !FMath::IsFinite(Center.X) || !FMath::IsFinite(Center.Y) || !FMath::IsFinite(Center.Z))
 	{
 		return Out;
 	}
@@ -463,7 +467,8 @@ double FTramwayModel::CartMass(const FMineCart& Cart) const
 
 bool FTramwayModel::SetLoad(FMineCart& Cart, float LoadKg) const
 {
-	if (!(LoadKg >= 0.0f) || LoadKg > Settings.CapacityKg)
+	// IsFinite explícito: con matemáticas rápidas `!(x >= 0)` no descarta los NaN.
+	if (!FMath::IsFinite(LoadKg) || LoadKg < 0.0f || LoadKg > Settings.CapacityKg)
 	{
 		return false;
 	}
@@ -474,7 +479,7 @@ bool FTramwayModel::SetLoad(FMineCart& Cart, float LoadKg) const
 bool FTramwayModel::PlaceCart(FMineCart& Cart, const FIntVector& From, const FIntVector& To, double S) const
 {
 	const double Length = SegmentLength(From, To);
-	if (Length <= 0.0 || !(S >= 0.0) || S > Length)
+	if (Length <= 0.0 || !FMath::IsFinite(S) || S < 0.0 || S > Length)
 	{
 		return false;
 	}
@@ -603,6 +608,20 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 		Cart.V = 0.0;
 		R.Derailed = Cause;
 	};
+	// LoadKg es público y V/S pueden venir de fuera: con un NaN la masa y la velocidad son NaN,
+	// S nunca vuelve al tramo y el cruce de nodos no acaba en una vía cerrada.
+	if (!FMath::IsFinite(Cart.LoadKg))
+	{
+		Cart.LoadKg = 0.0f;
+	}
+	if (!FMath::IsFinite(Cart.V))
+	{
+		Cart.V = 0.0;
+	}
+	if (!FMath::IsFinite(Cart.S))
+	{
+		Cart.S = 0.0;
+	}
 	const double StartLength = SegmentLength(Cart.From, Cart.To);
 	if (StartLength <= 0.0)
 	{
@@ -667,12 +686,20 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 	Cart.S += V * Settings.SubstepSeconds();
 	R.Distance = FMath::Abs(V) * Settings.SubstepSeconds();
 
+	// Red de seguridad: en un subpaso no se puede dar la vuelta entera a la red.
+	const int32 MaxCrossings = Nodes.Num() + 2;
 	for (;;)
 	{
 		const double Length = SegmentLength(Cart.From, Cart.To);
 		const bool bForward = Cart.S > Length;
 		if (!bForward && Cart.S >= 0.0)
 		{
+			break;
+		}
+		if (R.NodesCrossed >= MaxCrossings)
+		{
+			Cart.S = FMath::Clamp(Cart.S, 0.0, Length);
+			Derail(ECartDerailCause::MissingTrack);
 			break;
 		}
 		const FIntVector Node = bForward ? Cart.To : Cart.From;
@@ -732,7 +759,7 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 FCartStepResult FTramwayModel::Step(FMineCart& Cart, const FCartControl& Control, double Dt, double& Accumulator) const
 {
 	FCartStepResult Total;
-	if (!(Dt > 0.0) || !FMath::IsFinite(Dt))
+	if (!FMath::IsFinite(Dt) || Dt <= 0.0)
 	{
 		return Total;
 	}
@@ -907,7 +934,7 @@ bool FTramwayModel::CartFromValue(const FSaveValue& Value, FMineCart& OutCart)
 	if (!Value.IsObject() || !Ends || !Ends->IsArray() || Ends->Num() != 6 || !S || !V || !Load || !Derail
 		|| !ReadNode(*Ends, 0, Cart.From) || !ReadNode(*Ends, 3, Cart.To)
 		|| !S->TryGetDouble(Cart.S) || !V->TryGetDouble(Cart.V) || !Load->TryGetDouble(Load64)
-		|| !FMath::IsFinite(Cart.S) || !FMath::IsFinite(Cart.V) || !(Load64 >= 0.0) || Load64 > 1.0e6
+		|| !FMath::IsFinite(Cart.S) || !FMath::IsFinite(Cart.V) || !FMath::IsFinite(Load64) || Load64 < 0.0 || Load64 > 1.0e6
 		|| !Derail->TryGetInt(Cause) || Cause < 0 || Cause > static_cast<int64>(ECartDerailCause::MissingTrack))
 	{
 		return false;

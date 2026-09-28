@@ -2,6 +2,8 @@
 
 #include "Building/BuildingModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BuildingSpecDetail
@@ -483,6 +485,18 @@ void FBuildingSpec::Define()
 			TestEqual(TEXT("Cimiento de piedra"), Model->FindPiece(Stone)->Integrity, 100.0f - 0.15f, 1.0e-3f);
 			TestTrue(TEXT("Sin tiempo no pasa nada"), Model->Tick(0.0f, Rain).IsEmpty());
 		});
+
+		It("un paso de tiempo no finito no rompe ni derrumba nada", [this]()
+		{
+			const int32 Floor = Place(*Model, TEXT("suelo_madera"), Base, 0, 0, 0, 0, true);
+			const int32 Wall = Place(*Model, TEXT("pared_madera"), Base, 0, 0, 0, 0);
+			FBuildingWeather Cyclone;
+			Cyclone.StormCategory = 3.0f;
+			TestTrue(TEXT("NaN"), Model->Tick(std::numeric_limits<float>::quiet_NaN(), Cyclone).IsEmpty());
+			TestTrue(TEXT("Infinito"), Model->Tick(std::numeric_limits<float>::infinity(), Cyclone).IsEmpty());
+			TestTrue(TEXT("Suelo intacto"), Model->FindPiece(Floor) && Model->FindPiece(Floor)->Integrity == 75.0f);
+			TestTrue(TEXT("Pared intacta"), Model->FindPiece(Wall) && Model->FindPiece(Wall)->Integrity == 75.0f);
+		});
 	});
 
 	Describe("Reparación", [this]()
@@ -515,6 +529,13 @@ void FBuildingSpec::Define()
 			const FBuildingChangeResult Result = Model->ApplyDamage(Floor, 100.0f);
 			TestEqual(TEXT("Rota"), Result.Destroyed, TArray<int32>({Floor}));
 			TestEqual(TEXT("La cama cae"), Result.Collapsed, TArray<int32>({Bed}));
+		});
+
+		It("un daño no finito se ignora", [this]()
+		{
+			const int32 Floor = Place(*Model, TEXT("suelo_bambu"), Base, 0, 0, 0, 0, true);
+			TestTrue(TEXT("NaN"), Model->ApplyDamage(Floor, std::numeric_limits<float>::quiet_NaN()).IsEmpty());
+			TestTrue(TEXT("Pieza en pie"), Model->FindPiece(Floor) && Model->FindPiece(Floor)->Integrity == 50.0f);
 		});
 	});
 
@@ -668,6 +689,44 @@ void FBuildingSpec::Define()
 			TestEqual(TEXT("Dos descartadas"), Dropped, 2);
 			TestEqual(TEXT("Queda una"), Loaded.GetPieces().Num(), 1);
 			TestEqual(TEXT("Los ids no se reutilizan"), Loaded.SaveState().NextPieceId, 52);
+		});
+
+		It("descarta al cargar celdas, bases e ids fuera de rango", [this]()
+		{
+			Place(*Model, TEXT("suelo_palma"), Base, 0, 0, 0, 0, true);
+			FBuildingSaveState Saved = Model->SaveState();
+			const FBuildingPieceState Good = Saved.Pieces[0];
+			auto Variant = [&Good](int32 Id, int32 BaseId, int32 X, int32 Y, int32 Z)
+			{
+				FBuildingPieceState P = Good;
+				P.Id = Id;
+				P.Placement.BaseId = BaseId;
+				P.Placement.Cell = FIntVector(X, Y, Z);
+				return P;
+			};
+			// Base 65536 + Base: su clave de 16 bits coincidiría con la de Base.
+			FBuildingBaseState Aliased = Saved.Bases[0];
+			Aliased.Id = Base + 65536;
+			FBuildingBaseState Huge = Saved.Bases[0];
+			Huge.Id = MAX_int32;
+			Saved.Bases.Add(Aliased);
+			Saved.Bases.Add(Huge);
+			Saved.Pieces.Add(Variant(60, Base, 65536, 0, 0));        // mismo hueco de 16 bits que X = 0
+			Saved.Pieces.Add(Variant(61, Base, 0, 0, 256));          // mismo hueco de 8 bits que Z = 0
+			Saved.Pieces.Add(Variant(62, Base, 3, 0, FBuildingModel::MaxLevels + 1));
+			Saved.Pieces.Add(Variant(63, Base, MAX_int32, 0, 0));    // X + 32768 desborda
+			Saved.Pieces.Add(Variant(64, Aliased.Id, 0, 0, 0));
+			Saved.Pieces.Add(Variant(MAX_int32, Base, 5, 0, 0));    // Id + 1 desborda
+
+			FBuildingModel Loaded(MakeCatalog());
+			int32 Dropped = 0;
+			TestFalse(TEXT("Carga con descartes"), Loaded.LoadState(Saved, &Dropped));
+			TestEqual(TEXT("Seis descartadas"), Dropped, 6);
+			TestEqual(TEXT("Queda la buena"), Loaded.GetPieces(), TArray<FBuildingPieceState>({Good}));
+			TestEqual(TEXT("Solo la base válida"), Loaded.SaveState().Bases.Num(), 1);
+			TestEqual(TEXT("Siguiente id sin desbordar"), Loaded.SaveState().NextPieceId, 65);
+			const int32 Next = Place(Loaded, TEXT("suelo_palma"), Base, 1, 0, 0, 0, true);
+			TestEqual(TEXT("Se sigue construyendo"), Next, 65);
 		});
 
 		It("la misma secuencia da el mismo resultado", [this]()

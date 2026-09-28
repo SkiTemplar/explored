@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
+from . import achievements, combat, cooking, crafting, farm, fases, fauna, mining, music, packs
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -49,7 +49,7 @@ DATA_FILES = [
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
-    "fases_futuras.json", "fauna_terrestre.json",
+    "fases_futuras.json", "fauna_terrestre.json", "combat.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -1241,6 +1241,7 @@ def run_all(ds: DataSet) -> Report:
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
     check_compost(ds, r, obtainable)
+    farm.check_farm(ds, r)
     check_building(ds, r, obtainable)
     check_boats(ds, r, obtainable)
     check_meshes(ds, r)
@@ -1257,6 +1258,7 @@ def run_all(ds: DataSet) -> Report:
     check_gdd_mining(ds, r)
     mining.check_mining(ds, r)
     fauna.check_fauna(ds, r, PROPERTIES)
+    combat.check_combat(ds, r)
     fases.check_future_phases(ds, r, BUILDING_SOCKETS)
     packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r

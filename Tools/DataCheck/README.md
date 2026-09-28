@@ -30,6 +30,10 @@ Qué comprueba:
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
   Si una planta tiene `birdsEat`, debe existir la pieza `espantapajaros`
   (`FFarmModel::ScarecrowRadius`, GDD §8.7).
+- **Huerto (biblia 02 §10.1)**: `plants.json/rules` es espejo de las constantes de
+  `FFarmModel` (fuera de estación, días secos hasta marchitarse y morir, lluvia por riego,
+  radio del espantapájaros en metros, picoteo de las aves), y un cultivo que se planta con su
+  propia cosecha y se arranca al cosechar debe dar al menos 2 (si no, la cosecha neta es nula).
 - **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
   obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`.
   `mining.json`: materiales espejo de `ETerrainMaterial`/`FTerrainEditModel::MaterialInfo`
@@ -38,6 +42,12 @@ Qué comprueba:
   capa, profundidad, fase y vetas finitas; niveles de herramienta 0–4 en los que cada
   cabeza produce de verdad un `pico` (no la captura `hacha`) y toda pieza que cabe como
   cabeza tiene nivel; progresión de picos sin ciclos y completa solo con islas de fase 1.
+  Peligros (biblia 02 §2.4): derrumbe con una pieza de apoyo real sobre el terreno que cubre la
+  luz máxima y avisa antes de caer, luces que existen, cada una con su ritmo de quema (`lightBurn`) y una `maxDurability` que gastar, aire viciado que nunca mata, sellado con
+  un encaje del kit y crecida en una estación conocida. Lugares subterráneos (§2.5): acceso y
+  nivel de entrada, fase 1 solo en las islas del acceso anticipado, objetos de estrato presentes
+  en esa isla y fase, la cueva de Landing que se cava con la pala sin tocar un estrato más duro
+  (GDD v2 §6.1), y los tubos de lava del Humo y las grutas marinas de Los Dientes (§6.2).
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).

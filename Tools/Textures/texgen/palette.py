@@ -231,6 +231,13 @@ FAMILIES: tuple[Family, ...] = (
         ("pescado", "#7b97ad", "Pescado plateado."),
         ("cangrejo", "#d0563b", "Cangrejo y langosta cocidos."),
         ("taro", "#9a7b8c", "Taro, raíces moradas."),
+        ("pina", "#bfa332", "Piña (cáscara dorada verdosa: el mango ya es naranja)."),
+        ("coco", "#5b4a2b", "Coco maduro, cáscara con fibra (palma.coco no se verifica contra el suelo)."),
+        ("maracuya", "#5f2d5c", "Maracuyá morada."),
+        ("seta", "#a8583a", "Sombrero de la seta comestible."),
+        ("batata", "#9b4a5a", "Batata, piel rosada."),
+        ("yuca", "#7a3a36", "Yuca, corteza de la raíz."),
+        ("huevo", "#eee8d8", "Huevo de ave marina o de gallina."),
     )),
     Family("ui", 8, False, True, "Interfaz y objetos de UI en el mundo (mapa, marcadores).", (
         ("tinta", "#302b27", "Texto, tinta del mapa."),

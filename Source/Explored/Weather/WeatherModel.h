@@ -65,6 +65,11 @@ class EXPLORED_API FWeatherModel
 public:
 	static constexpr int32 DaysPerSeason = 8;
 	static constexpr int32 DaysPerYear = DaysPerSeason * static_cast<int32>(ESeason::Count);
+	/**
+	 * Reloj máximo admitido (10 000 días de juego, como FRainCatchModel::MaxSupportedMinute).
+	 * Un reloj mayor (estado corrupto) se trata como este: pasarlo a int32 desbordaría.
+	 */
+	static constexpr int32 MaxSupportedDays = 10000;
 
 	explicit FWeatherModel(uint32 InSeed);
 

@@ -50,7 +50,9 @@ int32 FGroundBranchModel::Advance(FGroundBranchCell& Cell, const TArray<FGroundB
 	{
 		return 0;
 	}
-	const int64 Step = FMath::Min(NowMinute - Cell.LastUpdateMinute, MaxStepMinutes);
+	// NowMinute > LastUpdateMinute: la diferencia sin signo es exacta aunque la resta con signo
+	// desbordara (LastUpdateMinute = INT64_MIN en una partida manipulada).
+	const int64 Step = (int64)FMath::Min<uint64>((uint64)NowMinute - (uint64)Cell.LastUpdateMinute, (uint64)MaxStepMinutes);
 	Cell.LastUpdateMinute = NowMinute;
 
 	const int32 Capacity = TotalCapacity(Sources);
@@ -64,7 +66,10 @@ int32 FGroundBranchModel::Advance(FGroundBranchCell& Cell, const TArray<FGroundB
 
 	// Lo que sobre al llenarse se descarta igual; acotarlo antes evita desbordar con pasos enormes.
 	const int64 Missing = Capacity - Cell.Present.Num();
-	Cell.Accumulator = FMath::Min(Cell.Accumulator + Step * Rate, Missing * MilliPerBranch);
+	const int64 Cap = Missing * MilliPerBranch;
+	// Acumulador cargado acotado antes de sumar, y la ganancia saturada: ninguna suma desborda.
+	const int64 Gain = Rate > Cap / Step ? Cap : Step * Rate;
+	Cell.Accumulator = FMath::Min(FMath::Min(Cell.Accumulator, Cap) + Gain, Cap);
 
 	int32 Spawned = 0;
 	while (Cell.Accumulator >= MilliPerBranch && Cell.Present.Num() < Capacity)

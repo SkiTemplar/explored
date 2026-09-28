@@ -310,5 +310,14 @@
 		"UnknownInstance": { "es": "Esa pieza ya no existe", "en": "That piece no longer exists" },
 		"UnknownPiece": { "es": "Pieza desconocida", "en": "Unknown piece" },
 		"Unstable": { "es": "Demasiado lejos de un apoyo", "en": "Too far from a support" }
+	},
+	"ExploredCoop": {
+		"SleepStillUp": { "es": "Hay {Count} en pie todavía.", "en": "{Count} still up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"SleepOneStillUp": { "es": "Queda uno en pie.", "en": "One still up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"SleepBlockedByDowned": { "es": "No se duerme con alguien en el suelo.", "en": "Nobody sleeps with someone down.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"ReviveVerb": { "es": "Levantar a {Name}", "en": "Help {Name} up", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"ReviveVerbMedicine": { "es": "Atender a {Name}", "en": "Patch {Name} up", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"PlayerDown": { "es": "{Name} está en el suelo.", "en": "{Name} is down.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
+		"PlayerBackUp": { "es": "{Name} vuelve a estar en pie.", "en": "{Name} is back up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" }
 	}
 }

@@ -4,6 +4,21 @@
 #include "Save/SaveArchive.h"
 
 /**
+ * Base64 estándar sin relleno para meter bytes en el texto de la partida. La
+ * decodificación es estricta (codificación canónica): rechaza caracteres ajenos, una
+ * longitud imposible o bits sobrantes distintos de cero, así que un texto truncado o
+ * manipulado nunca decodifica a medias.
+ */
+struct EXPLORED_API FSaveBase64
+{
+	static FString Encode(const TArray<uint8>& Bytes);
+	/** Devuelve false (y deja Out vacío) si el texto no es válido o pasaría de MaxBytes. */
+	static bool Decode(const FString& Text, TArray<uint8>& Out, int32 MaxBytes = MAX_int32);
+	/** Igual que Decode, pero sobre [Data, Data + Len). */
+	static bool Decode(const TCHAR* Data, int32 Len, TArray<uint8>& Out, int32 MaxBytes = MAX_int32);
+};
+
+/**
  * Conjunto de índices no negativos (instancias de una celda) como mapa de bits.
  * Se codifica en texto con la forma más corta de dos:
  * - «r:0-4,9,12-40»: rangos ascendentes (recolección en claros contiguos);
@@ -21,6 +36,8 @@ public:
 	bool Contains(int32 Index) const;
 	int32 Num() const { return Count; }
 	bool IsEmpty() const { return Count == 0; }
+	/** Palabras de 32 bits reservadas (lo que ocupa en memoria: crece con el índice más alto). */
+	int32 NumWords() const { return Words.Num(); }
 	void Reset();
 
 	/** Une otro conjunto. Devuelve cuántos índices eran nuevos. */
@@ -67,6 +84,15 @@ struct FSaveCellDeltas
 class EXPLORED_API FSaveScatterDeltas
 {
 public:
+	/**
+	 * Tope de memoria al cargar, en palabras de 32 bits: 2^22 = 16 MiB por capa y
+	 * también en total en FSaveWorldDeltas::Load (134 millones de índices posibles,
+	 * muy por encima de lo que se recolecta en una partida). Cada celda cuesta según su
+	 * índice más alto, no según cuántos lleva: "r:1048575" son 11 caracteres y 128 KiB,
+	 * y 90.000 celdas así pedirían unos 11 GB. Al pasarlo se rechaza la capa.
+	 */
+	static constexpr int32 MaxLoadedWords = 1 << 22;
+
 	bool Add(const FIntPoint& Cell, int32 Index);
 	bool Remove(const FIntPoint& Cell, int32 Index);
 	bool Contains(const FIntPoint& Cell, int32 Index) const;
@@ -75,6 +101,8 @@ public:
 
 	int32 Num() const;
 	int32 NumCells() const { return Cells.Num(); }
+	/** Memoria de todas las celdas en palabras de 32 bits (ver MaxLoadedWords). */
+	int64 NumWords() const;
 	bool IsEmpty() const { return Cells.Num() == 0; }
 	void Reset() { Cells.Reset(); }
 

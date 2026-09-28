@@ -22,7 +22,7 @@ def write_pending(ds: DataSet) -> None:
     }
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     ds.data["meshes_pendientes.json"] = doc
-    print(f"Escrito {path.relative_to(ds.repo_root)}")
+    print(f"Escrito {path.relative_to(ds.repo_root).as_posix()}")
 
 
 def main(argv: list[str] | None = None) -> int:

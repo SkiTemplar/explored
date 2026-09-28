@@ -34,6 +34,23 @@ namespace InventoryModelDetail
 
 	FName Tag(const TCHAR* Name) { return FName(Name); }
 
+	/**
+	 * Cantidad utilizable: finita y no negativa. Un guardado editado o corrupto
+	 * puede traer NaN, infinitos o pesos negativos («weightKg»: -1000).
+	 */
+	bool IsSaneAmount(float Value)
+	{
+		return FMath::IsFinite(Value) && Value >= 0.0f;
+	}
+
+	/** Peso, volumen y líquido con sentido, sin más líquido del que cabe en el recipiente. */
+	bool HasSaneAmounts(const FInventoryItem& Item)
+	{
+		return IsSaneAmount(Item.WeightKg) && IsSaneAmount(Item.VolumeLiters)
+			&& IsSaneAmount(Item.LiquidLiters) && IsSaneAmount(Item.LiquidCapacityLiters)
+			&& Item.LiquidLiters <= Item.LiquidCapacityLiters + CapacityTolerance;
+	}
+
 	bool IsHand(EInventorySlot Slot)
 	{
 		return Slot == EInventorySlot::HandLeft || Slot == EInventorySlot::HandRight;
@@ -317,7 +334,7 @@ EInventoryFail FInventoryContainer::CanAccept(const FInventoryItem& Item) const
 {
 	using namespace InventoryModelDetail;
 
-	if (!Item.IsValid())
+	if (!Item.IsValid() || !FInventoryModel::IsUsableInstanceId(Item.InstanceId))
 	{
 		return EInventoryFail::InvalidItem;
 	}
@@ -691,7 +708,8 @@ EInventoryFail FInventoryModel::CanPlace(const FInventoryItem& Item, EInventoryS
 {
 	using namespace InventoryModelDetail;
 
-	if (!Item.IsValid())
+	// Con un id fuera de rango, NextInstanceId = Id + 1 desbordaría (PlaceInHand, TakeFromWorld).
+	if (!Item.IsValid() || !FInventoryModel::IsUsableInstanceId(Item.InstanceId))
 	{
 		return EInventoryFail::InvalidItem;
 	}
@@ -1231,7 +1249,8 @@ bool FInventoryModel::AttachSledge(const FInventoryItem& SledgeItem, const FInve
 		return false;
 	}
 	FInventoryEquipmentSpec Spec;
-	if (!SledgeItem.IsValid() || !FindEquipmentSpec(SledgeItem, Spec) || Spec.Kind != EInventoryEquipment::Sledge)
+	if (!SledgeItem.IsValid() || !IsUsableInstanceId(SledgeItem.InstanceId)
+		|| !FindEquipmentSpec(SledgeItem, Spec) || Spec.Kind != EInventoryEquipment::Sledge)
 	{
 		OutFail = EInventoryFail::NotEquippable;
 		return false;
@@ -1310,12 +1329,13 @@ float FInventoryModel::GetComfortableCapacityKg() const
 
 float FInventoryModel::GetCarriedWeightRatio() const
 {
-	return (GetBodyWeightKg() + GetSledgeWeightKg() * SledgeDragFactor) / GetComfortableCapacityKg();
+	// Divisor acotado por si la capacidad cómoda llegara a 0 (0/0 = NaN).
+	return (GetBodyWeightKg() + GetSledgeWeightKg() * SledgeDragFactor) / FMath::Max(GetComfortableCapacityKg(), UE_KINDA_SMALL_NUMBER);
 }
 
 float FInventoryModel::GetSwimLoadRatio() const
 {
-	return GetBodyWeightKg() / GetComfortableCapacityKg();
+	return GetBodyWeightKg() / FMath::Max(GetComfortableCapacityKg(), UE_KINDA_SMALL_NUMBER);
 }
 
 float FInventoryModel::GetNoiseLevel() const
@@ -1416,6 +1436,12 @@ float FInventoryModel::FillLiquid(int64 InstanceId, float Liters, EInventoryFail
 		OutFail = EInventoryFail::NotALiquidContainer;
 		return 0.0f;
 	}
+	// Clamp(NaN) devuelve el máximo: sin esto, NaN litros llenan el recipiente entero.
+	if (!FMath::IsFinite(Liters) || Liters <= 0.0f)
+	{
+		OutFail = EInventoryFail::NoRoom;
+		return 0.0f;
+	}
 	float Added = FMath::Clamp(Liters, 0.0f, Item->LiquidCapacityLiters - Item->LiquidLiters);
 	if (const FInventoryContainer* Container = GetContainer(Slot))
 	{
@@ -1437,7 +1463,8 @@ float FInventoryModel::FillLiquid(int64 InstanceId, float Liters, EInventoryFail
 float FInventoryModel::DrinkFrom(int64 InstanceId, float Liters)
 {
 	FInventoryItem* Item = FindMutableItemById(InstanceId);
-	if (!Item)
+	// Igual que al llenar: NaN litros no vacían el recipiente.
+	if (!Item || !FMath::IsFinite(Liters))
 	{
 		return 0.0f;
 	}
@@ -1480,7 +1507,9 @@ bool FInventoryModel::ShrinkItem(const FInventoryItem& Updated, EInventoryFail& 
 		OutFail = EInventoryFail::NotFound;
 		return false;
 	}
-	if (!Updated.IsValid() || Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
+	// Un peso NaN pasaría la comparación de abajo (NaN > x es falso) y se quedaría en el inventario.
+	if (!Updated.IsValid() || !InventoryModelDetail::HasSaneAmounts(Updated)
+		|| Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
 	{
 		OutFail = EInventoryFail::InvalidItem;
 		return false;
@@ -1508,6 +1537,12 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 	RebuildSpecs(S);
 	OutFail = EInventoryFail::CorruptState;
 
+	// Contador de ids: por debajo de 1 repartiría ids no válidos y en el tope desbordaría.
+	if (S.NextInstanceId < 1 || S.NextInstanceId > MaxInstanceId)
+	{
+		return false;
+	}
+
 	// Manos.
 	if (S.bHandsHoldTwoHanded)
 	{
@@ -1517,6 +1552,30 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 		}
 	}
 	else if ((S.HandLeft.IsValid() && S.HandLeft.IsTwoHanded()) || (S.HandRight.IsValid() && S.HandRight.IsTwoHanded()))
+	{
+		return false;
+	}
+
+	// Cantidades: con NaN o pesos negativos el peso del cuerpo deja de tener
+	// sentido (una roca de -1000 kg deja coger otra de 500).
+	bool bSaneAmounts = true;
+	InventoryModelDetail::ForEachCarried(S, /*bIncludeSledge=*/true, [&bSaneAmounts](const FInventoryItem& Item, EInventorySlot)
+	{
+		bSaneAmounts = bSaneAmounts && InventoryModelDetail::HasSaneAmounts(Item);
+	});
+	InventoryModelDetail::ForEachEquipped(S, /*bIncludeSledge=*/true, [&bSaneAmounts](const FInventoryItem& Item)
+	{
+		bSaneAmounts = bSaneAmounts && InventoryModelDetail::HasSaneAmounts(Item);
+	});
+	if (!bSaneAmounts)
+	{
+		return false;
+	}
+	// La mochila a medida (sin objeto) conserva la capacidad guardada tal cual (RebuildSpecs).
+	// También su comodidad: con -15 kg la capacidad cómoda queda en 0 y la proporción de carga en 0/0.
+	if (S.bHasBackpack && (!InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxVolumeLiters)
+		|| !InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxWeightKg)
+		|| !InventoryModelDetail::IsSaneAmount(S.BackpackComfortBonusKg)))
 	{
 		return false;
 	}

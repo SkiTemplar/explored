@@ -3,8 +3,10 @@
 El catálogo dice qué fichero de qué pack CC0 cubre cada id de juego; ``Tools/Packs/normalize.py``
 lo aplica en Blender. Aquí se mira que los ids existan, que todo pack sea CC0 verificado y
 con sha256, que no haya duplicados y que cada regla de color apunte a una muestra real de
-``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json``)
-lleva malla con esqueleto ``SK_Pack_*`` y un bloque ``rig`` con sus acciones.
+``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json`` o ``fauna.json``)
+lleva malla con esqueleto ``SK_Pack_*`` y un bloque ``rig`` con sus acciones. Los iconos de UI
+(``icons``) apuntan a pistas ``icon`` de ``achievements.json`` o a un widget ``SExplored*`` y se
+tiñen con colores de ``ExploredUIStyle.h``; toda pista de logro queda cubierta o en ``iconsPending``.
 """
 
 from __future__ import annotations
@@ -38,6 +40,12 @@ HEX = re.compile(r"^#[0-9a-f]{6}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SM_NAME = re.compile(r"/(SM_[A-Za-z0-9_]+)\.\1$")
+TEXTURE = re.compile(r"^T_Pack_Icon_[A-Za-z0-9]+$")
+WIDGET = re.compile(r"^SExplored[A-Za-z0-9]+$")
+ICON_ROLE = re.compile(r"^[a-z][a-z0-9_]*$")
+UI_WIDGETS = Path("Source") / "Explored" / "UI" / "Widgets"
+UI_STYLE = Path("Source") / "Explored" / "UI" / "ExploredUIStyle.h"
+STYLE_COLOR = re.compile(r"FLinearColor (Color[A-Za-z]+)\(\) const")
 
 Err = Callable[[str], None]
 
@@ -112,7 +120,10 @@ def _game_ids(data: dict) -> dict[str, set[str]]:
         for pl in data.get("plants.json", {}).get("plants", [])
         for s in pl.get("stages", [])
     }
+    # fauna.json trae también la fauna de ambiente (cangrejo, gaviota, fragata), que no está
+    # en fauna_terrestre.json pero sale en meshes_pendientes.json y se busca en los packs.
     fauna = {f.get("id") for f in data.get(FAUNA, {}).get("species", [])}
+    fauna |= {f.get("id") for f in data.get("fauna.json", {}).get("species", [])}
     return {"item": items, "pieza": pieces, "planta": stages, "fauna": fauna}
 
 
@@ -186,6 +197,100 @@ def _piece_meshes(data: dict) -> dict[str, str]:
         for p in data.get("building_pieces.json", {}).get("pieces", [])
         if p.get("mesh")
     }
+
+
+def _achievement_icons(data: dict) -> set[str]:
+    return {a.get("icon") for a in data.get("achievements.json", {}).get("achievements", []) if a.get("icon")}
+
+
+def _style_colors(repo_root: Path) -> set[str]:
+    path = repo_root / UI_STYLE
+    return set(STYLE_COLOR.findall(path.read_text(encoding="utf-8"))) if path.exists() else set()
+
+
+def check_icons(repo_root: Path, catalog: dict, data: dict, lotes: set[str], known_packs: set[str],
+                usable: set[str], error: Err) -> None:
+    """Iconos de UI: pista de logro o widget existentes, tintes de ExploredUIStyle y cobertura total."""
+    hints = _achievement_icons(data)
+    colors = _style_colors(repo_root)
+    widgets = repo_root / UI_WIDGETS
+    seen_tex: set[str] = set()
+    seen_slot: set[str] = set()
+    chosen: set[tuple[str, str, str]] = set()
+    for icon in catalog.get("icons", []):
+        tex = icon.get("texture", "")
+        where = f"{CATALOG}: icono «{tex}»"
+        if not TEXTURE.match(tex):
+            error(f"{where}: textura no sigue T_Pack_Icon_<Nombre>")
+        if tex in seen_tex:
+            error(f"{where}: textura repetida")
+        seen_tex.add(tex)
+        if icon.get("lote") not in lotes:
+            error(f"{where}: lote «{icon.get('lote')}» no declarado en «lotes»")
+        pack = icon.get("pack")
+        if pack not in known_packs:
+            error(f"{where}: pack «{pack}» no está en packs.json")
+        elif pack not in usable:
+            error(f"{where}: pack «{pack}» sin licencia CC0 verificada o sin sha256")
+        f = icon.get("file", "")
+        if not f.endswith(".png") or f.startswith("/") or ".." in Path(f).parts:
+            error(f"{where}: «file» debe ser un .png con ruta relativa dentro del pack")
+        slots = icon.get("slots") or []
+        if not slots:
+            error(f"{where}: sin slots (dónde se usa)")
+        for slot in slots:
+            if "achievementIcon" in slot:
+                hint = slot["achievementIcon"]
+                key = f"logro:{hint}"
+                chosen.add((hint, str(pack), f))
+                if hint not in hints:
+                    error(f"{where}: la pista «{hint}» no es un icon de achievements.json")
+            else:
+                w, role = slot.get("widget", ""), slot.get("role", "")
+                key = f"{w}.{role}"
+                if not WIDGET.match(w) or not ICON_ROLE.match(role):
+                    error(f"{where}: slot «{key}» necesita widget SExplored<Nombre> y role en minúsculas")
+                elif widgets.is_dir() and not (widgets / f"{w}.h").exists():
+                    error(f"{where}: el widget «{w}» no existe en {UI_WIDGETS.as_posix()}")
+            if key in seen_slot:
+                error(f"{where}: el slot «{key}» ya tiene icono")
+            seen_slot.add(key)
+        tint = icon.get("tint")
+        if not isinstance(tint, dict) or not tint:
+            error(f"{where}: tint debe dar un color de ExploredUIStyle por estado")
+        else:
+            for state, color in tint.items():
+                if not ICON_ROLE.match(state):
+                    error(f"{where}: estado «{state}» no ASCII en minúsculas")
+                if colors and color not in colors:
+                    error(f"{where}: el tinte «{color}» no existe en ExploredUIStyle.h")
+
+    covered = {k.split(":", 1)[1] for k in seen_slot if k.startswith("logro:")}
+    for d in catalog.get("iconsDiscarded", []):
+        hint = d.get("achievementIcon", "")
+        if hint not in hints:
+            error(f"{CATALOG}: iconsDiscarded: «{hint}» no es un icon de achievements.json")
+        if d.get("pack") not in known_packs:
+            error(f"{CATALOG}: iconsDiscarded: «{hint}» cita el pack «{d.get('pack')}», que no está en packs.json")
+        if (hint, d.get("pack"), d.get("file")) in chosen:
+            error(f"{CATALOG}: iconsDiscarded: «{hint}» descarta {d.get('file')}, que es el fichero de su icono")
+        if not d.get("reason"):
+            error(f"{CATALOG}: iconsDiscarded: «{hint}» sin motivo")
+    pending: set[str] = set()
+    for d in catalog.get("iconsPending", []):
+        hint = d.get("achievementIcon", "")
+        if hint not in hints:
+            error(f"{CATALOG}: iconsPending: «{hint}» no es un icon de achievements.json")
+        if hint in covered:
+            error(f"{CATALOG}: iconsPending: «{hint}» ya tiene icono")
+        if hint in pending:
+            error(f"{CATALOG}: iconsPending: «{hint}» repetido")
+        pending.add(hint)
+        if not d.get("reason"):
+            error(f"{CATALOG}: iconsPending: «{hint}» sin motivo")
+    if "icons" in catalog:
+        for hint in sorted(hints - covered - pending):
+            error(f"{CATALOG}: la pista de logro «{hint}» no tiene icono ni está en iconsPending")
 
 
 def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
@@ -293,6 +398,8 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
 
     covered = {g for _, g in seen_game}
     all_ids = set().union(*ids.values())
+    chosen = {(e.get("gameId"), e.get("pack"), e.get("file")) for e in catalog.get("entries", [])}
+    pending_seen: set[str] = set()
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
@@ -308,3 +415,13 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{CATALOG}: discarded: «{gid}» no existe en los datos del juego")
             if key == "pending" and gid in covered:
                 error(f"{CATALOG}: pending: «{gid}» ya está cubierto en entries")
+            if key == "discarded" and (gid, d.get("pack"), d.get("file")) in chosen:
+                error(f"{CATALOG}: discarded: «{gid}» descarta {d.get('file')}, que es el fichero de su entrada")
+            if key == "pending":
+                if gid in pending_seen:
+                    error(f"{CATALOG}: pending: «{gid}» repetido")
+                pending_seen.add(gid)
+                if GAME_ID.match(gid) and "." not in gid and gid not in all_ids:
+                    error(f"{CATALOG}: pending: «{gid}» no existe en los datos del juego")
+
+    check_icons(repo_root, catalog, data, lotes, known_packs, usable, error)

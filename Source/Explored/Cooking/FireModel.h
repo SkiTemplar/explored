@@ -164,6 +164,17 @@ struct EXPLORED_API FFireModel
 	static constexpr int32 MaxTinderCharges = 3;
 	/** Paso máximo de simulación (horas) para que un Tick largo dé lo mismo que muchos cortos. */
 	static constexpr float MaxStepHours = 0.05f;
+	/**
+	 * Tope de pasos por Tick (~200 h a MaxStepHours, más de lo que dura cualquier hogar lleno
+	 * y sus brasas). Por encima se alargan los pasos: se pierde exactitud, no se cuelga.
+	 */
+	static constexpr int32 MaxTickSteps = 4096;
+
+	/**
+	 * Deja un estado cargado de fuera (guardado) dentro de rango: reales no finitos o
+	 * negativos a 0, fracciones en [0, 1], yesca en [0, MaxTinderCharges] y enums válidos.
+	 */
+	static void Sanitize(FFireState& State);
 
 	/**
 	 * Echa una unidad de combustible. Devuelve false si el objeto no arde o

@@ -84,8 +84,8 @@ def day_variants() -> dict[str, list[str]]:
     for island in MUSIC_ISLANDS:
         own = configs[island]
         sisters = sorted(
-            (other for other in MUSIC_ISLANDS if other != island and configs[other]["scale"] == own["scale"]),
-            key=lambda other: (abs(configs[other]["bpm"] - own["bpm"]), other),
+            (other for other in MUSIC_ISLANDS if other != island and configs[other].scale == own.scale),
+            key=lambda other: (abs(configs[other].bpm - own.bpm), other),
         )
         out[island] = [f"mus_explore_{island}", *(f"mus_explore_{s}" for s in sisters[:DAY_SISTER_COUNT])]
     return out

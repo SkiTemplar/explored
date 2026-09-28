@@ -292,3 +292,16 @@ def test_pack_aliases_point_to_existing_swatches():
     ids = {s["id"] for s in island_swatches(ISLANDS[0])}
     missing = {k: v for k, v in PACK_ALIASES.items() if v not in ids}
     assert not missing, missing
+
+
+def test_pack_catalog_recolor_targets_exist():
+    """Las reglas `recolor` de packs_catalogo.json apuntan a muestras de paleta.json: si una
+    muestra se renombra o se borra, normalize.py fallaría en local con Blender."""
+    catalog = json.loads((ROOT / "Content" / "Data" / "packs_catalogo.json").read_text(encoding="utf-8"))
+    ids = {s["id"] for s in island_swatches(ISLANDS[0])}
+    missing = set()
+    for e in catalog["entries"]:
+        rc = e.get("recolor") or {}
+        targets = [r["to"] for r in rc.get("rules", [])] + ([rc["default"]] if "default" in rc else [])
+        missing |= {(e["gameId"], t) for t in targets if t not in ids}
+    assert not missing, sorted(missing)
