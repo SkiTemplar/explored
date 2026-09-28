@@ -63,6 +63,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote9-iconos.png",
       "scope": "Iconos de UI de Kenney (prioridad 5): logros y estados de la pantalla de logros y del indicador de guardado. Familia única de siluetas blancas redondeadas (Board Game Icons, y Game Icons solo para la estrella)."
+    },
+    {
+      "id": "lote10-mar-y-coco",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote10-mar-y-coco.png",
+      "scope": "Mitad de coco, pescado de arrecife y espina de pescado de las primeras horas en Landing con Kenney Food Kit."
     }
   ],
   "entries": [
@@ -1486,6 +1492,138 @@
         "default": "madera.deriva"
       },
       "note": "Tronco con muñón de rama; en gris plata de deriva. Una sola muestra."
+    },
+    {
+      "gameId": "cascara_coco",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut-half.glb",
+      "mesh": "SM_Pack_CascaraCoco",
+      "replaces": "SM_Item_CascaraCoco",
+      "size": {
+        "axis": "max",
+        "m": 0.14
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#8e5641",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#ab5e41",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#fafafc",
+            "to": "palma.pulpa"
+          },
+          {
+            "from": "#c1c1d8",
+            "to": "palma.pulpa"
+          }
+        ],
+        "default": "palma.coco"
+      },
+      "note": "Mitad de coco hueca con pulpa clara; sirve también de recipiente_coco (mismo fichero, otra entrada si el diseño lo pide)."
+    },
+    {
+      "gameId": "pescado_arrecife",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/fish.glb",
+      "mesh": "SM_Pack_PescadoArrecife",
+      "replaces": "SM_Item_PescadoArrecife",
+      "size": {
+        "axis": "x",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#626880",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#737990",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#848aa6",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#9ca3c4",
+            "to": "recurso.nacar"
+          },
+          {
+            "from": "#acb4d7",
+            "to": "recurso.nacar"
+          },
+          {
+            "from": "#dfdfeb",
+            "to": "recurso.nacar"
+          }
+        ],
+        "default": "comida.pescado"
+      },
+      "rotateDeg": [
+        0,
+        0,
+        -90
+      ],
+      "note": "Pez genérico de arrecife, largo en +X con la cabeza hacia +X; los peces con nombre (pargo, mero...) siguen en Tools/Blender."
+    },
+    {
+      "gameId": "espina_pescado",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/fish-bones.glb",
+      "mesh": "SM_Pack_EspinaPescado",
+      "replaces": "SM_Item_EspinaPescado",
+      "size": {
+        "axis": "x",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#979ebe",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#a7afd2",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#848aa6",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#bbc3ea",
+            "to": "recurso.hueso"
+          }
+        ],
+        "default": "recurso.hueso"
+      },
+      "rotateDeg": [
+        0,
+        0,
+        -90
+      ],
+      "note": "Espina de pez de Kenney; larga en +X."
     }
   ],
   "discarded": [
@@ -1662,6 +1800,12 @@
       "pack": "quaternius_stylized_nature_megakit",
       "file": "glTF/Rock_Medium_2.gltf",
       "reason": "En la hoja de contacto del lote 8 una cara grande queda como mancha clara plana (ya está en el original) que al recolorear a obsidiana rompe la pieza. Se usa Pebble_Square_3."
+    },
+    {
+      "gameId": "concha_pequena",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/mussel.glb",
+      "reason": "Bloque hexagonal de 38 triángulos que, recoloreado, se lee como piedra rosada y no como concha (hoja del lote 10). Se queda la malla propia SM_Item_ConchaPequena."
     }
   ],
   "pending": [
