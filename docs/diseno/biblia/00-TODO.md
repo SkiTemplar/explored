@@ -19,13 +19,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
-| H2 — Minería y construcción | 2 | 29 | 31 |
+| H2 — Minería y construcción | 10 | 22 | 32 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **17** | **191** | **208** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -349,30 +349,44 @@ posterior.
 Estratos más allá de tierra/arena, riesgos de mina completos, fundición, transporte de
 mineral y las piezas de construcción avanzadas que dependen de ellos.
 
-- [ ] `WorldGen`: extender el picado por esfera a caliza, basalto, veta de cobre, hierro
+- [x] `WorldGen`: extender el picado por esfera a caliza, basalto, veta de cobre, hierro
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
-      −15 durabilidad). *(biblia 02 §2)*
-- [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
-      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
-- [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
-      de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
-- [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
+      −15 durabilidad). *(biblia 02 §2)* — `FMiningModel` (`WorldGen/MiningModel.h`):
+      estratos, vetas finitas, radio y ritmo por herramienta, rebote y mella.
+      `MiningModelSpec`.
+- [x] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
+      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)* — pieza en
+      `building_pieces.json` y regla en `FMineHazardModel` (`MineHazardModelSpec`).
+- [x] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
+      de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)* —
+      `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals` (respiración y mareo).
+- [x] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
       (1 m/40 s sin sellar) y crecida de monzón (30 % durante la estación).
-      *(biblia 02 §2.4)*
+      *(biblia 02 §2.4)* — `FMineHazardModel` (galerías, marea, sellado con `pared`,
+      lluvia +50 %) y `MonsoonFloodFraction`.
 - [ ] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos
       subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` mayores, con
       radio de exclusión de 1,5 m alrededor de un tesoro. *(biblia 02 §2.5, §12)*
 - [ ] Prueba de estrés de guardado de minería extensa antes de M3. *(GDD §7.4, biblia
       02 §2 TODO)*
-- [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
-      sobre camino terminado). *(biblia 02 §3)*
-- [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
-      revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
-- [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
-      (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
-- [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
-      en 1 m). *(biblia 02 §5.3)*
+- [x] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
+      sobre camino terminado). *(biblia 02 §3)* — `FShovelPathModel`
+      (`ShovelPathModelSpec`).
+- [x] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
+      revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)* — `FSandModel`
+      (PR #46).
+- [x] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
+      (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)* —
+      `FSandModel::ApplyHalfTide` (PR #46).
+- [x] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
+      en 1 m). *(biblia 02 §5.3)* — pieza en `building_pieces.json` y
+      `FSandModel::PieceAnchorsSand`.
+- [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
+      `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
+      (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
+      las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
+      −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
 - [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
       `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
       `carretilla`. *(biblia 03 §3.2–3.4)*
