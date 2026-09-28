@@ -610,6 +610,8 @@ void FBoatSpec::Define()
 			TestFalse(TEXT("demasiado lejos"), Model.Moor(FVector2D(500.0, 0.0), 300.0f));
 			TestFalse(TEXT("cabo de 0"), Model.Moor(FVector2D(0.0, 0.0), 0.0f));
 			TestFalse(TEXT("cabo NaN"), Model.Moor(FVector2D(0.0, 0.0), std::numeric_limits<float>::quiet_NaN()));
+			TestFalse(TEXT("poste NaN"), Model.Moor(FVector2D(std::numeric_limits<double>::quiet_NaN(), 0.0), 300.0f));
+			TestFalse(TEXT("sin amarrar tras los intentos fallidos"), Model.IsMoored());
 			TestTrue(TEXT("justo en el largo"), Model.Moor(FVector2D(300.0, 0.0), 300.0f));
 			const FBoatModel Loaded = FBoatModel::FromSaveData(Model.ToSaveData());
 			TestTrue(TEXT("se guarda amarrada"), Loaded.IsMoored());

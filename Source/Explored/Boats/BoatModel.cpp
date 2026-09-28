@@ -362,7 +362,8 @@ bool FBoatModel::Moor(const FVector2D& AnchorCm, float LengthCm)
 		return false;
 	}
 	const FVector2D Here(State.LocationCm.X, State.LocationCm.Y);
-	if ((Here - AnchorCm).Size() > LengthCm + UE_KINDA_SMALL_NUMBER)
+	// Comparación en positivo: un poste con NaN (o un cabo infinito frente a un poste NaN) no amarra.
+	if (!((Here - AnchorCm).Size() <= LengthCm + UE_KINDA_SMALL_NUMBER))
 	{
 		return false;
 	}
