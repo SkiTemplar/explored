@@ -328,6 +328,55 @@ FBoatModel::FBoatModel(EBoatType InType, const FVector& InLocationCm, float InYa
 	State.Type = InType >= EBoatType::Count ? EBoatType::Raft : InType;
 	State.LocationCm = InLocationCm;
 	State.YawDeg = BoatModelDetail::Wrap360(InYawDeg);
+	Def = Definition(State.Type);
+}
+
+FBoatModel::FBoatModel(const FBoatDefinition& InDefinition, const FVector& InLocationCm, float InYawDeg)
+	: FBoatModel(InDefinition.Type, InLocationCm, InYawDeg)
+{
+	SetDefinition(InDefinition);
+}
+
+void FBoatModel::SetDefinition(const FBoatDefinition& InDefinition)
+{
+	Def = InDefinition;
+	Def.Type = State.Type;
+	// Salvaguardas: una ficha degenerada (sin piezas) no debe dividir por cero en la integración.
+	Def.LengthCm = FMath::Max(Def.LengthCm, 10.0f);
+	Def.BeamCm = FMath::Max(Def.BeamCm, 10.0f);
+	Def.HullDepthCm = FMath::Max(Def.HullDepthCm, 1.0f);
+	Def.HullMassKg = FMath::Max(Def.HullMassKg, 1.0f);
+	Def.WaterplaneCoefficient = FMath::Clamp(Def.WaterplaneCoefficient, 0.05f, 1.0f);
+	Def.MaxCargoKg = FMath::Max(Def.MaxCargoKg, 0.0f);
+	// Estabilidad: sin GM positiva el balance no tiene rigidez, y el vuelco tiene que caer entre 0° y 90°.
+	Def.MetacentricHeightCm = FMath::Max(Def.MetacentricHeightCm, 1.0f);
+	Def.CapsizeRollDeg = FMath::Clamp(Def.CapsizeRollDeg, 5.0f, 89.0f);
+	Def.RollPeriodS = FMath::Max(Def.RollPeriodS, 0.2f);
+	Def.RollDamping = FMath::Clamp(Def.RollDamping, 0.0f, 2.0f);
+	State.CargoKg = FMath::Min(State.CargoKg, Def.MaxCargoKg);
+	if (!Def.HasSail())
+	{
+		State.bSailRaised = false;
+	}
+}
+
+bool FBoatModel::Moor(const FVector2D& AnchorCm, float LengthCm)
+{
+	if (!(LengthCm > 0.0f) || State.Condition == EBoatCondition::Wrecked)
+	{
+		return false;
+	}
+	const FVector2D Here(State.LocationCm.X, State.LocationCm.Y);
+	// Comparación en positivo: un poste con NaN (o un cabo infinito frente a un poste NaN) no amarra.
+	if (!((Here - AnchorCm).Size() <= LengthCm + UE_KINDA_SMALL_NUMBER))
+	{
+		return false;
+	}
+	State.bMoored = true;
+	State.bMooringTaut = false;
+	State.MooringAnchorCm = AnchorCm;
+	State.MooringLengthCm = LengthCm;
+	return true;
 }
 
 float FBoatModel::TotalMassKg() const
@@ -770,6 +819,32 @@ void FBoatModel::Substep(float H, float WaveTime, const FBoatControls& Controls,
 
 	// --- Desplazamiento con fondo: varadas contra arrecifes y el límite de la balsa.
 	FVector2D Candidate = Center + NewVelocity * (100.0 * H);
+
+	// Amarre: el cabo no se estira. Si el paso lo sacaría del círculo, se queda en el borde
+	// y pierde la velocidad que lo alejaba; la que va de lado o hacia el poste se conserva.
+	// Se aplica antes de mirar el fondo para que la varada juzgue el paso que de verdad da.
+	State.bMooringTaut = false;
+	auto ApplyMooring = [&]()
+	{
+		if (!State.bMoored)
+		{
+			return;
+		}
+		const FVector2D Offset = Candidate - State.MooringAnchorCm;
+		const double Distance = Offset.Size();
+		if (Distance > State.MooringLengthCm && Distance > UE_KINDA_SMALL_NUMBER)
+		{
+			const FVector2D Out = Offset / Distance;
+			Candidate = State.MooringAnchorCm + Out * static_cast<double>(State.MooringLengthCm);
+			const double Radial = FVector2D::DotProduct(NewVelocity, Out);
+			if (Radial > 0.0)
+			{
+				NewVelocity -= Out * Radial;
+			}
+			State.bMooringTaut = true;
+		}
+	};
+	ApplyMooring();
 	State.bAtOpenOceanLimit = false;
 	if (bHasDepth && !NewVelocity.IsNearlyZero())
 	{
@@ -801,6 +876,11 @@ void FBoatModel::Substep(float H, float WaveTime, const FBoatControls& Controls,
 			if (ImpactCmS > SafeImpactSpeedCmS)
 			{
 				ApplyDamage((ImpactCmS - SafeImpactSpeedCmS) / 100.0f * 0.12f * D.ImpactDamageScale);
+				// Registro para el astillero: dónde golpea (marco del casco) y a qué velocidad.
+				const FVector2D Dir = NewVelocity.GetSafeNormal();
+				State.LastImpactDirection = FVector2D(FVector2D::DotProduct(Dir, NewForward), FVector2D::DotProduct(Dir, StarboardOf(State.YawDeg)));
+				State.LastImpactSpeedCmS = ImpactCmS;
+				++State.ImpactCount;
 			}
 		}
 		if (!bBlocked && D.bShallowWaterOnly)
@@ -827,7 +907,12 @@ void FBoatModel::Substep(float H, float WaveTime, const FBoatControls& Controls,
 		const double Slowed = FMath::Max(0.0, Speed - 0.6 * Gravity * Support * H);
 		NewVelocity = NewVelocity * (Slowed / Speed);
 		Candidate = Center + NewVelocity * (100.0 * H);
+		// Roce: carga sobre el fondo × distancia arrastrada (desgaste de Archard en las uniones).
+		State.GroundScrapeWorkNm += static_cast<double>(Mass) * Gravity * Support * Slowed * H;
 	}
+
+	// El roce solo acorta el paso hacia Center, pero se reaplica por si Center ya estaba en el borde.
+	ApplyMooring();
 
 	State.VelocityCmS = NewVelocity * 100.0;
 	State.LocationCm.X = Candidate.X;
@@ -845,12 +930,26 @@ FBoatSaveData FBoatModel::ToSaveData() const
 	Data.CargoKg = State.CargoKg;
 	Data.WaterInHullKg = State.WaterInHullKg;
 	Data.bSailRaised = State.bSailRaised;
+	Data.bMoored = State.bMoored;
+	Data.MooringAnchorCm = State.MooringAnchorCm;
+	Data.MooringLengthCm = State.MooringLengthCm;
 	return Data;
 }
 
-FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data)
+FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefinition* CustomDefinition)
 {
 	FBoatModel Model(Data.Type, Data.LocationCm, Data.YawDeg);
+	if (CustomDefinition)
+	{
+		Model.SetDefinition(*CustomDefinition);
+	}
+	if (Data.bMoored && Data.MooringLengthCm > 0.0f)
+	{
+		// Se restaura tal cual (no con Moor): el barco pudo guardarse con el cabo tenso.
+		Model.State.bMoored = true;
+		Model.State.MooringAnchorCm = Data.MooringAnchorCm;
+		Model.State.MooringLengthCm = Data.MooringLengthCm;
+	}
 	const FBoatDefinition& D = Model.GetDefinition();
 	Model.State.Condition = Data.Condition;
 	Model.State.HullDamage01 = FMath::Clamp(Data.HullDamage01, 0.0f, 1.0f);

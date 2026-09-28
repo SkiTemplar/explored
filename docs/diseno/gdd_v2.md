@@ -469,8 +469,10 @@ arrecife con reputación alta (§3.9).
   estrellas.
 - **Reglas / progresión / interfaz:** ver GDD v3 §6, §8.10 (sin cambios).
 - **Riesgos técnicos:** ninguno nuevo; `FBoatModel` tiene specs en host verdes.
-  Pendiente de siempre: malla del «Limón» y astillero (roadmap).
+  Pendiente de siempre: malla del «Limón». El astillero de balsas está en §3.17.
 - **Dependencias:** `Boats`, `Ruins`, `Villages`.
+- **Construcción:** los barcos se arman pieza a pieza y la física decide si
+  navegan (§3.14).
 
 ### 3.11 Museo y tesoros
 
@@ -492,7 +494,7 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva (§3.13), el astillero de balsas y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones naturales.
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -645,10 +647,109 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
   `Ocean` (`FOceanTide`: pleamar, bajamar y marea viva), `Weather` (lluvia),
   `Building` (anclajes), `Save` (capa `sand`).
 
+### 3.14 Construcción naval: barcos que hay que pensar **[alcance aprobado 2026-09-27 (biblia 02 §8); detalle pendiente de validar]**
+
+Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), spec
+`Explored.HullAssembly`. Integración en `docs/tecnico/casco-por-piezas.md`.
+
+- **Objetivo:** no existe «construir barco». El jugador arma un casco con piezas y el
+  agua le dice si ha acertado. Una balsa mal equilibrada vuelca, y ese error es parte
+  de la diversión: se aprende mirando cómo escora, no leyendo una barra.
+- **Piezas.** Cada pieza es una caja con masa, volumen y posición en el marco del casco
+  (X hacia proa, Y hacia estribor, Z hacia arriba). Tamaño por defecto, que se puede
+  cambiar:
+
+  | Pieza | Tamaño (cm) | Densidad efectiva | Masa | Qué aporta |
+  |---|---|---|---|---|
+  | Tronco | 300 × 22 × 22 (≈ Ø 25 cm) | 500 kg/m³ | 72,6 kg | Flotación pesada y estable |
+  | Tablón | 200 × 25 × 4 | 550 kg/m³ | 11 kg | Cubierta, largueros |
+  | Bambú (haz de cañas gruesas) | 300 × 10 × 10 | 300 kg/m³ (hueco) | 9 kg | Mucha flotación por kilo |
+  | Flotador sellado (calabaza, barril) | 60 × 40 × 40 | 80 kg/m³ | 7,7 kg | Balancín, reserva de flotación |
+  | Mástil | 10 × 10 × 400 | 550 kg/m³ | 22 kg | Habilita la vela; sube el centro de masas |
+  | Vela | 2 × 2 m | 1,2 kg/m² | 4,8 kg | Empuje con viento (máx. 12 m² por mástil) |
+  | Remos (par) | — | — | 6 kg | 70 N sostenidos por tripulante |
+  | Pala (canalete) | — | — | 2,5 kg | 35 N sostenidos por tripulante |
+
+  Carga y pasajeros son masas puntuales. Un pasajero pesa 75 kg y, de pie, tiene su
+  centro de masas a 90 cm sobre la cubierta; sentado, a unos 50 cm.
+- **Hidrostática (agua de mar, 1025 kg/m³).** El calado es el que desplaza el peso
+  total (Arquímedes). El centro de carena es el centroide de lo sumergido. La **altura
+  metacéntrica** GM = KB + BM − KG sale de la pendiente del brazo adrizante en 0°. El
+  cálculo es exacto para cajas: recorta la sección de cada pieza con el plano del agua.
+  El spec comprueba GM contra la fórmula de la barcaza (±1 %).
+- **Veredicto, del mejor al peor:**
+
+  | Veredicto | Cuándo |
+  |---|---|
+  | Flota nivelada | Escora y asiento ≤ 2° |
+  | Escora | Flota, pero con escora o asiento > 2° |
+  | Anegada | Francobordo < 2 cm en algún canto de la cubierta: cualquier ola entra; va a la mitad de velocidad |
+  | Vuelca | No hay equilibrio estable por debajo de 55° de escora (biblia 02 §8.2), o GM < 0 sin un ángulo de apoyo antes de 55° |
+  | Se hunde | Masa total > flotación máxima (todo el volumen sumergido) |
+
+- **Números de referencia** (calculados con el modelo):
+
+  | Montaje | Masa total | Calado | Francobordo | GM | Resultado |
+  |---|---|---|---|---|---|
+  | 6 troncos + 1 pasajero de pie + remos | 519 kg | 12,8 cm | 9,2 cm | 94 cm | Flota nivelada; 1,0 m/s remando |
+  | La misma + un segundo pasajero a 40 cm del eje | 592 kg | 14,6 cm | 2,7 cm | 70 cm | Escora 4,1° |
+  | La misma + 60 kg de carga en la borda (66 cm) | 571 kg | 14,1 cm | 2,4 cm | 83 cm | Escora 4,8° |
+  | 6 troncos + 1 pasajero + 300 kg de carga | 811 kg | 20,0 cm | 2,0 cm | 51 cm | Casi anegada; con 350 kg ya anegada; con 400 kg se hunde (flotación máxima: 893 kg) |
+  | 2 troncos + pasajero de pie | 223 kg | 16,5 cm | — | −27 cm | **Vuelca** (KG 45 cm > KM 18 cm) |
+  | 3 troncos + pasajero de pie | 295 kg | 14,6 cm | — | −4,5 cm | **Vuelca** por poco |
+  | 4 troncos + pasajero de pie | 368 kg | 13,6 cm | 8,4 cm | 23 cm | Flota; el mínimo seguro |
+  | 2 troncos + balancín (travesaño de bambú y 2 flotadores a 1,5 m) | 238 kg | 13,8 cm | 18,2 cm | 322 cm | Flota muy estable |
+  | 4 haces de bambú + pasajero de pie | 114 kg | 9,2 cm | — | −49 cm | **Vuelca**; con 8 haces flota y va a 1,5 m/s a pala |
+  | 3 troncos de 6 m + pasajero + remos | 517 kg | 12,7 cm | 9,3 cm | 9 cm | Flota; 1,9 m/s remando (el doble que la balsa de 6 × 3 m) |
+
+  La lección que el juego enseña sin texto: **más ancho es más estable, más alto es
+  menos estable, y un balancín compra estabilidad casi gratis**. Sentarse (bajar el
+  centro de masas 40 cm) salva una balsa estrecha que de pie vuelca.
+- **Propulsión y forma.**
+  - Cada tripulante coge unos remos si quedan libres y, si no, una pala.
+  - La vela necesita un mástil y un tripulante que lleve la escota. Empuja
+    ½ · ρ_aire · 0,8 · A · V², así que con 4 m² y el alisio de 6,5 m/s da 83 N,
+    algo más que los remos.
+  - Con viento flojo se rema. El modelo elige lo que más empuja.
+  - Resistencia de forma: Cd = 0,3 + 1,2 / (eslora / manga efectiva). La manga
+    efectiva suma solo lo que está bajo el agua, así que un balancín no frena como un
+    casco ancho.
+  - Velocidad de casco: 0,4 · √(g · eslora), unos 2,2 m/s para 3 m. Pasar de ella
+    rinde una cuarta parte del empuje de más.
+  - Escorada, la embarcación pierde velocidad (× cos escora).
+  - Giro con radio de 1,5 esloras. Mantener el rumbo depende de lo esbelto que sea el
+    casco (0 si es cuadrado, 1 a partir de 8:1). Un casco chato gira y deriva; uno
+    esbelto corre y va recto.
+- **La carga cuenta.** La misma balsa con 150 kg más cala 3,7 cm más, pierde GM y va más
+  lenta. Una carga descentrada escora hacia su lado (tan φ ≈ w · e / (Δ · GM), lo
+  comprueba el spec), y hacia proa la asienta de proa.
+- **Al agua.** `ToBoatDefinition` traduce lo armado a la ficha con la que navega
+  `FBoatModel`: eslora, manga, altura de cubierta, masa, coeficiente de flotación, GM,
+  vuelco en el ángulo de estabilidad nula (tope 55°), vela y su altura sobre la
+  flotación, empuje y velocidad de remo, y carga máxima (95 % de la flotación con un
+  tripulante, biblia 02 §8.2). Las olas, el viento aparente, la escora dinámica por la
+  vela y el vuelco en marcha los sigue resolviendo `FBoatModel`, que ya tiene specs.
+- **Progresión:** balsa de troncos ancha (pesada, lenta, segura) → balsa de bambú
+  (ligera y rápida, pero hay que ensancharla o sentarse) → casco estrecho con balancín
+  (rápido y estable) → vela en mástil. Los planos canónicos de `boats.json` pasan a
+  ser montajes de ejemplo sobre estas mismas piezas.
+- **Interfaz:** sin números en pantalla. En el astillero, la pieza fantasma muestra el
+  casco inclinándose hacia donde quedaría escorado y hundiéndose hasta su calado. Al
+  botarlo, la física hace el resto.
+- **Riesgos técnicos:** escora y asiento se resuelven desacoplados (estabilidad
+  estática clásica). Una carga en diagonal da una escora y un asiento correctos por
+  separado, pero no su combinación exacta. Es suficiente para el astillero, y la
+  dinámica en el mar la lleva `FBoatModel`.
+- **Pendiente de decisión:** el objeto `tronco_pequeno` pesa 8 kg en la biblia 03, y con
+  8 troncos así una balsa no aguanta a una persona. La pieza «tronco» del casco es un
+  tronco de balsa de verdad (72,6 kg: se lleva a hombros entre dos o se hace rodar).
+  Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
+- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
+  por piezas en la sección de barcos, pendiente).
+
 ### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
 
-Cuarta mecánica del principio del mundo interactivo. La numeración salta §3.13 y §3.14
-porque la arena viva y el astillero están en PR abiertas (#46 y #53). Los números de
+Cuarta mecánica del principio del mundo interactivo. Los números de
 contagio, rebrote y ceniza son los de la biblia 02 §6, que manda en el detalle. Las
 duraciones de quema son una propuesta y no las ha validado nadie.
 
@@ -780,6 +881,122 @@ Esta sección fija cuánto se llena, cuándo se vacía y qué pasa si se mezcla.
   cargar recorre como mucho 60 días de juego.
 - **Dependencias:** `Weather` (`FRainCatchModel`, `FWeatherModel`), `Carry`
   (`LiquidCapacityFromRecipiente`), `Save` (capa de recipientes del mundo).
+
+### 3.17 Mundo interactivo: astillero de balsas **[mecánicas pedidas por el director 2026-09-27; números pendientes de validar]**
+
+Tercera mecánica del principio «el mundo entero es interactivo». Modelo puro
+`FRaftYardModel` (`Source/Explored/Boats/RaftYardModel.h`), spec `Explored.RaftYard`.
+Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flotación, y
+`FBoatModel` para navegar, sin duplicar ninguno de los dos. Integración en
+`docs/tecnico/astillero-balsas.md`.
+
+- **Objetivo:** que botar una balsa sea un pequeño problema físico, no un botón. Dónde
+  se construye importa, cómo se lleva al agua importa y cómo se ata importa.
+- **Dónde se construye:**
+  - **En tierra** la balsa es estable: no le afectan las olas ni la marea. Para botarla
+    hay que empujarla hasta que el agua la levante.
+  - **En el agua** flota desde la primera pieza: deriva con la corriente y el viento y
+    cabecea con el oleaje (`FBoatModel`), salvo que se **amarre** a un poste o a un
+    muelle. Amarrada sigue cabeceando, pero el cabo no la deja alejarse más que su
+    largo; se puede soltar en cualquier momento. El amarre se guarda con el barco.
+- **Uniones.** Cada pareja de piezas que se tocan (hueco ≤ 5 cm) se une con uno de
+  estos tres tipos:
+
+  | Unión | Objeto | Aguante al roce | Aguante a los golpes | Reparación |
+  |---|---|---|---|---|
+  | Cordel de fibra | 1 `cordel` | 0,6 | 0,7 | +50 % por 1 `cordel` |
+  | Cuerda | 1 `cuerda` | 1,0 | 1,2 | +50 % por 1 `cuerda` |
+  | Clavos | 2 `clavo` | 2,0 | 0,7 | +100 % por 2 `clavo` |
+
+  La cuerda cede y vuelve, así que aguanta mejor los golpes. Los clavos resisten el
+  roce, pero un golpe seco raja la madera a su alrededor.
+  - **Una unión rota suelta la pieza** si ya no queda otra que la sujete. Se queda el
+    grupo de más masa y lo demás sale flotando (o cae, si está en tierra). Si hay otras
+    uniones que sujetan, la rota no suelta nada y se puede reparar allí mismo.
+  - Una pieza que nadie ató se va flotando al botar la balsa.
+  - No se pierde nada: casco más piezas sueltas suman siempre las mismas piezas y la
+    misma masa (lo comprueba el spec).
+- **Botadura desde tierra.** La balsa se mueve a lo largo de un camino hacia el agua.
+  Cada tramo del camino tiene un suelo y una pendiente.
+  - **Rozamiento de Coulomb:** para arrancarla hace falta vencer μ · peso sobre el
+    suelo. La pendiente ayuda cuesta abajo, y el agua sostiene una parte del peso
+    según la profundidad frente al calado. Cuando el agua cubre el calado, flota y
+    pasa a `FBoatModel` con la arrancada que llevaba.
+  - **Rodillos.** Son troncos atravesados en el camino. Con al menos uno bajo cada
+    mitad del casco, la balsa rueda: resistencia de rodadura de 0,05 y ningún desgaste.
+    Los rodillos de debajo avanzan la mitad que la balsa, así que se quedan atrás y hay
+    que recogerlos y volver a ponerlos delante. Es el trabajo de la botadura, y en
+    cooperativo lo hace uno mientras los demás empujan.
+  - **Rampa de tablones:** poco roce (0,30). A partir de unos 17° la balsa baja sola.
+  - **Arrastrarla sin rodillos gasta** las uniones de las piezas que tocan el suelo.
+    El desgaste es de Archard: carga × distancia, repartido entre esas uniones.
+  - Una persona empuja 300 N sostenidos.
+
+  | Suelo | μ | Desgaste (salud / kN·m) | 6 troncos (451 kg): fuerza para arrancar | Personas |
+  |---|---|---|---|---|
+  | Arena seca | 0,55 | 0,12 | 2,43 kN | 9 |
+  | Arena mojada | 0,45 | 0,08 | 1,99 kN | 7 |
+  | Hierba | 0,40 | 0,05 | 1,77 kN | 6 |
+  | Roca | 0,50 | 0,40 | 2,21 kN | 8 |
+  | Rampa de tablones (llana) | 0,30 | 0,01 | 1,33 kN | 5 |
+  | Rampa de tablones a 8° | 0,30 | 0,01 | 0,70 kN | 3 |
+  | Rodillos | 0,05 | 0 | 0,22 kN | **1** |
+
+  Arrastrar 10 m la balsa de 6 troncos (17 uniones con el fondo):
+
+  | Uniones | Por arena | Por roca |
+  |---|---|---|
+  | Cordel de fibra | −52 % | se rompen a los 5,8 m |
+  | Cuerda | −31 % | se rompen a los 9,6 m |
+  | Clavos | −16 % | −52 % |
+
+- **En el agua.**
+  - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura
+    (0,8 m/s), el astillero reparte el golpe entre las uniones cercanas al punto de
+    impacto. Resta 0,25 por cada m/s de más en la unión más cercana, y el efecto baja
+    linealmente hasta cero a media eslora. Un golpe de proa a 3 m/s quita un 46 % a la
+    cuerda más cercana y un 79 % a los clavos o al cordel.
+  - **Roce:** varada y arrastrándose sobre un bajío, `FBoatModel` acumula carga ×
+    distancia. Ese trabajo gasta las uniones del fondo con el mismo desgaste que en
+    tierra, según el suelo que haya debajo.
+  - El daño de `FBoatModel` es 1 − la salud media de las uniones. Al soltarse una
+    pieza, el barco toma la ficha nueva sin perder la posición ni el rumbo.
+- **Progresión:** al principio, balsa atada con cordel y botada desde la arena mojada o
+  sobre rodillos. Con cuerda, balsas que aguantan los arrecifes. Con clavos y rampa
+  de tablones, un astillero de verdad en la playa (Arenas Blancas, §4).
+- **Interfaz:** sin barras.
+  - Las ataduras gastadas se ven deshilachadas y crujen al golpear.
+  - La balsa en tierra no se mueve hasta que empujan bastantes, y los rodillos giran y
+    se quedan atrás.
+  - Al romperse una unión, la pieza se separa con un chapoteo.
+- **Riesgos técnicos:**
+  - El camino de botadura es una línea recta de tramos, no la física de Chaos. Para
+    varar y botar por el terreno real, el motor genera el camino con una traza hacia
+    el agua.
+  - Las uniones no modelan el esfuerzo interno de la estructura (una balsa con el
+    mástil atado a un solo tablón no se tuerce): solo hay roce, golpe y daño directo.
+- **Pendiente de decisión: contradicciones con la biblia 02 §8.** El encargo del
+  director del 2026-09-27 pide que una unión rota suelte la pieza y que arrastrar sin
+  rodillos dañe las uniones. La biblia, que manda en el detalle, dice otra cosa en varios
+  puntos. Hasta que el director elija, el modelo sigue el encargo:
+
+  | Punto | Biblia 02 §8 | Este modelo | Opciones |
+  |---|---|---|---|
+  | Unión rota (§8.3) | Abre una vía de agua de 0,5 L/s por brecha | Suelta la pieza | Las dos a la vez (unión casco–casco abre una vía; pieza de cubierta o balancín, se suelta), o una de ellas |
+  | Salud de la unión (§7, §8.3) | `integrity` 1–100 de `FBuildingModel`, sin sistema aparte | `FRaftJoint::Health01` propio | Guardar la salud en la `integrity` de la pieza de construcción (×100) y que este modelo solo calcule el daño |
+  | Botadura (§8.4) | Canal de esfuerzo de 8 s por tonelada | Rozamiento de Coulomb: 9 personas en arena seca, 1 sobre rodillos | Mantener los rodillos obligatorios en arena (el cooperativo es de 2 a 4) o escalar el empuje para cuadrar con 8 s/t |
+  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua (`SwampWaterKg` sube 2 kg/s); por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.14) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
+  | Balancín (§8.2) | Reduce un 60 % el momento de escora en el lado del flotador | Sin regla fija: el flotador sube la GM por hidrostática (322 cm en el ejemplo de §3.14) | Mantener la hidrostática o aplicar el 60 % de la biblia |
+  | Piezas (§8.1) | Quilla, cuaderna, tablón, cubierta, mástil, vela, balancín, timón, banco de remo, noray | Tronco, tablón, bambú, flotador, mástil, vela, remos, pala (§3.14) | Añadir las piezas que faltan o revisar la lista de la biblia |
+  | Peso del tronco (biblia 03) | `tronco_pequeno`: 8 kg; balsa: 8 troncos + 6 `liana` | Tronco de balsa: 72,6 kg | Nuevo objeto `tronco_balsa` o revisar el peso |
+  | Unión con clavos | `clavo` no existe en `items.json` | Tipo `Nails` | Crear el objeto o quitar ese tipo |
+
+- **Red (biblia 08; «todo sistema nuevo nace con la autoridad en el servidor»).**
+  Simula el servidor. Lo que se replica y cuánto cuesta está en
+  `docs/tecnico/astillero-balsas.md` §Red.
+- **Dependencias:** `Boats` (`FHullAssemblyModel`, `FBoatModel`), `Building`
+  (astillero y postes de amarre), `WorldGen` (troncos de la tala para los rodillos),
+  `Save` (uniones y rodillos en la sección de barcos).
 
 ---
 

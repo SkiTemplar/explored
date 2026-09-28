@@ -824,6 +824,13 @@ namespace ExploredSaveStates
 		Ar.Write(TEXT("cargoKg"), Boat.CargoKg);
 		Ar.Write(TEXT("waterInHullKg"), Boat.WaterInHullKg);
 		Ar.Write(TEXT("sailRaised"), Boat.bSailRaised);
+		// Amarre (astillero de balsas, GDD v2 §3.17): solo si lo hay, para no cambiar las partidas antiguas.
+		if (Boat.bMoored)
+		{
+			Ar.Write(TEXT("moored"), Boat.bMoored);
+			Ar.Write(TEXT("mooringAnchor"), Boat.MooringAnchorCm);
+			Ar.Write(TEXT("mooringLength"), Boat.MooringLengthCm);
+		}
 	}
 
 	void LoadBoat(const FSaveArchive& Ar, FBoatSaveData& OutBoat)
@@ -837,6 +844,9 @@ namespace ExploredSaveStates
 		Ar.Read(TEXT("cargoKg"), OutBoat.CargoKg);
 		Ar.Read(TEXT("waterInHullKg"), OutBoat.WaterInHullKg);
 		Ar.Read(TEXT("sailRaised"), OutBoat.bSailRaised);
+		Ar.Read(TEXT("moored"), OutBoat.bMoored);
+		Ar.Read(TEXT("mooringAnchor"), OutBoat.MooringAnchorCm);
+		Ar.Read(TEXT("mooringLength"), OutBoat.MooringLengthCm);
 	}
 
 	// --- Pesca ------------------------------------------------------------------------------------
