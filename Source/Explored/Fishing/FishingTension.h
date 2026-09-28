@@ -152,10 +152,15 @@ public:
 	static constexpr float ReelEffort01 = 0.45f;
 	/** Paso interno máximo: el resultado apenas depende de los FPS. */
 	static constexpr float MaxStepSeconds = 1.0f / 60.0f;
+	/** Tiempo máximo que avanza un Tick (un tirón de varios segundos no se simula entero). */
+	static constexpr float MaxTickSeconds = 5.0f;
 
 	FFishFight(const FFishFightParams& InParams, uint32 Seed);
 
-	/** Avanza la pelea. ReelInput en [-1, 1]. Devuelve el resultado (InProgress mientras dure). */
+	/**
+	 * Avanza la pelea como mucho MaxTickSeconds. ReelInput en [-1, 1]; entradas no finitas
+	 * cuentan como 0. Devuelve el resultado (InProgress mientras dure).
+	 */
 	EFishFightOutcome Tick(float DeltaSeconds, float ReelInput);
 
 	const FFishFightState& GetState() const { return State; }

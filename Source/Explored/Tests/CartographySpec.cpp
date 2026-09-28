@@ -343,6 +343,72 @@ void FCartographySpec::Define()
 		TestEqual(TEXT("Cobertura intacta"), Model.GetIslandCoverage(0), Coverage);
 	});
 
+	It("ignora posiciones y distancias a la orilla no finitas sin manchar trazos ni cobertura", [this]()
+	{
+		const double NaN = std::numeric_limits<double>::quiet_NaN();
+		FCartographyModel Model(Seed);
+		Model.RegisterIslandCoast(0, Circle(FVector2D::ZeroVector, IslandRadius, 256));
+		for (double X = 0.0; X < 20.0; X += 1.0)
+		{
+			Model.Sample(MakeSample(FVector2D(IslandRadius, X), ECartographyLocomotion::Walking, false, 5.0f));
+		}
+		TestTrue(TEXT("graba en la orilla"), Model.IsRecording());
+		const float Coverage = Model.GetIslandCoverage(0);
+		Model.Sample(MakeSample(FVector2D(NaN, 0.0), ECartographyLocomotion::Walking, false, 5.0f));
+		Model.Sample(MakeSample(FVector2D(0.0, std::numeric_limits<double>::infinity()), ECartographyLocomotion::Walking, false, 5.0f));
+		TestEqual(TEXT("posición NaN: la cobertura no cambia"), Model.GetIslandCoverage(0), Coverage);
+		TestFalse(TEXT("posición NaN: corta el trazo"), Model.IsRecording());
+
+		for (double X = 20.0; X < 40.0; X += 1.0)
+		{
+			Model.Sample(MakeSample(FVector2D(IslandRadius, X), ECartographyLocomotion::Walking, false, 5.0f));
+		}
+		TestTrue(TEXT("vuelve a grabar"), Model.IsRecording());
+		Model.Sample(MakeSample(FVector2D(IslandRadius, 40.0), ECartographyLocomotion::Walking, false, std::numeric_limits<float>::quiet_NaN()));
+		TestFalse(TEXT("distancia NaN: como lejos de la orilla"), Model.IsRecording());
+
+		bool bAllFinite = true;
+		for (const FMapStroke& Stroke : Model.GetState().Strokes)
+		{
+			for (const FVector2D& P : Stroke.Points)
+			{
+				bAllFinite &= FMath::IsFinite(P.X) && FMath::IsFinite(P.Y);
+			}
+		}
+		TestTrue(TEXT("todos los puntos finitos"), bAllFinite);
+		TestTrue(TEXT("deriva finita"), FMath::IsFinite(Model.GetState().Drift.X) && FMath::IsFinite(Model.GetState().Drift.Y));
+	});
+
+	It("el agua con tiempos o progreso no finitos o enormes no cuelga el mapa", [this]()
+	{
+		FCartographyExposure Sea;
+		Sea.bInSeaWater = true;
+		FCartographyState Soaked;
+		Soaked.Wetness = 1.0f;
+		// Por encima de 2^24, restar 1 a un float no cambia nada.
+		Soaked.InkRunProgress = 3.0e7f;
+		FCartographyModel Model(Seed);
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, 0.1f);
+		TestTrue(TEXT("progreso guardado enorme: pocas pasadas"), Model.GetState().InkRuns <= FCartographyModel::MaxInkRunsPerTick);
+		TestTrue(TEXT("y queda en [0, 1)"), Model.GetState().InkRunProgress >= 0.0f && Model.GetState().InkRunProgress < 1.0f);
+
+		Soaked.InkRunProgress = std::numeric_limits<float>::infinity();
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, 0.1f);
+		TestTrue(TEXT("progreso infinito: finito después"), FMath::IsFinite(Model.GetState().InkRunProgress));
+
+		Soaked.InkRunProgress = 0.0f;
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, std::numeric_limits<float>::quiet_NaN());
+		TestEqual(TEXT("DeltaSeconds NaN no hace nada"), Model.GetWetness(), 1.0f);
+		TestEqual(TEXT("ni corre la tinta"), Model.GetState().InkRuns, 0);
+		TestEqual(TEXT("ni ensucia el progreso"), Model.GetState().InkRunProgress, 0.0f);
+		Model.TickWetness(Sea, 1.0e30f);
+		TestTrue(TEXT("DeltaSeconds enorme: pocas pasadas"), Model.GetState().InkRuns <= FCartographyModel::MaxInkRunsPerTick);
+		TestTrue(TEXT("humedad finita"), FMath::IsFinite(Model.GetWetness()));
+	});
+
 	It("mide la cobertura de costa en una isla circular sintética", [this]()
 	{
 		FCartographyModel Model(Seed);
@@ -418,6 +484,39 @@ void FCartographySpec::Define()
 		const int32 StrokesBefore = Loaded.GetState().Strokes.Num();
 		WalkArc(Loaded, 4.0, 4.5, 1.0);
 		TestEqual(TEXT("Sigue dibujando en un trazo nuevo"), Loaded.GetState().Strokes.Num(), StrokesBefore + 1);
+	});
+
+	It("sanea al cargar la deriva no finita y las listas de cobertura y boceto desparejadas", [this]()
+	{
+		FCartographyModel Model(Seed);
+		Model.RegisterIslandCoast(0, Circle(FVector2D::ZeroVector, IslandRadius, 128));
+		Model.AddSketch(0, Circle(FVector2D::ZeroVector, IslandRadius, 128));
+		FCartographyState Corrupt = Model.GetState();
+		Corrupt.Drift = FVector2D(std::numeric_limits<double>::quiet_NaN(), 0.0);
+		Corrupt.TravelDistance = std::numeric_limits<double>::infinity();
+		Corrupt.Coverage[0].Visited.SetNum(1);
+		Corrupt.Sketches[0].Confirmed.Empty();
+
+		FCartographyModel Loaded(Seed);
+		Loaded.LoadState(Corrupt);
+		WalkArc(Loaded, 0.0, 1.0, 1.0);
+		const FCartographyState& State = Loaded.GetState();
+		TestTrue(TEXT("deriva finita"), FMath::IsFinite(State.Drift.X) && FMath::IsFinite(State.Drift.Y));
+		TestTrue(TEXT("recorrido finito"), FMath::IsFinite(State.TravelDistance));
+		TestTrue(TEXT("sigue dibujando costa"), State.Strokes.Num() > 0);
+		bool bAllFinite = true;
+		for (const FMapStroke& Stroke : State.Strokes)
+		{
+			for (const FVector2D& P : Stroke.Points)
+			{
+				bAllFinite &= FMath::IsFinite(P.X) && FMath::IsFinite(P.Y);
+			}
+		}
+		TestTrue(TEXT("puntos finitos"), bAllFinite);
+		TestEqual(TEXT("una marca de visita por punto de costa"), State.Coverage[0].Visited.Num(), State.Coverage[0].Coast.Num());
+		TestEqual(TEXT("una confirmación por punto de boceto"), State.Sketches[0].Confirmed.Num(), State.Sketches[0].Points.Num());
+		TestTrue(TEXT("cuenta lo recorrido"), Loaded.GetIslandCoverage(0) > 0.0f);
+		TestTrue(TEXT("y confirma el boceto"), State.Sketches[0].ConfirmedFraction() > 0.0f);
 	});
 
 	It("traza la costa real de las islas del archipiélago", [this]()

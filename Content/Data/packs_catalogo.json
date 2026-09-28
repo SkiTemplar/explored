@@ -6,7 +6,8 @@
     "pivot": "base: centro de la huella, z = 0 abajo; agarre: socket hand_r a gripFromEndM del extremo end (bottom o top) del mango, mango en +Z, filo o cara de golpe en +X (Tools/Blender/props/_items.py)",
     "recolor": "cada cara toma la muestra de la regla cuyo color from (sRGB del pack) esté más cerca en Oklab; si ninguna está a menos de tolerance (0,12 por defecto), default. La isla la pone el atlas T_Palette_<Isla> en Unreal: la UV es la misma en las cuatro islas.",
     "replaces": "malla propia de Tools/Blender a la que sustituye (meshPath de items.json)",
-    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas."
+    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas.",
+    "icons": "solo la sección icons: silueta blanca de 128 px con margen del 10 % (Tools/Packs/icons.py); slots dice dónde se usa (achievementIcon: pista icon de achievements.json; widget y role: SExplored<Nombre> de Source/Explored/UI/Widgets); tint da, por estado, el color de ExploredUIStyle.h con que Slate la tiñe. La UI no cambia por isla, así que no usa paleta.json."
   },
   "lotes": [
     {
@@ -38,6 +39,30 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote5-fauna.png",
       "scope": "Primera pasada de fauna salvaje terrestre (prioridad 4, GDD v2 §3.7): cerdo salvaje de Esmeralda con Quaternius Farm Animals, rig y 6 acciones conservadas."
+    },
+    {
+      "id": "lote6-mineria",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote6-mineria.png",
+      "scope": "Minería manual de las primeras horas (GDD v2 §3.4, prioridad 1): pico de piedra, canto rodado y caliza."
+    },
+    {
+      "id": "lote7-cuarzo-taro",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote7-cuarzo-taro.png",
+      "scope": "Pendientes con candidato en dos packs de Quaternius revisados hoy: cristal de cuarzo de las cuevas (minería, prioridad 1) y las tres fases del taro del huerto (prioridad 3)."
+    },
+    {
+      "id": "lote8-suelo",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote8-suelo.png",
+      "scope": "Materiales de suelo de las primeras horas (prioridad 1, porción vertical de Landing): piedras de tallar y de fogón y maderas sueltas de playa."
+    },
+    {
+      "id": "lote9-iconos",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote9-iconos.png",
+      "scope": "Iconos de UI de Kenney (prioridad 5): logros y estados de la pantalla de logros y del indicador de guardado. Familia única de siluetas blancas redondeadas (Board Game Icons, y Game Icons solo para la estrella)."
     }
   ],
   "entries": [
@@ -1130,6 +1155,337 @@
           }
         ]
       }
+    },
+    {
+      "gameId": "pico",
+      "kind": "item",
+      "lote": "lote6-mineria",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/pickaxe.gltf",
+      "mesh": "SM_Pack_Pico",
+      "stretch": [
+        0.7,
+        1.0,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.85
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.12
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#607482",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#768995",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#455b6a",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#9eadb5",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#92513d",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#a36249",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#7d3d2c",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#dfb787",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#d4a370",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "piedra.basalto"
+      },
+      "note": "Pico de piedra (GDD v2 §3.4: caliza y cobre). La cabeza de hierro curva de KayKit se lee como piedra tallada con basalto, igual que el hacha del lote 1; estrechada al 70 % en X (la cabeza del pack es tan ancha como largo el mango). Cubre un id de meshes_pendientes.json (hoy /Engine/BasicShapes/Cylinder)."
+    },
+    {
+      "gameId": "canto_rodado",
+      "kind": "item",
+      "lote": "lote6-mineria",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Round_1.gltf",
+      "mesh": "SM_Pack_CantoRodado",
+      "replaces": "SM_Item_CantoRodado",
+      "stretch": [
+        1.0,
+        1.0,
+        1.8
+      ],
+      "size": {
+        "axis": "max",
+        "m": 0.12
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.canto"
+      },
+      "note": "Canto redondeado y aplanado. El pack trae musgo en la cara de abajo (40 % del área): todo va a piedra.canto, una sola muestra para evitar dientes de sierra; el degradado de la paleta da el volumen. Engrosado ×1,8 en Z para que 12 cm den ≈ 0,3 l (items.json)."
+    },
+    {
+      "gameId": "caliza",
+      "kind": "item",
+      "lote": "lote6-mineria",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Rock_Medium_1.gltf",
+      "mesh": "SM_Pack_Caliza",
+      "size": {
+        "axis": "max",
+        "m": 0.11
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.caliza"
+      },
+      "note": "Trozo de caliza de La Meseta (GDD v2 §3.4). Rock_Medium_1 es una roca de 3 m: a 11 cm queda un terrón redondeado y facetado. Musgo del pack fuera: todo a piedra.caliza. Cubre un id de meshes_pendientes.json."
+    },
+    {
+      "gameId": "cristal_cuarzo",
+      "kind": "item",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Powerups and Pickups/glTF/Gem_Blue.gltf",
+      "mesh": "SM_Pack_CristalCuarzo",
+      "size": {
+        "axis": "z",
+        "m": 0.12
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "mineral.cuarzo"
+      },
+      "note": "Prisma hexagonal con puntas piramidales (44 triángulos): la forma natural del cuarzo. Una sola muestra. Para las vetas de cristal de las cuevas (mining.json, estrato cristal) se agrupan instancias en Unreal."
+    },
+    {
+      "gameId": "taro.brote",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroBrote",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hoja_clara"
+      },
+      "note": "Misma malla que hojas_grandes a un tercio: hoja tierna más clara."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroHojas",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hoja"
+      },
+      "note": "Hojas anchas sobre peciolo largo; estrechada al 50 % en planta (el original mide 2 m de ancho y 0,8 m de alto)."
+    },
+    {
+      "gameId": "taro.listo",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroListo",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hierba_seca"
+      },
+      "note": "El taro está listo cuando las hojas amarillean: misma malla, algo más baja, en hierba seca."
+    },
+    {
+      "gameId": "piedra_plana",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Round_3.gltf",
+      "mesh": "SM_Pack_PiedraPlana",
+      "replaces": "SM_Item_PiedraPlana",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.canto"
+      },
+      "note": "Canto ancho y plano (0,45 × 0,49 × 0,10 m en el pack): sirve de losa de fogón. Una sola muestra, como canto_rodado."
+    },
+    {
+      "gameId": "basalto",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_4.gltf",
+      "mesh": "SM_Pack_Basalto",
+      "replaces": "SM_Item_Basalto",
+      "size": {
+        "axis": "max",
+        "m": 0.11
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.basalto"
+      },
+      "note": "Bloque de aristas rectas: se lee como trozo de columna basáltica. Una sola muestra."
+    },
+    {
+      "gameId": "arenisca",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_5.gltf",
+      "mesh": "SM_Pack_Arenisca",
+      "replaces": "SM_Item_Arenisca",
+      "size": {
+        "axis": "max",
+        "m": 0.11
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.arenisca"
+      },
+      "note": "Losa en capas de caras planas, como la arenisca. Una sola muestra."
+    },
+    {
+      "gameId": "obsidiana",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_3.gltf",
+      "mesh": "SM_Pack_Obsidiana",
+      "replaces": "SM_Item_Obsidiana",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.obsidiana"
+      },
+      "note": "Canto anguloso de caras planas y aristas vivas, como un bloque de vidrio volcánico. Una sola muestra."
+    },
+    {
+      "gameId": "pedernal",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Rock_Medium_3.gltf",
+      "mesh": "SM_Pack_Pedernal",
+      "replaces": "SM_Item_Pedernal",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.basalto_claro"
+      },
+      "note": "Nódulo abultado (Rock_Medium_3), la forma del pedernal en la caliza. Sin muestra propia en la paleta: basalto_claro."
+    },
+    {
+      "gameId": "madera_flotante",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/WoodLog.obj",
+      "mesh": "SM_Pack_MaderaFlotante",
+      "replaces": "SM_Item_MaderaFlotante",
+      "size": {
+        "axis": "max",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.deriva"
+      },
+      "note": "Tronco con muñón de rama; en gris plata de deriva. Una sola muestra."
     }
   ],
   "discarded": [
@@ -1246,13 +1602,69 @@
       "pack": "quaternius_stylized_nature_megakit",
       "file": "glTF/Plant_1.gltf",
       "reason": "Hojas lanceoladas con textura de hojas con canal alfa (estilo de sombreado propio de Quaternius): el muestreo de color por cara sale blanco y el recoloreado a paleta no es posible sin rehacer el material. Lo mismo vale para Fern_1, Bush_Common y Clover_*."
+    },
+    {
+      "gameId": "pico",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/tool-pickaxe.glb",
+      "reason": "Mismo problema que el hacha de Kenney (lote 1): 74 triángulos en bloques, mango cuadrado y cabeza de hierro. KayKit pickaxe encaja con el hacha y la pala ya curadas."
+    },
+    {
+      "gameId": "caliza",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/stone_smallA.glb",
+      "reason": "16 triángulos: pirámide truncada que al lado del pico de KayKit rompe el low poly pulido (hoja de exploración del lote 6). Lo mismo stone_smallTopA, rock_smallC y rock_smallTopB."
+    },
+    {
+      "gameId": "caliza",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/resource-stone.glb",
+      "reason": "Dos prismas de caras planas: se lee como un tocón o un bloque cortado, no como un terrón arrancado a pico."
+    },
+    {
+      "gameId": "canto_rodado",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_2.gltf",
+      "reason": "Canto anguloso de aristas rectas: para canto rodado va Pebble_Round_1."
+    },
+    {
+      "gameId": "tierra_suelta",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/crops_dirtSingle.glb",
+      "reason": "Meseta hexagonal de 32 triángulos con la cima plana: recoloreada parece una losa de piedra, no un puñado de tierra."
+    },
+    {
+      "gameId": "vasija_barro",
+      "pack": "kaykit_restaurant_bits",
+      "file": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/jar_A_large.gltf",
+      "reason": "Tarro de cocina cilíndrico con tapa de rosca (igual jar_B, jar_C y jar_D): sin cuello ni boca de vasija; en terracota sigue pareciendo un bote de mermelada. Se queda SM_Item_VasijaBarro."
+    },
+    {
+      "gameId": "cangrejo_cocotero_salvaje",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Enemies/glTF/Crab.gltf",
+      "reason": "Enemigo de plataformas: cabeza redonda con ojos grandes y dientes, superficie suavizada (3704 triángulos) y sin el abdomen ni las pinzas del cangrejo cocotero. Rompe el low poly pulido y el tono de la fauna."
+    },
+    {
+      "gameId": "cristal_cuarzo",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Powerups and Pickups/glTF/Gem_Green.gltf",
+      "reason": "Talla brillante de joya (Gem_Pink igual): se lee como gema de tienda, no como cristal natural. Se elige Gem_Blue."
+    },
+    {
+      "gameId": "taro.brote",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_1.obj",
+      "reason": "Hojas lanceoladas arqueadas: otra planta. Se usa Plant_4 a 0,3 m para que el brote y la planta adulta tengan la misma silueta."
+    },
+    {
+      "gameId": "obsidiana",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Rock_Medium_2.gltf",
+      "reason": "En la hoja de contacto del lote 8 una cara grande queda como mancha clara plana (ya está en el original) que al recolorear a obsidiana rompe la pieza. Se usa Pebble_Square_3."
     }
   ],
   "pending": [
-    {
-      "gameId": "pico",
-      "reason": "No hay id pico en items.json ni plantilla (DataCheck ya da una nota). El candidato es KayKit pickaxe.gltf, con cabeza de piedra; se cataloga cuando exista el id."
-    },
     {
       "gameId": "fibra_coco",
       "reason": "No hay candidato en los packs descargados."
@@ -1267,7 +1679,7 @@
     },
     {
       "gameId": "cesta",
-      "reason": "Sin candidato en los packs descargados. KayKit Furniture Bits y Restaurant Bits son CC0 de precio libre (uploads 8655517 y 8784350); falta descargarlos y mirarlos."
+      "reason": "Sin candidato. KayKit Furniture Bits y Restaurant Bits (Free) se descargaron y revisaron el 2026-09-28 (lote 6): no traen cesta ni cesto de fibra. Queda para Tools/Blender o un pack futuro."
     },
     {
       "gameId": "platanera.planta_con_racimo",
@@ -1298,18 +1710,6 @@
       "reason": "Ningún pack revisado trae planta rastrera."
     },
     {
-      "gameId": "taro.brote",
-      "reason": "Sin hoja en punta de flecha en los packs revisados (ver discarded de taro.hojas_grandes)."
-    },
-    {
-      "gameId": "taro.hojas_grandes",
-      "reason": "Ver discarded."
-    },
-    {
-      "gameId": "taro.listo",
-      "reason": "Ver discarded de taro.hojas_grandes."
-    },
-    {
       "gameId": "maracuya.brote",
       "reason": "La maracuyá trepa por la espaldera (pieza propia): enredadera a medida de esa pieza, mejor en Tools/Blender."
     },
@@ -1336,6 +1736,364 @@
     {
       "gameId": "cabra",
       "reason": "F2. Igual que cabra_salvaje: sin cabra en los packs de Quaternius descargables de forma reproducible."
+    },
+    {
+      "gameId": "canto_aguzado",
+      "reason": "Sin canto con punta en los packs revisados (Pebble_Square y Pebble_Round de Quaternius son planos; rock_smallTop de Kenney Nature es tosco). Candidato: SM_Pack_CantoRodado con una cara tallada en Tools/Blender."
+    },
+    {
+      "gameId": "basalto_tallado",
+      "reason": "Cabeza de basalto tallada por percusión: ningún pack trae una lasca o cabeza de piedra suelta. La del hacha y el pico (lotes 1 y 6) está pegada al mango."
+    },
+    {
+      "gameId": "tierra_suelta",
+      "reason": "Ver discarded: el montón de Kenney Nature (crops_dirtSingle) es una meseta hexagonal que se lee como losa, no como tierra suelta."
+    },
+    {
+      "gameId": "cabeza_pico_rescatada",
+      "reason": "Objeto rescatado del Albatros (metal): Blender propio por GDD v2 §7.1, como la cantimplora."
+    },
+    {
+      "gameId": "cangrejo_cocotero_salvaje",
+      "reason": "Fauna de Landing (porción vertical). Revisados el 2026-09-28: el cangrejo de Quaternius Ultimate Platformer se descarta (ver discarded); Easy Animated Enemy Pack (rana, araña, avispa y dos alimañas eliminadas por el GDD §12) y Fish Pack no traen cangrejo. Candidato: malla y rig propios en Tools/Blender o un pack CC0 futuro."
+    },
+    {
+      "gameId": "gaviota_posada",
+      "reason": "Fauna de Landing y Los Dientes. Ningún pack de Quaternius con descarga reproducible por itch.io trae aves (revisados Farm Animals, Easy Animated Enemy Pack, Ultimate Platformer, Ultimate Nature y Fish Pack el 2026-09-28). El Ultimate Animated Animal Pack solo está en Google Drive (no reproducible)."
+    },
+    {
+      "gameId": "viga_apoyo",
+      "reason": "Pieza de mina (poste y dintel que apuntalan 1,5 m). Revisados el 2026-09-28 (lote 8): KayKit Resource Bits solo trae troncos cortos de pie (Wood_Log_A/B) y tablones sueltos, y Kenney Survival y Fantasy Town no traen entibado. Candidato: pieza propia en Tools/Blender reutilizando SM_Pack_TroncoPequeno."
+    }
+  ],
+  "icons": [
+    {
+      "texture": "T_Pack_Icon_Fuego",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/campfire.png",
+      "slots": [
+        {
+          "achievementIcon": "fuego"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Hoguera con troncos cruzados: se lee como fuego de campamento, no como llama suelta (fire.png, descartado)."
+    },
+    {
+      "texture": "T_Pack_Icon_Refugio",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_house.png",
+      "slots": [
+        {
+          "achievementIcon": "refugio"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Casa genérica de tejado a dos aguas. La chimenea es pequeña y a 32-48 px no se distingue; el refugio de palma también es a dos aguas."
+    },
+    {
+      "texture": "T_Pack_Icon_Estrella",
+      "lote": "lote9-iconos",
+      "pack": "kenney_game_icons",
+      "file": "PNG/White/2x/star.png",
+      "slots": [
+        {
+          "achievementIcon": "estrella"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Board Game Icons no trae estrella; la de Game Icons tiene las puntas redondeadas y encaja con la familia. Sirve a deseos_a_punados y sin_mapa."
+    },
+    {
+      "texture": "T_Pack_Icon_Logro",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/award.png",
+      "slots": [
+        {
+          "widget": "SExploredAchievements",
+          "role": "conseguido"
+        },
+        {
+          "widget": "SExploredAchievementToast",
+          "role": "logro"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent"
+      },
+      "note": "Laurel: marca de logro conseguido en la lista y en el aviso. Se prefiere a trophy.png (copa de competición)."
+    },
+    {
+      "texture": "T_Pack_Icon_Oculto",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/lock_closed.png",
+      "slots": [
+        {
+          "widget": "SExploredAchievements",
+          "role": "oculto"
+        }
+      ],
+      "tint": {
+        "oculto": "ColorDisabled"
+      },
+      "note": "Candado para los logros enmascarados (Row.bMasked) que aún no se pueden leer."
+    },
+    {
+      "texture": "T_Pack_Icon_Guardando",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/hourglass.png",
+      "slots": [
+        {
+          "widget": "SExploredSavingIndicator",
+          "role": "guardando"
+        }
+      ],
+      "tint": {
+        "guardando": "ColorInkDim"
+      },
+      "note": "Reloj de arena junto al texto «Guardando…». Se prefiere al disquete de Game Icons (save.png), que no pega en una isla."
+    }
+  ],
+  "iconsDiscarded": [
+    {
+      "achievementIcon": "fuego",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/fire.png",
+      "reason": "Llama suelta: se confunde con peligro o daño; la hoguera dice «primer fuego»."
+    },
+    {
+      "achievementIcon": "huerto",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_wheat.png",
+      "reason": "Espigas de trigo: cereal de clima templado, no hay trigo en el archipiélago."
+    },
+    {
+      "achievementIcon": "huerto",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_farm.png",
+      "reason": "Granero europeo con puerta de establo."
+    },
+    {
+      "achievementIcon": "limon",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_apple.png",
+      "reason": "Es una manzana con hoja; teñida de amarillo sigue sin leerse como limón. Igual para coco."
+    },
+    {
+      "achievementIcon": "piedra",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_wall.png",
+      "reason": "Muralla almenada de castillo: medieval, rompe el tono de isla."
+    },
+    {
+      "achievementIcon": "brujula",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/direction_n.png",
+      "reason": "Aguja con «N»: brújula magnética occidental; el logro wayfinder premia la navegación ancestral sin instrumentos."
+    },
+    {
+      "achievementIcon": "mapa",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/book_open.png",
+      "reason": "Libro abierto, no mapa: el mapa del juego es una hoja dibujada a mano."
+    },
+    {
+      "achievementIcon": "estaciones",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/hourglass.png",
+      "reason": "Se lee como espera, no como año o estaciones; se reserva para el indicador de guardado."
+    }
+  ],
+  "iconsPending": [
+    {
+      "achievementIcon": "ola",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "pez",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "anzuelo",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "burbujas",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "vela",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "barco",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ancla",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "tortuga",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ballena",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "isla",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "archipielago",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "volcan",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ciclon",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "sol",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "coco",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "limon",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "huerto",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "mapa",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "brujula",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "estaciones",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "piedra",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "olla",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "vitrina",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "avion",
+      "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
+    },
+    {
+      "achievementIcon": "flauta",
+      "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
+    },
+    {
+      "achievementIcon": "arco",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "bandera",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "cangrejo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "canoa",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "corral",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "empalizada",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "escudo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "herramienta",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "huevo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "mina",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "muralla",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "obsidiana",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pala",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pico",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pueblo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "templo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "trueque",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "vagon",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "viga",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
     }
   ]
 }

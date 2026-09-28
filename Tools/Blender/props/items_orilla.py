@@ -2,11 +2,12 @@
 items_orilla.py — materiales sueltos de playa, arrecife y sotobosque que
 aún usaban un marcador (items.json, biblia §3.1 «Plantas», «Minerales» y
 «Mar»): hoja de plátano, musgo, algodón silvestre, arena, sal marina,
-azufre, caracola (el pū polinesio), esponja de mar y alga de fibra.
+azufre, caracola (el pū polinesio), esponja de mar y alga de fibra; y la
+tierra suelta que sale de cavar (biblia 02 §2.7), paralela a la arena.
 
 Objetos sueltos: pivote en la base (z = 0), centrados en XY, en su postura
 de reposo (los alargados a lo largo de +X). Escala real en metros. Los
-materiales «a granel» (arena, sal) se representan como el montoncito que
+materiales «a granel» (arena, tierra suelta, sal) se representan como el montoncito que
 el jugador recoge del suelo.
 """
 
@@ -35,6 +36,9 @@ OPAL = {
     'moss': (0.10, 0.28, 0.035),
     'moss_hi': (0.34, 0.46, 0.06),
     'soil': (0.16, 0.09, 0.04),
+    'soil_dry': (0.33, 0.21, 0.11),
+    'soil_pebble': (0.40, 0.37, 0.32),
+    'soil_root': (0.36, 0.24, 0.12),
     'cotton': (0.93, 0.91, 0.84),
     'cotton_shade': (0.80, 0.76, 0.66),
     'boll': (0.30, 0.17, 0.06),
@@ -66,6 +70,8 @@ VARIANTS = [
     dict(name='Item_AlgodonSilvestre', item_id='algodon_silvestre', seed=4903, builder='algodon_silvestre',
          tri_budget=(400, 6000)),
     dict(name='Item_Arena', item_id='arena', seed=4904, builder='arena', tri_budget=(300, 5000)),
+    dict(name='Item_TierraSuelta', item_id='tierra_suelta', seed=4910, builder='tierra_suelta',
+         tri_budget=(300, 5000)),
     dict(name='Item_SalMarina', item_id='sal_marina', seed=4905, builder='sal_marina', tri_budget=(400, 6000)),
     dict(name='Item_Azufre', item_id='azufre', seed=4906, builder='azufre', tri_budget=(300, 5000)),
     dict(name='Item_Caracola', item_id='caracola', seed=4907, builder='caracola', tri_budget=(600, 8000),
@@ -334,6 +340,42 @@ def _b_arena(v, rnd, name):
         M.assign(bit, ['M_Stone'])
         I.tint(bit, rgb, rnd, 0.02)
         p.add(bit, 'none')
+    return p.finish(name)
+
+
+@_register('tierra_suelta')
+def _b_tierra_suelta(v, rnd, name):
+    """Puñado de tierra suelta recién cavada (15 cm): montón más alto y
+    grumoso que el de arena, pardo oscuro con terrones secos más claros
+    arriba, dos chinas y una raicilla que asoma."""
+    p = K.Parts()
+    o = _mound('Soil', 0.07, 0.055, v['seed'], rings=12, segs=32, ripple=0.004)
+    M.assign(o, ['M_Stone'])
+    I.color_fn(o, lambda co: I.lerp3(OPAL['soil'], OPAL['soil_dry'], max(0.0, I.noise3(co, 180)) * 0.9
+                                     + max(0.0, co.z - 0.03) / 0.025 * 0.35), rnd, 0.03)
+    p.add(o, 'none')
+    r = random.Random(v['seed'])
+    for k in range(5):
+        a = r.uniform(0, 2 * math.pi)
+        rr = r.uniform(0.2, 0.75)
+        pos = (math.cos(a) * rr * 0.06, math.sin(a) * rr * 0.06, 0.055 * (1 - rr ** 1.4) ** 1.8 + 0.004)
+        clod = C.make_blob(f'Clod{k}', pos, 1.0, v['seed'] + 10 + k, subdivisions=1, noise_strength=0.3,
+                           scale=(0.012, 0.010, 0.008))
+        M.assign(clod, ['M_Stone'])
+        I.tint(clod, OPAL['soil_dry'], rnd, 0.03)
+        p.add(clod, 'none')
+    for k, (pos, sc) in enumerate((((0.04, -0.03, 0.012), (0.008, 0.006, 0.005)),
+                                   ((-0.045, 0.02, 0.01), (0.006, 0.005, 0.004)))):
+        pebble = C.make_blob(f'Pebble{k}', pos, 1.0, v['seed'] + 20 + k, subdivisions=1, noise_strength=0.15, scale=sc)
+        M.assign(pebble, ['M_Stone'])
+        I.tint(pebble, OPAL['soil_pebble'], rnd, 0.02)
+        p.add(pebble, 'none')
+    root = I.soft_box('Root', (0.05, 0.003, 0.003), roundness=0.5, cuts=2)
+    root.data.transform(Matrix.Rotation(0.5, 4, 'Y') @ Matrix.Rotation(0.8, 4, 'Z'))
+    root.data.transform(Matrix.Translation((0.012, 0.01, 0.045)))
+    M.assign(root, ['M_Wood'])
+    I.tint(root, OPAL['soil_root'], rnd, 0.02)
+    p.add(root, 'none')
     return p.finish(name)
 
 

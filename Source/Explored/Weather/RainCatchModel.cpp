@@ -30,7 +30,8 @@ namespace
 	/** mm/h × m² → µL/min (1 mm sobre 1 m² = 1 L). */
 	int64 MicroLPerMinute(double MmPerHour, double AreaM2)
 	{
-		if (!(MmPerHour > 0.0) || !(AreaM2 > 0.0) || !FMath::IsFinite(MmPerHour * AreaM2))
+		if (!FMath::IsFinite(MmPerHour) || !FMath::IsFinite(AreaM2) || MmPerHour <= 0.0 || AreaM2 <= 0.0
+			|| !FMath::IsFinite(MmPerHour * AreaM2))
 		{
 			return 0;
 		}
@@ -42,7 +43,9 @@ namespace
 	 * hacia arriba: si no, con poca agua ajena el suelo entero la dejaría para
 	 * siempre (un rastro de 0,1 % que no se va nunca por mucho que llueva).
 	 */
-	void RemoveProportional(FRainCatchState& State, int64 Amount, int64* OutRain, int64* OutOther)
+	/** bRoundOtherUp: al rebosar o al beber, lo ajeno sale redondeado hacia arriba para que no quede un
+	 *  residuo eterno. Al evaporar no: el sol concentra la mezcla, no la limpia. */
+	void RemoveProportional(FRainCatchState& State, int64 Amount, int64* OutRain, int64* OutOther, bool bRoundOtherUp = true)
 	{
 		const int64 Total = State.TotalMicroL();
 		Amount = FMath::Clamp<int64>(Amount, 0, Total);
@@ -52,12 +55,13 @@ namespace
 			if (Total <= FRainCatchModel::MaxCapacityMicroL)
 			{
 				// Amount y OtherMicroL no pasan de MaxCapacityMicroL (1e9): el producto cabe en int64.
-				FromOther = (Amount * State.OtherMicroL + Total - 1) / Total;
+				FromOther = (Amount * State.OtherMicroL + (bRoundOtherUp ? Total - 1 : 0)) / Total;
 			}
 			else
 			{
 				// Estado cargado fuera de rango: sin exactitud, pero sin desbordar.
-				FromOther = static_cast<int64>(FMath::CeilToDouble(static_cast<double>(Amount) * (static_cast<double>(State.OtherMicroL) / static_cast<double>(Total))));
+				const double Share = static_cast<double>(Amount) * (static_cast<double>(State.OtherMicroL) / static_cast<double>(Total));
+				FromOther = static_cast<int64>(bRoundOtherUp ? FMath::CeilToDouble(Share) : FMath::FloorToDouble(Share));
 			}
 			FromOther = FMath::Min(FromOther, State.OtherMicroL);
 		}
@@ -107,7 +111,8 @@ float FRainCatchState::TotalLiters() const
 
 float FRainCatchModel::RainMmPerHour(float Rain01)
 {
-	if (!(Rain01 > RainThreshold))
+	// IsFinite explícito: con matemáticas rápidas `!(Rain01 > Umbral)` deja pasar un NaN.
+	if (!FMath::IsFinite(Rain01) || Rain01 <= RainThreshold)
 	{
 		return 0.0f;
 	}
@@ -138,7 +143,7 @@ float FRainCatchModel::EvaporationMmPerHour(const FWeatherSample& Sample)
 FRainCatchRates FRainCatchModel::RatesFor(const FRainCatchSpec& Spec, const FWeatherSample& Sample)
 {
 	FRainCatchRates Rates;
-	if (!(Spec.MouthAreaM2 > 0.0) || Spec.CapacityMicroL <= 0)
+	if (!FMath::IsFinite(Spec.MouthAreaM2) || Spec.MouthAreaM2 <= 0.0 || Spec.CapacityMicroL <= 0)
 	{
 		return Rates;
 	}
@@ -212,7 +217,7 @@ void FRainCatchModel::StepMinutes(FRainCatchState& State, const FRainCatchSpec& 
 		else if (Evap > 0 && State.TotalMicroL() > 0)
 		{
 			const int64 Before = State.TotalMicroL();
-			RemoveProportional(State, Evap, nullptr, nullptr);
+			RemoveProportional(State, Evap, nullptr, nullptr, /*bRoundOtherUp*/ false);
 			State.EvaporatedMicroL += Before - State.TotalMicroL();
 		}
 		const int64 Excess = State.TotalMicroL() - Capacity;

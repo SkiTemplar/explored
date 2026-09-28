@@ -204,7 +204,9 @@ void FSaveArchiveSpec::Define()
 			TestEqual(TEXT("Menos infinito"), Text, TEXT("\"-Infinity\""));
 			double Read = 0.0;
 			TestTrue(TEXT("Se lee como real"), RoundTrip(FSaveValue::MakeDouble(-Inf), ESaveTextStyle::Compact).TryGetDouble(Read));
-			TestTrue(TEXT("Es menos infinito"), Read < -TNumericLimits<double>::Max());
+			// Sin comparar con -Max: con matemáticas rápidas el compilador da por hecho que no hay
+			// infinitos y pliega esa comparación a falso.
+			TestTrue(TEXT("Es menos infinito"), !FMath::IsFinite(Read) && !FMath::IsNaN(Read) && Read < 0.0);
 			const double NaN = Inf - Inf;
 			TestTrue(TEXT("NaN"), FMath::IsNaN(RoundTrip(FSaveValue::MakeDouble(NaN), ESaveTextStyle::Compact).AsDouble()));
 		});

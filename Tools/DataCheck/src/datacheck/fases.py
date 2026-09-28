@@ -177,5 +177,6 @@ def _phase1_view(name: str, content):
                     stats=[s for s in content.get("stats", []) if s.get("phase", "AA") == "AA"],
                     achievements=[a for a in content.get("achievements", []) if a.get("phase", "AA") == "AA"])
     if name == "packs_catalogo.json" and isinstance(content, dict):
-        return {k: v for k, v in content.items() if k not in ("discarded", "pending")}
+        # iconsPending repite las pistas de icono de los logros (también los de F2/F3), no ids de objetos.
+        return {k: v for k, v in content.items() if k not in ("discarded", "pending", "iconsPending")}
     return content

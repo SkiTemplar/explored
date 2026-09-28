@@ -1,6 +1,6 @@
 # Estadísticas de juego (contrato para todos los sistemas)
 
-Los 30 logros (GDD §16) no escuchan a ningún sistema concreto: cada sistema **informa de
+Los logros (GDD §16; 30 de partida, hasta 54 según biblia 07 §2) no escuchan a ningún sistema concreto: cada sistema **informa de
 lo que pasa** con un evento genérico de estadística y el modelo de logros decide. Este es el
 único sitio que lista todas las estadísticas; la versión que lee el juego está en
 `Content/Data/achievements.json` (`stats`) y `Tools/DataCheck` comprueba que ambas coinciden

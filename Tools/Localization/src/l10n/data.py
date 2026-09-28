@@ -64,6 +64,18 @@ def _path(*keys: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
     return records
 
 
+def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
+    """Objeto indexado por id: ``{"derrumbe": {...}, "oscuridad": {...}}`` (las notas sueltas se saltan)."""
+
+    def records(doc: object) -> Iterator[tuple[str, dict]]:
+        node = doc.get(name, {}) if isinstance(doc, dict) else {}
+        for key, rec in (node.items() if isinstance(node, dict) else []):
+            if isinstance(rec, dict):
+                yield str(key), rec
+
+    return records
+
+
 def _landmarks(doc: object) -> Iterator[tuple[str, dict]]:
     for island in (doc.get("islands", []) if isinstance(doc, dict) else []):
         for mark in island.get("landmarks", []):
@@ -110,6 +122,9 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("mining.json", "layers", _sub("layers"), "nameEs", "nameEn", "capa del subsuelo"),
     FieldSpec("mining.json", "strata", _sub("strata"), "nameEs", "nameEn", "estrato minable"),
     FieldSpec("mining.json", "tools", _sub("tools"), "nameEs", "nameEn", "herramienta de excavación"),
+    FieldSpec("mining.json", "places", _sub("places"), "nameEs", "nameEn", "lugar subterráneo"),
+    FieldSpec("mining.json", "hazards", _keyed("hazards"), "nameEs", "nameEn", "peligro de la mina"),
+    FieldSpec("combat.json", "creatures", _sub("creatures"), "nameEs", "nameEn", "criatura con la que se combate"),
     FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
     FieldSpec("ruins.json", "elements", _sub("elements"), "nameEs", "nameEn", "elemento de una ruina"),
@@ -128,6 +143,17 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("fases_futuras.json", "trade.favors", _path("trade", "favors"), "nameEs", "nameEn", "favor del pueblo [F3]"),
     FieldSpec("fases_futuras.json", "trade.reputationActions", _path("trade", "reputationActions"), "nameEs", "nameEn",
               "acción que mueve la reputación [F3]"),
+    FieldSpec("halden_diaries.json", "entries", _sub("entries"), "textEs", "textEn", "cuaderno de la expedición Halden"),
+    FieldSpec("journal_entries.json", "entries", _sub("entries"), "textEs", "textEn",
+              "entrada del diario del náufrago ({Day} = día de la partida)"),
+    FieldSpec("map_clues.json", "clues", _sub("clues"), "clueEs", "clueEn", "pista en prosa de un tesoro"),
+    FieldSpec("museum_collections.json", "collections", _sub("collections"), "nameEs", "nameEn", "colección del museo"),
+    FieldSpec("museum_collections.json", "collections", _sub("collections"), "rewardEs", "rewardEn",
+              "recompensa por completar la colección"),
+    *(FieldSpec(f, "pieces", _sub("pieces"), es, en, purpose)
+      for f in ("shells.json", "herbarium.json", "insects.json", "fossils.json", "minerals.json")
+      for es, en, purpose in (("nameEs", "nameEn", "etiqueta de vitrina"),
+                              ("descriptionEs", "descriptionEn", "ficha de vitrina"))),
 ]
 
 # Campos «…Es» que no ve el jugador: notas de diseño y documentación interna.
@@ -136,6 +162,7 @@ DESIGN_NOTES: set[tuple[str, str]] = {
     ("*", "redNotaEs"),
     ("exploration.json", "accessEs"),  # guion de diseño de cada lugar, con referencias al GDD
     ("exploration.json", "rewardEs"),
+    ("journal_entries.json", "descriptionEs"),  # catálogo de sucesos que disparan el diario
 }
 
 # Listas paralelas: la inglesa va en otra clave del mismo objeto, en el mismo orden.

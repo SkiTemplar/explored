@@ -17,6 +17,7 @@ Plugins/*/Intermediate/
 # Salidas generadas por las herramientas (se regeneran; no se versionan)
 Art/Export/Textures/
 Art/Export/Packs/
+Art/Export/Audio/
 Art/Packs/
 
 # Mundo horneado por ExploredWorldGen (se regenera con Tools/worldgen.ps1 -Mode bake).

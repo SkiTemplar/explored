@@ -12,6 +12,8 @@ import math
 import re
 from pathlib import Path
 
+from . import estilo
+
 # Biblia 07 §2: 54 logros, dentro del rango de 40 a 60 que pidió el director.
 ACHIEVEMENT_RANGE = (40, 60)
 PHASES = ("AA", "F2", "F3")
@@ -252,6 +254,12 @@ def check_achievements(ds, r) -> None:
                 r.error(f"{where}: falta {key}")
             elif "almudena" in text.lower():
                 r.error(f"{where}: {key} usa el nombre de la dedicatoria; va solo en el menú y los créditos")
+            else:
+                # Guía anti-IA (biblia 07 §1) sin los límites de longitud: dos de los 30 logros de
+                # partida y varios de los 24 de biblia 07 §2.3 ya se pasan de §1.3 y sus textos
+                # están fijados; la longitud la revisa una persona.
+                for problem in estilo.lint(text, "en" if key.endswith("En") else "es", "sin_limite"):
+                    r.error(f"{where}: {key}: {problem}")
         if not isinstance(ach.get("hidden"), bool):
             r.error(f"{where}: hidden debe ser true o false")
         icon = ach.get("icon")

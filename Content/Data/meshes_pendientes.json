@@ -8,16 +8,24 @@
     "canto_aguzado",
     "compost",
     "cristal_cuarzo",
+    "guano",
     "hierro_meteorito",
     "mineral_cobre",
-    "pico",
-    "tierra_suelta"
+    "pico"
   ],
   "buildingPieces": [
     "astillero",
+    "atril_cuaderno",
     "banco_chatarra",
+    "bandeja_conchas",
     "espantapajaros",
-    "pila_compost"
+    "marco_herbario",
+    "panel_fosiles",
+    "pecera_museo",
+    "pila_compost",
+    "tablon_contencion",
+    "viga_apoyo",
+    "vitrina_minerales"
   ],
   "plantStages": [
     "batata.brote",

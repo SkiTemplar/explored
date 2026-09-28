@@ -1,0 +1,62 @@
+{
+	"version": 1,
+	"note": "Combate de H1 (biblia 05 §3 y §5, 00-TODO H1 «Combate y fauna peligrosa»). Espejo de FCombatModel (Source/Explored/Combat/CombatModel.h y .cpp): Tools/DataCheck compara cada número con el C++ y las fichas de cerdo, cabra y cangrejo con fauna.json. No hay barra de vida nueva: el golpe quita Salud de survival_needs.json y el corte entra en «wounds» con FBodyModel::AddCut.",
+	"units": {
+		"property": "propiedad del objeto o equivalente del animal, escala 0-5 (biblia 02 §2.1)",
+		"damage": "puntos de Salud (0-100), enteros; el rápido y el cargado redondean hacia abajo",
+		"ms": "milisegundos",
+		"m": "metros",
+		"pct": "tanto por ciento entero",
+		"bytes": "bytes por mensaje en la red"
+	},
+	"damage": {
+		"cutDamagePerPoint": 3,
+		"bluntDamagePerPoint": 4,
+		"cutDepthDivisor": 5,
+		"maxProperty": 5,
+		"bluntStunMinProperty": 4,
+		"bluntStunMs": 1500,
+		"tieBreak": ["Filo", "Punta", "Contundente"],
+		"noteEs": "Filo y Punta: Salud = propiedad × 3 y corte de profundidad propiedad ÷ 5. Contundente: Salud = propiedad × 4, sin corte, aturde si la propiedad es ≥ 4. Un objeto con varias propiedades golpea con la que más daño hace; a igualdad, con la que corta."
+	},
+	"melee": {
+		"quick": { "multiplierPct": 70, "executeMs": 450, "chainMax": 3, "chainPauseMs": 400 },
+		"charged": { "multiplierPct": 160, "telegraphMs": 1200, "recoveryMs": 300 },
+		"reachM": { "corto": 1.2, "lanza": 2.2 },
+		"noteEs": "Rápido: llega al pulsar y ocupa 0,45 s; tres seguidos exigen 0,4 s de pausa y esperar 0,4 s rompe la racha. Cargado: el arma se echa atrás 1,2 s (aviso legible y esquivable), llega al acabar y recupera 0,3 s; cancelarlo antes no golpea."
+	},
+	"dodge": {
+		"invulnerableMs": 300,
+		"cooldownMs": 1200,
+		"noteEs": "Invulnerable en [arranque, arranque + 300 ms). Se esquiva en reposo, en la pausa de la racha o cargando (cancela la carga); no a mitad de un golpe rápido ni en la recuperación del cargado."
+	},
+	"bow": {
+		"bands": [
+			{ "fromM": 0, "toM": 15, "accuracyPct": 100 },
+			{ "fromM": 15, "toM": 30, "accuracyPct": 70 },
+			{ "fromM": 30, "toM": 45, "accuracyPct": 40 }
+		],
+		"beyondPct": 0,
+		"noteEs": "Tramos [desde, hasta): cada límite cuenta en el tramo más lejano (15 m = 70 %, 45 m = 0 %). Daño = Punta de la flecha × 3. La tirada la hace el servidor, determinista por semilla y número de disparo."
+	},
+	"creatures": [
+		{ "id": "cerdo_salvaje", "cpp": "WildBoar", "nameEs": "Cerdo salvaje", "nameEn": "Wild boar", "healthPoints": 35, "attack": { "property": "Contundente", "value": 4 }, "damage": 16, "cutDepth": 0, "stunMs": 1000, "flee": { "healthFraction": 0.3, "afterHits": 0 }, "capsizePct": 0, "noteEs": "La tabla de la biblia 05 §5 manda sobre la regla general: aturde 1 s, no 1,5 s." },
+		{ "id": "cabra_salvaje", "cpp": "WildGoat", "nameEs": "Cabra salvaje", "nameEn": "Wild goat", "healthPoints": 20, "attack": { "property": "Contundente", "value": 1 }, "damage": 4, "cutDepth": 0, "stunMs": 0, "flee": { "healthFraction": 1.0, "afterHits": 0 }, "capsizePct": 0, "noteEs": "La cabra montés de la biblia 05 §5: casi siempre huye; huye en cuanto recibe un golpe." },
+		{ "id": "cangrejo_cocotero_salvaje", "cpp": "CoconutCrab", "nameEs": "Cangrejo de los cocoteros", "nameEn": "Coconut crab", "healthPoints": 15, "attack": { "property": "Contundente", "value": 2 }, "damage": 8, "cutDepth": 0, "stunMs": 0, "flee": { "healthFraction": 0, "afterHits": 1 }, "capsizePct": 0, "noteEs": "Huye tras el primer golpe recibido." },
+		{ "id": "tiburon_arrecife", "cpp": "ReefShark", "nameEs": "Tiburón de arrecife", "nameEn": "Reef shark", "healthPoints": 55, "attack": { "property": "Filo", "value": 4 }, "damage": 12, "cutDepth": 0.6, "stunMs": 0, "flee": { "healthFraction": 0, "afterHits": 0 }, "capsizePct": 15, "noteEs": "Variante corriente del tiburón tigre «Sombra». La tabla manda sobre la fórmula en el corte: 0,6, no 4 ÷ 5. Vive en el agua (EFaunaSpecies::ReefShark), por eso no está en fauna.json." }
+	],
+	"red": {
+		"autoridad": "servidor",
+		"noteEs": "Biblia 08 §1.2: el cliente reproduce al instante la animación y el sonido del golpe, nunca el daño. El servidor lee el arma de su copia del inventario, traza desde su copia del personaje, comprueba alcance (arma + 0,5 m), reloj (≤ 250 ms de antigüedad) y cadencia (≥ 382 ms entre rápidos), tira la puntería del arco y aplica el golpe con FCombatModel::ReceiveHit o HitCreature.",
+		"mensajes": [
+			{ "id": "accion", "sentido": "cliente → servidor", "canal": "RPC de servidor fiable", "bytes": 7, "campos": "acción u8 (rápido, empezar carga, cancelar carga, esquiva, disparo de arco), reloj del cliente u16 en ms módulo 65 536, rumbo u16 (360° / 65 536), cabeceo i16 (90° / 32 767)" },
+			{ "id": "impacto", "sentido": "servidor → dueño de la víctima; multicast a menos de 15 m", "canal": "RPC de cliente fiable al dueño; multicast sin fiabilidad a los cercanos", "bytes": 8, "campos": "atacante u16 y víctima u16 (id corto de red), banderas u8 (tipo 2 bits, variante 2 bits, esquivado, muerto, huye, 1 bit reservado a 0), salud u8, corte u8 en 1/255, aturdimiento u8 en décimas de segundo" },
+			{ "id": "estado", "sentido": "servidor → los demás", "canal": "propiedad replicada, solo al cambiar (OnRep)", "bytes": 2, "campos": "fase 3 bits y racha 2 bits (3 bits reservados a 0), décimas de segundo en la fase u8 saturadas a 255: basta para dibujar el aviso del cargado y la esquiva" }
+		],
+		"presupuesto": {
+			"clienteServidorBps": 16,
+			"servidorClienteBps": 96,
+			"noteEs": "Peor caso realista: los 4 jugadores contra un jabalí. Cada uno pide como mucho 3 rápidos cada 1,75 s ≈ 1,7 acciones/s × 7 B + esquivas ≈ 16 B/s de subida. Cada cliente recibe los impactos de todos a menos de 15 m (≤ 12 por segundo × 8 B = 96 B/s ≈ 0,8 kbps), que caben en la reserva de «multicast cosméticos» (2 kbps) de biblia 08 §3. El estado de 2 B solo viaja al cambiar de fase."
+		}
+	}
+}
