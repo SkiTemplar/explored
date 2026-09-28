@@ -90,6 +90,7 @@ Sección nueva: qué hace que el archipiélago se sienta habitado y no decorado.
 | Aves e insectos | Bandadas en vuelo, enjambres de abejas, luciérnagas, mariposas — ambiente con movimiento constante | `Fauna` (boids ya existentes) |
 | Flora reactiva | Hierba que se aparta al pasar, palmeras que se doblan en el ciclón, quemado que rebrota | Ya implementado (`VegetationScatter`, `Weather`) |
 | Mundo interactivo | Todo árbol se tala y cae según el golpe y la pendiente; el tocón rebrota salvo que se arranque; ramas sueltas bajo los árboles | `WorldGen` (§3.12, modelos puros hechos) |
+| Arena viva | La arena se cava y se apila, se derrumba a su ángulo de reposo (más empinada si está mojada) y las olas borran hoyos y montones en la orilla; las estructuras la sujetan | `WorldGen` (§3.13, modelo puro hecho) |
 | Día/noche, estaciones, marea | Cambian qué se puede hacer, no solo cómo se ve: pesca, mareas que abren pasos, mina que se inunda con la crecida | `Sky`, `Weather`, `Events`, `Ocean` (ya implementado) |
 | Pueblo con horario **[F3]** | Los navegantes del arrecife trabajan, comercian y hacen ofrendas en su propio ciclo diario | `Villages` (§3.9, nuevo) |
 | Piratas que patrullan **[F3]** | Rutas de patrulla y asaltos programados, no solo reactivos (las piezas de muralla que se defienden de ellos llegan antes, en fase 2, §3.8) | `Raiders` (§3.8, nuevo) |
@@ -286,6 +287,51 @@ mapa.
   ejecución. Sin prototipo de PIE, el coste real de esta mecánica es una incógnita.
 - **Dependencias:** `Building` (piezas de vía), `Mining` (galerías), un nuevo módulo
   ligero `Tramway` (grafo de vía + vagón).
+- **Reglas y números del modelo [F2]** (modelo puro `FTramwayModel`, spec
+  `Explored.Tramway`; integración en `docs/tecnico/railes-vagones.md`). El alcance
+  (raíles y vagones en [F2]) lo decidió el director el 2026-09-27 (biblia 02 §9); el
+  detalle del modelo (tramos sobre rejilla, pendiente máxima, inercia del vagón con su
+  carga) está pendiente de validar. Los números marcados con *(biblia)* vienen de la biblia 02 §9;
+  el resto es **propuesta pendiente de revisar**:
+  - **Vía sobre rejilla.** Nodos cada **2 m** en horizontal *(biblia)* y cada
+    **12,5 cm** en vertical. Un tramo une dos nodos vecinos en una de las 4 direcciones
+    y sube o baja de 0 a 5 escalones: **pendiente máxima 17,4°** (5 × 12,5 cm en 2 m).
+    La pieza sale sola de la forma del nodo: dos tramos alineados son vía recta
+    (`rail_recto`); dos perpendiculares, una curva de 90° (`rail_curvo`, radio 1 m); tres
+    o cuatro, un cambio de agujas (`cambio_agujas`).
+  - **Cambio de agujas.** La palanca apunta a una salida. El vagón nunca da media
+    vuelta: si la palanca apunta por donde viene, sigue recto, y si no hay recta, toma la
+    salida de menor índice (+X, +Y, −X, −Y).
+  - **Vagón.** 60 kg vacío y **200 kg de carga** como máximo *(biblia)*. La carga no se
+    reparte: pasarse de 200 kg se rechaza. Toda la dinámica se hace sobre la masa total
+    (60 + carga). Rodadura μ = 0,02 y freno de zapata μ = 0,3.
+  - **Empujar a mano.** Hasta **1,2 m/s** *(biblia)* con una fuerza sostenida de
+    280 N. Con carga, el vagón tiene inercia: lleno tarda **1,1 s** en llegar a 1 m/s y
+    vacío, 0,23 s. Suelto a 1,2 m/s, rueda 3,7 m hasta pararse, esté lleno o vacío; con
+    el freno echado se para en 25 cm. **Lleno solo se sube a mano hasta 5°** *(biblia)*:
+    sí sube una rampa de 1 escalón (3,6°) pero no una de 2 (7,1°), y ahí se queda quieto
+    (no repta ni rueda hacia atrás). Vacío se sube a mano cualquier pendiente de vía.
+  - **Torno de cuerda.** Tira a **2 m/s** *(biblia)* con hasta 900 N. Así sube el vagón
+    lleno por la pendiente máxima, que necesita 811 N. La cuerda mide **60 m** medidos
+    por la vía. El torno tira hacia sí por el camino más corto, y a 0,5 m el trinquete
+    sujeta el vagón, aunque esté en cuesta. Si no hay torno al alcance, no pasa nada y
+    la interfaz lo dice. Por encima de 5°, el torno es obligatorio *(biblia)*; que
+    el vagón vacío sí se pueda empujar más arriba es interpretación de este modelo
+    (propuesta).
+  - **Curvas y topes: donde el error es parte de la diversión.** Un vagón vuelca en
+    curva a partir de **2,56 m/s vacío** y **2,05 m/s lleno** (el centro de masas sube
+    de 0,45 a 0,7 m con la carga). Empujado o con el torno nunca vuelca, pero dejado
+    rodar cuesta abajo sí: lleno por 3 tramos a 17° llega a unos 5,9 m/s y vuelca en la
+    primera curva. Al final de la vía hay un tope. Por debajo de 2,5 m/s el vagón se para
+    en él; por encima, vuelca.
+  - **Terreno editado bajo la vía** *(biblia)*. Picar, cavar o echar tierra a menos
+    del radio del pincel de un tramo lo marca **dañado**. Un vagón que entra en un tramo
+    dañado (o que está encima de uno que desaparece) descarrila y se queda quieto hasta
+    que se repara el tramo y se vuelve a poner en la vía.
+  - **Guardado.** La vía, los daños, las palancas y los tornos van en una capa opaca
+    `"tramway"` de la sección `world`, y cada vagón con su tramo, posición, velocidad,
+    carga y estado. La simulación usa pasos fijos de 1/120 s: el resultado es el mismo
+    bit a bit con cualquier tasa de fotogramas (lo comprueba el spec).
 - **Decisión de alcance:** **queda fuera del acceso anticipado** (§6). La minería
   manual y las cuevas sí entran porque reutilizan sistemas que ya existen
   (`TerrainDensity`, `Building`, `Save`); los raíles y vagones son un sistema nuevo de
@@ -423,10 +469,10 @@ arrecife con reputación alta (§3.9).
   estrellas.
 - **Reglas / progresión / interfaz:** ver GDD v3 §6, §8.10 (sin cambios).
 - **Riesgos técnicos:** ninguno nuevo; `FBoatModel` tiene specs en host verdes.
-  Pendiente de siempre: malla del «Limón». El astillero de balsas está en §3.14.
+  Pendiente de siempre: malla del «Limón». El astillero de balsas está en §3.17.
 - **Dependencias:** `Boats`, `Ruins`, `Villages`.
 - **Construcción:** los barcos se arman pieza a pieza y la física decide si
-  navegan (§3.13).
+  navegan (§3.14).
 
 ### 3.11 Museo y tesoros
 
@@ -448,7 +494,7 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva, el astillero de balsas (§3.14) y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones naturales.
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -508,7 +554,100 @@ vendrán la arena viva, el astillero de balsas (§3.14) y otras interacciones na
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 
-### 3.13 Construcción naval: barcos que hay que pensar **[alcance aprobado 2026-09-27 (biblia 02 §8); detalle pendiente de validar]**
+### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**
+
+Segunda mecánica del principio «el mundo entero es interactivo y se comporta de forma
+natural». La playa deja de ser un decorado: se cava, se apila y reacciona. **Manda la
+biblia:** las reglas son las de `biblia/02-mecanicas-del-mundo.md` §5 y los presupuestos,
+los de `biblia/08-cooperativo-y-red.md` §2.6 (la capa de alturas propia y la rampa del
+oleaje están anotadas allí como decisiones del director). Esta sección solo añade el
+tamaño de la rejilla, la capa de arena y las pasadas por revisión.
+
+- **Objetivo:** que cavar en la playa se sienta como en una playa de verdad (el hoyo
+  se desmorona, el montón se escurre, la marea lo borra con el paso de los días) sin
+  pagar el coste de la edición volumétrica de §3.4.
+- **Reglas:**
+  - **Solo la capa de superficie.** La arena es un campo de alturas de deltas sobre el
+    suelo de la isla: una columna cada 0,25 m, chunks de 8 m (la misma rejilla que la
+    edición volumétrica). Bajo la arena hay roca: como mucho se cava **1,5 m**, y un
+    montón no pasa de **2 m** sobre el suelo original. Túneles y cuevas siguen siendo
+    cosa del pico (§3.4).
+  - **Pala.** Cada pasada es un cono de 0,6 m de radio y 15 cm en el centro (unos
+    0,06 m³). Lo cavado va al cubo como arena, que tiene masa exacta. Al apilar se echa
+    lo que se lleva y nada más.
+  - **La arena no desaparece.** La avalancha es un traspaso entre columnas vecinas. El
+    oleaje cambia arena con el **banco del mar** (la arena en suspensión de la resaca):
+    lo que alisa de un montón va al banco y lo que rellena un hoyo sale de él. La suma
+    «arena de la playa + banco del mar» solo cambia con lo que la pala saca o echa.
+  - **Ángulo de reposo (biblia 02 §5.1).** **Una revisión por segundo** por chunk
+    activo. Si el desnivel entre dos columnas pasa del reposo, la arena resbala: **34°**
+    seca (168 mm por celda) y **45°** húmeda (249 mm). Está húmeda toda la arena a la
+    altura de la pleamar del día o por debajo, y toda la arena mientras llueve. Al
+    secarse (baja la pleamar con la luna, deja de llover), lo que estaba a 45° se vuelve
+    a derrumbar hasta 34°. Cada revisión hace hasta 4 pasadas de ¼ del exceso. Una
+    palada se asienta en 1–2 s, un montón de 1 m³ en unos pocos segundos y uno de
+    2,5 m³ en unos 25 s, porque lo frena el tope de red: se ve escurrir.
+  - **Lo natural no se derrumba solo.** El umbral nunca es menor que la pendiente del
+    suelo original: una duna generada a 50° se queda como está. Solo se mueve la arena
+    que ha tocado el jugador (o lo que esta arrastra).
+  - **Relleno por oleaje (biblia 02 §5.2).** No es continuo: se resuelve **una vez por
+    medio ciclo de marea** (~6 h de juego), en toda la isla. Cada columna editada cuya
+    altura original está bajo la pleamar vuelve **hacia su altura original** (los hoyos
+    se rellenan y los montones se alisan):
+    - **20 %** por medio ciclo en la línea de pleamar, creciendo en línea recta hacia el
+      agua hasta el **60 %** en la línea de bajamar y por debajo;
+    - en marea viva, **+15 puntos** en todas partes (**35 %** en la pleamar, 75 % en la
+      bajamar);
+    - un resto de **2 cm** o menos lo remata la última onda.
+    Con estos números, un hoyo bajo la bajamar se cierra del todo en **2–3 ciclos**: uno
+    de 30 cm en 1,5 ciclos y el más hondo posible (1,5 m) en 2,5. Entre medio ciclo y
+    medio ciclo, un hoyo en la orilla se queda como está: la marea lo borra con los días,
+    no con los segundos.
+  - **Anclaje (biblia 02 §5.3).** El tablón de contención, los pilotes, los muelles y
+    los sacos sujetan toda la arena a **1 m** o menos de su huella (distancia real, con
+    las esquinas redondas). Esa arena no desliza y el oleaje no la rellena mientras la
+    pieza siga en pie; la de fuera sí puede caer contra ella. La pala no cava bajo la
+    huella. Al quitar la pieza, la arena que sujetaba se suelta y se derrumba a 34°.
+    Dos piezas que se solapan sujetan hasta que se quitan las dos.
+- **Números:** `FSandModel` en `Source/Explored/WorldGen/SandModel.h`.
+
+  | Qué | Valor | Fuente |
+  |---|---|---|
+  | Rejilla / chunk | 0,25 m / 8 m (32 columnas) | este GDD |
+  | Capa de arena / montón máximo | 1,5 m / 2 m | este GDD |
+  | Reposo seco / húmedo | 34° / 45° | biblia 02 §5.1 |
+  | Revisión de pendiente | 1 por segundo, 4 pasadas de ¼ del exceso | biblia 02 §5.1 / este GDD |
+  | Relleno por medio ciclo, pleamar → bajamar | 20 % → 60 % | biblia 02 §5.2 |
+  | Marea viva | +15 puntos (35 % en la pleamar) | biblia 02 §5.2 |
+  | Remate del oleaje | ≤ 2 cm | biblia 02 §5.2 |
+  | Arena sujeta por una estructura | ≤ 1 m de la huella | biblia 02 §5.3 |
+  | Radio activo alrededor de cada jugador | 80 m hasta el borde del chunk | biblia 08 §2.6 |
+  | Tope de columnas cambiadas | 64 por chunk y revisión | biblia 08 §2.6 |
+  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta | biblia 08 §2.6 |
+  | Paquete de red | versión 2, capa 1, ≤ 512 B | biblia 08 §2.2 |
+
+- **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo
+  tierra, zanjas de drenaje, rampas de arena para botar balsas). El tablón de
+  contención (tier `bambu`) y los sacos de arena, más adelante, sirven para muros,
+  diques y muelles que la marea no borra.
+- **Interfaz:** ninguna. La arena se ve escurrir y oscurecerse al mojarse.
+- **Coste:** solo lo simula el servidor, y solo en los chunks a menos de 80 m de algún
+  jugador. Dentro de ellos solo se revisan las columnas **sucias** (tocadas, o vecinas
+  de algo que se ha movido). Fuera, la arena se congela con su estado y cuenta las
+  revisiones que se salta; al volver alguien, las recupera de golpe (4 como máximo) y
+  después sigue a su ritmo, sin recordar el resto del tiempo perdido. Un montón asentado cuesta cero. El medio ciclo de marea toca solo las
+  columnas editadas, una vez cada 10 minutos reales.
+- **Riesgos técnicos:**
+  - Casar la malla de la arena con el terreno volumétrico: ver
+    `docs/tecnico/arena-viva.md`.
+  - Si la pleamar del día cambia mientras nadie está cerca, la arena de esa playa no
+    se entera hasta que llegue alguien. Es invisible para el jugador, porque nadie lo ve
+    pasar. El relleno por oleaje sí llega a toda la isla.
+- **Dependencias:** `WorldGen` (`FSandModel`, `FTerrainDensity` como suelo base),
+  `Ocean` (`FOceanTide`: pleamar, bajamar y marea viva), `Weather` (lluvia),
+  `Building` (anclajes), `Save` (capa `sand`).
+
+### 3.14 Construcción naval: barcos que hay que pensar **[alcance aprobado 2026-09-27 (biblia 02 §8); detalle pendiente de validar]**
 
 Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), spec
 `Explored.HullAssembly`. Integración en `docs/tecnico/casco-por-piezas.md`.
@@ -608,11 +747,146 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
 - **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
   por piezas en la sección de barcos, pendiente).
 
-### 3.14 Mundo interactivo: astillero de balsas **[mecánicas pedidas por el director 2026-09-27; números pendientes de validar]**
+### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
+
+Cuarta mecánica del principio del mundo interactivo. Los números de
+contagio, rebrote y ceniza son los de la biblia 02 §6, que manda en el detalle. Las
+duraciones de quema son una propuesta y no las ha validado nadie.
+
+- **Objetivo:** que un fuego mal vigilado en la seca pueda quemar una ladera de hierba, y
+  que el jugador lo pueda frenar con agua, arena o un cortafuegos.
+- **Rejilla:** celdas de **2 m** (la misma medida que la rejilla de construcción) en
+  chunks de **16 × 16 celdas (32 m)**. Arden la hierba y el matorral; los árboles, la
+  arena, la roca, el agua y el suelo desnudo no arden. Solo se guardan las celdas que
+  se apartan del mundo base: ardiendo, quemadas o mojadas.
+- **Reglas:**
+  - **Contagio.** Cada segundo, una celda que arde tira por cada una de sus **8
+    vecinas** no mojadas con combustible:
+
+    | Condición | Probabilidad por vecina y segundo |
+    |---|---|
+    | Seca (también con ola de calor o llovizna) | **45 %** |
+    | Primeras lluvias, monzón o ciclones | **13,5 %** (−70 %) |
+    | Niebla matinal | **9 %** |
+    | Chubasco, tormenta o ciclón activo | 0: el incendio se apaga entero |
+
+  - **Viento.** Con viento de fuerza ≥ 0,1, a la probabilidad se suman **25 puntos**
+    multiplicados por el coseno entre la vecina y la dirección del viento: +25 a favor,
+    0 de través y −25 en contra, sin bajar de 0. En la estación húmeda, un fuego con
+    viento no avanza nunca hacia barlovento (13,5 − 25 < 0).
+    - *Interpretación:* la biblia dice «+25 %», que aquí se lee como puntos
+      porcentuales. Aplicado como factor (×1,25), el viento apenas se notaría en la
+      estación húmeda.
+  - **Duración de la quema [propuesta]:** la hierba arde **20 s** y el matorral **60
+    s**. Después, la celda queda quemada. En seca y sin viento, una mancha de hierba
+    de 40 × 40 m que prende en el centro se apaga en menos de un minuto (35 s con la
+    semilla del spec).
+  - **Apagar:**
+    - Un chubasco o más apaga todo el incendio, incluidas las celdas lejanas.
+    - Echar agua o arena en un disco de hasta 8 celdas de radio apaga lo que arde en
+      él, que queda quemado.
+    - Las celdas con combustible del disco quedan **mojadas**: no prenden mientras
+      dura la humedad, que la fija quien la causa (cubo, lluvia local).
+    - Una línea mojada de una sola celda de ancho ya funciona como cortafuegos.
+  - **Rebrote:** la hierba quemada vuelve a los **12 días** y el matorral a los **25
+    días**. Hasta entonces no tiene combustible y no se puede volver a quemar.
+  - **Ceniza:** cada celda quemada da **1 `ceniza_madera`** durante los **3 primeros
+    días**. Se recoge una sola vez.
+- **Contradicción abierta:** la biblia 02 §6 dice que los 25 días del matorral son «el
+  mismo número que el rebrote de tala de arbustos (1.2)», pero la tala implementada
+  (§3.12, `FFellingModel`) rebrota el arbusto en 3 + 2 días. Queda pendiente de que
+  decida el director. Mientras tanto, el incendio usa los 25 días de la biblia.
+- **Red y coste (misma política que la arena viva, biblia 08 §2.6):**
+  - Solo simula el servidor.
+  - Solo se revisan los chunks con fuego que estén a **menos de 80 m** de algún
+    jugador, medidos hasta el borde del chunk. Fuera de ese radio, el fuego se congela.
+  - Como mucho se acumulan **4 pasos** y el resto se descarta.
+  - Como mucho prenden **64 celdas por chunk y segundo**; el resto espera.
+  - El coste de un paso es proporcional al número de celdas que arden cerca de un
+    jugador, nunca al tamaño del mundo.
+- **Determinismo:** cada tirada es un hash de (semilla, celda destino, segundo,
+  vecina de origen), y las celdas que prenden no contagian hasta el segundo siguiente.
+  El resultado no depende del orden de visita ni de cómo se trocee el avance, y una
+  partida guardada a mitad de incendio sigue exactamente igual.
+- **Interfaz:** humo que avisa desde lejos, crepitar, suelo ennegrecido y ceniza gris
+  que se puede recoger. Sin barras ni avisos de texto.
+- **Dependencias:** `WorldGen` (`FWildfireModel`), `Weather` (`ESeason`,
+  `EWeatherState`, viento), `Cooking` (una hoguera o una antorcha sin vigilar es la
+  chispa), `Save` (sección `wildfire`). Ver `docs/tecnico/incendio-integracion.md`.
+
+### 3.16 Mundo interactivo: la lluvia llena los recipientes **[biblia 02 §5.4; números pendientes de validar]**
+
+La biblia 02 §5.4 ya lo pide: «cualquier recipiente abierto se llena con la lluvia
+activa», y la biblia 01 §6.2 cuenta la «lluvia recogida» como agua para beber sin riesgo.
+Esta sección fija cuánto se llena, cuándo se vacía y qué pasa si se mezcla.
+
+- **Objetivo:** que dejar un cuenco a la intemperie antes de un chubasco sea una
+  decisión natural de supervivencia, sin menús ni temporizadores.
+- **Reglas:**
+  - **Cuánto entra.** Recoge lo que cae sobre la boca: 1 mm de lluvia sobre 1 m² son
+    1 L. La intensidad sale de `FWeatherSample::Rain`:
+
+    | Tiempo (`Rain`) | mm/h |
+    |---|---|
+    | Llovizna (0,3) | 2,5 |
+    | Galerna (0,35) | 3,3 |
+    | Chubasco (0,75) | 10 |
+    | Tormenta (0,95) | 30 |
+    | Ciclón (1,0) | 50 |
+
+    Entre los puntos se interpola en línea recta. Por debajo de 0,02 no llueve.
+  - **A cubierto no recoge.** Un recipiente bajo techo no se llena, y a la sombra se
+    evapora al 30 %.
+  - **Evaporación.** Sin lluvia, una lámina de agua pierde 0,25 mm/h con cielo
+    despejado (unos 5,5 mm al día) y un 60 % menos con el cielo cubierto.
+  - **Rebose.** Lo que no cabe se sale. La capacidad es la del inventario
+    (`Recipiente` × 0,25 L), así que un cuenco lleno en el suelo pesa lo mismo al
+    cogerlo.
+  - **Mezcla.** Si dentro había agua de mar o sin tratar, la lluvia se mezcla, y al
+    rebosar sale mezcla. Una vasija llena de agua de mar que se deja en una tormenta
+    deja de ser salobre a las 4,4 h y queda con agua de lluvia limpia a las 12,3 h.
+    - **Salobre** con un 3 % o más de agua de mar (~1 g/L de sal). Cuenta como
+      `agua_mar`.
+    - **Sin tratar** con cualquier rastro de agua ajena por debajo de eso. Cuenta como
+      `agua_sin_tratar` (se hierve).
+    - **Lluvia** solo si no queda nada ajeno. Se bebe sin riesgo.
+    - El agua de mar manda sobre la sin tratar al mezclarse.
+  - **Qué recipientes recogen.** Solo los abiertos del catálogo, con su boca:
+
+    | Objeto | Boca (m²) | Capacidad (L) | Horas de chubasco para llenarse |
+    |---|---|---|---|
+    | `concha_grande` | 0,050 | 0,5 | 1 |
+    | `cascara_coco`, `recipiente_coco` | 0,018 | 0,5 | 2,8 |
+    | `vasija_barro` | 0,020 | 0,75 | 3,75 |
+    | `bambu_grueso` | 0,003 | 0,5 | 16,7 |
+    | `concha_pequena` | 0,004 | 0,25 | 6,3 |
+    | `bambu_fino`, `caracola` | 0,001 | 0,25 | 25 |
+    | `cantimplora` (boca estrecha) | 0,0007 | 1,0 | 143 |
+
+    El coco verde, la cesta, las mochilas y la bolsa estanca no recogen.
+- **Progresión:** el primer día se bebe coco. Con la primera cáscara raspada ya se puede
+  poner a recoger lluvia, y en `primeras_lluvias` y `monzon` unas cuantas conchas y
+  vasijas dan agua limpia sin hervir. La cantimplora se llena mejor en el río o
+  vertiendo desde un cuenco.
+- **Interfaz:** el nivel del agua se ve dentro del recipiente, con salpicaduras
+  mientras llueve. Al mirarlo, la etiqueta dice «agua de lluvia», «agua sin tratar» o
+  «agua salobre».
+- **Pendiente de decidir:**
+  - En `items.json` no hay un objeto `agua_lluvia`. La lluvia limpia se bebe
+    directamente del recipiente; si hace falta como ingrediente, habría que crearlo.
+  - Un colector de hojas o de lona que amplíe la boca de una vasija (más m² para el
+    mismo recipiente) encaja en el modelo, pero no existe como pieza de construcción.
+  - Los números de esta sección no los ha validado el director.
+- **Riesgos técnicos:** ver `docs/tecnico/lluvia-recipientes.md`. Ponerse al día al
+  cargar recorre como mucho 60 días de juego.
+- **Dependencias:** `Weather` (`FRainCatchModel`, `FWeatherModel`), `Carry`
+  (`LiquidCapacityFromRecipiente`), `Save` (capa de recipientes del mundo).
+
+### 3.17 Mundo interactivo: astillero de balsas **[mecánicas pedidas por el director 2026-09-27; números pendientes de validar]**
 
 Tercera mecánica del principio «el mundo entero es interactivo». Modelo puro
 `FRaftYardModel` (`Source/Explored/Boats/RaftYardModel.h`), spec `Explored.RaftYard`.
-Usa el casco por piezas de §3.13 (`FHullAssemblyModel`) para la forma y la flotación, y
+Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flotación, y
 `FBoatModel` para navegar, sin duplicar ninguno de los dos. Integración en
 `docs/tecnico/astillero-balsas.md`.
 
@@ -711,9 +985,9 @@ Usa el casco por piezas de §3.13 (`FHullAssemblyModel`) para la forma y la flot
   | Unión rota (§8.3) | Abre una vía de agua de 0,5 L/s por brecha | Suelta la pieza | Las dos a la vez (unión casco–casco abre una vía; pieza de cubierta o balancín, se suelta), o una de ellas |
   | Salud de la unión (§7, §8.3) | `integrity` 1–100 de `FBuildingModel`, sin sistema aparte | `FRaftJoint::Health01` propio | Guardar la salud en la `integrity` de la pieza de construcción (×100) y que este modelo solo calcule el daño |
   | Botadura (§8.4) | Canal de esfuerzo de 8 s por tonelada | Rozamiento de Coulomb: 9 personas en arena seca, 1 sobre rodillos | Mantener los rodillos obligatorios en arena (el cooperativo es de 2 a 4) o escalar el empuje para cuadrar con 8 s/t |
-  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua (`SwampWaterKg` sube 2 kg/s); por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.13) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
-  | Balancín (§8.2) | Reduce un 60 % el momento de escora en el lado del flotador | Sin regla fija: el flotador sube la GM por hidrostática (322 cm en el ejemplo de §3.13) | Mantener la hidrostática o aplicar el 60 % de la biblia |
-  | Piezas (§8.1) | Quilla, cuaderna, tablón, cubierta, mástil, vela, balancín, timón, banco de remo, noray | Tronco, tablón, bambú, flotador, mástil, vela, remos, pala (§3.13) | Añadir las piezas que faltan o revisar la lista de la biblia |
+  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua (`SwampWaterKg` sube 2 kg/s); por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.14) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
+  | Balancín (§8.2) | Reduce un 60 % el momento de escora en el lado del flotador | Sin regla fija: el flotador sube la GM por hidrostática (322 cm en el ejemplo de §3.14) | Mantener la hidrostática o aplicar el 60 % de la biblia |
+  | Piezas (§8.1) | Quilla, cuaderna, tablón, cubierta, mástil, vela, balancín, timón, banco de remo, noray | Tronco, tablón, bambú, flotador, mástil, vela, remos, pala (§3.14) | Añadir las piezas que faltan o revisar la lista de la biblia |
   | Peso del tronco (biblia 03) | `tronco_pequeno`: 8 kg; balsa: 8 troncos + 6 `liana` | Tronco de balsa: 72,6 kg | Nuevo objeto `tronco_balsa` o revisar el peso |
   | Unión con clavos | `clavo` no existe en `items.json` | Tipo `Nails` | Crear el objeto o quitar ese tipo |
 

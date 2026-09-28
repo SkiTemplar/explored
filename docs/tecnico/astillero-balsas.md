@@ -3,12 +3,12 @@
 Estado: el modelo es puro y tiene spec en el host (`Explored.RaftYard`, 24 casos), además
 de los casos nuevos de `Explored.Boat` (amarre y ficha propia) y de
 `Explored.SaveSystems` (amarre guardado). Falta la integración con Unreal, que tiene que
-hacer una sesión con el editor. Diseño de juego: GDD v2 §3.14.
+hacer una sesión con el editor. Diseño de juego: GDD v2 §3.17.
 
 ## Qué hay
 
 - `Source/Explored/Boats/RaftYardModel.h`: `FRaftYardModel` lleva dentro un
-  `FHullAssemblyModel` (piezas y cargas; GDD §3.13) y añade:
+  `FHullAssemblyModel` (piezas y cargas; GDD §3.14) y añade:
   - **Uniones** entre piezas (`FRaftJoint`: cordel, cuerda o clavos, con salud 0–1).
   - **Camino de botadura** (`FLaunchPath`), que es una línea en planta con tramos de
     suelo y pendiente.

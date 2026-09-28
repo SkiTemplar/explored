@@ -135,6 +135,7 @@ class Family:
     accent: bool      # True: puede superar el tope de croma (comida, UI: tiene que saltar a la vista)
     desc: str
     swatches: tuple[tuple[str, str, str], ...]   # (clave, sRGB medio, uso)
+    pickup: bool = False  # True: se recoge del suelo; debe leerse sobre todos los suelos de la isla
 
 
 # Tope de croma Oklab para familias de entorno: el agua de M_Ocean (arrecife, C ≈ 0.11;
@@ -143,7 +144,12 @@ class Family:
 # pueden superarlo: tienen que leerse desde lejos.
 CHROMA_CAP = 0.14
 # Acentos dentro de familias de entorno (flores): se permiten por encima del tope.
-ACCENT_SWATCHES = frozenset({"vegetacion.flor_roja", "vegetacion.flor_amarilla"})
+ACCENT_SWATCHES = frozenset({"vegetacion.flor_roja", "vegetacion.flor_amarilla", "fauna.cresta"})
+# Pelajes y plumajes de fauna: cubren el cuerpo del animal, que se caza o se esquiva, así
+# que tienen que leerse sobre todos los suelos de la isla como lo recogible. Las piezas
+# pequeñas (pezuña, cuerno, cresta, pico) no: las rodea el pelaje.
+FAUNA_BODY_SWATCHES = frozenset({"fauna.jabali", "fauna.jabali_claro", "fauna.pardo", "fauna.canela",
+                                 "fauna.crema", "fauna.rosado", "fauna.plumaje"})
 
 FAMILIES: tuple[Family, ...] = (
     Family("madera", 0, True, False, "Madera de construcción, herramientas y muebles.", (
@@ -215,7 +221,7 @@ FAMILIES: tuple[Family, ...] = (
         ("flor_roja", "#cf4a41", "Hibisco (acento)."),
         ("flor_amarilla", "#e5c141", "Flor amarilla (acento)."),
     )),
-    Family("comida", 7, False, True, "Comida recogible: tiene que saltar a la vista sobre arena, hierba y roca.", (
+    Family("comida", 7, False, True, "Comida recogible: tiene que saltar a la vista sobre arena, hierba y roca.", pickup=True, swatches=(
         ("mango", "#e8983a", "Mango, papaya."),
         ("platano", "#f0c04a", "Plátano maduro."),
         ("lima", "#9cc24b", "Lima, fruta verde."),
@@ -235,6 +241,45 @@ FAMILIES: tuple[Family, ...] = (
         ("info", "#4f8ec0", "Información, agua."),
         ("neutro", "#8c8579", "Deshabilitado."),
         ("hueso", "#f1f0ec", "Blanco roto de la UI."),
+    )),
+    # Recursos sueltos de items.json sin familia propia hasta ahora (huesos, conchas, plumas,
+    # resina...): se recogen del suelo, así que son identidad (iguales en las 4 islas) y
+    # tienen que despegarse de arena, hierba, basalto, caliza y ceniza como la comida.
+    Family("recurso", 11, False, True, "Recursos naturales sueltos: fauna, playa y arrecife.", pickup=True, swatches=(
+        ("hueso", "#ece5d3", "Huesos, espinas grandes, anzuelo de hueso."),
+        ("concha", "#ebc6c8", "Conchas pequeñas y grandes (rosado pálido: la arena es amarilla)."),
+        ("nacar", "#bfd0d4", "Interior nacarado, lapa, cuentas."),
+        ("caracola", "#e59a86", "Caracola, labio rosado de las conchas grandes."),
+        ("pluma", "#7d6450", "Plumas de ave marina, emplumado de flechas."),
+        ("alga", "#56703d", "Alga fibrosa, esponja de mar seca."),
+        ("erizo", "#4a2f55", "Erizo de mar, tinta de pulpo."),
+        ("resina", "#c47a26", "Resina y ámbar, pegamento, yesca de hongo."),
+    )),
+    Family("mineral", 12, False, True, "Minerales y restos del avión que se recogen o se extraen.", pickup=True, swatches=(
+        ("arcilla", "#9c4f36", "Arcilla roja cruda."),
+        ("terracota", "#c5704a", "Barro cocido: vasijas, tejas."),
+        ("azufre", "#e3d54c", "Azufre del Humo (acento)."),
+        ("cuarzo", "#e2dcec", "Cristal de cuarzo (blanco frío con un punto lila)."),
+        ("sal", "#efeee8", "Sal marina."),
+        ("aluminio", "#c0c9d3", "Tubo de aluminio y chapa del fuselaje del Albatros."),
+        ("malaquita", "#3f8a70", "Mineral de cobre."),
+        ("hematites", "#6b3a37", "Hierro del meteorito, óxido rojo."),
+    )),
+    # Fauna terrestre (fauna_terrestre.json y el kit de Tools/Blender/animals): identidad,
+    # como la comida (un jabalí es el mismo en todas las islas). Antes de esta fila el
+    # cerdo salvaje del lote 5 se coloreaba con madera.oscura/madera.quemada.
+    Family("fauna", 13, False, False, "Pelaje, piel y plumaje de la fauna terrestre y de granja.", (
+        ("jabali", "#5a4838", "Cerdas del jabalí (cerdo salvaje), lomo oscuro."),
+        ("jabali_claro", "#8b7560", "Flancos y vientre del jabalí, mono."),
+        ("pardo", "#94653f", "Cabra salvaje parda, cabra de granja."),
+        ("canela", "#d8894a", "Canela (la perra), zorro, gato."),
+        ("crema", "#e8e2d2", "Cabra blanca, pecho y hocico claros, gallina blanca."),
+        ("rosado", "#df9a96", "Cerdo de granja, orejas y hocico."),
+        ("pezuna", "#35302e", "Pezuñas, nariz, ojos, puntas de cuerno."),
+        ("cuerno", "#c2b596", "Cuernos y colmillos."),
+        ("plumaje", "#a24f2e", "Gallina roja, plumaje cobrizo."),
+        ("cresta", "#c93a33", "Cresta y barbilla de la gallina (acento)."),
+        ("pico", "#dcae45", "Pico y patas de ave."),
     )),
 )
 
@@ -307,6 +352,10 @@ PACK_ALIASES: dict[str, str] = {
     "Copper": "metal.cobre", "Steel": "metal.acero",
     "Cloth": "tela.lona", "Fabric": "tela.crudo", "Leather": "tela.cuero", "Rope": "palma.fibra",
     "Straw": "palma.paja", "Thatch": "palma.paja", "Bamboo": "bambu.maduro",
+    "Bone": "recurso.hueso", "Shell": "recurso.concha", "Feather": "recurso.pluma",
+    "Fur": "fauna.pardo", "Skin": "fauna.rosado", "Hoof": "fauna.pezuna", "Hooves": "fauna.pezuna",
+    "Horn": "fauna.cuerno", "Beak": "fauna.pico", "Eye_Black": "fauna.pezuna",
+    "Clay": "mineral.terracota", "Crystal": "mineral.cuarzo", "Aluminium": "mineral.aluminio",
     "Sand": "terreno.arena_seca", "Dirt": "terreno.arena_mojada", "Water": "entorno.laguna",
 }
 
@@ -458,12 +507,13 @@ def to_json() -> dict:
             "color_vertice_terreno": {k: list(v) for k, v in isl.vertex.items()},
             "colores": colors,
         }
-    families = {f.key: {"fila": f.row, "por_isla": f.graded, "acento": f.accent, "descripcion": f.desc,
+    families = {f.key: {"fila": f.row, "por_isla": f.graded, "acento": f.accent, "recogible": f.pickup,
+                        "descripcion": f.desc,
                         "muestras": {k: use for k, _, use in f.swatches}} for f in FAMILIES}
-    families["terreno"] = {"fila": TERRAIN_ROW, "por_isla": True, "acento": False,
+    families["terreno"] = {"fila": TERRAIN_ROW, "por_isla": True, "acento": False, "recogible": False,
                            "descripcion": "Tono medio del terreno ya teñido por M_Terrain en cada isla.",
                            "muestras": {k: m for m, (k, *_r) in TERRAIN_TARGETS.items()}}
-    families["entorno"] = {"fila": ENTORNO_ROW, "por_isla": False, "acento": False,
+    families["entorno"] = {"fila": ENTORNO_ROW, "por_isla": False, "acento": False, "recogible": False,
                            "descripcion": "Agua y cielo actuales (solo referencia).",
                            "muestras": {k: src for k, (_, src) in ENTORNO.items()}}
     return {

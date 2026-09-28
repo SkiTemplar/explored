@@ -12,8 +12,10 @@ junto a los packs.
   `gen_palette.py`; un test falla si el JSON no coincide con el generador.
 - Atlas: `T_Palette_Landing`, `T_Palette_Esmeralda`, `T_Palette_Humo`, `T_Palette_Dientes`
   (512×512, en `Art/Export/Textures/`, no versionados).
-- Hoja de contacto: [`paleta-2026-09-27.png`](paleta-2026-09-27.png) — atlas de cada isla,
-  una muestra aplicada a formas low poly a 1-3 m sobre el suelo armonizado de la isla (con
+- Hoja de contacto: [`paleta-2026-09-28b.png`](paleta-2026-09-28b.png) (anteriores:
+  [`paleta-2026-09-28.png`](paleta-2026-09-28.png), [`paleta-2026-09-27.png`](paleta-2026-09-27.png)) — atlas de cada isla, una muestra
+  aplicada a formas low poly a 1-3 m (con recursos sueltos: hueso, concha, pluma, azufre,
+  vasija de terracota; y fauna: jabalí y gallina) sobre el suelo armonizado de la isla (con
   cielo y mar actuales), y el antes/después del terreno.
 
 ```bash
@@ -33,10 +35,11 @@ Los colores se manipulan en **Oklab** (perceptual: ΔE ≈ 0.02 apenas visible, 
 | Albedo | sRGB en [0.035, 0.95] en medio, arriba y abajo | Igual que las texturas: ni negro ni blanco puros. |
 | Degradado | ΔL entre arriba y abajo de 0.08 a 0.2 | Se lee volumen sin ensuciar ni quedar plano. |
 | Distinguibles | ΔE > 0.035 entre muestras de una familia | Piezas contiguas de un objeto a 1-2 m (mango y hoja de un hacha, aros de un barril). |
-| Comida | ΔE > 0.06 contra **todos** los suelos de la isla | Lo recogible tiene que saltar a la vista en arena, hierba, basalto, caliza y ceniza. |
-| Croma del entorno | C ≤ 0.14 (salvo acentos: comida, UI, flores) | El agua del arrecife (C ≈ 0.11) es lo más saturado del paisaje; el entorno no le roba protagonismo. |
+| Recogible | ΔE > 0.06 contra **todos** los suelos de la isla (familias con `recogible`: comida, recurso, mineral) | Lo recogible tiene que saltar a la vista en arena, hierba, basalto, caliza y ceniza. Por eso la concha es rosada y no crema: en crema quedaba a ΔE 0.045 de la arena seca. |
+| Pelaje de fauna | ΔE > 0.06 contra todos los suelos de la isla para los pelajes y plumajes (`FAUNA_BODY_SWATCHES`); pezuña, cuerno, cresta y pico no, porque los rodea el pelaje | Un jabalí en la selva o una cabra en la caliza se tienen que ver para cazarlos o esquivarlos. Por eso la cabra blanca es `#e8e2d2` y no crema cálida (quedaba a ΔE 0.042 de la arena seca). |
+| Croma del entorno | C ≤ 0.14 (salvo acentos: comida, UI, flores, cresta de gallina) | El agua del arrecife (C ≈ 0.11) es lo más saturado del paisaje; el entorno no le roba protagonismo. |
 | Coherencia con el terreno | `piedra.basalto`, `piedra.caliza`, `vegetacion.hierba` a ΔE < 0.05 del terreno teñido de su isla | Una roca KayKit junto al acantilado escaneado no desentona. |
-| Identidad | comida, metal, tela y UI iguales en las 4 islas | Un mango es el mismo mango en todas partes; solo cambia el entorno. |
+| Identidad | comida, metal, tela, UI, recurso, mineral y fauna iguales en las 4 islas | Un mango es el mismo mango en todas partes; solo cambia el entorno. |
 
 ## Islas
 
@@ -56,11 +59,12 @@ tono medio de la textura armonizada multiplicado por el tinte de color de vérti
 ## Atlas
 
 512×512, rejilla de 16×16 celdas de 32 px (una fila por familia; columnas libres en gris
-`#808080`, filas 11-15 libres para crecer).
+`#808080`, filas 14-15 libres para crecer). Un test impide que dos familias compartan fila.
 
 ```
 fila 0 madera · 1 palma · 2 bambú · 3 piedra · 4 metal · 5 tela · 6 vegetación · 7 comida
      8 UI · 9 terreno (referencia) · 10 entorno (agua y cielo, referencia)
+     11 recurso · 12 mineral · 13 fauna
 celda (32 px, de arriba abajo):
   4 px margen = color «arriba»      ← v_rango[0]
  10 px rampa arriba → medio (Oklab, suavizada)
@@ -182,6 +186,33 @@ Color medio por isla (`=`: igual que Landing). Arriba/abajo y lineal en `paleta.
 | `ui.info` | 5,8 | `#4f8ec0` | = | = | = | Información, agua. |
 | `ui.neutro` | 6,8 | `#8c8579` | = | = | = | Deshabilitado. |
 | `ui.hueso` | 7,8 | `#f1f0ec` | = | = | = | Blanco roto de la UI. |
+| `recurso.hueso` | 0,11 | `#ece5d3` | = | = | = | Huesos, espinas grandes, anzuelo de hueso. |
+| `recurso.concha` | 1,11 | `#ebc6c8` | = | = | = | Conchas pequeñas y grandes (rosado pálido: la arena es amarilla). |
+| `recurso.nacar` | 2,11 | `#bfd0d4` | = | = | = | Interior nacarado, lapa, cuentas. |
+| `recurso.caracola` | 3,11 | `#e59a86` | = | = | = | Caracola, labio rosado de las conchas grandes. |
+| `recurso.pluma` | 4,11 | `#7d6450` | = | = | = | Plumas de ave marina, emplumado de flechas. |
+| `recurso.alga` | 5,11 | `#56703d` | = | = | = | Alga fibrosa, esponja de mar seca. |
+| `recurso.erizo` | 6,11 | `#4a2f55` | = | = | = | Erizo de mar, tinta de pulpo. |
+| `recurso.resina` | 7,11 | `#c47a26` | = | = | = | Resina y ámbar, pegamento, yesca de hongo. |
+| `mineral.arcilla` | 0,12 | `#9c4f36` | = | = | = | Arcilla roja cruda. |
+| `mineral.terracota` | 1,12 | `#c5704a` | = | = | = | Barro cocido: vasijas, tejas. |
+| `mineral.azufre` | 2,12 | `#e3d54c` | = | = | = | Azufre del Humo (acento). |
+| `mineral.cuarzo` | 3,12 | `#e2dcec` | = | = | = | Cristal de cuarzo (blanco frío con un punto lila). |
+| `mineral.sal` | 4,12 | `#efeee8` | = | = | = | Sal marina. |
+| `mineral.aluminio` | 5,12 | `#c0c9d3` | = | = | = | Tubo de aluminio y chapa del fuselaje del Albatros. |
+| `mineral.malaquita` | 6,12 | `#3f8a70` | = | = | = | Mineral de cobre. |
+| `mineral.hematites` | 7,12 | `#6b3a37` | = | = | = | Hierro del meteorito, óxido rojo. |
+| `fauna.jabali` | 0,13 | `#5a4838` | = | = | = | Cerdas del jabalí (cerdo salvaje), lomo oscuro. |
+| `fauna.jabali_claro` | 1,13 | `#8b7560` | = | = | = | Flancos y vientre del jabalí, mono. |
+| `fauna.pardo` | 2,13 | `#94653f` | = | = | = | Cabra salvaje parda, cabra de granja. |
+| `fauna.canela` | 3,13 | `#d8894a` | = | = | = | Canela (la perra), zorro, gato. |
+| `fauna.crema` | 4,13 | `#e8e2d2` | = | = | = | Cabra blanca, pecho y hocico claros, gallina blanca. |
+| `fauna.rosado` | 5,13 | `#df9a96` | = | = | = | Cerdo de granja, orejas y hocico. |
+| `fauna.pezuna` | 6,13 | `#35302e` | = | = | = | Pezuñas, nariz, ojos, puntas de cuerno. |
+| `fauna.cuerno` | 7,13 | `#c2b596` | = | = | = | Cuernos y colmillos. |
+| `fauna.plumaje` | 8,13 | `#a24f2e` | = | = | = | Gallina roja, plumaje cobrizo. |
+| `fauna.cresta` | 9,13 | `#c93a33` | = | = | = | Cresta y barbilla de la gallina (acento). |
+| `fauna.pico` | 10,13 | `#dcae45` | = | = | = | Pico y patas de ave. |
 | `terreno.arena_seca` | 0,9 | `#e7c691` | `#e7c691` | `#e6c592` | `#e6c692` | `T_SandDry_BC` teñido por M_Terrain |
 | `terreno.arena_mojada` | 1,9 | `#ae8e65` | `#ae8e65` | `#ad8e66` | `#ad8e65` | `T_SandWet_BC` teñido por M_Terrain |
 | `terreno.hierba` | 2,9 | `#639243` | `#629343` | `#649143` | `#639143` | `T_Grass_BC` teñido por M_Terrain |
@@ -193,10 +224,36 @@ Fila 10 (`entorno.*`, solo referencia, lineal del motor): laguna `(0.30, 0.86, 0
 arrecife `(0.05, 0.45, 0.62)`, profundo `(0.02, 0.10, 0.22)`, espuma `(0.94, 0.97, 0.98)`
 (`M_Ocean`) y cielo `(0.32, 0.52, 0.80)` (niebla de día de `ExploredSkyController`).
 
+## Recursos y minerales (2026-09-28)
+
+`items.json` tiene ~40 recursos sueltos (huesos, conchas, plumas, resina, arcilla, azufre,
+cuarzo, sal, chapa del fuselaje...) que no encajaban en ninguna familia: el catálogo de
+packs los habría mandado a `piedra.caliza` o `tela.crudo` y se confundirían con el suelo.
+Las filas 11 (`recurso`) y 12 (`mineral`) son de identidad (iguales en las 4 islas),
+marcadas `recogible` en `paleta.json` y sujetas a la misma regla de contraste que la
+comida. Alias nuevos para los packs: `Bone`, `Shell`, `Feather`, `Clay`, `Crystal`,
+`Aluminium`. Los atlas y las UV de las filas 0-10 no cambian: las mallas ya
+recoloreadas no hay que reimportarlas.
+
+## Fauna (2026-09-28)
+
+El cerdo salvaje del lote 5 (Quaternius) se coloreaba con `madera.oscura` y
+`madera.quemada` porque no había familia para animales: un jabalí del mismo color que una
+viga y, en Esmeralda, a tiro de confundirse con el basalto. La fila 13 (`fauna`) es de
+identidad (igual en las 4 islas) y cubre `fauna_terrestre.json` (cerdo y cabra salvajes,
+gallina, cerdo y cabra de granja) y el kit de `Tools/Blender/animals` (Canela, mono).
+Alias nuevos: `Fur`, `Skin`, `Hoof`/`Hooves`, `Horn`, `Beak`, `Eye_Black`. Las filas 0-12
+no cambian: nada hay que reimportar.
+
+Correspondencia propuesta para el cerdo salvaje en `packs_catalogo.json` (la cambia el
+agente de packs al volver a normalizar, porque regenera la malla):
+`#d8a1a4` (cuerpo) → `fauna.jabali` y `#7c533e` (hocico y pezuñas) → `fauna.pezuna`.
+
 ## Pendiente
 
 - Verificar en Unreal: importación con kind `palette`, compilación de `M_LowPoly` (nodo
   Custom con `CalculateLevelOfDetail`/`Texture2DSampleLevel`) y las `MI_LowPoly_<Isla>`.
-- Remapeo de UV de cada pack a las celdas (script de Blender o de importación) usando
-  `alias_packs`.
+- Usar `recurso.*` y `mineral.*` en `packs_catalogo.json` cuando se cataloguen conchas,
+  huesos, plumas o vasijas (flecha: emplumado → `recurso.pluma`).
+- Pasar `cerdo_salvaje` de `packs_catalogo.json` a `fauna.*` (ver «Fauna») y renormalizar.
 - Comprobar la legibilidad en juego con Lumen (la hoja usa un sombreado simple).

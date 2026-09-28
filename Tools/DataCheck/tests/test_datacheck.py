@@ -284,8 +284,14 @@ def test_detecta_evento_de_animo_distinto_del_cpp(ds: DataSet) -> None:
 
 
 def test_detecta_fauna_terrestre(ds: DataSet) -> None:
+    item(ds, "grasa")["nameEs"] = "Grasa de iguana"
+    assert any_error(errors_of(ds), "iguana")
+
+
+def test_admite_la_fauna_del_gdd_v2(ds: DataSet) -> None:
+    # GDD v2 §3.6-§3.7: cerdo salvaje y cabra vuelven con packs de Quaternius.
     item(ds, "grasa")["nameEs"] = "Grasa de jabalí"
-    assert any_error(errors_of(ds), "jabalí")
+    assert not any_error(errors_of(ds), "jabalí")
 
 
 def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
@@ -760,3 +766,145 @@ def test_malla_de_base_sin_pieza_es_nota_no_error(real_report: Report) -> None:
 def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
     ds.data["building_pieces.json"]["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "catre_bambu"]
     assert "SM_Base_Bed" in _idle_base_note(run_all(ds))
+
+
+# --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
+
+from datacheck import packs as packs_check  # noqa: E402
+
+
+def _catalog(ds: DataSet) -> dict:
+    return ds.data["packs_catalogo.json"]
+
+
+def test_packs_catalogo_cubre_herramientas_de_las_primeras_horas(real: DataSet) -> None:
+    covered = {e["gameId"] for e in _catalog(real)["entries"]}
+    assert {"hacha", "cuchillo", "pala", "tronco_pequeno", "cuerda"} <= covered
+
+
+def test_packs_catalogo_id_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["entries"][0]["gameId"] = "hacha_laser"
+    assert any_error(errors_of(ds), "hacha_laser", "no existe")
+
+
+def test_packs_catalogo_duplicado(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    dup = dict(cat["entries"][0])
+    dup["mesh"] = "SM_Pack_Otra"
+    cat["entries"].append(dup)
+    assert any_error(errors_of(ds), "duplicada")
+
+
+def test_packs_catalogo_muestra_de_paleta_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["entries"][0]["recolor"]["default"] = "madera.fluorescente"
+    assert any_error(errors_of(ds), "madera.fluorescente", "paleta")
+
+
+def test_packs_catalogo_pack_desconocido(ds: DataSet) -> None:
+    _catalog(ds)["entries"][0]["pack"] = "pack_de_pago"
+    assert any_error(errors_of(ds), "pack_de_pago", "packs.json")
+
+
+def test_packs_catalogo_agarre_fuera_del_mango(ds: DataSet) -> None:
+    e = next(e for e in _catalog(ds)["entries"] if e["pivot"]["kind"] == "agarre")
+    e["pivot"]["gripFromEndM"] = e["size"]["m"] * 2
+    assert any_error(errors_of(ds), "gripFromEndM")
+
+
+def test_packs_manifiesto_rechaza_licencia_no_cc0(real: DataSet) -> None:
+    manifest = packs_check.load_manifest(real.repo_root)
+    manifest["packs"][0]["license"]["spdx"] = "CC-BY-4.0"
+    manifest["packs"][1]["sha256"] = ""
+    errs: list[str] = []
+    usable = packs_check.check_manifest(manifest, errs.append)
+    assert any("CC-BY-4.0" in e for e in errs)
+    assert any("sha256" in e for e in errs)
+    assert manifest["packs"][0]["id"] not in usable and manifest["packs"][1]["id"] not in usable
+
+
+def test_packs_catalogo_cubre_la_lanza_y_la_caza(real: DataSet) -> None:
+    covered = {e["gameId"] for e in _catalog(real)["entries"]}
+    pending = {p["gameId"] for p in _catalog(real)["pending"]}
+    assert {"lanza", "arco", "flecha"} <= covered
+    assert "lanza" not in pending
+
+
+def test_packs_catalogo_centro_del_agarre_desconocido(ds: DataSet) -> None:
+    e = next(e for e in _catalog(ds)["entries"] if e["pivot"]["kind"] == "agarre")
+    e["pivot"]["centerAt"] = "punta"
+    assert any_error(errors_of(ds), "centerAt")
+
+
+def test_packs_catalogo_replaces_de_pieza_comprueba_la_malla(ds: DataSet) -> None:
+    e = dict(next(e for e in _catalog(ds)["entries"] if e["pivot"]["kind"] == "base"))
+    e.update(gameId="muelle", kind="pieza", mesh="SM_Pack_MuellePrueba", replaces="SM_Base_Muelle")
+    _catalog(ds)["entries"].append(e)
+    assert any_error(errors_of(ds), "muelle", "replaces", "SM_Base_Dock")
+
+
+def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["discarded"][0]["gameId"] = "pared_de_neon"
+    assert any_error(errors_of(ds), "pared_de_neon", "no existe")
+
+
+def test_packs_catalogo_cubre_fases_del_huerto(real: DataSet) -> None:
+    entries = {e["gameId"]: e for e in _catalog(real)["entries"]}
+    assert {"platanera.hijuelo", "pina.roseta", "limonero.arbol_joven"} <= set(entries)
+    assert all(entries[g]["kind"] == "planta" for g in ("platanera.hijuelo", "pina.roseta"))
+
+
+def test_packs_catalogo_pendiente_de_etapa_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["pending"].append({"gameId": "taro.florecido", "reason": "prueba"})
+    assert any_error(errors_of(ds), "taro.florecido", "etapa")
+
+
+def test_packs_catalogo_descarte_de_etapa_valida(ds: DataSet) -> None:
+    d = dict(_catalog(ds)["discarded"][0], gameId="batata.enredadera")
+    _catalog(ds)["discarded"].append(d)
+    assert not any_error(errors_of(ds), "batata.enredadera")
+
+
+def _fauna_entry(ds: DataSet) -> dict:
+    return next(e for e in _catalog(ds)["entries"] if e["kind"] == "fauna")
+
+
+def test_packs_catalogo_cubre_el_cerdo_salvaje_con_rig(real: DataSet) -> None:
+    e = _fauna_entry(real)
+    assert e["gameId"] == "cerdo_salvaje" and e["mesh"].startswith("SK_Pack_")
+    assert {"Idle", "Walk", "Run", "Death"} <= set(e["rig"]["animations"])
+
+
+def test_packs_catalogo_fauna_con_id_inexistente(ds: DataSet) -> None:
+    _fauna_entry(ds)["gameId"] = "dragon_de_komodo"
+    assert any_error(errors_of(ds), "dragon_de_komodo", "no existe como fauna")
+
+
+def test_packs_catalogo_fauna_sin_rig(ds: DataSet) -> None:
+    del _fauna_entry(ds)["rig"]
+    assert any_error(errors_of(ds), "bloque rig")
+
+
+def test_packs_catalogo_fauna_con_malla_estatica(ds: DataSet) -> None:
+    _fauna_entry(ds)["mesh"] = "SM_Pack_Cerdo"
+    assert any_error(errors_of(ds), "SK_Pack_")
+
+
+def test_packs_catalogo_comportamiento_con_clip_inexistente(ds: DataSet) -> None:
+    _fauna_entry(ds)["rig"]["behaviors"]["cargar"] = "Charge"
+    assert any_error(errors_of(ds), "cargar", "Charge")
+
+
+def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
+    _catalog(ds)["entries"][0]["rig"] = {"skeleton": "SKEL_Pack_Hacha", "animations": ["Idle"]}
+    assert any_error(errors_of(ds), "rig solo va en kind fauna")
+
+
+def test_fauna_terrestre_isla_desconocida(ds: DataSet) -> None:
+    ds.data["fauna_terrestre.json"]["species"][0]["islands"] = ["Atlantida"]
+    assert any_error(errors_of(ds), "Atlantida", "EIslandArchetype")
+
+
+def test_fauna_terrestre_id_duplicado(ds: DataSet) -> None:
+    sp = ds.data["fauna_terrestre.json"]["species"]
+    sp.append(dict(sp[0]))
+    assert any_error(errors_of(ds), "fauna_terrestre.json", "duplicado")

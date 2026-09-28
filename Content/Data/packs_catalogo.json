@@ -1,0 +1,1341 @@
+{
+  "version": 1,
+  "note": "Qué fichero de qué pack CC0 (Tools/Packs/packs.json) cubre cada id de juego, con escala en metros, pivote y recoloreado a la paleta (Tools/Textures/paleta.json, docs/art/paleta.md). Lo aplica Tools/Packs/normalize.py y lo valida Tools/DataCheck. kind: item (items.json), pieza (building_pieces.json), planta (<planta>.<etapa> de plants.json), fauna (fauna_terrestre.json; malla con esqueleto SK_Pack_* y bloque rig).",
+  "units": {
+    "size.m": "medida final en metros a lo largo de size.axis (x, y, z o max) tras rotateDeg y stretch",
+    "pivot": "base: centro de la huella, z = 0 abajo; agarre: socket hand_r a gripFromEndM del extremo end (bottom o top) del mango, mango en +Z, filo o cara de golpe en +X (Tools/Blender/props/_items.py)",
+    "recolor": "cada cara toma la muestra de la regla cuyo color from (sRGB del pack) esté más cerca en Oklab; si ninguna está a menos de tolerance (0,12 por defecto), default. La isla la pone el atlas T_Palette_<Isla> en Unreal: la UV es la misma en las cuatro islas.",
+    "replaces": "malla propia de Tools/Blender a la que sustituye (meshPath de items.json)",
+    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas."
+  },
+  "lotes": [
+    {
+      "id": "lote1-herramientas",
+      "date": "2026-09-27",
+      "sheet": "docs/art/packs/lote1-herramientas.png",
+      "scope": "Herramientas y materiales de las primeras horas (prioridad 1, porción vertical de Landing, GDD v2 §6.1)."
+    },
+    {
+      "id": "lote2-caza",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote2-caza.png",
+      "scope": "Lanza, arco y flecha: cierra la prioridad 1 (lanza pendiente del lote 1) con piedra y fibra en vez de acero."
+    },
+    {
+      "id": "lote3-comida",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote3-comida.png",
+      "scope": "Fruta y comida de recolección de Landing (prioridad 3) con Kenney Food Kit."
+    },
+    {
+      "id": "lote4-huerto",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote4-huerto.png",
+      "scope": "Fases de cultivo del huerto de Landing (prioridad 3) con Kenney Nature Kit: platanera, piña y limonero."
+    },
+    {
+      "id": "lote5-fauna",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote5-fauna.png",
+      "scope": "Primera pasada de fauna salvaje terrestre (prioridad 4, GDD v2 §3.7): cerdo salvaje de Esmeralda con Quaternius Farm Animals, rig y 6 acciones conservadas."
+    }
+  ],
+  "entries": [
+    {
+      "gameId": "hacha",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/axe.gltf",
+      "mesh": "SM_Pack_Hacha",
+      "replaces": "SM_Item_Hacha",
+      "rotateDeg": [
+        0,
+        0,
+        180
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.55
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.12
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#677c89",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#7d8f9b",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#4d6271",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#8d9fa8",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#758894",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#617683",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#899ba4",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#9eaeb6",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#475d6c",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#536876",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#637784",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#768994",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#93a4ac",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#425868",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#995843",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#874634",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#ad6b4f",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#ddb382",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#d19e6b",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "madera.caramelo"
+      },
+      "note": "Hacha de basalto tallado: la cabeza metálica de KayKit pasa a piedra.basalto y la atadura a fibra (biblia §6: nada forjado en las primeras horas). Filo en +X."
+    },
+    {
+      "gameId": "cuchillo",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/knife.gltf",
+      "mesh": "SM_Pack_Cuchillo",
+      "replaces": "SM_Item_Cuchillo",
+      "size": {
+        "axis": "z",
+        "m": 0.24
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.055
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#758894",
+            "to": "piedra.canto"
+          },
+          {
+            "from": "#617683",
+            "to": "piedra.canto"
+          },
+          {
+            "from": "#899ba4",
+            "to": "piedra.canto"
+          },
+          {
+            "from": "#9eaeb6",
+            "to": "piedra.canto"
+          },
+          {
+            "from": "#475d6c",
+            "to": "piedra.canto"
+          },
+          {
+            "from": "#845f4c",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#705042",
+            "to": "madera.oscura"
+          }
+        ],
+        "default": "madera.caramelo"
+      },
+      "note": "Hoja de pedernal (piedra.canto) con mango de madera; 24 cm en total, agarre en el centro del mango de 11 cm."
+    },
+    {
+      "gameId": "pala",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/shovel.gltf",
+      "mesh": "SM_Pack_Pala",
+      "replaces": "SM_Item_Pala",
+      "size": {
+        "axis": "z",
+        "m": 1.1
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.25,
+        "end": "top"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#677c89",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#7d8f9b",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#4d6271",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#8d9fa8",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#758894",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#617683",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#899ba4",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#9eaeb6",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#475d6c",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#536876",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#637784",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#768994",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#93a4ac",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#425868",
+            "to": "madera.clara"
+          },
+          {
+            "from": "#a05f48",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#b27052",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#904f3c",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#ddb383",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#d19f6c",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "madera.caramelo"
+      },
+      "note": "Pala de madera tallada de una pieza: la hoja metálica pasa a madera.clara (tierra y arena, nivel tosco, GDD v2 §3.4). Mano alta a 25 cm del extremo superior; hoja hacia -Z."
+    },
+    {
+      "gameId": "martillo",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/mallet.gltf",
+      "mesh": "SM_Pack_Martillo",
+      "replaces": "SM_Item_Martillo",
+      "size": {
+        "axis": "z",
+        "m": 0.38
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.09
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#d6a775",
+            "to": "madera.miel"
+          },
+          {
+            "from": "#e4bf91",
+            "to": "madera.miel"
+          }
+        ],
+        "default": "madera.miel"
+      },
+      "note": "Mazo de madera maciza, una sola muestra (madera.miel): con dos muestras las caras de brillo del pack dibujaban dientes de sierra en la cabeza. El martillo con cabeza forjada (hammer.gltf) se descarta."
+    },
+    {
+      "gameId": "antorcha",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/torch.gltf",
+      "mesh": "SM_Pack_Antorcha",
+      "replaces": "SM_Item_Antorcha",
+      "size": {
+        "axis": "z",
+        "m": 0.6
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.14
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#92513e",
+            "to": "madera.caramelo"
+          },
+          {
+            "from": "#7d3d2c",
+            "to": "madera.oscura"
+          },
+          {
+            "from": "#ad9d8c",
+            "to": "palma.seca"
+          },
+          {
+            "from": "#978675",
+            "to": "palma.seca"
+          },
+          {
+            "from": "#7a6857",
+            "to": "madera.quemada"
+          }
+        ],
+        "default": "madera.caramelo"
+      },
+      "note": "Haz de fibra seca con resina (palma.seca) y punta chamuscada; la llama es un sistema de partículas en Unreal, no malla."
+    },
+    {
+      "gameId": "cuerda",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/rope_bundle_A.gltf",
+      "mesh": "SM_Pack_Cuerda",
+      "replaces": "SM_Item_Cuerda",
+      "size": {
+        "axis": "max",
+        "m": 0.32
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#938271",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#a39281",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#b8a897",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#715f4e",
+            "to": "palma.seca"
+          }
+        ],
+        "default": "palma.fibra"
+      },
+      "note": "Rollo de cuerda de fibra de coco, tumbado."
+    },
+    {
+      "gameId": "cordel",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/rope_bundle_B.gltf",
+      "mesh": "SM_Pack_Cordel",
+      "replaces": "SM_Item_Cordel",
+      "size": {
+        "axis": "max",
+        "m": 0.2
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#a39382",
+            "to": "palma.paja"
+          },
+          {
+            "from": "#b4a493",
+            "to": "palma.paja"
+          },
+          {
+            "from": "#887665",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#756352",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "palma.paja"
+      },
+      "note": "Madeja de cordel, más clara y fina que la cuerda para distinguirlas en el inventario."
+    },
+    {
+      "gameId": "tronco_pequeno",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Wood_Log_B.gltf",
+      "mesh": "SM_Pack_TroncoPequeno",
+      "replaces": "SM_Item_TroncoPequeno",
+      "stretch": [
+        0.75,
+        1.0,
+        0.75
+      ],
+      "size": {
+        "axis": "y",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#9f5e47",
+            "to": "madera.corteza"
+          },
+          {
+            "from": "#8c4b38",
+            "to": "madera.corteza"
+          },
+          {
+            "from": "#d8aa78",
+            "to": "madera.clara"
+          }
+        ],
+        "default": "madera.corteza"
+      },
+      "note": "Tronco tumbado a lo largo de Y; adelgazado un 25 % (el de KayKit es muy rechoncho: 0,8 m × 0,24 m)."
+    },
+    {
+      "gameId": "mineral_cobre",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Copper_Nugget_Large.gltf",
+      "mesh": "SM_Pack_MineralCobre",
+      "size": {
+        "axis": "max",
+        "m": 0.14
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#974328",
+            "to": "metal.oxido"
+          },
+          {
+            "from": "#aa512c",
+            "to": "metal.oxido"
+          },
+          {
+            "from": "#bd6031",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#d66e34",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#ed7a35",
+            "to": "metal.cobre"
+          }
+        ],
+        "default": "metal.cobre"
+      },
+      "note": "Pepita de cobre nativo (veta de cobre, GDD v2 §3.4). Cubre un id de meshes_pendientes.json."
+    },
+    {
+      "gameId": "hierro_meteorito",
+      "kind": "item",
+      "lote": "lote1-herramientas",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Iron_Nugget_Large.gltf",
+      "mesh": "SM_Pack_HierroMeteorito",
+      "size": {
+        "axis": "max",
+        "m": 0.14
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#405765",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#526776",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#617683",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#7e919b",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#92a2ab",
+            "to": "metal.hierro"
+          }
+        ],
+        "default": "metal.hierro"
+      },
+      "note": "Fragmento de meteorito: costra oscura de basalto y caras de hierro. Cubre un id de meshes_pendientes.json."
+    },
+    {
+      "gameId": "lanza",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/spear_A.gltf",
+      "mesh": "SM_Pack_Lanza",
+      "replaces": "SM_Item_Lanza",
+      "size": {
+        "axis": "z",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.75,
+        "centerAt": "grip"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#6f838e",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#5d7280",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#4c6270",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#2795d0",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#2475b5",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#78685d",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#8e7d70",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#9e8c7e",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#56483f",
+            "to": "bambu.nudo"
+          },
+          {
+            "from": "#6f4f42",
+            "to": "bambu.nudo"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Punta de obsidiana atada con fibra; el acero y las borlas azules de KayKit pasan a piedra y fibra (nada forjado en las primeras horas). Agarre a 0,75 m del regatón, como SM_Item_Lanza."
+    },
+    {
+      "gameId": "arco",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/bow_A_withString.gltf",
+      "mesh": "SM_Pack_Arco",
+      "replaces": "SM_Item_Arco",
+      "rotateDeg": [
+        0,
+        -90,
+        90
+      ],
+      "size": {
+        "axis": "z",
+        "m": 1.3
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.65,
+        "centerAt": "grip"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#7e6e62",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#978675",
+            "to": "bambu.maduro"
+          },
+          {
+            "from": "#615248",
+            "to": "bambu.nudo"
+          },
+          {
+            "from": "#d2c0aa",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#a79786",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Arco de bambú rajado con cuerda de fibra. Palas por ±Z, espalda a +X y cuerda a -X; agarre en el centro de la empuñadura (centerAt grip)."
+    },
+    {
+      "gameId": "flecha",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/arrow_A.gltf",
+      "mesh": "SM_Pack_Flecha",
+      "replaces": "SM_Item_Flecha",
+      "rotateDeg": [
+        -90,
+        0,
+        0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.78
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.01
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#795747",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#225b9f",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#2474b4",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#2794cf",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#204a91",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#778a95",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#354b5b",
+            "to": "piedra.obsidiana"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Flecha de caña con punta de obsidiana y plumas claras; pivote en el culatín, punta en +Z."
+    },
+    {
+      "gameId": "platano",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/banana.glb",
+      "mesh": "SM_Pack_Platano",
+      "replaces": "SM_Item_Platano",
+      "size": {
+        "axis": "max",
+        "m": 0.19
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#ffb046",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#ff9731",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#ffc759",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#a95e41",
+            "to": "palma.coco"
+          }
+        ],
+        "default": "comida.platano"
+      }
+    },
+    {
+      "gameId": "limon",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/lemon.glb",
+      "mesh": "SM_Pack_Limon",
+      "replaces": "SM_Item_Limon",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#ffb54a",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ff9d36",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ffcd5e",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ab5e41",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#845442",
+            "to": "palma.coco"
+          }
+        ],
+        "default": "comida.limon"
+      }
+    },
+    {
+      "gameId": "pina",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/pineapple.glb",
+      "mesh": "SM_Pack_Pina",
+      "replaces": "SM_Item_Pina",
+      "size": {
+        "axis": "z",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#43ad7d",
+            "to": "vegetacion.hoja"
+          },
+          {
+            "from": "#ff9d36",
+            "to": "comida.mango"
+          }
+        ],
+        "default": "comida.mango"
+      }
+    },
+    {
+      "gameId": "seta_comestible",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/mushroom.glb",
+      "mesh": "SM_Pack_SetaComestible",
+      "replaces": "SM_Item_SetaComestible",
+      "size": {
+        "axis": "max",
+        "m": 0.09
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#a55d41",
+            "to": "tela.tapa"
+          },
+          {
+            "from": "#cd8860",
+            "to": "palma.pulpa"
+          },
+          {
+            "from": "#dc9e76",
+            "to": "palma.pulpa"
+          }
+        ],
+        "default": "palma.pulpa"
+      }
+    },
+    {
+      "gameId": "platanera.hijuelo",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/crops_leafsStageA.glb",
+      "mesh": "SM_Pack_PlataneraHijuelo",
+      "size": {
+        "axis": "z",
+        "m": 0.6
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_clara"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_clara"
+          }
+        ],
+        "default": "vegetacion.hoja_clara"
+      }
+    },
+    {
+      "gameId": "platanera.planta_joven",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/crops_leafsStageB.glb",
+      "mesh": "SM_Pack_PlataneraJoven",
+      "size": {
+        "axis": "z",
+        "m": 1.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_clara"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_clara"
+          }
+        ],
+        "default": "vegetacion.hoja_clara"
+      }
+    },
+    {
+      "gameId": "pina.corona",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_bushSmall.glb",
+      "mesh": "SM_Pack_PinaCorona",
+      "size": {
+        "axis": "max",
+        "m": 0.2
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "pina.roseta",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_bushDetailed.glb",
+      "mesh": "SM_Pack_PinaRoseta",
+      "size": {
+        "axis": "max",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "limonero.brote",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_simple.glb",
+      "mesh": "SM_Pack_LimoneroBrote",
+      "size": {
+        "axis": "z",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#f2be9e",
+            "to": "madera.corteza"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "limonero.arbol_joven",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_default.glb",
+      "mesh": "SM_Pack_LimoneroJoven",
+      "size": {
+        "axis": "z",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#f2be9e",
+            "to": "madera.corteza"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "cerdo_salvaje",
+      "kind": "fauna",
+      "lote": "lote5-fauna",
+      "pack": "quaternius_farm_animals",
+      "file": "Blends/Pig.blend",
+      "mesh": "SK_Pack_CerdoSalvaje",
+      "rotateDeg": [
+        0,
+        0,
+        90
+      ],
+      "size": {
+        "axis": "x",
+        "m": 1.45
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "rig": {
+        "skeleton": "SKEL_Pack_CerdoSalvaje",
+        "animations": [
+          "Idle",
+          "WalkSlow",
+          "Walk",
+          "Run",
+          "Jump",
+          "Death"
+        ],
+        "behaviors": {
+          "reposo": "Idle",
+          "pastar": "Idle",
+          "deambular": "WalkSlow",
+          "beber": null,
+          "huir": "Run",
+          "cargar": "Run",
+          "dormir": null,
+          "morir": "Death"
+        },
+        "tilePoses": [
+          {
+            "action": "Idle",
+            "frame": 0
+          },
+          {
+            "action": "Walk",
+            "frame": 16
+          },
+          {
+            "action": "Run",
+            "frame": 6
+          },
+          {
+            "action": "Death",
+            "frame": 26
+          }
+        ]
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#d8a1a4",
+            "to": "madera.oscura"
+          },
+          {
+            "from": "#7c533e",
+            "to": "madera.quemada"
+          }
+        ]
+      }
+    }
+  ],
+  "discarded": [
+    {
+      "gameId": "rama_seca",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/resource-wood.glb",
+      "reason": "Sección cuadrada y aristas duras: al lado de KayKit rompe el low poly pulido (visto en la hoja de contacto del lote 1). Se queda la malla propia SM_Item_RamaSeca."
+    },
+    {
+      "gameId": "martillo",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/hammer.gltf",
+      "reason": "Cabeza de hierro forjado: no existe en las primeras horas (biblia §6). Se usa el mazo (mallet.gltf)."
+    },
+    {
+      "gameId": "hacha",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/tool-axe.glb",
+      "reason": "Herramientas de Kenney: 84 triángulos, formas de bloque y cabeza metálica; KayKit tiene más detalle y encaja mejor con el estilo pulido. Lo mismo vale para tool-shovel, tool-pickaxe y tool-hammer."
+    },
+    {
+      "gameId": "cantimplora",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/bottle.glb",
+      "reason": "Es una botella de cristal con etiqueta, no una cantimplora de aluminio rescatada del Albatros. Es un objeto narrativo: Blender propio."
+    },
+    {
+      "gameId": "canto_rodado",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Stone_Chunks_Small.gltf",
+      "reason": "Montón de piedras angulosas, no un canto redondeado suelto. Kenney resource-stone y rock-sand-* son igual de angulosos. Se queda SM_Item_CantoRodado."
+    },
+    {
+      "gameId": "coco_maduro",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut.glb",
+      "reason": "Blob de 76 triángulos sin los tres ojos ni la fibra: se lee como una patata o un kiwi (hoja de contacto del lote 3). Se queda SM_Item_CocoMaduro."
+    },
+    {
+      "gameId": "coco_verde",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut.glb",
+      "reason": "Mismo coconut.glb recoloreado a verde: sale un óvalo liso que se lee como lima o aguacate, sin las tres aristas del coco verde. Se queda SM_Item_CocoVerde."
+    },
+    {
+      "gameId": "huevo",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/egg.glb",
+      "reason": "44 triángulos con facetas muy marcadas: en la hoja de contacto parece un canto rodado, no un huevo. Se queda SM_Item_Huevo."
+    },
+    {
+      "gameId": "pared_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-wood.glb",
+      "reason": "Paneles de 1 × 1 m y 10 cm de grosor, lisos y de pueblo europeo (paredes enlucidas, arcos, tejas). Llevados a la rejilla de 2 × 2,5 m pierden la proporción y quedan más pobres que el kit propio (kit-construccion-montaje.png). Lo mismo vale para wall, wall-door, wall-wood-door y los tejados roof-* (teja, no existe en el juego)."
+    },
+    {
+      "gameId": "escalera_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/stairs-wood.glb",
+      "reason": "Escalera de 1 × 0,5 × 1 m; la del juego sube 2,65 m en 1 × 4 m con 13 peldaños. Estirarla ×4 en planta deforma los peldaños. Se queda SM_Kit_Wood_Stairs."
+    },
+    {
+      "gameId": "pilote_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/pillar-wood.glb",
+      "reason": "Poste con zapata de piedra de 16 cm: encaja, pero mezclado con el resto del kit propio desentona (otro grosor y otro remate). Se reevalúa si algún día se sustituye el kit entero."
+    },
+    {
+      "gameId": "muelle",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-platform.glb",
+      "reason": "Plataforma de 2,5 × 2,5 m con patas de 0,9 m; el muelle del juego es de 2 × 4 m sobre pilotes de 2 m hasta el fondo, con franja de algas. Habría que estirarlo ×1,6 en largo y ×2 en alto. Se queda SM_Base_Dock."
+    },
+    {
+      "gameId": "muelle_final",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-platform-dock.glb",
+      "reason": "Mismo problema de proporción que structure-platform; sin escala de bajada ni bolardos con cabo. Se queda SM_Base_DockEnd."
+    },
+    {
+      "gameId": "techo_palma",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-roof.glb",
+      "reason": "Es una choza entera (cúpula de paja sobre cuatro postes de 3,4 m), no una vertiente modular de 2 m a 35°. Se queda SM_Roof_PalmThatch."
+    },
+    {
+      "gameId": "limonero.brote",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_small.glb",
+      "reason": "Copa cónica y estrecha: en la hoja de contacto del lote 4 se lee como un ciprés, no como un cítrico. Se usa tree_simple (tronco fino y copa redonda pequeña)."
+    },
+    {
+      "gameId": "limonero.esqueje",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_simple.glb",
+      "reason": "A 0,45 m sigue siendo un arbolito en miniatura con copa, no una estaca con dos hojas; además repetiría la malla del brote."
+    },
+    {
+      "gameId": "batata.brote",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_flatShort.glb",
+      "reason": "Roseta de hojas en estrella y puntiagudas: parece un agave o un cardo, no la hoja acorazonada de la batata (hoja de contacto del lote 4)."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_flatTall.glb",
+      "reason": "Hojas en estrella; el taro se reconoce por la hoja grande en punta de flecha sobre peciolo largo, que no trae ningún pack revisado."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Plant_1.gltf",
+      "reason": "Hojas lanceoladas con textura de hojas con canal alfa (estilo de sombreado propio de Quaternius): el muestreo de color por cara sale blanco y el recoloreado a paleta no es posible sin rehacer el material. Lo mismo vale para Fern_1, Bush_Common y Clover_*."
+    }
+  ],
+  "pending": [
+    {
+      "gameId": "pico",
+      "reason": "No hay id pico en items.json ni plantilla (DataCheck ya da una nota). El candidato es KayKit pickaxe.gltf, con cabeza de piedra; se cataloga cuando exista el id."
+    },
+    {
+      "gameId": "fibra_coco",
+      "reason": "No hay candidato en los packs descargados."
+    },
+    {
+      "gameId": "cantimplora",
+      "reason": "Objeto rescatado del Albatros: Blender propio (GDD v2 §7.1)."
+    },
+    {
+      "gameId": "pared_palma",
+      "reason": "Ningún pack CC0 revisado (Kenney Survival, Fantasy Town y Pirate; KayKit Medieval Builder, Resource y RPG Tools) trae paredes de hoja de palma ni de bambú. El kit propio de Tools/Blender (4 materiales, rejilla de 2 m) se mantiene hasta que aparezca uno mejor. Vale igual para suelo, techo y puerta de palma y bambú."
+    },
+    {
+      "gameId": "cesta",
+      "reason": "Sin candidato en los packs descargados. KayKit Furniture Bits y Restaurant Bits son CC0 de precio libre (uploads 8655517 y 8784350); falta descargarlos y mirarlos."
+    },
+    {
+      "gameId": "platanera.planta_con_racimo",
+      "reason": "Ningún pack trae platanera con racimo. Opción: SM_Pack_PlataneraJoven + racimo propio de Tools/Blender como socket; se decide al montar el huerto en Unreal."
+    },
+    {
+      "gameId": "pina.con_fruto",
+      "reason": "La roseta (plant_bushDetailed) sirve de base; falta el fruto en el centro. Opción: combinar SM_Pack_PinaRoseta con SM_Pack_Pina (lote 3) en Unreal o en un script propio."
+    },
+    {
+      "gameId": "limonero.arbol_adulto",
+      "reason": "tree_oak o tree_default a 3 m servirían de copa, pero sin fruta. El limonero es el árbol del huerto de la porción vertical: mejor malla propia con limones (Tools/Blender) o copa del pack con instancias de SM_Pack_Limon; decisión de arte pendiente."
+    },
+    {
+      "gameId": "limonero.esqueje",
+      "reason": "Sin candidato: ver discarded."
+    },
+    {
+      "gameId": "batata.brote",
+      "reason": "Sin candidato con hoja acorazonada en Kenney Nature Kit ni en Quaternius Stylized Nature MegaKit (Standard)."
+    },
+    {
+      "gameId": "batata.enredadera",
+      "reason": "Ningún pack revisado trae planta rastrera."
+    },
+    {
+      "gameId": "batata.listo",
+      "reason": "Ningún pack revisado trae planta rastrera."
+    },
+    {
+      "gameId": "taro.brote",
+      "reason": "Sin hoja en punta de flecha en los packs revisados (ver discarded de taro.hojas_grandes)."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "reason": "Ver discarded."
+    },
+    {
+      "gameId": "taro.listo",
+      "reason": "Ver discarded de taro.hojas_grandes."
+    },
+    {
+      "gameId": "maracuya.brote",
+      "reason": "La maracuyá trepa por la espaldera (pieza propia): enredadera a medida de esa pieza, mejor en Tools/Blender."
+    },
+    {
+      "gameId": "maracuya.trepadora",
+      "reason": "Igual que maracuya.brote."
+    },
+    {
+      "gameId": "maracuya.en_flor_y_fruto",
+      "reason": "Igual que maracuya.brote."
+    },
+    {
+      "gameId": "cabra_salvaje",
+      "reason": "Ninguna página de itch.io de Quaternius con precio libre trae cabra (revisadas el 2026-09-28: Farm Animals trae vaca, caballo, llama, oveja, cerdo, pug y cebra). El Ultimate Animated Animal Pack solo se distribuye por Google Drive desde quaternius.com, que aquí no es reproducible (cuota); su contenido no se ha podido verificar. Es de La Meseta (F2): no bloquea el acceso anticipado."
+    },
+    {
+      "gameId": "cerdo",
+      "reason": "Cerdo doméstico de la granja (F2, GDD v2 §3.6). Candidato: el mismo Pig.blend con la paleta rosada original; se cataloga cuando entre la granja para no duplicar malla antes de tiempo."
+    },
+    {
+      "gameId": "gallina",
+      "reason": "F2. Quaternius Farm Animals no trae gallina y no hay otra página de itch.io de Quaternius con aves de corral."
+    },
+    {
+      "gameId": "cabra",
+      "reason": "F2. Igual que cabra_salvaje: sin cabra en los packs de Quaternius descargables de forma reproducible."
+    }
+  ]
+}

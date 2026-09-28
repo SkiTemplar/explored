@@ -1,0 +1,18 @@
+[project]
+name = "explored-packs"
+version = "0.1.0"
+description = "Packs CC0 de terceros (Kenney, KayKit, Quaternius): manifiesto, descarga reproducible con sha256 y normalización en Blender."
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

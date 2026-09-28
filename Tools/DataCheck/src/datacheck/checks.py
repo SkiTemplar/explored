@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, music
+from . import achievements, cooking, crafting, music, packs
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -30,19 +30,20 @@ SCARECROW_PIECE = "espantapajaros"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
-# GDD §10 y §12: sin fauna terrestre ni narrativa de personajes eliminada.
+# GDD §10 y §12: sin narrativa de personajes eliminada ni fauna terrestre fuera de la que
+# vuelve con el GDD v2 §3.6-§3.7 (cerdo, jabalí, cabra y su caza, en fauna_terrestre.json).
 FORBIDDEN_TERMS = [
-    "jabali", "jabalí", "cerdo", "cabra", "rata", "murcielago", "murciélago", "serpiente",
+    "rata", "murcielago", "murciélago", "serpiente",
     "lagarto", "iguana", "perro", "canela", "almudena_", "rodrigo", "ines", "inés",
     "diario halden", "pagina halden", "página halden", "haldenpage", "beacon", "baliza",
-    "rescate", "mascota", "caza terrestre",
+    "rescate", "mascota",
 ]
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json",
+    "fish.json", "music_layers.json", "packs_catalogo.json", "fauna_terrestre.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -1110,4 +1111,5 @@ def run_all(ds: DataSet) -> Report:
     check_forbidden_terms(ds, r)
     check_gdd_food_coverage(ds, r)
     check_gdd_mining(ds, r)
+    packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r

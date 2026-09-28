@@ -152,6 +152,25 @@ def scene(island: str) -> list[dict]:
         box((-1.45, 0, 1.9), (0.5, 0.04, 0.12), "madera.deriva", rot=0.6),
         icosphere((1.15, 0, 1.9), 0.09, "palma.coco", squash=(1.0, 0.95, 1.0)),
         box((0.3, 0, 2.2), (0.35, 0.22, 0.25), "palma.paja", rot=-0.4),
+        # Recursos sueltos y minerales (filas 11-12): lo que se recoge del suelo.
+        prism((1.45, 0, 1.55), 0.1, 0.2, 8, "mineral.terracota", top_scale=0.6),
+        prism((-1.15, 0, 1.35), 0.04, 0.07, 6, "recurso.hueso", top_scale=0.8),
+        icosphere((0.3, 0, 1.25), 0.05, "recurso.concha", squash=(1.3, 0.45, 1.0)),
+        box((-0.15, 0, 1.2), (0.2, 0.012, 0.035), "recurso.pluma", rot=-0.5),
+        icosphere((1.05, 0, 1.35), 0.05, "mineral.azufre", seed=11, jitter=0.4),
+        # Fauna (fila 13): jabalí de lomo oscuro y gallina roja.
+        *[prism((x, 0, z), 0.045, 0.2, 5, "fauna.jabali") for x, z in
+          ((1.74, 2.41), (1.74, 2.57), (1.38, 2.41), (1.38, 2.57))],
+        icosphere((1.56, 0.15, 2.49), 0.26, "fauna.jabali", squash=(1.4, 0.75, 0.75), seed=13, jitter=0.15),
+        icosphere((1.22, 0.14, 2.49), 0.14, "fauna.jabali_claro", squash=(1.2, 0.95, 0.9), seed=14, jitter=0.1),
+        icosphere((1.09, 0.21, 2.49), 0.05, "fauna.pezuna", squash=(1.0, 0.9, 1.0)),
+        box((1.12, 0.19, 2.42), (0.09, 0.02, 0.02), "fauna.cuerno", rot=-0.3),
+        box((1.27, 0.37, 2.44), (0.04, 0.07, 0.02), "fauna.jabali", rot=0.2),
+        box((1.27, 0.37, 2.54), (0.04, 0.07, 0.02), "fauna.jabali", rot=-0.2),
+        icosphere((-0.25, 0.0, 2.05), 0.12, "fauna.plumaje", squash=(1.25, 0.95, 0.9), seed=15, jitter=0.1),
+        icosphere((-0.13, 0.19, 2.05), 0.06, "fauna.plumaje"),
+        icosphere((-0.13, 0.3, 2.05), 0.03, "fauna.cresta", squash=(1.3, 1.0, 0.6)),
+        icosphere((-0.07, 0.24, 2.05), 0.022, "fauna.pico", squash=(1.3, 0.8, 0.8)),
     ]
     return ms
 
@@ -322,7 +341,7 @@ def contact_sheet(path: Path, terrain: dict[str, np.ndarray], raw_terrain: dict[
         rows[TERRAIN_ROW], rows[ENTORNO_ROW] = "terreno", "entorno"
         for r, name in rows.items():
             draw.text((pad, y0 + r * cell_draw + 6), name, fill=(200, 200, 205), font=f_small)
-        draw.text((pad, y0 + 12 * cell_draw), "(libres)", fill=(120, 120, 128), font=f_small)
+        draw.text((pad, y0 + (max(rows) + 1) * cell_draw + 6), "(libres)", fill=(120, 120, 128), font=f_small)
         g1, g2 = GROUNDS[isl.key]
         layer = {m: TERRAIN_TARGETS[m][4] for m in TERRAIN_TARGETS}
         render = render_scene(isl.key, atlas, sws, terrain[g1], terrain[g2],

@@ -45,6 +45,7 @@ UI/MapViewLogic.cpp
 UI/ScreensLogic.cpp
 UI/SettingsLogic.cpp
 Weather/WeatherModel.cpp
+Weather/RainCatchModel.cpp
 WorldGen/ArchipelagoLayout.cpp
 WorldGen/BeachDebrisModel.cpp
 WorldGen/FormationPlacementModel.cpp
@@ -58,3 +59,6 @@ WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
 WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
+WorldGen/SandModel.cpp
+WorldGen/WildfireModel.cpp
+Tramway/TramwayModel.cpp

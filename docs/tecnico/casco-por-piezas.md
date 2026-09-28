@@ -1,7 +1,7 @@
 # Casco por piezas: cómo engancharlo en el motor
 
 Modelo: `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), puro (solo
-`CoreMinimal.h`). Spec: `Explored.HullAssembly` (host y editor). Diseño: GDD v2 §3.13.
+`CoreMinimal.h`). Spec: `Explored.HullAssembly` (host y editor). Diseño: GDD v2 §3.14.
 
 ## Qué hace y qué no
 

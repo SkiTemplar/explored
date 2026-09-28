@@ -16,8 +16,12 @@ from texgen.palette import (
     ALBEDO_MAX,
     ATLAS,
     CHROMA_CAP,
+    ENTORNO_ROW,
     FAMILIES,
+    FAUNA_BODY_SWATCHES,
     ISLANDS,
+    PACK_ALIASES,
+    TERRAIN_ROW,
     TERRAIN_TARGETS,
     build_atlas,
     cell_profile,
@@ -210,14 +214,27 @@ def test_swatches_in_a_family_are_distinguishable(atlases, island):
 
 
 @pytest.mark.parametrize("island", ISLAND_KEYS)
-def test_food_pops_out_of_every_ground(atlases, island):
-    """La comida recogible se lee sobre cualquier suelo de la isla."""
+def test_pickups_pop_out_of_every_ground(atlases, island):
+    """Lo recogible (comida, recursos, minerales) se lee sobre cualquier suelo de la isla."""
     sws = {s["id"]: srgb_to_oklab(s["mid"]) for s in atlases[island][0]}
     grounds = [v for k, v in sws.items() if k.startswith("terreno.")]
+    pickup = {f.key for f in FAMILIES if f.pickup}
+    assert {"comida", "recurso", "mineral"} <= pickup
     for k, lab in sws.items():
-        if k.startswith("comida."):
+        if k.split(".")[0] in pickup:
             worst = min(delta_e(lab, g) for g in grounds)
             assert worst > 0.06, f"{k}: ΔE {worst:.3f} contra el suelo"
+
+
+@pytest.mark.parametrize("island", ISLAND_KEYS)
+def test_fauna_bodies_read_on_every_ground(atlases, island):
+    """El pelaje de un animal (jabalí en la selva, cabra en la caliza) no se camufla en el suelo."""
+    sws = {s["id"]: srgb_to_oklab(s["mid"]) for s in atlases[island][0]}
+    grounds = [v for k, v in sws.items() if k.startswith("terreno.")]
+    assert FAUNA_BODY_SWATCHES <= set(sws)
+    for k in FAUNA_BODY_SWATCHES:
+        worst = min(delta_e(sws[k], g) for g in grounds)
+        assert worst > 0.06, f"{k}: ΔE {worst:.3f} contra el suelo"
 
 
 @pytest.mark.parametrize("island", ISLAND_KEYS)
@@ -259,3 +276,16 @@ def test_terrain_mean_tone_matches_palette(generated, name):
 def test_harmonized_terrain_is_resolution_independent():
     a = srgb_to_oklab(generate("Grass", 128)["BC"]).reshape(-1, 3).mean(axis=0)
     assert delta_e(a, terrain_target_lab("Grass")) < 0.006
+
+
+def test_family_rows_are_unique_and_fit_the_grid():
+    rows = [f.row for f in FAMILIES] + [TERRAIN_ROW, ENTORNO_ROW]
+    assert len(rows) == len(set(rows)), rows
+    assert max(rows) < ATLAS["grid"]
+    assert all(len(f.swatches) <= ATLAS["grid"] for f in FAMILIES)
+
+
+def test_pack_aliases_point_to_existing_swatches():
+    ids = {s["id"] for s in island_swatches(ISLANDS[0])}
+    missing = {k: v for k, v in PACK_ALIASES.items() if v not in ids}
+    assert not missing, missing
