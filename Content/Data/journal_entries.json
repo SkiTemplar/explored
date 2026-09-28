@@ -56,7 +56,7 @@
       "phase": "AA",
       "trigger": { "event": "run_start" },
       "textEs": "Día {Day}. El avión ya no vuela. Yo sí puedo caminar, así que empiezo por ahí.",
-      "textEn": "Day {Day}. The plane doesn't fly anymore. I can still walk, so that's where I start."
+      "textEn": "Day {Day}. The plane doesn't fly any more. I can still walk, so that's where I start."
     },
     {
       "id": "diario_primera_noche",

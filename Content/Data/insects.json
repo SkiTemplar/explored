@@ -54,8 +54,8 @@
       "habitat": "caverna",
       "obtain": "observar_y_dibujar",
       "phase": "AA",
-      "descriptionEs": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, y se la ve venir sin antorcha.",
-      "descriptionEn": "Cave firefly. Flickers slowly in the deepest caves; you can see it coming without a torch."
+      "descriptionEs": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no llega otra luz.",
+      "descriptionEn": "Cave firefly. Flickers slowly in the deepest caves, where no other light reaches."
     },
     {
       "id": "escarabajo_rinoceronte",

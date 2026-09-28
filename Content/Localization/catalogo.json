@@ -4239,8 +4239,8 @@
 		{
 			"namespace": "Data.insects.pieces",
 			"key": "luciernaga_caverna.descriptionEs",
-			"es": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, y se la ve venir sin antorcha.",
-			"en": "Cave firefly. Flickers slowly in the deepest caves; you can see it coming without a torch.",
+			"es": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no llega otra luz.",
+			"en": "Cave firefly. Flickers slowly in the deepest caves, where no other light reaches.",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/insects.json «luciernaga_caverna» descriptionEs/descriptionEn"
@@ -5860,7 +5860,7 @@
 			"namespace": "Data.journal_entries.entries",
 			"key": "diario_amaraje.textEs",
 			"es": "Día {Day}. El avión ya no vuela. Yo sí puedo caminar, así que empiezo por ahí.",
-			"en": "Day {Day}. The plane doesn't fly anymore. I can still walk, so that's where I start.",
+			"en": "Day {Day}. The plane doesn't fly any more. I can still walk, so that's where I start.",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/journal_entries.json «diario_amaraje» textEs/textEn"
