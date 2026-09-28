@@ -508,7 +508,7 @@ vendrán la arena viva, el astillero de balsas (§3.14) y otras interacciones na
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 
-### 3.13 Construcción naval: barcos que hay que pensar **[aprobado por Rodrigo 2026-09-27]**
+### 3.13 Construcción naval: barcos que hay que pensar **[alcance aprobado 2026-09-27 (biblia 02 §8); detalle pendiente de validar]**
 
 Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), spec
 `Explored.HullAssembly`. Integración en `docs/tecnico/casco-por-piezas.md`.
@@ -608,7 +608,7 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
 - **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
   por piezas en la sección de barcos, pendiente).
 
-### 3.14 Mundo interactivo: astillero de balsas **[director, 2026-09-27]**
+### 3.14 Mundo interactivo: astillero de balsas **[mecánicas pedidas por el director 2026-09-27; números pendientes de validar]**
 
 Tercera mecánica del principio «el mundo entero es interactivo». Modelo puro
 `FRaftYardModel` (`Source/Explored/Boats/RaftYardModel.h`), spec `Explored.RaftYard`.
@@ -701,8 +701,24 @@ Usa el casco por piezas de §3.13 (`FHullAssemblyModel`) para la forma y la flot
     el agua.
   - Las uniones no modelan el esfuerzo interno de la estructura (una balsa con el
     mástil atado a un solo tablón no se tuerce): solo hay roce, golpe y daño directo.
-- **Pendiente de decisión:** el objeto `clavo` no existe todavía en `items.json`.
-  Hay que crearlo (herrería o clavos de madera dura) o quitar esa unión.
+- **Pendiente de decisión: contradicciones con la biblia 02 §8.** El encargo del
+  director del 2026-09-27 pide que una unión rota suelte la pieza y que arrastrar sin
+  rodillos dañe las uniones. La biblia, que manda en el detalle, dice otra cosa en varios
+  puntos. Hasta que el director elija, el modelo sigue el encargo:
+
+  | Punto | Biblia 02 §8 | Este modelo | Opciones |
+  |---|---|---|---|
+  | Unión rota (§8.3) | Abre una vía de agua de 0,5 L/s por brecha | Suelta la pieza | Las dos a la vez (unión casco–casco abre una vía; pieza de cubierta o balancín, se suelta), o una de ellas |
+  | Salud de la unión (§7, §8.3) | `integrity` 1–100 de `FBuildingModel`, sin sistema aparte | `FRaftJoint::Health01` propio | Guardar la salud en la `integrity` de la pieza de construcción (×100) y que este modelo solo calcule el daño |
+  | Botadura (§8.4) | Canal de esfuerzo de 8 s por tonelada | Rozamiento de Coulomb: 9 personas en arena seca, 1 sobre rodillos | Mantener los rodillos obligatorios en arena (el cooperativo es de 2 a 4) o escalar el empuje para cuadrar con 8 s/t |
+  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua; por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.13) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
+  | Piezas (§8.1) | Quilla, cuaderna, tablón, cubierta, mástil, vela, balancín, timón, banco de remo, noray | Tronco, tablón, bambú, flotador, mástil, vela, remos, pala (§3.13) | Añadir las piezas que faltan o revisar la lista de la biblia |
+  | Peso del tronco (biblia 03) | `tronco_pequeno`: 8 kg; balsa: 8 troncos + 6 `liana` | Tronco de balsa: 72,6 kg | Nuevo objeto `tronco_balsa` o revisar el peso |
+  | Unión con clavos | `clavo` no existe en `items.json` | Tipo `Nails` | Crear el objeto o quitar ese tipo |
+
+- **Red (biblia 08; «todo sistema nuevo nace con la autoridad en el servidor»).**
+  Simula el servidor. Lo que se replica y cuánto cuesta está en
+  `docs/tecnico/astillero-balsas.md` §Red.
 - **Dependencias:** `Boats` (`FHullAssemblyModel`, `FBoatModel`), `Building`
   (astillero y postes de amarre), `WorldGen` (troncos de la tala para los rodillos),
   `Save` (uniones y rodillos en la sección de barcos).

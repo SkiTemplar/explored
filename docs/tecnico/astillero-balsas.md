@@ -66,6 +66,48 @@ hacer una sesión con el editor. Diseño de juego: GDD v2 §3.14.
    a `SetAfloat()` y hay un `FBoatModel` vivo. Cada `AddPiece` o `AddJoint` va seguido
    de `SetDefinition`.
 
+## Red (biblia 08 §2.5)
+
+Autoridad en el servidor, como el resto de `FBoatModel`. El cliente no decide nada: solo
+extrapola con el mismo código.
+
+- **Barco a flote.** `FExploredBoatNetState` (19 B a 20 Hz) necesita crecer para que el
+  cliente extrapole bien con amarre:
+  - `bMoored` va en un bit de las banderas que ya hay en el byte de vela + trimado.
+  - Poste y largo solo cambian al amarrar o soltar, así que no van en el estado de 20 Hz.
+    Van en una propiedad fiable aparte, `FExploredMooringNetState`: poste en
+    `FVector2D` cuantizado a 1 cm (4 B) y largo en `uint16` en cm (2 B). Son 6 B por
+    cambio, con coste de ancho de banda sostenido nulo.
+  - La ficha propia (`FBoatDefinition` de un casco por piezas) tampoco va en el estado.
+    El cliente la reconstruye con `FHullAssemblyModel::ToBoatDefinition` a partir de las
+    piezas, que ya se replican como piezas de construcción (biblia 08, construcción).
+    Cuando se suelta una pieza, se replica la retirada de esa pieza (fiable, una vez) y
+    cada cliente llama a `SetDefinition`.
+  - La integridad del casco (`uint8`, ya en el estado) es `HullDamage01` del astillero.
+    El byte reservado para «piezas dañadas» puede llevar el índice de la última unión que
+    ha cambiado, para el efecto visual.
+- **Balsa en tierra (astillero):**
+  - Empuje: `Server_PushRaft(uint8 Fuerza)`, sin fiabilidad, a 10 Hz mientras se mantiene
+    pulsado. El servidor suma los empujes de todos los jugadores que están a menos de
+    2 m del casco y acota cada uno a `PushForcePerPersonN`. Un cliente no puede empujar
+    más fuerte ni desde lejos.
+  - Estado replicado: `CenterS` (`uint16` en cm) y `VelocityCmS` (`int16`) a 10 Hz
+    mientras se mueve, y nada cuando está quieta: 4 B × 10 Hz = 0,3 kbps con una balsa
+    en movimiento. El camino (`FLaunchPath`) se replica una vez, de forma fiable, al
+    empezar la botadura.
+  - Rodillos: `TArray<uint16>` fiable, solo cuando se pone o se recoge uno. Mientras la
+    balsa rueda, el cliente los mueve con la misma regla (la mitad del avance), sin
+    tráfico.
+  - Uniones: la salud (`uint8` por unión) se replica solo cuando cambia, junto a la pieza
+    de construcción. Las roturas y las piezas sueltas son eventos fiables, y la pieza
+    suelta nace como objeto soltado de Chaos (biblia 08 §2.5).
+  - Reparar: `Server_RepairJoint(int32)`. El servidor comprueba la distancia y el
+    inventario y gasta `ItemsPerRepair`.
+- **Aforo.** La balsa admite 2 tripulantes (biblia 08 §5.4). Eso es cosa de
+  `AExploredBoat` (adjuntar pasajeros, tarea 16 de H3), no de estos modelos:
+  `FBoatModel` solo sabe si hay tripulante (`bCrewAboard`). Cuando se añadan pasajeros,
+  cada uno entra como `FHullLoad` de 75 kg en el astillero.
+
 ## Persistencia
 
 - **Barco a flote:** `FBoatSaveData` (con amarre) en la sección de barcos, como hoy.
