@@ -25,7 +25,7 @@ import numpy as np
 import soundfile as sf
 
 from ..constants import SAMPLE_RATE
-from .oggflac import is_ogg_flac, ogg_flac_to_flac
+from .oggflac import is_ogg_flac, ogg_flac_to_flac, set_ogg_serial
 from .loudness import integrated_lufs, sample_peak_dbfs
 from .process import process
 from .sources import Piece, SourceList
@@ -37,6 +37,8 @@ USER_AGENT = "ExploredSoundtrackFetcher/1.0 (+https://github.com/SkiTemplar/expl
 # (unos 110 kbps en estereo), de sobra para piano y cuerdas de fondo.
 VORBIS_COMPRESSION = 0.6
 OGG_WRITE_BLOCK = 1 << 15
+# Se sube al cambiar el tratamiento, para que la cache se rehaga sola.
+PIPELINE_VERSION = 2
 # Por encima de este total los OGG no se versionan (encargo 21): el script
 # los regenera. Ver `versionable()`.
 VERSIONING_LIMIT_BYTES = 10 * 1024 * 1024
@@ -123,6 +125,9 @@ def export_ogg(path: Path, audio: np.ndarray, piece: Piece) -> None:
         data = np.ascontiguousarray(audio, dtype=np.float32)
         for i in range(0, len(data), OGG_WRITE_BLOCK):
             f.write(data[i : i + OGG_WRITE_BLOCK])
+    # Numero de serie fijo, derivado del id: mismo audio, mismos bytes.
+    serial = int.from_bytes(hashlib.sha256(piece.id.encode()).digest()[:4], "little")
+    tmp.write_bytes(set_ogg_serial(tmp.read_bytes(), serial))
     os.replace(tmp, path)
 
 
@@ -150,7 +155,7 @@ def build_piece(cache: Path, sources: SourceList, piece: Piece, force: bool = Fa
     out = ogg_path(cache, piece)
     stamp = out.with_suffix(".sha256")
     # Se reprocesa si cambia el original, los parametros o el propio OGG.
-    key = f"{piece.sha256}:{sources.target_lufs}:{sources.peak_ceiling_dbfs}:{VORBIS_COMPRESSION}"
+    key = f"{PIPELINE_VERSION}:{piece.sha256}:{sources.target_lufs}:{sources.peak_ceiling_dbfs}:{VORBIS_COMPRESSION}"
     if not force and out.exists() and stamp.exists() and stamp.read_text().strip() == key:
         return {"id": piece.id, "cached": True, **measure_ogg(out)}
     audio, fs = read_audio(src)

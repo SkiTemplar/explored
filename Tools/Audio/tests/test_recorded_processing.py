@@ -148,6 +148,14 @@ def test_ogg_exportado_conserva_nivel_y_no_satura(tmp_path):
         assert f.title == piece.title
 
 
+def test_ogg_exportado_es_reproducible_byte_a_byte(tmp_path):
+    y, _ = process(_piano_like(6.0), 44_100, -16.0, -1.5)
+    piece = load_sources().pieces[0]
+    export_ogg(tmp_path / "a.ogg", y, piece)
+    export_ogg(tmp_path / "b.ogg", y, piece)
+    assert (tmp_path / "a.ogg").read_bytes() == (tmp_path / "b.ogg").read_bytes()
+
+
 def test_hash_distinto_borra_el_original_y_falla(tmp_path, monkeypatch):
     piece = load_sources().pieces[0]
     path = tmp_path / "src" / f"{piece.id}{piece.extension}"

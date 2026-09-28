@@ -1,4 +1,4 @@
-"""Convierte FLAC encapsulado en Ogg (`.ogg`/`.oga` con audio FLAC) a FLAC
+"""Utilidades Ogg: convierte FLAC encapsulado en Ogg (`.ogg`/`.oga` con audio FLAC) a FLAC
 nativo, sin recodificar.
 
 libsndfile 1.2 falla al abrir Ogg FLAC («unknown error in flac decoder»),
@@ -117,3 +117,46 @@ def _set_total_samples(block: bytearray, total: int) -> None:
         return  # ya lo trae
     packed |= total
     block[off : off + 8] = packed.to_bytes(8, "big")
+
+
+def _crc_table() -> list[int]:
+    table = []
+    for i in range(256):
+        r = i << 24
+        for _ in range(8):
+            r = ((r << 1) ^ 0x04C11DB7) if r & 0x80000000 else (r << 1)
+        table.append(r & 0xFFFFFFFF)
+    return table
+
+
+_CRC_TABLE = _crc_table()
+
+
+def ogg_crc(page: bytes) -> int:
+    """CRC-32 de pagina Ogg (polinomio 0x04C11DB7, sin reflejar, semilla 0)."""
+    crc = 0
+    for byte in page:
+        crc = ((crc << 8) & 0xFFFFFFFF) ^ _CRC_TABLE[((crc >> 24) & 0xFF) ^ byte]
+    return crc
+
+
+def set_ogg_serial(data: bytes, serial: int) -> bytes:
+    """Reescribe el numero de serie de todas las paginas y recalcula su CRC.
+
+    libsndfile elige un numero de serie al azar en cada exportacion: el audio
+    sale identico pero el fichero no. Fijarlo hace el OGG reproducible byte
+    a byte."""
+    out = bytearray(data)
+    pos = 0
+    while pos < len(out):
+        if out[pos : pos + 4] != _OGG_MAGIC or pos + 27 > len(out):
+            raise ValueError(f"pagina Ogg rota en el byte {pos}")
+        nsegs = out[pos + 26]
+        end = pos + 27 + nsegs + sum(out[pos + 27 : pos + 27 + nsegs])
+        if end > len(out):
+            raise ValueError("pagina Ogg truncada")
+        struct.pack_into("<I", out, pos + 14, serial & 0xFFFFFFFF)
+        struct.pack_into("<I", out, pos + 22, 0)
+        struct.pack_into("<I", out, pos + 22, ogg_crc(bytes(out[pos:end])))
+        pos = end
+    return bytes(out)

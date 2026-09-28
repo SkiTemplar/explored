@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from explored_audio.recorded.oggflac import is_ogg_flac, ogg_flac_to_flac, ogg_packets
+from explored_audio.recorded.oggflac import is_ogg_flac, ogg_crc, ogg_flac_to_flac, ogg_packets, set_ogg_serial
 
 
 def _native_flac(samples: np.ndarray, fs: int) -> bytes:
@@ -114,3 +114,40 @@ def test_granulo_final(signal):
     ogg = _to_ogg_flac(_native_flac(samples, fs), total=len(samples))
     _, granule = ogg_packets(ogg)
     assert granule == len(samples)
+
+
+def test_crc_ogg_coincide_con_el_de_libogg(signal, tmp_path):
+    # libogg escribe el CRC correcto: recalcularlo sobre su propia pagina
+    # (con el campo a cero) tiene que dar el mismo valor.
+    samples, fs = signal
+    path = tmp_path / "v.ogg"
+    sf.write(path, samples, fs, format="OGG", subtype="VORBIS")
+    data = bytearray(path.read_bytes())
+    nsegs = data[26]
+    end = 27 + nsegs + sum(data[27 : 27 + nsegs])
+    stored = struct.unpack_from("<I", data, 22)[0]
+    struct.pack_into("<I", data, 22, 0)
+    assert ogg_crc(bytes(data[:end])) == stored
+
+
+def test_fijar_serie_da_bytes_identicos_y_audio_intacto(signal, tmp_path):
+    samples, fs = signal
+    outs = []
+    for i in range(2):
+        path = tmp_path / f"{i}.ogg"
+        sf.write(path, samples, fs, format="OGG", subtype="VORBIS")
+        outs.append(set_ogg_serial(path.read_bytes(), 1234))
+    assert outs[0] == outs[1]
+    fixed = tmp_path / "fijo.ogg"
+    fixed.write_bytes(outs[0])
+    a, _ = sf.read(fixed)
+    b, _ = sf.read(tmp_path / "0.ogg")
+    np.testing.assert_array_equal(a, b)
+
+
+def test_fijar_serie_rechaza_ogg_truncado(signal, tmp_path):
+    samples, fs = signal
+    path = tmp_path / "v.ogg"
+    sf.write(path, samples, fs, format="OGG", subtype="VORBIS")
+    with pytest.raises(ValueError):
+        set_ogg_serial(path.read_bytes()[:-5], 1)
