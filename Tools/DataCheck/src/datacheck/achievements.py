@@ -1,8 +1,9 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: 30 logros, ids ASCII, textos en ES y EN, los ejemplos
-del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
+tipo compatible) y añade las de diseño: 30 logros del acceso anticipado más los de fase 2 y 3
+(marcados con ``phase``, biblia 07 §2) sin pasar de 60, ids ASCII, textos en ES y EN, los
+ejemplos del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
 
 from __future__ import annotations
@@ -12,6 +13,12 @@ import re
 from pathlib import Path
 
 ACHIEVEMENT_COUNT = 30
+# Biblia 07 §2: el catálogo completo cabe en 40-60 logros de Steam.
+ACHIEVEMENT_MAX = 60
+PHASES = {"AA", "F2", "F3"}
+# Biblia 08 §5.7: quién desbloquea un logro en cooperativo.
+COOP_SCOPES = {"actor", "world", "witness"}
+FUTURE_PHASES = {"F2", "F3"}
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 STAT_KINDS = {"counter", "max", "set", "flag"}
 STAT_SCOPES = {"profile", "run"}
@@ -162,6 +169,8 @@ def check_achievements(ds, r) -> None:
             vals = stat["values"]
             if not isinstance(vals, list) or not vals or len(set(vals)) != len(vals):
                 r.error(f"achievements.json: «{sid}».values debe ser una lista no vacía sin repetidos")
+        if stat.get("phase", "AA") not in PHASES:
+            r.error(f"achievements.json: estadística «{sid}» con phase {stat.get('phase')!r} (admite {sorted(PHASES)})")
         if "valuesFrom" in stat and stat["valuesFrom"] not in VALUE_SOURCES:
             r.error(f"achievements.json: «{sid}».valuesFrom «{stat['valuesFrom']}» (admite {sorted(VALUE_SOURCES)})")
 
@@ -176,8 +185,12 @@ def check_achievements(ds, r) -> None:
 
     # Logros.
     achievements = doc.get("achievements", [])
-    if len(achievements) != ACHIEVEMENT_COUNT:
-        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    # Los 30 del GDD §16 no llevan fase posterior; los de F2/F3 se añaden encima (biblia 07 §2).
+    base = [a for a in achievements if a.get("phase", "AA") not in FUTURE_PHASES]
+    if len(base) != ACHIEVEMENT_COUNT:
+        r.error(f"achievements.json: {len(base)} logros del acceso anticipado; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    if len(achievements) > ACHIEVEMENT_MAX:
+        r.error(f"achievements.json: {len(achievements)} logros; la biblia 07 §2 no pasa de {ACHIEVEMENT_MAX}")
     seen: set[str] = set()
     used: set[str] = set()
     for ach in achievements:
@@ -203,8 +216,20 @@ def check_achievements(ds, r) -> None:
             ach_modes = ach["modes"]
             if not isinstance(ach_modes, list) or not ach_modes or not set(ach_modes) <= modes:
                 r.error(f"{where}: modes {ach_modes!r} no es una lista no vacía de {sorted(modes)}")
+        phase = ach.get("phase", "AA")
+        if phase not in PHASES:
+            r.error(f"{where}: phase {phase!r} (admite {sorted(PHASES)})")
+        if ach.get("coopScope", "actor") not in COOP_SCOPES:
+            r.error(f"{where}: coopScope {ach.get('coopScope')!r} (admite {sorted(COOP_SCOPES)}, biblia 08 §5.7)")
         check_condition(ds, ach.get("condition"), stats, where, r)
-        _stats_used(ach.get("condition"), used)
+        cond_stats: set[str] = set()
+        _stats_used(ach.get("condition"), cond_stats)
+        used |= cond_stats
+        # Un logro del acceso anticipado no puede depender de algo que aún no existe.
+        if phase not in FUTURE_PHASES:
+            for sid in sorted(cond_stats):
+                if stats.get(sid, {}).get("phase", "AA") in FUTURE_PHASES:
+                    r.error(f"{where}: es del acceso anticipado y usa «{sid}», de fase {stats[sid]['phase']}")
 
     missing = REQUIRED - seen
     if missing:

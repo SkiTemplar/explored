@@ -8,6 +8,8 @@
     "icon": "pista de icono genérica; la UI decide el dibujo",
     "stats.kind": "counter suma, max guarda el mayor, set reúne ids distintos, flag se marca una vez",
     "stats.scope": "profile dura toda la vida del jugador; run se vacía al empezar partida y viaja con su guardado",
+    "phase": "fase en que entra el logro o la estadística (AA, F2, F3); si falta, AA. Nada de F2/F3 se informa en el acceso anticipado",
+    "coopScope": "biblia 08 §5.7: actor (solo quien actúa), world (todos los conectados) o witness (a menos de 50 m); si falta, actor",
     "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces)"
   },
   "source": "Catálogo de estadísticas documentado en docs/tecnico/estadisticas.md; Tools/DataCheck comprueba que ambos coinciden.",
@@ -191,6 +193,23 @@
       "scope": "run",
       "reportedBy": "P-BOATS / P-RUINS",
       "descriptionEs": "Se marca al desembarcar en la isla oculta."
+    },
+    {
+      "id": "livestock_species_raised",
+      "kind": "set",
+      "scope": "run",
+      "phase": "F2",
+      "reportedBy": "Fauna (granja)",
+      "descriptionEs": "Especies domésticas con al menos una cría nacida en un corral (biblia 07 §2.1).",
+      "values": ["gallina", "cerdo", "cabra"]
+    },
+    {
+      "id": "eggs_collected",
+      "kind": "counter",
+      "scope": "profile",
+      "phase": "F2",
+      "reportedBy": "Fauna (granja)",
+      "descriptionEs": "Huevos recogidos del gallinero o del corral."
     }
   ],
   "achievements": [
@@ -495,6 +514,42 @@
       "hidden": true,
       "icon": "estrella",
       "condition": {"all": [{"flag": "hidden_island_reached"}, {"not": {"flag": "coast_drawn"}}]}
+    },
+    {
+      "id": "primera_pareja",
+      "nameEs": "La primera pareja",
+      "nameEn": "The First Pair",
+      "descriptionEs": "Tu primera pareja de animales domésticos tiene una cría.",
+      "descriptionEn": "Your first pair of domestic animals has a young one.",
+      "hidden": false,
+      "icon": "gallina",
+      "phase": "F2",
+      "coopScope": "world",
+      "condition": {"stat": "livestock_species_raised", "op": ">=", "value": 1}
+    },
+    {
+      "id": "corral_completo",
+      "nameEs": "Corral completo",
+      "nameEn": "Full Pen",
+      "descriptionEs": "Saca crías de gallina, cerdo y cabra en la misma partida.",
+      "descriptionEn": "Breed hens, pigs and goats in the same game.",
+      "hidden": false,
+      "icon": "corral",
+      "phase": "F2",
+      "coopScope": "world",
+      "condition": {"stat": "livestock_species_raised", "op": ">=", "value": 3}
+    },
+    {
+      "id": "huevos_por_docenas",
+      "nameEs": "Huevos por docenas",
+      "nameEn": "Eggs by the Dozen",
+      "descriptionEs": "Recoge cien huevos.",
+      "descriptionEn": "Collect a hundred eggs.",
+      "hidden": false,
+      "icon": "huevo",
+      "phase": "F2",
+      "coopScope": "actor",
+      "condition": {"stat": "eggs_collected", "op": ">=", "value": 100}
     }
   ]
 }

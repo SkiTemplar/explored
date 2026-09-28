@@ -1,6 +1,6 @@
 # Estadísticas de juego (contrato para todos los sistemas)
 
-Los 30 logros (GDD §16) no escuchan a ningún sistema concreto: cada sistema **informa de
+Los logros (los 30 del GDD §16 y los de fase 2 y 3 de biblia 07 §2, marcados con `phase`) no escuchan a ningún sistema concreto: cada sistema **informa de
 lo que pasa** con un evento genérico de estadística y el modelo de logros decide. Este es el
 único sitio que lista todas las estadísticas; la versión que lee el juego está en
 `Content/Data/achievements.json` (`stats`) y `Tools/DataCheck` comprueba que ambas coinciden
@@ -68,6 +68,8 @@ conseguidos son siempre del perfil.
 | `crops_harvested` | set | run | Cultivos cosechados al menos una vez. | `UFarmSubsystem::Harvest` | ids de `plants.json` | el_limonero, huerto_en_flor |
 | `boats_built` | set | run | Embarcaciones terminadas en el astillero. | `AExploredBoat` con `bBuiltByPlayer` (pendiente: el astillero que la crea) | ids de `boats.json`: `balsa`, `canoa`, `canoa_balancin`, `barco_limon` | limon_zarpa |
 | `hidden_island_reached` | flag | run | Desembarco en la isla oculta. | `UExploredWiringSubsystem` (a menos de 400 m del centro de la isla oculta) | — | limon_zarpa, naufrago_de_verdad, sin_mapa |
+| `livestock_species_raised` | set | run | [F2] Especies domésticas con al menos una cría nacida en un corral. | Pendiente: subsistema de granja con cada `FLivestockDayReport::Births` (`FLivestockModel::SpeciesId`) | `gallina`, `cerdo`, `cabra` | primera_pareja, corral_completo |
+| `eggs_collected` | counter | profile | [F2] Huevos recogidos (se suma lo que devuelve cada recogida). | Pendiente: subsistema de granja con `FLivestockModel::Collect` (`FLivestockCollect::Eggs`) | — | huevos_por_docenas |
 
 Los ids de las listas cerradas son un contrato: si un paquete necesita otro nombre, cambia
 la lista aquí y en `achievements.json` en el mismo commit (DataCheck lo comprueba).

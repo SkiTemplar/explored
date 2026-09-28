@@ -354,14 +354,50 @@ def achievement(ds: DataSet, aid: str) -> dict:
 
 
 def test_logros_reales_son_treinta_con_los_del_gdd(real: DataSet) -> None:
-    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
+    achievements = real.data["achievements.json"]["achievements"]
+    ids = {a["id"] for a in achievements if a.get("phase", "AA") == "AA"}
     assert len(ids) == 30
+    assert len(achievements) <= 60
     assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
 
 
+def test_logros_de_granja_de_fase_2(real: DataSet) -> None:
+    for aid in ("primera_pareja", "corral_completo", "huevos_por_docenas"):
+        assert achievement(real, aid)["phase"] == "F2"
+
+
 def test_detecta_numero_de_logros(ds: DataSet) -> None:
-    ds.data["achievements.json"]["achievements"].pop()
-    assert any_error(errors_of(ds), "29 logros")
+    items = ds.data["achievements.json"]["achievements"]
+    victim = next(a for a in items if a.get("phase", "AA") == "AA" and a["id"] not in {
+        "primer_fuego", "tierra_firme", "cartografo", "coleccionista", "rey_del_cocotero", "bajo_el_volcan",
+        "luz_en_el_agua", "ojo_de_ciclon", "wayfinder", "el_limonero", "limon_zarpa", "naufrago_de_verdad", "sin_mapa"})
+    items.remove(victim)
+    assert any_error(errors_of(ds), "29 logros del acceso anticipado")
+
+
+def test_detecta_mas_de_sesenta_logros(ds: DataSet) -> None:
+    items = ds.data["achievements.json"]["achievements"]
+    extra = achievement(ds, "huevos_por_docenas")
+    for n in range(40):
+        items.append(dict(extra, id=f"relleno_{n}"))
+    assert any_error(errors_of(ds), "no pasa de 60")
+
+
+def test_detecta_coop_scope_desconocido(ds: DataSet) -> None:
+    achievement(ds, "corral_completo")["coopScope"] = "todos"
+    assert any_error(errors_of(ds), "corral_completo", "coopScope")
+
+
+def test_detecta_fase_de_logro_desconocida(ds: DataSet) -> None:
+    achievement(ds, "primera_pareja")["phase"] = "F9"
+    assert any_error(errors_of(ds), "primera_pareja", "phase")
+
+
+def test_detecta_logro_del_acceso_anticipado_con_estadistica_de_f2(ds: DataSet) -> None:
+    del achievement(ds, "primera_pareja")["phase"]
+    errors = errors_of(ds)
+    assert any_error(errors, "primera_pareja", "livestock_species_raised", "F2")
+    assert any_error(errors, "31 logros del acceso anticipado")
 
 
 def test_detecta_logro_duplicado(ds: DataSet) -> None:
@@ -1065,6 +1101,46 @@ def test_fases_tramos_de_reputacion_con_hueco(ds: DataSet) -> None:
 def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
     future(ds)["livestock"]["species"][1]["wildSource"] = "jabali_gigante"
     assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
+
+
+def test_fases_corrales_en_building_con_fase_2(real: DataSet) -> None:
+    for pid in ("gallinero", "pocilga", "corral"):
+        assert piece(real, pid)["phase"] == "F2"
+        assert piece(real, pid)["category"] == "granja"
+
+
+def test_fases_dato_de_fase_1_usa_una_pieza_de_f2(ds: DataSet) -> None:
+    next(p for p in ds.plants if p["id"] == "taro")["requiresPiece"] = "pocilga"
+    assert any_error(fases_errors(ds), "plants.json", "pocilga", "fase 2/3")
+
+
+def test_fases_pieza_del_acceso_anticipado_que_requiere_una_de_f2(ds: DataSet) -> None:
+    piece(ds, "muro_piedra")["requiresPieces"].append("corral")
+    assert any_error(errors_of(ds), "muro_piedra", "corral", "fase posterior")
+
+
+def test_fases_pieza_con_fase_desconocida(ds: DataSet) -> None:
+    piece(ds, "gallinero")["phase"] = "F7"
+    assert any_error(errors_of(ds), "gallinero", "phase")
+
+
+def test_fases_estructura_de_animal_que_no_es_de_f2(ds: DataSet) -> None:
+    future(ds)["livestock"]["species"][0]["structure"] = "bancal"
+    assert any_error(fases_errors(ds), "gallina", "bancal", "estructura")
+
+
+def test_fases_corral_de_building_que_no_es_de_f2(ds: DataSet) -> None:
+    del piece(ds, "pocilga")["phase"]
+    errors = fases_errors(ds)
+    assert any_error(errors, "piecesEnBuilding", "pocilga") or any_error(errors, "livestock", "pocilga")
+
+
+def test_fases_cifras_de_granja_iguales_al_modelo(ds: DataSet) -> None:
+    future(ds)["livestock"]["breeding"]["dailyChance"] = 0.25
+    future(ds)["livestock"]["maxAlivePerBase"] = 12
+    errors = fases_errors(ds)
+    assert any_error(errors, "breeding.dailyChance", "BreedingChancePerDay")
+    assert any_error(errors, "maxAlivePerBase", "MaxAlivePerBase")
 
 
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
