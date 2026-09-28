@@ -271,7 +271,11 @@ ordenada y determinista que sale de los mismos datos en las dos puntas.
 días — muy por encima de una partida).
 
 Total **10 B por instancia**, + 4 B de sobrecarga de `FFastArraySerializer` = **14 B por
-cambio**. Se replica como `FFastArraySerializer` en el `GameState`, así que solo viajan
+cambio**. El empaquetado es puro y ya está en `FVegetationStateModel` (el byte de estado
+lleva la etapa en los bits 0–1, los golpes en los 2–5 y los bits 6–7 a cero; un paquete
+con ellos puestos, con golpes en una instancia talada o con «no rebrota» fuera de un
+tocón se rechaza). El día de rebrote se redondea hacia arriba al cuarto de día, así que
+el cliente nunca ve rebrotar antes que el servidor; `0xFFFF` significa «no rebrota». Se replica como `FFastArraySerializer` en el `GameState`, así que solo viajan
 las entradas que cambian.
 
 | Situación | Coste |
@@ -1090,7 +1094,8 @@ del proyecto), y lo de red que se puede modelar puro es bastante:
   original; la fusión de dos paquetes del mismo chunk es idempotente y conmutativa; un
   paquete truncado o manipulado se rechaza sin tocar el estado.
 - `FVegetationNetStateSpec`: la clave de 7 bytes va y vuelve sin pérdida; el tope de
-  4096 compacta en el orden esperado.
+  4096 compacta en el orden esperado. *(Hecho como `FVegetationStateModelSpec`,
+  «Explored.VegetationState», sobre `WorldGen/VegetationStateModel.h`.)*
 - `FCoopRulesSpec`: reglas de §5.1 (dormir), §5.2 (derribado, tope de 2 reanimaciones) y
   §5.6 (escalado) como funciones puras en `ExploredLinks`, probadas con tablas.
 - `FContentHashSpec`: el hash de `Content/Data` es estable entre ejecuciones y cambia al

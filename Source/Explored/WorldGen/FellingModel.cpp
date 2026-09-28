@@ -34,8 +34,22 @@ namespace
 		return (FFellingModel::WorkToFell + N - 1) / N;
 	}
 
-	/** Por debajo de este empuje neto (fracción del trabajo total) los golpes se consideran anulados. */
+	/** Por debajo de este módulo, golpe + pendiente se consideran anulados. */
 	constexpr double MinNetPush = 1.0e-3;
+
+	/** Ramas del suelo de un árbol (biblia 02 §1.3): 2–4 rama_seca por ciclo de 6 h, tope de 6. */
+	void SetTreeGroundBranches(FFellingProfile& P)
+	{
+		P.GroundBranchCapacity = 6;
+		P.GroundBranchCycleMin = 2;
+		P.GroundBranchCycleMax = 4;
+		P.GroundBranchItem = FName(TEXT("rama_seca"));
+	}
+
+	/** Biblia 02 §1.2: 18 días con fruto, 24 madera sin fruto, 4 arbustos. */
+	constexpr int32 RegrowDaysFruit = 18;
+	constexpr int32 RegrowDaysTimber = 24;
+	constexpr int32 RegrowDaysShrub = 4;
 
 	constexpr int32 HandsIdx = (int32)EFellingTool::Hands;
 	constexpr int32 BluntIdx = (int32)EFellingTool::Blunt;
@@ -49,7 +63,8 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 	TArray<FFellingProfile> Profiles;
 
 	{
-		// Palmera: tronco fino y alto, cocos y hojas en la copa. Rebrota del estípite si no se arranca.
+		// Palmera: tronco fino y alto, cocos maduros y hojas en la copa. Rebrota del estípite si no
+		// se arranca. El coco_verde no cae al talar: se coge trepando (biblia 02 §13.1).
 		FFellingProfile P;
 		P.Species = FName(TEXT("Palm"));
 		P.HitsByTool[HandsIdx] = 8;
@@ -60,18 +75,16 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 			MakeYield(TEXT("hoja_palma"), K::Leaf, 2, 4),
 			MakeYield(TEXT("fibra_coco"), K::Leaf, 0, 2),
 			MakeYield(TEXT("coco_maduro"), K::Fruit, 1, 3),
-			MakeYield(TEXT("coco_verde"), K::Fruit, 0, 2),
 			MakeYield(TEXT("cascara_coco"), K::Fruit, 0, 1),
 		};
 		P.HeightMeters = 9.0f;
 		P.CrownRadiusMeters = 3.0f;
-		P.StumpRegrowDays = 12;
-		P.SaplingToMatureDays = 30;
+		P.StumpRegrowDays = RegrowDaysFruit;
+		P.SproutDays = 6;
+		P.WindDeviationDeg = 15.0f;
 		P.UprootShovelHits = 4;
 		P.UprootDrops = { MakeUprootDrop(TEXT("fibra_coco"), 1, 2) };
-		P.GroundBranchCapacity = 2;
-		P.GroundBranchPerDayMilli = 500; // una hoja seca cada dos días
-		P.GroundBranchItem = FName(TEXT("hoja_palma"));
+		SetTreeGroundBranches(P);
 		Profiles.Add(P);
 	}
 	{
@@ -90,13 +103,11 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		};
 		P.HeightMeters = 22.0f;
 		P.CrownRadiusMeters = 6.0f;
-		P.StumpRegrowDays = 20;
-		P.SaplingToMatureDays = 60;
+		P.StumpRegrowDays = RegrowDaysTimber;
+		P.SproutDays = 8;
 		P.UprootShovelHits = 8;
 		P.UprootDrops = { MakeUprootDrop(TEXT("madera_dura"), 0, 1), MakeUprootDrop(TEXT("rama_seca"), 1, 2) };
-		P.GroundBranchCapacity = 4;
-		P.GroundBranchPerDayMilli = 1500;
-		P.GroundBranchItem = FName(TEXT("rama_seca"));
+		SetTreeGroundBranches(P);
 		Profiles.Add(P);
 	}
 	{
@@ -114,17 +125,15 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		};
 		P.HeightMeters = 14.0f;
 		P.CrownRadiusMeters = 7.0f;
-		P.StumpRegrowDays = 15;
-		P.SaplingToMatureDays = 45;
+		P.StumpRegrowDays = RegrowDaysTimber;
+		P.SproutDays = 8;
 		P.UprootShovelHits = 6;
 		P.UprootDrops = { MakeUprootDrop(TEXT("rama_seca"), 1, 2) };
-		P.GroundBranchCapacity = 4;
-		P.GroundBranchPerDayMilli = 1200;
-		P.GroundBranchItem = FName(TEXT("rama_seca"));
+		SetTreeGroundBranches(P);
 		Profiles.Add(P);
 	}
 	{
-		// Manglar: bajo y ancho, suelta madera flotante. Rebrota a los 20 días (480 h, como en FHarvestModel).
+		// Manglar: bajo y ancho, suelta madera flotante. Madera sin fruto: 24 días.
 		FFellingProfile P;
 		P.Species = FName(TEXT("Mangrove"));
 		P.HitsByTool[HandsIdx] = 9;
@@ -137,17 +146,15 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		};
 		P.HeightMeters = 7.0f;
 		P.CrownRadiusMeters = 4.0f;
-		P.StumpRegrowDays = 20;
-		P.SaplingToMatureDays = 30;
+		P.StumpRegrowDays = RegrowDaysTimber;
+		P.SproutDays = 8;
 		P.UprootShovelHits = 5;
 		P.UprootDrops = { MakeUprootDrop(TEXT("madera_flotante"), 0, 1) };
-		P.GroundBranchCapacity = 2;
-		P.GroundBranchPerDayMilli = 600;
-		P.GroundBranchItem = FName(TEXT("rama_seca"));
+		SetTreeGroundBranches(P);
 		Profiles.Add(P);
 	}
 	{
-		// Sotobosque: árbol joven, cae corto y vuelve pronto (10 días = 240 h de FHarvestModel).
+		// Sotobosque: árbol joven que cae corto. Madera sin fruto: 24 días, aunque el brote asoma antes.
 		FFellingProfile P;
 		P.Species = FName(TEXT("Understory"));
 		P.HitsByTool[HandsIdx] = 5;
@@ -161,13 +168,11 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		};
 		P.HeightMeters = 5.0f;
 		P.CrownRadiusMeters = 2.0f;
-		P.StumpRegrowDays = 10;
-		P.SaplingToMatureDays = 12;
+		P.StumpRegrowDays = RegrowDaysTimber;
+		P.SproutDays = 4;
 		P.UprootShovelHits = 3;
 		P.UprootDrops = { MakeUprootDrop(TEXT("rama_seca"), 1, 1) };
-		P.GroundBranchCapacity = 2;
-		P.GroundBranchPerDayMilli = 800;
-		P.GroundBranchItem = FName(TEXT("rama_seca"));
+		SetTreeGroundBranches(P);
 		Profiles.Add(P);
 	}
 	{
@@ -186,13 +191,12 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 		};
 		P.HeightMeters = 0.0f;
 		P.CrownRadiusMeters = 1.0f;
-		P.StumpRegrowDays = 3; // 72 h de FHarvestModel
-		P.SaplingToMatureDays = 2;
+		P.StumpRegrowDays = RegrowDaysShrub;
+		P.SproutDays = 1;
+		P.WindDeviationDeg = 0.0f; // no cae
 		P.UprootShovelHits = 1;
 		P.UprootDrops = {};
-		P.GroundBranchCapacity = 1;
-		P.GroundBranchPerDayMilli = 300;
-		P.GroundBranchItem = FName(TEXT("rama_seca"));
+		// No es un árbol: sin ramas del suelo propias (biblia 02 §1.3 «bajo cada árbol»).
 		Profiles.Add(P);
 	}
 
@@ -230,15 +234,22 @@ bool FFellingModel::ApplyHit(const FFellingProfile& Profile, FFellingProgress& P
 		return false;
 	}
 	const int32 Work = WorkPerHit(Hits);
-	Progress.Push += HitDirection.GetSafeNormal() * ((double)Work / (double)WorkToFell);
+	const FVector2D Dir = HitDirection.GetSafeNormal();
+	if (!Dir.IsZero())
+	{
+		// Un golpe sin dirección (NaN, cero) cuenta como trabajo pero no cambia hacia dónde caerá.
+		Progress.LastHit = Dir;
+	}
 	Progress.Work = FMath::Min(Progress.Work + Work, WorkToFell);
 	return Progress.Work >= WorkToFell;
 }
 
 FVector2D FFellingModel::ResolveFallDirection(const FFellingProgress& Progress, const FVector2D& Downhill, uint32 InstanceSeed)
 {
-	const FVector2D PushDir = Progress.Push.Size() >= MinNetPush ? Progress.Push.GetSafeNormal() : FVector2D::ZeroVector;
-	const FVector2D Combined = PushDir + Downhill * SlopeWeight;
+	const FVector2D PushDir = Progress.LastHit.GetSafeNormal();
+	// Una pendiente NaN o infinita (muestra de terreno corrupta) se ignora.
+	const FVector2D Slope = (FMath::IsFinite(Downhill.X) && FMath::IsFinite(Downhill.Y)) ? Downhill : FVector2D::ZeroVector;
+	const FVector2D Combined = PushDir + Slope * SlopeWeight;
 	if (Combined.Size() >= MinNetPush)
 	{
 		return Combined.GetSafeNormal();
@@ -247,7 +258,7 @@ FVector2D FFellingModel::ResolveFallDirection(const FFellingProgress& Progress, 
 	return FVector2D(FMath::Cos(Angle), FMath::Sin(Angle));
 }
 
-TArray<FFellingDrop> FFellingModel::ComputeFellDrops(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, FExploredRandom& Random)
+TArray<FFellingDrop> FFellingModel::ComputeFellDrops(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, FExploredRandom& Random, double ReachFraction)
 {
 	FVector2D Dir = FallDirection.GetSafeNormal();
 	if (Dir.IsZero())
@@ -255,7 +266,9 @@ TArray<FFellingDrop> FFellingModel::ComputeFellDrops(const FFellingProfile& Prof
 		Dir = FVector2D(1.0, 0.0);
 	}
 	const FVector2D Perp(-Dir.Y, Dir.X);
-	const double HeightCm = FMath::Max(0.0f, Profile.HeightMeters) * 100.0;
+	// Apoyado en algo, el tronco solo se proyecta en parte sobre el suelo (NaN → cae entero).
+	const double Reach = FMath::IsFinite(ReachFraction) ? FMath::Clamp(ReachFraction, 0.0, 1.0) : 1.0;
+	const double HeightCm = FMath::Max(0.0f, Profile.HeightMeters) * 100.0 * Reach;
 	const double CrownCm = FMath::Max(0.0f, Profile.CrownRadiusMeters) * 100.0;
 	// La copa empieza al 85 % del tronco; los troncos se reparten por el 80 % inferior.
 	const FVector2D Crown = Base + Dir * (HeightCm * 0.85);
@@ -315,6 +328,21 @@ TArray<FFellingDrop> FFellingModel::ComputeFellDrops(const FFellingProfile& Prof
 	return Drops;
 }
 
+int64 FFellingModel::RegrowMinutes(const FFellingProfile& Profile)
+{
+	return Profile.StumpRegrowDays > 0 ? (int64)Profile.StumpRegrowDays * MinutesPerDay : 0;
+}
+
+int64 FFellingModel::SproutMinutes(const FFellingProfile& Profile)
+{
+	const int64 Regrow = RegrowMinutes(Profile);
+	if (Regrow <= 0)
+	{
+		return 0;
+	}
+	return FMath::Clamp((int64)Profile.SproutDays * MinutesPerDay, (int64)1, Regrow - 1);
+}
+
 EStumpStage FFellingModel::StageAt(const FFellingProfile& Profile, const FStumpState& Stump, int64 NowMinute)
 {
 	if (Stump.bUprooted)
@@ -326,8 +354,8 @@ EStumpStage FFellingModel::StageAt(const FFellingProfile& Profile, const FStumpS
 		return EStumpStage::Stump;
 	}
 	const int64 Elapsed = NowMinute - Stump.FelledAtMinute;
-	const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
-	const int64 MatureAt = SproutAt + (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
+	const int64 SproutAt = SproutMinutes(Profile);
+	const int64 MatureAt = RegrowMinutes(Profile);
 	if (Elapsed < SproutAt)
 	{
 		return EStumpStage::Stump;
@@ -343,8 +371,8 @@ float FFellingModel::GrowthScaleAt(const FFellingProfile& Profile, const FStumpS
 		return 1.0f;
 	case EStumpStage::Sapling:
 	{
-		const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
-		const int64 Span = (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
+		const int64 SproutAt = SproutMinutes(Profile);
+		const int64 Span = FMath::Max((int64)1, RegrowMinutes(Profile) - SproutAt);
 		const double Alpha = (double)(NowMinute - Stump.FelledAtMinute - SproutAt) / (double)Span;
 		return (float)FMath::Lerp((double)SaplingStartScale, 1.0, FMath::Clamp(Alpha, 0.0, 1.0));
 	}
@@ -375,7 +403,8 @@ FGroundBranchSource FFellingModel::MakeBranchSource(const FFellingProfile& Profi
 	Source.Position = Position;
 	Source.CrownRadiusMeters = Profile.CrownRadiusMeters;
 	Source.Capacity = Profile.GroundBranchCapacity;
-	Source.PerDayMilli = Profile.GroundBranchPerDayMilli;
+	Source.CycleMin = Profile.GroundBranchCycleMin;
+	Source.CycleMax = Profile.GroundBranchCycleMax;
 	Source.ItemId = Profile.GroundBranchItem;
 	return Source;
 }

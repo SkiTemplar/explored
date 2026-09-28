@@ -60,20 +60,26 @@ struct EXPLORED_API FFellingProfile
 	/** Radio de la copa, en metros: frutos al caer y ramas del suelo bajo el árbol en pie. */
 	float CrownRadiusMeters = 1.0f;
 
-	/** Días de juego desde la tala hasta que el tocón echa un brote. 0 = no rebrota. */
+	/**
+	 * Días de juego desde la tala hasta que vuelve a ser un ejemplar talable (biblia 02 §1.2:
+	 * 18 con fruto, 24 madera sin fruto, 4 arbustos). 0 = no rebrota.
+	 */
 	int32 StumpRegrowDays = 0;
-	/** Días de juego desde el brote hasta el ejemplar adulto (escala 1). */
-	int32 SaplingToMatureDays = 1;
+	/** Días de juego desde la tala hasta que asoma el brote (0 < SproutDays < StumpRegrowDays); antes es tocón pelado. */
+	int32 SproutDays = 1;
+	/** Desviación máxima de la caída por el viento, en grados (biblia 02 §1.2: ±20°, palmera ±15°, balsa ±25°). */
+	float WindDeviationDeg = 20.0f;
 	/** Golpes de pala para arrancar el tocón (impide el rebrote). */
 	int32 UprootShovelHits = 3;
 	/** Lo que suelta el tocón arrancado. */
 	TArray<FHarvestDrop> UprootDrops;
 
-	/** Ramas sueltas que caben a la vez bajo un ejemplar en pie. */
+	/** Ramas sueltas que caben a la vez bajo el árbol (biblia 02 §1.3: tope de 6). 0 = no suelta ramas. */
 	int32 GroundBranchCapacity = 0;
-	/** Ramas nuevas por día de juego bajo un ejemplar en pie, en milésimas (entero: sin deriva). */
-	int32 GroundBranchPerDayMilli = 0;
-	/** Lo que se encuentra en el suelo bajo el ejemplar (rama_seca; hoja_palma bajo las palmeras). */
+	/** Ramas nuevas por ciclo de 6 h de juego: entre Min y Max (biblia 02 §1.3: 2–4). */
+	int32 GroundBranchCycleMin = 0;
+	int32 GroundBranchCycleMax = 0;
+	/** Lo que se encuentra en el suelo bajo el árbol (rama_seca). */
 	FName GroundBranchItem;
 };
 
@@ -82,8 +88,8 @@ struct EXPLORED_API FFellingProgress
 {
 	/** Trabajo acumulado, en unidades de FFellingModel::WorkToFell. */
 	int32 Work = 0;
-	/** Suma de las direcciones de los golpes (hacia dónde empuja cada golpe), ponderada por el trabajo de cada uno. */
-	FVector2D Push = FVector2D::ZeroVector;
+	/** Dirección unitaria del último golpe que contó (hacia dónde empuja: del jugador al tronco); cero si aún no hay ninguno. */
+	FVector2D LastHit = FVector2D::ZeroVector;
 };
 
 /** Una unidad suelta en el suelo al caer el árbol. */
@@ -120,7 +126,7 @@ struct EXPLORED_API FFellingModel
 	 * herramientas a media tala nunca deja el árbol «a una millonésima».
 	 */
 	static constexpr int32 WorkToFell = 720720;
-	/** Peso de la pendiente frente al empuje de los golpes: a tan = 1 / SlopeWeight (≈ 27°) pesan igual. */
+	/** Peso de la pendiente frente al empuje del golpe final: a tan = 1 / SlopeWeight (≈ 27°) pesan igual. */
 	static constexpr double SlopeWeight = 2.0;
 	/** Escala del brote recién salido respecto al adulto. */
 	static constexpr float SaplingStartScale = 0.15f;
@@ -141,10 +147,12 @@ struct EXPLORED_API FFellingModel
 	static bool ApplyHit(const FFellingProfile& Profile, FFellingProgress& Progress, EFellingTool Tool, const FVector2D& HitDirection);
 
 	/**
-	 * Dirección de caída (unitaria, en el plano). Combina el empuje medio de
-	 * los golpes con la pendiente: Downhill apunta cuesta abajo y su módulo es
-	 * la tangente de la pendiente (|∇h|). Si ambos se anulan (golpes opuestos
-	 * en llano), cae hacia una dirección fija derivada de InstanceSeed.
+	 * Dirección de caída sin viento (unitaria, en el plano). Combina la
+	 * dirección del golpe final (biblia 02 §1.2) con la pendiente: Downhill
+	 * apunta cuesta abajo y su módulo es la tangente de la pendiente (|∇h|).
+	 * Si ambos se anulan (sin golpe válido en llano, o golpe cuesta arriba que
+	 * iguala la pendiente), cae hacia una dirección fija derivada de
+	 * InstanceSeed. El viento lo añade FTreeFallModel::ResolveDirection.
 	 */
 	static FVector2D ResolveFallDirection(const FFellingProgress& Progress, const FVector2D& Downhill, uint32 InstanceSeed);
 
@@ -152,8 +160,15 @@ struct EXPLORED_API FFellingModel
 	 * Tira el rendimiento y coloca cada unidad: troncos repartidos a lo largo
 	 * del tronco caído, ramas y hojas en la copa, frutos en el radio de la
 	 * copa. Base en centímetros. Cada unidad es un FFellingDrop (Count 1).
+	 * ReachFraction es la parte de la altura que queda en horizontal: 1 si cae
+	 * al suelo, menos si se apoya en algo (FTreeFallResult::ReachFraction).
 	 */
-	static TArray<FFellingDrop> ComputeFellDrops(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, FExploredRandom& Random);
+	static TArray<FFellingDrop> ComputeFellDrops(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, FExploredRandom& Random, double ReachFraction = 1.0);
+
+	/** Minutos de juego desde la tala hasta que vuelve a ser talable; 0 si no rebrota. */
+	static int64 RegrowMinutes(const FFellingProfile& Profile);
+	/** Minutos de juego desde la tala hasta que asoma el brote (acotado a (0, RegrowMinutes)); 0 si no rebrota. */
+	static int64 SproutMinutes(const FFellingProfile& Profile);
 
 	/** Etapa del tocón a esa hora. Una hora anterior a la tala (reloj corrupto) cuenta como tocón. */
 	static EStumpStage StageAt(const FFellingProfile& Profile, const FStumpState& Stump, int64 NowMinute);

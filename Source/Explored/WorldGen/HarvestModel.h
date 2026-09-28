@@ -38,7 +38,11 @@ struct EXPLORED_API FHarvestSpeciesRule
 	/** Solo al golpe final: troncos, cocos, lascas de la roca agotada. */
 	TArray<FHarvestDrop> FellDrops;
 
-	/** Horas de juego hasta que una instancia talada puede volver a aparecer. 0 = no rebrota (árboles grandes). */
+	/**
+	 * Horas de juego hasta que una instancia talada vuelve a ser recolectable (biblia 02 §1.2:
+	 * 18 días con fruto, 24 madera sin fruto, 4 arbustos y hierba). Con perfil de tala
+	 * (FFellingModel) coincide con StumpRegrowDays × 24. 0 = no rebrota.
+	 */
 	float RegrowHours = 0.0f;
 };
 

@@ -15,6 +15,7 @@
 #include "Survival/SurvivalModel.h"
 #include "UI/ExploredGameplayMode.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/FellingModel.h"
 #include "WorldGen/HarvestModel.h"
 #include "WorldGen/VegetationHarvestState.h"
 
@@ -141,6 +142,8 @@ private:
 	void SpawnItemsAround(const FVector& Center, FName ItemId, int32 Count, float RadiusCm) const;
 	void NotifyDiscovery(bool bMorale = true) const;
 	float GetTotalDays() const;
+	/** Reloj del juego en minutos enteros (tala, tocón y rebrote: FVegetationStateModel). */
+	int64 GetTotalMinutes() const;
 
 	/**
 	 * Arranque de partida nueva en Landing (GDD): un cuchillo y una cantimplora de
@@ -158,7 +161,14 @@ private:
 	/** Oculta en esta celda las instancias que ya venían taladas en la partida (una sola vez por celda y carga). */
 	void EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell);
 	void HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const;
+	/** Tocones: escala del brote y rebrote cuando toca (biblia 02 §1.2). */
 	void TickVegetationRegrowth();
+	/** Minutos de juego hasta que la especie vuelve a ser talable (0 = no rebrota) y, en OutSprout, hasta que asoma el brote. */
+	int64 RegrowMinutesFor(FName Species, const FHarvestSpeciesRule& Rule, int64& OutSproutMinutes) const;
+	/** Una instancia rebrotada sale de los deltas y del reloj de tala. */
+	void ForgetFelledInstance(const FIntPoint& Cell, FName Component, int32 Index);
+	/** Copia VegetationClock en WorldDeltas para el próximo guardado. */
+	void SyncVegetationClock();
 	/** true si Instigator lleva RequiredTag en una mano (NAME_None = no hace falta ninguna herramienta). */
 	bool HasHarvestTool(const AActor* Instigator, FName RequiredTag) const;
 
@@ -184,6 +194,10 @@ private:
 
 	// --- Recolección de vegetación y rocas --------------------------------------
 	TArray<FHarvestSpeciesRule> HarvestRules = FHarvestModel::DefaultRules();
+	/** Perfiles de tala: días de brote y rebrote de las especies leñosas y del arbusto. */
+	TArray<FFellingProfile> FellingProfiles = FFellingModel::DefaultProfiles();
+	/** Hora de tala de cada instancia que espera rebrote (sección «vegetationClock» del guardado). */
+	FVegetationClock VegetationClock;
 	TMap<FVegetationInstanceKey, FVegetationRuntimeState> VegetationRuntime;
 	/** Celdas cuyos deltas guardados ya se aplicaron esta sesión (ver EnsureVegetationDeltasApplied). */
 	TSet<FIntPoint> VegetationDeltasAppliedCells;

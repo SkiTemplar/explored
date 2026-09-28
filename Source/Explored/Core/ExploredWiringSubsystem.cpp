@@ -230,6 +230,11 @@ float UExploredWiringSubsystem::GetTotalDays() const
 	return Time ? Time->GetTotalDays() : 0.0f;
 }
 
+int64 UExploredWiringSubsystem::GetTotalMinutes() const
+{
+	return FVegetationStateModel::MinuteFromDays(GetTotalDays());
+}
+
 UExploredWiringSubsystem* UExploredWiringSubsystem::Get(const UObject* WorldContextObject)
 {
 	const UWorld* World = (GEngine && WorldContextObject)
@@ -740,6 +745,9 @@ void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetation
 	// Una celda agrupa varias especies (un HISM por malla): cada una tiene su propia capa de
 	// deltas, con nombre el del componente (estable entre partidas, ver ExploredVegetationCell.cpp
 	// GetOrCreateComponent), porque los índices de instancia no se comparten entre componentes.
+	const int64 Now = GetTotalMinutes();
+	TArray<TPair<FName, int32>> Regrown;
+	bool bClockChanged = false;
 	for (const auto& Pair : Cell.GetComponentSpecies())
 	{
 		UHierarchicalInstancedStaticMeshComponent* CellComponent = Pair.Key;
@@ -747,31 +755,84 @@ void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetation
 		{
 			continue;
 		}
-		const FSaveScatterDeltas* Layer = WorldDeltas.FindLayer(CellComponent->GetFName());
+		const FName ComponentName = CellComponent->GetFName();
+		const FSaveScatterDeltas* Layer = WorldDeltas.FindLayer(ComponentName);
 		const FSaveIndexSet* Indices = Layer ? Layer->FindCell(Cell.CellCoord) : nullptr;
 		if (!Indices)
 		{
 			continue;
 		}
+		const FName Species = Pair.Value;
+		const FHarvestSpeciesRule* Rule = FHarvestModel::FindRule(HarvestRules, Species);
+		int64 SproutMinutes = 0;
+		const int64 RegrowMinutes = Rule ? RegrowMinutesFor(Species, *Rule, SproutMinutes) : 0;
 		for (const int32 Index : Indices->ToArray())
 		{
 			if (Index < 0 || Index >= CellComponent->GetInstanceCount())
 			{
 				continue;
 			}
-			FVegetationInstanceKey Key{ Cell.CellCoord, CellComponent->GetFName(), Index };
+			FVegetationInstanceKey Key{ Cell.CellCoord, ComponentName, Index };
 			FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
 			if (State.bHidden)
 			{
 				continue;
 			}
+			// Hora de tala guardada (biblia 02 §1.6). Si falta (partida anterior al reloj) o está
+			// rota, cuenta como talada ahora: el rebrote se retrasa, nunca se adelanta.
+			const int64* Saved = VegetationClock.Find(Cell.CellCoord, ComponentName, Index);
+			const int64 FelledAt = RegrowMinutes > 0 ? FVegetationStateModel::ResolveFelledAt(Saved, Now) : Now;
+			const FVegetationInstanceState Instance = FVegetationStateModel::Fell(FelledAt, SproutMinutes, RegrowMinutes);
+			if (FVegetationStateModel::IsRegrown(Instance, Now))
+			{
+				// Rebrotó mientras la partida estaba guardada: se queda en pie.
+				Regrown.Add(TPair<FName, int32>(ComponentName, Index));
+				VegetationRuntime.Remove(Key);
+				continue;
+			}
 			HideVegetationInstance(*CellComponent, Index, State);
-			// Ya venía talada de la partida guardada: sin rebrote de sesión (se persistió
-			// precisamente porque su especie no rebrota, ver HarvestInstance).
-			State.RegrowAtDays = -1.0f;
-			State.Hits = 1;
+			State.Instance = Instance;
+			State.Species = Species;
+			State.AppliedScale = 0.0f;
+			if (RegrowMinutes > 0 && (!Saved || *Saved != FelledAt))
+			{
+				// Repara el reloj (entrada perdida o manipulada) para que el próximo guardado la lleve.
+				VegetationClock.Set(Cell.CellCoord, ComponentName, Index, FelledAt);
+				bClockChanged = true;
+			}
 		}
 	}
+	for (const TPair<FName, int32>& Done : Regrown)
+	{
+		ForgetFelledInstance(Cell.CellCoord, Done.Key, Done.Value);
+		bClockChanged = true;
+	}
+	if (bClockChanged)
+	{
+		SyncVegetationClock();
+	}
+}
+
+int64 UExploredWiringSubsystem::RegrowMinutesFor(FName Species, const FHarvestSpeciesRule& Rule, int64& OutSproutMinutes) const
+{
+	if (const FFellingProfile* Profile = FFellingModel::FindProfile(FellingProfiles, Species))
+	{
+		OutSproutMinutes = FFellingModel::SproutMinutes(*Profile);
+		return FFellingModel::RegrowMinutes(*Profile);
+	}
+	OutSproutMinutes = 0;
+	return Rule.RegrowHours > 0.0f ? (int64)FMath::RoundToDouble((double)Rule.RegrowHours * 60.0) : 0;
+}
+
+void UExploredWiringSubsystem::ForgetFelledInstance(const FIntPoint& Cell, FName Component, int32 Index)
+{
+	WorldDeltas.Layer(Component).Remove(Cell, Index);
+	VegetationClock.Remove(Cell, Component, Index);
+}
+
+void UExploredWiringSubsystem::SyncVegetationClock()
+{
+	WorldDeltas.VegetationClock = VegetationClock.IsEmpty() ? FSaveValue() : VegetationClock.ToValue();
 }
 
 void UExploredWiringSubsystem::HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const
@@ -796,22 +857,57 @@ void UExploredWiringSubsystem::TickVegetationRegrowth()
 	{
 		return;
 	}
-	const float Days = GetTotalDays();
+	const int64 Now = GetTotalMinutes();
+	bool bClockChanged = false;
+	TSet<UHierarchicalInstancedStaticMeshComponent*> Dirty;
 	for (auto& Pair : VegetationRuntime)
 	{
 		FVegetationRuntimeState& State = Pair.Value;
-		if (!State.bHidden || State.RegrowAtDays < 0.0f || Days < State.RegrowAtDays)
+		if (!State.bHidden || State.Instance.RegrowAtMinute < 0)
 		{
 			continue;
 		}
 		UHierarchicalInstancedStaticMeshComponent* Component = State.Component.Get();
-		if (Component)
+		if (FVegetationStateModel::IsRegrown(State.Instance, Now))
 		{
-			Component->UpdateInstanceTransform(Pair.Key.Index, State.OriginalTransform, true, true, true);
+			if (Component)
+			{
+				Component->UpdateInstanceTransform(Pair.Key.Index, State.OriginalTransform, true, true, true);
+			}
+			ForgetFelledInstance(Pair.Key.Cell, Pair.Key.Component, Pair.Key.Index);
+			bClockChanged = true;
+			State.bHidden = false;
+			State.Instance = FVegetationInstanceState();
+			State.AppliedScale = 1.0f;
+			continue;
 		}
-		State.bHidden = false;
-		State.Hits = 0;
-		State.RegrowAtDays = -1.0f;
+		// Brote: crece desde SaplingStartScale; sigue sin poderse golpear hasta que rebrota del todo.
+		const FFellingProfile* Profile = FFellingModel::FindProfile(FellingProfiles, State.Species);
+		if (!Component || !Profile || State.StageAt(Now) != EVegetationStage::Sapling)
+		{
+			continue;
+		}
+		FStumpState Stump;
+		Stump.FelledAtMinute = State.Instance.FelledAtMinute;
+		const float Scale = FFellingModel::GrowthScaleAt(*Profile, Stump, Now);
+		if (FMath::Abs(Scale - State.AppliedScale) < 0.01f)
+		{
+			continue;
+		}
+		FTransform Grown = State.OriginalTransform;
+		Grown.SetScale3D(State.OriginalTransform.GetScale3D() * Scale);
+		// Sin marcar el render por instancia: una vez por componente al final del barrido.
+		Component->UpdateInstanceTransform(Pair.Key.Index, Grown, true, false, true);
+		State.AppliedScale = Scale;
+		Dirty.Add(Component);
+	}
+	for (UHierarchicalInstancedStaticMeshComponent* Component : Dirty)
+	{
+		Component->MarkRenderStateDirty();
+	}
+	if (bClockChanged)
+	{
+		SyncVegetationClock();
 	}
 }
 
@@ -860,7 +956,7 @@ void UExploredWiringSubsystem::GetHarvestVerbs(const AExploredVegetationCell& Ce
 	const int32 Required = FHarvestModel::HitsRequired(*Rule, bHasTool);
 	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
 	const FVegetationRuntimeState* State = VegetationRuntime.Find(Key);
-	const int32 CurrentHits = State ? State->Hits : 0;
+	const int32 CurrentHits = State ? State->Instance.Hits : 0;
 
 	FText Verb;
 	if (Required <= 1)
@@ -930,7 +1026,7 @@ void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UH
 	FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
 
 	bool bFelled = false;
-	State.Hits = FHarvestModel::ApplyHit(*Rule, State.Hits, bHasTool, bFelled);
+	State.Instance.Hits = FHarvestModel::ApplyHit(*Rule, State.Instance.Hits, bHasTool, bFelled);
 
 	FTransform InstanceTransform;
 	Component->GetInstanceTransform(InstanceIndex, InstanceTransform, true);
@@ -952,19 +1048,19 @@ void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UH
 	}
 
 	HideVegetationInstance(*Component, InstanceIndex, State);
-	if (Rule->RegrowHours > 0.0f)
+	// Tocón (biblia 02 §1.2): el índice va a los deltas y la hora de tala al reloj, así que el
+	// rebrote (18, 24 o 4 días según la especie) atraviesa guardar y cargar.
+	const int64 Now = GetTotalMinutes();
+	int64 SproutMinutes = 0;
+	const int64 RegrowMinutes = RegrowMinutesFor(Species, *Rule, SproutMinutes);
+	State.Instance = FVegetationStateModel::Fell(Now, SproutMinutes, RegrowMinutes);
+	State.Species = Species;
+	State.AppliedScale = 0.0f;
+	WorldDeltas.Layer(Component->GetFName()).Add(Cell.CellCoord, InstanceIndex);
+	if (RegrowMinutes > 0)
 	{
-		// Simplificación deliberada: el rebrote es de sesión, en horas de juego (sigue la duración
-		// del día elegida en ajustes y el sueño), y no se guarda instancia a instancia — el formato de
-		// guardado (FSaveScatterDeltas) es un conjunto de índices sin marca de tiempo. Por eso
-		// estas especies NO se añaden a WorldDeltas: si la partida se recarga antes de que
-		// rebrote en esta sesión, aparecen disponibles de nuevo en vez de seguir taladas.
-		State.RegrowAtDays = GetTotalDays() + Rule->RegrowHours / 24.0f;
-	}
-	else
-	{
-		State.RegrowAtDays = -1.0f;
-		WorldDeltas.Layer(Component->GetFName()).Add(Cell.CellCoord, InstanceIndex);
+		VegetationClock.Set(Cell.CellCoord, Component->GetFName(), InstanceIndex, Now);
+		SyncVegetationClock();
 	}
 }
 
@@ -1363,6 +1459,8 @@ void UExploredWiringSubsystem::SaveWorld(FSaveArchive& Ar) const
 void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 {
 	WorldDeltas.Load(Ar);
+	// Una sección ilegible deja el reloj vacío: lo talado cuenta como talado al cargar (ver EnsureVegetationDeltasApplied).
+	VegetationClock.FromValue(WorldDeltas.VegetationClock);
 	if (WorldDeltas.Seed == 0)
 	{
 		WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;

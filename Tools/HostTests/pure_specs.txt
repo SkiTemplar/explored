@@ -18,6 +18,8 @@ Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/FellingModelSpec.cpp
 Tests/GroundBranchModelSpec.cpp
+Tests/TreeFallModelSpec.cpp
+Tests/VegetationStateModelSpec.cpp
 Tests/HarvestModelSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp
