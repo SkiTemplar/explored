@@ -1585,3 +1585,58 @@ def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
 def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
     del item(ds, "antorcha")["maxDurability"]
     assert any_error(mining_errors(ds), "antorcha", "maxDurability")
+
+
+# --------------------------------------------------------------------------- iconos de UI (lote 9)
+
+
+def test_packs_iconos_cubren_o_dejan_pendiente_cada_pista_de_logro(real: DataSet) -> None:
+    cat = _catalog(real)
+    hints = {a["icon"] for a in real.data["achievements.json"]["achievements"]}
+    covered = {s["achievementIcon"] for i in cat["icons"] for s in i["slots"] if "achievementIcon" in s}
+    assert {"fuego", "refugio", "estrella"} <= covered
+    assert hints == covered | {p["achievementIcon"] for p in cat["iconsPending"]}
+    assert not any_error(errors_of(real), "icono")
+
+
+def test_packs_icono_con_pista_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"achievementIcon": "unicornio"}]
+    assert any_error(errors_of(ds), "unicornio", "achievements.json")
+
+
+def test_packs_icono_de_widget_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"widget": "SExploredRadar", "role": "punto"}]
+    assert any_error(errors_of(ds), "SExploredRadar", "no existe")
+
+
+def test_packs_icono_con_tinte_fuera_del_estilo(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["tint"] = {"conseguido": "ColorNeon"}
+    assert any_error(errors_of(ds), "ColorNeon", "ExploredUIStyle")
+
+
+def test_packs_icono_slot_repetido(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["slots"] = list(icons[0]["slots"])
+    assert any_error(errors_of(ds), "ya tiene icono")
+
+
+def test_packs_icono_textura_repetida(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["texture"] = icons[0]["texture"]
+    assert any_error(errors_of(ds), "textura repetida")
+
+
+def test_packs_icono_pista_sin_cubrir(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    cat["iconsPending"] = [p for p in cat["iconsPending"] if p["achievementIcon"] != "ballena"]
+    assert any_error(errors_of(ds), "ballena", "ni está en iconsPending")
+
+
+def test_packs_icono_pendiente_ya_cubierto(ds: DataSet) -> None:
+    _catalog(ds)["iconsPending"].append({"achievementIcon": "fuego", "reason": "prueba"})
+    assert any_error(errors_of(ds), "fuego", "ya tiene icono")
+
+
+def test_packs_icono_de_pack_sin_licencia(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["pack"] = "iconos_de_pago"
+    assert any_error(errors_of(ds), "iconos_de_pago", "packs.json")
