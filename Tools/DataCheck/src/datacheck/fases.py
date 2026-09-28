@@ -14,6 +14,7 @@ trueque con el pueblo del arrecife (§3.9, §5). Comprueba:
 from __future__ import annotations
 
 import json
+from typing import Any, Iterator, TypeGuard
 
 from . import mining
 
@@ -23,7 +24,12 @@ DRAFT_SOCKETS = {"via"}
 MONEY_KEYS = {"price", "precio", "moneda", "currency", "coins", "monedas", "cost_coins", "gold", "oro"}
 
 
-def _walk_keys(node):
+def _num(value: Any) -> TypeGuard[float]:
+    """Número JSON (no booleano): lo único que se puede comparar con < sin romper."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _walk_keys(node: Any) -> Iterator[str]:
     if isinstance(node, dict):
         for k, v in node.items():
             yield k
@@ -69,7 +75,9 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         for group in ("pieces", "traps", "species"):
             for e in sec.get(group, []):
                 eid = e.get("id")
-                if e.get("fase") not in DRAFT_PHASES or e.get("fase") < sec.get("fase", 0):
+                sec_phase = sec.get("fase", 0)
+                floor = sec_phase if _num(sec_phase) else 0
+                if e.get("fase") not in DRAFT_PHASES or e["fase"] < floor:
                     r.error(f"{FILE}/{name} «{eid}»: fase {e.get('fase')!r} no es 2/3 o es anterior a su sección")
                 if eid in draft_ids:
                     r.error(f"{FILE}/{name}: id repetido «{eid}»")
@@ -103,7 +111,8 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         prod = s.get("product")
         if prod and prod.get("item") not in known:
             r.error(f"{FILE}/livestock «{s.get('id')}»: producto «{prod.get('item')}» no existe")
-    if not 0 < live.get("breeding", {}).get("dailyChance", 0) < 1:
+    chance = live.get("breeding", {}).get("dailyChance", 0)
+    if not (_num(chance) and 0 < chance < 1):
         r.error(f"{FILE}/livestock: breeding.dailyChance fuera de (0, 1)")
 
     trade = sections.get("trade", {})
@@ -111,22 +120,27 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
     tier_ids = [t.get("id") for t in tiers]
     expect_min, last_rate = 0, -1.0
     for t in tiers:
-        if t.get("min") != expect_min or t.get("max", -1) < t.get("min", 0):
-            r.error(f"{FILE}/trade: tramo «{t.get('id')}» [{t.get('min')}, {t.get('max')}] no continúa en {expect_min}")
-        expect_min = t.get("max", 0) + 1
-        if t.get("rate", -1) < last_rate:
+        lo, hi, rate = t.get("min"), t.get("max"), t.get("rate", -1)
+        if lo != expect_min or not _num(hi) or hi < lo:
+            r.error(f"{FILE}/trade: tramo «{t.get('id')}» [{lo}, {hi}] no continúa en {expect_min}")
+        # Un máximo que no es número rompe la cadena: el tramo siguiente y el final se informan también.
+        expect_min = hi + 1 if _num(hi) else -1
+        if not _num(rate) or rate < last_rate:
             r.error(f"{FILE}/trade: la tasa del tramo «{t.get('id')}» baja respecto al anterior")
-        last_rate = t.get("rate", -1)
+        else:
+            last_rate = rate
     if tiers and expect_min != 101:
         r.error(f"{FILE}/trade: los tramos de reputación deben acabar en 100")
     islands = mining.cpp_islands(ds)
     for s in trade.get("settlements", []):
         if islands and s.get("island") not in islands:
             r.error(f"{FILE}/trade: asentamiento en «{s.get('island')}», que no es un EIslandArchetype")
-        if not 0 <= s.get("initialReputation", -1) <= 100:
+        rep = s.get("initialReputation", -1)
+        if not (_num(rep) and 0 <= rep <= 100):
             r.error(f"{FILE}/trade: reputación inicial fuera de 0-100")
     for w in trade.get("wants", []):
-        if not 1 <= w.get("value", 0) <= 5:
+        value = w.get("value", 0)
+        if not (_num(value) and 1 <= value <= 5):
             r.error(f"{FILE}/trade/wants «{w.get('id')}»: valor fuera de 1-5 (biblia 05 §1.4)")
         for tag in w.get("tags", []):
             if tag not in tags:
@@ -135,7 +149,8 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
             if it not in known:
                 r.error(f"{FILE}/trade/wants «{w.get('id')}»: objeto «{it}» no existe")
     for o in trade.get("offers", []) + trade.get("favors", []):
-        if not 1 <= o.get("value", 1) <= 5:
+        value = o.get("value", 1)
+        if not (_num(value) and 1 <= value <= 5):
             r.error(f"{FILE}/trade/offers: valor {o.get('value')!r} fuera de 1-5")
         if o.get("minTier") not in tier_ids:
             r.error(f"{FILE}/trade: tramo «{o.get('minTier')}» no existe")
@@ -160,7 +175,7 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
                 r.error(f"{name}: usa «{did}», que solo existe en el borrador de fase 2/3 ({FILE})")
 
 
-def _phase1_view(name: str, content):
+def _phase1_view(name: str, content: Any) -> Any:
     """Lo que de verdad es fase 1 en un fichero de datos.
 
     ``fauna_terrestre.json`` lista también las especies de F2/F3 con su ``phase`` y el

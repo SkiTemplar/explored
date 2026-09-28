@@ -62,7 +62,7 @@ def check_manifest(manifest: dict, error: Err) -> set[str]:
     for p in manifest.get("packs", []):
         pid = p.get("id", "")
         where = f"packs.json: pack «{pid}»"
-        if not ASCII_ID.match(pid):
+        if not isinstance(pid, str) or not ASCII_ID.match(pid):
             error(f"{where}: id no ASCII en minúsculas")
             continue
         if pid in seen:
@@ -125,7 +125,7 @@ def check_fauna(data: dict, error: Err) -> None:
     for f in doc.get("species", []):
         fid = f.get("id", "")
         where = f"{FAUNA}: «{fid}»"
-        if not ASCII_ID.match(fid):
+        if not isinstance(fid, str) or not ASCII_ID.match(fid):
             error(f"{where}: id no ASCII en minúsculas")
         if fid in seen:
             error(f"{where}: id duplicado")
@@ -206,7 +206,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
     lotes = set()
     for lote in catalog.get("lotes", []):
         lid = lote.get("id", "")
-        if not LOTE_ID.match(lid):
+        if not LOTE_ID.match(str(lid)):
             error(f"{CATALOG}: lote «{lid}» no sigue lote<N>-<nombre>")
         if lid in lotes:
             error(f"{CATALOG}: lote «{lid}» duplicado")
@@ -214,6 +214,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         if not DATE.match(str(lote.get("date", ""))):
             error(f"{CATALOG}: lote «{lid}» sin fecha")
         sheet = lote.get("sheet", "")
+        sheet = sheet if isinstance(sheet, str) else ""
         path = repo_root / sheet
         if not sheet.startswith("docs/art/packs/") or not sheet.endswith(".png"):
             error(f"{CATALOG}: lote «{lid}»: la hoja de contacto va en docs/art/packs/*.png")
@@ -242,12 +243,12 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         elif pack not in usable:
             error(f"{where}: pack «{pack}» sin licencia CC0 verificada o sin sha256")
         f = e.get("file", "")
-        if not f or f.startswith("/") or ".." in Path(f).parts:
+        if not isinstance(f, str) or not f or f.startswith("/") or ".." in Path(f).parts:
             error(f"{where}: «file» debe ser una ruta relativa dentro del pack")
         mesh = e.get("mesh", "")
-        if kind == "fauna" and not SK_MESH.match(mesh):
+        if kind == "fauna" and not SK_MESH.match(str(mesh)):
             error(f"{where}: malla con esqueleto «{mesh}» no sigue SK_Pack_<Nombre>")
-        elif kind != "fauna" and not MESH.match(mesh):
+        elif kind != "fauna" and not MESH.match(str(mesh)):
             error(f"{where}: malla «{mesh}» no sigue SM_Pack_<Nombre>")
         _check_rig(e, where, error)
         if mesh in seen_mesh:
@@ -295,7 +296,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
-            if not GAME_ID.match(gid):
+            if not isinstance(gid, str) or not GAME_ID.match(gid):
                 error(f"{CATALOG}: {key}: id «{gid}» no ASCII")
             elif "." in gid and gid not in ids["planta"]:
                 error(f"{CATALOG}: {key}: «{gid}» no es una etapa de plants.json")

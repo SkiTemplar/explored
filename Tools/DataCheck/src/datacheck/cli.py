@@ -1,10 +1,11 @@
-"""CLI: ``uv run datacheck [--strict] [--write-pending] [--write-cooking] [--quiet]``."""
+"""CLI: ``uv run datacheck [--strict] [--write-pending] [--write-cooking] [--quiet] [--root RUTA]``."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import cooking
 from .checks import REPO_ROOT, DataSet, pending_expected, run_all
@@ -31,9 +32,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-cooking", action="store_true",
                         help="regenera FireData.inl y CookingData.inl desde fuels.json, recipes.json e items.json")
     parser.add_argument("--quiet", action="store_true", help="no muestra la información de diseño")
+    parser.add_argument("--root", type=Path, default=REPO_ROOT,
+                        help="raíz del repositorio a validar (por defecto, la de este checkout)")
     args = parser.parse_args(argv)
 
-    ds = DataSet.load(REPO_ROOT)
+    ds = DataSet.load(args.root)
     if args.write_pending:
         write_pending(ds)
     if args.write_cooking:

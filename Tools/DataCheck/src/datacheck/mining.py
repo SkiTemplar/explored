@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import copy
+import json
 import re
 
 from . import crafting
@@ -54,7 +56,8 @@ def cpp_materials(ds) -> dict[str, tuple[float, int]] | None:
         return None
     names = [n for n in re.findall(r"(\w+),", enum.group(1)) if n != "Count"]
     rows = re.findall(r"\{\s*([\d.]+)f,\s*(\d+)\s*\}", table.group(1))
-    return {n: (float(a), int(b)) for n, (a, b) in zip(names, rows)}
+    # Sin strict: si el enum tiene más valores que filas, los sobrantes aparecen como «no coincide».
+    return {n: (float(a), int(b)) for n, (a, b) in zip(names, rows, strict=False)}
 
 
 def _cpp_const(ds, name: str) -> float | None:
@@ -93,11 +96,14 @@ def check_mining(ds, r) -> None:
             r.error(f"mining.json/materials «{mid}»: dureza {hardness!r} o nivel mínimo {min_tier!r} inválidos")
             continue
         table = m.get("hitsPerM3", {})
+        table = table if isinstance(table, dict) else {}
         expected_tiers = {str(t) for t in range(min_tier, MAX_TIER + 1)}
         if set(table) != expected_tiers:
             r.error(f"mining.json/materials «{mid}»: hitsPerM3 debe tener los niveles {sorted(expected_tiers)}, no {sorted(table)}")
         if isinstance(bonus, (int, float)) and isinstance(floor, (int, float)):
             for tier, hits in table.items():
+                if not str(tier).isdigit():
+                    continue  # nivel no numérico: ya informado arriba (hitsPerM3 debe tener los niveles)
                 want = design_hits(hardness, min_tier, int(tier), bonus, floor)
                 if not isinstance(hits, (int, float)) or abs(hits - want) > 0.05:
                     r.error(f"mining.json/materials «{mid}»: {hits!r} golpes/m³ con nivel {tier}, la fórmula del GDD da {want:.2f}")
@@ -108,7 +114,8 @@ def check_mining(ds, r) -> None:
     else:
         by_cpp = {m.get("cpp"): m for m in materials.values()}
         if set(by_cpp) != set(cpp):
-            r.error(f"mining.json/materials {sorted(by_cpp)} no coincide con ETerrainMaterial {sorted(cpp)}")
+            # key=str: un material sin «cpp» (None) no puede romper la ordenación.
+            r.error(f"mining.json/materials {sorted(by_cpp, key=str)} no coincide con ETerrainMaterial {sorted(cpp)}")
         for name, (hardness, min_tier) in cpp.items():
             m = by_cpp.get(name)
             if m and (abs(m.get("hardness", -1) - hardness) > 1e-6 or m.get("minToolTier") != min_tier):
@@ -120,7 +127,7 @@ def check_mining(ds, r) -> None:
             r.error(f"mining.json: {key}={doc.get(key)!r} pero TerrainEditModel.h dice {name}={v}")
 
     # ------------------------------------------------------------------ estratos
-    layers = {l.get("id"): l for l in doc.get("layers", [])}
+    layers = {layer.get("id"): layer for layer in doc.get("layers", [])}
     islands = cpp_islands(ds)
     strata: dict[str, dict] = {}
     for s in doc.get("strata", []):
@@ -274,7 +281,22 @@ def _check_progression(ds, doc, materials, strata, tier_heads, r) -> None:
             r.error(f"mining.json/strata «{s['id']}»: aparece en fase 1 pero ninguna herramienta de fase 1 lo cava")
 
 
+# Memoria de _head_inputs por contenido (objetos, plantillas y piezas): es pura y recorre todos
+# los pares de objetos en bruto, lo más caro de check_mining con el catálogo real.
+_HEAD_INPUTS_CACHE: dict[str, dict[str, list[set[str]]]] = {}
+
+
 def _head_inputs(ds) -> dict[str, list[set[str]]]:
+    pieces = ds.data.get("building_pieces.json", {}).get("pieces", [])
+    key = json.dumps([ds.items, ds.templates, pieces], sort_keys=True, default=repr)
+    if key not in _HEAD_INPUTS_CACHE:
+        if len(_HEAD_INPUTS_CACHE) >= 8:
+            _HEAD_INPUTS_CACHE.pop(next(iter(_HEAD_INPUTS_CACHE)))
+        _HEAD_INPUTS_CACHE[key] = _compute_head_inputs(ds)
+    return copy.deepcopy(_HEAD_INPUTS_CACHE[key])
+
+
+def _compute_head_inputs(ds) -> dict[str, list[set[str]]]:
     """Para objetos fabricados que sirven de cabeza: conjuntos de objetos que los producen en un paso.
 
     Si la plantilla exige estación (``station``), su coste de construcción entra en el conjunto.
