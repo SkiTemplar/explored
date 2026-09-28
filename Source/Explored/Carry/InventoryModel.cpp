@@ -34,6 +34,23 @@ namespace InventoryModelDetail
 
 	FName Tag(const TCHAR* Name) { return FName(Name); }
 
+	/**
+	 * Cantidad utilizable: finita y no negativa. Un guardado editado o corrupto
+	 * puede traer NaN, infinitos o pesos negativos («weightKg»: -1000).
+	 */
+	bool IsSaneAmount(float Value)
+	{
+		return FMath::IsFinite(Value) && Value >= 0.0f;
+	}
+
+	/** Peso, volumen y líquido con sentido, sin más líquido del que cabe en el recipiente. */
+	bool HasSaneAmounts(const FInventoryItem& Item)
+	{
+		return IsSaneAmount(Item.WeightKg) && IsSaneAmount(Item.VolumeLiters)
+			&& IsSaneAmount(Item.LiquidLiters) && IsSaneAmount(Item.LiquidCapacityLiters)
+			&& Item.LiquidLiters <= Item.LiquidCapacityLiters + CapacityTolerance;
+	}
+
 	bool IsHand(EInventorySlot Slot)
 	{
 		return Slot == EInventorySlot::HandLeft || Slot == EInventorySlot::HandRight;
@@ -1517,6 +1534,28 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 		}
 	}
 	else if ((S.HandLeft.IsValid() && S.HandLeft.IsTwoHanded()) || (S.HandRight.IsValid() && S.HandRight.IsTwoHanded()))
+	{
+		return false;
+	}
+
+	// Cantidades: con NaN o pesos negativos el peso del cuerpo deja de tener
+	// sentido (una roca de -1000 kg deja coger otra de 500).
+	bool bSaneAmounts = true;
+	InventoryModelDetail::ForEachCarried(S, /*bIncludeSledge=*/true, [&bSaneAmounts](const FInventoryItem& Item, EInventorySlot)
+	{
+		bSaneAmounts = bSaneAmounts && InventoryModelDetail::HasSaneAmounts(Item);
+	});
+	InventoryModelDetail::ForEachEquipped(S, /*bIncludeSledge=*/true, [&bSaneAmounts](const FInventoryItem& Item)
+	{
+		bSaneAmounts = bSaneAmounts && InventoryModelDetail::HasSaneAmounts(Item);
+	});
+	if (!bSaneAmounts)
+	{
+		return false;
+	}
+	// La mochila a medida (sin objeto) conserva la capacidad guardada tal cual (RebuildSpecs).
+	if (S.bHasBackpack && (!InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxVolumeLiters)
+		|| !InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxWeightKg)))
 	{
 		return false;
 	}

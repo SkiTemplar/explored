@@ -2,6 +2,8 @@
 
 #include "Carry/InventoryModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace InventoryTest
@@ -619,6 +621,57 @@ void FInventorySpec::Define()
 			TestFalse(TEXT("El contador de ids no puede quedarse atrás"), Model.LoadState(StaleCounter, Fail));
 
 			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+		});
+
+		It("rechaza pesos, volúmenes y líquidos no finitos o negativos", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail));
+			const FInventoryItem Stone = Piedra(Model);
+			PickAndStore(Model, Stone, EInventorySlot::Pockets, Fail);
+			const FInventoryItem Canteen = Cantimplora(Model);
+			Model.PickUp(Canteen, Fail);
+			const FInventoryState Good = Model.GetState();
+			TestTrue(TEXT("El estado bueno se carga"), FInventoryModel::ValidateState(Good, Fail));
+
+			// Una roca de -1000 kg en el bolsillo dejaría coger otra de 500 kg.
+			FInventoryState Negative = Good;
+			Negative.Pockets.Entries[0].Item.WeightKg = -1000.0f;
+			TestFalse(TEXT("Peso negativo"), Model.LoadState(Negative, Fail));
+
+			FInventoryState NaNWeight = Good;
+			NaNWeight.HandLeft.WeightKg = NaN;
+			TestFalse(TEXT("Peso NaN"), Model.LoadState(NaNWeight, Fail));
+
+			FInventoryState InfVolume = Good;
+			InfVolume.Pockets.Entries[0].Item.VolumeLiters = Inf;
+			TestFalse(TEXT("Volumen infinito"), Model.LoadState(InfVolume, Fail));
+
+			FInventoryState NaNLiquid = Good;
+			NaNLiquid.HandLeft.LiquidLiters = NaN;
+			TestFalse(TEXT("Líquido NaN"), Model.LoadState(NaNLiquid, Fail));
+
+			FInventoryState Overfull = Good;
+			Overfull.HandLeft.LiquidLiters = Overfull.HandLeft.LiquidCapacityLiters + 5.0f;
+			TestFalse(TEXT("Más líquido del que cabe"), Model.LoadState(Overfull, Fail));
+
+			FInventoryState NegativeCapacity = Good;
+			NegativeCapacity.HandLeft.LiquidCapacityLiters = -1.0f;
+			NegativeCapacity.HandLeft.LiquidLiters = -2.0f;
+			TestFalse(TEXT("Capacidad de líquido negativa"), Model.LoadState(NegativeCapacity, Fail));
+
+			FInventoryState BadBackpack = Good;
+			BadBackpack.Backpack.Spec.MaxWeightKg = NaN;
+			TestFalse(TEXT("Mochila a medida con capacidad NaN"), Model.LoadState(BadBackpack, Fail));
+			BadBackpack.Backpack.Spec.MaxWeightKg = 10.0f;
+			BadBackpack.Backpack.Spec.MaxVolumeLiters = -Inf;
+			TestFalse(TEXT("Mochila a medida con volumen -inf"), Model.LoadState(BadBackpack, Fail));
+
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+			TestTrue(TEXT("El peso sigue siendo finito"), FMath::IsFinite(Model.GetBodyWeightKg()));
 		});
 	});
 
