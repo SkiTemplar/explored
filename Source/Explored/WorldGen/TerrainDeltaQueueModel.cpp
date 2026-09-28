@@ -1,108 +1,193 @@
 #include "WorldGen/TerrainDeltaQueueModel.h"
 
-void FTerrainDeltaQueueModel::Enqueue(const FIntVector& Chunk, const TArray<FTerrainDeltaCodecModel::FSample>& Samples, double DistanceToReceiverM)
+double FTerrainDeltaQueueModel::SanitizeDistance(double DistanceToReceiverM)
 {
+	if (FMath::IsNaN(DistanceToReceiverM))
+	{
+		// Sin una distancia fiable no se puede decir que sea relevante: se espera a la siguiente.
+		return TNumericLimits<double>::Max();
+	}
+	return FMath::Max(DistanceToReceiverM, 0.0);
+}
+
+int32 FTerrainDeltaQueueModel::Enqueue(const FIntVector& Chunk, const TArray<FTerrainDeltaCodecModel::FSample>& Samples, double DistanceToReceiverM)
+{
+	if (!FTerrainDeltaCodecModel::IsChunkEncodable(Chunk))
+	{
+		return Samples.Num();
+	}
+
+	int32 Rejected = 0;
+	TArray<FTerrainDeltaCodecModel::FSample> Valid;
+	Valid.Reserve(Samples.Num());
+	for (const FTerrainDeltaCodecModel::FSample& S : Samples)
+	{
+		if (FTerrainDeltaCodecModel::IsSampleEncodable(S))
+		{
+			Valid.Add(S);
+		}
+		else
+		{
+			++Rejected;
+		}
+	}
+	if (Valid.IsEmpty())
+	{
+		return Rejected;
+	}
+
+	const double Distance = SanitizeDistance(DistanceToReceiverM);
 	for (FEntry& Entry : Entries)
 	{
 		if (Entry.Chunk == Chunk)
 		{
 			// Las muestras nuevas van detrás: Canonicalize hace que la edición más
 			// reciente gane cuando dos parches tocan el mismo índice.
-			TArray<FTerrainDeltaCodecModel::FSample> Merged = Entry.Samples;
-			Merged.Append(Samples);
+			TArray<FTerrainDeltaCodecModel::FSample> Merged = MoveTemp(Entry.Samples);
+			Merged.Append(Valid);
 			FTerrainDeltaCodecModel::Canonicalize(Merged, Entry.Samples);
-			Entry.DistanceToReceiverM = DistanceToReceiverM;
-			return;
+			Entry.DistanceToReceiverM = Distance;
+			return Rejected;
 		}
 	}
 
 	FEntry NewEntry;
 	NewEntry.Chunk = Chunk;
-	FTerrainDeltaCodecModel::Canonicalize(Samples, NewEntry.Samples);
-	NewEntry.DistanceToReceiverM = DistanceToReceiverM;
+	FTerrainDeltaCodecModel::Canonicalize(Valid, NewEntry.Samples);
+	NewEntry.DistanceToReceiverM = Distance;
 	NewEntry.SequenceNumber = NextSequenceNumber++;
 	Entries.Add(MoveTemp(NewEntry));
+	return Rejected;
 }
 
-bool FTerrainDeltaQueueModel::Contains(const FIntVector& Chunk) const
+bool FTerrainDeltaQueueModel::UpdateDistance(const FIntVector& Chunk, double DistanceToReceiverM)
 {
-	for (const FEntry& Entry : Entries)
+	for (FEntry& Entry : Entries)
 	{
 		if (Entry.Chunk == Chunk)
 		{
+			Entry.DistanceToReceiverM = SanitizeDistance(DistanceToReceiverM);
 			return true;
 		}
 	}
 	return false;
 }
 
+bool FTerrainDeltaQueueModel::Contains(const FIntVector& Chunk) const
+{
+	return PendingSamples(Chunk) != nullptr;
+}
+
+const TArray<FTerrainDeltaCodecModel::FSample>* FTerrainDeltaQueueModel::PendingSamples(const FIntVector& Chunk) const
+{
+	for (const FEntry& Entry : Entries)
+	{
+		if (Entry.Chunk == Chunk)
+		{
+			return &Entry.Samples;
+		}
+	}
+	return nullptr;
+}
+
 void FTerrainDeltaQueueModel::Reset()
 {
 	Entries.Reset();
-	AvailableBytes = 0.0;
+	SustainedBytes = 0.0;
+	ClockSeconds = 0.0;
+	RecentSends.Reset();
 	NextSequenceNumber = 0;
 }
 
 void FTerrainDeltaQueueModel::Accrue(double DeltaSeconds)
 {
-	if (DeltaSeconds <= 0.0)
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0)
 	{
 		return;
 	}
-	AvailableBytes = FMath::Min(AvailableBytes + SustainedBytesPerSecond * DeltaSeconds, BurstCapacityBytes);
+	SustainedBytes = FMath::Min(SustainedBytes + SustainedBytesPerSecond * DeltaSeconds, BurstCreditBytes);
+	ClockSeconds += DeltaSeconds;
+	// Un envío en t cuenta en la ventana (Reloj − 1 s, Reloj]: sale cuando ha pasado un segundo entero.
+	int32 Expired = 0;
+	while (Expired < RecentSends.Num() && RecentSends[Expired].AtSeconds <= ClockSeconds - 1.0)
+	{
+		++Expired;
+	}
+	RecentSends.RemoveAt(0, Expired);
+}
+
+double FTerrainDeltaQueueModel::BytesInPeakWindow() const
+{
+	double Sum = 0.0;
+	for (const FSent& Sent : RecentSends)
+	{
+		Sum += static_cast<double>(Sent.Bytes);
+	}
+	return Sum;
+}
+
+double FTerrainDeltaQueueModel::AvailableBudgetBytes() const
+{
+	return FMath::Max(0.0, FMath::Min(SustainedBytes, BurstBytesPerSecond - BytesInPeakWindow()));
 }
 
 int32 FTerrainDeltaQueueModel::IndexOfHighestPriority() const
 {
 	int32 Best = INDEX_NONE;
-	// Primera pasada: solo los chunks cerca del receptor, el más antiguo de ellos.
+	bool bBestIsNear = false;
 	for (int32 I = 0; I < Entries.Num(); ++I)
 	{
-		if (Entries[I].DistanceToReceiverM < PriorityDistanceM)
+		const FEntry& E = Entries[I];
+		if (E.DistanceToReceiverM > RelevanceDistanceM)
 		{
-			if (Best == INDEX_NONE || Entries[I].SequenceNumber < Entries[Best].SequenceNumber)
-			{
-				Best = I;
-			}
+			continue;
 		}
-	}
-	if (Best != INDEX_NONE)
-	{
-		return Best;
-	}
-	// Nadie cerca: FIFO puro sobre el resto.
-	for (int32 I = 0; I < Entries.Num(); ++I)
-	{
-		if (Best == INDEX_NONE || Entries[I].SequenceNumber < Entries[Best].SequenceNumber)
+		const bool bNear = E.DistanceToReceiverM < PriorityDistanceM;
+		if (Best == INDEX_NONE
+			|| (bNear && !bBestIsNear)
+			|| (bNear == bBestIsNear && E.SequenceNumber < Entries[Best].SequenceNumber))
 		{
 			Best = I;
+			bBestIsNear = bNear;
 		}
 	}
 	return Best;
 }
 
-bool FTerrainDeltaQueueModel::TryPopWithinBudget(FEntry& Out)
+bool FTerrainDeltaQueueModel::TryPopPacket(FOutgoingPacket& Out)
 {
-	if (Entries.IsEmpty())
-	{
-		return false;
-	}
-
 	const int32 Index = IndexOfHighestPriority();
-	check(Index != INDEX_NONE);
-
-	FTerrainDeltaCodecModel::FChunkPatch Patch;
-	Patch.Chunk = Entries[Index].Chunk;
-	Patch.Samples = Entries[Index].Samples;
-	const int32 Cost = FTerrainDeltaCodecModel::EncodedByteCount(Patch);
-
-	if (static_cast<double>(Cost) > AvailableBytes)
+	if (Index == INDEX_NONE)
 	{
 		return false;
 	}
 
-	AvailableBytes -= static_cast<double>(Cost);
-	Out = Entries[Index];
-	Entries.RemoveAt(Index);
+	FEntry& Entry = Entries[Index];
+	int32 Consumed = 0;
+	TArray<uint8> Bytes = FTerrainDeltaCodecModel::EncodeFirstPacket(Entry.Chunk, Entry.Samples, Consumed);
+	if (Consumed <= 0)
+	{
+		// No debería pasar (Enqueue solo guarda muestras válidas y canónicas); si pasa, la
+		// entrada es irrecuperable y se quita para no bloquear la cola para siempre.
+		Entries.RemoveAt(Index);
+		return false;
+	}
+
+	const double Cost = static_cast<double>(Bytes.Num());
+	if (Cost > AvailableBudgetBytes())
+	{
+		return false;
+	}
+
+	SustainedBytes -= Cost;
+	RecentSends.Add(FSent{ ClockSeconds, Bytes.Num() });
+	Out.Chunk = Entry.Chunk;
+	Out.Bytes = MoveTemp(Bytes);
+	Entry.Samples.RemoveAt(0, Consumed);
+	Out.bLastOfChunk = Entry.Samples.IsEmpty();
+	if (Out.bLastOfChunk)
+	{
+		Entries.RemoveAt(Index);
+	}
 	return true;
 }
