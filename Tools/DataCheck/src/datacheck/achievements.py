@@ -1,8 +1,9 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: 30 logros, ids ASCII, textos en ES y EN, los ejemplos
-del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
+tipo compatible) y añade las de diseño: los 30 logros del GDD §16 intactos y como mucho los 54
+de biblia 07 §2, ids ASCII, textos en ES y EN que cumplen la guía anti-IA (biblia 07 §1), los
+ejemplos del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
 
 from __future__ import annotations
@@ -11,12 +12,25 @@ import math
 import re
 from pathlib import Path
 
-ACHIEVEMENT_COUNT = 30
+from . import textos
+
+# Biblia 07 §2: el catálogo completo son 54 logros; los 30 del GDD §16 (§2.2) no cambian de id.
+MAX_ACHIEVEMENTS = 54
+LEGACY_IDS = frozenset({
+    "primer_fuego", "diez_amaneceres", "un_ano_de_islas", "rey_del_cocotero", "tierra_firme",
+    "las_siete_islas", "cartografo", "el_mapa_entero", "bajo_el_volcan", "restos_del_albatros",
+    "primer_techo", "cimientos_de_piedra", "ojo_de_ciclon", "el_limonero", "huerto_en_flor",
+    "cocina_de_isla", "primera_captura", "una_historia_que_contar", "pulmones_de_perla",
+    "mar_abierto", "luz_en_el_agua", "madrugada_de_tortugas", "canto_de_ballenas",
+    "deseos_a_punados", "melodia_junto_al_fuego", "coleccionista", "wayfinder", "limon_zarpa",
+    "naufrago_de_verdad", "sin_mapa",
+})
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 STAT_KINDS = {"counter", "max", "set", "flag"}
 STAT_SCOPES = {"profile", "run"}
 COMPARE_OPS = {">=", ">", "<=", "<", "=="}
 VALUE_SOURCES = {"items", "plants", "building_pieces"}
+COOP_SCOPES = {"actor", "world", "witness"}  # biblia 08 §5.7
 STATS_DOC = Path("docs") / "tecnico" / "estadisticas.md"
 DOC_ROW = re.compile(r"^\|\s*`([a-z0-9_]+)`\s*\|\s*([a-z]+)\s*\|\s*([a-z]+)\s*\|")
 
@@ -27,6 +41,8 @@ CATALOG_SETS = {
     "legendary_catches": ("fish.json → legendary",
                           lambda ds: [f.get("id") for f in ds.data.get("fish.json", {}).get("legendary", [])]),
     "boats_built": ("boats.json → boats", lambda ds: [b.get("id") for b in ds.boats]),
+    "strata_mined": ("mining.json → strata",
+                     lambda ds: [s.get("id") for s in ds.data.get("mining.json", {}).get("strata", [])]),
 }
 
 # Ejemplos del GDD §16: tienen que existir con estos ids.
@@ -86,6 +102,11 @@ def check_condition(ds, cond, stats: dict[str, dict], where: str, r) -> None:
         r.error(f"{where}: la condición debe ser un objeto")
         return
     keys = set(cond)
+    # Ids y operador son cadenas: una lista o un número aquí es JSON corrupto, no una condición.
+    for key in ("stat", "flag", "op", "contains"):
+        if key in cond and not isinstance(cond[key], str):
+            r.error(f"{where}: «{key}» debe ser una cadena, no {type(cond[key]).__name__}")
+            return
     if keys == {"stat", "op", "value"}:
         stat = stats.get(cond["stat"])
         if stat is None:
@@ -176,8 +197,8 @@ def check_achievements(ds, r) -> None:
 
     # Logros.
     achievements = doc.get("achievements", [])
-    if len(achievements) != ACHIEVEMENT_COUNT:
-        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    if len(achievements) > MAX_ACHIEVEMENTS:
+        r.error(f"achievements.json: {len(achievements)} logros; biblia 07 §2 fija {MAX_ACHIEVEMENTS} como máximo")
     seen: set[str] = set()
     used: set[str] = set()
     for ach in achievements:
@@ -199,13 +220,24 @@ def check_achievements(ds, r) -> None:
         icon = ach.get("icon")
         if not isinstance(icon, str) or not ID_RE.match(icon):
             r.error(f"{where}: icon debe ser una palabra ASCII en minúsculas")
+        if "coopScope" in ach and (not isinstance(ach["coopScope"], str) or ach["coopScope"] not in COOP_SCOPES):
+            r.error(f"{where}: coopScope {ach['coopScope']!r} no es uno de {sorted(COOP_SCOPES)} (biblia 08 §5.7)")
+        if aid not in LEGACY_IDS and "coopScope" not in ach:
+            r.error(f"{where}: logro nuevo sin coopScope; biblia 08 §5.7 decide quién lo desbloquea en cooperativo")
         if "modes" in ach:
             ach_modes = ach["modes"]
             if not isinstance(ach_modes, list) or not ach_modes or not set(ach_modes) <= modes:
                 r.error(f"{where}: modes {ach_modes!r} no es una lista no vacía de {sorted(modes)}")
         check_condition(ds, ach.get("condition"), stats, where, r)
         _stats_used(ach.get("condition"), used)
+        # Los 30 del GDD conservan su texto (biblia 07 §2.2); los nuevos cumplen los límites de §1.3.
+        if aid not in LEGACY_IDS:
+            for problem in textos.achievement_length_problems(ach):
+                r.error(f"{where}: {problem} (biblia 07 §1.3)")
 
+    lost = LEGACY_IDS - seen
+    if lost:
+        r.error(f"achievements.json: faltan logros del GDD §16 que biblia 07 §2.2 conserva: {sorted(lost)}")
     missing = REQUIRED - seen
     if missing:
         r.error(f"achievements.json: faltan los logros del GDD §16 {sorted(missing)}")

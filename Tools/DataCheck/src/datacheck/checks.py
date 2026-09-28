@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
+from . import achievements, cooking, crafting, fases, fauna, mining, music, packs, smithing, textos
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -48,7 +48,7 @@ DATA_FILES = [
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
-    "fases_futuras.json", "fauna_terrestre.json",
+    "fases_futuras.json", "fauna_terrestre.json", "recipes_smithing.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -261,6 +261,12 @@ def check_crafting_reachability(ds: DataSet, r: Report, max_depth: int = 2) -> c
         r.info.append(f"con «{verb}», «{winner}» gana a «{shadowed}» por orden del fichero (empate en slots)")
     for tid, hits in sorted(crafting.single_piece_templates(ds.items, ds.templates).items()):
         r.info.append(f"«{tid}» se dispara con una sola pieza + cualquier otra: {', '.join(hits)}")
+    grouped: dict[tuple[str, str], list[str]] = {}
+    for a, b, hidden, lost in crafting.hidden_templates(ds.items, ds.templates):
+        grouped.setdefault((a, ", ".join(hidden)), []).append(f"{b} ({', '.join(lost)})")
+    for (a, hidden), partners in sorted(grouped.items()):
+        r.info.append(f"«{a}»: UCraftingLibrary::MaxActions corta en {crafting.MAX_ACTIONS} verbos y esconde {hidden} "
+                      f"con {len(partners)} piezas: {'; '.join(partners)}")
     produced = {t["resultDefinitionId"] for t in ds.templates}
     for item in ds.items:
         if item["id"] in produced and item["id"] not in reach.reached_items:
@@ -269,7 +275,9 @@ def check_crafting_reachability(ds: DataSet, r: Report, max_depth: int = 2) -> c
 
 
 def _obtainable(ds: DataSet, reach: crafting.Reachability) -> set[str]:
-    return set(reach.reached_items)
+    """Lo que alcanzan las plantillas, con los procesados solo si alguna receta los hace (smithing)."""
+    obtainable, _ = smithing.resolve_obtainable(ds, set(reach.reached_items))
+    return obtainable
 
 
 def check_plants(ds: DataSet, r: Report, obtainable: set[str]) -> None:
@@ -1180,6 +1188,8 @@ def run_all(ds: DataSet) -> Report:
     check_meshes(ds, r)
     check_survival(ds, r)
     check_cooking(ds, r)
+    smithing.check_smithing(ds, r, obtainable)
+    textos.check_player_texts(ds.data, r.error)
     check_story(ds, r)
     achievements.check_achievements(ds, r)
     check_ruins(ds, r)

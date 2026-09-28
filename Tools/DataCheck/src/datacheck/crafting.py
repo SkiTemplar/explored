@@ -216,3 +216,51 @@ def single_piece_templates(items: list[dict], templates: list[dict]) -> dict[str
         if hits:
             out[tpl["id"]] = hits
     return out
+
+
+MAX_ACTIONS = 3  # UCraftingLibrary::MaxActions
+# Mangos atados de referencia para buscar verbos escondidos: (mango, ligadura).
+REFERENCE_HANDLES = (("palo_recto", "cuerda"), ("bambu_grueso", "cuerda"), ("madera_dura", "cuerda"))
+
+
+def offered_verbs(templates: list[dict], left: Instance, right: Instance) -> list[str]:
+    """Todos los verbos que casan, en el orden de FindActionsWithData (plantillas en orden del fichero)."""
+    verbs: list[str] = []
+    for tpl in templates:
+        if template_matches(tpl, left, right):
+            for verb in tpl.get("verbs", []):
+                if verb not in verbs:
+                    verbs.append(verb)
+    return verbs
+
+
+def hidden_templates(items: list[dict], templates: list[dict]) -> list[tuple[str, str, list[str], list[str]]]:
+    """Pares cuyo cuarto verbo o siguientes esconden una plantilla que no es genérica.
+
+    ``FindActionsWithData`` corta en ``MaxActions`` verbos: si una plantilla solo tiene
+    verbos de los que quedan fuera, ese par nunca la ofrece en la mano. Se miran los pares
+    del catálogo y cada objeto con un mango atado de ``REFERENCE_HANDLES``.
+    Devuelve (pieza A, pieza B, verbos escondidos, plantillas escondidas).
+    """
+    by_id = {i["id"]: i for i in items}
+    pieces = [leaf(i) for i in items if "interno" not in i.get("tags", [])]
+    handles = []
+    for handle, lashing in REFERENCE_HANDLES:
+        if handle in by_id and lashing in by_id:
+            a, b = leaf(by_id[handle]), leaf(by_id[lashing])
+            tpl = best_template(templates, "Atar", a, b)
+            if tpl is not None and tpl.get("resultDefinitionId") in by_id:
+                handles.append((f"{handle} atado con {lashing}", combine(by_id[tpl["resultDefinitionId"]], a, b)))
+    pairs = [(a.definition, a, b.definition, b) for n, a in enumerate(pieces) for b in pieces[n:]]
+    pairs += [(name, h, p.definition, p) for name, h in handles for p in pieces]
+    out = []
+    for name_a, a, name_b, b in pairs:
+        verbs = offered_verbs(templates, a, b)
+        if len(verbs) <= MAX_ACTIONS:
+            continue
+        hidden = verbs[MAX_ACTIONS:]
+        lost = [t["id"] for t in templates if not t["id"].endswith("_generico") and template_matches(t, a, b)
+                and all(v in hidden for v in t.get("verbs", []))]
+        if lost:
+            out.append((name_a, name_b, hidden, lost))
+    return out
