@@ -839,3 +839,20 @@ def test_packs_catalogo_replaces_de_pieza_comprueba_la_malla(ds: DataSet) -> Non
 def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
     _catalog(ds)["discarded"][0]["gameId"] = "pared_de_neon"
     assert any_error(errors_of(ds), "pared_de_neon", "no existe")
+
+
+def test_packs_catalogo_cubre_fases_del_huerto(real: DataSet) -> None:
+    entries = {e["gameId"]: e for e in _catalog(real)["entries"]}
+    assert {"platanera.hijuelo", "pina.roseta", "limonero.arbol_joven"} <= set(entries)
+    assert all(entries[g]["kind"] == "planta" for g in ("platanera.hijuelo", "pina.roseta"))
+
+
+def test_packs_catalogo_pendiente_de_etapa_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["pending"].append({"gameId": "taro.florecido", "reason": "prueba"})
+    assert any_error(errors_of(ds), "taro.florecido", "etapa")
+
+
+def test_packs_catalogo_descarte_de_etapa_valida(ds: DataSet) -> None:
+    d = dict(_catalog(ds)["discarded"][0], gameId="batata.enredadera")
+    _catalog(ds)["discarded"].append(d)
+    assert not any_error(errors_of(ds), "batata.enredadera")

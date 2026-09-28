@@ -54,11 +54,18 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote1-herramientas` | Hacha, cuchillo, pala, mazo, antorcha, cuerda, cordel, tronco, cobre, hierro | `docs/art/packs/lote1-herramientas.png` |
 | `lote2-caza` | Lanza, arco y flecha (KayKit Fantasy Weapons Bits) en obsidiana, bambú y fibra | `docs/art/packs/lote2-caza.png` |
 | `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
+| `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
 trae palma ni bambú, y los de madera y piedra son de pueblo europeo o no cuadran con la
 rejilla de 2 m. El kit propio de `Tools/Blender` se mantiene.
+
+Huerto (prioridad 3): las etapas son `kind: planta` con id `<planta>.<etapa>` de
+`plants.json`. Taro, batata y maracuyá no tienen candidato (hoja en flecha, rastrera y
+trepadora de espaldera): siguen en `pending`. El follaje de Quaternius Stylized Nature
+MegaKit usa texturas de hojas con alfa y no se puede recolorear por cara; de ese pack solo
+interesan los cantos (`Pebble_Round_*`), pendientes de revisar para `canto_rodado`.
 
 ## Trampas de importación
 
