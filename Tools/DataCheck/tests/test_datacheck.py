@@ -1751,3 +1751,36 @@ def test_verbos_escondidos_detecta_plantilla_perdida(ds: DataSet) -> None:
 def test_verbos_escondidos_ignora_plantillas_genericas(real: DataSet) -> None:
     for _, _, _, lost in crafting.hidden_templates(real.items, real.templates):
         assert not any(t.endswith("_generico") for t in lost)
+
+
+@pytest.mark.parametrize("key, value", [
+    ("station", ["yunque"]), ("station", None), ("result", {"id": "clavos"}), ("result", 7),
+    ("minFireLevel", ["horno_fundicion"]), ("tools", "martillo"), ("tools", [["martillo"]]),
+])
+def test_metal_campo_corrupto_no_rompe(ds, real_reach, key, value) -> None:
+    smithing_recipe(ds, "clavos_de_hierro")[key] = value
+    assert any_error(smith_report(ds, real_reach).errors, "clavos_de_hierro", key, "tipo")
+
+
+@pytest.mark.parametrize("corrupt", [None, "horno", [1, 2], {"id": ["x"]}])
+def test_metal_nivel_corrupto_no_rompe(ds, real_reach, corrupt) -> None:
+    ds.data["fuels.json"]["smeltingLevels"].append(corrupt)
+    smith_report(ds, real_reach)  # no revienta
+
+
+def test_metal_niveles_que_no_son_lista(ds, real_reach) -> None:
+    ds.data["fuels.json"]["smeltingLevels"] = {"horno_fundicion": {}}
+    assert any_error(smith_report(ds, real_reach).errors, "smeltingLevels", "lista")
+
+
+def test_metal_pieza_de_nivel_corrupta_no_rompe(ds, real_reach) -> None:
+    smelting_level(ds)["pieceId"] = ["horno_fundicion"]
+    errors = smith_report(ds, real_reach).errors
+    assert any_error(errors, "pieceId")
+    assert any_error(errors, "fundir_cobre", "nunca se puede hacer")
+
+
+@pytest.mark.parametrize("value", [["mineral_cobre"], {"id": "x"}, None, 3])
+def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> None:
+    smithing_recipe(ds, "fundir_cobre")["ingredients"][0]["item"] = value
+    assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no está en items.json")

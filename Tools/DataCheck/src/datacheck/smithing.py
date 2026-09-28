@@ -42,13 +42,18 @@ def _entries(value) -> list[dict]:
     return [e for e in value if isinstance(e, dict)] if isinstance(value, list) else []
 
 
+def _ids(value) -> list[str]:
+    return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
+
+
 def _num(value, lo: float, hi: float) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and lo <= value <= hi
 
 
 def smelting_levels(ds) -> dict[str, dict]:
-    return {lv.get("id"): lv for lv in ds.data.get("fuels.json", {}).get("smeltingLevels", [])
-            if isinstance(lv, dict)}
+    levels = ds.data.get("fuels.json", {}).get("smeltingLevels", [])
+    return {lv["id"]: lv for lv in levels if isinstance(lv, dict) and isinstance(lv.get("id"), str)} \
+        if isinstance(levels, list) else {}
 
 
 def processed_items(ds) -> dict[str, list[dict]]:
@@ -63,26 +68,29 @@ def processed_items(ds) -> dict[str, list[dict]]:
         if not isinstance(rec, dict):
             continue
         level = rec.get("minFireLevel")
-        out.setdefault(rec.get("result"), []).append({
+        if not isinstance(rec.get("result"), str):
+            continue
+        out.setdefault(rec["result"], []).append({
             "id": rec.get("id"), "file": "recipes.json",
             "ingredients": _entries(rec.get("ingredients")),
-            "pieces": [cook_pieces[level]] if level in cook_pieces else [],
+            "pieces": [cook_pieces[level]] if isinstance(level, str) and level in cook_pieces else [],
             "tools": [],
-            "vessels": [vessels.get(v, {}) for v in rec.get("vessels", [])],
+            "vessels": [vessels.get(v, {}) for v in _ids(rec.get("vessels"))],
         })
     levels = smelting_levels(ds)
     for rec in _recipes(ds):
-        pieces = [rec.get("station")]
-        level = levels.get(rec.get("minFireLevel"))
+        if not isinstance(rec.get("result"), str):
+            continue
+        pieces = [rec["station"]] if isinstance(rec.get("station"), str) else [None]
+        level = levels.get(rec["minFireLevel"]) if isinstance(rec.get("minFireLevel"), str) else None
         if level is not None:
-            pieces.append(level.get("pieceId"))
-        out.setdefault(rec.get("result"), []).append({
+            pieces.append(level["pieceId"] if isinstance(level.get("pieceId"), str) else None)
+        out.setdefault(rec["result"], []).append({
             "id": rec.get("id"), "file": FILE, "ingredients": _entries(rec.get("ingredients")),
-            "pieces": pieces, "tools": rec.get("tools", []), "vessels": [],
+            "pieces": pieces, "tools": _ids(rec.get("tools")), "vessels": [],
         })
     for iid in templated:
         out.pop(iid, None)
-    out.pop(None, None)
     return out
 
 
@@ -103,7 +111,7 @@ def resolve_obtainable(ds, crafted: set[str]) -> tuple[set[str], set[str]]:
 
     def has(entry: dict) -> bool:
         if entry.get("item") is not None:
-            return entry["item"] in obtainable
+            return isinstance(entry["item"], str) and entry["item"] in obtainable
         tag = entry.get("tag")
         return any(tag in tags and iid in obtainable for iid, tags in tags_of.items())
 
@@ -140,8 +148,8 @@ def sourceless_ingredients(ds) -> set[str]:
     templated = {t.get("resultDefinitionId") for t in ds.templates}
     sources = _stratum_sources(ds)
     rescued = {i["id"] for i in ds.items if "rescatado" in i.get("tags", [])}
-    used = {e.get("item") for rec in _recipes(ds) for e in _entries(rec.get("ingredients"))}
-    return {iid for iid in used if isinstance(iid, str)} - set(processed) - templated - set(sources) - rescued
+    used = {e["item"] for rec in _recipes(ds) for e in _entries(rec.get("ingredients")) if isinstance(e.get("item"), str)}
+    return used - set(processed) - templated - set(sources) - rescued
 
 
 def _stratum_sources(ds) -> dict[str, set[int]]:
@@ -164,6 +172,9 @@ def check_levels(ds, r) -> None:
     last_cooking = (fuels.get("levels") or [{}])[-1]
     seen: set[str] = set()
     for lv in levels:
+        if not isinstance(lv, dict):
+            r.error(f"fuels.json smeltingLevels: entrada que no es un objeto: {lv!r}")
+            continue
         lid = lv.get("id")
         where = f"fuels.json smeltingLevels «{lid}»"
         if not isinstance(lid, str) or not ID_RE.match(lid):
@@ -176,7 +187,7 @@ def check_levels(ds, r) -> None:
             r.error(f"{where}: ya es un nivel de cocina de EFireLevel; va en «levels», no aquí")
         if not lv.get("nameEs"):
             r.error(f"{where}: falta nameEs")
-        piece = pieces.get(lv.get("pieceId"))
+        piece = pieces.get(lv["pieceId"]) if isinstance(lv.get("pieceId"), str) else None
         if piece is None:
             r.error(f"{where}: pieceId «{lv.get('pieceId')}» no está en building_pieces.json")
         elif piece.get("category") != "produccion":
@@ -216,7 +227,7 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
     sources = _stratum_sources(ds)
     processed = processed_items(ds)
     templated = {t.get("resultDefinitionId") for t in ds.templates}
-    fire_stations = {lv.get("pieceId"): lid for lid, lv in levels.items()}
+    fire_stations = {lv["pieceId"]: lid for lid, lv in levels.items() if isinstance(lv.get("pieceId"), str)}
     seen: set[str] = set()
 
     for rec in _recipes(ds):
@@ -231,6 +242,14 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
         for key in ("nameEs", "nameEn"):
             if not isinstance(rec.get(key), str) or not rec[key].strip():
                 r.error(f"{where}: falta {key}")
+        bad = [key for key in ("station", "result") if not isinstance(rec.get(key), str)]
+        if rec.get("minFireLevel") is not None and not isinstance(rec.get("minFireLevel"), str):
+            bad.append("minFireLevel")
+        if not isinstance(rec.get("tools", []), list) or len(_ids(rec.get("tools", []))) != len(rec.get("tools", [])):
+            bad.append("tools")
+        if bad:
+            r.error(f"{where}: {', '.join(bad)} con un tipo que no toca (cadenas; tools, lista de cadenas)")
+            continue
         station = pieces.get(rec.get("station"))
         if station is None:
             r.error(f"{where}: estación «{rec.get('station')}» no está en building_pieces.json")
@@ -263,7 +282,7 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
                 r.error(f"{where}: cada ingrediente lleva exactamente «item» y «count»")
             if not isinstance(ing.get("count"), int) or isinstance(ing.get("count"), bool) or not 1 <= ing["count"] <= 20:
                 r.error(f"{where}: count de «{iid}» fuera de [1, 20]")
-            if iid not in items:
+            if not isinstance(iid, str) or iid not in items:
                 r.error(f"{where}: ingrediente «{iid}» no está en items.json")
                 continue
             if iid == rec.get("result"):
@@ -288,11 +307,16 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
     # Cada receta que no se puede hacer nunca, con lo que le falta (aunque su resultado salga de otra).
     _, built = resolve_obtainable(ds, obtainable)
     for rec in _recipes(ds):
-        missing = [str(e.get("item")) for e in _entries(rec.get("ingredients")) if e.get("item") not in obtainable]
-        missing += [f"herramienta {t}" for t in rec.get("tools") or [] if t not in obtainable]
+        if not isinstance(rec.get("station"), str) or not isinstance(rec.get("minFireLevel") or "", str):
+            continue
+        missing = [str(e.get("item")) for e in _entries(rec.get("ingredients"))
+                   if not isinstance(e.get("item"), str) or e["item"] not in obtainable]
+        missing += [f"herramienta {t}" for t in _ids(rec.get("tools")) if t not in obtainable]
         level = levels.get(rec.get("minFireLevel"))
         for pid in (rec.get("station"), level.get("pieceId") if level else None):
-            if pid is not None and pid in pieces and pid not in built:
+            if not isinstance(pid, str) and pid is not None:
+                missing.append(f"pieza {pid!r} (no es un id)")
+            elif pid is not None and pid in pieces and pid not in built:
                 missing.append(f"pieza {pid} (su coste no se puede reunir)")
         if missing:
             r.error(f"{where_of(rec)}: nunca se puede hacer; no sale de ninguna fuente: {', '.join(missing)}")
