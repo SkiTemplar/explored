@@ -145,7 +145,8 @@ float FBodyModel::BleedingDamagePerHour(const FSurvivalState& S)
 FFallResult FBodyModel::FallDamage(float HeightM, ELandingSurface Surface)
 {
 	FFallResult Result;
-	if (!(HeightM > 0.0f))
+	// IsFinite explícito: con matemáticas rápidas `!(x > 0)` deja pasar un NaN y el daño saldría NaN.
+	if (!FMath::IsFinite(HeightM) || HeightM <= 0.0f)
 	{
 		return Result;
 	}

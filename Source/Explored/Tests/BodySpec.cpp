@@ -4,6 +4,8 @@
 #include "Survival/BodySignals.h"
 #include "Survival/SurvivalModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BodyTest
@@ -244,6 +246,11 @@ void FBodySpec::Define()
 			TestTrue(TEXT("Roca > tierra > arena"), Rock > Ground && Ground > Sand);
 			TestEqual(TEXT("Al agua desde 10 m, sin daño"), FBodyModel::FallDamage(10.0f, ELandingSurface::Water).Damage, 0.0f);
 			TestEqual(TEXT("Altura no válida"), FBodyModel::FallDamage(-4.0f, ELandingSurface::Rock).Damage, 0.0f);
+			for (const float Bad : { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity() })
+			{
+				const FFallResult R = FBodyModel::FallDamage(Bad, ELandingSurface::Rock);
+				TestTrue(TEXT("Altura no finita: sin daño ni esguince"), R.Damage == 0.0f && R.SprainHours == 0.0f);
+			}
 		});
 
 		It("tuercen el tobillo desde unos 4.5 m y la férula lo cura", [this]()
