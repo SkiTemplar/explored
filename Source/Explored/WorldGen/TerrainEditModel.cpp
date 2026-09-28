@@ -590,7 +590,9 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 
 	// Lo que se rellena sale de lo que se lleva más lo que corta esta misma pasada.
 	const double CutVolume = -ProposalVolume(Cut, 1.0f);
-	const double Allowed = FMath::Max(0.0, Stroke.SoilBudget) + CutVolume;
+	// Un presupuesto no finito no es tierra que se lleve: con NaN o infinito se rellenaba sin tope.
+	const double Budget = FMath::IsFinite(Stroke.SoilBudget) ? FMath::Max(0.0, Stroke.SoilBudget) : 0.0;
+	const double Allowed = Budget + CutVolume;
 	Commit(Cut, 1.0f, Result);
 	Commit(Fill, ScaleToVolume(Fill, Allowed), Result);
 
@@ -617,7 +619,8 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 FTerrainEditResult FTerrainEditModel::PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base)
 {
 	FTerrainEditResult Result;
-	if (Placement.SoilBudget <= 0.0 || Placement.Radius <= 0.0f)
+	// Presupuesto no finito: nada (con infinito se echaba la esfera entera gratis).
+	if (!FMath::IsFinite(Placement.SoilBudget) || Placement.SoilBudget <= 0.0 || Placement.Radius <= 0.0f)
 	{
 		return Result;
 	}
@@ -656,7 +659,7 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
 	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || Flat.SizeSquared() < 1.0e-6
 		|| Stairs.NumSteps < 1 || Stairs.StepRun <= 0.0f || Stairs.Width <= 0.0f || Stairs.Headroom <= 0.0f
-		|| Stairs.NumSteps > MaxStairSteps || !TerrainEditDetail::IsFiniteVector(Stairs.Start) || !TerrainEditDetail::IsFiniteVector(Stairs.Direction)
+		|| Stairs.NumSteps > MaxStairSteps || !FMath::IsFinite(Stairs.MaxVolume) || !TerrainEditDetail::IsFiniteVector(Stairs.Start) || !TerrainEditDetail::IsFiniteVector(Stairs.Direction)
 		|| !TerrainEditDetail::InReach(Stairs.StepRun, 0.0f) || !TerrainEditDetail::InReach(Stairs.Width, 0.0f)
 		|| !TerrainEditDetail::InReach(Stairs.Headroom, 0.0f) || !TerrainEditDetail::InReach(Stairs.StepRise, -MaxToolReach))
 	{

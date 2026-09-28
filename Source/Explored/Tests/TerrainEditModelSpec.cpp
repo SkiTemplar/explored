@@ -652,6 +652,30 @@ void FTerrainEditModelSpec::Define()
 			FTerrainEditModel Loaded;
 			TestTrue(TEXT("el guardado carga"), Loaded.FromValue(Model.ToValue()));
 		});
+
+		It("un presupuesto de tierra o de volumen no finito no da tierra ni tallado gratis", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			for (const double Budget : { NaN, Inf })
+			{
+				FTerrainEditModel Model;
+				FSoilPlacement Place;
+				Place.Center = FVector(0.0, 0.0, 0.3);
+				Place.SoilBudget = Budget;
+				TestFalse(TEXT("echar tierra"), Model.PlaceSoil(Place, Flat).Changed());
+
+				FShovelStroke Stroke;
+				Stroke.bMarkPath = false;
+				Stroke.SoilBudget = Budget;
+				const FTerrainEditResult R = Model.Shovel(Stroke, Pit);
+				TestTrue(TEXT("la pala solo rellena con lo que corta"), R.VolumeAdded <= R.VolumeRemoved + 1.0e-6);
+
+				FStairCarve Stairs;
+				Stairs.MaxVolume = Budget;
+				TestTrue(TEXT("escalera rechazada"), Model.CarveStairs(Stairs, Slope).bRejected);
+			}
+		});
 	});
 
 	Describe("el guardado", [this]()
