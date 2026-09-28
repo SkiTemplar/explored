@@ -8,6 +8,7 @@
 #pragma once
 
 #include <algorithm>
+#include <bit>
 #include <cassert>
 #include <cfloat>
 #include <cmath>
@@ -214,10 +215,12 @@ struct FMath
 	static bool IsNearlyEqual(double A, double B, double Tol = UE_SMALL_NUMBER) { return std::fabs(A - B) <= Tol; }
 	static bool IsNearlyZero(float A, float Tol = UE_SMALL_NUMBER) { return std::fabs(A) <= Tol; }
 	static bool IsNearlyZero(double A, double Tol = UE_SMALL_NUMBER) { return std::fabs(A) <= Tol; }
-	static bool IsFinite(float A) { return std::isfinite(A); }
-	static bool IsFinite(double A) { return std::isfinite(A); }
-	static bool IsNaN(float A) { return std::isnan(A); }
-	static bool IsNaN(double A) { return std::isnan(A); }
+	// Por bits, como FGenericPlatformMath: con matemáticas rápidas (-ffast-math, /fp:fast) el
+	// compilador puede dar por hecho que no hay NaN y plegar std::isnan/std::isfinite a una constante.
+	static bool IsFinite(float A) { return (std::bit_cast<uint32>(A) & 0x7F800000u) != 0x7F800000u; }
+	static bool IsFinite(double A) { return (std::bit_cast<uint64>(A) & 0x7FF0000000000000ull) != 0x7FF0000000000000ull; }
+	static bool IsNaN(float A) { return (std::bit_cast<uint32>(A) & 0x7FFFFFFFu) > 0x7F800000u; }
+	static bool IsNaN(double A) { return (std::bit_cast<uint64>(A) & 0x7FFFFFFFFFFFFFFFull) > 0x7FF0000000000000ull; }
 	template <typename T> static constexpr bool IsPowerOfTwo(T V) { return V > 0 && (V & (V - 1)) == 0; }
 	template <typename T> static constexpr bool IsWithin(T V, T Lo, T Hi) { return V >= Lo && V < Hi; }
 	template <typename T> static constexpr bool IsWithinInclusive(T V, T Lo, T Hi) { return V >= Lo && V <= Hi; }
