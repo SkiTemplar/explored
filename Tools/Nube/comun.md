@@ -20,3 +20,8 @@ Reglas:
 - Commits pequeños en español técnico, con ortografía completa y conventional commits.
 - Entrega por rama, con push y PR hacia main que incluya un resumen y cómo verificarla. Nunca hagas push a main.
 - Si la PR toca código de motor que aquí no se compila (actores, componentes, subsistemas, Build.cs, Config, materiales), ponle la etiqueta `necesita-unreal` y explica qué hay que verificar en local.
+
+Antes de empezar:
+- Mira `gh pr list --state all --limit 60` y busca en main (`git grep`) si parte de la tarea ya existe. No dupliques trabajo: amplía lo que haya. Si ya está hecho, marca las casillas del TODO y termina con una PR corta.
+- Hay otras sesiones trabajando en paralelo sobre items.json, achievements.json, building_pieces.json, pure_sources.txt y pure_specs.txt. Rebasa sobre main justo antes de abrir la PR y resuelve los conflictos conservando lo de ambos lados.
+- Trabaja hasta dejar la tarea completa y verificada. Si te sobra margen, añade tests que cacen bugs reales: bordes, entradas corruptas, determinismo.
