@@ -18,14 +18,14 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
-| H1 — Mundo interactivo | 1 | 35 | 36 |
+| H1 — Mundo interactivo | 2 | 34 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **10** | **197** | **207** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -300,6 +300,8 @@ posterior.
 - [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
       13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
       Coalescencia a 10 Hz. *(biblia 08 §2.4)*
+      *(presupuesto ya modelado: `FNetBudgetTableModel` cuenta las entradas de 13 B de
+      `FContainerReplicationModel::EntryBytes` a 10 Hz; falta el `FFastArraySerializer`.)*
 - [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
       (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`
       (FNV-1a de 64 bits) en el saludo de conexión, con rechazo y el texto de biblia 08
@@ -308,6 +310,12 @@ posterior.
       (`Server_SubscribeContainer`, baja al cerrar); la carrera de dos jugadores sobre el
       mismo hueco se resuelve con `EInventoryFail::NotFound`, sin bloqueos.
       *(biblia 08 §2.4)*
+      *(modelo puro ya implementado: `FContainerReplicationModel`
+      (`Source/Explored/Carry/ContainerReplicationModel.h/.cpp`), spec
+      `Tests/ContainerReplicationModelSpec.cpp` — suscripción al abrir a menos de 3 m,
+      contenido entero y luego solo huecos, baja al cerrar, alejarse o desconectarse, y la
+      carrera con `NotFound` y hueco refrescado; falta el RPC `Server_SubscribeContainer`
+      en `AExploredContainer`.)*
 - [ ] `Items/ExploredItemActor`: `bReplicateMovement` a 10 Hz, dormir el cuerpo físico a
       los 3 s de quietud (y dejar de replicar), `NetCullDistanceSquared` 6 000 cm y tope
       de 32 objetos sueltos despiertos a la vez. *(biblia 08 §2.5)*
@@ -316,20 +324,39 @@ posterior.
       etapa, golpes, día de rebrote ×4), tope de 4096 entradas con compactación a
       snapshot por celda reusando `FSaveIndexSet::Encode`. Progreso de tala solo a
       clientes a < 60 m. *(biblia 08 §2.3)*
+      *(modelo puro ya implementado: `FVegetationNetStateModel`
+      (`Source/Explored/WorldGen/VegetationNetStateModel.h/.cpp`), spec
+      `Tests/VegetationNetStateModelSpec.cpp` — clave y estado de 10 B, tabla de especies,
+      filtro de 60 m, tope de 4096 con compactación y sincronía servidor-cliente; falta el
+      `FFastArraySerializer` en el `GameState` que lo alimente.)*
 - [ ] `Fauna`: anclas por grupo cada 2 s (10 B: id, centroide cuantizado, estado) para la
       fauna de ambiente que cada cliente simula en local, y actores replicados (14 B) para
       la terrestre cazable, con el tope duro de 12 a 10 Hz + 24 a 2 Hz enganchado a
       `FFaunaLod`. `ReefSharkAttackRoll` solo en el servidor, una tirada por nadador.
       *(biblia 08 §2.7)*
+      *(anclas ya como modelo puro: `FFaunaAnchorNetModel`
+      (`Source/Explored/Fauna/FaunaAnchorNetModel.h/.cpp`), spec
+      `Tests/FaunaAnchorNetModelSpec.cpp` — 10 B por grupo, 24 grupos a < 150 m, fase de
+      envío por id y arrastre de 1 s; falta la fauna terrestre replicada y el enganche con
+      `AExploredFaunaManager`.)*
 - [ ] `Sky`/`Weather`: replicar los 11 B de reloj, estación, viento, lluvia, mar y
       tormenta a 0,2 Hz en el `GameState`; el cliente avanza su reloj local y corrige con
       `TimeScale` entre 0,95 y 1,05, con salto duro solo por encima de 6 minutos de juego
       de error. Olas, mareas y corrientes se calculan en local. *(biblia 08 §2.8)*
-- [ ] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
+      *(modelo puro ya implementado: `FWorldClockNetModel`
+      (`Source/Explored/Sky/WorldClockNetModel.h/.cpp`), spec
+      `Tests/WorldClockNetModelSpec.cpp` — 11 B con cuantización e ida y vuelta canónica,
+      envío a 0,2 Hz o al cambiar y corrección entre 0,95 y 1,05 con salto a 6 min; falta
+      la propiedad replicada en `AExploredGameState` y el ajuste de `UTimeOfDaySubsystem`.)*
+- [x] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
       (`TimeScale` ×120 solo con todos acostados, vuelta a ×1 al levantarse uno,
       conservando las horas ganadas) y `Derribado` (90 s, reanimación de 6 s o 3 s con
       medicina, alta al 25 % de salud y ánimo −6, tope de 2 reanimaciones por día, sin
       `Derribado` en Náufrago). *(biblia 08 §5.1, §5.2)*
+      *(hecho: `ExploredLinks::DecideGroupSleep`, `FGroupSleepSession`, `OnHealthZero`,
+      `AdvanceRevive`, `FinishRevive` y `TickGroupDowned` en `Core/SystemLinks.h`, spec
+      `Tests/CoopRulesSpec.cpp`; textos de §6.6 y §6.8 pendientes de integrar en
+      `translations/en.json`, espacio `ExploredCoop`.)*
 - [ ] `UI`: `SExploredPlayerList` como pestaña de `SExploredPauseMenu` (tinta, nombre,
       retardo, expulsar), nombres sobre la cabeza (hasta 60 m, desvanecido 45–60 m, sin
       verse a través del terreno, sin barra de vida), rueda de ping de tres opciones
@@ -494,6 +521,10 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `FBoatModel::Step` y corrige hacia el estado recibido en 200 ms.
       `NetCullDistanceSquared` 25 000 cm. Olas y corrientes **no se replican**.
       *(biblia 08 §2.5)*
+      *(formato ya como modelo puro: `FBoatNetStateModel`
+      (`Source/Explored/Boats/BoatNetStateModel.h/.cpp`), spec
+      `Tests/BoatNetStateModelSpec.cpp` — estado de 19 B, mandos de 4 B con rechazo de
+      manipulados y corrección de 200 ms; falta el RPC y la propiedad en `AExploredBoat`.)*
 - [ ] `Boats`: pasajeros con `AttachToActor` replicado, aforo por plano canónico (balsa 2,
       canoa 2, canoa con balancín 3, «Limón» 4 — al lleno el verbo «Subir» no se ofrece),
       timón cedible con el verbo de interacción sobre el asiento y liberado si el timonel
@@ -580,6 +611,10 @@ datos todavía.
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
       *(biblia 08 §5.6, §5.7)*
+      *(funciones puras ya hechas: `CoopAbundanceScale`, `ScaleFiniteVein`,
+      `PirateRaidersForPlayers`, `PirateCategoryBonus`, `ParseCoopScope` y
+      `AchievementRecipients` en `Core/SystemLinks.h`, spec `Tests/CoopRulesSpec.cpp`;
+      falta el campo `coopScope` en `achievements.json` y la bandera de restricción.)*
 
 ---
 
@@ -638,6 +673,11 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] Red: verificar con el CSV de `Explored.NetBudget` el objetivo de **menos de 64 kbps
       por cliente en reposo** y **menos de 256 kbps en pico** con 4 jugadores, sobre las 16
       filas de la matriz. Criterio de salida, no estimación. *(biblia 08 §3)*
+      *(estimación de diseño ya comprobada en host: `FNetBudgetTableModel`
+      (`Source/Explored/Debug/NetBudgetTableModel.h/.cpp`), spec
+      `Tests/NetBudgetTableModelSpec.cpp` — reposo ≈ 33 kbps con 1–4 jugadores, pico
+      ≈ 80 y ≈ 208 con la ráfaga de terreno, con los tamaños reales de los paquetes; el
+      criterio sigue siendo el CSV medido.)*
 - [ ] Red: ajustar con datos de la beta cerrada las cifras de biblia 08 §5 (×120 al dormir,
       90 s y 6/3 s de `Derribado`, y el escalado de vetas, fauna y asaltos por número de
       jugadores). Están escritas con número justo para poder moverlas de una en una.
