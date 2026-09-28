@@ -175,7 +175,13 @@ sueño y temperatura — nunca una cifra.
 
 Cada estado de esta sección tiene, cuando aplica, un **aviso interior** (ES/EN): una frase
 corta que el personaje «piensa» al cruzar un umbral, en el tono seco y algo irónico de un
-superviviente que ya lleva unos días en esto. Nunca un mensaje de sistema.
+superviviente que ya lleva unos días en esto. Nunca un mensaje de sistema. Los textos
+viven en `survival_needs.json#innerVoice` y `FInnerVoiceModel` decide cuándo suena cada
+uno: los de umbral se dicen una vez al entrar y se rearman al salir con margen (5 puntos
+en las necesidades, 0,3 °C en la temperatura); los de suceso (quemadura, jadeo) suenan
+cada vez; como mucho uno por paso del cuerpo, el más urgente, y al cargar o reaparecer
+no se recita lo que ya dolía. «Calor aprieta» salta por encima de 38,5 °C sin fiebre
+[Decisión: la biblia no daba umbral]. En red lo evalúa el dueño sobre su réplica.
 
 Todas las necesidades van de **0 a 100** salvo que se diga lo contrario. El tiempo se mide
 en horas de juego. `Scale` es el multiplicador de modo (§8); `Metabolism` es el
@@ -373,16 +379,24 @@ Dos fuentes, con reglas distintas.
 - **Cómo se cura:** gel de aloe (`biblia-de-contenido.md` §3.7), sombra, esperar a que
   pase.
 
-**Quemadura de contacto** (fuego, brasas, agua o vapor hirviendo) — [AA] **[Decisión, aún
-sin código]**: el estado `ECondition` actual solo distingue quemadura solar; hace falta un
-tipo nuevo para el contacto directo, porque su daño y su cura son distintos. Regla
-propuesta, consistente con el patrón de heridas (§6.7):
+**Quemadura de contacto** (fuego, brasas, agua o vapor hirviendo) — [AA], implementada
+(`ECondition::ContactBurn`, `FBodyModel::ApplyContactBurn`/`SootheBurns`, `FWound::bBurn`,
+constantes `ContactBurnDamage`, `ContactBurnDepth`, `ContactBurnHealHours`,
+`AloeBurnHealFactor` en `survival_needs.json#body.burns`). Es un tipo distinto de la
+quemadura solar porque su daño y su cura son distintos, con el patrón de heridas (§6.7):
 
 - Contacto con fuego abierto, brasas o líquido hirviendo aplica de golpe **8 pts de
   salud** y abre una «herida de quemadura» de profundidad **0.4** que no sangra ni se
   infecta por el mecanismo de §6.7 (el fuego cauteriza), pero sí duele (Dolor, §6.19) y
   cicatriza en **24 horas** sin tratar, o en **12 horas** con gel de aloe.
-- **Cómo se cura:** gel de aloe (cura directa, mitad de tiempo), o simplemente esperar.
+- El estado `ContactBurn` dura lo que le quede a la peor quemadura abierta; cada contacto
+  abre su propia herida. Ni el agua ni las vendas la tratan. Resta ánimo como herida
+  (`Injured`, −6) y el evento `Burned` dispara el aviso interior.
+- **Cómo se cura:** gel de aloe (`gel_aloe`, `Cures` sobre `SunBurn` y `ContactBurn`): la
+  quemadura cicatriza al doble de velocidad desde ese momento — 12 h si se aplica nada más
+  quemarse; aplicado a mitad, solo acorta lo que queda. O simplemente esperar.
+- **Red (08 §2.9):** la aplica y la simula el servidor; al dueño le llega en su réplica
+  (bit de estado y bandera de quemadura en cada herida) y en el RPC fiable de `Burned`.
 - **Aviso interior:** ES: «Eso ha dolido. Cuidado con las brasas.» / EN: «That hurt. Watch
   the embers.»
 
@@ -407,7 +421,7 @@ Fuente: `survival_needs.json#body.scurvy`, `BodyModel.cpp` (`ScurvyStage`, `Tick
 - **Aviso interior:**
   - Encías (≥0.15) — ES: «Las encías se quejan. Necesito fruta.» / EN: «Gums are
     complaining. Need fruit.»
-  - Visión (≥0.45) — ES: «Los colores se están apagando.» / EN: «Colors are fading out.»
+  - Visión (≥0.45) — ES: «Los colores se están apagando.» / EN: «Colours are fading out.»
   - Sangrado (≥0.75) — ES: «Esto es escorbuto de verdad. Fruta, ya.» / EN: «This is proper
     scurvy. Fruit, now.»
 
@@ -457,8 +471,7 @@ si se le pisa (se evita arrastrando los pies por el fondo); la medusa, quedándo
 su radio.
 
 **Aviso interior:**
-- Medusa — ES: «Menudo escozor de medusa.» / EN: «That jellyfish sting stings, no
-  kidding.»
+- Medusa — ES: «Menudo escozor de medusa.» / EN: «Nasty jellyfish sting, that.»
 - Raya — ES: «La raya me ha dado bien.» / EN: «That ray got me good.»
 
 ### 6.13 Esguince
@@ -515,7 +528,7 @@ Fuente: `Source/Explored/Player/SwimModel.{h,cpp}` (`FSwimTuning`,
 - **Aviso interior:**
   - Jadeo (Oxígeno<35 al emerger) — ES: «Casi me quedo sin aire ahí abajo.» / EN: «Almost
     ran out of air down there.»
-  - Ahogo (Oxígeno=0) — ES: «¡Aire! ¡Necesito aire!» / EN: «Air! I need air!»
+  - Ahogo (Oxígeno=0) — ES: «¡Aire, necesito aire!» / EN: «Air, I need air!»
 
 ### 6.16 Ánimo
 
@@ -696,10 +709,10 @@ Fuente: `Source/Explored/Save/SaveSlots.{h,cpp}`, `SaveFormat.cpp`,
 
 ## TODO de implementación
 
-- [ ] [AA] `Survival`: añadir `ECondition::ContactBurn` (quemadura de contacto, §6.8) —
+- [x] [AA] `Survival`: añadir `ECondition::ContactBurn` (quemadura de contacto, §6.8) —
       distinta de `SunBurn`; daño instantáneo 8 pts + herida de profundidad 0.4 que no
       sangra ni se infecta, cicatriza en 24 h (12 h con gel de aloe).
-- [ ] [AA] `Survival`/`Items`: dar a los ítems de gel de aloe la propiedad `Cures` sobre
+- [x] [AA] `Survival`/`Items`: dar a los ítems de gel de aloe la propiedad `Cures` sobre
       `ContactBurn` además de `SunBurn`, y el multiplicador ×0.5 al tiempo de
       cicatrización de esa herida concreta (§6.8).
 - [ ] [AA] `Player/SwimComponent`: exponer el evento de daño por ahogo
@@ -714,14 +727,19 @@ Fuente: `Source/Explored/Save/SaveSlots.{h,cpp}`, `SaveFormat.cpp`,
       navaja rota, botiquín, manual del avión, cantimplora en el fuselaje) — hoy
       `SpawnLandingStarterKitIfNeeded` existe en `ExploredWiringSubsystem` pero su
       contenido exacto debe alinearse con esta lista.
-- [ ] [AA] `Survival`: fijar `Wetness = 1.0` como valor inicial explícito de
+- [x] [AA] `Survival`: fijar `Wetness = 1.0` como valor inicial explícito de
       `FSurvivalState` al arrancar una partida nueva (§4): hoy la struct usa `0.0` por
       defecto y nada lo sobrescribe a `1.0` en el arranque.
-- [ ] [AA] `Survival`/`UI`: implementar los avisos interiores ES/EN de §6 como líneas de
+- [x] [AA] `Survival`/`UI`: implementar los avisos interiores ES/EN de §6 como líneas de
       voz interna del personaje (subtítulo opcional, coherente con
       `biblia-de-contenido.md` §2.5) enganchadas a los eventos de `ESurvivalEvent` y a los
-      cruces de umbral de cada estado.
-- [ ] [AA] `Core/SystemLinks`: documentar en código (comentario junto a `HasPermadeath`)
+      cruces de umbral de cada estado. *(datos, `FInnerVoiceModel` y
+      `UBodySignalsComponent::OnInnerVoice`; falta el subtítulo en pantalla)*
+- [ ] [AA] `UI`: mostrar `UBodySignalsComponent::OnInnerVoice` como subtítulo opcional
+      (Ajustes → Accesibilidad), con el texto de `FInnerVoiceModel::Text` en el idioma activo.
+- [ ] [AA] `Cooking`/`Player`: llamar a `UBodySignalsComponent::ApplyContactBurn` al tocar
+      una hoguera encendida, brasas o una vasija hirviendo (§6.8).
+- [x] [AA] `Core/SystemLinks`: documentar en código (comentario junto a `HasPermadeath`)
       que el modo Personalizado une «necesidades pueden matar» y «permadeath» en un único
       interruptor de «modo duro» (§8) — hoy son campos separados en
       `FSurvivalModeSettings` (`bNeedsCanKill`) sin que quede escrito si el permadeath del
@@ -733,6 +751,6 @@ Fuente: `Source/Explored/Save/SaveSlots.{h,cpp}`, `SaveFormat.cpp`,
 - [ ] [F2] `Fauna`/`Building`: cuando entren los animales domésticos, engancharlos al
       bonus de Ánimo «compañero cerca» (+2/hora, §6.16) que hoy ya existe en el modelo
       (`In.bCompanionNearby`) pero no tiene ninguna fuente que lo active.
-- [ ] [AA] `Tests`: añadir specs de host (`Source/Explored/Tests/`) para
-      `ContactBurn` una vez implementado, siguiendo el patrón de `BodySpec.cpp` para
+- [x] [AA] `Tests`: añadir specs de host (`Source/Explored/Tests/`) para
+      `ContactBurn` una vez implementado *(`MedicineModelSpec.cpp`, `InnerVoiceModelSpec.cpp`)*, siguiendo el patrón de `BodySpec.cpp` para
       `SunBurn` y los cortes.

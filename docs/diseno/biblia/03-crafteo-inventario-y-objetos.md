@@ -49,10 +49,12 @@ hueco es un sitio físico, y `UCarryComponent`/`FInventoryModel`
 | `mochila_cuero_bambu` | 35 L | +20 kg | 1,6 kg | 150 |
 
 *Decisión: `items.json` fija peso/volumen del objeto y `Recipiente`, pero no
-la capacidad de carga cómoda adicional (`BackpackComfortBonusKg` vive en C++
-sin exponer). Se fijan aquí los tres valores de arriba porque son los que
-`UCarryComponent::SetCustomBackpack` necesita recibir; quien implemente lee
-esta tabla, no la inventa de nuevo.*
+la capacidad de carga cómoda adicional: vive en C++ (`FInventoryModel::FindEquipmentSpec`,
+`BackpackComfortBonusKgFor`) con los tres valores de arriba, y
+`UCarryComponent::SetBackpack`/`FInventoryModel::SetCustomBackpack` la reciben como
+parámetro para la mochila sin objeto (por defecto +8 kg, la del Albatros del kit
+inicial). El volumen de la tabla (20/25/35 L) aún no coincide con el código
+(20/30/34 L): queda en el TODO.*
 
 Ponerse la mochila (`EquipFromHand`) exige tenerla en una mano; si ya llevabas
 otra, el contenido pasa entero a la nueva (si no cabe, no se puede cambiar) y
@@ -99,8 +101,9 @@ microgestión»).
 ### 1.4 Contenedores
 
 Contenedores del mundo (`EWorldContainerKind`, ya en el enum): **Cesta**,
-**Estante**, **Arcón**. Los que ya tienen pieza de construcción real en
-`building_pieces.json`:
+**Estante**, **Arcón**. Sus piezas ya están en `building_pieces.json` (campo
+`container` con la clase, que DataCheck compara con el enum) y sus capacidades en
+`FInventoryContainerSpec::Basket/Shelf/Chest`:
 
 | Contenedor | Pieza | Capacidad | Coste |
 |---|---|---|---|
@@ -648,12 +651,12 @@ la única puerta.
 
 ## TODO de implementación
 
-- [ ] [AA] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg), `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en el sitio donde `UCarryComponent::SetCustomBackpack` recibe hoy solo volumen/peso del objeto.
+- [x] [AA] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg), `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en el sitio donde `UCarryComponent::SetCustomBackpack` recibe hoy solo volumen/peso del objeto.
 - [ ] [AA] `Carry`/`InventoryModel`: implementar el apilado de hasta 10 unidades por hueco para objetos sin `maxDurability` ni `LiquidCapacityLiters` (§1.3); hoy `FInventoryEntry` es un objeto por hueco.
-- [ ] [AA] `Items`: añadir a `Content/Data/items.json` las entradas `pico`, `lingote_cobre`, `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`, `ferula_bambu`, `gel_aloe`, `tela_fibra`, `carretilla`.
+- [ ] [AA] `Items`: añadir a `Content/Data/items.json` las entradas `pico`, `lingote_cobre`, `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`, `ferula_bambu`, `gel_aloe`, `tela_fibra`, `carretilla`. *(hechas las seis medicinas, con su efecto en `survival_needs.json#medicines`)*
 - [ ] [AA] `Items`/`Templates`: añadir la plantilla `pico` a `Content/Data/templates.json` (slots Cabeza/Mango/Unión, §2.1) — bloqueante para la minería manual de la porción vertical (GDD §6.1).
 - [ ] [AA] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras con ella enganchada, §1.5).
-- [ ] [AA] `Building`: añadir a `Content/Data/building_pieces.json` las piezas `cesta_almacen`, `estanteria_almacen`, `arcon`, `banco_chatarra`, `horno_fundicion`, `yunque` con el coste de §1.4 y §2.2.
+- [ ] [AA] `Building`: añadir a `Content/Data/building_pieces.json` las piezas `cesta_almacen`, `estanteria_almacen`, `arcon`, `banco_chatarra`, `horno_fundicion`, `yunque` con el coste de §1.4 y §2.2. *(hechas las tres de almacenamiento, con `container` y la capacidad de §1.4 en `FInventoryContainerSpec`)*
 - [ ] [AA] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4) en `Content/Data/fuels.json`, y las recetas de fundición de §4.3 en un fichero nuevo `Content/Data/recipes_smithing.json` (mismo patrón que `recipes.json`).
 - [ ] [AA] `GameMode`/`Carry`: confirmar en código (no solo en este documento) que `HandlePlayerDeath` nunca vacía el inventario en Explorador/Superviviente/Personalizado, y aplicar el golpe de ánimo −6 (`moraleEvents.Injured`, ya existe) al reaparecer.
 - [ ] [AA] `Villages` (stub): dejar preparado el punto de extensión «reputación alta enseña una plantilla de herramienta de cobre» para cuando `Villages` exista en F3 (§2.3), sin bloquear el AA.
@@ -662,3 +665,6 @@ la única puerta.
 - [ ] [F3] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts` (`Fuselage`, `Wing`, `Tail`, `Engine`) antes de permitir la receta, y que consume `canoa_balancin` como indica `requiresBoat`/`consumesRequiredBoat` (ya en `boats.json`, solo falta el mesh `SM_Limon` pendiente).
 - [ ] [F3] `Ruins`/`Artifacts`: cablear el examen de `figura_navegante`, `figura_gemelos`, `figura_mira_cielo`, `carta_varillas`, `carta_oleaje`, `tapa_estrellas` a las técnicas de wayfinding de §3.10 (hoy `artifacts.json` no tiene ese vínculo; solo lo tiene `ruins.json` por sitio, no por artefacto individual).
 - [ ] [AA] `Tests`: extender `Source/Explored/Tests/CarrySpec.cpp` con la carretilla y el apilado; extender `Tools/DataCheck` para validar que toda plantilla nueva de §2–4 es alcanzable con materiales de al menos una isla en AA (regla ya exigida por la biblia §12).
+- [ ] [AA] `Building`/`Carry`: al colocar una pieza con `container` (`FBuildingPieceDef::ContainerKind`), crear su `AExploredContainer` con `SetKind` y guardarlo con la pieza; hoy la pieza se construye, pero aún no guarda nada en el juego.
+- [ ] [AA] `Carry`: alinear el volumen de las mochilas con §1.1 (20/25/35 L; el código tiene 20/30/34 L) o corregir la tabla.
+- [ ] [AA] `Items`/`Templates`: recetas de las seis medicinas de §3.6 (hoy existen como objetos con efecto, pero ninguna plantilla las fabrica) y sus mallas (`meshes_pendientes.json`).
