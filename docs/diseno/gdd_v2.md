@@ -551,6 +551,75 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 
+
+### 3.16 Mundo interactivo: la lluvia llena los recipientes **[biblia 02 §5.4; números pendientes de validar]**
+
+La biblia 02 §5.4 ya lo pide: «cualquier recipiente abierto se llena con la lluvia
+activa», y la biblia 01 §6.2 cuenta la «lluvia recogida» como agua para beber sin riesgo.
+Esta sección fija cuánto se llena, cuándo se vacía y qué pasa si se mezcla.
+
+- **Objetivo:** que dejar un cuenco a la intemperie antes de un chubasco sea una
+  decisión natural de supervivencia, sin menús ni temporizadores.
+- **Reglas:**
+  - **Cuánto entra.** Recoge lo que cae sobre la boca: 1 mm de lluvia sobre 1 m² son
+    1 L. La intensidad sale de `FWeatherSample::Rain`:
+
+    | Tiempo (`Rain`) | mm/h |
+    |---|---|
+    | Llovizna (0,3) | 2,5 |
+    | Galerna (0,35) | 3,3 |
+    | Chubasco (0,75) | 10 |
+    | Tormenta (0,95) | 30 |
+    | Ciclón (1,0) | 50 |
+
+    Entre los puntos se interpola en línea recta. Por debajo de 0,02 no llueve.
+  - **A cubierto no recoge.** Un recipiente bajo techo no se llena, y a la sombra se
+    evapora al 30 %.
+  - **Evaporación.** Sin lluvia, una lámina de agua pierde 0,25 mm/h con cielo
+    despejado (unos 5,5 mm al día) y un 60 % menos con el cielo cubierto.
+  - **Rebose.** Lo que no cabe se sale. La capacidad es la del inventario
+    (`Recipiente` × 0,25 L), así que un cuenco lleno en el suelo pesa lo mismo al
+    cogerlo.
+  - **Mezcla.** Si dentro había agua de mar o sin tratar, la lluvia se mezcla, y al
+    rebosar sale mezcla. Una vasija llena de agua de mar que se deja en una tormenta
+    deja de ser salobre a las 4,4 h y queda con agua de lluvia limpia a las 12,3 h.
+    - **Salobre** con un 3 % o más de agua de mar (~1 g/L de sal). Cuenta como
+      `agua_mar`.
+    - **Sin tratar** con cualquier rastro de agua ajena por debajo de eso. Cuenta como
+      `agua_sin_tratar` (se hierve).
+    - **Lluvia** solo si no queda nada ajeno. Se bebe sin riesgo.
+    - El agua de mar manda sobre la sin tratar al mezclarse.
+  - **Qué recipientes recogen.** Solo los abiertos del catálogo, con su boca:
+
+    | Objeto | Boca (m²) | Capacidad (L) | Horas de chubasco para llenarse |
+    |---|---|---|---|
+    | `concha_grande` | 0,050 | 0,5 | 1 |
+    | `cascara_coco`, `recipiente_coco` | 0,018 | 0,5 | 2,8 |
+    | `vasija_barro` | 0,020 | 0,75 | 3,75 |
+    | `bambu_grueso` | 0,003 | 0,5 | 16,7 |
+    | `concha_pequena` | 0,004 | 0,25 | 6,3 |
+    | `bambu_fino`, `caracola` | 0,001 | 0,25 | 25 |
+    | `cantimplora` (boca estrecha) | 0,0007 | 1,0 | 143 |
+
+    El coco verde, la cesta, las mochilas y la bolsa estanca no recogen.
+- **Progresión:** el primer día se bebe coco. Con la primera cáscara raspada ya se puede
+  poner a recoger lluvia, y en `primeras_lluvias` y `monzon` unas cuantas conchas y
+  vasijas dan agua limpia sin hervir. La cantimplora se llena mejor en el río o
+  vertiendo desde un cuenco.
+- **Interfaz:** el nivel del agua se ve dentro del recipiente, con salpicaduras
+  mientras llueve. Al mirarlo, la etiqueta dice «agua de lluvia», «agua sin tratar» o
+  «agua salobre».
+- **Pendiente de decidir:**
+  - En `items.json` no hay un objeto `agua_lluvia`. La lluvia limpia se bebe
+    directamente del recipiente; si hace falta como ingrediente, habría que crearlo.
+  - Un colector de hojas o de lona que amplíe la boca de una vasija (más m² para el
+    mismo recipiente) encaja en el modelo, pero no existe como pieza de construcción.
+  - Los números de esta sección no los ha validado el director.
+- **Riesgos técnicos:** ver `docs/tecnico/lluvia-recipientes.md`. Ponerse al día al
+  cargar recorre como mucho 60 días de juego.
+- **Dependencias:** `Weather` (`FRainCatchModel`, `FWeatherModel`), `Carry`
+  (`LiquidCapacityFromRecipiente`), `Save` (capa de recipientes del mundo).
+
 ---
 
 ## 4. Progresión de islas y tecnología
