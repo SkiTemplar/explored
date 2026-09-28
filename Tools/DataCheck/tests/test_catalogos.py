@@ -118,7 +118,7 @@ def test_catalogo_de_estadisticas_mal_formado(tmp_path: Path) -> None:
     assert _has(e, "«peces» tiene values/valuesFrom pero no es un conjunto")
     assert _has(e, "«lista».values debe ser una lista no vacía sin repetidos")
     assert _has(e, "valuesFrom «rocas»")
-    assert _has(e, "1 logros; el GDD §16 fija 30")
+    assert _has(e, "1 logros; el GDD §16 y la biblia 07 §2 piden")
     assert _has(e, "«uno»: falta nameEn") and _has(e, "«uno»: nameEs usa el nombre de la dedicatoria")
     assert _has(e, "hidden debe ser true o false") and _has(e, "icon debe ser")
     assert _has(e, "modes ['Dios']")

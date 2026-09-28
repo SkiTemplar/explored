@@ -10,7 +10,17 @@ from pathlib import Path
 from typing import Any
 
 from . import (
-    achievements, combat, contenido, cooking, crafting, farm, fases, fauna, mining, music, packs,
+    achievements,
+    combat,
+    contenido,
+    cooking,
+    crafting,
+    farm,
+    fases,
+    fauna,
+    mining,
+    music,
+    packs,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
