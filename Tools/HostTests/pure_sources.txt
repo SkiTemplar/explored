@@ -20,6 +20,7 @@ Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp
 Fauna/BoidsModel.cpp
+Fauna/FaunaAnchorNetModel.cpp
 Fauna/FaunaAnimation.cpp
 Fauna/FaunaGroups.cpp
 Fauna/FaunaSpawning.cpp

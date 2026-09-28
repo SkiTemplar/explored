@@ -12,6 +12,7 @@ Tests/CookingSpec.cpp
 Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
+Tests/FaunaAnchorNetModelSpec.cpp
 Tests/FireSpec.cpp
 Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
