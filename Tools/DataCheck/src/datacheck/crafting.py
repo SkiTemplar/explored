@@ -282,3 +282,40 @@ def single_piece_templates(items: list[dict], templates: list[dict]) -> dict[str
             out[tpl["id"]] = hits
     return out
 
+
+def resolve_example(entry, items_by_id: dict[str, dict], templates: list[dict]) -> tuple[Instance, str | None]:
+    """Instancia de un paso de ``ejemplo`` de templates.json.
+
+    Un paso es el id de un objeto (la pieza tal cual, como ``MakeInstance`` en
+    CraftingSpec.cpp) o ``{"verbo": ..., "de": [paso, paso]}``: lo que sale de combinar
+    esos dos pasos con ese verbo. Devuelve la instancia y la plantilla que la produjo
+    (``None`` para un objeto suelto). Lanza ``ValueError`` si el paso no es válido.
+    """
+
+    if isinstance(entry, str):
+        if entry not in items_by_id:
+            raise ValueError(f"«{entry}» no está en items.json")
+        return leaf(items_by_id[entry]), None
+    if not isinstance(entry, dict) or not isinstance(entry.get("de"), list) or len(entry["de"]) != 2:
+        raise ValueError(f"paso mal formado {entry!r}: se espera un id o {{verbo, de: [a, b]}}")
+    a, _ = resolve_example(entry["de"][0], items_by_id, templates)
+    b, _ = resolve_example(entry["de"][1], items_by_id, templates)
+    tpl = best_template(templates, entry.get("verbo"), a, b)
+    if tpl is None:
+        raise ValueError(f"con «{entry.get('verbo')}», {entry['de']} no casa con ninguna plantilla")
+    if tpl.get("isSharpen") or tpl["resultDefinitionId"] not in items_by_id:
+        raise ValueError(f"el paso {entry['de']} da «{tpl['id']}», que no produce un objeto")
+    return combine(items_by_id[tpl["resultDefinitionId"]], a, b), tpl["id"]
+
+
+def example_winner(template: dict, items_by_id: dict[str, dict], templates: list[dict]) -> str | None:
+    """Plantilla que gana con el ``ejemplo`` de ``template`` y su primer verbo (como CraftingSpec)."""
+
+    pair = template.get("ejemplo")
+    if not isinstance(pair, list) or len(pair) != 2:
+        raise ValueError("«ejemplo» debe ser una lista de dos pasos")
+    a, _ = resolve_example(pair[0], items_by_id, templates)
+    b, _ = resolve_example(pair[1], items_by_id, templates)
+    verbs = template.get("verbs") or [None]
+    tpl = best_template(templates, verbs[0], a, b)
+    return tpl["id"] if tpl else None

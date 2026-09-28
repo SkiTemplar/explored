@@ -131,6 +131,113 @@ def test_coco_y_huevo_no_se_atan(real: DataSet) -> None:
     assert apply(real, inst(real, "coco_maduro"), inst(real, "huevo"), "Atar") is None
 
 
+def test_dos_cordeles_dan_cuerda_y_no_otro_cordel(real: DataSet) -> None:
+    # El cordel trenzado hereda Fibroso 4 de la fibra y casaba también con «cordel»,
+    # que empataba en huecos e iba antes en el fichero: dos cordeles daban un cordel.
+    cordel = apply(real, inst(real, "fibra_coco"), inst(real, "corteza"), "Trenzar")
+    assert cordel is not None and cordel.definition == "cordel"
+    cuerda = apply(real, cordel, cordel, "Trenzar")
+    assert cuerda is not None and cuerda.definition == "cuerda"
+
+
+def test_cada_ejemplo_da_su_plantilla(real: DataSet) -> None:
+    by_id = {i["id"]: i for i in real.items}
+    wrong = {t["id"]: crafting.example_winner(t, by_id, real.templates) for t in real.templates}
+    assert {tid: got for tid, got in wrong.items() if got != tid} == {}
+
+
+def test_las_plantillas_nuevas_no_roban_las_combinaciones_de_siempre(real: DataSet) -> None:
+    # Las cadenas de CraftingSpec.cpp: ninguna plantilla de acceso anticipado con más
+    # huecos (garfio, hoz, arpón, azada...) debe quedarse con ellas.
+    mango = apply(real, inst(real, "palo_recto"), inst(real, "liana"), "Atar")
+    assert mango.definition == "atado_generico"
+    assert apply(real, mango, inst(real, "lasca_pedernal"), "Atar").definition == "hacha"
+    assert apply(real, mango, inst(real, "canto_aguzado"), "Atar").definition == "pico"
+    asta = apply(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
+    assert apply(real, asta, inst(real, "hueso_largo"), "Atar").definition == "lanza"
+    assert apply(real, inst(real, "lasca_pedernal"), inst(real, "palo_recto"), "Tallar").definition == "estaca"
+    assert apply(real, inst(real, "vara_flexible"), inst(real, "cuerda"), "Atar").definition == "arco"
+    assert apply(real, inst(real, "hoja_palma"), inst(real, "hoja_palma"), "Trenzar").definition == "cesta"
+
+
+def test_arpon_con_espina_y_lanza_con_hueso_largo(real: DataSet) -> None:
+    asta = apply(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
+    assert apply(real, asta, inst(real, "espina_pescado"), "Atar").definition == "arpon"
+    assert apply(real, asta, inst(real, "hueso_pequeno"), "Atar").definition == "arpon"
+
+
+def test_la_ropa_cambia_un_estado_del_cuerpo(real: DataSet) -> None:
+    ropa = {i["id"]: i["wear"] for i in real.items if "ropa" in i.get("tags", [])}
+    assert ropa["sombrero_palma"]["sunFactor"] == 0.3  # HatSunFactor de survival_needs.json
+    assert ropa["ropa_abrigo"]["insulation"] > ropa["capa_impermeable"]["insulation"]
+    assert ropa["sandalias"]["footGuard"] is True
+    assert 0 < ropa["capa_impermeable"]["rainFactor"] < 1
+
+
+def _simulacion_de_referencia(items, templates, max_depth=2):
+    """El algoritmo sin optimizar (recorre cada hueco y cada cubo), para comparar."""
+    by_id = {i["id"]: i for i in items}
+    cuts = crafting.thresholds(templates)
+    produced = {t["resultDefinitionId"] for t in templates}
+    raw = [i for i in items if i["id"] not in produced and "interno" not in i.get("tags", [])]
+    known: dict[str, list] = {}
+
+    def dominates(a, b):
+        pa = dict(a.props)
+        return a.tags == b.tags and all(pa.get(k, 0.0) >= v for k, v in b.props)
+
+    def add(x):
+        bucket = known.setdefault(x.definition, [])
+        if any(dominates(k, x) for k in bucket):
+            return False
+        bucket[:] = [k for k in bucket if not dominates(x, k)] + [x]
+        return True
+
+    for it in raw:
+        add(crafting.quantize(crafting.leaf(it), cuts))
+    reached_items = {i["id"]: 0 for i in raw}
+    reached_templates, ties = {}, set()
+    verbs = sorted({v for t in templates for v in t.get("verbs", [])})
+    frontier = [x for b in known.values() for x in b]
+    for depth in range(1, max_depth + 1):
+        pool = [x for b in known.values() for x in b]
+        new = []
+        for a in frontier:
+            for b in pool:
+                for verb in verbs:
+                    tpl = crafting.best_template(templates, verb, a, b)
+                    if tpl is None:
+                        continue
+                    for other in templates:
+                        if other is not tpl and verb in other.get("verbs", []) \
+                                and len(other["slots"]) == len(tpl["slots"]) and crafting.template_matches(other, a, b):
+                            ties.add((verb, tpl["id"], other["id"]))
+                    reached_templates.setdefault(tpl["id"], depth)
+                    if tpl.get("isSharpen") or tpl["resultDefinitionId"] not in by_id:
+                        continue
+                    x = crafting.quantize(crafting.combine(by_id[tpl["resultDefinitionId"]], a, b), cuts)
+                    reached_items.setdefault(x.definition, depth)
+                    if add(x):
+                        new.append(x)
+        new = [x for x in new if any(x is k for k in known.get(x.definition, []))]
+        if not new:
+            break
+        frontier = new
+    return reached_templates, reached_items, ties
+
+
+def test_simulacion_igual_que_la_referencia(real: DataSet) -> None:
+    # Subconjunto con materiales de las cadenas de herramientas, pesca y ropa: basta para
+    # que haya empates, dominancia y dos pasos, y la referencia tarda poco.
+    keep = {"palo_recto", "liana", "lasca_pedernal", "bambu_grueso", "hueso_largo", "espina_pescado",
+            "cordel", "cuerda", "hoja_palma", "fibra_coco", "corteza", "canto_rodado", "pedernal",
+            "algodon_silvestre", "cuero_curtido", "concha_grande", "rama_verde", "arenisca"}
+    produced = {t["resultDefinitionId"] for t in real.templates}
+    items = [i for i in real.items if i["id"] in keep or i["id"] in produced or "interno" in i.get("tags", [])]
+    got = crafting.simulate(items, real.templates)
+    assert (got.reached_templates, got.reached_items, got.ties) == _simulacion_de_referencia(items, real.templates)
+
+
 # --------------------------------------------------------------------------- regresiones
 
 
@@ -1287,3 +1394,56 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- recetas de acceso anticipado
+
+
+def test_detecta_ejemplo_que_da_otra_plantilla(ds: DataSet) -> None:
+    template(ds, "remo")["ejemplo"] = ["lasca_pedernal", "palo_recto"]  # sale una estaca
+    assert any_error(errors_of(ds), "«remo»", "produce «estaca_por_tallado»")
+
+
+def test_detecta_ejemplo_con_objeto_inexistente(ds: DataSet) -> None:
+    template(ds, "odre")["ejemplo"] = ["cuero_curtido", "tendon_de_ballena"]
+    assert any_error(errors_of(ds), "«odre»", "ejemplo inválido", "tendon_de_ballena")
+
+
+def test_detecta_plantilla_nueva_que_roba_el_hacha(ds: DataSet) -> None:
+    # Un garfio sin la etiqueta de hueso ni metal en el gancho casa con el mango atado
+    # y la lasca; con cuatro huecos le gana al hacha, que deja de salir de su ejemplo.
+    garfio = template(ds, "garfio")
+    garfio["slots"] = [{"role": "Gancho", "requireAll": False, "requirements": [{"property": "Filo", "min": 2}]},
+                       {"role": "Mango", "requireAll": False, "requirements": [{"property": "Largo", "min": 2}]},
+                       {"role": "Cabo", "requireAll": False, "requirements": [{"property": "Ata", "min": 2}]},
+                       {"role": "Otro", "requireAll": False, "requirements": [{"property": "Rigido", "min": 1}]}]
+    assert any_error(errors_of(ds), "«hacha»", "produce «garfio»")
+
+
+def test_detecta_estacion_sin_tiempo_y_mano_con_tiempo(ds: DataSet) -> None:
+    template(ds, "remo")["craftMinutes"] = 0
+    template(ds, "hoz")["craftMinutes"] = 5
+    errors = errors_of(ds)
+    assert any_error(errors, "«remo»", "craftMinutes > 0")
+    assert any_error(errors, "«hoz»", "no cuesta tiempo")
+
+
+def test_detecta_fase_y_uso_que_faltan(ds: DataSet) -> None:
+    template(ds, "honda")["fase"] = "F4"
+    del template(ds, "honda")["usoEn"]
+    piece(ds, "hamaca")["fase"] = "beta"
+    errors = errors_of(ds)
+    assert any_error(errors, "«honda»", "fase")
+    assert any_error(errors, "«honda»", "falta usoEn")
+    assert any_error(errors, "«hamaca»", "fase")
+
+
+def test_detecta_ropa_sin_efecto(ds: DataSet) -> None:
+    del item(ds, "sandalias")["wear"]
+    item(ds, "sombrero_palma")["wear"] = {"slot": "sombrero", "sunFactor": 1.5}
+    item(ds, "remo")["wear"] = {"slot": "torso", "insulation": 0.2}
+    errors = errors_of(ds)
+    assert any_error(errors, "«sandalias»", "ropa sin «wear»")
+    assert any_error(errors, "«sombrero_palma»", "wear.slot")
+    assert any_error(errors, "«sombrero_palma»", "wear.sunFactor")
+    assert any_error(errors, "«remo»", "sin la etiqueta ropa")

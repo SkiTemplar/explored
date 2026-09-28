@@ -244,6 +244,69 @@ def check_templates(ds: DataSet, r: Report) -> None:
             r.error(f"templates.json «{tid}»: nameTemplate usa {{{max(placeholders)}}} con {len(slots)} slots")
         if t.get("isSharpen") and t.get("verbs") != ["Afilar"]:
             r.warn(f"templates.json «{tid}»: isSharpen con verbos distintos de Afilar")
+        _check_template_design(ds, t, r)
+
+
+# Fases del GDD v2 §6.2 (biblia 03: [AA], [F2], [F3]).
+PHASES = {"AA", "F2", "F3"}
+# Combinar en la mano no cuesta tiempo (biblia 03 §4.1); en una estación, sí.
+MAX_CRAFT_MINUTES = 240
+
+
+def _check_template_design(ds: DataSet, t: dict, r: Report) -> None:
+    """Fase, tiempo, texto de la libreta y combinación canónica (biblia 03 §2.4)."""
+    tid = t.get("id")
+    if t.get("fase") not in PHASES:
+        r.error(f"templates.json «{tid}»: fase {t.get('fase')!r} no es {sorted(PHASES)}")
+    minutes = t.get("craftMinutes")
+    if not _type_ok(minutes, (int,)) or not 0 <= minutes <= MAX_CRAFT_MINUTES:
+        r.error(f"templates.json «{tid}»: craftMinutes {minutes!r} fuera de [0, {MAX_CRAFT_MINUTES}]")
+    elif t.get("station") and minutes == 0:
+        r.error(f"templates.json «{tid}»: con estación «{t['station']}» el trabajo lleva tiempo (craftMinutes > 0)")
+    elif not t.get("station") and minutes > 0:
+        r.error(f"templates.json «{tid}»: sin estación se combina en la mano y no cuesta tiempo (craftMinutes 0)")
+    for key in ("usoEs", "usoEn"):
+        if not isinstance(t.get(key), str) or not t[key].strip():
+            r.error(f"templates.json «{tid}»: falta {key} (qué le permite hacer al jugador, biblia 03 §2.4)")
+    try:
+        winner = crafting.example_winner(t, {i["id"]: i for i in ds.items}, ds.templates)
+    except ValueError as exc:
+        r.error(f"templates.json «{tid}»: ejemplo inválido: {exc}")
+        return
+    if winner != tid:
+        r.error(f"templates.json «{tid}»: su ejemplo {t.get('ejemplo')} produce «{winner}» con "
+                f"«{(t.get('verbs') or ['?'])[0]}» (otra plantilla gana por huecos o por orden del fichero)")
+
+
+# Ranuras de ropa (biblia 01 §6.5-6.8 y 03 §3.11): cada prenda ocupa una y cambia un estado.
+WEAR_SLOTS = {"cabeza", "torso", "espalda", "pies"}
+WEAR_KEYS = {"slot", "insulation", "sunFactor", "rainFactor", "footGuard"}
+
+
+def check_wear(ds: DataSet, r: Report) -> None:
+    for item in ds.items:
+        iid, wear = item.get("id"), item.get("wear")
+        is_clothing = "ropa" in item.get("tags", [])
+        if wear is None:
+            if is_clothing:
+                r.error(f"items.json «{iid}»: ropa sin «wear» (qué estado del cuerpo cambia, biblia 01)")
+            continue
+        if not is_clothing:
+            r.error(f"items.json «{iid}»: «wear» en un objeto sin la etiqueta ropa")
+        if not isinstance(wear, dict):
+            r.error(f"items.json «{iid}»: «wear» debe ser un objeto")
+            continue
+        for key in sorted(set(wear) - WEAR_KEYS):
+            r.error(f"items.json «{iid}»: wear.{key} desconocido ({sorted(WEAR_KEYS)})")
+        if wear.get("slot") not in WEAR_SLOTS:
+            r.error(f"items.json «{iid}»: wear.slot {wear.get('slot')!r} no es {sorted(WEAR_SLOTS)}")
+        for key in ("insulation", "sunFactor", "rainFactor"):
+            if key in wear and (not _type_ok(wear[key], (int, float)) or not 0 <= wear[key] <= 1):
+                r.error(f"items.json «{iid}»: wear.{key}={wear[key]!r} fuera de [0, 1]")
+        if "footGuard" in wear and not isinstance(wear["footGuard"], bool):
+            r.error(f"items.json «{iid}»: wear.footGuard debe ser true o false")
+        if len(set(wear) - {"slot"}) == 0:
+            r.error(f"items.json «{iid}»: wear sin ningún efecto sobre el cuerpo")
 
 
 # --------------------------------------------------------------------------- progresión
@@ -439,6 +502,10 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
         # Encaje en la rejilla: lo lee FBuildingModel (ParseBuildSocket) y sin él la pieza no se coloca.
         if p.get("socket") not in BUILDING_SOCKETS:
             r.error(f"building_pieces.json «{pid}»: socket {p.get('socket')!r} no es uno de {sorted(BUILDING_SOCKETS)}")
+        if "fase" in p and p["fase"] not in PHASES:
+            r.error(f"building_pieces.json «{pid}»: fase {p['fase']!r} no es {sorted(PHASES)}")
+        if ("usoEs" in p) != ("usoEn" in p) or any(k in p and not str(p[k]).strip() for k in ("usoEs", "usoEn")):
+            r.error(f"building_pieces.json «{pid}»: usoEs y usoEn van juntos y sin texto vacío")
         if "respawnPoint" in p and not isinstance(p["respawnPoint"], bool):
             r.error(f"building_pieces.json «{pid}»: respawnPoint debe ser true o false")
     if not any(p.get("respawnPoint") is True for p in pieces.values()):
@@ -1171,6 +1238,7 @@ def run_all(ds: DataSet) -> Report:
     check_items_schema(ds, r)
     check_verbs(ds, r)
     check_templates(ds, r)
+    check_wear(ds, r)
     reach = check_crafting_reachability(ds, r)
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
