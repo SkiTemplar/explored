@@ -382,9 +382,13 @@ FGroundBranchSource FFellingModel::MakeBranchSource(const FFellingProfile& Profi
 
 FIntPoint FFellingModel::CellOf(const FVector2D& Position, double CellSize)
 {
-	if (!(CellSize > 0.0))
+	// Tamaño o posición no finitos → origen; coordenadas enormes se recortan antes de pasar a
+	// int32 (convertir un real fuera de rango o NaN a entero es comportamiento indefinido).
+	if (!FMath::IsFinite(CellSize) || CellSize <= 0.0 || !FMath::IsFinite(Position.X) || !FMath::IsFinite(Position.Y))
 	{
 		return FIntPoint(0, 0);
 	}
-	return FIntPoint(FMath::FloorToInt32(Position.X / CellSize), FMath::FloorToInt32(Position.Y / CellSize));
+	constexpr double MaxCell = 1.0e9;
+	return FIntPoint(FMath::FloorToInt32(FMath::Clamp(Position.X / CellSize, -MaxCell, MaxCell)),
+		FMath::FloorToInt32(FMath::Clamp(Position.Y / CellSize, -MaxCell, MaxCell)));
 }
