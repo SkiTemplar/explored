@@ -14,7 +14,18 @@ GDD v2 §3.4; pipeline: GDD v2 §7.3.
   `[&](const FVector& P) { return Density.Density(P); }`. Las unidades son metros.
 - Cada edición devuelve `FTerrainEditResult`: `DirtyChunks` (coordenadas de chunk de
   edición, ordenadas y sin repetir), `VolumeRemoved` y `VolumeAdded` en m³ para el
-  inventario de tierra y roca, y `bRejected` cuando la herramienta no llega al material.
+  inventario de tierra y roca, y `bRejected` cuando la herramienta no llega al material
+  o la petición no es válida.
+- **Entradas validadas.** Cada herramienta rechaza entera (`bRejected`, sin chunks
+  sucios) una petición con valores no finitos, con coordenadas fuera de
+  ±`MaxWorldCoordinate` (100 km) o con un pincel de pala o de tierra de más de
+  `MaxBrushExtent` (4 m). `CarveStairs` rechaza lo que pase de los topes de
+  `SnapStairs` (64 peldaños, contrahuella 0,45 m, huella 0,9 m, ancho 3 m, altura libre
+  3 m), y `SnapStairs` devuelve `false` con valores no finitos. Antes, un solo golpe
+  con el punto de impacto a NaN escribía deltas en muestras sin sentido y el guardado
+  entero del terreno dejaba de cargar, y una pala de 200 m de radio tardaba ~30 s.
+  Por eso el servidor del cooperativo puede pasar al modelo las peticiones de los
+  clientes tal como llegan: el rechazo se responde con el sonido de rebote.
 - `BuildChunkGrid(Chunk, Base, Grid)` rellena un `FDensityGrid` de N + 2 muestras por eje
   con el mismo convenio que `FTerrainChunkBuilder`. Esa rejilla se pasa tal cual a
   `FSurfaceNets::Polygonize`.
