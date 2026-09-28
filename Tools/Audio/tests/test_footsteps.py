@@ -149,3 +149,23 @@ def test_paso_en_roca_tritura_y_rebota_sin_sisear(rendered):
         assert centroid < 2200.0, f"{name}: centroide {centroid:.0f} Hz"
         assert air < 0.04, f"{name}: {air:.1%} sobre 8 kHz"
         assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a siseo"
+
+
+def test_paso_en_madera_suena_a_tablon_y_no_a_bombo(rendered):
+    """Un tablon atado es madera hueca pero muy amortiguada: tras el apoyo de
+    la punta, la banda de 100-400 Hz (primer modo del tablon y golpe del peso)
+    cae 30 dB en menos de 100 ms (envolvente de 5 ms). La version con el
+    primer modo a 150-230 Hz y 55 ms de decaimiento tardaba 130-190 ms y
+    sonaba a bombo."""
+    sos = signal.butter(4, [100.0, 400.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.005 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_wood_" not in name:
+            continue
+        low = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(low**2, np.ones(win) / win, mode="same"))
+        lo = int(0.05 * SAMPLE_RATE)
+        toe = lo + int(np.argmax(env[lo : int(0.16 * SAMPLE_RATE)]))
+        below = np.nonzero(env[toe:] < env[toe] * 10 ** (-30 / 20))[0]
+        decay_ms = below[0] / SAMPLE_RATE * 1000.0 if below.size else float("inf")
+        assert decay_ms < 100.0, f"{name}: la banda grave tarda {decay_ms:.0f} ms en caer 30 dB"

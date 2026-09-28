@@ -404,44 +404,104 @@ def _footstep_rock(rng: np.random.Generator) -> np.ndarray:
     return out
 
 
-def _footstep_wood(rng: np.random.Generator) -> np.ndarray:
-    n = int(rng.uniform(0.30, 0.36) * SR)
+def _plank_knock(n: int, onset: int, rng: np.random.Generator, freq: float, q: float,
+                 contact_s: float) -> np.ndarray:
+    """Respuesta del tablon al golpe: modos de viga libre (1 : 2,76 : 5,40 :
+    8,93) con el amortiguamiento de la madera, tau = Q / (pi f), asi que los
+    modos altos se apagan antes que el primero. Con Q 18-30 el primer modo
+    (260-380 Hz) dura 15-35 ms: "toc" de tablon, no "bum" de tambor. Se mezcla
+    con ruido en la banda del segundo modo para que no suene a tono.
+
+    La fuerza no es un impulso: un talon (planta blanda) tarda 3-6 ms en
+    cargar el tablon y un tablon contra el rastrel 1-2 ms (`contact_s`). Se
+    convoluciona con ese semiseno, que apaga los modos altos como en la
+    realidad y reparte el pico del ataque."""
     out = np.zeros(n)
-    plank_freq = rng.uniform(150, 230)  # mismo tablon para talon y punta
-    for onset, w in _contacts(rng, n, (0.07, 0.10)):
-        out += w * 0.18 * _thump(n, onset, rng, fc=rng.uniform(180, 260), tau_s=0.02)
-        out += w * 0.15 * _click(n, onset, rng, fc=rng.uniform(1800, 2800), dur_s=0.006)
-        # Tablon hueco: modos inharmonicos de viga libre, amortiguados rapido
-        # (madera, no campana) y excitados con ruido para que no suene a seno.
-        length = n - onset
-        knock = modal_hit(SR, length / SR, base_freq=plank_freq, mode_ratios=[1.0, 2.76, 5.40, 8.93],
-                          mode_dampings_s=[0.055, 0.032, 0.018, 0.009], mode_amps=[0.7, 0.6, 0.4, 0.25],
-                          rng=rng, detune=0.01)
-        body = static_filter(rng.standard_normal(length), SR, fc=plank_freq * 4.0, q=1.0, kind="bandpass")
-        body *= np.exp(-np.arange(length) / SR / 0.02)
-        knock = fit_length(knock, length)
-        knock = knock / (np.max(np.abs(knock)) + 1e-9) * 0.5 + body / (np.max(np.abs(body)) + 1e-9) * 0.5
-        out[onset:] += w * 0.45 * knock
-    # Crujido ocasional del tablon al soltar el peso: pulsos de friccion
-    # (stick-slip) a ~20-40 Hz filtrados en banda media.
+    length = min(int(0.12 * SR), n - onset)
+    if length <= 64:
+        return out
+    ratios = [1.0, 2.76, 5.40, 8.93]
+    knock = modal_hit(SR, length / SR, base_freq=freq, mode_ratios=ratios,
+                      mode_dampings_s=[q / (np.pi * freq * r) for r in ratios],
+                      mode_amps=[0.6, 1.0, 0.5, 0.3], rng=rng, detune=0.02)
+    knock = fit_length(knock, length)
+    grain = static_filter(rng.standard_normal(length), SR, fc=freq * 2.76, q=1.2, kind="bandpass")
+    grain *= np.exp(-np.arange(length) / SR / 0.015)
+    body = knock / (np.max(np.abs(knock)) + 1e-9) * 0.65 + grain / (np.max(np.abs(grain)) + 1e-9) * 0.35
+    force = np.sin(np.pi * np.arange(max(int(contact_s * SR), 2)) / max(int(contact_s * SR), 2))
+    body = fftconvolve(body, force / force.sum())[:length]
+    out[onset : onset + length] = body
+    peak = np.max(np.abs(out))
+    return out / peak if peak > 1e-9 else out
+
+
+def _footstep_wood(rng: np.random.Generator) -> np.ndarray:
+    """Paso en tablazon de cabaña o de balsa: tablones sobre rastreles,
+    atados con cuerda, con algo de arena de la playa encima.
+
+    - El talon se para en el tablon: golpe grave corto (tau 10-14 ms) y el
+      "toc" de la suela, un transitorio de 2-4 ms hasta 2,5 kHz.
+    - El tablon responde con sus modos de viga (primer modo 260-380 Hz,
+      Q de madera 18-30): suena hueco pero se apaga en unas decenas de ms.
+    - Un tablon atado nunca queda firme: al cargarlo baja la holgura y da
+      contra el rastrel 6-14 ms despues ("clac" seco y mas agudo), y a
+      veces el de al lado vibra contra el.
+    - La arena que hay sobre la tablazon cruje un instante bajo la planta.
+    - Al soltar el peso, la mitad de las veces el tablon cruje contra la
+      cuerda (adherencia y deslizamiento a 25-60 pulsos/s, cada vez mas
+      rapido al descargarse).
+
+    La version anterior daba al primer modo (150-230 Hz) 55 ms de
+    decaimiento: la banda de 100-400 Hz seguia sonando 300 ms, un 18-37 %
+    de la energia era tonal y el paso sonaba a bombo; ademas quedaba hasta
+    4 dB bajo el objetivo porque el pico del clic llegaba al techo antes."""
+    n = int(rng.uniform(0.28, 0.33) * SR)
+    out = np.zeros(n)
+    t = np.arange(n) / SR
+    plank_freq = rng.uniform(260.0, 380.0)  # mismo tablon para talon y punta
+    plank_q = rng.uniform(14.0, 22.0)
+    contacts = _contacts(rng, n, (0.07, 0.10))
+    for onset, w in contacts:
+        out += w * 0.10 * _thump(n, onset, rng, fc=rng.uniform(200, 280), tau_s=rng.uniform(0.010, 0.014))
+        tock = _click(n, onset, rng, fc=rng.uniform(600, 900), dur_s=rng.uniform(0.002, 0.004))
+        out += w * 0.10 * static_filter(tock, SR, fc=2500.0, q=0.7, kind="lowpass")
+        out += w * 0.30 * _plank_knock(n, onset, rng, plank_freq * rng.uniform(0.98, 1.02), plank_q,
+                                       rng.uniform(0.0004, 0.0007))
+        # Holgura: el tablon da contra el rastrel.
+        slap = onset + int(rng.uniform(0.006, 0.014) * SR)
+        out += w * rng.uniform(0.22, 0.30) * _plank_knock(n, slap, rng, rng.uniform(700.0, 1100.0), rng.uniform(8.0, 14.0),
+                                                                  rng.uniform(0.0002, 0.00035))
+        if rng.uniform() < 0.6:
+            rattle = slap + int(rng.uniform(0.008, 0.02) * SR)
+            out += w * rng.uniform(0.08, 0.12) * _plank_knock(n, rattle, rng, rng.uniform(500.0, 900.0), 10.0, 0.00025)
+        # Arena sobre la tablazon: crujido breve que se agota en 10-20 ms.
+        tc = np.clip(t - onset / SR, 0.0, None)
+        grind = np.where(t * SR < onset, 0.0, np.sin(0.5 * np.pi * np.minimum(tc / 0.004, 1.0)) ** 2
+                         * np.exp(-np.maximum(tc - 0.004, 0.0) / rng.uniform(0.012, 0.02)))
+        grit = _crunch(n, rng, 4000.0 * grind, band_hz=(1200.0, 4500.0), click_s=(0.0003, 0.001))
+        grit = static_filter(grit, SR, fc=5000.0, q=0.6, kind="lowpass")
+        out += w * 0.12 * grit * np.sqrt(grind)
+    # Crujido del tablon contra la cuerda al soltar el peso.
     if rng.uniform() < 0.5:
-        start = int(rng.uniform(0.14, 0.18) * SR)
-        length = min(int(rng.uniform(0.07, 0.11) * SR), n - start)
+        start = contacts[-1][0] + int(rng.uniform(0.04, 0.07) * SR)
+        length = min(int(rng.uniform(0.07, 0.11) * SR), n - start - int(0.02 * SR))
         if length > 64:
             pulses = np.zeros(length)
-            t = 0.0
+            rate0, rate1 = rng.uniform(25.0, 35.0), rng.uniform(45.0, 60.0)
+            tp = rng.uniform(0.0, 0.01)
             while True:
-                t += 1.0 / rng.uniform(20, 40)
-                idx = int(t * SR)
+                tp += 1.0 / (rate0 + (rate1 - rate0) * min(tp * SR / length, 1.0))
+                idx = int(tp * SR)
                 if idx >= length:
                     break
                 pulses[idx] = rng.uniform(0.5, 1.0)
-            creak = static_filter(pulses, SR, fc=rng.uniform(700, 1100), q=6.0, kind="bandpass")
+            creak = static_filter(pulses, SR, fc=rng.uniform(700, 1100), q=5.0, kind="bandpass")
+            creak = static_filter(creak, SR, fc=rng.uniform(1800, 2600), q=4.0, kind="bandpass") * 0.4 + creak
             k = np.arange(length) / length
             creak *= np.sin(np.pi * k)
             peak = np.max(np.abs(creak))
             if peak > 1e-9:
-                out[start : start + length] += 0.08 * creak / peak
+                out[start : start + length] += 0.05 * creak / peak
     return out
 
 
