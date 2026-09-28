@@ -18,7 +18,7 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json`, `music_layers.json`, `mining.json` y `fauna.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json` y `fases_futuras.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -79,6 +79,11 @@ Qué comprueba:
   botín/nidos con objetos reales; las cuatro islas del acceso anticipado con ficha y
   ninguna isla de fase 1 con especies de fase 2/3. Especies sin malla, en
   `meshes_pendientes.json/fauna`.
+- **Borradores de fase 2 y 3** (`fases_futuras.json`, GDD v2 §6.2): raíles y vagones,
+  animales domésticos, murallas y trampas, y trueque con reputación. Todo con `fase` 2 o 3;
+  objetos del catálogo o declarados en `pendingItems`; ningún otro fichero de datos (fase 1)
+  nombra un id que solo existe en el borrador; sin claves de precio ni moneda (§5), valores
+  de trueque 1–5 y tramos de reputación contiguos de 0 a 100 con tasa creciente.
 - **Reglas del GDD §12**: sin narrativa eliminada en los datos; la fauna terrestre que
   recupera el GDD v2 (cerdo, cabra, aves posadas) ya no es término prohibido.
 - **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que

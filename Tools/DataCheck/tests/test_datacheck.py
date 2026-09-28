@@ -918,3 +918,58 @@ def test_fauna_pendiente_de_malla(ds: DataSet) -> None:
 
 def test_fauna_terrestre_ya_no_es_termino_prohibido(real_report: Report) -> None:
     assert not any("cerdo" in e or "cabra" in e for e in real_report.errors)
+
+
+# --------------------------------------------------------------------------- borradores de fase 2 y 3
+
+from datacheck import fases
+from datacheck.checks import BUILDING_SOCKETS
+
+
+def fases_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    fases.check_future_phases(ds, r, BUILDING_SOCKETS)
+    return r.errors
+
+
+def future(ds: DataSet) -> dict:
+    return ds.data["fases_futuras.json"]
+
+
+def test_fases_real_sin_errores(real: DataSet) -> None:
+    assert fases_errors(real) == []
+
+
+def test_fases_dato_de_fase_1_usa_el_borrador(ds: DataSet) -> None:
+    piece(ds, "muro_piedra")["cost"].append({"item": "lingote_hierro", "count": 1})
+    assert any_error(fases_errors(ds), "building_pieces.json", "lingote_hierro", "fase 2/3")
+
+
+def test_fases_entrada_sin_fase_de_borrador(ds: DataSet) -> None:
+    future(ds)["tramway"]["pieces"][0]["fase"] = 1
+    assert any_error(fases_errors(ds), "rail_recto", "fase")
+
+
+def test_fases_coste_con_objeto_inexistente(ds: DataSet) -> None:
+    future(ds)["defenses"]["pieces"][0]["cost"].append({"item": "cemento", "count": 2})
+    assert any_error(fases_errors(ds), "cemento", "pendingItems")
+
+
+def test_fases_pendiente_que_ya_existe(ds: DataSet) -> None:
+    future(ds)["pendingItems"].append({"id": "cuerda", "fase": 2})
+    assert any_error(fases_errors(ds), "cuerda", "ya existe")
+
+
+def test_fases_trueque_con_precio(ds: DataSet) -> None:
+    future(ds)["trade"]["offers"][0]["precio"] = 10
+    assert any_error(fases_errors(ds), "precio", "tienda")
+
+
+def test_fases_tramos_de_reputacion_con_hueco(ds: DataSet) -> None:
+    future(ds)["trade"]["tiers"][2]["min"] = 45
+    assert any_error(fases_errors(ds), "neutral", "no continúa")
+
+
+def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
+    future(ds)["livestock"]["species"][1]["wildSource"] = "jabali_gigante"
+    assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
