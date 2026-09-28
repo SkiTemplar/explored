@@ -50,16 +50,15 @@ def palette_distance(name: str, bc: np.ndarray, island) -> np.ndarray:
     terreno lo tiñe M_Terrain con el color de vértice de la isla (`vertex_tint`); el resto
     se compara con las muestras de la isla sin teñir."""
     px = bc.reshape(-1, 3)
-    terrain = name in TERRAIN_TARGETS
-    vertex = island.vertex[TERRAIN_TARGETS[name][4]] if terrain else None
-    if terrain:
+    vertex = island.vertex[TERRAIN_TARGETS[name][4]] if name in TERRAIN_TARGETS else None
+    if vertex is not None:
         lab = linear_to_oklab(vertex_tint(srgb_to_linear(px), vertex))
     else:
         lab = srgb_to_oklab(px)
     dist = np.full(lab.shape[0], np.inf)
     for sw in PALETTES[name]:
         ramp = swatch_ramp(sw, island.key)
-        if terrain and not sw.startswith("terreno."):
+        if vertex is not None and not sw.startswith("terreno."):
             ramp = _tinted(ramp, vertex)  # la muestra `terreno.*` de la isla ya viene teñida
         dist = np.minimum(dist, _segment_distance(lab, ramp))
     return dist
@@ -202,7 +201,7 @@ def test_rocks_need_neither_photos_nor_network(monkeypatch):
 
 def test_islands_get_their_own_terrain_tone(generated):
     """El mismo T_Grass_BC teñido por M_Terrain da el tono medio de hierba de cada isla."""
-    from texgen.palette import island_swatches, hex_to_srgb
+    from texgen.palette import hex_to_srgb, island_swatches
 
     bc = generated["Grass"]["BC"].reshape(-1, 3)
     for island in ISLANDS:

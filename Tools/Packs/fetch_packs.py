@@ -137,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--update-sha", action="store_true", help="escribe en packs.json los sha256 vacíos")
     args = parser.parse_args(argv)
 
-    manifest = load_manifest()
+    manifest = load_manifest(MANIFEST)
     packs = {p["id"]: p for p in manifest["packs"]}
     if args.list:
         for p in packs.values():

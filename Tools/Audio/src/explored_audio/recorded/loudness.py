@@ -63,7 +63,7 @@ def integrated_lufs(x: np.ndarray, fs: int) -> float:
     if not np.all(np.isfinite(ch)):
         raise ValueError("el audio contiene NaN o infinitos")
     (b1, a1), (b2, a2) = k_weighting(fs)
-    y = signal.lfilter(b2, a2, signal.lfilter(b1, a1, ch, axis=-1), axis=-1)
+    y = np.asarray(signal.lfilter(b2, a2, np.asarray(signal.lfilter(b1, a1, ch, axis=-1)), axis=-1))
 
     block = int(round(BLOCK_S * fs))
     step = int(round(BLOCK_S * (1.0 - OVERLAP) * fs))

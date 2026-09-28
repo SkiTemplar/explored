@@ -14,20 +14,22 @@ from explored_audio.music import compose
 from explored_audio.music.instruments import karplus_strong_pluck
 
 
-def _duration_s(name: str) -> float:
-    return compose.generate(name).shape[-1] / SAMPLE_RATE
+def _duration_s(rendered: dict[str, np.ndarray], name: str) -> float:
+    # El postproceso (`finalize`) no cambia la longitud: se mide sobre la cache
+    # de sesion en vez de volver a componer cada pieza.
+    return rendered[name].shape[-1] / SAMPLE_RATE
 
 
-def test_stingers_de_descubrimiento_son_cortos():
+def test_stingers_de_descubrimiento_son_cortos(rendered):
     """Un motivo de descubrimiento debe poder sonar sin tapar el gameplay:
     unos pocos segundos, nunca una pieza entera."""
     for variant in ("01", "02", "03", "04"):
         name = f"mus_discovery_{variant}"
         assert not compose.is_loop(name)
-        assert 1.5 <= _duration_s(name) <= 10.0, f"{name} dura fuera de lo esperado para un stinger"
+        assert 1.5 <= _duration_s(rendered, name) <= 10.0, f"{name} dura fuera de lo esperado para un stinger"
 
 
-def test_bucles_de_exploracion_e_isla_duran_una_pieza_entera(catalog):
+def test_bucles_de_exploracion_e_isla_duran_una_pieza_entera(rendered):
     """Las 7 variantes de exploracion por isla, la noche, la tension, la
     tormenta, el mar y el menu son bucles: deben durar lo bastante para no
     notarse repetitivos en segundos."""
@@ -37,24 +39,22 @@ def test_bucles_de_exploracion_e_isla_duran_una_pieza_entera(catalog):
     ]
     for name in loop_names:
         assert compose.is_loop(name)
-        dur = _duration_s(name)
+        dur = _duration_s(rendered, name)
         assert 20.0 <= dur <= 160.0, f"{name} dura {dur:.1f}s, fuera de lo esperado para un bucle de musica"
 
 
-def test_finales_y_creditos_no_son_bucles_y_duran_una_pieza_completa():
+def test_finales_y_creditos_no_son_bucles_y_duran_una_pieza_completa(rendered):
     for name in ("mus_finale_rescue", "mus_finale_voyage", "mus_finale_stay", "mus_credits", "mus_theme"):
         assert not compose.is_loop(name)
-        dur = _duration_s(name)
+        dur = _duration_s(rendered, name)
         assert 60.0 <= dur <= 160.0, f"{name} dura {dur:.1f}s, fuera de lo esperado para una pieza completa"
 
 
-def test_musica_esta_en_el_catalogo_como_estereo_y_sin_clipping(specs_by_name):
-    from explored_audio.build import render_sound
+def test_musica_esta_en_el_catalogo_como_estereo_y_sin_clipping(rendered):
     from explored_audio.constants import PEAK_CEILING_LINEAR
 
     for name in ("mus_storm", "mus_credits"):
-        spec = specs_by_name[name]
-        audio = render_sound(spec)
+        audio = rendered[name]
         assert audio.ndim == 2 and audio.shape[0] == 2
         assert np.max(np.abs(audio)) <= PEAK_CEILING_LINEAR + 1e-6
 
@@ -86,7 +86,7 @@ def test_guitarra_karplus_strong_es_determinista():
     assert np.array_equal(note_a, note_b)
 
 
-def test_nuevos_sfx_duracion_esperada(specs_by_name):
+def test_nuevos_sfx_duracion_esperada(rendered):
     bounds = {
         "sfx_crab_01": (0.05, 1.0),
         "sfx_turtle_01": (0.5, 2.0),
@@ -114,9 +114,6 @@ def test_nuevos_sfx_duracion_esperada(specs_by_name):
         "amb_rain_on_thatch": (30.0, 60.0),
         "amb_wind_palms": (30.0, 60.0),
     }
-    from explored_audio.build import render_sound
-
     for name, (low, high) in bounds.items():
-        spec = specs_by_name[name]
-        dur = render_sound(spec).shape[-1] / SAMPLE_RATE
+        dur = rendered[name].shape[-1] / SAMPLE_RATE
         assert low <= dur <= high, f"{name} dura {dur:.2f}s, fuera de [{low}, {high}]"

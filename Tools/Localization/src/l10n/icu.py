@@ -191,7 +191,7 @@ def check(text: str | None, culture: str) -> tuple[list[str], list[str]]:
         if mod.name == "gender":
             if len(mod.values) not in (2, 3) or any(not v.strip() for v in mod.values):
                 errors.append(f"{label}: «gender» lleva dos o tres formas no vacías (masculino, femenino[, neutro])")
-            elif any(_KEY_RE.match(v) and _KEY_RE.match(v).group(1) in CATEGORIES for v in mod.values):
+            elif any((m := _KEY_RE.match(v)) and m.group(1) in CATEGORIES for v in mod.values):
                 errors.append(f"{label}: «gender» va por posición, sin «clave=»")
             continue
         seen: dict[str, str] = {}

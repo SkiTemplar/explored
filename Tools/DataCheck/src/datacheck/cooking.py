@@ -11,6 +11,7 @@ exactamente lo que se juega.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, Callable
 
 LEVELS = {"fogata": "Fogata", "hoguera": "Hoguera", "horno_arcilla": "HornoArcilla"}
 LEVEL_ORDER = list(LEVELS)
@@ -192,7 +193,7 @@ def render_cooking_inl(recipes: dict, items: list[dict]) -> str:
     return "\n".join(out) + "\n"
 
 
-def generated_files(data: dict[str, object]) -> dict[Path, str]:
+def generated_files(data: dict[str, Any]) -> dict[Path, str]:
     """Ruta relativa al repo → contenido esperado de cada .inl."""
     files: dict[Path, str] = {}
     if "fuels.json" in data:
@@ -224,7 +225,7 @@ def check_fuels(fuels: dict, items: list[dict], piece_ids: set[str], error) -> N
                 error(f"fuels.json nivel «{lid}»: {key}={lv.get(key)!r} fuera de [{lo}, {hi}]")
         if not lv.get("nameEs"):
             error(f"fuels.json nivel «{lid}»: falta nameEs")
-    for prev, cur in zip(levels, levels[1:]):
+    for prev, cur in zip(levels, levels[1:], strict=False):  # pares consecutivos: longitudes distintas a propósito
         for key in ("maxFuelHours", "heat", "emberHours"):
             if _num(prev.get(key), 0, 99) and _num(cur.get(key), 0, 99) and cur[key] <= prev[key]:
                 error(f"fuels.json: {key} de «{cur.get('id')}» no supera a «{prev.get('id')}»")
@@ -379,7 +380,7 @@ def check_recipes(recipes: dict, items: list[dict], piece_ids: set[str], error) 
         error("recipes.json preservation: spoiledToxicity ≤ rottenToxicity, ambos en [0, 1]")
 
 
-def check_generated(repo_root: Path, data: dict[str, object], error) -> None:
+def check_generated(repo_root: Path, data: dict[str, Any], error: Callable[[str], None]) -> None:
     for rel, expected in generated_files(data).items():
         path = repo_root / rel
         current = path.read_text(encoding="utf-8") if path.exists() else None
@@ -387,7 +388,7 @@ def check_generated(repo_root: Path, data: dict[str, object], error) -> None:
             error(f"{rel.as_posix()} no coincide con los datos: {WRITE_HINT}")
 
 
-def write_generated(repo_root: Path, data: dict[str, object]) -> list[Path]:
+def write_generated(repo_root: Path, data: dict[str, Any]) -> list[Path]:
     written = []
     for rel, text in generated_files(data).items():
         path = repo_root / rel

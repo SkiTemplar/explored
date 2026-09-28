@@ -32,13 +32,14 @@ el resultado cae sobre la muestra `terreno.*` de esa isla (lo comprueba
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .noise import (
+    band_noise,
     blur,
     scatter_dots,
-    band_noise,
     smoothstep,
     unit,
     uv_grid,
@@ -54,6 +55,9 @@ from .palette import (
     srgb_to_oklab,
     terrain_target_lab,
 )
+
+if TYPE_CHECKING:
+    from .materials import Material  # solo tipos: materials importa este módulo
 
 # Muestras de paleta que puede usar cada material (la primera es la base).
 PALETTES: dict[str, tuple[str, ...]] = {
@@ -99,7 +103,7 @@ def swatch_ramp(swatch_id: str, island_key: str | None = None) -> np.ndarray:
     return _island_ramps(island_key or REFERENCE_ISLAND.key)[swatch_id].copy()
 
 
-def tone(ramp: np.ndarray, t: np.ndarray) -> np.ndarray:
+def tone(ramp: np.ndarray, t: np.ndarray | float) -> np.ndarray:
     """Color Oklab (…, 3) en el tramo de una muestra: t = -1 abajo, 0 medio, 1 arriba."""
     t = np.clip(np.asarray(t, dtype=np.float64), -1.0, 1.0)[..., None]
     bottom, mid, top = ramp
@@ -215,7 +219,7 @@ def rough_field(size: int, seed: int, lo: float = ROUGH_MIN + 0.02, hi: float = 
     return lo + (hi - lo) * unit(band_noise(size, seed, 2.0, 16.0, 2.0), 2.5)
 
 
-def _result(lab: np.ndarray, height: np.ndarray, rough: np.ndarray, depth: float, soften: float) -> dict:
+def _result(lab: np.ndarray, height: np.ndarray, rough: np.ndarray, depth: float, soften: float) -> Material:
     """Empaqueta un material: la normal sale de la altura algo desenfocada (relieve suave)."""
     from .materials import Material  # evita el ciclo materials ↔ stylized
 

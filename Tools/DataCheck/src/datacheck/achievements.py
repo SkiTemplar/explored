@@ -95,7 +95,8 @@ def required_phase(ds, cond, stats: dict[str, dict]) -> str:
     if not isinstance(cond, dict):
         return best
     for key in ("stat", "flag"):
-        stat = stats.get(cond.get(key)) if isinstance(cond.get(key), str) else None
+        ref = cond.get(key)
+        stat = stats.get(ref) if isinstance(ref, str) else None
         if stat and _phase_index(stat.get("phase", "AA")) > _phase_index(best):
             best = stat.get("phase", "AA")
     item = cond.get("contains")

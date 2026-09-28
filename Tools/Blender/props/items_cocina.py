@@ -20,17 +20,17 @@ de reposo. Escala real en metros.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 sys.path.insert(0, os.path.dirname(__file__))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
 import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 import items_contenedores as CT  # noqa: E402
 import items_despojos as D  # noqa: E402
 import items_pescados as F  # noqa: E402
-
+import kit_construccion as K  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -130,7 +130,7 @@ def _coconut_inner_r(R, h, z, wall=0.009):
 
 def _profile_r(outer, z):
     """Radio de un perfil (r, z) ascendente a la altura z (interpolado)."""
-    for (r0, z0), (r1, z1) in zip(outer, outer[1:]):
+    for (r0, z0), (r1, z1) in pairwise(outer):
         if z0 <= z <= z1 and z1 > z0:
             return r0 + (r1 - r0) * (z - z0) / (z1 - z0)
     return outer[-1][0]
@@ -455,7 +455,8 @@ def _b_guiso_improvisado(v, rnd, name):
         sl.data.transform(Matrix.Rotation(rnd.uniform(-0.25, 0.25), 4, 'X'))
         sl.data.transform(Matrix.Translation((math.cos(a) * d, math.sin(a) * d, zw - 0.003)))
         M.assign(sl, ['M_Leaf'])
-        I.color_fn(sl, lambda co, c0=(math.cos(a) * d, math.sin(a) * d): (0.45, 0.06, 0.08)
+        c0 = (math.cos(a) * d, math.sin(a) * d)
+        I.color_fn(sl, lambda co, c0=c0: (0.45, 0.06, 0.08)
                    if math.hypot(co.x - c0[0], co.y - c0[1]) > 0.0112 else KPAL['yam'], rnd, 0.02)
         p.add(sl, 'none')
     for k in range(3):
@@ -563,7 +564,7 @@ def _b_pulpo(v, rnd, name):
         M.assign(arm, ['M_Leaf'])
         n = len(pts)
 
-        def ac(vv, pts=pts, n=n):
+        def ac(vv, pts=pts, radii=radii, n=n):
             ring, k = divmod(vv.index, segs)
             ring = min(ring, n - 1)
             under = vv.co.z < pts[ring].z - radii[ring] * 0.25

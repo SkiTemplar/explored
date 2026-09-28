@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,8 +17,8 @@ class DataText:
     file: str
     namespace: str  # "Data.<fichero sin .json>.<colección>"
     key: str  # "<id>.<campo>"
-    es: str | None
-    en: str | None
+    es: Any  # str o None en datos sanos; el catálogo marca como error cualquier otro tipo
+    en: Any
     es_field: str
     en_field: str
     record: str = ""
@@ -31,43 +32,53 @@ class DataText:
 class FieldSpec:
     file: str
     collection: str
-    records: Callable[[object], Iterator[tuple[str, dict]]]
+    records: Callable[[object], Iterator[tuple[str, object]]]
     es_field: str
     en_field: str
     purpose: str  # para el informe
 
 
-def _list(doc: object) -> Iterator[tuple[str, dict]]:
-    for rec in doc if isinstance(doc, list) else []:
-        yield str(rec.get("id")), rec
+def _id(rec: object, index: int) -> str:
+    # Un registro que no es un objeto no tiene «id»: se nombra por su posición para el error.
+    return str(rec.get("id")) if isinstance(rec, dict) else f"#{index}"
 
 
-def _sub(name: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
-    def records(doc: object) -> Iterator[tuple[str, dict]]:
-        for rec in (doc.get(name, []) if isinstance(doc, dict) else []):
-            yield str(rec.get("id")), rec
+def _items(doc: object, name: str | None = None) -> list[object]:
+    if name is not None:
+        doc = doc.get(name, []) if isinstance(doc, dict) else []
+    return doc if isinstance(doc, list) else []
+
+
+def _list(doc: object) -> Iterator[tuple[str, object]]:
+    for i, rec in enumerate(_items(doc)):
+        yield _id(rec, i), rec
+
+
+def _sub(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
+    def records(doc: object) -> Iterator[tuple[str, object]]:
+        for i, rec in enumerate(_items(doc, name)):
+            yield _id(rec, i), rec
 
     return records
 
 
-def _path(*keys: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
+def _path(*keys: str) -> Callable[[object], Iterator[tuple[str, object]]]:
     """Lista anidada en objetos: ``_path("trade", "wants")`` → doc["trade"]["wants"]."""
 
-    def records(doc: object) -> Iterator[tuple[str, dict]]:
+    def records(doc: object) -> Iterator[tuple[str, object]]:
         node = doc
         for key in keys:
             node = node.get(key, {}) if isinstance(node, dict) else {}
-        for rec in node if isinstance(node, list) else []:
-            if isinstance(rec, dict):
-                yield str(rec.get("id")), rec
+        for i, rec in enumerate(_items(node)):
+            yield _id(rec, i), rec
 
     return records
 
 
-def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
+def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
     """Objeto indexado por id: ``{"derrumbe": {...}, "oscuridad": {...}}`` (las notas sueltas se saltan)."""
 
-    def records(doc: object) -> Iterator[tuple[str, dict]]:
+    def records(doc: object) -> Iterator[tuple[str, object]]:
         node = doc.get(name, {}) if isinstance(doc, dict) else {}
         for key, rec in (node.items() if isinstance(node, dict) else []):
             if isinstance(rec, dict):
@@ -76,16 +87,22 @@ def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, dict]]]:
     return records
 
 
-def _landmarks(doc: object) -> Iterator[tuple[str, dict]]:
-    for island in (doc.get("islands", []) if isinstance(doc, dict) else []):
-        for mark in island.get("landmarks", []):
-            yield str(mark.get("id")), mark
+def _landmarks(doc: object) -> Iterator[tuple[str, object]]:
+    for i, island in enumerate(_items(doc, "islands")):
+        if not isinstance(island, dict):
+            yield _id(island, i), island
+            continue
+        for j, mark in enumerate(_items(island, "landmarks")):
+            yield _id(mark, j), mark
 
 
-def _stages(doc: object) -> Iterator[tuple[str, dict]]:
-    for plant in (doc.get("plants", []) if isinstance(doc, dict) else []):
-        for stage in plant.get("stages", []):
-            yield f"{plant.get('id')}.{stage.get('id')}", stage
+def _stages(doc: object) -> Iterator[tuple[str, object]]:
+    for i, plant in enumerate(_items(doc, "plants")):
+        if not isinstance(plant, dict):
+            yield _id(plant, i), plant
+            continue
+        for j, stage in enumerate(_items(plant, "stages")):
+            yield f"{plant.get('id')}.{_id(stage, j)}", stage
 
 
 FIELDS: list[FieldSpec] = [
@@ -209,6 +226,9 @@ def extract(data: dict[str, object]) -> tuple[list[DataText], list[str]]:
         if doc is None:
             continue
         for rid, rec in spec.records(doc):
+            if not isinstance(rec, dict):
+                errors.append(f"Content/Data/{spec.file}: {spec.collection} {rid} no es un objeto")
+                continue
             covered.add((id(rec), spec.es_field))
             es, en = rec.get(spec.es_field), rec.get(spec.en_field)
             if es is None and en is None:
@@ -223,6 +243,9 @@ def extract(data: dict[str, object]) -> tuple[list[DataText], list[str]]:
         if not isinstance(doc, dict) or es_key not in doc:
             continue
         es_list, en_list = doc.get(es_key) or [], doc.get(en_key)
+        if not isinstance(es_list, list) or not (en_list is None or isinstance(en_list, list)):
+            errors.append(f"{file}: {es_key} y {en_key} deben ser listas")
+            continue
         if en_list is not None and len(en_list) != len(es_list):
             errors.append(f"{file}: {en_key} tiene {len(en_list)} entradas y {es_key} {len(es_list)}")
         for i, es in enumerate(es_list):

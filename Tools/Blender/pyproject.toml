@@ -1,0 +1,83 @@
+[project]
+name = "explored-blender"
+version = "0.1.0"
+description = "Scripts de Blender 5.2 (headless) que generan las mallas low poly de Explored: vegetación, props y fauna."
+# Blender 5.2 lleva Python 3.13 y el módulo bpy de PyPI solo existe para esa versión.
+requires-python = "==3.13.*"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "bpy==5.2.2",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "basedpyright>=1.20",
+    # stubs de bpy/bmesh/mathutils (solo paquetes *-stubs: conviven con el bpy real)
+    "fake-bpy-module-5.2==20260730",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "I"]
+
+[tool.ruff.lint.isort]
+# Con el módulo bpy de PyPI, bmesh y mathutils solo son importables DESPUÉS de
+# `import bpy` (dentro del ejecutable de Blender da igual): sección propia
+# para que isort nunca ponga bmesh delante de bpy.
+section-order = ["future", "standard-library", "bpy", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.isort.sections]
+bpy = ["bpy"]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.13"
+# Los scripts se importan por nombre tras insertar lib/, assets/, animals/ y
+# props/ en sys.path (así los carga Blender), no como paquete.
+extraPaths = ["lib", "assets", "animals", "props", "."]
+exclude = [".venv", "props/.cache", "**/__pycache__"]
+# Reglas bajadas a warning (siguen visibles, no bloquean) porque con los stubs
+# de fake-bpy-module-5.2 son casi todo ruido de los propios stubs, no de este
+# código (medido: ~2400 de ~2500 errores iniciales):
+#  - reportAttributeAccessIssue: Object.data está tipado como la unión de todos
+#    los ID (Mesh | Curve | Light | Camera | Speaker...), así que cualquier
+#    obj.data.vertices falla en 14 de las 15 ramas; nodes.new()/modifiers.new()
+#    devuelven la clase base Node/Modifier (sin .image, .levels, .thickness...)
+#    y Vector.cross() está tipado como float (caso 2D).
+#  - reportOptional*: casi todo es Optional en los stubs (node_tree,
+#    nodes.get(), obj.data, bpy.context.object...).
+#  - reportArgumentType: bmesh.ops.* piden list[BMFace] y reciben BMFaceSeq
+#    (lo que documenta la API), y Vector no es Sequence[float] en los stubs.
+#  - reportIndexIssue: bpy_prop_array sin __getitem__ en los stubs.
+reportAttributeAccessIssue = "warning"
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportOptionalIterable = "warning"
+reportArgumentType = "warning"
+reportIndexIssue = "warning"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # avisos internos del exportador FBX que trae Blender 5.2 con NumPy 2.5
+    "ignore:Setting the shape on a NumPy array:DeprecationWarning",
+    # Material/World.use_nodes ya no hacen nada en Blender 5.x (siempre hay nodos);
+    # se retirará de los scripts cuando se pase a Blender 6
+    "ignore:.(Material|World).use_nodes. is expected to be removed:DeprecationWarning",
+]

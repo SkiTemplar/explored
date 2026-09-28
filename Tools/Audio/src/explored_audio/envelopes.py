@@ -37,7 +37,8 @@ def smooth_random_walk(
     """Paseo aleatorio suavizado (filtro de un polo) normalizado al rango [low, high]."""
     steps = rng.standard_normal(n)
     alpha = np.exp(-2.0 * np.pi * smoothing_hz / sr)
-    walk = signal.lfilter([1 - alpha], [1, -alpha], steps)
+    # Sin `zi`, `lfilter` devuelve solo el array (los stubs anuncian tambien la tupla).
+    walk = np.asarray(signal.lfilter([1 - alpha], [1, -alpha], steps))
     walk -= walk.mean()
     peak = np.max(np.abs(walk))
     if peak > 1e-9:

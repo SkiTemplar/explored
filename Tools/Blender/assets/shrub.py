@@ -13,9 +13,9 @@ sube la densidad de folíolos/hojas del resto para que ninguna especie del
 kit se lea como «palo con pocas hojas sueltas».
 """
 
+import math
 import os
 import sys
-import math
 
 import bpy
 

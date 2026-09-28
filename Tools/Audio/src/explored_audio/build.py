@@ -47,6 +47,9 @@ def finalize(audio: np.ndarray, category: str, is_loop: bool = False) -> np.ndar
     -16 LUFS integrados y limitador de pico verdadero con anticipacion, que
     no satura como el `tanh` de seguridad. En los bucles el limitador trata
     la pieza como circular, para que la ganancia no salte en la union."""
+    if not np.all(np.isfinite(audio)):
+        # Un NaN atraviesa el limitador (`tanh(nan)`) y acabaria en el WAV.
+        raise ValueError("el generador ha producido valores no finitos (NaN/inf)")
     audio = remove_dc(audio)
     if category == "Ambiente":
         audio = match_lufs(audio, AMBIENCE_TARGET_LUFS)
@@ -66,7 +69,10 @@ def finalize(audio: np.ndarray, category: str, is_loop: bool = False) -> np.ndar
 def render_sound(spec: SoundSpec) -> np.ndarray:
     """Genera y normaliza un sonido del catalogo por su spec. Determinista."""
     raw = spec.generate(spec.name)
-    return finalize(np.asarray(raw, dtype=np.float64), spec.category, spec.is_loop)
+    try:
+        return finalize(np.asarray(raw, dtype=np.float64), spec.category, spec.is_loop)
+    except ValueError as exc:
+        raise ValueError(f"{spec.name}: {exc}") from exc
 
 
 def render_by_name(name: str) -> np.ndarray:

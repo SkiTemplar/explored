@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -28,7 +29,7 @@ FG = (235, 232, 224)
 DIM = (160, 164, 170)
 
 
-def font(size: int) -> ImageFont.ImageFont:
+def font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for name in ("DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
         try:
             return ImageFont.truetype(name, size)
@@ -39,12 +40,19 @@ def font(size: int) -> ImageFont.ImageFont:
 
 def build(lote: str) -> Path:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    info = next(l for l in catalog["lotes"] if l["id"] == lote)
+    info = next((lt for lt in catalog["lotes"] if lt["id"] == lote), None)
+    if info is None:
+        raise SystemExit(f"lote desconocido: {lote}")
     entries = [e for e in catalog["entries"] if e["lote"] == lote]
+    if not entries:
+        raise SystemExit(f"el lote {lote} no tiene entradas en el catálogo")
     tiles_dir = TILES / lote / "_tiles"
-    report = json.loads((tiles_dir / "report.json").read_text(encoding="utf-8"))
+    report_path = tiles_dir / "report.json"
+    if not report_path.exists():
+        raise SystemExit(f"falta {report_path}: ejecuta antes normalize.py --tiles")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
     # Fauna con rig: además de <id>.png, una viñeta por pose extra (<id>@<acción>.png).
-    cells = []
+    cells: list[tuple[dict[str, Any], str | None]] = []
     for e in entries:
         cells.append((e, None))
         poses = (e.get("rig") or {}).get("tilePoses", [])[1:]
@@ -59,13 +67,16 @@ def build(lote: str) -> Path:
     draw.text((16, 12), f"{lote} · {info['date']} · original del pack (izq.) / normalizado a paleta Landing (dcha.)",
               font=font(20), fill=FG)
     draw.text((16, 38), info["scope"], font=font(14), fill=DIM)
-    for i, ((e, action), tile) in enumerate(zip(cells, tiles)):
+    for i, ((e, action), tile) in enumerate(zip(cells, tiles, strict=True)):
         x = (i % COLS) * tw
         y = header + (i // COLS) * (th + LABEL_H)
         sheet.paste(tile, (x, y))
-        r = report[e["gameId"]]
+        r = report.get(e["gameId"])
+        if r is None:
+            raise SystemExit(f"{e['gameId']}: no está en {report_path} (vuelve a normalizar el lote)")
         dims = " × ".join(f"{d:.2f}" for d in r["dims"])
-        pose = f" · {action or e['rig']['tilePoses'][0]['action']}" if e.get("rig", {}).get("tilePoses") else ""
+        tile_poses = (e.get("rig") or {}).get("tilePoses")
+        pose = f" · {action or tile_poses[0]['action']}" if tile_poses else ""
         draw.text((x + 10, y + th + 4), f"{e['gameId']} → {e['mesh']}{pose}", font=font(16), fill=FG)
         draw.text((x + 10, y + th + 26), f"{e['pack']}: {Path(e['file']).name} · {dims} m · {r['tris']} tris",
                   font=font(12), fill=DIM)

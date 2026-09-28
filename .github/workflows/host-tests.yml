@@ -1,4 +1,4 @@
-# Validación sin Unreal: modelos puros de C++ (con ASan/UBSan) y generador de texturas.
+# Validación sin Unreal: modelos puros de C++ (con ASan/UBSan) y herramientas Python.
 name: host-tests
 
 on:
@@ -18,23 +18,67 @@ jobs:
       - name: Tests de modelos puros con matemáticas rápidas (como el editor)
         run: HOST_TESTS_FASTMATH=ON Tools/HostTests/run.sh
 
-  localization:
+  # Cada herramienta de Tools/ con su propio pyproject y uv.lock: ruff, basedpyright y
+  # pytest con cobertura mínima del 80 % (fail_under en su pyproject).
+  python-tools:
+    name: python (${{ matrix.tool }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tool: Packs
+            # bpy 5.2 (Blender como módulo) solo existe para Python 3.13.
+            python: "3.13"
+            groups: --group blender
+            egl: true
+          - tool: Textures
+            python: "3.11"
+          - tool: Audio
+            python: "3.11"
+            # La música se renderiza con FluidSynth; music/soundfont.py solo lo descarga en Windows.
+            apt: fluidsynth
+          - tool: DataCheck
+            python: "3.11"
+            extra: uv run datacheck --strict
+          - tool: Localization
+            python: "3.11"
+            extra: uv run l10n export --check --quiet
+          - tool: Blender
+            python: "3.13"
+            egl: true
+    defaults:
+      run:
+        working-directory: Tools/${{ matrix.tool }}
+    env:
+      UV_PYTHON: ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - name: Tests de la herramienta de localización
-        working-directory: Tools/Localization
-        run: uv run pytest -q
-      - name: Catálogo ES/EN completo y ficheros de Unreal al día
-        working-directory: Tools/Localization
-        run: uv run l10n export --check --quiet
-
-  textures:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - name: Tests del generador de texturas
-        working-directory: Tools/Textures
-        run: uv run --with numpy --with pillow --with pytest python -m pytest -q tests
+        with:
+          enable-cache: true
+          cache-dependency-glob: Tools/${{ matrix.tool }}/uv.lock
+      - name: EGL de Mesa para renderizar con Workbench sin GPU
+        if: matrix.egl
+        run: sudo apt-get update -q && sudo apt-get install -y -q libegl1 libegl-mesa0 libgl1-mesa-dri
+      - name: Paquetes del sistema de la herramienta
+        if: matrix.apt
+        run: sudo apt-get update -q && sudo apt-get install -y -q ${{ matrix.apt }}
+      - name: Caché del soundfont (se descarga y se verifica por SHA256 la primera vez)
+        if: matrix.tool == 'Audio'
+        uses: actions/cache@v4
+        with:
+          path: Tools/Audio/.cache
+          key: audio-soundfont-${{ hashFiles('Tools/Audio/src/explored_audio/music/soundfont.py') }}
+      - name: Dependencias
+        run: uv sync --locked ${{ matrix.groups }}
+      - name: ruff
+        run: uv run --no-sync ruff check .
+      - name: basedpyright
+        run: uv run --no-sync basedpyright
+      - name: pytest con cobertura
+        run: uv run --no-sync pytest -q --cov --cov-report=term-missing
+      - name: Comprobaciones propias de la herramienta
+        if: matrix.extra
+        run: ${{ matrix.extra }}
