@@ -376,6 +376,41 @@ void FSaveSlotsSpec::Define()
 			FSaveText::Parse(TEXT("[[1, 2, \"r:0-3\"], [1, 2, \"r:5\"]]"), Value, Error);
 			TestTrue(TEXT("Celdas repetidas se unen"), Deltas.FromValue(Value) && Deltas.Num() == 5 && Deltas.NumCells() == 1);
 		});
+
+		It("acota la memoria total de muchas celdas con el índice máximo", [this]()
+		{
+			// "r:1048575" son 11 caracteres y 128 KiB: sin tope, 90.000 celdas pedirían ~11 GB.
+			auto MakeCells = [](int32 NumCells)
+			{
+				FSaveValue Cells = FSaveValue::MakeArray();
+				for (int32 I = 0; I < NumCells; ++I)
+				{
+					FSaveValue Entry = FSaveValue::MakeArray();
+					Entry.Add(FSaveValue::MakeInt(I));
+					Entry.Add(FSaveValue::MakeInt(0));
+					Entry.Add(FSaveValue::MakeString(FString::Printf(TEXT("r:%d"), FSaveIndexSet::MaxIndex)));
+					Cells.Add(MoveTemp(Entry));
+				}
+				return Cells;
+			};
+			const int32 WordsPerCell = (FSaveIndexSet::MaxIndex + 1) / 32;
+			const int32 CellsAtCap = FSaveScatterDeltas::MaxLoadedWords / WordsPerCell;
+
+			FSaveScatterDeltas Deltas;
+			TestTrue(TEXT("Justo en el tope se carga"), Deltas.FromValue(MakeCells(CellsAtCap)));
+			TestFalse(TEXT("Una celda más se rechaza"), Deltas.FromValue(MakeCells(CellsAtCap + 1)));
+			TestTrue(TEXT("Y queda vacío"), Deltas.IsEmpty());
+
+			// El tope vale también para la suma de capas.
+			FSaveValue Layers = FSaveValue::MakeObject();
+			Layers.Set(TEXT("destroyed"), MakeCells(CellsAtCap));
+			Layers.Set(TEXT("harvested"), MakeCells(CellsAtCap));
+			FSaveArchive Ar;
+			Ar.SetValue(TEXT("layers"), Layers);
+			FSaveWorldDeltas World;
+			World.Load(Ar);
+			TestEqual(TEXT("Solo cabe una de las dos capas"), World.Layers.Num(), 1);
+		});
 	});
 
 	Describe(TEXT("el estado del jugador"), [this]()
