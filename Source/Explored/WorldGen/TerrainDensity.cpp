@@ -9,6 +9,13 @@ namespace
 	constexpr float InfluenceLimit = 1.9f;
 	/** Profundidad de la plataforma somera junto a la costa. */
 	constexpr float ShelfDepth = -1.2f;
+	/** En las islas con playa la plataforma empieza más honda: la cara sigue bajando. */
+	constexpr float BeachShelfDepth = -2.5f;
+	/**
+	 * Profundidad hasta la que baja recta la cara de la playa antes de fundirse con el fondo.
+	 * Algo más de 5 m: la unión suave con el fondo queda fuera de la franja de ±5 m.
+	 */
+	constexpr float BeachFaceDepth = 5.6f;
 
 	FORCEINLINE float SmoothStep(float A, float B, float X)
 	{
@@ -208,6 +215,71 @@ namespace
 	}
 }
 
+namespace
+{
+	// --- Playas: perfil casi recto de la berma al agua (FBeachProfileModel) ---------------
+
+	/** Cómo es la playa de cada arquetipo. Pendiente en grados, distancias y alturas en metros. */
+	struct FBeachStyle
+	{
+		bool bHasBeach = false;
+		float MinSlopeDeg = 3.0f;
+		float MaxSlopeDeg = 5.0f;
+		/** Por encima de la pleamar viva (0,9 m, FBoatModel::TideAmplitudeCm). */
+		float BermHeight = 1.8f;
+		float BlendStart = 35.0f;
+		float BlendEnd = 70.0f;
+		float JoinSoftness = 0.5f;
+	};
+
+	/**
+	 * La arena fina (coralina) da playas más tendidas y la gruesa (volcánica) más empinadas.
+	 * Las bermas repiten la altura del antiguo delantal de arena de cada isla. Los Dientes
+	 * son acantilados y el manglar es fango entre raíces: sin playa de arena.
+	 */
+	FBeachStyle BeachStyleFor(EIslandArchetype Archetype)
+	{
+		switch (Archetype)
+		{
+		case EIslandArchetype::Landing: return {true, 3.0f, 5.0f, 1.8f, 35.0f, 70.0f, 0.5f};
+		case EIslandArchetype::Emerald: return {true, 3.5f, 5.2f, 1.6f, 30.0f, 60.0f, 0.5f};
+		case EIslandArchetype::Smoke: return {true, 4.0f, 5.3f, 1.4f, 22.0f, 50.0f, 0.4f};
+		case EIslandArchetype::Mesa: return {true, 3.0f, 5.0f, 1.8f, 30.0f, 60.0f, 0.5f};
+		case EIslandArchetype::WhiteSands: return {true, 2.8f, 4.0f, 1.2f, 40.0f, 80.0f, 0.4f};
+		default: return {};
+		}
+	}
+
+	/** Celda (m) del campo de distancia a la costa y factor de la rejilla gruesa. */
+	constexpr float ShoreFieldCell = 4.0f;
+	constexpr int32 ShoreFieldCoarseFactor = 4;
+	/** Las celdas gruesas con alguna esquina a menos de esto (m) del nivel del mar se afinan. */
+	constexpr float ShoreFieldActiveBand = 6.0f;
+
+	/** Construye (una vez por semilla de isla) el campo de distancia firmada a su costa. */
+	TSharedPtr<const FBeachShoreField> GetOrBuildShoreField(const FIslandDesc& Island, TFunctionRef<float(double X, double Y)> BaseHeight)
+	{
+		static FCriticalSection Mutex;
+		static TMap<uint32, TSharedPtr<const FBeachShoreField>> Cache;
+
+		FScopeLock Lock(&Mutex);
+		if (const TSharedPtr<const FBeachShoreField>* Found = Cache.Find(Island.Seed))
+		{
+			return *Found;
+		}
+		TSharedPtr<FBeachShoreField> Field = MakeShared<FBeachShoreField>();
+		const FVector2D Extent(Island.Radius * InfluenceLimit);
+		Field->Build(Island.Center - Extent, Island.Center + Extent, ShoreFieldCell, ShoreFieldCoarseFactor, ShoreFieldActiveBand, BaseHeight);
+		TSharedPtr<const FBeachShoreField> Result;
+		if (Field->IsValid())
+		{
+			Result = Field;
+		}
+		Cache.Add(Island.Seed, Result);
+		return Result;
+	}
+}
+
 FTerrainDensity::FTerrainDensity(const FArchipelagoLayout& InLayout)
 	: Layout(InLayout)
 	, FloorNoise(InLayout.Seed ^ 0x1F123BB5u)
@@ -219,9 +291,68 @@ FTerrainDensity::FTerrainDensity(const FArchipelagoLayout& InLayout)
 	{
 		KarstGrid = GetOrBuildKarstGrid(*Karst);
 	}
+	// Después de las cuevas y del macizo: las cuevas se colocan sobre el relieve base (como
+	// antes) y la costa del macizo kárstico sale ya erosionada.
+	BuildShoreFields();
 }
 
-float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const
+bool FTerrainDensity::HasBeach(EIslandArchetype Archetype)
+{
+	return BeachStyleFor(Archetype).bHasBeach;
+}
+
+void FTerrainDensity::BuildShoreFields()
+{
+	ShoreFields.SetNum(Layout.Islands.Num());
+	for (int32 I = 0; I < Layout.Islands.Num(); ++I)
+	{
+		const FIslandDesc& Island = Layout.Islands[I];
+		if (!HasBeach(Island.Archetype))
+		{
+			continue;
+		}
+		ShoreFields[I] = GetOrBuildShoreField(Island, [this, &Island](double X, double Y)
+		{
+			float T = 0.0f;
+			return BaseIslandHeight(Island, static_cast<float>(X), static_cast<float>(Y), T);
+		});
+	}
+}
+
+float FTerrainDensity::IslandHeight(int32 IslandIndex, float X, float Y, float& OutT, float* OutShoreDistance, float* OutBeachAmount) const
+{
+	const FIslandDesc& Island = Layout.Islands[IslandIndex];
+	const float Base = BaseIslandHeight(Island, X, Y, OutT);
+	float Distance = 0.0f;
+	if (!ShoreFields.IsValidIndex(IslandIndex) || !ShoreFields[IslandIndex] || !ShoreFields[IslandIndex]->SignedDistance(X, Y, Distance))
+	{
+		return Base;
+	}
+
+	// Pendiente propia de cada tramo de costa: varía despacio a lo largo de la orilla.
+	const FBeachStyle Style = BeachStyleFor(Island.Archetype);
+	const FExploredNoise N(Island.Seed ^ 0xBEAC4u);
+	const float Variation = FMath::Clamp(0.5f + 0.5f * N.Fbm2D(X / 320.0f, Y / 320.0f, 2), 0.0f, 1.0f);
+	FBeachProfileParams Params;
+	Params.Slope = FBeachProfileModel::SlopeFromDegrees(FMath::Lerp(Style.MinSlopeDeg, Style.MaxSlopeDeg, Variation));
+	Params.BermHeight = Style.BermHeight;
+	Params.JoinSoftness = Style.JoinSoftness;
+	Params.NearshoreDepth = BeachFaceDepth;
+	Params.BlendStart = Style.BlendStart;
+	Params.BlendEnd = Style.BlendEnd;
+
+	if (OutShoreDistance)
+	{
+		*OutShoreDistance = Distance;
+	}
+	if (OutBeachAmount)
+	{
+		*OutBeachAmount = FBeachProfileModel::BeachAmount(Params, Distance);
+	}
+	return FBeachProfileModel::ComposeHeight(Params, Distance, Base);
+}
+
+float FTerrainDensity::BaseIslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const
 {
 	const FExploredNoise N(Island.Seed);
 	FVector2D Q = ToLocal(Island, X, Y);
@@ -259,9 +390,10 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 
 	// Perfil submarino común: plataforma somera, cresta de arrecife y talud.
 	const float Floor = FArchipelagoLayout::OceanFloor;
+	const float Shelf = BeachStyleFor(Island.Archetype).bHasBeach ? BeachShelfDepth : ShelfDepth;
 	// Plataforma somera estrecha, cresta de arrecife discontinua y talud pronunciado.
 	const float ShelfEnd = 1.22f + 0.08f * N.Fbm2D(Q.X * 3.0f - 20.0f, Q.Y * 3.0f, 2);
-	float Underwater = FMath::Lerp(ShelfDepth, -6.0f, SmoothStep(1.02f, ShelfEnd, T));
+	float Underwater = FMath::Lerp(Shelf, -6.0f, SmoothStep(1.02f, ShelfEnd, T));
 	Underwater = FMath::Lerp(Underwater, Floor, SmoothStep(ShelfEnd, InfluenceLimit, T));
 	const float ReefBreaks = SmoothStep(-0.1f, 0.3f, N.Fbm2D(Q.X * 8.0f, Q.Y * 8.0f + 50.0f, 2));
 	Underwater += 3.2f * ReefBreaks * FMath::Exp(-FMath::Square((T - ShelfEnd + 0.03f) / 0.025f));
@@ -373,7 +505,7 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 			return Underwater;
 		}
 		// Transición suave entre la orilla y la plataforma.
-		return FMath::Lerp(FMath::Min(Land, 0.0f) + ShelfDepth, Underwater, SmoothStep(1.0f, 1.12f, T));
+		return FMath::Lerp(FMath::Min(Land, 0.0f) + Shelf, Underwater, SmoothStep(1.0f, 1.12f, T));
 	}
 	if (Land < -500.0f)
 	{
@@ -404,10 +536,14 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 		}
 
 		float T = 0.0f;
-		const float H = IslandHeight(Island, X, Y, T);
+		float ShoreDistance = 0.0f;
+		float BeachAmount = 0.0f;
+		const float H = IslandHeight(I, X, Y, T, &ShoreDistance, &BeachAmount);
 		if (H > Column.Height)
 		{
 			Column.Height = H;
+			Column.ShoreDistance = ShoreDistance;
+			Column.BeachAmount = BeachAmount;
 		}
 		if (T < Column.NormalizedDistance)
 		{
@@ -429,6 +565,8 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 			if (H > Column.Height)
 			{
 				Column.Height = H;
+				Column.ShoreDistance = 0.0f;
+				Column.BeachAmount = 0.0f;
 				if (H > -2.0f)
 				{
 					Column.IslandIndex = I;
@@ -437,10 +575,12 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 		}
 	}
 
-	// Microrrelieve en tierra firme.
-	if (Column.Height > 0.5f)
+	// Microrrelieve en tierra firme: entra poco a poco (antes era un escalón de hasta 0,6 m
+	// en la cota 0,5) y nunca en la cara de la playa, que ha de bajar recta hasta el agua.
+	if (Column.Height > 0.5f && Column.BeachAmount < 1.0f)
 	{
-		Column.Height += 0.6f * DetailNoise.Fbm2D(X / 14.0f, Y / 14.0f, 3);
+		Column.Height += 0.6f * DetailNoise.Fbm2D(X / 14.0f, Y / 14.0f, 3)
+			* SmoothStep(0.5f, 1.5f, Column.Height) * (1.0f - Column.BeachAmount);
 	}
 	return Column;
 }
@@ -516,8 +656,9 @@ void FTerrainDensity::BuildCaves()
 {
 	FExploredRandom Rng(static_cast<uint64>(Layout.Seed) ^ 0xCAFEF00DULL);
 
-	for (const FIslandDesc& Island : Layout.Islands)
+	for (int32 IslandIndex = 0; IslandIndex < Layout.Islands.Num(); ++IslandIndex)
 	{
+		const FIslandDesc& Island = Layout.Islands[IslandIndex];
 		int32 Count = 0;
 		float EntranceFraction = 0.45f;
 		switch (Island.Archetype)
@@ -540,7 +681,7 @@ void FTerrainDensity::BuildCaves()
 			{
 				const FVector2D P = Island.Center + Dir * R;
 				float T = 0.0f;
-				if (IslandHeight(Island, P.X, P.Y, T) < TargetHeight)
+				if (IslandHeight(IslandIndex, P.X, P.Y, T) < TargetHeight)
 				{
 					Entrance = P;
 					break;
@@ -548,7 +689,7 @@ void FTerrainDensity::BuildCaves()
 			}
 
 			float T = 0.0f;
-			const float EntranceHeight = IslandHeight(Island, Entrance.X, Entrance.Y, T);
+			const float EntranceHeight = IslandHeight(IslandIndex, Entrance.X, Entrance.Y, T);
 			FCaveDesc Cave;
 			Cave.Radius = Rng.RangeFloat(3.5f, 6.0f);
 			Cave.Start = FVector(Entrance.X, Entrance.Y, EntranceHeight + Cave.Radius * 0.3f) - FVector(Dir, 0.0) * 2.0f;

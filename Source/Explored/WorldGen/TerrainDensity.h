@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/BeachProfileModel.h"
 #include "WorldGen/TerrainErosion.h"
 
 /** Cueva o arco: cápsula deformada que se excava en el terreno. Metros. */
@@ -23,6 +24,13 @@ struct EXPLORED_API FTerrainColumn
 	int32 IslandIndex = INDEX_NONE;
 	/** Distancia normalizada al centro de la isla dominante (1 = costa nominal). */
 	float NormalizedDistance = 10.0f;
+	/**
+	 * Distancia firmada en metros a la orilla de la playa que da la altura de la columna
+	 * (> 0 tierra adentro, < 0 mar adentro). Solo tiene sentido si BeachAmount > 0.
+	 */
+	float ShoreDistance = 0.0f;
+	/** 1 en la cara de una playa, baja a 0 donde vuelve a mandar el relieve; 0 en costas sin playa. */
+	float BeachAmount = 0.0f;
 };
 
 /**
@@ -64,11 +72,18 @@ public:
 	const FArchipelagoLayout& GetLayout() const { return Layout; }
 	const TArray<FCaveDesc>& GetCaves() const { return Caves; }
 
+	/** Si las costas de este arquetipo tienen playa de arena (perfil de FBeachProfileModel). */
+	static bool HasBeach(EIslandArchetype Archetype);
+
 	/** Amplitud máxima del ruido 3D que se suma a la altura (m). */
 	static constexpr float OverhangAmplitude = 2.5f;
 
 private:
-	float IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const;
+	/** Altura de la isla con la playa aplicada (si la isla tiene playa y su campo de costa). */
+	float IslandHeight(int32 IslandIndex, float X, float Y, float& OutT, float* OutShoreDistance = nullptr, float* OutBeachAmount = nullptr) const;
+	/** Relieve base de la isla, sin perfil de playa: de él sale la línea de costa. */
+	float BaseIslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const;
+	void BuildShoreFields();
 	float CaveCarve(const FVector& P) const;
 	void BuildCaves();
 
@@ -86,4 +101,11 @@ private:
 	 * es const y se fija en el constructor, así que no rompe la inmutabilidad de la clase.
 	 */
 	TSharedPtr<const FErosionHeightGrid> KarstGrid;
+
+	/**
+	 * Distancia firmada a la costa de cada isla con playa (índice = isla del layout; null si
+	 * la isla no tiene playa). Como la rejilla kárstica, se calcula una vez por semilla de
+	 * isla y se comparte entre instancias.
+	 */
+	TArray<TSharedPtr<const FBeachShoreField>> ShoreFields;
 };
