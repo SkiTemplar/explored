@@ -69,6 +69,24 @@ golpe, con un mínimo de 1. Botín final: madera + rama-suelo (véase 1.3).
   arbustos y matas de hierba rebrotan a los **4 días**. El tocón en sí no se
   puede talar de nuevo hasta que ha rebrotado del todo.
 
+**Correspondencia con el código** (decidido al cerrar la tala de H0, 2026-09-28). El
+scatter todavía genera especies genéricas (`Palm`, `JungleGiant`, `JungleWide`,
+`Mangrove`, `Understory`, `Shrub`, `Grass`), no las filas de esta tabla. Mientras no
+existan el guayabo, la balsa y el árbol con lianas:
+
+- **Manda esta sección** en el rebrote (palmera 18 días; gigante, copa ancha, manglar y
+  sotobosque 24; arbusto y hierba 4), en la dirección de caída (golpe final + viento, con
+  la pendiente de GDD §3.12 como tercer término), en el viento por especie (±20°,
+  palmera ±15°), en el aplastamiento (palma y bambú, 40 %) y en las ramas del suelo
+  (§1.3).
+- **Mandan los golpes de GDD §3.12** (mano / contundente / filo por especie): el hacha
+  por niveles de esta tabla necesita el catálogo de hachas y las especies nuevas, y se
+  aplicará con ellas.
+- `SM_JungleTreeCanopy_01` es `JungleGiant` y `SM_JungleTreeRound_01` es `JungleWide`.
+
+Código: `FFellingModel` (perfiles y tocón), `FTreeFallModel` (dirección y colisión),
+`FGroundBranchModel` (ramas), `FVegetationStateModel` (estado, red y reloj de guardado).
+
 ### 1.3 Ramas del suelo
 
 Bajo cada árbol talado o intacto se generan 2–4 `rama_seca` sueltas por
@@ -103,6 +121,11 @@ Tocón + rebrote van en la misma capa `"harvested"` de `FSaveWorldDeltas` que
 ya usa el scatter recolectado hoy; no hace falta una sección de guardado
 nueva, solo un estado adicional por instancia (`Stump`, con el día en que
 puede rebrotar).
+
+En el código ese estado adicional es la sección `vegetationClock` de
+`FSaveWorldDeltas`: `[[X, Y, "<componente>", Índice, MinutoDeTala], …]`, al lado
+de los índices de siempre. Si una entrada falta o está rota, el árbol cuenta como
+talado al cargar: el rebrote se retrasa, nunca se adelanta.
 
 ---
 

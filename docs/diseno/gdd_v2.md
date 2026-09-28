@@ -507,38 +507,42 @@ vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interac
     caído (en su 80 % inferior). Las ramas y las hojas caen en la copa, y los frutos,
     en el radio de la copa. Mientras se golpea se siguen soltando los `PerHitDrops` de
     la recolección.
-  - **Dirección de caída.** El árbol cae hacia donde empujan los golpes, es decir,
+  - **Dirección de caída.** El árbol cae hacia donde empuja el golpe final, es decir,
     hacia el lado contrario al jugador, pero la pendiente tira cuesta abajo. Las dos
     fuerzas pesan igual con unos 27° de pendiente (peso 2 × tangente). Con más
-    pendiente cae cuesta abajo aunque se golpee desde abajo. Si los golpes se anulan
-    en terreno llano, cae hacia una dirección fija de cada ejemplar.
+    pendiente cae cuesta abajo aunque se golpee desde abajo. Si se anulan en terreno
+    llano, cae hacia una dirección fija de cada ejemplar. Después el viento la desvía
+    hasta ±20° (palmera ±15°) según su fuerza, y el tronco aplasta la construcción de
+    palma o bambú (40 % de su integridad) y se apoya en la pesada o en una loma
+    (biblia 02 §1.2).
   - **Tocón.**
     - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
-      hasta adulto y entonces se puede volver a talar.
+      hasta adulto y entonces se puede volver a talar: 18 días con fruto, 24 madera
+      sin fruto, 4 arbustos y hierba (biblia 02 §1.2). La hora de tala se guarda.
     - Si se arranca con pala (tocón o brote), no vuelve nunca. Es la única forma de
       deforestar para siempre y sustituye a la regla anterior de que los árboles
       grandes no rebrotaban.
     - El arbusto no cae: se desbroza en el sitio.
-  - **Ramas sueltas.** Bajo cada ejemplar en pie se encuentran ramas en el suelo (hojas
-    secas bajo las palmeras). Se recogen a mano y reaparecen a su ritmo hasta llenar la
-    capacidad. Con la celda llena no se acumula nada, así que no aparece una ráfaga de
-    ramas al volver. Un tocón no da ramas: un bosque talado se queda sin leña fácil.
+  - **Ramas sueltas.** Bajo cada árbol, talado o intacto, aparecen de 2 a 4 `rama_seca`
+    por ciclo de 6 horas, con un tope de 6 por árbol (biblia 02 §1.3). Se recogen a mano.
+    Un árbol lleno no acumula nada, así que no aparece una ráfaga de ramas al volver. El
+    arbusto no da ramas, y un tocón arrancado con pala tampoco.
 
-  | Especie | Mano / contundente / filo | Altura (m) | Copa (m) | Rebrote + adulto (días) | Pala para arrancar | Ramas del suelo (máx., por día) |
+  | Especie | Mano / contundente / filo | Altura (m) | Copa (m) | Brote / talable (días) | Pala para arrancar | Ramas del suelo (tope, por 6 h) |
   |---|---|---|---|---|---|---|
-  | Palmera (`Palm`) | 8 / 7 / 4 | 9 | 3 | 12 + 30 | 4 | 2, 0,5 (hoja de palma) |
-  | Gigante (`JungleGiant`) | 14 / 12 / 6 | 22 | 6 | 20 + 60 | 8 | 4, 1,5 |
-  | Copa ancha (`JungleWide`) | 11 / 10 / 5 | 14 | 7 | 15 + 45 | 6 | 4, 1,2 |
-  | Manglar (`Mangrove`) | 9 / 8 / 4 | 7 | 4 | 20 + 30 | 5 | 2, 0,6 |
-  | Sotobosque (`Understory`) | 5 / 4 / 3 | 5 | 2 | 10 + 12 | 3 | 2, 0,8 |
-  | Arbusto (`Shrub`) | 1 / 1 / 1 (y pala 1) | — | 1 | 3 + 2 | 1 | 1, 0,3 |
+  | Palmera (`Palm`) | 8 / 7 / 4 | 9 | 3 | 6 / 18 | 4 | 6, 2–4 |
+  | Gigante (`JungleGiant`) | 14 / 12 / 6 | 22 | 6 | 8 / 24 | 8 | 6, 2–4 |
+  | Copa ancha (`JungleWide`) | 11 / 10 / 5 | 14 | 7 | 8 / 24 | 6 | 6, 2–4 |
+  | Manglar (`Mangrove`) | 9 / 8 / 4 | 7 | 4 | 8 / 24 | 5 | 6, 2–4 |
+  | Sotobosque (`Understory`) | 5 / 4 / 3 | 5 | 2 | 4 / 24 | 3 | 6, 2–4 |
+  | Arbusto (`Shrub`) | 1 / 1 / 1 (y pala 1) | — | 1 | 1 / 4 | 1 | — |
 
   Los golpes a mano y con filo son los mismos que en `FHarvestModel`, y hay un spec
   que lo comprueba. Rendimiento al caer:
   - **Gigante:** 2–3 troncos, 1–2 de madera dura, 1–2 de corteza, 0–1 de resina y 2–4
     ramas secas.
-  - **Palmera:** 1 tronco, 2–4 hojas, 0–2 de fibra, 1–3 cocos maduros, 0–2 verdes y 0–1
-    cáscaras.
+  - **Palmera:** 1 tronco, 2–4 hojas, 0–2 de fibra, 1–3 cocos maduros y 0–1 cáscaras.
+    Nunca cocos verdes: esos se cogen trepando (biblia 02 §13.1).
   - **Resto de especies:** ver `FFellingModel::DefaultProfiles`.
 - **Progresión:** al principio se tala a mano y se recogen ramas del suelo. Con el hacha
   se tala en la mitad de golpes, y con la pala se despeja terreno para siempre (huerto,
@@ -546,11 +550,12 @@ vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interac
 - **Interfaz:** sin barra de progreso. El árbol tiembla más con cada golpe y cruje en el
   penúltimo. El brote se ve crecer.
 - **Riesgos técnicos:**
-  - Guardar la hora de tala de cada tocón exige una sección nueva, porque los deltas
-    actuales no tienen tiempo.
+  - La hora de tala de cada tocón va en la sección `vegetationClock` (hecha), porque los
+    deltas de índices no tienen tiempo.
   - La caída es un actor temporal, no física.
   - Ver `docs/tecnico/tala-integracion.md`.
-- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
+- **Dependencias:** `WorldGen` (`FFellingModel`, `FTreeFallModel`, `FGroundBranchModel`,
+  `FVegetationStateModel`, `FHarvestModel`), `Weather` (viento), `Building` (piezas que aplasta),
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 

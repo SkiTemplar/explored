@@ -17,7 +17,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
+| H0 — Porción vertical jugable en Landing | 8 | 35 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
@@ -118,26 +118,41 @@ salir de la isla.
 
 ### Tala y recolección
 
-- [ ] `WorldGen/HarvestModel`: revisar la tabla de especies talables de biblia 02 §1.2
+- [x] `WorldGen/HarvestModel`: revisar la tabla de especies talables de biblia 02 §1.2
       (golpes, tiempo, botín, altura) contra las reglas reales de `HarvestModel.cpp`
       (hoy usa `HitsBareHands`/`HitsWithTool` por especie genérica `Palm`/`JungleGiant`/
       `JungleWide`/`Mangrove`, no la tabla por herramienta de la biblia) y decidir cuál
       manda antes de tocar el código. *(biblia 02 §1.2)*
-- [ ] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
+      *(decidido: la biblia manda en rebrote, viento y ramas; los golpes por herramienta
+      se quedan con la tabla de GDD §3.12 hasta que existan en el scatter las especies de
+      la biblia (guayabo, balsa, árbol con lianas). Ver la nota «Correspondencia con el
+      código» de biblia 02 §1.2.)*
+- [x] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
       ligera/terreno al talar. *(biblia 02 §1.2)*
-- [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
+      *(modelo puro: `WorldGen/TreeFallModel.h`, spec `Explored.TreeFall`; falta
+      engancharlo al actor de caída en local, ver `docs/tecnico/tala-integracion.md`)*
+- [x] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
       según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
       `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
       diseño nueva de la biblia, pendiente de aplicar al código. *(biblia 02 §1.2, 02 §1.6)*
-- [ ] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
+      *(`FVegetationRuntimeState::Instance` + `FVegetationClock` en la sección
+      `vegetationClock` del guardado; specs `Explored.Felling` y `Explored.VegetationState`.
+      Sin compilar en local todavía.)*
+- [x] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
       tope 6). *(biblia 02 §1.3)*
+      *(modelo puro: `FGroundBranchModel`, spec `Explored.GroundBranch`; el HISM de ramas
+      por celda sigue pendiente en local, ver `docs/tecnico/tala-integracion.md`)*
 - [x] Tala de la Palmera de coco ya suelta `coco_maduro` ×1-3 al caer (no un mix de
       `coco_verde`/`coco_maduro`) — corregido en la tabla de biblia 02 §1.2 para que
       coincida con `HarvestModel.cpp::Palm.FellDrops`.
       *(verificado: `Source/Explored/WorldGen/HarvestModel.cpp:29`)*
-- [ ] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
+- [x] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
       copa de una palmera trepada (§13.1 nueva de escalada), sin golpe ni herramienta,
       distinto del `coco_maduro` que suelta la tala. *(biblia 02 §13.1, §1.2)*
+      *(verificado: `recipes.json` lo tiene en `foods` como `crudo` con agua 25, sin
+      receta ni herramienta; `items.json` lo define. La tala ya no lo suelta:
+      `FellingModel.cpp` quitaba 0–2 `coco_verde` de la palmera y se ha corregido, con
+      test en `Explored.Felling`.)*
 
 ### Granja (huerto y limonero de Landing)
 
@@ -316,6 +331,9 @@ posterior.
       etapa, golpes, día de rebrote ×4), tope de 4096 entradas con compactación a
       snapshot por celda reusando `FSaveIndexSet::Encode`. Progreso de tala solo a
       clientes a < 60 m. *(biblia 08 §2.3)*
+      *(la parte pura ya está: `FVegetationStateModel` empaqueta clave y estado, rechaza
+      paquetes imposibles y compacta el tope; spec `Explored.VegetationState`. Falta el
+      `FFastArraySerializer` en el `GameState`, que espera a los cimientos de red de H0.)*
 - [ ] `Fauna`: anclas por grupo cada 2 s (10 B: id, centroide cuantizado, estado) para la
       fauna de ambiente que cada cliente simula en local, y actores replicados (14 B) para
       la terrestre cazable, con el tope duro de 12 a 10 Hz + 24 a 2 Hz enganchado a
