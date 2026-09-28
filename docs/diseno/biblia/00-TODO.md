@@ -19,15 +19,15 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
 |---|---|---|---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 6 | 12 | 25 | 43 | 14 % | 28 % |
+| H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
-| H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
+| H2 — Minería y construcción | 3 | 11 | 17 | 31 | 10 % | 27 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
 | H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
-| H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
+| H5 — Lanzamiento del acceso anticipado | 3 | 0 | 20 | 23 | 13 % | 13 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **15** | **45** | **148** | **208** | **7 %** | **18 %** |
+| **Total** | **19** | **44** | **148** | **211** | **9 %** | **19 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -129,32 +129,40 @@ salir de la isla.
 - [x] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
       `FTerrainDensity`. *(GDD §7.3 punto 1, biblia 02 §7.3)*
       → **Hecho:** `cb4e5a6` (PR #40): `FTerrainEditModel`, deltas dispersos por chunk sobre
-        la densidad base, `WorldGen/TerrainEditModel.h:136`.
-- [ ] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
+        la densidad base, `WorldGen/TerrainEditModel.h:136`. PR #88 añade encima
+        `FTerrainEdits` (`WorldGen/TerrainEdits.h`, spec `Explored.TerrainEdits`).
+- [x] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
       de evaluar el ruido procedural. *(GDD §7.3 punto 1)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:189` (`Density(P, Base)`) —
-        falta que `FTerrainDensity::Density` y el horneado consulten la capa.
+      → **Hecho:** PR #88, `FTerrainDensity::SetEdits` y `DensityWithColumn` en
+        `WorldGen/TerrainDensity.cpp`, con spec. Falta que el horneado del motor le pase la
+        capa, que va con la casilla de remallado.
 - [ ] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados
       por una edición. *(GDD §7.3 punto 3)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:44-47` (`DirtyChunks`) — el
-        modelo sabe qué chunks tocar; falta el remallado en tiempo de juego.
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:44-47` (`DirtyChunks`), y
+        PR #88 (`FTerrainDigResult::RenderChunks`, `FTerrainEdits::ChunksToInvalidate`,
+        esferas que cruzan caras, aristas y esquinas) — el modelo sabe qué chunks tocar;
+        falta el remallado en tiempo de juego (`docs/tecnico/terreno-editable.md`).
 - [ ] `WorldGen`: implementar el picado por esfera (radio y tiempo por golpe según
       herramienta/estrato, tabla de biblia 02 §2.3) para tierra/arena/arcilla (dureza 1,
       pala tosca) — el resto de estratos no hace falta para Landing. *(biblia 02 §2)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:60-69, 144-172` — picado por
-        esfera con dureza y nivel de herramienta solo en el modelo puro; falta enganchar
-        pala y pico a un actor.
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:60-69, 144-172`, y PR #88
+        (`FTerrainEdits::Dig` y `ToolInfo`, espejo de `mining.json/tools`) — picado por
+        esfera solo en el modelo puro; falta enganchar pala y pico a un actor. El tope de
+        1/6 m³ por golpe de #88 está pendiente de que el director lo confirme frente a la
+        «esfera completa» de la biblia 02 §2.1.
 - [x] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
       mismo patrón que `FSaveScatterDeltas`) — condición dura del criterio de salida
       («se queda cavado al recargar la partida»). *(GDD §7.3 punto 2, biblia 02 §2.8)*
-      → **Hecho:** `064b73a` (PR #40), `Save/SaveWorldDeltas.cpp:613-625`. Ojo: nada en el
-        juego escribe aún en esta capa, así que el criterio «se queda cavado al recargar»
-        depende de la casilla de picado.
+      → **Hecho:** `064b73a` (PR #40), `Save/SaveWorldDeltas.cpp:613-625`; PR #88 pasa el
+        formato a la versión 2 (`FTerrainEdits::SaveTo`/`LoadFrom`) con una prueba de
+        estrés de 50 000 golpes en el host. Ojo: nada en el juego escribe aún en esta capa,
+        así que el criterio «se queda cavado al recargar» depende de la casilla de picado.
 - [ ] `Cartography`: hoja subterránea por sistema de galerías, generada bajo demanda al
       entrar la primera vez, para la cueva pequeña de Landing. *(GDD §3.2)*
 - [x] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
       `items.json`. *(biblia 02 §2.7)*
-      → **Hecho:** `46382a9` (PR #50), `Content/Data/items.json:96`.
+      → **Hecho:** `46382a9` (PR #50), `Content/Data/items.json:96`; malla
+        `SM_Item_TierraSuelta` de `Tools/Blender/props/items_orilla.py` (PR #88).
 
 ### Tala y recolección
 
@@ -190,6 +198,9 @@ salir de la isla.
 - [ ] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
       copa de una palmera trepada (§13.1 nueva de escalada), sin golpe ni herramienta,
       distinto del `coco_maduro` que suelta la tala. *(biblia 02 §13.1, §1.2)*
+      → **En parte:** `ef8b2d6` (PR #71), `WorldGen/CoconutPalmModel.h:207`
+        (`FCoconutPalmModel::PickFromCrown`) — el modelo puro ya da el verde de la copa sin
+        herramienta; falta engancharlo a la escalada y al interactuable de la palmera.
 
 ### Granja (huerto y limonero de Landing)
 
@@ -535,14 +546,15 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       tope duro de 512 B por paquete. Spec de host: ida y vuelta sin pérdida, fusión de
       dos paquetes del mismo chunk idempotente y conmutativa, paquete truncado o
       manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:250` — existe el paquete de arena
-        (cabecera de 11 B). PR #89: `FTerrainDeltaCodecModel`
+      → **Hecho:** PR #89, `FTerrainDeltaCodecModel`
         (`WorldGen/TerrainDeltaCodecModel.h/.cpp`, `TerrainDeltaCodecModelSpec`) — ida y
         vuelta exacta, límites de 512 B, cuantización a mm con saturación, `DecodeAndApply`
-        atómico y fusión idempotente y conmutativa. Solo modelo puro: falta la RPC y el
-        cableado. *Pendiente de diseño:* un delta de más de ±32,767 m no cabe en el `int16`
-        del cable (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero
-        hay que decidir si se acota el delta o se cambia el formato.
+        atómico y fusión idempotente y conmutativa: es lo que pide la casilla (formato y
+        spec de host). La RPC y el cableado son las casillas siguientes. El paquete de arena
+        (cabecera de 11 B) ya existía: `e6c89d1` (PR #46), `SandModel.h:250`. *Pendiente de
+        diseño:* un delta de más de ±32,767 m no cabe en el `int16` del cable
+        (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero hay que
+        decidir si se acota el delta o se cambia el formato.
 - [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
       muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
       para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.

@@ -58,6 +58,7 @@ WorldGen/TerrainDeltaCodecModel.cpp
 WorldGen/TerrainDeltaQueueModel.cpp
 WorldGen/TerrainDensity.cpp
 WorldGen/TerrainEditModel.cpp
+WorldGen/TerrainEdits.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp

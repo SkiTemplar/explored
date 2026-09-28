@@ -112,6 +112,8 @@ void FTerrainDeltaQueueModelSpec::Define()
 			Queue.Enqueue(FIntVector(0, 0, 0), MakeSamples(0, 2), std::numeric_limits<double>::quiet_NaN());
 			Queue.Enqueue(FIntVector(1, 0, 0), MakeSamples(0, 2), 50.0);
 			Queue.Enqueue(FIntVector(2, 0, 0), MakeSamples(0, 2), -7.0);
+			Queue.Enqueue(FIntVector(3, 0, 0), MakeSamples(0, 2), -std::numeric_limits<double>::infinity());
+			Queue.Enqueue(FIntVector(4, 0, 0), MakeSamples(0, 2), std::numeric_limits<double>::infinity());
 			Queue.FillBudget();
 
 			FQueue::FOutgoingPacket A, B, C;
@@ -119,8 +121,8 @@ void FTerrainDeltaQueueModelSpec::Define()
 			TestTrue(TEXT("El de distancia negativa, como cercano"), A.Chunk == FIntVector(2, 0, 0));
 			TestTrue(TEXT("Sale otro"), Queue.TryPopPacket(B));
 			TestTrue(TEXT("El de 50 m"), B.Chunk == FIntVector(1, 0, 0));
-			TestFalse(TEXT("El de NaN se queda esperando una distancia buena"), Queue.TryPopPacket(C));
-			TestEqual(TEXT("Queda uno"), Queue.Num(), 1);
+			TestFalse(TEXT("Los de NaN y ±infinito se quedan esperando una distancia buena"), Queue.TryPopPacket(C));
+			TestEqual(TEXT("Quedan tres"), Queue.Num(), 3);
 		});
 
 		It("descarta y cuenta las muestras y chunks que no caben en el cable; un parche sin nada válido no crea entrada", [this]()
