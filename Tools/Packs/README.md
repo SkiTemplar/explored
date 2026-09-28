@@ -9,7 +9,8 @@ pequeñas.
 | Fichero | Qué es |
 |---|---|
 | `packs.json` | Manifiesto: autor, página oficial, versión, fuente de descarga, licencia CC0 verificada (fecha y texto leído) y sha256 del zip. |
-| `fetch_packs.py` | Descarga reproducible a `Art/Packs/` (ignorado; `$EXPLORED_PACKS_CACHE` lo cambia) y verifica el sha256. |
+| `packs_cc_by.json` | Mismo esquema, para assets CC-BY con crédito (Poly Pizza: antiguo Google Poly, autores independientes). Fuera de `packs.json` a propósito: `Tools/DataCheck` exige CC0-1.0 en todo lo que haya ahí. `uv run python fetch_packs.py --manifest packs_cc_by.json` para descargarlo. No pasa por `packs_catalogo.json`; ver `Content/Data/seabed_scatter.json`. |
+| `fetch_packs.py` | Descarga reproducible a `Art/Packs/` (ignorado; `$EXPLORED_PACKS_CACHE` lo cambia) y verifica el sha256. `archive` en la entrada (por defecto `zip`) da la extensión real; con otra (p. ej. `glb`) copia el fichero suelto sin descomprimir, para los modelos de un único glb de Poly Pizza. |
 | `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
 | `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
 | `contact_sheet.py` | Compone `docs/art/packs/<lote>.png` (< 1 MB) con el original y el normalizado. |
@@ -56,6 +57,7 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
 | `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
 | `lote5-fauna` | Cerdo salvaje de Esmeralda con rig y 6 acciones (Quaternius Farm Animals) | `docs/art/packs/lote5-fauna.png` |
+| `lote6-fondomarino` | Corales, borde del arrecife, praderas y conchas, algas y erizos, roca submarina (Poly Pizza CC0 y CC-BY). Descargado y catalogado; falta `normalize.py` e importar en Unreal (`necesita-unreal`, ver `Content/Data/seabed_scatter.json`). | `docs/art/packs/lote6-fondomarino-creditos.md` (hoja en texto; el PNG sale del `normalize.py` pendiente) |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
