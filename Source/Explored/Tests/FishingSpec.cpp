@@ -587,6 +587,21 @@ void FFishingSpec::Define()
 			TestTrue(TEXT("En la siguiente bajamar se rellena"), FFishingModel::GatherTidePool(State, 1, 10.875f, 8u).Num() >= 1);
 			TestEqual(TEXT("Dos bajamares al día"), FFishingModel::LowTideIndex(10.875f) - FFishingModel::LowTideIndex(10.375f), 1);
 		});
+
+		It("instantes y posiciones no finitos o enormes no dan claves con UB ni marisco", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const double NaND = std::numeric_limits<double>::quiet_NaN();
+			FFishingSaveState State;
+			TestEqual(TEXT("poza en instante NaN: nada"), FFishingModel::GatherTidePool(State, 1, NaN, 8u).Num(), 0);
+			TestEqual(TEXT("ni la apunta"), State.TidePools.Num(), 0);
+			// Sin acotar, convertir estos valores a int32 es UB (lo caza HOST_TESTS_SANITIZE).
+			TestTrue(TEXT("bajamar en NaN"), FFishingModel::LowTideIndex(NaN) == FFishingModel::LowTideIndex(NaN));
+			TestTrue(TEXT("bajamar lejanísima"), FFishingModel::LowTideIndex(1.0e30f) >= 0);
+			TestTrue(TEXT("zona NaN"), FFishingModel::ZoneKeyAt(FVector2D(NaND, 1.0e300)) >= 0);
+			TestTrue(TEXT("sitio NaN"), FFishingModel::SpotKeyAt(FVector2D(-1.0e300, NaND)) >= 0);
+			TestEqual(TEXT("red en instante NaN"), FFishingModel::CastNet(ReefDawn(), 9u, 1, NaN).Num(), FFishingModel::CastNet(ReefDawn(), 9u, 1, NaN).Num());
+		});
 	});
 
 	Describe("Legendarias", [this]()
