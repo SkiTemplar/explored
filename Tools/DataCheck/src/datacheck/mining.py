@@ -284,17 +284,21 @@ def _head_inputs(ds) -> dict[str, list[set[str]]]:
     pieces = {p.get("id"): p for p in ds.data.get("building_pieces.json", {}).get("pieces", [])}
     out: dict[str, list[set[str]]] = {}
     leaves = [crafting.leaf(i) for i in ds.items if "interno" not in i.get("tags", [])]
+    targets: dict[str, list[dict]] = {}
     for t in ds.templates:
         res = t.get("resultDefinitionId")
-        if res not in items or "mineria" not in items[res].get("tags", []):
-            continue
-        station_cost = {c.get("item") for c in pieces.get(t.get("station"), {}).get("cost", [])}
-        for verb in t.get("verbs", []):
-            for a in leaves:
-                for b in leaves:
-                    best = crafting.best_template(ds.templates, verb, a, b)
-                    if best is t:
-                        out.setdefault(res, []).append({a.definition, b.definition} | station_cost)
+        if res in items and "mineria" in items[res].get("tags", []):
+            for verb in t.get("verbs", []):
+                targets.setdefault(verb, []).append(t)
+    # Una sola búsqueda por verbo y par sin orden (casar es simétrico), no una por plantilla.
+    for verb, wanted in targets.items():
+        for n, a in enumerate(leaves):
+            for b in leaves[n:]:
+                best = crafting.best_template(ds.templates, verb, a, b)
+                if not any(best is t for t in wanted):
+                    continue
+                station_cost = {c.get("item") for c in pieces.get(best.get("station"), {}).get("cost", [])}
+                out.setdefault(best["resultDefinitionId"], []).append({a.definition, b.definition} | station_cost)
     return out
 
 

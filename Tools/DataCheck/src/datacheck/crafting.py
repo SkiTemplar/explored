@@ -14,7 +14,9 @@ Reglas (Source/Explored/Crafting/CraftingLibrary.cpp e Items/ItemTypes.cpp):
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
+from operator import ge
 
 
 @dataclass(frozen=True)
@@ -114,12 +116,23 @@ def quantize(inst: Instance, cuts: dict[str, list[float]]) -> Instance:
     return Instance(inst.definition, tuple(props), inst.tags, inst.depth)
 
 
-def _dominates(a: Instance, b: Instance) -> bool:
-    pa = dict(a.props)
-    return a.tags == b.tags and all(pa.get(k, 0.0) >= v for k, v in b.props)
+_SIMULATIONS: dict[str, Reachability] = {}
 
 
 def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Reachability:
+    """Como :func:`_simulate`, con caché por contenido: los tests de DataCheck ejecutan
+    todas las comprobaciones sobre copias que casi nunca tocan objetos ni plantillas."""
+
+    # Solo cuenta lo que lee la simulación: id, etiquetas y propiedades de cada objeto.
+    view = [(i.get("id"), i.get("tags", []), i.get("properties", [])) for i in items]
+    key = json.dumps([max_depth, view, templates], sort_keys=True, ensure_ascii=False)
+    hit = _SIMULATIONS.get(key)
+    if hit is None:
+        hit = _SIMULATIONS[key] = _simulate(items, templates, max_depth)
+    return Reachability(dict(hit.reached_templates), dict(hit.reached_items), set(hit.ties))
+
+
+def _simulate(items: list[dict], templates: list[dict], max_depth: int) -> Reachability:
     """Explora combinaciones desde los materiales en bruto hasta ``max_depth`` pasos.
 
     Materiales en bruto: todo objeto que no es resultado de ninguna plantilla ni
@@ -134,14 +147,54 @@ def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Re
     produced = {t["resultDefinitionId"] for t in templates}
     raw = [i for i in items if i["id"] not in produced and "interno" not in i.get("tags", [])]
 
-    known: dict[str, list[Instance]] = {}
+    # Frente de Pareto por definición y etiquetas: se guarda cada instancia con su vector
+    # de propiedades (solo las que tienen umbral tras cuantizar) para comparar la
+    # dominancia sin montar diccionarios: «a» domina a «b» si tiene sus mismas etiquetas
+    # y ninguna propiedad por debajo (casar es monótono, así que «b» no aporta nada).
+    prop_index = {name: n for n, name in enumerate(sorted(cuts))}
+    known: dict[tuple[str, frozenset[str]], list[tuple[tuple[float, ...], Instance]]] = {}
+    # Una instancia igual a otra ya vista está dominada por ella o por quien la desbancó
+    # (la dominancia es transitiva): se descarta sin recorrer el cubo.
+    seen: set[Instance] = set()
 
     def add(inst: Instance) -> bool:
-        bucket = known.setdefault(inst.definition, [])
-        if any(_dominates(k, inst) for k in bucket):
+        if inst in seen:
             return False
-        bucket[:] = [k for k in bucket if not _dominates(inst, k)] + [inst]
+        seen.add(inst)
+        values = [0.0] * len(prop_index)
+        for key, value in inst.props:
+            values[prop_index[key]] = value
+        vec = tuple(values)
+        bucket = known.setdefault((inst.definition, inst.tags), [])
+        if any(all(map(ge, kv, vec)) for kv, _ in bucket):
+            return False
+        bucket[:] = [kv for kv in bucket if not all(map(ge, vec, kv[0]))] + [(vec, inst)]
         return True
+
+    def instances() -> list[Instance]:
+        return [i for bucket in known.values() for _, i in bucket]
+
+    # Qué huecos cumple cada instancia, como máscara de bits sobre todos los huecos de
+    # todas las plantillas; una plantilla casa si la unión de las dos máscaras la cubre.
+    slot_bits: list[tuple[int, dict]] = []
+    template_mask: list[int] = []
+    for t in templates:
+        mask = 0
+        for s in t.get("slots", []):
+            mask |= 1 << len(slot_bits)
+            slot_bits.append((len(slot_bits), s))
+        template_mask.append(mask)
+    masks: dict[Instance, int] = {}
+
+    def mask_of(inst: Instance) -> int:
+        m = masks.get(inst)
+        if m is None:
+            m = 0
+            for bit, s in slot_bits:
+                if slot_satisfied(s, inst):
+                    m |= 1 << bit
+            masks[inst] = m
+        return m
 
     for item in raw:
         add(quantize(leaf(item), cuts))
@@ -151,10 +204,29 @@ def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Re
     ties: set[tuple[str, str, str]] = set()
     verbs = sorted({v for t in templates for v in t.get("verbs", [])})
 
-    per_verb = {v: [t for t in templates if v in t.get("verbs", [])] for v in verbs}
-    frontier = [i for bucket in known.values() for i in bucket]
+    # Mismo orden que best_template: más huecos primero y, a igualdad, el primero del fichero.
+    per_verb = {
+        v: sorted(
+            ((t, template_mask[n]) for n, t in enumerate(templates) if v in t.get("verbs", [])),
+            key=lambda tm: -len(tm[0]["slots"]),
+        )
+        for v in verbs
+    }
+
+    def best(verb: str, both: int) -> dict | None:
+        for t, m in per_verb[verb]:
+            if both & m == m:
+                return t
+        return None
+
+    def record_ties(verb: str, winner: dict, both: int) -> None:
+        for t, m in per_verb[verb]:
+            if t is not winner and len(t["slots"]) == len(winner["slots"]) and both & m == m:
+                ties.add((verb, winner["id"], t["id"]))
+
+    frontier = instances()
     for depth in range(1, max_depth + 1):
-        pool = [i for bucket in known.values() for i in bucket]
+        pool = instances()
         in_frontier = {id(i): n for n, i in enumerate(frontier)}
         new: list[Instance] = []
         for n, a in enumerate(frontier):
@@ -162,11 +234,12 @@ def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Re
                 # Casar y combinar son simétricos: cada par sin orden una sola vez.
                 if in_frontier.get(id(b), n) < n:
                     continue
+                both = mask_of(a) | mask_of(b)
                 for verb in verbs:
-                    tpl = best_template(per_verb[verb], verb, a, b)
+                    tpl = best(verb, both)
                     if tpl is None:
                         continue
-                    _record_ties(per_verb[verb], verb, tpl, a, b, ties)
+                    record_ties(verb, tpl, both)
                     reached_templates.setdefault(tpl["id"], depth)
                     if tpl.get("isSharpen"):
                         continue
@@ -177,19 +250,11 @@ def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Re
                     reached_items.setdefault(inst.definition, depth)
                     if add(inst):
                         new.append(inst)
-        new = [i for i in new if any(i is k for k in known.get(i.definition, []))]
+        new = [i for i in new if any(i is k for _, k in known.get((i.definition, i.tags), []))]
         if not new:
             break
         frontier = new
     return Reachability(reached_templates, reached_items, ties)
-
-
-def _record_ties(templates, verb, winner, a, b, ties) -> None:
-    for other in templates:
-        if other is winner or verb not in other.get("verbs", []):
-            continue
-        if len(other["slots"]) == len(winner["slots"]) and template_matches(other, a, b):
-            ties.add((verb, winner["id"], other["id"]))
 
 
 def single_piece_templates(items: list[dict], templates: list[dict]) -> dict[str, list[str]]:
@@ -216,3 +281,4 @@ def single_piece_templates(items: list[dict], templates: list[dict]) -> dict[str
         if hits:
             out[tpl["id"]] = hits
     return out
+
