@@ -6,7 +6,12 @@
     "harvest.min / harvest.max": "unidades del objeto cosechado por cosecha",
     "waterPerDay": "riegos al día necesarios (0 = basta la lluvia de la estación)",
     "seasons": "estaciones en que se puede plantar: seca, primeras_lluvias, monzon, ciclones",
-    "birdsEat": "las aves picotean la fruta si no hay espantapájaros cerca (opcional, false por defecto)"
+    "birdsEat": "las aves picotean la fruta si no hay espantapájaros cerca (opcional, false por defecto)",
+    "compost.inputsPerResult": "restos orgánicos que se echan a la pila por cada unidad de compost",
+    "compost.daysToMature": "días de juego que tarda la pila en convertir una tanda de restos en compost",
+    "compost.capacity": "restos que caben a la vez en la pila (múltiplo de inputsPerResult)",
+    "compost.inputs": "restos aceptados, por id («item») o por etiqueta («tag»); la comida vale en cualquier estado, también estropeada o podrida",
+    "compost.growthMultiplier / compost.durationDays": "efecto al echarlo en una parcela; espejo de FFarmModel::CompostGrowth y CompostDays (no se acumula, solo renueva)"
   },
   "plants": [
     {
@@ -103,5 +108,23 @@
       ],
       "harvest": { "item": "maracuya", "min": 3, "max": 6, "everyDays": 3 }
     }
-  ]
+  ],
+  "compost": {
+    "piece": "pila_compost",
+    "result": "compost",
+    "inputsPerResult": 4,
+    "daysToMature": 3,
+    "capacity": 16,
+    "inputs": [
+      { "item": "hoja_palma" },
+      { "item": "hoja_platano" },
+      { "item": "fibra_coco" },
+      { "item": "alga_fibra" },
+      { "item": "espina_pescado" },
+      { "tag": "comida" }
+    ],
+    "growthMultiplier": 1.5,
+    "durationDays": 8,
+    "noteEs": "Biblia de contenido §7.2 y 02 §10.1. Cierra el ciclo de la comida estropeada: lo que se pudre en la despensa vuelve al bancal. Una tanda de 4 restos abona una parcela un ciclo entero de taro o batata."
+  }
 }

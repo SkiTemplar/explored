@@ -6,6 +6,7 @@
     "cabeza_pico_rescatada",
     "caliza",
     "canto_aguzado",
+    "compost",
     "cristal_cuarzo",
     "hierro_meteorito",
     "mineral_cobre",
@@ -15,7 +16,8 @@
   "buildingPieces": [
     "astillero",
     "banco_chatarra",
-    "espantapajaros"
+    "espantapajaros",
+    "pila_compost"
   ],
   "plantStages": [
     "batata.brote",

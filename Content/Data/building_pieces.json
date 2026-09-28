@@ -380,6 +380,32 @@
       "mesh": null
     },
     {
+      "id": "pila_compost",
+      "nameEs": "Pila de compost",
+      "nameEn": "Compost heap",
+      "tier": "palma",
+      "category": "huerto",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 4
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [
+        "bancal"
+      ],
+      "buildMinutes": 15,
+      "integrity": 20,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
       "id": "suelo_bambu",
       "nameEs": "Suelo de bambú",
       "nameEn": "Bamboo floor",
