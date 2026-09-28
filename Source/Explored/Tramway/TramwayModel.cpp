@@ -112,9 +112,13 @@ FVector FTramwayModel::NodePosition(const FIntVector& Node) const
 
 FIntVector FTramwayModel::SnapNode(const FVector& World) const
 {
+	// Se acota antes de convertir: RoundToInt32 de NaN o de 1e30 es UB. Lo no finito da 0.
+	const auto Snap = [](double V)
+	{
+		return FMath::IsFinite(V) ? FMath::RoundToInt32(FMath::Clamp(V, -1.0e9, 1.0e9)) : 0;
+	};
 	const FVector L = World - Settings.Origin;
-	return FIntVector(FMath::RoundToInt32(L.X / Settings.CellSize), FMath::RoundToInt32(L.Y / Settings.CellSize),
-		FMath::RoundToInt32(L.Z / Settings.HeightStep));
+	return FIntVector(Snap(L.X / Settings.CellSize), Snap(L.Y / Settings.CellSize), Snap(L.Z / Settings.HeightStep));
 }
 
 float FTramwayModel::MaxSlopeDegrees() const

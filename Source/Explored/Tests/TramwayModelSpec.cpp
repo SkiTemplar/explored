@@ -129,6 +129,10 @@ void FTramwayModelSpec::Define()
 			FTramwayModel Model;
 			TestTrue(TEXT("redondeo"), Model.SnapNode(FVector(-1.1, -2.9, -0.07)) == FIntVector(-1, -1, -1));
 			TestTrue(TEXT("ida y vuelta"), Model.SnapNode(Model.NodePosition(FIntVector(-7, 3, -12))) == FIntVector(-7, 3, -12));
+			// Sin acotar, convertir estos valores a int32 es UB (lo caza HOST_TESTS_SANITIZE).
+			TestTrue(TEXT("NaN al origen"), Model.SnapNode(FVector(static_cast<double>(NAN), 0.0, 0.0)).X == 0);
+			const FIntVector Far = Model.SnapNode(FVector(1.0e300, -1.0e300, static_cast<double>(INFINITY)));
+			TestTrue(TEXT("lejanísimo: acotado"), Far.X > 0 && Far.Y < 0 && Far.Z == 0);
 		});
 	});
 
