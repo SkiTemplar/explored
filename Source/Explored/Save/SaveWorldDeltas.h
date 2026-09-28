@@ -116,6 +116,11 @@ struct EXPLORED_API FSaveWorldDeltas
 	 * las serializa FTerrainEditModel::ToValue. Opaca para el guardado; nulo si no hay.
 	 */
 	FSaveValue Terrain;
+	/**
+	 * Sección «vegetationClock»: hora de tala de cada instancia que espera rebrote, tal
+	 * como la serializa FVegetationClock::ToValue (biblia 02 §1.6). Opaca; nulo si no hay.
+	 */
+	FSaveValue VegetationClock;
 
 	FSaveScatterDeltas& Layer(FName Name) { return Layers.FindOrAdd(Name); }
 	const FSaveScatterDeltas* FindLayer(FName Name) const { return Layers.Find(Name); }

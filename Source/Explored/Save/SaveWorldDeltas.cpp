@@ -596,6 +596,10 @@ void FSaveWorldDeltas::Merge(const FSaveWorldDeltas& Other)
 	{
 		Terrain = Other.Terrain;
 	}
+	if (VegetationClock.IsNull())
+	{
+		VegetationClock = Other.VegetationClock;
+	}
 }
 
 void FSaveWorldDeltas::Save(FSaveArchive& Ar) const
@@ -614,6 +618,10 @@ void FSaveWorldDeltas::Save(FSaveArchive& Ar) const
 	{
 		Ar.SetValue(TEXT("terrain"), Terrain);
 	}
+	if (!VegetationClock.IsNull())
+	{
+		Ar.SetValue(TEXT("vegetationClock"), VegetationClock);
+	}
 }
 
 void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
@@ -623,6 +631,10 @@ void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
 	if (const FSaveValue* TerrainValue = Ar.FindValue(TEXT("terrain")))
 	{
 		Terrain = *TerrainValue;
+	}
+	if (const FSaveValue* ClockValue = Ar.FindValue(TEXT("vegetationClock")))
+	{
+		VegetationClock = *ClockValue;
 	}
 	const FSaveValue* LayersValue = Ar.FindValue(TEXT("layers"));
 	if (!LayersValue || !LayersValue->IsObject())
@@ -642,7 +654,7 @@ void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
 
 bool FSaveWorldDeltas::operator==(const FSaveWorldDeltas& Other) const
 {
-	if (Seed != Other.Seed || Terrain != Other.Terrain)
+	if (Seed != Other.Seed || Terrain != Other.Terrain || VegetationClock != Other.VegetationClock)
 	{
 		return false;
 	}

@@ -60,6 +60,7 @@ WorldGen/VegetationScatter.cpp
 WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
 WorldGen/TreeFallModel.cpp
+WorldGen/VegetationStateModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 Tramway/TramwayModel.cpp
