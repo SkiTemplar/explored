@@ -711,7 +711,8 @@ Usa el casco por piezas de §3.13 (`FHullAssemblyModel`) para la forma y la flot
   | Unión rota (§8.3) | Abre una vía de agua de 0,5 L/s por brecha | Suelta la pieza | Las dos a la vez (unión casco–casco abre una vía; pieza de cubierta o balancín, se suelta), o una de ellas |
   | Salud de la unión (§7, §8.3) | `integrity` 1–100 de `FBuildingModel`, sin sistema aparte | `FRaftJoint::Health01` propio | Guardar la salud en la `integrity` de la pieza de construcción (×100) y que este modelo solo calcule el daño |
   | Botadura (§8.4) | Canal de esfuerzo de 8 s por tonelada | Rozamiento de Coulomb: 9 personas en arena seca, 1 sobre rodillos | Mantener los rodillos obligatorios en arena (el cooperativo es de 2 a 4) o escalar el empuje para cuadrar con 8 s/t |
-  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua; por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.13) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
+  | Anegarse y hundirse (§8.2) | Por encima del 95 % de flotabilidad embarca agua (`SwampWaterKg` sube 2 kg/s); por encima del 115 %, se hunde | Francobordo < 2 cm y > 100 % (§3.13) | Adoptar los umbrales de la biblia en `FHullAssemblyModel` |
+  | Balancín (§8.2) | Reduce un 60 % el momento de escora en el lado del flotador | Sin regla fija: el flotador sube la GM por hidrostática (322 cm en el ejemplo de §3.13) | Mantener la hidrostática o aplicar el 60 % de la biblia |
   | Piezas (§8.1) | Quilla, cuaderna, tablón, cubierta, mástil, vela, balancín, timón, banco de remo, noray | Tronco, tablón, bambú, flotador, mástil, vela, remos, pala (§3.13) | Añadir las piezas que faltan o revisar la lista de la biblia |
   | Peso del tronco (biblia 03) | `tronco_pequeno`: 8 kg; balsa: 8 troncos + 6 `liana` | Tronco de balsa: 72,6 kg | Nuevo objeto `tronco_balsa` o revisar el peso |
   | Unión con clavos | `clavo` no existe en `items.json` | Tipo `Nails` | Crear el objeto o quitar ese tipo |
