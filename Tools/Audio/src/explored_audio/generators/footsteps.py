@@ -23,6 +23,7 @@ suave que la madera hueca).
 from __future__ import annotations
 
 import numpy as np
+from scipy.signal import fftconvolve
 
 from ..constants import SAMPLE_RATE
 from ..envelopes import fit_length
@@ -149,16 +150,96 @@ def _contacts(rng: np.random.Generator, n: int, gap_range: tuple[float, float]) 
     return [(heel, 1.0), (toe, rng.uniform(0.35, 0.6))]
 
 
-def _footstep_sand(rng: np.random.Generator) -> np.ndarray:
-    n = int(rng.uniform(0.30, 0.36) * SR)
+def _crunch(n: int, rng: np.random.Generator, rate: np.ndarray, band_hz: tuple[float, float],
+            click_s: tuple[float, float], kernels: int = 8) -> np.ndarray:
+    """Crujido granular: chasquidos de Poisson con tasa instantanea `rate`
+    (chasquidos/s, por muestra): muchos roces pequeños y un 3 % de granos
+    que ceden de golpe, algo mas fuertes. Cada chasquido es una
+    rafaga pasabanda de `click_s` segundos; se preparan `kernels` nucleos y
+    cada uno se convoluciona con su tren de impulsos (miles de chasquidos sin
+    filtrarlos uno a uno)."""
+    prob = np.clip(rate / SR, 0.0, 1.0)
+    hits = np.nonzero(rng.random(n) < prob)[0]
     out = np.zeros(n)
-    for onset, w in _contacts(rng, n, (0.07, 0.11)):
-        out += w * 0.24 * _thump(n, onset, rng, fc=rng.uniform(160, 220), tau_s=0.028)
-        # Crujido de la arena al compactarse: granos cortos y densos en banda media.
-        out += w * 0.6 * _grain_burst(n, onset, rng, count=int(rng.uniform(70, 110)), spread_s=0.035,
-                                      grain_len_s=(0.002, 0.007), band_hz=(600, 3200), q=1.1)
-        # Deslizamiento de arena suelta bajo el pie.
-        out += w * 0.18 * _swish(n, onset, rng, rng.uniform(0.08, 0.12), 2500, 900, q=0.6)
+    if hits.size == 0:
+        return out
+    amps = rng.uniform(0.3, 1.0, hits.size)
+    snap = rng.random(hits.size) < 0.03
+    amps[snap] = rng.uniform(1.3, 1.8, int(snap.sum()))
+    amps *= rng.choice((-1.0, 1.0), hits.size)
+    which = rng.integers(0, kernels, hits.size)
+    for k in range(kernels):
+        sel = which == k
+        if not np.any(sel):
+            continue
+        cn = max(int(rng.uniform(*click_s) * SR), 8)
+        fc = float(np.exp(rng.uniform(np.log(band_hz[0]), np.log(band_hz[1]))))
+        kernel = static_filter(rng.standard_normal(cn), SR, fc=fc, q=0.9, kind="bandpass")
+        kernel *= np.exp(-np.arange(cn) / cn * 5.0)
+        kernel /= np.max(np.abs(kernel)) + 1e-12
+        train = np.zeros(n)
+        train[hits[sel]] = amps[sel]
+        out += fftconvolve(train, kernel)[:n]
+    peak = np.max(np.abs(out))
+    return out / peak if peak > 1e-9 else out
+
+
+def _soft_thump(n: int, onset: int, rng: np.random.Generator, fc: float, attack_s: float, tau_s: float) -> np.ndarray:
+    """Golpe grave de un apoyo blando: como `_thump`, pero el pie se hunde
+    en `attack_s` (la arena cede) en vez de pararse en 2 ms."""
+    out = np.zeros(n)
+    length = min(int((attack_s + tau_s * 6) * SR), n - onset)
+    if length <= 8:
+        return out
+    t = np.arange(length) / SR
+    env = np.sin(0.5 * np.pi * np.minimum(t / attack_s, 1.0)) ** 2 * np.exp(-np.maximum(t - attack_s, 0.0) / tau_s)
+    burst = static_filter(rng.standard_normal(length), SR, fc=fc, q=0.8, kind="lowpass")
+    burst = static_filter(burst, SR, fc=45.0, q=0.7, kind="highpass")
+    out[onset : onset + length] = burst * env
+    peak = np.max(np.abs(out))
+    return out / peak if peak > 1e-9 else out
+
+
+def _footstep_sand(rng: np.random.Generator) -> np.ndarray:
+    """Paso en arena seca de playa. La arena no para el pie en seco: cede.
+    Por eso no hay chasquido de contacto, sino una compresion:
+
+    - el pie se hunde 15-30 ms (ataque blando) y el peso llega como un
+      golpe grave y sordo;
+    - mientras se hunde, miles de granos rozan y ceden (crujido denso de
+      chasquidos de 0,5-2 ms en 250-2500 Hz, la arena se come los agudos)
+      cuya tasa sigue a la compresion: sube con el hundimiento y se apaga
+      cuando el pie se asienta;
+    - al despegar la punta, el pie empuja arena hacia atras: un soplo corto
+      y una lluvia fina de granos que caen 40-160 ms despues, algo mas
+      agudos y cada vez mas escasos.
+
+    La version anterior eran granos de 2-7 ms en 600-3200 Hz con un golpe de
+    2 ms: sonaba a grava y el pico llegaba al techo antes que la sonoridad."""
+    n = int(rng.uniform(0.34, 0.40) * SR)
+    out = np.zeros(n)
+    t = np.arange(n) / SR
+    contacts = _contacts(rng, n, (0.08, 0.12))
+    for onset, w in contacts:
+        sink = rng.uniform(0.015, 0.03)
+        out += w * 0.18 * _soft_thump(n, onset, rng, fc=rng.uniform(140, 200), attack_s=sink * 0.7,
+                                       tau_s=rng.uniform(0.025, 0.035))
+        # Compresion: sube en `sink` y cae con el asentamiento.
+        tc = np.clip(t - onset / SR, 0.0, None)
+        comp = np.where(t * SR < onset, 0.0,
+                        np.sin(0.5 * np.pi * np.minimum(tc / sink, 1.0)) ** 2
+                        * np.exp(-np.maximum(tc - sink, 0.0) / rng.uniform(0.05, 0.07)))
+        crunch = _crunch(n, rng, 10000.0 * comp, band_hz=(250.0, 2500.0), click_s=(0.0005, 0.002))
+        crunch = static_filter(crunch, SR, fc=2400.0, q=0.6, kind="lowpass")
+        out += w * 0.9 * crunch * np.sqrt(comp)
+    # Despegue de la punta: arena empujada hacia atras.
+    toe = contacts[-1][0]
+    kick = toe + int(rng.uniform(0.05, 0.08) * SR)
+    if kick < n - int(0.05 * SR):
+        out += 0.10 * _swish(n, kick, rng, rng.uniform(0.05, 0.08), 1800.0, 900.0, q=0.6)
+        tk = np.clip(t - kick / SR - 0.04, 0.0, None)
+        fall = np.where(t * SR < kick + int(0.04 * SR), 0.0, np.exp(-tk / 0.05))
+        out += 0.12 * _crunch(n, rng, 900.0 * fall, band_hz=(800.0, 5000.0), click_s=(0.0003, 0.001))
     return out
 
 

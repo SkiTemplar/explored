@@ -76,3 +76,24 @@ def test_paso_en_agua_suena_a_burbujas_y_gotas(rendered):
         env = np.sqrt(np.convolve(audio**2, np.ones(win) / win, mode="same"))[:: win // 2]
         peaks, _ = signal.find_peaks(20.0 * np.log10(env + 1e-9), prominence=6.0)
         assert len(peaks) >= 4, f"{name}: {len(peaks)} repuntes, no se oyen las gotas"
+
+
+def test_paso_en_arena_cruje_grave_y_se_prolonga(rendered):
+    """La arena cede y se come los agudos: crujido denso bajo 2,5 kHz que dura
+    mientras el pie se hunde y se asienta, no granos agudos y secos. Centroide
+    por debajo de 1,6 kHz, menos de un 6 % de energia sobre 4 kHz y al menos
+    220 ms con la envolvente (5 ms) a menos de 30 dB de su maximo. La version
+    de granos de 600-3200 Hz daba 2,2-2,7 kHz, 16-23 % y 160-190 ms."""
+    win = int(0.005 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_sand_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        high = float(spectrum[freqs > 4000.0].sum() / spectrum.sum())
+        env = np.sqrt(np.convolve(audio**2, np.ones(win) / win, mode="same"))
+        active_ms = (env > env.max() * 10 ** (-30 / 20)).sum() / SAMPLE_RATE * 1000.0
+        assert centroid < 1600.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert high < 0.06, f"{name}: {high:.1%} sobre 4 kHz"
+        assert active_ms >= 220.0, f"{name}: solo {active_ms:.0f} ms de crujido"
