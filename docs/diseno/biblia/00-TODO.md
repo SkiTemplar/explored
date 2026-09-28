@@ -21,13 +21,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 3 | 10 | 23 | 36 | 8 % | 22 % |
-| H2 — Minería y construcción | 3 | 11 | 17 | 31 | 10 % | 27 % |
+| H2 — Minería y construcción | 3 | 14 | 15 | 32 | 9 % | 31 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
 | H4 — Contenido de acceso anticipado | 9 | 2 | 12 | 23 | 39 % | 43 % |
 | H5 — Lanzamiento del acceso anticipado | 4 | 0 | 22 | 26 | 15 % | 15 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **29** | **44** | **143** | **216** | **13 %** | **24 %** |
+| **Total** | **29** | **47** | **141** | **217** | **13 %** | **24 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -43,6 +43,11 @@ como «en parte» y no como hechas. Cerrar H0 pasa sobre todo por enganchar
 `FTerrainEditModel` (picado, remallado y guardado) y `FFellingModel` a actores, trabajo
 que necesita Unreal. Sigue sin haber una sola línea de replicación en `Source/`: las 43
 casillas de red están pendientes.
+
+Minería y terreno de H2 (PR #95): `FMiningModel`, `FMineHazardModel` y `FShovelPathModel`
+con sus specs y las piezas `viga_apoyo` y `tablon_contencion` en datos. Con el mismo
+criterio, sus casillas cuentan como «en parte» (modelo puro sin enganchar) y se añade la
+casilla de conectarlos al juego.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -482,16 +487,22 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
       −15 durabilidad). *(biblia 02 §2)*
-      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50), `TerrainEditModel.h:12-19`,
-        `mining.json:75-132` — el modelo tiene 5 materiales; cobre, hierro, azufre y cristal
-        solo están en datos y la rotura de la obsidiana solo en JSON.
+      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50) + PR #95: `FMiningModel`
+        (`WorldGen/MiningModel.h`, `MiningModelSpec`) con estratos, vetas finitas, radio y
+        ritmo por herramienta, rebote y mella — modelo puro sin enganchar.
 - [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
       luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
+      → **En parte:** PR #95, pieza en `building_pieces.json` y regla en `FMineHazardModel`
+        (`MineHazardModelSpec`) — sin enganchar.
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals`
+        (respiración y mareo) — sin enganchar a las señales del cuerpo.
 - [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
       (1 m/40 s sin sellar) y crecida de monzón (30 % durante la estación).
       *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel` (galerías, marea, sellado con `pared`,
+        lluvia +50 %) y `MonsoonFloodFraction` — sin enganchar.
 - [ ] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos
       subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` mayores, con
       radio de exclusión de 1,5 m alrededor de un tesoro. *(biblia 02 §2.5, §12)*
@@ -499,20 +510,27 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       02 §2 TODO)*
 - [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
       sobre camino terminado). *(biblia 02 §3)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:87, 163` (`bMarkPath`) — falta
-        el −15 % de coste de movimiento y enganchar la pala.
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h` (`bMarkPath`) + PR #95:
+        `FShovelPathModel` (`ShovelPathModelSpec`) — falta enganchar la pala y el −15 % en
+        el movimiento.
 - [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
       revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
-      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h:139` (34°/45°,
+      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h` (34°/45°,
         revisión 1 s) — modelo puro sin enganchar.
 - [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:142-145` (`ApplyHalfTide` 20 %/35 %)
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`ApplyHalfTide` 20 %/35 %)
         — nadie lo llama desde la marea.
 - [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
       en 1 m). *(biblia 02 §5.3)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:149, 196` (`SetAnchor` a 1 m) — falta
-        la pieza en `building_pieces.json`.
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95: pieza
+        en `building_pieces.json` y `FSandModel::PieceAnchorsSand` — falta llamar a
+        `SetAnchor` al colocarla.
+- [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
+      `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
+      (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
+      las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
+      −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
 - [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
       `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
       `carretilla`. *(biblia 03 §3.2–3.4)*

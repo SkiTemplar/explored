@@ -75,4 +75,7 @@ WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
+WorldGen/MiningModel.cpp
+WorldGen/MineHazardModel.cpp
+WorldGen/ShovelPathModel.cpp
 Combat/CombatModel.cpp
