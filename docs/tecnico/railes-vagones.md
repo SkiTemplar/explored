@@ -1,6 +1,6 @@
 # Raíles y vagones: cómo enganchar `FTramwayModel` en el motor [F2]
 
-Estado: el modelo es puro y tiene spec en el host (`Explored.Tramway`, 26 casos). Falta
+Estado: el modelo es puro y tiene spec en el host (`Explored.Tramway`, 27 casos). Falta
 la integración con Unreal, que tiene que hacer una sesión con el editor. Diseño de
 juego y números: GDD v2 §3.5. La mecánica es de fase 2, así que este documento no
 compromete nada del acceso anticipado.
@@ -17,8 +17,8 @@ compromete nada del acceso anticipado.
   `FCartControl` se empuja hacia delante o hacia atrás, se tira con el torno o se echa
   el freno.
 - `Step(Cart, Control, Dt, Accumulator)` integra en pasos fijos de 1/120 s. Da lo mismo
-  con cualquier `Dt`, y eso importa para el cooperativo: el servidor y los clientes
-  llegan al mismo resultado con los mismos controles.
+  con cualquier troceo de `Dt`, así que el resultado en el servidor no depende de su
+  tasa de fotogramas (los clientes no simulan, ver el punto 6).
 - `DamageInSphere(Centro, Radio)` marca dañados los tramos que pasan a menos del radio y
   devuelve los recién dañados. `Repair` los arregla.
 - Guardado: `ToValue()` y `FromValue()` para la vía, y `CartToValue()` y
@@ -54,10 +54,12 @@ compromete nada del acceso anticipado.
    existe para el terreno, y guardar los vagones como lista de `CartToValue` en la misma
    capa. Si falla al cargar, la vía se queda vacía y se avisa en el registro, igual que
    el terreno.
-6. **Red (biblia 08).** El servidor es la autoridad: simula los vagones y replica
-   `FMineCart` (unos 40 bytes) cuando cambia de tramo o de control. Entre medias, los
-   clientes predicen con el mismo `Step`, que da el mismo resultado con los mismos
-   controles.
+6. **Red (biblia 08 §1.2 y §1.3; `00-TODO.md`, F2).** El servidor es la autoridad y el
+   único que simula los vagones: el cliente **no** predice (biblia 08 §1.2, «nada más
+   se predice»). Se replica el estado, la posición sobre el tramo y la velocidad, a
+   10 Hz (unos 6 B cuantizados; el tramo `From → To` solo cuando cambia), y el cliente
+   interpola. Que `Step` dé lo mismo con cualquier `Dt` sirve para que el servidor no
+   dependa de su tasa de fotogramas, no para predecir en el cliente.
 
 ## Límites conocidos del modelo
 

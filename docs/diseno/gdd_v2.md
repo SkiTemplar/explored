@@ -313,7 +313,9 @@ mapa.
     lleno por la pendiente máxima, que necesita 811 N. La cuerda mide **60 m** medidos
     por la vía. El torno tira hacia sí por el camino más corto, y a 0,5 m el trinquete
     sujeta el vagón, aunque esté en cuesta. Si no hay torno al alcance, no pasa nada y
-    la interfaz lo dice. Por encima de 5° con carga, el torno es obligatorio *(biblia)*.
+    la interfaz lo dice. Por encima de 5°, el torno es obligatorio *(biblia)*; que
+    el vagón vacío sí se pueda empujar más arriba es interpretación de este modelo
+    (propuesta).
   - **Curvas y topes: donde el error es parte de la diversión.** Un vagón vuelca en
     curva a partir de **2,56 m/s vacío** y **2,05 m/s lleno** (el centro de masas sube
     de 0,45 a 0,7 m con la carga). Empujado o con el torno nunca vuelca, pero dejado
