@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 638,
+		"total": 639,
 		"cpp": 303,
-		"datos": 335,
+		"datos": 336,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -4214,6 +4214,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «grasa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "guano.nameEs",
+			"es": "Guano",
+			"en": "Guano",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «guano» nameEs/nameEn"
 			]
 		},
 		{

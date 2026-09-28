@@ -751,8 +751,15 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
   8 troncos así una balsa no aguanta a una persona. La pieza «tronco» del casco es un
   tronco de balsa de verdad (72,6 kg: se lleva a hombros entre dos o se hace rodar).
   Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
-- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
-  por piezas en la sección de barcos, pendiente).
+- **Al guardar y cargar.** Un barco armado por piezas se guarda con sus piezas y sus
+  uniones, cada una con su salud, y al cargar navega exactamente igual: mismo calado,
+  misma GM y la misma unión a medio romper. Las cargas y los pasajeros no se guardan,
+  porque salen del inventario del barco y de quién sube. Si una pieza del guardado es
+  imposible (valores no finitos, más de 50 m, un tipo que no existe) se pierde solo esa
+  pieza y sus uniones. Un casco tiene como mucho 256 piezas.
+- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (casco por
+  piezas junto a cada barco de la sección `boats`: `SaveRaftHull`/`LoadRaftHull`, falta el
+  enganche en el motor, `docs/tecnico/astillero-balsas.md`).
 
 ### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
 
@@ -956,6 +963,33 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
   | Cordel de fibra | −52 % | se rompen a los 5,8 m |
   | Cuerda | −31 % | se rompen a los 9,6 m |
   | Clavos | −16 % | −52 % |
+
+  - **Surco en la arena [propuesta, pendiente del director]** (`FRaftFurrowModel`).
+    Arrastrada sin rodillos por arena seca o mojada, la balsa abre un surco con dos
+    cordones a los lados. Sobre rodillos, hierba, roca o la rampa no deja marca; cuenta la
+    superficie que hay debajo de cada parte del casco, no la del centro.
+    - Hondo del surco = presión del fondo × 12 mm/kPa en arena seca o × 4 mm/kPa en arena
+      húmeda (bajo la pleamar o con lluvia). La presión es el peso que no sostiene el agua
+      entre el área en planta de las piezas del fondo. Tope de 60 mm; por debajo de 3 mm
+      no queda marca.
+    - El fondo rasa la arena hasta ese hondo respecto a la original: aplana un montón que
+      haya en el camino y no toca un hoyo más hondo. Volver a pasar no ahonda el surco.
+    - La arena del surco va al costado más cercano, a la primera columna fuera de la
+      huella. Si ese costado es huella de una estructura o ya está al tope del montón
+      (2 m), va al otro; si tampoco cabe, se queda. La masa se conserva siempre.
+    - Después actúa la arena viva (§3.13): la avalancha derrumba los cordones que pasen
+      de 34° (45° mojados) y el oleaje rellena el surco de la franja intermareal.
+
+    | Balsa | Presión | Surco en seco | Surco en mojado |
+    |---|---|---|---|
+    | 6 troncos (451 kg, 3,96 m²) | 1,1 kPa | 13 mm | 4 mm |
+    | 6 troncos + 3 personas + 200 kg | 2,2 kPa | 26 mm | 8 mm |
+    | Catamarán de 2 troncos (211 kg, 1,32 m²) | 1,6 kPa | 18 mm | 6 mm |
+
+    Es el rastro que dice «por aquí se botó una balsa»: dos cordones paralelos hasta el
+    agua. En la franja intermareal el oleaje lo rellena; por encima de la pleamar no hay
+    nada que lo borre y se queda en el guardado (pendiente del director: si debe borrarse
+    y cómo).
 
 - **En el agua.**
   - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura

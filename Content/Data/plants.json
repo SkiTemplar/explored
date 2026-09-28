@@ -135,10 +135,11 @@
       { "item": "fibra_coco" },
       { "item": "alga_fibra" },
       { "item": "espina_pescado" },
+      { "item": "guano" },
       { "tag": "comida" }
     ],
     "growthMultiplier": 1.5,
     "durationDays": 8,
-    "noteEs": "Biblia de contenido §7.2 y 02 §10.1. Cierra el ciclo de la comida estropeada: lo que se pudre en la despensa vuelve al bancal. Una tanda de 4 restos abona una parcela un ciclo entero de taro o batata."
+    "noteEs": "Biblia de contenido §7.2 y 02 §10.1. Cierra el ciclo de la comida estropeada: lo que se pudre en la despensa vuelve al bancal. Una tanda de 4 restos abona una parcela un ciclo entero de taro o batata. El guano de Los Dientes (fauna.json, depósito de la colonia de fragatas) cuenta como un resto más: propuesta, sin bonificación propia porque FFarmModel solo conoce un abono."
   }
 }
