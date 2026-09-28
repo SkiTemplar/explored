@@ -39,11 +39,16 @@ ATTRIBUTION_LICENSES = frozenset({"CC-BY-3.0", "CC-BY-4.0"})
 # Fuente -> (licencias admitidas, dominios admitidos para source_url/download_url).
 SOURCES: dict[str, tuple[frozenset[str], tuple[str, ...]]] = {
     "wikimedia_commons": (frozenset({"PD", "CC0-1.0"}), ("commons.wikimedia.org", "upload.wikimedia.org")),
-    "musopen": (frozenset({"PD", "CC0-1.0"}), ("musopen.org",)),
+    "musopen": (frozenset({"PD", "CC0-1.0"}), ("musopen.org", "archive.org")),
     "freepd": (frozenset({"CC0-1.0"}), ("freepd.com",)),
     "incompetech": (frozenset({"CC-BY-4.0"}), ("incompetech.com",)),
     "opengameart": (frozenset({"CC0-1.0", "CC-BY-3.0", "CC-BY-4.0"}), ("opengameart.org",)),
 }
+
+# Musopen bloquea las descargas automaticas (403) y distribuye sus
+# colecciones CC0 en archive.org desde su propia cuenta. Solo se admiten
+# esos elementos, no cualquier subida de terceros que diga ser de Musopen.
+MUSOPEN_ARCHIVE_ITEMS = frozenset({"musopen-chopin"})
 
 # Momentos de juego del encargo y papel de music_layers.json que les
 # corresponde por defecto. El papel concreto de cada pieza se declara en el
@@ -168,6 +173,17 @@ def _host_allowed(url: str, hosts: tuple[str, ...]) -> bool:
     return any(host == h or host.endswith("." + h) for h in hosts)
 
 
+def _official_musopen(p: Piece) -> bool:
+    for url, prefix in ((p.source_url, "/details/"), (p.download_url, "/download/")):
+        parsed = urlparse(url)
+        if parsed.hostname != "archive.org":
+            continue
+        parts = parsed.path.split("/")
+        if not parsed.path.startswith(prefix) or len(parts) < 3 or parts[2] not in MUSOPEN_ARCHIVE_ITEMS:
+            return False
+    return True
+
+
 def validate(sources: SourceList, layer_roles: set[str] | None = None) -> list[str]:
     """Devuelve la lista de problemas (vacia si todo cuadra)."""
     errors: list[str] = []
@@ -205,6 +221,8 @@ def validate(sources: SourceList, layer_roles: set[str] | None = None) -> list[s
         for field in ("source_url", "download_url"):
             if not _host_allowed(getattr(p, field), hosts):
                 errors.append(f"{tag}: {field} no es https en un dominio de {p.source}")
+        if p.source == "musopen" and not _official_musopen(p):
+            errors.append(f"{tag}: en archive.org solo valen los elementos subidos por Musopen")
         if p.download_url in seen_urls:
             errors.append(f"{tag}: download_url repetida")
         seen_urls.add(p.download_url)

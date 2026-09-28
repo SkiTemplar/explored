@@ -159,6 +159,18 @@ def test_validate_rechaza_entradas_corruptas(raw, changes):
     assert _mutate(raw, **changes), f"no se detecto {changes}"
 
 
+def test_archive_org_solo_vale_para_elementos_oficiales_de_musopen(raw):
+    data = copy.deepcopy(raw)
+    musopen = next(e for e in data["pieces"] if e["source"] == "musopen")
+    musopen["download_url"] = "https://archive.org/download/subida-de-un-tercero/x.mp3"
+    assert validate(parse_sources(data), load_layer_roles())
+    # Y una pieza de Commons no puede apuntar a archive.org.
+    data = copy.deepcopy(raw)
+    commons = next(e for e in data["pieces"] if e["source"] == "wikimedia_commons")
+    commons["download_url"] = "https://archive.org/download/musopen-chopin/x.mp3"
+    assert validate(parse_sources(data), load_layer_roles())
+
+
 def test_validate_rechaza_ids_y_hashes_duplicados(raw):
     data = copy.deepcopy(raw)
     data["pieces"].append(copy.deepcopy(data["pieces"][0]))
