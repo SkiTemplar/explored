@@ -236,7 +236,8 @@ public:
 	/**
 	 * Avanza Dt segundos en pasos fijos de 1/SubstepsPerSecond. Lo que no llega a un
 	 * paso se acumula en `Accumulator` (en pasos, no en segundos), así que 60 llamadas
-	 * de 1/60 s dan lo mismo que una de 1 s.
+	 * de 1/60 s dan lo mismo que una de 1 s. Se simula como mucho MaxStepSeconds por
+	 * llamada, y un acumulador no finito o negativo se reinicia.
 	 */
 	FCartStepResult Step(FMineCart& Cart, const FCartControl& Control, double Dt, double& Accumulator) const;
 	/** Un único paso fijo. */
@@ -263,6 +264,8 @@ public:
 
 	/** Sin tramo en esa dirección. */
 	static constexpr int8 NoEdge = -128;
+	/** Tope de tiempo simulado por llamada a Step. */
+	static constexpr double MaxStepSeconds = 5.0;
 
 private:
 	struct FNode

@@ -1,6 +1,6 @@
 # Raíles y vagones: cómo enganchar `FTramwayModel` en el motor [F2]
 
-Estado: el modelo es puro y tiene spec en el host (`Explored.Tramway`, 27 casos). Falta
+Estado: el modelo es puro y tiene spec en el host (`Explored.Tramway`, 28 casos). Falta
 la integración con Unreal, que tiene que hacer una sesión con el editor. Diseño de
 juego y números: GDD v2 §3.5. La mecánica es de fase 2, así que este documento no
 compromete nada del acceso anticipado.

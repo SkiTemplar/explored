@@ -75,6 +75,14 @@ bool FTramwayModel::FNode::operator==(const FNode& O) const
 FTramwayModel::FTramwayModel(const FTramwaySettings& InSettings)
 	: Settings(InSettings)
 {
+	// Ajustes que romperían el modelo: rejilla o centro de masas nulos (divisiones por cero)
+	// y subidas que no caben en int8 sin chocar con NoEdge.
+	Settings.CellSize = FMath::Max(Settings.CellSize, 0.01f);
+	Settings.HeightStep = FMath::Max(Settings.HeightStep, 0.001f);
+	Settings.MaxRiseSteps = FMath::Clamp(Settings.MaxRiseSteps, 0, 127);
+	Settings.EmptyCogHeight = FMath::Max(Settings.EmptyCogHeight, 0.01f);
+	Settings.FullCogHeight = FMath::Max(Settings.FullCogHeight, 0.01f);
+	Settings.SubstepsPerSecond = FMath::Max(Settings.SubstepsPerSecond, 1);
 }
 
 FIntVector FTramwayModel::DirOffset(ERailDir Dir)
@@ -722,7 +730,13 @@ FCartStepResult FTramwayModel::Step(FMineCart& Cart, const FCartControl& Control
 	{
 		return Total;
 	}
-	Accumulator += Dt * FMath::Max(1, Settings.SubstepsPerSecond);
+	if (!FMath::IsFinite(Accumulator) || Accumulator < 0.0)
+	{
+		Accumulator = 0.0;
+	}
+	// Un Dt enorme (pausa, tirón del servidor) no puede lanzar millones de pasos: como mucho
+	// MaxStepSeconds de simulación por llamada; el resto se descarta.
+	Accumulator = FMath::Min(Accumulator + Dt * Settings.SubstepsPerSecond, MaxStepSeconds * Settings.SubstepsPerSecond + 1.0);
 	// Tolerancia de redondeo: 0,03 s × 120 = 3,5999… pasos no debe perder un paso por el camino.
 	while (Accumulator >= 1.0 - 1e-6)
 	{

@@ -505,6 +505,28 @@ void FTramwayModelSpec::Define()
 			TestFalse(TEXT("no se pone fuera de la vía"), Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0), 2.5));
 			TestFalse(TEXT("ni en un tramo que no existe"), Model.PlaceCart(Cart, FIntVector(5, 0, 0), FIntVector(6, 0, 0)));
 		});
+
+		It("acota el tiempo simulado por llamada y se recupera de un acumulador roto", [this]()
+		{
+			FTramwaySettings Settings;
+			Settings.MaxRiseSteps = 400;
+			Settings.EmptyCogHeight = 0.0f;
+			Settings.FullCogHeight = 0.0f;
+			FTramwayModel Model(Settings);
+			TestEqual(TEXT("las subidas caben en int8 sin chocar con NoEdge"), Model.GetSettings().MaxRiseSteps, 127);
+			Line(Model, FIntVector(0, 0, 0), 10, 0);
+			FMineCart Cart;
+			Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0));
+			TestTrue(TEXT("límite de curva finito con centro de masas nulo"), FMath::IsFinite(Model.CurveSpeedLimit(Cart)));
+			double Acc = 0.0;
+			const FCartStepResult R = Model.Step(Cart, Push(), 1e9, Acc);
+			TestTrue(TEXT("un Dt enorme simula como mucho MaxStepSeconds"),
+				R.Distance <= Settings.PushSpeed * (FTramwayModel::MaxStepSeconds + 0.1));
+			TestTrue(TEXT("y no deja deuda"), Acc < 1.0);
+			double Broken = static_cast<double>(NAN);
+			const FCartStepResult R2 = Model.Step(Cart, Push(), 0.5, Broken);
+			TestTrue(TEXT("un acumulador NaN se reinicia y el vagón sigue"), R2.Distance > 0.0 && FMath::IsFinite(Broken));
+		});
 	});
 
 	Describe("el guardado", [this]()
