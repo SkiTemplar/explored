@@ -2012,16 +2012,88 @@
       "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
     },
     {
-      "achievementIcon": "tesoro",
-      "reason": "Pista del logro «Bajo el templo» (PR #79), posterior a la revisión de packs del 2026-09-28. Candidato: silueta propia en SVG (cofre o ídolo)."
-    },
-    {
       "achievementIcon": "avion",
       "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
     },
     {
       "achievementIcon": "flauta",
       "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
+    },
+    {
+      "achievementIcon": "arco",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "bandera",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "cangrejo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "canoa",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "corral",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "empalizada",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "escudo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "herramienta",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "huevo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "mina",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "muralla",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "obsidiana",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pala",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pico",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "pueblo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "templo",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "trueque",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "vagon",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+    },
+    {
+      "achievementIcon": "viga",
+      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
     }
   ]
 }

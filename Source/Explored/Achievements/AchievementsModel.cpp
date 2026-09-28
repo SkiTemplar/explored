@@ -75,6 +75,66 @@ const TCHAR* LexToString(EAchievementStatScope Scope)
 	}
 }
 
+const TCHAR* LexToString(EAchievementPhase Phase)
+{
+	switch (Phase)
+	{
+	case EAchievementPhase::EarlyAccess: return TEXT("AA");
+	case EAchievementPhase::Phase2: return TEXT("F2");
+	case EAchievementPhase::Phase3: return TEXT("F3");
+	default: return TEXT("unknown");
+	}
+}
+
+const TCHAR* LexToString(EAchievementRarity Rarity)
+{
+	switch (Rarity)
+	{
+	case EAchievementRarity::Common: return TEXT("comun");
+	case EAchievementRarity::Uncommon: return TEXT("infrecuente");
+	case EAchievementRarity::Rare: return TEXT("raro");
+	case EAchievementRarity::VeryRare: return TEXT("muy_raro");
+	default: return TEXT("unknown");
+	}
+}
+
+const TCHAR* LexToString(EAchievementCoopScope Scope)
+{
+	switch (Scope)
+	{
+	case EAchievementCoopScope::Actor: return TEXT("actor");
+	case EAchievementCoopScope::World: return TEXT("world");
+	case EAchievementCoopScope::Witness: return TEXT("witness");
+	default: return TEXT("unknown");
+	}
+}
+
+bool ParseAchievementPhase(const FString& Text, EAchievementPhase& OutPhase)
+{
+	// Sensible a mayúsculas, igual que el resto del JSON: «aa» es un error de datos.
+	if (Text.Equals(TEXT("AA"), ESearchCase::CaseSensitive)) { OutPhase = EAchievementPhase::EarlyAccess; return true; }
+	if (Text.Equals(TEXT("F2"), ESearchCase::CaseSensitive)) { OutPhase = EAchievementPhase::Phase2; return true; }
+	if (Text.Equals(TEXT("F3"), ESearchCase::CaseSensitive)) { OutPhase = EAchievementPhase::Phase3; return true; }
+	return false;
+}
+
+bool ParseAchievementRarity(const FString& Text, EAchievementRarity& OutRarity)
+{
+	if (Text.Equals(TEXT("comun"), ESearchCase::CaseSensitive)) { OutRarity = EAchievementRarity::Common; return true; }
+	if (Text.Equals(TEXT("infrecuente"), ESearchCase::CaseSensitive)) { OutRarity = EAchievementRarity::Uncommon; return true; }
+	if (Text.Equals(TEXT("raro"), ESearchCase::CaseSensitive)) { OutRarity = EAchievementRarity::Rare; return true; }
+	if (Text.Equals(TEXT("muy_raro"), ESearchCase::CaseSensitive)) { OutRarity = EAchievementRarity::VeryRare; return true; }
+	return false;
+}
+
+bool ParseAchievementCoopScope(const FString& Text, EAchievementCoopScope& OutScope)
+{
+	if (Text.Equals(TEXT("actor"), ESearchCase::CaseSensitive)) { OutScope = EAchievementCoopScope::Actor; return true; }
+	if (Text.Equals(TEXT("world"), ESearchCase::CaseSensitive)) { OutScope = EAchievementCoopScope::World; return true; }
+	if (Text.Equals(TEXT("witness"), ESearchCase::CaseSensitive)) { OutScope = EAchievementCoopScope::Witness; return true; }
+	return false;
+}
+
 bool ParseAchievementCompareOp(const FString& Text, EAchievementCompareOp& OutOp)
 {
 	if (Text == TEXT(">=")) { OutOp = EAchievementCompareOp::GreaterEqual; return true; }
@@ -405,12 +465,29 @@ TArray<FName> FAchievementsModel::Evaluate()
 void FAchievementsModel::TryUnlock(int32 InAchievementIndex, TArray<FName>& OutUnlocked)
 {
 	const FAchievementDef& Def = Achievements[InAchievementIndex];
-	if (State.Unlocked.Contains(Def.Id) || !IsAvailableInCurrentMode(Def) || !Holds(Def.Condition))
+	if (State.Unlocked.Contains(Def.Id) || !IsReleased(Def) || !IsAvailableInCurrentMode(Def) || !Holds(Def.Condition))
 	{
 		return;
 	}
 	State.Unlocked.Add(Def.Id);
 	OutUnlocked.Add(Def.Id);
+}
+
+bool FAchievementsModel::ReachesPlayer(EAchievementCoopScope Scope, bool bIsActor, float DistanceMeters)
+{
+	switch (Scope)
+	{
+	case EAchievementCoopScope::Actor:
+		return bIsActor;
+	case EAchievementCoopScope::World:
+		return true;
+	case EAchievementCoopScope::Witness:
+		// Quien hace la acción siempre la presencia; el resto, dentro del radio. Una distancia
+		// corrupta (NaN, infinita o negativa) nunca cuenta como testigo.
+		return bIsActor || (FMath::IsFinite(DistanceMeters) && DistanceMeters >= 0.0f && DistanceMeters <= WitnessRadiusMeters);
+	default:
+		return false;
+	}
 }
 
 bool FAchievementsModel::IsAvailableInCurrentMode(const FAchievementDef& Def) const

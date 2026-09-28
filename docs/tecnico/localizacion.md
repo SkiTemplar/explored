@@ -17,6 +17,10 @@ fichero que el español hace imposible olvidarse de uno al añadir el otro, y
 El informe generado con los recuentos, los literales y los avisos está en
 [`localizacion-informe.md`](localizacion-informe.md).
 
+Los términos propios del juego (islas, el «Limón», galería → *tunnel*, piratas → *raiders*…)
+tienen una sola traducción, fijada en el [glosario](glosario.md) (biblia 07 §5.2). La voz y
+lo que no se escribe nunca están en biblia 07 §1 (guía anti-IA).
+
 ## Cómo escribir textos
 
 ### En C++
@@ -71,9 +75,17 @@ Cada texto que ve el jugador lleva su pareja en inglés al lado:
 | `building_pieces.json` | `nameEs` de niveles y piezas | `nameEn` |
 | `survival_needs.json` | `nameEs` | `nameEn` |
 | `story_es.json` | `label` de `map_marks` y `artifact_kinds`; `petroglyph_themes` | `labelEn`; `petroglyph_themes_en` (misma longitud y orden) |
+| `achievements.json` | `nameEs`, `descriptionEs` de cada logro | `nameEn`, `descriptionEn` |
+| `artifacts.json`, `boats.json`, `exploration.json`, `fauna.json`, `fauna_terrestre.json`, `fish.json`, `fuels.json`, `mining.json`, `recipes.json`, `ruins.json`, `fases_futuras.json` | `nameEs` (y `revealsEs` en las técnicas de `ruins.json`) | `nameEn`, `revealsEn` |
+
+La lista exacta está en `Tools/Localization/src/l10n/data.py` (`FIELDS`). La herramienta
+lee **todos** los ficheros de `Content/Data`: un campo `…Es` con texto que no esté en esa
+lista es un error, para que un fichero nuevo no se quede sin inglés sin que nadie lo vea.
+Si el campo es una nota de diseño, va a `DESIGN_NOTES` en el mismo fichero.
 
 Quedan fuera, por ser notas de diseño que el jugador no ve: `units`, `note`, `source`,
-`atZero` de `survival_needs.json` y los ids. Una plantilla con `nameTemplate` vacío usa
+`noteEs`, `redNotaEs`, la `descriptionEs` de las estadísticas de `achievements.json`,
+`accessEs`/`rewardEs` de `exploration.json`, `atZero` de `survival_needs.json` y los ids. Una plantilla con `nameTemplate` vacío usa
 el nombre del objeto resultante y no necesita `nameTemplateEn`. El nombre
 `story_es.json` se mantiene (lo leen `NarrativeSpec` y `Tools/DataCheck`) aunque ya es
 bilingüe; cuando se separe en `petroglyphs.json`/`artifacts.json`/`map_marks.json`
@@ -103,6 +115,27 @@ coinciden, que no hay claves en conflicto, traducciones desfasadas (cambió el e
 huérfanas, la dedicatoria, y avisa si el inglés supera 1,3 veces el español (desde 12
 caracteres) por si no cabe. Además lista los `TEXT("...")` que llegan a la pantalla sin
 localizar. Más detalle en `Tools/Localization/README.md`.
+
+Desde H5 comprueba también:
+
+- **Modificadores de argumento** (`{Count}|plural(one=pez,other=peces)`, `|ordinal`,
+  `|gender`, `|hpp`): sintaxis (paréntesis y comillas cerrados, categorías conocidas, sin
+  repetir, `other` siempre), que estén las categorías que necesita cada idioma (`one` en
+  español e inglés; `one`/`two`/`few` en el ordinal inglés) y aviso de las que el idioma no
+  usa nunca (`zero` en inglés). Si un idioma pluraliza un argumento, el otro también.
+  Un `|plural(` suelto, sin marcador delante, se vería tal cual: es error.
+- **Guía anti-IA** (biblia 07 §1.2–§1.3): palabras de la lista negra en los dos idiomas,
+  emoji (error), exclamaciones en logros y museo, «fishes», y los máximos de longitud de
+  los logros (4 palabras de nombre; 90/110 caracteres y una frase de descripción) y de las
+  etiquetas de vitrina (6 palabras).
+- **Glosario** ([`glosario.md`](glosario.md)): si el español de un texto nombra un término
+  con comprobación, el inglés tiene que llevar su traducción fijada.
+- **Coherencia**: un mismo nombre en español no puede tener dos inglés distintos en dos
+  ficheros de datos (p. ej. «Atún» en `items.json` y en `fish.json`).
+
+Las excepciones revisadas a mano (un inglés más largo que cabe, «Épica» como nivel de
+calidad de Unreal) van en `Tools/Localization/translations/excepciones.json`, cada una con
+su motivo. Una excepción que ya no hace falta da aviso, para que la lista no se pudra.
 
 Genera `Content/Localization/Game/Game.manifest`, `Content/Localization/Game/es/Game.archive`,
 `Content/Localization/Game/en/Game.archive`, `Content/Localization/catalogo.json` y
