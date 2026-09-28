@@ -191,7 +191,27 @@ float FTerrainMetricsModel::LocalVariance(const FTerrainSampleGrid& Grid, int32 
 	return Count > 0 ? static_cast<float>(Sum / Count) : -1.0f;
 }
 
-float FTerrainMetricsModel::MaxStepBelow(const FTerrainSampleGrid& Grid, float BelowHeight)
+float FTerrainMetricsModel::SmoothFraction(const FTerrainSampleGrid& Grid, int32 IslandIdx, float MinHeight, float MaxVariance)
+{
+	int64 Land = 0;
+	int64 Smooth = 0;
+	for (int32 Y = 1; Y < Grid.Height - 1; ++Y)
+	{
+		for (int32 X = 1; X < Grid.Width - 1; ++X)
+		{
+			const int32 I = Grid.Index(X, Y);
+			if (Grid.IslandIndex[I] != IslandIdx || Grid.Heights[I] < MinHeight)
+			{
+				continue;
+			}
+			++Land;
+			Smooth += WindowVariance(Grid, X, Y, 1) < MaxVariance ? 1 : 0;
+		}
+	}
+	return Land > 0 ? static_cast<float>(Smooth) / Land : 0.0f;
+}
+
+float FTerrainMetricsModel::MaxStepBelow(const FTerrainSampleGrid& Grid, float BelowHeight, FVector2D* OutWhere)
 {
 	float Best = 0.0f;
 	for (int32 Y = 0; Y < Grid.Height; ++Y)
@@ -203,13 +223,16 @@ float FTerrainMetricsModel::MaxStepBelow(const FTerrainSampleGrid& Grid, float B
 			{
 				continue;
 			}
-			if (X + 1 < Grid.Width && Grid.Heights[Grid.Index(X + 1, Y)] < BelowHeight)
+			const float Right = X + 1 < Grid.Width ? Grid.Heights[Grid.Index(X + 1, Y)] : H;
+			const float Up = Y + 1 < Grid.Height ? Grid.Heights[Grid.Index(X, Y + 1)] : H;
+			const float Step = FMath::Max(Right < BelowHeight ? FMath::Abs(H - Right) : 0.0f, Up < BelowHeight ? FMath::Abs(H - Up) : 0.0f);
+			if (Step > Best)
 			{
-				Best = FMath::Max(Best, FMath::Abs(H - Grid.Heights[Grid.Index(X + 1, Y)]));
-			}
-			if (Y + 1 < Grid.Height && Grid.Heights[Grid.Index(X, Y + 1)] < BelowHeight)
-			{
-				Best = FMath::Max(Best, FMath::Abs(H - Grid.Heights[Grid.Index(X, Y + 1)]));
+				Best = Step;
+				if (OutWhere)
+				{
+					*OutWhere = Grid.WorldPosition(X, Y);
+				}
 			}
 		}
 	}

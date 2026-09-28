@@ -110,6 +110,13 @@ TArray<FVector2D> FTerrainSurvey::DeclaredAnchors(const FTerrainDensity& Density
 			Anchors.Add(Cay.Center);
 		}
 	}
+	for (const FSeamountDesc& Mount : Density.GetSeafloor().GetSeamounts())
+	{
+		if (Mount.IsIslet())
+		{
+			Anchors.Add(Mount.Center);
+		}
+	}
 	return Anchors;
 }
 
@@ -125,10 +132,21 @@ FTerrainRealismReport FTerrainSurvey::Measure(const FTerrainDensity& Density, co
 		Report.HighestUnexplainedBump = FMath::Max(Report.HighestUnexplainedBump, Bump.MaxHeight);
 	}
 	Report.Seafloor = FTerrainMetricsModel::SeafloorHistogram(Grid, BumpThreshold);
-	Report.MaxSeafloorStep = FTerrainMetricsModel::MaxStepBelow(Grid, BumpThreshold);
+	Report.MaxSeafloorStep = FTerrainMetricsModel::MaxStepBelow(Grid, BumpThreshold, &Report.MaxSeafloorStepAt);
+	for (int32 I = 0; I < FMath::Min(Bumps.Num(), 5); ++I)
+	{
+		Report.LargestBumps.Add(Bumps[I]);
+	}
 	for (int32 I = 0; I < Density.GetLayout().Islands.Num(); ++I)
 	{
-		Report.Islands.Add(MeasureIsland(Grid, I));
+		FIslandRealism Island = MeasureIsland(Grid, I);
+		Island.SmoothFraction = FTerrainMetricsModel::SmoothFraction(Grid, I, 0.5f, 0.005f);
+		if (const FIslandReliefGrid* Relief = Density.GetRelief(I))
+		{
+			Island.ErosionPitsBefore = Relief->GetPitsBefore();
+			Island.ErosionPitsAfter = Relief->GetPitsAfter();
+		}
+		Report.Islands.Add(Island);
 	}
 	return Report;
 }

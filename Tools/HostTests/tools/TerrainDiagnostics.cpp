@@ -106,22 +106,53 @@ namespace
 
 	void PrintReport(const FTerrainDensity& Density, const FTerrainRealismReport& R)
 	{
+		for (const FSeamountDesc& M : Density.GetSeafloor().GetSeamounts())
+		{
+			std::printf("  %s en (%.0f, %.0f): radio %.0f m, cima %.1f m\n", M.IsIslet() ? "islote" : "monticulo", M.Center.X, M.Center.Y,
+				M.Radius, M.Peak);
+		}
 		std::printf("bultos_sin_explicar=%d  bulto_mas_alto=%.2f m\n", R.UnexplainedBumps, R.HighestUnexplainedBump);
-		std::printf("fondo: muestras=%d  cota_dominante=%.2f m (%.2f %%)  pico_histograma=%.2f en %.1f m  salto_max=%.2f m\n",
+		for (const FTerrainBump& Bump : R.LargestBumps)
+		{
+			std::printf("  bulto en (%.0f, %.0f): %d celdas, cima %.2f m\n", Bump.Centroid.X, Bump.Centroid.Y, Bump.CellCount, Bump.MaxHeight);
+		}
+		std::printf("fondo: muestras=%d  cota_dominante=%.2f m (%.2f %%)  pico_histograma=%.2f en %.1f m  salto_max=%.2f m en (%.0f, %.0f)\n",
 			R.Seafloor.SampleCount, R.Seafloor.ModeHeight, R.Seafloor.ModeFraction * 100.0f, R.Seafloor.MaxSpike,
-			R.Seafloor.SpikeHeight, R.MaxSeafloorStep);
+			R.Seafloor.SpikeHeight, R.MaxSeafloorStep, R.MaxSeafloorStepAt.X, R.MaxSeafloorStepAt.Y);
 		for (int32 I = 0; I < R.Islands.Num(); ++I)
 		{
 			const FIslandRealism& Isl = R.Islands[I];
-			std::printf("  [%d] %-10s var_fina=%7.3f m2  cauces=%5d ejes=%.2f diag=%.2f  pozos/km2=%.1f\n", I,
-				LexToString(Density.GetLayout().Islands[I].Archetype), Isl.FineVariance, Isl.Channels.SampleCount,
-				Isl.Channels.AxisExcess, Isl.Channels.DiagonalExcess, Isl.PitsPerKm2);
+			std::printf("  [%d] %-10s var_fina=%7.3f m2  lisa=%4.1f%%  cauces=%5d ejes=%.2f diag=%.2f  pozos/km2=%.1f  pozos_erosion=%d->%d\n", I,
+				LexToString(Density.GetLayout().Islands[I].Archetype), Isl.FineVariance, Isl.SmoothFraction * 100.0f,
+				Isl.Channels.SampleCount, Isl.Channels.AxisExcess, Isl.Channels.DiagonalExcess, Isl.PitsPerKm2,
+				Isl.ErosionPitsBefore, Isl.ErosionPitsAfter);
 		}
 	}
 }
 
+/** `TerrainDiagnostics probe X Y`: alturas en una cruz de ±12 m alrededor de un punto. */
+int Probe(float X, float Y)
+{
+	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	for (int32 Axis = 0; Axis < 2; ++Axis)
+	{
+		std::printf("%s:", Axis == 0 ? "X" : "Y");
+		for (int32 D = -12; D <= 12; D += 2)
+		{
+			const FTerrainColumn C = Density.SampleColumn(X + (Axis == 0 ? D : 0), Y + (Axis == 1 ? D : 0));
+			std::printf(" %.1f[%d,%.2f]", C.Height, C.IslandIndex, C.NormalizedDistance);
+		}
+		std::printf("\n");
+	}
+	return 0;
+}
+
 int main(int Argc, char** Argv)
 {
+	if (Argc > 3 && std::string(Argv[1]) == "probe")
+	{
+		return Probe(static_cast<float>(std::atof(Argv[2])), static_cast<float>(std::atof(Argv[3])));
+	}
 	const std::string Prefix = Argc > 1 ? Argv[1] : "terreno";
 	const uint32 Seed = Argc > 2 ? static_cast<uint32>(std::strtoul(Argv[2], nullptr, 10)) : FArchipelagoLayout::OfficialSeed;
 	const float Spacing = Argc > 3 ? static_cast<float>(std::atof(Argv[3])) : 6.0f;

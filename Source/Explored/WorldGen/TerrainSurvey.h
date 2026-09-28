@@ -14,6 +14,11 @@ struct EXPLORED_API FIslandRealism
 	FOrientationStats Channels;
 	/** Pozos por km² de tierra: mínimos locales estrictos de al menos 0,3 m. */
 	float PitsPerKm2 = 0.0f;
+	/** Fracción de la tierra por encima de 0,5 m que es lisa como una mesa (ventana 3x3, σ < 7 cm). */
+	float SmoothFraction = 0.0f;
+	/** Pozos de la rejilla de erosión antes y después de erosionar (ver FIslandReliefGrid); -1 sin rejilla. */
+	int32 ErosionPitsBefore = -1;
+	int32 ErosionPitsAfter = -1;
 	int32 LandCells = 0;
 };
 
@@ -25,6 +30,9 @@ struct EXPLORED_API FTerrainRealismReport
 	FSeafloorHistogram Seafloor;
 	/** Mayor salto entre celdas vecinas del fondo (< -3 m), m. */
 	float MaxSeafloorStep = 0.0f;
+	FVector2D MaxSeafloorStepAt = FVector2D::ZeroVector;
+	/** Los cinco bultos sin explicar más grandes, para localizarlos. */
+	TArray<FTerrainBump> LargestBumps;
 	TArray<FIslandRealism> Islands;
 };
 

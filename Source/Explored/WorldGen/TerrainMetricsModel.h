@@ -79,8 +79,15 @@ public:
 	/** Varianza local media (ventana de 2·Radius+1 celdas) en la tierra de una isla por encima de MinHeight. */
 	static float LocalVariance(const FTerrainSampleGrid& Grid, int32 IslandIdx, float MinHeight, int32 Radius);
 
+	/**
+	 * Fracción de la tierra de una isla (por encima de MinHeight) cuya ventana 3x3 tiene una
+	 * varianza menor que MaxVariance: mesetas lisas o cotas recortadas, que en el terreno
+	 * natural no aparecen. Una playa en rampa o un llano con microrrelieve no cuentan.
+	 */
+	static float SmoothFraction(const FTerrainSampleGrid& Grid, int32 IslandIdx, float MinHeight, float MaxVariance);
+
 	/** Mayor salto de altura entre celdas vecinas cuando ambas están por debajo de BelowHeight. */
-	static float MaxStepBelow(const FTerrainSampleGrid& Grid, float BelowHeight);
+	static float MaxStepBelow(const FTerrainSampleGrid& Grid, float BelowHeight, FVector2D* OutWhere = nullptr);
 
 	/**
 	 * Orientación del gradiente en las celdas con Mask != 0 y pendiente de al menos MinGradient

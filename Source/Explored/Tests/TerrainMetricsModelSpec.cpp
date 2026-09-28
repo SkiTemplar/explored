@@ -137,6 +137,23 @@ void FTerrainMetricsModelSpec::Define()
 			TestTrue(TEXT("relieve"), FTerrainMetricsModel::LocalVariance(Grid, 0, 2.0f, 1) > 0.3f);
 			TestEqual(TEXT("isla sin tierra"), FTerrainMetricsModel::LocalVariance(Grid, 3, 2.0f, 1), -1.0f);
 		});
+
+		It("SmoothFraction detecta mesetas lisas y no las laderas con relieve", [this]()
+		{
+			FTerrainSampleGrid Grid;
+			Grid.Init(20, 20, FVector2D::ZeroVector, 4.0f);
+			for (int32 I = 0; I < Grid.Heights.Num(); ++I)
+			{
+				Grid.Heights[I] = 5.0f;
+				Grid.IslandIndex[I] = 0;
+			}
+			TestTrue(TEXT("meseta"), FTerrainMetricsModel::SmoothFraction(Grid, 0, 0.5f, 0.005f) > 0.99f);
+			for (int32 I = 0; I < Grid.Heights.Num(); ++I)
+			{
+				Grid.Heights[I] += 0.4f * ((I * 7) % 5);
+			}
+			TestTrue(TEXT("con relieve"), FTerrainMetricsModel::SmoothFraction(Grid, 0, 0.5f, 0.005f) < 0.01f);
+		});
 	});
 
 	Describe("GradientOrientation", [this]()

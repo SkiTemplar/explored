@@ -3,8 +3,10 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandReliefModel.h"
+#include "WorldGen/KarstTowerModel.h"
+#include "WorldGen/SeafloorModel.h"
 #include "WorldGen/TerrainEdits.h"
-#include "WorldGen/TerrainErosion.h"
 
 /** Cueva o arco: cápsula deformada que se excava en el terreno. Metros. */
 struct EXPLORED_API FCaveDesc
@@ -79,6 +81,12 @@ public:
 
 	const FArchipelagoLayout& GetLayout() const { return Layout; }
 	const TArray<FCaveDesc>& GetCaves() const { return Caves; }
+	const FSeafloorModel& GetSeafloor() const { return Seafloor; }
+	/** Relieve erosionado de la isla (índice del layout); null si no se erosiona. */
+	const FIslandReliefGrid* GetRelief(int32 IslandIndex) const
+	{
+		return Reliefs.IsValidIndex(IslandIndex) && Reliefs[IslandIndex].Grid ? &*Reliefs[IslandIndex].Grid : nullptr;
+	}
 
 	/** Amplitud máxima del ruido 3D que se suma a la altura (m). */
 	static constexpr float OverhangAmplitude = 2.5f;
@@ -90,18 +98,27 @@ private:
 
 	FArchipelagoLayout Layout;
 	TArray<FCaveDesc> Caves;
-	FExploredNoise FloorNoise;
+	/** Fondo marino continuo (dorsal, llanura abisal, montículos e islotes sueltos). */
+	FSeafloorModel Seafloor;
 	FExploredNoise DetailNoise;
 	FExploredNoise OverhangNoise;
 
 	/**
-	 * Rejilla de alturas erosionada del macizo kárstico (isla Mesa), en coordenadas Q
-	 * locales normalizadas por el radio de la isla. Null si el layout no tiene esa isla.
-	 * Se calcula una vez por semilla de isla y se comparte entre instancias de
-	 * FTerrainDensity (la erosión no es gratis, ver TerrainDensity.cpp); el puntero en sí
-	 * es const y se fija en el constructor, así que no rompe la inmutabilidad de la clase.
+	 * Relieve erosionado (erosión hidráulica y térmica más ríos, FIslandReliefModel) y torres
+	 * kársticas (FKarstTowerModel, solo el macizo de La Meseta) de cada isla, alineados con
+	 * Layout.Islands; nulos donde no aplican. Las rejillas se calculan una vez por isla y se
+	 * comparten entre instancias (la erosión no es gratis); los punteros se fijan en el
+	 * constructor, así que no rompen la inmutabilidad de la clase.
 	 */
-	TSharedPtr<const FErosionHeightGrid> KarstGrid;
+	struct FIslandRelief
+	{
+		TSharedPtr<const FIslandReliefGrid> Grid;
+		TSharedPtr<const FKarstLayout> Karst;
+	};
+	TArray<FIslandRelief> Reliefs;
+
+	void BuildReliefs();
+	const FIslandRelief* FindRelief(const FIslandDesc& Island) const;
 
 	/** Capa de ediciones del jugador; nula en el mundo recién generado. */
 	TSharedPtr<const FTerrainEdits> Edits;
