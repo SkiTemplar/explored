@@ -286,6 +286,48 @@ mapa.
   ejecución. Sin prototipo de PIE, el coste real de esta mecánica es una incógnita.
 - **Dependencias:** `Building` (piezas de vía), `Mining` (galerías), un nuevo módulo
   ligero `Tramway` (grafo de vía + vagón).
+- **Reglas y números del modelo [F2]** (modelo puro `FTramwayModel`, spec
+  `Explored.Tramway`; integración en `docs/tecnico/railes-vagones.md`). La mecánica
+  (tramos sobre rejilla, pendiente máxima, inercia del vagón con su carga) la aprobó
+  Rodrigo el 2026-09-27. Los números marcados con *(biblia)* vienen de la biblia 02 §9;
+  el resto es **propuesta pendiente de revisar**:
+  - **Vía sobre rejilla.** Nodos cada **2 m** en horizontal *(biblia)* y cada
+    **12,5 cm** en vertical. Un tramo une dos nodos vecinos en una de las 4 direcciones
+    y sube o baja de 0 a 5 escalones: **pendiente máxima 17,4°** (5 × 12,5 cm en 2 m).
+    La pieza sale sola de la forma del nodo: dos tramos alineados son vía recta
+    (`rail_recto`); dos perpendiculares, una curva de 90° (`rail_curvo`, radio 1 m); tres
+    o cuatro, un cambio de agujas (`cambio_agujas`).
+  - **Cambio de agujas.** La palanca apunta a una salida. El vagón nunca da media
+    vuelta: si la palanca apunta por donde viene, sigue recto, y si no hay recta, toma la
+    salida de menor índice (+X, +Y, −X, −Y).
+  - **Vagón.** 60 kg vacío y **200 kg de carga** como máximo *(biblia)*. La carga no se
+    reparte: pasarse de 200 kg se rechaza. Toda la dinámica se hace sobre la masa total
+    (60 + carga). Rodadura μ = 0,02 y freno de zapata μ = 0,3.
+  - **Empujar a mano.** Hasta **1,2 m/s** *(biblia)* con una fuerza sostenida de
+    280 N. Con carga, el vagón tiene inercia: lleno tarda **1,1 s** en llegar a 1 m/s y
+    vacío, 0,23 s. Suelto a 1,2 m/s, rueda 3,7 m hasta pararse, esté lleno o vacío; con
+    el freno echado se para en 25 cm. **Lleno solo se sube a mano hasta 5°** *(biblia)*:
+    sí sube una rampa de 1 escalón (3,6°) pero no una de 2 (7,1°), y ahí se queda quieto
+    (no repta ni rueda hacia atrás). Vacío se sube a mano cualquier pendiente de vía.
+  - **Torno de cuerda.** Tira a **2 m/s** *(biblia)* con hasta 900 N. Así sube el vagón
+    lleno por la pendiente máxima, que necesita 811 N. La cuerda mide **60 m** medidos
+    por la vía. El torno tira hacia sí por el camino más corto, y a 0,5 m el trinquete
+    sujeta el vagón, aunque esté en cuesta. Si no hay torno al alcance, no pasa nada y
+    la interfaz lo dice. Por encima de 5° con carga, el torno es obligatorio *(biblia)*.
+  - **Curvas y topes: donde el error es parte de la diversión.** Un vagón vuelca en
+    curva a partir de **2,56 m/s vacío** y **2,05 m/s lleno** (el centro de masas sube
+    de 0,45 a 0,7 m con la carga). Empujado o con el torno nunca vuelca, pero dejado
+    rodar cuesta abajo sí: lleno por 3 tramos a 17° llega a unos 5,9 m/s y vuelca en la
+    primera curva. Al final de la vía hay un tope. Por debajo de 2,5 m/s el vagón se para
+    en él; por encima, vuelca.
+  - **Terreno editado bajo la vía** *(biblia)*. Picar, cavar o echar tierra a menos
+    del radio del pincel de un tramo lo marca **dañado**. Un vagón que entra en un tramo
+    dañado (o que está encima de uno que desaparece) descarrila y se queda quieto hasta
+    que se repara el tramo y se vuelve a poner en la vía.
+  - **Guardado.** La vía, los daños, las palancas y los tornos van en una capa opaca
+    `"tramway"` de la sección `world`, y cada vagón con su tramo, posición, velocidad,
+    carga y estado. La simulación usa pasos fijos de 1/120 s: el resultado es el mismo
+    bit a bit con cualquier tasa de fotogramas (lo comprueba el spec).
 - **Decisión de alcance:** **queda fuera del acceso anticipado** (§6). La minería
   manual y las cuevas sí entran porque reutilizan sistemas que ya existen
   (`TerrainDensity`, `Building`, `Save`); los raíles y vagones son un sistema nuevo de
