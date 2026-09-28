@@ -207,8 +207,8 @@ TERRAIN_COLOR_HLSL = TERRAIN_LAYERS_COMMON + r"""
 #define TRI(T, S) (Texture2DSample(T, SHARED, p.yz / S) * w.x + Texture2DSample(T, SHARED, p.xz / S) * w.y + Texture2DSample(T, SHARED, p.xy / S) * w.z)
 // Igual que TOP2 pero por eje triplanar: mezcla la muestra base con una segunda girada y a otra
 // escala para romper la repetición. Solo para BasaltBC (ver más abajo): a la escala de tile de la
-// roca volcánica (4 m), la fotografía fotobasheada con paleta escalonada en 5 bandas (más «planos
-// de tono» que una roca continua, ver VOLCANIC_STYLE en texgen/photobash.py) repite su patrón de
+// roca volcánica (4 m), el basalto estilizado en caras planas escalonadas en 4 valores (ver
+// volcanic_rock en texgen/stylized.py) repite su patrón de
 // bandas de forma idéntica en cada tile y en las tres proyecciones triplanares comparten fase en
 // los ejes que cruzan por la misma coordenada de mundo (yz y xz comparten Z): en formas redondeadas
 // como una cumbre, donde dos proyecciones pesan parecido, esa repetición sincronizada se lee como
@@ -221,9 +221,8 @@ TERRAIN_COLOR_HLSL = TERRAIN_LAYERS_COMMON + r"""
 float4 sandDry = lerp(TOP2(SandBC, 3.2), TOP2(AshBC, 3.0), smoothstep(0.75, 1.0, volcanic));
 float4 sand = lerp(sandDry, TOP2(WetBC, 3.2), saturate(wetW * 1.4));
 float4 grass = TOP2(GrassBC, 2.4);
-// La hojarasca pintada sale otoñal y demasiado saturada: bajo dosel tropical es marrón oscuro verdoso.
+// La hojarasca estilizada (texgen/stylized.py) ya pinta con la paleta: sin corrección de color aquí.
 float4 forest = TOP2(ForestBC, 2.8);
-forest.rgb = lerp(dot(forest.rgb, float3(0.3, 0.59, 0.11)).xxx, forest.rgb, 0.55) * float3(0.62, 0.66, 0.5);
 float4 rock = lerp(TRI(LimeBC, 4.5), TRI2(BasaltBC, 4.0), volcanic);
 
 // Mezcla por altura: la luminancia hace de mapa de alturas aproximado.
