@@ -296,14 +296,19 @@ oculto: no. ES: «Completa una muralla de piedra con al menos una torre.» EN:
 #### Granja [F2]
 
 **`primera_pareja`** — La primera pareja / The First Pair — [F2] · Común ·
-oculto: no. ES: «Consigue tu primera pareja de animales domésticos.» EN: «Get
-your first pair of domestic animals.» Condición:
+oculto: no. ES: «Tu primera pareja de animales domésticos tiene una cría.» EN:
+«Your first pair of domestic animals has a young one.» Condición:
 `{stat: "livestock_species_raised", op: ">=", value: 1}`.
 
 **`corral_completo`** — Corral completo / Full Pen — [F2] · Infrecuente ·
-oculto: no. ES: «Cría tres especies domésticas distintas a la vez.» EN: «Raise
-three different domestic species at once.» Condición:
+oculto: no. ES: «Saca crías de gallina, cerdo y cabra en la misma partida.» EN:
+«Breed hens, pigs and goats in the same game.» Condición:
 `{stat: "livestock_species_raised", op: ">=", value: 3}`.
+
+`[Decisión]` 2026-09-28: los textos de estos dos logros decían «consigue tu primera
+pareja» y «a la vez», pero la condición cuenta especies con una cría nacida en la
+partida, no parejas conseguidas ni animales vivos a la vez. Se reescribió el texto para
+que diga lo que mide la condición, que es la que manda §2.1.
 
 **`huevos_por_docenas`** — Huevos por docenas / Eggs by the Dozen — [F2] ·
 Infrecuente · oculto: no. ES: «Recoge cien huevos.» EN: «Collect a hundred

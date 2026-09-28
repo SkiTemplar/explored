@@ -23,6 +23,7 @@ Fauna/FaunaAnimation.cpp
 Fauna/FaunaGroups.cpp
 Fauna/FaunaSpawning.cpp
 Fauna/FaunaTypes.cpp
+Fauna/LivestockModel.cpp
 Fauna/MarineCreatureBrain.cpp
 Fauna/ProceduralGait.cpp
 Fishing/FishingModel.cpp

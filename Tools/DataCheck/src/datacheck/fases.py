@@ -6,7 +6,10 @@ trueque con el pueblo del arrecife (§3.9, §5). Comprueba:
 - Todo lleva ``fase`` 2 o 3; objetos, piezas y especies a los que se refiere existen en
   ``items.json``/``fauna.json`` o están declarados como ``pendingItems`` del borrador.
 - Aislamiento de fases: ningún otro fichero de ``Content/Data`` (fase 1) nombra un id que
-  solo existe en el borrador, y ninguna pieza del borrador pisa un id real.
+  solo existe en el borrador o que está en un fichero real marcado con ``phase`` F2/F3
+  (piezas de ``building_pieces.json``, estadísticas y logros de ``achievements.json``), y
+  ninguna pieza del borrador pisa un id real.
+- Las estructuras de ``livestock`` son piezas del borrador o piezas reales de fase 2/3.
 - Economía sin tienda (§5): sin claves de precio o moneda; valores de trueque 1-5; tramos
   de reputación contiguos de 0 a 100 con tasa creciente.
 """
@@ -14,13 +17,42 @@ trueque con el pueblo del arrecife (§3.9, §5). Comprueba:
 from __future__ import annotations
 
 import json
+import re
 
 from . import mining
 
 FILE = "fases_futuras.json"
 DRAFT_PHASES = (2, 3)
+FUTURE_PHASE_TAGS = {"F2", "F3"}
 DRAFT_SOCKETS = {"via"}
 MONEY_KEYS = {"price", "precio", "moneda", "currency", "coins", "monedas", "cost_coins", "gold", "oro"}
+LIVESTOCK_H = "Source/Explored/Fauna/LivestockModel.h"
+# Cifras del borrador que FLivestockSettings tiene que repetir (ruta JSON → campo del struct).
+LIVESTOCK_NUMBERS = {
+    ("maxAlivePerBase",): "MaxAlivePerBase",
+    ("feedPerDay",): "FeedPerDay",
+    ("breeding", "dailyChance"): "BreedingChancePerDay",
+    ("breeding", "daysToAdult"): "DaysToAdult",
+    ("taming", "daysFedToTame"): "DaysFedToTame",
+    ("taming", "daysUnfedToWild"): "DaysUnfedToWild",
+}
+
+
+def check_livestock_model(ds, r, live: dict) -> None:
+    """Los números de ``livestock`` son los de ``FLivestockSettings`` (el modelo del servidor)."""
+    path = ds.repo_root / LIVESTOCK_H
+    if not path.exists():
+        return
+    header = path.read_text(encoding="utf-8")
+    for keys, field in LIVESTOCK_NUMBERS.items():
+        value = live
+        for k in keys:
+            value = value.get(k) if isinstance(value, dict) else None
+        m = re.search(rf"\b(?:int32|float) {field} = ([0-9.]+)f?;", header)
+        if m is None:
+            r.error(f"{LIVESTOCK_H}: no encuentro FLivestockSettings::{field}")
+        elif value is None or abs(float(m.group(1)) - float(value)) > 1e-6:
+            r.error(f"{FILE}/livestock {'.'.join(keys)} = {value!r} pero {field} = {m.group(1)} en {LIVESTOCK_H}")
 
 
 def _walk_keys(node):
@@ -41,6 +73,7 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
     tags = {t for i in ds.items for t in i.get("tags", [])}
     fauna_ids = {s.get("id") for s in ds.data.get("fauna.json", {}).get("species", [])}
     real_pieces = {p.get("id") for p in ds.building.get("pieces", [])}
+    future_pieces = {p.get("id") for p in ds.building.get("pieces", []) if p.get("phase") in FUTURE_PHASE_TAGS}
 
     pending = {}
     for p in doc.get("pendingItems", []):
@@ -91,13 +124,18 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
                 r.error(f"{FILE} «{pid}»: cantidad {c.get('count')!r} de «{c.get('item')}» debe ser > 0")
 
     live = sections.get("livestock", {})
+    check_livestock_model(ds, r, live)
+    for pid in live.get("piecesEnBuilding", []):
+        if pid not in future_pieces:
+            r.error(f"{FILE}/livestock: «{pid}» no es una pieza de fase 2/3 de building_pieces.json")
     for f in live.get("feedItems", []):
         if f not in items:
             r.error(f"{FILE}/livestock: comida «{f}» no está en items.json")
     live_species = {s.get("id") for s in live.get("species", [])}
     for s in live.get("species", []):
-        if s.get("structure") not in pieces:
-            r.error(f"{FILE}/livestock «{s.get('id')}»: estructura «{s.get('structure')}» no está en el borrador")
+        if s.get("structure") not in pieces and s.get("structure") not in future_pieces:
+            r.error(f"{FILE}/livestock «{s.get('id')}»: estructura «{s.get('structure')}» no está en el borrador "
+                    "ni es una pieza de fase 2/3 de building_pieces.json")
         if s.get("wildSource") is not None and s["wildSource"] not in fauna_ids:
             r.error(f"{FILE}/livestock «{s.get('id')}»: wildSource «{s['wildSource']}» no está en fauna.json")
         prod = s.get("product")
@@ -158,10 +196,18 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         for did in sorted(draft_only):
             if f'"{did}"' in text:
                 r.error(f"{name}: usa «{did}», que solo existe en el borrador de fase 2/3 ({FILE})")
+        # La lista de mallas pendientes es derivada: cubre también las piezas de F2/F3.
+        if name == "meshes_pendientes.json":
+            continue
+        for fid in sorted(future_pieces):
+            if f'"{fid}"' in text:
+                r.error(f"{name}: usa «{fid}», que es una pieza de fase 2/3 de building_pieces.json")
 
 
 def _phase1_view(name: str, content):
     """Lo que de verdad es fase 1 en un fichero de datos.
+
+    Las piezas, estadísticas y logros con ``phase`` F2/F3 se quitan de la vista.
 
     ``fauna_terrestre.json`` lista también las especies de F2/F3 con su ``phase`` y el
     catálogo de packs guarda en ``discarded`` y ``pending`` los ids que aún no tienen malla
@@ -172,4 +218,11 @@ def _phase1_view(name: str, content):
         return dict(content, species=[s for s in content.get("species", []) if s.get("phase") == "AA"])
     if name == "packs_catalogo.json" and isinstance(content, dict):
         return {k: v for k, v in content.items() if k not in ("discarded", "pending")}
+    if name in ("building_pieces.json", "achievements.json") and isinstance(content, dict):
+        # Lo marcado con phase F2/F3 ya vive en el fichero real pero no es del acceso anticipado.
+        view = dict(content)
+        for key in ("pieces", "stats", "achievements"):
+            if isinstance(view.get(key), list):
+                view[key] = [e for e in view[key] if not (isinstance(e, dict) and e.get("phase") in FUTURE_PHASE_TAGS)]
+        return view
     return content

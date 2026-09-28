@@ -9,7 +9,8 @@
     "maxCycloneCategory": "categoría de ciclón (0-3) que aguanta sin daño si está bien apoyada; 0 = cae con cualquier galerna",
     "mesh": "nombre SM_ generado por Tools/Blender/props; null = pendiente (ver meshes_pendientes.json)",
     "socket": "encaje en la rejilla de 2 m (docs/art/kit-construccion.md): pilar (esquina, sobre terreno), suelo, pared, puerta (lado), techo, escalera (dos celdas), mueble (sobre suelo o terreno), terreno (solo sobre terreno)",
-    "respawnPoint": "true si, encendida, es punto de reaparición (GDD §8.6); por defecto false"
+    "respawnPoint": "true si, encendida, es punto de reaparición (GDD §8.6); por defecto false",
+    "phase": "fase en que la pieza entra en el juego (AA, F2, F3); si falta, AA. Las de F2/F3 no se ofrecen en el acceso anticipado"
   },
   "tiers": [
     {
@@ -1259,6 +1260,99 @@
       "integrity": 95,
       "maxCycloneCategory": 3,
       "mesh": "SM_Base_Chimney"
+    },
+    {
+      "id": "gallinero",
+      "nameEs": "Gallinero",
+      "nameEn": "Coop",
+      "tier": "bambu",
+      "category": "granja",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 40,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null,
+      "phase": "F2"
+    },
+    {
+      "id": "pocilga",
+      "nameEs": "Pocilga",
+      "nameEn": "Sty",
+      "tier": "madera",
+      "category": "granja",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 60,
+      "integrity": 60,
+      "maxCycloneCategory": 2,
+      "mesh": null,
+      "phase": "F2"
+    },
+    {
+      "id": "corral",
+      "nameEs": "Corral",
+      "nameEn": "Pen",
+      "tier": "madera",
+      "category": "granja",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 60,
+      "integrity": 55,
+      "maxCycloneCategory": 2,
+      "mesh": null,
+      "phase": "F2"
     }
   ]
 }
