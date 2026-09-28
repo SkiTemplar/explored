@@ -43,3 +43,7 @@ compile_commands.json
 .cache/
 
 .claude/worktrees/
+
+# Herramientas Python: cachés de ruff y datos de cobertura de pytest-cov.
+.ruff_cache/
+.coverage

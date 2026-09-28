@@ -12,6 +12,7 @@ pequeñas.
 | `fetch_packs.py` | Descarga reproducible a `Art/Packs/` (ignorado; `$EXPLORED_PACKS_CACHE` lo cambia) y verifica el sha256. |
 | `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
 | `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
+| `normalize_core.py` | Lógica pura de `normalize.py` (color Oklab, reglas, degradado de paleta, medida y pivote), sin `bpy`. |
 | `contact_sheet.py` | Compone `docs/art/packs/<lote>.png` (< 1 MB) con el original y el normalizado. |
 
 ```bash
@@ -25,7 +26,21 @@ uv run --with pillow python Tools/Packs/contact_sheet.py lote1-herramientas
 blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote <lote> --ids <id> --analyze
 ```
 
-Workbench necesita EGL: en un Linux sin GPU, instala `libegl1 libgl1-mesa-dri`.
+Workbench necesita EGL: en un Linux sin GPU, instala `libegl1 libegl-mesa0 libgl1-mesa-dri`.
+
+### Calidad (lo mismo que ejecuta CI)
+
+```bash
+cd Tools/Packs
+uv run ruff check .
+uv run basedpyright                  # tipos de bpy con fake-bpy-module-5.2
+uv run --python 3.13 --group blender pytest -q --cov --cov-report=term-missing
+```
+
+El grupo `blender` instala `bpy==5.2.2` (Blender 5.2 como módulo, solo Python 3.13, unos
+400 MB): `tests/test_normalize_blender.py` genera un pack sintético (glTF con textura, OBJ,
+FBX y un `.blend` con esqueleto) y ejecuta `normalize.py` de punta a punta en un tmp. Sin
+ese grupo esos tests se saltan y la cobertura no llega al 80 % exigido.
 
 ## Fuentes
 
