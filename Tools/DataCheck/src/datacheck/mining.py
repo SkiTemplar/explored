@@ -269,6 +269,18 @@ def _check_hazards(ds, doc, items, r) -> None:
     for it in o.get("lightItems", []):
         if it not in items:
             r.error(f"mining.json/hazards/oscuridad: luz «{it}» no está en items.json")
+    burns = {b.get("item"): b for b in o.get("lightBurn", []) if isinstance(b, dict)}
+    for it in o.get("lightItems", []):
+        b = burns.get(it)
+        if b is None:
+            r.error(f"mining.json/hazards/oscuridad: la luz «{it}» no tiene lightBurn (a qué ritmo se gasta)")
+            continue
+        if not _positive(b.get("gameMinutesPerDurability")):
+            r.error(f"mining.json/hazards/oscuridad: lightBurn «{it}».gameMinutesPerDurability debe ser > 0")
+        if it in items and not _positive(items[it].get("maxDurability")):
+            r.error(f"mining.json/hazards/oscuridad: la luz «{it}» no tiene maxDurability en items.json y no se gasta")
+    for it in set(burns) - set(o.get("lightItems", [])):
+        r.error(f"mining.json/hazards/oscuridad: lightBurn «{it}» no está en lightItems")
     for it in o.get("lightItemsPendientes", []):
         if it in items:
             r.error(f"mining.json/hazards/oscuridad: «{it}» ya está en items.json; pásala a lightItems")

@@ -13,6 +13,7 @@
 		"places.access": "cómo se entra: a_pie, cavando, picando, nadando, descolgandose o en_balsa",
 		"places.entryToolTier": "nivel mínimo de herramienta para abrir la entrada (0 = se entra sin cavar)",
 		"places.carving": "true si es un FCaveDesc determinista por semilla (no se guarda); false si lo cava el jugador",
+		"lightBurn.gameMinutesPerDurability": "minutos de juego encendida que gastan 1 punto de maxDurability de la luz (1 h de juego = 100 s reales)",
 		"places.items": "objetos que se sacan dentro; si son de un estrato, ese estrato aparece en la misma isla y fase"
 	},
 	"secondsPerHit": 0.9,
@@ -127,7 +128,9 @@
 	"hazards": {
 		"noteEs": "Peligros de la mina (biblia 02 §2.4, GDD v2 §3.4). Sin C++ todavía: son los números de diseño que leerá el modelo de galerías. Se leen en el cuerpo, nunca en un HUD. Minutos y segundos reales (1 h de juego = 100 s): interpretación de este fichero, la biblia no lo dice; ver docs/balance/2026-09-28-peligros-mina.md.",
 		"derrumbe": { "nameEs": "Derrumbe", "nameEn": "Cave-in", "maxUnsupportedSpanM": 3, "collapseSeconds": 8, "warningSeconds": 2, "supportPiece": "viga_apoyo", "supportRadiusM": 1.5 },
-		"oscuridad": { "nameEs": "Oscuridad", "nameEn": "Darkness", "daylightReachM": 6, "lightItems": ["antorcha"], "lightItemsPendientes": ["lampara_aceite"] },
+		"oscuridad": { "nameEs": "Oscuridad", "nameEn": "Darkness", "daylightReachM": 6, "lightItems": ["antorcha"], "lightItemsPendientes": ["lampara_aceite"],
+			"lightBurn": [ { "item": "antorcha", "gameMinutesPerDurability": 6, "propuesta": true,
+				"noteEs": "Nadie fijaba a qué ritmo se gasta una luz. Con maxDurability 20 la antorcha dura 2 h de juego (≈ 3 min 20 s reales): una galería de 20 m en basalto pide unas 5 (docs/balance/2026-09-28-peligros-mina.md §3)." } ] },
 		"aire_viciado": { "nameEs": "Aire viciado", "nameEn": "Foul air", "minDistanceFromOpeningM": 15, "graceMinutes": 2, "dropPercentPerMinute": 4, "dizzyBelowPercent": 20, "lethal": false },
 		"inundacion": { "nameEs": "Inundación", "nameEn": "Flooding", "riseM": 1, "everySeconds": 40, "sealSocket": "pared", "belowSeaLevelAlwaysConnected": true },
 		"crecida": { "nameEs": "Crecida de monzón", "nameEn": "Monsoon flood", "season": "monzon", "floodFraction": 0.3, "drainDays": 2 }
