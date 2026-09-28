@@ -1254,3 +1254,15 @@ def test_fauna_terrestre_id_duplicado(ds: DataSet) -> None:
     sp.append(dict(sp[0]))
     assert any_error(errors_of(ds), "fauna_terrestre.json", "duplicado")
 
+
+def test_fauna_terrestre_de_fase_2_no_rompe_el_aislamiento(real: DataSet) -> None:
+    # fauna_terrestre.json (packs) nombra cerdo, cabra y gallina con phase F2: no es fase 1.
+    assert not any_error(errors_of(real), "fauna_terrestre.json", "borrador")
+    assert not any_error(errors_of(real), "packs_catalogo.json", "borrador")
+
+
+def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -> None:
+    sp = next(s for s in ds.data["fauna_terrestre.json"]["species"] if s["id"] == "gallina")
+    sp["phase"] = "AA"
+    assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
+

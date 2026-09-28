@@ -154,7 +154,22 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
     for name, content in ds.data.items():
         if name == FILE:
             continue
-        text = json.dumps(content, ensure_ascii=False)
+        text = json.dumps(_phase1_view(name, content), ensure_ascii=False)
         for did in sorted(draft_only):
             if f'"{did}"' in text:
                 r.error(f"{name}: usa «{did}», que solo existe en el borrador de fase 2/3 ({FILE})")
+
+
+def _phase1_view(name: str, content):
+    """Lo que de verdad es fase 1 en un fichero de datos.
+
+    ``fauna_terrestre.json`` lista también las especies de F2/F3 con su ``phase`` y el
+    catálogo de packs guarda en ``discarded`` y ``pending`` los ids que aún no tienen malla
+    (entre ellos los animales de granja de F2): ninguno de los dos los usa en el acceso
+    anticipado.
+    """
+    if name == "fauna_terrestre.json" and isinstance(content, dict):
+        return dict(content, species=[s for s in content.get("species", []) if s.get("phase") == "AA"])
+    if name == "packs_catalogo.json" and isinstance(content, dict):
+        return {k: v for k, v in content.items() if k not in ("discarded", "pending")}
+    return content
