@@ -751,8 +751,15 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
   8 troncos así una balsa no aguanta a una persona. La pieza «tronco» del casco es un
   tronco de balsa de verdad (72,6 kg: se lleva a hombros entre dos o se hace rodar).
   Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
-- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
-  por piezas en la sección de barcos, pendiente).
+- **Al guardar y cargar.** Un barco armado por piezas se guarda con sus piezas y sus
+  uniones, cada una con su salud, y al cargar navega exactamente igual: mismo calado,
+  misma GM y la misma unión a medio romper. Las cargas y los pasajeros no se guardan,
+  porque salen del inventario del barco y de quién sube. Si una pieza del guardado es
+  imposible (valores no finitos, más de 50 m, un tipo que no existe) se pierde solo esa
+  pieza y sus uniones. Un casco tiene como mucho 256 piezas.
+- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (casco por
+  piezas junto a cada barco de la sección `boats`: `SaveRaftHull`/`LoadRaftHull`, falta el
+  enganche en el motor, `docs/tecnico/astillero-balsas.md`).
 
 ### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
 
