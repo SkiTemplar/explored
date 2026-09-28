@@ -1,29 +1,5 @@
 [
 	{
-		"id": "cabeza_pico_de_chapa", "nameEs": "Cabeza de pico de chapa", "nameEn": "Sheet-metal pick head",
-		"verbs": ["Golpear"],
-		"station": "banco_chatarra",
-		"resultDefinitionId": "cabeza_pico_rescatada",
-		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
-		"baseMaxDurability": 0,
-		"slots": [
-			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
-			{ "role": "Chatarra", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 3 } ], "tags": ["rescatado"] }
-		]
-	},
-	{
-		"id": "cabeza_pico_de_hierro", "nameEs": "Cabeza de pico de hierro", "nameEn": "Iron pick head",
-		"verbs": ["Golpear"],
-		"station": "banco_chatarra",
-		"resultDefinitionId": "cabeza_pico_rescatada",
-		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
-		"baseMaxDurability": 0,
-		"slots": [
-			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
-			{ "role": "Hierro", "requireAll": false, "requirements": [ { "property": "Pesado", "min": 5 } ], "tags": ["mineral"] }
-		]
-	},
-	{
 		"id": "lasca_por_golpeo", "nameEs": "Lasca por golpeo", "nameEn": "Struck flake",
 		"verbs": ["Golpear"],
 		"resultDefinitionId": "lasca_tallada",
@@ -87,6 +63,30 @@
 		"slots": [
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 } ] },
 			{ "role": "Coco", "requireAll": false, "requirements": [], "tags": ["coco"] }
+		]
+	},
+	{
+		"id": "cabeza_pico_de_chapa", "nameEs": "Cabeza de pico de chapa", "nameEn": "Sheet-metal pick head",
+		"verbs": ["Golpear"],
+		"station": "banco_chatarra",
+		"resultDefinitionId": "cabeza_pico_rescatada",
+		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Chatarra", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 3 } ], "tags": ["rescatado"] }
+		]
+	},
+	{
+		"id": "cabeza_pico_de_hierro", "nameEs": "Cabeza de pico de hierro", "nameEn": "Iron pick head",
+		"verbs": ["Golpear"],
+		"station": "banco_chatarra",
+		"resultDefinitionId": "cabeza_pico_rescatada",
+		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Hierro", "requireAll": false, "requirements": [ { "property": "Pesado", "min": 5 } ], "tags": ["mineral"] }
 		]
 	},
 	{
