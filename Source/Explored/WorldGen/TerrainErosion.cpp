@@ -149,6 +149,35 @@ namespace
 		return Removed;
 	}
 
+	/** La dirección mezcla inercia (velocidad previa) y el gradiente cuesta abajo. */
+	FVector2D NextDirection(const FVector2D& Dir, const FVector2D& Gradient, float Inertia, FExploredRandom& Rng)
+	{
+		FVector2D Next = Dir * Inertia - Gradient * (1.0f - Inertia);
+		if (Next.IsNearlyZero())
+		{
+			const float Angle = Rng.RangeFloat(0.0f, UE_TWO_PI);
+			return FVector2D(FMath::Cos(Angle), FMath::Sin(Angle));
+		}
+		Next.Normalize();
+		return Next;
+	}
+
+	/** Deposita (cuesta arriba o con exceso de carga) o erosiona en Pos; devuelve el sedimento nuevo. */
+	float ExchangeSediment(FErosionHeightGrid& Grid, const FErosionParams& Params, const FErosionBrush& Brush, const FVector2D& Pos,
+		float DeltaHeight, float Capacity, float Sediment)
+	{
+		if (Sediment > Capacity || DeltaHeight > 0.0f)
+		{
+			const float AmountToDeposit = DeltaHeight > 0.0f
+				? FMath::Min(DeltaHeight, Sediment)
+				: (Sediment - Capacity) * Params.DepositSpeed;
+			DepositBilinear(Grid, Pos.X, Pos.Y, AmountToDeposit);
+			return Sediment - AmountToDeposit;
+		}
+		const float AmountToErode = FMath::Min((Capacity - Sediment) * Params.ErodeSpeed, -DeltaHeight);
+		return Sediment + ErodeWithBrush(Grid, Brush, FMath::FloorToInt32(Pos.X), FMath::FloorToInt32(Pos.Y), AmountToErode);
+	}
+
 	/**
 	 * Traza una gota de agua desde Pos hasta que se evapora o sale de la rejilla, erosionando
 	 * cuesta abajo y depositando cuando pierde capacidad de arrastre. Sigue el modelo de
@@ -172,19 +201,13 @@ namespace
 
 			const FVector2D Gradient = Grid.Gradient(Pos.X, Pos.Y);
 			const float HeightOld = Grid.Sample(Pos.X, Pos.Y);
-
-			// La dirección mezcla inercia (velocidad previa) y el gradiente cuesta abajo.
-			Dir = Dir * Params.Inertia - Gradient * (1.0f - Params.Inertia);
-			if (Dir.IsNearlyZero())
+			if (HeightOld < Params.SeaLevel)
 			{
-				const float Angle = Rng.RangeFloat(0.0f, UE_TWO_PI);
-				Dir = FVector2D(FMath::Cos(Angle), FMath::Sin(Angle));
-			}
-			else
-			{
-				Dir.Normalize();
+				// Agua quieta: el sedimento se queda en la desembocadura (se deposita al salir).
+				break;
 			}
 
+			Dir = NextDirection(Dir, Gradient, Params.Inertia, Rng);
 			const FVector2D NewPos = Pos + Dir;
 			if (!Grid.IsValidCoord(FMath::FloorToInt32(NewPos.X), FMath::FloorToInt32(NewPos.Y)))
 			{
@@ -195,21 +218,7 @@ namespace
 			const float HeightNew = Grid.Sample(NewPos.X, NewPos.Y);
 			const float DeltaHeight = HeightNew - HeightOld;
 			const float SedimentCapacity = FMath::Max(-DeltaHeight * Speed * Water * Params.SedimentCapacityFactor, Params.MinSedimentCapacity);
-
-			if (Sediment > SedimentCapacity || DeltaHeight > 0.0f)
-			{
-				// Cuesta arriba, o llevaba más sedimento del que puede sostener: deposita.
-				const float AmountToDeposit = DeltaHeight > 0.0f
-					? FMath::Min(DeltaHeight, Sediment)
-					: (Sediment - SedimentCapacity) * Params.DepositSpeed;
-				Sediment -= AmountToDeposit;
-				DepositBilinear(Grid, Pos.X, Pos.Y, AmountToDeposit);
-			}
-			else
-			{
-				const float AmountToErode = FMath::Min((SedimentCapacity - Sediment) * Params.ErodeSpeed, -DeltaHeight);
-				Sediment += ErodeWithBrush(Grid, Brush, NodeX, NodeY, AmountToErode);
-			}
+			Sediment = ExchangeSediment(Grid, Params, Brush, Pos, DeltaHeight, SedimentCapacity, Sediment);
 
 			// Energía potencial → cinética al bajar (DropHeight > 0 cuesta abajo).
 			const float DropHeight = HeightOld - HeightNew;
@@ -392,6 +401,7 @@ FErosionParams FTerrainErosionModel::SanitizeParams(const FErosionParams& Params
 	Safe.InitialSpeed = FiniteOr(Params.InitialSpeed, Defaults.InitialSpeed, 0.0f, 100.0f);
 	Safe.TalusAngleTangent = Params.TalusAngleTangent > 0.0f ? FiniteOr(Params.TalusAngleTangent, Defaults.TalusAngleTangent, 0.01f, 100.0f) : Defaults.TalusAngleTangent;
 	Safe.ThermalTransferRate = FiniteOr(Params.ThermalTransferRate, Defaults.ThermalTransferRate, 0.0f, 1.0f);
+	Safe.SeaLevel = FiniteOr(Params.SeaLevel, Defaults.SeaLevel, Defaults.SeaLevel, 1.0e6f);
 	return Safe;
 }
 

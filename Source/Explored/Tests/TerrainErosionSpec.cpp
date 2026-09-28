@@ -254,6 +254,35 @@ void FTerrainErosionSpec::Define()
 			TestTrue(TEXT("celda"), Safe.CellSizeMeters > 0.0f);
 		});
 
+		It("las gotas se paran al llegar al mar: una laguna bajo el nivel del mar no se ciega", [this]()
+		{
+			FErosionParams Params;
+			Params.Seed = 8;
+			Params.CellSizeMeters = 4.0f;
+			Params.DropletCount = 61 * 61 * 2 / 5; // la misma densidad que las islas (FIslandReliefModel)
+			Params.ThermalIterations = 0;
+			Params.SeaLevel = 0.0f;
+
+			// Cubeta: llano a +4 m que baja en rampa hasta una laguna de fondo -3 m en el centro.
+			FErosionHeightGrid Grid;
+			Grid.Init(61, 61, 0.0f);
+			for (int32 Y = 0; Y < 61; ++Y)
+			{
+				for (int32 X = 0; X < 61; ++X)
+				{
+					const float R = FMath::Sqrt(static_cast<float>(FMath::Square(X - 30) + FMath::Square(Y - 30)));
+					const float Rough = (ExploredHash::ToUnitFloat(ExploredHash::Hash2D(6, X, Y)) - 0.5f) * 0.3f;
+					Grid.At(X, Y) = -3.0f + 7.0f * FMath::SmoothStep(5.0f, 14.0f, R) + 0.02f * R * R * 0.1f + Rough;
+				}
+			}
+			FErosionHeightGrid NoSea = Grid;
+			FTerrainErosionModel::Erode(Grid, Params);
+			Params.SeaLevel = -1.0e9f;
+			FTerrainErosionModel::Erode(NoSea, Params);
+			TestTrue(*FString::Printf(TEXT("sin mar, la cubeta se rellena (%.2f m)"), NoSea.At(30, 30)), NoSea.At(30, 30) > Grid.At(30, 30));
+			TestTrue(*FString::Printf(TEXT("la laguna sigue honda (%.2f m)"), Grid.At(30, 30)), Grid.At(30, 30) < -2.5f);
+		});
+
 		It("no rebaja las celdas duras: una torre caliza conserva sus paredes", [this]()
 		{
 			FErosionParams Params;

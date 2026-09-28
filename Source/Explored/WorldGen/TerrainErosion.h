@@ -28,6 +28,11 @@ struct EXPLORED_API FErosionParams
 	float InitialSpeed = 0.6f;
 	/** Radio del pincel de erosión, en celdas. */
 	int32 ErosionRadius = 3;
+	/**
+	 * Nivel del mar (m): una gota que llega a agua quieta suelta ahí su sedimento y se acaba,
+	 * como un río en su desembocadura. Por defecto no hay mar (las gotas no se paran).
+	 */
+	float SeaLevel = -1.0e9f;
 
 	// --- Erosión térmica (talud de reposo) ---
 	int32 ThermalIterations = 40;
