@@ -150,6 +150,12 @@ namespace ExploredNet
 		const int64 X = SignExtend(Packed & XYMask, PositionXYBits);
 		const int64 Y = SignExtend((Packed >> PositionXYBits) & XYMask, PositionXYBits);
 		const int64 Z = SignExtend((Packed >> (2 * PositionXYBits)) & ZMask, PositionZBits);
+		// El mínimo de complemento a dos no lo escribe nunca WritePosition7 (el rango es
+		// simétrico): un paquete que lo trae está manipulado y no se aceptaría al reenviarlo.
+		if (X < -XYMax || Y < -XYMax || Z < -ZMax)
+		{
+			R.bOk = false;
+		}
 		return FVector(X * PositionXYStepCm, Y * PositionXYStepCm, Z * PositionZStepCm);
 	}
 

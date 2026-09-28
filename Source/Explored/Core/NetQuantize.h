@@ -50,7 +50,7 @@ namespace ExploredNet
 	/** NaN e infinitos → Fallback; el resto, tal cual. */
 	EXPLORED_API double Finite(double V, double Fallback = 0.0);
 
-	/** Redondeo al entero más cercano acotado a [Lo, Hi], a salvo de NaN (→ Lo si Lo ≤ 0 ≤ Hi no se cumple, 0 si sí). */
+	/** Redondeo al entero más cercano (la mitad hacia arriba) acotado a [Lo, Hi]; NaN e infinitos cuentan como 0 antes de acotar. */
 	EXPLORED_API int64 RoundClamped(double V, int64 Lo, int64 Hi);
 
 	/** 0–1 → 0–255 (redondeo, acotado). NaN → 0. */
@@ -86,6 +86,7 @@ namespace ExploredNet
 	constexpr double PositionZMaxCm = ((1 << (PositionZBits - 1)) - 1) * PositionZStepCm;
 
 	EXPLORED_API void WritePosition7(FByteWriter& W, const FVector& PositionCm);
+	/** Marca el lector como roto si trae el mínimo de complemento a dos, que no se escribe nunca. */
 	EXPLORED_API FVector ReadPosition7(FByteReader& R);
 	/** La posición tal como llega al otro lado (útil para comparar y para el servidor). */
 	EXPLORED_API FVector QuantizePosition7(const FVector& PositionCm);

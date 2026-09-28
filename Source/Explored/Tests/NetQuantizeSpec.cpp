@@ -146,6 +146,12 @@ void FNetQuantizeSpec::Define()
 			TestEqual(TEXT("NaN e inf"), QuantizePosition7(FVector(NaN, Inf, -Inf)), FVector(0.0, 0.0, 0.0));
 			TestEqual(TEXT("−1 paso"), QuantizePosition7(FVector(-PositionXYStepCm, -PositionXYStepCm, -PositionZStepCm)), FVector(-PositionXYStepCm, -PositionXYStepCm, -PositionZStepCm));
 			TestTrue(TEXT("Cubre de sobra el archipiélago de 6,4 km"), PositionXYMaxCm > 640000.0);
+
+			// El mínimo de complemento a dos (−2^21 en X) no sale nunca de WritePosition7.
+			TArray<uint8> Bytes = {0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00};
+			FByteReader R(Bytes);
+			ReadPosition7(R);
+			TestFalse(TEXT("X = −2^21 se rechaza"), R.bOk);
 		});
 	});
 }
