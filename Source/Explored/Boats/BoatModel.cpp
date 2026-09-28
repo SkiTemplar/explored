@@ -425,7 +425,8 @@ bool FBoatModel::SetSailRaised(bool bRaised)
 
 bool FBoatModel::TryAddCargo(float Kg)
 {
-	if (Kg < 0.0f || State.CargoKg + Kg > GetDefinition().MaxCargoKg + UE_KINDA_SMALL_NUMBER)
+	// IsFinite explícito: con NaN las dos comparaciones son falsas y se guardaría CargoKg NaN.
+	if (!FMath::IsFinite(Kg) || Kg < 0.0f || State.CargoKg + Kg > GetDefinition().MaxCargoKg + UE_KINDA_SMALL_NUMBER)
 	{
 		return false;
 	}

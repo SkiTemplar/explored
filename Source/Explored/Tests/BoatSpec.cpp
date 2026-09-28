@@ -145,6 +145,15 @@ void FBoatSpec::Define()
 				TestFalse(TEXT("Rechaza la sobrecarga"), Model.TryAddCargo(1.0f));
 			}
 		});
+
+		It("rechaza cargas no finitas sin tocar la carga", [this]()
+		{
+			FBoatModel Model(EBoatType::Canoe, FVector::ZeroVector, 0.0f);
+			TestTrue(TEXT("carga normal"), Model.TryAddCargo(10.0f));
+			TestFalse(TEXT("NaN"), Model.TryAddCargo(std::numeric_limits<float>::quiet_NaN()));
+			TestFalse(TEXT("infinito"), Model.TryAddCargo(std::numeric_limits<float>::infinity()));
+			TestEqual(TEXT("sigue con 10 kg"), Model.GetState().CargoKg, 10.0f);
+		});
 	});
 
 	Describe("Flotación", [this]()
