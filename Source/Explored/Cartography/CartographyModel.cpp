@@ -579,4 +579,28 @@ void FCartographyModel::LoadState(const FCartographyState& InState)
 	State = InState;
 	ActiveStroke = INDEX_NONE;
 	bHasLastPosition = false;
+
+	// Saneado del guardado (admite NaN e infinitos y listas de otra versión): una deriva NaN
+	// haría NaN todos los puntos nuevos, y listas desparejadas se leerían fuera de rango.
+	if (!FMath::IsFinite(State.Drift.X) || !FMath::IsFinite(State.Drift.Y))
+	{
+		State.Drift = FVector2D::ZeroVector;
+	}
+	if (!FMath::IsFinite(State.TravelDistance) || State.TravelDistance < 0.0)
+	{
+		State.TravelDistance = 0.0;
+	}
+	State.Wetness = FMath::IsFinite(State.Wetness) ? FMath::Clamp(State.Wetness, 0.0f, 1.0f) : 0.0f;
+	if (!FMath::IsFinite(State.InkRunProgress) || State.InkRunProgress < 0.0f)
+	{
+		State.InkRunProgress = 0.0f;
+	}
+	for (FMapIslandCoverage& Entry : State.Coverage)
+	{
+		Entry.Visited.SetNumZeroed(Entry.Coast.Num());
+	}
+	for (FMapSketch& Sketch : State.Sketches)
+	{
+		Sketch.Confirmed.SetNumZeroed(Sketch.Points.Num());
+	}
 }

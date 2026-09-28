@@ -486,6 +486,39 @@ void FCartographySpec::Define()
 		TestEqual(TEXT("Sigue dibujando en un trazo nuevo"), Loaded.GetState().Strokes.Num(), StrokesBefore + 1);
 	});
 
+	It("sanea al cargar la deriva no finita y las listas de cobertura y boceto desparejadas", [this]()
+	{
+		FCartographyModel Model(Seed);
+		Model.RegisterIslandCoast(0, Circle(FVector2D::ZeroVector, IslandRadius, 128));
+		Model.AddSketch(0, Circle(FVector2D::ZeroVector, IslandRadius, 128));
+		FCartographyState Corrupt = Model.GetState();
+		Corrupt.Drift = FVector2D(std::numeric_limits<double>::quiet_NaN(), 0.0);
+		Corrupt.TravelDistance = std::numeric_limits<double>::infinity();
+		Corrupt.Coverage[0].Visited.SetNum(1);
+		Corrupt.Sketches[0].Confirmed.Empty();
+
+		FCartographyModel Loaded(Seed);
+		Loaded.LoadState(Corrupt);
+		WalkArc(Loaded, 0.0, 1.0, 1.0);
+		const FCartographyState& State = Loaded.GetState();
+		TestTrue(TEXT("deriva finita"), FMath::IsFinite(State.Drift.X) && FMath::IsFinite(State.Drift.Y));
+		TestTrue(TEXT("recorrido finito"), FMath::IsFinite(State.TravelDistance));
+		TestTrue(TEXT("sigue dibujando costa"), State.Strokes.Num() > 0);
+		bool bAllFinite = true;
+		for (const FMapStroke& Stroke : State.Strokes)
+		{
+			for (const FVector2D& P : Stroke.Points)
+			{
+				bAllFinite &= FMath::IsFinite(P.X) && FMath::IsFinite(P.Y);
+			}
+		}
+		TestTrue(TEXT("puntos finitos"), bAllFinite);
+		TestEqual(TEXT("una marca de visita por punto de costa"), State.Coverage[0].Visited.Num(), State.Coverage[0].Coast.Num());
+		TestEqual(TEXT("una confirmación por punto de boceto"), State.Sketches[0].Confirmed.Num(), State.Sketches[0].Points.Num());
+		TestTrue(TEXT("cuenta lo recorrido"), Loaded.GetIslandCoverage(0) > 0.0f);
+		TestTrue(TEXT("y confirma el boceto"), State.Sketches[0].ConfirmedFraction() > 0.0f);
+	});
+
 	It("traza la costa real de las islas del archipiélago", [this]()
 	{
 		const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
