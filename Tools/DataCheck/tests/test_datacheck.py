@@ -283,9 +283,10 @@ def test_detecta_evento_de_animo_distinto_del_cpp(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "StormHit")
 
 
-def test_detecta_fauna_terrestre(ds: DataSet) -> None:
-    item(ds, "grasa")["nameEs"] = "Grasa de jabalí"
-    assert any_error(errors_of(ds), "jabalí")
+def test_detecta_fauna_fuera_del_gdd_v2(ds: DataSet) -> None:
+    # El GDD v2 §3.7 recupera cerdo y cabra, pero no reptiles ni roedores.
+    item(ds, "grasa")["nameEs"] = "Grasa de iguana"
+    assert any_error(errors_of(ds), "iguana")
 
 
 def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
@@ -852,3 +853,68 @@ def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> Non
     items = {i["id"]: i for i in real.items}
     best = crafting.best_template(real.templates, "Tallar", crafting.leaf(items["lasca_pedernal"]), crafting.leaf(items["basalto"]))
     assert best and best["resultDefinitionId"] == "basalto_tallado"
+
+
+# --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
+
+from datacheck import fauna
+from datacheck.checks import PROPERTIES
+
+
+def fauna_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    fauna.check_fauna(ds, r, PROPERTIES)
+    return r.errors
+
+
+def animal(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
+
+
+def fauna_island(ds: DataSet, iid: str) -> dict:
+    return next(i for i in ds.data["fauna.json"]["islands"] if i["island"] == iid)
+
+
+def test_fauna_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert fauna_errors(real) == []
+    assert {"Gull", "Frigatebird"} <= fauna.cpp_species(real)
+    assert fauna.cpp_lod(real)["FullRadiusCm"] == 4000.0
+
+
+def test_fauna_lod_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["fauna.json"]["lod"]["reducedRadiusCm"] = 20000.0
+    assert any_error(fauna_errors(ds), "reducedRadiusCm", "FFaunaLodSettings")
+
+
+def test_fauna_especie_cpp_inexistente(ds: DataSet) -> None:
+    animal(ds, "gaviota_posada")["cppSpecies"] = "Albatross"
+    assert any_error(fauna_errors(ds), "Albatross", "EFaunaSpecies")
+
+
+def test_fauna_rutina_con_hueco(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["routine"].pop()
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "24 h")
+
+
+def test_fauna_botin_inexistente(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["loot"].append({"item": "chuleta", "min": 1, "max": 1, "tool": "cuchillo"})
+    assert any_error(fauna_errors(ds), "chuleta", "items.json")
+
+
+def test_fauna_isla_de_fase_1_con_especie_de_fase_2(ds: DataSet) -> None:
+    fauna_island(ds, "landing")["species"].append("cabra_montes")
+    assert any_error(fauna_errors(ds), "landing", "cabra_montes", "fase 2")
+
+
+def test_fauna_falta_isla_del_acceso_anticipado(ds: DataSet) -> None:
+    ds.data["fauna.json"]["islands"] = [i for i in ds.data["fauna.json"]["islands"] if i["island"] != "smoke"]
+    assert any_error(fauna_errors(ds), "smoke", "acceso anticipado")
+
+
+def test_fauna_pendiente_de_malla(ds: DataSet) -> None:
+    ds.data["meshes_pendientes.json"]["fauna"] = []
+    assert any_error(errors_of(ds), "meshes_pendientes.json/fauna", "cerdo_salvaje")
+
+
+def test_fauna_terrestre_ya_no_es_termino_prohibido(real_report: Report) -> None:
+    assert not any("cerdo" in e or "cabra" in e for e in real_report.errors)

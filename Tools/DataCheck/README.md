@@ -18,7 +18,7 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json`, `music_layers.json` y `mining.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json`, `mining.json` y `fauna.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -73,7 +73,14 @@ Qué comprueba:
   bucles con compases enteros, `seconds_per_bar`/`duration_s` coherentes con el tempo,
   descubrimientos ≤ 5 s y la flauta con `FFluteModel::NumNotes` notas. Los finales distintos
   del «Limón» quedan como nota (GDD §2: sin finales narrativos).
-- **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.
+- **Fauna salvaje (GDD v2 §3.7)**: `fauna.json` contra `EFaunaSpecies` (especie existente
+  o un `cppSpeciesPropuesto` nuevo) y `FFaunaLodSettings` (radios, histéresis, intervalo);
+  vida, percepción, huida, ataque con propiedad equivalente, rutina que cubre las 24 h,
+  botín/nidos con objetos reales; las cuatro islas del acceso anticipado con ficha y
+  ninguna isla de fase 1 con especies de fase 2/3. Especies sin malla, en
+  `meshes_pendientes.json/fauna`.
+- **Reglas del GDD §12**: sin narrativa eliminada en los datos; la fauna terrestre que
+  recupera el GDD v2 (cerdo, cabra, aves posadas) ya no es término prohibido.
 - **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que
   falta en `items.json` y setas por tipo (2 comestibles, 2 tóxicas por `Toxico`,
   1 con etiqueta `alucinogena`). Ver `docs/balance/2026-09-27-comida-recoleccion.md`.

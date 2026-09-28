@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, mining, music
+from . import achievements, cooking, crafting, fauna, mining, music
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -30,19 +30,22 @@ SCARECROW_PIECE = "espantapajaros"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
-# GDD §10 y §12: sin fauna terrestre ni narrativa de personajes eliminada.
+# GDD §12: sin narrativa de personajes eliminada. El GDD v2 §3.6-3.7 reintroduce la
+# fauna terrestre (cerdo salvaje, cabra, aves que se posan y animales de granja), así que
+# solo quedan prohibidas las especies que ningún documento vigente contempla y el perro
+# del prólogo eliminado.
 FORBIDDEN_TERMS = [
-    "jabali", "jabalí", "cerdo", "cabra", "rata", "murcielago", "murciélago", "serpiente",
+    "rata", "murcielago", "murciélago", "serpiente",
     "lagarto", "iguana", "perro", "canela", "almudena_", "rodrigo", "ines", "inés",
     "diario halden", "pagina halden", "página halden", "haldenpage", "beacon", "baliza",
-    "rescate", "mascota", "caza terrestre",
+    "rescate", "mascota",
 ]
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json", "mining.json",
+    "fish.json", "music_layers.json", "mining.json", "fauna.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -526,7 +529,9 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
     displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
     boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats}
+    animals = {s["id"] for s in ds.data.get("fauna.json", {}).get("species", []) if s.get("mesh") is None}
+    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats,
+            "fauna": animals}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
@@ -1014,7 +1019,7 @@ def check_forbidden_terms(ds: DataSet, r: Report) -> None:
         text = json.dumps(content, ensure_ascii=False).lower()
         for term in FORBIDDEN_TERMS:
             if re.search(rf"(?<![a-záéíóúñ]){re.escape(term)}(?![a-záéíóúñ])", text):
-                r.error(f"{name}: contiene «{term}», eliminado por el GDD §10/§12")
+                r.error(f"{name}: contiene «{term}», eliminado por el GDD §12 (y no recuperado por el GDD v2)")
 
 
 # GDD §8.8 (recolección y mar): nombre del GDD -> ids de items.json que lo cubren.
@@ -1110,4 +1115,5 @@ def run_all(ds: DataSet) -> Report:
     check_gdd_food_coverage(ds, r)
     check_gdd_mining(ds, r)
     mining.check_mining(ds, r)
+    fauna.check_fauna(ds, r, PROPERTIES)
     return r
