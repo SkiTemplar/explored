@@ -25,6 +25,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote3-comida.png",
       "scope": "Fruta y comida de recolección de Landing (prioridad 3) con Kenney Food Kit."
+    },
+    {
+      "id": "lote4-huerto",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote4-huerto.png",
+      "scope": "Fases de cultivo del huerto de Landing (prioridad 3) con Kenney Nature Kit: platanera, piña y limonero."
     }
   ],
   "entries": [
@@ -870,6 +876,182 @@
         ],
         "default": "palma.pulpa"
       }
+    },
+    {
+      "gameId": "platanera.hijuelo",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/crops_leafsStageA.glb",
+      "mesh": "SM_Pack_PlataneraHijuelo",
+      "size": {
+        "axis": "z",
+        "m": 0.6
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_clara"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_clara"
+          }
+        ],
+        "default": "vegetacion.hoja_clara"
+      }
+    },
+    {
+      "gameId": "platanera.planta_joven",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/crops_leafsStageB.glb",
+      "mesh": "SM_Pack_PlataneraJoven",
+      "size": {
+        "axis": "z",
+        "m": 1.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_clara"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_clara"
+          }
+        ],
+        "default": "vegetacion.hoja_clara"
+      }
+    },
+    {
+      "gameId": "pina.corona",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_bushSmall.glb",
+      "mesh": "SM_Pack_PinaCorona",
+      "size": {
+        "axis": "max",
+        "m": 0.2
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "pina.roseta",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_bushDetailed.glb",
+      "mesh": "SM_Pack_PinaRoseta",
+      "size": {
+        "axis": "max",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "limonero.brote",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_simple.glb",
+      "mesh": "SM_Pack_LimoneroBrote",
+      "size": {
+        "axis": "z",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#f2be9e",
+            "to": "madera.corteza"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
+    },
+    {
+      "gameId": "limonero.arbol_joven",
+      "kind": "planta",
+      "lote": "lote4-huerto",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_default.glb",
+      "mesh": "SM_Pack_LimoneroJoven",
+      "size": {
+        "axis": "z",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#73eddd",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#70e6d6",
+            "to": "vegetacion.hoja_oscura"
+          },
+          {
+            "from": "#f2be9e",
+            "to": "madera.corteza"
+          }
+        ],
+        "default": "vegetacion.hoja_oscura"
+      }
     }
   ],
   "discarded": [
@@ -956,6 +1138,36 @@
       "pack": "kenney_pirate_kit",
       "file": "Models/GLB format/structure-roof.glb",
       "reason": "Es una choza entera (cúpula de paja sobre cuatro postes de 3,4 m), no una vertiente modular de 2 m a 35°. Se queda SM_Roof_PalmThatch."
+    },
+    {
+      "gameId": "limonero.brote",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_small.glb",
+      "reason": "Copa cónica y estrecha: en la hoja de contacto del lote 4 se lee como un ciprés, no como un cítrico. Se usa tree_simple (tronco fino y copa redonda pequeña)."
+    },
+    {
+      "gameId": "limonero.esqueje",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/tree_simple.glb",
+      "reason": "A 0,45 m sigue siendo un arbolito en miniatura con copa, no una estaca con dos hojas; además repetiría la malla del brote."
+    },
+    {
+      "gameId": "batata.brote",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_flatShort.glb",
+      "reason": "Roseta de hojas en estrella y puntiagudas: parece un agave o un cardo, no la hoja acorazonada de la batata (hoja de contacto del lote 4)."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "pack": "kenney_nature_kit",
+      "file": "Models/GLTF format/plant_flatTall.glb",
+      "reason": "Hojas en estrella; el taro se reconoce por la hoja grande en punta de flecha sobre peciolo largo, que no trae ningún pack revisado."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Plant_1.gltf",
+      "reason": "Hojas lanceoladas con textura de hojas con canal alfa (estilo de sombreado propio de Quaternius): el muestreo de color por cara sale blanco y el recoloreado a paleta no es posible sin rehacer el material. Lo mismo vale para Fern_1, Bush_Common y Clover_*."
     }
   ],
   "pending": [
@@ -978,6 +1190,58 @@
     {
       "gameId": "cesta",
       "reason": "Sin candidato en los packs descargados. KayKit Furniture Bits y Restaurant Bits son CC0 de precio libre (uploads 8655517 y 8784350); falta descargarlos y mirarlos."
+    },
+    {
+      "gameId": "platanera.planta_con_racimo",
+      "reason": "Ningún pack trae platanera con racimo. Opción: SM_Pack_PlataneraJoven + racimo propio de Tools/Blender como socket; se decide al montar el huerto en Unreal."
+    },
+    {
+      "gameId": "pina.con_fruto",
+      "reason": "La roseta (plant_bushDetailed) sirve de base; falta el fruto en el centro. Opción: combinar SM_Pack_PinaRoseta con SM_Pack_Pina (lote 3) en Unreal o en un script propio."
+    },
+    {
+      "gameId": "limonero.arbol_adulto",
+      "reason": "tree_oak o tree_default a 3 m servirían de copa, pero sin fruta. El limonero es el árbol del huerto de la porción vertical: mejor malla propia con limones (Tools/Blender) o copa del pack con instancias de SM_Pack_Limon; decisión de arte pendiente."
+    },
+    {
+      "gameId": "limonero.esqueje",
+      "reason": "Sin candidato: ver discarded."
+    },
+    {
+      "gameId": "batata.brote",
+      "reason": "Sin candidato con hoja acorazonada en Kenney Nature Kit ni en Quaternius Stylized Nature MegaKit (Standard)."
+    },
+    {
+      "gameId": "batata.enredadera",
+      "reason": "Ningún pack revisado trae planta rastrera."
+    },
+    {
+      "gameId": "batata.listo",
+      "reason": "Ningún pack revisado trae planta rastrera."
+    },
+    {
+      "gameId": "taro.brote",
+      "reason": "Sin hoja en punta de flecha en los packs revisados (ver discarded de taro.hojas_grandes)."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "reason": "Ver discarded."
+    },
+    {
+      "gameId": "taro.listo",
+      "reason": "Ver discarded de taro.hojas_grandes."
+    },
+    {
+      "gameId": "maracuya.brote",
+      "reason": "La maracuyá trepa por la espaldera (pieza propia): enredadera a medida de esa pieza, mejor en Tools/Blender."
+    },
+    {
+      "gameId": "maracuya.trepadora",
+      "reason": "Igual que maracuya.brote."
+    },
+    {
+      "gameId": "maracuya.en_flor_y_fruto",
+      "reason": "Igual que maracuya.brote."
     }
   ]
 }
