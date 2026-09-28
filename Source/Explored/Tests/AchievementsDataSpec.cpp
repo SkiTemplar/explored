@@ -15,7 +15,7 @@ END_DEFINE_SPEC(FAchievementsDataSpec)
 
 void FAchievementsDataSpec::Define()
 {
-	It("carga los logros de achievements.json (entre 30 y 60) y el modelo los acepta", [this]()
+	It("carga los 54 logros de achievements.json y el modelo los acepta", [this]()
 	{
 		FString Text;
 		const FString Path = FPaths::ProjectContentDir() / TEXT("Data/achievements.json");
@@ -28,7 +28,13 @@ void FAchievementsDataSpec::Define()
 		TArray<FAchievementDef> Achievements;
 		FString Error;
 		TestTrue(TEXT("Se parsea"), UAchievementsSubsystem::ParseAchievementsJson(Text, Stats, Achievements, Error));
-		TestTrue(TEXT("Entre 30 y 60 logros (GDD §16, biblia 07 §2)"), Achievements.Num() >= 30 && Achievements.Num() <= 60);
+		TestEqual(TEXT("Cincuenta y cuatro logros (biblia 07 §2)"), Achievements.Num(), 54);
+		int32 EarlyAccess = 0;
+		for (const FAchievementDef& Def : Achievements)
+		{
+			EarlyAccess += Def.Phase == EAchievementPhase::EarlyAccess ? 1 : 0;
+		}
+		TestEqual(TEXT("Treinta y seis de acceso anticipado"), EarlyAccess, 36);
 
 		FAchievementsModel Model;
 		TestTrue(FString::Printf(TEXT("El modelo lo acepta (%s)"), *Error), Model.Configure(Stats, Achievements, Error));

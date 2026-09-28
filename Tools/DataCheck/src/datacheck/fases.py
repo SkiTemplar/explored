@@ -163,6 +163,7 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
 def _phase1_view(name: str, content):
     """Lo que de verdad es fase 1 en un fichero de datos.
 
+    ``achievements.json`` lleva los logros de F2/F3 marcados con ``phase`` (biblia 07 §2).
     ``fauna_terrestre.json`` lista también las especies de F2/F3 con su ``phase`` y el
     catálogo de packs guarda en ``discarded`` y ``pending`` los ids que aún no tienen malla
     (entre ellos los animales de granja de F2): ninguno de los dos los usa en el acceso
@@ -170,6 +171,12 @@ def _phase1_view(name: str, content):
     """
     if name == "fauna_terrestre.json" and isinstance(content, dict):
         return dict(content, species=[s for s in content.get("species", []) if s.get("phase") == "AA"])
+    if name == "achievements.json" and isinstance(content, dict):
+        # Los logros y estadísticas de F2/F3 nombran piezas y especies del borrador a propósito.
+        return dict(content,
+                    stats=[s for s in content.get("stats", []) if s.get("phase", "AA") == "AA"],
+                    achievements=[a for a in content.get("achievements", []) if a.get("phase", "AA") == "AA"])
     if name == "packs_catalogo.json" and isinstance(content, dict):
-        return {k: v for k, v in content.items() if k not in ("discarded", "pending")}
+        # iconsPending repite las pistas de icono de los logros (también los de F2/F3), no ids de objetos.
+        return {k: v for k, v in content.items() if k not in ("discarded", "pending", "iconsPending")}
     return content

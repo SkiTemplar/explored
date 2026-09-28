@@ -35,6 +35,16 @@ Qué comprueba:
 - Literales `TEXT("...")` que llegan a la pantalla sin pasar por `NSLOCTEXT`/`LOCTEXT`
   (se clasifican en *literal*, *invariante* y *revisar*; `// loc: ignorar` en la línea
   los excluye).
+- Modificadores `{Arg}|plural(...)`, `|ordinal(...)`, `|gender(...)`, `|hpp(...)`: sintaxis,
+  categorías CLDR de cada idioma y que ES y EN pluralicen los mismos argumentos (`icu.py`).
+- Guía anti-IA de biblia 07 §1.2–§1.3: lista negra, emoji, exclamaciones en logros y museo,
+  máximos de longitud de logros y etiquetas de vitrina (`estilo.py`).
+- Glosario de `docs/tecnico/glosario.md`: términos con traducción fijada (`glosario.py`).
+- Que ningún campo `…Es` de `Content/Data` se quede sin registrar en `data.py`, y que un
+  mismo nombre no tenga dos traducciones en dos ficheros.
+
+Excepciones revisadas a mano, con su motivo: `translations/excepciones.json`
+(`longitud`, `estilo`).
 
 Genera:
 

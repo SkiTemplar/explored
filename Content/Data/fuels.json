@@ -14,11 +14,11 @@
     "minutes": "minutos de juego que cuesta un intento"
   },
   "levels": [
-    { "id": "fogata", "nameEs": "Fogata", "pieceId": "fogata", "maxFuelHours": 4, "burnRate": 1.0, "heat": 0.7,
+    { "id": "fogata", "nameEs": "Fogata", "nameEn": "Campfire", "pieceId": "fogata", "maxFuelHours": 4, "burnRate": 1.0, "heat": 0.7,
       "emberHours": 2, "rainQuench": 2.5, "windTolerance": 0.6, "enclosed": false, "smoke": 0.3 },
-    { "id": "hoguera", "nameEs": "Hoguera", "pieceId": "hoguera_senal", "maxFuelHours": 10, "burnRate": 1.3, "heat": 1.0,
+    { "id": "hoguera", "nameEs": "Hoguera", "nameEn": "Bonfire", "pieceId": "hoguera_senal", "maxFuelHours": 10, "burnRate": 1.3, "heat": 1.0,
       "emberHours": 4, "rainQuench": 1.5, "windTolerance": 0.8, "enclosed": false, "smoke": 0.35 },
-    { "id": "horno_arcilla", "nameEs": "Horno de arcilla", "pieceId": "horno_barro", "maxFuelHours": 12, "burnRate": 0.7, "heat": 1.2,
+    { "id": "horno_arcilla", "nameEs": "Horno de arcilla", "nameEn": "Clay oven", "pieceId": "horno_barro", "maxFuelHours": 12, "burnRate": 0.7, "heat": 1.2,
       "emberHours": 8, "rainQuench": 0, "windTolerance": 1.0, "enclosed": true, "smoke": 0.5 }
   ],
   "fuels": [
@@ -40,8 +40,8 @@
     { "item": "rama_verde", "burnHours": 0.4, "heat": 0.3, "tinder": false, "green": true }
   ],
   "ignition": [
-    { "id": "cerillas", "nameEs": "Cerillas", "toolItem": "cerillas", "consumesTool": true, "chance": 0.9, "minutes": 0.5 },
-    { "id": "pedernal", "nameEs": "Pedernal y metal", "toolItem": "pedernal", "consumesTool": false, "chance": 0.55, "minutes": 2 },
-    { "id": "friccion", "nameEs": "Arco de fuego", "toolItem": "rama_seca", "consumesTool": false, "chance": 0.3, "minutes": 5 }
+    { "id": "cerillas", "nameEs": "Cerillas", "nameEn": "Matches", "toolItem": "cerillas", "consumesTool": true, "chance": 0.9, "minutes": 0.5 },
+    { "id": "pedernal", "nameEs": "Pedernal y metal", "nameEn": "Flint and steel", "toolItem": "pedernal", "consumesTool": false, "chance": 0.55, "minutes": 2 },
+    { "id": "friccion", "nameEs": "Arco de fuego", "nameEn": "Bow drill", "toolItem": "rama_seca", "consumesTool": false, "chance": 0.3, "minutes": 5 }
   ]
 }
