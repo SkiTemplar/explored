@@ -110,11 +110,50 @@ extrapola con el mismo código.
 
 ## Persistencia
 
-- **Barco a flote:** `FBoatSaveData` (con amarre) en la sección de barcos, como hoy.
-  Además hay que guardar la lista de piezas (tipo, centro, tamaño) y la de uniones
-  (A, B, tipo, salud). Es el mismo pendiente que en `casco-por-piezas.md` §5, y ahora
-  incluye las uniones. `FromSaveData(Data, &Yard.ToBoatDefinition())` reconstruye el
-  barco.
+- **Barco a flote:** `FBoatSaveData` (con amarre) en la sección de barcos, como hoy, y
+  el casco por piezas al lado. Modelos puros hechos (specs `Explored.RaftYard`, «el
+  guardado del casco», y `Explored.Save.Systems`); falta el enganche en
+  `UExploredWiringSubsystem::SaveBoats` / `LoadBoats`:
+
+  ```cpp
+  // SaveBoats, por cada AExploredBoat que tenga astillero (armado por piezas):
+  FSaveArchive HullAr;
+  ExploredSaveStates::SaveRaftHull(HullAr, Boat->GetRaftYard().ToHullSaveData());
+  Entry.Write(TEXT("hull"), HullAr);
+
+  // LoadBoats, después de LoadBoat(DataAr, Data):
+  FSaveArchive HullAr;
+  FRaftHullSaveData Hull;
+  if (Entry.Read(TEXT("hull"), HullAr))
+  {
+      ExploredSaveStates::LoadRaftHull(HullAr, Hull);
+  }
+  if (!Hull.IsEmpty())
+  {
+      FRaftYardModel Yard = FRaftYardModel::FromHullSaveData(Hull);
+      Yard.SetAfloat();
+      const FBoatDefinition Def = Yard.ToBoatDefinition();
+      // RestoreFromSaveData hoy no acepta ficha: hay que añadirle este parámetro y pasarlo
+      // a FBoatModel::FromSaveData(Data, &Def).
+      Boat->RestoreFromSaveData(Data, &Def);
+  }
+  ```
+
+  - Formato: `hull = { pieces: [{type, center, size}], joints: [{a, b, kind, health}] }`,
+    con los enums por nombre (`Log`, `Plank`, `Bamboo`, `Float`, `Mast`, `Sail`, `Oars`,
+    `Paddle`; `Fiber`, `Rope`, `Nails`). Las uniones citan las piezas por su índice en
+    la lista.
+  - Partida antigua o barco del mapa sin `hull`: carga con la ficha estándar de su tipo,
+    como hasta ahora.
+  - Lectura tolerante en dos capas. `LoadRaftHull` salta una pieza ilegible (sin tipo, con
+    un tipo desconocido o sin centro) y las uniones que la usaban, y renumera las demás.
+    `FromHullSaveData` descarta las piezas no finitas, las de más de 50 m en cualquier
+    coordenada o lado (`MaxSavedExtentCm`) y las que pasan de 256 (`MaxSavedPieces`).
+    También descarta las uniones que `AddJoint` ya no aceptaría. Una salud no finita
+    cuenta como unión rota y las demás se recortan a 0–1. Así un guardado manipulado o
+    corrupto no mete NaN en la hidrostática ni deja `Evaluate` calculando minutos.
+  - `HullDamage01` de `FBoatSaveData` y `Yard.HullDamage01()` salen de lo mismo (la
+    salud de las uniones), así que coinciden al cargar.
 - **Balsa en tierra:** piezas, uniones, rodillos, `CenterS` y el `FLaunchPath` en una
   capa opaca `"raftyard"`, en la sección `world` junto a `WorldDeltas`. Es la misma idea
   que las capas `"terrain"` y `"sand"`: no son índices de scatter, así que no van en
