@@ -391,6 +391,43 @@ FSandResult FSandModel::Pile(const FSandBrush& In, FBaseHeight Base)
 	return Brush(In, Base, false);
 }
 
+FSandResult FSandModel::Transfer(const TArray<FSandMove>& Moves, FBaseHeight Base)
+{
+	FSandResult Result;
+	TArray<FIntPoint> DirtyChunks;
+	for (const FSandMove& Move : Moves)
+	{
+		if (Move.Mm <= 0 || Move.From == Move.To
+			|| FMath::Abs(Move.From.X) > MaxAbsColumn || FMath::Abs(Move.From.Y) > MaxAbsColumn
+			|| FMath::Abs(Move.To.X) > MaxAbsColumn || FMath::Abs(Move.To.Y) > MaxAbsColumn
+			|| IsAnchored(Move.From) || IsAnchored(Move.To))
+		{
+			continue;
+		}
+		const int64 CanGive = static_cast<int64>(DeltaMm(Move.From)) + MaxDigDepthMm;
+		const int64 CanTake = static_cast<int64>(MaxPileHeightMm) - DeltaMm(Move.To);
+		const int64 Amount = FMath::Min<int64>(Move.Mm, FMath::Min(CanGive, CanTake));
+		if (Amount <= 0)
+		{
+			continue;
+		}
+		AddDelta(Move.From, static_cast<int32>(-Amount), Base);
+		AddDelta(Move.To, static_cast<int32>(Amount), Base);
+		for (const FIntPoint& Column : { Move.From, Move.To })
+		{
+			MarkDirtyAround(Column);
+			ChunksReadingColumn(Column, DirtyChunks);
+			Result.ChangedColumns.Add(Column);
+		}
+		Result.Mass += Amount;
+	}
+	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Result.ChangedColumns);
+	Result.ColumnsChanged = Result.ChangedColumns.Num();
+	Result.DirtyChunks = MoveTemp(DirtyChunks);
+	return Result;
+}
+
 FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bool bAnchor, FBaseHeight Base)
 {
 	FSandResult Result;

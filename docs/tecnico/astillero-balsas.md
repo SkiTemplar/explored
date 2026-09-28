@@ -181,6 +181,53 @@ extrapola con el mismo código.
 - El objeto `clavo` no existe en `items.json` (lo tiene que decidir la rutina de datos).
 - El camino recto no rodea obstáculos: si la traza choca con algo, se corta ahí y la
   balsa se detiene al final (`bAtPathEnd`).
-- Arrastrar la balsa por la arena viva (`FSandModel`, PR #46) podría abrir un surco con
-  `Dig` a lo largo del camino. No está enganchado, porque el modelo de arena no está
-  en esta rama.
+- El surco en la arena viva ya está en `FRaftFurrowModel`; cómo engancharlo, más abajo
+  en «Surco en la arena».
+
+## Surco en la arena
+
+`FRaftFurrowModel` (`Source/Explored/Boats/RaftFurrowModel.h`, spec `Explored.RaftFurrow`)
+enlaza el astillero con la arena viva. Reglas y números: GDD v2 §3.17, «Surco en la arena».
+
+- **Dónde se llama.** En el servidor, en el mismo sitio que `FRaftYardModel::Push` (el
+  componente del astillero de `AExploredBoat` o del actor de la balsa en tierra):
+
+  ```cpp
+  const float SBefore = Yard.GetCenterS();
+  const FRaftPushReport Push = Yard.Push(ForceN, DeltaSeconds);
+  if (!Push.bOnRollers && Push.MovedCm != 0.0f)
+  {
+      const FRaftFurrowResult Furrow = FRaftFurrowModel::Drag(Yard, SBefore, Yard.GetCenterS(),
+          SandEnv.HighTide, SandEnv.bRaining, SandSubsystem->Model(), SandSubsystem->BaseHeight());
+      SandSubsystem->QueueChanged(Furrow.Sand);   // API por hacer: lo mismo que tras Dig o Pile
+  }
+  ```
+
+  `HighTide` y `bRaining` son los del `FSandEnvironment` del fotograma. `Base` es la misma
+  función de altura base que usa el subsistema de arena.
+- **Actores y HISM.** No hay ninguno nuevo. El surco y los cordones son deltas de la capa
+  de arena: los remalla el `UDynamicMeshComponent` de cada chunk de `Furrow.Sand.DirtyChunks`,
+  como una pasada de pala (`docs/tecnico/arena-viva.md`). Los rodillos siguen siendo los
+  troncos de la tala.
+- **Red.** `Furrow.Sand.ChangedColumns` sale por la cola de terreno con
+  `FSandModel::EncodePackets`, igual que la pala. Un arrastre de 1 m con la balsa de 6
+  troncos cambia unas 4 filas × 7 columnas por metro (surco y cordones), unas 28 columnas:
+  un paquete por chunk.
+- **Persistencia.** Nada nuevo: los deltas van en la capa `"sand"` de `WorldDeltas`, como
+  los de la pala. La balsa en tierra ya guarda `CenterS` y el camino en la capa
+  `"raftyard"`.
+- **Coste por fotograma.** Solo con la balsa arrastrándose sin rodillos. Muestrea el tramo
+  del fotograma cada media celda (12,5 cm): a 1 m/s son 1 o 2 muestras por fotograma, cada
+  una con unas 15 × 4 columnas por tronco del fondo. En el host, con el `TMap` lineal del
+  shim, el test de empuje (unos 300 fotogramas de `Push` más `Drag`) tarda unos 25 ms en
+  total: menos de 0,1 ms por fotograma. Las columnas ya rasadas no mueven nada. Hay que
+  medirlo en PIE con el `TMap` de Unreal.
+  `MaxStations` (512) acota un salto de tiempo enorme.
+- **Por verificar en PIE.**
+  - El `CharacterMovement` de quien empuja pisa el cordón (hasta 3 × 60 mm con mucha
+    carga): no debe engancharse.
+  - La balsa no se hunde visualmente en el surco: el camino es una traza del terreno
+    anterior. Si se nota, bajar el casco `DrySinkMm` en el actor mientras se arrastra.
+  - El camino recto puede pasar junto a unos tablones de contención: el cordón se va
+    entero al otro lado (test «echa el cordón al otro lado si un costado está bajo un
+    muelle»).
