@@ -42,6 +42,7 @@ Tests/TerrainChunkChecksumModelSpec.cpp
 Tests/TerrainDeltaCodecModelSpec.cpp
 Tests/TerrainDeltaQueueModelSpec.cpp
 Tests/TerrainEditModelSpec.cpp
+Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
