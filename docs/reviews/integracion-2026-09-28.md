@@ -764,3 +764,42 @@ Las revisiones las hicieron subagentes de solo lectura. Las comprobaciones se pa
 - **#101** trae su propia casilla `[x]`: las herramientas de la banda sonora grabada existen de verdad. Añade además dos `[ ]`: importar los OGG en el editor y los créditos en el juego y en Steam.
 - **#106** se anota en la nota «en parte» de la fauna terrestre (datos de LOD y población; faltan la especie C++, el LOD aplicado y la navegación).
 - Recuento: 20 hechas, 44 en parte y 150 sin empezar, de 214.
+
+## Ejecución 19:00 UTC
+
+Base: `origin/main` en `1385bc7` al empezar y en `29c4ac0` después de fusionar #110. Solo
+#110 y #111 son nuevas o tienen commits desde la pasada de las 17:00. Las demás mantienen
+la decisión anterior y no se han vuelto a comprobar.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #110 | `nube/packs-2026-09-28` | **Fusionada** (`29c4ac0`) | Lote 9: seis iconos de UI de Kenney (CC0, con sha256 y licencia verificada) y la comprobación `check_icons` en DataCheck, con 9 tests. Solo toca datos JSON, `Tools/` y docs. Las hojas de contacto de los lotes 8 y 9 pasan a LFS, como las de los lotes 1 a 7; comprobé que los dos objetos existen en el servidor LFS. |
+| #111 | `arte/vegetacion-unificada` | `necesita-unreal` + cambios pedidos | Toca `WorldGenCommandlet.cpp`, `SExploredCredits.cpp` e `import_meshes.py`. Al juntarla con `main` choca en `packs.json`, y con el conflicto resuelto DataCheck da 5 errores: `sha256` «n/a», fuente `polypizza` desconocida y licencia CC-BY-3.0. Mete 11 modelos CC-BY 3.0 sin su crédito en el juego, y la excepción a la política CC0 del GDD v2 §7.1 no está escrita en el GDD. |
+| #70, #72, #75, #79–#82, #84–#87, #90–#93, #95, #96, #98 | — | Sin cambios | No tienen commits nuevos desde la pasada de las 17:00. Siguen como allí. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #110 (ya al día con `main`) | — | — | 0 errores · 266 passed | Packs: 12 passed · Localization: 27 passed · CI de GitHub en verde |
+| #111 + `main` (conflicto de `packs.json` resuelto en local) | 1086 / 0 | 1086 / 0 | **5 errores** | — |
+
+### Aviso para las PR que tocan `achievements.json`
+
+Desde #110, DataCheck exige que cada pista `icon` de `achievements.json` tenga icono o
+esté en `iconsPending` de `packs_catalogo.json`. #79, #80, #81, #90 y #91 añaden pistas
+nuevas: #80 añade `arco`, `bandera`, `cangrejo`, `canoa`, `corral`, `empalizada`,
+`escudo`, `herramienta`, `huevo`, `mina`, `muralla`, `obsidiana`, `pala`, `pico`,
+`pueblo`, `templo`, `trueque`, `vagon` y `viga`. Al fusionarles `main`, tienen que añadir
+esas pistas a `iconsPending` o DataCheck se pondrá en rojo.
+
+### Notas para el director
+
+- **#111:** la excepción CC-BY para el dosel de selva tiene que quedar escrita en el GDD v2
+  §7.1. El crédito en ES/EN y la localización tienen que entrar con las mallas, no en una
+  PR aparte.
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]`. #110 se anota en la nota «en parte» de la casilla de
+  arte del GDD §7.1: iconos de UI, con 25 pistas de logro aún pendientes.

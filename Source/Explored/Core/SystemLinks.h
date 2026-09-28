@@ -229,4 +229,206 @@ namespace ExploredLinks
 	 * igualdad, en el orden de la lista. False (y OutTakes vacío) si no alcanza.
 	 */
 	EXPLORED_API bool PlanMaterialTakes(const TArray<FMaterialStack>& Stacks, const TArray<FBuildingCost>& Costs, TArray<FMaterialTake>& OutTakes);
+
+	// --- Cooperativo: dormir en grupo (biblia 08 §5.1) ----------------------------------
+
+	/** Multiplicador del reloj con todo el grupo acostado: 8 h de juego en 6,7 s reales. */
+	constexpr float GroupSleepTimeScale = 120.0f;
+	/** Tope de horas de juego que se saltan de una vez (un sueño completo). */
+	constexpr float GroupSleepMaxHours = 8.0f;
+	/** El salto también para al amanecer (el mismo que usan los eventos del mundo). */
+	constexpr float GroupSleepDawnHour = FWorldEventsModel::DawnStartHour;
+
+	/** Un jugador conectado, visto por la regla de dormir. */
+	struct EXPLORED_API FCoopSleeper
+	{
+		bool bInBed = false;
+		/** `Derribado` (§5.2): no cuenta como acostado y bloquea el sueño de todos. */
+		bool bDowned = false;
+	};
+
+	/** Qué pasa con la noche según quién está acostado (el aviso de biblia 08 §6.6). */
+	enum class EGroupSleepStatus : uint8
+	{
+		/** Nadie acostado: el reloj sigue a ×1, sin aviso. */
+		NobodyInBed,
+		/** Alguno acostado, otros en pie: ×1; «Hay {Count} en pie todavía.» / «Queda uno en pie.». */
+		WaitingForOthers,
+		/** Alguien derribado: ×1; «No se duerme con alguien en el suelo.». */
+		BlockedByDowned,
+		/** Todos acostados: ×120 hasta el amanecer o las 8 h. */
+		AllInBed,
+	};
+
+	struct EXPLORED_API FGroupSleepDecision
+	{
+		EGroupSleepStatus Status = EGroupSleepStatus::NobodyInBed;
+		/** Jugadores que no están acostados (los derribados cuentan como en pie). */
+		int32 StillUp = 0;
+	};
+
+	/** Regla pura de §5.1: la noche solo se salta si todos los conectados están acostados. */
+	EXPLORED_API FGroupSleepDecision DecideGroupSleep(const TArray<FCoopSleeper>& Players);
+
+	/** Horas de juego desde HoursOfDay hasta el próximo amanecer, en (0, 24]. */
+	EXPLORED_API float HoursUntilDawn(float HoursOfDay);
+
+	/** Qué ha pasado en esta actualización del sueño de grupo. */
+	enum class EGroupSleepEvent : uint8
+	{
+		None,
+		/** Se acaban de acostar todos: empieza el salto (fundido en cada cliente). */
+		Started,
+		/** Llegó el amanecer o las 8 h: vuelta a ×1 con el sueño completo. */
+		Completed,
+		/** Alguien se levantó (o cayó, o entró uno nuevo) a mitad: vuelta a ×1, horas conservadas. */
+		Interrupted,
+	};
+
+	/**
+	 * Sueño de grupo en el servidor (solo el servidor fija `TimeScale`, que viaja en el
+	 * paquete de reloj de §2.8). Se actualiza cada tick con los jugadores conectados, la
+	 * hora del día y las horas de juego que han pasado desde la actualización anterior.
+	 * Si alguien se levanta a mitad, el reloj vuelve a ×1 de inmediato y se conservan las
+	 * horas ya ganadas, con recuperación proporcional (06 §2.12). Tras completar, no vuelve
+	 * a empezar hasta que alguien se levante y se acueste de nuevo.
+	 */
+	struct EXPLORED_API FGroupSleepSession
+	{
+		struct FResult
+		{
+			FGroupSleepDecision Decision;
+			EGroupSleepEvent Event = EGroupSleepEvent::None;
+			/** `TimeScale` que debe fijar el servidor ahora. */
+			float TimeScale = 1.0f;
+			/** Horas de juego dormidas en el tramo que acaba de terminar (Completed/Interrupted). */
+			float HoursSlept = 0.0f;
+			/** Fracción del sueño completo recuperada (HoursSlept / 8, 0–1). */
+			float Recovery01 = 0.0f;
+		};
+
+		FResult Update(const TArray<FCoopSleeper>& Players, float HoursOfDay, float DeltaGameHours);
+
+		bool bActive = false;
+		/** Completado y todos siguen acostados: no se encadena otro salto. */
+		bool bCompletedLatch = false;
+		float HoursSlept = 0.0f;
+		float TargetHours = 0.0f;
+	};
+
+	// --- Cooperativo: derribado y reanimación (biblia 08 §5.2) --------------------------
+
+	constexpr float DownedSeconds = 90.0f;
+	/** De la tercera reanimación del día en adelante, el derribado dura menos. */
+	constexpr float DownedSecondsAfterCap = 30.0f;
+	constexpr int32 MaxRevivesPerDay = 2;
+	constexpr float DownedCrawlSpeedMps = 0.6f;
+	constexpr float ReviveSeconds = 6.0f;
+	constexpr float ReviveSecondsWithMedicine = 3.0f;
+	/** Salud al levantarse (de 100) y golpe de ánimo (`moraleEvents.Injured`). */
+	constexpr float RevivedHealth = 25.0f;
+	constexpr float RevivedMoraleDelta = -6.0f;
+
+	/** Qué pasa cuando un jugador llega a Health = 0. */
+	enum class ECoopHealthZero : uint8
+	{
+		/** En cooperativo, fuera de Náufrago: `Derribado` durante DownedSeconds (o 30 s tras el tope). */
+		Downed,
+		/** En solitario: la muerte normal de 01 §7 (ver DecideRespawn). */
+		Dead,
+		/** Náufrago en cooperativo: morir es morir; espectador hasta que el anfitrión recargue. */
+		Spectator,
+	};
+
+	/** Estado de derribado de un jugador (lo lleva el servidor, uno por jugador vivo). */
+	struct EXPLORED_API FCoopDownState
+	{
+		bool bDowned = false;
+		float SecondsLeft = 0.0f;
+		/** Segundos de reanimación acumulados por el compañero que le atiende ahora. */
+		float ReviveProgressSeconds = 0.0f;
+		/** Día de juego al que se refiere RevivesToday (INDEX_NONE = nunca reanimado). */
+		int32 RevivesDay = INDEX_NONE;
+		int32 RevivesToday = 0;
+	};
+
+	/** Reanimaciones ya gastadas en ese día de juego (0 si el contador es de otro día). */
+	EXPLORED_API int32 RevivesUsedOn(const FCoopDownState& State, int32 Day);
+
+	/**
+	 * Health = 0: decide y, si toca, abre el derribado. PlayersConnected cuenta a todos,
+	 * incluido este; con 1 no hay cooperativo y se muere como en solitario.
+	 */
+	EXPLORED_API ECoopHealthZero OnHealthZero(FCoopDownState& State, const FSurvivalModeSettings& Mode, int32 PlayersConnected, int32 Day);
+
+	/** Objetos que acortan la reanimación a 3 s si van en la mano (y se consumen). */
+	EXPLORED_API bool IsReviveMedicine(FName ItemId);
+
+	/**
+	 * Avanza la reanimación de un derribado: true cuando se completa (6 s, o 3 s con
+	 * medicina en la mano). Si el compañero suelta, CancelRevive vuelve a empezar de cero.
+	 */
+	EXPLORED_API bool AdvanceRevive(FCoopDownState& State, float DeltaSeconds, bool bMedicineInHand);
+	EXPLORED_API void CancelRevive(FCoopDownState& State);
+
+	/**
+	 * Levanta al derribado: 25 de salud, ánimo −6, heridas abiertas sin curar; gasta una
+	 * reanimación del día Day. No hace nada si no estaba derribado.
+	 */
+	EXPLORED_API void FinishRevive(FCoopDownState& State, FSurvivalState& Body, int32 Day);
+
+	/**
+	 * Avanza el derribado de todo el grupo (solo los jugadores vivos y conectados, en el
+	 * mismo orden siempre) y devuelve en OutDied los índices que mueren ahora: los que
+	 * agotan su tiempo y, si en ese momento no queda nadie en pie, todos los derribados
+	 * con ellos (el empate de cuatro personas gateando no existe).
+	 */
+	EXPLORED_API void TickGroupDowned(TArray<FCoopDownState>& Players, float DeltaSeconds, TArray<int32>& OutDied);
+
+	// --- Cooperativo: escalado y reparto (biblia 08 §5.6, §5.7) -------------------------
+
+	/** Jugadores efectivos para el escalado: 1–4. */
+	EXPLORED_API int32 CoopPlayersClamped(int32 Players);
+
+	/** `1 + 0,25·(N−1)`: vetas finitas, fauna cazable, pescado y cangrejos. */
+	EXPLORED_API float CoopAbundanceScale(int32 Players);
+
+	/** Unidades de una veta finita con N jugadores: Base × escala, redondeo abajo (nunca menos que Base). */
+	EXPLORED_API int32 ScaleFiniteVein(int32 BaseUnits, int32 Players);
+
+	/** Asaltantes piratas [F3]: `BaseRaiders × (1 + 0,4·(N−1))` al entero más cercano (5 → 7 / 9 / 11). */
+	EXPLORED_API int32 PirateRaidersForPlayers(int32 Players, int32 BaseRaiders = 5);
+
+	/** Categoría extra de asalto [F3]: +1 por cada 2 jugadores por encima de 1 (N=2 → 0, 3 → 1, 4 → 1). */
+	EXPLORED_API int32 PirateCategoryBonus(int32 Players);
+
+	/** Quién desbloquea un logro en cooperativo (`coopScope` de achievements.json, §5.7). */
+	enum class ECoopScope : uint8
+	{
+		/** Solo quien hace la acción. */
+		Actor,
+		/** Todos los conectados en ese momento. */
+		World,
+		/** Quien esté a menos de CoopWitnessRadiusCm del hecho (y quien lo hace). */
+		Witness,
+	};
+
+	constexpr double CoopWitnessRadiusCm = 5000.0;
+
+	/** "actor" / "world" / "witness" (sin distinguir mayúsculas); false si no es ninguno. */
+	EXPLORED_API bool ParseCoopScope(const FString& Text, ECoopScope& OutScope);
+
+	struct EXPLORED_API FCoopPlayerSpot
+	{
+		int32 PlayerId = INDEX_NONE;
+		FVector PositionCm = FVector::ZeroVector;
+		bool bConnected = true;
+	};
+
+	/**
+	 * Jugadores (PlayerId, en el orden de Players) a los que el servidor manda el RPC de
+	 * desbloqueo. El actor siempre lo recibe si está conectado; una posición no finita
+	 * nunca cuenta como testigo.
+	 */
+	EXPLORED_API TArray<int32> AchievementRecipients(ECoopScope Scope, int32 ActorId, const FVector& EventCm, const TArray<FCoopPlayerSpot>& Players);
 }

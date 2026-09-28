@@ -69,6 +69,13 @@ struct EXPLORED_API FPickaxeHit
 	int32 ToolTier = 2;
 	/** Semilla de la forma irregular del hueco (p. ej. contador de golpes del jugador). */
 	uint32 Seed = 0;
+	/**
+	 * Radio nominal del hueco (m). Depende de la herramienta, no del material (biblia 02
+	 * §2.1): 0,40 pico de piedra, 0,42 tallado, 0,50 obsidiana, 0,55 rescatado (ver
+	 * `FMiningModel::ToolInfo`). Fuera de [MinPickaxeRadius, MaxPickaxeRadius] se recorta;
+	 * no finito, se usa PickaxeRadius.
+	 */
+	float Radius = 0.5f;
 };
 
 /**
@@ -160,6 +167,9 @@ public:
 
 	/** Radio nominal del hueco de un golpe de pico y su irregularidad (±20 %). */
 	static constexpr float PickaxeRadius = 0.5f;
+	/** Límites del radio que admite `FPickaxeHit::Radius` (un golpe no vacía una sala). */
+	static constexpr float MinPickaxeRadius = 0.1f;
+	static constexpr float MaxPickaxeRadius = 1.0f;
 	static constexpr float PickaxeIrregularity = 0.2f;
 	/** El centro del pincel entra en la pared desde el punto de impacto. */
 	static constexpr float PickaxeBite = 0.15f;
@@ -220,6 +230,12 @@ public:
 	FTerrainEditResult PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base);
 	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes. */
 	FTerrainEditResult CarveStairs(const FStairCarve& Stairs, FBaseDensity Base);
+	/**
+	 * Camino terminado (biblia 02 §3): compactación 100 en las columnas cuyo centro queda a
+	 * ≤ HalfWidth del segmento A–B (en planta). No cambia la forma; marca sucios los chunks
+	 * de la huella a la altura del segmento para remallar la capa de superficie.
+	 */
+	FTerrainEditResult CompactStrip(const FVector& A, const FVector& B, float HalfWidth);
 	/**
 	 * Vacía una esfera hasta MaxVolume: lleva cada muestra a la distancia con signo a la
 	 * esfera (aire dentro). Toca solo muestras a menos de SphereDigReach(Radius) del centro.

@@ -841,6 +841,45 @@ def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
     assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
 
 
+def test_mineria_lee_estratos_y_herramientas_de_mining_model(real: DataSet) -> None:
+    strata = mining.cpp_strata(real)
+    assert strata and len(strata) == 10
+    assert strata["veta_cobre"] == {"item": "mineral_cobre", "cpp": "Caliza", "hardness": 2, "minToolTier": 2,
+                                    "veinUnits": 10, "respawnDays": 20, "host": "Caliza"}
+    assert strata["azufre"]["minToolTier"] == 0
+    tools = mining.cpp_tools(real)
+    assert tools and len(tools) == 6
+    assert tools["pala_tosca"]["secondsPerHit"] == 1.2
+    assert tools["pico_obsidiana"] == {"tier": 4, "radiusM": 0.5, "secondsPerHit": 1.0, "durability": 30, "fragile": True}
+    assert "tablon_contencion" in mining.cpp_sand_anchor_pieces(real)
+
+
+def test_mineria_herramienta_distinta_del_mining_model(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_tallado")["radiusM"] = 0.6
+    assert any_error(mining_errors(ds), "pico_tallado", "radiusM")
+
+
+def test_mineria_fragilidad_distinta_del_mining_model(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["fragile"]["chance"] = 0.1
+    assert any_error(mining_errors(ds), "pico_obsidiana", "fragile")
+
+
+def test_mineria_veta_distinta_del_mining_model(ds: DataSet) -> None:
+    stratum(ds, "hierro_meteorito")["vein"]["veinUnits"] = 6
+    assert any_error(mining_errors(ds), "hierro_meteorito", "veta")
+
+
+def test_mineria_herramienta_mas_rapida_que_el_minimo_de_red(ds: DataSet) -> None:
+    ds.data["mining.json"]["secondsPerHit"] = 1.25
+    assert any_error(mining_errors(ds), "pico_obsidiana", "mínimo de red")
+
+
+def test_mineria_faltan_la_viga_o_una_pieza_que_sujeta_arena(ds: DataSet) -> None:
+    ds.data["building_pieces.json"]["pieces"] = [
+        p for p in ds.building["pieces"] if p["id"] not in ("viga_apoyo", "tablon_contencion")]
+    errors = mining_errors(ds)
+    assert any_error(errors, "viga_apoyo", "2.7")
+    assert any_error(errors, "tablon_contencion", "sujeta arena")
 def test_mineria_herramientas_espejo_del_cpp(real: DataSet) -> None:
     cpp = mining.cpp_dig_tools(real)
     assert cpp and cpp["PalaTosca"] == (1, 0.35, 1.2) and cpp["PicoRescatado"] == (4, 0.55, 1.1)
@@ -1602,3 +1641,58 @@ def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
 def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
     del item(ds, "antorcha")["maxDurability"]
     assert any_error(mining_errors(ds), "antorcha", "maxDurability")
+
+
+# --------------------------------------------------------------------------- iconos de UI (lote 9)
+
+
+def test_packs_iconos_cubren_o_dejan_pendiente_cada_pista_de_logro(real: DataSet) -> None:
+    cat = _catalog(real)
+    hints = {a["icon"] for a in real.data["achievements.json"]["achievements"]}
+    covered = {s["achievementIcon"] for i in cat["icons"] for s in i["slots"] if "achievementIcon" in s}
+    assert {"fuego", "refugio", "estrella"} <= covered
+    assert hints == covered | {p["achievementIcon"] for p in cat["iconsPending"]}
+    assert not any_error(errors_of(real), "icono")
+
+
+def test_packs_icono_con_pista_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"achievementIcon": "unicornio"}]
+    assert any_error(errors_of(ds), "unicornio", "achievements.json")
+
+
+def test_packs_icono_de_widget_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"widget": "SExploredRadar", "role": "punto"}]
+    assert any_error(errors_of(ds), "SExploredRadar", "no existe")
+
+
+def test_packs_icono_con_tinte_fuera_del_estilo(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["tint"] = {"conseguido": "ColorNeon"}
+    assert any_error(errors_of(ds), "ColorNeon", "ExploredUIStyle")
+
+
+def test_packs_icono_slot_repetido(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["slots"] = list(icons[0]["slots"])
+    assert any_error(errors_of(ds), "ya tiene icono")
+
+
+def test_packs_icono_textura_repetida(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["texture"] = icons[0]["texture"]
+    assert any_error(errors_of(ds), "textura repetida")
+
+
+def test_packs_icono_pista_sin_cubrir(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    cat["iconsPending"] = [p for p in cat["iconsPending"] if p["achievementIcon"] != "ballena"]
+    assert any_error(errors_of(ds), "ballena", "ni está en iconsPending")
+
+
+def test_packs_icono_pendiente_ya_cubierto(ds: DataSet) -> None:
+    _catalog(ds)["iconsPending"].append({"achievementIcon": "fuego", "reason": "prueba"})
+    assert any_error(errors_of(ds), "fuego", "ya tiene icono")
+
+
+def test_packs_icono_de_pack_sin_licencia(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["pack"] = "iconos_de_pago"
+    assert any_error(errors_of(ds), "iconos_de_pago", "packs.json")

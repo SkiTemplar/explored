@@ -2,10 +2,10 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 648,
+		"total": 649,
 		"cpp": 303,
-		"datos": 345,
-		"pendientes": 0,
+		"datos": 346,
+		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
@@ -3428,6 +3428,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "tablon_contencion.nameEs",
+			"es": "Tablón de contención",
+			"en": "Retaining board",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «tablon_contencion» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "techo_bambu.nameEs",
 			"es": "Techo de bambú y palma",
 			"en": "Bamboo and palm roof",
@@ -6514,6 +6524,76 @@
 			"origin": "ini",
 			"locations": [
 				"Config/DefaultGame.ini:4"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "PlayerBackUp",
+			"es": "{Name} vuelve a estar en pie.",
+			"en": "{Name} is back up.",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "PlayerDown",
+			"es": "{Name} está en el suelo.",
+			"en": "{Name} is down.",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "ReviveVerb",
+			"es": "Levantar a {Name}",
+			"en": "Help {Name} up",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "ReviveVerbMedicine",
+			"es": "Atender a {Name}",
+			"en": "Patch {Name} up",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "SleepBlockedByDowned",
+			"es": "No se duerme con alguien en el suelo.",
+			"en": "Nobody sleeps with someone down.",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "SleepOneStillUp",
+			"es": "Queda uno en pie.",
+			"en": "One still up.",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+			]
+		},
+		{
+			"namespace": "ExploredCoop",
+			"key": "SleepStillUp",
+			"es": "Hay {Count} en pie todavía.",
+			"en": "{Count} still up.",
+			"origin": "pendiente",
+			"locations": [
+				"UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
 			]
 		}
 	]
