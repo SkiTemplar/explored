@@ -348,6 +348,11 @@ void FBoatModel::SetDefinition(const FBoatDefinition& InDefinition)
 	Def.HullMassKg = FMath::Max(Def.HullMassKg, 1.0f);
 	Def.WaterplaneCoefficient = FMath::Clamp(Def.WaterplaneCoefficient, 0.05f, 1.0f);
 	Def.MaxCargoKg = FMath::Max(Def.MaxCargoKg, 0.0f);
+	// Estabilidad: sin GM positiva el balance no tiene rigidez, y el vuelco tiene que caer entre 0° y 90°.
+	Def.MetacentricHeightCm = FMath::Max(Def.MetacentricHeightCm, 1.0f);
+	Def.CapsizeRollDeg = FMath::Clamp(Def.CapsizeRollDeg, 5.0f, 89.0f);
+	Def.RollPeriodS = FMath::Max(Def.RollPeriodS, 0.2f);
+	Def.RollDamping = FMath::Clamp(Def.RollDamping, 0.0f, 2.0f);
 	State.CargoKg = FMath::Min(State.CargoKg, Def.MaxCargoKg);
 	if (!Def.HasSail())
 	{
@@ -814,6 +819,32 @@ void FBoatModel::Substep(float H, float WaveTime, const FBoatControls& Controls,
 
 	// --- Desplazamiento con fondo: varadas contra arrecifes y el límite de la balsa.
 	FVector2D Candidate = Center + NewVelocity * (100.0 * H);
+
+	// Amarre: el cabo no se estira. Si el paso lo sacaría del círculo, se queda en el borde
+	// y pierde la velocidad que lo alejaba; la que va de lado o hacia el poste se conserva.
+	// Se aplica antes de mirar el fondo para que la varada juzgue el paso que de verdad da.
+	State.bMooringTaut = false;
+	auto ApplyMooring = [&]()
+	{
+		if (!State.bMoored)
+		{
+			return;
+		}
+		const FVector2D Offset = Candidate - State.MooringAnchorCm;
+		const double Distance = Offset.Size();
+		if (Distance > State.MooringLengthCm && Distance > UE_KINDA_SMALL_NUMBER)
+		{
+			const FVector2D Out = Offset / Distance;
+			Candidate = State.MooringAnchorCm + Out * static_cast<double>(State.MooringLengthCm);
+			const double Radial = FVector2D::DotProduct(NewVelocity, Out);
+			if (Radial > 0.0)
+			{
+				NewVelocity -= Out * Radial;
+			}
+			State.bMooringTaut = true;
+		}
+	};
+	ApplyMooring();
 	State.bAtOpenOceanLimit = false;
 	if (bHasDepth && !NewVelocity.IsNearlyZero())
 	{
@@ -877,28 +908,11 @@ void FBoatModel::Substep(float H, float WaveTime, const FBoatControls& Controls,
 		NewVelocity = NewVelocity * (Slowed / Speed);
 		Candidate = Center + NewVelocity * (100.0 * H);
 		// Roce: carga sobre el fondo × distancia arrastrada (desgaste de Archard en las uniones).
-		State.GroundScrapeWorkNm += static_cast<float>(Mass * Gravity * Support * Slowed * H);
+		State.GroundScrapeWorkNm += static_cast<double>(Mass) * Gravity * Support * Slowed * H;
 	}
 
-	// Amarre: el cabo no se estira. Si el paso lo sacaría del círculo, se queda en el borde
-	// y pierde la velocidad que lo alejaba; la que va de lado o hacia el poste se conserva.
-	State.bMooringTaut = false;
-	if (State.bMoored)
-	{
-		const FVector2D Offset = Candidate - State.MooringAnchorCm;
-		const double Distance = Offset.Size();
-		if (Distance > State.MooringLengthCm && Distance > UE_KINDA_SMALL_NUMBER)
-		{
-			const FVector2D Out = Offset / Distance;
-			Candidate = State.MooringAnchorCm + Out * static_cast<double>(State.MooringLengthCm);
-			const double Radial = FVector2D::DotProduct(NewVelocity, Out);
-			if (Radial > 0.0)
-			{
-				NewVelocity -= Out * Radial;
-			}
-			State.bMooringTaut = true;
-		}
-	}
+	// El roce solo acorta el paso hacia Center, pero se reaplica por si Center ya estaba en el borde.
+	ApplyMooring();
 
 	State.VelocityCmS = NewVelocity * 100.0;
 	State.LocationCm.X = Candidate.X;

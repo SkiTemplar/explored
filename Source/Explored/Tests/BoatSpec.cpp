@@ -604,6 +604,26 @@ void FBoatSpec::Define()
 			TestTrue(TEXT("suelta el cabo y se va"), (FVector2D(S.LocationCm.X, S.LocationCm.Y) - FVector2D(-100.0, 0.0)).Size() > 600.0);
 		});
 
+		It("con el cabo tenso pierde solo la velocidad que lo aleja y se desliza de lado por el círculo", [this]()
+		{
+			FRun Run(EBoatType::Raft);
+			Run.Model.SetCrewAboard(false);
+			const FVector2D Anchor(-300.0, 0.0);
+			TestTrue(TEXT("amarra con el cabo justo"), Run.Model.Moor(Anchor, 300.0f));
+			// Corriente hacia fuera (+X) y de lado (+Y).
+			Run.Env.CurrentCmS = FVector2D(80.0, 40.0);
+			Run.Advance(3.0f);
+			const FBoatState& S = Run.Model.GetState();
+			const FVector2D Here(S.LocationCm.X, S.LocationCm.Y);
+			const FVector2D Out = (Here - Anchor).GetSafeNormal();
+			const FVector2D Side(-Out.Y, Out.X);
+			TestTrue(TEXT("tenso"), S.bMooringTaut);
+			TestTrue(TEXT("en el borde del círculo"), (Here - Anchor).Size() <= 300.0 + 1e-3);
+			TestTrue(TEXT("sin velocidad hacia fuera"), FVector2D::DotProduct(S.VelocityCmS, Out) <= 1e-6);
+			TestTrue(TEXT("conserva la de lado"), FVector2D::DotProduct(S.VelocityCmS, Side) > 5.0);
+			TestTrue(TEXT("y se ha deslizado por el círculo"), S.LocationCm.Y > 10.0);
+		});
+
 		It("no amarra a un poste fuera del alcance del cabo, sin cabo ni destrozada, y el amarre se guarda", [this]()
 		{
 			FBoatModel Model(EBoatType::Raft, FVector::ZeroVector, 0.0f);
@@ -639,6 +659,14 @@ void FBoatSpec::Define()
 			Custom.SetDefinition(Small);
 			TestEqual(TEXT("carga recortada"), Custom.GetState().CargoKg, 40.0f);
 			TestTrue(TEXT("eslora degenerada saneada"), Custom.GetDefinition().LengthCm >= 10.0f);
+			FBoatDefinition Unstable = Small;
+			Unstable.MetacentricHeightCm = -20.0f;
+			Unstable.CapsizeRollDeg = 0.0f;
+			Unstable.RollPeriodS = 0.0f;
+			Custom.SetDefinition(Unstable);
+			TestTrue(TEXT("GM saneada"), Custom.GetDefinition().MetacentricHeightCm >= 1.0f);
+			TestTrue(TEXT("vuelco saneado"), Custom.GetDefinition().CapsizeRollDeg >= 5.0f && Custom.GetDefinition().CapsizeRollDeg < 90.0f);
+			TestTrue(TEXT("periodo saneado"), Custom.GetDefinition().RollPeriodS > 0.0f);
 			TestEqual(TEXT("misma posición"), Custom.GetState().LocationCm.Y, 20.0, 1e-9);
 			TestEqual(TEXT("mismo rumbo"), Custom.GetState().YawDeg, 45.0f, 1e-4f);
 			const FBoatModel Loaded = FBoatModel::FromSaveData(Custom.ToSaveData(), &Small);

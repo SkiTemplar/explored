@@ -516,7 +516,7 @@ void FRaftYardModelSpec::Define()
 			{
 				Boat.Step(Dt, FBoatControls(), Env);
 			}
-			const float Work = Boat.GetState().GroundScrapeWorkNm;
+			const float Work = static_cast<float>(Boat.GetState().GroundScrapeWorkNm);
 			TestTrue(FString::Printf(TEXT("roce acumulado %.0f N·m"), Work), Work > 0.0f);
 			const FRaftDamageReport R = Yard.ApplyScrapeWork(Work, ELaunchSurface::WetSand);
 			TestEqual(TEXT("todas las del fondo"), R.JointsDamaged, 17);

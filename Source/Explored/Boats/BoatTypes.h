@@ -201,8 +201,12 @@ struct EXPLORED_API FBoatState
 	float LastImpactSpeedCmS = 0.0f;
 	/** Dirección del último golpe en el marco del casco (X proa, Y estribor; unitaria). */
 	FVector2D LastImpactDirection = FVector2D(1.0, 0.0);
-	/** Trabajo de roce contra el fondo varado y en marcha (N·m acumulados): la arena y la roca gastan las uniones. */
-	float GroundScrapeWorkNm = 0.0f;
+	/**
+	 * Trabajo de roce contra el fondo varado y en marcha (N·m acumulados): la arena y la roca
+	 * gastan las uniones. Solo crece; quien lo consume guarda el último valor y aplica la
+	 * diferencia. En double para que la diferencia no se pierda tras horas de juego.
+	 */
+	double GroundScrapeWorkNm = 0.0;
 
 	float StrokeTimeLeftS = 0.0f;
 	EBoatSide StrokeSide = EBoatSide::Port;
