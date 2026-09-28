@@ -812,10 +812,10 @@ cambio grande para una necesidad que hoy no existe):
 - [ ] Añadir el campo `phase` a los 30 logros ya existentes en `achievements.json`, con los valores de §2.2.
 - [ ] Añadir un campo de rareza (`rarity: "comun" | "infrecuente" | "raro" | "muy_raro"`) a los 54 logros de `achievements.json`, con los valores asignados en §2.
 - [ ] Añadir a `Content/Data/building_pieces.json` las piezas de muralla: `empalizada`, `muralla_piedra`, `torre_defensa` (categoría nueva `defensa`, sin equivalente hoy en el fichero).
-- [ ] Añadir a `Content/Data/building_pieces.json` las piezas de museo nuevas: `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`, `vitrina_minerales`, `panel_fosiles` (categoría `museo`, mismo patrón que `estanteria_museo`/`vitrina_museo`/`panel_museo`).
-- [ ] Crear `Content/Data/shells.json`, `Content/Data/herbarium.json`, `Content/Data/insects.json` y `Content/Data/fossils.json` con las piezas listadas en §3.6, siguiendo el patrón bilingüe (`nameEs`/`nameEn`) de `artifacts.json`.
-- [ ] Añadir el subconjunto «tesoros» a `artifacts.json` como campo derivado o consulta (`rarity` en `["raro", "unico"]`), documentado en §3.2, sin duplicar el catálogo.
-- [ ] Crear `Content/Data/journal_entries.json` con el esquema de §4.1 (`id`, `trigger`, `textEs`, `textEn`, marcador `{Day}`) y las 15 entradas de §4.2 como contenido inicial.
+- [x] Añadir a `Content/Data/building_pieces.json` las piezas de museo nuevas: `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`, `vitrina_minerales`, `panel_fosiles` (categoría `museo`, mismo patrón que `estanteria_museo`/`vitrina_museo`/`panel_museo`).
+- [x] Crear `Content/Data/shells.json`, `Content/Data/herbarium.json`, `Content/Data/insects.json` y `Content/Data/fossils.json` con las piezas listadas en §3.6, siguiendo el patrón bilingüe (`nameEs`/`nameEn`) de `artifacts.json`.
+- [x] Añadir el subconjunto «tesoros» a `artifacts.json` como campo derivado o consulta (`rarity` en `["raro", "unico"]`), documentado en §3.2, sin duplicar el catálogo.
+- [x] Crear `Content/Data/journal_entries.json` con el esquema de §4.1 (`id`, `trigger`, `textEs`, `textEn`, marcador `{Day}`) y las 15 entradas de §4.2 como contenido inicial.
 - [ ] Añadir el logro candidato `museo_completo` (§3.4) a una futura revisión de `achievements.json` cuando el total de logros lo permita sin salir del rango 40–60, o en una actualización de contenido posterior al lanzamiento.
 - [ ] Añadir las 66 entradas del glosario de §5.2 a `docs/tecnico/localizacion.md` o a un fichero de glosario propio referenciado desde ahí, para que el equipo de traducción futuro (o Codex/Antigravity delegados en localización) no reinvente ninguna de estas decisiones de nombre propio.
 - [ ] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de plural ICU (`{Count}|plural(...)`) descritos en §5.3, hoy no verificados explícitamente por el chequeo de marcadores.

@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "note": "Colección «Conchas» del museo de la base (biblia 07 §3.2-3.6). Cada pieza: nombre de vitrina (≤6 palabras) y ficha (≤2 frases, ≤160 caracteres ES / ≤200 EN) bilingües, islas donde aparece (minúsculas de EIslandArchetype), hábitat, cómo se consigue y fase. Lo valida Tools/DataCheck. Red (biblia 08 §2.11, §5.5): el museo es uno por mundo, estado del servidor replicado en el GameState; el texto es dato local.",
+  "collection": "conchas",
+  "display": "bandeja_conchas",
+  "pieces": [
+    {
+      "id": "cauri_anillado",
+      "nameEs": "Cauri anillado",
+      "nameEn": "Ringed cowrie",
+      "islands": [
+        "landing",
+        "teeth"
+      ],
+      "habitat": "intermareal_rocoso",
+      "obtain": "recoger_bajamar",
+      "phase": "AA",
+      "descriptionEs": "Cauri anillado. La marea lo deja entre las rocas después de una noche de luna llena.",
+      "descriptionEn": "Ringed cowrie. The tide leaves it among the rocks after a full-moon night."
+    },
+    {
+      "id": "oreja_de_mar",
+      "nameEs": "Oreja de mar nacarada",
+      "nameEn": "Pearly abalone",
+      "islands": [
+        "teeth"
+      ],
+      "habitat": "intermareal_rocoso",
+      "obtain": "recoger_bajamar",
+      "phase": "AA",
+      "descriptionEs": "Oreja de mar nacarada. Se agarra a la roca batida de Los Dientes y hay que despegarla con la hoja del cuchillo.",
+      "descriptionEn": "Pearly abalone. It grips the wave-beaten rock of the Teeth and has to be prised off with a knife blade."
+    },
+    {
+      "id": "caracola_trompeta",
+      "nameEs": "Caracola trompeta",
+      "nameEn": "Trumpet conch",
+      "islands": [
+        "landing",
+        "emerald"
+      ],
+      "habitat": "fondo_arenoso",
+      "obtain": "bucear",
+      "phase": "AA",
+      "descriptionEs": "Caracola trompeta. Vacía y limpia, suena si soplas por la punta rota.",
+      "descriptionEn": "Trumpet conch. Empty and clean, it sounds if you blow through the broken tip."
+    },
+    {
+      "id": "almeja_gigante",
+      "nameEs": "Concha de almeja gigante",
+      "nameEn": "Giant clam shell",
+      "islands": [
+        "landing",
+        "whitesands"
+      ],
+      "habitat": "laguna",
+      "obtain": "bucear",
+      "phase": "AA",
+      "descriptionEs": "Concha de almeja gigante. Pesa como un cubo de agua, y el borde ondulado corta si la coges mal.",
+      "descriptionEn": "Giant clam shell. As heavy as a bucket of water, and the wavy rim cuts if you grip it wrong."
+    },
+    {
+      "id": "dolar_de_arena",
+      "nameEs": "Dólar de arena",
+      "nameEn": "Sand dollar",
+      "islands": [
+        "landing",
+        "whitesands"
+      ],
+      "habitat": "playa",
+      "obtain": "recoger_playa",
+      "phase": "AA",
+      "descriptionEs": "Dólar de arena. Aparece en la playa después de un temporal, blanco y tan fino que se parte con dos dedos.",
+      "descriptionEn": "Sand dollar. It turns up on the beach after a storm, white and thin enough to snap between two fingers."
+    },
+    {
+      "id": "concha_abanico",
+      "nameEs": "Concha de abanico rosado",
+      "nameEn": "Pink fan shell",
+      "islands": [
+        "emerald",
+        "whitesands"
+      ],
+      "habitat": "fondo_arenoso",
+      "obtain": "bucear",
+      "phase": "AA",
+      "descriptionEs": "Concha de abanico rosado. El color se apaga al sol en pocos días, así que se guarda a la sombra.",
+      "descriptionEn": "Pink fan shell. The colour fades in the sun within days, so it's kept in the shade."
+    },
+    {
+      "id": "turbante_verde",
+      "nameEs": "Turbante verde",
+      "nameEn": "Green turban shell",
+      "islands": [
+        "teeth"
+      ],
+      "habitat": "intermareal_rocoso",
+      "obtain": "recoger_bajamar",
+      "phase": "AA",
+      "descriptionEs": "Turbante verde. Bajo la costra verde hay una espiral de nácar que asoma donde el oleaje la ha gastado.",
+      "descriptionEn": "Green turban shell. Under the green crust there's a spiral of mother-of-pearl, showing where the surf has worn it."
+    },
+    {
+      "id": "casco_real",
+      "nameEs": "Concha de casco real",
+      "nameEn": "Royal helmet shell",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "playa",
+      "obtain": "recoger_playa",
+      "phase": "AA",
+      "rarity": "raro",
+      "descriptionEs": "Concha de casco real. Tiene la boca naranja y aparece en la arena negra al pie del volcán.",
+      "descriptionEn": "Royal helmet shell. Orange-lipped, it turns up in the black sand below the volcano."
+    }
+  ]
+}
