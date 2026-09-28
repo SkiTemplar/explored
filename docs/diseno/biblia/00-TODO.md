@@ -19,7 +19,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
 |---|---|---|---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 7 | 10 | 26 | 43 | 16 % | 28 % |
+| H0 — Porción vertical jugable en Landing | 6 | 11 | 26 | 43 | 14 % | 27 % |
 | H1 — Mundo interactivo | 2 | 5 | 29 | 36 | 6 % | 13 % |
 | H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
@@ -27,14 +27,14 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **15** | **38** | **154** | **207** | **7 %** | **16 %** |
+| **Total** | **14** | **39** | **154** | **207** | **7 %** | **16 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
 
 Revisión del 2026-09-28: auditoría casilla a casilla contra `origin/main` (`266a8cc`,
-tras la PR #69) con `git grep` y `git log`. Seis casillas pasan a `[x]` (de 9 a 15), cada
-una con su commit y su PR en una línea `→ **Hecho:**`, y 38 quedan anotadas como «en
+tras la PR #69) con `git grep` y `git log`. Cinco casillas pasan a `[x]` (de 9 a 14), cada
+una con su commit y su PR en una línea `→ **Hecho:**`, y 39 quedan anotadas como «en
 parte». El patrón es el mismo en casi todas: las PR de la nube (#39 tala, #40 terreno
 editable, #46 arena viva, #50 datos de minería y fauna, #53 astillero, #57 raíles, #58
 incendio) entregaron el **modelo puro con su spec**, pero ningún actor, componente ni
@@ -193,11 +193,14 @@ salir de la isla.
 
 ### Granja (huerto y limonero de Landing)
 
-- [x] Confirmar que `FarmModel`/`plants.json` ya cubren riego y ventana de estaciones tal
+- [ ] Confirmar que `FarmModel`/`plants.json` ya cubren riego y ventana de estaciones tal
       como se documenta en biblia 02 §10.1 (sin cambios esperados; solo verificación).
       *(biblia 02 §10.1)*
-      → **Hecho:** `22ec751` + riego en `c0a6f1c` (PR #36): `Farming/FarmModel.h:15-24,
-        60-63`, `plants.json:23-24`.
+      → **En parte:** `22ec751` + riego en `c0a6f1c` (PR #36): `Farming/FarmModel.h:15-24,
+        60-63`, `plants.json:23-24` cubren `waterPerDay` y `seasons` — pero la verificación
+        falla: la biblia dice que sin riego la planta «deja de avanzar de etapa (no muere)»,
+        y `FarmModel.h:195-196` (`DryDaysToDie = 4`) la mata a los 4 días secos
+        (`FarmModel.cpp:420-422`). Falta decidir cuál manda y alinear código o biblia.
 - [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
