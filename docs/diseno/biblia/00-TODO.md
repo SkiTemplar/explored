@@ -26,8 +26,8 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H4 — Contenido de acceso anticipado | 9 | 2 | 12 | 23 | 39 % | 43 % |
 | H5 — Lanzamiento del acceso anticipado | 11 | 0 | 15 | 26 | 42 % | 42 % |
 | F2 | 2 | 4 | 10 | 16 | 12 % | 25 % |
-| F3 | 2 | 0 | 25 | 27 | 7 % | 7 % |
-| **Total** | **42** | **47** | **128** | **217** | **19 %** | **30 %** |
+| F3 | 2 | 6 | 20 | 28 | 7 % | 18 % |
+| **Total** | **42** | **53** | **123** | **218** | **19 %** | **31 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -48,6 +48,10 @@ Minería y terreno de H2 (PR #95): `FMiningModel`, `FMineHazardModel` y `FShovel
 con sus specs y las piezas `viga_apoyo` y `tablon_contencion` en datos. Con el mismo
 criterio, sus casillas cuentan como «en parte» (modelo puro sin enganchar) y se añade la
 casilla de conectarlos al juego.
+
+F3 (PR #92): `FReputationModel`, `FBarterModel`, `FPirateThreatModel` y `FRaiderCampsModel`
+con sus specs. Seis casillas pasan a «en parte» (modelo puro sin enganchar) y se añade la
+de cablearlos en el motor.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -1011,31 +1015,47 @@ asaltos), isla oculta y final.
 - [ ] Nuevo módulo `Villages`: spawn de la aldea (Arenas Blancas, 10 NPC) y el puesto de
       trueque (La Meseta, 4 NPC). *(biblia 05 §1.1)*
 - [ ] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* → **En parte (PR #92):** modelo puro `Villages/ReputationModel` (`FReputationModel::Save`/
+      `Load`, spec `Explored.Villages.Reputation`); registrarla en el subsistema va en la
+      casilla de cableado de abajo.
 - [ ] Prop nuevo «tablón de peticiones» (malla + rotación de icono cada 4 días)
       reutilizando `story_es.json.petroglyph_themes`. *(biblia 05 §1.3)*
 - [ ] Lógica de trueque: valor 1–5 por objeto × tasa de reputación, ventana horaria
-      8:00–18:00. *(biblia 05 §1.4)*
+      8:00–18:00. *(biblia 05 §1.4)* → **En parte (PR #92):** `Villages/BarterModel` (aritmética entera en cuartos,
+      trueque gratis del tablón, solo básicos en Cauta); DataCheck compara sus constantes con
+      `fases_futuras.json`.
 - [ ] Enganchar «devolver objeto ritual» a `Ruins` (+5 reputación, sin trueque de por
-      medio). *(biblia 05 §1.5)*
+      medio). *(biblia 05 §1.5)* — la regla ya está en `FReputationModel::ReturnRitualObject`
+      (una vez por objeto, solo marae y cueva ritual); falta llamarla desde `URuinsSubsystem`.
 - [ ] Wayfinding enseñado por el guardián del marae con reputación ≥70, sin duplicar
       entre Arenas Blancas y La Meseta. *(biblia 05 §1.6)*
 - [ ] Aldeanos invulnerables al daño de arma (solo huida + penalización de reputación).
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* — el modelo ya lo fija (`StrikeVillager`: daño 0, huye, −25;
+      `IsHostileCombatant` siempre false); falta el actor del aldeano.
 - [ ] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* → **En parte (PR #92):** `FReputationModel`: una ofensa nueva en Hostil lo alarga, nunca lo
+      acorta.
 - [ ] Especificar e implementar la pantalla de trueque (§2.11 de biblia 06): prompt de
       contexto «Ofrecer {objeto}», sin menú de tienda ni barra de reputación en pantalla.
       *(biblia 06 §2.11)*
 - [ ] Nuevo módulo `Raiders`: percepción reutilizando `Fauna`, patrulla por semilla entre
       los dos campamentos, 4 tipos de pirata con sus daños y vidas. *(biblia 05 §2.1–2.2)*
 - [ ] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de
-      biblia 05 §2.3. *(biblia 05 §2.3)*
+      biblia 05 §2.3. *(biblia 05 §2.3)* → **En parte (PR #92):** `Raiders/PirateThreatModel` (sección `raiders`,
+      spec `Explored.Raiders.Threat`).
 - [ ] Programador de asaltos: categoría según Amenaza, condición de recursos
-      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)*
+      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)* → **En parte (PR #92):**
+      `FPirateThreatModel::EvaluateDay`, determinista por semilla; el humo y el tambor como
+      efectos van con el cableado.
 - [ ] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes,
       Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
-      *(biblia 05 §2.5)*
+      *(biblia 05 §2.5)* → **En parte (PR #92):** `Raiders/RaiderCampsModel` (spec `Explored.Raiders.Camps`); los
+      actores se crean con el cableado.
+- [ ] Cablear los modelos de F3 en el motor: subsistemas `Villages` y `Raiders` que
+      registren las secciones `reputation` y `raiders` en `UExploredSaveSubsystem`, llamen a
+      `FPirateThreatModel::EvaluateDay` al empezar cada día, creen los campamentos de
+      `FRaiderCampsModel::Generate` y lancen humo y tambor. Necesita Unreal.
+      *(docs/tecnico/navegantes-piratas.md)*
 - [ ] Dos plantillas de barco pirata (Piragua de asalto, Balandra negra) sobre el mismo
       `FBoatModel` del resto de embarcaciones. *(biblia 05 §2.5)*
 - [ ] Botín: skin «Machete pirata» y accesorio cosmético único «Capa de vigía» al
@@ -1066,7 +1086,8 @@ asaltos), isla oculta y final.
       §2.7, mismo tope y mismo LOD), con el escalado por número de jugadores de biblia 08
       §5.6: asaltantes `×(1 + 0,4·(N−1))` sobre la base de 5 (7/9/11 con 2/3/4 jugadores) y
       categoría **+1** por cada 2 jugadores por encima de 1; la frecuencia no escala.
-      *(biblia 08 §5.6, §1.3)*
+      *(biblia 08 §5.6, §1.3)* — el escalado ya está en `FPirateThreatModel`
+      (`ScaledPartySize`, `EffectiveCategory`); falta la autoridad en el servidor.
 - [ ] Red: logros de restricción en cooperativo (`sin_disparar_una_flecha` y similares) con
       la bandera compartida del `GameState`: si cualquier jugador rompe la restricción, se
       apaga para todos en esa partida. *(biblia 08 §5.7)*

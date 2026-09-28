@@ -75,6 +75,10 @@ WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
+Villages/ReputationModel.cpp
+Villages/BarterModel.cpp
+Raiders/PirateThreatModel.cpp
+Raiders/RaiderCampsModel.cpp
 WorldGen/MiningModel.cpp
 WorldGen/MineHazardModel.cpp
 WorldGen/ShovelPathModel.cpp
