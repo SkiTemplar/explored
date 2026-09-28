@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Boats/BoatTypes.h"
+#include "Boats/BoatModel.h"
 
 /**
  * Piezas con las que el jugador arma un casco (GDD v2 §3.13). No hay «construir
@@ -192,10 +192,10 @@ struct EXPLORED_API FHullPerformance
 class EXPLORED_API FHullAssemblyModel
 {
 public:
-	/** Agua de mar (kg/m³). */
-	static constexpr float WaterDensity = 1025.0f;
-	static constexpr float AirDensity = 1.225f;
-	static constexpr float Gravity = 9.81f;
+	/** Agua de mar (kg/m³), aire y gravedad: los mismos que FBoatModel, para que el casco no cambie al botarlo. */
+	static constexpr float WaterDensity = FBoatModel::WaterDensity;
+	static constexpr float AirDensity = FBoatModel::AirDensity;
+	static constexpr float Gravity = FBoatModel::Gravity;
 	/** Por debajo de esta escora y este asiento se considera nivelada (°). */
 	static constexpr float LevelToleranceDeg = 2.0f;
 	/** Francobordo mínimo (cm): por debajo, cualquier ola entra y la embarcación va anegada. */
@@ -204,8 +204,8 @@ public:
 	static constexpr float SwampedSpeedFactor = 0.5f;
 	/** Escora estática a partir de la cual vuelca (°, biblia 02 §8.2). */
 	static constexpr float CapsizeHeelDeg = 55.0f;
-	/** Masa de un pasajero tipo (kg). */
-	static constexpr float PassengerMassKg = 75.0f;
+	/** Masa de un pasajero tipo (kg): la del tripulante de FBoatModel. */
+	static constexpr float PassengerMassKg = FBoatModel::CrewMassKg;
 	/** Empuje sostenido de un tripulante con pala (N) y con un par de remos (N). */
 	static constexpr float PaddleThrustN = 35.0f;
 	static constexpr float OarsThrustN = 70.0f;
