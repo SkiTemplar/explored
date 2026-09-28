@@ -252,6 +252,11 @@ mapa.
     tierra la escalera es un túnel) y hasta 64 peldaños. Tallarla cuesta golpes: cada
     golpe sobre la escalera marcada arranca como mucho el volumen de un golpe de pico en
     ese material, y la escalera se va definiendo poco a poco hasta quedar completa.
+  - **Peticiones imposibles.** Si una edición llega con valores no finitos, fuera del
+    mundo, con una pala o un montón de tierra de más de 4 m de radio o con una escalera
+    que pasa de los topes anteriores, no se toca nada y la herramienta rebota, igual que
+    contra un material demasiado duro. Así ni un fallo ni un cliente del cooperativo
+    pueden colgar la partida o estropear el guardado del terreno.
   - **Persistencia.** Todo queda en la capa `"terrain"` de la sección `world` del
     guardado (deltas por chunk de 8 m en milímetros enteros). Un agujero sigue cavado
     al recargar la partida (criterio de salida de §6.1).
@@ -1124,6 +1129,10 @@ Precedente ya existente en el repo que respalda el pivote: `VolcanicRock` y
 `Limestone` ya son fotobasheados desde fotografías CC0 de Poly Haven
 (`docs/art/texturas.md`); el proyecto ya rompió la regla «todo por código» antes de
 esta decisión, solo que sin decirlo en el GDD. Este documento lo hace explícito.
+*Actualización 2026-09-28:* por criterio del director, las texturas del terreno (hierba,
+arenas, tierra, hojarasca, basalto y caliza) vuelven a pintarse por código, estilizadas y
+con la paleta por isla (`docs/art/texturas.md`); el kit de mallas de rocas escaneadas no
+cambia.
 
 Regla de estilo que **no** cambia: low-poly estilizado y pulido (GDD v3 §13); los
 packs CC0 se seleccionan y, si hace falta, se retocan en materiales/color para no

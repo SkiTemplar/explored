@@ -640,6 +640,20 @@ void FBoatSpec::Define()
 			TestEqual(TEXT("con su cabo"), Loaded.GetState().MooringLengthCm, 300.0f);
 			TestTrue(TEXT("y su poste"), Loaded.GetState().MooringAnchorCm == FVector2D(300.0, 0.0));
 
+			// Un guardado incoherente no amarra: el primer paso llevaría el barco hasta el poste.
+			FBoatSaveData Bad = Model.ToSaveData();
+			Bad.MooringAnchorCm = FVector2D(1.0e7, 0.0);
+			TestFalse(TEXT("poste guardado fuera del alcance"), FBoatModel::FromSaveData(Bad).IsMoored());
+			Bad = Model.ToSaveData();
+			Bad.MooringLengthCm = std::numeric_limits<float>::infinity();
+			TestFalse(TEXT("cabo guardado infinito"), FBoatModel::FromSaveData(Bad).IsMoored());
+			Bad = Model.ToSaveData();
+			Bad.MooringAnchorCm.Y = std::numeric_limits<double>::quiet_NaN();
+			TestFalse(TEXT("poste guardado NaN"), FBoatModel::FromSaveData(Bad).IsMoored());
+			Bad = Model.ToSaveData();
+			Bad.HullDamage01 = 1.0f;
+			TestFalse(TEXT("destrozada al cargar"), FBoatModel::FromSaveData(Bad).IsMoored());
+
 			FBoatModel Wreck(EBoatType::Raft, FVector::ZeroVector, 0.0f);
 			Wreck.ApplyDamage(1.0f);
 			TestFalse(TEXT("destrozada no"), Wreck.Moor(FVector2D(0.0, 0.0), 100.0f));

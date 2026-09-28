@@ -71,6 +71,8 @@ public:
 	static constexpr float GroundingToleranceCm = 3.0f;
 	/** Velocidad de choque contra el fondo a partir de la cual se daña el casco (cm/s). */
 	static constexpr float SafeImpactSpeedCmS = 80.0f;
+	/** Holgura al cargar un amarre (cm): más lejos del poste que el cabo más esto, el guardado no es coherente y se suelta. */
+	static constexpr float MooringLoadToleranceCm = 50.0f;
 
 	static const FBoatDefinition& Definition(EBoatType Type);
 
