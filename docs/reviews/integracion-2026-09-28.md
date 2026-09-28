@@ -232,3 +232,82 @@ Sin casillas marcadas:
 - #57 es el modelo puro de `Tramway`, pero la casilla de raíles («Nuevo módulo
   `Tramway`: pieza de vía (socket `via`), grafo de tramos, vagón sobre spline con colisión
   contra terreno editable») pide también la pieza, la spline y la integración en el motor.
+
+## Ejecución 07:00 UTC
+
+Base: `origin/main` en `7a3e678` al empezar y en `7593c02` después de fusionar #58 (`e649a96`) y #60.
+#44, #49 y #53 no tienen commits ni respuestas nuevas desde la ejecución de las 05:00, así que
+mantienen la decisión anterior y no se han vuelto a comprobar. En #46 tampoco ha respondido el
+director.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #44 | `nocturno/revision-2026-09-27c` | Sin cambios: `necesita-unreal` | No tiene commits nuevos. |
+| #46 | `nube/mundo-2026-09-27` | Sin cambios: falta que el director confirme (merge de `main` subido) | Siguen sin confirmar las dos notas «[director, 2026-09-27]» de la biblia 02 §5.1 y §5.2. |
+| #49 | `nocturno/revision-2026-09-28` | Sin cambios: `necesita-unreal` | No tiene commits nuevos. |
+| #50 | `nocturno/datos-2026-09-28` | Sin cambios: falta que el director apruebe (merge de `main` subido) | El compost nuevo está bien. Sigue bloqueada por la «Cabeza con Punta» de la biblia 02 §2.2, y además duplica el registro de fauna de #60 (ver abajo). |
+| #53 | `nube/mundo-2026-09-28` | Sin cambios: cambios pedidos | No tiene commits nuevos. Ahora también choca con `main` en `gdd_v2.md` (§3.15 de #58). |
+| #58 | `nube/mundo-2026-09-28-incendio` | **Fusionada** (`e649a96`) | Es un modelo puro `FWildfireModel` con su spec y documentación. Cumple la biblia 02 §6 y define la red. |
+| #60 | `nube/packs-2026-09-28` | **Fusionada** (`7593c02`) | Solo toca datos JSON, `Tools/DataCheck`, `Tools/Packs` y la hoja de contacto. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #46 | 749 / 0 fallos | 749 / 0 fallos | — | Solo se comprobó tras fusionar `main` |
+| #50 | — | — | 0 errores · 180 passed | Localization: 27 passed · `export --check` ok |
+| #58 | 702 / 0 fallos | 702 / 0 fallos | — | 22 casos de `Explored.Wildfire` |
+| #60 | — | — | 0 errores · 131 passed | Packs: 7 passed · `normalize.py` (Blender) solo se ha leído |
+
+### Arreglos subidos
+
+- **#46 `6810c3e`:** merge de `main` después de fusionar #58. Se conservaron las dos líneas en
+  `pure_sources.txt` y `pure_specs.txt`.
+- **#46 `f42e85f`:** el merge había dejado la §3.15 (incendio) delante de la §3.13 (arena
+  viva) en el GDD, y además con una línea horizontal repetida. Se reordena.
+- **#50 `2f0a2da`:** merge de `main` después de fusionar #60. En `checks.py` y
+  `test_datacheck.py` se conservaron las dos partes: `fauna.json`, `fases_futuras.json` y
+  `fauna_terrestre.json` en `DATA_FILES`, y los tests de red de fauna y del `rig` de packs.
+- **#50 `a86a43e`:** después del merge, DataCheck daba 6 errores. El aislamiento de
+  `fases_futuras.json` tomaba como fase 1 a `cerdo`, `cabra` y `gallina`, que en
+  `fauna_terrestre.json` llevan `phase: F2` y en el catálogo de packs están en `discarded`
+  o `pending`. Ahora esas partes quedan fuera. Dos tests nuevos: uno comprueba que los datos
+  reales pasan y el otro que una especie `AA` con un id del borrador sigue fallando.
+
+### #58: notas
+
+- La biblia 08 §2.6 pide recuperar hasta 4 iteraciones al acercarse un jugador. Aquí el
+  fuego de un chunk congelado sigue donde estaba, sin ponerse al día. Es defendible, pero
+  hay que decirlo en la biblia 08 o añadir la recuperación por chunk.
+- El viento se aplica como ±25 puntos y no como ×1,25. Es una interpretación y está
+  señalada en el GDD §3.15.
+- Sigue abierta la contradicción entre los 25 días del matorral y el rebrote de tala de
+  3 + 2 días. La decide el director.
+
+### #50 y #60: fauna duplicada
+
+- `fauna.json` (#50) y `fauna_terrestre.json` (#60, ya en `main`) registran las mismas
+  especies terrestres y no coinciden en todo:
+  - la cabra es `cabra_montes` en #50 y `cabra_salvaje` en #60;
+  - el cerdo salvaje se llama en inglés «Wild pig» en #50 y «Wild boar» en #60.
+- La biblia 02 §11.2 dice «cabra montés» y la biblia 04 dice «cabra salvaje».
+- Hay que dejar una sola fuente. `packs.py` tiene que leer los ids de fauna de ella, así que
+  `fauna_terrestre.json` debería desaparecer o quedar como vista derivada, y hay que
+  alinear el id de la cabra. Queda pedido en #50.
+
+### Duplicados y choques
+
+- #50 chocaba con #60 en `checks.py` y `test_datacheck.py`. Ya se resolvió con el merge.
+- #46 chocaba con #58 en `pure_*.txt`. Ya se resolvió con el merge.
+- #53 choca con #58 en `gdd_v2.md`. No se resuelve aquí porque la PR tiene cambios pedidos
+  sin atender. Además, #53 usa §3.13 y §3.14, y #46 también usa §3.13. Se le ha pedido
+  que renumere.
+
+### 00-TODO.md
+
+Sin casillas marcadas:
+- #58 cubre el modelo de «contagio de fuego entre celdas» (Fuego y clima), pero falta
+  conectarlo al motor. La casilla del rebrote pide además compartir el temporizador con la
+  tala, y eso no está hecho.
+- #60 solo avanza el arte de la fauna, porque el cerdo salvaje aún no está importado en
+  Unreal.
