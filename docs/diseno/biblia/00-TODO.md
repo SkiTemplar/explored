@@ -20,14 +20,14 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 6 | 11 | 26 | 43 | 14 % | 27 % |
-| H1 — Mundo interactivo | 2 | 5 | 29 | 36 | 6 % | 13 % |
+| H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
 | H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
 | H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
 | H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **15** | **39** | **154** | **208** | **7 %** | **17 %** |
+| **Total** | **15** | **44** | **149** | **208** | **7 %** | **18 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -306,21 +306,32 @@ posterior.
 
 - [ ] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la
       propiedad real Filo/Punta/Contundente del objeto. *(biblia 05 §3.0)*
+      → **En parte:** PR #78, `FCombatModel` (`Combat/CombatModel.h`, `CombatModelSpec`) —
+        solo modelo puro; ningún componente ni RPC lo usa. Vale para las cuatro casillas
+        de combate siguientes.
 - [ ] Apertura de corte con profundidad = propiedad ÷ 5, enganchada al sistema `wounds`
       ya existente en `BodyModel` (sin una segunda barra de heridas). *(biblia 05 §3.0)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph
       1.2 s) como variantes de la misma acción de ataque. *(biblia 05 §3.1)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s. *(biblia 05 §3.1)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Caída de precisión del arco por distancia (100/70/40/0 %). *(biblia 05 §3.2)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] `Fauna`: estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los
       cocoteros. *(biblia 05 §5)*
-      → **En parte:** `46382a9` (PR #50), `Content/Data/fauna.json:42, 102, 127` —
-        estadísticas solo en datos; no hay especie C++ ni código que las lea.
+      → **En parte:** `46382a9` (PR #50), `Content/Data/fauna.json:42, 102, 127`, y
+        PR #78: fichas de combate de los cuatro animales en `Content/Data/combat.json`,
+        leídas por `FCombatModel` (`Source/Explored/Combat`, `CombatModelSpec`) y comparadas
+        por `Tools/DataCheck` con el C++ y con `fauna.json`. Falta el cableado en el motor
+        (componente de combate, RPC y actores de fauna terrestre), y `FMarineCreatureBrain`
+        aún usa su propio mordisco de tiburón.
 - [x] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
       tigre «Sombra» ya descrito en la biblia de contenido §4.6. *(biblia 05 §5)*
       → **Hecho:** anterior a #41: `EFaunaSpecies::ReefShark` separado de
         `TigerShark`, `Fauna/FaunaTypes.cpp:42`, `MarineCreatureBrain.cpp:310`
-        (`ReefSharkAttackRoll`).
+        (`ReefSharkAttackRoll`). Ficha de combate en `combat.json` desde PR #78.
 
 ### Inventario y UI general
 
