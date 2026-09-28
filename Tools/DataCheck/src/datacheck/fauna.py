@@ -7,6 +7,9 @@
 - Islas: las de ``EIslandArchetype``; las cuatro del acceso anticipado (GDD v2 §6.2) tienen
   ficha; una isla de fase 1 no puede depender de una especie de fase 2/3 y toda especie de
   fase 1 vive en alguna isla de fase 1.
+- Red (biblia 08 §2.7): cada especie dice si es fauna de ambiente con ancla de grupo o un
+  actor replicado; lo que ataca lo tira el servidor, lo que se caza y despieza se replica y
+  lo que deja nidos o recogidas guarda ese estado en el servidor.
 """
 
 from __future__ import annotations
@@ -22,6 +25,8 @@ DISPOSITIONS = {"huidizo", "defensivo", "territorial"}
 LOD_TIERS = ("Full", "Reduced", "Frozen")
 SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 PHASES = (1, 2, 3)
+NET_CLASSES = {"ambiente", "replicada"}
+NET_ANCHORS = {"bandada", "colonia", "banco", "enjambre"}
 
 
 def cpp_species(ds) -> set[str]:
@@ -133,6 +138,8 @@ def check_fauna(ds, r, properties: set[str]) -> None:
             if bad:
                 r.error(f"{where}: {key} con estaciones desconocidas {sorted(bad)}")
 
+        _check_net(s, where, r)
+
     islands = mining.cpp_islands(ds)
     listed: dict[str, dict] = {}
     home_phases: dict[str, set[int]] = {}
@@ -162,3 +169,23 @@ def check_fauna(ds, r, properties: set[str]) -> None:
             r.error(f"fauna.json «{sid}»: no vive en ninguna isla")
         elif sp.get("fase") == 1 and 1 not in phases:
             r.error(f"fauna.json «{sid}»: es de fase 1 pero solo vive en islas de fase {sorted(phases)}")
+
+
+def _check_net(s: dict, where: str, r) -> None:
+    net = s.get("red")
+    if not isinstance(net, dict):
+        r.error(f"{where}: falta «red» (biblia 08 §2.7: fauna de ambiente con ancla o replicada)")
+        return
+    cls = net.get("clase")
+    if cls not in NET_CLASSES:
+        r.error(f"{where}: red.clase {cls!r} no es {sorted(NET_CLASSES)}")
+    if cls == "ambiente" and net.get("ancla") not in NET_ANCHORS:
+        r.error(f"{where}: fauna de ambiente sin red.ancla de grupo {sorted(NET_ANCHORS)}")
+    if cls == "replicada" and net.get("ancla") is not None:
+        r.error(f"{where}: una especie replicada no lleva ancla de grupo")
+    if s.get("attack") is not None and net.get("tiradaDano") != "servidor":
+        r.error(f"{where}: ataca, así que red.tiradaDano debe ser «servidor» (como ReefSharkAttackRoll)")
+    if s.get("loot") and cls != "replicada":
+        r.error(f"{where}: se caza y despieza (loot), así que debe ser replicada (biblia 08 §2.7 b)")
+    if (s.get("nest") or s.get("groundPickup")) and net.get("recogidas") != "servidor":
+        r.error(f"{where}: nidos o recogidas sin red.recogidas «servidor» (biblia 08 §2.3)")

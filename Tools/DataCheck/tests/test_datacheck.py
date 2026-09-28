@@ -1095,3 +1095,48 @@ def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
     _catalog(ds)["discarded"][0]["gameId"] = "pared_de_neon"
     assert any_error(errors_of(ds), "pared_de_neon", "no existe")
 
+
+# --------------------------------------------------------------------------- red (biblia 08 §2.7)
+
+def fauna_errors(ds: DataSet) -> list[str]:
+    from datacheck import fauna
+    from datacheck.checks import PROPERTIES
+
+    r = Report()
+    fauna.check_fauna(ds, r, PROPERTIES)
+    return r.errors
+
+
+def species(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
+
+
+def test_fauna_real_clasificada_para_red(real: DataSet) -> None:
+    assert fauna_errors(real) == []
+    assert species(real, "cerdo_salvaje")["red"]["clase"] == "replicada"
+    assert species(real, "fragata_colonia")["red"]["tiradaDano"] == "servidor"
+
+
+def test_fauna_sin_red(ds: DataSet) -> None:
+    del species(ds, "gaviota_posada")["red"]
+    assert any_error(fauna_errors(ds), "gaviota_posada", "red")
+
+
+def test_fauna_ataque_tirado_en_cliente(ds: DataSet) -> None:
+    species(ds, "fragata_colonia")["red"]["tiradaDano"] = None
+    assert any_error(fauna_errors(ds), "fragata_colonia", "servidor")
+
+
+def test_fauna_cazable_como_ambiente(ds: DataSet) -> None:
+    species(ds, "cerdo_salvaje")["red"].update(clase="ambiente", ancla="bandada")
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "replicada")
+
+
+def test_fauna_nidos_sin_estado_en_servidor(ds: DataSet) -> None:
+    species(ds, "gaviota_posada")["red"]["recogidas"] = None
+    assert any_error(fauna_errors(ds), "gaviota_posada", "nidos")
+
+
+def test_fases_futuras_sin_nota_de_red(ds: DataSet) -> None:
+    del ds.data["fases_futuras.json"]["trade"]["redNotaEs"]
+    assert any_error(run_all(ds).errors, "trade", "redNotaEs")

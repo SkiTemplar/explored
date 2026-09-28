@@ -64,6 +64,8 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
     for name, sec in sections.items():
         if sec.get("fase") not in DRAFT_PHASES:
             r.error(f"{FILE}/{name}: fase {sec.get('fase')!r} debe ser 2 o 3")
+        if not sec.get("redNotaEs"):
+            r.error(f"{FILE}/{name}: falta redNotaEs (cómo se replica en cooperativo, biblia 08)")
         for group in ("pieces", "traps", "species"):
             for e in sec.get(group, []):
                 eid = e.get("id")

@@ -42,6 +42,7 @@
 			"attack": { "kind": "pinza", "equiv": { "property": "Contundente", "value": 2 }, "damage": 8, "stunSeconds": 0, "onlyIfProvoked": true },
 			"loot": [ { "item": "cangrejo_cocotero", "min": 1, "max": 1, "tool": null } ],
 			"lootPendiente": [],
+			"red": { "clase": "replicada", "ancla": null, "tiradaDano": "servidor", "recogidas": null, "noteEs": "Biblia 08 §2.7 b: se caza y se despieza; actor replicado del servidor." },
 			"noteEs": "Se coge entero con las manos una vez aturdido o de noche en su refugio (mismo objeto que el cangrejo de la poza)."
 		},
 		{
@@ -61,6 +62,7 @@
 			"loot": [],
 			"nest": { "item": "huevo", "min": 1, "max": 3, "everyDays": 4, "seasons": ["seca", "primeras_lluvias"] },
 			"lootPendiente": [],
+			"red": { "clase": "ambiente", "ancla": "bandada", "tiradaDano": null, "recogidas": "servidor", "noteEs": "Biblia 08 §2.7 a: no se caza ni ataca; cada cliente simula la bandada con ancla por grupo cada 2 s. Los nidos son puntos fijos por semilla y su recogida es estado del servidor, como la vegetación talada (§2.3)." },
 			"noteEs": "No se caza: se posa en tierra y huye volando; los nidos de la playa dan huevos (GDD v2 §3.7)."
 		},
 		{
@@ -79,6 +81,7 @@
 			"nest": { "item": "huevo", "min": 1, "max": 1, "everyDays": 6, "seasons": ["seca"] },
 			"groundPickup": { "item": "plumas", "min": 1, "max": 2, "everyDays": 1 },
 			"lootPendiente": ["guano"],
+			"red": { "clase": "ambiente", "ancla": "colonia", "tiradaDano": "servidor", "recogidas": "servidor", "promocion": "picado", "propuesta": true, "noteEs": "Biblia 08 §2.7 a con dos excepciones: el picado lo tira solo el servidor, una vez por jugador y encuentro, como ReefSharkAttackRoll (RPC al afectado, multicast cosmético). Propuesta: la fragata que entra en picado se promociona a actor replicado hasta que vuelve a posarse, para que los golpes que recibe no diverjan; cuenta en el tope de §2.7 b mientras dure. Nidos y plumas del suelo son estado del servidor (§2.3)." },
 			"noteEs": "Colonias en los acantilados de Los Dientes: atacan en picado a menos de 5 m de un nido y vuelven a posarse al alejarse (biblia 04)."
 		},
 		{
@@ -103,6 +106,7 @@
 				{ "item": "grasa", "min": 1, "max": 2, "tool": "cuchillo" }
 			],
 			"lootPendiente": ["carne de cerdo (comida: recipes.json y CookingData.inl)", "piel de cerdo en bruto (curtido)"],
+			"red": { "clase": "replicada", "ancla": null, "tiradaDano": "servidor", "recogidas": null, "noteEs": "Biblia 08 §2.7 b: se caza y carga; actor replicado del servidor." },
 			"noteEs": "Pacífico si no se le molesta; carga si se le acorrala contra la maleza y huye bajo el 30 % de vida (biblia 05 §5)."
 		},
 		{
@@ -127,6 +131,7 @@
 				{ "item": "grasa", "min": 1, "max": 1, "tool": "cuchillo" }
 			],
 			"lootPendiente": ["carne de cabra (comida: recipes.json y CookingData.inl)", "piel de cabra en bruto (curtido)"],
+			"red": { "clase": "replicada", "ancla": null, "tiradaDano": "servidor", "recogidas": null, "noteEs": "Biblia 08 §2.7 b." },
 			"noteEs": "Farallones de La Meseta (isla de fase 2); casi siempre huye, solo embiste si se la acorrala."
 		}
 	]
