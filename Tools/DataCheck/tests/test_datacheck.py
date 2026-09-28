@@ -844,6 +844,20 @@ def test_mineria_ciclo_obsidiana_solo_con_obsidiana(ds: DataSet) -> None:
     assert any_error(errors, "obsidiana", "ninguna herramienta")
 
 
+def test_mineria_afloramiento_de_fase_2_no_cuenta_en_fase_1(ds: DataSet) -> None:
+    # Obsidiana suelta solo en islas de fase 2: en fase 1 no puede dar el pico de nivel 4.
+    for occ in stratum(ds, "obsidiana")["occurrences"]:
+        occ["fase"] = 2
+    without_tool(ds, "pico_rescatado")
+    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
+
+
+def test_mineria_nivel_saltado_no_cuenta(ds: DataSet) -> None:
+    # Cabeza tallada imposible: el nivel 3 no existe aunque la obsidiana suelta dé el 4.
+    template(ds, "cabeza_pico_por_tallado")["slots"][0]["requirements"][0]["min"] = 6
+    assert any_error(mining_errors(ds), "se queda en el nivel 2")
+
+
 def test_mineria_veta_mal_formada(ds: DataSet) -> None:
     stratum(ds, "veta_cobre")["vein"]["veinUnits"] = 0
     assert any_error(mining_errors(ds), "veta_cobre", "veinUnits")

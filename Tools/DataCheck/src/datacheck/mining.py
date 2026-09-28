@@ -228,8 +228,16 @@ def _check_progression(ds, doc, materials, strata, tier_heads, r) -> None:
     base = {i["id"] for i in ds.items if i["id"] not in produced and i["id"] not in mining_only}
     recipe_inputs = _head_inputs(ds)
 
+    def surface_phase(item: str) -> int:
+        """Primera fase en la que un estrato con afloramiento deja ``item`` en superficie."""
+
+        phases = [o.get("fase", 9) for s in strata.values() if s.get("surfaceSource") and s.get("item") == item
+                  for o in s.get("occurrences", [])]
+        return min(phases) if phases else 0
+
     def reachable_tiers(max_phase: int) -> tuple[int, dict[str, int]]:
-        have = set(base)
+        # Lo que aflora en superficie solo cuenta si su isla es de esta fase o anterior.
+        have = {i for i in base if surface_phase(i) <= max_phase}
         tier = 1 if "pala" in produced or "pala" in have else 0
         mined_at: dict[str, int] = {}
         changed = True
@@ -247,6 +255,12 @@ def _check_progression(ds, doc, materials, strata, tier_heads, r) -> None:
                 if any(_head_available(h, have, recipe_inputs) for h in tier_heads.get(t, ())):
                     tier = t
                     changed = True
+        # Saltar un nivel (p. ej. obsidiana suelta en superficie) no vale por el nivel saltado:
+        # cada pico de 2 a MAX_TIER necesita alguna cabeza obtenible por sí mismo.
+        for t in range(2, MAX_TIER + 1):
+            if t <= tier and not any(_head_available(h, have, recipe_inputs) for h in tier_heads.get(t, ())):
+                tier = t - 1
+                break
         return tier, mined_at
 
     best, _ = reachable_tiers(max(PHASES))
