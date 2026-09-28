@@ -31,6 +31,18 @@ namespace SandModelDetail
 		return FMath::FloorToInt64(Meters * 1000.0 + 0.5);
 	}
 
+	/** Pleamar en mm; si no es finita o es absurda (FloorToInt64 no la cabe), Fallback. */
+	int64 TideMm(double Meters, int64 Fallback)
+	{
+		return (FMath::IsFinite(Meters) && FMath::Abs(Meters) <= 1.0e6) ? MetersToMm(Meters) : Fallback;
+	}
+
+	/** |Meters| + Margin cabe en la rejilla de columnas sin acercarse al borde de int32. */
+	bool InColumnRange(double Meters, double Margin, double CellSize)
+	{
+		return FMath::IsFinite(Meters) && (FMath::Abs(Meters) + Margin) / CellSize <= FSandModel::MaxAbsColumn;
+	}
+
 	/** Estado de una columna leído antes de aplicar ningún flujo del paso. */
 	struct FColumnState
 	{
@@ -282,6 +294,12 @@ FSandResult FSandModel::Brush(const FSandBrush& In, FBaseHeight Base, bool bDig)
 	{
 		return Result;
 	}
+	// Con una coordenada enorme el cast a int32 de ColumnOf envuelve y los bucles X <= Hi no terminan.
+	if (!SandModelDetail::InColumnRange(In.Center.X, In.Radius, Settings.CellSize)
+		|| !SandModelDetail::InColumnRange(In.Center.Y, In.Radius, Settings.CellSize))
+	{
+		return Result;
+	}
 	const FIntPoint Lo = ColumnOf(In.Center.X - In.Radius, In.Center.Y - In.Radius);
 	const FIntPoint Hi = ColumnOf(In.Center.X + In.Radius, In.Center.Y + In.Radius);
 
@@ -385,6 +403,12 @@ FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bo
 	// Sujeción: columnas a ≤ AnchorHoldMeters de la caja (distancia euclídea, esquinas redondas).
 	const double Cell = Settings.CellSize;
 	const double Reach = AnchorHoldMeters;
+	// Igual que en Brush: fuera de la rejilla el cast a int32 envuelve y los bucles no terminan.
+	if (!SandModelDetail::InColumnRange(Min.X, Reach + Cell, Cell) || !SandModelDetail::InColumnRange(Min.Y, Reach + Cell, Cell)
+		|| !SandModelDetail::InColumnRange(Max.X, Reach + Cell, Cell) || !SandModelDetail::InColumnRange(Max.Y, Reach + Cell, Cell))
+	{
+		return Result;
+	}
 	const FIntPoint Lo(
 		static_cast<int32>(-FMath::FloorToInt64(-(Min.X - Reach) / Cell)),
 		static_cast<int32>(-FMath::FloorToInt64(-(Min.Y - Reach) / Cell)));
@@ -442,7 +466,8 @@ FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bo
 
 void FSandModel::WakeForTide(const FSandEnvironment& Env)
 {
-	const int64 HighMm = SandModelDetail::MetersToMm(Env.HighTide);
+	// Una pleamar no finita no cambia nada (como en ApplyHalfTide): se queda la última.
+	const int64 HighMm = SandModelDetail::TideMm(Env.HighTide, LastWakeHighMm);
 	if (!bHasWoken || Env.bRaining != bLastWakeRaining || FMath::Abs(HighMm - LastWakeHighMm) >= TideWakeStepMm)
 	{
 		bHasWoken = true;
@@ -606,7 +631,7 @@ FSandResult FSandModel::Revise(const FSandEnvironment& Env, FBaseHeight Base, co
 	FSandResult Result;
 	Result.Ticks = 1;
 
-	const int64 HighMm = MetersToMm(Env.HighTide);
+	const int64 HighMm = TideMm(Env.HighTide, LastWakeHighMm);
 	const int32 DryDrop = ReposeDropMm(DryReposeDeg, Settings.CellSize);
 	const int32 WetDrop = ReposeDropMm(WetReposeDeg, Settings.CellSize);
 
@@ -1085,8 +1110,10 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 		{
 			const FSaveValue& Entry = ChunkList->At(E);
 			FIntPoint Key;
-			// Mismo rango que el paquete (int16): fuera de él, Key * CellsPerChunk desborda y el chunk no llegaría a los clientes.
+			// Las columnas del chunk (Key · N) deben caber en la cota de columna y la clave, en el int16
+			// del paquete: fuera de él, Key * CellsPerChunk desborda y el chunk no llegaría a los clientes.
 			if (!Entry.IsArray() || Entry.Num() != 3 || !ReadInt32(Entry.At(0), Key.X) || !ReadInt32(Entry.At(1), Key.Y)
+				|| FMath::Abs(static_cast<int64>(Key.X)) > MaxAbsColumn / N || FMath::Abs(static_cast<int64>(Key.Y)) > MaxAbsColumn / N
 				|| Key.X < -32768 || Key.X > 32767 || Key.Y < -32768 || Key.Y > 32767
 				|| !Entry.At(2).IsArray() || Chunks.Contains(Key))
 			{
@@ -1133,14 +1160,16 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 
 	if (const FSaveValue* DirtyList = Value.Find(TEXT("dirty")))
 	{
-		if (!DirtyList->IsArray() || DirtyList->Num() % 2 != 0)
+		// Acotadas en número y en rango: Revise suma vecinas (Column + Offset) y recorre todas cada segundo.
+		if (!DirtyList->IsArray() || DirtyList->Num() % 2 != 0 || DirtyList->Num() / 2 > MaxSavedDirtyColumns)
 		{
 			return Fail();
 		}
 		for (int32 I = 0; I < DirtyList->Num(); I += 2)
 		{
 			FIntPoint Column;
-			if (!ReadInt32(DirtyList->At(I), Column.X) || !ReadInt32(DirtyList->At(I + 1), Column.Y))
+			if (!ReadInt32(DirtyList->At(I), Column.X) || !ReadInt32(DirtyList->At(I + 1), Column.Y)
+				|| FMath::Abs(static_cast<int64>(Column.X)) > MaxAbsColumn || FMath::Abs(static_cast<int64>(Column.Y)) > MaxAbsColumn)
 			{
 				return Fail();
 			}

@@ -1,5 +1,7 @@
 #include "Misc/AutomationTest.h"
 
+#include <limits>
+
 #include "Save/SaveFormat.h"
 #include "Save/SaveWorldDeltas.h"
 #include "WorldGen/SurfaceNets.h"
@@ -604,6 +606,77 @@ void FTerrainEditModelSpec::Define()
 			Stairs.ToolTier = 3;
 			TestTrue(TEXT("rechazado"), Model.CarveStairs(Stairs, Slope).bRejected);
 			TestTrue(TEXT("vacío"), Model.IsEmpty());
+		});
+	});
+
+	Describe("las entradas no válidas", [this]()
+	{
+		It("se rechazan sin tocar la rejilla y el guardado sigue cargando", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			FTerrainEditModel Model;
+			Model.Pickaxe(DownHit(FVector(0.1, 0.1, 0.0)), Flat);
+			const FSaveValue Before = Model.ToValue();
+
+			// Antes un pico con X NaN escribía deltas en X = INT_MIN y FromValue rechazaba todo el guardado.
+			TestTrue(TEXT("pico en NaN"), Model.Pickaxe(DownHit(FVector(NaN, 0.1, 0.0)), Flat).bRejected);
+			FPickaxeHit Sideways = DownHit(FVector(0.1, 0.1, 0.0));
+			Sideways.Direction = FVector(Inf, 0.0, 0.0);
+			TestTrue(TEXT("dirección infinita"), Model.Pickaxe(Sideways, Flat).bRejected);
+
+			FShovelStroke Stroke;
+			Stroke.Center = FVector(0.0, Inf, 0.0);
+			TestTrue(TEXT("pala en el infinito"), Model.Shovel(Stroke, Flat).bRejected);
+			Stroke.Center = FVector::ZeroVector;
+			Stroke.Radius = 1.0e30f; // antes recorría columnas sin tope (cuelgue)
+			TestTrue(TEXT("pala con radio enorme"), Model.Shovel(Stroke, Flat).bRejected);
+
+			FSoilPlacement Place;
+			Place.SoilBudget = 1.0;
+			Place.Radius = 1.0e6f;
+			TestTrue(TEXT("tierra con radio enorme"), Model.PlaceSoil(Place, Flat).bRejected);
+			Place.Radius = 0.5f;
+			Place.Center = FVector(NaN);
+			TestTrue(TEXT("tierra en NaN"), Model.PlaceSoil(Place, Flat).bRejected);
+
+			FStairCarve Stairs;
+			Stairs.NumSteps = 1000000000; // antes, caja y bucle de peldaños sin tope
+			TestTrue(TEXT("mil millones de peldaños"), Model.CarveStairs(Stairs, Slope).bRejected);
+			Stairs.NumSteps = 6;
+			Stairs.Start = FVector(0.0, 0.0, NaN);
+			TestTrue(TEXT("escalera en NaN"), Model.CarveStairs(Stairs, Slope).bRejected);
+			Stairs.Start = FVector::ZeroVector;
+			Stairs.StepRise = std::numeric_limits<float>::infinity();
+			TestTrue(TEXT("contrahuella infinita"), Model.CarveStairs(Stairs, Slope).bRejected);
+
+			TestTrue(TEXT("nada ha cambiado"), FSaveText::Write(Model.ToValue()) == FSaveText::Write(Before));
+			FTerrainEditModel Loaded;
+			TestTrue(TEXT("el guardado carga"), Loaded.FromValue(Model.ToValue()));
+		});
+
+		It("un presupuesto de tierra o de volumen no finito no da tierra ni tallado gratis", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			for (const double Budget : { NaN, Inf })
+			{
+				FTerrainEditModel Model;
+				FSoilPlacement Place;
+				Place.Center = FVector(0.0, 0.0, 0.3);
+				Place.SoilBudget = Budget;
+				TestFalse(TEXT("echar tierra"), Model.PlaceSoil(Place, Flat).Changed());
+
+				FShovelStroke Stroke;
+				Stroke.bMarkPath = false;
+				Stroke.SoilBudget = Budget;
+				const FTerrainEditResult R = Model.Shovel(Stroke, Pit);
+				TestTrue(TEXT("la pala solo rellena con lo que corta"), R.VolumeAdded <= R.VolumeRemoved + 1.0e-6);
+
+				FStairCarve Stairs;
+				Stairs.MaxVolume = Budget;
+				TestTrue(TEXT("escalera rechazada"), Model.CarveStairs(Stairs, Slope).bRejected);
+			}
 		});
 	});
 

@@ -4,6 +4,8 @@
 #include "Fishing/FishingTension.h"
 #include "Ocean/OceanCurrents.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace FishingTest
@@ -375,6 +377,28 @@ void FFishingSpec::Define()
 			Long.Tick(0.5f, 1.0f);
 			TestTrue(TEXT("Paso largo troceado"), Long.GetState().ElapsedSeconds > 0.49f);
 		});
+
+		It("un paso NaN o enorme no cuelga la pelea", [this]()
+		{
+			FFishFightParams P;
+			// Pelea que no acaba sola: sin el tope, restar 1/60 a 1e30 no cambia nada y el
+			// bucle no terminaría nunca.
+			P.StrengthKgf = 1.0f;
+			P.StaminaSeconds = 1.0e6f;
+			P.ApplyTackle(FFishingTackle());
+			P.SpoolLengthM = 1.0e9f;
+			P.MaxSeconds = 1.0e9f;
+			P.SlackGraceSeconds = 1.0e9f;
+			FFishFight Fight(P, 3u);
+			Fight.Tick(std::numeric_limits<float>::quiet_NaN(), 0.0f);
+			TestEqual(TEXT("NaN no avanza"), Fight.GetState().ElapsedSeconds, 0.0f);
+			Fight.Tick(0.1f, std::numeric_limits<float>::quiet_NaN());
+			TestTrue(TEXT("recoger NaN: tensión finita"), FMath::IsFinite(Fight.GetState().Tension01));
+			const float Before = Fight.GetState().ElapsedSeconds;
+			Fight.Tick(1.0e30f, 0.0f);
+			TestTrue(TEXT("un paso enorme avanza como mucho MaxTickSeconds"),
+				Fight.GetState().ElapsedSeconds <= Before + FFishFight::MaxTickSeconds + 0.01f);
+		});
 	});
 
 	Describe("Arpón", [this]()
@@ -469,6 +493,30 @@ void FFishingSpec::Define()
 			}
 		});
 
+		It("un tiempo NaN, infinito o enorme no cuelga la trampa", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FFishingSaveState State;
+			FPlacedTrap& Trap = State.PlaceTrap(ETrapKind::Nasa, EFishHabitat::Reef, FVector::ZeroVector, EFishBait::Visceras, 2.0f);
+			TestEqual(TEXT("revisar en NaN no se lleva nada"), FFishingModel::CollectTrap(Trap, NaN, 5u).Num(), 0);
+			TestEqual(TEXT("ni guarda el NaN"), Trap.SimulatedToDays, 2.0f);
+			FFishingModel::AdvanceTrap(Trap, Inf, 5u);
+			TestEqual(TEXT("infinito no avanza"), Trap.SimulatedToDays, 2.0f);
+
+			// Guardado corrupto: se recupera como mucho MaxTrapCatchUpDays.
+			Trap.SimulatedToDays = NaN;
+			FFishingModel::AdvanceTrap(Trap, 3.0f, 5u);
+			TestEqual(TEXT("NaN guardado: sigue desde ahora"), Trap.SimulatedToDays, 3.0f);
+			TestTrue(TEXT("sin pasar de la capacidad"), Trap.Contents.Num() <= FFishingModel::TrapCapacity(ETrapKind::Nasa));
+
+			Trap.SimulatedToDays = -Inf;
+			FFishingModel::AdvanceTrap(Trap, 1.0e30f, 5u);
+			TestEqual(TEXT("un salto enorme termina"), Trap.SimulatedToDays, 1.0e30f);
+			const int32 Inside = Trap.Contents.Num();
+			TestEqual(TEXT("revisarla antes no simula hacia atrás"), FFishingModel::CollectTrap(Trap, 4.0f, 5u).Num(), Inside);
+		});
+
 		It("el cebo llena antes las trampas (media de 200 nasas en un día)", [this]()
 		{
 			FFishingSaveState State;
@@ -538,6 +586,21 @@ void FFishingSpec::Define()
 			TestTrue(TEXT("Otra poza sí"), FFishingModel::GatherTidePool(State, 2, 10.39f, 8u).Num() >= 1);
 			TestTrue(TEXT("En la siguiente bajamar se rellena"), FFishingModel::GatherTidePool(State, 1, 10.875f, 8u).Num() >= 1);
 			TestEqual(TEXT("Dos bajamares al día"), FFishingModel::LowTideIndex(10.875f) - FFishingModel::LowTideIndex(10.375f), 1);
+		});
+
+		It("instantes y posiciones no finitos o enormes no dan claves con UB ni marisco", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const double NaND = std::numeric_limits<double>::quiet_NaN();
+			FFishingSaveState State;
+			TestEqual(TEXT("poza en instante NaN: nada"), FFishingModel::GatherTidePool(State, 1, NaN, 8u).Num(), 0);
+			TestEqual(TEXT("ni la apunta"), State.TidePools.Num(), 0);
+			// Sin acotar, convertir estos valores a int32 es UB (lo caza HOST_TESTS_SANITIZE).
+			TestTrue(TEXT("bajamar en NaN"), FFishingModel::LowTideIndex(NaN) == FFishingModel::LowTideIndex(NaN));
+			TestTrue(TEXT("bajamar lejanísima"), FFishingModel::LowTideIndex(1.0e30f) >= 0);
+			TestTrue(TEXT("zona NaN"), FFishingModel::ZoneKeyAt(FVector2D(NaND, 1.0e300)) >= 0);
+			TestTrue(TEXT("sitio NaN"), FFishingModel::SpotKeyAt(FVector2D(-1.0e300, NaND)) >= 0);
+			TestEqual(TEXT("red en instante NaN"), FFishingModel::CastNet(ReefDawn(), 9u, 1, NaN).Num(), FFishingModel::CastNet(ReefDawn(), 9u, 1, NaN).Num());
 		});
 	});
 
@@ -655,6 +718,20 @@ void FFishingSpec::Define()
 			TestTrue(TEXT("Sedal legendario"), Result.Yields.ContainsByPredicate([](const FButcherYield& Y) { return Y.ItemId == FName(TEXT("sedal_legendario")); }));
 			TestTrue(TEXT("Anzuelo legendario"), Result.Yields.ContainsByPredicate([](const FButcherYield& Y) { return Y.ItemId == FName(TEXT("anzuelo_legendario")); }));
 		});
+
+		It("un peso NaN, infinito o enorme da un despiece acotado", [this]()
+		{
+			for (const float Bad : { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(), 1.0e30f })
+			{
+				FButcherResult Result;
+				TestTrue(TEXT("se despieza"), FFishingModel::Butcher(TEXT("bonito"), Bad, 0.6f, 1.0f, Result));
+				for (const FButcherYield& Y : Result.Yields)
+				{
+					TestTrue(FString::Printf(TEXT("%s entre 1 y 60"), *Y.ItemId.ToString()), Y.Count >= 1 && Y.Count <= 60);
+				}
+				TestTrue(TEXT("tiempo finito y acotado"), FMath::IsFinite(Result.Seconds) && Result.Seconds <= 600.0f);
+			}
+		});
 	});
 
 	Describe("Determinismo y ecosistema", [this]()
@@ -681,6 +758,27 @@ void FFishingSpec::Define()
 				Different += (Other.WaitSeconds != A.WaitSeconds || Other.Id != A.Id) ? 1 : 0;
 			}
 			TestTrue(TEXT("Otro sitio, otra picada"), Different >= 15);
+		});
+
+		It("una espera enorme o un instante o condiciones NaN no rompen la picada", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const FFishingConditions C = ReefDawn();
+			FFishBite Normal;
+			FFishBite Huge;
+			TestTrue(TEXT("pica en 5 minutos"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, 300.0f, Normal));
+			TestTrue(TEXT("con espera enorme también"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, 1.0e30f, Huge));
+			TestEqual(TEXT("y es la misma picada"), Huge.WaitSeconds, Normal.WaitSeconds);
+			FFishBite Bite;
+			TestFalse(TEXT("instante NaN: no pica"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, NaN, 300.0f, Bite));
+			TestFalse(TEXT("espera NaN: no pica"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, NaN, Bite));
+			FFishingConditions Broken = C;
+			Broken.Hours = NaN;
+			Broken.DepthM = NaN;
+			if (FFishingModel::WaitForBite(Broken, nullptr, 123u, 45, 7.25f, 300.0f, Bite))
+			{
+				TestTrue(TEXT("condiciones NaN: si pica, con peso finito"), FMath::IsFinite(Bite.WeightKg) && Bite.Id != NAME_None);
+			}
 		});
 
 		It("los ejemplares grandes son raros y pelean más", [this]()

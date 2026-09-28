@@ -201,7 +201,8 @@ const FIgnitionDef* FFireData::FindIgnitionByTool(FName ItemId) const
 bool FFireModel::AddFuel(FFireState& S, const FFireData& Data, FName ItemId, TArray<EFireEvent>& OutEvents)
 {
 	const FFuelDef* Fuel = Data.FindFuel(ItemId);
-	if (!Fuel)
+	// Horas o calor no finitos en los datos dejarían el hogar en NaN (y ya nunca se apagaría).
+	if (!Fuel || !FMath::IsFinite(Fuel->BurnHours) || Fuel->BurnHours < 0.0f || !FMath::IsFinite(Fuel->Heat))
 	{
 		return false;
 	}
@@ -293,17 +294,43 @@ FIgnitionResult FFireModel::TryIgnite(FFireState& S, const FFireData& Data, EIgn
 
 void FFireModel::Tick(FFireState& S, const FFireData& Data, const FFireEnvironment& Env, float DeltaHours, TArray<EFireEvent>& OutEvents)
 {
-	if (DeltaHours <= 0.0f)
+	// NaN pasaría el guarda `<= 0` y CeilToInt(NaN) es indefinido.
+	if (!FMath::IsFinite(DeltaHours) || DeltaHours <= 0.0f)
 	{
 		return;
 	}
 	const FFireLevelDef& Level = Data.GetLevel(S.Level);
-	const int32 Steps = FMath::Max(1, FMath::CeilToInt(DeltaHours / MaxStepHours));
+	// Se cuenta en float y se topa antes de convertir: un paso enorme desbordaría int32.
+	const float WantedSteps = FMath::CeilToFloat(DeltaHours / MaxStepHours);
+	const int32 Steps = WantedSteps >= static_cast<float>(MaxTickSteps)
+		? MaxTickSteps : FMath::Max(1, static_cast<int32>(WantedSteps));
 	const float Dt = DeltaHours / static_cast<float>(Steps);
 	for (int32 I = 0; I < Steps; ++I)
 	{
 		FireModelDetail::StepFire(S, Level, Env, Dt, OutEvents);
 	}
+}
+
+void FFireModel::Sanitize(FFireState& S)
+{
+	auto NonNegative = [](float V) { return FMath::IsFinite(V) ? FMath::Max(V, 0.0f) : 0.0f; };
+	auto Unit = [](float V) { return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0f, 1.0f) : 0.0f; };
+	if (static_cast<uint8>(S.Level) >= static_cast<uint8>(EFireLevel::Count))
+	{
+		S.Level = EFireLevel::Fogata;
+	}
+	if (static_cast<uint8>(S.Status) > static_cast<uint8>(EFireStatus::Embers))
+	{
+		S.Status = EFireStatus::Unlit;
+	}
+	S.FuelHours = NonNegative(S.FuelHours);
+	S.FuelHeat = Unit(S.FuelHeat);
+	S.TinderCharges = FMath::Clamp(S.TinderCharges, 0, MaxTinderCharges);
+	S.Dampness = Unit(S.Dampness);
+	S.EmberHours = NonNegative(S.EmberHours);
+	S.SignalSmokeHours = NonNegative(S.SignalSmokeHours);
+	S.Heat = NonNegative(S.Heat);
+	S.Smoke = Unit(S.Smoke);
 }
 
 bool FFireModel::Upgrade(FFireState& S, EFireLevel NewLevel)

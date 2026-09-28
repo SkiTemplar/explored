@@ -168,6 +168,10 @@ public:
 	static constexpr int32 MaxCatchUpRevisions = 4;
 	/** Cambio de la pleamar que obliga a revisar qué columnas editadas están ahora húmedas. */
 	static constexpr int32 TideWakeStepMm = 50;
+	/** Cota de columna (en celdas): lejos del borde de int32, así Column + 1 y los bucles X <= Hi no desbordan. */
+	static constexpr int32 MaxAbsColumn = 1000000000;
+	/** Tope de columnas sucias en una partida guardada (~16 000 m² de arena sin asentar en celdas de 0,25 m). */
+	static constexpr int32 MaxSavedDirtyColumns = 1 << 18;
 
 	/** Desnivel máximo (mm) entre dos columnas vecinas para un ángulo dado. */
 	static int32 ReposeDropMm(float AngleDeg, float CellSize);

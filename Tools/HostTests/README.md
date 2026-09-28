@@ -11,6 +11,7 @@ contra un shim mínimo de Core y ejecuta:
 Tools/HostTests/run.sh                      # todo (~20 s la primera vez, ~2 s incremental)
 Tools/HostTests/run.sh Explored.Survival    # filtro por subcadena del nombre
 HOST_TESTS_SANITIZE=ON Tools/HostTests/run.sh   # con AddressSanitizer + UBSan
+HOST_TESTS_FASTMATH=ON Tools/HostTests/run.sh   # con matemáticas rápidas, como el editor
 ```
 
 Requisitos: `cmake` ≥ 3.20 y un compilador C++20 (g++ 13 o clang 18). Funciona en la nube
@@ -25,6 +26,12 @@ Requisitos: `cmake` ≥ 3.20 y un compilador C++20 (g++ 13 o clang 18). Funciona
 - **No es Unreal.** Si algo pasa aquí y falla en el editor, manda el editor (y conviene
   arreglar el shim). Lo que incluya `UObject` (`UCLASS`, `USTRUCT`, `*.generated.h`),
   mundo, actores o Slate no se compila aquí.
+- `FMath::IsFinite`/`IsNaN` miran los bits, como en Unreal, para que sigan funcionando con
+  matemáticas rápidas.
+- **Matemáticas rápidas.** El editor compila con `/fp:fast`: el compilador da por hecho que no
+  hay NaN, y `!(x > 0)` o `x == x` dejan de descartarlos. `HOST_TESTS_FASTMATH=ON` compila con
+  `-ffast-math` para cazar esos sitios aquí; la regla es comprobar siempre con
+  `FMath::IsFinite` las entradas reales que vengan de fuera (guardados, red, `DeltaSeconds`).
 - `ParallelFor` es secuencial (el determinismo no debe depender del orden de los hilos).
 
 ## Añadir código

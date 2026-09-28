@@ -20,6 +20,12 @@ namespace FishingModelDetail
 	constexpr float DarkMoon[] = { 1.2f, 1.0f, 0.8f, 1.0f };
 	constexpr float BrightMoon[] = { 0.9f, 1.0f, 1.2f, 1.0f };
 
+	/** FloorToInt sin UB: lo no finito da 0 y lo enorme se acota antes de convertir. */
+	int32 SafeFloorToInt(double V)
+	{
+		return FMath::IsFinite(V) ? static_cast<int32>(FMath::FloorToDouble(FMath::Clamp(V, -2.0e9, 2.0e9))) : 0;
+	}
+
 	template <int32 N>
 	void Fill(float (&Dst)[N], const float (&Src)[N])
 	{
@@ -679,16 +685,19 @@ bool FFishingModel::WaitForBite(const FFishingConditions& C, const FFishingSaveS
 	{
 		Total += Rates.Add_GetRef(LegendaryRatePerSecond(L, C, State, StartDays));
 	}
-	if (Total <= 0.0f)
+	// IsFinite explícito: con NaN (condiciones o tiempo corruptos) Total <= 0 es falso y
+	// picaría en el primer segundo con un pez NaN.
+	if (!FMath::IsFinite(Total) || Total <= 0.0f || !FMath::IsFinite(StartDays) || !FMath::IsFinite(MaxWaitSeconds))
 	{
 		return false;
 	}
 
 	// El instante se discretiza en minutos de juego: misma semilla, sitio y
 	// minuto dan la misma espera, y un minuto después, otra distinta.
-	const int32 Minute = FMath::FloorToInt(static_cast<double>(StartDays) * 1440.0);
+	const int32 Minute = static_cast<int32>(FMath::FloorToDouble(FMath::Clamp(static_cast<double>(StartDays) * 1440.0, -2.0e9, 2.0e9)));
 	const float PerSecond = 1.0f - FMath::Exp(-Total);
-	const int32 MaxSeconds = FMath::Max(0, FMath::FloorToInt(MaxWaitSeconds));
+	// Acotado antes de convertir: una espera enorme daría hasta 2^31 vueltas.
+	const int32 MaxSeconds = FMath::FloorToInt(FMath::Clamp(MaxWaitSeconds, 0.0f, MaxBiteWaitLimitSeconds));
 	for (int32 Second = 0; Second < MaxSeconds; ++Second)
 	{
 		if (Unit(Seed ^ BiteSalt, SpotKey, Minute, Second) >= PerSecond)
@@ -804,7 +813,7 @@ TArray<FTrapCatch> FFishingModel::CastNet(const FFishingConditions& Conditions, 
 	{
 		return Out;
 	}
-	const int32 Minute = FMath::FloorToInt(static_cast<double>(NowDays) * 1440.0);
+	const int32 Minute = SafeFloorToInt(static_cast<double>(NowDays) * 1440.0);
 	const float Expected = FMath::Min(3.0f, Total * 45.0f);
 	for (int32 Try = 0; Try < 3; ++Try)
 	{
@@ -835,19 +844,29 @@ TArray<FTrapCatch> FFishingModel::CastNet(const FFishingConditions& Conditions, 
 void FFishingModel::AdvanceTrap(FPlacedTrap& Trap, float ToDays, uint32 WorldSeed)
 {
 	using namespace FishingModelDetail;
-	if (ToDays <= Trap.SimulatedToDays)
+	// Un guardado corrupto puede traer NaN o infinitos: sin IsFinite, FloorToInt(NaN)
+	// da INT_MIN y el bucle de horas no acaba nunca.
+	const bool bSimulatedValid = FMath::IsFinite(Trap.SimulatedToDays);
+	if (!FMath::IsFinite(ToDays) || (bSimulatedValid && ToDays <= Trap.SimulatedToDays))
 	{
 		return;
 	}
 	// Horas enteras de juego en (SimulatedToDays, ToDays]: simular de una vez
-	// o a trozos da exactamente lo mismo.
-	const int32 FirstHour = FMath::FloorToInt(static_cast<double>(Trap.SimulatedToDays) * 24.0) + 1;
-	const int32 LastHour = FMath::FloorToInt(static_cast<double>(ToDays) * 24.0);
+	// o a trozos da exactamente lo mismo. Se acota antes de convertir a entero.
+	constexpr double HourLimit = 1.0e9;
+	const int64 LastHour = FMath::FloorToInt64(FMath::Clamp(static_cast<double>(ToDays) * 24.0, -HourLimit, HourLimit));
+	int64 FirstHour = LastHour - 24 * static_cast<int64>(MaxTrapCatchUpDays) + 1;
+	if (bSimulatedValid)
+	{
+		FirstHour = FMath::Max(FirstHour,
+			FMath::FloorToInt64(FMath::Clamp(static_cast<double>(Trap.SimulatedToDays) * 24.0, -HourLimit, HourLimit)) + 1);
+	}
 	const int32 Capacity = TrapCapacity(Trap.Kind);
 	const uint32 Salt = WorldSeed ^ TrapSalt ^ (static_cast<uint32>(Trap.Kind) << 24);
 
-	for (int32 Hour = FirstHour; Hour <= LastHour; ++Hour)
+	for (int64 Hour64 = FirstHour; Hour64 <= LastHour; ++Hour64)
 	{
+		const int32 Hour = static_cast<int32>(Hour64);
 		const float Days = static_cast<float>(static_cast<double>(Hour) / 24.0);
 		const float Level = FOceanTide::Level(Days);
 		const float Flow = FOceanTide::Flow(Days);
@@ -896,6 +915,10 @@ void FFishingModel::AdvanceTrap(FPlacedTrap& Trap, float ToDays, uint32 WorldSee
 
 TArray<FTrapCatch> FFishingModel::CollectTrap(FPlacedTrap& Trap, float NowDays, uint32 WorldSeed)
 {
+	if (!FMath::IsFinite(NowDays))
+	{
+		return {};
+	}
 	AdvanceTrap(Trap, NowDays, WorldSeed);
 	TArray<FTrapCatch> Out = MoveTemp(Trap.Contents);
 	Trap.Contents.Reset();
@@ -910,14 +933,14 @@ TArray<FTrapCatch> FFishingModel::CollectTrap(FPlacedTrap& Trap, float NowDays, 
 int32 FFishingModel::LowTideIndex(float TotalDays)
 {
 	// Level = sin(4·pi·T): bajamares en T = 3/8 + k/2.
-	return FMath::FloorToInt((static_cast<double>(TotalDays) - 0.375) * 2.0 + 0.5);
+	return FishingModelDetail::SafeFloorToInt((static_cast<double>(TotalDays) - 0.375) * 2.0 + 0.5);
 }
 
 TArray<FTrapCatch> FFishingModel::GatherTidePool(FFishingSaveState& State, int32 PoolId, float TotalDays, uint32 Seed)
 {
 	using namespace FishingModelDetail;
 	TArray<FTrapCatch> Out;
-	if (FOceanTide::Level(TotalDays) > TidePoolOpenLevel)
+	if (!FMath::IsFinite(TotalDays) || FOceanTide::Level(TotalDays) > TidePoolOpenLevel)
 	{
 		return Out;
 	}
@@ -980,7 +1003,9 @@ bool FFishingModel::Butcher(FName CatchId, float WeightKg, float KnifeEdge01, fl
 		return false;
 	}
 
-	const float W = FMath::Max(0.05f, WeightKg);
+	// Se acota antes de convertir a entero: RoundToInt de NaN o de 1e30 es UB. La mayor
+	// legendaria no llega a 400 kg.
+	const float W = FMath::IsFinite(WeightKg) ? FMath::Clamp(WeightKg, 0.05f, 2000.0f) : 0.05f;
 	const float FilletRatio = SpeciesDef ? SpeciesDef->FilletRatio : Legend->FilletRatio;
 	const float OilRatio = SpeciesDef ? SpeciesDef->OilRatio : 0.03f;
 
@@ -1021,15 +1046,15 @@ bool FFishingModel::Butcher(FName CatchId, float WeightKg, float KnifeEdge01, fl
 
 int32 FFishingModel::ZoneKeyAt(const FVector2D& LocationCm)
 {
-	const int32 X = FMath::FloorToInt(LocationCm.X / 10000.0);
-	const int32 Y = FMath::FloorToInt(LocationCm.Y / 10000.0);
+	const int32 X = FishingModelDetail::SafeFloorToInt(LocationCm.X / 10000.0);
+	const int32 Y = FishingModelDetail::SafeFloorToInt(LocationCm.Y / 10000.0);
 	return static_cast<int32>(ExploredHash::Hash2D(0x20AE5EEDu, X, Y) & 0x7FFFFFFFu);
 }
 
 int32 FFishingModel::SpotKeyAt(const FVector2D& LocationCm)
 {
-	const int32 X = FMath::FloorToInt(LocationCm.X / 500.0);
-	const int32 Y = FMath::FloorToInt(LocationCm.Y / 500.0);
+	const int32 X = FishingModelDetail::SafeFloorToInt(LocationCm.X / 500.0);
+	const int32 Y = FishingModelDetail::SafeFloorToInt(LocationCm.Y / 500.0);
 	return static_cast<int32>(ExploredHash::Hash2D(0x5B07CAFEu, X, Y) & 0x7FFFFFFFu);
 }
 

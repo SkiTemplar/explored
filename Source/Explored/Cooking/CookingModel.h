@@ -249,6 +249,12 @@ struct EXPLORED_API FCookingModel
 	/** Ritmo de avance (1 = minutos de receta) según la técnica y el entorno. */
 	static float ProgressRate(ECookTechnique Technique, const FCookEnvironment& Env);
 
+	/**
+	 * Deja una cocción cargada de fuera (guardado) dentro de rango: estado y técnica
+	 * válidos y ProgressMinutes finito y no negativo (NaN dejaba la olla atascada).
+	 */
+	static void SanitizePot(FCookingPot& Pot);
+
 	/** Avanza la cocción; lo que se queda en el fuego después de hecho acaba quemándose. */
 	static void TickPot(FCookingPot& Pot, const FCookingData& Data, const FCookEnvironment& Env, float DeltaMinutes);
 
