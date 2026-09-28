@@ -626,6 +626,51 @@ void FSandModelSpec::Define()
 			TestFalse(TEXT("en diagonal de la esquina, a 1,12 m"), Model.IsHeld(FIntPoint(-2, -4)));
 		});
 
+		It("sujetan la arena el tablón de contención, los pilotes y el muelle; el resto de piezas no", [this]()
+		{
+			for (const TCHAR* Id : { TEXT("tablon_contencion"), TEXT("pilote_bambu"), TEXT("pilote_madera"), TEXT("muelle"), TEXT("muelle_final") })
+			{
+				TestTrue(FString(Id), FSandModel::PieceAnchorsSand(Id));
+			}
+			for (const TCHAR* Id : { TEXT("pared_bambu"), TEXT("viga_apoyo"), TEXT(""), TEXT("Tablon_Contencion") })
+			{
+				TestFalse(FString(TEXT("no: ")) + Id, FSandModel::PieceAnchorsSand(Id));
+			}
+		});
+
+		It("un tablón de contención de 2 m en la franja intermareal detiene el derrumbe y el relleno", [this, Flat]()
+		{
+			// Playa bajo la pleamar (húmeda, 45°). Tablón de 2 m × 0,1 m a lo largo de Y en x = 0.
+			auto Run = [this, Flat](bool bBoard)
+			{
+				FSandModel Model;
+				if (bBoard && FSandModel::PieceAnchorsSand(TEXT("tablon_contencion")))
+				{
+					Model.SetAnchor(FVector2D(-0.05, -1.0), FVector2D(0.05, 1.0), true, Flat);
+				}
+				// Zanja pegada al tablón (a 0,5 m) y otra a 3 m, las dos de paredes verticales.
+				FSandBrush B;
+				B.Radius = 0.3f;
+				B.Depth = 0.6f;
+				B.Center = FVector2D(0.5, 0.0);
+				Model.Dig(B, Flat);
+				B.Center = FVector2D(3.0, 0.0);
+				Model.Dig(B, Flat);
+				FSandEnvironment Wet = Dry();
+				Wet.HighTide = 1.0;
+				Settle(Model, Wet, Flat);
+				Model.ApplyHalfTide(Tide(1.0, -1.0), Flat);
+				return Model;
+			};
+			const FSandModel Board = Run(true);
+			const FSandModel Bare = Run(false);
+			TestEqual(TEXT("junto al tablón, el hoyo sigue intacto"), Board.DeltaMm(FIntPoint(2, 0)), -600);
+			TestTrue(TEXT("sin tablón se derrumba y se rellena"), Bare.DeltaMm(FIntPoint(2, 0)) > -600);
+			TestTrue(TEXT("a 3 m el tablón no llega: se rellena igual"), Board.DeltaMm(FIntPoint(12, 0)) > -600);
+			TestEqual(TEXT("y del mismo modo que sin tablón"), Board.DeltaMm(FIntPoint(12, 0)), Bare.DeltaMm(FIntPoint(12, 0)));
+			TestTrue(TEXT("determinista"), Run(true) == Board);
+		});
+
 		It("la arena sujeta no desliza y, al quitar la estructura, se derrumba a 34°", [this, Flat]()
 		{
 			FSandModel Free;

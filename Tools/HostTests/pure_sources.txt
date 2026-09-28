@@ -79,4 +79,7 @@ Villages/ReputationModel.cpp
 Villages/BarterModel.cpp
 Raiders/PirateThreatModel.cpp
 Raiders/RaiderCampsModel.cpp
+WorldGen/MiningModel.cpp
+WorldGen/MineHazardModel.cpp
+WorldGen/ShovelPathModel.cpp
 Combat/CombatModel.cpp

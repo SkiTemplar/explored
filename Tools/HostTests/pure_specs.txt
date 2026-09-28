@@ -64,5 +64,8 @@ Tests/ReputationModelSpec.cpp
 Tests/BarterModelSpec.cpp
 Tests/PirateThreatModelSpec.cpp
 Tests/RaiderCampsModelSpec.cpp
+Tests/MiningModelSpec.cpp
+Tests/MineHazardModelSpec.cpp
+Tests/ShovelPathModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
 Tests/CombatModelSpec.cpp

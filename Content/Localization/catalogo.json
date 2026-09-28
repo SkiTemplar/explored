@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 639,
+		"total": 640,
 		"cpp": 303,
-		"datos": 336,
+		"datos": 337,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
@@ -3424,6 +3424,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «suelo_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "tablon_contencion.nameEs",
+			"es": "Tablón de contención",
+			"en": "Retaining board",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «tablon_contencion» nameEs/nameEn"
 			]
 		},
 		{

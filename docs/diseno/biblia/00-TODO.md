@@ -491,16 +491,22 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
       −15 durabilidad). *(biblia 02 §2)*
-      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50), `TerrainEditModel.h:12-19`,
-        `mining.json:75-132` — el modelo tiene 5 materiales; cobre, hierro, azufre y cristal
-        solo están en datos y la rotura de la obsidiana solo en JSON.
+      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50) + PR #95: `FMiningModel`
+        (`WorldGen/MiningModel.h`, `MiningModelSpec`) con estratos, vetas finitas, radio y
+        ritmo por herramienta, rebote y mella — modelo puro sin enganchar.
 - [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
       luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
+      → **En parte:** PR #95, pieza en `building_pieces.json` y regla en `FMineHazardModel`
+        (`MineHazardModelSpec`) — sin enganchar.
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals`
+        (respiración y mareo) — sin enganchar a las señales del cuerpo.
 - [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
       (1 m/40 s sin sellar) y crecida de monzón (30 % durante la estación).
       *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel` (galerías, marea, sellado con `pared`,
+        lluvia +50 %) y `MonsoonFloodFraction` — sin enganchar.
 - [ ] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos
       subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` mayores, con
       radio de exclusión de 1,5 m alrededor de un tesoro. *(biblia 02 §2.5, §12)*
@@ -508,20 +514,27 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       02 §2 TODO)*
 - [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
       sobre camino terminado). *(biblia 02 §3)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:87, 163` (`bMarkPath`) — falta
-        el −15 % de coste de movimiento y enganchar la pala.
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h` (`bMarkPath`) + PR #95:
+        `FShovelPathModel` (`ShovelPathModelSpec`) — falta enganchar la pala y el −15 % en
+        el movimiento.
 - [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
       revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
-      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h:139` (34°/45°,
+      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h` (34°/45°,
         revisión 1 s) — modelo puro sin enganchar.
 - [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:142-145` (`ApplyHalfTide` 20 %/35 %)
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`ApplyHalfTide` 20 %/35 %)
         — nadie lo llama desde la marea.
 - [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
       en 1 m). *(biblia 02 §5.3)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:149, 196` (`SetAnchor` a 1 m) — falta
-        la pieza en `building_pieces.json`.
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95: pieza
+        en `building_pieces.json` y `FSandModel::PieceAnchorsSand` — falta llamar a
+        `SetAnchor` al colocarla.
+- [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
+      `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
+      (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
+      las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
+      −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
 - [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
       `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
       `carretilla`. *(biblia 03 §3.2–3.4)*
