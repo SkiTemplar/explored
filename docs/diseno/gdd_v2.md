@@ -957,6 +957,30 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
   | Cuerda | −31 % | se rompen a los 9,6 m |
   | Clavos | −16 % | −52 % |
 
+  - **Surco en la arena** (`FRaftFurrowModel`). Arrastrada sin rodillos por arena seca o
+    mojada, la balsa abre un surco con dos cordones a los lados. Sobre rodillos, hierba,
+    roca o la rampa no deja marca.
+    - Hondo del surco = presión del fondo × 12 mm/kPa en arena seca o × 4 mm/kPa en arena
+      húmeda (bajo la pleamar o con lluvia). La presión es el peso que no sostiene el agua
+      entre el área en planta de las piezas del fondo. Tope de 60 mm; por debajo de 3 mm
+      no queda marca.
+    - El fondo rasa la arena hasta ese hondo respecto a la original: aplana un montón que
+      haya en el camino y no toca un hoyo más hondo. Volver a pasar no ahonda el surco.
+    - La arena del surco va al costado más cercano, a la primera columna fuera de la
+      huella. Si ese costado es huella de una estructura o ya está al tope del montón
+      (2 m), va al otro; si tampoco cabe, se queda. La masa se conserva siempre.
+    - Después actúa la arena viva (§3.13): la avalancha derrumba los cordones que pasen
+      de 34° (45° mojados) y el oleaje rellena el surco de la franja intermareal.
+
+    | Balsa | Presión | Surco en seco | Surco en mojado |
+    |---|---|---|---|
+    | 6 troncos (451 kg, 3,96 m²) | 1,1 kPa | 13 mm | 4 mm |
+    | 6 troncos + 3 personas + 200 kg | 2,2 kPa | 26 mm | 8 mm |
+    | Catamarán de 2 troncos (211 kg, 1,32 m²) | 1,6 kPa | 18 mm | 6 mm |
+
+    Es el rastro que dice «por aquí se botó una balsa»: dos cordones paralelos hasta el
+    agua que la marea borra en unos días.
+
 - **En el agua.**
   - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura
     (0,8 m/s), el astillero reparte el golpe entre las uniones cercanas al punto de
