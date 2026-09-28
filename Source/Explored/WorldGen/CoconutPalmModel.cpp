@@ -33,6 +33,15 @@ namespace
 		return Lo + (Span > 0 ? static_cast<int64>(Hash % static_cast<uint64>(Span + 1)) : 0);
 	}
 
+	/** CycleOf sin volver a sanear: P ya viene saneado (va en el bucle caliente de Advance). */
+	void RawCycle(const FCoconutPalmState& State, const FCoconutPalmProfile& P, int32 SlotIndex, int64& OutSet, int64& OutMature, int64& OutFall)
+	{
+		const FCoconutSlot& Slot = State.Slots[SlotIndex];
+		OutSet = Slot.CycleStartMinute + DaysBetween(SlotHash(State.Seed, SaltRefill, SlotIndex, Slot.Generation), P.RefillMinDays, P.RefillMaxDays);
+		OutMature = OutSet + static_cast<int64>(P.GreenDays) * FCoconutPalmModel::MinutesPerDay;
+		OutFall = OutMature + DaysBetween(SlotHash(State.Seed, SaltHang, SlotIndex, Slot.Generation), P.HangMinDays, P.HangMaxDays);
+	}
+
 	float Clamp01OrZero(float V)
 	{
 		return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0f, 1.0f) : 0.0f;
@@ -67,9 +76,36 @@ namespace
 		return Coconut;
 	}
 
+	/**
+	 * Minutos de madurar y caer de la generación actual de cada hueco. Vive solo
+	 * durante una llamada (no se guarda): evita rehacer los hashes del ciclo en
+	 * cada hora de temporal. Se refresca al vaciar un hueco.
+	 */
+	struct FCycleCache
+	{
+		TArray<int64> Mature;
+		TArray<int64> Fall;
+
+		FCycleCache(const FCoconutPalmState& State, const FCoconutPalmProfile& P)
+		{
+			Mature.SetNum(State.Slots.Num());
+			Fall.SetNum(State.Slots.Num());
+			for (int32 i = 0; i < State.Slots.Num(); ++i)
+			{
+				Refresh(State, P, i);
+			}
+		}
+
+		void Refresh(const FCoconutPalmState& State, const FCoconutPalmProfile& P, int32 i)
+		{
+			int64 Set = 0;
+			RawCycle(State, P, i, Set, Mature[i], Fall[i]);
+		}
+	};
+
 	/** Tirada de sacudida (jugador o racha) en el minuto T de la última actualización. */
 	int32 ShakeAt(FCoconutPalmState& State, const FCoconutPalmProfile& P, float Strength, uint32 Salt, uint32 Roll,
-		const FVector2D* Shaker, int32& Counter, TArray<FCoconutDrop>& OutDrops)
+		const FVector2D* Shaker, int32& Counter, TArray<FCoconutDrop>& OutDrops, FCycleCache& Cache)
 	{
 		if (State.bFelled || Strength <= 0.0f)
 		{
@@ -80,8 +116,8 @@ namespace
 		int32 Fallen = 0;
 		for (int32 i = 0; i < State.Slots.Num(); ++i)
 		{
-			int64 Set = 0, Mature = 0, Fall = 0;
-			FCoconutPalmModel::CycleOf(State, P, i, Set, Mature, Fall);
+			const int64 Mature = Cache.Mature[i];
+			const int64 Fall = Cache.Fall[i];
 			if (T < Mature || T >= Fall)
 			{
 				continue;
@@ -94,6 +130,7 @@ namespace
 				continue;
 			}
 			const FFallenCoconut Landed = LandOnGround(State, P, i, T);
+			Cache.Refresh(State, P, i);
 			FCoconutDrop Drop;
 			Drop.ItemId = FCoconutPalmModel::MatureItem;
 			Drop.Position = Landed.Position;
@@ -103,7 +140,54 @@ namespace
 			++Counter;
 			++Fallen;
 		}
-		State.Ground.Sort(SortGround);
+		if (Fallen > 0)
+		{
+			State.Ground.Sort(SortGround);
+		}
+		return Fallen;
+	}
+
+	/** Ciclo natural hasta NowMinute (≥ LastUpdateMinute), sin rachas. P ya saneado. */
+	int32 AdvanceNatural(FCoconutPalmState& State, const FCoconutPalmProfile& P, int64 NowMinute, FCycleCache& Cache)
+	{
+		const int64 Life = static_cast<int64>(P.GroundLifeDays) * FCoconutPalmModel::MinutesPerDay;
+		int32 Fallen = 0;
+		if (!State.bFelled)
+		{
+			for (int32 i = 0; i < State.Slots.Num(); ++i)
+			{
+				for (;;)
+				{
+					const int64 Fall = Cache.Fall[i];
+					if (Fall > NowMinute)
+					{
+						break;
+					}
+					++State.Counters.NaturalFalls;
+					++Fallen;
+					if (Fall + Life <= NowMinute)
+					{
+						// Cayó y se pudrió mientras nadie miraba: no hace falta ni ponerlo en la lista.
+						++State.Counters.Rotted;
+						Vacate(State.Slots[i], Fall);
+					}
+					else
+					{
+						LandOnGround(State, P, i, Fall);
+					}
+					Cache.Refresh(State, P, i);
+				}
+			}
+		}
+		const int32 Before = State.Ground.Num();
+		State.Ground.RemoveAll([NowMinute, Life](const FFallenCoconut& C) { return C.LandedMinute + Life <= NowMinute; });
+		State.Counters.Rotted += Before - State.Ground.Num();
+		// RemoveAll conserva el orden: solo hay que ordenar si ha caído algo nuevo.
+		if (Fallen > 0)
+		{
+			State.Ground.Sort(SortGround);
+		}
+		State.LastUpdateMinute = NowMinute;
 		return Fallen;
 	}
 }
@@ -127,6 +211,7 @@ FCoconutPalmProfile FCoconutPalmModel::Sanitize(const FCoconutPalmProfile& In)
 	P.TrunkHeightMeters = NonNegativeOrZero(P.TrunkHeightMeters);
 	P.CrownRadiusMeters = NonNegativeOrZero(P.CrownRadiusMeters);
 	P.CrackChanceOnFell = Clamp01OrZero(P.CrackChanceOnFell);
+	P.MaxFellMature = FMath::Clamp(P.MaxFellMature, 1, MaxSlots);
 	return P;
 }
 
@@ -139,11 +224,7 @@ uint32 FCoconutPalmModel::MakeId(int32 SlotIndex, int32 Generation)
 void FCoconutPalmModel::CycleOf(const FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, int32 SlotIndex,
 	int64& OutSetMinute, int64& OutMatureMinute, int64& OutFallMinute)
 {
-	const FCoconutPalmProfile P = Sanitize(InProfile);
-	const FCoconutSlot& Slot = State.Slots[SlotIndex];
-	OutSetMinute = Slot.CycleStartMinute + DaysBetween(SlotHash(State.Seed, SaltRefill, SlotIndex, Slot.Generation), P.RefillMinDays, P.RefillMaxDays);
-	OutMatureMinute = OutSetMinute + static_cast<int64>(P.GreenDays) * MinutesPerDay;
-	OutFallMinute = OutMatureMinute + DaysBetween(SlotHash(State.Seed, SaltHang, SlotIndex, Slot.Generation), P.HangMinDays, P.HangMaxDays);
+	RawCycle(State, Sanitize(InProfile), SlotIndex, OutSetMinute, OutMatureMinute, OutFallMinute);
 }
 
 FVector2D FCoconutPalmModel::FallPosition(const FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, int32 SlotIndex, int32 Generation)
@@ -181,48 +262,38 @@ FCoconutPalmState FCoconutPalmModel::Initialize(uint32 Seed, const FVector2D& Tr
 	return State;
 }
 
-int32 FCoconutPalmModel::Advance(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, int64 NowMinute)
+int32 FCoconutPalmModel::Advance(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, int64 NowMinute, const TArray<FCoconutGust>& Gusts)
 {
 	if (NowMinute < State.LastUpdateMinute)
 	{
 		return 0;
 	}
 	const FCoconutPalmProfile P = Sanitize(InProfile);
-	const int64 Life = static_cast<int64>(P.GroundLifeDays) * MinutesPerDay;
 	int32 Fallen = 0;
-	if (!State.bFelled)
+	TArray<FCoconutDrop> GustDrops;
+	FCycleCache Cache(State, P);
+	for (const FCoconutGust& Gust : Gusts)
 	{
-		for (int32 i = 0; i < State.Slots.Num(); ++i)
+		// Lista ordenada: una hora ya aplicada o desordenada se salta, igual avance como avance.
+		if (Gust.Hour <= State.LastGustHour)
 		{
-			for (;;)
-			{
-				int64 Set = 0, Mature = 0, Fall = 0;
-				CycleOf(State, P, i, Set, Mature, Fall);
-				if (Fall > NowMinute)
-				{
-					break;
-				}
-				++State.Counters.NaturalFalls;
-				++Fallen;
-				if (Fall + Life <= NowMinute)
-				{
-					// Cayó y se pudrió mientras nadie miraba: no hace falta ni ponerlo en la lista.
-					++State.Counters.Rotted;
-					Vacate(State.Slots[i], Fall);
-				}
-				else
-				{
-					LandOnGround(State, P, i, Fall);
-				}
-			}
+			continue;
 		}
+		const int64 T = Gust.Hour * 60;
+		if (T > NowMinute)
+		{
+			break;
+		}
+		State.LastGustHour = Gust.Hour;
+		const float Strength = GustStrength(Gust.Wind);
+		if (T < State.LastUpdateMinute || Strength <= 0.0f)
+		{
+			continue; // hacia atrás no se aplica nada; sin fuerza no hay nada que hacer
+		}
+		Fallen += AdvanceNatural(State, P, T, Cache);
+		Fallen += ShakeAt(State, P, Strength, SaltGust, static_cast<uint32>(Gust.Hour), nullptr, State.Counters.GustFalls, GustDrops, Cache);
 	}
-	const int32 Before = State.Ground.Num();
-	State.Ground.RemoveAll([NowMinute, Life](const FFallenCoconut& C) { return C.LandedMinute + Life <= NowMinute; });
-	State.Counters.Rotted += Before - State.Ground.Num();
-	State.Ground.Sort(SortGround);
-	State.LastUpdateMinute = NowMinute;
-	return Fallen;
+	return Fallen + AdvanceNatural(State, P, NowMinute, Cache);
 }
 
 ECoconutStage FCoconutPalmModel::StageOf(const FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int32 SlotIndex)
@@ -272,32 +343,20 @@ float FCoconutPalmModel::GustStrength(float Wind)
 }
 
 int32 FCoconutPalmModel::Shake(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, float Strength, const FVector2D& ShakerPosition,
-	int64 NowMinute, TArray<FCoconutDrop>& OutDrops)
+	int64 NowMinute, const TArray<FCoconutGust>& Gusts, TArray<FCoconutDrop>& OutDrops)
 {
 	const FCoconutPalmProfile P = Sanitize(InProfile);
 	// Un reloj que va hacia atrás no deshace nada: se sacude en el último minuto conocido.
-	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute));
+	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute), Gusts);
 	++State.ShakeSerial;
-	return ShakeAt(State, P, Clamp01OrZero(Strength), SaltShake, State.ShakeSerial, &ShakerPosition, State.Counters.Shaken, OutDrops);
+	FCycleCache Cache(State, P);
+	return ShakeAt(State, P, Clamp01OrZero(Strength), SaltShake, State.ShakeSerial, &ShakerPosition, State.Counters.Shaken, OutDrops, Cache);
 }
 
-int32 FCoconutPalmModel::ApplyGust(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, float Wind, int64 HourIndex, TArray<FCoconutDrop>& OutDrops)
-{
-	const int64 T = HourIndex * 60;
-	if (HourIndex <= State.LastGustHour || T < State.LastUpdateMinute)
-	{
-		return 0;
-	}
-	const FCoconutPalmProfile P = Sanitize(InProfile);
-	Advance(State, P, T);
-	State.LastGustHour = HourIndex;
-	return ShakeAt(State, P, GustStrength(Wind), SaltGust, static_cast<uint32>(HourIndex), nullptr, State.Counters.GustFalls, OutDrops);
-}
-
-FName FCoconutPalmModel::PickFromCrown(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, bool bWantGreen, int64 NowMinute)
+FName FCoconutPalmModel::PickFromCrown(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, bool bWantGreen, int64 NowMinute, const TArray<FCoconutGust>& Gusts)
 {
 	const FCoconutPalmProfile P = Sanitize(InProfile);
-	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute));
+	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute), Gusts);
 	const ECoconutStage Wanted = bWantGreen ? ECoconutStage::Green : ECoconutStage::Mature;
 	for (int32 i = 0; i < State.Slots.Num(); ++i)
 	{
@@ -327,10 +386,21 @@ bool FCoconutPalmModel::PickFromGround(FCoconutPalmState& State, uint32 Id, FFal
 	return true;
 }
 
-int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, const FVector2D& FallDirection, int64 NowMinute, TArray<FCoconutDrop>& OutDrops)
+int32 FCoconutPalmModel::FellMatureKept(const FCoconutPalmProfile& InProfile, int32 Mature, int32 Survivors)
 {
 	const FCoconutPalmProfile P = Sanitize(InProfile);
-	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute));
+	if (Mature <= 1)
+	{
+		return 0; // «nunca los 100 %»: con uno solo, se abre
+	}
+	return FMath::Clamp(Survivors, 1, FMath::Min(P.MaxFellMature, Mature - 1));
+}
+
+int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, const FVector2D& FallDirection, int64 NowMinute,
+	const TArray<FCoconutGust>& Gusts, TArray<FCoconutDrop>& OutDrops)
+{
+	const FCoconutPalmProfile P = Sanitize(InProfile);
+	Advance(State, P, FMath::Max(NowMinute, State.LastUpdateMinute), Gusts);
 	if (State.bFelled)
 	{
 		return 0;
@@ -346,6 +416,10 @@ int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfil
 	const FVector2D Crown = State.TrunkPosition + Dir * (static_cast<double>(P.TrunkHeightMeters) * 0.85 * 100.0);
 	const double CrownCm = static_cast<double>(P.CrownRadiusMeters) * 100.0;
 	const int64 T = State.LastUpdateMinute;
+
+	// Primero la tirada de cada maduro; después se acota a [1, min(MaxFellMature, M − 1)] en orden de hueco.
+	TArray<int32> MatureSlots;
+	TArray<uint8> Intact; // uint8 y no bool: TArray<bool> no es contiguo en el shim
 	int32 Taken = 0;
 	for (int32 i = 0; i < State.Slots.Num(); ++i)
 	{
@@ -354,22 +428,48 @@ int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfil
 		{
 			continue;
 		}
-		const int32 Gen = State.Slots[i].Generation;
-		FCoconutDrop Drop;
-		Drop.ItemId = GreenItem;
+		++Taken;
 		if (Stage == ECoconutStage::Mature)
 		{
-			const float Dice = ExploredHash::ToUnitFloat(SlotHash(State.Seed, SaltCrack, i, Gen));
-			Drop.ItemId = Dice < P.CrackChanceOnFell ? ShellItem : MatureItem;
+			MatureSlots.Add(i);
+			Intact.Add(ExploredHash::ToUnitFloat(SlotHash(State.Seed, SaltCrack, i, State.Slots[i].Generation)) >= P.CrackChanceOnFell ? 1 : 0);
 		}
+	}
+	int32 Survivors = 0;
+	for (const uint8 b : Intact)
+	{
+		Survivors += b;
+	}
+	const int32 Kept = FellMatureKept(P, MatureSlots.Num(), Survivors);
+	// Sobran enteros: se abren los últimos. Faltan: se salvan los primeros abiertos.
+	for (int32 k = Intact.Num() - 1; k >= 0 && Survivors > Kept; --k)
+	{
+		if (Intact[k]) { Intact[k] = 0; --Survivors; }
+	}
+	for (int32 k = 0; k < Intact.Num() && Survivors < Kept; ++k)
+	{
+		if (!Intact[k]) { Intact[k] = 1; ++Survivors; }
+	}
+	for (int32 k = 0; k < MatureSlots.Num(); ++k)
+	{
+		const int32 i = MatureSlots[k];
+		const int32 Gen = State.Slots[i].Generation;
+		FCoconutDrop Drop;
+		Drop.ItemId = Intact[k] ? MatureItem : ShellItem;
 		// Esparcidos por la copa caída (la misma fórmula del anillo, pero con el centro en la copa).
 		const double Angle = static_cast<double>(ExploredHash::ToUnitFloat(SlotHash(State.Seed, SaltAngle ^ SaltCrack, i, Gen))) * 2.0 * PI;
 		const double Radius = FMath::Sqrt(static_cast<double>(ExploredHash::ToUnitFloat(SlotHash(State.Seed, SaltRadius ^ SaltCrack, i, Gen)))) * CrownCm;
 		Drop.Position = Crown + FVector2D(FMath::Cos(Angle), FMath::Sin(Angle)) * Radius;
 		OutDrops.Add(Drop);
-		Vacate(State.Slots[i], T);
-		++State.Counters.Felled;
-		++Taken;
+	}
+	// Los verdes se pierden con el golpe: el agua del verde solo se consigue trepando (biblia 02 §13.1).
+	for (int32 i = 0; i < State.Slots.Num(); ++i)
+	{
+		if (StageOf(State, P, i) != ECoconutStage::Empty)
+		{
+			Vacate(State.Slots[i], T);
+			++State.Counters.Felled;
+		}
 	}
 	State.bFelled = true;
 	return Taken;

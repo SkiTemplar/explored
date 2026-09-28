@@ -12,9 +12,14 @@
  *   - Sacudir el tronco suelta cocos maduros con una probabilidad que crece con
  *     lo flojos que están y con la fuerza de la sacudida. El verde no cae nunca.
  *   - Las rachas de un temporal sacuden igual que el jugador, una vez por hora.
+ *     Son parte del ciclo natural: Advance las aplica a partir de la lista de horas
+ *     de temporal que saca el tiempo del mundo, así que reconstruir una palmera
+ *     da los mismos cocos que haberla simulado cargada.
  *   - Trepar (biblia 02 §13.1) coge un coco de la copa, verde o maduro.
- *   - Talar suelta lo que queda en la copa (parte del maduro se abre con el golpe)
- *     y la copa se queda vacía: sacudir y luego talar no da cocos de más.
+ *   - Talar suelta de 1 a 3 maduros y nunca todos los que había (biblia 02 §1.2):
+ *     el resto se abre con el golpe. Los verdes se pierden: el agua del verde
+ *     solo se consigue trepando (§13.1). La copa se queda vacía, así que sacudir
+ *     y luego talar no da cocos de más.
  *
  * Todo es entero (minutos de juego) y cada momento del ciclo sale de un hash de
  * (semilla, hueco, generación), así que avanzar 30 días de golpe o 43 200 veces
@@ -49,8 +54,19 @@ struct EXPLORED_API FCoconutPalmProfile
 	float TrunkHeightMeters = 9.0f;
 	/** Radio de la copa, en metros (el mismo que FFellingProfile::CrownRadiusMeters). */
 	float CrownRadiusMeters = 3.0f;
-	/** Fracción de los maduros que se abren al caer la palmera talada (se quedan en cáscara). */
+	/** Probabilidad de que cada maduro se abra al caer la palmera talada (se queda en cáscara), antes de acotar a [1, MaxFellMature]. */
 	float CrackChanceOnFell = 0.3f;
+	/** Como mucho, cuántos maduros enteros suelta la tala (biblia 02 §1.2: 1–3). */
+	int32 MaxFellMature = 3;
+};
+
+/** Una hora de temporal: el motor las saca de FWeatherModel con la semilla del mundo. */
+struct EXPLORED_API FCoconutGust
+{
+	/** Hora de juego (minutos Hour·60 …). */
+	int64 Hour = 0;
+	/** Viento de esa hora, 0–1. Por debajo de GustWindThreshold no hace nada. */
+	float Wind = 0.0f;
 };
 
 /** Un hueco de la copa. Su estado a cualquier hora se deduce de estos dos números. */
@@ -104,7 +120,7 @@ struct EXPLORED_API FCoconutPalmState
 	int64 LastUpdateMinute = 0;
 	/** Cuántas sacudidas ha recibido: entra en el hash de cada tirada. */
 	uint32 ShakeSerial = 0;
-	/** Última hora de juego en la que se aplicó una racha (una por hora como mucho). */
+	/** Última hora de temporal ya aplicada (una por hora como mucho, nunca hacia atrás). */
 	int64 LastGustHour = -1;
 	/** Talada: la copa ya no da cocos (los del suelo siguen pudriéndose). */
 	bool bFelled = false;
@@ -152,11 +168,14 @@ struct EXPLORED_API FCoconutPalmModel
 	static FCoconutPalmState Initialize(uint32 Seed, const FVector2D& TrunkPosition, const FCoconutPalmProfile& Profile, int64 NowMinute, bool bStocked);
 
 	/**
-	 * Avanza hasta NowMinute: los maduros que cumplen su tiempo caen al suelo y
-	 * los caídos que cumplen el suyo se pudren. Devuelve cuántos han caído. Una
-	 * hora anterior a LastUpdateMinute no hace nada.
+	 * Avanza hasta NowMinute: los maduros que cumplen su tiempo caen al suelo, las
+	 * horas de temporal de Gusts que caen en el tramo sacuden la copa en su minuto
+	 * (Hour·60) y los caídos que cumplen su tiempo se pudren. Gusts va ordenada por
+	 * hora; se ignoran las horas ya aplicadas y las anteriores a LastUpdateMinute.
+	 * Devuelve cuántos han caído (solos y por las rachas). Una hora anterior a
+	 * LastUpdateMinute no hace nada.
 	 */
-	static int32 Advance(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int64 NowMinute);
+	static int32 Advance(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int64 NowMinute, const TArray<FCoconutGust>& Gusts);
 
 	/** Etapa del hueco a la hora de la última actualización. */
 	static ECoconutStage StageOf(const FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int32 SlotIndex);
@@ -175,34 +194,35 @@ struct EXPLORED_API FCoconutPalmModel
 	 * probabilidad Strength × (BaseLooseness + (1 − BaseLooseness) × flojera),
 	 * donde la flojera va de 0 al madurar a 1 al caer solo. Los que caen van al
 	 * suelo y se añaden a OutDrops; bHitsShaker marca los que caen encima de
-	 * ShakerPosition. Devuelve cuántos han caído.
+	 * ShakerPosition. Antes avanza hasta NowMinute con Gusts. Devuelve cuántos
+	 * han caído por la sacudida.
 	 */
-	static int32 Shake(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, float Strength, const FVector2D& ShakerPosition, int64 NowMinute, TArray<FCoconutDrop>& OutDrops);
-
-	/**
-	 * Racha de viento de la hora HourIndex (minutos HourIndex·60 …). Se aplica una
-	 * sola vez por hora y nunca hacia atrás; el motor la llama al cruzar cada hora
-	 * con el viento de esa hora, también al ponerse al día al cargar.
-	 */
-	static int32 ApplyGust(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, float Wind, int64 HourIndex, TArray<FCoconutDrop>& OutDrops);
+	static int32 Shake(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, float Strength, const FVector2D& ShakerPosition, int64 NowMinute, const TArray<FCoconutGust>& Gusts, TArray<FCoconutDrop>& OutDrops);
 
 	/**
 	 * Coge un coco de la copa tras trepar (biblia 02 §13.1): el verde si
-	 * bWantGreen, si no el maduro. Devuelve el objeto o NAME_None si no hay.
+	 * bWantGreen, si no el maduro (la biblia solo habla del verde: el maduro es
+	 * una extensión, ver GDD §3.18). Devuelve el objeto o NAME_None si no hay.
 	 */
-	static FName PickFromCrown(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, bool bWantGreen, int64 NowMinute);
+	static FName PickFromCrown(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, bool bWantGreen, int64 NowMinute, const TArray<FCoconutGust>& Gusts);
 
 	/** Recoge el coco caído con ese Id. Devuelve false si no está (ya recogido, podrido o inexistente). */
 	static bool PickFromGround(FCoconutPalmState& State, uint32 Id, FFallenCoconut* OutCoconut = nullptr);
 
 	/**
-	 * La palmera cae talada hacia FallDirection (en el plano): lo que queda en la
-	 * copa acaba en el suelo alrededor de la copa caída. Cada maduro se abre con
-	 * CrackChanceOnFell y queda en cascara_coco; los verdes aguantan. La copa se
-	 * queda vacía y deja de dar cocos. Devuelve cuántos cocos había en la copa.
-	 * Estos drops sustituyen a los coco_* de Palm.FellDrops (ver la nota técnica).
+	 * La palmera cae talada hacia FallDirection (en el plano): los maduros de la
+	 * copa acaban alrededor de la copa caída. Cada uno se abre con
+	 * CrackChanceOnFell y queda en cascara_coco, y después se acota: con M maduros
+	 * en la copa quedan enteros entre 1 y min(MaxFellMature, M − 1), el resto
+	 * abiertos (con un solo maduro, se abre). Los verdes se pierden con el golpe
+	 * (no hay drop). La copa se queda vacía y deja de dar cocos. Devuelve cuántos
+	 * cocos había en la copa. Estos drops sustituyen a los coco_* de Palm.FellDrops
+	 * (ver la nota técnica).
 	 */
-	static int32 Fell(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, const FVector2D& FallDirection, int64 NowMinute, TArray<FCoconutDrop>& OutDrops);
+	static int32 Fell(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, const FVector2D& FallDirection, int64 NowMinute, const TArray<FCoconutGust>& Gusts, TArray<FCoconutDrop>& OutDrops);
+
+	/** Cuántos maduros enteros deja la tala con M maduros en la copa y Survivors que no se han abierto en la tirada. */
+	static int32 FellMatureKept(const FCoconutPalmProfile& Profile, int32 Mature, int32 Survivors);
 
 	/** Minutos del ciclo de la generación del hueco: cuaja, madura y cae solo, contados desde CycleStartMinute. */
 	static void CycleOf(const FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int32 SlotIndex, int64& OutSetMinute, int64& OutMatureMinute, int64& OutFallMinute);
