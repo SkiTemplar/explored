@@ -151,10 +151,10 @@ void FFaunaAnchorNetModelSpec::Define()
 		It("a igual distancia desempata por id y nunca repite un id", [this]()
 		{
 			TArray<FFaunaGroupAnchor> Groups;
-			for (uint16 Id : {9, 3, 3, 5})
+			for (int32 Id : {9, 3, 3, 5})
 			{
 				FFaunaGroupAnchor A;
-				A.GroupId = Id;
+				A.GroupId = static_cast<uint16>(Id);
 				A.CentroidCm = FVector(100.0, 0.0, 0.0);
 				Groups.Add(A);
 			}

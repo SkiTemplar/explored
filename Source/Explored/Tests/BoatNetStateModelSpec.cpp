@@ -42,7 +42,8 @@ void FBoatNetStateModelSpec::Define()
 			FBoatNetState Out;
 			TestTrue(TEXT("Decodifica"), FBoatNetStateModel::DecodeState(Bytes, Out));
 			TestEqual(TEXT("Posición"), Out.PositionCm, In.PositionCm, 5.0f);
-			TestEqual(TEXT("Velocidad a 5 cm/s"), Out.VelocityCmS, In.VelocityCmS, 5.0f);
+			TestEqual(TEXT("Velocidad X a 5 cm/s"), Out.VelocityCmS.X, In.VelocityCmS.X, 5.0);
+			TestEqual(TEXT("Velocidad Y a 5 cm/s"), Out.VelocityCmS.Y, In.VelocityCmS.Y, 5.0);
 			TestEqual(TEXT("Rumbo a 0,003°"), ExploredNet::AngleDeltaDeg(In.YawDeg, Out.YawDeg), 0.0f, 0.003f);
 			TestEqual(TEXT("Escora al grado"), Out.HeelDeg, -14.0f);
 			TestTrue(TEXT("Vela izada"), Out.bSailRaised);
