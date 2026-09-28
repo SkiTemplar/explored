@@ -506,6 +506,74 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 
+### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
+
+Cuarta mecánica del principio del mundo interactivo. La numeración salta §3.13 y §3.14
+porque la arena viva y el astillero están en PR abiertas (#46 y #53). Los números de
+contagio, rebrote y ceniza son los de la biblia 02 §6, que manda en el detalle. Las
+duraciones de quema son una propuesta y no las ha validado nadie.
+
+- **Objetivo:** que un fuego mal vigilado en la seca pueda quemar una ladera de hierba, y
+  que el jugador lo pueda frenar con agua, arena o un cortafuegos.
+- **Rejilla:** celdas de **2 m** (la misma medida que la rejilla de construcción) en
+  chunks de **16 × 16 celdas (32 m)**. Arden la hierba y el matorral; los árboles, la
+  arena, la roca, el agua y el suelo desnudo no arden. Solo se guardan las celdas que
+  se apartan del mundo base: ardiendo, quemadas o mojadas.
+- **Reglas:**
+  - **Contagio.** Cada segundo, una celda que arde tira por cada una de sus **8
+    vecinas** no mojadas con combustible:
+
+    | Condición | Probabilidad por vecina y segundo |
+    |---|---|
+    | Seca (también con ola de calor o llovizna) | **45 %** |
+    | Primeras lluvias, monzón o ciclones | **13,5 %** (−70 %) |
+    | Niebla matinal | **9 %** |
+    | Chubasco, tormenta o ciclón activo | 0: el incendio se apaga entero |
+
+  - **Viento.** Con viento de fuerza ≥ 0,1, a la probabilidad se suman **25 puntos**
+    multiplicados por el coseno entre la vecina y la dirección del viento: +25 a favor,
+    0 de través y −25 en contra, sin bajar de 0. En la estación húmeda, un fuego con
+    viento no avanza nunca hacia barlovento (13,5 − 25 < 0).
+    - *Interpretación:* la biblia dice «+25 %», que aquí se lee como puntos
+      porcentuales. Aplicado como factor (×1,25), el viento apenas se notaría en la
+      estación húmeda.
+  - **Duración de la quema [propuesta]:** la hierba arde **20 s** y el matorral **60
+    s**. Después, la celda queda quemada. En seca y sin viento, una mancha de hierba
+    de 40 × 40 m que prende en el centro se apaga en menos de un minuto (35 s con la
+    semilla del spec).
+  - **Apagar:**
+    - Un chubasco o más apaga todo el incendio, incluidas las celdas lejanas.
+    - Echar agua o arena en un disco de hasta 8 celdas de radio apaga lo que arde en
+      él, que queda quemado.
+    - Las celdas con combustible del disco quedan **mojadas**: no prenden mientras
+      dura la humedad, que la fija quien la causa (cubo, lluvia local).
+    - Una línea mojada de una sola celda de ancho ya funciona como cortafuegos.
+  - **Rebrote:** la hierba quemada vuelve a los **12 días** y el matorral a los **25
+    días**. Hasta entonces no tiene combustible y no se puede volver a quemar.
+  - **Ceniza:** cada celda quemada da **1 `ceniza_madera`** durante los **3 primeros
+    días**. Se recoge una sola vez.
+- **Contradicción abierta:** la biblia 02 §6 dice que los 25 días del matorral son «el
+  mismo número que el rebrote de tala de arbustos (1.2)», pero la tala implementada
+  (§3.12, `FFellingModel`) rebrota el arbusto en 3 + 2 días. Queda pendiente de que
+  decida el director. Mientras tanto, el incendio usa los 25 días de la biblia.
+- **Red y coste (misma política que la arena viva, biblia 08 §2.6):**
+  - Solo simula el servidor.
+  - Solo se revisan los chunks con fuego que estén a **menos de 80 m** de algún
+    jugador, medidos hasta el borde del chunk. Fuera de ese radio, el fuego se congela.
+  - Como mucho se acumulan **4 pasos** y el resto se descarta.
+  - Como mucho prenden **64 celdas por chunk y segundo**; el resto espera.
+  - El coste de un paso es proporcional al número de celdas que arden cerca de un
+    jugador, nunca al tamaño del mundo.
+- **Determinismo:** cada tirada es un hash de (semilla, celda destino, segundo,
+  vecina de origen), y las celdas que prenden no contagian hasta el segundo siguiente.
+  El resultado no depende del orden de visita ni de cómo se trocee el avance, y una
+  partida guardada a mitad de incendio sigue exactamente igual.
+- **Interfaz:** humo que avisa desde lejos, crepitar, suelo ennegrecido y ceniza gris
+  que se puede recoger. Sin barras ni avisos de texto.
+- **Dependencias:** `WorldGen` (`FWildfireModel`), `Weather` (`ESeason`,
+  `EWeatherState`, viento), `Cooking` (una hoguera o una antorcha sin vigilar es la
+  chispa), `Save` (sección `wildfire`). Ver `docs/tecnico/incendio-integracion.md`.
+
 ---
 
 ## 4. Progresión de islas y tecnología
