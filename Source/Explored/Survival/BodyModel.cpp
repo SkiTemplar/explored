@@ -36,6 +36,12 @@ namespace BodyModelDetail
 	constexpr float RayDamagePerHour = 3.0f;
 	constexpr float RayWoundDepth = 0.35f;
 
+	// Quemaduras de contacto (biblia 01 §6.8).
+	constexpr float ContactBurnDamage = 8.0f;
+	constexpr float ContactBurnDepth = 0.4f;
+	constexpr float ContactBurnHealHours = 24.0f;
+	constexpr float AloeBurnHealFactor = 0.5f;
+
 	// Sol.
 	constexpr float SunBurnDoseHours = 2.0f;
 	constexpr float HatSunFactor = 0.3f;
@@ -58,6 +64,34 @@ namespace BodyModelDetail
 	bool IsActive(const FSurvivalState& S, ECondition C)
 	{
 		return S.HasCondition(C);
+	}
+
+	/** Horas que tarda en cicatrizar del todo una quemadura: la mitad con aloe. */
+	float BurnHealHours(const FWound& W)
+	{
+		return ContactBurnHealHours * (W.bMedicinal ? AloeBurnHealFactor : 1.0f);
+	}
+
+	/**
+	 * ContactBurn dura lo que le quede a la peor quemadura abierta. Sin quemaduras no se
+	 * toca: un estado cargado o puesto a mano se consume solo, como el resto.
+	 */
+	void SyncContactBurn(FSurvivalState& S, bool bHadBurns)
+	{
+		float Remaining = 0.0f;
+		bool bAnyBurn = false;
+		for (const FWound& W : S.Wounds)
+		{
+			if (W.bBurn)
+			{
+				bAnyBurn = true;
+				Remaining = FMath::Max(Remaining, (1.0f - FMath::Clamp(W.Healed, 0.0f, 1.0f)) * BurnHealHours(W));
+			}
+		}
+		if (bAnyBurn || bHadBurns)
+		{
+			S.ConditionTime[static_cast<int32>(ECondition::ContactBurn)] = Remaining;
+		}
 	}
 }
 
@@ -96,6 +130,11 @@ int32 FBodyModel::TreatWounds(FSurvivalState& S, EWoundTreatment Treatment)
 	int32 Treated = 0;
 	for (FWound& W : S.Wounds)
 	{
+		if (W.bBurn)
+		{
+			// Una quemadura no se lava ni se venda: se cura con aloe (SootheBurns) o con tiempo.
+			continue;
+		}
 		++Treated;
 		W.HoursUntreated = 0.0f;
 		switch (Treatment)
@@ -140,6 +179,71 @@ float FBodyModel::BleedingDamagePerHour(const FSurvivalState& S)
 		Total += W.Bleeding * WoundBleedDamagePerHour;
 	}
 	return Total;
+}
+
+float FBodyModel::ApplyContactBurn(FSurvivalState& S, const FSurvivalModeSettings& Mode, TArray<ESurvivalEvent>& OutEvents)
+{
+	if (S.IsDead())
+	{
+		return 0.0f;
+	}
+	float Damage = ContactBurnDamage;
+	if (!Mode.NeedsCanKill())
+	{
+		Damage = FMath::Min(Damage, FMath::Max(0.0f, S.Health - 10.0f));
+	}
+	S.Health = FMath::Clamp(S.Health - Damage, 0.0f, 100.0f);
+
+	// El fuego cauteriza: herida sin sangrado que no cuenta para la infección.
+	FWound Burn;
+	Burn.Depth = ContactBurnDepth;
+	Burn.bBurn = true;
+	S.Wounds.Add(Burn);
+	SyncContactBurn(S, true);
+
+	ApplyMoraleEvent(S, EMoraleEvent::Injured);
+	OutEvents.AddUnique(ESurvivalEvent::Burned);
+	if (S.IsDead())
+	{
+		OutEvents.AddUnique(ESurvivalEvent::Died);
+	}
+	return Damage;
+}
+
+int32 FBodyModel::SootheBurns(FSurvivalState& S)
+{
+	int32 Soothed = 0;
+	for (FWound& W : S.Wounds)
+	{
+		if (W.bBurn && !W.bMedicinal)
+		{
+			// El aloe dobla la velocidad desde ahora; lo ya cicatrizado se conserva.
+			W.bMedicinal = true;
+			W.bBandaged = true;
+			++Soothed;
+		}
+	}
+	const bool bHasBurns = S.Wounds.ContainsByPredicate([](const FWound& W) { return W.bBurn; });
+	if (bHasBurns)
+	{
+		SyncContactBurn(S, true);
+	}
+	else
+	{
+		// Sin herida que cuidar (estado cargado o puesto a mano): el aloe lo cura directamente.
+		S.ClearCondition(ECondition::ContactBurn);
+	}
+	return Soothed;
+}
+
+int32 FBodyModel::NumBurns(const FSurvivalState& S)
+{
+	int32 Burns = 0;
+	for (const FWound& W : S.Wounds)
+	{
+		Burns += W.bBurn ? 1 : 0;
+	}
+	return Burns;
 }
 
 FFallResult FBodyModel::FallDamage(float HeightM, ELandingSurface Surface)
@@ -357,9 +461,22 @@ void FBodyModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaH
 	const bool bInfectionActive = S.HasCondition(ECondition::Infection);
 	const float ClotMul = Stage == EScurvyStage::Bleeding ? 0.5f : 1.0f;
 	const float HealMul = Stage == EScurvyStage::Bleeding ? 0.5f : 1.0f;
+	const bool bHadBurns = NumBurns(S) > 0;
 	for (int32 Index = S.Wounds.Num() - 1; Index >= 0; --Index)
 	{
 		FWound& W = S.Wounds[Index];
+		if (W.bBurn)
+		{
+			// Quemadura: no sangra ni se infecta; cicatriza en un tiempo fijo (la mitad con aloe).
+			W.Bleeding = 0.0f;
+			W.Healed += DeltaHours / BurnHealHours(W) * HealMul;
+			// Negado a propósito: un Healed NaN (partida dañada) cierra la quemadura en vez de dejarla para siempre.
+			if (!(W.Healed < 1.0f))
+			{
+				S.Wounds.RemoveAt(Index);
+			}
+			continue;
+		}
 		InOutDamage += W.Bleeding * WoundBleedDamagePerHour * DeltaHours;
 		W.Bleeding = FMath::Max(0.0f, W.Bleeding - WoundClotPerHour * (1.0f - W.Depth) * ClotMul * DeltaHours);
 
@@ -390,6 +507,8 @@ void FBodyModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaH
 			S.Wounds.RemoveAt(Index);
 		}
 	}
+
+	SyncContactBurn(S, bHadBurns);
 
 	// Picaduras.
 	if (S.HasCondition(ECondition::JellyfishSting))

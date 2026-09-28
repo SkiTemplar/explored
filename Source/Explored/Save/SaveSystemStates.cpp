@@ -769,6 +769,11 @@ namespace ExploredSaveStates
 			Out.Write(TEXT("bandaged"), Wound.bBandaged);
 			Out.Write(TEXT("medicinal"), Wound.bMedicinal);
 			Out.Write(TEXT("infected"), Wound.bInfected);
+			// Quemadura de contacto (biblia 01 §6.8): solo si lo es, para no cambiar las partidas antiguas.
+			if (Wound.bBurn)
+			{
+				Out.Write(TEXT("burn"), Wound.bBurn);
+			}
 		});
 	}
 
@@ -808,6 +813,7 @@ namespace ExploredSaveStates
 			In.Read(TEXT("bandaged"), Wound.bBandaged);
 			In.Read(TEXT("medicinal"), Wound.bMedicinal);
 			In.Read(TEXT("infected"), Wound.bInfected);
+			In.Read(TEXT("burn"), Wound.bBurn);
 			return In.Read(TEXT("depth"), Wound.Depth);
 		});
 	}

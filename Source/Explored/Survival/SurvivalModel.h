@@ -31,7 +31,16 @@ struct EXPLORED_API FSurvivalModeSettings
 	float NeedScale() const;
 	/** Explorador nunca; Personalizado según bNeedsCanKill; el resto, sí. */
 	bool NeedsCanKill() const;
-	/** Náufrago: sin reaparición en fogatas. */
+	/**
+	 * Náufrago: sin reaparición en fogatas.
+	 *
+	 * Personalizado (biblia 01 §8): «las necesidades pueden matar» y «permadeath» no son
+	 * dos opciones sueltas, sino un único interruptor de «modo duro» (bNeedsCanKill), para
+	 * no ofrecer la combinación absurda de morir para siempre sin poder morir de hambre.
+	 * Hoy el Personalizado aún reaparece con el interruptor encendido; cuando el menú
+	 * exponga el «modo duro», el permadeath del Personalizado debe salir de bNeedsCanKill
+	 * y no de un segundo campo.
+	 */
 	bool HasPermadeath() const { return Mode == ESurvivalMode::Castaway; }
 };
 
@@ -58,6 +67,13 @@ enum class ECondition : uint8
 	JellyfishSting,  // picadura de medusa: escozor; se cura con vinagre
 	RaySting,        // picadura de raya: dolor fuerte; antídoto de corteza
 	Hallucinating,   // seta alucinógena (o falta de sueño extrema, ver FBodyModel)
+	/**
+	 * Quemadura de contacto (fuego, brasas, líquido hirviendo; biblia 01 §6.8). Distinta
+	 * de SunBurn: la abre FBodyModel::ApplyContactBurn junto con una herida de quemadura
+	 * (FWound::bBurn) y dura lo que tarde en cicatrizar la peor de ellas. Va al final
+	 * para no mover los índices de las partidas guardadas ni los bits de Cures.
+	 */
+	ContactBurn,
 	Count
 };
 
@@ -118,6 +134,12 @@ struct EXPLORED_API FWound
 	/** Vendada con hojas medicinales: cicatriza más rápido. */
 	bool bMedicinal = false;
 	bool bInfected = false;
+	/**
+	 * Quemadura de contacto (biblia 01 §6.8): el fuego cauteriza, así que no sangra ni
+	 * se infecta; duele y cicatriza en un tiempo fijo, a mitad con gel de aloe
+	 * (bMedicinal). Las vendas y el agua no la tratan (FBodyModel::TreatWounds la salta).
+	 */
+	bool bBurn = false;
 };
 
 /** Eventos que produce el modelo para que el juego reaccione (sonidos, efectos, textos). */
@@ -135,6 +157,7 @@ enum class ESurvivalEvent : uint8
 	ScurvyWorse,     // el escorbuto pasa a una etapa peor (encías → visión → sangrado)
 	Sprained,
 	Stung,
+	Burned,          // quemadura de contacto (brasas, fuego, líquido hirviendo)
 	Count
 };
 
@@ -151,7 +174,8 @@ struct EXPLORED_API FSurvivalState
 	float Rest = 90.0f;          // sueño
 	float Morale = 60.0f;
 	float BodyTemperature = 37.0f;
-	float Wetness = 0.0f;        // 0–1
+	/** 0–1. Una partida nueva empieza empapada: se llega nadando desde el amaraje (biblia 01 §4). */
+	float Wetness = 1.0f;
 	float Protein = 50.0f;
 	float Carbs = 50.0f;
 	float Vitamins = 50.0f;

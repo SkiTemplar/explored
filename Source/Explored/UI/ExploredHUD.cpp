@@ -276,6 +276,10 @@ void AExploredHUD::DrawBodyNeeds(const AExploredCharacter& Character)
 	{
 		Conditions.Add(NSLOCTEXT("ExploredUI", "CondSunBurn", "Quemadura solar"));
 	}
+	if (State.HasCondition(ECondition::ContactBurn))
+	{
+		Conditions.Add(NSLOCTEXT("ExploredUI", "CondContactBurn", "Quemadura"));
+	}
 	if (State.HasCondition(ECondition::Fever))
 	{
 		Conditions.Add(NSLOCTEXT("ExploredUI", "CondFever", "Fiebre"));
@@ -294,7 +298,7 @@ void AExploredHUD::DrawBodyNeeds(const AExploredCharacter& Character)
 	{
 		Conditions.Add(NSLOCTEXT("ExploredUI", "CondScurvy", "Escorbuto"));
 	}
-	const int32 OpenWounds = Algo::CountIf(State.Wounds, [](const FWound& Wound) { return Wound.Healed < 1.0f && !Wound.bBandaged; });
+	const int32 OpenWounds = Algo::CountIf(State.Wounds, [](const FWound& Wound) { return Wound.Healed < 1.0f && !Wound.bBandaged && !Wound.bBurn; });
 	if (OpenWounds > 0)
 	{
 		FFormatNamedArguments Args;
