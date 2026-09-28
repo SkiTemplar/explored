@@ -2,14 +2,19 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-#include "Async/TaskGraphInterfaces.h"
 #include "CollisionQueryParams.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/IConsoleManager.h"
 #include "HAL/PlatformTime.h"
+#include "Async/TaskGraphInterfaces.h"
+#include "Materials/MaterialInterface.h"
 #include "ProceduralMeshComponent.h"
+#include "Tickable.h"
+#include "UObject/UObjectGlobals.h"
 
+#include "Mining/ExploredTerrainSettings.h"
 #include "Mining/TerrainEditSubsystem.h"
 #include "Mining/TerrainRuntimeMesher.h"
 #include "Save/SaveArchive.h"
@@ -132,6 +137,8 @@ namespace TerrainRuntimeTestDetail
 		FVector Surface = FVector::ZeroVector;
 		double GroundBefore = 0.0;
 		double GroundDug = 0.0;
+		/** Fotogramas de remallado con 2 ms o más en el hilo de juego (objetivo: ninguno). */
+		int32 FramesOverTarget = 0;
 	};
 
 	int32 NumTriangles(const UProceduralMeshComponent* Component)
@@ -140,13 +147,22 @@ namespace TerrainRuntimeTestDetail
 		return Section ? Section->ProcIndexBuffer.Num() / 3 : 0;
 	}
 
-	/** 1) Sustituir el chunk horneado: mallas finas con colisión, a la altura del terreno. */
+	double RemeshLikeGame(FContext& C, int32& OutFrames);
+
+	/**
+	 * 1) Sustituir el chunk horneado con el presupuesto del juego (es lo que pasa en el primer
+	 * golpe sobre un chunk): mallas finas con colisión, a la altura del terreno.
+	 */
 	bool ReplaceAndMeasure(FContext& C)
 	{
 		C.Terrain->EnsureReplacedAt(C.Surface);
 		const double Start = FPlatformTime::Seconds();
+		int32 Frames = 0;
+		RemeshLikeGame(C, Frames);
 		C.Test.TestTrue(TEXT("sustitución terminada"), C.Terrain->FlushRemeshing(120.0));
 		const FTerrainRemeshStats Stats = C.Terrain->GetRemeshStats();
+		C.Test.TestTrue(FString::Printf(TEXT("sustitución: hilo de juego por fotograma < 2 ms (máx %.3f ms)"), Stats.GameThreadMsMax),
+			Stats.GameThreadMsMax < 2.0f);
 		const FIntVector RenderChunk(FMath::FloorToInt32(C.Surface.X / 64.0), FMath::FloorToInt32(C.Surface.Y / 64.0),
 			FMath::FloorToInt32(C.Surface.Z / 64.0));
 		C.Test.TestTrue(TEXT("chunk de render sustituido"), C.Mesher->GetReplacementState(RenderChunk) == ETerrainReplacementState::Replaced);
@@ -160,58 +176,48 @@ namespace TerrainRuntimeTestDetail
 		C.GroundBefore = GroundCm(C.World, C.Surface);
 		C.Test.TestTrue(FString::Printf(TEXT("el suelo colisiona a la altura del terreno (%.1f cm frente a %.1f)"), C.GroundBefore, C.Surface.Z * 100.0),
 			FMath::IsFinite(C.GroundBefore) && FMath::Abs(C.GroundBefore - C.Surface.Z * 100.0) < 30.0);
-		C.Test.AddInfo(FString::Printf(TEXT("Sustitución de un chunk de 64 m: %.2f s, %d chunks de 8 m, tarea media %.2f ms (máx %.2f)"),
-			FPlatformTime::Seconds() - Start, Stats.ChunksApplied, Stats.TaskMsAverage, Stats.TaskMsMax));
+		C.Test.AddInfo(FString::Printf(TEXT("Sustitución de un chunk de 64 m: %.2f s en %d fotogramas, %d chunks de 8 m; hilo de juego máx %.3f ms/fotograma (%d fotogramas ≥ 2 ms), volcado máx %.3f ms/chunk; tarea media %.2f ms (máx %.2f)"),
+			FPlatformTime::Seconds() - Start, Frames, Stats.ChunksApplied, Stats.GameThreadMsMax, C.FramesOverTarget, Stats.ApplyMsMax, Stats.TaskMsAverage, Stats.TaskMsMax));
 		return true;
 	}
 
 	/**
-	 * Fotogramas como en el juego (presupuesto de 1,5 ms, cocinado asíncrono) hasta que no
-	 * queda nada pendiente; comprueba y apunta el coste por fotograma en el hilo de juego.
+	 * Remalla como el juego: presupuesto de `explored.Terrain.RemeshBudgetMs` por fotograma y
+	 * colisión cocinada fuera del hilo de juego. Espera al cocinado antes de devolver. Devuelve
+	 * el fin de fotograma máximo (ms).
 	 */
-	void RunBudgetedFrames(FContext& C, const TCHAR* Label)
+	double RemeshLikeGame(FContext& C, int32& OutFrames)
 	{
+		const IConsoleVariable* Budget = IConsoleManager::Get().FindConsoleVariable(TEXT("explored.Terrain.RemeshBudgetMs"));
+		const double BudgetMs = Budget ? Budget->GetFloat() : 1.0;
+		C.Mesher->SetAsyncCollisionCooking(true);
 		double EndOfFrameMsMax = 0.0;
-		int32 Frames = 0;
-		const double Start = FPlatformTime::Seconds();
-		const double Deadline = Start + 60.0;
-		while ((C.Mesher->NeedsTick() || C.Mesher->IsCollisionCookPending()) && FPlatformTime::Seconds() < Deadline)
+		OutFrames = 0;
+		const double Deadline = FPlatformTime::Seconds() + 30.0;
+		while (C.Mesher->NeedsTick() && FPlatformTime::Seconds() < Deadline)
 		{
-			// El fin del cocinado asíncrono llega como tarea del hilo de juego.
-			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
-			C.Mesher->Tick(C.Terrain->GetModel(), C.Surface, 1.5);
+			C.Mesher->Tick(C.Terrain->GetModel(), C.Surface, BudgetMs);
+			C.FramesOverTarget += C.Mesher->GetStats().GameThreadMsLastTick >= 2.0f ? 1 : 0;
 			const double EndOfFrameStart = FPlatformTime::Seconds();
 			C.World->SendAllEndOfFrameUpdates();
 			EndOfFrameMsMax = FMath::Max(EndOfFrameMsMax, (FPlatformTime::Seconds() - EndOfFrameStart) * 1000.0);
-			++Frames;
+			++OutFrames;
+			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
 			FPlatformProcess::Sleep(0.004f);
 		}
-		const FTerrainRemeshStats Stats = C.Terrain->GetRemeshStats();
-		C.Test.TestFalse(FString::Printf(TEXT("%s: remallado terminado"), Label), C.Mesher->NeedsTick());
-		C.Test.TestFalse(FString::Printf(TEXT("%s: colisión cocinada"), Label), C.Mesher->IsCollisionCookPending());
-		C.Test.TestTrue(FString::Printf(TEXT("%s: hilo de juego por fotograma < 4 ms (máx %.3f ms)"), Label, Stats.GameThreadMsMax),
-			Stats.GameThreadMsMax < 4.0f);
-		C.Test.AddInfo(FString::Printf(TEXT("%s: %d chunks en %d fotogramas (%.2f s); hilo de juego máx %.3f ms/fotograma, volcado máx %.3f ms/chunk, fin de fotograma máx %.3f ms; tarea media %.2f ms (máx %.2f)"),
-			Label, Stats.ChunksApplied, Frames, FPlatformTime::Seconds() - Start, Stats.GameThreadMsMax, Stats.ApplyMsMax, EndOfFrameMsMax,
-			Stats.TaskMsAverage, Stats.TaskMsMax));
-	}
-
-	/** 4) Primer golpe en un chunk horneado, con el presupuesto del juego: sustituir 64 m. */
-	void MeasureBudgetedReplacement(FContext& C)
-	{
-		C.Terrain->ResetEdits();
-		C.Mesher->SetAsyncCollisionCooking(true);
-		C.Mesher->ResetStats();
-		C.Terrain->EnsureReplacedAt(C.Surface);
-		RunBudgetedFrames(C, TEXT("Sustitución con presupuesto"));
+		while (C.Mesher->IsCollisionCookPending() && FPlatformTime::Seconds() < Deadline)
+		{
+			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
+			FPlatformProcess::Sleep(0.004f);
+		}
+		C.Test.TestFalse(TEXT("colisión cocinada"), C.Mesher->IsCollisionCookPending());
 		C.Mesher->SetAsyncCollisionCooking(false);
+		return EndOfFrameMsMax;
 	}
 
 	/** 2) Cavar con el pico (autoridad: partida sola) y remallar con el presupuesto del juego. */
 	void DigAndRemesh(FContext& C)
 	{
-		// Como en el juego: colisión cocinada fuera del hilo de juego.
-		C.Mesher->SetAsyncCollisionCooking(true);
 		C.Mesher->ResetStats();
 		double Removed = 0.0;
 		for (int32 I = 0; I < 16; ++I)
@@ -223,8 +229,13 @@ namespace TerrainRuntimeTestDetail
 			Removed += C.Terrain->Dig(Hit).Edit.VolumeRemoved;
 		}
 		C.Test.TestTrue(FString::Printf(TEXT("el pico arranca tierra (%.2f m³)"), Removed), Removed > 0.5);
-		RunBudgetedFrames(C, TEXT("16 golpes"));
-		C.Mesher->SetAsyncCollisionCooking(false);
+		int32 Frames = 0;
+		const double EndOfFrameMsMax = RemeshLikeGame(C, Frames);
+		const FTerrainRemeshStats Stats = C.Terrain->GetRemeshStats();
+		C.Test.TestFalse(TEXT("remallado terminado"), C.Mesher->NeedsTick());
+		C.Test.TestTrue(FString::Printf(TEXT("hilo de juego por fotograma < 2 ms (máx %.3f ms)"), Stats.GameThreadMsMax), Stats.GameThreadMsMax < 2.0f);
+		C.Test.AddInfo(FString::Printf(TEXT("16 golpes: %d chunks remallados en %d fotogramas; hilo de juego máx %.3f ms/fotograma, volcado máx %.3f ms/chunk, fin de fotograma máx %.3f ms; tarea media %.2f ms (máx %.2f)"),
+			Stats.ChunksApplied, Frames, Stats.GameThreadMsMax, Stats.ApplyMsMax, EndOfFrameMsMax, Stats.TaskMsAverage, Stats.TaskMsMax));
 
 		TickWorld(C.World, 2);
 		C.GroundDug = GroundCm(C.World, C.Surface);
@@ -264,6 +275,65 @@ namespace TerrainRuntimeTestDetail
 		C.Test.TestTrue(FString::Printf(TEXT("cargar reproduce el hueco (%.1f cm frente a %.1f)"), Reloaded, C.GroundDug),
 			FMath::IsFinite(Reloaded) && FMath::Abs(Reloaded - C.GroundDug) < 2.0);
 	}
+
+	/** 4) Echar tierra en el hueco y aplanar con la pala hacia el plano del suelo original. */
+	void FillAndFlatten(FContext& C)
+	{
+		FSoilPlacement Soil;
+		Soil.Center = FVector(C.Surface.X, C.Surface.Y, C.GroundDug / 100.0);
+		Soil.Radius = 0.6f;
+		Soil.SoilBudget = 2.0;
+		const FTerrainEditResult Placed = C.Terrain->PlaceSoil(Soil);
+		C.Test.TestTrue(FString::Printf(TEXT("echar tierra añade volumen (%.2f m³)"), Placed.VolumeAdded), !Placed.bRejected && Placed.VolumeAdded > 0.1);
+		int32 Frames = 0;
+		RemeshLikeGame(C, Frames);
+		TickWorld(C.World, 2);
+		const double Filled = GroundCm(C.World, C.Surface);
+		C.Test.TestTrue(FString::Printf(TEXT("la tierra sube el fondo (%.1f cm, antes %.1f)"), Filled, C.GroundDug),
+			FMath::IsFinite(Filled) && Filled > C.GroundDug + 15.0);
+
+		FShovelStroke Stroke;
+		Stroke.Center = C.Surface;
+		Stroke.Radius = 1.2f;
+		Stroke.VerticalReach = 2.5f;
+		// Tierra de sobra: la pasada cubre también el lado bajo de la ladera (pendiente de hasta 25°).
+		Stroke.SoilBudget = 12.0;
+		// Cada pasada mueve como mucho 0,25 m (ShovelMaxChange): el hueco pide varias.
+		FTerrainEditResult Flattened;
+		for (int32 Pass = 0; Pass < 10; ++Pass)
+		{
+			const FTerrainEditResult One = C.Terrain->Shovel(Stroke);
+			C.Test.TestFalse(TEXT("la pala no se rechaza"), One.bRejected);
+			Flattened.VolumeAdded += One.VolumeAdded;
+			Flattened.VolumeRemoved += One.VolumeRemoved;
+		}
+		RemeshLikeGame(C, Frames);
+		TickWorld(C.World, 2);
+		const double Flat = GroundCm(C.World, C.Surface);
+		C.Test.TestTrue(FString::Printf(TEXT("la pala deja el suelo en el plano (%.1f cm frente a %.1f)"), Flat, C.GroundBefore),
+			FMath::IsFinite(Flat) && FMath::Abs(Flat - C.GroundBefore) < 35.0);
+		C.Test.AddInfo(FString::Printf(TEXT("Pala: +%.2f m³ echados, +%.2f/-%.2f m³ al aplanar; hilo de juego máx %.3f ms/fotograma"),
+			Placed.VolumeAdded, Flattened.VolumeAdded, Flattened.VolumeRemoved, C.Terrain->GetRemeshStats().GameThreadMsMax));
+	}
+
+	/** El material de las mallas finas llega por referencia desde el ajuste de proyecto. */
+	void CheckMaterial(FContext& C)
+	{
+		const TSoftObjectPtr<UMaterialInterface> Ref = GetDefault<UExploredTerrainSettings>()->RuntimeTerrainMaterial;
+		C.Test.TestFalse(TEXT("ajuste de proyecto con material"), Ref.IsNull());
+		// La carga asíncrona entrega su delegado un fotograma después (s.StreamableDelegateDelayFrames).
+		FlushAsyncLoading();
+		for (int32 Frame = 0; Frame < 4 && !C.Mesher->GetMaterial(); ++Frame)
+		{
+			FTickableGameObject::TickObjects(nullptr, LEVELTICK_All, false, 1.0f / 60.0f);
+		}
+		const UMaterialInterface* Material = C.Mesher->GetMaterial();
+		C.Test.TestTrue(FString::Printf(TEXT("material de las mallas finas (%s)"), Material ? *Material->GetName() : TEXT("ninguno")),
+			Material && Material == Ref.Get());
+		const UProceduralMeshComponent* Component = C.Mesher->FindChunkComponent(FIntVector(FMath::FloorToInt32(C.Surface.X / 8.0),
+			FMath::FloorToInt32(C.Surface.Y / 8.0), FMath::FloorToInt32(C.Surface.Z / 8.0)));
+		C.Test.TestTrue(TEXT("las mallas ya creadas reciben el material"), Component && Material && Component->GetMaterial(0) == Material);
+	}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTerrainRuntimeEditTest, "Explored.TerrainRuntime.EditRemeshCollisionSave",
@@ -290,8 +360,9 @@ bool FTerrainRuntimeEditTest::RunTest(const FString& Parameters)
 	{
 		DigAndRemesh(C);
 		SaveResetLoad(C);
-		MeasureBudgetedReplacement(C);
+		FillAndFlatten(C);
 	}
+	CheckMaterial(C);
 	return true;
 }
 
