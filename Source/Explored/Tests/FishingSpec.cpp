@@ -681,6 +681,20 @@ void FFishingSpec::Define()
 			TestTrue(TEXT("Sedal legendario"), Result.Yields.ContainsByPredicate([](const FButcherYield& Y) { return Y.ItemId == FName(TEXT("sedal_legendario")); }));
 			TestTrue(TEXT("Anzuelo legendario"), Result.Yields.ContainsByPredicate([](const FButcherYield& Y) { return Y.ItemId == FName(TEXT("anzuelo_legendario")); }));
 		});
+
+		It("un peso NaN, infinito o enorme da un despiece acotado", [this]()
+		{
+			for (const float Bad : { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(), 1.0e30f })
+			{
+				FButcherResult Result;
+				TestTrue(TEXT("se despieza"), FFishingModel::Butcher(TEXT("bonito"), Bad, 0.6f, 1.0f, Result));
+				for (const FButcherYield& Y : Result.Yields)
+				{
+					TestTrue(FString::Printf(TEXT("%s entre 1 y 60"), *Y.ItemId.ToString()), Y.Count >= 1 && Y.Count <= 60);
+				}
+				TestTrue(TEXT("tiempo finito y acotado"), FMath::IsFinite(Result.Seconds) && Result.Seconds <= 600.0f);
+			}
+		});
 	});
 
 	Describe("Determinismo y ecosistema", [this]()

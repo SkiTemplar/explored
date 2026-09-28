@@ -994,7 +994,9 @@ bool FFishingModel::Butcher(FName CatchId, float WeightKg, float KnifeEdge01, fl
 		return false;
 	}
 
-	const float W = FMath::Max(0.05f, WeightKg);
+	// Se acota antes de convertir a entero: RoundToInt de NaN o de 1e30 es UB. La mayor
+	// legendaria no llega a 400 kg.
+	const float W = FMath::IsFinite(WeightKg) ? FMath::Clamp(WeightKg, 0.05f, 2000.0f) : 0.05f;
 	const float FilletRatio = SpeciesDef ? SpeciesDef->FilletRatio : Legend->FilletRatio;
 	const float OilRatio = SpeciesDef ? SpeciesDef->OilRatio : 0.03f;
 
