@@ -83,3 +83,9 @@ WorldGen/MiningModel.cpp
 WorldGen/MineHazardModel.cpp
 WorldGen/ShovelPathModel.cpp
 Combat/CombatModel.cpp
+WorldGen/TerrainEditModelAccess.cpp
+WorldGen/TerrainNetSyncModel.cpp
+WorldGen/TerrainToolModel.cpp
+WorldGen/TerrainRemeshModel.cpp
+WorldGen/TerrainRemeshQueueModel.cpp
+WorldGen/TerrainReplacementModel.cpp

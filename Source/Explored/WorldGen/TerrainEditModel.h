@@ -51,6 +51,12 @@ struct EXPLORED_API FTerrainEditResult
 	double VolumeAdded = 0.0;
 	int32 SamplesChanged = 0;
 	/**
+	 * Muestras globales cuyo delta ha cambiado, en el orden en que se escribieron (sin
+	 * repetir dentro de una misma herramienta). Es lo que el servidor replica: el valor
+	 * final se lee del modelo con `SampleDeltaMm` (0 = la muestra vuelve a estar sin tocar).
+	 */
+	TArray<FIntVector> ChangedSamples;
+	/**
 	 * No se ha tocado nada: la herramienta no puede con el material o la edición no es
 	 * válida (valores no finitos, fuera del mundo o más grande que cualquier herramienta).
 	 */
@@ -252,6 +258,22 @@ public:
 	FIntVector ChunkOfSample(const FIntVector& Global) const;
 	/** Delta guardado en una muestra (metros); 0 si no se ha tocado. */
 	float SampleDelta(const FIntVector& Global) const;
+
+	// --- Acceso por muestra y por chunk (red y remallado; TerrainEditModelAccess.cpp) ---
+
+	/** Delta guardado en una muestra, en milímetros enteros (0 si no se ha tocado). */
+	int32 SampleDeltaMm(const FIntVector& Global) const { return GetDeltaMm(Global); }
+	/**
+	 * Fija el delta de una muestra tal como llega de la red (0 la deja sin tocar). Devuelve
+	 * false sin cambiar nada si el valor pasa de ±MaxDeltaMm.
+	 */
+	bool SetSampleDeltaMm(const FIntVector& Global, int32 DeltaMm);
+	/** Muestra global de un índice local X + N·(Y + N·Z) del chunk; false si el índice no cabe. */
+	bool LocalToGlobal(const FIntVector& Chunk, int32 LocalIndex, FIntVector& OutGlobal) const;
+	/** Índice local de una muestra dentro del chunk que la guarda (ChunkOfSample). */
+	int32 LocalIndexOf(const FIntVector& Global) const;
+	/** Deltas guardados en un chunk (índice local → mm), o nullptr si no tiene ninguno. */
+	const TMap<int32, int32>* FindChunkDeltas(const FIntVector& Chunk) const { return Chunks.Find(Chunk); }
 	float SampleDensity(const FIntVector& Global, FBaseDensity Base) const;
 	/** Densidad en cualquier punto: base + delta interpolado trilinealmente. */
 	float Density(const FVector& P, FBaseDensity Base) const;
