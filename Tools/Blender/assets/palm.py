@@ -6,9 +6,9 @@ y anillado, 7-10 hojas pinnadas curvadas hacia abajo y cocos opcionales.
 Presupuesto orientativo: 3 000-6 000 triángulos.
 """
 
+import math
 import os
 import sys
-import math
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402

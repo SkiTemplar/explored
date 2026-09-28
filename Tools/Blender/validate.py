@@ -23,12 +23,12 @@ un script de CI; imprime un resumen legible en cualquier caso.
 """
 
 import json
-import math
 import os
 import sys
 
-import bmesh
 import bpy
+
+import bmesh
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 EXPORT_DIR = os.path.join(REPO_ROOT, 'Art', 'Export', 'Meshes')
@@ -418,7 +418,7 @@ def main_animals():
         else:
             dims_cm = tuple(bbox_max[i] - bbox_min[i] for i in range(3))
         recorded = entry['dimensions_cm']
-        for axis, value in zip('xyz', dims_cm):
+        for axis, value in zip('xyz', dims_cm, strict=True):
             rec = recorded[axis]
             tol = max(DIMENSION_TOLERANCE_CM, rec * DIMENSION_TOLERANCE_PCT)
             if abs(value - rec) > tol:

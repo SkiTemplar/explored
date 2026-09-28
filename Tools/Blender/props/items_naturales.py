@@ -14,15 +14,16 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
+import bpy  # noqa: E402
+
 import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 import items_contenedores as IC  # noqa: E402
 import items_materiales as IM  # noqa: E402
-
-import bpy  # noqa: E402
-from mathutils import Matrix, Vector, noise as mnoise  # noqa: E402
+import kit_construccion as K  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
+from mathutils import noise as mnoise
 
 GROUP = I.GROUP
 PAL = I.PAL
@@ -406,7 +407,6 @@ def _b_obsidiana(v, rnd, name):
     M.assign(o, ['M_Stone'])
 
     def col(vv):
-        co = vv.co
         if vv.index not in facet:
             return NPAL['obsidian_cortex'] + (0.0,)
         # cada cara de fractura con un reflejo violeta distinto

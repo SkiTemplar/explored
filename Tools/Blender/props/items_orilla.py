@@ -16,12 +16,12 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
-import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
 import bpy  # noqa: E402
+
+import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -257,7 +257,7 @@ def _b_algodon_silvestre(v, rnd, name):
     I.tint(stem, OPAL['twig'], rnd, 0.02)
     p.add(stem, 'none')
     spots = [(0.95, 0.0, 0.0), (0.55, 1.2, 0.05), (0.3, -1.4, 0.04)]
-    for k, (t, ang, off) in enumerate(spots):
+    for k, (t, ang, _off) in enumerate(spots):
         c = Vector(pts[int(t * 8)])
         d = Vector((math.cos(ang), math.sin(ang), 0.6)).normalized() if k else Vector((0, 0, 1))
         R = 0.022 if k == 0 else 0.018
