@@ -13,6 +13,7 @@ pequeñas.
 | `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
 | `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
 | `contact_sheet.py` | Compone `docs/art/packs/<lote>.png` (< 1 MB) con el original y el normalizado. |
+| `icons.py` | Iconos de UI (`icons` del catálogo): silueta blanca de 128 px a `Art/Export/Packs/<lote>/T_Pack_Icon_*.png` (ignorado) y su hoja de contacto. |
 
 ```bash
 cd Tools/Packs
@@ -21,6 +22,7 @@ uv run pytest -q
 cd ../..
 blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote lote1-herramientas --tiles
 uv run --with pillow python Tools/Packs/contact_sheet.py lote1-herramientas
+uv run --with pillow python Tools/Packs/icons.py lote9-iconos   # iconos de UI, sin Blender
 # Para escribir reglas de color de una entrada nueva:
 blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote <lote> --ids <id> --analyze
 ```
@@ -59,6 +61,7 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote6-mineria` | Pico (KayKit RPG Tools), canto rodado y caliza (Quaternius Stylized Nature MegaKit) | `docs/art/packs/lote6-mineria.png` |
 | `lote7-cuarzo-taro` | Cristal de cuarzo (Quaternius Ultimate Platformer) y tres fases del taro (Quaternius Ultimate Nature) | `docs/art/packs/lote7-cuarzo-taro.png` |
 | `lote8-suelo` | Piedra plana, basalto, arenisca, obsidiana, pedernal (Quaternius Stylized Nature MegaKit) y madera flotante (Quaternius Ultimate Nature) | `docs/art/packs/lote8-suelo.png` |
+| `lote9-iconos` | Iconos de UI: fuego, refugio y estrella de los logros; laurel, candado y reloj de arena de las pantallas de logros y de guardado (Kenney Board Game Icons y Game Icons) | `docs/art/packs/lote9-iconos.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
@@ -121,3 +124,12 @@ materiales ni texturas del FBX. La fauna se importa como Skeletal Mesh con anima
 (`SKEL_Pack_*` del bloque `rig`); las tomas llegan como `Armature|<Acción>`. Cambiar el `meshPath` de `items.json` a la malla nueva
 (`replaces` dice cuál sustituye) y quitar el script propio de `Tools/Blender` solo cuando la
 malla esté en el repo, para que DataCheck siga en verde.
+
+Iconos de UI (lote 9): una sola familia de siluetas blancas redondeadas (Kenney Board Game
+Icons; de Game Icons, solo la estrella). No usan `paleta.json`: la UI no cambia por isla y
+Slate los tiñe con los colores de `ExploredUIStyle.h` que dice `tint` para cada estado
+(conseguido, pendiente, oculto…). Cada pista `icon` de `achievements.json` tiene icono o
+está en `iconsPending` (DataCheck lo exige). Kenney no tiene iconos de mar ni de naturaleza
+tropical con esta silueta: 25 pistas siguen pendientes de siluetas propias. Revisados y
+descartados sin entrar en el manifiesto: Generic Items (objetos planos a color, de oficina),
+Minimap Pack (pixel art) y UI Pack Adventure (marcos y paneles, no iconos).
