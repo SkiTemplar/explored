@@ -95,7 +95,7 @@ void FSandModelSpec::Define()
 		It("el reposo seco es 34° y el húmedo 45° en celdas de 0,25 m", [this]()
 		{
 			TestEqual(TEXT("seco"), FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f), 168);
-			TestEqual(TEXT("húmedo"), FSandModel::ReposeDropMm(FSandModel::WetReposeDeg, 0.25f), 249);
+			TestEqual(TEXT("húmedo"), FSandModel::ReposeDropMm(FSandModel::WetReposeDeg, 0.25f), 250);
 		});
 
 		It("el oleaje rellena el 20 % en la pleamar, más hacia el agua, y nada por encima (biblia 02 §5.2)", [this]()

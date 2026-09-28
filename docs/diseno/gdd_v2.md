@@ -1129,6 +1129,10 @@ Precedente ya existente en el repo que respalda el pivote: `VolcanicRock` y
 `Limestone` ya son fotobasheados desde fotografías CC0 de Poly Haven
 (`docs/art/texturas.md`); el proyecto ya rompió la regla «todo por código» antes de
 esta decisión, solo que sin decirlo en el GDD. Este documento lo hace explícito.
+*Actualización 2026-09-28:* por criterio del director, las texturas del terreno (hierba,
+arenas, tierra, hojarasca, basalto y caliza) vuelven a pintarse por código, estilizadas y
+con la paleta por isla (`docs/art/texturas.md`); el kit de mallas de rocas escaneadas no
+cambia.
 
 Regla de estilo que **no** cambia: low-poly estilizado y pulido (GDD v3 §13); los
 packs CC0 se seleccionan y, si hace falta, se retocan en materiales/color para no

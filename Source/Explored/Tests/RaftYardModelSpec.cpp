@@ -273,6 +273,15 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("desgaste exacto"), Yard.GetJoints()[0].Health01, 1.0f - 0.40f * 10.0f / 17.0f, 1e-5f);
 			TestEqual(TEXT("trabajo negativo no hace nada"), Yard.ApplyScrapeWork(-5.0f, ELaunchSurface::Rock).JointsDamaged, 0);
 		});
+
+		It("unos remos colgados por debajo de los troncos no cambian qué pieza toca el suelo", [this]()
+		{
+			FRaftYardModel Yard = SixLogRaft();
+			const int32 Oars = Yard.AddPiece(Piece(EHullPieceType::Oars, FVector(0.0, 0.0, -30.0)));
+			TestTrue(TEXT("el tronco sigue tocando el suelo"), Yard.IsBottomPiece(0));
+			TestFalse(TEXT("los remos no son el fondo"), Yard.IsBottomPiece(Oars));
+			TestTrue(TEXT("el roce gasta las uniones de los troncos"), Yard.ApplyScrapeWork(10000.0f, ELaunchSurface::Rock).JointsDamaged > 0);
+		});
 	});
 
 	Describe("en tierra", [this]()
