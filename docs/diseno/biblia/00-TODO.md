@@ -23,11 +23,11 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H1 — Mundo interactivo | 2 | 5 | 29 | 36 | 6 % | 13 % |
 | H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
-| H4 — Contenido de acceso anticipado | 0 | 2 | 18 | 20 | 0 % | 5 % |
+| H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
 | H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **14** | **39** | **154** | **207** | **7 %** | **16 %** |
+| **Total** | **15** | **39** | **154** | **208** | **7 %** | **17 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -87,7 +87,7 @@ salir de la isla.
 - [ ] `Save`/`GameMode`/`Carry`: confirmar en código que `HandlePlayerDeath` nunca vacía
       el inventario en Explorador/Superviviente/Personalizado, y aplicar el golpe de
       ánimo −6 (`moraleEvents.Injured`, ya existe) al reaparecer. *(biblia 01 §7, 03 §1.7)*
-      → **En parte:** `22ec751` (anterior a #41), `ExploredGameMode.cpp:63-138`: no se vacía
+      → **En parte:** anterior a #41, `ExploredGameMode.cpp:63-138`: no se vacía
         el inventario — falta aplicar el −6 de `moraleEvents.Injured` (hoy es un −15 fijo) y
         dejarlo explícito en código.
 - [x] Salud, heridas y sangrado (`FWound`, `TreatWounds`) ya implementados en
@@ -113,7 +113,7 @@ salir de la isla.
       `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en
       `UCarryComponent::SetCustomBackpack`, que hoy solo recibe volumen/peso del objeto.
       *(biblia 03 §1.1)*
-      → **En parte:** `22ec751`, `Carry/InventoryModel.cpp:16-17, 995-1020` — el bonus
+      → **En parte:** anterior a #41, `Carry/InventoryModel.cpp:16-17, 995-1020` — el bonus
         existe pero vale 2/2/6 kg en vez de 8/10/20 y `SetCustomBackpack` lo deja a 0.
 - [ ] `Building`: añadir a `building_pieces.json` las piezas de almacenamiento
       `cesta_almacen`, `estanteria_almacen`, `arcon` — sin ellas ni el refugio→cabaña de
@@ -196,7 +196,7 @@ salir de la isla.
 - [ ] Confirmar que `FarmModel`/`plants.json` ya cubren riego y ventana de estaciones tal
       como se documenta en biblia 02 §10.1 (sin cambios esperados; solo verificación).
       *(biblia 02 §10.1)*
-      → **En parte:** `22ec751` + riego en `c0a6f1c` (PR #36): `Farming/FarmModel.h:15-24,
+      → **En parte:** anterior a #41 + riego en `c0a6f1c` (PR #36): `Farming/FarmModel.h:15-24,
         60-63`, `plants.json:23-24` cubren `waterPerDay` y `seasons` — pero la verificación
         falla: la biblia dice que sin riego la planta «deja de avanzar de etapa (no muere)»,
         y `FarmModel.h:195-196` (`DryDaysToDie = 4`) la mata a los 4 días secos
@@ -318,7 +318,7 @@ posterior.
         estadísticas solo en datos; no hay especie C++ ni código que las lea.
 - [x] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
       tigre «Sombra» ya descrito en la biblia de contenido §4.6. *(biblia 05 §5)*
-      → **Hecho:** `22ec751` (anterior a #41): `EFaunaSpecies::ReefShark` separado de
+      → **Hecho:** anterior a #41: `EFaunaSpecies::ReefShark` separado de
         `TigerShark`, `Fauna/FaunaTypes.cpp:42`, `MarineCreatureBrain.cpp:310`
         (`ReefSharkAttackRoll`).
 
@@ -346,7 +346,7 @@ posterior.
 - [ ] `bReduceMotion`: cablear a `bCameraBobEnabled`, al rebote del aviso de logro, al
       pulso de opacidad del fantasma de construcción y a la easing de apertura de menús
       — el ajuste existe, falta el consumidor en los cuatro sitios. *(biblia 06 §3.4)*
-      → **En parte:** `22ec751`, `Player/ExploredCharacter.cpp:277` (bamboleo) y
+      → **En parte:** anterior a #41, `Player/ExploredCharacter.cpp:277` (bamboleo) y
         `SExploredMapInHands.cpp:86` — faltan el aviso de logro, el pulso del fantasma y la
         apertura de menús.
 - [ ] `bDisableFlashing`: cablear al flash de la cámara desechable, al parpadeo de rayo
@@ -591,11 +591,11 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 - [ ] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts`
       (`Fuselage`, `Wing`, `Tail`, `Engine`) y consume `canoa_balancin` como indica
       `boats.json` — solo falta el mesh `SM_Limon`. *(biblia 03 §3.8 TODO — [F3])*
-      → **En parte:** `af649e9`, `boats.json:95-96`, `checks.py:569` — se exigen las 4
+      → **En parte:** anterior a #41, `boats.json:95-96`, `checks.py:569` — se exigen las 4
         partes, pero `consumesRequiredBoat` es `false` y falta `SM_Limon`.
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el
       invariante «ninguna plantilla produce un objeto sin malla». *(biblia 05 §Tests)*
-      → **En parte:** `22ec751`, `checks.py:611-631` (`check_meshes`) — el invariante se
+      → **En parte:** anterior a #41, `checks.py:611-631` (`check_meshes`) — el invariante se
         comprueba por objeto; falta cubrir las combinaciones de daño nuevas.
 
 ### Red y cooperativo — barcos (biblia 08)
@@ -656,11 +656,17 @@ datos todavía.
       marcador `{Day}`) con las 15 entradas de biblia 07 §4.2. *(biblia 07 §4.1)*
 - [ ] Arte: material del terreno con `Roughness` 0,85–0,95, sin especular en arena seca,
       arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
-      de detalle con la paleta low poly; comprobar con capturas antes/después
+      de detalle con la paleta low poly (hecho en las texturas, 2026-09-28: falta que
+      `M_Terrain` lea `_ARH`); comprobar con capturas antes/después
       (`M_Terrain.uasset` ya existe, hoy se ve brillante). *(director, 2026-09-27)*
       → **En parte:** `650dfab` (PR #36), `Tools/Unreal/build_materials.py:254-256, 322-324`
         — arena, hierba y bosque a 0,88–0,92; falta la roca (0,78), el especular a 0 en
         arena seca y las capturas antes/después.
+- [x] Arte: texturas estilizadas del terreno por código (hierba, arena seca y mojada,
+      tierra, basalto, caliza y hojarasca) en vez de las pseudo-realistas: paleta por
+      isla, normal suave, rugosidad 0,85–0,95, tileables y sin repetición a 50 m; hoja de
+      contacto por material en `docs/art/`. Falta reimportar y comprobarlas en Unreal.
+      *(director, 2026-09-28; docs/art/texturas.md)*
 - [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
       materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
       (GDD §7.1). *(GDD §7.1)*
@@ -812,7 +818,7 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
 - [ ] `Content/Data/`: dar de alta en `items.json`/`templates.json` los recursos
       exclusivos de Manglar (arcilla, junco), Arenas Blancas (conchas raras, velas de
       lona) y La Meseta (caliza, cultivos) si aún no existen. *(biblia 04 §2.5–2.7)*
-      → **En parte:** `22ec751`, `items.json:90, 106, 119-122` (arcilla roja, caliza,
+      → **En parte:** anterior a #41, `items.json:90, 106, 119-122` (arcilla roja, caliza,
         conchas) — faltan junco, velas de lona y conchas raras.
 - [ ] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
       `livestock_species_raised`, `eggs_collected`, y los logros
@@ -889,7 +895,7 @@ asaltos), isla oculta y final.
       rutas de patrulla cerca de Arenas Blancas y La Meseta. *(biblia 04 §2.4 TODO)*
 - [x] `Ruins/RuinsModel`: confirmar que `HiddenIslandIndex` exige `RequiredStarPaths = 3`
       de los 4 caminos disponibles, no los 4 completos. *(biblia 04 §2.8 TODO)*
-      → **Hecho:** `af649e9` (anterior a #41): `Ruins/RuinsModel.h:89` (`RequiredStarPaths =
+      → **Hecho:** anterior a #41: `Ruins/RuinsModel.h:89` (`RequiredStarPaths =
         3`), `RuinsModel.h:202`, `RuinsModel.cpp:311-313`.
 - [ ] `Ruins`/`Artifacts`: cablear el examen de `figura_navegante`, `figura_gemelos`,
       `figura_mira_cielo`, `carta_varillas`, `carta_oleaje`, `tapa_estrellas` a las
