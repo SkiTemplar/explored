@@ -85,3 +85,5 @@ WorldGen/DrainageModel.cpp
 WorldGen/SeafloorModel.cpp
 WorldGen/KarstTowerModel.cpp
 WorldGen/IslandReliefModel.cpp
+WorldGen/PlayabilityMetricsModel.cpp
+WorldGen/TerrainPlayabilitySurvey.cpp

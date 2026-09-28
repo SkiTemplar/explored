@@ -9,6 +9,7 @@
 // cualquier conversor (p. ej. `magick x.ppm x.png`). No las guardes en el repositorio.
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
+#include "WorldGen/TerrainPlayabilitySurvey.h"
 #include "WorldGen/TerrainSurvey.h"
 
 #include <chrono>
@@ -44,6 +45,36 @@ namespace
 		return Mix(FRgb{80, 140, 60}, FRgb{235, 235, 225}, (H - 2.0f) / 250.0f);
 	}
 
+	/**
+	 * Zonas construibles: tierra con pendiente < 15° en verde claro, ladera en ocre, pared de
+	 * más de 60° en rojo; el mar, azul según la profundidad. Sombreado leve para leer el relieve.
+	 */
+	FRgb BuildableTint(float H, float SlopeDeg, float Shade)
+	{
+		FRgb C;
+		if (H <= 0.0f)
+		{
+			const float T = std::fmin(-H / 60.0f, 1.0f);
+			C = FRgb{static_cast<unsigned char>(40 - 30 * T), static_cast<unsigned char>(90 - 60 * T), static_cast<unsigned char>(160 - 60 * T)};
+		}
+		else if (SlopeDeg < 15.0f && H > 0.5f)
+		{
+			C = FRgb{120, 220, 90};
+		}
+		else if (SlopeDeg > 60.0f)
+		{
+			C = FRgb{220, 40, 40};
+		}
+		else
+		{
+			const float T = std::fmin((SlopeDeg - 15.0f) / 45.0f, 1.0f);
+			C = FRgb{static_cast<unsigned char>(200 - 60 * T), static_cast<unsigned char>(170 - 80 * T), static_cast<unsigned char>(110 - 50 * T)};
+		}
+		const float K = 0.75f + 0.25f * std::fmin(Shade, 1.2f);
+		return FRgb{static_cast<unsigned char>(std::fmin(255.0f, C.R * K)), static_cast<unsigned char>(std::fmin(255.0f, C.G * K)),
+			static_cast<unsigned char>(std::fmin(255.0f, C.B * K))};
+	}
+
 	void WritePpm(const std::string& Path, int32 W, int32 H, const std::vector<FRgb>& Pixels)
 	{
 		FILE* File = std::fopen(Path.c_str(), "wb");
@@ -62,6 +93,7 @@ namespace
 	{
 		std::vector<FRgb> Relief(static_cast<size_t>(Grid.Width) * Grid.Height);
 		std::vector<FRgb> Slope(Relief.size());
+		std::vector<FRgb> Buildable(Relief.size());
 		for (int32 Y = 0; Y < Grid.Height; ++Y)
 		{
 			for (int32 X = 0; X < Grid.Width; ++X)
@@ -79,10 +111,12 @@ namespace
 				const float Deg = std::atan(std::sqrt(Dx * Dx + Dy * Dy)) * 57.2958f;
 				const unsigned char V = static_cast<unsigned char>(std::fmin(255.0f, Deg / 60.0f * 255.0f));
 				Slope[Pixel] = FRgb{V, static_cast<unsigned char>(V / 2), static_cast<unsigned char>(255 - V)};
+				Buildable[Pixel] = BuildableTint(At(X, Y), Deg, Shade);
 			}
 		}
 		WritePpm(Prefix + "_relieve.ppm", Grid.Width, Grid.Height, Relief);
 		WritePpm(Prefix + "_pendiente.ppm", Grid.Width, Grid.Height, Slope);
+		WritePpm(Prefix + "_construible.ppm", Grid.Width, Grid.Height, Buildable);
 	}
 
 	FTerrainSampleGrid SampleAround(const FTerrainDensity& Density, const FIslandDesc& Island, float Spacing)
@@ -126,6 +160,27 @@ namespace
 				LexToString(Density.GetLayout().Islands[I].Archetype), Isl.FineVariance, Isl.SmoothFraction * 100.0f,
 				Isl.Channels.SampleCount, Isl.Channels.AxisExcess, Isl.Channels.DiagonalExcess, Isl.PitsPerKm2,
 				Isl.ErosionPitsBefore, Isl.ErosionPitsAfter);
+		}
+	}
+
+	void PrintPlayability(const FTerrainDensity& Density, const FPlayabilityReport& P)
+	{
+		std::printf("motas_mar=%d  clark_evans=%.2f\n", P.SeaMotes.Num(), P.SeaMoteClarkEvans);
+		for (const FVector2D& M : P.SeaMotes)
+		{
+			std::printf("  mota en (%.0f, %.0f)\n", M.X, M.Y);
+		}
+		for (int32 I = 0; I < P.Islands.Num(); ++I)
+		{
+			const FIslandPlayability& Isl = P.Islands[I];
+			const FCoastStats& C = Isl.Coast;
+			std::printf("  [%d] %-10s llano=%5.1f%% parches>=400=%3d >=2000=%3d mayor=%7.0f m2 | acantilado=%4.1f%% (alt. med %.0f max %.0f m, %d/%d rayos)"
+				" | plataforma cv=%.2f talud cv=%.2f dentado=%.3f (n=%d) | rios=%d desemb=%d resultante=%.2f radial=%.2f sinuos=%.2f\n",
+				I, LexToString(Density.GetLayout().Islands[I].Archetype), Isl.Flat.FlatFraction * 100.0f, Isl.Flat.CountAtLeast(400.0f),
+				Isl.Flat.CountAtLeast(2000.0f), Isl.Flat.PatchAreas.IsEmpty() ? 0.0f : Isl.Flat.PatchAreas[0], C.CliffFraction * 100.0f,
+				C.CliffMedianHeight, C.CliffMaxHeight, C.CliffRays, C.Rays, C.ShelfWidthCV, C.SlopeWidthCV, C.ShelfJaggedness,
+				C.ShelfWidths.Num(), Isl.Drainage.RiverCells, Isl.Drainage.Mouths, Isl.Drainage.MouthResultant, Isl.Drainage.Radiality,
+				Isl.Drainage.Sinuosity);
 		}
 	}
 }
@@ -173,6 +228,10 @@ int main(int Argc, char** Argv)
 	if (!bZoom)
 	{
 		PrintReport(Density, FTerrainSurvey::Measure(Density, Grid));
+		const auto PlayStart = std::chrono::steady_clock::now();
+		const FPlayabilityReport Play = FTerrainPlayabilitySurvey::Measure(Density, 4.0f);
+		std::printf("jugabilidad=%.2f s\n", std::chrono::duration<double>(std::chrono::steady_clock::now() - PlayStart).count());
+		PrintPlayability(Density, Play);
 	}
 	WriteImages(Grid, Prefix);
 	return 0;

@@ -49,3 +49,8 @@ option(HOST_TESTS_FASTMATH "Compilar con matemáticas rápidas (-ffast-math)" OF
 if(HOST_TESTS_FASTMATH)
 	target_compile_options(explored_host_tests PRIVATE -ffast-math)
 endif()
+
+# Diagnóstico del terreno (programa aparte, fuera de `all`): `cmake --build <dir> --target terrain_diag`.
+list(FILTER PURE_SOURCES EXCLUDE REGEX "Spec\.cpp$")
+add_executable(terrain_diag EXCLUDE_FROM_ALL tools/TerrainDiagnostics.cpp ${PURE_SOURCES})
+target_include_directories(terrain_diag PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/shim ${CMAKE_CURRENT_SOURCE_DIR} ${SRC})
