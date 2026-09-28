@@ -30,22 +30,37 @@ uint32 FTerrainChunkChecksumModel::Compute(const TArray<FTerrainDeltaCodecModel:
 	uint32 Hash = TerrainChunkChecksumDetail::FnvOffsetBasis32;
 	for (const FTerrainDeltaCodecModel::FSample& S : Sorted)
 	{
+		if (S.DeltaMm == 0)
+		{
+			continue;
+		}
 		TerrainChunkChecksumDetail::FoldInt32LE(Hash, S.LocalIndex);
 		TerrainChunkChecksumDetail::FoldInt32LE(Hash, S.DeltaMm);
 	}
 	return Hash;
 }
 
+uint32 FTerrainChunkChecksumModel::ComputeState(const FTerrainDeltaCodecModel::FChunkState& State)
+{
+	return Compute(FTerrainDeltaCodecModel::SamplesOf(State));
+}
+
 void FTerrainChunkChecksumModel::FTracker::DueChunks(const TMap<FIntVector, uint32>& CurrentChecksums, double NowSeconds, TArray<FIntVector>& OutDue)
 {
 	OutDue.Reset();
+	if (!FMath::IsFinite(NowSeconds))
+	{
+		return;
+	}
 	for (const auto& Pair : CurrentChecksums)
 	{
 		const FIntVector& Chunk = Pair.Key;
 		const uint32 Checksum = Pair.Value;
 
 		const FChunkRecord* Existing = Records.Find(Chunk);
-		const bool bDue = !Existing || !Existing->bEverSent || (NowSeconds - Existing->LastSentAtSeconds) >= VerificationIntervalSeconds;
+		const bool bDue = !Existing || !Existing->bEverSent
+			|| NowSeconds < Existing->LastSentAtSeconds
+			|| (NowSeconds - Existing->LastSentAtSeconds) >= VerificationIntervalSeconds;
 		if (!bDue)
 		{
 			continue;
@@ -57,6 +72,12 @@ void FTerrainChunkChecksumModel::FTracker::DueChunks(const TMap<FIntVector, uint
 		Updated.LastSentAtSeconds = NowSeconds;
 		Updated.bEverSent = true;
 	}
+	OutDue.Sort([](const FIntVector& A, const FIntVector& B)
+	{
+		if (A.X != B.X) { return A.X < B.X; }
+		if (A.Y != B.Y) { return A.Y < B.Y; }
+		return A.Z < B.Z;
+	});
 }
 
 bool FTerrainChunkChecksumModel::FTracker::ConfirmAndCheck(const FIntVector& Chunk, uint32 ClientChecksum) const

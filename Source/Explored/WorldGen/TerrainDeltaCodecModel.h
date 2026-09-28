@@ -87,22 +87,69 @@ public:
 	 */
 	static void Canonicalize(const TArray<FSample>& Samples, TArray<FSample>& OutSorted);
 
+	/** true si las tres coordenadas del chunk caben en el `int16` de la cabecera. */
+	static bool IsChunkEncodable(const FIntVector& Chunk);
+
+	/** true si la muestra cabe en el formato de cable (índice en [0, MaxLocalIndex] y delta en int16). */
+	static bool IsSampleEncodable(const FSample& Sample);
+
+	/**
+	 * Cuantiza un delta de densidad en metros al entero de milímetros del cable, redondeando
+	 * al más cercano (los medios, lejos de cero, igual que `FMath::RoundToInt`). Devuelve
+	 * false si no es finito o no cabe en int16 (±32,767 m); entonces `OutMm` queda saturado
+	 * al extremo con el mismo signo (0 si no es finito) para que el llamante decida.
+	 */
+	static bool QuantizeDeltaMm(double DeltaMeters, int32& OutMm);
+
 	/**
 	 * Serializa un parche en uno o más paquetes de como mucho MaxPacketBytes, en orden.
-	 * Muestras con `LocalIndex` fuera de [0, MaxLocalIndex] o `DeltaMm` fuera de
-	 * [MinDeltaMm, MaxDeltaMm] se descartan (defensivo: un paquete que produce este códec
-	 * siempre es válido). Un parche vacío (o que se queda vacío tras filtrar) produce cero
-	 * paquetes.
+	 * Las muestras que no cumplen `IsSampleEncodable`, o todas si el chunk no cumple
+	 * `IsChunkEncodable`, se descartan y se cuentan en `OutRejected` (nunca en silencio:
+	 * truncar un `int16` mandaría otro chunk u otro valor y desincronizaría al cliente).
+	 * Un parche vacío, o que se queda vacío tras filtrar, produce cero paquetes.
 	 */
-	static TArray<TArray<uint8>> Encode(const FChunkPatch& Patch);
+	static TArray<TArray<uint8>> Encode(const FChunkPatch& Patch, int32* OutRejected = nullptr);
+
+	/**
+	 * Codifica solo el primer paquete de `CanonicalSamples` (ya en forma canónica y todas
+	 * codificables: la cola lo garantiza) y dice cuántas muestras del principio ha metido
+	 * en `OutConsumed`. Es lo que usa la cola para gastar el presupuesto paquete a paquete
+	 * sin volver a codificar el chunk entero. Devuelve un array vacío (y 0) si no hay
+	 * muestras, si el chunk no es codificable o si la entrada no es canónica.
+	 */
+	static TArray<uint8> EncodeFirstPacket(const FIntVector& Chunk, const TArray<FSample>& CanonicalSamples, int32& OutConsumed);
 
 	/**
 	 * Decodifica un paquete. Devuelve false sin tocar `Out` si los bytes están truncados,
-	 * sobran al final del paquete, tienen una versión que no es `CurrentVersion`, un tramo
-	 * con cuenta 0, un tramo que se sale de [0, MaxLocalIndex], o tramos que no vienen en
-	 * orden estrictamente creciente (solapados o desordenados: indicio de manipulación).
+	 * sobran al final del paquete, tienen una versión que no es `CurrentVersion`, ningún
+	 * tramo (este códec nunca manda un paquete vacío), un tramo con cuenta 0, un tramo que
+	 * se sale de [0, MaxLocalIndex], o tramos que no vienen en orden estrictamente creciente
+	 * (solapados o desordenados: indicio de manipulación).
 	 */
 	static bool Decode(const TArray<uint8>& Bytes, FPacket& Out);
+
+	/**
+	 * Estado replicado de un chunk tal como lo guarda `FTerrainEditModel`: índice local →
+	 * delta en mm, sin ceros (un delta 0 es «muestra sin tocar» y se borra).
+	 */
+	using FChunkState = TMap<int32, int32>;
+
+	/**
+	 * Aplica un paquete ya decodificado al estado del chunk: cada muestra fija su valor
+	 * (el último gana; 0 borra la entrada). Idempotente: aplicarlo dos veces es igual que
+	 * una. Dos paquetes con índices disjuntos conmutan.
+	 */
+	static void ApplyPacket(const FPacket& Packet, FChunkState& InOutState);
+
+	/**
+	 * Decodifica y aplica de forma atómica al mundo del cliente (chunk → estado). Si el
+	 * paquete no pasa `Decode`, devuelve false y `InOutWorld` no cambia en nada. Un chunk
+	 * que se queda sin muestras desaparece del mapa, igual que en `FTerrainEditModel`.
+	 */
+	static bool DecodeAndApply(const TArray<uint8>& Bytes, TMap<FIntVector, FChunkState>& InOutWorld);
+
+	/** Muestras canónicas de un estado de chunk: lo que se manda como «chunk completo» (biblia 08 §2.2). */
+	static TArray<FSample> SamplesOf(const FChunkState& State);
 
 	/** Bytes que ocuparía un único paquete con un tramo de Count muestras (para tests y para dimensionar la cola). */
 	static constexpr int32 PacketBytesForRun(int32 Count) { return HeaderBytes + RunOverheadBytes + Count * 2; }

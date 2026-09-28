@@ -18,10 +18,20 @@ public:
 	/**
 	 * FNV-1a de 32 bits sobre las muestras de un chunk. Determinista: aplica
 	 * `FTerrainDeltaCodecModel::Canonicalize` antes de plegar los bytes, así que el
-	 * resultado no depende del orden de `Samples` ni de índices repetidos. Un chunk sin
-	 * muestras da la base de FNV-1a (0x811C9DC5).
+	 * resultado no depende del orden de `Samples` ni de índices repetidos. Las muestras con
+	 * delta 0 no cuentan: `FTerrainEditModel` las borra, así que «0» y «sin tocar» son el
+	 * mismo estado y deben dar la misma comprobación (si no, el cliente pediría el chunk
+	 * completo cada 30 s sin motivo). Un chunk sin muestras da la base de FNV-1a (0x811C9DC5).
+	 *
+	 * Bytes plegados, por muestra en orden creciente de índice: `int32` índice y `int32`
+	 * delta, los dos little-endian. Con la misma cantidad de bytes, FNV-1a distingue
+	 * siempre dos entradas que difieren en un único byte (xor y producto por primo impar
+	 * son biyecciones de 32 bits), que es justo el fallo de un paquete corrupto.
 	 */
 	static uint32 Compute(const TArray<FTerrainDeltaCodecModel::FSample>& Samples);
+
+	/** La misma comprobación sobre el estado de un chunk (índice → delta en mm). */
+	static uint32 ComputeState(const FTerrainDeltaCodecModel::FChunkState& State);
 
 	/** Registro de la última comprobación mandada de un chunk. */
 	struct FChunkRecord
@@ -42,7 +52,10 @@ public:
 		 * Chunks a los que hay que mandarles la comprobación ahora: los que nunca se han
 		 * mandado, o llevan >= VerificationIntervalSeconds desde la última vez. Marca los
 		 * elegidos como mandados a NowSeconds con el checksum dado. `CurrentChecksums` son
-		 * todos los chunks editados visibles para este cliente en este instante.
+		 * todos los chunks editados visibles para este cliente en este instante. Sale en
+		 * orden (X, Y, Z) para ser determinista. Si el reloj retrocede (reinicio del
+		 * servidor, cambio de mapa) el chunk vuelve a tocar en vez de quedarse mudo hasta
+		 * alcanzar la hora vieja; con un `NowSeconds` no finito no se manda nada.
 		 */
 		void DueChunks(const TMap<FIntVector, uint32>& CurrentChecksums, double NowSeconds, TArray<FIntVector>& OutDue);
 

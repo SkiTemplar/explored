@@ -51,36 +51,94 @@ namespace TerrainDeltaCodecDetail
 		return true;
 	}
 
-	/** Tramo de muestras contiguas (LocalIndex consecutivo) antes de volcarlo al cable. */
-	struct FRun
+	/**
+	 * Escribe un paquete con los tramos contiguos de `Sorted[First..]` que quepan en
+	 * MaxPacketBytes y devuelve cuántas muestras ha metido. `Sorted` es canónica y todas
+	 * sus muestras son codificables. Un tramo nunca se parte entre paquetes salvo al llegar
+	 * a MaxRunCount, que por construcción cabe él solo en un paquete vacío.
+	 */
+	int32 WritePacket(const FIntVector& Chunk, const TArray<FTerrainDeltaCodecModel::FSample>& Sorted, int32 First, TArray<uint8>& OutPacket)
 	{
-		int32 FirstSample = 0;
-		TArray<int32> Deltas;
-	};
+		using FCodec = FTerrainDeltaCodecModel;
+		OutPacket.Reset();
+		OutPacket.Reserve(FCodec::MaxPacketBytes);
+		OutPacket.Add(FCodec::CurrentVersion);
+		WriteInt16LE(OutPacket, static_cast<int16>(Chunk.X));
+		WriteInt16LE(OutPacket, static_cast<int16>(Chunk.Y));
+		WriteInt16LE(OutPacket, static_cast<int16>(Chunk.Z));
+		const int32 NumRunsOffset = OutPacket.Num();
+		WriteUint16LE(OutPacket, 0);
 
-	/** Agrupa muestras ya canónicas (ordenadas, únicas) en tramos contiguos de como mucho MaxRunCount. */
-	void BuildRuns(const TArray<FTerrainDeltaCodecModel::FSample>& Sorted, TArray<FRun>& OutRuns)
-	{
-		OutRuns.Reset();
-		int32 I = 0;
+		int32 NumRuns = 0;
+		int32 I = First;
 		while (I < Sorted.Num())
 		{
-			FRun Run;
-			Run.FirstSample = Sorted[I].LocalIndex;
-			Run.Deltas.Add(Sorted[I].DeltaMm);
-			int32 Prev = Sorted[I].LocalIndex;
-			++I;
-			while (I < Sorted.Num()
-				&& Sorted[I].LocalIndex == Prev + 1
-				&& Run.Deltas.Num() < FTerrainDeltaCodecModel::MaxRunCount)
+			// Longitud del tramo contiguo que empieza en I, acotada por el formato.
+			int32 Count = 1;
+			while (I + Count < Sorted.Num()
+				&& Count < FCodec::MaxRunCount
+				&& Sorted[I + Count].LocalIndex == Sorted[I].LocalIndex + Count)
 			{
-				Run.Deltas.Add(Sorted[I].DeltaMm);
-				Prev = Sorted[I].LocalIndex;
-				++I;
+				++Count;
 			}
-			OutRuns.Add(MoveTemp(Run));
+			const int32 Room = FCodec::MaxPacketBytes - OutPacket.Num() - FCodec::RunOverheadBytes;
+			if (Room < 2)
+			{
+				break;
+			}
+			// Lo que no cabe se queda para el paquete siguiente: el tramo se parte ahí.
+			Count = FMath::Min(Count, Room / 2);
+
+			WriteUint16LE(OutPacket, static_cast<uint16>(Sorted[I].LocalIndex));
+			OutPacket.Add(static_cast<uint8>(Count));
+			for (int32 K = 0; K < Count; ++K)
+			{
+				WriteInt16LE(OutPacket, static_cast<int16>(Sorted[I + K].DeltaMm));
+			}
+			I += Count;
+			++NumRuns;
 		}
+
+		OutPacket[NumRunsOffset] = static_cast<uint8>(NumRuns & 0xFF);
+		OutPacket[NumRunsOffset + 1] = static_cast<uint8>((NumRuns >> 8) & 0xFF);
+		return I - First;
 	}
+}
+
+bool FTerrainDeltaCodecModel::IsChunkEncodable(const FIntVector& Chunk)
+{
+	auto Fits = [](int32 V) { return V >= -32768 && V <= 32767; };
+	return Fits(Chunk.X) && Fits(Chunk.Y) && Fits(Chunk.Z);
+}
+
+bool FTerrainDeltaCodecModel::IsSampleEncodable(const FSample& Sample)
+{
+	return Sample.LocalIndex >= 0 && Sample.LocalIndex <= MaxLocalIndex
+		&& Sample.DeltaMm >= MinDeltaMm && Sample.DeltaMm <= MaxDeltaMm;
+}
+
+bool FTerrainDeltaCodecModel::QuantizeDeltaMm(double DeltaMeters, int32& OutMm)
+{
+	if (!FMath::IsFinite(DeltaMeters))
+	{
+		OutMm = 0;
+		return false;
+	}
+	// Se compara en double antes de convertir: 1e30 m pasado a int32 sería comportamiento indefinido.
+	const double Mm = DeltaMeters * 1000.0;
+	const double Rounded = Mm < 0.0 ? -FMath::FloorToDouble(-Mm + 0.5) : FMath::FloorToDouble(Mm + 0.5);
+	if (Rounded > static_cast<double>(MaxDeltaMm))
+	{
+		OutMm = MaxDeltaMm;
+		return false;
+	}
+	if (Rounded < static_cast<double>(MinDeltaMm))
+	{
+		OutMm = MinDeltaMm;
+		return false;
+	}
+	OutMm = static_cast<int32>(Rounded);
+	return true;
 }
 
 void FTerrainDeltaCodecModel::Canonicalize(const TArray<FSample>& Samples, TArray<FSample>& OutSorted)
@@ -102,9 +160,21 @@ void FTerrainDeltaCodecModel::Canonicalize(const TArray<FSample>& Samples, TArra
 	OutSorted.Sort(&TerrainDeltaCodecDetail::SampleLess);
 }
 
-TArray<TArray<uint8>> FTerrainDeltaCodecModel::Encode(const FChunkPatch& Patch)
+TArray<TArray<uint8>> FTerrainDeltaCodecModel::Encode(const FChunkPatch& Patch, int32* OutRejected)
 {
 	TArray<TArray<uint8>> Packets;
+	if (OutRejected)
+	{
+		*OutRejected = 0;
+	}
+	if (!IsChunkEncodable(Patch.Chunk))
+	{
+		if (OutRejected)
+		{
+			*OutRejected = Patch.Samples.Num();
+		}
+		return Packets;
+	}
 
 	// Un paquete que produce este códec siempre es válido: se descarta lo que no cabría
 	// en el formato de cable en vez de generar basura silenciosa.
@@ -112,64 +182,46 @@ TArray<TArray<uint8>> FTerrainDeltaCodecModel::Encode(const FChunkPatch& Patch)
 	Filtered.Reserve(Patch.Samples.Num());
 	for (const FSample& S : Patch.Samples)
 	{
-		if (S.LocalIndex >= 0 && S.LocalIndex <= MaxLocalIndex && S.DeltaMm >= MinDeltaMm && S.DeltaMm <= MaxDeltaMm)
+		if (IsSampleEncodable(S))
 		{
 			Filtered.Add(S);
+		}
+		else if (OutRejected)
+		{
+			++*OutRejected;
 		}
 	}
 
 	TArray<FSample> Sorted;
 	Canonicalize(Filtered, Sorted);
-	if (Sorted.IsEmpty())
+
+	int32 Next = 0;
+	while (Next < Sorted.Num())
 	{
-		return Packets;
-	}
-
-	TArray<TerrainDeltaCodecDetail::FRun> Runs;
-	TerrainDeltaCodecDetail::BuildRuns(Sorted, Runs);
-
-	TArray<uint8> CurrentBody;
-	int32 CurrentRunCount = 0;
-
-	auto FlushPacket = [&]()
-	{
-		if (CurrentRunCount == 0)
-		{
-			return;
-		}
 		TArray<uint8> Packet;
-		Packet.Reserve(HeaderBytes + CurrentBody.Num());
-		Packet.Add(CurrentVersion);
-		TerrainDeltaCodecDetail::WriteInt16LE(Packet, static_cast<int16>(Patch.Chunk.X));
-		TerrainDeltaCodecDetail::WriteInt16LE(Packet, static_cast<int16>(Patch.Chunk.Y));
-		TerrainDeltaCodecDetail::WriteInt16LE(Packet, static_cast<int16>(Patch.Chunk.Z));
-		TerrainDeltaCodecDetail::WriteUint16LE(Packet, static_cast<uint16>(CurrentRunCount));
-		Packet.Append(CurrentBody);
+		Next += TerrainDeltaCodecDetail::WritePacket(Patch.Chunk, Sorted, Next, Packet);
 		Packets.Add(MoveTemp(Packet));
-		CurrentBody.Reset();
-		CurrentRunCount = 0;
-	};
-
-	for (const TerrainDeltaCodecDetail::FRun& Run : Runs)
-	{
-		const int32 RunBytes = RunOverheadBytes + Run.Deltas.Num() * 2;
-		// MaxRunCount garantiza que un tramo, él solo, siempre cabe en un paquete vacío:
-		// este flush solo dispara cuando el paquete en curso ya tiene contenido.
-		if (CurrentRunCount > 0 && HeaderBytes + CurrentBody.Num() + RunBytes > MaxPacketBytes)
-		{
-			FlushPacket();
-		}
-		TerrainDeltaCodecDetail::WriteUint16LE(CurrentBody, static_cast<uint16>(Run.FirstSample));
-		CurrentBody.Add(static_cast<uint8>(Run.Deltas.Num()));
-		for (const int32 Delta : Run.Deltas)
-		{
-			TerrainDeltaCodecDetail::WriteInt16LE(CurrentBody, static_cast<int16>(Delta));
-		}
-		++CurrentRunCount;
 	}
-	FlushPacket();
-
 	return Packets;
+}
+
+TArray<uint8> FTerrainDeltaCodecModel::EncodeFirstPacket(const FIntVector& Chunk, const TArray<FSample>& CanonicalSamples, int32& OutConsumed)
+{
+	OutConsumed = 0;
+	TArray<uint8> Packet;
+	if (CanonicalSamples.IsEmpty() || !IsChunkEncodable(Chunk))
+	{
+		return Packet;
+	}
+	for (int32 I = 0; I < CanonicalSamples.Num(); ++I)
+	{
+		if (!IsSampleEncodable(CanonicalSamples[I]) || (I > 0 && CanonicalSamples[I].LocalIndex <= CanonicalSamples[I - 1].LocalIndex))
+		{
+			return Packet;
+		}
+	}
+	OutConsumed = TerrainDeltaCodecDetail::WritePacket(Chunk, CanonicalSamples, 0, Packet);
+	return Packet;
 }
 
 bool FTerrainDeltaCodecModel::Decode(const TArray<uint8>& Bytes, FPacket& Out)
@@ -193,6 +245,12 @@ bool FTerrainDeltaCodecModel::Decode(const TArray<uint8>& Bytes, FPacket& Out)
 	if (!ReadInt16LE(Bytes, Cursor, ChunkX) || !ReadInt16LE(Bytes, Cursor, ChunkY)
 		|| !ReadInt16LE(Bytes, Cursor, ChunkZ) || !ReadUint16LE(Bytes, Cursor, NumRuns))
 	{
+		return false;
+	}
+
+	if (NumRuns == 0)
+	{
+		// Este códec nunca manda un paquete sin tramos.
 		return false;
 	}
 
@@ -244,6 +302,49 @@ bool FTerrainDeltaCodecModel::Decode(const TArray<uint8>& Bytes, FPacket& Out)
 	Out.Chunk = FIntVector(static_cast<int32>(ChunkX), static_cast<int32>(ChunkY), static_cast<int32>(ChunkZ));
 	Out.Samples = MoveTemp(Samples);
 	return true;
+}
+
+void FTerrainDeltaCodecModel::ApplyPacket(const FPacket& Packet, FChunkState& InOutState)
+{
+	for (const FSample& S : Packet.Samples)
+	{
+		if (S.DeltaMm == 0)
+		{
+			InOutState.Remove(S.LocalIndex);
+		}
+		else
+		{
+			InOutState.Add(S.LocalIndex, S.DeltaMm);
+		}
+	}
+}
+
+bool FTerrainDeltaCodecModel::DecodeAndApply(const TArray<uint8>& Bytes, TMap<FIntVector, FChunkState>& InOutWorld)
+{
+	FPacket Packet;
+	if (!Decode(Bytes, Packet))
+	{
+		return false;
+	}
+	FChunkState& State = InOutWorld.FindOrAdd(Packet.Chunk);
+	ApplyPacket(Packet, State);
+	if (State.Num() == 0)
+	{
+		InOutWorld.Remove(Packet.Chunk);
+	}
+	return true;
+}
+
+TArray<FTerrainDeltaCodecModel::FSample> FTerrainDeltaCodecModel::SamplesOf(const FChunkState& State)
+{
+	TArray<FSample> Samples;
+	Samples.Reserve(State.Num());
+	for (const auto& Pair : State)
+	{
+		Samples.Add(FSample{ Pair.Key, Pair.Value });
+	}
+	Samples.Sort(&TerrainDeltaCodecDetail::SampleLess);
+	return Samples;
 }
 
 int32 FTerrainDeltaCodecModel::EncodedByteCount(const FChunkPatch& Patch)
