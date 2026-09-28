@@ -384,6 +384,45 @@ void FSaveSystemsSpec::Define()
 			TestEqual(TEXT("Logros: la unión"), Merged.Unlocked.Num(), 2);
 			TestEqual(TEXT("En orden"), Merged.Unlocked[0], FName(TEXT("primer_fuego")));
 		});
+
+		It("ignora números no finitos y repetidos en los conjuntos", [this]()
+		{
+			FSaveValue Numbers = FSaveValue::MakeObject();
+			Numbers.Set(TEXT("fires_lit"), FSaveValue::MakeString(TEXT("NaN")));
+			Numbers.Set(TEXT("max_dive_depth_m"), FSaveValue::MakeString(TEXT("Infinity")));
+			Numbers.Set(TEXT("fish_caught"), FSaveValue::MakeDouble(3.0));
+			FSaveValue Foods = FSaveValue::MakeArray();
+			Foods.Add(FSaveValue::MakeString(TEXT("coco")));
+			Foods.Add(FSaveValue::MakeString(TEXT("coco")));
+			Foods.Add(FSaveValue::MakeString(TEXT("taro")));
+			FSaveValue Sets = FSaveValue::MakeObject();
+			Sets.Set(TEXT("foods_eaten"), Foods);
+			FSaveArchive Profile;
+			Profile.SetValue(TEXT("numbers"), Numbers);
+			Profile.SetValue(TEXT("sets"), Sets);
+			FSaveArchive Ar;
+			Ar.Write(TEXT("profile"), Profile);
+			Ar.Write(TEXT("run"), Profile);
+
+			FAchievementsState Loaded;
+			LoadAchievements(ThroughText(Ar), Loaded);
+			TestFalse(TEXT("Sin el NaN"), Loaded.Profile.Numbers.Contains(FName(TEXT("fires_lit"))));
+			TestFalse(TEXT("Sin el infinito"), Loaded.Profile.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+			TestEqual(TEXT("Con el bueno"), Loaded.Profile.Numbers.FindRef(FName(TEXT("fish_caught"))), 3.0);
+			TestEqual(TEXT("Comidas sin repetir"), Loaded.Profile.Sets.FindRef(FName(TEXT("foods_eaten"))).Num(), 2);
+			TestEqual(TEXT("También en la partida"), Loaded.Run.Sets.FindRef(FName(TEXT("foods_eaten"))).Num(), 2);
+			TestFalse(TEXT("Partida sin el infinito"), Loaded.Run.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+
+			// La fusión tampoco deja que un NaN pise el perfil.
+			FAchievementsState Current;
+			Current.Profile.Numbers.Add(FName(TEXT("fires_lit")), 10.0);
+			FAchievementsState Corrupt;
+			Corrupt.Profile.Numbers.Add(FName(TEXT("fires_lit")), std::numeric_limits<double>::quiet_NaN());
+			Corrupt.Profile.Numbers.Add(FName(TEXT("max_dive_depth_m")), std::numeric_limits<double>::infinity());
+			const FAchievementsState Merged = MergeLoadedAchievements(Current, Corrupt);
+			TestEqual(TEXT("Fuegos intactos"), Merged.Profile.Numbers.FindRef(FName(TEXT("fires_lit"))), 10.0);
+			TestFalse(TEXT("Sin buceo infinito"), Merged.Profile.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+		});
 	});
 
 	Describe("Inventario", [this]()

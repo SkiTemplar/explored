@@ -144,8 +144,27 @@ namespace SaveSystemStatesDetail
 	void ReadStatValues(const FSaveArchive& Ar, FAchievementStatValues& Out)
 	{
 		Out = FAchievementStatValues();
-		Ar.Read(TEXT("numbers"), Out.Numbers);
-		Ar.Read(TEXT("sets"), Out.Sets);
+		TMap<FName, double> Numbers;
+		Ar.Read(TEXT("numbers"), Numbers);
+		for (const TPair<FName, double>& Number : Numbers)
+		{
+			// "NaN" o "Infinity" (el formato los lee como reales) desbloquearían o romperían el progreso.
+			if (FMath::IsFinite(Number.Value))
+			{
+				Out.Numbers.Add(Number.Key, Number.Value);
+			}
+		}
+		TMap<FName, TArray<FName>> Sets;
+		Ar.Read(TEXT("sets"), Sets);
+		for (const TPair<FName, TArray<FName>>& Set : Sets)
+		{
+			// Sin repetidos: ["a", "a"] contaría dos en GetSetSize.
+			TArray<FName>& Items = Out.Sets.Add(Set.Key);
+			for (const FName& Item : Set.Value)
+			{
+				Items.AddUnique(Item);
+			}
+		}
 		Ar.Read(TEXT("flags"), Out.Flags);
 	}
 
@@ -617,6 +636,11 @@ namespace ExploredSaveStates
 		Out.Profile = Current.Profile;
 		for (const TPair<FName, double>& Number : Loaded.Profile.Numbers)
 		{
+			// Max(Valor, NaN) devuelve NaN y pisaría el progreso del perfil.
+			if (!FMath::IsFinite(Number.Value))
+			{
+				continue;
+			}
 			double& Value = Out.Profile.Numbers.FindOrAdd(Number.Key, Number.Value);
 			Value = FMath::Max(Value, Number.Value);
 		}
