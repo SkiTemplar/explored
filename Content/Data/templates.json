@@ -5,6 +5,10 @@
 		"resultDefinitionId": "lasca_tallada",
 		"nameTemplate": "Lasca de {1}", "nameTemplateEn": "{1} flake",
 		"baseMaxDurability": 10,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Tu primer filo sale de dos piedras.",
+		"usoEn": "Your first edge comes from two stones.",
+		"ejemplo": ["canto_rodado", "pedernal"],
 		"slots": [
 			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
 			{ "role": "Nucleo", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 4 } ] }
@@ -16,6 +20,10 @@
 		"resultDefinitionId": "basalto_tallado",
 		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "La cabeza del pico tallado: pica basalto.",
+		"usoEn": "The knapped pick head. It breaks basalt.",
+		"ejemplo": ["lasca_pedernal", "basalto"],
 		"slots": [
 			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
 			{ "role": "Piedra", "requireAll": true, "requirements": [ { "property": "Contundente", "min": 4 }, { "property": "Rigido", "min": 4 } ], "tags": ["piedra"] }
@@ -27,6 +35,10 @@
 		"resultDefinitionId": "canto_aguzado",
 		"nameTemplate": "Punta de {1}", "nameTemplateEn": "{1} point",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "La cabeza del primer pico: pica caliza y cobre.",
+		"usoEn": "The first pick head. It breaks limestone and copper.",
+		"ejemplo": ["lasca_pedernal", "canto_rodado"],
 		"slots": [
 			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
 			{ "role": "Piedra", "requireAll": true, "requirements": [ { "property": "Contundente", "min": 3 }, { "property": "Rigido", "min": 3 } ], "tags": ["piedra"] }
@@ -38,6 +50,10 @@
 		"resultDefinitionId": "estaca",
 		"nameTemplate": "Estaca de {1}", "nameTemplateEn": "{1} stake",
 		"baseMaxDurability": 15,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Estacas para trampas, cercas y espetos.",
+		"usoEn": "Stakes for traps, fences and spits.",
+		"ejemplo": ["lasca_pedernal", "palo_recto"],
 		"slots": [
 			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
 			{ "role": "Madera", "requireAll": true, "requirements": [ { "property": "Largo", "min": 1 }, { "property": "Rigido", "min": 1 } ] }
@@ -49,6 +65,10 @@
 		"resultDefinitionId": "pasta_medicinal",
 		"nameTemplate": "Pasta de {1}", "nameTemplateEn": "{1} paste",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Cura cortes leves antes de que se infecten.",
+		"usoEn": "Treats small cuts before they get infected.",
+		"ejemplo": ["canto_rodado", "planta_medicinal_aloe"],
 		"slots": [
 			{ "role": "Mazo", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 2 } ] },
 			{ "role": "Planta", "requireAll": false, "requirements": [ { "property": "Medicinal", "min": 1 } ] }
@@ -60,6 +80,10 @@
 		"resultDefinitionId": "recipiente_coco",
 		"nameTemplate": "Recipiente de coco", "nameTemplateEn": "Coconut bowl",
 		"baseMaxDurability": 15,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Tu primer cuenco: recoge lluvia y hierve agua.",
+		"usoEn": "Your first bowl. It catches rain and boils water.",
+		"ejemplo": ["lasca_pedernal", "coco_maduro"],
 		"slots": [
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 } ] },
 			{ "role": "Coco", "requireAll": false, "requirements": [], "tags": ["coco"] }
@@ -72,6 +96,10 @@
 		"resultDefinitionId": "cabeza_pico_rescatada",
 		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
 		"baseMaxDurability": 0,
+		"craftMinutes": 20, "fase": "AA",
+		"usoEs": "Cabeza de pico que dura el doble que la de piedra.",
+		"usoEn": "A pick head that lasts twice as long as stone.",
+		"ejemplo": ["canto_rodado", "chapa_fuselaje"],
 		"slots": [
 			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
 			{ "role": "Chatarra", "requireAll": true, "requirements": [ { "property": "Rigido", "min": 3 }, { "property": "Filo", "min": 2 } ], "tags": ["rescatado"] }
@@ -84,20 +112,13 @@
 		"resultDefinitionId": "cabeza_pico_rescatada",
 		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
 		"baseMaxDurability": 0,
+		"craftMinutes": 30, "fase": "AA",
+		"usoEs": "La mejor cabeza de pico del archipiélago.",
+		"usoEn": "The best pick head in the archipelago.",
+		"ejemplo": ["canto_rodado", "hierro_meteorito"],
 		"slots": [
 			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
 			{ "role": "Hierro", "requireAll": false, "requirements": [ { "property": "Pesado", "min": 5 } ], "tags": ["mineral"] }
-		]
-	},
-	{
-		"id": "cordel", "nameEs": "Cordel", "nameEn": "Twine",
-		"verbs": ["Trenzar"],
-		"resultDefinitionId": "cordel",
-		"nameTemplate": "Cordel de fibra", "nameTemplateEn": "Fibre twine",
-		"baseMaxDurability": 0,
-		"slots": [
-			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
-			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] }
 		]
 	},
 	{
@@ -106,9 +127,28 @@
 		"resultDefinitionId": "cuerda",
 		"nameTemplate": "Cuerda trenzada", "nameTemplateEn": "Braided rope",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Aguanta el peso de una balsa o de una persona.",
+		"usoEn": "Holds the weight of a raft, or of a person.",
+		"ejemplo": [{"verbo": "Trenzar", "de": ["fibra_coco", "corteza"]}, {"verbo": "Trenzar", "de": ["fibra_coco", "corteza"]}],
 		"slots": [
 			{ "role": "CordelA", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
 			{ "role": "CordelB", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "cordel", "nameEs": "Cordel", "nameEn": "Twine",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "cordel",
+		"nameTemplate": "Cordel de fibra", "nameTemplateEn": "Fibre twine",
+		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Ata lo pequeño; dos cordeles hacen una cuerda.",
+		"usoEn": "Ties small things. Two lengths make a rope.",
+		"ejemplo": ["fibra_coco", "corteza"],
+		"slots": [
+			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] }
 		]
 	},
 	{
@@ -117,6 +157,10 @@
 		"resultDefinitionId": "cesta",
 		"nameTemplate": "Cesta de {0}", "nameTemplateEn": "{0} basket",
 		"baseMaxDurability": 30,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Diez cocos en un viaje en vez de dos.",
+		"usoEn": "Ten coconuts in one trip instead of two.",
+		"ejemplo": ["hoja_palma", "hoja_palma"],
 		"slots": [
 			{ "role": "FibraA", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
 			{ "role": "FibraB", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] }
@@ -128,6 +172,10 @@
 		"resultDefinitionId": "arco",
 		"nameTemplate": "Arco de {0} con cuerda de {1}", "nameTemplateEn": "{0} bow with a {1} string",
 		"baseMaxDurability": 45,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Caza y pesca a distancia sin espantar a la presa.",
+		"usoEn": "Hunt and fish at range without scaring the prey.",
+		"ejemplo": ["vara_flexible", "cuerda"],
 		"slots": [
 			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
 			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
@@ -139,6 +187,10 @@
 		"resultDefinitionId": "atado_generico",
 		"nameTemplate": "{0} atado con {1}", "nameTemplateEn": "{0} lashed with {1}",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Une dos piezas para seguir fabricando con ellas.",
+		"usoEn": "Joins two pieces so you can keep building with them.",
+		"ejemplo": ["palo_recto", "liana"],
 		"slots": [
 			{ "role": "Base", "requireAll": false, "requirements": [] },
 			{ "role": "Ligadura", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
@@ -150,6 +202,10 @@
 		"resultDefinitionId": "pegado_generico",
 		"nameTemplate": "{0} pegado con {1}", "nameTemplateEn": "{0} glued with {1}",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Como atar, pero la unión aguanta más golpes.",
+		"usoEn": "Like lashing, but the joint takes more knocks.",
+		"ejemplo": ["palo_recto", "resina"],
 		"slots": [
 			{ "role": "Base", "requireAll": false, "requirements": [] },
 			{ "role": "Ligadura", "requireAll": false, "requirements": [ { "property": "Adhesivo", "min": 3 } ] }
@@ -161,6 +217,10 @@
 		"resultDefinitionId": "angarillas",
 		"nameTemplate": "Angarillas de {0}", "nameTemplateEn": "{0} travois",
 		"baseMaxDurability": 100,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Arrastra troncos y piedra que no podrías cargar.",
+		"usoEn": "Drag logs and stone you could never carry.",
+		"ejemplo": [{"verbo": "Atar", "de": ["bambu_grueso", "liana"]}, "hoja_palma"],
 		"slots": [
 			{ "role": "Varales", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 3 } ] },
 			{ "role": "Lecho", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
@@ -173,6 +233,10 @@
 		"resultDefinitionId": "pico",
 		"nameTemplate": "Pico de {0} con mango de {1}, atado con {2}", "nameTemplateEn": "{0} pick with a {1} handle, lashed with {2}",
 		"baseMaxDurability": 55,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Abre la roca: caliza, cobre, basalto, según la cabeza.",
+		"usoEn": "Opens the rock. Limestone, copper or basalt, depending on the head.",
+		"ejemplo": [{"verbo": "Atar", "de": ["palo_recto", "liana"]}, "canto_aguzado"],
 		"slots": [
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ], "tags": ["piedra", "mineral", "metal"] },
 			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
@@ -185,6 +249,10 @@
 		"resultDefinitionId": "hacha",
 		"nameTemplate": "Hacha de {0} con mango de {1}, atada con {2}", "nameTemplateEn": "{0} axe with a {1} handle, lashed with {2}",
 		"baseMaxDurability": 60,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Tala árboles y parte leña.",
+		"usoEn": "Fells trees and splits firewood.",
+		"ejemplo": [{"verbo": "Atar", "de": ["palo_recto", "liana"]}, "lasca_pedernal"],
 		"slots": [
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 }, { "property": "Contundente", "min": 2 } ] },
 			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
@@ -197,6 +265,10 @@
 		"resultDefinitionId": "lanza",
 		"nameTemplate": "Lanza de {0} con punta de {1}, atada con {2}", "nameTemplateEn": "{0} spear with a {1} tip, lashed with {2}",
 		"baseMaxDurability": 50,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Pesca en los bajíos y defiéndete de un tiburón.",
+		"usoEn": "Spear fish in the shallows and keep a shark at bay.",
+		"ejemplo": [{"verbo": "Atar", "de": ["bambu_grueso", "liana"]}, "hueso_largo"],
 		"slots": [
 			{ "role": "Asta", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 2 } ] },
 			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 3 } ] },
@@ -209,6 +281,10 @@
 		"resultDefinitionId": "cuchillo",
 		"nameTemplate": "Cuchillo de {0} con mango de {1}", "nameTemplateEn": "{0} knife with a {1} handle",
 		"baseMaxDurability": 40,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Despieza, corta fibra y raspa piel.",
+		"usoEn": "Butchers, cuts fibre and scrapes hide.",
+		"ejemplo": ["lasca_obsidiana", "palo_recto"],
 		"slots": [
 			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
 			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 1 } ] }
@@ -220,6 +296,10 @@
 		"resultDefinitionId": "martillo",
 		"nameTemplate": "Martillo de {0} con mango de {1}", "nameTemplateEn": "{0} hammer with a {1} handle",
 		"baseMaxDurability": 50,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Clava estacas y monta piezas de madera.",
+		"usoEn": "Drives stakes and fits timber together.",
+		"ejemplo": ["canto_rodado", "palo_recto"],
 		"slots": [
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
 			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
@@ -231,6 +311,10 @@
 		"resultDefinitionId": "antorcha",
 		"nameTemplate": "Antorcha de {0} con {1}", "nameTemplateEn": "{0} torch with {1}",
 		"baseMaxDurability": 20,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Luz para la cueva; se apaga con la lluvia.",
+		"usoEn": "Light for the cave. Rain puts it out.",
+		"ejemplo": ["palo_recto", "grasa"],
 		"slots": [
 			{ "role": "Asta", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
 			{ "role": "Combustible", "requireAll": false, "requirements": [ { "property": "Combustible", "min": 2 }, { "property": "Inflamable", "min": 2 } ] }
@@ -242,6 +326,10 @@
 		"resultDefinitionId": "flecha",
 		"nameTemplate": "Flecha de {0} con punta de {1}", "nameTemplateEn": "{0} arrow with a {1} tip",
 		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Munición del arco; se pierden a menudo.",
+		"usoEn": "Ammunition for the bow. You lose plenty.",
+		"ejemplo": ["bambu_fino", "hueso_pequeno"],
 		"slots": [
 			{ "role": "Astil", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 1 } ] },
 			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ] }
@@ -253,6 +341,10 @@
 		"resultDefinitionId": "pala",
 		"nameTemplate": "Pala de {0} con mango de {1}", "nameTemplateEn": "{0} shovel with a {1} handle",
 		"baseMaxDurability": 40,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Cava tierra, arena y arcilla.",
+		"usoEn": "Digs soil, sand and clay.",
+		"ejemplo": ["chapa_fuselaje", "palo_recto"],
 		"slots": [
 			{ "role": "Superficie", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 2 }, { "property": "Contundente", "min": 1 } ] },
 			{ "role": "Mango", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
@@ -265,9 +357,449 @@
 		"nameTemplate": "",
 		"baseMaxDurability": 0,
 		"isSharpen": true,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Devuelve el filo y parte del desgaste.",
+		"usoEn": "Restores the edge and some of the wear.",
+		"ejemplo": [{"verbo": "Atar", "de": [{"verbo": "Atar", "de": ["palo_recto", "liana"]}, "lasca_pedernal"]}, "arenisca"],
 		"slots": [
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 }, { "property": "Punta", "min": 1 } ] },
 			{ "role": "Abrasivo", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "odre", "nameEs": "Odre", "nameEn": "Waterskin",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "odre_piel",
+		"nameTemplate": "Odre de {0}", "nameTemplateEn": "{0} waterskin",
+		"baseMaxDurability": 25,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Un litro de agua a la espalda: ya puedes alejarte del río más de medio día.",
+		"usoEn": "A litre of water on your back: you can stray from the river for more than half a day.",
+		"ejemplo": ["cuero_curtido", "tendon"],
+		"slots": [
+			{ "role": "Piel", "requireAll": false, "requirements": [ { "property": "Impermeable", "min": 1 } ], "tags": ["piel"] },
+			{ "role": "Costura", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Cierre", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "filtro_de_arena", "nameEs": "Filtro de arena", "nameEn": "Sand filter",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "filtro_agua",
+		"nameTemplate": "Filtro de {0} con {1}", "nameTemplateEn": "{0} filter with {1}",
+		"baseMaxDurability": 20,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Limpia el agua de charca sin gastar leña; no la deja tan segura como hervirla.",
+		"usoEn": "Cleans pond water without burning wood. Not as safe as boiling it.",
+		"ejemplo": ["bambu_grueso", "arena"],
+		"slots": [
+			{ "role": "Cuerpo", "requireAll": false, "requirements": [ { "property": "Recipiente", "min": 2 } ], "tags": ["bambu", "coco"] },
+			{ "role": "Lecho", "requireAll": false, "requirements": [], "tags": ["filtrante"] },
+			{ "role": "Relleno", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 2 }, { "property": "Combustible", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "anzuelo_por_tallado", "nameEs": "Anzuelo tallado", "nameEn": "Carved hook",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "anzuelo",
+		"nameTemplate": "Anzuelo de {1}", "nameTemplateEn": "{1} hook",
+		"baseMaxDurability": 12,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Con un anzuelo pescas desde la orilla lo que no alcanzas con la lanza.",
+		"usoEn": "A hook catches from the shore what the spear can't reach.",
+		"ejemplo": ["lasca_pedernal", "hueso_pequeno"],
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Pieza", "requireAll": false, "requirements": [ { "property": "Punta", "min": 1 } ], "tags": ["hueso", "concha"] }
+		]
+	},
+	{
+		"id": "cana_de_pescar", "nameEs": "Caña de pescar", "nameEn": "Fishing rod",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "cana_pesca",
+		"nameTemplate": "Caña de {0}", "nameTemplateEn": "{0} rod",
+		"baseMaxDurability": 30,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Lanza lejos de la rompiente, donde están los peces grandes.",
+		"usoEn": "Cast beyond the breakers, where the big fish are.",
+		"ejemplo": [{"verbo": "Atar", "de": ["bambu_fino", "liana"]}, {"verbo": "Tallar", "de": ["lasca_pedernal", "hueso_pequeno"]}],
+		"slots": [
+			{ "role": "Vara", "requireAll": true, "requirements": [ { "property": "Largo", "min": 3 }, { "property": "Flexible", "min": 2 } ] },
+			{ "role": "Sedal", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Anzuelo", "requireAll": false, "requirements": [], "tags": ["anzuelo"] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "red_de_mano", "nameEs": "Red de mano", "nameEn": "Hand net",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "red_mano",
+		"nameTemplate": "Red de {0}", "nameTemplateEn": "{0} net",
+		"baseMaxDurability": 25,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Saca cangrejos y peces pequeños de las pozas de marea sin cebo.",
+		"usoEn": "Scoops crabs and small fish out of rock pools, no bait needed.",
+		"ejemplo": ["cordel", "bambu_fino"],
+		"slots": [
+			{ "role": "Malla", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Aro", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 2 }, { "property": "Largo", "min": 3 } ], "tags": ["madera", "bambu"] },
+			{ "role": "Fibra", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "arpon", "nameEs": "Arpón", "nameEn": "Harpoon",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "arpon",
+		"nameTemplate": "Arpón de {1}", "nameTemplateEn": "{1} harpoon",
+		"baseMaxDurability": 45,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "El pez clavado queda atado: los meros grandes ya no se escapan con la punta.",
+		"usoEn": "A struck fish stays on the line: big groupers stop swimming off with your point.",
+		"ejemplo": [{"verbo": "Atar", "de": ["bambu_grueso", "liana"]}, "espina_pescado"],
+		"slots": [
+			{ "role": "Asta", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 2 } ] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ], "tags": ["hueso"] },
+			{ "role": "Cabo", "requireAll": false, "requirements": [ { "property": "Ata", "min": 4 } ] }
+		]
+	},
+	{
+		"id": "trampa_de_lazo", "nameEs": "Trampa de lazo", "nameEn": "Snare",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "trampa_lazo",
+		"nameTemplate": "Trampa de lazo con {1}", "nameTemplateEn": "Snare with {1}",
+		"baseMaxDurability": 10,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Déjala en un sendero de cerdos y vuelve por la mañana.",
+		"usoEn": "Leave it on a pig trail and come back in the morning.",
+		"ejemplo": [{"verbo": "Tallar", "de": ["lasca_pedernal", "palo_recto"]}, "cordel"],
+		"slots": [
+			{ "role": "Estaca", "requireAll": false, "requirements": [], "tags": ["punta"] },
+			{ "role": "Lazo", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Largo", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] },
+			{ "role": "Firme", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "honda", "nameEs": "Honda", "nameEn": "Sling",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "honda",
+		"nameTemplate": "Honda de {0}", "nameTemplateEn": "{0} sling",
+		"baseMaxDurability": 20,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Un canto rodado bien lanzado tumba un ave o un coco a veinte metros.",
+		"usoEn": "A well-thrown pebble drops a bird or a coconut at twenty metres.",
+		"ejemplo": ["cuero_curtido", "cordel"],
+		"slots": [
+			{ "role": "Bolsa", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ], "tags": ["piel"] },
+			{ "role": "Correa", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Tira", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "arco_de_fuego", "nameEs": "Arco de fuego", "nameEn": "Bow drill",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "arco_fuego",
+		"nameTemplate": "Arco de fuego de {0}", "nameTemplateEn": "{0} bow drill",
+		"baseMaxDurability": 25,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Fuego sin cerillas: cuesta brazo, pero no se acaba nunca.",
+		"usoEn": "Fire without matches. Hard on the arm, but it never runs out.",
+		"ejemplo": ["rama_verde", "cordel"],
+		"slots": [
+			{ "role": "Arco", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 3 }, { "property": "Largo", "min": 2 } ] },
+			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "yesca_machacada", "nameEs": "Yesca", "nameEn": "Tinder",
+		"verbs": ["Machacar"],
+		"resultDefinitionId": "yesca",
+		"nameTemplate": "Nido de {1}", "nameTemplateEn": "{1} tinder",
+		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Prende con la primera brasa del arco o la primera chispa del pedernal.",
+		"usoEn": "Catches from the first ember of the drill or the first spark off the flint.",
+		"ejemplo": ["canto_rodado", "fibra_coco"],
+		"slots": [
+			{ "role": "Mazo", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 2 } ] },
+			{ "role": "Fibra", "requireAll": false, "requirements": [ { "property": "Inflamable", "min": 2 } ], "tags": ["fibra"] }
+		]
+	},
+	{
+		"id": "lampara_de_coco", "nameEs": "Lámpara de aceite", "nameEn": "Oil lamp",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "lampara_aceite_coco",
+		"nameTemplate": "Lámpara de {0}", "nameTemplateEn": "{0} lamp",
+		"baseMaxDurability": 60,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Luz quieta para toda la noche dentro del refugio, sin humo en los ojos.",
+		"usoEn": "A steady light all night in the shelter, and no smoke in your eyes.",
+		"ejemplo": ["cascara_coco", "aceite_coco"],
+		"slots": [
+			{ "role": "Cuenco", "requireAll": false, "requirements": [ { "property": "Recipiente", "min": 2 } ], "tags": ["coco"] },
+			{ "role": "Aceite", "requireAll": true, "requirements": [ { "property": "Combustible", "min": 3 }, { "property": "Impermeable", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "farol_de_bambu", "nameEs": "Farol", "nameEn": "Lantern",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "farol",
+		"nameTemplate": "Farol de {1}", "nameTemplateEn": "{1} lantern",
+		"baseMaxDurability": 50,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "La lámpara, protegida del viento y la lluvia: se lleva en la mano o en la canoa.",
+		"usoEn": "The lamp, sheltered from wind and rain. Carry it by hand or in the canoe.",
+		"ejemplo": [{"verbo": "Atar", "de": ["cascara_coco", "aceite_coco"]}, "bambu_grueso"],
+		"slots": [
+			{ "role": "Lampara", "requireAll": false, "requirements": [], "tags": ["lampara"] },
+			{ "role": "Pantalla", "requireAll": false, "requirements": [ { "property": "Recipiente", "min": 2 } ], "tags": ["bambu"] },
+			{ "role": "Asa", "requireAll": false, "requirements": [ { "property": "Largo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "tela_en_telar", "nameEs": "Tela", "nameEn": "Cloth",
+		"verbs": ["Trenzar"],
+		"station": "telar",
+		"resultDefinitionId": "tela_fibra",
+		"nameTemplate": "Tela de {1}", "nameTemplateEn": "{1} cloth",
+		"baseMaxDurability": 0,
+		"craftMinutes": 40, "fase": "AA",
+		"usoEs": "La base del abrigo y de la hamaca.",
+		"usoEn": "What the coat and the hammock are made from.",
+		"ejemplo": ["liana", "algodon_silvestre"],
+		"slots": [
+			{ "role": "Urdimbre", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Trama", "requireAll": true, "requirements": [ { "property": "Aislante", "min": 2 }, { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "Relleno", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "sombrero_de_palma", "nameEs": "Sombrero de palma", "nameEn": "Palm-leaf hat",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "sombrero_palma",
+		"nameTemplate": "Sombrero de {0}", "nameTemplateEn": "{0} hat",
+		"baseMaxDurability": 20,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "A mediodía el sol quema tres veces más despacio.",
+		"usoEn": "At midday the sun burns you three times more slowly.",
+		"ejemplo": ["hoja_palma", "cordel"],
+		"slots": [
+			{ "role": "Ala", "requireAll": false, "requirements": [], "tags": ["techado"] },
+			{ "role": "Copa", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
+			{ "role": "Cinta", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "capa_de_hojas", "nameEs": "Capa de hojas", "nameEn": "Leaf cape",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "capa_impermeable",
+		"nameTemplate": "Capa de {0}", "nameTemplateEn": "{0} cape",
+		"baseMaxDurability": 15,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Bajo el aguacero te mojas menos de la mitad y no pierdes el calor tan rápido.",
+		"usoEn": "In a downpour you get less than half as wet, and hold on to your warmth.",
+		"ejemplo": ["hoja_platano", "cordel"],
+		"slots": [
+			{ "role": "Cobertura", "requireAll": false, "requirements": [ { "property": "Impermeable", "min": 3 } ], "tags": ["fibra", "piel"] },
+			{ "role": "Atado", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Hombros", "requireAll": false, "requirements": [ { "property": "Aislante", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "sandalias", "nameEs": "Sandalias", "nameEn": "Sandals",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "sandalias",
+		"nameTemplate": "Sandalias de {0}", "nameTemplateEn": "{0} sandals",
+		"baseMaxDurability": 30,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Cruzas el arrecife y la roca volcánica sin cortarte los pies.",
+		"usoEn": "Cross the reef flats and the lava rock without cutting your feet.",
+		"ejemplo": ["piel_bruto", "cordel"],
+		"slots": [
+			{ "role": "Suela", "requireAll": false, "requirements": [ { "property": "Abrasivo", "min": 2 } ], "tags": ["piel"] },
+			{ "role": "Correa", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Talon", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "abrigo", "nameEs": "Abrigo", "nameEn": "Coat",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "ropa_abrigo",
+		"nameTemplate": "Abrigo de {0}", "nameTemplateEn": "{0} coat",
+		"baseMaxDurability": 40,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Las noches del monzón y la cumbre de los Dientes dejan de ser un riesgo.",
+		"usoEn": "Monsoon nights and the peaks of the Teeth stop being a danger.",
+		"ejemplo": [{"verbo": "Trenzar", "de": ["liana", "algodon_silvestre"]}, "cuero_curtido"],
+		"slots": [
+			{ "role": "Tela", "requireAll": false, "requirements": [], "tags": ["tela"] },
+			{ "role": "Forro", "requireAll": false, "requirements": [ { "property": "Aislante", "min": 2 } ] },
+			{ "role": "Costura", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] },
+			{ "role": "Cuerpo", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "azada", "nameEs": "Azada", "nameEn": "Hoe",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "azada",
+		"nameTemplate": "Azada de {0}", "nameTemplateEn": "{0} hoe",
+		"baseMaxDurability": 40,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Abre un bancal en la mitad de tiempo que con la pala.",
+		"usoEn": "Digs a garden bed in half the time a shovel takes.",
+		"ejemplo": [{"verbo": "Atar", "de": ["palo_recto", "liana"]}, "concha_grande"],
+		"slots": [
+			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 1 }, { "property": "Recipiente", "min": 2 } ], "tags": ["concha"] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "hoz", "nameEs": "Hoz", "nameEn": "Sickle",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "hoz",
+		"nameTemplate": "Hoz de {0}", "nameTemplateEn": "{0} sickle",
+		"baseMaxDurability": 30,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Siega el bancal entero de una pasada y corta fibra a manojos.",
+		"usoEn": "Reaps a whole bed in one pass and cuts fibre by the armful.",
+		"ejemplo": [{"verbo": "Atar", "de": ["rama_verde", "liana"]}, "lasca_pedernal"],
+		"slots": [
+			{ "role": "Hoja", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 3 }, { "property": "Largo", "min": 2 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "sierra", "nameEs": "Sierra", "nameEn": "Saw",
+		"verbs": ["Tallar"],
+		"station": "banco_tallado",
+		"resultDefinitionId": "sierra",
+		"nameTemplate": "Sierra de {1}", "nameTemplateEn": "{1} saw",
+		"baseMaxDurability": 40,
+		"craftMinutes": 30, "fase": "AA",
+		"usoEs": "Corta tablas y hueso limpio, sin astillar lo que vas a ensamblar.",
+		"usoEn": "Cuts planks and bone cleanly, without splitting what you mean to join.",
+		"ejemplo": ["lasca_pedernal", "chapa_fuselaje"],
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Hoja", "requireAll": true, "requirements": [ { "property": "Filo", "min": 2 }, { "property": "Rigido", "min": 3 } ], "tags": ["metal", "hueso"] },
+			{ "role": "Dientes", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "cincel", "nameEs": "Cincel", "nameEn": "Chisel",
+		"verbs": ["Tallar"],
+		"station": "banco_tallado",
+		"resultDefinitionId": "cincel",
+		"nameTemplate": "Cincel de {1}", "nameTemplateEn": "{1} chisel",
+		"baseMaxDurability": 35,
+		"craftMinutes": 20, "fase": "AA",
+		"usoEs": "Talla muescas y encajes: la canoa y los muebles dejan de depender de la cuerda.",
+		"usoEn": "Cuts notches and joints, so the canoe and the furniture stop relying on rope.",
+		"ejemplo": ["lasca_obsidiana", "hueso_largo"],
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Barra", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 4 } ], "tags": ["hueso"] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "garfio", "nameEs": "Garfio con cabo", "nameEn": "Grappling hook",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "garfio",
+		"nameTemplate": "Garfio con cabo de {0}", "nameTemplateEn": "{0} grappling hook",
+		"baseMaxDurability": 30,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Sube a una cornisa de hasta seis metros o recupera lo que se llevó la corriente.",
+		"usoEn": "Climbs a ledge up to six metres, or pulls back what the current took.",
+		"ejemplo": ["hueso_largo", "cuerda"],
+		"slots": [
+			{ "role": "Gancho", "requireAll": true, "requirements": [ { "property": "Punta", "min": 3 }, { "property": "Rigido", "min": 4 } ], "tags": ["hueso", "metal"] },
+			{ "role": "Cabo", "requireAll": false, "requirements": [ { "property": "Ata", "min": 4 } ] },
+			{ "role": "Punta", "requireAll": false, "requirements": [ { "property": "Punta", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "lazo_de_trepar", "nameEs": "Lazo de trepar", "nameEn": "Climbing loop",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "pie_de_palmera",
+		"nameTemplate": "Lazo de trepar de {0}", "nameTemplateEn": "{0} climbing loop",
+		"baseMaxDurability": 25,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Trepas cualquier palmera y bajas los cocos verdes sin sacudirla.",
+		"usoEn": "Climb any palm and bring the green coconuts down without shaking it.",
+		"ejemplo": ["fibra_coco", "liana"],
+		"slots": [
+			{ "role": "Fibra", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 3 } ] },
+			{ "role": "Lazo", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] },
+			{ "role": "Nudo", "requireAll": false, "requirements": [ { "property": "Flexible", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "remo", "nameEs": "Remo", "nameEn": "Paddle",
+		"verbs": ["Tallar"],
+		"station": "banco_tallado",
+		"resultDefinitionId": "remo",
+		"nameTemplate": "Remo de {1}", "nameTemplateEn": "{1} paddle",
+		"baseMaxDurability": 40,
+		"craftMinutes": 45, "fase": "AA",
+		"usoEs": "La canoa avanza el doble que remando con un palo.",
+		"usoEn": "The canoe moves twice as fast as paddling with a stick.",
+		"ejemplo": ["lasca_pedernal", "madera_blanda"],
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flota", "min": 4 }, { "property": "Largo", "min": 3 } ] },
+			{ "role": "Madera", "requireAll": false, "requirements": [], "tags": ["madera"] }
+		]
+	},
+	{
+		"id": "rodillo", "nameEs": "Rodillo", "nameEn": "Log roller",
+		"verbs": ["Tallar"],
+		"station": "astillero",
+		"resultDefinitionId": "rodillos",
+		"nameTemplate": "Rodillo de {1}", "nameTemplateEn": "{1} roller",
+		"baseMaxDurability": 60,
+		"craftMinutes": 30, "fase": "AA",
+		"usoEs": "Tres rodillos bajo el casco y dos personas botan una canoa sin cargarla.",
+		"usoEn": "Three rollers under the hull and two people launch a canoe without lifting it.",
+		"ejemplo": ["lasca_pedernal", "tronco_pequeno"],
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 2 } ] },
+			{ "role": "Tronco", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Pesado", "min": 3 } ] },
+			{ "role": "Madera", "requireAll": false, "requirements": [], "tags": ["madera"] }
+		]
+	},
+	{
+		"id": "cabo_de_amarre", "nameEs": "Cabo de amarre", "nameEn": "Mooring line",
+		"verbs": ["Trenzar"],
+		"resultDefinitionId": "cabo_amarre",
+		"nameTemplate": "Cabo de amarre", "nameTemplateEn": "Mooring line",
+		"baseMaxDurability": 0,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Amarras el barco al muelle y la marea ya no se lo lleva de noche.",
+		"usoEn": "Tie the boat to the jetty and the tide stops taking it at night.",
+		"ejemplo": ["cuerda", "cuerda"],
+		"slots": [
+			{ "role": "CaboA", "requireAll": true, "requirements": [ { "property": "Ata", "min": 4 }, { "property": "Fibroso", "min": 1 } ] },
+			{ "role": "CaboB", "requireAll": false, "requirements": [], "tags": ["ata"] },
+			{ "role": "Gaza", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
+		]
+	},
+	{
+		"id": "ancla", "nameEs": "Ancla de piedra", "nameEn": "Stone anchor",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "ancla_piedra",
+		"nameTemplate": "Ancla de {0}", "nameTemplateEn": "{0} anchor",
+		"baseMaxDurability": 80,
+		"craftMinutes": 0, "fase": "AA",
+		"usoEs": "Fondeas en cualquier cala y pescas o buceas sin que la canoa se aleje.",
+		"usoEn": "Drop anchor in any cove and fish or dive without the canoe drifting off.",
+		"ejemplo": ["basalto", "cuerda"],
+		"slots": [
+			{ "role": "Peso", "requireAll": true, "requirements": [ { "property": "Pesado", "min": 3 }, { "property": "Rigido", "min": 3 } ], "tags": ["piedra"] },
+			{ "role": "Amarre", "requireAll": false, "requirements": [ { "property": "Ata", "min": 4 } ] },
+			{ "role": "Cabo", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 1 } ] }
 		]
 	}
 ]

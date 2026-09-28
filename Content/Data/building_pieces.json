@@ -685,6 +685,9 @@
       "buildMinutes": 25,
       "integrity": 35,
       "maxCycloneCategory": 1,
+      "fase": "AA",
+      "usoEs": "Llena de agua de lluvia lo que dejes debajo, sin hervirla.",
+      "usoEn": "Fills whatever you leave under it with rainwater that needs no boiling.",
       "mesh": "SM_Base_RainCollector"
     },
     {
@@ -1259,6 +1262,157 @@
       "integrity": 95,
       "maxCycloneCategory": 3,
       "mesh": "SM_Base_Chimney"
+    },
+    {
+      "id": "destilador_solar",
+      "nameEs": "Destilador solar",
+      "nameEn": "Solar still",
+      "tier": "bambu",
+      "category": "agua",
+      "socket": "terreno",
+      "cost": [
+        { "item": "hoja_platano", "count": 4 },
+        { "item": "cascara_coco", "count": 1 },
+        { "item": "canto_rodado", "count": 3 }
+      ],
+      "tools": [ "pala" ],
+      "requiresPieces": [],
+      "buildMinutes": 30,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "fase": "AA",
+      "usoEs": "Un hoyo, hojas encima y un cuenco: saca agua dulce del mar en cinco horas de sol.",
+      "usoEn": "A pit, leaves on top and a bowl: fresh water from the sea in five hours of sun.",
+      "mesh": null
+    },
+    {
+      "id": "nasa",
+      "nameEs": "Nasa",
+      "nameEn": "Fish trap",
+      "tier": "bambu",
+      "category": "pesca",
+      "socket": "terreno",
+      "cost": [
+        { "item": "bambu_fino", "count": 5 },
+        { "item": "cordel", "count": 3 }
+      ],
+      "tools": [ "cuchillo" ],
+      "requiresPieces": [],
+      "buildMinutes": 25,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "fase": "AA",
+      "usoEs": "Se deja en la corriente del arrecife y pesca sola mientras duermes.",
+      "usoEn": "Set it in the reef current and it fishes on its own while you sleep.",
+      "mesh": null
+    },
+    {
+      "id": "trampa_cangrejos",
+      "nameEs": "Trampa de cangrejos",
+      "nameEn": "Crab trap",
+      "tier": "bambu",
+      "category": "pesca",
+      "socket": "terreno",
+      "cost": [
+        { "item": "bambu_fino", "count": 3 },
+        { "item": "liana", "count": 2 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 10,
+      "maxCycloneCategory": 0,
+      "fase": "AA",
+      "usoEs": "Con cebo dentro, amanece con uno o dos cangrejos.",
+      "usoEn": "Baited, it has a crab or two in it by morning.",
+      "mesh": null
+    },
+    {
+      "id": "trampa_caida",
+      "nameEs": "Trampa de foso",
+      "nameEn": "Pit trap",
+      "tier": "madera",
+      "category": "caza",
+      "socket": "terreno",
+      "cost": [
+        { "item": "tronco_pequeno", "count": 2 },
+        { "item": "estaca", "count": 4 },
+        { "item": "hoja_palma", "count": 4 }
+      ],
+      "tools": [ "pala" ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 15,
+      "maxCycloneCategory": 0,
+      "fase": "AA",
+      "usoEs": "Un foso con estacas tapado con hojas: para el cerdo salvaje que no se deja ver.",
+      "usoEn": "A staked pit under leaves, for the wild pig that never shows itself.",
+      "mesh": null
+    },
+    {
+      "id": "hamaca",
+      "nameEs": "Hamaca",
+      "nameEn": "Hammock",
+      "tier": "bambu",
+      "category": "descanso",
+      "socket": "mueble",
+      "cost": [
+        { "item": "tela_fibra", "count": 2 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 30,
+      "maxCycloneCategory": 1,
+      "fase": "AA",
+      "usoEs": "Duermes lejos del suelo húmedo y de los cangrejos; descansas como en una cama.",
+      "usoEn": "You sleep off the damp ground and away from the crabs, as well as in a bed.",
+      "mesh": null
+    },
+    {
+      "id": "banco_tallado",
+      "nameEs": "Banco de tallado",
+      "nameEn": "Carving bench",
+      "tier": "madera",
+      "category": "produccion",
+      "socket": "mueble",
+      "cost": [
+        { "item": "madera_dura", "count": 3 },
+        { "item": "tronco_pequeno", "count": 1 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": [ "hacha" ],
+      "requiresPieces": [],
+      "buildMinutes": 40,
+      "integrity": 60,
+      "maxCycloneCategory": 2,
+      "fase": "AA",
+      "usoEs": "Sujeta la pieza mientras tallas: aquí salen el remo, el cincel y la sierra.",
+      "usoEn": "Holds the work while you carve. Paddles, chisels and saws are made here.",
+      "mesh": null
+    },
+    {
+      "id": "ahumadero",
+      "nameEs": "Ahumadero",
+      "nameEn": "Smokehouse",
+      "tier": "madera",
+      "category": "produccion",
+      "socket": "terreno",
+      "cost": [
+        { "item": "tronco_pequeno", "count": 4 },
+        { "item": "hoja_palma", "count": 8 },
+        { "item": "canto_rodado", "count": 6 }
+      ],
+      "tools": [ "hacha" ],
+      "requiresPieces": [],
+      "buildMinutes": 60,
+      "integrity": 45,
+      "maxCycloneCategory": 2,
+      "fase": "AA",
+      "usoEs": "Ahúma ocho piezas a la vez, con el fuego a cubierto de la lluvia.",
+      "usoEn": "Smokes eight pieces at once, with the fire kept out of the rain.",
+      "mesh": null
     }
   ]
 }

@@ -54,6 +54,34 @@
 	V.MaxUses = 0;
 }
 {
+	FCookVesselDef& V = D.Vessels.AddDefaulted_GetRef();
+	V.Id = FName(TEXT("ahumadero"));
+	V.NameEs = TEXT("Ahumadero");
+	V.PieceId = FName(TEXT("ahumadero"));
+	V.Capacity = 8;
+	V.bWatertight = false;
+	V.MaxUses = 0;
+}
+{
+	FCookVesselDef& V = D.Vessels.AddDefaulted_GetRef();
+	V.Id = FName(TEXT("filtro"));
+	V.NameEs = TEXT("Filtro de arena y carbón");
+	V.ItemIds.Add(FName(TEXT("filtro_agua")));
+	V.PieceId = FName(NAME_None);
+	V.Capacity = 2;
+	V.bWatertight = true;
+	V.MaxUses = 40;
+}
+{
+	FCookVesselDef& V = D.Vessels.AddDefaulted_GetRef();
+	V.Id = FName(TEXT("destilador"));
+	V.NameEs = TEXT("Destilador solar");
+	V.PieceId = FName(TEXT("destilador_solar"));
+	V.Capacity = 2;
+	V.bWatertight = true;
+	V.MaxUses = 0;
+}
+{
 	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
 	R.Id = FName(TEXT("agua_hervida"));
 	R.NameEs = TEXT("Agua hervida");
@@ -290,6 +318,7 @@
 	R.NameEs = TEXT("Pescado ahumado");
 	R.Technique = ECookTechnique::Smoke;
 	R.Vessels.Add(FName(TEXT("secadero")));
+	R.Vessels.Add(FName(TEXT("ahumadero")));
 	R.MinFireLevel = EFireLevel::Fogata;
 	{
 		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
@@ -376,6 +405,61 @@
 	R.ResultCount = 2;
 	R.CookMinutes = 240.0f;
 	R.BurnAfterMinutes = -1.0f;
+}
+{
+	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
+	R.Id = FName(TEXT("agua_filtrada"));
+	R.NameEs = TEXT("Agua filtrada");
+	R.Technique = ECookTechnique::Dry;
+	R.Vessels.Add(FName(TEXT("filtro")));
+	R.MinFireLevel = EFireLevel::Fogata;
+	{
+		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
+		Q.ItemId = FName(TEXT("agua_sin_tratar"));
+		Q.Tag = FName(NAME_None);
+		Q.Count = 1;
+	}
+	R.ResultItemId = FName(TEXT("agua_filtrada"));
+	R.ResultCount = 1;
+	R.CookMinutes = 15.0f;
+	R.BurnAfterMinutes = -1.0f;
+}
+{
+	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
+	R.Id = FName(TEXT("agua_destilada"));
+	R.NameEs = TEXT("Agua destilada al sol");
+	R.Technique = ECookTechnique::Dry;
+	R.Vessels.Add(FName(TEXT("destilador")));
+	R.MinFireLevel = EFireLevel::Fogata;
+	{
+		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
+		Q.ItemId = FName(TEXT("agua_mar"));
+		Q.Tag = FName(NAME_None);
+		Q.Count = 1;
+	}
+	R.ResultItemId = FName(TEXT("agua_destilada"));
+	R.ResultCount = 1;
+	R.CookMinutes = 300.0f;
+	R.BurnAfterMinutes = -1.0f;
+}
+{
+	FCookRecipeDef& R = D.Recipes.AddDefaulted_GetRef();
+	R.Id = FName(TEXT("aceite_coco"));
+	R.NameEs = TEXT("Aceite de coco");
+	R.Technique = ECookTechnique::Boil;
+	R.Vessels.Add(FName(TEXT("olla_coco")));
+	R.Vessels.Add(FName(TEXT("vasija_barro")));
+	R.MinFireLevel = EFireLevel::Fogata;
+	{
+		FCookIngredientReq& Q = R.Ingredients.AddDefaulted_GetRef();
+		Q.ItemId = FName(TEXT("coco_maduro"));
+		Q.Tag = FName(NAME_None);
+		Q.Count = 2;
+	}
+	R.ResultItemId = FName(TEXT("aceite_coco"));
+	R.ResultCount = 1;
+	R.CookMinutes = 90.0f;
+	R.BurnAfterMinutes = 45.0f;
 }
 {
 	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
@@ -991,6 +1075,41 @@
 	F.Effects.Carbs = 0.0f;
 	F.Effects.Vitamins = 0.0f;
 	F.Effects.Warmth = 1.0f;
+	F.Effects.Morale = 1.0f;
+	F.Effects.Toxicity = 0.0f;
+	F.bCookingRemovesToxicity = false;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("agua_filtrada"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("agua"));
+	F.Tags.Add(FName(TEXT("agua")));
+	F.Tags.Add(FName(TEXT("agua_dulce")));
+	F.Effects.Food = 0.0f;
+	F.Effects.Water = 30.0f;
+	F.Effects.Protein = 0.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
+	F.Effects.Morale = 0.0f;
+	F.Effects.Toxicity = 0.1f;
+	F.bCookingRemovesToxicity = true;
+}
+{
+	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
+	F.ItemId = FName(TEXT("agua_destilada"));
+	F.State = EFoodState::Raw;
+	F.Family = FName(TEXT("agua"));
+	F.Tags.Add(FName(TEXT("agua")));
+	F.Tags.Add(FName(TEXT("agua_dulce")));
+	F.Tags.Add(FName(TEXT("bebida")));
+	F.Effects.Food = 0.0f;
+	F.Effects.Water = 30.0f;
+	F.Effects.Protein = 0.0f;
+	F.Effects.Carbs = 0.0f;
+	F.Effects.Vitamins = 0.0f;
+	F.Effects.Warmth = 0.0f;
 	F.Effects.Morale = 1.0f;
 	F.Effects.Toxicity = 0.0f;
 	F.bCookingRemovesToxicity = false;
