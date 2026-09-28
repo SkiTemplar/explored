@@ -50,6 +50,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote7-cuarzo-taro.png",
       "scope": "Pendientes con candidato en dos packs de Quaternius revisados hoy: cristal de cuarzo de las cuevas (minería, prioridad 1) y las tres fases del taro del huerto (prioridad 3)."
+    },
+    {
+      "id": "lote8-suelo",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote8-suelo.png",
+      "scope": "Materiales de suelo de las primeras horas (prioridad 1, porción vertical de Landing): piedras de tallar y de fogón y maderas sueltas de playa."
     }
   ],
   "entries": [
@@ -1347,6 +1353,132 @@
         "default": "vegetacion.hierba_seca"
       },
       "note": "El taro está listo cuando las hojas amarillean: misma malla, algo más baja, en hierba seca."
+    },
+    {
+      "gameId": "piedra_plana",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Round_3.gltf",
+      "mesh": "SM_Pack_PiedraPlana",
+      "replaces": "SM_Item_PiedraPlana",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.canto"
+      },
+      "note": "Canto ancho y plano (0,45 × 0,49 × 0,10 m en el pack): sirve de losa de fogón. Una sola muestra, como canto_rodado."
+    },
+    {
+      "gameId": "basalto",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_4.gltf",
+      "mesh": "SM_Pack_Basalto",
+      "replaces": "SM_Item_Basalto",
+      "size": {
+        "axis": "max",
+        "m": 0.11
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.basalto"
+      },
+      "note": "Bloque de aristas rectas: se lee como trozo de columna basáltica. Una sola muestra."
+    },
+    {
+      "gameId": "arenisca",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_5.gltf",
+      "mesh": "SM_Pack_Arenisca",
+      "replaces": "SM_Item_Arenisca",
+      "size": {
+        "axis": "max",
+        "m": 0.11
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.arenisca"
+      },
+      "note": "Losa en capas de caras planas, como la arenisca. Una sola muestra."
+    },
+    {
+      "gameId": "obsidiana",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Pebble_Square_3.gltf",
+      "mesh": "SM_Pack_Obsidiana",
+      "replaces": "SM_Item_Obsidiana",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.obsidiana"
+      },
+      "note": "Canto anguloso de caras planas y aristas vivas, como un bloque de vidrio volcánico. Una sola muestra."
+    },
+    {
+      "gameId": "pedernal",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Rock_Medium_3.gltf",
+      "mesh": "SM_Pack_Pedernal",
+      "replaces": "SM_Item_Pedernal",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "piedra.basalto_claro"
+      },
+      "note": "Nódulo abultado (Rock_Medium_3), la forma del pedernal en la caliza. Sin muestra propia en la paleta: basalto_claro."
+    },
+    {
+      "gameId": "madera_flotante",
+      "kind": "item",
+      "lote": "lote8-suelo",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/WoodLog.obj",
+      "mesh": "SM_Pack_MaderaFlotante",
+      "replaces": "SM_Item_MaderaFlotante",
+      "size": {
+        "axis": "max",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.deriva"
+      },
+      "note": "Tronco con muñón de rama; en gris plata de deriva. Una sola muestra."
     }
   ],
   "discarded": [
@@ -1517,6 +1649,12 @@
       "pack": "quaternius_ultimate_nature",
       "file": "OBJ/Plant_1.obj",
       "reason": "Hojas lanceoladas arqueadas: otra planta. Se usa Plant_4 a 0,3 m para que el brote y la planta adulta tengan la misma silueta."
+    },
+    {
+      "gameId": "obsidiana",
+      "pack": "quaternius_stylized_nature_megakit",
+      "file": "glTF/Rock_Medium_2.gltf",
+      "reason": "En la hoja de contacto del lote 8 una cara grande queda como mancha clara plana (ya está en el original) que al recolorear a obsidiana rompe la pieza. Se usa Pebble_Square_3."
     }
   ],
   "pending": [
@@ -1615,6 +1753,10 @@
     {
       "gameId": "gaviota_posada",
       "reason": "Fauna de Landing y Los Dientes. Ningún pack de Quaternius con descarga reproducible por itch.io trae aves (revisados Farm Animals, Easy Animated Enemy Pack, Ultimate Platformer, Ultimate Nature y Fish Pack el 2026-09-28). El Ultimate Animated Animal Pack solo está en Google Drive (no reproducible)."
+    },
+    {
+      "gameId": "viga_apoyo",
+      "reason": "Pieza de mina (poste y dintel que apuntalan 1,5 m). Revisados el 2026-09-28 (lote 8): KayKit Resource Bits solo trae troncos cortos de pie (Wood_Log_A/B) y tablones sueltos, y Kenney Survival y Fantasy Town no traen entibado. Candidato: pieza propia en Tools/Blender reutilizando SM_Pack_TroncoPequeno."
     }
   ]
 }
