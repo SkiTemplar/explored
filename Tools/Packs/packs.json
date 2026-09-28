@@ -233,6 +233,52 @@
       ],
       "sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
       "note": "Revisado en lote4-huerto: el follaje (hojas con alfa) no se puede recolorear por cara y se descarta. Candidato abierto: Pebble_Round_* para canto_rodado."
+    },
+    {
+      "id": "kaykit_furniture_bits",
+      "name": "KayKit Furniture Bits (Free)",
+      "author": "Kay Lousberg",
+      "page": "https://kaylousberg.itch.io/furniture-bits",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://kaylousberg.itch.io/furniture-bits",
+        "uploadId": 8655517
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página itch.io: «(CC0 Licensed)» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Free» (precio libre, mínimo 0)."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "e6d75f34c5545486b5a8f45f86209dbd49092f3e77ae23011bdb87edab89e7e4"
+    },
+    {
+      "id": "kaykit_restaurant_bits",
+      "name": "KayKit Restaurant Bits (Free)",
+      "author": "Kay Lousberg",
+      "page": "https://kaylousberg.itch.io/restaurant-bits",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://kaylousberg.itch.io/restaurant-bits",
+        "uploadId": 8784350
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página itch.io: «(CC0 Licensed)» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Free» (precio libre, mínimo 0)."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "75f75f0a1ae569f3f2348fa7a04ccd45d2f010d419045755c70ae43289b68e4b"
     }
   ]
 }

@@ -56,6 +56,7 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
 | `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
 | `lote5-fauna` | Cerdo salvaje de Esmeralda con rig y 6 acciones (Quaternius Farm Animals) | `docs/art/packs/lote5-fauna.png` |
+| `lote6-mineria` | Pico (KayKit RPG Tools), canto rodado y caliza (Quaternius Stylized Nature MegaKit) | `docs/art/packs/lote6-mineria.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
@@ -67,6 +68,13 @@ Huerto (prioridad 3): las etapas son `kind: planta` con id `<planta>.<etapa>` de
 trepadora de espaldera): siguen en `pending`. El follaje de Quaternius Stylized Nature
 MegaKit usa texturas de hojas con alfa y no se puede recolorear por cara; de ese pack solo
 interesan los cantos (`Pebble_Round_*`), pendientes de revisar para `canto_rodado`.
+
+Minería (lote 6): los cantos y rocas de Quaternius traen musgo en la cara de abajo; se
+recolorean enteros a una sola muestra (`piedra.canto`, `piedra.caliza`). Las piedras de
+Kenney Nature y Survival (16-44 triángulos) quedan toscas al lado de KayKit. KayKit
+Furniture Bits y Restaurant Bits se añadieron al manifiesto y se revisaron: no traen cesta,
+y sus tarros no sirven de vasija. Siguen sin candidato `cristal_cuarzo`, `canto_aguzado`,
+`basalto_tallado` y `tierra_suelta`.
 
 ## Fauna con esqueleto
 
