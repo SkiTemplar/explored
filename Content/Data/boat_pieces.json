@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "units": {
+    "type": "nombre de EBoatPieceType en Source/Explored/Boats/BoatPiecesModel.h",
+    "tier": "tier de building_pieces.json (biblia 02 §8.1: madera, bambú o piedra según el plano)",
+    "station": "pieza de building_pieces.json donde se empieza un casco; reparar se puede en cualquier sitio (biblia 02 §8.4)",
+    "cost[].count": "unidades del objeto de items.json que se consumen al colocar la pieza o al reponerla al reparar",
+    "tools": "ids de items.json que el jugador debe llevar (no se consumen); deben ser fabricables",
+    "buildMinutes": "minutos de juego de trabajo por pieza con eficiencia 1.0",
+    "massKg": "masa a tamaño por defecto; escala con la dimensión principal (FBoatPiecesModel::ScaleOf). Igual que FBoatPieceSpec::MassKg",
+    "buoyancyLiters": "VolumenFlotacionLitros (biblia 02 §8.2) a tamaño por defecto: solo tablón y balancín",
+    "cargoKg": "espacio de carga a tamaño por defecto: solo la cubierta",
+    "sailAreaM2": "superficie vélica a tamaño por defecto: solo la vela",
+    "integrity": "integridad 1-100 de las uniones de la pieza (biblia 02 §8.3); la unión cuaderna–tablón toma la menor de las dos"
+  },
+  "pieces": [
+    {
+      "id": "quilla",
+      "type": "Keel",
+      "nameEs": "Quilla",
+      "nameEn": "Keel",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_dura", "count": 2 },
+        { "item": "resina", "count": 1 }
+      ],
+      "tools": ["hacha"],
+      "buildMinutes": 30,
+      "massKg": 10,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 100
+    },
+    {
+      "id": "cuaderna",
+      "type": "Frame",
+      "nameEs": "Cuaderna",
+      "nameEn": "Hull frame",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_dura", "count": 1 },
+        { "item": "cuerda", "count": 1 }
+      ],
+      "tools": ["hacha", "cuchillo"],
+      "buildMinutes": 20,
+      "massKg": 5,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 80
+    },
+    {
+      "id": "tablon_casco",
+      "type": "HullPlank",
+      "nameEs": "Tablón de casco",
+      "nameEn": "Hull plank",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_blanda", "count": 1 },
+        { "item": "resina", "count": 1 }
+      ],
+      "tools": ["hacha", "cuchillo"],
+      "buildMinutes": 20,
+      "massKg": 5,
+      "buoyancyLiters": 70,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 70
+    },
+    {
+      "id": "cubierta",
+      "type": "Deck",
+      "nameEs": "Cubierta",
+      "nameEn": "Deck",
+      "tier": "bambu",
+      "station": "astillero",
+      "cost": [
+        { "item": "bambu_grueso", "count": 2 },
+        { "item": "cordel", "count": 2 }
+      ],
+      "tools": ["cuchillo"],
+      "buildMinutes": 15,
+      "massKg": 8,
+      "buoyancyLiters": 0,
+      "cargoKg": 60,
+      "sailAreaM2": 0,
+      "integrity": 70
+    },
+    {
+      "id": "mastil",
+      "type": "Mast",
+      "nameEs": "Mástil",
+      "nameEn": "Mast",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "palo_recto", "count": 2 },
+        { "item": "cuerda", "count": 1 }
+      ],
+      "tools": ["hacha"],
+      "buildMinutes": 25,
+      "massKg": 12,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 90
+    },
+    {
+      "id": "vela",
+      "type": "Sail",
+      "nameEs": "Vela",
+      "nameEn": "Sail",
+      "tier": "palma",
+      "station": "astillero",
+      "cost": [
+        { "item": "hoja_palma", "count": 12 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": ["cuchillo"],
+      "buildMinutes": 40,
+      "massKg": 6,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 4.5,
+      "integrity": 50
+    },
+    {
+      "id": "balancin",
+      "type": "Outrigger",
+      "nameEs": "Balancín",
+      "nameEn": "Outrigger float",
+      "tier": "bambu",
+      "station": "astillero",
+      "cost": [
+        { "item": "bambu_grueso", "count": 4 },
+        { "item": "resina", "count": 1 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": ["cuchillo"],
+      "buildMinutes": 30,
+      "massKg": 18,
+      "buoyancyLiters": 90,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 70
+    },
+    {
+      "id": "timon",
+      "type": "Rudder",
+      "nameEs": "Timón",
+      "nameEn": "Rudder",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_dura", "count": 1 },
+        { "item": "cordel", "count": 1 }
+      ],
+      "tools": ["hacha", "cuchillo"],
+      "buildMinutes": 20,
+      "massKg": 4,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 80
+    },
+    {
+      "id": "banco_remo",
+      "type": "RowingBench",
+      "nameEs": "Banco de remo",
+      "nameEn": "Rowing bench",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "madera_blanda", "count": 1 },
+        { "item": "cordel", "count": 1 }
+      ],
+      "tools": ["hacha"],
+      "buildMinutes": 10,
+      "massKg": 3,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 80
+    },
+    {
+      "id": "amarre",
+      "type": "Mooring",
+      "nameEs": "Amarre",
+      "nameEn": "Mooring cleat",
+      "tier": "madera",
+      "station": "astillero",
+      "cost": [
+        { "item": "palo_recto", "count": 1 },
+        { "item": "cuerda", "count": 2 }
+      ],
+      "tools": ["cuchillo"],
+      "buildMinutes": 5,
+      "massKg": 1,
+      "buoyancyLiters": 0,
+      "cargoKg": 0,
+      "sailAreaM2": 0,
+      "integrity": 100
+    }
+  ]
+}

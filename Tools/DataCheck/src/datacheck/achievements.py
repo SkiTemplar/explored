@@ -1,7 +1,7 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: 30 logros, ids ASCII, textos en ES y EN, los ejemplos
+tipo compatible) y añade las de diseño: de 30 a 54 logros, ids ASCII, textos en ES y EN, los ejemplos
 del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
 
@@ -11,7 +11,9 @@ import math
 import re
 from pathlib import Path
 
-ACHIEVEMENT_COUNT = 30
+# GDD §16 fija los 30 primeros; la biblia 07 §2 los lleva a 54 (se añaden por tandas).
+ACHIEVEMENT_MIN = 30
+ACHIEVEMENT_MAX = 54
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 STAT_KINDS = {"counter", "max", "set", "flag"}
 STAT_SCOPES = {"profile", "run"}
@@ -176,8 +178,9 @@ def check_achievements(ds, r) -> None:
 
     # Logros.
     achievements = doc.get("achievements", [])
-    if len(achievements) != ACHIEVEMENT_COUNT:
-        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    if not ACHIEVEMENT_MIN <= len(achievements) <= ACHIEVEMENT_MAX:
+        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 pide al menos {ACHIEVEMENT_MIN} "
+                f"y la biblia 07 §2 como mucho {ACHIEVEMENT_MAX}")
     seen: set[str] = set()
     used: set[str] = set()
     for ach in achievements:

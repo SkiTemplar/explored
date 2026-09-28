@@ -1,10 +1,11 @@
 {
   "version": 1,
   "units": {
-    "type": "nombre de EBoatType en Source/Explored/Boats/BoatTypes.h; la física (eslora, calado, velocidades, vela) vive solo en FBoatModel",
+    "type": "nombre de EBoatType en Source/Explored/Boats/BoatTypes.h; la física sale de las piezas del plano (FBoatPiecesModel) y el tacto de mando de FBoatModel",
     "order": "posición en la progresión del GDD §8.10 (balsa → canoa → balancín → «Limón»)",
     "station": "pieza de building_pieces.json donde se construye",
-    "cost[].count": "unidades del objeto de items.json que se consumen",
+    "pieces": "plano canónico (biblia 02 §8.4): piezas de boat_pieces.json y cuántas; las mismas que FBoatPiecesModel::Blueprint (Tools/DataCheck lo comprueba)",
+    "cost[].count": "unidades del objeto de items.json que se consumen al seguir el plano entero (no es la suma de las piezas)",
     "tools": "ids de items.json que el jugador debe llevar (no se consumen); deben ser fabricables",
     "requiresBoat": "embarcación que debe existir antes; si consumesRequiredBoat es true, se transforma en esta",
     "requiresShipParts": "piezas del Albatros recuperadas (EShipPart de Narrative/ExploredProgress.h, GDD §4.3)",
@@ -19,6 +20,14 @@
       "nameEs": "Balsa",
       "nameEn": "Raft",
       "station": "astillero",
+      "pieces": [
+        { "piece": "quilla", "count": 1 },
+        { "piece": "tablon_casco", "count": 6 },
+        { "piece": "cuaderna", "count": 2 },
+        { "piece": "cubierta", "count": 1 },
+        { "piece": "banco_remo", "count": 1 },
+        { "piece": "amarre", "count": 1 }
+      ],
       "cost": [
         { "item": "tronco_pequeno", "count": 8 },
         { "item": "liana", "count": 6 }
@@ -37,6 +46,14 @@
       "nameEs": "Canoa",
       "nameEn": "Canoe",
       "station": "astillero",
+      "pieces": [
+        { "piece": "quilla", "count": 1 },
+        { "piece": "cuaderna", "count": 3 },
+        { "piece": "tablon_casco", "count": 4 },
+        { "piece": "cubierta", "count": 1 },
+        { "piece": "banco_remo", "count": 2 },
+        { "piece": "amarre", "count": 1 }
+      ],
       "cost": [
         { "item": "madera_dura", "count": 6 },
         { "item": "tronco_pequeno", "count": 2 },
@@ -57,6 +74,18 @@
       "nameEs": "Canoa con balancín y vela",
       "nameEn": "Outrigger sailing canoe",
       "station": "astillero",
+      "pieces": [
+        { "piece": "quilla", "count": 1 },
+        { "piece": "cuaderna", "count": 5 },
+        { "piece": "tablon_casco", "count": 4 },
+        { "piece": "cubierta", "count": 2 },
+        { "piece": "banco_remo", "count": 2 },
+        { "piece": "amarre", "count": 1 },
+        { "piece": "balancin", "count": 1 },
+        { "piece": "mastil", "count": 1 },
+        { "piece": "vela", "count": 1 },
+        { "piece": "timon", "count": 1 }
+      ],
       "cost": [
         { "item": "madera_blanda", "count": 2 },
         { "item": "bambu_grueso", "count": 4 },
@@ -79,6 +108,17 @@
       "nameEs": "Barco «Limón»",
       "nameEn": "The Lemon",
       "station": "astillero",
+      "pieces": [
+        { "piece": "quilla", "count": 2 },
+        { "piece": "cuaderna", "count": 5 },
+        { "piece": "tablon_casco", "count": 10 },
+        { "piece": "cubierta", "count": 2 },
+        { "piece": "mastil", "count": 1 },
+        { "piece": "vela", "count": 1 },
+        { "piece": "timon", "count": 2 },
+        { "piece": "banco_remo", "count": 2 },
+        { "piece": "amarre", "count": 1 }
+      ],
       "cost": [
         { "item": "madera_dura", "count": 16 },
         { "item": "tronco_pequeno", "count": 6 },
