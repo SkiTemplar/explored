@@ -49,3 +49,4 @@ Tests/TramwayModelSpec.cpp
 Tests/ReputationModelSpec.cpp
 Tests/BarterModelSpec.cpp
 Tests/PirateThreatModelSpec.cpp
+Tests/RaiderCampsModelSpec.cpp

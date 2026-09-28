@@ -65,3 +65,4 @@ Tramway/TramwayModel.cpp
 Villages/ReputationModel.cpp
 Villages/BarterModel.cpp
 Raiders/PirateThreatModel.cpp
+Raiders/RaiderCampsModel.cpp
