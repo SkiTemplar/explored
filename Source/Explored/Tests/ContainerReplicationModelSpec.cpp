@@ -80,7 +80,7 @@ void FContainerReplicationModelSpec::Define()
 			Model.CollectOutgoing(Out);
 			TestEqual(TEXT("Un mensaje"), Out.Num(), 1);
 			TestTrue(TEXT("Contenido entero (el cambio previo va dentro)"), Out[0].Kind == EContainerMessageKind::Snapshot);
-			TestEqual(TEXT("5 × 13 B + 4 B"), FContainerReplicationModel::MessageBytes(Out[0], C), 69);
+			TestEqual(TEXT("5 × 12 B + 4 B"), FContainerReplicationModel::MessageBytes(Out[0], C), 64);
 
 			Model.MarkSlotChanged(ChestId, 4);
 			Model.MarkSlotChanged(ChestId, 1);
@@ -89,7 +89,7 @@ void FContainerReplicationModelSpec::Define()
 			TestEqual(TEXT("Un mensaje"), Out.Num(), 1);
 			TestTrue(TEXT("Solo huecos"), Out[0].Kind == EContainerMessageKind::Update);
 			TestTrue(TEXT("Huecos 1 y 4, ordenados y sin repetir"), Out[0].Slots == TArray<int32>({1, 4}));
-			TestEqual(TEXT("2 × 13 B + 4 B"), FContainerReplicationModel::MessageBytes(Out[0], C), 30);
+			TestEqual(TEXT("2 × 12 B + 4 B"), FContainerReplicationModel::MessageBytes(Out[0], C), 28);
 
 			Model.CollectOutgoing(Out);
 			TestEqual(TEXT("Sin cambios, sin mensajes"), Out.Num(), 0);

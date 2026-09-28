@@ -399,9 +399,9 @@ posterior.
 ### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
 
 - [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
-      13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
+      12 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
       Coalescencia a 10 Hz. *(biblia 08 §2.4)*
-      *(presupuesto ya modelado: `FNetBudgetTableModel` cuenta las entradas de 13 B de
+      *(presupuesto ya modelado: `FNetBudgetTableModel` cuenta las entradas de 12 B de
       `FContainerReplicationModel::EntryBytes` a 10 Hz; falta el `FFastArraySerializer`.)*
 - [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
       (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`

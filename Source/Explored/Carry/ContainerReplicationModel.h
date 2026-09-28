@@ -35,13 +35,13 @@ struct EXPLORED_API FContainerMessage
  * colas.
  *
  * Modelo puro: el actor solo lo alimenta con los RPC y serializa los huecos que diga
- * CollectOutgoing con las entradas de 13 B de §2.4.
+ * CollectOutgoing con las entradas de 12 B de §2.4 (1+1+2+4+1+1+1+1).
  */
 class EXPLORED_API FContainerReplicationModel
 {
 public:
-	/** Entrada de inventario en el cable (08 §2.4). */
-	static constexpr int32 EntryBytes = 13;
+	/** Entrada de inventario en el cable (08 §2.4): 1+1+2+4+1+1+1+1 = 12 B. */
+	static constexpr int32 EntryBytes = 12;
 	/** Cabecera de un mensaje: id de contenedor (`uint16` de la tabla de ids) + tipo + cuenta. */
 	static constexpr int32 MessageHeaderBytes = 4;
 	/** Distancia máxima para abrir y para seguir con él abierto (08 §1.2: 250 cm + 50 de latencia). */

@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Debug/NetBudgetModel.h"
+
 /** Un canal del presupuesto de red: mensajes de un tamaño a una frecuencia, o una reserva fija. */
 struct EXPLORED_API FNetBudgetChannel
 {
@@ -19,7 +21,7 @@ struct EXPLORED_API FNetBudgetChannel
 /**
  * Tabla de presupuesto de ancho de banda servidor → cliente (biblia 08 §3), escrita con
  * los tamaños reales de los paquetes de los modelos de red (reloj de 11 B, anclas de 10 B,
- * vegetación de 14 B por cambio, cofres de 13 B por hueco) para que un cambio de formato que rompa
+ * vegetación de 14 B por cambio, cofres de 12 B por hueco) para que un cambio de formato que rompa
  * el objetivo lo cace un test, no la beta. Los canales que aún no tienen modelo propio
  * (personajes, terreno, barco, cartografía) llevan la cifra de la biblia.
  *
@@ -29,9 +31,12 @@ struct EXPLORED_API FNetBudgetChannel
 class EXPLORED_API FNetBudgetTableModel
 {
 public:
-	/** Objetivo duro por cliente en reposo y en pico (criterio de salida de H5). */
-	static constexpr double RestTargetKbps = 64.0;
-	static constexpr double PeakTargetKbps = 256.0;
+	/**
+	 * Objetivo duro por cliente en reposo y en pico (criterio de salida de H5). Mismos
+	 * techos que mide `FNetBudgetModel` (H0): una sola fuente de verdad para el número.
+	 */
+	static constexpr double RestTargetKbps = FNetBudgetModel::RestKbpsLimit;
+	static constexpr double PeakTargetKbps = FNetBudgetModel::PeakKbpsLimit;
 
 	// Canales sin modelo de paquete propio todavía (cifras de biblia 08).
 	static constexpr double CharacterBytes = 24.0;
@@ -54,8 +59,11 @@ public:
 	/** `FExploredBoatNetState` de 08 §2.5 (su modelo va en la rama de barcos por piezas). */
 	static constexpr double BoatStateBytes = 19.0;
 	static constexpr double BoatStateHz = 20.0;
-	/** Ráfaga completa de terreno al unirse o entrar en chunks nuevos (08 §3), durante 5 s. */
-	static constexpr double TerrainBurstKbps = 128.0;
+	/**
+	 * Ráfaga completa de terreno al unirse o entrar en chunks nuevos (08 §3), durante 5 s.
+	 * Mismo número que `FNetBudgetModel::TerrainBurstKbps` (medida real, H0).
+	 */
+	static constexpr double TerrainBurstKbps = FNetBudgetModel::TerrainBurstKbps;
 
 	/** Reposo (08 §3): Players jugadores juntos en la base, nadie cavando ni talando. */
 	static TArray<FNetBudgetChannel> RestTable(int32 Players);
@@ -77,6 +85,10 @@ public:
 	 */
 	static bool FitsTarget(const TArray<FNetBudgetChannel>& Channels, double TargetKbps, FString& OutReason);
 
-	/** «canal;kbps» por línea con la fila de total, en el orden de la tabla (mismo formato que el CSV de NetBudget). */
+	/**
+	 * «canal;kbps» por línea con la fila de total, en el orden de la tabla. Formato propio
+	 * de esta tabla de estimación de diseño, distinto del CSV largo (`cliente,segundo,canal,kbps`)
+	 * de `FNetBudgetModel::ToCsv`, que es la medida real (H0).
+	 */
 	static FString ToCsv(const TArray<FNetBudgetChannel>& Channels);
 };
