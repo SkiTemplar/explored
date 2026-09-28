@@ -6,7 +6,8 @@
     "pivot": "base: centro de la huella, z = 0 abajo; agarre: socket hand_r a gripFromEndM del extremo end (bottom o top) del mango, mango en +Z, filo o cara de golpe en +X (Tools/Blender/props/_items.py)",
     "recolor": "cada cara toma la muestra de la regla cuyo color from (sRGB del pack) esté más cerca en Oklab; si ninguna está a menos de tolerance (0,12 por defecto), default. La isla la pone el atlas T_Palette_<Isla> en Unreal: la UV es la misma en las cuatro islas.",
     "replaces": "malla propia de Tools/Blender a la que sustituye (meshPath de items.json)",
-    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas."
+    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas.",
+    "icons": "solo la sección icons: silueta blanca de 128 px con margen del 10 % (Tools/Packs/icons.py); slots dice dónde se usa (achievementIcon: pista icon de achievements.json; widget y role: SExplored<Nombre> de Source/Explored/UI/Widgets); tint da, por estado, el color de ExploredUIStyle.h con que Slate la tiñe. La UI no cambia por isla, así que no usa paleta.json."
   },
   "lotes": [
     {
@@ -56,6 +57,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote8-suelo.png",
       "scope": "Materiales de suelo de las primeras horas (prioridad 1, porción vertical de Landing): piedras de tallar y de fogón y maderas sueltas de playa."
+    },
+    {
+      "id": "lote9-iconos",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote9-iconos.png",
+      "scope": "Iconos de UI de Kenney (prioridad 5): logros y estados de la pantalla de logros y del indicador de guardado. Familia única de siluetas blancas redondeadas (Board Game Icons, y Game Icons solo para la estrella)."
     }
   ],
   "entries": [
@@ -1757,6 +1764,260 @@
     {
       "gameId": "viga_apoyo",
       "reason": "Pieza de mina (poste y dintel que apuntalan 1,5 m). Revisados el 2026-09-28 (lote 8): KayKit Resource Bits solo trae troncos cortos de pie (Wood_Log_A/B) y tablones sueltos, y Kenney Survival y Fantasy Town no traen entibado. Candidato: pieza propia en Tools/Blender reutilizando SM_Pack_TroncoPequeno."
+    }
+  ],
+  "icons": [
+    {
+      "texture": "T_Pack_Icon_Fuego",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/campfire.png",
+      "slots": [
+        {
+          "achievementIcon": "fuego"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Hoguera con troncos cruzados: se lee como fuego de campamento, no como llama suelta (fire.png, descartado)."
+    },
+    {
+      "texture": "T_Pack_Icon_Refugio",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_house.png",
+      "slots": [
+        {
+          "achievementIcon": "refugio"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Casa genérica de tejado a dos aguas. La chimenea es pequeña y a 32-48 px no se distingue; el refugio de palma también es a dos aguas."
+    },
+    {
+      "texture": "T_Pack_Icon_Estrella",
+      "lote": "lote9-iconos",
+      "pack": "kenney_game_icons",
+      "file": "PNG/White/2x/star.png",
+      "slots": [
+        {
+          "achievementIcon": "estrella"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Board Game Icons no trae estrella; la de Game Icons tiene las puntas redondeadas y encaja con la familia. Sirve a deseos_a_punados y sin_mapa."
+    },
+    {
+      "texture": "T_Pack_Icon_Logro",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/award.png",
+      "slots": [
+        {
+          "widget": "SExploredAchievements",
+          "role": "conseguido"
+        },
+        {
+          "widget": "SExploredAchievementToast",
+          "role": "logro"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent"
+      },
+      "note": "Laurel: marca de logro conseguido en la lista y en el aviso. Se prefiere a trophy.png (copa de competición)."
+    },
+    {
+      "texture": "T_Pack_Icon_Oculto",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/lock_closed.png",
+      "slots": [
+        {
+          "widget": "SExploredAchievements",
+          "role": "oculto"
+        }
+      ],
+      "tint": {
+        "oculto": "ColorDisabled"
+      },
+      "note": "Candado para los logros enmascarados (Row.bMasked) que aún no se pueden leer."
+    },
+    {
+      "texture": "T_Pack_Icon_Guardando",
+      "lote": "lote9-iconos",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/hourglass.png",
+      "slots": [
+        {
+          "widget": "SExploredSavingIndicator",
+          "role": "guardando"
+        }
+      ],
+      "tint": {
+        "guardando": "ColorInkDim"
+      },
+      "note": "Reloj de arena junto al texto «Guardando…». Se prefiere al disquete de Game Icons (save.png), que no pega en una isla."
+    }
+  ],
+  "iconsDiscarded": [
+    {
+      "achievementIcon": "fuego",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/fire.png",
+      "reason": "Llama suelta: se confunde con peligro o daño; la hoguera dice «primer fuego»."
+    },
+    {
+      "achievementIcon": "huerto",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_wheat.png",
+      "reason": "Espigas de trigo: cereal de clima templado, no hay trigo en el archipiélago."
+    },
+    {
+      "achievementIcon": "huerto",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_farm.png",
+      "reason": "Granero europeo con puerta de establo."
+    },
+    {
+      "achievementIcon": "limon",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_apple.png",
+      "reason": "Es una manzana con hoja; teñida de amarillo sigue sin leerse como limón. Igual para coco."
+    },
+    {
+      "achievementIcon": "piedra",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_wall.png",
+      "reason": "Muralla almenada de castillo: medieval, rompe el tono de isla."
+    },
+    {
+      "achievementIcon": "brujula",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/direction_n.png",
+      "reason": "Aguja con «N»: brújula magnética occidental; el logro wayfinder premia la navegación ancestral sin instrumentos."
+    },
+    {
+      "achievementIcon": "mapa",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/book_open.png",
+      "reason": "Libro abierto, no mapa: el mapa del juego es una hoja dibujada a mano."
+    },
+    {
+      "achievementIcon": "estaciones",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/hourglass.png",
+      "reason": "Se lee como espera, no como año o estaciones; se reserva para el indicador de guardado."
+    }
+  ],
+  "iconsPending": [
+    {
+      "achievementIcon": "ola",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "pez",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "anzuelo",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "burbujas",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "vela",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "barco",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ancla",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "tortuga",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ballena",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "isla",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "archipielago",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "volcan",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "ciclon",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "sol",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "coco",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "limon",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "huerto",
+      "reason": "Kenney no tiene iconos de mar ni de naturaleza tropical con esta silueta (revisados Game Icons, Game Icons Expansion, Board Game Icons, Minimap Pack y UI Pack Adventure el 2026-09-28). Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
+    },
+    {
+      "achievementIcon": "mapa",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "brujula",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "estaciones",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "piedra",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "olla",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "vitrina",
+      "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
+    },
+    {
+      "achievementIcon": "avion",
+      "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
+    },
+    {
+      "achievementIcon": "flauta",
+      "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
     }
   ]
 }

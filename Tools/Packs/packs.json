@@ -328,6 +328,48 @@
       ],
       "sha256": "2d0cac0f3cb58f6845f779a4c6b4a92be6fa27d118ee0b976ead55c6834a53d4",
       "note": "Revisado en lote7-cuarzo-taro: solo Gem_Blue (prisma hexagonal con puntas) sirve, para cristal_cuarzo. El cangrejo es un enemigo de plataformas con cara y dientes."
+    },
+    {
+      "id": "kenney_board_game_icons",
+      "name": "Board Game Icons",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/board-game-icons",
+      "version": "1.1",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/board-game-icons/19cae04050-1721645690/kenney_board-game-icons.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «Board Game Icons (1.1)» y «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "png",
+        "svg"
+      ],
+      "sha256": "05f4358381d8b16b303b2f056393b76ce3f6a58228599e88caa2eab11d4c2946"
+    },
+    {
+      "id": "kenney_game_icons",
+      "name": "Game Icons",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/game-icons",
+      "version": "sin número (zip del 2023-03-01)",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/game-icons/1ebf9c14af-1677661579/kenney_game-icons.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página: «License: Creative Commons CC0». license.txt del zip: «Game icon pack by Kenney Vleugels» y «License (CC0) http://creativecommons.org/publicdomain/zero/1.0/»."
+      },
+      "formats": [
+        "png",
+        "svg"
+      ],
+      "sha256": "7a86d8d58e0b851e22004b3c70bf90b003632bbf9ac633424daa3bb17d9e7e4e"
     }
   ]
 }
