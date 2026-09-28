@@ -2,6 +2,8 @@
 
 #include "Carry/InventoryModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace InventoryTest
@@ -425,6 +427,23 @@ void FInventorySpec::Define()
 			Model.FillLiquid(Stone.InstanceId, 1.0f, Fail);
 			TestTrue(TEXT("Una piedra no guarda agua"), Fail == EInventoryFail::NotALiquidContainer);
 		});
+
+		It("no llena ni vacía con litros no finitos", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Canteen = Cantimplora(Model);
+			PickAndStore(Model, Canteen, EInventorySlot::Belt, Fail);
+			TestEqual(TEXT("NaN litros no llenan"), Model.FillLiquid(Canteen.InstanceId, NaN, Fail), 0.0f);
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::NoRoom);
+			TestEqual(TEXT("Sigue vacía"), Model.GetCarriedWaterLiters(), 0.0f);
+			TestEqual(TEXT("Infinitos litros tampoco"), Model.FillLiquid(Canteen.InstanceId, Inf, Fail), 0.0f);
+			TestEqual(TEXT("Se llena medio litro"), Model.FillLiquid(Canteen.InstanceId, 0.5f, Fail), 0.5f);
+			TestEqual(TEXT("NaN litros no se beben"), Model.DrinkFrom(Canteen.InstanceId, NaN), 0.0f);
+			TestEqual(TEXT("Queda medio"), Model.GetCarriedWaterLiters(), 0.5f);
+		});
 	});
 
 	Describe("Las etiquetas", [this]()
@@ -620,6 +639,124 @@ void FInventorySpec::Define()
 
 			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
 		});
+
+		It("rechaza pesos, volúmenes y líquidos no finitos o negativos", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail));
+			const FInventoryItem Stone = Piedra(Model);
+			PickAndStore(Model, Stone, EInventorySlot::Pockets, Fail);
+			const FInventoryItem Canteen = Cantimplora(Model);
+			Model.PickUp(Canteen, Fail);
+			const FInventoryState Good = Model.GetState();
+			TestTrue(TEXT("El estado bueno se carga"), FInventoryModel::ValidateState(Good, Fail));
+
+			// Una roca de -1000 kg en el bolsillo dejaría coger otra de 500 kg.
+			FInventoryState Negative = Good;
+			Negative.Pockets.Entries[0].Item.WeightKg = -1000.0f;
+			TestFalse(TEXT("Peso negativo"), Model.LoadState(Negative, Fail));
+
+			FInventoryState NaNWeight = Good;
+			NaNWeight.HandLeft.WeightKg = NaN;
+			TestFalse(TEXT("Peso NaN"), Model.LoadState(NaNWeight, Fail));
+
+			FInventoryState InfVolume = Good;
+			InfVolume.Pockets.Entries[0].Item.VolumeLiters = Inf;
+			TestFalse(TEXT("Volumen infinito"), Model.LoadState(InfVolume, Fail));
+
+			FInventoryState NaNLiquid = Good;
+			NaNLiquid.HandLeft.LiquidLiters = NaN;
+			TestFalse(TEXT("Líquido NaN"), Model.LoadState(NaNLiquid, Fail));
+
+			FInventoryState Overfull = Good;
+			Overfull.HandLeft.LiquidLiters = Overfull.HandLeft.LiquidCapacityLiters + 5.0f;
+			TestFalse(TEXT("Más líquido del que cabe"), Model.LoadState(Overfull, Fail));
+
+			FInventoryState NegativeCapacity = Good;
+			NegativeCapacity.HandLeft.LiquidCapacityLiters = -1.0f;
+			NegativeCapacity.HandLeft.LiquidLiters = -2.0f;
+			TestFalse(TEXT("Capacidad de líquido negativa"), Model.LoadState(NegativeCapacity, Fail));
+
+			FInventoryState BadBackpack = Good;
+			BadBackpack.Backpack.Spec.MaxWeightKg = NaN;
+			TestFalse(TEXT("Mochila a medida con capacidad NaN"), Model.LoadState(BadBackpack, Fail));
+			BadBackpack.Backpack.Spec.MaxWeightKg = 10.0f;
+			BadBackpack.Backpack.Spec.MaxVolumeLiters = -Inf;
+			TestFalse(TEXT("Mochila a medida con volumen -inf"), Model.LoadState(BadBackpack, Fail));
+
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+			TestTrue(TEXT("El peso sigue siendo finito"), FMath::IsFinite(Model.GetBodyWeightKg()));
+		});
+
+		It("no deja que los ids de instancia desborden", [this]()
+		{
+			const int64 Huge = std::numeric_limits<int64>::max();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			PickAndStore(Model, Piedra(Model), EInventorySlot::Pockets, Fail);
+			const FInventoryState Good = Model.GetState();
+
+			// "nextInstanceId": INT64_MAX pasaba la validación y AllocateInstanceId hacía Id + 1.
+			FInventoryState HugeCounter = Good;
+			HugeCounter.NextInstanceId = Huge;
+			TestFalse(TEXT("Contador en el máximo de int64"), Model.LoadState(HugeCounter, Fail));
+			FInventoryState ZeroCounter;
+			ZeroCounter.NextInstanceId = 0;
+			TestFalse(TEXT("Contador a 0"), Model.LoadState(ZeroCounter, Fail));
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+
+			FInventoryItem HugeStone = Piedra(Model);
+			HugeStone.InstanceId = Huge;
+			TestFalse(TEXT("No se coge un objeto con id enorme"), Model.PlaceInHand(HugeStone, EInventorySlot::HandLeft, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::InvalidItem);
+
+			TestTrue(TEXT("El contador sigue en su sitio"), Model.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			// Cada vía por separado, en un modelo limpio: la mano ocupada no debe tapar el caso.
+			FInventoryModel FromChest;
+			FInventoryContainer Chest;
+			Chest.Spec = FInventoryContainerSpec::Chest();
+			FInventoryEntry Entry;
+			Entry.Item = HugeStone;
+			Chest.Entries.Add(Entry);
+			TestFalse(TEXT("Ni de un arcón"), FromChest.TakeFromWorld(Chest, Huge, EInventorySlot::HandLeft, Fail));
+			TestTrue(TEXT("Contador del arcón en su sitio"), FromChest.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			FInventoryModel WithLoad;
+			FInventoryContainer Load;
+			Load.Entries.Add(Entry);
+			TestFalse(TEXT("Ni en la carga de unas angarillas"), WithLoad.AttachSledge(Angarillas(WithLoad), Load, Fail));
+			TestTrue(TEXT("Contador de la carga en su sitio"), WithLoad.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			FInventoryModel WithSledge;
+			FInventoryItem HugeSledge = Angarillas(WithSledge);
+			HugeSledge.InstanceId = Huge;
+			TestFalse(TEXT("Ni unas angarillas con id enorme"), WithSledge.AttachSledge(HugeSledge, FInventoryContainer(), Fail));
+			TestTrue(TEXT("Contador de las angarillas en su sitio"), WithSledge.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+		});
+
+		It("rechaza una comodidad de mochila negativa o no finita", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail));
+			const FInventoryState Good = Model.GetState();
+
+			// -15 kg deja la capacidad cómoda en 0: la proporción de carga sería 0/0.
+			FInventoryState Negative = Good;
+			Negative.BackpackComfortBonusKg = -FInventoryModel::BaseComfortableKg;
+			TestFalse(TEXT("Comodidad negativa"), Model.LoadState(Negative, Fail));
+			FInventoryState NaNBonus = Good;
+			NaNBonus.BackpackComfortBonusKg = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Comodidad NaN"), Model.LoadState(NaNBonus, Fail));
+
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+			TestTrue(TEXT("Proporción de carga finita"), FMath::IsFinite(Model.GetCarriedWeightRatio()));
+			TestTrue(TEXT("Proporción al nadar finita"), FMath::IsFinite(Model.GetSwimLoadRatio()));
+		});
 	});
 
 	Describe("Gastar materiales", [this]()
@@ -666,6 +803,26 @@ void FInventorySpec::Define()
 			FInventoryItem Other = Fewer;
 			Other.DefinitionId = FName(TEXT("coral"));
 			TestFalse(TEXT("No cambia de objeto"), Model.ShrinkItem(Other, Fail));
+		});
+
+		It("no mengua a cantidades no finitas o negativas", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Stones = Piedra(Model);
+			TestTrue(TEXT("Al bolsillo"), PickAndStore(Model, Stones, EInventorySlot::Pockets, Fail));
+
+			FInventoryItem NaNWeight = Stones;
+			NaNWeight.WeightKg = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Peso NaN"), Model.ShrinkItem(NaNWeight, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::InvalidItem);
+			FInventoryItem NaNVolume = Stones;
+			NaNVolume.VolumeLiters = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Volumen NaN"), Model.ShrinkItem(NaNVolume, Fail));
+			FInventoryItem Negative = Stones;
+			Negative.WeightKg = -1000.0f;
+			TestFalse(TEXT("Peso negativo"), Model.ShrinkItem(Negative, Fail));
+			TestEqual(TEXT("Pesa lo mismo"), Model.GetBodyWeightKg(), 1.0f);
 		});
 	});
 }

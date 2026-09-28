@@ -73,7 +73,11 @@ piedra ya está desde el minuto 13). Cabe en la segunda hora.
    1×2×5 m en basalto son 60 basaltos = 60 kg: 2–3 viajes con 25 kg a hombros. Da la
    presión de acarreo que justifica los vagones de fase 2 (GDD v2 §3.5) sin volverlo
    tedioso. La tierra pesa poco (0,35 kg por unidad): cavar la cueva de Landing no satura.
-5. **La sed marca el primer cuarto de hora.** Con 70 inicial y 20 h, el coco del minuto
+5. **La galería de 4 m necesita una viga.** *(Añadido con los peligros de la mina.)* Con la
+   regla del derrumbe (más de 3 m de luz sin apoyo), la galería del minuto 40 se hunde sin
+   una `viga_apoyo` (2 troncos, 1 cuerda, ≈ 25 s de obra). Ver
+   [`2026-09-28-peligros-mina.md`](2026-09-28-peligros-mina.md).
+6. **La sed marca el primer cuarto de hora.** Con 70 inicial y 20 h, el coco del minuto
    ~8 llega con margen; sin talar una palmera el jugador ve la visión borrosa hacia el
    minuto 23.
 

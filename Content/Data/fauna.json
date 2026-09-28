@@ -13,24 +13,45 @@
 		"reducedRadiusCm": 15000.0,
 		"hysteresis": 0.1,
 		"reducedInterval": 4,
+		"speciesNote": "Cada especie declara en lodBehavior qué hace en cada nivel (subconjunto de tiers[].does) y su locomotion: suelo (usa el campo de navegación del servidor, que se reconstruye por chunk minado, biblia 08 §2.7 b) o vuelo (sin navegación). Huir o cargar solo se resuelve en Full.",
 		"tiers": [
 			{ "id": "Full", "nameEs": "Completo", "nameEn": "Full", "does": ["rutina", "percepcion", "huida_o_carga", "navegacion_fina", "animacion_completa"] },
 			{ "id": "Reduced", "nameEs": "Reducido", "nameEn": "Reduced", "does": ["rutina", "percepcion_oido", "navegacion_gruesa"] },
 			{ "id": "Frozen", "nameEs": "Congelado", "nameEn": "Frozen", "does": [] }
 		]
 	},
+	"populationNote": "Propuesta pendiente de validar en PIE: grupos por isla, tamaño de grupo [min, max] y días para reponer un grupo abatido. Tope duro de biblia 08 §2.7 b: 12 terrestres replicados a 10 Hz y 24 a 2 Hz por cliente, así que ninguna isla pasa de 36 replicados vivos y el máximo de un solo grupo cabe en los 12 de Full.",
 	"islands": [
-		{ "island": "landing", "fase": 1, "species": ["cangrejo_cocotero_salvaje", "gaviota_posada"] },
-		{ "island": "emerald", "fase": 1, "species": ["cerdo_salvaje"] },
-		{ "island": "smoke", "fase": 1, "species": [], "noteEs": "Sin especie terrestre propia: ninguna se adapta a la ceniza activa (biblia 04). Solo aves marinas de paso." },
-		{ "island": "teeth", "fase": 1, "species": ["fragata_colonia", "gaviota_posada"] },
-		{ "island": "mangrove", "fase": 2, "species": ["cangrejo_cocotero_salvaje"] },
-		{ "island": "mesa", "fase": 2, "species": ["cabra_salvaje"] }
+		{ "island": "landing", "fase": 1, "species": ["cangrejo_cocotero_salvaje", "gaviota_posada"],
+			"population": [
+				{ "species": "cangrejo_cocotero_salvaje", "groups": 6, "groupSize": [1, 1], "respawnDays": 5 },
+				{ "species": "gaviota_posada", "groups": 3, "groupSize": [4, 10], "respawnDays": 2 }
+			] },
+		{ "island": "emerald", "fase": 1, "species": ["cerdo_salvaje"],
+			"population": [
+				{ "species": "cerdo_salvaje", "groups": 3, "groupSize": [2, 4], "respawnDays": 8 }
+			] },
+		{ "island": "smoke", "fase": 1, "species": [], "population": [], "noteEs": "Sin especie terrestre propia: ninguna se adapta a la ceniza activa (biblia 04). Solo aves marinas de paso." },
+		{ "island": "teeth", "fase": 1, "species": ["fragata_colonia", "gaviota_posada"],
+			"population": [
+				{ "species": "fragata_colonia", "groups": 2, "groupSize": [6, 14], "respawnDays": 6 },
+				{ "species": "gaviota_posada", "groups": 2, "groupSize": [4, 10], "respawnDays": 2 }
+			] },
+		{ "island": "mangrove", "fase": 2, "species": ["cangrejo_cocotero_salvaje"],
+			"population": [
+				{ "species": "cangrejo_cocotero_salvaje", "groups": 8, "groupSize": [1, 1], "respawnDays": 5 }
+			] },
+		{ "island": "mesa", "fase": 2, "species": ["cabra_salvaje"],
+			"population": [
+				{ "species": "cabra_salvaje", "groups": 4, "groupSize": [2, 5], "respawnDays": 8 }
+			] }
 	],
 	"species": [
 		{
 			"id": "cangrejo_cocotero_salvaje", "nameEs": "Cangrejo de los cocoteros", "nameEn": "Coconut crab",
 			"fase": 1, "cppSpecies": null, "cppSpeciesPropuesto": "CoconutCrab", "mesh": null,
+			"locomotion": "suelo",
+			"lodBehavior": { "Full": ["rutina", "percepcion", "huida_o_carga", "navegacion_fina", "animacion_completa"], "Reduced": ["rutina", "navegacion_gruesa"], "Frozen": [] },
 			"healthPoints": 15, "disposition": "defensivo",
 			"perception": { "sightConeDeg": 180, "sightM": 4, "hearingM": 3, "runHearingBonus": 0.5, "smellM": 0 },
 			"routine": [
@@ -48,6 +69,8 @@
 		{
 			"id": "gaviota_posada", "nameEs": "Gaviota", "nameEn": "Gull",
 			"fase": 1, "cppSpecies": "Gull", "cppSpeciesPropuesto": null, "mesh": null,
+			"locomotion": "vuelo",
+			"lodBehavior": { "Full": ["rutina", "percepcion", "huida_o_carga", "animacion_completa"], "Reduced": ["rutina"], "Frozen": [] },
 			"healthPoints": 5, "disposition": "huidizo",
 			"perception": { "sightConeDeg": 300, "sightM": 12, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 0 },
 			"routine": [
@@ -68,6 +91,8 @@
 		{
 			"id": "fragata_colonia", "nameEs": "Fragata", "nameEn": "Frigatebird",
 			"fase": 1, "cppSpecies": "Frigatebird", "cppSpeciesPropuesto": null, "mesh": null,
+			"locomotion": "vuelo",
+			"lodBehavior": { "Full": ["rutina", "percepcion", "huida_o_carga", "animacion_completa"], "Reduced": ["rutina", "percepcion_oido"], "Frozen": [] },
 			"healthPoints": 8, "disposition": "territorial",
 			"perception": { "sightConeDeg": 300, "sightM": 20, "hearingM": 10, "runHearingBonus": 0.5, "smellM": 0 },
 			"routine": [
@@ -80,13 +105,16 @@
 			"loot": [],
 			"nest": { "item": "huevo", "min": 1, "max": 1, "everyDays": 6, "seasons": ["seca"] },
 			"groundPickup": { "item": "plumas", "min": 1, "max": 2, "everyDays": 1 },
-			"lootPendiente": ["guano"],
+			"deposit": { "item": "guano", "min": 1, "max": 3, "everyDays": 3, "tool": "pala", "propuesta": true, "noteEs": "Biblia 04 §2.4: guano de las colonias de Los Dientes. Se raspa con pala de la roca bajo los nidos; va a la pila de compost (plants.json). Acercarse a rasparlo es entrar en el territorio de 5 m: el riesgo es el precio." },
+			"lootPendiente": [],
 			"red": { "clase": "ambiente", "ancla": "colonia", "tiradaDano": "servidor", "recogidas": "servidor", "promocion": "picado", "propuesta": true, "noteEs": "Biblia 08 §2.7 a con dos excepciones: el picado lo tira solo el servidor, una vez por jugador y encuentro, como ReefSharkAttackRoll (RPC al afectado, multicast cosmético). Propuesta: la fragata que entra en picado se promociona a actor replicado hasta que vuelve a posarse, para que los golpes que recibe no diverjan; cuenta en el tope de §2.7 b mientras dure. Nidos y plumas del suelo son estado del servidor (§2.3)." },
 			"noteEs": "Colonias en los acantilados de Los Dientes: atacan en picado a menos de 5 m de un nido y vuelven a posarse al alejarse (biblia 04)."
 		},
 		{
 			"id": "cerdo_salvaje", "nameEs": "Cerdo salvaje", "nameEn": "Wild boar",
 			"fase": 1, "cppSpecies": null, "cppSpeciesPropuesto": "WildBoar", "mesh": null,
+			"locomotion": "suelo",
+			"lodBehavior": { "Full": ["rutina", "percepcion", "huida_o_carga", "navegacion_fina", "animacion_completa"], "Reduced": ["rutina", "percepcion_oido", "navegacion_gruesa"], "Frozen": [] },
 			"healthPoints": 35, "disposition": "defensivo",
 			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },
 			"routine": [
@@ -112,6 +140,8 @@
 		{
 			"id": "cabra_salvaje", "nameEs": "Cabra salvaje", "nameEn": "Wild goat",
 			"fase": 2, "cppSpecies": null, "cppSpeciesPropuesto": "WildGoat", "mesh": null,
+			"locomotion": "suelo",
+			"lodBehavior": { "Full": ["rutina", "percepcion", "huida_o_carga", "navegacion_fina", "animacion_completa"], "Reduced": ["rutina", "percepcion_oido", "navegacion_gruesa"], "Frozen": [] },
 			"healthPoints": 20, "disposition": "huidizo",
 			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },
 			"routine": [

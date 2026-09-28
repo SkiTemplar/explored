@@ -127,7 +127,8 @@ public:
 
 	void AddError(const FString& Msg, int32 = 0) { HostTest::Fail(SpecName.c_str(), 0, Msg.Std()); }
 	void AddWarning(const FString&, int32 = 0) {}
-	void AddInfo(const FString&, int32 = 0) {}
+	// Las medidas de los specs (tiempos, tamaños) salen en la salida del host, antes de la línea del caso.
+	void AddInfo(const FString& Msg, int32 = 0) { std::printf("    info: %s\n", Msg.Std().c_str()); }
 
 	bool TestTrue(const FString& What, bool bValue) { if (!bValue) { AddError(What + FString(": se esperaba cierto")); } return bValue; }
 	bool TestFalse(const FString& What, bool bValue) { return TestTrue(What, !bValue); }

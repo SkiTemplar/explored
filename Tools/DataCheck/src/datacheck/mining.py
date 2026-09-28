@@ -5,7 +5,9 @@
   ``MinHitsPerCubicMeter``; la tabla ``hitsPerM3`` sigue la fórmula del GDD.
 - Estratos: material y objeto existentes, islas del C++ (``EIslandArchetype``), capa y
   profundidad coherentes, vetas finitas bien formadas, y todos los estratos del GDD.
-- Herramientas: niveles 0-4, cada cabeza de pico la acepta la plantilla ``pico`` y
+- Herramientas: niveles 0-4; radio de esfera y duración de golpe (biblia 02 §2.2) espejo
+  de ``ETerrainDigTool`` y ``FTerrainEdits::ToolInfo``, y ``unitsPerM3`` de
+  ``FTerrainEdits::UnitsPerCubicMeter``; cada cabeza de pico la acepta la plantilla ``pico`` y
   produce de verdad un pico (no la captura otra plantilla); toda pieza que cabe como
   cabeza tiene nivel asignado.
 - Progresión: cada nivel se alcanza sin ciclos (la cabeza sale de la superficie o de un
@@ -20,6 +22,8 @@ from . import crafting
 
 TERRAIN_H = "Source/Explored/WorldGen/TerrainEditModel.h"
 TERRAIN_CPP = "Source/Explored/WorldGen/TerrainEditModel.cpp"
+EDITS_H = "Source/Explored/WorldGen/TerrainEdits.h"
+EDITS_CPP = "Source/Explored/WorldGen/TerrainEdits.cpp"
 ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
 PICK_TEMPLATE = "pico"
 # GDD v2 §3.4: estrato -> id de mining.json.
@@ -30,6 +34,13 @@ GDD_STRATA = {
 }
 MAX_TIER = 4
 PHASES = (1, 2, 3)
+# GDD v2 §6.2: islas del acceso anticipado (las únicas con datos de fase 1).
+EA_ISLANDS = {"landing", "emerald", "smoke", "teeth"}
+# Biblia 02 §2.4: peligros de la mina que el modelo de galerías tiene que recibir.
+HAZARDS = ("derrumbe", "oscuridad", "aire_viciado", "inundacion", "crecida")
+PLACE_ACCESS = {"a_pie", "cavando", "picando", "nadando", "descolgandose", "en_balsa"}
+SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
+BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 
 
 def _read(ds, rel: str) -> str:
@@ -57,6 +68,19 @@ def cpp_materials(ds) -> dict[str, tuple[float, int]] | None:
     return {n: (float(a), int(b)) for n, (a, b) in zip(names, rows)}
 
 
+def cpp_dig_tools(ds) -> dict[str, tuple[int, float, float]] | None:
+    """ETerrainDigTool -> (nivel, radio, segundos por golpe) de FTerrainEdits::ToolInfo."""
+
+    h, cpp = _read(ds, EDITS_H), _read(ds, EDITS_CPP)
+    enum = re.search(r"enum class ETerrainDigTool : uint8\s*\{(.*?)\};", h, re.S)
+    table = re.search(r"ToolInfo\(ETerrainDigTool Tool\)\s*\{.*?Table\[\] = \{(.*?)\};", cpp, re.S)
+    if not enum or not table:
+        return None
+    names = [n for n in re.findall(r"(\w+),", enum.group(1)) if n != "Count"]
+    rows = re.findall(r"\{\s*(\d+),\s*([\d.]+)f,\s*([\d.]+)f\s*\}", table.group(1))
+    return {n: (int(t), float(r), float(s)) for n, (t, r, s) in zip(names, rows)}
+
+
 def _cpp_const(ds, name: str) -> float | None:
     m = re.search(rf"static constexpr float {name} = ([\d.]+)f;", _read(ds, TERRAIN_H))
     return float(m.group(1)) if m else None
@@ -71,6 +95,35 @@ def _pick_mango() -> crafting.Instance:
     """Mango ya atado de referencia (palo recto + liana), como en CraftingSpec.cpp."""
 
     return crafting.Instance("atado_generico", (("Ata", 3.0), ("Largo", 3.0), ("Rigido", 3.0)), frozenset({"interno"}))
+
+
+def _check_dig_tools(ds, doc: dict, r) -> None:
+    """Radio y duración de golpe de cada herramienta de cavar contra el C++ (biblia 02 §2.2)."""
+
+    diggers = [t for t in doc.get("tools", []) if t.get("tier", 0) >= 1]
+    for tool in diggers:
+        tid = tool.get("id")
+        radius, seconds = tool.get("radiusM"), tool.get("secondsPerHit")
+        if not isinstance(radius, (int, float)) or not 0 < radius <= 2:
+            r.error(f"mining.json/tools «{tid}»: radiusM {radius!r} debe ser un radio en metros (0-2]")
+        if not isinstance(seconds, (int, float)) or not 0 < seconds <= 10:
+            r.error(f"mining.json/tools «{tid}»: secondsPerHit {seconds!r} debe estar en (0-10] s")
+    m = re.search(r"static constexpr int32 UnitsPerCubicMeter = (\d+);", _read(ds, EDITS_H))
+    if m and doc.get("unitsPerM3") != int(m.group(1)):
+        r.error(f"mining.json: unitsPerM3={doc.get('unitsPerM3')!r} pero TerrainEdits.h dice UnitsPerCubicMeter={m.group(1)}")
+    cpp = cpp_dig_tools(ds)
+    if cpp is None:
+        r.warn("mining.json: no se lee ETerrainDigTool/ToolInfo de TerrainEdits; no se comparan las herramientas con el C++")
+        return
+    by_cpp = {t.get("cpp"): t for t in diggers}
+    if set(by_cpp) != set(cpp):
+        r.error(f"mining.json/tools {sorted(k for k in by_cpp if k)} no coincide con ETerrainDigTool {sorted(cpp)}")
+    for name, (tier, radius, seconds) in cpp.items():
+        t = by_cpp.get(name)
+        if t and (t.get("tier") != tier or abs(t.get("radiusM", -1) - radius) > 1e-6
+                  or abs(t.get("secondsPerHit", -1) - seconds) > 1e-6):
+            r.error(f"mining.json/tools «{t['id']}»: nivel/radio/segundos {t.get('tier')}/{t.get('radiusM')}/"
+                    f"{t.get('secondsPerHit')} pero FTerrainEdits::ToolInfo dice {tier}/{radius}/{seconds}")
 
 
 def check_mining(ds, r) -> None:
@@ -164,6 +217,9 @@ def check_mining(ds, r) -> None:
         if missing:
             r.error(f"mining.json: falta el estrato «{name}» del GDD v2 §3.4 ({', '.join(missing)})")
 
+    _check_hazards(ds, doc, items, r)
+    _check_places(ds, doc, items, materials, strata, islands, r)
+
     # ------------------------------------------------------------------ herramientas
     tier_heads: dict[int, set[str]] = {}
     head_tier: dict[str, int] = {}
@@ -190,6 +246,7 @@ def check_mining(ds, r) -> None:
     for tier in range(0, MAX_TIER + 1):
         if tier not in tier_heads:
             r.error(f"mining.json/tools: falta el nivel {tier} (GDD v2 §3.4)")
+    _check_dig_tools(ds, doc, r)
 
     pick = templates.get(PICK_TEMPLATE)
     if pick is None:
@@ -218,6 +275,158 @@ def check_mining(ds, r) -> None:
 
     # ------------------------------------------------------------------ progresión
     _check_progression(ds, doc, materials, strata, tier_heads, r)
+
+
+def _positive(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0
+
+
+def _check_hazards(ds, doc, items, r) -> None:
+    """Peligros de la biblia 02 §2.4: números con sentido y contramedidas que existen."""
+
+    hz = doc.get("hazards")
+    if hz is None:
+        r.error("mining.json: faltan los peligros de la mina (hazards, biblia 02 §2.4)")
+        return
+    for key in HAZARDS:
+        h = hz.get(key)
+        if not isinstance(h, dict):
+            r.error(f"mining.json/hazards: falta «{key}» (biblia 02 §2.4)")
+            continue
+        if not h.get("nameEs") or not h.get("nameEn"):
+            r.error(f"mining.json/hazards «{key}»: falta nameEs o nameEn")
+    pieces = {p.get("id"): p for p in ds.data.get("building_pieces.json", {}).get("pieces", [])}
+    d = hz.get("derrumbe") or {}
+    for k in ("maxUnsupportedSpanM", "collapseSeconds", "warningSeconds", "supportRadiusM"):
+        if k in d and not _positive(d[k]):
+            r.error(f"mining.json/hazards/derrumbe: {k}={d[k]!r} debe ser > 0")
+    if _positive(d.get("warningSeconds")) and _positive(d.get("collapseSeconds")) and d["warningSeconds"] >= d["collapseSeconds"]:
+        r.error("mining.json/hazards/derrumbe: el aviso (warningSeconds) debe llegar antes del colapso")
+    if _positive(d.get("supportRadiusM")) and _positive(d.get("maxUnsupportedSpanM")) \
+            and 2 * d["supportRadiusM"] < d["maxUnsupportedSpanM"]:
+        r.error("mining.json/hazards/derrumbe: una viga debe cubrir al menos la luz máxima sin apoyo (2 × radio ≥ luz)")
+    sp = d.get("supportPiece")
+    if d and sp not in pieces:
+        r.error(f"mining.json/hazards/derrumbe: pieza de apoyo «{sp}» no está en building_pieces.json")
+    elif sp and pieces[sp].get("socket") != "terreno":
+        r.error(f"mining.json/hazards/derrumbe: «{sp}» debe ir sobre el terreno (socket terreno)")
+    o = hz.get("oscuridad") or {}
+    if o and not o.get("lightItems"):
+        r.error("mining.json/hazards/oscuridad: sin ninguna luz que se pueda llevar")
+    for it in o.get("lightItems", []):
+        if it not in items:
+            r.error(f"mining.json/hazards/oscuridad: luz «{it}» no está en items.json")
+    burns = {b.get("item"): b for b in o.get("lightBurn", []) if isinstance(b, dict)}
+    for it in o.get("lightItems", []):
+        b = burns.get(it)
+        if b is None:
+            r.error(f"mining.json/hazards/oscuridad: la luz «{it}» no tiene lightBurn (a qué ritmo se gasta)")
+            continue
+        if not _positive(b.get("gameMinutesPerDurability")):
+            r.error(f"mining.json/hazards/oscuridad: lightBurn «{it}».gameMinutesPerDurability debe ser > 0")
+        if it in items and not _positive(items[it].get("maxDurability")):
+            r.error(f"mining.json/hazards/oscuridad: la luz «{it}» no tiene maxDurability en items.json y no se gasta")
+    for it in set(burns) - set(o.get("lightItems", [])):
+        r.error(f"mining.json/hazards/oscuridad: lightBurn «{it}» no está en lightItems")
+    for it in o.get("lightItemsPendientes", []):
+        if it in items:
+            r.error(f"mining.json/hazards/oscuridad: «{it}» ya está en items.json; pásala a lightItems")
+    a = hz.get("aire_viciado") or {}
+    for k in ("minDistanceFromOpeningM", "graceMinutes", "dropPercentPerMinute"):
+        if k in a and not _positive(a[k]):
+            r.error(f"mining.json/hazards/aire_viciado: {k}={a[k]!r} debe ser > 0")
+    if a and not (isinstance(a.get("dizzyBelowPercent"), (int, float)) and 0 < a["dizzyBelowPercent"] < 100):
+        r.error("mining.json/hazards/aire_viciado: dizzyBelowPercent debe estar en (0, 100)")
+    if a.get("lethal") is not False and a:
+        r.error("mining.json/hazards/aire_viciado: el aire viciado nunca mata por sí solo (biblia 02 §2.4)")
+    f = hz.get("inundacion") or {}
+    if f and not (_positive(f.get("riseM")) and _positive(f.get("everySeconds"))):
+        r.error("mining.json/hazards/inundacion: riseM y everySeconds deben ser > 0")
+    if f and f.get("sealSocket") not in BUILDING_SOCKETS:
+        r.error(f"mining.json/hazards/inundacion: sealSocket {f.get('sealSocket')!r} no es un encaje del kit")
+    elif f and not any(p.get("socket") == f["sealSocket"] for p in pieces.values()):
+        r.error(f"mining.json/hazards/inundacion: ninguna pieza con socket «{f['sealSocket']}» para sellar")
+    c = hz.get("crecida") or {}
+    if c and c.get("season") not in SEASONS:
+        r.error(f"mining.json/hazards/crecida: estación {c.get('season')!r} desconocida")
+    if c and not (isinstance(c.get("floodFraction"), (int, float)) and 0 < c["floodFraction"] <= 1):
+        r.error("mining.json/hazards/crecida: floodFraction debe estar en (0, 1]")
+    if c and not _positive(c.get("drainDays")):
+        r.error("mining.json/hazards/crecida: drainDays debe ser > 0")
+
+
+def _check_places(ds, doc, items, materials, strata, islands, r) -> None:
+    """Lugares subterráneos de la biblia 02 §2.5 por isla y fase."""
+
+    boats = {b.get("id") for b in ds.data.get("boats.json", {}).get("boats", [])}
+    seen: set[str] = set()
+    ea_places: set[str] = set()
+    for p in doc.get("places", []):
+        pid = p.get("id")
+        where = f"mining.json/places «{pid}»"
+        if pid in seen:
+            r.error(f"{where}: id repetido")
+        seen.add(pid)
+        if not p.get("nameEs") or not p.get("nameEn"):
+            r.error(f"{where}: falta nameEs o nameEn")
+        if p.get("access") not in PLACE_ACCESS:
+            r.error(f"{where}: access {p.get('access')!r} no es uno de {sorted(PLACE_ACCESS)}")
+        tier = p.get("entryToolTier")
+        if tier not in range(0, MAX_TIER + 1):
+            r.error(f"{where}: entryToolTier {tier!r} fuera de 0-{MAX_TIER}")
+            tier = MAX_TIER
+        if p.get("access") in ("cavando", "picando") and tier == 0:
+            r.error(f"{where}: se entra cavando pero entryToolTier es 0")
+        if not isinstance(p.get("carving"), bool):
+            r.error(f"{where}: carving debe ser true o false")
+        if p.get("access") == "en_balsa" and p.get("requiresBoat") not in boats:
+            r.error(f"{where}: requiresBoat {p.get('requiresBoat')!r} no está en boats.json")
+        for it in p.get("items", []):
+            if it not in items:
+                r.error(f"{where}: objeto «{it}» no está en items.json")
+        if not p.get("occurrences"):
+            r.error(f"{where}: sin ninguna isla")
+        for occ in p.get("occurrences", []):
+            isl, fase, depth = occ.get("island"), occ.get("fase"), occ.get("depthM")
+            if islands and isl not in islands:
+                r.error(f"{where}: isla «{isl}» no es un EIslandArchetype")
+            if fase not in PHASES:
+                r.error(f"{where}/{isl}: fase {fase!r} debe ser 1, 2 o 3")
+            elif fase == 1 and isl not in EA_ISLANDS:
+                r.error(f"{where}/{isl}: fase 1 en una isla fuera del acceso anticipado (GDD v2 §6.2)")
+            if fase == 1:
+                ea_places.add(pid)
+            if not (isinstance(depth, list) and len(depth) == 2 and all(isinstance(x, (int, float)) for x in depth)
+                    and 0 <= depth[0] < depth[1]):
+                r.error(f"{where}/{isl}: depthM={depth!r} debe ser [mín, máx] con 0 ≤ mín < máx")
+                continue
+            # Un objeto de estrato solo sale si el estrato está en esa isla a esa fase o antes.
+            for it in p.get("items", []):
+                src = [s for s in strata.values() if s.get("item") == it]
+                if src and not any(o.get("island") == isl and o.get("fase", 9) <= (fase or 9)
+                                   for s in src for o in s.get("occurrences", [])):
+                    r.error(f"{where}/{isl}: da «{it}» pero ningún estrato lo pone en esa isla en fase ≤ {fase}")
+            # Lo que se cava con la herramienta de entrada: ningún estrato más duro dentro de su hueco.
+            if p.get("access") == "cavando":
+                for s in strata.values():
+                    need = materials.get(s.get("material"), {}).get("minToolTier", 0)
+                    for o in s.get("occurrences", []):
+                        od = o.get("depthM") or [0, 0]
+                        if o.get("island") == isl and need > tier and od[0] < depth[1] and depth[0] < od[1]:
+                            r.error(f"{where}/{isl}: a {depth[0]}-{depth[1]} m aparece «{s['id']}» "
+                                    f"(nivel {need}) y se entra con nivel {tier}")
+    if doc.get("places") is None:
+        r.error("mining.json: faltan los lugares subterráneos (places, biblia 02 §2.5)")
+        return
+    # GDD v2 §6.1: la porción vertical necesita una cueva que se cave a mano en Landing.
+    if not any(p.get("access") == "cavando" and any(o.get("island") == "landing" and o.get("fase") == 1
+               for o in p.get("occurrences", [])) for p in doc["places"]):
+        r.error("mining.json/places: falta la cueva pequeña de Landing que se cava a mano (GDD v2 §6.1)")
+    # GDD v2 §6.2: tubos de lava en el Humo y grutas marinas en Los Dientes.
+    for pid, isl in (("tubos_lava", "smoke"), ("grutas_marinas", "teeth")):
+        p = next((x for x in doc["places"] if x.get("id") == pid), None)
+        if p is None or not any(o.get("island") == isl and o.get("fase") == 1 for o in p.get("occurrences", [])):
+            r.error(f"mining.json/places: falta «{pid}» en «{isl}» en fase 1 (GDD v2 §6.2)")
 
 
 def _check_progression(ds, doc, materials, strata, tier_heads, r) -> None:

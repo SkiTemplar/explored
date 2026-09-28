@@ -67,6 +67,17 @@ struct EXPLORED_API FSandBrush
 	int64 MassBudget = 0;
 };
 
+/**
+ * Traslado de arena de una columna a otra (mm de altura en una columna). Lo usan los
+ * modelos que empujan arena sin pala: el surco de una balsa arrastrada, por ejemplo.
+ */
+struct EXPLORED_API FSandMove
+{
+	FIntPoint From = FIntPoint::ZeroValue;
+	FIntPoint To = FIntPoint::ZeroValue;
+	int32 Mm = 0;
+};
+
 /** Qué ha hecho una edición, una revisión de pendiente o un medio ciclo de marea. */
 struct EXPLORED_API FSandResult
 {
@@ -168,6 +179,10 @@ public:
 	static constexpr int32 MaxCatchUpRevisions = 4;
 	/** Cambio de la pleamar que obliga a revisar qué columnas editadas están ahora húmedas. */
 	static constexpr int32 TideWakeStepMm = 50;
+	/** Cota de columna (en celdas): lejos del borde de int32, así Column + 1 y los bucles X <= Hi no desbordan. */
+	static constexpr int32 MaxAbsColumn = 1000000000;
+	/** Tope de columnas sucias en una partida guardada (~16 000 m² de arena sin asentar en celdas de 0,25 m). */
+	static constexpr int32 MaxSavedDirtyColumns = 1 << 18;
 
 	/** Desnivel máximo (mm) entre dos columnas vecinas para un ángulo dado. */
 	static int32 ReposeDropMm(float AngleDeg, float CellSize);
@@ -188,6 +203,15 @@ public:
 	FSandResult Dig(const FSandBrush& Brush, FBaseHeight Base);
 	/** Echa arena; `Mass` es lo que sale del inventario (≤ MassBudget). */
 	FSandResult Pile(const FSandBrush& Brush, FBaseHeight Base);
+
+	/**
+	 * Mueve arena entre columnas, en el orden dado; cada traslado ve el resultado de los
+	 * anteriores. La masa se conserva exactamente: lo que sale de From entra en To.
+	 * Un traslado se recorta a lo que From puede dar (MaxDigDepthMm) y To puede recibir
+	 * (MaxPileHeightMm); si toca la huella de una estructura o sale de la rejilla, no se hace.
+	 * `Mass` es la suma movida.
+	 */
+	FSandResult Transfer(const TArray<FSandMove>& Moves, FBaseHeight Base);
 
 	// --- Estructuras ---
 

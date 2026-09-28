@@ -1,12 +1,14 @@
 # EXPLORED — Lista maestra de TODO
 
-Versión 1 · 2026-09-27 · Fusiona los «TODO de implementación» de las 7 secciones de la
-biblia (`01`–`07`), añade lo transversal que no tenía dueño (rendimiento, arte, audio,
-terreno editable en runtime, empaquetado y salida a mercado) y lo agrupa por hitos en
-orden de ejecución. Cada casilla indica el sistema o fichero al que toca y la sección de
-la biblia (o el GDD) de la que sale. `[x]` se ha verificado con grep contra el `main` del
-árbol principal (`C:\Users\Rodrigo\PERSONAL\ProyectosPersonales\Explored\Explored`), no
-se ha supuesto; `[ ]` es lo que falta o no se ha podido confirmar en el código.
+Versión 1.1 · 2026-09-28 (revisión de estado contra `main`; la 1 es del 2026-09-27) ·
+Fusiona los «TODO de implementación» de las 7 secciones de la biblia (`01`–`07`), añade
+lo transversal que no tenía dueño (rendimiento, arte, audio, terreno editable en
+runtime, empaquetado y salida a mercado) y lo agrupa por hitos en orden de ejecución.
+Cada casilla indica el sistema o fichero al que toca y la sección de la biblia (o el
+GDD) de la que sale. `[x]` se ha verificado con grep contra el `main` del árbol
+principal (`C:\Users\Rodrigo\PERSONAL\ProyectosPersonales\Explored\Explored`), no se ha
+supuesto; `[ ]` es lo que falta o no se ha podido confirmar en el código. Desde la
+versión 1.1 cada `[x]` nuevo cita su commit y su PR de `main`.
 
 Aviso heredado de `docs/roadmap.md` y GDD §8: varios sistemas ya escritos en `main`
 llevan tiempo «sin compilar en local» (17 según el roadmap al cierre de esta biblia). Un
@@ -15,17 +17,41 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 ## Recuento de casillas por hito
 
-| Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
-|---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
-| H1 — Mundo interactivo | 1 | 35 | 36 |
-| H2 — Minería y construcción | 2 | 29 | 31 |
-| H3 — Mar y barcos | 1 | 13 | 14 |
-| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
-| H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
-| F2 | 1 | 15 | 16 |
-| F3 | 6 | 22 | 28 |
-| **Total** | **15** | **193** | **208** |
+| Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
+|---|---|---|---|---|---|---|
+| H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
+| H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
+| H2 — Minería y construcción | 3 | 14 | 15 | 32 | 9 % | 31 % |
+| H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
+| H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
+| H5 — Lanzamiento del acceso anticipado | 4 | 0 | 22 | 26 | 15 % | 15 % |
+| F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
+| F3 | 1 | 6 | 21 | 28 | 4 % | 14 % |
+| **Total** | **20** | **53** | **143** | **216** | **9 %** | **22 %** |
+
+¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
+una línea `→ **En parte:**` con el commit, la PR y lo que falta.
+
+Revisión del 2026-09-28: auditoría casilla a casilla contra `origin/main` (`266a8cc`,
+tras la PR #69) con `git grep` y `git log`. Cinco casillas pasan a `[x]` (de 9 a 14), cada
+una con su commit y su PR en una línea `→ **Hecho:**`, y 39 quedan anotadas como «en
+parte». El patrón es el mismo en casi todas: las PR de la nube (#39 tala, #40 terreno
+editable, #46 arena viva, #50 datos de minería y fauna, #53 astillero, #57 raíles, #58
+incendio) entregaron el **modelo puro con su spec**, pero ningún actor, componente ni
+subsistema los usa todavía, y las casillas piden la mecánica en juego. Por eso cuentan
+como «en parte» y no como hechas. Cerrar H0 pasa sobre todo por enganchar
+`FTerrainEditModel` (picado, remallado y guardado) y `FFellingModel` a actores, trabajo
+que necesita Unreal. Sigue sin haber una sola línea de replicación en `Source/`: las 43
+casillas de red están pendientes.
+
+Minería y terreno de H2 (PR #95): `FMiningModel`, `FMineHazardModel` y `FShovelPathModel`
+con sus specs y las piezas `viga_apoyo` y `tablon_contencion` en datos. Con el mismo
+criterio, sus casillas cuentan como «en parte» (modelo puro sin enganchar) y se añade la
+casilla de conectarlos al juego.
+
+F3 (PR #92): `FReputationModel`, `FBarterModel`, `FPirateThreatModel` y `FRaiderCampsModel`
+con sus specs. Seis casillas pasan a «en parte» (modelo puro sin enganchar) y se añade la
+de cablearlos en el motor.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -70,9 +96,14 @@ salir de la isla.
 - [ ] `Save`/`GameMode`/`Carry`: confirmar en código que `HandlePlayerDeath` nunca vacía
       el inventario en Explorador/Superviviente/Personalizado, y aplicar el golpe de
       ánimo −6 (`moraleEvents.Injured`, ya existe) al reaparecer. *(biblia 01 §7, 03 §1.7)*
+      → **En parte:** anterior a #41, `ExploredGameMode.cpp:63-138`: no se vacía
+        el inventario — falta aplicar el −6 de `moraleEvents.Injured` (hoy es un −15 fijo) y
+        dejarlo explícito en código.
 - [x] Salud, heridas y sangrado (`FWound`, `TreatWounds`) ya implementados en
       `BodyModel.{h,cpp}` — base sobre la que se engancha `ContactBurn`.
       *(verificado: `Source/Explored/Survival/BodyModel.h`)*
+      → **Revisión 2026-09-28:** `FWound` vive en `Survival/SurvivalModel.h:109`;
+        `TreatWounds` en `BodyModel.h:98`.
 
 ### Crafteo e inventario
 
@@ -81,6 +112,9 @@ salir de la isla.
       Mango (Largo≥2, Rígido≥3), Unión (Ata≥2 o Adhesivo≥2), `baseMaxDurability` 55.
       Bloqueante para la minería manual de Landing. *(biblia 02 §2.2, 03 §2.1 — definición
       única tras resolver la contradicción con la versión antigua de 03)*
+      → **En parte:** `46382a9` (PR #50), `items.json:467`, `templates.json:171-180` — falta
+        alinear la Cabeza con la biblia: hoy pide Punta≥2 con etiqueta piedra/mineral/metal,
+        no Contundente≥3 o Rígido≥3.
 - [ ] `Items`: añadir a `items.json` las medicinas nuevas que exige la porción vertical:
       `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`,
       `ferula_bambu`, `gel_aloe`. *(biblia 03 §3.6)*
@@ -88,6 +122,8 @@ salir de la isla.
       `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en
       `UCarryComponent::SetCustomBackpack`, que hoy solo recibe volumen/peso del objeto.
       *(biblia 03 §1.1)*
+      → **En parte:** anterior a #41, `Carry/InventoryModel.cpp:16-17, 995-1020` — el bonus
+        existe pero vale 2/2/6 kg en vez de 8/10/20 y `SetCustomBackpack` lo deja a 0.
 - [ ] `Building`: añadir a `building_pieces.json` las piezas de almacenamiento
       `cesta_almacen`, `estanteria_almacen`, `arcon` — sin ellas ni el refugio→cabaña de
       Landing tiene sentido. *(biblia 03 §1.4)*
@@ -99,22 +135,43 @@ salir de la isla.
 
 ### Minería y terreno (pipeline mínimo para la cueva de Landing)
 
-- [ ] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
+- [x] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
       `FTerrainDensity`. *(GDD §7.3 punto 1, biblia 02 §7.3)*
-- [ ] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
+      → **Hecho:** `cb4e5a6` (PR #40): `FTerrainEditModel`, deltas dispersos por chunk sobre
+        la densidad base, `WorldGen/TerrainEditModel.h:136`. PR #88 añade encima
+        `FTerrainEdits` (`WorldGen/TerrainEdits.h`, spec `Explored.TerrainEdits`).
+- [x] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
       de evaluar el ruido procedural. *(GDD §7.3 punto 1)*
+      → **Hecho:** PR #88, `FTerrainDensity::SetEdits` y `DensityWithColumn` en
+        `WorldGen/TerrainDensity.cpp`, con spec. Falta que el horneado del motor le pase la
+        capa, que va con la casilla de remallado.
 - [ ] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados
       por una edición. *(GDD §7.3 punto 3)*
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:44-47` (`DirtyChunks`), y
+        PR #88 (`FTerrainDigResult::RenderChunks`, `FTerrainEdits::ChunksToInvalidate`,
+        esferas que cruzan caras, aristas y esquinas) — el modelo sabe qué chunks tocar;
+        falta el remallado en tiempo de juego (`docs/tecnico/terreno-editable.md`).
 - [ ] `WorldGen`: implementar el picado por esfera (radio y tiempo por golpe según
       herramienta/estrato, tabla de biblia 02 §2.3) para tierra/arena/arcilla (dureza 1,
       pala tosca) — el resto de estratos no hace falta para Landing. *(biblia 02 §2)*
-- [ ] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:60-69, 144-172`, y PR #88
+        (`FTerrainEdits::Dig` y `ToolInfo`, espejo de `mining.json/tools`) — picado por
+        esfera solo en el modelo puro; falta enganchar pala y pico a un actor. El tope de
+        1/6 m³ por golpe de #88 está pendiente de que el director lo confirme frente a la
+        «esfera completa» de la biblia 02 §2.1.
+- [x] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
       mismo patrón que `FSaveScatterDeltas`) — condición dura del criterio de salida
       («se queda cavado al recargar la partida»). *(GDD §7.3 punto 2, biblia 02 §2.8)*
+      → **Hecho:** `064b73a` (PR #40), `Save/SaveWorldDeltas.cpp:613-625`; PR #88 pasa el
+        formato a la versión 2 (`FTerrainEdits::SaveTo`/`LoadFrom`) con una prueba de
+        estrés de 50 000 golpes en el host. Ojo: nada en el juego escribe aún en esta capa,
+        así que el criterio «se queda cavado al recargar» depende de la casilla de picado.
 - [ ] `Cartography`: hoja subterránea por sistema de galerías, generada bajo demanda al
       entrar la primera vez, para la cueva pequeña de Landing. *(GDD §3.2)*
-- [ ] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
+- [x] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
       `items.json`. *(biblia 02 §2.7)*
+      → **Hecho:** `46382a9` (PR #50), `Content/Data/items.json:96`; malla
+        `SM_Item_TierraSuelta` de `Tools/Blender/props/items_orilla.py` (PR #88).
 
 ### Tala y recolección
 
@@ -123,14 +180,26 @@ salir de la isla.
       (hoy usa `HitsBareHands`/`HitsWithTool` por especie genérica `Palm`/`JungleGiant`/
       `JungleWide`/`Mangrove`, no la tabla por herramienta de la biblia) y decidir cuál
       manda antes de tocar el código. *(biblia 02 §1.2)*
+      → **En parte:** `6fb9833` (PR #39): `FFellingModel` ya tiene golpes por herramienta
+        (`WorldGen/FellingModel.cpp:54-194`) — falta la decisión escrita frente a la tabla
+        de la biblia y retirar `HitsBareHands`/`HitsWithTool` de `HarvestModel`.
 - [ ] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
       ligera/terreno al talar. *(biblia 02 §1.2)*
+      → **En parte:** `6fb9833` (PR #39), `FellingModel.h:149` (`ResolveFallDirection`,
+        golpes + pendiente) — falta el viento, la colisión con construcción y engancharlo a
+        un actor.
 - [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
       según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
       `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
       diseño nueva de la biblia, pendiente de aplicar al código. *(biblia 02 §1.2, 02 §1.6)*
+      → **En parte:** `6fb9833` (PR #39), `FellingModel.h:100-113` — el tocón con rebrote
+        existe, pero con 12/20/15/20 días en vez de 18/24/4, y `VegetationHarvestState` aún
+        no lo usa.
 - [ ] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
       tope 6). *(biblia 02 §1.3)*
+      → **En parte:** `bb07614` (PR #39), `WorldGen/GroundBranchModel.h:55-71` — modelo puro
+        con otro ritmo y tope (1,5/día, tope 4); falta ajustar a 2–4 cada 6 h con tope 6 y
+        engancharlo.
 - [x] Tala de la Palmera de coco ya suelta `coco_maduro` ×1-3 al caer (no un mix de
       `coco_verde`/`coco_maduro`) — corregido en la tabla de biblia 02 §1.2 para que
       coincida con `HarvestModel.cpp::Palm.FellDrops`.
@@ -138,12 +207,20 @@ salir de la isla.
 - [ ] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
       copa de una palmera trepada (§13.1 nueva de escalada), sin golpe ni herramienta,
       distinto del `coco_maduro` que suelta la tala. *(biblia 02 §13.1, §1.2)*
+      → **En parte:** `ef8b2d6` (PR #71), `WorldGen/CoconutPalmModel.h:207`
+        (`FCoconutPalmModel::PickFromCrown`) — el modelo puro ya da el verde de la copa sin
+        herramienta; falta engancharlo a la escalada y al interactuable de la palmera.
 
 ### Granja (huerto y limonero de Landing)
 
 - [ ] Confirmar que `FarmModel`/`plants.json` ya cubren riego y ventana de estaciones tal
       como se documenta en biblia 02 §10.1 (sin cambios esperados; solo verificación).
       *(biblia 02 §10.1)*
+      → **En parte:** anterior a #41 + riego en `c0a6f1c` (PR #36): `Farming/FarmModel.h:15-24,
+        60-63`, `plants.json:23-24` cubren `waterPerDay` y `seasons` — pero la verificación
+        falla: la biblia dice que sin riego la planta «deja de avanzar de etapa (no muere)»,
+        y `FarmModel.h:195-196` (`DryDaysToDie = 4`) la mata a los 4 días secos
+        (`FarmModel.cpp:420-422`). Falta decidir cuál manda y alinear código o biblia.
 - [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
@@ -195,6 +272,12 @@ biblia 08 §7.3 pasan en condiciones «Normal».
 - [ ] `Debug`: comando `Explored.NetBudget` que vuelca a CSV los kbps por canal y por
       cliente cada segundo (es la herramienta con la que se verifica el objetivo de
       ancho de banda, no una estimación). *(biblia 08 §3)*
+      *(modelo puro ya implementado: `FNetBudgetModel` (`Source/Explored/Debug/NetBudgetModel.h/.cpp`,
+      spec `Tests/NetBudgetModelSpec.cpp`) acumula bytes por canal/cliente, cierra
+      segundos, valida la serie con `ValidateSeries` (techo de reposo o pico por
+      segundo, ráfaga de terreno de 128 kbps durante 5 s como máximo) y da el texto del
+      CSV con `ToCsv`; falta registrar el comando de consola en el motor, engancharlo a
+      los bytes reales de cada canal y escribir el fichero.)*
 - [ ] `Tools/net-test.ps1` (nuevo): arranca PIE como servidor de escucha con 2 o 4
       clientes, aplica los perfiles «Normal»/«Mala»/«Horrible» de `net pktlag`/
       `pktlagvariance`/`pktloss`/`pktorder` y recoge el CSV de `Explored.NetBudget`.
@@ -237,23 +320,44 @@ posterior.
 
 - [ ] `Weather`/`WorldGen`: contagio de fuego entre celdas de vegetación (45 %/s en
       seco, −70 % en estaciones húmedas, ±25 % por viento). *(biblia 02 §6)*
+      → **En parte:** `d0d556c` (PR #58): `FWildfireModel`,
+        `WorldGen/WildfireModel.h:109-113` (450 ‰ seco, 135 ‰ húmedo, ±250 ‰ viento) — solo
+        modelo puro; ningún actor ni subsistema lo usa.
 - [ ] `WorldGen`: rebrote de zona quemada (12 días hierba, 25 días arbustos),
       compartiendo temporizador con el rebrote de tala. *(biblia 02 §6)*
+      → **En parte:** `d0d556c` (PR #58), `WildfireModel.h:121-122` — rebrote 12/25 días
+        solo en el modelo, sin cablear y con un reloj propio, no el de la tala.
 
 ### Combate y fauna peligrosa (sistema, no contenido de fase 3)
 
 - [ ] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la
       propiedad real Filo/Punta/Contundente del objeto. *(biblia 05 §3.0)*
+      → **En parte:** PR #78, `FCombatModel` (`Combat/CombatModel.h`, `CombatModelSpec`) —
+        solo modelo puro; ningún componente ni RPC lo usa. Vale para las cuatro casillas
+        de combate siguientes.
 - [ ] Apertura de corte con profundidad = propiedad ÷ 5, enganchada al sistema `wounds`
       ya existente en `BodyModel` (sin una segunda barra de heridas). *(biblia 05 §3.0)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph
       1.2 s) como variantes de la misma acción de ataque. *(biblia 05 §3.1)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s. *(biblia 05 §3.1)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] Caída de precisión del arco por distancia (100/70/40/0 %). *(biblia 05 §3.2)*
+      → **En parte:** PR #78, `FCombatModel` (ver arriba).
 - [ ] `Fauna`: estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los
       cocoteros. *(biblia 05 §5)*
-- [ ] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
+      → **En parte:** `46382a9` (PR #50), `Content/Data/fauna.json:42, 102, 127`, y
+        PR #78: fichas de combate de los cuatro animales en `Content/Data/combat.json`,
+        leídas por `FCombatModel` (`Source/Explored/Combat`, `CombatModelSpec`) y comparadas
+        por `Tools/DataCheck` con el C++ y con `fauna.json`. Falta el cableado en el motor
+        (componente de combate, RPC y actores de fauna terrestre), y `FMarineCreatureBrain`
+        aún usa su propio mordisco de tiburón.
+- [x] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
       tigre «Sombra» ya descrito en la biblia de contenido §4.6. *(biblia 05 §5)*
+      → **Hecho:** anterior a #41: `EFaunaSpecies::ReefShark` separado de
+        `TigerShark`, `Fauna/FaunaTypes.cpp:42`, `MarineCreatureBrain.cpp:310`
+        (`ReefSharkAttackRoll`). Ficha de combate en `combat.json` desde PR #78.
 
 ### Inventario y UI general
 
@@ -279,6 +383,9 @@ posterior.
 - [ ] `bReduceMotion`: cablear a `bCameraBobEnabled`, al rebote del aviso de logro, al
       pulso de opacidad del fantasma de construcción y a la easing de apertura de menús
       — el ajuste existe, falta el consumidor en los cuatro sitios. *(biblia 06 §3.4)*
+      → **En parte:** anterior a #41, `Player/ExploredCharacter.cpp:277` (bamboleo) y
+        `SExploredMapInHands.cpp:86` — faltan el aviso de logro, el pulso del fantasma y la
+        apertura de menús.
 - [ ] `bDisableFlashing`: cablear al flash de la cámara desechable, al parpadeo de rayo
       de `Weather` y a cualquier destello de pantalla completa por daño.
       *(biblia 06 §3.4)*
@@ -294,12 +401,18 @@ posterior.
 - [ ] `Fauna`: primera pasada de fauna salvaje terrestre (cerdo, cabra, aves que se
       posan) con LOD (`FFaunaLod` ya existente) y navegación invalidada por chunk
       minado. *(biblia 02 §11)*
+      → **En parte:** `46382a9` (PR #50, `fauna.json`), `bdcc33f` (PR #60, malla del
+        jabalí) y PR #106 (`lodBehavior` por especie y población por isla en `fauna.json`,
+        validados por `Tools/DataCheck` con los topes de biblia 08 §2.7) — solo datos y
+        malla; falta la especie C++, el LOD aplicado y la navegación por chunk.
 
 ### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
 
 - [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
-      13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
+      12 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
       Coalescencia a 10 Hz. *(biblia 08 §2.4)*
+      *(presupuesto ya modelado: `FNetBudgetTableModel` cuenta las entradas de 12 B de
+      `FContainerReplicationModel::EntryBytes` a 10 Hz; falta el `FFastArraySerializer`.)*
 - [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
       (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`
       (FNV-1a de 64 bits) en el saludo de conexión, con rechazo y el texto de biblia 08
@@ -308,6 +421,12 @@ posterior.
       (`Server_SubscribeContainer`, baja al cerrar); la carrera de dos jugadores sobre el
       mismo hueco se resuelve con `EInventoryFail::NotFound`, sin bloqueos.
       *(biblia 08 §2.4)*
+      *(modelo puro ya implementado: `FContainerReplicationModel`
+      (`Source/Explored/Carry/ContainerReplicationModel.h/.cpp`), spec
+      `Tests/ContainerReplicationModelSpec.cpp` — suscripción al abrir a menos de 3 m,
+      contenido entero y luego solo huecos, baja al cerrar, alejarse o desconectarse, y la
+      carrera con `NotFound` y hueco refrescado; falta el RPC `Server_SubscribeContainer`
+      en `AExploredContainer`.)*
 - [ ] `Items/ExploredItemActor`: `bReplicateMovement` a 10 Hz, dormir el cuerpo físico a
       los 3 s de quietud (y dejar de replicar), `NetCullDistanceSquared` 6 000 cm y tope
       de 32 objetos sueltos despiertos a la vez. *(biblia 08 §2.5)*
@@ -316,20 +435,39 @@ posterior.
       etapa, golpes, día de rebrote ×4), tope de 4096 entradas con compactación a
       snapshot por celda reusando `FSaveIndexSet::Encode`. Progreso de tala solo a
       clientes a < 60 m. *(biblia 08 §2.3)*
+      *(modelo puro ya implementado: `FVegetationNetStateModel`
+      (`Source/Explored/WorldGen/VegetationNetStateModel.h/.cpp`), spec
+      `Tests/VegetationNetStateModelSpec.cpp` — clave y estado de 10 B, tabla de especies,
+      filtro de 60 m, tope de 4096 con compactación y sincronía servidor-cliente; falta el
+      `FFastArraySerializer` en el `GameState` que lo alimente.)*
 - [ ] `Fauna`: anclas por grupo cada 2 s (10 B: id, centroide cuantizado, estado) para la
       fauna de ambiente que cada cliente simula en local, y actores replicados (14 B) para
       la terrestre cazable, con el tope duro de 12 a 10 Hz + 24 a 2 Hz enganchado a
       `FFaunaLod`. `ReefSharkAttackRoll` solo en el servidor, una tirada por nadador.
       *(biblia 08 §2.7)*
+      *(anclas ya como modelo puro: `FFaunaAnchorNetModel`
+      (`Source/Explored/Fauna/FaunaAnchorNetModel.h/.cpp`), spec
+      `Tests/FaunaAnchorNetModelSpec.cpp` — 10 B por grupo, 24 grupos a < 150 m, fase de
+      envío por id y arrastre de 1 s; falta la fauna terrestre replicada y el enganche con
+      `AExploredFaunaManager`.)*
 - [ ] `Sky`/`Weather`: replicar los 11 B de reloj, estación, viento, lluvia, mar y
       tormenta a 0,2 Hz en el `GameState`; el cliente avanza su reloj local y corrige con
       `TimeScale` entre 0,95 y 1,05, con salto duro solo por encima de 6 minutos de juego
       de error. Olas, mareas y corrientes se calculan en local. *(biblia 08 §2.8)*
-- [ ] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
+      *(modelo puro ya implementado: `FWorldClockNetModel`
+      (`Source/Explored/Sky/WorldClockNetModel.h/.cpp`), spec
+      `Tests/WorldClockNetModelSpec.cpp` — 11 B con cuantización e ida y vuelta canónica,
+      envío a 0,2 Hz o al cambiar y corrección entre 0,95 y 1,05 con salto a 6 min; falta
+      la propiedad replicada en `AExploredGameState` y el ajuste de `UTimeOfDaySubsystem`.)*
+- [x] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
       (`TimeScale` ×120 solo con todos acostados, vuelta a ×1 al levantarse uno,
       conservando las horas ganadas) y `Derribado` (90 s, reanimación de 6 s o 3 s con
       medicina, alta al 25 % de salud y ánimo −6, tope de 2 reanimaciones por día, sin
       `Derribado` en Náufrago). *(biblia 08 §5.1, §5.2)*
+      *(hecho: `ExploredLinks::DecideGroupSleep`, `FGroupSleepSession`, `OnHealthZero`,
+      `AdvanceRevive`, `FinishRevive` y `TickGroupDowned` en `Core/SystemLinks.h`, spec
+      `Tests/CoopRulesSpec.cpp`; textos de §6.6 y §6.8 pendientes de integrar en
+      `translations/en.json`, espacio `ExploredCoop`.)*
 - [ ] `UI`: `SExploredPlayerList` como pestaña de `SExploredPauseMenu` (tinta, nombre,
       retardo, expulsar), nombres sobre la cabeza (hasta 60 m, desvanecido 45–60 m, sin
       verse a través del terreno, sin barra de vida), rueda de ping de tres opciones
@@ -353,6 +491,9 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
       −15 durabilidad). *(biblia 02 §2)*
+      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50), `TerrainEditModel.h:12-19`,
+        `mining.json:75-132` — el modelo tiene 5 materiales; cobre, hierro, azufre y cristal
+        solo están en datos y la rotura de la obsidiana solo en JSON.
 - [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
       luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
@@ -367,12 +508,20 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       02 §2 TODO)*
 - [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
       sobre camino terminado). *(biblia 02 §3)*
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:87, 163` (`bMarkPath`) — falta
+        el −15 % de coste de movimiento y enganchar la pala.
 - [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
       revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
+      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h:139` (34°/45°,
+        revisión 1 s) — modelo puro sin enganchar.
 - [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:142-145` (`ApplyHalfTide` 20 %/35 %)
+        — nadie lo llama desde la marea.
 - [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
       en 1 m). *(biblia 02 §5.3)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:149, 196` (`SetAnchor` a 1 m) — falta
+        la pieza en `building_pieces.json`.
 - [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
       `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
       `carretilla`. *(biblia 03 §3.2–3.4)*
@@ -381,6 +530,8 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       enganchada). *(biblia 03 §1.5)*
 - [ ] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
       `yunque`, con su coste. *(biblia 03 §2.2)*
+      → **En parte:** `46382a9` (PR #50), `building_pieces.json:1205` (`banco_chatarra`) —
+        faltan `horno_fundicion` y `yunque`.
 - [ ] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4); recetas de
       fundición en un fichero nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
 - [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
@@ -396,9 +547,14 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       extremo (GDD §7.3: `FTerrainDensity` + `FTerrainEdits` + `FSurfaceNets`, **no**
       `UDynamicMeshComponent` — el proyecto ya tiene su propio pipeline volumétrico
       procedural y no usa el componente genérico de Unreal). *(GDD §7.3, §7.4)*
+      → **En parte:** `cb4e5a6` + `064b73a` (PR #40): capa de ediciones y guardado — faltan
+        el remallado en runtime y la hoja subterránea; el recorrido no está cableado.
 - [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
       para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
       al menos una isla en AA. *(biblia 03 §Tests)*
+      → **En parte:** `46382a9` (PR #50), `Tools/DataCheck/src/datacheck/checks.py:252` — el
+        alcance de plantillas es global, no por isla de AA; falta el `CarrySpec` de la
+        carretilla.
 - [ ] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
       `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
       `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
@@ -422,15 +578,34 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
 El sistema de red más caro y el de más riesgo. Criterio de salida de red de H2: las
 filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 
-- [ ] `WorldGen`: `FExploredTerrainDeltaPacket` — cabecera de 9 B (versión + chunk) y
+- [x] `WorldGen`: `FExploredTerrainDeltaPacket` — cabecera de 9 B (versión + chunk) y
       tramos de `uint16` inicio + `uint8` cuenta + `int16` por muestra en milímetros, con
       tope duro de 512 B por paquete. Spec de host: ida y vuelta sin pérdida, fusión de
       dos paquetes del mismo chunk idempotente y conmutativa, paquete truncado o
       manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
+      → **Hecho:** PR #89, `FTerrainDeltaCodecModel`
+        (`WorldGen/TerrainDeltaCodecModel.h/.cpp`, `TerrainDeltaCodecModelSpec`) — ida y
+        vuelta exacta, límites de 512 B, cuantización a mm con saturación, `DecodeAndApply`
+        atómico y fusión idempotente y conmutativa: es lo que pide la casilla (formato y
+        spec de host). La RPC y el cableado son las casillas siguientes. El paquete de arena
+        (cabecera de 11 B) ya existía: `e6c89d1` (PR #46), `SandModel.h:250`. *Pendiente de
+        diseño:* un delta de más de ±32,767 m no cabe en el `int16` del cable
+        (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero hay que
+        decidir si se acota el delta o se cambia el formato.
 - [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
       muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
       para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.
       *(biblia 08 §2.2)*
+      → **En parte:** PR #89 — solo modelo puro con su spec (detalle abajo); ningún
+        componente de red lo usa.
+      *(modelo puro: `FTerrainDeltaQueueModel`
+      (`Source/Explored/WorldGen/TerrainDeltaQueueModel.h/.cpp`), spec
+      `Tests/TerrainDeltaQueueModelSpec.cpp` — fusión por chunk (también a medio enviar),
+      envío paquete a paquete, cubo sostenido de 8 KB/s con 40 KB de crédito más ventana
+      deslizante de 16 KB por segundo, prioridad a < 30 m y relevancia a 120 m. La
+      distancia la pasa el componente de red (la menor entre el personaje y los chunks
+      que el cliente tiene cargados por World Partition), que se engancha con la RPC de
+      la casilla siguiente.)*
 - [ ] `WorldGen`: aplicar los deltas recibidos al `FTerrainEditModel` del cliente y
       remallar con `FTerrainChunkBuilder::Build` coalescido a 250 ms por chunk; el cliente
       nunca aplica su propia edición antes de recibirla del servidor. *(biblia 08 §2.2)*
@@ -438,6 +613,11 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       cada 30 s, y petición del chunk completo (mismo formato de tramos que
       `FTerrainEditModel::ToValue`) cuando no coincide o cuando se entra en un chunk nunca
       recibido. *(biblia 08 §2.2)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:269` (`ChunkChecksum` FNV-1a,
+        `EncodeFullChunk`) — solo para arena. PR #89: `FTerrainChunkChecksumModel` y su
+        `FTracker` (`WorldGen/TerrainChunkChecksumModel.h/.cpp`) — FNV-1a de 32 bits,
+        calendario de 30 s por chunk y detección de desincronización. Solo modelo puro:
+        falta la RPC que manda la comprobación y pide el chunk completo.
 - [ ] `Building`: colocación autoritativa (`Server_PlacePiece` que valida encaje, rejilla
       de 2 m, materiales en la copia del servidor y `RecomputeStability` antes de generar
       el actor); el fantasma de `UBuildPreviewComponent` queda puramente local;
@@ -447,6 +627,9 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       a menos de 80 m de algún jugador (con un máximo de 4 iteraciones acumuladas al
       acercarse), tope de 64 celdas movidas por segundo y por chunk, y salida por la cola
       de terreno con prioridad más baja que las ediciones del jugador. *(biblia 08 §2.6)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:38, 159, 175` (80 m, 64 columnas, 4
+        revisiones) — presupuestos en el modelo; falta ejecutarlo en el servidor y sacarlo
+        por la cola.
 - [ ] Medir la compresión real de los deltas de terreno con `OodleNetwork` y entrenar el
       diccionario (`Tools/net-dictionary.ps1`, nuevo) sobre una captura de 10 min de
       minería; anotar el factor en `docs/tecnico/red.md`. Si no llega a ×2, bajar el tope
@@ -459,13 +642,22 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 - [ ] `Boats`: piezas de casco (quilla, cuaderna, tablón, cubierta, mástil, vela,
       balancín, timón, banco de remo, amarre) en un nuevo `Content/Data/boat_pieces.json`.
       *(biblia 02 §8.1)*
+      → **En parte:** `58e38da` (PR #53), `Boats/HullAssemblyModel.h:12` (`EHullPieceType`)
+        — las piezas están en C++ y son de balsa; faltan `boat_pieces.json` y
+        quilla/cuaderna/timón/banco/amarre.
 - [ ] `Boats/BoatModel`: sustituir la tabla fija por `EBoatType` por el cálculo de
       `TotalMassKg`/`EquilibriumDraftCm`/`SwampWaterKg`/escora a partir de las piezas
       ancladas. *(biblia 02 §8.2)*
+      → **En parte:** `58e38da` (PR #53), `HullAssemblyModel.h:250` (`ToBoatDefinition`) —
+        `AExploredBoat` sigue con la tabla fija por `EBoatType`.
 - [ ] `Boats`: integridad por unión cuaderna–tablón, daño por impacto sobre
       `SafeImpactSpeedCmS`, vía de agua por brecha (0,5 L/s). *(biblia 02 §8.3)*
+      → **En parte:** `58e38da` (PR #53), `RaftYardModel.h:191, 231` — uniones de balsa, no
+        cuaderna–tablón; la vía de agua no es 0,5 L/s por brecha.
 - [ ] `Boats`: botadura sobre rodillos en tierra (8 s/tonelada) y deriva por corriente si
       no está amarrado en el agua. *(biblia 02 §8.4)*
+      → **En parte:** `58e38da` (PR #53), `RaftYardModel.h:256, 269`, `BoatModel.cpp:634`
+        (amarre) — falta la regla de 8 s/tonelada y enganchar astillero y amarre a un actor.
 - [ ] `Boats`: actualizar `boats.json` para que los cuatro planos canónicos listen piezas
       en vez de un coste plano. *(biblia 02 §8.4)*
 - [ ] Diseñar y cablear la fila de «Estado del barco» del HUD: nueva
@@ -483,8 +675,12 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 - [ ] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts`
       (`Fuselage`, `Wing`, `Tail`, `Engine`) y consume `canoa_balancin` como indica
       `boats.json` — solo falta el mesh `SM_Limon`. *(biblia 03 §3.8 TODO — [F3])*
+      → **En parte:** anterior a #41, `boats.json:95-96`, `checks.py:569` — se exigen las 4
+        partes, pero `consumesRequiredBoat` es `false` y falta `SM_Limon`.
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el
       invariante «ninguna plantilla produce un objeto sin malla». *(biblia 05 §Tests)*
+      → **En parte:** anterior a #41, `checks.py:611-631` (`check_meshes`) — el invariante se
+        comprueba por objeto; falta cubrir las combinaciones de daño nuevas.
 
 ### Red y cooperativo — barcos (biblia 08)
 
@@ -547,6 +743,9 @@ datos todavía.
       de detalle con la paleta low poly (hecho en las texturas, 2026-09-28: falta que
       `M_Terrain` lea `_ARH`); comprobar con capturas antes/después
       (`M_Terrain.uasset` ya existe, hoy se ve brillante). *(director, 2026-09-27)*
+      → **En parte:** `650dfab` (PR #36), `Tools/Unreal/build_materials.py:254-256, 322-324`
+        — arena, hierba y bosque a 0,88–0,92; falta la roca (0,78), el especular a 0 en
+        arena seca y las capturas antes/después.
 - [x] Arte: texturas estilizadas del terreno por código (hierba, arena seca y mojada,
       tierra, basalto, caliza y hojarasca) en vez de las pseudo-realistas: paleta por
       isla, normal suave, rugosidad 0,85–0,95, tileables y sin repetición a 50 m; hoja de
@@ -555,6 +754,11 @@ datos todavía.
 - [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
       materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
       (GDD §7.1). *(GDD §7.1)*
+      → **En parte:** PR #45, #48, #56 y #60 (packs CC0) y #42, #54, #63 (paleta),
+        `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
+        general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
+        estrella, laurel, candado y reloj de arena); 25 pistas de logro siguen en
+        `iconsPending`.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
@@ -586,6 +790,10 @@ datos todavía.
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
       *(biblia 08 §5.6, §5.7)*
+      *(funciones puras ya hechas: `CoopAbundanceScale`, `ScaleFiniteVein`,
+      `PirateRaidersForPlayers`, `PirateCategoryBonus`, `ParseCoopScope` y
+      `AchievementRecipients` en `Core/SystemLinks.h`, spec `Tests/CoopRulesSpec.cpp`;
+      falta el campo `coopScope` en `achievements.json` y la bandera de restricción.)*
 
 ---
 
@@ -620,10 +828,32 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
       cargar/descargar celdas de World Partition; medir el tiempo de frame con el modo
       bench ya existente (`-ExploredBench`, `Tools/bench.ps1`). *(director, 2026-09-27;
       infraestructura de medida ya existe, el objetivo en sí no está verificado)*
-- [ ] Audio: pipeline de música y efectos con soundfont acústico (sin sintetizador
+- [x] Audio: pipeline de música y efectos con soundfont acústico (sin sintetizador
       genérico), coherente con el director de música adaptativa y la flauta ya
-      implementados (`docs/roadmap.md`, P-MUSIC) — hoy no hay soundfont en
-      `Tools/Audio`. *(GDD §7.2, transversal)*
+      implementados (`docs/roadmap.md`, P-MUSIC). Hecho: la música y la muestra de
+      la flauta se renderizan con FluidR3Mono_GM (MIT, commit fijado y SHA256 en
+      `Tools/Audio/THIRD_PARTY_SOUNDFONT.md`), sala por convolución, -16 LUFS
+      integrados y limitador; `uv run explored-audio music` genera las capas de
+      `music_layers.json`. Los efectos y ambientes siguen siendo síntesis propia.
+      *(GDD §7.2, transversal)*
+- [ ] Audio: añadir los créditos del soundfont (Frank Wen, Michael Cowgill,
+      S. Christian Collins, Ethan Winer, Michael Schorsch; licencia MIT) a la
+      pantalla de créditos o al fichero de licencias de terceros del build.
+      *(`Tools/Audio/THIRD_PARTY_SOUNDFONT.md`)*
+- [x] Audio: banda sonora grabada de licencia abierta que complementa la música
+      generada (21 piezas de dominio público, CC0 y CC BY 4.0; descarga, SHA-256,
+      −16 LUFS, recorte de silencios y OGG en caché; créditos ES/EN para juego y
+      Steam). Hecho: las herramientas y la lista; los OGG (unos 60 MB) no se versionan
+      y se regeneran con `uv run explored-music fetch`. *(encargo 21, PR #101;
+      `Tools/Audio/music_sources.json`, `Tools/Audio/src/explored_audio/recorded/`,
+      `docs/creditos-musica.md`, `docs/tecnico/musica-grabada.md`)*
+- [ ] Audio: importar los OGG de `Tools/Audio/.cache/music/ogg/` a
+      `Content/Audio/MusicaGrabada/` y que `UExploredMusicSubsystem` elija entre las
+      grabaciones del mismo momento (día, noche, lluvia, mar, cueva, ruinas) en los
+      huecos tranquilos, sin replicar (biblia 08 §2.1, «Cliente local»). Necesita el
+      editor. *(encargo 21, `docs/tecnico/musica-grabada.md`)*
+- [ ] Créditos: pasar `docs/creditos-musica.md` a la pantalla de créditos del juego y
+      a la descripción de la página de Steam. *(encargo 21)*
 - [ ] Empaquetado Win64 reproducible (`Tools/build.ps1` ya existe genérico; falta el
       paso de empaquetado final con configuración Shipping y verificación de tamaño de
       build). *(GDD §7.2, `docs/roadmap.md` P-M9)*
@@ -635,6 +865,13 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] Beta cerrada: reclutar y correr al menos una ronda antes de abrir el acceso
       anticipado, con foco en el pipeline de minería (mayor riesgo técnico, GDD §8) y en
       el rendimiento de H0–H3. *(GDD §8, transversal)*
+- [x] Auditoría de los modelos puros (NaN, divisiones por cero, índices, desbordes, orden de
+      iteración y determinismo), con `HOST_TESTS_FASTMATH=ON` en CI y tests de propiedades
+      en `Tests/PropertyFuzzSpec.cpp`. *(docs/reviews/auditoria-modelos-puros-2026-09-28.md)*
+- [ ] Pendientes de la auditoría de modelos puros: saneado de `FSavePlayerState::Load`,
+      `FBodyModel::AddCut(NaN)`, límite de carga en `CartFromValue`, reloj del incendio por
+      delante, radio máximo del pincel de arena y límite de peso al cargar el inventario.
+      *(docs/reviews/auditoria-modelos-puros-2026-09-28.md, «Pendiente»)*
 - [ ] QA de cierre: pasar `Tools/HostTests/run.sh` (specs de host) y
       `Tools/test.ps1` (Automation Tests del editor) en verde antes de empaquetar.
       *(CLAUDE.md del proyecto, «Tests»)*
@@ -644,6 +881,11 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] Red: verificar con el CSV de `Explored.NetBudget` el objetivo de **menos de 64 kbps
       por cliente en reposo** y **menos de 256 kbps en pico** con 4 jugadores, sobre las 16
       filas de la matriz. Criterio de salida, no estimación. *(biblia 08 §3)*
+      *(estimación de diseño ya comprobada en host: `FNetBudgetTableModel`
+      (`Source/Explored/Debug/NetBudgetTableModel.h/.cpp`), spec
+      `Tests/NetBudgetTableModelSpec.cpp` — reposo ≈ 33 kbps con 1–4 jugadores, pico
+      ≈ 80 y ≈ 208 con la ráfaga de terreno, con los tamaños reales de los paquetes; el
+      criterio sigue siendo el CSV medido.)*
 - [ ] Red: ajustar con datos de la beta cerrada las cifras de biblia 08 §5 (×120 al dormir,
       90 s y 6/3 s de `Derribado`, y el escalado de vetas, fauna y asaltos por número de
       jugadores). Están escritas con número justo para poder moverlas de una en una.
@@ -671,8 +913,13 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
       vuelta a salvaje tras 2 días sin comida. *(biblia 02 §10.2)*
 - [ ] Nuevo módulo `Tramway`: pieza de vía (socket `via`), grafo de tramos, vagón sobre
       spline con colisión contra terreno editable. *(biblia 02 §9, 03 §3.9)*
+      → **En parte:** `9787b2b` (PR #57): `FTramwayModel`, `Tramway/TramwayModel.h:162, 221`
+        — modelo puro sobre rejilla; falta el actor del vagón sobre spline, la pieza con
+        socket `via` y la colisión real.
 - [ ] `Building`: torno horizontal y ascensor de pozo como piezas de producción.
       *(biblia 02 §9)*
+      → **En parte:** `9787b2b` (PR #57), `TramwayModel.h:209` (`AddWinch`); ascensor solo
+        en el borrador `fases_futuras.json` — ninguno es pieza construible.
 - [ ] Prototipo de PIE del sistema de raíles antes de comprometer alcance (coste real no
       verificado). *(GDD §3.5, biblia 02 §9 TODO)*
 - [ ] `Building`: añadir `rail_recto`, `rail_curvo`, `cambio_agujas`, `vagon`,
@@ -695,6 +942,8 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
 - [ ] `Content/Data/`: dar de alta en `items.json`/`templates.json` los recursos
       exclusivos de Manglar (arcilla, junco), Arenas Blancas (conchas raras, velas de
       lona) y La Meseta (caliza, cultivos) si aún no existen. *(biblia 04 §2.5–2.7)*
+      → **En parte:** anterior a #41, `items.json:90, 106, 119-122` (arcilla roja, caliza,
+        conchas) — faltan junco, velas de lona y conchas raras.
 - [ ] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
       `livestock_species_raised`, `eggs_collected`, y los logros
       `primer_tren_de_isla`, `primera_empalizada`, `muralla_de_piedra`,
@@ -706,9 +955,14 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
       servidor y replicado como estado (posición sobre el tramo + velocidad, 6 B a 10 Hz);
       un tramo cuyo terreno se reedita por debajo se marca «dañado» y no navegable hasta
       repararlo, igual que una pieza de construcción. *(biblia 08 §1.3, biblia 02 §9)*
+      → **En parte:** `9787b2b` (PR #57), `TramwayModel.h:221`
+        (`DamageInSphere`/`IsDamaged`/`Repair`) — falta la autoridad de servidor y replicar
+        el vagón.
 - [x] Estratos de caliza (La Meseta) ya diseñados en la tabla de materiales de biblia 02
       §2.3, pendientes solo de que la propia isla entre en F2 — no de una mecánica
       nueva. *(biblia 02 §2.3, GDD §4)*
+      → **Revisión 2026-09-28:** `mining.json:21, 68` (`46382a9`, PR #50) ya lista la caliza
+        por isla.
 
 ---
 
@@ -729,14 +983,14 @@ asaltos), isla oculta y final.
       oscuro/metal) sobre la misma malla base. *(biblia 05 §0)*
 - [ ] Nuevo módulo `Villages`: spawn de la aldea (Arenas Blancas, 10 NPC) y el puesto de
       trueque (La Meseta, 4 NPC). *(biblia 05 §1.1)*
-- [x] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
-      *(biblia 05 §1.5)* — modelo puro `Villages/ReputationModel` (`FReputationModel::Save`/
+- [ ] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
+      *(biblia 05 §1.5)* → **En parte (PR #92):** modelo puro `Villages/ReputationModel` (`FReputationModel::Save`/
       `Load`, spec `Explored.Villages.Reputation`); registrarla en el subsistema va en la
       casilla de cableado de abajo.
 - [ ] Prop nuevo «tablón de peticiones» (malla + rotación de icono cada 4 días)
       reutilizando `story_es.json.petroglyph_themes`. *(biblia 05 §1.3)*
-- [x] Lógica de trueque: valor 1–5 por objeto × tasa de reputación, ventana horaria
-      8:00–18:00. *(biblia 05 §1.4)* — `Villages/BarterModel` (aritmética entera en cuartos,
+- [ ] Lógica de trueque: valor 1–5 por objeto × tasa de reputación, ventana horaria
+      8:00–18:00. *(biblia 05 §1.4)* → **En parte (PR #92):** `Villages/BarterModel` (aritmética entera en cuartos,
       trueque gratis del tablón, solo básicos en Cauta); DataCheck compara sus constantes con
       `fases_futuras.json`.
 - [ ] Enganchar «devolver objeto ritual» a `Ruins` (+5 reputación, sin trueque de por
@@ -747,24 +1001,24 @@ asaltos), isla oculta y final.
 - [ ] Aldeanos invulnerables al daño de arma (solo huida + penalización de reputación).
       *(biblia 05 §1.5)* — el modelo ya lo fija (`StrikeVillager`: daño 0, huye, −25;
       `IsHostileCombatant` siempre false); falta el actor del aldeano.
-- [x] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
-      *(biblia 05 §1.5)* — `FReputationModel`: una ofensa nueva en Hostil lo alarga, nunca lo
+- [ ] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
+      *(biblia 05 §1.5)* → **En parte (PR #92):** `FReputationModel`: una ofensa nueva en Hostil lo alarga, nunca lo
       acorta.
 - [ ] Especificar e implementar la pantalla de trueque (§2.11 de biblia 06): prompt de
       contexto «Ofrecer {objeto}», sin menú de tienda ni barra de reputación en pantalla.
       *(biblia 06 §2.11)*
 - [ ] Nuevo módulo `Raiders`: percepción reutilizando `Fauna`, patrulla por semilla entre
       los dos campamentos, 4 tipos de pirata con sus daños y vidas. *(biblia 05 §2.1–2.2)*
-- [x] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de
-      biblia 05 §2.3. *(biblia 05 §2.3)* — `Raiders/PirateThreatModel` (sección `raiders`,
+- [ ] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de
+      biblia 05 §2.3. *(biblia 05 §2.3)* → **En parte (PR #92):** `Raiders/PirateThreatModel` (sección `raiders`,
       spec `Explored.Raiders.Threat`).
-- [x] Programador de asaltos: categoría según Amenaza, condición de recursos
-      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)* —
+- [ ] Programador de asaltos: categoría según Amenaza, condición de recursos
+      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)* → **En parte (PR #92):**
       `FPirateThreatModel::EvaluateDay`, determinista por semilla; el humo y el tambor como
       efectos van con el cableado.
-- [x] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes,
+- [ ] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes,
       Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
-      *(biblia 05 §2.5)* — `Raiders/RaiderCampsModel` (spec `Explored.Raiders.Camps`); los
+      *(biblia 05 §2.5)* → **En parte (PR #92):** `Raiders/RaiderCampsModel` (spec `Explored.Raiders.Camps`); los
       actores se crean con el cableado.
 - [ ] Cablear los modelos de F3 en el motor: subsistemas `Villages` y `Raiders` que
       registren las secciones `reputation` y `raiders` en `UExploredSaveSubsystem`, llamen a
@@ -779,8 +1033,10 @@ asaltos), isla oculta y final.
       piezas inflamables y su apagado con agua/arena. *(biblia 05 §4.3)*
 - [ ] Nuevo módulo `Raiders`: escondite pirata en el islote secundario de Los Dientes;
       rutas de patrulla cerca de Arenas Blancas y La Meseta. *(biblia 04 §2.4 TODO)*
-- [ ] `Ruins/RuinsModel`: confirmar que `HiddenIslandIndex` exige `RequiredStarPaths = 3`
+- [x] `Ruins/RuinsModel`: confirmar que `HiddenIslandIndex` exige `RequiredStarPaths = 3`
       de los 4 caminos disponibles, no los 4 completos. *(biblia 04 §2.8 TODO)*
+      → **Hecho:** anterior a #41: `Ruins/RuinsModel.h:89` (`RequiredStarPaths =
+        3`), `RuinsModel.h:202`, `RuinsModel.cpp:311-313`.
 - [ ] `Ruins`/`Artifacts`: cablear el examen de `figura_navegante`, `figura_gemelos`,
       `figura_mira_cielo`, `carta_varillas`, `carta_oleaje`, `tapa_estrellas` a las
       técnicas de wayfinding (hoy `artifacts.json` no tiene ese vínculo por artefacto

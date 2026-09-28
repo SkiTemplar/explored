@@ -4,6 +4,8 @@
 #include "Weather/WeatherModel.h"
 #include "WorldGen/ArchipelagoLayout.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(FSystemLinksSpec, "Explored.Links",
@@ -208,6 +210,27 @@ void FSystemLinksSpec::Define()
 			TestEqual(TEXT("Reanuda sin contar el remo"), Odometer.Step(FVector2D(1150.0, 0.0), true), 0);
 			TestEqual(TEXT("Teletransporte no"), Odometer.Step(FVector2D(900000.0, 0.0), true), 0);
 			TestEqual(TEXT("Sigue desde el salto"), Odometer.Step(FVector2D(900250.0, 0.0), true), 3);
+		});
+
+		It("no se rompe con valores no finitos", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			TestEqual(TEXT("Días con reloj NaN"), DaysSurvived(std::numeric_limits<float>::quiet_NaN(), 4.3f), 0);
+			TestEqual(TEXT("Días con reloj infinito"), DaysSurvived(Inf, 4.3f), 0);
+			TestEqual(TEXT("Días fuera de int32"), DaysSurvived(1.0e30f, 0.0f), TNumericLimits<int32>::Max());
+
+			FSailingOdometer Odometer;
+			Odometer.Step(FVector2D(0.0, 0.0), true);
+			TestEqual(TEXT("Muestra NaN no cuenta"), Odometer.Step(FVector2D(NaN, 0.0), true), 0);
+			TestEqual(TEXT("La siguiente tampoco (salto desde NaN)"), Odometer.Step(FVector2D(100.0, 0.0), true), 0);
+			TestEqual(TEXT("Y después cuenta bien"), Odometer.Step(FVector2D(350.0, 0.0), true), 2);
+
+			FSurvivalInputs Inputs;
+			FSurvivalLinkInputs Links;
+			Links.CarriedWeightRatio = std::numeric_limits<float>::quiet_NaN();
+			ApplySurvivalLinks(Inputs, Links);
+			TestEqual(TEXT("Carga NaN cuenta como nada"), Inputs.CarriedWeightRatio, 0.0f);
 		});
 
 		It("da el ciclón por superado solo si la base sale intacta", [this]()

@@ -559,12 +559,12 @@ piratas); raya y medusa **ya están implementadas** con sus propias constantes e
 
 ### Combate y fauna (§3, §5)
 
-- [ ] [AA] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la propiedad Filo/Punta/Contundente real del objeto, no el mínimo de la plantilla.
-- [ ] [AA] Apertura de corte con profundidad = propiedad ÷ 5 enganchada al sistema `wounds` ya existente en `BodyModel`/`survival_needs.json` (sin crear una segunda barra de heridas).
-- [ ] [AA] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph 1.2 s) como dos variantes de la misma acción contextual de ataque.
-- [ ] [AA] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s.
-- [ ] [AA] Caída de precisión del arco por distancia (100/70/40/0 %).
-- [ ] [AA] Estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los cocoteros (tabla §5) en el módulo `Fauna` ya existente.
-- [ ] [AA] Tiburón de arrecife genérico como variante no legendaria del tiburón tigre «Sombra» ya descrito en biblia §4.6, con las estadísticas de la tabla §5.
+- [x] [AA] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la propiedad Filo/Punta/Contundente real del objeto, no el mínimo de la plantilla.
+- [x] [AA] Apertura de corte con profundidad = propiedad ÷ 5 enganchada al sistema `wounds` ya existente en `BodyModel`/`survival_needs.json` (sin crear una segunda barra de heridas).
+- [x] [AA] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph 1.2 s) como dos variantes de la misma acción contextual de ataque.
+- [x] [AA] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s.
+- [x] [AA] Caída de precisión del arco por distancia (100/70/40/0 %).
+- [x] [AA] Estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los cocoteros (tabla §5) en el módulo `Fauna` ya existente.
+- [x] [AA] Tiburón de arrecife genérico como variante no legendaria del tiburón tigre «Sombra» ya descrito en biblia §4.6, con las estadísticas de la tabla §5.
 - [ ] [F2] Tres piezas de armadura nuevas (coraza de cuero, peto de placas) en `Content/Data/items.json`/`templates.json`, más el trofeo único «Piel de tiburón curtida» ya previsto como recompensa de «El Errante» (biblia §4.6).
 - [ ] [F2/F3] Verificar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el invariante «ninguna plantilla produce un objeto sin malla» (biblia §12).
