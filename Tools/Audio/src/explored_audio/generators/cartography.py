@@ -20,6 +20,8 @@ SR = SAMPLE_RATE
 GAIN_PEN = 1.15
 # Ganancia del sello: misma sonoridad integrada que el modal de antes (~ -17,6 LUFS).
 GAIN_STAMP = 0.85
+# Ganancia de desplegar el mapa: sonoridad integrada como la version anterior (~ -20 LUFS).
+GAIN_UNFOLD = 1.2
 
 
 def _place(out: np.ndarray, x: np.ndarray, pos: int) -> None:
@@ -128,36 +130,84 @@ def map_pen_scratch(name: str) -> np.ndarray:
     return out * GAIN_PEN
 
 
+def _sheet_swish(rng: np.random.Generator, n: int, lo: float, hi: float) -> np.ndarray:
+    """Aire que desplaza la hoja al moverse: ruido rosa en banda que sube de
+    `lo` a `hi` (la hoja acelera) con una campana de sonoridad, a pico 1."""
+    t = np.linspace(0.0, 1.0, n)
+    fc = lo * (hi / lo) ** t
+    x = time_varying_filter(pink_noise(n, rng), SR, fc, q=1.1, kind="bandpass")
+    x *= np.sin(np.pi * t) ** 1.5
+    return x / (np.max(np.abs(x)) + 1e-9)
+
+
 def map_unfold(name: str) -> np.ndarray:
-    """Desplegar un mapa: rafagas de crujidos al abrir cada pliegue, el
-    aire que mueve la hoja (soplo grave que se abre de timbre) y el
-    chasquido final cuando se tensa la hoja sobre la mesa."""
+    """Desplegar un mapa grande sobre la mesa, pliegue a pliegue.
+
+    Antes era un crujido continuo con un soplo de ruido rosa por debajo de
+    350 Hz: el 27 % de la energia por debajo de 150 Hz (un retumbo que el
+    papel no tiene), el 22 % por encima de 8 kHz (siseo) y una envolvente
+    plana en la que no se distinguian los pliegues. Ahora, por capas:
+
+    - cada pliegue (3 o 4) se abre con un "clac" de pandeo: la hoja doblada
+      salta de golpe al otro lado (2-6 ms en banda 1,2-3 kHz) y suelta una
+      rafaga de crujidos de la arruga que se desacelera en ~120 ms;
+    - el aire que mueve la hoja al girar: un soplo en banda que sube de
+      ~300 a ~1100 Hz en 90-160 ms, por delante del pandeo;
+    - entre pliegues, la hoja se desliza sobre si misma: roce flojo en
+      2-4 kHz con crujidos sueltos;
+    - al final la hoja se posa (un "fump" corto de aire apretado contra la
+      mesa, 150-500 Hz, 40 ms) y las dos manos la tensan: dos chasquidos
+      secos muy seguidos y unos crujidos que se asientan.
+    """
     rng = rng_for(name)
-    dur = rng.uniform(1.1, 1.4)
+    folds = int(rng.integers(3, 5))
+    gaps = rng.uniform(0.2, 0.3, folds)
+    first = rng.uniform(0.12, 0.18)
+    starts = first + np.concatenate([[0.0], np.cumsum(gaps[:-1])])
+    land_t = starts[-1] + gaps[-1] + rng.uniform(0.02, 0.06)
+    dur = land_t + rng.uniform(0.3, 0.38)
     n = int(dur * SR)
-
-    # Densidad de crujido: dos o tres pliegues que se abren, cada uno una rafaga.
-    density = np.full(n, 60.0)
     t = np.arange(n) / SR
-    folds = np.sort(rng.uniform(0.05, dur * 0.65, int(rng.integers(2, 4))))
-    for centre in folds:
-        width = rng.uniform(0.06, 0.12)
-        density += rng.uniform(1500.0, 2600.0) * np.exp(-0.5 * ((t - centre) / width) ** 2)
-    crackle = _crackle(n, rng, density)
+    out = np.zeros(n)
 
-    air = pink_noise(n, rng)
-    sweep = np.linspace(350.0, 1600.0, n) ** 1.0
-    air = time_varying_filter(air, SR, sweep, q=0.6, kind="lowpass")
-    air *= fit_length(ar_envelope(SR, dur * 0.3, dur * 0.5, shape=1.5), n) * 0.12
+    # Roce de hoja contra hoja mientras se abre, con crujidos sueltos.
+    slide_env = np.clip((t - starts[0] + 0.1) / 0.1, 0.0, 1.0) * np.clip((land_t - t) / 0.08, 0.0, 1.0)
+    slide = static_filter(rng.standard_normal(n), SR, fc=rng.uniform(2400.0, 3400.0), q=0.8, kind="bandpass")
+    slide *= smooth_random_walk(n, rng, smoothing_hz=6.0, sr=SR, low=0.3, high=1.0) * slide_env
+    density = 10.0 + 25.0 * slide_env
 
-    out = crackle * 0.8 + air
-    snap_pos = int(dur * rng.uniform(0.72, 0.8) * SR)
-    snap_n = int(0.05 * SR)
-    snap = static_filter(rng.standard_normal(snap_n), SR, fc=2200.0, q=0.6, kind="bandpass") * np.exp(-np.arange(snap_n) / SR / 0.008)
-    flap = modal_hit(SR, 0.12, base_freq=rng.uniform(85, 115), mode_ratios=[1.0, 2.2], mode_dampings_s=[0.03, 0.015], mode_amps=[1.0, 0.3], rng=rng, detune=0.03)
-    _place(out, snap * 0.9, snap_pos)
-    _place(out, flap * 0.35, snap_pos)
-    return out * fit_length(ar_envelope(SR, 0.01, 0.08, hold_s=dur - 0.09), n)
+    for i, st in enumerate(starts):
+        # Soplo por delante del pandeo: la hoja gira y luego salta.
+        sw_n = int(rng.uniform(0.09, 0.16) * SR)
+        _place(out, _sheet_swish(rng, sw_n, rng.uniform(260.0, 340.0), rng.uniform(900.0, 1200.0)) * rng.uniform(0.18, 0.26), max(int(st * SR) - sw_n // 2, 0))
+        # Pandeo: el pliegue se da la vuelta de golpe.
+        pop_pos = int((st + rng.uniform(0.03, 0.05)) * SR)
+        pop = _burst(rng, int(0.012 * SR), fc=rng.uniform(1200.0, 3000.0), q=0.9, kind="bandpass", decay_s=rng.uniform(0.0015, 0.004))
+        _place(out, pop * rng.uniform(0.55, 0.8), pop_pos)
+        # Rafaga de la arruga que se abre: densa al saltar, se desacelera.
+        rel = t - pop_pos / SR
+        density += np.where(rel >= 0.0, rng.uniform(1600.0, 2400.0) * np.exp(-np.maximum(rel, 0.0) / rng.uniform(0.05, 0.08)), 0.0)
+
+    # Se posa: aire apretado contra la mesa.
+    land = int(land_t * SR)
+    fump_n = int(0.06 * SR)
+    fump = static_filter(rng.standard_normal(fump_n), SR, fc=rng.uniform(220.0, 320.0), q=0.7, kind="bandpass")
+    fump *= np.sin(np.pi * np.linspace(0.0, 1.0, fump_n)) ** 2
+    _place(out, fump / (np.max(np.abs(fump)) + 1e-9) * 0.35, land - fump_n // 2)
+    # Las manos tensan la hoja: dos chasquidos secos casi juntos.
+    snap_pos = land + int(rng.uniform(0.06, 0.1) * SR)
+    for k in range(2):
+        snap = _burst(rng, int(0.02 * SR), fc=rng.uniform(1800.0, 3200.0), q=0.7, kind="bandpass", decay_s=rng.uniform(0.002, 0.004))
+        _place(out, snap * (0.9 if k == 0 else 0.55), snap_pos + k * int(rng.uniform(0.012, 0.025) * SR))
+    rel = t - snap_pos / SR
+    density += np.where(rel >= 0.0, 900.0 * np.exp(-np.maximum(rel, 0.0) / 0.05), 0.0)
+
+    crackle = _crackle(n, rng, density, band=(1500.0, 6500.0))
+    out += crackle * 0.8 + slide * 0.035
+    # El papel no tiene retumbo ni siseo por encima de ~10 kHz.
+    out = static_filter(out, SR, fc=140.0, q=0.707, kind="highpass")
+    out = static_filter(out, SR, fc=10000.0, q=0.707, kind="lowpass")
+    return out * fit_length(ar_envelope(SR, 0.005, 0.06, hold_s=dur - 0.065), n) * GAIN_UNFOLD
 
 
 def _burst(rng: np.random.Generator, n: int, fc: float, q: float, kind: str, decay_s: float) -> np.ndarray:

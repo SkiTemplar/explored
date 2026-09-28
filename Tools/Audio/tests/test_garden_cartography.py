@@ -143,6 +143,23 @@ def test_desplegar_mapa_es_crujido_de_papel(rendered):
     assert _band_share(rendered["sfx_map_unfold"], 1500.0, 12000.0) >= 0.5
 
 
+def test_desplegar_mapa_se_oye_pliegue_a_pliegue_sin_retumbo_ni_siseo(rendered):
+    """Cada pliegue es un golpe de sonoridad propio (pandeo y rafaga de la
+    arruga) y el final son otro o dos (se posa y se tensa): al menos 5 picos
+    con 6 dB de prominencia en la envolvente de 20 ms. Antes era un crujido
+    plano (3-4 picos), con el 27 % de la energia por debajo de 150 Hz y el
+    22 % por encima de 8 kHz."""
+    audio = rendered["sfx_map_unfold"]
+    frame = int(0.02 * SAMPLE_RATE)
+    frames = audio[: len(audio) // frame * frame].reshape(-1, frame)
+    db = 20.0 * np.log10(np.sqrt((frames ** 2).mean(axis=1)) + 1e-9)
+    peaks, _ = signal.find_peaks(db, prominence=6.0, distance=7)
+    assert len(peaks) >= 5, f"{len(peaks)} picos"
+    assert _band_share(audio, 0.0, 150.0) < 0.05
+    assert _band_share(audio, 8000.0, SAMPLE_RATE / 2) < 0.15
+    assert np.max(np.abs(audio[-64:])) < 1e-3
+
+
 def test_pluma_sigue_el_gesto_de_la_mano(rendered):
     """Adherencia-deslizamiento: la sonoridad sube y baja con la rapidez del
     plumin, que cae en cada cambio de sentido de la letra (la envolvente se
