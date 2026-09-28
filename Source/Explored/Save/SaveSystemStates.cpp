@@ -645,7 +645,9 @@ namespace ExploredSaveStates
 		{
 			ReadInventoryItem(In, Entry.Item);
 			In.Read(TEXT("slotIndex"), Entry.SlotIndex);
-			return Entry.Item.IsValid();
+			// Un id negativo o enorme haría rechazar el inventario entero en ValidateState:
+			// se pierde ese objeto y no todo lo demás.
+			return Entry.Item.IsValid() && FInventoryModel::IsUsableInstanceId(Entry.Item.InstanceId);
 		});
 	}
 

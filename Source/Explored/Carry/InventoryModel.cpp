@@ -334,7 +334,7 @@ EInventoryFail FInventoryContainer::CanAccept(const FInventoryItem& Item) const
 {
 	using namespace InventoryModelDetail;
 
-	if (!Item.IsValid())
+	if (!Item.IsValid() || !FInventoryModel::IsUsableInstanceId(Item.InstanceId))
 	{
 		return EInventoryFail::InvalidItem;
 	}
@@ -708,7 +708,8 @@ EInventoryFail FInventoryModel::CanPlace(const FInventoryItem& Item, EInventoryS
 {
 	using namespace InventoryModelDetail;
 
-	if (!Item.IsValid())
+	// Con un id fuera de rango, NextInstanceId = Id + 1 desbordaría (PlaceInHand, TakeFromWorld).
+	if (!Item.IsValid() || !FInventoryModel::IsUsableInstanceId(Item.InstanceId))
 	{
 		return EInventoryFail::InvalidItem;
 	}
@@ -1248,7 +1249,8 @@ bool FInventoryModel::AttachSledge(const FInventoryItem& SledgeItem, const FInve
 		return false;
 	}
 	FInventoryEquipmentSpec Spec;
-	if (!SledgeItem.IsValid() || !FindEquipmentSpec(SledgeItem, Spec) || Spec.Kind != EInventoryEquipment::Sledge)
+	if (!SledgeItem.IsValid() || !IsUsableInstanceId(SledgeItem.InstanceId)
+		|| !FindEquipmentSpec(SledgeItem, Spec) || Spec.Kind != EInventoryEquipment::Sledge)
 	{
 		OutFail = EInventoryFail::NotEquippable;
 		return false;
@@ -1534,6 +1536,12 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 	FInventoryState S = InState;
 	RebuildSpecs(S);
 	OutFail = EInventoryFail::CorruptState;
+
+	// Contador de ids: por debajo de 1 repartiría ids no válidos y en el tope desbordaría.
+	if (S.NextInstanceId < 1 || S.NextInstanceId > MaxInstanceId)
+	{
+		return false;
+	}
 
 	// Manos.
 	if (S.bHandsHoldTwoHanded)

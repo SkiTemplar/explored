@@ -4,6 +4,8 @@
 #include "Save/SaveSystemStates.h"
 #include "Save/SaveValue.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace SaveSystemsTest
@@ -383,6 +385,32 @@ void FSaveSystemsSpec::Define()
 			FInventoryState Loaded;
 			LoadInventory(ThroughText(Ar), Loaded);
 			TestTrue(TEXT("Mismo estado"), Loaded == State);
+		});
+
+		It("descarta los objetos con id negativo o enorme sin perder el resto", [this]()
+		{
+			FInventoryState State;
+			const int64 Ids[] = { 3, -5, std::numeric_limits<int64>::max() };
+			for (const int64 Id : Ids)
+			{
+				FInventoryEntry Entry;
+				Entry.Item.InstanceId = Id;
+				Entry.Item.DefinitionId = FName(TEXT("basalto"));
+				Entry.Item.WeightKg = 1.0f;
+				Entry.SlotIndex = State.Pockets.Entries.Num();
+				State.Pockets.Entries.Add(Entry);
+			}
+			State.NextInstanceId = 10;
+
+			FSaveArchive Ar;
+			SaveInventory(Ar, State);
+			FInventoryState Loaded;
+			LoadInventory(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Solo queda la piedra buena"), Loaded.Pockets.Entries.Num(), 1);
+			TestEqual(TEXT("Es la del id 3"), Loaded.Pockets.Num() == 1 ? Loaded.Pockets.Entries[0].Item.InstanceId : int64(0), int64(3));
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("El inventario cargado es válido"), Model.LoadState(Loaded, Fail));
 		});
 
 		It("aplana y reconstruye un objeto fabricado con sus piezas", [this]()

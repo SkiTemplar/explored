@@ -691,6 +691,53 @@ void FInventorySpec::Define()
 			TestTrue(TEXT("El peso sigue siendo finito"), FMath::IsFinite(Model.GetBodyWeightKg()));
 		});
 
+		It("no deja que los ids de instancia desborden", [this]()
+		{
+			const int64 Huge = std::numeric_limits<int64>::max();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			PickAndStore(Model, Piedra(Model), EInventorySlot::Pockets, Fail);
+			const FInventoryState Good = Model.GetState();
+
+			// "nextInstanceId": INT64_MAX pasaba la validación y AllocateInstanceId hacía Id + 1.
+			FInventoryState HugeCounter = Good;
+			HugeCounter.NextInstanceId = Huge;
+			TestFalse(TEXT("Contador en el máximo de int64"), Model.LoadState(HugeCounter, Fail));
+			FInventoryState ZeroCounter;
+			ZeroCounter.NextInstanceId = 0;
+			TestFalse(TEXT("Contador a 0"), Model.LoadState(ZeroCounter, Fail));
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+
+			FInventoryItem HugeStone = Piedra(Model);
+			HugeStone.InstanceId = Huge;
+			TestFalse(TEXT("No se coge un objeto con id enorme"), Model.PlaceInHand(HugeStone, EInventorySlot::HandLeft, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::InvalidItem);
+
+			TestTrue(TEXT("El contador sigue en su sitio"), Model.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			// Cada vía por separado, en un modelo limpio: la mano ocupada no debe tapar el caso.
+			FInventoryModel FromChest;
+			FInventoryContainer Chest;
+			Chest.Spec = FInventoryContainerSpec::Chest();
+			FInventoryEntry Entry;
+			Entry.Item = HugeStone;
+			Chest.Entries.Add(Entry);
+			TestFalse(TEXT("Ni de un arcón"), FromChest.TakeFromWorld(Chest, Huge, EInventorySlot::HandLeft, Fail));
+			TestTrue(TEXT("Contador del arcón en su sitio"), FromChest.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			FInventoryModel WithLoad;
+			FInventoryContainer Load;
+			Load.Entries.Add(Entry);
+			TestFalse(TEXT("Ni en la carga de unas angarillas"), WithLoad.AttachSledge(Angarillas(WithLoad), Load, Fail));
+			TestTrue(TEXT("Contador de la carga en su sitio"), WithLoad.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+
+			FInventoryModel WithSledge;
+			FInventoryItem HugeSledge = Angarillas(WithSledge);
+			HugeSledge.InstanceId = Huge;
+			TestFalse(TEXT("Ni unas angarillas con id enorme"), WithSledge.AttachSledge(HugeSledge, FInventoryContainer(), Fail));
+			TestTrue(TEXT("Contador de las angarillas en su sitio"), WithSledge.GetState().NextInstanceId < FInventoryModel::MaxInstanceId);
+		});
+
 		It("rechaza una comodidad de mochila negativa o no finita", [this]()
 		{
 			FInventoryModel Model;
