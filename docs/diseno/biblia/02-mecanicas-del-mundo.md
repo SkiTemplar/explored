@@ -121,7 +121,8 @@ puede rebrotar).
   sin penalizar el intento.
 - El botín de un golpe efectivo es determinista por golpe (no por RNG de
   loot): un golpe = una unidad del ítem de ese estrato (tabla 2.3), salvo
-  donde se indique lo contrario (vetas finitas).
+  donde se indique lo contrario (vetas finitas). En el terreno volumétrico del
+  GDD v2 §3.4 eso son **6 unidades por m³** (`mining.json/unitsPerM3`).
 
 ### 2.2 Herramientas de minería (catálogo nuevo)
 
@@ -150,7 +151,7 @@ biblia §3.4).
   "baseMaxDurability": 55,
   "slots": [
     { "role": "Cabeza", "requireAll": false,
-      "requirements": [ { "property": "Contundente", "min": 3 }, { "property": "Rigido", "min": 3 } ] },
+      "requirements": [ { "property": "Punta", "min": 2 } ], "tags": ["piedra", "mineral", "metal"] },
     { "role": "Mango", "requireAll": true,
       "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
     { "role": "Union", "requireAll": false,
@@ -160,11 +161,16 @@ biblia §3.4).
 
 | Nombre | Cabeza (material) | Radio de esfera | Tiempo/golpe | Durabilidad | Peso | Nivel |
 |---|---|---|---|---|---|---|
-| **Pico de piedra** | `canto_rodado`/`basalto` | 0,40 m | 1,3 s | 55 | 1,6 kg | Nivel 1 (tosco) |
-| **Pico tallado** | `basalto` + `lasca_pedernal` | 0,42 m | 1,2 s | 75 | 1,9 kg | Nivel 2 (tallado) |
-| **Pico de obsidiana** | `obsidiana` | 0,50 m | 1,0 s | 30 | 1,2 kg | Nivel 3 (obsidiana) |
-| **Pico rescatado** | `chapa_fuselaje`/`hierro_meteorito` | 0,55 m | 1,1 s | 95 | 2,1 kg | Nivel 4 (rescatado) |
+| **Pico de piedra** | `canto_aguzado` (lasca + `canto_rodado`, Tallar) | 0,40 m | 1,3 s | 55 | 1,6 kg | Nivel 1 (tosco); `ToolTier` 2 |
+| **Pico tallado** | `basalto_tallado` (lasca + `basalto`, Tallar) | 0,42 m | 1,2 s | 75 | 1,9 kg | Nivel 2 (tallado); `ToolTier` 3 |
+| **Pico de obsidiana** | `obsidiana` | 0,50 m | 1,0 s | 30 | 1,2 kg | Nivel 3 (obsidiana); `ToolTier` 4 |
+| **Pico rescatado** | `cabeza_pico_rescatada` (`chapa_fuselaje`/`hierro_meteorito` golpeados en el `banco_chatarra`) | 0,55 m | 1,1 s | 95 | 2,1 kg | Nivel 4 (rescatado); `ToolTier` 4 |
 
+- **Cabeza con Punta** (integración 2026-09-28): el slot `Cabeza` exige `Punta ≥ 2`
+  para que `canto_rodado`/`piedra_plana`/`basalto` + mango sigan dando el **hacha de
+  piedra** (§1.2); cada cabeza de pico se prepara antes (tabla). Numeración: el «Nivel»
+  de esta biblia es el `ToolTier` del C++ menos uno (0 mano, 1 pala); `mining.json/tools`
+  lleva el `ToolTier`.
 - **Fragilidad del pico de obsidiana** (biblia §2.4, «se rompen si golpeas
   piedra»): cada golpe efectivo contra un estrato de dureza ≥ 3 (basalto,
   obsidiana, hierro, cristal) tiene un **8 % de probabilidad** de perder de

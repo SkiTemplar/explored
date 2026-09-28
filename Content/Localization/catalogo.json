@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 619,
+		"total": 637,
 		"cpp": 303,
-		"datos": 316,
+		"datos": 334,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3088,6 +3088,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "banco_chatarra.nameEs",
+			"es": "Banco de chatarra",
+			"en": "Scrap bench",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «banco_chatarra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "cama_hojas.nameEs",
 			"es": "Cama de hojas",
 			"en": "Leaf bed",
@@ -3294,6 +3304,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «piedra_trabajo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pila_compost.nameEs",
+			"es": "Pila de compost",
+			"en": "Compost heap",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pila_compost» nameEs/nameEn"
 			]
 		},
 		{
@@ -3708,6 +3728,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "basalto_tallado.nameEs",
+			"es": "Cabeza de basalto tallada",
+			"en": "Knapped basalt head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «basalto_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "batata.nameEs",
 			"es": "Batata",
 			"en": "Sweet potato",
@@ -3754,6 +3784,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «brujula» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cabeza_pico_rescatada.nameEs",
+			"es": "Cabeza de pico rescatada",
+			"en": "Salvaged pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cabeza_pico_rescatada» nameEs/nameEn"
 			]
 		},
 		{
@@ -3814,6 +3854,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cantimplora» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "canto_aguzado.nameEs",
+			"es": "Canto aguzado",
+			"en": "Pointed pebble",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «canto_aguzado» nameEs/nameEn"
 			]
 		},
 		{
@@ -3934,6 +3984,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «comida_quemada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "compost.nameEs",
+			"es": "Compost",
+			"en": "Compost",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «compost» nameEs/nameEn"
 			]
 		},
 		{
@@ -4628,6 +4688,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "pico.nameEs",
+			"es": "Pico",
+			"en": "Pick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "piedra_plana.nameEs",
 			"es": "Piedra plana",
 			"en": "Flat stone",
@@ -4844,6 +4914,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «tendon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "tierra_suelta.nameEs",
+			"es": "Tierra suelta",
+			"en": "Loose soil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tierra_suelta» nameEs/nameEn"
 			]
 		},
 		{
@@ -5778,6 +5858,66 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_chapa.nameEs",
+			"es": "Cabeza de pico de chapa",
+			"en": "Sheet-metal pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_chapa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_chapa.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_chapa» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_hierro.nameEs",
+			"es": "Cabeza de pico de hierro",
+			"en": "Iron pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_hierro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_hierro.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_hierro» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_por_tallado.nameEs",
+			"es": "Cabeza de pico por tallado",
+			"en": "Carved pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_por_tallado.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cesta.nameEs",
 			"es": "Cesta",
 			"en": "Basket",
@@ -6034,6 +6174,46 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pegado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pico.nameEs",
+			"es": "Pico",
+			"en": "Pick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pico.nameTemplate",
+			"es": "Pico de {0} con mango de {1}, atado con {2}",
+			"en": "{0} pick with a {1} handle, lashed with {2}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "punta_de_canto_por_tallado.nameEs",
+			"es": "Punta de canto por tallado",
+			"en": "Knapped cobble point",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «punta_de_canto_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "punta_de_canto_por_tallado.nameTemplate",
+			"es": "Punta de {1}",
+			"en": "{1} point",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «punta_de_canto_por_tallado» nameTemplate/nameTemplateEn"
 			]
 		},
 		{

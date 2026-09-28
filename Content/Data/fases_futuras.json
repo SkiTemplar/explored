@@ -1,0 +1,144 @@
+{
+	"version": 1,
+	"note": "BORRADOR de fase 2 y 3 (GDD v2 §6.2): nada de aquí lo carga el juego ni lo puede usar un dato de fase 1 (lo comprueba DataCheck). Números de la biblia 02 §9-11, 03 §3.9 y 05 §1.4-1.6 y §4; donde la biblia no fija un número, el valor lleva \"propuesta\": true. Sin moneda ni tienda (GDD v2 §5).",
+	"pendingItems": [
+		{ "id": "lingote_hierro", "nameEs": "Lingote de hierro", "nameEn": "Iron ingot", "fase": 2, "noteEs": "Del hierro de meteorito en un horno de fundición (estación aún sin diseñar)" },
+		{ "id": "clavos", "nameEs": "Clavos", "nameEn": "Nails", "fase": 2, "noteEs": "Del lingote de hierro" },
+		{ "id": "leche_cabra", "nameEs": "Leche de cabra", "nameEn": "Goat's milk", "fase": 2, "noteEs": "Comida: exige recipes.json y CookingData.inl" },
+		{ "id": "batata_violeta", "nameEs": "Batata violeta", "nameEn": "Purple sweet potato", "fase": 3, "noteEs": "Variedad exclusiva del trueque (biblia 05 §1.4)" },
+		{ "id": "ceramica_decorada", "nameEs": "Cerámica decorada", "nameEn": "Decorated pottery", "fase": 3 },
+		{ "id": "sal_refinada", "nameEs": "Sal refinada", "nameEn": "Refined salt", "fase": 3 },
+		{ "id": "vela_lona_reforzada", "nameEs": "Vela de lona reforzada", "nameEn": "Reinforced canvas sail", "fase": 3 },
+		{ "id": "tabla_mareas", "nameEs": "Tabla de mareas", "nameEn": "Tide table", "fase": 3, "noteEs": "Ayuda de cartografía" },
+		{ "id": "perla", "nameEs": "Perla", "nameEn": "Pearl", "fase": 3 },
+		{ "id": "nacar_trabajado", "nameEs": "Nácar trabajado", "nameEn": "Worked mother-of-pearl", "fase": 3 }
+	],
+	"tramway": {
+		"fase": 2,
+		"noteEs": "GDD v2 §3.5: fuera del acceso anticipado hasta tener prototipo en PIE. Costes de la biblia 03 §3.9 (la biblia 02 §9 da un coste de vía más barato; manda 03 porque usa ids del catálogo).",
+		"redNotaEs": "Biblia 08 §9.3 [F2]: vagones replicados como actores del servidor (física y carga autoritativas, como los barcos de §2.5); raíles y torno son piezas de construcción (§2.10: validadas en el servidor, 0 B tras aparecer). El torno lo acciona un jugador cada vez; el servidor resuelve el orden de llegada.",
+		"wagon": { "capacityKg": 200, "pushSpeedMs": 1.2, "winchSpeedMs": 2.0, "maxPushSlopeDeg": 5 },
+		"shaftLiftMinDepthM": 25,
+		"pieces": [
+			{ "id": "rail_recto", "nameEs": "Tramo de raíl recto", "nameEn": "Straight rail section", "fase": 2, "socket": "via", "lengthM": 2,
+				"cost": [ { "item": "madera_dura", "count": 3 }, { "item": "lingote_hierro", "count": 2 }, { "item": "clavos", "count": 6 } ] },
+			{ "id": "rail_curvo", "nameEs": "Tramo de raíl curvo", "nameEn": "Curved rail section", "fase": 2, "socket": "via", "lengthM": 2,
+				"cost": [ { "item": "madera_dura", "count": 3 }, { "item": "lingote_hierro", "count": 2 }, { "item": "clavos", "count": 8 } ] },
+			{ "id": "cambio_agujas", "nameEs": "Cambio de agujas", "nameEn": "Points switch", "fase": 2, "socket": "via", "lengthM": 2,
+				"cost": [ { "item": "madera_dura", "count": 5 }, { "item": "lingote_hierro", "count": 4 }, { "item": "clavos", "count": 10 } ] },
+			{ "id": "vagon", "nameEs": "Vagón", "nameEn": "Mine cart", "fase": 2, "socket": "via", "lengthM": 0,
+				"cost": [ { "item": "madera_dura", "count": 6 }, { "item": "lingote_hierro", "count": 3 }, { "item": "tubo_aluminio", "count": 2 }, { "item": "cuerda", "count": 2 } ] },
+			{ "id": "torno_cuerda", "nameEs": "Torno de cuerda", "nameEn": "Rope winch", "fase": 2, "socket": "terreno", "lengthM": 0,
+				"cost": [ { "item": "tronco_pequeno", "count": 4 }, { "item": "lingote_hierro", "count": 2 }, { "item": "cuerda", "count": 8 } ] },
+			{ "id": "ascensor_pozo", "nameEs": "Ascensor de pozo", "nameEn": "Shaft lift", "fase": 2, "socket": "terreno", "lengthM": 0,
+				"cost": [ { "item": "madera_dura", "count": 10 }, { "item": "lingote_hierro", "count": 6 }, { "item": "cuerda", "count": 12 }, { "item": "torno_cuerda", "count": 1 } ] }
+		]
+	},
+	"livestock": {
+		"fase": 2,
+		"noteEs": "GDD v2 §3.6, biblia 02 §10.2 y §11.5. Animales con rig de Quaternius (CC0).",
+		"redNotaEs": "Biblia 08 §5.5: corrales y animales son del grupo. Los animales domésticos son fauna terrestre replicada (§2.7 b) y cuentan en su tope duro (12 a 10 Hz, 24 a 2 Hz por cliente); comida, cría y doma se resuelven solo en el servidor. Propuesta: fuera de 60 m el corral replica un único estado agregado en lugar de cada animal.",
+		"maxAlivePerBase": 8,
+		"feedPerDay": 1,
+		"feedItems": ["platano", "taro", "batata", "coco_maduro", "mango_fruta", "pina", "maracuya"],
+		"breeding": { "dailyChance": 0.15, "daysToAdult": 6 },
+		"taming": { "daysFedToTame": 3, "daysUnfedToWild": 2 },
+		"species": [
+			{ "id": "gallina", "nameEs": "Gallina", "nameEn": "Hen", "fase": 2, "structure": "gallinero", "wildSource": null,
+				"product": { "item": "huevo", "everyDays": 1, "requires": "adulta" } },
+			{ "id": "cerdo", "nameEs": "Cerdo", "nameEn": "Pig", "fase": 2, "structure": "pocilga", "wildSource": "cerdo_salvaje",
+				"product": null },
+			{ "id": "cabra", "nameEs": "Cabra", "nameEn": "Goat", "fase": 2, "structure": "corral", "wildSource": "cabra_salvaje",
+				"product": { "item": "leche_cabra", "everyDays": 1, "requires": "cria_reciente" } }
+		],
+		"pieces": [
+			{ "id": "gallinero", "nameEs": "Gallinero", "nameEn": "Coop", "fase": 2, "socket": "terreno", "propuesta": true,
+				"cost": [ { "item": "palo_recto", "count": 8 }, { "item": "hoja_palma", "count": 10 }, { "item": "cuerda", "count": 2 } ] },
+			{ "id": "pocilga", "nameEs": "Pocilga", "nameEn": "Sty", "fase": 2, "socket": "terreno", "propuesta": true,
+				"cost": [ { "item": "tronco_pequeno", "count": 8 }, { "item": "cuerda", "count": 3 } ] },
+			{ "id": "corral", "nameEs": "Corral", "nameEn": "Pen", "fase": 2, "socket": "terreno", "propuesta": true,
+				"cost": [ { "item": "tronco_pequeno", "count": 6 }, { "item": "estaca", "count": 8 }, { "item": "cuerda", "count": 3 } ] }
+		]
+	},
+	"defenses": {
+		"fase": 2,
+		"noteEs": "Biblia 05 §4.1-4.3: piezas del kit de construcción; se activan contra piratas en fase 3. Vida de la biblia; costes propuestos.",
+		"redNotaEs": "Biblia 08 §2.10: murallas, torres y trampas son piezas de construcción colocadas y degradadas en el servidor. El disparo de una trampa y su daño los tira el servidor (como ReefSharkAttackRoll, §2.7); los clientes solo ven el multicast cosmético.",
+		"repairFractionPerUnit": 0.2,
+		"pieces": [
+			{ "id": "cerca_estacas", "nameEs": "Cerca de estacas", "nameEn": "Stake fence", "fase": 2, "socket": "pared", "health": 60, "crossDelayS": 1.5, "propuesta": true,
+				"cost": [ { "item": "estaca", "count": 6 }, { "item": "cuerda", "count": 1 } ] },
+			{ "id": "empalizada", "nameEs": "Empalizada de madera", "nameEn": "Wooden palisade", "fase": 2, "socket": "pared", "health": 140, "propuesta": true,
+				"cost": [ { "item": "tronco_pequeno", "count": 6 }, { "item": "cuerda", "count": 2 } ] },
+			{ "id": "muralla_piedra", "nameEs": "Muralla de piedra", "nameEn": "Stone wall", "fase": 2, "socket": "pared", "health": 380, "fireproof": true, "propuesta": true,
+				"cost": [ { "item": "piedra_plana", "count": 10 }, { "item": "canto_rodado", "count": 6 }, { "item": "arcilla_roja", "count": 4 } ] },
+			{ "id": "puerta_muralla", "nameEs": "Puerta de muralla", "nameEn": "Wall gate", "fase": 2, "socket": "puerta", "health": 180, "propuesta": true,
+				"cost": [ { "item": "madera_dura", "count": 6 }, { "item": "tronco_pequeno", "count": 2 }, { "item": "cuerda", "count": 2 } ] },
+			{ "id": "torre_defensa", "nameEs": "Torre de defensa", "nameEn": "Defence tower", "fase": 2, "socket": "terreno", "health": 320, "platformM": 4, "propuesta": true,
+				"cost": [ { "item": "tronco_pequeno", "count": 12 }, { "item": "madera_dura", "count": 6 }, { "item": "cuerda", "count": 4 } ] }
+		],
+		"traps": [
+			{ "id": "foso_estacas", "nameEs": "Foso con estacas", "nameEn": "Staked pit", "fase": 2, "damage": 18, "stunS": 1, "reusable": true,
+				"cost": [ { "item": "estaca", "count": 6 } ], "noteEs": "Es terreno cavado (§3.4) con estacas en el fondo" },
+			{ "id": "estacas_ocultas", "nameEs": "Estacas ocultas", "nameEn": "Hidden stakes", "fase": 2, "damage": 22, "stunS": 2, "reusable": false,
+				"cost": [ { "item": "estaca", "count": 2 }, { "item": "fibra_coco", "count": 1 } ] }
+		]
+	},
+	"trade": {
+		"fase": 3,
+		"noteEs": "GDD v2 §3.9 y §5, biblia 05 §1.4-1.6: trueque sin moneda. Valor 1-5 × tasa del tramo de reputación. Los tesoros del museo no se truecan.",
+		"redNotaEs": "Biblia 08 §5.5: la reputación es del grupo y vive en el servidor. Cada trueque es un RPC al servidor, que valida el inventario de quien lo hace (§2.4) y aplica el cambio de reputación; los aldeanos son actores replicados de §2.7 b ([F3], +4 en §9.3).",
+		"settlements": [
+			{ "island": "whitesands", "initialReputation": 50 },
+			{ "island": "mesa", "initialReputation": 50 }
+		],
+		"hours": [8, 18],
+		"reputationPerDayCap": 1,
+		"hostileCooldownDays": 15,
+		"passiveDecay": false,
+		"tiers": [
+			{ "id": "hostil", "nameEs": "Hostil", "nameEn": "Hostile", "min": 0, "max": 19, "rate": 0, "tradeOpen": false },
+			{ "id": "cauta", "nameEs": "Cauta", "nameEn": "Wary", "min": 20, "max": 39, "rate": 0.75, "tradeOpen": true },
+			{ "id": "neutral", "nameEs": "Neutral", "nameEn": "Neutral", "min": 40, "max": 69, "rate": 1.0, "tradeOpen": true },
+			{ "id": "buena", "nameEs": "Buena", "nameEn": "Good", "min": 70, "max": 89, "rate": 1.25, "tradeOpen": true },
+			{ "id": "alta", "nameEs": "Alta", "nameEn": "High", "min": 90, "max": 100, "rate": 1.5, "tradeOpen": true }
+		],
+		"wants": [
+			{ "id": "fruta_y_pescado", "nameEs": "Fruta común y pescado fresco", "value": 1, "tags": ["fruta", "pescado"] },
+			{ "id": "comida_preparada", "nameEs": "Comida preparada o conservada", "value": 2, "tags": ["cocinado", "conserva"] },
+			{ "id": "fibra_y_ceramica", "nameEs": "Cerámica, tela y cordelería", "value": 2, "tags": ["fibra", "ceramica"], "items": ["cordel", "cuerda", "cesta"] },
+			{ "id": "pieles", "nameEs": "Cuero y pieles", "value": 3, "items": ["cuero_curtido", "piel_bruto"] },
+			{ "id": "herramientas_buenas", "nameEs": "Herramientas de nivel 2-3", "value": 3, "items": ["hacha", "cuchillo", "lanza", "pico"] },
+			{ "id": "medicina", "nameEs": "Medicina", "value": 4, "tags": ["medicinal"], "items": ["pasta_medicinal"] },
+			{ "id": "metal_trabajado", "nameEs": "Metal trabajado", "value": 5, "items": ["chapa_fuselaje", "tubo_aluminio", "lingote_hierro", "clavos"] }
+		],
+		"offers": [
+			{ "item": "batata_violeta", "value": 2, "minTier": "neutral" },
+			{ "item": "ceramica_decorada", "value": 2, "minTier": "neutral" },
+			{ "item": "sal_refinada", "value": 2, "minTier": "neutral" },
+			{ "item": "cuerda", "value": 3, "minTier": "neutral" },
+			{ "item": "vela_lona_reforzada", "value": 3, "minTier": "neutral" },
+			{ "item": "tabla_mareas", "value": 3, "minTier": "neutral" },
+			{ "item": "perla", "value": 3, "minTier": "buena" },
+			{ "item": "nacar_trabajado", "value": 3, "minTier": "buena" },
+			{ "livestock": "gallina", "value": 5, "minTier": "alta" },
+			{ "livestock": "cabra", "value": 5, "minTier": "alta" }
+		],
+		"favors": [
+			{ "id": "ensenar_wayfinding", "nameEs": "Enseñar una técnica de navegación", "minTier": "buena" },
+			{ "id": "aviso_asalto", "nameEs": "Avisar de un asalto pirata", "minTier": "alta" }
+		],
+		"reputationActions": [
+			{ "id": "trueque", "nameEs": "Trueque (máx. 1 al día)", "delta": 3 },
+			{ "id": "devolver_ritual", "nameEs": "Devolver un objeto ritual a su marae", "delta": 5 },
+			{ "id": "encargo_tablon", "nameEs": "Completar un encargo del tablón", "delta": 4 },
+			{ "id": "jornada_respetuosa", "nameEs": "Un día sin minar, talar ni cazar cerca de la aldea o de un marae", "delta": 2 },
+			{ "id": "defender_asalto", "nameEs": "Ayudar a repeler un asalto pirata", "delta": 10 },
+			{ "id": "cazar_cerca", "nameEs": "Cazar a menos de 150 m de la aldea", "delta": -15 },
+			{ "id": "minar_talar_marae", "nameEs": "Minar o talar a menos de 50 m de un marae activo", "delta": -10 },
+			{ "id": "saquear", "nameEs": "Saquear un contenedor o las ofrendas", "delta": -20 },
+			{ "id": "golpear_aldeano", "nameEs": "Golpear a un aldeano", "delta": -25 }
+		],
+		"questRotationDays": 4
+	}
+}
