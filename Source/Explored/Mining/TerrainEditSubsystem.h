@@ -96,6 +96,8 @@ private:
 	void AfterEdit(const TArray<FIntVector>& ChangedSamples, const TArray<FIntVector>& DirtyChunks, bool bBroadcast);
 	void HandleLevelAdded(ULevel* Level, UWorld* InWorld);
 	FVector ViewerMeters() const;
+	/** Material de las mallas finas desde el ajuste de proyecto (carga asíncrona por referencia). */
+	void RequestRuntimeMaterial();
 
 	TSharedPtr<const FTerrainDensity> TerrainDensity;
 	FTerrainEdits Edits;
@@ -104,4 +106,5 @@ private:
 	TObjectPtr<UTerrainRuntimeMesher> Mesher;
 
 	FDelegateHandle LevelAddedHandle;
+	TSharedPtr<struct FStreamableHandle> MaterialLoadHandle;
 };

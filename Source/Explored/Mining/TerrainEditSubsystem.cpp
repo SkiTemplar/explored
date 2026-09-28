@@ -1,11 +1,15 @@
 #include "Mining/TerrainEditSubsystem.h"
 
+#include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
+#include "Engine/StreamableManager.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
+#include "Materials/MaterialInterface.h"
 
 #include "Explored.h"
+#include "Mining/ExploredTerrainSettings.h"
 #include "Save/SaveWorldDeltas.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/TerrainDensity.h"
@@ -14,7 +18,7 @@
 
 namespace TerrainEditSubsystemDetail
 {
-	TAutoConsoleVariable<float> CVarRemeshBudgetMs(TEXT("explored.Terrain.RemeshBudgetMs"), 1.5f,
+	TAutoConsoleVariable<float> CVarRemeshBudgetMs(TEXT("explored.Terrain.RemeshBudgetMs"), 1.0f,
 		TEXT("Presupuesto del remallado del terreno en el hilo de juego por fotograma (ms)."));
 }
 
@@ -38,7 +42,41 @@ void UTerrainEditSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		Mesher->Initialize(*World, TerrainDensity.ToSharedRef(), Edits.GetModel().GetSettings(), Edits.GetRenderSettings());
 	}
+	RequestRuntimeMaterial();
 	LevelAddedHandle = FWorldDelegates::LevelAddedToWorld.AddUObject(this, &UTerrainEditSubsystem::HandleLevelAdded);
+}
+
+void UTerrainEditSubsystem::RequestRuntimeMaterial()
+{
+	const TSoftObjectPtr<UMaterialInterface> Ref = GetDefault<UExploredTerrainSettings>()->RuntimeTerrainMaterial;
+	if (Ref.IsNull() || !Mesher)
+	{
+		return; // Sin ajuste: el mesher toma el material de los chunks horneados.
+	}
+	if (UMaterialInterface* Loaded = Ref.Get())
+	{
+		Mesher->SetMaterial(Loaded);
+		return;
+	}
+	if (!UAssetManager::IsInitialized())
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Terreno] Sin AssetManager: las mallas finas usan el material de los chunks horneados"));
+		return;
+	}
+	MaterialLoadHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(Ref.ToSoftObjectPath(),
+		FStreamableDelegate::CreateWeakLambda(this, [this, Ref]()
+		{
+			UMaterialInterface* Loaded = Ref.Get();
+			if (!Loaded)
+			{
+				UE_LOG(LogExplored, Warning, TEXT("[Terreno] El material %s del ajuste de proyecto no carga"), *Ref.ToString());
+			}
+			else if (Mesher)
+			{
+				Mesher->SetMaterial(Loaded);
+			}
+			MaterialLoadHandle.Reset();
+		}));
 }
 
 void UTerrainEditSubsystem::OnWorldBeginPlay(UWorld& InWorld)
@@ -53,6 +91,11 @@ void UTerrainEditSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 void UTerrainEditSubsystem::Deinitialize()
 {
 	FWorldDelegates::LevelAddedToWorld.Remove(LevelAddedHandle);
+	if (MaterialLoadHandle.IsValid())
+	{
+		MaterialLoadHandle->CancelHandle();
+		MaterialLoadHandle.Reset();
+	}
 	OnPatches.Clear();
 	Super::Deinitialize();
 }

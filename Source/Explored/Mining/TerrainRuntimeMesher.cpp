@@ -260,13 +260,19 @@ void UTerrainRuntimeMesher::ApplyReady(double StartSeconds, double BudgetMs)
 	int32 Applied = 0;
 	for (; Applied < Ready.Num(); ++Applied)
 	{
-		if (BudgetMs >= 0.0 && Applied > 0 && TerrainRuntimeMesherDetail::ElapsedMs(StartSeconds) >= BudgetMs)
+		// Un volcado más solo si cabe entero (estimado): así el fotograma no pasa del presupuesto
+		// más que por el primero, que siempre entra para que la cola avance.
+		if (BudgetMs >= 0.0 && Applied > 0 && TerrainRuntimeMesherDetail::ElapsedMs(StartSeconds) + ApplyMsEstimate >= BudgetMs)
 		{
 			break;
 		}
 		if (Ready[Applied])
 		{
+			const double ApplyStart = FPlatformTime::Seconds();
 			ApplyResult(*Ready[Applied]);
+			const double ApplyMs = TerrainRuntimeMesherDetail::ElapsedMs(ApplyStart);
+			// Media móvil que sube deprisa y baja despacio: un pico no se olvida en un fotograma.
+			ApplyMsEstimate = ApplyMs > ApplyMsEstimate ? ApplyMs : FMath::Lerp(ApplyMsEstimate, ApplyMs, 0.1);
 		}
 	}
 	Ready.RemoveAt(0, Applied);

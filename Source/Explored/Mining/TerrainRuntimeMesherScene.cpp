@@ -169,15 +169,31 @@ bool UTerrainRuntimeMesher::IsCollisionCookPending()
 	return bPending;
 }
 
-void UTerrainRuntimeMesher::SetMaterialFromBaked(UMaterialInterface* BakedMaterial)
+void UTerrainRuntimeMesher::SetMaterial(UMaterialInterface* InMaterial)
 {
-	if (Material || !BakedMaterial)
+	if (!InMaterial)
 	{
 		return;
 	}
-	// El material de las mallas finas es el de los chunks horneados (M_Terrain): así no se
-	// carga nada por ruta y las que se crearon antes de verlo lo reciben ahora.
+	bExplicitMaterial = true;
+	Material = InMaterial;
+	ApplyMaterialToComponents();
+}
+
+void UTerrainRuntimeMesher::SetMaterialFromBaked(UMaterialInterface* BakedMaterial)
+{
+	if (bExplicitMaterial || Material || !BakedMaterial)
+	{
+		return;
+	}
+	// Sin ajuste de proyecto, el material de las mallas finas es el de los chunks horneados
+	// (M_Terrain): las que se crearon antes de verlo lo reciben ahora.
 	Material = BakedMaterial;
+	ApplyMaterialToComponents();
+}
+
+void UTerrainRuntimeMesher::ApplyMaterialToComponents()
+{
 	for (const auto& Pair : ChunkComponents)
 	{
 		if (UProceduralMeshComponent* Component = Pair.Value.Get())

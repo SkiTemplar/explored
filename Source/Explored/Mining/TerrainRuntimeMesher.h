@@ -110,6 +110,12 @@ public:
 	/** Algún componente tiene colisión nueva sin cocinar todavía. */
 	bool IsCollisionCookPending();
 	int32 EditChunksPerRender() const { return EditPerRender; }
+	/**
+	 * Material de las mallas finas por referencia (ajuste de proyecto `UExploredTerrainSettings`).
+	 * Manda sobre el de los chunks horneados y se aplica también a las mallas ya creadas.
+	 */
+	void SetMaterial(UMaterialInterface* InMaterial);
+	UMaterialInterface* GetMaterial() const { return Material; }
 
 	/** Etiqueta de los actores de terreno (horneados y el de las mallas finas). */
 	static const FName TerrainTag;
@@ -152,6 +158,7 @@ private:
 	void SetBakedHidden(const FIntVector& RenderChunk, bool bHidden);
 	void SetBakedCollision(const FIntVector& RenderChunk, bool bEnabled);
 	void SetMaterialFromBaked(UMaterialInterface* BakedMaterial);
+	void ApplyMaterialToComponents();
 	void CacheBase(const FIntVector& Chunk, TSharedPtr<const FDensityGrid> Grid);
 
 	TWeakObjectPtr<UWorld> World;
@@ -183,5 +190,9 @@ private:
 	/** Chunks de render cuya colisión horneada ya está apagada. */
 	TSet<FIntVector> BakedCollisionOff;
 	FTerrainRemeshStats Stats;
+	/** Coste estimado de volcar un chunk (ms), para no empezar uno que no cabe en el presupuesto. */
+	double ApplyMsEstimate = 0.3;
 	bool bAsyncCooking = true;
+	/** El material vino de SetMaterial: el de los horneados ya no lo sustituye. */
+	bool bExplicitMaterial = false;
 };

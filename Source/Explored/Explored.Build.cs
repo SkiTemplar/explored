@@ -15,6 +15,6 @@ public class Explored : ModuleRules
 			"ProceduralMeshComponent", "PhysicsCore"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new[] { "RenderCore", "RHI", "Slate", "SlateCore", "UMG", "Json" });
+		PrivateDependencyModuleNames.AddRange(new[] { "RenderCore", "RHI", "Slate", "SlateCore", "UMG", "Json", "DeveloperSettings" });
 	}
 }
