@@ -2,6 +2,8 @@
 
 #include "Building/BuildingModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BuildingSpecDetail
@@ -483,6 +485,18 @@ void FBuildingSpec::Define()
 			TestEqual(TEXT("Cimiento de piedra"), Model->FindPiece(Stone)->Integrity, 100.0f - 0.15f, 1.0e-3f);
 			TestTrue(TEXT("Sin tiempo no pasa nada"), Model->Tick(0.0f, Rain).IsEmpty());
 		});
+
+		It("un paso de tiempo no finito no rompe ni derrumba nada", [this]()
+		{
+			const int32 Floor = Place(*Model, TEXT("suelo_madera"), Base, 0, 0, 0, 0, true);
+			const int32 Wall = Place(*Model, TEXT("pared_madera"), Base, 0, 0, 0, 0);
+			FBuildingWeather Cyclone;
+			Cyclone.StormCategory = 3.0f;
+			TestTrue(TEXT("NaN"), Model->Tick(std::numeric_limits<float>::quiet_NaN(), Cyclone).IsEmpty());
+			TestTrue(TEXT("Infinito"), Model->Tick(std::numeric_limits<float>::infinity(), Cyclone).IsEmpty());
+			TestTrue(TEXT("Suelo intacto"), Model->FindPiece(Floor) && Model->FindPiece(Floor)->Integrity == 75.0f);
+			TestTrue(TEXT("Pared intacta"), Model->FindPiece(Wall) && Model->FindPiece(Wall)->Integrity == 75.0f);
+		});
 	});
 
 	Describe("Reparación", [this]()
@@ -515,6 +529,13 @@ void FBuildingSpec::Define()
 			const FBuildingChangeResult Result = Model->ApplyDamage(Floor, 100.0f);
 			TestEqual(TEXT("Rota"), Result.Destroyed, TArray<int32>({Floor}));
 			TestEqual(TEXT("La cama cae"), Result.Collapsed, TArray<int32>({Bed}));
+		});
+
+		It("un daño no finito se ignora", [this]()
+		{
+			const int32 Floor = Place(*Model, TEXT("suelo_bambu"), Base, 0, 0, 0, 0, true);
+			TestTrue(TEXT("NaN"), Model->ApplyDamage(Floor, std::numeric_limits<float>::quiet_NaN()).IsEmpty());
+			TestTrue(TEXT("Pieza en pie"), Model->FindPiece(Floor) && Model->FindPiece(Floor)->Integrity == 50.0f);
 		});
 	});
 

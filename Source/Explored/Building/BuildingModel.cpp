@@ -952,7 +952,8 @@ TArray<int32> FBuildingModel::RemovePiece(int32 PieceId)
 FBuildingChangeResult FBuildingModel::Tick(float DeltaHours, const FBuildingWeather& Weather)
 {
 	FBuildingChangeResult Result;
-	if (DeltaHours <= 0.0f)
+	// Un paso NaN (de un guardado o un reloj roto) dejaría Max(NaN, 0) = 0 y rompería todas las piezas.
+	if (!FMath::IsFinite(DeltaHours) || DeltaHours <= 0.0f)
 	{
 		return Result;
 	}
@@ -1009,7 +1010,8 @@ FBuildingChangeResult FBuildingModel::ApplyDamage(int32 PieceId, float Points)
 {
 	FBuildingChangeResult Result;
 	const int32* Index = PieceIndex.Find(PieceId);
-	if (!Index || Points <= 0.0f)
+	// Daño NaN: Max(NaN, 0) = 0 rompería la pieza de un golpe.
+	if (!Index || !FMath::IsFinite(Points) || Points <= 0.0f)
 	{
 		return Result;
 	}
