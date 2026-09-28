@@ -1263,6 +1263,40 @@ def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
     assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
 
 
+def test_fases_trueque_cpp_y_borrador_coinciden(real: DataSet) -> None:
+    r = Report()
+    fases.check_trade_matches_cpp(real, r, future(real)["trade"])
+    assert r.errors == []
+
+
+def test_fases_tasa_de_tramo_distinta_del_cpp(ds: DataSet) -> None:
+    next(t for t in future(ds)["trade"]["tiers"] if t["id"] == "buena")["rate"] = 1.3
+    assert any_error(fases_errors(ds), "buena", "C++")
+
+
+def test_fases_accion_de_reputacion_distinta_del_cpp(ds: DataSet) -> None:
+    next(a for a in future(ds)["trade"]["reputationActions"] if a["id"] == "devolver_ritual")["delta"] = 6
+    assert any_error(fases_errors(ds), "devolver_ritual", "C++")
+
+
+def test_fases_valor_de_categoria_distinto_del_cpp(ds: DataSet) -> None:
+    next(w for w in future(ds)["trade"]["wants"] if w["id"] == "medicina")["value"] = 3
+    assert any_error(fases_errors(ds), "medicina", "C++")
+
+
+def test_fases_ventana_y_enfriamiento_distintos_del_cpp(ds: DataSet) -> None:
+    future(ds)["trade"]["hours"] = [7, 18]
+    future(ds)["trade"]["hostileCooldownDays"] = 10
+    errors = fases_errors(ds)
+    assert any_error(errors, "ventana horaria")
+    assert any_error(errors, "enfriamiento")
+
+
+def test_fases_reputacion_con_decaimiento_pasivo(ds: DataSet) -> None:
+    future(ds)["trade"]["passiveDecay"] = True
+    assert any_error(fases_errors(ds), "passiveDecay")
+
+
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
 
 from datacheck import packs as packs_check  # noqa: E402
