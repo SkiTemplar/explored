@@ -6090,7 +6090,7 @@
 			"namespace": "Data.minerals.pieces",
 			"key": "azufre_cristalizado.descriptionEs",
 			"es": "Azufre cristalizado. Agujas amarillas de la boca de una fumarola que huelen a huevo podrido hasta dentro de la vitrina.",
-			"en": "Crystallised sulphur. Yellow needles from the mouth of a fumarole that smell of rotten eggs even inside the case.",
+			"en": "Crystallised sulphur. Yellow needles from the mouth of a fumarole that smell of rotten eggs even inside the display case.",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/minerals.json «azufre_cristalizado» descriptionEs/descriptionEn"
