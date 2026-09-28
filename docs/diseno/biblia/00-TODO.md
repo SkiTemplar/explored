@@ -198,6 +198,9 @@ salir de la isla.
 - [ ] `Items`/`recipes.json`: confirmar que `coco_verde` se recoge directamente de la
       copa de una palmera trepada (§13.1 nueva de escalada), sin golpe ni herramienta,
       distinto del `coco_maduro` que suelta la tala. *(biblia 02 §13.1, §1.2)*
+      → **En parte:** `ef8b2d6` (PR #71), `WorldGen/CoconutPalmModel.h:207`
+        (`FCoconutPalmModel::PickFromCrown`) — el modelo puro ya da el verde de la copa sin
+        herramienta; falta engancharlo a la escalada y al interactuable de la palmera.
 
 ### Granja (huerto y limonero de Landing)
 

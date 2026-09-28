@@ -547,3 +547,57 @@ Las casillas se ajustaron en los merges de `main` en #78, #89 y #88, con el crit
 - #70: termina de integrarla la ejecución que abrió #99.
 - La máquina no aguanta 7 subagentes a la vez compilando HostTests y ejecutando DataCheck:
   conviene como mucho 2 o 3.
+
+## Ejecución 15:00 UTC
+
+Base: `origin/main` en `4e6a7b3` al empezar y en `b6a9503` al terminar. Había 22 PR abiertas.
+Mientras corría esta pasada, la sesión local del director también estaba fusionando: fusionó
+#94 (squash, `7d26939`) y #89 (`b6a9503`). En cuanto se vio, esta pasada dejó de fusionar para
+no pisarse con ella. Las PR con etiqueta `necesita-unreal` y las que tienen cambios pedidos
+sin commits nuevos desde la pasada de las 13:00 mantienen la decisión y no se han vuelto a
+comprobar.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #70 | `nocturno/revision-2026-09-28` | Sin cambios: `necesita-unreal` | La rama nocturna sigue recibiendo commits (14:57). Choca con `main`. |
+| #71 | `nube/mundo-2026-09-28-cocos` | **Fusionada** (`b7037a9`) | Es el modelo puro `FCoconutPalmModel` con su spec, `pure_*.txt` y docs. `ef8b2d6` y `eda1d95` resuelven lo pedido a las 13:00: la tala no suelta `coco_verde` y deja entre 1 y 3 maduros, y las rachas son deterministas. |
+| #72, #75, #79, #80, #81, #82, #84, #85, #86, #87, #90, #91, #96, #101 | — | Sin cambios: `necesita-unreal` | No hay commits nuevos desde la etiqueta. Todas salvo #72 chocan ahora con `main`, así que habrá que fusionarles `main` en la sesión local. |
+| #88 | `claude/terrain-edits-pipeline-alwur4` | Sin cambios: cambios pedidos | No hay commits nuevos. Sigue duplicando la tabla de herramientas y la vía de picado de #95, con otros radios y otro botín. La revisión de las 14:30 propone fusionarla quitando el `IsFiniteVector` repetido, pero no resuelve el duplicado. Eso lo decide el director. |
+| #89 | `claude/h0-network-codec-queue-o6u5gq` | Fusionada por el director (`b6a9503`) | Esta pasada la fusionó con `main` y la comprobó: 1031 casos, 0 fallos, también con ASan/UBSan y `-ffast-math`. El push llegó tarde porque el director ya había subido su propio merge de `main` y la había fusionado. |
+| #92 | `claude/phase-3-pure-models-65r78m` | Sin cambios: cambios pedidos | `6289ddd` solo arregla el alcance del machete (1,2 m). Siguen abiertos el alcance F3, el NaN con matemáticas rápidas, las casillas mal marcadas y los bytes de red. |
+| #93 | `claude/network-pieces-h1-h3-6jsk6r` | Sin cambios: cambios pedidos | No hay commits nuevos. Sigue el choque de ODR con #82 (`FVegetationNetKey`/`FVegetationNetState`). |
+| #94 | `audio/soundfont-acustico` | Fusionada por el director (`7d26939`) | Entró con el bloqueo de las 13:00 sin resolver (ver abajo). |
+| #95 | `claude/mining-terrain-h2-models-fnc9sw` | Sin cambios: cambios pedidos | No hay commits nuevos. Siguen el duplicado con #88, el guardado de vetas y `CompactStrip` sin topes. |
+| #98 | `claude/improve-python-tools-quality-duaxgr` | Sin cambios: espera a ser la última de `Tools/` | No hay commits nuevos. Choca ya con `compose.py`, `sequencer.py` y `build.py` de #94. |
+
+### Comprobaciones
+
+| Qué | HostTests | HostTests + ASan/UBSan | Otros |
+|---|---|---|---|
+| #71 fusionada con `main` (`4e6a7b3`) | 965 / 0 fallos | 965 / 0 fallos | — |
+| #89 fusionada con `main` (`b7037a9`) | 1031 / 0 fallos | 1031 / 0 fallos | `HOST_TESTS_FASTMATH=ON`: 1031 / 0 |
+| `main` en `b6a9503` | 1031 / 0 fallos | — | Audio: sin `fluidsynth`, **error**; con `apt install fluidsynth`, 170 passed |
+
+### `Tools/Audio` falla en la nube desde #94
+
+- `tests/conftest.py`: la fixture de sesión `rendered` renderiza todo el catálogo, y eso
+  incluye la música y la muestra de flauta, que ahora salen de FluidSynth.
+- Sin `fluidsynth` en el PATH, `soundfont.ensure_fluidsynth()` lanza `RuntimeError`.
+  Entonces caen también los tests de efectos y ambientes, no solo los de música.
+- Arreglos posibles, para el director:
+  1. instalar `fluidsynth` en el script de configuración del entorno de la nube;
+  2. o que los tests que dependen de FluidSynth se salten con `pytest.skip` cuando falte,
+     sin arrastrar a los demás.
+- La casilla de 00-TODO «pipeline de música **y efectos** con soundfont acústico» quedó en
+  `[x]`, pero su propia nota dice que los efectos y ambientes siguen siendo síntesis.
+  No se toca aquí porque la marcó el director al fusionar. Si los efectos entran en esa
+  casilla, habría que volver a dejarla en «en parte».
+
+### 00-TODO.md
+
+- #71: se añade «en parte» a la casilla del `coco_verde` de la copa (`PickFromCrown`). Es un
+  modelo puro y todavía no está enganchado a la escalada.
+- #89: el director ya lo dejó bien al fusionar. El códec está en `[x]` porque la casilla
+  pide el spec de host. La cola, la comprobación de chunk y NetBudget no se marcan.
+- La tabla de recuento ya iba una casilla por detrás en «hechas» y en «en parte» antes de
+  esta pasada, así que no se ha tocado.
