@@ -552,8 +552,14 @@ datos todavía.
       marcador `{Day}`) con las 15 entradas de biblia 07 §4.2. *(biblia 07 §4.1)*
 - [ ] Arte: material del terreno con `Roughness` 0,85–0,95, sin especular en arena seca,
       arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
-      de detalle con la paleta low poly; comprobar con capturas antes/después
+      de detalle con la paleta low poly (hecho en las texturas, 2026-09-28: falta que
+      `M_Terrain` lea `_ARH`); comprobar con capturas antes/después
       (`M_Terrain.uasset` ya existe, hoy se ve brillante). *(director, 2026-09-27)*
+- [x] Arte: texturas estilizadas del terreno por código (hierba, arena seca y mojada,
+      tierra, basalto, caliza y hojarasca) en vez de las pseudo-realistas: paleta por
+      isla, normal suave, rugosidad 0,85–0,95, tileables y sin repetición a 50 m; hoja de
+      contacto por material en `docs/art/`. Falta reimportar y comprobarlas en Unreal.
+      *(director, 2026-09-28; docs/art/texturas.md)*
 - [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
       materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
       (GDD §7.1). *(GDD §7.1)*

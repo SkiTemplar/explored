@@ -58,6 +58,47 @@ def spectral_noise(
     return field / (std + 1e-12)
 
 
+# Rejilla canónica de band_noise: el ruido blanco se sortea siempre a este tamaño.
+BAND_CANON = 512
+
+
+def band_noise(
+    size: int,
+    seed: int,
+    fmin: float = 1.0,
+    fmax: float = 64.0,
+    beta: float = 2.0,
+    stretch: tuple[float, float] = (1.0, 1.0),
+    angle: float = 0.0,
+) -> np.ndarray:
+    """Como `spectral_noise`, pero **independiente de la resolución**: los coeficientes de
+    Fourier se sortean en una rejilla canónica de BAND_CANON² y se copian al tamaño de
+    salida, así que a 256, 1024 o 2048 px sale el mismo campo (solo cambia el muestreo; por
+    encima de la Nyquist de `size` se descarta). `spectral_noise` sortea el ruido blanco al
+    tamaño de salida: mismas estadísticas, pero otra textura en cada resolución, de modo
+    que un test a 256 px no validaba la textura de 1024 px que se publica.
+    Devuelve media 0 y desviación 1."""
+    canon = BAND_CANON
+    white = np.fft.fft2(np.random.default_rng(seed).standard_normal((canon, canon)))
+    fx, fy = _freqs(canon)
+    ca, sa = np.cos(angle), np.sin(angle)
+    ru = (fx * ca + fy * sa) * stretch[0]
+    rv = (-fx * sa + fy * ca) * stretch[1]
+    r = np.hypot(ru, rv)
+    r[0, 0] = 1.0
+    amp = r ** (-beta / 2.0)
+    amp *= 1.0 / (1.0 + (fmin / r) ** 8)
+    amp *= np.exp(-((r / fmax) ** 2))
+    amp[0, 0] = 0.0
+    spec = white * amp
+    half = min(size, canon) // 2
+    k = np.r_[0:half, -half + 1:0]  # sin la fila de Nyquist: el campo sale real y simétrico
+    out = np.zeros((size, size), dtype=np.complex128)
+    out[np.ix_(k % size, k % size)] = spec[np.ix_(k % canon, k % canon)]
+    field = np.fft.ifft2(out).real
+    return field / (field.std() + 1e-12)
+
+
 def unit(field: np.ndarray, spread: float = 3.0) -> np.ndarray:
     """Campo de media 0 y desviación 1 a [0, 1] estable (no depende de mín/máx de la muestra)."""
     return np.clip(0.5 + field / (2.0 * spread), 0.0, 1.0)
