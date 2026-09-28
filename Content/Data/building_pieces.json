@@ -544,6 +544,33 @@
       "mesh": "SM_Kit_Bamboo_Foundation"
     },
     {
+      "id": "tablon_contencion",
+      "nameEs": "Tablón de contención",
+      "nameEn": "Retaining board",
+      "tier": "bambu",
+      "category": "exterior",
+      "socket": "pared",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 3
+        },
+        {
+          "item": "cordel",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null,
+      "noteEs": "Biblia 02 §5.3: ninguna celda de arena a menos de 1 m desliza ni se rellena con el oleaje mientras el tablón siga en pie."
+    },
+    {
       "id": "escalera_bambu",
       "nameEs": "Escalera de bambú",
       "nameEn": "Bamboo ladder",
@@ -860,6 +887,33 @@
       "mesh": "SM_Kit_Wood_Foundation"
     },
     {
+      "id": "viga_apoyo",
+      "nameEs": "Viga de apoyo",
+      "nameEn": "Support beam",
+      "tier": "madera",
+      "category": "mina",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 2
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 60,
+      "maxCycloneCategory": 3,
+      "mesh": null,
+      "noteEs": "Biblia 02 §2.4 y §2.7: apuntala un hueco de mina en 1,5 m a la redonda (mining.json/hazards/derrumbe). Solo bajo tierra, donde no llega el viento del ciclón; por eso aguanta la categoría 3."
+    },
+    {
       "id": "escalera_madera",
       "nameEs": "Escalera de madera",
       "nameEn": "Wooden ladder",
@@ -884,6 +938,54 @@
       "integrity": 70,
       "maxCycloneCategory": 2,
       "mesh": "SM_Kit_Wood_Stairs"
+    },
+    {
+      "id": "escalera_mano",
+      "nameEs": "Escalera de mano",
+      "nameEn": "Lashed ladder",
+      "tier": "madera",
+      "category": "escalada",
+      "socket": "escalera",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 3
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 12,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null,
+      "noteEs": "Biblia 02 §13.3: se sube a velocidad de escalera, sin gastar la Energía de escalar."
+    },
+    {
+      "id": "cuerda_fija",
+      "nameEs": "Cuerda fija",
+      "nameEn": "Fixed rope",
+      "tier": "palma",
+      "category": "escalada",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [],
+      "buildMinutes": 5,
+      "integrity": 25,
+      "maxCycloneCategory": 1,
+      "mesh": null,
+      "noteEs": "Biblia 02 §13.3: un tramo de 4 m en una pared ya escalada; se sube y se baja a 1,3 m/s sin gastar Energía de escalar."
     },
     {
       "id": "mesa_cartografia",
@@ -1230,6 +1332,68 @@
       "integrity": 80,
       "maxCycloneCategory": 3,
       "mesh": null
+    },
+    {
+      "id": "horno_fundicion",
+      "nameEs": "Horno de fundición",
+      "nameEn": "Smelting furnace",
+      "tier": "piedra",
+      "category": "produccion",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "arcilla_roja",
+          "count": 10
+        },
+        {
+          "item": "canto_rodado",
+          "count": 10
+        },
+        {
+          "item": "carbon_vegetal",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "pala"
+      ],
+      "requiresPieces": [
+        "horno_barro"
+      ],
+      "buildMinutes": 180,
+      "integrity": 95,
+      "maxCycloneCategory": 3,
+      "mesh": null,
+      "noteEs": "Biblia 03 §2.2: funde mineral y chatarra (recipes_smithing.json). Nivel de fuego propio en fuels.json/smeltingLevels (heat 1.4). Pide el horno de barro porque de ahí sale el carbón vegetal."
+    },
+    {
+      "id": "yunque",
+      "nameEs": "Yunque",
+      "nameEn": "Anvil",
+      "tier": "piedra",
+      "category": "produccion",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "basalto",
+          "count": 4
+        },
+        {
+          "item": "lingote_hierro",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [
+        "horno_fundicion"
+      ],
+      "buildMinutes": 60,
+      "integrity": 100,
+      "maxCycloneCategory": 3,
+      "mesh": null,
+      "noteEs": "Biblia 03 §2.2: estira alambre y forja clavos (recipes_smithing.json). El primer lingote de hierro sale del horno de fundición."
     },
     {
       "id": "chimenea",
