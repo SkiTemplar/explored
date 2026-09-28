@@ -64,3 +64,4 @@ WorldGen/WildfireModel.cpp
 Tramway/TramwayModel.cpp
 WorldGen/MiningModel.cpp
 WorldGen/MineHazardModel.cpp
+WorldGen/ShovelPathModel.cpp

@@ -48,3 +48,4 @@ Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
 Tests/MiningModelSpec.cpp
 Tests/MineHazardModelSpec.cpp
+Tests/ShovelPathModelSpec.cpp
