@@ -253,6 +253,24 @@ void FSaveSlotsSpec::Define()
 			TestTrue(TEXT("Borra la ranura"), Store.DeleteSlot(TEXT("manual1")));
 			TestEqual(TEXT("Continuar pasa a la siguiente"), Store.FindContinueSlot(), FString(TEXT("manual2")));
 		});
+
+		It("lee un tiempo de juego no finito o negativo como 0", [this]()
+		{
+			// Con "NaN", SortForContinue dejaría de ser un orden estricto débil.
+			for (const TCHAR* Text : { TEXT("NaN"), TEXT("Infinity"), TEXT("-Infinity") })
+			{
+				FSaveValue Value = FSaveHeader().ToValue();
+				Value.Set(TEXT("playTimeSeconds"), FSaveValue::MakeString(Text));
+				FSaveHeader Header;
+				TestTrue(FString::Printf(TEXT("Cabecera con «%s» legible"), Text), Header.FromValue(Value));
+				TestEqual(FString::Printf(TEXT("«%s» cuenta como 0"), Text), Header.PlayTimeSeconds, 0.0);
+			}
+			FSaveValue Negative = FSaveHeader().ToValue();
+			Negative.Set(TEXT("playTimeSeconds"), FSaveValue::MakeDouble(-50.0));
+			FSaveHeader Header;
+			Header.FromValue(Negative);
+			TestEqual(TEXT("Negativo cuenta como 0"), Header.PlayTimeSeconds, 0.0);
+		});
 	});
 
 	Describe(TEXT("los deltas del mundo"), [this]()

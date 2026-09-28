@@ -53,6 +53,11 @@ bool FSaveHeader::FromValue(const FSaveValue& Value)
 	Ar.Read(TEXT("gameVersion"), Result.GameVersion);
 	Ar.Read(TEXT("seed"), Result.Seed);
 	Ar.Read(TEXT("playTimeSeconds"), Result.PlayTimeSeconds);
+	// "NaN" rompería el orden estricto débil de SortForContinue (NaN != x y ni > ni <).
+	if (!FMath::IsFinite(Result.PlayTimeSeconds) || Result.PlayTimeSeconds < 0.0)
+	{
+		Result.PlayTimeSeconds = 0.0;
+	}
 	Ar.Read(TEXT("timestampUnix"), Result.TimestampUnix);
 	Ar.Read(TEXT("slotId"), Result.SlotId);
 	*this = MoveTemp(Result);
