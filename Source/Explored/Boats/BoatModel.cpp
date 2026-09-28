@@ -525,7 +525,9 @@ float FBoatModel::TideOffsetCm(float TotalDays, float MoonPhase01)
 
 void FBoatModel::Step(float DeltaSeconds, const FBoatControls& Controls, const FBoatEnvironment& Environment)
 {
-	if (!(DeltaSeconds > 0.0f))
+	// IsFinite explícito: con matemáticas rápidas `!(x > 0)` deja pasar un NaN, que envenenaría
+	// el acumulador de tiempo y con él todo el estado del barco.
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f)
 	{
 		return;
 	}

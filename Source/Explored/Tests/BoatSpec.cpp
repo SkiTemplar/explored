@@ -803,6 +803,25 @@ void FBoatSpec::Define()
 			TestTrue(TEXT("Estado idéntico"), A.Condition == B.Condition && A.HullDamage01 == B.HullDamage01
 				&& A.WaterInHullKg == B.WaterInHullKg);
 		});
+
+		It("ignora pasos de tiempo nulos, negativos o no finitos sin estropear el estado", [this]()
+		{
+			FRun Run(EBoatType::Canoe);
+			Run.bAlternate = true;
+			Run.Advance(2.0f);
+			const FBoatState Before = Run.Model.GetState();
+			for (const float Bad : { 0.0f, -1.0f, std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity() })
+			{
+				Run.Model.Step(Bad, Run.Controls, Run.Env);
+			}
+			const FBoatState& After = Run.Model.GetState();
+			TestTrue(TEXT("no se ha movido"), After.LocationCm == Before.LocationCm && After.VelocityCmS == Before.VelocityCmS);
+			TestTrue(TEXT("acumulador intacto"), After.PendingTimeS == Before.PendingTimeS);
+			Run.Advance(2.0f);
+			const FBoatState& Later = Run.Model.GetState();
+			TestTrue(TEXT("y sigue navegando con valores finitos"), FMath::IsFinite(Later.PendingTimeS)
+				&& FMath::IsFinite(Later.LocationCm.X) && FMath::IsFinite(Later.LocationCm.Y) && Later.LocationCm != Before.LocationCm);
+		});
 	});
 }
 
