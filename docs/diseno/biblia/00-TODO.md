@@ -629,6 +629,13 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] Beta cerrada: reclutar y correr al menos una ronda antes de abrir el acceso
       anticipado, con foco en el pipeline de minería (mayor riesgo técnico, GDD §8) y en
       el rendimiento de H0–H3. *(GDD §8, transversal)*
+- [x] Auditoría de los modelos puros (NaN, divisiones por cero, índices, desbordes, orden de
+      iteración y determinismo), con `HOST_TESTS_FASTMATH=ON` en CI y tests de propiedades
+      en `Tests/PropertyFuzzSpec.cpp`. *(docs/reviews/auditoria-modelos-puros-2026-09-28.md)*
+- [ ] Pendientes de la auditoría de modelos puros: saneado de `FSavePlayerState::Load`,
+      `FBodyModel::AddCut(NaN)`, límite de carga en `CartFromValue`, reloj del incendio por
+      delante, radio máximo del pincel de arena y límite de peso al cargar el inventario.
+      *(docs/reviews/auditoria-modelos-puros-2026-09-28.md, «Pendiente»)*
 - [ ] QA de cierre: pasar `Tools/HostTests/run.sh` (specs de host) y
       `Tools/test.ps1` (Automation Tests del editor) en verde antes de empaquetar.
       *(CLAUDE.md del proyecto, «Tests»)*
