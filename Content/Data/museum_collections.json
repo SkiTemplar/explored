@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "note": "Las siete colecciones del museo de la base y el subconjunto «tesoros» (biblia 07 §3.2-3.4). source es el fichero de datos con las piezas (collection: la lista dentro de él), displays las piezas de building_pieces.json donde se exponen y reward lo que da completarla (siempre cosmético o una receta, nunca dinero: GDD §5). tesoros no es un catálogo aparte: son las piezas de artifacts.json con una rareza de artifacts.json → treasureRarities. Lo valida Tools/DataCheck. Red (biblia 08 §5.5): el museo y las colecciones son del grupo, estado del servidor en el GameState.",
+  "collections": [
+    {
+      "id": "peces",
+      "nameEs": "Peces",
+      "nameEn": "Fish",
+      "phase": "AA",
+      "source": "fish.json",
+      "lists": ["species", "legendary"],
+      "pieces": 17,
+      "displays": ["pecera_museo"],
+      "rewardEs": "Una pecera central grande para la base, solo de adorno.",
+      "rewardEn": "A large central fish tank for the base, purely for show."
+    },
+    {
+      "id": "conchas",
+      "nameEs": "Conchas",
+      "nameEn": "Shells",
+      "phase": "AA",
+      "source": "shells.json",
+      "lists": ["pieces"],
+      "pieces": 8,
+      "displays": ["bandeja_conchas"],
+      "rewardEs": "Un móvil de conchas que suena cuando sopla el viento.",
+      "rewardEn": "A shell mobile that clinks when the wind blows."
+    },
+    {
+      "id": "herbario",
+      "nameEs": "Herbario",
+      "nameEn": "Herbarium",
+      "phase": "AA",
+      "source": "herbarium.json",
+      "lists": ["pieces"],
+      "pieces": 10,
+      "displays": ["marco_herbario"],
+      "rewardEs": "La semilla de una flor rara para el huerto. No se come.",
+      "rewardEn": "The seed of a rare flower for the garden. Not for eating."
+    },
+    {
+      "id": "insectos",
+      "nameEs": "Insectos",
+      "nameEn": "Insects",
+      "phase": "AA",
+      "source": "insects.json",
+      "lists": ["pieces"],
+      "pieces": 10,
+      "displays": ["atril_cuaderno"],
+      "rewardEs": "Un farol que atrae luciérnagas de noche y alumbra sin gastar combustible.",
+      "rewardEn": "A lantern that draws fireflies at night and gives light without fuel."
+    },
+    {
+      "id": "artefactos",
+      "nameEs": "Artefactos",
+      "nameEn": "Artefacts",
+      "phase": "AA",
+      "source": "artifacts.json",
+      "lists": ["artifacts"],
+      "pieces": 16,
+      "displays": ["estanteria_museo", "vitrina_museo", "panel_museo"],
+      "rewardEs": "Un estandarte ceremonial para la base, por respeto al pueblo navegante.",
+      "rewardEn": "A ceremonial banner for the base, out of respect for the voyaging people."
+    },
+    {
+      "id": "tesoros",
+      "nameEs": "Tesoros",
+      "nameEn": "Treasures",
+      "phase": "AA",
+      "derivedFrom": "artefactos",
+      "pieces": 12,
+      "displays": ["vitrina_museo"],
+      "rewardEs": "Una placa grabada con la inscripción que elijas.",
+      "rewardEn": "An engraved plaque with an inscription of your choice."
+    },
+    {
+      "id": "minerales",
+      "nameEs": "Minerales y cristales",
+      "nameEn": "Minerals and crystals",
+      "phase": "AA",
+      "source": "minerals.json",
+      "lists": ["pieces"],
+      "pieces": 10,
+      "displays": ["vitrina_minerales"],
+      "rewardEs": "Un pigmento que brilla a oscuras, para pintar las paredes de la base.",
+      "rewardEn": "A pigment that glows in the dark, for painting the base walls."
+    },
+    {
+      "id": "fosiles",
+      "nameEs": "Fósiles",
+      "nameEn": "Fossils",
+      "phase": "F2",
+      "source": "fossils.json",
+      "lists": ["pieces"],
+      "pieces": 8,
+      "displays": ["panel_fosiles"],
+      "rewardEs": "Una aldaba tallada con forma de amonita para la puerta principal.",
+      "rewardEn": "A carved ammonite knocker for the front door."
+    }
+  ]
+}

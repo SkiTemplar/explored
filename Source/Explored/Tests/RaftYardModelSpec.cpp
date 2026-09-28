@@ -554,9 +554,9 @@ void FRaftYardModelSpec::Define()
 		{
 			FRaftYardModel Yard = SixLogRaft(ERaftJointKind::Nails);
 			const int32 Mast = Yard.AddPiece(Piece(EHullPieceType::Mast, FVector(0.0, 0.0, 226.0)));
-			TestNotEqual(TEXT("el mástil se ata al tronco de debajo"), Yard.AddJoint(Mast, 2, ERaftJointKind::Fiber), INDEX_NONE);
+			TestNotEqual(TEXT("el mástil se ata al tronco de debajo"), Yard.AddJoint(Mast, 2, ERaftJointKind::Fiber), int32(INDEX_NONE));
 			const int32 Sail = Yard.AddPiece(Piece(EHullPieceType::Sail, FVector(0.0, 0.0, 250.0), FVector(5.0, 200.0, 150.0)));
-			TestNotEqual(TEXT("la vela se ata al mástil"), Yard.AddJoint(Sail, Mast, ERaftJointKind::Rope), INDEX_NONE);
+			TestNotEqual(TEXT("la vela se ata al mástil"), Yard.AddJoint(Sail, Mast, ERaftJointKind::Rope), int32(INDEX_NONE));
 			Yard.DamageJoint(2, 0.3f);
 			Yard.DamageJoint(5, 1.0f);
 			Yard.AddLoad({ 75.0f, FVector(0.0, 30.0, 114.0), true });
@@ -710,7 +710,7 @@ void FRaftYardModelSpec::Define()
 			FRaftYardModel Yard;
 			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
 			{
-				TestNotEqual(TEXT("cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector((I % 16) * 60.0, (I / 16) * 40.0, 20.0))), INDEX_NONE);
+				TestNotEqual(TEXT("cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector((I % 16) * 60.0, (I / 16) * 40.0, 20.0))), int32(INDEX_NONE));
 			}
 			TestEqual(TEXT("una más no cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector(0.0, 0.0, 200.0))), INDEX_NONE);
 			FRaftYardModel Small;

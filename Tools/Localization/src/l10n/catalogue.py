@@ -22,7 +22,9 @@ INI_EXCLUDE = ("Config/Localization/",)
 
 DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json",
+    "building_pieces.json", "survival_needs.json", "ruins.json",
+    "fish.json", "halden_diaries.json", "journal_entries.json", "map_clues.json", "museum_collections.json",
+    "shells.json", "herbarium.json", "insects.json", "fossils.json", "minerals.json",
 ]
 
 # El inglés suele ser más corto que el español; si sale bastante más largo, puede no caber

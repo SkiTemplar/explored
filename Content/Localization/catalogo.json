@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 640,
+		"total": 821,
 		"cpp": 303,
-		"datos": 337,
+		"datos": 518,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
@@ -3078,6 +3078,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "atril_cuaderno.nameEs",
+			"es": "Atril del cuaderno",
+			"en": "Sketchbook lectern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «atril_cuaderno» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "bancal.nameEs",
 			"es": "Bancal",
 			"en": "Garden bed",
@@ -3094,6 +3104,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «banco_chatarra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "bandeja_conchas.nameEs",
+			"es": "Bandeja de conchas",
+			"en": "Shell tray",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «bandeja_conchas» nameEs/nameEn"
 			]
 		},
 		{
@@ -3218,6 +3238,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "marco_herbario.nameEs",
+			"es": "Marco del herbario",
+			"en": "Herbarium frame",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «marco_herbario» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "mesa_cartografia.nameEs",
 			"es": "Mesa de cartografía",
 			"en": "Chart table",
@@ -3258,6 +3288,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "panel_fosiles.nameEs",
+			"es": "Panel de fósiles",
+			"en": "Fossil panel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «panel_fosiles» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "panel_museo.nameEs",
 			"es": "Panel de pared del museo",
 			"en": "Museum wall panel",
@@ -3294,6 +3334,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «pared_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pecera_museo.nameEs",
+			"es": "Pecera del museo",
+			"en": "Museum fish tank",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pecera_museo» nameEs/nameEn"
 			]
 		},
 		{
@@ -3488,6 +3538,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "vitrina_minerales.nameEs",
+			"es": "Vitrina de minerales",
+			"en": "Mineral case",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «vitrina_minerales» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "vitrina_museo.nameEs",
 			"es": "Vitrina",
 			"en": "Display case",
@@ -3534,6 +3594,786 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.legendary",
+			"key": "el_errante.nameEs",
+			"es": "El Errante",
+			"en": "The Wanderer",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «el_errante» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.legendary",
+			"key": "el_viejo.nameEs",
+			"es": "El Viejo",
+			"en": "The Old One",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «el_viejo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.legendary",
+			"key": "manta_negra.nameEs",
+			"es": "La Manta Negra",
+			"en": "The Black Ray",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «manta_negra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.legendary",
+			"key": "rey_de_plata.nameEs",
+			"es": "El Rey de Plata",
+			"en": "The Silver King",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «rey_de_plata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.legendary",
+			"key": "sombra.nameEs",
+			"es": "Sombra",
+			"en": "Shadow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «sombra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "atun.nameEs",
+			"es": "Atún",
+			"en": "Tuna",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «atun» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "barracuda.nameEs",
+			"es": "Barracuda",
+			"en": "Barracuda",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «barracuda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "bonito.nameEs",
+			"es": "Bonito",
+			"en": "Bonito",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «bonito» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "dorado.nameEs",
+			"es": "Dorado",
+			"en": "Mahi-mahi",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «dorado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "jurel.nameEs",
+			"es": "Jurel",
+			"en": "Trevally",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «jurel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "langosta.nameEs",
+			"es": "Langosta de arrecife",
+			"en": "Spiny lobster",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «langosta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "mero.nameEs",
+			"es": "Mero",
+			"en": "Grouper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «mero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "pargo.nameEs",
+			"es": "Pargo",
+			"en": "Snapper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «pargo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "pez_ballesta.nameEs",
+			"es": "Pez ballesta",
+			"en": "Triggerfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «pez_ballesta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "pez_cirujano.nameEs",
+			"es": "Pez cirujano",
+			"en": "Surgeonfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «pez_cirujano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "pez_loro.nameEs",
+			"es": "Pez loro",
+			"en": "Parrotfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «pez_loro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fish.species",
+			"key": "salmonete.nameEs",
+			"es": "Salmonete",
+			"en": "Goatfish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fish.json «salmonete» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "amonite_caliza.descriptionEs",
+			"es": "Amonita en caliza. La espiral está entera, y cada cámara se rellenó de una piedra más clara.",
+			"en": "Ammonite in limestone. The spiral is whole, and each chamber filled with paler stone.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «amonite_caliza» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "amonite_caliza.nameEs",
+			"es": "Amonita en caliza",
+			"en": "Ammonite in limestone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «amonite_caliza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "concha_gigante_fosilizada.descriptionEs",
+			"es": "Concha gigante fosilizada. Una almeja como las de la laguna de hoy, pero de piedra y el doble de grande.",
+			"en": "Giant fossilised shell. A clam like the ones in today's lagoon, but made of stone and twice the size.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «concha_gigante_fosilizada» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "concha_gigante_fosilizada.nameEs",
+			"es": "Concha gigante fosilizada",
+			"en": "Giant fossilised shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «concha_gigante_fosilizada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "coral_fosil_ramificado.descriptionEs",
+			"es": "Coral fósil ramificado. Las ramas ya son piedra, pero conservan los poros donde vivían los pólipos.",
+			"en": "Branching fossil coral. The branches are stone now, but they keep the pores where the polyps lived.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «coral_fosil_ramificado» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "coral_fosil_ramificado.nameEs",
+			"es": "Coral fósil ramificado",
+			"en": "Branching fossil coral",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «coral_fosil_ramificado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "diente_tiburon_fosil.descriptionEs",
+			"es": "Diente de tiburón fósil. Mucho más viejo que la isla donde apareció: la caliza lo subió desde el fondo de otro mar.",
+			"en": "Fossil shark tooth. Much older than the island it turned up on; the limestone carried it up from the floor of another sea.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «diente_tiburon_fosil» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "diente_tiburon_fosil.nameEs",
+			"es": "Diente de tiburón fósil",
+			"en": "Fossil shark tooth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «diente_tiburon_fosil» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "huella_ave_ceniza.descriptionEs",
+			"es": "Huella de ave en ceniza. Tres dedos marcados en una capa de ceniza que se endureció antes de que lloviera.",
+			"en": "Bird track in ash. Three toes pressed into a layer of ash that hardened before the rain came.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «huella_ave_ceniza» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "huella_ave_ceniza.nameEs",
+			"es": "Huella de ave en ceniza",
+			"en": "Bird track in ash",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «huella_ave_ceniza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "huevo_fosil.descriptionEs",
+			"es": "Huevo fósil. Del tamaño de un puño, con la cáscara hecha piedra, y nadie sabe qué ave lo puso.",
+			"en": "Fossil egg. Fist-sized, the shell turned to stone, and no one knows which bird laid it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «huevo_fosil» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "huevo_fosil.nameEs",
+			"es": "Huevo fósil",
+			"en": "Fossil egg",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «huevo_fosil» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "madera_petrificada.descriptionEs",
+			"es": "Madera petrificada. Pesa como una piedra y todavía tiene los anillos del árbol, uno por año.",
+			"en": "Petrified wood. Weighs like a stone and still has the tree's rings, one per year.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «madera_petrificada» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "madera_petrificada.nameEs",
+			"es": "Madera petrificada",
+			"en": "Petrified wood",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «madera_petrificada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "vertebra_pez_fosil.descriptionEs",
+			"es": "Vértebra de pez fósil. Un disco de piedra con un agujero en el centro, como una cuenta de collar.",
+			"en": "Fossil fish vertebra. A stone disc with a hole through the middle, like a necklace bead.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «vertebra_pez_fosil» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.fossils.pieces",
+			"key": "vertebra_pez_fosil.nameEs",
+			"es": "Vértebra de pez fósil",
+			"en": "Fossil fish vertebra",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fossils.json «vertebra_pez_fosil» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.halden_diaries.entries",
+			"key": "halden_01.textEs",
+			"es": "Día 14. La radio se moja más de lo que transmite. Marchena dice que es la antena. Yo digo que es la isla.",
+			"en": "Day 14. The radio gets wetter than it transmits. Marchena blames the antenna. I blame the island.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/halden_diaries.json «halden_01» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.halden_diaries.entries",
+			"key": "halden_02.textEs",
+			"es": "Encontramos tallas en la roca, bajo el tubo de lava. Nadie las esperaba. Fotografiamos, no tocamos nada.",
+			"en": "Found carvings in the rock, under the lava tube. Nobody expected them. We photograph, we touch nothing.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/halden_diaries.json «halden_02» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.halden_diaries.entries",
+			"key": "halden_03.textEs",
+			"es": "El barómetro no ha dejado de bajar en dos días. Guardamos los cuadernos en la lata de galletas, por si acaso.",
+			"en": "The barometer hasn't stopped falling in two days. Notebooks go in the biscuit tin, just in case.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/halden_diaries.json «halden_03» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.halden_diaries.entries",
+			"key": "halden_04.textEs",
+			"es": "Se acabó el café el martes. Se acabó la paciencia el jueves. Quedan tres semanas de expedición.",
+			"en": "Coffee ran out Tuesday. Patience ran out Thursday. Three weeks of expedition left.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/halden_diaries.json «halden_04» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.halden_diaries.entries",
+			"key": "halden_05.textEs",
+			"es": "Si alguien lee esto: la radio nunca funcionó del todo bien. No busquéis un mensaje de socorro, no lo hubo. Solo nos fuimos con la siguiente marea baja.",
+			"en": "If anyone reads this: the radio never really worked. Don't look for a distress call, there wasn't one. We just left on the next low tide.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/halden_diaries.json «halden_05» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "alga_roja_seca.descriptionEs",
+			"es": "Alga roja seca. La marea la deja en la línea de resaca; seca conserva el color, pero ya no huele a mar.",
+			"en": "Dried red seaweed. The tide leaves it along the wrack line; dried, it keeps its colour but loses the sea smell.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «alga_roja_seca» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "alga_roja_seca.nameEs",
+			"es": "Alga roja seca",
+			"en": "Dried red seaweed",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «alga_roja_seca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "campanas_manglar.descriptionEs",
+			"es": "Campanas de manglar. Flores colgantes que las abejas visitan en cuanto sale el sol.",
+			"en": "Mangrove bells. Hanging flowers the bees visit as soon as the sun is up.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «campanas_manglar» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "campanas_manglar.nameEs",
+			"es": "Campanas de manglar",
+			"en": "Mangrove bells",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «campanas_manglar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "flor_fantasma_nocturna.descriptionEs",
+			"es": "Flor fantasma nocturna. Blanca y sin hojas, sale del suelo de la selva y solo se abre de noche.",
+			"en": "Night ghost flower. White and leafless, it comes up from the forest floor and only opens at night.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «flor_fantasma_nocturna» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "flor_fantasma_nocturna.nameEs",
+			"es": "Flor fantasma nocturna",
+			"en": "Night ghost flower",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «flor_fantasma_nocturna» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "frangipani.descriptionEs",
+			"es": "Frangipani. Cinco pétalos blancos con el centro amarillo; el olor se queda en los dedos un buen rato.",
+			"en": "Frangipani. Five white petals with a yellow centre; the scent stays on your fingers for a good while.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «frangipani» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "frangipani.nameEs",
+			"es": "Frangipani",
+			"en": "Frangipani",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «frangipani» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "helecho_de_cueva.descriptionEs",
+			"es": "Helecho de cueva. Vive en la penumbra de la entrada, justo hasta donde llega la luz.",
+			"en": "Cave fern. Lives in the half-dark of the entrance, exactly as far in as the light reaches.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «helecho_de_cueva» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "helecho_de_cueva.nameEs",
+			"es": "Helecho de cueva",
+			"en": "Cave fern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «helecho_de_cueva» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "hibisco_silvestre.descriptionEs",
+			"es": "Hibisco silvestre. Cada flor dura un solo día, así que la que se prensa hay que cortarla por la mañana.",
+			"en": "Wild hibiscus. Each flower lasts a single day, so the one you press has to be cut in the morning.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «hibisco_silvestre» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "hibisco_silvestre.nameEs",
+			"es": "Hibisco silvestre",
+			"en": "Wild hibiscus",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «hibisco_silvestre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "liquen_de_lava.descriptionEs",
+			"es": "Liquen de lava. Es lo primero que vive sobre la roca nueva del Humo, en manchas grises del tamaño de una moneda.",
+			"en": "Lava lichen. The first thing to live on Smoke Island's new rock, in grey patches the size of a coin.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «liquen_de_lava» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "liquen_de_lava.nameEs",
+			"es": "Liquen de lava",
+			"en": "Lava lichen",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «liquen_de_lava» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "loto_de_cenote.descriptionEs",
+			"es": "Loto de cenote. Las hojas flotan en el agua dulce y la flor se cierra al caer la tarde.",
+			"en": "Cenote lotus. Its leaves float on the fresh water and the flower closes as evening falls.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «loto_de_cenote» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "loto_de_cenote.nameEs",
+			"es": "Loto de cenote",
+			"en": "Cenote lotus",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «loto_de_cenote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "musgo_luminoso.descriptionEs",
+			"es": "Musgo luminoso. En la mano no brilla; hay que devolverlo a la oscuridad para ver el verde.",
+			"en": "Glowing moss. In your hand it doesn't shine; put it back in the dark to see the green.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «musgo_luminoso» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "musgo_luminoso.nameEs",
+			"es": "Musgo luminoso",
+			"en": "Glowing moss",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «musgo_luminoso» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "orquidea_acantilado.descriptionEs",
+			"es": "Orquídea de acantilado. Crece donde nada más se sostiene, con las raíces metidas en la propia roca.",
+			"en": "Cliff orchid. Grows where nothing else can hold on, roots wedged into the rock itself.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «orquidea_acantilado» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.herbarium.pieces",
+			"key": "orquidea_acantilado.nameEs",
+			"es": "Orquídea de acantilado",
+			"en": "Cliff orchid",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/herbarium.json «orquidea_acantilado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "abeja_islena.descriptionEs",
+			"es": "Abeja isleña. Pequeña y oscura, anida en troncos huecos de Esmeralda, y la miel sale del mismo tronco.",
+			"en": "Island bee. Small and dark, it nests in hollow trunks on Emerald, and the honey comes from the same trunk.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «abeja_islena» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "abeja_islena.nameEs",
+			"es": "Abeja isleña",
+			"en": "Island bee",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «abeja_islena» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "escarabajo_rinoceronte.descriptionEs",
+			"es": "Escarabajo rinoceronte. El macho lleva un cuerno curvo, y al anochecer se le oye zumbar entre las palmas.",
+			"en": "Rhinoceros beetle. The male carries a curved horn, and at dusk you hear it droning among the palms.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «escarabajo_rinoceronte» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "escarabajo_rinoceronte.nameEs",
+			"es": "Escarabajo rinoceronte",
+			"en": "Rhinoceros beetle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «escarabajo_rinoceronte» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "hormiga_cortadora.descriptionEs",
+			"es": "Hormiga cortadora. Una fila de trozos de hoja cruza el sendero, y debajo de cada trozo va una hormiga.",
+			"en": "Leafcutter ant. A line of leaf pieces crosses the path, and under each piece walks an ant.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «hormiga_cortadora» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "hormiga_cortadora.nameEs",
+			"es": "Hormiga cortadora",
+			"en": "Leafcutter ant",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «hormiga_cortadora» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "libelula_roja_cenote.descriptionEs",
+			"es": "Libélula roja del cenote. Patrulla siempre el mismo tramo de orilla y vuelve a posarse en el mismo junco.",
+			"en": "Cenote red dragonfly. Patrols the same stretch of shore and always lands back on the same reed.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «libelula_roja_cenote» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "libelula_roja_cenote.nameEs",
+			"es": "Libélula roja del cenote",
+			"en": "Cenote red dragonfly",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «libelula_roja_cenote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "luciernaga_caverna.descriptionEs",
+			"es": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no llega otra luz.",
+			"en": "Cave firefly. Flickers slowly in the deepest caves, where no other light reaches.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «luciernaga_caverna» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "luciernaga_caverna.nameEs",
+			"es": "Luciérnaga de caverna",
+			"en": "Cave firefly",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «luciernaga_caverna» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mantis_hoja_esmeralda.descriptionEs",
+			"es": "Mantis hoja de Esmeralda. Se queda quieta en una rama y pasa por una hoja más hasta que gira la cabeza.",
+			"en": "Emerald leaf mantis. Sits still on a branch, passing for one more leaf until it turns its head.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mantis_hoja_esmeralda» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mantis_hoja_esmeralda.nameEs",
+			"es": "Mantis hoja de Esmeralda",
+			"en": "Emerald leaf mantis",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mantis_hoja_esmeralda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mariposa_azul_manglar.descriptionEs",
+			"es": "Mariposa azul del manglar. Vuela a ras del agua entre las raíces y solo enseña el azul cuando abre las alas.",
+			"en": "Mangrove blue butterfly. Flies low over the water between the roots and only shows the blue when it opens its wings.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mariposa_azul_manglar» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mariposa_azul_manglar.nameEs",
+			"es": "Mariposa azul del manglar",
+			"en": "Mangrove blue butterfly",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mariposa_azul_manglar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mariposa_cristal.descriptionEs",
+			"es": "Mariposa de cristal. Las alas son tan transparentes que a través de ellas se ve la hoja de detrás.",
+			"en": "Glasswing butterfly. The wings are so clear you can see the leaf behind through them.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mariposa_cristal» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "mariposa_cristal.nameEs",
+			"es": "Mariposa de cristal",
+			"en": "Glasswing butterfly",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «mariposa_cristal» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "polilla_luna_meseta.descriptionEs",
+			"es": "Polilla luna de la Meseta. Verde pálido, con colas largas en las alas de atrás; acude a la luz del fuego.",
+			"en": "Mesa moon moth. Pale green, with long tails on the hind wings; drawn to firelight.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «polilla_luna_meseta» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "polilla_luna_meseta.nameEs",
+			"es": "Polilla luna de la Meseta",
+			"en": "Mesa moon moth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «polilla_luna_meseta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "saltamontes_hierba_seca.descriptionEs",
+			"es": "Saltamontes de hierba seca. Tiene el color de la hierba en la estación seca y solo se le ve cuando salta.",
+			"en": "Dry-grass grasshopper. The colour of the grass in the dry season; you only see it when it jumps.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «saltamontes_hierba_seca» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.insects.pieces",
+			"key": "saltamontes_hierba_seca.nameEs",
+			"es": "Saltamontes de hierba seca",
+			"en": "Dry-grass grasshopper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/insects.json «saltamontes_hierba_seca» nameEs/nameEn"
 			]
 		},
 		{
@@ -5047,6 +5887,576 @@
 			]
 		},
 		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_amaraje.textEs",
+			"es": "Día {Day}. El avión ya no vuela. Yo sí puedo caminar, así que empiezo por ahí.",
+			"en": "Day {Day}. The plane doesn't fly any more. I can still walk, so that's where I start.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_amaraje» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_lectura_oleaje.textEs",
+			"es": "Día {Day}. Aprendí a leer el oleaje. Ahora el mar me dice hacia dónde queda tierra antes de verla.",
+			"en": "Day {Day}. Learned to read the swell. Now the sea tells me where land is before I see it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_lectura_oleaje» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primer_fuego.textEs",
+			"es": "Día {Day}. Primera hoguera. Tuve que tapar la llama con el cuerpo hasta que el viento dejó de apagarla.",
+			"en": "Day {Day}. First fire. I had to shield the flame with my body until the wind stopped putting it out.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primer_fuego» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primer_limon.textEs",
+			"es": "Día {Day}. El limonero dio su primer limón. Pequeño y ácido. Me lo comí entero.",
+			"en": "Day {Day}. The lemon tree gave its first lemon. Small and sour. I ate the whole thing.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primer_limon» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primer_refugio.textEs",
+			"es": "Día {Day}. Cuatro palos y hojas de palma encima. Esta noche no me llueve en la cara.",
+			"en": "Day {Day}. Four sticks with palm leaves on top. Tonight the rain stays off my face.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primer_refugio» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primer_trazo.textEs",
+			"es": "Día {Day}. Empecé el mapa. Una línea torcida donde la playa se acaba y empieza la roca.",
+			"en": "Day {Day}. Started the map. One crooked line where the beach ends and the rock begins.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primer_trazo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primer_trueque.textEs",
+			"es": "Día {Day}. Les llevé cuerda y aluminio trabajado. Me dieron semillas que no había visto nunca. Ninguno de los dos contó monedas.",
+			"en": "Day {Day}. Brought them rope and worked aluminium. They gave me seeds I'd never seen. Neither of us counted coins.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primer_trueque» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_cueva.textEs",
+			"es": "Día {Day}. El pico atravesó la roca y detrás no había más roca. Una cámara entera que nadie había visto.",
+			"en": "Day {Day}. The pick went through the rock and there was no more rock behind it. A whole chamber nobody had seen.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_cueva» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_empalizada.textEs",
+			"es": "Día {Day}. Clavé la última estaca antes de que oscureciera. No sé si aguantará un asalto, pero ya no duermo con la puerta abierta.",
+			"en": "Day {Day}. Drove the last stake in before dark. I don't know if it'll hold off a raid, but I'm done sleeping with the door open.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_empalizada» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_leyenda.textEs",
+			"es": "Día {Day}. Rompió el sedal dos veces antes de rendirse. Pesaba más que yo, o eso me pareció.",
+			"en": "Day {Day}. It snapped the line twice before it gave up. It weighed more than me, or felt like it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_leyenda» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_noche.textEs",
+			"es": "Día {Day}. Pasé la primera noche entera. El fuego aguantó despierto más que yo.",
+			"en": "Day {Day}. Got through the first whole night. The fire stayed awake longer than I did.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_noche» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_palada.textEs",
+			"es": "Día {Day}. Empecé a cavar en serio. Debajo de la tierra hay tanta isla como encima.",
+			"en": "Day {Day}. Started digging in earnest. There's as much island underground as above it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_palada» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_ruina.textEs",
+			"es": "Día {Day}. Piedras puestas en fila bajo la maleza. El mar no las dejó así. Alguien vivió aquí antes que yo.",
+			"en": "Day {Day}. Stones set in a row under the undergrowth. The sea didn't leave them like that. Someone lived here before me.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_ruina» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_primera_tormenta.textEs",
+			"es": "Día {Day}. El techo aguantó. Yo también. Mañana reviso qué se llevó el viento.",
+			"en": "Day {Day}. The roof held. So did I. Tomorrow I check what the wind took.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_primera_tormenta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.journal_entries.entries",
+			"key": "diario_zarpa_limon.textEs",
+			"es": "Día {Day}. Última entrada desde tierra. A partir de esta noche llevo el barco solo con lo que aprendí del cielo.",
+			"en": "Day {Day}. Last entry from land. From tonight I steer by nothing but what the sky taught me.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/journal_entries.json «diario_zarpa_limon» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_anzuelo_ceremonial.clueEs",
+			"es": "Detrás del agua que cae, donde ya no llega la luz, la roca tiene una repisa a la altura del pecho.",
+			"en": "Behind the falling water, where the light no longer reaches, the rock has a ledge at chest height.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_anzuelo_ceremonial» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_carta_varillas.clueEs",
+			"es": "Cuenta siete palmeras desde el marae hacia el mar. Bajo la séptima, a un palmo de arena.",
+			"en": "Count seven palms from the marae towards the sea. Under the seventh, a hand's depth into the sand.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_carta_varillas» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_colgante_carey.clueEs",
+			"es": "Entre el segundo y el tercer islote, con bajamar, asoma la cuaderna de un casco viejo. Hay que bucear junto a ella.",
+			"en": "Between the second and third islets, at low tide, the rib of an old hull breaks the surface. Dive beside it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_colgante_carey» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_figura_navegante.clueEs",
+			"es": "Donde el tubo de lava se abre al cielo, la ceniza tapa una losa plana. No la levantamos.",
+			"en": "Where the lava tube opens to the sky, ash covers a flat slab. We didn't lift it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_figura_navegante» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_pectoral_nacar.clueEs",
+			"es": "Con la marea más baja del año, la laguna enseña un muro de coral cortado a mano. Lo que dejaron está al pie.",
+			"en": "At the lowest tide of the year, the lagoon shows a wall of hand-cut coral. What they left lies at its foot.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_pectoral_nacar» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.map_clues.clues",
+			"key": "pista_tapa_estrellas.clueEs",
+			"es": "Al pie del farallón partido, donde la costa gira al este, el suelo suena hueco al pisarlo.",
+			"en": "At the foot of the split sea stack, where the coast turns east, the ground sounds hollow underfoot.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/map_clues.json «pista_tapa_estrellas» clueEs/clueEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "amatista_caverna.descriptionEs",
+			"es": "Amatista de caverna. Violeta por dentro de una piedra hueca que por fuera parecía un canto cualquiera.",
+			"en": "Cave amethyst. Violet inside a hollow stone that looked like any other pebble from outside.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «amatista_caverna» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "amatista_caverna.nameEs",
+			"es": "Amatista de caverna",
+			"en": "Cave amethyst",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «amatista_caverna» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "azufre_cristalizado.descriptionEs",
+			"es": "Azufre cristalizado. Agujas amarillas de la boca de una fumarola que huelen a huevo podrido hasta dentro de la vitrina.",
+			"en": "Crystallised sulphur. Yellow needles from the mouth of a fumarole that smell of rotten eggs even inside the display case.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «azufre_cristalizado» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "azufre_cristalizado.nameEs",
+			"es": "Azufre cristalizado",
+			"en": "Crystallised sulphur",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «azufre_cristalizado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "basalto_pulido.descriptionEs",
+			"es": "Basalto pulido. El oleaje de Los Dientes lo deja liso y negro, frío en la mano incluso al mediodía.",
+			"en": "Polished basalt. The surf at the Teeth wears it smooth and black, cold in the hand even at noon.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «basalto_pulido» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "basalto_pulido.nameEs",
+			"es": "Basalto pulido",
+			"en": "Polished basalt",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «basalto_pulido» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "caliza_veteada.descriptionEs",
+			"es": "Caliza veteada. Franjas grises y crema, y cada franja es un fondo de mar distinto.",
+			"en": "Streaked limestone. Grey and cream bands, and each band is a different sea floor.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «caliza_veteada» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "caliza_veteada.nameEs",
+			"es": "Caliza veteada",
+			"en": "Streaked limestone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «caliza_veteada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "cobre_nativo.descriptionEs",
+			"es": "Cobre nativo. Sale de la veta ya hecho metal, en hilos retorcidos que se doblan con los dedos.",
+			"en": "Native copper. It comes out of the seam already as metal, in twisted threads you can bend with your fingers.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «cobre_nativo» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "cobre_nativo.nameEs",
+			"es": "Cobre nativo",
+			"en": "Native copper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «cobre_nativo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "cuarzo_transparente.descriptionEs",
+			"es": "Cuarzo transparente. Seis caras rectas que nadie talló; a través de él se lee la letra pequeña.",
+			"en": "Clear quartz. Six straight faces nobody cut; small print reads clearly through it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «cuarzo_transparente» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "cuarzo_transparente.nameEs",
+			"es": "Cuarzo transparente",
+			"en": "Clear quartz",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «cuarzo_transparente» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "hierro_meteorito.descriptionEs",
+			"es": "Hierro de meteorito. Cayó del cielo sobre Los Dientes; pesa el doble de lo que aparenta y desvía la brújula.",
+			"en": "Meteoric iron. It fell from the sky onto the Teeth; it weighs twice what it looks and pulls the compass needle.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «hierro_meteorito» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "hierro_meteorito.nameEs",
+			"es": "Hierro de meteorito",
+			"en": "Meteoric iron",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «hierro_meteorito» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "obsidiana_arcoiris.descriptionEs",
+			"es": "Obsidiana arcoíris. Solo enseña el color si la giras contra el sol, y el resto del tiempo es negra como cualquier otra.",
+			"en": "Rainbow obsidian. It only shows its colour if you turn it against the sun, and the rest of the time it's as black as any other.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «obsidiana_arcoiris» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "obsidiana_arcoiris.nameEs",
+			"es": "Obsidiana arcoíris",
+			"en": "Rainbow obsidian",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «obsidiana_arcoiris» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "obsidiana_negra.descriptionEs",
+			"es": "Obsidiana negra. Vidrio de volcán; el borde de una lasca corta más que la navaja.",
+			"en": "Black obsidian. Volcanic glass; the edge of a flake cuts better than the penknife.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «obsidiana_negra» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "obsidiana_negra.nameEs",
+			"es": "Obsidiana negra",
+			"en": "Black obsidian",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «obsidiana_negra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "opalo_fumarola.descriptionEs",
+			"es": "Ópalo de fumarola. Blanco lechoso con destellos verdes; se forma donde el vapor calienta la roca.",
+			"en": "Fumarole opal. Milky white with green flashes; it forms where steam heats the rock.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «opalo_fumarola» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.minerals.pieces",
+			"key": "opalo_fumarola.nameEs",
+			"es": "Ópalo de fumarola",
+			"en": "Fumarole opal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/minerals.json «opalo_fumarola» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "artefactos.nameEs",
+			"es": "Artefactos",
+			"en": "Artefacts",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «artefactos» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "artefactos.rewardEs",
+			"es": "Un estandarte ceremonial para la base, por respeto al pueblo navegante.",
+			"en": "A ceremonial banner for the base, out of respect for the voyaging people.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «artefactos» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "conchas.nameEs",
+			"es": "Conchas",
+			"en": "Shells",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «conchas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "conchas.rewardEs",
+			"es": "Un móvil de conchas que suena cuando sopla el viento.",
+			"en": "A shell mobile that clinks when the wind blows.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «conchas» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "fosiles.nameEs",
+			"es": "Fósiles",
+			"en": "Fossils",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «fosiles» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "fosiles.rewardEs",
+			"es": "Una aldaba tallada con forma de amonita para la puerta principal.",
+			"en": "A carved ammonite knocker for the front door.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «fosiles» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "herbario.nameEs",
+			"es": "Herbario",
+			"en": "Herbarium",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «herbario» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "herbario.rewardEs",
+			"es": "La semilla de una flor rara para el huerto. No se come.",
+			"en": "The seed of a rare flower for the garden. Not for eating.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «herbario» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "insectos.nameEs",
+			"es": "Insectos",
+			"en": "Insects",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «insectos» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "insectos.rewardEs",
+			"es": "Un farol que atrae luciérnagas de noche y alumbra sin gastar combustible.",
+			"en": "A lantern that draws fireflies at night and gives light without fuel.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «insectos» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "minerales.nameEs",
+			"es": "Minerales y cristales",
+			"en": "Minerals and crystals",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «minerales» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "minerales.rewardEs",
+			"es": "Un pigmento que brilla a oscuras, para pintar las paredes de la base.",
+			"en": "A pigment that glows in the dark, for painting the base walls.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «minerales» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "peces.nameEs",
+			"es": "Peces",
+			"en": "Fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «peces» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "peces.rewardEs",
+			"es": "Una pecera central grande para la base, solo de adorno.",
+			"en": "A large central fish tank for the base, purely for show.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «peces» rewardEs/rewardEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "tesoros.nameEs",
+			"es": "Tesoros",
+			"en": "Treasures",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «tesoros» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.museum_collections.collections",
+			"key": "tesoros.rewardEs",
+			"es": "Una placa grabada con la inscripción que elijas.",
+			"en": "An engraved plaque with an inscription of your choice.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/museum_collections.json «tesoros» rewardEs/rewardEn"
+			]
+		},
+		{
 			"namespace": "Data.plants.plants",
 			"key": "batata.nameEs",
 			"es": "Batata",
@@ -5294,6 +6704,406 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/plants.json «taro.listo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "altar.nameEs",
+			"es": "Ofrenda en el altar",
+			"en": "Altar offering",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «altar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "canoe.nameEs",
+			"es": "Canoa doble fosilizada",
+			"en": "Fossilised double canoe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «canoe» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "cave.nameEs",
+			"es": "Cueva ritual",
+			"en": "Ritual cave",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «cave» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "compass.nameEs",
+			"es": "Brújula estelar",
+			"en": "Star compass",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «compass» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "petroglyph.nameEs",
+			"es": "Petroglifo",
+			"en": "Petroglyph",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «petroglyph» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.elements",
+			"key": "statue.nameEs",
+			"es": "Estatua alineada",
+			"en": "Aligned statue",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «statue» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_compass.nameEs",
+			"es": "Brújula estelar del Humo",
+			"en": "Star compass of Smoke Island",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_compass» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_emerald.nameEs",
+			"es": "Marae de la cascada",
+			"en": "Waterfall marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_emerald» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_landing.nameEs",
+			"es": "Marae del palmeral",
+			"en": "Palm grove marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_landing» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_mangrove.nameEs",
+			"es": "Marae de las raíces",
+			"en": "Root marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_mangrove» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_mesa.nameEs",
+			"es": "Marae de la meseta",
+			"en": "Plateau marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_mesa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_smoke.nameEs",
+			"es": "Marae del tubo de lava",
+			"en": "Lava tube marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_smoke» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_teeth.nameEs",
+			"es": "Marae de los acantilados",
+			"en": "Cliff marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_teeth» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.sites",
+			"key": "ruin_whitesands.nameEs",
+			"es": "Marae de las canoas",
+			"en": "Canoe marae",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «ruin_whitesands» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "birds_at_dusk.nameEs",
+			"es": "Aves al atardecer",
+			"en": "Birds at dusk",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «birds_at_dusk» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "birds_at_dusk.revealsEs",
+			"es": "Las bandadas vuelven a la isla más cercana",
+			"en": "Flocks fly back to the nearest island",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «birds_at_dusk» revealsEs/revealsEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "fixed_clouds.nameEs",
+			"es": "Nubes fijas",
+			"en": "Fixed clouds",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «fixed_clouds» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "fixed_clouds.revealsEs",
+			"es": "Una nube quieta delata una isla alta y lejana",
+			"en": "A still cloud gives away a distant high island",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «fixed_clouds» revealsEs/revealsEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "star_path.nameEs",
+			"es": "Camino de estrellas",
+			"en": "Star path",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «star_path» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "star_path.revealsEs",
+			"es": "Rumbo nocturno hacia otra isla concreta",
+			"en": "Night bearing towards a specific island",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «star_path» revealsEs/revealsEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "swell_reading.nameEs",
+			"es": "Lectura del oleaje",
+			"en": "Swell reading",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «swell_reading» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "swell_reading.revealsEs",
+			"es": "Distancia y dirección a tierra por el mar de fondo",
+			"en": "Distance and direction to land from the swell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «swell_reading» revealsEs/revealsEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "water_colour.nameEs",
+			"es": "Color del agua",
+			"en": "Water colour",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «water_colour» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.ruins.techniques",
+			"key": "water_colour.revealsEs",
+			"es": "El tono del agua marca bajíos y arrecifes",
+			"en": "The water's hue marks shoals and reefs",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/ruins.json «water_colour» revealsEs/revealsEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "almeja_gigante.descriptionEs",
+			"es": "Concha de almeja gigante. Pesa como un cubo de agua, y el borde ondulado corta si la coges mal.",
+			"en": "Giant clam shell. As heavy as a bucket of water, and the wavy rim cuts if you grip it wrong.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «almeja_gigante» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "almeja_gigante.nameEs",
+			"es": "Concha de almeja gigante",
+			"en": "Giant clam shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «almeja_gigante» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "caracola_trompeta.descriptionEs",
+			"es": "Caracola trompeta. Vacía y limpia, suena si soplas por la punta rota.",
+			"en": "Trumpet conch. Empty and clean, it sounds if you blow through the broken tip.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «caracola_trompeta» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "caracola_trompeta.nameEs",
+			"es": "Caracola trompeta",
+			"en": "Trumpet conch",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «caracola_trompeta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "casco_real.descriptionEs",
+			"es": "Concha de casco real. Tiene la boca naranja y aparece en la arena negra al pie del volcán.",
+			"en": "Royal helmet shell. Orange-lipped, it turns up in the black sand below the volcano.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «casco_real» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "casco_real.nameEs",
+			"es": "Concha de casco real",
+			"en": "Royal helmet shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «casco_real» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "cauri_anillado.descriptionEs",
+			"es": "Cauri anillado. La marea lo deja entre las rocas después de una noche de luna llena.",
+			"en": "Ringed cowrie. The tide leaves it among the rocks after a full-moon night.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «cauri_anillado» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "cauri_anillado.nameEs",
+			"es": "Cauri anillado",
+			"en": "Ringed cowrie",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «cauri_anillado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "concha_abanico.descriptionEs",
+			"es": "Concha de abanico rosado. El color se apaga al sol en pocos días, así que se guarda a la sombra.",
+			"en": "Pink fan shell. The colour fades in the sun within days, so it's kept in the shade.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «concha_abanico» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "concha_abanico.nameEs",
+			"es": "Concha de abanico rosado",
+			"en": "Pink fan shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «concha_abanico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "dolar_de_arena.descriptionEs",
+			"es": "Dólar de arena. Aparece en la playa después de un temporal, blanco y tan fino que se parte con dos dedos.",
+			"en": "Sand dollar. It turns up on the beach after a storm, white and thin enough to snap between two fingers.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «dolar_de_arena» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "dolar_de_arena.nameEs",
+			"es": "Dólar de arena",
+			"en": "Sand dollar",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «dolar_de_arena» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "oreja_de_mar.descriptionEs",
+			"es": "Oreja de mar nacarada. Se agarra a la roca batida de Los Dientes y hay que despegarla con la hoja del cuchillo.",
+			"en": "Pearly abalone. It grips the wave-beaten rock of the Teeth and has to be prised off with a knife blade.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «oreja_de_mar» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "oreja_de_mar.nameEs",
+			"es": "Oreja de mar nacarada",
+			"en": "Pearly abalone",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «oreja_de_mar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "turbante_verde.descriptionEs",
+			"es": "Turbante verde. Bajo la costra verde hay una espiral de nácar que asoma donde el oleaje la ha gastado.",
+			"en": "Green turban shell. Under the green crust there's a spiral of mother-of-pearl, showing where the surf has worn it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «turbante_verde» descriptionEs/descriptionEn"
+			]
+		},
+		{
+			"namespace": "Data.shells.pieces",
+			"key": "turbante_verde.nameEs",
+			"es": "Turbante verde",
+			"en": "Green turban shell",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/shells.json «turbante_verde» nameEs/nameEn"
 			]
 		},
 		{
