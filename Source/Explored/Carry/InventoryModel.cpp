@@ -32,6 +32,29 @@ namespace InventoryModelDetail
 	constexpr float SledgeFullPenalty = 0.3f;
 	constexpr float MinSpeedMultiplier = 0.4f;
 
+	/**
+	 * Etiquetas que nunca apilan (biblia 03 §1.3): equipo que se lleva puesto,
+	 * contenedores (cada uno guarda cosas), piezas legendarias únicas y registros
+	 * internos. Tools/DataCheck lee esta lista: mantener el formato TEXT("...").
+	 */
+	const TCHAR* const NonStackableTagNames[] = {
+		TEXT("mochila"), TEXT("cinturon"), TEXT("angarillas"), TEXT("contenedor"), TEXT("legendario"), TEXT("interno"),
+	};
+
+	/** Unidades de tamaño Unit (kg o litros) que caben en Free, con la misma holgura que CanAccept. */
+	int32 UnitsIn(float Free, float Unit)
+	{
+		if (Unit <= 0.0f)
+		{
+			return TNumericLimits<int32>::Max();
+		}
+		if (Free + CapacityTolerance < Unit)
+		{
+			return 0;
+		}
+		return FMath::Max(0, FMath::FloorToInt((Free + CapacityTolerance) / Unit));
+	}
+
 	FName Tag(const TCHAR* Name) { return FName(Name); }
 
 	bool IsHand(EInventorySlot Slot)
@@ -184,6 +207,9 @@ const TCHAR* LexToString(EInventoryFail Fail)
 	case EInventoryFail::NotALiquidContainer: return TEXT("No guarda líquidos");
 	case EInventoryFail::DuplicateId: return TEXT("Id de instancia repetido");
 	case EInventoryFail::CorruptState: return TEXT("Estado incoherente");
+	case EInventoryFail::NotStackable: return TEXT("No se apilan juntos");
+	case EInventoryFail::StackFull: return TEXT("La pila está llena");
+	case EInventoryFail::InvalidCount: return TEXT("Cantidad no válida");
 	default: return TEXT("Desconocido");
 	}
 }
@@ -199,7 +225,34 @@ bool FInventoryItem::operator==(const FInventoryItem& Other) const
 		&& Size == Other.Size
 		&& Tags == Other.Tags
 		&& LiquidLiters == Other.LiquidLiters
-		&& LiquidCapacityLiters == Other.LiquidCapacityLiters;
+		&& LiquidCapacityLiters == Other.LiquidCapacityLiters
+		&& Count == Other.Count
+		&& MaxStack == Other.MaxStack
+		&& Quality == Other.Quality;
+}
+
+bool FInventoryItem::CanStackWith(const FInventoryItem& Other) const
+{
+	constexpr float UnitTolerance = 1.0e-4f;
+	return IsValid() && Other.IsValid()
+		&& IsStackable() && Other.IsStackable()
+		&& MaxStack == Other.MaxStack
+		&& DefinitionId == Other.DefinitionId
+		&& Quality == Other.Quality
+		&& Size == Other.Size
+		&& !IsTwoHanded()
+		&& LiquidCapacityLiters <= 0.0f && Other.LiquidCapacityLiters <= 0.0f
+		&& LiquidLiters <= 0.0f && Other.LiquidLiters <= 0.0f
+		&& FMath::IsNearlyEqual(WeightKg, Other.WeightKg, UnitTolerance)
+		&& FMath::IsNearlyEqual(VolumeLiters, Other.VolumeLiters, UnitTolerance)
+		&& Tags == Other.Tags;
+}
+
+FInventoryItem FInventoryItem::WithCount(int32 NewCount) const
+{
+	FInventoryItem Copy = *this;
+	Copy.Count = NewCount;
+	return Copy;
 }
 
 // --------------------------------------------------------------------------- FInventoryContainerSpec
@@ -308,7 +361,7 @@ float FInventoryContainer::GetUsedVolumeLiters() const
 	float Total = 0.0f;
 	for (const FInventoryEntry& Entry : Entries)
 	{
-		Total += Entry.Item.VolumeLiters;
+		Total += Entry.Item.GetTotalVolumeLiters();
 	}
 	return Total;
 }
@@ -317,7 +370,7 @@ EInventoryFail FInventoryContainer::CanAccept(const FInventoryItem& Item) const
 {
 	using namespace InventoryModelDetail;
 
-	if (!Item.IsValid())
+	if (!Item.IsValid() || Item.Count < 1 || Item.Count > FMath::Max(Item.MaxStack, 1))
 	{
 		return EInventoryFail::InvalidItem;
 	}
@@ -337,7 +390,7 @@ EInventoryFail FInventoryContainer::CanAccept(const FInventoryItem& Item) const
 	{
 		return EInventoryFail::ContainerFull;
 	}
-	if (Spec.MaxVolumeLiters > 0.0f && GetUsedVolumeLiters() + Item.VolumeLiters > Spec.MaxVolumeLiters + CapacityTolerance)
+	if (Spec.MaxVolumeLiters > 0.0f && GetUsedVolumeLiters() + Item.GetTotalVolumeLiters() > Spec.MaxVolumeLiters + CapacityTolerance)
 	{
 		return EInventoryFail::NoRoom;
 	}
@@ -346,6 +399,27 @@ EInventoryFail FInventoryContainer::CanAccept(const FInventoryItem& Item) const
 		return EInventoryFail::TooHeavy;
 	}
 	return EInventoryFail::None;
+}
+
+int32 FInventoryContainer::UnitsThatFitInStack(const FInventoryItem& Item, int64 IntoInstanceId) const
+{
+	using namespace InventoryModelDetail;
+
+	const FInventoryItem* Into = FindById(IntoInstanceId);
+	if (!Into || Into->InstanceId == Item.InstanceId || !Into->CanStackWith(Item))
+	{
+		return 0;
+	}
+	int32 Units = Into->GetStackRoom();
+	if (Spec.MaxVolumeLiters > 0.0f)
+	{
+		Units = FMath::Min(Units, UnitsIn(Spec.MaxVolumeLiters - GetUsedVolumeLiters(), Item.VolumeLiters));
+	}
+	if (Spec.MaxWeightKg > 0.0f)
+	{
+		Units = FMath::Min(Units, UnitsIn(Spec.MaxWeightKg - GetUsedWeightKg(), Item.WeightKg));
+	}
+	return FMath::Max(Units, 0);
 }
 
 bool FInventoryContainer::Add(const FInventoryItem& Item, EInventoryFail& OutFail)
@@ -452,6 +526,36 @@ int64 FInventoryModel::AllocateInstanceId()
 	return State.NextInstanceId++;
 }
 
+const TArray<FName>& FInventoryModel::GetNonStackableTags()
+{
+	static const TArray<FName> Tags = []()
+	{
+		TArray<FName> Out;
+		for (const TCHAR* Name : InventoryModelDetail::NonStackableTagNames)
+		{
+			Out.Add(FName(Name));
+		}
+		return Out;
+	}();
+	return Tags;
+}
+
+int32 FInventoryModel::ComputeMaxStack(float MaxDurability, float LiquidCapacityLiters, EInventorySize Size, const TArray<FName>& Tags, bool bComposite)
+{
+	if (MaxDurability > 0.0f || LiquidCapacityLiters > 0.0f || Size == EInventorySize::DosManos || bComposite)
+	{
+		return 1;
+	}
+	for (const FName& Tag : GetNonStackableTags())
+	{
+		if (Tags.Contains(Tag))
+		{
+			return 1;
+		}
+	}
+	return MaxStackSize;
+}
+
 void FInventoryModel::RebuildSpecs(FInventoryState& InOut)
 {
 	InOut.Pockets.Spec = FInventoryContainerSpec::Pockets();
@@ -537,6 +641,27 @@ bool FInventoryModel::PickUp(const FInventoryItem& Item, EInventoryFail& OutFail
 		Target = EInventorySlot::HandRight;
 	}
 	return PlaceInHand(Item, Target, OutFail);
+}
+
+bool FInventoryModel::PickUpMerging(const FInventoryItem& Item, int64& OutMergedInto, EInventoryFail& OutFail)
+{
+	OutMergedInto = 0;
+	if (Item.IsValid() && Item.IsStackable() && FindItem(Item.InstanceId) == EInventorySlot::None)
+	{
+		for (EInventorySlot Hand : { EInventorySlot::HandLeft, EInventorySlot::HandRight })
+		{
+			const FInventoryItem* Held = GetHandItem(Hand);
+			if (Held && UnitsThatFitOnPlayerStack(Item, Held->InstanceId, /*bAlreadyOnBody=*/false) >= Item.Count)
+			{
+				OutMergedInto = Held->InstanceId;
+				CommitItem(Held->WithCount(Held->Count + Item.Count));
+				State.NextInstanceId = FMath::Max(State.NextInstanceId, Item.InstanceId + 1);
+				OutFail = EInventoryFail::None;
+				return true;
+			}
+		}
+	}
+	return PickUp(Item, OutFail);
 }
 
 bool FInventoryModel::PlaceInHand(const FInventoryItem& Item, EInventorySlot Hand, EInventoryFail& OutFail)
@@ -830,6 +955,300 @@ bool FInventoryModel::WouldOrphanPouch(int64 InstanceId, EInventorySlot From, EI
 	return true;
 }
 
+// ------------------------------------------------------------- pilas
+
+void FInventoryModel::CommitItem(const FInventoryItem& Updated)
+{
+	FInventoryItem* Item = FindMutableItemById(Updated.InstanceId);
+	check(Item);
+	*Item = Updated;
+	if (State.bHandsHoldTwoHanded && State.HandLeft.InstanceId == Updated.InstanceId)
+	{
+		State.HandRight = State.HandLeft;
+	}
+}
+
+int32 FInventoryModel::UnitsThatFitOnPlayerStack(const FInventoryItem& Item, int64 IntoId, bool bAlreadyOnBody) const
+{
+	using namespace InventoryModelDetail;
+
+	const EInventorySlot IntoSlot = FindItem(IntoId);
+	const FInventoryItem* Into = FindItemById(IntoId);
+	if (!Into || Into->InstanceId == Item.InstanceId || !Into->CanStackWith(Item))
+	{
+		return 0;
+	}
+	int32 Units = Into->GetStackRoom();
+	const FInventoryContainer* Container = GetContainer(IntoSlot);
+	// Dentro del mismo contenedor el volumen y el peso no cambian: solo manda el tope de la pila.
+	if (Container && Container->FindIndexById(Item.InstanceId) == INDEX_NONE)
+	{
+		Units = FMath::Min(Units, Container->UnitsThatFitInStack(Item, IntoId));
+	}
+	if (IsBodySlot(IntoSlot) && !bAlreadyOnBody)
+	{
+		const float Free = GetComfortableCapacityKg() * MaxLoadRatio - GetBodyWeightKg();
+		Units = FMath::Min(Units, UnitsIn(Free, Item.WeightKg));
+	}
+	return FMath::Max(Units, 0);
+}
+
+bool FInventoryModel::SplitStack(int64 InstanceId, int32 Count, EInventorySlot To, int64& OutNewId, EInventoryFail& OutFail)
+{
+	using namespace InventoryModelDetail;
+
+	OutNewId = 0;
+	const EInventorySlot From = FindItem(InstanceId);
+	const FInventoryItem* Found = FindItemById(InstanceId);
+	if (!Found)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	if (Count < 1 || Count >= Found->Count)
+	{
+		OutFail = EInventoryFail::InvalidCount;
+		return false;
+	}
+	if (!IsHand(To) && !GetContainer(To))
+	{
+		OutFail = EInventoryFail::InvalidItem;
+		return false;
+	}
+
+	// Se prueba sobre una copia: la pila que queda y la nueva comparten contenedor a veces.
+	FInventoryModel Probe = *this;
+	Probe.CommitItem(Found->WithCount(Found->Count - Count));
+	FInventoryItem Part = Found->WithCount(Count);
+	Part.InstanceId = Probe.State.NextInstanceId;
+	OutFail = Probe.CanPlace(Part, To, /*bAlreadyOnBody=*/IsBodySlot(From));
+	if (OutFail != EInventoryFail::None)
+	{
+		return false;
+	}
+	Probe.PlaceUnchecked(Part, To);
+	++Probe.State.NextInstanceId;
+	*this = MoveTemp(Probe);
+	OutNewId = Part.InstanceId;
+	return true;
+}
+
+bool FInventoryModel::MergeStacks(int64 FromId, int64 IntoId, int32& OutMoved, EInventoryFail& OutFail)
+{
+	using namespace InventoryModelDetail;
+
+	OutMoved = 0;
+	const FInventoryItem* From = FindItemById(FromId);
+	const FInventoryItem* Into = FindItemById(IntoId);
+	if (!From || !Into)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	if (FromId == IntoId)
+	{
+		OutFail = EInventoryFail::AlreadyThere;
+		return false;
+	}
+	if (!Into->CanStackWith(*From))
+	{
+		OutFail = EInventoryFail::NotStackable;
+		return false;
+	}
+	if (Into->GetStackRoom() == 0)
+	{
+		OutFail = EInventoryFail::StackFull;
+		return false;
+	}
+	const EInventorySlot FromSlot = FindItem(FromId);
+	const EInventorySlot IntoSlot = FindItem(IntoId);
+	if (WouldOrphanPouch(FromId, FromSlot, IntoSlot))
+	{
+		OutFail = EInventoryFail::ContainerNotEmpty;
+		return false;
+	}
+	const int32 Units = FMath::Min(From->Count, UnitsThatFitOnPlayerStack(*From, IntoId, /*bAlreadyOnBody=*/IsBodySlot(FromSlot)));
+	if (Units <= 0)
+	{
+		// El motivo es el de meter una sola unidad más donde está la pila de destino.
+		const FInventoryContainer* Container = GetContainer(IntoSlot);
+		const EInventoryFail ContainerFail = Container ? Container->CanAccept(From->WithCount(1)) : EInventoryFail::None;
+		OutFail = (ContainerFail == EInventoryFail::NoRoom || ContainerFail == EInventoryFail::TooHeavy) ? ContainerFail : EInventoryFail::OverCarryLimit;
+		return false;
+	}
+
+	const FInventoryItem FromCopy = *From;
+	CommitItem(Into->WithCount(Into->Count + Units));
+	if (Units == FromCopy.Count)
+	{
+		FInventoryItem Removed;
+		RemoveUnchecked(FromId, Removed);
+	}
+	else
+	{
+		CommitItem(FromCopy.WithCount(FromCopy.Count - Units));
+	}
+	OutMoved = Units;
+	OutFail = EInventoryFail::None;
+	return true;
+}
+
+bool FInventoryModel::StowMerging(int64 InstanceId, EInventorySlot To, FInventoryStowResult& OutResult, EInventoryFail& OutFail)
+{
+	using namespace InventoryModelDetail;
+
+	OutResult = FInventoryStowResult();
+	const EInventorySlot From = FindItem(InstanceId);
+	const FInventoryItem* Found = FindItemById(InstanceId);
+	if (!Found)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	const FInventoryContainer* Target = GetContainer(To);
+	if (!Found->IsStackable() || !Target)
+	{
+		// Lo que no apila (o va a una mano) se mueve entero.
+		const int32 Units = Found->Count;
+		if (!Move(InstanceId, To, OutFail))
+		{
+			return false;
+		}
+		OutResult.MovedUnits = Units;
+		OutResult.bMovedWhole = true;
+		return true;
+	}
+	if (From == To)
+	{
+		OutFail = EInventoryFail::AlreadyThere;
+		return false;
+	}
+	if (WouldOrphanPouch(InstanceId, From, To))
+	{
+		OutFail = EInventoryFail::ContainerNotEmpty;
+		return false;
+	}
+	// Mismas condiciones que un traslado (mochila puesta, bolsa, angarillas, tamaño y
+	// etiquetas); la falta de hueco, volumen o peso aún puede salvarse fundiendo.
+	const EInventoryFail Gate = CanPlace(Found->WithCount(1), To, /*bAlreadyOnBody=*/true);
+	if (Gate != EInventoryFail::None && Gate != EInventoryFail::ContainerFull
+		&& Gate != EInventoryFail::NoRoom && Gate != EInventoryFail::TooHeavy)
+	{
+		OutFail = Gate;
+		return false;
+	}
+
+	const bool bAlreadyOnBody = IsBodySlot(From);
+	FInventoryModel Probe = *this;
+	int32 Remaining = Found->Count;
+	OutFail = EInventoryFail::None;
+
+	// 1) Completar las pilas que ya hay, por orden de hueco visible.
+	TArray<FInventoryEntry> Sorted = Target->Entries;
+	Sorted.StableSort([](const FInventoryEntry& A, const FInventoryEntry& B) { return A.SlotIndex < B.SlotIndex; });
+	for (const FInventoryEntry& Entry : Sorted)
+	{
+		if (Remaining == 0)
+		{
+			break;
+		}
+		const FInventoryItem Source = *Probe.FindItemById(InstanceId);
+		const int32 Units = FMath::Min(Remaining, Probe.UnitsThatFitOnPlayerStack(Source, Entry.Item.InstanceId, bAlreadyOnBody));
+		if (Units <= 0)
+		{
+			continue;
+		}
+		const FInventoryItem Into = *Probe.FindItemById(Entry.Item.InstanceId);
+		Probe.CommitItem(Into.WithCount(Into.Count + Units));
+		Remaining -= Units;
+		if (Remaining > 0)
+		{
+			Probe.CommitItem(Source.WithCount(Remaining));
+		}
+		OutResult.ToppedUp.Add(TPair<int64, int32>(Entry.Item.InstanceId, Units));
+		OutResult.MovedUnits += Units;
+	}
+
+	if (Remaining == 0)
+	{
+		FInventoryItem Removed;
+		Probe.RemoveUnchecked(InstanceId, Removed);
+		OutResult.bSourceRemoved = true;
+	}
+	else
+	{
+		// 2) Lo que sobra, a un hueco nuevo: entero (conserva el id) o, si no cabe, la parte que quepa.
+		const FInventoryItem Rest = *Probe.FindItemById(InstanceId);
+		OutFail = Probe.CanPlace(Rest, To, bAlreadyOnBody);
+		if (OutFail == EInventoryFail::None)
+		{
+			FInventoryItem Removed;
+			Probe.RemoveUnchecked(InstanceId, Removed);
+			Probe.PlaceUnchecked(Rest, To);
+			OutResult.bMovedWhole = true;
+			OutResult.MovedUnits += Rest.Count;
+			Remaining = 0;
+		}
+		else if (OutFail != EInventoryFail::ContainerFull)
+		{
+			for (int32 Part = Rest.Count - 1; Part >= 1; --Part)
+			{
+				FInventoryItem Piece = Rest.WithCount(Part);
+				Piece.InstanceId = Probe.State.NextInstanceId;
+				FInventoryModel Try = Probe;
+				Try.CommitItem(Rest.WithCount(Rest.Count - Part));
+				if (Try.CanPlace(Piece, To, bAlreadyOnBody) == EInventoryFail::None)
+				{
+					Try.PlaceUnchecked(Piece, To);
+					++Try.State.NextInstanceId;
+					Probe = MoveTemp(Try);
+					OutResult.NewStackId = Piece.InstanceId;
+					OutResult.MovedUnits += Part;
+					Remaining -= Part;
+					break;
+				}
+			}
+		}
+	}
+
+	if (OutResult.MovedUnits == 0)
+	{
+		if (OutFail == EInventoryFail::None)
+		{
+			OutFail = EInventoryFail::NoRoom;
+		}
+		OutResult = FInventoryStowResult();
+		return false;
+	}
+	OutResult.LeftAtSource = Remaining;
+	*this = MoveTemp(Probe);
+	OutFail = EInventoryFail::None;
+	return true;
+}
+
+bool FInventoryModel::RemoveUnits(int64 InstanceId, int32 Count, EInventoryFail& OutFail)
+{
+	const FInventoryItem* Found = FindItemById(InstanceId);
+	if (!Found)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	if (Count < 1 || Count > Found->Count)
+	{
+		OutFail = EInventoryFail::InvalidCount;
+		return false;
+	}
+	if (Count == Found->Count)
+	{
+		FInventoryItem Removed;
+		return ConsumeItem(InstanceId, Removed, OutFail);
+	}
+	CommitItem(Found->WithCount(Found->Count - Count));
+	OutFail = EInventoryFail::None;
+	return true;
+}
+
 // ------------------------------------------------------------- traslados
 
 EInventoryFail FInventoryModel::CanMove(int64 InstanceId, EInventorySlot To) const
@@ -977,6 +1396,59 @@ bool FInventoryModel::AutoStowFromHand(EInventorySlot Hand, EInventorySlot& OutW
 		return false;
 	}
 	if (!Move(Held->InstanceId, Target, OutFail))
+	{
+		return false;
+	}
+	OutWhere = Target;
+	return true;
+}
+
+bool FInventoryModel::AutoStowMergingFromHand(EInventorySlot Hand, EInventorySlot& OutWhere, FInventoryStowResult& OutResult, EInventoryFail& OutFail)
+{
+	OutWhere = EInventorySlot::None;
+	OutResult = FInventoryStowResult();
+	const FInventoryItem* HeldPtr = GetHandItem(Hand);
+	if (!HeldPtr)
+	{
+		OutFail = EInventoryFail::NotFound;
+		return false;
+	}
+	const FInventoryItem Held = *HeldPtr;
+
+	// Primero donde ya hay una pila igual con sitio: así no se gasta un hueco nuevo.
+	EInventorySlot Target = EInventorySlot::None;
+	if (Held.IsStackable())
+	{
+		const EInventorySlot Slots[] = { EInventorySlot::Pockets, EInventorySlot::Pouch, EInventorySlot::Belt, EInventorySlot::Backpack, EInventorySlot::Sledge };
+		for (EInventorySlot Slot : Slots)
+		{
+			const EInventoryFail Gate = CanPlace(Held.WithCount(1), Slot, /*bAlreadyOnBody=*/true);
+			if (Gate != EInventoryFail::None && Gate != EInventoryFail::ContainerFull
+				&& Gate != EInventoryFail::NoRoom && Gate != EInventoryFail::TooHeavy)
+			{
+				continue;
+			}
+			const bool bHasRoomyStack = GetContainer(Slot)->Entries.ContainsByPredicate([this, &Held](const FInventoryEntry& E)
+			{
+				return UnitsThatFitOnPlayerStack(Held, E.Item.InstanceId, /*bAlreadyOnBody=*/true) > 0;
+			});
+			if (bHasRoomyStack)
+			{
+				Target = Slot;
+				break;
+			}
+		}
+	}
+	if (Target == EInventorySlot::None)
+	{
+		Target = SuggestStowSlot(Held);
+	}
+	if (Target == EInventorySlot::None)
+	{
+		OutFail = Held.IsTwoHanded() ? EInventoryFail::TooBig : EInventoryFail::NoRoom;
+		return false;
+	}
+	if (!StowMerging(Held.InstanceId, Target, OutResult, OutFail))
 	{
 		return false;
 	}
@@ -1480,7 +1952,8 @@ bool FInventoryModel::ShrinkItem(const FInventoryItem& Updated, EInventoryFail& 
 		OutFail = EInventoryFail::NotFound;
 		return false;
 	}
-	if (!Updated.IsValid() || Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
+	if (!Updated.IsValid() || Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size
+		|| Updated.Count < 1 || Updated.Count > FMath::Max(Updated.MaxStack, 1))
 	{
 		OutFail = EInventoryFail::InvalidItem;
 		return false;
@@ -1567,19 +2040,33 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 	// Ids únicos y por debajo del siguiente que se va a repartir.
 	TArray<int64> Ids;
 	bool bDuplicate = false;
-	auto Visit = [&Ids, &bDuplicate](const FInventoryItem& Item)
+	bool bBadStack = false;
+	auto Visit = [&Ids, &bDuplicate, &bBadStack](const FInventoryItem& Item)
 	{
 		if (Ids.Contains(Item.InstanceId))
 		{
 			bDuplicate = true;
 		}
 		Ids.Add(Item.InstanceId);
+		// Pilas (biblia 03 §1.3): 1..MaxStack unidades y nada con líquido ni DosManos por encima de 1.
+		const bool bStackRange = Item.MaxStack >= 1 && Item.MaxStack <= MaxStackSize && Item.Count >= 1 && Item.Count <= Item.MaxStack;
+		const bool bStackKind = Item.MaxStack == 1 || (!Item.IsTwoHanded() && Item.LiquidCapacityLiters <= 0.0f && Item.LiquidLiters <= 0.0f);
+		bBadStack = bBadStack || !bStackRange || !bStackKind;
 	};
 	InventoryModelDetail::ForEachCarried(S, /*bIncludeSledge=*/true, [&Visit](const FInventoryItem& Item, EInventorySlot) { Visit(Item); });
-	InventoryModelDetail::ForEachEquipped(S, /*bIncludeSledge=*/true, Visit);
+	InventoryModelDetail::ForEachEquipped(S, /*bIncludeSledge=*/true, [&Visit, &bBadStack](const FInventoryItem& Item)
+	{
+		Visit(Item);
+		// El equipo puesto es una pieza: nunca una pila.
+		bBadStack = bBadStack || Item.Count != 1;
+	});
 	if (bDuplicate)
 	{
 		OutFail = EInventoryFail::DuplicateId;
+		return false;
+	}
+	if (bBadStack)
+	{
 		return false;
 	}
 	for (int64 Id : Ids)
@@ -1592,6 +2079,95 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 
 	OutFail = EInventoryFail::None;
 	return true;
+}
+
+bool FInventoryModel::SanitizeUnknownDefinitions(FInventoryState& InOut, TFunctionRef<bool(FName)> IsKnown, FInventoryLoadReport& OutReport)
+{
+	using namespace InventoryModelDetail;
+
+	OutReport = FInventoryLoadReport();
+	auto IsUnknown = [&IsKnown](const FInventoryItem& Item) { return Item.IsValid() && !IsKnown(Item.DefinitionId); };
+	auto Orphan = [&OutReport](FInventoryContainer& Container)
+	{
+		Container.Entries.StableSort([](const FInventoryEntry& A, const FInventoryEntry& B) { return A.SlotIndex < B.SlotIndex; });
+		for (const FInventoryEntry& Entry : Container.Entries)
+		{
+			OutReport.Orphaned.Add(Entry.Item);
+		}
+		Container.Entries.Reset();
+	};
+
+	// 1) Manos (un DosManos desconocido libera las dos).
+	if (IsUnknown(InOut.HandLeft))
+	{
+		OutReport.Unknown.Add(InOut.HandLeft);
+		if (InOut.bHandsHoldTwoHanded)
+		{
+			InOut.HandRight = FInventoryItem();
+			InOut.bHandsHoldTwoHanded = false;
+		}
+		InOut.HandLeft = FInventoryItem();
+	}
+	if (!InOut.bHandsHoldTwoHanded && IsUnknown(InOut.HandRight))
+	{
+		OutReport.Unknown.Add(InOut.HandRight);
+		InOut.HandRight = FInventoryItem();
+	}
+
+	// 2) Contenido: lo desconocido sale; el resto conserva su hueco visible.
+	for (FInventoryContainer* Container : { &InOut.Pockets, &InOut.Belt, &InOut.Pouch, &InOut.Backpack, &InOut.Sledge })
+	{
+		for (int32 Index = Container->Entries.Num() - 1; Index >= 0; --Index)
+		{
+			if (IsUnknown(Container->Entries[Index].Item))
+			{
+				OutReport.Unknown.Insert(Container->Entries[Index].Item, 0);
+				Container->Entries.RemoveAt(Index);
+			}
+		}
+	}
+
+	// 3) Equipo desconocido: se quita y lo que llevaba cae al suelo.
+	if (IsUnknown(InOut.BackpackItem))
+	{
+		OutReport.Unknown.Add(InOut.BackpackItem);
+		InOut.BackpackItem = FInventoryItem();
+		InOut.bHasBackpack = false;
+		InOut.BackpackComfortBonusKg = 0.0f;
+		InOut.bBackpackWaterproofPocket = false;
+		Orphan(InOut.Backpack);
+	}
+	if (IsUnknown(InOut.BeltItem))
+	{
+		OutReport.Unknown.Add(InOut.BeltItem);
+		InOut.BeltItem = FInventoryItem();
+	}
+	if (IsUnknown(InOut.SledgeItem))
+	{
+		OutReport.Unknown.Add(InOut.SledgeItem);
+		InOut.SledgeItem = FInventoryItem();
+		InOut.bHasSledge = false;
+		Orphan(InOut.Sledge);
+	}
+	RebuildSpecs(InOut);
+
+	// El cinturón puede haber vuelto a sus enganches básicos: lo que sobra, al suelo.
+	InOut.Belt.Entries.StableSort([](const FInventoryEntry& A, const FInventoryEntry& B) { return A.SlotIndex < B.SlotIndex; });
+	while (InOut.Belt.Num() > InOut.Belt.Spec.MaxSlots)
+	{
+		OutReport.Orphaned.Add(InOut.Belt.Entries.Last().Item);
+		InOut.Belt.Entries.Pop();
+	}
+	if (InOut.Belt.Entries.ContainsByPredicate([&InOut](const FInventoryEntry& E) { return E.SlotIndex >= InOut.Belt.Spec.MaxSlots; }))
+	{
+		CompactSlots(InOut.Belt);
+	}
+	// Sin mochila impermeable ni bolsa colgada no hay bolsa estanca.
+	if (!StateProvidesPouch(InOut) && !InOut.Pouch.IsEmpty())
+	{
+		Orphan(InOut.Pouch);
+	}
+	return !OutReport.IsClean();
 }
 
 bool FInventoryModel::LoadState(const FInventoryState& InState, EInventoryFail& OutFail)
