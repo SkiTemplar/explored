@@ -947,6 +947,82 @@ def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> Non
     assert best and best["resultDefinitionId"] == "basalto_tallado"
 
 
+# --------------------------------------------------------------------------- peligros y lugares de la mina (biblia 02 §2.4-2.5)
+
+def hazard(ds: DataSet, hid: str) -> dict:
+    return ds.data["mining.json"]["hazards"][hid]
+
+
+def place(ds: DataSet, pid: str) -> dict:
+    return next(p for p in ds.data["mining.json"]["places"] if p["id"] == pid)
+
+
+def test_mineria_viga_de_apoyo_es_pieza_de_madera_bajo_tierra(real: DataSet) -> None:
+    viga = piece(real, hazard(real, "derrumbe")["supportPiece"])
+    assert viga["id"] == "viga_apoyo" and viga["tier"] == "madera" and viga["socket"] == "terreno"
+    assert {c["item"]: c["count"] for c in viga["cost"]} == {"tronco_pequeno": 2, "cuerda": 1}
+
+
+def test_mineria_falta_un_peligro(ds: DataSet) -> None:
+    del ds.data["mining.json"]["hazards"]["aire_viciado"]
+    assert any_error(mining_errors(ds), "aire_viciado", "biblia 02")
+
+
+def test_mineria_viga_inexistente(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportPiece"] = "puntal_magico"
+    assert any_error(mining_errors(ds), "puntal_magico", "building_pieces.json")
+
+
+def test_mineria_viga_que_no_cubre_la_luz(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportRadiusM"] = 1.0
+    assert any_error(mining_errors(ds), "derrumbe", "luz")
+
+
+def test_mineria_aviso_despues_del_derrumbe(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["warningSeconds"] = 9
+    assert any_error(mining_errors(ds), "derrumbe", "aviso")
+
+
+def test_mineria_aire_viciado_nunca_mata(ds: DataSet) -> None:
+    hazard(ds, "aire_viciado")["lethal"] = True
+    assert any_error(mining_errors(ds), "aire_viciado", "nunca mata")
+
+
+def test_mineria_luz_pendiente_que_ya_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightItemsPendientes"].append("antorcha")
+    assert any_error(mining_errors(ds), "oscuridad", "antorcha", "lightItems")
+
+
+def test_mineria_crecida_en_estacion_desconocida(ds: DataSet) -> None:
+    hazard(ds, "crecida")["season"] = "invierno"
+    assert any_error(mining_errors(ds), "crecida", "invierno")
+
+
+def test_mineria_lugar_de_fase_1_fuera_del_acceso_anticipado(ds: DataSet) -> None:
+    place(ds, "cenotes")["occurrences"][0]["fase"] = 1
+    assert any_error(mining_errors(ds), "cenotes", "mesa", "acceso anticipado")
+
+
+def test_mineria_lugar_con_objeto_de_estrato_ausente(ds: DataSet) -> None:
+    place(ds, "grutas_marinas")["items"] = ["obsidiana"]
+    assert any_error(mining_errors(ds), "grutas_marinas", "teeth", "obsidiana")
+
+
+def test_mineria_cueva_de_landing_mas_honda_que_la_pala(ds: DataSet) -> None:
+    place(ds, "cueva_landing")["occurrences"][0]["depthM"] = [0, 6]
+    assert any_error(mining_errors(ds), "cueva_landing", "basalto", "nivel 1")
+
+
+def test_mineria_falta_la_cueva_de_landing(ds: DataSet) -> None:
+    ds.data["mining.json"]["places"] = [p for p in ds.data["mining.json"]["places"] if p["id"] != "cueva_landing"]
+    assert any_error(mining_errors(ds), "Landing", "GDD v2 §6.1")
+
+
+def test_mineria_rio_subterraneo_sin_barco(ds: DataSet) -> None:
+    place(ds, "rios_subterraneos")["requiresBoat"] = "submarino"
+    assert any_error(mining_errors(ds), "rios_subterraneos", "boats.json")
+
+
 # --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
 
 from datacheck import fauna
@@ -1323,3 +1399,72 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- huerto: reglas y cosecha neta
+
+
+def farm_errors(ds: DataSet) -> list[str]:
+    from datacheck import farm
+    r = Report()
+    farm.check_farm(ds, r)
+    return r.errors
+
+
+def test_huerto_reglas_espejo_de_farm_model(real: DataSet) -> None:
+    assert farm_errors(real) == []
+    assert real.data["plants.json"]["rules"]["scarecrowRadiusM"] == 15
+
+
+def test_huerto_sin_reglas(ds: DataSet) -> None:
+    del ds.data["plants.json"]["rules"]
+    assert any_error(farm_errors(ds), "falta el bloque «rules»")
+
+
+def test_huerto_regla_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["scarecrowRadiusM"] = 4
+    ds.data["plants.json"]["rules"]["dryDaysToDie"] = 5
+    errs = farm_errors(ds)
+    assert any_error(errs, "scarecrowRadiusM=4", "ScarecrowRadius=1500 cm")
+    assert any_error(errs, "dryDaysToDie=5", "DryDaysToDie=4")
+
+
+def test_huerto_marchita_despues_de_morir(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["dryDaysToWilt"] = 4
+    assert any_error(farm_errors(ds), "se marchita")
+
+
+def test_huerto_cosecha_neta_nula(ds: DataSet) -> None:
+    pina = next(p for p in ds.plants if p["id"] == "pina")
+    pina["harvest"]["everyDays"] = 0
+    assert any_error(farm_errors(ds), "«pina»", "cosecha neta nula")
+
+
+def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> None:
+    for p in real.plants:
+        h = p["harvest"]
+        if p["plantedFrom"] == h["item"]:
+            assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
+
+
+# --------------------------------------------------------------------------- mina: quema de la luz
+
+
+def test_mineria_antorcha_con_ritmo_de_quema(real: DataSet) -> None:
+    burn = {b["item"]: b for b in hazard(real, "oscuridad")["lightBurn"]}
+    assert burn["antorcha"]["gameMinutesPerDurability"] * item(real, "antorcha")["maxDurability"] == 120
+
+
+def test_mineria_luz_sin_ritmo_de_quema(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"] = []
+    assert any_error(mining_errors(ds), "antorcha", "lightBurn")
+
+
+def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"].append({"item": "vela", "gameMinutesPerDurability": 3})
+    assert any_error(mining_errors(ds), "«vela»", "lightItems")
+
+
+def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
+    del item(ds, "antorcha")["maxDurability"]
+    assert any_error(mining_errors(ds), "antorcha", "maxDurability")
