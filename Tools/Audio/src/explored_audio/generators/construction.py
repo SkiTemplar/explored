@@ -101,37 +101,90 @@ def _place(out: np.ndarray, x: np.ndarray, pos: int) -> None:
         out[pos:end] += x[: end - pos]
 
 
+def _hammer_burst(rng: np.random.Generator, n: int, fc: float, q: float, kind: str, decay_s: float) -> np.ndarray:
+    """Ruido filtrado con ataque de 0,1 ms y caida exponencial, a pico 1."""
+    t = np.arange(n) / SR
+    x = static_filter(rng.standard_normal(n), SR, fc=fc, q=q, kind=kind)
+    x *= (1.0 - np.exp(-t / 0.0001)) * np.exp(-t / decay_s)
+    return x / (np.max(np.abs(x)) + 1e-9)
+
+
 def build_hammer(name: str) -> np.ndarray:
-    """Clavar una clavija de madera con un mazo de piedra: 3-4 golpes. Cada
-    uno es el chasquido del contacto piedra-madera, el cuerpo resonante de la
-    viga y un golpe grave; la clavija entra y el tono sube golpe a golpe
-    (queda menos madera libre vibrando), y el ultimo suena mas seco."""
+    """Clavar una clavija de madera con un mazo de piedra: 3-4 golpes.
+
+    Antes cada golpe era un modo largo de la viga a 260-340 Hz (el 77 % de la
+    energia en una octava, ~150 ms hasta -30 dB) y sonaba a marimba. Un mazo
+    contra una clavija es un golpe seco por capas, como `sfx_wood_chop`:
+
+    - el contacto piedra-madera: chasquido de ~1 ms por encima de 2,5 kHz;
+    - el "toc" de la cabeza de la clavija: modos inarmonicos a 420-520 Hz
+      muy amortiguados (25 ms) con ruido de banda media que les quita la
+      nota; suben de tono golpe a golpe porque queda menos clavija libre;
+    - el golpe sordo de la viga que recibe: ruido grave de ~20 ms y un modo
+      a 110-150 Hz amortiguado (la viga esta atada, apenas resuena);
+    - la clavija que entra en el agujero: 20-50 ms de roce (adherencia y
+      deslizamiento de fibra contra fibra) justo despues del contacto, mas
+      largo en los primeros golpes, cuando todavia avanza;
+    - a veces el mazo rebota y da un segundo toque flojo 15-30 ms despues.
+    El ultimo golpe asienta la clavija: sin roce y con el cuerpo mas seco.
+    """
     rng = rng_for(name)
     n_hits = int(rng.integers(3, 5))
     gaps = [rng.uniform(0.3, 0.4) for _ in range(n_hits - 1)]
-    n = int((sum(gaps) + 0.45) * SR)
+    n = int((sum(gaps) + 0.35) * SR)
     out = np.zeros(n)
-    beam_freq = rng.uniform(260, 340)
-    pos = 0
+    peg_freq = rng.uniform(420, 520)
+    beam_freq = rng.uniform(110, 150)
+    pos = int(0.003 * SR)
     for i in range(n_hits):
         last = i == n_hits - 1
-        freq = beam_freq * (1.0 + 0.06 * i)
-        body = modal_hit(
-            SR, 0.35, base_freq=freq,
-            mode_ratios=[1.0, 2.76, 5.4, 8.9],
-            mode_dampings_s=[0.07 * (0.6 if last else 1.0), 0.035, 0.015, 0.007],
-            mode_amps=[1.0, 0.5, 0.25, 0.12], rng=rng, detune=0.015,
+        force = rng.uniform(0.85, 1.0) * (1.1 if last else 1.0)
+        dry = 0.6 if last else 1.0
+
+        click_n = int(rng.uniform(0.0008, 0.0014) * SR)
+        _place(out, _hammer_burst(rng, click_n, fc=rng.uniform(2500, 3500), q=0.7, kind="highpass", decay_s=click_n / SR / 3.0) * 0.5, pos)
+
+        peg = modal_hit(
+            SR, 0.12, base_freq=peg_freq * (1.0 + 0.07 * i),
+            mode_ratios=[1.0, 1.62, 2.37, 3.3], mode_dampings_s=[0.025 * dry, 0.017 * dry, 0.011, 0.007],
+            mode_amps=[1.0, 0.55, 0.35, 0.2], rng=rng, detune=0.04,
         )
-        low = modal_hit(SR, 0.2, base_freq=rng.uniform(80, 100), mode_ratios=[1.0], mode_dampings_s=[0.035], mode_amps=[1.0])
-        click_n = int(0.006 * SR)
-        click = static_filter(rng.standard_normal(click_n), SR, fc=3000.0, q=0.7, kind="highpass") * np.exp(-np.arange(click_n) / SR / 0.0012)
-        force = rng.uniform(0.8, 1.0) * (1.1 if last else 1.0)
-        _place(out, body * 0.7 * force, pos)
-        _place(out, low * 0.35 * force, pos)
-        _place(out, click * 0.8 * force, pos)
+        _place(out, peg * 0.55 * force, pos)
+        _place(out, _hammer_burst(rng, int(0.06 * SR), fc=rng.uniform(800, 1200), q=1.0, kind="bandpass", decay_s=0.012) * 0.35 * force, pos)
+
+        _place(out, _hammer_burst(rng, int(0.08 * SR), fc=240.0, q=0.8, kind="lowpass", decay_s=0.02) * 0.5 * force, pos)
+        beam = modal_hit(SR, 0.15, base_freq=beam_freq, mode_ratios=[1.0, 2.4], mode_dampings_s=[0.03 * dry, 0.015], mode_amps=[1.0, 0.3], rng=rng, detune=0.03)
+        _place(out, beam * 0.3 * force, pos)
+
+        if not last:
+            # Roce de la clavija al avanzar: tren de micro-chasquidos cada vez
+            # mas lentos (se frena), filtrados por la resonancia de la madera.
+            slide_s = rng.uniform(0.02, 0.05) * (1.0 - 0.25 * i)
+            slide_n = int(slide_s * SR)
+            rate = np.linspace(rng.uniform(900, 1300), 250.0, slide_n)
+            phase = np.cumsum(rate / SR)
+            ticks = np.zeros(slide_n)
+            ticks[np.nonzero(np.diff(np.floor(phase), prepend=0.0))[0]] = 1.0
+            ticks *= rng.uniform(0.5, 1.0, slide_n)
+            slide = static_filter(ticks, SR, fc=rng.uniform(1400, 2200), q=4.0, kind="bandpass")
+            slide *= np.linspace(1.0, 0.0, slide_n) ** 1.5
+            slide /= np.max(np.abs(slide)) + 1e-9
+            _place(out, slide * 0.18 * force, pos + int(0.004 * SR))
+
+        if rng.uniform() < 0.35:
+            bounce = int(rng.uniform(0.015, 0.03) * SR)
+            _place(out, _hammer_burst(rng, int(0.03 * SR), fc=rng.uniform(1500, 2500), q=1.2, kind="bandpass", decay_s=0.004) * 0.15, pos + bounce)
+
         if not last:
             pos += int(gaps[i] * SR)
-    return out
+
+    # Sin continua del golpe grave y saturacion suave, como en `impacts`:
+    # el chasquido de 1 ms fija el pico y sin ella el golpe queda muy bajo.
+    out = static_filter(out, SR, fc=30.0, q=0.707, kind="highpass")
+    out = np.tanh(2.5 * out / (np.max(np.abs(out)) + 1e-9)) / np.tanh(2.5)
+    fade = int(0.005 * SR)
+    out[-fade:] *= np.linspace(1.0, 0.0, fade)
+    return out * 0.85
 
 
 def build_dismantle(name: str) -> np.ndarray:
