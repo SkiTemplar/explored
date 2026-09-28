@@ -6,12 +6,46 @@
 
 BEGIN_DEFINE_SPEC(FSandModelSpec, "Explored.Sand",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
-	/** Entorno seco: el agua muy por debajo y el foco en el origen. */
+	/** Entorno seco: la pleamar muy por debajo y el foco en el origen. */
 	FSandEnvironment Dry()
 	{
 		FSandEnvironment Env;
-		Env.SeaLevel = -10.0;
+		Env.HighTide = -10.0;
 		return Env;
+	}
+	/** Marea de un medio ciclo: pleamar y bajamar en metros. */
+	FSandTide Tide(double High, double Low, bool bSpring = false)
+	{
+		FSandTide T;
+		T.HighTide = High;
+		T.LowTide = Low;
+		T.bSpring = bSpring;
+		return T;
+	}
+	/** Deltas de todas las columnas de un chunk. */
+	TMap<FIntPoint, int32> Snapshot(const FSandModel& Model, const FIntPoint& Chunk)
+	{
+		const int32 N = Model.GetSettings().CellsPerChunk;
+		TMap<FIntPoint, int32> Out;
+		for (int32 Y = Chunk.Y * N; Y < Chunk.Y * N + N; ++Y)
+		{
+			for (int32 X = Chunk.X * N; X < Chunk.X * N + N; ++X)
+			{
+				Out.Add(FIntPoint(X, Y), Model.DeltaMm(FIntPoint(X, Y)));
+			}
+		}
+		return Out;
+	}
+	/** Columnas del chunk cuyo delta ha cambiado desde la instantánea. */
+	int32 ChangedInChunk(const FSandModel& Model, const TMap<FIntPoint, int32>& Before, const FIntPoint& Chunk)
+	{
+		int32 Count = 0;
+		for (const auto& Pair : Before)
+		{
+			Count += Model.DeltaMm(Pair.Key) != Pair.Value ? 1 : 0;
+		}
+		(void)Chunk;
+		return Count;
 	}
 	/** Tick hasta que no queda nada sucio cerca del foco; devuelve los pasos (o -1 si no se asienta). */
 	int32 Settle(FSandModel& Model, const FSandEnvironment& Env, TFunctionRef<double(double, double)> Base, int32 MaxTicks = 4000)
@@ -41,11 +75,11 @@ BEGIN_DEFINE_SPEC(FSandModelSpec, "Explored.Sand",
 		}
 		return Max;
 	}
-	FSandBrush Spike(const FVector2D& Center, int64 Mass)
+	FSandBrush Spike(const FVector2D& Center, int64 Mass, float Radius = 1.2f)
 	{
 		FSandBrush B;
 		B.Center = Center;
-		B.Radius = 1.2f;
+		B.Radius = Radius;
 		B.Depth = 2.0f;
 		B.MassBudget = Mass;
 		return B;
@@ -64,19 +98,26 @@ void FSandModelSpec::Define()
 			TestEqual(TEXT("húmedo"), FSandModel::ReposeDropMm(FSandModel::WetReposeDeg, 0.25f), 249);
 		});
 
-		It("las olas pesan más cuanto más cerca del agua y nada fuera de la franja", [this]()
+		It("el oleaje rellena el 20 % en la pleamar, más hacia el agua, y nada por encima (biblia 02 §5.2)", [this]()
 		{
-			TestEqual(TEXT("en la línea"), FSandModel::WaveWeightMilli(0, 0), 1000);
-			TestEqual(TEXT("bajo el agua somera"), FSandModel::WaveWeightMilli(-1000, 0), 1000);
-			TestEqual(TEXT("demasiado hondo"), FSandModel::WaveWeightMilli(-1501, 0), 0);
-			TestEqual(TEXT("donde ya no llega"), FSandModel::WaveWeightMilli(1000, 0), 0);
-			int32 Previous = 1001;
-			for (int32 H = 0; H <= 1000; H += 50)
+			// Pleamar a 0 mm y bajamar a −1000 mm.
+			TestEqual(TEXT("en la pleamar"), FSandModel::RefillMilli(0, 0, -1000, false), 200);
+			TestEqual(TEXT("a media franja"), FSandModel::RefillMilli(-500, 0, -1000, false), 400);
+			TestEqual(TEXT("en la bajamar"), FSandModel::RefillMilli(-1000, 0, -1000, false), 600);
+			TestEqual(TEXT("bajo la bajamar"), FSandModel::RefillMilli(-3000, 0, -1000, false), 600);
+			TestEqual(TEXT("por encima de la pleamar"), FSandModel::RefillMilli(1, 0, -1000, false), 0);
+			TestEqual(TEXT("marea viva en la pleamar: 35 %"), FSandModel::RefillMilli(0, 0, -1000, true), 350);
+			TestEqual(TEXT("marea viva en la bajamar"), FSandModel::RefillMilli(-1000, 0, -1000, true), 750);
+			int32 Previous = -1;
+			for (int32 H = 0; H >= -1000; H -= 50)
 			{
-				const int32 W = FSandModel::WaveWeightMilli(H, 0);
-				TestTrue(TEXT("decrece al subir"), W < Previous);
-				Previous = W;
+				const int32 R = FSandModel::RefillMilli(H, 0, -1000, false);
+				TestTrue(TEXT("crece hacia el agua"), R > Previous);
+				Previous = R;
 			}
+			// Marea degenerada: sin franja o con la bajamar por encima de la pleamar, sin dividir por cero.
+			TestEqual(TEXT("pleamar = bajamar"), FSandModel::RefillMilli(0, 0, 0, false), 600);
+			TestEqual(TEXT("bajamar sobre la pleamar"), FSandModel::RefillMilli(-10, 0, 500, false), 600);
 		});
 
 		It("masa y m³ van y vuelven", [this]()
@@ -120,20 +161,27 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("se ha repartido por varios chunks"), Model.EditedChunks().Num() >= 4);
 		});
 
-		It("las olas tampoco: un hoyo en la orilla se rellena con arena de alrededor", [this, Flat]()
+		It("el oleaje tampoco: lo que rellena o alisa sale del banco del mar o vuelve a él", [this, Flat]()
 		{
 			FSandModel Model;
 			FSandBrush B;
 			B.Radius = 0.8f;
 			B.Depth = 0.3f;
 			const int64 Dug = Model.Dig(B, Flat).Mass;
-			FSandEnvironment Env;
-			Env.SeaLevel = 0.0;
-			for (int32 T = 0; T < 600; ++T)
+			B.Center = FVector2D(3.0, 0.0);
+			B.MassBudget = 9000;
+			const int64 Piled = Model.Pile(B, Flat).Mass;
+			for (int32 Half = 0; Half < 8; ++Half)
 			{
-				Model.Tick(Env, Flat);
+				const FSandResult R = Model.ApplyHalfTide(Tide(0.5, -0.5, Half % 4 == 0), Flat);
+				TestEqual(TEXT("Σ delta + banco constante"), Model.TotalMass() + Model.SeaBankMass(), Piled - Dug);
+				if (Half == 0)
+				{
+					TestTrue(TEXT("el primer medio ciclo mueve arena"), R.Changed());
+				}
 			}
-			TestEqual(TEXT("masa"), Model.TotalMass(), -Dug);
+			TestEqual(TEXT("al final el mar lo ha devuelto todo a su sitio"), Model.TotalMass(), static_cast<int64>(0));
+			TestEqual(TEXT("y se ha quedado la diferencia"), Model.SeaBankMass(), Piled - Dug);
 		});
 
 		It("no se cava más allá de la capa de arena ni la avalancha la atraviesa", [this, Flat]()
@@ -224,6 +272,21 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("ahora a 34°"), MaxDrop(Wet, FIntPoint(0, 0), 20) <= FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
 		});
 
+		It("la franja bajo la pleamar es húmeda y, si la pleamar del día baja, la arena se seca y se revisa", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D::ZeroVector, 40000), Flat);
+			FSandEnvironment Spring = Dry();
+			Spring.HighTide = 5.0;
+			TestTrue(TEXT("se asienta húmedo"), Settle(Model, Spring, Flat) >= 0);
+			TestTrue(TEXT("a más de 34°"), MaxDrop(Model, FIntPoint(0, 0), 20) > FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+			TestEqual(TEXT("dormido"), Model.NumDirtyColumns(), 0);
+			const FSandResult R = Model.Tick(Dry(), Flat);
+			TestTrue(TEXT("despierta"), R.ActiveColumns > 0);
+			Settle(Model, Dry(), Flat);
+			TestTrue(TEXT("ahora a 34°"), MaxDrop(Model, FIntPoint(0, 0), 20) <= FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+		});
+
 		It("un agujero de paredes verticales se derrumba y el borde cae dentro", [this, Flat]()
 		{
 			FSandModel Model;
@@ -244,16 +307,29 @@ void FSandModelSpec::Define()
 		{
 			// Columna (0, 0): esquina de los chunks (−1,−1), (0,−1), (−1,0) y (0,0).
 			// Columna (16, 16): centro del chunk (0, 0). La física no puede notar la diferencia.
+			// Montón pequeño para que no entre el tope de red por chunk, que sí distingue
+			// (a propósito) un montón repartido entre cuatro chunks de uno dentro de uno solo.
 			FSandModel Corner;
 			FSandModel Inside;
 			// Sin tope de masa: el reparto del resto de un tope rompería la simetría del pincel, no de la física.
-			Corner.Pile(Spike(FVector2D(0.0, 0.0), MAX_int32), Flat);
-			Inside.Pile(Spike(FVector2D(4.0, 4.0), MAX_int32), Flat);
+			Corner.Pile(Spike(FVector2D(0.0, 0.0), MAX_int32, 0.5f), Flat);
+			Inside.Pile(Spike(FVector2D(4.0, 4.0), MAX_int32, 0.5f), Flat);
 			FSandEnvironment EnvCorner = Dry();
 			FSandEnvironment EnvInside = Dry();
 			EnvInside.Focus = FVector2D(4.0, 4.0);
-			Settle(Corner, EnvCorner, Flat);
-			Settle(Inside, EnvInside, Flat);
+			int32 Deferred = 0;
+			for (int32 T = 0; T < 400; ++T)
+			{
+				const FSandResult A = Corner.Tick(EnvCorner, Flat);
+				const FSandResult B = Inside.Tick(EnvInside, Flat);
+				Deferred += A.DeferredColumns + B.DeferredColumns;
+				if (A.ActiveColumns == 0 && B.ActiveColumns == 0)
+				{
+					break;
+				}
+			}
+			TestEqual(TEXT("sin tope de red"), Deferred, 0);
+			TestEqual(TEXT("asentados"), Corner.NumDirtyColumns() + Inside.NumDirtyColumns(), 0);
 			bool bSymmetric = true;
 			bool bTranslated = true;
 			for (int32 Y = -14; Y <= 14; ++Y)
@@ -267,6 +343,7 @@ void FSandModelSpec::Define()
 			}
 			TestTrue(TEXT("simétrico respecto a la esquina"), bSymmetric);
 			TestTrue(TEXT("igual que en el centro del chunk"), bTranslated);
+			TestTrue(TEXT("se ha derrumbado"), Corner.DeltaMm(FIntPoint(0, 0)) < 2000);
 			TestEqual(TEXT("masa"), Corner.TotalMass(), Inside.TotalMass());
 		});
 
@@ -306,14 +383,14 @@ void FSandModelSpec::Define()
 			}
 		});
 
-		It("un segundo de golpe da lo mismo que diez pasos de 100 ms", [this, Flat]()
+		It("una revisión por segundo, troceada como sea", [this, Flat]()
 		{
 			FSandModel A;
 			FSandModel B;
 			A.Pile(Spike(FVector2D(0.3, 0.2), 40000), Flat);
 			B.Pile(Spike(FVector2D(0.3, 0.2), 40000), Flat);
 			FSandEnvironment Env;
-			Env.SeaLevel = -0.3;
+			Env.HighTide = 0.3;
 			for (int32 S = 0; S < 5; ++S)
 			{
 				A.Advance(1000, Env, Flat);
@@ -323,19 +400,21 @@ void FSandModelSpec::Define()
 				}
 			}
 			TestTrue(TEXT("iguales"), A == B);
-			// Y un paso de 37 ms no avanza nada hasta completar 100.
+			// Y 370 ms no revisan nada hasta completar el segundo.
 			FSandModel C;
 			C.Pile(Spike(FVector2D::ZeroVector, 1000), Flat);
-			TestEqual(TEXT("sin paso"), C.Advance(37, Env, Flat).Ticks, 0);
-			TestEqual(TEXT("con paso"), C.Advance(63, Env, Flat).Ticks, 1);
+			TestEqual(TEXT("sin revisión"), C.Advance(370, Env, Flat).Ticks, 0);
+			TestEqual(TEXT("con revisión"), C.Advance(630, Env, Flat).Ticks, 1);
 		});
 
-		It("un paso gigantesco o negativo no dispara el coste", [this, Flat]()
+		It("un salto de tiempo se resuelve con 4 revisiones como máximo y el resto se descarta (08 §2.6)", [this, Flat]()
 		{
 			FSandModel Model;
 			Model.Pile(Spike(FVector2D::ZeroVector, 30000), Flat);
-			TestEqual(TEXT("tope de pasos"), Model.Advance(MAX_int32 / 2, Dry(), Flat).Ticks, FSandModel::MaxTicksPerAdvance);
-			TestEqual(TEXT("negativo"), Model.Advance(-500, Dry(), Flat).Ticks, FSandModel::MaxTicksPerAdvance);
+			TestEqual(TEXT("tope"), Model.Advance(MAX_int32 / 2, Dry(), Flat).Ticks, FSandModel::MaxTicksPerAdvance);
+			TestEqual(TEXT("sin deuda acumulada"), Model.Advance(0, Dry(), Flat).Ticks, 0);
+			TestEqual(TEXT("negativo"), Model.Advance(-500, Dry(), Flat).Ticks, 0);
+			TestEqual(TEXT("sin desbordar"), Model.Advance(MAX_int32, Dry(), Flat).Ticks, FSandModel::MaxTicksPerAdvance);
 		});
 
 		It("pinceles degenerados no hacen nada", [this, Flat]()
@@ -354,117 +433,207 @@ void FSandModelSpec::Define()
 		});
 	});
 
-	Describe("olas en la franja intermareal", [this, Flat]()
+	Describe("relleno por oleaje (biblia 02 §5.2)", [this, Flat]()
 	{
-		It("rellenan un hoyo más deprisa cuanto más cerca del agua y no tocan la arena seca", [this, Flat]()
+		// Un hoyo de una sola columna: pincel de 0,2 m, que no llega a las vecinas a 0,25 m.
+		auto OneHole = [Flat](FSandModel& Model, const FVector2D& At, float Depth)
 		{
-			// Hoyo poco profundo: sus paredes están por debajo del reposo, así que solo lo mueven las olas.
 			FSandBrush B;
-			B.Radius = 0.8f;
-			B.Depth = 0.3f;
-			FSandModel Shore;
-			FSandModel High;
-			FSandModel Inland;
-			Shore.Dig(B, Flat);
-			High.Dig(B, Flat);
-			Inland.Dig(B, Flat);
-			const int32 Start = Shore.DeltaMm(FIntPoint(0, 0));
-			FSandEnvironment AtShore;
-			AtShore.SeaLevel = 0.0;
-			FSandEnvironment HighSwash;
-			HighSwash.SeaLevel = -0.7;
-			for (int32 T = 0; T < 60; ++T)
-			{
-				Shore.Tick(AtShore, Flat);
-				High.Tick(HighSwash, Flat);
-			}
-			TestEqual(TEXT("seco: se duerme sin moverse"), Settle(Inland, Dry(), Flat), 1);
-			TestEqual(TEXT("seco: igual"), Inland.DeltaMm(FIntPoint(0, 0)), Start);
-			const int32 ShoreDepth = -Shore.DeltaMm(FIntPoint(0, 0));
-			const int32 HighDepth = -High.DeltaMm(FIntPoint(0, 0));
-			TestTrue(TEXT("arriba también se rellena algo"), HighDepth < -Start);
-			TestTrue(TEXT("en la orilla, bastante más"), ShoreDepth * 3 < HighDepth * 2);
-			TestTrue(TEXT("en 6 s la orilla ha borrado más de la mitad"), ShoreDepth * 2 < -Start);
+			B.Center = At;
+			B.Radius = 0.2f;
+			B.Depth = Depth;
+			Model.Dig(B, Flat);
+		};
+
+		It("en la pleamar devuelve un 20 % por medio ciclo, y un 35 % en marea viva", [this, Flat, OneHole]()
+		{
+			FSandModel Normal;
+			FSandModel Spring;
+			OneHole(Normal, FVector2D::ZeroVector, 1.0f);
+			OneHole(Spring, FVector2D::ZeroVector, 1.0f);
+			TestEqual(TEXT("hoyo de 1 m"), Normal.DeltaMm(FIntPoint(0, 0)), -1000);
+			const FSandResult R = Normal.ApplyHalfTide(Tide(0.0, -1.0), Flat);
+			Spring.ApplyHalfTide(Tide(0.0, -1.0, true), Flat);
+			TestEqual(TEXT("20 %"), Normal.DeltaMm(FIntPoint(0, 0)), -800);
+			TestEqual(TEXT("35 %"), Spring.DeltaMm(FIntPoint(0, 0)), -650);
+			TestEqual(TEXT("el mar ha traído 200"), R.SeaMass, static_cast<int64>(200));
+			TestEqual(TEXT("una columna"), R.ColumnsChanged, 1);
+			TestTrue(TEXT("remalla su chunk"), R.DirtyChunks.Contains(FIntPoint(0, 0)));
+			TestTrue(TEXT("y deja la columna para la revisión de pendiente"), Normal.IsDirty(FIntPoint(0, 0)));
 		});
 
-		It("alisan un montón que en seco se quedaría en pie", [this, Flat]()
+		It("rellena más cuanto más cerca del agua y nada por encima de la pleamar", [this, Flat, OneHole]()
+		{
+			FSandModel Above;
+			FSandModel Middle;
+			FSandModel Low;
+			OneHole(Above, FVector2D::ZeroVector, 1.0f);
+			OneHole(Middle, FVector2D::ZeroVector, 1.0f);
+			OneHole(Low, FVector2D::ZeroVector, 1.0f);
+			// Misma playa (base a 0 m) con tres mareas distintas.
+			TestFalse(TEXT("sobre la pleamar"), Above.ApplyHalfTide(Tide(-0.01, -1.0), Flat).Changed());
+			Middle.ApplyHalfTide(Tide(1.0, -1.0), Flat);
+			Low.ApplyHalfTide(Tide(1.0, 0.0), Flat);
+			TestEqual(TEXT("seco: igual"), Above.DeltaMm(FIntPoint(0, 0)), -1000);
+			TestEqual(TEXT("a media franja: 40 %"), Middle.DeltaMm(FIntPoint(0, 0)), -600);
+			TestEqual(TEXT("en la bajamar: 60 %"), Low.DeltaMm(FIntPoint(0, 0)), -400);
+		});
+
+		It("un hoyo bajo la bajamar se cierra del todo en 2–3 ciclos, no de golpe", [this, Flat, OneHole]()
+		{
+			for (const float Depth : { 0.3f, 1.0f, 1.5f })
+			{
+				FSandModel Model;
+				OneHole(Model, FVector2D::ZeroVector, Depth);
+				int32 Halves = 0;
+				while (Model.DeltaMm(FIntPoint(0, 0)) != 0 && Halves < 20)
+				{
+					Model.ApplyHalfTide(Tide(1.0, 0.5), Flat);
+					++Halves;
+				}
+				TestTrue(TEXT("cerrado en ≤ 3 ciclos (6 medios)"), Halves <= 6);
+				TestTrue(TEXT("pero no en el primer medio ciclo"), Halves >= 2);
+				TestTrue(TEXT("sin rastro"), Model.EditedChunks().Num() == 0);
+			}
+			// La capa entera (1,5 m) tarda de 2 a 3 ciclos, como dice la biblia.
+			FSandModel Deep;
+			OneHole(Deep, FVector2D::ZeroVector, 1.5f);
+			for (int32 Half = 0; Half < 4; ++Half)
+			{
+				Deep.ApplyHalfTide(Tide(1.0, 0.5), Flat);
+			}
+			TestTrue(TEXT("tras 2 ciclos aún queda algo"), Deep.DeltaMm(FIntPoint(0, 0)) < 0);
+			Deep.ApplyHalfTide(Tide(1.0, 0.5), Flat);
+			Deep.ApplyHalfTide(Tide(1.0, 0.5), Flat);
+			TestEqual(TEXT("tras 3, nada"), Deep.DeltaMm(FIntPoint(0, 0)), 0);
+		});
+
+		It("alisa un montón hacia la altura original y la arena se la lleva el mar", [this, Flat]()
 		{
 			FSandBrush B;
 			B.Radius = 0.8f;
 			B.Depth = 0.3f;
 			B.MassBudget = 300000;
 			FSandModel Model;
-			Model.Pile(B, Flat);
+			const int64 Piled = Model.Pile(B, Flat).Mass;
 			const int32 Start = Model.DeltaMm(FIntPoint(0, 0));
-			FSandEnvironment Env;
-			Env.SeaLevel = 0.0;
-			for (int32 T = 0; T < 100; ++T)
-			{
-				Model.Tick(Env, Flat);
-			}
-			TestTrue(TEXT("mucho más bajo"), Model.DeltaMm(FIntPoint(0, 0)) * 3 < Start);
+			const FSandResult R = Model.ApplyHalfTide(Tide(0.5, -0.5), Flat);
+			TestTrue(TEXT("más bajo"), Model.DeltaMm(FIntPoint(0, 0)) < Start);
+			TestTrue(TEXT("pero sigue ahí"), Model.DeltaMm(FIntPoint(0, 0)) > 0);
+			TestTrue(TEXT("el mar se lleva arena"), R.SeaMass < 0);
+			TestEqual(TEXT("al banco"), Model.SeaBankMass(), -R.SeaMass);
+			TestEqual(TEXT("masa"), Model.TotalMass() + Model.SeaBankMass(), Piled);
 		});
 
-		It("al subir la marea despiertan la arena editada que antes estaba seca", [this, Flat]()
+		It("no es continuo: entre medio ciclo y medio ciclo la revisión de pendiente no rellena nada", [this, Flat]()
 		{
+			// Hoyo de paredes suaves (por debajo del reposo) en plena franja: sin oleaje continuo, no se mueve.
 			FSandModel Model;
 			FSandBrush B;
 			B.Radius = 0.8f;
 			B.Depth = 0.3f;
 			Model.Dig(B, Flat);
-			FSandEnvironment Low;
-			Low.SeaLevel = -3.0;
-			Settle(Model, Low, Flat);
-			TestEqual(TEXT("dormido en bajamar"), Model.NumDirtyColumns(), 0);
-			const int32 Before = Model.DeltaMm(FIntPoint(0, 0));
-			FSandEnvironment HighTide;
-			HighTide.SeaLevel = 0.0;
-			const FSandResult R = Model.Tick(HighTide, Flat);
-			TestTrue(TEXT("despierta"), R.ActiveColumns > 0);
-			for (int32 T = 0; T < 30; ++T)
+			const int32 Start = Model.DeltaMm(FIntPoint(0, 0));
+			FSandEnvironment Env;
+			Env.HighTide = 1.0;
+			for (int32 T = 0; T < 600; ++T)
 			{
-				Model.Tick(HighTide, Flat);
+				Model.Tick(Env, Flat);
 			}
-			TestTrue(TEXT("la pleamar empieza a rellenar"), Model.DeltaMm(FIntPoint(0, 0)) > Before);
+			TestEqual(TEXT("10 minutos después, igual"), Model.DeltaMm(FIntPoint(0, 0)), Start);
+			TestEqual(TEXT("dormido"), Model.NumDirtyColumns(), 0);
+		});
+
+		It("llega a toda la isla: también a la arena lejos de los jugadores", [this, Flat, OneHole]()
+		{
+			FSandModel Model;
+			OneHole(Model, FVector2D(500.0, -300.0), 0.5f);
+			const FIntPoint Far = Model.ColumnOf(500.0, -300.0);
+			TestTrue(TEXT("rellena"), Model.ApplyHalfTide(Tide(0.5, -0.5), Flat).Changed());
+			TestTrue(TEXT("sube"), Model.DeltaMm(Far) > -500);
+		});
+
+		It("mareas no finitas no hacen nada", [this, Flat, OneHole]()
+		{
+			FSandModel Model;
+			OneHole(Model, FVector2D::ZeroVector, 0.5f);
+			TestFalse(TEXT("NaN"), Model.ApplyHalfTide(Tide(NAN, 0.0), Flat).Changed());
+			TestFalse(TEXT("infinito"), Model.ApplyHalfTide(Tide(0.0, -INFINITY), Flat).Changed());
+			TestEqual(TEXT("igual"), Model.DeltaMm(FIntPoint(0, 0)), -500);
 		});
 	});
 
-	Describe("estructuras", [this, Flat]()
+	Describe("estructuras (biblia 02 §5.3)", [this, Flat]()
 	{
-		It("las columnas ancladas no se mueven y la arena pegada aguanta más pendiente", [this, Flat]()
+		It("sujetan la arena a menos de 1 m de su huella, con las esquinas redondas", [this, Flat]()
+		{
+			FSandModel Model;
+			// Un tablón de 1 m a lo largo del eje Y: huella en x ∈ [0,5; 0,75].
+			Model.SetAnchor(FVector2D(0.5, -0.5), FVector2D(0.75, 0.5), true, Flat);
+			TestTrue(TEXT("huella"), Model.IsAnchored(FIntPoint(2, 0)) && Model.IsAnchored(FIntPoint(3, 0)));
+			TestFalse(TEXT("fuera de la huella"), Model.IsAnchored(FIntPoint(4, 0)));
+			TestTrue(TEXT("la huella está sujeta"), Model.IsHeld(FIntPoint(2, 0)));
+			TestTrue(TEXT("a 1 m justo, sujeta"), Model.IsHeld(FIntPoint(-2, 0)));
+			TestFalse(TEXT("a 1,25 m, suelta"), Model.IsHeld(FIntPoint(-3, 0)));
+			TestTrue(TEXT("al otro lado, a 1 m"), Model.IsHeld(FIntPoint(7, 0)));
+			TestFalse(TEXT("al otro lado, a 1,25 m"), Model.IsHeld(FIntPoint(8, 0)));
+			TestTrue(TEXT("junto a la esquina, a 0,79 m"), Model.IsHeld(FIntPoint(-1, -3)));
+			TestFalse(TEXT("en diagonal de la esquina, a 1,12 m"), Model.IsHeld(FIntPoint(-2, -4)));
+		});
+
+		It("la arena sujeta no desliza y, al quitar la estructura, se derrumba a 34°", [this, Flat]()
 		{
 			FSandModel Free;
 			FSandModel Held;
-			// Un tablón de 1 m a lo largo del eje Y justo al este del montón.
 			Held.SetAnchor(FVector2D(0.5, -0.5), FVector2D(0.75, 0.5), true, Flat);
-			TestTrue(TEXT("anclada"), Held.IsAnchored(FIntPoint(2, 0)));
-			TestFalse(TEXT("fuera de la caja"), Held.IsAnchored(FIntPoint(4, 0)));
-			Free.Pile(Spike(FVector2D::ZeroVector, 40000), Flat);
-			Held.Pile(Spike(FVector2D::ZeroVector, 40000), Flat);
+			// Montón pegado al tablón, entero dentro de la zona sujeta.
+			Free.Pile(Spike(FVector2D::ZeroVector, 5000, 0.5f), Flat);
+			Held.Pile(Spike(FVector2D::ZeroVector, 5000, 0.5f), Flat);
+			const int32 Peak = Held.DeltaMm(FIntPoint(0, 0));
+			TestTrue(TEXT("más empinado que el reposo"), Peak - Held.DeltaMm(FIntPoint(-1, 0)) > FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
 			Settle(Free, Dry(), Flat);
 			Settle(Held, Dry(), Flat);
-			for (int32 Y = -2; Y <= 2; ++Y)
-			{
-				TestEqual(TEXT("bajo el tablón no cambia"), Held.DeltaMm(FIntPoint(2, Y)), 0);
-			}
-			TestTrue(TEXT("el montón anclado queda más alto"), Held.DeltaMm(FIntPoint(0, 0)) > Free.DeltaMm(FIntPoint(0, 0)));
-			int32 HeldDrop = 0;
-			for (int32 Y = -2; Y <= 2; ++Y)
-			{
-				HeldDrop = FMath::Max(HeldDrop, FMath::Abs(Held.DeltaMm(FIntPoint(1, Y)) - Held.DeltaMm(FIntPoint(0, Y))));
-			}
-			TestTrue(TEXT("la arena pegada al tablón aguanta más de 34°"), HeldDrop > FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
-			TestTrue(TEXT("pero no más de 60°"), HeldDrop <= FSandModel::ReposeDropMm(FSandModel::AnchoredReposeDeg, 0.25f));
-			TestEqual(TEXT("masa"), Held.TotalMass(), static_cast<int64>(40000));
+			TestEqual(TEXT("sujeto: la cima sigue igual"), Held.DeltaMm(FIntPoint(0, 0)), Peak);
+			TestTrue(TEXT("suelto: se ha derrumbado"), Free.DeltaMm(FIntPoint(0, 0)) < Peak);
+			TestEqual(TEXT("masa"), Held.TotalMass(), static_cast<int64>(5000));
 
-			// Quitar el tablón suelta la arena que sujetaba.
 			Held.SetAnchor(FVector2D(0.5, -0.5), FVector2D(0.75, 0.5), false, Flat);
 			TestTrue(TEXT("despierta"), Held.NumDirtyColumns() > 0);
 			Settle(Held, Dry(), Flat);
 			TestTrue(TEXT("vuelve a 34°"), MaxDrop(Held, FIntPoint(0, 0), 20) <= FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+			TestEqual(TEXT("masa"), Held.TotalMass(), static_cast<int64>(5000));
 		});
 
-		It("la pala no cava bajo una estructura y las olas apenas la descalzan", [this, Flat]()
+		It("la arena de fuera sí puede caer contra la estructura", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.SetAnchor(FVector2D(0.5, -0.5), FVector2D(0.75, 0.5), true, Flat);
+			// Montón justo fuera de la zona (x = −1,75 m), que se derrumba hacia el tablón.
+			Model.Pile(Spike(FVector2D(-1.75, 0.0), 40000), Flat);
+			const int32 Before = Model.DeltaMm(FIntPoint(-2, 0));
+			Settle(Model, Dry(), Flat);
+			TestTrue(TEXT("la arena sujeta ha recibido"), Model.DeltaMm(FIntPoint(-2, 0)) > Before);
+			TestEqual(TEXT("masa"), Model.TotalMass(), static_cast<int64>(40000));
+		});
+
+		It("el oleaje no rellena la arena sujeta y sí la de más allá de 1 m", [this, Flat]()
+		{
+			FSandModel Model;
+			// Pilote de 0,2 m en el origen.
+			Model.SetAnchor(FVector2D(-0.1, -0.1), FVector2D(0.1, 0.1), true, Flat);
+			FSandBrush B;
+			B.Radius = 0.2f;
+			B.Depth = 0.5f;
+			B.Center = FVector2D(0.75, 0.0);
+			Model.Dig(B, Flat);
+			B.Center = FVector2D(2.0, 0.0);
+			Model.Dig(B, Flat);
+			Model.ApplyHalfTide(Tide(1.0, -1.0), Flat);
+			TestEqual(TEXT("a 0,65 m: sujeto"), Model.DeltaMm(FIntPoint(3, 0)), -500);
+			TestTrue(TEXT("a 1,9 m: se rellena"), Model.DeltaMm(FIntPoint(8, 0)) > -500);
+		});
+
+		It("la pala no cava bajo la huella, pero sí al lado", [this, Flat]()
 		{
 			FSandModel Model;
 			Model.SetAnchor(FVector2D(-0.25, -0.25), FVector2D(0.25, 0.25), true, Flat);
@@ -475,7 +644,7 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("alrededor sí"), Model.DeltaMm(FIntPoint(2, 0)) < 0);
 		});
 
-		It("las referencias se cuentan: dos estructuras sobre la misma columna", [this, Flat]()
+		It("las referencias se cuentan: dos estructuras que se solapan", [this, Flat]()
 		{
 			FSandModel Model;
 			Model.SetAnchor(FVector2D(0.0, 0.0), FVector2D(0.0, 0.0), true, Flat);
@@ -484,89 +653,164 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("sigue anclada"), Model.IsAnchored(FIntPoint(0, 0)));
 			Model.SetAnchor(FVector2D(0.0, 0.0), FVector2D(0.0, 0.0), false, Flat);
 			TestFalse(TEXT("suelta"), Model.IsAnchored(FIntPoint(0, 0)));
+			TestFalse(TEXT("y sin sujeción"), Model.IsHeld(FIntPoint(0, 0)));
+
+			// Dos pilotes a 1,5 m: la arena del medio la sujetan los dos.
+			Model.SetAnchor(FVector2D(0.0, 0.0), FVector2D(0.0, 0.0), true, Flat);
+			Model.SetAnchor(FVector2D(1.5, 0.0), FVector2D(1.5, 0.0), true, Flat);
+			Model.SetAnchor(FVector2D(0.0, 0.0), FVector2D(0.0, 0.0), false, Flat);
+			TestTrue(TEXT("el medio sigue sujeto por el otro"), Model.IsHeld(FIntPoint(3, 0)));
+			TestFalse(TEXT("el lado lejano ya no"), Model.IsHeld(FIntPoint(-3, 0)));
+			// Quitar lo que no está puesto no deja contadores negativos.
+			Model.SetAnchor(FVector2D(-5.0, -5.0), FVector2D(-5.0, -5.0), false, Flat);
+			Model.SetAnchor(FVector2D(1.5, 0.0), FVector2D(1.5, 0.0), false, Flat);
+			TestFalse(TEXT("todo suelto"), Model.IsHeld(FIntPoint(3, 0)) || Model.IsHeld(FIntPoint(6, 0)));
+		});
+
+		It("la zona sujeta cruza el borde de chunk y las cajas no válidas no hacen nada", [this, Flat]()
+		{
+			FSandModel Model;
+			// Pilote a 0,1 m del borde entre los chunks 0 y 1 (x = 8 m).
+			Model.SetAnchor(FVector2D(7.9, 0.0), FVector2D(7.9, 0.0), true, Flat);
+			TestEqual(TEXT("chunk vecino"), Model.ChunkOfColumn(FIntPoint(35, 0)).X, 1);
+			TestTrue(TEXT("a 0,85 m en el chunk 1: sujeta"), Model.IsHeld(FIntPoint(35, 0)));
+			TestFalse(TEXT("a 1,1 m: suelta"), Model.IsHeld(FIntPoint(36, 0)));
+			// En negativo: el chunk −1 empieza en x = −0,25.
+			Model.SetAnchor(FVector2D(0.1, 0.0), FVector2D(0.1, 0.0), true, Flat);
+			TestTrue(TEXT("a 0,85 m en el chunk −1: sujeta"), Model.IsHeld(FIntPoint(-3, 0)));
+			TestFalse(TEXT("a 1,1 m: suelta"), Model.IsHeld(FIntPoint(-4, 0)));
+
+			FSandModel Empty;
+			TestFalse(TEXT("caja al revés"), Empty.SetAnchor(FVector2D(1.0, 1.0), FVector2D(0.0, 0.0), true, Flat).Changed());
+			TestFalse(TEXT("NaN"), Empty.SetAnchor(FVector2D(NAN, 0.0), FVector2D(1.0, 1.0), true, Flat).Changed());
+			TestFalse(TEXT("nada sujeto"), Empty.IsHeld(FIntPoint(0, 0)));
 		});
 	});
 
-	Describe("coste: solo celdas sucias cerca del jugador", [this, Flat]()
+	Describe("coste y red: solo chunks cerca de algún jugador (biblia 08 §2.6)", [this, Flat]()
 	{
-		It("un montón lejano queda dormido e intacto hasta que el jugador se acerca", [this, Flat]()
+		It("la distancia a un chunk se mide a su borde, también en negativo", [this]()
+		{
+			const FSandModel Model;
+			TestEqual(TEXT("dentro"), Model.DistanceToChunk(FVector2D(1.0, 1.0), FIntPoint(0, 0)), 0.0);
+			TestEqual(TEXT("chunk 10: empieza a 80 m"), Model.DistanceToChunk(FVector2D::ZeroVector, FIntPoint(10, 0)), 80.0);
+			TestEqual(TEXT("chunk 11: 88 m"), Model.DistanceToChunk(FVector2D::ZeroVector, FIntPoint(11, 0)), 88.0);
+			TestEqual(TEXT("chunk −1: acaba en −0,25"), Model.DistanceToChunk(FVector2D::ZeroVector, FIntPoint(-1, 0)), 0.25);
+		});
+
+		It("un montón a más de 80 m queda congelado e intacto hasta que llega un jugador", [this, Flat]()
 		{
 			FSandModel Model;
-			Model.Pile(Spike(FVector2D::ZeroVector, 20000), Flat);
-			Model.Pile(Spike(FVector2D(100.0, 0.0), 20000), Flat);
-			const int32 FarPeak = Model.DeltaMm(Model.ColumnOf(100.0, 0.0));
+			// Chunk 10 (a 80 m justos del jugador): activo. Chunk 11 (a 88 m): congelado.
+			Model.Pile(Spike(FVector2D(84.0, 4.0), 20000), Flat);
+			Model.Pile(Spike(FVector2D(92.0, 4.0), 20000), Flat);
+			const FIntPoint Near = Model.ColumnOf(84.0, 4.0);
+			const FIntPoint Far = Model.ColumnOf(92.0, 4.0);
+			const int32 FarPeak = Model.DeltaMm(Far);
+			const int32 NearPeak = Model.DeltaMm(Near);
 			FSandEnvironment Env = Dry();
-			int32 MaxActive = 0;
+			int32 MaxChunks = 0;
 			for (int32 T = 0; T < 400; ++T)
 			{
 				const FSandResult R = Model.Tick(Env, Flat);
-				MaxActive = FMath::Max(MaxActive, R.ActiveColumns);
+				MaxChunks = FMath::Max(MaxChunks, R.ActiveChunks);
 				if (R.ActiveColumns == 0)
 				{
 					TestTrue(TEXT("lo lejano sigue pendiente"), R.DormantColumns > 0);
 					break;
 				}
 			}
-			TestTrue(TEXT("el montón cercano se ha asentado"), MaxDrop(Model, FIntPoint(0, 0), 20) <= 168);
-			TestEqual(TEXT("el lejano no se ha tocado"), Model.DeltaMm(Model.ColumnOf(100.0, 0.0)), FarPeak);
-			TestTrue(TEXT("el lejano sigue sucio"), Model.IsDirty(Model.ColumnOf(100.0, 0.0)));
-			TestTrue(TEXT("nunca más de ~ lo que cubre el montón cercano"), MaxActive < 2000);
+			TestTrue(TEXT("el chunk a 80 m se ha asentado"), Model.DeltaMm(Near) < NearPeak && MaxDrop(Model, Near, 20) <= 168);
+			TestEqual(TEXT("el de 88 m no se ha tocado"), Model.DeltaMm(Far), FarPeak);
+			TestTrue(TEXT("y sigue sucio"), Model.IsDirty(Far));
+			TestTrue(TEXT("solo se revisan los chunks del montón cercano"), MaxChunks <= 2);
 
-			Env.Focus = FVector2D(100.0, 0.0);
+			Env.Focus = FVector2D(92.0, 4.0);
 			TestTrue(TEXT("se asienta al llegar"), Settle(Model, Env, Flat) > 0);
 			TestEqual(TEXT("nada sucio"), Model.NumDirtyColumns(), 0);
-			TestTrue(TEXT("el lejano ya a 34°"), MaxDrop(Model, Model.ColumnOf(100.0, 0.0), 20) <= 168);
+			TestTrue(TEXT("el lejano ya a 34°"), MaxDrop(Model, Far, 20) <= 168);
 		});
 
-		It("en cooperativo cada jugador activa su zona y el solape se simula una sola vez", [this, Flat]()
+		It("al volver, la arena congelada no recupera el tiempo perdido: 4 revisiones y sigue", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(200.0, 0.0), 40000), Flat);
+			const FIntPoint Peak = Model.ColumnOf(200.0, 0.0);
+			const int32 Start = Model.DeltaMm(Peak);
+			// Diez minutos lejos: nada cambia.
+			Model.Advance(600000, Dry(), Flat);
+			TestEqual(TEXT("congelado"), Model.DeltaMm(Peak), Start);
+			FSandEnvironment Env = Dry();
+			Env.Focus = FVector2D(199.0, 0.0);
+			const FSandResult R = Model.Advance(600000, Env, Flat);
+			TestEqual(TEXT("4 revisiones"), R.Ticks, FSandModel::MaxTicksPerAdvance);
+			TestTrue(TEXT("empieza a derrumbarse"), Model.DeltaMm(Peak) < Start);
+			TestTrue(TEXT("pero no se ha asentado de golpe"), Model.NumDirtyColumns() > 0);
+		});
+
+		It("en cooperativo cada jugador activa su zona y el solape se revisa una sola vez", [this, Flat]()
 		{
 			FSandModel One;
 			FSandModel Two;
 			One.Pile(Spike(FVector2D::ZeroVector, 20000), Flat);
 			Two.Pile(Spike(FVector2D::ZeroVector, 20000), Flat);
-			Two.Pile(Spike(FVector2D(60.0, 0.0), 20000), Flat);
+			// 160 m = 20 chunks justos: el segundo montón también está en una esquina de chunks.
+			Two.Pile(Spike(FVector2D(160.0, 0.0), 20000), Flat);
 			FSandEnvironment Env = Dry();
 			Env.ExtraFoci.Add(FVector2D(1.0, 0.0));
-			Env.ExtraFoci.Add(FVector2D(60.0, 0.0));
+			Env.ExtraFoci.Add(FVector2D(160.0, 0.0));
 			for (int32 T = 0; T < 5; ++T)
 			{
 				One.Tick(Dry(), Flat);
 				Two.Tick(Env, Flat);
 			}
 			bool bSame = true;
+			bool bFarSame = true;
 			for (int32 Y = -12; Y <= 12; ++Y)
 			{
 				for (int32 X = -12; X <= 12; ++X)
 				{
 					bSame &= One.DeltaMm(FIntPoint(X, Y)) == Two.DeltaMm(FIntPoint(X, Y));
+					bFarSame &= Two.DeltaMm(FIntPoint(X, Y)) == Two.DeltaMm(FIntPoint(X + 640, Y));
 				}
 			}
 			TestTrue(TEXT("dos focos encima no la hacen ir el doble de rápido"), bSame);
-			const int32 FarPeak = Two.DeltaMm(Two.ColumnOf(60.0, 0.0));
-			TestTrue(TEXT("el segundo jugador también mueve su montón"), FarPeak < FSandModel::MaxPileHeightMm);
-			TestEqual(TEXT("y al mismo ritmo"), FarPeak, Two.DeltaMm(FIntPoint(0, 0)));
+			TestTrue(TEXT("el segundo jugador mueve su montón igual"), bFarSame);
+			TestTrue(TEXT("y se ha movido"), Two.DeltaMm(FIntPoint(640, 0)) < One.DeltaMm(FIntPoint(0, 0)) + 1 && Two.DeltaMm(FIntPoint(640, 0)) < FSandModel::MaxPileHeightMm);
 		});
 
-		It("un paso nunca simula más del tope de columnas y empieza por las más cercanas", [this, Flat]()
+		It("una revisión cambia como mucho 64 columnas por chunk; el resto espera", [this, Flat]()
 		{
 			FSandModel Model;
+			// Cono de 2 m de alto y 2 m de radio (45°) en el centro del chunk (0, 0): todo resbala.
 			FSandBrush B;
-			B.Center = FVector2D(10.0, 0.0);
-			B.Radius = 11.0f;
-			B.Depth = 0.05f;
+			B.Center = FVector2D(4.0, 4.0);
+			B.Radius = 2.0f;
+			B.Depth = 2.0f;
 			B.MassBudget = MAX_int32;
-			Model.Pile(B, Flat);
-			TestTrue(TEXT("hay más sucias que el tope"), Model.NumDirtyColumns() > FSandModel::MaxActiveColumnsPerTick);
+			const int64 Mass = Model.Pile(B, Flat).Mass;
 			FSandEnvironment Env = Dry();
-			Env.ActiveRadius = 30.0;
-			const FSandResult R = Model.Tick(Env, Flat);
-			TestEqual(TEXT("tope"), R.ActiveColumns, FSandModel::MaxActiveColumnsPerTick);
-			// Un montón de 5 cm no resbala: lo simulado se duerme y lo no simulado sigue pendiente.
-			TestFalse(TEXT("la columna del foco ya se ha simulado"), Model.IsDirty(FIntPoint(0, 0)));
-			TestTrue(TEXT("la más lejana sigue pendiente"), Model.IsDirty(Model.ColumnOf(20.9, 0.0)));
+			Env.Focus = FVector2D(4.0, 4.0);
+			int32 MaxChanged = 0;
+			bool bDeferred = false;
+			for (int32 T = 0; T < 40; ++T)
+			{
+				const TMap<FIntPoint, int32> Before = Snapshot(Model, FIntPoint(0, 0));
+				const FSandResult R = Model.Tick(Env, Flat);
+				const int32 Changed = ChangedInChunk(Model, Before, FIntPoint(0, 0));
+				MaxChanged = FMath::Max(MaxChanged, Changed);
+				TestTrue(TEXT("≤ 64 por chunk"), Changed <= FSandModel::MaxChangedColumnsPerChunk);
+				TestEqual(TEXT("lo que dice el resultado"), R.ColumnsChanged, Changed);
+				bDeferred |= R.DeferredColumns > 0;
+			}
+			TestEqual(TEXT("llega al tope"), MaxChanged, FSandModel::MaxChangedColumnsPerChunk);
+			TestTrue(TEXT("y aplaza lo demás"), bDeferred);
+			TestTrue(TEXT("acaba asentándose"), Settle(Model, Env, Flat) >= 0);
+			TestTrue(TEXT("a 34°"), MaxDrop(Model, FIntPoint(16, 16), 20) <= 168);
+			TestEqual(TEXT("masa"), Model.TotalMass(), Mass);
 		});
 
-		It("con todo asentado un paso no simula ninguna columna", [this, Flat]()
+		It("con todo asentado una revisión no toca ninguna columna", [this, Flat]()
 		{
 			FSandModel Model;
 			Model.Pile(Spike(FVector2D::ZeroVector, 30000), Flat);
@@ -579,7 +823,7 @@ void FSandModelSpec::Define()
 
 	Describe("guardado", [this, Flat]()
 	{
-		It("ida y vuelta a mitad de derrumbe continúa exactamente igual", [this, Flat]()
+		It("ida y vuelta a mitad de derrumbe continúa exactamente igual, banco del mar incluido", [this, Flat]()
 		{
 			FSandModel Model;
 			Model.Pile(Spike(FVector2D(-4.1, 7.9), 30000), Flat);
@@ -588,15 +832,20 @@ void FSandModelSpec::Define()
 			Model.Dig(B, Flat);
 			FSandEnvironment Env = Dry();
 			Env.Focus = FVector2D(-4.0, 8.0);
-			for (int32 T = 0; T < 7; ++T)
+			for (int32 T = 0; T < 3; ++T)
 			{
 				Model.Tick(Env, Flat);
 			}
+			Model.ApplyHalfTide(Tide(0.5, -0.5), Flat);
+			TestTrue(TEXT("el mar tiene arena"), Model.SeaBankMass() != 0);
 			FSandModel Loaded;
 			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
 			TestTrue(TEXT("igual"), Loaded == Model);
+			TestEqual(TEXT("banco"), Loaded.SeaBankMass(), Model.SeaBankMass());
 			Settle(Model, Env, Flat);
 			Settle(Loaded, Env, Flat);
+			Model.ApplyHalfTide(Tide(0.5, -0.5), Flat);
+			Loaded.ApplyHalfTide(Tide(0.5, -0.5), Flat);
 			TestTrue(TEXT("sigue igual"), Loaded == Model);
 			TestEqual(TEXT("masa"), Loaded.TotalMass(), Model.TotalMass());
 		});
@@ -639,6 +888,11 @@ void FSandModelSpec::Define()
 			List.Add(FSaveValue::MakeInt(3));
 			OddDirty.Set(TEXT("dirty"), MoveTemp(List));
 			TestFalse(TEXT("sucias impares"), Probe.FromValue(OddDirty));
+
+			FSaveValue BadSea = Good;
+			BadSea.Set(TEXT("sea"), FSaveValue::MakeString(TEXT("mucha")));
+			TestFalse(TEXT("banco que no es un entero"), Probe.FromValue(BadSea));
+			TestEqual(TEXT("banco a cero tras fallar"), Probe.SeaBankMass(), static_cast<int64>(0));
 		});
 	});
 }

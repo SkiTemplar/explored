@@ -37,9 +37,7 @@ namespace SandModelDetail
 		int64 Height = 0;
 		int64 BaseMm = 0;
 		int32 Delta = 0;
-		int32 WaveMilli = 0;
-		bool bAnchored = false;
-		bool bNearAnchor = false;
+		bool bHeld = false;
 		bool bWet = false;
 	};
 }
@@ -60,21 +58,24 @@ int32 FSandModel::ReposeDropMm(float AngleDeg, float CellSize)
 	return static_cast<int32>(FMath::FloorToInt64(Drop));
 }
 
-int32 FSandModel::WaveWeightMilli(int64 HeightMm, int64 SeaMm)
+int32 FSandModel::RefillMilli(int64 BaseMm, int64 HighMm, int64 LowMm, bool bSpring)
 {
-	const int64 Swash = static_cast<int64>(SwashHeightMeters * 1000.0f);
-	const int64 Depth = static_cast<int64>(SwashDepthMeters * 1000.0f);
-	const int64 Above = HeightMm - SeaMm;
-	if (Above >= Swash || Above < -Depth)
+	if (BaseMm > HighMm)
 	{
 		return 0;
 	}
-	if (Above <= 0)
+	LowMm = FMath::Min(LowMm, HighMm);
+	// Lineal: RefillAtHighTideMilli en la pleamar y RefillAtLowTideMilli en la bajamar y por debajo.
+	int64 Rate = RefillAtLowTideMilli;
+	if (BaseMm > LowMm)
 	{
-		return 1000;
+		Rate = RefillAtHighTideMilli + (HighMm - BaseMm) * (RefillAtLowTideMilli - RefillAtHighTideMilli) / (HighMm - LowMm);
 	}
-	// Lineal: 1000 en la línea del agua, 0 donde ya no llega la ola.
-	return static_cast<int32>((Swash - Above) * 1000 / Swash);
+	if (bSpring)
+	{
+		Rate += SpringRefillBonusMilli;
+	}
+	return static_cast<int32>(FMath::Min<int64>(Rate, 1000));
 }
 
 double FSandModel::MassToCubicMeters(int64 Mass) const
@@ -125,6 +126,7 @@ FSandModel::FChunk& FSandModel::TouchChunk(const FIntPoint& Chunk, FBaseHeight B
 	{
 		C.Delta.SetNumZeroed(N * N);
 		C.Anchor.SetNumZeroed(N * N);
+		C.Hold.SetNumZeroed(N * N);
 		C.NonZero = 0;
 	}
 	if (!C.bBaseValid)
@@ -172,13 +174,6 @@ double FSandModel::Height(const FIntPoint& Column, FBaseHeight Base) const
 	return static_cast<double>(SandModelDetail::MetersToMm(Base(P.X, P.Y)) + DeltaMm(Column)) * 0.001;
 }
 
-int64 FSandModel::HeightMm(const FIntPoint& Column, FBaseHeight Base)
-{
-	int32 Local = 0;
-	const FChunk& C = TouchColumn(Column, Base, Local);
-	return static_cast<int64>(C.BaseMm[Local]) + C.Delta[Local];
-}
-
 bool FSandModel::IsAnchored(const FIntPoint& Column) const
 {
 	int32 Local = 0;
@@ -186,20 +181,35 @@ bool FSandModel::IsAnchored(const FIntPoint& Column) const
 	return C && C->Anchor[Local] > 0;
 }
 
-bool FSandModel::NearAnchor(const FIntPoint& Column) const
+bool FSandModel::IsHeld(const FIntPoint& Column) const
 {
-	if (AnchoredColumns == 0)
+	int32 Local = 0;
+	const FChunk* C = FindChunk(Column, Local);
+	return C && C->Hold[Local] > 0;
+}
+
+double FSandModel::DistanceToChunk(const FVector2D& P, const FIntPoint& Chunk) const
+{
+	// El chunk cubre las columnas [C·N, C·N + N − 1]; sus puntos de rejilla forman la caja.
+	const int32 N = Settings.CellsPerChunk;
+	const FVector2D Lo = ColumnPosition(FIntPoint(Chunk.X * N, Chunk.Y * N));
+	const FVector2D Hi = ColumnPosition(FIntPoint(Chunk.X * N + N - 1, Chunk.Y * N + N - 1));
+	const double DX = FMath::Max(0.0, FMath::Max(Lo.X - P.X, P.X - Hi.X));
+	const double DY = FMath::Max(0.0, FMath::Max(Lo.Y - P.Y, P.Y - Hi.Y));
+	return FMath::Sqrt(DX * DX + DY * DY);
+}
+
+bool FSandModel::ChunkIsActive(const FIntPoint& Chunk, const FSandEnvironment& Env) const
+{
+	if (DistanceToChunk(Env.Focus, Chunk) <= Env.ActiveRadius)
 	{
-		return false;
+		return true;
 	}
-	for (int32 DY = -1; DY <= 1; ++DY)
+	for (const FVector2D& Extra : Env.ExtraFoci)
 	{
-		for (int32 DX = -1; DX <= 1; ++DX)
+		if (DistanceToChunk(Extra, Chunk) <= Env.ActiveRadius)
 		{
-			if (IsAnchored(Column + FIntPoint(DX, DY)))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 	return false;
@@ -363,81 +373,91 @@ FSandResult FSandModel::Pile(const FSandBrush& In, FBaseHeight Base)
 FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bool bAnchor, FBaseHeight Base)
 {
 	FSandResult Result;
-	// Columnas cuyo punto de rejilla cae dentro de la caja (bordes incluidos).
+	if (!FMath::IsFinite(Min.X) || !FMath::IsFinite(Min.Y) || !FMath::IsFinite(Max.X) || !FMath::IsFinite(Max.Y)
+		|| Min.X > Max.X || Min.Y > Max.Y)
+	{
+		return Result;
+	}
+	// Huella: columnas cuyo punto de rejilla cae dentro de la caja (bordes incluidos).
+	// Sujeción: columnas a ≤ AnchorHoldMeters de la caja (distancia euclídea, esquinas redondas).
 	const double Cell = Settings.CellSize;
+	const double Reach = AnchorHoldMeters;
 	const FIntPoint Lo(
-		static_cast<int32>(-FMath::FloorToInt64(-Min.X / Cell)),
-		static_cast<int32>(-FMath::FloorToInt64(-Min.Y / Cell)));
+		static_cast<int32>(-FMath::FloorToInt64(-(Min.X - Reach) / Cell)),
+		static_cast<int32>(-FMath::FloorToInt64(-(Min.Y - Reach) / Cell)));
 	const FIntPoint Hi(
-		static_cast<int32>(FMath::FloorToInt64(Max.X / Cell)),
-		static_cast<int32>(FMath::FloorToInt64(Max.Y / Cell)));
+		static_cast<int32>(FMath::FloorToInt64((Max.X + Reach) / Cell)),
+		static_cast<int32>(FMath::FloorToInt64((Max.Y + Reach) / Cell)));
 	for (int32 Y = Lo.Y; Y <= Hi.Y; ++Y)
 	{
 		for (int32 X = Lo.X; X <= Hi.X; ++X)
 		{
 			const FIntPoint Column(X, Y);
+			const FVector2D P = ColumnPosition(Column);
+			const double DX = FMath::Max(0.0, FMath::Max(Min.X - P.X, P.X - Max.X));
+			const double DY = FMath::Max(0.0, FMath::Max(Min.Y - P.Y, P.Y - Max.Y));
+			const double Distance = FMath::Sqrt(DX * DX + DY * DY);
+			// Margen de redondeo: una columna a 1 m justo (4 celdas) queda dentro.
+			if (Distance > Reach + 1e-6)
+			{
+				continue;
+			}
+			const bool bFootprint = Distance == 0.0;
 			int32 Local = 0;
 			FChunk& C = TouchColumn(Column, Base, Local);
 			if (bAnchor)
 			{
-				if (C.Anchor[Local] < 255)
+				if (C.Hold[Local] == 255 || (bFootprint && C.Anchor[Local] == 255))
 				{
-					AnchoredColumns += C.Anchor[Local] == 0 ? 1 : 0;
+					continue;
+				}
+				++C.Hold[Local];
+				if (bFootprint)
+				{
 					++C.Anchor[Local];
+					++Result.ColumnsChanged;
 				}
 			}
-			else if (C.Anchor[Local] > 0)
+			else if (C.Hold[Local] > 0 && (!bFootprint || C.Anchor[Local] > 0))
 			{
-				--C.Anchor[Local];
-				if (C.Anchor[Local] == 0)
+				--C.Hold[Local];
+				if (bFootprint)
 				{
-					--AnchoredColumns;
-					// Sin la estructura, la arena de alrededor puede volver a moverse.
-					for (int32 DY = -1; DY <= 1; ++DY)
-					{
-						for (int32 DX = -1; DX <= 1; ++DX)
-						{
-							MarkDirtyAround(Column + FIntPoint(DX, DY));
-						}
-					}
+					--C.Anchor[Local];
+					++Result.ColumnsChanged;
+				}
+				if (C.Hold[Local] == 0)
+				{
+					// Sin la estructura, esta arena puede volver a moverse.
+					MarkDirtyAround(Column);
 				}
 			}
-			++Result.ColumnsChanged;
 		}
 	}
 	return Result;
 }
 
-void FSandModel::WakeForTide(const FSandEnvironment& Env, FBaseHeight Base)
+void FSandModel::WakeForTide(const FSandEnvironment& Env)
 {
-	const int64 SeaMm = SandModelDetail::MetersToMm(Env.SeaLevel);
-	if (bHasWoken && Env.bRaining == bLastWakeRaining && FMath::Abs(SeaMm - LastWakeSeaMm) < TideWakeStepMm)
+	const int64 HighMm = SandModelDetail::MetersToMm(Env.HighTide);
+	if (bHasWoken && Env.bRaining == bLastWakeRaining && FMath::Abs(HighMm - LastWakeHighMm) < TideWakeStepMm)
 	{
 		return;
 	}
 	bHasWoken = true;
-	LastWakeSeaMm = SeaMm;
+	LastWakeHighMm = HighMm;
 	bLastWakeRaining = Env.bRaining;
 
-	// La marea o la lluvia cambian qué arena está húmeda y dónde llegan las olas: se
-	// revisan las columnas editadas cerca del foco (los chunks sin deltas se saltan).
+	// La pleamar del día o la lluvia cambian qué arena está húmeda: se revisan las columnas
+	// editadas de los chunks activos (los chunks sin deltas se saltan).
 	const int32 N = Settings.CellsPerChunk;
-	const double Reach = Env.ActiveRadius + Settings.ChunkSizeMeters() * 1.5;
-	TArray<FIntPoint> Keys;
-	Chunks.GetKeys(Keys);
-	Keys.Sort(&SandModelDetail::ColumnLess);
-	for (const FIntPoint& Key : Keys)
+	for (const FIntPoint& Key : EditedChunks())
 	{
+		if (!ChunkIsActive(Key, Env))
+		{
+			continue;
+		}
 		const FChunk& C = Chunks.FindChecked(Key);
-		if (C.NonZero == 0)
-		{
-			continue;
-		}
-		const FVector2D Center = ColumnPosition(FIntPoint(Key.X * N + N / 2, Key.Y * N + N / 2));
-		if (Env.DistanceToFoci(Center) > Reach)
-		{
-			continue;
-		}
 		for (int32 I = 0; I < N * N; ++I)
 		{
 			if (C.Delta[I] != 0)
@@ -446,7 +466,6 @@ void FSandModel::WakeForTide(const FSandEnvironment& Env, FBaseHeight Base)
 			}
 		}
 	}
-	(void)Base;
 }
 
 FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBaseHeight Base)
@@ -454,7 +473,8 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 	FSandResult Total;
 	if (DeltaMs > 0)
 	{
-		AccumulatedMs += DeltaMs;
+		// Suma sin desbordar: más de MaxTicksPerAdvance revisiones se descartan igualmente.
+		AccumulatedMs = static_cast<int32>(FMath::Min<int64>(static_cast<int64>(AccumulatedMs) + DeltaMs, static_cast<int64>(TickMs) * (MaxTicksPerAdvance + 1)));
 	}
 	TArray<FIntPoint> DirtyChunks;
 	while (AccumulatedMs >= TickMs && Total.Ticks < MaxTicksPerAdvance)
@@ -464,11 +484,14 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 		DirtyChunks.Append(Step.DirtyChunks);
 		Total.ColumnsChanged += Step.ColumnsChanged;
 		Total.ActiveColumns += Step.ActiveColumns;
+		Total.DeferredColumns = Step.DeferredColumns;
 		Total.DormantColumns = Step.DormantColumns;
+		Total.ActiveChunks = FMath::Max(Total.ActiveChunks, Step.ActiveChunks);
 		++Total.Ticks;
 	}
-	// Un paso larguísimo no se come la partida: lo que no cabe espera a la siguiente llamada.
-	AccumulatedMs = FMath::Min(AccumulatedMs, TickMs * MaxTicksPerAdvance);
+	// Una playa no recuerda diez minutos de avalancha (08 §2.6): el tiempo que no cabe
+	// en MaxTicksPerAdvance revisiones se descarta; solo se guarda la fracción de segundo.
+	AccumulatedMs = FMath::Min(AccumulatedMs, TickMs - 1);
 	FinishDirtyChunks(DirtyChunks);
 	Total.DirtyChunks = MoveTemp(DirtyChunks);
 	return Total;
@@ -479,186 +502,316 @@ FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 	using namespace SandModelDetail;
 	FSandResult Result;
 	Result.Ticks = 1;
-	WakeForTide(Env, Base);
+	WakeForTide(Env);
 
-	const int64 SeaMm = MetersToMm(Env.SeaLevel);
-	const int64 WetTopMm = SeaMm + static_cast<int64>(WetBandMeters * 1000.0f);
+	const int64 HighMm = MetersToMm(Env.HighTide);
 	const int32 DryDrop = ReposeDropMm(DryReposeDeg, Settings.CellSize);
 	const int32 WetDrop = ReposeDropMm(WetReposeDeg, Settings.CellSize);
-	const int32 AnchoredDrop = ReposeDropMm(AnchoredReposeDeg, Settings.CellSize);
 
-	// 1. Columnas sucias en orden (Y, X): activas cerca del foco, dormidas lejos.
+	// 1. Columnas sucias en orden (Y, X): las de chunks activos se revisan, las demás se congelan.
 	TArray<FIntPoint> Pending;
 	Dirty.GetKeys(Pending);
 	Pending.Sort(&ColumnLess);
-	struct FCandidate
+	TMap<FIntPoint, bool> ChunkActive;
+	auto IsActiveChunk = [&](const FIntPoint& Column)
 	{
-		FIntPoint Column;
-		double Distance;
-	};
-	TArray<FCandidate> Candidates;
-	for (const FIntPoint& Column : Pending)
-	{
-		const double Distance = Env.DistanceToFoci(ColumnPosition(Column));
-		if (Distance <= Env.ActiveRadius)
-		{
-			Candidates.Add({ Column, Distance });
-		}
-	}
-	if (Candidates.Num() > MaxActiveColumnsPerTick)
-	{
-		// Tope de coste: primero lo más cercano a un jugador; el resto espera al paso siguiente.
-		Candidates.Sort([](const FCandidate& A, const FCandidate& B)
-		{
-			return A.Distance != B.Distance ? A.Distance < B.Distance : ColumnLess(A.Column, B.Column);
-		});
-		Candidates.SetNum(MaxActiveColumnsPerTick);
-		Candidates.Sort([](const FCandidate& A, const FCandidate& B) { return ColumnLess(A.Column, B.Column); });
-	}
-	TMap<FIntPoint, uint8> Active;
-	TArray<FIntPoint> ActiveList;
-	for (const FCandidate& C : Candidates)
-	{
-		Active.Add(C.Column, 1);
-		ActiveList.Add(C.Column);
-	}
-	Result.ActiveColumns = ActiveList.Num();
-	Result.DormantColumns = Pending.Num() - ActiveList.Num();
-
-	// 2. Instantánea de las columnas implicadas (activas y sus vecinas).
-	TMap<FIntPoint, FColumnState> States;
-	auto StateOf = [&](const FIntPoint& Column) -> const FColumnState&
-	{
-		if (const FColumnState* Found = States.Find(Column))
+		const FIntPoint Chunk = ChunkOfColumn(Column);
+		if (const bool* Found = ChunkActive.Find(Chunk))
 		{
 			return *Found;
 		}
-		FColumnState S;
-		int32 Local = 0;
-		const FChunk& C = TouchColumn(Column, Base, Local);
-		S.BaseMm = C.BaseMm[Local];
-		S.Delta = C.Delta[Local];
-		S.Height = S.BaseMm + S.Delta;
-		S.bAnchored = C.Anchor[Local] > 0;
-		S.bNearAnchor = NearAnchor(Column);
-		S.bWet = Env.bRaining || S.Height <= WetTopMm;
-		S.WaveMilli = WaveWeightMilli(S.Height, SeaMm);
-		return States.Add(Column, S);
+		const bool bActive = ChunkIsActive(Chunk, Env);
+		ChunkActive.Add(Chunk, bActive);
+		Result.ActiveChunks += bActive ? 1 : 0;
+		return bActive;
 	};
-
-	// 3. Flujos por pareja (positivo: de A a B), cada pareja una sola vez.
-	struct FFlow
-	{
-		FIntPoint A;
-		FIntPoint B;
-		int64 Amount;
-	};
-	TArray<FFlow> Flows;
-	for (const FIntPoint& A : ActiveList)
-	{
-		for (const FIntPoint& Offset : Neighbours)
-		{
-			const FIntPoint B = A + Offset;
-			if (Active.Contains(B) && ColumnLess(B, A))
-			{
-				continue;
-			}
-			const FColumnState SA = StateOf(A);
-			const FColumnState& SB = StateOf(B);
-			if (SA.bAnchored || SB.bAnchored)
-			{
-				continue;
-			}
-			const bool bHardened = SA.bNearAnchor || SB.bNearAnchor;
-			int64 Flow = 0;
-
-			// Avalancha: del lado alto al bajo, solo el exceso sobre el reposo y sobre la base.
-			const bool bAHigh = SA.Height >= SB.Height;
-			const FColumnState& High = bAHigh ? SA : SB;
-			const FColumnState& Low = bAHigh ? SB : SA;
-			const int64 Drop = High.Height - Low.Height;
-			const int64 Repose = bHardened ? AnchoredDrop : (High.bWet ? WetDrop : DryDrop);
-			const int64 Threshold = FMath::Max<int64>(Repose, High.BaseMm - Low.BaseMm);
-			const int64 Excess = Drop - Threshold;
-			if (Excess > 0)
-			{
-				const int64 Slide = FMath::Max<int64>(1, Excess / AvalancheDivisor);
-				Flow += bAHigh ? Slide : -Slide;
-			}
-
-			// Olas: difunden el delta (no la altura), así que devuelven la playa a su perfil.
-			int64 WaveMilli = FMath::Min(SA.WaveMilli, SB.WaveMilli);
-			if (bHardened)
-			{
-				WaveMilli = WaveMilli * AnchoredWaveMilli / 1000;
-			}
-			if (WaveMilli > 0)
-			{
-				const int64 Rate = static_cast<int64>(WaveRateMilliAtShore) * WaveMilli;
-				Flow += (static_cast<int64>(SA.Delta) - SB.Delta) * Rate / 1000000;
-			}
-
-			if (Flow != 0)
-			{
-				Flows.Add({ A, B, Flow });
-			}
-		}
-	}
-
-	// 4. Nadie da más arena de la que tiene sobre la roca (reparto proporcional truncado).
-	// Con los números actuales no llega a pasar (cada salida es como mucho 1/5 del exceso
-	// y las olas un 8 % por vecina), pero protege ante cambios de números o datos cargados.
-	TMap<FIntPoint, int64> Outflow;
-	for (const FFlow& F : Flows)
-	{
-		Outflow.FindOrAdd(F.Amount > 0 ? F.A : F.B) += FMath::Abs(F.Amount);
-	}
-	TMap<FIntPoint, int64> Change;
-	for (FFlow& F : Flows)
-	{
-		const FIntPoint& Source = F.Amount > 0 ? F.A : F.B;
-		const int64 Available = FMath::Max<int64>(0, static_cast<int64>(StateOf(Source).Delta) + MaxDigDepthMm);
-		const int64 Out = Outflow.FindChecked(Source);
-		if (Out > Available)
-		{
-			F.Amount = F.Amount * Available / Out;
-		}
-		if (F.Amount != 0)
-		{
-			Change.FindOrAdd(F.A) -= F.Amount;
-			Change.FindOrAdd(F.B) += F.Amount;
-		}
-	}
-
-	// 5. Aplicar. Las activas que no se han movido ni tienen vecinas movidas se duermen.
-	// Se rehace el conjunto en vez de quitar una a una: quitar de un TMap grande no es gratis
-	// (en el host medía 26 ms por paso con 1300 columnas activas; así, 1,6 ms).
 	TMap<FIntPoint, uint8> NextDirty;
+	TArray<FIntPoint> Sweep;
 	for (const FIntPoint& Column : Pending)
 	{
-		if (!Active.Contains(Column))
+		if (IsActiveChunk(Column))
+		{
+			Sweep.Add(Column);
+		}
+		else
 		{
 			NextDirty.Add(Column, 1);
 		}
 	}
-	Dirty = MoveTemp(NextDirty);
-	TArray<FIntPoint> Changed;
-	for (const auto& Pair : Change)
+	Result.ActiveColumns = Sweep.Num();
+	Result.DormantColumns = NextDirty.Num();
+
+	// Columnas que ya han cambiado en esta revisión y cuántas lleva cada chunk (tope de red).
+	TMap<FIntPoint, uint8> ChangedThisTick;
+	TMap<FIntPoint, int32> ChangedPerChunk;
+	TMap<FIntPoint, uint8> Deferred;
+	/** Delta de cada columna tocada antes de la revisión, para contar solo el cambio neto. */
+	TMap<FIntPoint, int32> Moved;
+	TArray<FIntPoint> LastChanged;
+
+	for (int32 Pass = 0; Pass < SweepsPerTick && Sweep.Num() > 0; ++Pass)
 	{
-		if (Pair.Value != 0)
+		TMap<FIntPoint, uint8> InSweep;
+		for (const FIntPoint& Column : Sweep)
 		{
-			Changed.Add(Pair.Key);
+			InSweep.Add(Column, 1);
+		}
+
+		// 2. Instantánea de las columnas implicadas (las de la pasada y sus vecinas).
+		TMap<FIntPoint, FColumnState> States;
+		auto StateOf = [&](const FIntPoint& Column) -> FColumnState
+		{
+			if (const FColumnState* Found = States.Find(Column))
+			{
+				return *Found;
+			}
+			FColumnState S;
+			int32 Local = 0;
+			const FChunk& C = TouchColumn(Column, Base, Local);
+			S.BaseMm = C.BaseMm[Local];
+			S.Delta = C.Delta[Local];
+			S.Height = S.BaseMm + S.Delta;
+			S.bHeld = C.Hold[Local] > 0;
+			S.bWet = Env.bRaining || S.Height <= HighMm;
+			States.Add(Column, S);
+			return S;
+		};
+
+		// 3. Flujos por pareja (positivo: de A a B), cada pareja una sola vez.
+		struct FFlow
+		{
+			FIntPoint A;
+			FIntPoint B;
+			int64 Amount;
+		};
+		TArray<FFlow> Flows;
+		for (const FIntPoint& A : Sweep)
+		{
+			for (const FIntPoint& Offset : Neighbours)
+			{
+				const FIntPoint B = A + Offset;
+				if (InSweep.Contains(B) && ColumnLess(B, A))
+				{
+					continue;
+				}
+				const FColumnState SA = StateOf(A);
+				const FColumnState SB = StateOf(B);
+				// Del lado alto al bajo, solo el exceso sobre el reposo y sobre la base.
+				const bool bAHigh = SA.Height >= SB.Height;
+				const FColumnState& High = bAHigh ? SA : SB;
+				const FColumnState& Low = bAHigh ? SB : SA;
+				// La arena sujeta por una estructura no desliza; la de fuera sí puede caer contra ella.
+				if (High.bHeld)
+				{
+					continue;
+				}
+				const int64 Drop = High.Height - Low.Height;
+				const int64 Repose = High.bWet ? WetDrop : DryDrop;
+				const int64 Threshold = FMath::Max<int64>(Repose, High.BaseMm - Low.BaseMm);
+				const int64 Excess = Drop - Threshold;
+				if (Excess > 0)
+				{
+					const int64 Slide = FMath::Max<int64>(1, Excess / AvalancheDivisor);
+					Flows.Add({ A, B, bAHigh ? Slide : -Slide });
+				}
+			}
+		}
+
+		// 4. Tope de 64 columnas cambiadas por chunk y revisión. Primero las pendientes más
+		// fuertes; lo que no cabe espera a la revisión siguiente.
+		Flows.Sort([](const FFlow& X, const FFlow& Y)
+		{
+			const int64 AX = FMath::Abs(X.Amount);
+			const int64 AY = FMath::Abs(Y.Amount);
+			if (AX != AY)
+			{
+				return AX > AY;
+			}
+			return X.A != Y.A ? ColumnLess(X.A, Y.A) : ColumnLess(X.B, Y.B);
+		});
+		auto Cost = [&](const FIntPoint& Column, TMap<FIntPoint, int32>& Extra)
+		{
+			if (!ChangedThisTick.Contains(Column))
+			{
+				Extra.FindOrAdd(ChunkOfColumn(Column)) += 1;
+			}
+		};
+		TArray<FFlow> Accepted;
+		for (const FFlow& F : Flows)
+		{
+			TMap<FIntPoint, int32> Extra;
+			Cost(F.A, Extra);
+			Cost(F.B, Extra);
+			bool bFits = true;
+			for (const auto& Pair : Extra)
+			{
+				const int32* Used = ChangedPerChunk.Find(Pair.Key);
+				if ((Used ? *Used : 0) + Pair.Value > MaxChangedColumnsPerChunk)
+				{
+					bFits = false;
+				}
+			}
+			if (!bFits)
+			{
+				Deferred.FindOrAdd(F.A);
+				Deferred.FindOrAdd(F.B);
+				continue;
+			}
+			for (const auto& Pair : Extra)
+			{
+				ChangedPerChunk.FindOrAdd(Pair.Key) += Pair.Value;
+			}
+			ChangedThisTick.FindOrAdd(F.A);
+			ChangedThisTick.FindOrAdd(F.B);
+			Accepted.Add(F);
+		}
+
+		// 5. Nadie da más arena de la que tiene sobre la roca (reparto proporcional truncado).
+		TMap<FIntPoint, int64> Outflow;
+		for (const FFlow& F : Accepted)
+		{
+			Outflow.FindOrAdd(F.Amount > 0 ? F.A : F.B) += FMath::Abs(F.Amount);
+		}
+		TMap<FIntPoint, int64> Change;
+		for (FFlow& F : Accepted)
+		{
+			const FIntPoint& Source = F.Amount > 0 ? F.A : F.B;
+			const int64 Available = FMath::Max<int64>(0, static_cast<int64>(StateOf(Source).Delta) + MaxDigDepthMm);
+			const int64 Out = Outflow.FindChecked(Source);
+			if (Out > Available)
+			{
+				F.Amount = F.Amount * Available / Out;
+			}
+			if (F.Amount != 0)
+			{
+				Change.FindOrAdd(F.A) -= F.Amount;
+				Change.FindOrAdd(F.B) += F.Amount;
+			}
+		}
+
+		// 6. Aplicar y preparar la pasada siguiente: lo que ha cambiado y sus vecinas activas.
+		TArray<FIntPoint> Changed;
+		for (const auto& Pair : Change)
+		{
+			if (Pair.Value != 0)
+			{
+				Changed.Add(Pair.Key);
+			}
+		}
+		Changed.Sort(&ColumnLess);
+		TMap<FIntPoint, uint8> NextSweep;
+		for (const FIntPoint& Column : Changed)
+		{
+			if (!Moved.Contains(Column))
+			{
+				Moved.Add(Column, DeltaMm(Column));
+			}
+			AddDelta(Column, static_cast<int32>(Change.FindChecked(Column)), Base);
+			if (IsActiveChunk(Column))
+			{
+				NextSweep.FindOrAdd(Column);
+			}
+			else
+			{
+				NextDirty.FindOrAdd(Column);
+			}
+			for (const FIntPoint& Offset : Neighbours)
+			{
+				const FIntPoint Next = Column + Offset;
+				if (IsActiveChunk(Next))
+				{
+					NextSweep.FindOrAdd(Next);
+				}
+				else
+				{
+					NextDirty.FindOrAdd(Next);
+				}
+			}
+		}
+		LastChanged = MoveTemp(Changed);
+		Sweep.Reset();
+		NextSweep.GetKeys(Sweep);
+		Sweep.Sort(&ColumnLess);
+	}
+
+	// 7. Lo que sigue moviéndose al acabar las pasadas, y lo aplazado por el tope, se
+	// revisa en la revisión siguiente. Lo demás está asentado y deja de estar sucio.
+	if (LastChanged.Num() > 0)
+	{
+		for (const FIntPoint& Column : Sweep)
+		{
+			NextDirty.FindOrAdd(Column);
 		}
 	}
-	Changed.Sort(&ColumnLess);
-	TArray<FIntPoint> DirtyChunks;
-	for (const FIntPoint& Column : Changed)
+	for (const auto& Pair : Deferred)
 	{
-		AddDelta(Column, static_cast<int32>(Change.FindChecked(Column)), Base);
-		MarkDirtyAround(Column);
-		ChunksReadingColumn(Column, DirtyChunks);
+		NextDirty.FindOrAdd(Pair.Key);
 	}
-	Result.ColumnsChanged = Changed.Num();
+	Result.DeferredColumns = Deferred.Num();
+	Dirty = MoveTemp(NextDirty);
+
+	// Una columna puede volver a su valor dentro de la revisión (va y viene entre pasadas):
+	// solo cuenta, y solo sale por la red, el cambio neto.
+	TArray<FIntPoint> DirtyChunks;
+	for (const auto& Pair : Moved)
+	{
+		if (DeltaMm(Pair.Key) != Pair.Value)
+		{
+			ChunksReadingColumn(Pair.Key, DirtyChunks);
+			++Result.ColumnsChanged;
+		}
+	}
+	FinishDirtyChunks(DirtyChunks);
+	Result.DirtyChunks = MoveTemp(DirtyChunks);
+	return Result;
+}
+
+FSandResult FSandModel::ApplyHalfTide(const FSandTide& Tide, FBaseHeight Base)
+{
+	using namespace SandModelDetail;
+	FSandResult Result;
+	if (!FMath::IsFinite(Tide.HighTide) || !FMath::IsFinite(Tide.LowTide))
+	{
+		return Result;
+	}
+	const int64 HighMm = MetersToMm(Tide.HighTide);
+	const int64 LowMm = MetersToMm(Tide.LowTide);
+	const int32 N = Settings.CellsPerChunk;
+	TArray<FIntPoint> DirtyChunks;
+	// Todas las columnas editadas, cerca o lejos de los jugadores: la marea sube en toda la isla.
+	for (const FIntPoint& Key : EditedChunks())
+	{
+		FChunk& C = TouchChunk(Key, Base);
+		for (int32 I = 0; I < N * N; ++I)
+		{
+			const int32 D = C.Delta[I];
+			if (D == 0 || C.Hold[I] > 0)
+			{
+				continue;
+			}
+			const int32 Rate = RefillMilli(C.BaseMm[I], HighMm, LowMm, Tide.bSpring);
+			if (Rate == 0)
+			{
+				continue;
+			}
+			// Hacia la altura original: se redondea hacia arriba para que un delta pequeño
+			// también se cierre, y la última onda remata lo que queda por debajo de RefillSnapMm.
+			const int64 Size = FMath::Abs(static_cast<int64>(D));
+			int64 Amount = (Size * Rate + 999) / 1000;
+			if (Size - Amount <= RefillSnapMm)
+			{
+				Amount = Size;
+			}
+			const int32 Signed = static_cast<int32>(D > 0 ? -Amount : Amount);
+			const FIntPoint Column(Key.X * N + I % N, Key.Y * N + I / N);
+			AddDelta(Column, Signed, Base);
+			SeaBank -= Signed;
+			Result.SeaMass += Signed;
+			MarkDirtyAround(Column);
+			ChunksReadingColumn(Column, DirtyChunks);
+			++Result.ColumnsChanged;
+		}
+	}
 	FinishDirtyChunks(DirtyChunks);
 	Result.DirtyChunks = MoveTemp(DirtyChunks);
 	return Result;
@@ -700,9 +853,9 @@ void FSandModel::Reset()
 {
 	Chunks.Reset();
 	Dirty.Reset();
-	AnchoredColumns = 0;
+	SeaBank = 0;
 	AccumulatedMs = 0;
-	LastWakeSeaMm = 0;
+	LastWakeHighMm = 0;
 	bLastWakeRaining = false;
 	bHasWoken = false;
 }
@@ -759,6 +912,7 @@ FSaveValue FSandModel::ToValue() const
 		DirtyList.Add(FSaveValue::MakeInt(Column.Y));
 	}
 	Root.Set(TEXT("dirty"), MoveTemp(DirtyList));
+	Root.Set(TEXT("sea"), FSaveValue::MakeInt(SeaBank));
 	return Root;
 }
 
@@ -806,6 +960,7 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 			FChunk C;
 			C.Delta.SetNumZeroed(LocalCount);
 			C.Anchor.SetNumZeroed(LocalCount);
+			C.Hold.SetNumZeroed(LocalCount);
 			const FSaveValue& Runs = Entry.At(2);
 			int64 PreviousEnd = 0;
 			int32 Pos = 0;
@@ -857,6 +1012,16 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 			Dirty.FindOrAdd(Column);
 		}
 	}
+
+	if (const FSaveValue* Sea = Value.Find(TEXT("sea")))
+	{
+		int64 Bank = 0;
+		if (!Sea->TryGetInt(Bank))
+		{
+			return Fail();
+		}
+		SeaBank = Bank;
+	}
 	return true;
 }
 
@@ -867,7 +1032,7 @@ bool FSandModel::operator==(const FSandModel& Other) const
 		return false;
 	}
 	const TArray<FIntPoint> Mine = EditedChunks();
-	if (Mine != Other.EditedChunks() || Dirty.Num() != Other.Dirty.Num())
+	if (Mine != Other.EditedChunks() || Dirty.Num() != Other.Dirty.Num() || SeaBank != Other.SeaBank)
 	{
 		return false;
 	}
