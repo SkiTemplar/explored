@@ -537,6 +537,54 @@ void FSaveSystemsSpec::Define()
 			TestTrue(TEXT("Fiebre"), Loaded.HasCondition(ECondition::Fever));
 			TestEqual(TEXT("Una herida"), Loaded.Wounds.Num(), 1);
 		});
+
+		It("sanea valores no finitos o fuera de rango", [this]()
+		{
+			FSurvivalState State;
+			State.AddCondition(ECondition::Fever, 6.0f);
+			FSaveArchive Ar;
+			SaveSurvival(Ar, State, ESurvivalMode::Survivor);
+			Ar.SetValue(TEXT("health"), FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("hunger"), FSaveValue::MakeDouble(500.0));
+			Ar.SetValue(TEXT("thirst"), FSaveValue::MakeDouble(-20.0));
+			Ar.SetValue(TEXT("bodyTemperature"), FSaveValue::MakeString(TEXT("Infinity")));
+			Ar.SetValue(TEXT("wetness"), FSaveValue::MakeString(TEXT("-Infinity")));
+			Ar.SetValue(TEXT("sunDose"), FSaveValue::MakeString(TEXT("NaN")));
+			FSaveValue Conditions = FSaveValue::MakeArray();
+			Conditions.Add(FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("conditionHours"), Conditions);
+			FSaveValue Wounds = FSaveValue::MakeArray();
+			FSaveValue Deep = FSaveValue::MakeObject();
+			Deep.Set(TEXT("depth"), FSaveValue::MakeDouble(2.0));
+			Deep.Set(TEXT("bleeding"), FSaveValue::MakeDouble(-50.0));
+			Deep.Set(TEXT("healed"), FSaveValue::MakeString(TEXT("NaN")));
+			Deep.Set(TEXT("hoursUntreated"), FSaveValue::MakeDouble(-5.0));
+			Wounds.Add(Deep);
+			FSaveValue NaNDepth = FSaveValue::MakeObject();
+			NaNDepth.Set(TEXT("depth"), FSaveValue::MakeString(TEXT("NaN")));
+			Wounds.Add(NaNDepth);
+			Ar.SetValue(TEXT("wounds"), Wounds);
+
+			FSurvivalState Loaded;
+			ESurvivalMode Mode = ESurvivalMode::Survivor;
+			LoadSurvival(ThroughText(Ar), Loaded, Mode);
+			const FSurvivalState Defaults;
+			TestEqual(TEXT("Salud NaN: la de partida nueva"), Loaded.Health, Defaults.Health);
+			TestEqual(TEXT("Hambre hasta 100"), Loaded.Hunger, 100.0f);
+			TestEqual(TEXT("Sed desde 0"), Loaded.Thirst, 0.0f);
+			TestEqual(TEXT("Temperatura infinita: la de partida nueva"), Loaded.BodyTemperature, Defaults.BodyTemperature);
+			TestEqual(TEXT("Humedad -inf: la de partida nueva"), Loaded.Wetness, Defaults.Wetness);
+			TestEqual(TEXT("Sol NaN: la de partida nueva"), Loaded.SunDose, Defaults.SunDose);
+			TestEqual(TEXT("Estado NaN: sin estado"), Loaded.ConditionTime[0], 0.0f);
+			TestEqual(TEXT("La herida sin profundidad se descarta"), Loaded.Wounds.Num(), 1);
+			if (Loaded.Wounds.Num() == 1)
+			{
+				TestEqual(TEXT("Profundidad hasta 1"), Loaded.Wounds[0].Depth, 1.0f);
+				TestEqual(TEXT("Sangrado desde 0"), Loaded.Wounds[0].Bleeding, 0.0f);
+				TestEqual(TEXT("Cicatrización NaN: 0"), Loaded.Wounds[0].Healed, 0.0f);
+				TestEqual(TEXT("Horas sin tratar desde 0"), Loaded.Wounds[0].HoursUntreated, 0.0f);
+			}
+		});
 	});
 
 	Describe("Barcos, pesca y reloj", [this]()

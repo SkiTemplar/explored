@@ -222,6 +222,15 @@ namespace SaveSystemStatesDetail
 		return true;
 	}
 
+	/**
+	 * Real cargado dentro de [Lo, Hi]; uno no finito toma Default. El formato lee
+	 * "NaN" e "Infinity" como reales y FMath::Clamp(NaN) devolvería Hi.
+	 */
+	float SaneFloat(float Value, float Lo, float Hi, float Default)
+	{
+		return FMath::IsFinite(Value) ? FMath::Clamp(Value, Lo, Hi) : Default;
+	}
+
 	/** Une B en A sin repetir y conservando el orden de A. */
 	void UnionInto(TArray<FName>& A, const TArray<FName>& B)
 	{
@@ -811,7 +820,7 @@ namespace ExploredSaveStates
 			const int32 Num = FMath::Min(Conditions.Num(), static_cast<int32>(ECondition::Count));
 			for (int32 I = 0; I < Num; ++I)
 			{
-				OutState.ConditionTime[I] = FMath::Max(0.0f, Conditions[I]);
+				OutState.ConditionTime[I] = SaneFloat(Conditions[I], 0.0f, TNumericLimits<float>::Max(), 0.0f);
 			}
 		}
 		Ar.Read(TEXT("scurvySeverity"), OutState.ScurvySeverity);
@@ -825,8 +834,36 @@ namespace ExploredSaveStates
 			In.Read(TEXT("bandaged"), Wound.bBandaged);
 			In.Read(TEXT("medicinal"), Wound.bMedicinal);
 			In.Read(TEXT("infected"), Wound.bInfected);
-			return In.Read(TEXT("depth"), Wound.Depth);
+			// Una herida sin profundidad legible se descarta. Fuera de [0, 1] el sangrado
+			// crece sin tope (profundidad 2) o cura (sangrado -50).
+			if (!In.Read(TEXT("depth"), Wound.Depth) || !FMath::IsFinite(Wound.Depth))
+			{
+				return false;
+			}
+			Wound.Depth = FMath::Clamp(Wound.Depth, 0.0f, 1.0f);
+			Wound.Bleeding = SaneFloat(Wound.Bleeding, 0.0f, 1.0f, Wound.Depth);
+			Wound.Healed = SaneFloat(Wound.Healed, 0.0f, 1.0f, 0.0f);
+			Wound.HoursUntreated = SaneFloat(Wound.HoursUntreated, 0.0f, TNumericLimits<float>::Max(), 0.0f);
+			return true;
 		});
+
+		// Valores del cuerpo en los rangos que usa FSurvivalModel; uno no finito vuelve al de partida nueva.
+		const FSurvivalState Defaults;
+		OutState.Health = SaneFloat(OutState.Health, 0.0f, 100.0f, Defaults.Health);
+		OutState.Hunger = SaneFloat(OutState.Hunger, 0.0f, 100.0f, Defaults.Hunger);
+		OutState.Thirst = SaneFloat(OutState.Thirst, 0.0f, 100.0f, Defaults.Thirst);
+		OutState.Energy = SaneFloat(OutState.Energy, 0.0f, 100.0f, Defaults.Energy);
+		OutState.Rest = SaneFloat(OutState.Rest, 0.0f, 100.0f, Defaults.Rest);
+		OutState.Morale = SaneFloat(OutState.Morale, 0.0f, 100.0f, Defaults.Morale);
+		OutState.Protein = SaneFloat(OutState.Protein, 0.0f, 100.0f, Defaults.Protein);
+		OutState.Carbs = SaneFloat(OutState.Carbs, 0.0f, 100.0f, Defaults.Carbs);
+		OutState.Vitamins = SaneFloat(OutState.Vitamins, 0.0f, 100.0f, Defaults.Vitamins);
+		// Margen amplio: el modelo nunca se aleja tanto de 37 °C.
+		OutState.BodyTemperature = SaneFloat(OutState.BodyTemperature, 25.0f, 45.0f, Defaults.BodyTemperature);
+		OutState.Wetness = SaneFloat(OutState.Wetness, 0.0f, 1.0f, Defaults.Wetness);
+		OutState.ScurvySeverity = SaneFloat(OutState.ScurvySeverity, 0.0f, 1.0f, Defaults.ScurvySeverity);
+		OutState.SunDose = SaneFloat(OutState.SunDose, 0.0f, TNumericLimits<float>::Max(), Defaults.SunDose);
+		OutState.MonotonyHours = SaneFloat(OutState.MonotonyHours, 0.0f, TNumericLimits<float>::Max(), Defaults.MonotonyHours);
 	}
 
 	// --- Embarcaciones -------------------------------------------------------------------------
