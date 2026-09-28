@@ -343,6 +343,42 @@ void FCartographySpec::Define()
 		TestEqual(TEXT("Cobertura intacta"), Model.GetIslandCoverage(0), Coverage);
 	});
 
+	It("ignora posiciones y distancias a la orilla no finitas sin manchar trazos ni cobertura", [this]()
+	{
+		const double NaN = std::numeric_limits<double>::quiet_NaN();
+		FCartographyModel Model(Seed);
+		Model.RegisterIslandCoast(0, Circle(FVector2D::ZeroVector, IslandRadius, 256));
+		for (double X = 0.0; X < 20.0; X += 1.0)
+		{
+			Model.Sample(MakeSample(FVector2D(IslandRadius, X), ECartographyLocomotion::Walking, false, 5.0f));
+		}
+		TestTrue(TEXT("graba en la orilla"), Model.IsRecording());
+		const float Coverage = Model.GetIslandCoverage(0);
+		Model.Sample(MakeSample(FVector2D(NaN, 0.0), ECartographyLocomotion::Walking, false, 5.0f));
+		Model.Sample(MakeSample(FVector2D(0.0, std::numeric_limits<double>::infinity()), ECartographyLocomotion::Walking, false, 5.0f));
+		TestEqual(TEXT("posición NaN: la cobertura no cambia"), Model.GetIslandCoverage(0), Coverage);
+		TestFalse(TEXT("posición NaN: corta el trazo"), Model.IsRecording());
+
+		for (double X = 20.0; X < 40.0; X += 1.0)
+		{
+			Model.Sample(MakeSample(FVector2D(IslandRadius, X), ECartographyLocomotion::Walking, false, 5.0f));
+		}
+		TestTrue(TEXT("vuelve a grabar"), Model.IsRecording());
+		Model.Sample(MakeSample(FVector2D(IslandRadius, 40.0), ECartographyLocomotion::Walking, false, std::numeric_limits<float>::quiet_NaN()));
+		TestFalse(TEXT("distancia NaN: como lejos de la orilla"), Model.IsRecording());
+
+		bool bAllFinite = true;
+		for (const FMapStroke& Stroke : Model.GetState().Strokes)
+		{
+			for (const FVector2D& P : Stroke.Points)
+			{
+				bAllFinite &= FMath::IsFinite(P.X) && FMath::IsFinite(P.Y);
+			}
+		}
+		TestTrue(TEXT("todos los puntos finitos"), bAllFinite);
+		TestTrue(TEXT("deriva finita"), FMath::IsFinite(Model.GetState().Drift.X) && FMath::IsFinite(Model.GetState().Drift.Y));
+	});
+
 	It("mide la cobertura de costa en una isla circular sintética", [this]()
 	{
 		FCartographyModel Model(Seed);

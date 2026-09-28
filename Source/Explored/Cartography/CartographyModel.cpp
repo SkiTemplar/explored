@@ -135,6 +135,13 @@ void FCartographyModel::UpdateDrift(const FVector2D& Step, double StepLength, co
 void FCartographyModel::Sample(const FCartographySample& InSample)
 {
 	const FVector2D Position = InSample.WorldPosition;
+	// Una posición no finita no se dibuja ni se recuerda: mancharía el trazo, la cobertura y la
+	// muestra siguiente. IsFinite explícito, que con matemáticas rápidas las comparaciones no bastan.
+	if (!FMath::IsFinite(Position.X) || !FMath::IsFinite(Position.Y))
+	{
+		EndStroke();
+		return;
+	}
 	if (bHasLastPosition)
 	{
 		const FVector2D Step = Position - LastPosition;
@@ -154,7 +161,7 @@ void FCartographyModel::Sample(const FCartographySample& InSample)
 	bHasLastPosition = true;
 
 	const float Reach = IsRecording() ? RecordDistance + RecordHysteresis : RecordDistance;
-	if (!(InSample.DistanceToShore <= Reach))
+	if (!FMath::IsFinite(InSample.DistanceToShore) || InSample.DistanceToShore > Reach)
 	{
 		EndStroke();
 		return;
