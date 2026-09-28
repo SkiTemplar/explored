@@ -916,6 +916,18 @@ void FMarineFaunaSpec::Define()
 			TestTrue(TEXT("Sin saltos"), bOk);
 		});
 
+		It("un paso o una fase no finitos no dejan la fase en NaN", [this]()
+		{
+			FFaunaAnimState State;
+			State.Phase01 = 0.25f;
+			const FFaunaAnimParams P = FFaunaAnimation::Advance(EFaunaSpecies::OpenSeaFish, State, 200.0f, 0.0f,
+				std::numeric_limits<float>::quiet_NaN());
+			TestEqual(TEXT("Paso NaN: la fase no avanza"), P.Phase01, 0.25f);
+			State.Phase01 = std::numeric_limits<float>::quiet_NaN();
+			const FFaunaAnimParams Q = FFaunaAnimation::Advance(EFaunaSpecies::OpenSeaFish, State, 200.0f, 0.0f, 0.1f);
+			TestTrue(TEXT("Fase NaN: vuelve a [0, 1)"), Q.Phase01 >= 0.0f && Q.Phase01 < 1.0f);
+		});
+
 		It("la medusa late a su ritmo y las aves nunca pliegan las alas", [this]()
 		{
 			FFaunaAnimState Jelly;
