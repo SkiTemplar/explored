@@ -219,16 +219,22 @@ posterior.
 
 ### Escalada (mecánica nueva completa)
 
+- [x] `Player`: modelo puro `FClimbModel` (palmeras y roca): estados agarrado,
+      trepando, descansando y cayendo; 0,7 / 1,3 m/s y −9×peso / −6×peso; roca > 60° con
+      tope de 3 m ampliado por clavijas y cuerda fija; caída por altura con
+      `FBodyModel::FallDamage`; instantánea y validación de red.
+      *(verificado: `Source/Explored/Player/ClimbModel.h`, `Tests/ClimbModelSpec.cpp`;
+      biblia 02 §13.6)*
 - [ ] `Player`: verbo contextual «Trepar» sobre palmeras (`Palm` en
-      `HarvestModel.cpp`), subida a 0,7 m/s sin herramienta / 1,3 m/s con
-      `pie_de_palmera`, coste de Energía −9×peso / −6×peso por segundo.
-      *(biblia 02 §13.1)*
-- [ ] `Items`/`Templates`: nuevo item `pie_de_palmera` (`cuerda` ×1) en `items.json`.
-      *(biblia 02 §13.1)*
-- [ ] `Player`/`WorldGen`: escalada de roca sobre pendiente > 60°, tope de 3 m sin
-      herramienta; caída y esguince al agotar Energía, reutilizando el sistema de
-      caída/esguince ya existente (`SprainFallHeight`, biblia 01 §6.13).
-      *(biblia 02 §13.2)*
+      `HarvestModel.cpp`) cableado en el personaje (`CustomMovementMode` que llama a
+      `FClimbModel`), con `coco_verde` y la estadística `palms_climbed` al llegar a la
+      copa. *(biblia 02 §13.1, §13.6)*
+- [x] `Items`/`Templates`: nuevo item `pie_de_palmera` (`cuerda` ×1) en `items.json`.
+      *(verificado: `Content/Data/items.json`, plantilla `pie_de_palmera` en
+      `templates.json`; biblia 02 §13.6)*
+- [ ] `Player`/`WorldGen`: escalada de roca sobre pendiente > 60° en el personaje,
+      leyendo la pendiente de `FTerrainDensity` y la caída/esguince de
+      `FClimbModel::Land`. *(biblia 02 §13.2, §13.6)*
 - [ ] `Player`: animación de trepa en primera persona con manos visibles y bamboleo de
       cámara simple, con «Reducir movimiento» aplicado igual que el resto de cámara.
       *(biblia 02 §13.5, 06 §3.4)*
@@ -386,9 +392,12 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
 - [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
       de lava del Humo tiene una boca visible desde el marae de la cumbre, para que las
       ruinas queden junto a una entrada real. *(biblia 04 §7.1 TODO)*
-- [ ] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de
-      colocación con el pico equipado como herramienta de golpeo, para ampliar la
-      escalada de roca más allá de 3 m. *(biblia 02 §13.4 — director, 2026-09-27)*
+- [x] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango).
+      *(verificado: `Content/Data/items.json`, plantilla `clavija_roca_por_tallado`)*
+- [ ] `Player`: verbo de colocación de `clavija_roca` con el pico equipado como
+      herramienta de golpeo (`FClimbModel::DrivePiton`, persistencia en la capa
+      `"terrain"`), para ampliar la escalada de roca más allá de 3 m.
+      *(biblia 02 §13.4 — director, 2026-09-27)*
 - [ ] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
       *(biblia 02 §13.3)*
 - [ ] Confirmar en pipeline de terreno editable en runtime el recorrido completo

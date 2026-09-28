@@ -729,6 +729,45 @@ verde si hay apoyo en los dos extremos, rojo si no.
 - Sin HUD de aguante de escalada: se lee en el mismo temblor/respiración del
   cuerpo que el resto de esfuerzo físico (01 §6.0).
 
+### 13.6 Estados, ajustes y red (`FClimbModel`)
+
+Implementado como modelo puro en `Source/Explored/Player/ClimbModel.h`, con sus
+casos en `Tests/ClimbModelSpec.cpp`.
+
+- **Estados:** en el suelo → **agarrado** (al pulsar «Trepar») ↔ **trepando** (eje
+  vertical) → **descansando** (solo en un anclaje: la copa, una clavija o la cuerda
+  fija) → **cayendo** (al soltarse o al agotar la Energía) → en el suelo al aterrizar.
+  Cualquier otra orden se rechaza y el estado no cambia: no se agarra uno cayendo, no
+  se clava trepando ni en una palmera, no se reanuda sin estar descansando.
+- **Arranque:** se rechaza con las angarillas enganchadas (con aviso), sin Energía
+  (con aviso) y en roca de 60° o menos (en silencio: ahí se sube andando).
+- **Números nuevos** (ajustables en `FClimbTuning`): agarrado y quieto cuesta un
+  tercio de lo que cuesta subir (−3×peso/s a pulso, −2×peso/s con pie de palmera);
+  descansar en un anclaje recupera +6/s (menos que descansar de pie, +14, 01 §6.3);
+  se puede descansar a menos de 0,3 m de un anclaje.
+- **Tope de roca:** 3 m desde la base y 3 m más desde cada clavija o final de cuerda
+  fija al que se llegue desde abajo; una clavija por encima del tope no cuenta. En la
+  cuerda fija no se gasta Energía ni se cae por agotamiento.
+- **Caída:** la altura de caída es la subida en el momento de soltarse más lo que
+  quede por debajo de la base; el daño y el esguince son los de `FBodyModel::FallDamage`
+  (01 §6.13). Con `SafeFallHeight = 3 m`, soltarse desde el tope sin clavijas no hace
+  daño; desde 3,01 m, muy poco; el esguince llega a 4,5 m.
+- **Receta del pie de palmera:** el crafteo siempre combina dos piezas, así que la
+  plantilla `pie_de_palmera` (Atar) pide la cuerda (`Ata ≥ 4`, etiqueta `ata`) y un
+  puñado de fibra de acolchado (`Fibroso ≥ 2`, etiqueta `fibra`): hoja de palma,
+  corteza o fibra de coco. Va justo antes de `atado_generico` para ganarle solo a él.
+- **Clavija:** plantilla `clavija_roca_por_tallado` (Tallar): un filo (`Filo ≥ 3`) y
+  una pieza de hueso o metal con `Punta ≥ 2`, `Rigido ≥ 4` y `Largo ≥ 2`
+  (`hueso_largo` hoy; el `lingote_hierro` de F2 cuando exista).
+- **Red (biblia 08 §1.2):** el movimiento propio se predice. El cliente ejecuta el
+  mismo `Tick` con su copia replicada de la Energía; el servidor lo repite con la
+  Energía autoritativa y compara con `ValidateClientMove`: corrige si el estado no
+  coincide o si la altura difiere más de 8 cm. Se replica `FClimbSnapshot` (estado en
+  un byte y altura en centímetros). Arrancar, clavar y soltarse son órdenes que el
+  servidor valida con su propio inventario (angarillas, pie de palmera, clavija y pico
+  en mano); la Energía, el daño y el esguince solo los aplica el servidor. Los otros
+  jugadores ven la trepa interpolada, como cualquier otro movimiento.
+
 ---
 
 ## Textos de feedback (ES/EN)
@@ -746,8 +785,9 @@ Frases cortas, tono de superviviente seco, sin exclamaciones grandilocuentes.
 | Barco a punto de volcar | «Vamos a volcar.» | "We're going over." |
 | Cerca de territorio del pueblo | «Esto no me parece buena idea.» | "Doesn't feel right doing this here." |
 | Talar cerca de ruinas | «Mejor no toco esto.» | "Better not touch this." |
-| Sin fuerzas para seguir trepando | «No llego más arriba así.» | "Not making it up there like this." |
+| Sin fuerzas para seguir trepando | «No llego más arriba así.» | "Can't get higher like this." |
 | Pared sin saliente para clavija | «Aquí no hay donde clavar nada.» | "Nothing to drive a piton into here." |
+| Trepar con las angarillas enganchadas | «Con las angarillas no puedo trepar.» | "Can't climb with the sledge on." |
 
 ---
 
@@ -814,7 +854,7 @@ Frases cortas, tono de superviviente seco, sin exclamaciones grandilocuentes.
 ### Escalada (§13)
 
 - [ ] [AA] `Player`: verbo contextual «Trepar» sobre `Palm` (`HarvestModel.cpp`), subida a 0,7 m/s sin herramienta / 1,3 m/s con `pie_de_palmera`, coste de Energía −9×peso / −6×peso por segundo (§13.1).
-- [ ] [AA] `Items`/`Templates`: nuevo item `pie_de_palmera` (`cuerda` ×1) en `items.json`.
+- [x] [AA] `Items`/`Templates`: nuevo item `pie_de_palmera` (`cuerda` ×1) en `items.json`.
 - [ ] [AA] `Player`/`WorldGen`: escalada de roca sobre pendiente > 60°, tope de 3 m sin herramienta, mismo coste de Energía que trepar sin ayuda; caída y esguince al agotar Energía reutilizando el sistema de 01 §6.13 (§13.2).
 - [ ] [AA] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json` (coste y `integrity` de la tabla de §13.3).
 - [ ] [H2] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de colocación con el pico equipado como herramienta de golpeo, ampliando el tramo escalable de roca más allá de 3 m (§13.4).

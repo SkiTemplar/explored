@@ -108,6 +108,7 @@ cliente):
 | Sistema | Quién decide | Quién simula | Qué ve el cliente |
 |---|---|---|---|
 | Movimiento del propio personaje | Servidor (corrige) | Cliente + servidor | Predicción + corrección |
+| Escalada propia (`FClimbModel`) | Servidor (corrige > 8 cm o estado distinto) | Cliente + servidor | Predicción + corrección (02 §13.6) |
 | Movimiento de los otros | Servidor | Servidor | Interpolación suavizada |
 | Necesidades y heridas (`FSurvivalModel`, `FBodyModel`) | Servidor | Servidor | Réplica de su propio cuerpo (§2.9) |
 | Inventario (`UCarryComponent`, `FInventoryModel`) | Servidor | Servidor | Réplica solo del propio |
