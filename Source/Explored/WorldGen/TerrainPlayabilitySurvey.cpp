@@ -115,6 +115,28 @@ namespace
 		Values.Sort();
 		return Values[Values.Num() / 2];
 	}
+
+	/** Fracciones, medianas y variación a lo largo del perímetro a partir de los rayos ya medidos. */
+	FCoastStats Summarize(FCoastStats Stats, const TArray<float>& CliffHeights, const TArray<float>& EdgeDistances)
+	{
+		Stats.CliffFraction = Stats.Rays > 0 ? static_cast<float>(Stats.CliffRays) / Stats.Rays : 0.0f;
+		Stats.CliffMedianHeight = Median(CliffHeights);
+		for (float H : CliffHeights)
+		{
+			Stats.CliffMaxHeight = FMath::Max(Stats.CliffMaxHeight, H);
+		}
+		Stats.ShelfWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.ShelfWidths);
+		Stats.SlopeWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.SlopeWidths);
+		// Dentado del borde de la plataforma (la cota -10 m vista desde el centro) respecto a su
+		// anchura media: el rizado de la línea de costa no cuenta, solo el del borde.
+		double MeanShelf = 0.0;
+		for (float W : Stats.ShelfWidths)
+		{
+			MeanShelf += W / FMath::Max(Stats.ShelfWidths.Num(), 1);
+		}
+		Stats.ShelfJaggedness = FPlayabilityMetricsModel::Jaggedness(EdgeDistances, static_cast<float>(MeanShelf));
+		return Stats;
+	}
 }
 
 FTerrainSampleGrid FTerrainPlayabilitySurvey::SampleIsland(const FTerrainDensity& Density, int32 IslandIdx, float Spacing)
@@ -151,6 +173,32 @@ FFlatPatchStats FTerrainPlayabilitySurvey::MeasureBuildable(const FTerrainSample
 		Land[I] = Grid.IslandIndex[I] == IslandIdx && Grid.Heights[I] > BuildableMinHeight ? 1 : 0;
 	}
 	return FPlayabilityMetricsModel::FlatPatches(Grid.Heights, Grid.Width, Grid.Height, Grid.Spacing, Land, BuildableSlopeDeg);
+}
+
+FLagoonStats FTerrainPlayabilitySurvey::MeasureLagoon(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx)
+{
+	FLagoonStats Stats;
+	TArray<uint8> Water;
+	Water.Init(0, Grid.Heights.Num());
+	TArray<float> Depths;
+	for (int32 I = 0; I < Water.Num(); ++I)
+	{
+		const float H = Grid.Heights[I];
+		if (Grid.IslandIndex[I] != IslandIdx || !FMath::IsFinite(H) || H >= 0.0f)
+		{
+			continue;
+		}
+		const FVector2D P = Grid.WorldPosition(I % Grid.Width, I / Grid.Width);
+		if (Density.SampleColumn(static_cast<float>(P.X), static_cast<float>(P.Y)).NormalizedDistance < InnerCoastT)
+		{
+			Water[I] = 1;
+			Depths.Add(-H);
+		}
+	}
+	Stats.Area = Depths.Num() * Grid.Spacing * Grid.Spacing;
+	Stats.MedianDepth = Median(MoveTemp(Depths));
+	Stats.Floor = FPlayabilityMetricsModel::FlatPatches(Grid.Heights, Grid.Width, Grid.Height, Grid.Spacing, Water, BuildableSlopeDeg);
+	return Stats;
 }
 
 FDrainagePattern FTerrainPlayabilitySurvey::MeasureDrainage(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx)
@@ -220,23 +268,7 @@ FCoastStats FTerrainPlayabilitySurvey::MeasureCoast(const FTerrainDensity& Densi
 			EdgeDistances[R] = Coast + Shelf;
 		}
 	}
-	Stats.CliffFraction = Stats.Rays > 0 ? static_cast<float>(Stats.CliffRays) / Stats.Rays : 0.0f;
-	Stats.CliffMedianHeight = Median(CliffHeights);
-	for (float H : CliffHeights)
-	{
-		Stats.CliffMaxHeight = FMath::Max(Stats.CliffMaxHeight, H);
-	}
-	Stats.ShelfWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.ShelfWidths);
-	Stats.SlopeWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.SlopeWidths);
-	// Dentado del borde de la plataforma (la cota -10 m vista desde el centro) respecto a su
-	// anchura media: el rizado de la línea de costa no cuenta, solo el del borde.
-	double MeanShelf = 0.0;
-	for (float W : Stats.ShelfWidths)
-	{
-		MeanShelf += W / FMath::Max(Stats.ShelfWidths.Num(), 1);
-	}
-	Stats.ShelfJaggedness = FPlayabilityMetricsModel::Jaggedness(EdgeDistances, static_cast<float>(MeanShelf));
-	return Stats;
+	return Summarize(MoveTemp(Stats), CliffHeights, EdgeDistances);
 }
 
 TArray<FVector2D> FTerrainPlayabilitySurvey::SeaMotes(const FTerrainDensity& Density)
@@ -284,6 +316,7 @@ FPlayabilityReport FTerrainPlayabilitySurvey::Measure(const FTerrainDensity& Den
 		FIslandPlayability Island;
 		Island.Flat = MeasureBuildable(Grid, I);
 		Island.Drainage = MeasureDrainage(Density, Grid, I);
+		Island.Lagoon = MeasureLagoon(Density, Grid, I);
 		Island.Coast = MeasureCoast(Density, I, 360);
 		Report.Islands.Add(MoveTemp(Island));
 	}

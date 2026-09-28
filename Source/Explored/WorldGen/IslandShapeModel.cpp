@@ -87,7 +87,7 @@ namespace
 		const float S = static_cast<float>(FVector2D::DotProduct(Q, Along));
 		const float Lateral = static_cast<float>(FVector2D::DotProduct(Q, Side));
 		const float Phase = UE_TWO_PI * SeedUnit(Island, 0x7E11u);
-		const float Meander = 0.17f * FMath::Sin(S * UE_TWO_PI / 0.4f + Phase) + 0.05f * N.Fbm2D(S * 3.0f, 7.0f, 2);
+		const float Meander = 0.21f * FMath::Sin(S * UE_TWO_PI / 0.4f + Phase) + 0.05f * N.Fbm2D(S * 3.0f, 7.0f, 2);
 		const float Distance = FMath::Abs(Lateral - Meander);
 		const float Off = FMath::Min(Distance / 0.7f, 1.0f);
 		// Sección en V abierta hacia el cauce, que se apaga más allá de la cabecera, y un canal

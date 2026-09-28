@@ -13,6 +13,8 @@ namespace
 
 	/** Transición (en unidades del ruido) entre costa normal y acantilado pleno. */
 	constexpr float EdgeSoftness = 0.04f;
+	/** Semiancho (celdas de 0,5°) de la rampa con que acaba cada tramo a lo largo de la costa. */
+	constexpr int32 EndRampBins = 5;
 
 	/** Umbral que deja por encima la fracción Fraction de los valores. */
 	float ThresholdFor(TArray<float> Values, float Fraction)
@@ -20,6 +22,33 @@ namespace
 		Values.Sort();
 		const int32 Index = FMath::Clamp(FMath::RoundToInt32((1.0f - Fraction) * Values.Num()), 0, Values.Num() - 1);
 		return Values[Index];
+	}
+
+	/**
+	 * Media móvil circular (dos pasadas de caja de ±Radius celdas): los extremos de cada tramo
+	 * bajan en rampa a lo largo de la costa. Con el corte seco del umbral quedaba una pared
+	 * lateral de toda la altura del acantilado que se metía tierra adentro.
+	 */
+	TArray<float> SmoothCircular(const TArray<float>& Values, int32 Radius)
+	{
+		TArray<float> Current = Values;
+		const int32 Num = Current.Num();
+		for (int32 Pass = 0; Pass < 2 && Num > 0; ++Pass)
+		{
+			TArray<float> Next;
+			Next.SetNum(Num);
+			for (int32 I = 0; I < Num; ++I)
+			{
+				float Sum = 0.0f;
+				for (int32 K = -Radius; K <= Radius; ++K)
+				{
+					Sum += Current[((I + K) % Num + Num) % Num];
+				}
+				Next[I] = Sum / (2 * Radius + 1);
+			}
+			Current = MoveTemp(Next);
+		}
+		return Current;
 	}
 
 	float SectorAmount(const TArray<FVector2D>& Sectors, float Angle)
@@ -53,12 +82,12 @@ bool FCoastalCliffModel::StyleFor(EIslandArchetype Archetype, FCliffStyle& OutSt
 	{
 	case EIslandArchetype::Smoke:
 		// Frentes de colada cortados por el mar: paredes altas de basalto.
-		Style.Fraction = 0.22f;
+		Style.Fraction = 0.17f;
 		Style.MinHeight = 18.0f;
 		Style.MaxHeight = 48.0f;
 		break;
 	case EIslandArchetype::Emerald:
-		Style.Fraction = 0.24f;
+		Style.Fraction = 0.16f;
 		Style.MinHeight = 14.0f;
 		Style.MaxHeight = 40.0f;
 		break;
@@ -90,27 +119,30 @@ FCoastalCliffs FCoastalCliffModel::Build(uint32 Seed, const FCliffStyle& Style)
 		Raw[B] = FIslandShapeModel::AroundCoast(N, -UE_PI + UE_TWO_PI * B / FCoastalCliffs::Bins, 1.7f, 4.0f, 3);
 	}
 	const float Threshold = ThresholdFor(Raw, FMath::Clamp(Style.Fraction, 0.0f, 1.0f));
-	Cliffs.Amounts.SetNum(FCoastalCliffs::Bins);
+	TArray<float> Amounts;
+	Amounts.SetNum(FCoastalCliffs::Bins);
 	Cliffs.Heights.SetNum(FCoastalCliffs::Bins);
 	for (int32 B = 0; B < FCoastalCliffs::Bins; ++B)
 	{
 		const float Angle = -UE_PI + UE_TWO_PI * B / FCoastalCliffs::Bins;
-		Cliffs.Amounts[B] = Style.Sectors.IsEmpty() ? SmoothStep(Threshold - EdgeSoftness, Threshold + EdgeSoftness, Raw[B])
+		Amounts[B] = Style.Sectors.IsEmpty() ? SmoothStep(Threshold - EdgeSoftness, Threshold + EdgeSoftness, Raw[B])
 			: SectorAmount(Style.Sectors, Angle);
 		const float Variation = SmoothStep(-0.4f, 0.4f, FIslandShapeModel::AroundCoast(N, Angle, 2.3f, -13.0f, 2));
 		Cliffs.Heights[B] = FMath::Lerp(Style.MinHeight, Style.MaxHeight, Variation);
 	}
+	Cliffs.Amounts = Style.Sectors.IsEmpty() ? SmoothCircular(Amounts, EndRampBins) : MoveTemp(Amounts);
 	return Cliffs;
 }
 
 float FCoastalCliffModel::Uplift(const FCoastalCliffs& Cliffs, float Angle, float U, float Radius)
 {
-	const float Amount = Cliffs.Amount(Angle);
-	if (Amount <= 0.0f || !(Radius > 1.0f))
+	// Comprobación por bits: con matemáticas rápidas, !(U > 0) no descarta un NaN.
+	if (!FMath::IsFinite(U) || !FMath::IsFinite(Radius) || U <= 0.0f || Radius <= 1.0f)
 	{
 		return 0.0f;
 	}
-	if (!(U > 0.0f))
+	const float Amount = Cliffs.Amount(Angle);
+	if (Amount <= 0.0f)
 	{
 		return 0.0f;
 	}

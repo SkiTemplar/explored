@@ -73,6 +73,24 @@ void FCoastalCliffModelSpec::Define()
 			TestTrue(*FString::Printf(TEXT("tramos: %d cambios"), Changes), Changes >= 4 && Changes <= 16);
 		});
 
+		It("acaba cada tramo en rampa a lo largo de la costa, sin pared lateral", [this]()
+		{
+			// Antes: el tramo pasaba de 0 a pleno en ~2 celdas (10 m de costa en una isla de 600 m):
+			// una pared lateral de toda la altura que entraba tierra adentro.
+			FCliffStyle Style;
+			Style.Fraction = 0.25f;
+			const FCoastalCliffs Cliffs = FCoastalCliffModel::Build(42u, Style);
+			float Steepest = 0.0f;
+			for (int32 I = 0; I < 720; ++I)
+			{
+				const float Here = UE_TWO_PI * I / 720.0f - UE_PI;
+				const float Next = UE_TWO_PI * (I + 1) / 720.0f - UE_PI;
+				Steepest = FMath::Max(Steepest, FMath::Abs(Cliffs.Amount(Next) - Cliffs.Amount(Here)));
+			}
+			// Con 40 m de acantilado y 5,2 m de costa por celda: por debajo de 0,1 → menos de 38°.
+			TestTrue(*FString::Printf(TEXT("mayor salto por celda %.3f"), Steepest), Steepest < 0.1f);
+		});
+
 		It("pone los tramos fijos donde se piden y en ningún otro sitio", [this]()
 		{
 			FCliffStyle Style;

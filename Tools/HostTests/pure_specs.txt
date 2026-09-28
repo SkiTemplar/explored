@@ -72,3 +72,5 @@ Tests/KarstTowerModelSpec.cpp
 Tests/IslandReliefModelSpec.cpp
 Tests/TerrainRealismSpec.cpp
 Tests/PlayabilityMetricsModelSpec.cpp
+Tests/IslandShelfModelSpec.cpp
+Tests/CoastalCliffModelSpec.cpp

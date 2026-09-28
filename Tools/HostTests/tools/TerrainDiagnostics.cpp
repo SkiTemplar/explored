@@ -197,6 +197,11 @@ namespace
 				C.CliffMedianHeight, C.CliffMaxHeight, C.CliffRays, C.Rays, C.ShelfWidthCV, C.SlopeWidthCV, C.ShelfJaggedness,
 				C.ShelfWidths.Num(), Isl.Drainage.RiverCells, Isl.Drainage.Mouths, Isl.Drainage.MouthResultant, Isl.Drainage.Radiality,
 				Isl.Drainage.Sinuosity);
+			if (Isl.Lagoon.Area > 0.0f)
+			{
+				std::printf("        laguna interior: %.0f m2, profundidad mediana %.1f m, fondo llano %.1f%% (mayor parche %.0f m2)\n", Isl.Lagoon.Area,
+					Isl.Lagoon.MedianDepth, Isl.Lagoon.Floor.FlatFraction * 100.0f, Isl.Lagoon.Floor.PatchAreas.IsEmpty() ? 0.0f : Isl.Lagoon.Floor.PatchAreas[0]);
+			}
 		}
 	}
 }

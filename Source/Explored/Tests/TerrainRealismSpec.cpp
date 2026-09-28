@@ -210,11 +210,23 @@ void FTerrainRealismSpec::Define()
 			{
 				const FFlatPatchStats& Flat = P.Islands[FindIsland(Density, Goal.Archetype)].Flat;
 				const TCHAR* Name = LexToString(Goal.Archetype);
+				AddInfo(FString::Printf(TEXT("%s: %.1f %% llano, %d parches de %.0f m²"), Name, Flat.FlatFraction * 100.0f,
+					Flat.CountAtLeast(Goal.PatchArea), Goal.PatchArea));
 				TestTrue(*FString::Printf(TEXT("%s: %.1f %% llano"), Name, Flat.FlatFraction * 100.0f),
 					Flat.FlatFraction >= Goal.MinFlat && Flat.FlatFraction <= Goal.MaxFlat);
 				TestTrue(*FString::Printf(TEXT("%s: %d parches de %.0f m²"), Name, Flat.CountAtLeast(Goal.PatchArea), Goal.PatchArea),
 					Flat.CountAtLeast(Goal.PatchArea) >= Goal.MinPatches);
 			}
+		});
+
+		It("deja en El Nido una laguna interior somera de fondo llano, navegable y vadeable", [this]()
+		{
+			// La llanura costera ya la cubre el caso anterior; aquí, el fondo de la laguna entre torres.
+			const FLagoonStats& L = Playability().Islands[FindIsland(Fixture().Density, EIslandArchetype::Mesa)].Lagoon;
+			TestTrue(*FString::Printf(TEXT("laguna de %.0f m²"), L.Area), L.Area >= 8000.0f);
+			TestTrue(*FString::Printf(TEXT("profundidad mediana %.1f m"), L.MedianDepth), L.MedianDepth >= 1.0f && L.MedianDepth <= 5.0f);
+			TestTrue(*FString::Printf(TEXT("fondo llano %.1f %%"), L.Floor.FlatFraction * 100.0f), L.Floor.FlatFraction >= 0.6f);
+			TestTrue(*FString::Printf(TEXT("parches de 2.000 m²: %d"), L.Floor.CountAtLeast(2000.0f)), L.Floor.CountAtLeast(2000.0f) >= 1);
 		});
 
 		It("tiene acantilados marinos en Smoke, Emerald y algo de Landing, lejos de la bahía y del spawn", [this]()
@@ -225,6 +237,8 @@ void FTerrainRealismSpec::Define()
 			for (EIslandArchetype A : {EIslandArchetype::Smoke, EIslandArchetype::Emerald})
 			{
 				const FCoastStats& C = P.Islands[FindIsland(Density, A)].Coast;
+				AddInfo(FString::Printf(TEXT("%s: %.1f %% acantilado, altura mediana %.0f m"), LexToString(A), C.CliffFraction * 100.0f,
+					C.CliffMedianHeight));
 				TestTrue(*FString::Printf(TEXT("%s: %.1f %% acantilado"), LexToString(A), C.CliffFraction * 100.0f),
 					C.CliffFraction >= 0.15f && C.CliffFraction <= 0.35f);
 				TestTrue(*FString::Printf(TEXT("%s: altura mediana %.0f m"), LexToString(A), C.CliffMedianHeight),
@@ -275,6 +289,8 @@ void FTerrainRealismSpec::Define()
 		{
 			// Antes: resultante 0,17 (desembocaduras en todas direcciones), radial 0,64, sinuosidad 1,28.
 			const FDrainagePattern& D = Playability().Islands[FindIsland(Fixture().Density, EIslandArchetype::Mangrove)].Drainage;
+			AddInfo(FString::Printf(TEXT("manglar: %d desembocaduras, resultante %.2f, radialidad %.2f, sinuosidad %.2f"), D.Mouths,
+				D.MouthResultant, D.Radiality, D.Sinuosity));
 			TestTrue(*FString::Printf(TEXT("desembocaduras: %d"), D.Mouths), D.Mouths >= 1);
 			TestTrue(*FString::Printf(TEXT("resultante %.2f"), D.MouthResultant), D.MouthResultant >= 0.4f);
 			TestTrue(*FString::Printf(TEXT("radialidad %.2f"), D.Radiality), D.Radiality <= 0.5f);

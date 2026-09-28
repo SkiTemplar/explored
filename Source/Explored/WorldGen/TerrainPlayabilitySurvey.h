@@ -28,6 +28,17 @@ struct EXPLORED_API FCoastStats
 	float ShelfJaggedness = 0.0f;
 };
 
+/** Agua tierra adentro de una isla (lagunas interiores): extensión, cota y fondo llano. */
+struct EXPLORED_API FLagoonStats
+{
+	/** Superficie de agua dentro de la costa de la isla (T < InnerCoastT), m². */
+	float Area = 0.0f;
+	/** Profundidad mediana (m, positiva). */
+	float MedianDepth = 0.0f;
+	/** Llanos del fondo (pendiente < 15°) dentro de esa agua. */
+	FFlatPatchStats Floor;
+};
+
 /** Jugabilidad de una isla: llanos construibles, costa y red de drenaje. */
 struct EXPLORED_API FIslandPlayability
 {
@@ -35,6 +46,7 @@ struct EXPLORED_API FIslandPlayability
 	FFlatPatchStats Flat;
 	FCoastStats Coast;
 	FDrainagePattern Drainage;
+	FLagoonStats Lagoon;
 };
 
 /** Informe de jugabilidad del archipiélago. */
@@ -68,6 +80,12 @@ public:
 	 */
 	static FDrainagePattern MeasureDrainage(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx);
 
+	/**
+	 * Agua dentro de la costa de la isla (lagunas interiores, bahías cerradas, esteros): la parte
+	 * de la rejilla bajo el mar con distancia normalizada < InnerCoastT.
+	 */
+	static FLagoonStats MeasureLagoon(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx);
+
 	/** Acantilados y plataforma a lo largo de RayCount rayos repartidos alrededor de la isla. */
 	static FCoastStats MeasureCoast(const FTerrainDensity& Density, int32 IslandIdx, int32 RayCount);
 
@@ -81,4 +99,6 @@ public:
 	static constexpr float CliffSlopeDeg = 60.0f;
 	/** Tramo tierra adentro (m) en el que se busca la pared del acantilado. */
 	static constexpr float CliffBand = 20.0f;
+	/** Agua más adentro que esta distancia normalizada a la costa cuenta como laguna interior. */
+	static constexpr float InnerCoastT = 0.9f;
 };
