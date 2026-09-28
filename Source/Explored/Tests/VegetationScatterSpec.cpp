@@ -86,6 +86,37 @@ void FVegetationScatterSpec::Define()
 		}
 	});
 
+	It("deja un radio despejado alrededor del spawn y los POI", [this]()
+	{
+		const TArray<FScatterRule> Rules = FVegetationScatter::DefaultRules();
+		const FVector Avoid(Region.GetCenter().X, Region.GetCenter().Y, 0.0f);
+		constexpr float ClearRadiusM = 6.0f;
+		const FScatterResult Result = FVegetationScatter::Generate(*Density, Rules, Region, 7, {Avoid}, ClearRadiusM);
+		for (int32 R = 0; R < Rules.Num(); ++R)
+		{
+			for (const FScatterInstance& I : Result.PerRule[R])
+			{
+				const FVector2D Location2D(I.Transform.GetLocation().X / 100.0f, I.Transform.GetLocation().Y / 100.0f);
+				const float DistM = FVector2D::Distance(Location2D, FVector2D(Avoid));
+				if (DistM < ClearRadiusM - 0.01f)
+				{
+					AddError(FString::Printf(TEXT("%s a %.2f m del punto protegido (< %.1f m)"),
+						*Rules[R].Species.ToString(), DistM, ClearRadiusM));
+					return;
+				}
+			}
+		}
+	});
+
+	It("el radio despejado no rompe el determinismo", [this]()
+	{
+		const TArray<FScatterRule> Rules = FVegetationScatter::DefaultRules();
+		const FVector Avoid(Region.GetCenter().X, Region.GetCenter().Y, 0.0f);
+		const FScatterResult A = FVegetationScatter::Generate(*Density, Rules, Region, 7, {Avoid}, 6.0f);
+		const FScatterResult B = FVegetationScatter::Generate(*Density, Rules, Region, 7, {Avoid}, 6.0f);
+		TestEqual(TEXT("Mismo total con radio despejado"), A.Total(), B.Total());
+	});
+
 	It("encuentra la superficie exacta del terreno", [this]()
 	{
 		const FIslandDesc* Landing = Density->GetLayout().FindIsland(EIslandArchetype::Landing);
