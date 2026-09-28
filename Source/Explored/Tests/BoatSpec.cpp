@@ -818,6 +818,15 @@ void FBoatSpec::Define()
 			FBoatModel Launched(EBoatType::Raft, FVector::ZeroVector, 0.0f);
 			Launched.SetVelocityCmS(FVector2D(static_cast<double>(NaN), 10.0));
 			TestTrue(TEXT("velocidad NaN: quieto"), Launched.GetState().VelocityCmS.IsZero());
+
+			// Una arrancada finita pero absurda (1e30 cm/s) daba NaN en posición y rumbo al paso siguiente.
+			FBoatModel Flung(EBoatType::Canoe, FVector::ZeroVector, 0.0f);
+			Flung.SetVelocityCmS(FVector2D(1.0e30, -250.0));
+			TestTrue(TEXT("arrancada enorme recortada"), Flung.GetState().VelocityCmS.Size() <= FBoatModel::MaxSetSpeedCmS + 1.0);
+			Flung.Step(1.0f / 60.0f, FBoatControls(), FBoatEnvironment());
+			const FBoatState& After = Flung.GetState();
+			TestTrue(TEXT("y el paso siguiente sigue finito"), FMath::IsFinite(After.LocationCm.X) && FMath::IsFinite(After.LocationCm.Y)
+				&& FMath::IsFinite(After.VelocityCmS.X) && FMath::IsFinite(After.YawDeg));
 		});
 
 		It("da exactamente el mismo resultado con las mismas entradas", [this]()

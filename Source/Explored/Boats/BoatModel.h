@@ -71,6 +71,8 @@ public:
 	static constexpr float GroundingToleranceCm = 3.0f;
 	/** Velocidad de choque contra el fondo a partir de la cual se daña el casco (cm/s). */
 	static constexpr float SafeImpactSpeedCmS = 80.0f;
+	/** Tope de la arrancada impuesta desde fuera (50 m/s, muy por encima de cualquier barco). */
+	static constexpr float MaxSetSpeedCmS = 5000.0f;
 
 	static const FBoatDefinition& Definition(EBoatType Type);
 
@@ -86,10 +88,20 @@ public:
 	/** Cambia la ficha sin tocar el estado (una unión rota ha soltado una pieza). Recorta la carga a la nueva capacidad. */
 	void SetDefinition(const FBoatDefinition& InDefinition);
 
-	/** Velocidad sobre el fondo (cm/s): la arrancada con la que sale de la botadura. Una no finita lo deja quieto. */
+	/**
+	 * Velocidad sobre el fondo (cm/s): la arrancada con la que sale de la botadura. Una no finita
+	 * lo deja quieto y una enorme se recorta a MaxSetSpeedCmS (la física daría NaN al paso siguiente).
+	 */
 	void SetVelocityCmS(const FVector2D& VelocityCmS)
 	{
-		State.VelocityCmS = FMath::IsFinite(VelocityCmS.X) && FMath::IsFinite(VelocityCmS.Y) ? VelocityCmS : FVector2D::ZeroVector;
+		if (!FMath::IsFinite(VelocityCmS.X) || !FMath::IsFinite(VelocityCmS.Y))
+		{
+			State.VelocityCmS = FVector2D::ZeroVector;
+			return;
+		}
+		// Size() de un vector enorme puede ser infinito: entonces el factor es 0 y queda quieto.
+		const double Speed = VelocityCmS.Size();
+		State.VelocityCmS = Speed > MaxSetSpeedCmS ? VelocityCmS * (MaxSetSpeedCmS / Speed) : VelocityCmS;
 	}
 
 	/**
