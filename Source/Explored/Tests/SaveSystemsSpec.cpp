@@ -498,6 +498,22 @@ void FSaveSystemsSpec::Define()
 			SaveBoat(Again, Loaded);
 			TestEqual(TEXT("Mismo texto"), Canonical(Again), Canonical(Ar));
 			TestEqual(TEXT("Tipo"), Loaded.Type, EBoatType::Outrigger);
+			TestFalse(TEXT("Sin amarre"), Loaded.bMoored);
+		});
+
+		It("conserva el amarre de una balsa", [this]()
+		{
+			FBoatSaveData Boat;
+			Boat.bMoored = true;
+			Boat.MooringAnchorCm = FVector2D(1234.5, -678.0);
+			Boat.MooringLengthCm = 350.0f;
+			FSaveArchive Ar;
+			SaveBoat(Ar, Boat);
+			FBoatSaveData Loaded;
+			LoadBoat(ThroughText(Ar), Loaded);
+			TestTrue(TEXT("Amarrada"), Loaded.bMoored);
+			TestTrue(TEXT("Poste"), Loaded.MooringAnchorCm == FVector2D(1234.5, -678.0));
+			TestEqual(TEXT("Cabo"), Loaded.MooringLengthCm, 350.0f);
 		});
 
 		It("conserva trampas, legendarias, pozas y zonas", [this]()
