@@ -25,6 +25,7 @@ Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
 Tests/OceanCurrentsSpec.cpp
+Tests/RainCatchModelSpec.cpp
 Tests/RuinsSpec.cpp
 Tests/SaveArchiveSpec.cpp
 Tests/SaveSlotsSpec.cpp
