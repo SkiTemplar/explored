@@ -440,6 +440,11 @@ void FClimbModelSpec::Define()
 			const FClimbStep Free = Model.Tick(Up(), 10.0f);
 			TestEqual(TEXT("3 m más por encima de la cuerda"), Free.HeightM, 7.0f, 1e-5f);
 			TestTrue(TEXT("Por encima ya cuesta"), Free.EnergyDelta < 0.0f);
+			Model.Tick(Down(), 10.0f);
+			TestEqual(TEXT("Baja hasta el final de la cuerda"), Model.GetHeightM(), 4.0f, 1e-5f);
+			const FClimbStep RopeDown = Model.Tick(Down(), 1.0f);
+			TestEqual(TEXT("Y por la cuerda a 1,3 m/s"), RopeDown.HeightM, 4.0f - 1.3f, 1e-5f);
+			TestEqual(TEXT("Gratis también al bajar"), RopeDown.EnergyDelta, 0.0f);
 		});
 
 		It("sin Energía en la cuerda fija no se cae", [this]()

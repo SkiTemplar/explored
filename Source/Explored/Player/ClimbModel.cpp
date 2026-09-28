@@ -240,10 +240,6 @@ FFallResult FClimbModel::Land(ELandingSurface Surface, float ExtraDropM)
 
 float FClimbModel::SpeedMps() const
 {
-	if (OnFixedRope())
-	{
-		return Tuning.FixedRopeSpeedMps;
-	}
 	if (Route.Surface == EClimbSurface::Palm)
 	{
 		return Climber.bHasPalmFoot ? Tuning.PalmFootSpeedMps : Tuning.PalmSpeedMps;
@@ -306,7 +302,7 @@ FClimbStep FClimbModel::Tick(const FClimbInput& Input, float DeltaSeconds)
 	{
 		Target = Route.FixedRopeTopM > 0.0f && Height > Route.FixedRopeTopM + HeightEpsilon ? Route.FixedRopeTopM : 0.0f;
 	}
-	const float Speed = SpeedMps() * Effort;
+	const float Speed = (bRope ? Tuning.FixedRopeSpeedMps : SpeedMps()) * Effort;
 	const float Distance = FMath::Abs(Target - Height);
 	bool bArrives = Speed > 0.0f && Distance <= Speed * DeltaSeconds;
 	float MoveTime = Speed > 0.0f ? (bArrives ? Distance / Speed : DeltaSeconds) : 0.0f;
