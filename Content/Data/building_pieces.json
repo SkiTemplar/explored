@@ -1270,15 +1270,15 @@
       "socket": "terreno",
       "cost": [
         {
-          "item": "palo_recto",
-          "count": 8
-        },
-        {
-          "item": "hoja_palma",
-          "count": 10
+          "item": "bambu_grueso",
+          "count": 6
         },
         {
           "item": "cuerda",
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
           "count": 2
         }
       ],
@@ -1301,12 +1301,16 @@
       "socket": "terreno",
       "cost": [
         {
-          "item": "tronco_pequeno",
-          "count": 8
+          "item": "bambu_grueso",
+          "count": 6
         },
         {
           "item": "cuerda",
-          "count": 3
+          "count": 4
+        },
+        {
+          "item": "madera_dura",
+          "count": 2
         }
       ],
       "tools": [
@@ -1328,16 +1332,16 @@
       "socket": "terreno",
       "cost": [
         {
-          "item": "tronco_pequeno",
+          "item": "bambu_grueso",
           "count": 6
         },
         {
-          "item": "estaca",
-          "count": 8
+          "item": "cuerda",
+          "count": 4
         },
         {
-          "item": "cuerda",
-          "count": 3
+          "item": "madera_dura",
+          "count": 2
         }
       ],
       "tools": [
