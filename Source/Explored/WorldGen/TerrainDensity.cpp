@@ -108,18 +108,21 @@ namespace
 
 namespace
 {
-	// --- Macizo kárstico (isla Mesa): forma base + erosión hidráulica/térmica -----------
+	// --- Relieve erosionado por isla: forma base + erosión hidráulica/térmica -----------
 	//
-	// El estilo de referencia es El Nido / bahía de Ha Long: un macizo de caliza con
-	// cresta muy irregular (varias cumbres, nunca una meseta plana), laderas empinadas
-	// cubiertas de selva y paredes casi verticales solo en algunos tramos. La forma base
-	// de abajo solo coloca esas cumbres de forma determinista por semilla; el tallado de
-	// barrancos, taludes de derrubios y canales lo hace después FTerrainErosionModel.
+	// Varias islas (el macizo kárstico de La Meseta y los canales del Manglar) parten de una
+	// forma base determinista por semilla y se tallan una sola vez, al construir la isla, con
+	// el mismo FTerrainErosionModel que ya se usaba solo para La Meseta. La hidráulica traza
+	// una red de drenaje con gradiente real (gotas que fluyen cuesta abajo, se concentran en
+	// cauces y depositan sedimento al perder pendiente cerca de la costa) y la térmica limita
+	// las pendientes según el "talud de reposo" del material: alto para caliza (paredes casi
+	// verticales), bajo para barro de manglar (orillas tendidas, valles en V/U que se ensanchan).
 
-	/** Resolución de la rejilla de erosión (celdas por lado). */
-	constexpr int32 KarstGridResolution = 420;
+	/** Resolución de la rejilla de erosión (celdas por lado); igual para todas las islas
+	 * erosionadas para poder compartir la caché y el bilineal de muestreo. */
+	constexpr int32 ErosionGridResolution = 420;
 	/** Semiancho, en radios de isla, de la zona Q que cubre la rejilla. */
-	constexpr float KarstQExtent = 1.3f;
+	constexpr float ErosionQExtent = 1.3f;
 
 	/** Perfil base (antes de erosionar) del macizo: cresta irregular con 2-4 cumbres y
 	 * espolones deterministas por semilla, sin mesetas ni escalones repetidos. Devuelve
@@ -148,14 +151,78 @@ namespace
 		return Rise * (0.4f + 0.35f * Ridged + 0.55f * PeakBoost);
 	}
 
-	/** Erosiona (una vez por semilla de isla) y devuelve la rejilla de alturas del macizo
-	 * kárstico, en coordenadas Q locales normalizadas por el radio. Comparte el resultado
-	 * entre todas las instancias de FTerrainDensity construidas con la misma semilla de
-	 * isla: cada construcción independiente de la misma isla (subsistemas de cartografía,
-	 * ruinas, cámara de capturas...) paga el coste una sola vez por proceso. Medido: unos
-	 * 0,35 s en una rejilla de 420x420 en Development x64 (ver Tools/HostTests).
+	/** Perfil base (antes de erosionar) de los canales del Manglar: un llano bajo con relieve
+	 * ondulado a tres escalas (nunca una meseta perfectamente plana), para que la erosión
+	 * hidráulica tenga pendiente real de la que partir y trace una red de drenaje con
+	 * gradiente hacia la costa en vez del corte a profundidad constante de antes. */
+	float MangroveBaseShape(const FExploredNoise& N, float Qx, float Qy)
+	{
+		const float R = FMath::Sqrt(Qx * Qx + Qy * Qy);
+		const float U = FMath::Max(0.0f, 1.0f - R);
+		// Relieve a tres escalas, con longitud de onda de unas pocas decenas de metros.
+		// FExploredNoise repite cada ~1 unidad de su argumento, así que el multiplicador que da
+		// una longitud de onda concreta es Radio/λ, no 2π/λ como en una onda seno: con los
+		// multiplicadores "por radio de isla" del macizo kárstico (pensados para 1-2 crestas
+		// cruzando la isla entera) todo el relieve medía unos pocos metros de longitud de onda
+		// y se promediaba a "plano" en cualquier ventana de paisaje de decenas de metros (visto
+		// con Tools/HostTests/tools/TerrainDiagnostics.cpp: la varianza de paisaje no subía
+		// aunque se subiera la amplitud). Lomas de ~60 m, montículos de ~25 m y un rizado de
+		// ~10 m; la amplitud (22, muy por encima de lo que parece "razonable" a ojo) compensa
+		// que la erosión térmica se come buena parte del relieve de entrada.
+		const float Relief = 0.5f * N.Fbm2D(Qx * 9.0f, Qy * 9.0f, 3)
+			+ 0.35f * N.Fbm2D(Qx * 21.0f + 30.0f, Qy * 21.0f, 4)
+			+ 0.15f * N.Fbm2D(Qx * 53.0f - 70.0f, Qy * 53.0f, 3);
+		return 0.4f + 4.2f * SmoothStep(0.0f, 0.75f, U) + 22.0f * Relief * SmoothStep(0.0f, 0.2f, U);
+	}
+
+	/** Parámetros de erosión por arquetipo: el talud de reposo y la capacidad de sedimento
+	 * cambian con el material (caliza casi vertical, barro de manglar muy tendido). */
+	FErosionParams ErosionParamsFor(const FIslandDesc& Island)
+	{
+		FErosionParams Params;
+		Params.Seed = Island.Seed;
+		Params.CellSizeMeters = (2.0f * ErosionQExtent * Island.Radius) / ErosionGridResolution;
+		switch (Island.Archetype)
+		{
+		case EIslandArchetype::Mesa:
+			Params.DropletCount = 20000;
+			Params.MaxDropletLifetime = 32;
+			Params.ErosionRadius = 3;
+			Params.ThermalIterations = 60;
+			Params.TalusAngleTangent = 0.85f; // Caliza: laderas empinadas, no un talud arenoso.
+			Params.ThermalTransferRate = 0.5f;
+			break;
+		case EIslandArchetype::Mangrove:
+			// El relieve de partida es de pocos metros (no las decenas del macizo kárstico):
+			// con los mismos parámetros que Mesa la hidráulica y la térmica aplanan casi todo
+			// el terreno de fondo (les sobra material que mover) y solo dejan los cauces. Menos
+			// gotas y vida más corta bastan para tallar un cauce de un par de metros sin
+			// planchar las lomas y montículos de alrededor.
+			Params.DropletCount = 5000;
+			Params.MaxDropletLifetime = 18;
+			Params.ErosionRadius = 2;
+			Params.SedimentCapacityFactor = 2.2f;
+			Params.ErodeSpeed = 0.25f;
+			Params.DepositSpeed = 0.4f;
+			Params.ThermalIterations = 4;
+			Params.TalusAngleTangent = 0.7f; // Barro/tierra blanda: orillas tendidas, no un talud rocoso.
+			Params.ThermalTransferRate = 0.35f;
+			break;
+		default:
+			break;
+		}
+		return Params;
+	}
+
+	/** Erosiona (una vez por semilla de isla) y devuelve la rejilla de alturas de la isla, en
+	 * coordenadas Q locales normalizadas por el radio. Comparte el resultado entre todas las
+	 * instancias de FTerrainDensity construidas con la misma semilla de isla: cada
+	 * construcción independiente de la misma isla (subsistemas de cartografía, ruinas, cámara
+	 * de capturas...) paga el coste una sola vez por proceso. Medido: unos 0,35 s en una
+	 * rejilla de 420x420 en Development x64 (ver Tools/HostTests).
 	 */
-	TSharedPtr<const FErosionHeightGrid> GetOrBuildKarstGrid(const FIslandDesc& Island)
+	TSharedPtr<const FErosionHeightGrid> GetOrBuildErodedGrid(const FIslandDesc& Island,
+		TFunctionRef<float(const FExploredNoise&, float, float)> BaseShape)
 	{
 		static FCriticalSection Mutex;
 		static TMap<uint32, TSharedPtr<const FErosionHeightGrid>> Cache;
@@ -167,44 +234,35 @@ namespace
 		}
 
 		TSharedPtr<FErosionHeightGrid> Grid = MakeShared<FErosionHeightGrid>();
-		Grid->Init(KarstGridResolution, KarstGridResolution, 0.0f);
+		Grid->Init(ErosionGridResolution, ErosionGridResolution, 0.0f);
 		const FExploredNoise N(Island.Seed);
-		const float Step = (2.0f * KarstQExtent) / (KarstGridResolution - 1);
-		for (int32 Gy = 0; Gy < KarstGridResolution; ++Gy)
+		const float Step = (2.0f * ErosionQExtent) / (ErosionGridResolution - 1);
+		for (int32 Gy = 0; Gy < ErosionGridResolution; ++Gy)
 		{
-			for (int32 Gx = 0; Gx < KarstGridResolution; ++Gx)
+			for (int32 Gx = 0; Gx < ErosionGridResolution; ++Gx)
 			{
-				const float Qx = -KarstQExtent + Gx * Step;
-				const float Qy = -KarstQExtent + Gy * Step;
-				Grid->At(Gx, Gy) = KarstMassifShape(Island.Seed, N, Qx, Qy) * Island.MaxHeight;
+				const float Qx = -ErosionQExtent + Gx * Step;
+				const float Qy = -ErosionQExtent + Gy * Step;
+				Grid->At(Gx, Gy) = BaseShape(N, Qx, Qy);
 			}
 		}
 
-		FErosionParams Params;
-		Params.Seed = Island.Seed;
-		Params.CellSizeMeters = (2.0f * KarstQExtent * Island.Radius) / KarstGridResolution;
-		Params.DropletCount = 20000;
-		Params.MaxDropletLifetime = 32;
-		Params.ErosionRadius = 3;
-		Params.ThermalIterations = 60;
-		Params.TalusAngleTangent = 0.85f; // Caliza: laderas empinadas, no un talud arenoso.
-		Params.ThermalTransferRate = 0.5f;
-		FTerrainErosionModel::Erode(*Grid, Params);
+		FTerrainErosionModel::Erode(*Grid, ErosionParamsFor(Island));
 
 		TSharedPtr<const FErosionHeightGrid> Result = Grid;
 		Cache.Add(Island.Seed, Result);
 		return Result;
 	}
 
-	/** Altura del macizo ya erosionado en Q local (bilineal); 0 fuera de la rejilla. */
-	float SampleKarstGrid(const FErosionHeightGrid& Grid, float Qx, float Qy)
+	/** Altura de la rejilla erosionada en Q local (bilineal); 0 fuera de la rejilla. */
+	float SampleErodedGrid(const FErosionHeightGrid& Grid, float Qx, float Qy)
 	{
-		if (FMath::Abs(Qx) >= KarstQExtent || FMath::Abs(Qy) >= KarstQExtent)
+		if (FMath::Abs(Qx) >= ErosionQExtent || FMath::Abs(Qy) >= ErosionQExtent)
 		{
 			return 0.0f;
 		}
-		const float Step = (2.0f * KarstQExtent) / (KarstGridResolution - 1);
-		return Grid.Sample((Qx + KarstQExtent) / Step, (Qy + KarstQExtent) / Step);
+		const float Step = (2.0f * ErosionQExtent) / (ErosionGridResolution - 1);
+		return Grid.Sample((Qx + ErosionQExtent) / Step, (Qy + ErosionQExtent) / Step);
 	}
 }
 
@@ -217,7 +275,14 @@ FTerrainDensity::FTerrainDensity(const FArchipelagoLayout& InLayout)
 	BuildCaves();
 	if (const FIslandDesc* Karst = Layout.FindIsland(EIslandArchetype::Mesa))
 	{
-		KarstGrid = GetOrBuildKarstGrid(*Karst);
+		KarstGrid = GetOrBuildErodedGrid(*Karst, [Seed = Karst->Seed, MaxHeight = Karst->MaxHeight](const FExploredNoise& N, float Qx, float Qy)
+		{
+			return KarstMassifShape(Seed, N, Qx, Qy) * MaxHeight;
+		});
+	}
+	if (const FIslandDesc* Mangrove = Layout.FindIsland(EIslandArchetype::Mangrove))
+	{
+		MangroveGrid = GetOrBuildErodedGrid(*Mangrove, &MangroveBaseShape);
 	}
 }
 
@@ -312,20 +377,22 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	case EIslandArchetype::Mesa:
 	{
 		// Macizo kárstico (El Nido / Ha Long): la forma viene de una rejilla erosionada por
-		// FTerrainErosionModel (ver GetOrBuildKarstGrid más arriba), no de ruido evaluado al
+		// FTerrainErosionModel (ver GetOrBuildErodedGrid más arriba), no de ruido evaluado al
 		// vuelo. Si por lo que sea no hay rejilla (no debería pasar: se construye para toda
 		// isla Mesa), cae a un macizo sin erosionar en vez de dejar un agujero en el mundo.
-		const float Eroded = KarstGrid ? SampleKarstGrid(*KarstGrid, Q.X, Q.Y) : KarstMassifShape(Island.Seed, N, Q.X, Q.Y) * Hmax;
+		const float Eroded = KarstGrid ? SampleErodedGrid(*KarstGrid, Q.X, Q.Y) : KarstMassifShape(Island.Seed, N, Q.X, Q.Y) * Hmax;
 		Land = 1.8f * SmoothStep(-0.02f, 0.06f, U) + Eroded;
 		break;
 	}
 	case EIslandArchetype::Mangrove:
 	{
-		Land = 0.4f + 4.5f * SmoothStep(0.0f, 0.7f, U) + 1.2f * N.Fbm2D(Q.X * 6.0f, Q.Y * 6.0f, 4);
-		// Canales sinuosos por debajo del nivel del mar.
-		const float Channel = FMath::Abs(N.Fbm2D(Q.X * 3.5f + 40.0f, Q.Y * 3.5f, 4));
-		const float ChannelMask = 1.0f - SmoothStep(0.03f, 0.08f, Channel);
-		Land = FMath::Lerp(Land, -1.6f, ChannelMask * SmoothStep(0.0f, 0.15f, U));
+		// Llano de manglar: la forma (relieve bajo + cauces) viene de una rejilla erosionada
+		// por FTerrainErosionModel (ver GetOrBuildErodedGrid), igual que el macizo kárstico
+		// pero con un talud de reposo mucho más bajo (barro, no caliza). Antes esto era un
+		// domo casi plano con un corte a -1,6 m constante allí donde un ruido superaba un
+		// umbral: cauces sin gradiente y todos a la misma profundidad. La erosión da cauces
+		// que bajan de verdad hacia la costa, con anchura y profundidad variables.
+		Land = MangroveGrid ? SampleErodedGrid(*MangroveGrid, Q.X, Q.Y) : MangroveBaseShape(N, Q.X, Q.Y);
 		break;
 	}
 	case EIslandArchetype::WhiteSands:

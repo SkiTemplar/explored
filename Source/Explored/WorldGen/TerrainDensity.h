@@ -86,4 +86,9 @@ private:
 	 * es const y se fija en el constructor, así que no rompe la inmutabilidad de la clase.
 	 */
 	TSharedPtr<const FErosionHeightGrid> KarstGrid;
+
+	/** Igual que KarstGrid pero para los cauces del Manglar: rejilla de alturas erosionada
+	 * (drenaje con gradiente real hacia la costa) en vez del corte a profundidad constante
+	 * de antes. Null si el layout no tiene esa isla. */
+	TSharedPtr<const FErosionHeightGrid> MangroveGrid;
 };

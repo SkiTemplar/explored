@@ -1,0 +1,84 @@
+=== Diagnostico de terreno (semilla 20260926, paso 6.0 m) ===
+Islas: 7
+  [0] Smoke      centro=(1782,2114) radio=636 (tropical/playa)
+  [1] Emerald    centro=(256,1375) radio=715 (tropical/playa)
+  [2] Mesa       centro=(1415,8) radio=627 (rocosa)
+  [3] Landing    centro=(-88,-17) radio=536 (tropical/playa)
+  [4] Mangrove   centro=(308,-1500) radio=531 (tropical/playa)
+  [5] Teeth      centro=(-747,-991) radio=395 (rocosa)
+  [6] WhiteSands centro=(-1341,-1949) radio=500 (tropical/playa)
+
+Volcado de alturas: terrain_pristine_baseline.bin (1001x1001 celdas)
+
+--- Bultos submarinos aislados (por encima de -3.0 m, sin isla asociada) ---
+Componentes someras totales: 422 | Bultos aislados: 129
+  # 0 centroide=(924,-2084) celdas=412 area=14832m2 altura=[-2.99,2.52]
+  # 1 centroide=(512,-605) celdas=362 area=13032m2 altura=[-2.99,2.68]
+  # 2 centroide=(-2116,-1637) celdas=342 area=12312m2 altura=[-3.00,1.67]
+  # 3 centroide=(-167,-2218) celdas=325 area=11700m2 altura=[-2.93,2.03]
+  # 4 centroide=(2376,1295) celdas=272 area=9792m2 altura=[-2.94,1.82]
+  # 5 centroide=(-981,-38) celdas=243 area=8748m2 altura=[-2.97,1.53]
+  # 6 centroide=(-628,-2355) celdas=187 area=6732m2 altura=[-2.87,1.67]
+  # 7 centroide=(472,-2282) celdas=146 area=5256m2 altura=[-2.82,2.05]
+  # 8 centroide=(992,-989) celdas=128 area=4608m2 altura=[-3.00,16.54]
+  # 9 centroide=(-484,-702) celdas=122 area=4392m2 altura=[-3.00,-2.65]
+  #10 centroide=(1327,1007) celdas=88 area=3168m2 altura=[-2.97,2.56]
+  #11 centroide=(1466,-1003) celdas=79 area=2844m2 altura=[-2.79,14.36]
+  #12 centroide=(-949,-1312) celdas=65 area=2340m2 altura=[-3.00,-2.61]
+  #13 centroide=(-1066,-786) celdas=63 area=2268m2 altura=[-3.00,-2.65]
+  #14 centroide=(-1014,-1004) celdas=57 area=2052m2 altura=[-2.99,-2.59]
+  #15 centroide=(-587,-593) celdas=55 area=1980m2 altura=[-3.00,-2.78]
+  #16 centroide=(-576,-984) celdas=54 area=1944m2 altura=[-2.98,-2.72]
+  #17 centroide=(-14,-1179) celdas=47 area=1692m2 altura=[-2.97,-2.44]
+  #18 centroide=(733,842) celdas=46 area=1656m2 altura=[-2.99,-2.42]
+  #19 centroide=(1090,-1610) celdas=46 area=1656m2 altura=[-2.84,2.43]
+
+--- Planitud (varianza local de altura) por isla ---
+  [0] Smoke      fina(18m)=17.75470 m2  paisaje(78m)=271.47568 m2
+  [1] Emerald    fina(18m)=8.13938 m2  paisaje(78m)=108.92161 m2
+  [2] Mesa       fina(18m)=11.36150 m2  paisaje(78m)=155.93745 m2
+  [3] Landing    fina(18m)=0.66722 m2  paisaje(78m)=9.32906 m2
+  [4] Mangrove   fina(18m)=1.49414 m2  paisaje(78m)=3.98651 m2
+  [5] Teeth      fina(18m)=90.74705 m2  paisaje(78m)=569.24084 m2
+  [6] WhiteSands fina(18m)=1.22420 m2  paisaje(78m)=6.40357 m2
+
+--- Perfil de cauces (celdas de tierra por debajo del maximo local en >0.5m) ---
+[0] Smoke: N=29880 min=-2.499 max=325.934 media=90.942 desviacion=85.0516
+[1] Emerald: N=41608 min=-2.498 max=181.123 media=43.479 desviacion=46.3944
+[2] Mesa: N=22613 min=-2.500 max=218.269 media=44.104 desviacion=51.0435
+[3] Landing: N=17018 min=-2.499 max=41.838 media=8.038 desviacion=9.9825
+[4] Mangrove: N=12220 min=-2.496 max=5.125 media=0.287 desviacion=1.9877
+[5] Teeth: N=3501 min=-2.497 max=93.878 media=20.912 desviacion=26.0008
+[6] WhiteSands: N=9430 min=-2.499 max=7.635 media=1.337 desviacion=2.6543
+
+--- Histograma de profundidad del fondo marino (celdas con altura < 0) ---
+  [ -1,  0) m: 5659 celdas
+  [ -2, -1) m: 29409 celdas
+  [ -3, -2) m: 11188 celdas
+  [ -4, -3) m: 23205 celdas
+  [ -5, -4) m: 18703 celdas
+  [ -6, -5) m: 16509 celdas
+  [ -7, -6) m: 15794 celdas
+  [ -8, -7) m: 8547 celdas
+  [ -9, -8) m: 6550 celdas
+  [-10, -9) m: 5905 celdas
+  [-11,-10) m: 5094 celdas
+  [-12,-11) m: 4747 celdas
+  [-13,-12) m: 4396 celdas
+  [-14,-13) m: 4292 celdas
+  [-15,-14) m: 4344 celdas
+  [-16,-15) m: 4018 celdas
+  [-17,-16) m: 3852 celdas
+  [-18,-17) m: 3802 celdas
+  [-19,-18) m: 3655 celdas
+  [-20,-19) m: 3650 celdas
+  [-21,-20) m: 3534 celdas
+  [-22,-21) m: 4721 celdas
+  [-23,-22) m: 2560 celdas
+  [-24,-23) m: 2614 celdas
+  [-25,-24) m: 2519 celdas
+  [-26,-25) m: 2562 celdas
+  [-27,-26) m: 28768 celdas
+  [-28,-27) m: 6008 celdas
+  [-29,-28) m: 5154 celdas
+  [-30,-29) m: 631334 celdas
