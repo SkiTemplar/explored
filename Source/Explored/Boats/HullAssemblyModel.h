@@ -5,7 +5,7 @@
 #include "Boats/BoatModel.h"
 
 /**
- * Piezas con las que el jugador arma un casco (GDD v2 §3.13). No hay «construir
+ * Piezas con las que el jugador arma un casco (GDD v2 §3.14). No hay «construir
  * barco»: cada pieza aporta masa, volumen y posición, y el modelo hidrostático
  * decide si lo armado flota, escora, vuelca o se hunde.
  */
@@ -174,7 +174,7 @@ struct EXPLORED_API FHullPerformance
 };
 
 /**
- * Modelo puro del casco por piezas (GDD v2 §3.13). Cada pieza es una caja
+ * Modelo puro del casco por piezas (GDD v2 §3.14). Cada pieza es una caja
  * alineada con los ejes del casco con su masa y su volumen; las cargas son
  * masas puntuales.
  *

@@ -6,7 +6,7 @@
 #include "Boats/HullAssemblyModel.h"
 
 /**
- * Con qué se unen dos piezas de la balsa (GDD v2 §3.14). La unión es lo que se
+ * Con qué se unen dos piezas de la balsa (GDD v2 §3.17). La unión es lo que se
  * rompe: la madera aguanta, lo que cede es la atadura o los clavos.
  */
 enum class ERaftJointKind : uint8
@@ -150,7 +150,7 @@ struct EXPLORED_API FRaftPushReport
 };
 
 /**
- * Modelo puro del astillero de balsas (GDD v2 §3.14): uniones entre piezas,
+ * Modelo puro del astillero de balsas (GDD v2 §3.17): uniones entre piezas,
  * botadura desde tierra (arrastre, rodillos, rampa) y daño por roce y golpes.
  *
  * - La forma y la flotación son de FHullAssemblyModel (lo lleva dentro); la

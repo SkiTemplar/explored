@@ -824,7 +824,7 @@ namespace ExploredSaveStates
 		Ar.Write(TEXT("cargoKg"), Boat.CargoKg);
 		Ar.Write(TEXT("waterInHullKg"), Boat.WaterInHullKg);
 		Ar.Write(TEXT("sailRaised"), Boat.bSailRaised);
-		// Amarre (astillero de balsas, GDD v2 §3.14): solo si lo hay, para no cambiar las partidas antiguas.
+		// Amarre (astillero de balsas, GDD v2 §3.17): solo si lo hay, para no cambiar las partidas antiguas.
 		if (Boat.bMoored)
 		{
 			Ar.Write(TEXT("moored"), Boat.bMoored);
