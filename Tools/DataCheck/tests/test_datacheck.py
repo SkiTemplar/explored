@@ -397,7 +397,14 @@ def test_detecta_logro_del_acceso_anticipado_con_estadistica_de_f2(ds: DataSet) 
     del achievement(ds, "primera_pareja")["phase"]
     errors = errors_of(ds)
     assert any_error(errors, "primera_pareja", "livestock_species_raised", "F2")
-    assert any_error(errors, "31 logros del acceso anticipado")
+
+
+def test_admite_logros_del_acceso_anticipado_por_encima_de_treinta(ds: DataSet) -> None:
+    # Biblia 07 §2: hay logros [AA] además de los 30 del GDD §16 (p. ej. primera_canoa).
+    items = ds.data["achievements.json"]["achievements"]
+    extra = dict(achievement(ds, "cartografo"), id="logro_aa_extra")
+    items.append(extra)
+    assert not any_error(errors_of(ds), "logros del acceso anticipado")
 
 
 def test_detecta_logro_duplicado(ds: DataSet) -> None:

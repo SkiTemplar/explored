@@ -1,7 +1,7 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: 30 logros del acceso anticipado más los de fase 2 y 3
+tipo compatible) y añade las de diseño: al menos 30 logros del acceso anticipado más los de fase 2 y 3
 (marcados con ``phase``, biblia 07 §2) sin pasar de 60, ids ASCII, textos en ES y EN, los
 ejemplos del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
@@ -185,10 +185,11 @@ def check_achievements(ds, r) -> None:
 
     # Logros.
     achievements = doc.get("achievements", [])
-    # Los 30 del GDD §16 no llevan fase posterior; los de F2/F3 se añaden encima (biblia 07 §2).
+    # Los 30 del GDD §16 son el mínimo del acceso anticipado; la biblia 07 §2 añade más logros
+    # [AA] (p. ej. primera_canoa) y los de F2/F3 encima.
     base = [a for a in achievements if a.get("phase", "AA") not in FUTURE_PHASES]
-    if len(base) != ACHIEVEMENT_COUNT:
-        r.error(f"achievements.json: {len(base)} logros del acceso anticipado; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    if len(base) < ACHIEVEMENT_COUNT:
+        r.error(f"achievements.json: {len(base)} logros del acceso anticipado; el GDD §16 pide al menos {ACHIEVEMENT_COUNT}")
     if len(achievements) > ACHIEVEMENT_MAX:
         r.error(f"achievements.json: {len(achievements)} logros; la biblia 07 §2 no pasa de {ACHIEVEMENT_MAX}")
     seen: set[str] = set()
