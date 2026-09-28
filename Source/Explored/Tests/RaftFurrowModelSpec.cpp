@@ -343,8 +343,46 @@ void FRaftFurrowModelSpec::Define()
 			// La roca acaba en S = 4 m: con la popa en la roca (hasta S = 3,99 m) la huella no pisa arena
 			// antes de 2,5 m; en la arena el casco abarca de S − 1,5 m a S + 1,5 m.
 			TestEqual(TEXT("sin surco al principio de la roca"), Sand.DeltaMm(FIntPoint(4, 0)), 0);
+			// Con el centro ya en la arena (S > 4 m) la popa sigue sobre la roca: la roca no se cava.
+			for (int32 X = 12; X <= 15; ++X)
+			{
+				TestEqual(*FString::Printf(TEXT("sin surco en la roca bajo la popa (columna %d)"), X), Sand.DeltaMm(FIntPoint(X, 0)), 0);
+			}
 			TestTrue(TEXT("surco en la arena"), Sand.DeltaMm(FIntPoint(28, 0)) < 0);
 			TestEqual(TEXT("masa"), Sand.TotalMass(), static_cast<int64>(0));
+		});
+
+		It("la proa que ya pisa la rampa no deja marca aunque el centro siga en la arena", [this, Flat]()
+		{
+			FRaftYardModel Yard = SixLogRaft();
+			FLaunchPath P = Path(ELaunchSurface::Sand, 400.0f);
+			FLaunchSegment Ramp;
+			Ramp.Surface = ELaunchSurface::PlankRamp;
+			Ramp.LengthCm = 1600.0f;
+			P.Segments.Add(Ramp);
+			Yard.PlaceOnPath(P, 200.0f);
+			FSandModel Sand;
+			FRaftFurrowModel::Drag(Yard, 200.0f, 380.0f, DryTide, false, Sand, Flat);
+			TestTrue(TEXT("surco en la arena"), Sand.DeltaMm(FIntPoint(8, 0)) < 0);
+			for (int32 X = 17; X <= 21; ++X)
+			{
+				TestEqual(*FString::Printf(TEXT("sin surco bajo la rampa (columna %d)"), X), Sand.DeltaMm(FIntPoint(X, 0)), 0);
+			}
+			TestEqual(TEXT("masa"), Sand.TotalMass(), static_cast<int64>(0));
+		});
+
+		It("la arena mojada del camino se hunde como la de bajo la pleamar", [this, Flat]()
+		{
+			FRaftYardModel DryYard = SixLogRaft();
+			DryYard.PlaceOnPath(Path(ELaunchSurface::Sand, 2000.0f), 200.0f);
+			FSandModel Dry;
+			const FRaftFurrowResult R = FRaftFurrowModel::Drag(DryYard, 200.0f, 600.0f, DryTide, false, Dry, Flat);
+			FRaftYardModel WetYard = SixLogRaft();
+			WetYard.PlaceOnPath(Path(ELaunchSurface::WetSand, 2000.0f), 200.0f);
+			FSandModel Wet;
+			FRaftFurrowModel::Drag(WetYard, 200.0f, 600.0f, DryTide, false, Wet, Flat);
+			TestEqual(TEXT("seca"), Dry.DeltaMm(FIntPoint(16, 0)), -R.DrySinkMm);
+			TestEqual(TEXT("mojada"), Wet.DeltaMm(FIntPoint(16, 0)), -R.WetSinkMm);
 		});
 
 		It("con entradas degeneradas no toca nada ni se cuelga", [this, Flat]()
@@ -373,6 +411,13 @@ void FRaftFurrowModelSpec::Define()
 			const FRaftFurrowResult R = FRaftFurrowModel::Drag(Big, 0.0f, 1.0e6f, DryTide, false, Long, Flat);
 			TestTrue(TEXT("acaba"), R.FootprintColumns > 0);
 			TestEqual(TEXT("masa"), Long.TotalMass(), static_cast<int64>(0));
+			// Una pieza desmesurada no hace recorrer millones de columnas por muestra.
+			FSandModel Huge;
+			FRaftYardModel Giant = SixLogRaft();
+			Giant.AddPiece(Piece(EHullPieceType::Plank, FVector(0.0, 0.0, 0.0), FVector(1.0e7, 1.0e7, 4.0)));
+			Giant.PlaceOnPath(Path(ELaunchSurface::Sand, 2000.0f), 200.0f);
+			FRaftFurrowModel::Drag(Giant, 200.0f, 600.0f, DryTide, false, Huge, Flat);
+			TestEqual(TEXT("masa con pieza desmesurada"), Huge.TotalMass(), static_cast<int64>(0));
 		});
 	});
 

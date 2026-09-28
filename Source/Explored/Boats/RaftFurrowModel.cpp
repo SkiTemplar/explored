@@ -38,6 +38,16 @@ namespace RaftFurrowDetail
 	{
 		double MinX, MaxX, MinY, MaxY;
 	};
+
+	/** Columna de la huella: lado respecto al eje (cm) y si la superficie de debajo es arena mojada. */
+	struct FFootCell
+	{
+		double LY = 0.0;
+		bool bWetSurface = false;
+	};
+
+	/** Media pieza más grande que se marca (cm): lo mismo que FRaftYardModel deja guardar (50 m de lado). */
+	constexpr double MaxFootHalfCm = 2500.0;
 }
 
 int32 FRaftFurrowModel::SinkMm(float PressureKPa, bool bWet)
@@ -81,8 +91,9 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 		}
 		FVector Half = FHullAssemblyModel::EffectiveSizeCm(Pieces[I]) * 0.5;
 		const FVector& C = Pieces[I].CenterCm;
+		// Una pieza desmesurada recorrería millones de columnas por muestra: no se marca.
 		if (!IsFiniteValue(C.X) || !IsFiniteValue(C.Y) || !IsFiniteValue(Half.X) || !IsFiniteValue(Half.Y) || Half.X <= 0.0
-			|| Half.Y <= 0.0)
+			|| Half.Y <= 0.0 || Half.X > MaxFootHalfCm || Half.Y > MaxFootHalfCm)
 		{
 			continue;
 		}
@@ -123,16 +134,16 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 	const double S1 = FMath::Clamp(static_cast<double>(STo), 0.0, Total);
 	const int32 Steps = FMath::Clamp(FMath::CeilToInt(static_cast<float>(FMath::Abs(S1 - S0) / (Cell * 50.0))), 1, MaxStations);
 	// Columna → coordenada lateral (cm) respecto al eje del camino.
-	TMap<FIntPoint, double> Footprint;
+	TMap<FIntPoint, FFootCell> Footprint;
+	// Superficie bajo un punto del camino; pasado el final del camino, arena.
+	const auto SurfaceAt = [&Path](double S)
+	{
+		const int32 Segment = Path.SegmentIndexAt(static_cast<float>(S));
+		return Segment == INDEX_NONE ? ELaunchSurface::Sand : Path.Segments[Segment].Surface;
+	};
 	for (int32 K = 0; K <= Steps; ++K)
 	{
 		const double S = S0 + (S1 - S0) * K / Steps;
-		const int32 Segment = Path.SegmentIndexAt(static_cast<float>(S));
-		const ELaunchSurface Surface = Segment == INDEX_NONE ? ELaunchSurface::Sand : Path.Segments[Segment].Surface;
-		if (!IsSandSurface(Surface))
-		{
-			continue;
-		}
 		const FVector2D Origin = Start + Fwd * (S / 100.0);
 		for (const FFootBox& Box : Boxes)
 		{
@@ -167,7 +178,13 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 					const double LY = FVector2D::DotProduct(P, Right) * 100.0;
 					if (LX >= Box.MinX && LX <= Box.MaxX && LY >= Box.MinY && LY <= Box.MaxY)
 					{
-						Footprint.Add(Column, LY);
+						// La superficie cuenta bajo cada columna, no bajo el centro del casco: con el
+						// centro en la roca y la proa en la arena, la proa marca; al revés, no.
+						const ELaunchSurface Surface = SurfaceAt(S + LX);
+						if (IsSandSurface(Surface))
+						{
+							Footprint.Add(Column, { LY, Surface == ELaunchSurface::WetSand });
+						}
 					}
 				}
 			}
@@ -205,7 +222,8 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 	FSandResult& Moved = Result.Sand;
 	for (const FIntPoint& Column : Columns)
 	{
-		const bool bWet = bRaining || Sand.Height(Column, Base) <= HighTide;
+		const FFootCell& Foot = Footprint.FindChecked(Column);
+		const bool bWet = bRaining || Foot.bWetSurface || Sand.Height(Column, Base) <= HighTide;
 		const int32 Sink = bWet ? Result.WetSinkMm : Result.DrySinkMm;
 		if (Sink == 0 || Sand.IsAnchored(Column))
 		{
@@ -220,7 +238,7 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 		const FIntPoint ToR = Berm(Column, 1.0, StepsR);
 		const FIntPoint ToL = Berm(Column, -1.0, StepsL);
 		// Costado más cercano; a igual distancia, hacia fuera del eje, y en el eje, por paridad.
-		const double LY = Footprint.FindChecked(Column);
+		const double LY = Foot.LY;
 		bool bRightFirst = StepsR != StepsL ? StepsR < StepsL : (LY != 0.0 ? LY > 0.0 : ((Column.X + Column.Y) & 1) == 0);
 		for (int32 Try = 0; Try < 2 && Excess > 0; ++Try)
 		{

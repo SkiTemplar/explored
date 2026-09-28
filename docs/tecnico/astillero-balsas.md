@@ -160,7 +160,7 @@ enlaza el astillero con la arena viva. Reglas y números: GDD v2 §3.17, «Surco
   {
       const FRaftFurrowResult Furrow = FRaftFurrowModel::Drag(Yard, SBefore, Yard.GetCenterS(),
           SandEnv.HighTide, SandEnv.bRaining, SandSubsystem->Model(), SandSubsystem->BaseHeight());
-      SandSubsystem->QueueChanged(Furrow.Sand);   // lo mismo que tras Dig o Pile
+      SandSubsystem->QueueChanged(Furrow.Sand);   // API por hacer: lo mismo que tras Dig o Pile
   }
   ```
 

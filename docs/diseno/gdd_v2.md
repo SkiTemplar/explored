@@ -957,9 +957,10 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
   | Cuerda | −31 % | se rompen a los 9,6 m |
   | Clavos | −16 % | −52 % |
 
-  - **Surco en la arena** (`FRaftFurrowModel`). Arrastrada sin rodillos por arena seca o
-    mojada, la balsa abre un surco con dos cordones a los lados. Sobre rodillos, hierba,
-    roca o la rampa no deja marca.
+  - **Surco en la arena [propuesta, pendiente del director]** (`FRaftFurrowModel`).
+    Arrastrada sin rodillos por arena seca o mojada, la balsa abre un surco con dos
+    cordones a los lados. Sobre rodillos, hierba, roca o la rampa no deja marca; cuenta la
+    superficie que hay debajo de cada parte del casco, no la del centro.
     - Hondo del surco = presión del fondo × 12 mm/kPa en arena seca o × 4 mm/kPa en arena
       húmeda (bajo la pleamar o con lluvia). La presión es el peso que no sostiene el agua
       entre el área en planta de las piezas del fondo. Tope de 60 mm; por debajo de 3 mm
@@ -979,7 +980,9 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
     | Catamarán de 2 troncos (211 kg, 1,32 m²) | 1,6 kPa | 18 mm | 6 mm |
 
     Es el rastro que dice «por aquí se botó una balsa»: dos cordones paralelos hasta el
-    agua que la marea borra en unos días.
+    agua. En la franja intermareal el oleaje lo rellena; por encima de la pleamar no hay
+    nada que lo borre y se queda en el guardado (pendiente del director: si debe borrarse
+    y cómo).
 
 - **En el agua.**
   - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura
