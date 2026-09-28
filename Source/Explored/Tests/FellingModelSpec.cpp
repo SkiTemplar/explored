@@ -348,6 +348,18 @@ void FFellingModelSpec::Define()
 			TestEqual(TEXT("escala 0"), FFellingModel::GrowthScaleAt(Get(TEXT("Palm")), Stump, -100000), 0.0f);
 		});
 
+		It("con minutos extremos guardados no desborda", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			FStumpState Stump;
+			// Antes 100 - INT64_MIN desbordaba a negativo: tocón para siempre.
+			Stump.FelledAtMinute = TNumericLimits<int64>::Min();
+			TestTrue(TEXT("talado hace muchísimo: adulto"), FFellingModel::StageAt(Palm, Stump, 100) == EStumpStage::Mature);
+			TestEqual(TEXT("escala 1"), FFellingModel::GrowthScaleAt(Palm, Stump, 100), 1.0f);
+			Stump.FelledAtMinute = TNumericLimits<int64>::Max();
+			TestTrue(TEXT("talado en el futuro: tocón"), FFellingModel::StageAt(Palm, Stump, TNumericLimits<int64>::Min()) == EStumpStage::Stump);
+		});
+
 		It("no rebrota si el perfil tiene 0 días de rebrote", [this]()
 		{
 			FFellingProfile P = Get(TEXT("Palm"));

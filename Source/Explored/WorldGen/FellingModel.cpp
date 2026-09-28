@@ -325,14 +325,19 @@ EStumpStage FFellingModel::StageAt(const FFellingProfile& Profile, const FStumpS
 	{
 		return EStumpStage::Stump;
 	}
-	const int64 Elapsed = NowMinute - Stump.FelledAtMinute;
-	const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
-	const int64 MatureAt = SproutAt + (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
-	if (Elapsed < SproutAt)
+	// Comparar antes de restar: con FelledAtMinute = INT64_MIN guardado la resta desbordaba.
+	if (NowMinute < Stump.FelledAtMinute)
 	{
 		return EStumpStage::Stump;
 	}
-	return Elapsed < MatureAt ? EStumpStage::Sapling : EStumpStage::Mature;
+	const uint64 Elapsed = (uint64)NowMinute - (uint64)Stump.FelledAtMinute;
+	const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
+	const int64 MatureAt = SproutAt + (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
+	if (Elapsed < (uint64)SproutAt)
+	{
+		return EStumpStage::Stump;
+	}
+	return Elapsed < (uint64)MatureAt ? EStumpStage::Sapling : EStumpStage::Mature;
 }
 
 float FFellingModel::GrowthScaleAt(const FFellingProfile& Profile, const FStumpState& Stump, int64 NowMinute)
