@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Tesoros del pueblo navegante (GDD §7, biblia §10) y muebles del museo de la base. Lo lee URuinsSubsystem y lo valida Tools/DataCheck. Un hueco admite su tamaño y los menores. offsetCm: posición local del hueco en la malla del mueble (centímetros). piece: pieza de building_pieces.json que construye el mueble (null mientras no exista).",
+  "note": "Tesoros del pueblo navegante (GDD §7, biblia §10) y muebles del museo de la base. Lo lee URuinsSubsystem y lo valida Tools/DataCheck. Un hueco admite su tamaño y los menores. offsetCm: posición local del hueco en la malla del mueble (centímetros). piece: pieza de building_pieces.json que construye el mueble (null mientras no exista). treasureRarities: rarezas que forman la colección «tesoros» del museo (biblia 07 §3.2), sin catálogo aparte.",
   "provenances": [
     {
       "id": "marae",
@@ -39,6 +39,10 @@
       "nameEs": "Único",
       "nameEn": "Unique"
     }
+  ],
+  "treasureRarities": [
+    "raro",
+    "unico"
   ],
   "displays": [
     {
@@ -196,7 +200,7 @@
       "id": "anzuelo_nacar",
       "kind": "hook_bone",
       "nameEs": "Anzuelo de nácar",
-      "nameEn": "Mother-of-pearl fish hook",
+      "nameEn": "Mother-of-pearl hook",
       "provenance": "pecio",
       "rarity": "comun",
       "size": "Pequeno",
@@ -275,7 +279,7 @@
     {
       "id": "figura_mira_cielo",
       "kind": "stone_figure",
-      "nameEs": "Figura de basalto que mira al cielo",
+      "nameEs": "Figura de basalto mirando al cielo",
       "nameEn": "Basalt sky-gazer figure",
       "provenance": "ruina_sumergida",
       "rarity": "unico",
@@ -295,7 +299,7 @@
     {
       "id": "carta_oleaje",
       "kind": "stick_chart",
-      "nameEs": "Carta del oleaje de las siete islas",
+      "nameEs": "Carta del oleaje de siete islas",
       "nameEn": "Swell chart of the seven islands",
       "provenance": "pecio",
       "rarity": "unico",

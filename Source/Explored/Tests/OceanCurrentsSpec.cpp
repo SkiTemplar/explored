@@ -39,6 +39,15 @@ void FOceanCurrentsSpec::Define()
 			}
 			TestTrue(TEXT("Más pendiente con temporal"), RoughTiltSum > CalmTiltSum * 2.0f);
 		});
+
+		It("una ola de amplitud cero no da desplazamientos NaN", [this]()
+		{
+			FOceanWaves Waves = FOceanWaves::Make(0.5f);
+			Waves.Waves[1].Amplitude = 0.0f;
+			const FVector D = Waves.Displacement(FVector2D(123.0, -45.0), 3.7f);
+			TestTrue(TEXT("desplazamiento finito"), FMath::IsFinite(D.X) && FMath::IsFinite(D.Y) && FMath::IsFinite(D.Z));
+			TestTrue(TEXT("altura finita"), FMath::IsFinite(Waves.HeightAt(FVector2D(123.0, -45.0), 3.7f)));
+		});
 	});
 
 	Describe("FOceanTide", [this]()

@@ -353,17 +353,69 @@ def achievement(ds: DataSet, aid: str) -> dict:
     return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
 
 
-def test_logros_reales_conservan_los_treinta_del_gdd(real: DataSet) -> None:
-    from datacheck.achievements import LEGACY_IDS, MAX_ACHIEVEMENTS
-    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
-    assert len(LEGACY_IDS) == 30 and LEGACY_IDS <= ids
-    assert len(ids) <= MAX_ACHIEVEMENTS
-    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
+def test_logros_reales_son_los_54_de_la_biblia(real: DataSet) -> None:
+    achs = real.data["achievements.json"]["achievements"]
+    ids = {a["id"] for a in achs}
+    assert len(ids) == len(achs) == 54
+    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa",
+            "banquete_de_mil_cocos", "el_cangrejo_se_lo_llevo", "manazas"} <= ids
+    # Biblia 07 §2.2: dos de los 30 originales pasan a F2 y tres a F3.
+    phase = {a["id"]: a["phase"] for a in achs}
+    assert [i for i in phase if phase[i] == "F2" and i in ("las_siete_islas", "el_mapa_entero")] == ["las_siete_islas", "el_mapa_entero"]
+    assert {i for i in ("limon_zarpa", "naufrago_de_verdad", "sin_mapa") if phase[i] == "F3"} == {"limon_zarpa", "naufrago_de_verdad", "sin_mapa"}
+    assert sum(1 for a in achs if a["phase"] == "AA") == 36
 
 
-def test_detecta_logro_del_gdd_perdido(ds: DataSet) -> None:
-    ds.data["achievements.json"]["achievements"].pop()
-    assert any_error(errors_of(ds), "faltan logros del GDD §16", "sin_mapa")
+def test_detecta_numero_de_logros(ds: DataSet) -> None:
+    achs = ds.data["achievements.json"]["achievements"]
+    del achs[39:]
+    assert any_error(errors_of(ds), "39 logros", "entre 40 y 60")
+    achs.extend(dict(achs[0], id=f"extra_{i}") for i in range(22))
+    assert any_error(errors_of(ds), "61 logros")
+
+
+def test_detecta_fase_rareza_y_alcance_invalidos(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["phase"] = "F4"
+    del achievement(ds, "tierra_firme")["rarity"]
+    achievement(ds, "cartografo")["coopScope"] = "todos"
+    errors = errors_of(ds)
+    assert any_error(errors, "primer_fuego", "phase «F4»")
+    assert any_error(errors, "tierra_firme", "rarity «None»")
+    assert any_error(errors, "cartografo", "coopScope «todos»")
+
+
+def test_detecta_logro_de_aa_que_depende_de_f2(ds: DataSet) -> None:
+    # Una estadística de F2 (la granja) no puede sostener un logro del acceso anticipado.
+    achievement(ds, "huevos_por_docenas")["phase"] = "AA"
+    assert any_error(errors_of(ds), "huevos_por_docenas", "depende de algo de F2")
+
+
+def test_detecta_pieza_futura_en_logro_de_aa(ds: DataSet) -> None:
+    # La empalizada solo existe en el borrador de F2: pedirla desde un logro de AA es error.
+    achievement(ds, "primera_empalizada")["phase"] = "AA"
+    errors = errors_of(ds)
+    assert any_error(errors, "primera_empalizada", "depende de algo de F2")
+    assert any_error(errors, "usa «empalizada», que solo existe en el borrador")
+
+
+def test_piezas_futuras_admitidas_en_building_pieces_built(real_report: Report) -> None:
+    assert not any_error(real_report.errors, "empalizada", "no es un id admitido")
+
+
+def test_detecta_estratos_desincronizados(ds: DataSet) -> None:
+    strata = ds.data["mining.json"]["strata"]
+    strata.append(dict(strata[-1], id="jade"))
+    assert any_error(errors_of(ds), "strata_mined", "mining.json → strata")
+
+
+def test_detecta_tesoro_inexistente(ds: DataSet) -> None:
+    achievement(ds, "juego_de_anzuelos")["condition"]["all"][0]["contains"] = "anzuelo_oro"
+    assert any_error(errors_of(ds), "anzuelo_oro", "no es un id admitido")
+
+
+def test_detecta_estadistica_con_fase_invalida(ds: DataSet) -> None:
+    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "eggs_collected")["phase"] = "F9"
+    assert any_error(errors_of(ds), "eggs_collected", "phase «F9»")
 
 
 def test_detecta_logro_duplicado(ds: DataSet) -> None:
@@ -843,6 +895,65 @@ def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
     assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
 
 
+def test_mineria_lee_estratos_y_herramientas_de_mining_model(real: DataSet) -> None:
+    strata = mining.cpp_strata(real)
+    assert strata and len(strata) == 10
+    assert strata["veta_cobre"] == {"item": "mineral_cobre", "cpp": "Caliza", "hardness": 2, "minToolTier": 2,
+                                    "veinUnits": 10, "respawnDays": 20, "host": "Caliza"}
+    assert strata["azufre"]["minToolTier"] == 0
+    tools = mining.cpp_tools(real)
+    assert tools and len(tools) == 6
+    assert tools["pala_tosca"]["secondsPerHit"] == 1.2
+    assert tools["pico_obsidiana"] == {"tier": 4, "radiusM": 0.5, "secondsPerHit": 1.0, "durability": 30, "fragile": True}
+    assert "tablon_contencion" in mining.cpp_sand_anchor_pieces(real)
+
+
+def test_mineria_herramienta_distinta_del_mining_model(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_tallado")["radiusM"] = 0.6
+    assert any_error(mining_errors(ds), "pico_tallado", "radiusM")
+
+
+def test_mineria_fragilidad_distinta_del_mining_model(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["fragile"]["chance"] = 0.1
+    assert any_error(mining_errors(ds), "pico_obsidiana", "fragile")
+
+
+def test_mineria_veta_distinta_del_mining_model(ds: DataSet) -> None:
+    stratum(ds, "hierro_meteorito")["vein"]["veinUnits"] = 6
+    assert any_error(mining_errors(ds), "hierro_meteorito", "veta")
+
+
+def test_mineria_herramienta_mas_rapida_que_el_minimo_de_red(ds: DataSet) -> None:
+    ds.data["mining.json"]["secondsPerHit"] = 1.25
+    assert any_error(mining_errors(ds), "pico_obsidiana", "mínimo de red")
+
+
+def test_mineria_faltan_la_viga_o_una_pieza_que_sujeta_arena(ds: DataSet) -> None:
+    ds.data["building_pieces.json"]["pieces"] = [
+        p for p in ds.building["pieces"] if p["id"] not in ("viga_apoyo", "tablon_contencion")]
+    errors = mining_errors(ds)
+    assert any_error(errors, "viga_apoyo", "2.7")
+    assert any_error(errors, "tablon_contencion", "sujeta arena")
+def test_mineria_herramientas_espejo_del_cpp(real: DataSet) -> None:
+    cpp = mining.cpp_dig_tools(real)
+    assert cpp and cpp["PalaTosca"] == (1, 0.35, 1.2) and cpp["PicoRescatado"] == (4, 0.55, 1.1)
+
+
+def test_mineria_radio_distinto_del_cpp(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["radiusM"] = 0.6
+    assert any_error(mining_errors(ds), "pico_obsidiana", "ToolInfo")
+
+
+def test_mineria_herramienta_sin_tiempo_de_golpe(ds: DataSet) -> None:
+    del next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pala_tosca")["secondsPerHit"]
+    assert any_error(mining_errors(ds), "pala_tosca", "secondsPerHit")
+
+
+def test_mineria_unidades_por_m3_distintas_del_cpp(ds: DataSet) -> None:
+    ds.data["mining.json"]["unitsPerM3"] = 5
+    assert any_error(mining_errors(ds), "unitsPerM3", "UnitsPerCubicMeter")
+
+
 def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
     m = material(ds, "basalto")
     m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
@@ -947,6 +1058,82 @@ def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> Non
     items = {i["id"]: i for i in real.items}
     best = crafting.best_template(real.templates, "Tallar", crafting.leaf(items["lasca_pedernal"]), crafting.leaf(items["basalto"]))
     assert best and best["resultDefinitionId"] == "basalto_tallado"
+
+
+# --------------------------------------------------------------------------- peligros y lugares de la mina (biblia 02 §2.4-2.5)
+
+def hazard(ds: DataSet, hid: str) -> dict:
+    return ds.data["mining.json"]["hazards"][hid]
+
+
+def place(ds: DataSet, pid: str) -> dict:
+    return next(p for p in ds.data["mining.json"]["places"] if p["id"] == pid)
+
+
+def test_mineria_viga_de_apoyo_es_pieza_de_madera_bajo_tierra(real: DataSet) -> None:
+    viga = piece(real, hazard(real, "derrumbe")["supportPiece"])
+    assert viga["id"] == "viga_apoyo" and viga["tier"] == "madera" and viga["socket"] == "terreno"
+    assert {c["item"]: c["count"] for c in viga["cost"]} == {"tronco_pequeno": 2, "cuerda": 1}
+
+
+def test_mineria_falta_un_peligro(ds: DataSet) -> None:
+    del ds.data["mining.json"]["hazards"]["aire_viciado"]
+    assert any_error(mining_errors(ds), "aire_viciado", "biblia 02")
+
+
+def test_mineria_viga_inexistente(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportPiece"] = "puntal_magico"
+    assert any_error(mining_errors(ds), "puntal_magico", "building_pieces.json")
+
+
+def test_mineria_viga_que_no_cubre_la_luz(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportRadiusM"] = 1.0
+    assert any_error(mining_errors(ds), "derrumbe", "luz")
+
+
+def test_mineria_aviso_despues_del_derrumbe(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["warningSeconds"] = 9
+    assert any_error(mining_errors(ds), "derrumbe", "aviso")
+
+
+def test_mineria_aire_viciado_nunca_mata(ds: DataSet) -> None:
+    hazard(ds, "aire_viciado")["lethal"] = True
+    assert any_error(mining_errors(ds), "aire_viciado", "nunca mata")
+
+
+def test_mineria_luz_pendiente_que_ya_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightItemsPendientes"].append("antorcha")
+    assert any_error(mining_errors(ds), "oscuridad", "antorcha", "lightItems")
+
+
+def test_mineria_crecida_en_estacion_desconocida(ds: DataSet) -> None:
+    hazard(ds, "crecida")["season"] = "invierno"
+    assert any_error(mining_errors(ds), "crecida", "invierno")
+
+
+def test_mineria_lugar_de_fase_1_fuera_del_acceso_anticipado(ds: DataSet) -> None:
+    place(ds, "cenotes")["occurrences"][0]["fase"] = 1
+    assert any_error(mining_errors(ds), "cenotes", "mesa", "acceso anticipado")
+
+
+def test_mineria_lugar_con_objeto_de_estrato_ausente(ds: DataSet) -> None:
+    place(ds, "grutas_marinas")["items"] = ["obsidiana"]
+    assert any_error(mining_errors(ds), "grutas_marinas", "teeth", "obsidiana")
+
+
+def test_mineria_cueva_de_landing_mas_honda_que_la_pala(ds: DataSet) -> None:
+    place(ds, "cueva_landing")["occurrences"][0]["depthM"] = [0, 6]
+    assert any_error(mining_errors(ds), "cueva_landing", "basalto", "nivel 1")
+
+
+def test_mineria_falta_la_cueva_de_landing(ds: DataSet) -> None:
+    ds.data["mining.json"]["places"] = [p for p in ds.data["mining.json"]["places"] if p["id"] != "cueva_landing"]
+    assert any_error(mining_errors(ds), "Landing", "GDD v2 §6.1")
+
+
+def test_mineria_rio_subterraneo_sin_barco(ds: DataSet) -> None:
+    place(ds, "rios_subterraneos")["requiresBoat"] = "submarino"
+    assert any_error(mining_errors(ds), "rios_subterraneos", "boats.json")
 
 
 # --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
@@ -1233,6 +1420,19 @@ def test_packs_catalogo_fauna_con_id_inexistente(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "dragon_de_komodo", "no existe como fauna")
 
 
+def test_packs_catalogo_pendiente_de_fauna_de_ambiente(ds: DataSet) -> None:
+    # La gaviota está en fauna.json y no en fauna_terrestre.json: es un id válido.
+    cat = _catalog(ds)
+    cat["pending"] = [p for p in cat["pending"] if p["gameId"] != "gaviota_posada"]
+    cat["pending"].append({"gameId": "gaviota_posada", "reason": "prueba"})
+    assert not any_error(errors_of(ds), "gaviota_posada")
+
+
+def test_packs_catalogo_cubre_cuarzo_y_taro(real: DataSet) -> None:
+    covered = {e["gameId"] for e in _catalog(real)["entries"]}
+    assert {"cristal_cuarzo", "taro.brote", "taro.hojas_grandes", "taro.listo"} <= covered
+
+
 def test_packs_catalogo_fauna_sin_rig(ds: DataSet) -> None:
     del _fauna_entry(ds)["rig"]
     assert any_error(errors_of(ds), "bloque rig")
@@ -1251,6 +1451,29 @@ def test_packs_catalogo_comportamiento_con_clip_inexistente(ds: DataSet) -> None
 def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
     _catalog(ds)["entries"][0]["rig"] = {"skeleton": "SKEL_Pack_Hacha", "animations": ["Idle"]}
     assert any_error(errors_of(ds), "rig solo va en kind fauna")
+
+
+def test_packs_catalogo_cubre_la_mineria_manual(real: DataSet) -> None:
+    entries = {e["gameId"]: e for e in _catalog(real)["entries"]}
+    assert {"pico", "caliza", "canto_rodado"} <= set(entries)
+    assert entries["pico"]["pivot"]["kind"] == "agarre"
+
+
+def test_packs_catalogo_pendiente_con_id_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["pending"].append({"gameId": "pico_de_diamante", "reason": "prueba"})
+    assert any_error(errors_of(ds), "pico_de_diamante", "no existe")
+
+
+def test_packs_catalogo_pendiente_repetido(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    cat["pending"].append(dict(cat["pending"][0]))
+    assert any_error(errors_of(ds), cat["pending"][0]["gameId"], "repetido")
+
+
+def test_packs_catalogo_descarte_del_fichero_elegido(ds: DataSet) -> None:
+    e = _catalog(ds)["entries"][0]
+    _catalog(ds)["discarded"].append({"gameId": e["gameId"], "pack": e["pack"], "file": e["file"], "reason": "prueba"})
+    assert any_error(errors_of(ds), e["gameId"], "fichero de su entrada")
 
 
 def test_fauna_y_fauna_terrestre_nombran_igual(ds: DataSet) -> None:
@@ -1580,14 +1803,6 @@ def test_logros_estadistica_sin_logro_avisa(ds: DataSet) -> None:
     assert any_error(_ach_errors(ds), "tools_broken_on_wrong_material", "no la usa ningún logro")
 
 
-def test_logros_como_mucho_54(ds: DataSet) -> None:
-    lst = ds.data["achievements.json"]["achievements"]
-    base = achievement(ds, "primera_palada")
-    for n in range(60 - len(lst)):
-        lst.append(dict(base, id=f"extra_{n}"))
-    assert any_error(_ach_errors(ds), "60 logros", "54")
-
-
 def test_logros_del_gdd_no_se_pierden(ds: DataSet) -> None:
     achievement(ds, "primer_techo")["id"] = "primer_tejado"
     assert any_error(_ach_errors(ds), "primer_techo", "biblia 07 §2.2")
@@ -1613,10 +1828,10 @@ def test_logro_nuevo_con_dos_frases(ds: DataSet) -> None:
     assert any_error(_ach_errors(ds), "manazas", "más de una frase")
 
 
-def test_logro_antiguo_conserva_su_texto(real: DataSet) -> None:
-    # «primer_techo» tiene cinco palabras en inglés desde el GDD §16: biblia 07 §2.2 lo conserva.
-    assert len(achievement(real, "primer_techo")["nameEn"].split()) == 5
-    assert not any_error(_ach_errors(real), "primer_techo")
+def test_logro_antiguo_conserva_su_texto(ds: DataSet) -> None:
+    # Los 30 del GDD §16 conservan su texto (biblia 07 §2.2): la longitud de §1.3 no se les mide.
+    achievement(ds, "primer_techo")["nameEn"] = "A Roof Of Your Own"
+    assert not any_error(_ach_errors(ds), "primer_techo")
 
 
 # --------------------------------------------------------------------------- guía anti-IA (biblia 07 §1)
@@ -1693,15 +1908,10 @@ def test_logro_con_coop_scope_desconocido(ds: DataSet, scope) -> None:
     assert any_error(_ach_errors(ds), "manazas", "coopScope")
 
 
-def test_logro_nuevo_sin_coop_scope(ds: DataSet) -> None:
+def test_logro_sin_coop_scope(ds: DataSet) -> None:
+    # Desde H5 (PR #80) los 54 logros llevan coopScope, también los 30 del GDD.
     del achievement(ds, "primera_palada")["coopScope"]
-    assert any_error(_ach_errors(ds), "primera_palada", "sin coopScope")
-
-
-def test_logro_antiguo_sin_coop_scope_todavia_vale(real: DataSet) -> None:
-    # Los 30 del GDD reciben coopScope en la pasada de H4 (00-TODO, biblia 08 §5.7).
-    assert "coopScope" not in achievement(real, "primer_fuego")
-    assert not any_error(_ach_errors(real), "primer_fuego")
+    assert any_error(_ach_errors(ds), "primera_palada", "coopScope «None»")
 
 
 @pytest.mark.parametrize("cond", [
@@ -1784,3 +1994,222 @@ def test_metal_pieza_de_nivel_corrupta_no_rompe(ds, real_reach) -> None:
 def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> None:
     smithing_recipe(ds, "fundir_cobre")["ingredients"][0]["item"] = value
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no está en items.json")
+# --------------------------------------------------------------------------- combate (biblia 05 §3 y §5)
+
+from datacheck import combat  # noqa: E402
+
+
+def combat_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    combat.check_combat(ds, r)
+    return r.errors
+
+
+def creature(ds: DataSet, cid: str) -> dict:
+    return next(c for c in ds.data["combat.json"]["creatures"] if c["id"] == cid)
+
+
+def test_combate_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert combat_errors(real) == []
+    cpp = combat.cpp_constants(real)
+    assert cpp["QuickMultiplierPct"] == 70 and cpp["DodgeInvulnerableMs"] == 300
+    assert combat.cpp_creature_enum(real) == ["WildBoar", "WildGoat", "CoconutCrab", "ReefShark"]
+    assert [row["id"] for row in combat.cpp_creatures(real)] == [
+        "cerdo_salvaje", "cabra_salvaje", "cangrejo_cocotero_salvaje", "tiburon_arrecife"]
+
+
+def test_combate_constante_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["combat.json"]["dodge"]["invulnerableMs"] = 350
+    assert any_error(combat_errors(ds), "invulnerableMs", "DodgeInvulnerableMs")
+
+
+def test_combate_constante_ausente(ds: DataSet) -> None:
+    del ds.data["combat.json"]["melee"]["quick"]["chainPauseMs"]
+    assert any_error(combat_errors(ds), "chainPauseMs", "falta")
+
+
+def test_combate_tramo_de_arco_con_hueco(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["bands"][1]["fromM"] = 16
+    assert any_error(combat_errors(ds), "bow", "no sigue")
+
+
+def test_combate_precision_que_sube_con_la_distancia(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["bands"][2]["accuracyPct"] = 80
+    assert any_error(combat_errors(ds), "bow", "sube")
+
+
+def test_combate_arco_acierta_mas_alla_de_45(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["beyondPct"] = 10
+    assert any_error(combat_errors(ds), "beyondPct")
+
+
+def test_combate_dano_que_no_sale_de_la_formula(ds: DataSet) -> None:
+    creature(ds, "cangrejo_cocotero_salvaje")["damage"] = 9
+    errors = combat_errors(ds)
+    assert any_error(errors, "cangrejo_cocotero_salvaje", "Contundente 2 da 8")
+    assert any_error(errors, "cangrejo_cocotero_salvaje", "CreatureTable")
+
+
+def test_combate_contundente_que_corta(ds: DataSet) -> None:
+    creature(ds, "cerdo_salvaje")["cutDepth"] = 0.2
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "no abre corte")
+
+
+def test_combate_distinto_de_fauna_json(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["healthPoints"] = 40
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "healthPoints", "fauna.json")
+
+
+def test_combate_aturdimiento_distinto_de_fauna_json(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["attack"]["stunSeconds"] = 1.5
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "stunMs", "fauna.json")
+
+
+def test_combate_orden_distinto_del_enum(ds: DataSet) -> None:
+    cs = ds.data["combat.json"]["creatures"]
+    cs[0], cs[1] = cs[1], cs[0]
+    assert any_error(combat_errors(ds), "ECombatCreature")
+
+
+def test_combate_animal_terrestre_sin_ficha_de_fauna(ds: DataSet) -> None:
+    creature(ds, "cabra_salvaje")["id"] = "cabra_montes"
+    assert any_error(combat_errors(ds), "cabra_montes", "fauna.json")
+
+
+def test_combate_bytes_de_red_distintos_del_cpp(ds: DataSet) -> None:
+    ds.data["combat.json"]["red"]["mensajes"][1]["bytes"] = 12
+    assert any_error(combat_errors(ds), "impacto", "ImpactMsgBytes")
+
+
+def test_combate_sin_autoridad_del_servidor(ds: DataSet) -> None:
+    ds.data["combat.json"]["red"]["autoridad"] = "cliente"
+    assert any_error(combat_errors(ds), "servidor")
+
+
+def test_combate_falta_el_fichero(ds: DataSet) -> None:
+    del ds.data["combat.json"]
+    assert any_error(errors_of(ds), "combat.json")
+
+
+# --------------------------------------------------------------------------- huerto: reglas y cosecha neta
+
+
+def farm_errors(ds: DataSet) -> list[str]:
+    from datacheck import farm
+    r = Report()
+    farm.check_farm(ds, r)
+    return r.errors
+
+
+def test_huerto_reglas_espejo_de_farm_model(real: DataSet) -> None:
+    assert farm_errors(real) == []
+    assert real.data["plants.json"]["rules"]["scarecrowRadiusM"] == 15
+
+
+def test_huerto_sin_reglas(ds: DataSet) -> None:
+    del ds.data["plants.json"]["rules"]
+    assert any_error(farm_errors(ds), "falta el bloque «rules»")
+
+
+def test_huerto_regla_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["scarecrowRadiusM"] = 4
+    ds.data["plants.json"]["rules"]["dryDaysToDie"] = 5
+    errs = farm_errors(ds)
+    assert any_error(errs, "scarecrowRadiusM=4", "ScarecrowRadius=1500 cm")
+    assert any_error(errs, "dryDaysToDie=5", "DryDaysToDie=4")
+
+
+def test_huerto_marchita_despues_de_morir(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["dryDaysToWilt"] = 4
+    assert any_error(farm_errors(ds), "se marchita")
+
+
+def test_huerto_cosecha_neta_nula(ds: DataSet) -> None:
+    pina = next(p for p in ds.plants if p["id"] == "pina")
+    pina["harvest"]["everyDays"] = 0
+    assert any_error(farm_errors(ds), "«pina»", "cosecha neta nula")
+
+
+def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> None:
+    for p in real.plants:
+        h = p["harvest"]
+        if p["plantedFrom"] == h["item"]:
+            assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
+
+
+# --------------------------------------------------------------------------- mina: quema de la luz
+
+
+def test_mineria_antorcha_con_ritmo_de_quema(real: DataSet) -> None:
+    burn = {b["item"]: b for b in hazard(real, "oscuridad")["lightBurn"]}
+    assert burn["antorcha"]["gameMinutesPerDurability"] * item(real, "antorcha")["maxDurability"] == 120
+
+
+def test_mineria_luz_sin_ritmo_de_quema(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"] = []
+    assert any_error(mining_errors(ds), "antorcha", "lightBurn")
+
+
+def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"].append({"item": "vela", "gameMinutesPerDurability": 3})
+    assert any_error(mining_errors(ds), "«vela»", "lightItems")
+
+
+def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
+    del item(ds, "antorcha")["maxDurability"]
+    assert any_error(mining_errors(ds), "antorcha", "maxDurability")
+
+
+# --------------------------------------------------------------------------- iconos de UI (lote 9)
+
+
+def test_packs_iconos_cubren_o_dejan_pendiente_cada_pista_de_logro(real: DataSet) -> None:
+    cat = _catalog(real)
+    hints = {a["icon"] for a in real.data["achievements.json"]["achievements"]}
+    covered = {s["achievementIcon"] for i in cat["icons"] for s in i["slots"] if "achievementIcon" in s}
+    assert {"fuego", "refugio", "estrella"} <= covered
+    assert hints == covered | {p["achievementIcon"] for p in cat["iconsPending"]}
+    assert not any_error(errors_of(real), "icono")
+
+
+def test_packs_icono_con_pista_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"achievementIcon": "unicornio"}]
+    assert any_error(errors_of(ds), "unicornio", "achievements.json")
+
+
+def test_packs_icono_de_widget_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["slots"] = [{"widget": "SExploredRadar", "role": "punto"}]
+    assert any_error(errors_of(ds), "SExploredRadar", "no existe")
+
+
+def test_packs_icono_con_tinte_fuera_del_estilo(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["tint"] = {"conseguido": "ColorNeon"}
+    assert any_error(errors_of(ds), "ColorNeon", "ExploredUIStyle")
+
+
+def test_packs_icono_slot_repetido(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["slots"] = list(icons[0]["slots"])
+    assert any_error(errors_of(ds), "ya tiene icono")
+
+
+def test_packs_icono_textura_repetida(ds: DataSet) -> None:
+    icons = _catalog(ds)["icons"]
+    icons[1]["texture"] = icons[0]["texture"]
+    assert any_error(errors_of(ds), "textura repetida")
+
+
+def test_packs_icono_pista_sin_cubrir(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    cat["iconsPending"] = [p for p in cat["iconsPending"] if p["achievementIcon"] != "ballena"]
+    assert any_error(errors_of(ds), "ballena", "ni está en iconsPending")
+
+
+def test_packs_icono_pendiente_ya_cubierto(ds: DataSet) -> None:
+    _catalog(ds)["iconsPending"].append({"achievementIcon": "fuego", "reason": "prueba"})
+    assert any_error(errors_of(ds), "fuego", "ya tiene icono")
+
+
+def test_packs_icono_de_pack_sin_licencia(ds: DataSet) -> None:
+    _catalog(ds)["icons"][0]["pack"] = "iconos_de_pago"
+    assert any_error(errors_of(ds), "iconos_de_pago", "packs.json")

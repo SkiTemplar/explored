@@ -7,6 +7,12 @@
 - Islas: las de ``EIslandArchetype``; las cuatro del acceso anticipado (GDD v2 §6.2) tienen
   ficha; una isla de fase 1 no puede depender de una especie de fase 2/3 y toda especie de
   fase 1 vive en alguna isla de fase 1.
+- Nivel de detalle: cada especie dice qué hace en Full, Reduced y Frozen (subconjunto de
+  ``lod.tiers[].does``); huir o cargar solo en Full, la rutina sigue en Reduced y la
+  navegación depende de ``locomotion`` (suelo navega, vuelo no).
+- Población por isla (propuesta): grupos y tamaño de grupo de especies que viven allí,
+  dentro del tope duro de biblia 08 §2.7 (12 + 24 terrestres replicados, 24 grupos de
+  ambiente) y con días de reposición > 0.
 - Red (biblia 08 §2.7): cada especie dice si es fauna de ambiente con ancla de grupo o un
   actor replicado; lo que ataca lo tira el servidor, lo que se caza y despieza se replica y
   lo que deja nidos o recogidas guarda ese estado en el servidor.
@@ -27,6 +33,14 @@ SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 PHASES = (1, 2, 3)
 NET_CLASSES = {"ambiente", "replicada"}
 NET_ANCHORS = {"bandada", "colonia", "banco", "enjambre"}
+LOCOMOTION = {"suelo", "vuelo"}
+NAV_FULL, NAV_REDUCED = "navegacion_fina", "navegacion_gruesa"
+# Biblia 08 §2.7 b: tope duro por cliente de terrestres replicados (10 Hz cerca, 2 Hz lejos)
+# y §2.7 a: grupos de ambiente con ancla.
+REPLICATED_FULL_CAP = 12
+REPLICATED_CAP = REPLICATED_FULL_CAP + 24
+AMBIENT_GROUP_CAP = 24
+PICKUP_BLOCKS = ("nest", "groundPickup", "deposit")
 # fauna_terrestre.json (ids para packs_catalogo.json, #60) y fauna.json deben nombrar igual a
 # las especies que comparten; su «phase» usa AA/F2/F3 y sus islas, EIslandArchetype.
 REGISTRY = "fauna_terrestre.json"
@@ -81,6 +95,7 @@ def check_fauna(ds, r, properties: set[str]) -> None:
     if [t.get("id") for t in lod.get("tiers", [])] != list(LOD_TIERS):
         r.error(f"fauna.json/lod: los niveles deben ser {list(LOD_TIERS)} (EFaunaLodTier)")
 
+    tiers = {t.get("id"): set(t.get("does", [])) for t in lod.get("tiers", [])}
     enum = cpp_species(ds)
     species: dict[str, dict] = {}
     for s in doc.get("species", []):
@@ -130,7 +145,7 @@ def check_fauna(ds, r, properties: set[str]) -> None:
                 r.error(f"{where}: herramienta de despiece «{entry['tool']}» no está en items.json")
             if not 0 <= entry.get("min", -1) <= entry.get("max", -1):
                 r.error(f"{where}: botín «{entry.get('item')}» con min/max incoherentes")
-        for key in ("nest", "groundPickup"):
+        for key in PICKUP_BLOCKS:
             block = s.get(key)
             if block is None:
                 continue
@@ -141,7 +156,10 @@ def check_fauna(ds, r, properties: set[str]) -> None:
             bad = set(block.get("seasons", [])) - SEASONS
             if bad:
                 r.error(f"{where}: {key} con estaciones desconocidas {sorted(bad)}")
+            if block.get("tool") is not None and block["tool"] not in items:
+                r.error(f"{where}: {key} con herramienta «{block['tool']}» que no está en items.json")
 
+        _check_lod(s, where, tiers, r)
         _check_net(s, where, r)
 
     islands = mining.cpp_islands(ds)
@@ -162,6 +180,7 @@ def check_fauna(ds, r, properties: set[str]) -> None:
             home_phases.setdefault(sid, set()).add(isl.get("fase"))
             if isl.get("fase") == 1 and sp.get("fase", 1) > 1:
                 r.error(f"fauna.json/islands «{iid}»: isla de fase 1 con «{sid}» de fase {sp['fase']}")
+        _check_population(isl, species, r)
     for iid in EA_ISLANDS:
         if iid not in listed:
             r.error(f"fauna.json: falta la ficha de «{iid}», isla del acceso anticipado (GDD v2 §6.2)")
@@ -213,5 +232,87 @@ def _check_net(s: dict, where: str, r) -> None:
         r.error(f"{where}: ataca, así que red.tiradaDano debe ser «servidor» (como ReefSharkAttackRoll)")
     if s.get("loot") and cls != "replicada":
         r.error(f"{where}: se caza y despieza (loot), así que debe ser replicada (biblia 08 §2.7 b)")
-    if (s.get("nest") or s.get("groundPickup")) and net.get("recogidas") != "servidor":
+    if any(s.get(k) for k in PICKUP_BLOCKS) and net.get("recogidas") != "servidor":
         r.error(f"{where}: nidos o recogidas sin red.recogidas «servidor» (biblia 08 §2.3)")
+
+
+def _check_lod(s: dict, where: str, tiers: dict[str, set[str]], r) -> None:
+    """Qué hace la especie en cada nivel de FFaunaLod (biblia 02 §11.1)."""
+    loco = s.get("locomotion")
+    if loco not in LOCOMOTION:
+        r.error(f"{where}: locomotion {loco!r} no es {sorted(LOCOMOTION)}")
+    beh = s.get("lodBehavior")
+    if not isinstance(beh, dict) or set(beh) != set(LOD_TIERS):
+        r.error(f"{where}: lodBehavior debe tener exactamente {list(LOD_TIERS)}")
+        return
+    for tier in LOD_TIERS:
+        acts = beh[tier]
+        if not isinstance(acts, list) or len(set(acts)) != len(acts):
+            r.error(f"{where}: lodBehavior.{tier} debe ser una lista sin repetidos")
+            return
+        extra = set(acts) - tiers.get(tier, set())
+        if extra:
+            r.error(f"{where}: lodBehavior.{tier} hace {sorted(extra)}, que el nivel {tier} no permite")
+    full, reduced = set(beh["Full"]), set(beh["Reduced"])
+    if beh["Frozen"]:
+        r.error(f"{where}: en Frozen no se actualiza nada (biblia 02 §11.1)")
+    if "rutina" not in full or "rutina" not in reduced:
+        r.error(f"{where}: la rutina sigue en Full y en Reduced (el reloj no se para al alejarse)")
+    reacts = s.get("attack") is not None or any(v for v in (s.get("flee") or {}).values())
+    if reacts and "huida_o_carga" not in full:
+        r.error(f"{where}: huye o ataca, así que Full necesita «huida_o_carga»")
+    if reacts and "percepcion" not in full:
+        r.error(f"{where}: huye o ataca, así que Full necesita «percepcion»")
+    if loco == "suelo" and (NAV_FULL not in full or NAV_REDUCED not in reduced):
+        r.error(f"{where}: camina, así que necesita «{NAV_FULL}» en Full y «{NAV_REDUCED}» en Reduced")
+    if loco == "vuelo" and (full | reduced) & {NAV_FULL, NAV_REDUCED}:
+        r.error(f"{where}: vuela y no usa el campo de navegación del suelo (se reconstruye por chunk minado)")
+
+
+def _check_population(isl: dict, species: dict[str, dict], r) -> None:
+    """Grupos por isla dentro del tope de red de biblia 08 §2.7 (propuesta de balance)."""
+    iid = isl.get("island")
+    where = f"fauna.json/islands «{iid}»"
+    pop = isl.get("population")
+    if not isinstance(pop, list):
+        r.error(f"{where}: falta «population» (lista, vacía si no hay fauna)")
+        return
+    seen: set[str] = set()
+    replicated = ambient_groups = 0
+    for entry in pop:
+        if not isinstance(entry, dict):
+            r.error(f"{where}: cada entrada de population debe ser un objeto, no {entry!r}")
+            continue
+        sid = entry.get("species")
+        if sid not in isl.get("species", []):
+            r.error(f"{where}: población de «{sid}», que no está en species de la isla")
+            continue
+        if sid in seen:
+            r.error(f"{where}: población de «{sid}» repetida")
+        seen.add(sid)
+        groups, size, days = entry.get("groups"), entry.get("groupSize"), entry.get("respawnDays")
+        if not (isinstance(groups, int) and not isinstance(groups, bool) and groups >= 1):
+            r.error(f"{where} «{sid}»: groups={groups!r} debe ser un entero ≥ 1")
+            continue
+        if not (isinstance(size, list) and len(size) == 2 and all(isinstance(x, int) for x in size)
+                and 1 <= size[0] <= size[1]):
+            r.error(f"{where} «{sid}»: groupSize={size!r} debe ser [min, max] con 1 ≤ min ≤ max")
+            continue
+        if not (isinstance(days, (int, float)) and not isinstance(days, bool) and days > 0):
+            r.error(f"{where} «{sid}»: respawnDays={days!r} debe ser > 0")
+        net = (species.get(sid) or {}).get("red") or {}
+        if net.get("clase") == "replicada":
+            replicated += groups * size[1]
+            if size[1] > REPLICATED_FULL_CAP:
+                r.error(f"{where} «{sid}»: un grupo de {size[1]} no cabe en los {REPLICATED_FULL_CAP} "
+                        "replicados a 10 Hz (biblia 08 §2.7 b)")
+        else:
+            ambient_groups += groups
+    missing = set(isl.get("species", [])) - seen
+    if missing:
+        r.error(f"{where}: especies sin población {sorted(missing)}")
+    if replicated > REPLICATED_CAP:
+        r.error(f"{where}: hasta {replicated} terrestres replicados vivos; el tope por cliente es "
+                f"{REPLICATED_CAP} (biblia 08 §2.7 b)")
+    if ambient_groups > AMBIENT_GROUP_CAP:
+        r.error(f"{where}: {ambient_groups} grupos de ambiente; el tope es {AMBIENT_GROUP_CAP} (biblia 08 §2.7 a)")

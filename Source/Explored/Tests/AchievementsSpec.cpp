@@ -2,6 +2,8 @@
 
 #include "Achievements/AchievementsModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace AchievementsSpecDetail
@@ -332,6 +334,97 @@ void FAchievementsSpec::Define()
 		{
 			Model.BeginRun(TEXT("Explorer"));
 			TestTrue(TEXT("Primer fuego en Explorador"), Has(Model.Report(TEXT("fires_lit")), TEXT("primer_fuego")));
+		});
+	});
+
+	Describe("Fases", [this]()
+	{
+		It("un logro de una fase sin publicar no se desbloquea, pero su estadística cuenta", [this]()
+		{
+			TArray<FAchievementDef> Defs = MakeAchievements();
+			FAchievementDef Eggs = Achievement(TEXT("huevos_por_docenas"), FCond::AtLeast(TEXT("coconuts_opened"), 3));
+			Eggs.Phase = EAchievementPhase::Phase2;
+			Defs.Add(Eggs);
+			FAchievementsModel Phased;
+			FString Error;
+			if (!TestTrue(TEXT("Configura"), Phased.Configure(MakeStats(), Defs, Error)))
+			{
+				return;
+			}
+			Phased.BeginRun(TEXT("Survivor"));
+			Phased.SetReleasedPhase(EAchievementPhase::EarlyAccess);
+			TestFalse(TEXT("No se anuncia en AA"), Has(Phased.Report(TEXT("coconuts_opened"), 5.0), TEXT("huevos_por_docenas")));
+			TestFalse(TEXT("No está desbloqueado"), Phased.IsUnlocked(TEXT("huevos_por_docenas")));
+			TestEqual(TEXT("La estadística sí cuenta"), Phased.GetNumber(TEXT("coconuts_opened")), 5.0);
+			TestTrue(TEXT("Los de AA siguen igual"), Has(Phased.Report(TEXT("fires_lit")), TEXT("primer_fuego")));
+
+			Phased.SetReleasedPhase(EAchievementPhase::Phase2);
+			TestTrue(TEXT("Al publicar F2, Evaluate lo recupera"), Has(Phased.Evaluate(), TEXT("huevos_por_docenas")));
+			TestFalse(TEXT("Y no lo repite"), Has(Phased.Evaluate(), TEXT("huevos_por_docenas")));
+		});
+
+		It("por defecto todas las fases están publicadas y las fases se ordenan", [this]()
+		{
+			FAchievementsModel Fresh;
+			TestTrue(TEXT("Por defecto, F3"), Fresh.GetReleasedPhase() == EAchievementPhase::Phase3);
+			FAchievementDef Late;
+			Late.Phase = EAchievementPhase::Phase3;
+			TestTrue(TEXT("F3 publicado por defecto"), Fresh.IsReleased(Late));
+			Fresh.SetReleasedPhase(EAchievementPhase::Phase2);
+			TestFalse(TEXT("F3 no entra en F2"), Fresh.IsReleased(Late));
+			Late.Phase = EAchievementPhase::EarlyAccess;
+			TestTrue(TEXT("AA entra en F2"), Fresh.IsReleased(Late));
+		});
+
+		It("lee fase, rareza y alcance con la grafía exacta del JSON", [this]()
+		{
+			EAchievementPhase Phase = EAchievementPhase::EarlyAccess;
+			TestTrue(TEXT("F2"), ParseAchievementPhase(TEXT("F2"), Phase) && Phase == EAchievementPhase::Phase2);
+			TestFalse(TEXT("«f2» no"), ParseAchievementPhase(TEXT("f2"), Phase));
+			TestFalse(TEXT("Vacío no"), ParseAchievementPhase(TEXT(""), Phase));
+			TestTrue(TEXT("No toca la salida al fallar"), Phase == EAchievementPhase::Phase2);
+			TestEqual(TEXT("Ida y vuelta"), FString(LexToString(EAchievementPhase::Phase3)), FString(TEXT("F3")));
+
+			EAchievementRarity Rarity = EAchievementRarity::Common;
+			TestTrue(TEXT("muy_raro"), ParseAchievementRarity(TEXT("muy_raro"), Rarity) && Rarity == EAchievementRarity::VeryRare);
+			TestFalse(TEXT("«común» con tilde no"), ParseAchievementRarity(TEXT("común"), Rarity));
+			for (EAchievementRarity R : { EAchievementRarity::Common, EAchievementRarity::Uncommon, EAchievementRarity::Rare, EAchievementRarity::VeryRare })
+			{
+				EAchievementRarity Back = EAchievementRarity::Common;
+				TestTrue(TEXT("Rareza ida y vuelta"), ParseAchievementRarity(LexToString(R), Back) && Back == R);
+			}
+
+			EAchievementCoopScope Scope = EAchievementCoopScope::Actor;
+			TestTrue(TEXT("witness"), ParseAchievementCoopScope(TEXT("witness"), Scope) && Scope == EAchievementCoopScope::Witness);
+			TestFalse(TEXT("«World» no"), ParseAchievementCoopScope(TEXT("World"), Scope));
+			for (EAchievementCoopScope S : { EAchievementCoopScope::Actor, EAchievementCoopScope::World, EAchievementCoopScope::Witness })
+			{
+				EAchievementCoopScope Back = EAchievementCoopScope::Actor;
+				TestTrue(TEXT("Alcance ida y vuelta"), ParseAchievementCoopScope(LexToString(S), Back) && Back == S);
+			}
+		});
+	});
+
+	Describe("Cooperativo", [this]()
+	{
+		It("actor solo llega a quien hace la acción y world a todos", [this]()
+		{
+			TestTrue(TEXT("Actor"), FAchievementsModel::ReachesPlayer(EAchievementCoopScope::Actor, true, 1000.0f));
+			TestFalse(TEXT("Actor, otro jugador al lado"), FAchievementsModel::ReachesPlayer(EAchievementCoopScope::Actor, false, 0.0f));
+			TestTrue(TEXT("World lejos"), FAchievementsModel::ReachesPlayer(EAchievementCoopScope::World, false, 100000.0f));
+			TestTrue(TEXT("World sin distancia válida"), FAchievementsModel::ReachesPlayer(EAchievementCoopScope::World, false, std::numeric_limits<float>::quiet_NaN()));
+		});
+
+		It("witness llega hasta 50 m, incluido el borde, y nunca con distancias corruptas", [this]()
+		{
+			using S = EAchievementCoopScope;
+			TestTrue(TEXT("Quien lo hace"), FAchievementsModel::ReachesPlayer(S::Witness, true, std::numeric_limits<float>::quiet_NaN()));
+			TestTrue(TEXT("A 0 m"), FAchievementsModel::ReachesPlayer(S::Witness, false, 0.0f));
+			TestTrue(TEXT("A 50 m justos"), FAchievementsModel::ReachesPlayer(S::Witness, false, FAchievementsModel::WitnessRadiusMeters));
+			TestFalse(TEXT("A 50,01 m"), FAchievementsModel::ReachesPlayer(S::Witness, false, 50.01f));
+			TestFalse(TEXT("NaN"), FAchievementsModel::ReachesPlayer(S::Witness, false, std::numeric_limits<float>::quiet_NaN()));
+			TestFalse(TEXT("Infinito"), FAchievementsModel::ReachesPlayer(S::Witness, false, std::numeric_limits<float>::infinity()));
+			TestFalse(TEXT("Negativo"), FAchievementsModel::ReachesPlayer(S::Witness, false, -1.0f));
 		});
 	});
 

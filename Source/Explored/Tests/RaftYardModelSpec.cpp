@@ -273,6 +273,15 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("desgaste exacto"), Yard.GetJoints()[0].Health01, 1.0f - 0.40f * 10.0f / 17.0f, 1e-5f);
 			TestEqual(TEXT("trabajo negativo no hace nada"), Yard.ApplyScrapeWork(-5.0f, ELaunchSurface::Rock).JointsDamaged, 0);
 		});
+
+		It("unos remos colgados por debajo de los troncos no cambian qué pieza toca el suelo", [this]()
+		{
+			FRaftYardModel Yard = SixLogRaft();
+			const int32 Oars = Yard.AddPiece(Piece(EHullPieceType::Oars, FVector(0.0, 0.0, -30.0)));
+			TestTrue(TEXT("el tronco sigue tocando el suelo"), Yard.IsBottomPiece(0));
+			TestFalse(TEXT("los remos no son el fondo"), Yard.IsBottomPiece(Oars));
+			TestTrue(TEXT("el roce gasta las uniones de los troncos"), Yard.ApplyScrapeWork(10000.0f, ELaunchSurface::Rock).JointsDamaged > 0);
+		});
 	});
 
 	Describe("en tierra", [this]()
@@ -539,6 +548,181 @@ void FRaftYardModelSpec::Define()
 		});
 	});
 
+	Describe("el guardado del casco", [this]()
+	{
+		It("rehace exactamente las piezas, las uniones con su salud y la ficha de navegación", [this]()
+		{
+			FRaftYardModel Yard = SixLogRaft(ERaftJointKind::Nails);
+			const int32 Mast = Yard.AddPiece(Piece(EHullPieceType::Mast, FVector(0.0, 0.0, 226.0)));
+			TestNotEqual(TEXT("el mástil se ata al tronco de debajo"), Yard.AddJoint(Mast, 2, ERaftJointKind::Fiber), int32(INDEX_NONE));
+			const int32 Sail = Yard.AddPiece(Piece(EHullPieceType::Sail, FVector(0.0, 0.0, 250.0), FVector(5.0, 200.0, 150.0)));
+			TestNotEqual(TEXT("la vela se ata al mástil"), Yard.AddJoint(Sail, Mast, ERaftJointKind::Rope), int32(INDEX_NONE));
+			Yard.DamageJoint(2, 0.3f);
+			Yard.DamageJoint(5, 1.0f);
+			Yard.AddLoad({ 75.0f, FVector(0.0, 30.0, 114.0), true });
+
+			int32 Discarded = -1;
+			const FRaftHullSaveData Saved = Yard.ToHullSaveData();
+			FRaftYardModel Loaded = FRaftYardModel::FromHullSaveData(Saved, &Discarded);
+			Loaded.AddLoad({ 75.0f, FVector(0.0, 30.0, 114.0), true });
+			TestEqual(TEXT("nada descartado"), Discarded, 0);
+
+			const FRaftHullSaveData Again = Loaded.ToHullSaveData();
+			TestEqual(TEXT("mismas piezas"), Again.Pieces.Num(), Saved.Pieces.Num());
+			TestEqual(TEXT("mismas uniones"), Again.Joints.Num(), Saved.Joints.Num());
+			for (int32 I = 0; I < FMath::Min(Again.Pieces.Num(), Saved.Pieces.Num()); ++I)
+			{
+				TestTrue(FString::Printf(TEXT("pieza %d"), I), Again.Pieces[I].Type == Saved.Pieces[I].Type
+					&& Again.Pieces[I].CenterCm == Saved.Pieces[I].CenterCm && Again.Pieces[I].SizeCm == Saved.Pieces[I].SizeCm);
+			}
+			for (int32 I = 0; I < FMath::Min(Again.Joints.Num(), Saved.Joints.Num()); ++I)
+			{
+				TestTrue(FString::Printf(TEXT("unión %d"), I), Again.Joints[I].PieceA == Saved.Joints[I].PieceA
+					&& Again.Joints[I].PieceB == Saved.Joints[I].PieceB && Again.Joints[I].Kind == Saved.Joints[I].Kind
+					&& Again.Joints[I].Health01 == Saved.Joints[I].Health01);
+			}
+			TestTrue(TEXT("la unión rota sigue rota (se puede reparar)"), Loaded.GetJoints()[5].IsBroken());
+			TestEqual(TEXT("misma integridad"), Loaded.Integrity01(), Yard.Integrity01());
+
+			const FHullHydrostatics& H0 = Yard.GetHydrostatics();
+			const FHullHydrostatics& H1 = Loaded.GetHydrostatics();
+			TestEqual(TEXT("mismo veredicto"), H1.Verdict, H0.Verdict);
+			TestEqual(TEXT("mismo calado"), H1.DraftCm, H0.DraftCm);
+			TestEqual(TEXT("misma GM"), H1.GMCm, H0.GMCm);
+			TestEqual(TEXT("misma escora"), H1.HeelDeg, H0.HeelDeg);
+			const FBoatDefinition D0 = Yard.ToBoatDefinition();
+			const FBoatDefinition D1 = Loaded.ToBoatDefinition();
+			TestEqual(TEXT("misma masa"), D1.HullMassKg, D0.HullMassKg);
+			TestEqual(TEXT("misma eslora"), D1.LengthCm, D0.LengthCm);
+			TestEqual(TEXT("misma manga"), D1.BeamCm, D0.BeamCm);
+			TestEqual(TEXT("misma vela"), D1.SailAreaM2, D0.SailAreaM2);
+			TestEqual(TEXT("misma GM en la ficha"), D1.MetacentricHeightCm, D0.MetacentricHeightCm);
+			TestEqual(TEXT("misma carga máxima"), D1.MaxCargoKg, D0.MaxCargoKg);
+			TestEqual(TEXT("en tierra hasta que quien llama diga otra cosa"), Loaded.GetState(), ERaftYardState::Ashore);
+		});
+
+		It("descarta las piezas imposibles y las uniones que las usaban, y renumera las demás", [this]()
+		{
+			FRaftHullSaveData Data;
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));                      // 0 → 0
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, NaN, 11.0)));                      // 1 NaN
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 22.0, 11.0)));                     // 2 → 1
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 44.0, 11.0), FVector(std::numeric_limits<double>::infinity(), 0.0, 0.0))); // 3 inf
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 44.0, 11.0), FVector(300.0, 22.0, 1.0e7))); // 4 desmesurada
+			Data.Pieces.Add(Piece(EHullPieceType::Count, FVector(0.0, 44.0, 11.0)));                   // 5 tipo desconocido
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 44.0, 11.0)));                     // 6 → 2
+			Data.Joints.Add({ 0, 2, ERaftJointKind::Rope, 0.5f });
+			Data.Joints.Add({ 1, 2, ERaftJointKind::Rope, 1.0f });
+			Data.Joints.Add({ 2, 3, ERaftJointKind::Rope, 1.0f });
+			Data.Joints.Add({ 4, 6, ERaftJointKind::Rope, 1.0f });
+			Data.Joints.Add({ 5, 6, ERaftJointKind::Rope, 1.0f });
+			Data.Joints.Add({ 2, 6, ERaftJointKind::Fiber, 0.25f });
+
+			int32 Discarded = 0;
+			const FRaftYardModel Yard = FRaftYardModel::FromHullSaveData(Data, &Discarded);
+			TestEqual(TEXT("quedan 3 piezas"), Yard.GetHull().GetPieces().Num(), 3);
+			TestEqual(TEXT("quedan 2 uniones"), Yard.GetJoints().Num(), 2);
+			TestEqual(TEXT("4 piezas y 4 uniones descartadas"), Discarded, 8);
+			if (Yard.GetJoints().Num() == 2 && Yard.GetHull().GetPieces().Num() == 3)
+			{
+				TestTrue(TEXT("0-2 pasa a ser 0-1"), Yard.GetJoints()[0].PieceA == 0 && Yard.GetJoints()[0].PieceB == 1);
+				TestEqual(TEXT("con su salud"), Yard.GetJoints()[0].Health01, 0.5f);
+				TestTrue(TEXT("2-6 pasa a ser 1-2"), Yard.GetJoints()[1].PieceA == 1 && Yard.GetJoints()[1].PieceB == 2);
+				TestEqual(TEXT("con su tipo"), Yard.GetJoints()[1].Kind, ERaftJointKind::Fiber);
+				TestEqual(TEXT("la pieza 1 es la que estaba en y = 22"), Yard.GetHull().GetPieces()[1].CenterCm.Y, 22.0);
+				TestEqual(TEXT("la pieza 2 es la que estaba en y = 44"), Yard.GetHull().GetPieces()[2].CenterCm.Y, 44.0);
+			}
+			TestTrue(TEXT("la hidrostática es finita"), FMath::IsFinite(Yard.GetHydrostatics().GMCm) && Yard.GetHydrostatics().IsAfloat());
+		});
+
+		It("descarta las uniones que ya no se podrían hacer y sanea la salud", [this]()
+		{
+			FRaftHullSaveData Data;
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 22.0, 11.0)));
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 44.0, 11.0)));
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 200.0, 11.0)));                   // separada
+			Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, -22.0, 11.0)));
+			Data.Joints.Add({ 0, 1, ERaftJointKind::Rope, NaN });                                       // rota
+			Data.Joints.Add({ 1, 2, ERaftJointKind::Nails, 3.0f });                                     // → 1
+			Data.Joints.Add({ 2, 1, ERaftJointKind::Rope, 1.0f });                                      // repetida al revés
+			Data.Joints.Add({ 0, 0, ERaftJointKind::Rope, 1.0f });                                      // consigo misma
+			Data.Joints.Add({ 0, 9, ERaftJointKind::Rope, 1.0f });                                      // no existe
+			Data.Joints.Add({ -1, 1, ERaftJointKind::Rope, 1.0f });                                     // negativa
+			Data.Joints.Add({ 0, 2, ERaftJointKind::Count, 1.0f });                                     // tipo desconocido
+			Data.Joints.Add({ 2, 3, ERaftJointKind::Rope, 1.0f });                                      // 156 cm de hueco
+			Data.Joints.Add({ 4, 0, ERaftJointKind::Fiber, -2.0f });                                    // → 0
+			int32 Discarded = 0;
+			const FRaftYardModel Yard = FRaftYardModel::FromHullSaveData(Data, &Discarded);
+			TestEqual(TEXT("quedan 3 uniones"), Yard.GetJoints().Num(), 3);
+			TestEqual(TEXT("6 uniones descartadas"), Discarded, 6);
+			if (Yard.GetJoints().Num() == 3)
+			{
+				TestEqual(TEXT("salud NaN: rota"), Yard.GetJoints()[0].Health01, 0.0f);
+				TestEqual(TEXT("salud 3: intacta"), Yard.GetJoints()[1].Health01, 1.0f);
+				TestEqual(TEXT("salud −2: rota"), Yard.GetJoints()[2].Health01, 0.0f);
+			}
+			TestTrue(TEXT("integridad en 0–1"), Yard.Integrity01() >= 0.0f && Yard.Integrity01() <= 1.0f);
+		});
+
+		It("no pasa de MaxSavedPieces y un guardado vacío da un astillero vacío", [this]()
+		{
+			FRaftHullSaveData Data;
+			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces + 44; ++I)
+			{
+				Data.Pieces.Add(Piece(EHullPieceType::Float, FVector((I % 16) * 60.0, (I / 16) * 40.0, 20.0)));
+			}
+			int32 Discarded = 0;
+			const FRaftYardModel Big = FRaftYardModel::FromHullSaveData(Data, &Discarded);
+			TestEqual(TEXT("se queda en el tope"), Big.GetHull().GetPieces().Num(), FRaftYardModel::MaxSavedPieces);
+			TestEqual(TEXT("las demás, descartadas"), Discarded, 44);
+
+			const FRaftYardModel Empty = FRaftYardModel::FromHullSaveData(FRaftHullSaveData(), nullptr);
+			TestEqual(TEXT("sin piezas"), Empty.GetHull().GetPieces().Num(), 0);
+			TestEqual(TEXT("veredicto vacío"), Empty.GetHydrostatics().Verdict, EHullVerdict::Empty);
+			TestTrue(TEXT("sin piezas guardadas"), Empty.ToHullSaveData().IsEmpty());
+		});
+
+		It("no pasa de MaxSavedJoints aunque el guardado venga inundado de uniones", [this]()
+		{
+			// Todas las piezas en el mismo sitio: cada par se puede unir y, sin tope, cargar sería cuadrático.
+			FRaftHullSaveData Data;
+			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
+			{
+				Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));
+			}
+			for (int32 A = 0; A < 64; ++A)
+			{
+				for (int32 B = A + 1; B < 64; ++B)
+				{
+					Data.Joints.Add({ A, B, ERaftJointKind::Rope, 1.0f });
+				}
+			}
+			const int32 Saved = Data.Joints.Num();
+			int32 Discarded = 0;
+			const FRaftYardModel Yard = FRaftYardModel::FromHullSaveData(Data, &Discarded);
+			TestEqual(TEXT("se queda en el tope"), Yard.GetJoints().Num(), FRaftYardModel::MaxSavedJoints);
+			TestEqual(TEXT("las demás, descartadas"), Discarded, Saved - FRaftYardModel::MaxSavedJoints);
+		});
+
+		It("al construir tampoco se pasa del tope de piezas ni del de tamaño, así que lo armado se guarda entero", [this]()
+		{
+			FRaftYardModel Yard;
+			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
+			{
+				TestNotEqual(TEXT("cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector((I % 16) * 60.0, (I / 16) * 40.0, 20.0))), int32(INDEX_NONE));
+			}
+			TestEqual(TEXT("una más no cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector(0.0, 0.0, 200.0))), INDEX_NONE);
+			FRaftYardModel Small;
+			TestEqual(TEXT("centro fuera de rango"), Small.AddPiece(Piece(EHullPieceType::Log, FVector(1.0e6, 0.0, 11.0))), INDEX_NONE);
+			TestEqual(TEXT("lado desmesurado"), Small.AddPiece(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0), FVector(300.0, 22.0, 1.0e7))), INDEX_NONE);
+			int32 Discarded = -1;
+			const FRaftYardModel Loaded = FRaftYardModel::FromHullSaveData(Yard.ToHullSaveData(), &Discarded);
+			TestEqual(TEXT("recarga entera"), Loaded.GetHull().GetPieces().Num(), FRaftYardModel::MaxSavedPieces);
+			TestEqual(TEXT("sin descartes"), Discarded, 0);
+		});
+	});
+
 	Describe("los estados degenerados", [this]()
 	{
 		It("un astillero vacío, un camino sin tramos y entradas no finitas no rompen nada", [this]()
@@ -564,11 +748,38 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("S no finita → 0"), Yard.GetCenterS(), 0.0f);
 			TestEqual(TEXT("fuerza NaN"), Yard.Push(NaN, 1.0f).MovedCm, 0.0f);
 			TestEqual(TEXT("tiempo negativo"), Yard.Push(3000.0f, -1.0f).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo NaN"), Yard.Push(3000.0f, NaN).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo infinito"), Yard.Push(3000.0f, INFINITY).MovedCm, 0.0f);
+			TestTrue(TEXT("el tiempo roto no envenena el siguiente empujón"), Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm > 0.0f);
+			TestEqual(TEXT("roce NaN"), Yard.ApplyScrapeWork(NaN, ELaunchSurface::Rock).JointsDamaged, 0);
+			TestEqual(TEXT("golpe infinito"), Yard.ApplyImpact(INFINITY, FVector2D(1.0, 0.0)).JointsDamaged, 0);
 			TestFalse(TEXT("rodillo fuera del camino"), Yard.PlaceRoller(1000.5f));
 			TestFalse(TEXT("rodillo NaN"), Yard.PlaceRoller(NaN));
 			TestFalse(TEXT("quitar rodillo inexistente"), Yard.TakeRoller(0));
 			TestEqual(TEXT("daño NaN"), Yard.DamageJoint(0, NaN).JointsDamaged, 0);
 			TestEqual(TEXT("daño a unión inexistente"), Yard.DamageJoint(99, 1.0f).JointsDamaged, 0);
+		});
+
+		It("un camino con valores no finitos toma los valores por defecto", [this]()
+		{
+			FLaunchPath Path = FlatPath(ELaunchSurface::Sand, 1000.0f);
+			FLaunchSegment Broken;
+			Broken.LengthCm = NaN;
+			Broken.DropCm = INFINITY;
+			Path.Segments.Add(Broken);
+			Path.StartCm = FVector(static_cast<double>(NaN), 0.0, 0.0);
+			Path.YawDeg = INFINITY;
+			Path.WaterLevelZCm = NaN;
+			FRaftYardModel Yard = SixLogRaft();
+			Yard.PlaceOnPath(Path, 500.0f);
+			const FLaunchPath& Placed = Yard.GetPath();
+			TestEqual(TEXT("largo del camino"), Placed.TotalLengthCm(), 1000.0f);
+			TestEqual(TEXT("rumbo por defecto"), Placed.YawDeg, 0.0f);
+			TestEqual(TEXT("agua por defecto: en seco"), Placed.WaterLevelZCm, FLaunchPath().WaterLevelZCm);
+			const FVector End = Placed.WorldAt(Placed.TotalLengthCm());
+			TestTrue(TEXT("posición finita"), FMath::IsFinite(End.X) && FMath::IsFinite(End.Y) && FMath::IsFinite(End.Z));
+			TestTrue(TEXT("empuja sin NaN"), FMath::IsFinite(Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm));
+			TestTrue(TEXT("centro finito"), FMath::IsFinite(Yard.GetCenterS()));
 		});
 
 		It("empuja hasta el final de un camino sin agua y se detiene en el borde, también marcha atrás", [this]()

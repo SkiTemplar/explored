@@ -105,3 +105,130 @@ def k_weighted_momentary_max(x: np.ndarray, window_s: float = 0.1, sr: int = 48_
     if mean_sq <= 1e-12:
         return -120.0
     return -0.691 + 10.0 * np.log10(mean_sq)
+
+
+# ---------------------------------------------------------------------------
+# Sonoridad integrada con puertas (ITU-R BS.1770-4) y limitador de pico con
+# anticipacion, para el master de la musica. `lufs_approx` sigue siendo la
+# medida rapida del resto del catalogo; la musica se mide y se ajusta con
+# `integrated_lufs`, que es la cifra que dan los medidores de referencia.
+# ---------------------------------------------------------------------------
+
+_BLOCK_S = 0.4
+_BLOCK_HOP_S = 0.1  # solape del 75 %
+_ABSOLUTE_GATE_LUFS = -70.0
+_RELATIVE_GATE_LU = -10.0
+
+
+def _block_loudness(mean_sq: np.ndarray) -> np.ndarray:
+    with np.errstate(divide="ignore"):
+        return -0.691 + 10.0 * np.log10(np.maximum(mean_sq, 1e-20))
+
+
+def integrated_lufs(x: np.ndarray, sr: int = 48_000) -> float:
+    """Sonoridad integrada BS.1770-4: K-weighting, bloques de 400 ms con 75 %
+    de solape, SUMA de la potencia de los canales (L y R pesan 1,0), puerta
+    absoluta a -70 LUFS y puerta relativa a -10 LU. `x` mono (N,) o (C, N).
+
+    Una señal mas corta que un bloque se mide entera, sin puertas."""
+    channels = [x] if x.ndim == 1 else [x[c] for c in range(x.shape[0])]
+    n = channels[0].shape[-1]
+    if n == 0:
+        return -120.0
+    weighted_sq = sum(_k_weight(np.asarray(ch, dtype=np.float64)) ** 2 for ch in channels)
+    block = int(round(_BLOCK_S * sr))
+    hop = int(round(_BLOCK_HOP_S * sr))
+    if n < block:
+        mean_sq = float(np.mean(weighted_sq))
+        return -120.0 if mean_sq <= 1e-12 else float(-0.691 + 10.0 * np.log10(mean_sq))
+    csum = np.concatenate([[0.0], np.cumsum(weighted_sq)])
+    starts = np.arange(0, n - block + 1, hop)
+    block_ms = (csum[starts + block] - csum[starts]) / block
+    loud = _block_loudness(block_ms)
+    kept = block_ms[loud > _ABSOLUTE_GATE_LUFS]
+    if kept.size == 0:
+        return -120.0
+    relative_gate = float(_block_loudness(np.array([np.mean(kept)]))[0]) + _RELATIVE_GATE_LU
+    kept = block_ms[(loud > _ABSOLUTE_GATE_LUFS) & (loud > relative_gate)]
+    return float(_block_loudness(np.array([np.mean(kept)]))[0])
+
+
+def true_peak_envelope(x: np.ndarray, oversample: int = 4) -> np.ndarray:
+    """Envolvente de pico por muestra, enlazada entre canales y medida sobre
+    la señal sobremuestreada `oversample` veces: capta los picos entre
+    muestras que un conversor reconstruye y que el valor de las muestras no
+    ve. Devuelve un array (N,)."""
+    channels = [x] if x.ndim == 1 else [x[c] for c in range(x.shape[0])]
+    n = channels[0].shape[-1]
+    env = np.zeros(n)
+    for ch in channels:
+        env = np.maximum(env, np.abs(ch))
+        if oversample > 1 and n > 1:
+            up = np.abs(signal.resample_poly(ch.astype(np.float32), oversample, 1))
+            env = np.maximum(env, up[: n * oversample].reshape(n, oversample).max(axis=1))
+    return env
+
+
+def lookahead_limiter(
+    x: np.ndarray,
+    ceiling: float = PEAK_CEILING_LINEAR,
+    sr: int = 48_000,
+    window_s: float = 0.012,
+    circular: bool = False,
+) -> np.ndarray:
+    """Limitador de pico sin distorsion armonica para el master de la musica.
+
+    Calcula la ganancia que hace falta en cada muestra para que el pico
+    (verdadero, ver `true_peak_envelope`) no pase de `ceiling`, la extiende
+    con un minimo deslizante de ancho `2h+1` y la suaviza con una media movil
+    del mismo ancho. Como toda muestra de la media viene de un minimo cuya
+    ventana contiene a la muestra central, la ganancia final nunca supera la
+    necesaria: el pico queda garantizado, y la ganancia entra y sale en rampa
+    de `window_s` a cada lado (sin el "clic" de un recorte duro ni la
+    saturacion de `enforce_peak_ceiling`). Proceso fuera de linea, asi que la
+    anticipacion no añade latencia.
+
+    `circular=True` trata la señal como un bucle (la ganancia es continua a
+    traves del punto de union)."""
+    from scipy.ndimage import minimum_filter1d, uniform_filter1d
+
+    if x.size == 0:
+        return x
+    target = ceiling * 0.999  # margen para el redondeo de coma flotante
+    env = true_peak_envelope(x)
+    required = np.minimum(1.0, target / np.maximum(env, 1e-12))
+    if float(np.min(required)) >= 1.0:
+        return x
+    half = max(int(round(window_s * sr)), 1)
+    size = 2 * half + 1
+    mode = "wrap" if circular else "nearest"
+    gain = minimum_filter1d(required, size=size, mode=mode)
+    gain = uniform_filter1d(gain, size=size, mode=mode)
+    # La media movil de coma flotante puede quedar un ulp por encima.
+    gain = np.minimum(gain, required)
+    return x * gain
+
+
+def master_to_lufs(
+    x: np.ndarray,
+    target_lufs: float,
+    ceiling: float = PEAK_CEILING_LINEAR,
+    sr: int = 48_000,
+    circular: bool = False,
+    max_gain_db: float = 24.0,
+    iterations: int = 4,
+    tolerance_lu: float = 0.1,
+) -> np.ndarray:
+    """Lleva `x` a `target_lufs` (integrados, BS.1770) con el pico por debajo
+    de `ceiling`: ganancia lineal y limitador, repetidos hasta que el
+    limitador deja de restar sonoridad apreciable."""
+    y = x
+    for _ in range(iterations):
+        current = integrated_lufs(y, sr)
+        if current <= -119.0:
+            return y
+        gain_db = float(np.clip(target_lufs - current, -max_gain_db, max_gain_db))
+        y = lookahead_limiter(y * (10.0 ** (gain_db / 20.0)), ceiling, sr, circular=circular)
+        if abs(integrated_lufs(y, sr) - target_lufs) <= tolerance_lu:
+            break
+    return y

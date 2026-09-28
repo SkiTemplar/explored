@@ -11,7 +11,20 @@
     "compost.daysToMature": "días de juego que tarda la pila en convertir una tanda de restos en compost",
     "compost.capacity": "restos que caben a la vez en la pila (múltiplo de inputsPerResult)",
     "compost.inputs": "restos aceptados, por id («item») o por etiqueta («tag»); la comida vale en cualquier estado, también estropeada o podrida",
+    "rules": "espejo de las constantes de FFarmModel (Source/Explored/Farming/FarmModel.h); DataCheck las compara",
+    "rules.scarecrowRadiusM": "radio de protección del espantapájaros en metros (FFarmModel::ScarecrowRadius va en cm)",
+    "rules.rainHoursPerWatering": "horas de lluvia plena (Rain = 1) que equivalen a un riego",
     "compost.growthMultiplier / compost.durationDays": "efecto al echarlo en una parcela; espejo de FFarmModel::CompostGrowth y CompostDays (no se acumula, solo renueva)"
+  },
+  "rules": {
+    "outOfSeasonGrowth": 0.5,
+    "dryDaysToWilt": 2,
+    "dryDaysToDie": 4,
+    "rainHoursPerWatering": 2.0,
+    "scarecrowRadiusM": 15,
+    "birdChance": 0.5,
+    "birdShare": 0.25,
+    "noteEs": "Espejo de FFarmModel. Dos puntos chocan con la biblia 02 §10.1 y los decide el director (docs/balance/2026-09-28-huerto-rendimiento.md): la biblia dice que sin riego la planta solo se pausa y nunca muere (el modelo la mata a los 4 días secos, salvo el limonero), y que el espantapájaros protege 4 m (el modelo, 15 m)."
   },
   "plants": [
     {
@@ -34,7 +47,7 @@
     {
       "id": "platanera",
       "nameEs": "Platanera",
-      "nameEn": "Banana plant",
+      "nameEn": "Banana tree",
       "plantedFrom": "hijuelo_platano",
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
@@ -90,7 +103,8 @@
         { "id": "roseta", "nameEs": "Roseta", "nameEn": "Rosette", "days": 6, "mesh": null },
         { "id": "con_fruto", "nameEs": "Con fruto", "nameEn": "Fruiting", "days": 0, "mesh": null }
       ],
-      "harvest": { "item": "pina", "min": 1, "max": 1, "everyDays": 0 }
+      "harvest": { "item": "pina", "min": 1, "max": 1, "everyDays": 8 },
+      "noteEs": "Propuesta: la mata vuelve a dar fruto (retoño) cada 8 días buenos en su estación. Con everyDays 0 se plantaba una piña para cosechar una piña y el cultivo no producía nada."
     },
     {
       "id": "maracuya",
@@ -121,10 +135,11 @@
       { "item": "fibra_coco" },
       { "item": "alga_fibra" },
       { "item": "espina_pescado" },
+      { "item": "guano" },
       { "tag": "comida" }
     ],
     "growthMultiplier": 1.5,
     "durationDays": 8,
-    "noteEs": "Biblia de contenido §7.2 y 02 §10.1. Cierra el ciclo de la comida estropeada: lo que se pudre en la despensa vuelve al bancal. Una tanda de 4 restos abona una parcela un ciclo entero de taro o batata."
+    "noteEs": "Biblia de contenido §7.2 y 02 §10.1. Cierra el ciclo de la comida estropeada: lo que se pudre en la despensa vuelve al bancal. Una tanda de 4 restos abona una parcela un ciclo entero de taro o batata. El guano de Los Dientes (fauna.json, depósito de la colonia de fragatas) cuenta como un resto más: propuesta, sin bonificación propia porque FFarmModel solo conoce un abono."
   }
 }

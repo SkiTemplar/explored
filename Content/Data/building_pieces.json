@@ -1113,6 +1113,196 @@
       "mesh": "SM_Base_MuseumPanel"
     },
     {
+      "id": "pecera_museo",
+      "nameEs": "Pecera del museo",
+      "nameEn": "Museum fish tank",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "resina",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha",
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 60,
+      "integrity": 45,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "bandeja_conchas",
+      "nameEs": "Bandeja de conchas",
+      "nameEn": "Shell tray",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_blanda",
+          "count": 2
+        },
+        {
+          "item": "arena",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 15,
+      "integrity": 40,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "marco_herbario",
+      "nameEs": "Marco del herbario",
+      "nameEn": "Herbarium frame",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 2
+        },
+        {
+          "item": "cordel",
+          "count": 1
+        },
+        {
+          "item": "resina",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "pared_madera"
+      ],
+      "buildMinutes": 15,
+      "integrity": 35,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "atril_cuaderno",
+      "nameEs": "Atril del cuaderno",
+      "nameEn": "Sketchbook lectern",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_blanda",
+          "count": 2
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 20,
+      "integrity": 45,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "vitrina_minerales",
+      "nameEs": "Vitrina de minerales",
+      "nameEn": "Mineral display case",
+      "tier": "madera",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 2
+        },
+        {
+          "item": "bambu_fino",
+          "count": 4
+        },
+        {
+          "item": "resina",
+          "count": 2
+        },
+        {
+          "item": "cristal_cuarzo",
+          "count": 1
+        },
+        {
+          "item": "grasa",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha",
+        "cuchillo"
+      ],
+      "requiresPieces": [
+        "techo_madera"
+      ],
+      "buildMinutes": 40,
+      "integrity": 50,
+      "maxCycloneCategory": 2,
+      "mesh": null
+    },
+    {
+      "id": "panel_fosiles",
+      "nameEs": "Panel de fósiles",
+      "nameEn": "Fossil panel",
+      "tier": "piedra",
+      "category": "museo",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "piedra_plana",
+          "count": 4
+        },
+        {
+          "item": "caliza",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [
+        "muro_piedra"
+      ],
+      "buildMinutes": 45,
+      "integrity": 90,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
       "id": "astillero",
       "nameEs": "Astillero",
       "nameEn": "Shipyard",

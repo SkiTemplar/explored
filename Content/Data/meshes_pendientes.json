@@ -12,24 +12,30 @@
     "clavos",
     "compost",
     "cristal_cuarzo",
+    "guano",
     "hierro_meteorito",
     "lingote_aluminio",
     "lingote_cobre",
     "lingote_hierro",
     "mineral_cobre",
-    "pico",
-    "tierra_suelta"
+    "pico"
   ],
   "buildingPieces": [
     "astillero",
+    "atril_cuaderno",
     "banco_chatarra",
+    "bandeja_conchas",
     "cuerda_fija",
     "escalera_mano",
     "espantapajaros",
     "horno_fundicion",
+    "marco_herbario",
+    "panel_fosiles",
+    "pecera_museo",
     "pila_compost",
     "tablon_contencion",
     "viga_apoyo",
+    "vitrina_minerales",
     "yunque"
   ],
   "plantStages": [

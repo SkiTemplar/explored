@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "note": "Cuadernos de la expedición Halden de 1974 (biblia 04 §7.1). Cada entrada vive en un punto de interés real que coloca Source/Explored/WorldGen/PointsOfInterest.cpp: island es la isla en minúsculas (LexToString de EIslandArchetype), poi el EPoiType y contentId el ContentId del POI. Tools/DataCheck comprueba que ese POI existe en esa isla. Red (biblia 08 §2.11, §5.5): el texto es dato local; que un cuaderno ya se haya leído es estado del mundo, del servidor, compartido por el grupo como el resto del progreso de exploración.",
+  "expeditionYear": 1974,
+  "entries": [
+    {
+      "id": "halden_01",
+      "order": 1,
+      "expeditionDay": 14,
+      "island": "mangrove",
+      "poi": "RadioStation",
+      "contentId": "radio",
+      "textEs": "Día 14. La radio se moja más de lo que transmite. Marchena dice que es la antena. Yo digo que es la isla.",
+      "textEn": "Day 14. The radio gets wetter than it transmits. Marchena blames the antenna. I blame the island."
+    },
+    {
+      "id": "halden_02",
+      "order": 2,
+      "expeditionDay": null,
+      "island": "smoke",
+      "poi": "HaldenCamp",
+      "contentId": "camp_halden_2",
+      "textEs": "Encontramos tallas en la roca, bajo el tubo de lava. Nadie las esperaba. Fotografiamos, no tocamos nada.",
+      "textEn": "Found carvings in the rock, under the lava tube. Nobody expected them. We photograph, we touch nothing."
+    },
+    {
+      "id": "halden_03",
+      "order": 3,
+      "expeditionDay": null,
+      "island": "emerald",
+      "poi": "HaldenCamp",
+      "contentId": "camp_halden_1",
+      "textEs": "El barómetro no ha dejado de bajar en dos días. Guardamos los cuadernos en la lata de galletas, por si acaso.",
+      "textEn": "The barometer hasn't stopped falling in two days. Notebooks go in the biscuit tin, just in case."
+    },
+    {
+      "id": "halden_04",
+      "order": 4,
+      "expeditionDay": null,
+      "island": "whitesands",
+      "poi": "HaldenCamp",
+      "contentId": "camp_halden_3",
+      "textEs": "Se acabó el café el martes. Se acabó la paciencia el jueves. Quedan tres semanas de expedición.",
+      "textEn": "Coffee ran out Tuesday. Patience ran out Thursday. Three weeks of expedition left."
+    },
+    {
+      "id": "halden_05",
+      "order": 5,
+      "expeditionDay": null,
+      "island": "mesa",
+      "poi": "HaldenCamp",
+      "contentId": "camp_halden_4",
+      "textEs": "Si alguien lee esto: la radio nunca funcionó del todo bien. No busquéis un mensaje de socorro, no lo hubo. Solo nos fuimos con la siguiente marea baja.",
+      "textEn": "If anyone reads this: the radio never really worked. Don't look for a distress call, there wasn't one. We just left on the next low tide."
+    }
+  ]
+}

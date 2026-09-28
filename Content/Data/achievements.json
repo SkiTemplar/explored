@@ -6,10 +6,12 @@
     "modes": "modos en que se puede conseguir (Explorer, Survivor, Castaway, Custom); si falta, en todos",
     "hidden": "la UI no muestra nombre ni descripción hasta desbloquearlo",
     "icon": "pista de icono genérica; la UI decide el dibujo",
-    "coopScope": "biblia 08 §5.7: actor (solo quien hace la acción), world (todos los conectados) o witness (quien esté a menos de 50 m); si falta, pendiente de la pasada de H4",
     "stats.kind": "counter suma, max guarda el mayor, set reúne ids distintos, flag se marca una vez",
     "stats.scope": "profile dura toda la vida del jugador; run se vacía al empezar partida y viaja con su guardado",
-    "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces)"
+    "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces, artifacts); building_pieces incluye las piezas futuras de fases_futuras.json",
+    "phase": "fase en que el logro se puede conseguir (biblia 07 §2): AA acceso anticipado, F2 fase 2, F3 fase 3; en stats, fase de quien la informa (si falta, AA)",
+    "rarity": "rareza estimada para Steam (biblia 07 §2): comun >40 %, infrecuente 15-40 %, raro 4-15 %, muy_raro <4 % de quienes empiezan a jugar",
+    "coopScope": "quién lo desbloquea en cooperativo (biblia 08 §5.7): actor quien hace la acción, world todos los conectados, witness quien esté a menos de 50 m del hecho"
   },
   "source": "Catálogo de estadísticas documentado en docs/tecnico/estadisticas.md; Tools/DataCheck comprueba que ambos coinciden.",
   "modes": ["Explorer", "Survivor", "Castaway", "Custom"],
@@ -160,7 +162,7 @@
       "kind": "set",
       "scope": "run",
       "reportedBy": "P-BUILD",
-      "descriptionEs": "Piezas de construcción colocadas al menos una vez (ids de building_pieces.json).",
+      "descriptionEs": "Piezas de construcción colocadas al menos una vez (ids de building_pieces.json y piezas futuras de fases_futuras.json).",
       "valuesFrom": "building_pieces"
     },
     {
@@ -198,50 +200,147 @@
       "kind": "counter",
       "scope": "run",
       "reportedBy": "Mining",
-      "descriptionEs": "Ediciones del terreno hechas: cada golpe de pala o de pico que quita o pone tierra."
+      "descriptionEs": "Ediciones de terreno hechas (golpes de pala o pico que restan o suman densidad).",
+      "phase": "AA"
     },
     {
       "id": "strata_mined",
       "kind": "set",
       "scope": "run",
       "reportedBy": "Mining",
-      "descriptionEs": "Estratos de los que se ha sacado al menos una unidad (ids de mining.json → strata).",
-      "values": ["tierra", "arena", "arcilla", "azufre", "caliza", "veta_cobre", "basalto", "hierro_meteorito", "obsidiana", "cristal"]
+      "descriptionEs": "Estratos de los que se ha extraído al menos una unidad (ids de mining.json → strata).",
+      "values": ["tierra", "arena", "arcilla", "azufre", "caliza", "veta_cobre", "basalto", "hierro_meteorito", "obsidiana", "cristal"],
+      "phase": "AA"
     },
     {
       "id": "max_mining_depth_m",
       "kind": "max",
       "scope": "run",
       "reportedBy": "Mining",
-      "descriptionEs": "Profundidad máxima cavada bajo la superficie local, en metros."
+      "descriptionEs": "Profundidad máxima cavada bajo la superficie, en metros.",
+      "phase": "AA"
     },
     {
       "id": "air_pocket_survived",
       "kind": "flag",
       "scope": "run",
-      "reportedBy": "Mining / Survival",
-      "descriptionEs": "Se marca la primera vez que el aire de una bolsa cerrada llega al mínimo y el jugador sale con vida."
+      "reportedBy": "Mining",
+      "descriptionEs": "Se marca la primera vez que el aire llega al mínimo en una bolsa cerrada y el jugador sale con vida.",
+      "phase": "AA"
     },
     {
       "id": "cave_collapse_avoided",
       "kind": "flag",
       "scope": "run",
       "reportedBy": "Mining / Building",
-      "descriptionEs": "Se marca al colocar una viga de apoyo en una galería que estaba a punto de derrumbarse."
+      "descriptionEs": "Se marca al colocar una viga de apoyo en una galería a punto de derrumbarse.",
+      "phase": "AA"
+    },
+    {
+      "id": "artifact_ids_found",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "Ruins",
+      "descriptionEs": "Tesoros encontrados por id, estén expuestos o no.",
+      "valuesFrom": "artifacts",
+      "phase": "AA"
+    },
+    {
+      "id": "underground_treasure_found",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Ruins / Mining",
+      "descriptionEs": "Se marca al encontrar el primer tesoro en un templo enterrado.",
+      "phase": "F2"
     },
     {
       "id": "tools_broken_on_wrong_material",
       "kind": "counter",
       "scope": "profile",
-      "reportedBy": "Crafting / Mining",
-      "descriptionEs": "Herramientas rotas al golpear un material más duro del que aguantaban."
+      "reportedBy": "Crafting",
+      "descriptionEs": "Herramientas rotas por golpear un material más duro del que soportaban.",
+      "phase": "AA"
     },
     {
       "id": "crab_stole_item",
       "kind": "flag",
       "scope": "profile",
       "reportedBy": "Fauna",
-      "descriptionEs": "Se marca la primera vez que un cangrejo se lleva un objeto dejado en la arena."
+      "descriptionEs": "Se marca la primera vez que un cangrejo se lleva un objeto dejado en la arena.",
+      "phase": "AA"
+    },
+    {
+      "id": "rail_track_and_cart_used",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Tramway",
+      "descriptionEs": "Se marca al mover un vagón cargado por una vía tendida por el jugador.",
+      "phase": "F2"
+    },
+    {
+      "id": "livestock_species_raised",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "Fauna (granja)",
+      "descriptionEs": "Especies domésticas con al menos una cría nacida en un corral (ids de fases_futuras.json → livestock.species).",
+      "values": ["gallina", "cerdo", "cabra"],
+      "phase": "F2"
+    },
+    {
+      "id": "eggs_collected",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Fauna (granja)",
+      "descriptionEs": "Huevos recogidos del gallinero.",
+      "phase": "F2"
+    },
+    {
+      "id": "barter_trades_completed",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Villages",
+      "descriptionEs": "Trueques completados con el pueblo del arrecife.",
+      "phase": "F3"
+    },
+    {
+      "id": "reputation_village_tier",
+      "kind": "max",
+      "scope": "run",
+      "reportedBy": "Villages",
+      "descriptionEs": "Nivel de reputación alcanzado (0 neutral, 1 básica, 2 alta, 3 aliado de facto).",
+      "phase": "F3"
+    },
+    {
+      "id": "wayfinding_taught_by_village",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Villages",
+      "descriptionEs": "Se marca al aprender una técnica de wayfinding directamente del pueblo.",
+      "phase": "F3"
+    },
+    {
+      "id": "village_defended_from_raid",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Villages / Raiders",
+      "descriptionEs": "Se marca cuando se repele un asalto sobre el pueblo con ayuda del jugador y sin que nadie de la sesión haya disparado una flecha (restricción de biblia 08 §5.7).",
+      "phase": "F3"
+    },
+    {
+      "id": "raids_defended",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Raiders",
+      "descriptionEs": "Asaltos piratas a la propia base repelidos sin pérdidas.",
+      "phase": "F3"
+    },
+    {
+      "id": "raider_camps_defeated",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Raiders",
+      "descriptionEs": "Campamentos pirata derrotados.",
+      "phase": "F3"
     }
   ],
   "achievements": [
@@ -253,6 +352,9 @@
       "descriptionEn": "Light your first fire on the archipelago.",
       "hidden": false,
       "icon": "fuego",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "actor",
       "condition": {"stat": "fires_lit", "op": ">=", "value": 1}
     },
     {
@@ -263,27 +365,36 @@
       "descriptionEn": "Last ten days on the islands.",
       "hidden": false,
       "icon": "sol",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "world",
       "condition": {"stat": "days_survived", "op": ">=", "value": 10}
     },
     {
       "id": "un_ano_de_islas",
       "nameEs": "Un año de islas",
       "nameEn": "A Year of Islands",
-      "descriptionEs": "Vive un año entero del archipiélago, sus cuatro estaciones, en modo Superviviente o Náufrago.",
-      "descriptionEn": "Live through a whole island year, all four seasons, in Survivor or Castaway mode.",
+      "descriptionEs": "Vive las cuatro estaciones del archipiélago en modo Superviviente o Náufrago.",
+      "descriptionEn": "Live through all four island seasons in Survivor or Castaway mode.",
       "hidden": false,
       "icon": "estaciones",
       "modes": ["Survivor", "Castaway"],
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "world",
       "condition": {"stat": "days_survived", "op": ">=", "value": 32}
     },
     {
       "id": "rey_del_cocotero",
       "nameEs": "Rey del cocotero",
       "nameEn": "Coconut King",
-      "descriptionEs": "Trepa a lo alto de un cocotero y abre cincuenta cocos.",
-      "descriptionEn": "Climb to the top of a coconut palm and open fifty coconuts.",
+      "descriptionEs": "Trepa a un cocotero y abre cincuenta cocos.",
+      "descriptionEn": "Climb a coconut palm and open fifty coconuts.",
       "hidden": false,
       "icon": "coco",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
       "condition": {"all": [{"stat": "palms_climbed", "op": ">=", "value": 1}, {"stat": "coconuts_opened", "op": ">=", "value": 50}]}
     },
     {
@@ -294,6 +405,9 @@
       "descriptionEn": "Set foot on a second island.",
       "hidden": false,
       "icon": "isla",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "actor",
       "condition": {"stat": "islands_visited", "op": ">=", "value": 2}
     },
     {
@@ -304,6 +418,9 @@
       "descriptionEn": "Set foot on all seven islands.",
       "hidden": false,
       "icon": "archipielago",
+      "phase": "F2",
+      "rarity": "raro",
+      "coopScope": "actor",
       "condition": {"stat": "islands_visited", "op": ">=", "value": 7}
     },
     {
@@ -314,6 +431,9 @@
       "descriptionEn": "Complete the map of one island by your own hand.",
       "hidden": false,
       "icon": "mapa",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "world",
       "condition": {"stat": "islands_mapped", "op": ">=", "value": 1}
     },
     {
@@ -324,6 +444,9 @@
       "descriptionEn": "Complete the map of all seven islands.",
       "hidden": false,
       "icon": "mapa",
+      "phase": "F2",
+      "rarity": "muy_raro",
+      "coopScope": "world",
       "condition": {"stat": "islands_mapped", "op": ">=", "value": 7}
     },
     {
@@ -334,6 +457,9 @@
       "descriptionEn": "Walk through the lava tube beneath the volcano on Smoke Island.",
       "hidden": false,
       "icon": "volcan",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
       "condition": {"stat": "places_visited", "contains": "tubo_lava"}
     },
     {
@@ -344,124 +470,48 @@
       "descriptionEn": "Recover all four pieces of the Albatross: fuselage, wing, tail and engine.",
       "hidden": false,
       "icon": "avion",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "world",
       "condition": {"stat": "albatros_parts_recovered", "op": ">=", "value": 4}
     },
     {
       "id": "primer_techo",
       "nameEs": "Un techo propio",
-      "nameEn": "A Roof of Your Own",
+      "nameEn": "Your Own Roof",
       "descriptionEs": "Construye tu primer refugio o tu primer techo.",
       "descriptionEn": "Build your first shelter or your first roof.",
       "hidden": false,
       "icon": "refugio",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "world",
       "condition": {"any": [{"stat": "building_pieces_built", "contains": "refugio_inclinado"}, {"stat": "building_pieces_built", "contains": "techo_palma"}, {"stat": "building_pieces_built", "contains": "techo_bambu"}, {"stat": "building_pieces_built", "contains": "techo_madera"}]}
     },
     {
       "id": "cimientos_de_piedra",
       "nameEs": "Cimientos de piedra",
       "nameEn": "Stone Foundations",
-      "descriptionEs": "Construye con piedra, el material más sólido de la base.",
-      "descriptionEn": "Build with stone, the sturdiest material for your base.",
+      "descriptionEs": "Construye tu primera pieza de piedra.",
+      "descriptionEn": "Build your first piece in stone.",
       "hidden": false,
       "icon": "piedra",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "world",
       "condition": {"stat": "building_tier_max", "op": ">=", "value": 3}
-    },
-    {
-      "id": "primera_palada",
-      "nameEs": "Primera palada",
-      "nameEn": "First Shovelful",
-      "descriptionEs": "Cava tu primer agujero en la tierra o la arena.",
-      "descriptionEn": "Dig your first hole in earth or sand.",
-      "hidden": false,
-      "icon": "pala",
-      "coopScope": "actor",
-      "condition": {"stat": "terrain_edits_made", "op": ">=", "value": 1}
-    },
-    {
-      "id": "buscador_de_vetas",
-      "nameEs": "Buscador de vetas",
-      "nameEn": "Seam Seeker",
-      "descriptionEs": "Extrae mineral de tres estratos distintos.",
-      "descriptionEn": "Mine ore from three different strata.",
-      "hidden": false,
-      "icon": "veta",
-      "coopScope": "actor",
-      "condition": {"stat": "strata_mined", "op": ">=", "value": 3}
-    },
-    {
-      "id": "filo_de_obsidiana",
-      "nameEs": "Filo de obsidiana",
-      "nameEn": "Obsidian Edge",
-      "descriptionEs": "Extrae tu primera veta de obsidiana en la Isla del Humo.",
-      "descriptionEn": "Mine your first obsidian seam on Smoke Island.",
-      "hidden": false,
-      "icon": "obsidiana",
-      "coopScope": "actor",
-      "condition": {"stat": "strata_mined", "contains": "obsidiana"}
-    },
-    {
-      "id": "topo_de_isla",
-      "nameEs": "Topo de isla",
-      "nameEn": "Island Mole",
-      "descriptionEs": "Cava una galería de veinte metros bajo la superficie.",
-      "descriptionEn": "Dig a tunnel twenty metres below the surface.",
-      "hidden": false,
-      "icon": "galeria",
-      "coopScope": "actor",
-      "condition": {"stat": "max_mining_depth_m", "op": ">=", "value": 20}
-    },
-    {
-      "id": "el_aire_que_falta",
-      "nameEs": "El aire que falta",
-      "nameEn": "Running Out of Air",
-      "descriptionEs": "Sal con vida de una bolsa de aire viciado justo a tiempo.",
-      "descriptionEn": "Get out of a foul-air pocket alive, just in time.",
-      "hidden": true,
-      "icon": "aire",
-      "coopScope": "witness",
-      "condition": {"flag": "air_pocket_survived"}
-    },
-    {
-      "id": "viga_a_tiempo",
-      "nameEs": "Viga a tiempo",
-      "nameEn": "Beam in Time",
-      "descriptionEs": "Coloca un apoyo en una galería a punto de derrumbarse.",
-      "descriptionEn": "Place a support beam in a tunnel about to cave in.",
-      "hidden": true,
-      "icon": "viga",
-      "coopScope": "actor",
-      "condition": {"flag": "cave_collapse_avoided"}
-    },
-    {
-      "id": "manazas",
-      "nameEs": "Manazas",
-      "nameEn": "Butterfingers",
-      "descriptionEs": "Rompe veinte herramientas golpeando algo demasiado duro para ellas.",
-      "descriptionEn": "Break twenty tools on something too hard for them.",
-      "hidden": false,
-      "icon": "herramienta_rota",
-      "coopScope": "actor",
-      "condition": {"stat": "tools_broken_on_wrong_material", "op": ">=", "value": 20}
-    },
-    {
-      "id": "el_cangrejo_se_lo_llevo",
-      "nameEs": "Cangrejo ladrón",
-      "nameEn": "The Crab Took It",
-      "descriptionEs": "Deja que un cangrejo se lleve algo que habías dejado en la arena.",
-      "descriptionEn": "Let a crab make off with something you left on the sand.",
-      "hidden": true,
-      "icon": "cangrejo",
-      "coopScope": "actor",
-      "condition": {"flag": "crab_stole_item"}
     },
     {
       "id": "ojo_de_ciclon",
       "nameEs": "Ojo de ciclón",
       "nameEn": "Eye of the Cyclone",
       "descriptionEs": "Sobrevive a un ciclón sin que tu base sufra ningún daño.",
-      "descriptionEn": "Weather a cyclone without a single scratch on your base.",
+      "descriptionEn": "Weather a cyclone without any damage to your base.",
       "hidden": false,
       "icon": "ciclon",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "world",
       "condition": {"stat": "cyclones_survived_intact", "op": ">=", "value": 1}
     },
     {
@@ -472,6 +522,9 @@
       "descriptionEn": "Harvest the first lemon from your lemon tree.",
       "hidden": false,
       "icon": "limon",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "world",
       "condition": {"stat": "crops_harvested", "contains": "limonero"}
     },
     {
@@ -482,6 +535,9 @@
       "descriptionEn": "Harvest five different crops.",
       "hidden": false,
       "icon": "huerto",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "world",
       "condition": {"stat": "crops_harvested", "op": ">=", "value": 5}
     },
     {
@@ -492,6 +548,9 @@
       "descriptionEn": "Taste twenty different foods.",
       "hidden": false,
       "icon": "olla",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "actor",
       "condition": {"stat": "foods_eaten", "op": ">=", "value": 20}
     },
     {
@@ -502,6 +561,9 @@
       "descriptionEn": "Catch your first fish.",
       "hidden": false,
       "icon": "pez",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "actor",
       "condition": {"stat": "fish_caught", "op": ">=", "value": 1}
     },
     {
@@ -512,6 +574,9 @@
       "descriptionEn": "Land one of the archipelago's five legendary catches.",
       "hidden": true,
       "icon": "anzuelo",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "witness",
       "condition": {"stat": "legendary_catches", "op": ">=", "value": 1}
     },
     {
@@ -522,6 +587,9 @@
       "descriptionEn": "Dive down to twenty metres.",
       "hidden": false,
       "icon": "burbujas",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
       "condition": {"stat": "max_dive_depth_m", "op": ">=", "value": 20}
     },
     {
@@ -532,26 +600,35 @@
       "descriptionEn": "Sail ten kilometres.",
       "hidden": false,
       "icon": "vela",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
       "condition": {"stat": "distance_sailed_m", "op": ">=", "value": 10000}
     },
     {
       "id": "luz_en_el_agua",
       "nameEs": "Luz en el agua",
       "nameEn": "Light in the Water",
-      "descriptionEs": "Contempla el mar encendido de bioluminiscencia.",
-      "descriptionEn": "Watch the sea light up with bioluminescence.",
+      "descriptionEs": "Mira el mar cuando brilla de bioluminiscencia.",
+      "descriptionEn": "See the sea glow with bioluminescence.",
       "hidden": false,
       "icon": "ola",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "witness",
       "condition": {"stat": "events_witnessed", "contains": "Bioluminescence"}
     },
     {
       "id": "madrugada_de_tortugas",
       "nameEs": "Madrugada de tortugas",
       "nameEn": "Turtle Dawn",
-      "descriptionEs": "Acompaña con la mirada a las crías de tortuga en su camino al mar.",
-      "descriptionEn": "Watch the turtle hatchlings make their way to the sea.",
+      "descriptionEs": "Mira cómo las crías de tortuga llegan al mar.",
+      "descriptionEn": "Watch the turtle hatchlings reach the sea.",
       "hidden": false,
       "icon": "tortuga",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "witness",
       "condition": {"stat": "events_witnessed", "contains": "TurtleHatchlings"}
     },
     {
@@ -562,6 +639,9 @@
       "descriptionEn": "Spot the whales passing by.",
       "hidden": false,
       "icon": "ballena",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "witness",
       "condition": {"stat": "events_witnessed", "contains": "WhalePassage"}
     },
     {
@@ -572,6 +652,9 @@
       "descriptionEn": "Stay up through a night of shooting stars.",
       "hidden": true,
       "icon": "estrella",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "witness",
       "condition": {"stat": "events_witnessed", "contains": "MeteorShower"}
     },
     {
@@ -582,6 +665,9 @@
       "descriptionEn": "Play the bamboo flute by the fire.",
       "hidden": false,
       "icon": "flauta",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
       "condition": {"stat": "flute_played_by_fire", "op": ">=", "value": 1}
     },
     {
@@ -592,6 +678,9 @@
       "descriptionEn": "Display ten treasures at once in your home museum.",
       "hidden": false,
       "icon": "vitrina",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "world",
       "condition": {"stat": "museum_treasures_on_display", "op": ">=", "value": 10}
     },
     {
@@ -602,6 +691,9 @@
       "descriptionEn": "Learn all five ancestral wayfinding techniques.",
       "hidden": false,
       "icon": "brujula",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "actor",
       "condition": {"stat": "wayfinding_techniques", "op": ">=", "value": 5}
     },
     {
@@ -612,6 +704,9 @@
       "descriptionEn": "Build the boat «Limón» and sail her to the hidden island.",
       "hidden": false,
       "icon": "barco",
+      "phase": "F3",
+      "rarity": "raro",
+      "coopScope": "world",
       "condition": {"all": [{"stat": "boats_built", "contains": "barco_limon"}, {"flag": "hidden_island_reached"}]}
     },
     {
@@ -623,6 +718,9 @@
       "hidden": false,
       "icon": "ancla",
       "modes": ["Castaway"],
+      "phase": "F3",
+      "rarity": "muy_raro",
+      "coopScope": "world",
       "condition": {"flag": "hidden_island_reached"}
     },
     {
@@ -633,7 +731,322 @@
       "descriptionEn": "Reach the hidden island without ever drawing a coastline.",
       "hidden": true,
       "icon": "estrella",
+      "phase": "F3",
+      "rarity": "muy_raro",
+      "coopScope": "world",
       "condition": {"all": [{"flag": "hidden_island_reached"}, {"not": {"flag": "coast_drawn"}}]}
+    },
+    {
+      "id": "primera_palada",
+      "nameEs": "Primera palada",
+      "nameEn": "First Shovelful",
+      "descriptionEs": "Cava tu primer agujero en la tierra o la arena.",
+      "descriptionEn": "Dig your first hole in earth or sand.",
+      "hidden": false,
+      "icon": "pala",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "actor",
+      "condition": {"stat": "terrain_edits_made", "op": ">=", "value": 1}
+    },
+    {
+      "id": "buscador_de_vetas",
+      "nameEs": "Buscador de vetas",
+      "nameEn": "Seam Seeker",
+      "descriptionEs": "Extrae mineral de tres estratos distintos.",
+      "descriptionEn": "Mine ore from three different strata.",
+      "hidden": false,
+      "icon": "pico",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"stat": "strata_mined", "op": ">=", "value": 3}
+    },
+    {
+      "id": "filo_de_obsidiana",
+      "nameEs": "Filo de obsidiana",
+      "nameEn": "Obsidian Edge",
+      "descriptionEs": "Extrae tu primera veta de obsidiana en la Isla del Humo.",
+      "descriptionEn": "Mine your first obsidian seam on Smoke Island.",
+      "hidden": false,
+      "icon": "obsidiana",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "actor",
+      "condition": {"stat": "strata_mined", "contains": "obsidiana"}
+    },
+    {
+      "id": "topo_de_isla",
+      "nameEs": "Topo de isla",
+      "nameEn": "Island Mole",
+      "descriptionEs": "Cava hasta veinte metros bajo la superficie.",
+      "descriptionEn": "Dig twenty metres below the surface.",
+      "hidden": false,
+      "icon": "mina",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "actor",
+      "condition": {"stat": "max_mining_depth_m", "op": ">=", "value": 20}
+    },
+    {
+      "id": "el_aire_que_falta",
+      "nameEs": "El aire que falta",
+      "nameEn": "Running Out of Air",
+      "descriptionEs": "Sal de una bolsa de aire viciado antes de desmayarte.",
+      "descriptionEn": "Get out of a pocket of foul air before you pass out.",
+      "hidden": true,
+      "icon": "burbujas",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "witness",
+      "condition": {"flag": "air_pocket_survived"}
+    },
+    {
+      "id": "viga_a_tiempo",
+      "nameEs": "Viga a tiempo",
+      "nameEn": "Beam in Time",
+      "descriptionEs": "Coloca un apoyo en una galería a punto de derrumbarse.",
+      "descriptionEn": "Prop up a tunnel that is about to cave in.",
+      "hidden": true,
+      "icon": "viga",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"flag": "cave_collapse_avoided"}
+    },
+    {
+      "id": "primer_tren_de_isla",
+      "nameEs": "El primer tren",
+      "nameEn": "The First Train",
+      "descriptionEs": "Tiende una vía y mueve por ella un vagón cargado.",
+      "descriptionEn": "Lay track and push a loaded cart along it.",
+      "hidden": false,
+      "icon": "vagon",
+      "phase": "F2",
+      "rarity": "infrecuente",
+      "coopScope": "world",
+      "condition": {"flag": "rail_track_and_cart_used"}
+    },
+    {
+      "id": "primera_empalizada",
+      "nameEs": "Primera empalizada",
+      "nameEn": "First Palisade",
+      "descriptionEs": "Construye tu primera empalizada.",
+      "descriptionEn": "Build your first palisade.",
+      "hidden": false,
+      "icon": "empalizada",
+      "phase": "F2",
+      "rarity": "comun",
+      "coopScope": "world",
+      "condition": {"stat": "building_pieces_built", "contains": "empalizada"}
+    },
+    {
+      "id": "muralla_de_piedra",
+      "nameEs": "Muralla de piedra",
+      "nameEn": "Stone Wall",
+      "descriptionEs": "Completa una muralla de piedra con al menos una torre.",
+      "descriptionEn": "Finish a stone wall with at least one tower.",
+      "hidden": false,
+      "icon": "muralla",
+      "phase": "F2",
+      "rarity": "infrecuente",
+      "coopScope": "world",
+      "condition": {"all": [{"stat": "building_pieces_built", "contains": "muralla_piedra"}, {"stat": "building_pieces_built", "contains": "torre_defensa"}]}
+    },
+    {
+      "id": "primera_pareja",
+      "nameEs": "Primera cría",
+      "nameEn": "A New Arrival",
+      "descriptionEs": "Consigue la primera cría en un corral.",
+      "descriptionEn": "Breed your first animal in a pen.",
+      "hidden": false,
+      "icon": "corral",
+      "phase": "F2",
+      "rarity": "comun",
+      "coopScope": "world",
+      "condition": {"stat": "livestock_species_raised", "op": ">=", "value": 1}
+    },
+    {
+      "id": "corral_completo",
+      "nameEs": "Corral completo",
+      "nameEn": "Full Pen",
+      "descriptionEs": "Cría las tres especies domésticas.",
+      "descriptionEn": "Breed all three farm species.",
+      "hidden": false,
+      "icon": "corral",
+      "phase": "F2",
+      "rarity": "infrecuente",
+      "coopScope": "world",
+      "condition": {"stat": "livestock_species_raised", "op": ">=", "value": 3}
+    },
+    {
+      "id": "huevos_por_docenas",
+      "nameEs": "Huevos por docenas",
+      "nameEn": "Eggs by the Dozen",
+      "descriptionEs": "Recoge cien huevos.",
+      "descriptionEn": "Collect a hundred eggs.",
+      "hidden": false,
+      "icon": "huevo",
+      "phase": "F2",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"stat": "eggs_collected", "op": ">=", "value": 100}
+    },
+    {
+      "id": "asalto_repelido",
+      "nameEs": "Asalto repelido",
+      "nameEn": "Raid Repelled",
+      "descriptionEs": "Repele tu primer asalto pirata sin perder nada.",
+      "descriptionEn": "Fight off your first raid without losing anything.",
+      "hidden": false,
+      "icon": "escudo",
+      "phase": "F3",
+      "rarity": "raro",
+      "coopScope": "world",
+      "condition": {"stat": "raids_defended", "op": ">=", "value": 1}
+    },
+    {
+      "id": "campamento_tomado",
+      "nameEs": "Campamento tomado",
+      "nameEn": "Camp Taken",
+      "descriptionEs": "Derrota un campamento pirata.",
+      "descriptionEn": "Defeat a raider camp.",
+      "hidden": false,
+      "icon": "bandera",
+      "phase": "F3",
+      "rarity": "raro",
+      "coopScope": "world",
+      "condition": {"stat": "raider_camps_defeated", "op": ">=", "value": 1}
+    },
+    {
+      "id": "primer_trueque",
+      "nameEs": "Primer trueque",
+      "nameEn": "First Barter",
+      "descriptionEs": "Completa tu primer trueque con el pueblo del arrecife.",
+      "descriptionEn": "Barter with the reef village for the first time.",
+      "hidden": false,
+      "icon": "trueque",
+      "phase": "F3",
+      "rarity": "comun",
+      "coopScope": "actor",
+      "condition": {"stat": "barter_trades_completed", "op": ">=", "value": 1}
+    },
+    {
+      "id": "aliado_de_facto",
+      "nameEs": "Aliado de facto",
+      "nameEn": "Ally in Practice",
+      "descriptionEs": "Alcanza la reputación más alta con el pueblo del arrecife.",
+      "descriptionEn": "Reach the highest standing with the reef village.",
+      "hidden": false,
+      "icon": "pueblo",
+      "phase": "F3",
+      "rarity": "raro",
+      "coopScope": "world",
+      "condition": {"stat": "reputation_village_tier", "op": ">=", "value": 3}
+    },
+    {
+      "id": "otra_forma_de_aprender",
+      "nameEs": "Otra forma de aprender",
+      "nameEn": "Another Way to Learn",
+      "descriptionEs": "Aprende una técnica de wayfinding del pueblo del arrecife.",
+      "descriptionEn": "Learn a wayfinding technique from the reef village.",
+      "hidden": true,
+      "icon": "brujula",
+      "phase": "F3",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"flag": "wayfinding_taught_by_village"}
+    },
+    {
+      "id": "sin_disparar_una_flecha",
+      "nameEs": "Sin disparar una flecha",
+      "nameEn": "Without Loosing an Arrow",
+      "descriptionEs": "Ayuda a defender el pueblo del arrecife de un asalto sin disparar.",
+      "descriptionEn": "Help the reef village fight off a raid without shooting.",
+      "hidden": true,
+      "icon": "arco",
+      "phase": "F3",
+      "rarity": "muy_raro",
+      "coopScope": "world",
+      "condition": {"flag": "village_defended_from_raid"}
+    },
+    {
+      "id": "primera_canoa",
+      "nameEs": "Primera canoa",
+      "nameEn": "First Canoe",
+      "descriptionEs": "Termina tu primera canoa en el astillero.",
+      "descriptionEn": "Finish your first canoe at the shipyard.",
+      "hidden": false,
+      "icon": "canoa",
+      "phase": "AA",
+      "rarity": "comun",
+      "coopScope": "actor",
+      "condition": {"stat": "boats_built", "contains": "canoa"}
+    },
+    {
+      "id": "bajo_el_templo",
+      "nameEs": "Bajo el templo",
+      "nameEn": "Under the Temple",
+      "descriptionEs": "Encuentra un tesoro en un templo enterrado.",
+      "descriptionEn": "Find a treasure inside a buried temple.",
+      "hidden": true,
+      "icon": "templo",
+      "phase": "F2",
+      "rarity": "raro",
+      "coopScope": "witness",
+      "condition": {"flag": "underground_treasure_found"}
+    },
+    {
+      "id": "juego_de_anzuelos",
+      "nameEs": "Juego de anzuelos",
+      "nameEn": "Set of Hooks",
+      "descriptionEs": "Reúne los tres anzuelos del pueblo navegante.",
+      "descriptionEn": "Find all three of the voyagers' fish hooks.",
+      "hidden": false,
+      "icon": "anzuelo",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "world",
+      "condition": {"all": [{"stat": "artifact_ids_found", "contains": "anzuelo_hueso"}, {"stat": "artifact_ids_found", "contains": "anzuelo_nacar"}, {"stat": "artifact_ids_found", "contains": "anzuelo_ceremonial"}]}
+    },
+    {
+      "id": "manazas",
+      "nameEs": "Manazas",
+      "nameEn": "Butterfingers",
+      "descriptionEs": "Rompe veinte herramientas golpeando algo demasiado duro para ellas.",
+      "descriptionEn": "Break twenty tools on something too hard for them.",
+      "hidden": false,
+      "icon": "herramienta",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"stat": "tools_broken_on_wrong_material", "op": ">=", "value": 20}
+    },
+    {
+      "id": "banquete_de_mil_cocos",
+      "nameEs": "Banquete de mil cocos",
+      "nameEn": "Thousand-Coconut Feast",
+      "descriptionEs": "Abre quinientos cocos en total.",
+      "descriptionEn": "Open five hundred coconuts in total.",
+      "hidden": true,
+      "icon": "coco",
+      "phase": "AA",
+      "rarity": "muy_raro",
+      "coopScope": "actor",
+      "condition": {"stat": "coconuts_opened", "op": ">=", "value": 500}
+    },
+    {
+      "id": "el_cangrejo_se_lo_llevo",
+      "nameEs": "Lo robó un cangrejo",
+      "nameEn": "The Crab Took It",
+      "descriptionEs": "Un cangrejo se lleva algo que dejaste en la arena.",
+      "descriptionEn": "A crab makes off with something you left on the sand.",
+      "hidden": true,
+      "icon": "cangrejo",
+      "phase": "AA",
+      "rarity": "infrecuente",
+      "coopScope": "actor",
+      "condition": {"flag": "crab_stole_item"}
     }
   ]
 }

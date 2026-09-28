@@ -154,7 +154,14 @@ public:
 	/** Oxígeno restante (0–100). */
 	float GetOxygen() const { return static_cast<float>(Oxygen); }
 	float GetOxygen01() const { return static_cast<float>(Oxygen / 100.0); }
-	void SetOxygen(float NewOxygen) { Oxygen = FMath::Clamp(static_cast<double>(NewOxygen), 0.0, 100.0); }
+	/** Un valor NaN (guardado corrupto) se ignora. */
+	void SetOxygen(float NewOxygen)
+	{
+		if (!FMath::IsNaN(NewOxygen))
+		{
+			Oxygen = FMath::Clamp(static_cast<double>(NewOxygen), 0.0, 100.0);
+		}
+	}
 
 	/** Fase de brazada en [0, 1). */
 	float GetStrokePhase() const { return StrokePhase; }
