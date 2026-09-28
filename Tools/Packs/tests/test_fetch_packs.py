@@ -62,10 +62,21 @@ def test_rechaza_rutas_fuera_del_zip(tmp_path: Path) -> None:
 
 
 def test_manifiesto_real_cc0_con_sha() -> None:
+    """Los packs con un unico zip verificable (direct/itch, los que baja
+    fetch_packs.py) son siempre CC0 con su sha256 real. Los packs "polypizza"
+    (modelo a modelo, sin zip; ver download_polypizza.py) son una excepcion
+    documentada: se verifican por autor+licencia scrapeados de cada pagina, no
+    por hash, y pueden ser CC0 o CC-BY 3.0 (con atribucion, ver
+    Tools/Packs/creditos_cc_by.md)."""
     manifest = fp.load_manifest()
     ids = [p["id"] for p in manifest["packs"]]
     assert len(ids) == len(set(ids))
     for p in manifest["packs"]:
+        if p["source"]["kind"] == "polypizza":
+            assert p["license"]["spdx"] in ("CC0-1.0", "CC-BY-3.0"), p["id"]
+            assert p["sha256"].startswith("n/a"), p["id"]
+            assert "note" in p["source"], p["id"]
+            continue
         assert p["license"]["spdx"] == "CC0-1.0", p["id"]
         assert len(p["sha256"]) == 64, p["id"]
         assert p["source"]["kind"] in ("direct", "itch")

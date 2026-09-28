@@ -259,11 +259,33 @@ def build_scene():
         y = -40 + RNG.uniform(-6, 6) + (5 if i % 2 == 0 else 0)
         place(tpl(name), (x, y, 0), rotation_z=RNG.uniform(0, math.tau), scale_jitter=0.15)
 
+    # --- Emergentes del dosel: unos pocos, mas altos, asomando por detras
+    # de la pared de copa media. ------------------------------------------
+    giant_names = ["SM_LowPolyJungleGiantA_01", "SM_LowPolyJungleGiantB_01"]
+    for i, x in enumerate(range(-30, 32, 15)):
+        name = giant_names[i % len(giant_names)]
+        y = -50 + RNG.uniform(-4, 4)
+        place(tpl(name), (x, y, 0), rotation_z=RNG.uniform(0, math.tau), scale_jitter=0.1)
+
+    # --- Sotobosque alto (bambu / dosel joven), entre la selva y la playa ---
+    understory_names = ["SM_LowPolyUnderstoryA_01", "SM_LowPolyUnderstoryB_01"]
+    for i, x in enumerate(range(-34, 36, 9)):
+        name = understory_names[i % len(understory_names)]
+        y = -26 + RNG.uniform(-4, 4)
+        place(tpl(name), (x, y, 0), rotation_z=RNG.uniform(0, math.tau), scale_jitter=0.15)
+
+    # --- Manglar: un par de arboles con sus raices junto a la orilla oeste --
+    mangrove_names = ["SM_LowPolyMangroveA_01", "SM_LowPolyMangroveRoots_01"]
+    for i, y in enumerate(range(-6, 20, 8)):
+        name = mangrove_names[i % len(mangrove_names)]
+        place(tpl(name), (-34, y, 0), rotation_z=RNG.uniform(0, math.tau), scale_jitter=0.15)
+
     # --- Suelo de selva: hierba y helechos densos junto a la selva, bajos
     # (todos <1.6 m: no tapan la vista de una camara a 1.7 m). ---------------
-    shrub_names = ["SM_LowPolyShrubA_01", "SM_LowPolyShrubB_01",
-                   "SM_LowPolyShrubFlowering_01", "SM_LowPolyShrubBanana_01"]
-    fern_names = ["SM_LowPolyFernA_01", "SM_LowPolyFernB_01"]
+    shrub_names = ["SM_LowPolyShrubMonstera_01", "SM_LowPolyShrubBromeliad_01",
+                   "SM_LowPolyShrubPineappleTop_01", "SM_LowPolyShrubBanana_01",
+                   "SM_LowPolyShrubHeliconia_01", "SM_LowPolyShrubBamboo_01"]
+    fern_names = ["SM_LowPolyFernA_01"]
     for i in range(16):
         x = RNG.uniform(-36, 36)
         y = -32 + RNG.uniform(-10, 10)
@@ -288,7 +310,7 @@ def build_scene():
         y = RNG.uniform(-10, 28)
         place(tpl(grass_names[i % len(grass_names)]), (x, y, 0), rotation_z=RNG.uniform(0, math.tau), scale_jitter=0.3)
 
-    flower_names = ["SM_LowPolyFlowerA_01", "SM_LowPolyFlowerB_01", "SM_LowPolyFlowerC_01"]
+    flower_names = ["SM_LowPolyFlowerHibiscus_01"]
     for i in range(12):
         x = RNG.uniform(-34, 34)
         if -6 < x < 6:

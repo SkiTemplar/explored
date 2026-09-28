@@ -5,19 +5,26 @@ Blender headless (no abre ventana):
     "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe" ^
         --background --factory-startup --python Tools/Packs/process_landing_set.py
 
-Fuentes (v2, tras el rechazo del director sobre el primer pase con Kenney
-Nature Kit para arboles/palmeras/arbustos):
-  - Quaternius, via Poly Pizza (CC0, descargados por download_polypizza.py a
-    Tools/Packs/.cache/quaternius-polypizza/): palmeras, arboles de copa
-    ancha, arbustos, helechos, hierba y flores. Se importan como .glb y se
-    conserva su material nativo (atlas con degradado base oscura/punta
-    clara ya horneado) sin tocarlo: el primer pase remapeaba todo a un
-    color plano por pieza y eso fue justo lo que se rechazo como "cutre".
+Fuentes (v3, 2026-09-28: el director marco el follaje del v2 -Quaternius via
+Poly Pizza generico- como de aspecto europeo/templado -robles redondos, setos
+de jardin, margaritas de prado- y pidio especies tropicales reconocibles):
+  - Poly Pizza, CC0 o CC-BY 3.0 (descargados por download_polypizza.py a
+    Tools/Packs/.cache/quaternius-polypizza/): palmeras (Quaternius, CC0),
+    dosel de selva y emergentes (Poly by Google / Zacharylll, CC-BY 3.0: sin
+    equivalente CC0 con especie reconocible), sotobosque (bananero, monstera,
+    heliconia, bromelia, bambu: mezcla CC0/CC-BY), manglar, helecho y hierba
+    (CC0). Se importan como .glb y se conserva su material nativo (atlas con
+    degradado propio ya horneado) sin tocarlo. Los modelos CC-BY exigen
+    atribucion: ver Tools/Packs/creditos_cc_by.md (pendiente de integrar en
+    Source/Explored/UI/Widgets/SExploredCredits.cpp con el editor abierto).
   - Kenney Nature Kit + Survival Kit (CC0, download_packs.py), solo para lo
     que el director pidio mantener: rocas de orilla, troncos/ramas caidas y
     setas. Estas SI se remapean a Tools/Packs/palette_lowpoly.png (paleta
     plana): son props pequenos y solidos, no follaje, donde un color plano
     no lee como generico.
+
+Especies retiradas en el v3 y el porque: ver DISCARDED en
+Tools/Packs/download_polypizza.py.
 
 Ver Tools/Packs/packs.json para licencia, autor y URL verificable de cada
 modelo, y Tools/Packs/mapping.md para como encajan estos slots con
@@ -93,27 +100,54 @@ ENTRIES: list[LandingEntry] = [
     LandingEntry(slot="Palm", name="SM_LowPolyPalmB_01", kind="glb", src="palm_b.glb", metric="height", target=22.0),
     LandingEntry(slot="Palm", name="SM_LowPolyPalmC_01", kind="glb", src="palm_c.glb", metric="height", target=25.0),
     LandingEntry(slot="Palm", name="SM_LowPolyPalmD_01", kind="glb", src="palm_d.glb", metric="height", target=15.0),
-    # --- Arboles de selva de copa ancha (Quaternius/Poly Pizza) -------------
-    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=16.0),
-    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideB_01", kind="glb", src="jungle_wide_b.glb", metric="height", target=18.0),
-    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideC_01", kind="glb", src="jungle_wide_c.glb", metric="height", target=14.0),
-    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideD_01", kind="glb", src="jungle_wide_d.glb", metric="height", target=17.0),
-    # --- Arbustos (Quaternius/Poly Pizza) -----------------------------------
-    LandingEntry(slot="Shrub", name="SM_LowPolyShrubA_01", kind="glb", src="shrub_a.glb", metric="height", target=1.4),
-    LandingEntry(slot="Shrub", name="SM_LowPolyShrubB_01", kind="glb", src="shrub_b.glb", metric="height", target=1.0),
-    LandingEntry(slot="Shrub", name="SM_LowPolyShrubFlowering_01", kind="glb", src="shrub_flowering.glb", metric="height", target=1.6),
-    LandingEntry(slot="Shrub", name="SM_LowPolyShrubBanana_01", kind="glb", src="shrub_banana.glb", metric="height", target=2.0),
-    # --- Helechos / sotobosque (Quaternius/Poly Pizza) ----------------------
+    # --- Dosel de selva, 14-18 m (CC-BY 3.0, ver Tools/Packs/creditos_cc_by.md) --
+    # 2026-09-28: sustituyen las 4 "Tree" de Quaternius (copas en bola sobre
+    # tronco en Y, aspecto de roble de jardin) que el director marco como
+    # europeas/templadas. Quaternius no tiene dosel tropical reconocible en
+    # Poly Pizza.
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=18.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideB_01", kind="glb", src="jungle_wide_b.glb", metric="height", target=16.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideC_01", kind="glb", src="jungle_wide_c.glb", metric="height", target=15.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideD_01", kind="glb", src="jungle_wide_d.glb", metric="height", target=14.0),
+    # --- Emergentes del dosel, 22-28 m (CC-BY 3.0): especies reales de selva,
+    # mas altas que el dosel medio. Sustituyen SM_JungleTreeGiant_01 (procedural).
+    LandingEntry(slot="JungleGiant", name="SM_LowPolyJungleGiantA_01", kind="glb", src="jungle_giant_a.glb", metric="height", target=28.0),
+    LandingEntry(slot="JungleGiant", name="SM_LowPolyJungleGiantB_01", kind="glb", src="jungle_giant_b.glb", metric="height", target=24.0),
+    # --- Sotobosque alto, 6-8 m: sustituyen SM_JungleTreeUnderstory_01. -----
+    # UnderstoryA reusa el mismo .glb que JungleWideA (Vine Covered Tree) a
+    # menor escala: es literalmente "JungleWide escalado" que pide el brief.
+    LandingEntry(slot="Understory", name="SM_LowPolyUnderstoryA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=8.0),
+    LandingEntry(slot="Understory", name="SM_LowPolyUnderstoryB_01", kind="glb", src="understory_bamboo.glb", metric="height", target=6.0),
+    # --- Manglar, 2-4 m: sustituyen SM_JungleTreeMangrove_01 (procedural, -----
+    # tronco cuadrado). MangroveA es el arbol (tronco en Y, CC0); MangroveB es
+    # una raiz arqueada aislada (CC-BY) para plantar junto al tronco o sola
+    # como detalle de raices en la orilla -sin ella ninguna malla de manglar
+    # mostraba raices, que es justo lo que pidio el director-.
+    LandingEntry(slot="Mangrove", name="SM_LowPolyMangroveA_01", kind="glb", src="mangrove_a.glb", metric="height", target=4.0),
+    LandingEntry(slot="Mangrove", name="SM_LowPolyMangroveRoots_01", kind="glb", src="mangrove_roots.glb", metric="length", target=2.0),
+    # --- Sotobosque: platanero, plantas de hoja grande y bambu ---------------
+    # 2026-09-28: sustituyen shrub_a/shrub_b (bolas de seto), shrub_flowering
+    # (flor lila de jardin) y shrub_banana (que era la fruta suelta, no la
+    # planta). Todo CC0 salvo donde se anota CC-BY.
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubBanana_01", kind="glb", src="shrub_banana.glb", metric="height", target=3.0),  # CC-BY
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubMonstera_01", kind="glb", src="shrub_monstera.glb", metric="height", target=1.2),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubHeliconia_01", kind="glb", src="shrub_heliconia.glb", metric="height", target=1.5),  # CC-BY
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubBromeliad_01", kind="glb", src="shrub_bromeliad.glb", metric="height", target=0.6),  # CC-BY
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubPineappleTop_01", kind="glb", src="shrub_pineapple_top.glb", metric="height", target=0.7),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubBamboo_01", kind="glb", src="shrub_bamboo.glb", metric="height", target=3.5),
+    # --- Helechos de suelo (Quaternius/Poly Pizza) ---------------------------
+    # fern_b (racimo de petalos morados mal etiquetado "Fern") se retira: no
+    # hay un segundo helecho CC0/CC-BY adecuado, ver DISCARDED en
+    # download_polypizza.py. Limitacion conocida, queda un unico helecho.
     LandingEntry(slot="Fern", name="SM_LowPolyFernA_01", kind="glb", src="fern_a.glb", metric="height", target=0.7),
-    LandingEntry(slot="Fern", name="SM_LowPolyFernB_01", kind="glb", src="fern_b.glb", metric="height", target=0.55),
-    # --- Hierba en matas (Quaternius/Poly Pizza) ----------------------------
-    LandingEntry(slot="Grass", name="SM_LowPolyGrassA_01", kind="glb", src="grass_a.glb", metric="height", target=0.4),
-    LandingEntry(slot="Grass", name="SM_LowPolyGrassB_01", kind="glb", src="grass_b.glb", metric="height", target=0.55),
-    LandingEntry(slot="Grass", name="SM_LowPolyGrassC_01", kind="glb", src="grass_c.glb", metric="height", target=0.35),
-    # --- Flores (Quaternius/Poly Pizza) -------------------------------------
-    LandingEntry(slot="Flower", name="SM_LowPolyFlowerA_01", kind="glb", src="flower_a.glb", metric="height", target=0.3),
-    LandingEntry(slot="Flower", name="SM_LowPolyFlowerB_01", kind="glb", src="flower_b.glb", metric="height", target=0.4),
-    LandingEntry(slot="Flower", name="SM_LowPolyFlowerC_01", kind="glb", src="flower_c.glb", metric="height", target=0.3),
+    # --- Hierba en matas altas, no cesped de prado (Quaternius/Poly Pizza) ---
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassA_01", kind="glb", src="grass_a.glb", metric="height", target=0.55),
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassB_01", kind="glb", src="grass_b.glb", metric="height", target=0.4),
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassC_01", kind="glb", src="grass_c.glb", metric="height", target=0.5),
+    # --- Flor (CC-BY 3.0) -----------------------------------------------------
+    # Flower_A/B/C (margaritas de prado) se retiran sin reemplazo 1:1: unico
+    # sustituto tropical sin maceta encontrado en Poly Pizza. Ver DISCARDED.
+    LandingEntry(slot="Flower", name="SM_LowPolyFlowerHibiscus_01", kind="glb", src="flower_hibiscus.glb", metric="height", target=0.5),  # CC-BY
     # --- Rocas de orilla (Kenney, mantenidas por peticion del director) ----
     LandingEntry(slot="Rock", name="SM_LowPolyRockShoreA_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallA.obj", metric="height", target=0.4),
@@ -290,6 +324,19 @@ def normalize_scale_and_pivot(obj, metric: str, target: float):
 
 
 def export_fbx(obj, out_path: Path):
+    """Exporta a FBX con las texturas incrustadas.
+
+    Causa del follaje gris-marron en el mapa horneado (diagnosticado 2026-09-28):
+    esta funcion exportaba con path_mode='STRIP' (tira la ruta de la textura,
+    no deja ni un path relativo) y embed_textures=False (tampoco la incrusta).
+    El follaje "kind=glb" conserva su material nativo -un atlas con degradado
+    ya horneado, ver remap_to_palette()/get_palette_material() mas arriba para
+    contraste con "kind=obj"-, asi que el FBX resultante llegaba a Unreal SIN
+    ninguna textura: ni incrustada ni referenciada por ruta. El importador de
+    Unreal crea igualmente el material (no falla), pero con el Base Color sin
+    conectar -de ahi el gris-marron plano en vez del degradado de la paleta
+    por isla-. path_mode='COPY' es requisito de Blender para que
+    embed_textures surta efecto (si no, la opcion se ignora en silencio)."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
@@ -308,8 +355,8 @@ def export_fbx(obj, out_path: Path):
         mesh_smooth_type='FACE',
         use_triangles=True,
         bake_anim=False,
-        path_mode='STRIP',
-        embed_textures=False,
+        path_mode='COPY',
+        embed_textures=True,
     )
 
 
@@ -340,10 +387,21 @@ def main():
 
         tris = sum(len(p.vertices) - 2 for p in obj.data.polygons)
         dims = obj.dimensions
+        # material_slots=["NATIVE"] para TODO este set: kind="glb" conserva
+        # el material propio del .glb (sin vertex color) y kind="obj" lleva
+        # el material M_LowPoly_Palette ya creado y asignado en Blender por
+        # remap_to_palette/get_palette_material. Ambos casos exportan ahora
+        # con la textura incrustada en el FBX (export_fbx: embed_textures,
+        # ver su docstring), asi que en los dos basta con que
+        # Tools/Unreal/import_meshes.py conserve el material que trae el FBX
+        # en vez de forzarle los 4 materiales estables de MATERIAL_DEFS
+        # (pensados para el vertex color del kit procedural, no para este set).
+        material_slots = ["NATIVE"]
         results.append(dict(
             name=entry["name"], slot=entry["slot"], file=f"{entry['slot']}/{entry['name']}.fbx",
             source_kind=entry["kind"], source_file=entry["src"], triangles=tris,
             dimensions_m={"x": round(dims.x, 3), "y": round(dims.y, 3), "z": round(dims.z, 3)},
+            material_slots=material_slots,
         ))
         print(f"[ok] {entry['name']}: {tris} tris, dims={dims.x:.2f}x{dims.y:.2f}x{dims.z:.2f} m -> {out_path}")
 
