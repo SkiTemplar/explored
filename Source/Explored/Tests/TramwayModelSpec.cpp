@@ -532,6 +532,19 @@ void FTramwayModelSpec::Define()
 			TestTrue(TEXT("vagón igual"), Back == Cart);
 		});
 
+		It("un torno que se queda sin vía debajo no borra la vía al cargar", [this]()
+		{
+			FTramwayModel Model;
+			Line(Model, FIntVector(0, 0, 0), 3, 0);
+			TestTrue(TEXT("torno al final"), Model.AddWinch(FIntVector(3, 0, 0)));
+			TestTrue(TEXT("quitan el último tramo"), Model.Remove(FIntVector(2, 0, 0), FIntVector(3, 0, 0)));
+			TestTrue(TEXT("el torno sigue puesto"), Model.HasWinch(FIntVector(3, 0, 0)));
+			FTramwayModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("igual"), Loaded == Model);
+			TestEqual(TEXT("los dos tramos que quedan"), Loaded.NumSegments(), 2);
+		});
+
 		It("rechaza guardados rotos y se queda vacío", [this]()
 		{
 			FTramwayModel Model;
@@ -556,8 +569,8 @@ void FTramwayModelSpec::Define()
 				Broken([](FSaveValue& V) { *V.Find(TEXT("seg"))->AtMutable(3) = FSaveValue::MakeInt(2); }),
 				// Palanca en una recta.
 				Broken([](FSaveValue& V) { FSaveValue& Sw = *V.Find(TEXT("sw")); Sw.Add(FSaveValue::MakeInt(1)); Sw.Add(FSaveValue::MakeInt(0)); Sw.Add(FSaveValue::MakeInt(0)); Sw.Add(FSaveValue::MakeInt(0)); }),
-				// Torno sin vía.
-				Broken([](FSaveValue& V) { FSaveValue& W = *V.Find(TEXT("winch")); W.Add(FSaveValue::MakeInt(9)); W.Add(FSaveValue::MakeInt(9)); W.Add(FSaveValue::MakeInt(0)); }),
+				// Torno repetido.
+				Broken([](FSaveValue& V) { FSaveValue& W = *V.Find(TEXT("winch")); for (int32 I = 0; I < 2; ++I) { W.Add(FSaveValue::MakeInt(9)); W.Add(FSaveValue::MakeInt(9)); W.Add(FSaveValue::MakeInt(0)); } }),
 				// Coordenada fuera de rango.
 				Broken([](FSaveValue& V) { *V.Find(TEXT("seg"))->AtMutable(0) = FSaveValue::MakeInt(int64(1) << 40); }),
 			};

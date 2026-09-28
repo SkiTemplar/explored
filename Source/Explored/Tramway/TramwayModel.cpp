@@ -843,10 +843,18 @@ bool FTramwayModel::FromValue(const FSaveValue& Value)
 	for (int32 I = 0; I < Winches->Num(); I += 3)
 	{
 		FIntVector Node;
-		if (!ReadNode(*Winches, I, Node) || !AddWinch(Node))
+		if (!ReadNode(*Winches, I, Node))
 		{
 			return Fail();
 		}
+		// No se pasa por AddWinch: un torno cuyo último tramo se quitó sigue en su nodo
+		// (Remove no lo borra) y tiene que volver a cargarse igual.
+		FNode& Target = Nodes.FindOrAdd(Node);
+		if (Target.bWinch)
+		{
+			return Fail();
+		}
+		Target.bWinch = true;
 	}
 	return true;
 }
