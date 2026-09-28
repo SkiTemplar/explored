@@ -37,6 +37,7 @@ Tests/SettingsLogicSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/SystemLinksSpec.cpp
+Tests/CoopRulesSpec.cpp
 Tests/TerrainEditModelSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
