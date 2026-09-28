@@ -572,6 +572,8 @@ namespace ExploredSaveStates
 			State.Read(TEXT("signalSmokeHours"), OutFire.Fire.SignalSmokeHours);
 			State.Read(TEXT("heat"), OutFire.Fire.Heat);
 			State.Read(TEXT("smoke"), OutFire.Fire.Smoke);
+			// El formato admite NaN/Infinity: un combustible NaN dejaría el fuego ardiendo para siempre.
+			FFireModel::Sanitize(OutFire.Fire);
 		}
 		FSaveArchive Pot;
 		if (Ar.Read(TEXT("pot"), Pot))

@@ -2,6 +2,8 @@
 
 #include "Cooking/FireModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace FireTest
@@ -296,6 +298,69 @@ void FFireSpec::Define()
 
 			FFireModel::Tick(Hoguera, Data, Calm(), 1.0f, Events);
 			TestFalse(TEXT("El humo denso se acaba"), FFireModel::IsSignalFire(Hoguera));
+		});
+	});
+
+	Describe("las entradas no finitas", [this]()
+	{
+		It("un paso NaN o infinito no toca el fuego y uno enorme termina y lo deja apagado", [this]()
+		{
+			const FFireData& Data = FFireData::Default();
+			FFireState S = Lit(EFireLevel::Hoguera, {TEXT("tronco_pequeno")});
+			const FFireState Before = S;
+			TArray<EFireEvent> Events;
+			FFireModel::Tick(S, Data, Calm(), std::numeric_limits<float>::quiet_NaN(), Events);
+			FFireModel::Tick(S, Data, Calm(), std::numeric_limits<float>::infinity(), Events);
+			TestTrue(TEXT("Sin cambios"), S == Before);
+			TestEqual(TEXT("Sin eventos"), Events.Num(), 0);
+
+			// 1e9 h: 2e10 pasos desbordarían int32 (y tardarían una eternidad).
+			FFireModel::Tick(S, Data, Calm(), 1.0e9f, Events);
+			TestTrue(TEXT("Apagado"), S.Status == EFireStatus::Unlit);
+			TestTrue(TEXT("Se consumió"), Events.Contains(EFireEvent::BurnedDown) && Events.Contains(EFireEvent::WentOut));
+		});
+
+		It("un estado cargado con NaN se sanea: arde, se consume y deja de admitir leña", [this]()
+		{
+			const FFireData& Data = FFireData::Default();
+			constexpr float NaN = std::numeric_limits<float>::quiet_NaN();
+			FFireState S;
+			S.Status = EFireStatus::Burning;
+			S.FuelHours = NaN;
+			S.FuelHeat = NaN;
+			S.Dampness = NaN;
+			S.EmberHours = std::numeric_limits<float>::infinity();
+			S.SignalSmokeHours = -3.0f;
+			S.Heat = NaN;
+			S.Smoke = 7.0f;
+			S.TinderCharges = 99;
+			FFireModel::Sanitize(S);
+			TestEqual(TEXT("Combustible"), S.FuelHours, 0.0f);
+			TestEqual(TEXT("Calor del combustible"), S.FuelHeat, 0.0f);
+			TestEqual(TEXT("Humedad"), S.Dampness, 0.0f);
+			TestEqual(TEXT("Brasas"), S.EmberHours, 0.0f);
+			TestEqual(TEXT("Señal"), S.SignalSmokeHours, 0.0f);
+			TestEqual(TEXT("Calor"), S.Heat, 0.0f);
+			TestEqual(TEXT("Humo"), S.Smoke, 1.0f);
+			TestEqual(TEXT("Yesca"), S.TinderCharges, FFireModel::MaxTinderCharges);
+
+			TArray<EFireEvent> Events;
+			TestTrue(TEXT("Cabe un tronco"), FFireModel::AddFuel(S, Data, TEXT("tronco_pequeno"), Events));
+			TestFalse(TEXT("El segundo no cabe"), FFireModel::AddFuel(S, Data, TEXT("tronco_pequeno"), Events));
+			FFireModel::Tick(S, Data, Calm(), 24.0f, Events);
+			TestTrue(TEXT("Se apaga"), S.Status == EFireStatus::Unlit);
+		});
+
+		It("rechaza un combustible con horas NaN en los datos", [this]()
+		{
+			FFireData Data = FFireData::Default();
+			FFuelDef& Bad = Data.Fuels.AddDefaulted_GetRef();
+			Bad.ItemId = TEXT("lena_rota");
+			Bad.BurnHours = std::numeric_limits<float>::quiet_NaN();
+			FFireState S;
+			TArray<EFireEvent> Events;
+			TestFalse(TEXT("No se acepta"), FFireModel::AddFuel(S, Data, TEXT("lena_rota"), Events));
+			TestEqual(TEXT("El hogar sigue vacío"), S.FuelHours, 0.0f);
 		});
 	});
 
