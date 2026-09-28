@@ -14,10 +14,15 @@ trueque con el pueblo del arrecife (§3.9, §5). Comprueba:
 from __future__ import annotations
 
 import json
+import re
 
 from . import mining
 
 FILE = "fases_futuras.json"
+REPUTATION_CPP = "Source/Explored/Villages/ReputationModel.cpp"
+REPUTATION_H = "Source/Explored/Villages/ReputationModel.h"
+BARTER_CPP = "Source/Explored/Villages/BarterModel.cpp"
+BARTER_H = "Source/Explored/Villages/BarterModel.h"
 DRAFT_PHASES = (2, 3)
 DRAFT_SOCKETS = {"via"}
 MONEY_KEYS = {"price", "precio", "moneda", "currency", "coins", "monedas", "cost_coins", "gold", "oro"}
@@ -143,6 +148,7 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
             r.error(f"{FILE}/trade/offers: objeto «{o['item']}» no existe")
         if "livestock" in o and o["livestock"] not in live_species:
             r.error(f"{FILE}/trade/offers: animal «{o['livestock']}» no está en livestock")
+    check_trade_matches_cpp(ds, r, trade)
     artifacts = {a.get("id") for a in ds.data.get("artifacts.json", {}).get("artifacts", [])}
     for w in trade.get("wants", []):
         for it in w.get("items", []):
@@ -158,6 +164,92 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         for did in sorted(draft_only):
             if f'"{did}"' in text:
                 r.error(f"{name}: usa «{did}», que solo existe en el borrador de fase 2/3 ({FILE})")
+
+
+def _cpp_function(text: str, signature: str) -> str:
+    """Cuerpo de una función de un .cpp (hasta la primera llave de cierre en la columna 0)."""
+    start = text.find(signature)
+    if start < 0:
+        return ""
+    end = text.find("\n}\n", start)
+    return text[start : end if end >= 0 else len(text)]
+
+
+def _cpp_enum_ids(text: str, enum: str) -> dict[str, str]:
+    """Enumerador → id de LexToString (``case EFoo::Bar: return TEXT("bar");``)."""
+    return dict(re.findall(rf'case {enum}::(\w+): return TEXT\("([^"]+)"\);', text))
+
+
+def _cpp_switch_ints(body: str, enum: str) -> dict[str, int]:
+    return {k: int(v) for k, v in re.findall(rf"case {enum}::(\w+): return (-?\d+);", body)}
+
+
+def _cpp_constexpr(text: str, name: str) -> float | None:
+    m = re.search(rf"static constexpr (?:int32|float) {name} = (-?[\d.]+)f?;", text)
+    return float(m.group(1)) if m else None
+
+
+def check_trade_matches_cpp(ds, r, trade: dict) -> None:
+    """El modelo puro del trueque (``Source/Explored/Villages``) y el borrador dicen lo mismo.
+
+    Tramos, tasas, cambios de reputación, valores por categoría, ventana horaria, enfriamiento
+    y reputación inicial: si alguien retoca uno de los dos lados, DataCheck lo caza. Sin los
+    ficheros de C++ (copia parcial del repo) no comprueba nada.
+    """
+    rep_cpp, rep_h = mining._read(ds, REPUTATION_CPP), mining._read(ds, REPUTATION_H)
+    bar_cpp, bar_h = mining._read(ds, BARTER_CPP), mining._read(ds, BARTER_H)
+    if not (rep_cpp and rep_h and bar_cpp and bar_h):
+        return
+    where = f"{FILE}/trade frente a Villages/"
+
+    tier_ids = _cpp_enum_ids(rep_cpp, "EReputationTier")
+    mins = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::TierMin("), "EReputationTier")
+    quarters = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::TradeRateQuarters("), "EReputationTier")
+    json_tiers = {t.get("id"): t for t in trade.get("tiers", [])}
+    if set(tier_ids.values()) != set(json_tiers):
+        r.error(f"{where}ReputationModel: tramos {sorted(tier_ids.values())} en C++ y {sorted(json_tiers)} en el borrador")
+    for enum, tid in tier_ids.items():
+        t = json_tiers.get(tid)
+        if t is None:
+            continue
+        if mins.get(enum) != t.get("min"):
+            r.error(f"{where}ReputationModel: el tramo «{tid}» empieza en {mins.get(enum)} en C++ y en {t.get('min')} en el borrador")
+        if quarters.get(enum, 0) * 0.25 != t.get("rate"):
+            r.error(f"{where}ReputationModel: tasa de «{tid}» ×{quarters.get(enum, 0) / 4} en C++ y ×{t.get('rate')} en el borrador")
+
+    action_ids = _cpp_enum_ids(rep_cpp, "EReputationAction")
+    deltas = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::ActionDelta("), "EReputationAction")
+    json_actions = {a.get("id"): a.get("delta") for a in trade.get("reputationActions", [])}
+    for enum, aid in action_ids.items():
+        if json_actions.get(aid) != deltas.get(enum):
+            r.error(f"{where}ReputationModel: la acción «{aid}» da {deltas.get(enum)} en C++ y {json_actions.get(aid)} en el borrador")
+    for aid in sorted(set(json_actions) - set(action_ids.values())):
+        r.error(f"{where}ReputationModel: la acción «{aid}» del borrador no existe en EReputationAction")
+
+    category_ids = _cpp_enum_ids(bar_cpp, "EBarterCategory")
+    values = _cpp_switch_ints(_cpp_function(bar_cpp, "int32 FBarterModel::CategoryValue("), "EBarterCategory")
+    json_wants = {w.get("id"): w.get("value") for w in trade.get("wants", [])}
+    for enum, cid in category_ids.items():
+        if enum == "None":
+            continue
+        if json_wants.get(cid) != values.get(enum):
+            r.error(f"{where}BarterModel: «{cid}» vale {values.get(enum)} en C++ y {json_wants.get(cid)} en el borrador")
+
+    hours = [_cpp_constexpr(bar_h, "OpenHour"), _cpp_constexpr(bar_h, "CloseHour")]
+    if hours != [float(h) for h in trade.get("hours", [])]:
+        r.error(f"{where}BarterModel: ventana horaria {hours} en C++ y {trade.get('hours')} en el borrador")
+    cooldown = _cpp_constexpr(rep_h, "HostileCooldownDays")
+    if cooldown != trade.get("hostileCooldownDays"):
+        r.error(f"{where}ReputationModel: enfriamiento de {cooldown} días en C++ y {trade.get('hostileCooldownDays')} en el borrador")
+    initial = _cpp_constexpr(rep_h, "FirstContactReputation")
+    for st in trade.get("settlements", []):
+        if st.get("initialReputation") != initial:
+            r.error(f"{where}ReputationModel: reputación inicial {initial} en C++ y {st.get('initialReputation')} en «{st.get('island')}»")
+    settlement_ids = set(_cpp_enum_ids(rep_cpp, "ESettlement").values())
+    if settlement_ids != {st.get("island") for st in trade.get("settlements", [])}:
+        r.error(f"{where}ReputationModel: asentamientos {sorted(settlement_ids)} en C++ distintos de los del borrador")
+    if trade.get("passiveDecay") is not False:
+        r.error(f"{FILE}/trade: passiveDecay debe ser false (biblia 05 §1.5: la reputación no baja sola)")
 
 
 def _phase1_view(name: str, content):
