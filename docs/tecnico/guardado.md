@@ -240,6 +240,14 @@ La sección `"world"` la registra `UExploredWiringSubsystem` (`GetWorldDeltas()`
 sin capas porque el scatter de vegetación aún no tiene recolección: cuando la tenga, basta con
 `GetWorldDeltas().Layer("harvested").Add(Celda, Índice)` y aplicar `ForEach` al regenerar.
 
+La capa `"terrain"` de la sección `"world"` guarda las ediciones del terreno volumétrico
+(`FSaveWorldDeltas::Terrain`, que el guardado trata como opaca). La escribe
+`FTerrainEdits::SaveTo` con `FTerrainEditModel::ToValue`, versión 2: deltas en milímetros
+por muestra de 0,25 m, en tramos por chunk de 8 m, como varints en base64 (formato en
+`TerrainEditModel.h`, ≈ 1,45 B por muestra editada). El lector acepta también la versión 1
+(arrays de enteros) y rechaza entera cualquier capa truncada o manipulada: el mundo carga
+sin cavar en vez de a medias. El base64 es `FSaveBase64`, el mismo de los mapas de bits.
+
 ## Ranuras
 
 - 3 ranuras manuales (`manual1`…`manual3`) y una automática (`auto`), en

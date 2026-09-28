@@ -93,7 +93,7 @@
 	{ "id": "arena", "nameEs": "Arena", "nameEn": "Sand", "meshPath": "/Game/Generated/Meshes/Items/SM_Item_Arena.SM_Item_Arena",
 		"weightKg": 0.3, "volumeLiters": 0.3, "size": "Pequeno", "tags": [],
 		"properties": [ { "name": "Abrasivo", "value": 2 } ] },
-	{ "id": "tierra_suelta", "nameEs": "Tierra suelta", "nameEn": "Loose soil", "meshPath": "/Engine/BasicShapes/Sphere.Sphere",
+	{ "id": "tierra_suelta", "nameEs": "Tierra suelta", "nameEn": "Loose soil", "meshPath": "/Game/Generated/Meshes/Items/SM_Item_TierraSuelta.SM_Item_TierraSuelta",
 		"weightKg": 0.35, "volumeLiters": 0.3, "size": "Pequeno", "tags": ["tierra", "mineria"],
 		"properties": [ { "name": "Moldeable", "value": 1 } ] },
 	{ "id": "sal_marina", "nameEs": "Sal marina", "nameEn": "Sea salt", "meshPath": "/Game/Generated/Meshes/Items/SM_Item_SalMarina.SM_Item_SalMarina",

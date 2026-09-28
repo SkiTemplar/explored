@@ -344,3 +344,260 @@ una PR abierta.
 ### 00-TODO.md
 
 Sin casillas marcadas: #65 corrige un fallo y no completa ninguna tarea de la lista.
+
+## Ejecución 11:00 UTC (larga, solapada con las siguientes)
+
+Empezó con `origin/main` en `266a8cc` y 23 PR abiertas (#70–#92). Cada PR la revisó un
+subagente en un worktree propio, rebasada en local sobre `origin/main`. La máquina (4 CPU)
+estuvo saturada durante horas, con cargas de 40 a 80, así que esta ejecución se ha solapado
+con las de las 13:00 y las 15:00. Esas ejecuciones fusionaron por su cuenta #83, #99 (la
+primera parte de #70), #76, #77, #100, #97, #71 y #94. Aquí no se han vuelto a tocar. Antes
+de cada fusión se volvió a comprobar la cabeza de la rama y se fusionó con `expectedHeadSha`.
+Las PR #93 y siguientes quedan para la próxima ejecución.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #70 | `nocturno/revision-2026-09-28` | No fusionada: la lleva otra ejecución | Main ya tiene la primera parte por #99. Lo que queda toca `M_Terrain` a través de `build_materials.py` (material), así que necesita Unreal. |
+| #71 | `nube/mundo-2026-09-28-cocos` | Fusionada en otra ejecución (`b7037a9`) | Aquí se pidieron cambios porque la tala soltaba `coco_verde` (biblia 02 §1.2 y §13.1) y las rachas no persistían. El autor lo corrigió en `ef8b2d6` y `eda1d95`: 850/0 con y sin sanitizer. |
+| #72 | `debug/playtest-automatico` | `necesita-unreal` | El auditor, el bot y el `ShotSubsystem` son código de motor. Los fallos funcionales están en la revisión (ver abajo). |
+| #73 | `nube/packs-2026-09-28` | **Fusionada** (`4a5b1ad`) | Solo datos, `Tools/Packs`, `Tools/DataCheck` y hojas de contacto. Ahora trae también el lote 7 (cuarzo y taro). |
+| #74 | `nocturno/datos-2026-09-28b` | **Fusionada** (`d184e03`) | Solo datos, DataCheck y docs. Coincide con la biblia 02 §2.4, §2.7 y §10.1. |
+| #75 | `arte/fondo-marino` | `necesita-unreal`, con fallos serios | Toca `WorldGenCommandlet.cpp` (ver abajo). |
+| #76 | `nube/mecanicas-2026-09-28-entradas` | Fusionada en otra ejecución (`a6108d3`) | Aquí salía verde: 822/0 con y sin sanitizer. |
+| #77 | `claude/update-todo-checklist-g6y9m0` | Fusionada en otra ejecución (`77e3f53`) | Lleva `5466c99` de esta revisión: la casilla de riego de `FFarmModel` vuelve a «en parte», porque `DryDaysToDie = 4` mata la planta y la biblia 02 §10.1 dice que no muere. |
+| #78 | `claude/implement-combat-model-h1-qweffn` | **Fusionada** (`b030518`) | `FCombatModel` puro con su spec, `combat.json` y DataCheck. Los números cuadran con la biblia 05 §3 y §5. |
+| #79 | `claude/h4-text-content-iytug5` | `necesita-unreal` (tres arreglos subidos) | `AchievementsDataSpec.cpp` solo corre en el editor. |
+| #80 | `claude/complete-h5-achievements-localization-be97tx` | `necesita-unreal`, pendiente del director | Toca `AchievementsSubsystem.cpp` y `Game.archive`. Reescribe la biblia 07 sin aprobación (ver abajo). |
+| #81 | `claude/livestock-pens-phase-2-be63wr` | `necesita-unreal` (dos arreglos subidos) | `AchievementsDataSpec.cpp`, y tres piezas F2 en `building_pieces.json` que el menú aún no filtra por fase. |
+| #82 | `claude/harvesting-h0-complete-lqtnfp` | `necesita-unreal` (arreglo subido) | Toca `ExploredWiringSubsystem` y `VegetationHarvestState.h`. |
+| #83 | `claude/stylized-terrain-textures-xvyy77` | Fusionada en otra ejecución (`8410a6d`) | Aquí salía verde: Textures 374 passed. |
+| #84 | `claude/h0-survival-conditions-2z1wec` | `necesita-unreal` | Componentes, HUD, `Game.archive`. En la nube todo en verde: 878/0 y DataCheck 201 passed. |
+| #85 | `claude/climb-model-h1-t20vxc` | `necesita-unreal` | Contiene #72 entera y toca los binarios de `Content/Localization/Game`. Además reescribe recetas de la biblia sin aprobación. |
+| #86 | `claude/h1-inventory-completion-y9tnyv` | `necesita-unreal` | `CarryComponent`, `SExploredInventoryPanel`, `Game.archive`. En la nube todo en verde: 869/0 y DataCheck 204 passed. |
+| #87 | `claude/fix-beach-terrain-profile-tvvrs3` | `necesita-unreal` | El código es puro y está en verde (838/0), pero cambia el terreno horneado. El encargo `23-perfil-playas.md` pide rehornear el mapa y el HLOD y mirar las playas en local. |
+| #88 | `claude/terrain-edits-pipeline-alwur4` | **Fusionada** (`c807d8d`), con arreglo al integrar | `FTerrainEdits` puro, con su spec, datos y docs. Git la fusionaba con #76 sin conflicto, pero salía `IsFiniteVector` definida dos veces y no compilaba. |
+| #89 | `claude/h0-network-codec-queue-o6u5gq` | **Fusionada** (`b6a9503`) | Modelos puros de red: códec de deltas, cola, checksum y `NetBudget`. Cumplen la biblia 08 §2.2. |
+| #90 | `claude/boat-pieces-pure-models-1vfxhd` | Cambios pedidos (sigue `necesita-unreal`) | Duplica lo que #53 dejó en main (ver abajo). |
+| #91 | `claude/add-h2-game-data-l4x8pd` | `necesita-unreal` (arreglo subido) | `AchievementsDataSpec.cpp` y el orden de `templates.json`, del que depende `Explored.Crafting` en el editor. |
+| #92 | `claude/phase-3-pure-models-65r78m` | Pendiente del director (arreglo subido) | Los modelos están en verde (895/0), pero la PR añade tres `[Decisión]` a la biblia 05 sin constancia de aprobación. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #72 | 825 / 0 | 825 / 0 | — | — |
+| #73 + #74 sobre main (`77e3f53`) | — | — | 0 errores · 212 passed | Packs: 7 passed · `l10n export --check`: 0 errores |
+| #75 | 825 / 0 | no se ejecutó (sin memoria) | 0 errores · 183 passed | Packs: 11 passed · Textures: 296 passed |
+| #78 sobre main (`d184e03`) | 878 / 0 | 878 / 0 | 0 errores · 227 passed | — |
+| #79 | 819 / 0 | 819 / 0 | 0 errores · 251 passed | l10n: 31 passed · `export --check` ok |
+| #80 | 825 / 0 | 825 / 0 | 0 errores · 190 passed | l10n: 56 passed · `--strict` sin avisos |
+| #81 | 851 / 0 | 851 / 0 | 0 errores · 196 passed | l10n: 27 passed |
+| #82 | 869 / 0 | 869 / 0 | — | — |
+| #84 | 878 / 0 | 878 / 0 | 0 errores · 201 passed | l10n: 27 passed |
+| #84 + #86 juntas | 928 / 0 | 928 / 0 | 0 errores · 222 passed | — |
+| #85 | 870 / 0 | no se ejecutó (sin memoria) | 0 errores · 183 passed | l10n: 27 passed · `export --check` ok |
+| #86 | 869 / 0 | 869 / 0 | 0 errores · 204 passed | l10n: 27 passed |
+| #87 | 838 / 0 | 838 / 0 | — | — |
+| #88 sobre main (`b6a9503`) | 1054 / 0 | 1054 / 0 | 0 errores · 231 passed | — |
+| #89 sobre main (`7d26939`) | 1031 / 0 | 1031 / 0 | — | — |
+| #90 | 859 / 0 | 859 / 0 | 0 errores · 200 passed | — |
+| #91 | 819 / 0 | 819 / 0 | 0 errores · 296 passed | l10n: 27 passed · `export --check` ok |
+| #92 | 895 / 0 | 895 / 0 | 0 errores · 189 passed | — |
+
+DataCheck `pytest` tardó 15 minutos con la máquina libre y entre 1,5 y 2 horas con la
+máquina saturada.
+
+### Arreglos subidos
+
+- **#77 `5466c99`:** la casilla de riego de `FFarmModel` vuelve a «en parte» y se corrige
+  el recuento.
+- **#78 `017f61d`, `597a19e`:** merges de `main` en la rama.
+  - Conflicto en `00-TODO.md` con #77: las cinco casillas de combate y la de estadísticas
+    de fauna quedan «en parte», porque `FCombatModel` es solo un modelo puro, sin
+    componente ni RPC. Es el mismo criterio que #77 aplica a #40, #46, #57 y #58.
+  - Conflictos en `checks.py` (un import) y `test_datacheck.py`: se conservan los dos
+    lados.
+- **#89 `9f4104f`, `04bd858`, `dc9f70a`:** merges de `main` en la rama. Las casillas del
+  paquete de deltas, la cola de salida y la comprobación por chunk quedan «en parte», por
+  la misma razón.
+- **#88 `be9cace`:** merge de `main` en la rama.
+  - Se quita la copia de `TerrainEditDetail::IsFiniteVector` que también trae #76.
+  - `ForEachSampleInBox` se queda con la versión de #97, que además acota el número de
+    muestras.
+  - `00-TODO.md` adopta el formato de #77.
+- **#79 `7c84878`, `f7382da`, `17252a2`:**
+  - inglés británico;
+  - `phase`, `rarity` y `coopScope` en dos logros (biblia 07 §2.3 y 08 §5.7);
+  - «display case» según el glosario.
+  - `catalogo.json` se regeneró con `l10n export`.
+- **#81 `b7ac254`, `b8d5019`:**
+  - coste de `gallinero`, `pocilga` y `corral` según la biblia 03 §3.7;
+  - DataCheck pide «al menos 30» logros del acceso anticipado en vez de «exactamente
+    30», que chocaba con #90.
+- **#82 `a2abf2b`:** `FTreeFallModel::Resolve` dejaba que un árbol atravesara una pared o
+  una loma más alta que el arco del tronco.
+  - Dos casos del spec daban el fallo por bueno. Se han corregido y se ha añadido uno
+    nuevo.
+  - Con el código anterior, fallan 2 casos.
+- **#91 `a073348`:** faltaba el `nameEn` del nivel de fundición en `fuels.json`.
+- **#92 `6289ddd`:** el alcance del machete del Saqueador y del Capitán baja de 1,5 m a
+  1,2 m, como dice la biblia 05 §3.1 (`ReachShortM` de #78). Se añade la comprobación al
+  spec.
+
+**No subidos (push denegado al subagente):** hay dos arreglos listos en local.
+- #85: `DrivePiton` devuelve `EClimbReject::PitonAlreadyThere` cuando ya hay una clavija
+  (biblia 02 §13.4), y «sledge» pasa a «travois».
+- #75: el modelo descarta columnas NaN o infinitas del fondo marino, con su test.
+
+Quedan anotados en las revisiones de cada PR para que los aplique su autor.
+
+### Fallos serios y decisiones pendientes del director
+
+- **#72 (playtest):**
+  - el bot apunta con `Camera->SetWorldRotation`, pero la cámara usa
+    `bUsePawnControlRotation`, así que no mira al punto;
+  - con `-ExploredShots=playtest`, el bot y el `ShotSubsystem` se disputan el pawn y
+    `FScreenshotRequest`;
+  - `WriteReport` no espera al bot;
+  - `AuditGroundClearance` recorre el océano, el cielo y las manos, y dará falsos
+    positivos.
+- **#75 (fondo marino):**
+  - donde se solapan los halos de dos islas, las celdas se generan dos veces y salen
+    instancias duplicadas;
+  - el presupuesto de 2000 instancias por celda se lo come el coral, y no salen praderas,
+    kelp ni roca;
+  - los assets son CC-BY, cuando el GDD §7.1 solo recoge CC0, así que hace falta
+    aprobación y crédito;
+  - repite el número de lote 6 con #73.
+- **#80:**
+  - retoca 7 textos de los 30 logros originales, aunque la biblia 07 §2.2 dice que no se
+    tocan;
+  - pone rarezas a esos 30 logros;
+  - reescribe §3.5 y §4.2.
+  - Es el superconjunto de logros; se recomienda fusionarla primero y adaptar a ella #79,
+    #81, #90 y #91.
+- **#81:** reescribe dos textos de logros de granja de la biblia 07 §2.3.
+- **#82:**
+  - la nota nueva de la biblia 02 §1.2 decide por su cuenta que los golpes y el botín
+    siguen el GDD §3.12;
+  - en las partidas antiguas, los árboles talados «para siempre» rebrotarán.
+- **#85:** cambia la receta de `pie_de_palmera` (ya no es «cuerda ×1»), da dos roles a la
+  clavija y pone números nuevos en la biblia 02 §13.6.
+- **#90 (barcos por piezas):**
+  - duplica lo que #53 dejó en main: dos catálogos (`EHullPieceType` y
+    `EBoatPieceType`), dos formas de sacar la ficha y dos sistemas de uniones con ritmos
+    de daño distintos. Hay que unificarlos o decir cuál manda;
+  - repite dos objeciones de #53: reparar suma puntos, cuando la biblia 02 §8.3 pide
+    reemplazar la pieza; y las masas no cuadran con la biblia 03 (el tablón pesa 5 kg y
+    sale de 0,3 kg de `madera_blanda`);
+  - la red no dice cómo llegan al cliente la lista de piezas de un casco libre ni el
+    amarre;
+  - marca como hecha `barco_limon` aunque no consume `canoa_balancin`.
+- **#91:** añade «Decisiones 2026-09-28» a la biblia 03 y 07. Cambia la carretilla y el
+  banco de chatarra, y renombra «Cangrejo ladrón» y «Running Out of Air».
+- **#92:** hay que confirmar:
+  - que la batata violeta, la cerámica decorada y la sal refinada pasan de Neutral a
+    Cauta (biblia 05 §1.4);
+  - que la canoa de Cala Rota flota en vez de estar varada (§2.5);
+  - que «a veces 2 Saqueadores» es un 50 % (§2.3).
+- **#89 (ya en main):** `FTerrainEditModel` admite `MaxDeltaMm` de ±1000 m, pero el
+  `int16` del cable solo lleva ±32,767 m. Antes de cablear la red de H2 hay que decidir si
+  se acota el delta o se cambia el formato. `FTerrainChunkChecksumModel` duplica el FNV-1a
+  de `FTerrainEditModel::ChunkChecksum`, con la misma disposición de bytes.
+- **#74 (ya en main), para la sesión local:** en `FarmSpec.cpp` (`DataPlants()`), la
+  piña pasa de `1, 1, 0` a `1, 1, 8`. Siguen abiertas tres decisiones: los días sin riego
+  (biblia contra modelo), el radio del espantapájaros (4 m contra 15 m) y la carne del
+  cerdo salvaje.
+
+### Duplicados y choques
+
+- #85 contiene #72 entera: #72 va primero.
+- Varias PR repiten los mismos logros con textos distintos: #80 comparte 8 con #91 y 2 con
+  #79, y además #81 y #90 repiten algunos.
+- El tope de logros es incompatible entre PR: 54 frente a 60. La biblia 07 da de 40 a 60.
+- Hay tres comprobadores anti-IA: `datacheck/estilo.py` (#79), `datacheck/textos.py`
+  (#91) y `l10n/estilo.py` (#80).
+- #91 trae una `viga_apoyo` idéntica a la de #74, que ya está en main: hay que quitar la
+  copia de #91.
+- #84 y #86 fusionan juntas sin conflicto de código. `catalogo.json` y
+  `localizacion-informe.md` hay que regenerarlos con `l10n export` después de la segunda.
+- #87 y #88 chocan en texto en `TerrainDensity.h`: hay que quedarse con las dos partes.
+  Probadas juntas, están en verde.
+
+### 00-TODO.md
+
+Las casillas se ajustaron en los merges de `main` en #78, #89 y #88, con el criterio de
+#77 (el modelo puro sin cablear cuenta como «en parte»). No hace falta una PR aparte.
+
+- **Pasa a `[x]`:** «`FTerrainDensity::Density` consulta primero la capa de ediciones»
+  (#88: `SetEdits` y `DensityWithColumn`, con spec).
+- **Siguen `[x]`, con la nota de #88 añadida:** `FTerrainEdits`, la capa `"terrain"` del
+  guardado y `tierra_suelta`.
+- **Quedan «en parte»:**
+  - las cinco casillas de combate y la de estadísticas de fauna (#78);
+  - el paquete de deltas, la cola de salida y la comprobación por chunk (#89);
+  - el picado por esfera y el remallado (#88).
+- #73 y #74 no cierran ninguna casilla.
+- Recuento: 16 hechas, 44 en parte y 148 sin empezar, de 208. Un 8 % hecho y un 18 %
+  ponderado.
+
+### Para la próxima ejecución
+
+- #93–#98 siguen abiertas y no se han revisado aquí.
+- #70: termina de integrarla la ejecución que abrió #99.
+- La máquina no aguanta 7 subagentes a la vez compilando HostTests y ejecutando DataCheck:
+  conviene como mucho 2 o 3.
+
+## Ejecución 15:00 UTC
+
+Base: `origin/main` en `4e6a7b3` al empezar y en `b6a9503` al terminar. Había 22 PR abiertas.
+Mientras corría esta pasada, la sesión local del director también estaba fusionando: fusionó
+#94 (squash, `7d26939`) y #89 (`b6a9503`). En cuanto se vio, esta pasada dejó de fusionar para
+no pisarse con ella. Las PR con etiqueta `necesita-unreal` y las que tienen cambios pedidos
+sin commits nuevos desde la pasada de las 13:00 mantienen la decisión y no se han vuelto a
+comprobar.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #70 | `nocturno/revision-2026-09-28` | Sin cambios: `necesita-unreal` | La rama nocturna sigue recibiendo commits (14:57). Choca con `main`. |
+| #71 | `nube/mundo-2026-09-28-cocos` | **Fusionada** (`b7037a9`) | Es el modelo puro `FCoconutPalmModel` con su spec, `pure_*.txt` y docs. `ef8b2d6` y `eda1d95` resuelven lo pedido a las 13:00: la tala no suelta `coco_verde` y deja entre 1 y 3 maduros, y las rachas son deterministas. |
+| #72, #75, #79, #80, #81, #82, #84, #85, #86, #87, #90, #91, #96, #101 | — | Sin cambios: `necesita-unreal` | No hay commits nuevos desde la etiqueta. Todas salvo #72 chocan ahora con `main`, así que habrá que fusionarles `main` en la sesión local. |
+| #88 | `claude/terrain-edits-pipeline-alwur4` | Sin cambios: cambios pedidos | No hay commits nuevos. Sigue duplicando la tabla de herramientas y la vía de picado de #95, con otros radios y otro botín. La revisión de las 14:30 propone fusionarla quitando el `IsFiniteVector` repetido, pero no resuelve el duplicado. Eso lo decide el director. |
+| #89 | `claude/h0-network-codec-queue-o6u5gq` | Fusionada por el director (`b6a9503`) | Esta pasada la fusionó con `main` y la comprobó: 1031 casos, 0 fallos, también con ASan/UBSan y `-ffast-math`. El push llegó tarde porque el director ya había subido su propio merge de `main` y la había fusionado. |
+| #92 | `claude/phase-3-pure-models-65r78m` | Sin cambios: cambios pedidos | `6289ddd` solo arregla el alcance del machete (1,2 m). Siguen abiertos el alcance F3, el NaN con matemáticas rápidas, las casillas mal marcadas y los bytes de red. |
+| #93 | `claude/network-pieces-h1-h3-6jsk6r` | Sin cambios: cambios pedidos | No hay commits nuevos. Sigue el choque de ODR con #82 (`FVegetationNetKey`/`FVegetationNetState`). |
+| #94 | `audio/soundfont-acustico` | Fusionada por el director (`7d26939`) | Entró con el bloqueo de las 13:00 sin resolver (ver abajo). |
+| #95 | `claude/mining-terrain-h2-models-fnc9sw` | Sin cambios: cambios pedidos | No hay commits nuevos. Siguen el duplicado con #88, el guardado de vetas y `CompactStrip` sin topes. |
+| #98 | `claude/improve-python-tools-quality-duaxgr` | Sin cambios: espera a ser la última de `Tools/` | No hay commits nuevos. Choca ya con `compose.py`, `sequencer.py` y `build.py` de #94. |
+
+### Comprobaciones
+
+| Qué | HostTests | HostTests + ASan/UBSan | Otros |
+|---|---|---|---|
+| #71 fusionada con `main` (`4e6a7b3`) | 965 / 0 fallos | 965 / 0 fallos | — |
+| #89 fusionada con `main` (`b7037a9`) | 1031 / 0 fallos | 1031 / 0 fallos | `HOST_TESTS_FASTMATH=ON`: 1031 / 0 |
+| `main` en `b6a9503` | 1031 / 0 fallos | — | Audio: sin `fluidsynth`, **error**; con `apt install fluidsynth`, 170 passed |
+
+### `Tools/Audio` falla en la nube desde #94
+
+- `tests/conftest.py`: la fixture de sesión `rendered` renderiza todo el catálogo, y eso
+  incluye la música y la muestra de flauta, que ahora salen de FluidSynth.
+- Sin `fluidsynth` en el PATH, `soundfont.ensure_fluidsynth()` lanza `RuntimeError`.
+  Entonces caen también los tests de efectos y ambientes, no solo los de música.
+- Arreglos posibles, para el director:
+  1. instalar `fluidsynth` en el script de configuración del entorno de la nube;
+  2. o que los tests que dependen de FluidSynth se salten con `pytest.skip` cuando falte,
+     sin arrastrar a los demás.
+- La casilla de 00-TODO «pipeline de música **y efectos** con soundfont acústico» quedó en
+  `[x]`, pero su propia nota dice que los efectos y ambientes siguen siendo síntesis.
+  No se toca aquí porque la marcó el director al fusionar. Si los efectos entran en esa
+  casilla, habría que volver a dejarla en «en parte».
+
+### 00-TODO.md
+
+- #71: se añade «en parte» a la casilla del `coco_verde` de la copa (`PickFromCrown`). Es un
+  modelo puro y todavía no está enganchado a la escalada.
+- #89: el director ya lo dejó bien al fusionar. El códec está en `[x]` porque la casilla
+  pide el spec de host. La cola, la comprobación de chunk y NetBudget no se marcan.
+- La tabla de recuento ya iba una casilla por detrás en «hechas» y en «en parte» antes de
+  esta pasada, así que no se ha tocado.
