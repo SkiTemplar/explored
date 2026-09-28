@@ -67,6 +67,17 @@ struct EXPLORED_API FSandBrush
 	int64 MassBudget = 0;
 };
 
+/**
+ * Traslado de arena de una columna a otra (mm de altura en una columna). Lo usan los
+ * modelos que empujan arena sin pala: el surco de una balsa arrastrada, por ejemplo.
+ */
+struct EXPLORED_API FSandMove
+{
+	FIntPoint From = FIntPoint::ZeroValue;
+	FIntPoint To = FIntPoint::ZeroValue;
+	int32 Mm = 0;
+};
+
 /** Qué ha hecho una edición, una revisión de pendiente o un medio ciclo de marea. */
 struct EXPLORED_API FSandResult
 {
@@ -192,6 +203,15 @@ public:
 	FSandResult Dig(const FSandBrush& Brush, FBaseHeight Base);
 	/** Echa arena; `Mass` es lo que sale del inventario (≤ MassBudget). */
 	FSandResult Pile(const FSandBrush& Brush, FBaseHeight Base);
+
+	/**
+	 * Mueve arena entre columnas, en el orden dado; cada traslado ve el resultado de los
+	 * anteriores. La masa se conserva exactamente: lo que sale de From entra en To.
+	 * Un traslado se recorta a lo que From puede dar (MaxDigDepthMm) y To puede recibir
+	 * (MaxPileHeightMm); si toca la huella de una estructura o sale de la rejilla, no se hace.
+	 * `Mass` es la suma movida.
+	 */
+	FSandResult Transfer(const TArray<FSandMove>& Moves, FBaseHeight Base);
 
 	// --- Estructuras ---
 

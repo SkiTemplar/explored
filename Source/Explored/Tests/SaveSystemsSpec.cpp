@@ -665,6 +665,96 @@ void FSaveSystemsSpec::Define()
 			TestEqual(TEXT("Cabo"), Loaded.MooringLengthCm, 350.0f);
 		});
 
+		It("conserva el casco por piezas y el barco carga con su ficha, no con la estándar", [this]()
+		{
+			FRaftYardModel Yard;
+			for (int32 I = 0; I < 4; ++I)
+			{
+				FHullPiece Log;
+				Log.Type = EHullPieceType::Log;
+				Log.CenterCm = FVector(0.0, (I - 1.5) * 22.0, 11.0);
+				Yard.AddPiece(Log);
+			}
+			FHullPiece Deck;
+			Deck.Type = EHullPieceType::Plank;
+			Deck.CenterCm = FVector(0.0, 0.0, 24.0);
+			Deck.SizeCm = FVector(25.0, 90.5, 4.0);
+			const int32 DeckIndex = Yard.AddPiece(Deck);
+			for (int32 I = 0; I < 4; ++I)
+			{
+				Yard.AddJoint(DeckIndex, I, I % 2 == 0 ? ERaftJointKind::Rope : ERaftJointKind::Nails);
+			}
+			Yard.DamageJoint(1, 0.4f);
+			Yard.SetAfloat();
+
+			FSaveArchive Ar;
+			SaveRaftHull(Ar, Yard.ToHullSaveData());
+			FRaftHullSaveData Loaded;
+			LoadRaftHull(ThroughText(Ar), Loaded);
+			FSaveArchive Again;
+			SaveRaftHull(Again, Loaded);
+			TestEqual(TEXT("Mismo texto"), Canonical(Again), Canonical(Ar));
+			TestEqual(TEXT("Piezas"), Loaded.Pieces.Num(), 5);
+			TestEqual(TEXT("Uniones"), Loaded.Joints.Num(), 4);
+
+			const FRaftYardModel Rebuilt = FRaftYardModel::FromHullSaveData(Loaded);
+			const FBoatDefinition Def = Rebuilt.ToBoatDefinition();
+			TestEqual(TEXT("Misma masa que la balsa armada"), Def.HullMassKg, Yard.ToBoatDefinition().HullMassKg);
+			TestEqual(TEXT("Misma GM que la balsa armada"), Def.MetacentricHeightCm, Yard.ToBoatDefinition().MetacentricHeightCm);
+			TestEqual(TEXT("Misma integridad"), Rebuilt.Integrity01(), Yard.Integrity01());
+			TestNotEqual(TEXT("No es la balsa estándar"), Def.HullMassKg, FBoatModel::Definition(EBoatType::Raft).HullMassKg);
+			const FBoatModel Boat = FBoatModel::FromSaveData(FBoatSaveData(), &Def);
+			TestEqual(TEXT("El barco navega con la ficha del casco"), Boat.GetDefinition().HullMassKg, Def.HullMassKg);
+		});
+
+		It("descarta las piezas ilegibles del casco y renumera las uniones", [this]()
+		{
+			const auto MakePiece = [](const TCHAR* Type, double Y)
+			{
+				FSaveArchive Piece;
+				Piece.Write(TEXT("type"), Type);
+				Piece.Write(TEXT("center"), FVector(0.0, Y, 11.0));
+				return Piece;
+			};
+			const auto MakeJoint = [](int32 A, int32 B, const TCHAR* Kind)
+			{
+				FSaveArchive Joint;
+				Joint.Write(TEXT("a"), A);
+				Joint.Write(TEXT("b"), B);
+				Joint.Write(TEXT("kind"), Kind);
+				Joint.Write(TEXT("health"), 0.75f);
+				return Joint;
+			};
+			FSaveArchive NoCenter;
+			NoCenter.Write(TEXT("type"), TEXT("Log"));
+			TArray<FSaveArchive> Pieces = { MakePiece(TEXT("Log"), 0.0), MakePiece(TEXT("Canoa"), 22.0), NoCenter, MakePiece(TEXT("Bamboo"), 16.0) };
+			TArray<FSaveArchive> Joints = { MakeJoint(0, 3, TEXT("Rope")), MakeJoint(0, 1, TEXT("Rope")), MakeJoint(2, 3, TEXT("Rope")),
+				MakeJoint(0, 3, TEXT("Grapas")), MakeJoint(0, 7, TEXT("Rope")) };
+			FSaveArchive Ar;
+			Ar.Write(TEXT("pieces"), Pieces);
+			Ar.Write(TEXT("joints"), Joints);
+			// Un elemento que no es un objeto también se salta sin mover los índices de las demás.
+			FSaveValue WithJunk = *Ar.FindValue(TEXT("pieces"));
+			WithJunk.Add(FSaveValue::MakeInt(5));
+			Ar.SetValue(TEXT("pieces"), WithJunk);
+
+			FRaftHullSaveData Loaded;
+			LoadRaftHull(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Dos piezas legibles"), Loaded.Pieces.Num(), 2);
+			TestEqual(TEXT("Una unión"), Loaded.Joints.Num(), 1);
+			if (Loaded.Pieces.Num() == 2 && Loaded.Joints.Num() == 1)
+			{
+				TestEqual(TEXT("La segunda es el bambú"), Loaded.Pieces[1].Type, EHullPieceType::Bamboo);
+				TestTrue(TEXT("Sin tamaño: el del tipo"), Loaded.Pieces[1].SizeCm == FVector::ZeroVector);
+				TestTrue(TEXT("0-3 pasa a ser 0-1"), Loaded.Joints[0].PieceA == 0 && Loaded.Joints[0].PieceB == 1);
+				TestEqual(TEXT("Salud"), Loaded.Joints[0].Health01, 0.75f);
+			}
+
+			FRaftHullSaveData Old;
+			LoadRaftHull(FSaveArchive(), Old);
+			TestTrue(TEXT("Partida sin casco: ficha estándar"), Old.IsEmpty() && Old.Joints.Num() == 0);
+		});
+
 		It("conserva trampas, legendarias, pozas y zonas", [this]()
 		{
 			FFishingSaveState State;
