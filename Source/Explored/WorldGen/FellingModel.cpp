@@ -325,14 +325,19 @@ EStumpStage FFellingModel::StageAt(const FFellingProfile& Profile, const FStumpS
 	{
 		return EStumpStage::Stump;
 	}
-	const int64 Elapsed = NowMinute - Stump.FelledAtMinute;
-	const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
-	const int64 MatureAt = SproutAt + (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
-	if (Elapsed < SproutAt)
+	// Comparar antes de restar: con FelledAtMinute = INT64_MIN guardado la resta desbordaba.
+	if (NowMinute < Stump.FelledAtMinute)
 	{
 		return EStumpStage::Stump;
 	}
-	return Elapsed < MatureAt ? EStumpStage::Sapling : EStumpStage::Mature;
+	const uint64 Elapsed = (uint64)NowMinute - (uint64)Stump.FelledAtMinute;
+	const int64 SproutAt = (int64)Profile.StumpRegrowDays * MinutesPerDay;
+	const int64 MatureAt = SproutAt + (int64)FMath::Max(1, Profile.SaplingToMatureDays) * MinutesPerDay;
+	if (Elapsed < (uint64)SproutAt)
+	{
+		return EStumpStage::Stump;
+	}
+	return Elapsed < (uint64)MatureAt ? EStumpStage::Sapling : EStumpStage::Mature;
 }
 
 float FFellingModel::GrowthScaleAt(const FFellingProfile& Profile, const FStumpState& Stump, int64 NowMinute)
@@ -382,9 +387,13 @@ FGroundBranchSource FFellingModel::MakeBranchSource(const FFellingProfile& Profi
 
 FIntPoint FFellingModel::CellOf(const FVector2D& Position, double CellSize)
 {
-	if (!(CellSize > 0.0))
+	// Tamaño o posición no finitos → origen; coordenadas enormes se recortan antes de pasar a
+	// int32 (convertir un real fuera de rango o NaN a entero es comportamiento indefinido).
+	if (!FMath::IsFinite(CellSize) || CellSize <= 0.0 || !FMath::IsFinite(Position.X) || !FMath::IsFinite(Position.Y))
 	{
 		return FIntPoint(0, 0);
 	}
-	return FIntPoint(FMath::FloorToInt32(Position.X / CellSize), FMath::FloorToInt32(Position.Y / CellSize));
+	constexpr double MaxCell = 1.0e9;
+	return FIntPoint(FMath::FloorToInt32(FMath::Clamp(Position.X / CellSize, -MaxCell, MaxCell)),
+		FMath::FloorToInt32(FMath::Clamp(Position.Y / CellSize, -MaxCell, MaxCell)));
 }

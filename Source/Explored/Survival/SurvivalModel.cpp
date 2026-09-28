@@ -84,6 +84,11 @@ bool FSurvivalModeSettings::NeedsCanKill() const
 
 void FSurvivalState::AddCondition(ECondition C, float Hours)
 {
+	// Max(T, NaN) guardaría NaN: un estado invisible para HasCondition que dañaría para siempre.
+	if (!FMath::IsFinite(Hours))
+	{
+		return;
+	}
 	float& T = ConditionTime[static_cast<int32>(C)];
 	T = FMath::Max(T, Hours);
 }
@@ -183,7 +188,8 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaHours, const FSurvivalModeSettings& Mode,
 	float RandomRoll, TArray<ESurvivalEvent>& OutEvents)
 {
-	if (S.IsDead() || DeltaHours <= 0.0f)
+	// Un paso NaN pasaría el guarda `<= 0` y los Clamp(NaN) llenarían necesidades y salud.
+	if (S.IsDead() || !FMath::IsFinite(DeltaHours) || DeltaHours <= 0.0f)
 	{
 		return;
 	}
@@ -235,8 +241,11 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 	for (int32 C = 0; C < static_cast<int32>(ECondition::Count); ++C)
 	{
 		float& T = S.ConditionTime[C];
-		if (T <= 0.0f)
+		// Un tiempo no finito (de un guardado) no cuenta como estado y se borra: con NaN,
+		// HasCondition decía que no pero cada paso dañaba como si durase para siempre.
+		if (!FMath::IsFinite(T) || T <= 0.0f)
 		{
+			T = FMath::IsFinite(T) ? T : 0.0f;
 			continue;
 		}
 		// L4: en el último paso de un estado solo cuenta el tiempo que aún le quedaba.
@@ -317,8 +326,16 @@ void FSurvivalModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float De
 	}
 }
 
-void FSurvivalModel::Consume(FSurvivalState& S, const FConsumable& Item, float RandomRoll, TArray<ESurvivalEvent>& OutEvents)
+void FSurvivalModel::Consume(FSurvivalState& S, const FConsumable& InItem, float RandomRoll, TArray<ESurvivalEvent>& OutEvents)
 {
+	// Valores no finitos (datos rotos) cuentan como 0: Clamp(NaN) llenaría la necesidad y Min(38, NaN)
+	// dejaría la temperatura en NaN.
+	FConsumable Item = InItem;
+	for (float* Value : {&Item.Food, &Item.Water, &Item.Protein, &Item.Carbs, &Item.Vitamins, &Item.Warmth,
+		&Item.Morale, &Item.Toxicity, &Item.Healing, &Item.HallucinogenHours})
+	{
+		*Value = FMath::IsFinite(*Value) ? *Value : 0.0f;
+	}
 	S.Hunger = FMath::Clamp(S.Hunger + Item.Food, 0.0f, 100.0f);
 	S.Thirst = FMath::Clamp(S.Thirst + Item.Water, 0.0f, 100.0f);
 	S.Protein = FMath::Clamp(S.Protein + Item.Protein, 0.0f, 100.0f);

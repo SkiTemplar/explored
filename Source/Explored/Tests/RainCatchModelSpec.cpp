@@ -128,6 +128,27 @@ void FRainCatchModelSpec::Define()
 			TestEqual(TEXT("vacío"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Empty);
 		});
 
+		It("evaporar al sol concentra la mezcla: un poco de agua sin tratar no se vuelve de lluvia", [this]()
+		{
+			const FRainCatchSpec Spec = Coconut();
+			FRainCatchState S;
+			FRainCatchModel::Pour(S, Spec, 499000, ERainCatchLiquid::None);
+			FRainCatchModel::Pour(S, Spec, 1000, ERainCatchLiquid::Untreated);
+			const FRainCatchRates Sun = FRainCatchModel::RatesFor(Spec, SampleWithRain(0.0f, 0.0f));
+			TestTrue(TEXT("el sol evapora"), Sun.EvaporationPerMinute > 0);
+			for (int32 Minute = 0; Minute < 30 * Day && S.TotalMicroL() > 0; ++Minute)
+			{
+				FRainCatchModel::StepMinutes(S, Spec, Sun, 1);
+				if (S.TotalMicroL() > 0
+					&& !TestEqual(TEXT("sigue sin tratar mientras quede agua"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Untreated))
+				{
+					return;
+				}
+			}
+			TestEqual(TEXT("acaba seco"), S.TotalMicroL(), (int64)0);
+			TestTrue(TEXT("balance"), Balanced(S, 0, 500000, 0));
+		});
+
 		It("un chaparrón acaba desplazando el agua de mar: salobre → sin tratar → lluvia", [this]()
 		{
 			const FRainCatchSpec Spec = FRainCatchModel::SpecForItem(FName(TEXT("vasija_barro")), 3.0f, false);

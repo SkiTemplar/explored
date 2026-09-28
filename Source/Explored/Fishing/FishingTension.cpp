@@ -106,8 +106,10 @@ void FFishFight::StartBurst()
 
 EFishFightOutcome FFishFight::Tick(float DeltaSeconds, float ReelInput)
 {
-	float Remaining = FMath::Max(0.0f, DeltaSeconds);
-	const float Input = FMath::Clamp(ReelInput, -1.0f, 1.0f);
+	// Con NaN, o con un paso enorme en el que restar MaxStepSeconds no cambia el float,
+	// el bucle no acabaría nunca.
+	float Remaining = FMath::IsFinite(DeltaSeconds) ? FMath::Clamp(DeltaSeconds, 0.0f, MaxTickSeconds) : 0.0f;
+	const float Input = FMath::IsFinite(ReelInput) ? FMath::Clamp(ReelInput, -1.0f, 1.0f) : 0.0f;
 	while (Remaining > 0.0f && !IsFinished())
 	{
 		const float Dt = FMath::Min(Remaining, MaxStepSeconds);

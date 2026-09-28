@@ -3,6 +3,8 @@
 #include "Farming/FarmModel.h"
 #include "Weather/WeatherModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace FarmSpecDetail
@@ -353,6 +355,19 @@ void FFarmSpec::Define()
 			TestEqual(TEXT("Y crece"), Model.FindPlot(PlotId)->Crop.GrowthDays, 1.0f);
 		});
 
+		It("un riego o una lluvia NaN no dejan el día seco", [this]()
+		{
+			constexpr float NaN = std::numeric_limits<float>::quiet_NaN();
+			FFarmModel Model(DataPlants(), 1);
+			const int32 PlotId = PlantNew(Model, FName(TEXT("batata")), 2);
+			TestEqual(TEXT("Riego NaN aceptado sin efecto"), Model.Water(PlotId, NaN), EFarmResult::Ok);
+			Model.Water(PlotId, 1.0f);
+			Model.EndDay(2, NaN);
+			TestEqual(TEXT("Regada"), Model.GetHealth(PlotId), EPlantHealth::Healthy);
+			TestEqual(TEXT("Y crece"), Model.FindPlot(PlotId)->Crop.GrowthDays, 1.0f);
+			TestEqual(TEXT("Lluvia NaN = sin lluvia"), FFarmModel::WateringsFromRainHours(NaN), 0.0f);
+		});
+
 		It("la piña se conforma con la lluvia de la estación", [this]()
 		{
 			FFarmModel Model(DataPlants(), 1);
@@ -587,6 +602,20 @@ void FFarmSpec::Define()
 			TestEqual(TEXT("Misma cantidad"), A.Count, B.Count);
 			TestEqual(TEXT("Mismo crecimiento"), Model.FindPlot(PlotId)->Crop.GrowthDays, Loaded.FindPlot(PlotId)->Crop.GrowthDays);
 			TestNotEqual(TEXT("Las parcelas nuevas no repiten id"), Loaded.AddPlot(FVector::ZeroVector, {}), PlotId);
+
+			// Reales no finitos de un guardado se sanean: con GrowthDays NaN no crecía nunca.
+			FFarmState Broken = Saved;
+			Broken.Plots[0].Crop.GrowthDays = std::numeric_limits<float>::quiet_NaN();
+			Broken.Plots[0].Crop.HarvestClock = std::numeric_limits<float>::infinity();
+			Broken.Plots[0].Crop.WaterToday = std::numeric_limits<float>::quiet_NaN();
+			Broken.Plots[0].CompostDaysLeft = 0;
+			Broken.LastEndedDay = 5;
+			FFarmModel Sane(DataPlants(), 5);
+			Sane.SetState(Broken);
+			WaterAndEnd(Sane, PlotId, 6);
+			TestEqual(TEXT("Vuelve a crecer desde 0"), Sane.FindPlot(PlotId)->Crop.GrowthDays, 1.0f);
+			TestEqual(TEXT("Reloj de fruta saneado"), Sane.FindPlot(PlotId)->Crop.HarvestClock, 0.0f);
+			TestEqual(TEXT("Regada"), Sane.GetHealth(PlotId), EPlantHealth::Healthy);
 
 			// Un cultivo que ya no existe en los datos se descarta al cargar.
 			Saved.Plots[0].Crop.PlantId = FName(TEXT("arroz"));

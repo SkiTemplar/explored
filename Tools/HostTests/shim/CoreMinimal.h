@@ -8,6 +8,7 @@
 #pragma once
 
 #include <algorithm>
+#include <bit>
 #include <cassert>
 #include <cfloat>
 #include <cmath>
@@ -137,8 +138,10 @@ struct FMath
 	static constexpr auto Min(A X, B Y) -> std::common_type_t<A, B> { return X < Y ? X : Y; }
 	template <typename T> static constexpr T Max3(T A, T B, T C) { return Max(Max(A, B), C); }
 	template <typename T> static constexpr T Min3(T A, T B, T C) { return Min(Min(A, B), C); }
+	// Misma forma que UnrealMathUtility.h: con NaN, Max/Min devuelven el segundo argumento y
+	// Clamp devuelve el máximo (no el NaN), así que los tests ven lo mismo que el editor.
 	template <typename T, typename U, typename V>
-	static constexpr T Clamp(T X, U Lo, V Hi) { return X < T(Lo) ? T(Lo) : (X > T(Hi) ? T(Hi) : X); }
+	static constexpr T Clamp(T X, U Lo, V Hi) { return X < T(Lo) ? T(Lo) : (X < T(Hi) ? X : T(Hi)); }
 	template <typename T> static constexpr T Abs(T A) { return A < T(0) ? -A : A; }
 	template <typename T> static constexpr T Sign(T A) { return A > T(0) ? T(1) : (A < T(0) ? T(-1) : T(0)); }
 	template <typename T> static constexpr T Square(T A) { return A * A; }
@@ -214,10 +217,12 @@ struct FMath
 	static bool IsNearlyEqual(double A, double B, double Tol = UE_SMALL_NUMBER) { return std::fabs(A - B) <= Tol; }
 	static bool IsNearlyZero(float A, float Tol = UE_SMALL_NUMBER) { return std::fabs(A) <= Tol; }
 	static bool IsNearlyZero(double A, double Tol = UE_SMALL_NUMBER) { return std::fabs(A) <= Tol; }
-	static bool IsFinite(float A) { return std::isfinite(A); }
-	static bool IsFinite(double A) { return std::isfinite(A); }
-	static bool IsNaN(float A) { return std::isnan(A); }
-	static bool IsNaN(double A) { return std::isnan(A); }
+	// Por bits, como FGenericPlatformMath: con matemáticas rápidas (-ffast-math, /fp:fast) el
+	// compilador puede dar por hecho que no hay NaN y plegar std::isnan/std::isfinite a una constante.
+	static bool IsFinite(float A) { return (std::bit_cast<uint32>(A) & 0x7F800000u) != 0x7F800000u; }
+	static bool IsFinite(double A) { return (std::bit_cast<uint64>(A) & 0x7FF0000000000000ull) != 0x7FF0000000000000ull; }
+	static bool IsNaN(float A) { return (std::bit_cast<uint32>(A) & 0x7FFFFFFFu) > 0x7F800000u; }
+	static bool IsNaN(double A) { return (std::bit_cast<uint64>(A) & 0x7FFFFFFFFFFFFFFFull) > 0x7FF0000000000000ull; }
 	template <typename T> static constexpr bool IsPowerOfTwo(T V) { return V > 0 && (V & (V - 1)) == 0; }
 	template <typename T> static constexpr bool IsWithin(T V, T Lo, T Hi) { return V >= Lo && V < Hi; }
 	template <typename T> static constexpr bool IsWithinInclusive(T V, T Lo, T Hi) { return V >= Lo && V <= Hi; }

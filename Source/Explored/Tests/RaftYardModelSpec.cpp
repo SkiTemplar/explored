@@ -273,6 +273,15 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("desgaste exacto"), Yard.GetJoints()[0].Health01, 1.0f - 0.40f * 10.0f / 17.0f, 1e-5f);
 			TestEqual(TEXT("trabajo negativo no hace nada"), Yard.ApplyScrapeWork(-5.0f, ELaunchSurface::Rock).JointsDamaged, 0);
 		});
+
+		It("unos remos colgados por debajo de los troncos no cambian qué pieza toca el suelo", [this]()
+		{
+			FRaftYardModel Yard = SixLogRaft();
+			const int32 Oars = Yard.AddPiece(Piece(EHullPieceType::Oars, FVector(0.0, 0.0, -30.0)));
+			TestTrue(TEXT("el tronco sigue tocando el suelo"), Yard.IsBottomPiece(0));
+			TestFalse(TEXT("los remos no son el fondo"), Yard.IsBottomPiece(Oars));
+			TestTrue(TEXT("el roce gasta las uniones de los troncos"), Yard.ApplyScrapeWork(10000.0f, ELaunchSurface::Rock).JointsDamaged > 0);
+		});
 	});
 
 	Describe("en tierra", [this]()
@@ -564,11 +573,38 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("S no finita → 0"), Yard.GetCenterS(), 0.0f);
 			TestEqual(TEXT("fuerza NaN"), Yard.Push(NaN, 1.0f).MovedCm, 0.0f);
 			TestEqual(TEXT("tiempo negativo"), Yard.Push(3000.0f, -1.0f).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo NaN"), Yard.Push(3000.0f, NaN).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo infinito"), Yard.Push(3000.0f, INFINITY).MovedCm, 0.0f);
+			TestTrue(TEXT("el tiempo roto no envenena el siguiente empujón"), Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm > 0.0f);
+			TestEqual(TEXT("roce NaN"), Yard.ApplyScrapeWork(NaN, ELaunchSurface::Rock).JointsDamaged, 0);
+			TestEqual(TEXT("golpe infinito"), Yard.ApplyImpact(INFINITY, FVector2D(1.0, 0.0)).JointsDamaged, 0);
 			TestFalse(TEXT("rodillo fuera del camino"), Yard.PlaceRoller(1000.5f));
 			TestFalse(TEXT("rodillo NaN"), Yard.PlaceRoller(NaN));
 			TestFalse(TEXT("quitar rodillo inexistente"), Yard.TakeRoller(0));
 			TestEqual(TEXT("daño NaN"), Yard.DamageJoint(0, NaN).JointsDamaged, 0);
 			TestEqual(TEXT("daño a unión inexistente"), Yard.DamageJoint(99, 1.0f).JointsDamaged, 0);
+		});
+
+		It("un camino con valores no finitos toma los valores por defecto", [this]()
+		{
+			FLaunchPath Path = FlatPath(ELaunchSurface::Sand, 1000.0f);
+			FLaunchSegment Broken;
+			Broken.LengthCm = NaN;
+			Broken.DropCm = INFINITY;
+			Path.Segments.Add(Broken);
+			Path.StartCm = FVector(static_cast<double>(NaN), 0.0, 0.0);
+			Path.YawDeg = INFINITY;
+			Path.WaterLevelZCm = NaN;
+			FRaftYardModel Yard = SixLogRaft();
+			Yard.PlaceOnPath(Path, 500.0f);
+			const FLaunchPath& Placed = Yard.GetPath();
+			TestEqual(TEXT("largo del camino"), Placed.TotalLengthCm(), 1000.0f);
+			TestEqual(TEXT("rumbo por defecto"), Placed.YawDeg, 0.0f);
+			TestEqual(TEXT("agua por defecto: en seco"), Placed.WaterLevelZCm, FLaunchPath().WaterLevelZCm);
+			const FVector End = Placed.WorldAt(Placed.TotalLengthCm());
+			TestTrue(TEXT("posición finita"), FMath::IsFinite(End.X) && FMath::IsFinite(End.Y) && FMath::IsFinite(End.Z));
+			TestTrue(TEXT("empuja sin NaN"), FMath::IsFinite(Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm));
+			TestTrue(TEXT("centro finito"), FMath::IsFinite(Yard.GetCenterS()));
 		});
 
 		It("empuja hasta el final de un camino sin agua y se detiene en el borde, también marcha atrás", [this]()

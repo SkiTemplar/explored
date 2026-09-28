@@ -755,19 +755,19 @@ Frases cortas, tono de superviviente seco, sin exclamaciones grandilocuentes.
 
 ### Minería y terreno
 
-- [ ] [AA] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) según GDD §7.3 punto 1.
-- [ ] [AA] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes de evaluar el ruido.
+- [x] [AA] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) según GDD §7.3 punto 1.
+- [x] [AA] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes de evaluar el ruido.
 - [ ] [AA] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados por una edición.
-- [ ] [AA] `WorldGen`: implementar picado por esfera con radio y tiempo por golpe de la tabla 2.3, por estrato y herramienta.
+- [x] [AA] `WorldGen`: implementar picado por esfera con radio y tiempo por golpe de la tabla 2.3, por estrato y herramienta.
 - [ ] [AA] `Items`/`Crafting`: añadir item `pico` y plantilla `pico` a `items.json`/`templates.json` (sección 2.2), con las cuatro combinaciones canónicas balanceadas por `Rigido`/`Contundente`/`Filo` de la cabeza.
 - [ ] [AA] `Crafting`: regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe, −15 durabilidad).
 - [ ] [AA] `Survival`/`WorldGen`: indicador de aire viciado (bolsas cerradas a > 15 m de una salida), sin HUD, leído en el cuerpo.
 - [ ] [AA] `Building`: pieza `viga_apoyo` (apuntalamiento de galería) y regla de derrumbe (hueco > 3 m de luz sin apoyo, 8 s).
 - [ ] [AA] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático (1 m/40 s sin sellar).
 - [ ] [AA] `Cartography`: hoja subterránea por sistema de galerías (GDD §3.2), generada bajo demanda al entrar la primera vez.
-- [ ] [AA] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk).
+- [x] [AA] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk).
 - [ ] [AA] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` de mayor tamaño, con radio de exclusión de 1,5 m alrededor de un tesoro.
-- [ ] [AA] Prueba de estrés de guardado de minería extensa antes de M3 (GDD §7.4).
+- [x] [AA] Prueba de estrés de guardado de minería extensa antes de M3 (GDD §7.4).
 
 ### Tala y recolección
 

@@ -97,6 +97,23 @@ FWeatherSample FWeatherSample::Lerp(const FWeatherSample& A, const FWeatherSampl
 	return R;
 }
 
+namespace WeatherModelDetail
+{
+	/**
+	 * Acota un reloj a [-1, MaxSupportedDays] para que FloorToInt32 esté definido (y Day - 1
+	 * no desborde); false si no es finito. Por debajo de 0 todo sigue siendo «antes de empezar».
+	 */
+	bool ClampClock(float& TotalDays)
+	{
+		if (!FMath::IsFinite(TotalDays))
+		{
+			return false;
+		}
+		TotalDays = FMath::Clamp(TotalDays, -1.0f, static_cast<float>(FWeatherModel::MaxSupportedDays));
+		return true;
+	}
+}
+
 FWeatherModel::FWeatherModel(uint32 InSeed)
 	: Seed(InSeed)
 {
@@ -104,7 +121,9 @@ FWeatherModel::FWeatherModel(uint32 InSeed)
 
 ESeason FWeatherModel::SeasonForDay(float TotalDays)
 {
-	const int32 DayOfYear = FMath::FloorToInt32(FMath::Fmod(FMath::Max(0.0f, TotalDays), static_cast<float>(DaysPerYear)));
+	// Fmod(NaN o infinito) da NaN y FloorToInt32(NaN) es indefinido: un reloj roto cuenta como el día 0.
+	const float Days = FMath::IsFinite(TotalDays) ? FMath::Max(0.0f, TotalDays) : 0.0f;
+	const int32 DayOfYear = FMath::FloorToInt32(FMath::Fmod(Days, static_cast<float>(DaysPerYear)));
 	return static_cast<ESeason>(FMath::Clamp(DayOfYear / DaysPerSeason, 0, static_cast<int32>(ESeason::Count) - 1));
 }
 
@@ -210,7 +229,7 @@ int32 FWeatherModel::CycloneCategoryForDay(int32 Day) const
 
 int32 FWeatherModel::CycloneCategoryAt(float TotalDays) const
 {
-	if (StateAt(TotalDays) != EWeatherState::Cyclone)
+	if (!WeatherModelDetail::ClampClock(TotalDays) || StateAt(TotalDays) != EWeatherState::Cyclone)
 	{
 		return 0;
 	}
@@ -235,6 +254,10 @@ int32 FWeatherModel::CycloneCategoryAt(float TotalDays) const
 
 EWeatherState FWeatherModel::StateAt(float TotalDays) const
 {
+	if (!WeatherModelDetail::ClampClock(TotalDays))
+	{
+		return EWeatherState::Clear;
+	}
 	const int32 Day = FMath::FloorToInt32(TotalDays);
 	// El ciclón del día anterior se extiende pasada la medianoche.
 	for (const int32 D : {Day - 1, Day})
@@ -265,6 +288,10 @@ EWeatherState FWeatherModel::StateAt(float TotalDays) const
 
 bool FWeatherModel::NextSevereEvent(float FromDays, FWeatherSpan& OutSpan) const
 {
+	if (!WeatherModelDetail::ClampClock(FromDays))
+	{
+		return false;
+	}
 	const int32 First = FMath::Max(0, FMath::FloorToInt32(FromDays) - 1);
 	for (int32 Day = First; Day < First + 40; ++Day)
 	{

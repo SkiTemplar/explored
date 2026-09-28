@@ -3,7 +3,7 @@
 El catálogo dice qué fichero de qué pack CC0 cubre cada id de juego; ``Tools/Packs/normalize.py``
 lo aplica en Blender. Aquí se mira que los ids existan, que todo pack sea CC0 verificado y
 con sha256, que no haya duplicados y que cada regla de color apunte a una muestra real de
-``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json``)
+``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json`` o ``fauna.json``)
 lleva malla con esqueleto ``SK_Pack_*`` y un bloque ``rig`` con sus acciones.
 """
 
@@ -112,7 +112,10 @@ def _game_ids(data: dict) -> dict[str, set[str]]:
         for pl in data.get("plants.json", {}).get("plants", [])
         for s in pl.get("stages", [])
     }
+    # fauna.json trae también la fauna de ambiente (cangrejo, gaviota, fragata), que no está
+    # en fauna_terrestre.json pero sale en meshes_pendientes.json y se busca en los packs.
     fauna = {f.get("id") for f in data.get(FAUNA, {}).get("species", [])}
+    fauna |= {f.get("id") for f in data.get("fauna.json", {}).get("species", [])}
     return {"item": items, "pieza": pieces, "planta": stages, "fauna": fauna}
 
 
@@ -292,6 +295,8 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
 
     covered = {g for _, g in seen_game}
     all_ids = set().union(*ids.values())
+    chosen = {(e.get("gameId"), e.get("pack"), e.get("file")) for e in catalog.get("entries", [])}
+    pending_seen: set[str] = set()
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
@@ -307,3 +312,11 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{CATALOG}: discarded: «{gid}» no existe en los datos del juego")
             if key == "pending" and gid in covered:
                 error(f"{CATALOG}: pending: «{gid}» ya está cubierto en entries")
+            if key == "discarded" and (gid, d.get("pack"), d.get("file")) in chosen:
+                error(f"{CATALOG}: discarded: «{gid}» descarta {d.get('file')}, que es el fichero de su entrada")
+            if key == "pending":
+                if gid in pending_seen:
+                    error(f"{CATALOG}: pending: «{gid}» repetido")
+                pending_seen.add(gid)
+                if GAME_ID.match(gid) and "." not in gid and gid not in all_ids:
+                    error(f"{CATALOG}: pending: «{gid}» no existe en los datos del juego")

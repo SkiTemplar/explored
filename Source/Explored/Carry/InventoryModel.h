@@ -249,6 +249,14 @@ public:
 	static constexpr int32 PocketSlots = 4;
 	static constexpr int32 BaseBeltHooks = 3;
 	static constexpr int32 PouchSlots = 2;
+	/**
+	 * Tope de los ids de instancia (y de NextInstanceId). Un guardado editado con
+	 * "nextInstanceId": INT64_MAX haría desbordar el Id + 1 al repartir el
+	 * siguiente; con 2^62 quedan más ids de los que se van a gastar nunca.
+	 */
+	static constexpr int64 MaxInstanceId = static_cast<int64>(1) << 62;
+	/** Id que el inventario puede guardar: positivo y por debajo de MaxInstanceId. */
+	static bool IsUsableInstanceId(int64 InstanceId) { return InstanceId > 0 && InstanceId < MaxInstanceId; }
 
 	FInventoryModel();
 
