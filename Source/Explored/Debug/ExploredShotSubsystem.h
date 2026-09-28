@@ -25,8 +25,8 @@ struct FExploredShot
  * Conjuntos: «islands» (una vista por isla a media tarde), «day» (ciclo del
  * día en la isla de inicio), «spawn» (vista del jugador al aparecer), «playtest»
  * (recorrido a pie por isla y punto de interés, en orilla/vegetación/cima/cueva,
- * a varias horas; activa también a UExploredPlaytestAuditor, ver Tools/playtest.ps1)
- * y «all».
+ * a varias horas; activa también a UExploredPlaytestAuditor y a UExploredPlaytestBot,
+ * ver Tools/playtest.ps1) y «all».
  *
  * Con «-ExploredBench» en vez de (o junto a) «-ExploredShots» recorre tres
  * posiciones fijas (spawn en la selva, vista aérea, orilla) y, tras el mismo

@@ -22,6 +22,9 @@
  *  - puntos de aparición (PlayerStart) con la cápsula del jugador solapada
  *    con colisión.
  *
+ * Si UExploredPlaytestBot está activo (mismas condiciones de arranque), también
+ * recibe sus pasos vía RecordBotStep y los incluye en el mismo informe.
+ *
  * Vuelca Saved/Shots/playtest_report.json (para leer desde fuera del editor)
  * y playtest_report.txt (resumen legible). La clasificación de qué es un
  * defecto y el formato del informe viven en el modelo puro
@@ -49,6 +52,10 @@ public:
 	/** Añade una muestra de FPS medio/mínimo (y consulta la VRAM actual) para un punto de captura. */
 	void RecordFrameSample(const FString& ShotName, float AvgFPS, float MinFPS);
 
+	/** Añade un paso del bot de juego (ver UExploredPlaytestBot) al informe compartido. */
+	void RecordBotStep(const FString& WaypointName, const FVector& LocationMeters, const FString& FocusedActorName,
+		bool bInteracted, const FString& InventoryDelta);
+
 	/** Escribe playtest_report.json y playtest_report.txt con lo acumulado hasta ahora. */
 	void WriteReport();
 
@@ -57,6 +64,8 @@ private:
 	{
 		Warmup,
 		WaitingPhysics,
+		/** Solo en solitario: espera a que UExploredPlaytestBot (si lo hay) termine su ruta antes de cerrar. */
+		WaitingForBot,
 		Done,
 	};
 

@@ -28,6 +28,7 @@
 #include "DynamicRHI.h"
 #include "RHIStats.h"
 
+#include "Debug/ExploredPlaytestBot.h"
 #include "Explored.h"
 #include "Items/ExploredItemActor.h"
 #include "WorldGen/ArchipelagoLayout.h"
@@ -111,14 +112,30 @@ void UExploredPlaytestAuditor::Tick(float DeltaTime)
 		if (Timer >= FPlaytestReportModel::PhysicsSampleSeconds)
 		{
 			SamplePhysicsDrift();
-			Phase = EPhase::Done;
-			bActive = false;
-			if (bStandalone)
-			{
-				WriteReport();
-				UE_LOG(LogExplored, Display, TEXT("[Playtest] Auditor en solitario: informe escrito, cerrando"));
-				FPlatformMisc::RequestExit(false, TEXT("ExploredPlaytestAudit"));
-			}
+			Phase = EPhase::WaitingForBot;
+		}
+		return;
+	}
+
+	if (Phase == EPhase::WaitingForBot)
+	{
+		// Si UExploredPlaytestBot está activo (mismas condiciones de ShouldCreateSubsystem que
+		// este auditor), se espera a que termine su ruta antes de escribir el informe: si no,
+		// en solitario ("-ExploredPlaytestAudit" sin capturas) se cerraría el proceso a mitad
+		// de la ruta del bot y sus pasos se quedarían fuera del JSON.
+		const UExploredPlaytestBot* Bot = GetWorld()->GetSubsystem<UExploredPlaytestBot>();
+		if (Bot && !Bot->IsDone())
+		{
+			return;
+		}
+
+		Phase = EPhase::Done;
+		bActive = false;
+		if (bStandalone)
+		{
+			WriteReport();
+			UE_LOG(LogExplored, Display, TEXT("[Playtest] Auditor en solitario: informe escrito, cerrando"));
+			FPlatformMisc::RequestExit(false, TEXT("ExploredPlaytestAudit"));
 		}
 	}
 }
@@ -399,6 +416,12 @@ void UExploredPlaytestAuditor::RecordFrameSample(const FString& ShotName, float 
 	Sample.MinFPS = MinFPS;
 	Sample.VRAMUsedMB = VRAMUsedMB;
 	Report.FrameSamples.Add(Sample);
+}
+
+void UExploredPlaytestAuditor::RecordBotStep(const FString& WaypointName, const FVector& LocationMeters,
+	const FString& FocusedActorName, bool bInteracted, const FString& InventoryDelta)
+{
+	FPlaytestReportModel::AppendBotStep(Report, WaypointName, LocationMeters, FocusedActorName, bInteracted, InventoryDelta);
 }
 
 void UExploredPlaytestAuditor::WriteReport()
