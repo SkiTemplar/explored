@@ -18,6 +18,8 @@ from ..rng import rng_for
 SR = SAMPLE_RATE
 # Ganancia de la pluma, calibrada para quedar en torno a -24 LUFS.
 GAIN_PEN = 1.15
+# Ganancia del sello: misma sonoridad integrada que el modal de antes (~ -17,6 LUFS).
+GAIN_STAMP = 0.85
 
 
 def _place(out: np.ndarray, x: np.ndarray, pos: int) -> None:
@@ -158,33 +160,81 @@ def map_unfold(name: str) -> np.ndarray:
     return out * fit_length(ar_envelope(SR, 0.01, 0.08, hold_s=dur - 0.09), n)
 
 
+def _burst(rng: np.random.Generator, n: int, fc: float, q: float, kind: str, decay_s: float) -> np.ndarray:
+    """Ruido filtrado con ataque de 0,1 ms y caida exponencial, a pico 1."""
+    t = np.arange(n) / SR
+    x = static_filter(rng.standard_normal(n), SR, fc=fc, q=q, kind=kind)
+    x *= (1.0 - np.exp(-t / 0.0001)) * np.exp(-t / decay_s)
+    return x / (np.max(np.abs(x)) + 1e-9)
+
+
 def map_stamp(name: str) -> np.ndarray:
-    """Sello sobre el mapa: golpe firme del mango de madera contra la mesa
-    (con el papel aplastado en medio) y el "tic" al levantarlo."""
+    """Sello de madera sobre el mapa, por capas secas.
+
+    Antes era un modo de la mesa a 95-125 Hz: el 86 % de la energia por
+    debajo de 150 Hz, el 82 % en una octava y ~200 ms hasta -30 dB. Sonaba a
+    bombo. Un sello apretado contra papel sobre una mesa es un golpe corto y
+    amortiguado (el papel y la tinta hacen de fieltro):
+
+    - el contacto de la cara del sello con el papel: un "tap" de ~2 ms en
+      banda media-alta, suave porque el papel lo amortigua;
+    - el mango: modos inarmonicos a 650-850 Hz muy amortiguados (15 ms) con
+      ruido de banda media que les quita la nota;
+    - el tablero que recibe: ruido grave de ~15 ms y un modo a 150-200 Hz
+      que muere en 25 ms (la mesa es gruesa y el mapa la apaga);
+    - el papel aplastado: una rafaga corta de crujidos;
+    - a veces se balancea el sello para marcar bien: un segundo apoyo flojo
+      con un crujido lento de la hoja;
+    - al levantar, la tinta despega: un tren de micro-chasquidos que se
+      acelera durante 15-25 ms y se suelta de golpe, con un "tic" final.
+    """
     rng = rng_for(name)
-    dur = rng.uniform(0.45, 0.6)
+    dur = rng.uniform(0.5, 0.62)
     n = int(dur * SR)
     out = np.zeros(n)
+    pos = int(0.003 * SR)
 
-    table = modal_hit(
-        SR, 0.3, base_freq=rng.uniform(95, 125),
-        mode_ratios=[1.0, 2.6, 4.1, 6.3], mode_dampings_s=[0.06, 0.03, 0.015, 0.008],
-        mode_amps=[1.0, 0.5, 0.3, 0.15], rng=rng, detune=0.02,
-    )
+    _place(out, _burst(rng, int(0.003 * SR), fc=rng.uniform(1800, 2600), q=0.8, kind="bandpass", decay_s=0.0007) * 0.35, pos)
     handle = modal_hit(
-        SR, 0.12, base_freq=rng.uniform(420, 560),
-        mode_ratios=[1.0, 2.76, 5.4], mode_dampings_s=[0.02, 0.01, 0.005],
-        mode_amps=[1.0, 0.45, 0.2], rng=rng, detune=0.02,
+        SR, 0.08, base_freq=rng.uniform(650, 850),
+        mode_ratios=[1.0, 1.58, 2.41, 3.37], mode_dampings_s=[0.015, 0.01, 0.007, 0.004],
+        mode_amps=[1.0, 0.5, 0.3, 0.15], rng=rng, detune=0.04,
     )
-    crush_n = int(0.04 * SR)
-    crush = _crackle(crush_n, rng, np.full(crush_n, 3000.0), band=(1200.0, 6000.0))
-    crush *= np.exp(-np.arange(crush_n) / SR / 0.012)
-    _place(out, table, 0)
-    _place(out, handle * 0.5, 0)
-    _place(out, crush * 0.7, 0)
+    _place(out, handle * 0.45, pos)
+    _place(out, _burst(rng, int(0.05 * SR), fc=rng.uniform(900, 1300), q=1.0, kind="bandpass", decay_s=0.008) * 0.25, pos)
+    _place(out, _burst(rng, int(0.07 * SR), fc=260.0, q=0.8, kind="lowpass", decay_s=0.015) * 0.55, pos)
+    table = modal_hit(SR, 0.12, base_freq=rng.uniform(150, 200), mode_ratios=[1.0, 2.3], mode_dampings_s=[0.025, 0.012], mode_amps=[1.0, 0.3], rng=rng, detune=0.03)
+    _place(out, table * 0.22, pos)
+    crush_n = int(0.035 * SR)
+    crush = _crackle(crush_n, rng, np.full(crush_n, 2500.0), band=(1500.0, 6000.0))
+    crush *= np.exp(-np.arange(crush_n) / SR / 0.01)
+    _place(out, crush * 0.5, pos)
 
-    lift_pos = int(rng.uniform(0.28, 0.36) * SR)
-    lift_n = int(0.02 * SR)
-    lift = static_filter(rng.standard_normal(lift_n), SR, fc=3200.0, q=1.5, kind="bandpass") * np.exp(-np.arange(lift_n) / SR / 0.003)
-    _place(out, lift * 0.25, lift_pos)
-    return out
+    lift_at = rng.uniform(0.3, 0.38)
+    if rng.uniform() < 0.5:
+        rock = int(rng.uniform(0.09, 0.14) * SR)
+        _place(out, _burst(rng, int(0.04 * SR), fc=220.0, q=0.8, kind="lowpass", decay_s=0.01) * 0.15, pos + rock)
+        creak_n = int(0.08 * SR)
+        creak = _crackle(creak_n, rng, np.full(creak_n, 350.0), band=(1200.0, 4000.0))
+        creak *= np.hanning(creak_n)
+        _place(out, creak * 0.35, pos + rock)
+
+    # Despegue de la tinta: cada vez mas chasquidos por segundo hasta soltarse.
+    peel_n = int(rng.uniform(0.015, 0.025) * SR)
+    rate = np.linspace(300.0, rng.uniform(2000.0, 2800.0), peel_n)
+    ticks = np.zeros(peel_n)
+    ticks[np.nonzero(np.diff(np.floor(np.cumsum(rate) / SR), prepend=0.0))[0]] = 1.0
+    ticks *= rng.uniform(0.4, 1.0, peel_n) * np.linspace(0.3, 1.0, peel_n)
+    peel = static_filter(ticks, SR, fc=rng.uniform(2800, 3800), q=2.0, kind="bandpass")
+    peel /= np.max(np.abs(peel)) + 1e-9
+    lift = int(lift_at * SR)
+    _place(out, peel * 0.12, lift)
+    _place(out, _burst(rng, int(0.012 * SR), fc=rng.uniform(3000, 4000), q=1.5, kind="bandpass", decay_s=0.002) * 0.1, lift + peel_n)
+
+    # Sin continua del golpe grave y saturacion suave: el tap de 2 ms fija el
+    # pico y sin ella el golpe queda bajo (como `build_hammer`).
+    out = static_filter(out, SR, fc=40.0, q=0.707, kind="highpass")
+    out = np.tanh(2.5 * out / (np.max(np.abs(out)) + 1e-9)) / np.tanh(2.5)
+    fade = int(0.005 * SR)
+    out[-fade:] *= np.linspace(1.0, 0.0, fade)
+    return out * GAIN_STAMP

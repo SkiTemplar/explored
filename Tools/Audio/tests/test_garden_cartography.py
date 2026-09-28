@@ -113,6 +113,32 @@ def test_sello_y_desmontar_tienen_golpe_grave(rendered):
     assert _band_share(rendered["sfx_build_dismantle"], 0.0, 400.0) >= 0.3
 
 
+def _octave_share(audio: np.ndarray) -> float:
+    spectrum = np.abs(np.fft.rfft(audio)) ** 2
+    freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+    fp = freqs[np.argmax(spectrum)]
+    band = (freqs > fp / np.sqrt(2.0)) & (freqs < fp * np.sqrt(2.0))
+    return float(spectrum[band].sum() / spectrum.sum())
+
+
+def _t30_ms(audio: np.ndarray) -> float:
+    win = int(0.005 * SAMPLE_RATE)
+    env = np.convolve(audio ** 2, np.ones(win) / win, mode="same")
+    peak = int(np.argmax(env))
+    below = np.nonzero(env[peak:] < env[peak] * 1e-3)[0]
+    return 1000.0 * below[0] / SAMPLE_RATE if below.size else float("inf")
+
+
+def test_sello_y_desmontar_son_secos_y_sin_nota(rendered):
+    """Golpes por capas, no un modo grave largo: ninguna octava se lleva la
+    mitad de la energia y el golpe principal cae a -30 dB en menos de 180 ms
+    (antes: 82 % en una octava y 200 ms el sello, 265 ms desmontar)."""
+    for name in ("sfx_map_stamp", "sfx_build_dismantle"):
+        audio = rendered[name]
+        assert _octave_share(audio) < 0.5, f"{name}: {_octave_share(audio):.0%} en una octava"
+        assert _t30_ms(audio) < 180.0, f"{name}: {_t30_ms(audio):.0f} ms hasta -30 dB"
+
+
 def test_desplegar_mapa_es_crujido_de_papel(rendered):
     assert _band_share(rendered["sfx_map_unfold"], 1500.0, 12000.0) >= 0.5
 

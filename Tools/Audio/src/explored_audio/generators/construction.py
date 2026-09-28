@@ -15,6 +15,8 @@ from ..noise import pink_noise
 from ..rng import rng_for
 
 SR = SAMPLE_RATE
+# Ganancia de desmontar: sonoridad momentanea como la de clavar (~ -13 LUFS).
+GAIN_DISMANTLE = 0.85
 
 
 def build_place(name: str) -> np.ndarray:
@@ -188,38 +190,76 @@ def build_hammer(name: str) -> np.ndarray:
 
 
 def build_dismantle(name: str) -> np.ndarray:
-    """Desmontar: se aflojan las ataduras (crujido de fibra que se estira),
-    la pieza se suelta con un golpe sordo y caen un par de trozos sueltos
-    que rebotan cada vez mas flojo."""
+    """Desmontar una pieza, por capas secas.
+
+    Antes la atadura era ruido rosa en banda, la pieza un modo a 110-150 Hz
+    (el 58 % de la energia por debajo de 150 Hz, ~265 ms hasta -30 dB) y los
+    trozos caian a intervalos al azar. Ahora:
+
+    - se aflojan las ataduras: dos tirones de cuerda de fibra por
+      adherencia-deslizamiento (como `tie_cord`), pero al reves: la tension
+      baja y los saltos se espacian (de ~130 a ~35 por segundo);
+    - la pieza se suelta y cae: chasquido de contacto, modos de flexion de
+      la viga (1 : 2,76 : 5,4 a 170-240 Hz, muy amortiguados) y un golpe
+      grave corto del suelo;
+    - caen dos o tres trozos sueltos (clavijas, astillas) que rebotan como
+      una pelota: cada bote llega antes y mas flojo que el anterior
+      (coeficiente de restitucion 0,5-0,7) y cada trozo tiene su tono.
+    """
     rng = rng_for(name)
-    dur = rng.uniform(1.1, 1.4)
+    dur = rng.uniform(1.25, 1.5)
     n = int(dur * SR)
     out = np.zeros(n)
 
-    creak_n = int(rng.uniform(0.35, 0.5) * SR)
-    fibre = pink_noise(creak_n, rng)
-    fc = np.linspace(700.0, 1500.0, creak_n) * smooth_random_walk(creak_n, rng, smoothing_hz=12.0, sr=SR, low=0.85, high=1.15)
-    creak = time_varying_filter(fibre, SR, fc, q=3.0, kind="bandpass")
-    creak *= np.linspace(0.3, 1.0, creak_n) ** 1.5
-    _place(out, creak * 0.6, 0)
+    pos = int(0.01 * SR)
+    for k in range(2):
+        pull_n = int(rng.uniform(0.14, 0.2) * SR)
+        u = np.arange(pull_n) / pull_n
+        rate = (130.0 - 95.0 * u) * smooth_random_walk(pull_n, rng, smoothing_hz=25.0, sr=SR, low=0.7, high=1.3)
+        slips = np.nonzero(np.diff(np.floor(np.cumsum(rate) / SR)) > 0)[0] + 1
+        pulses = np.zeros(pull_n)
+        pulses[slips] = rng.uniform(0.4, 1.0, slips.size)
+        fibre = static_filter(pulses, SR, fc=rng.uniform(1200, 1700), q=4.0, kind="bandpass")
+        fibre += 0.5 * static_filter(pulses, SR, fc=rng.uniform(3000, 4000), q=3.0, kind="bandpass")
+        fibre = np.tanh(3.0 * fibre / (np.max(np.abs(fibre)) + 1e-9)) / np.tanh(3.0)
+        rub = static_filter(pink_noise(pull_n, rng), SR, fc=rng.uniform(800, 1200), q=0.9, kind="bandpass")
+        rub /= np.max(np.abs(rub)) + 1e-9
+        env = np.minimum(u / 0.1, 1.0) * (1.0 - u) ** 0.7
+        _place(out, (0.8 * fibre + 0.25 * rub) * env * (0.5 if k == 0 else 0.65), pos)
+        pos += pull_n + int(rng.uniform(0.04, 0.08) * SR)
 
-    release = creak_n
-    thud = modal_hit(
-        SR, 0.3, base_freq=rng.uniform(110, 150),
-        mode_ratios=[1.0, 2.3, 3.6], mode_dampings_s=[0.06, 0.03, 0.015],
-        mode_amps=[1.0, 0.4, 0.2], rng=rng, detune=0.02,
+    # La pieza se suelta y golpea el suelo.
+    pos += int(rng.uniform(0.03, 0.06) * SR)
+    _place(out, _hammer_burst(rng, int(0.0012 * SR), fc=rng.uniform(2500, 3200), q=0.7, kind="highpass", decay_s=0.0004) * 0.4, pos)
+    beam = modal_hit(
+        SR, 0.15, base_freq=rng.uniform(170, 240),
+        mode_ratios=[1.0, 2.76, 5.4, 8.9], mode_dampings_s=[0.035, 0.02, 0.01, 0.005],
+        mode_amps=[1.0, 0.6, 0.3, 0.12], rng=rng, detune=0.03,
     )
-    _place(out, thud * 0.9, release)
+    _place(out, beam * 0.55, pos)
+    _place(out, _hammer_burst(rng, int(0.06 * SR), fc=rng.uniform(700, 1000), q=1.0, kind="bandpass", decay_s=0.01) * 0.3, pos)
+    _place(out, _hammer_burst(rng, int(0.08 * SR), fc=220.0, q=0.8, kind="lowpass", decay_s=0.02) * 0.6, pos)
 
-    t = release + int(rng.uniform(0.1, 0.16) * SR)
-    amp = 0.55
-    for _ in range(int(rng.integers(3, 6))):
-        piece = modal_hit(
-            SR, 0.15, base_freq=rng.uniform(300, 700),
-            mode_ratios=[1.0, 2.76, 5.4], mode_dampings_s=[0.03, 0.015, 0.006],
-            mode_amps=[1.0, 0.4, 0.15], rng=rng, detune=0.03,
-        )
-        _place(out, piece * amp, t)
-        t += int(rng.uniform(0.06, 0.14) * SR)
-        amp *= rng.uniform(0.55, 0.75)
-    return out * fit_length(ar_envelope(SR, 0.01, 0.06, hold_s=dur - 0.07), n)
+    # Trozos sueltos que rebotan: intervalos y fuerza caen con la restitucion.
+    for _ in range(int(rng.integers(2, 4))):
+        t = pos + int(rng.uniform(0.03, 0.12) * SR)
+        gap = rng.uniform(0.09, 0.15)
+        amp = rng.uniform(0.3, 0.45)
+        restitution = rng.uniform(0.5, 0.7)
+        freq = rng.uniform(550, 950)
+        while amp > 0.03 and t < n:
+            _place(out, _hammer_burst(rng, int(0.001 * SR), fc=3000.0, q=0.7, kind="highpass", decay_s=0.0003) * amp * 0.5, t)
+            bit = modal_hit(
+                SR, 0.06, base_freq=freq,
+                mode_ratios=[1.0, 1.7, 2.9], mode_dampings_s=[0.012, 0.008, 0.004],
+                mode_amps=[1.0, 0.45, 0.2], rng=rng, detune=0.05,
+            )
+            _place(out, bit * amp, t)
+            t += int(gap * SR)
+            gap *= restitution
+            amp *= restitution
+    out = static_filter(out, SR, fc=40.0, q=0.707, kind="highpass")
+    out = np.tanh(2.5 * out / (np.max(np.abs(out)) + 1e-9)) / np.tanh(2.5)
+    fade = int(0.02 * SR)
+    out[-fade:] *= np.linspace(1.0, 0.0, fade) ** 2
+    return out * GAIN_DISMANTLE
