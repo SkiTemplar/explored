@@ -6,6 +6,7 @@
     "modes": "modos en que se puede conseguir (Explorer, Survivor, Castaway, Custom); si falta, en todos",
     "hidden": "la UI no muestra nombre ni descripción hasta desbloquearlo",
     "icon": "pista de icono genérica; la UI decide el dibujo",
+    "coopScope": "biblia 08 §5.7: actor (solo quien hace la acción), world (todos los conectados) o witness (quien esté a menos de 50 m); si falta, pendiente de la pasada de H4",
     "stats.kind": "counter suma, max guarda el mayor, set reúne ids distintos, flag se marca una vez",
     "stats.scope": "profile dura toda la vida del jugador; run se vacía al empezar partida y viaja con su guardado",
     "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces)"
@@ -191,6 +192,56 @@
       "scope": "run",
       "reportedBy": "P-BOATS / P-RUINS",
       "descriptionEs": "Se marca al desembarcar en la isla oculta."
+    },
+    {
+      "id": "terrain_edits_made",
+      "kind": "counter",
+      "scope": "run",
+      "reportedBy": "Mining",
+      "descriptionEs": "Ediciones del terreno hechas: cada golpe de pala o de pico que quita o pone tierra."
+    },
+    {
+      "id": "strata_mined",
+      "kind": "set",
+      "scope": "run",
+      "reportedBy": "Mining",
+      "descriptionEs": "Estratos de los que se ha sacado al menos una unidad (ids de mining.json → strata).",
+      "values": ["tierra", "arena", "arcilla", "azufre", "caliza", "veta_cobre", "basalto", "hierro_meteorito", "obsidiana", "cristal"]
+    },
+    {
+      "id": "max_mining_depth_m",
+      "kind": "max",
+      "scope": "run",
+      "reportedBy": "Mining",
+      "descriptionEs": "Profundidad máxima cavada bajo la superficie local, en metros."
+    },
+    {
+      "id": "air_pocket_survived",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Mining / Survival",
+      "descriptionEs": "Se marca la primera vez que el aire de una bolsa cerrada llega al mínimo y el jugador sale con vida."
+    },
+    {
+      "id": "cave_collapse_avoided",
+      "kind": "flag",
+      "scope": "run",
+      "reportedBy": "Mining / Building",
+      "descriptionEs": "Se marca al colocar una viga de apoyo en una galería que estaba a punto de derrumbarse."
+    },
+    {
+      "id": "tools_broken_on_wrong_material",
+      "kind": "counter",
+      "scope": "profile",
+      "reportedBy": "Crafting / Mining",
+      "descriptionEs": "Herramientas rotas al golpear un material más duro del que aguantaban."
+    },
+    {
+      "id": "crab_stole_item",
+      "kind": "flag",
+      "scope": "profile",
+      "reportedBy": "Fauna",
+      "descriptionEs": "Se marca la primera vez que un cangrejo se lleva un objeto dejado en la arena."
     }
   ],
   "achievements": [
@@ -314,6 +365,94 @@
       "hidden": false,
       "icon": "piedra",
       "condition": {"stat": "building_tier_max", "op": ">=", "value": 3}
+    },
+    {
+      "id": "primera_palada",
+      "nameEs": "Primera palada",
+      "nameEn": "First Shovelful",
+      "descriptionEs": "Cava tu primer agujero en la tierra o la arena.",
+      "descriptionEn": "Dig your first hole in earth or sand.",
+      "hidden": false,
+      "icon": "pala",
+      "coopScope": "actor",
+      "condition": {"stat": "terrain_edits_made", "op": ">=", "value": 1}
+    },
+    {
+      "id": "buscador_de_vetas",
+      "nameEs": "Buscador de vetas",
+      "nameEn": "Seam Seeker",
+      "descriptionEs": "Extrae mineral de tres estratos distintos.",
+      "descriptionEn": "Mine ore from three different strata.",
+      "hidden": false,
+      "icon": "veta",
+      "coopScope": "actor",
+      "condition": {"stat": "strata_mined", "op": ">=", "value": 3}
+    },
+    {
+      "id": "filo_de_obsidiana",
+      "nameEs": "Filo de obsidiana",
+      "nameEn": "Obsidian Edge",
+      "descriptionEs": "Extrae tu primera veta de obsidiana en la Isla del Humo.",
+      "descriptionEn": "Mine your first obsidian seam on Smoke Island.",
+      "hidden": false,
+      "icon": "obsidiana",
+      "coopScope": "actor",
+      "condition": {"stat": "strata_mined", "contains": "obsidiana"}
+    },
+    {
+      "id": "topo_de_isla",
+      "nameEs": "Topo de isla",
+      "nameEn": "Island Mole",
+      "descriptionEs": "Cava una galería de veinte metros bajo la superficie.",
+      "descriptionEn": "Dig a tunnel twenty metres below the surface.",
+      "hidden": false,
+      "icon": "galeria",
+      "coopScope": "actor",
+      "condition": {"stat": "max_mining_depth_m", "op": ">=", "value": 20}
+    },
+    {
+      "id": "el_aire_que_falta",
+      "nameEs": "El aire que falta",
+      "nameEn": "Running Out of Air",
+      "descriptionEs": "Sal con vida de una bolsa de aire viciado justo a tiempo.",
+      "descriptionEn": "Get out of a foul-air pocket alive, just in time.",
+      "hidden": true,
+      "icon": "aire",
+      "coopScope": "witness",
+      "condition": {"flag": "air_pocket_survived"}
+    },
+    {
+      "id": "viga_a_tiempo",
+      "nameEs": "Viga a tiempo",
+      "nameEn": "Beam in Time",
+      "descriptionEs": "Coloca un apoyo en una galería a punto de derrumbarse.",
+      "descriptionEn": "Place a support beam in a tunnel about to cave in.",
+      "hidden": true,
+      "icon": "viga",
+      "coopScope": "actor",
+      "condition": {"flag": "cave_collapse_avoided"}
+    },
+    {
+      "id": "manazas",
+      "nameEs": "Manazas",
+      "nameEn": "Butterfingers",
+      "descriptionEs": "Rompe veinte herramientas golpeando algo demasiado duro para ellas.",
+      "descriptionEn": "Break twenty tools on something too hard for them.",
+      "hidden": false,
+      "icon": "herramienta_rota",
+      "coopScope": "actor",
+      "condition": {"stat": "tools_broken_on_wrong_material", "op": ">=", "value": 20}
+    },
+    {
+      "id": "el_cangrejo_se_lo_llevo",
+      "nameEs": "Cangrejo ladrón",
+      "nameEn": "The Crab Took It",
+      "descriptionEs": "Deja que un cangrejo se lleve algo que habías dejado en la arena.",
+      "descriptionEn": "Let a crab make off with something you left on the sand.",
+      "hidden": true,
+      "icon": "cangrejo",
+      "coopScope": "actor",
+      "condition": {"flag": "crab_stole_item"}
     },
     {
       "id": "ojo_de_ciclon",

@@ -1,6 +1,6 @@
 # Estadísticas de juego (contrato para todos los sistemas)
 
-Los 30 logros (GDD §16) no escuchan a ningún sistema concreto: cada sistema **informa de
+Los logros (biblia 07 §2: 30 del GDD §16 más los nuevos del GDD v2, hasta 54) no escuchan a ningún sistema concreto: cada sistema **informa de
 lo que pasa** con un evento genérico de estadística y el modelo de logros decide. Este es el
 único sitio que lista todas las estadísticas; la versión que lee el juego está en
 `Content/Data/achievements.json` (`stats`) y `Tools/DataCheck` comprueba que ambas coinciden
@@ -68,12 +68,20 @@ conseguidos son siempre del perfil.
 | `crops_harvested` | set | run | Cultivos cosechados al menos una vez. | `UFarmSubsystem::Harvest` | ids de `plants.json` | el_limonero, huerto_en_flor |
 | `boats_built` | set | run | Embarcaciones terminadas en el astillero. | `AExploredBoat` con `bBuiltByPlayer` (pendiente: el astillero que la crea) | ids de `boats.json`: `balsa`, `canoa`, `canoa_balancin`, `barco_limon` | limon_zarpa |
 | `hidden_island_reached` | flag | run | Desembarco en la isla oculta. | `UExploredWiringSubsystem` (a menos de 400 m del centro de la isla oculta) | — | limon_zarpa, naufrago_de_verdad, sin_mapa |
+| `terrain_edits_made` | counter | run | Ediciones del terreno: cada golpe de pala o de pico que quita o pone tierra. | Pendiente: `FTerrainEditModel` en el mundo (H2) | — | primera_palada |
+| `strata_mined` | set | run | Estratos de los que se ha sacado al menos una unidad. | Pendiente: `FTerrainEditModel` en el mundo (H2), con el estrato del golpe | ids de `mining.json → strata`: `tierra`, `arena`, `arcilla`, `azufre`, `caliza`, `veta_cobre`, `basalto`, `hierro_meteorito`, `obsidiana`, `cristal` | buscador_de_vetas, filo_de_obsidiana |
+| `max_mining_depth_m` | max | run | Profundidad máxima cavada bajo la superficie local, en metros (se informa el total actual). | Pendiente: `FTerrainEditModel` en el mundo (H2) | — | topo_de_isla |
+| `air_pocket_survived` | flag | run | El aire de una bolsa cerrada llega al mínimo y el jugador sale con vida. | Pendiente: aire viciado de biblia 02 §2.4 (H2) | — | el_aire_que_falta |
+| `cave_collapse_avoided` | flag | run | Se coloca una `viga_apoyo` en una galería a punto de derrumbarse. | Pendiente: regla de derrumbe de biblia 02 §2.4 (H2) | — | viga_a_tiempo |
+| `tools_broken_on_wrong_material` | counter | profile | Herramientas rotas al golpear un material más duro del que aguantaban. | Pendiente: rotura del pico de obsidiana (biblia 02 §2.2, H2) | — | manazas |
+| `crab_stole_item` | flag | profile | Un cangrejo se lleva un objeto dejado en la arena. | Pendiente: fauna de playa (biblia 07 §2.1) | — | el_cangrejo_se_lo_llevo |
 
 Los ids de las listas cerradas son un contrato: si un paquete necesita otro nombre, cambia
 la lista aquí y en `achievements.json` en el mismo commit (DataCheck lo comprueba).
 Los conjuntos que reflejan otro catálogo usan sus ids tal cual y DataCheck exige que
 coincidan: `wayfinding_techniques` con `ruins.json → techniques`, `legendary_catches` con
-`fish.json → legendary` y `boats_built` con `boats.json`. Los ids de los enums del C++
+`fish.json → legendary`, `boats_built` con `boats.json` y `strata_mined` con
+`mining.json → strata`. Los ids de los enums del C++
 (`islands_visited`, `events_witnessed`) son su `LexToString`, igual que en el juego. La
 traducción de cada sistema a estos ids está en `ExploredLinks` (`Core/SystemLinks.h`, con
 specs en el host).
@@ -81,6 +89,7 @@ specs en el host).
 ## Añadir una estadística o un logro
 
 1. Añade la fila a esta tabla y la entrada a `stats` en `achievements.json`.
-2. Si es para un logro, sustituye uno de los 30 (el número lo fija el GDD) y escribe su
-   condición con el lenguaje del JSON (`units.condition`).
+2. Si es para un logro, añádelo con el id, los textos y la condición de biblia 07 §2.3
+   (lenguaje del JSON, `units.condition`). Los 30 del GDD §16 no se tocan y el total no pasa
+   de 54; los textos pasan la guía anti-IA de biblia 07 §1 (DataCheck mide su longitud).
 3. `cd Tools/DataCheck && uv run datacheck` y `Tools/HostTests/run.sh Explored.Achievements`.
