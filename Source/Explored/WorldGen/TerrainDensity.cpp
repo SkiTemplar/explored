@@ -321,8 +321,10 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 	}
 	if (Land > -500.0f && Relief && Relief->Grid)
 	{
-		// Erosión y ríos: diferencia guardada en la rejilla, que se apaga en su borde.
-		Land += Relief->Grid->SampleDelta(Q.X, Q.Y);
+		// Erosión y ríos: diferencia guardada en la rejilla, que se apaga en su borde y en la
+		// línea de costa. Ahí las gotas dejan su sedimento al llegar al mar; sin apagarla, ese
+		// depósito subía la orilla, la costa se movía y crecía el salto de la base en T = 1.
+		Land += Relief->Grid->SampleDelta(Q.X, Q.Y) * SmoothStep(0.0f, 0.08f, 1.0f - T);
 	}
 	if (Relief && Relief->Karst)
 	{
