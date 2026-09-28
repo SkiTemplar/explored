@@ -158,6 +158,15 @@ def scene(island: str) -> list[dict]:
         icosphere((0.3, 0, 1.25), 0.05, "recurso.concha", squash=(1.3, 0.45, 1.0)),
         box((-0.15, 0, 1.2), (0.2, 0.012, 0.035), "recurso.pluma", rot=-0.5),
         icosphere((1.05, 0, 1.35), 0.05, "mineral.azufre", seed=11, jitter=0.4),
+        # Comida sin muestra propia hasta ahora (piña, coco, seta, huevo, maracuyá, batata).
+        prism((-1.4, 0, 1.2), 0.055, 0.14, 7, "comida.pina", top_scale=0.75),
+        prism((-1.4, 0.14, 1.2), 0.035, 0.08, 5, "vegetacion.hoja_oscura", top_scale=0.15),
+        icosphere((1.3, 0, 1.95), 0.085, "comida.coco", squash=(1.0, 0.95, 1.0), seed=17, jitter=0.1),
+        prism((0.55, 0, 1.2), 0.018, 0.05, 6, "palma.pulpa"),
+        icosphere((0.55, 0.05, 1.2), 0.045, "comida.seta", squash=(1.0, 0.45, 1.0)),
+        icosphere((0.8, 0.03, 1.2), 0.03, "comida.huevo", squash=(0.85, 1.15, 0.85)),
+        icosphere((-0.62, 0.035, 1.12), 0.035, "comida.maracuya", seed=19),
+        icosphere((-0.95, 0.03, 1.15), 0.035, "comida.batata", squash=(1.8, 0.8, 0.9), seed=21, jitter=0.1),
         # Fauna (fila 13): jabalí de lomo oscuro y gallina roja.
         *[prism((x, 0, z), 0.045, 0.2, 5, "fauna.jabali") for x, z in
           ((1.74, 2.41), (1.74, 2.57), (1.38, 2.41), (1.38, 2.57))],
