@@ -658,11 +658,20 @@ Raíles y vagones, animales domésticos, murallas y defensas (piezas, sin IA de 
 resto de islas (Manglar, Arenas Blancas, Meseta completa).
 
 - [ ] `Fauna`: extensión a especies terrestres domésticas (gallina, cerdo, cabra) con
-      packs CC0 riggeados (Quaternius). *(biblia 02 §10.2)*
-- [ ] `Building`: piezas de corral (gallinero, pocilga, corral genérico) con tope de 8
-      animales vivos por base. *(biblia 02 §10.2)*
-- [ ] `Fauna`: reproducción por pares (15 %/día), cría a adulto en 6 días, regla de
-      vuelta a salvaje tras 2 días sin comida. *(biblia 02 §10.2)*
+      packs CC0 riggeados (Quaternius). *(biblia 02 §10.2)* — Hecho el modelo puro
+      `FLivestockModel` (`Fauna/LivestockModel.h`, spec `Explored.Fauna.Livestock`).
+      Faltan las mallas (`packs_catalogo.json` → `pending`) y el enganche en el motor
+      (`docs/tecnico/granja.md`).
+- [x] `Building`: piezas de corral (gallinero, pocilga, corral genérico) con tope de 8
+      animales vivos por base. *(biblia 02 §10.2 — verificado: `building_pieces.json`
+      con `phase: "F2"` y `FLivestockSettings::MaxAlivePerBase`/`MaxAnimalsPerPen` = 8)*
+- [x] `Fauna`: reproducción por pares (15 %/día), cría a adulto en 6 días, regla de
+      vuelta a salvaje tras 2 días sin comida. *(biblia 02 §10.2 — verificado:
+      `FLivestockModel::EndDay`; DataCheck compara las cifras con `fases_futuras.json`)*
+- [ ] Red: granja autoritativa en el servidor (`ULivestockSubsystem`), animales como
+      fauna terrestre replicada con `FLivestockAnimalNet` y corral agregado
+      `FLivestockPenNet` (7 B) a más de 60 m. *(biblia 08 §2.7 b, §5.5 — diseño y modelo
+      en `docs/tecnico/granja.md`)*
 - [ ] Nuevo módulo `Tramway`: pieza de vía (socket `via`), grafo de tramos, vagón sobre
       spline con colisión contra terreno editable. *(biblia 02 §9, 03 §3.9)*
 - [ ] `Building`: torno horizontal y ascensor de pozo como piezas de producción.
@@ -673,7 +682,8 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
       `torno_cuerda`, `ascensor_pozo`, `muralla_piedra`, `torre_defensa`,
       `cerca_estacas`, `empalizada`, `torre_vigia`, `gallinero`, `pocilga`, `corral` a
       `building_pieces.json` — verificado: hoy no existe ningún id de muralla ni de
-      raíl en el fichero. *(biblia 03 §3.7, §3.9, 05 §4.1, 07 §2.1 — verificado:
+      raíl en el fichero. `gallinero`, `pocilga` y `corral` ya están (categoría
+      `granja`, `phase: "F2"`). *(biblia 03 §3.7, §3.9, 05 §4.1, 07 §2.1 — verificado:
       `Content/Data/building_pieces.json` sin coincidencias de `muralla`/`empalizada`/
       `torre_defensa`)*
 - [ ] `Building`: trampas de defensa (estacas ocultas) como pieza colocable con verbo
@@ -693,6 +703,8 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
       `livestock_species_raised`, `eggs_collected`, y los logros
       `primer_tren_de_isla`, `primera_empalizada`, `muralla_de_piedra`,
       `primera_pareja`, `corral_completo`, `huevos_por_docenas`. *(biblia 07 §2.1, §2.3)*
+      — Hechos los de granja: `livestock_species_raised`, `eggs_collected` y sus tres
+      logros, con `phase: "F2"` y `coopScope`. Faltan los de vagones y murallas.
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño de armadura nueva
       rompe el invariante «ninguna plantilla produce un objeto sin malla».
       *(biblia 05 §Tests)*
