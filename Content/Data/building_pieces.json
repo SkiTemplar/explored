@@ -860,6 +860,33 @@
       "mesh": "SM_Kit_Wood_Foundation"
     },
     {
+      "id": "viga_apoyo",
+      "nameEs": "Viga de apoyo",
+      "nameEn": "Support beam",
+      "tier": "madera",
+      "category": "mina",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "tronco_pequeno",
+          "count": 2
+        },
+        {
+          "item": "cuerda",
+          "count": 1
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 60,
+      "maxCycloneCategory": 3,
+      "mesh": null,
+      "noteEs": "Biblia 02 §2.4 y §2.7: apuntala un hueco de mina en 1,5 m a la redonda (mining.json/hazards/derrumbe). Solo bajo tierra, donde no llega el viento del ciclón; por eso aguanta la categoría 3."
+    },
+    {
       "id": "escalera_madera",
       "nameEs": "Escalera de madera",
       "nameEn": "Wooden ladder",

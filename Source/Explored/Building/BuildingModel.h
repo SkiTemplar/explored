@@ -52,6 +52,14 @@ public:
 	static constexpr double BaseRadiusCm = 4000.0;
 	/** Pisos por encima o por debajo del origen que admite una base. */
 	static constexpr int32 MaxLevels = 8;
+	/**
+	 * Límites de la clave de hueco (X e Y en 16 bits, base en 16): más allá, dos huecos
+	 * distintos comparten clave. X/Y dejan margen para los vecinos (±1) que se consultan.
+	 */
+	static constexpr int32 MaxCellCoord = 32000;
+	static constexpr int32 MaxBaseId = 0xFFFF;
+	/** Id de pieza máximo que se acepta al cargar (deja margen para que Id + 1 no desborde). */
+	static constexpr int32 MaxPieceId = 1 << 30;
 
 	/** Por debajo de esta estabilidad una pieza no se sostiene. */
 	static constexpr float MinStability = 0.05f;
@@ -150,7 +158,9 @@ public:
 	FBuildingSaveState SaveState() const;
 	/**
 	 * Restaura un estado guardado. Descarta (y cuenta en OutDropped) las piezas con
-	 * definición desconocida o hueco repetido; no derrumba nada al cargar.
+	 * definición desconocida, hueco repetido, id o celda fuera de rango (MaxPieceId,
+	 * MaxCellCoord, MaxLevels) o base inexistente; ignora las bases con id fuera de
+	 * [1, MaxBaseId]. No derrumba nada al cargar.
 	 */
 	bool LoadState(const FBuildingSaveState& State, int32* OutDropped = nullptr);
 

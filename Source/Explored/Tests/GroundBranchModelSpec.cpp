@@ -130,6 +130,23 @@ void FGroundBranchModelSpec::Define()
 		TestTrue(TEXT("acumulador sano"), Cell.Accumulator >= 0);
 	});
 
+	It("un reloj o un acumulador guardados extremos no desbordan", [this]()
+	{
+		FGroundBranchCell Cell = FGroundBranchModel::Initialize(3u, Sources, 0);
+		EmptyCell(Cell);
+		// Antes NowMinute - INT64_MIN desbordaba a negativo y la celda no volvía a llenarse.
+		Cell.LastUpdateMinute = TNumericLimits<int64>::Min();
+		FGroundBranchModel::Advance(Cell, Sources, 100);
+		TestEqual(TEXT("llena"), Cell.Present.Num(), FGroundBranchModel::TotalCapacity(Sources));
+
+		FGroundBranchCell Rich = FGroundBranchModel::Initialize(3u, Sources, 0);
+		EmptyCell(Rich);
+		Rich.Accumulator = TNumericLimits<int64>::Max();
+		FGroundBranchModel::Advance(Rich, Sources, Day);
+		TestEqual(TEXT("llena con acumulador enorme"), Rich.Present.Num(), FGroundBranchModel::TotalCapacity(Sources));
+		TestTrue(TEXT("acumulador sano"), Rich.Accumulator >= 0);
+	});
+
 	It("Pick quita una sola vez y los números de serie nunca se repiten", [this]()
 	{
 		FGroundBranchCell Cell = FGroundBranchModel::Initialize(8u, Sources, 0);

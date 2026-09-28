@@ -54,7 +54,8 @@ ESwimState FSwimModel::NextState(const FSwimTuning& Tuning, ESwimState Previous,
 
 FSwimStep FSwimModel::Tick(const FSwimTuning& Tuning, const FSwimInputs& In, float DeltaTime)
 {
-	DeltaTime = FMath::Max(0.0f, DeltaTime);
+	// Max(0, NaN) es NaN: el oxígeno quedaría NaN para siempre y no se ahogaría nunca.
+	DeltaTime = FMath::IsFinite(DeltaTime) ? FMath::Max(0.0f, DeltaTime) : 0.0f;
 
 	FSwimStep Out;
 	Out.Velocity = In.Velocity;

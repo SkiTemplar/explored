@@ -12,8 +12,8 @@ junto a los packs.
   `gen_palette.py`; un test falla si el JSON no coincide con el generador.
 - Atlas: `T_Palette_Landing`, `T_Palette_Esmeralda`, `T_Palette_Humo`, `T_Palette_Dientes`
   (512×512, en `Art/Export/Textures/`, no versionados).
-- Hoja de contacto: [`paleta-2026-09-28b.png`](paleta-2026-09-28b.png) (anteriores:
-  [`paleta-2026-09-28.png`](paleta-2026-09-28.png), [`paleta-2026-09-27.png`](paleta-2026-09-27.png)) — atlas de cada isla, una muestra
+- Hoja de contacto: [`paleta-2026-09-28c.png`](paleta-2026-09-28c.png) (anteriores:
+  [`paleta-2026-09-28b.png`](paleta-2026-09-28b.png), [`paleta-2026-09-28.png`](paleta-2026-09-28.png), [`paleta-2026-09-27.png`](paleta-2026-09-27.png)) — atlas de cada isla, una muestra
   aplicada a formas low poly a 1-3 m (con recursos sueltos: hueso, concha, pluma, azufre,
   vasija de terracota; y fauna: jabalí y gallina) sobre el suelo armonizado de la isla (con
   cielo y mar actuales), y el antes/después del terreno.
@@ -178,6 +178,13 @@ Color medio por isla (`=`: igual que Landing). Arriba/abajo y lineal en `paleta.
 | `comida.pescado` | 6,7 | `#7b97ad` | = | = | = | Pescado plateado. |
 | `comida.cangrejo` | 7,7 | `#d0563b` | = | = | = | Cangrejo y langosta cocidos. |
 | `comida.taro` | 8,7 | `#9a7b8c` | = | = | = | Taro, raíces moradas. |
+| `comida.pina` | 9,7 | `#bfa332` | = | = | = | Piña (cáscara dorada verdosa: el mango ya es naranja). |
+| `comida.coco` | 10,7 | `#5b4a2b` | = | = | = | Coco maduro, cáscara con fibra (palma.coco no se verifica contra el suelo). |
+| `comida.maracuya` | 11,7 | `#5f2d5c` | = | = | = | Maracuyá morada. |
+| `comida.seta` | 12,7 | `#a8583a` | = | = | = | Sombrero de la seta comestible. |
+| `comida.batata` | 13,7 | `#9b4a5a` | = | = | = | Batata, piel rosada. |
+| `comida.yuca` | 14,7 | `#7a3a36` | = | = | = | Yuca, corteza de la raíz. |
+| `comida.huevo` | 15,7 | `#eee8d8` | = | = | = | Huevo de ave marina o de gallina. |
 | `ui.tinta` | 0,8 | `#302b27` | = | = | = | Texto, tinta del mapa. |
 | `ui.papel` | 1,8 | `#eee3c7` | = | = | = | Papel del mapa (MapPaper). |
 | `ui.acento` | 2,8 | `#e0a041` | = | = | = | Resaltado, selección. |
@@ -249,6 +256,30 @@ Correspondencia propuesta para el cerdo salvaje en `packs_catalogo.json` (la cam
 agente de packs al volver a normalizar, porque regenera la malla):
 `#d8a1a4` (cuerpo) → `fauna.jabali` y `#7c533e` (hocico y pezuñas) → `fauna.pezuna`.
 
+## Comida sin muestra propia (2026-09-28c)
+
+La fila 7 tenía 9 muestras para 40 comidas de `items.json`: la piña del lote 3 salía en
+`comida.mango` (igual que el mango), la seta en `palma.pulpa`/`tela.tapa` y el coco en
+`palma.coco`, familias que **no** se comprueban contra el suelo (no son `recogible`).
+Se añaden 7 muestras en las columnas 9-15 (la fila queda llena): `pina`, `coco`,
+`maracuya`, `seta`, `batata`, `yuca` y `huevo`. Peor ΔE contra el suelo de cualquier isla:
+coco 0.078, yuca 0.087, piña y maracuyá 0.090; vecino más próximo dentro de la fila: yuca
+y asado a 0.059. Las columnas 0-8 y las demás filas no cambian: nada hay que reimportar
+salvo el propio atlas.
+
+Correspondencia propuesta para `packs_catalogo.json` (la cambia el agente de packs al
+renormalizar, porque regenera la malla y la hoja `docs/art/packs/lote3-comida.png`):
+
+| Entrada | Ahora | Propuesta |
+|---|---|---|
+| `pina` | `#ff9d36` → `comida.mango` (y `default`) | → `comida.pina` |
+| `seta_comestible` | `#a55d41` → `tela.tapa`; `default` `palma.pulpa` | sombrero → `comida.seta`; pie sigue en `palma.pulpa`, `default` `comida.seta` |
+| `platano`, `limon` | tallo `#a95e41` → `palma.coco` | se queda: el tallo es pequeño y lo rodea la fruta |
+
+Nuevo test `test_pack_catalog_recolor_targets_exist`: toda regla `recolor` (y su
+`default`) del catálogo apunta a una muestra existente, para que un renombrado en la
+paleta no rompa `normalize.py` en local.
+
 ## Pendiente
 
 - Verificar en Unreal: importación con kind `palette`, compilación de `M_LowPoly` (nodo
@@ -256,4 +287,5 @@ agente de packs al volver a normalizar, porque regenera la malla):
 - Usar `recurso.*` y `mineral.*` en `packs_catalogo.json` cuando se cataloguen conchas,
   huesos, plumas o vasijas (flecha: emplumado → `recurso.pluma`).
 - Pasar `cerdo_salvaje` de `packs_catalogo.json` a `fauna.*` (ver «Fauna») y renormalizar.
+- Pasar `pina` y `seta_comestible` a `comida.pina`/`comida.seta` (ver «Comida sin muestra propia») y renormalizar el lote 3.
 - Comprobar la legibilidad en juego con Lumen (la hoja usa un sombreado simple).

@@ -76,7 +76,7 @@ bool FFarmModel::SeasonFromId(const FString& Id, ESeason& OutSeason)
 
 float FFarmModel::WateringsFromRainHours(float RainHours)
 {
-	return FMath::Max(0.0f, RainHours) / RainHoursPerWatering;
+	return FMath::IsFinite(RainHours) ? FMath::Max(0.0f, RainHours) / RainHoursPerWatering : 0.0f;
 }
 
 float FFarmModel::RainWateringsForDay(const FWeatherModel& Weather, int32 Day)
@@ -260,7 +260,8 @@ EFarmResult FFarmModel::Water(int32 PlotId, float Waterings)
 	{
 		return EFarmResult::PlantDead;
 	}
-	Plot->Crop.WaterToday += FMath::Max(0.0f, Waterings);
+	// Max(0, NaN) dejaría WaterToday en NaN y el día contaría como seco.
+	Plot->Crop.WaterToday += FMath::IsFinite(Waterings) ? FMath::Max(0.0f, Waterings) : 0.0f;
 	return EFarmResult::Ok;
 }
 
@@ -391,7 +392,8 @@ bool FFarmModel::EndDay(int32 Day, float RainWaterings)
 	State.LastEndedDay = Day;
 
 	const ESeason Season = FWeatherModel::SeasonForDay(static_cast<float>(Day));
-	const float Rain = FMath::Max(0.0f, RainWaterings);
+	// Lluvia no finita cuenta como seca: con NaN ningún riego llegaba a WaterPerDay.
+	const float Rain = FMath::IsFinite(RainWaterings) ? FMath::Max(0.0f, RainWaterings) : 0.0f;
 
 	for (FFarmPlot& Plot : State.Plots)
 	{
@@ -400,7 +402,7 @@ bool FFarmModel::EndDay(int32 Day, float RainWaterings)
 
 		FFarmCrop& Crop = Plot.Crop;
 		const FPlantDef* Def = Crop.IsEmpty() ? nullptr : FindPlant(Crop.PlantId);
-		const float WaterToday = Crop.WaterToday;
+		const float WaterToday = FMath::IsFinite(Crop.WaterToday) ? Crop.WaterToday : 0.0f;
 		Crop.WaterToday = 0.0f;
 		if (!Def || Crop.bDead || Day < Crop.PlantedDay)
 		{
@@ -504,6 +506,8 @@ void FFarmModel::SetState(const FFarmState& InState)
 {
 	State = InState;
 	int32 MaxId = 0;
+	// Reales de un guardado (el formato admite NaN/Infinity): con GrowthDays NaN no crecía nunca.
+	auto NonNegative = [](float V) { return FMath::IsFinite(V) ? FMath::Max(V, 0.0f) : 0.0f; };
 	for (FFarmPlot& Plot : State.Plots)
 	{
 		MaxId = FMath::Max(MaxId, Plot.Id);
@@ -511,6 +515,9 @@ void FFarmModel::SetState(const FFarmState& InState)
 		{
 			Plot.Crop = FFarmCrop();
 		}
+		Plot.Crop.GrowthDays = NonNegative(Plot.Crop.GrowthDays);
+		Plot.Crop.HarvestClock = NonNegative(Plot.Crop.HarvestClock);
+		Plot.Crop.WaterToday = NonNegative(Plot.Crop.WaterToday);
 	}
 	State.NextPlotId = FMath::Max(State.NextPlotId, MaxId + 1);
 }

@@ -40,3 +40,12 @@ if(HOST_TESTS_SANITIZE)
 		-fno-sanitize-recover=undefined -fsanitize=float-cast-overflow)
 	target_link_options(explored_host_tests PRIVATE -fsanitize=address,undefined)
 endif()
+
+# HOST_TESTS_FASTMATH=ON: matemáticas rápidas, como el editor (MSVC /fp:fast). El compilador
+# supone que no hay NaN ni infinitos, así que `!(x > 0)` deja pasar un NaN; solo las
+# comprobaciones por bits (FMath::IsFinite/IsNaN) los siguen viendo. Sirve para cazar los
+# sitios que confían en la semántica IEEE de las comparaciones con NaN.
+option(HOST_TESTS_FASTMATH "Compilar con matemáticas rápidas (-ffast-math)" OFF)
+if(HOST_TESTS_FASTMATH)
+	target_compile_options(explored_host_tests PRIVATE -ffast-math)
+endif()

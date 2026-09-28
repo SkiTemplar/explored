@@ -5,6 +5,8 @@
 #include "Sky/MoonModel.h"
 #include "Weather/WeatherModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace WorldEventsSpecDetail
@@ -299,6 +301,28 @@ void FWorldEventsSpec::Define()
 						TestTrue(FString::Printf(TEXT("Siguiente %s tras %.1f"), LexToString(Type), T), Next == *Expected);
 					}
 				}
+			}
+		});
+
+		It("acota relojes no finitos o fuera de partida y la ventana de búsqueda", [this]()
+		{
+			constexpr float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Max = static_cast<float>(FWeatherModel::MaxSupportedDays);
+			TestEqual(TEXT("Ventana NaN vacía"), Model->EventsInWindow(0.0f, NaN).Num(), 0);
+			TestEqual(TEXT("Instante NaN vacío"), Model->ActiveAt(NaN).Num(), 0);
+			FWorldEvent Next;
+			TestFalse(TEXT("Sin siguiente con NaN"), Model->NextOccurrence(EWorldEventType::ShipOnHorizon, NaN, Next));
+
+			// Sin tope, un reloj de 1e9 días generaba 1e9 días (cuelgue) y ++Day desbordaba.
+			for (const FWorldEvent& Event : Model->EventsInWindow(Max - 2.0f, 1.0e9f))
+			{
+				TestTrue(TEXT("Ventana acotada al último día admitido"), Event.Start <= Max);
+			}
+			// FirstDay + SearchDays desbordaba int32 y no se buscaba nada.
+			TestTrue(TEXT("Búsqueda enorme acotada"), Model->NextOccurrence(EWorldEventType::ShipOnHorizon, 0.0f, Next, MAX_int32));
+			if (Model->NextOccurrence(EWorldEventType::ShipOnHorizon, 3.0e9f, Next))
+			{
+				TestTrue(TEXT("Tras el último día admitido"), Next.Start > Max);
 			}
 		});
 

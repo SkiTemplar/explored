@@ -1,5 +1,7 @@
 #include "WorldGen/TerrainEditModel.h"
 
+#include "Save/SaveWorldDeltas.h"
+
 namespace TerrainEditDetail
 {
 	/** Paso de SplitMix64: semilla → forma del golpe, sin depender de ningún generador global. */
@@ -77,9 +79,122 @@ namespace TerrainEditDetail
 		return true;
 	}
 
+	bool IsFiniteVector(const FVector& V)
+	{
+		return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z);
+	}
+
+	/** Punto finito y dentro del mundo: sus muestras globales caben en int32 con holgura. */
+	bool InWorld(const FVector& P)
+	{
+		const double Max = FTerrainEditModel::MaxWorldCoordinate;
+		return IsFiniteVector(P) && FMath::Abs(P.X) <= Max && FMath::Abs(P.Y) <= Max && FMath::Abs(P.Z) <= Max;
+	}
+
+	/** Medida de pincel finita y no mayor que la de ninguna herramienta. */
+	bool ValidExtent(float Value)
+	{
+		return FMath::IsFinite(Value) && Value <= FTerrainEditModel::MaxBrushExtent;
+	}
+
 	float SnapTo(float Value, float Step)
 	{
 		return FMath::RoundToFloat(Value / Step) * Step;
+	}
+
+	// --- Formato binario de la versión 2 del guardado ---
+
+	uint64 ZigZag(int64 Value)
+	{
+		return (static_cast<uint64>(Value) << 1) ^ static_cast<uint64>(Value >> 63);
+	}
+
+	int64 UnZigZag(uint64 Value)
+	{
+		return static_cast<int64>(Value >> 1) ^ -static_cast<int64>(Value & 1);
+	}
+
+	void PutVarint(TArray<uint8>& Out, uint64 Value)
+	{
+		while (Value >= 0x80)
+		{
+			Out.Add(static_cast<uint8>(Value | 0x80));
+			Value >>= 7;
+		}
+		Out.Add(static_cast<uint8>(Value));
+	}
+
+	void PutSigned(TArray<uint8>& Out, int64 Value)
+	{
+		PutVarint(Out, ZigZag(Value));
+	}
+
+	/** Lector con límites: cualquier lectura más allá del final falla en vez de leer basura. */
+	struct FByteReader
+	{
+		const TArray<uint8>& Bytes;
+		int32 Pos = 0;
+
+		explicit FByteReader(const TArray<uint8>& InBytes) : Bytes(InBytes) {}
+
+		bool AtEnd() const { return Pos == Bytes.Num(); }
+		int32 Remaining() const { return Bytes.Num() - Pos; }
+
+		bool Varint(uint64& Out)
+		{
+			Out = 0;
+			// 10 bytes cubren 64 bits; más es un fichero manipulado.
+			for (int32 Shift = 0; Shift < 70; Shift += 7)
+			{
+				if (Pos >= Bytes.Num())
+				{
+					return false;
+				}
+				const uint8 Byte = Bytes[Pos++];
+				if (Shift == 63 && (Byte & 0x7E) != 0)
+				{
+					return false;
+				}
+				Out |= static_cast<uint64>(Byte & 0x7F) << Shift;
+				if ((Byte & 0x80) == 0)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool Unsigned(int64 Max, int64& Out)
+		{
+			uint64 Value = 0;
+			if (!Varint(Value) || Value > static_cast<uint64>(Max))
+			{
+				return false;
+			}
+			Out = static_cast<int64>(Value);
+			return true;
+		}
+
+		bool Signed(int64 Limit, int64& Out)
+		{
+			uint64 Value = 0;
+			if (!Varint(Value))
+			{
+				return false;
+			}
+			Out = UnZigZag(Value);
+			return Out >= -Limit && Out <= Limit;
+		}
+	};
+
+	void FnvBytes(uint32& Hash, int32 Value)
+	{
+		const uint32 U = static_cast<uint32>(Value);
+		for (int32 Byte = 0; Byte < 4; ++Byte)
+		{
+			Hash ^= (U >> (Byte * 8)) & 0xFFu;
+			Hash *= 16777619u;
+		}
 	}
 }
 
@@ -124,7 +239,9 @@ float FTerrainEditModel::Occupancy(float Density, float CellSize)
 bool FTerrainEditModel::SnapStairs(const FStairCarve& In, FStairCarve& Out)
 {
 	const FVector2D Flat(In.Direction.X, In.Direction.Y);
-	if (Flat.Size() < 1.0e-3)
+	if (!TerrainEditDetail::InWorld(In.Start) || !TerrainEditDetail::IsFiniteVector(In.Direction)
+		|| !FMath::IsFinite(In.StepRise) || !FMath::IsFinite(In.StepRun) || !FMath::IsFinite(In.Width)
+		|| !FMath::IsFinite(In.Headroom) || Flat.Size() < 1.0e-3)
 	{
 		return false;
 	}
@@ -147,9 +264,9 @@ bool FTerrainEditModel::SnapStairs(const FStairCarve& In, FStairCarve& Out)
 	const float Rise = FMath::Clamp(TerrainEditDetail::SnapTo(FMath::Abs(In.StepRise), HalfGrid), HalfGrid, 3.0f * HalfGrid);
 	Out.StepRise = In.StepRise < 0.0f ? -Rise : Rise;
 	Out.StepRun = FMath::Clamp(TerrainEditDetail::SnapTo(In.StepRun, HalfGrid), StairGrid, 3.0f * StairGrid);
-	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, 64);
-	Out.Width = FMath::Clamp(In.Width, 0.6f, 3.0f);
-	Out.Headroom = FMath::Clamp(In.Headroom, 1.8f, 3.0f);
+	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, MaxStairSteps);
+	Out.Width = FMath::Clamp(In.Width, 0.6f, MaxStairWidth);
+	Out.Headroom = FMath::Clamp(In.Headroom, 1.8f, MaxStairHeadroom);
 	return true;
 }
 
@@ -258,11 +375,36 @@ float FTerrainEditModel::SampleDensity(const FIntVector& Global, FBaseDensity Ba
 
 float FTerrainEditModel::Density(const FVector& P, FBaseDensity Base) const
 {
+	float Delta = 0.0f;
+	DeltaAt(P, Delta);
+	return Base(P) + Delta;
+}
+
+bool FTerrainEditModel::DeltaAt(const FVector& P, float& OutDelta) const
+{
+	OutDelta = 0.0f;
+	if (Chunks.Num() == 0)
+	{
+		return false;
+	}
 	const double H = Settings.CellSize;
 	const FVector Q = P / H;
+	// Fuera de la rejilla representable (o NaN) no hay ediciones: nunca se convierte a int
+	// un valor que no cabe.
+	static constexpr double Limit = 2.0e9;
+	if (!(FMath::Abs(Q.X) < Limit && FMath::Abs(Q.Y) < Limit && FMath::Abs(Q.Z) < Limit))
+	{
+		return false;
+	}
 	const FIntVector G0(FMath::FloorToInt32(Q.X), FMath::FloorToInt32(Q.Y), FMath::FloorToInt32(Q.Z));
+	// Caso normal: las 8 muestras están en el mismo chunk y ese chunk no está editado.
+	const FIntVector Chunk = ChunkOfSample(G0);
+	if (Chunk == ChunkOfSample(G0 + FIntVector(1)) && !Chunks.Contains(Chunk))
+	{
+		return false;
+	}
 	const FVector F = Q - FVector(G0.X, G0.Y, G0.Z);
-	float Delta = 0.0f;
+	bool bEdited = false;
 	for (int32 Corner = 0; Corner < 8; ++Corner)
 	{
 		const FIntVector O(Corner & 1, (Corner >> 1) & 1, (Corner >> 2) & 1);
@@ -270,16 +412,88 @@ float FTerrainEditModel::Density(const FVector& P, FBaseDensity Base) const
 		if (Mm != 0)
 		{
 			const double W = (O.X ? F.X : 1.0 - F.X) * (O.Y ? F.Y : 1.0 - F.Y) * (O.Z ? F.Z : 1.0 - F.Z);
-			Delta += static_cast<float>(W * Mm * 0.001);
+			OutDelta += static_cast<float>(W * Mm * 0.001);
+			bEdited = true;
 		}
 	}
-	return Base(P) + Delta;
+	return bEdited;
+}
+
+void FTerrainEditModel::ChunksTouchedBySphere(const FVector& Center, float Radius, TArray<FIntVector>& Out) const
+{
+	if (!(Radius > 0.0f) || !FMath::IsFinite(Radius) || !TerrainEditDetail::IsFiniteVector(Center))
+	{
+		return;
+	}
+	const int32 First = Out.Num();
+	ForEachSampleInBox(FBox(Center - FVector(Radius), Center + FVector(Radius)),
+		[&](const FIntVector& G, const FVector& P)
+		{
+			if ((P - Center).Size() < Radius)
+			{
+				ChunksReadingSample(G, Out);
+			}
+		});
+	// Los que ya traía Out se quedan delante; lo nuevo, ordenado y sin repetir.
+	TArray<FIntVector> Added(Out.GetData() + First, Out.Num() - First);
+	Out.SetNum(First);
+	Added.Sort(&TerrainEditDetail::ChunkLess);
+	for (const FIntVector& Chunk : Added)
+	{
+		if (Out.Num() == First || Out.Last() != Chunk)
+		{
+			Out.Add(Chunk);
+		}
+	}
+}
+
+uint32 FTerrainEditModel::ChunkChecksum(const FIntVector& Chunk) const
+{
+	uint32 Hash = 2166136261u;
+	const TMap<int32, int32>* Deltas = Chunks.Find(Chunk);
+	if (!Deltas)
+	{
+		return Hash;
+	}
+	TArray<int32> Locals;
+	for (const auto& Pair : *Deltas)
+	{
+		Locals.Add(Pair.Key);
+	}
+	Locals.Sort();
+	for (const int32 Local : Locals)
+	{
+		TerrainEditDetail::FnvBytes(Hash, Local);
+		TerrainEditDetail::FnvBytes(Hash, Deltas->FindChecked(Local));
+	}
+	return Hash;
 }
 
 void FTerrainEditModel::ForEachSampleInBox(const FBox& Box,
 	TFunctionRef<void(const FIntVector&, const FVector&)> Visit) const
 {
 	const double H = Settings.CellSize;
+	// Caja no finita, fuera de la rejilla o absurda: nada. Con NaN, CeilToInt32 daba INT_MIN y las
+	// ediciones caían en chunks que FromValue rechaza (se perdía todo el guardado).
+	constexpr double MaxAbsSample = 1.0e8;
+	constexpr double MaxSamples = 1 << 22;
+	const double Los[3] = { Box.Min.X / H, Box.Min.Y / H, Box.Min.Z / H };
+	const double His[3] = { Box.Max.X / H, Box.Max.Y / H, Box.Max.Z / H };
+	double Count = 1.0;
+	for (int32 Axis = 0; Axis < 3; ++Axis)
+	{
+		const double Lo = Los[Axis];
+		const double Hi = His[Axis];
+		if (!FMath::IsFinite(Lo) || !FMath::IsFinite(Hi) || FMath::Abs(Lo) > MaxAbsSample || FMath::Abs(Hi) > MaxAbsSample)
+		{
+			return;
+		}
+		Count *= FMath::Max(0.0, Hi - Lo + 1.0);
+	}
+	if (Count > MaxSamples)
+	{
+		return;
+	}
 	const FIntVector Min(FMath::CeilToInt32(Box.Min.X / H), FMath::CeilToInt32(Box.Min.Y / H), FMath::CeilToInt32(Box.Min.Z / H));
 	const FIntVector Max(FMath::FloorToInt32(Box.Max.X / H), FMath::FloorToInt32(Box.Max.Y / H), FMath::FloorToInt32(Box.Max.Z / H));
 	for (int32 Z = Min.Z; Z <= Max.Z; ++Z)
@@ -400,7 +614,15 @@ void FTerrainEditModel::Commit(const TArray<FProposal>& Proposals, float Scale, 
 
 FIntPoint FTerrainEditModel::ColumnOf(double X, double Y) const
 {
-	return FIntPoint(FMath::FloorToInt32(X / Settings.CellSize), FMath::FloorToInt32(Y / Settings.CellSize));
+	const double CX = X / Settings.CellSize;
+	const double CY = Y / Settings.CellSize;
+	// Un punto no finito o fuera de la rejilla cae en una columna centinela que nunca es camino.
+	static constexpr double Limit = 2.0e9;
+	if (!(FMath::Abs(CX) < Limit && FMath::Abs(CY) < Limit))
+	{
+		return FIntPoint(MAX_int32, MAX_int32);
+	}
+	return FIntPoint(FMath::FloorToInt32(CX), FMath::FloorToInt32(CY));
 }
 
 int32 FTerrainEditModel::Compaction(double X, double Y) const
@@ -419,6 +641,10 @@ void FTerrainEditModel::AddCompaction(const FVector& Center, float Radius, int32
 	const double H = Settings.CellSize;
 	const FIntPoint Min = ColumnOf(Center.X - Radius, Center.Y - Radius);
 	const FIntPoint Max = ColumnOf(Center.X + Radius, Center.Y + Radius);
+	if (Min.X == MAX_int32 || Max.X == MAX_int32)
+	{
+		return;
+	}
 	for (int32 Y = Min.Y; Y <= Max.Y; ++Y)
 	{
 		for (int32 X = Min.X; X <= Max.X; ++X)
@@ -458,7 +684,8 @@ FTerrainEditResult FTerrainEditModel::Pickaxe(const FPickaxeHit& Hit, FBaseDensi
 {
 	FTerrainEditResult Result;
 	const FTerrainMaterialInfo& Info = MaterialInfo(Hit.Material);
-	if (Hit.ToolTier < Info.MinToolTier)
+	if (Hit.ToolTier < Info.MinToolTier || !TerrainEditDetail::InWorld(Hit.ImpactPoint)
+		|| !TerrainEditDetail::IsFiniteVector(Hit.Direction))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -507,9 +734,16 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 {
 	FTerrainEditResult Result;
 	const float Factor = ToolFactor(Stroke.Material, Stroke.ToolTier);
-	if (Factor <= 0.0f)
+	if (Factor <= 0.0f || !TerrainEditDetail::InWorld(Stroke.Center) || !TerrainEditDetail::IsFiniteVector(Stroke.PlaneNormal)
+		|| !TerrainEditDetail::ValidExtent(Stroke.Radius) || !TerrainEditDetail::ValidExtent(Stroke.EdgeWidth)
+		|| !TerrainEditDetail::ValidExtent(Stroke.VerticalReach) || !FMath::IsFinite(Stroke.SoilBudget))
 	{
 		Result.bRejected = true;
+		return Result;
+	}
+	if (!TerrainEditDetail::IsFiniteVector(Stroke.Center) || !TerrainEditDetail::IsFiniteVector(Stroke.PlaneNormal)
+		|| !FMath::IsFinite(Stroke.Radius) || !FMath::IsFinite(Stroke.EdgeWidth) || !FMath::IsFinite(Stroke.VerticalReach))
+	{
 		return Result;
 	}
 	const FVector N = Stroke.PlaneNormal.SizeSquared() > 1.0e-8 ? Stroke.PlaneNormal.GetSafeNormal() : FVector(0.0, 0.0, 1.0);
@@ -553,7 +787,9 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 
 	// Lo que se rellena sale de lo que se lleva más lo que corta esta misma pasada.
 	const double CutVolume = -ProposalVolume(Cut, 1.0f);
-	const double Allowed = FMath::Max(0.0, Stroke.SoilBudget) + CutVolume;
+	// Un presupuesto no finito no es tierra que se lleve: con NaN o infinito se rellenaba sin tope.
+	const double Budget = FMath::IsFinite(Stroke.SoilBudget) ? FMath::Max(0.0, Stroke.SoilBudget) : 0.0;
+	const double Allowed = Budget + CutVolume;
 	Commit(Cut, 1.0f, Result);
 	Commit(Fill, ScaleToVolume(Fill, Allowed), Result);
 
@@ -584,6 +820,12 @@ FTerrainEditResult FTerrainEditModel::PlaceSoil(const FSoilPlacement& Placement,
 	{
 		return Result;
 	}
+	if (!FMath::IsFinite(Placement.SoilBudget) || !TerrainEditDetail::ValidExtent(Placement.Radius)
+		|| !TerrainEditDetail::InWorld(Placement.Center))
+	{
+		Result.bRejected = true;
+		return Result;
+	}
 	const float Reach = Placement.Radius + Settings.CellSize;
 	TArray<FProposal> Proposals;
 	ForEachSampleInBox(FBox(Placement.Center - FVector(Reach), Placement.Center + FVector(Reach)),
@@ -612,8 +854,19 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 {
 	FTerrainEditResult Result;
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
-	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || Flat.SizeSquared() < 1.0e-6
-		|| Stairs.NumSteps < 1 || Stairs.StepRun <= 0.0f || Stairs.Width <= 0.0f || Stairs.Headroom <= 0.0f)
+	// Holgura para los valores que SnapStairs deja justo en el tope (0,45 = 3 × 0,15 en float).
+	static constexpr float Slack = 1.0e-4f;
+	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || !TerrainEditDetail::InWorld(Stairs.Start)
+		|| !TerrainEditDetail::IsFiniteVector(Stairs.Direction) || Flat.SizeSquared() < 1.0e-6
+		|| Stairs.NumSteps < 1 || Stairs.NumSteps > MaxStairSteps
+		// IsFinite explícito: con matemáticas rápidas la comparación en positivo no descarta los NaN.
+		|| !FMath::IsFinite(Stairs.StepRun) || !FMath::IsFinite(Stairs.StepRise)
+		|| !FMath::IsFinite(Stairs.Width) || !FMath::IsFinite(Stairs.Headroom)
+		|| !(Stairs.StepRun > 0.0f) || Stairs.StepRun > MaxStairRun + Slack
+		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
+		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack
+		|| !(Stairs.Headroom > 0.0f) || Stairs.Headroom > MaxStairHeadroom + Slack
+		|| !FMath::IsFinite(Stairs.MaxVolume))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -685,6 +938,50 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	return Result;
 }
 
+FTerrainEditResult FTerrainEditModel::DigSphere(const FSphereDig& Dig, FBaseDensity Base)
+{
+	FTerrainEditResult Result;
+	if (ToolFactor(Dig.Material, Dig.ToolTier) <= 0.0f)
+	{
+		// Biblia 02 §2.1: rebota, no resta densidad.
+		Result.bRejected = true;
+		return Result;
+	}
+	if (!(Dig.Radius > 0.0f) || !FMath::IsFinite(Dig.Radius) || !TerrainEditDetail::IsFiniteVector(Dig.Center)
+		|| !(Dig.MaxVolume >= 0.0))
+	{
+		return Result;
+	}
+	// Distancia con signo a la esfera (aire dentro). Con la ocupación lineal de una celda,
+	// su volumen es el de la esfera real aunque el centro caiga en una muestra; por eso
+	// entran también las muestras de la corteza de media celda (SphereDigReach). Ninguna
+	// más: la esfera no ensucia un chunk que no lea una muestra dentro de ese alcance.
+	const float Reach = SphereDigReach(Dig.Radius);
+	TArray<FProposal> Proposals;
+	ForEachSampleInBox(FBox(Dig.Center - FVector(Reach), Dig.Center + FVector(Reach)),
+		[&](const FIntVector& G, const FVector& P)
+		{
+			const float Dist = static_cast<float>((P - Dig.Center).Size());
+			if (Dist >= Reach)
+			{
+				return;
+			}
+			const float BaseValue = Base(P);
+			const float Old = BaseValue + static_cast<float>(GetDeltaMm(G)) * 0.001f;
+			const float Target = Band(Dig.Radius - Dist);
+			if (Target > Band(Old))
+			{
+				Proposals.Add({ G, BaseValue, Old, Target });
+			}
+		});
+
+	const float Scale = Dig.MaxVolume > 0.0 ? ScaleToVolume(Proposals, Dig.MaxVolume) : 1.0f;
+	Commit(Proposals, Scale, Result);
+	ClearCompaction(Proposals);
+	TerrainEditDetail::Finish(Result);
+	return Result;
+}
+
 // ---------------------------------------------------------------------------
 // Estado, guardado y comparación
 // ---------------------------------------------------------------------------
@@ -716,12 +1013,90 @@ void FTerrainEditModel::Reset()
 	PathColumns.Reset();
 }
 
-FSaveValue FTerrainEditModel::ToValue() const
+FSaveValue FTerrainEditModel::ToValue(int32 Version) const
 {
 	FSaveValue Root = FSaveValue::MakeObject();
-	Root.Set(TEXT("v"), FSaveValue::MakeInt(1));
+	Root.Set(TEXT("v"), FSaveValue::MakeInt(Version == 1 ? 1 : 2));
 	Root.Set(TEXT("cell"), FSaveValue::MakeFloat(Settings.CellSize));
 	Root.Set(TEXT("n"), FSaveValue::MakeInt(Settings.CellsPerChunk));
+
+	TArray<FIntPoint> Columns;
+	for (const auto& Pair : PathColumns)
+	{
+		Columns.Add(Pair.Key);
+	}
+	Columns.Sort(&TerrainEditDetail::ColumnLess);
+
+	if (Version != 1)
+	{
+		using namespace TerrainEditDetail;
+		TArray<uint8> Bytes;
+		const TArray<FIntVector> Edited = EditedChunks();
+		PutVarint(Bytes, static_cast<uint64>(Edited.Num()));
+		FIntVector Previous(0);
+		int64 Samples = 0;
+		for (const FIntVector& Chunk : Edited)
+		{
+			PutSigned(Bytes, static_cast<int64>(Chunk.X) - Previous.X);
+			PutSigned(Bytes, static_cast<int64>(Chunk.Y) - Previous.Y);
+			PutSigned(Bytes, static_cast<int64>(Chunk.Z) - Previous.Z);
+			Previous = Chunk;
+
+			const TMap<int32, int32>& Deltas = Chunks.FindChecked(Chunk);
+			TArray<int32> Locals;
+			for (const auto& Pair : Deltas)
+			{
+				Locals.Add(Pair.Key);
+			}
+			Locals.Sort();
+			Samples += Locals.Num();
+
+			int32 NumRuns = Locals.Num() > 0 ? 1 : 0;
+			for (int32 I = 1; I < Locals.Num(); ++I)
+			{
+				NumRuns += Locals[I] != Locals[I - 1] + 1 ? 1 : 0;
+			}
+			PutVarint(Bytes, static_cast<uint64>(NumRuns));
+			int32 PreviousEnd = 0;
+			int64 PreviousMm = 0;
+			int32 I = 0;
+			while (I < Locals.Num())
+			{
+				int32 End = I + 1;
+				while (End < Locals.Num() && Locals[End] == Locals[End - 1] + 1)
+				{
+					++End;
+				}
+				PutVarint(Bytes, static_cast<uint64>(Locals[I] - PreviousEnd));
+				PutVarint(Bytes, static_cast<uint64>(End - I - 1));
+				for (int32 K = I; K < End; ++K)
+				{
+					const int64 Mm = Deltas.FindChecked(Locals[K]);
+					PutSigned(Bytes, Mm - PreviousMm);
+					PreviousMm = Mm;
+				}
+				PreviousEnd = Locals[End - 1] + 1;
+				I = End;
+			}
+		}
+
+		TArray<uint8> PathBytes;
+		PutVarint(PathBytes, static_cast<uint64>(Columns.Num()));
+		FIntPoint PreviousColumn(0, 0);
+		for (const FIntPoint& Column : Columns)
+		{
+			PutSigned(PathBytes, static_cast<int64>(Column.X) - PreviousColumn.X);
+			PutSigned(PathBytes, static_cast<int64>(Column.Y) - PreviousColumn.Y);
+			PutVarint(PathBytes, static_cast<uint64>(PathColumns.FindChecked(Column)));
+			PreviousColumn = Column;
+		}
+
+		Root.Set(TEXT("samples"), FSaveValue::MakeInt(Samples));
+		Root.Set(TEXT("columns"), FSaveValue::MakeInt(Columns.Num()));
+		Root.Set(TEXT("chunks"), FSaveValue::MakeString(FSaveBase64::Encode(Bytes)));
+		Root.Set(TEXT("paths"), FSaveValue::MakeString(FSaveBase64::Encode(PathBytes)));
+		return Root;
+	}
 
 	FSaveValue ChunkList = FSaveValue::MakeArray();
 	for (const FIntVector& Chunk : EditedChunks())
@@ -762,12 +1137,6 @@ FSaveValue FTerrainEditModel::ToValue() const
 	}
 	Root.Set(TEXT("chunks"), MoveTemp(ChunkList));
 
-	TArray<FIntPoint> Columns;
-	for (const auto& Pair : PathColumns)
-	{
-		Columns.Add(Pair.Key);
-	}
-	Columns.Sort(&TerrainEditDetail::ColumnLess);
 	FSaveValue Paths = FSaveValue::MakeArray();
 	for (const FIntPoint& Column : Columns)
 	{
@@ -796,13 +1165,23 @@ bool FTerrainEditModel::FromValue(const FSaveValue& Value)
 	const FSaveValue* Cells = Value.Find(TEXT("n"));
 	double CellSize = 0.0;
 	int32 N = 0;
-	if (!Version || Version->AsInt(-1) != 1 || !Cell || !Cell->TryGetDouble(CellSize)
-		|| static_cast<float>(CellSize) != Settings.CellSize || !Cells || !TerrainEditDetail::ReadInt32(*Cells, N)
+	int32 VersionNumber = 0;
+	if (!Version || !TerrainEditDetail::ReadInt32(*Version, VersionNumber) || !Cell || !Cell->TryGetDouble(CellSize)
+		|| !(FMath::Abs(CellSize) < 1.0e6) || static_cast<float>(CellSize) != Settings.CellSize || !Cells || !TerrainEditDetail::ReadInt32(*Cells, N)
 		|| N != Settings.CellsPerChunk)
 	{
 		// Otra rejilla: las muestras no significarían lo mismo.
 		return Fail();
 	}
+	const bool bOk = VersionNumber == 1 ? FromValueV1(Value, N)
+		: VersionNumber == 2 ? FromValueV2(Value, N)
+		: false;
+	return bOk ? true : Fail();
+}
+
+bool FTerrainEditModel::FromValueV1(const FSaveValue& Value, int32 N)
+{
+	auto Fail = []() { return false; };
 	const int64 LocalCount = static_cast<int64>(N) * N * N;
 
 	if (const FSaveValue* ChunkList = Value.Find(TEXT("chunks")))
@@ -884,6 +1263,145 @@ bool FTerrainEditModel::FromValue(const FSaveValue& Value)
 		}
 	}
 	return true;
+}
+
+bool FTerrainEditModel::FromValueV2(const FSaveValue& Value, int32 N)
+{
+	using namespace TerrainEditDetail;
+	const int64 LocalCount = static_cast<int64>(N) * N * N;
+	const FSaveValue* SamplesValue = Value.Find(TEXT("samples"));
+	const FSaveValue* ColumnsValue = Value.Find(TEXT("columns"));
+	const FSaveValue* ChunksValue = Value.Find(TEXT("chunks"));
+	const FSaveValue* PathsValue = Value.Find(TEXT("paths"));
+	int64 ExpectedSamples = 0;
+	int64 ExpectedColumns = 0;
+	if (!SamplesValue || !SamplesValue->TryGetInt(ExpectedSamples) || ExpectedSamples < 0 || !ColumnsValue
+		|| !ColumnsValue->TryGetInt(ExpectedColumns) || ExpectedColumns < 0 || !ChunksValue || !ChunksValue->IsString()
+		|| !PathsValue || !PathsValue->IsString())
+	{
+		return false;
+	}
+
+	TArray<uint8> Bytes;
+	if (!FSaveBase64::Decode(ChunksValue->AsString(), Bytes))
+	{
+		return false;
+	}
+	FByteReader Reader(Bytes);
+	// Chunk·N (y ±1 al leer los vecinos) tiene que caber en int32.
+	const int64 MaxChunk = MAX_int32 / N - 2;
+	int64 NumChunks = 0;
+	// Cada chunk ocupa al menos 5 bytes: acota el bucle ante una cuenta manipulada.
+	if (!Reader.Unsigned(Reader.Remaining() / 5, NumChunks))
+	{
+		return false;
+	}
+	int64 Samples = 0;
+	FIntVector Previous(0);
+	for (int64 C = 0; C < NumChunks; ++C)
+	{
+		int64 Coords[3];
+		for (int32 Axis = 0; Axis < 3; ++Axis)
+		{
+			int64 Step = 0;
+			if (!Reader.Signed(2 * MaxChunk, Step))
+			{
+				return false;
+			}
+			Coords[Axis] = Previous[Axis] + Step;
+			if (FMath::Abs(Coords[Axis]) > MaxChunk)
+			{
+				return false;
+			}
+		}
+		const FIntVector Chunk(static_cast<int32>(Coords[0]), static_cast<int32>(Coords[1]), static_cast<int32>(Coords[2]));
+		Previous = Chunk;
+		int64 NumRuns = 0;
+		if (Chunks.Contains(Chunk) || !Reader.Unsigned(LocalCount, NumRuns) || NumRuns < 1)
+		{
+			return false;
+		}
+		TMap<int32, int32> Deltas;
+		int64 PreviousEnd = 0;
+		int64 PreviousMm = 0;
+		for (int64 R = 0; R < NumRuns; ++R)
+		{
+			int64 Gap = 0;
+			int64 CountMinusOne = 0;
+			if (!Reader.Unsigned(LocalCount, Gap) || !Reader.Unsigned(LocalCount - 1, CountMinusOne))
+			{
+				return false;
+			}
+			const int64 First = PreviousEnd + Gap;
+			const int64 Count = CountMinusOne + 1;
+			// Cada delta ocupa al menos un byte.
+			if (First + Count > LocalCount || Count > Reader.Remaining())
+			{
+				return false;
+			}
+			for (int64 K = 0; K < Count; ++K)
+			{
+				int64 Step = 0;
+				if (!Reader.Signed(2 * static_cast<int64>(MaxDeltaMm), Step))
+				{
+					return false;
+				}
+				const int64 Mm = PreviousMm + Step;
+				if (Mm == 0 || Mm < -MaxDeltaMm || Mm > MaxDeltaMm)
+				{
+					return false;
+				}
+				Deltas.Add(static_cast<int32>(First + K), static_cast<int32>(Mm));
+				PreviousMm = Mm;
+			}
+			PreviousEnd = First + Count;
+			Samples += Count;
+		}
+		Chunks.Add(Chunk, MoveTemp(Deltas));
+	}
+	if (!Reader.AtEnd() || Samples != ExpectedSamples)
+	{
+		return false;
+	}
+
+	TArray<uint8> PathBytes;
+	if (!FSaveBase64::Decode(PathsValue->AsString(), PathBytes))
+	{
+		return false;
+	}
+	FByteReader PathReader(PathBytes);
+	int64 NumColumns = 0;
+	// Cada columna ocupa al menos 3 bytes.
+	if (!PathReader.Unsigned(PathReader.Remaining() / 3, NumColumns) || NumColumns != ExpectedColumns)
+	{
+		return false;
+	}
+	FIntPoint PreviousColumn(0, 0);
+	for (int64 I = 0; I < NumColumns; ++I)
+	{
+		int64 StepX = 0;
+		int64 StepY = 0;
+		int64 Amount = 0;
+		if (!PathReader.Signed(2 * static_cast<int64>(MAX_int32), StepX) || !PathReader.Signed(2 * static_cast<int64>(MAX_int32), StepY)
+			|| !PathReader.Unsigned(100, Amount) || Amount < 1)
+		{
+			return false;
+		}
+		const int64 X = PreviousColumn.X + StepX;
+		const int64 Y = PreviousColumn.Y + StepY;
+		if (X < MIN_int32 || X > MAX_int32 || Y < MIN_int32 || Y > MAX_int32)
+		{
+			return false;
+		}
+		const FIntPoint Column(static_cast<int32>(X), static_cast<int32>(Y));
+		if (PathColumns.Contains(Column))
+		{
+			return false;
+		}
+		PathColumns.Add(Column, static_cast<int32>(Amount));
+		PreviousColumn = Column;
+	}
+	return PathReader.AtEnd();
 }
 
 bool FTerrainEditModel::operator==(const FTerrainEditModel& Other) const

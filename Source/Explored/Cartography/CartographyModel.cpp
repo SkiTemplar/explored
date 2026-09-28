@@ -135,6 +135,13 @@ void FCartographyModel::UpdateDrift(const FVector2D& Step, double StepLength, co
 void FCartographyModel::Sample(const FCartographySample& InSample)
 {
 	const FVector2D Position = InSample.WorldPosition;
+	// Una posición no finita no se dibuja ni se recuerda: mancharía el trazo, la cobertura y la
+	// muestra siguiente. IsFinite explícito, que con matemáticas rápidas las comparaciones no bastan.
+	if (!FMath::IsFinite(Position.X) || !FMath::IsFinite(Position.Y))
+	{
+		EndStroke();
+		return;
+	}
 	if (bHasLastPosition)
 	{
 		const FVector2D Step = Position - LastPosition;
@@ -154,7 +161,7 @@ void FCartographyModel::Sample(const FCartographySample& InSample)
 	bHasLastPosition = true;
 
 	const float Reach = IsRecording() ? RecordDistance + RecordHysteresis : RecordDistance;
-	if (!(InSample.DistanceToShore <= Reach))
+	if (!FMath::IsFinite(InSample.DistanceToShore) || InSample.DistanceToShore > Reach)
 	{
 		EndStroke();
 		return;
@@ -419,9 +426,18 @@ bool FCartographyModel::NoteRecipe(FName RecipeId, bool bDoodle)
 
 void FCartographyModel::TickWetness(const FCartographyExposure& Exposure, float DeltaSeconds)
 {
-	if (DeltaSeconds <= 0.0f)
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f)
 	{
 		return;
+	}
+	// Un guardado corrupto puede traer NaN o infinitos: se empieza de papel seco.
+	if (!FMath::IsFinite(State.Wetness))
+	{
+		State.Wetness = 0.0f;
+	}
+	if (!FMath::IsFinite(State.InkRunProgress) || State.InkRunProgress < 0.0f)
+	{
+		State.InkRunProgress = 0.0f;
 	}
 	float Gain = 0.0f;
 	if (!Exposure.bStoredDry)
@@ -434,10 +450,15 @@ void FCartographyModel::TickWetness(const FCartographyExposure& Exposure, float 
 	{
 		const float Soak = (State.Wetness - InkRunThreshold) / (1.0f - InkRunThreshold);
 		State.InkRunProgress += Soak * DeltaSeconds / InkRunSeconds;
-		while (State.InkRunProgress >= 1.0f)
+		if (State.InkRunProgress >= 1.0f)
 		{
-			State.InkRunProgress -= 1.0f;
-			ApplyInkRun();
+			// Acotado: un progreso enorme (guardado o DeltaSeconds gigante) no deja el bucle girando.
+			const int32 Runs = static_cast<int32>(FMath::Min(FMath::FloorToDouble(State.InkRunProgress), static_cast<double>(MaxInkRunsPerTick)));
+			State.InkRunProgress = FMath::Frac(State.InkRunProgress);
+			for (int32 Run = 0; Run < Runs; ++Run)
+			{
+				ApplyInkRun();
+			}
 		}
 	}
 }
@@ -558,4 +579,28 @@ void FCartographyModel::LoadState(const FCartographyState& InState)
 	State = InState;
 	ActiveStroke = INDEX_NONE;
 	bHasLastPosition = false;
+
+	// Saneado del guardado (admite NaN e infinitos y listas de otra versión): una deriva NaN
+	// haría NaN todos los puntos nuevos, y listas desparejadas se leerían fuera de rango.
+	if (!FMath::IsFinite(State.Drift.X) || !FMath::IsFinite(State.Drift.Y))
+	{
+		State.Drift = FVector2D::ZeroVector;
+	}
+	if (!FMath::IsFinite(State.TravelDistance) || State.TravelDistance < 0.0)
+	{
+		State.TravelDistance = 0.0;
+	}
+	State.Wetness = FMath::IsFinite(State.Wetness) ? FMath::Clamp(State.Wetness, 0.0f, 1.0f) : 0.0f;
+	if (!FMath::IsFinite(State.InkRunProgress) || State.InkRunProgress < 0.0f)
+	{
+		State.InkRunProgress = 0.0f;
+	}
+	for (FMapIslandCoverage& Entry : State.Coverage)
+	{
+		Entry.Visited.SetNumZeroed(Entry.Coast.Num());
+	}
+	for (FMapSketch& Sketch : State.Sketches)
+	{
+		Sketch.Confirmed.SetNumZeroed(Sketch.Points.Num());
+	}
 }

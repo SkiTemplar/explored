@@ -5,6 +5,8 @@
 #include "Core/ExploredRandom.h"
 #include "Fauna/BoidsModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BoidsSpecDetail
@@ -89,6 +91,42 @@ void FBoidsSpec::Define()
 		const FVector B = Model.GetAgents()[1].Position;
 		TestFalse(TEXT("Sin NaN"), FMath::IsNaN(A.X) || FMath::IsNaN(B.X));
 		TestTrue(TEXT("Separados"), FVector::Distance(A, B) > 10.0);
+	});
+
+	It("con radio de vecinos 0 y dos agentes en el mismo punto no produce NaN", [this]()
+	{
+		FBoidsParams P = PureRules();
+		P.NeighborRadiusCm = 0.0f;
+		FBoidsModel Model(P);
+		Model.AddAgent(FVector(5.0, 5.0, 5.0), FVector::ZeroVector);
+		Model.AddAgent(FVector(5.0, 5.0, 5.0), FVector::ZeroVector);
+		Model.Step(0.5f, FBoidsEnvironment());
+		for (const FBoidAgent& Agent : Model.GetAgents())
+		{
+			TestTrue(TEXT("Posición finita"), FMath::IsFinite(Agent.Position.X) && FMath::IsFinite(Agent.Position.Y)
+				&& FMath::IsFinite(Agent.Position.Z));
+		}
+	});
+
+	It("ignora un paso no finito y topa uno enorme a MaxSubstepsPerStep subpasos", [this]()
+	{
+		FBoidsModel Model(PureRules());
+		Model.AddAgent(FVector::ZeroVector, FVector(100.0, 0.0, 0.0));
+		Model.AddAgent(FVector(1000.0, 0.0, 0.0), FVector(100.0, 0.0, 0.0));
+		const TArray<FBoidAgent> Before = Model.GetAgents();
+		Model.Step(std::numeric_limits<float>::quiet_NaN(), FBoidsEnvironment());
+		Model.Step(std::numeric_limits<float>::infinity(), FBoidsEnvironment());
+		TestTrue(TEXT("NaN e infinito no mueven nada"), Model.GetAgents()[0].Position == Before[0].Position
+			&& Model.GetAgents()[1].Position == Before[1].Position);
+
+		// 1e10 s: CeilToInt(2e11) desbordaría int32; se simulan como mucho 2 s.
+		Model.Step(1.0e10f, FBoidsEnvironment());
+		const double MaxTravel = PureRules().MaxSpeedCmS * FBoidsModel::MaxSubstep * FBoidsModel::MaxSubstepsPerStep + 1.0;
+		for (int32 I = 0; I < 2; ++I)
+		{
+			const double Travel = FVector::Distance(Model.GetAgents()[I].Position, Before[I].Position);
+			TestTrue(FString::Printf(TEXT("Avanza como mucho 2 s (%.1f cm)"), Travel), Travel <= MaxTravel);
+		}
 	});
 
 	It("separa vecinos a ambos lados de una frontera de celda con coordenadas negativas", [this]()

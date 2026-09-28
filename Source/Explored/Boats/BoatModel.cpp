@@ -425,7 +425,8 @@ bool FBoatModel::SetSailRaised(bool bRaised)
 
 bool FBoatModel::TryAddCargo(float Kg)
 {
-	if (Kg < 0.0f || State.CargoKg + Kg > GetDefinition().MaxCargoKg + UE_KINDA_SMALL_NUMBER)
+	// IsFinite explícito: con NaN las dos comparaciones son falsas y se guardaría CargoKg NaN.
+	if (!FMath::IsFinite(Kg) || Kg < 0.0f || State.CargoKg + Kg > GetDefinition().MaxCargoKg + UE_KINDA_SMALL_NUMBER)
 	{
 		return false;
 	}
@@ -525,7 +526,9 @@ float FBoatModel::TideOffsetCm(float TotalDays, float MoonPhase01)
 
 void FBoatModel::Step(float DeltaSeconds, const FBoatControls& Controls, const FBoatEnvironment& Environment)
 {
-	if (!(DeltaSeconds > 0.0f))
+	// IsFinite explícito: con matemáticas rápidas `!(x > 0)` deja pasar un NaN, que envenenaría
+	// el acumulador de tiempo y con él todo el estado del barco.
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f)
 	{
 		return;
 	}
@@ -940,23 +943,19 @@ FBoatSaveData FBoatModel::ToSaveData() const
 
 FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefinition* CustomDefinition)
 {
-	FBoatModel Model(Data.Type, Data.LocationCm, Data.YawDeg);
+	// El guardado admite NaN e infinitos: lo no finito vuelve a su valor por defecto.
+	const auto Finite = [](float V, float Default) { return FMath::IsFinite(V) ? V : Default; };
+	const bool bLocationValid = FMath::IsFinite(Data.LocationCm.X) && FMath::IsFinite(Data.LocationCm.Y) && FMath::IsFinite(Data.LocationCm.Z);
+	FBoatModel Model(Data.Type, bLocationValid ? Data.LocationCm : FVector::ZeroVector, Finite(Data.YawDeg, 0.0f));
 	if (CustomDefinition)
 	{
 		Model.SetDefinition(*CustomDefinition);
 	}
-	if (Data.bMoored && Data.MooringLengthCm > 0.0f)
-	{
-		// Se restaura tal cual (no con Moor): el barco pudo guardarse con el cabo tenso.
-		Model.State.bMoored = true;
-		Model.State.MooringAnchorCm = Data.MooringAnchorCm;
-		Model.State.MooringLengthCm = Data.MooringLengthCm;
-	}
 	const FBoatDefinition& D = Model.GetDefinition();
 	Model.State.Condition = Data.Condition;
-	Model.State.HullDamage01 = FMath::Clamp(Data.HullDamage01, 0.0f, 1.0f);
-	Model.State.CargoKg = FMath::Clamp(Data.CargoKg, 0.0f, D.MaxCargoKg);
-	Model.State.WaterInHullKg = FMath::Clamp(Data.WaterInHullKg, 0.0f, Model.SwampWaterKg());
+	Model.State.HullDamage01 = FMath::Clamp(Finite(Data.HullDamage01, 0.0f), 0.0f, 1.0f);
+	Model.State.CargoKg = FMath::Clamp(Finite(Data.CargoKg, 0.0f), 0.0f, D.MaxCargoKg);
+	Model.State.WaterInHullKg = FMath::Clamp(Finite(Data.WaterInHullKg, 0.0f), 0.0f, Model.SwampWaterKg());
 	Model.State.bSailRaised = Data.bSailRaised && D.HasSail() && Data.Condition == EBoatCondition::Afloat;
 	if (Model.State.HullDamage01 >= 1.0f)
 	{
@@ -965,6 +964,21 @@ FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefini
 	if (Model.State.Condition == EBoatCondition::Capsized)
 	{
 		Model.State.RollDeg = 180.0f;
+	}
+	// Se restaura sin Moor (el barco pudo guardarse con el cabo tenso), pero con sus mismas
+	// defensas: un cabo o un poste no finitos, un poste fuera del alcance del cabo (el primer
+	// paso llevaría el barco hasta él) o un barco destrozado no quedan amarrados. IsFinite
+	// explícito: con matemáticas rápidas la comparación en positivo no descarta los NaN.
+	// Con la posición ya saneada: una posición no finita vuelve al origen y el poste queda lejos.
+	const FVector2D Here(Model.State.LocationCm.X, Model.State.LocationCm.Y);
+	if (Data.bMoored && FMath::IsFinite(Data.MooringLengthCm) && Data.MooringLengthCm > 0.0f
+		&& FMath::IsFinite(Data.MooringAnchorCm.X) && FMath::IsFinite(Data.MooringAnchorCm.Y)
+		&& (Here - Data.MooringAnchorCm).Size() <= Data.MooringLengthCm + MooringLoadToleranceCm
+		&& Model.State.Condition != EBoatCondition::Wrecked)
+	{
+		Model.State.bMoored = true;
+		Model.State.MooringAnchorCm = Data.MooringAnchorCm;
+		Model.State.MooringLengthCm = Data.MooringLengthCm;
 	}
 	return Model;
 }

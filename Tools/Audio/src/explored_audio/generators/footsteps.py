@@ -11,7 +11,8 @@ floja que el talon. Cada contacto suma tres capas:
 - la textura del material (granos de ruido con densidad que decae tras el
   contacto: crujido de arena, chasquido de hierba, grava sobre roca...);
 - donde el material lo pide, una resonancia modal breve y poco tonal
-  (tablon de madera) o burbujas de Minnaert (agua somera).
+  (tablon de madera) o burbujas de Minnaert (agua somera: la cavidad que
+  se cierra al hundir el pie y las gotas que vuelven a caer).
 
 La sonoridad final se fija por material (`_TARGET_MOMENTARY`) con un margen
 aleatorio pequeño, para que las cuatro variantes de un material suenen al
@@ -235,22 +236,57 @@ def _footstep_wood(rng: np.random.Generator) -> np.ndarray:
     return out
 
 
+def _droplet(n: int, onset: int, rng: np.random.Generator, amp: float) -> np.ndarray:
+    """Gota que cae de vuelta al agua: un tic de impacto de ~1 ms y, casi
+    siempre, la burbuja que atrapa (Pumphrey y Crum: 1,5-5 kHz, tono que
+    sube). La burbuja es lo que hace que suene a agua y no a grava."""
+    out = np.zeros(n)
+    if onset >= n - 64:
+        return out
+    out += 0.35 * amp * _click(n, onset, rng, fc=rng.uniform(3000, 6000), dur_s=0.0012)
+    if rng.uniform() < 0.8:
+        pos = min(onset + int(rng.uniform(0.0005, 0.003) * SR), n - 64)
+        out += amp * _bubble(n, pos, rng.uniform(1500, 5000), rng.uniform(0.003, 0.008), rng.uniform(0.1, 0.3))
+    return out
+
+
 def _footstep_water(rng: np.random.Generator) -> np.ndarray:
-    n = int(rng.uniform(0.40, 0.48) * SR)
+    """Paso en agua somera (por el tobillo), por fases como en el agua real:
+
+    - la planta golpea la superficie: palmetazo ancho y corto, y el golpe
+      amortiguado del pie en el fondo de arena;
+    - el pie arrastra aire al hundirse y la cavidad se cierra con un «plonc»
+      de burbuja grande (Minnaert de 1-2 cm, 250-600 Hz, tono que sube);
+    - el agua desplazada rodea el tobillo (roce grave a medio);
+    - las gotas levantadas vuelven a caer 60-250 ms despues: tics con su
+      burbuja aguda, cada vez mas escasas;
+    - al despegar la punta, el agua escurre del pie: unos goteos sueltos.
+    """
+    n = int(rng.uniform(0.42, 0.50) * SR)
     out = np.zeros(n)
     for onset, w in _contacts(rng, n, (0.10, 0.14)):
-        out += w * 0.22 * _thump(n, onset, rng, fc=rng.uniform(120, 170), tau_s=0.04)
-        # Agua desplazada: roce ancho que abre de grave a medio.
-        out += w * 0.5 * _swish(n, onset, rng, rng.uniform(0.14, 0.2), 500, 2200, q=0.7)
-        # Salpicadura fina.
-        out += w * 0.3 * _grain_burst(n, onset, rng, count=int(rng.uniform(25, 40)), spread_s=0.06,
-                                      grain_len_s=(0.003, 0.01), band_hz=(2500, 8000), q=1.4)
-        # Burbujas: pocas, con el tono de Minnaert de burbujas de unos mm.
-        for _ in range(int(rng.integers(3, 7))):
-            pos = onset + int(rng.uniform(0.01, 0.16) * SR)
-            if pos >= n - 64:
-                continue
-            out += w * rng.uniform(0.06, 0.14) * _bubble(n, pos, rng.uniform(500, 1600), rng.uniform(0.008, 0.02), rng.uniform(0.3, 0.8))
+        out += w * 0.20 * _thump(n, onset, rng, fc=rng.uniform(110, 160), tau_s=0.035)
+        out += w * 0.22 * _click(n, onset, rng, fc=rng.uniform(900, 1500), dur_s=0.008)
+        # Cavidad que se cierra: una burbuja grande (y a veces otra menor).
+        pos = onset + int(rng.uniform(0.012, 0.025) * SR)
+        out += w * 0.28 * _bubble(n, pos, rng.uniform(280, 480), rng.uniform(0.025, 0.04), rng.uniform(0.4, 0.9))
+        if rng.uniform() < 0.6:
+            pos = onset + int(rng.uniform(0.025, 0.05) * SR)
+            out += w * 0.22 * _bubble(n, pos, rng.uniform(500, 900), rng.uniform(0.012, 0.022), rng.uniform(0.3, 0.8))
+        # Agua desplazada alrededor del tobillo, mas grave y floja que antes:
+        # un roce ancho enmascaraba las burbujas.
+        out += w * 0.22 * _swish(n, onset, rng, rng.uniform(0.12, 0.18), 350, 1400, q=0.7)
+        # Lamina de agua que se rompe al pisar: salpicadura corta y brillante.
+        out += w * 0.16 * _grain_burst(n, onset, rng, count=int(rng.uniform(15, 25)), spread_s=0.02,
+                                       grain_len_s=(0.002, 0.006), band_hz=(1500, 6000), q=1.2)
+        # Gotas que vuelven a caer: densas al principio, luego sueltas.
+        for _ in range(int(rng.integers(14, 24))):
+            delay = 0.06 + min(rng.exponential(0.06), 0.19)
+            out += w * rng.uniform(0.12, 0.28) * np.exp(-(delay - 0.06) / 0.12) * _droplet(n, onset + int(delay * SR), rng, 1.0)
+    # El pie sale del agua: goteo suelto al final.
+    lift = int(rng.uniform(0.26, 0.32) * SR)
+    for _ in range(int(rng.integers(2, 5))):
+        out += rng.uniform(0.05, 0.1) * _droplet(n, lift + int(rng.uniform(0.0, 0.1) * SR), rng, 1.0)
     return out
 
 

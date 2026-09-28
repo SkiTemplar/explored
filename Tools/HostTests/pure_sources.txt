@@ -4,6 +4,7 @@ Audio/MusicDirectorModel.cpp
 Boats/BoatModel.cpp
 Boats/HullAssemblyModel.cpp
 Boats/RaftYardModel.cpp
+Boats/RaftFurrowModel.cpp
 Building/BuildingModel.cpp
 Carry/InventoryModel.cpp
 Cartography/CartographyModel.cpp
@@ -15,6 +16,7 @@ Core/ExploredLocalization.cpp
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Core/SystemLinks.cpp
+Debug/NetBudgetModel.cpp
 Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp
@@ -52,8 +54,12 @@ WorldGen/FormationPlacementModel.cpp
 WorldGen/PointsOfInterest.cpp
 WorldGen/SurfaceNets.cpp
 WorldGen/TerrainChunkBuilder.cpp
+WorldGen/TerrainChunkChecksumModel.cpp
+WorldGen/TerrainDeltaCodecModel.cpp
+WorldGen/TerrainDeltaQueueModel.cpp
 WorldGen/TerrainDensity.cpp
 WorldGen/TerrainEditModel.cpp
+WorldGen/TerrainEdits.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
@@ -61,4 +67,6 @@ WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
+WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
+Combat/CombatModel.cpp
