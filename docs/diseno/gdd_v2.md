@@ -508,7 +508,7 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
 
-### 3.13 Construcción naval: barcos que hay que pensar **[aprobado por Rodrigo 2026-09-27]**
+### 3.13 Construcción naval: barcos que hay que pensar **[alcance aprobado 2026-09-27 (biblia 02 §8); detalle pendiente de validar]**
 
 Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), spec
 `Explored.HullAssembly`. Integración en `docs/tecnico/casco-por-piezas.md`.
