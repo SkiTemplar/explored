@@ -564,6 +564,11 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("S no finita → 0"), Yard.GetCenterS(), 0.0f);
 			TestEqual(TEXT("fuerza NaN"), Yard.Push(NaN, 1.0f).MovedCm, 0.0f);
 			TestEqual(TEXT("tiempo negativo"), Yard.Push(3000.0f, -1.0f).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo NaN"), Yard.Push(3000.0f, NaN).MovedCm, 0.0f);
+			TestEqual(TEXT("tiempo infinito"), Yard.Push(3000.0f, INFINITY).MovedCm, 0.0f);
+			TestTrue(TEXT("el tiempo roto no envenena el siguiente empujón"), Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm > 0.0f);
+			TestEqual(TEXT("roce NaN"), Yard.ApplyScrapeWork(NaN, ELaunchSurface::Rock).JointsDamaged, 0);
+			TestEqual(TEXT("golpe infinito"), Yard.ApplyImpact(INFINITY, FVector2D(1.0, 0.0)).JointsDamaged, 0);
 			TestFalse(TEXT("rodillo fuera del camino"), Yard.PlaceRoller(1000.5f));
 			TestFalse(TEXT("rodillo NaN"), Yard.PlaceRoller(NaN));
 			TestFalse(TEXT("quitar rodillo inexistente"), Yard.TakeRoller(0));

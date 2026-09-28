@@ -36,7 +36,8 @@ const TCHAR* LexToString(ERaftYardState State)
 
 namespace RaftYardDetail
 {
-	bool IsFiniteValue(float V) { return V == V && V > -3.0e38f && V < 3.0e38f; }
+	// Por bits (FMath::IsFinite): con matemáticas rápidas `V == V` no descarta los NaN.
+	bool IsFiniteValue(float V) { return FMath::IsFinite(V); }
 
 	/** Unión-búsqueda con compresión de caminos para los grupos de piezas unidas. */
 	int32 Find(TArray<int32>& Parent, int32 I)
@@ -334,7 +335,7 @@ FRaftDamageReport FRaftYardModel::ApplyJointDamage(const TArray<float>& Damage01
 	{
 		FRaftJoint& Joint = Joints[J];
 		const float Amount = Damage01[J];
-		if (!(Amount > 0.0f) || Joint.IsBroken())
+		if (!RaftYardDetail::IsFiniteValue(Amount) || Amount <= 0.0f || Joint.IsBroken())
 		{
 			continue;
 		}
@@ -356,7 +357,7 @@ FRaftDamageReport FRaftYardModel::ApplyJointDamage(const TArray<float>& Damage01
 
 FRaftDamageReport FRaftYardModel::ApplyScrapeWork(float WorkNm, ELaunchSurface Surface)
 {
-	if (!(WorkNm > 0.0f) || !RaftYardDetail::IsFiniteValue(WorkNm))
+	if (!RaftYardDetail::IsFiniteValue(WorkNm) || WorkNm <= 0.0f)
 	{
 		return FRaftDamageReport();
 	}
@@ -388,7 +389,7 @@ FRaftDamageReport FRaftYardModel::ApplyImpact(float SpeedCmS, const FVector2D& D
 {
 	const float ExcessMS = (SpeedCmS - FBoatModel::SafeImpactSpeedCmS) / 100.0f;
 	const TArray<FHullPiece>& Pieces = Hull.GetPieces();
-	if (!(ExcessMS > 0.0f) || !RaftYardDetail::IsFiniteValue(SpeedCmS) || Pieces.Num() == 0 || Joints.Num() == 0)
+	if (!RaftYardDetail::IsFiniteValue(SpeedCmS) || ExcessMS <= 0.0f || Pieces.Num() == 0 || Joints.Num() == 0)
 	{
 		return FRaftDamageReport();
 	}
@@ -431,7 +432,7 @@ FRaftDamageReport FRaftYardModel::ApplyImpact(float SpeedCmS, const FVector2D& D
 
 FRaftDamageReport FRaftYardModel::DamageJoint(int32 JointIndex, float Amount01)
 {
-	if (!Joints.IsValidIndex(JointIndex) || !(Amount01 > 0.0f))
+	if (!Joints.IsValidIndex(JointIndex) || !RaftYardDetail::IsFiniteValue(Amount01) || Amount01 <= 0.0f)
 	{
 		return FRaftDamageReport();
 	}
@@ -577,7 +578,7 @@ float FRaftYardModel::WaterSupport01() const
 		return 1.0f;
 	}
 	const float Depth = Path.WaterDepthAt(CenterS);
-	if (!(Depth > 0.0f))
+	if (!RaftYardDetail::IsFiniteValue(Depth) || Depth <= 0.0f)
 	{
 		return 0.0f;
 	}
@@ -615,7 +616,8 @@ FRaftPushReport FRaftYardModel::Push(float PushForceN, float DeltaSeconds)
 		Report.WaterSupport01 = 1.0f;
 		return Report;
 	}
-	if (!(DeltaSeconds > 0.0f) || !RaftYardDetail::IsFiniteValue(PushForceN) || Hull.GetPieces().Num() == 0)
+	if (!RaftYardDetail::IsFiniteValue(DeltaSeconds) || DeltaSeconds <= 0.0f || !RaftYardDetail::IsFiniteValue(PushForceN)
+		|| Hull.GetPieces().Num() == 0)
 	{
 		Report.WaterSupport01 = WaterSupport01();
 		Report.bOnRollers = IsOnRollers();
