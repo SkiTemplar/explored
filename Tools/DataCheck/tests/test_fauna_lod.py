@@ -169,3 +169,18 @@ def test_deposito_sin_recogida_en_el_servidor(ds: DataSet) -> None:
     del sp["nest"], sp["groundPickup"]
     sp["red"]["recogidas"] = None
     assert any_error(fauna_errors(ds), "fragata_colonia", "recogidas")
+
+
+def test_nivel_nulo_no_rompe_el_validador(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["lodBehavior"]["Reduced"] = None
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "Reduced")
+
+
+def test_entrada_de_poblacion_que_no_es_objeto(ds: DataSet) -> None:
+    island(ds, "emerald")["population"].append("cerdo_salvaje")
+    assert any_error(fauna_errors(ds), "emerald", "population")
+
+
+def test_grupos_booleano(ds: DataSet) -> None:
+    population(ds, "emerald", "cerdo_salvaje")["groups"] = True
+    assert any_error(fauna_errors(ds), "emerald", "groups")

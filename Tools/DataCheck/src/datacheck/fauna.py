@@ -249,7 +249,7 @@ def _check_lod(s: dict, where: str, tiers: dict[str, set[str]], r) -> None:
         acts = beh[tier]
         if not isinstance(acts, list) or len(set(acts)) != len(acts):
             r.error(f"{where}: lodBehavior.{tier} debe ser una lista sin repetidos")
-            continue
+            return
         extra = set(acts) - tiers.get(tier, set())
         if extra:
             r.error(f"{where}: lodBehavior.{tier} hace {sorted(extra)}, que el nivel {tier} no permite")
@@ -280,6 +280,9 @@ def _check_population(isl: dict, species: dict[str, dict], r) -> None:
     seen: set[str] = set()
     replicated = ambient_groups = 0
     for entry in pop:
+        if not isinstance(entry, dict):
+            r.error(f"{where}: cada entrada de population debe ser un objeto, no {entry!r}")
+            continue
         sid = entry.get("species")
         if sid not in isl.get("species", []):
             r.error(f"{where}: población de «{sid}», que no está en species de la isla")
@@ -288,7 +291,7 @@ def _check_population(isl: dict, species: dict[str, dict], r) -> None:
             r.error(f"{where}: población de «{sid}» repetida")
         seen.add(sid)
         groups, size, days = entry.get("groups"), entry.get("groupSize"), entry.get("respawnDays")
-        if not (isinstance(groups, int) and groups >= 1):
+        if not (isinstance(groups, int) and not isinstance(groups, bool) and groups >= 1):
             r.error(f"{where} «{sid}»: groups={groups!r} debe ser un entero ≥ 1")
             continue
         if not (isinstance(size, list) and len(size) == 2 and all(isinstance(x, int) for x in size)
