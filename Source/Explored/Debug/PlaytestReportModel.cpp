@@ -94,6 +94,18 @@ void FPlaytestReportModel::AppendSpawnBlockedIssue(FPlaytestReport& Report, cons
 	Report.Issues.Add(MoveTemp(Issue));
 }
 
+void FPlaytestReportModel::AppendBotStep(FPlaytestReport& Report, const FString& WaypointName, const FVector& LocationMeters,
+	const FString& FocusedActorName, bool bInteracted, const FString& InventoryDelta)
+{
+	FPlaytestBotStep Step;
+	Step.WaypointName = WaypointName;
+	Step.LocationMeters = LocationMeters;
+	Step.FocusedActorName = FocusedActorName;
+	Step.bInteracted = bInteracted;
+	Step.InventoryDelta = InventoryDelta;
+	Report.BotSteps.Add(MoveTemp(Step));
+}
+
 FString FPlaytestReportModel::EscapeJsonString(const FString& In)
 {
 	return In.Replace(TEXT("\\"), TEXT("\\\\")).Replace(TEXT("\""), TEXT("\\\"")).Replace(TEXT("\n"), TEXT("\\n"));
@@ -129,6 +141,21 @@ FString FPlaytestReportModel::ToJson(const FPlaytestReport& Report)
 		Out += FString::Printf(TEXT("      \"min_fps\": %.1f,\n"), Sample.MinFPS);
 		Out += FString::Printf(TEXT("      \"vram_mb\": %.1f\n"), Sample.VRAMUsedMB);
 		Out += (Index + 1 < Report.FrameSamples.Num()) ? TEXT("    },\n") : TEXT("    }\n");
+	}
+	Out += TEXT("  ],\n");
+
+	Out += TEXT("  \"bot_steps\": [\n");
+	for (int32 Index = 0; Index < Report.BotSteps.Num(); ++Index)
+	{
+		const FPlaytestBotStep& Step = Report.BotSteps[Index];
+		Out += TEXT("    {\n");
+		Out += FString::Printf(TEXT("      \"waypoint\": \"%s\",\n"), *EscapeJsonString(Step.WaypointName));
+		Out += FString::Printf(TEXT("      \"location_m\": [%.3f, %.3f, %.3f],\n"),
+			Step.LocationMeters.X, Step.LocationMeters.Y, Step.LocationMeters.Z);
+		Out += FString::Printf(TEXT("      \"focused_actor\": \"%s\",\n"), *EscapeJsonString(Step.FocusedActorName));
+		Out += FString::Printf(TEXT("      \"interacted\": %s,\n"), Step.bInteracted ? TEXT("true") : TEXT("false"));
+		Out += FString::Printf(TEXT("      \"inventory_delta\": \"%s\"\n"), *EscapeJsonString(Step.InventoryDelta));
+		Out += (Index + 1 < Report.BotSteps.Num()) ? TEXT("    },\n") : TEXT("    }\n");
 	}
 	Out += TEXT("  ]\n");
 
@@ -170,6 +197,17 @@ FString FPlaytestReportModel::ToReadableSummary(const FPlaytestReport& Report)
 	{
 		Out += FString::Printf(TEXT("- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n"),
 			*Sample.ShotName, Sample.AvgFPS, Sample.MinFPS, Sample.VRAMUsedMB);
+	}
+	Out += TEXT("\n");
+
+	Out += FString::Printf(TEXT("== Bot de juego (%d paso(s)) ==\n"), Report.BotSteps.Num());
+	for (const FPlaytestBotStep& Step : Report.BotSteps)
+	{
+		Out += FString::Printf(TEXT("- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n"),
+			*Step.WaypointName, Step.LocationMeters.X, Step.LocationMeters.Y, Step.LocationMeters.Z,
+			Step.FocusedActorName.IsEmpty() ? TEXT("ninguno") : *Step.FocusedActorName,
+			Step.bInteracted ? TEXT("sí") : TEXT("no"),
+			Step.InventoryDelta.IsEmpty() ? TEXT("sin cambios") : *Step.InventoryDelta);
 	}
 
 	return Out;

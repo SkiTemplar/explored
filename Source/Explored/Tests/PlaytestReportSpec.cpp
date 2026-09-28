@@ -52,8 +52,10 @@ void FPlaytestReportSpec::Define()
 		FPlaytestReportModel::AppendFloatingOrBuriedIssue(Report, TEXT("SM_Palmera_02"), FVector(4, 4, 2), 45.0f, true);
 		FPlaytestReportModel::AppendSpawnBlockedIssue(Report, TEXT("PlayerStart_0"), FVector(0, 0, 0), TEXT("AExploredVegetationCell_3"));
 		Report.FrameSamples.Add({ TEXT("Landing_orilla_amanecer"), 58.2f, 41.0f, 1024.5 });
+		FPlaytestReportModel::AppendBotStep(Report, TEXT("Landing_jungla"), FVector(12, 8, 2), TEXT("AExploredVegetationCell_1"), true, TEXT("+3 Platano"));
 
 		TestEqual(TEXT("Cuatro defectos"), Report.Issues.Num(), 4);
+		TestEqual(TEXT("Un paso de bot"), Report.BotSteps.Num(), 1);
 
 		const FString Json = FPlaytestReportModel::ToJson(Report);
 		int32 OpenBraces = 0, CloseBraces = 0, OpenBrackets = 0, CloseBrackets = 0;
@@ -69,10 +71,12 @@ void FPlaytestReportSpec::Define()
 		TestEqual(TEXT("Corchetes balanceados"), OpenBrackets, CloseBrackets);
 		TestTrue(TEXT("Incluye el tipo de defecto"), Json.Contains(TEXT("MaterialMissing")));
 		TestTrue(TEXT("Incluye la muestra de rendimiento"), Json.Contains(TEXT("Landing_orilla_amanecer")));
+		TestTrue(TEXT("Incluye el paso del bot"), Json.Contains(TEXT("Landing_jungla")));
 
 		const FString Summary = FPlaytestReportModel::ToReadableSummary(Report);
 		TestTrue(TEXT("El resumen menciona los defectos de material"), Summary.Contains(TEXT("Materiales nulos o por defecto")));
 		TestTrue(TEXT("El resumen menciona el rendimiento"), Summary.Contains(TEXT("58.2")));
+		TestTrue(TEXT("El resumen menciona el paso del bot"), Summary.Contains(TEXT("Platano")));
 	});
 
 	It("escapa comillas y barras invertidas al serializar a JSON", [this]()

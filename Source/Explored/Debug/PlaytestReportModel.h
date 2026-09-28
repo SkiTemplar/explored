@@ -48,10 +48,28 @@ struct EXPLORED_API FPlaytestFrameSample
 	double VRAMUsedMB = 0.0;
 };
 
+/**
+ * Un paso del bot de juego (ver UExploredPlaytestBot): se mueve a un punto, mira a lo más
+ * cercano y, si UInteractionComponent le da foco, interactúa (recolectar, talar...) con las
+ * mismas funciones que usaría el input del jugador.
+ */
+struct EXPLORED_API FPlaytestBotStep
+{
+	/** Nombre descriptivo del punto de la ruta (p. ej. "Landing_jungla"). */
+	FString WaypointName;
+	FVector LocationMeters = FVector::ZeroVector;
+	/** Vacío si no encontró nada a tiro (ver UInteractionComponent::TraceDistanceCm). */
+	FString FocusedActorName;
+	bool bInteracted = false;
+	/** Diferencia del inventario antes/después, en texto (p. ej. "+2 Platano, +1 FibraPalma"). */
+	FString InventoryDelta;
+};
+
 struct EXPLORED_API FPlaytestReport
 {
 	TArray<FPlaytestIssue> Issues;
 	TArray<FPlaytestFrameSample> FrameSamples;
+	TArray<FPlaytestBotStep> BotSteps;
 };
 
 /**
@@ -91,6 +109,10 @@ struct EXPLORED_API FPlaytestReportModel
 		const FVector& LocationMeters, float ClearanceCm, bool bFloating);
 	static void AppendSpawnBlockedIssue(FPlaytestReport& Report, const FString& SpawnName,
 		const FVector& LocationMeters, const FString& BlockingActorsCsv);
+
+	/** Añade un paso del bot de juego (recolecta de evidencia: UExploredPlaytestBot). */
+	static void AppendBotStep(FPlaytestReport& Report, const FString& WaypointName, const FVector& LocationMeters,
+		const FString& FocusedActorName, bool bInteracted, const FString& InventoryDelta);
 
 	/** Serializa el informe a JSON. A mano (sin el módulo Json del motor) para seguir siendo un modelo puro. */
 	static FString ToJson(const FPlaytestReport& Report);
