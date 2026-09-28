@@ -353,14 +353,29 @@ def achievement(ds: DataSet, aid: str) -> dict:
     return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
 
 
-def test_logros_reales_son_treinta_con_los_del_gdd(real: DataSet) -> None:
+def test_logros_reales_entre_treinta_y_cincuenta_y_cuatro_con_los_del_gdd(real: DataSet) -> None:
     ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
-    assert len(ids) == 30
+    assert 30 <= len(ids) <= 54
     assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
 
 
+def test_primera_canoa_segun_la_biblia(real: DataSet) -> None:
+    ach = achievement(real, "primera_canoa")
+    assert (ach["nameEs"], ach["nameEn"]) == ("Primera canoa", "First Canoe")
+    assert ach["hidden"] is False
+    assert ach["condition"] == {"stat": "boats_built", "contains": "canoa"}
+
+
+def test_detecta_demasiados_logros(ds: DataSet) -> None:
+    achievements = ds.data["achievements.json"]["achievements"]
+    template = achievement(ds, "primer_fuego")
+    while len(achievements) <= 54:
+        achievements.append(dict(template, id=f"relleno_{len(achievements)}"))
+    assert any_error(errors_of(ds), "como mucho 54")
+
+
 def test_detecta_numero_de_logros(ds: DataSet) -> None:
-    ds.data["achievements.json"]["achievements"].pop()
+    del ds.data["achievements.json"]["achievements"][29:]
     assert any_error(errors_of(ds), "29 logros")
 
 
@@ -1287,3 +1302,104 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- barcos por piezas
+
+from datacheck import boat_pieces
+
+
+def boat_piece(ds: DataSet, pid: str) -> dict:
+    return next(p for p in ds.data["boat_pieces.json"]["pieces"] if p["id"] == pid)
+
+
+def boat_pieces_errors(ds: DataSet, **overrides) -> list[str]:
+    r = Report()
+    obtainable = set(check_crafting_reachability(ds, Report()).reached_items)
+    boat_pieces.check_boat_pieces(ds, r, obtainable, **overrides)
+    return r.errors
+
+
+def test_boat_pieces_reales_sin_errores(real_report: Report) -> None:
+    assert not any("boat_pieces.json" in e or "Blueprint" in e or "el plano" in e for e in real_report.errors)
+
+
+def test_boat_pieces_espejo_del_cpp(real: DataSet) -> None:
+    source = (real.repo_root / boat_pieces.PIECES_CPP).read_text(encoding="utf-8")
+    header = (real.repo_root / boat_pieces.PIECES_H).read_text(encoding="utf-8")
+    assert set(boat_pieces.cpp_enum(header)) == boat_pieces.REQUIRED_TYPES
+    specs = boat_pieces.cpp_specs(source)
+    assert set(specs) == boat_pieces.REQUIRED_TYPES
+    plans = boat_pieces.cpp_blueprints(source)
+    assert set(plans) == {"Raft", "Canoe", "Outrigger", "Limon"}
+    assert plans["Canoe"]["HullPlank"] == 4
+
+
+def test_los_cuatro_planos_listan_piezas_con_casco(real: DataSet) -> None:
+    for b in real.boats:
+        ids = {p["piece"] for p in b["pieces"]}
+        assert {"quilla", "cuaderna", "tablon_casco"} <= ids, b["id"]
+    outrigger = next(b for b in real.boats if b["id"] == "canoa_balancin")
+    assert {"balancin", "mastil", "vela"} <= {p["piece"] for p in outrigger["pieces"]}
+
+
+def test_detecta_plano_sin_piezas(ds: DataSet) -> None:
+    del boat(ds, "canoa")["pieces"]
+    assert any_error(boat_pieces_errors(ds), "canoa", "no lista sus piezas")
+
+
+def test_detecta_plano_distinto_del_cpp(ds: DataSet) -> None:
+    next(p for p in boat(ds, "balsa")["pieces"] if p["piece"] == "tablon_casco")["count"] = 5
+    assert any_error(boat_pieces_errors(ds), "balsa", "FBoatPiecesModel::Blueprint")
+
+
+def test_detecta_plano_sin_quilla(ds: DataSet) -> None:
+    b = boat(ds, "canoa")
+    b["pieces"] = [p for p in b["pieces"] if p["piece"] != "quilla"]
+    assert any_error(boat_pieces_errors(ds), "canoa", "Keel")
+
+
+def test_detecta_pieza_de_plano_desconocida(ds: DataSet) -> None:
+    boat(ds, "canoa")["pieces"].append({"piece": "ancla", "count": 1})
+    assert any_error(boat_pieces_errors(ds), "«ancla»", "boat_pieces.json")
+
+
+def test_detecta_vela_sin_mastil_en_el_plano(ds: DataSet) -> None:
+    b = boat(ds, "canoa_balancin")
+    b["pieces"] = [p for p in b["pieces"] if p["piece"] != "mastil"]
+    assert any_error(boat_pieces_errors(ds), "canoa_balancin", "vela sin mástil")
+
+
+def test_detecta_masa_distinta_del_cpp(ds: DataSet) -> None:
+    boat_piece(ds, "tablon_casco")["buoyancyLiters"] = 106
+    assert any_error(boat_pieces_errors(ds), "tablon_casco", "buoyancyLiters")
+
+
+def test_detecta_integridad_fuera_de_rango(ds: DataSet) -> None:
+    boat_piece(ds, "vela")["integrity"] = 0
+    assert any_error(boat_pieces_errors(ds), "vela", "integrity")
+
+
+def test_detecta_pieza_de_la_biblia_que_falta(ds: DataSet) -> None:
+    ds.data["boat_pieces.json"]["pieces"] = [p for p in ds.data["boat_pieces.json"]["pieces"] if p["id"] != "amarre"]
+    assert any_error(boat_pieces_errors(ds), "faltan piezas", "Mooring")
+
+
+def test_detecta_coste_de_pieza_inexistente(ds: DataSet) -> None:
+    boat_piece(ds, "quilla")["cost"].append({"item": "tronco_de_teca", "count": 1})
+    assert any_error(boat_pieces_errors(ds), "quilla", "tronco_de_teca")
+
+
+def test_detecta_id_de_pieza_que_choca_con_un_objeto(ds: DataSet) -> None:
+    boat_piece(ds, "timon")["id"] = "cuerda"
+    assert any_error(boat_pieces_errors(ds), "choca con un objeto")
+
+
+def test_detecta_tipo_de_pieza_que_no_esta_en_el_cpp(ds: DataSet) -> None:
+    header = "enum class EBoatPieceType : uint8 { Keel, Frame, HullPlank, Deck, Mast, Sail, Outrigger, Rudder, RowingBench, Count };"
+    assert any_error(boat_pieces_errors(ds, header=header), "Mooring", "EBoatPieceType")
+
+
+def test_detecta_tabla_de_plano_que_falta_en_el_cpp(real: DataSet) -> None:
+    source = (real.repo_root / boat_pieces.PIECES_CPP).read_text(encoding="utf-8").replace("LimonRows", "LemonRows")
+    assert any_error(boat_pieces_errors(real.copy(), source=source), "barco_limon", "LimonRows")
