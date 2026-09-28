@@ -30,7 +30,8 @@ namespace
 	/** mm/h × m² → µL/min (1 mm sobre 1 m² = 1 L). */
 	int64 MicroLPerMinute(double MmPerHour, double AreaM2)
 	{
-		if (!(MmPerHour > 0.0) || !(AreaM2 > 0.0) || !FMath::IsFinite(MmPerHour * AreaM2))
+		if (!FMath::IsFinite(MmPerHour) || !FMath::IsFinite(AreaM2) || MmPerHour <= 0.0 || AreaM2 <= 0.0
+			|| !FMath::IsFinite(MmPerHour * AreaM2))
 		{
 			return 0;
 		}
@@ -110,7 +111,8 @@ float FRainCatchState::TotalLiters() const
 
 float FRainCatchModel::RainMmPerHour(float Rain01)
 {
-	if (!(Rain01 > RainThreshold))
+	// IsFinite explícito: con matemáticas rápidas `!(Rain01 > Umbral)` deja pasar un NaN.
+	if (!FMath::IsFinite(Rain01) || Rain01 <= RainThreshold)
 	{
 		return 0.0f;
 	}
@@ -141,7 +143,7 @@ float FRainCatchModel::EvaporationMmPerHour(const FWeatherSample& Sample)
 FRainCatchRates FRainCatchModel::RatesFor(const FRainCatchSpec& Spec, const FWeatherSample& Sample)
 {
 	FRainCatchRates Rates;
-	if (!(Spec.MouthAreaM2 > 0.0) || Spec.CapacityMicroL <= 0)
+	if (!FMath::IsFinite(Spec.MouthAreaM2) || Spec.MouthAreaM2 <= 0.0 || Spec.CapacityMicroL <= 0)
 	{
 		return Rates;
 	}

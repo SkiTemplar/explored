@@ -8,6 +8,16 @@ namespace WildfireModelPrivate
 	constexpr int32 SaveVersion = 1;
 	/** Radio máximo de Douse: un cubo no apaga medio monte. */
 	constexpr int32 MaxDouseRadiusCells = 8;
+	/** Cota de celda (la misma que CellAt): ±1e9 deja margen para sumar vecinas sin desbordar int32. */
+	constexpr int64 MaxAbsCell = 1000000000;
+	/** Cota de minuto de juego en una partida cargada (~1,9 millones de años): sumar rebrotes no desborda. */
+	constexpr int64 MaxAbsMinute = 1000000000000ll;
+
+	/** Minutos transcurridos desde From hasta Now (Now >= From), sin desbordar con valores extremos. */
+	uint64 MinutesSince(int64 Now, int64 From)
+	{
+		return (uint64)Now - (uint64)From;
+	}
 
 	const FIntPoint NeighborOffsets[8] = {
 		FIntPoint(1, 0), FIntPoint(1, 1), FIntPoint(0, 1), FIntPoint(-1, 1),
@@ -154,7 +164,9 @@ EFireCellState FWildfireModel::StateAt(FIntPoint Cell, int64 NowMinute) const
 	{
 		return EFireCellState::Unburnt;
 	}
-	if (Found->State == EFireCellState::Burnt && NowMinute >= Found->BurntMinute + WildfirePriv::RegrowMinutesFor(Found->Fuel))
+	// Comparar antes de restar: BurntMinute + rebrote desborda con minutos extremos.
+	if (Found->State == EFireCellState::Burnt && NowMinute >= Found->BurntMinute
+		&& WildfirePriv::MinutesSince(NowMinute, Found->BurntMinute) >= (uint64)WildfirePriv::RegrowMinutesFor(Found->Fuel))
 	{
 		return EFireCellState::Unburnt;
 	}
@@ -185,6 +197,11 @@ bool FWildfireModel::IsWet(FIntPoint Cell, int64 NowMinute) const
 
 bool FWildfireModel::Ignite(FIntPoint Cell, int64 NowMinute)
 {
+	// Fuera de la cota de CellAt: las vecinas (Cell.X + 1) desbordarían int32.
+	if (FMath::Abs((int64)Cell.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Cell.Y) > WildfirePriv::MaxAbsCell)
+	{
+		return false;
+	}
 	if (StateAt(Cell, NowMinute) != EFireCellState::Unburnt || IsWet(Cell, NowMinute))
 	{
 		return false;
@@ -219,8 +236,14 @@ void FWildfireModel::Extinguish(FIntPoint Cell, int64 NowMinute)
 
 void FWildfireModel::Douse(FIntPoint Center, int32 RadiusCells, int64 NowMinute, int64 WetMinutes)
 {
+	if (FMath::Abs((int64)Center.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Center.Y) > WildfirePriv::MaxAbsCell)
+	{
+		return;
+	}
 	const int32 R = FMath::Clamp(RadiusCells, 0, WildfirePriv::MaxDouseRadiusCells);
-	const int64 WetUntil = NowMinute + FMath::Max<int64>(0, WetMinutes);
+	// Saturar en vez de sumar: NowMinute + WetMinutes desborda con valores extremos.
+	const int64 Wet = FMath::Max<int64>(0, WetMinutes);
+	const int64 WetUntil = NowMinute > INT64_MAX - Wet ? INT64_MAX : NowMinute + Wet;
 	bool bRemovedBurning = false;
 	for (int32 DY = -R; DY <= R; ++DY)
 	{
@@ -428,7 +451,7 @@ int32 FWildfireModel::AshAt(FIntPoint Cell, int64 NowMinute) const
 	{
 		return 0;
 	}
-	return (NowMinute >= Found->BurntMinute && NowMinute < Found->BurntMinute + AshMinutes) ? 1 : 0;
+	return (NowMinute >= Found->BurntMinute && WildfirePriv::MinutesSince(NowMinute, Found->BurntMinute) < (uint64)AshMinutes) ? 1 : 0;
 }
 
 int32 FWildfireModel::TakeAsh(FIntPoint Cell, int64 NowMinute)
@@ -491,7 +514,9 @@ bool FWildfireModel::Load(const FSaveValue& Value)
 	const FSaveValue* Last = Value.Find(TEXT("lastSecond"));
 	const FSaveValue* List = Value.Find(TEXT("cells"));
 	int64 V = 0, LastValue = 0;
-	if (!Version || !Version->TryGetInt(V) || V != WildfirePriv::SaveVersion || !Last || !Last->TryGetInt(LastValue) || !List || !List->IsArray())
+	// Un segundo negativo no sale de ningún reloj de partida (y con INT64_MIN la resta de Advance desbordaba).
+	if (!Version || !Version->TryGetInt(V) || V != WildfirePriv::SaveVersion || !Last || !Last->TryGetInt(LastValue) || LastValue < 0
+		|| !List || !List->IsArray())
 	{
 		return false;
 	}
@@ -507,9 +532,8 @@ bool FWildfireModel::Load(const FSaveValue& Value)
 		{
 			return false;
 		}
-		// CellAt nunca da más de ±1e9 y los minutos se suman a duraciones: fuera de esos rangos es un guardado roto.
-		constexpr int64 MaxCell = 1000000000;
-		constexpr int64 MaxMinute = static_cast<int64>(1) << 60;
+		// Rangos, no Abs: Abs(INT64_MIN) desborda.
+		const int64 MaxCell = WildfirePriv::MaxAbsCell, MaxMinute = WildfirePriv::MaxAbsMinute;
 		if (X < -MaxCell || X > MaxCell || Y < -MaxCell || Y > MaxCell
 			|| BurntMinute < -MaxMinute || BurntMinute > MaxMinute || WetUntil < -MaxMinute || WetUntil > MaxMinute
 			|| State < 0 || State >= (int64)EFireCellState::Count || CellFuel < 0 || CellFuel >= (int64)EFireFuel::Count

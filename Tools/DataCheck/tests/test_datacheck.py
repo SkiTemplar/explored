@@ -841,6 +841,26 @@ def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
     assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
 
 
+def test_mineria_herramientas_espejo_del_cpp(real: DataSet) -> None:
+    cpp = mining.cpp_dig_tools(real)
+    assert cpp and cpp["PalaTosca"] == (1, 0.35, 1.2) and cpp["PicoRescatado"] == (4, 0.55, 1.1)
+
+
+def test_mineria_radio_distinto_del_cpp(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["radiusM"] = 0.6
+    assert any_error(mining_errors(ds), "pico_obsidiana", "ToolInfo")
+
+
+def test_mineria_herramienta_sin_tiempo_de_golpe(ds: DataSet) -> None:
+    del next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pala_tosca")["secondsPerHit"]
+    assert any_error(mining_errors(ds), "pala_tosca", "secondsPerHit")
+
+
+def test_mineria_unidades_por_m3_distintas_del_cpp(ds: DataSet) -> None:
+    ds.data["mining.json"]["unitsPerM3"] = 5
+    assert any_error(mining_errors(ds), "unitsPerM3", "UnitsPerCubicMeter")
+
+
 def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
     m = material(ds, "basalto")
     m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
@@ -1399,6 +1419,103 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- combate (biblia 05 §3 y §5)
+
+from datacheck import combat  # noqa: E402
+
+
+def combat_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    combat.check_combat(ds, r)
+    return r.errors
+
+
+def creature(ds: DataSet, cid: str) -> dict:
+    return next(c for c in ds.data["combat.json"]["creatures"] if c["id"] == cid)
+
+
+def test_combate_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert combat_errors(real) == []
+    cpp = combat.cpp_constants(real)
+    assert cpp["QuickMultiplierPct"] == 70 and cpp["DodgeInvulnerableMs"] == 300
+    assert combat.cpp_creature_enum(real) == ["WildBoar", "WildGoat", "CoconutCrab", "ReefShark"]
+    assert [row["id"] for row in combat.cpp_creatures(real)] == [
+        "cerdo_salvaje", "cabra_salvaje", "cangrejo_cocotero_salvaje", "tiburon_arrecife"]
+
+
+def test_combate_constante_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["combat.json"]["dodge"]["invulnerableMs"] = 350
+    assert any_error(combat_errors(ds), "invulnerableMs", "DodgeInvulnerableMs")
+
+
+def test_combate_constante_ausente(ds: DataSet) -> None:
+    del ds.data["combat.json"]["melee"]["quick"]["chainPauseMs"]
+    assert any_error(combat_errors(ds), "chainPauseMs", "falta")
+
+
+def test_combate_tramo_de_arco_con_hueco(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["bands"][1]["fromM"] = 16
+    assert any_error(combat_errors(ds), "bow", "no sigue")
+
+
+def test_combate_precision_que_sube_con_la_distancia(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["bands"][2]["accuracyPct"] = 80
+    assert any_error(combat_errors(ds), "bow", "sube")
+
+
+def test_combate_arco_acierta_mas_alla_de_45(ds: DataSet) -> None:
+    ds.data["combat.json"]["bow"]["beyondPct"] = 10
+    assert any_error(combat_errors(ds), "beyondPct")
+
+
+def test_combate_dano_que_no_sale_de_la_formula(ds: DataSet) -> None:
+    creature(ds, "cangrejo_cocotero_salvaje")["damage"] = 9
+    errors = combat_errors(ds)
+    assert any_error(errors, "cangrejo_cocotero_salvaje", "Contundente 2 da 8")
+    assert any_error(errors, "cangrejo_cocotero_salvaje", "CreatureTable")
+
+
+def test_combate_contundente_que_corta(ds: DataSet) -> None:
+    creature(ds, "cerdo_salvaje")["cutDepth"] = 0.2
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "no abre corte")
+
+
+def test_combate_distinto_de_fauna_json(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["healthPoints"] = 40
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "healthPoints", "fauna.json")
+
+
+def test_combate_aturdimiento_distinto_de_fauna_json(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["attack"]["stunSeconds"] = 1.5
+    assert any_error(combat_errors(ds), "cerdo_salvaje", "stunMs", "fauna.json")
+
+
+def test_combate_orden_distinto_del_enum(ds: DataSet) -> None:
+    cs = ds.data["combat.json"]["creatures"]
+    cs[0], cs[1] = cs[1], cs[0]
+    assert any_error(combat_errors(ds), "ECombatCreature")
+
+
+def test_combate_animal_terrestre_sin_ficha_de_fauna(ds: DataSet) -> None:
+    creature(ds, "cabra_salvaje")["id"] = "cabra_montes"
+    assert any_error(combat_errors(ds), "cabra_montes", "fauna.json")
+
+
+def test_combate_bytes_de_red_distintos_del_cpp(ds: DataSet) -> None:
+    ds.data["combat.json"]["red"]["mensajes"][1]["bytes"] = 12
+    assert any_error(combat_errors(ds), "impacto", "ImpactMsgBytes")
+
+
+def test_combate_sin_autoridad_del_servidor(ds: DataSet) -> None:
+    ds.data["combat.json"]["red"]["autoridad"] = "cliente"
+    assert any_error(combat_errors(ds), "servidor")
+
+
+def test_combate_falta_el_fichero(ds: DataSet) -> None:
+    del ds.data["combat.json"]
+    assert any_error(errors_of(ds), "combat.json")
 
 
 # --------------------------------------------------------------------------- huerto: reglas y cosecha neta

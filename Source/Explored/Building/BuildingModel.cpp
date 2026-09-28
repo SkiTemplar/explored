@@ -952,7 +952,8 @@ TArray<int32> FBuildingModel::RemovePiece(int32 PieceId)
 FBuildingChangeResult FBuildingModel::Tick(float DeltaHours, const FBuildingWeather& Weather)
 {
 	FBuildingChangeResult Result;
-	if (DeltaHours <= 0.0f)
+	// Un paso NaN (de un guardado o un reloj roto) dejaría Max(NaN, 0) = 0 y rompería todas las piezas.
+	if (!FMath::IsFinite(DeltaHours) || DeltaHours <= 0.0f)
 	{
 		return Result;
 	}
@@ -1009,7 +1010,8 @@ FBuildingChangeResult FBuildingModel::ApplyDamage(int32 PieceId, float Points)
 {
 	FBuildingChangeResult Result;
 	const int32* Index = PieceIndex.Find(PieceId);
-	if (!Index || Points <= 0.0f)
+	// Daño NaN: Max(NaN, 0) = 0 rompería la pieza de un golpe.
+	if (!Index || !FMath::IsFinite(Points) || Points <= 0.0f)
 	{
 		return Result;
 	}
@@ -1211,12 +1213,13 @@ bool FBuildingModel::LoadState(const FBuildingSaveState& State, int32* OutDroppe
 	PieceIndex.Empty();
 	SlotOwners.Empty();
 	Stability.Empty();
-	NextPieceId = FMath::Max(State.NextPieceId, 1);
-	NextBaseId = FMath::Max(State.NextBaseId, 1);
+	NextPieceId = FMath::Clamp(State.NextPieceId, 1, MaxPieceId + 1);
+	NextBaseId = FMath::Clamp(State.NextBaseId, 1, MaxBaseId + 1);
 
 	for (const FBuildingBaseState& Base : State.Bases)
 	{
-		if (!FindBase(Base.Id))
+		// La clave de hueco guarda la base en 16 bits: una base 65537 compartiría huecos con la 1.
+		if (Base.Id >= 1 && Base.Id <= MaxBaseId && !FindBase(Base.Id))
 		{
 			Bases.Add(Base);
 			NextBaseId = FMath::Max(NextBaseId, Base.Id + 1);
@@ -1231,13 +1234,22 @@ bool FBuildingModel::LoadState(const FBuildingSaveState& State, int32* OutDroppe
 	for (const FBuildingPieceState& Piece : Sorted)
 	{
 		// Ni siquiera las descartadas deben reutilizar su id (otros sistemas pueden recordarlo).
-		NextPieceId = FMath::Max(NextPieceId, Piece.Id + 1);
+		if (Piece.Id >= 1 && Piece.Id <= MaxPieceId)
+		{
+			NextPieceId = FMath::Max(NextPieceId, Piece.Id + 1);
+		}
 	}
 	for (const FBuildingPieceState& Piece : Sorted)
 	{
 		const FBuildingPieceDef* Def = Catalog.FindPiece(Piece.DefId);
+		// Celdas fuera de la clave de hueco (X = 65536 compartía hueco con X = 0) o de los pisos
+		// que admite CanPlace, e ids con los que Id + 1 desbordaría.
+		const FIntVector& Cell = Piece.Placement.Cell;
 		bool bValid = Def && FindBase(Piece.Placement.BaseId) && !PieceIndex.Contains(Piece.Id) &&
-			Piece.Placement.Rotation >= 0 && Piece.Placement.Rotation <= 3;
+			Piece.Placement.Rotation >= 0 && Piece.Placement.Rotation <= 3 &&
+			Piece.Id >= 1 && Piece.Id <= MaxPieceId &&
+			Cell.X >= -MaxCellCoord && Cell.X <= MaxCellCoord && Cell.Y >= -MaxCellCoord && Cell.Y <= MaxCellCoord &&
+			Cell.Z >= -MaxLevels && Cell.Z <= MaxLevels;
 		if (bValid)
 		{
 			Slots.Reset();

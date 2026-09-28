@@ -4,6 +4,8 @@
 #include "Save/SaveSystemStates.h"
 #include "Save/SaveValue.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace SaveSystemsTest
@@ -117,6 +119,40 @@ void FSaveSystemsSpec::Define()
 			FBuildingSaveState Loaded;
 			LoadBuilding(Ar, Loaded);
 			TestEqual(TEXT("Una pieza"), Loaded.Pieces.Num(), 1);
+		});
+
+		It("descarta una pieza con celda no finita o fuera de int32", [this]()
+		{
+			FBuildingSaveState State;
+			FBuildingPieceState Piece;
+			Piece.Id = 1;
+			Piece.DefId = FName(TEXT("pilote"));
+			Piece.Placement.Cell = FIntVector(-3, 4, 1);
+			State.Pieces.Add(Piece);
+			FSaveArchive Ar;
+			SaveBuilding(Ar, State);
+			FSaveValue Pieces = *Ar.FindValue(TEXT("pieces"));
+			auto AddPiece = [&Pieces](int64 Id, FSaveValue X)
+			{
+				FSaveValue Cell = FSaveValue::MakeArray();
+				Cell.Add(MoveTemp(X));
+				Cell.Add(FSaveValue::MakeDouble(0.0));
+				Cell.Add(FSaveValue::MakeDouble(0.0));
+				FSaveValue Bad = FSaveValue::MakeObject();
+				Bad.Set(TEXT("id"), FSaveValue::MakeInt(Id));
+				Bad.Set(TEXT("defId"), FSaveValue::MakeString(TEXT("pared")));
+				Bad.Set(TEXT("cell"), MoveTemp(Cell));
+				Pieces.Add(MoveTemp(Bad));
+			};
+			AddPiece(2, FSaveValue::MakeDouble(1.0e30));
+			AddPiece(3, FSaveValue::MakeString(TEXT("NaN")));
+			AddPiece(4, FSaveValue::MakeString(TEXT("-Infinity")));
+			AddPiece(5, FSaveValue::MakeDouble(-3.0e9));
+			Ar.SetValue(TEXT("pieces"), Pieces);
+			FBuildingSaveState Loaded;
+			LoadBuilding(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Solo la pieza buena"), Loaded.Pieces.Num(), 1);
+			TestTrue(TEXT("Con su celda"), Loaded.Pieces.Num() == 1 && Loaded.Pieces[0].Placement.Cell == FIntVector(-3, 4, 1));
 		});
 	});
 
@@ -348,6 +384,45 @@ void FSaveSystemsSpec::Define()
 			TestEqual(TEXT("Logros: la unión"), Merged.Unlocked.Num(), 2);
 			TestEqual(TEXT("En orden"), Merged.Unlocked[0], FName(TEXT("primer_fuego")));
 		});
+
+		It("ignora números no finitos y repetidos en los conjuntos", [this]()
+		{
+			FSaveValue Numbers = FSaveValue::MakeObject();
+			Numbers.Set(TEXT("fires_lit"), FSaveValue::MakeString(TEXT("NaN")));
+			Numbers.Set(TEXT("max_dive_depth_m"), FSaveValue::MakeString(TEXT("Infinity")));
+			Numbers.Set(TEXT("fish_caught"), FSaveValue::MakeDouble(3.0));
+			FSaveValue Foods = FSaveValue::MakeArray();
+			Foods.Add(FSaveValue::MakeString(TEXT("coco")));
+			Foods.Add(FSaveValue::MakeString(TEXT("coco")));
+			Foods.Add(FSaveValue::MakeString(TEXT("taro")));
+			FSaveValue Sets = FSaveValue::MakeObject();
+			Sets.Set(TEXT("foods_eaten"), Foods);
+			FSaveArchive Profile;
+			Profile.SetValue(TEXT("numbers"), Numbers);
+			Profile.SetValue(TEXT("sets"), Sets);
+			FSaveArchive Ar;
+			Ar.Write(TEXT("profile"), Profile);
+			Ar.Write(TEXT("run"), Profile);
+
+			FAchievementsState Loaded;
+			LoadAchievements(ThroughText(Ar), Loaded);
+			TestFalse(TEXT("Sin el NaN"), Loaded.Profile.Numbers.Contains(FName(TEXT("fires_lit"))));
+			TestFalse(TEXT("Sin el infinito"), Loaded.Profile.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+			TestEqual(TEXT("Con el bueno"), Loaded.Profile.Numbers.FindRef(FName(TEXT("fish_caught"))), 3.0);
+			TestEqual(TEXT("Comidas sin repetir"), Loaded.Profile.Sets.FindRef(FName(TEXT("foods_eaten"))).Num(), 2);
+			TestEqual(TEXT("También en la partida"), Loaded.Run.Sets.FindRef(FName(TEXT("foods_eaten"))).Num(), 2);
+			TestFalse(TEXT("Partida sin el infinito"), Loaded.Run.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+
+			// La fusión tampoco deja que un NaN pise el perfil.
+			FAchievementsState Current;
+			Current.Profile.Numbers.Add(FName(TEXT("fires_lit")), 10.0);
+			FAchievementsState Corrupt;
+			Corrupt.Profile.Numbers.Add(FName(TEXT("fires_lit")), std::numeric_limits<double>::quiet_NaN());
+			Corrupt.Profile.Numbers.Add(FName(TEXT("max_dive_depth_m")), std::numeric_limits<double>::infinity());
+			const FAchievementsState Merged = MergeLoadedAchievements(Current, Corrupt);
+			TestEqual(TEXT("Fuegos intactos"), Merged.Profile.Numbers.FindRef(FName(TEXT("fires_lit"))), 10.0);
+			TestFalse(TEXT("Sin buceo infinito"), Merged.Profile.Numbers.Contains(FName(TEXT("max_dive_depth_m"))));
+		});
 	});
 
 	Describe("Inventario", [this]()
@@ -383,6 +458,32 @@ void FSaveSystemsSpec::Define()
 			FInventoryState Loaded;
 			LoadInventory(ThroughText(Ar), Loaded);
 			TestTrue(TEXT("Mismo estado"), Loaded == State);
+		});
+
+		It("descarta los objetos con id negativo o enorme sin perder el resto", [this]()
+		{
+			FInventoryState State;
+			const int64 Ids[] = { 3, -5, std::numeric_limits<int64>::max() };
+			for (const int64 Id : Ids)
+			{
+				FInventoryEntry Entry;
+				Entry.Item.InstanceId = Id;
+				Entry.Item.DefinitionId = FName(TEXT("basalto"));
+				Entry.Item.WeightKg = 1.0f;
+				Entry.SlotIndex = State.Pockets.Entries.Num();
+				State.Pockets.Entries.Add(Entry);
+			}
+			State.NextInstanceId = 10;
+
+			FSaveArchive Ar;
+			SaveInventory(Ar, State);
+			FInventoryState Loaded;
+			LoadInventory(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Solo queda la piedra buena"), Loaded.Pockets.Entries.Num(), 1);
+			TestEqual(TEXT("Es la del id 3"), Loaded.Pockets.Num() == 1 ? Loaded.Pockets.Entries[0].Item.InstanceId : int64(0), int64(3));
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("El inventario cargado es válido"), Model.LoadState(Loaded, Fail));
 		});
 
 		It("aplana y reconstruye un objeto fabricado con sus piezas", [this]()
@@ -475,6 +576,54 @@ void FSaveSystemsSpec::Define()
 			TestTrue(TEXT("Fiebre"), Loaded.HasCondition(ECondition::Fever));
 			TestEqual(TEXT("Una herida"), Loaded.Wounds.Num(), 1);
 		});
+
+		It("sanea valores no finitos o fuera de rango", [this]()
+		{
+			FSurvivalState State;
+			State.AddCondition(ECondition::Fever, 6.0f);
+			FSaveArchive Ar;
+			SaveSurvival(Ar, State, ESurvivalMode::Survivor);
+			Ar.SetValue(TEXT("health"), FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("hunger"), FSaveValue::MakeDouble(500.0));
+			Ar.SetValue(TEXT("thirst"), FSaveValue::MakeDouble(-20.0));
+			Ar.SetValue(TEXT("bodyTemperature"), FSaveValue::MakeString(TEXT("Infinity")));
+			Ar.SetValue(TEXT("wetness"), FSaveValue::MakeString(TEXT("-Infinity")));
+			Ar.SetValue(TEXT("sunDose"), FSaveValue::MakeString(TEXT("NaN")));
+			FSaveValue Conditions = FSaveValue::MakeArray();
+			Conditions.Add(FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("conditionHours"), Conditions);
+			FSaveValue Wounds = FSaveValue::MakeArray();
+			FSaveValue Deep = FSaveValue::MakeObject();
+			Deep.Set(TEXT("depth"), FSaveValue::MakeDouble(2.0));
+			Deep.Set(TEXT("bleeding"), FSaveValue::MakeDouble(-50.0));
+			Deep.Set(TEXT("healed"), FSaveValue::MakeString(TEXT("NaN")));
+			Deep.Set(TEXT("hoursUntreated"), FSaveValue::MakeDouble(-5.0));
+			Wounds.Add(Deep);
+			FSaveValue NaNDepth = FSaveValue::MakeObject();
+			NaNDepth.Set(TEXT("depth"), FSaveValue::MakeString(TEXT("NaN")));
+			Wounds.Add(NaNDepth);
+			Ar.SetValue(TEXT("wounds"), Wounds);
+
+			FSurvivalState Loaded;
+			ESurvivalMode Mode = ESurvivalMode::Survivor;
+			LoadSurvival(ThroughText(Ar), Loaded, Mode);
+			const FSurvivalState Defaults;
+			TestEqual(TEXT("Salud NaN: la de partida nueva"), Loaded.Health, Defaults.Health);
+			TestEqual(TEXT("Hambre hasta 100"), Loaded.Hunger, 100.0f);
+			TestEqual(TEXT("Sed desde 0"), Loaded.Thirst, 0.0f);
+			TestEqual(TEXT("Temperatura infinita: la de partida nueva"), Loaded.BodyTemperature, Defaults.BodyTemperature);
+			TestEqual(TEXT("Humedad -inf: la de partida nueva"), Loaded.Wetness, Defaults.Wetness);
+			TestEqual(TEXT("Sol NaN: la de partida nueva"), Loaded.SunDose, Defaults.SunDose);
+			TestEqual(TEXT("Estado NaN: sin estado"), Loaded.ConditionTime[0], 0.0f);
+			TestEqual(TEXT("La herida sin profundidad se descarta"), Loaded.Wounds.Num(), 1);
+			if (Loaded.Wounds.Num() == 1)
+			{
+				TestEqual(TEXT("Profundidad hasta 1"), Loaded.Wounds[0].Depth, 1.0f);
+				TestEqual(TEXT("Sangrado desde 0"), Loaded.Wounds[0].Bleeding, 0.0f);
+				TestEqual(TEXT("Cicatrización NaN: 0"), Loaded.Wounds[0].Healed, 0.0f);
+				TestEqual(TEXT("Horas sin tratar desde 0"), Loaded.Wounds[0].HoursUntreated, 0.0f);
+			}
+		});
 	});
 
 	Describe("Barcos, pesca y reloj", [this]()
@@ -556,6 +705,22 @@ void FSaveSystemsSpec::Define()
 			FSavedClock Default;
 			LoadClock(NoForced, Default);
 			TestEqual(TEXT("Sin clima forzado"), Default.ForcedWeather, EWeatherState::Count);
+		});
+
+		It("no carga una hora NaN ni un clima forzado para siempre", [this]()
+		{
+			FSavedClock Clock;
+			Clock.ForcedWeather = EWeatherState::Cyclone;
+			Clock.ForcedUntilDays = 18.1f;
+			FSaveArchive Ar;
+			SaveClock(Ar, Clock);
+			Ar.SetValue(TEXT("hours"), FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("forcedUntilDays"), FSaveValue::MakeString(TEXT("Infinity")));
+			FSavedClock Loaded;
+			LoadClock(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Hora NaN: la de partida nueva"), Loaded.Hours, FSavedClock().Hours);
+			TestEqual(TEXT("Sin clima forzado"), Loaded.ForcedWeather, EWeatherState::Count);
+			TestTrue(TEXT("Plazo finito"), FMath::IsFinite(Loaded.ForcedUntilDays));
 		});
 	});
 }

@@ -26,6 +26,7 @@ Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
+Tests/NetBudgetModelSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
 Tests/RuinsSpec.cpp
@@ -37,7 +38,11 @@ Tests/SettingsLogicSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/SystemLinksSpec.cpp
+Tests/TerrainChunkChecksumModelSpec.cpp
+Tests/TerrainDeltaCodecModelSpec.cpp
+Tests/TerrainDeltaQueueModelSpec.cpp
 Tests/TerrainEditModelSpec.cpp
+Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
@@ -45,4 +50,7 @@ Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
 Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
+Tests/CoconutPalmModelSpec.cpp
 Tests/TramwayModelSpec.cpp
+Tests/PropertyFuzzSpec.cpp
+Tests/CombatModelSpec.cpp

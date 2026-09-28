@@ -145,6 +145,15 @@ void FBoatSpec::Define()
 				TestFalse(TEXT("Rechaza la sobrecarga"), Model.TryAddCargo(1.0f));
 			}
 		});
+
+		It("rechaza cargas no finitas sin tocar la carga", [this]()
+		{
+			FBoatModel Model(EBoatType::Canoe, FVector::ZeroVector, 0.0f);
+			TestTrue(TEXT("carga normal"), Model.TryAddCargo(10.0f));
+			TestFalse(TEXT("NaN"), Model.TryAddCargo(std::numeric_limits<float>::quiet_NaN()));
+			TestFalse(TEXT("infinito"), Model.TryAddCargo(std::numeric_limits<float>::infinity()));
+			TestEqual(TEXT("sigue con 10 kg"), Model.GetState().CargoKg, 10.0f);
+		});
 	});
 
 	Describe("Flotación", [this]()
@@ -793,6 +802,47 @@ void FBoatSpec::Define()
 			TestTrue(TEXT("Daño total = naufragio"), Clamped.GetState().Condition == EBoatCondition::Wrecked);
 		});
 
+		It("un guardado con NaN o infinitos vuelve a valores por defecto", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FBoatModel Model(EBoatType::Canoe, FVector(100.0, 200.0, 0.0), 30.0f);
+			TestTrue(TEXT("amarra"), Model.Moor(FVector2D(100.0, 300.0), 300.0f));
+			FBoatSaveData Data = Model.ToSaveData();
+			Data.LocationCm.X = static_cast<double>(NaN);
+			Data.YawDeg = Inf;
+			Data.HullDamage01 = NaN;
+			Data.CargoKg = NaN;
+			Data.WaterInHullKg = NaN;
+			Data.MooringLengthCm = Inf;
+			const FBoatModel Loaded = FBoatModel::FromSaveData(Data);
+			const FBoatState& S = Loaded.GetState();
+			TestTrue(TEXT("posición finita"), FMath::IsFinite(S.LocationCm.X) && FMath::IsFinite(S.LocationCm.Y));
+			TestTrue(TEXT("rumbo finito"), FMath::IsFinite(S.YawDeg));
+			TestEqual(TEXT("daño NaN: sin daño"), S.HullDamage01, 0.0f);
+			TestTrue(TEXT("y no naufraga"), S.Condition != EBoatCondition::Wrecked);
+			TestEqual(TEXT("sin carga"), S.CargoKg, 0.0f);
+			TestEqual(TEXT("sin agua"), S.WaterInHullKg, 0.0f);
+			TestFalse(TEXT("cabo infinito: sin amarre"), Loaded.IsMoored());
+
+			Data = Model.ToSaveData();
+			Data.MooringAnchorCm.Y = static_cast<double>(NaN);
+			TestFalse(TEXT("poste NaN: sin amarre"), FBoatModel::FromSaveData(Data).IsMoored());
+
+			FBoatModel Launched(EBoatType::Raft, FVector::ZeroVector, 0.0f);
+			Launched.SetVelocityCmS(FVector2D(static_cast<double>(NaN), 10.0));
+			TestTrue(TEXT("velocidad NaN: quieto"), Launched.GetState().VelocityCmS.IsZero());
+
+			// Una arrancada finita pero absurda (1e30 cm/s) daba NaN en posición y rumbo al paso siguiente.
+			FBoatModel Flung(EBoatType::Canoe, FVector::ZeroVector, 0.0f);
+			Flung.SetVelocityCmS(FVector2D(1.0e30, -250.0));
+			TestTrue(TEXT("arrancada enorme recortada"), Flung.GetState().VelocityCmS.Size() <= FBoatModel::MaxSetSpeedCmS + 1.0);
+			Flung.Step(1.0f / 60.0f, FBoatControls(), FBoatEnvironment());
+			const FBoatState& After = Flung.GetState();
+			TestTrue(TEXT("y el paso siguiente sigue finito"), FMath::IsFinite(After.LocationCm.X) && FMath::IsFinite(After.LocationCm.Y)
+				&& FMath::IsFinite(After.VelocityCmS.X) && FMath::IsFinite(After.YawDeg));
+		});
+
 		It("da exactamente el mismo resultado con las mismas entradas", [this]()
 		{
 			const FOceanWaves Waves = FOceanWaves::Make(0.6f);
@@ -816,6 +866,25 @@ void FBoatSpec::Define()
 			TestTrue(TEXT("Actitud idéntica"), A.YawDeg == B.YawDeg && A.PitchDeg == B.PitchDeg && A.RollDeg == B.RollDeg);
 			TestTrue(TEXT("Estado idéntico"), A.Condition == B.Condition && A.HullDamage01 == B.HullDamage01
 				&& A.WaterInHullKg == B.WaterInHullKg);
+		});
+
+		It("ignora pasos de tiempo nulos, negativos o no finitos sin estropear el estado", [this]()
+		{
+			FRun Run(EBoatType::Canoe);
+			Run.bAlternate = true;
+			Run.Advance(2.0f);
+			const FBoatState Before = Run.Model.GetState();
+			for (const float Bad : { 0.0f, -1.0f, std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity() })
+			{
+				Run.Model.Step(Bad, Run.Controls, Run.Env);
+			}
+			const FBoatState& After = Run.Model.GetState();
+			TestTrue(TEXT("no se ha movido"), After.LocationCm == Before.LocationCm && After.VelocityCmS == Before.VelocityCmS);
+			TestTrue(TEXT("acumulador intacto"), After.PendingTimeS == Before.PendingTimeS);
+			Run.Advance(2.0f);
+			const FBoatState& Later = Run.Model.GetState();
+			TestTrue(TEXT("y sigue navegando con valores finitos"), FMath::IsFinite(Later.PendingTimeS)
+				&& FMath::IsFinite(Later.LocationCm.X) && FMath::IsFinite(Later.LocationCm.Y) && Later.LocationCm != Before.LocationCm);
 		});
 	});
 }

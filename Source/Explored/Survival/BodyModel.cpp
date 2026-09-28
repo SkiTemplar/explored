@@ -23,6 +23,8 @@ namespace BodyModelDetail
 
 	// Caídas.
 	constexpr float SafeFallHeight = 3.0f;
+	/** Tope de altura para el cálculo: más ya es mortal en cualquier superficie. */
+	constexpr float MaxFallHeightM = 1000.0f;
 	constexpr float FallDamageScale = 4.0f;
 	constexpr float FallDamageExponent = 1.6f;
 	constexpr float SprainFallHeight = 4.5f;
@@ -145,10 +147,13 @@ float FBodyModel::BleedingDamagePerHour(const FSurvivalState& S)
 FFallResult FBodyModel::FallDamage(float HeightM, ELandingSurface Surface)
 {
 	FFallResult Result;
-	if (!(HeightM > 0.0f))
+	// IsFinite explícito: con matemáticas rápidas `!(x > 0)` deja pasar un NaN y el daño saldría NaN.
+	if (!FMath::IsFinite(HeightM) || HeightM <= 0.0f)
 	{
 		return Result;
 	}
+	// Por encima de cualquier caída posible el daño ya es mortal; sin tope, Pow daría infinito.
+	HeightM = FMath::Min(HeightM, MaxFallHeightM);
 	if (Surface == ELandingSurface::Water)
 	{
 		// El agua amortigua: solo duelen los saltos muy altos, y como caer desde menos altura.
@@ -360,6 +365,13 @@ void FBodyModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaH
 	for (int32 Index = S.Wounds.Num() - 1; Index >= 0; --Index)
 	{
 		FWound& W = S.Wounds[Index];
+		// Una herida fuera de rango (guardado roto) se acota: con Depth > 1 la coagulación
+		// (1 - Depth) era negativa y el sangrado crecía sin tope; con Bleeding < 0 curaba.
+		auto Unit = [](float V) { return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0f, 1.0f) : 0.0f; };
+		W.Depth = Unit(W.Depth);
+		W.Bleeding = Unit(W.Bleeding);
+		W.Healed = Unit(W.Healed);
+		W.HoursUntreated = FMath::IsFinite(W.HoursUntreated) ? FMath::Max(W.HoursUntreated, 0.0f) : 0.0f;
 		InOutDamage += W.Bleeding * WoundBleedDamagePerHour * DeltaHours;
 		W.Bleeding = FMath::Max(0.0f, W.Bleeding - WoundClotPerHour * (1.0f - W.Depth) * ClotMul * DeltaHours);
 

@@ -2,6 +2,8 @@
 
 #include "Boats/HullAssemblyModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace HullAssemblySpecDetail
@@ -318,6 +320,25 @@ void FHullAssemblyModelSpec::Define()
 
 			const FHullAssemblyModel Solo;
 			TestEqual(TEXT("sin piezas, sin brazo"), Solo.RightingArmCm(20.0f), 0.0f);
+		});
+
+		It("rechaza piezas y cargas con valores no finitos", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			FHullAssemblyModel Model = Raft();
+			const FHullHydrostatics Before = Model.Evaluate();
+			FHullPiece Bad;
+			Bad.CenterCm = FVector(NaN, 0.0, 11.0);
+			TestEqual(TEXT("centro NaN"), Model.AddPiece(Bad), INDEX_NONE);
+			Bad.CenterCm = FVector::ZeroVector;
+			Bad.SizeCm = FVector(std::numeric_limits<double>::infinity(), 0.0, 0.0);
+			TestEqual(TEXT("tamaño infinito"), Model.AddPiece(Bad), INDEX_NONE);
+			Model.AddLoad(Cargo(std::numeric_limits<float>::quiet_NaN()));
+			Model.AddLoad(Cargo(50.0f, NaN));
+			TestEqual(TEXT("sin cargas nuevas"), Model.GetLoads().Num(), 0);
+			const FHullHydrostatics After = Model.Evaluate();
+			TestEqual(TEXT("misma masa"), After.TotalMassKg, Before.TotalMassKg);
+			TestTrue(TEXT("sigue a flote"), After.IsAfloat());
 		});
 	});
 

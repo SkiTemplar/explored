@@ -368,6 +368,15 @@ bool FWorldEventsModel::IsActive(EWorldEventType Type, float TotalDays, FWorldEv
 
 void FWorldEventsModel::ForEachInWindow(float FromDays, float ToDays, TFunctionRef<bool(const FWorldEvent&)> Visitor) const
 {
+	// Relojes no finitos o fuera de partida (estado corrupto): sin acotar, un reloj de 1e9
+	// generaba 1e9 días y FloorToInt32 o ++Day desbordaban.
+	if (!FMath::IsFinite(FromDays) || !FMath::IsFinite(ToDays))
+	{
+		return;
+	}
+	const float MaxDays = static_cast<float>(FWeatherModel::MaxSupportedDays);
+	FromDays = FMath::Clamp(FromDays, -1.0f, MaxDays);
+	ToDays = FMath::Clamp(ToDays, -1.0f, MaxDays);
 	// Un evento anclado al día D empieza en [D, D + 1) y dura menos de MaxEventDays: basta
 	// con mirar desde el día anterior a FromDays. Los días salen en orden y cada día ya viene
 	// ordenado, así que la visita queda ordenada por inicio.
@@ -404,9 +413,16 @@ TArray<FWorldEvent> FWorldEventsModel::EventsInWindow(float FromDays, float ToDa
 
 bool FWorldEventsModel::NextOccurrence(EWorldEventType Type, float AfterDays, FWorldEvent& OutEvent, int32 SearchDays) const
 {
-	const int32 FirstDay = FMath::Max(0, FMath::FloorToInt32(AfterDays));
+	// Reloj y búsqueda acotados a MaxSupportedDays: FloorToInt32(3e9) y FirstDay + SearchDays desbordaban.
+	if (!FMath::IsFinite(AfterDays))
+	{
+		return false;
+	}
+	AfterDays = FMath::Min(AfterDays, static_cast<float>(FWeatherModel::MaxSupportedDays));
+	const int32 FirstDay = FMath::Max(0, FMath::FloorToInt32(FMath::Max(AfterDays, -1.0f)));
+	const int32 LastDay = FirstDay + FMath::Clamp(SearchDays, 0, FWeatherModel::MaxSupportedDays);
 	TArray<FWorldEvent> DayEvents;
-	for (int32 Day = FirstDay; Day <= FirstDay + SearchDays; ++Day)
+	for (int32 Day = FirstDay; Day <= LastDay; ++Day)
 	{
 		DayEvents.Reset();
 		GenerateDay(Day, DayEvents);

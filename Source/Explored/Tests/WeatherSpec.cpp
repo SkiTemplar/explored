@@ -2,6 +2,8 @@
 
 #include "Weather/WeatherModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(FWeatherSpec, "Explored.Weather",
@@ -85,6 +87,29 @@ void FWeatherSpec::Define()
 			}
 			Prev = S;
 		}
+	});
+
+	It("un reloj no finito o fuera de partida no desborda", [this]()
+	{
+		const FWeatherModel Model(7);
+		constexpr float NaN = std::numeric_limits<float>::quiet_NaN();
+		const float Max = static_cast<float>(FWeatherModel::MaxSupportedDays);
+		TestEqual(TEXT("Estación con NaN"), FWeatherModel::SeasonForDay(NaN), ESeason::Dry);
+		TestEqual(TEXT("Estación con infinito"), FWeatherModel::SeasonForDay(std::numeric_limits<float>::infinity()), ESeason::Dry);
+		TestEqual(TEXT("Estado con NaN"), Model.StateAt(NaN), EWeatherState::Clear);
+		TestEqual(TEXT("Sin ciclón con NaN"), Model.CycloneCategoryAt(NaN), 0);
+		FWeatherSpan Severe;
+		TestFalse(TEXT("Sin temporal con NaN"), Model.NextSevereEvent(NaN, Severe));
+		const FWeatherSample Sample = Model.SampleAt(NaN);
+		TestTrue(TEXT("Muestra finita con NaN"), FMath::IsFinite(Sample.Rain) && FMath::IsFinite(Sample.Pressure));
+
+		// 3e9 días no caben en int32: se tratan como el último día admitido.
+		TestEqual(TEXT("Estado con 3e9"), Model.StateAt(3.0e9f), Model.StateAt(Max));
+		TestEqual(TEXT("Ciclón con 3e9"), Model.CycloneCategoryAt(3.0e9f), Model.CycloneCategoryAt(Max));
+		TestEqual(TEXT("Estado con -3e9"), Model.StateAt(-3.0e9f), EWeatherState::Clear);
+		FWeatherSpan AtMax;
+		const bool bAtMax = Model.NextSevereEvent(Max, AtMax);
+		TestEqual(TEXT("Temporal con 3e9"), Model.NextSevereEvent(3.0e9f, Severe), bAtMax);
 	});
 
 	It("hace la estación seca más soleada que el monzón", [this]()
