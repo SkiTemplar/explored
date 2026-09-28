@@ -94,3 +94,25 @@ def test_colocar_pieza_toca_y_asienta_en_dos_golpes():
         env = static_filter(contact, SR, fc=300.0, q=0.7, kind="lowpass")[: int(0.1 * SR)]
         peaks, _ = find_peaks(env, height=env.max() * 0.2, distance=int(0.015 * SR))
         assert len(peaks) >= 2, name
+
+
+def test_techar_tiene_golpe_con_cuerpo_y_crujido_que_se_asienta():
+    """Antes era un siseo plano: el 96 % de la energia por encima de 2 kHz."""
+    for name in ("sfx_build_thatch", "sfx_build_thatch_b", "sfx_build_thatch_c"):
+        x = render_sound(SoundSpec(name, "Efectos", False, construction.build_thatch))
+        # Peso de la plancha (vara y masa de hojas) sin tapar el crujido.
+        assert 0.2 <= _band_share(x, 0, 500) <= 0.5, name
+        assert _band_share(x, 1500, 8000) >= 0.3, name
+        # El golpe no esta al principio: antes llega el soplo de la plancha.
+        onset = int(np.argmax(np.abs(x)))
+        assert 0.05 * SR < onset < 0.2 * SR, name
+        # Los foliolos crujen cada vez menos: mas chasquidos justo despues del
+        # golpe que en el asiento.
+        clicks = np.abs(static_filter(x, SR, fc=1500.0, q=0.7, kind="highpass"))
+        peaks, _ = find_peaks(clicks, height=clicks.max() * 0.05, distance=int(0.0025 * SR))
+        early = np.count_nonzero((peaks >= onset) & (peaks < onset + int(0.15 * SR)))
+        late = np.count_nonzero((peaks >= onset + int(0.25 * SR)) & (peaks < onset + int(0.4 * SR)))
+        assert early > 2 * max(late, 1), (name, early, late)
+        assert abs(x[-1]) < 1e-3
+        assert k_weighted_momentary_max(x) < k_weighted_momentary_max(
+            render_sound(SoundSpec("sfx_build_place", "Efectos", False, construction.build_place))) + 1.5

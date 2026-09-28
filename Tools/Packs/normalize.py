@@ -660,9 +660,11 @@ def main() -> None:
         orig.data = obj.data.copy()
         bpy.context.scene.collection.objects.link(orig)
         write_color_attr(orig, "Orig", _loop_orig(orig, face_colors(orig)))
-        share = recolor(obj, e, palette)
+        # Orientar antes de recolorear: el degradado de la paleta va por la altura del
+        # objeto ya girado (mango en +Z), no por la del fichero del pack.
         orient_scale_pivot(obj, e)
         orient_scale_pivot(orig, e)
+        share = recolor(obj, e, palette)
         dims = bbox_dims(obj)
         tris = sum(len(p.vertices) - 2 for p in obj.data.polygons)
         report[e["gameId"]] = {"mesh": e["mesh"], "dims": [round(d, 3) for d in dims], "tris": tris, "paleta": share}
@@ -674,6 +676,10 @@ def main() -> None:
     if report and args["lote"]:
         out = EXPORT / args["lote"] / "_tiles" / "report.json"
         out.parent.mkdir(parents=True, exist_ok=True)
+        # Con --ids solo se renormaliza una parte del lote: se conserva lo demás para que
+        # contact_sheet.py encuentre todas las entradas.
+        if out.exists():
+            report = {**load_json(out), **report}
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
 

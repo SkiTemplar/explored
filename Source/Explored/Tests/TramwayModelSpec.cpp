@@ -612,6 +612,31 @@ void FTramwayModelSpec::Define()
 			BadCart.Set(TEXT("s"), FSaveValue::MakeString(TEXT("NaN")));
 			TestFalse(TEXT("posición no finita"), FTramwayModel::CartFromValue(BadCart, Cart));
 		});
+
+		It("un vagón cargado con la posición fuera de su tramo no cuelga el paso en una vía cerrada", [this]()
+		{
+			// Cuadrado de 2 × 2 celdas: vía cerrada con cuatro curvas.
+			FTramwayModel Model;
+			Line(Model, FIntVector(0, 0, 0), 1, 0, ERailDir::PosX);
+			Line(Model, FIntVector(1, 0, 0), 1, 0, ERailDir::PosY);
+			Line(Model, FIntVector(1, 1, 0), 1, 0, ERailDir::NegX);
+			Line(Model, FIntVector(0, 1, 0), 1, 0, ERailDir::NegY);
+			for (const double Bad : { 1.0e300, -1.0e300, 7.5, -0.5 })
+			{
+				FMineCart Cart;
+				Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0));
+				FSaveValue Saved = FTramwayModel::CartToValue(Cart);
+				Saved.Set(TEXT("s"), FSaveValue::MakeDouble(Bad));
+				FMineCart Loaded;
+				if (FTramwayModel::CartFromValue(Saved, Loaded))
+				{
+					double Acc = 0.0;
+					Model.Step(Loaded, FCartControl(), 1.0 / 60.0, Acc);
+					const double Length = Model.SegmentLength(Loaded.From, Loaded.To);
+					TestTrue(TEXT("sobre su tramo"), Loaded.S >= 0.0 && Loaded.S <= Length);
+				}
+			}
+		});
 	});
 }
 
