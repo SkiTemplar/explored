@@ -24,7 +24,7 @@
       "emberHours": 8, "rainQuench": 0, "windTolerance": 1.0, "enclosed": true, "smoke": 0.5 }
   ],
   "smeltingLevels": [
-    { "id": "horno_fundicion", "nameEs": "Horno de fundición", "pieceId": "horno_fundicion", "maxFuelHours": 16, "burnRate": 1.5, "heat": 1.4,
+    { "id": "horno_fundicion", "nameEs": "Horno de fundición", "nameEn": "Smelting furnace", "pieceId": "horno_fundicion", "maxFuelHours": 16, "burnRate": 1.5, "heat": 1.4,
       "emberHours": 10, "rainQuench": 0, "windTolerance": 1.0, "enclosed": true, "smoke": 0.6, "acceptedFuels": ["carbon_vegetal"] }
   ],
   "fuels": [
