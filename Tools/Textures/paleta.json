@@ -270,6 +270,7 @@
       "fila": 9,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Tono medio del terreno ya teñido por M_Terrain en cada isla.",
       "muestras": {
         "arena_seca": "SandDry",
@@ -284,6 +285,7 @@
       "fila": 10,
       "por_isla": false,
       "acento": false,
+      "recogible": false,
       "descripcion": "Agua y cielo actuales (solo referencia).",
       "muestras": {
         "laguna": "M_Ocean BaseColorShallow",

@@ -487,10 +487,10 @@ def to_json() -> dict:
     families = {f.key: {"fila": f.row, "por_isla": f.graded, "acento": f.accent, "recogible": f.pickup,
                         "descripcion": f.desc,
                         "muestras": {k: use for k, _, use in f.swatches}} for f in FAMILIES}
-    families["terreno"] = {"fila": TERRAIN_ROW, "por_isla": True, "acento": False,
+    families["terreno"] = {"fila": TERRAIN_ROW, "por_isla": True, "acento": False, "recogible": False,
                            "descripcion": "Tono medio del terreno ya teñido por M_Terrain en cada isla.",
                            "muestras": {k: m for m, (k, *_r) in TERRAIN_TARGETS.items()}}
-    families["entorno"] = {"fila": ENTORNO_ROW, "por_isla": False, "acento": False,
+    families["entorno"] = {"fila": ENTORNO_ROW, "por_isla": False, "acento": False, "recogible": False,
                            "descripcion": "Agua y cielo actuales (solo referencia).",
                            "muestras": {k: src for k, (_, src) in ENTORNO.items()}}
     return {
