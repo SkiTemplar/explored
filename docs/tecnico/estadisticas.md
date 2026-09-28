@@ -113,6 +113,7 @@ specs en el host).
 2. Si es para un logro, escribe su condición con el lenguaje del JSON (`units.condition`) y
    dale `phase` (`AA`/`F2`/`F3`), `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) y
    `coopScope` (`actor`/`world`/`witness`). El total se queda entre 40 y 60 (biblia 07 §2 fija
-   54). Una estadística que informa un sistema de F2/F3 lleva también `phase`: DataCheck no deja
-   que un logro de una fase anterior dependa de ella.
+   54) y los 30 del GDD §16 no se tocan. Una estadística que informa un sistema de F2/F3 lleva
+   también `phase`: DataCheck no deja que un logro de una fase anterior dependa de ella. Los
+   textos pasan la guía anti-IA de biblia 07 §1 (DataCheck mide su longitud).
 3. `cd Tools/DataCheck && uv run datacheck` y `Tools/HostTests/run.sh Explored.Achievements`.

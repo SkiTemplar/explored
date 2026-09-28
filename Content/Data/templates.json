@@ -33,6 +33,17 @@
 		]
 	},
 	{
+		"id": "clavija_roca", "nameEs": "Clavija de roca", "nameEn": "Rock piton",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "clavija_roca",
+		"nameTemplate": "Clavija de {1}", "nameTemplateEn": "{1} piton",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Pieza", "requireAll": false, "requirements": [ { "property": "Punta", "min": 3 }, { "property": "Contundente", "min": 4 } ], "tags": ["hueso", "hierro"] }
+		]
+	},
+	{
 		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado", "nameEn": "Carved stake",
 		"verbs": ["Tallar"],
 		"resultDefinitionId": "estaca",
@@ -177,6 +188,19 @@
 			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ], "tags": ["piedra", "mineral", "metal"] },
 			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
 			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
+		]
+	},
+	{
+		"id": "carretilla", "nameEs": "Carretilla", "nameEn": "Wheelbarrow",
+		"verbs": ["Atar"],
+		"station": "piedra_trabajo",
+		"resultDefinitionId": "carretilla",
+		"nameTemplate": "Carretilla de {0} con rueda de {1}", "nameTemplateEn": "{0} wheelbarrow with a {1} wheel",
+		"baseMaxDurability": 60,
+		"slots": [
+			{ "role": "Bastidor", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 3 } ], "tags": ["bambu"] },
+			{ "role": "Rueda", "requireAll": true, "requirements": [ { "property": "Contundente", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
 		]
 	},
 	{

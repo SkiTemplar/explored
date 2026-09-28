@@ -24,7 +24,7 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json` y `fases_futuras.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json`, `fases_futuras.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -63,8 +63,10 @@ Qué comprueba:
   (técnicas, elementos, ruinas por isla, caminos de estrellas, umbral de «Coleccionista»).
 - **Museo**: cada tesoro tiene un tipo de `story_es.json`, una malla de `tesoros.py` y
   algún hueco de mueble donde cabe; los muebles apuntan a piezas `museo` existentes.
-- **Logros (GDD §16, biblia 07 §2)**: entre 30 y 60, ids ASCII únicos, textos en ES y EN, los
-  ejemplos del GDD presentes, condiciones con estadísticas conocidas y de tipo
+- **Logros (GDD §16, biblia 07 §2)**: entre 40 y 60 con los 30 del GDD siempre presentes,
+  ids ASCII únicos, textos en ES y EN con la longitud de biblia 07 §1.3 en los nuevos, los
+  ejemplos del GDD presentes, `phase`, `rarity` y `coopScope` válidos (biblia 08 §5.7),
+  `strata_mined` igual a `mining.json → strata`, condiciones con estadísticas conocidas y de tipo
   compatible (la misma regla que `FAchievementsModel::Configure`), ids de conjuntos
   admitidos (listas cerradas o `items`/`plants`/`building_pieces`), metas alcanzables,
   y el catálogo de estadísticas igual al de `docs/tecnico/estadisticas.md`.
@@ -76,6 +78,23 @@ Qué comprueba:
   JSON: `--write-cooking` genera `Source/Explored/Cooking/FireData.inl` y
   `CookingData.inl` desde `fuels.json`, `recipes.json` e `items.json`, y la
   comprobación falla si el `.inl` no coincide con los datos.
+- **Metal en estación** (`smithing.py`, biblia 03 §2.2 y §4.3): `fuels.json/smeltingLevels`
+  (pieza de producción, cerrado, más calor, horas y brasas que el horno de arcilla,
+  combustibles existentes, id que no sea de `EFireLevel`) y `recipes_smithing.json`
+  (estación de producción, el fuego arde en su estación, sin estaciones con horno en
+  frío, cantidades 1-20, ingredientes y resultados existentes).
+- **Fuentes de los procesados**: lo que sale de una receta de `recipes.json` o de
+  `recipes_smithing.json` solo es obtenible si alguna de sus recetas se puede hacer
+  (punto fijo con las piezas construibles: el horno cuesta carbón, el yunque un
+  lingote). Un `lingote` sin receta o un ingrediente de fundición sin veta, chatarra
+  (`rescatado`) ni receta no cuenta como material en bruto, así que su falta arrastra a
+  las piezas y recetas que lo piden. Las vetas que alimentan una fundición existen en
+  alguna isla de fase 1; todo `mineral` sale de un estrato y todo `lingote` de una
+  receta de fundición.
+- **Guía anti-IA** (`textos.py`, biblia 07 §1): lista negra ES/EN, exclamaciones y emoji
+  en nombres de objetos, plantillas, piezas, recetas de metal y logros; límites de
+  §1.3 (nombre de 4 palabras sin puntuación final, descripción de una frase con 90/110
+  caracteres) en los logros que no son de los 30 del GDD.
 - **Barcos**: `boats.json` contra `EBoatType` y `FBoatDefinition::MeshName` (`Boats/`) y
   contra `EShipPart` (`Narrative/ExploredProgress.h`).
 - **Astillero** (`boats.json`): progresión balsa → canoa → balancín → «Limón», estación
