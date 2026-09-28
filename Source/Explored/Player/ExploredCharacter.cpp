@@ -26,6 +26,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
+#include "Mining/TerrainToolComponent.h"
 #include "Player/SwimComponent.h"
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
@@ -118,6 +119,7 @@ AExploredCharacter::AExploredCharacter()
 	BuildPreview = CreateDefaultSubobject<UBuildPreviewComponent>(TEXT("BuildPreview"));
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
+	TerrainTool = CreateDefaultSubobject<UTerrainToolComponent>(TEXT("TerrainTool"));
 
 	bUseControllerRotationYaw = true;
 
@@ -723,6 +725,11 @@ void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 	{
 		return;
 	}
+	// Pico o pala en la mano: el clic cava (UTerrainToolComponent).
+	if (TerrainTool && TerrainTool->TryUseFromHands(Carry, false))
+	{
+		return;
+	}
 	// «Clic izquierdo = usar la mano derecha» (encargo, punto 5).
 	UseHand(EHand::Right);
 }
@@ -730,6 +737,10 @@ void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 void AExploredCharacter::HandleUseSecondary(const FInputActionValue&)
 {
 	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
+	{
+		return;
+	}
+	if (TerrainTool && TerrainTool->TryUseFromHands(Carry, true))
 	{
 		return;
 	}

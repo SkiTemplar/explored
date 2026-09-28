@@ -14,6 +14,7 @@
 #include "GameFramework/Pawn.h"
 #include "Misc/CommandLine.h"
 #include "Cartography/CartographyComponent.h"
+#include "Mining/TerrainSyncComponent.h"
 #include "Player/ExploredCharacter.h"
 #include "Ruins/RuinsSubsystem.h"
 #include "Survival/BodySignalsComponent.h"
@@ -64,6 +65,7 @@ namespace ExploredUI
 AExploredPlayerController::AExploredPlayerController()
 {
 	bShowMouseCursor = true;
+	TerrainSync = CreateDefaultSubobject<UTerrainSyncComponent>(TEXT("TerrainSync"));
 }
 
 void AExploredPlayerController::BeginPlay()

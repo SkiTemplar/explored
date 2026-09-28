@@ -15,6 +15,7 @@ class SExploredSavingIndicator;
 class SExploredSettingsPanel;
 class UExploredGameUserSettings;
 class UExploredSaveSubsystem;
+class UTerrainSyncComponent;
 
 /** Modos de interfaz del PlayerController (GDD §10). */
 UENUM(BlueprintType)
@@ -149,6 +150,10 @@ public:
 	/** Ruta del mapa a la que vuelve «Salir al menú» (GameDefaultMap, ver Config/DefaultEngine.ini). */
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|UI")
 	FName MainMenuMapName = "/Game/Maps/Archipelago";
+
+	/** Réplica del terreno editado servidor → este cliente (biblia 08 §2.2). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Terreno")
+	TObjectPtr<UTerrainSyncComponent> TerrainSync;
 
 private:
 	void HandleEscape();
