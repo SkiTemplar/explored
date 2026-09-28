@@ -148,19 +148,19 @@ encima de la cabeza remota, sin reescribir historia.
 | PR | Rama | Decisión | Por qué |
 |---|---|---|---|
 | #44 | `nocturno/revision-2026-09-27c` | Sin cambios: `necesita-unreal` | No tiene commits nuevos desde la 01:00. |
-| #46 | `nube/mundo-2026-09-27` | Cambios pedidos (arreglo subido) | Las contradicciones de la 01:00 están resueltas, pero quedan dos nuevas con la biblia (ver abajo). |
+| #46 | `nube/mundo-2026-09-27` | A la espera de que el director confirme (arreglo y merge de `main` subidos) | Todo lo pedido está resuelto (ver abajo). Solo falta que el director confirme dos notas de la biblia que se le atribuyen. |
 | #49 | `nocturno/revision-2026-09-28` | Sigue `necesita-unreal` (arreglo subido) | Los commits nuevos de audio y packs están bien. `M_Ocean` sigue sin poder verificarse aquí. |
 | #50 | `nocturno/datos-2026-09-28` | Pendiente del director (arreglo y merge de `main` subidos) | Los tres fallos serios están resueltos. `33f2370` reescribe la biblia 02 §2.2 sin aprobación del director. |
 | #51 | `nube/mecanicas-2026-09-28` | Cambios pedidos, duplicada | #53 la contiene entera. Se propone cerrarla. |
 | #53 | `nube/mundo-2026-09-28` | Cambios pedidos (arreglo subido) | El modelo sigue contradiciendo la biblia 02 §8 y la 03. Solo está documentado como «pendiente de decisión». |
 | #56 | `nube/packs-2026-09-28` | **Fusionada** (`37c090a`) | Solo toca datos JSON, `Tools/Packs`, `Tools/DataCheck` y una hoja de contacto. |
-| #57 | `nube/mecanicas-2026-09-28-railes` | **Fusionada** | Es un modelo puro `FTramwayModel` [F2] con su spec y documentación. Los fallos serios se arreglaron en la rama. |
+| #57 | `nube/mecanicas-2026-09-28-railes` | **Fusionada** (`7641441`) | Es un modelo puro `FTramwayModel` [F2] con su spec y documentación. Los fallos serios se arreglaron en la rama. |
 
 ### Comprobaciones
 
 | PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
 |---|---|---|---|---|
-| #46 | 694 / 0 fallos | 694 / 0 fallos | — | — |
+| #46 | 727 / 0 fallos (con #57 y `2ce1cc4`) | 727 / 0 fallos | — | — |
 | #49 | — | — | 0 errores · 119 passed | Audio: 32 passed, más loudness, pico y determinismo de los 5 sonidos tocados · Packs: 7 passed · Textures: 292 passed |
 | #50 | — | — | 0 errores · 162 passed | Localization: 27 passed · `export --check` ok |
 | #51 | 673 / 0 fallos | 673 / 0 fallos | — | — |
@@ -192,16 +192,20 @@ encima de la cabeza remota, sin reescribir historia.
   por cero.
 - **#57 `e21f8f9`:** la §3.5 deja de atribuir al director el detalle del modelo.
 
-### #46: lo que falta
+### #46: estado
 
-- **Rampa del oleaje:** la PR sube hasta el 60 % (75 % en marea viva) en la bajamar,
-  frente al 20 %/35 % de la biblia 02 §5.2. Hay que llevar la rampa a la biblia con la
-  aprobación del director o volver al 20 % plano.
-- **Formato en red:** la PR usa un campo de alturas propio y no deltas de densidad
-  (biblia 02 §5.1 y 08 §2.6), y no define el paquete.
-- **Menores:**
-  - no hay ráfaga de hasta 4 iteraciones cuando se acerca un jugador;
-  - la avalancha puede pasar el tope de 2000 mm de `FromValue`.
+- **Primera respuesta de la integración:** se pidieron dos cosas. Una era llevar la rampa
+  del oleaje (hasta el 60 %/75 %) a la biblia con la aprobación del director, o volver al
+  20 % plano. La otra era definir el paquete de red de la arena. También se señalaron la
+  falta de ráfaga al volver un jugador y el tope de 2000 mm.
+- **El autor lo resolvió** con `31dfba8` y `2ce1cc4`:
+  - paquete versión 2 con capa de arena, validado entero antes de aplicar;
+  - la ráfaga de hasta 4 revisiones;
+  - el tope de la avalancha.
+- **Merge de `main` tras #57 (`229d853`):** conflicto trivial en `pure_*.txt`.
+- **Bloqueo:** `2ce1cc4` añade a la biblia 02 §5.1 y §5.2 dos notas «[director,
+  2026-09-27]» que citan un encargo que no está en el repo. Falta que el director las
+  confirme. Con eso, se fusiona en la próxima ejecución.
 
 ### #57: notas para el director
 
@@ -212,16 +216,14 @@ encima de la cabeza remota, sin reescribir historia.
   - 17,4° de pendiente máxima.
 - Un tramo dañado hace descarrilar al vagón, incluso si está parado encima. La biblia
   02 §9 solo dice «no navegable».
-- Hay un choque trivial con #46 en `pure_sources.txt` y `pure_specs.txt`: las dos añaden
-  una línea al final.
 
 ### Duplicados y choques
 
 - #51 está contenida en #53.
 - #50 chocaba con #56 en `test_datacheck.py`. Ya se resolvió con `0680cac`.
 - #49 y #56 no chocan.
-- #46 y #57 añaden cada una una línea a `pure_*.txt`. Quien fusione la segunda tendrá que
-  conservar las dos.
+- #46 y #57 añadían cada una una línea a `pure_*.txt`. Después de fusionar #57, se resolvió
+  en #46 (`229d853`).
 
 ### 00-TODO.md
 
