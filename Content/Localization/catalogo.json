@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 639,
+		"total": 648,
 		"cpp": 303,
-		"datos": 336,
+		"datos": 345,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -4848,6 +4848,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "rizoma_curcuma.nameEs",
+			"es": "Rizoma de cúrcuma silvestre",
+			"en": "Wild turmeric root",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «rizoma_curcuma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "sal_marina.nameEs",
 			"es": "Sal marina",
 			"en": "Sea salt",
@@ -5038,12 +5048,32 @@
 		},
 		{
 			"namespace": "Data.plants.plants",
+			"key": "aloe.nameEs",
+			"es": "Aloe",
+			"en": "Aloe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
 			"key": "batata.nameEs",
 			"es": "Batata",
 			"en": "Sweet potato",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/plants.json «batata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "curcuma.nameEs",
+			"es": "Cúrcuma silvestre",
+			"en": "Wild turmeric",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma» nameEs/nameEn"
 			]
 		},
 		{
@@ -5098,6 +5128,36 @@
 		},
 		{
 			"namespace": "Data.plants.stages",
+			"key": "aloe.hijuelo.nameEs",
+			"es": "Hijuelo",
+			"en": "Offset",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.hijuelo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "aloe.hojas_carnosas.nameEs",
+			"es": "Hojas carnosas",
+			"en": "Fleshy leaves",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.hojas_carnosas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "aloe.roseta.nameEs",
+			"es": "Roseta",
+			"en": "Rosette",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.roseta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
 			"key": "batata.brote.nameEs",
 			"es": "Brote",
 			"en": "Sprout",
@@ -5124,6 +5184,36 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/plants.json «batata.listo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.hojas_anchas.nameEs",
+			"es": "Hojas anchas",
+			"en": "Broad leaves",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.hojas_anchas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.listo.nameEs",
+			"es": "Listo para arrancar",
+			"en": "Ready to pull up",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.listo» nameEs/nameEn"
 			]
 		},
 		{
