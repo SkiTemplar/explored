@@ -12,6 +12,7 @@ y la pieza falla: nunca se procesa un fichero distinto del que se reviso.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import time
@@ -24,6 +25,7 @@ import numpy as np
 import soundfile as sf
 
 from ..constants import SAMPLE_RATE
+from .oggflac import is_ogg_flac, ogg_flac_to_flac
 from .loudness import integrated_lufs, sample_peak_dbfs
 from .process import process
 from .sources import Piece, SourceList
@@ -134,6 +136,15 @@ def measure_ogg(path: Path) -> dict[str, float]:
     }
 
 
+def read_audio(path: Path) -> tuple[np.ndarray, int]:
+    """Lee cualquier original de la lista. El FLAC en Ogg se desenvuelve a
+    FLAC nativo en memoria (libsndfile no lo abre); el resto va directo."""
+    data = path.read_bytes()
+    if is_ogg_flac(data):
+        return sf.read(io.BytesIO(ogg_flac_to_flac(data)), dtype="float64", always_2d=True)
+    return sf.read(path, dtype="float64", always_2d=True)
+
+
 def build_piece(cache: Path, sources: SourceList, piece: Piece, force: bool = False) -> dict:
     src, _ = ensure_original(cache, piece)
     out = ogg_path(cache, piece)
@@ -142,7 +153,7 @@ def build_piece(cache: Path, sources: SourceList, piece: Piece, force: bool = Fa
     key = f"{piece.sha256}:{sources.target_lufs}:{sources.peak_ceiling_dbfs}:{VORBIS_COMPRESSION}"
     if not force and out.exists() and stamp.exists() and stamp.read_text().strip() == key:
         return {"id": piece.id, "cached": True, **measure_ogg(out)}
-    audio, fs = sf.read(src, dtype="float64", always_2d=True)
+    audio, fs = read_audio(src)
     processed, report = process(audio, fs, sources.target_lufs, sources.peak_ceiling_dbfs)
     export_ogg(out, processed, piece)
     stamp.write_text(key + "\n")
