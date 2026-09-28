@@ -31,13 +31,24 @@ from pathlib import Path
 import numpy as np
 import soundfile
 
-# Fuente: https://github.com/musescore/MuseScore/blob/main/share/sound/FluidR3Mono_GM.sf3
-# Licencia: MIT (Frank Wen 2000-2002, conversion mono Michael Cowgill 2014-17,
+# Fuente: repositorio oficial de MuseScore, fijado a un commit concreto (la
+# rama `main` puede cambiar el fichero y romper el hash sin aviso).
+# Licencia: MIT (Frank Wen 2000-2002, conversion mono Michael Cowgill 2014-17;
 # texto completo en THIRD_PARTY_SOUNDFONT.md, copiado de FluidR3Mono_License.md
-# del mismo repositorio).
-SOUNDFONT_URL = "https://raw.githubusercontent.com/musescore/MuseScore/main/share/sound/FluidR3Mono_GM.sf3"
+# del mismo commit, que tambien se descarga y se verifica junto al soundfont).
+MUSESCORE_COMMIT = "894e82c1b12937021eb024305ef21c64335e21ce"
+_MUSESCORE_RAW = f"https://raw.githubusercontent.com/musescore/MuseScore/{MUSESCORE_COMMIT}/share/sound"
+SOUNDFONT_URL = f"{_MUSESCORE_RAW}/FluidR3Mono_GM.sf3"
 SOUNDFONT_SHA256 = "2aacd036d7058d40a371846ef2f5dc5f130d648ab3837fe2626591ba49a71254"
 SOUNDFONT_FILENAME = "FluidR3Mono_GM.sf3"
+SOUNDFONT_LICENSE_URL = f"{_MUSESCORE_RAW}/FluidR3Mono_License.md"
+SOUNDFONT_LICENSE_SHA256 = "0fa7d85b3114adb91cebd42fe955e22df6b19917e9c8e19c401080c075975636"
+SOUNDFONT_LICENSE_FILENAME = "FluidR3Mono_License.md"
+SOUNDFONT_LICENSE = "MIT"
+# Por encima de este tamaño un recurso de terceros no se versiona nunca (ni
+# siquiera con LFS): se descarga a la cache. El soundfont ronda los 24 MB,
+# pero tampoco se versiona: descargarlo y verificarlo cuesta segundos.
+MAX_VERSIONED_BYTES = 50 * 1024 * 1024
 
 # Fuente: https://github.com/FluidSynth/fluidsynth/releases/tag/v2.6.1 (build oficial
 # de la propia organizacion FluidSynth, licencia LGPL). Solo se usa como
@@ -82,13 +93,31 @@ def _download_verified(url: str, dest: Path, expected_sha256: str) -> None:
     tmp.replace(dest)
 
 
+# Ficheros de la cache cuyo hash ya se comprobo en este proceso (hashear
+# 24 MB en cada pieza renderizada seria tiempo perdido).
+_verified: set[Path] = set()
+
+
+def _ensure_cached(url: str, dest: Path, expected_sha256: str) -> Path:
+    """Devuelve `dest` verificado por SHA256. Si falta, lo descarga; si esta
+    pero no coincide (descarga a medias de otra version, fichero tocado a
+    mano), lo descarta y lo vuelve a descargar en vez de usarlo."""
+    if dest in _verified and dest.exists():
+        return dest
+    if dest.exists() and _sha256(dest) != expected_sha256:
+        dest.unlink()
+    if not dest.exists():
+        _download_verified(url, dest, expected_sha256)
+    _verified.add(dest)
+    return dest
+
+
 def ensure_soundfont() -> Path:
     """Descarga (si hace falta) y devuelve la ruta local al soundfont, ya
-    verificado por SHA256."""
-    dest = _cache_dir() / "soundfont" / SOUNDFONT_FILENAME
-    if not dest.exists():
-        _download_verified(SOUNDFONT_URL, dest, SOUNDFONT_SHA256)
-    return dest
+    verificado por SHA256, junto con el texto de su licencia."""
+    folder = _cache_dir() / "soundfont"
+    _ensure_cached(SOUNDFONT_LICENSE_URL, folder / SOUNDFONT_LICENSE_FILENAME, SOUNDFONT_LICENSE_SHA256)
+    return _ensure_cached(SOUNDFONT_URL, folder / SOUNDFONT_FILENAME, SOUNDFONT_SHA256)
 
 
 def ensure_fluidsynth() -> Path:

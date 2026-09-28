@@ -25,7 +25,8 @@ def main() -> int:
     print(f"Soundfont: {soundfont.SOUNDFONT_URL}")
     sf_path = soundfont.ensure_soundfont()
     print(f"  -> {sf_path} ({sf_path.stat().st_size / 1_000_000:.1f} MB, SHA256 verificado)")
-    print("  Licencia: MIT -- ver Tools/Audio/THIRD_PARTY_SOUNDFONT.md")
+    print(f"  Licencia: {soundfont.SOUNDFONT_LICENSE} -- texto en {sf_path.parent / soundfont.SOUNDFONT_LICENSE_FILENAME}")
+    print("  Creditos y procedencia: Tools/Audio/THIRD_PARTY_SOUNDFONT.md")
 
     print(f"FluidSynth: {soundfont.FLUIDSYNTH_URL}")
     fs_path = soundfont.ensure_fluidsynth()

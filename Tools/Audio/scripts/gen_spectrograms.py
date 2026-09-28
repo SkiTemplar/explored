@@ -53,15 +53,22 @@ def plot_spectrogram(audio: np.ndarray, name: str, out_path: Path) -> None:
     plt.close(fig)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--musica", action="store_true", help="solo la musica (y la muestra de flauta)")
+    args = parser.parse_args(argv)
+
     out_dir = default_output_root() / "_spectrograms"
     for spec in build_catalog():
-        if spec.category != "Ambiente":
+        if args.musica or spec.category != "Ambiente":
             continue
         audio = render_by_name(spec.name)
         plot_spectrogram(audio, spec.name, out_dir / f"{spec.name}.png")
         print(f"  {spec.name} -> {out_dir / (spec.name + '.png')}")
-    print(f"\nEspectrogramas de ambiente en {out_dir}")
+    if not args.musica:
+        print(f"\nEspectrogramas de ambiente en {out_dir}")
 
     # Musica: una imagen por pista/capa (mas la muestra de flauta diegetica,
     # que comparte instrumento y renderizador), en Saved/AudioPreview -para
