@@ -19,13 +19,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
-| H2 — Minería y construcción | 3 | 28 | 31 |
+| H2 — Minería y construcción | 4 | 27 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **10** | **197** | **207** |
+| **Total** | **11** | **196** | **207** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -197,8 +197,10 @@ biblia 08 §7.3 pasan en condiciones «Normal».
       ancho de banda, no una estimación). *(biblia 08 §3)*
       *(modelo puro ya implementado: `FNetBudgetModel` (`Source/Explored/Debug/NetBudgetModel.h/.cpp`,
       spec `Tests/NetBudgetModelSpec.cpp`) acumula bytes por canal/cliente, cierra
-      segundos y valida contra `RestKbpsLimit`/`PeakKbpsLimit`; falta registrar el
-      comando de consola en el motor y el volcado a CSV.)*
+      segundos, valida la serie con `ValidateSeries` (techo de reposo o pico por
+      segundo, ráfaga de terreno de 128 kbps durante 5 s como máximo) y da el texto del
+      CSV con `ToCsv`; falta registrar el comando de consola en el motor, engancharlo a
+      los bytes reales de cada canal y escribir el fichero.)*
 - [ ] `Tools/net-test.ps1` (nuevo): arranca PIE como servidor de escucha con 2 o 4
       clientes, aplica los perfiles «Normal»/«Mala»/«Horrible» de `net pktlag`/
       `pktlagvariance`/`pktloss`/`pktorder` y recoge el CSV de `Explored.NetBudget`.
@@ -433,18 +435,28 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
       *(implementado como modelo puro: `FTerrainDeltaCodecModel`
       (`Source/Explored/WorldGen/TerrainDeltaCodecModel.h/.cpp`), spec
-      `Tests/TerrainDeltaCodecModelSpec.cpp` — ida y vuelta exacta, límites de paquete,
-      `Canonicalize` idempotente/conmutativa y rechazo de paquetes corruptos o truncados,
-      todo cubierto.)*
-- [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
+      `Tests/TerrainDeltaCodecModelSpec.cpp` — ida y vuelta exacta (también en 200
+      parches pseudoaleatorios), límites de paquete (512 B justos con un tramo de 250),
+      cuantización a mm con saturación, `DecodeAndApply` atómico, fusión idempotente y
+      conmutativa en el estado del cliente, cualquier byte cambiado rechazado o detectado
+      por la comprobación del chunk, y 20 000 buffers basura sin reventar.)*
+      *(Pendiente de diseño: un delta de más de ±32,767 m no cabe en el `int16` del
+      cable. `FTerrainDensity` es una distancia a la superficie, así que una galería a
+      más de ~32 m de profundidad lo supera; el códec la rechaza y la cuenta en vez de
+      truncarla, pero hay que decidir si se acota el delta en `FTerrainEditModel` o se
+      cambia el formato.)*
+- [x] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
       muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
       para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.
       *(biblia 08 §2.2)*
-      *(modelo puro parcial: `FTerrainDeltaQueueModel`
+      *(modelo puro: `FTerrainDeltaQueueModel`
       (`Source/Explored/WorldGen/TerrainDeltaQueueModel.h/.cpp`), spec
-      `Tests/TerrainDeltaQueueModelSpec.cpp` — fusión por chunk, presupuesto de 8 KB/s
-      con ráfaga de 16 KB/s/5 s y prioridad a < 30 m ya probados; falta el filtro de
-      relevancia a 120 m, que depende del streaming de World Partition.)*
+      `Tests/TerrainDeltaQueueModelSpec.cpp` — fusión por chunk (también a medio enviar),
+      envío paquete a paquete, cubo sostenido de 8 KB/s con 40 KB de crédito más ventana
+      deslizante de 16 KB por segundo, prioridad a < 30 m y relevancia a 120 m. La
+      distancia la pasa el componente de red (la menor entre el personaje y los chunks
+      que el cliente tiene cargados por World Partition), que se engancha con la RPC de
+      la casilla siguiente.)*
 - [ ] `WorldGen`: aplicar los deltas recibidos al `FTerrainEditModel` del cliente y
       remallar con `FTerrainChunkBuilder::Build` coalescido a 250 ms por chunk; el cliente
       nunca aplica su propia edición antes de recibirla del servidor. *(biblia 08 §2.2)*
@@ -455,8 +467,10 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       *(modelo puro ya implementado: `FTerrainChunkChecksumModel` y su `FTracker`
       (`Source/Explored/WorldGen/TerrainChunkChecksumModel.h/.cpp`), spec
       `Tests/TerrainChunkChecksumModelSpec.cpp` — FNV-1a de 32 bits determinista,
-      calendario de 30 s por chunk y detección de desincronización; falta la RPC que
-      manda la comprobación y pide el chunk completo.)*
+      calendario de 30 s por chunk, detección de desincronización, «delta 0 = sin
+      tocar» y reloj que retrocede; `FTerrainDeltaCodecModel::SamplesOf` da ya el chunk
+      completo en el mismo formato de tramos. Falta la RPC que manda la comprobación y
+      pide el chunk completo.)*
 - [ ] `Building`: colocación autoritativa (`Server_PlacePiece` que valida encaje, rejilla
       de 2 m, materiales en la copia del servidor y `RecomputeStability` antes de generar
       el actor); el fantasma de `UBuildPreviewComponent` queda puramente local;
