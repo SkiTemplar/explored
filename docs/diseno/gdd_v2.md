@@ -287,9 +287,10 @@ mapa.
 - **Dependencias:** `Building` (piezas de vía), `Mining` (galerías), un nuevo módulo
   ligero `Tramway` (grafo de vía + vagón).
 - **Reglas y números del modelo [F2]** (modelo puro `FTramwayModel`, spec
-  `Explored.Tramway`; integración en `docs/tecnico/railes-vagones.md`). La mecánica
-  (tramos sobre rejilla, pendiente máxima, inercia del vagón con su carga) la aprobó
-  Rodrigo el 2026-09-27. Los números marcados con *(biblia)* vienen de la biblia 02 §9;
+  `Explored.Tramway`; integración en `docs/tecnico/railes-vagones.md`). El alcance
+  (raíles y vagones en [F2]) lo decidió el director el 2026-09-27 (biblia 02 §9); el
+  detalle del modelo (tramos sobre rejilla, pendiente máxima, inercia del vagón con su
+  carga) está pendiente de validar. Los números marcados con *(biblia)* vienen de la biblia 02 §9;
   el resto es **propuesta pendiente de revisar**:
   - **Vía sobre rejilla.** Nodos cada **2 m** en horizontal *(biblia)* y cada
     **12,5 cm** en vertical. Un tramo une dos nodos vecinos en una de las 4 direcciones
