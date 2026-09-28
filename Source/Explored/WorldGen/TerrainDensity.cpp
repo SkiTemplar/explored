@@ -1,6 +1,7 @@
 #include "WorldGen/TerrainDensity.h"
 
 #include "Core/ExploredRandom.h"
+#include "WorldGen/TerrainEdits.h"
 #include "Misc/ScopeLock.h"
 
 namespace
@@ -446,6 +447,22 @@ FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 }
 
 float FTerrainDensity::DensityWithColumn(const FVector& P, const FTerrainColumn& Column) const
+{
+	// La capa de ediciones va primero: fuera de los chunks editados no suma nada.
+	float Delta = 0.0f;
+	if (Edits)
+	{
+		Edits->DeltaAt(P, Delta);
+	}
+	return ProceduralDensityWithColumn(P, Column) + Delta;
+}
+
+float FTerrainDensity::ProceduralDensity(const FVector& P) const
+{
+	return ProceduralDensityWithColumn(P, SampleColumn(P.X, P.Y));
+}
+
+float FTerrainDensity::ProceduralDensityWithColumn(const FVector& P, const FTerrainColumn& Column) const
 {
 	float D = P.Z - Column.Height;
 
