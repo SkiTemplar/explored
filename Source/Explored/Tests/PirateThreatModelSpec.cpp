@@ -62,6 +62,9 @@ void FPirateThreatModelSpec::Define()
 		{
 			TestEqual(TEXT("saqueador"), FPirateThreatModel::Stats(EPirateType::Raider).Health, 40.0f);
 			TestEqual(TEXT("saqueador daño"), FPirateThreatModel::Stats(EPirateType::Raider).Damage, 9.0f);
+			// Machete: 1,2 m, el mismo alcance que el del jugador (biblia 05 §3.1).
+			TestEqual(TEXT("saqueador alcance"), FPirateThreatModel::Stats(EPirateType::Raider).RangeM, 1.2f);
+			TestEqual(TEXT("capitán alcance"), FPirateThreatModel::Stats(EPirateType::Captain).RangeM, 1.2f);
 			TestEqual(TEXT("arquero"), FPirateThreatModel::Stats(EPirateType::Archer).Health, 30.0f);
 			TestEqual(TEXT("arquero alcance"), FPirateThreatModel::Stats(EPirateType::Archer).RangeM, 15.0f);
 			TestEqual(TEXT("incendiario"), FPirateThreatModel::Stats(EPirateType::Firestarter).Health, 35.0f);

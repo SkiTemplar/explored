@@ -93,12 +93,13 @@ int32 FRaidParty::Num(EPirateType Type) const
 FPirateStats FPirateThreatModel::Stats(EPirateType Type)
 {
 	FPirateStats S;
+	// El machete alcanza 1,2 m, como el del jugador (biblia 05 §3.1): mismo formulario para todos.
 	switch (Type)
 	{
-	case EPirateType::Raider: S.Health = 40.0f; S.Damage = 9.0f; S.RangeM = 1.5f; break;
+	case EPirateType::Raider: S.Health = 40.0f; S.Damage = 9.0f; S.RangeM = 1.2f; break;
 	case EPirateType::Archer: S.Health = 30.0f; S.Damage = 9.0f; S.RangeM = 15.0f; break;
 	case EPirateType::Firestarter: S.Health = 35.0f; S.Damage = 0.0f; S.RangeM = 12.0f; break;
-	case EPirateType::Captain: S.Health = 90.0f; S.Damage = 15.0f; S.RangeM = 1.5f; S.bStuns = true; break;
+	case EPirateType::Captain: S.Health = 90.0f; S.Damage = 15.0f; S.RangeM = 1.2f; S.bStuns = true; break;
 	default: break;
 	}
 	return S;
