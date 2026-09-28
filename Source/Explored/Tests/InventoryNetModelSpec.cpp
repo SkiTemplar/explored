@@ -176,7 +176,10 @@ void FInventoryNetModelSpec::Define()
 			TArray<FInventoryNetEntry> Entries;
 			TArray<FInventoryNetSkip> Skipped;
 			TMap<int64, FInventoryNetExtras> Extras;
-			Extras.Add(Canteen.InstanceId, { 0.5f, static_cast<uint8>(InventoryNetFlags::Wet | InventoryNetFlags::TwoHanded) });
+			FInventoryNetExtras CanteenExtras;
+			CanteenExtras.Durability01 = 0.5f;
+			CanteenExtras.Flags = static_cast<uint8>(InventoryNetFlags::Wet | InventoryNetFlags::TwoHanded);
+			Extras.Add(Canteen.InstanceId, CanteenExtras);
 			FInventoryNetModel::BuildSnapshot(Model.GetState(), Table, Extras, Entries, Skipped);
 			TestEqual(TEXT("Cuatro entradas: tronco, piedras, cantimplora y mochila"), Entries.Num(), 4);
 			TestEqual(TEXT("Nada se queda fuera"), Skipped.Num(), 0);

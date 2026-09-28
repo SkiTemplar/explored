@@ -103,7 +103,10 @@ void FInventoryNetModel::BuildSnapshot(const FInventoryState& State, const FCont
 		if (NetDefinition == FContentIdTableModel::InvalidNetId || Item.InstanceId <= 0
 			|| Item.InstanceId > static_cast<int64>(MAX_uint32) || SlotIndex < 0 || SlotIndex > 255)
 		{
-			OutSkipped.Add({ Item.InstanceId, Item.DefinitionId });
+			FInventoryNetSkip Skip;
+			Skip.InstanceId = Item.InstanceId;
+			Skip.DefinitionId = Item.DefinitionId;
+			OutSkipped.Add(Skip);
 			return;
 		}
 		FInventoryNetEntry Entry;

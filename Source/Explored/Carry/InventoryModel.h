@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/Function.h"
 
 /**
  * Inventario diegético (GDD §8.2, biblia §3.8 y §3.9) como modelo puro.
