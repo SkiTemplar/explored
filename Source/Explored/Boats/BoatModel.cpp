@@ -1,5 +1,7 @@
 #include "Boats/BoatModel.h"
 
+#include "Boats/BoatPiecesModel.h"
+
 #include "Ocean/OceanCurrents.h"
 #include "Ocean/OceanWaves.h"
 #include "Weather/WeatherModel.h"
@@ -30,7 +32,12 @@ const TCHAR* LexToString(EBoatCondition Condition)
 
 namespace BoatModelDetail
 {
-	/** Tabla de embarcaciones. Medidas de Tools/Blender/props/boats.py; el «Limón» es una canoa doble sin malla aún. */
+	/**
+	 * Tacto de mando de cada embarcación: paladas, amortiguamientos, vuelco dinámico y daño.
+	 * La física del casco (eslora, manga, puntal, masa, flotación, carga, vela y altura
+	 * metacéntrica) no está aquí: sale de las piezas del plano canónico
+	 * (FBoatPiecesModel::Blueprint, biblia 02 §8.2).
+	 */
 	FBoatDefinition MakeDefinition(EBoatType Type)
 	{
 		FBoatDefinition D;
@@ -38,14 +45,8 @@ namespace BoatModelDetail
 		switch (Type)
 		{
 		case EBoatType::Raft:
-			// Ocho troncos de 20 cm × 2,2 m atados en 1,6 m de ancho: muy estable, lenta y sin quilla.
+			// Siete troncos de 2,2 m sobre dos travesaños: muy estable, lenta y sin orza.
 			D.MeshName = TEXT("SM_Raft");
-			D.LengthCm = 220.0f;
-			D.BeamCm = 160.0f;
-			D.HullDepthCm = 22.0f;
-			D.HullMassKg = 160.0f;
-			D.WaterplaneCoefficient = 0.9f;
-			D.MaxCargoKg = 120.0f;
 			D.MaxPaddleSpeedCmS = 100.0f;
 			D.PaddleThrustN = 30.0f;
 			D.StrokeDurationS = 0.9f;
@@ -55,7 +56,6 @@ namespace BoatModelDetail
 			D.YawTimeConstantS = 1.2f;
 			D.RudderTurnRateDegS = 8.0f;
 			D.WindageAreaM2 = 0.8f;
-			D.MetacentricHeightCm = 200.0f;
 			D.RollPeriodS = 1.6f;
 			D.RollDamping = 0.18f;
 			D.WaveRollResponse = 1.0f;
@@ -67,14 +67,8 @@ namespace BoatModelDetail
 			D.ImpactDamageScale = 0.5f;
 			break;
 		case EBoatType::Canoe:
-			// Tronco excavado de 4 m y 68 cm de manga: rápida remando pero celosa.
+			// Canoa de tablones de 4 m y 68 cm de manga: rápida remando pero celosa.
 			D.MeshName = TEXT("SM_Canoe");
-			D.LengthCm = 400.0f;
-			D.BeamCm = 68.0f;
-			D.HullDepthCm = 50.0f;
-			D.HullMassKg = 90.0f;
-			D.WaterplaneCoefficient = 0.62f;
-			D.MaxCargoKg = 150.0f;
 			D.MaxPaddleSpeedCmS = 250.0f;
 			D.PaddleThrustN = 55.0f;
 			D.StrokeDurationS = 0.7f;
@@ -84,7 +78,6 @@ namespace BoatModelDetail
 			D.YawTimeConstantS = 2.0f;
 			D.RudderTurnRateDegS = 18.0f;
 			D.WindageAreaM2 = 0.5f;
-			D.MetacentricHeightCm = 15.0f;
 			D.RollPeriodS = 1.8f;
 			D.RollDamping = 0.12f;
 			D.WaveRollResponse = 1.0f;
@@ -95,12 +88,6 @@ namespace BoatModelDetail
 		case EBoatType::Outrigger:
 			// La misma canoa con flotador a 1,2 m, mástil de 2,5 m y vela: el mar abierto.
 			D.MeshName = TEXT("SM_Canoe_Outrigger");
-			D.LengthCm = 400.0f;
-			D.BeamCm = 160.0f;
-			D.HullDepthCm = 50.0f;
-			D.HullMassKg = 140.0f;
-			D.WaterplaneCoefficient = 0.33f;
-			D.MaxCargoKg = 250.0f;
 			D.MaxPaddleSpeedCmS = 220.0f;
 			D.PaddleThrustN = 55.0f;
 			D.StrokeDurationS = 0.7f;
@@ -109,10 +96,7 @@ namespace BoatModelDetail
 			D.LateralResistance = 45.0f;
 			D.YawTimeConstantS = 2.5f;
 			D.RudderTurnRateDegS = 16.0f;
-			D.SailAreaM2 = 4.5f;
-			D.SailCenterOfEffortCm = 130.0f;
 			D.WindageAreaM2 = 0.7f;
-			D.MetacentricHeightCm = 90.0f;
 			D.RollPeriodS = 2.6f;
 			D.RollDamping = 0.3f;
 			D.WaveRollResponse = 0.45f;
@@ -125,12 +109,6 @@ namespace BoatModelDetail
 			// Canoa doble de 6,5 m con chapa y tubos del Albatros, amarilla: el viaje final.
 			D.Type = EBoatType::Limon;
 			D.MeshName = TEXT("");
-			D.LengthCm = 650.0f;
-			D.BeamCm = 280.0f;
-			D.HullDepthCm = 70.0f;
-			D.HullMassKg = 420.0f;
-			D.WaterplaneCoefficient = 0.28f;
-			D.MaxCargoKg = 500.0f;
 			D.MaxPaddleSpeedCmS = 150.0f;
 			D.PaddleThrustN = 80.0f;
 			D.StrokeDurationS = 1.0f;
@@ -139,10 +117,7 @@ namespace BoatModelDetail
 			D.LateralResistance = 70.0f;
 			D.YawTimeConstantS = 3.0f;
 			D.RudderTurnRateDegS = 12.0f;
-			D.SailAreaM2 = 12.0f;
-			D.SailCenterOfEffortCm = 200.0f;
 			D.WindageAreaM2 = 1.5f;
-			D.MetacentricHeightCm = 160.0f;
 			D.RollPeriodS = 3.4f;
 			D.RollDamping = 0.3f;
 			D.WaveRollResponse = 0.4f;
@@ -162,7 +137,8 @@ namespace BoatModelDetail
 		{
 			for (int32 I = 0; I < static_cast<int32>(EBoatType::Count); ++I)
 			{
-				Entries[I] = MakeDefinition(static_cast<EBoatType>(I));
+				const EBoatType Type = static_cast<EBoatType>(I);
+				Entries[I] = FBoatPiecesModel::Blueprint(Type).ToBoatDefinition(MakeDefinition(Type));
 			}
 		}
 	};

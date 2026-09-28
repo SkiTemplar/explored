@@ -710,6 +710,8 @@ struct TCString
 	static int32 Atoi(const T* S) { return S ? (int32)std::strtol(S, nullptr, 10) : 0; }
 	static int64 Atoi64(const T* S) { return S ? (int64)std::strtoll(S, nullptr, 10) : 0; }
 	static int32 Strlen(const T* S) { return S ? (int32)std::strlen(S) : 0; }
+	/** Como en Unreal: distingue mayúsculas; <0, 0 o >0. */
+	static int32 Strcmp(const T* A, const T* B) { return std::strcmp(A, B); }
 };
 using FCString = TCString<TCHAR>;
 using FCStringAnsi = TCString<ANSICHAR>;

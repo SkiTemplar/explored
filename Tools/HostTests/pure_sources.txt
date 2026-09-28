@@ -2,6 +2,7 @@
 Achievements/AchievementsModel.cpp
 Audio/MusicDirectorModel.cpp
 Boats/BoatModel.cpp
+Boats/BoatPiecesModel.cpp
 Boats/HullAssemblyModel.cpp
 Boats/RaftYardModel.cpp
 Building/BuildingModel.cpp
