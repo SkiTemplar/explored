@@ -679,16 +679,19 @@ bool FFishingModel::WaitForBite(const FFishingConditions& C, const FFishingSaveS
 	{
 		Total += Rates.Add_GetRef(LegendaryRatePerSecond(L, C, State, StartDays));
 	}
-	if (Total <= 0.0f)
+	// IsFinite explícito: con NaN (condiciones o tiempo corruptos) Total <= 0 es falso y
+	// picaría en el primer segundo con un pez NaN.
+	if (!FMath::IsFinite(Total) || Total <= 0.0f || !FMath::IsFinite(StartDays) || !FMath::IsFinite(MaxWaitSeconds))
 	{
 		return false;
 	}
 
 	// El instante se discretiza en minutos de juego: misma semilla, sitio y
 	// minuto dan la misma espera, y un minuto después, otra distinta.
-	const int32 Minute = FMath::FloorToInt(static_cast<double>(StartDays) * 1440.0);
+	const int32 Minute = static_cast<int32>(FMath::FloorToDouble(FMath::Clamp(static_cast<double>(StartDays) * 1440.0, -2.0e9, 2.0e9)));
 	const float PerSecond = 1.0f - FMath::Exp(-Total);
-	const int32 MaxSeconds = FMath::Max(0, FMath::FloorToInt(MaxWaitSeconds));
+	// Acotado antes de convertir: una espera enorme daría hasta 2^31 vueltas.
+	const int32 MaxSeconds = FMath::FloorToInt(FMath::Clamp(MaxWaitSeconds, 0.0f, MaxBiteWaitLimitSeconds));
 	for (int32 Second = 0; Second < MaxSeconds; ++Second)
 	{
 		if (Unit(Seed ^ BiteSalt, SpotKey, Minute, Second) >= PerSecond)

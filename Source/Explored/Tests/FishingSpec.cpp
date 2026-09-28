@@ -723,6 +723,27 @@ void FFishingSpec::Define()
 			TestTrue(TEXT("Otro sitio, otra picada"), Different >= 15);
 		});
 
+		It("una espera enorme o un instante o condiciones NaN no rompen la picada", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const FFishingConditions C = ReefDawn();
+			FFishBite Normal;
+			FFishBite Huge;
+			TestTrue(TEXT("pica en 5 minutos"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, 300.0f, Normal));
+			TestTrue(TEXT("con espera enorme también"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, 1.0e30f, Huge));
+			TestEqual(TEXT("y es la misma picada"), Huge.WaitSeconds, Normal.WaitSeconds);
+			FFishBite Bite;
+			TestFalse(TEXT("instante NaN: no pica"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, NaN, 300.0f, Bite));
+			TestFalse(TEXT("espera NaN: no pica"), FFishingModel::WaitForBite(C, nullptr, 123u, 45, 7.25f, NaN, Bite));
+			FFishingConditions Broken = C;
+			Broken.Hours = NaN;
+			Broken.DepthM = NaN;
+			if (FFishingModel::WaitForBite(Broken, nullptr, 123u, 45, 7.25f, 300.0f, Bite))
+			{
+				TestTrue(TEXT("condiciones NaN: si pica, con peso finito"), FMath::IsFinite(Bite.WeightKg) && Bite.Id != NAME_None);
+			}
+		});
+
 		It("los ejemplares grandes son raros y pelean más", [this]()
 		{
 			const FFishingConditions C = ReefDawn();

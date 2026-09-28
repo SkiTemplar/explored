@@ -351,9 +351,13 @@ struct EXPLORED_API FFishingModel
 	/** Suma de todas las tasas: lo que el HUD o la fauna pueden usar como «¿hay vida aquí?». */
 	static float TotalBiteRatePerSecond(const FFishingConditions& Conditions, const FFishingSaveState* State, float NowDays);
 
+	/** Espera máxima de WaitForBite: más allá, no pica. */
+	static constexpr float MaxBiteWaitLimitSeconds = 3600.0f;
+
 	/**
 	 * Espera de picada segundo a segundo, determinista por semilla, sitio
-	 * (SpotKey) e instante de inicio. False si no pica en MaxWaitSeconds.
+	 * (SpotKey) e instante de inicio. False si no pica en MaxWaitSeconds (como
+	 * mucho MaxBiteWaitLimitSeconds) o si algún dato no es finito.
 	 */
 	static bool WaitForBite(const FFishingConditions& Conditions, const FFishingSaveState* State, uint32 Seed,
 		int32 SpotKey, float StartDays, float MaxWaitSeconds, FFishBite& OutBite);
