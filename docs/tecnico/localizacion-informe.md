@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 821 |
+| Textos en el catálogo | 1141 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
-| … de `Content/Data` (campos bilingües) | 518 |
+| … de `Content/Data` (campos bilingües) | 838 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
 | Literales para revisar | 78 |
-| Errores / avisos | 0 / 25 |
+| Errores / avisos | 0 / 5 |
 
 ## Literales del C++
 
@@ -38,10 +38,10 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
 | Fichero:línea | Texto | Código |
 |---|---|---|
-| `Source/Explored/Achievements/AchievementsModel.cpp:186` | `Estadística sin id` | `return Fail(TEXT("Estadística sin id"));` |
-| `Source/Explored/Achievements/AchievementsModel.cpp:190` | `Estadística repetida: %s` | `return Fail(FString::Printf(TEXT("Estadística repetida: %s"), *Def.Id.ToString()));` |
-| `Source/Explored/Achievements/AchievementsModel.cpp:199` | `Logro sin id` | `return Fail(TEXT("Logro sin id"));` |
-| `Source/Explored/Achievements/AchievementsModel.cpp:203` | `Logro repetido: %s` | `return Fail(FString::Printf(TEXT("Logro repetido: %s"), *Def.Id.ToString()));` |
+| `Source/Explored/Achievements/AchievementsModel.cpp:246` | `Estadística sin id` | `return Fail(TEXT("Estadística sin id"));` |
+| `Source/Explored/Achievements/AchievementsModel.cpp:250` | `Estadística repetida: %s` | `return Fail(FString::Printf(TEXT("Estadística repetida: %s"), *Def.Id.ToString()));` |
+| `Source/Explored/Achievements/AchievementsModel.cpp:259` | `Logro sin id` | `return Fail(TEXT("Logro sin id"));` |
+| `Source/Explored/Achievements/AchievementsModel.cpp:263` | `Logro repetido: %s` | `return Fail(FString::Printf(TEXT("Logro repetido: %s"), *Def.Id.ToString()));` |
 | `Source/Explored/Carry/InventoryModel.cpp:181` | `Sin error` | `case EInventoryFail::None: return TEXT("Sin error");` |
 | `Source/Explored/Carry/InventoryModel.cpp:182` | `Objeto no válido` | `case EInventoryFail::InvalidItem: return TEXT("Objeto no válido");` |
 | `Source/Explored/Carry/InventoryModel.cpp:183` | `No se encuentra` | `case EInventoryFail::NotFound: return TEXT("No se encuentra");` |
@@ -136,30 +136,10 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (25)
+## Avisos (5)
 
-- translations/en.json: Explored,Carry_NoRegistry no aparece en el código (¿clave renombrada o borrada?)
-- Source/Explored/Building/BuildingSubsystem.cpp:277: ExploredBuilding,Occupied: el inglés (26 car.) es más de 1.3× el español (15); comprueba que cabe
-- Source/Explored/Building/BuildingSubsystem.cpp:281: ExploredBuilding,MissingRequiredPiece: el inglés (36 car.) es más de 1.3× el español (27); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:111: Explored,Carry_AlreadyThere: el inglés (19 car.) es más de 1.3× el español (12); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:153: Explored,Carry_NoRoom: el inglés (13 car.) es más de 1.3× el español (9); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:160: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:162: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
-- Source/Explored/Fishing/ExploredTrap.cpp:132: Explored,Verb_TidePool: el inglés (15 car.) es más de 1.3× el español (10); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredAchievements.cpp:105: ExploredUI,AchievementsTitle: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79: ExploredUI,Achievements: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:312: ExploredUI,ViewDistance: el inglés (13 car.) es más de 1.3× el español (5); comprueba que cabe
-- Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:316: ExploredUI,PostProcess: el inglés (15 car.) es más de 1.3× el español (11); comprueba que cabe
-- Content/Data/items.json «palo_recto» nameEs/nameEn: Data.items.items,palo_recto.nameEs: el inglés (14 car.) es más de 1.3× el español (10); comprueba que cabe
-- Content/Data/items.json «bonito» nameEs/nameEn: Data.items.items,bonito.nameEs: el inglés (13 car.) es más de 1.3× el español (6); comprueba que cabe
-- Content/Data/items.json «atun» nameEs/nameEn: Data.items.items,atun.nameEs: el inglés (14 car.) es más de 1.3× el español (4); comprueba que cabe
-- Content/Data/items.json «batata» nameEs/nameEn: Data.items.items,batata.nameEs: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
-- Content/Data/items.json «maracuya» nameEs/nameEn: Data.items.items,maracuya.nameEs: el inglés (13 car.) es más de 1.3× el español (8); comprueba que cabe
-- Content/Data/items.json «yuca» nameEs/nameEn: Data.items.items,yuca.nameEs: el inglés (12 car.) es más de 1.3× el español (4); comprueba que cabe
-- Content/Data/items.json «batata_asada» nameEs/nameEn: Data.items.items,batata_asada.nameEs: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
-- Content/Data/items.json «lasca_tallada» nameEs/nameEn: Data.items.items,lasca_tallada.nameEs: el inglés (13 car.) es más de 1.3× el español (5); comprueba que cabe
-- Content/Data/plants.json «platanera» nameEs/nameEn: Data.plants.plants,platanera.nameEs: el inglés (12 car.) es más de 1.3× el español (9); comprueba que cabe
-- Content/Data/plants.json «batata» nameEs/nameEn: Data.plants.plants,batata.nameEs: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
-- Content/Data/plants.json «maracuya» nameEs/nameEn: Data.plants.plants,maracuya.nameEs: el inglés (13 car.) es más de 1.3× el español (8); comprueba que cabe
-- Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn: Data.building_pieces.pieces,vitrina_museo.nameEs: el inglés (12 car.) es más de 1.3× el español (7); comprueba que cabe
-- Content/Data/story_es.json «6» petroglyph_themes/petroglyph_themes_en: Data.story_es.petroglyph_themes,06: el inglés (21 car.) es más de 1.3× el español (16); comprueba que cabe
+- Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_chapa.nameEs: el inglés (21 car.) es más de 1.3× el español (12); comprueba que cabe
+- Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_tubo.nameEs: el inglés (16 car.) es más de 1.3× el español (11); comprueba que cabe
+- Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,batir_chapa.nameEs: el inglés (22 car.) es más de 1.3× el español (11); comprueba que cabe
+- Content/Data/recipes_smithing.json «batir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,batir_tubo.nameEs: el inglés (17 car.) es más de 1.3× el español (10); comprueba que cabe
+- «hijuelo» tiene 2 traducciones distintas: «offset» en Content/Data/plants.json «aloe.hijuelo» nameEs/nameEn; «sucker» en Content/Data/plants.json «platanera.hijuelo» nameEs/nameEn

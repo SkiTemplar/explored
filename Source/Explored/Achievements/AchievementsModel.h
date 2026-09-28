@@ -30,8 +30,46 @@ enum class EAchievementStatScope : uint8
 	Run        // Solo la partida actual: se vacía con BeginRun y viaja con su guardado.
 };
 
+/** Fase del acceso anticipado en que el logro se puede conseguir (biblia 07 §2). Ordenadas. */
+enum class EAchievementPhase : uint8
+{
+	EarlyAccess,   // «AA»: acceso anticipado.
+	Phase2,        // «F2»: raíles, granja, murallas, resto de islas.
+	Phase3         // «F3»: pueblo, piratas, isla oculta.
+};
+
+/** Rareza estimada para el icono de Steam (biblia 07 §2); no es un dato medido. */
+enum class EAchievementRarity : uint8
+{
+	Common,     // «comun»: más del 40 % de quienes empiezan a jugar.
+	Uncommon,   // «infrecuente»: 15–40 %.
+	Rare,       // «raro»: 4–15 %.
+	VeryRare    // «muy_raro»: menos del 4 %.
+};
+
+/**
+ * A quién llega el logro en cooperativo (biblia 08 §5.7). El servidor decide el hecho y
+ * avisa a cada cliente que corresponda; cada cliente desbloquea en su propia cuenta.
+ */
+enum class EAchievementCoopScope : uint8
+{
+	Actor,     // «actor»: solo quien hace la acción.
+	World,     // «world»: todos los conectados en ese momento.
+	Witness    // «witness»: quien esté a menos de FAchievementsModel::WitnessRadiusMeters del hecho.
+};
+
 EXPLORED_API const TCHAR* LexToString(EAchievementStatKind Kind);
 EXPLORED_API const TCHAR* LexToString(EAchievementStatScope Scope);
+EXPLORED_API const TCHAR* LexToString(EAchievementPhase Phase);
+EXPLORED_API const TCHAR* LexToString(EAchievementRarity Rarity);
+EXPLORED_API const TCHAR* LexToString(EAchievementCoopScope Scope);
+
+/** «AA», «F2», «F3» → fase; false si no la reconoce. */
+EXPLORED_API bool ParseAchievementPhase(const FString& Text, EAchievementPhase& OutPhase);
+/** «comun», «infrecuente», «raro», «muy_raro» → rareza; false si no la reconoce. */
+EXPLORED_API bool ParseAchievementRarity(const FString& Text, EAchievementRarity& OutRarity);
+/** «actor», «world», «witness» → alcance; false si no lo reconoce. */
+EXPLORED_API bool ParseAchievementCoopScope(const FString& Text, EAchievementCoopScope& OutScope);
 
 struct EXPLORED_API FAchievementStatDef
 {
@@ -94,6 +132,9 @@ struct EXPLORED_API FAchievementDef
 	FName Icon;
 	/** Modos de juego en que se puede conseguir («Explorer», «Survivor», «Castaway», «Custom»). Vacío: todos. */
 	TArray<FName> Modes;
+	EAchievementPhase Phase = EAchievementPhase::EarlyAccess;
+	EAchievementRarity Rarity = EAchievementRarity::Common;
+	EAchievementCoopScope CoopScope = EAchievementCoopScope::Actor;
 	FAchievementCondition Condition;
 };
 
@@ -163,6 +204,25 @@ public:
 	/** Si el logro se puede conseguir en el modo de la partida actual. */
 	bool IsAvailableInCurrentMode(const FAchievementDef& Def) const;
 
+	/**
+	 * Fase publicada del juego. Los logros de fases posteriores no se desbloquean ni cuentan
+	 * en la lista, pero sus estadísticas se siguen acumulando: al subir la fase, Evaluate
+	 * desbloquea lo que ya se hubiera cumplido. Por defecto todo está publicado.
+	 */
+	void SetReleasedPhase(EAchievementPhase Phase) { ReleasedPhase = Phase; }
+	EAchievementPhase GetReleasedPhase() const { return ReleasedPhase; }
+	bool IsReleased(const FAchievementDef& Def) const { return Def.Phase <= ReleasedPhase; }
+
+	/** Radio de «witness» en cooperativo (biblia 08 §5.7), en metros. */
+	static constexpr float WitnessRadiusMeters = 50.0f;
+
+	/**
+	 * Si un logro que decide el servidor llega a un jugador concreto (biblia 08 §5.7).
+	 * bIsActor: ese jugador hizo la acción. DistanceMeters: distancia del jugador al hecho
+	 * (solo cuenta para «witness»; un valor no finito o negativo no llega).
+	 */
+	static bool ReachesPlayer(EAchievementCoopScope Scope, bool bIsActor, float DistanceMeters);
+
 	bool IsKnownStat(FName Stat) const { return StatIndex.Contains(Stat); }
 	const FAchievementStatDef* FindStat(FName Stat) const;
 	const FAchievementDef* FindAchievement(FName AchievementId) const;
@@ -196,4 +256,5 @@ private:
 	/** Qué logros dependen de cada estadística (para no evaluar los 30 en cada evento). */
 	TMap<FName, TArray<int32>> Dependents;
 	FAchievementsState State;
+	EAchievementPhase ReleasedPhase = EAchievementPhase::Phase3;
 };

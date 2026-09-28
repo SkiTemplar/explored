@@ -15,13 +15,13 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
-import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
-import bmesh  # noqa: E402
 import bpy  # noqa: E402
+
+import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -597,7 +597,7 @@ def _b_madera_naufragio(v, rnd, name):
         t = (x + L / 2) / L
         warp = 0.008 * math.sin(t * math.pi)
         out = []
-        for k, (y, z) in enumerate(sec):
+        for y, z in sec:
             wear = 1.0 - 0.06 * max(0.0, abs(t - 0.5) * 2 - 0.8) / 0.2
             out.append((y * wear, z * wear + warp + 0.002 * math.sin(y * 90)))
         return out

@@ -7,7 +7,7 @@
     {"id": "danger", "label": "Peligro", "labelEn": "Danger"},
     {"id": "resource", "label": "Recurso", "labelEn": "Resource"},
     {"id": "ruin", "label": "Ruina", "labelEn": "Ruin"},
-    {"id": "wreck", "label": "Resto del Albatros", "labelEn": "Albatros wreckage"}
+    {"id": "wreck", "label": "Resto del Albatros", "labelEn": "Albatross wreckage"}
   ],
   "petroglyph_themes": [
     "Canoa de doble casco bajo una estrella", "Espiral de marea", "Tortuga con siete puntos (las siete islas)",
@@ -20,7 +20,7 @@
   ],
   "petroglyph_themes_en": [
     "Double-hulled canoe beneath a star", "Tidal spiral", "Turtle with seven dots (the seven islands)",
-    "Figure gazing at the sky", "Flying fish", "Whale with calf", "Frigatebird in flight", "Eight-armed star",
+    "Figure gazing at the sky", "Flying fish", "Whale with calf", "Frigatebird aloft", "Eight-armed star",
     "Receding wave", "Emerging island", "Open hand", "New moon",
     "Coconut crab", "Smoking volcano", "Star path", "Fishing basket", "Drum",
     "Shark and circle", "Three canoes", "Wind-bent palm", "Eye", "Mangrove roots",

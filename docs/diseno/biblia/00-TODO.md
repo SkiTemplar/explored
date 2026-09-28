@@ -21,13 +21,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 3 | 10 | 23 | 36 | 8 % | 22 % |
-| H2 — Minería y construcción | 3 | 14 | 15 | 32 | 9 % | 31 % |
-| H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
+| H2 — Minería y construcción | 14 | 12 | 13 | 39 | 36 % | 51 % |
+| H3 — Mar y barcos | 2 | 6 | 6 | 14 | 14 % | 36 % |
 | H4 — Contenido de acceso anticipado | 9 | 2 | 12 | 23 | 39 % | 43 % |
-| H5 — Lanzamiento del acceso anticipado | 4 | 0 | 22 | 26 | 15 % | 15 % |
-| F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
-| F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **29** | **47** | **141** | **217** | **13 %** | **24 %** |
+| H5 — Lanzamiento del acceso anticipado | 11 | 0 | 15 | 26 | 42 % | 42 % |
+| F2 | 2 | 4 | 10 | 16 | 12 % | 25 % |
+| F3 | 2 | 0 | 26 | 28 | 7 % | 7 % |
+| **Total** | **50** | **45** | **130** | **225** | **22 %** | **32 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -48,6 +48,10 @@ Minería y terreno de H2 (PR #95): `FMiningModel`, `FMineHazardModel` y `FShovel
 con sus specs y las piezas `viga_apoyo` y `tablon_contencion` en datos. Con el mismo
 criterio, sus casillas cuentan como «en parte» (modelo puro sin enganchar) y se añade la
 casilla de conectarlos al juego.
+
+F3 (PR #92): `FReputationModel`, `FBarterModel`, `FPirateThreatModel` y `FRaiderCampsModel`
+con sus specs. Seis casillas pasan a «en parte» (modelo puro sin enganchar) y se añade la
+de cablearlos en el motor.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -220,6 +224,11 @@ salir de la isla.
 - [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
+      → **Más:** PR #112 (`bb04f04`) añade el aloe y la cúrcuma silvestre como cultivos
+        medicinales (GDD v3 §8.7, «especias y plantas medicinales»), con `rizoma_curcuma` y
+        la regla de DataCheck «todo cultivo da comida o medicina». Faltan las mallas
+        (`meshes_pendientes.json`), dónde aparece el primer rizoma y añadirlos a
+        `DataPlants()` de `FarmSpec.cpp`.
 
 ### Red y cooperativo — cimientos (biblia 08)
 
@@ -490,10 +499,12 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50) + PR #95: `FMiningModel`
         (`WorldGen/MiningModel.h`, `MiningModelSpec`) con estratos, vetas finitas, radio y
         ritmo por herramienta, rebote y mella — modelo puro sin enganchar.
-- [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
-      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
-      → **En parte:** PR #95, pieza en `building_pieces.json` y regla en `FMineHazardModel`
-        (`MineHazardModelSpec`) — sin enganchar.
+- [x] `Building`: pieza `viga_apoyo` (apuntalamiento) en `building_pieces.json`
+      (categoría `mina`, 2× `tronco_pequeno` + 1× `cuerda`). *(biblia 02 §2.7)*
+- [ ] `Building`: regla de derrumbe (hueco > 3 m de luz sin apoyo, colapsa a los 8 s) con
+      la `viga_apoyo` como apoyo. *(biblia 02 §2.4)*
+      → **En parte:** PR #95, regla en `FMineHazardModel` (`MineHazardModelSpec`) — sin
+        enganchar.
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
       → **En parte:** PR #95, `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals`
@@ -521,35 +532,43 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`ApplyHalfTide` 20 %/35 %)
         — nadie lo llama desde la marea.
-- [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
-      en 1 m). *(biblia 02 §5.3)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95: pieza
-        en `building_pieces.json` y `FSandModel::PieceAnchorsSand` — falta llamar a
-        `SetAnchor` al colocarla.
+- [x] `Building`: pieza `tablon_contencion` en `building_pieces.json` (tier `bambu`,
+      socket `pared`, 3× `bambu_grueso` + 2× `cordel`). *(biblia 02 §5.3)*
+- [ ] `WorldGen`: el `tablon_contencion` ancla la arena (detiene deslizamiento y relleno
+      en 1 m mientras siga en pie). *(biblia 02 §5.3)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95:
+        `FSandModel::PieceAnchorsSand` — falta llamar a `SetAnchor` al colocarla.
 - [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
       `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
       (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
       las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
       −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
-- [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
-      `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
-      `carretilla`. *(biblia 03 §3.2–3.4)*
+- [x] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
+      `lingote_hierro`, `lingote_aluminio`, `alambre`, `clavos` y `carretilla` (plantilla
+      en `piedra_trabajo`). *(biblia 03 §3.2–3.4, §1.5)*
+- [ ] `Items`/`Templates`: añadir `sierra_diente_tiburon` y `tela_fibra` (con la receta de
+      telar de biblia 03 §4.3). *(biblia 03 §3.2, §3.4)*
 - [ ] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor
       propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras
       enganchada). *(biblia 03 §1.5)*
-- [ ] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
+- [x] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
       `yunque`, con su coste. *(biblia 03 §2.2)*
-      → **En parte:** `46382a9` (PR #50), `building_pieces.json:1205` (`banco_chatarra`) —
-        faltan `horno_fundicion` y `yunque`.
-- [ ] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4); recetas de
-      fundición en un fichero nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [x] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4) en
+      `fuels.json/smeltingLevels`; recetas de fundición, chatarra y forja en un fichero
+      nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [ ] `Cooking`: `EFireLevel::HornoFundicion`, pasar `smeltingLevels` a `levels` (y a
+      `FireData.inl` con `--write-cooking`) y un modelo puro que lea
+      `recipes_smithing.json` con su spec; replicación como el resto de estaciones
+      (biblia 08 §2.4: el servidor valida y consume). *(biblia 03 §2.2, §4.3)*
 - [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
       de lava del Humo tiene una boca visible desde el marae de la cumbre, para que las
       ruinas queden junto a una entrada real. *(biblia 04 §7.1 TODO)*
-- [ ] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de
-      colocación con el pico equipado como herramienta de golpeo, para ampliar la
-      escalada de roca más allá de 3 m. *(biblia 02 §13.4 — director, 2026-09-27)*
-- [ ] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
+- [x] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta 2, sin mango) y su plantilla
+      `clavija_roca` (Tallar `hueso_largo` o `lingote_hierro`). *(biblia 02 §13.4)*
+- [ ] `Player`/`WorldGen`: verbo de colocación de `clavija_roca` con el pico equipado como
+      herramienta de golpeo, para ampliar la escalada de roca más allá de 3 m.
+      *(biblia 02 §13.4 — director, 2026-09-27)*
+- [x] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
       *(biblia 02 §13.3)*
 - [ ] Confirmar en pipeline de terreno editable en runtime el recorrido completo
       capa-de-ediciones → remallado → guardado → hoja subterránea del mapa, de extremo a
@@ -558,20 +577,25 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       procedural y no usa el componente genérico de Unreal). *(GDD §7.3, §7.4)*
       → **En parte:** `cb4e5a6` + `064b73a` (PR #40): capa de ediciones y guardado — faltan
         el remallado en runtime y la hoja subterránea; el recorrido no está cableado.
-- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
-      para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
-      al menos una isla en AA. *(biblia 03 §Tests)*
-      → **En parte:** `46382a9` (PR #50), `Tools/DataCheck/src/datacheck/checks.py:252` — el
-        alcance de plantillas es global, no por isla de AA; falta el `CarrySpec` de la
-        carretilla.
-- [ ] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
+- [x] `Tests`: extender `Tools/DataCheck` para validar que toda plantilla nueva de
+      crafteo es alcanzable y que cada receta de metal sale de materiales de al menos una
+      isla en AA (`smithing.py`: vetas de fase 1, chatarra del Albatros o recetas
+      posibles; lingotes y carbón sin receta no cuentan como material en bruto).
+      *(biblia 03 §Tests)*
+- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla. *(biblia 03 §Tests)*
+- [ ] `Crafting`: `UCraftingLibrary::FindActionsWithData` corta en 3 verbos por orden del
+      fichero y esconde Atar con un mango de `madera_dura` atado (no hay hacha, pico ni
+      cuchillo de obsidiana, pedernal o metal con ese mango). Priorizar el verbo de la
+      plantilla con más huecos antes de cortar, o subir `lasca_por_golpeo` y `cuerda` de
+      orden; DataCheck lo lista como nota («MaxActions»). *(biblia 03 §2.1, datos de H2)*
+- [x] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
       `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
       `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
       *(biblia 07 §2.1)*
-- [ ] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
+- [x] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
       `buscador_de_vetas`, `filo_de_obsidiana`, `topo_de_isla`, `el_aire_que_falta`,
       `viga_a_tiempo`. *(biblia 07 §2.3)*
-- [ ] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
+- [x] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
       *(biblia 07 §2.3)*
 - [x] `FBuildingModel::RecomputeStability` y el sistema de integridad/encaje de piezas
       ya implementados — base sobre la que se añaden `viga_apoyo` y `tablon_contencion`.
@@ -673,7 +697,7 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `AExploredHUD::DrawBoatStatus`, solo mientras se está a bordo y solo si hay algo
       urgente (vela mal trimada, casco <40 %, haciendo agua, capotado).
       *(biblia 06 §2.4)*
-- [ ] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
+- [x] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
       *(biblia 07 §2.3)*
 - [x] `FBoatModel` con `TotalMassKg`, `EquilibriumDraftCm`, `SwampWaterKg`,
       `MaxAbsRollDeg`, `ApplyDamage` ya implementado — base sobre la que se calculan las
@@ -775,7 +799,7 @@ datos todavía.
       → **En parte:** PR #45, #48, #56 y #60 (packs CC0) y #42, #54, #63 (paleta),
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
         general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
-        estrella, laurel, candado y reloj de arena); 26 pistas de logro siguen en
+        estrella, laurel, candado y reloj de arena); 44 pistas de logro siguen en
         `iconsPending`.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
@@ -807,11 +831,12 @@ datos todavía.
       para el tercero) en los 54 logros de `achievements.json`, bandera compartida en el
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
-      *(biblia 08 §5.6, §5.7)*
-      *(funciones puras ya hechas: `CoopAbundanceScale`, `ScaleFiniteVein`,
-      `PirateRaidersForPlayers`, `PirateCategoryBonus`, `ParseCoopScope` y
-      `AchievementRecipients` en `Core/SystemLinks.h`, spec `Tests/CoopRulesSpec.cpp`;
-      falta el campo `coopScope` en `achievements.json` y la bandera de restricción.)*
+      *(biblia 08 §5.6, §5.7; parcial 2026-09-28: `coopScope` ya está en los 54 logros y
+      `FAchievementsModel::ReachesPlayer` decide actor/world/witness; funciones puras
+      `CoopAbundanceScale`, `ScaleFiniteVein`, `PirateRaidersForPlayers`,
+      `PirateCategoryBonus`, `ParseCoopScope` y `AchievementRecipients` en
+      `Core/SystemLinks.h`, spec `Tests/CoopRulesSpec.cpp`; faltan la bandera del
+      `GameState` y enganchar el escalado)*
 
 ---
 
@@ -819,28 +844,36 @@ datos todavía.
 
 Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 
-- [ ] Añadir el campo `phase` (`"AA"`/`"F2"`/`"F3"`) a los 30 logros ya existentes en
+- [x] Añadir el campo `phase` (`"AA"`/`"F2"`/`"F3"`) a los 30 logros ya existentes en
       `achievements.json` y a los 24 nuevos, con los valores de biblia 07 §2.2–2.3.
-      *(biblia 07 §2.1)*
-- [ ] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
-      de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2)*
-- [ ] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
+      *(biblia 07 §2.1; hecho 2026-09-28: 36 AA, 10 F2, 8 F3; `FAchievementsModel::SetReleasedPhase`
+      oculta los de fases sin publicar y DataCheck impide que un logro dependa de algo de
+      una fase posterior)*
+- [x] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
+      de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2; los 30
+      originales no tenían rareza en la biblia: se asignan en 07 §2.2)*
+- [x] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
       (absurdos/graciosos, §2.3 «humor», máximo 3 de 54) con su stat
       `coconuts_opened`/`crab_stole_item`. *(biblia 07 §2.3)*
 - [ ] Añadir el logro candidato `museo_completo` a una revisión posterior de
       `achievements.json` cuando el total lo permita sin salir del rango 40–60, o como
       contenido post-lanzamiento. *(biblia 07 §3.4)*
-- [ ] Añadir las 66 entradas del glosario ES/EN de biblia 07 §5.2 a
+- [x] Añadir las 66 entradas del glosario ES/EN de biblia 07 §5.2 a
       `docs/tecnico/localizacion.md` o a un glosario propio referenciado desde ahí.
-      *(biblia 07 §5.2)*
-- [ ] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de
+      *(biblia 07 §5.2; la tabla tenía 69 filas, no 66: están todas en
+      `docs/tecnico/glosario.md`, y `uv run l10n` comprueba los 39 nombres propios y
+      decisiones de traducción)*
+- [x] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de
       plural ICU (`{Count}|plural(...)`), hoy no verificados por el chequeo de
-      marcadores. *(biblia 07 §5.3)*
-- [ ] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de
+      marcadores. *(biblia 07 §5.3; `Tools/Localization/src/l10n/icu.py`: sintaxis,
+      categorías CLDR de cada idioma y mismos plurales en ES y EN)*
+- [x] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de
       datos nuevo de esta lista en cuanto exista, antes de darlo por escrito definitivo.
-      *(biblia 07 §5.1)*
-- [ ] Pasar cada logro, ficha de museo y entrada de diario por el checklist anti-IA de
-      biblia 07 §1.5 una segunda vez en revisión de contenido. *(biblia 07 §1.5)*
+      *(biblia 07 §5.1; `l10n` lee ya todos los ficheros de `Content/Data` y falla si un
+      campo `…Es` queda sin registrar)*
+- [x] Pasar cada logro, ficha de museo y entrada de diario por el checklist anti-IA de
+      biblia 07 §1.5 una segunda vez en revisión de contenido. *(biblia 07 §1.5; la lista
+      negra, los máximos de longitud y las exclamaciones los vigila ya `uv run l10n --strict`)*
 - [ ] Rendimiento: verificar 60 fps a 1080p con menos de 6,5 GB de VRAM en Landing
       (objetivo de H0) y en el resto de islas del acceso anticipado, sin tirones al
       cargar/descargar celdas de World Partition; medir el tiempo de frame con el modo
@@ -962,7 +995,7 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
       lona) y La Meseta (caliza, cultivos) si aún no existen. *(biblia 04 §2.5–2.7)*
       → **En parte:** anterior a #41, `items.json:90, 106, 119-122` (arcilla roja, caliza,
         conchas) — faltan junco, velas de lona y conchas raras.
-- [ ] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
+- [x] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
       `livestock_species_raised`, `eggs_collected`, y los logros
       `primer_tren_de_isla`, `primera_empalizada`, `muralla_de_piedra`,
       `primera_pareja`, `corral_completo`, `huevos_por_docenas`. *(biblia 07 §2.1, §2.3)*
@@ -1002,31 +1035,47 @@ asaltos), isla oculta y final.
 - [ ] Nuevo módulo `Villages`: spawn de la aldea (Arenas Blancas, 10 NPC) y el puesto de
       trueque (La Meseta, 4 NPC). *(biblia 05 §1.1)*
 - [ ] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* → **En parte (PR #92):** modelo puro `Villages/ReputationModel` (`FReputationModel::Save`/
+      `Load`, spec `Explored.Villages.Reputation`); registrarla en el subsistema va en la
+      casilla de cableado de abajo.
 - [ ] Prop nuevo «tablón de peticiones» (malla + rotación de icono cada 4 días)
       reutilizando `story_es.json.petroglyph_themes`. *(biblia 05 §1.3)*
 - [ ] Lógica de trueque: valor 1–5 por objeto × tasa de reputación, ventana horaria
-      8:00–18:00. *(biblia 05 §1.4)*
+      8:00–18:00. *(biblia 05 §1.4)* → **En parte (PR #92):** `Villages/BarterModel` (aritmética entera en cuartos,
+      trueque gratis del tablón, solo básicos en Cauta); DataCheck compara sus constantes con
+      `fases_futuras.json`.
 - [ ] Enganchar «devolver objeto ritual» a `Ruins` (+5 reputación, sin trueque de por
-      medio). *(biblia 05 §1.5)*
+      medio). *(biblia 05 §1.5)* — la regla ya está en `FReputationModel::ReturnRitualObject`
+      (una vez por objeto, solo marae y cueva ritual); falta llamarla desde `URuinsSubsystem`.
 - [ ] Wayfinding enseñado por el guardián del marae con reputación ≥70, sin duplicar
       entre Arenas Blancas y La Meseta. *(biblia 05 §1.6)*
 - [ ] Aldeanos invulnerables al daño de arma (solo huida + penalización de reputación).
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* — el modelo ya lo fija (`StrikeVillager`: daño 0, huye, −25;
+      `IsHostileCombatant` siempre false); falta el actor del aldeano.
 - [ ] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
-      *(biblia 05 §1.5)*
+      *(biblia 05 §1.5)* → **En parte (PR #92):** `FReputationModel`: una ofensa nueva en Hostil lo alarga, nunca lo
+      acorta.
 - [ ] Especificar e implementar la pantalla de trueque (§2.11 de biblia 06): prompt de
       contexto «Ofrecer {objeto}», sin menú de tienda ni barra de reputación en pantalla.
       *(biblia 06 §2.11)*
 - [ ] Nuevo módulo `Raiders`: percepción reutilizando `Fauna`, patrulla por semilla entre
       los dos campamentos, 4 tipos de pirata con sus daños y vidas. *(biblia 05 §2.1–2.2)*
 - [ ] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de
-      biblia 05 §2.3. *(biblia 05 §2.3)*
+      biblia 05 §2.3. *(biblia 05 §2.3)* → **En parte (PR #92):** `Raiders/PirateThreatModel` (sección `raiders`,
+      spec `Explored.Raiders.Threat`).
 - [ ] Programador de asaltos: categoría según Amenaza, condición de recursos
-      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)*
+      visibles/reputación Hostil, aviso previo (humo + tambor). *(biblia 05 §2.3)* → **En parte (PR #92):**
+      `FPirateThreatModel::EvaluateDay`, determinista por semilla; el humo y el tambor como
+      efectos van con el cableado.
 - [ ] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes,
       Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
-      *(biblia 05 §2.5)*
+      *(biblia 05 §2.5)* → **En parte (PR #92):** `Raiders/RaiderCampsModel` (spec `Explored.Raiders.Camps`); los
+      actores se crean con el cableado.
+- [ ] Cablear los modelos de F3 en el motor: subsistemas `Villages` y `Raiders` que
+      registren las secciones `reputation` y `raiders` en `UExploredSaveSubsystem`, llamen a
+      `FPirateThreatModel::EvaluateDay` al empezar cada día, creen los campamentos de
+      `FRaiderCampsModel::Generate` y lancen humo y tambor. Necesita Unreal.
+      *(docs/tecnico/navegantes-piratas.md)*
 - [ ] Dos plantillas de barco pirata (Piragua de asalto, Balandra negra) sobre el mismo
       `FBoatModel` del resto de embarcaciones. *(biblia 05 §2.5)*
 - [ ] Botín: skin «Machete pirata» y accesorio cosmético único «Capa de vigía» al
@@ -1046,7 +1095,7 @@ asaltos), isla oculta y final.
 - [ ] Arte: el pueblo del arrecife y el campamento pirata necesitan asset propio (marae
       «vivo» con estructuras ligeras); no reutilizar directamente las piezas de ruina
       (deben leerse como abandonadas). *(biblia 04 §2.8 TODO, GDD §7.1)*
-- [ ] Añadir a `achievements.json` los stats `barter_trades_completed`,
+- [x] Añadir a `achievements.json` los stats `barter_trades_completed`,
       `reputation_village_tier`, `wayfinding_taught_by_village`,
       `village_defended_from_raid`, `raids_defended`, `raider_camps_defeated`, y los
       logros `primer_trueque`, `aliado_de_facto`, `otra_forma_de_aprender`,
@@ -1057,7 +1106,8 @@ asaltos), isla oculta y final.
       §2.7, mismo tope y mismo LOD), con el escalado por número de jugadores de biblia 08
       §5.6: asaltantes `×(1 + 0,4·(N−1))` sobre la base de 5 (7/9/11 con 2/3/4 jugadores) y
       categoría **+1** por cada 2 jugadores por encima de 1; la frecuencia no escala.
-      *(biblia 08 §5.6, §1.3)*
+      *(biblia 08 §5.6, §1.3)* — el escalado ya está en `FPirateThreatModel`
+      (`ScaledPartySize`, `EffectiveCategory`); falta la autoridad en el servidor.
 - [ ] Red: logros de restricción en cooperativo (`sin_disparar_una_flecha` y similares) con
       la bandera compartida del `GameState`: si cualquier jugador rompe la restricción, se
       apaga para todos en esa partida. *(biblia 08 §5.7)*

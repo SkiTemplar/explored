@@ -5,13 +5,12 @@ pueblo de navegantes.
 3 props: plataforma escalonada, piedra vertical y altar. Punto de interés
 secreto ligado al hilo narrativo de los Navegantes.
 """
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
 import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 
 VARIANTS = [
     dict(name='Marae_Platform', seed=1601, builder='platform',

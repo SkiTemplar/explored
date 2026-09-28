@@ -38,6 +38,13 @@ def _path_of(location: str) -> str:
     return f"{path} - line {line}" if line.isdigit() else location
 
 
+def _source(e: Entry) -> str:
+    # Lo exportado viene del C++ y siempre tiene texto fuente; si no, el manifiesto quedaría con null.
+    if e.es is None:
+        raise ValueError(f"{e.id}: sin texto fuente en español; no se puede exportar")
+    return e.es
+
+
 def _by_namespace(entries: list[Entry]) -> dict[str, list[Entry]]:
     groups: dict[str, list[Entry]] = defaultdict(list)
     for e in entries:
@@ -61,7 +68,7 @@ def manifest(entries: list[Entry]) -> dict:
     def children(ns_entries: list[Entry]) -> list[dict]:
         by_source: dict[str, list[Entry]] = defaultdict(list)
         for e in ns_entries:
-            by_source[e.es].append(e)
+            by_source[_source(e)].append(e)
         out = []
         for source in sorted(by_source):
             keys = sorted(by_source[source], key=lambda e: e.key)
@@ -76,8 +83,9 @@ def archive(entries: list[Entry], culture: str) -> dict:
     def children(ns_entries: list[Entry]) -> list[dict]:
         out = []
         for e in sorted(ns_entries, key=lambda e: e.key):
-            translation = e.es if culture == NATIVE_CULTURE else (e.en or "")
-            out.append({"Source": {"Text": e.es}, "Translation": {"Text": translation}, "Key": e.key})
+            source = _source(e)
+            translation = source if culture == NATIVE_CULTURE else (e.en or "")
+            out.append({"Source": {"Text": source}, "Translation": {"Text": translation}, "Key": e.key})
         return out
 
     return _root(ARCHIVE_VERSION, entries, children)

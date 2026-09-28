@@ -22,6 +22,8 @@ sin ninguna rotación de por medio.
 
 import os
 import sys
+from collections.abc import Sequence
+from typing import overload
 
 import bpy
 
@@ -31,7 +33,12 @@ import common as C  # noqa: E402
 CM_PER_M = 100.0
 
 
+@overload
+def cm_to_m(value: float) -> float: ...
+@overload
+def cm_to_m(value: Sequence[float]) -> tuple[float, ...]: ...
 def cm_to_m(value):
+    """Centímetros a metros: un escalar o una tupla/lista de escalares."""
     if isinstance(value, (tuple, list)):
         return tuple(v / CM_PER_M for v in value)
     return value / CM_PER_M
@@ -99,7 +106,7 @@ def build_blob_piece(name, parent, pivot_cm, role, species, center_offset_cm,
     lo da el propio modificador Skin, no hace falta desplazar vértices)."""
     del seed, noise_strength, relax  # compatibilidad de firma, sin uso
     center_m = cm_to_m(center_offset_cm)
-    rx, ry, rz = (r * s / CM_PER_M for r, s in zip(radii_cm, scale_extra))
+    rx, ry, rz = (r * s / CM_PER_M for r, s in zip(radii_cm, scale_extra, strict=True))
     extra = None
     if extra_nodes_cm:
         extra = [(cm_to_m(off), tuple(v / CM_PER_M for v in r)) for off, r in extra_nodes_cm]

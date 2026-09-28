@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "source": "Recetas de metal en estación (biblia 03 §2.2 y §4.3): fundición en horno_fundicion, chatarra batida en banco_chatarra y forja en yunque. Tools/DataCheck las valida contra items.json, building_pieces.json, fuels.json y mining.json; el C++ todavía no las lee (TODO Cooking/Smithing de H2).",
+  "units": {
+    "station": "pieza de producción de building_pieces.json donde se trabaja la receta",
+    "minFireLevel": "nivel de fuels.json/smeltingLevels que tiene que estar encendido; null = en frío, a martillo",
+    "tools": "ids de items.json que hay que llevar (no se consumen)",
+    "ingredients": "objetos de items.json que se consumen; cada entrada lleva «item» y «count»",
+    "resultCount": "unidades de «result» que salen de una tanda",
+    "minutes": "minutos de juego que dura una tanda con eficiencia 1.0"
+  },
+  "recipes": [
+    { "id": "fundir_cobre", "nameEs": "Fundir cobre", "nameEn": "Smelt copper", "station": "horno_fundicion", "minFireLevel": "horno_fundicion", "tools": [],
+      "ingredients": [ { "item": "mineral_cobre", "count": 2 }, { "item": "carbon_vegetal", "count": 1 } ],
+      "result": "lingote_cobre", "resultCount": 1, "minutes": 30 },
+    { "id": "fundir_hierro", "nameEs": "Fundir hierro", "nameEn": "Smelt iron", "station": "horno_fundicion", "minFireLevel": "horno_fundicion", "tools": [],
+      "ingredients": [ { "item": "hierro_meteorito", "count": 2 }, { "item": "carbon_vegetal", "count": 2 } ],
+      "result": "lingote_hierro", "resultCount": 1, "minutes": 45 },
+    { "id": "fundir_chapa", "nameEs": "Fundir chapa", "nameEn": "Melt down sheet metal", "station": "horno_fundicion", "minFireLevel": "horno_fundicion", "tools": [],
+      "ingredients": [ { "item": "chapa_fuselaje", "count": 1 }, { "item": "carbon_vegetal", "count": 1 } ],
+      "result": "lingote_aluminio", "resultCount": 1, "minutes": 20 },
+    { "id": "fundir_tubo", "nameEs": "Fundir tubo", "nameEn": "Melt down tubing", "station": "horno_fundicion", "minFireLevel": "horno_fundicion", "tools": [],
+      "ingredients": [ { "item": "tubo_aluminio", "count": 1 }, { "item": "carbon_vegetal", "count": 1 } ],
+      "result": "lingote_aluminio", "resultCount": 1, "minutes": 20 },
+    { "id": "batir_chapa", "nameEs": "Batir chapa", "nameEn": "Hammer out sheet metal", "station": "banco_chatarra", "minFireLevel": null, "tools": ["martillo"],
+      "ingredients": [ { "item": "chapa_fuselaje", "count": 1 } ],
+      "result": "lingote_aluminio", "resultCount": 1, "minutes": 20 },
+    { "id": "batir_tubo", "nameEs": "Batir tubo", "nameEn": "Hammer out tubing", "station": "banco_chatarra", "minFireLevel": null, "tools": ["martillo"],
+      "ingredients": [ { "item": "tubo_aluminio", "count": 1 } ],
+      "result": "lingote_aluminio", "resultCount": 1, "minutes": 20 },
+    { "id": "estirar_alambre", "nameEs": "Estirar alambre", "nameEn": "Draw wire", "station": "yunque", "minFireLevel": null, "tools": ["martillo"],
+      "ingredients": [ { "item": "lingote_cobre", "count": 1 } ],
+      "result": "alambre", "resultCount": 4, "minutes": 10 },
+    { "id": "clavos_de_alambre", "nameEs": "Clavos de alambre", "nameEn": "Wire nails", "station": "yunque", "minFireLevel": null, "tools": ["martillo"],
+      "ingredients": [ { "item": "alambre", "count": 1 } ],
+      "result": "clavos", "resultCount": 8, "minutes": 10 },
+    { "id": "clavos_de_hierro", "nameEs": "Clavos de hierro", "nameEn": "Iron nails", "station": "yunque", "minFireLevel": null, "tools": ["martillo"],
+      "ingredients": [ { "item": "lingote_hierro", "count": 1 } ],
+      "result": "clavos", "resultCount": 8, "minutes": 10 }
+  ]
+}

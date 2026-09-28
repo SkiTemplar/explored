@@ -16,7 +16,9 @@ def _silueta(size: int, box: tuple[int, int, int, int]) -> Image.Image:
 def test_normaliza_a_silueta_blanca_centrada_con_margen() -> None:
     out = icons.normalize(_silueta(100, (5, 40, 45, 60)))
     assert out.size == (icons.SIZE, icons.SIZE)
-    x0, y0, x1, y1 = out.getchannel("A").getbbox()
+    bbox = out.getchannel("A").getbbox()
+    assert bbox is not None
+    x0, y0, x1, y1 = bbox
     margin = round(icons.SIZE * icons.MARGIN)
     assert abs(x0 - margin) <= 1 and abs((icons.SIZE - x1) - margin) <= 1
     assert abs((y0 + y1) / 2 - icons.SIZE / 2) <= 1
@@ -29,7 +31,8 @@ def test_iconos_de_distinto_tamano_salen_iguales() -> None:
     b = icons.normalize(_silueta(200, (30, 50, 190, 170)))
     # Mismo recuadro salvo el redondeo del remuestreo (1 px).
     ba, bb = a.getchannel("A").getbbox(), b.getchannel("A").getbbox()
-    assert all(abs(p - q) <= 1 for p, q in zip(ba, bb)), (ba, bb)
+    assert ba is not None and bb is not None
+    assert all(abs(p - q) <= 1 for p, q in zip(ba, bb, strict=True)), (ba, bb)
 
 
 def test_icono_vacio_falla() -> None:

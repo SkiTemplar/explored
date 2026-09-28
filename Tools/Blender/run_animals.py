@@ -206,10 +206,8 @@ def _export_piece(species, out_dir, piece):
     fname = f"SM_{species}_{piece['name']}.fbx"
     fpath = os.path.join(out_dir, fname)
     C.export_fbx(fpath, [piece['obj']])
-    return dict(
-        file=os.path.relpath(fpath, EXPORT_DIR).replace('\\', '/'),
-        triangles=C.triangle_count(piece['obj']),
-    )
+    return (os.path.relpath(fpath, EXPORT_DIR).replace('\\', '/'),
+            C.triangle_count(piece['obj']))
 
 
 def main():
@@ -237,8 +235,8 @@ def main():
             piece_entries = []
             total_tris = 0
             for p in pieces:
-                exported = _export_piece(species, out_dir, p)
-                total_tris += exported['triangles']
+                file_rel, tris = _export_piece(species, out_dir, p)
+                total_tris += tris
 
                 parent = p['parent']
                 if parent is None:
@@ -246,20 +244,20 @@ def main():
                 else:
                     parent_abs = abs_by_name[parent]
                     local_offset = tuple(round(a - b, 4) for a, b in
-                                          zip(p['pivot_cm'], parent_abs))
+                                          zip(p['pivot_cm'], parent_abs, strict=True))
 
                 entry = dict(
                     name=p['name'], parent=parent, role=p['role'],
                     local_offset_cm=list(local_offset),
                     pivot_cm=list(p['pivot_cm']),
-                    file=exported['file'], triangles=exported['triangles'],
+                    file=file_rel, triangles=tris,
                 )
 
                 lod = rig.make_lod1(p, ratio=LOD1_RATIO, min_tris=LOD1_MIN_TRIS)
                 if lod is not None:
-                    lod_exported = _export_piece(species, out_dir, lod)
-                    entry['lod1_file'] = lod_exported['file']
-                    entry['lod1_triangles'] = lod_exported['triangles']
+                    lod_file, lod_tris = _export_piece(species, out_dir, lod)
+                    entry['lod1_file'] = lod_file
+                    entry['lod1_triangles'] = lod_tris
 
                 piece_entries.append(entry)
 

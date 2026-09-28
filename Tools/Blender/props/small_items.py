@@ -13,9 +13,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
 import _materials as M  # noqa: E402
 import _shapes as S  # noqa: E402
+import common as C  # noqa: E402
 
 CATEGORY = 'small_items'
 
@@ -205,7 +205,7 @@ def _build_antenna(variant, rnd):
     z = 0.0
     radii = (0.008, 0.0055, 0.0038, 0.0022)
     lengths = (0.14, 0.12, 0.11, 0.09)
-    for i, (r, ln) in enumerate(zip(radii, lengths)):
+    for i, (r, ln) in enumerate(zip(radii, lengths, strict=True)):
         seg = C.make_cylinder(f'Seg{i}', radius=r, depth=ln, segments=7,
                                center=(0.0, 0.0, z + ln / 2.0), radius2=r * 0.85)
         segs.append(seg)

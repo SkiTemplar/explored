@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from pathlib import Path
 
 from . import report, unreal
 from .catalogue import REPO_ROOT, Catalogue, Sources, build
@@ -31,7 +32,7 @@ def _normalized(content: bytes) -> str:
     return _LINE_REF.sub(r"\1", text)
 
 
-def stale_files(cat: Catalogue, repo_root=REPO_ROOT) -> list[str]:
+def stale_files(cat: Catalogue, repo_root: Path = REPO_ROOT) -> list[str]:
     stale = []
     for rel, content in generated_files(cat).items():
         path = repo_root / rel
@@ -49,12 +50,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--utf16", action="store_true", help="export: manifiesto y archivos en UTF-16 LE con BOM, como el editor")
     args = parser.parse_args(argv)
 
-    cat = build(Sources.load(REPO_ROOT))
+    try:
+        cat = build(Sources.load(REPO_ROOT))
+    except ValueError as exc:
+        # Fuentes ilegibles (JSON mal formado, LOCTEXT sin espacio de nombres...): sin traza de Python.
+        print(f"ERROR  {exc}")
+        return 2
     r = cat.report
 
     if args.command == "export":
         if args.check:
-            stale = stale_files(cat)
+            stale = stale_files(cat, REPO_ROOT)
             for rel in stale:
                 print(f"DESFASADO  {rel}  (ejecuta: cd Tools/Localization && uv run l10n export)")
             if stale:

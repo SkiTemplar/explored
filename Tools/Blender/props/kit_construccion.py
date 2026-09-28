@@ -32,14 +32,15 @@ tinte plano por pieza.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
+import bpy  # noqa: E402
+
 import _materials as M  # noqa: E402
 import _shapes as S  # noqa: E402
-
 import bmesh  # noqa: E402
-import bpy  # noqa: E402
+import common as C  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 CATEGORY = 'building_kit_modular'
@@ -297,7 +298,7 @@ def _fringe_slab(name, u0, u1, v0, v1, t, rnd, rgb, fringe=0.07, cells=None):
     como un manojo de hojas atado, no como una tabla."""
     n = cells or max(2, int((u1 - u0) / 0.12))
     bm = bmesh.new()
-    top, bot = [], []
+    bot = []
     for i in range(n + 1):
         u = u0 + (u1 - u0) * i / n
         dv = 0.0 if i in (0, n) else rnd.uniform(0.0, fringe) * (1.0 if i % 2 else 0.35)
@@ -543,7 +544,7 @@ def _stone_courses(p, rnd, x0, x1, z0, z1, t, cuts, prefix, moss=True, breaks=()
                     ln = s1 - x
                 rgb = _pick(rnd, 'stone')
                 if moss and z < 0.35 and rnd.random() < 0.35:
-                    rgb = tuple(a * 0.5 + b * 0.5 for a, b in zip(rgb, PAL['moss']))
+                    rgb = tuple(a * 0.5 + b * 0.5 for a, b in zip(rgb, PAL['moss'], strict=True))
                 d = t * rnd.uniform(0.94, 1.0)
                 p.add(_box(f'{prefix}{row}_{si}_{k}', (ln - gap, d, ch - gap),
                            (x + ln / 2, rnd.uniform(-0.012, 0.012), z + ch / 2), 'M_Stone', rgb, rnd,
@@ -1010,9 +1011,8 @@ def _clip_parts(p, planes):
             bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-4)
             # descarta astillas: lo que queda por debajo de 3 cm de alto o
             # de 2 cm de ancho en la punta del triángulo
-            if bm.verts:
-                zs = [v.co.z for v in bm.verts]
-                xs = [v.co.x for v in bm.verts]
+            zs = [v.co.z for v in bm.verts]
+            xs = [v.co.x for v in bm.verts]
             if not bm.faces or max(zs) - min(zs) < 0.03 or max(xs) - min(xs) < 0.02:
                 bm.free()
                 bpy.data.objects.remove(o, do_unlink=True)
@@ -1051,14 +1051,14 @@ def _gable_parts(mat, rnd, profile):
     top = max(z for _, z in profile)
     p = _wall_parts(mat, rnd, top + 0.25, [])
     planes = []
-    for (xa, za), (xb, zb) in zip(profile, profile[1:]):
+    for (xa, za), (xb, zb) in pairwise(profile):
         d = Vector((xb - xa, 0.0, zb - za)).normalized()
         n = Vector((-d.z, 0.0, d.x))  # normal hacia arriba del tramo
         if n.z < 0:
             n = -n
         planes.append((Vector((xa, 0.0, za)), n))
     _clip_parts(p, planes)
-    for i, ((xa, za), (xb, zb)) in enumerate(zip(profile, profile[1:])):
+    for i, ((xa, za), (xb, zb)) in enumerate(pairwise(profile)):
         lift = 0.05
         k = _rake_trim(mat, rnd, (xa, 0, za - lift), (xb, 0, zb - lift), f'K{i}')
         # el remate no baja de la coronación: pivote en la base (z = 0)

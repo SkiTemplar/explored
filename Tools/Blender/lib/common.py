@@ -23,12 +23,14 @@ Convenciones del kit:
       random.Random(seed); nunca se usa random global sin sembrar.
 """
 
-import bpy
-import bmesh
 import math
 import os
 import random
-from mathutils import Vector, Matrix
+
+import bpy
+
+import bmesh
+from mathutils import Matrix, Vector
 from mathutils import noise as mnoise
 
 # ---------------------------------------------------------------------------
@@ -195,10 +197,12 @@ def get_material(name):
 
     bc_image = _load_texture(tex_cfg['bc']) if tex_cfg else None
 
+    alpha_out = None
     if bc_image is not None:
         tex_node = nt.nodes.new('ShaderNodeTexImage')
         tex_node.image = bc_image
         base_color_out = tex_node.outputs['Color']
+        alpha_out = tex_node.outputs['Alpha']
     else:
         base = nt.nodes.new('ShaderNodeRGB')
         base.outputs[0].default_value = cfg['base_color']
@@ -215,7 +219,7 @@ def get_material(name):
     if 'Metallic' in bsdf.inputs:
         bsdf.inputs['Metallic'].default_value = 0.0
 
-    if bc_image is not None and tex_cfg.get('masked'):
+    if alpha_out is not None and tex_cfg and tex_cfg.get('masked'):
         # Recorte alfa (mismo umbral que opacity_mask_clip_value en
         # Tools/Unreal/build_materials.py) + doble cara, para que la
         # previsualización EEVEE se lea igual que el Masked de Unreal.
@@ -223,7 +227,7 @@ def get_material(name):
         mat.alpha_threshold = 0.35
         mat.use_backface_culling = False
         if 'Alpha' in bsdf.inputs:
-            nt.links.new(tex_node.outputs['Alpha'], bsdf.inputs['Alpha'])
+            nt.links.new(alpha_out, bsdf.inputs['Alpha'])
 
     n_image = _load_texture(tex_cfg['n'], non_color=True) if tex_cfg else None
     if n_image is not None and 'Normal' in bsdf.inputs:
@@ -856,6 +860,23 @@ def displace_mesh_noise(obj, seed, strength=0.15, scale=1.5, octaves=2):
     me.update()
 
 
+def _bake_matrix(obj, mat):
+    """Hornea «mat» en los vértices de la malla y deja el objeto con la
+    transformación identidad: el mismo resultado que asignar matrix_world y
+    llamar a bpy.ops.object.transform_apply(location, rotation, scale), pero
+    sin el operador, que re-evalúa la escena entera en cada llamada (~20 ms
+    con cientos de objetos vivos: las ~1800 hojas de un árbol de selva se
+    llevaban más de 30 s solo en esto). «mat» es siempre una rotación
+    propia + traslación (base ortonormal dextrógira), así que no hay que
+    invertir normales como haría transform_apply con escalas negativas."""
+    obj.data.transform(mat)
+    obj.data.update()
+    obj.matrix_world = Matrix.Identity(4)
+    # transform_apply dejaba el objeto seleccionado y activo: se conserva
+    # por si algún llamador encadena operadores sobre el objeto activo.
+    select_only(obj)
+
+
 def orient_and_place(obj, origin, forward, up):
     """Orienta un objeto local (construido con el eje de crecimiento en +Y y
     el ancho en +X) para que +Y coincida con «forward» y +Z quede lo más
@@ -882,9 +903,7 @@ def orient_and_place(obj, origin, forward, up):
         (right.z, forward.z, up_final.z, origin[2]),
         (0.0, 0.0, 0.0, 1.0),
     ))
-    obj.matrix_world = mat
-    select_only(obj)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    _bake_matrix(obj, mat)
 
 
 def orient_and_place_zaxis(obj, origin, direction, up_hint=None):
@@ -918,9 +937,7 @@ def orient_and_place_zaxis(obj, origin, direction, up_hint=None):
         (right.z, up_final.z, direction.z, origin[2]),
         (0.0, 0.0, 0.0, 1.0),
     ))
-    obj.matrix_world = mat
-    select_only(obj)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    _bake_matrix(obj, mat)
 
 
 def add_ring_bumps(obj, spacing, amplitude, rnd=None, sharpness=6):

@@ -25,15 +25,16 @@ hacia +Z, cabeza hacia +X). Escala real en metros.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
-import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
-import bmesh  # noqa: E402
 import bpy  # noqa: E402
+
+import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -128,7 +129,7 @@ def _interp(table, u):
     """Interpolación lineal en una tabla [(u, a, b, ...)] ordenada por u."""
     if u <= table[0][0]:
         return table[0][1:]
-    for a, b in zip(table, table[1:]):
+    for a, b in pairwise(table):
         if u <= b[0]:
             f = (u - a[0]) / max(b[0] - a[0], 1e-9)
             return tuple(a[j] + (b[j] - a[j]) * f for j in range(1, len(a)))
@@ -222,7 +223,7 @@ class FishBody:
             rings.append(ring)
         for k in range(segs):
             bm.faces.new((tip, rings[0][(k + 1) % segs], rings[0][k]))
-        for a, b in zip(rings, rings[1:]):
+        for a, b in pairwise(rings):
             for k in range(segs):
                 k2 = (k + 1) % segs
                 bm.faces.new((a[k], a[k2], b[k2], b[k]))
@@ -239,7 +240,7 @@ class FishBody:
         return u, max(-1.0, min(1.0, zn))
 
 
-def _fin_mesh(name, base, tips, rows=3, fold=0.0, thick=0.002, arch=0.0):
+def _fin_mesh(name, base, tips, rows=3, fold=None, thick=0.002, arch=None):
     """Aleta de membrana: rejilla entre la línea de base (sobre el cuerpo)
     y la línea de puntas, con los radios plegados en abanico (`fold`,
     desplazamiento alterno a lo largo de `fold_dir`). Devuelve el objeto
@@ -404,7 +405,7 @@ def eyes(p, body, u, zn, radius, iris, pupil=None, cooked=False, both=True, pupi
         e = C.make_blob(f'Eye{side}', c, 1.0, 11, subdivisions=2, noise_strength=0.0, scale=(r, r * 0.55, r))
         M.assign(e, ['M_Leaf'])
         ic = FPAL['eye_cooked'] if cooked else iris
-        I.color_fn(e, lambda co: ic)
+        I.color_fn(e, lambda co, ic=ic: ic)
         p.add(e, 'none')
         if cooked:
             continue

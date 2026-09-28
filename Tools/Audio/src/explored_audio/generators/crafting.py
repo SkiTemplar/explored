@@ -10,7 +10,7 @@ import numpy as np
 
 from ..constants import SAMPLE_RATE
 from ..envelopes import ar_envelope, fit_length, smooth_random_walk
-from ..filters import static_filter, time_varying_filter
+from ..filters import static_filter
 from ..granular import render_noise_grains
 from ..levels import k_weighted_momentary_max
 from ..loop import seamless_loop
@@ -166,7 +166,6 @@ def wood_saw(name: str) -> np.ndarray:
     rng = rng_for(name)
     dur = rng.uniform(1.6, 2.0)
     n = int(dur * SR)
-    t = np.arange(n) / SR
 
     # Posicion de la hoja: sinusoide con un vaiven de 1,7-2,1 Hz y algo de
     # irregularidad de pasada a pasada (la mano no es un metronomo).

@@ -13,12 +13,12 @@ una fase fraccionaria para que el borde sea «un sitio cualquiera» de la textur
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import numpy as np
 
 from . import stylized
-from .palette import TERRAIN_TARGETS, harmonize_albedo
 from .noise import (
     ambient_occlusion,
     blur,
@@ -36,6 +36,7 @@ from .noise import (
     uv_grid,
     voronoi,
 )
+from .palette import TERRAIN_TARGETS, harmonize_albedo
 
 
 @dataclass
@@ -61,10 +62,14 @@ class Material:
         }
 
 
+# Generador de un material: (size, seed) -> Material o mapas ya terminados.
+MaterialFn = Callable[[int, int], "Material | dict[str, np.ndarray]"]
+
+
 @dataclass
 class Spec:
     name: str
-    fn: object
+    fn: MaterialFn
     tile_m: float
     use: str
     outputs: tuple[str, ...] = ("BC", "N", "ARH")

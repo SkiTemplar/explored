@@ -18,14 +18,14 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
-import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
-import items_herramientas as H  # noqa: E402
-
-import bmesh  # noqa: E402
 import bpy  # noqa: E402
+
+import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
+import items_herramientas as H  # noqa: E402
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP

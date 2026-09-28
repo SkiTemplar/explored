@@ -14,6 +14,8 @@ Reglas (Source/Explored/Crafting/CraftingLibrary.cpp e Items/ItemTypes.cpp):
 
 from __future__ import annotations
 
+import copy
+import json
 from dataclasses import dataclass, field
 
 
@@ -119,7 +121,24 @@ def _dominates(a: Instance, b: Instance) -> bool:
     return a.tags == b.tags and all(pa.get(k, 0.0) >= v for k, v in b.props)
 
 
+# Resultados ya calculados, por contenido de (items, templates, max_depth). La simulación es
+# pura y cara (segundos con el catálogo real), y los tests y --write-* la repiten con los mismos
+# datos; la clave es el JSON completo, así que cualquier cambio de datos recalcula.
+_SIMULATE_CACHE: dict[str, Reachability] = {}
+_CACHE_SIZE = 8
+
+
 def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Reachability:
+    """Como ``_simulate``, con memoria de los últimos catálogos (devuelve una copia)."""
+    key = json.dumps([items, templates, max_depth], sort_keys=True, default=repr)
+    if key not in _SIMULATE_CACHE:
+        if len(_SIMULATE_CACHE) >= _CACHE_SIZE:
+            _SIMULATE_CACHE.pop(next(iter(_SIMULATE_CACHE)))
+        _SIMULATE_CACHE[key] = _simulate(items, templates, max_depth)
+    return copy.deepcopy(_SIMULATE_CACHE[key])
+
+
+def _simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Reachability:
     """Explora combinaciones desde los materiales en bruto hasta ``max_depth`` pasos.
 
     Materiales en bruto: todo objeto que no es resultado de ninguna plantilla ni
@@ -215,4 +234,52 @@ def single_piece_templates(items: list[dict], templates: list[dict]) -> dict[str
                 hits.append(item["id"])
         if hits:
             out[tpl["id"]] = hits
+    return out
+
+
+MAX_ACTIONS = 3  # UCraftingLibrary::MaxActions
+# Mangos atados de referencia para buscar verbos escondidos: (mango, ligadura).
+REFERENCE_HANDLES = (("palo_recto", "cuerda"), ("bambu_grueso", "cuerda"), ("madera_dura", "cuerda"))
+
+
+def offered_verbs(templates: list[dict], left: Instance, right: Instance) -> list[str]:
+    """Todos los verbos que casan, en el orden de FindActionsWithData (plantillas en orden del fichero)."""
+    verbs: list[str] = []
+    for tpl in templates:
+        if template_matches(tpl, left, right):
+            for verb in tpl.get("verbs", []):
+                if verb not in verbs:
+                    verbs.append(verb)
+    return verbs
+
+
+def hidden_templates(items: list[dict], templates: list[dict]) -> list[tuple[str, str, list[str], list[str]]]:
+    """Pares cuyo cuarto verbo o siguientes esconden una plantilla que no es genérica.
+
+    ``FindActionsWithData`` corta en ``MaxActions`` verbos: si una plantilla solo tiene
+    verbos de los que quedan fuera, ese par nunca la ofrece en la mano. Se miran los pares
+    del catálogo y cada objeto con un mango atado de ``REFERENCE_HANDLES``.
+    Devuelve (pieza A, pieza B, verbos escondidos, plantillas escondidas).
+    """
+    by_id = {i["id"]: i for i in items}
+    pieces = [leaf(i) for i in items if "interno" not in i.get("tags", [])]
+    handles = []
+    for handle, lashing in REFERENCE_HANDLES:
+        if handle in by_id and lashing in by_id:
+            a, b = leaf(by_id[handle]), leaf(by_id[lashing])
+            tpl = best_template(templates, "Atar", a, b)
+            if tpl is not None and tpl.get("resultDefinitionId") in by_id:
+                handles.append((f"{handle} atado con {lashing}", combine(by_id[tpl["resultDefinitionId"]], a, b)))
+    pairs = [(a.definition, a, b.definition, b) for n, a in enumerate(pieces) for b in pieces[n:]]
+    pairs += [(name, h, p.definition, p) for name, h in handles for p in pieces]
+    out = []
+    for name_a, a, name_b, b in pairs:
+        verbs = offered_verbs(templates, a, b)
+        if len(verbs) <= MAX_ACTIONS:
+            continue
+        hidden = verbs[MAX_ACTIONS:]
+        lost = [t["id"] for t in templates if not t["id"].endswith("_generico") and template_matches(t, a, b)
+                and all(v in hidden for v in t.get("verbs", []))]
+        if lost:
+            out.append((name_a, name_b, hidden, lost))
     return out
