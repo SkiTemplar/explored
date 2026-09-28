@@ -987,6 +987,8 @@ void FCombatModelSpec::Define()
 			TestEqual(TEXT("daño saturado"), (int32)Sat.HealthDamage, 255);
 			TestEqual(TEXT("corte NaN = 0"), (int32)Sat.CutDepth255, 0);
 			TestEqual(TEXT("aturdimiento saturado"), (int32)Sat.StunDeciseconds, 255);
+			Wild.StunMs = MAX_int32; // StunMs + 50 desbordaba int32 (UB)
+			TestEqual(TEXT("aturdimiento máximo saturado"), (int32)FCombatModel::MakeImpact(0, 0, Wild, false, true, false).StunDeciseconds, 255);
 			const FCombatImpactMsg Dodged = FCombatModel::MakeImpact(0, 0, Wild, true, true, false);
 			TestTrue(TEXT("esquivado va vacío"), Dodged.bDodged && !Dodged.bKilled && Dodged.HealthDamage == 0
 				&& Dodged.CutDepth255 == 0 && Dodged.StunDeciseconds == 0);

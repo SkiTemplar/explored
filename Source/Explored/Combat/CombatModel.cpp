@@ -640,7 +640,7 @@ FCombatImpactMsg FCombatModel::MakeImpact(uint16 AttackerId, uint16 VictimId, co
 	Msg.HealthDamage = static_cast<uint8>(FMath::Clamp(Hit.HealthDamage, 0, 255));
 	const float Depth = FMath::IsFinite(Hit.CutDepth) ? FMath::Clamp(Hit.CutDepth, 0.0f, 1.0f) : 0.0f;
 	Msg.CutDepth255 = static_cast<uint8>(FMath::RoundToInt(Depth * 255.0f));
-	Msg.StunDeciseconds = static_cast<uint8>(FMath::Clamp((FMath::Max(0, Hit.StunMs) + 50) / 100, 0, 255));
+	Msg.StunDeciseconds = static_cast<uint8>(FMath::Clamp<int64>((static_cast<int64>(FMath::Max(0, Hit.StunMs)) + 50) / 100, 0, 255));
 	return Msg;
 }
 
