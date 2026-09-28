@@ -166,6 +166,10 @@ namespace
 	 * streaming que dispare la celda, así que no puede depender de ella. */
 	constexpr double LandingSafetyRadiusCm = 40000.0;
 
+	/** Radio (metros) sin vegetación alrededor del punto de aparición y de cada punto de interés:
+	 * mínimo pedido por el director tras ver al jugador aparecer dentro de un arbusto. */
+	constexpr float VegetationClearRadiusM = 6.0f;
+
 	/**
 	 * Accede a una UPROPERTY aunque sea C++ private (Grids de UWorldPartitionRuntimeSpatialHash,
 	 * CellSize/LoadingRange de UHLODLayer no tienen setter público fuera del editor de detalles).
@@ -528,6 +532,20 @@ namespace
 		return FVector(Landing->Center, Density.SampleColumn(Landing->Center.X, Landing->Center.Y).Height + 2.0f);
 	}
 
+	/** Puntos protegidos (metros): el spawn de Landing y todos los puntos de interés ya colocados.
+	 * Los usan tanto la vegetación (VegetationClearRadiusM) como las formaciones rocosas y el
+	 * microdetalle de playa, para no tapar ni el aterrizaje ni ningún hito jugable. */
+	TArray<FVector> CollectAvoidPoints(const FTerrainDensity& Density)
+	{
+		TArray<FVector> AvoidPoints;
+		AvoidPoints.Add(FindSpawnPoint(Density));
+		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		{
+			AvoidPoints.Add(Poi.Location);
+		}
+		return AvoidPoints;
+	}
+
 	int32 RunBake(const FTerrainDensity& Density, const FTerrainChunkSettings& Settings, const FBox2D& Region)
 	{
 		const double StartTime = FPlatformTime::Seconds();
@@ -741,7 +759,8 @@ namespace
 		}
 	}
 
-	void SpawnVegetation(UWorld* World, const FTerrainDensity& Density, const FVector& SpawnLocationCm)
+	void SpawnVegetation(UWorld* World, const FTerrainDensity& Density, const FVector& SpawnLocationCm,
+		const TArray<FVector>& AvoidPoints)
 	{
 		TArray<FScatterRule> Rules = FVegetationScatter::DefaultRules();
 		ResolveScatterMeshes(Rules);
@@ -754,7 +773,7 @@ namespace
 		const double Start = FPlatformTime::Seconds();
 		const float E = FArchipelagoLayout::WorldHalfExtent;
 		const FScatterResult Result = FVegetationScatter::Generate(Density, Rules, FBox2D(FVector2D(-E), FVector2D(E)),
-			Density.GetLayout().Seed);
+			Density.GetLayout().Seed, AvoidPoints, VegetationClearRadiusM);
 		UE_LOG(LogExplored, Display, TEXT("Vegetación: %d instancias en %.1f s"), Result.Total(), FPlatformTime::Seconds() - Start);
 
 		// Celdas de 512 m: el culling y el streaming trabajan por celda.
@@ -1016,20 +1035,10 @@ namespace
 	 * microdetalle de playa. Único punto de entrada de este bloque: se llama una vez desde
 	 * ComposeMap. No falla si faltan los manifiestos o las mallas; avisa y sigue.
 	 */
-	void SpawnFormations(UWorld* World, const FTerrainDensity& Density)
+	void SpawnFormations(UWorld* World, const FTerrainDensity& Density, const TArray<FVector>& AvoidPoints)
 	{
 		const double Start = FPlatformTime::Seconds();
 		constexpr float CellSizeCm = 51200.0f; // mismas celdas de 512 m que la vegetación.
-
-		// Puntos protegidos: el spawn de Landing y todos los puntos de interés ya colocados, para
-		// no tapar ni el aterrizaje ni ningún hito jugable (no hay un sistema de rutas aparte que
-		// proteger todavía; FindBeach/FindInland resuelven sobre el terreno, no sobre trazos fijos).
-		TArray<FVector> AvoidPoints;
-		AvoidPoints.Add(FindSpawnPoint(Density));
-		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
-		{
-			AvoidPoints.Add(Poi.Location);
-		}
 
 		const uint32 Seed = Density.GetLayout().Seed;
 		const TArray<FFormationInstance> Formations = FFormationPlacementModel::Generate(Density, Seed, AvoidPoints);
@@ -1123,6 +1132,9 @@ namespace
 		// LandingSafetyRadiusCm alrededor de él se marca siempre cargada (bIsSpatiallyLoaded=false)
 		// porque el jugador aparece ahí antes de que ninguna fuente de streaming la reclame.
 		const FVector Spawn = FindSpawnPoint(Density) * 100.0;
+		// Compartido por SpawnVegetation (radio despejado) y SpawnFormations (no tapar hitos): un
+		// único cálculo, FPoiLayout::Generate no es gratis y ambas listas deben coincidir.
+		const TArray<FVector> AvoidPoints = CollectAvoidPoints(Density);
 
 		for (const FTerrainPiece& Piece : Terrain)
 		{
@@ -1142,11 +1154,11 @@ namespace
 		SpawnOptional(World, TEXT("/Script/Explored.ExploredOcean"), FVector::ZeroVector, TEXT("Ocean"));
 		if (bVegetation)
 		{
-			SpawnVegetation(World, Density, Spawn);
+			SpawnVegetation(World, Density, Spawn, AvoidPoints);
 		}
 		if (bFormations)
 		{
-			SpawnFormations(World, Density);
+			SpawnFormations(World, Density, AvoidPoints);
 		}
 
 		const bool bActorsSaved = SaveExternalActorPackages(World);

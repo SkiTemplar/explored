@@ -241,7 +241,7 @@ bool FVegetationScatter::FindSurface(const FTerrainDensity& Density, float X, fl
 }
 
 FScatterResult FVegetationScatter::Generate(const FTerrainDensity& Density, const TArray<FScatterRule>& Rules,
-	const FBox2D& Region, uint32 Seed)
+	const FBox2D& Region, uint32 Seed, const TArray<FVector>& AvoidPoints, float ClearRadiusM)
 {
 	FScatterResult Result;
 	Result.PerRule.SetNum(Rules.Num());
@@ -275,6 +275,24 @@ FScatterResult FVegetationScatter::Generate(const FTerrainDensity& Density, cons
 				if (!Region.IsInside(FVector2D(X, Y)))
 				{
 					continue;
+				}
+
+				if (ClearRadiusM > 0.0f)
+				{
+					const float ClearRadiusSqM = ClearRadiusM * ClearRadiusM;
+					bool bTooClose = false;
+					for (const FVector& Avoid : AvoidPoints)
+					{
+						if (FVector2D::DistSquared(FVector2D(X, Y), FVector2D(Avoid)) < ClearRadiusSqM)
+						{
+							bTooClose = true;
+							break;
+						}
+					}
+					if (bTooClose)
+					{
+						continue;
+					}
 				}
 
 				const FTerrainColumn Column = Density.SampleColumn(X, Y);

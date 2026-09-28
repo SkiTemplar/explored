@@ -61,9 +61,15 @@ struct EXPLORED_API FVegetationScatter
 	/** Reglas por defecto del archipiélago (rutas de /Game/Generated/Meshes). */
 	static TArray<FScatterRule> DefaultRules();
 
-	/** Coloca las instancias dentro del rectángulo (metros). */
+	/**
+	 * Coloca las instancias dentro del rectángulo (metros).
+	 *
+	 * AvoidPoints (metros, XY) y ClearRadiusM excluyen instancias alrededor del punto de aparición
+	 * y de los puntos de interés: sin esto el jugador puede aparecer dentro de un arbusto o helecho
+	 * de primer plano (ClearRadiusM=0, el valor por defecto, no filtra nada).
+	 */
 	static FScatterResult Generate(const FTerrainDensity& Density, const TArray<FScatterRule>& Rules,
-		const FBox2D& Region, uint32 Seed);
+		const FBox2D& Region, uint32 Seed, const TArray<FVector>& AvoidPoints = {}, float ClearRadiusM = 0.0f);
 
 	/**
 	 * Altura de la superficie más alta en (X, Y) según la densidad exacta (con
