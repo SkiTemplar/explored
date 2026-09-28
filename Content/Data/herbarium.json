@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "note": "Colección «Herbario» del museo de la base (biblia 07 §3.2-3.6). Cada pieza: nombre de vitrina (≤6 palabras) y ficha (≤2 frases, ≤160 caracteres ES / ≤200 EN) bilingües, islas donde aparece (minúsculas de EIslandArchetype), hábitat, cómo se consigue y fase. Lo valida Tools/DataCheck. Red (biblia 08 §2.11, §5.5): el museo es uno por mundo, estado del servidor replicado en el GameState; el texto es dato local.",
+  "collection": "herbario",
+  "display": "marco_herbario",
+  "pieces": [
+    {
+      "id": "orquidea_acantilado",
+      "nameEs": "Orquídea de acantilado",
+      "nameEn": "Cliff orchid",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "acantilado",
+      "obtain": "cortar_y_prensar",
+      "phase": "F2",
+      "descriptionEs": "Orquídea de acantilado. Crece donde nada más se sostiene, con las raíces metidas en la propia roca.",
+      "descriptionEn": "Cliff orchid. Grows where nothing else can hold on, roots wedged into the rock itself."
+    },
+    {
+      "id": "hibisco_silvestre",
+      "nameEs": "Hibisco silvestre",
+      "nameEn": "Wild hibiscus",
+      "islands": [
+        "landing",
+        "emerald"
+      ],
+      "habitat": "linde_de_selva",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Hibisco silvestre. Cada flor dura un solo día, así que la que se prensa hay que cortarla por la mañana.",
+      "descriptionEn": "Wild hibiscus. Each flower lasts a single day, so the one you press has to be cut in the morning."
+    },
+    {
+      "id": "helecho_de_cueva",
+      "nameEs": "Helecho de cueva",
+      "nameEn": "Cave fern",
+      "islands": [
+        "emerald",
+        "smoke"
+      ],
+      "habitat": "boca_de_cueva",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Helecho de cueva. Vive en la penumbra de la entrada, justo hasta donde llega la luz.",
+      "descriptionEn": "Cave fern. Lives in the half-dark of the entrance, exactly as far in as the light reaches."
+    },
+    {
+      "id": "musgo_luminoso",
+      "nameEs": "Musgo luminoso",
+      "nameEn": "Glowing moss",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "caverna",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Musgo luminoso. En la mano no brilla; hay que devolverlo a la oscuridad para ver el verde.",
+      "descriptionEn": "Glowing moss. In your hand it doesn't shine; put it back in the dark to see the green."
+    },
+    {
+      "id": "loto_de_cenote",
+      "nameEs": "Loto de cenote",
+      "nameEn": "Cenote lotus",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "cenote",
+      "obtain": "cortar_y_prensar",
+      "phase": "F2",
+      "descriptionEs": "Loto de cenote. Las hojas flotan en el agua dulce y la flor se cierra al caer la tarde.",
+      "descriptionEn": "Cenote lotus. Its leaves float on the fresh water and the flower closes as evening falls."
+    },
+    {
+      "id": "campanas_manglar",
+      "nameEs": "Campanas de manglar",
+      "nameEn": "Mangrove bells",
+      "islands": [
+        "mangrove"
+      ],
+      "habitat": "manglar",
+      "obtain": "cortar_y_prensar",
+      "phase": "F2",
+      "descriptionEs": "Campanas de manglar. Flores colgantes que las abejas visitan en cuanto sale el sol.",
+      "descriptionEn": "Mangrove bells. Hanging flowers the bees visit as soon as the sun is up."
+    },
+    {
+      "id": "frangipani",
+      "nameEs": "Frangipani",
+      "nameEn": "Frangipani",
+      "islands": [
+        "landing"
+      ],
+      "habitat": "linde_de_playa",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Frangipani. Cinco pétalos blancos con el centro amarillo; el olor se queda en los dedos un buen rato.",
+      "descriptionEn": "Frangipani. Five white petals with a yellow centre; the scent stays on your fingers for a good while."
+    },
+    {
+      "id": "alga_roja_seca",
+      "nameEs": "Alga roja seca",
+      "nameEn": "Dried red seaweed",
+      "islands": [
+        "landing",
+        "teeth"
+      ],
+      "habitat": "linea_de_resaca",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Alga roja seca. La marea la deja en la línea de resaca; seca conserva el color, pero ya no huele a mar.",
+      "descriptionEn": "Dried red seaweed. The tide leaves it along the wrack line; dried, it keeps its colour but loses the sea smell."
+    },
+    {
+      "id": "liquen_de_lava",
+      "nameEs": "Liquen de lava",
+      "nameEn": "Lava lichen",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "roca_volcanica",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Liquen de lava. Es lo primero que vive sobre la roca nueva del Humo, en manchas grises del tamaño de una moneda.",
+      "descriptionEn": "Lava lichen. The first thing to live on Smoke Island's new rock, in grey patches the size of a coin."
+    },
+    {
+      "id": "flor_fantasma_nocturna",
+      "nameEs": "Flor fantasma nocturna",
+      "nameEn": "Night ghost flower",
+      "islands": [
+        "emerald"
+      ],
+      "habitat": "suelo_de_selva",
+      "obtain": "cortar_y_prensar",
+      "phase": "AA",
+      "descriptionEs": "Flor fantasma nocturna. Blanca y sin hojas, sale del suelo de la selva y solo se abre de noche.",
+      "descriptionEn": "Night ghost flower. White and leafless, it comes up from the forest floor and only opens at night."
+    }
+  ]
+}

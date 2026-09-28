@@ -15,9 +15,15 @@
   ],
   "buildingPieces": [
     "astillero",
+    "atril_cuaderno",
     "banco_chatarra",
+    "bandeja_conchas",
     "espantapajaros",
-    "pila_compost"
+    "marco_herbario",
+    "panel_fosiles",
+    "pecera_museo",
+    "pila_compost",
+    "vitrina_minerales"
   ],
   "plantStages": [
     "batata.brote",

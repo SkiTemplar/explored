@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "note": "Colección «Minerales y cristales» del museo de la base (biblia 07 §3.2-3.6). Cada pieza: nombre de vitrina (≤6 palabras) y ficha (≤2 frases, ≤160 caracteres ES / ≤200 EN) bilingües, islas donde aparece (minúsculas de EIslandArchetype), hábitat, cómo se consigue y fase. Lo valida Tools/DataCheck. Red (biblia 08 §2.11, §5.5): el museo es uno por mundo, estado del servidor replicado en el GameState; el texto es dato local.",
+  "collection": "minerales",
+  "display": "vitrina_minerales",
+  "pieces": [
+    {
+      "id": "basalto_pulido",
+      "nameEs": "Basalto pulido",
+      "nameEn": "Polished basalt",
+      "islands": [
+        "teeth",
+        "smoke"
+      ],
+      "habitat": "orilla_rocosa",
+      "obtain": "recoger_playa",
+      "phase": "AA",
+      "item": "basalto",
+      "descriptionEs": "Basalto pulido. El oleaje de Los Dientes lo deja liso y negro, frío en la mano incluso al mediodía.",
+      "descriptionEn": "Polished basalt. The surf at the Teeth wears it smooth and black, cold in the hand even at noon."
+    },
+    {
+      "id": "obsidiana_negra",
+      "nameEs": "Obsidiana negra",
+      "nameEn": "Black obsidian",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "crater",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "obsidiana",
+      "descriptionEs": "Obsidiana negra. Vidrio de volcán; el borde de una lasca corta más que la navaja.",
+      "descriptionEn": "Black obsidian. Volcanic glass; the edge of a flake cuts better than the penknife."
+    },
+    {
+      "id": "obsidiana_arcoiris",
+      "nameEs": "Obsidiana arcoíris",
+      "nameEn": "Rainbow obsidian",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "crater",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "obsidiana",
+      "rarity": "raro",
+      "descriptionEs": "Obsidiana arcoíris. Solo enseña el color si la giras contra el sol, y el resto del tiempo es negra como cualquier otra.",
+      "descriptionEn": "Rainbow obsidian. It only shows its colour if you turn it against the sun, and the rest of the time it's as black as any other."
+    },
+    {
+      "id": "cobre_nativo",
+      "nameEs": "Cobre nativo",
+      "nameEn": "Native copper",
+      "islands": [
+        "emerald",
+        "smoke"
+      ],
+      "habitat": "veta_de_basalto",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "mineral_cobre",
+      "descriptionEs": "Cobre nativo. Sale de la veta ya hecho metal, en hilos retorcidos que se doblan con los dedos.",
+      "descriptionEn": "Native copper. It comes out of the seam already as metal, in twisted threads you can bend with your fingers."
+    },
+    {
+      "id": "hierro_meteorito",
+      "nameEs": "Hierro de meteorito",
+      "nameEn": "Meteoric iron",
+      "islands": [
+        "teeth"
+      ],
+      "habitat": "crater_de_impacto",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "hierro_meteorito",
+      "rarity": "raro",
+      "descriptionEs": "Hierro de meteorito. Cayó del cielo sobre Los Dientes; pesa el doble de lo que aparenta y desvía la brújula.",
+      "descriptionEn": "Meteoric iron. It fell from the sky onto the Teeth; it weighs twice what it looks and pulls the compass needle."
+    },
+    {
+      "id": "azufre_cristalizado",
+      "nameEs": "Azufre cristalizado",
+      "nameEn": "Crystallised sulphur",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "fumarola",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "azufre",
+      "descriptionEs": "Azufre cristalizado. Agujas amarillas de la boca de una fumarola que huelen a huevo podrido hasta dentro de la vitrina.",
+      "descriptionEn": "Crystallised sulphur. Yellow needles from the mouth of a fumarole that smell of rotten eggs even inside the case."
+    },
+    {
+      "id": "cuarzo_transparente",
+      "nameEs": "Cuarzo transparente",
+      "nameEn": "Clear quartz",
+      "islands": [
+        "emerald",
+        "smoke"
+      ],
+      "habitat": "caverna",
+      "obtain": "minar",
+      "phase": "AA",
+      "item": "cristal_cuarzo",
+      "descriptionEs": "Cuarzo transparente. Seis caras rectas que nadie talló; a través de él se lee la letra pequeña.",
+      "descriptionEn": "Clear quartz. Six straight faces nobody cut; small print reads clearly through it."
+    },
+    {
+      "id": "amatista_caverna",
+      "nameEs": "Amatista de caverna",
+      "nameEn": "Cave amethyst",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "caverna",
+      "obtain": "minar",
+      "phase": "AA",
+      "rarity": "raro",
+      "descriptionEs": "Amatista de caverna. Violeta por dentro de una piedra hueca que por fuera parecía un canto cualquiera.",
+      "descriptionEn": "Cave amethyst. Violet inside a hollow stone that looked like any other pebble from outside."
+    },
+    {
+      "id": "opalo_fumarola",
+      "nameEs": "Ópalo de fumarola",
+      "nameEn": "Fumarole opal",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "fumarola",
+      "obtain": "minar",
+      "phase": "AA",
+      "rarity": "raro",
+      "descriptionEs": "Ópalo de fumarola. Blanco lechoso con destellos verdes; se forma donde el vapor calienta la roca.",
+      "descriptionEn": "Fumarole opal. Milky white with green flashes; it forms where steam heats the rock."
+    },
+    {
+      "id": "caliza_veteada",
+      "nameEs": "Caliza veteada",
+      "nameEn": "Streaked limestone",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "item": "caliza",
+      "descriptionEs": "Caliza veteada. Franjas grises y crema, y cada franja es un fondo de mar distinto.",
+      "descriptionEn": "Streaked limestone. Grey and cream bands, and each band is a different sea floor."
+    }
+  ]
+}
