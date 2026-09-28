@@ -186,6 +186,24 @@ struct EXPLORED_API FBoatState
 	/** La balsa ha llegado al borde del mar abierto y no avanza más. */
 	bool bAtOpenOceanLimit = false;
 
+	/** Amarrada a un poste o a un muelle: el cabo no deja que se aleje más de MooringLengthCm del punto de amarre. */
+	bool bMoored = false;
+	/** El cabo va tenso en este paso (el barco tira del amarre). */
+	bool bMooringTaut = false;
+	/** Punto de amarre (cm, mundo, XY). */
+	FVector2D MooringAnchorCm = FVector2D::ZeroVector;
+	/** Largo del cabo (cm). */
+	float MooringLengthCm = 0.0f;
+
+	/** Golpes contra el fondo que han dañado el casco desde la construcción (los consume el astillero para repartirlos en las uniones). */
+	int32 ImpactCount = 0;
+	/** Velocidad del último golpe (cm/s). */
+	float LastImpactSpeedCmS = 0.0f;
+	/** Dirección del último golpe en el marco del casco (X proa, Y estribor; unitaria). */
+	FVector2D LastImpactDirection = FVector2D(1.0, 0.0);
+	/** Trabajo de roce contra el fondo varado y en marcha (N·m acumulados): la arena y la roca gastan las uniones. */
+	float GroundScrapeWorkNm = 0.0f;
+
 	float StrokeTimeLeftS = 0.0f;
 	EBoatSide StrokeSide = EBoatSide::Port;
 	/** Tiempo pendiente de integrar (paso fijo); no se guarda. */
@@ -203,6 +221,9 @@ struct EXPLORED_API FBoatSaveData
 	float CargoKg = 0.0f;
 	float WaterInHullKg = 0.0f;
 	bool bSailRaised = false;
+	bool bMoored = false;
+	FVector2D MooringAnchorCm = FVector2D::ZeroVector;
+	float MooringLengthCm = 0.0f;
 };
 
 /**

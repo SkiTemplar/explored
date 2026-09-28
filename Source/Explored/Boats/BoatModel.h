@@ -76,6 +76,29 @@ public:
 
 	FBoatModel() : FBoatModel(EBoatType::Raft, FVector::ZeroVector, 0.0f) {}
 	FBoatModel(EBoatType InType, const FVector& InLocationCm, float InYawDeg);
+	/**
+	 * Con una ficha arbitraria: la de un casco armado por piezas
+	 * (FHullAssemblyModel::ToBoatDefinition). Type solo decide el nombre y el
+	 * guardado; la física sale de la ficha.
+	 */
+	FBoatModel(const FBoatDefinition& InDefinition, const FVector& InLocationCm, float InYawDeg);
+
+	/** Cambia la ficha sin tocar el estado (una unión rota ha soltado una pieza). Recorta la carga a la nueva capacidad. */
+	void SetDefinition(const FBoatDefinition& InDefinition);
+
+	/** Velocidad sobre el fondo (cm/s): la arrancada con la que sale de la botadura. */
+	void SetVelocityCmS(const FVector2D& VelocityCmS) { State.VelocityCmS = VelocityCmS; }
+
+	/**
+	 * Amarra a un poste o muelle en AnchorCm con un cabo de LengthCm. False si el
+	 * punto de amarre queda más lejos que el cabo, si el cabo no tiene largo o si
+	 * el barco está destrozado. Amarrado sigue cabeceando y balanceándose con las
+	 * olas, pero la deriva no lo aleja más que el cabo.
+	 */
+	bool Moor(const FVector2D& AnchorCm, float LengthCm);
+	/** Suelta el amarre. */
+	void CastOff() { State.bMoored = false; State.bMooringTaut = false; }
+	bool IsMoored() const { return State.bMoored; }
 
 	/** Avanza DeltaSeconds (se acumula y se integra a paso fijo). */
 	void Step(float DeltaSeconds, const FBoatControls& Controls, const FBoatEnvironment& Environment);
@@ -104,7 +127,7 @@ public:
 	void ApplyDamage(float Amount01);
 
 	const FBoatState& GetState() const { return State; }
-	const FBoatDefinition& GetDefinition() const { return Definition(State.Type); }
+	const FBoatDefinition& GetDefinition() const { return Def; }
 
 	/** Masa total a bordo: casco, tripulante, carga y agua embarcada (kg). */
 	float TotalMassKg() const;
@@ -136,12 +159,14 @@ public:
 	float GetMaxAbsRollDeg() const { return MaxAbsRollDeg; }
 
 	FBoatSaveData ToSaveData() const;
-	static FBoatModel FromSaveData(const FBoatSaveData& Data);
+	/** Con CustomDefinition, la ficha del casco por piezas que se reconstruye aparte (el astillero guarda las piezas). */
+	static FBoatModel FromSaveData(const FBoatSaveData& Data, const FBoatDefinition* CustomDefinition = nullptr);
 
 private:
 	void Substep(float H, float WaveTime, const FBoatControls& Controls, const FBoatEnvironment& Environment);
 
 	FBoatState State;
+	FBoatDefinition Def;
 	FVector2D LastApparentWindCmS = FVector2D::ZeroVector;
 	float LastApparentWindAngleDeg = 0.0f;
 	float LastLeewayDeg = 0.0f;
