@@ -408,9 +408,10 @@ FWildfireStepResult FWildfireModel::Advance(int64 NowSecond, int64 NowMinute, co
 	{
 		return Out;
 	}
-	const int64 Pending = NowSecond - LastSecond;
-	const int64 Steps = FMath::Min<int64>(Pending, MaxCatchUpSteps);
-	Out.StepsDropped = (int32)FMath::Min<int64>(Pending - Steps, MAX_int32);
+	// En uint64: con un LastSecond cargado muy negativo, la resta en int64 desborda y el bucle no acaba.
+	const uint64 Pending = (uint64)NowSecond - (uint64)LastSecond;
+	const int64 Steps = (int64)FMath::Min<uint64>(Pending, (uint64)MaxCatchUpSteps);
+	Out.StepsDropped = (int32)FMath::Min<uint64>(Pending - (uint64)Steps, (uint64)MAX_int32);
 	for (int64 S = NowSecond - Steps + 1; S <= NowSecond; ++S)
 	{
 		Step(S, NowMinute, Conditions, ObserversCm, Out);
@@ -506,15 +507,20 @@ bool FWildfireModel::Load(const FSaveValue& Value)
 		{
 			return false;
 		}
-		if (X < MIN_int32 || X > MAX_int32 || Y < MIN_int32 || Y > MAX_int32
+		// CellAt nunca da más de ±1e9 y los minutos se suman a duraciones: fuera de esos rangos es un guardado roto.
+		constexpr int64 MaxCell = 1000000000;
+		constexpr int64 MaxMinute = static_cast<int64>(1) << 60;
+		if (X < -MaxCell || X > MaxCell || Y < -MaxCell || Y > MaxCell
+			|| BurntMinute < -MaxMinute || BurntMinute > MaxMinute || WetUntil < -MaxMinute || WetUntil > MaxMinute
 			|| State < 0 || State >= (int64)EFireCellState::Count || CellFuel < 0 || CellFuel >= (int64)EFireFuel::Count
 			|| Steps < 0 || Steps > ShrubBurnSteps)
 		{
 			return false;
 		}
 		const EFireCellState CellState = (EFireCellState)State;
-		// Una celda que arde sin combustible o sin tiempo de quema no puede existir.
-		if (CellState == EFireCellState::Burning && (CellFuel == (int64)EFireFuel::None || Steps == 0))
+		// Una celda que arde sin combustible, sin tiempo de quema o con más del que da su combustible no puede existir.
+		if (CellState == EFireCellState::Burning
+			&& (CellFuel == (int64)EFireFuel::None || Steps == 0 || Steps > WildfirePriv::BurnStepsFor((EFireFuel)CellFuel)))
 		{
 			return false;
 		}
