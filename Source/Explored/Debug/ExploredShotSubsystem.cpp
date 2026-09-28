@@ -152,6 +152,66 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
+	// Tres vistas para juzgar el cambio de vegetación de Landing (encargo
+	// 2026-09-27, sustitución de la vegetación por el pack low poly de
+	// Quaternius/Kenney): altura de jugador en la playa, dentro de la selva y
+	// la isla vista desde el mar. No están en "bench" (ese trío es
+	// spawn/orilla/aérea, para fps) ni en "islands" (esa vista de Landing
+	// desde el mar es más lejana, pensada para las 7 islas a la vez).
+	if (bAll || Set == TEXT("landing_report"))
+	{
+		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
+		if (Landing)
+		{
+			// Playa a la altura del jugador: mismo criterio que "spawn" (ojos a 1.7 m), pero desde
+			// la orilla mirando hacia dentro para que las palmeras de la franja de costa entren en
+			// cuadro junto con el mar detrás de la cámara.
+			{
+				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
+				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 1.02f;
+				const float GroundZ = FMath::Max(Density.SampleColumn(CamXY.X, CamXY.Y).Height, 0.0f);
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_beach");
+				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
+				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.5f;
+				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
+				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 3.0f) * 100.0 - Shot.Location).Rotation();
+				Shot.Hours = 10.0f;
+				Shots.Add(Shot);
+			}
+			// Dentro de la selva: a media isla, altura de jugador, mirando hacia el centro (más
+			// densidad de JungleWide/Shrub según FVegetationScatter::DefaultRules).
+			{
+				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
+				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 0.55f;
+				const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_jungle");
+				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
+				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.1f;
+				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
+				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 1.5f) * 100.0 - Shot.Location).Rotation();
+				Shot.Hours = 12.0f;
+				Shots.Add(Shot);
+			}
+			// La isla desde el mar: mismo criterio que el bucle de "islands" pero solo para
+			// Landing, para no pagar las otras 6 vistas cuando solo hace falta juzgar esta.
+			{
+				const float Angle = Landing->Rotation + 0.9f;
+				const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+				const FVector2D Cam2D = Landing->Center + Dir * Landing->Radius * 1.45f;
+				const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 25.0f + Landing->MaxHeight * 0.25f;
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_from_sea");
+				Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
+				const FVector Target(Landing->Center.X * 100.0, Landing->Center.Y * 100.0, Landing->MaxHeight * 35.0);
+				Shot.Rotation = (Target - Shot.Location).Rotation();
+				Shot.Hours = 16.0f;
+				Shots.Add(Shot);
+			}
+		}
+	}
+
 	if (bAll || Set == TEXT("day"))
 	{
 		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
