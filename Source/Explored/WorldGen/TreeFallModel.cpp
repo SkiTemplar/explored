@@ -85,12 +85,17 @@ FTreeFallResult FTreeFallModel::Resolve(const FFellingProfile& Profile, const FV
 		}
 		// Borde más cercano de la huella sobre la línea de caída (0 si la base está dentro).
 		const double Near = FMath::Max(0.0, Along - HalfChord);
-		// El tronco toca la esquina (Near, Top) si llega a ella: barre el cuarto de círculo de radio la altura.
-		if (Near * Near + O.TopCm * O.TopCm > HeightCm * HeightCm)
+		// El tronco barre el cuarto de círculo de radio la altura. Más allá de la punta no llega.
+		if (Near > HeightCm)
 		{
 			continue;
 		}
-		Contacts.Add({ i, FMath::Atan2(Near, O.TopCm) });
+		// Si la esquina de arriba (Near, Top) queda dentro del arco, el tronco la toca al girar.
+		// Si queda fuera (la pieza o la loma es más alta que el arco a esa distancia), la punta
+		// choca antes con la cara cercana, cuando su alcance horizontal llega a Near.
+		const bool bCornerInside = Near * Near + O.TopCm * O.TopCm <= HeightCm * HeightCm;
+		const double ContactRad = bCornerInside ? FMath::Atan2(Near, O.TopCm) : FMath::Asin(FMath::Min(1.0, Near / HeightCm));
+		Contacts.Add({ i, ContactRad });
 	}
 	Contacts.Sort([](const FContact& A, const FContact& B)
 	{

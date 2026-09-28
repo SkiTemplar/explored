@@ -182,7 +182,7 @@ void FTreeFallModelSpec::Define()
 		{
 			const FFellingProfile& Palm = Get(TEXT("Palm")); // 9 m
 			TArray<FTreeFallObstacle> Obstacles;
-			Obstacles.Add(Piece(FVector2D(1000.0, 0.0), 3, 100.0f));			// más allá de la punta
+			Obstacles.Add(Piece(FVector2D(1100.0, 0.0), 3, 100.0f));			// más allá de la punta: cara a 980 cm
 			Obstacles.Add(Piece(FVector2D(400.0, 200.0), 3, 100.0f, 250.0, 150.0));	// a un lado: 200 ≥ 150 + 20
 			Obstacles.Add(Piece(FVector2D(-400.0, 0.0), 3, 100.0f));			// detrás
 			Obstacles.Add(Piece(FVector2D(400.0, 0.0), 3, 100.0f, 0.0));		// a ras de suelo (TopCm 0)
@@ -199,9 +199,40 @@ void FTreeFallModelSpec::Define()
 			const double Near = 900.0 * FMath::Sin(FMath::DegreesToRadians(60.0));
 			const double Top = 900.0 * FMath::Cos(FMath::DegreesToRadians(60.0));
 			TArray<FTreeFallObstacle> On = { Piece(FVector2D(Near + 120.0 - 1.0e-6, 0.0), 3, 100.0f, Top) };
-			TestEqual(TEXT("en el arco: lo para"), FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), On).StoppedBy.ObstacleIndex, 0);
-			TArray<FTreeFallObstacle> Off = { Piece(FVector2D(Near + 120.0 + 1.0, 0.0), 3, 100.0f, Top) };
-			TestEqual(TEXT("fuera: al suelo"), FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), Off).StoppedBy.ObstacleIndex, (int32)INDEX_NONE);
+			const FTreeFallResult OnResult = FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), On);
+			TestEqual(TEXT("en el arco: lo para"), OnResult.StoppedBy.ObstacleIndex, 0);
+			TestEqual(TEXT("en el arco: a 60°"), OnResult.RestAngleDeg, 60.0, 1.0e-4);
+			// Un poco más lejos la esquina queda fuera del arco, pero la punta aún choca con la cara.
+			TArray<FTreeFallObstacle> Face = { Piece(FVector2D(Near + 120.0 + 1.0, 0.0), 3, 100.0f, Top) };
+			TestEqual(TEXT("esquina fuera: la cara lo para"), FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), Face).StoppedBy.ObstacleIndex, 0);
+			// Con la cara a la altura exacta la punta la toca; más allá, al suelo.
+			TArray<FTreeFallObstacle> Tip = { Piece(FVector2D(900.0 + 120.0, 0.0), 3, 100.0f, Top) };
+			TestEqual(TEXT("cara en la punta: la toca"), FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), Tip).StoppedBy.ObstacleIndex, 0);
+			TArray<FTreeFallObstacle> Off = { Piece(FVector2D(900.0 + 120.0 + 1.0, 0.0), 3, 100.0f, Top) };
+			TestEqual(TEXT("más allá de la punta: al suelo"), FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), Off).StoppedBy.ObstacleIndex, (int32)INDEX_NONE);
+		});
+
+		It("una pared o una loma más alta que el arco lo para con la punta, no lo deja atravesarla", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm")); // 900 cm
+			FTreeFallObstacle Cliff;
+			Cliff.Kind = ETreeFallObstacleKind::Terrain;
+			Cliff.Center = FVector2D(700.0 + 50.0 + 20.0, 0.0); // cara cercana a 700 cm
+			Cliff.RadiusCm = 50.0;
+			Cliff.TopCm = 2000.0;
+			const FTreeFallResult R = FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), { Cliff });
+			TestEqual(TEXT("el acantilado lo para"), R.StoppedBy.ObstacleIndex, 0);
+			const double Expected = FMath::Asin(700.0 / 900.0);
+			TestEqual(TEXT("apoyado con la punta en la cara"), R.RestAngleDeg, FMath::RadiansToDegrees(Expected), 1.0e-9);
+			TestEqual(TEXT("alcance = cara / altura"), R.ReachFraction, 700.0 / 900.0, 1.0e-12);
+
+			// Una pieza ligera más alta que el arco se aplasta igual, y la pesada de detrás lo para.
+			TArray<FTreeFallObstacle> Obstacles;
+			Obstacles.Add(Piece(FVector2D(600.0 + 120.0, 0.0), 0, 50.0f, 1500.0));
+			Obstacles.Add(Piece(FVector2D(800.0 + 120.0, 0.0), 3, 100.0f, 1500.0));
+			const FTreeFallResult R2 = FTreeFallModel::Resolve(Palm, FVector2D::ZeroVector, FVector2D(1.0, 0.0), Obstacles);
+			TestEqual(TEXT("aplasta la ligera"), R2.Crushed.Num(), 1);
+			TestEqual(TEXT("para la pesada"), R2.StoppedBy.ObstacleIndex, 1);
 		});
 
 		It("una pieza que envuelve la base lo deja en pie (0°) y a igual ángulo gana el índice menor", [this]()
