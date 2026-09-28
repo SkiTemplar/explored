@@ -19,13 +19,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
-| H2 — Minería y construcción | 2 | 29 | 31 |
-| H3 — Mar y barcos | 1 | 13 | 14 |
-| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
-| H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
-| F2 | 1 | 15 | 16 |
-| F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| H2 — Minería y construcción | 5 | 26 | 31 |
+| H3 — Mar y barcos | 2 | 12 | 14 |
+| H4 — Contenido de acceso anticipado | 1 | 19 | 20 |
+| H5 — Lanzamiento del acceso anticipado | 8 | 12 | 20 |
+| F2 | 2 | 14 | 16 |
+| F3 | 1 | 26 | 27 |
+| **Total** | **23** | **184** | **207** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -399,14 +399,14 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
 - [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
       para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
       al menos una isla en AA. *(biblia 03 §Tests)*
-- [ ] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
+- [x] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
       `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
       `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
       *(biblia 07 §2.1)*
-- [ ] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
+- [x] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
       `buscador_de_vetas`, `filo_de_obsidiana`, `topo_de_isla`, `el_aire_que_falta`,
       `viga_a_tiempo`. *(biblia 07 §2.3)*
-- [ ] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
+- [x] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
       *(biblia 07 §2.3)*
 - [x] `FBuildingModel::RecomputeStability` y el sistema de integridad/encaje de piezas
       ya implementados — base sobre la que se añaden `viga_apoyo` y `tablon_contencion`.
@@ -472,7 +472,7 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `AExploredHUD::DrawBoatStatus`, solo mientras se está a bordo y solo si hay algo
       urgente (vela mal trimada, casco <40 %, haciendo agua, capotado).
       *(biblia 06 §2.4)*
-- [ ] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
+- [x] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
       *(biblia 07 §2.3)*
 - [x] `FBoatModel` con `TotalMassKg`, `EquilibriumDraftCm`, `SwampWaterKg`,
       `MaxAbsRollDeg`, `ApplyDamage` ya implementado — base sobre la que se calculan las
@@ -528,7 +528,7 @@ datos todavía.
       `Villages` exista en F3. *(biblia 03 §2.3)*
 - [ ] `Fauna`: extender la primera pasada de fauna salvaje terrestre a cabra montés en
       La Meseta cuando esa isla entre en su parche de contenido. *(biblia 04 §2.7)*
-- [ ] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
+- [x] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
       reunir los tres anzuelos del pueblo navegante) y `bajo_el_templo` («Bajo el
       templo», tesoro en templo enterrado) junto a su stat `underground_treasure_found`
       y `artifact_ids_found`. *(biblia 07 §2.1, §2.3)*
@@ -579,7 +579,9 @@ datos todavía.
       para el tercero) en los 54 logros de `achievements.json`, bandera compartida en el
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
-      *(biblia 08 §5.6, §5.7)*
+      *(biblia 08 §5.6, §5.7; parcial 2026-09-28: `coopScope` ya está en los 54 logros y
+      `FAchievementsModel::ReachesPlayer` decide actor/world/witness; faltan la bandera del
+      `GameState` y el escalado)*
 
 ---
 
@@ -587,28 +589,36 @@ datos todavía.
 
 Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 
-- [ ] Añadir el campo `phase` (`"AA"`/`"F2"`/`"F3"`) a los 30 logros ya existentes en
+- [x] Añadir el campo `phase` (`"AA"`/`"F2"`/`"F3"`) a los 30 logros ya existentes en
       `achievements.json` y a los 24 nuevos, con los valores de biblia 07 §2.2–2.3.
-      *(biblia 07 §2.1)*
-- [ ] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
-      de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2)*
-- [ ] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
+      *(biblia 07 §2.1; hecho 2026-09-28: 36 AA, 10 F2, 8 F3; `FAchievementsModel::SetReleasedPhase`
+      oculta los de fases sin publicar y DataCheck impide que un logro dependa de algo de
+      una fase posterior)*
+- [x] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
+      de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2; los 30
+      originales no tenían rareza en la biblia: se asignan en 07 §2.2)*
+- [x] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
       (absurdos/graciosos, §2.3 «humor», máximo 3 de 54) con su stat
       `coconuts_opened`/`crab_stole_item`. *(biblia 07 §2.3)*
 - [ ] Añadir el logro candidato `museo_completo` a una revisión posterior de
       `achievements.json` cuando el total lo permita sin salir del rango 40–60, o como
       contenido post-lanzamiento. *(biblia 07 §3.4)*
-- [ ] Añadir las 66 entradas del glosario ES/EN de biblia 07 §5.2 a
+- [x] Añadir las 66 entradas del glosario ES/EN de biblia 07 §5.2 a
       `docs/tecnico/localizacion.md` o a un glosario propio referenciado desde ahí.
-      *(biblia 07 §5.2)*
-- [ ] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de
+      *(biblia 07 §5.2; la tabla tenía 69 filas, no 66: están todas en
+      `docs/tecnico/glosario.md`, y `uv run l10n` comprueba los 39 nombres propios y
+      decisiones de traducción)*
+- [x] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de
       plural ICU (`{Count}|plural(...)`), hoy no verificados por el chequeo de
-      marcadores. *(biblia 07 §5.3)*
-- [ ] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de
+      marcadores. *(biblia 07 §5.3; `Tools/Localization/src/l10n/icu.py`: sintaxis,
+      categorías CLDR de cada idioma y mismos plurales en ES y EN)*
+- [x] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de
       datos nuevo de esta lista en cuanto exista, antes de darlo por escrito definitivo.
-      *(biblia 07 §5.1)*
-- [ ] Pasar cada logro, ficha de museo y entrada de diario por el checklist anti-IA de
-      biblia 07 §1.5 una segunda vez en revisión de contenido. *(biblia 07 §1.5)*
+      *(biblia 07 §5.1; `l10n` lee ya todos los ficheros de `Content/Data` y falla si un
+      campo `…Es` queda sin registrar)*
+- [x] Pasar cada logro, ficha de museo y entrada de diario por el checklist anti-IA de
+      biblia 07 §1.5 una segunda vez en revisión de contenido. *(biblia 07 §1.5; la lista
+      negra, los máximos de longitud y las exclamaciones los vigila ya `uv run l10n --strict`)*
 - [ ] Rendimiento: verificar 60 fps a 1080p con menos de 6,5 GB de VRAM en Landing
       (objetivo de H0) y en el resto de islas del acceso anticipado, sin tirones al
       cargar/descargar celdas de World Partition; medir el tiempo de frame con el modo
@@ -689,7 +699,7 @@ resto de islas (Manglar, Arenas Blancas, Meseta completa).
 - [ ] `Content/Data/`: dar de alta en `items.json`/`templates.json` los recursos
       exclusivos de Manglar (arcilla, junco), Arenas Blancas (conchas raras, velas de
       lona) y La Meseta (caliza, cultivos) si aún no existen. *(biblia 04 §2.5–2.7)*
-- [ ] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
+- [x] Añadir a `achievements.json` los stats `rail_track_and_cart_used`,
       `livestock_species_raised`, `eggs_collected`, y los logros
       `primer_tren_de_isla`, `primera_empalizada`, `muralla_de_piedra`,
       `primera_pareja`, `corral_completo`, `huevos_por_docenas`. *(biblia 07 §2.1, §2.3)*
@@ -766,7 +776,7 @@ asaltos), isla oculta y final.
 - [ ] Arte: el pueblo del arrecife y el campamento pirata necesitan asset propio (marae
       «vivo» con estructuras ligeras); no reutilizar directamente las piezas de ruina
       (deben leerse como abandonadas). *(biblia 04 §2.8 TODO, GDD §7.1)*
-- [ ] Añadir a `achievements.json` los stats `barter_trades_completed`,
+- [x] Añadir a `achievements.json` los stats `barter_trades_completed`,
       `reputation_village_tier`, `wayfinding_taught_by_village`,
       `village_defended_from_raid`, `raids_defended`, `raider_camps_defeated`, y los
       logros `primer_trueque`, `aliado_de_facto`, `otra_forma_de_aprender`,
