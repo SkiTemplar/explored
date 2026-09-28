@@ -17,15 +17,15 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
+| H0 — Porción vertical jugable en Landing | 4 | 39 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
-| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
+| H4 — Contenido de acceso anticipado | 1 | 28 | 29 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **11** | **205** | **216** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -76,11 +76,12 @@ salir de la isla.
 
 ### Crafteo e inventario
 
-- [ ] `Items`/`Templates`: añadir el item `pico` y su plantilla a
-      `Content/Data/items.json`/`templates.json` — Cabeza (Contundente≥3 o Rígido≥3),
-      Mango (Largo≥2, Rígido≥3), Unión (Ata≥2 o Adhesivo≥2), `baseMaxDurability` 55.
-      Bloqueante para la minería manual de Landing. *(biblia 02 §2.2, 03 §2.1 — definición
-      única tras resolver la contradicción con la versión antigua de 03)*
+- [x] `Items`/`Templates`: item `pico` y su plantilla en
+      `Content/Data/items.json`/`templates.json` — Cabeza (Punta≥2, etiqueta `piedra`,
+      `mineral` o `metal`), Mango (Largo≥2, Rígido≥3), Unión (Ata≥2 o Adhesivo≥2),
+      `baseMaxDurability` 55. *(verificado 2026-09-28: `templates.json` de `main`; manda
+      la definición de biblia 02 §2.2, que ahora repite 03 §2.1 — la de Contundente/Rígido
+      se retira porque le quitaba el hacha de piedra a `canto_rodado` + mango)*
 - [ ] `Items`: añadir a `items.json` las medicinas nuevas que exige la porción vertical:
       `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`,
       `ferula_bambu`, `gel_aloe`. *(biblia 03 §3.6)*
@@ -580,6 +581,31 @@ datos todavía.
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
       *(biblia 08 §5.6, §5.7)*
+
+### Recetas de acceso anticipado (biblia 03 §2.4, §3.11, §4.1)
+
+- [x] `Content/Data/`: 27 plantillas nuevas (agua, pesca, caza, fuego y luz, ropa,
+      herramientas, transporte), 30 objetos, 7 piezas (`destilador_solar`, `nasa`,
+      `trampa_cangrejos`, `trampa_caida`, `hamaca`, `banco_tallado`, `ahumadero`) y 3
+      recetas de cocina (`agua_filtrada`, `agua_destilada`, `aceite_coco`), con `fase`,
+      `craftMinutes`, `usoEs`/`usoEn` y `ejemplo` canónico que comprueba
+      `Tools/DataCheck`. *(verificado 2026-09-28: `uv run datacheck --strict`)*
+- [ ] `Items`/`Crafting` (C++): leer `station` y `craftMinutes` y exigir la estación
+      cerca al combinar. *(biblia 03 §4.1)*
+- [ ] `Survival`: leer `wear` de la ropa puesta (`bHasHat`, `ClothingInsulation`,
+      `rainFactor`, `footGuard`) con su spec. *(biblia 03 §3.11, 01 §6.5–6.8)*
+- [ ] `Carry`: cuatro ranuras de ropa fuera de manos y mochila, con desgaste por hora.
+      *(biblia 03 §3.11)*
+- [ ] Modelo puro `FRecipeHintModel` + `RecipeHintModelSpec.cpp`: familia de inspección
+      («esto sirve de mango»), contador de 3 inspecciones y estados de la libreta.
+      *(biblia 03 §2.4.1, §2.4.4)*
+- [ ] `Cartography`: libreta de recetas con estados Pista/Anotada, autor y textos ES/EN;
+      réplica de 4 B por cambio en la hoja compartida. *(biblia 03 §2.4.1, §2.4.5)*
+- [ ] `WorldGen`/`Ruins`: 6 latas con bocetos de Halden y 7 petroglifos sueltos con
+      pista de receta. *(biblia 03 §2.4.2, §2.4.3)*
+- [ ] `Cooking`: técnica `filtrar` para `agua_filtrada` (hoy usa `secar`).
+      *(biblia 03 §4.2)*
+- [ ] Arte: mallas de los 30 objetos y 7 piezas nuevos de `meshes_pendientes.json`.
 
 ---
 
