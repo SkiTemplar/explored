@@ -385,6 +385,45 @@ void FSaveSystemsSpec::Define()
 			TestTrue(TEXT("Mismo estado"), Loaded == State);
 		});
 
+		It("conserva las pilas y lee como sueltas las de una partida anterior a ellas", [this]()
+		{
+			FInventoryState State;
+			FInventoryEntry Entry;
+			Entry.Item.InstanceId = 4;
+			Entry.Item.DefinitionId = FName(TEXT("basalto"));
+			Entry.Item.WeightKg = 1.0f;
+			Entry.Item.Count = 7;
+			Entry.Item.MaxStack = 10;
+			Entry.Item.Quality = 5;
+			State.Pockets.Entries.Add(Entry);
+			State.NextInstanceId = 5;
+
+			FSaveArchive Ar;
+			SaveInventory(Ar, State);
+			FInventoryState Loaded;
+			LoadInventory(ThroughText(Ar), Loaded);
+			TestTrue(TEXT("Mismo estado"), Loaded == State);
+			TestEqual(TEXT("Siete unidades"), Loaded.Pockets.Entries[0].Item.Count, 7);
+
+			// Un registro guardado antes de las pilas no trae count, maxStack ni quality.
+			FSaveArchive Old;
+			Old.Write(TEXT("instanceId"), (int64)4);
+			Old.Write(TEXT("definitionId"), FName(TEXT("basalto")));
+			FSaveArchive OldContainer;
+			TArray<FSaveArchive> OldEntries = { Old };
+			OldContainer.Write(TEXT("entries"), OldEntries);
+			FSaveArchive OldState;
+			OldState.Write(TEXT("pockets"), OldContainer);
+			FInventoryState FromOld;
+			LoadInventory(ThroughText(OldState), FromOld);
+			if (TestEqual(TEXT("Un objeto"), FromOld.Pockets.Num(), 1))
+			{
+				TestEqual(TEXT("Suelto"), FromOld.Pockets.Entries[0].Item.Count, 1);
+				TestEqual(TEXT("Sin pila"), FromOld.Pockets.Entries[0].Item.MaxStack, 1);
+				TestEqual(TEXT("Calidad por defecto"), (int32)FromOld.Pockets.Entries[0].Item.Quality, 3);
+			}
+		});
+
 		It("aplana y reconstruye un objeto fabricado con sus piezas", [this]()
 		{
 			const FTestItem Axe = MakeAxe();
