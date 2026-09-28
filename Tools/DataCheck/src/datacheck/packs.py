@@ -3,7 +3,8 @@
 El catálogo dice qué fichero de qué pack CC0 cubre cada id de juego; ``Tools/Packs/normalize.py``
 lo aplica en Blender. Aquí se mira que los ids existan, que todo pack sea CC0 verificado y
 con sha256, que no haya duplicados y que cada regla de color apunte a una muestra real de
-``Tools/Textures/paleta.json``.
+``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json``)
+lleva malla con esqueleto ``SK_Pack_*`` y un bloque ``rig`` con sus acciones.
 """
 
 from __future__ import annotations
@@ -17,7 +18,10 @@ CATALOG = "packs_catalogo.json"
 MANIFEST = Path("Tools") / "Packs" / "packs.json"
 PALETTE = Path("Tools") / "Textures" / "paleta.json"
 SPDX_CC0 = "CC0-1.0"
-KINDS = {"item", "pieza", "planta"}
+KINDS = {"item", "pieza", "planta", "fauna"}
+FAUNA = "fauna_terrestre.json"
+ISLANDS = {"Landing", "Emerald", "Smoke", "Teeth", "Mangrove", "WhiteSands", "Mesa"}
+PHASES = {"AA", "F2", "F3"}
 AXES = {"x", "y", "z", "max"}
 PIVOTS = {"base", "agarre"}
 HAND_SOCKETS = {"hand_r"}
@@ -27,6 +31,9 @@ ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 GAME_ID = re.compile(r"^[a-z0-9_]+(\.[a-z0-9_]+)?$")
 LOTE_ID = re.compile(r"^lote[0-9]+-[a-z0-9-]+$")
 MESH = re.compile(r"^SM_Pack_[A-Za-z0-9]+$")
+SK_MESH = re.compile(r"^SK_Pack_[A-Za-z0-9]+$")
+SKELETON = re.compile(r"^SKEL_Pack_[A-Za-z0-9]+$")
+ACTION = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 HEX = re.compile(r"^#[0-9a-f]{6}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -105,7 +112,63 @@ def _game_ids(data: dict) -> dict[str, set[str]]:
         for pl in data.get("plants.json", {}).get("plants", [])
         for s in pl.get("stages", [])
     }
-    return {"item": items, "pieza": pieces, "planta": stages}
+    fauna = {f.get("id") for f in data.get(FAUNA, {}).get("species", [])}
+    return {"item": items, "pieza": pieces, "planta": stages, "fauna": fauna}
+
+
+def check_fauna(data: dict, error: Err) -> None:
+    """fauna_terrestre.json: ids únicos, islas de EIslandArchetype y fase."""
+    doc = data.get(FAUNA)
+    if doc is None:
+        return
+    seen: set[str] = set()
+    for f in doc.get("species", []):
+        fid = f.get("id", "")
+        where = f"{FAUNA}: «{fid}»"
+        if not ASCII_ID.match(fid):
+            error(f"{where}: id no ASCII en minúsculas")
+        if fid in seen:
+            error(f"{where}: id duplicado")
+        seen.add(fid)
+        for key in ("nameEs", "nameEn", "source"):
+            if not f.get(key):
+                error(f"{where}: falta «{key}»")
+        if not isinstance(f.get("wild"), bool):
+            error(f"{where}: wild debe ser true o false")
+        bad = [i for i in f.get("islands", []) if i not in ISLANDS]
+        if bad:
+            error(f"{where}: islas desconocidas {bad} (EIslandArchetype)")
+        if f.get("wild") and not f.get("islands"):
+            error(f"{where}: especie salvaje sin isla")
+        if f.get("phase") not in PHASES:
+            error(f"{where}: fase «{f.get('phase')}» desconocida ({', '.join(sorted(PHASES))})")
+
+
+def _check_rig(e: dict, where: str, error: Err) -> None:
+    rig = e.get("rig")
+    if e.get("kind") != "fauna":
+        if rig is not None:
+            error(f"{where}: rig solo va en kind fauna")
+        return
+    if not isinstance(rig, dict):
+        error(f"{where}: la fauna necesita un bloque rig (esqueleto y acciones)")
+        return
+    if not SKELETON.match(str(rig.get("skeleton", ""))):
+        error(f"{where}: rig.skeleton «{rig.get('skeleton')}» no sigue SKEL_Pack_<Nombre>")
+    anims = rig.get("animations", [])
+    if not anims or not all(isinstance(a, str) and ACTION.match(a) for a in anims):
+        error(f"{where}: rig.animations debe listar las acciones del pack")
+        anims = []
+    if len(set(anims)) != len(anims):
+        error(f"{where}: rig.animations con acciones repetidas")
+    for beh, clip in (rig.get("behaviors") or {}).items():
+        if clip is not None and clip not in anims:
+            error(f"{where}: el comportamiento {beh} usa «{clip}», que no está en rig.animations")
+    for pose in rig.get("tilePoses", []):
+        if pose.get("action") not in anims:
+            error(f"{where}: tilePoses usa «{pose.get('action')}», que no está en rig.animations")
+    if "stretch" in e:
+        error(f"{where}: stretch no se admite con rig (deformaría los huesos)")
 
 
 def _item_meshes(data: dict) -> dict[str, str]:
@@ -134,6 +197,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         error(f"{CATALOG}: falta {MANIFEST.as_posix()}")
         return
     usable = check_manifest(manifest, error)
+    check_fauna(data, error)
     known_packs = {p.get("id") for p in manifest.get("packs", [])}
     samples = palette_samples(repo_root)
     ids = _game_ids(data)
@@ -181,8 +245,11 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         if not f or f.startswith("/") or ".." in Path(f).parts:
             error(f"{where}: «file» debe ser una ruta relativa dentro del pack")
         mesh = e.get("mesh", "")
-        if not MESH.match(mesh):
+        if kind == "fauna" and not SK_MESH.match(mesh):
+            error(f"{where}: malla con esqueleto «{mesh}» no sigue SK_Pack_<Nombre>")
+        elif kind != "fauna" and not MESH.match(mesh):
             error(f"{where}: malla «{mesh}» no sigue SM_Pack_<Nombre>")
+        _check_rig(e, where, error)
         if mesh in seen_mesh:
             error(f"{where}: malla «{mesh}» repetida")
         seen_mesh.add(mesh)

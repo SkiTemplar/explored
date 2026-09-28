@@ -33,9 +33,9 @@ BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plan
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
 # GDD §12: sin narrativa de personajes eliminada. El GDD v2 §3.6-3.7 reintroduce la
-# fauna terrestre (cerdo salvaje, cabra, aves que se posan y animales de granja), así que
-# solo quedan prohibidas las especies que ningún documento vigente contempla y el perro
-# del prólogo eliminado.
+# fauna terrestre (cerdo salvaje, cabra, aves que se posan y animales de granja, en
+# fauna.json y fauna_terrestre.json), así que solo quedan prohibidas las especies que
+# ningún documento vigente contempla y el perro del prólogo eliminado.
 FORBIDDEN_TERMS = [
     "rata", "murcielago", "murciélago", "serpiente",
     "lagarto", "iguana", "perro", "canela", "almudena_", "rodrigo", "ines", "inés",
@@ -48,7 +48,7 @@ DATA_FILES = [
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
-    "fases_futuras.json",
+    "fases_futuras.json", "fauna_terrestre.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).

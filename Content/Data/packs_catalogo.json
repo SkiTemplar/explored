@@ -1,11 +1,12 @@
 {
   "version": 1,
-  "note": "Qué fichero de qué pack CC0 (Tools/Packs/packs.json) cubre cada id de juego, con escala en metros, pivote y recoloreado a la paleta (Tools/Textures/paleta.json, docs/art/paleta.md). Lo aplica Tools/Packs/normalize.py y lo valida Tools/DataCheck. kind: item (items.json), pieza (building_pieces.json), planta (<planta>.<etapa> de plants.json).",
+  "note": "Qué fichero de qué pack CC0 (Tools/Packs/packs.json) cubre cada id de juego, con escala en metros, pivote y recoloreado a la paleta (Tools/Textures/paleta.json, docs/art/paleta.md). Lo aplica Tools/Packs/normalize.py y lo valida Tools/DataCheck. kind: item (items.json), pieza (building_pieces.json), planta (<planta>.<etapa> de plants.json), fauna (fauna_terrestre.json; malla con esqueleto SK_Pack_* y bloque rig).",
   "units": {
     "size.m": "medida final en metros a lo largo de size.axis (x, y, z o max) tras rotateDeg y stretch",
     "pivot": "base: centro de la huella, z = 0 abajo; agarre: socket hand_r a gripFromEndM del extremo end (bottom o top) del mango, mango en +Z, filo o cara de golpe en +X (Tools/Blender/props/_items.py)",
     "recolor": "cada cara toma la muestra de la regla cuyo color from (sRGB del pack) esté más cerca en Oklab; si ninguna está a menos de tolerance (0,12 por defecto), default. La isla la pone el atlas T_Palette_<Isla> en Unreal: la UV es la misma en las cuatro islas.",
-    "replaces": "malla propia de Tools/Blender a la que sustituye (meshPath de items.json)"
+    "replaces": "malla propia de Tools/Blender a la que sustituye (meshPath de items.json)",
+    "rig": "solo kind fauna: armadura y acciones del pack conservadas; animations lista los clips exportados (una toma FBX por acción), behaviors dice qué clip usa cada comportamiento de la biblia 02 §11.2-11.3 (null = falta en el pack), tilePoses las poses de la hoja de contacto. Eje delantero del animal en +X, pivote base entre las patas."
   },
   "lotes": [
     {
@@ -31,6 +32,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote4-huerto.png",
       "scope": "Fases de cultivo del huerto de Landing (prioridad 3) con Kenney Nature Kit: platanera, piña y limonero."
+    },
+    {
+      "id": "lote5-fauna",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote5-fauna.png",
+      "scope": "Primera pasada de fauna salvaje terrestre (prioridad 4, GDD v2 §3.7): cerdo salvaje de Esmeralda con Quaternius Farm Animals, rig y 6 acciones conservadas."
     }
   ],
   "entries": [
@@ -1052,6 +1059,77 @@
         ],
         "default": "vegetacion.hoja_oscura"
       }
+    },
+    {
+      "gameId": "cerdo_salvaje",
+      "kind": "fauna",
+      "lote": "lote5-fauna",
+      "pack": "quaternius_farm_animals",
+      "file": "Blends/Pig.blend",
+      "mesh": "SK_Pack_CerdoSalvaje",
+      "rotateDeg": [
+        0,
+        0,
+        90
+      ],
+      "size": {
+        "axis": "x",
+        "m": 1.45
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "rig": {
+        "skeleton": "SKEL_Pack_CerdoSalvaje",
+        "animations": [
+          "Idle",
+          "WalkSlow",
+          "Walk",
+          "Run",
+          "Jump",
+          "Death"
+        ],
+        "behaviors": {
+          "reposo": "Idle",
+          "pastar": "Idle",
+          "deambular": "WalkSlow",
+          "beber": null,
+          "huir": "Run",
+          "cargar": "Run",
+          "dormir": null,
+          "morir": "Death"
+        },
+        "tilePoses": [
+          {
+            "action": "Idle",
+            "frame": 0
+          },
+          {
+            "action": "Walk",
+            "frame": 16
+          },
+          {
+            "action": "Run",
+            "frame": 6
+          },
+          {
+            "action": "Death",
+            "frame": 26
+          }
+        ]
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#d8a1a4",
+            "to": "madera.oscura"
+          },
+          {
+            "from": "#7c533e",
+            "to": "madera.quemada"
+          }
+        ]
+      }
     }
   ],
   "discarded": [
@@ -1242,6 +1320,22 @@
     {
       "gameId": "maracuya.en_flor_y_fruto",
       "reason": "Igual que maracuya.brote."
+    },
+    {
+      "gameId": "cabra_salvaje",
+      "reason": "Ninguna página de itch.io de Quaternius con precio libre trae cabra (revisadas el 2026-09-28: Farm Animals trae vaca, caballo, llama, oveja, cerdo, pug y cebra). El Ultimate Animated Animal Pack solo se distribuye por Google Drive desde quaternius.com, que aquí no es reproducible (cuota); su contenido no se ha podido verificar. Es de La Meseta (F2): no bloquea el acceso anticipado."
+    },
+    {
+      "gameId": "cerdo",
+      "reason": "Cerdo doméstico de la granja (F2, GDD v2 §3.6). Candidato: el mismo Pig.blend con la paleta rosada original; se cataloga cuando entre la granja para no duplicar malla antes de tiempo."
+    },
+    {
+      "gameId": "gallina",
+      "reason": "F2. Quaternius Farm Animals no trae gallina y no hay otra página de itch.io de Quaternius con aves de corral."
+    },
+    {
+      "gameId": "cabra",
+      "reason": "F2. Igual que cabra_salvaje: sin cabra en los packs de Quaternius descargables de forma reproducible."
     }
   ]
 }

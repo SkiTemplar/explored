@@ -331,6 +331,12 @@ def test_detecta_fauna_fuera_del_gdd_v2(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "iguana")
 
 
+def test_admite_la_fauna_del_gdd_v2(ds: DataSet) -> None:
+    # GDD v2 §3.6-§3.7: cerdo salvaje y cabra vuelven con packs de Quaternius.
+    item(ds, "grasa")["nameEs"] = "Grasa de jabalí"
+    assert not any_error(errors_of(ds), "jabalí")
+
+
 def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
     assert not any_error(errors_of(ds), "«rescate»")
 
@@ -1201,3 +1207,50 @@ def test_fauna_nidos_sin_estado_en_servidor(ds: DataSet) -> None:
 def test_fases_futuras_sin_nota_de_red(ds: DataSet) -> None:
     del ds.data["fases_futuras.json"]["trade"]["redNotaEs"]
     assert any_error(run_all(ds).errors, "trade", "redNotaEs")
+
+
+def _fauna_entry(ds: DataSet) -> dict:
+    return next(e for e in _catalog(ds)["entries"] if e["kind"] == "fauna")
+
+
+def test_packs_catalogo_cubre_el_cerdo_salvaje_con_rig(real: DataSet) -> None:
+    e = _fauna_entry(real)
+    assert e["gameId"] == "cerdo_salvaje" and e["mesh"].startswith("SK_Pack_")
+    assert {"Idle", "Walk", "Run", "Death"} <= set(e["rig"]["animations"])
+
+
+def test_packs_catalogo_fauna_con_id_inexistente(ds: DataSet) -> None:
+    _fauna_entry(ds)["gameId"] = "dragon_de_komodo"
+    assert any_error(errors_of(ds), "dragon_de_komodo", "no existe como fauna")
+
+
+def test_packs_catalogo_fauna_sin_rig(ds: DataSet) -> None:
+    del _fauna_entry(ds)["rig"]
+    assert any_error(errors_of(ds), "bloque rig")
+
+
+def test_packs_catalogo_fauna_con_malla_estatica(ds: DataSet) -> None:
+    _fauna_entry(ds)["mesh"] = "SM_Pack_Cerdo"
+    assert any_error(errors_of(ds), "SK_Pack_")
+
+
+def test_packs_catalogo_comportamiento_con_clip_inexistente(ds: DataSet) -> None:
+    _fauna_entry(ds)["rig"]["behaviors"]["cargar"] = "Charge"
+    assert any_error(errors_of(ds), "cargar", "Charge")
+
+
+def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
+    _catalog(ds)["entries"][0]["rig"] = {"skeleton": "SKEL_Pack_Hacha", "animations": ["Idle"]}
+    assert any_error(errors_of(ds), "rig solo va en kind fauna")
+
+
+def test_fauna_terrestre_isla_desconocida(ds: DataSet) -> None:
+    ds.data["fauna_terrestre.json"]["species"][0]["islands"] = ["Atlantida"]
+    assert any_error(errors_of(ds), "Atlantida", "EIslandArchetype")
+
+
+def test_fauna_terrestre_id_duplicado(ds: DataSet) -> None:
+    sp = ds.data["fauna_terrestre.json"]["species"]
+    sp.append(dict(sp[0]))
+    assert any_error(errors_of(ds), "fauna_terrestre.json", "duplicado")
+
