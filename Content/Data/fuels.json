@@ -11,7 +11,9 @@
     "smoke": "humo base (0-1) encendido, para el ahumadero",
     "burnHours": "horas de fuego que aporta una unidad a ritmo 1",
     "chance": "probabilidad de prender por intento con yesca, seco y sin viento ni lluvia",
-    "minutes": "minutos de juego que cuesta un intento"
+    "minutes": "minutos de juego que cuesta un intento",
+    "smeltingLevels": "niveles de fuego de fundición (biblia 03 §2.2): mismo esquema que levels, por encima del horno de arcilla; todavía no pasan a FireData.inl porque EFireLevel no tiene su valor (TODO Cooking), y los usa recipes_smithing.json",
+    "acceptedFuels": "combustibles de fuels que admite un nivel de fundición; el resto no llega a la temperatura"
   },
   "levels": [
     { "id": "fogata", "nameEs": "Fogata", "pieceId": "fogata", "maxFuelHours": 4, "burnRate": 1.0, "heat": 0.7,
@@ -20,6 +22,10 @@
       "emberHours": 4, "rainQuench": 1.5, "windTolerance": 0.8, "enclosed": false, "smoke": 0.35 },
     { "id": "horno_arcilla", "nameEs": "Horno de arcilla", "pieceId": "horno_barro", "maxFuelHours": 12, "burnRate": 0.7, "heat": 1.2,
       "emberHours": 8, "rainQuench": 0, "windTolerance": 1.0, "enclosed": true, "smoke": 0.5 }
+  ],
+  "smeltingLevels": [
+    { "id": "horno_fundicion", "nameEs": "Horno de fundición", "pieceId": "horno_fundicion", "maxFuelHours": 16, "burnRate": 1.5, "heat": 1.4,
+      "emberHours": 10, "rainQuench": 0, "windTolerance": 1.0, "enclosed": true, "smoke": 0.6, "acceptedFuels": ["carbon_vegetal"] }
   ],
   "fuels": [
     { "item": "fibra_coco", "burnHours": 0.05, "heat": 0.3, "tinder": true, "green": false },
