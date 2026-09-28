@@ -38,7 +38,7 @@ mano da 1–3 cocos maduros (media 2), así que la primera tala resuelve la sed 
 |---|---|---|---|---|
 | 0–4 | 07:30–10:00 | Fuselaje: kit de arranque, chapa del Albatros | — | chapa, cantimplora… |
 | 4–10 | 10:00–13:30 | 2 palmeras y 2 sotobosques a mano, 4 arbustos, 3 rocas | — | ~14 hojas de palma, ~8 palos, ~2 lianas, 4 cocos, 2 hojas de platanera, 9 cantos, 3 piedras planas |
-| 10–12 | 13:30–14:40 | Pala: chapa + palo (Atar). Mango atado + canto: **pico de piedra** | 2 palos, 1 liana, 1 canto | pala (nivel 1), pico (nivel 2) |
+| 10–13 | 13:30–15:20 | Pala: chapa + palo (Atar). Mango atado + canto: **hacha de piedra**. Lasca de pedernal + canto (Tallar): canto aguzado; + mango atado: **pico de piedra** | 4 palos, 2 lianas, 2 cantos, 1 lasca | pala (nivel 1), hacha, pico (nivel 2) |
 | 12–16 | 14:40–17:00 | Refugio inclinado (20 min de juego) y fogata (10) | 3 palos, 8 hojas, 1 liana; 6 cantos, 5 ramas, 1 fibra | refugio, fuego |
 | 16–20 | 17:00–19:30 | 2 rocas, arena de la playa (2 m³ con pala ≈ 11 s de golpes) | — | 6 cantos (quedan 8), 2 piedras planas, 12 arenas |
 | 20–24 | 19:30–22:00 | Arriate del limonero (30 min, pala) y plantar el limón silvestre; beber coco | 8 cantos, 2 arenas, 1 limón | limonero día 1 (fruto el día 13) |
@@ -48,8 +48,8 @@ mano da 1–3 cocos maduros (media 2), así que la primera tala resuelve la sed 
 | 55–60 | 16:00–19:30 | Mirador de la Cresta (boceto del mapa), marae del palmeral | — | primer trazo de mapa, ruina |
 
 Resultado: a los 60 minutos el jugador cumple el criterio de salida de la porción
-vertical salvo el tesoro expuesto (necesita estantería del museo, tier madera, y un
-hacha: lasca de pedernal + mango atado). Cabe en la segunda hora.
+vertical salvo el tesoro expuesto (necesita estantería del museo, tier madera; el hacha de
+piedra ya está desde el minuto 13). Cabe en la segunda hora.
 
 ## 4. Hallazgos
 
@@ -59,11 +59,13 @@ hacha: lasca de pedernal + mango atado). Cabe en la segunda hora.
    **fondo de la cueva de Landing queda en ~4 m**, lo que acota bien la prueba del pipeline
    de edición (GDD v2 §7.3) y deja el pico para la veta de cobre de Esmeralda. Es coherente
    con el GDD v2 §6.1 («pala en tierra/arena»): no se propone cambiarlo.
-2. **Pico antes que hacha con canto rodado.** Con la plantilla `pico` delante de `hacha`, canto
-   rodado, piedra plana o basalto + mango atado dan **pico**; el hacha sale de lascas
-   (pedernal, obsidiana: etiqueta `filo`). Se pierde el «hacha contundente de piedra»; la
-   tala a mano con algo contundente sigue existiendo (`FFellingModel`, columna
-   contundente) y el pico cuenta como contundente, así que no hay hueco de juego.
+2. **Hacha de piedra y pico, sin robarse la cabeza.** *(Corregido tras la integración del
+   2026-09-28.)* La primera versión dejaba que canto rodado + mango diera pico y se perdía
+   el hacha de piedra que la biblia 01 y 02 §1.2 dan por hecha. Ahora la Cabeza del pico
+   exige **Punta ≥ 2** con etiqueta `piedra`, `mineral` o `metal`: canto rodado, piedra
+   plana o basalto + mango dan **hacha**, y el pico de piedra pide antes aguzar el canto
+   (lasca + canto con Tallar → `canto_aguzado`). Cuesta una lasca y un paso más, que en
+   Landing son ~30 s: el pico no hace falta hasta Esmeralda (hallazgo 1).
 3. **Hojas de platanera: cuello de botella de la cama.** La cama pide 4 y solo salen del
    sotobosque (0–2 al caer, media 1): hacen falta ~4 sotobosques. Si en PIE se nota, bajar
    la cama a 2 hojas de platanera o dar 1–2 fijas al sotobosque.
@@ -79,8 +81,10 @@ hacha: lasca de pedernal + mango atado). Cabe en la segunda hora.
 
 - `mining.json`: materiales (espejo del C++), estratos por isla, capa y fase, vetas
   finitas, rendimiento y niveles de herramienta 0–4.
-- `items.json`/`templates.json`: `pico`, `basalto_tallado`, `tierra_suelta`; plantillas
-  `pico` y `cabeza_pico_por_tallado`.
+- `items.json`/`templates.json`: `pico`, `canto_aguzado`, `basalto_tallado`,
+  `cabeza_pico_rescatada`, `tierra_suelta`; plantillas `pico`, `punta_de_canto_por_tallado`,
+  `cabeza_pico_por_tallado` y `cabeza_pico_de_chapa`/`cabeza_pico_de_hierro` (estas dos con
+  `"station": "banco_chatarra"`, pieza nueva de `building_pieces.json`).
 - `fauna.json`: cangrejo de los cocoteros y gaviota (Landing), cerdo salvaje (Esmeralda),
   sin fauna terrestre en el Humo, fragatas y gaviotas (Los Dientes); cabra montés (fase 2).
 - `fases_futuras.json`: borrador de raíles, granja, murallas y trueque (fases 2 y 3).
