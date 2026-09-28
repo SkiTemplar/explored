@@ -242,18 +242,23 @@ posterior.
 
 ### Combate y fauna peligrosa (sistema, no contenido de fase 3)
 
-- [ ] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la
+- [x] Fórmulas de daño instantáneo (cortante/perforante ×3, contundente ×4) leyendo la
       propiedad real Filo/Punta/Contundente del objeto. *(biblia 05 §3.0)*
-- [ ] Apertura de corte con profundidad = propiedad ÷ 5, enganchada al sistema `wounds`
+- [x] Apertura de corte con profundidad = propiedad ÷ 5, enganchada al sistema `wounds`
       ya existente en `BodyModel` (sin una segunda barra de heridas). *(biblia 05 §3.0)*
-- [ ] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph
+- [x] Golpe rápido (×0.7, encadenable ×3 + pausa 0.4 s) y golpe cargado (×1.6, telegraph
       1.2 s) como variantes de la misma acción de ataque. *(biblia 05 §3.1)*
-- [ ] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s. *(biblia 05 §3.1)*
-- [ ] Caída de precisión del arco por distancia (100/70/40/0 %). *(biblia 05 §3.2)*
-- [ ] `Fauna`: estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los
+- [x] Esquiva con invulnerabilidad de 0.3 s y reutilización de 1.2 s. *(biblia 05 §3.1)*
+- [x] Caída de precisión del arco por distancia (100/70/40/0 %). *(biblia 05 §3.2)*
+- [x] `Fauna`: estadísticas de combate de cerdo salvaje, cabra montés y cangrejo de los
       cocoteros. *(biblia 05 §5)*
-- [ ] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
+- [x] `Fauna`: tiburón de arrecife genérico como variante no legendaria del tiburón
       tigre «Sombra» ya descrito en la biblia de contenido §4.6. *(biblia 05 §5)*
+      Hecho en `FCombatModel` (`Source/Explored/Combat`, `CombatModelSpec`): fichas de
+      combate de los cuatro animales en `Content/Data/combat.json`, comparadas por
+      `Tools/DataCheck` con el C++ y con `fauna.json`; red según biblia 08 (acción 7 B,
+      impacto 8 B, estado 2 B). Falta el cableado en el motor (componente de combate,
+      RPC y actores de fauna terrestre).
 
 ### Inventario y UI general
 
