@@ -8,9 +8,8 @@ respecto a la version sintetizada, y tampoco lo ha hecho `compose.py` (la
 partitura -que nota, cuando, con que progresion de acordes- es exactamente la
 misma). Lo unico que cambia es qué sostiene esa partitura: antes, osciladores
 numpy; ahora, muestras reales via MIDI. Ver `midi_render.py` para el mapeo de
-instrumentos a programas General MIDI y sus limitaciones documentadas
-(percusion a un solo canal, flauta sin portamento continuo, ukelele
-aproximado con guitarra de nailon)."""
+instrumentos a presets del soundfont y sus limitaciones documentadas
+(percusion a un solo canal, flauta sin portamento continuo)."""
 
 from __future__ import annotations
 
@@ -20,8 +19,9 @@ from pathlib import Path
 
 import numpy as np
 
-from ..reverb import schroeder_reverb
+from ..reverb import room_reverb
 from . import midi_render, soundfont
+from .midi_render import FluteNote
 
 NoteEvent = tuple[float, float, "float | list[float]", float, float]  # start, dur, freq(s), vel, pan
 
@@ -57,7 +57,7 @@ def _fade_tail(x: np.ndarray, sr: int, fade_s: float = _TAIL_FADE_S) -> np.ndarr
 
 
 def render_flute_phrase(
-    notes: list[tuple[float, float, float, float]],  # (start_beat, dur_beats, freq, velocity)
+    notes: list[FluteNote],
     bpm: float,
     sr: int,
     rng: np.random.Generator,
@@ -85,16 +85,17 @@ def render_song(
     sr: int,
     total_beats: float,
     tracks: list[Track],
-    flute_phrases: list[list[tuple[float, float, float, float]]] | None = None,
+    flute_phrases: list[list[FluteNote]] | None = None,
     seed_rng: np.random.Generator | None = None,
     reverb_wet: float = 0.3,
     reverb_room: float = 0.6,
 ) -> np.ndarray:
     """Une todas las pistas (mas las frases de flauta) en un unico MIDI
-    multicanal, lo renderiza con el soundfont acustico y aplica la
-    reverberacion de sala/placa final (`reverb.schroeder_reverb`, igual que
-    antes: un unico punto de control sobre el espacio de cada pieza, ya se
-    sostenga con osciladores o con muestras).
+    multicanal, lo renderiza con el soundfont acustico y lo coloca en una
+    sala (`reverb.room_reverb`, convolucion con una respuesta sintetica):
+    un unico punto de control sobre el espacio de cada pieza. La sonoridad
+    final (-16 LUFS) y el limitador los pone `build.finalize`, sobre la
+    pieza ya cerrada en bucle.
 
     `total_beats` ya incluye, si hace falta, el margen para la cola de
     reverberacion/liberacion natural del instrumento o para el material
@@ -119,6 +120,5 @@ def render_song(
     mix[:, :length] = rendered[:, :length]
     mix = _fade_tail(mix, sr)
 
-    left = schroeder_reverb(mix[0], sr, room_size=reverb_room, damping=0.35, wet=reverb_wet)
-    right = schroeder_reverb(mix[1], sr, room_size=reverb_room * 1.04, damping=0.35, wet=reverb_wet)
-    return np.stack([left, right])
+    room_seed = int(rng.integers(0, 2**31 - 1))
+    return room_reverb(mix, sr, room_size=reverb_room, damping=0.35, wet=reverb_wet, seed=room_seed)
