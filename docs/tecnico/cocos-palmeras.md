@@ -17,25 +17,36 @@ conectarlo a la capa de Unreal. Las reglas y los números están en el GDD v2 §
    - `TrunkPosition` es la posición de la instancia en el plano, en centímetros.
 2. **Palmeras sin tocar: nada guardado.** Una palmera que nadie ha sacudido, trepado,
    talado ni recogido debajo se reconstruye al cargar su celda con
-   `Initialize(semilla, pos, perfil, 0, true)` y `Advance(estado, perfil, NowMinute)`. El
-   spec «avanzar 30 días de golpe, por horas o minuto a minuto da lo mismo» es lo que
-   permite hacerlo.
+   `Initialize(semilla, pos, perfil, 0, true)` y `Advance(estado, perfil, NowMinute, Gusts)`.
+   Los specs «avanzar 30 días de golpe, por horas o minuto a minuto da lo mismo» y
+   «racha, guardar y reconstruir» son los que permiten hacerlo, también con temporales.
 3. **Reloj.** `NowMinute` es el minuto entero de `UTimeOfDaySubsystem`, el mismo que
    usan la tala, las ramas del suelo y la lluvia en recipientes.
 4. **Verbos del tronco** (biblia 02 §8.3, «máximo tres verbos»):
    - Golpe con herramienta: talar (`FFellingModel`).
    - **E corto sin herramienta: sacudir.** `Shake(estado, perfil,
-     HandShakeStrength(perfil), posición del jugador, NowMinute, Drops)`. Enfriamiento
+     HandShakeStrength(perfil), posición del jugador, NowMinute, Gusts, Drops)`. Enfriamiento
      de 1,5 s reales para que no se machaque la tecla.
-   - E mantenido: trepar; arriba, `PickFromCrown(..., bWantGreen, NowMinute)`.
-5. **Rachas.** El `UExploredWeatherSubsystem` avisa al cruzar cada hora de juego; el
-   subsistema de cocos llama a `ApplyGust(estado, perfil, Wind, Hora, Drops)` solo en las
-   palmeras de celdas cargadas. Las lejanas no reciben rachas (es un efecto que se ve);
-   `ApplyGust` ignora horas repetidas o anteriores a la última actualización, así que
-   llamarla de más no hace daño.
+   - E mantenido: trepar; arriba, `PickFromCrown(..., bWantGreen, NowMinute, Gusts)`.
+5. **Rachas.** Son parte del ciclo natural, no un efecto de lo cargado:
+   - El `UExploredWeatherSubsystem` calcula una vez la lista ordenada de horas de
+     temporal (`FCoconutGust`: hora y viento, solo las horas con `Wind` >
+     `GustWindThreshold`) desde la hora 0 hasta ahora, con `FWeatherModel` y la semilla
+     del mundo, y la va ampliando al cruzar cada hora. No se guarda: sale de la semilla.
+   - Todas las llamadas (`Advance`, `Shake`, `PickFromCrown`, `Fell`) reciben esa lista,
+     tanto en las palmeras cargadas como al reconstruir una sin tocar. El spec «racha,
+     guardar y reconstruir» comprueba que avanzar cada 10 min, de golpe, o guardar a
+     mitad del temporal y cargar después dan los mismos cocos.
+   - **Nunca** llamar a `Advance` con una lista vacía para ahorrar: las horas de
+     temporal que queden atrás ya no se aplican (spec «las rachas pasadas no tiran
+     nada»), y la palmera quedaría distinta de la reconstruida.
+   - Con unas 400 horas de temporal al año, la lista pesa ~7 KB por año de partida.
+     `Advance` la recorre desde el principio; si llegara a notarse, pasarle solo el
+     tramo desde `LastGustHour` (búsqueda binaria en el subsistema).
 6. **Tala.** Cuando `FFellingModel::ApplyHit` tumba una palmera, llamar a
-   `Fell(estado, perfil, dirección de caída, NowMinute, Drops)` y soltar esos objetos
-   como objetos del mundo. **Quitar** de ese mismo `ComputeFellDrops` los rendimientos
+   `Fell(estado, perfil, dirección de caída, NowMinute, Gusts, Drops)` y soltar esos objetos
+   como objetos del mundo: solo `coco_maduro` (1–3) y `cascara_coco`, nunca `coco_verde`.
+   **Quitar** de ese mismo `ComputeFellDrops` los rendimientos
    `Fruit` de la palmera (`coco_maduro`, `coco_verde`, `cascara_coco`): si no, sacudir y
    luego talar vuelve a dar cocos. Hay spec que lo comprueba del lado del modelo.
 7. **Coco en la cabeza.** Si un `FCoconutDrop` trae `bHitsShaker`, aplicar el daño
@@ -78,14 +89,17 @@ conectarlo a la capa de Unreal. Las reglas y los números están en el GDD v2 §
 Medido en el host (`-O2`, un núcleo, 2000 palmeras):
 
 - **Nada en `Tick`.** Solo hay trabajo al cargar una celda, al interactuar y una vez por
-  hora de juego con las rachas.
-- `Advance` de 10 minutos: **0,23 µs** por palmera. Ponerse al día 60 días: **1,5 µs**.
-  Una celda con 40 palmeras cuesta ~60 µs al cargar.
-- Reconstruir desde el minuto 0 crece con la edad de la partida (~27 ciclos por hueco y
-  año): en una partida de un año de juego, unos 10 µs por palmera. Si llegara a notarse,
-  guardar un «ancla» (estado completo) cada 30 días de juego en la celda.
-- `Shake`: **0,67 µs**. `ApplyGust` en 200 palmeras cargadas con temporal: < 0,2 ms una
-  vez por hora de juego.
+  hora de juego con temporal (un `Advance` de las palmeras cargadas).
+- Sin temporales: `Advance` de 10 minutos, **0,4 µs** por palmera; ponerse al día 60
+  días, **2,3 µs**; `Shake`, **1,2 µs**.
+- Con temporales, cada hora de temporal cuesta una sacudida. Reconstruir desde el minuto
+  0 una partida de un año con 438 horas de temporal (una de cada 20): **83 µs** por
+  palmera, ~3,3 ms para una celda de 40 palmeras. Crece con la edad de la partida:
+  - repartir la carga de celdas entre fotogramas (ya lo hace el streaming de vegetación);
+  - si llegara a notarse, guardar un «ancla» por celda (estado completo de sus palmeras)
+    cada 30 días de juego y reconstruir desde ella, que no cambia el resultado;
+  - pasar a `Advance` solo el tramo de la lista desde `LastGustHour` (recorrerla entera
+    cuesta 0,4 µs por cada 438 horas).
 - La lista del suelo está acotada: como mucho un coco vivo por hueco con los números
   por defecto (hay spec de diez años seguidos).
 

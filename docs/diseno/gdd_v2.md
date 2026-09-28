@@ -1031,13 +1031,25 @@ cocos de verdad en la copa, que maduren y caigan solos, y que sacudirla los suel
     tronco pasa en ~3 % de los cocos. El daño lo fija la biblia 01 (propuesta: 5 de
     salud, sin esguince).
   - **Rachas.** Con viento por encima de 0,6, cada hora de juego sacude la copa con
-    fuerza `0,5 × (viento − 0,6) / 0,4` (0,5 en un ciclón). Solo en palmeras cercanas al
-    jugador: es un efecto que se ve.
-  - **Trepar.** Arriba se coge un coco de la copa, verde o maduro, y el hueco queda vacío.
-  - **Talar.** Lo que queda en la copa cae con ella, repartido por la copa caída. Cada
-    maduro se abre con probabilidad 0,3 y queda en `cascara_coco`; los verdes aguantan.
-    La copa se vacía, así que **sacudir y luego talar no da cocos de más**. Estos cocos
-    sustituyen a los `coco_*` de la tabla de la palmera en §3.12.
+    fuerza `0,5 × (viento − 0,6) / 0,4` (0,5 en un ciclón). Las rachas son parte del
+    ciclo natural y afectan a **todas** las palmeras, cargadas o no: las horas de
+    temporal salen del tiempo del mundo (determinista por semilla) y una palmera que se
+    reconstruye al volver da los mismos cocos que si se hubiera simulado cargada. Así no
+    depende de qué celdas tenga cargadas el servidor en el cooperativo.
+  - **Trepar.** Arriba se coge un coco de la copa y el hueco queda vacío. La biblia 02
+    §13.1 solo habla del `coco_verde`; poder coger también el maduro es una
+    **extensión** de este GDD, pendiente de validar.
+  - **Talar.** La copa cae con la palmera. Con M maduros en la copa, cada uno se abre
+    con probabilidad 0,3 y después se acota: quedan enteros entre 1 y mín(3, M − 1)
+    (biblia 02 §1.2: «1–3× `coco_maduro` […], nunca los 100 %»), y el resto quedan en
+    `cascara_coco`. **Los verdes se pierden con el golpe**: el agua del verde solo se
+    consigue trepando (biblia 02 §1.2 y §13.1). La copa se vacía, así que **sacudir y
+    luego talar no da cocos de más**. Estos cocos sustituyen a los `coco_*` de la tabla
+    de la palmera en §3.12.
+    - **Discrepancia para el director:** con 0 o 1 maduros en la copa (una palmera ya
+      sacudida, o con todo verde), la tala da 0 maduros enteros (con 1, se abre). La
+      biblia pide «1–3» sin decir qué pasa si la copa no los tiene; aquí manda la copa
+      para que sacudir y luego talar no regale cocos.
   - **Rebrote.** Cuando el tocón vuelve a ser adulto (§3.12), la copa empieza vacía y
     cuaja su primer coco a los 2–4 días.
 
@@ -1053,7 +1065,8 @@ cocos de verdad en la copa, que maduren y caigan solos, y que sacudirla los suel
   | Racha | desde viento 0,6; máx. 0,5 | `GustStrength` |
   | Anillo de caída | 0,5 m – 0,6 × copa | `MinFallRadiusMeters`, `FallRadiusCrownFraction` |
   | Radio de la cabeza | 0,35 m | `HeadHitRadiusMeters` |
-  | Maduros que se abren al talar | 30 % | `CrackChanceOnFell` |
+  | Maduros que se abren al talar | 30 % por coco, después acotado | `CrackChanceOnFell` |
+  | Maduros enteros al talar | 1 – mín(3, M − 1); 0 con M ≤ 1 | `MaxFellMature`, `FellMatureKept` |
 
 - **Determinismo.** Todo el ciclo sale de un hash de (semilla, hueco, generación) y va en
   minutos enteros: avanzar 30 días de golpe o minuto a minuto da lo mismo (hay spec). Una
