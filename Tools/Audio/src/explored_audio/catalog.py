@@ -9,9 +9,23 @@ from typing import Callable
 
 import numpy as np
 
-from .generators import ambience, birds, body, cartography, construction, crafting, fauna, fire, footsteps, garden, impacts, misc_sfx, ui, water
+from .generators import (
+    ambience,
+    birds,
+    body,
+    cartography,
+    construction,
+    crafting,
+    fauna,
+    fire,
+    footsteps,
+    garden,
+    impacts,
+    misc_sfx,
+    ui,
+    water,
+)
 from .music import compose as music_compose
-
 
 # Piezas de la musica adaptativa, en el orden en que se exportan. `music.layers`
 # las describe (papel, isla, tempo, compases) para el director de musica del juego.

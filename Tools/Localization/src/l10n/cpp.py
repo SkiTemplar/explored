@@ -8,6 +8,7 @@ No es un compilador: tokeniza lo justo (comentarios, cadenas) para no confundir 
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,6 +19,9 @@ LOCTEXT_RE = re.compile(rf"(?<![A-Za-z_])LOCTEXT\s*\(\s*{_STR}\s*,\s*{_STR}\s*\)
 NAMESPACE_DEFINE_RE = re.compile(rf"#\s*define\s+LOCTEXT_NAMESPACE\s+{_STR}")
 NAMESPACE_UNDEF_RE = re.compile(r"#\s*undef\s+LOCTEXT_NAMESPACE\b")
 TEXT_RE = re.compile(rf"\bTEXT\s*\(\s*{_STR}\s*\)")
+# Cualquier invocación de las macros, para detectar las que las expresiones de arriba no saben leer.
+ANY_LOC_MACRO_RE = re.compile(r"(?<![A-Za-z_])(?:NS)?LOCTEXT\s*\(")
+_HEX = re.compile(r"[0-9A-Fa-f]+")
 
 # Sentencias cuyo texto no llega al jugador (registro, asserts, errores internos, rutas).
 EXCLUDED_TOKENS = (
@@ -66,9 +70,18 @@ def unescape(s: str) -> str:
                 continue
             if nxt in "uU":
                 width = 4 if nxt == "u" else 8
-                out.append(chr(int(s[i + 2 : i + 2 + width], 16)))
-                i += 2 + width
-                continue
+                digits = s[i + 2 : i + 2 + width]
+                if len(digits) == width and _HEX.fullmatch(digits):
+                    out.append(chr(int(digits, 16)))
+                    i += 2 + width
+                    continue
+            if nxt == "x":
+                # En C++ \x se come todos los dígitos hexadecimales que siguen.
+                m = _HEX.match(s, i + 2)
+                if m:
+                    out.append(chr(int(m.group(), 16)))
+                    i = m.end()
+                    continue
         out.append(c)
         i += 1
     return "".join(out)
@@ -116,6 +129,13 @@ def extract_loctext(code: str, rel_path: str) -> list[LocText]:
     """Textos de NSLOCTEXT y LOCTEXT (con el LOCTEXT_NAMESPACE vigente en cada punto)."""
     clean = strip_comments(code)
     found: list[LocText] = []
+    # Una macro que no encaja (literales concatenados, una constante en vez de un literal...)
+    # desaparecería del catálogo sin avisar: mejor fallar con la línea.
+    parsed = {m.start() for m in NSLOCTEXT_RE.finditer(clean)} | {m.start() for m in LOCTEXT_RE.finditer(clean)}
+    for m in ANY_LOC_MACRO_RE.finditer(_mask_strings(clean)):
+        if m.start() not in parsed:
+            raise ValueError(f"{rel_path}:{_line_of(clean, m.start())}: no se puede leer este LOCTEXT/NSLOCTEXT "
+                             "(usa un único literal por argumento)")
     for m in NSLOCTEXT_RE.finditer(clean):
         found.append(LocText(unescape(m.group(1)), unescape(m.group(2)), unescape(m.group(3)),
                              rel_path, _line_of(clean, m.start())))
@@ -186,7 +206,9 @@ def scan_literals(code: str, rel_path: str) -> list[Literal]:
     return found
 
 
-def iter_sources(repo_root: Path, roots: list[str], suffixes: tuple[str, ...], exclude: tuple[str, ...] = ()):
+def iter_sources(
+    repo_root: Path, roots: list[str], suffixes: tuple[str, ...], exclude: tuple[str, ...] = ()
+) -> Iterator[tuple[Path, str]]:
     for root in roots:
         base = repo_root / root
         if not base.exists():

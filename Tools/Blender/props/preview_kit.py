@@ -22,6 +22,7 @@ import os
 import sys
 
 import bpy
+
 from mathutils import Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -172,7 +173,7 @@ def _shrink_png(path, limit=1_000_000):
     tries = 0
     while os.path.getsize(path) > limit and tries < 6:
         img = bpy.data.images.load(path, check_existing=False)
-        w, h = img.size
+        w, h = img.size[:]
         img.scale(int(w * 0.9), int(h * 0.9))
         img.filepath_raw = path
         img.file_format = 'PNG'
@@ -287,6 +288,7 @@ def module_tiles(mod_name, slug, samples, res, cols=4, group=None, only=None):
     diminutos (tesoros de 10 cm junto a un remo de 2 m)."""
     import importlib
     import tempfile
+
     import numpy as np
     mod = importlib.import_module(mod_name)
     variants = [v for v in mod.VARIANTS if (group is None or v.get('group') == group)
@@ -297,33 +299,35 @@ def module_tiles(mod_name, slug, samples, res, cols=4, group=None, only=None):
     sheet = np.zeros((rows * th, cols * tw, 4), dtype=np.float32)
     sheet[..., :3] = (0.55, 0.45, 0.30)
     sheet[..., 3] = 1.0
-    tmp = tempfile.mkdtemp()
-    for i, v in enumerate(variants):
-        bpy.ops.wm.read_factory_settings(use_empty=True)
-        o = mod.build(v)
-        # giro opcional SOLO para la lámina (p.ej. la pala, cuya hoja mira
-        # a +X por convención de socket y se vería de canto, o la flecha,
-        # que de pie sale diminuta y se tumba con preview_rot_y)
-        o.rotation_euler = (v.get('preview_rot_x', 0.0), v.get('preview_rot_y', 0.0), v.get('preview_rot_z', 0.0))
-        bpy.context.view_layer.update()
-        x0, x1, y0, y1, z0, _ = _bounds(o)
-        ext = max(x1 - x0, y1 - y0)
-        o.location = (-(x0 + x1) / 2, -(y0 + y1) / 2, -z0)
-        path = os.path.join(tmp, f'{i}.png')
-        _stage(ext * 4 + 1, ext * 4 + 1, (0, 0), (-0.8 * ext, -2.0 * ext, 1.5 * ext), (0, 0, 0), 40, path,
-               samples, f'{tw}x{th}')
-        img = bpy.data.images.load(path, check_existing=False)
-        w, h = img.size
-        px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
-        bpy.data.images.remove(img)
-        if i == 0:
-            # teselas vacías del color de la arena renderizada
-            sheet[..., :3] = px[4, 4, :3]
-        c, r = i % cols, rows - 1 - i // cols  # las filas de bpy van de abajo arriba
-        sheet[r * th:r * th + min(h, th), c * tw:c * tw + min(w, tw)] = px[:th, :tw]
-        # separación fina entre teselas
-        sheet[r * th:(r + 1) * th, c * tw:c * tw + 2, :3] = 0.2
-        sheet[r * th:r * th + 2, c * tw:(c + 1) * tw, :3] = 0.2
+    # las teselas intermedias van a un temporal que se borra al terminar
+    # (antes quedaba un directorio suelto en /tmp por cada lámina)
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, v in enumerate(variants):
+            bpy.ops.wm.read_factory_settings(use_empty=True)
+            o = mod.build(v)
+            # giro opcional SOLO para la lámina (p.ej. la pala, cuya hoja mira
+            # a +X por convención de socket y se vería de canto, o la flecha,
+            # que de pie sale diminuta y se tumba con preview_rot_y)
+            o.rotation_euler = (v.get('preview_rot_x', 0.0), v.get('preview_rot_y', 0.0), v.get('preview_rot_z', 0.0))
+            bpy.context.view_layer.update()
+            x0, x1, y0, y1, z0, _ = _bounds(o)
+            ext = max(x1 - x0, y1 - y0)
+            o.location = (-(x0 + x1) / 2, -(y0 + y1) / 2, -z0)
+            path = os.path.join(tmp, f'{i}.png')
+            _stage(ext * 4 + 1, ext * 4 + 1, (0, 0), (-0.8 * ext, -2.0 * ext, 1.5 * ext), (0, 0, 0), 40, path,
+                   samples, f'{tw}x{th}')
+            img = bpy.data.images.load(path, check_existing=False)
+            w, h = img.size[:]
+            px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
+            bpy.data.images.remove(img)
+            if i == 0:
+                # teselas vacías del color de la arena renderizada
+                sheet[..., :3] = px[4, 4, :3]
+            c, r = i % cols, rows - 1 - i // cols  # las filas de bpy van de abajo arriba
+            sheet[r * th:r * th + min(h, th), c * tw:c * tw + min(w, tw)] = px[:th, :tw]
+            # separación fina entre teselas
+            sheet[r * th:(r + 1) * th, c * tw:c * tw + 2, :3] = 0.2
+            sheet[r * th:r * th + 2, c * tw:(c + 1) * tw, :3] = 0.2
     out = os.path.join(OUT_DIR, f'{slug}.png')
     img = bpy.data.images.new('Sheet', cols * tw, rows * th)
     img.pixels = sheet.ravel()

@@ -6,6 +6,8 @@ fase en los dos canales: antes quedaban en contrafase y se anulaban en mono."""
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 from scipy import signal, stats
 
@@ -52,7 +54,7 @@ def test_el_mar_de_fondo_pesa_mas_en_graves_que_la_orilla_mansa(rendered):
 
 
 def test_los_graves_de_los_ambientes_van_en_fase(catalog, rendered):
-    b, a = signal.butter(4, 150.0, fs=SAMPLE_RATE)
+    b, a = cast(tuple[np.ndarray, np.ndarray], signal.butter(4, 150.0, fs=SAMPLE_RATE))
     checked = 0
     for spec in catalog:
         if spec.category != "Ambiente":

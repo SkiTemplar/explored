@@ -17,16 +17,16 @@ postura natural. Escala real en metros.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 sys.path.insert(0, os.path.dirname(__file__))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
 import _items as I  # noqa: E402
-import kit_construccion as K  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 import items_contenedores as CT  # noqa: E402
 import items_despojos as D  # noqa: E402
-
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -173,7 +173,7 @@ def _b_hijuelo(v, rnd, name):
     # pseudotallo
     zs = [0.08, 0.14, 0.22, 0.30, 0.38, 0.42]
     rs = [0.05, 0.044, 0.037, 0.031, 0.026, 0.022]
-    prof = [(0.0, 0.07)] + list(zip(rs, zs)) + [(0.0, zs[-1])]
+    prof = [(0.0, 0.07)] + list(zip(rs, zs, strict=True)) + [(0.0, zs[-1])]
     stem = I.lathe('Stem', prof, segs=18)
     M.assign(stem, ['M_Leaf'])
 
@@ -326,7 +326,7 @@ def _b_pasta(v, rnd, name):
 
 
 def _prof_r(outer, z):
-    for (r0, z0), (r1, z1) in zip(outer, outer[1:]):
+    for (r0, z0), (r1, z1) in pairwise(outer):
         if z0 <= z <= z1 and z1 > z0:
             return r0 + (r1 - r0) * (z - z0) / (z1 - z0)
     return outer[-1][0]

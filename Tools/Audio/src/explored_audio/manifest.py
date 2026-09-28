@@ -30,4 +30,4 @@ def write_manifest(entries: list[dict[str, Any]], out_path: Path) -> None:
         "count": len(entries),
         "sounds": sorted(entries, key=lambda e: (e["category"], e["name"])),
     }
-    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")

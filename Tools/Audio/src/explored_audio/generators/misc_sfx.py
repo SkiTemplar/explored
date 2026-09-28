@@ -9,8 +9,8 @@ import numpy as np
 from ..constants import SAMPLE_RATE
 from ..envelopes import ar_envelope, exp_decay, fit_length, smooth_random_walk
 from ..filters import static_filter
-from ..levels import k_weighted_momentary_max
 from ..granular import render_noise_grains
+from ..levels import k_weighted_momentary_max
 from ..noise import brown_noise, pink_noise
 from ..rng import rng_for
 from .footsteps import _bubble, _click, _droplet, _grain_burst, _swish, _thump

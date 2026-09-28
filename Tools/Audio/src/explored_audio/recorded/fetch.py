@@ -25,8 +25,8 @@ import numpy as np
 import soundfile as sf
 
 from ..constants import SAMPLE_RATE
-from .oggflac import is_ogg_flac, ogg_flac_to_flac, set_ogg_serial
 from .loudness import integrated_lufs, sample_peak_dbfs
+from .oggflac import is_ogg_flac, ogg_flac_to_flac, set_ogg_serial
 from .process import process
 from .sources import Piece, SourceList
 

@@ -14,6 +14,8 @@ Reglas (Source/Explored/Crafting/CraftingLibrary.cpp e Items/ItemTypes.cpp):
 
 from __future__ import annotations
 
+import copy
+import json
 from dataclasses import dataclass, field
 
 
@@ -119,7 +121,24 @@ def _dominates(a: Instance, b: Instance) -> bool:
     return a.tags == b.tags and all(pa.get(k, 0.0) >= v for k, v in b.props)
 
 
+# Resultados ya calculados, por contenido de (items, templates, max_depth). La simulación es
+# pura y cara (segundos con el catálogo real), y los tests y --write-* la repiten con los mismos
+# datos; la clave es el JSON completo, así que cualquier cambio de datos recalcula.
+_SIMULATE_CACHE: dict[str, Reachability] = {}
+_CACHE_SIZE = 8
+
+
 def simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Reachability:
+    """Como ``_simulate``, con memoria de los últimos catálogos (devuelve una copia)."""
+    key = json.dumps([items, templates, max_depth], sort_keys=True, default=repr)
+    if key not in _SIMULATE_CACHE:
+        if len(_SIMULATE_CACHE) >= _CACHE_SIZE:
+            _SIMULATE_CACHE.pop(next(iter(_SIMULATE_CACHE)))
+        _SIMULATE_CACHE[key] = _simulate(items, templates, max_depth)
+    return copy.deepcopy(_SIMULATE_CACHE[key])
+
+
+def _simulate(items: list[dict], templates: list[dict], max_depth: int = 2) -> Reachability:
     """Explora combinaciones desde los materiales en bruto hasta ``max_depth`` pasos.
 
     Materiales en bruto: todo objeto que no es resultado de ninguna plantilla ni

@@ -10,8 +10,14 @@ cd Tools/DataCheck
 uv run datacheck            # informe; código de salida 1 si hay errores
 uv run datacheck --strict   # los avisos también fallan
 uv run datacheck --write-cooking   # regenera las tablas C++ del fuego y la cocina
+uv run datacheck --root RUTA # valida otro checkout (los tests lo usan con repos temporales)
 uv run pytest               # tests (datos reales + regresiones sintéticas)
+uv run ruff check . && uv run basedpyright   # lint y tipos (CI)
+uv run pytest -q --cov --cov-report=term-missing   # cobertura (mínimo 80 %)
 ```
+
+Un JSON mal formado se informa como error (`JSON mal formado`) en vez de abortar con una
+excepción, y los campos de tipo equivocado (texto donde va un número, ids nulos…) también.
 
 Qué comprueba:
 

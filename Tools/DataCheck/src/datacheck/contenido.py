@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 from . import achievements, estilo
 
@@ -58,7 +59,7 @@ CONTENT_FILES = [
 ]
 
 
-def _phase_rank(phase: str) -> int:
+def _phase_rank(phase: object) -> int:
     return PHASES.index(phase) if phase in PHASES else -1
 
 
@@ -199,7 +200,7 @@ def check_journal(ctx: _Ctx) -> None:
     if doc is None:
         return
     r = ctx.r
-    events = {e.get("id"): e for e in doc.get("events", []) if isinstance(e, dict)}
+    events: dict[Any, dict] = {e.get("id"): e for e in doc.get("events", []) if isinstance(e, dict)}
     _ids(r, "journal_entries.json/events", doc.get("events", []))
     for eid, ev in events.items():
         if ev.get("phase") not in PHASES:
@@ -208,7 +209,7 @@ def check_journal(ctx: _Ctx) -> None:
             r.error(f"journal_entries.json/events «{eid}»: falta descriptionEs o reportedBy")
 
     ach = ctx.ds.data.get("achievements.json", {})
-    stats = {s.get("id"): s for s in ach.get("stats", []) if isinstance(s, dict)}
+    stats: dict[Any, dict] = {s.get("id"): s for s in ach.get("stats", []) if isinstance(s, dict)}
 
     entries = doc.get("entries", [])
     _ids(r, "journal_entries.json/entries", entries)
@@ -365,7 +366,7 @@ def check_ruin_assignment(ctx: _Ctx) -> None:
 # --------------------------------------------------------------------------- museo
 
 
-def _check_museum_piece(ctx: _Ctx, where: str, p: dict, collection_phase: str, obtain: set[str]) -> None:
+def _check_museum_piece(ctx: _Ctx, where: str, p: dict, collection_phase: Any, obtain: set[str]) -> None:
     r = ctx.r
     estilo.check_pair(r, where, p, "nameEs", "nameEn", "nombre_vitrina")
     estilo.check_pair(r, where, p, "descriptionEs", "descriptionEn", "ficha")
@@ -402,12 +403,12 @@ def check_museum(ctx: _Ctx) -> None:
     data = ctx.ds.data
     pieces = {p.get("id"): p for p in ctx.ds.building.get("pieces", [])}
     museum_pieces = {pid for pid, p in pieces.items() if p.get("category") == "museo"}
-    collections = {c.get("id"): c for c in doc.get("collections", []) if isinstance(c, dict)}
+    collections: dict[Any, dict] = {c.get("id"): c for c in doc.get("collections", []) if isinstance(c, dict)}
     ids = _ids(r, "museum_collections.json", doc.get("collections", []))
     if set(ids) != COLLECTIONS:
         r.error(f"museum_collections.json: colecciones {sorted(ids)}; la biblia 07 §3.2 fija {sorted(COLLECTIONS)}")
     shown: set[str] = set()
-    all_piece_ids: dict[str, str] = {}
+    all_piece_ids: dict[Any, Any] = {}
     for cid, c in collections.items():
         where = f"museum_collections.json «{cid}»"
         estilo.check_pair(r, where, c, "nameEs", "nameEn", "nombre_vitrina")

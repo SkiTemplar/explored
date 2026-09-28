@@ -15,11 +15,10 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
 import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 import kit_construccion as K  # noqa: E402
-
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -432,7 +431,7 @@ def _b_carbon_vegetal(v, rnd, name):
         n = 8
         xs = [-length / 2 + length * k / n for k in range(n + 1)]
 
-        def section(x, r=r, length=length):
+        def section(x, r=r, length=length, segs=segs, i=i):
             t = (x + length / 2) / length
             end = 1.0 - 0.18 * max(0.0, abs(t - 0.5) * 2 - 0.7) / 0.3
             out = []
@@ -446,7 +445,7 @@ def _b_carbon_vegetal(v, rnd, name):
         o = I.loft_x(f'Char{i}', xs, section, cap=True)
         M.assign(o, ['M_Stone'])
 
-        def col(vv, length=length, r=r):
+        def col(vv, length=length, r=r, segs=segs, i=i):
             k = vv.index % segs
             co = vv.co
             t = (co.x + length / 2) / length

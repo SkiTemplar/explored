@@ -12,6 +12,7 @@ from __future__ import annotations
 import math
 import re
 from pathlib import Path
+from typing import Any, TypeGuard
 
 MODEL_CPP = Path("Source") / "Explored" / "Audio" / "MusicDirectorModel.cpp"
 MODEL_H = Path("Source") / "Explored" / "Audio" / "MusicDirectorModel.h"
@@ -52,7 +53,7 @@ def _cpp_num_notes(text: str) -> int | None:
     return int(m.group(1)) if m else None
 
 
-def _num(v) -> bool:
+def _num(v: Any) -> TypeGuard[float]:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
@@ -80,6 +81,9 @@ def check_music(ds, r) -> None:
     ids: list[str] = []
     by_id: dict[str, dict] = {}
     for p in pieces:
+        if not isinstance(p, dict):
+            r.error(f"{where}: pieza {p!r} no es un objeto")
+            continue
         pid = p.get("id")
         if not isinstance(pid, str) or not ID_RE.match(pid):
             r.error(f"{where}: id de pieza inválido {pid!r} (mus_ + minúsculas ASCII)")
@@ -129,10 +133,11 @@ def check_music(ds, r) -> None:
 
     # Exploración diurna: una pieza por isla y las variaciones del día.
     explore = [p for p in by_id.values() if p.get("role") == "explore"]
-    explore_vars = [p.get("variant") for p in explore]
-    if island_keys and sorted(explore_vars) != sorted(island_keys):
+    # key=str: una pieza sin «variant» (None) no puede romper la ordenación.
+    explore_vars = sorted((p.get("variant") for p in explore), key=str)
+    if island_keys and explore_vars != sorted(island_keys):
         r.error(f"{where}: las piezas de exploración deben cubrir una vez cada isla {island_keys}, "
-                f"hay {sorted(explore_vars)}")
+                f"hay {explore_vars}")
     days = doc.get("day_variants")
     if not isinstance(days, dict):
         r.error(f"{where}: «day_variants» debe ser un objeto isla → piezas")
@@ -164,7 +169,7 @@ def check_music(ds, r) -> None:
                         f"EMusicFinale {sorted(finale_keys)}; nunca se elegiría")
     if finale_default and finale_default not in finale_vars:
         r.error(f"{where}: falta el final por defecto «{finale_default}» (partida del «Limón»)")
-    extra = sorted(v for v in finale_vars if v != GDD_FINALE)
+    extra = sorted(str(v) for v in finale_vars if v != GDD_FINALE)
     if extra:
         r.info.append(f"{where}: finales de música fuera del GDD §2/§14.3 (solo la partida del «Limón»): "
                       f"{', '.join(extra)}")

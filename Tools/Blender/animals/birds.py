@@ -13,8 +13,6 @@ aleteo en Unreal (anim=flap) — no hay animación en C++."""
 import os
 import sys
 
-import bpy
-
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402

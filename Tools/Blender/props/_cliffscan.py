@@ -26,11 +26,10 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _shapes as S  # noqa: E402
+import bpy  # noqa: E402
 
 import bmesh  # noqa: E402
-import bpy  # noqa: E402
+import common as C  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), '.cache', 'rocks_cc0')

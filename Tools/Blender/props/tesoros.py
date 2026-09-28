@@ -14,15 +14,16 @@ así el jugador reconoce el "estilo" del pueblo en objetos de 20 cm y de
 import math
 import os
 import sys
+from typing import cast
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
+import bpy  # noqa: E402
+
 import _materials as M  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
 import kit_construccion as K  # noqa: E402
 import ruinas_polinesias as R  # noqa: E402
-
-import bmesh  # noqa: E402
-import bpy  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 CATEGORY = 'treasures'
@@ -104,7 +105,8 @@ def _sweep(name, pts, radii, segs=10, cap=True):
         else:
             n = (prev_n - t * prev_n.dot(t)).normalized()
         prev_n = n
-        b = t.cross(n)
+        # los stubs tipan cross() como Vector | float (caso 2D); aquí es 3D
+        b = cast(Vector, t.cross(n))
         r = radii[i] if isinstance(radii, (list, tuple)) else radii
         rings.append([p + (n * math.cos(2 * math.pi * k / segs) + b * math.sin(2 * math.pi * k / segs)) * r
                       for k in range(segs)])

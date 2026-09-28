@@ -18,17 +18,17 @@ TIER_INSET = 0,8 m; la escalinata sube exactamente un escalón de terraza.
 
 import math
 import os
-import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
-import bmesh  # noqa: E402
 import bpy  # noqa: E402
-from mathutils import Matrix, Vector, noise as mnoise  # noqa: E402
+
+import _materials as M  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
+from mathutils import noise as mnoise
 
 CATEGORY = 'ruins'
 GROUP_SITE = 'RuinasMarae'
@@ -136,12 +136,12 @@ def _stone_tint(rgb, seed, rnd, moss=0.35, lichen=0.25, jitter=0.02):
         n = mnoise.noise(v.co * 2.2 + off)
         if moss and v.normal.z > 0.35 and n > 0.25 - moss:
             k = min(1.0, (n - (0.25 - moss)) * 2.5) * min(1.0, (v.normal.z - 0.35) * 3)
-            c = [a * (1 - k) + b * k for a, b in zip(c, PAL['moss'])]
+            c = [a * (1 - k) + b * k for a, b in zip(c, PAL['moss'], strict=True)]
         n2 = mnoise.noise(v.co * 6.5 + off * 1.7)
         if lichen and n2 > 0.55 - lichen:
             lc = PAL['lichen'] if n2 < 0.62 else PAL['lichen_orange']
             k = min(1.0, (n2 - (0.55 - lichen)) * 3.0) * 0.8
-            c = [a * (1 - k) + b * k for a, b in zip(c, lc)]
+            c = [a * (1 - k) + b * k for a, b in zip(c, lc, strict=True)]
         j = rnd.uniform(-jitter, jitter)
         out = (max(0, c[0] + j), max(0, c[1] + j), max(0, c[2] + j), 0.0)
         cache[v.index] = out

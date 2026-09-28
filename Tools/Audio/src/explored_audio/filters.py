@@ -56,7 +56,7 @@ def _coeffs(sr: float, fc: float, q: float, kind: str):
 def static_filter(x: np.ndarray, sr: float, fc: float, q: float = 0.707, kind: str = "lowpass") -> np.ndarray:
     """Filtro de estado variable de corte fijo (equivalente a biquad RBJ)."""
     b, a = _coeffs(sr, fc, q, kind)
-    return signal.lfilter(b, a, x)
+    return np.asarray(signal.lfilter(b, a, x))
 
 
 def time_varying_filter(
@@ -75,6 +75,10 @@ def time_varying_filter(
     estado del filtro para no introducir clics entre bloques.
     """
     n = len(x)
+    if len(cutoff_track) != n:
+        # Un bloque sin pista de corte daba una media NaN y, con ella, una
+        # salida entera de NaN sin ningun error.
+        raise ValueError(f"cutoff_track mide {len(cutoff_track)} muestras y la señal {n}")
     out = np.empty(n)
     zi = np.zeros(2)
     for start in range(0, n, block_size):

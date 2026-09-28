@@ -22,13 +22,12 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _shapes as S  # noqa: E402
-
-import bmesh  # noqa: E402
 import bpy  # noqa: E402
-from mathutils import Matrix, Vector  # noqa: E402
 
+import _shapes as S  # noqa: E402
+import bmesh  # noqa: E402
+import common as C  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Anillos de radio irregular (columnas: farallones, espolones, pilares de
@@ -160,9 +159,46 @@ def finish_rock(obj, name, bevel_width, bevel_segments=2, bevel_angle_deg=38.0,
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.dissolve_degenerate(threshold=1e-3)
     bpy.ops.object.mode_set(mode='OBJECT')
+    remove_sliver_triangles(obj)
     C.shade_smooth_auto(obj, angle_deg=smooth_angle_deg)
     C.add_basic_uv(obj, method=uv_method)
     obj.name = name
+    return obj
+
+
+def _loop_tri_area(lt):
+    a, b, c = (loop.vert.co for loop in lt)
+    return (b - a).cross(c - a).length * 0.5
+
+
+def remove_sliver_triangles(obj, min_area=1e-7, max_passes=4):
+    """Elimina los triángulos «aguja» que saldrían al triangular la malla.
+
+    El decimate planar + bisel de las formaciones escaneadas deja n-gonos
+    grandes (hasta ~180 lados) con tramos de vértices casi alineados a
+    ~1 mm: sus caras tienen área de sobra (dissolve_degenerate no las toca),
+    pero el FBX se exporta triangulado (use_triangles=True) y esos tramos
+    se convierten en triángulos de área ~0 que validate.py rechaza. Aquí se
+    triangulan (BEAUTY) SOLO las caras que producirían alguno de esos
+    triángulos y se colapsa la arista más corta de cada aguja restante; el
+    resto de la malla no se toca."""
+    me = obj.data
+    for _ in range(max_passes):
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        bad = {lt[0].face for lt in bm.calc_loop_triangles() if _loop_tri_area(lt) < min_area}
+        if not bad:
+            bm.free()
+            break
+        tris = bmesh.ops.triangulate(bm, faces=list(bad), quad_method='BEAUTY',
+                                     ngon_method='BEAUTY')['faces']
+        agujas = [f for f in tris if f.is_valid and f.calc_area() < min_area]
+        cortas = {min(f.edges, key=lambda e: e.calc_length()) for f in agujas}
+        if cortas:
+            bmesh.ops.collapse(bm, edges=list(cortas), uvs=True)
+        bm.to_mesh(me)
+        bm.free()
+        me.update()
     return obj
 
 

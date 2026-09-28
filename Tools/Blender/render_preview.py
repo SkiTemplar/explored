@@ -30,6 +30,7 @@ import os
 import sys
 
 import bpy
+
 from mathutils import Vector
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -66,6 +67,28 @@ ROW_SIZE_AXIS = {
 }
 ROW_DEPTH = 3.3           # separación en Y entre filas
 ITEM_MARGIN = 0.5         # separación horizontal entre mallas de una misma fila
+
+
+# Motor y escala de resolución de TODAS las láminas. Los tests los bajan a
+# Workbench y a un porcentaje mínimo (EEVEE sin GPU tarda minutos por imagen).
+RENDER_ENGINE = 'BLENDER_EEVEE'
+RESOLUTION_PERCENT = 100
+
+
+def _render_still(scene, out_path, res_x, res_y, samples, raytracing):
+    """Configura la salida PNG y renderiza la escena ya montada a «out_path»
+    (ajustes de EEVEE solo si el motor es EEVEE)."""
+    scene.render.engine = RENDER_ENGINE
+    scene.render.resolution_x = res_x
+    scene.render.resolution_y = res_y
+    scene.render.resolution_percentage = RESOLUTION_PERCENT
+    scene.render.image_settings.file_format = 'PNG'
+    scene.render.filepath = out_path
+    if RENDER_ENGINE == 'BLENDER_EEVEE':
+        scene.eevee.use_raytracing = raytracing
+        scene.eevee.taa_render_samples = samples
+    bpy.ops.render.render(write_still=True)
+    print(f'[render_preview] escrito {out_path}')
 
 
 def _bounds_world(obj):
@@ -234,22 +257,7 @@ def main():
     scene.camera = cam
 
     # --- render ---
-    scene.render.engine = 'BLENDER_EEVEE'
-    scene.render.resolution_x = 1600
-    scene.render.resolution_y = 900
-    scene.render.image_settings.file_format = 'PNG'
-    scene.render.filepath = PREVIEW_PATH
-    try:
-        scene.eevee.use_raytracing = True
-    except Exception:
-        pass
-    try:
-        scene.eevee.taa_render_samples = 64
-    except Exception:
-        pass
-
-    bpy.ops.render.render(write_still=True)
-    print(f'[render_preview] escrito {PREVIEW_PATH}')
+    _render_still(scene, PREVIEW_PATH, 1600, 900, samples=64, raytracing=True)
 
 
 # ---------------------------------------------------------------------------
@@ -274,7 +282,7 @@ GROUP_ORDER_PROPS = [
     'Albatros', 'Faro', 'Baliza', 'Halden', 'BrujulaEstelar',
     'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
     'ObjetosPequenos', 'KitPalma', 'KitBambu', 'KitMadera', 'KitPiedra',
-    'MobiliarioBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
+    'MobiliarioBase', 'ProduccionBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
     'AcantiladoFormaciones', 'AcantiladoBloques',
 ]
 GROUP_TARGET_HEIGHT_PROPS = {
@@ -282,7 +290,7 @@ GROUP_TARGET_HEIGHT_PROPS = {
     'BrujulaEstelar': 1.4, 'Petroglifos': 0.9, 'Marae': 1.4, 'Pecio': 1.4,
     'Embarcaciones': 1.4, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
     'KitPalma': 1.4, 'KitBambu': 1.4, 'KitMadera': 1.4, 'KitPiedra': 1.4,
-    'MobiliarioBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
+    'MobiliarioBase': 1.4, 'ProduccionBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
     'Tesoros': 0.7, 'Items': 0.7,
     # cada prop se normaliza a esta altura por SU PROPIA dimension mayor
     # (ver _render_props_group): formaciones grandes vs. bloques sueltos
@@ -432,28 +440,12 @@ def _render_props_group(entries, target_height, out_path, max_cols=PROPS_GRID_MA
     _point_camera(cam, Vector((0.0, 0.0, target_height * 0.28)))
     scene.camera = cam
 
-    scene.render.engine = 'BLENDER_EEVEE'
-    scene.render.resolution_x = 1600
-    scene.render.resolution_y = 1200
-    scene.render.image_settings.file_format = 'PNG'
-    scene.render.filepath = out_path
-    try:
-        # el trazado de rayos (SSR/SSGI) de EEVEE Next hacía que un objeto
-        # metálico grande y brillante (p.ej. el domo de la sala de la
-        # lámpara del faro) sobreexpusiera TODA la lámina por luz
-        # rebotada — se detectó comparando la lámina de Faro (lavada casi
-        # a blanco) con las de Albatros/Halden (bien expuestas) con el
-        # mismo código de luces. Desactivarlo la deja consistente.
-        scene.eevee.use_raytracing = False
-    except Exception:
-        pass
-    try:
-        scene.eevee.taa_render_samples = 64
-    except Exception:
-        pass
-
-    bpy.ops.render.render(write_still=True)
-    print(f'[render_preview] escrito {out_path}')
+    # sin trazado de rayos: el SSR/SSGI de EEVEE Next hacía que un objeto
+    # metálico grande y brillante (p.ej. el domo de la sala de la lámpara
+    # del faro) sobreexpusiera TODA la lámina por luz rebotada — se detectó
+    # comparando la lámina de Faro (lavada casi a blanco) con las de
+    # Albatros/Halden (bien expuestas) con el mismo código de luces.
+    _render_still(scene, out_path, 1600, 1200, samples=64, raytracing=False)
     return True
 
 
@@ -584,22 +576,7 @@ def _render_vegetation_group(entries, target_height, out_path, max_cols=4):
     _point_camera(cam, Vector((0.0, 0.0, target_height * 0.30)))
     scene.camera = cam
 
-    scene.render.engine = 'BLENDER_EEVEE'
-    scene.render.resolution_x = 1600
-    scene.render.resolution_y = 1200
-    scene.render.image_settings.file_format = 'PNG'
-    scene.render.filepath = out_path
-    try:
-        scene.eevee.use_raytracing = False
-    except Exception:
-        pass
-    try:
-        scene.eevee.taa_render_samples = 64
-    except Exception:
-        pass
-
-    bpy.ops.render.render(write_still=True)
-    print(f'[render_preview] escrito {out_path}')
+    _render_still(scene, out_path, 1600, 1200, samples=64, raytracing=False)
     return True
 
 
@@ -711,23 +688,8 @@ def build_scatter_clearing():
     _point_camera(cam, Vector((0.0, 3.5, 3.6)))
     scene.camera = cam
 
-    scene.render.engine = 'BLENDER_EEVEE'
-    scene.render.resolution_x = 1920
-    scene.render.resolution_y = 1080
-    scene.render.image_settings.file_format = 'PNG'
     out_path = os.path.join(DOCS_ART_DIR, 'escena_claro_selva.png')
-    scene.render.filepath = out_path
-    try:
-        scene.eevee.use_raytracing = True
-    except Exception:
-        pass
-    try:
-        scene.eevee.taa_render_samples = 96
-    except Exception:
-        pass
-
-    bpy.ops.render.render(write_still=True)
-    print(f'[render_preview] escrito {out_path}')
+    _render_still(scene, out_path, 1920, 1080, samples=96, raytracing=True)
     return True
 
 

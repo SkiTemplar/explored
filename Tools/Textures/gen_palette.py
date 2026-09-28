@@ -1,8 +1,9 @@
 """Genera la paleta low poly de Explored: paleta.json (versionado), los atlas
 T_Palette_<Isla>.png y, opcionalmente, la hoja de contacto.
 
-Uso (desde la raíz del repositorio):
-    uv run --with numpy --with pillow python Tools/Textures/gen_palette.py
+Uso (desde la raíz del repositorio; dependencias en Tools/Textures/pyproject.toml):
+    uv run --project Tools/Textures python Tools/Textures/gen_palette.py
+    uv run --with numpy --with pillow python Tools/Textures/gen_palette.py   (forma antigua, sigue valiendo)
     uv run --with numpy --with pillow python Tools/Textures/gen_palette.py --sheet docs/art/paleta-AAAA-MM-DD.png
 
 Salida:
@@ -22,8 +23,15 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from texgen.output import to_u8  # noqa: E402
-from texgen.palette import ISLANDS, TERRAIN_TARGETS, build_atlas, island_swatches, palette_texture_name, to_json  # noqa: E402
+from texgen.output import to_u8
+from texgen.palette import (
+    ISLANDS,
+    TERRAIN_TARGETS,
+    build_atlas,
+    island_swatches,
+    palette_texture_name,
+    to_json,
+)
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -53,20 +61,22 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--sheet-size", type=int, default=512, help="resolución del terreno en la hoja")
     args = ap.parse_args(argv)
 
+    # Como --out y --sheet, --json crea su carpeta si falta (antes fallaba con FileNotFoundError).
+    args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(palette_json_text(), encoding="utf-8")
     print(f"[paleta] {args.json}")
     for p in write_atlases(args.out):
         print(f"[paleta] {p}")
 
     if args.sheet:
-        from texgen.materials import MATERIALS, default_seed, generate
+        from texgen.materials import MATERIALS, Material, default_seed, generate
         from texgen.palette_sheet import contact_sheet
 
         terrain, raw = {}, {}
         for name in TERRAIN_TARGETS:
             terrain[name] = generate(name, args.sheet_size)["BC"]
             out = MATERIALS[name].fn(args.sheet_size, default_seed(name))
-            raw[name] = out.finish()["BC"] if hasattr(out, "finish") else out["BC"]
+            raw[name] = out.finish()["BC"] if isinstance(out, Material) else out["BC"]
         path = contact_sheet(args.sheet, terrain, raw,
                              "Explored · paleta low poly por isla · atlas 512 px + muestra a 1-3 m")
         print(f"[paleta] hoja de contacto: {path} ({path.stat().st_size / 1e6:.2f} MB)")
