@@ -661,7 +661,10 @@ void FTerrainEditModelSpec::Define()
 		{
 			FTerrainEditModel Model;
 			BuildEdited(Model);
-			const FSaveValue Good = Model.ToValue();
+			// Versión 1 (texto): cada campo se puede manipular por separado. La 2 tiene su spec en TerrainEditsSpec.
+			const FSaveValue Good = Model.ToValue(1);
+			FTerrainEditModel FromV1;
+			TestTrue(TEXT("la versión 1 aún se lee"), FromV1.FromValue(Good) && FromV1 == Model);
 
 			FTerrainEditSettings Coarse;
 			Coarse.CellSize = 0.5f;
@@ -677,7 +680,7 @@ void FTerrainEditModelSpec::Define()
 				const bool bOk = Target.FromValue(Copy);
 				return !bOk && Target.IsEmpty();
 			};
-			TestTrue(TEXT("versión desconocida"), Tampered([](FSaveValue& V) { V.Set(TEXT("v"), FSaveValue::MakeInt(2)); }));
+			TestTrue(TEXT("versión desconocida"), Tampered([](FSaveValue& V) { V.Set(TEXT("v"), FSaveValue::MakeInt(3)); }));
 			TestTrue(TEXT("índice fuera del chunk"), Tampered([](FSaveValue& V)
 			{
 				FSaveValue* Runs = V.Find(TEXT("chunks"))->AtMutable(0)->AtMutable(3);
