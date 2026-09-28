@@ -47,3 +47,4 @@ Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
+Tests/CombatModelSpec.cpp
