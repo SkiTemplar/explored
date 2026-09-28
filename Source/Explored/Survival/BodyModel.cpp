@@ -361,6 +361,13 @@ void FBodyModel::Tick(FSurvivalState& S, const FSurvivalInputs& In, float DeltaH
 	for (int32 Index = S.Wounds.Num() - 1; Index >= 0; --Index)
 	{
 		FWound& W = S.Wounds[Index];
+		// Una herida fuera de rango (guardado roto) se acota: con Depth > 1 la coagulación
+		// (1 - Depth) era negativa y el sangrado crecía sin tope; con Bleeding < 0 curaba.
+		auto Unit = [](float V) { return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0f, 1.0f) : 0.0f; };
+		W.Depth = Unit(W.Depth);
+		W.Bleeding = Unit(W.Bleeding);
+		W.Healed = Unit(W.Healed);
+		W.HoursUntreated = FMath::IsFinite(W.HoursUntreated) ? FMath::Max(W.HoursUntreated, 0.0f) : 0.0f;
 		InOutDamage += W.Bleeding * WoundBleedDamagePerHour * DeltaHours;
 		W.Bleeding = FMath::Max(0.0f, W.Bleeding - WoundClotPerHour * (1.0f - W.Depth) * ClotMul * DeltaHours);
 
