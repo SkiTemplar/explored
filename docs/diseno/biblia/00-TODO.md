@@ -392,9 +392,10 @@ posterior.
 - [ ] `Fauna`: primera pasada de fauna salvaje terrestre (cerdo, cabra, aves que se
       posan) con LOD (`FFaunaLod` ya existente) y navegación invalidada por chunk
       minado. *(biblia 02 §11)*
-      → **En parte:** `46382a9` (PR #50, `fauna.json`) y `bdcc33f` (PR #60, malla del
-        jabalí) — solo datos y malla; falta la especie C++, el LOD aplicado y la navegación
-        por chunk.
+      → **En parte:** `46382a9` (PR #50, `fauna.json`), `bdcc33f` (PR #60, malla del
+        jabalí) y PR #106 (`lodBehavior` por especie y población por isla en `fauna.json`,
+        validados por `Tools/DataCheck` con los topes de biblia 08 §2.7) — solo datos y
+        malla; falta la especie C++, el LOD aplicado y la navegación por chunk.
 
 ### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
 
