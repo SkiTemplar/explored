@@ -34,7 +34,7 @@
     {
       "id": "platanera",
       "nameEs": "Platanera",
-      "nameEn": "Banana plant",
+      "nameEn": "Banana tree",
       "plantedFrom": "hijuelo_platano",
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
