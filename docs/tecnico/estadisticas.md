@@ -1,6 +1,6 @@
 # Estadísticas de juego (contrato para todos los sistemas)
 
-Los 30 logros (GDD §16) no escuchan a ningún sistema concreto: cada sistema **informa de
+Los logros (los 30 del GDD §16 y los que añade la biblia 07 §2) no escuchan a ningún sistema concreto: cada sistema **informa de
 lo que pasa** con un evento genérico de estadística y el modelo de logros decide. Este es el
 único sitio que lista todas las estadísticas; la versión que lee el juego está en
 `Content/Data/achievements.json` (`stats`) y `Tools/DataCheck` comprueba que ambas coinciden
@@ -66,7 +66,7 @@ conseguidos son siempre del perfil.
 | `building_pieces_built` | set | run | Piezas de construcción colocadas al menos una vez. | `UBuildingSubsystem::TryPlacePiece` | ids de `building_pieces.json` | primer_techo |
 | `building_tier_max` | max | run | Nivel de material más alto construido (`order` de `building_pieces.json`: 0 palma … 3 piedra). | `UBuildingSubsystem::TryPlacePiece` | — | cimientos_de_piedra |
 | `crops_harvested` | set | run | Cultivos cosechados al menos una vez. | `UFarmSubsystem::Harvest` | ids de `plants.json` | el_limonero, huerto_en_flor |
-| `boats_built` | set | run | Embarcaciones terminadas en el astillero. | `AExploredBoat` con `bBuiltByPlayer` (pendiente: el astillero que la crea) | ids de `boats.json`: `balsa`, `canoa`, `canoa_balancin`, `barco_limon` | limon_zarpa |
+| `boats_built` | set | run | Embarcaciones terminadas en el astillero. | `AExploredBoat` con `bBuiltByPlayer` (pendiente: el astillero que la crea) | ids de `boats.json`: `balsa`, `canoa`, `canoa_balancin`, `barco_limon` | primera_canoa, limon_zarpa |
 | `hidden_island_reached` | flag | run | Desembarco en la isla oculta. | `UExploredWiringSubsystem` (a menos de 400 m del centro de la isla oculta) | — | limon_zarpa, naufrago_de_verdad, sin_mapa |
 
 Los ids de las listas cerradas son un contrato: si un paquete necesita otro nombre, cambia

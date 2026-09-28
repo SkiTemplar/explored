@@ -386,6 +386,16 @@
       "condition": {"stat": "max_dive_depth_m", "op": ">=", "value": 20}
     },
     {
+      "id": "primera_canoa",
+      "nameEs": "Primera canoa",
+      "nameEn": "First Canoe",
+      "descriptionEs": "Termina tu primera canoa en el astillero.",
+      "descriptionEn": "Finish your first canoe at the shipyard.",
+      "hidden": false,
+      "icon": "barco",
+      "condition": {"stat": "boats_built", "contains": "canoa"}
+    },
+    {
       "id": "mar_abierto",
       "nameEs": "Mar abierto",
       "nameEn": "Open Sea",

@@ -62,6 +62,7 @@ namespace AchievementsSpecDetail
 				FCond::Contains(TEXT("building_pieces_built"), TEXT("refugio_inclinado")),
 				FCond::Contains(TEXT("building_pieces_built"), TEXT("techo_palma")) })),
 			Achievement(TEXT("un_ano_de_islas"), FCond::AtLeast(TEXT("days_survived"), 32), { TEXT("Survivor"), TEXT("Castaway") }),
+			Achievement(TEXT("primera_canoa"), FCond::Contains(TEXT("boats_built"), TEXT("canoa"))),
 			Achievement(TEXT("limon_zarpa"), FCond::All({
 				FCond::Contains(TEXT("boats_built"), TEXT("barco_limon")),
 				FCond::Flag(TEXT("hidden_island_reached")) })),
@@ -243,6 +244,16 @@ void FAchievementsSpec::Define()
 		{
 			TestTrue(TEXT("Un techo de palma basta"),
 				Has(Model.ReportItem(TEXT("building_pieces_built"), TEXT("techo_palma")), TEXT("primer_techo")));
+		});
+
+		It("«Primera canoa» salta con la canoa y no con la balsa ni el balancín", [this]()
+		{
+			TestFalse(TEXT("La balsa no"), Has(Model.ReportItem(TEXT("boats_built"), TEXT("balsa")), TEXT("primera_canoa")));
+			TestFalse(TEXT("El balancín tampoco (el id es otro)"),
+				Has(Model.ReportItem(TEXT("boats_built"), TEXT("canoa_balancin")), TEXT("primera_canoa")));
+			TestTrue(TEXT("La canoa sí"), Has(Model.ReportItem(TEXT("boats_built"), TEXT("canoa")), TEXT("primera_canoa")));
+			TestTrue(TEXT("Queda desbloqueado"), Model.IsUnlocked(TEXT("primera_canoa")));
+			TestTrue(TEXT("Una segunda canoa no lo repite"), Model.ReportItem(TEXT("boats_built"), TEXT("canoa")).IsEmpty());
 		});
 
 		It("«Limón zarpa» necesita el barco y la isla oculta", [this]()
