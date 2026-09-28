@@ -54,13 +54,6 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: Tools/${{ matrix.tool }}/uv.lock
-      - name: Caché de fotos CC0 de Poly Haven (tests de roca)
-        if: matrix.tool == 'Textures'
-        uses: actions/cache@v4
-        with:
-          path: Tools/Textures/.cache/polyhaven
-          key: polyhaven-${{ hashFiles('Tools/Textures/texgen/photobash.py') }}
-          restore-keys: polyhaven-
       - name: EGL de Mesa para renderizar con Workbench sin GPU
         if: matrix.egl
         run: sudo apt-get update -q && sudo apt-get install -y -q libegl1 libegl-mesa0 libgl1-mesa-dri
