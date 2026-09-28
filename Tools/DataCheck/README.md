@@ -43,6 +43,14 @@ Qué comprueba:
   `Source/Explored/Survival/SurvivalModel.{h,cpp}`; `ruins.json` y `artifacts.json`
   contra los ids de `LexToString` y las constantes de `Source/Explored/Ruins/*Model.{h,cpp}`
   (técnicas, elementos, ruinas por isla, caminos de estrellas, umbral de «Coleccionista»).
+- **Inventario** (`inventory.py`, biblia 03 §1.3 y 08 §2.4): `MaxStackSize` de
+  `Carry/InventoryModel.h` es el tope de 10 de la biblia; el equipo que reconoce
+  `FindEquipmentSpec` lleva su etiqueta y no apila (espejo de `ComputeMaxStack` y
+  `NonStackableTagNames`); los ids de `items`, `templates`, `building_pieces`, `plants`,
+  `boats` y `achievements` valen para la tabla `uint16` de red (`[a-z0-9_]`, únicos, ≤ 65 535)
+  y siguen el orden de `EContentKind`. Notas con las pilas, las pilas que pesan más que el
+  límite de carga y el hash FNV-1a del saludo de conexión (mismo formato que
+  `FContentIdTableModel::ComputeContentHash`).
 - **Museo**: cada tesoro tiene un tipo de `story_es.json`, una malla de `tesoros.py` y
   algún hueco de mueble donde cabe; los muebles apuntan a piezas `museo` existentes.
 - **Logros (GDD §16)**: exactamente 30, ids ASCII únicos, textos en ES y EN, los

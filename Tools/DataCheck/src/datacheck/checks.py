@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
+from . import achievements, cooking, crafting, fases, fauna, inventory, mining, music, packs
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -1169,6 +1169,7 @@ def run_all(ds: DataSet) -> Report:
     r = Report()
     check_files_present(ds, r)
     check_items_schema(ds, r)
+    inventory.check_inventory(ds, r)
     check_verbs(ds, r)
     check_templates(ds, r)
     reach = check_crafting_reachability(ds, r)
