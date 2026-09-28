@@ -66,10 +66,10 @@ def test_variaciones_diurnas_propia_primero_y_sin_repetir(payload):
         assert pieces[0] == f"mus_explore_{island}"
         assert len(pieces) >= 2, "sin hermanas no se puede evitar repetir la misma pieza"
         assert len(set(pieces)) == len(pieces)
-        scale = compose.ISLAND_CONFIGS[island]["scale"]
+        scale = compose.ISLAND_CONFIGS[island].scale
         for other in pieces[1:]:
             assert role_of(other)[0] == "explore"
-            assert compose.ISLAND_CONFIGS[role_of(other)[1]]["scale"] == scale
+            assert compose.ISLAND_CONFIGS[role_of(other)[1]].scale == scale
 
 
 def test_flauta_pentatonica_de_cinco_notas(payload):

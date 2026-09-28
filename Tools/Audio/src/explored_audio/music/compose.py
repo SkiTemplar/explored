@@ -14,6 +14,8 @@ bpm, beats_per_bar, reverb_wet, reverb_room)`. `generate()` la renderiza y
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 
 from ..constants import SAMPLE_RATE
@@ -23,14 +25,19 @@ from .sequencer import Track, render_song
 from .theory import chord_freqs, degree_freq, semitone_freq
 
 SR = SAMPLE_RATE
-ROOT = semitone_freq(440.0, -19)  # D3: un registro comodo para marimba/kalimba/bajo.
+ROOT = semitone_freq(440.0, -19)  # D3: un registro comodo para marimba/vibrafono/bajo.
 
 # ---------------------------------------------------------------------------
 # El leitmotiv: 8 compases de 4/4 (32 tiempos), en grados de una pentatonica
 # de 5 notas. Perfil en arco (sube hasta el compas 5, vuelve a la tonica):
 # la forma mas simple de que una melodia se sienta "reconocible".
 # ---------------------------------------------------------------------------
-THEME_DEGREES: list[tuple[int | None, float, float]] = [
+# (grado de la escala o None para silencio, duracion en tiempos, velocidad).
+Degree = tuple[int | None, float, float]
+# (semitonos sobre la raiz, calidad del acorde, compases).
+Progression = list[tuple[int, str, int]]
+
+THEME_DEGREES: list[Degree] = [
     (0, 1, 0.90), (2, 1, 0.80), (4, 1, 0.85), (2, 1, 0.75),
     (5, 1, 0.90), (4, 0.5, 0.70), (2, 0.5, 0.65), (0, 2, 0.80),
     (4, 1, 0.85), (2, 1, 0.75), (0, 1, 0.70), (2, 1, 0.75),
@@ -44,16 +51,16 @@ assert sum(d[1] for d in THEME_DEGREES) == 32.0
 
 # Progresiones de acordes: (semitonos_sobre_root, calidad, compases). Suman 8
 # compases -> una vez por cada repeticion de 8 compases del leitmotiv.
-DEFAULT_PROGRESSION = [(0, "min", 2), (10, "maj", 2), (8, "maj", 2), (10, "maj", 2)]  # i-bVII-bVI-bVII (dorico)
-BRIGHT_PROGRESSION = [(0, "maj", 2), (5, "maj", 2), (7, "maj", 2), (0, "maj", 2)]  # I-IV-V-I (mixolidio/mayor)
-DARK_PROGRESSION = [(0, "min", 2), (3, "maj", 2), (5, "min", 2), (10, "maj", 2)]
-CLUSTER_PROGRESSION = [(0, "sus2", 2), (10, "sus4", 2), (8, "sus2", 2), (10, "sus4", 2)]
+DEFAULT_PROGRESSION: Progression = [(0, "min", 2), (10, "maj", 2), (8, "maj", 2), (10, "maj", 2)]  # i-bVII-bVI-bVII (dorico)
+BRIGHT_PROGRESSION: Progression = [(0, "maj", 2), (5, "maj", 2), (7, "maj", 2), (0, "maj", 2)]  # I-IV-V-I (mixolidio/mayor)
+DARK_PROGRESSION: Progression = [(0, "min", 2), (3, "maj", 2), (5, "min", 2), (10, "maj", 2)]
+CLUSTER_PROGRESSION: Progression = [(0, "sus2", 2), (10, "sus4", 2), (8, "sus2", 2), (10, "sus4", 2)]
 
 
 def add_melody_phrase(
     tracks: list[Track], instrument: str, root_freq: float, scale: str, beats_per_bar: float,
     bar_offset: float, octave_shift: int = 0, pan: float = 0.0, vel_scale: float = 1.0,
-    degrees: list[tuple[int | None, float, float]] | None = None,
+    degrees: list[Degree] | None = None,
 ) -> None:
     from .theory import SCALE_STEPS
 
@@ -120,7 +127,7 @@ def add_arpeggio(
 ) -> None:
     """Arpegio (por defecto corchea 1-3-5-3) de las notas del acorde de cada
     compas de la progresion, para un instrumento punteado (la guitarra
-    Karplus-Strong): el contraste ritmico natural de un "fingerpicking"
+    de nailon): el contraste ritmico natural de un "fingerpicking"
     frente al pad sostenido, en vez de tocar el acorde entero de golpe."""
     track = Track(instrument=instrument, humanize_timing_s=0.02)
     beat_cursor = bar_offset * beats_per_bar
@@ -167,7 +174,7 @@ def _theme_arc(root_freq: float, scale: str, beats_per_bar: int) -> tuple[list[T
     add_bass(tracks, root_freq, beats_per_bar, 8, DEFAULT_PROGRESSION)
     add_percussion(tracks, beats_per_bar, 8, phrase_bars, density="light")
 
-    add_melody_phrase(tracks, "kalimba", root_freq, scale, beats_per_bar, 16, octave_shift=1, vel_scale=0.75, pan=0.25)
+    add_melody_phrase(tracks, "vibraphone", root_freq, scale, beats_per_bar, 16, octave_shift=1, vel_scale=0.75, pan=0.25)
     add_melody_phrase(tracks, "marimba", root_freq, scale, beats_per_bar, 16, pan=-0.15)
     add_pad(tracks, "strings", root_freq, beats_per_bar, 16, DEFAULT_PROGRESSION, vel=0.48)
     add_bass(tracks, root_freq, beats_per_bar, 16, DEFAULT_PROGRESSION)
@@ -190,22 +197,41 @@ def _theme() -> tuple:
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, 0.32, 0.7
 
 
-ISLAND_CONFIGS = {
-    "landing": dict(bpm=82, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="pad", perc="light", arpeggio=True),
-    "emerald": dict(bpm=84, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="kalimba", pad="pad", perc="full"),
-    "smoke": dict(bpm=70, scale="minor_pentatonic", progression=DARK_PROGRESSION, melody=None, pad="tremolo_strings", perc="sparse", root_shift=-3, wet=0.4, room=0.75),
-    "teeth": dict(bpm=86, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody=None, pad="pad", perc=None, flute=True, wet=0.38),
-    "mangrove": dict(bpm=74, scale="minor_pentatonic", progression=CLUSTER_PROGRESSION, melody="kalimba", pad="pad", perc=None, root_shift=-1, wet=0.45, room=0.8),
-    "whitesands": dict(bpm=88, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, melody="marimba", pad="pad", perc="full", root_shift=2, arpeggio=True),
-    "mesa": dict(bpm=78, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="strings", perc="light", wet=0.4, room=0.78),
+@dataclass(frozen=True)
+class IslandConfig:
+    """Arreglo de la pieza de exploracion de una isla. Dataclass y no `dict`
+    para que cada campo tenga su tipo (un `dict` mezclado obliga a pyright a
+    tratar cada valor como la union de todos)."""
+
+    bpm: int
+    scale: str
+    progression: Progression
+    melody: str | None
+    pad: str
+    perc: str | None
+    arpeggio: bool = False
+    flute: bool = False
+    root_shift: int = 0
+    wet: float = 0.32
+    room: float = 0.65
+
+
+ISLAND_CONFIGS: dict[str, IslandConfig] = {
+    "landing": IslandConfig(bpm=82, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="pad", perc="light", arpeggio=True),
+    "emerald": IslandConfig(bpm=84, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="vibraphone", pad="pad", perc="full"),
+    "smoke": IslandConfig(bpm=70, scale="minor_pentatonic", progression=DARK_PROGRESSION, melody=None, pad="tremolo_strings", perc="sparse", root_shift=-3, wet=0.4, room=0.75),
+    "teeth": IslandConfig(bpm=86, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody=None, pad="pad", perc=None, flute=True, wet=0.38),
+    "mangrove": IslandConfig(bpm=74, scale="minor_pentatonic", progression=CLUSTER_PROGRESSION, melody="vibraphone", pad="pad", perc=None, root_shift=-1, wet=0.45, room=0.8),
+    "whitesands": IslandConfig(bpm=88, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, melody="marimba", pad="pad", perc="full", root_shift=2, arpeggio=True),
+    "mesa": IslandConfig(bpm=78, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="strings", perc="light", wet=0.4, room=0.78),
 }
 
 
 def _explore_variant(island: str) -> tuple:
     cfg = ISLAND_CONFIGS[island]
     beats_per_bar = 4
-    bpm = cfg["bpm"]
-    root_freq = semitone_freq(ROOT, cfg.get("root_shift", 0))
+    bpm = cfg.bpm
+    root_freq = semitone_freq(ROOT, cfg.root_shift)
     phrase_bars = 8
     n_phrases = 5
     total_bars = phrase_bars * n_phrases
@@ -214,18 +240,18 @@ def _explore_variant(island: str) -> tuple:
 
     for p in range(n_phrases):
         bar_offset = p * phrase_bars
-        if cfg["melody"]:
-            add_melody_phrase(tracks, cfg["melody"], root_freq, cfg["scale"], beats_per_bar, bar_offset, pan=(-0.12 if p % 2 == 0 else 0.12))
-        if cfg.get("flute"):
-            add_flute_phrase(flute_phrases, root_freq, cfg["scale"], beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.75)
-        add_pad(tracks, cfg["pad"], root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.55 if cfg["pad"] == "tremolo_strings" else 0.45)
-        add_bass(tracks, root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.5)
-        if cfg.get("arpeggio"):
-            add_arpeggio(tracks, "guitar", root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.3, pan=0.12 if p % 2 == 0 else -0.12)
-        if cfg.get("perc"):
-            add_percussion(tracks, beats_per_bar, bar_offset, phrase_bars, density=cfg["perc"])
+        if cfg.melody:
+            add_melody_phrase(tracks, cfg.melody, root_freq, cfg.scale, beats_per_bar, bar_offset, pan=(-0.12 if p % 2 == 0 else 0.12))
+        if cfg.flute:
+            add_flute_phrase(flute_phrases, root_freq, cfg.scale, beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.75)
+        add_pad(tracks, cfg.pad, root_freq, beats_per_bar, bar_offset, cfg.progression, vel=0.55 if cfg.pad == "tremolo_strings" else 0.45)
+        add_bass(tracks, root_freq, beats_per_bar, bar_offset, cfg.progression, vel=0.5)
+        if cfg.arpeggio:
+            add_arpeggio(tracks, "guitar", root_freq, beats_per_bar, bar_offset, cfg.progression, vel=0.3, pan=0.12 if p % 2 == 0 else -0.12)
+        if cfg.perc:
+            add_percussion(tracks, beats_per_bar, bar_offset, phrase_bars, density=cfg.perc)
 
-    return tracks, flute_phrases, total_bars, bpm, beats_per_bar, cfg.get("wet", 0.32), cfg.get("room", 0.65)
+    return tracks, flute_phrases, total_bars, bpm, beats_per_bar, cfg.wet, cfg.room
 
 
 def _night() -> tuple:
@@ -236,14 +262,14 @@ def _night() -> tuple:
     tracks: list[Track] = []
     add_pad(tracks, "pad", root_freq, beats_per_bar, 0, [(0, "min", 8), (8, "maj", 8)], vel=0.26)
 
-    kalimba_t = Track(instrument="kalimba", humanize_timing_s=0.05)
+    vibes_t = Track(instrument="vibraphone", humanize_timing_s=0.05)
     positions_beats = [2, 9, 15, 23, 30, 40, 47, 55, 60]
     degree_cycle = [0, 4, 7, 2, 9]
     for i, beat in enumerate(positions_beats):
         if beat < bars * beats_per_bar:
             freq = degree_freq(root_freq, scale, degree_cycle[i % len(degree_cycle)])
-            kalimba_t.events.append((beat, 3.0, freq, 0.32, 0.0 if i % 2 == 0 else 0.2))
-    tracks.append(kalimba_t)
+            vibes_t.events.append((beat, 3.0, freq, 0.32, 0.0 if i % 2 == 0 else 0.2))
+    tracks.append(vibes_t)
 
     return tracks, [], bars, bpm, beats_per_bar, 0.45, 0.8
 
@@ -278,7 +304,7 @@ def _sea() -> tuple:
     add_pad(tracks, "pad", root_freq, beats_per_bar, 0, prog, vel=0.38)
     add_bass(tracks, root_freq, beats_per_bar, 0, prog, vel=0.55)
 
-    # Ukelele en vez de kalimba para el arpegio de mar abierto: es el timbre
+    # Ukelele en vez de laminas para el arpegio de mar abierto: es el timbre
     # mas identificado con "archipielago tropical" del set acustico, y esta
     # pieza es la unica ambientada realmente en el agua.
     arp = Track(instrument="ukulele", humanize_timing_s=0.02)
@@ -303,7 +329,7 @@ def _sea() -> tuple:
 # Motivo corto y en penumbra (2 compases) para insinuar melodia bajo la
 # tormenta sin distraer de la tension: mismo perfil en arco que el leitmotiv,
 # a menor escala.
-STORM_MOTIF: list[tuple[int | None, float, float]] = [
+STORM_MOTIF: list[Degree] = [
     (0, 2, 0.55), (None, 1, 0.0), (3, 1, 0.5),
     (5, 2, 0.6), (3, 1, 0.45), (0, 1, 0.4),
 ]
@@ -315,7 +341,7 @@ def _storm() -> tuple:
     Drone grave sostenido + cuerdas en tremolo sobre armonia en clusters
     (sus2/sus4, ya "inestable" de por si) + rafagas de shaker con intensidad
     que sube y baja cada 4 compases (el oleaje de viento) + un motivo de
-    kalimba lejano y apagado. Bucle: la tormenta puede durar lo que tarde el
+    vibrafono lejano y apagado. Bucle: la tormenta puede durar lo que tarde el
     jugador en resguardarse."""
     bpm, beats_per_bar = 64, 4
     root_freq = semitone_freq(ROOT, -4)
@@ -342,14 +368,14 @@ def _storm() -> tuple:
 
     for bar_offset in range(0, bars, 2):
         pan = -0.1 if (bar_offset // 2) % 2 == 0 else 0.1
-        add_melody_phrase(tracks, "kalimba", root_freq, "minor_pentatonic", beats_per_bar, bar_offset, vel_scale=0.5, pan=pan, degrees=STORM_MOTIF)
+        add_melody_phrase(tracks, "vibraphone", root_freq, "minor_pentatonic", beats_per_bar, bar_offset, vel_scale=0.5, pan=pan, degrees=STORM_MOTIF)
 
     return tracks, [], bars, bpm, beats_per_bar, 0.42, 0.82
 
 
 def _credits() -> tuple:
     """Creditos: reprise calida del leitmotiv a tempo de paseo, con la
-    guitarra Karplus-Strong llevando un arpegio de fingerpicking bajo el pad
+    guitarra de nailon llevando un arpegio de fingerpicking bajo el pad
     de cuerdas -la unica pieza donde la guitarra es protagonista y no solo
     color- y la flauta asomando en las frases pares. No es un bucle: tiene
     una duracion fija pensada para acompañar el rodillo de creditos."""
@@ -365,7 +391,7 @@ def _credits() -> tuple:
     for p in range(n_phrases):
         bar_offset = p * phrase_bars
         add_melody_phrase(tracks, "marimba", root_freq, scale, beats_per_bar, bar_offset, pan=-0.12)
-        add_melody_phrase(tracks, "kalimba", root_freq, scale, beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.55, pan=0.18)
+        add_melody_phrase(tracks, "vibraphone", root_freq, scale, beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.55, pan=0.18)
         add_arpeggio(tracks, "guitar", root_freq, beats_per_bar, bar_offset, BRIGHT_PROGRESSION, vel=0.4, pan=-0.3 if p % 2 == 0 else 0.3)
         add_pad(tracks, "strings", root_freq, beats_per_bar, bar_offset, BRIGHT_PROGRESSION, vel=0.48 + 0.04 * p)
         add_bass(tracks, root_freq, beats_per_bar, bar_offset, BRIGHT_PROGRESSION, vel=0.55)
@@ -376,11 +402,21 @@ def _credits() -> tuple:
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, 0.4, 0.82
 
 
-DISCOVERY_FRAGMENTS = {
-    "01": dict(instrument="marimba", bpm=90, octave_shift=1, degrees=[(0, 0.5, 0.9), (4, 0.5, 0.95), (7, 1.0, 1.0)]),
-    "02": dict(instrument="kalimba", bpm=88, octave_shift=1, degrees=[(0, 0.4, 0.8), (2, 0.4, 0.85), (4, 0.4, 0.9), (7, 1.2, 1.0)]),
-    "03": dict(instrument="marimba", bpm=92, octave_shift=1, degrees=[(4, 0.4, 0.9), (7, 0.4, 0.95), (9, 0.4, 1.0), (12, 1.4, 1.0)]),
-    "04": dict(instrument="kalimba", bpm=76, octave_shift=0, degrees=[(7, 0.6, 0.7), (4, 0.6, 0.65), (0, 1.4, 0.6)]),
+@dataclass(frozen=True)
+class DiscoveryFragment:
+    """Fanfarria corta de descubrimiento (un unico instrumento)."""
+
+    instrument: str
+    bpm: int
+    octave_shift: int
+    degrees: list[Degree]
+
+
+DISCOVERY_FRAGMENTS: dict[str, DiscoveryFragment] = {
+    "01": DiscoveryFragment(instrument="marimba", bpm=90, octave_shift=1, degrees=[(0, 0.5, 0.9), (4, 0.5, 0.95), (7, 1.0, 1.0)]),
+    "02": DiscoveryFragment(instrument="vibraphone", bpm=88, octave_shift=1, degrees=[(0, 0.4, 0.8), (2, 0.4, 0.85), (4, 0.4, 0.9), (7, 1.2, 1.0)]),
+    "03": DiscoveryFragment(instrument="marimba", bpm=92, octave_shift=1, degrees=[(4, 0.4, 0.9), (7, 0.4, 0.95), (9, 0.4, 1.0), (12, 1.4, 1.0)]),
+    "04": DiscoveryFragment(instrument="vibraphone", bpm=76, octave_shift=0, degrees=[(7, 0.6, 0.7), (4, 0.6, 0.65), (0, 1.4, 0.6)]),
 }
 
 
@@ -388,23 +424,32 @@ def _discovery(variant: str) -> tuple:
     cfg = DISCOVERY_FRAGMENTS[variant]
     beats_per_bar = 4
     tracks: list[Track] = []
-    add_melody_phrase(tracks, cfg["instrument"], ROOT, "major_pentatonic", beats_per_bar, 0, octave_shift=cfg["octave_shift"], degrees=cfg["degrees"])
-    total_beats = sum(d[1] for d in cfg["degrees"])
-    return tracks, [], total_beats / beats_per_bar, cfg["bpm"], beats_per_bar, 0.35, 0.7
+    add_melody_phrase(tracks, cfg.instrument, ROOT, "major_pentatonic", beats_per_bar, 0, octave_shift=cfg.octave_shift, degrees=cfg.degrees)
+    total_beats = sum(d[1] for d in cfg.degrees)
+    return tracks, [], total_beats / beats_per_bar, cfg.bpm, beats_per_bar, 0.35, 0.7
 
 
-FINALE_CONFIGS = {
-    "rescue": dict(bpm=84, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, root_shift=0, flute=False),
-    "voyage": dict(bpm=80, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=0, flute=True),
-    "stay": dict(bpm=72, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=-1, flute=False),
+@dataclass(frozen=True)
+class FinaleConfig:
+    bpm: int
+    scale: str
+    progression: Progression
+    root_shift: int = 0
+    flute: bool = False
+
+
+FINALE_CONFIGS: dict[str, FinaleConfig] = {
+    "rescue": FinaleConfig(bpm=84, scale="major_pentatonic", progression=BRIGHT_PROGRESSION),
+    "voyage": FinaleConfig(bpm=80, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, flute=True),
+    "stay": FinaleConfig(bpm=72, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=-1),
 }
 
 
 def _finale(variant: str) -> tuple:
     cfg = FINALE_CONFIGS[variant]
     beats_per_bar = 4
-    bpm = cfg["bpm"]
-    root_freq = semitone_freq(ROOT, cfg.get("root_shift", 0))
+    bpm = cfg.bpm
+    root_freq = semitone_freq(ROOT, cfg.root_shift)
     phrase_bars = 8
     n_phrases = 4
     total_bars = phrase_bars * n_phrases
@@ -413,19 +458,19 @@ def _finale(variant: str) -> tuple:
 
     for p in range(n_phrases):
         bar_offset = p * phrase_bars
-        add_melody_phrase(tracks, "marimba", root_freq, cfg["scale"], beats_per_bar, bar_offset, pan=-0.1)
-        add_melody_phrase(tracks, "kalimba", root_freq, cfg["scale"], beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.6, pan=0.2)
-        add_pad(tracks, "strings", root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.52)
-        add_bass(tracks, root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.58)
+        add_melody_phrase(tracks, "marimba", root_freq, cfg.scale, beats_per_bar, bar_offset, pan=-0.1)
+        add_melody_phrase(tracks, "vibraphone", root_freq, cfg.scale, beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.6, pan=0.2)
+        add_pad(tracks, "strings", root_freq, beats_per_bar, bar_offset, cfg.progression, vel=0.52)
+        add_bass(tracks, root_freq, beats_per_bar, bar_offset, cfg.progression, vel=0.58)
         add_percussion(tracks, beats_per_bar, bar_offset, phrase_bars, density="full" if p > 0 else "light")
-        if cfg.get("flute") and p % 2 == 1:
-            add_flute_phrase(flute_phrases, root_freq, cfg["scale"], beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.7)
+        if cfg.flute and p % 2 == 1:
+            add_flute_phrase(flute_phrases, root_freq, cfg.scale, beats_per_bar, bar_offset, octave_shift=1, vel_scale=0.7)
 
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, 0.38, 0.8
 
 
 def _menu() -> tuple:
-    """Menu: piano en vez de kalimba para el leitmotiv -es la pantalla mas
+    """Menu: piano en vez de laminas para el leitmotiv -es la pantalla mas
     "de sala de estar" del juego, sin diegesis que la ate a un instrumento de
     isla, y el piano es el timbre mas idiomatico de "musica clasica suave"
     del encargo para una portada."""
@@ -444,8 +489,8 @@ def _menu() -> tuple:
 # de flauta de la banda sonora, `add_flute_phrase` con octave_shift=1). Se
 # exporta UNA nota en la tonica y el juego la transpone a cada grado con el
 # multiplicador de tono 2^(semitonos/12): cinco muestras casi identicas no
-# aportarian nada y la transposicion maxima (9 semitonos) no degrada el timbre
-# de una flauta sintetica.
+# aportarian nada y la transposicion maxima (9 semitonos) apenas altera el timbre
+# de una flauta del soundfont.
 # ---------------------------------------------------------------------------
 FLUTE_SAMPLE_NAME = "sfx_flute_note"
 FLUTE_SCALE = "major_pentatonic"
