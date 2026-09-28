@@ -7,6 +7,8 @@
 #include "WorldGen/SurfaceNets.h"
 #include "WorldGen/TerrainEditModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace TerrainEditSpecDetail
@@ -781,6 +783,141 @@ void FTerrainEditModelSpec::Define()
 			{
 				*V.Find(TEXT("paths"))->AtMutable(2) = FSaveValue::MakeInt(101);
 			}));
+		});
+	});
+	Describe("las entradas inválidas", [this]()
+	{
+		It("un golpe no finito o fuera del mundo se rechaza sin tocar nada y el guardado sigue cargando", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			FTerrainEditModel Model;
+			TestTrue(TEXT("golpe válido"), Model.Pickaxe(DownHit(FVector(0.0, 0.0, 0.0)), Flat).Changed());
+			const FSaveValue Before = Model.ToValue();
+
+			const FPickaxeHit Bad[] = {
+				DownHit(FVector(NaN, 0.0, 0.0)),
+				DownHit(FVector(0.0, Inf, 0.0)),
+				DownHit(FVector(0.0, 0.0, -1.0e12)),
+				DownHit(FVector(FTerrainEditModel::MaxWorldCoordinate * 2.0, 0.0, 0.0)),
+			};
+			for (const FPickaxeHit& Hit : Bad)
+			{
+				const FTerrainEditResult R = Model.Pickaxe(Hit, Flat);
+				TestTrue(TEXT("rechazado"), R.bRejected);
+				TestFalse(TEXT("sin cambios"), R.Changed());
+				TestEqual(TEXT("sin chunks sucios"), R.DirtyChunks.Num(), 0);
+			}
+			FPickaxeHit InfDir = DownHit(FVector(0.0, 0.0, 0.0));
+			InfDir.Direction = FVector(Inf, 0.0, 0.0);
+			TestTrue(TEXT("dirección infinita rechazada"), Model.Pickaxe(InfDir, Flat).bRejected);
+
+			TestTrue(TEXT("el terreno no ha cambiado"), Model.ToValue() == Before);
+			FTerrainEditModel Loaded;
+			TestTrue(TEXT("el guardado carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("y vuelve igual"), Loaded == Model);
+		});
+
+		It("la pala y echar tierra rechazan pinceles no finitos o desmesurados sin recorrerlos", [this]()
+		{
+			const float NaNf = std::numeric_limits<float>::quiet_NaN();
+			FTerrainEditModel Model;
+			auto Stroke = [](TFunctionRef<void(FShovelStroke&)> Edit)
+			{
+				FShovelStroke S;
+				S.Center = FVector(0.0, 0.0, 0.3);
+				Edit(S);
+				return S;
+			};
+			const FShovelStroke BadStrokes[] = {
+				// 200 m de radio recorrería miles de millones de muestras: la partida se colgaría.
+				Stroke([](FShovelStroke& S) { S.Radius = 200.0f; }),
+				Stroke([&](FShovelStroke& S) { S.Radius = NaNf; }),
+				Stroke([](FShovelStroke& S) { S.EdgeWidth = 50.0f; }),
+				Stroke([](FShovelStroke& S) { S.VerticalReach = 1.0e6f; }),
+				Stroke([&](FShovelStroke& S) { S.EdgeWidth = NaNf; }),
+				Stroke([](FShovelStroke& S) { S.SoilBudget = std::numeric_limits<double>::quiet_NaN(); }),
+				Stroke([](FShovelStroke& S) { S.Center.X = std::numeric_limits<double>::infinity(); }),
+				Stroke([](FShovelStroke& S) { S.PlaneNormal = FVector(0.0, std::numeric_limits<double>::quiet_NaN(), 1.0); }),
+			};
+			for (const FShovelStroke& S : BadStrokes)
+			{
+				const FTerrainEditResult R = Model.Shovel(S, Mound);
+				TestTrue(TEXT("pala rechazada"), R.bRejected);
+				TestEqual(TEXT("sin chunks sucios"), R.DirtyChunks.Num(), 0);
+			}
+
+			FSoilPlacement Place;
+			Place.SoilBudget = 1.0;
+			Place.Radius = 50.0f;
+			TestTrue(TEXT("tierra: radio desmesurado"), Model.PlaceSoil(Place, Pit).bRejected);
+			Place.Radius = NaNf;
+			TestTrue(TEXT("tierra: radio NaN"), Model.PlaceSoil(Place, Pit).bRejected);
+			Place.Radius = 0.5f;
+			Place.SoilBudget = std::numeric_limits<double>::infinity();
+			TestTrue(TEXT("tierra: presupuesto infinito"), Model.PlaceSoil(Place, Pit).bRejected);
+			Place.SoilBudget = 1.0;
+			Place.Center = FVector(0.0, std::numeric_limits<double>::quiet_NaN(), 0.0);
+			TestTrue(TEXT("tierra: centro NaN"), Model.PlaceSoil(Place, Pit).bRejected);
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+
+			// En el tope sí se admite.
+			FShovelStroke Max = Stroke([](FShovelStroke& S) {});
+			Max.Radius = FTerrainEditModel::MaxBrushExtent;
+			Max.EdgeWidth = FTerrainEditModel::MaxBrushExtent;
+			TestFalse(TEXT("pala en el tope admitida"), Model.Shovel(Max, Mound).bRejected);
+		});
+
+		It("las escaleras rechazan lo que pasa de los topes y lo no finito; lo ajustado siempre se talla", [this]()
+		{
+			const float NaNf = std::numeric_limits<float>::quiet_NaN();
+			FTerrainEditModel Model;
+			auto Carve = [](TFunctionRef<void(FStairCarve&)> Edit)
+			{
+				FStairCarve S;
+				Edit(S);
+				return S;
+			};
+			const FStairCarve Bad[] = {
+				Carve([](FStairCarve& S) { S.NumSteps = 100000; }),
+				Carve([](FStairCarve& S) { S.Width = 40.0f; }),
+				Carve([](FStairCarve& S) { S.Headroom = 1.0e6f; }),
+				Carve([](FStairCarve& S) { S.StepRun = 5.0f; }),
+				Carve([](FStairCarve& S) { S.StepRise = -3.0f; }),
+				Carve([&](FStairCarve& S) { S.StepRise = NaNf; }),
+				Carve([&](FStairCarve& S) { S.Width = NaNf; }),
+				Carve([](FStairCarve& S) { S.Start.Z = std::numeric_limits<double>::quiet_NaN(); }),
+				Carve([](FStairCarve& S) { S.Direction = FVector(std::numeric_limits<double>::infinity(), 0.0, 0.0); }),
+				Carve([](FStairCarve& S) { S.MaxVolume = std::numeric_limits<double>::quiet_NaN(); }),
+			};
+			for (const FStairCarve& S : Bad)
+			{
+				TestTrue(TEXT("escalera rechazada"), Model.CarveStairs(S, Slope).bRejected);
+			}
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+
+			FStairCarve Out;
+			TestFalse(TEXT("SnapStairs: dirección NaN"),
+				FTerrainEditModel::SnapStairs(Carve([](FStairCarve& S) { S.Direction.X = std::numeric_limits<double>::quiet_NaN(); }), Out));
+			TestFalse(TEXT("SnapStairs: arranque infinito"),
+				FTerrainEditModel::SnapStairs(Carve([](FStairCarve& S) { S.Start.Y = std::numeric_limits<double>::infinity(); }), Out));
+			TestFalse(TEXT("SnapStairs: huella NaN"),
+				FTerrainEditModel::SnapStairs(Carve([&](FStairCarve& S) { S.StepRun = NaNf; }), Out));
+
+			// Todo al máximo: SnapStairs lo deja justo en los topes y CarveStairs lo acepta.
+			const FStairCarve Huge = Carve([](FStairCarve& S)
+			{
+				S.NumSteps = 500;
+				S.StepRise = -9.0f;
+				S.StepRun = 9.0f;
+				S.Width = 9.0f;
+				S.Headroom = 9.0f;
+				S.MaxVolume = 0.1;
+			});
+			TestTrue(TEXT("se ajusta"), FTerrainEditModel::SnapStairs(Huge, Out));
+			const FTerrainEditResult R = Model.CarveStairs(Out, Flat);
+			TestFalse(TEXT("ajustada: admitida"), R.bRejected);
+			TestTrue(TEXT("ajustada: talla"), R.Changed());
 		});
 	});
 }

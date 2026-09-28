@@ -267,12 +267,18 @@ float FRaftYardModel::TotalMassKg() const
 
 float FRaftYardModel::BottomZ() const
 {
+	// La quilla es la de las piezas con volumen, como en FHullAssemblyModel::Evaluate: unos
+	// remos o una pala colgados por debajo no apoyan el casco en el suelo, y si contaran
+	// ninguna unión de los troncos sufriría el roce.
 	double Bottom = TNumericLimits<double>::Max();
 	for (const FHullPiece& Piece : Hull.GetPieces())
 	{
-		FVector Min, Max;
-		RaftYardDetail::Box(Piece, Min, Max);
-		Bottom = FMath::Min(Bottom, Min.Z);
+		if (FHullAssemblyModel::Spec(Piece.Type).bBuoyant)
+		{
+			FVector Min, Max;
+			RaftYardDetail::Box(Piece, Min, Max);
+			Bottom = FMath::Min(Bottom, Min.Z);
+		}
 	}
 	return static_cast<float>(Bottom);
 }
@@ -318,7 +324,7 @@ float FRaftYardModel::Integrity01() const
 bool FRaftYardModel::IsBottomPiece(int32 Index) const
 {
 	const TArray<FHullPiece>& Pieces = Hull.GetPieces();
-	if (!Pieces.IsValidIndex(Index))
+	if (!Pieces.IsValidIndex(Index) || !FHullAssemblyModel::Spec(Pieces[Index].Type).bBuoyant)
 	{
 		return false;
 	}

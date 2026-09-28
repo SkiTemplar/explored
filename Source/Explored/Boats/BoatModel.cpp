@@ -951,15 +951,6 @@ FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefini
 	{
 		Model.SetDefinition(*CustomDefinition);
 	}
-	// Mismas comprobaciones que Moor (salvo la distancia: pudo guardarse con el cabo tenso).
-	if (Data.bMoored && FMath::IsFinite(Data.MooringLengthCm) && Data.MooringLengthCm > 0.0f
-		&& FMath::IsFinite(Data.MooringAnchorCm.X) && FMath::IsFinite(Data.MooringAnchorCm.Y))
-	{
-		// Se restaura tal cual (no con Moor): el barco pudo guardarse con el cabo tenso.
-		Model.State.bMoored = true;
-		Model.State.MooringAnchorCm = Data.MooringAnchorCm;
-		Model.State.MooringLengthCm = Data.MooringLengthCm;
-	}
 	const FBoatDefinition& D = Model.GetDefinition();
 	Model.State.Condition = Data.Condition;
 	Model.State.HullDamage01 = FMath::Clamp(Finite(Data.HullDamage01, 0.0f), 0.0f, 1.0f);
@@ -973,6 +964,21 @@ FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefini
 	if (Model.State.Condition == EBoatCondition::Capsized)
 	{
 		Model.State.RollDeg = 180.0f;
+	}
+	// Se restaura sin Moor (el barco pudo guardarse con el cabo tenso), pero con sus mismas
+	// defensas: un cabo o un poste no finitos, un poste fuera del alcance del cabo (el primer
+	// paso llevaría el barco hasta él) o un barco destrozado no quedan amarrados. IsFinite
+	// explícito: con matemáticas rápidas la comparación en positivo no descarta los NaN.
+	// Con la posición ya saneada: una posición no finita vuelve al origen y el poste queda lejos.
+	const FVector2D Here(Model.State.LocationCm.X, Model.State.LocationCm.Y);
+	if (Data.bMoored && FMath::IsFinite(Data.MooringLengthCm) && Data.MooringLengthCm > 0.0f
+		&& FMath::IsFinite(Data.MooringAnchorCm.X) && FMath::IsFinite(Data.MooringAnchorCm.Y)
+		&& (Here - Data.MooringAnchorCm).Size() <= Data.MooringLengthCm + MooringLoadToleranceCm
+		&& Model.State.Condition != EBoatCondition::Wrecked)
+	{
+		Model.State.bMoored = true;
+		Model.State.MooringAnchorCm = Data.MooringAnchorCm;
+		Model.State.MooringLengthCm = Data.MooringLengthCm;
 	}
 	return Model;
 }

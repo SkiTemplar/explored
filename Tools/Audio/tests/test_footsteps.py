@@ -53,3 +53,26 @@ def test_pasos_tienen_talon_y_punta(rendered):
         rise = segment.max() / max(segment[: int(np.argmax(segment)) + 1].min(), 1e-9)
         assert segment.max() >= env[first] * 0.1, f"{name}: la punta es demasiado debil"
         assert rise >= 1.5, f"{name}: no se aprecia el segundo contacto (repunte x{rise:.2f})"
+
+
+def test_paso_en_agua_suena_a_burbujas_y_gotas(rendered):
+    """El agua somera se reconoce por sus burbujas (la cavidad que cierra el
+    pie y las gotas que vuelven a caer), que son tonos breves: al menos un
+    15 % de la energia de 200-6000 Hz en picos espectrales 12 dB sobre la
+    mediana local. La version de ruido en banda daba 2-9 % y sonaba a siseo.
+    Ademas, la caida de gotas deja al menos 4 repuntes de 6 dB en la
+    envolvente de 10 ms."""
+    from scipy.ndimage import median_filter
+
+    for name, audio in _footsteps(rendered).items():
+        if "_water_" not in name:
+            continue
+        freqs, _, z = signal.stft(audio, SAMPLE_RATE, nperseg=512, noverlap=384)
+        power = np.abs(z[(freqs >= 200.0) & (freqs < 6000.0)]) ** 2 + 1e-18
+        local = median_filter(power, size=(15, 1), mode="nearest")
+        tonal = power[power > local * 10.0**1.2].sum() / power.sum()
+        assert tonal >= 0.15, f"{name}: solo {tonal:.1%} de energia tonal (burbujas)"
+        win = int(0.01 * SAMPLE_RATE)
+        env = np.sqrt(np.convolve(audio**2, np.ones(win) / win, mode="same"))[:: win // 2]
+        peaks, _ = signal.find_peaks(20.0 * np.log10(env + 1e-9), prominence=6.0)
+        assert len(peaks) >= 4, f"{name}: {len(peaks)} repuntes, no se oyen las gotas"

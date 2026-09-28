@@ -6,7 +6,7 @@
 #include "Weather/WeatherModel.h"
 
 /**
- * Incendio de vegetación (biblia 02 §6, GDD v2 §3.14): contagio de fuego entre
+ * Incendio de vegetación (biblia 02 §6, GDD v2 §3.15): contagio de fuego entre
  * celdas de hierba y matorral sobre una rejilla de 2 m.
  *
  * - Solo se guardan las celdas que se apartan del mundo base (ardiendo,

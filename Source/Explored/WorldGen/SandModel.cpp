@@ -67,7 +67,8 @@ double FSandEnvironment::DistanceToFoci(const FVector2D& P) const
 int32 FSandModel::ReposeDropMm(float AngleDeg, float CellSize)
 {
 	const double Drop = FMath::Tan(FMath::DegreesToRadians(static_cast<double>(AngleDeg))) * CellSize * 1000.0;
-	return static_cast<int32>(FMath::FloorToInt64(Drop));
+	// tan(45°) da 0,9999999999999999 en double: sin el margen, el reposo húmedo sale de 249 mm y un escalón de 45° exactos se derrumba.
+	return static_cast<int32>(FMath::FloorToInt64(Drop + 1e-6));
 }
 
 int32 FSandModel::RefillMilli(int64 BaseMm, int64 HighMm, int64 LowMm, bool bSpring)
@@ -518,8 +519,10 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 	FSandResult Total;
 	if (DeltaMs > 0)
 	{
-		// Suma sin desbordar: más de MaxTicksPerAdvance revisiones se descartan igualmente.
-		AccumulatedMs = static_cast<int32>(FMath::Min<int64>(static_cast<int64>(AccumulatedMs) + DeltaMs, static_cast<int64>(TickMs) * (MaxTicksPerAdvance + 1)));
+		// Suma sin desbordar: más de MaxTicksPerAdvance revisiones se descartan, pero se conserva
+		// la fracción de segundo; si no, un salto largo deja una revisión de más para el fotograma siguiente.
+		const int64 Sum = static_cast<int64>(AccumulatedMs) + DeltaMs;
+		AccumulatedMs = static_cast<int32>(FMath::Min<int64>(Sum, static_cast<int64>(TickMs) * MaxTicksPerAdvance + Sum % TickMs));
 	}
 	TArray<FIntPoint> DirtyChunks;
 	while (AccumulatedMs >= TickMs && Total.Ticks < MaxTicksPerAdvance)
@@ -548,6 +551,10 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 {
 	using namespace SandModelDetail;
+	if (!FMath::IsFinite(Env.HighTide) || !FMath::IsFinite(Env.ActiveRadius))
+	{
+		return FSandResult();
+	}
 	WakeForTide(Env);
 
 	// Revisiones perdidas (08 §2.6): un chunk con arena pendiente lejos de todos los jugadores
@@ -1103,9 +1110,11 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 		{
 			const FSaveValue& Entry = ChunkList->At(E);
 			FIntPoint Key;
-			// Las columnas del chunk (Key · N) deben caber en la cota de columna.
+			// Las columnas del chunk (Key · N) deben caber en la cota de columna y la clave, en el int16
+			// del paquete: fuera de él, Key * CellsPerChunk desborda y el chunk no llegaría a los clientes.
 			if (!Entry.IsArray() || Entry.Num() != 3 || !ReadInt32(Entry.At(0), Key.X) || !ReadInt32(Entry.At(1), Key.Y)
 				|| FMath::Abs(static_cast<int64>(Key.X)) > MaxAbsColumn / N || FMath::Abs(static_cast<int64>(Key.Y)) > MaxAbsColumn / N
+				|| Key.X < -32768 || Key.X > 32767 || Key.Y < -32768 || Key.Y > 32767
 				|| !Entry.At(2).IsArray() || Chunks.Contains(Key))
 			{
 				return Fail();

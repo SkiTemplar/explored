@@ -431,7 +431,7 @@ FWildfireStepResult FWildfireModel::Advance(int64 NowSecond, int64 NowMinute, co
 	{
 		return Out;
 	}
-	// NowSecond > LastSecond: la diferencia sin signo es exacta aunque la resta con signo desbordara.
+	// En uint64: con un LastSecond cargado muy negativo, la resta en int64 desborda y el bucle no acaba.
 	const uint64 Pending = (uint64)NowSecond - (uint64)LastSecond;
 	const int64 Steps = (int64)FMath::Min<uint64>(Pending, (uint64)MaxCatchUpSteps);
 	Out.StepsDropped = (int32)FMath::Min<uint64>(Pending - (uint64)Steps, (uint64)MAX_int32);
@@ -542,8 +542,9 @@ bool FWildfireModel::Load(const FSaveValue& Value)
 			return false;
 		}
 		const EFireCellState CellState = (EFireCellState)State;
-		// Una celda que arde sin combustible o sin tiempo de quema no puede existir.
-		if (CellState == EFireCellState::Burning && (CellFuel == (int64)EFireFuel::None || Steps == 0))
+		// Una celda que arde sin combustible, sin tiempo de quema o con más del que da su combustible no puede existir.
+		if (CellState == EFireCellState::Burning
+			&& (CellFuel == (int64)EFireFuel::None || Steps == 0 || Steps > WildfirePriv::BurnStepsFor((EFireFuel)CellFuel)))
 		{
 			return false;
 		}

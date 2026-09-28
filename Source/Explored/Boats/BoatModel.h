@@ -73,6 +73,8 @@ public:
 	static constexpr float SafeImpactSpeedCmS = 80.0f;
 	/** Tope de la arrancada impuesta desde fuera (50 m/s, muy por encima de cualquier barco). */
 	static constexpr float MaxSetSpeedCmS = 5000.0f;
+	/** Holgura al cargar un amarre (cm): más lejos del poste que el cabo más esto, el guardado no es coherente y se suelta. */
+	static constexpr float MooringLoadToleranceCm = 50.0f;
 
 	static const FBoatDefinition& Definition(EBoatType Type);
 
