@@ -841,3 +841,41 @@ nuevos, pero se fusionaron fuera de esta pasada.
 - Ninguna casilla nueva en `[x]`. #112 se anota junto a la casilla ya hecha de los cultivos
   de Landing: el aloe y la cúrcuma silvestre completan las «especias y plantas medicinales»
   del huerto a nivel de datos. Faltan las mallas y dónde se encuentra el primer rizoma.
+
+## Ejecución 23:00 UTC
+
+Base: `origin/main` en `bde0f36` al empezar. Solo se revisa lo que tiene commits desde la
+pasada de las 21:00: #91, #116, #117 y #118. #114 no tiene commits nuevos desde su revisión.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #91 | `claude/add-h2-game-data-l4x8pd` | **Fusionada** (`725ff1c`) | Ya no toca `Source/`: los logros y `AchievementsDataSpec.cpp` entraron con #80. Solo toca datos JSON, `Tools/` y docs, así que se le quita `necesita-unreal`. Los duplicados `viga_apoyo` y `tablon_contencion` están resueltos. `cuerda_fija` en `terreno` y el cobre detrás del hierro coinciden con la biblia 02 §13.3 y la biblia 03 §2.2. El recuento de 00-TODO.md lo he contado otra vez con un script y cuadra; además corrige la fila F3, que estaba mal. |
+| #116 | `nube/packs-2026-09-28b` | **Fusionada** (`b034c9a`) | Lote 10 de packs: mitad de coco, pescado de arrecife y espina (Kenney Food Kit, CC0). Solo toca el catálogo, el README y la hoja de contacto. Le integré `main` después de fusionar #91. |
+| #117 | `feat/pico-pala-runtime` | `necesita-unreal` | Toca `Build.cs` (`DeveloperSettings`), un subsistema, componentes, `UDeveloperSettings`, el personaje y el PlayerController. Los modelos puros están bien y la replicación sigue la biblia 08. Aviso: el servidor se fía de la herramienta y de la acción que manda el cliente. Choca con `main` solo en `localizacion-informe.md`, que se resuelve regenerándolo con `l10n export`. |
+| #118 | `worldgen/terreno-jugable` | `necesita-unreal` + cambios | Está apilada sobre #114 y hereda sus cuatro problemas serios. Añade un acantilado en Landing que contradice la biblia 04 §2.1 («la isla más llana y segura»). Emerald y Smoke pasan a tener un 23 % y un 30 % de costa acantilada, y eso lo tiene que confirmar el director. Mueve los cayos, así que hay que revisar los POI. |
+| #70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114 | — | Sin cambios | No tienen commits nuevos desde la pasada de las 21:00. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #91 + `main` (`17dd997`) | — | — | 0 errores, 0 avisos · 550 passed | Localization: 103 passed · `export --check` al día |
+| #116 + `main` (`e8c49b2`) | — | — | 0 errores, 0 avisos · 550 passed | Packs: 64 passed, 1 skipped |
+| #117 + `main` (`bde0f36`, en local) | 1340 / 0 | 1340 / 0 | — | `l10n export --check` al día tras regenerar |
+| #118 + `main` (`bde0f36`, en local) | 1375 / 0 | 1375 / 0 | — | — |
+
+### Notas para el director
+
+- **#91:** la biblia 03 se contradice con el aluminio. §2.2 dice que el banco de chatarra
+  lo recupera «sin fundir» y §4.3 pone carbón en las dos estaciones. Con la decisión de la
+  PR, `fundir_chapa` y `fundir_tubo` no sirven para nada mientras el banco dé lo mismo sin
+  carbón.
+- **#85:** al integrar `main` tiene que quitar su `clavija_roca`, que ya entró con #91.
+- **#118:** hay que decidir si Landing lleva acantilado. Si se quiere, primero hay que
+  escribirlo en la biblia 04 §2.1.
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]` aparte de las que marca #91 con su propia PR: los datos
+  de H2 del metal, las piezas de mina y escalada, la carretilla y la regla de DataCheck.
+  #116 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.
