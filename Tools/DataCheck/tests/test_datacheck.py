@@ -1363,3 +1363,72 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- huerto: reglas y cosecha neta
+
+
+def farm_errors(ds: DataSet) -> list[str]:
+    from datacheck import farm
+    r = Report()
+    farm.check_farm(ds, r)
+    return r.errors
+
+
+def test_huerto_reglas_espejo_de_farm_model(real: DataSet) -> None:
+    assert farm_errors(real) == []
+    assert real.data["plants.json"]["rules"]["scarecrowRadiusM"] == 15
+
+
+def test_huerto_sin_reglas(ds: DataSet) -> None:
+    del ds.data["plants.json"]["rules"]
+    assert any_error(farm_errors(ds), "falta el bloque «rules»")
+
+
+def test_huerto_regla_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["scarecrowRadiusM"] = 4
+    ds.data["plants.json"]["rules"]["dryDaysToDie"] = 5
+    errs = farm_errors(ds)
+    assert any_error(errs, "scarecrowRadiusM=4", "ScarecrowRadius=1500 cm")
+    assert any_error(errs, "dryDaysToDie=5", "DryDaysToDie=4")
+
+
+def test_huerto_marchita_despues_de_morir(ds: DataSet) -> None:
+    ds.data["plants.json"]["rules"]["dryDaysToWilt"] = 4
+    assert any_error(farm_errors(ds), "se marchita")
+
+
+def test_huerto_cosecha_neta_nula(ds: DataSet) -> None:
+    pina = next(p for p in ds.plants if p["id"] == "pina")
+    pina["harvest"]["everyDays"] = 0
+    assert any_error(farm_errors(ds), "«pina»", "cosecha neta nula")
+
+
+def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> None:
+    for p in real.plants:
+        h = p["harvest"]
+        if p["plantedFrom"] == h["item"]:
+            assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
+
+
+# --------------------------------------------------------------------------- mina: quema de la luz
+
+
+def test_mineria_antorcha_con_ritmo_de_quema(real: DataSet) -> None:
+    burn = {b["item"]: b for b in hazard(real, "oscuridad")["lightBurn"]}
+    assert burn["antorcha"]["gameMinutesPerDurability"] * item(real, "antorcha")["maxDurability"] == 120
+
+
+def test_mineria_luz_sin_ritmo_de_quema(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"] = []
+    assert any_error(mining_errors(ds), "antorcha", "lightBurn")
+
+
+def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightBurn"].append({"item": "vela", "gameMinutesPerDurability": 3})
+    assert any_error(mining_errors(ds), "«vela»", "lightItems")
+
+
+def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
+    del item(ds, "antorcha")["maxDurability"]
+    assert any_error(mining_errors(ds), "antorcha", "maxDurability")
