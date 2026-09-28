@@ -1,6 +1,6 @@
 # Arena viva: cómo enganchar `FSandModel` en el motor
 
-Estado: el modelo es puro y tiene spec en el host (`Explored.Sand`, 42 casos). Falta la
+Estado: el modelo es puro y tiene spec en el host (`Explored.Sand`, 47 casos). Falta la
 integración con Unreal, que tiene que hacer una sesión con el editor. Diseño de juego:
 biblia 02 §5 (reglas), biblia 08 §2.6 (red y presupuesto) y GDD v2 §3.13 (números que
 la biblia deja abiertos).
@@ -58,9 +58,16 @@ la biblia deja abiertos).
      reales), llama a `ApplyHalfTide` con la pleamar y la bajamar de ese medio ciclo y
      `bSpring` en luna llena o nueva. Toca todas las columnas editadas de la isla, no
      solo las cercanas.
-   - **Salida por la red.** Los `DirtyChunks` de cada llamada se traducen en deltas de
-     terreno de la capa de arena y entran en la **misma cola** de 08 §2.2, con
-     **prioridad más baja** que las ediciones de los jugadores. Si la cola va llena
+   - **Salida por la red.** Cada llamada devuelve `ChangedColumns` (ordenadas y sin
+     repetir). Por cada chunk tocado, `EncodePackets(Chunk, ChangedColumns)` da los
+     paquetes `FExploredTerrainDeltaPacket` versión 2, capa 1 (arena), de 512 B como
+     máximo y con valores absolutos (biblia 08 §2.2). Entran en la **misma cola** de
+     08 §2.2, con **prioridad más baja** que las ediciones de los jugadores. Si el chunk
+     ya está en la cola, basta con guardar la unión de columnas y codificar al salir: el
+     valor final gana. Un cliente que llega recibe `EncodeFullChunk` (el primer paquete
+     vacía el chunk). El cliente llama a `ApplyPacket`, que valida el paquete entero
+     antes de tocar nada y no marca columnas sucias, porque el cliente no simula.
+     `ChunkChecksum` es el FNV-1a de la comprobación de cada 30 s. Si la cola va llena
      porque alguien está cavando, la arena llega un poco más tarde. El tope de 64
      columnas cambiadas por chunk y revisión (`MaxChangedColumnsPerChunk`) es lo que
      mantiene la arena en ≈ 0,6 kbps comprimidos por avalancha en curso. Un medio ciclo
@@ -158,6 +165,13 @@ la biblia deja abiertos).
 - **Medio ciclo de marea delante del jugador:** el relleno llega de golpe cada 10
   minutos reales. Si alguien está mirando el hoyo, conviene fundir la altura nueva en
   unos segundos en el cliente, al ritmo de las olas que suben.
-- **Arena congelada:** una playa a más de 80 m no se revisa. Al volver alguien, se
-  resuelve con 4 revisiones como máximo y sigue a su ritmo (1 por segundo). Hay que
-  comprobar en PIE que ese arranque no se note.
+- **Arena congelada:** una playa a más de 80 m no se revisa, pero cada chunk cuenta las
+  revisiones que se salta (`FrozenRevisions`, hasta 4). Al volver alguien, `Tick` las
+  recupera de golpe solo en esos chunks (`CatchUpRevisions`) y después la arena sigue a
+  su ritmo (1 por segundo). Esa ráfaga puede sacar hasta 5 × 64 columnas de un chunk en
+  un segundo; entra en la ráfaga de 16 KB/s de 08 §2.2. El contador no se guarda: al
+  cargar, la arena empieza sin deuda. Hay que comprobar en PIE que el arranque no se
+  note.
+- **Tope del montón:** la avalancha no deja que una columna pase de 2 m sobre su suelo,
+  ni siquiera al pie de un escalón. La arena que no cabe se queda arriba, así que el
+  guardado nunca contiene un delta que `FromValue` rechace.

@@ -514,8 +514,9 @@ vendrán la arena viva (§3.13), el astillero de balsas y otras interacciones na
 Segunda mecánica del principio «el mundo entero es interactivo y se comporta de forma
 natural». La playa deja de ser un decorado: se cava, se apila y reacciona. **Manda la
 biblia:** las reglas son las de `biblia/02-mecanicas-del-mundo.md` §5 y los presupuestos,
-los de `biblia/08-cooperativo-y-red.md` §2.6. Esta sección solo añade lo que la biblia
-deja abierto (tamaño de la rejilla, cómo crece el relleno hacia el agua y el remate).
+los de `biblia/08-cooperativo-y-red.md` §2.6 (la capa de alturas propia y la rampa del
+oleaje están anotadas allí como decisiones del director). Esta sección solo añade el
+tamaño de la rejilla, la capa de arena y las pasadas por revisión.
 
 - **Objetivo:** que cavar en la playa se sienta como en una playa de verdad (el hoyo
   se desmorona, el montón se escurre, la marea lo borra con el paso de los días) sin
@@ -571,13 +572,14 @@ deja abierto (tamaño de la rejilla, cómo crece el relleno hacia el agua y el r
   | Capa de arena / montón máximo | 1,5 m / 2 m | este GDD |
   | Reposo seco / húmedo | 34° / 45° | biblia 02 §5.1 |
   | Revisión de pendiente | 1 por segundo, 4 pasadas de ¼ del exceso | biblia 02 §5.1 / este GDD |
-  | Relleno por medio ciclo, pleamar → bajamar | 20 % → 60 % | biblia 02 §5.2 / este GDD |
+  | Relleno por medio ciclo, pleamar → bajamar | 20 % → 60 % | biblia 02 §5.2 |
   | Marea viva | +15 puntos (35 % en la pleamar) | biblia 02 §5.2 |
-  | Remate del oleaje | ≤ 2 cm | este GDD |
+  | Remate del oleaje | ≤ 2 cm | biblia 02 §5.2 |
   | Arena sujeta por una estructura | ≤ 1 m de la huella | biblia 02 §5.3 |
   | Radio activo alrededor de cada jugador | 80 m hasta el borde del chunk | biblia 08 §2.6 |
   | Tope de columnas cambiadas | 64 por chunk y revisión | biblia 08 §2.6 |
-  | Revisiones acumuladas al acercarse | 4 como máximo; el resto se descarta | biblia 08 §2.6 |
+  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta | biblia 08 §2.6 |
+  | Paquete de red | versión 2, capa 1, ≤ 512 B | biblia 08 §2.2 |
 
 - **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo
   tierra, zanjas de drenaje, rampas de arena para botar balsas). El tablón de
@@ -586,9 +588,9 @@ deja abierto (tamaño de la rejilla, cómo crece el relleno hacia el agua y el r
 - **Interfaz:** ninguna. La arena se ve escurrir y oscurecerse al mojarse.
 - **Coste:** solo lo simula el servidor, y solo en los chunks a menos de 80 m de algún
   jugador. Dentro de ellos solo se revisan las columnas **sucias** (tocadas, o vecinas
-  de algo que se ha movido). Fuera, la arena se congela con su estado; al volver alguien
-  se resuelve con 4 revisiones como máximo y después sigue a su ritmo, sin recordar el
-  tiempo perdido. Un montón asentado cuesta cero. El medio ciclo de marea toca solo las
+  de algo que se ha movido). Fuera, la arena se congela con su estado y cuenta las
+  revisiones que se salta; al volver alguien, las recupera de golpe (4 como máximo) y
+  después sigue a su ritmo, sin recordar el resto del tiempo perdido. Un montón asentado cuesta cero. El medio ciclo de marea toca solo las
   columnas editadas, una vez cada 10 minutos reales.
 - **Riesgos técnicos:**
   - Casar la malla de la arena con el terreno volumétrico: ver

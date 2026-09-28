@@ -307,6 +307,14 @@ semilla); solo se guarda lo que el jugador ha picado encima de ellos.
   las pendientes locales vuelven a estar por debajo del ángulo. Es el mismo
   mecanismo de edición de densidad que picar, aplicado automáticamente por
   el sistema en vez de por el jugador.
+- **Nota de implementación [director, 2026-09-27]:** el encargo del mundo
+  interactivo pide que la arena sea «un campo de alturas local de deltas: solo
+  capa de superficie, más barato que lo volumétrico». Por eso la arena de playa
+  no edita densidad: es una capa propia de deltas de altura (`FSandModel`,
+  GDD §3.13) sobre la misma rejilla de 0,25 m y chunks de 8 m. Sale por la red
+  por el mismo canal y el mismo formato de tramos que la densidad, con la capa
+  marcada en la cabecera (biblia 08 §2.2). Picar tierra, roca o cualquier cosa
+  que no sea arena de playa sigue siendo edición de densidad.
 
 ### 5.2 Relleno por oleaje
 
@@ -318,6 +326,14 @@ semilla); solo se guarda lo que el jugador ha picado encima de ellos.
   ciclo — coherente con «mareas vivas» ya descritas en la biblia §6.1.
 - Un agujero completamente por debajo de la línea de bajamar se rellena del
   todo en **2–3 ciclos de marea** sin intervención del jugador.
+- **Cómo crece hacia el agua [director, 2026-09-27]:** el encargo del mundo
+  interactivo pide que el oleaje rellene y alise «con una tasa que crece cuanto
+  más cerca está del agua». El 20 % (35 % en marea viva) es la tasa **en la línea
+  de pleamar**. De ahí sube en línea recta hasta el **60 %** en la línea de
+  bajamar y por debajo (**75 %** en marea viva). La última onda remata lo que
+  quede por debajo de 2 cm. Con el 20 % plano, el punto anterior no se cumpliría:
+  a un hoyo le quedaría un 26 % tras 3 ciclos. Con la rampa, el hoyo más hondo
+  posible (1,5 m) se cierra en 2,5 ciclos y uno de 30 cm, en 1,5.
 
 ### 5.3 Anclaje
 

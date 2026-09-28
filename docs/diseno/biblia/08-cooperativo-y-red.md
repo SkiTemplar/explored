@@ -189,6 +189,26 @@ Cabecera 9 B + 3 B por tramo + 2 B por muestra. **Tope duro por paquete: 512 byt
 (≈ 240 muestras), por debajo de `MaxPacketSize` para que nunca fragmente. Una edición
 más grande se parte en varios paquetes del mismo chunk, en orden.
 
+**Versión 2, con capa** (para la arena de §2.6, que no es densidad sino un campo de
+alturas de 32×32 columnas por chunk de 8 m; ver 02 §5.1):
+
+```
+uint8   Version           // 2
+uint8   Layer             // 0 = densidad (igual que la versión 1), 1 = arena
+uint8   Flags             // bit 0: vaciar el chunk antes de aplicar (chunk completo)
+int16   ChunkX, ChunkY, ChunkZ   // arena: ChunkZ = 0
+uint16  NumRuns
+por tramo:  uint16 FirstSample (arena: 0..1023, índice de columna)
+            uint8  Count (1..255)
+            int16  Delta[Count]   // mm de altura absolutos, también 0
+```
+
+Cabecera 11 B y el mismo tope de 512 B. Los valores son absolutos, así que la capa de
+arena conserva la idempotencia y la fusión por chunk de arriba (el valor final gana), y
+la comprobación de cada 30 s es el mismo FNV-1a sobre los 1 024 deltas del chunk.
+Implementado y probado en el host: `FSandModel::EncodePackets`, `EncodeFullChunk`,
+`ApplyPacket` y `ChunkChecksum`.
+
 **Volumen real por herramienta** (medido sobre la geometría del propio modelo, no
 estimado a ojo):
 
@@ -379,7 +399,8 @@ estado que consulta densidad base + deltas.
    distintas con optimizaciones distintas no garantiza el mismo bit, así que «de forma
    determinista en cada cliente» sería deriva garantizada a los pocos minutos.
 2. Su salida son **exactamente** deltas de terreno. Ya tenemos un canal barato para eso
-   (§2.2), así que no hace falta inventar nada.
+   (§2.2), así que no hace falta inventar nada. La arena va en la capa 1 del paquete
+   versión 2 de §2.2: mismo canal, misma cola, mismo formato de tramos.
 
 Reglas de presupuesto, porque una playa que se derrumba podría inundar el canal:
 
