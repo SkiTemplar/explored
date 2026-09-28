@@ -18,6 +18,7 @@ from texgen.palette import (
     CHROMA_CAP,
     ENTORNO_ROW,
     FAMILIES,
+    FAUNA_BODY_SWATCHES,
     ISLANDS,
     PACK_ALIASES,
     TERRAIN_ROW,
@@ -223,6 +224,17 @@ def test_pickups_pop_out_of_every_ground(atlases, island):
         if k.split(".")[0] in pickup:
             worst = min(delta_e(lab, g) for g in grounds)
             assert worst > 0.06, f"{k}: ΔE {worst:.3f} contra el suelo"
+
+
+@pytest.mark.parametrize("island", ISLAND_KEYS)
+def test_fauna_bodies_read_on_every_ground(atlases, island):
+    """El pelaje de un animal (jabalí en la selva, cabra en la caliza) no se camufla en el suelo."""
+    sws = {s["id"]: srgb_to_oklab(s["mid"]) for s in atlases[island][0]}
+    grounds = [v for k, v in sws.items() if k.startswith("terreno.")]
+    assert FAUNA_BODY_SWATCHES <= set(sws)
+    for k in FAUNA_BODY_SWATCHES:
+        worst = min(delta_e(sws[k], g) for g in grounds)
+        assert worst > 0.06, f"{k}: ΔE {worst:.3f} contra el suelo"
 
 
 @pytest.mark.parametrize("island", ISLAND_KEYS)
