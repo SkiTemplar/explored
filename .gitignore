@@ -44,3 +44,11 @@ compile_commands.json
 .cache/
 
 .claude/worktrees/
+
+# Volcados y binarios del diagnóstico de terreno (Tools/HostTests/tools): nunca al repositorio.
+Tools/HostTests/*.bin
+Tools/HostTests/*.exe
+Tools/HostTests/*.ppm
+Tools/HostTests/baseline_report*.txt
+Tools/HostTests/terrain_*
+Tools/HostTests/build*/

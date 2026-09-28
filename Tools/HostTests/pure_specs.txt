@@ -55,3 +55,5 @@ Tests/CoconutPalmModelSpec.cpp
 Tests/TramwayModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
 Tests/CombatModelSpec.cpp
+Tests/TerrainMetricsModelSpec.cpp
+Tests/DrainageModelSpec.cpp

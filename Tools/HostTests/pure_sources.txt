@@ -70,3 +70,6 @@ WorldGen/WildfireModel.cpp
 WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
 Combat/CombatModel.cpp
+WorldGen/TerrainMetricsModel.cpp
+WorldGen/TerrainSurvey.cpp
+WorldGen/DrainageModel.cpp
