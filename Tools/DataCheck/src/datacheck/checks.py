@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
+from . import achievements, cooking, crafting, fases, fauna, mining, music, packs, survival_data
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -408,6 +408,7 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
             if tool not in obtainable:
                 r.error(f"building_pieces.json tier «{t['id']}»: herramienta «{tool}» no obtenible")
     pieces = {p.get("id"): p for p in doc.get("pieces", [])}
+    container_kinds = survival_data.cpp_enum(_read_source(ds, "Carry/CarryTypes.h"), "EWorldContainerKind")
     if len(pieces) != len(doc.get("pieces", [])):
         r.error("building_pieces.json: ids de pieza duplicados")
     for pid, p in pieces.items():
@@ -441,6 +442,13 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
             r.error(f"building_pieces.json «{pid}»: socket {p.get('socket')!r} no es uno de {sorted(BUILDING_SOCKETS)}")
         if "respawnPoint" in p and not isinstance(p["respawnPoint"], bool):
             r.error(f"building_pieces.json «{pid}»: respawnPoint debe ser true o false")
+        # Almacenamiento (biblia 03 §1.4): la pieza hace de contenedor del mundo de esa clase.
+        if "container" in p and p["container"] not in container_kinds:
+            r.error(f"building_pieces.json «{pid}»: container {p['container']!r} no es un EWorldContainerKind "
+                    f"({', '.join(container_kinds) or 'no se encuentra Carry/CarryTypes.h'})")
+    for kind in container_kinds:
+        if not any(p.get("container") == kind for p in pieces.values()):
+            r.error(f"building_pieces.json: ninguna pieza construye el contenedor {kind} (biblia 03 §1.4)")
     if not any(p.get("respawnPoint") is True for p in pieces.values()):
         r.error("building_pieces.json: ninguna pieza es punto de reaparición (GDD §8.6: las fogatas encendidas)")
     # Tier de una pieza estructural nunca por debajo de lo que aguanta: piedra ≥ madera ≥ ...
@@ -1179,6 +1187,7 @@ def run_all(ds: DataSet) -> Report:
     check_boats(ds, r, obtainable)
     check_meshes(ds, r)
     check_survival(ds, r)
+    survival_data.check_survival_data(ds.repo_root, ds.data, r.error)
     check_cooking(ds, r)
     check_story(ds, r)
     achievements.check_achievements(ds, r)

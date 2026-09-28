@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
-		"cpp": 303,
-		"datos": 334,
+		"total": 673,
+		"cpp": 304,
+		"datos": 369,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -667,7 +667,7 @@
 			"en": "Invalid rotation",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:275"
+				"Source/Explored/Building/BuildingSubsystem.cpp:280"
 			]
 		},
 		{
@@ -677,7 +677,7 @@
 			"en": "Not enough materials",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:283"
+				"Source/Explored/Building/BuildingSubsystem.cpp:288"
 			]
 		},
 		{
@@ -687,7 +687,7 @@
 			"en": "Another piece is missing in the base",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:281"
+				"Source/Explored/Building/BuildingSubsystem.cpp:286"
 			]
 		},
 		{
@@ -697,7 +697,7 @@
 			"en": "A tool is missing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:282"
+				"Source/Explored/Building/BuildingSubsystem.cpp:287"
 			]
 		},
 		{
@@ -707,7 +707,7 @@
 			"en": "Must go on the ground",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:280"
+				"Source/Explored/Building/BuildingSubsystem.cpp:285"
 			]
 		},
 		{
@@ -717,7 +717,7 @@
 			"en": "Nothing to rest on",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:278"
+				"Source/Explored/Building/BuildingSubsystem.cpp:283"
 			]
 		},
 		{
@@ -727,7 +727,7 @@
 			"en": "Nothing to repair",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:284"
+				"Source/Explored/Building/BuildingSubsystem.cpp:289"
 			]
 		},
 		{
@@ -737,7 +737,7 @@
 			"en": "Something is already there",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:277"
+				"Source/Explored/Building/BuildingSubsystem.cpp:282"
 			]
 		},
 		{
@@ -747,7 +747,7 @@
 			"en": "Outside the base",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:276"
+				"Source/Explored/Building/BuildingSubsystem.cpp:281"
 			]
 		},
 		{
@@ -757,7 +757,7 @@
 			"en": "That piece no longer exists",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:285"
+				"Source/Explored/Building/BuildingSubsystem.cpp:290"
 			]
 		},
 		{
@@ -767,7 +767,7 @@
 			"en": "Unknown piece",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:274"
+				"Source/Explored/Building/BuildingSubsystem.cpp:279"
 			]
 		},
 		{
@@ -777,7 +777,7 @@
 			"en": "Too far from a support",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:279"
+				"Source/Explored/Building/BuildingSubsystem.cpp:284"
 			]
 		},
 		{
@@ -1108,12 +1108,22 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "CondContactBurn",
+			"es": "Quemadura",
+			"en": "Burn",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:281"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "CondFever",
 			"es": "Fiebre",
 			"en": "Fever",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:281"
+				"Source/Explored/UI/ExploredHUD.cpp:285"
 			]
 		},
 		{
@@ -1123,7 +1133,7 @@
 			"en": "Infected wound",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:285"
+				"Source/Explored/UI/ExploredHUD.cpp:289"
 			]
 		},
 		{
@@ -1133,7 +1143,7 @@
 			"en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:302"
+				"Source/Explored/UI/ExploredHUD.cpp:306"
 			]
 		},
 		{
@@ -1143,7 +1153,7 @@
 			"en": "Scurvy",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:295"
+				"Source/Explored/UI/ExploredHUD.cpp:299"
 			]
 		},
 		{
@@ -1153,7 +1163,7 @@
 			"en": "Sprain",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:289"
+				"Source/Explored/UI/ExploredHUD.cpp:293"
 			]
 		},
 		{
@@ -3058,6 +3068,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "arcon.nameEs",
+			"es": "Arcón",
+			"en": "Chest",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «arcon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "arriate_limonero.nameEs",
 			"es": "Arriate del limonero",
 			"en": "Lemon tree bed",
@@ -3118,6 +3138,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "cesta_almacen.nameEs",
+			"es": "Cesta de almacén",
+			"en": "Storage basket",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «cesta_almacen» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "chimenea.nameEs",
 			"es": "Chimenea",
 			"en": "Chimney",
@@ -3174,6 +3204,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «espantapajaros» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "estanteria_almacen.nameEs",
+			"es": "Estantería de almacén",
+			"en": "Storage shelf",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «estanteria_almacen» nameEs/nameEn"
 			]
 		},
 		{
@@ -3598,6 +3638,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "antidoto_corteza.nameEs",
+			"es": "Antídoto de corteza",
+			"en": "Bark antidote",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «antidoto_corteza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "antorcha.nameEs",
 			"es": "Antorcha",
 			"en": "Torch",
@@ -3888,6 +3938,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "carbon_activado.nameEs",
+			"es": "Carbón activado",
+			"en": "Activated charcoal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «carbon_activado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "carbon_vegetal.nameEs",
 			"es": "Carbón vegetal",
 			"en": "Charcoal",
@@ -4148,6 +4208,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "ferula_bambu.nameEs",
+			"es": "Férula de bambú",
+			"en": "Bamboo splint",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «ferula_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "fibra_coco.nameEs",
 			"es": "Fibra de coco",
 			"en": "Coconut fibre",
@@ -4194,6 +4264,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «fruta_seca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "gel_aloe.nameEs",
+			"es": "Gel de aloe",
+			"en": "Aloe gel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «gel_aloe» nameEs/nameEn"
 			]
 		},
 		{
@@ -4908,6 +4988,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "te_corteza_sauce.nameEs",
+			"es": "Té de corteza de sauce isleño",
+			"en": "Willow-bark tea",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «te_corteza_sauce» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "tendon.nameEs",
 			"es": "Tendón",
 			"en": "Sinew",
@@ -4974,6 +5064,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «vasija_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "vendaje_tela.nameEs",
+			"es": "Venda de tela",
+			"en": "Cloth bandage",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «vendaje_tela» nameEs/nameEn"
 			]
 		},
 		{
@@ -5684,6 +5784,266 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/story_es.json «29» petroglyph_themes/petroglyph_themes_en"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "ahogo.textEs",
+			"es": "¡Aire, necesito aire!",
+			"en": "Air, I need air!",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «ahogo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "alucinacion.textEs",
+			"es": "¿Eso lo he visto de verdad?",
+			"en": "Did I really just see that?",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «alucinacion» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "calor_aprieta.textEs",
+			"es": "El sol está pegando fuerte.",
+			"en": "Sun's hitting hard today.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «calor_aprieta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "empapado.textEs",
+			"es": "Empapado hasta los huesos.",
+			"en": "Soaked through to the bone.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «empapado» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "escorbuto_encias.textEs",
+			"es": "Las encías se quejan. Necesito fruta.",
+			"en": "Gums are complaining. Need fruit.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «escorbuto_encias» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "escorbuto_sangrado.textEs",
+			"es": "Esto es escorbuto de verdad. Fruta, ya.",
+			"en": "This is proper scurvy. Fruit, now.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «escorbuto_sangrado» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "escorbuto_vision.textEs",
+			"es": "Los colores se están apagando.",
+			"en": "Colours are fading out.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «escorbuto_vision» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "esguince.textEs",
+			"es": "El tobillo no aguanta mi peso.",
+			"en": "Ankle won't take my weight.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «esguince» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "fiebre.textEs",
+			"es": "Tengo la cabeza ardiendo.",
+			"en": "My head's burning up.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «fiebre» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "frio_aprieta.textEs",
+			"es": "Tengo la piel de gallina.",
+			"en": "Skin's crawling with goosebumps.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «frio_aprieta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "golpe_calor.textEs",
+			"es": "Todo me da vueltas. Sombra, ya.",
+			"en": "Everything's spinning. Shade, now.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «golpe_calor» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "hambre_aprieta.textEs",
+			"es": "El estómago empieza a quejarse.",
+			"en": "Stomach's putting in a complaint.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «hambre_aprieta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "hambre_critica.textEs",
+			"es": "Ya ni me acuerdo de la última comida.",
+			"en": "Can't remember my last meal.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «hambre_critica» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "herida_infectada.textEs",
+			"es": "Esta herida no tiene buena pinta.",
+			"en": "This wound doesn't look good.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «herida_infectada» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "herida_sangra.textEs",
+			"es": "Esto sangra más de lo que me gustaría.",
+			"en": "Bleeding more than I'd like.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «herida_sangra» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "hipotermia.textEs",
+			"es": "No paro de tiritar. Necesito fuego.",
+			"en": "Can't stop shaking. Need fire.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «hipotermia» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "intoxicacion.textEs",
+			"es": "Algo de lo que comí no me ha sentado bien.",
+			"en": "Something I ate didn't agree with me.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «intoxicacion» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "jadeo.textEs",
+			"es": "Casi me quedo sin aire ahí abajo.",
+			"en": "Almost ran out of air down there.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «jadeo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "monotonia.textEs",
+			"es": "Coco otra vez. Necesito comer otra cosa.",
+			"en": "Coconut again. I need to eat something else.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «monotonia» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "picadura_medusa.textEs",
+			"es": "Menudo escozor de medusa.",
+			"en": "Nasty jellyfish sting, that.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «picadura_medusa» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "picadura_raya.textEs",
+			"es": "La raya me ha dado bien.",
+			"en": "That ray got me good.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «picadura_raya» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "quemadura_contacto.textEs",
+			"es": "Eso ha dolido. Cuidado con las brasas.",
+			"en": "That hurt. Watch the embers.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «quemadura_contacto» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "sed_aprieta.textEs",
+			"es": "Se me está secando la boca.",
+			"en": "Mouth's gone dry.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sed_aprieta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "sed_critica.textEs",
+			"es": "Veo doble. Necesito agua, ya.",
+			"en": "Seeing double. Need water, now.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sed_critica» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "sueno_aprieta.textEs",
+			"es": "Los párpados pesan una barbaridad.",
+			"en": "My eyelids weigh a ton.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sueno_aprieta» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.survival_needs.innerVoice",
+			"key": "sueno_critico.textEs",
+			"es": "No sé si eso lo he soñado o lo he visto de verdad.",
+			"en": "Not sure if I dreamed that or actually saw it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/survival_needs.json «sueno_critico» textEs/textEn"
 			]
 		},
 		{

@@ -2,21 +2,30 @@
   "version": 1,
   "note": "Objetos, piezas y etapas que usan un marcador de /Engine/BasicShapes o mesh null. Lo mantiene Tools/DataCheck (uv run datacheck --write-pending); quita la entrada al añadir su script en Tools/Blender.",
   "items": [
+    "antidoto_corteza",
     "basalto_tallado",
     "cabeza_pico_rescatada",
     "caliza",
     "canto_aguzado",
+    "carbon_activado",
     "compost",
     "cristal_cuarzo",
+    "ferula_bambu",
+    "gel_aloe",
     "hierro_meteorito",
     "mineral_cobre",
     "pico",
-    "tierra_suelta"
+    "te_corteza_sauce",
+    "tierra_suelta",
+    "vendaje_tela"
   ],
   "buildingPieces": [
+    "arcon",
     "astillero",
     "banco_chatarra",
+    "cesta_almacen",
     "espantapajaros",
+    "estanteria_almacen",
     "pila_compost"
   ],
   "plantStages": [

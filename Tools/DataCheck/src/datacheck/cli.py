@@ -1,4 +1,4 @@
-"""CLI: ``uv run datacheck [--strict] [--write-pending] [--write-cooking] [--quiet]``."""
+"""CLI: ``uv run datacheck [--strict] [--write-pending] [--write-cooking] [--write-survival] [--quiet]``."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import argparse
 import json
 import sys
 
-from . import cooking
+from . import cooking, survival_data
 from .checks import REPO_ROOT, DataSet, pending_expected, run_all
 
 
@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-pending", action="store_true", help="regenera meshes_pendientes.json")
     parser.add_argument("--write-cooking", action="store_true",
                         help="regenera FireData.inl y CookingData.inl desde fuels.json, recipes.json e items.json")
+    parser.add_argument("--write-survival", action="store_true",
+                        help="regenera MedicineData.inl e InnerVoiceData.inl desde survival_needs.json")
     parser.add_argument("--quiet", action="store_true", help="no muestra la información de diseño")
     args = parser.parse_args(argv)
 
@@ -38,6 +40,9 @@ def main(argv: list[str] | None = None) -> int:
         write_pending(ds)
     if args.write_cooking:
         for rel in cooking.write_generated(ds.repo_root, ds.data):
+            print(f"Escrito {rel.as_posix()}")
+    if args.write_survival:
+        for rel in survival_data.write_generated(ds.repo_root, ds.data):
             print(f"Escrito {rel.as_posix()}")
     report = run_all(ds)
 

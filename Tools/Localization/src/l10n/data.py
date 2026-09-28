@@ -68,6 +68,8 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("building_pieces.json", "tiers", _sub("tiers"), "nameEs", "nameEn", "nivel de construcción"),
     FieldSpec("building_pieces.json", "pieces", _sub("pieces"), "nameEs", "nameEn", "pieza de construcción"),
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),
+    FieldSpec("survival_needs.json", "innerVoice", _sub("innerVoice"), "textEs", "textEn",
+              "aviso interior: frase que piensa el personaje al cruzar un umbral (biblia 01 §6)"),
     FieldSpec("story_es.json", "map_marks", _sub("map_marks"), "label", "labelEn", "sello del mapa"),
     FieldSpec("story_es.json", "artifact_kinds", _sub("artifact_kinds"), "label", "labelEn", "tipo de tesoro del museo"),
 ]
