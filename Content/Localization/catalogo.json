@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 635,
+		"total": 637,
 		"cpp": 303,
-		"datos": 332,
+		"datos": 334,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3308,6 +3308,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "pila_compost.nameEs",
+			"es": "Pila de compost",
+			"en": "Compost heap",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pila_compost» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "pilote_bambu.nameEs",
 			"es": "Pilote de bambú",
 			"en": "Bamboo stilt",
@@ -3974,6 +3984,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «comida_quemada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "compost.nameEs",
+			"es": "Compost",
+			"en": "Compost",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «compost» nameEs/nameEn"
 			]
 		},
 		{
