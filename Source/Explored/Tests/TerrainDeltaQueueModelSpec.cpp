@@ -206,6 +206,22 @@ void FTerrainDeltaQueueModelSpec::Define()
 			TestEqual(TEXT("NaN, negativo e infinito no dan presupuesto"), Broken.AvailableBudgetBytes(), 0.0);
 		});
 
+		It("tras un salto de reloj enorme la ventana de pico sigue contando un segundo", [this]()
+		{
+			FQueue Queue;
+			Queue.Accrue(1.0e17);
+			Queue.Enqueue(FIntVector(0, 0, 0), MakeSamples(0, 10), 0.0);
+			FQueue::FOutgoingPacket Out;
+			TestTrue(TEXT("sale un paquete"), Queue.TryPopPacket(Out));
+			TestTrue(TEXT("cuenta en la ventana"), Queue.BytesInPeakWindow() > 0.0);
+			Queue.Accrue(0.5);
+			// Con el reloj en 1e17, Reloj − 1 == Reloj: todo envío caducaba en el primer tick
+			// y el tope de 16 KB/s dejaba de aplicarse para el resto de la sesión.
+			TestTrue(TEXT("medio segundo después sigue en la ventana"), Queue.BytesInPeakWindow() > 0.0);
+			Queue.Accrue(0.6);
+			TestEqual(TEXT("pasado el segundo, sale"), Queue.BytesInPeakWindow(), 0.0);
+		});
+
 		It("cada paquete cuesta exactamente sus bytes y ninguno pasa de 512", [this]()
 		{
 			FQueue Queue;

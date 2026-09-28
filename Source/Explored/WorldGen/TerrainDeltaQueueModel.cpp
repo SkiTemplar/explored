@@ -106,6 +106,9 @@ void FTerrainDeltaQueueModel::Accrue(double DeltaSeconds)
 	{
 		return;
 	}
+	// Tras BurstWindowSeconds el cubo ya está lleno y la ventana de pico vacía: acotar no cambia
+	// nada y evita que un salto enorme deje ClockSeconds − 1 == ClockSeconds (la ventana no vaciaría).
+	DeltaSeconds = FMath::Min(DeltaSeconds, BurstWindowSeconds);
 	SustainedBytes = FMath::Min(SustainedBytes + SustainedBytesPerSecond * DeltaSeconds, BurstCreditBytes);
 	ClockSeconds += DeltaSeconds;
 	// Un envío en t cuenta en la ventana (Reloj − 1 s, Reloj]: sale cuando ha pasado un segundo entero.
