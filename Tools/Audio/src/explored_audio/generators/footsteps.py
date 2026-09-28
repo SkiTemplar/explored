@@ -244,15 +244,49 @@ def _footstep_sand(rng: np.random.Generator) -> np.ndarray:
 
 
 def _footstep_grass(rng: np.random.Generator) -> np.ndarray:
-    n = int(rng.uniform(0.30, 0.36) * SR)
+    """Paso en hierba de claro (mata baja sobre tierra humeda). La hierba no
+    sisea: son tallos fibrosos que se doblan y se quiebran bajo el pie.
+
+    - El peso llega amortiguado por la mata: golpe grave con un hundimiento
+      breve (6-10 ms), mas sordo que en roca y mas firme que en arena.
+    - Al comprimirse la mata, decenas de tallos se doblan y parten: crujido
+      de chasquidos de 1-3 ms en 900-5000 Hz cuya tasa sigue a la compresion,
+      con algun tallo mas grueso que se quiebra claramente (el "crac" que
+      distingue la hierba de la arena).
+    - Las hojas rozan entre si mientras bajan: un roce corto y apagado.
+    - Al levantar la punta, las hojas vuelven a su sitio: un roce breve y
+      suave y unos pocos chasquidos sueltos.
+
+    La version anterior era un barrido de ruido de 1,8 a 6 kHz con granos de
+    2-7 kHz: centroide de 2,7-3,4 kHz y un 7-9 % de la energia sobre 8 kHz,
+    un siseo de papel mas que un paso."""
+    n = int(rng.uniform(0.32, 0.38) * SR)
     out = np.zeros(n)
-    for onset, w in _contacts(rng, n, (0.08, 0.12)):
-        out += w * 0.28 * _thump(n, onset, rng, fc=rng.uniform(130, 180), tau_s=0.022)
-        # Hojas que se doblan y rozan: barrido ascendente brillante.
-        out += w * 0.4 * _swish(n, onset, rng, rng.uniform(0.10, 0.15), 1800, 6000, q=0.9)
-        # Tallos que se quiebran: chasquidos dispersos.
-        out += w * 0.35 * _grain_burst(n, onset, rng, count=int(rng.uniform(18, 30)), spread_s=0.05,
-                                       grain_len_s=(0.0015, 0.005), band_hz=(2000, 7000), q=1.6)
+    t = np.arange(n) / SR
+    contacts = _contacts(rng, n, (0.08, 0.12))
+    for onset, w in contacts:
+        sink = rng.uniform(0.006, 0.010)
+        out += w * 0.13 * _soft_thump(n, onset, rng, fc=rng.uniform(120, 170), attack_s=sink,
+                                       tau_s=rng.uniform(0.02, 0.028))
+        tc = np.clip(t - onset / SR, 0.0, None)
+        comp = np.where(t * SR < onset, 0.0,
+                        np.sin(0.5 * np.pi * np.minimum(tc / (sink * 2.5), 1.0)) ** 2
+                        * np.exp(-np.maximum(tc - sink * 2.5, 0.0) / rng.uniform(0.035, 0.05)))
+        stems = _crunch(n, rng, 2600.0 * comp, band_hz=(900.0, 5000.0), click_s=(0.001, 0.003), kernels=10)
+        stems = static_filter(stems, SR, fc=4500.0, q=0.6, kind="lowpass")
+        out += w * 0.75 * stems * np.sqrt(comp)
+        # Tallos gruesos que se quiebran: pocos chasquidos claros al pisar.
+        out += w * 0.12 * _grain_burst(n, onset + int(sink * SR), rng, count=int(rng.integers(2, 5)), spread_s=0.018,
+                                       grain_len_s=(0.002, 0.004), band_hz=(1500, 3500), q=2.0)
+        # Hojas que rozan al bajar: roce corto que se apaga hacia los medios.
+        out += w * 0.10 * _swish(n, onset, rng, rng.uniform(0.05, 0.08), 3200, 1400, q=0.7)
+    # Las hojas vuelven a su sitio tras despegar la punta.
+    lift = contacts[-1][0] + int(rng.uniform(0.06, 0.09) * SR)
+    if lift < n - int(0.06 * SR):
+        out += 0.06 * _swish(n, lift, rng, rng.uniform(0.05, 0.07), 1600, 3200, q=0.8)
+        tl = np.clip(t - lift / SR, 0.0, None)
+        spring = np.where(t * SR < lift, 0.0, np.exp(-tl / 0.03))
+        out += 0.10 * _crunch(n, rng, 300.0 * spring, band_hz=(1200.0, 4500.0), click_s=(0.0008, 0.002))
     return out
 
 

@@ -97,3 +97,29 @@ def test_paso_en_arena_cruje_grave_y_se_prolonga(rendered):
         assert centroid < 1600.0, f"{name}: centroide {centroid:.0f} Hz"
         assert high < 0.06, f"{name}: {high:.1%} sobre 4 kHz"
         assert active_ms >= 220.0, f"{name}: solo {active_ms:.0f} ms de crujido"
+
+
+def test_paso_en_hierba_cruje_a_tallos_y_no_sisea(rendered):
+    """La hierba son tallos que se doblan y se quiebran, no un soplo de ruido:
+    centroide por debajo de 2,6 kHz, menos de un 3 % de energia sobre 8 kHz y
+    una banda de 1-5 kHz impulsiva (curtosis >= 5,5 tras normalizar por su
+    envolvente de 20 ms; el ruido gaussiano da ~3). La version de barrido de
+    1,8-6 kHz daba 2,7-3,4 kHz, 7-9 % y curtosis 3,2-5,0."""
+    from scipy.stats import kurtosis
+
+    sos = signal.butter(4, [1000.0, 5000.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.02 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_grass_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        air = float(spectrum[freqs > 8000.0].sum() / spectrum.sum())
+        band = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(band**2, np.ones(win) / win, mode="same")) + 1e-12
+        active = env > env.max() * 0.05
+        crackle = float(kurtosis((band / env)[active], fisher=False))
+        assert centroid < 2600.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert air < 0.03, f"{name}: {air:.1%} sobre 8 kHz"
+        assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a soplo de ruido"
