@@ -18,6 +18,7 @@ Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Core/NetQuantize.cpp
 Core/SystemLinks.cpp
+Debug/NetBudgetTableModel.cpp
 Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp

@@ -91,6 +91,37 @@ void FFaunaAnchorNetModelSpec::Define()
 		});
 	});
 
+	Describe("Lotes al azar", [this]()
+	{
+		It("todo lote que acepta vuelve a codificarse igual byte a byte", [this]()
+		{
+			FExploredRandom Rng(0xA2C);
+			int32 Accepted = 0;
+			for (int32 i = 0; i < 20000; ++i)
+			{
+				TArray<uint8> Bytes;
+				const int32 Count = Rng.RangeInt(0, 3);
+				for (int32 b = 0; b < Count * FFaunaAnchorNetModel::PacketBytes; ++b)
+				{
+					Bytes.Add(static_cast<uint8>(Rng.NextUInt32() & 0xFF));
+				}
+				TArray<FFaunaGroupAnchor> Anchors;
+				if (!FFaunaAnchorNetModel::DecodeBatch(Bytes, Anchors))
+				{
+					continue;
+				}
+				++Accepted;
+				TArray<uint8> Again;
+				if (!FFaunaAnchorNetModel::EncodeBatch(Anchors, Again) || Again != Bytes)
+				{
+					AddError(FString::Printf(TEXT("El lote %d no es canónico"), i));
+					return;
+				}
+			}
+			TestTrue(TEXT("Acepta bastantes"), Accepted > 10000);
+		});
+	});
+
 	Describe("Relevancia y calendario", [this, NaN]()
 	{
 		It("elige como mucho 24 grupos dentro de 150 m, del más cercano al más lejano", [this, NaN]()

@@ -29,6 +29,7 @@ Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
+Tests/NetBudgetTableModelSpec.cpp
 Tests/NetQuantizeSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
