@@ -144,7 +144,12 @@ class Family:
 # pueden superarlo: tienen que leerse desde lejos.
 CHROMA_CAP = 0.14
 # Acentos dentro de familias de entorno (flores): se permiten por encima del tope.
-ACCENT_SWATCHES = frozenset({"vegetacion.flor_roja", "vegetacion.flor_amarilla"})
+ACCENT_SWATCHES = frozenset({"vegetacion.flor_roja", "vegetacion.flor_amarilla", "fauna.cresta"})
+# Pelajes y plumajes de fauna: cubren el cuerpo del animal, que se caza o se esquiva, así
+# que tienen que leerse sobre todos los suelos de la isla como lo recogible. Las piezas
+# pequeñas (pezuña, cuerno, cresta, pico) no: las rodea el pelaje.
+FAUNA_BODY_SWATCHES = frozenset({"fauna.jabali", "fauna.jabali_claro", "fauna.pardo", "fauna.canela",
+                                 "fauna.crema", "fauna.rosado", "fauna.plumaje"})
 
 FAMILIES: tuple[Family, ...] = (
     Family("madera", 0, True, False, "Madera de construcción, herramientas y muebles.", (
@@ -260,6 +265,22 @@ FAMILIES: tuple[Family, ...] = (
         ("malaquita", "#3f8a70", "Mineral de cobre."),
         ("hematites", "#6b3a37", "Hierro del meteorito, óxido rojo."),
     )),
+    # Fauna terrestre (fauna_terrestre.json y el kit de Tools/Blender/animals): identidad,
+    # como la comida (un jabalí es el mismo en todas las islas). Antes de esta fila el
+    # cerdo salvaje del lote 5 se coloreaba con madera.oscura/madera.quemada.
+    Family("fauna", 13, False, False, "Pelaje, piel y plumaje de la fauna terrestre y de granja.", (
+        ("jabali", "#5a4838", "Cerdas del jabalí (cerdo salvaje), lomo oscuro."),
+        ("jabali_claro", "#8b7560", "Flancos y vientre del jabalí, mono."),
+        ("pardo", "#94653f", "Cabra salvaje parda, cabra de granja."),
+        ("canela", "#d8894a", "Canela (la perra), zorro, gato."),
+        ("crema", "#e8e2d2", "Cabra blanca, pecho y hocico claros, gallina blanca."),
+        ("rosado", "#df9a96", "Cerdo de granja, orejas y hocico."),
+        ("pezuna", "#35302e", "Pezuñas, nariz, ojos, puntas de cuerno."),
+        ("cuerno", "#c2b596", "Cuernos y colmillos."),
+        ("plumaje", "#a24f2e", "Gallina roja, plumaje cobrizo."),
+        ("cresta", "#c93a33", "Cresta y barbilla de la gallina (acento)."),
+        ("pico", "#dcae45", "Pico y patas de ave."),
+    )),
 )
 
 # Terreno: objetivos globales (Oklab L, C, h°) a los que se armonizan las texturas del
@@ -332,6 +353,8 @@ PACK_ALIASES: dict[str, str] = {
     "Cloth": "tela.lona", "Fabric": "tela.crudo", "Leather": "tela.cuero", "Rope": "palma.fibra",
     "Straw": "palma.paja", "Thatch": "palma.paja", "Bamboo": "bambu.maduro",
     "Bone": "recurso.hueso", "Shell": "recurso.concha", "Feather": "recurso.pluma",
+    "Fur": "fauna.pardo", "Skin": "fauna.rosado", "Hoof": "fauna.pezuna", "Hooves": "fauna.pezuna",
+    "Horn": "fauna.cuerno", "Beak": "fauna.pico", "Eye_Black": "fauna.pezuna",
     "Clay": "mineral.terracota", "Crystal": "mineral.cuarzo", "Aluminium": "mineral.aluminio",
     "Sand": "terreno.arena_seca", "Dirt": "terreno.arena_mojada", "Water": "entorno.laguna",
 }

@@ -224,8 +224,9 @@ terreno armonizado conserva `T_SandDry_BC`, `T_Grass_BC`, etc. (mismos canales y
      Un prop se coloca con la instancia de su isla; si un actor tiene que cambiar de isla
      en tiempo de ejecución, basta un `MaterialInstanceDynamic` que cambie `Palette`.
 3. Las mallas de los packs llevan UV0 dentro de su celda (`paleta.json`: `uv` para el color
-   exacto, `v_rango` para el degradado). El remapeo por nombre de material está pendiente;
-   `alias_packs` da la correspondencia propuesta.
+   exacto, `v_rango` para el degradado). Lo hace `Tools/Packs/normalize.py` en Blender
+   (reglas `recolor` de `packs_catalogo.json`); `alias_packs` da la correspondencia por
+   nombre de material.
 
 Los paths de `build_lowpoly()` están escritos literales (`PALETTE_TEXTURES`) para que
 `tests/test_contract.py` los valide contra el generador.
