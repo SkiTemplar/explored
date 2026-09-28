@@ -7,14 +7,14 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 637 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
+| Textos en el catálogo | 641 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 307 |
 | … de `Content/Data` (campos bilingües) | 334 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 0 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
-| Literales para revisar | 71 |
+| Literales para revisar | 74 |
 | Errores / avisos | 0 / 25 |
 
 ## Literales del C++
@@ -32,7 +32,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (71)
+### Revisar (74)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -42,29 +42,32 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Achievements/AchievementsModel.cpp:190` | `Estadística repetida: %s` | `return Fail(FString::Printf(TEXT("Estadística repetida: %s"), *Def.Id.ToString()));` |
 | `Source/Explored/Achievements/AchievementsModel.cpp:199` | `Logro sin id` | `return Fail(TEXT("Logro sin id"));` |
 | `Source/Explored/Achievements/AchievementsModel.cpp:203` | `Logro repetido: %s` | `return Fail(FString::Printf(TEXT("Logro repetido: %s"), *Def.Id.ToString()));` |
-| `Source/Explored/Carry/InventoryModel.cpp:164` | `Sin error` | `case EInventoryFail::None: return TEXT("Sin error");` |
-| `Source/Explored/Carry/InventoryModel.cpp:165` | `Objeto no válido` | `case EInventoryFail::InvalidItem: return TEXT("Objeto no válido");` |
-| `Source/Explored/Carry/InventoryModel.cpp:166` | `No se encuentra` | `case EInventoryFail::NotFound: return TEXT("No se encuentra");` |
-| `Source/Explored/Carry/InventoryModel.cpp:167` | `Ya está ahí` | `case EInventoryFail::AlreadyThere: return TEXT("Ya está ahí");` |
-| `Source/Explored/Carry/InventoryModel.cpp:168` | `Esa mano está ocupada` | `case EInventoryFail::HandOccupied: return TEXT("Esa mano está ocupada");` |
-| `Source/Explored/Carry/InventoryModel.cpp:169` | `Hacen falta las dos manos libres` | `case EInventoryFail::NeedBothHands: return TEXT("Hacen falta las dos manos libres");` |
-| `Source/Explored/Carry/InventoryModel.cpp:170` | `Las dos manos están ocupadas` | `case EInventoryFail::HandsFull: return TEXT("Las dos manos están ocupadas");` |
-| `Source/Explored/Carry/InventoryModel.cpp:171` | `Es un único objeto en las dos manos` | `case EInventoryFail::SameItem: return TEXT("Es un único objeto en las dos manos");` |
-| `Source/Explored/Carry/InventoryModel.cpp:172` | `Demasiado grande` | `case EInventoryFail::TooBig: return TEXT("Demasiado grande");` |
-| `Source/Explored/Carry/InventoryModel.cpp:173` | `No es de lo que se guarda ahí` | `case EInventoryFail::WrongKind: return TEXT("No es de lo que se guarda ahí");` |
-| `Source/Explored/Carry/InventoryModel.cpp:174` | `No quedan huecos` | `case EInventoryFail::ContainerFull: return TEXT("No quedan huecos");` |
-| `Source/Explored/Carry/InventoryModel.cpp:175` | `Pesa demasiado` | `case EInventoryFail::TooHeavy: return TEXT("Pesa demasiado");` |
-| `Source/Explored/Carry/InventoryModel.cpp:176` | `No cabe` | `case EInventoryFail::NoRoom: return TEXT("No cabe");` |
-| `Source/Explored/Carry/InventoryModel.cpp:177` | `Sin mochila` | `case EInventoryFail::NoBackpack: return TEXT("Sin mochila");` |
-| `Source/Explored/Carry/InventoryModel.cpp:178` | `Sin bolsa estanca` | `case EInventoryFail::NoPouch: return TEXT("Sin bolsa estanca");` |
-| `Source/Explored/Carry/InventoryModel.cpp:179` | `Sin angarillas` | `case EInventoryFail::NoSledge: return TEXT("Sin angarillas");` |
-| `Source/Explored/Carry/InventoryModel.cpp:180` | `Ya hay angarillas enganchadas` | `case EInventoryFail::SledgeAttached: return TEXT("Ya hay angarillas enganchadas");` |
-| `Source/Explored/Carry/InventoryModel.cpp:181` | `No se puede poner` | `case EInventoryFail::NotEquippable: return TEXT("No se puede poner");` |
-| `Source/Explored/Carry/InventoryModel.cpp:182` | `Hay que vaciarlo antes` | `case EInventoryFail::ContainerNotEmpty: return TEXT("Hay que vaciarlo antes");` |
-| `Source/Explored/Carry/InventoryModel.cpp:183` | `Demasiado peso encima` | `case EInventoryFail::OverCarryLimit: return TEXT("Demasiado peso encima");` |
-| `Source/Explored/Carry/InventoryModel.cpp:184` | `No guarda líquidos` | `case EInventoryFail::NotALiquidContainer: return TEXT("No guarda líquidos");` |
-| `Source/Explored/Carry/InventoryModel.cpp:185` | `Id de instancia repetido` | `case EInventoryFail::DuplicateId: return TEXT("Id de instancia repetido");` |
-| `Source/Explored/Carry/InventoryModel.cpp:186` | `Estado incoherente` | `case EInventoryFail::CorruptState: return TEXT("Estado incoherente");` |
+| `Source/Explored/Carry/InventoryModel.cpp:187` | `Sin error` | `case EInventoryFail::None: return TEXT("Sin error");` |
+| `Source/Explored/Carry/InventoryModel.cpp:188` | `Objeto no válido` | `case EInventoryFail::InvalidItem: return TEXT("Objeto no válido");` |
+| `Source/Explored/Carry/InventoryModel.cpp:189` | `No se encuentra` | `case EInventoryFail::NotFound: return TEXT("No se encuentra");` |
+| `Source/Explored/Carry/InventoryModel.cpp:190` | `Ya está ahí` | `case EInventoryFail::AlreadyThere: return TEXT("Ya está ahí");` |
+| `Source/Explored/Carry/InventoryModel.cpp:191` | `Esa mano está ocupada` | `case EInventoryFail::HandOccupied: return TEXT("Esa mano está ocupada");` |
+| `Source/Explored/Carry/InventoryModel.cpp:192` | `Hacen falta las dos manos libres` | `case EInventoryFail::NeedBothHands: return TEXT("Hacen falta las dos manos libres");` |
+| `Source/Explored/Carry/InventoryModel.cpp:193` | `Las dos manos están ocupadas` | `case EInventoryFail::HandsFull: return TEXT("Las dos manos están ocupadas");` |
+| `Source/Explored/Carry/InventoryModel.cpp:194` | `Es un único objeto en las dos manos` | `case EInventoryFail::SameItem: return TEXT("Es un único objeto en las dos manos");` |
+| `Source/Explored/Carry/InventoryModel.cpp:195` | `Demasiado grande` | `case EInventoryFail::TooBig: return TEXT("Demasiado grande");` |
+| `Source/Explored/Carry/InventoryModel.cpp:196` | `No es de lo que se guarda ahí` | `case EInventoryFail::WrongKind: return TEXT("No es de lo que se guarda ahí");` |
+| `Source/Explored/Carry/InventoryModel.cpp:197` | `No quedan huecos` | `case EInventoryFail::ContainerFull: return TEXT("No quedan huecos");` |
+| `Source/Explored/Carry/InventoryModel.cpp:198` | `Pesa demasiado` | `case EInventoryFail::TooHeavy: return TEXT("Pesa demasiado");` |
+| `Source/Explored/Carry/InventoryModel.cpp:199` | `No cabe` | `case EInventoryFail::NoRoom: return TEXT("No cabe");` |
+| `Source/Explored/Carry/InventoryModel.cpp:200` | `Sin mochila` | `case EInventoryFail::NoBackpack: return TEXT("Sin mochila");` |
+| `Source/Explored/Carry/InventoryModel.cpp:201` | `Sin bolsa estanca` | `case EInventoryFail::NoPouch: return TEXT("Sin bolsa estanca");` |
+| `Source/Explored/Carry/InventoryModel.cpp:202` | `Sin angarillas` | `case EInventoryFail::NoSledge: return TEXT("Sin angarillas");` |
+| `Source/Explored/Carry/InventoryModel.cpp:203` | `Ya hay angarillas enganchadas` | `case EInventoryFail::SledgeAttached: return TEXT("Ya hay angarillas enganchadas");` |
+| `Source/Explored/Carry/InventoryModel.cpp:204` | `No se puede poner` | `case EInventoryFail::NotEquippable: return TEXT("No se puede poner");` |
+| `Source/Explored/Carry/InventoryModel.cpp:205` | `Hay que vaciarlo antes` | `case EInventoryFail::ContainerNotEmpty: return TEXT("Hay que vaciarlo antes");` |
+| `Source/Explored/Carry/InventoryModel.cpp:206` | `Demasiado peso encima` | `case EInventoryFail::OverCarryLimit: return TEXT("Demasiado peso encima");` |
+| `Source/Explored/Carry/InventoryModel.cpp:207` | `No guarda líquidos` | `case EInventoryFail::NotALiquidContainer: return TEXT("No guarda líquidos");` |
+| `Source/Explored/Carry/InventoryModel.cpp:208` | `Id de instancia repetido` | `case EInventoryFail::DuplicateId: return TEXT("Id de instancia repetido");` |
+| `Source/Explored/Carry/InventoryModel.cpp:209` | `Estado incoherente` | `case EInventoryFail::CorruptState: return TEXT("Estado incoherente");` |
+| `Source/Explored/Carry/InventoryModel.cpp:210` | `No se apilan juntos` | `case EInventoryFail::NotStackable: return TEXT("No se apilan juntos");` |
+| `Source/Explored/Carry/InventoryModel.cpp:211` | `La pila está llena` | `case EInventoryFail::StackFull: return TEXT("La pila está llena");` |
+| `Source/Explored/Carry/InventoryModel.cpp:212` | `Cantidad no válida` | `case EInventoryFail::InvalidCount: return TEXT("Cantidad no válida");` |
 | `Source/Explored/Cooking/CookingModel.cpp:248` | `No hay nada que cocinar.` | `OutFailReason = TEXT("No hay nada que cocinar.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:253` | `Son demasiadas cosas a la vez.` | `OutFailReason = TEXT("Son demasiadas cosas a la vez.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:259` | `Eso no sirve para cocinar.` | `OutFailReason = TEXT("Eso no sirve para cocinar.");` |
@@ -124,10 +127,10 @@ Ninguno.
 - translations/en.json: Explored,Carry_NoRegistry no aparece en el código (¿clave renombrada o borrada?)
 - Source/Explored/Building/BuildingSubsystem.cpp:277: ExploredBuilding,Occupied: el inglés (26 car.) es más de 1.3× el español (15); comprueba que cabe
 - Source/Explored/Building/BuildingSubsystem.cpp:281: ExploredBuilding,MissingRequiredPiece: el inglés (36 car.) es más de 1.3× el español (27); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:111: Explored,Carry_AlreadyThere: el inglés (19 car.) es más de 1.3× el español (12); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:153: Explored,Carry_NoRoom: el inglés (13 car.) es más de 1.3× el español (9); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:160: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
-- Source/Explored/Carry/CarryComponent.cpp:162: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:117: Explored,Carry_AlreadyThere: el inglés (19 car.) es más de 1.3× el español (12); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:159: Explored,Carry_NoRoom: el inglés (13 car.) es más de 1.3× el español (9); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:166: Explored,Carry_OverCarryLimit: el inglés (32 car.) es más de 1.3× el español (23); comprueba que cabe
+- Source/Explored/Carry/CarryComponent.cpp:171: Explored,Carry_Generic: el inglés (18 car.) es más de 1.3× el español (12); comprueba que cabe
 - Source/Explored/Fishing/ExploredTrap.cpp:132: Explored,Verb_TidePool: el inglés (15 car.) es más de 1.3× el español (10); comprueba que cabe
 - Source/Explored/UI/Widgets/SExploredAchievements.cpp:105: ExploredUI,AchievementsTitle: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe
 - Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79: ExploredUI,Achievements: el inglés (12 car.) es más de 1.3× el español (6); comprueba que cabe

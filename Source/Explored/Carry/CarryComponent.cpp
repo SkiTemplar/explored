@@ -78,15 +78,19 @@ FInventoryItem UCarryComponent::MakeRecord(const FItemInstance& Instance, int64 
 	Record.InstanceId = InstanceId;
 	Record.DefinitionId = Instance.DefinitionId;
 	Record.LiquidLiters = Instance.LiquidLiters;
+	Record.Count = FMath::Max(Instance.Count, 1);
+	Record.Quality = static_cast<uint8>(FMath::Clamp(Instance.Quality, 1, 5));
 	if (!Registry)
 	{
 		// Sin registro no se sabe cuánto ocupa: se trata como grande (no entra
 		// en bolsillos), igual que hacía la versión anterior del componente.
 		Record.Size = EInventorySize::Grande;
+		Record.MaxStack = FMath::Min(Record.Count, FInventoryModel::MaxStackSize);
 		return Record;
 	}
-	Record.WeightKg = Registry->GetEffectiveWeightKg(Instance);
-	Record.VolumeLiters = Registry->GetEffectiveVolumeLiters(Instance);
+	// El modelo guarda el peso y el volumen de UNA unidad; el registro los da ya multiplicados por Count.
+	Record.WeightKg = Registry->GetEffectiveWeightKg(Instance) / static_cast<float>(Record.Count);
+	Record.VolumeLiters = Registry->GetEffectiveVolumeLiters(Instance) / static_cast<float>(Record.Count);
 	Record.Size = static_cast<EInventorySize>(Registry->GetEffectiveSize(Instance));
 	FItemDefinition Definition;
 	if (Registry->FindDefinition(Instance.DefinitionId, Definition))
@@ -96,8 +100,14 @@ FInventoryItem UCarryComponent::MakeRecord(const FItemInstance& Instance, int64 
 		{
 			Record.LiquidCapacityLiters = FInventoryModel::LiquidCapacityFromRecipiente(Registry->GetEffectiveProperty(Instance, TEXT("Recipiente")));
 		}
+		// Pilas (biblia 03 §1.3): recursos sin durabilidad ni líquido, hasta 10 por hueco.
+		Record.MaxStack = FInventoryModel::ComputeMaxStack(Definition.MaxDurability, Record.LiquidCapacityLiters,
+			Record.Size, Record.Tags, Instance.Components.Num() > 0);
 	}
 	Record.LiquidLiters = FMath::Min(Record.LiquidLiters, Record.LiquidCapacityLiters);
+	// Una instancia que ya venía con más unidades de las que admite su pila (definición
+	// desconocida, datos cambiados) se respeta hasta el tope general para no perder nada.
+	Record.MaxStack = FMath::Max(Record.MaxStack, FMath::Min(Record.Count, FInventoryModel::MaxStackSize));
 	return Record;
 }
 
@@ -159,6 +169,9 @@ FText UCarryComponent::FailToText(EInventoryFail Fail, EInventorySlot Target)
 	case EInventoryFail::ContainerNotEmpty: return NSLOCTEXT("Explored", "Carry_ContainerNotEmpty", "Vacíalo antes.");
 	case EInventoryFail::OverCarryLimit: return NSLOCTEXT("Explored", "Carry_OverCarryLimit", "No puedes con más peso.");
 	case EInventoryFail::NotALiquidContainer: return NSLOCTEXT("Explored", "Carry_NotALiquidContainer", "Ahí no se lleva agua.");
+	case EInventoryFail::NotStackable: return NSLOCTEXT("Explored", "Carry_NotStackable", "No son iguales: no se juntan.");
+	case EInventoryFail::StackFull: return NSLOCTEXT("Explored", "Carry_StackFull", "Ahí ya hay diez.");
+	case EInventoryFail::InvalidCount: return NSLOCTEXT("Explored", "Carry_InvalidCount", "No llevas tantos.");
 	default: return NSLOCTEXT("Explored", "Carry_Generic", "No se puede.");
 	}
 }
@@ -171,8 +184,15 @@ void UCarryComponent::SyncFromModel()
 	// para que el HUD y lo que se suelte lo conserven.
 	auto ToInstance = [this](const FInventoryItem& Record)
 	{
+		// La cuenta de la pila vive en el modelo (se funde, se parte y se gasta ahí): se copia
+		// también a Payloads para que FindInstance y el guardado (ExportState) la vean al día.
+		if (FItemInstance* Payload = Payloads.Find(Record.InstanceId))
+		{
+			Payload->Count = Record.Count;
+		}
 		FItemInstance Instance = Payloads.FindRef(Record.InstanceId);
 		Instance.LiquidLiters = Record.LiquidLiters;
+		Instance.Count = Record.Count;
 		return Instance;
 	};
 	auto Rebuild = [&ToInstance](const FInventoryContainer& Container, TArray<FItemInstance>& Out)
@@ -208,7 +228,21 @@ FItemInstance UCarryComponent::TakePayload(const FInventoryItem& Record)
 	FItemInstance Instance;
 	Payloads.RemoveAndCopyValue(Record.InstanceId, Instance);
 	Instance.LiquidLiters = Record.LiquidLiters;
+	Instance.Count = Record.Count;
 	return Instance;
+}
+
+void UCarryComponent::ApplyStowResult(int64 SourceId, const FInventoryStowResult& Result)
+{
+	if (Result.NewStackId != 0)
+	{
+		// La parte que cupo es otra pila con la misma instancia (la cuenta la pone SyncFromModel).
+		Payloads.Add(Result.NewStackId, Payloads.FindRef(SourceId));
+	}
+	if (Result.bSourceRemoved)
+	{
+		Payloads.Remove(SourceId);
+	}
 }
 
 bool UCarryComponent::TryPickUp(AExploredItemActor* ItemActor, FText& OutFailReason)
@@ -231,15 +265,22 @@ bool UCarryComponent::TryPickUp(AExploredItemActor* ItemActor, FText& OutFailRea
 	if (ItemActor->GetEffectiveSize() == EItemSize::DosManos)
 	{
 		Record.Size = EInventorySize::DosManos;
+		// Lo que va a dos manos nunca apila (biblia 03 §1.3).
+		Record.MaxStack = 1;
 	}
 	EInventoryFail Fail = EInventoryFail::None;
-	if (!Model.PickUp(Record, Fail))
+	int64 MergedInto = 0;
+	if (!Model.PickUpMerging(Record, MergedInto, Fail))
 	{
 		OutFailReason = FailToText(Fail, EInventorySlot::HandLeft);
 		return false;
 	}
 
-	Payloads.Add(Record.InstanceId, Instance);
+	// Si se ha fundido con la pila de una mano, esa pila ya tiene su instancia.
+	if (MergedInto == 0)
+	{
+		Payloads.Add(Record.InstanceId, Instance);
+	}
 	ItemActor->Destroy();
 	SyncFromModel();
 	if (const UItemRegistrySubsystem* Registry = GetRegistry())
@@ -307,14 +348,19 @@ bool UCarryComponent::StoreFromHand(EHand Hand, ECarrySlot Slot, FText& OutFailR
 		return false;
 	}
 	const EInventorySlot Target = CarryComponentDetail::ToModelSlot(Slot);
+	const int64 HeldId = Held->InstanceId;
+	const bool bTwoHanded = Held->IsTwoHanded();
 	EInventoryFail Fail = EInventoryFail::None;
-	if (!Model.Move(Held->InstanceId, Target, Fail))
+	FInventoryStowResult Result;
+	// Completa primero las pilas iguales que ya hay ahí; si no cabe todo, el resto sigue en la mano.
+	if (!Model.StowMerging(HeldId, Target, Result, Fail))
 	{
-		OutFailReason = (Held->IsTwoHanded() && Fail == EInventoryFail::TooBig)
+		OutFailReason = (bTwoHanded && Fail == EInventoryFail::TooBig)
 			? NSLOCTEXT("Explored", "Carry_TwoHandedNoStore", "Eso ocupa las dos manos: no se guarda.")
 			: FailToText(Fail, Target);
 		return false;
 	}
+	ApplyStowResult(HeldId, Result);
 	SyncFromModel();
 	return true;
 }
@@ -340,13 +386,17 @@ bool UCarryComponent::TakeToHand(ECarrySlot Slot, int32 Index, EHand Hand, FText
 
 bool UCarryComponent::AutoStowFromHand(EHand Hand, ECarrySlot& OutSlot, FText& OutFailReason)
 {
+	const FInventoryItem* Held = Model.GetHandItem(CarryComponentDetail::ToModelHand(Hand));
+	const int64 HeldId = Held ? Held->InstanceId : 0;
 	EInventorySlot Where = EInventorySlot::None;
 	EInventoryFail Fail = EInventoryFail::None;
-	if (!Model.AutoStowFromHand(CarryComponentDetail::ToModelHand(Hand), Where, Fail))
+	FInventoryStowResult Result;
+	if (!Model.AutoStowMergingFromHand(CarryComponentDetail::ToModelHand(Hand), Where, Result, Fail))
 	{
 		OutFailReason = FailToText(Fail, Where);
 		return false;
 	}
+	ApplyStowResult(HeldId, Result);
 	CarryComponentDetail::ToCarrySlot(Where, OutSlot);
 	SyncFromModel();
 	return true;
@@ -382,26 +432,81 @@ bool UCarryComponent::TakeOneFromHand(EHand Hand, FItemInstance& OutTaken)
 		return false;
 	}
 	const EInventorySlot HandSlot = CarryComponentDetail::ToModelHand(Hand);
-	FInventoryItem Removed;
+	const FInventoryItem* Held = Model.GetHandItem(HandSlot);
+	if (!Held)
+	{
+		return false;
+	}
 	EInventoryFail Fail = EInventoryFail::None;
+	if (Held->Count > 1)
+	{
+		// De una pila sale una unidad: la pila se queda en la mano, con su id y su sitio.
+		const int64 HeldId = Held->InstanceId;
+		OutTaken = Payloads.FindRef(HeldId);
+		OutTaken.LiquidLiters = 0.0f;
+		OutTaken.Count = 1;
+		if (!Model.RemoveUnits(HeldId, 1, Fail))
+		{
+			return false;
+		}
+		SyncFromModel();
+		return true;
+	}
+	FInventoryItem Removed;
 	if (!Model.RemoveFromHand(HandSlot, Removed, Fail))
 	{
 		return false;
 	}
-	FItemInstance Instance = TakePayload(Removed);
-	OutTaken = Instance;
+	OutTaken = TakePayload(Removed);
 	OutTaken.Count = 1;
+	SyncFromModel();
+	return true;
+}
 
-	// Si era una pila, el resto vuelve a la misma mano como registro nuevo (el peso
-	// del modelo depende de Count, así que se recalcula con MakeRecord).
-	if (Instance.Count > 1)
+bool UCarryComponent::SplitFromHand(EHand Hand, int32 Count, FText& OutFailReason)
+{
+	const EInventorySlot From = CarryComponentDetail::ToModelHand(Hand);
+	const EInventorySlot To = Hand == EHand::Left ? EInventorySlot::HandRight : EInventorySlot::HandLeft;
+	const FInventoryItem* Held = Model.GetHandItem(From);
+	if (!Held)
 	{
-		--Instance.Count;
-		const FInventoryItem Rest = MakeRecord(Instance, Model.AllocateInstanceId(), GetRegistry());
-		if (Model.PlaceInHand(Rest, HandSlot, Fail))
-		{
-			Payloads.Add(Rest.InstanceId, Instance);
-		}
+		OutFailReason = NSLOCTEXT("Explored", "Carry_HandEmpty", "No llevas nada en esa mano.");
+		return false;
+	}
+	const int64 HeldId = Held->InstanceId;
+	int64 NewId = 0;
+	EInventoryFail Fail = EInventoryFail::None;
+	if (!Model.SplitStack(HeldId, Count, To, NewId, Fail))
+	{
+		OutFailReason = FailToText(Fail, To);
+		return false;
+	}
+	Payloads.Add(NewId, Payloads.FindRef(HeldId));
+	SyncFromModel();
+	return true;
+}
+
+bool UCarryComponent::MergeHands(FText& OutFailReason)
+{
+	const FInventoryItem* Left = Model.GetHandItem(EInventorySlot::HandLeft);
+	const FInventoryItem* Right = Model.GetHandItem(EInventorySlot::HandRight);
+	if (!Left || !Right)
+	{
+		OutFailReason = NSLOCTEXT("Explored", "Carry_HandEmpty", "No llevas nada en esa mano.");
+		return false;
+	}
+	const int64 FromId = Right->InstanceId;
+	const int64 IntoId = Left->InstanceId;
+	int32 Moved = 0;
+	EInventoryFail Fail = EInventoryFail::None;
+	if (!Model.MergeStacks(FromId, IntoId, Moved, Fail))
+	{
+		OutFailReason = FailToText(Fail, EInventorySlot::HandLeft);
+		return false;
+	}
+	if (Model.FindItem(FromId) == EInventorySlot::None)
+	{
+		Payloads.Remove(FromId);
 	}
 	SyncFromModel();
 	return true;
@@ -600,6 +705,7 @@ bool UCarryComponent::StoreInContainer(EHand Hand, AExploredContainer* Container
 	FItemInstance Instance;
 	Payloads.RemoveAndCopyValue(InstanceId, Instance);
 	Instance.LiquidLiters = Stored ? Stored->LiquidLiters : Instance.LiquidLiters;
+	Instance.Count = Stored ? Stored->Count : Instance.Count;
 	Container->AddPayload(InstanceId, Instance);
 	Container->RefreshStoredVisuals();
 	SyncFromModel();
@@ -706,8 +812,7 @@ void UCarryComponent::CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>&
 		{
 			return;
 		}
-		const FItemInstance* Payload = Payloads.Find(Record.InstanceId);
-		OutCounts.FindOrAdd(Record.DefinitionId) += FMath::Max(Payload ? Payload->Count : 1, 1);
+		OutCounts.FindOrAdd(Record.DefinitionId) += FMath::Max(Record.Count, 1);
 		OutTools.Add(Record.DefinitionId);
 	};
 	Add(State.HandLeft);
@@ -733,14 +838,13 @@ bool UCarryComponent::ConsumeMaterials(const TArray<FBuildingCost>& Costs)
 	}
 	const FInventoryState& State = Model.GetState();
 	TArray<ExploredLinks::FMaterialStack> Stacks;
-	auto AddStack = [this, &Stacks](const FInventoryItem& Record, EInventorySlot Slot)
+	auto AddStack = [&Stacks](const FInventoryItem& Record, EInventorySlot Slot)
 	{
 		if (!Record.IsValid())
 		{
 			return;
 		}
-		const FItemInstance* Payload = Payloads.Find(Record.InstanceId);
-		Stacks.Add({Record.InstanceId, Record.DefinitionId, FMath::Max(Payload ? Payload->Count : 1, 1),
+		Stacks.Add({Record.InstanceId, Record.DefinitionId, FMath::Max(Record.Count, 1),
 			CarryComponentDetail::SpendPriority(Slot)});
 	};
 	AddStack(State.HandLeft, EInventorySlot::HandLeft);
@@ -766,32 +870,18 @@ bool UCarryComponent::ConsumeMaterials(const TArray<FBuildingCost>& Costs)
 	}
 	for (const ExploredLinks::FMaterialTake& Take : Takes)
 	{
-		FItemInstance* Payload = Payloads.Find(Take.InstanceId);
-		const int32 Count = Payload ? FMath::Max(Payload->Count, 1) : 1;
+		const FInventoryItem* Record = Model.FindItemById(Take.InstanceId);
+		const int32 Count = Record ? FMath::Max(Record->Count, 1) : 1;
 		EInventoryFail Fail = EInventoryFail::None;
-		if (Take.Count >= Count)
+		// Pila que mengua: conserva su sitio; con la última unidad, desaparece.
+		if (!Model.RemoveUnits(Take.InstanceId, FMath::Min(Take.Count, Count), Fail))
 		{
-			FInventoryItem Removed;
-			if (Model.ConsumeItem(Take.InstanceId, Removed, Fail))
-			{
-				Payloads.Remove(Take.InstanceId);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo gastar el objeto %lld: %s"), Take.InstanceId, LexToString(Fail));
-			}
+			UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo gastar el objeto %lld: %s"), Take.InstanceId, LexToString(Fail));
 			continue;
 		}
-		// Pila que mengua: el registro se rehace con el nuevo Count y conserva su sitio y su líquido.
-		Payload->Count = Count - Take.Count;
-		FInventoryItem Record = MakeRecord(*Payload, Take.InstanceId, GetRegistry());
-		if (const FInventoryItem* Current = Model.FindItemById(Take.InstanceId))
+		if (Model.FindItem(Take.InstanceId) == EInventorySlot::None)
 		{
-			Record.LiquidLiters = Current->LiquidLiters;
-		}
-		if (!Model.ShrinkItem(Record, Fail))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo mermar la pila %lld: %s"), Take.InstanceId, LexToString(Fail));
+			Payloads.Remove(Take.InstanceId);
 		}
 	}
 	SyncFromModel();
@@ -806,15 +896,117 @@ void UCarryComponent::ExportState(FInventoryState& OutState, TMap<int64, FItemIn
 	OutInstances = Payloads;
 }
 
+namespace CarryComponentDetail
+{
+	/** Todos los registros del estado que se pueden tocar en su sitio (un DosManos, una vez). */
+	template <typename TVisitor>
+	void ForEachRecord(FInventoryState& State, TVisitor&& Visitor)
+	{
+		for (FInventoryItem* Item : { &State.HandLeft, &State.HandRight, &State.BackpackItem, &State.BeltItem, &State.SledgeItem })
+		{
+			if (Item->IsValid() && !(Item == &State.HandRight && State.bHandsHoldTwoHanded))
+			{
+				Visitor(*Item);
+			}
+		}
+		if (State.bHandsHoldTwoHanded)
+		{
+			State.HandRight = State.HandLeft;
+		}
+		for (FInventoryContainer* Container : { &State.Pockets, &State.Belt, &State.Pouch, &State.Backpack, &State.Sledge })
+		{
+			for (FInventoryEntry& Entry : Container->Entries)
+			{
+				Visitor(Entry.Item);
+			}
+		}
+	}
+}
+
 bool UCarryComponent::ImportState(const FInventoryState& InState, const TMap<int64, FItemInstance>& InInstances)
 {
+	FInventoryState State = InState;
+	TMap<int64, FItemInstance> Instances = InInstances;
+	TArray<FItemInstance> ToDrop;
+
+	if (const UItemRegistrySubsystem* Registry = GetRegistry())
+	{
+		// 1) Objetos cuya definición ya no existe (contenido retirado en una actualización):
+		//    fuera, y lo conocido que se queda sin sitio cae a los pies (FInventoryLoadReport).
+		FInventoryLoadReport Report;
+		FInventoryModel::SanitizeUnknownDefinitions(State, [Registry](FName Id)
+		{
+			FItemDefinition Ignored;
+			return Registry->FindDefinition(Id, Ignored);
+		}, Report);
+		for (const FInventoryItem& Unknown : Report.Unknown)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Explored] La partida guardaba «%s» (%lld), que ya no existe: se descarta."),
+				*Unknown.DefinitionId.ToString(), Unknown.InstanceId);
+			Instances.Remove(Unknown.InstanceId);
+		}
+		for (const FInventoryItem& Orphan : Report.Orphaned)
+		{
+			FItemInstance Instance;
+			if (Instances.RemoveAndCopyValue(Orphan.InstanceId, Instance))
+			{
+				// Un registro anterior a las pilas (tope 1 y cuenta 1) deja la cuenta en la instancia.
+				if (Orphan.MaxStack > 1 || Orphan.Count > 1)
+				{
+					Instance.Count = Orphan.Count;
+				}
+				Instance.LiquidLiters = Orphan.LiquidLiters;
+				ToDrop.Add(Instance);
+			}
+		}
+
+		// 2) Partidas anteriores a las pilas: el registro pesaba la pila entera con Count 1
+		//    y la cuenta estaba solo en la instancia. Se pasa a unidades y se fija el tope.
+		CarryComponentDetail::ForEachRecord(State, [&Instances, &ToDrop, Registry](FInventoryItem& Record)
+		{
+			FItemInstance* Instance = Instances.Find(Record.InstanceId);
+			FItemDefinition Definition;
+			if (!Instance || !Registry->FindDefinition(Record.DefinitionId, Definition))
+			{
+				return;
+			}
+			const int32 MaxStack = FInventoryModel::ComputeMaxStack(Definition.MaxDurability, Record.LiquidCapacityLiters,
+				Record.Size, Record.Tags, Instance->Components.Num() > 0);
+			// Solo un registro anterior a las pilas tiene tope 1 y cuenta 1 con una instancia de más.
+			if (Record.MaxStack == 1 && Record.Count == 1 && Instance->Count > 1)
+			{
+				const int32 Legacy = Instance->Count;
+				Record.WeightKg /= static_cast<float>(Legacy);
+				Record.VolumeLiters /= static_cast<float>(Legacy);
+				Record.Count = FMath::Min(Legacy, MaxStack);
+				if (Legacy > Record.Count)
+				{
+					// Lo que no cabe en una pila de hoy sale a los pies como otra pila.
+					FItemInstance Rest = *Instance;
+					Rest.Count = Legacy - Record.Count;
+					ToDrop.Add(Rest);
+				}
+			}
+			if (Record.Count <= MaxStack)
+			{
+				Record.MaxStack = MaxStack;
+			}
+			Record.Quality = static_cast<uint8>(FMath::Clamp(Instance->Quality, 1, 5));
+			Instance->Count = Record.Count;
+		});
+	}
+
 	EInventoryFail Fail = EInventoryFail::None;
-	if (!Model.LoadState(InState, Fail))
+	if (!Model.LoadState(State, Fail))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Explored] Inventario guardado no válido: %s"), LexToString(Fail));
 		return false;
 	}
-	Payloads = InInstances;
+	Payloads = Instances;
+	for (const FItemInstance& Dropped : ToDrop)
+	{
+		SpawnDropped(Dropped);
+	}
 	// Las angarillas cargadas se vuelven a ver detrás del jugador.
 	if (Model.HasSledge() && !AttachedSledge.IsValid())
 	{

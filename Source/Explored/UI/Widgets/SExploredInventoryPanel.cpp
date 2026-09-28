@@ -110,7 +110,8 @@ FString SExploredInventoryPanel::ComputeSignature() const
 	}
 	const FInventoryModel& Model = Carry->GetInventoryModel();
 	const FInventoryState& State = Model.GetState();
-	FString Out = FString::Printf(TEXT("%lld|%lld|%d|%d|%d|%.1f"), State.HandLeft.InstanceId, State.HandRight.InstanceId,
+	FString Out = FString::Printf(TEXT("%lld:%d|%lld:%d|%d|%d|%d|%.1f"), State.HandLeft.InstanceId, State.HandLeft.Count,
+		State.HandRight.InstanceId, State.HandRight.Count,
 		State.bHasBackpack ? 1 : 0, State.bHasSledge ? 1 : 0, Model.HasPouch() ? 1 : 0, Model.GetBodyWeightKg());
 	const FInventoryContainer* Containers[] = { &State.Pockets, &State.Belt, &State.Pouch, &State.Backpack, &State.Sledge };
 	for (const FInventoryContainer* Container : Containers)
@@ -118,7 +119,7 @@ FString SExploredInventoryPanel::ComputeSignature() const
 		Out += TEXT("|");
 		for (const FInventoryEntry& Entry : Container->Entries)
 		{
-			Out += FString::Printf(TEXT("%lld:%d,"), Entry.Item.InstanceId, Entry.SlotIndex);
+			Out += FString::Printf(TEXT("%lld:%d:%d,"), Entry.Item.InstanceId, Entry.SlotIndex, Entry.Item.Count);
 		}
 	}
 	return Out;
@@ -142,12 +143,15 @@ void SExploredInventoryPanel::Rebuild()
 	auto ItemName = [Carry, Registry, &Model](int64 InstanceId) -> FText
 	{
 		const FItemInstance* Instance = Carry->FindInstance(InstanceId);
-		if (Instance && Registry)
-		{
-			return Registry->GetDisplayName(*Instance);
-		}
 		const FInventoryItem* Item = Model.FindItemById(InstanceId);
-		return Item ? FText::FromName(Item->DefinitionId) : FText::GetEmpty();
+		const FText Name = (Instance && Registry) ? Registry->GetDisplayName(*Instance)
+			: (Item ? FText::FromName(Item->DefinitionId) : FText::GetEmpty());
+		// Una pila (biblia 03 §1.3) se lee con su cuenta: «Rama seca ×4».
+		if (Item && Item->Count > 1)
+		{
+			return FText::Format(NSLOCTEXT("ExploredUI", "InvStackCount", "{0} ×{1}"), Name, FText::AsNumber(Item->Count));
+		}
+		return Name;
 	};
 	auto Line = [&Style](const FText& Text, bool bHeading = false, const FLinearColor* Color = nullptr) -> TSharedRef<SWidget>
 	{

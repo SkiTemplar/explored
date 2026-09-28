@@ -60,6 +60,17 @@ public:
 	bool SwapHands();
 
 	/**
+	 * Pasa Count unidades de la pila de una mano a la otra, que tiene que estar
+	 * libre (biblia 03 §1.3). La parte nueva conserva la instancia (calidad...).
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
+	bool SplitFromHand(EHand Hand, int32 Count, FText& OutFailReason);
+
+	/** Junta la pila de la mano derecha con la de la izquierda (hasta 10); lo que sobra se queda en la derecha. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
+	bool MergeHands(FText& OutFailReason);
+
+	/**
 	 * Gasta una unidad del objeto de una mano (plantar una semilla, comer): si
 	 * era la última, la mano queda vacía. Un objeto DosManos vacía las dos.
 	 */
@@ -207,6 +218,11 @@ public:
 
 	/** Guardado (P-SAVE): estado plano del modelo y las instancias completas por id. */
 	void ExportState(FInventoryState& OutState, TMap<int64, FItemInstance>& OutInstances) const;
+	/**
+	 * Carga una partida. Antes quita lo que ya no existe en items.json y suelta a
+	 * los pies lo que se queda sin sitio (FInventoryModel::SanitizeUnknownDefinitions),
+	 * y pasa a unidades las pilas guardadas antes de que existieran (biblia 03 §1.3).
+	 */
 	bool ImportState(const FInventoryState& InState, const TMap<int64, FItemInstance>& InInstances);
 
 	/** Registro plano del modelo para una instancia (peso, volumen, tamaño y etiquetas del registro). */
@@ -231,8 +247,10 @@ protected:
 private:
 	const UItemRegistrySubsystem* GetRegistry() const;
 	AExploredItemActor* SpawnDropped(const FItemInstance& Instance) const;
-	/** Instancia completa con el líquido actual del modelo (para soltarla o guardarla fuera). */
+	/** Instancia completa con el líquido y la cuenta actuales del modelo (para soltarla o guardarla fuera). */
 	FItemInstance TakePayload(const FInventoryItem& Record);
+	/** Ajusta Payloads tras FInventoryModel::StowMerging (pila nueva o registro fundido del todo). */
+	void ApplyStowResult(int64 SourceId, const FInventoryStowResult& Result);
 	/** Rehace las copias en FItemInstance que usan el HUD y el personaje, y avisa del cambio. */
 	void SyncFromModel();
 	void PlaceSledgeActorBehindOwner(AExploredSledge* Sledge) const;
@@ -240,7 +258,7 @@ private:
 	/** Fuente de verdad de lo que se lleva y dónde (datos planos, sin UObject). */
 	FInventoryModel Model;
 
-	/** Instancias completas por id de instancia del modelo. */
+	/** Instancias completas por id de instancia del modelo; su Count se copia del modelo en SyncFromModel. */
 	UPROPERTY()
 	TMap<int64, FItemInstance> Payloads;
 

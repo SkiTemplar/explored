@@ -24,7 +24,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_InvalidSlotIndex",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 110"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 116"
 						}
 					]
 				},
@@ -35,7 +35,18 @@
 					"Keys": [
 						{
 							"Key": "Carry_NotALiquidContainer",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 167"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ahí ya hay diez."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_StackFull",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 169"
 						}
 					]
 				},
@@ -46,7 +57,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NothingToPickUp",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 218"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 248"
 						}
 					]
 				},
@@ -134,7 +145,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BeltFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 139"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 145"
 						}
 					]
 				},
@@ -145,7 +156,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BeltNotTool",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 125"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
 						}
 					]
 				},
@@ -189,7 +200,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TooBig",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 121"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 127"
 						}
 					]
 				},
@@ -200,7 +211,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SameItem",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 121"
 						}
 					]
 				},
@@ -211,7 +222,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandOccupied",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 112"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 118"
 						}
 					]
 				},
@@ -222,7 +233,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_InvalidItem",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 109"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 115"
 						}
 					]
 				},
@@ -233,7 +244,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_WrongKind",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 131"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 137"
 						}
 					]
 				},
@@ -244,7 +255,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NotEquippable",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 158"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 164"
 						}
 					]
 				},
@@ -255,7 +266,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TwoHandedNoStore",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 314"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 353"
 						}
 					]
 				},
@@ -343,7 +354,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SledgeOnlyMaterial",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 129"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 135"
 						}
 					]
 				},
@@ -354,7 +365,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_PocketsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 135"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 141"
 						}
 					]
 				},
@@ -387,7 +398,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NeedBothHands",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 113"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 119"
 						}
 					]
 				},
@@ -409,7 +420,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooBig",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 151"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
 						}
 					]
 				},
@@ -420,7 +431,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoRoom",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
 						}
 					]
 				},
@@ -431,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoSledge",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 156"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 162"
 						}
 					]
 				},
@@ -442,7 +453,18 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 277"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 312"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas tantos."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_InvalidCount",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 170"
 						}
 					]
 				},
@@ -453,7 +475,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_OverCarryLimit",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 166"
 						}
 					]
 				},
@@ -464,7 +486,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_ContainerFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 141"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 147"
 						}
 					]
 				},
@@ -475,7 +497,18 @@
 					"Keys": [
 						{
 							"Key": "Carry_Generic",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 162"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 171"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No son iguales: no se juntan."
+					},
+					"Keys": [
+						{
+							"Key": "Carry_NotStackable",
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 168"
 						}
 					]
 				},
@@ -486,7 +519,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoPouch",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 155"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 161"
 						}
 					]
 				},
@@ -497,7 +530,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_NoBackpack",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 154"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 160"
 						}
 					]
 				},
@@ -508,7 +541,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_BackpackTooHeavy",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 145"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 151"
 						}
 					]
 				},
@@ -519,7 +552,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_TooHeavy",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 147"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 153"
 						}
 					]
 				},
@@ -585,7 +618,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_PocketTooSmall",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 119"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 125"
 						}
 					]
 				},
@@ -607,7 +640,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_HandsFull",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 114"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 120"
 						}
 					]
 				},
@@ -618,7 +651,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_ContainerNotEmpty",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 159"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 165"
 						}
 					]
 				},
@@ -629,7 +662,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_SledgeAttached",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 157"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 163"
 						}
 					]
 				},
@@ -640,7 +673,7 @@
 					"Keys": [
 						{
 							"Key": "Carry_AlreadyThere",
-							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 111"
+							"Path": "Source/Explored/Carry/CarryComponent.cpp - line 117"
 						}
 					]
 				},
@@ -1227,7 +1260,7 @@
 					"Keys": [
 						{
 							"Key": "InvWeight",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 219"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 223"
 						}
 					]
 				},
@@ -1620,7 +1653,7 @@
 					"Keys": [
 						{
 							"Key": "InvBothHands",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 173"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 177"
 						}
 					]
 				},
@@ -1943,7 +1976,7 @@
 					"Keys": [
 						{
 							"Key": "InvTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 164"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 168"
 						}
 					]
 				},
@@ -2035,7 +2068,7 @@
 					"Keys": [
 						{
 							"Key": "InvRightHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 185"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 189"
 						}
 					]
 				},
@@ -2046,7 +2079,7 @@
 					"Keys": [
 						{
 							"Key": "InvLeftHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 180"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 184"
 						}
 					]
 				},
@@ -2274,7 +2307,7 @@
 					"Keys": [
 						{
 							"Key": "InvOverloaded",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 228"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 232"
 						}
 					]
 				},
@@ -2971,7 +3004,7 @@
 					"Keys": [
 						{
 							"Key": "InvHeavy",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 227"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 231"
 						}
 					]
 				},
@@ -3103,7 +3136,7 @@
 					"Keys": [
 						{
 							"Key": "InvNothing",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 201"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 205"
 						}
 					]
 				},
@@ -3147,7 +3180,7 @@
 					"Keys": [
 						{
 							"Key": "InvEmptyHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 168"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 172"
 						}
 					]
 				},
@@ -3247,6 +3280,17 @@
 						{
 							"Key": "SlotSavedAt",
 							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 135"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} ×{1}"
+					},
+					"Keys": [
+						{
+							"Key": "InvStackCount",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 152"
 						}
 					]
 				},
