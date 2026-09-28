@@ -8,7 +8,9 @@
     "icon": "pista de icono genérica; la UI decide el dibujo",
     "stats.kind": "counter suma, max guarda el mayor, set reúne ids distintos, flag se marca una vez",
     "stats.scope": "profile dura toda la vida del jugador; run se vacía al empezar partida y viaja con su guardado",
-    "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces, artifacts)"
+    "stats.values / valuesFrom": "ids admitidos en un conjunto: lista cerrada, o fichero de datos del que salen (items, plants, building_pieces, artifacts)",
+    "phase / rarity": "fase (AA, F2, F3) y rareza (comun, infrecuente, raro, muy_raro) de biblia 07 §2; hoy solo las llevan los logros nuevos y el C++ aún no las lee",
+    "coopScope": "biblia 08 §5.7: actor (solo quien actúa), world (todos los conectados) o witness (a menos de 50 m del hecho)"
   },
   "source": "Catálogo de estadísticas documentado en docs/tecnico/estadisticas.md; Tools/DataCheck comprueba que ambos coinciden.",
   "modes": ["Explorer", "Survivor", "Castaway", "Custom"],
@@ -519,6 +521,9 @@
       "descriptionEn": "Collect all three of the voyaging people's fish hooks.",
       "hidden": false,
       "icon": "anzuelo",
+      "phase": "AA",
+      "rarity": "raro",
+      "coopScope": "world",
       "condition": {"all": [{"stat": "artifact_ids_found", "contains": "anzuelo_hueso"}, {"stat": "artifact_ids_found", "contains": "anzuelo_nacar"}, {"stat": "artifact_ids_found", "contains": "anzuelo_ceremonial"}]}
     },
     {
@@ -529,6 +534,9 @@
       "descriptionEn": "Find a treasure inside a buried temple.",
       "hidden": true,
       "icon": "tesoro",
+      "phase": "F2",
+      "rarity": "raro",
+      "coopScope": "witness",
       "condition": {"flag": "underground_treasure_found"}
     }
   ]
