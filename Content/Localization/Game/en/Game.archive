@@ -47,7 +47,7 @@
 						"Text": "Ya está ahí."
 					},
 					"Translation": {
-						"Text": "It's already there."
+						"Text": "Already there."
 					},
 					"Key": "Carry_AlreadyThere"
 				},
@@ -110,7 +110,7 @@
 						"Text": "No se puede."
 					},
 					"Translation": {
-						"Text": "You can't do that."
+						"Text": "Can't do that."
 					},
 					"Key": "Carry_Generic"
 				},
@@ -191,7 +191,7 @@
 						"Text": "No entra."
 					},
 					"Translation": {
-						"Text": "It won't fit."
+						"Text": "Won't fit."
 					},
 					"Key": "Carry_NoRoom"
 				},
@@ -236,7 +236,7 @@
 						"Text": "No puedes con más peso."
 					},
 					"Translation": {
-						"Text": "You can't carry any more weight."
+						"Text": "You can't carry more."
 					},
 					"Key": "Carry_OverCarryLimit"
 				},
@@ -578,7 +578,7 @@
 						"Text": "Marisquear"
 					},
 					"Translation": {
-						"Text": "Forage the pool"
+						"Text": "Forage"
 					},
 					"Key": "Verb_TidePool"
 				},
@@ -619,7 +619,7 @@
 						"Text": "Falta otra pieza en la base"
 					},
 					"Translation": {
-						"Text": "Another piece is missing in the base"
+						"Text": "The base needs another piece"
 					},
 					"Key": "MissingRequiredPiece"
 				},
@@ -664,7 +664,7 @@
 						"Text": "Ya hay algo ahí"
 					},
 					"Translation": {
-						"Text": "Something is already there"
+						"Text": "Something's there"
 					},
 					"Key": "Occupied"
 				},
@@ -2096,7 +2096,7 @@
 						"Text": "Postproceso"
 					},
 					"Translation": {
-						"Text": "Post-processing"
+						"Text": "Post-process"
 					},
 					"Key": "PostProcess"
 				},
@@ -2627,7 +2627,7 @@
 						"Text": "Vista"
 					},
 					"Translation": {
-						"Text": "View distance"
+						"Text": "View range"
 					},
 					"Key": "ViewDistance"
 				},

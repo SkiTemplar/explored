@@ -201,6 +201,9 @@ bool UAchievementsSubsystem::ReloadFromDisk()
 		UE_LOG(LogExploredAchievements, Error, TEXT("achievements.json no es válido: %s"), *Error);
 		return false;
 	}
+	// El acceso anticipado publica solo los logros «AA» (biblia 07 §2). Al abrir la fase 2,
+	// subir a Phase2: los ya cumplidos se desbloquean en el siguiente EvaluatePending.
+	Model.SetReleasedPhase(EAchievementPhase::EarlyAccess);
 	UE_LOG(LogExploredAchievements, Log, TEXT("Cargados %d logros y %d estadísticas"), Achievements.Num(), Stats.Num());
 	return true;
 }
@@ -275,6 +278,25 @@ bool UAchievementsSubsystem::ParseAchievementsJson(const FString& JsonText, TArr
 			{
 				Def.Modes.Add(FName(*Mode));
 			}
+		}
+
+		// Fase, rareza y alcance cooperativo (biblia 07 §2, biblia 08 §5.7). Si faltan valen AA,
+		// común y actor; si están mal escritos, el fichero entero se rechaza.
+		FString Phase, Rarity, CoopScope;
+		if (Obj->TryGetStringField(TEXT("phase"), Phase) && !ParseAchievementPhase(Phase, Def.Phase))
+		{
+			OutError = FString::Printf(TEXT("Logro «%s»: phase «%s» desconocida"), *Id, *Phase);
+			return false;
+		}
+		if (Obj->TryGetStringField(TEXT("rarity"), Rarity) && !ParseAchievementRarity(Rarity, Def.Rarity))
+		{
+			OutError = FString::Printf(TEXT("Logro «%s»: rarity «%s» desconocida"), *Id, *Rarity);
+			return false;
+		}
+		if (Obj->TryGetStringField(TEXT("coopScope"), CoopScope) && !ParseAchievementCoopScope(CoopScope, Def.CoopScope))
+		{
+			OutError = FString::Printf(TEXT("Logro «%s»: coopScope «%s» desconocido"), *Id, *CoopScope);
+			return false;
 		}
 
 		const TSharedPtr<FJsonObject>* ConditionObject = nullptr;
