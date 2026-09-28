@@ -428,6 +428,12 @@ void FTerrainEditsSpec::Define()
 			Sphere.Radius = 0.4f;
 			Sphere.MaxVolume = -1.0;
 			TestFalse(TEXT("tope negativo"), Edits.GetModel().DigSphere(Sphere, Flat).Changed());
+			// Finito pero fuera del mundo: sus chunks no caben en el int16 del códec de red.
+			Sphere.MaxVolume = 0.0;
+			Sphere.Center = FVector(3.0e5, 0.0, 0.0);
+			const FTerrainEditResult Far = Edits.GetModel().DigSphere(Sphere, Flat);
+			TestFalse(TEXT("esfera fuera del mundo"), Far.Changed());
+			TestTrue(TEXT("y se marca como rechazada"), Far.bRejected);
 			TestTrue(TEXT("nada editado"), Edits.IsEmpty());
 			// El pico y la pala de la PR #40 pasan por la misma consulta de camino.
 			FPickaxeHit NaNHit;

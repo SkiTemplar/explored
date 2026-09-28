@@ -953,6 +953,12 @@ FTerrainEditResult FTerrainEditModel::DigSphere(const FSphereDig& Dig, FBaseDens
 	{
 		return Result;
 	}
+	if (!TerrainEditDetail::InWorld(Dig.Center))
+	{
+		// Como Pickaxe o Shovel: fuera del mundo sus chunks no caben en el códec de red.
+		Result.bRejected = true;
+		return Result;
+	}
 	// Distancia con signo a la esfera (aire dentro). Con la ocupación lineal de una celda,
 	// su volumen es el de la esfera real aunque el centro caiga en una muestra; por eso
 	// entran también las muestras de la corteza de media celda (SphereDigReach). Ninguna
