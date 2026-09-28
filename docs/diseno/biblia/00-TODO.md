@@ -19,7 +19,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
 |---|---|---|---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 6 | 11 | 26 | 43 | 14 % | 27 % |
+| H0 — Porción vertical jugable en Landing | 6 | 12 | 25 | 43 | 14 % | 28 % |
 | H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
 | H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
@@ -27,7 +27,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **15** | **44** | **149** | **208** | **7 %** | **18 %** |
+| **Total** | **15** | **45** | **148** | **208** | **7 %** | **18 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -252,6 +252,12 @@ biblia 08 §7.3 pasan en condiciones «Normal».
 - [ ] `Debug`: comando `Explored.NetBudget` que vuelca a CSV los kbps por canal y por
       cliente cada segundo (es la herramienta con la que se verifica el objetivo de
       ancho de banda, no una estimación). *(biblia 08 §3)*
+      *(modelo puro ya implementado: `FNetBudgetModel` (`Source/Explored/Debug/NetBudgetModel.h/.cpp`,
+      spec `Tests/NetBudgetModelSpec.cpp`) acumula bytes por canal/cliente, cierra
+      segundos, valida la serie con `ValidateSeries` (techo de reposo o pico por
+      segundo, ráfaga de terreno de 128 kbps durante 5 s como máximo) y da el texto del
+      CSV con `ToCsv`; falta registrar el comando de consola en el motor, engancharlo a
+      los bytes reales de cada canal y escribir el fichero.)*
 - [ ] `Tools/net-test.ps1` (nuevo): arranca PIE como servidor de escucha con 2 o 4
       clientes, aplica los perfiles «Normal»/«Mala»/«Horrible» de `net pktlag`/
       `pktlagvariance`/`pktloss`/`pktorder` y recoge el CSV de `Explored.NetBudget`.
@@ -524,17 +530,33 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
 El sistema de red más caro y el de más riesgo. Criterio de salida de red de H2: las
 filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 
-- [ ] `WorldGen`: `FExploredTerrainDeltaPacket` — cabecera de 9 B (versión + chunk) y
+- [x] `WorldGen`: `FExploredTerrainDeltaPacket` — cabecera de 9 B (versión + chunk) y
       tramos de `uint16` inicio + `uint8` cuenta + `int16` por muestra en milímetros, con
       tope duro de 512 B por paquete. Spec de host: ida y vuelta sin pérdida, fusión de
       dos paquetes del mismo chunk idempotente y conmutativa, paquete truncado o
       manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h:250` — existe el paquete de arena
-        (cabecera de 11 B); falta el volumétrico de 9 B para `FTerrainEditModel`.
+        (cabecera de 11 B). PR #89: `FTerrainDeltaCodecModel`
+        (`WorldGen/TerrainDeltaCodecModel.h/.cpp`, `TerrainDeltaCodecModelSpec`) — ida y
+        vuelta exacta, límites de 512 B, cuantización a mm con saturación, `DecodeAndApply`
+        atómico y fusión idempotente y conmutativa. Solo modelo puro: falta la RPC y el
+        cableado. *Pendiente de diseño:* un delta de más de ±32,767 m no cabe en el `int16`
+        del cable (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero
+        hay que decidir si se acota el delta o se cambia el formato.
 - [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
       muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
       para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.
       *(biblia 08 §2.2)*
+      → **En parte:** PR #89 — solo modelo puro con su spec (detalle abajo); ningún
+        componente de red lo usa.
+      *(modelo puro: `FTerrainDeltaQueueModel`
+      (`Source/Explored/WorldGen/TerrainDeltaQueueModel.h/.cpp`), spec
+      `Tests/TerrainDeltaQueueModelSpec.cpp` — fusión por chunk (también a medio enviar),
+      envío paquete a paquete, cubo sostenido de 8 KB/s con 40 KB de crédito más ventana
+      deslizante de 16 KB por segundo, prioridad a < 30 m y relevancia a 120 m. La
+      distancia la pasa el componente de red (la menor entre el personaje y los chunks
+      que el cliente tiene cargados por World Partition), que se engancha con la RPC de
+      la casilla siguiente.)*
 - [ ] `WorldGen`: aplicar los deltas recibidos al `FTerrainEditModel` del cliente y
       remallar con `FTerrainChunkBuilder::Build` coalescido a 250 ms por chunk; el cliente
       nunca aplica su propia edición antes de recibirla del servidor. *(biblia 08 §2.2)*
@@ -543,8 +565,10 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `FTerrainEditModel::ToValue`) cuando no coincide o cuando se entra en un chunk nunca
       recibido. *(biblia 08 §2.2)*
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h:269` (`ChunkChecksum` FNV-1a,
-        `EncodeFullChunk`) — solo para arena; falta el volumétrico, el ciclo de 30 s y la
-        petición de chunk.
+        `EncodeFullChunk`) — solo para arena. PR #89: `FTerrainChunkChecksumModel` y su
+        `FTracker` (`WorldGen/TerrainChunkChecksumModel.h/.cpp`) — FNV-1a de 32 bits,
+        calendario de 30 s por chunk y detección de desincronización. Solo modelo puro:
+        falta la RPC que manda la comprobación y pide el chunk completo.
 - [ ] `Building`: colocación autoritativa (`Server_PlacePiece` que valida encaje, rejilla
       de 2 m, materiales en la copia del servidor y `RecomputeStability` antes de generar
       el actor); el fantasma de `UBuildPreviewComponent` queda puramente local;
