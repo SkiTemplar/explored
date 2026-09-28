@@ -560,11 +560,18 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 	if (Stroke.bMarkPath)
 	{
 		AddCompaction(Stroke.Center, Stroke.Radius, CompactionPerStroke);
-		// El camino cambia la capa de superficie: remallar el chunk del centro aunque no cambie la forma.
-		ChunksReadingSample(FIntVector(
-			FMath::FloorToInt32(Stroke.Center.X / Settings.CellSize),
-			FMath::FloorToInt32(Stroke.Center.Y / Settings.CellSize),
-			FMath::RoundToInt32(Stroke.Center.Z / Settings.CellSize)), Result.DirtyChunks);
+		// El camino cambia la capa de superficie: remallar los chunks de toda la huella compactada
+		// aunque no cambie la forma (la huella puede cruzar el borde de un chunk).
+		const FIntPoint Min = ColumnOf(Stroke.Center.X - Stroke.Radius, Stroke.Center.Y - Stroke.Radius);
+		const FIntPoint Max = ColumnOf(Stroke.Center.X + Stroke.Radius, Stroke.Center.Y + Stroke.Radius);
+		const int32 Z = FMath::RoundToInt32(Stroke.Center.Z / Settings.CellSize);
+		for (int32 Y = Min.Y; Y <= Max.Y; ++Y)
+		{
+			for (int32 X = Min.X; X <= Max.X; ++X)
+			{
+				ChunksReadingSample(FIntVector(X, Y, Z), Result.DirtyChunks);
+			}
+		}
 	}
 	TerrainEditDetail::Finish(Result);
 	return Result;
@@ -811,6 +818,13 @@ bool FTerrainEditModel::FromValue(const FSaveValue& Value)
 			if (!Entry.IsArray() || Entry.Num() != 4 || !TerrainEditDetail::ReadInt32(Entry.At(0), Chunk.X)
 				|| !TerrainEditDetail::ReadInt32(Entry.At(1), Chunk.Y) || !TerrainEditDetail::ReadInt32(Entry.At(2), Chunk.Z)
 				|| !Entry.At(3).IsArray() || Chunks.Contains(Chunk))
+			{
+				return Fail();
+			}
+			// Chunk·N (y ±1 al leer los vecinos) tiene que caber en int32.
+			const int32 MaxChunk = MAX_int32 / N - 2;
+			if (FMath::Abs(static_cast<int64>(Chunk.X)) > MaxChunk || FMath::Abs(static_cast<int64>(Chunk.Y)) > MaxChunk
+				|| FMath::Abs(static_cast<int64>(Chunk.Z)) > MaxChunk)
 			{
 				return Fail();
 			}

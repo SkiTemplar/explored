@@ -3,6 +3,8 @@
 #include "Boats/BoatModel.h"
 #include "Ocean/OceanWaves.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BoatSpecDetail
@@ -561,6 +563,116 @@ void FBoatSpec::Define()
 
 			FBoatModel Raft(EBoatType::Raft, FVector::ZeroVector, 0.0f);
 			TestFalse(TEXT("No se adriza lo que no está volcado"), Raft.TryRight());
+		});
+	});
+
+	Describe("Amarre y ficha propia", [this]()
+	{
+		It("amarrada a un poste no se aleja más que el cabo, pero sigue cabeceando con el oleaje", [this]()
+		{
+			const FOceanWaves Waves = FOceanWaves::Make(0.4f);
+			FRun Free(EBoatType::Raft);
+			Free.Model.SetCrewAboard(false);
+			Free.Env.Waves = &Waves;
+			Free.Env.CurrentCmS = FVector2D(50.0, 20.0);
+			Free.Advance(60.0f);
+
+			FRun Moored(EBoatType::Raft);
+			Moored.Model.SetCrewAboard(false);
+			Moored.Env.Waves = &Waves;
+			Moored.Env.CurrentCmS = FVector2D(50.0, 20.0);
+			TestTrue(TEXT("amarra"), Moored.Model.Moor(FVector2D(-100.0, 0.0), 300.0f));
+			float MinPitch = 1000.0f, MaxPitch = -1000.0f;
+			double MaxDistance = 0.0;
+			for (int32 I = 0; I < 60; ++I)
+			{
+				Moored.Advance(1.0f);
+				const FBoatState& S = Moored.Model.GetState();
+				MinPitch = FMath::Min(MinPitch, S.PitchDeg);
+				MaxPitch = FMath::Max(MaxPitch, S.PitchDeg);
+				MaxDistance = FMath::Max(MaxDistance, (FVector2D(S.LocationCm.X, S.LocationCm.Y) - FVector2D(-100.0, 0.0)).Size());
+			}
+			const FVector2D FreeAt(Free.Model.GetState().LocationCm.X, Free.Model.GetState().LocationCm.Y);
+			TestTrue(TEXT("suelta deriva lejos"), FreeAt.Size() > 2000.0);
+			TestTrue(FString::Printf(TEXT("amarrada: %.1f cm ≤ 300"), MaxDistance), MaxDistance <= 300.0 + 1e-3);
+			TestTrue(TEXT("el cabo va tenso"), Moored.Model.GetState().bMooringTaut);
+			TestTrue(TEXT("cabecea"), MaxPitch - MinPitch > 1.0f);
+
+			Moored.Model.CastOff();
+			Moored.Advance(20.0f);
+			const FBoatState& S = Moored.Model.GetState();
+			TestTrue(TEXT("suelta el cabo y se va"), (FVector2D(S.LocationCm.X, S.LocationCm.Y) - FVector2D(-100.0, 0.0)).Size() > 600.0);
+		});
+
+		It("con el cabo tenso pierde solo la velocidad que lo aleja y se desliza de lado por el círculo", [this]()
+		{
+			FRun Run(EBoatType::Raft);
+			Run.Model.SetCrewAboard(false);
+			const FVector2D Anchor(-300.0, 0.0);
+			TestTrue(TEXT("amarra con el cabo justo"), Run.Model.Moor(Anchor, 300.0f));
+			// Corriente hacia fuera (+X) y de lado (+Y).
+			Run.Env.CurrentCmS = FVector2D(80.0, 40.0);
+			Run.Advance(3.0f);
+			const FBoatState& S = Run.Model.GetState();
+			const FVector2D Here(S.LocationCm.X, S.LocationCm.Y);
+			const FVector2D Out = (Here - Anchor).GetSafeNormal();
+			const FVector2D Side(-Out.Y, Out.X);
+			TestTrue(TEXT("tenso"), S.bMooringTaut);
+			TestTrue(TEXT("en el borde del círculo"), (Here - Anchor).Size() <= 300.0 + 1e-3);
+			TestTrue(TEXT("sin velocidad hacia fuera"), FVector2D::DotProduct(S.VelocityCmS, Out) <= 1e-6);
+			TestTrue(TEXT("conserva la de lado"), FVector2D::DotProduct(S.VelocityCmS, Side) > 5.0);
+			TestTrue(TEXT("y se ha deslizado por el círculo"), S.LocationCm.Y > 10.0);
+		});
+
+		It("no amarra a un poste fuera del alcance del cabo, sin cabo ni destrozada, y el amarre se guarda", [this]()
+		{
+			FBoatModel Model(EBoatType::Raft, FVector::ZeroVector, 0.0f);
+			TestFalse(TEXT("demasiado lejos"), Model.Moor(FVector2D(500.0, 0.0), 300.0f));
+			TestFalse(TEXT("cabo de 0"), Model.Moor(FVector2D(0.0, 0.0), 0.0f));
+			TestFalse(TEXT("cabo NaN"), Model.Moor(FVector2D(0.0, 0.0), std::numeric_limits<float>::quiet_NaN()));
+			TestFalse(TEXT("poste NaN"), Model.Moor(FVector2D(std::numeric_limits<double>::quiet_NaN(), 0.0), 300.0f));
+			TestFalse(TEXT("cabo infinito"), Model.Moor(FVector2D(0.0, 0.0), std::numeric_limits<float>::infinity()));
+			TestFalse(TEXT("poste infinito"), Model.Moor(FVector2D(0.0, std::numeric_limits<double>::infinity()), 300.0f));
+			TestFalse(TEXT("sin amarrar tras los intentos fallidos"), Model.IsMoored());
+			TestTrue(TEXT("justo en el largo"), Model.Moor(FVector2D(300.0, 0.0), 300.0f));
+			const FBoatModel Loaded = FBoatModel::FromSaveData(Model.ToSaveData());
+			TestTrue(TEXT("se guarda amarrada"), Loaded.IsMoored());
+			TestEqual(TEXT("con su cabo"), Loaded.GetState().MooringLengthCm, 300.0f);
+			TestTrue(TEXT("y su poste"), Loaded.GetState().MooringAnchorCm == FVector2D(300.0, 0.0));
+
+			FBoatModel Wreck(EBoatType::Raft, FVector::ZeroVector, 0.0f);
+			Wreck.ApplyDamage(1.0f);
+			TestFalse(TEXT("destrozada no"), Wreck.Moor(FVector2D(0.0, 0.0), 100.0f));
+		});
+
+		It("con una ficha propia navega con ella y SetDefinition conserva el estado y recorta la carga", [this]()
+		{
+			FBoatDefinition Heavy = FBoatModel::Definition(EBoatType::Raft);
+			Heavy.HullMassKg *= 2.0f;
+			const FBoatModel Light(EBoatType::Raft, FVector::ZeroVector, 0.0f);
+			FBoatModel Custom(Heavy, FVector(10.0, 20.0, 0.0), 45.0f);
+			TestTrue(TEXT("tipo de la ficha"), Custom.GetState().Type == EBoatType::Raft);
+			TestTrue(TEXT("más pesada cala más"), Custom.EquilibriumDraftCm() > Light.EquilibriumDraftCm());
+			TestTrue(TEXT("carga"), Custom.TryAddCargo(100.0f));
+
+			FBoatDefinition Small = Heavy;
+			Small.MaxCargoKg = 40.0f;
+			Small.LengthCm = 0.0f;
+			Custom.SetDefinition(Small);
+			TestEqual(TEXT("carga recortada"), Custom.GetState().CargoKg, 40.0f);
+			TestTrue(TEXT("eslora degenerada saneada"), Custom.GetDefinition().LengthCm >= 10.0f);
+			FBoatDefinition Unstable = Small;
+			Unstable.MetacentricHeightCm = -20.0f;
+			Unstable.CapsizeRollDeg = 0.0f;
+			Unstable.RollPeriodS = 0.0f;
+			Custom.SetDefinition(Unstable);
+			TestTrue(TEXT("GM saneada"), Custom.GetDefinition().MetacentricHeightCm >= 1.0f);
+			TestTrue(TEXT("vuelco saneado"), Custom.GetDefinition().CapsizeRollDeg >= 5.0f && Custom.GetDefinition().CapsizeRollDeg < 90.0f);
+			TestTrue(TEXT("periodo saneado"), Custom.GetDefinition().RollPeriodS > 0.0f);
+			TestEqual(TEXT("misma posición"), Custom.GetState().LocationCm.Y, 20.0, 1e-9);
+			TestEqual(TEXT("mismo rumbo"), Custom.GetState().YawDeg, 45.0f, 1e-4f);
+			const FBoatModel Loaded = FBoatModel::FromSaveData(Custom.ToSaveData(), &Small);
+			TestEqual(TEXT("la ficha propia se restaura"), Loaded.GetDefinition().MaxCargoKg, 40.0f);
 		});
 	});
 

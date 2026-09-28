@@ -986,6 +986,11 @@ namespace
 			Cell->CellCoord = Key;
 			Cell->SetActorLabel(FString::Printf(TEXT("Formations_%d_%d"), Key.X, Key.Y));
 			Cell->SetFolderPath(FName(TEXT("Formations")));
+			// Misma rejilla y capa HLOD que la vegetación (ver SpawnVegetation): sin esto hereda
+			// HLOD_Terrain y el builder fusiona cantos y restos de playa en la silueta del mundo.
+			Cell->SetRuntimeGrid(FName(VegetationGridName));
+			Cell->SetHLODLayer(FindObject<UHLODLayer>(nullptr,
+				*FString::Printf(TEXT("%s/HLOD_Vegetation.HLOD_Vegetation"), HLODFolder)));
 		}
 		return Cell;
 	}

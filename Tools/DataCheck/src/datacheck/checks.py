@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, music, packs
+from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -27,11 +27,15 @@ SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 # Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
 SCARECROW_PIECE = "espantapajaros"
+# Compost del huerto (biblia de contenido §7.2, biblia 02 §10.1): sus efectos copian FFarmModel.
+FARM_MODEL_H = "Farming/FarmModel.h"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
-# GDD §10 y §12: sin narrativa de personajes eliminada ni fauna terrestre fuera de la que
-# vuelve con el GDD v2 §3.6-§3.7 (cerdo, jabalí, cabra y su caza, en fauna_terrestre.json).
+# GDD §12: sin narrativa de personajes eliminada. El GDD v2 §3.6-3.7 reintroduce la
+# fauna terrestre (cerdo salvaje, cabra, aves que se posan y animales de granja, en
+# fauna.json y fauna_terrestre.json), así que solo quedan prohibidas las especies que
+# ningún documento vigente contempla y el perro del prólogo eliminado.
 FORBIDDEN_TERMS = [
     "rata", "murcielago", "murciélago", "serpiente",
     "lagarto", "iguana", "perro", "canela", "almudena_", "rodrigo", "ines", "inés",
@@ -43,7 +47,8 @@ DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json", "packs_catalogo.json", "fauna_terrestre.json",
+    "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
+    "fases_futuras.json", "fauna_terrestre.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -195,6 +200,9 @@ def check_templates(ds: DataSet, r: Report) -> None:
     verb_ids = {v.get("id") for v in ds.verbs}
     item_ids = ds.item_ids
     seen: set[str] = set()
+    # «station» todavía no lo lee el C++: fija en datos la estación que exige la plantilla (biblia 03 §1.4).
+    stations = {p.get("id") for p in ds.data.get("building_pieces.json", {}).get("pieces", [])
+                if p.get("category") == "produccion"}
     if len(ds.templates) < 15:
         r.error(f"templates.json: {len(ds.templates)} plantillas; ItemsSpec.cpp exige al menos 15")
     for t in ds.templates:
@@ -209,6 +217,9 @@ def check_templates(ds: DataSet, r: Report) -> None:
             r.error(f"templates.json «{tid}»: produce «{t.get('resultDefinitionId')}», que no está en items.json")
         if not t.get("verbs"):
             r.error(f"templates.json «{tid}»: sin verbos")
+        station = t.get("station")
+        if station is not None and station not in stations:
+            r.error(f"templates.json «{tid}»: estación «{station}» no es una pieza de producción de building_pieces.json")
         for verb in t.get("verbs", []):
             if verb not in verb_ids:
                 r.error(f"templates.json «{tid}»: verbo «{verb}» no está en verbs.json")
@@ -316,6 +327,71 @@ def check_plants(ds: DataSet, r: Report, obtainable: set[str]) -> None:
                 r.error("plants.json «limonero»: debe cosechar «limon» (cura el escorbuto)")
     if doc and not has_lemon_tree:
         r.error("plants.json: falta el limonero (GDD §8.7)")
+
+
+def check_compost(ds: DataSet, r: Report, obtainable: set[str]) -> None:
+    """Pila de compost: restos obtenibles, pieza del primer bancal y efectos iguales a FFarmModel."""
+    doc = ds.data.get("plants.json", {})
+    if not doc:
+        return
+    c = doc.get("compost")
+    if not isinstance(c, dict):
+        r.error("plants.json: falta el bloque «compost» (GDD v2 §3.6, biblia §7.2)")
+        return
+    pieces = {p.get("id"): p for p in ds.building.get("pieces", [])}
+    tiers = [t.get("id") for t in ds.building.get("tiers", [])]
+    piece = pieces.get(c.get("piece"))
+    if piece is None:
+        r.error(f"plants.json/compost: piece «{c.get('piece')}» no está en building_pieces.json")
+    else:
+        bed = pieces.get("bancal")
+        if bed and piece.get("tier") in tiers and bed.get("tier") in tiers \
+                and tiers.index(piece["tier"]) > tiers.index(bed["tier"]):
+            r.error(f"plants.json/compost: la pieza «{piece['id']}» llega en un tier posterior al bancal")
+    result = next((i for i in ds.items if i.get("id") == c.get("result")), None)
+    if result is None:
+        r.error(f"plants.json/compost: result «{c.get('result')}» no está en items.json")
+    elif "comida" in result.get("tags", []):
+        r.error(f"plants.json/compost: «{result['id']}» no puede ser comida (se echaría a sí mismo a la pila)")
+    per = c.get("inputsPerResult")
+    cap = c.get("capacity")
+    if not (isinstance(per, int) and 1 <= per <= 10):
+        r.error(f"plants.json/compost: inputsPerResult={per!r} fuera de [1, 10]")
+    elif not (isinstance(cap, int) and cap >= per and cap % per == 0):
+        r.error(f"plants.json/compost: capacity={cap!r} debe ser múltiplo de inputsPerResult ({per})")
+    days = c.get("daysToMature")
+    if not (isinstance(days, int) and 1 <= days <= 8):
+        r.error(f"plants.json/compost: daysToMature={days!r} fuera de [1, 8]")
+    tags = {t for i in ds.items for t in i.get("tags", [])}
+    usable = False
+    for entry in c.get("inputs", []):
+        if "item" in entry:
+            ref = entry["item"]
+            if ref not in ds.item_ids:
+                r.error(f"plants.json/compost: input «{ref}» no está en items.json")
+            elif ref == c.get("result"):
+                r.error("plants.json/compost: el compost no puede ser su propio resto")
+            else:
+                usable |= ref in obtainable
+        elif "tag" in entry:
+            if entry["tag"] not in tags:
+                r.error(f"plants.json/compost: ninguna entrada de items.json tiene la etiqueta «{entry['tag']}»")
+            else:
+                usable |= any(entry["tag"] in i.get("tags", []) and i["id"] in obtainable for i in ds.items)
+        else:
+            r.error(f"plants.json/compost: input sin «item» ni «tag»: {entry!r}")
+    if not usable:
+        r.error("plants.json/compost: ningún resto aceptado es obtenible")
+    header = _read_source(ds, FARM_MODEL_H)
+    if header:
+        growth = _cpp_float(header, r"CompostGrowth = ([0-9.]+)f;")
+        cpp_days = _cpp_int(ds.repo_root, f"Source/Explored/{FARM_MODEL_H}", "CompostDays")
+        if growth is None or cpp_days is None:
+            r.error("plants.json/compost: no encuentro CompostGrowth o CompostDays en FarmModel.h")
+        if growth is not None and c.get("growthMultiplier") != growth:
+            r.error(f"plants.json/compost: growthMultiplier={c.get('growthMultiplier')} y FFarmModel::CompostGrowth={growth}")
+        if cpp_days is not None and c.get("durationDays") != cpp_days:
+            r.error(f"plants.json/compost: durationDays={c.get('durationDays')} y FFarmModel::CompostDays={cpp_days}")
 
 
 def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
@@ -527,7 +603,9 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
     displays = {d["id"] for d in ds.data.get("artifacts.json", {}).get("displays", []) if d.get("mesh") is None}
     boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats}
+    animals = {s["id"] for s in ds.data.get("fauna.json", {}).get("species", []) if s.get("mesh") is None}
+    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "museumDisplays": displays, "boats": boats,
+            "fauna": animals}
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
@@ -1015,7 +1093,7 @@ def check_forbidden_terms(ds: DataSet, r: Report) -> None:
         text = json.dumps(content, ensure_ascii=False).lower()
         for term in FORBIDDEN_TERMS:
             if re.search(rf"(?<![a-záéíóúñ]){re.escape(term)}(?![a-záéíóúñ])", text):
-                r.error(f"{name}: contiene «{term}», eliminado por el GDD §10/§12")
+                r.error(f"{name}: contiene «{term}», eliminado por el GDD §12 (y no recuperado por el GDD v2)")
 
 
 # GDD §8.8 (recolección y mar): nombre del GDD -> ids de items.json que lo cubren.
@@ -1071,9 +1149,8 @@ MINING_TOOLS = ("pala", "pico")
 def check_gdd_mining(ds: DataSet, r: Report) -> None:
     """Cada estrato del GDD v2 §3.4 deja un objeto en items.json (error si falta).
 
-    El pico aún no tiene plantilla: toda cabeza de pico (Punta o Contundente con Rigido)
-    la captura antes «hacha», así que queda como nota hasta decidir la regla
-    (docs/balance/2026-09-27-mineria.md).
+    Las herramientas, los estratos por isla y la progresión de picos los valida
+    ``mining.check_mining`` sobre mining.json.
     """
     ids = {i["id"] for i in ds.items}
     for name, cands in GDD_MINING.items():
@@ -1097,6 +1174,7 @@ def run_all(ds: DataSet) -> Report:
     reach = check_crafting_reachability(ds, r)
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
+    check_compost(ds, r, obtainable)
     check_building(ds, r, obtainable)
     check_boats(ds, r, obtainable)
     check_meshes(ds, r)
@@ -1111,5 +1189,8 @@ def run_all(ds: DataSet) -> Report:
     check_forbidden_terms(ds, r)
     check_gdd_food_coverage(ds, r)
     check_gdd_mining(ds, r)
+    mining.check_mining(ds, r)
+    fauna.check_fauna(ds, r, PROPERTIES)
+    fases.check_future_phases(ds, r, BUILDING_SOCKETS)
     packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r

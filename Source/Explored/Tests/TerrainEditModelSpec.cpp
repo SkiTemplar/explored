@@ -416,6 +416,21 @@ void FTerrainEditModelSpec::Define()
 			TestFalse(TEXT("picado deja de ser camino"), Model.IsPath(0.1, 0.1));
 		});
 
+		It("al marcar camino junto al borde de un chunk remalla también el vecino que lee la huella", [this]()
+		{
+			FTerrainEditModel Model;
+			FShovelStroke Stroke;
+			Stroke.Center = FVector(7.5, 4.0, 0.1);
+			Stroke.Radius = 1.0f;
+			Model.Shovel(Stroke, Flat);
+			const FTerrainEditResult R = Model.Shovel(Stroke, Flat);
+			TestTrue(TEXT("la huella cruza x = 8 m"), Model.IsPath(8.1, 4.0));
+			const int32 NeighbourX = Model.ChunkOfSample(FIntVector(
+				FMath::FloorToInt32(8.1 / Model.GetSettings().CellSize), 0, 0)).X;
+			TestTrue(TEXT("el chunk vecino queda sucio"),
+				R.DirtyChunks.ContainsByPredicate([NeighbourX](const FIntVector& C) { return C.X == NeighbourX; }));
+		});
+
 		It("no puede con la caliza ni con la roca", [this]()
 		{
 			FTerrainEditModel Model;
@@ -684,6 +699,10 @@ void FTerrainEditModelSpec::Define()
 			{
 				FSaveValue* List = V.Find(TEXT("chunks"));
 				List->Add(List->At(0));
+			}));
+			TestTrue(TEXT("coordenada de chunk que desborda int32"), Tampered([](FSaveValue& V)
+			{
+				*V.Find(TEXT("chunks"))->AtMutable(0)->AtMutable(0) = FSaveValue::MakeInt(1 << 30);
 			}));
 			TestTrue(TEXT("camino con compactación imposible"), Tampered([](FSaveValue& V)
 			{

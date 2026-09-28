@@ -380,6 +380,32 @@
       "mesh": null
     },
     {
+      "id": "pila_compost",
+      "nameEs": "Pila de compost",
+      "nameEn": "Compost heap",
+      "tier": "palma",
+      "category": "huerto",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "palo_recto",
+          "count": 4
+        },
+        {
+          "item": "liana",
+          "count": 2
+        }
+      ],
+      "tools": [],
+      "requiresPieces": [
+        "bancal"
+      ],
+      "buildMinutes": 15,
+      "integrity": 20,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
       "id": "suelo_bambu",
       "nameEs": "Suelo de bambú",
       "nameEn": "Bamboo floor",
@@ -1174,6 +1200,36 @@
       "integrity": 90,
       "maxCycloneCategory": 3,
       "mesh": "SM_Base_ClayOven"
+    },
+    {
+      "id": "banco_chatarra",
+      "nameEs": "Banco de chatarra",
+      "nameEn": "Scrap bench",
+      "tier": "piedra",
+      "category": "produccion",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "chapa_fuselaje",
+          "count": 2
+        },
+        {
+          "item": "tubo_aluminio",
+          "count": 2
+        },
+        {
+          "item": "piedra_plana",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 80,
+      "maxCycloneCategory": 3,
+      "mesh": null
     },
     {
       "id": "chimenea",

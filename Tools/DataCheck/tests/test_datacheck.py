@@ -224,6 +224,48 @@ def test_espantapajaros_en_el_primer_tier(real: DataSet) -> None:
     assert p["tier"] == "palma" and p["category"] == "huerto" and p["tools"] == []
 
 
+def test_compost_en_el_primer_tier_y_con_restos_de_landing(real: DataSet) -> None:
+    # El compost acompaña al primer bancal: pila del tier palma y restos que ya se recogen en Landing.
+    c = real.data["plants.json"]["compost"]
+    pile = next(p for p in real.building["pieces"] if p["id"] == c["piece"])
+    assert pile["tier"] == "palma" and pile["tools"] == []
+    assert {"item": "hoja_palma"} in c["inputs"] and {"tag": "comida"} in c["inputs"]
+
+
+def test_detecta_compost_sin_bloque(ds: DataSet) -> None:
+    del ds.data["plants.json"]["compost"]
+    assert any_error(errors_of(ds), "falta el bloque «compost»")
+
+
+def test_detecta_compost_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["growthMultiplier"] = 2.0
+    ds.data["plants.json"]["compost"]["durationDays"] = 5
+    errors = errors_of(ds)
+    assert any_error(errors, "CompostGrowth") and any_error(errors, "CompostDays")
+
+
+def test_detecta_compost_como_resto_de_si_mismo(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["inputs"].append({"item": "compost"})
+    assert any_error(errors_of(ds), "su propio resto")
+
+
+def test_detecta_compost_con_capacidad_no_multiplo(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["capacity"] = 10
+    assert any_error(errors_of(ds), "múltiplo de inputsPerResult")
+
+
+def test_detecta_pila_de_compost_tardia(ds: DataSet) -> None:
+    pile = next(p for p in ds.building["pieces"] if p["id"] == "pila_compost")
+    pile["tier"] = "madera"
+    assert any_error(errors_of(ds), "tier posterior al bancal")
+
+
+def test_detecta_compost_con_etiqueta_inexistente(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["inputs"] = [{"tag": "estiercol"}]
+    errors = errors_of(ds)
+    assert any_error(errors, "estiercol") and any_error(errors, "ningún resto aceptado")
+
+
 def test_detecta_limonero_arrancable(ds: DataSet) -> None:
     ds.data["plants.json"]["plants"][0]["neverRemoved"] = False
     assert any_error(errors_of(ds), "neverRemoved")
@@ -283,7 +325,8 @@ def test_detecta_evento_de_animo_distinto_del_cpp(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "StormHit")
 
 
-def test_detecta_fauna_terrestre(ds: DataSet) -> None:
+def test_detecta_fauna_fuera_del_gdd_v2(ds: DataSet) -> None:
+    # El GDD v2 §3.7 recupera cerdo y cabra, pero no reptiles ni roedores.
     item(ds, "grasa")["nameEs"] = "Grasa de iguana"
     assert any_error(errors_of(ds), "iguana")
 
@@ -649,8 +692,8 @@ def test_cuenta_setas_por_tipo(ds: DataSet) -> None:
 
 
 def test_estratos_de_mineria_del_gdd_v2(real_report: Report) -> None:
-    assert not any("GDD v2 §3.4" in e for e in real_report.errors)
-    assert any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
+    assert not any("GDD v2 §3.4" in e or "mining.json" in e for e in real_report.errors)
+    assert not any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
 
 
 def test_detecta_estrato_de_mineria_que_desaparece(ds: DataSet) -> None:
@@ -768,6 +811,262 @@ def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
     assert "SM_Base_Bed" in _idle_base_note(run_all(ds))
 
 
+# --------------------------------------------------------------------------- minería (GDD v2 §3.4)
+
+from datacheck import mining
+
+
+def mining_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    mining.check_mining(ds, r)
+    return r.errors
+
+
+def stratum(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["mining.json"]["strata"] if s["id"] == sid)
+
+
+def material(ds: DataSet, mid: str) -> dict:
+    return next(m for m in ds.data["mining.json"]["materials"] if m["id"] == mid)
+
+
+def without_tool(ds: DataSet, tid: str) -> None:
+    ds.data["mining.json"]["tools"] = [t for t in ds.data["mining.json"]["tools"] if t["id"] != tid]
+
+
+def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert mining_errors(real) == []
+    cpp = mining.cpp_materials(real)
+    assert cpp and cpp["Basalto"] == (3.0, 3)
+    assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
+
+
+def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
+    m = material(ds, "basalto")
+    m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
+    assert any_error(mining_errors(ds), "basalto", "MaterialInfo")
+
+
+def test_mineria_golpes_fuera_de_la_formula(ds: DataSet) -> None:
+    material(ds, "caliza")["hitsPerM3"]["3"] = 10
+    assert any_error(mining_errors(ds), "caliza", "fórmula")
+
+
+def test_mineria_isla_que_no_existe(ds: DataSet) -> None:
+    stratum(ds, "basalto")["occurrences"][0]["island"] = "atlantida"
+    assert any_error(mining_errors(ds), "atlantida", "EIslandArchetype")
+
+
+def test_mineria_falta_estrato_del_gdd(ds: DataSet) -> None:
+    ds.data["mining.json"]["strata"] = [s for s in ds.data["mining.json"]["strata"] if s["id"] != "azufre"]
+    assert any_error(mining_errors(ds), "azufre", "GDD v2")
+
+
+def test_mineria_cabeza_de_pico_sin_nivel(ds: DataSet) -> None:
+    ds.data["items.json"] = ds.items + [{"id": "granito", "tags": ["piedra"], "properties": [{"name": "Rigido", "value": 4}, {"name": "Punta", "value": 3}]}]
+    assert any_error(mining_errors(ds), "granito", "no tiene nivel")
+
+
+def test_mineria_hacha_delante_roba_el_pico(ds: DataSet) -> None:
+    tpl = ds.data["templates.json"]
+    pico = template(ds, "pico")
+    tpl.remove(pico)
+    tpl.append(pico)
+    assert any_error(mining_errors(ds), "canto_aguzado", "hacha")
+
+
+def test_canto_rodado_con_mango_sigue_dando_hacha_de_piedra(real: DataSet) -> None:
+    # Biblia 01 (días 2-4) y 02 §1.2: el hacha de piedra existe; el pico exige Punta.
+    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    for piedra in ("canto_rodado", "basalto", "piedra_plana"):
+        assert apply(real, mango, inst(real, piedra), "Atar").definition == "hacha", piedra
+
+
+def test_pico_de_piedra_sale_del_canto_aguzado(real: DataSet) -> None:
+    punta = apply(real, inst(real, "lasca_pedernal"), inst(real, "canto_rodado"), "Tallar")
+    assert punta.definition == "canto_aguzado"
+    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    assert apply(real, mango, punta, "Atar").definition == "pico"
+
+
+def test_cabeza_rescatada_de_chapa_o_hierro_en_el_banco(real: DataSet) -> None:
+    # Biblia 02 §2.2: pico rescatado de chapa_fuselaje/hierro_meteorito, tras el banco de chatarra.
+    for chatarra in ("chapa_fuselaje", "hierro_meteorito"):
+        head = apply(real, inst(real, "canto_rodado"), inst(real, chatarra), "Golpear")
+        assert head.definition == "cabeza_pico_rescatada", chatarra
+    tubo = apply(real, inst(real, "canto_rodado"), inst(real, "tubo_aluminio"), "Golpear")
+    assert tubo is None or tubo.definition != "cabeza_pico_rescatada"
+    for tid in ("cabeza_pico_de_chapa", "cabeza_pico_de_hierro"):
+        assert template(real, tid)["station"] == "banco_chatarra"
+
+
+def test_plantilla_con_estacion_que_no_existe(ds: DataSet) -> None:
+    template(ds, "cabeza_pico_de_chapa")["station"] = "fragua"
+    assert any_error(run_all(ds).errors, "cabeza_pico_de_chapa", "fragua")
+
+
+def test_mineria_pico_de_obsidiana_solo_en_fase_2(ds: DataSet) -> None:
+    obs = stratum(ds, "obsidiana")
+    obs["surfaceSource"] = False
+    for occ in obs["occurrences"]:
+        occ["fase"] = 2
+    without_tool(ds, "pico_rescatado")
+    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
+
+
+def test_mineria_ciclo_obsidiana_solo_con_obsidiana(ds: DataSet) -> None:
+    stratum(ds, "obsidiana")["surfaceSource"] = False
+    without_tool(ds, "pico_rescatado")
+    errors = mining_errors(ds)
+    assert any_error(errors, "se queda en el nivel 3")
+    assert any_error(errors, "obsidiana", "ninguna herramienta")
+
+
+def test_mineria_afloramiento_de_fase_2_no_cuenta_en_fase_1(ds: DataSet) -> None:
+    # Obsidiana suelta solo en islas de fase 2: en fase 1 no puede dar el pico de nivel 4.
+    for occ in stratum(ds, "obsidiana")["occurrences"]:
+        occ["fase"] = 2
+    without_tool(ds, "pico_rescatado")
+    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
+
+
+def test_mineria_nivel_saltado_no_cuenta(ds: DataSet) -> None:
+    # Cabeza tallada imposible: el nivel 3 no existe aunque la obsidiana suelta dé el 4.
+    template(ds, "cabeza_pico_por_tallado")["slots"][0]["requirements"][0]["min"] = 6
+    assert any_error(mining_errors(ds), "se queda en el nivel 2")
+
+
+def test_mineria_veta_mal_formada(ds: DataSet) -> None:
+    stratum(ds, "veta_cobre")["vein"]["veinUnits"] = 0
+    assert any_error(mining_errors(ds), "veta_cobre", "veinUnits")
+
+
+def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> None:
+    items = {i["id"]: i for i in real.items}
+    best = crafting.best_template(real.templates, "Tallar", crafting.leaf(items["lasca_pedernal"]), crafting.leaf(items["basalto"]))
+    assert best and best["resultDefinitionId"] == "basalto_tallado"
+
+
+# --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
+
+from datacheck import fauna
+from datacheck.checks import PROPERTIES
+
+
+def fauna_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    fauna.check_fauna(ds, r, PROPERTIES)
+    return r.errors
+
+
+def animal(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
+
+
+def fauna_island(ds: DataSet, iid: str) -> dict:
+    return next(i for i in ds.data["fauna.json"]["islands"] if i["island"] == iid)
+
+
+def test_fauna_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert fauna_errors(real) == []
+    assert {"Gull", "Frigatebird"} <= fauna.cpp_species(real)
+    assert fauna.cpp_lod(real)["FullRadiusCm"] == 4000.0
+
+
+def test_fauna_lod_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["fauna.json"]["lod"]["reducedRadiusCm"] = 20000.0
+    assert any_error(fauna_errors(ds), "reducedRadiusCm", "FFaunaLodSettings")
+
+
+def test_fauna_especie_cpp_inexistente(ds: DataSet) -> None:
+    animal(ds, "gaviota_posada")["cppSpecies"] = "Albatross"
+    assert any_error(fauna_errors(ds), "Albatross", "EFaunaSpecies")
+
+
+def test_fauna_rutina_con_hueco(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["routine"].pop()
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "24 h")
+
+
+def test_fauna_botin_inexistente(ds: DataSet) -> None:
+    animal(ds, "cerdo_salvaje")["loot"].append({"item": "chuleta", "min": 1, "max": 1, "tool": "cuchillo"})
+    assert any_error(fauna_errors(ds), "chuleta", "items.json")
+
+
+def test_fauna_isla_de_fase_1_con_especie_de_fase_2(ds: DataSet) -> None:
+    fauna_island(ds, "landing")["species"].append("cabra_salvaje")
+    assert any_error(fauna_errors(ds), "landing", "cabra_salvaje", "fase 2")
+
+
+def test_fauna_falta_isla_del_acceso_anticipado(ds: DataSet) -> None:
+    ds.data["fauna.json"]["islands"] = [i for i in ds.data["fauna.json"]["islands"] if i["island"] != "smoke"]
+    assert any_error(fauna_errors(ds), "smoke", "acceso anticipado")
+
+
+def test_fauna_pendiente_de_malla(ds: DataSet) -> None:
+    ds.data["meshes_pendientes.json"]["fauna"] = []
+    assert any_error(errors_of(ds), "meshes_pendientes.json/fauna", "cerdo_salvaje")
+
+
+def test_fauna_terrestre_ya_no_es_termino_prohibido(real_report: Report) -> None:
+    assert not any("cerdo" in e or "cabra" in e for e in real_report.errors)
+
+
+# --------------------------------------------------------------------------- borradores de fase 2 y 3
+
+from datacheck import fases
+from datacheck.checks import BUILDING_SOCKETS
+
+
+def fases_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    fases.check_future_phases(ds, r, BUILDING_SOCKETS)
+    return r.errors
+
+
+def future(ds: DataSet) -> dict:
+    return ds.data["fases_futuras.json"]
+
+
+def test_fases_real_sin_errores(real: DataSet) -> None:
+    assert fases_errors(real) == []
+
+
+def test_fases_dato_de_fase_1_usa_el_borrador(ds: DataSet) -> None:
+    piece(ds, "muro_piedra")["cost"].append({"item": "lingote_hierro", "count": 1})
+    assert any_error(fases_errors(ds), "building_pieces.json", "lingote_hierro", "fase 2/3")
+
+
+def test_fases_entrada_sin_fase_de_borrador(ds: DataSet) -> None:
+    future(ds)["tramway"]["pieces"][0]["fase"] = 1
+    assert any_error(fases_errors(ds), "rail_recto", "fase")
+
+
+def test_fases_coste_con_objeto_inexistente(ds: DataSet) -> None:
+    future(ds)["defenses"]["pieces"][0]["cost"].append({"item": "cemento", "count": 2})
+    assert any_error(fases_errors(ds), "cemento", "pendingItems")
+
+
+def test_fases_pendiente_que_ya_existe(ds: DataSet) -> None:
+    future(ds)["pendingItems"].append({"id": "cuerda", "fase": 2})
+    assert any_error(fases_errors(ds), "cuerda", "ya existe")
+
+
+def test_fases_trueque_con_precio(ds: DataSet) -> None:
+    future(ds)["trade"]["offers"][0]["precio"] = 10
+    assert any_error(fases_errors(ds), "precio", "tienda")
+
+
+def test_fases_tramos_de_reputacion_con_hueco(ds: DataSet) -> None:
+    future(ds)["trade"]["tiers"][2]["min"] = 45
+    assert any_error(fases_errors(ds), "neutral", "no continúa")
+
+
+def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
+    future(ds)["livestock"]["species"][1]["wildSource"] = "jabali_gigante"
+    assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
+
+
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
 
 from datacheck import packs as packs_check  # noqa: E402
@@ -864,6 +1163,52 @@ def test_packs_catalogo_descarte_de_etapa_valida(ds: DataSet) -> None:
     assert not any_error(errors_of(ds), "batata.enredadera")
 
 
+# --------------------------------------------------------------------------- red (biblia 08 §2.7)
+
+def fauna_errors(ds: DataSet) -> list[str]:
+    from datacheck import fauna
+    from datacheck.checks import PROPERTIES
+
+    r = Report()
+    fauna.check_fauna(ds, r, PROPERTIES)
+    return r.errors
+
+
+def species(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
+
+
+def test_fauna_real_clasificada_para_red(real: DataSet) -> None:
+    assert fauna_errors(real) == []
+    assert species(real, "cerdo_salvaje")["red"]["clase"] == "replicada"
+    assert species(real, "fragata_colonia")["red"]["tiradaDano"] == "servidor"
+
+
+def test_fauna_sin_red(ds: DataSet) -> None:
+    del species(ds, "gaviota_posada")["red"]
+    assert any_error(fauna_errors(ds), "gaviota_posada", "red")
+
+
+def test_fauna_ataque_tirado_en_cliente(ds: DataSet) -> None:
+    species(ds, "fragata_colonia")["red"]["tiradaDano"] = None
+    assert any_error(fauna_errors(ds), "fragata_colonia", "servidor")
+
+
+def test_fauna_cazable_como_ambiente(ds: DataSet) -> None:
+    species(ds, "cerdo_salvaje")["red"].update(clase="ambiente", ancla="bandada")
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "replicada")
+
+
+def test_fauna_nidos_sin_estado_en_servidor(ds: DataSet) -> None:
+    species(ds, "gaviota_posada")["red"]["recogidas"] = None
+    assert any_error(fauna_errors(ds), "gaviota_posada", "nidos")
+
+
+def test_fases_futuras_sin_nota_de_red(ds: DataSet) -> None:
+    del ds.data["fases_futuras.json"]["trade"]["redNotaEs"]
+    assert any_error(run_all(ds).errors, "trade", "redNotaEs")
+
+
 def _fauna_entry(ds: DataSet) -> dict:
     return next(e for e in _catalog(ds)["entries"] if e["kind"] == "fauna")
 
@@ -899,6 +1244,27 @@ def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "rig solo va en kind fauna")
 
 
+def test_fauna_y_fauna_terrestre_nombran_igual(ds: DataSet) -> None:
+    sp = next(s for s in ds.data["fauna.json"]["species"] if s["id"] == "cerdo_salvaje")
+    sp["nameEn"] = "Wild pig"
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "nameEn", "fauna_terrestre.json")
+
+
+def test_fauna_terrestre_salvaje_sin_ficha_en_fauna(ds: DataSet) -> None:
+    for s in ds.data["fauna.json"]["species"]:
+        if s["id"] == "cabra_salvaje":
+            s["id"] = "cabra_montes"
+    for isl in ds.data["fauna.json"]["islands"]:
+        isl["species"] = ["cabra_montes" if x == "cabra_salvaje" else x for x in isl["species"]]
+    assert any_error(fauna_errors(ds), "fauna_terrestre.json", "cabra_salvaje", "no está en fauna.json")
+
+
+def test_fauna_terrestre_con_otra_isla(ds: DataSet) -> None:
+    reg = next(s for s in ds.data["fauna_terrestre.json"]["species"] if s["id"] == "cerdo_salvaje")
+    reg["islands"] = ["Landing"]
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "vive en")
+
+
 def test_fauna_terrestre_isla_desconocida(ds: DataSet) -> None:
     ds.data["fauna_terrestre.json"]["species"][0]["islands"] = ["Atlantida"]
     assert any_error(errors_of(ds), "Atlantida", "EIslandArchetype")
@@ -908,3 +1274,16 @@ def test_fauna_terrestre_id_duplicado(ds: DataSet) -> None:
     sp = ds.data["fauna_terrestre.json"]["species"]
     sp.append(dict(sp[0]))
     assert any_error(errors_of(ds), "fauna_terrestre.json", "duplicado")
+
+
+def test_fauna_terrestre_de_fase_2_no_rompe_el_aislamiento(real: DataSet) -> None:
+    # fauna_terrestre.json (packs) nombra cerdo, cabra y gallina con phase F2: no es fase 1.
+    assert not any_error(errors_of(real), "fauna_terrestre.json", "borrador")
+    assert not any_error(errors_of(real), "packs_catalogo.json", "borrador")
+
+
+def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -> None:
+    sp = next(s for s in ds.data["fauna_terrestre.json"]["species"] if s["id"] == "gallina")
+    sp["phase"] = "AA"
+    assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
+

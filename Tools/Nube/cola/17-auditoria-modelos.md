@@ -13,3 +13,8 @@ Pasos:
 4. Escribe un informe en docs/reviews/ con cada hallazgo, su arreglo y su test.
 
 Abre la PR con un commit por arreglo.
+
+PRIORIDAD: el editor compila con matemáticas rápidas y HostTests no. El 2026-09-28 un spec de `FBoatModel::Moor` pasaba en HostTests y fallaba en el editor, porque el truco `!(x > 0)` no descarta NaN con matemáticas rápidas (arreglado en la PR #65 con `FMath::IsFinite`). Hay más sitios con el mismo patrón en Source/Explored; búscalos con `git grep -nE "if \(!\(\w+ *[<>]"`.
+
+1. Añade a HostTests una variante que compile con `-ffast-math`, igual que el editor, y que se ejecute en CI.
+2. Sustituye todas las defensas contra NaN basadas en comparaciones por `FMath::IsFinite` o `FMath::IsNaN`.

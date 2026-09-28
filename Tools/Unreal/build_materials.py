@@ -633,8 +633,8 @@ return saturate((D + dith * 260.0 - 900.0) / 1400.0);
     # no tiene salida nombrada "RGB" (a diferencia de un TextureSample): hace falta un
     # ComponentMask explícito para truncar a 3 canales.
     glint_color_rgb = expr(m, unreal.MaterialExpressionComponentMask, -20, -180)
-    for channel in ("r", "g", "b"):
-        glint_color_rgb.set_editor_property(channel, True)
+    for channel in ("r", "g", "b", "a"):
+        glint_color_rgb.set_editor_property(channel, channel != "a")
     connect(glint_color, "", glint_color_rgb, "")
 
     glint_emissive = expr(m, unreal.MaterialExpressionMultiply, 100, -180)

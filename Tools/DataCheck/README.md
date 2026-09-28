@@ -18,15 +18,20 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json` y `music_layers.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json` y `fases_futuras.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
   Si una planta tiene `birdsEat`, debe existir la pieza `espantapajaros`
   (`FFarmModel::ScarecrowRadius`, GDD §8.7).
 - **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
-  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`;
-  nota mientras falte la plantilla del pico.
+  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`.
+  `mining.json`: materiales espejo de `ETerrainMaterial`/`FTerrainEditModel::MaterialInfo`
+  (dureza, nivel mínimo, `SecondsPerPickaxeHit`, `TierBonus`, `MinHitsPerCubicMeter`) y
+  golpes/m³ según la fórmula del GDD; estratos con objeto, islas de `EIslandArchetype`,
+  capa, profundidad, fase y vetas finitas; niveles de herramienta 0–4 en los que cada
+  cabeza produce de verdad un `pico` (no la captura `hacha`) y toda pieza que cabe como
+  cabeza tiene nivel; progresión de picos sin ciclos y completa solo con islas de fase 1.
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).
@@ -68,7 +73,19 @@ Qué comprueba:
   bucles con compases enteros, `seconds_per_bar`/`duration_s` coherentes con el tempo,
   descubrimientos ≤ 5 s y la flauta con `FFluteModel::NumNotes` notas. Los finales distintos
   del «Limón» quedan como nota (GDD §2: sin finales narrativos).
-- **Reglas del GDD §12**: sin fauna terrestre ni narrativa eliminada en los datos.
+- **Fauna salvaje (GDD v2 §3.7)**: `fauna.json` contra `EFaunaSpecies` (especie existente
+  o un `cppSpeciesPropuesto` nuevo) y `FFaunaLodSettings` (radios, histéresis, intervalo);
+  vida, percepción, huida, ataque con propiedad equivalente, rutina que cubre las 24 h,
+  botín/nidos con objetos reales; las cuatro islas del acceso anticipado con ficha y
+  ninguna isla de fase 1 con especies de fase 2/3. Especies sin malla, en
+  `meshes_pendientes.json/fauna`.
+- **Borradores de fase 2 y 3** (`fases_futuras.json`, GDD v2 §6.2): raíles y vagones,
+  animales domésticos, murallas y trampas, y trueque con reputación. Todo con `fase` 2 o 3;
+  objetos del catálogo o declarados en `pendingItems`; ningún otro fichero de datos (fase 1)
+  nombra un id que solo existe en el borrador; sin claves de precio ni moneda (§5), valores
+  de trueque 1–5 y tramos de reputación contiguos de 0 a 100 con tasa creciente.
+- **Reglas del GDD §12**: sin narrativa eliminada en los datos; la fauna terrestre que
+  recupera el GDD v2 (cerdo, cabra, aves posadas) ya no es término prohibido.
 - **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que
   falta en `items.json` y setas por tipo (2 comestibles, 2 tóxicas por `Toxico`,
   1 con etiqueta `alucinogena`). Ver `docs/balance/2026-09-27-comida-recoleccion.md`.

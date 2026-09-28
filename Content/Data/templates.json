@@ -11,6 +11,28 @@
 		]
 	},
 	{
+		"id": "cabeza_pico_por_tallado", "nameEs": "Cabeza de pico por tallado", "nameEn": "Carved pick head",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "basalto_tallado",
+		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Piedra", "requireAll": true, "requirements": [ { "property": "Contundente", "min": 4 }, { "property": "Rigido", "min": 4 } ], "tags": ["piedra"] }
+		]
+	},
+	{
+		"id": "punta_de_canto_por_tallado", "nameEs": "Punta de canto por tallado", "nameEn": "Knapped cobble point",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "canto_aguzado",
+		"nameTemplate": "Punta de {1}", "nameTemplateEn": "{1} point",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Piedra", "requireAll": true, "requirements": [ { "property": "Contundente", "min": 3 }, { "property": "Rigido", "min": 3 } ], "tags": ["piedra"] }
+		]
+	},
+	{
 		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado", "nameEn": "Carved stake",
 		"verbs": ["Tallar"],
 		"resultDefinitionId": "estaca",
@@ -41,6 +63,30 @@
 		"slots": [
 			{ "role": "Herramienta", "requireAll": false, "requirements": [ { "property": "Filo", "min": 1 }, { "property": "Contundente", "min": 1 } ] },
 			{ "role": "Coco", "requireAll": false, "requirements": [], "tags": ["coco"] }
+		]
+	},
+	{
+		"id": "cabeza_pico_de_chapa", "nameEs": "Cabeza de pico de chapa", "nameEn": "Sheet-metal pick head",
+		"verbs": ["Golpear"],
+		"station": "banco_chatarra",
+		"resultDefinitionId": "cabeza_pico_rescatada",
+		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Chatarra", "requireAll": true, "requirements": [ { "property": "Rigido", "min": 3 }, { "property": "Filo", "min": 2 } ], "tags": ["rescatado"] }
+		]
+	},
+	{
+		"id": "cabeza_pico_de_hierro", "nameEs": "Cabeza de pico de hierro", "nameEn": "Iron pick head",
+		"verbs": ["Golpear"],
+		"station": "banco_chatarra",
+		"resultDefinitionId": "cabeza_pico_rescatada",
+		"nameTemplate": "Cabeza de pico de {1}", "nameTemplateEn": "{1} pick head",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
+			{ "role": "Hierro", "requireAll": false, "requirements": [ { "property": "Pesado", "min": 5 } ], "tags": ["mineral"] }
 		]
 	},
 	{
@@ -119,6 +165,18 @@
 			{ "role": "Varales", "requireAll": true, "requirements": [ { "property": "Largo", "min": 4 }, { "property": "Rigido", "min": 3 } ] },
 			{ "role": "Lecho", "requireAll": false, "requirements": [ { "property": "Fibroso", "min": 2 } ] },
 			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "pico", "nameEs": "Pico", "nameEn": "Pick",
+		"verbs": ["Atar", "Pegar"],
+		"resultDefinitionId": "pico",
+		"nameTemplate": "Pico de {0} con mango de {1}, atado con {2}", "nameTemplateEn": "{0} pick with a {1} handle, lashed with {2}",
+		"baseMaxDurability": 55,
+		"slots": [
+			{ "role": "Cabeza", "requireAll": false, "requirements": [ { "property": "Punta", "min": 2 } ], "tags": ["piedra", "mineral", "metal"] },
+			{ "role": "Mango", "requireAll": true, "requirements": [ { "property": "Largo", "min": 2 }, { "property": "Rigido", "min": 3 } ] },
+			{ "role": "Union", "requireAll": false, "requirements": [ { "property": "Ata", "min": 2 }, { "property": "Adhesivo", "min": 2 } ] }
 		]
 	},
 	{
