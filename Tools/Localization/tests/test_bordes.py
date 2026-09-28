@@ -285,6 +285,10 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (tmp_path / "Content/Data").mkdir(parents=True)
     (tmp_path / "Content/Data/items.json").write_text(
         json.dumps([{"id": "limon", "nameEs": "Limón", "nameEn": "Lemon"}]), encoding="utf-8")
+    # El glosario de biblia 07 §5.2 es obligatorio; aquí basta con la cabecera de la tabla.
+    (tmp_path / "docs/tecnico").mkdir(parents=True)
+    (tmp_path / "docs/tecnico/glosario.md").write_text(
+        "| Español | Inglés | Nota | Comprobación |\n|---|---|---|---|\n", encoding="utf-8")
     escribir_en(tmp_path, EN_OK)
     monkeypatch.setattr(cli, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(catalogue, "TRANSLATIONS", tmp_path / "en.json")

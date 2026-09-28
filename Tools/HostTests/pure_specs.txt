@@ -60,6 +60,10 @@ Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/CoconutPalmModelSpec.cpp
 Tests/TramwayModelSpec.cpp
+Tests/ReputationModelSpec.cpp
+Tests/BarterModelSpec.cpp
+Tests/PirateThreatModelSpec.cpp
+Tests/RaiderCampsModelSpec.cpp
 Tests/MiningModelSpec.cpp
 Tests/MineHazardModelSpec.cpp
 Tests/ShovelPathModelSpec.cpp

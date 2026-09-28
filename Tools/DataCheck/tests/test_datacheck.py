@@ -361,15 +361,69 @@ def achievement(ds: DataSet, aid: str) -> dict[str, Any]:
     return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
 
 
-def test_logros_reales_entre_30_y_60_con_los_del_gdd(real: DataSet) -> None:
-    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
-    assert 30 <= len(ids) <= 60
-    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
+def test_logros_reales_son_los_54_de_la_biblia(real: DataSet) -> None:
+    achs = real.data["achievements.json"]["achievements"]
+    ids = {a["id"] for a in achs}
+    assert len(ids) == len(achs) == 54
+    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa",
+            "banquete_de_mil_cocos", "el_cangrejo_se_lo_llevo", "manazas"} <= ids
+    # Biblia 07 §2.2: dos de los 30 originales pasan a F2 y tres a F3.
+    phase = {a["id"]: a["phase"] for a in achs}
+    assert [i for i in phase if phase[i] == "F2" and i in ("las_siete_islas", "el_mapa_entero")] == ["las_siete_islas", "el_mapa_entero"]
+    assert {i for i in ("limon_zarpa", "naufrago_de_verdad", "sin_mapa") if phase[i] == "F3"} == {"limon_zarpa", "naufrago_de_verdad", "sin_mapa"}
+    assert sum(1 for a in achs if a["phase"] == "AA") == 36
 
 
 def test_detecta_numero_de_logros(ds: DataSet) -> None:
-    del ds.data["achievements.json"]["achievements"][29:]
-    assert any_error(errors_of(ds), "29 logros")
+    achs = ds.data["achievements.json"]["achievements"]
+    del achs[39:]
+    assert any_error(errors_of(ds), "39 logros", "entre 40 y 60")
+    achs.extend(dict(achs[0], id=f"extra_{i}") for i in range(22))
+    assert any_error(errors_of(ds), "61 logros")
+
+
+def test_detecta_fase_rareza_y_alcance_invalidos(ds: DataSet) -> None:
+    achievement(ds, "primer_fuego")["phase"] = "F4"
+    del achievement(ds, "tierra_firme")["rarity"]
+    achievement(ds, "cartografo")["coopScope"] = "todos"
+    errors = errors_of(ds)
+    assert any_error(errors, "primer_fuego", "phase «F4»")
+    assert any_error(errors, "tierra_firme", "rarity «None»")
+    assert any_error(errors, "cartografo", "coopScope «todos»")
+
+
+def test_detecta_logro_de_aa_que_depende_de_f2(ds: DataSet) -> None:
+    # Una estadística de F2 (la granja) no puede sostener un logro del acceso anticipado.
+    achievement(ds, "huevos_por_docenas")["phase"] = "AA"
+    assert any_error(errors_of(ds), "huevos_por_docenas", "depende de algo de F2")
+
+
+def test_detecta_pieza_futura_en_logro_de_aa(ds: DataSet) -> None:
+    # La empalizada solo existe en el borrador de F2: pedirla desde un logro de AA es error.
+    achievement(ds, "primera_empalizada")["phase"] = "AA"
+    errors = errors_of(ds)
+    assert any_error(errors, "primera_empalizada", "depende de algo de F2")
+    assert any_error(errors, "usa «empalizada», que solo existe en el borrador")
+
+
+def test_piezas_futuras_admitidas_en_building_pieces_built(real_report: Report) -> None:
+    assert not any_error(real_report.errors, "empalizada", "no es un id admitido")
+
+
+def test_detecta_estratos_desincronizados(ds: DataSet) -> None:
+    strata = ds.data["mining.json"]["strata"]
+    strata.append(dict(strata[-1], id="jade"))
+    assert any_error(errors_of(ds), "strata_mined", "mining.json → strata")
+
+
+def test_detecta_tesoro_inexistente(ds: DataSet) -> None:
+    achievement(ds, "juego_de_anzuelos")["condition"]["all"][0]["contains"] = "anzuelo_oro"
+    assert any_error(errors_of(ds), "anzuelo_oro", "no es un id admitido")
+
+
+def test_detecta_estadistica_con_fase_invalida(ds: DataSet) -> None:
+    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "eggs_collected")["phase"] = "F9"
+    assert any_error(errors_of(ds), "eggs_collected", "phase «F9»")
 
 
 def test_detecta_logro_duplicado(ds: DataSet) -> None:
@@ -1195,6 +1249,40 @@ def test_fases_tramos_de_reputacion_con_hueco(ds: DataSet) -> None:
 def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
     future(ds)["livestock"]["species"][1]["wildSource"] = "jabali_gigante"
     assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
+
+
+def test_fases_trueque_cpp_y_borrador_coinciden(real: DataSet) -> None:
+    r = Report()
+    fases.check_trade_matches_cpp(real, r, future(real)["trade"])
+    assert r.errors == []
+
+
+def test_fases_tasa_de_tramo_distinta_del_cpp(ds: DataSet) -> None:
+    next(t for t in future(ds)["trade"]["tiers"] if t["id"] == "buena")["rate"] = 1.3
+    assert any_error(fases_errors(ds), "buena", "C++")
+
+
+def test_fases_accion_de_reputacion_distinta_del_cpp(ds: DataSet) -> None:
+    next(a for a in future(ds)["trade"]["reputationActions"] if a["id"] == "devolver_ritual")["delta"] = 6
+    assert any_error(fases_errors(ds), "devolver_ritual", "C++")
+
+
+def test_fases_valor_de_categoria_distinto_del_cpp(ds: DataSet) -> None:
+    next(w for w in future(ds)["trade"]["wants"] if w["id"] == "medicina")["value"] = 3
+    assert any_error(fases_errors(ds), "medicina", "C++")
+
+
+def test_fases_ventana_y_enfriamiento_distintos_del_cpp(ds: DataSet) -> None:
+    future(ds)["trade"]["hours"] = [7, 18]
+    future(ds)["trade"]["hostileCooldownDays"] = 10
+    errors = fases_errors(ds)
+    assert any_error(errors, "ventana horaria")
+    assert any_error(errors, "enfriamiento")
+
+
+def test_fases_reputacion_con_decaimiento_pasivo(ds: DataSet) -> None:
+    future(ds)["trade"]["passiveDecay"] = True
+    assert any_error(fases_errors(ds), "passiveDecay")
 
 
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)

@@ -9,11 +9,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import cpp, data
+from . import cpp, data, estilo, glosario, icu
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 TOOL_ROOT = Path(__file__).resolve().parents[2]
 TRANSLATIONS = TOOL_ROOT / "translations" / "en.json"
+# Excepciones revisadas a mano, con su motivo: {"longitud": {id: motivo}, "estilo": {id: motivo}}.
+# «longitud»: el inglés es más largo pero se ha comprobado que cabe. «estilo»: una palabra de
+# la lista negra que ahí es un término técnico (p. ej. la calidad «Epic» de Unreal).
+EXCEPTIONS = TOOL_ROOT / "translations" / "excepciones.json"
 
 # Dónde busca textos el C++ (lo mismo que Config/Localization/Game_Gather.ini).
 CPP_ROOTS = ["Source/Explored"]
@@ -21,12 +25,9 @@ CPP_EXCLUDE = ("Source/Explored/Tests/",)
 INI_ROOTS = ["Config"]
 INI_EXCLUDE = ("Config/Localization/",)
 
-DATA_FILES = [
-    "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
-    "building_pieces.json", "survival_needs.json", "ruins.json",
-    "fish.json", "halden_diaries.json", "journal_entries.json", "map_clues.json", "museum_collections.json",
-    "shells.json", "herbarium.json", "insects.json", "fossils.json", "minerals.json",
-]
+# Todos los ficheros de Content/Data: data.py dice qué campos son textos y avisa de los que
+# lleven «…Es» sin registrar, para que un fichero nuevo no se quede fuera sin que nadie lo vea.
+DATA_DIR = Path("Content") / "Data"
 
 # El inglés suele ser más corto que el español; si sale bastante más largo, puede no caber
 # en un botón o una fila de ajustes pensados para el texto español.
@@ -75,6 +76,9 @@ class Sources:
     translations: dict[str, Any]
     repo_root: Path = REPO_ROOT
     problems: list[str] = field(default_factory=list)  # p. ej. claves repetidas en un JSON
+    glossary: list[glosario.Term] = field(default_factory=list)
+    glossary_errors: list[str] = field(default_factory=list)
+    exceptions: dict[str, dict[str, str]] = field(default_factory=dict)
 
     @classmethod
     def load(cls, repo_root: Path = REPO_ROOT, translations_path: Path | None = None) -> Sources:
@@ -90,16 +94,22 @@ class Sources:
         for path, rel in cpp.iter_sources(repo_root, INI_ROOTS, (".ini",), INI_EXCLUDE):
             loctexts += cpp.extract_loctext(path.read_text(encoding="utf-8"), rel)
         docs: dict[str, Any] = {}
-        for name in DATA_FILES:
-            p = repo_root / "Content" / "Data" / name
-            if p.exists():
-                docs[name] = load_json(p, f"Content/Data/{name}", problems)
+        for p in sorted((repo_root / DATA_DIR).glob("*.json")):
+            docs[p.name] = load_json(p, f"Content/Data/{p.name}", problems)
         translations: Any = {}
         if translations_path.exists():
             translations = load_json(translations_path, "translations/en.json", problems)
         if not isinstance(translations, dict):
             raise ValueError("translations/en.json: la raíz debe ser un objeto {espacio: {clave: {es, en}}}")
-        return cls(loctexts, literals, docs, translations, repo_root, problems)
+        terms, glossary_errors = glosario.load(repo_root)
+        exc_path = translations_path.parent / EXCEPTIONS.name
+        exceptions: Any = {}
+        if exc_path.exists():
+            exceptions = load_json(exc_path, f"translations/{EXCEPTIONS.name}", problems)
+        if not isinstance(exceptions, dict):
+            raise ValueError(f"translations/{EXCEPTIONS.name}: la raíz debe ser un objeto {{tipo: {{id: motivo}}}}")
+        return cls(loctexts, literals, docs, translations, repo_root, problems=problems, glossary=terms,
+                   glossary_errors=glossary_errors, exceptions=exceptions)
 
     def copy(self) -> Sources:
         return copy.deepcopy(self)
@@ -225,8 +235,16 @@ def build(src: Sources) -> Catalogue:
         by_id[e.id] = e
         entries.append(e)
 
+    r.errors += src.glossary_errors
+    used: dict[str, set[str]] = {kind: set() for kind in EXCEPTION_KINDS}
     for e in entries:
-        _check_entry(e, r)
+        _check_entry(e, r, src, used)
+    for kind in EXCEPTION_KINDS:
+        for eid in sorted(set(src.exceptions.get(kind, {})) - used[kind]):
+            r.warnings.append(f"translations/{EXCEPTIONS.name}: «{kind}» de {eid} ya no hace falta; quítala")
+    for kind in sorted(set(src.exceptions) - set(EXCEPTION_KINDS)):
+        r.errors.append(f"translations/{EXCEPTIONS.name}: sección «{kind}» desconocida (admite {', '.join(EXCEPTION_KINDS)})")
+    _check_consistency(entries, r)
 
     lits = src.literals
     for lit in lits:
@@ -236,7 +254,36 @@ def build(src: Sources) -> Catalogue:
     return Catalogue(entries, lits, r)
 
 
-def _check_entry(e: Entry, r: Report) -> None:
+EXCEPTION_KINDS = ("longitud", "estilo")
+
+
+def _excepted(src: "Sources | None", used: dict[str, set[str]] | None, kind: str, eid: str) -> bool:
+    if src is None or eid not in src.exceptions.get(kind, {}):
+        return False
+    if used is not None:
+        used[kind].add(eid)
+    return True
+
+
+def _check_consistency(entries: list[Entry], r: Report) -> None:
+    """El mismo nombre de dato en español no puede tener dos inglés distintos (biblia 07 §5.2)."""
+    by_es: dict[str, dict[str, str]] = {}
+    for e in entries:
+        es, en = e.es, e.en
+        # Un texto que no es cadena ya es un error de _check_entry; aquí solo se salta.
+        if e.origin != "datos" or not isinstance(es, str) or not isinstance(en, str):
+            continue
+        if not es.strip() or not en.strip() or not e.key.endswith(".nameEs"):
+            continue
+        # Sin distinguir mayúsculas: los nombres de logro van en mayúsculas de título en inglés.
+        by_es.setdefault(es.strip().lower(), {}).setdefault(en.strip().lower(), e.locations[0])
+    for es, ens in sorted(by_es.items()):
+        if len(ens) > 1:
+            variants = "; ".join(f"«{en}» en {where}" for en, where in sorted(ens.items()))
+            r.warnings.append(f"«{es}» tiene {len(ens)} traducciones distintas: {variants}")
+
+
+def _check_entry(e: Entry, r: Report, src: Sources | None = None, used: dict[str, set[str]] | None = None) -> None:
     where = e.locations[0] if e.locations else e.id
     # Los datos son JSON sin esquema: un número o una lista en lugar de texto no debe romper la herramienta.
     for lang, value in (("es", e.es), ("en", e.en)):
@@ -255,10 +302,25 @@ def _check_entry(e: Entry, r: Report) -> None:
                         f"y {sorted(placeholders(en))} (EN)")
     if DEDICATION in es and en != es:
         r.errors.append(f"{where}: {e.id}: la dedicatoria «{DEDICATION}» no se traduce")
-    edges_es = (es[:1].isspace(), es[-1:].isspace())
-    edges_en = (en[:1].isspace(), en[-1:].isspace())
-    if edges_es != edges_en:
-        r.warnings.append(f"{where}: {e.id}: espacios al principio o al final distintos entre ES y EN")
+    if es != es.strip() or en != en.strip():
+        if (es[:1].isspace(), es[-1:].isspace()) != (en[:1].isspace(), en[-1:].isspace()):
+            r.warnings.append(f"{where}: {e.id}: espacios al principio o al final distintos entre ES y EN")
     if len(en) >= LENGTH_MIN and len(en) > LENGTH_RATIO * len(es):
-        r.warnings.append(f"{where}: {e.id}: el inglés ({len(en)} car.) es más de {LENGTH_RATIO:.1f}× "
-                          f"el español ({len(es)}); comprueba que cabe")
+        if not _excepted(src, used, "longitud", e.id):
+            r.warnings.append(f"{where}: {e.id}: el inglés ({len(en)} car.) es más de {LENGTH_RATIO:.1f}× "
+                              f"el español ({len(es)}); comprueba que cabe")
+
+    # Modificadores de argumento ({Count}|plural(...)): sintaxis, categorías de cada idioma
+    # y que los dos idiomas pluralicen los mismos argumentos.
+    for culture, text in (("es", es), ("en", en)):
+        errs, warns = icu.check(text, culture)
+        r.errors += [f"{where}: {e.id} ({culture.upper()}): {m}" for m in errs]
+        r.warnings += [f"{where}: {e.id} ({culture.upper()}): {m}" for m in warns]
+    r.errors += [f"{where}: {e.id}: {m}" for m in icu.compare(es, en)]
+
+    errs, warns = estilo.check(e.namespace, e.key, es, en)
+    r.errors += [f"{where}: {e.id}: {m}" for m in errs]
+    if warns and not _excepted(src, used, "estilo", e.id):
+        r.warnings += [f"{where}: {e.id}: {m}" for m in warns]
+    if src is not None:
+        r.warnings += [f"{where}: {e.id}: {m}" for m in glosario.check(src.glossary, es, en)]

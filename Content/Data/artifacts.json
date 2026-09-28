@@ -200,7 +200,7 @@
       "id": "anzuelo_nacar",
       "kind": "hook_bone",
       "nameEs": "Anzuelo de nácar",
-      "nameEn": "Mother-of-pearl fish hook",
+      "nameEn": "Mother-of-pearl hook",
       "provenance": "pecio",
       "rarity": "comun",
       "size": "Pequeno",
@@ -279,7 +279,7 @@
     {
       "id": "figura_mira_cielo",
       "kind": "stone_figure",
-      "nameEs": "Figura de basalto que mira al cielo",
+      "nameEs": "Figura de basalto mirando al cielo",
       "nameEn": "Basalt sky-gazer figure",
       "provenance": "ruina_sumergida",
       "rarity": "unico",
@@ -299,7 +299,7 @@
     {
       "id": "carta_oleaje",
       "kind": "stick_chart",
-      "nameEs": "Carta del oleaje de las siete islas",
+      "nameEs": "Carta del oleaje de siete islas",
       "nameEn": "Swell chart of the seven islands",
       "provenance": "pecio",
       "rarity": "unico",

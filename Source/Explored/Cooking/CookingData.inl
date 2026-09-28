@@ -1127,6 +1127,7 @@
 	F.Tags.Add(FName(TEXT("comida")));
 	F.Tags.Add(FName(TEXT("pescado")));
 	F.Tags.Add(FName(TEXT("cocinado")));
+	F.Tags.Add(FName(TEXT("sopa")));
 	F.Effects.Food = 22.0f;
 	F.Effects.Water = 15.0f;
 	F.Effects.Protein = 24.0f;
@@ -1162,6 +1163,7 @@
 	F.Family = FName(TEXT("guiso"));
 	F.Tags.Add(FName(TEXT("comida")));
 	F.Tags.Add(FName(TEXT("cocinado")));
+	F.Tags.Add(FName(TEXT("sopa")));
 	F.Effects.Food = 18.0f;
 	F.Effects.Water = 8.0f;
 	F.Effects.Protein = 8.0f;
