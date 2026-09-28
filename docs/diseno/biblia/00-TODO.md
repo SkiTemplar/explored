@@ -21,11 +21,11 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
-| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
+| H4 — Contenido de acceso anticipado | 1 | 20 | 21 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **10** | **198** | **208** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -546,6 +546,11 @@ datos todavía.
       arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
       de detalle con la paleta low poly; comprobar con capturas antes/después
       (`M_Terrain.uasset` ya existe, hoy se ve brillante). *(director, 2026-09-27)*
+- [x] Terreno: perfil de playa casi recto de la berma al agua (2°–6°, bajo el agua igual o
+      algo más empinado, sin escalón ni hombro convexo en la orilla) con
+      `FBeachProfileModel` sobre la distancia real a la costa; specs de transectos en todas
+      las islas con playa. Falta rehornear el terreno en local (PR `necesita-unreal`).
+      *(director, 2026-09-28)*
 - [ ] Arte: vegetación, mobiliario y props no protagonistas seleccionados y retocados en
       materiales/color desde Kenney/KayKit/Quaternius para no romper la paleta por isla
       (GDD §7.1). *(GDD §7.1)*
