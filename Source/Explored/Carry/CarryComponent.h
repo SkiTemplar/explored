@@ -165,9 +165,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsHandEmpty(EHand Hand) const;
 
-	/** Mochila sin objeto con capacidad fija (tests y ajustes de diseño). */
+	/**
+	 * Mochila sin objeto con capacidad fija (tests y ajustes de diseño). ComfortBonusKg es
+	 * la carga cómoda que suma (biblia 03 §1.1: +8 kg la del Albatros, +10 la de fibra,
+	 * +20 la de cuero con armazón; FInventoryModel::BackpackComfortBonusKgFor).
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
-	void SetBackpack(bool bInHasBackpack, float CapacityVolumeLiters, float CapacityWeightKg);
+	void SetBackpack(bool bInHasBackpack, float CapacityVolumeLiters, float CapacityWeightKg, float ComfortBonusKg = 0.0f);
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool HasBackpack() const { return Model.HasBackpack(); }
@@ -273,4 +277,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Explored|Carga")
 	float BackpackCapacityWeightKg = 0.0f;
+
+	/** Carga cómoda extra de esa mochila; por defecto la del Albatros, la del kit inicial (biblia 01 §4, 03 §1.1). */
+	UPROPERTY(EditAnywhere, Category = "Explored|Carga")
+	float BackpackComfortBonusKg = 8.0f;
 };

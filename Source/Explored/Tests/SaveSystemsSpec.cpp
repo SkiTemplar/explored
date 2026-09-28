@@ -475,6 +475,38 @@ void FSaveSystemsSpec::Define()
 			TestTrue(TEXT("Fiebre"), Loaded.HasCondition(ECondition::Fever));
 			TestEqual(TEXT("Una herida"), Loaded.Wounds.Num(), 1);
 		});
+
+		It("conserva las quemaduras de contacto y no convierte un corte en quemadura", [this]()
+		{
+			FSurvivalState State;
+			State.Wetness = 0.25f;
+			FWound Cut;
+			Cut.Depth = 0.3f;
+			Cut.Bleeding = 0.1f;
+			FWound Burn;
+			Burn.Depth = 0.4f;
+			Burn.Healed = 0.5f;
+			Burn.bBurn = true;
+			Burn.bMedicinal = true;
+			Burn.bBandaged = true;
+			State.Wounds = { Cut, Burn };
+			State.AddCondition(ECondition::ContactBurn, 6.0f);
+
+			FSaveArchive Ar;
+			SaveSurvival(Ar, State, ESurvivalMode::Survivor);
+			FSurvivalState Loaded;
+			ESurvivalMode Mode = ESurvivalMode::Castaway;
+			LoadSurvival(ThroughText(Ar), Loaded, Mode);
+			FSaveArchive Again;
+			SaveSurvival(Again, Loaded, Mode);
+			TestEqual(TEXT("Mismo texto"), Canonical(Again), Canonical(Ar));
+			TestEqual(TEXT("Dos heridas"), Loaded.Wounds.Num(), 2);
+			TestFalse(TEXT("El corte sigue siendo un corte"), Loaded.Wounds.Num() == 2 && Loaded.Wounds[0].bBurn);
+			TestTrue(TEXT("La quemadura sigue siendo quemadura"), Loaded.Wounds.Num() == 2 && Loaded.Wounds[1].bBurn);
+			TestTrue(TEXT("Con su aloe"), Loaded.Wounds.Num() == 2 && Loaded.Wounds[1].bMedicinal);
+			TestEqual(TEXT("Estado ContactBurn"), Loaded.ConditionTime[static_cast<int32>(ECondition::ContactBurn)], 6.0f);
+			TestEqual(TEXT("El mojado guardado manda sobre el inicial"), Loaded.Wetness, 0.25f);
+		});
 	});
 
 	Describe("Barcos, pesca y reloj", [this]()

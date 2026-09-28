@@ -44,12 +44,16 @@ salir de la isla.
 
 ### Cuerpo y supervivencia
 
-- [ ] `Survival`: añadir `ECondition::ContactBurn` (quemadura de contacto) — daño
+- [x] `Survival`: añadir `ECondition::ContactBurn` (quemadura de contacto) — daño
       instantáneo 8 pts + herida de profundidad 0.4 que no sangra ni se infecta,
       cicatriza en 24 h (12 h con gel de aloe). *(biblia 01 §6.8)*
-- [ ] `Survival`/`Items`: dar a los ítems de gel de aloe la propiedad `Cures` sobre
+      *(verificado: `FBodyModel::ApplyContactBurn`, `Tests/MedicineModelSpec.cpp`)*
+- [x] `Survival`/`Items`: dar a los ítems de gel de aloe la propiedad `Cures` sobre
       `ContactBurn` además de `SunBurn`, con el multiplicador ×0.5 al tiempo de
       cicatrización de esa herida. *(biblia 01 §6.8)*
+      *(verificado: `survival_needs.json#medicines`, `FBodyModel::SootheBurns`)*
+- [ ] `Cooking`/`Player`: llamar a `UBodySignalsComponent::ApplyContactBurn` al tocar una
+      hoguera encendida, brasas o una vasija hirviendo. *(biblia 01 §6.8)*
 - [ ] `Player/SwimComponent`: enganchar el delegado de daño por ahogo
       (`OnDrowningDamage`) a `BodySignalsComponent::GetMutableSurvivalState().Health` —
       hoy el delegado existe pero nadie aplica el daño. *(biblia 01 §6.15)*
@@ -58,15 +62,20 @@ salir de la isla.
       puestos; mechero, navaja rota, botiquín, manual, cantimplora en el fuselaje) —
       `SpawnLandingStarterKitIfNeeded` ya existe en `ExploredWiringSubsystem`, verificar
       que su contenido coincide con la lista. *(biblia 01 §4)*
-- [ ] `Survival`: fijar `Wetness = 1.0` como valor inicial explícito de
+- [x] `Survival`: fijar `Wetness = 1.0` como valor inicial explícito de
       `FSurvivalState` al arrancar una partida nueva — hoy la struct usa `0.0` por
-      defecto. *(biblia 01 §4)*
-- [ ] `Survival`/`UI`: implementar los avisos interiores ES/EN de 01 §6 como líneas de
+      defecto. *(biblia 01 §4)* *(verificado: `SurvivalModel.h`, DataCheck compara
+      `survival_needs.json#wetness`)*
+- [x] `Survival`/`UI`: implementar los avisos interiores ES/EN de 01 §6 como líneas de
       voz interna (subtítulo opcional) enganchadas a los eventos de `ESurvivalEvent` y a
       los cruces de umbral de cada estado. *(biblia 01 §6, 06 §3.1)*
-- [ ] `Core/SystemLinks`: documentar en código (comentario junto a `HasPermadeath`) que
+      *(verificado: `survival_needs.json#innerVoice`, `FInnerVoiceModel`,
+      `UBodySignalsComponent::OnInnerVoice`)*
+- [ ] `UI`: mostrar `UBodySignalsComponent::OnInnerVoice` como subtítulo opcional con el
+      texto de `FInnerVoiceModel::Text` en el idioma activo. *(biblia 01 §6.0, 06 §3.1)*
+- [x] `Core/SystemLinks`: documentar en código (comentario junto a `HasPermadeath`) que
       el modo Personalizado une «necesidades pueden matar» y «permadeath» en un único
-      interruptor de «modo duro». *(biblia 01 §8)*
+      interruptor de «modo duro». *(biblia 01 §8)* *(verificado: `SurvivalModel.h`)*
 - [ ] `Save`/`GameMode`/`Carry`: confirmar en código que `HandlePlayerDeath` nunca vacía
       el inventario en Explorador/Superviviente/Personalizado, y aplicar el golpe de
       ánimo −6 (`moraleEvents.Injured`, ya existe) al reaparecer. *(biblia 01 §7, 03 §1.7)*
@@ -81,16 +90,22 @@ salir de la isla.
       Mango (Largo≥2, Rígido≥3), Unión (Ata≥2 o Adhesivo≥2), `baseMaxDurability` 55.
       Bloqueante para la minería manual de Landing. *(biblia 02 §2.2, 03 §2.1 — definición
       única tras resolver la contradicción con la versión antigua de 03)*
-- [ ] `Items`: añadir a `items.json` las medicinas nuevas que exige la porción vertical:
+- [x] `Items`: añadir a `items.json` las medicinas nuevas que exige la porción vertical:
       `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`,
-      `ferula_bambu`, `gel_aloe`. *(biblia 03 §3.6)*
-- [ ] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg),
+      `ferula_bambu`, `gel_aloe`. *(biblia 03 §3.6)* *(verificado: efectos en
+      `FMedicineModel`, uso desde la mano en `AExploredCharacter::UseHand`)*
+- [ ] `Items`/`Templates`: recetas y mallas de las seis medicinas (hoy son objetos con
+      efecto que ninguna plantilla fabrica). *(biblia 03 §3.6, §4)*
+- [x] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg),
       `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en
       `UCarryComponent::SetCustomBackpack`, que hoy solo recibe volumen/peso del objeto.
-      *(biblia 03 §1.1)*
-- [ ] `Building`: añadir a `building_pieces.json` las piezas de almacenamiento
+      *(biblia 03 §1.1)* *(verificado: `InventoryModel.cpp`, `Tests/InventorySpec.cpp`)*
+- [x] `Building`: añadir a `building_pieces.json` las piezas de almacenamiento
       `cesta_almacen`, `estanteria_almacen`, `arcon` — sin ellas ni el refugio→cabaña de
-      Landing tiene sentido. *(biblia 03 §1.4)*
+      Landing tiene sentido. *(biblia 03 §1.4)* *(verificado: campo `container` y
+      capacidades en `FInventoryContainerSpec`)*
+- [ ] `Building`/`Carry`: al colocar una pieza con `container`, crear su
+      `AExploredContainer` (`SetKind`) y guardarlo con la pieza. *(biblia 03 §1.4)*
 - [ ] `AExploredCharacter::HandleCombine`: cuando `Verbs.Num() > 1`, no aplicar
       `Verbs[0]` de inmediato — abrir la lista de verbos candidatos y esperar
       confirmación o expiración (4 s). *(biblia 06 §2.6)*

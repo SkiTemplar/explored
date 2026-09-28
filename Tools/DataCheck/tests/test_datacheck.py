@@ -1287,3 +1287,108 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     sp["phase"] = "AA"
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
+
+
+# --------------------------------------------------------------------------- supervivencia (H0)
+
+
+def medicine(ds: DataSet, iid: str) -> dict:
+    return next(m for m in ds.data["survival_needs.json"]["medicines"] if m["item"] == iid)
+
+
+def voice(ds: DataSet, vid: str) -> dict:
+    return next(v for v in ds.data["survival_needs.json"]["innerVoice"] if v["id"] == vid)
+
+
+def test_gel_aloe_cura_las_dos_quemaduras(real: DataSet) -> None:
+    assert set(medicine(real, "gel_aloe")["cures"]) == {"SunBurn", "ContactBurn"}
+
+
+def test_medicinas_de_la_porcion_vertical_en_items(real: DataSet) -> None:
+    for iid in ("vendaje_tela", "antidoto_corteza", "carbon_activado", "te_corteza_sauce", "ferula_bambu", "gel_aloe"):
+        assert "medicinal" in item(real, iid)["tags"]
+        medicine(real, iid)
+
+
+def test_detecta_medicina_que_cura_un_estado_inexistente(ds: DataSet) -> None:
+    medicine(ds, "gel_aloe")["cures"].append("Quemadura")
+    assert any_error(errors_of(ds), "gel_aloe", "Quemadura", "ECondition")
+
+
+def test_detecta_medicina_sin_objeto(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["medicines"].append({"item": "pocion_magica", "cures": ["Fever"]})
+    assert any_error(errors_of(ds), "pocion_magica", "items.json")
+
+
+def test_detecta_medicina_sin_etiqueta_medicinal(ds: DataSet) -> None:
+    item(ds, "carbon_activado")["tags"] = []
+    assert any_error(errors_of(ds), "carbon_activado", "medicinal")
+
+
+def test_detecta_tratamiento_desconocido(ds: DataSet) -> None:
+    medicine(ds, "vendaje_tela")["treatment"] = "Tirita"
+    assert any_error(errors_of(ds), "vendaje_tela", "EWoundTreatment")
+
+
+def test_detecta_medicina_que_no_hace_nada(ds: DataSet) -> None:
+    med = medicine(ds, "ferula_bambu")
+    med["cures"] = []
+    assert any_error(errors_of(ds), "ferula_bambu", "no cura nada")
+
+
+def test_detecta_tabla_de_medicinas_desfasada(ds: DataSet) -> None:
+    medicine(ds, "antidoto_corteza")["healing"] = 7
+    assert any_error(errors_of(ds), "MedicineData.inl", "--write-survival")
+
+
+def test_detecta_aviso_interior_sin_ingles(ds: DataSet) -> None:
+    voice(ds, "hambre_aprieta")["textEn"] = ""
+    assert any_error(errors_of(ds), "hambre_aprieta", "textEn")
+
+
+def test_detecta_aviso_interior_que_falta(ds: DataSet) -> None:
+    lines = ds.data["survival_needs.json"]["innerVoice"]
+    lines.remove(voice(ds, "ahogo"))
+    assert any_error(errors_of(ds), "EInnerVoiceLine::Drowning", "no tiene texto")
+
+
+def test_detecta_aviso_interior_con_linea_repetida(ds: DataSet) -> None:
+    voice(ds, "sed_aprieta")["line"] = "HungerLow"
+    assert any_error(errors_of(ds), "HungerLow", "ya lo usa")
+
+
+def test_detecta_aviso_interior_con_linea_desconocida(ds: DataSet) -> None:
+    voice(ds, "monotonia")["line"] = "Boredom"
+    assert any_error(errors_of(ds), "Boredom", "EInnerVoiceLine")
+
+
+def test_detecta_mojado_inicial_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["wetness"]["initial"] = 0.0
+    assert any_error(errors_of(ds), "wetness.initial", "SurvivalModel.h")
+
+
+def test_detecta_quemadura_distinta_del_cpp(ds: DataSet) -> None:
+    ds.data["survival_needs.json"]["body"]["burns"]["contactHealHours"]["value"] = 48
+    assert any_error(errors_of(ds), "ContactBurnHealHours")
+
+
+def test_piezas_de_almacenamiento(real: DataSet) -> None:
+    kinds = {piece(real, pid)["container"] for pid in ("cesta_almacen", "estanteria_almacen", "arcon")}
+    assert kinds == {"Cesta", "Estante", "Arcon"}
+
+
+def test_detecta_contenedor_desconocido(ds: DataSet) -> None:
+    piece(ds, "arcon")["container"] = "Baul"
+    assert any_error(errors_of(ds), "arcon", "EWorldContainerKind")
+
+
+def test_detecta_contenedor_sin_pieza(ds: DataSet) -> None:
+    piece(ds, "estanteria_almacen").pop("container")
+    assert any_error(errors_of(ds), "Estante", "ninguna pieza")
+
+
+def test_enum_con_comentarios_de_bloque() -> None:
+    from datacheck.survival_data import cpp_enum
+
+    text = "enum class E : uint8\n{\n\tA, // uno, dos\n\t/** tres, cuatro */\n\tB,\n\tCount\n};"
+    assert cpp_enum(text, "E") == ["A", "B"]

@@ -7,7 +7,7 @@
 /**
  * Cuerpo del náufrago más allá de las necesidades básicas (GDD §8.3, biblia §5.4):
  * escorbuto, cortes e infección, caídas y esguinces, picaduras, intoxicaciones,
- * quemaduras solares, dieta monótona, falta de sueño y fuentes de ánimo.
+ * quemaduras solares y de contacto, dieta monótona, falta de sueño y fuentes de ánimo.
  *
  * Todo son funciones puras sobre FSurvivalState. FSurvivalModel::Tick llama a
  * FBodyModel::Tick en cada paso; el resto son acciones que el juego dispara
@@ -102,6 +102,27 @@ struct EXPLORED_API FBodyModel
 
 	/** Salud perdida por hora por los cortes que sangran ahora mismo. */
 	static float BleedingDamagePerHour(const FSurvivalState& State);
+
+	// --- Quemaduras de contacto (biblia 01 §6.8) ---------------------------------
+
+	/**
+	 * Contacto con fuego, brasas o líquido hirviendo: 8 de salud de golpe (en
+	 * Explorador no mata), una herida de quemadura de profundidad 0.4 que no sangra
+	 * ni se infecta y el estado ContactBurn mientras cicatriza (24 h). Devuelve la
+	 * salud perdida. Cada contacto abre su propia quemadura.
+	 */
+	static float ApplyContactBurn(FSurvivalState& State, const FSurvivalModeSettings& Mode, TArray<ESurvivalEvent>& OutEvents);
+
+	/**
+	 * Gel de aloe sobre las quemaduras: cicatrizan al doble de velocidad desde ese
+	 * momento (12 h en vez de 24 si se aplica nada más quemarse). Si hay ContactBurn
+	 * sin herida detrás, lo quita. Devuelve cuántas quemaduras alivió. Lo llama
+	 * FSurvivalModel::Consume cuando el remedio lleva el bit ContactBurn en Cures.
+	 */
+	static int32 SootheBurns(FSurvivalState& State);
+
+	/** Quemaduras de contacto abiertas. */
+	static int32 NumBurns(const FSurvivalState& State);
 
 	// --- Caídas (GDD §8.1) -----------------------------------------------------
 

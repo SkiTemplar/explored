@@ -1004,6 +1004,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Quemadura"
+					},
+					"Translation": {
+						"Text": "Quemadura"
+					},
+					"Key": "CondContactBurn"
+				},
+				{
+					"Source": {
 						"Text": "Fiebre"
 					},
 					"Translation": {

@@ -27,6 +27,7 @@
   ],
   "sleepRecoveryHours": { "value": 6, "cppConstant": "SleepRecoveryHours" },
   "bodyTemperature": { "initial": 37, "hypothermiaBelow": 35, "heatstrokeAbove": 39.5, "unit": "°C" },
+  "wetness": { "initial": 1.0, "state": "Wetness", "note": "0 seco, 1 empapado; la partida empieza empapada tras el amaraje (biblia 01 §4)" },
   "modeScale": { "Explorer": 0.6, "Survivor": 1.0, "Castaway": 1.35 },
   "customNeedSpeed": { "min": 0.25, "max": 3.0, "note": "Modo Personalizado (GDD §11): multiplica modeScale de Superviviente" },
   "activityMetabolism": { "Resting": 0.8, "Walking": 1.0, "Sprinting": 1.8, "Swimming": 1.7, "Working": 1.5, "Sleeping": 0.5 },
@@ -64,6 +65,12 @@
       "rayDamagePerHour": { "value": 3, "cppConstant": "RayDamagePerHour" },
       "rayWoundDepth": { "value": 0.35, "cppConstant": "RayWoundDepth" }
     },
+    "burns": {
+      "contactDamage": { "value": 8, "cppConstant": "ContactBurnDamage", "note": "salud de golpe al tocar fuego, brasas o líquido hirviendo" },
+      "contactDepth": { "value": 0.4, "cppConstant": "ContactBurnDepth", "note": "profundidad de la herida de quemadura (no sangra ni se infecta)" },
+      "contactHealHours": { "value": 24, "cppConstant": "ContactBurnHealHours", "note": "horas hasta cicatrizar sin tratar" },
+      "aloeHealFactor": { "value": 0.5, "cppConstant": "AloeBurnHealFactor", "curedBy": "gel de aloe", "note": "multiplicador del tiempo de cicatrización con aloe (12 h)" }
+    },
     "sun": {
       "burnDoseHours": { "value": 2, "cppConstant": "SunBurnDoseHours", "note": "horas a pleno sol sin sombrero hasta quemarse" },
       "hatFactor": { "value": 0.3, "cppConstant": "HatSunFactor" },
@@ -84,5 +91,43 @@
       "seaWaterThirst": { "value": 15, "cppConstant": "SeaWaterThirst", "note": "sed que quita beber agua de mar" }
     },
     "moraleEvents": { "Discovery": 8, "MapProgress": 5, "IslandMapped": 15, "MusicPlayed": 4, "HotMeal": 3, "SleptInBed": 5, "Injured": -6, "StormHit": -4 }
-  }
+  },
+  "medicinesSource": "Efecto de cada medicina de items.json (biblia 03 §3.6). cures usa los nombres de ECondition; treatment, los de EWoundTreatment. Tools/DataCheck genera Source/Explored/Survival/MedicineData.inl (uv run datacheck --write-survival).",
+  "medicines": [
+    { "item": "vendaje_tela", "treatment": "ClothBandage", "cures": [], "healing": 0, "note": "detiene el sangrado de los cortes no muy profundos" },
+    { "item": "antidoto_corteza", "cures": ["RaySting"], "healing": 5, "note": "igual que FBodyModel::Antidote(Ray)" },
+    { "item": "carbon_activado", "cures": ["Poisoned"], "healing": 0 },
+    { "item": "te_corteza_sauce", "cures": ["Fever"], "healing": 0 },
+    { "item": "ferula_bambu", "cures": ["Sprain"], "healing": 0 },
+    { "item": "gel_aloe", "cures": ["SunBurn", "ContactBurn"], "healing": 0, "note": "en ContactBurn no borra la quemadura: la cicatriza a mitad de tiempo (FBodyModel::SootheBurns)" }
+  ],
+  "innerVoiceSource": "Avisos interiores de biblia 01 §6: una frase que el personaje piensa al cruzar un umbral o al pasarle algo. line es el nombre de EInnerVoiceLine; trigger resume la regla de FInnerVoiceModel. Tools/DataCheck genera Source/Explored/Survival/InnerVoiceData.inl (uv run datacheck --write-survival).",
+  "innerVoice": [
+    { "id": "ahogo", "line": "Drowning", "trigger": "oxígeno a 0 bajo el agua", "textEs": "¡Aire, necesito aire!", "textEn": "Air, I need air!" },
+    { "id": "golpe_calor", "line": "Heatstroke", "trigger": "temperatura corporal > 39.5 °C", "textEs": "Todo me da vueltas. Sombra, ya.", "textEn": "Everything's spinning. Shade, now." },
+    { "id": "hipotermia", "line": "Hypothermia", "trigger": "temperatura corporal < 35 °C", "textEs": "No paro de tiritar. Necesito fuego.", "textEn": "Can't stop shaking. Need fire." },
+    { "id": "sed_critica", "line": "ThirstZero", "trigger": "sed en 0", "textEs": "Veo doble. Necesito agua, ya.", "textEn": "Seeing double. Need water, now." },
+    { "id": "hambre_critica", "line": "HungerZero", "trigger": "hambre en 0", "textEs": "Ya ni me acuerdo de la última comida.", "textEn": "Can't remember my last meal." },
+    { "id": "quemadura_contacto", "line": "ContactBurn", "trigger": "evento Burned", "textEs": "Eso ha dolido. Cuidado con las brasas.", "textEn": "That hurt. Watch the embers." },
+    { "id": "jadeo", "line": "OutOfBreath", "trigger": "sale a respirar con el oxígeno < 35 %", "textEs": "Casi me quedo sin aire ahí abajo.", "textEn": "Almost ran out of air down there." },
+    { "id": "herida_sangra", "line": "WoundBleeding", "trigger": "un corte abierto sangrando", "textEs": "Esto sangra más de lo que me gustaría.", "textEn": "Bleeding more than I'd like." },
+    { "id": "escorbuto_sangrado", "line": "ScurvyBleeding", "trigger": "escorbuto ≥ 0.75", "textEs": "Esto es escorbuto de verdad. Fruta, ya.", "textEn": "This is proper scurvy. Fruit, now." },
+    { "id": "picadura_raya", "line": "RaySting", "trigger": "estado RaySting", "textEs": "La raya me ha dado bien.", "textEn": "That ray got me good." },
+    { "id": "picadura_medusa", "line": "JellyfishSting", "trigger": "estado JellyfishSting", "textEs": "Menudo escozor de medusa.", "textEn": "Nasty jellyfish sting, that." },
+    { "id": "intoxicacion", "line": "Poisoned", "trigger": "estado Poisoned", "textEs": "Algo de lo que comí no me ha sentado bien.", "textEn": "Something I ate didn't agree with me." },
+    { "id": "herida_infectada", "line": "WoundInfected", "trigger": "estado Infection", "textEs": "Esta herida no tiene buena pinta.", "textEn": "This wound doesn't look good." },
+    { "id": "fiebre", "line": "Fever", "trigger": "estado Fever", "textEs": "Tengo la cabeza ardiendo.", "textEn": "My head's burning up." },
+    { "id": "esguince", "line": "Sprain", "trigger": "estado Sprain", "textEs": "El tobillo no aguanta mi peso.", "textEn": "Ankle won't take my weight." },
+    { "id": "sueno_critico", "line": "SleepZero", "trigger": "sueño en 0", "textEs": "No sé si eso lo he soñado o lo he visto de verdad.", "textEn": "Not sure if I dreamed that or actually saw it." },
+    { "id": "alucinacion", "line": "Hallucinating", "trigger": "estado Hallucinating", "textEs": "¿Eso lo he visto de verdad?", "textEn": "Did I really just see that?" },
+    { "id": "empapado", "line": "Soaked", "trigger": "mojado > 0.7 y temperatura corporal < 36 °C", "textEs": "Empapado hasta los huesos.", "textEn": "Soaked through to the bone." },
+    { "id": "frio_aprieta", "line": "ColdLow", "trigger": "temperatura corporal < 36 °C", "textEs": "Tengo la piel de gallina.", "textEn": "Skin's crawling with goosebumps." },
+    { "id": "calor_aprieta", "line": "HeatHigh", "trigger": "temperatura corporal > 38.5 °C sin fiebre", "textEs": "El sol está pegando fuerte.", "textEn": "Sun's hitting hard today." },
+    { "id": "sed_aprieta", "line": "ThirstLow", "trigger": "sed < 40", "textEs": "Se me está secando la boca.", "textEn": "Mouth's gone dry." },
+    { "id": "hambre_aprieta", "line": "HungerLow", "trigger": "hambre < 40", "textEs": "El estómago empieza a quejarse.", "textEn": "Stomach's putting in a complaint." },
+    { "id": "sueno_aprieta", "line": "SleepLow", "trigger": "sueño < 30", "textEs": "Los párpados pesan una barbaridad.", "textEn": "My eyelids weigh a ton." },
+    { "id": "escorbuto_vision", "line": "ScurvyVision", "trigger": "escorbuto ≥ 0.45", "textEs": "Los colores se están apagando.", "textEn": "Colours are fading out." },
+    { "id": "escorbuto_encias", "line": "ScurvyGums", "trigger": "escorbuto ≥ 0.15", "textEs": "Las encías se quejan. Necesito fruta.", "textEn": "Gums are complaining. Need fruit." },
+    { "id": "monotonia", "line": "Monotony", "trigger": "72 h de dieta monótona", "textEs": "Coco otra vez. Necesito comer otra cosa.", "textEn": "Coconut again. I need to eat something else." }
+  ]
 }

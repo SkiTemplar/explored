@@ -119,6 +119,11 @@ namespace BuildingSubsystemDetail
 		Out.Integrity = Integrity;
 		Out.MaxCycloneCategory = Cyclone;
 		Out.bRespawnPoint = bRespawn;
+		FString Container;
+		if (Obj->TryGetStringField(TEXT("container"), Container) && !Container.IsEmpty())
+		{
+			Out.ContainerKind = FName(*Container);
+		}
 		return true;
 	}
 

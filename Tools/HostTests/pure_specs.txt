@@ -19,10 +19,12 @@ Tests/GaitSpec.cpp
 Tests/FellingModelSpec.cpp
 Tests/GroundBranchModelSpec.cpp
 Tests/HarvestModelSpec.cpp
+Tests/InnerVoiceModelSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp
 Tests/MapViewLogicSpec.cpp
 Tests/MarineFaunaSpec.cpp
+Tests/MedicineModelSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp

@@ -13,8 +13,10 @@ namespace InventoryModelDetail
 	constexpr float FibreBackpackKg = 12.0f;
 	constexpr float LeatherBackpackLiters = 34.0f;
 	constexpr float LeatherBackpackKg = 20.0f;
-	constexpr float BackpackComfortKg = 2.0f;
-	constexpr float FramedBackpackComfortKg = 6.0f;
+	// Carga cómoda que suma cada mochila puesta (biblia 03 §1.1).
+	constexpr float AlbatrosBackpackComfortKg = 8.0f;
+	constexpr float FibreBackpackComfortKg = 10.0f;
+	constexpr float FramedBackpackComfortKg = 20.0f;
 
 	/** Cinturón de cuero: +2 enganches (biblia §3.8). */
 	constexpr int32 LeatherBeltHooks = 5;
@@ -265,29 +267,37 @@ FInventoryContainerSpec FInventoryContainerSpec::Sledge()
 	return Spec;
 }
 
+// Capacidades de biblia 03 §1.4 (piezas cesta_almacen, estanteria_almacen y arcon).
 FInventoryContainerSpec FInventoryContainerSpec::Basket()
 {
+	// 15 L sin límite de peso propio: acepta todo lo que quepa.
 	FInventoryContainerSpec Spec;
 	Spec.MaxSlots = 6;
-	Spec.MaxVolumeLiters = 12.0f;
-	Spec.MaxSize = EInventorySize::Mediano;
+	Spec.MaxVolumeLiters = 15.0f;
+	Spec.MaxSize = EInventorySize::Grande;
 	return Spec;
 }
 
 FInventoryContainerSpec FInventoryContainerSpec::Shelf()
 {
+	// 30 L y 40 kg, solo objetos medianos o menores.
 	FInventoryContainerSpec Spec;
 	Spec.MaxSlots = 8;
-	Spec.MaxSize = EInventorySize::Grande;
+	Spec.MaxVolumeLiters = 30.0f;
+	Spec.MaxWeightKg = 40.0f;
+	Spec.MaxSize = EInventorySize::Mediano;
 	return Spec;
 }
 
 FInventoryContainerSpec FInventoryContainerSpec::Chest()
 {
+	// 60 L y 80 kg, todo salvo lo de dos manos; el único estanco del mundo (protege de la lluvia).
 	FInventoryContainerSpec Spec;
 	Spec.MaxSlots = 12;
-	Spec.MaxVolumeLiters = 80.0f;
+	Spec.MaxVolumeLiters = 60.0f;
+	Spec.MaxWeightKg = 80.0f;
 	Spec.MaxSize = EInventorySize::Grande;
+	Spec.bWaterproof = true;
 	return Spec;
 }
 
@@ -1006,7 +1016,7 @@ bool FInventoryModel::FindEquipmentSpec(const FInventoryItem& Item, FInventoryEq
 		OutSpec.Kind = EInventoryEquipment::Backpack;
 		OutSpec.BackpackVolumeLiters = FibreBackpackLiters;
 		OutSpec.BackpackWeightKg = FibreBackpackKg;
-		OutSpec.ComfortBonusKg = BackpackComfortKg;
+		OutSpec.ComfortBonusKg = FibreBackpackComfortKg;
 		OutSpec.bWaterproofPocket = false;
 		return true;
 	}
@@ -1016,7 +1026,7 @@ bool FInventoryModel::FindEquipmentSpec(const FInventoryItem& Item, FInventoryEq
 		OutSpec.Kind = EInventoryEquipment::Backpack;
 		OutSpec.BackpackVolumeLiters = AlbatrosBackpackLiters;
 		OutSpec.BackpackWeightKg = AlbatrosBackpackKg;
-		OutSpec.ComfortBonusKg = BackpackComfortKg;
+		OutSpec.ComfortBonusKg = AlbatrosBackpackComfortKg;
 		OutSpec.bWaterproofPocket = true;
 		return true;
 	}
@@ -1032,6 +1042,14 @@ bool FInventoryModel::FindEquipmentSpec(const FInventoryItem& Item, FInventoryEq
 		return true;
 	}
 	return false;
+}
+
+float FInventoryModel::BackpackComfortBonusKgFor(FName ItemId)
+{
+	FInventoryItem Item;
+	Item.DefinitionId = ItemId;
+	FInventoryEquipmentSpec Spec;
+	return FindEquipmentSpec(Item, Spec) && Spec.Kind == EInventoryEquipment::Backpack ? Spec.ComfortBonusKg : 0.0f;
 }
 
 bool FInventoryModel::EquipFromHand(EInventorySlot Hand, EInventoryFail& OutFail)
@@ -1191,7 +1209,8 @@ bool FInventoryModel::UnequipBelt(EInventorySlot Hand, EInventoryFail& OutFail)
 	return true;
 }
 
-bool FInventoryModel::SetCustomBackpack(bool bEquipped, float VolumeLiters, float WeightKg, EInventoryFail& OutFail)
+bool FInventoryModel::SetCustomBackpack(bool bEquipped, float VolumeLiters, float WeightKg, EInventoryFail& OutFail,
+	float ComfortBonusKg)
 {
 	if (State.BackpackItem.IsValid())
 	{
@@ -1218,7 +1237,8 @@ bool FInventoryModel::SetCustomBackpack(bool bEquipped, float VolumeLiters, floa
 	}
 	State.Backpack = Refilled;
 	State.bHasBackpack = true;
-	State.BackpackComfortBonusKg = 0.0f;
+	// Un valor corrupto (NaN, negativo) no puede bajar la carga cómoda de la base.
+	State.BackpackComfortBonusKg = FMath::IsFinite(ComfortBonusKg) ? FMath::Max(0.0f, ComfortBonusKg) : 0.0f;
 	State.bBackpackWaterproofPocket = false;
 	return true;
 }

@@ -329,10 +329,18 @@ void FSurvivalModel::Consume(FSurvivalState& S, const FConsumable& Item, float R
 	S.Health = FMath::Clamp(S.Health + Item.Healing, 0.0f, 100.0f);
 	for (int32 C = 0; C < static_cast<int32>(ECondition::Count); ++C)
 	{
-		if (Item.Cures & (1u << C))
+		if (!(Item.Cures & (1u << C)))
 		{
-			S.ClearCondition(static_cast<ECondition>(C));
+			continue;
 		}
+		if (static_cast<ECondition>(C) == ECondition::ContactBurn)
+		{
+			// La quemadura de contacto es una herida: el aloe la cicatriza a mitad de tiempo
+			// en vez de borrarla de golpe (biblia 01 §6.8).
+			FBodyModel::SootheBurns(S);
+			continue;
+		}
+		S.ClearCondition(static_cast<ECondition>(C));
 	}
 	if (Item.HallucinogenHours > 0.0f)
 	{

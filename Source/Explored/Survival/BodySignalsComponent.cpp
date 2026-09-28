@@ -18,6 +18,7 @@
 #include "Sound/SoundBase.h"
 
 #include "Player/SwimComponent.h"
+#include "Survival/MedicineModel.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/Widgets/SExploredWristWatch.h"
 #include "Weather/ExploredWeatherSubsystem.h"
@@ -93,6 +94,7 @@ void UBodySignalsComponent::BeginPlay()
 		FallApexZ = Character->GetActorLocation().Z;
 	}
 	SampleEnvironment();
+	FInnerVoiceModel::Prime(InnerVoice, State);
 }
 
 void UBodySignalsComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -168,12 +170,15 @@ void UBodySignalsComponent::RestoreSurvival(const FSurvivalState& InState, ESurv
 		ModeSettings = FSurvivalModeSettings::FromMode(Mode);
 	}
 	StepAccumulator = 0.0f;
+	// Al cargar no se recita de golpe lo que ya dolía antes de guardar.
+	FInnerVoiceModel::Prime(InnerVoice, State);
 }
 
 void UBodySignalsComponent::ApplyRespawn()
 {
 	State = ExploredLinks::MakeRespawnState(State);
 	StepAccumulator = 0.0f;
+	FInnerVoiceModel::Prime(InnerVoice, State);
 	bWasFalling = false;
 	bFallFromFlight = false;
 	if (const ACharacter* Character = Cast<ACharacter>(GetOwner()))
@@ -203,6 +208,24 @@ void UBodySignalsComponent::ApplySting(EStingKind Kind)
 	TArray<ESurvivalEvent> Events;
 	FBodyModel::ApplySting(State, Kind, Events);
 	Broadcast(Events);
+}
+
+void UBodySignalsComponent::ApplyContactBurn()
+{
+	TArray<ESurvivalEvent> Events;
+	FBodyModel::ApplyContactBurn(State, ModeSettings, Events);
+	Broadcast(Events);
+}
+
+bool UBodySignalsComponent::ApplyMedicine(FName ItemId)
+{
+	TArray<ESurvivalEvent> Events;
+	if (!FMedicineModel::Apply(State, ItemId, Events))
+	{
+		return false;
+	}
+	Broadcast(Events);
+	return true;
 }
 
 void UBodySignalsComponent::ApplyMoraleEvent(EMoraleEvent Event)
@@ -461,6 +484,21 @@ void UBodySignalsComponent::Broadcast(const TArray<ESurvivalEvent>& Events)
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("[Explored] Cuerpo: suceso %d"), static_cast<int32>(Event));
 		OnSurvivalEvent.Broadcast(Event);
+	}
+	SpeakInnerVoice(Events);
+}
+
+void UBodySignalsComponent::SpeakInnerVoice(const TArray<ESurvivalEvent>& Events)
+{
+	if (const USwimComponent* Swim = GetOwner() ? GetOwner()->FindComponentByClass<USwimComponent>() : nullptr)
+	{
+		FInnerVoiceModel::ObserveBreath(InnerVoice, Swim->GetOxygen01(), Swim->IsHeadUnderwater());
+	}
+	EInnerVoiceLine Line = EInnerVoiceLine::Count;
+	if (FInnerVoiceModel::Evaluate(InnerVoice, State, Events, Line))
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[Explored] Aviso interior: %s"), *FInnerVoiceModel::Id(Line).ToString());
+		OnInnerVoice.Broadcast(Line);
 	}
 }
 

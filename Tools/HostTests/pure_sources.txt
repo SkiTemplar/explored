@@ -40,6 +40,8 @@ Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
 Survival/BodyModel.cpp
 Survival/BodySignals.cpp
+Survival/InnerVoiceModel.cpp
+Survival/MedicineModel.cpp
 Survival/SurvivalModel.cpp
 UI/MapViewLogic.cpp
 UI/ScreensLogic.cpp

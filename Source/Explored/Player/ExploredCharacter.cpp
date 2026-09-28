@@ -31,6 +31,7 @@
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/SettingsLogic.h"
 #include "Survival/BodySignalsComponent.h"
+#include "Survival/MedicineModel.h"
 
 // Espacio de nombres con nombre (no anónimo): MakeAction/MapKey son nombres
 // demasiado genéricos para el Unity build.
@@ -703,6 +704,12 @@ void AExploredCharacter::UseHand(EHand Hand)
 				Achievements->ReportStat(TEXT("coconuts_opened"));
 			}
 		}
+		return;
+	}
+	// Curarse (biblia 03 §3.6): vendas, antídoto, carbón activado, té de sauce, férula, aloe.
+	if (Body && !Body->IsDead() && FMedicineModel::Find(Item.DefinitionId) && Carry->ConsumeOneFromHand(Hand))
+	{
+		Body->ApplyMedicine(Item.DefinitionId);
 		return;
 	}
 	// El resto de usos (cortar leña, beber, encender una antorcha...) llegarán con

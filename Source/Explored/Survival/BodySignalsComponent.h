@@ -8,6 +8,7 @@
 #include "Core/SystemLinks.h"
 #include "Survival/BodyModel.h"
 #include "Survival/BodySignals.h"
+#include "Survival/InnerVoiceModel.h"
 #include "Survival/SurvivalModel.h"
 
 #include "BodySignalsComponent.generated.h"
@@ -20,6 +21,7 @@ class UMaterialInterface;
 class USoundBase;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBodySurvivalEvent, ESurvivalEvent);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBodyInnerVoice, EInnerVoiceLine);
 
 /**
  * «El cuerpo como HUD» (GDD §8.3). Capa fina de Unreal sobre los modelos puros:
@@ -80,12 +82,25 @@ public:
 	/** Sucesos del cuerpo (intoxicación, infección, esguince…) para sonidos y textos. */
 	FOnBodySurvivalEvent OnSurvivalEvent;
 
+	/**
+	 * Aviso interior que el personaje piensa ahora (biblia 01 §6.0; texto ES/EN en
+	 * FInnerVoiceModel::Text). Como mucho uno por paso del cuerpo; la UI lo muestra como
+	 * subtítulo opcional y el audio, si existe, como voz baja.
+	 */
+	FOnBodyInnerVoice OnInnerVoice;
+
 	// --- Acciones del juego -------------------------------------------------------
 
 	void Consume(const FConsumable& Item);
 	void AddCut(float Depth);
 	void TreatWounds(EWoundTreatment Treatment);
 	void ApplySting(EStingKind Kind);
+
+	/** Contacto con fuego, brasas o líquido hirviendo (biblia 01 §6.8). */
+	void ApplyContactBurn();
+
+	/** Usa una medicina de items.json (FMedicineModel); false si ese objeto no lo es. */
+	bool ApplyMedicine(FName ItemId);
 	void ApplyMoraleEvent(EMoraleEvent Event);
 
 	/** Caída aplicada a mano (la detección automática ya llama a esto al aterrizar). */
@@ -162,6 +177,8 @@ private:
 	void EnsureWristWatch();
 	void RemoveWristWatch();
 	void Broadcast(const TArray<ESurvivalEvent>& Events);
+	/** Avisos interiores tras cualquier cambio del cuerpo (paso, caída, picadura…). */
+	void SpeakInnerVoice(const TArray<ESurvivalEvent>& Events);
 	float GameHoursPerSecond() const;
 	EActivity CurrentActivity() const;
 	UCameraComponent* FindCamera() const;
@@ -185,6 +202,7 @@ private:
 	FBodySignals Signals;
 	FBodySignals TargetSignals;
 	FWristWatchReadout WatchReadout;
+	FInnerVoiceState InnerVoice;
 	TSharedPtr<SExploredWristWatch> WristWatchWidget;
 
 	float StepAccumulator = 0.0f;

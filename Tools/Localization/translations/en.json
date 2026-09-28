@@ -291,6 +291,7 @@
 		"NeedWarmth": { "es": "Temperatura", "en": "Temperature" },
 		"CondBleeding": { "es": "Sangrando", "en": "Bleeding" },
 		"CondSunBurn": { "es": "Quemadura solar", "en": "Sunburn" },
+		"CondContactBurn": { "es": "Quemadura", "en": "Burn" },
 		"CondFever": { "es": "Fiebre", "en": "Fever" },
 		"CondInfection": { "es": "Herida infectada", "en": "Infected wound" },
 		"CondSprain": { "es": "Esguince", "en": "Sprain" },

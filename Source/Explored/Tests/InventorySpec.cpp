@@ -281,6 +281,43 @@ void FInventorySpec::Define()
 			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::ContainerNotEmpty);
 			TestTrue(TEXT("Nada ha cambiado"), Model.GetState() == Before);
 		});
+
+		It("suma la carga cómoda de biblia 03 §1.1: +8, +10 y +20 kg", [this]()
+		{
+			const float Base = FInventoryModel::BaseComfortableKg;
+			const TPair<FInventoryItem (*)(FInventoryModel&), float> Cases[] = {
+				{ &MochilaAlbatros, 8.0f }, { &MochilaFibra, 10.0f }, { &MochilaCuero, 20.0f } };
+			for (const TPair<FInventoryItem (*)(FInventoryModel&), float>& Case : Cases)
+			{
+				FInventoryModel Model;
+				const FInventoryItem Pack = Case.Key(Model);
+				EquipBackpack(Model, Pack);
+				TestEqual(*FString::Printf(TEXT("Cómoda con %s"), *Pack.DefinitionId.ToString()),
+					Model.GetComfortableCapacityKg(), Base + Case.Value);
+				TestEqual(TEXT("La misma tabla por id"), FInventoryModel::BackpackComfortBonusKgFor(Pack.DefinitionId), Case.Value);
+			}
+			TestEqual(TEXT("Cuero con armazón: 35 kg cómodos"), Base + FInventoryModel::BackpackComfortBonusKgFor(FName(TEXT("mochila_cuero_bambu"))), 35.0f);
+			TestEqual(TEXT("Lo que no es mochila no suma"), FInventoryModel::BackpackComfortBonusKgFor(FName(TEXT("hacha"))), 0.0f);
+			TestEqual(TEXT("Ni un id vacío"), FInventoryModel::BackpackComfortBonusKgFor(NAME_None), 0.0f);
+		});
+
+		It("a medida lleva su carga cómoda, sin valores corruptos, y la pierde al quitarla", [this]()
+		{
+			const float Base = FInventoryModel::BaseComfortableKg;
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail, 8.0f));
+			TestEqual(TEXT("+8 kg"), Model.GetComfortableCapacityKg(), Base + 8.0f);
+			TestTrue(TEXT("Sin dar el extra"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail));
+			TestEqual(TEXT("Sin extra"), Model.GetComfortableCapacityKg(), Base);
+			TestTrue(TEXT("Con NaN"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail, std::numeric_limits<float>::quiet_NaN()));
+			TestEqual(TEXT("NaN no cuenta"), Model.GetComfortableCapacityKg(), Base);
+			TestTrue(TEXT("Con negativo"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail, -30.0f));
+			TestEqual(TEXT("Nunca por debajo de la base"), Model.GetComfortableCapacityKg(), Base);
+			TestTrue(TEXT("Con +20"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail, 20.0f));
+			TestTrue(TEXT("Se quita vacía"), Model.SetCustomBackpack(false, 0.0f, 0.0f, Fail));
+			TestEqual(TEXT("Sin mochila vuelve a la base"), Model.GetComfortableCapacityKg(), Base);
+		});
 	});
 
 	Describe("La bolsa estanca", [this]()
@@ -499,6 +536,34 @@ void FInventorySpec::Define()
 			Shelf.Spec = FInventoryContainerSpec::Shelf();
 			TestFalse(TEXT("Ni en el estante (es DosManos)"), Logs.StoreInWorld(Log.InstanceId, Shelf, Fail));
 			TestTrue(TEXT("El arcón tiene 12 huecos"), FInventoryContainerSpec::Chest().MaxSlots == 12);
+		});
+
+		It("tienen las capacidades de biblia 03 §1.4", [this]()
+		{
+			const FInventoryContainerSpec Basket = FInventoryContainerSpec::Basket();
+			TestEqual(TEXT("Cesta: 15 L"), Basket.MaxVolumeLiters, 15.0f);
+			TestEqual(TEXT("Cesta: sin límite de peso propio"), Basket.MaxWeightKg, 0.0f);
+			const FInventoryContainerSpec Shelf = FInventoryContainerSpec::Shelf();
+			TestEqual(TEXT("Estante: 30 L"), Shelf.MaxVolumeLiters, 30.0f);
+			TestEqual(TEXT("Estante: 40 kg"), Shelf.MaxWeightKg, 40.0f);
+			TestTrue(TEXT("Estante: hasta Mediano"), Shelf.MaxSize == EInventorySize::Mediano);
+			const FInventoryContainerSpec Chest = FInventoryContainerSpec::Chest();
+			TestEqual(TEXT("Arcón: 60 L"), Chest.MaxVolumeLiters, 60.0f);
+			TestEqual(TEXT("Arcón: 80 kg"), Chest.MaxWeightKg, 80.0f);
+			TestTrue(TEXT("Arcón: el único estanco"), Chest.bWaterproof && !Basket.bWaterproof && !Shelf.bWaterproof);
+
+			// Una mochila (Grande) va en la cesta y en el arcón, no en el estante.
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Pack = MochilaAlbatros(Model);
+			Model.PickUp(Pack, Fail);
+			FInventoryContainer OnShelf;
+			OnShelf.Spec = Shelf;
+			TestFalse(TEXT("Grande no va al estante"), Model.StoreInWorld(Pack.InstanceId, OnShelf, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::TooBig);
+			FInventoryContainer InChest;
+			InChest.Spec = Chest;
+			TestTrue(TEXT("Al arcón sí"), Model.StoreInWorld(Pack.InstanceId, InChest, Fail));
 		});
 
 		It("no cambian nada si el traslado falla", [this]()
