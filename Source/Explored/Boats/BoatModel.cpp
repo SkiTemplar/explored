@@ -943,12 +943,17 @@ FBoatSaveData FBoatModel::ToSaveData() const
 
 FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefinition* CustomDefinition)
 {
-	FBoatModel Model(Data.Type, Data.LocationCm, Data.YawDeg);
+	// El guardado admite NaN e infinitos: lo no finito vuelve a su valor por defecto.
+	const auto Finite = [](float V, float Default) { return FMath::IsFinite(V) ? V : Default; };
+	const bool bLocationValid = FMath::IsFinite(Data.LocationCm.X) && FMath::IsFinite(Data.LocationCm.Y) && FMath::IsFinite(Data.LocationCm.Z);
+	FBoatModel Model(Data.Type, bLocationValid ? Data.LocationCm : FVector::ZeroVector, Finite(Data.YawDeg, 0.0f));
 	if (CustomDefinition)
 	{
 		Model.SetDefinition(*CustomDefinition);
 	}
-	if (Data.bMoored && Data.MooringLengthCm > 0.0f)
+	// Mismas comprobaciones que Moor (salvo la distancia: pudo guardarse con el cabo tenso).
+	if (Data.bMoored && FMath::IsFinite(Data.MooringLengthCm) && Data.MooringLengthCm > 0.0f
+		&& FMath::IsFinite(Data.MooringAnchorCm.X) && FMath::IsFinite(Data.MooringAnchorCm.Y))
 	{
 		// Se restaura tal cual (no con Moor): el barco pudo guardarse con el cabo tenso.
 		Model.State.bMoored = true;
@@ -957,9 +962,9 @@ FBoatModel FBoatModel::FromSaveData(const FBoatSaveData& Data, const FBoatDefini
 	}
 	const FBoatDefinition& D = Model.GetDefinition();
 	Model.State.Condition = Data.Condition;
-	Model.State.HullDamage01 = FMath::Clamp(Data.HullDamage01, 0.0f, 1.0f);
-	Model.State.CargoKg = FMath::Clamp(Data.CargoKg, 0.0f, D.MaxCargoKg);
-	Model.State.WaterInHullKg = FMath::Clamp(Data.WaterInHullKg, 0.0f, Model.SwampWaterKg());
+	Model.State.HullDamage01 = FMath::Clamp(Finite(Data.HullDamage01, 0.0f), 0.0f, 1.0f);
+	Model.State.CargoKg = FMath::Clamp(Finite(Data.CargoKg, 0.0f), 0.0f, D.MaxCargoKg);
+	Model.State.WaterInHullKg = FMath::Clamp(Finite(Data.WaterInHullKg, 0.0f), 0.0f, Model.SwampWaterKg());
 	Model.State.bSailRaised = Data.bSailRaised && D.HasSail() && Data.Condition == EBoatCondition::Afloat;
 	if (Model.State.HullDamage01 >= 1.0f)
 	{

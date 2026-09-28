@@ -788,6 +788,38 @@ void FBoatSpec::Define()
 			TestTrue(TEXT("Daño total = naufragio"), Clamped.GetState().Condition == EBoatCondition::Wrecked);
 		});
 
+		It("un guardado con NaN o infinitos vuelve a valores por defecto", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FBoatModel Model(EBoatType::Canoe, FVector(100.0, 200.0, 0.0), 30.0f);
+			TestTrue(TEXT("amarra"), Model.Moor(FVector2D(100.0, 300.0), 300.0f));
+			FBoatSaveData Data = Model.ToSaveData();
+			Data.LocationCm.X = static_cast<double>(NaN);
+			Data.YawDeg = Inf;
+			Data.HullDamage01 = NaN;
+			Data.CargoKg = NaN;
+			Data.WaterInHullKg = NaN;
+			Data.MooringLengthCm = Inf;
+			const FBoatModel Loaded = FBoatModel::FromSaveData(Data);
+			const FBoatState& S = Loaded.GetState();
+			TestTrue(TEXT("posición finita"), FMath::IsFinite(S.LocationCm.X) && FMath::IsFinite(S.LocationCm.Y));
+			TestTrue(TEXT("rumbo finito"), FMath::IsFinite(S.YawDeg));
+			TestEqual(TEXT("daño NaN: sin daño"), S.HullDamage01, 0.0f);
+			TestTrue(TEXT("y no naufraga"), S.Condition != EBoatCondition::Wrecked);
+			TestEqual(TEXT("sin carga"), S.CargoKg, 0.0f);
+			TestEqual(TEXT("sin agua"), S.WaterInHullKg, 0.0f);
+			TestFalse(TEXT("cabo infinito: sin amarre"), Loaded.IsMoored());
+
+			Data = Model.ToSaveData();
+			Data.MooringAnchorCm.Y = static_cast<double>(NaN);
+			TestFalse(TEXT("poste NaN: sin amarre"), FBoatModel::FromSaveData(Data).IsMoored());
+
+			FBoatModel Launched(EBoatType::Raft, FVector::ZeroVector, 0.0f);
+			Launched.SetVelocityCmS(FVector2D(static_cast<double>(NaN), 10.0));
+			TestTrue(TEXT("velocidad NaN: quieto"), Launched.GetState().VelocityCmS.IsZero());
+		});
+
 		It("da exactamente el mismo resultado con las mismas entradas", [this]()
 		{
 			const FOceanWaves Waves = FOceanWaves::Make(0.6f);

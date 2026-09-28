@@ -86,8 +86,11 @@ public:
 	/** Cambia la ficha sin tocar el estado (una unión rota ha soltado una pieza). Recorta la carga a la nueva capacidad. */
 	void SetDefinition(const FBoatDefinition& InDefinition);
 
-	/** Velocidad sobre el fondo (cm/s): la arrancada con la que sale de la botadura. */
-	void SetVelocityCmS(const FVector2D& VelocityCmS) { State.VelocityCmS = VelocityCmS; }
+	/** Velocidad sobre el fondo (cm/s): la arrancada con la que sale de la botadura. Una no finita lo deja quieto. */
+	void SetVelocityCmS(const FVector2D& VelocityCmS)
+	{
+		State.VelocityCmS = FMath::IsFinite(VelocityCmS.X) && FMath::IsFinite(VelocityCmS.Y) ? VelocityCmS : FVector2D::ZeroVector;
+	}
 
 	/**
 	 * Amarra a un poste o muelle en AnchorCm con un cabo de LengthCm. False si el
