@@ -801,6 +801,8 @@ datos todavía.
         general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
         estrella, laurel, candado y reloj de arena); 44 pistas de logro siguen en
         `iconsPending`.
+        PR #116: mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit),
+        sin normalizar todavía en Unreal.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
