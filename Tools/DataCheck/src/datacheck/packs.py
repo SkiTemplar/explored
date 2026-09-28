@@ -23,6 +23,8 @@ PIVOTS = {"base", "agarre"}
 HAND_SOCKETS = {"hand_r"}
 SHEET_MAX_BYTES = 1_000_000
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
+# Ids de juego: item o pieza, o <planta>.<etapa> para las fases del huerto.
+GAME_ID = re.compile(r"^[a-z0-9_]+(\.[a-z0-9_]+)?$")
 LOTE_ID = re.compile(r"^lote[0-9]+-[a-z0-9-]+$")
 MESH = re.compile(r"^SM_Pack_[A-Za-z0-9]+$")
 HEX = re.compile(r"^#[0-9a-f]{6}$")
@@ -226,8 +228,10 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
-            if not ASCII_ID.match(gid):
+            if not GAME_ID.match(gid):
                 error(f"{CATALOG}: {key}: id «{gid}» no ASCII")
+            elif "." in gid and gid not in ids["planta"]:
+                error(f"{CATALOG}: {key}: «{gid}» no es una etapa de plants.json")
             if not d.get("reason"):
                 error(f"{CATALOG}: {key}: «{gid}» sin motivo")
             if key == "discarded" and d.get("pack") not in known_packs:
