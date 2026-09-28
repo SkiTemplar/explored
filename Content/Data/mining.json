@@ -72,7 +72,7 @@
 			]
 		},
 		{
-			"id": "veta_cobre", "nameEs": "Veta de cobre", "nameEn": "Copper vein", "material": "caliza", "item": "mineral_cobre",
+			"id": "veta_cobre", "nameEs": "Veta de cobre", "nameEn": "Copper ore seam", "material": "caliza", "item": "mineral_cobre",
 			"surfaceSource": false,
 			"vein": { "veinUnits": 10, "respawnDays": 20 },
 			"occurrences": [
@@ -103,7 +103,7 @@
 			]
 		},
 		{
-			"id": "obsidiana", "nameEs": "Veta de obsidiana", "nameEn": "Obsidian vein", "material": "obsidiana", "item": "obsidiana",
+			"id": "obsidiana", "nameEs": "Veta de obsidiana", "nameEn": "Obsidian seam", "material": "obsidiana", "item": "obsidiana",
 			"surfaceSource": true,
 			"occurrences": [
 				{ "island": "smoke", "layer": "subsuelo", "depthM": [1, 30], "fase": 1, "noteEs": "Junto al cráter y en los tubos de lava; hay cantos sueltos en la ladera" }

@@ -50,9 +50,9 @@
 				"product": { "item": "leche_cabra", "everyDays": 1, "requires": "cria_reciente" } }
 		],
 		"pieces": [
-			{ "id": "gallinero", "nameEs": "Gallinero", "nameEn": "Chicken coop", "fase": 2, "socket": "terreno", "propuesta": true,
+			{ "id": "gallinero", "nameEs": "Gallinero", "nameEn": "Coop", "fase": 2, "socket": "terreno", "propuesta": true,
 				"cost": [ { "item": "palo_recto", "count": 8 }, { "item": "hoja_palma", "count": 10 }, { "item": "cuerda", "count": 2 } ] },
-			{ "id": "pocilga", "nameEs": "Pocilga", "nameEn": "Pigsty", "fase": 2, "socket": "terreno", "propuesta": true,
+			{ "id": "pocilga", "nameEs": "Pocilga", "nameEn": "Sty", "fase": 2, "socket": "terreno", "propuesta": true,
 				"cost": [ { "item": "tronco_pequeno", "count": 8 }, { "item": "cuerda", "count": 3 } ] },
 			{ "id": "corral", "nameEs": "Corral", "nameEn": "Pen", "fase": 2, "socket": "terreno", "propuesta": true,
 				"cost": [ { "item": "tronco_pequeno", "count": 6 }, { "item": "estaca", "count": 8 }, { "item": "cuerda", "count": 3 } ] }
@@ -71,7 +71,7 @@
 				"cost": [ { "item": "piedra_plana", "count": 10 }, { "item": "canto_rodado", "count": 6 }, { "item": "arcilla_roja", "count": 4 } ] },
 			{ "id": "puerta_muralla", "nameEs": "Puerta de muralla", "nameEn": "Wall gate", "fase": 2, "socket": "puerta", "health": 180, "propuesta": true,
 				"cost": [ { "item": "madera_dura", "count": 6 }, { "item": "tronco_pequeno", "count": 2 }, { "item": "cuerda", "count": 2 } ] },
-			{ "id": "torre_defensa", "nameEs": "Torre de defensa", "nameEn": "Defense tower", "fase": 2, "socket": "terreno", "health": 320, "platformM": 4, "propuesta": true,
+			{ "id": "torre_defensa", "nameEs": "Torre de defensa", "nameEn": "Defence tower", "fase": 2, "socket": "terreno", "health": 320, "platformM": 4, "propuesta": true,
 				"cost": [ { "item": "tronco_pequeno", "count": 12 }, { "item": "madera_dura", "count": 6 }, { "item": "cuerda", "count": 4 } ] }
 		],
 		"traps": [
