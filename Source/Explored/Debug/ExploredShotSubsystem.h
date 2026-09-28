@@ -23,7 +23,10 @@ struct FExploredShot
  * captura de cada una en Saved/Shots/ y cierra el juego.
  *
  * Conjuntos: «islands» (una vista por isla a media tarde), «day» (ciclo del
- * día en la isla de inicio), «spawn» (vista del jugador al aparecer) y «all».
+ * día en la isla de inicio), «spawn» (vista del jugador al aparecer), «playtest»
+ * (recorrido a pie por isla y punto de interés, en orilla/vegetación/cima/cueva,
+ * a varias horas; activa también a UExploredPlaytestAuditor y a UExploredPlaytestBot,
+ * ver Tools/playtest.ps1) y «all».
  *
  * Con «-ExploredBench» en vez de (o junto a) «-ExploredShots» recorre tres
  * posiciones fijas (spawn en la selva, vista aérea, orilla) y, tras el mismo
@@ -62,6 +65,13 @@ private:
 	bool bBenchMode = false;
 	/** Los «stat» del modo bench ya están encendidos (son interruptores: no repetir). */
 	bool bBenchStatsEnabled = false;
+
+	/**
+	 * Fotogramas por segundo (1/DeltaTime) acumulados mientras se espera el asentamiento de la
+	 * vista actual; al pedir la captura se reduce a media/mínimo y, si hay un
+	 * UExploredPlaytestAuditor en el mundo (conjunto «playtest»), se le pasa junto con la VRAM.
+	 */
+	TArray<float> CurrentShotFrameRates;
 
 	UPROPERTY(Transient)
 	TObjectPtr<ACameraActor> Camera;

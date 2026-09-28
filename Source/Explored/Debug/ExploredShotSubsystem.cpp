@@ -18,11 +18,13 @@
 #include "WorldPartition/WorldPartitionSubsystem.h"
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Debug/ExploredPlaytestAuditor.h"
 #include "Explored.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/ExploredVegetationCell.h"
+#include "WorldGen/PointsOfInterest.h"
 #include "WorldGen/TerrainDensity.h"
 
 // Contadores de RenderCore/RHI que alimentan el HUD de «stat unit»/«stat gpu» (ciclos del último
@@ -149,6 +151,179 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Rotation = (Target - Shot.Location).Rotation();
 			Shot.Hours = 16.5f;
 			Shots.Add(Shot);
+		}
+	}
+
+	// Tres vistas para juzgar el cambio de vegetación de Landing (encargo
+	// 2026-09-27, sustitución de la vegetación por el pack low poly de
+	// Quaternius/Kenney): altura de jugador en la playa, dentro de la selva y
+	// la isla vista desde el mar. No están en "bench" (ese trío es
+	// spawn/orilla/aérea, para fps) ni en "islands" (esa vista de Landing
+	// desde el mar es más lejana, pensada para las 7 islas a la vez).
+	if (bAll || Set == TEXT("landing_report"))
+	{
+		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
+		if (Landing)
+		{
+			// Playa a la altura del jugador: mismo criterio que "spawn" (ojos a 1.7 m), pero desde
+			// la orilla mirando hacia dentro para que las palmeras de la franja de costa entren en
+			// cuadro junto con el mar detrás de la cámara.
+			{
+				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
+				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 1.02f;
+				const float GroundZ = FMath::Max(Density.SampleColumn(CamXY.X, CamXY.Y).Height, 0.0f);
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_beach");
+				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
+				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.5f;
+				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
+				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 3.0f) * 100.0 - Shot.Location).Rotation();
+				Shot.Hours = 10.0f;
+				Shots.Add(Shot);
+			}
+			// Dentro de la selva: a media isla, altura de jugador, mirando hacia el centro (más
+			// densidad de JungleWide/Shrub según FVegetationScatter::DefaultRules).
+			{
+				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
+				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 0.55f;
+				const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_jungle");
+				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
+				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.1f;
+				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
+				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 1.5f) * 100.0 - Shot.Location).Rotation();
+				Shot.Hours = 12.0f;
+				Shots.Add(Shot);
+			}
+			// La isla desde el mar: mismo criterio que el bucle de "islands" pero solo para
+			// Landing, para no pagar las otras 6 vistas cuando solo hace falta juzgar esta.
+			{
+				const float Angle = Landing->Rotation + 0.9f;
+				const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+				const FVector2D Cam2D = Landing->Center + Dir * Landing->Radius * 1.45f;
+				const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 25.0f + Landing->MaxHeight * 0.25f;
+				FExploredShot Shot;
+				Shot.Name = TEXT("landing_from_sea");
+				Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
+				const FVector Target(Landing->Center.X * 100.0, Landing->Center.Y * 100.0, Landing->MaxHeight * 35.0);
+				Shot.Rotation = (Target - Shot.Location).Rotation();
+				Shot.Hours = 16.0f;
+				Shots.Add(Shot);
+			}
+		}
+	}
+
+	// Playtest automático (auditor de defectos, ver ExploredPlaytestAuditor): recorrido «a pie»
+	// por cada isla y sus puntos de interés garantizados. Altura de jugador, en la orilla, dentro
+	// de la vegetación, en la cima y en la boca de una cueva si la isla tiene una, cada una a
+	// cuatro horas del día (mismos valores que «day», para reaprovechar el mismo punto de
+	// asentamiento de iluminación ya validado). Los puntos de interés garantizados (FPoiLayout) se
+	// capturan aparte, uno por punto a mediodía: multiplicarlos también por las cuatro horas
+	// dispararía el número de capturas sin aportar tanto (la luz importa más para el paisaje
+	// general que para verificar un objeto concreto).
+	if (bAll || Set == TEXT("playtest"))
+	{
+		struct FHourNamed { const TCHAR* Name; float Hours; };
+		const FHourNamed Hours[] = {
+			{ TEXT("amanecer"), 6.2f },
+			{ TEXT("mediodia"), 13.0f },
+			{ TEXT("atardecer"), 17.6f },
+			{ TEXT("noche"), 22.0f },
+		};
+
+		// Busca, en pasos de 30° desde Island.Rotation, un ángulo donde FindBeach/FindInland
+		// encuentren un punto válido. Doce intentos cubren toda la vuelta.
+		auto FindBeachAround = [&Density](const FIslandDesc& Island, FVector& Out) -> bool
+		{
+			for (int32 Step = 0; Step < 12; ++Step)
+			{
+				if (FPoiLayout::FindBeach(Density, Island, Island.Rotation + Step * (UE_PI / 6.0f), Out))
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+		auto FindInlandAround = [&Density](const FIslandDesc& Island, FVector& Out) -> bool
+		{
+			for (int32 Step = 0; Step < 12; ++Step)
+			{
+				if (FPoiLayout::FindInland(Density, Island, Island.Rotation + Step * (UE_PI / 6.0f), 0.5f, Out))
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+		auto AddWalkShot = [this](const FString& Name, const FVector& StandLocationMeters, const FVector& LookAtMeters, float ShotHours)
+		{
+			FExploredShot Shot;
+			Shot.Name = Name;
+			Shot.Location = StandLocationMeters * 100.0;
+			Shot.Rotation = ((LookAtMeters - StandLocationMeters) * 100.0).Rotation();
+			Shot.Hours = ShotHours;
+			Shots.Add(Shot);
+		};
+
+		for (const FIslandDesc& Island : Density.GetLayout().Islands)
+		{
+			const FString IslandName = LexToString(Island.Archetype);
+
+			FVector Beach = FVector::ZeroVector;
+			FVector Inland = FVector::ZeroVector;
+			const bool bHasBeach = FindBeachAround(Island, Beach);
+			const bool bHasInland = FindInlandAround(Island, Inland);
+			const FVector Summit = FPoiLayout::FindSummit(Density, Island);
+
+			// Cueva más cercana al centro de esta isla (si el layout generó alguna ahí).
+			const FCaveDesc* IslandCave = nullptr;
+			for (const FCaveDesc& Cave : Density.GetCaves())
+			{
+				const FVector2D CaveXY(Cave.Start.X, Cave.Start.Y);
+				if ((CaveXY - Island.Center).Size() <= Island.Radius * 1.5f)
+				{
+					IslandCave = &Cave;
+					break;
+				}
+			}
+
+			for (const FHourNamed& Hour : Hours)
+			{
+				if (bHasBeach)
+				{
+					const FVector Stand = Beach + FVector(0, 0, 1.7f);
+					AddWalkShot(FString::Printf(TEXT("%s_orilla_%s"), *IslandName, Hour.Name), Stand,
+						FVector(Island.Center.X, Island.Center.Y, Stand.Z), Hour.Hours);
+				}
+				if (bHasInland)
+				{
+					const FVector Stand = Inland + FVector(0, 0, 1.7f);
+					AddWalkShot(FString::Printf(TEXT("%s_vegetacion_%s"), *IslandName, Hour.Name), Stand,
+						FVector(Island.Center.X, Island.Center.Y, Stand.Z), Hour.Hours);
+				}
+				{
+					const FVector Stand = Summit + FVector(0, 0, 1.7f);
+					AddWalkShot(FString::Printf(TEXT("%s_cima_%s"), *IslandName, Hour.Name), Stand,
+						FVector(Island.Center.X, Island.Center.Y, Summit.Z - 5.0f), Hour.Hours);
+				}
+				if (IslandCave)
+				{
+					const FVector Stand = IslandCave->Start + FVector(0, 0, 1.0f);
+					AddWalkShot(FString::Printf(TEXT("%s_cueva_%s"), *IslandName, Hour.Name), Stand, IslandCave->End, Hour.Hours);
+				}
+			}
+		}
+
+		// Puntos de interés garantizados: uno por punto, a mediodía, altura de jugador.
+		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		{
+			const FIslandDesc* Island = Density.GetLayout().Islands.IsValidIndex(Poi.IslandIndex)
+				? &Density.GetLayout().Islands[Poi.IslandIndex] : nullptr;
+			const FString IslandName = Island ? LexToString(Island->Archetype) : TEXT("Mar");
+			const FVector Stand = Poi.Location + FVector(0, 0, Poi.bUnderwater ? 0.3f : 1.7f);
+			const FVector LookAt = Island ? FVector(Island->Center.X, Island->Center.Y, Stand.Z) : Stand + FVector(5.0f, 0.0f, 0.0f);
+			AddWalkShot(FString::Printf(TEXT("%s_%s_mediodia"), *IslandName, LexToString(Poi.Type)), Stand, LookAt, 13.0f);
 		}
 	}
 
@@ -334,6 +509,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	}
 	Timer = 0.0f;
 	bRequested = false;
+	CurrentShotFrameRates.Reset();
 }
 
 void UExploredShotSubsystem::Tick(float DeltaTime)
@@ -364,6 +540,14 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		return;
 	}
 
+	// Muestra de fps de esta vista (para UExploredPlaytestAuditor, si está activo): cada fotograma
+	// de espera cuenta, no solo el de la captura, para que el mínimo recoja un posible tirón del
+	// streaming de World Partition o de los shaders on-demand.
+	if (DeltaTime > UE_KINDA_SMALL_NUMBER)
+	{
+		CurrentShotFrameRates.Add(1.0f / DeltaTime);
+	}
+
 	// Sin esperar al streaming, las texturas del terreno se capturan con los mips más bajos.
 	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
 	if (!bRequested && Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds))
@@ -371,6 +555,18 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		if (bBenchMode)
 		{
 			LogBenchSample(Current);
+		}
+		if (UExploredPlaytestAuditor* Auditor = GetWorld()->GetSubsystem<UExploredPlaytestAuditor>())
+		{
+			float SumFPS = 0.0f;
+			float MinFPS = 0.0f;
+			for (int32 Index = 0; Index < CurrentShotFrameRates.Num(); ++Index)
+			{
+				SumFPS += CurrentShotFrameRates[Index];
+				MinFPS = (Index == 0) ? CurrentShotFrameRates[Index] : FMath::Min(MinFPS, CurrentShotFrameRates[Index]);
+			}
+			const float AvgFPS = CurrentShotFrameRates.Num() > 0 ? SumFPS / CurrentShotFrameRates.Num() : 0.0f;
+			Auditor->RecordFrameSample(Shots[Current].Name, AvgFPS, MinFPS);
 		}
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, false, false);
@@ -386,6 +582,13 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		if (Current >= Shots.Num())
 		{
 			bActive = false;
+			// El auditor puede seguir acumulando defectos por su cuenta (su propio Tick,
+			// independiente del de este subsistema); se le pide el volcado final aquí para
+			// que el informe incluya también el rendimiento de todas las vistas ya capturadas.
+			if (UExploredPlaytestAuditor* Auditor = GetWorld()->GetSubsystem<UExploredPlaytestAuditor>())
+			{
+				Auditor->WriteReport();
+			}
 			UE_LOG(LogExplored, Display, TEXT("[Shots] Terminado"));
 			FPlatformMisc::RequestExit(false, TEXT("ExploredShots"));
 			return;
