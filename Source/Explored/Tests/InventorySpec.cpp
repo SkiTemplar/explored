@@ -690,6 +690,26 @@ void FInventorySpec::Define()
 			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
 			TestTrue(TEXT("El peso sigue siendo finito"), FMath::IsFinite(Model.GetBodyWeightKg()));
 		});
+
+		It("rechaza una comodidad de mochila negativa o no finita", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			TestTrue(TEXT("Mochila a medida"), Model.SetCustomBackpack(true, 20.0f, 10.0f, Fail));
+			const FInventoryState Good = Model.GetState();
+
+			// -15 kg deja la capacidad cómoda en 0: la proporción de carga sería 0/0.
+			FInventoryState Negative = Good;
+			Negative.BackpackComfortBonusKg = -FInventoryModel::BaseComfortableKg;
+			TestFalse(TEXT("Comodidad negativa"), Model.LoadState(Negative, Fail));
+			FInventoryState NaNBonus = Good;
+			NaNBonus.BackpackComfortBonusKg = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Comodidad NaN"), Model.LoadState(NaNBonus, Fail));
+
+			TestTrue(TEXT("El estado bueno sigue ahí"), Model.GetState() == Good);
+			TestTrue(TEXT("Proporción de carga finita"), FMath::IsFinite(Model.GetCarriedWeightRatio()));
+			TestTrue(TEXT("Proporción al nadar finita"), FMath::IsFinite(Model.GetSwimLoadRatio()));
+		});
 	});
 
 	Describe("Gastar materiales", [this]()

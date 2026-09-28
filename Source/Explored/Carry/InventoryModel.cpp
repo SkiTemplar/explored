@@ -1327,12 +1327,13 @@ float FInventoryModel::GetComfortableCapacityKg() const
 
 float FInventoryModel::GetCarriedWeightRatio() const
 {
-	return (GetBodyWeightKg() + GetSledgeWeightKg() * SledgeDragFactor) / GetComfortableCapacityKg();
+	// Divisor acotado por si la capacidad cómoda llegara a 0 (0/0 = NaN).
+	return (GetBodyWeightKg() + GetSledgeWeightKg() * SledgeDragFactor) / FMath::Max(GetComfortableCapacityKg(), UE_KINDA_SMALL_NUMBER);
 }
 
 float FInventoryModel::GetSwimLoadRatio() const
 {
-	return GetBodyWeightKg() / GetComfortableCapacityKg();
+	return GetBodyWeightKg() / FMath::Max(GetComfortableCapacityKg(), UE_KINDA_SMALL_NUMBER);
 }
 
 float FInventoryModel::GetNoiseLevel() const
@@ -1563,8 +1564,10 @@ bool FInventoryModel::ValidateState(const FInventoryState& InState, EInventoryFa
 		return false;
 	}
 	// La mochila a medida (sin objeto) conserva la capacidad guardada tal cual (RebuildSpecs).
+	// También su comodidad: con -15 kg la capacidad cómoda queda en 0 y la proporción de carga en 0/0.
 	if (S.bHasBackpack && (!InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxVolumeLiters)
-		|| !InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxWeightKg)))
+		|| !InventoryModelDetail::IsSaneAmount(S.Backpack.Spec.MaxWeightKg)
+		|| !InventoryModelDetail::IsSaneAmount(S.BackpackComfortBonusKg)))
 	{
 		return false;
 	}
