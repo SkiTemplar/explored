@@ -394,7 +394,7 @@ void FTramwayModel::SetDamaged(const FIntVector& A, const FIntVector& B, bool bD
 TArray<TPair<FIntVector, FIntVector>> FTramwayModel::DamageInSphere(const FVector& Center, float Radius)
 {
 	TArray<TPair<FIntVector, FIntVector>> Out;
-	if (!(Radius > 0.0f) || !FMath::IsFinite(Center.X) || !FMath::IsFinite(Center.Y) || !FMath::IsFinite(Center.Z))
+	if (!FMath::IsFinite(Radius) || Radius <= 0.0f || !FMath::IsFinite(Center.X) || !FMath::IsFinite(Center.Y) || !FMath::IsFinite(Center.Z))
 	{
 		return Out;
 	}
@@ -463,7 +463,8 @@ double FTramwayModel::CartMass(const FMineCart& Cart) const
 
 bool FTramwayModel::SetLoad(FMineCart& Cart, float LoadKg) const
 {
-	if (!(LoadKg >= 0.0f) || LoadKg > Settings.CapacityKg)
+	// IsFinite explícito: con matemáticas rápidas `!(x >= 0)` no descarta los NaN.
+	if (!FMath::IsFinite(LoadKg) || LoadKg < 0.0f || LoadKg > Settings.CapacityKg)
 	{
 		return false;
 	}
@@ -474,7 +475,7 @@ bool FTramwayModel::SetLoad(FMineCart& Cart, float LoadKg) const
 bool FTramwayModel::PlaceCart(FMineCart& Cart, const FIntVector& From, const FIntVector& To, double S) const
 {
 	const double Length = SegmentLength(From, To);
-	if (Length <= 0.0 || !(S >= 0.0) || S > Length)
+	if (Length <= 0.0 || !FMath::IsFinite(S) || S < 0.0 || S > Length)
 	{
 		return false;
 	}
@@ -732,7 +733,7 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 FCartStepResult FTramwayModel::Step(FMineCart& Cart, const FCartControl& Control, double Dt, double& Accumulator) const
 {
 	FCartStepResult Total;
-	if (!(Dt > 0.0) || !FMath::IsFinite(Dt))
+	if (!FMath::IsFinite(Dt) || Dt <= 0.0)
 	{
 		return Total;
 	}
@@ -907,7 +908,7 @@ bool FTramwayModel::CartFromValue(const FSaveValue& Value, FMineCart& OutCart)
 	if (!Value.IsObject() || !Ends || !Ends->IsArray() || Ends->Num() != 6 || !S || !V || !Load || !Derail
 		|| !ReadNode(*Ends, 0, Cart.From) || !ReadNode(*Ends, 3, Cart.To)
 		|| !S->TryGetDouble(Cart.S) || !V->TryGetDouble(Cart.V) || !Load->TryGetDouble(Load64)
-		|| !FMath::IsFinite(Cart.S) || !FMath::IsFinite(Cart.V) || !(Load64 >= 0.0) || Load64 > 1.0e6
+		|| !FMath::IsFinite(Cart.S) || !FMath::IsFinite(Cart.V) || !FMath::IsFinite(Load64) || Load64 < 0.0 || Load64 > 1.0e6
 		|| !Derail->TryGetInt(Cause) || Cause < 0 || Cause > static_cast<int64>(ECartDerailCause::MissingTrack))
 	{
 		return false;
