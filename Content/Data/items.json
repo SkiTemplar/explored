@@ -75,7 +75,7 @@
 	{ "id": "basalto_tallado", "nameEs": "Cabeza de basalto tallada", "nameEn": "Knapped basalt head", "meshPath": "/Engine/BasicShapes/Sphere.Sphere",
 		"weightKg": 0.9, "volumeLiters": 0.35, "size": "Pequeno", "tags": ["piedra", "mineria"],
 		"properties": [ { "name": "Contundente", "value": 4 }, { "name": "Rigido", "value": 4 }, { "name": "Pesado", "value": 3 }, { "name": "Punta", "value": 2 } ] },
-	{ "id": "canto_aguzado", "nameEs": "Canto aguzado", "nameEn": "Pointed cobble", "meshPath": "/Engine/BasicShapes/Sphere.Sphere",
+	{ "id": "canto_aguzado", "nameEs": "Canto aguzado", "nameEn": "Pointed pebble", "meshPath": "/Engine/BasicShapes/Sphere.Sphere",
 		"weightKg": 0.75, "volumeLiters": 0.28, "size": "Pequeno", "tags": ["piedra", "mineria"],
 		"properties": [ { "name": "Contundente", "value": 3 }, { "name": "Rigido", "value": 3 }, { "name": "Pesado", "value": 2 }, { "name": "Punta", "value": 2 } ] },
 	{ "id": "cabeza_pico_rescatada", "nameEs": "Cabeza de pico rescatada", "nameEn": "Salvaged pick head", "meshPath": "/Engine/BasicShapes/Sphere.Sphere",

@@ -74,7 +74,7 @@
 		"baseMaxDurability": 0,
 		"slots": [
 			{ "role": "Percutor", "requireAll": false, "requirements": [ { "property": "Contundente", "min": 3 } ] },
-			{ "role": "Chatarra", "requireAll": false, "requirements": [ { "property": "Rigido", "min": 3 } ], "tags": ["rescatado"] }
+			{ "role": "Chatarra", "requireAll": true, "requirements": [ { "property": "Rigido", "min": 3 }, { "property": "Filo", "min": 2 } ], "tags": ["rescatado"] }
 		]
 	},
 	{

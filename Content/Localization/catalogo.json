@@ -3850,7 +3850,7 @@
 			"namespace": "Data.items.items",
 			"key": "canto_aguzado.nameEs",
 			"es": "Canto aguzado",
-			"en": "Pointed cobble",
+			"en": "Pointed pebble",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «canto_aguzado» nameEs/nameEn"

@@ -846,6 +846,8 @@ def test_cabeza_rescatada_de_chapa_o_hierro_en_el_banco(real: DataSet) -> None:
     for chatarra in ("chapa_fuselaje", "hierro_meteorito"):
         head = apply(real, inst(real, "canto_rodado"), inst(real, chatarra), "Golpear")
         assert head.definition == "cabeza_pico_rescatada", chatarra
+    tubo = apply(real, inst(real, "canto_rodado"), inst(real, "tubo_aluminio"), "Golpear")
+    assert tubo is None or tubo.definition != "cabeza_pico_rescatada"
     for tid in ("cabeza_pico_de_chapa", "cabeza_pico_de_hierro"):
         assert template(real, tid)["station"] == "banco_chatarra"
 

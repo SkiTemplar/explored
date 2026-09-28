@@ -38,7 +38,7 @@ mano da 1–3 cocos maduros (media 2), así que la primera tala resuelve la sed 
 |---|---|---|---|---|
 | 0–4 | 07:30–10:00 | Fuselaje: kit de arranque, chapa del Albatros | — | chapa, cantimplora… |
 | 4–10 | 10:00–13:30 | 2 palmeras y 2 sotobosques a mano, 4 arbustos, 3 rocas | — | ~14 hojas de palma, ~8 palos, ~2 lianas, 4 cocos, 2 hojas de platanera, 9 cantos, 3 piedras planas |
-| 10–13 | 13:30–15:20 | Pala: chapa + palo (Atar). Mango atado + canto: **hacha de piedra**. Lasca de pedernal + canto (Tallar): canto aguzado; + mango atado: **pico de piedra** | 4 palos, 2 lianas, 2 cantos, 1 lasca | pala (nivel 1), hacha, pico (nivel 2) |
+| 10–13 | 13:30–15:20 | Pala: chapa + palo (Atar). Mango atado + canto: **hacha de piedra**. Lasca de pedernal + canto (Tallar): canto aguzado; + mango atado: **pico de piedra** | 4 palos, 2 lianas, 2 cantos, 1 lasca | pala (`ToolTier` 1), hacha, pico (`ToolTier` 2) |
 | 12–16 | 14:40–17:00 | Refugio inclinado (20 min de juego) y fogata (10) | 3 palos, 8 hojas, 1 liana; 6 cantos, 5 ramas, 1 fibra | refugio, fuego |
 | 16–20 | 17:00–19:30 | 2 rocas, arena de la playa (2 m³ con pala ≈ 11 s de golpes) | — | 6 cantos (quedan 8), 2 piedras planas, 12 arenas |
 | 20–24 | 19:30–22:00 | Arriate del limonero (30 min, pala) y plantar el limón silvestre; beber coco | 8 cantos, 2 arenas, 1 limón | limonero día 1 (fruto el día 13) |
