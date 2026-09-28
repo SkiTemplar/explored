@@ -87,6 +87,11 @@ struct EXPLORED_API FBuildingPieceDef
 	FName Mesh;
 	/** Encendida, es punto de reaparición (GDD §8.6: «las fogatas encendidas son puntos de reaparición»). */
 	bool bRespawnPoint = false;
+	/**
+	 * Almacenamiento (biblia 03 §1.4): clase de contenedor del mundo que hace la pieza
+	 * («Cesta», «Estante», «Arcon», los nombres de EWorldContainerKind); NAME_None si no guarda nada.
+	 */
+	FName ContainerKind;
 };
 
 /** Todo building_pieces.json ya parseado. */

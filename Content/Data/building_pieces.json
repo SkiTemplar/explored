@@ -914,6 +914,91 @@
       "mesh": "SM_Base_ChartTable"
     },
     {
+      "id": "cesta_almacen",
+      "nameEs": "Cesta de almacén",
+      "nameEn": "Storage basket",
+      "tier": "bambu",
+      "category": "almacen",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "bambu_fino",
+          "count": 6
+        },
+        {
+          "item": "cordel",
+          "count": 4
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 20,
+      "integrity": 30,
+      "maxCycloneCategory": 1,
+      "mesh": null,
+      "container": "Cesta"
+    },
+    {
+      "id": "estanteria_almacen",
+      "nameEs": "Estantería de almacén",
+      "nameEn": "Storage shelf",
+      "tier": "madera",
+      "category": "almacen",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 4
+        },
+        {
+          "item": "cuerda",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 40,
+      "integrity": 55,
+      "maxCycloneCategory": 2,
+      "mesh": null,
+      "container": "Estante"
+    },
+    {
+      "id": "arcon",
+      "nameEs": "Arcón",
+      "nameEn": "Chest",
+      "tier": "madera",
+      "category": "almacen",
+      "socket": "mueble",
+      "cost": [
+        {
+          "item": "madera_dura",
+          "count": 6
+        },
+        {
+          "item": "cuerda",
+          "count": 3
+        },
+        {
+          "item": "resina",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "hacha"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 50,
+      "integrity": 60,
+      "maxCycloneCategory": 2,
+      "mesh": null,
+      "container": "Arcon"
+    },
+    {
       "id": "estanteria_museo",
       "nameEs": "Estantería del museo",
       "nameEn": "Museum shelf",
