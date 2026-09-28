@@ -720,7 +720,9 @@ datos todavía.
       (GDD §7.1). *(GDD §7.1)*
       → **En parte:** PR #45, #48, #56 y #60 (packs CC0) y #42, #54, #63 (paleta),
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
-        general, mobiliario y props.
+        general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
+        estrella, laurel, candado y reloj de arena); 25 pistas de logro siguen en
+        `iconsPending`.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
