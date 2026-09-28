@@ -1,7 +1,6 @@
 #include "WorldGen/TerrainDensity.h"
 
 #include "Core/ExploredRandom.h"
-#include "WorldGen/TerrainEdits.h"
 #include "Misc/ScopeLock.h"
 
 namespace

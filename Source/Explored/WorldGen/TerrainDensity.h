@@ -3,9 +3,8 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/TerrainEdits.h"
 #include "WorldGen/TerrainErosion.h"
-
-class FTerrainEdits;
 
 /** Cueva o arco: cápsula deformada que se excava en el terreno. Metros. */
 struct EXPLORED_API FCaveDesc

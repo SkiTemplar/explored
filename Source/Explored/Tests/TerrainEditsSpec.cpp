@@ -8,6 +8,8 @@
 #include "WorldGen/TerrainDensity.h"
 #include "WorldGen/TerrainEdits.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace TerrainEditsSpecDetail
@@ -428,7 +430,9 @@ void FTerrainEditsSpec::Define()
 			TestFalse(TEXT("tope negativo"), Edits.GetModel().DigSphere(Sphere, Flat).Changed());
 			TestTrue(TEXT("nada editado"), Edits.IsEmpty());
 			// El pico y la pala de la PR #40 pasan por la misma consulta de camino.
-			TestFalse(TEXT("pico con impacto NaN"), Edits.GetModel().Pickaxe(FPickaxeHit{ FVector(NaN) }, Flat).Changed());
+			FPickaxeHit NaNHit;
+			NaNHit.ImpactPoint = FVector(NaN);
+			TestFalse(TEXT("pico con impacto NaN"), Edits.GetModel().Pickaxe(NaNHit, Flat).Changed());
 			TestEqual(TEXT("compactación en NaN"), Edits.GetModel().Compaction(NaN, 0.0), 0);
 			FShovelStroke Stroke;
 			Stroke.Center = FVector(0.0, NaN, 0.0);
@@ -494,8 +498,8 @@ void FTerrainEditsSpec::Define()
 			const FIntVector First = A.GetModel().EditedChunks()[0];
 			const uint32 Before = A.ChunkChecksum(First);
 			A.Dig(MakeHit(A.GetModel().SamplePosition(First * 32 + FIntVector(16)), ETerrainMaterial::Tierra, ETerrainDigTool::PicoRescatado), Deep);
-			TestNotEqual(TEXT("un golpe cambia la suma"), A.ChunkChecksum(First), Before);
-			TestEqual(TEXT("chunk sin editar: base de FNV-1a"), A.ChunkChecksum(FIntVector(1000, 0, 0)), 2166136261u);
+			TestTrue(TEXT("un golpe cambia la suma"), A.ChunkChecksum(First) != Before);
+			TestTrue(TEXT("chunk sin editar: base de FNV-1a"), A.ChunkChecksum(FIntVector(1000, 0, 0)) == 2166136261u);
 		});
 	});
 
@@ -758,7 +762,8 @@ void FTerrainEditsSpec::Define()
 			int32 Flipped = 0;
 			for (int32 I = 0; I < Bytes.Num(); ++I)
 			{
-				for (const uint8 Mask : { static_cast<uint8>(0x01), static_cast<uint8>(0x80), static_cast<uint8>(0xFF) })
+				static const uint8 Masks[] = { 0x01, 0x80, 0xFF };
+				for (const uint8 Mask : Masks)
 				{
 					TArray<uint8> Mutated = Bytes;
 					Mutated[I] ^= Mask;
