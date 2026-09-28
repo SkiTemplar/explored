@@ -208,6 +208,20 @@ namespace SaveSystemStatesDetail
 		}
 	}
 
+	/**
+	 * Coordenada de celda guardada como real: false si no es finita o no cabe en
+	 * int32 ("cell": [1e30, 0, 0] o ["NaN", 0, 0]); convertirla sería UB.
+	 */
+	bool RoundCellCoord(double Value, int32& Out)
+	{
+		if (!FMath::IsFinite(Value) || Value < -2147483648.0 || Value > 2147483647.0)
+		{
+			return false;
+		}
+		Out = FMath::RoundToInt(Value);
+		return true;
+	}
+
 	/** Une B en A sin repetir y conservando el orden de A. */
 	void UnionInto(TArray<FName>& A, const TArray<FName>& B)
 	{
@@ -260,11 +274,12 @@ namespace ExploredSaveStates
 		ReadList(Ar, TEXT("pieces"), OutState.Pieces, [](const FSaveArchive& In, FBuildingPieceState& Piece)
 		{
 			FVector Cell = FVector::ZeroVector;
-			if (!In.Read(TEXT("id"), Piece.Id) || !In.Read(TEXT("defId"), Piece.DefId) || !In.Read(TEXT("cell"), Cell))
+			if (!In.Read(TEXT("id"), Piece.Id) || !In.Read(TEXT("defId"), Piece.DefId) || !In.Read(TEXT("cell"), Cell)
+				|| !RoundCellCoord(Cell.X, Piece.Placement.Cell.X) || !RoundCellCoord(Cell.Y, Piece.Placement.Cell.Y)
+				|| !RoundCellCoord(Cell.Z, Piece.Placement.Cell.Z))
 			{
 				return false;
 			}
-			Piece.Placement.Cell = FIntVector(FMath::RoundToInt(Cell.X), FMath::RoundToInt(Cell.Y), FMath::RoundToInt(Cell.Z));
 			In.Read(TEXT("baseId"), Piece.Placement.BaseId);
 			In.Read(TEXT("rotation"), Piece.Placement.Rotation);
 			In.Read(TEXT("integrity"), Piece.Integrity);

@@ -120,6 +120,40 @@ void FSaveSystemsSpec::Define()
 			LoadBuilding(Ar, Loaded);
 			TestEqual(TEXT("Una pieza"), Loaded.Pieces.Num(), 1);
 		});
+
+		It("descarta una pieza con celda no finita o fuera de int32", [this]()
+		{
+			FBuildingSaveState State;
+			FBuildingPieceState Piece;
+			Piece.Id = 1;
+			Piece.DefId = FName(TEXT("pilote"));
+			Piece.Placement.Cell = FIntVector(-3, 4, 1);
+			State.Pieces.Add(Piece);
+			FSaveArchive Ar;
+			SaveBuilding(Ar, State);
+			FSaveValue Pieces = *Ar.FindValue(TEXT("pieces"));
+			auto AddPiece = [&Pieces](int64 Id, FSaveValue X)
+			{
+				FSaveValue Cell = FSaveValue::MakeArray();
+				Cell.Add(MoveTemp(X));
+				Cell.Add(FSaveValue::MakeDouble(0.0));
+				Cell.Add(FSaveValue::MakeDouble(0.0));
+				FSaveValue Bad = FSaveValue::MakeObject();
+				Bad.Set(TEXT("id"), FSaveValue::MakeInt(Id));
+				Bad.Set(TEXT("defId"), FSaveValue::MakeString(TEXT("pared")));
+				Bad.Set(TEXT("cell"), MoveTemp(Cell));
+				Pieces.Add(MoveTemp(Bad));
+			};
+			AddPiece(2, FSaveValue::MakeDouble(1.0e30));
+			AddPiece(3, FSaveValue::MakeString(TEXT("NaN")));
+			AddPiece(4, FSaveValue::MakeString(TEXT("-Infinity")));
+			AddPiece(5, FSaveValue::MakeDouble(-3.0e9));
+			Ar.SetValue(TEXT("pieces"), Pieces);
+			FBuildingSaveState Loaded;
+			LoadBuilding(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Solo la pieza buena"), Loaded.Pieces.Num(), 1);
+			TestTrue(TEXT("Con su celda"), Loaded.Pieces.Num() == 1 && Loaded.Pieces[0].Placement.Cell == FIntVector(-3, 4, 1));
+		});
 	});
 
 	Describe("Huerto", [this]()
