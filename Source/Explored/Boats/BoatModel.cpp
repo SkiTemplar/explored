@@ -362,13 +362,15 @@ void FBoatModel::SetDefinition(const FBoatDefinition& InDefinition)
 
 bool FBoatModel::Moor(const FVector2D& AnchorCm, float LengthCm)
 {
-	if (!(LengthCm > 0.0f) || State.Condition == EBoatCondition::Wrecked)
+	// Comprobación explícita de NaN e infinitos: el editor compila con matemáticas rápidas y ahí
+	// el truco de comparar en positivo (`!(x > 0)`) no descarta los NaN.
+	if (!FMath::IsFinite(LengthCm) || LengthCm <= 0.0f || !FMath::IsFinite(AnchorCm.X) || !FMath::IsFinite(AnchorCm.Y)
+		|| State.Condition == EBoatCondition::Wrecked)
 	{
 		return false;
 	}
 	const FVector2D Here(State.LocationCm.X, State.LocationCm.Y);
-	// Comparación en positivo: un poste con NaN (o un cabo infinito frente a un poste NaN) no amarra.
-	if (!((Here - AnchorCm).Size() <= LengthCm + UE_KINDA_SMALL_NUMBER))
+	if ((Here - AnchorCm).Size() > LengthCm + UE_KINDA_SMALL_NUMBER)
 	{
 		return false;
 	}
