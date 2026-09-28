@@ -24,6 +24,8 @@ def seamless_loop(x_extended: np.ndarray, loop_len: int, fade_len: int) -> np.nd
     """x_extended: (..., loop_len + fade_len) -> bucle continuo (..., loop_len)."""
     if x_extended.shape[-1] < loop_len + fade_len:
         raise ValueError("la señal extendida es mas corta que loop_len + fade_len")
+    if fade_len > loop_len:
+        raise ValueError("el fundido cruzado no puede ser mas largo que el bucle")
 
     fade_in = raised_cosine_fade(fade_len)
     fade_out = 1.0 - fade_in

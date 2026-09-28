@@ -14,16 +14,18 @@ celda de 2 x 2 m de la rejilla.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
+import bpy  # noqa: E402
+
 import _materials as M  # noqa: E402
 import _shapes as S  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
 import bmesh  # noqa: E402
-import bpy  # noqa: E402
-from mathutils import Matrix, Vector, noise as mnoise  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
+from mathutils import noise as mnoise
 
 CATEGORY = 'base_production'
 GROUP = 'ProduccionBase'
@@ -125,9 +127,9 @@ def _b_work_stone(v, rnd, name):
     def base_col(vv):
         c = wear(vv)[:3]
         k = min(1.0, max(0.0, vv.co.z / 0.16))
-        c = [m * (1 - k) + x * k for m, x in zip(PAL['moss'], c)]
+        c = [m * (1 - k) + x * k for m, x in zip(PAL['moss'], c, strict=True)]
         if vv.co.z > 0.355:
-            c = [x * 0.5 + w * 0.5 for x, w in zip(c, PAL['worn'])]
+            c = [x * 0.5 + w * 0.5 for x, w in zip(c, PAL['worn'], strict=True)]
         return (*c, 0.0)
     C.set_vertex_colors(base, base_col)
     p.add(base, 'none')
@@ -214,8 +216,8 @@ def _b_clay_oven(v, rnd, name):
         soot = min(1.0, soot + top * 0.8)
         j = rnd.uniform(-0.03, 0.03)
         dry = max(0.0, (vv.co.z - z0) / H) * 0.35
-        c = [a * (1 - dry) + b * dry for a, b in zip(base_c, PAL['clay_dry'])]
-        return (*[max(0.0, min(1.0, a * (1 - soot) + s * soot + j)) for a, s in zip(c, PAL['soot'])], 0.0)
+        c = [a * (1 - dry) + b * dry for a, b in zip(base_c, PAL['clay_dry'], strict=True)]
+        return (*[max(0.0, min(1.0, a * (1 - soot) + s * soot + j)) for a, s in zip(c, PAL['soot'], strict=True)], 0.0)
     C.set_vertex_colors(dome, dome_col)
     p.add(dome, 'none')
     # respiradero: tubo corto de barro
@@ -486,7 +488,7 @@ def _b_lemon_bed(v, rnd, name):
             z = sz * 0.8 + k * 0.22
             rgb = tuple(c * rnd.uniform(0.7, 0.95) for c in _pick(rnd, 'stone'))
             if k == 0 and rnd.random() < 0.4:
-                rgb = tuple(a_ * 0.55 + b_ * 0.45 for a_, b_ in zip(rgb, PAL['moss']))
+                rgb = tuple(a_ * 0.55 + b_ * 0.45 for a_, b_ in zip(rgb, PAL['moss'], strict=True))
             p.add(_blob(f'St{k}_{i}', (math.cos(a) * r, math.sin(a) * r, z), (sz * 1.15, sz, sz * 0.85), 'M_Stone',
                         rgb, rnd, v['seed'] * 13 + k * 40 + i, noise=0.22, subdiv=2), 'none')
     soil = C.make_blob('Soil', (0, 0, 0.3), radius=1.0, seed=v['seed'], subdivisions=3, noise_scale=1.5,
@@ -496,7 +498,7 @@ def _b_lemon_bed(v, rnd, name):
     def soil_col(vv):
         r = math.hypot(vv.co.x, vv.co.y)
         k = min(1.0, r / (R - 0.1))
-        c = [a * (1 - k) + b * k for a, b in zip(PAL['soil'][1], PAL['mulch'])]
+        c = [a * (1 - k) + b * k for a, b in zip(PAL['soil'][1], PAL['mulch'], strict=True)]
         j = rnd.uniform(-0.02, 0.02)
         return (*[max(0.0, min(1.0, x + j)) for x in c], 0.0)
     C.set_vertex_colors(soil, soil_col)
@@ -576,11 +578,11 @@ def _map_sheet(name, sx, sy, center, seed, rnd):
             c = PAL['ink']  # costa entintada
         elif land > -0.35:
             k = (land + 0.35) / 0.35
-            c = [a * (1 - k * 0.55) + b * k * 0.55 for a, b in zip(paper, PAL['sea'])]
+            c = [a * (1 - k * 0.55) + b * k * 0.55 for a, b in zip(paper, PAL['sea'], strict=True)]
         else:
             c = paper
         # rumbo punteado entre islas
-        for (ax, ay), (bx, by) in zip(route, route[1:]):
+        for (ax, ay), (bx, by) in pairwise(route):
             ab = Vector((bx - ax, by - ay))
             t = max(0.0, min(1.0, Vector((x - ax, y - ay)).dot(ab) / ab.length_squared))
             px, py = ax + ab.x * t, ay + ab.y * t

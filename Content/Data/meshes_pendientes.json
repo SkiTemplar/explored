@@ -18,7 +18,8 @@
     "lingote_cobre",
     "lingote_hierro",
     "mineral_cobre",
-    "pico"
+    "pico",
+    "rizoma_curcuma"
   ],
   "buildingPieces": [
     "astillero",
@@ -39,9 +40,15 @@
     "yunque"
   ],
   "plantStages": [
+    "aloe.hijuelo",
+    "aloe.hojas_carnosas",
+    "aloe.roseta",
     "batata.brote",
     "batata.enredadera",
     "batata.listo",
+    "curcuma.brote",
+    "curcuma.hojas_anchas",
+    "curcuma.listo",
     "limonero.arbol_adulto",
     "limonero.arbol_joven",
     "limonero.brote",

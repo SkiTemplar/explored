@@ -462,7 +462,6 @@ def test_glosario_mal_formado() -> None:
 
 
 def test_todos_los_ficheros_de_datos_se_leen(real: Sources) -> None:
-    import pathlib
 
     names = {p.name for p in (real.repo_root / "Content" / "Data").glob("*.json")}
     assert set(real.data) == names

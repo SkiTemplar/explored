@@ -2,23 +2,25 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
-from datacheck import crafting
+from datacheck import cooking, crafting, fases, fauna, mining, music, smithing, textos
+from datacheck import packs as packs_check
 from datacheck.checks import (
+    BUILDING_SOCKETS,
+    PROPERTIES,
     DataSet,
     Report,
+    blender_mesh_names,
     check_artifacts,
     check_building,
+    check_cooking,
     check_crafting_reachability,
+    check_gdd_food_coverage,
     check_ruins,
     run_all,
-)
-
-
-from datacheck import cooking, crafting
-from datacheck.checks import (
-    DataSet, Report, check_building, check_cooking, check_crafting_reachability, check_gdd_food_coverage, run_all,
 )
 
 
@@ -45,15 +47,15 @@ def any_error(errors: list[str], *needles: str) -> bool:
     return any(all(n in e for n in needles) for e in errors)
 
 
-def item(ds: DataSet, iid: str) -> dict:
+def item(ds: DataSet, iid: str) -> dict[str, Any]:
     return next(i for i in ds.items if i["id"] == iid)
 
 
-def template(ds: DataSet, tid: str) -> dict:
+def template(ds: DataSet, tid: str) -> dict[str, Any]:
     return next(t for t in ds.templates if t["id"] == tid)
 
 
-def piece(ds: DataSet, pid: str) -> dict:
+def piece(ds: DataSet, pid: str) -> dict[str, Any]:
     return next(p for p in ds.building["pieces"] if p["id"] == pid)
 
 
@@ -93,6 +95,13 @@ def apply(ds: DataSet, a: crafting.Instance, b: crafting.Instance, verb: str) ->
     return crafting.combine(item(ds, tpl["resultDefinitionId"]), a, b)
 
 
+def made(ds: DataSet, a: crafting.Instance, b: crafting.Instance, verb: str) -> crafting.Instance:
+    """Como apply, pero la combinación tiene que producir algo."""
+    out = apply(ds, a, b, verb)
+    assert out is not None, f"{a.definition} + {b.definition} con «{verb}» no produce nada"
+    return out
+
+
 def test_hacha_en_dos_pasos_como_craftingspec(real: DataSet) -> None:
     mango = apply(real, inst(real, "palo_recto"), inst(real, "liana"), "Atar")
     assert mango is not None
@@ -116,15 +125,15 @@ def test_angarillas_en_dos_pasos(real: DataSet) -> None:
 def test_angarillas_no_sombrea_lanza_ni_hacha(real: DataSet) -> None:
     # Van antes que hacha y lanza en templates.json: las cadenas de CraftingSpec
     # no llevan nada Fibroso >= 2, así que deben seguir dando su herramienta.
-    asta = apply(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
-    assert apply(real, asta, inst(real, "hueso_largo"), "Atar").definition == "lanza"
-    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
-    assert apply(real, mango, inst(real, "lasca_pedernal"), "Atar").definition == "hacha"
+    asta = made(real, inst(real, "bambu_grueso"), inst(real, "liana"), "Atar")
+    assert made(real, asta, inst(real, "hueso_largo"), "Atar").definition == "lanza"
+    mango = made(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    assert made(real, mango, inst(real, "lasca_pedernal"), "Atar").definition == "hacha"
 
 
 def test_combinacion_simetrica(real: DataSet) -> None:
     a, b = inst(real, "canto_rodado"), inst(real, "pedernal")
-    assert apply(real, a, b, "Golpear").definition == apply(real, b, a, "Golpear").definition
+    assert made(real, a, b, "Golpear").definition == made(real, b, a, "Golpear").definition
 
 
 def test_coco_y_huevo_no_se_atan(real: DataSet) -> None:
@@ -282,7 +291,6 @@ def test_detecta_malla_inventada(ds: DataSet) -> None:
 
 
 def test_reconoce_mallas_del_kit_modular(real: DataSet) -> None:
-    from datacheck.checks import blender_mesh_names
     names = blender_mesh_names(real.repo_root)
     assert {"SM_Kit_Palm_Wall", "SM_Kit_Stone_Foundation", "SM_Kit_Bamboo_GableShed"} <= names
     assert "SM_Kit_Palm_Nada" not in names
@@ -349,7 +357,7 @@ def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
 # --------------------------------------------------------------------------- logros (GDD §16)
 
 
-def achievement(ds: DataSet, aid: str) -> dict:
+def achievement(ds: DataSet, aid: str) -> dict[str, Any]:
     return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
 
 
@@ -489,7 +497,7 @@ def artifacts_errors(ds: DataSet) -> list[str]:
     return r.errors
 
 
-def artifact(ds: DataSet, aid: str) -> dict:
+def artifact(ds: DataSet, aid: str) -> dict[str, Any]:
     return next(a for a in ds.data["artifacts.json"]["artifacts"] if a["id"] == aid)
 
 
@@ -571,7 +579,7 @@ def cooking_errors(ds: DataSet) -> list[str]:
     return r.errors
 
 
-def recipe(ds: DataSet, rid: str) -> dict:
+def recipe(ds: DataSet, rid: str) -> dict[str, Any]:
     return next(r for r in ds.data["recipes.json"]["recipes"] if r["id"] == rid)
 
 
@@ -628,7 +636,7 @@ def test_detecta_hornear_fuera_del_horno(ds: DataSet) -> None:
 # --------------------------------------------------------------------------- embarcaciones
 
 
-def boat(ds: DataSet, bid: str) -> dict:
+def boat(ds: DataSet, bid: str) -> dict[str, Any]:
     return next(b for b in ds.boats if b["id"] == bid)
 
 
@@ -676,7 +684,7 @@ def test_detecta_astillero_inexistente(ds: DataSet) -> None:
 # --------------------------------------------------------------------------- pesca
 
 
-def fish(ds: DataSet) -> dict:
+def fish(ds: DataSet) -> dict[str, Any]:
     return ds.data["fish.json"]
 
 
@@ -757,16 +765,13 @@ def test_detecta_estrato_de_mineria_que_desaparece(ds: DataSet) -> None:
 
 # --------------------------------------------------------------------------- música (GDD §14.3)
 
-from datacheck import music
-
-
 def music_errors(ds: DataSet) -> list[str]:
     r = Report()
     music.check_music(ds, r)
     return r.errors
 
 
-def music_piece(ds: DataSet, pid: str) -> dict:
+def music_piece(ds: DataSet, pid: str) -> dict[str, Any]:
     return next(p for p in ds.data["music_layers.json"]["pieces"] if p["id"] == pid)
 
 
@@ -867,20 +872,17 @@ def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
 
 # --------------------------------------------------------------------------- minería (GDD v2 §3.4)
 
-from datacheck import mining
-
-
 def mining_errors(ds: DataSet) -> list[str]:
     r = Report()
     mining.check_mining(ds, r)
     return r.errors
 
 
-def stratum(ds: DataSet, sid: str) -> dict:
+def stratum(ds: DataSet, sid: str) -> dict[str, Any]:
     return next(s for s in ds.data["mining.json"]["strata"] if s["id"] == sid)
 
 
-def material(ds: DataSet, mid: str) -> dict:
+def material(ds: DataSet, mid: str) -> dict[str, Any]:
     return next(m for m in ds.data["mining.json"]["materials"] if m["id"] == mid)
 
 
@@ -905,7 +907,8 @@ def test_mineria_lee_estratos_y_herramientas_de_mining_model(real: DataSet) -> N
     assert tools and len(tools) == 6
     assert tools["pala_tosca"]["secondsPerHit"] == 1.2
     assert tools["pico_obsidiana"] == {"tier": 4, "radiusM": 0.5, "secondsPerHit": 1.0, "durability": 30, "fragile": True}
-    assert "tablon_contencion" in mining.cpp_sand_anchor_pieces(real)
+    anchors = mining.cpp_sand_anchor_pieces(real)
+    assert anchors and "tablon_contencion" in anchors
 
 
 def test_mineria_herramienta_distinta_del_mining_model(ds: DataSet) -> None:
@@ -990,22 +993,22 @@ def test_mineria_hacha_delante_roba_el_pico(ds: DataSet) -> None:
 
 def test_canto_rodado_con_mango_sigue_dando_hacha_de_piedra(real: DataSet) -> None:
     # Biblia 01 (días 2-4) y 02 §1.2: el hacha de piedra existe; el pico exige Punta.
-    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    mango = made(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
     for piedra in ("canto_rodado", "basalto", "piedra_plana"):
-        assert apply(real, mango, inst(real, piedra), "Atar").definition == "hacha", piedra
+        assert made(real, mango, inst(real, piedra), "Atar").definition == "hacha", piedra
 
 
 def test_pico_de_piedra_sale_del_canto_aguzado(real: DataSet) -> None:
-    punta = apply(real, inst(real, "lasca_pedernal"), inst(real, "canto_rodado"), "Tallar")
+    punta = made(real, inst(real, "lasca_pedernal"), inst(real, "canto_rodado"), "Tallar")
     assert punta.definition == "canto_aguzado"
-    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
-    assert apply(real, mango, punta, "Atar").definition == "pico"
+    mango = made(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    assert made(real, mango, punta, "Atar").definition == "pico"
 
 
 def test_cabeza_rescatada_de_chapa_o_hierro_en_el_banco(real: DataSet) -> None:
     # Biblia 02 §2.2: pico rescatado de chapa_fuselaje/hierro_meteorito, tras el banco de chatarra.
     for chatarra in ("chapa_fuselaje", "hierro_meteorito"):
-        head = apply(real, inst(real, "canto_rodado"), inst(real, chatarra), "Golpear")
+        head = made(real, inst(real, "canto_rodado"), inst(real, chatarra), "Golpear")
         assert head.definition == "cabeza_pico_rescatada", chatarra
     tubo = apply(real, inst(real, "canto_rodado"), inst(real, "tubo_aluminio"), "Golpear")
     assert tubo is None or tubo.definition != "cabeza_pico_rescatada"
@@ -1138,21 +1141,17 @@ def test_mineria_rio_subterraneo_sin_barco(ds: DataSet) -> None:
 
 # --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
 
-from datacheck import fauna
-from datacheck.checks import PROPERTIES
-
-
 def fauna_errors(ds: DataSet) -> list[str]:
     r = Report()
     fauna.check_fauna(ds, r, PROPERTIES)
     return r.errors
 
 
-def animal(ds: DataSet, sid: str) -> dict:
+def animal(ds: DataSet, sid: str) -> dict[str, Any]:
     return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
 
 
-def fauna_island(ds: DataSet, iid: str) -> dict:
+def fauna_island(ds: DataSet, iid: str) -> dict[str, Any]:
     return next(i for i in ds.data["fauna.json"]["islands"] if i["island"] == iid)
 
 
@@ -1203,17 +1202,13 @@ def test_fauna_terrestre_ya_no_es_termino_prohibido(real_report: Report) -> None
 
 # --------------------------------------------------------------------------- borradores de fase 2 y 3
 
-from datacheck import fases
-from datacheck.checks import BUILDING_SOCKETS
-
-
 def fases_errors(ds: DataSet) -> list[str]:
     r = Report()
     fases.check_future_phases(ds, r, BUILDING_SOCKETS)
     return r.errors
 
 
-def future(ds: DataSet) -> dict:
+def future(ds: DataSet) -> dict[str, Any]:
     return ds.data["fases_futuras.json"]
 
 
@@ -1226,7 +1221,7 @@ def test_fases_dato_de_fase_1_usa_el_borrador(ds: DataSet) -> None:
     assert any_error(fases_errors(ds), "building_pieces.json", "leche_cabra", "fase 2/3")
 
 
-def test_fases_pendiente_que_ya_existe(ds: DataSet) -> None:
+def test_fases_pendiente_que_ya_es_objeto_de_h2(ds: DataSet) -> None:
     # lingote_hierro y clavos salieron del borrador al entrar en items.json (H2).
     future(ds)["pendingItems"].append({"id": "lingote_hierro", "nameEs": "Lingote de hierro",
                                        "nameEn": "Iron ingot", "fase": 2})
@@ -1299,10 +1294,7 @@ def test_fases_reputacion_con_decaimiento_pasivo(ds: DataSet) -> None:
 
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
 
-from datacheck import packs as packs_check  # noqa: E402
-
-
-def _catalog(ds: DataSet) -> dict:
+def _catalog(ds: DataSet) -> dict[str, Any]:
     return ds.data["packs_catalogo.json"]
 
 
@@ -1342,6 +1334,7 @@ def test_packs_catalogo_agarre_fuera_del_mango(ds: DataSet) -> None:
 
 def test_packs_manifiesto_rechaza_licencia_no_cc0(real: DataSet) -> None:
     manifest = packs_check.load_manifest(real.repo_root)
+    assert manifest is not None
     manifest["packs"][0]["license"]["spdx"] = "CC-BY-4.0"
     manifest["packs"][1]["sha256"] = ""
     errs: list[str] = []
@@ -1395,16 +1388,7 @@ def test_packs_catalogo_descarte_de_etapa_valida(ds: DataSet) -> None:
 
 # --------------------------------------------------------------------------- red (biblia 08 §2.7)
 
-def fauna_errors(ds: DataSet) -> list[str]:
-    from datacheck import fauna
-    from datacheck.checks import PROPERTIES
-
-    r = Report()
-    fauna.check_fauna(ds, r, PROPERTIES)
-    return r.errors
-
-
-def species(ds: DataSet, sid: str) -> dict:
+def species(ds: DataSet, sid: str) -> dict[str, Any]:
     return next(s for s in ds.data["fauna.json"]["species"] if s["id"] == sid)
 
 
@@ -1439,7 +1423,7 @@ def test_fases_futuras_sin_nota_de_red(ds: DataSet) -> None:
     assert any_error(run_all(ds).errors, "trade", "redNotaEs")
 
 
-def _fauna_entry(ds: DataSet) -> dict:
+def _fauna_entry(ds: DataSet) -> dict[str, Any]:
     return next(e for e in _catalog(ds)["entries"] if e["kind"] == "fauna")
 
 
@@ -1554,10 +1538,8 @@ def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -
     assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
 
 
-
 # --------------------------------------------------------------------------- metal en estación (biblia 03 §2.2, §4.3)
 
-from datacheck import smithing, textos
 
 
 @pytest.fixture(scope="module")
@@ -1566,7 +1548,7 @@ def real_reach(real: DataSet) -> crafting.Reachability:
     return crafting.simulate(real.items, real.templates)
 
 
-def smith_report(ds: DataSet, reach: crafting.Reachability, extra: set[str] = frozenset()) -> Report:
+def smith_report(ds: DataSet, reach: crafting.Reachability, extra: frozenset[str] | set[str] = frozenset()) -> Report:
     r = Report()
     obtainable, _ = smithing.resolve_obtainable(ds, set(reach.reached_items) | set(extra))
     smithing.check_smithing(ds, r, obtainable)
@@ -2169,6 +2151,23 @@ def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> Non
         h = p["harvest"]
         if p["plantedFrom"] == h["item"]:
             assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
+
+
+def test_huerto_cultivos_medicinales(real: DataSet) -> None:
+    plantas = {p["id"]: p for p in real.plants}
+    assert plantas["aloe"]["harvest"]["item"] == "planta_medicinal_aloe"
+    assert plantas["curcuma"]["plantedFrom"] == "rizoma_curcuma"
+    assert "especia" in item(real, "rizoma_curcuma")["tags"]
+
+
+def test_huerto_cultivo_que_no_sirve_para_nada(ds: DataSet) -> None:
+    next(p for p in ds.plants if p["id"] == "taro")["harvest"]["item"] = "palo_recto"
+    assert any_error(farm_errors(ds), "«taro»", "palo_recto", "Medicinal")
+
+
+def test_huerto_sin_cultivo_medicinal(ds: DataSet) -> None:
+    ds.data["plants.json"]["plants"] = [p for p in ds.plants if p["id"] not in ("aloe", "curcuma")]
+    assert any_error(farm_errors(ds), "ningún cultivo medicinal")
 
 
 # --------------------------------------------------------------------------- mina: quema de la luz

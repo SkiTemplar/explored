@@ -10,6 +10,7 @@ Así las mismas escalas valen para cualquier resolución (256 en tests, 1024/204
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 
 def uv_grid(size: int) -> tuple[np.ndarray, np.ndarray]:
@@ -109,7 +110,9 @@ def normalize01(a: np.ndarray) -> np.ndarray:
     return (a - lo) / (hi - lo + 1e-12)
 
 
-def smoothstep(e0: float, e1: float, x: np.ndarray) -> np.ndarray:
+def smoothstep(e0: float | npt.NDArray[np.float64], e1: float | npt.NDArray[np.float64],
+               x: np.ndarray) -> np.ndarray:
+    """Hermite 0→1 entre `e0` y `e1` (los bordes pueden variar por píxel)."""
     t = np.clip((x - e0) / (e1 - e0), 0.0, 1.0)
     return t * t * (3.0 - 2.0 * t)
 

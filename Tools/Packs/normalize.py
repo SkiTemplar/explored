@@ -51,18 +51,43 @@ import json
 import math
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any, cast
 
 import bpy
-import bmesh
 from mathutils import Euler, Matrix, Vector
 
 HERE = Path(__file__).resolve().parent
+# Blender no añade la carpeta del script a sys.path (el intérprete estándar sí).
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+
+from normalize_core import (  # noqa: E402
+    RGB,
+    compile_rules,
+    delta_e,
+    gradient,
+    linear_to_srgb,
+    load_json,
+    oklab,
+    parse_args,
+    pick_swatch,
+    pivot_origin,
+    rgb3,
+    share_percent,
+    size_factor,
+    srgb_to_linear,
+    to_hex,
+)
+
 REPO = HERE.parent.parent
 CATALOG = REPO / "Content" / "Data" / "packs_catalogo.json"
 PALETTE = REPO / "Tools" / "Textures" / "paleta.json"
 EXPORT = REPO / "Art" / "Export" / "Packs"
 PACKS_JSON = HERE / "packs.json"
+
+GREY: RGB = (0.8, 0.8, 0.8)
 
 
 def cache_dir() -> Path:
@@ -70,78 +95,28 @@ def cache_dir() -> Path:
     return Path(env) if env else REPO / "Art" / "Packs"
 
 
-# ---------------------------------------------------------------------------
-# Color: sRGB <-> lineal <-> Oklab (mismas fórmulas que Tools/Textures/texgen)
-# ---------------------------------------------------------------------------
-
-def hex_to_srgb(h: str) -> tuple[float, float, float]:
-    h = h.lstrip("#")
-    return tuple(int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
-
-
-def srgb_to_linear(c: float) -> float:
-    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+def mesh_of(obj: bpy.types.Object) -> bpy.types.Mesh:
+    """Datos de malla de ``obj``; falla con un mensaje claro si el objeto no es una malla."""
+    me = obj.data
+    if not isinstance(me, bpy.types.Mesh):
+        raise TypeError(f"{obj.name}: se esperaba una malla y es {type(me).__name__}")
+    return me
 
 
-def linear_to_srgb(c: float) -> float:
-    c = min(max(c, 0.0), 1.0)
-    return 12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
+def armature_of(obj: bpy.types.Object) -> bpy.types.Armature:
+    arm = obj.data
+    if not isinstance(arm, bpy.types.Armature):
+        raise TypeError(f"{obj.name}: se esperaba una armadura y es {type(arm).__name__}")
+    return arm
 
 
-def oklab(srgb) -> tuple[float, float, float]:
-    r, g, b = (srgb_to_linear(c) for c in srgb)
-    l_ = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
-    m_ = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
-    s_ = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
-    l_, m_, s_ = (math.copysign(abs(v) ** (1 / 3), v) for v in (l_, m_, s_))
-    return (
-        0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
-        1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
-        0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
-    )
+def euler_matrix(rot_deg: list[float] | None) -> Matrix:
+    """Matriz 4×4 del giro Euler XYZ en grados (``rotateDeg`` del catálogo)."""
+    return Euler([math.radians(a) for a in (rot_deg or [0, 0, 0])], "XYZ").to_matrix().to_4x4()
 
 
-def delta_e(a, b) -> float:
-    return math.dist(a, b)
-
-
-def to_hex(srgb) -> str:
-    return "#" + "".join(f"{round(min(max(c, 0), 1) * 255):02x}" for c in srgb)
-
-
-# ---------------------------------------------------------------------------
-# Datos
-# ---------------------------------------------------------------------------
-
-def load_json(p: Path) -> dict:
-    return json.loads(p.read_text(encoding="utf-8"))
-
-
-def parse_args(argv: list[str]) -> dict:
-    args = {"lote": None, "ids": [], "isla": "Landing", "analyze": False, "tiles": False, "export": True}
-    it = iter(argv)
-    key = None
-    for a in it:
-        if a == "--lote":
-            args["lote"] = next(it)
-        elif a == "--isla":
-            args["isla"] = next(it)
-        elif a == "--ids":
-            key = "ids"
-            continue
-        elif a == "--analyze":
-            args["analyze"] = True
-        elif a == "--tiles":
-            args["tiles"] = True
-        elif a == "--no-export":
-            args["export"] = False
-        elif key == "ids" and not a.startswith("--"):
-            args["ids"].append(a)
-            continue
-        else:
-            raise SystemExit(f"argumento desconocido: {a}")
-        key = None
-    return args
+def triangle_count(me: bpy.types.Mesh) -> int:
+    return sum(p.loop_total - 2 for p in me.polygons)
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +152,7 @@ def import_file(path: Path) -> bpy.types.Object:
             o.modifiers.remove(m)
         # Las claves de forma (cuerda de arco de KayKit) guardan su propia copia de los
         # vértices: si quedan, ni el render ni el FBX ven la escala ni el giro aplicados.
-        if o.data.shape_keys:
+        if mesh_of(o).shape_keys:
             o.shape_key_clear()
         o.parent_type = "OBJECT"
     bpy.ops.object.select_all(action="DESELECT")
@@ -186,10 +161,13 @@ def import_file(path: Path) -> bpy.types.Object:
         o.parent = None
         o.matrix_world = mw
         o.select_set(True)
-    bpy.context.view_layer.objects.active = meshes[0]
+    view_layer = bpy.context.view_layer
+    view_layer.objects.active = meshes[0]
     if len(meshes) > 1:
         bpy.ops.object.join()
-    obj = bpy.context.view_layer.objects.active
+    obj = view_layer.objects.active
+    if obj is None:
+        raise RuntimeError(f"{path.name}: la unión no dejó objeto activo")
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     for name in new_names:
         o = bpy.data.objects.get(name)
@@ -208,7 +186,9 @@ def import_rigged(path: Path) -> tuple[bpy.types.Object, bpy.types.Object]:
     before = set(bpy.data.objects)
     ext = path.suffix.lower()
     if ext == ".blend":
-        with bpy.data.libraries.load(str(path), link=False) as (src, dst):
+        # Los stubs declaran que load() devuelve None; en Blender es un gestor de contexto.
+        loader = cast(Any, bpy.data.libraries.load(str(path), link=False))
+        with loader as (src, dst):
             dst.objects = list(src.objects)
             dst.actions = list(src.actions)
         for o in dst.objects:
@@ -226,9 +206,9 @@ def import_rigged(path: Path) -> tuple[bpy.types.Object, bpy.types.Object]:
     if len(arms) != 1 or len(meshes) != 1:
         raise RuntimeError(f"{path.name}: se espera una armadura y una malla, hay {len(arms)} y {len(meshes)}")
     mesh, arm = meshes[0], arms[0]
-    if not any(m.type == "ARMATURE" and m.object == arm for m in mesh.modifiers):
+    if not any(isinstance(m, bpy.types.ArmatureModifier) and m.object == arm for m in mesh.modifiers):
         raise RuntimeError(f"{path.name}: la malla no está deformada por la armadura")
-    if mesh.data.shape_keys:
+    if mesh_of(mesh).shape_keys:
         raise RuntimeError(f"{path.name}: claves de forma en una malla con rig (no soportado)")
     for a in bpy.data.actions:
         for fc in action_fcurves(a):
@@ -239,7 +219,23 @@ def import_rigged(path: Path) -> tuple[bpy.types.Object, bpy.types.Object]:
     return mesh, arm
 
 
-def drop_orphan_channels(arm) -> None:
+def floats(prop: object) -> list[float]:
+    """Copia de un ``bpy_prop_array`` (los stubs no lo declaran indexable)."""
+    return [float(x) for x in cast(Sequence[float], prop)]
+
+
+def keyframe_strips(action: bpy.types.Action) -> list[bpy.types.ActionKeyframeStrip]:
+    """Tiras con fotogramas clave de una acción por capas (Blender 4.4+)."""
+    return [strip for layer in action.layers for strip in layer.strips
+            if isinstance(strip, bpy.types.ActionKeyframeStrip)]
+
+
+def bone_of_path(data_path: str) -> str | None:
+    """Nombre del hueso de ``pose.bones["X"].location`` (None si la curva no es de un hueso)."""
+    return data_path.split('"')[1] if '"' in data_path else None
+
+
+def drop_orphan_channels(arm: bpy.types.Object) -> None:
     """Quita curvas de huesos que la armadura no tiene.
 
     Quaternius Farm Animals comparte acciones entre especies: las del cerdo animan
@@ -247,27 +243,23 @@ def drop_orphan_channels(arm) -> None:
     cualquier acción con una curva que no resuelve (por eso el FBX del pack solo trae Idle
     y Jump); sin esas curvas salen las seis.
     """
-    bones = {b.name for b in arm.data.bones}
+    bones = {b.name for b in armature_of(arm).bones}
     for a in bpy.data.actions:
-        dropped = set()
-        for layer in getattr(a, "layers", []):
-            for strip in layer.strips:
-                for bag in strip.channelbags:
-                    for fc in list(bag.fcurves):
-                        name = fc.data_path.split('"')[1] if '"' in fc.data_path else None
-                        if name is not None and name not in bones:
-                            dropped.add(name)
-                            bag.fcurves.remove(fc)
+        dropped: set[str] = set()
+        for strip in keyframe_strips(a):
+            for bag in strip.channelbags:
+                for fc in list(bag.fcurves):
+                    name = bone_of_path(fc.data_path)
+                    if name is not None and name not in bones:
+                        dropped.add(name)
+                        bag.fcurves.remove(fc)
         if dropped:
             print(f"   {a.name}: sin curvas de huesos ausentes {sorted(dropped)}")
 
 
-def action_fcurves(action) -> list:
-    """Curvas de una acción (acciones por capas de Blender 4.4+ o clásicas)."""
-    if getattr(action, "layers", None):
-        return [fc for layer in action.layers for strip in layer.strips
-                for bag in strip.channelbags for fc in bag.fcurves]
-    return list(getattr(action, "fcurves", []))
+def action_fcurves(action: bpy.types.Action) -> list[bpy.types.FCurve]:
+    """Curvas de una acción (acciones por capas de Blender 4.4+)."""
+    return [fc for strip in keyframe_strips(action) for bag in strip.channelbags for fc in bag.fcurves]
 
 
 # ---------------------------------------------------------------------------
@@ -276,40 +268,44 @@ def action_fcurves(action) -> list:
 
 class ImageSampler:
     def __init__(self, image: bpy.types.Image):
-        self.w, self.h = image.size
-        self.px = list(image.pixels[:])  # RGBA, valores tal como se guardan (sRGB en PNG de 8 bits)
+        w, h = floats(image.size)
+        self.w, self.h = int(w), int(h)
+        if self.w <= 0 or self.h <= 0:
+            raise ValueError(f"imagen vacía: {image.name}")
+        self.px = floats(image.pixels)  # RGBA, valores tal como se guardan (sRGB en PNG de 8 bits)
 
-    def sample(self, u: float, v: float) -> tuple[float, float, float]:
+    def sample(self, u: float, v: float) -> RGB:
         x = int((u % 1.0) * self.w) % self.w
         y = int((v % 1.0) * self.h) % self.h
         i = (y * self.w + x) * 4
-        return tuple(self.px[i:i + 3])
+        return rgb3(self.px[i:i + 3])
 
 
-def material_source(mat) -> tuple[ImageSampler | None, tuple[float, float, float]]:
+def material_source(mat: bpy.types.Material | None) -> tuple[ImageSampler | None, RGB]:
     """Textura de color base del material (si la hay) o su color base en sRGB."""
     if mat is None:
-        return None, (0.8, 0.8, 0.8)
-    if mat.use_nodes:
+        return None, GREY
+    # Blender 5: todo material tiene árbol de nodos (``use_nodes`` está obsoleto); sin BSDF
+    # de Principled se usa el color de la vista.
+    if mat.node_tree is not None:
         for node in mat.node_tree.nodes:
             if node.type == "BSDF_PRINCIPLED":
                 inp = node.inputs["Base Color"]
-                if inp.is_linked:
+                if inp.is_linked and inp.links:
                     src = inp.links[0].from_node
-                    if src.type == "TEX_IMAGE" and src.image is not None:
-                        return ImageSampler(src.image), (0.8, 0.8, 0.8)
-                col = inp.default_value
-                return None, tuple(linear_to_srgb(c) for c in col[:3])
-    col = mat.diffuse_color
-    return None, tuple(linear_to_srgb(c) for c in col[:3])
+                    if isinstance(src, bpy.types.ShaderNodeTexImage) and src.image is not None:
+                        return ImageSampler(src.image), GREY
+                col = inp.default_value  # pyright: ignore[reportAttributeAccessIssue] -- socket de color
+                return None, rgb3(linear_to_srgb(c) for c in col[:3])
+    return None, rgb3(linear_to_srgb(c) for c in floats(mat.diffuse_color)[:3])
 
 
-def face_colors(obj) -> list[tuple[float, float, float]]:
+def face_colors(obj: bpy.types.Object) -> list[RGB]:
     """Color sRGB original de cada polígono (centro UV sobre la textura, o color del material)."""
-    me = obj.data
-    sources = [material_source(m) for m in me.materials] or [(None, (0.8, 0.8, 0.8))]
+    me = mesh_of(obj)
+    sources = [material_source(m) for m in me.materials] or [(None, GREY)]
     uv = me.uv_layers.active.data if me.uv_layers.active else None
-    out = []
+    out: list[RGB] = []
     for p in me.polygons:
         sampler, flat = sources[min(p.material_index, len(sources) - 1)]
         if sampler is not None and uv is not None:
@@ -322,12 +318,16 @@ def face_colors(obj) -> list[tuple[float, float, float]]:
     return out
 
 
-def write_color_attr(obj, name: str, loop_colors: list) -> None:
-    me = obj.data
+def write_color_attr(obj: bpy.types.Object, name: str, loop_colors: list[list[float]]) -> None:
+    me = mesh_of(obj)
+    if len(loop_colors) != len(me.loops):
+        raise ValueError(f"{obj.name}: {len(loop_colors)} colores para {len(me.loops)} esquinas")
     if name in me.color_attributes:
         me.color_attributes.remove(me.color_attributes[name])
     attr = me.color_attributes.new(name=name, type="FLOAT_COLOR", domain="CORNER")
-    flat = []
+    if not isinstance(attr, bpy.types.FloatColorAttribute):
+        raise RuntimeError(f"{obj.name}: no se pudo crear el atributo de color {name}")
+    flat: list[float] = []
     for c in loop_colors:
         flat.extend((c[0], c[1], c[2], 1.0))
     attr.data.foreach_set("color", flat)
@@ -335,19 +335,27 @@ def write_color_attr(obj, name: str, loop_colors: list) -> None:
     me.color_attributes.render_color_index = me.color_attributes.find(name)
 
 
+def z_range(me: bpy.types.Mesh) -> tuple[float, float]:
+    """(z mínima, altura) de la malla; la altura nunca es 0 para poder dividir."""
+    if not me.vertices:
+        raise ValueError(f"{me.name}: malla sin vértices")
+    zs = [v.co.z for v in me.vertices]
+    zmin = min(zs)
+    return zmin, max(max(zs) - zmin, 1e-6)
+
+
 # ---------------------------------------------------------------------------
 # Análisis de colores del pack
 # ---------------------------------------------------------------------------
 
-def analyze(obj, label: str) -> None:
-    me = obj.data
+def analyze(obj: bpy.types.Object, label: str) -> list[dict[str, Any]]:
+    """Imprime y devuelve los colores del pack agrupados (ΔE < 0.05), de más a menos área."""
+    me = mesh_of(obj)
     cols = face_colors(obj)
-    zs = [v.co.z for v in me.vertices]
-    zmin, zmax = min(zs), max(zs)
-    span = max(zmax - zmin, 1e-6)
-    clusters: list[dict] = []
+    zmin, span = z_range(me)
+    clusters: list[dict[str, Any]] = []
     total = 0.0
-    for p, c in zip(me.polygons, cols):
+    for p, c in zip(me.polygons, cols, strict=True):
         lab = oklab(c)
         area = p.area
         total += area
@@ -360,40 +368,32 @@ def analyze(obj, label: str) -> None:
         else:
             clusters.append({"lab": lab, "srgb": c, "area": area, "h": h * area})
     clusters.sort(key=lambda c: -c["area"])
-    print(f"ANALYZE {label}  dims={tuple(round(d, 3) for d in obj.dimensions)}  tris={sum(len(p.vertices) - 2 for p in me.polygons)}")
+    dims = tuple(round(d, 3) for d in obj.dimensions)
+    print(f"ANALYZE {label}  dims={dims}  tris={triangle_count(me)}")
+    total = total or 1.0
     for cl in clusters[:10]:
-        print(f"   {to_hex(cl['srgb'])}  {100 * cl['area'] / total:5.1f}%  h={cl['h'] / cl['area']:.2f}")
+        h_avg = cl["h"] / cl["area"] if cl["area"] else 0.0
+        print(f"   {to_hex(cl['srgb'])}  {100 * cl['area'] / total:5.1f}%  h={h_avg:.2f}")
+    return clusters
 
 
 # ---------------------------------------------------------------------------
 # Normalización
 # ---------------------------------------------------------------------------
 
-def recolor(obj, entry: dict, palette: dict) -> dict:
+def recolor(obj: bpy.types.Object, entry: dict[str, Any], palette: dict[str, Any]) -> dict[str, float]:
     """Asigna UV de paleta y color de vértice «Col». Devuelve {muestra: % de área}."""
-    rules = entry["recolor"]
-    tol = rules.get("tolerance", 0.12)
-    compiled = [(oklab(hex_to_srgb(r["from"])), r["to"]) for r in rules.get("rules", [])]
-    default = rules.get("default")
-    me = obj.data
+    compiled, tol, default = compile_rules(entry["recolor"])
+    me = mesh_of(obj)
     cols = face_colors(obj)
-    zs = [v.co.z for v in me.vertices]
-    zmin, zmax = min(zs), max(zs)
-    span = max(zmax - zmin, 1e-6)
+    zmin, span = z_range(me)
 
-    targets = []
+    targets: list[str] = []
     share: dict[str, float] = {}
-    for p, c in zip(me.polygons, cols):
-        lab = oklab(c)
-        best, dist = None, 1e9
-        for flab, to in compiled:
-            d = delta_e(flab, lab)
-            if d < dist:
-                best, dist = to, d
-        if best is None or dist > tol:
-            if default is None:
-                raise RuntimeError(f"{entry['gameId']}: color {to_hex(c)} sin regla y sin default")
-            best = default
+    for p, c in zip(me.polygons, cols, strict=True):
+        best = pick_swatch(c, compiled, tol, default, entry.get("gameId", "?"))
+        if best not in palette:
+            raise KeyError(f"{entry.get('gameId', '?')}: la muestra {best} no está en la paleta de la isla")
         targets.append(best)
         share[best] = share.get(best, 0.0) + p.area
 
@@ -401,98 +401,56 @@ def recolor(obj, entry: dict, palette: dict) -> dict:
     while me.uv_layers:
         me.uv_layers.remove(me.uv_layers[0])
     uvl = me.uv_layers.new(name="UVMap")
-    loop_cols = [None] * len(me.loops)
-    for p, t in zip(me.polygons, targets):
-        s = palette[t]
-        u = s["uv"][0]
-        v0, v1 = s["v_rango"]
-        top = s["arriba"]["lineal"]
-        mid = s["medio"]["lineal"]
-        bot = s["abajo"]["lineal"]
+    if uvl is None:
+        raise RuntimeError(f"{obj.name}: no se pudo crear la capa UV")
+    loop_cols: list[list[float]] = [[0.0, 0.0, 0.0] for _ in range(len(me.loops))]
+    for p, t in zip(me.polygons, targets, strict=True):
         for li in p.loop_indices:
             z = me.vertices[me.loops[li].vertex_index].co.z
-            h = (z - zmin) / span  # 1 arriba, 0 abajo
-            # En Blender v = 0 es el borde inferior de la imagen; paleta.json da v desde arriba.
-            v_img = v0 + (1.0 - h) * (v1 - v0)
-            uvl.data[li].uv = (u, 1.0 - v_img)
-            if h >= 0.5:
-                t2 = (h - 0.5) * 2
-                col = [mid[i] + (top[i] - mid[i]) * t2 for i in range(3)]
-            else:
-                t2 = h * 2
-                col = [bot[i] + (mid[i] - bot[i]) * t2 for i in range(3)]
+            uv, col = gradient(palette[t], (z - zmin) / span)  # 1 arriba, 0 abajo
+            uvl.data[li].uv = uv
             loop_cols[li] = col
     write_color_attr(obj, "Col", loop_cols)
 
     mat = bpy.data.materials.get("M_LowPoly") or bpy.data.materials.new("M_LowPoly")
-    mat.use_nodes = True
+    if mat.node_tree is None:
+        mat.use_nodes = True  # Blender < 5
     nt = mat.node_tree
+    if nt is None:
+        raise RuntimeError("M_LowPoly sin árbol de nodos")
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
     attr = nt.nodes.new("ShaderNodeVertexColor")
-    attr.layer_name = "Col"
+    attr.layer_name = "Col"  # pyright: ignore[reportAttributeAccessIssue] -- ShaderNodeVertexColor
     nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
-    bsdf.inputs["Roughness"].default_value = 0.85
+    bsdf.inputs["Roughness"].default_value = 0.85  # pyright: ignore[reportAttributeAccessIssue] -- socket float
     me.materials.clear()
     me.materials.append(mat)
     for p in me.polygons:
         p.material_index = 0
-    total = sum(share.values()) or 1.0
-    return {k: round(100 * v / total, 1) for k, v in sorted(share.items(), key=lambda kv: -kv[1])}
+    return share_percent(share)
 
 
-def transform_mesh(obj, m: Matrix) -> None:
-    obj.data.transform(m)
-    obj.data.update()
+def transform_mesh(obj: bpy.types.Object, m: Matrix) -> None:
+    me = mesh_of(obj)
+    me.transform(m)
+    me.update()
 
 
-def orient_scale_pivot(obj, entry: dict) -> None:
-    rot = entry.get("rotateDeg") or [0, 0, 0]
-    transform_mesh(obj, Euler([math.radians(a) for a in rot], "XYZ").to_matrix().to_4x4())
+def orient_scale_pivot(obj: bpy.types.Object, entry: dict[str, Any]) -> None:
+    transform_mesh(obj, euler_matrix(entry.get("rotateDeg")))
 
     stretch = entry.get("stretch")
     if stretch:
         transform_mesh(obj, Matrix.Diagonal((*stretch, 1.0)))
 
-    vs = [v.co.copy() for v in obj.data.vertices]
+    vs = [v.co.copy() for v in mesh_of(obj).vertices]
     s = size_factor(vs, entry["size"])
     transform_mesh(obj, Matrix.Scale(s, 4))
-    transform_mesh(obj, Matrix.Translation(-pivot_origin([v * s for v in vs], entry["pivot"])))
+    origin = pivot_origin([v * s for v in vs], entry["pivot"])
+    transform_mesh(obj, Matrix.Translation([-c for c in origin]))
 
 
-def size_factor(vs: list, size: dict) -> float:
-    dims = [max(getattr(v, a) for v in vs) - min(getattr(v, a) for v in vs) for a in "xyz"]
-    axis = size.get("axis", "max")
-    cur = max(dims) if axis == "max" else dims["xyz".index(axis)]
-    return size["m"] / cur
-
-
-def pivot_origin(vs: list, pivot: dict) -> Vector:
-    zmin = min(v.z for v in vs)
-    if pivot["kind"] == "base":
-        cx = (min(v.x for v in vs) + max(v.x for v in vs)) / 2
-        cy = (min(v.y for v in vs) + max(v.y for v in vs)) / 2
-        return Vector((cx, cy, zmin))
-    if pivot["kind"] == "agarre":
-        zmax = max(v.z for v in vs)
-        height = zmax - zmin
-        if pivot.get("end", "bottom") == "top":
-            ring = [v for v in vs if v.z >= zmax - 0.15 * height]
-            z = zmax - pivot["gripFromEndM"]
-        else:
-            ring = [v for v in vs if v.z <= zmin + 0.15 * height]
-            z = zmin + pivot["gripFromEndM"]
-        if pivot.get("centerAt", "end") == "grip":
-            # Arcos y lanzas: el eje del mango se toma a la altura del agarre, no en la
-            # punta (las palas de un arco se curvan hacia la cuerda).
-            band = 0.04 * height
-            ring = [v for v in vs if abs(v.z - z) <= band] or ring
-        cx = sum(v.x for v in ring) / len(ring)
-        cy = sum(v.y for v in ring) / len(ring)
-        return Vector((cx, cy, z))
-    raise ValueError(pivot["kind"])
-
-
-def orient_scale_pivot_rig(mesh, arm, entry: dict) -> float:
+def orient_scale_pivot_rig(mesh: bpy.types.Object, arm: bpy.types.Object, entry: dict[str, Any]) -> float:
     """Gira, escala y centra armadura y malla juntas; devuelve la escala aplicada.
 
     La medida y el pivote salen de la malla en pose de reposo. Las claves de ``location``
@@ -501,12 +459,12 @@ def orient_scale_pivot_rig(mesh, arm, entry: dict) -> float:
     """
     if entry.get("stretch"):
         raise ValueError(f"{entry['gameId']}: stretch no se admite con rig (deformaría los huesos)")
-    rot = Euler([math.radians(a) for a in entry.get("rotateDeg") or [0, 0, 0]], "XYZ").to_matrix().to_4x4()
+    rot = euler_matrix(entry.get("rotateDeg"))
     bpy.context.view_layer.update()
-    vs = [rot @ (mesh.matrix_world @ v.co) for v in mesh.data.vertices]
+    vs = [rot @ (mesh.matrix_world @ v.co) for v in mesh_of(mesh).vertices]
     s = size_factor(vs, entry["size"])
     origin = pivot_origin([v * s for v in vs], entry["pivot"])
-    m = Matrix.Translation(-origin) @ Matrix.Scale(s, 4) @ rot
+    m = Matrix.Translation([-c for c in origin]) @ Matrix.Scale(s, 4) @ rot
     arm.matrix_world = m @ arm.matrix_world
     if mesh.parent != arm:
         mesh.matrix_world = m @ mesh.matrix_world
@@ -527,12 +485,13 @@ def orient_scale_pivot_rig(mesh, arm, entry: dict) -> float:
     return s
 
 
-def bbox_dims(obj) -> tuple[float, float, float]:
-    vs = [v.co for v in obj.data.vertices]
-    return tuple(max(getattr(v, a) for v in vs) - min(getattr(v, a) for v in vs) for a in "xyz")
+def bbox_dims(obj: bpy.types.Object) -> RGB:
+    from normalize_core import bbox_dims as dims_of
+
+    return dims_of([v.co for v in mesh_of(obj).vertices])
 
 
-def export_fbx(obj, path: Path) -> None:
+def export_fbx(obj: bpy.types.Object, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -546,7 +505,7 @@ def export_fbx(obj, path: Path) -> None:
     )
 
 
-def export_fbx_rig(mesh, arm, path: Path) -> None:
+def export_fbx_rig(mesh: bpy.types.Object, arm: bpy.types.Object, path: Path) -> None:
     """Malla con esqueleto y una toma por acción (Unreal crea SK_, SKEL_ y las AnimSequence)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")
@@ -565,12 +524,14 @@ def export_fbx_rig(mesh, arm, path: Path) -> None:
     )
 
 
-def pose_at(arm, action_name: str, frame: float) -> None:
-    arm.animation_data_create()
+def pose_at(arm: bpy.types.Object, action_name: str, frame: float) -> None:
+    ad = arm.animation_data or arm.animation_data_create()
+    if ad is None:
+        raise RuntimeError(f"{arm.name}: sin datos de animación")
     act = bpy.data.actions[action_name]
-    arm.animation_data.action = act
-    if getattr(act, "slots", None) and len(act.slots):
-        arm.animation_data.action_slot = act.slots[0]
+    ad.action = act
+    if len(act.slots):
+        ad.action_slot = act.slots[0]
     bpy.context.scene.frame_set(int(frame))
 
 
@@ -578,7 +539,7 @@ def pose_at(arm, action_name: str, frame: float) -> None:
 # Viñetas para la hoja de contacto (Workbench, color de vértice)
 # ---------------------------------------------------------------------------
 
-def render_tile(orig, norm, path: Path, px: int = 360) -> None:
+def render_tile(orig: bpy.types.Object, norm: bpy.types.Object, path: Path, px: int = 360) -> None:
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_WORKBENCH"
     sh = scene.display.shading
@@ -627,8 +588,9 @@ def render_tile(orig, norm, path: Path, px: int = 360) -> None:
 
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+def main(argv: list[str] | None = None) -> None:
+    if argv is None:
+        argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     args = parse_args(argv)
     catalog = load_json(CATALOG)
     packs = {p["id"]: p for p in load_json(PACKS_JSON)["packs"]}
@@ -639,7 +601,7 @@ def main() -> None:
     if not entries:
         raise SystemExit("sin entradas para ese lote/ids")
     root = cache_dir()
-    report = {}
+    report: dict[str, Any] = {}
     for e in entries:
         pack = packs[e["pack"]]
         src = root / pack["id"] / e["file"]
@@ -651,13 +613,12 @@ def main() -> None:
             continue
         obj = import_file(src)
         if args["analyze"]:
-            transform_mesh(obj, Euler([math.radians(a) for a in (e.get("rotateDeg") or [0, 0, 0])], "XYZ")
-                           .to_matrix().to_4x4())
+            transform_mesh(obj, euler_matrix(e.get("rotateDeg")))
             analyze(obj, f"{e['gameId']} <- {e['file']}")
             continue
         # Copia con el color original (mismo encuadre) para la viñeta de antes/después.
         orig = obj.copy()
-        orig.data = obj.data.copy()
+        orig.data = mesh_of(obj).copy()
         bpy.context.scene.collection.objects.link(orig)
         write_color_attr(orig, "Orig", _loop_orig(orig, face_colors(orig)))
         # Orientar antes de recolorear: el degradado de la paleta va por la altura del
@@ -666,7 +627,7 @@ def main() -> None:
         orient_scale_pivot(orig, e)
         share = recolor(obj, e, palette)
         dims = bbox_dims(obj)
-        tris = sum(len(p.vertices) - 2 for p in obj.data.polygons)
+        tris = triangle_count(mesh_of(obj))
         report[e["gameId"]] = {"mesh": e["mesh"], "dims": [round(d, 3) for d in dims], "tris": tris, "paleta": share}
         print(f"NORM {e['gameId']:16} {e['mesh']:24} dims={report[e['gameId']]['dims']} tris={tris} {share}")
         if args["export"]:
@@ -683,7 +644,7 @@ def main() -> None:
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
+def normalize_rigged(e: dict[str, Any], src: Path, palette: dict[str, Any], args: dict[str, Any]) -> dict[str, Any]:
     mesh, arm = import_rigged(src)
     rig = e["rig"]
     missing = [a for a in rig["animations"] if a not in bpy.data.actions]
@@ -691,7 +652,7 @@ def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
         raise SystemExit(f"{e['gameId']}: faltan acciones {missing} en {src.name}")
     # Copia estática con el color original para la viñeta (sin armadura: solo reposo).
     orig = mesh.copy()
-    orig.data = mesh.data.copy()
+    orig.data = mesh_of(mesh).copy()
     bpy.context.scene.collection.objects.link(orig)
     mw = orig.matrix_world.copy()
     orig.parent = None
@@ -699,11 +660,10 @@ def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
     for m in list(orig.modifiers):
         orig.modifiers.remove(m)
     bpy.context.view_layer.update()
-    orig.data.transform(orig.matrix_world)
+    mesh_of(orig).transform(orig.matrix_world)
     orig.matrix_world = Matrix.Identity(4)
     if args["analyze"]:
-        transform_mesh(orig, Euler([math.radians(a) for a in (e.get("rotateDeg") or [0, 0, 0])], "XYZ")
-                       .to_matrix().to_4x4())
+        transform_mesh(orig, euler_matrix(e.get("rotateDeg")))
         analyze(orig, f"{e['gameId']} <- {e['file']}")
         return {}
     write_color_attr(orig, "Orig", _loop_orig(orig, face_colors(orig)))
@@ -711,9 +671,10 @@ def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
     scale = orient_scale_pivot_rig(mesh, arm, e)
     orient_scale_pivot(orig, e)
     dims = bbox_dims(mesh)
-    tris = sum(len(p.vertices) - 2 for p in mesh.data.polygons)
-    out = {"mesh": e["mesh"], "dims": [round(d, 3) for d in dims], "tris": tris, "bones": len(arm.data.bones),
-           "scale": round(scale, 5), "animations": sorted(rig["animations"]), "paleta": share}
+    tris = triangle_count(mesh_of(mesh))
+    out = {"mesh": e["mesh"], "dims": [round(d, 3) for d in dims], "tris": tris,
+           "bones": len(armature_of(arm).bones), "scale": round(scale, 5),
+           "animations": sorted(rig["animations"]), "paleta": share}
     print(f"NORM {e['gameId']:16} {e['mesh']:24} dims={out['dims']} tris={tris} huesos={out['bones']} {share}")
     if args["export"]:
         export_fbx_rig(mesh, arm, EXPORT / e["lote"] / f"{e['mesh']}.fbx")
@@ -731,9 +692,10 @@ def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
     return out
 
 
-def _loop_orig(obj, cols) -> list:
-    me = obj.data
-    out = [None] * len(me.loops)
+def _loop_orig(obj: bpy.types.Object, cols: list[RGB]) -> list[list[float]]:
+    """Color lineal de cada esquina a partir del color sRGB de su polígono."""
+    me = mesh_of(obj)
+    out: list[list[float]] = [[0.0, 0.0, 0.0] for _ in range(len(me.loops))]
     for p in me.polygons:
         lin = [srgb_to_linear(c) for c in cols[p.index]]
         for li in p.loop_indices:

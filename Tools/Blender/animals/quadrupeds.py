@@ -16,11 +16,8 @@ mismo constructor. Cabezas y ojos más grandes a propósito (proporción
 adelante (hocico), Y derecha, Z arriba; el suelo está en Z=0.
 """
 
-import math
 import os
 import sys
-
-import bpy
 
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
@@ -192,11 +189,12 @@ def build(variant):
         chest_center = C.Vector((body_rx * 0.35 / 100.0, 0.0, -body_rz * 0.20 / 100.0))
         chest_radius = body_ry * 0.62 / 100.0
 
-        def body_color_fn(v, _base=torso_fn, _c=chest_center, _r=chest_radius,
-                           _col=cfg['chest_color']):
+        def _chest_color_fn(v, _base=torso_fn, _c=chest_center, _r=chest_radius,
+                            _col=cfg['chest_color']):
             if (v.co - _c).length <= _r:
                 return (*_col, 0.0)
             return _base(v)
+        body_color_fn = _chest_color_fn
 
     body = rig.build_blob_piece('Body', None, body_pivot, 'body', species,
                                  center_offset_cm=(0.0, 0.0, 0.0),

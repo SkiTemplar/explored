@@ -13,8 +13,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
 import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 
 CATEGORY = 'star_compass'
 

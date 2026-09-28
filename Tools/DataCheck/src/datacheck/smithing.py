@@ -312,7 +312,8 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
         missing = [str(e.get("item")) for e in _entries(rec.get("ingredients"))
                    if not isinstance(e.get("item"), str) or e["item"] not in obtainable]
         missing += [f"herramienta {t}" for t in _ids(rec.get("tools")) if t not in obtainable]
-        level = levels.get(rec.get("minFireLevel"))
+        fire = rec.get("minFireLevel")
+        level = levels.get(fire) if isinstance(fire, str) else None
         for pid in (rec.get("station"), level.get("pieceId") if level else None):
             if not isinstance(pid, str) and pid is not None:
                 missing.append(f"pieza {pid!r} (no es un id)")

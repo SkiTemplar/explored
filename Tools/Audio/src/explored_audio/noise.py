@@ -23,7 +23,7 @@ _PINK_A = [1.0, -2.494956002, 2.017265875, -0.522189400]
 def pink_noise(n: int, rng: np.random.Generator, warmup: int = 2000) -> np.ndarray:
     """Ruido rosa, normalizado a desviacion tipica ~1."""
     white = white_noise(n + warmup, rng)
-    pink = signal.lfilter(_PINK_B, _PINK_A, white)[warmup:]
+    pink = np.asarray(signal.lfilter(_PINK_B, _PINK_A, white))[warmup:]
     std = np.std(pink)
     return pink / std if std > 1e-9 else pink
 
@@ -31,6 +31,6 @@ def pink_noise(n: int, rng: np.random.Generator, warmup: int = 2000) -> np.ndarr
 def brown_noise(n: int, rng: np.random.Generator, leak: float = 0.999, warmup: int = 2000) -> np.ndarray:
     """Ruido marron/browniano: integrador de un polo con fuga, normalizado."""
     white = white_noise(n + warmup, rng)
-    brown = signal.lfilter([1.0], [1.0, -leak], white)[warmup:]
+    brown = np.asarray(signal.lfilter([1.0], [1.0, -leak], white))[warmup:]
     std = np.std(brown)
     return brown / std if std > 1e-9 else brown
