@@ -25,7 +25,7 @@
 		{ "island": "smoke", "fase": 1, "species": [], "noteEs": "Sin especie terrestre propia: ninguna se adapta a la ceniza activa (biblia 04). Solo aves marinas de paso." },
 		{ "island": "teeth", "fase": 1, "species": ["fragata_colonia", "gaviota_posada"] },
 		{ "island": "mangrove", "fase": 2, "species": ["cangrejo_cocotero_salvaje"] },
-		{ "island": "mesa", "fase": 2, "species": ["cabra_montes"] }
+		{ "island": "mesa", "fase": 2, "species": ["cabra_salvaje"] }
 	],
 	"species": [
 		{
@@ -85,7 +85,7 @@
 			"noteEs": "Colonias en los acantilados de Los Dientes: atacan en picado a menos de 5 m de un nido y vuelven a posarse al alejarse (biblia 04)."
 		},
 		{
-			"id": "cerdo_salvaje", "nameEs": "Cerdo salvaje", "nameEn": "Wild pig",
+			"id": "cerdo_salvaje", "nameEs": "Cerdo salvaje", "nameEn": "Wild boar",
 			"fase": 1, "cppSpecies": null, "cppSpeciesPropuesto": "WildBoar", "mesh": null,
 			"healthPoints": 35, "disposition": "defensivo",
 			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },
@@ -110,7 +110,7 @@
 			"noteEs": "Pacífico si no se le molesta; carga si se le acorrala contra la maleza y huye bajo el 30 % de vida (biblia 05 §5)."
 		},
 		{
-			"id": "cabra_montes", "nameEs": "Cabra montés", "nameEn": "Wild goat",
+			"id": "cabra_salvaje", "nameEs": "Cabra salvaje", "nameEn": "Wild goat",
 			"fase": 2, "cppSpecies": null, "cppSpeciesPropuesto": "WildGoat", "mesh": null,
 			"healthPoints": 20, "disposition": "huidizo",
 			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },

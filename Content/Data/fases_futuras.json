@@ -48,7 +48,7 @@
 				"product": { "item": "huevo", "everyDays": 1, "requires": "adulta" } },
 			{ "id": "cerdo", "nameEs": "Cerdo", "nameEn": "Pig", "fase": 2, "structure": "pocilga", "wildSource": "cerdo_salvaje",
 				"product": null },
-			{ "id": "cabra", "nameEs": "Cabra", "nameEn": "Goat", "fase": 2, "structure": "corral", "wildSource": "cabra_montes",
+			{ "id": "cabra", "nameEs": "Cabra", "nameEn": "Goat", "fase": 2, "structure": "corral", "wildSource": "cabra_salvaje",
 				"product": { "item": "leche_cabra", "everyDays": 1, "requires": "cria_reciente" } }
 		],
 		"pieces": [

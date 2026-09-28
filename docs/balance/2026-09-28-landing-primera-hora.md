@@ -86,5 +86,5 @@ piedra ya está desde el minuto 13). Cabe en la segunda hora.
   `cabeza_pico_por_tallado` y `cabeza_pico_de_chapa`/`cabeza_pico_de_hierro` (estas dos con
   `"station": "banco_chatarra"`, pieza nueva de `building_pieces.json`).
 - `fauna.json`: cangrejo de los cocoteros y gaviota (Landing), cerdo salvaje (Esmeralda),
-  sin fauna terrestre en el Humo, fragatas y gaviotas (Los Dientes); cabra montés (fase 2).
+  sin fauna terrestre en el Humo, fragatas y gaviotas (Los Dientes); cabra salvaje (fase 2).
 - `fases_futuras.json`: borrador de raíles, granja, murallas y trueque (fases 2 y 3).
