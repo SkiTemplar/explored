@@ -353,9 +353,11 @@ FSandResult FSandModel::Brush(const FSandBrush& In, FBaseHeight Base, bool bDig)
 		MarkDirtyAround(W.Column);
 		ChunksReadingColumn(W.Column, DirtyChunks);
 		Result.Mass += Amount;
+		Result.ChangedColumns.Add(W.Column);
 		++Result.ColumnsChanged;
 	}
 	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Result.ChangedColumns);
 	Result.DirtyChunks = MoveTemp(DirtyChunks);
 	return Result;
 }
@@ -500,7 +502,8 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 		AccumulatedMs -= TickMs;
 		FSandResult Step = Tick(Env, Base);
 		DirtyChunks.Append(Step.DirtyChunks);
-		Total.ColumnsChanged += Step.ColumnsChanged;
+		Total.ChangedColumns.Append(Step.ChangedColumns);
+		Total.CatchUpRevisions += Step.CatchUpRevisions;
 		Total.ActiveColumns += Step.ActiveColumns;
 		Total.DeferredColumns = Step.DeferredColumns;
 		Total.DormantColumns = Step.DormantColumns;
@@ -511,16 +514,90 @@ FSandResult FSandModel::Advance(int32 DeltaMs, const FSandEnvironment& Env, FBas
 	// en MaxTicksPerAdvance revisiones se descarta; solo se guarda la fracción de segundo.
 	AccumulatedMs = FMath::Min(AccumulatedMs, TickMs - 1);
 	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Total.ChangedColumns);
 	Total.DirtyChunks = MoveTemp(DirtyChunks);
+	Total.ColumnsChanged = Total.ChangedColumns.Num();
 	return Total;
 }
 
 FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 {
 	using namespace SandModelDetail;
+	WakeForTide(Env);
+
+	// Revisiones perdidas (08 §2.6): un chunk con arena pendiente lejos de todos los jugadores
+	// cuenta las revisiones que se salta, hasta MaxCatchUpRevisions. Cuando llega alguien se
+	// resuelven de golpe en esta misma llamada, y el resto del tiempo perdido se olvida.
+	TMap<FIntPoint, uint8> DirtyChunkSet;
+	for (const auto& Pair : Dirty)
+	{
+		DirtyChunkSet.FindOrAdd(ChunkOfColumn(Pair.Key));
+	}
+	TArray<FIntPoint> DirtyChunkList;
+	DirtyChunkSet.GetKeys(DirtyChunkList);
+	DirtyChunkList.Sort(&ColumnLess);
+	TMap<FIntPoint, int32> CatchUp;
+	int32 MaxCatchUp = 0;
+	// Un chunk que vuelve a estar cerca recupera su deuda si tiene algo pendiente, y la
+	// pierde en cualquier caso: no la guarda para la próxima vez que algo lo ensucie.
+	TArray<FIntPoint> Owing;
+	FrozenRevisions.GetKeys(Owing);
+	Owing.Sort(&ColumnLess);
+	for (const FIntPoint& Chunk : Owing)
+	{
+		if (ChunkIsActive(Chunk, Env))
+		{
+			const int32 Missed = FrozenRevisions.FindChecked(Chunk);
+			FrozenRevisions.Remove(Chunk);
+			if (DirtyChunkSet.Contains(Chunk))
+			{
+				CatchUp.Add(Chunk, Missed);
+				MaxCatchUp = FMath::Max(MaxCatchUp, Missed);
+			}
+		}
+	}
+	for (const FIntPoint& Chunk : DirtyChunkList)
+	{
+		if (!ChunkIsActive(Chunk, Env))
+		{
+			int32& Missed = FrozenRevisions.FindOrAdd(Chunk);
+			Missed = FMath::Min(Missed + 1, MaxCatchUpRevisions);
+		}
+	}
+
+	FSandResult Result = Revise(Env, Base, nullptr);
+	TArray<FIntPoint> DirtyChunks = MoveTemp(Result.DirtyChunks);
+	TArray<FIntPoint> ChangedColumns = MoveTemp(Result.ChangedColumns);
+	for (int32 Round = 1; Round <= MaxCatchUp; ++Round)
+	{
+		TMap<FIntPoint, uint8> Only;
+		for (const auto& Pair : CatchUp)
+		{
+			if (Pair.Value >= Round)
+			{
+				Only.Add(Pair.Key, 1);
+			}
+		}
+		FSandResult Extra = Revise(Env, Base, &Only);
+		DirtyChunks.Append(Extra.DirtyChunks);
+		ChangedColumns.Append(Extra.ChangedColumns);
+		Result.ActiveColumns += Extra.ActiveColumns;
+		Result.DeferredColumns = Extra.DeferredColumns;
+		++Result.CatchUpRevisions;
+	}
+	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(ChangedColumns);
+	Result.DirtyChunks = MoveTemp(DirtyChunks);
+	Result.ColumnsChanged = ChangedColumns.Num();
+	Result.ChangedColumns = MoveTemp(ChangedColumns);
+	return Result;
+}
+
+FSandResult FSandModel::Revise(const FSandEnvironment& Env, FBaseHeight Base, const TMap<FIntPoint, uint8>* OnlyChunks)
+{
+	using namespace SandModelDetail;
 	FSandResult Result;
 	Result.Ticks = 1;
-	WakeForTide(Env);
 
 	const int64 HighMm = MetersToMm(Env.HighTide);
 	const int32 DryDrop = ReposeDropMm(DryReposeDeg, Settings.CellSize);
@@ -538,7 +615,7 @@ FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 		{
 			return *Found;
 		}
-		const bool bActive = ChunkIsActive(Chunk, Env);
+		const bool bActive = (!OnlyChunks || OnlyChunks->Contains(Chunk)) && ChunkIsActive(Chunk, Env);
 		ChunkActive.Add(Chunk, bActive);
 		Result.ActiveChunks += bActive ? 1 : 0;
 		return bActive;
@@ -700,6 +777,31 @@ FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 			{
 				F.Amount = F.Amount * Available / Out;
 			}
+		}
+
+		// Y nadie recibe más de lo que cabe hasta el montón máximo: en una hondonada llena, la
+		// arena de la ladera se queda arriba en vez de pasar del tope (el guardado lo rechazaría).
+		TMap<FIntPoint, int64> Inflow;
+		for (const FFlow& F : Accepted)
+		{
+			if (F.Amount != 0)
+			{
+				Inflow.FindOrAdd(F.Amount > 0 ? F.B : F.A) += FMath::Abs(F.Amount);
+			}
+		}
+		for (FFlow& F : Accepted)
+		{
+			if (F.Amount == 0)
+			{
+				continue;
+			}
+			const FIntPoint& Target = F.Amount > 0 ? F.B : F.A;
+			const int64 Room = FMath::Max<int64>(0, static_cast<int64>(MaxPileHeightMm) - StateOf(Target).Delta);
+			const int64 In = Inflow.FindChecked(Target);
+			if (In > Room)
+			{
+				F.Amount = F.Amount * Room / In;
+			}
 			if (F.Amount != 0)
 			{
 				Change.FindOrAdd(F.A) -= F.Amount;
@@ -776,10 +878,12 @@ FSandResult FSandModel::Tick(const FSandEnvironment& Env, FBaseHeight Base)
 		if (DeltaMm(Pair.Key) != Pair.Value)
 		{
 			ChunksReadingColumn(Pair.Key, DirtyChunks);
+			Result.ChangedColumns.Add(Pair.Key);
 			++Result.ColumnsChanged;
 		}
 	}
 	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Result.ChangedColumns);
 	Result.DirtyChunks = MoveTemp(DirtyChunks);
 	return Result;
 }
@@ -827,10 +931,12 @@ FSandResult FSandModel::ApplyHalfTide(const FSandTide& Tide, FBaseHeight Base)
 			Result.SeaMass += Signed;
 			MarkDirtyAround(Column);
 			ChunksReadingColumn(Column, DirtyChunks);
+			Result.ChangedColumns.Add(Column);
 			++Result.ColumnsChanged;
 		}
 	}
 	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Result.ChangedColumns);
 	Result.DirtyChunks = MoveTemp(DirtyChunks);
 	return Result;
 }
@@ -872,6 +978,7 @@ void FSandModel::Reset()
 	Chunks.Reset();
 	Dirty.Reset();
 	StaleWetChunks.Reset();
+	FrozenRevisions.Reset();
 	SeaBank = 0;
 	AccumulatedMs = 0;
 	LastWakeHighMm = 0;
@@ -1070,4 +1177,277 @@ bool FSandModel::operator==(const FSandModel& Other) const
 		}
 	}
 	return true;
+}
+
+namespace SandModelDetail
+{
+	// Cabecera: Version, Layer, Flags, ChunkX, ChunkY, ChunkZ (int16), NumRuns (uint16).
+	constexpr int32 PacketHeaderBytes = 11;
+	constexpr int32 RunHeaderBytes = 3;
+	constexpr int32 MinI16 = -32768;
+	constexpr int32 MaxI16 = 32767;
+
+	void PutU8(TArray<uint8>& Out, uint8 V)
+	{
+		Out.Add(V);
+	}
+
+	void PutU16(TArray<uint8>& Out, uint16 V)
+	{
+		Out.Add(static_cast<uint8>(V & 0xFF));
+		Out.Add(static_cast<uint8>(V >> 8));
+	}
+
+	void PutI16(TArray<uint8>& Out, int16 V)
+	{
+		PutU16(Out, static_cast<uint16>(V));
+	}
+
+	uint16 GetU16(const TArray<uint8>& In, int32 At)
+	{
+		return static_cast<uint16>(In[At] | (static_cast<uint16>(In[At + 1]) << 8));
+	}
+
+	int16 GetI16(const TArray<uint8>& In, int32 At)
+	{
+		return static_cast<int16>(GetU16(In, At));
+	}
+
+	void SetU16(TArray<uint8>& Out, int32 At, uint16 V)
+	{
+		Out[At] = static_cast<uint8>(V & 0xFF);
+		Out[At + 1] = static_cast<uint8>(V >> 8);
+	}
+}
+
+TArray<TArray<uint8>> FSandModel::EncodePackets(const FIntPoint& Chunk, const TArray<FIntPoint>& Columns) const
+{
+	using namespace SandModelDetail;
+	TArray<TArray<uint8>> Packets;
+	// Un chunk de arena cabe en int16 de sobra (±32 767 chunks = ±262 km).
+	if (Chunk.X < MinI16 || Chunk.X > MaxI16 || Chunk.Y < MinI16 || Chunk.Y > MaxI16)
+	{
+		return Packets;
+	}
+	TArray<int32> Locals;
+	for (const FIntPoint& Column : Columns)
+	{
+		if (ChunkOfColumn(Column) == Chunk)
+		{
+			Locals.Add(LocalIndex(Column, Chunk));
+		}
+	}
+	Locals.Sort();
+	int32 Unique = 0;
+	for (int32 I = 0; I < Locals.Num(); ++I)
+	{
+		if (I == 0 || Locals[I] != Locals[I - 1])
+		{
+			Locals[Unique++] = Locals[I];
+		}
+	}
+	Locals.SetNum(Unique);
+
+	const FChunk* C = Chunks.Find(Chunk);
+	auto Value = [C](int32 Local) -> int16
+	{
+		return (C && C->Delta.Num() > Local) ? static_cast<int16>(C->Delta[Local]) : 0;
+	};
+	auto StartPacket = [&Chunk](TArray<uint8>& P)
+	{
+		P.Reset();
+		PutU8(P, PacketVersion);
+		PutU8(P, PacketLayerSand);
+		PutU8(P, 0);
+		PutI16(P, static_cast<int16>(Chunk.X));
+		PutI16(P, static_cast<int16>(Chunk.Y));
+		PutI16(P, 0);
+		PutU16(P, 0);
+	};
+
+	TArray<uint8> Packet;
+	int32 Runs = 0;
+	int32 I = 0;
+	while (I < Locals.Num())
+	{
+		// Tramo de índices consecutivos, de hasta 255 y que quepa en lo que queda del paquete.
+		if (Packet.Num() == 0)
+		{
+			StartPacket(Packet);
+			Runs = 0;
+		}
+		const int32 Room = (MaxPacketBytes - Packet.Num() - RunHeaderBytes) / 2;
+		if (Room < 1)
+		{
+			SetU16(Packet, 9, static_cast<uint16>(Runs));
+			Packets.Add(MoveTemp(Packet));
+			Packet.Reset();
+			continue;
+		}
+		int32 End = I + 1;
+		while (End < Locals.Num() && Locals[End] == Locals[End - 1] + 1 && End - I < FMath::Min(255, Room))
+		{
+			++End;
+		}
+		PutU16(Packet, static_cast<uint16>(Locals[I]));
+		PutU8(Packet, static_cast<uint8>(End - I));
+		for (int32 K = I; K < End; ++K)
+		{
+			PutI16(Packet, Value(Locals[K]));
+		}
+		++Runs;
+		I = End;
+	}
+	if (Packet.Num() > 0)
+	{
+		SetU16(Packet, 9, static_cast<uint16>(Runs));
+		Packets.Add(MoveTemp(Packet));
+	}
+	return Packets;
+}
+
+TArray<TArray<uint8>> FSandModel::EncodeFullChunk(const FIntPoint& Chunk) const
+{
+	using namespace SandModelDetail;
+	const int32 N = Settings.CellsPerChunk;
+	TArray<FIntPoint> Columns;
+	if (const FChunk* C = Chunks.Find(Chunk))
+	{
+		for (int32 I = 0; I < C->Delta.Num(); ++I)
+		{
+			if (C->Delta[I] != 0)
+			{
+				Columns.Add(FIntPoint(Chunk.X * N + I % N, Chunk.Y * N + I / N));
+			}
+		}
+	}
+	TArray<TArray<uint8>> Packets = EncodePackets(Chunk, Columns);
+	if (Packets.Num() == 0 && Chunk.X >= MinI16 && Chunk.X <= MaxI16 && Chunk.Y >= MinI16 && Chunk.Y <= MaxI16)
+	{
+		// Chunk vacío: un paquete sin tramos que solo lo vacía.
+		TArray<uint8> Empty;
+		PutU8(Empty, PacketVersion);
+		PutU8(Empty, PacketLayerSand);
+		PutU8(Empty, 0);
+		PutI16(Empty, static_cast<int16>(Chunk.X));
+		PutI16(Empty, static_cast<int16>(Chunk.Y));
+		PutI16(Empty, 0);
+		PutU16(Empty, 0);
+		Packets.Add(MoveTemp(Empty));
+	}
+	if (Packets.Num() > 0)
+	{
+		Packets[0][2] |= PacketFlagReset;
+	}
+	return Packets;
+}
+
+bool FSandModel::ApplyPacket(const TArray<uint8>& Packet, FBaseHeight Base, FSandResult* OutResult)
+{
+	using namespace SandModelDetail;
+	const int32 N = Settings.CellsPerChunk;
+	const int32 LocalCount = N * N;
+	// 1. Validar entero antes de tocar nada.
+	if (Packet.Num() < PacketHeaderBytes || Packet.Num() > MaxPacketBytes || Packet[0] != PacketVersion
+		|| Packet[1] != PacketLayerSand || (Packet[2] & ~PacketFlagReset) != 0 || GetI16(Packet, 7) != 0)
+	{
+		return false;
+	}
+	const FIntPoint Chunk(GetI16(Packet, 3), GetI16(Packet, 5));
+	const int32 NumRuns = GetU16(Packet, 9);
+	struct FRun
+	{
+		int32 First;
+		int32 Count;
+		int32 At;
+	};
+	TArray<FRun> Runs;
+	int32 At = PacketHeaderBytes;
+	int32 PreviousEnd = 0;
+	for (int32 R = 0; R < NumRuns; ++R)
+	{
+		if (At + RunHeaderBytes > Packet.Num())
+		{
+			return false;
+		}
+		const int32 First = GetU16(Packet, At);
+		const int32 Count = Packet[At + 2];
+		if (Count < 1 || First < PreviousEnd || First + Count > LocalCount || At + RunHeaderBytes + 2 * Count > Packet.Num())
+		{
+			return false;
+		}
+		for (int32 K = 0; K < Count; ++K)
+		{
+			const int32 Mm = GetI16(Packet, At + RunHeaderBytes + 2 * K);
+			if (Mm < -MaxDigDepthMm || Mm > MaxPileHeightMm)
+			{
+				return false;
+			}
+		}
+		Runs.Add({ First, Count, At + RunHeaderBytes });
+		PreviousEnd = First + Count;
+		At += RunHeaderBytes + 2 * Count;
+	}
+	if (At != Packet.Num())
+	{
+		return false;
+	}
+
+	// 2. Aplicar valores absolutos: reenviar el mismo paquete no acumula nada.
+	FSandResult Result;
+	TArray<FIntPoint> DirtyChunks;
+	auto SetColumn = [&](const FIntPoint& Column, int32 Mm)
+	{
+		const int32 Old = DeltaMm(Column);
+		if (Old != Mm)
+		{
+			AddDelta(Column, Mm - Old, Base);
+			ChunksReadingColumn(Column, DirtyChunks);
+			Result.ChangedColumns.Add(Column);
+		}
+	};
+	if ((Packet[2] & PacketFlagReset) != 0)
+	{
+		if (FChunk* C = Chunks.Find(Chunk))
+		{
+			for (int32 I = 0; I < C->Delta.Num(); ++I)
+			{
+				if (C->Delta[I] != 0)
+				{
+					SetColumn(FIntPoint(Chunk.X * N + I % N, Chunk.Y * N + I / N), 0);
+				}
+			}
+		}
+	}
+	for (const FRun& Run : Runs)
+	{
+		for (int32 K = 0; K < Run.Count; ++K)
+		{
+			const int32 Local = Run.First + K;
+			SetColumn(FIntPoint(Chunk.X * N + Local % N, Chunk.Y * N + Local / N), GetI16(Packet, Run.At + 2 * K));
+		}
+	}
+	FinishDirtyChunks(DirtyChunks);
+	FinishDirtyChunks(Result.ChangedColumns);
+	Result.ColumnsChanged = Result.ChangedColumns.Num();
+	Result.DirtyChunks = MoveTemp(DirtyChunks);
+	if (OutResult)
+	{
+		*OutResult = MoveTemp(Result);
+	}
+	return true;
+}
+
+uint32 FSandModel::ChunkChecksum(const FIntPoint& Chunk) const
+{
+	uint32 Hash = 2166136261u;
+	const FChunk* C = Chunks.Find(Chunk);
+	const int32 Count = Settings.CellsPerChunk * Settings.CellsPerChunk;
+	for (int32 I = 0; I < Count; ++I)
+	{
+		const uint16 V = static_cast<uint16>(static_cast<int16>((C && C->Delta.Num() > I) ? C->Delta[I] : 0));
+		Hash = (Hash ^ (V & 0xFF)) * 16777619u;
+		Hash = (Hash ^ (V >> 8)) * 16777619u;
+	}
+	return Hash;
 }

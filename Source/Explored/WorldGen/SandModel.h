@@ -81,6 +81,8 @@ struct EXPLORED_API FSandResult
 	int64 SeaMass = 0;
 	/** Columnas cuyo delta ha cambiado: es lo que sale por la cola de terreno. */
 	int32 ColumnsChanged = 0;
+	/** Esas columnas, ordenadas por (Y, X) y sin repetir: se codifican con `EncodePackets`. */
+	TArray<FIntPoint> ChangedColumns;
 	/** Columnas sucias revisadas (de chunks a menos de `ActiveRadius`). */
 	int32 ActiveColumns = 0;
 	/** Columnas sucias que se han dejado congeladas por estar lejos de todos los jugadores. */
@@ -89,6 +91,8 @@ struct EXPLORED_API FSandResult
 	int32 DeferredColumns = 0;
 	/** Chunks revisados. */
 	int32 ActiveChunks = 0;
+	/** Revisiones de más para los chunks que vuelven a estar cerca de un jugador (≤ 4). */
+	int32 CatchUpRevisions = 0;
 	int32 Ticks = 0;
 
 	bool Changed() const { return ColumnsChanged > 0; }
@@ -157,6 +161,11 @@ public:
 	static constexpr int32 TickMs = 1000;
 	/** Máximo de revisiones acumuladas por llamada; el tiempo sobrante se descarta (08 §2.6). */
 	static constexpr int32 MaxTicksPerAdvance = 4;
+	/**
+	 * Revisiones que un chunk congelado recupera de golpe al acercarse un jugador (08 §2.6):
+	 * las que se ha saltado, como mucho estas.
+	 */
+	static constexpr int32 MaxCatchUpRevisions = 4;
 	/** Cambio de la pleamar que obliga a revisar qué columnas editadas están ahora húmedas. */
 	static constexpr int32 TideWakeStepMm = 50;
 
@@ -197,7 +206,10 @@ public:
 
 	/** Avanza DeltaMs milisegundos en revisiones de 1 s (máximo MaxTicksPerAdvance; el resto se descarta). */
 	FSandResult Advance(int32 DeltaMs, const FSandEnvironment& Env, FBaseHeight Base);
-	/** Una revisión de pendiente. */
+	/**
+	 * Una revisión de pendiente. Si un chunk vuelve a estar cerca de un jugador tras saltarse
+	 * revisiones, las recupera de golpe aquí mismo (como mucho MaxCatchUpRevisions).
+	 */
 	FSandResult Tick(const FSandEnvironment& Env, FBaseHeight Base);
 	/**
 	 * Un medio ciclo de marea: el servidor lo llama al pasar cada pleamar o bajamar. Toca
@@ -229,6 +241,32 @@ public:
 	TArray<FIntPoint> EditedChunks() const;
 	bool IsEmpty() const;
 	void Reset();
+
+	// --- Red (biblia 08 §2.2 y §2.6) ---
+
+	/** Tope de bytes por paquete, el mismo que los deltas volumétricos: nunca fragmenta. */
+	static constexpr int32 MaxPacketBytes = 512;
+	/** `FExploredTerrainDeltaPacket` versión 2: la versión 1 es la volumétrica, sin capa. */
+	static constexpr uint8 PacketVersion = 2;
+	/** Capa del paquete versión 2: 0 = densidad (`FTerrainEditModel`), 1 = arena. */
+	static constexpr uint8 PacketLayerSand = 1;
+	/** Bit de `Flags`: vaciar el chunk antes de aplicar (primer paquete de un chunk completo). */
+	static constexpr uint8 PacketFlagReset = 1;
+
+	/**
+	 * Paquetes con el valor actual (absoluto, también 0) de las columnas dadas que caen en el
+	 * chunk. Las de otros chunks se ignoran. Aplicarlos dos veces da lo mismo que una.
+	 */
+	TArray<TArray<uint8>> EncodePackets(const FIntPoint& Chunk, const TArray<FIntPoint>& Columns) const;
+	/** El chunk completo para un cliente que llega (el primer paquete lleva `PacketFlagReset`). */
+	TArray<TArray<uint8>> EncodeFullChunk(const FIntPoint& Chunk) const;
+	/**
+	 * Lado cliente: valida el paquete entero y, si es correcto, lo aplica. No marca nada sucio
+	 * (el cliente no simula arena). Devuelve false, sin tocar nada, si el paquete no es válido.
+	 */
+	bool ApplyPacket(const TArray<uint8>& Packet, FBaseHeight Base, FSandResult* OutResult = nullptr);
+	/** FNV-1a de los 1 024 deltas del chunk en int16 little-endian: la comprobación de cada 30 s. */
+	uint32 ChunkChecksum(const FIntPoint& Chunk) const;
 
 	// --- Guardado ---
 
@@ -265,6 +303,8 @@ private:
 	void MarkDirtyAround(const FIntPoint& Column);
 	FSandResult Brush(const FSandBrush& Brush, FBaseHeight Base, bool bDig);
 	void WakeForTide(const FSandEnvironment& Env);
+	/** Una revisión de pendiente; con OnlyChunks, solo las columnas de esos chunks. */
+	FSandResult Revise(const FSandEnvironment& Env, FBaseHeight Base, const TMap<FIntPoint, uint8>* OnlyChunks);
 	bool ChunkIsActive(const FIntPoint& Chunk, const FSandEnvironment& Env) const;
 	static void FinishDirtyChunks(TArray<FIntPoint>& Chunks);
 
@@ -279,6 +319,8 @@ private:
 	 * estar lejos de todos los jugadores: se revisan cuando alguien se acerca.
 	 */
 	TMap<FIntPoint, uint8> StaleWetChunks;
+	/** Revisiones que se ha saltado cada chunk con arena pendiente lejos de los jugadores (≤ 4). */
+	TMap<FIntPoint, int32> FrozenRevisions;
 	int32 AccumulatedMs = 0;
 	/** Pleamar (mm) y lluvia de la última revisión de columnas editadas. */
 	int64 LastWakeHighMm = 0;

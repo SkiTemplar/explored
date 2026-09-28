@@ -753,21 +753,67 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("el lejano ya a 34°"), MaxDrop(Model, Far, 20) <= 168);
 		});
 
-		It("al volver, la arena congelada no recupera el tiempo perdido: 4 revisiones y sigue", [this, Flat]()
+		It("al volver, un chunk congelado recupera de golpe las revisiones que se saltó, como mucho 4", [this, Flat]()
+		{
+			// Montón en el centro de un chunk a 200 m: todo lo que se mueve queda en ese chunk.
+			const FVector2D At(204.0, 4.0);
+			FSandEnvironment Far = Dry();
+			FSandEnvironment Near = Dry();
+			Near.Focus = FVector2D(203.0, 4.0);
+			for (const int32 Missed : { 2, 4, 10 })
+			{
+				FSandModel Frozen;
+				FSandModel Fresh;
+				Frozen.Pile(Spike(At, 40000), Flat);
+				Fresh.Pile(Spike(At, 40000), Flat);
+				const int32 Start = Frozen.DeltaMm(Frozen.ColumnOf(At.X, At.Y));
+				for (int32 T = 0; T < Missed; ++T)
+				{
+					const FSandResult R = Frozen.Tick(Far, Flat);
+					TestEqual(TEXT("congelado: no revisa"), R.ActiveColumns, 0);
+					TestTrue(TEXT("y lo cuenta como pendiente"), R.DormantColumns > 0);
+				}
+				TestEqual(TEXT("intacto"), Frozen.DeltaMm(Frozen.ColumnOf(At.X, At.Y)), Start);
+				const int32 Expected = FMath::Min(Missed, FSandModel::MaxCatchUpRevisions);
+				const FSandResult Burst = Frozen.Tick(Near, Flat);
+				TestEqual(TEXT("recupera las que se saltó, como mucho 4"), Burst.CatchUpRevisions, Expected);
+				for (int32 T = 0; T <= Expected; ++T)
+				{
+					Fresh.Tick(Near, Flat);
+				}
+				TestTrue(TEXT("igual que si hubiera revisado 1 + esas"), Frozen == Fresh);
+				TestTrue(TEXT("pero no se asienta de golpe"), Frozen.NumDirtyColumns() > 0);
+				TestEqual(TEXT("la ráfaga no se repite"), Frozen.Tick(Near, Flat).CatchUpRevisions, 0);
+			}
+		});
+
+		It("la ráfaga solo es para los chunks que vuelven: los que ya estaban cerca no corren más", [this, Flat]()
 		{
 			FSandModel Model;
-			Model.Pile(Spike(FVector2D(200.0, 0.0), 40000), Flat);
-			const FIntPoint Peak = Model.ColumnOf(200.0, 0.0);
-			const int32 Start = Model.DeltaMm(Peak);
-			// Diez minutos lejos: nada cambia.
-			Model.Advance(600000, Dry(), Flat);
-			TestEqual(TEXT("congelado"), Model.DeltaMm(Peak), Start);
+			FSandModel Reference;
+			// Uno cerca desde el principio (centro del chunk (0, 0)) y otro lejos (centro del (25, 0)).
+			Model.Pile(Spike(FVector2D(4.0, 4.0), 40000), Flat);
+			Model.Pile(Spike(FVector2D(204.0, 4.0), 40000), Flat);
+			Reference.Pile(Spike(FVector2D(4.0, 4.0), 40000), Flat);
 			FSandEnvironment Env = Dry();
-			Env.Focus = FVector2D(199.0, 0.0);
-			const FSandResult R = Model.Advance(600000, Env, Flat);
-			TestEqual(TEXT("4 revisiones"), R.Ticks, FSandModel::MaxTicksPerAdvance);
-			TestTrue(TEXT("empieza a derrumbarse"), Model.DeltaMm(Peak) < Start);
-			TestTrue(TEXT("pero no se ha asentado de golpe"), Model.NumDirtyColumns() > 0);
+			Env.Focus = FVector2D(4.0, 4.0);
+			for (int32 T = 0; T < 3; ++T)
+			{
+				Model.Tick(Env, Flat);
+				Reference.Tick(Env, Flat);
+			}
+			Env.ExtraFoci.Add(FVector2D(203.0, 4.0));
+			TestEqual(TEXT("llega el segundo jugador: 3 revisiones de más"), Model.Tick(Env, Flat).CatchUpRevisions, 3);
+			Reference.Tick(Env, Flat);
+			bool bSame = true;
+			for (int32 Y = 0; Y < 32; ++Y)
+			{
+				for (int32 X = 0; X < 32; ++X)
+				{
+					bSame &= Model.DeltaMm(FIntPoint(X, Y)) == Reference.DeltaMm(FIntPoint(X, Y));
+				}
+			}
+			TestTrue(TEXT("el montón cercano va a su ritmo"), bSame);
 		});
 
 		It("en cooperativo cada jugador activa su zona y el solape se revisa una sola vez", [this, Flat]()
@@ -840,6 +886,154 @@ void FSandModelSpec::Define()
 			const FSandResult R = Model.Tick(Dry(), Flat);
 			TestEqual(TEXT("activas"), R.ActiveColumns, 0);
 			TestEqual(TEXT("cambiadas"), R.ColumnsChanged, 0);
+		});
+	});
+
+	Describe("tope del montón", [this, Flat]()
+	{
+		It("la avalancha no llena una hondonada por encima del montón máximo y la capa se sigue cargando", [this]()
+		{
+			// Escalón de 3 m: la arena que cae por el borde se acumula al pie.
+			auto Cliff = [](double X, double) { return X < 0.0 ? -3.0 : 0.0; };
+			FSandModel Model;
+			FSandEnvironment Env = Dry();
+			for (int32 I = 0; I < 30; ++I)
+			{
+				Model.Pile(Spike(FVector2D(0.5, 0.0), 20000), Cliff);
+				Settle(Model, Env, Cliff, 400);
+			}
+			int32 Max = 0;
+			for (int32 Y = -30; Y <= 30; ++Y)
+			{
+				for (int32 X = -40; X <= 30; ++X)
+				{
+					Max = FMath::Max(Max, Model.DeltaMm(FIntPoint(X, Y)));
+				}
+			}
+			TestTrue(TEXT("el pie del escalón llega al tope"), Max >= FSandModel::MaxPileHeightMm - 200);
+			TestTrue(TEXT("pero no lo pasa"), Max <= FSandModel::MaxPileHeightMm);
+			FSandModel Loaded;
+			TestTrue(TEXT("se carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("igual"), Loaded == Model);
+		});
+	});
+
+	Describe("red: paquete de terreno versión 2, capa de arena (biblia 08 §2.2 y §2.6)", [this, Flat]()
+	{
+		It("el cliente que aplica los paquetes de cada revisión queda igual que el servidor", [this, Flat]()
+		{
+			FSandModel Server;
+			FSandModel Client;
+			FSandEnvironment Env = Dry();
+			TArray<FIntPoint> Touched;
+			auto Send = [&](const FSandResult& R)
+			{
+				TMap<FIntPoint, uint8> Chunks;
+				for (const FIntPoint& Column : R.ChangedColumns)
+				{
+					Chunks.FindOrAdd(Server.ChunkOfColumn(Column));
+				}
+				for (const auto& Pair : Chunks)
+				{
+					for (const TArray<uint8>& Packet : Server.EncodePackets(Pair.Key, R.ChangedColumns))
+					{
+						TestTrue(TEXT("≤ 512 B"), Packet.Num() <= FSandModel::MaxPacketBytes);
+						TestTrue(TEXT("el cliente lo acepta"), Client.ApplyPacket(Packet, Flat));
+					}
+					Touched.AddUnique(Pair.Key);
+				}
+			};
+			// Pala, avalancha en la esquina de cuatro chunks (también en negativo) y medio ciclo.
+			Send(Server.Pile(Spike(FVector2D::ZeroVector, 40000), Flat));
+			FSandBrush B;
+			B.Center = FVector2D(-3.0, 2.0);
+			Send(Server.Dig(B, Flat));
+			for (int32 T = 0; T < 60; ++T)
+			{
+				Send(Server.Tick(Env, Flat));
+			}
+			Send(Server.ApplyHalfTide(Tide(0.5, -0.5), Flat));
+			TestTrue(TEXT("ha tocado varios chunks"), Touched.Num() >= 4);
+			bool bSame = true;
+			for (int32 Y = -40; Y <= 40; ++Y)
+			{
+				for (int32 X = -40; X <= 40; ++X)
+				{
+					bSame &= Server.DeltaMm(FIntPoint(X, Y)) == Client.DeltaMm(FIntPoint(X, Y));
+				}
+			}
+			TestTrue(TEXT("mismos deltas"), bSame);
+			for (const FIntPoint& Chunk : Touched)
+			{
+				TestEqual(TEXT("misma comprobación"), Client.ChunkChecksum(Chunk), Server.ChunkChecksum(Chunk));
+			}
+			TestEqual(TEXT("el cliente no simula"), Client.NumDirtyColumns(), 0);
+		});
+
+		It("el chunk completo reemplaza lo que tuviera el cliente, se parte en paquetes de 512 B y es idempotente", [this, Flat]()
+		{
+			FSandModel Server;
+			// Chunk (0, 0) lleno de deltas distintos: 1 024 columnas → más de un paquete.
+			FSandBrush B;
+			B.Center = FVector2D(4.0, 4.0);
+			B.Radius = 6.0f;
+			B.Depth = 1.0f;
+			B.MassBudget = MAX_int32;
+			Server.Pile(B, Flat);
+			const TArray<TArray<uint8>> Packets = Server.EncodeFullChunk(FIntPoint(0, 0));
+			TestTrue(TEXT("varios paquetes"), Packets.Num() > 1);
+			FSandModel Stale;
+			FSandBrush Junk;
+			Junk.Center = FVector2D(1.0, 7.0);
+			Stale.Dig(Junk, Flat);
+			for (int32 Pass = 0; Pass < 2; ++Pass)
+			{
+				for (const TArray<uint8>& Packet : Packets)
+				{
+					TestTrue(TEXT("≤ 512 B"), Packet.Num() <= FSandModel::MaxPacketBytes);
+					TestTrue(TEXT("aceptado"), Stale.ApplyPacket(Packet, Flat));
+				}
+				TestEqual(TEXT("comprobación igual (también al repetir)"), Stale.ChunkChecksum(FIntPoint(0, 0)), Server.ChunkChecksum(FIntPoint(0, 0)));
+			}
+			TestEqual(TEXT("el hoyo viejo ha desaparecido"), Stale.DeltaMm(Stale.ColumnOf(1.0, 7.0)), Server.DeltaMm(Server.ColumnOf(1.0, 7.0)));
+			// Un chunk vacío también se sincroniza: un paquete sin tramos que lo vacía.
+			const TArray<TArray<uint8>> Empty = FSandModel().EncodeFullChunk(FIntPoint(0, 0));
+			TestEqual(TEXT("un paquete"), Empty.Num(), 1);
+			TestTrue(TEXT("aceptado"), Stale.ApplyPacket(Empty[0], Flat));
+			TestTrue(TEXT("vacío"), Stale.EditedChunks().Num() == 0);
+			TestTrue(TEXT("checksum de un chunk vacío"), Stale.ChunkChecksum(FIntPoint(0, 0)) == FSandModel().ChunkChecksum(FIntPoint(0, 0)));
+		});
+
+		It("rechaza paquetes rotos sin tocar nada", [this, Flat]()
+		{
+			FSandModel Server;
+			Server.Pile(Spike(FVector2D(4.0, 4.0), 5000), Flat);
+			const TArray<uint8> Good = Server.EncodeFullChunk(FIntPoint(0, 0))[0];
+			FSandModel Client;
+			auto Broken = [&](TFunctionRef<void(TArray<uint8>&)> Edit)
+			{
+				TArray<uint8> P = Good;
+				Edit(P);
+				return P;
+			};
+			const TArray<TArray<uint8>> Bad = {
+				Broken([](TArray<uint8>& P) { P[0] = 1; }),                  // versión volumétrica
+				Broken([](TArray<uint8>& P) { P[1] = 0; }),                  // capa de densidad
+				Broken([](TArray<uint8>& P) { P[2] = 0x80; }),               // bandera desconocida
+				Broken([](TArray<uint8>& P) { P[7] = 1; }),                  // ChunkZ distinto de 0
+				Broken([](TArray<uint8>& P) { P.SetNum(P.Num() - 1); }),     // truncado
+				Broken([](TArray<uint8>& P) { P.Add(0); }),                  // bytes de más
+				Broken([](TArray<uint8>& P) { P[11] = 0xFF; P[12] = 0x03; }), // primer índice 1023 con más de uno
+				Broken([](TArray<uint8>& P) { P[13] = 0; }),                 // tramo vacío
+				Broken([](TArray<uint8>& P) { P[14] = 0xFF; P[15] = 0x7F; }), // 32 767 mm: montón imposible
+				Broken([](TArray<uint8>& P) { P.SetNum(5); }),               // sin cabecera
+			};
+			for (const TArray<uint8>& P : Bad)
+			{
+				TestFalse(TEXT("rechazado"), Client.ApplyPacket(P, Flat));
+			}
+			TestTrue(TEXT("nada aplicado"), Client.IsEmpty());
+			TestTrue(TEXT("el bueno sí"), Client.ApplyPacket(Good, Flat));
 		});
 	});
 
