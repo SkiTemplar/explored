@@ -209,6 +209,9 @@ struct EXPLORED_API FSurvivalModel
 	/** Consumo de energía a corto plazo por segundo real de la actividad (valores de juego). */
 	static float EnergyDrainPerSecond(EActivity Activity, float CarriedWeightRatio);
 
+	/** Multiplicador «× peso» de la tabla de Energía (biblia 01 §6.3): 1 hasta el 50 % de la carga cómoda. */
+	static float EnergyWeightFactor(float CarriedWeightRatio);
+
 	/**
 	 * Oxígeno (0–100) consumido por segundo real en apnea (buceo, GDD §4.1).
 	 * LungCapacityRatio es la mejora de pulmones (1 = base; más alto aguanta

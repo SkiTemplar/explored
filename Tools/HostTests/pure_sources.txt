@@ -63,3 +63,4 @@ WorldGen/GroundBranchModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 Tramway/TramwayModel.cpp
+Player/ClimbModel.cpp
