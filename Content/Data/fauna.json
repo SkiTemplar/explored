@@ -1,0 +1,133 @@
+{
+	"version": 1,
+	"note": "Fauna salvaje terrestre y aves que se posan (GDD v2 §3.7, biblia 02 §11 y 05 §5, biblia 04 por isla). La fauna marina ya implementada (EFaunaSpecies, FaunaSpawning) no se describe aquí. Las especies sin cppSpecies aún no existen en C++: cppSpeciesPropuesto es el nombre que propone la biblia 04. mesh null = modelo pendiente (packs CC0 de Quaternius, GDD v2 §7.1).",
+	"units": {
+		"healthPoints": "vida en los mismos puntos que el daño del combate (biblia 05 §3.0)",
+		"distancesM": "metros",
+		"hours": "hora del reloj de juego [inicio, fin), 24 h",
+		"attack.equiv": "propiedad y nivel equivalente del golpe, mismo formulario que las armas (biblia 05 §3.0)"
+	},
+	"lod": {
+		"note": "Espejo de FFaunaLodSettings (Fauna/FaunaSpawning.h); la fauna terrestre reutiliza los mismos niveles y radios por defecto (biblia 02 §11.1).",
+		"fullRadiusCm": 4000.0,
+		"reducedRadiusCm": 15000.0,
+		"hysteresis": 0.1,
+		"reducedInterval": 4,
+		"tiers": [
+			{ "id": "Full", "nameEs": "Completo", "nameEn": "Full", "does": ["rutina", "percepcion", "huida_o_carga", "navegacion_fina", "animacion_completa"] },
+			{ "id": "Reduced", "nameEs": "Reducido", "nameEn": "Reduced", "does": ["rutina", "percepcion_oido", "navegacion_gruesa"] },
+			{ "id": "Frozen", "nameEs": "Congelado", "nameEn": "Frozen", "does": [] }
+		]
+	},
+	"islands": [
+		{ "island": "landing", "fase": 1, "species": ["cangrejo_cocotero_salvaje", "gaviota_posada"] },
+		{ "island": "emerald", "fase": 1, "species": ["cerdo_salvaje"] },
+		{ "island": "smoke", "fase": 1, "species": [], "noteEs": "Sin especie terrestre propia: ninguna se adapta a la ceniza activa (biblia 04). Solo aves marinas de paso." },
+		{ "island": "teeth", "fase": 1, "species": ["fragata_colonia", "gaviota_posada"] },
+		{ "island": "mangrove", "fase": 2, "species": ["cangrejo_cocotero_salvaje"] },
+		{ "island": "mesa", "fase": 2, "species": ["cabra_montes"] }
+	],
+	"species": [
+		{
+			"id": "cangrejo_cocotero_salvaje", "nameEs": "Cangrejo de los cocoteros", "nameEn": "Coconut crab",
+			"fase": 1, "cppSpecies": null, "cppSpeciesPropuesto": "CoconutCrab", "mesh": null,
+			"healthPoints": 15, "disposition": "defensivo",
+			"perception": { "sightConeDeg": 180, "sightM": 4, "hearingM": 3, "runHearingBonus": 0.5, "smellM": 0 },
+			"routine": [
+				{ "activity": "forrajear", "hours": [19, 24] },
+				{ "activity": "forrajear", "hours": [0, 5] },
+				{ "activity": "refugio", "hours": [5, 19] }
+			],
+			"flee": { "triggerM": 2, "afterHits": 1, "healthFraction": null },
+			"attack": { "kind": "pinza", "equiv": { "property": "Contundente", "value": 2 }, "damage": 8, "stunSeconds": 0, "onlyIfProvoked": true },
+			"loot": [ { "item": "cangrejo_cocotero", "min": 1, "max": 1, "tool": null } ],
+			"lootPendiente": [],
+			"noteEs": "Se coge entero con las manos una vez aturdido o de noche en su refugio (mismo objeto que el cangrejo de la poza)."
+		},
+		{
+			"id": "gaviota_posada", "nameEs": "Gaviota", "nameEn": "Gull",
+			"fase": 1, "cppSpecies": "Gull", "cppSpeciesPropuesto": null, "mesh": null,
+			"healthPoints": 5, "disposition": "huidizo",
+			"perception": { "sightConeDeg": 300, "sightM": 12, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 0 },
+			"routine": [
+				{ "activity": "pescar_en_vuelo", "hours": [6, 11] },
+				{ "activity": "posada", "hours": [11, 16] },
+				{ "activity": "pescar_en_vuelo", "hours": [16, 19] },
+				{ "activity": "dormir", "hours": [19, 24] },
+				{ "activity": "dormir", "hours": [0, 6] }
+			],
+			"flee": { "triggerM": 8, "afterHits": 0, "healthFraction": null },
+			"attack": null,
+			"loot": [],
+			"nest": { "item": "huevo", "min": 1, "max": 3, "everyDays": 4, "seasons": ["seca", "primeras_lluvias"] },
+			"lootPendiente": [],
+			"noteEs": "No se caza: se posa en tierra y huye volando; los nidos de la playa dan huevos (GDD v2 §3.7)."
+		},
+		{
+			"id": "fragata_colonia", "nameEs": "Fragata", "nameEn": "Frigatebird",
+			"fase": 1, "cppSpecies": "Frigatebird", "cppSpeciesPropuesto": null, "mesh": null,
+			"healthPoints": 8, "disposition": "territorial",
+			"perception": { "sightConeDeg": 300, "sightM": 20, "hearingM": 10, "runHearingBonus": 0.5, "smellM": 0 },
+			"routine": [
+				{ "activity": "planear", "hours": [7, 17] },
+				{ "activity": "nido", "hours": [17, 24] },
+				{ "activity": "nido", "hours": [0, 7] }
+			],
+			"flee": { "triggerM": 0, "afterHits": 2, "healthFraction": 0.5 },
+			"attack": { "kind": "picotazo_en_picado", "equiv": { "property": "Punta", "value": 1 }, "damage": 3, "stunSeconds": 0, "onlyIfProvoked": true, "territoryM": 5 },
+			"loot": [],
+			"nest": { "item": "huevo", "min": 1, "max": 1, "everyDays": 6, "seasons": ["seca"] },
+			"groundPickup": { "item": "plumas", "min": 1, "max": 2, "everyDays": 1 },
+			"lootPendiente": ["guano"],
+			"noteEs": "Colonias en los acantilados de Los Dientes: atacan en picado a menos de 5 m de un nido y vuelven a posarse al alejarse (biblia 04)."
+		},
+		{
+			"id": "cerdo_salvaje", "nameEs": "Cerdo salvaje", "nameEn": "Wild pig",
+			"fase": 1, "cppSpecies": null, "cppSpeciesPropuesto": "WildBoar", "mesh": null,
+			"healthPoints": 35, "disposition": "defensivo",
+			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },
+			"routine": [
+				{ "activity": "pastar", "hours": [6, 10] },
+				{ "activity": "beber", "hours": [11, 13] },
+				{ "activity": "pastar", "hours": [17, 19] },
+				{ "activity": "reposar", "hours": [10, 11] },
+				{ "activity": "reposar", "hours": [13, 17] },
+				{ "activity": "dormir", "hours": [19, 24] },
+				{ "activity": "dormir", "hours": [0, 6] }
+			],
+			"flee": { "triggerM": 12, "afterHits": 0, "healthFraction": 0.3 },
+			"attack": { "kind": "embestida", "equiv": { "property": "Contundente", "value": 4 }, "damage": 16, "stunSeconds": 1, "onlyIfProvoked": true, "cornered": true },
+			"loot": [
+				{ "item": "hueso_largo", "min": 1, "max": 2, "tool": "cuchillo" },
+				{ "item": "hueso_pequeno", "min": 1, "max": 3, "tool": "cuchillo" },
+				{ "item": "grasa", "min": 1, "max": 2, "tool": "cuchillo" }
+			],
+			"lootPendiente": ["carne de cerdo (comida: recipes.json y CookingData.inl)", "piel de cerdo en bruto (curtido)"],
+			"noteEs": "Pacífico si no se le molesta; carga si se le acorrala contra la maleza y huye bajo el 30 % de vida (biblia 05 §5)."
+		},
+		{
+			"id": "cabra_montes", "nameEs": "Cabra montés", "nameEn": "Wild goat",
+			"fase": 2, "cppSpecies": null, "cppSpeciesPropuesto": "WildGoat", "mesh": null,
+			"healthPoints": 20, "disposition": "huidizo",
+			"perception": { "sightConeDeg": 110, "sightM": 15, "hearingM": 8, "runHearingBonus": 0.5, "smellM": 20 },
+			"routine": [
+				{ "activity": "pastar", "hours": [6, 10] },
+				{ "activity": "beber", "hours": [11, 13] },
+				{ "activity": "pastar", "hours": [17, 19] },
+				{ "activity": "reposar", "hours": [10, 11] },
+				{ "activity": "reposar", "hours": [13, 17] },
+				{ "activity": "dormir", "hours": [19, 24] },
+				{ "activity": "dormir", "hours": [0, 6] }
+			],
+			"flee": { "triggerM": 12, "afterHits": 0, "healthFraction": 1.0 },
+			"attack": { "kind": "embestida_leve", "equiv": { "property": "Contundente", "value": 1 }, "damage": 4, "stunSeconds": 0, "onlyIfProvoked": true, "cornered": true },
+			"loot": [
+				{ "item": "hueso_largo", "min": 1, "max": 1, "tool": "cuchillo" },
+				{ "item": "hueso_pequeno", "min": 1, "max": 2, "tool": "cuchillo" },
+				{ "item": "grasa", "min": 1, "max": 1, "tool": "cuchillo" }
+			],
+			"lootPendiente": ["carne de cabra (comida: recipes.json y CookingData.inl)", "piel de cabra en bruto (curtido)"],
+			"noteEs": "Farallones de La Meseta (isla de fase 2); casi siempre huye, solo embiste si se la acorrala."
+		}
+	]
+}

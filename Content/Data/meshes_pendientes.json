@@ -38,5 +38,12 @@
   "museumDisplays": [],
   "boats": [
     "barco_limon"
+  ],
+  "fauna": [
+    "cabra_montes",
+    "cangrejo_cocotero_salvaje",
+    "cerdo_salvaje",
+    "fragata_colonia",
+    "gaviota_posada"
   ]
 }
