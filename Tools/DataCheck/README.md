@@ -57,7 +57,7 @@ Qué comprueba:
   (técnicas, elementos, ruinas por isla, caminos de estrellas, umbral de «Coleccionista»).
 - **Museo**: cada tesoro tiene un tipo de `story_es.json`, una malla de `tesoros.py` y
   algún hueco de mueble donde cabe; los muebles apuntan a piezas `museo` existentes.
-- **Logros (GDD §16)**: exactamente 30, ids ASCII únicos, textos en ES y EN, los
+- **Logros (GDD §16, biblia 07 §2)**: entre 30 y 60, ids ASCII únicos, textos en ES y EN, los
   ejemplos del GDD presentes, condiciones con estadísticas conocidas y de tipo
   compatible (la misma regla que `FAchievementsModel::Configure`), ids de conjuntos
   admitidos (listas cerradas o `items`/`plants`/`building_pieces`), metas alcanzables,
@@ -96,6 +96,20 @@ Qué comprueba:
   objetos del catálogo o declarados en `pendingItems`; ningún otro fichero de datos (fase 1)
   nombra un id que solo existe en el borrador; sin claves de precio ni moneda (§5), valores
   de trueque 1–5 y tramos de reputación contiguos de 0 a 100 con tasa creciente.
+- **Contenido de texto de H4** (`contenido.py`, `docs/tecnico/contenido-textos.md`):
+  `halden_diaries.json` (los 5 cuadernos de biblia 04 §7.1, cada uno en un POI que de verdad
+  coloca `PointsOfInterest.cpp` en esa isla y con su `ContentId`), `journal_entries.json`
+  (al menos 15 entradas, `{Day}` en los dos idiomas, disparadores con el lenguaje de condiciones
+  de `achievements.json` o un suceso declarado y usado, sin sucesos de una fase posterior),
+  `map_clues.json` (tesoros raros o únicos, escondite que cuadra con la procedencia, fuente en una
+  ruina o un cuaderno de la misma isla), `ruins.json` (`teaches`/`starPathTarget`: cada técnica
+  global una vez, caminos a islas distintas de la propia, al menos `requiredStarPaths` y uno a la
+  isla oculta) y el museo (`museum_collections.json` con sus ficheros, recuentos, muebles
+  `museo` existentes y usados, y fase de cada pieza coherente con sus islas y su colección).
+  Islas: `LexToString(EIslandArchetype)` en minúsculas; POI: `EPoiType`.
+- **Guía anti-IA** (`estilo.py`, biblia 07 §1): lista negra ES/EN, exclamaciones, emoji, puntos
+  suspensivos, rayas de muletilla y límites de longitud y de frases por tipo de texto en los
+  ficheros de contenido; en los logros, todo menos la longitud (hay textos fijados que se pasan).
 - **Reglas del GDD §12**: sin narrativa eliminada en los datos; la fauna terrestre que
   recupera el GDD v2 (cerdo, cabra, aves posadas) ya no es término prohibido.
 - **Cobertura del GDD §8.8** (nota, no error): comida de recolección y marisqueo que

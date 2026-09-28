@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Tesoros del pueblo navegante (GDD §7, biblia §10) y muebles del museo de la base. Lo lee URuinsSubsystem y lo valida Tools/DataCheck. Un hueco admite su tamaño y los menores. offsetCm: posición local del hueco en la malla del mueble (centímetros). piece: pieza de building_pieces.json que construye el mueble (null mientras no exista).",
+  "note": "Tesoros del pueblo navegante (GDD §7, biblia §10) y muebles del museo de la base. Lo lee URuinsSubsystem y lo valida Tools/DataCheck. Un hueco admite su tamaño y los menores. offsetCm: posición local del hueco en la malla del mueble (centímetros). piece: pieza de building_pieces.json que construye el mueble (null mientras no exista). treasureRarities: rarezas que forman la colección «tesoros» del museo (biblia 07 §3.2), sin catálogo aparte.",
   "provenances": [
     {
       "id": "marae",
@@ -39,6 +39,10 @@
       "nameEs": "Único",
       "nameEn": "Unique"
     }
+  ],
+  "treasureRarities": [
+    "raro",
+    "unico"
   ],
   "displays": [
     {
