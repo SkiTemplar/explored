@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
+		"total": 639,
 		"cpp": 303,
-		"datos": 334,
+		"datos": 336,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3428,6 +3428,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "tablon_contencion.nameEs",
+			"es": "Tablón de contención",
+			"en": "Retaining board",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «tablon_contencion» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "techo_bambu.nameEs",
 			"es": "Techo de bambú y palma",
 			"en": "Bamboo and palm roof",
@@ -3464,6 +3474,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «telar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "viga_apoyo.nameEs",
+			"es": "Viga de apoyo",
+			"en": "Support beam",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «viga_apoyo» nameEs/nameEn"
 			]
 		},
 		{

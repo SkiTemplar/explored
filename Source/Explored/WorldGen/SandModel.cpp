@@ -372,6 +372,26 @@ FSandResult FSandModel::Pile(const FSandBrush& In, FBaseHeight Base)
 	return Brush(In, Base, false);
 }
 
+const TArray<FString>& FSandModel::SandAnchorPieces()
+{
+	static const TArray<FString> Pieces = {
+		TEXT("tablon_contencion"), TEXT("pilote_bambu"), TEXT("pilote_madera"), TEXT("muelle"), TEXT("muelle_final"),
+	};
+	return Pieces;
+}
+
+bool FSandModel::PieceAnchorsSand(const FString& PieceId)
+{
+	for (const FString& Piece : SandAnchorPieces())
+	{
+		if (Piece.Equals(PieceId, ESearchCase::CaseSensitive))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bool bAnchor, FBaseHeight Base)
 {
 	FSandResult Result;
