@@ -50,7 +50,8 @@ hace que la mina dependa de la tala (GDD v2 §2.1, pilar 2), sin que la domine.
 
 `antorcha` tiene `maxDurability: 20`, pero ningún dato ni ningún modelo dice **a qué
 ritmo** se consume la durabilidad de una luz. Sin eso no se puede medir el «turno de mina
-con antorchas de sobra» del GDD v2 §2.2. Propuesta para validar:
+con antorchas de sobra» del GDD v2 §2.2. Propuesta para validar (ya en
+`mining.json/hazards/oscuridad/lightBurn`, marcada `propuesta`):
 
 - **1 punto por cada 6 min de juego** → una antorcha dura 2 h de juego (≈ 3 min 20 s
   reales).
