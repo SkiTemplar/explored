@@ -43,7 +43,14 @@ def build(lote: str) -> Path:
     entries = [e for e in catalog["entries"] if e["lote"] == lote]
     tiles_dir = TILES / lote / "_tiles"
     report = json.loads((tiles_dir / "report.json").read_text(encoding="utf-8"))
-    tiles = [Image.open(tiles_dir / f"{e['gameId']}.png").convert("RGB") for e in entries]
+    # Fauna con rig: además de <id>.png, una viñeta por pose extra (<id>@<acción>.png).
+    cells = []
+    for e in entries:
+        cells.append((e, None))
+        poses = (e.get("rig") or {}).get("tilePoses", [])[1:]
+        cells.extend((e, p["action"]) for p in poses)
+    tiles = [Image.open(tiles_dir / (f"{e['gameId']}.png" if a is None else f"{e['gameId']}@{a}.png")).convert("RGB")
+             for e, a in cells]
     tw, th = tiles[0].size
     rows = (len(tiles) + COLS - 1) // COLS
     header = 64
@@ -52,13 +59,14 @@ def build(lote: str) -> Path:
     draw.text((16, 12), f"{lote} · {info['date']} · original del pack (izq.) / normalizado a paleta Landing (dcha.)",
               font=font(20), fill=FG)
     draw.text((16, 38), info["scope"], font=font(14), fill=DIM)
-    for i, (e, tile) in enumerate(zip(entries, tiles)):
+    for i, ((e, action), tile) in enumerate(zip(cells, tiles)):
         x = (i % COLS) * tw
         y = header + (i // COLS) * (th + LABEL_H)
         sheet.paste(tile, (x, y))
         r = report[e["gameId"]]
         dims = " × ".join(f"{d:.2f}" for d in r["dims"])
-        draw.text((x + 10, y + th + 4), f"{e['gameId']} → {e['mesh']}", font=font(16), fill=FG)
+        pose = f" · {action or e['rig']['tilePoses'][0]['action']}" if e.get("rig", {}).get("tilePoses") else ""
+        draw.text((x + 10, y + th + 4), f"{e['gameId']} → {e['mesh']}{pose}", font=font(16), fill=FG)
         draw.text((x + 10, y + th + 26), f"{e['pack']}: {Path(e['file']).name} · {dims} m · {r['tris']} tris",
                   font=font(12), fill=DIM)
     out = REPO / "docs" / "art" / "packs" / f"{lote}.png"

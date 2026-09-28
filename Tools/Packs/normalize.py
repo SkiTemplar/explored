@@ -31,6 +31,13 @@ Por cada entrada del lote:
 6. Exporta ``Art/Export/Packs/<lote>/<mesh>.fbx`` (ignorado en git) con un único
    material ``M_LowPoly``, triangulado, mismos ajustes FBX que ``Tools/Blender``.
 
+Fauna con esqueleto (``rig`` en la entrada, ``kind: fauna``): el fichero suele ser el
+``.blend`` del pack, porque el FBX de Quaternius Farm Animals solo trae Idle y Jump. Se
+conservan armadura, pesos y todas las acciones: el giro, la escala y el pivote se aplican a
+la armadura y a la malla juntas, y las claves de ``location`` de los huesos se multiplican
+por la misma escala (``transform_apply`` no las toca y el animal se desplazaría a la escala
+original). Exporta ``SK_Pack_*.fbx`` con malla, armadura y una toma por acción.
+
 ``--analyze`` no exporta: lista, por fichero, los colores del pack agrupados (ΔE < 0.05)
 con su parte del área y la altura media (0 abajo, 1 arriba), para escribir las reglas.
 ``--tiles`` renderiza (Workbench) una viñeta por entrada con el original a la izquierda
@@ -190,6 +197,77 @@ def import_file(path: Path) -> bpy.types.Object:
             bpy.data.objects.remove(o, do_unlink=True)
     obj.name = path.stem
     return obj
+
+
+def import_rigged(path: Path) -> tuple[bpy.types.Object, bpy.types.Object]:
+    """Importa un animal con esqueleto sin quitarle nada: devuelve (malla, armadura).
+
+    Un ``.blend`` se anexa entero (objetos y acciones, que en Quaternius tienen usuario
+    falso y no cuelgan de ningún objeto); un FBX o glTF se importa tal cual.
+    """
+    before = set(bpy.data.objects)
+    ext = path.suffix.lower()
+    if ext == ".blend":
+        with bpy.data.libraries.load(str(path), link=False) as (src, dst):
+            dst.objects = list(src.objects)
+            dst.actions = list(src.actions)
+        for o in dst.objects:
+            if o is not None and o.type in {"MESH", "ARMATURE"}:
+                bpy.context.scene.collection.objects.link(o)
+    elif ext == ".fbx":
+        bpy.ops.import_scene.fbx(filepath=str(path))
+    elif ext in (".gltf", ".glb"):
+        bpy.ops.import_scene.gltf(filepath=str(path))
+    else:
+        raise ValueError(f"formato no admitido para rig: {path}")
+    new = [o for o in bpy.data.objects if o not in before and o.users_scene]
+    arms = [o for o in new if o.type == "ARMATURE"]
+    meshes = [o for o in new if o.type == "MESH"]
+    if len(arms) != 1 or len(meshes) != 1:
+        raise RuntimeError(f"{path.name}: se espera una armadura y una malla, hay {len(arms)} y {len(meshes)}")
+    mesh, arm = meshes[0], arms[0]
+    if not any(m.type == "ARMATURE" and m.object == arm for m in mesh.modifiers):
+        raise RuntimeError(f"{path.name}: la malla no está deformada por la armadura")
+    if mesh.data.shape_keys:
+        raise RuntimeError(f"{path.name}: claves de forma en una malla con rig (no soportado)")
+    for a in bpy.data.actions:
+        for fc in action_fcurves(a):
+            if not fc.data_path.startswith("pose.bones["):
+                raise RuntimeError(f"{path.name}: la acción {a.name} anima el objeto ({fc.data_path}), no solo huesos")
+    drop_orphan_channels(arm)
+    mesh.name = path.stem
+    return mesh, arm
+
+
+def drop_orphan_channels(arm) -> None:
+    """Quita curvas de huesos que la armadura no tiene.
+
+    Quaternius Farm Animals comparte acciones entre especies: las del cerdo animan
+    ``Tail1``..``Tail4``, que su esqueleto no trae. El exportador FBX descarta entera
+    cualquier acción con una curva que no resuelve (por eso el FBX del pack solo trae Idle
+    y Jump); sin esas curvas salen las seis.
+    """
+    bones = {b.name for b in arm.data.bones}
+    for a in bpy.data.actions:
+        dropped = set()
+        for layer in getattr(a, "layers", []):
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for fc in list(bag.fcurves):
+                        name = fc.data_path.split('"')[1] if '"' in fc.data_path else None
+                        if name is not None and name not in bones:
+                            dropped.add(name)
+                            bag.fcurves.remove(fc)
+        if dropped:
+            print(f"   {a.name}: sin curvas de huesos ausentes {sorted(dropped)}")
+
+
+def action_fcurves(action) -> list:
+    """Curvas de una acción (acciones por capas de Blender 4.4+ o clásicas)."""
+    if getattr(action, "layers", None):
+        return [fc for layer in action.layers for strip in layer.strips
+                for bag in strip.channelbags for fc in bag.fcurves]
+    return list(getattr(action, "fcurves", []))
 
 
 # ---------------------------------------------------------------------------
@@ -375,20 +453,26 @@ def orient_scale_pivot(obj, entry: dict) -> None:
     if stretch:
         transform_mesh(obj, Matrix.Diagonal((*stretch, 1.0)))
 
-    size = entry["size"]
-    dims = bbox_dims(obj)
+    vs = [v.co.copy() for v in obj.data.vertices]
+    s = size_factor(vs, entry["size"])
+    transform_mesh(obj, Matrix.Scale(s, 4))
+    transform_mesh(obj, Matrix.Translation(-pivot_origin([v * s for v in vs], entry["pivot"])))
+
+
+def size_factor(vs: list, size: dict) -> float:
+    dims = [max(getattr(v, a) for v in vs) - min(getattr(v, a) for v in vs) for a in "xyz"]
     axis = size.get("axis", "max")
     cur = max(dims) if axis == "max" else dims["xyz".index(axis)]
-    transform_mesh(obj, Matrix.Scale(size["m"] / cur, 4))
+    return size["m"] / cur
 
-    vs = [v.co for v in obj.data.vertices]
+
+def pivot_origin(vs: list, pivot: dict) -> Vector:
     zmin = min(v.z for v in vs)
-    pivot = entry["pivot"]
     if pivot["kind"] == "base":
         cx = (min(v.x for v in vs) + max(v.x for v in vs)) / 2
         cy = (min(v.y for v in vs) + max(v.y for v in vs)) / 2
-        origin = Vector((cx, cy, zmin))
-    elif pivot["kind"] == "agarre":
+        return Vector((cx, cy, zmin))
+    if pivot["kind"] == "agarre":
         zmax = max(v.z for v in vs)
         height = zmax - zmin
         if pivot.get("end", "bottom") == "top":
@@ -404,10 +488,43 @@ def orient_scale_pivot(obj, entry: dict) -> None:
             ring = [v for v in vs if abs(v.z - z) <= band] or ring
         cx = sum(v.x for v in ring) / len(ring)
         cy = sum(v.y for v in ring) / len(ring)
-        origin = Vector((cx, cy, z))
-    else:
-        raise ValueError(pivot["kind"])
-    transform_mesh(obj, Matrix.Translation(-origin))
+        return Vector((cx, cy, z))
+    raise ValueError(pivot["kind"])
+
+
+def orient_scale_pivot_rig(mesh, arm, entry: dict) -> float:
+    """Gira, escala y centra armadura y malla juntas; devuelve la escala aplicada.
+
+    La medida y el pivote salen de la malla en pose de reposo. Las claves de ``location``
+    de los huesos están en el espacio local de cada hueso: el giro no les afecta, pero la
+    escala sí, y ``transform_apply`` no la lleva a las acciones.
+    """
+    if entry.get("stretch"):
+        raise ValueError(f"{entry['gameId']}: stretch no se admite con rig (deformaría los huesos)")
+    rot = Euler([math.radians(a) for a in entry.get("rotateDeg") or [0, 0, 0]], "XYZ").to_matrix().to_4x4()
+    bpy.context.view_layer.update()
+    vs = [rot @ (mesh.matrix_world @ v.co) for v in mesh.data.vertices]
+    s = size_factor(vs, entry["size"])
+    origin = pivot_origin([v * s for v in vs], entry["pivot"])
+    m = Matrix.Translation(-origin) @ Matrix.Scale(s, 4) @ rot
+    arm.matrix_world = m @ arm.matrix_world
+    if mesh.parent != arm:
+        mesh.matrix_world = m @ mesh.matrix_world
+    bpy.context.view_layer.update()
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in (arm, mesh):
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for a in bpy.data.actions:
+        for fc in action_fcurves(a):
+            if fc.data_path.endswith(".location"):
+                for k in fc.keyframe_points:
+                    k.co.y *= s
+                    k.handle_left.y *= s
+                    k.handle_right.y *= s
+                fc.update()
+    return s
 
 
 def bbox_dims(obj) -> tuple[float, float, float]:
@@ -427,6 +544,34 @@ def export_fbx(obj, path: Path) -> None:
         prioritize_active_color=True, use_triangles=True, use_tspace=True, bake_anim=False,
         path_mode="STRIP", embed_textures=False,
     )
+
+
+def export_fbx_rig(mesh, arm, path: Path) -> None:
+    """Malla con esqueleto y una toma por acción (Unreal crea SK_, SKEL_ y las AnimSequence)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in (arm, mesh):
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.export_scene.fbx(
+        filepath=str(path), check_existing=False, use_selection=True, global_scale=1.0,
+        apply_unit_scale=True, apply_scale_options="FBX_SCALE_ALL", axis_forward="-Z", axis_up="Y",
+        object_types={"MESH", "ARMATURE"}, use_mesh_modifiers=False, mesh_smooth_type="FACE",
+        colors_type="LINEAR", prioritize_active_color=True, use_triangles=True, use_tspace=False,
+        add_leaf_bones=False, armature_nodetype="NULL", bake_anim=True, bake_anim_use_all_bones=True,
+        bake_anim_use_nla_strips=False, bake_anim_use_all_actions=True,
+        bake_anim_force_startend_keying=True, bake_anim_simplify_factor=0.0,
+        path_mode="STRIP", embed_textures=False,
+    )
+
+
+def pose_at(arm, action_name: str, frame: float) -> None:
+    arm.animation_data_create()
+    act = bpy.data.actions[action_name]
+    arm.animation_data.action = act
+    if getattr(act, "slots", None) and len(act.slots):
+        arm.animation_data.action_slot = act.slots[0]
+    bpy.context.scene.frame_set(int(frame))
 
 
 # ---------------------------------------------------------------------------
@@ -455,7 +600,9 @@ def render_tile(orig, norm, path: Path, px: int = 360) -> None:
     dims = bbox_dims(norm)
     gap = max(dims) * 1.25
     orig.location = (-gap / 2, 0, 0)
-    norm.location = (gap / 2, 0, 0)
+    # Con rig se mueve la armadura: si la malla se separa de sus huesos, la pose la deforma
+    # alrededor de articulaciones que ya no están donde toca.
+    (norm.parent or norm).location = (gap / 2, 0, 0)
     cam_data = bpy.data.cameras.new("Cam")
     cam_data.type = "ORTHO"
     cam = bpy.data.objects.new("Cam", cam_data)
@@ -499,6 +646,9 @@ def main() -> None:
         if not src.exists():
             raise SystemExit(f"falta {src}: ejecuta `uv run python fetch_packs.py {pack['id']}` en Tools/Packs")
         reset_scene()
+        if e.get("rig"):
+            report[e["gameId"]] = normalize_rigged(e, src, palette, args)
+            continue
         obj = import_file(src)
         if args["analyze"]:
             transform_mesh(obj, Euler([math.radians(a) for a in (e.get("rotateDeg") or [0, 0, 0])], "XYZ")
@@ -525,6 +675,54 @@ def main() -> None:
         out = EXPORT / args["lote"] / "_tiles" / "report.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def normalize_rigged(e: dict, src: Path, palette: dict, args: dict) -> dict:
+    mesh, arm = import_rigged(src)
+    rig = e["rig"]
+    missing = [a for a in rig["animations"] if a not in bpy.data.actions]
+    if missing:
+        raise SystemExit(f"{e['gameId']}: faltan acciones {missing} en {src.name}")
+    # Copia estática con el color original para la viñeta (sin armadura: solo reposo).
+    orig = mesh.copy()
+    orig.data = mesh.data.copy()
+    bpy.context.scene.collection.objects.link(orig)
+    mw = orig.matrix_world.copy()
+    orig.parent = None
+    orig.matrix_world = mw
+    for m in list(orig.modifiers):
+        orig.modifiers.remove(m)
+    bpy.context.view_layer.update()
+    orig.data.transform(orig.matrix_world)
+    orig.matrix_world = Matrix.Identity(4)
+    if args["analyze"]:
+        transform_mesh(orig, Euler([math.radians(a) for a in (e.get("rotateDeg") or [0, 0, 0])], "XYZ")
+                       .to_matrix().to_4x4())
+        analyze(orig, f"{e['gameId']} <- {e['file']}")
+        return {}
+    write_color_attr(orig, "Orig", _loop_orig(orig, face_colors(orig)))
+    share = recolor(mesh, e, palette)
+    scale = orient_scale_pivot_rig(mesh, arm, e)
+    orient_scale_pivot(orig, e)
+    dims = bbox_dims(mesh)
+    tris = sum(len(p.vertices) - 2 for p in mesh.data.polygons)
+    out = {"mesh": e["mesh"], "dims": [round(d, 3) for d in dims], "tris": tris, "bones": len(arm.data.bones),
+           "scale": round(scale, 5), "animations": sorted(rig["animations"]), "paleta": share}
+    print(f"NORM {e['gameId']:16} {e['mesh']:24} dims={out['dims']} tris={tris} huesos={out['bones']} {share}")
+    if args["export"]:
+        export_fbx_rig(mesh, arm, EXPORT / e["lote"] / f"{e['mesh']}.fbx")
+    if args["tiles"]:
+        # Una viñeta por pose: la primera es la del catálogo; las demás (<id>@<acción>.png)
+        # sirven para ver que la escala de las claves de location aguanta en movimiento.
+        poses = rig.get("tilePoses") or [{"action": rig["animations"][0], "frame": 0}]
+        for i, pose in enumerate(poses):
+            pose_at(arm, pose["action"], pose["frame"])
+            name = e["gameId"] if i == 0 else f"{e['gameId']}@{pose['action']}"
+            render_tile(orig, mesh, EXPORT / e["lote"] / "_tiles" / f"{name}.png")
+            for o in bpy.data.objects:
+                if o.type == "CAMERA":
+                    bpy.data.objects.remove(o, do_unlink=True)
+    return out
 
 
 def _loop_orig(obj, cols) -> list:

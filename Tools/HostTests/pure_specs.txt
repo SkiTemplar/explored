@@ -41,4 +41,5 @@ Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
 Tests/SandModelSpec.cpp
+Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
