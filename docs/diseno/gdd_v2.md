@@ -494,7 +494,9 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones
+naturales: el incendio (§3.15), la lluvia en recipientes (§3.16) y los cocos que caen
+al sacudir (§3.18).
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -997,6 +999,70 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
 - **Dependencias:** `Boats` (`FHullAssemblyModel`, `FBoatModel`), `Building`
   (astillero y postes de amarre), `WorldGen` (troncos de la tala para los rodillos),
   `Save` (uniones y rodillos en la sección de barcos).
+
+### 3.18 Mundo interactivo: los cocos caen al sacudir **[biblia 02 §1.2 y §13.1; números pendientes de validar]**
+
+Tercera de las «otras interacciones naturales» del principio del director (§3.12). La
+biblia ya fija que la tala suelta el coco maduro y que trepando se coge el verde
+(biblia 02 §1.2 y §13.1). Esta sección añade lo que faltaba: que la palmera tenga
+cocos de verdad en la copa, que maduren y caigan solos, y que sacudirla los suelte.
+
+- **Objetivo:** que el primer alimento del día 1 (biblia 01, «un coco al alcance»)
+  salga de mirar la palmera y actuar, sin menús: debajo hay cocos caídos, arriba se ven
+  verdes y maduros, y sacudir el tronco trae los maduros.
+- **Reglas:**
+  - **La copa tiene huecos.** Cada palmera adulta tiene 6. En cada hueco cuaja un coco
+    verde a los 2–4 días de quedarse vacío. Pasa 5 días verde, cuelga maduro 3–8 días
+    y cae solo. En el suelo aguanta 6 días y se pudre; entonces el hueco vuelve a
+    cuajar. De media, una palmera sin tocar tiene ~2,2 verdes, ~2,5 maduros y ~2,6
+    cocos en el suelo, y suelta ~0,44 cocos al día.
+  - **Sacudir.** Verbo del tronco sin herramienta en la mano (el golpe con herramienta
+    es talar y E mantenido es trepar, biblia 02 §13.1). Cada maduro cae con
+    probabilidad `fuerza × (0,35 + 0,65 × flojera)`. La flojera va de 0 al madurar a 1
+    justo antes de caer solo, así que sacudir sirve sobre todo para los que ya iban a
+    caer. **El verde no cae nunca**, ni sacudiendo ni con viento: para él hay que trepar.
+  - **Fuerza a mano.** 1 en palmeras de hasta 4,5 m; después, `4,5 / altura`, con un
+    mínimo de 0,15. Una palmera adulta de 9 m se sacude con fuerza 0,5: suelta ~1/3 de
+    sus maduros por sacudida.
+  - **Dónde caen.** En un anillo de 0,5 m a 0,6 × copa (1,8 m en la palmera) alrededor
+    del tronco, repartidos por área. Pueden caer en la celda de vegetación vecina, pero
+    siguen siendo de su palmera.
+  - **En la cabeza.** Un coco que cae a menos de 35 cm de quien sacude le da. Pegado al
+    tronco pasa en ~3 % de los cocos. El daño lo fija la biblia 01 (propuesta: 5 de
+    salud, sin esguince).
+  - **Rachas.** Con viento por encima de 0,6, cada hora de juego sacude la copa con
+    fuerza `0,5 × (viento − 0,6) / 0,4` (0,5 en un ciclón). Solo en palmeras cercanas al
+    jugador: es un efecto que se ve.
+  - **Trepar.** Arriba se coge un coco de la copa, verde o maduro, y el hueco queda vacío.
+  - **Talar.** Lo que queda en la copa cae con ella, repartido por la copa caída. Cada
+    maduro se abre con probabilidad 0,3 y queda en `cascara_coco`; los verdes aguantan.
+    La copa se vacía, así que **sacudir y luego talar no da cocos de más**. Estos cocos
+    sustituyen a los `coco_*` de la tabla de la palmera en §3.12.
+  - **Rebrote.** Cuando el tocón vuelve a ser adulto (§3.12), la copa empieza vacía y
+    cuaja su primer coco a los 2–4 días.
+
+  | Número | Valor | Dónde |
+  |---|---|---|
+  | Huecos por palmera | 6 | `FCoconutPalmProfile::Slots` |
+  | Cuajar tras vaciarse | 2–4 días | `RefillMinDays`/`RefillMaxDays` |
+  | Verde | 5 días | `GreenDays` |
+  | Maduro colgando | 3–8 días | `HangMinDays`/`HangMaxDays` |
+  | En el suelo hasta pudrirse | 6 días | `GroundLifeDays` |
+  | Flojera mínima de un maduro | 0,35 | `BaseLooseness` |
+  | Fuerza a mano | 1 hasta 4,5 m, luego 4,5 / altura (mín. 0,15) | `HandShakeStrength` |
+  | Racha | desde viento 0,6; máx. 0,5 | `GustStrength` |
+  | Anillo de caída | 0,5 m – 0,6 × copa | `MinFallRadiusMeters`, `FallRadiusCrownFraction` |
+  | Radio de la cabeza | 0,35 m | `HeadHitRadiusMeters` |
+  | Maduros que se abren al talar | 30 % | `CrackChanceOnFell` |
+
+- **Determinismo.** Todo el ciclo sale de un hash de (semilla, hueco, generación) y va en
+  minutos enteros: avanzar 30 días de golpe o minuto a minuto da lo mismo (hay spec). Una
+  palmera que nadie ha tocado no guarda nada.
+- **Interfaz:** sin barra ni contador. Los cocos se ven en la copa (verdes o pardos); la
+  copa se agita al sacudir y suena el golpe sordo de cada coco al caer.
+- **Dependencias:** `WorldGen` (`FCoconutPalmModel`, `FFellingModel`), `Weather`
+  (viento), `Survival` (daño en la cabeza), `Save` (sección `coconuts`). Integración en
+  `docs/tecnico/cocos-palmeras.md`.
 
 ---
 
