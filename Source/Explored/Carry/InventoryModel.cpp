@@ -1433,6 +1433,12 @@ float FInventoryModel::FillLiquid(int64 InstanceId, float Liters, EInventoryFail
 		OutFail = EInventoryFail::NotALiquidContainer;
 		return 0.0f;
 	}
+	// Clamp(NaN) devuelve el máximo: sin esto, NaN litros llenan el recipiente entero.
+	if (!FMath::IsFinite(Liters) || Liters <= 0.0f)
+	{
+		OutFail = EInventoryFail::NoRoom;
+		return 0.0f;
+	}
 	float Added = FMath::Clamp(Liters, 0.0f, Item->LiquidCapacityLiters - Item->LiquidLiters);
 	if (const FInventoryContainer* Container = GetContainer(Slot))
 	{
@@ -1454,7 +1460,8 @@ float FInventoryModel::FillLiquid(int64 InstanceId, float Liters, EInventoryFail
 float FInventoryModel::DrinkFrom(int64 InstanceId, float Liters)
 {
 	FInventoryItem* Item = FindMutableItemById(InstanceId);
-	if (!Item)
+	// Igual que al llenar: NaN litros no vacían el recipiente.
+	if (!Item || !FMath::IsFinite(Liters))
 	{
 		return 0.0f;
 	}
@@ -1497,7 +1504,9 @@ bool FInventoryModel::ShrinkItem(const FInventoryItem& Updated, EInventoryFail& 
 		OutFail = EInventoryFail::NotFound;
 		return false;
 	}
-	if (!Updated.IsValid() || Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
+	// Un peso NaN pasaría la comparación de abajo (NaN > x es falso) y se quedaría en el inventario.
+	if (!Updated.IsValid() || !InventoryModelDetail::HasSaneAmounts(Updated)
+		|| Updated.DefinitionId != Item->DefinitionId || Updated.Size != Item->Size)
 	{
 		OutFail = EInventoryFail::InvalidItem;
 		return false;

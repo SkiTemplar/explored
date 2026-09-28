@@ -427,6 +427,23 @@ void FInventorySpec::Define()
 			Model.FillLiquid(Stone.InstanceId, 1.0f, Fail);
 			TestTrue(TEXT("Una piedra no guarda agua"), Fail == EInventoryFail::NotALiquidContainer);
 		});
+
+		It("no llena ni vacía con litros no finitos", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Canteen = Cantimplora(Model);
+			PickAndStore(Model, Canteen, EInventorySlot::Belt, Fail);
+			TestEqual(TEXT("NaN litros no llenan"), Model.FillLiquid(Canteen.InstanceId, NaN, Fail), 0.0f);
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::NoRoom);
+			TestEqual(TEXT("Sigue vacía"), Model.GetCarriedWaterLiters(), 0.0f);
+			TestEqual(TEXT("Infinitos litros tampoco"), Model.FillLiquid(Canteen.InstanceId, Inf, Fail), 0.0f);
+			TestEqual(TEXT("Se llena medio litro"), Model.FillLiquid(Canteen.InstanceId, 0.5f, Fail), 0.5f);
+			TestEqual(TEXT("NaN litros no se beben"), Model.DrinkFrom(Canteen.InstanceId, NaN), 0.0f);
+			TestEqual(TEXT("Queda medio"), Model.GetCarriedWaterLiters(), 0.5f);
+		});
 	});
 
 	Describe("Las etiquetas", [this]()
@@ -719,6 +736,26 @@ void FInventorySpec::Define()
 			FInventoryItem Other = Fewer;
 			Other.DefinitionId = FName(TEXT("coral"));
 			TestFalse(TEXT("No cambia de objeto"), Model.ShrinkItem(Other, Fail));
+		});
+
+		It("no mengua a cantidades no finitas o negativas", [this]()
+		{
+			FInventoryModel Model;
+			EInventoryFail Fail = EInventoryFail::None;
+			const FInventoryItem Stones = Piedra(Model);
+			TestTrue(TEXT("Al bolsillo"), PickAndStore(Model, Stones, EInventorySlot::Pockets, Fail));
+
+			FInventoryItem NaNWeight = Stones;
+			NaNWeight.WeightKg = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Peso NaN"), Model.ShrinkItem(NaNWeight, Fail));
+			TestTrue(TEXT("Motivo"), Fail == EInventoryFail::InvalidItem);
+			FInventoryItem NaNVolume = Stones;
+			NaNVolume.VolumeLiters = std::numeric_limits<float>::quiet_NaN();
+			TestFalse(TEXT("Volumen NaN"), Model.ShrinkItem(NaNVolume, Fail));
+			FInventoryItem Negative = Stones;
+			Negative.WeightKg = -1000.0f;
+			TestFalse(TEXT("Peso negativo"), Model.ShrinkItem(Negative, Fail));
+			TestEqual(TEXT("Pesa lo mismo"), Model.GetBodyWeightKg(), 1.0f);
 		});
 	});
 }
