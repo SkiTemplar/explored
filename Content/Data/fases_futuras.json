@@ -2,8 +2,6 @@
 	"version": 1,
 	"note": "BORRADOR de fase 2 y 3 (GDD v2 §6.2): nada de aquí lo carga el juego ni lo puede usar un dato de fase 1 (lo comprueba DataCheck). Números de la biblia 02 §9-11, 03 §3.9 y 05 §1.4-1.6 y §4; donde la biblia no fija un número, el valor lleva \"propuesta\": true. Sin moneda ni tienda (GDD v2 §5).",
 	"pendingItems": [
-		{ "id": "lingote_hierro", "nameEs": "Lingote de hierro", "nameEn": "Iron ingot", "fase": 2, "noteEs": "Del hierro de meteorito en un horno de fundición (estación aún sin diseñar)" },
-		{ "id": "clavos", "nameEs": "Clavos", "nameEn": "Nails", "fase": 2, "noteEs": "Del lingote de hierro" },
 		{ "id": "leche_cabra", "nameEs": "Leche de cabra", "nameEn": "Goat's milk", "fase": 2, "noteEs": "Comida: exige recipes.json y CookingData.inl" },
 		{ "id": "batata_violeta", "nameEs": "Batata violeta", "nameEn": "Purple sweet potato", "fase": 3, "noteEs": "Variedad exclusiva del trueque (biblia 05 §1.4)" },
 		{ "id": "ceramica_decorada", "nameEs": "Cerámica decorada", "nameEn": "Decorated pottery", "fase": 3 },
