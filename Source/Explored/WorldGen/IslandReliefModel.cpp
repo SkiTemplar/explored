@@ -160,6 +160,7 @@ void FIslandReliefModel::TuneForArchetype(EIslandArchetype Archetype, FIslandRel
 	case EIslandArchetype::Smoke:
 		// Barrancos en el cono: cuencas pequeñas pero muchas.
 		S.Erosion.TalusAngleTangent = 0.8f;
+		S.Erosion.MaxDropletLifetime = 60;
 		S.Drainage.MinRiverArea = 1200.0f;
 		break;
 	case EIslandArchetype::Emerald:
