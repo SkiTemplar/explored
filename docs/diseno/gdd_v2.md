@@ -425,6 +425,8 @@ arrecife con reputación alta (§3.9).
 - **Riesgos técnicos:** ninguno nuevo; `FBoatModel` tiene specs en host verdes.
   Pendiente de siempre: malla del «Limón» y astillero (roadmap).
 - **Dependencias:** `Boats`, `Ruins`, `Villages`.
+- **Construcción:** los barcos se arman pieza a pieza y la física decide si
+  navegan (§3.13).
 
 ### 3.11 Museo y tesoros
 
@@ -505,6 +507,106 @@ vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
 - **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
   `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
   herramienta).
+
+### 3.13 Construcción naval: barcos que hay que pensar **[aprobado por Rodrigo 2026-09-27]**
+
+Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), spec
+`Explored.HullAssembly`. Integración en `docs/tecnico/casco-por-piezas.md`.
+
+- **Objetivo:** no existe «construir barco». El jugador arma un casco con piezas y el
+  agua le dice si ha acertado. Una balsa mal equilibrada vuelca, y ese error es parte
+  de la diversión: se aprende mirando cómo escora, no leyendo una barra.
+- **Piezas.** Cada pieza es una caja con masa, volumen y posición en el marco del casco
+  (X hacia proa, Y hacia estribor, Z hacia arriba). Tamaño por defecto, que se puede
+  cambiar:
+
+  | Pieza | Tamaño (cm) | Densidad efectiva | Masa | Qué aporta |
+  |---|---|---|---|---|
+  | Tronco | 300 × 22 × 22 (≈ Ø 25 cm) | 500 kg/m³ | 72,6 kg | Flotación pesada y estable |
+  | Tablón | 200 × 25 × 4 | 550 kg/m³ | 11 kg | Cubierta, largueros |
+  | Bambú (haz de cañas gruesas) | 300 × 10 × 10 | 300 kg/m³ (hueco) | 9 kg | Mucha flotación por kilo |
+  | Flotador sellado (calabaza, barril) | 60 × 40 × 40 | 80 kg/m³ | 7,7 kg | Balancín, reserva de flotación |
+  | Mástil | 10 × 10 × 400 | 550 kg/m³ | 22 kg | Habilita la vela; sube el centro de masas |
+  | Vela | 2 × 2 m | 1,2 kg/m² | 4,8 kg | Empuje con viento (máx. 12 m² por mástil) |
+  | Remos (par) | — | — | 6 kg | 70 N sostenidos por tripulante |
+  | Pala (canalete) | — | — | 2,5 kg | 35 N sostenidos por tripulante |
+
+  Carga y pasajeros son masas puntuales. Un pasajero pesa 75 kg y, de pie, tiene su
+  centro de masas a 90 cm sobre la cubierta; sentado, a unos 50 cm.
+- **Hidrostática (agua de mar, 1025 kg/m³).** El calado es el que desplaza el peso
+  total (Arquímedes). El centro de carena es el centroide de lo sumergido. La **altura
+  metacéntrica** GM = KB + BM − KG sale de la pendiente del brazo adrizante en 0°. El
+  cálculo es exacto para cajas: recorta la sección de cada pieza con el plano del agua.
+  El spec comprueba GM contra la fórmula de la barcaza (±1 %).
+- **Veredicto, del mejor al peor:**
+
+  | Veredicto | Cuándo |
+  |---|---|
+  | Flota nivelada | Escora y asiento ≤ 2° |
+  | Escora | Flota, pero con escora o asiento > 2° |
+  | Anegada | Francobordo < 2 cm en algún canto de la cubierta: cualquier ola entra; va a la mitad de velocidad |
+  | Vuelca | No hay equilibrio estable por debajo de 55° de escora (biblia 02 §8.2), o GM < 0 sin un ángulo de apoyo antes de 55° |
+  | Se hunde | Masa total > flotación máxima (todo el volumen sumergido) |
+
+- **Números de referencia** (calculados con el modelo):
+
+  | Montaje | Masa total | Calado | Francobordo | GM | Resultado |
+  |---|---|---|---|---|---|
+  | 6 troncos + 1 pasajero de pie + remos | 519 kg | 12,8 cm | 9,2 cm | 94 cm | Flota nivelada; 1,0 m/s remando |
+  | La misma + un segundo pasajero a 40 cm del eje | 592 kg | 14,6 cm | 2,7 cm | 70 cm | Escora 4,1° |
+  | La misma + 60 kg de carga en la borda (66 cm) | 571 kg | 14,1 cm | 2,4 cm | 83 cm | Escora 4,8° |
+  | 6 troncos + 1 pasajero + 300 kg de carga | 811 kg | 20,0 cm | 2,0 cm | 51 cm | Casi anegada; con 350 kg ya anegada; con 400 kg se hunde (flotación máxima: 893 kg) |
+  | 2 troncos + pasajero de pie | 223 kg | 16,5 cm | — | −27 cm | **Vuelca** (KG 45 cm > KM 18 cm) |
+  | 3 troncos + pasajero de pie | 295 kg | 14,6 cm | — | −4,5 cm | **Vuelca** por poco |
+  | 4 troncos + pasajero de pie | 368 kg | 13,6 cm | 8,4 cm | 23 cm | Flota; el mínimo seguro |
+  | 2 troncos + balancín (travesaño de bambú y 2 flotadores a 1,5 m) | 238 kg | 13,8 cm | 18,2 cm | 322 cm | Flota muy estable |
+  | 4 haces de bambú + pasajero de pie | 114 kg | 9,2 cm | — | −49 cm | **Vuelca**; con 8 haces flota y va a 1,5 m/s a pala |
+  | 3 troncos de 6 m + pasajero + remos | 517 kg | 12,7 cm | 9,3 cm | 9 cm | Flota; 1,9 m/s remando (el doble que la balsa de 6 × 3 m) |
+
+  La lección que el juego enseña sin texto: **más ancho es más estable, más alto es
+  menos estable, y un balancín compra estabilidad casi gratis**. Sentarse (bajar el
+  centro de masas 40 cm) salva una balsa estrecha que de pie vuelca.
+- **Propulsión y forma.**
+  - Cada tripulante coge unos remos si quedan libres y, si no, una pala.
+  - La vela necesita un mástil y un tripulante que lleve la escota. Empuja
+    ½ · ρ_aire · 0,8 · A · V², así que con 4 m² y el alisio de 6,5 m/s da 83 N,
+    algo más que los remos.
+  - Con viento flojo se rema. El modelo elige lo que más empuja.
+  - Resistencia de forma: Cd = 0,3 + 1,2 / (eslora / manga efectiva). La manga
+    efectiva suma solo lo que está bajo el agua, así que un balancín no frena como un
+    casco ancho.
+  - Velocidad de casco: 0,4 · √(g · eslora), unos 2,2 m/s para 3 m. Pasar de ella
+    rinde una cuarta parte del empuje de más.
+  - Escorada, la embarcación pierde velocidad (× cos escora).
+  - Giro con radio de 1,5 esloras. Mantener el rumbo depende de lo esbelto que sea el
+    casco (0 si es cuadrado, 1 a partir de 8:1). Un casco chato gira y deriva; uno
+    esbelto corre y va recto.
+- **La carga cuenta.** La misma balsa con 150 kg más cala 3,7 cm más, pierde GM y va más
+  lenta. Una carga descentrada escora hacia su lado (tan φ ≈ w · e / (Δ · GM), lo
+  comprueba el spec), y hacia proa la asienta de proa.
+- **Al agua.** `ToBoatDefinition` traduce lo armado a la ficha con la que navega
+  `FBoatModel`: eslora, manga, altura de cubierta, masa, coeficiente de flotación, GM,
+  vuelco en el ángulo de estabilidad nula (tope 55°), vela y su altura sobre la
+  flotación, empuje y velocidad de remo, y carga máxima (95 % de la flotación con un
+  tripulante, biblia 02 §8.2). Las olas, el viento aparente, la escora dinámica por la
+  vela y el vuelco en marcha los sigue resolviendo `FBoatModel`, que ya tiene specs.
+- **Progresión:** balsa de troncos ancha (pesada, lenta, segura) → balsa de bambú
+  (ligera y rápida, pero hay que ensancharla o sentarse) → casco estrecho con balancín
+  (rápido y estable) → vela en mástil. Los planos canónicos de `boats.json` pasan a
+  ser montajes de ejemplo sobre estas mismas piezas.
+- **Interfaz:** sin números en pantalla. En el astillero, la pieza fantasma muestra el
+  casco inclinándose hacia donde quedaría escorado y hundiéndose hasta su calado. Al
+  botarlo, la física hace el resto.
+- **Riesgos técnicos:** escora y asiento se resuelven desacoplados (estabilidad
+  estática clásica). Una carga en diagonal da una escora y un asiento correctos por
+  separado, pero no su combinación exacta. Es suficiente para el astillero, y la
+  dinámica en el mar la lleva `FBoatModel`.
+- **Pendiente de decisión:** el objeto `tronco_pequeno` pesa 8 kg en la biblia 03, y con
+  8 troncos así una balsa no aguanta a una persona. La pieza «tronco» del casco es un
+  tronco de balsa de verdad (72,6 kg: se lleva a hombros entre dos o se hace rodar).
+  Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
+- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
+  por piezas en la sección de barcos, pendiente).
 
 ---
 
