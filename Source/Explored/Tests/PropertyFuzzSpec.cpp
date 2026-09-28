@@ -1,9 +1,16 @@
 #include "Misc/AutomationTest.h"
 
+#include "Boats/BoatModel.h"
 #include "Carry/InventoryModel.h"
+#include "Cartography/CartographyModel.h"
 #include "Core/ExploredRandom.h"
+#include "Player/SwimModel.h"
 #include "Save/SaveValue.h"
+#include "Survival/BodyModel.h"
 #include "Tramway/TramwayModel.h"
+#include "Weather/RainCatchModel.h"
+#include "WorldGen/FellingModel.h"
+#include "WorldGen/WildfireModel.h"
 
 #include <limits>
 
@@ -140,6 +147,28 @@ namespace PropertyFuzzDetail
 	{
 		return FSaveText::Write(Model.ToValue(), ESaveTextStyle::Compact);
 	}
+
+	// ------------------------------------------------------------------ valores hostiles
+
+	/**
+	 * La mitad de las veces un valor normal en [Lo, Hi); la otra, uno de los que llegan de un
+	 * guardado corrupto o de un fotograma roto: NaN, infinitos, enormes, negativos, denormales.
+	 */
+	float Hostile(FExploredRandom& Rng, float Lo, float Hi)
+	{
+		static const float Pool[] = {
+			std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
+			-std::numeric_limits<float>::infinity(), 1.0e30f, -1.0e30f, TNumericLimits<float>::Max(),
+			-1.0f, 0.0f, 1.0e-40f, 1.0e7f };
+		if (Rng.Chance(0.5f))
+		{
+			return Rng.RangeFloat(Lo, Hi);
+		}
+		return Pool[Rng.RangeInt(0, UE_ARRAY_COUNT(Pool) - 1)];
+	}
+
+	bool IsFiniteVec(const FVector& V) { return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z); }
+	bool IsFiniteVec(const FVector2D& V) { return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y); }
 }
 
 BEGIN_DEFINE_SPEC(FPropertyFuzzSpec, "Explored.Fuzz",
@@ -286,6 +315,125 @@ void FPropertyFuzzSpec::Define()
 				}
 			}
 			TestEqual(TEXT("sin fallos de invariantes"), Failures, 0);
+		});
+	});
+
+	Describe("los valores hostiles en las entradas públicas", [this]()
+	{
+		It("no dejan NaN ni infinitos en el estado del barco, el nado, el vagón y el mapa, ni cuelgan", [this]()
+		{
+			for (int32 Seed = 1; Seed <= Seeds; ++Seed)
+			{
+				FExploredRandom Rng(static_cast<uint64>(Seed) * 2654435761u);
+				const FString At = FString::Printf(TEXT("semilla %d"), Seed);
+
+				// Barco: pasos, carga, velocidad y amarre con valores rotos.
+				FBoatModel Boat(EBoatType::Canoe, FVector(100.0, 200.0, 0.0), 30.0f);
+				Boat.SetCrewAboard(true);
+				FBoatControls Controls;
+				FBoatEnvironment Env;
+				for (int32 I = 0; I < 200; ++I)
+				{
+					switch (Rng.RangeInt(0, 3))
+					{
+					case 0: Boat.TryAddCargo(Hostile(Rng, 0.0f, 50.0f)); break;
+					case 1: Boat.SetVelocityCmS(FVector2D(Hostile(Rng, -300.0f, 300.0f), Hostile(Rng, -300.0f, 300.0f))); break;
+					case 2: Boat.Moor(FVector2D(Hostile(Rng, -500.0f, 500.0f), Hostile(Rng, -500.0f, 500.0f)), Hostile(Rng, 0.0f, 800.0f)); break;
+					default: break;
+					}
+					Env.WaveTimeSeconds += 1.0f / 60.0f;
+					Boat.Step(Hostile(Rng, 0.0f, 0.05f), Controls, Env);
+				}
+				const FBoatState& B = Boat.GetState();
+				TestTrue(At + TEXT(": barco finito"), IsFiniteVec(B.LocationCm) && IsFiniteVec(B.VelocityCmS)
+					&& FMath::IsFinite(B.YawDeg) && FMath::IsFinite(B.CargoKg) && FMath::IsFinite(B.PendingTimeS)
+					&& FMath::IsFinite(B.MooringLengthCm) && IsFiniteVec(B.MooringAnchorCm));
+
+				// Nado: pasos de tiempo y oxígeno rotos, con la cabeza bajo el agua.
+				const FSwimTuning Tuning;
+				FSwimModel Swim;
+				FSwimInputs In;
+				In.bHasWater = true;
+				In.WaterZ = 0.0f;
+				In.CenterZ = -300.0f;
+				for (int32 I = 0; I < 200; ++I)
+				{
+					if (Rng.Chance(0.1f))
+					{
+						Swim.SetOxygen(Hostile(Rng, 0.0f, 100.0f));
+					}
+					Swim.Tick(Tuning, In, Hostile(Rng, 0.0f, 0.05f));
+				}
+				TestTrue(At + TEXT(": oxígeno finito y en rango"), FMath::IsFinite(Swim.GetOxygen()) && Swim.GetOxygen() >= 0.0f && Swim.GetOxygen() <= 100.0f);
+
+				// Vagón: carga, colocación y pasos rotos en una vía cerrada.
+				FTramwayModel Tram;
+				const FIntVector Corners[] = { FIntVector(0, 0, 0), FIntVector(1, 0, 0), FIntVector(1, 1, 0), FIntVector(0, 1, 0) };
+				for (int32 I = 0; I < 4; ++I)
+				{
+					Tram.Place(Corners[I], Corners[(I + 1) % 4]);
+				}
+				FMineCart Cart;
+				Tram.PlaceCart(Cart, Corners[0], Corners[1]);
+				double Acc = 0.0;
+				FCartControl Push;
+				Push.Propulsion = ECartPropulsion::Push;
+				for (int32 I = 0; I < 200 && !Cart.IsDerailed(); ++I)
+				{
+					if (Rng.Chance(0.1f))
+					{
+						Tram.SetLoad(Cart, Hostile(Rng, 0.0f, 200.0f));
+					}
+					if (Rng.Chance(0.05f))
+					{
+						Tram.PlaceCart(Cart, Corners[1], Corners[2], Hostile(Rng, 0.0f, 2.0f));
+					}
+					Tram.Step(Cart, Push, Hostile(Rng, 0.0f, 0.05f), Acc);
+				}
+				TestTrue(At + TEXT(": vagón finito"), FMath::IsFinite(Cart.S) && FMath::IsFinite(Cart.V) && FMath::IsFinite(Cart.LoadKg) && FMath::IsFinite(Acc));
+
+				// Mapa: posiciones, distancias y agua rotas.
+				FCartographyModel Map(static_cast<uint32>(Seed));
+				for (int32 I = 0; I < 300; ++I)
+				{
+					FCartographySample Sample;
+					Sample.WorldPosition = FVector2D(Rng.Chance(0.9f) ? I * 0.8f : Hostile(Rng, -10.0f, 10.0f), Hostile(Rng, -5.0f, 5.0f));
+					Sample.DistanceToShore = Hostile(Rng, 0.0f, 10.0f);
+					Map.Sample(Sample);
+					if (Rng.Chance(0.1f))
+					{
+						FCartographyExposure Water;
+						Water.Rain = Hostile(Rng, 0.0f, 1.0f);
+						Water.bInSeaWater = Rng.Chance(0.3f);
+						Map.TickWetness(Water, Hostile(Rng, 0.0f, 5.0f));
+					}
+				}
+				bool bMapFinite = IsFiniteVec(Map.GetState().Drift);
+				for (const FMapStroke& Stroke : Map.GetState().Strokes)
+				{
+					bMapFinite &= FMath::IsFinite(Stroke.Ink) && FMath::IsFinite(Stroke.Blur);
+					for (const FVector2D& P : Stroke.Points)
+					{
+						bMapFinite &= IsFiniteVec(P);
+					}
+				}
+				TestTrue(At + TEXT(": mapa finito"), bMapFinite);
+
+				// Funciones puras: resultado finito y en rango, sin conversiones con UB (UBSan).
+				for (int32 I = 0; I < 50; ++I)
+				{
+					const FFallResult Fall = FBodyModel::FallDamage(Hostile(Rng, 0.0f, 20.0f), ELandingSurface::Rock);
+					const float Rain = FRainCatchModel::RainMmPerHour(Hostile(Rng, 0.0f, 1.0f));
+					if (!FMath::IsFinite(Fall.Damage) || Fall.Damage < 0.0f || !FMath::IsFinite(Fall.SprainHours)
+						|| !FMath::IsFinite(Rain) || Rain < 0.0f)
+					{
+						AddError(At + TEXT(": caída o lluvia no finitas"));
+					}
+					const FVector2D Where(Hostile(Rng, -1.0e5f, 1.0e5f), Hostile(Rng, -1.0e5f, 1.0e5f));
+					FFellingModel::CellOf(Where, Hostile(Rng, 1.0f, 3200.0f));
+					FWildfireModel::CellAt(Where);
+				}
+			}
 		});
 	});
 
