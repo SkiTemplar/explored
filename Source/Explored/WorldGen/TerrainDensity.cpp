@@ -154,14 +154,22 @@ namespace
 	 * isla: cada construcción independiente de la misma isla (subsistemas de cartografía,
 	 * ruinas, cámara de capturas...) paga el coste una sola vez por proceso. Medido: unos
 	 * 0,35 s en una rejilla de 420x420 en Development x64 (ver Tools/HostTests).
+	 * La clave es todo lo que usa la rejilla (semilla, altura máxima y radio): dos
+	 * layouts con la misma semilla y otra altura no deben compartirla.
 	 */
 	TSharedPtr<const FErosionHeightGrid> GetOrBuildKarstGrid(const FIslandDesc& Island)
 	{
 		static FCriticalSection Mutex;
-		static TMap<uint32, TSharedPtr<const FErosionHeightGrid>> Cache;
+		static TMap<FIntVector, TSharedPtr<const FErosionHeightGrid>> Cache;
+
+		uint32 HeightBits = 0;
+		uint32 RadiusBits = 0;
+		FMemory::Memcpy(&HeightBits, &Island.MaxHeight, sizeof(HeightBits));
+		FMemory::Memcpy(&RadiusBits, &Island.Radius, sizeof(RadiusBits));
+		const FIntVector Key(static_cast<int32>(Island.Seed), static_cast<int32>(HeightBits), static_cast<int32>(RadiusBits));
 
 		FScopeLock Lock(&Mutex);
-		if (const TSharedPtr<const FErosionHeightGrid>* Found = Cache.Find(Island.Seed))
+		if (const TSharedPtr<const FErosionHeightGrid>* Found = Cache.Find(Key))
 		{
 			return *Found;
 		}
@@ -192,7 +200,7 @@ namespace
 		FTerrainErosionModel::Erode(*Grid, Params);
 
 		TSharedPtr<const FErosionHeightGrid> Result = Grid;
-		Cache.Add(Island.Seed, Result);
+		Cache.Add(Key, Result);
 		return Result;
 	}
 

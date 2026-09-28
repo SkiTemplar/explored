@@ -206,6 +206,44 @@ void FWorldGenSpec::Define()
 
 	Describe("FTerrainDensity", [this]()
 	{
+		It("no comparte el macizo kárstico entre layouts de igual semilla y distinta altura", [this]()
+		{
+			const FArchipelagoLayout Official = FArchipelagoLayout::Generate(OfficialSeed);
+			FArchipelagoLayout Taller = Official;
+			FIslandDesc* TallMesa = nullptr;
+			for (FIslandDesc& Island : Taller.Islands)
+			{
+				if (Island.Archetype == EIslandArchetype::Mesa)
+				{
+					TallMesa = &Island;
+				}
+			}
+			if (!TestNotNull(TEXT("hay macizo kárstico"), TallMesa))
+			{
+				return;
+			}
+			TallMesa->MaxHeight *= 2.0f;
+			const FTerrainDensity Low(Official);
+			const FTerrainDensity High(Taller);
+			// Cumbre de cada uno: antes High reutilizaba la rejilla de Low (misma semilla de isla).
+			auto Peak = [](const FTerrainDensity& Density, const FIslandDesc& Island)
+			{
+				float Best = -1.0e9f;
+				for (int32 Y = -20; Y <= 20; ++Y)
+				{
+					for (int32 X = -20; X <= 20; ++X)
+					{
+						const FVector2D P = Island.Center + FVector2D(X, Y) * (Island.Radius / 20.0f);
+						Best = FMath::Max(Best, Density.SampleColumn(static_cast<float>(P.X), static_cast<float>(P.Y)).Height);
+					}
+				}
+				return Best;
+			};
+			const float LowPeak = Peak(Low, *Official.FindIsland(EIslandArchetype::Mesa));
+			const float HighPeak = Peak(High, *TallMesa);
+			TestTrue(*FString::Printf(TEXT("el doble de alto sube la cumbre (%.1f → %.1f)"), LowPeak, HighPeak), HighPeak > LowPeak * 1.4f);
+		});
+
 		It("tiene tierra emergida cerca del centro de cada isla alta", [this]()
 		{
 			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
