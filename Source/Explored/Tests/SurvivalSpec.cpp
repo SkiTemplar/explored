@@ -2,6 +2,8 @@
 
 #include "Survival/SurvivalModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace SurvivalTest
@@ -61,6 +63,57 @@ void FSurvivalSpec::Define()
 		// 3 puntos por hora durante media hora, no durante las dos del paso.
 		TestEqual(TEXT("Daño de media hora"), Clean.Health - Poisoned.Health, 1.5f, 0.05f);
 		TestFalse(TEXT("Se le pasa"), Poisoned.HasCondition(ECondition::Poisoned));
+	});
+
+	It("un paso de tiempo no finito no llena las necesidades ni la salud", [this]()
+	{
+		FSurvivalState S;
+		S.Health = 50.0f;
+		S.Hunger = 30.0f;
+		S.Thirst = 20.0f;
+		S.Rest = 40.0f;
+		const FSurvivalState Before = S;
+		TArray<ESurvivalEvent> Events;
+		FSurvivalModel::Tick(S, FSurvivalInputs(), std::numeric_limits<float>::quiet_NaN(), ESurvivalMode::Survivor, 0.99f, Events);
+		FSurvivalModel::Tick(S, FSurvivalInputs(), std::numeric_limits<float>::infinity(), ESurvivalMode::Survivor, 0.99f, Events);
+		TestEqual(TEXT("Salud"), S.Health, Before.Health);
+		TestEqual(TEXT("Hambre"), S.Hunger, Before.Hunger);
+		TestEqual(TEXT("Sed"), S.Thirst, Before.Thirst);
+		TestEqual(TEXT("Sueño"), S.Rest, Before.Rest);
+		TestEqual(TEXT("Temperatura"), S.BodyTemperature, Before.BodyTemperature);
+	});
+
+	It("un estado con tiempo NaN se borra en vez de sangrar para siempre", [this]()
+	{
+		TArray<ESurvivalEvent> Events;
+		FSurvivalState Clean;
+		FSurvivalState Loaded;
+		Loaded.ConditionTime[static_cast<int32>(ECondition::Bleeding)] = std::numeric_limits<float>::quiet_NaN();
+		Loaded.AddCondition(ECondition::Poisoned, std::numeric_limits<float>::quiet_NaN());
+		TestFalse(TEXT("AddCondition(NaN) no añade nada"), FMath::IsNaN(Loaded.ConditionTime[static_cast<int32>(ECondition::Poisoned)]));
+		FSurvivalModel::Tick(Clean, FSurvivalInputs(), 2.0f, ESurvivalMode::Survivor, 0.99f, Events);
+		FSurvivalModel::Tick(Loaded, FSurvivalInputs(), 2.0f, ESurvivalMode::Survivor, 0.99f, Events);
+		TestEqual(TEXT("Sin daño de más"), Loaded.Health, Clean.Health);
+		TestEqual(TEXT("Tiempo borrado"), Loaded.ConditionTime[static_cast<int32>(ECondition::Bleeding)], 0.0f);
+	});
+
+	It("un consumible con valores no finitos cuenta como 0", [this]()
+	{
+		FSurvivalState S;
+		S.Hunger = 30.0f;
+		S.Health = 50.0f;
+		const FSurvivalState Before = S;
+		FConsumable Bad;
+		Bad.Food = std::numeric_limits<float>::quiet_NaN();
+		Bad.Warmth = std::numeric_limits<float>::quiet_NaN();
+		Bad.Healing = std::numeric_limits<float>::infinity();
+		Bad.Water = 10.0f;
+		TArray<ESurvivalEvent> Events;
+		FSurvivalModel::Consume(S, Bad, 0.99f, Events);
+		TestEqual(TEXT("Hambre"), S.Hunger, Before.Hunger);
+		TestEqual(TEXT("Salud"), S.Health, Before.Health);
+		TestEqual(TEXT("Temperatura"), S.BodyTemperature, Before.BodyTemperature);
+		TestEqual(TEXT("El agua sí cuenta"), S.Thirst, Before.Thirst + 10.0f);
 	});
 
 	It("enfría el cuerpo de noche, mojado y con viento, y el fuego lo recupera", [this]()
