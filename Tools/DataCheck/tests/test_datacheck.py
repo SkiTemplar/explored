@@ -815,7 +815,7 @@ def test_mineria_falta_estrato_del_gdd(ds: DataSet) -> None:
 
 
 def test_mineria_cabeza_de_pico_sin_nivel(ds: DataSet) -> None:
-    ds.data["items.json"] = ds.items + [{"id": "granito", "tags": ["piedra"], "properties": [{"name": "Rigido", "value": 4}]}]
+    ds.data["items.json"] = ds.items + [{"id": "granito", "tags": ["piedra"], "properties": [{"name": "Rigido", "value": 4}, {"name": "Punta", "value": 3}]}]
     assert any_error(mining_errors(ds), "granito", "no tiene nivel")
 
 
@@ -824,7 +824,35 @@ def test_mineria_hacha_delante_roba_el_pico(ds: DataSet) -> None:
     pico = template(ds, "pico")
     tpl.remove(pico)
     tpl.append(pico)
-    assert any_error(mining_errors(ds), "canto_rodado", "hacha")
+    assert any_error(mining_errors(ds), "canto_aguzado", "hacha")
+
+
+def test_canto_rodado_con_mango_sigue_dando_hacha_de_piedra(real: DataSet) -> None:
+    # Biblia 01 (días 2-4) y 02 §1.2: el hacha de piedra existe; el pico exige Punta.
+    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    for piedra in ("canto_rodado", "basalto", "piedra_plana"):
+        assert apply(real, mango, inst(real, piedra), "Atar").definition == "hacha", piedra
+
+
+def test_pico_de_piedra_sale_del_canto_aguzado(real: DataSet) -> None:
+    punta = apply(real, inst(real, "lasca_pedernal"), inst(real, "canto_rodado"), "Tallar")
+    assert punta.definition == "canto_aguzado"
+    mango = apply(real, inst(real, "tronco_pequeno"), inst(real, "liana"), "Atar")
+    assert apply(real, mango, punta, "Atar").definition == "pico"
+
+
+def test_cabeza_rescatada_de_chapa_o_hierro_en_el_banco(real: DataSet) -> None:
+    # Biblia 02 §2.2: pico rescatado de chapa_fuselaje/hierro_meteorito, tras el banco de chatarra.
+    for chatarra in ("chapa_fuselaje", "hierro_meteorito"):
+        head = apply(real, inst(real, "canto_rodado"), inst(real, chatarra), "Golpear")
+        assert head.definition == "cabeza_pico_rescatada", chatarra
+    for tid in ("cabeza_pico_de_chapa", "cabeza_pico_de_hierro"):
+        assert template(real, tid)["station"] == "banco_chatarra"
+
+
+def test_plantilla_con_estacion_que_no_existe(ds: DataSet) -> None:
+    template(ds, "cabeza_pico_de_chapa")["station"] = "fragua"
+    assert any_error(run_all(ds).errors, "cabeza_pico_de_chapa", "fragua")
 
 
 def test_mineria_pico_de_obsidiana_solo_en_fase_2(ds: DataSet) -> None:
@@ -1066,3 +1094,4 @@ def test_packs_catalogo_replaces_de_pieza_comprueba_la_malla(ds: DataSet) -> Non
 def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
     _catalog(ds)["discarded"][0]["gameId"] = "pared_de_neon"
     assert any_error(errors_of(ds), "pared_de_neon", "no existe")
+

@@ -1176,6 +1176,36 @@
       "mesh": "SM_Base_ClayOven"
     },
     {
+      "id": "banco_chatarra",
+      "nameEs": "Banco de chatarra",
+      "nameEn": "Scrap bench",
+      "tier": "piedra",
+      "category": "produccion",
+      "socket": "terreno",
+      "cost": [
+        {
+          "item": "chapa_fuselaje",
+          "count": 2
+        },
+        {
+          "item": "tubo_aluminio",
+          "count": 2
+        },
+        {
+          "item": "piedra_plana",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "martillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 45,
+      "integrity": 80,
+      "maxCycloneCategory": 3,
+      "mesh": null
+    },
+    {
       "id": "chimenea",
       "nameEs": "Chimenea",
       "nameEn": "Chimney",

@@ -275,21 +275,26 @@ def _check_progression(ds, doc, materials, strata, tier_heads, r) -> None:
 
 
 def _head_inputs(ds) -> dict[str, list[set[str]]]:
-    """Para objetos fabricados que sirven de cabeza: conjuntos de hojas que los producen en un paso."""
+    """Para objetos fabricados que sirven de cabeza: conjuntos de objetos que los producen en un paso.
+
+    Si la plantilla exige estación (``station``), su coste de construcción entra en el conjunto.
+    """
 
     items = {i["id"]: i for i in ds.items}
+    pieces = {p.get("id"): p for p in ds.data.get("building_pieces.json", {}).get("pieces", [])}
     out: dict[str, list[set[str]]] = {}
     leaves = [crafting.leaf(i) for i in ds.items if "interno" not in i.get("tags", [])]
     for t in ds.templates:
         res = t.get("resultDefinitionId")
         if res not in items or "mineria" not in items[res].get("tags", []):
             continue
+        station_cost = {c.get("item") for c in pieces.get(t.get("station"), {}).get("cost", [])}
         for verb in t.get("verbs", []):
             for a in leaves:
                 for b in leaves:
                     best = crafting.best_template(ds.templates, verb, a, b)
                     if best is t:
-                        out.setdefault(res, []).append({a.definition, b.definition})
+                        out.setdefault(res, []).append({a.definition, b.definition} | station_cost)
     return out
 
 

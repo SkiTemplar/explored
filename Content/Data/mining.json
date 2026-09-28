@@ -124,13 +124,13 @@
 		{ "tier": 0, "id": "mano", "nameEs": "A mano", "nameEn": "Bare hands", "template": null, "heads": [] },
 		{ "tier": 1, "id": "pala_tosca", "nameEs": "Pala tosca", "nameEn": "Crude shovel", "template": "pala", "heads": [] },
 		{ "tier": 2, "id": "pico_piedra", "nameEs": "Pico de piedra", "nameEn": "Stone pick", "template": "pico",
-			"heads": ["canto_rodado", "piedra_plana", "pedernal", "basalto", "caliza", "mineral_cobre", "cristal_cuarzo"] },
+			"heads": ["canto_aguzado"] },
 		{ "tier": 3, "id": "pico_tallado", "nameEs": "Pico tallado", "nameEn": "Knapped pick", "template": "pico",
 			"heads": ["basalto_tallado"] },
 		{ "tier": 4, "id": "pico_obsidiana", "nameEs": "Pico de obsidiana", "nameEn": "Obsidian pick", "template": "pico",
 			"heads": ["obsidiana"],
 			"fragile": { "minHardness": 3, "chance": 0.08, "durabilityLoss": 15 } },
-		{ "tier": 4, "id": "pico_rescatado", "nameEs": "Pico de hierro", "nameEn": "Iron pick", "template": "pico",
-			"heads": ["hierro_meteorito"] }
+		{ "tier": 4, "id": "pico_rescatado", "nameEs": "Pico rescatado", "nameEn": "Salvaged pick", "template": "pico",
+			"heads": ["cabeza_pico_rescatada"] }
 	]
 }

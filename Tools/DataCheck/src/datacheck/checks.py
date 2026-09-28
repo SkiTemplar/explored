@@ -198,6 +198,9 @@ def check_templates(ds: DataSet, r: Report) -> None:
     verb_ids = {v.get("id") for v in ds.verbs}
     item_ids = ds.item_ids
     seen: set[str] = set()
+    # «station» todavía no lo lee el C++: fija en datos la estación que exige la plantilla (biblia 03 §1.4).
+    stations = {p.get("id") for p in ds.data.get("building_pieces.json", {}).get("pieces", [])
+                if p.get("category") == "produccion"}
     if len(ds.templates) < 15:
         r.error(f"templates.json: {len(ds.templates)} plantillas; ItemsSpec.cpp exige al menos 15")
     for t in ds.templates:
@@ -212,6 +215,9 @@ def check_templates(ds: DataSet, r: Report) -> None:
             r.error(f"templates.json «{tid}»: produce «{t.get('resultDefinitionId')}», que no está en items.json")
         if not t.get("verbs"):
             r.error(f"templates.json «{tid}»: sin verbos")
+        station = t.get("station")
+        if station is not None and station not in stations:
+            r.error(f"templates.json «{tid}»: estación «{station}» no es una pieza de producción de building_pieces.json")
         for verb in t.get("verbs", []):
             if verb not in verb_ids:
                 r.error(f"templates.json «{tid}»: verbo «{verb}» no está en verbs.json")
