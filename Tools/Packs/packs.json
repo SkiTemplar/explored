@@ -235,26 +235,57 @@
       "note": "Revisado en lote4-huerto: el follaje (hojas con alfa) no se puede recolorear por cara y se descarta. Candidato abierto: Pebble_Round_* para canto_rodado."
     },
     {
-      "id": "quaternius_polypizza_foliage",
-      "name": "Quaternius (via Poly Pizza)",
-      "author": "Quaternius",
-      "page": "https://poly.pizza/u/Quaternius",
+      "id": "polypizza_cc0_tropical",
+      "name": "Poly Pizza (CC0, varios autores)",
+      "author": "Quaternius / Isa Lousberg",
+      "page": "https://poly.pizza",
       "version": "n/a (modelos individuales, sin version de pack)",
       "source": {
         "kind": "polypizza",
-        "page": "https://poly.pizza/u/Quaternius",
-        "note": "Sin API key: download_polypizza.py scrapea el JSON de estado embebido en la pagina de cada modelo (https://poly.pizza/m/<publicID>), que trae licencia, autor y la URL directa del .glb en static.poly.pizza; aborta la descarga si autor o licencia no coinciden con Quaternius/CC0. No usa fetch_packs.py (esquema de descarga distinto: modelo a modelo, no un zip)."
+        "page": "https://poly.pizza",
+        "note": "Sin API key: download_polypizza.py scrapea el JSON de estado embebido en la pagina de cada modelo (https://poly.pizza/m/<publicID>), que trae licencia, autor y la URL directa del .glb en static.poly.pizza; aborta la descarga si autor o licencia no coinciden EXACTAMENTE con lo registrado en MODELS (PolyPizzaModel.creator/licence_prefix). No usa fetch_packs.py (esquema de descarga distinto: modelo a modelo, no un zip)."
       },
       "license": {
         "spdx": "CC0-1.0",
-        "verifiedOn": "2026-09-27",
-        "evidence": "Pagina de cada modelo en poly.pizza reporta licencia CC0 y autor Quaternius; verificado por download_polypizza.py antes de cada descarga."
+        "verifiedOn": "2026-09-28",
+        "evidence": "Pagina de cada modelo en poly.pizza reporta licencia CC0 1.0 y el autor exacto; verificado por download_polypizza.py antes de cada descarga (ver .cache/quaternius-polypizza/resolved.json tras ejecutarlo)."
       },
       "formats": [
         "glb"
       ],
-      "sha256": "n/a (verificacion por licencia/autor scrapeados, no por hash de un unico zip; ver Tools/Packs/download_polypizza.py)",
-      "note": "Sustituye el follaje generico de Kenney Nature Kit (copas en bloques/bolas, troncos planos, sin degradado) tras el rechazo del director. Material nativo con degradado base oscura/punta clara ya horneado. used_for: Palm (palm_a A6cKJYFsIb, palm_b DsrrAYmucG, palm_c P0tgwyXBgr, palm_d nr1B5DbICA), JungleWide (jungle_wide_a i4QMw4L64D, jungle_wide_b qZtx0AHhcy, jungle_wide_c 9nvGuZlbpE, jungle_wide_d YWjGDJ9F7g), Shrub (shrub_a ooG6CkLyE8, shrub_b 92EytlU1El, shrub_flowering U1ymDy8tbY, shrub_banana ruOFtE0B6Z), Fern (fern_a jqcanvH7D6, fern_b xH5gNlQxAZ), Grass (grass_a iw6l7gqcdQ, grass_b JSIYtscPmP, grass_c vUJjrRsFp4), Flower (flower_a NBUxHir6FJ, flower_b hfPzQAedOe, flower_c dOO6kMDd8L)."
+      "sha256": "n/a (verificacion por licencia/autor scrapeados por modelo, no por hash de un unico zip; ver Tools/Packs/download_polypizza.py)",
+      "note": "Follaje CC0 sin maceta, listo para plantar en el terreno. used_for: Palm (palm_a A6cKJYFsIb, palm_b DsrrAYmucG, palm_c P0tgwyXBgr, palm_d nr1B5DbICA; Quaternius), Understory (understory_bamboo xBPj13w3JQ; Quaternius), Mangrove (mangrove_a 8qABc2Nslz: tronco en Y con dos copas, unico resultado CC0 con silueta de manglar; Quaternius), Shrub (shrub_monstera kZQ2WmnJFI de Isa Lousberg -Monstera deliciosa real, sin maceta-, shrub_pineapple_top MbhbP7JrTI y shrub_bamboo FUgtfvqgMx de Quaternius), Fern (fern_a jqcanvH7D6; Quaternius), Grass (grass_a JSIYtscPmP, grass_b vUJjrRsFp4, grass_c UGTOzcO3P2; Quaternius, matas altas, no cesped de prado)."
+    },
+    {
+      "id": "polypizza_ccby_tropical",
+      "name": "Poly Pizza (CC-BY 3.0, varios autores)",
+      "author": "Poly by Google / Zacharylll",
+      "page": "https://poly.pizza",
+      "version": "n/a (modelos individuales, sin version de pack)",
+      "source": {
+        "kind": "polypizza",
+        "page": "https://poly.pizza",
+        "note": "Misma mecanica de scrapeo que polypizza_cc0_tropical. EXCEPCION a la politica CC0-only de GDD v2 SS7.1, autorizada por el director el 2026-09-28 para poder usar especies de dosel de selva reconocibles: Quaternius no tiene en Poly Pizza ninguna especie de arbol tropical identificable (solo copas redondas genericas de aspecto templado). Requiere atribucion obligatoria: ver Tools/Packs/creditos_cc_by.md (texto listo para pegar) y el TODO en Source/Explored/UI/Widgets/SExploredCredits.cpp -pendiente de que alguien con el editor lo integre y regenere la localizacion-."
+      },
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Pagina de cada modelo en poly.pizza reporta licencia CC-BY 3.0 y el autor exacto; verificado por download_polypizza.py antes de cada descarga."
+      },
+      "formats": [
+        "glb"
+      ],
+      "sha256": "n/a (verificacion por licencia/autor scrapeados por modelo; ver Tools/Packs/download_polypizza.py)",
+      "note": "Dosel de selva y unas pocas especies sin equivalente CC0. used_for: JungleWide (jungle_wide_a dlW4hGKBpiS 'Vine Covered Tree' de Zacharylll -copa plana con lianas y contrafuertes-, jungle_wide_b 2PolZJUAMmk 'Rubber tree', jungle_wide_c 2EW209K0xBw 'Macassar tree', jungle_wide_d 6pwiq7hSrHr 'Tree', los 3 ultimos de Poly by Google), JungleGiant (jungle_giant_a 0CDi5mHR26U 'Brazil nut tree', jungle_giant_b ekCgu7iLrz2 'Balsa tree'; Poly by Google, emergentes reales de selva), Mangrove (mangrove_roots eYfjQLsebfA 'Tree roots' de Poly by Google: raiz arqueada aislada para plantar junto a mangrove_a), Shrub (shrub_banana d0WJSiuOz6o 'Banana Tree' -planta real, sustituye la fruta suelta que se usaba antes-, shrub_heliconia 06_hk2bO2Ix 'Heliconia flower', shrub_bromeliad 5FZIGjZBWTB 'Bromeliad'; los 3 de Poly by Google, sin maceta), Flower (flower_hibiscus fQVeG1obY8u 'Hibiscus flower'; Poly by Google, sin maceta)."
     }
-  ]
+  ],
+  "discarded_polypizza": {
+    "note": "Modelos evaluados y descartados en la revision tropical del 2026-09-28 (director: nada de aspecto europeo/templado). Detalle completo con el motivo de cada uno en Tools/Packs/download_polypizza.py -> DISCARDED.",
+    "ids": [
+      "i4QMw4L64D", "qZtx0AHhcy", "9nvGuZlbpE", "YWjGDJ9F7g",
+      "ooG6CkLyE8", "92EytlU1El", "U1ymDy8tbY", "ruOFtE0B6Z",
+      "xH5gNlQxAZ", "iw6l7gqcdQ", "NBUxHir6FJ", "hfPzQAedOe", "dOO6kMDd8L",
+      "folDA1yLeEF"
+    ]
+  }
 }
