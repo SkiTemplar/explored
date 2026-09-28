@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "UObject/WeakObjectPtr.h"
 
+#include "WorldGen/VegetationStateModel.h"
+
 class UHierarchicalInstancedStaticMeshComponent;
 
 /**
@@ -29,13 +31,25 @@ struct EXPLORED_API FVegetationInstanceKey
 
 EXPLORED_API uint32 GetTypeHash(const FVegetationInstanceKey& Key);
 
-/** Progreso de golpes y, si está talada, cómo devolverla (rebrote de sesión, ver UExploredWiringSubsystem::HarvestInstance). */
+/**
+ * Estado de una instancia golpeada o talada (UExploredWiringSubsystem::HarvestInstance).
+ * Instance es la parte pura (FVegetationStateModel): golpes, hora de tala, brote y
+ * rebrote en minutos de juego. Talada queda en «Stump» (tocón) hasta SproutAtMinute,
+ * luego «Sapling» (brote que crece, todavía no talable) y a RegrowAtMinute vuelve a
+ * ser un ejemplar entero (biblia 02 §1.2). La hora de tala se guarda en
+ * FSaveWorldDeltas::VegetationClock, así que el rebrote atraviesa guardar y cargar.
+ */
 struct EXPLORED_API FVegetationRuntimeState
 {
-	int32 Hits = 0;
+	FVegetationInstanceState Instance;
+	/** Oculta a escala 0 (tocón) o reducida (brote): no se puede golpear hasta que rebrote. */
 	bool bHidden = false;
-	/** Día total de juego (UTimeOfDaySubsystem) en que rebrota; < 0 = no rebrota en esta sesión (o no está oculta). */
-	float RegrowAtDays = -1.0f;
+	/** Especie (FScatterRule::Species): perfil de tala para la escala del brote. */
+	FName Species;
+	/** Última escala aplicada a la instancia oculta (0 tocón, SaplingStartScale → 1 brote). */
+	float AppliedScale = 0.0f;
 	FTransform OriginalTransform;
 	TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent> Component;
+
+	EVegetationStage StageAt(int64 NowMinute) const { return FVegetationStateModel::StageAt(Instance, NowMinute); }
 };
