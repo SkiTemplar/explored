@@ -55,6 +55,7 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote2-caza` | Lanza, arco y flecha (KayKit Fantasy Weapons Bits) en obsidiana, bambú y fibra | `docs/art/packs/lote2-caza.png` |
 | `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
 | `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
+| `lote5-fauna` | Cerdo salvaje de Esmeralda con rig y 6 acciones (Quaternius Farm Animals) | `docs/art/packs/lote5-fauna.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
@@ -67,6 +68,22 @@ trepadora de espaldera): siguen en `pending`. El follaje de Quaternius Stylized 
 MegaKit usa texturas de hojas con alfa y no se puede recolorear por cara; de ese pack solo
 interesan los cantos (`Pebble_Round_*`), pendientes de revisar para `canto_rodado`.
 
+## Fauna con esqueleto
+
+`kind: fauna` (ids de `Content/Data/fauna_terrestre.json`) lleva un bloque `rig`: armadura y
+acciones del pack se conservan y salen en `SK_Pack_*.fbx` con una toma por acción. El animal
+mira a +X (delante de Unreal) con el pivote en el suelo entre las patas. `behaviors` asigna
+a cada comportamiento de la biblia 02 §11.2-11.3 un clip del pack (`null` si falta: el cerdo
+no trae comer, beber ni dormir). La hoja de contacto pinta una viñeta por pose de
+`tilePoses` para ver que la pose aguanta la escala.
+
+- Se parte del `.blend` del pack cuando el FBX no trae todas las acciones.
+- `transform_apply` escala los huesos pero no las claves de `location`: `normalize.py` las
+  multiplica por la misma escala.
+- Quaternius comparte acciones entre especies: las del cerdo animan `Tail1`..`Tail4`, que
+  su esqueleto no tiene, y el exportador FBX descarta cualquier acción con una curva que no
+  resuelve. `normalize.py` quita esas curvas antes de exportar.
+
 ## Trampas de importación
 
 - Ficheros con varias mallas (puertas con hoja, arcos con cuerda): `import_file` las une.
@@ -76,6 +93,7 @@ interesan los cantos (`Pebble_Round_*`), pendientes de revisar para `canto_rodad
 ## Import en Unreal (local)
 
 Importar `Art/Export/Packs/<lote>/*.fbx` en `/Game/Packs/<lote>/` con `M_LowPoly`, sin
-materiales ni texturas del FBX. Cambiar el `meshPath` de `items.json` a la malla nueva
+materiales ni texturas del FBX. La fauna se importa como Skeletal Mesh con animaciones
+(`SKEL_Pack_*` del bloque `rig`); las tomas llegan como `Armature|<Acción>`. Cambiar el `meshPath` de `items.json` a la malla nueva
 (`replaces` dice cuál sustituye) y quitar el script propio de `Tools/Blender` solo cuando la
 malla esté en el repo, para que DataCheck siga en verde.
