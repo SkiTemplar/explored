@@ -5,7 +5,9 @@
   ``MinHitsPerCubicMeter``; la tabla ``hitsPerM3`` sigue la fórmula del GDD.
 - Estratos: material y objeto existentes, islas del C++ (``EIslandArchetype``), capa y
   profundidad coherentes, vetas finitas bien formadas, y todos los estratos del GDD.
-- Herramientas: niveles 0-4, cada cabeza de pico la acepta la plantilla ``pico`` y
+- Herramientas: niveles 0-4; radio de esfera y duración de golpe (biblia 02 §2.2) espejo
+  de ``ETerrainDigTool`` y ``FTerrainEdits::ToolInfo``, y ``unitsPerM3`` de
+  ``FTerrainEdits::UnitsPerCubicMeter``; cada cabeza de pico la acepta la plantilla ``pico`` y
   produce de verdad un pico (no la captura otra plantilla); toda pieza que cabe como
   cabeza tiene nivel asignado.
 - Progresión: cada nivel se alcanza sin ciclos (la cabeza sale de la superficie o de un
@@ -20,6 +22,8 @@ from . import crafting
 
 TERRAIN_H = "Source/Explored/WorldGen/TerrainEditModel.h"
 TERRAIN_CPP = "Source/Explored/WorldGen/TerrainEditModel.cpp"
+EDITS_H = "Source/Explored/WorldGen/TerrainEdits.h"
+EDITS_CPP = "Source/Explored/WorldGen/TerrainEdits.cpp"
 ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
 PICK_TEMPLATE = "pico"
 # GDD v2 §3.4: estrato -> id de mining.json.
@@ -57,6 +61,19 @@ def cpp_materials(ds) -> dict[str, tuple[float, int]] | None:
     return {n: (float(a), int(b)) for n, (a, b) in zip(names, rows)}
 
 
+def cpp_dig_tools(ds) -> dict[str, tuple[int, float, float]] | None:
+    """ETerrainDigTool -> (nivel, radio, segundos por golpe) de FTerrainEdits::ToolInfo."""
+
+    h, cpp = _read(ds, EDITS_H), _read(ds, EDITS_CPP)
+    enum = re.search(r"enum class ETerrainDigTool : uint8\s*\{(.*?)\};", h, re.S)
+    table = re.search(r"ToolInfo\(ETerrainDigTool Tool\)\s*\{.*?Table\[\] = \{(.*?)\};", cpp, re.S)
+    if not enum or not table:
+        return None
+    names = [n for n in re.findall(r"(\w+),", enum.group(1)) if n != "Count"]
+    rows = re.findall(r"\{\s*(\d+),\s*([\d.]+)f,\s*([\d.]+)f\s*\}", table.group(1))
+    return {n: (int(t), float(r), float(s)) for n, (t, r, s) in zip(names, rows)}
+
+
 def _cpp_const(ds, name: str) -> float | None:
     m = re.search(rf"static constexpr float {name} = ([\d.]+)f;", _read(ds, TERRAIN_H))
     return float(m.group(1)) if m else None
@@ -71,6 +88,35 @@ def _pick_mango() -> crafting.Instance:
     """Mango ya atado de referencia (palo recto + liana), como en CraftingSpec.cpp."""
 
     return crafting.Instance("atado_generico", (("Ata", 3.0), ("Largo", 3.0), ("Rigido", 3.0)), frozenset({"interno"}))
+
+
+def _check_dig_tools(ds, doc: dict, r) -> None:
+    """Radio y duración de golpe de cada herramienta de cavar contra el C++ (biblia 02 §2.2)."""
+
+    diggers = [t for t in doc.get("tools", []) if t.get("tier", 0) >= 1]
+    for tool in diggers:
+        tid = tool.get("id")
+        radius, seconds = tool.get("radiusM"), tool.get("secondsPerHit")
+        if not isinstance(radius, (int, float)) or not 0 < radius <= 2:
+            r.error(f"mining.json/tools «{tid}»: radiusM {radius!r} debe ser un radio en metros (0-2]")
+        if not isinstance(seconds, (int, float)) or not 0 < seconds <= 10:
+            r.error(f"mining.json/tools «{tid}»: secondsPerHit {seconds!r} debe estar en (0-10] s")
+    m = re.search(r"static constexpr int32 UnitsPerCubicMeter = (\d+);", _read(ds, EDITS_H))
+    if m and doc.get("unitsPerM3") != int(m.group(1)):
+        r.error(f"mining.json: unitsPerM3={doc.get('unitsPerM3')!r} pero TerrainEdits.h dice UnitsPerCubicMeter={m.group(1)}")
+    cpp = cpp_dig_tools(ds)
+    if cpp is None:
+        r.warn("mining.json: no se lee ETerrainDigTool/ToolInfo de TerrainEdits; no se comparan las herramientas con el C++")
+        return
+    by_cpp = {t.get("cpp"): t for t in diggers}
+    if set(by_cpp) != set(cpp):
+        r.error(f"mining.json/tools {sorted(k for k in by_cpp if k)} no coincide con ETerrainDigTool {sorted(cpp)}")
+    for name, (tier, radius, seconds) in cpp.items():
+        t = by_cpp.get(name)
+        if t and (t.get("tier") != tier or abs(t.get("radiusM", -1) - radius) > 1e-6
+                  or abs(t.get("secondsPerHit", -1) - seconds) > 1e-6):
+            r.error(f"mining.json/tools «{t['id']}»: nivel/radio/segundos {t.get('tier')}/{t.get('radiusM')}/"
+                    f"{t.get('secondsPerHit')} pero FTerrainEdits::ToolInfo dice {tier}/{radius}/{seconds}")
 
 
 def check_mining(ds, r) -> None:
@@ -190,6 +236,7 @@ def check_mining(ds, r) -> None:
     for tier in range(0, MAX_TIER + 1):
         if tier not in tier_heads:
             r.error(f"mining.json/tools: falta el nivel {tier} (GDD v2 §3.4)")
+    _check_dig_tools(ds, doc, r)
 
     pick = templates.get(PICK_TEMPLATE)
     if pick is None:

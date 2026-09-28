@@ -841,6 +841,26 @@ def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
     assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
 
 
+def test_mineria_herramientas_espejo_del_cpp(real: DataSet) -> None:
+    cpp = mining.cpp_dig_tools(real)
+    assert cpp and cpp["PalaTosca"] == (1, 0.35, 1.2) and cpp["PicoRescatado"] == (4, 0.55, 1.1)
+
+
+def test_mineria_radio_distinto_del_cpp(ds: DataSet) -> None:
+    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["radiusM"] = 0.6
+    assert any_error(mining_errors(ds), "pico_obsidiana", "ToolInfo")
+
+
+def test_mineria_herramienta_sin_tiempo_de_golpe(ds: DataSet) -> None:
+    del next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pala_tosca")["secondsPerHit"]
+    assert any_error(mining_errors(ds), "pala_tosca", "secondsPerHit")
+
+
+def test_mineria_unidades_por_m3_distintas_del_cpp(ds: DataSet) -> None:
+    ds.data["mining.json"]["unitsPerM3"] = 5
+    assert any_error(mining_errors(ds), "unitsPerM3", "UnitsPerCubicMeter")
+
+
 def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
     m = material(ds, "basalto")
     m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
