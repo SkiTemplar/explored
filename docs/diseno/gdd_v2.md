@@ -423,7 +423,7 @@ arrecife con reputación alta (§3.9).
   estrellas.
 - **Reglas / progresión / interfaz:** ver GDD v3 §6, §8.10 (sin cambios).
 - **Riesgos técnicos:** ninguno nuevo; `FBoatModel` tiene specs en host verdes.
-  Pendiente de siempre: malla del «Limón» y astillero (roadmap).
+  Pendiente de siempre: malla del «Limón». El astillero de balsas está en §3.14.
 - **Dependencias:** `Boats`, `Ruins`, `Villages`.
 - **Construcción:** los barcos se arman pieza a pieza y la física decide si
   navegan (§3.13).
@@ -448,7 +448,7 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva, el astillero de balsas y otras interacciones naturales.
+vendrán la arena viva, el astillero de balsas (§3.14) y otras interacciones naturales.
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -607,6 +607,105 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
   Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
 - **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
   por piezas en la sección de barcos, pendiente).
+
+### 3.14 Mundo interactivo: astillero de balsas **[director, 2026-09-27]**
+
+Tercera mecánica del principio «el mundo entero es interactivo». Modelo puro
+`FRaftYardModel` (`Source/Explored/Boats/RaftYardModel.h`), spec `Explored.RaftYard`.
+Usa el casco por piezas de §3.13 (`FHullAssemblyModel`) para la forma y la flotación, y
+`FBoatModel` para navegar, sin duplicar ninguno de los dos. Integración en
+`docs/tecnico/astillero-balsas.md`.
+
+- **Objetivo:** que botar una balsa sea un pequeño problema físico, no un botón. Dónde
+  se construye importa, cómo se lleva al agua importa y cómo se ata importa.
+- **Dónde se construye:**
+  - **En tierra** la balsa es estable: no le afectan las olas ni la marea. Para botarla
+    hay que empujarla hasta que el agua la levante.
+  - **En el agua** flota desde la primera pieza: deriva con la corriente y el viento y
+    cabecea con el oleaje (`FBoatModel`), salvo que se **amarre** a un poste o a un
+    muelle. Amarrada sigue cabeceando, pero el cabo no la deja alejarse más que su
+    largo; se puede soltar en cualquier momento. El amarre se guarda con el barco.
+- **Uniones.** Cada pareja de piezas que se tocan (hueco ≤ 5 cm) se une con uno de
+  estos tres tipos:
+
+  | Unión | Objeto | Aguante al roce | Aguante a los golpes | Reparación |
+  |---|---|---|---|---|
+  | Cordel de fibra | 1 `cordel` | 0,6 | 0,7 | +50 % por 1 `cordel` |
+  | Cuerda | 1 `cuerda` | 1,0 | 1,2 | +50 % por 1 `cuerda` |
+  | Clavos | 2 `clavo` | 2,0 | 0,7 | +100 % por 2 `clavo` |
+
+  La cuerda cede y vuelve, así que aguanta mejor los golpes. Los clavos resisten el
+  roce, pero un golpe seco raja la madera a su alrededor.
+  - **Una unión rota suelta la pieza** si ya no queda otra que la sujete. Se queda el
+    grupo de más masa y lo demás sale flotando (o cae, si está en tierra). Si hay otras
+    uniones que sujetan, la rota no suelta nada y se puede reparar allí mismo.
+  - Una pieza que nadie ató se va flotando al botar la balsa.
+  - No se pierde nada: casco más piezas sueltas suman siempre las mismas piezas y la
+    misma masa (lo comprueba el spec).
+- **Botadura desde tierra.** La balsa se mueve a lo largo de un camino hacia el agua.
+  Cada tramo del camino tiene un suelo y una pendiente.
+  - **Rozamiento de Coulomb:** para arrancarla hace falta vencer μ · peso sobre el
+    suelo. La pendiente ayuda cuesta abajo, y el agua sostiene una parte del peso
+    según la profundidad frente al calado. Cuando el agua cubre el calado, flota y
+    pasa a `FBoatModel` con la arrancada que llevaba.
+  - **Rodillos.** Son troncos atravesados en el camino. Con al menos uno bajo cada
+    mitad del casco, la balsa rueda: resistencia de rodadura de 0,05 y ningún desgaste.
+    Los rodillos de debajo avanzan la mitad que la balsa, así que se quedan atrás y hay
+    que recogerlos y volver a ponerlos delante. Es el trabajo de la botadura, y en
+    cooperativo lo hace uno mientras los demás empujan.
+  - **Rampa de tablones:** poco roce (0,30). A partir de unos 17° la balsa baja sola.
+  - **Arrastrarla sin rodillos gasta** las uniones de las piezas que tocan el suelo.
+    El desgaste es de Archard: carga × distancia, repartido entre esas uniones.
+  - Una persona empuja 300 N sostenidos.
+
+  | Suelo | μ | Desgaste (salud / kN·m) | 6 troncos (451 kg): fuerza para arrancar | Personas |
+  |---|---|---|---|---|
+  | Arena seca | 0,55 | 0,12 | 2,43 kN | 9 |
+  | Arena mojada | 0,45 | 0,08 | 1,99 kN | 7 |
+  | Hierba | 0,40 | 0,05 | 1,77 kN | 6 |
+  | Roca | 0,50 | 0,40 | 2,21 kN | 8 |
+  | Rampa de tablones (llana) | 0,30 | 0,01 | 1,33 kN | 5 |
+  | Rampa de tablones a 8° | 0,30 | 0,01 | 0,70 kN | 3 |
+  | Rodillos | 0,05 | 0 | 0,22 kN | **1** |
+
+  Arrastrar 10 m la balsa de 6 troncos (17 uniones con el fondo):
+
+  | Uniones | Por arena | Por roca |
+  |---|---|---|
+  | Cordel de fibra | −52 % | se rompen a los 5,8 m |
+  | Cuerda | −31 % | se rompen a los 9,6 m |
+  | Clavos | −16 % | −52 % |
+
+- **En el agua.**
+  - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura
+    (0,8 m/s), el astillero reparte el golpe entre las uniones cercanas al punto de
+    impacto. Resta 0,25 por cada m/s de más en la unión más cercana, y el efecto baja
+    linealmente hasta cero a media eslora. Un golpe de proa a 3 m/s quita un 46 % a la
+    cuerda más cercana y un 79 % a los clavos o al cordel.
+  - **Roce:** varada y arrastrándose sobre un bajío, `FBoatModel` acumula carga ×
+    distancia. Ese trabajo gasta las uniones del fondo con el mismo desgaste que en
+    tierra, según el suelo que haya debajo.
+  - El daño de `FBoatModel` es 1 − la salud media de las uniones. Al soltarse una
+    pieza, el barco toma la ficha nueva sin perder la posición ni el rumbo.
+- **Progresión:** al principio, balsa atada con cordel y botada desde la arena mojada o
+  sobre rodillos. Con cuerda, balsas que aguantan los arrecifes. Con clavos y rampa
+  de tablones, un astillero de verdad en la playa (Arenas Blancas, §4).
+- **Interfaz:** sin barras.
+  - Las ataduras gastadas se ven deshilachadas y crujen al golpear.
+  - La balsa en tierra no se mueve hasta que empujan bastantes, y los rodillos giran y
+    se quedan atrás.
+  - Al romperse una unión, la pieza se separa con un chapoteo.
+- **Riesgos técnicos:**
+  - El camino de botadura es una línea recta de tramos, no la física de Chaos. Para
+    varar y botar por el terreno real, el motor genera el camino con una traza hacia
+    el agua.
+  - Las uniones no modelan el esfuerzo interno de la estructura (una balsa con el
+    mástil atado a un solo tablón no se tuerce): solo hay roce, golpe y daño directo.
+- **Pendiente de decisión:** el objeto `clavo` no existe todavía en `items.json`.
+  Hay que crearlo (herrería o clavos de madera dura) o quitar esa unión.
+- **Dependencias:** `Boats` (`FHullAssemblyModel`, `FBoatModel`), `Building`
+  (astillero y postes de amarre), `WorldGen` (troncos de la tala para los rodillos),
+  `Save` (uniones y rodillos en la sección de barcos).
 
 ---
 
