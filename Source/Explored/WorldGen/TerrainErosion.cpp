@@ -142,7 +142,7 @@ namespace
 			{
 				continue;
 			}
-			const float Delta = Amount * Brush.Weights[I];
+			const float Delta = Amount * Brush.Weights[I] * Grid.ErodibilityAt(Gx, Gy);
 			Grid.At(Gx, Gy) -= Delta;
 			Removed += Delta;
 		}
@@ -232,12 +232,14 @@ namespace
 	}
 }
 
-void FTerrainErosionModel::ErodeHydraulic(FErosionHeightGrid& Grid, const FErosionParams& Params)
+void FTerrainErosionModel::ErodeHydraulic(FErosionHeightGrid& Grid, const FErosionParams& InParams)
 {
+	const FErosionParams Params = SanitizeParams(InParams);
 	if (Grid.Width < 3 || Grid.Height < 3 || Params.DropletCount <= 0)
 	{
 		return;
 	}
+	SanitizeGrid(Grid);
 	const int32 Radius = FMath::Clamp(Params.ErosionRadius, 1, FMath::Max(1, FMath::Min(Grid.Width, Grid.Height) / 2 - 1));
 	const FErosionBrush Brush = BuildBrush(Radius);
 	FExploredRandom Rng(static_cast<uint64>(Params.Seed) ^ 0x9E3779B97F4A7C15ULL);
@@ -249,16 +251,76 @@ void FTerrainErosionModel::ErodeHydraulic(FErosionHeightGrid& Grid, const FErosi
 	}
 }
 
-void FTerrainErosionModel::ErodeThermal(FErosionHeightGrid& Grid, const FErosionParams& Params)
+namespace
 {
+	const FIntPoint ThermalNeighbors[8] = {
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+	};
+
+	/** Cede parte del exceso sobre el talud de (X, Y) al vecino que más lo incumple. */
+	void RelaxCell(FErosionHeightGrid& Grid, const FErosionParams& Params, int32 X, int32 Y)
+	{
+		const float Erodibility = Grid.ErodibilityAt(X, Y);
+		if (Erodibility <= 0.0f)
+		{
+			return;
+		}
+		const float H = Grid.At(X, Y);
+		int32 BestN = -1;
+		float BestExcess = 0.0f;
+		for (int32 N = 0; N < 8; ++N)
+		{
+			const int32 Nx = X + ThermalNeighbors[N].X;
+			const int32 Ny = Y + ThermalNeighbors[N].Y;
+			if (!Grid.IsValidCoord(Nx, Ny))
+			{
+				continue;
+			}
+			const float Dist = (N < 4 ? 1.0f : 1.41421356f) * Params.CellSizeMeters;
+			const float NeighborExcess = H - Grid.At(Nx, Ny) - Params.TalusAngleTangent * Dist;
+			if (NeighborExcess > BestExcess)
+			{
+				BestExcess = NeighborExcess;
+				BestN = N;
+			}
+		}
+		if (BestN >= 0)
+		{
+			const float Transfer = BestExcess * 0.5f * Params.ThermalTransferRate * Erodibility;
+			Grid.At(X, Y) -= Transfer;
+			Grid.At(X + ThermalNeighbors[BestN].X, Y + ThermalNeighbors[BestN].Y) += Transfer;
+		}
+	}
+
+	/** Rellena los pozos de una sola celda (más bajos que sus 8 vecinos) hasta el vecino más bajo. */
+	void FillSingleCellPits(FErosionHeightGrid& Grid)
+	{
+		for (int32 Y = 1; Y < Grid.Height - 1; ++Y)
+		{
+			for (int32 X = 1; X < Grid.Width - 1; ++X)
+			{
+				float Lowest = TNumericLimits<float>::Max();
+				for (const FIntPoint& N : ThermalNeighbors)
+				{
+					Lowest = FMath::Min(Lowest, Grid.At(X + N.X, Y + N.Y));
+				}
+				if (Lowest > Grid.At(X, Y))
+				{
+					Grid.At(X, Y) = Lowest;
+				}
+			}
+		}
+	}
+}
+
+void FTerrainErosionModel::ErodeThermal(FErosionHeightGrid& Grid, const FErosionParams& InParams)
+{
+	const FErosionParams Params = SanitizeParams(InParams);
 	if (Grid.Width < 2 || Grid.Height < 2 || Params.ThermalIterations <= 0)
 	{
 		return;
 	}
-
-	static const FIntPoint Neighbors[8] = {
-		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
-	};
+	SanitizeGrid(Grid);
 
 	// Relajación en el sitio (Gauss-Seidel), no por doble búfer: cada celda cede, como mucho,
 	// la mitad de su exceso sobre el talud hacia un único vecino, el que más lo incumple.
@@ -266,40 +328,18 @@ void FTerrainErosionModel::ErodeThermal(FErosionHeightGrid& Grid, const FErosion
 	// hace el esquema incondicionalmente estable para ThermalTransferRate en [0, 1]; con
 	// varios vecinos a la vez (una arista, no solo una ladera) la versión por lotes oscila
 	// sin converger porque cada celda puede llegar a ceder más altura de la que tiene.
+	// El sentido del barrido rota en cada pasada (las cuatro combinaciones de X e Y): un
+	// barrido siempre igual arrastra el material en su dirección y deja taludes orientados.
 	for (int32 Iter = 0; Iter < Params.ThermalIterations; ++Iter)
 	{
-		for (int32 Y = 0; Y < Grid.Height; ++Y)
+		const bool bReverseX = (Iter & 1) != 0;
+		const bool bReverseY = (Iter & 2) != 0;
+		for (int32 Row = 0; Row < Grid.Height; ++Row)
 		{
-			for (int32 X = 0; X < Grid.Width; ++X)
+			const int32 Y = bReverseY ? Grid.Height - 1 - Row : Row;
+			for (int32 Col = 0; Col < Grid.Width; ++Col)
 			{
-				const float H = Grid.At(X, Y);
-				int32 BestN = -1;
-				float BestExcess = 0.0f;
-				for (int32 N = 0; N < 8; ++N)
-				{
-					const int32 Nx = X + Neighbors[N].X;
-					const int32 Ny = Y + Neighbors[N].Y;
-					if (!Grid.IsValidCoord(Nx, Ny))
-					{
-						continue;
-					}
-					const float Dist = FMath::Sqrt(static_cast<float>(Neighbors[N].X * Neighbors[N].X + Neighbors[N].Y * Neighbors[N].Y)) * Params.CellSizeMeters;
-					const float MaxDiff = Params.TalusAngleTangent * Dist;
-					const float NeighborExcess = H - Grid.At(Nx, Ny) - MaxDiff;
-					if (NeighborExcess > BestExcess)
-					{
-						BestExcess = NeighborExcess;
-						BestN = N;
-					}
-				}
-				if (BestN >= 0)
-				{
-					const int32 Nx = X + Neighbors[BestN].X;
-					const int32 Ny = Y + Neighbors[BestN].Y;
-					const float Transfer = BestExcess * 0.5f * Params.ThermalTransferRate;
-					Grid.At(X, Y) -= Transfer;
-					Grid.At(Nx, Ny) += Transfer;
-				}
+				RelaxCell(Grid, Params, bReverseX ? Grid.Width - 1 - Col : Col, Y);
 			}
 		}
 	}
@@ -307,6 +347,78 @@ void FTerrainErosionModel::ErodeThermal(FErosionHeightGrid& Grid, const FErosion
 
 void FTerrainErosionModel::Erode(FErosionHeightGrid& Grid, const FErosionParams& Params)
 {
+	SanitizeGrid(Grid);
 	ErodeHydraulic(Grid, Params);
 	ErodeThermal(Grid, Params);
+	// Las gotas dejan pozos de una celda donde el pincel rebaja más de lo que el depósito
+	// bilineal repone; en el juego se ven como hoyos de agua sin salida.
+	FillSingleCellPits(Grid);
+}
+
+float FErosionHeightGrid::ErodibilityAt(int32 X, int32 Y) const
+{
+	if (Erodibility.Num() != Heights.Num() || !IsValidCoord(X, Y))
+	{
+		return 1.0f;
+	}
+	return Erodibility[Y * Width + X];
+}
+
+namespace
+{
+	float FiniteOr(float Value, float Fallback, float Lo, float Hi)
+	{
+		return FMath::IsFinite(Value) ? FMath::Clamp(Value, Lo, Hi) : Fallback;
+	}
+}
+
+FErosionParams FTerrainErosionModel::SanitizeParams(const FErosionParams& Params)
+{
+	const FErosionParams Defaults;
+	FErosionParams Safe = Params;
+	Safe.CellSizeMeters = Params.CellSizeMeters > 0.0f ? FiniteOr(Params.CellSizeMeters, Defaults.CellSizeMeters, 0.01f, 1000.0f) : Defaults.CellSizeMeters;
+	Safe.DropletCount = FMath::Clamp(Params.DropletCount, 0, MaxDroplets);
+	Safe.MaxDropletLifetime = FMath::Clamp(Params.MaxDropletLifetime, 1, MaxLifetime);
+	Safe.ErosionRadius = FMath::Clamp(Params.ErosionRadius, 1, MaxBrushRadius);
+	Safe.ThermalIterations = FMath::Clamp(Params.ThermalIterations, 0, MaxThermalIterations);
+	Safe.Inertia = FiniteOr(Params.Inertia, Defaults.Inertia, 0.0f, 1.0f);
+	Safe.SedimentCapacityFactor = FiniteOr(Params.SedimentCapacityFactor, Defaults.SedimentCapacityFactor, 0.0f, 100.0f);
+	Safe.MinSedimentCapacity = FiniteOr(Params.MinSedimentCapacity, Defaults.MinSedimentCapacity, 0.0f, 10.0f);
+	Safe.ErodeSpeed = FiniteOr(Params.ErodeSpeed, Defaults.ErodeSpeed, 0.0f, 1.0f);
+	Safe.DepositSpeed = FiniteOr(Params.DepositSpeed, Defaults.DepositSpeed, 0.0f, 1.0f);
+	Safe.EvaporateSpeed = FiniteOr(Params.EvaporateSpeed, Defaults.EvaporateSpeed, 0.0f, 0.99f);
+	Safe.Gravity = FiniteOr(Params.Gravity, Defaults.Gravity, 0.0f, 100.0f);
+	Safe.InitialWaterVolume = FiniteOr(Params.InitialWaterVolume, Defaults.InitialWaterVolume, 0.02f, 100.0f);
+	Safe.InitialSpeed = FiniteOr(Params.InitialSpeed, Defaults.InitialSpeed, 0.0f, 100.0f);
+	Safe.TalusAngleTangent = Params.TalusAngleTangent > 0.0f ? FiniteOr(Params.TalusAngleTangent, Defaults.TalusAngleTangent, 0.01f, 100.0f) : Defaults.TalusAngleTangent;
+	Safe.ThermalTransferRate = FiniteOr(Params.ThermalTransferRate, Defaults.ThermalTransferRate, 0.0f, 1.0f);
+	return Safe;
+}
+
+void FTerrainErosionModel::SanitizeGrid(FErosionHeightGrid& Grid)
+{
+	float Lowest = TNumericLimits<float>::Max();
+	bool bAnyBad = false;
+	for (float H : Grid.Heights)
+	{
+		bAnyBad |= !FMath::IsFinite(H);
+		Lowest = FMath::IsFinite(H) ? FMath::Min(Lowest, H) : Lowest;
+	}
+	if (bAnyBad)
+	{
+		const float Fill = Lowest < TNumericLimits<float>::Max() ? Lowest : 0.0f;
+		for (float& H : Grid.Heights)
+		{
+			H = FMath::IsFinite(H) ? H : Fill;
+		}
+	}
+	if (Grid.Erodibility.IsEmpty())
+	{
+		return;
+	}
+	Grid.Erodibility.SetNum(Grid.Heights.Num());
+	for (float& E : Grid.Erodibility)
+	{
+		E = FMath::IsFinite(E) ? FMath::Clamp(E, 0.0f, 1.0f) : 1.0f;
+	}
 }

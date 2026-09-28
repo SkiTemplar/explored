@@ -46,6 +46,15 @@ struct EXPLORED_API FErosionHeightGrid
 	int32 Width = 0;
 	int32 Height = 0;
 	TArray<float> Heights;
+	/**
+	 * Erosionabilidad por celda en [0, 1] (vacío = 1 en todas): 0 es roca que ni las gotas
+	 * rebajan ni se desmorona por el talud (torres calizas, paredes que deben seguir a plomo).
+	 * Recibir sedimento sí puede: los derrubios se acumulan al pie de la roca dura.
+	 */
+	TArray<float> Erodibility;
+
+	/** Erosionabilidad de la celda (1 si no hay mapa). */
+	float ErodibilityAt(int32 X, int32 Y) const;
 
 	void Init(int32 InWidth, int32 InHeight, float FillValue = 0.0f);
 
@@ -80,4 +89,22 @@ public:
 
 	/** Solo la pasada térmica (talud de reposo). Expuesta para tests. */
 	static void ErodeThermal(FErosionHeightGrid& Grid, const FErosionParams& Params);
+
+	/**
+	 * Parámetros acotados y finitos. El trabajo se limita por iteraciones y no por reloj: el
+	 * terreno debe salir idéntico en cualquier máquina (servidor y clientes lo generan por su
+	 * cuenta a partir de la semilla), y un corte por tiempo lo haría depender de la CPU.
+	 */
+	static FErosionParams SanitizeParams(const FErosionParams& Params);
+
+	/**
+	 * Sustituye las alturas no finitas por la menor altura finita de la rejilla (o 0) y deja
+	 * la erosionabilidad en [0, 1] y del tamaño de la rejilla. Erode la llama antes de nada.
+	 */
+	static void SanitizeGrid(FErosionHeightGrid& Grid);
+
+	static constexpr int32 MaxDroplets = 400000;
+	static constexpr int32 MaxLifetime = 128;
+	static constexpr int32 MaxThermalIterations = 200;
+	static constexpr int32 MaxBrushRadius = 8;
 };
