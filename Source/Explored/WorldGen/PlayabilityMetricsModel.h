@@ -62,18 +62,19 @@ public:
 	static float CoefficientOfVariation(const TArray<float>& Values);
 
 	/**
-	 * Dentado de una serie cíclica (valores a lo largo de un perímetro): media de |v[i+1] -
-	 * v[i]| dividida por la media de v. Una variación suave y amplia da poco; un borde en
-	 * sierra, mucho.
+	 * Dentado de una serie cíclica (valores a lo largo de un perímetro): media de la segunda
+	 * diferencia |v[i-1] - 2 v[i] + v[i+1]| dividida por Scale (o por la media de v si Scale
+	 * <= 0). Una variación amplia y suave (o una forma alargada) da poco; un borde en sierra,
+	 * mucho. Los valores negativos son muestras que faltan y no cuentan.
 	 */
-	static float Jaggedness(const TArray<float>& Cyclic);
+	static float Jaggedness(const TArray<float>& Cyclic, float Scale = 0.0f);
 
 	/** Longitud media resultante de unos ángulos (radianes) con pesos: 0 repartidos, 1 iguales. */
 	static float MeanResultantLength(const TArray<float>& Angles, const TArray<float>& Weights);
 
 	/**
-	 * Red de drenaje de una rejilla de alturas (m): rellena
-	 * depresiones, acumula el caudal (MFD) y sigue el agua por la máxima pendiente del relleno.
+	 * Red de drenaje de una rejilla de alturas (m): rellena depresiones (priority-flood) y
+	 * sigue el agua por la máxima pendiente del relleno (D8), acumulando el caudal por ese árbol.
 	 * Río = cuenca de al menos MinRiverCells celdas sobre SeaLevel; Center en celdas.
 	 */
 	static FDrainagePattern DrainagePattern(const TArray<float>& Heights, int32 Width, int32 Height,

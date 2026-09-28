@@ -126,20 +126,32 @@ float FPlayabilityMetricsModel::CoefficientOfVariation(const TArray<float>& Valu
 	return FMath::Abs(Mean) > 1.0e-6 ? static_cast<float>(FMath::Sqrt(Variance) / FMath::Abs(Mean)) : 0.0f;
 }
 
-float FPlayabilityMetricsModel::Jaggedness(const TArray<float>& Cyclic)
+float FPlayabilityMetricsModel::Jaggedness(const TArray<float>& Cyclic, float Scale)
 {
-	if (Cyclic.Num() < 3)
-	{
-		return 0.0f;
-	}
-	double Steps = 0.0;
+	auto IsValid = [](float V) { return V >= 0.0f && FMath::IsFinite(V); };
+	const int32 Num = Cyclic.Num();
+	double Bends = 0.0;
+	int32 Triples = 0;
 	double Sum = 0.0;
-	for (int32 I = 0; I < Cyclic.Num(); ++I)
+	int32 Valid = 0;
+	for (int32 I = 0; I < Num && Num >= 3; ++I)
 	{
-		Steps += FMath::Abs(Cyclic[(I + 1) % Cyclic.Num()] - Cyclic[I]);
-		Sum += Cyclic[I];
+		const float A = Cyclic[(I + Num - 1) % Num];
+		const float B = Cyclic[I];
+		const float C = Cyclic[(I + 1) % Num];
+		if (IsValid(B))
+		{
+			Sum += B;
+			++Valid;
+		}
+		if (IsValid(A) && IsValid(B) && IsValid(C))
+		{
+			Bends += FMath::Abs(A - 2.0f * B + C);
+			++Triples;
+		}
 	}
-	return Sum > 1.0e-6 ? static_cast<float>(Steps / Sum) : 0.0f;
+	const double Reference = Scale > 0.0f ? Scale : (Valid > 0 ? Sum / Valid : 0.0);
+	return Triples > 0 && Reference > 1.0e-6 ? static_cast<float>(Bends / Triples / Reference) : 0.0f;
 }
 
 float FPlayabilityMetricsModel::MeanResultantLength(const TArray<float>& Angles, const TArray<float>& Weights)
@@ -171,6 +183,33 @@ namespace
 		FVector2D Position(int32 Cell) const { return FVector2D(Cell % Width, Cell / Width); }
 	};
 
+	/**
+	 * Caudal D8 (celdas aguas arriba, ella incluida) por el árbol de receptores: el mismo árbol
+	 * que se remonta para medir el cauce principal (el reparto MFD no casa con él en los llanos).
+	 */
+	void AccumulateAlongReceivers(const TArray<float>& Filled, FFlowGraph& Graph)
+	{
+		TArray<int32> Order;
+		Order.Reserve(Filled.Num());
+		for (int32 I = 0; I < Filled.Num(); ++I)
+		{
+			if (Graph.Land[I])
+			{
+				Order.Add(I);
+			}
+		}
+		Order.Sort([&Filled](int32 A, int32 B) { return Filled[A] > Filled[B] || (Filled[A] == Filled[B] && A < B); });
+		Graph.Accumulation.Init(0.0f, Filled.Num());
+		for (int32 Cell : Order)
+		{
+			Graph.Accumulation[Cell] += 1.0f;
+			if (Graph.Receiver[Cell] != INDEX_NONE)
+			{
+				Graph.Accumulation[Graph.Receiver[Cell]] += Graph.Accumulation[Cell];
+			}
+		}
+	}
+
 	FFlowGraph BuildFlowGraph(const TArray<float>& Heights, int32 Width, int32 Height, float SeaLevel)
 	{
 		FErosionHeightGrid Grid;
@@ -180,7 +219,6 @@ namespace
 		Graph.Width = Width;
 		Graph.Height = Height;
 		const TArray<float> Filled = FDrainageModel::FilledSurface(Grid, SeaLevel);
-		Graph.Accumulation = FDrainageModel::FlowAccumulation(Grid, SeaLevel, 1.1f);
 		Graph.Receiver.Init(INDEX_NONE, Heights.Num());
 		Graph.Land.Init(0, Heights.Num());
 		for (int32 I = 0; I < Heights.Num(); ++I)
@@ -203,18 +241,25 @@ namespace
 				}
 			}
 		}
+		AccumulateAlongReceivers(Filled, Graph);
 		return Graph;
 	}
 
-	/** Remonta el cauce principal desde la desembocadura; devuelve longitud / distancia recta. */
+	/** Celdas entre los vértices con que se mide el cauce: quita el zigzag propio del D8. */
+	constexpr int32 SinuosityStride = 8;
+
+	/**
+	 * Remonta el cauce principal desde la desembocadura (el afluente de más caudal en cada
+	 * junta) y devuelve su longitud, medida con vértices cada SinuosityStride celdas, entre la
+	 * distancia recta de la desembocadura al nacimiento. 0 si el cauce es demasiado corto.
+	 */
 	float MainStemSinuosity(const FFlowGraph& Graph, int32 Mouth, float MinRiverCells)
 	{
-		float Length = 0.0f;
+		TArray<FVector2D> Path = {Graph.Position(Mouth)};
 		int32 Current = Mouth;
 		for (int32 Guard = 0; Guard < Graph.Width * Graph.Height; ++Guard)
 		{
 			int32 Next = INDEX_NONE;
-			int32 NextStep = 0;
 			for (int32 N = 0; N < 8; ++N)
 			{
 				const int32 X = Current % Graph.Width + Steps8[N].X;
@@ -225,18 +270,24 @@ namespace
 				if (bUpstream && (Next == INDEX_NONE || Graph.Accumulation[C] > Graph.Accumulation[Next]))
 				{
 					Next = C;
-					NextStep = N;
 				}
 			}
 			if (Next == INDEX_NONE)
 			{
 				break;
 			}
-			Length += StepLength(NextStep);
+			Path.Add(Graph.Position(Next));
 			Current = Next;
 		}
-		const float Straight = static_cast<float>(FVector2D::Distance(Graph.Position(Mouth), Graph.Position(Current)));
-		return Straight >= 15.0f ? Length / Straight : 0.0f;
+		double Length = 0.0;
+		for (int32 From = 0; From < Path.Num() - 1;)
+		{
+			const int32 To = FMath::Min(From + SinuosityStride, Path.Num() - 1);
+			Length += FVector2D::Distance(Path[From], Path[To]);
+			From = To;
+		}
+		const float Straight = static_cast<float>(FVector2D::Distance(Path[0], Path.Last()));
+		return Straight >= 15.0f ? static_cast<float>(Length) / Straight : 0.0f;
 	}
 
 	bool IsMouth(const FFlowGraph& Graph, int32 Cell, float MinRiverCells)

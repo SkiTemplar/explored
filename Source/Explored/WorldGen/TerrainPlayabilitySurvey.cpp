@@ -11,6 +11,8 @@ namespace
 	/** Cotas que delimitan la plataforma y el talud. */
 	constexpr float ShelfBreakDepth = -10.0f;
 	constexpr float SlopeToeDepth = -20.0f;
+	/** Agua tierra adentro más somera que esto es un estero o canal por el que sigue el río. */
+	constexpr float InlandWaterDepth = -3.0f;
 	/** Un cayo cuyo camino a su isla baja de esta cota es una mota suelta en el mar. */
 	constexpr float IsolatedCayDepth = -8.0f;
 
@@ -73,9 +75,11 @@ namespace
 	void MeasureShelf(const FTerrainDensity& Density, const FIslandDesc& Island, int32 IslandIdx, const FVector2D& Dir, float Coast,
 		float& OutShelf, float& OutToe)
 	{
+		constexpr float Step = 3.0f;
 		OutShelf = -1.0f;
 		OutToe = -1.0f;
-		for (float S = 0.0f; S < Island.Radius; S += 3.0f)
+		float Previous = 0.0f;
+		for (float S = 0.0f; S < Island.Radius; S += Step)
 		{
 			const FVector2D P = Island.Center + Dir * (Coast + S);
 			const FTerrainColumn C = Density.SampleColumn(static_cast<float>(P.X), static_cast<float>(P.Y));
@@ -83,15 +87,22 @@ namespace
 			{
 				return; // entra en el dominio de otra isla
 			}
+			// Cruce interpolado entre muestras: sin él, el paso de 3 m salía como dentado.
+			auto Crossing = [&](float Level)
+			{
+				const float Drop = FMath::Max(Previous - C.Height, 1.0e-3f);
+				return S - Step + Step * FMath::Clamp((Previous - Level) / Drop, 0.0f, 1.0f);
+			};
 			if (OutShelf < 0.0f && C.Height <= ShelfBreakDepth)
 			{
-				OutShelf = S;
+				OutShelf = S > 0.0f ? FMath::Max(Crossing(ShelfBreakDepth), 0.0f) : 0.0f;
 			}
 			if (C.Height <= SlopeToeDepth)
 			{
-				OutToe = S;
+				OutToe = S > 0.0f ? FMath::Max(Crossing(SlopeToeDepth), OutShelf) : 0.0f;
 				return;
 			}
+			Previous = C.Height;
 		}
 	}
 
@@ -142,13 +153,30 @@ FFlatPatchStats FTerrainPlayabilitySurvey::MeasureBuildable(const FTerrainSample
 	return FPlayabilityMetricsModel::FlatPatches(Grid.Heights, Grid.Width, Grid.Height, Grid.Spacing, Land, BuildableSlopeDeg);
 }
 
-FDrainagePattern FTerrainPlayabilitySurvey::MeasureDrainage(const FTerrainSampleGrid& Grid, int32 IslandIdx, const FVector2D& Center)
+FDrainagePattern FTerrainPlayabilitySurvey::MeasureDrainage(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx)
 {
 	TArray<float> Heights = Grid.Heights;
 	for (int32 I = 0; I < Heights.Num(); ++I)
 	{
-		Heights[I] = Grid.IslandIndex[I] == IslandIdx ? Heights[I] : FMath::Min(Heights[I], -1.0f);
+		if (Grid.IslandIndex[I] != IslandIdx)
+		{
+			Heights[I] = FMath::Min(Heights[I], -1.0f);
+			continue;
+		}
+		if (Heights[I] > 0.0f || Heights[I] < InlandWaterDepth)
+		{
+			continue;
+		}
+		// Agua somera tierra adentro (canales de marea, esteros): el río sigue por ella hasta la
+		// costa; si no, su "desembocadura" quedaba al fondo del estero, cerca del centro.
+		const FVector2D P = Grid.WorldPosition(I % Grid.Width, I / Grid.Width);
+		if (Density.SampleColumn(static_cast<float>(P.X), static_cast<float>(P.Y)).NormalizedDistance < 0.97f)
+		{
+			Heights[I] = 0.05f;
+		}
 	}
+	const TArray<FIslandDesc>& Islands = Density.GetLayout().Islands;
+	const FVector2D Center = Islands.IsValidIndex(IslandIdx) ? Islands[IslandIdx].Center : Grid.Origin;
 	const FVector2D CenterCell = (Center - Grid.Origin) / Grid.Spacing;
 	return FPlayabilityMetricsModel::DrainagePattern(Heights, Grid.Width, Grid.Height, CenterCell, MinRiverCells, 0.0f);
 }
@@ -163,6 +191,8 @@ FCoastStats FTerrainPlayabilitySurvey::MeasureCoast(const FTerrainDensity& Densi
 	}
 	const FIslandDesc& Island = Islands[IslandIdx];
 	TArray<float> CliffHeights;
+	TArray<float> EdgeDistances;
+	EdgeDistances.Init(-1.0f, RayCount);
 	for (int32 R = 0; R < RayCount; ++R)
 	{
 		const float Angle = UE_TWO_PI * R / RayCount;
@@ -187,6 +217,7 @@ FCoastStats FTerrainPlayabilitySurvey::MeasureCoast(const FTerrainDensity& Densi
 		{
 			Stats.ShelfWidths.Add(Shelf);
 			Stats.SlopeWidths.Add(Toe - Shelf);
+			EdgeDistances[R] = Coast + Shelf;
 		}
 	}
 	Stats.CliffFraction = Stats.Rays > 0 ? static_cast<float>(Stats.CliffRays) / Stats.Rays : 0.0f;
@@ -197,7 +228,14 @@ FCoastStats FTerrainPlayabilitySurvey::MeasureCoast(const FTerrainDensity& Densi
 	}
 	Stats.ShelfWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.ShelfWidths);
 	Stats.SlopeWidthCV = FPlayabilityMetricsModel::CoefficientOfVariation(Stats.SlopeWidths);
-	Stats.ShelfJaggedness = FPlayabilityMetricsModel::Jaggedness(Stats.ShelfWidths);
+	// Dentado del borde de la plataforma (la cota -10 m vista desde el centro) respecto a su
+	// anchura media: el rizado de la línea de costa no cuenta, solo el del borde.
+	double MeanShelf = 0.0;
+	for (float W : Stats.ShelfWidths)
+	{
+		MeanShelf += W / FMath::Max(Stats.ShelfWidths.Num(), 1);
+	}
+	Stats.ShelfJaggedness = FPlayabilityMetricsModel::Jaggedness(EdgeDistances, static_cast<float>(MeanShelf));
 	return Stats;
 }
 
@@ -245,7 +283,7 @@ FPlayabilityReport FTerrainPlayabilitySurvey::Measure(const FTerrainDensity& Den
 		const FTerrainSampleGrid Grid = SampleIsland(Density, I, SampleSpacing);
 		FIslandPlayability Island;
 		Island.Flat = MeasureBuildable(Grid, I);
-		Island.Drainage = MeasureDrainage(Grid, I, Islands[I].Center);
+		Island.Drainage = MeasureDrainage(Density, Grid, I);
 		Island.Coast = MeasureCoast(Density, I, 360);
 		Report.Islands.Add(MoveTemp(Island));
 	}

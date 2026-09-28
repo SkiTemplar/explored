@@ -87,3 +87,6 @@ WorldGen/KarstTowerModel.cpp
 WorldGen/IslandReliefModel.cpp
 WorldGen/PlayabilityMetricsModel.cpp
 WorldGen/TerrainPlayabilitySurvey.cpp
+WorldGen/IslandShapeModel.cpp
+WorldGen/IslandShelfModel.cpp
+WorldGen/CoastalCliffModel.cpp

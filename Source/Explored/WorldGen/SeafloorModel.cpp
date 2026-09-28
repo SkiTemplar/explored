@@ -67,17 +67,20 @@ float FSeafloorModel::BaseFloorHeight(float X, float Y) const
 
 float FSeafloorModel::FloorHeight(float X, float Y) const
 {
-	float H = BaseFloorHeight(X, Y);
+	const float Base = BaseFloorHeight(X, Y);
 	if (!IsFinite2D(X, Y))
 	{
-		return H;
+		return Base;
 	}
+	// Los montículos de una cadena se tocan por el pedestal: cada uno se apoya en el fondo base
+	// y manda el más alto (encadenados, el segundo rebajaba al primero donde se solapaban).
+	float H = Base;
 	for (const FSeamountDesc& Mount : Seamounts)
 	{
 		const float Bound = Mount.Radius * 1.3f / FMath::Min(Mount.Aspect, 1.0f);
 		if (FVector2D::DistSquared(Mount.Center, FVector2D(X, Y)) < Bound * Bound)
 		{
-			H = SeamountHeight(Mount, X, Y, H);
+			H = FMath::Max(H, SeamountHeight(Mount, X, Y, Base));
 		}
 	}
 	return H;
@@ -162,25 +165,56 @@ namespace
 		});
 	}
 
-	void PlaceSeamounts(const FArchipelagoLayout& Layout, FExploredRandom& Rng, int32 Wanted, bool bIslets, TArray<FSeamountDesc>& Placed)
+	/**
+	 * Montículo I de una cadena de Count: la cabeza (el más joven) puede asomar como islote y
+	 * los siguientes, más viejos, están cada vez más hundidos, como en un rastro de punto caliente.
+	 */
+	FSeamountDesc MakeChainMount(FExploredRandom& Rng, int32 I, int32 Count, bool bIsletHead, float Heading)
+	{
+		FSeamountDesc Mount;
+		const bool bIslet = bIsletHead && I == 0;
+		Mount.Radius = bIslet ? Rng.RangeFloat(110.0f, 160.0f) : Rng.RangeFloat(140.0f, 230.0f);
+		const float Age = Count > 1 ? static_cast<float>(I) / (Count - 1) : 0.0f;
+		Mount.Peak = bIslet ? Rng.RangeFloat(6.0f, 14.0f)
+			: FMath::Min(FMath::Lerp(-9.0f, -23.0f, Age) + Rng.RangeFloat(-2.0f, 2.0f), FSeafloorModel::MaxSubmergedPeak - 1.0f);
+		Mount.Aspect = Rng.RangeFloat(bIslet ? 0.7f : 0.5f, bIslet ? 1.0f : 0.85f);
+		// Alargados a lo largo de la cadena: forman un lomo continuo, no bolas sueltas.
+		Mount.Angle = Heading + Rng.RangeFloat(-0.3f, 0.3f);
+		Mount.Seed = Rng.NextUInt32();
+		return Mount;
+	}
+
+	/** Cadena de Count montículos que se tocan por el pedestal, lejos de islas y de otras cadenas. */
+	bool PlaceChain(const FArchipelagoLayout& Layout, FExploredRandom& Rng, int32 Count, bool bIsletHead, float Heading,
+		TArray<FSeamountDesc>& Placed)
 	{
 		const float E = FArchipelagoLayout::WorldHalfExtent;
-		int32 Count = 0;
-		for (int32 Attempt = 0; Attempt < 400 && Count < Wanted; ++Attempt)
+		for (int32 Attempt = 0; Attempt < 300; ++Attempt)
 		{
-			FSeamountDesc Mount;
-			Mount.Center = FVector2D(Rng.RangeFloat(-E, E), Rng.RangeFloat(-E, E));
-			Mount.Radius = bIslets ? Rng.RangeFloat(110.0f, 160.0f) : Rng.RangeFloat(140.0f, 260.0f);
-			Mount.Peak = bIslets ? Rng.RangeFloat(6.0f, 14.0f) : Rng.RangeFloat(-24.0f, -9.0f);
-			Mount.Aspect = Rng.RangeFloat(bIslets ? 0.7f : 0.35f, bIslets ? 1.0f : 0.8f);
-			Mount.Angle = Rng.RangeFloat(0.0f, UE_PI);
-			Mount.Seed = Rng.NextUInt32();
-			if (IsClearOfLayout(Layout, Placed, Mount.Center, Mount.Radius / Mount.Aspect))
+			const float Angle = Heading + Rng.RangeFloat(-0.35f, 0.35f);
+			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+			FVector2D Center(Rng.RangeFloat(-E, E), Rng.RangeFloat(-E, E));
+			TArray<FSeamountDesc> Chain;
+			bool bClear = true;
+			for (int32 I = 0; I < Count && bClear; ++I)
 			{
-				Placed.Add(Mount);
-				++Count;
+				FSeamountDesc Mount = MakeChainMount(Rng, I, Count, bIsletHead, Angle);
+				if (I > 0)
+				{
+					const float Spacing = Rng.RangeFloat(0.9f, 1.05f) * (Chain.Last().Radius + Mount.Radius);
+					Center += Dir * Spacing + FVector2D(-Dir.Y, Dir.X) * Rng.RangeFloat(-50.0f, 50.0f);
+				}
+				Mount.Center = Center;
+				bClear = IsClearOfLayout(Layout, Placed, Mount.Center, Mount.Radius / Mount.Aspect);
+				Chain.Add(Mount);
+			}
+			if (bClear)
+			{
+				Placed.Append(Chain);
+				return true;
 			}
 		}
+		return false;
 	}
 }
 
@@ -192,7 +226,12 @@ TArray<FSeamountDesc> FSeafloorModel::GenerateSeamounts(const FArchipelagoLayout
 		return Placed;
 	}
 	FExploredRandom Rng(static_cast<uint64>(Layout.Seed) ^ 0x5EA3047ULL);
-	PlaceSeamounts(Layout, Rng, 2, true, Placed);
-	PlaceSeamounts(Layout, Rng, 5, false, Placed);
+	// Pocas cadenas paralelas a la del archipiélago (mismo punto caliente) en lugar de montículos
+	// sueltos repartidos por todo el mar: agrupadas, no en malla.
+	const FVector2D Along = Layout.Spine.Num() >= 2 ? (Layout.Spine.Last() - Layout.Spine[0]).GetSafeNormal() : FVector2D(1.0f, 0.0f);
+	const float Heading = FMath::Atan2(static_cast<float>(Along.Y), static_cast<float>(Along.X));
+	PlaceChain(Layout, Rng, 4, true, Heading, Placed);
+	PlaceChain(Layout, Rng, 3, false, Heading, Placed);
 	return Placed;
 }
+

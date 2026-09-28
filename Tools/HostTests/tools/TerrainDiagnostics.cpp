@@ -8,6 +8,7 @@
 // Las imágenes salen como <prefijo>_relieve.ppm y <prefijo>_pendiente.ppm; se pasan a PNG con
 // cualquier conversor (p. ej. `magick x.ppm x.png`). No las guardes en el repositorio.
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandShapeModel.h"
 #include "WorldGen/TerrainDensity.h"
 #include "WorldGen/TerrainPlayabilitySurvey.h"
 #include "WorldGen/TerrainSurvey.h"
@@ -160,11 +161,26 @@ namespace
 				LexToString(Density.GetLayout().Islands[I].Archetype), Isl.FineVariance, Isl.SmoothFraction * 100.0f,
 				Isl.Channels.SampleCount, Isl.Channels.AxisExcess, Isl.Channels.DiagonalExcess, Isl.PitsPerKm2,
 				Isl.ErosionPitsBefore, Isl.ErosionPitsAfter);
+			if (const FIslandReliefGrid* Relief = Density.GetRelief(I))
+			{
+				const FOrientationStats& C = Relief->GetChannelOrientation();
+				std::printf("        cauces de la erosion: ejes=%.2f diag=%.2f (%d muestras)\n", C.AxisExcess, C.DiagonalExcess, C.SampleCount);
+			}
 		}
 	}
 
 	void PrintPlayability(const FTerrainDensity& Density, const FPlayabilityReport& P)
 	{
+		for (const FIslandDesc& Island : Density.GetLayout().Islands)
+		{
+			const FExploredNoise N(Island.Seed);
+			for (const FCayDesc& Cay : Island.Cays)
+			{
+				const FVector2D Q = FIslandShapeModel::WarpedLocal(Island, N, static_cast<float>(Cay.Center.X), static_cast<float>(Cay.Center.Y));
+				std::printf("  cayo de %s en (%.0f, %.0f): T=%.2f  distancia=%.2f radios\n", LexToString(Island.Archetype), Cay.Center.X,
+					Cay.Center.Y, FIslandShapeModel::CoastT(Island, N, Q, false), FVector2D::Distance(Cay.Center, Island.Center) / Island.Radius);
+			}
+		}
 		std::printf("motas_mar=%d  clark_evans=%.2f\n", P.SeaMotes.Num(), P.SeaMoteClarkEvans);
 		for (const FVector2D& M : P.SeaMotes)
 		{
@@ -185,16 +201,17 @@ namespace
 	}
 }
 
-/** `TerrainDiagnostics probe X Y`: alturas en una cruz de ±12 m alrededor de un punto. */
-int Probe(float X, float Y)
+/** `TerrainDiagnostics probe X Y [paso]`: alturas en una cruz de ±6 pasos (2 m por defecto) alrededor de un punto. */
+int Probe(float X, float Y, float Step)
 {
 	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 	for (int32 Axis = 0; Axis < 2; ++Axis)
 	{
 		std::printf("%s:", Axis == 0 ? "X" : "Y");
-		for (int32 D = -12; D <= 12; D += 2)
+		for (int32 K = -6; K <= 6; ++K)
 		{
-			const FTerrainColumn C = Density.SampleColumn(X + (Axis == 0 ? D : 0), Y + (Axis == 1 ? D : 0));
+			const float D = K * Step;
+			const FTerrainColumn C = Density.SampleColumn(X + (Axis == 0 ? D : 0.0f), Y + (Axis == 1 ? D : 0.0f));
 			std::printf(" %.1f[%d,%.2f]", C.Height, C.IslandIndex, C.NormalizedDistance);
 		}
 		std::printf("\n");
@@ -206,7 +223,8 @@ int main(int Argc, char** Argv)
 {
 	if (Argc > 3 && std::string(Argv[1]) == "probe")
 	{
-		return Probe(static_cast<float>(std::atof(Argv[2])), static_cast<float>(std::atof(Argv[3])));
+		const float Step = Argc > 4 ? static_cast<float>(std::atof(Argv[4])) : 2.0f;
+		return Probe(static_cast<float>(std::atof(Argv[2])), static_cast<float>(std::atof(Argv[3])), Step);
 	}
 	const std::string Prefix = Argc > 1 ? Argv[1] : "terreno";
 	const uint32 Seed = Argc > 2 ? static_cast<uint32>(std::strtoul(Argv[2], nullptr, 10)) : FArchipelagoLayout::OfficialSeed;

@@ -62,8 +62,11 @@ public:
 	/** Llanos (pendiente < MaxSlopeDeg) en la tierra de la isla por encima de 0,5 m. */
 	static FFlatPatchStats MeasureBuildable(const FTerrainSampleGrid& Grid, int32 IslandIdx);
 
-	/** Red de drenaje de la tierra de la isla (el resto se trata como mar). */
-	static FDrainagePattern MeasureDrainage(const FTerrainSampleGrid& Grid, int32 IslandIdx, const FVector2D& Center);
+	/**
+	 * Red de drenaje de la tierra de la isla (el resto se trata como mar). El agua somera tierra
+	 * adentro (esteros, canales de marea) cuenta como cauce hasta la costa.
+	 */
+	static FDrainagePattern MeasureDrainage(const FTerrainDensity& Density, const FTerrainSampleGrid& Grid, int32 IslandIdx);
 
 	/** Acantilados y plataforma a lo largo de RayCount rayos repartidos alrededor de la isla. */
 	static FCoastStats MeasureCoast(const FTerrainDensity& Density, int32 IslandIdx, int32 RayCount);

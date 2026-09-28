@@ -161,7 +161,8 @@ void FTerrainRealismSpec::Define()
 		{
 			// Se mide en la rejilla de erosión (celdas rebajadas): en el mundo muestreado, el pie
 			// de las paredes kársticas también cuenta como "cauce" y su orientación es la de las
-			// torres, no la de la rejilla.
+			// torres, no la de la rejilla. Banda 0,9-1,3; en diagonales, desde 0,85: en el cono de
+			// Smoke el reparto de los barrancos por rumbos ya daba 0,88 (no es un sesgo de rejilla).
 			const FFixture& F = Fixture();
 			for (int32 I = 0; I < F.Density.GetLayout().Islands.Num(); ++I)
 			{
@@ -172,8 +173,9 @@ void FTerrainRealismSpec::Define()
 				}
 				const FOrientationStats& C = Relief->GetChannelOrientation();
 				const TCHAR* Name = LexToString(F.Density.GetLayout().Islands[I].Archetype);
-				TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.75f && C.AxisExcess < 1.3f);
-				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.75f && C.DiagonalExcess < 1.35f);
+				AddInfo(FString::Printf(TEXT("%s: ejes %.2f diagonales %.2f (%d)"), Name, C.AxisExcess, C.DiagonalExcess, C.SampleCount));
+			TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.9f && C.AxisExcess < 1.3f);
+				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.85f && C.DiagonalExcess < 1.3f);
 			}
 		});
 
@@ -243,7 +245,8 @@ void FTerrainRealismSpec::Define()
 
 		It("varía la plataforma a lo largo del perímetro, sin anillo de cota constante ni borde en sierra", [this]()
 		{
-			// Antes: plataforma cv 0,16-0,30, dentado 0,03-0,07.
+			// Antes: plataforma cv 0,16-0,30 y dentado del borde 0,022-0,066 (segunda diferencia por
+			// grado entre la anchura media).
 			const FTerrainDensity& Density = Fixture().Density;
 			const FPlayabilityReport& P = Playability();
 			for (int32 I = 0; I < P.Islands.Num(); ++I)
@@ -254,9 +257,9 @@ void FTerrainRealismSpec::Define()
 				{
 					continue; // rodeada de otras islas: pocos rayos llegan al talud
 				}
-				TestTrue(*FString::Printf(TEXT("%s: plataforma cv %.2f"), Name, C.ShelfWidthCV), C.ShelfWidthCV >= 0.4f);
+				TestTrue(*FString::Printf(TEXT("%s: plataforma cv %.2f"), Name, C.ShelfWidthCV), C.ShelfWidthCV >= 0.33f);
 				TestTrue(*FString::Printf(TEXT("%s: talud cv %.2f"), Name, C.SlopeWidthCV), C.SlopeWidthCV >= 0.35f);
-				TestTrue(*FString::Printf(TEXT("%s: dentado %.3f"), Name, C.ShelfJaggedness), C.ShelfJaggedness <= 0.05f);
+				TestTrue(*FString::Printf(TEXT("%s: dentado %.3f"), Name, C.ShelfJaggedness), C.ShelfJaggedness <= 0.045f);
 			}
 		});
 

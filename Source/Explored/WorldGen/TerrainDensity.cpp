@@ -9,28 +9,13 @@ namespace
 	constexpr float InfluenceLimit = 1.9f;
 	/** Profundidad de la plataforma somera junto a la costa. */
 	constexpr float ShelfDepth = -1.2f;
-	/** Cota máxima de la cresta de arrecife exterior (siempre sumergida). */
-	constexpr float ReefCrestTop = -3.4f;
+	/** Cota media del bajo rocoso de Los Dientes (FIslandShapeModel, TeethLand). */
+	constexpr float TeethShoalDepth = -5.4f;
 
 	FORCEINLINE float SmoothStep(float A, float B, float X)
 	{
 		const float T = FMath::Clamp((X - A) / (B - A), 0.0f, 1.0f);
 		return T * T * (3.0f - 2.0f * T);
-	}
-
-	/** Mínimo suave polinómico: une dos siluetas sin arista en la junta. */
-	FORCEINLINE float SmoothMin(float A, float B, float K)
-	{
-		const float H = FMath::Max(K - FMath::Abs(A - B), 0.0f) / K;
-		return FMath::Min(A, B) - H * H * K * 0.25f;
-	}
-
-	FVector2D ToLocal(const FIslandDesc& Island, float X, float Y)
-	{
-		const FVector2D D = (FVector2D(X, Y) - Island.Center) / Island.Radius;
-		const float C = FMath::Cos(-Island.Rotation);
-		const float S = FMath::Sin(-Island.Rotation);
-		return FVector2D(D.X * C - D.Y * S, D.X * S + D.Y * C);
 	}
 
 	float DistanceToSegment(const FVector& P, const FVector& A, const FVector& B, float& OutT)
@@ -68,170 +53,6 @@ namespace
 	}
 }
 
-namespace
-{
-	// --- Forma de cada isla ---------------------------------------------------------------
-	//
-	// Todo se evalúa en Q: coordenadas locales normalizadas por el radio, alargadas y con la
-	// costa deformada. La erosión (FIslandReliefModel) trabaja sobre una rejilla en ese mismo
-	// Q, así que la base analítica y la diferencia erosionada casan punto a punto.
-
-	FVector2D WarpedLocal(const FIslandDesc& Island, const FExploredNoise& N, float X, float Y)
-	{
-		FVector2D Q = ToLocal(Island, X, Y);
-		// Forma alargada propia de cada isla (las circulares no parecen naturales).
-		const float Aspect = 0.62f + 0.3f * ExploredHash::ToUnitFloat(ExploredHash::Hash32(Island.Seed ^ 0xA5u));
-		Q.Y /= Aspect;
-		// Costa irregular: deformación del dominio a dos escalas.
-		const FVector2D Warped = N.Warp2D(Q.X * 1.6f, Q.Y * 1.6f, 0.55f, 4) / 1.6f;
-		return FMath::Lerp(Q, Warped, 0.85f);
-	}
-
-	/** Distancia normalizada a la costa (1 = costa nominal) con lóbulos, bahías y penínsulas. */
-	float CoastT(const FIslandDesc& Island, const FExploredNoise& N, const FVector2D& Q)
-	{
-		const float Len = Q.Size();
-		const FVector2D Dir = Len > KINDA_SMALL_NUMBER ? Q / Len : FVector2D(1.0f, 0.0f);
-		const float Lobes = N.Fbm2D(Dir.X * 1.4f + 5.0f, Dir.Y * 1.4f - 3.0f, 3);
-		const float Coast = 1.0f + 0.32f * Lobes + 0.1f * N.Fbm2D(Q.X * 6.0f + 11.0f, Q.Y * 6.0f - 7.0f, 3);
-		float T = Len / FMath::Max(Coast, 0.45f);
-		for (const FIslandLobe& Lobe : Island.Lobes)
-		{
-			const FVector2D D = Q - Lobe.Offset;
-			const float C = FMath::Cos(-Lobe.Angle);
-			const float S = FMath::Sin(-Lobe.Angle);
-			const FVector2D L(D.X * C - D.Y * S, (D.X * S + D.Y * C) / Lobe.Aspect);
-			T = SmoothMin(T, L.Size() / (Lobe.Radius * FMath::Max(Coast, 0.45f)), 0.18f);
-		}
-		return T;
-	}
-
-	/** Plataforma somera, cresta de arrecife siempre sumergida y talud que acaba en Floor. */
-	float UnderwaterProfile(const FExploredNoise& N, const FVector2D& Q, float T, float Floor)
-	{
-		const float ShelfEnd = 1.22f + 0.08f * N.Fbm2D(Q.X * 3.0f - 20.0f, Q.Y * 3.0f, 2);
-		float Underwater = FMath::Lerp(ShelfDepth, -6.0f, SmoothStep(1.02f, ShelfEnd, T));
-		Underwater = FMath::Lerp(Underwater, Floor, SmoothStep(ShelfEnd, InfluenceLimit, T));
-		const float ReefBreaks = SmoothStep(-0.1f, 0.3f, N.Fbm2D(Q.X * 8.0f, Q.Y * 8.0f + 50.0f, 2));
-		// La cresta no sube de -3,4 m: más arriba asomaba en trozos sueltos (bultos someros en
-		// anillo alrededor de cada isla, a la misma distancia de la costa).
-		const float Crest = 3.2f * ReefBreaks * FMath::Exp(-FMath::Square((T - ShelfEnd + 0.03f) / 0.025f));
-		return Underwater + FMath::Min(Crest, FMath::Max(0.0f, ReefCrestTop - Underwater));
-	}
-
-	float LandingLand(const FExploredNoise& N, const FVector2D& Q, float U, float Hmax)
-	{
-		const float Rise = FMath::Pow(SmoothStep(0.06f, 1.0f, U), 1.6f);
-		const float Hills = 0.7f + 0.3f * N.Fbm2D(Q.X * 3.0f, Q.Y * 3.0f, 4);
-		// Lomas pequeñas en el interior: sin ellas el palmeral era una cúpula lisa.
-		const float Knolls = 1.5f * N.Fbm2D(Q.X * 14.0f - 9.0f, Q.Y * 14.0f, 3) * SmoothStep(0.1f, 0.4f, U);
-		float Land = 1.8f * SmoothStep(-0.02f, 0.08f, U) + (Hmax - 2.0f) * Rise * Hills + Knolls;
-		// Laguna protegida (lugar del amaraje) con bocana hacia el mar.
-		const float Lagoon = FVector2D::Distance(Q, FVector2D(0.58f, 0.0f)) / 0.26f;
-		const float Inlet = FMath::Abs(Q.Y) / 0.07f + FMath::Max(0.0f, 0.62f - Q.X) * 10.0f;
-		const float Water = FMath::Min(Lagoon, Inlet);
-		if (Water < 1.3f)
-		{
-			const float LagoonFloor = -5.0f + 3.5f * SmoothStep(0.3f, 1.0f, Water);
-			Land = FMath::Lerp(LagoonFloor, Land, SmoothStep(0.85f, 1.3f, Water));
-		}
-		return Land;
-	}
-
-	float SmokeLand(const FExploredNoise& N, const FVector2D& Q, float T, float Hmax)
-	{
-		const float U = 1.0f - T;
-		const float Cone = FMath::Pow(FMath::Max(U, 0.0f), 1.35f);
-		const float Flows = N.Ridged2D(Q.X * 6.0f, Q.Y * 6.0f, 3);
-		float Land = 1.2f * SmoothStep(-0.02f, 0.05f, U) + Hmax * Cone * (0.92f + 0.08f * Flows);
-		// Cráter con borde marcado.
-		const float Crater = 0.14f;
-		if (T < Crater * 1.3f)
-		{
-			Land -= (1.0f - SmoothStep(0.0f, Crater, T)) * Hmax * 0.28f;
-		}
-		return Land;
-	}
-
-	/**
-	 * Llano de manglar con relieve a tres escalas (lomas de ~60 m, montículos de ~25 m y rizado
-	 * de ~10 m). Los canales ya no son un corte a -1,6 m donde un ruido pasa un umbral (surcos
-	 * sin gradiente, todos a la misma cota): los talla la red de drenaje sobre este llano.
-	 */
-	float MangroveLand(const FExploredNoise& N, const FVector2D& Q, float U)
-	{
-		const float Relief = 0.5f * N.Fbm2D(Q.X * 9.0f, Q.Y * 9.0f, 3)
-			+ 0.35f * N.Fbm2D(Q.X * 21.0f + 30.0f, Q.Y * 21.0f, 4)
-			+ 0.15f * N.Fbm2D(Q.X * 53.0f - 70.0f, Q.Y * 53.0f, 3);
-		return 0.4f + 3.0f * SmoothStep(0.0f, 0.75f, U) + 4.5f * Relief * SmoothStep(0.0f, 0.2f, U);
-	}
-
-	float WhiteSandsLand(const FExploredNoise& N, const FVector2D& Q, float T, float Hmax)
-	{
-		// Anillo de arena alrededor de una laguna somera.
-		const float Ring = FMath::Abs(T - 0.78f) / 0.14f;
-		const float RingLand = 0.6f + Hmax * FMath::Square(FMath::Max(0.0f, 1.0f - Ring));
-		const float LagoonFloor = -3.5f - 1.5f * SmoothStep(0.64f, 0.2f, T);
-		float Land = Ring < 1.0f ? RingLand : (T < 0.78f ? FMath::Lerp(RingLand, LagoonFloor, SmoothStep(1.0f, 1.8f, Ring)) : -1000.0f);
-		// Pasos entre el anillo y la laguna (motus). Solo donde hay anillo o laguna: sobre el
-		// centinela -1000 el Lerp dejaba pozos de cientos de metros en el borde del atolón.
-		const float Gap = N.Fbm2D(Q.X * 4.0f, Q.Y * 4.0f, 2);
-		if (Ring < 1.2f && Gap > 0.35f && Land > -500.0f)
-		{
-			Land = FMath::Lerp(Land, -0.8f, SmoothStep(0.35f, 0.5f, Gap));
-		}
-		return Land;
-	}
-
-	/** Islotes de Los Dientes sobre un fondo rocoso somero que nunca asoma en bajíos sueltos. */
-	float TeethLand(const FIslandDesc& Island, const FExploredNoise& N, const FVector2D& Q)
-	{
-		float Best = -1000.0f;
-		for (int32 I = 0; I < Island.Islets.Num(); ++I)
-		{
-			const FVector2D Center = Island.Islets[I] / Island.Radius;
-			const float R = 0.13f + 0.07f * ExploredHash::ToUnitFloat(ExploredHash::Hash2D(Island.Seed, I, 0));
-			const float D = FVector2D::Distance(Q, Center) / R;
-			if (D < 2.2f)
-			{
-				const float Stack = FMath::Pow(FMath::Max(0.0f, 1.0f - D), 0.45f);
-				const float Height = Island.MaxHeight * (0.5f + 0.5f * ExploredHash::ToUnitFloat(ExploredHash::Hash2D(Island.Seed, I, 1)));
-				// El pie del islote baja sin cortes hasta el fondo rocoso (antes, dos escalones).
-				Best = FMath::Max(Best, D < 1.0f ? 1.0f + Height * Stack : FMath::Lerp(1.0f, -5.0f, SmoothStep(1.0f, 2.2f, D)));
-			}
-		}
-		return FMath::Max(Best, -4.6f + 1.2f * N.Fbm2D(Q.X * 5.0f, Q.Y * 5.0f, 3));
-	}
-
-	/**
-	 * Relieve de tierra antes de erosionar (m); -1000 donde el arquetipo no tiene tierra. El
-	 * macizo kárstico aquí es solo el llano entre torres: las torres se añaden después de
-	 * erosionar para que la erosión térmica no las convierta en conos.
-	 */
-	float BaseLand(const FIslandDesc& Island, const FExploredNoise& N, const FVector2D& Q, float T, const FKarstLayout* Karst)
-	{
-		const float U = 1.0f - T;
-		const float Hmax = Island.MaxHeight;
-		switch (Island.Archetype)
-		{
-		case EIslandArchetype::Landing: return LandingLand(N, Q, U, Hmax);
-		case EIslandArchetype::Emerald:
-		{
-			const float Rise = FMath::Pow(SmoothStep(0.04f, 1.0f, U), 1.15f);
-			const float Ridges = N.Ridged2D(Q.X * 2.4f + 3.0f, Q.Y * 2.4f, 5);
-			return 1.5f * SmoothStep(-0.02f, 0.06f, U) + Hmax * Rise * (0.45f + 0.55f * Ridges);
-		}
-		case EIslandArchetype::Smoke: return SmokeLand(N, Q, T, Hmax);
-		case EIslandArchetype::Mesa:
-			return Karst ? FKarstTowerModel::LowlandHeight(*Karst, N, Q.X, Q.Y, U, Hmax) : 1.8f * SmoothStep(-0.02f, 0.06f, U);
-		case EIslandArchetype::Mangrove: return MangroveLand(N, Q, U);
-		case EIslandArchetype::WhiteSands: return WhiteSandsLand(N, Q, T, Hmax);
-		case EIslandArchetype::Teeth: return TeethLand(Island, N, Q);
-		default: return -1000.0f;
-		}
-	}
-}
-
 FTerrainDensity::FTerrainDensity(const FArchipelagoLayout& InLayout)
 	: Layout(InLayout)
 	, Seafloor(InLayout)
@@ -252,6 +73,7 @@ void FTerrainDensity::BuildReliefs()
 		{
 			Reliefs[I].Karst = MakeShared<FKarstLayout>(FKarstTowerModel::Generate(Layout.Islands[I].Seed));
 		}
+		BuildCoast(I);
 	}
 	// Cada isla se erosiona por separado (determinista por su semilla), así que pueden ir en
 	// paralelo; la caché de FIslandReliefModel las comparte entre instancias.
@@ -269,7 +91,7 @@ void FTerrainDensity::BuildReliefs()
 			[&Island, &N, Karst](float Qx, float Qy)
 			{
 				const FVector2D Q(Qx, Qy);
-				const float Land = BaseLand(Island, N, Q, CoastT(Island, N, Q), Karst);
+				const float Land = FIslandShapeModel::BaseLand(Island, N, Q, FIslandShapeModel::CoastT(Island, N, Q), Karst);
 				return Land > -500.0f ? Land : 0.0f;
 			},
 			[Karst](float Qx, float Qy)
@@ -285,6 +107,30 @@ void FTerrainDensity::BuildReliefs()
 	});
 }
 
+void FTerrainDensity::BuildCoast(int32 IslandIndex)
+{
+	const FIslandDesc& Island = Layout.Islands[IslandIndex];
+	const FExploredNoise N(Island.Seed);
+	// Los cayos se asientan en espolones de la plataforma: antes salían sueltos del talud.
+	TArray<FShelfCay> Cays;
+	for (const FCayDesc& Cay : Island.Cays)
+	{
+		const FVector2D Q = FIslandShapeModel::WarpedLocal(Island, N, static_cast<float>(Cay.Center.X), static_cast<float>(Cay.Center.Y));
+		FShelfCay Shelf;
+		Shelf.Angle = FMath::Atan2(static_cast<float>(Q.Y), static_cast<float>(Q.X));
+		Shelf.T = FIslandShapeModel::CoastT(Island, N, Q, false);
+		const float Arc = FMath::Max(static_cast<float>(Q.Size()), 0.3f);
+		Shelf.HalfWidth = FMath::Clamp(Cay.Radius * 5.0f / Island.Radius / Arc + 0.25f, 0.35f, 0.7f);
+		Cays.Add(Shelf);
+	}
+	Reliefs[IslandIndex].Shelf = MakeShared<FIslandShelf>(FIslandShelfModel::Build(Island.Seed, Cays));
+	FCliffStyle Style;
+	if (FCoastalCliffModel::StyleFor(Island.Archetype, Style))
+	{
+		Reliefs[IslandIndex].Cliffs = MakeShared<FCoastalCliffs>(FCoastalCliffModel::Build(Island.Seed, Style));
+	}
+}
+
 const FTerrainDensity::FIslandRelief* FTerrainDensity::FindRelief(const FIslandDesc& Island) const
 {
 	for (int32 I = 0; I < Layout.Islands.Num() && I < Reliefs.Num(); ++I)
@@ -297,29 +143,70 @@ const FTerrainDensity::FIslandRelief* FTerrainDensity::FindRelief(const FIslandD
 	return nullptr;
 }
 
+float FTerrainDensity::UnderwaterHeight(const FIslandDesc& Island, const FIslandRelief* Relief, const FExploredNoise& N,
+	const FVector2D& Q, float T, float Angle, float X, float Y) const
+{
+	// Los Dientes se asientan en su bajo rocoso: la plataforma empieza a su cota, no a -1,2 m
+	// (subía en anillo alrededor del bajo).
+	const float Foot = Island.Archetype == EIslandArchetype::Teeth ? TeethShoalDepth : ShelfDepth;
+	if (T <= 1.0f)
+	{
+		return Foot;
+	}
+	// El talud acaba en el fondo real (dorsal, llanura abisal), no en una cota fija. Mar
+	// adentro se mide sin el rizado corto de la costa, que dibujaba el talud en sierra.
+	const float Floor = Seafloor.FloorHeight(X, Y);
+	const FVector2D Coarse = FIslandShapeModel::WarpedLocal(Island, N, X, Y, false);
+	const float Smooth = FMath::Lerp(T, FIslandShapeModel::CoastT(Island, N, Coarse, false), SmoothStep(1.0f, 1.25f, T));
+	if (!Relief || !Relief->Shelf)
+	{
+		return FMath::Lerp(Foot, Floor, SmoothStep(1.0f, InfluenceLimit, Smooth));
+	}
+	const float Detail = N.Fbm2D(Q.X * 3.0f - 40.0f, Q.Y * 3.0f, 2);
+	return FIslandShelfModel::Profile(*Relief->Shelf, Angle, Smooth, Floor, Foot, Detail);
+}
+
 float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y, float& OutT) const
 {
 	const FExploredNoise N(Island.Seed);
-	const FVector2D Q = WarpedLocal(Island, N, X, Y);
-	const float T = CoastT(Island, N, Q);
+	const FVector2D Q = FIslandShapeModel::WarpedLocal(Island, N, X, Y);
+	const float T = FIslandShapeModel::CoastT(Island, N, Q);
 	OutT = T;
 	if (T >= InfluenceLimit)
 	{
 		return Seafloor.FloorHeight(X, Y);
 	}
-
-	// El talud acaba en el fondo real (dorsal, llanura abisal), no en una cota fija: con
-	// OceanFloor fijo el fondo quedaba recortado a esa cota alrededor de cada isla. Por debajo
-	// de T = 1,1 el fondo no pesa en el perfil y no se evalúa.
-	const float Floor = T > 1.1f ? Seafloor.FloorHeight(X, Y) : FArchipelagoLayout::OceanFloor;
-	const float Underwater = UnderwaterProfile(N, Q, T, Floor);
 	const FIslandRelief* Relief = FindRelief(Island);
-	float Land = BaseLand(Island, N, Q, T, Relief && Relief->Karst ? &*Relief->Karst : nullptr);
+	const float Angle = FMath::Atan2(static_cast<float>(Q.Y), static_cast<float>(Q.X));
+	const float Underwater = UnderwaterHeight(Island, Relief, N, Q, T, Angle, X, Y);
+	float Land = FIslandShapeModel::BaseLand(Island, N, Q, T, Relief && Relief->Karst ? &*Relief->Karst : nullptr);
 	if (Island.Archetype == EIslandArchetype::Teeth)
 	{
-		return T < 1.0f ? Land : FMath::Lerp(Land, Underwater, SmoothStep(1.0f, 1.25f, T));
+		// El bajo rocoso se extiende más donde la plataforma es ancha: su contorno no es un disco.
+		const float Reach = Relief && Relief->Shelf ? 0.04f + 1.1f * Relief->Shelf->Width(Angle) : 0.25f;
+		return T < 1.0f ? Land : FMath::Lerp(Land, Underwater, SmoothStep(1.0f, 1.0f + Reach, T));
 	}
-	if (Land > -500.0f && Relief && Relief->Grid)
+	if (Land < -500.0f)
+	{
+		return Underwater;
+	}
+	Land = FinishLand(Island, Relief, Q, T, Land);
+	if (T >= 1.0f)
+	{
+		// Transición suave entre la orilla y la plataforma.
+		return FMath::Lerp(FMath::Min(Land, 0.0f) + ShelfDepth, Underwater, SmoothStep(1.0f, 1.12f, T));
+	}
+	const float U = 1.0f - T;
+	const float Shore = FMath::Lerp(Underwater, Land, SmoothStep(-0.02f, 0.03f, U));
+	// Acantilados marinos después de erosionar (la erosión térmica los tumbaría). Se suman a la
+	// orilla ya fundida y valen 0 en la línea de costa: la pared no abre un escalón en T = 1.
+	const FCoastalCliffs* Cliffs = Relief && Relief->Cliffs ? &*Relief->Cliffs : nullptr;
+	return Cliffs ? Shore + FCoastalCliffModel::Uplift(*Cliffs, Angle, U, Island.Radius) : Shore;
+}
+
+float FTerrainDensity::FinishLand(const FIslandDesc& Island, const FIslandRelief* Relief, const FVector2D& Q, float T, float Land) const
+{
+	if (Relief && Relief->Grid)
 	{
 		// Erosión y ríos: diferencia guardada en la rejilla, que se apaga en su borde y en la
 		// línea de costa. Ahí las gotas dejan su sedimento al llegar al mar; sin apagarla, ese
@@ -333,24 +220,8 @@ float FTerrainDensity::IslandHeight(const FIslandDesc& Island, float X, float Y,
 		Land = FKarstTowerModel::ApplyLagoons(*Relief->Karst, Q.X, Q.Y, Land);
 		Land = FKarstTowerModel::ApplyTowers(*Relief->Karst, Q.X, Q.Y, Land, Island.MaxHeight);
 	}
-
-	const float U = 1.0f - T;
-	if (T >= 1.0f)
-	{
-		if (Land < -500.0f)
-		{
-			return Underwater;
-		}
-		// Transición suave entre la orilla y la plataforma.
-		return FMath::Lerp(FMath::Min(Land, 0.0f) + ShelfDepth, Underwater, SmoothStep(1.0f, 1.12f, T));
-	}
-	if (Land < -500.0f)
-	{
-		return Underwater;
-	}
-	return FMath::Lerp(Underwater, Land, SmoothStep(-0.02f, 0.03f, U));
+	return Land;
 }
-
 
 FTerrainColumn FTerrainDensity::SampleColumn(float X, float Y) const
 {
