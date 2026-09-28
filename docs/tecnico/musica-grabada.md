@@ -2,8 +2,8 @@
 
 Encargo 21 (`Tools/Nube/cola/21-musica-licencia-abierta.md`). Complementa la banda
 sonora compuesta por código (`Tools/Audio/src/explored_audio/music`, encargo 03) con
-23 grabaciones reales: piano (Satie, Chopin, Schumann, Bach), guitarra clásica, arpa,
-violonchelo y cuarteto de cuerda. No sustituye a la música generada: las capas del
+21 grabaciones reales: piano (Satie, Chopin), guitarra clásica, arpa, violonchelo y
+cuerdas. No sustituye a la música generada: las capas del
 director de música (`Content/Data/music_layers.json`) siguen siendo las mismas, y las
 grabaciones se suman como piezas que suenan en los huecos tranquilos.
 
@@ -17,7 +17,9 @@ grabaciones se suman como piezas que suenan en los huecos tranquilos.
 | `Tools/Audio/.cache/music/` | **no** | Originales (`src/`), OGG tratados (`ogg/`) y `manifest.json`. |
 
 Los OGG ocupan unos 60 MB en total, por encima del límite de 10 MB del encargo, así que
-no se versionan: el script los regenera byte a byte desde los originales verificados.
+no se versionan: el script los regenera desde los originales verificados, idénticos byte
+a byte (el número de serie del flujo Ogg, que libsndfile elige al azar, se fija a partir
+del id de la pieza).
 
 ## Uso
 
@@ -30,20 +32,26 @@ EXPLORED_MUSIC_REQUIRE_CACHE=1 uv run pytest -q tests/test_recorded_cache.py
 ```
 
 `fetch` es incremental: una pieza cuyo original y parámetros no han cambiado no se
-reprocesa. Wikimedia limita el ritmo de descarga por IP; el script espera lo que pida la
-cabecera `Retry-After` y deja 3 s entre descargas.
+reprocesa. Wikimedia limita el ritmo de descarga por IP (desde la nube, una descarga cada
+veinte minutos o ninguna); el script espera lo que pida la cabecera `Retry-After` y deja
+3 s entre descargas. Por eso solo quedan tres piezas de Commons en la lista.
 
 ## Tratamiento
 
 1. Decodificación con libsndfile (MP3, Vorbis, FLAC), paso a estéreo y remuestreo a
-   48 kHz (`resample_poly`), igual que el resto del audio del juego.
+   48 kHz (`resample_poly`), igual que el resto del audio del juego. El FLAC dentro de
+   Ogg, que libsndfile no abre, se desenvuelve antes a FLAC nativo sin recodificar
+   (`recorded/oggflac.py`).
 2. Recorte de silencios: ventanas de 50 ms por debajo de −60 dBFS al principio y al
    final, con 150 ms de margen, fundido de entrada de 20 ms y de salida de 600 ms.
 3. Normalización a **−16 LUFS integrados** (BS.1770-4 con puerta absoluta y relativa;
    el `lufs_approx` de `levels.py` no tiene puertas y mide de menos una grabación con
    silencios).
 4. Limitador con anticipación a **−1,5 dBFS** de pico de muestra. La ganancia se
-   reajusta hasta quedar a 0,1 LU del objetivo después de limitar.
+   reajusta hasta quedar a 0,1 LU del objetivo después de limitar. El piano solo tiene
+   mucho rango dinámico: para llegar a −16 LUFS, los nocturnos y preludios pierden de 3
+   a 6 dB en los picos de ataque. Si se nota en el juego, bajar `target_lufs` a −18 en
+   `music_sources.json` reduce esa compresión a la mitad.
 5. Exportación OGG Vorbis (calidad de libsndfile 0,6, unos 110 kbps) con título,
    intérprete, licencia y origen en las etiquetas del fichero.
 
@@ -64,8 +72,12 @@ Solo se admite lo que el encargo permite, fuente por fuente, y la lista vive en 
   `{{PD-author|Musopen}}`).
 - Kevin MacLeod (incompetech): CC BY 4.0, con crédito. La página de cada pista
   (`index.html?isrc=…`) y la de licencias lo declaran.
-- FreePD ha cerrado (la web solo muestra el aviso de cierre) y Musopen responde 403 a las descargas automáticas; sus
-  grabaciones CC0 se toman de las copias de Commons, que enlazan la página de Musopen.
+- Musopen responde 403 a las descargas automáticas, pero publica su colección Chopin
+  completa en archive.org desde su propia cuenta, con licencia CC0 declarada en el
+  elemento (`archive.org/details/musopen-chopin`). Solo se admite ese elemento
+  (`MUSOPEN_ARCHIVE_ITEMS`), no cualquier subida de terceros que diga venir de Musopen.
+- FreePD ha cerrado: la web solo muestra el aviso de cierre.
+- OpenGameArt no hizo falta.
 - Sin Debussy: en Commons solo hay grabaciones CC BY-SA, históricas de dominio público
   solo en la UE (Marcelle Meyer, 1956) o interpretaciones de sintetizador. Ninguna pasa
   el filtro sin dudas para vender en Steam.
@@ -74,17 +86,17 @@ Solo se admite lo que el encargo permite, fuente por fuente, y la lista vive en 
 
 | Momento | Papel en `music_layers.json` | Piezas |
 |---|---|---|
-| Día | `explore` | Gymnopédie 1, Preludio op. 28 n.º 7, Romance anónimo, Morning, Clear Air, Evening |
-| Noche | `night` | Nocturnos op. 15/1, 55/2, 72/1 y 62/1, Träumerei |
+| Día | `explore` | Gymnopédie 1, Preludio op. 28 n.º 7, Romance anónimo (guitarra), Morning, Clear Air, Evening |
+| Noche | `night` | Nocturnos op. 15/1, 55/2, 72/1 y 62/2 |
 | Lluvia | `storm` | Preludio «Gota de agua», Gymnopédie 3, Plaint |
-| Mar | `sea` | Nocturno op. 37/2 (barcarola), Suite para violonchelo n.º 1, Enchanted Journey |
-| Cueva | `explore` | Gnossienne 1, Evening Fall (Harp), Lamentation |
-| Ruinas | `explore` | Aria de las Goldberg, adagios de Beethoven (op. 18/6) y Haydn («La alondra») |
+| Mar | `sea` | Enchanted Journey (arpa), Largo de la sonata para violonchelo op. 65, Preludio op. 28 n.º 13 |
+| Cueva | `explore` | Evening Fall (Harp), Lamentation |
+| Ruinas | `explore` | Canon en re (cuerdas y arpa), Preludio op. 28 n.º 6, Danse Morialta |
 
 `music_layers.json` no tiene papel propio de cueva ni de ruinas: esas piezas cuelgan de
 `explore` y el campo `moment` distingue cuándo suenan.
 
-## Red (biblia 08 §2)
+## Red (biblia 08 §2.1)
 
 La música es de la fila «Cliente local, sin réplica»: nada de esto viaja por la red.
 Cada cliente elige qué grabación suena a partir del estado que ya se replica (hora del

@@ -22,10 +22,10 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
-| H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
+| H5 — Lanzamiento del acceso anticipado | 2 | 21 | 23 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **10** | **200** | **210** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -624,6 +624,19 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
       genérico), coherente con el director de música adaptativa y la flauta ya
       implementados (`docs/roadmap.md`, P-MUSIC) — hoy no hay soundfont en
       `Tools/Audio`. *(GDD §7.2, transversal)*
+- [x] Audio: banda sonora grabada de licencia abierta que complementa la música
+      generada (21 piezas de dominio público, CC0 y CC BY 4.0; descarga, SHA-256,
+      −16 LUFS, recorte de silencios y OGG en caché; créditos ES/EN para juego y
+      Steam). *(encargo 21; verificado: `Tools/Audio/music_sources.json`,
+      `Tools/Audio/src/explored_audio/recorded/`, `docs/creditos-musica.md`,
+      `docs/tecnico/musica-grabada.md`)*
+- [ ] Audio: importar los OGG de `Tools/Audio/.cache/music/ogg/` a
+      `Content/Audio/MusicaGrabada/` y que `UExploredMusicSubsystem` elija entre las
+      grabaciones del mismo momento (día, noche, lluvia, mar, cueva, ruinas) en los
+      huecos tranquilos, sin replicar (biblia 08 §2.1, «Cliente local»). Necesita el
+      editor. *(encargo 21, `docs/tecnico/musica-grabada.md`)*
+- [ ] Créditos: pasar `docs/creditos-musica.md` a la pantalla de créditos del juego y
+      a la descripción de la página de Steam. *(encargo 21)*
 - [ ] Empaquetado Win64 reproducible (`Tools/build.ps1` ya existe genérico; falta el
       paso de empaquetado final con configuración Shipping y verificación de tamaño de
       build). *(GDD §7.2, `docs/roadmap.md` P-M9)*
