@@ -11,7 +11,8 @@
     "guano",
     "hierro_meteorito",
     "mineral_cobre",
-    "pico"
+    "pico",
+    "rizoma_curcuma"
   ],
   "buildingPieces": [
     "astillero",
@@ -28,9 +29,15 @@
     "vitrina_minerales"
   ],
   "plantStages": [
+    "aloe.hijuelo",
+    "aloe.hojas_carnosas",
+    "aloe.roseta",
     "batata.brote",
     "batata.enredadera",
     "batata.listo",
+    "curcuma.brote",
+    "curcuma.hojas_anchas",
+    "curcuma.listo",
     "limonero.arbol_adulto",
     "limonero.arbol_joven",
     "limonero.brote",

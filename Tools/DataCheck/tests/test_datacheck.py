@@ -1675,6 +1675,23 @@ def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> Non
             assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
 
 
+def test_huerto_cultivos_medicinales(real: DataSet) -> None:
+    plantas = {p["id"]: p for p in real.plants}
+    assert plantas["aloe"]["harvest"]["item"] == "planta_medicinal_aloe"
+    assert plantas["curcuma"]["plantedFrom"] == "rizoma_curcuma"
+    assert "especia" in item(real, "rizoma_curcuma")["tags"]
+
+
+def test_huerto_cultivo_que_no_sirve_para_nada(ds: DataSet) -> None:
+    next(p for p in ds.plants if p["id"] == "taro")["harvest"]["item"] = "palo_recto"
+    assert any_error(farm_errors(ds), "«taro»", "palo_recto", "Medicinal")
+
+
+def test_huerto_sin_cultivo_medicinal(ds: DataSet) -> None:
+    ds.data["plants.json"]["plants"] = [p for p in ds.plants if p["id"] not in ("aloe", "curcuma")]
+    assert any_error(farm_errors(ds), "ningún cultivo medicinal")
+
+
 # --------------------------------------------------------------------------- mina: quema de la luz
 
 

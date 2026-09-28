@@ -33,7 +33,9 @@ Qué comprueba:
 - **Huerto (biblia 02 §10.1)**: `plants.json/rules` es espejo de las constantes de
   `FFarmModel` (fuera de estación, días secos hasta marchitarse y morir, lluvia por riego,
   radio del espantapájaros en metros, picoteo de las aves), y un cultivo que se planta con su
-  propia cosecha y se arranca al cosechar debe dar al menos 2 (si no, la cosecha neta es nula).
+  propia cosecha y se arranca al cosechar debe dar al menos 2 (si no, la cosecha neta es nula). Todo cultivo
+  cosecha comida (`recipes.json/foods`) o un objeto con `Medicinal ≥ 1`, y al menos uno es
+  medicinal sin ser comida (GDD v3 §8.7: especias y plantas medicinales).
 - **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
   obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`.
   `mining.json`: materiales espejo de `ETerrainMaterial`/`FTerrainEditModel::MaterialInfo`

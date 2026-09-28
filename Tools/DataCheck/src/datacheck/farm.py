@@ -6,6 +6,10 @@
   no lee JSON: si cambia una constante, este bloque tiene que cambiar con ella.
 - Cosecha neta: un cultivo que se planta con el mismo objeto que cosecha y se arranca al
   cosechar tiene que devolver más de lo que costó; si no, el huerto no produce nada.
+- Utilidad: cada cultivo cosecha comida (``recipes.json/foods``) o un objeto con
+  ``Medicinal`` ≥ 1, y el huerto tiene al menos un cultivo medicinal que no sea comida
+  (el limón cura el escorbuto pero es fruta; GDD v3 §8.7:
+  «especias y plantas medicinales»; se recoge con el mismo verbo que el resto).
 """
 
 from __future__ import annotations
@@ -73,3 +77,17 @@ def check_farm(ds, r) -> None:
         if isinstance(lo, int) and lo < 2:
             r.error(f"plants.json «{plant.get('id')}»: se planta con «{h.get('item')}», se arranca al cosechar"
                     f" y da como mínimo {lo}: cosecha neta nula (min ≥ 2 o everyDays > 0)")
+
+    foods = {f.get("item") for f in ds.data.get("recipes.json", {}).get("foods", [])}
+    by_id = {i.get("id"): i for i in ds.items}
+    medicinal: list[str] = []
+    for plant in doc.get("plants", []):
+        item_id = (plant.get("harvest") or {}).get("item")
+        props = {p.get("name"): p.get("value", 0) for p in by_id.get(item_id, {}).get("properties", [])}
+        if props.get("Medicinal", 0) >= 1 and item_id not in foods:
+            medicinal.append(plant.get("id"))
+        elif item_id in by_id and item_id not in foods:
+            r.error(f"plants.json «{plant.get('id')}»: cosecha «{item_id}», que ni es comida"
+                    " (recipes.json/foods) ni tiene Medicinal ≥ 1")
+    if doc.get("plants") and not medicinal:
+        r.error("plants.json: ningún cultivo medicinal (GDD v3 §8.7: especias y plantas medicinales)")

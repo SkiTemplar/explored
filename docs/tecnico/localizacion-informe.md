@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 1109 |
+| Textos en el catálogo | 1118 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
-| … de `Content/Data` (campos bilingües) | 806 |
+| … de `Content/Data` (campos bilingües) | 815 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
 | Literales para revisar | 78 |
-| Errores / avisos | 0 / 0 |
+| Errores / avisos | 0 / 1 |
 
 ## Literales del C++
 
@@ -136,6 +136,6 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (0)
+## Avisos (1)
 
-Ninguno.
+- «hijuelo» tiene 2 traducciones distintas: «offset» en Content/Data/plants.json «aloe.hijuelo» nameEs/nameEn; «sucker» en Content/Data/plants.json «platanera.hijuelo» nameEs/nameEn
