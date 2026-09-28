@@ -45,7 +45,7 @@
         "obj"
       ],
       "sha256": "cdad90853682499b94c9fda2f87678b24bfd8f3264e0ed323f6b6a27fd7c6f6f",
-      "note": "Preparado para comida y huerto (prioridad 3); aún sin entradas en el catálogo."
+      "note": "Fruta y setas (lote3-comida)."
     },
     {
       "id": "kaykit_rpg_tools_bits",
@@ -116,6 +116,76 @@
       ],
       "sha256": "b4bc5f209368cafc21962934e7d676cf1cfb1f746a363086cd9f45c4385db70e",
       "note": "Preparado para la fauna (prioridad 4); aún sin entradas en el catálogo (ver PR)."
+    },
+    {
+      "id": "kenney_fantasy_town_kit",
+      "name": "Fantasy Town Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/fantasy-town-kit",
+      "version": "2.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/fantasy-town-kit/efe948d309-1754222374/kenney_fantasy-town-kit_2.0.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "glb",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "1a7530c09f4d2fa2cdee259876f089334f8b1f27fa86a0c4f54ef86cdd8676ef",
+      "note": "Evaluado para el kit de construcción (prioridad 2) y descartado: ver discarded en packs_catalogo.json. Se mantiene porque los descartes lo citan."
+    },
+    {
+      "id": "kenney_pirate_kit",
+      "name": "Pirate Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/pirate-kit",
+      "version": "2.1",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/pirate-kit/e6d4bb1525-1771333093/kenney_pirate-kit.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "glb",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "667ed2caf92954ddb98f7b7cede831fe99ab75063c26b25e23d32715bee9c943",
+      "note": "Evaluado para muelle y techo de palma (prioridad 2) y descartado por proporciones: ver discarded en packs_catalogo.json."
+    },
+    {
+      "id": "kaykit_fantasy_weapons_bits",
+      "name": "KayKit Fantasy Weapons Bits (Free)",
+      "author": "Kay Lousberg",
+      "page": "https://kaylousberg.itch.io/fantasy-weapons-bits",
+      "version": "1.0",
+      "source": {
+        "kind": "itch",
+        "page": "https://kaylousberg.itch.io/fantasy-weapons-bits",
+        "uploadId": 16499093
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página itch.io: «(CC0 Licensed)» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Free» (precio libre, mínimo 0)."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "1017144f85a994f405b731befa71ced360f5b60ed0b9c00c72e711c1633ce2d2",
+      "note": "Lanza, arco y flecha (lote2-caza)."
     }
   ]
 }
