@@ -50,7 +50,10 @@ struct EXPLORED_API FTerrainEditResult
 	/** Sólido añadido (tierra que sale del inventario). */
 	double VolumeAdded = 0.0;
 	int32 SamplesChanged = 0;
-	/** La herramienta no puede con el material: no se ha tocado nada. */
+	/**
+	 * No se ha tocado nada: la herramienta no puede con el material o la edición no es
+	 * válida (valores no finitos, fuera del mundo o más grande que cualquier herramienta).
+	 */
 	bool bRejected = false;
 
 	bool Changed() const { return SamplesChanged > 0; }
@@ -180,6 +183,24 @@ public:
 	static constexpr float CompactedHardnessBonus = 0.5f;
 	/** Rejilla de las escaleras: origen y huella en múltiplos de 30 cm, contrahuella de 15 en 15 cm. */
 	static constexpr float StairGrid = 0.3f;
+	/** Topes de las escaleras (los mismos a los que ajusta SnapStairs). */
+	static constexpr int32 MaxStairSteps = 64;
+	static constexpr float MaxStairRise = 0.45f;
+	static constexpr float MaxStairRun = 0.9f;
+	static constexpr float MaxStairWidth = 3.0f;
+	static constexpr float MaxStairHeadroom = 3.0f;
+
+	/**
+	 * Límites de validez de una edición. Una petición que llega de otro jugador (cooperativo)
+	 * o de un fallo aguas arriba no puede colgar la partida ni escribir deltas en muestras
+	 * que luego el guardado rechaza: se rechaza entera.
+	 * - Todas las coordenadas, dentro de ±MaxWorldCoordinate (el archipiélago mide unos
+	 *   pocos km; así las muestras globales caben de sobra en int32).
+	 * - Radio, borde y alcance de la pala y radio de echar tierra, hasta MaxBrushExtent
+	 *   (unas 2,5 veces lo que usa el diseño): acota las muestras que recorre una llamada.
+	 */
+	static constexpr double MaxWorldCoordinate = 100000.0;
+	static constexpr float MaxBrushExtent = 4.0f;
 
 	static const FTerrainMaterialInfo& MaterialInfo(ETerrainMaterial Material);
 	/** Golpes por m³ de diseño: 6 × dureza con la herramienta mínima, ÷ 1,5 por nivel extra, nunca menos de 6; 0 si no puede. */
@@ -187,7 +208,7 @@ public:
 	/** Multiplicador de lo que arranca un golpe (0 si la herramienta no llega al material). */
 	static float ToolFactor(ETerrainMaterial Material, int32 ToolTier);
 	static float Occupancy(float Density, float CellSize);
-	/** Escalera ajustada a la rejilla de diseño; devuelve false si la dirección es degenerada. */
+	/** Escalera ajustada a la rejilla de diseño; devuelve false si la dirección es degenerada o hay valores no finitos. */
 	static bool SnapStairs(const FStairCarve& In, FStairCarve& Out);
 
 	explicit FTerrainEditModel(const FTerrainEditSettings& InSettings = FTerrainEditSettings());
@@ -197,7 +218,7 @@ public:
 	FTerrainEditResult Pickaxe(const FPickaxeHit& Hit, FBaseDensity Base);
 	FTerrainEditResult Shovel(const FShovelStroke& Stroke, FBaseDensity Base);
 	FTerrainEditResult PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base);
-	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla). */
+	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes. */
 	FTerrainEditResult CarveStairs(const FStairCarve& Stairs, FBaseDensity Base);
 	/**
 	 * Vacía una esfera hasta MaxVolume: lleva cada muestra a la distancia con signo a la

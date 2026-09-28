@@ -144,6 +144,11 @@ public:
 
 	/** Paso máximo de integración (s). */
 	static constexpr float MaxSubstep = 1.0f / 20.0f;
+	/**
+	 * Tope de subpasos por Step (2 s de simulación). Un Step más largo (una pausa, un tirón)
+	 * pierde el resto: la bandada no lo nota y no se hacen miles de pasadas de vecinos.
+	 */
+	static constexpr int32 MaxSubstepsPerStep = 40;
 
 private:
 	void SubStep(float Dt, const FBoidsEnvironment& Environment);

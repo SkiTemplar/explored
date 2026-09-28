@@ -16,7 +16,8 @@
     "astillero",
     "banco_chatarra",
     "espantapajaros",
-    "pila_compost"
+    "pila_compost",
+    "viga_apoyo"
   ],
   "plantStages": [
     "batata.brote",

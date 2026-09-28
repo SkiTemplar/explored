@@ -127,6 +127,8 @@ def test_grass_reads_as_blades_not_blotches(generated):
     lum = bc @ LUMA
     fine = (lum - blur(lum, 0.01)).std() / lum.mean()
     macro = blur(lum, 0.08).std() / lum.mean()
-    assert fine > 0.08, f"sin hojas legibles (detalle fino {fine:.3f})"
+    # 0.08 con el césped fotográfico; el pintado (encargo del director, 2026-09-28) tiene a
+    # propósito menos hojas y más grandes, así que el umbral absoluto baja y manda la razón.
+    assert fine > 0.055, f"sin hojas legibles (detalle fino {fine:.3f})"
     assert fine > 2.5 * macro, f"la mancha macro domina ({macro:.3f} frente a {fine:.3f})"
     assert (lum < 0.1).mean() < 0.01, "huecos casi negros entre matas"

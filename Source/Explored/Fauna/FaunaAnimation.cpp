@@ -74,8 +74,11 @@ FFaunaAnimParams FFaunaAnimation::Advance(EFaunaSpecies Species, FFaunaAnimState
 		break;
 	}
 
-	State.Phase01 = FMath::Frac(State.Phase01 + Out.FrequencyHz * FMath::Max(0.0f, DeltaSeconds));
-	if (State.Phase01 >= 1.0f)
+	// Max(0, NaN) deja NaN y la fase se quedaría en NaN para siempre: un paso no finito no avanza
+	// y una fase no finita vuelve a 0.
+	const float Dt = FMath::IsFinite(DeltaSeconds) ? FMath::Max(0.0f, DeltaSeconds) : 0.0f;
+	State.Phase01 = FMath::Frac(State.Phase01 + Out.FrequencyHz * Dt);
+	if (!FMath::IsFinite(State.Phase01) || State.Phase01 >= 1.0f)
 	{
 		State.Phase01 = 0.0f;
 	}

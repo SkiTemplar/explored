@@ -367,6 +367,18 @@ void FWildfireModelSpec::Define()
 
 	Describe("rebrote y ceniza", [this]()
 	{
+		It("minutos y celdas extremos no desbordan", [this]()
+		{
+			const int64 Late = INT64_MAX - 5;
+			FWildfireModel M(8u, Everywhere());
+			TestTrue(TEXT("prende"), M.Ignite(FIntPoint(0, 0), Late));
+			M.Douse(FIntPoint(0, 0), 1, Late, INT64_MAX);
+			TestTrue(TEXT("sigue quemada (BurntMinute + rebrote desbordaba)"), M.StateAt(FIntPoint(0, 0), Late) == EFireCellState::Burnt);
+			TestEqual(TEXT("con ceniza"), M.AshAt(FIntPoint(0, 0), Late), 1);
+			TestTrue(TEXT("la vecina queda mojada (NowMinute + WetMinutes desbordaba)"), M.IsWet(FIntPoint(1, 0), Late));
+			TestFalse(TEXT("celda fuera de la cota de CellAt"), M.Ignite(FIntPoint(MAX_int32, 0), 0));
+		});
+
 		It("ceniza 3 días, hierba a los 12 y matorral a los 25; Prune olvida lo rebrotado", [this]()
 		{
 			const int64 Day = FWildfireModel::MinutesPerDay;
@@ -453,6 +465,14 @@ void FWildfireModelSpec::Define()
 			TestFalse(TEXT("pasos de más"), M.Load(WithRow({ I(0), I(0), I(1), I(1), I(100000), I(0), I(0), F })));
 			TestFalse(TEXT("coordenada fuera de int32"), M.Load(WithRow({ I(1ll << 40), I(0), I(0), I(1), I(0), I(0), I(0), F })));
 			TestFalse(TEXT("fila corta"), M.Load(WithRow({ I(0), I(0) })));
+			TestFalse(TEXT("celda fuera de ±1e9"), M.Load(WithRow({ I(MAX_int32), I(0), I(0), I(1), I(0), I(0), I(0), F })));
+			TestFalse(TEXT("minuto de quema extremo"), M.Load(WithRow({ I(0), I(0), I(2), I(1), I(0), I(INT64_MAX), I(0), F })));
+			TestFalse(TEXT("minuto de humedad extremo"), M.Load(WithRow({ I(0), I(0), I(0), I(1), I(0), I(0), I(INT64_MIN), F })));
+			FSaveValue BadClock = Good;
+			BadClock.Set(TEXT("lastSecond"), I(INT64_MIN));
+			TestFalse(TEXT("segundo INT64_MIN (Advance se colgaba)"), M.Load(BadClock));
+			BadClock.Set(TEXT("lastSecond"), I(-1));
+			TestFalse(TEXT("segundo negativo"), M.Load(BadClock));
 			FSaveValue Dup = Good;
 			FSaveValue* Cells = Dup.Find(TEXT("cells"));
 			Cells->Add(Cells->At(0));

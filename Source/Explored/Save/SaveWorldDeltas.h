@@ -36,6 +36,8 @@ public:
 	bool Contains(int32 Index) const;
 	int32 Num() const { return Count; }
 	bool IsEmpty() const { return Count == 0; }
+	/** Palabras de 32 bits reservadas (lo que ocupa en memoria: crece con el índice más alto). */
+	int32 NumWords() const { return Words.Num(); }
 	void Reset();
 
 	/** Une otro conjunto. Devuelve cuántos índices eran nuevos. */
@@ -82,6 +84,15 @@ struct FSaveCellDeltas
 class EXPLORED_API FSaveScatterDeltas
 {
 public:
+	/**
+	 * Tope de memoria al cargar, en palabras de 32 bits: 2^22 = 16 MiB por capa y
+	 * también en total en FSaveWorldDeltas::Load (134 millones de índices posibles,
+	 * muy por encima de lo que se recolecta en una partida). Cada celda cuesta según su
+	 * índice más alto, no según cuántos lleva: "r:1048575" son 11 caracteres y 128 KiB,
+	 * y 90.000 celdas así pedirían unos 11 GB. Al pasarlo se rechaza la capa.
+	 */
+	static constexpr int32 MaxLoadedWords = 1 << 22;
+
 	bool Add(const FIntPoint& Cell, int32 Index);
 	bool Remove(const FIntPoint& Cell, int32 Index);
 	bool Contains(const FIntPoint& Cell, int32 Index) const;
@@ -90,6 +101,8 @@ public:
 
 	int32 Num() const;
 	int32 NumCells() const { return Cells.Num(); }
+	/** Memoria de todas las celdas en palabras de 32 bits (ver MaxLoadedWords). */
+	int64 NumWords() const;
 	bool IsEmpty() const { return Cells.Num() == 0; }
 	void Reset() { Cells.Reset(); }
 

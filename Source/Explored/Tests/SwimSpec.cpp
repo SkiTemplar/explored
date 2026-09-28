@@ -3,6 +3,8 @@
 #include "Player/SwimModel.h"
 #include "Survival/SurvivalModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace SwimSpecDetail
@@ -222,6 +224,22 @@ void FSwimSpec::Define()
 			const FSwimStep Step = Model.Tick(Tuning, AtHeadDepth(Tuning, 200.0f), 0.1f);
 			TestEqual(TEXT("Sin aire"), Model.GetOxygen(), 0.0f);
 			TestEqual(TEXT("Daño por ahogo"), Step.DrowningDamagePerSecond, Tuning.DrowningDamagePerSecond);
+		});
+
+		It("un paso de tiempo o un oxígeno NaN no dejan el oxígeno en NaN", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const FSwimTuning Tuning;
+			FSwimModel Model;
+			Model.SetOxygen(40.0f);
+			Model.SetOxygen(NaN);
+			TestEqual(TEXT("SetOxygen(NaN) no cambia nada"), Model.GetOxygen(), 40.0f);
+			Model.Tick(Tuning, AtHeadDepth(Tuning, 200.0f), NaN);
+			Model.Tick(Tuning, AtHeadDepth(Tuning, 200.0f), std::numeric_limits<float>::infinity());
+			TestTrue(TEXT("oxígeno finito"), FMath::IsFinite(Model.GetOxygen()));
+			Model.SetOxygen(0.01f);
+			const FSwimStep Step = Model.Tick(Tuning, AtHeadDepth(Tuning, 200.0f), 0.1f);
+			TestEqual(TEXT("y se sigue ahogando"), Step.DrowningDamagePerSecond, Tuning.DrowningDamagePerSecond);
 		});
 
 		It("gasta lo mismo en 1 s a 10 fps que a 1000 y 10000 fps", [this]()

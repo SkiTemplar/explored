@@ -224,7 +224,7 @@ public:
 	float Integrity01() const;
 	/** Daño equivalente para FBoatModel (1 − integridad): se sincroniza con Repair/ApplyDamage. */
 	float HullDamage01() const { return 1.0f - Integrity01(); }
-	/** La pieza toca el suelo por debajo (su cara inferior está en la quilla): solo sus uniones sufren el roce. */
+	/** La pieza toca el suelo por debajo (su cara inferior está en la quilla de las piezas con volumen): solo sus uniones sufren el roce. Remos, pala y vela nunca. */
 	bool IsBottomPiece(int32 Index) const;
 
 	/** Roce: carga × distancia (N·m) contra un suelo. FBoatModel lo acumula varado en GroundScrapeWorkNm. */

@@ -492,6 +492,16 @@ int32 FSaveScatterDeltas::Num() const
 	return Total;
 }
 
+int64 FSaveScatterDeltas::NumWords() const
+{
+	int64 Total = 0;
+	for (const FSaveCellDeltas& Cell : Cells)
+	{
+		Total += Cell.Indices.NumWords();
+	}
+	return Total;
+}
+
 void FSaveScatterDeltas::Merge(const FSaveScatterDeltas& Other)
 {
 	for (const FSaveCellDeltas& OtherCell : Other.Cells)
@@ -550,6 +560,7 @@ bool FSaveScatterDeltas::FromValue(const FSaveValue& Value)
 		return false;
 	}
 	FSaveScatterDeltas Result;
+	int64 LoadedWords = 0;
 	for (int32 I = 0; I < Value.Num(); ++I)
 	{
 		const FSaveValue& Entry = Value.At(I);
@@ -566,6 +577,12 @@ bool FSaveScatterDeltas::FromValue(const FSaveValue& Value)
 		if (Indices.IsEmpty())
 		{
 			continue;
+		}
+		// Memoria acotada aunque el texto sea hostil (ver MaxLoadedWords); cuenta de más con celdas repetidas.
+		LoadedWords += Indices.NumWords();
+		if (LoadedWords > MaxLoadedWords)
+		{
+			return false;
 		}
 		// Una celda repetida (texto editado a mano) se une en vez de rechazar la partida.
 		bool bFound = false;
@@ -652,11 +669,19 @@ void FSaveWorldDeltas::Load(const FSaveArchive& Ar)
 		return;
 	}
 	// Orden ordinal de las claves: el mapa resultante no depende del orden del texto.
+	int64 LoadedWords = 0;
 	for (int32 I = 0; I < LayersValue->Num(); ++I)
 	{
 		FSaveScatterDeltas Deltas;
 		if (Deltas.FromValue(LayersValue->GetValueAt(I)) && !Deltas.IsEmpty())
 		{
+			// El tope por capa también vale para el total: muchas capas grandes no se suman sin fin.
+			const int64 LayerWords = Deltas.NumWords();
+			if (LoadedWords + LayerWords > FSaveScatterDeltas::MaxLoadedWords)
+			{
+				continue;
+			}
+			LoadedWords += LayerWords;
 			Layers.Add(FName(*LayersValue->GetKeys()[I]), MoveTemp(Deltas));
 		}
 	}

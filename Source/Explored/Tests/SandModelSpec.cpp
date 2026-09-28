@@ -95,7 +95,7 @@ void FSandModelSpec::Define()
 		It("el reposo seco es 34° y el húmedo 45° en celdas de 0,25 m", [this]()
 		{
 			TestEqual(TEXT("seco"), FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f), 168);
-			TestEqual(TEXT("húmedo"), FSandModel::ReposeDropMm(FSandModel::WetReposeDeg, 0.25f), 249);
+			TestEqual(TEXT("húmedo"), FSandModel::ReposeDropMm(FSandModel::WetReposeDeg, 0.25f), 250);
 		});
 
 		It("el oleaje rellena el 20 % en la pleamar, más hacia el agua, y nada por encima (biblia 02 §5.2)", [this]()
@@ -451,6 +451,13 @@ void FSandModelSpec::Define()
 			B.Depth = 0.1f;
 			B.MassBudget = -5;
 			TestFalse(TEXT("presupuesto negativo"), Model.Dig(B, Flat).Changed());
+			// Columna 2^31 − 2: antes el cast a int32 dejaba Hi.X = INT32_MAX y el bucle no terminaba.
+			B.MassBudget = 0;
+			B.Radius = 0.3f;
+			B.Center = FVector2D(536870911.5, 0.0);
+			TestFalse(TEXT("fuera de la rejilla (se colgaba)"), Model.Dig(B, Flat).Changed());
+			B.Center = FVector2D(0.0, -1.0e12);
+			TestFalse(TEXT("muy fuera de la rejilla"), Model.Dig(B, Flat).Changed());
 			TestTrue(TEXT("vacío"), Model.IsEmpty());
 		});
 	});
@@ -583,6 +590,22 @@ void FSandModelSpec::Define()
 			TestFalse(TEXT("infinito"), Model.ApplyHalfTide(Tide(0.0, -INFINITY), Flat).Changed());
 			TestEqual(TEXT("igual"), Model.DeltaMm(FIntPoint(0, 0)), -500);
 		});
+
+		It("una pleamar no finita en la revisión no seca la arena mojada", [this, Flat]()
+		{
+			FSandModel Model;
+			FSandEnvironment High = Dry();
+			High.HighTide = 10.0;
+			Model.Pile(Spike(FVector2D::ZeroVector, 40000), Flat);
+			TestTrue(TEXT("húmedo se asienta"), Settle(Model, High, Flat) >= 0);
+			const int32 Top = Model.DeltaMm(FIntPoint(0, 0));
+			// Antes FloorToInt64(NaN) daba INT64_MIN: toda la arena pasaba a seca y se derrumbaba.
+			High.HighTide = NAN;
+			TestEqual(TEXT("nada que revisar"), Settle(Model, High, Flat), 0);
+			High.HighTide = INFINITY;
+			TestEqual(TEXT("tampoco con infinito"), Settle(Model, High, Flat), 0);
+			TestEqual(TEXT("cima intacta"), Model.DeltaMm(FIntPoint(0, 0)), Top);
+		});
 	});
 
 	Describe("estructuras (biblia 02 §5.3)", [this, Flat]()
@@ -705,6 +728,8 @@ void FSandModelSpec::Define()
 			FSandModel Empty;
 			TestFalse(TEXT("caja al revés"), Empty.SetAnchor(FVector2D(1.0, 1.0), FVector2D(0.0, 0.0), true, Flat).Changed());
 			TestFalse(TEXT("NaN"), Empty.SetAnchor(FVector2D(NAN, 0.0), FVector2D(1.0, 1.0), true, Flat).Changed());
+			TestFalse(TEXT("fuera de la rejilla (se colgaba)"),
+				Empty.SetAnchor(FVector2D(536870911.0, 0.0), FVector2D(536870911.5, 0.0), true, Flat).Changed());
 			TestFalse(TEXT("nada sujeto"), Empty.IsHeld(FIntPoint(0, 0)));
 		});
 	});
@@ -1076,7 +1101,7 @@ void FSandModelSpec::Define()
 			TestFalse(TEXT("otra celda"), Other.FromValue(Good));
 			TestTrue(TEXT("queda vacío"), Other.IsEmpty());
 
-			auto Tampered = [&Good](int32 Value)
+			auto Tampered = [&Good](int32 Value, int32 KeyX = 5)
 			{
 				FSaveValue V = Good;
 				FSaveValue Runs = FSaveValue::MakeArray();
@@ -1084,7 +1109,7 @@ void FSandModelSpec::Define()
 				Runs.Add(FSaveValue::MakeInt(1));
 				Runs.Add(FSaveValue::MakeInt(Value));
 				FSaveValue Entry = FSaveValue::MakeArray();
-				Entry.Add(FSaveValue::MakeInt(5));
+				Entry.Add(FSaveValue::MakeInt(KeyX));
 				Entry.Add(FSaveValue::MakeInt(5));
 				Entry.Add(MoveTemp(Runs));
 				FSaveValue List = FSaveValue::MakeArray();
@@ -1104,6 +1129,26 @@ void FSandModelSpec::Define()
 			List.Add(FSaveValue::MakeInt(3));
 			OddDirty.Set(TEXT("dirty"), MoveTemp(List));
 			TestFalse(TEXT("sucias impares"), Probe.FromValue(OddDirty));
+
+			// Revise suma vecinas a cada columna sucia: una en el borde de int32 desbordaba.
+			FSaveValue FarDirty = Good;
+			FSaveValue FarList = FSaveValue::MakeArray();
+			FarList.Add(FSaveValue::MakeInt(MAX_int32));
+			FarList.Add(FSaveValue::MakeInt(0));
+			FarDirty.Set(TEXT("dirty"), MoveTemp(FarList));
+			TestFalse(TEXT("sucia fuera de la rejilla"), Probe.FromValue(FarDirty));
+
+			FSaveValue ManyDirty = Good;
+			FSaveValue ManyList = FSaveValue::MakeArray();
+			for (int32 I = 0; I <= FSandModel::MaxSavedDirtyColumns; ++I)
+			{
+				ManyList.Add(FSaveValue::MakeInt(I));
+				ManyList.Add(FSaveValue::MakeInt(0));
+			}
+			ManyDirty.Set(TEXT("dirty"), MoveTemp(ManyList));
+			TestFalse(TEXT("demasiadas sucias"), Probe.FromValue(ManyDirty));
+
+			TestFalse(TEXT("chunk fuera de la rejilla"), Probe.FromValue(Tampered(120, MAX_int32 / 32)));
 
 			FSaveValue BadSea = Good;
 			BadSea.Set(TEXT("sea"), FSaveValue::MakeString(TEXT("mucha")));

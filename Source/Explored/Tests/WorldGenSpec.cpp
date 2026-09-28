@@ -1,6 +1,9 @@
 #include "Misc/AutomationTest.h"
 
+#include <limits>
+
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/PointsOfInterest.h"
 #include "WorldGen/SurfaceNets.h"
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
@@ -204,6 +207,53 @@ void FWorldGenSpec::Define()
 
 	Describe("FTerrainDensity", [this]()
 	{
+		It("no comparte el macizo kárstico entre layouts de igual semilla y distinta altura", [this]()
+		{
+			const FArchipelagoLayout Official = FArchipelagoLayout::Generate(OfficialSeed);
+			FArchipelagoLayout Taller = Official;
+			FIslandDesc* TallMesa = nullptr;
+			for (FIslandDesc& Island : Taller.Islands)
+			{
+				if (Island.Archetype == EIslandArchetype::Mesa)
+				{
+					TallMesa = &Island;
+				}
+			}
+			if (!TestNotNull(TEXT("hay macizo kárstico"), TallMesa))
+			{
+				return;
+			}
+			TallMesa->MaxHeight *= 2.0f;
+			const FTerrainDensity Low(Official);
+			const FTerrainDensity High(Taller);
+			// Cumbre de cada uno: antes High reutilizaba la rejilla de Low (misma semilla de isla).
+			auto Peak = [](const FTerrainDensity& Density, const FIslandDesc& Island)
+			{
+				float Best = -1.0e9f;
+				for (int32 Y = -20; Y <= 20; ++Y)
+				{
+					for (int32 X = -20; X <= 20; ++X)
+					{
+						const FVector2D P = Island.Center + FVector2D(X, Y) * (Island.Radius / 20.0f);
+						Best = FMath::Max(Best, Density.SampleColumn(static_cast<float>(P.X), static_cast<float>(P.Y)).Height);
+					}
+				}
+				return Best;
+			};
+			const float LowPeak = Peak(Low, *Official.FindIsland(EIslandArchetype::Mesa));
+			const float HighPeak = Peak(High, *TallMesa);
+			TestTrue(*FString::Printf(TEXT("el doble de alto sube la cumbre (%.1f → %.1f)"), LowPeak, HighPeak), HighPeak > LowPeak * 1.4f);
+		});
+
+		It("un layout sin islas no tiene puntos de interés", [this]()
+		{
+			FArchipelagoLayout Empty;
+			Empty.Seed = 1u;
+			const FTerrainDensity Density(Empty);
+			// Antes las botellas pedían RangeInt(0, -1): check en desarrollo y % 0 en Shipping.
+			TestEqual(TEXT("ninguno"), FPoiLayout::Generate(Density).Num(), 0);
+		});
+
 		It("tiene tierra emergida cerca del centro de cada isla alta", [this]()
 		{
 			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
@@ -364,6 +414,31 @@ void FWorldGenSpec::Define()
 			const TArray<FIntVector> Chunks = FTerrainChunkBuilder::FindCandidateChunks(Density, Settings, Rect);
 			TestTrue(TEXT("Hay candidatos"), Chunks.Num() > 0);
 			TestTrue(TEXT("Pocas capas verticales por columna"), Chunks.Num() <= 4 * 4 * 5);
+		});
+
+		It("acota la altura con cualquier rectángulo y paso, sin colgarse", [this]()
+		{
+			const FTerrainDensity Density(FArchipelagoLayout::Generate(OfficialSeed));
+			float MinH = 0.0f;
+			float MaxH = 0.0f;
+			// En x = 1e8 un X += 2 en float no avanzaba: el bucle no terminaba.
+			Density.HeightBounds(FBox2D(FVector2D(1.0e8, 0.0), FVector2D(1.0e8 + 32.0, 32.0)), 2.0f, MinH, MaxH);
+			TestTrue(TEXT("lejos: finito y ordenado"), FMath::IsFinite(MinH) && FMath::IsFinite(MaxH) && MinH <= MaxH);
+			const FBox2D Rect(FVector2D(0.0), FVector2D(32.0));
+			Density.HeightBounds(Rect, 0.0f, MinH, MaxH);
+			TestTrue(TEXT("paso 0 (se colgaba)"), MinH == 0.0f && MaxH == 0.0f);
+			Density.HeightBounds(Rect, std::numeric_limits<float>::quiet_NaN(), MinH, MaxH);
+			TestTrue(TEXT("paso NaN"), MinH == 0.0f && MaxH == 0.0f);
+			// Sin muestras OutMin quedaba en FLT_MAX y FindCandidateChunks hacía FloorToInt32 de eso.
+			Density.HeightBounds(FBox2D(FVector2D(32.0), FVector2D(0.0)), 2.0f, MinH, MaxH);
+			TestTrue(TEXT("rectángulo vacío"), MinH == 0.0f && MaxH == 0.0f);
+			Density.HeightBounds(FBox2D(FVector2D(0.0), FVector2D(std::numeric_limits<double>::infinity(), 32.0)), 2.0f, MinH, MaxH);
+			TestTrue(TEXT("rectángulo infinito"), MinH == 0.0f && MaxH == 0.0f);
+
+			const FTerrainChunkSettings Settings;
+			const TArray<FIntVector> Far = FTerrainChunkBuilder::FindCandidateChunks(Density, Settings,
+				FBox2D(FVector2D(1.0e8, 0.0), FVector2D(1.0e8 + 1.0, 1.0)));
+			TestTrue(TEXT("candidatos lejos: pocos"), Far.Num() <= 8);
 		});
 	});
 }
