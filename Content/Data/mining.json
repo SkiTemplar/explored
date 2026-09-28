@@ -1,0 +1,136 @@
+{
+	"version": 1,
+	"fase": 1,
+	"note": "Minería manual del terreno volumétrico (GDD v2 §3.4, biblia 02 §2). Los materiales son espejo de ETerrainMaterial y FTerrainEditModel::MaterialInfo (Source/Explored/WorldGen/TerrainEditModel.{h,cpp}); DataCheck lo compara. Cada estrato del GDD se cava como uno de esos materiales y deja su objeto de items.json.",
+	"units": {
+		"hardness": "relativa, tierra = 1 (divide lo que arranca cada golpe)",
+		"toolTier": "0 a mano, 1 pala tosca, 2 pico de piedra, 3 pico tallado, 4 pico de obsidiana o rescatado",
+		"hitsPerM3": "golpes para vaciar 1 m³ = max(6 × dureza / 1,5^(nivel − mínimo), 6)",
+		"secondsPerHit": "segundos por golpe de pico (FTerrainEditModel::SecondsPerPickaxeHit)",
+		"unitsPerM3": "objetos que salen por m³ de sólido quitado (VolumeRemoved); una unidad ≈ el hueco de un golpe",
+		"depthM": "metros por debajo de la superficie local [mín, máx]",
+		"veinUnits": "unidades totales de una veta finita; al agotarse deja el material que la rodea"
+	},
+	"secondsPerHit": 0.9,
+	"minHitsPerM3": 6,
+	"tierBonus": 1.5,
+	"unitsPerM3": 6,
+	"materials": [
+		{ "id": "arena", "cpp": "Arena", "hardness": 0.75, "minToolTier": 1, "hitsPerM3": { "1": 6, "2": 6, "3": 6, "4": 6 } },
+		{ "id": "tierra", "cpp": "Tierra", "hardness": 1.0, "minToolTier": 1, "hitsPerM3": { "1": 6, "2": 6, "3": 6, "4": 6 } },
+		{ "id": "caliza", "cpp": "Caliza", "hardness": 2.0, "minToolTier": 2, "hitsPerM3": { "2": 12, "3": 8, "4": 6 } },
+		{ "id": "basalto", "cpp": "Basalto", "hardness": 3.0, "minToolTier": 3, "hitsPerM3": { "3": 18, "4": 12 } },
+		{ "id": "obsidiana", "cpp": "Obsidiana", "hardness": 4.0, "minToolTier": 4, "hitsPerM3": { "4": 24 } }
+	],
+	"layers": [
+		{ "id": "superficie", "nameEs": "Superficie", "nameEn": "Surface", "depthM": [0, 2] },
+		{ "id": "subsuelo", "nameEs": "Subsuelo", "nameEn": "Subsoil", "depthM": [2, 25] },
+		{ "id": "profundo", "nameEs": "Profundidad", "nameEn": "Deep", "depthM": [25, 80] }
+	],
+	"strata": [
+		{
+			"id": "tierra", "nameEs": "Tierra", "nameEn": "Soil", "material": "tierra", "item": "tierra_suelta",
+			"surfaceSource": false,
+			"occurrences": [
+				{ "island": "landing", "layer": "superficie", "depthM": [0, 1.5], "fase": 1 },
+				{ "island": "emerald", "layer": "superficie", "depthM": [0, 2], "fase": 1 },
+				{ "island": "teeth", "layer": "superficie", "depthM": [0, 0.5], "fase": 1 },
+				{ "island": "mangrove", "layer": "superficie", "depthM": [0, 2], "fase": 2 },
+				{ "island": "mesa", "layer": "superficie", "depthM": [0, 1], "fase": 2 }
+			]
+		},
+		{
+			"id": "arena", "nameEs": "Arena", "nameEn": "Sand", "material": "arena", "item": "arena",
+			"surfaceSource": true,
+			"occurrences": [
+				{ "island": "landing", "layer": "superficie", "depthM": [0, 3], "fase": 1 },
+				{ "island": "emerald", "layer": "superficie", "depthM": [0, 1.5], "fase": 1 },
+				{ "island": "teeth", "layer": "superficie", "depthM": [0, 1], "fase": 1 },
+				{ "island": "whitesands", "layer": "superficie", "depthM": [0, 4], "fase": 2 }
+			]
+		},
+		{
+			"id": "arcilla", "nameEs": "Arcilla", "nameEn": "Clay", "material": "tierra", "item": "arcilla_roja",
+			"surfaceSource": true,
+			"occurrences": [
+				{ "island": "emerald", "layer": "superficie", "depthM": [0.5, 2], "fase": 1, "noteEs": "Bolsas en la desembocadura de la cascada" },
+				{ "island": "mangrove", "layer": "superficie", "depthM": [0.3, 2], "fase": 2 }
+			]
+		},
+		{
+			"id": "azufre", "nameEs": "Azufre", "nameEn": "Sulphur", "material": "tierra", "item": "azufre",
+			"surfaceSource": true, "handPickable": true,
+			"occurrences": [
+				{ "island": "smoke", "layer": "superficie", "depthM": [0, 0.5], "fase": 1, "noteEs": "Costras en las fumarolas; a mano sin cavar" }
+			]
+		},
+		{
+			"id": "caliza", "nameEs": "Caliza", "nameEn": "Limestone", "material": "caliza", "item": "caliza",
+			"surfaceSource": true,
+			"occurrences": [
+				{ "island": "mesa", "layer": "subsuelo", "depthM": [0.5, 40], "fase": 2, "noteEs": "Macizo kárstico; aflora en los farallones" }
+			]
+		},
+		{
+			"id": "veta_cobre", "nameEs": "Veta de cobre", "nameEn": "Copper vein", "material": "caliza", "item": "mineral_cobre",
+			"surfaceSource": false,
+			"vein": { "veinUnits": 10, "respawnDays": 20 },
+			"occurrences": [
+				{ "island": "emerald", "layer": "subsuelo", "depthM": [1, 6], "fase": 1, "noteEs": "Primera veta superficial, en el basalto de la cascada" },
+				{ "island": "smoke", "layer": "subsuelo", "depthM": [2, 10], "fase": 1 },
+				{ "island": "mesa", "layer": "subsuelo", "depthM": [3, 12], "fase": 2 }
+			]
+		},
+		{
+			"id": "basalto", "nameEs": "Basalto", "nameEn": "Basalt", "material": "basalto", "item": "basalto",
+			"surfaceSource": true,
+			"occurrences": [
+				{ "island": "landing", "layer": "subsuelo", "depthM": [4, 60], "fase": 1 },
+				{ "island": "emerald", "layer": "subsuelo", "depthM": [2, 60], "fase": 1 },
+				{ "island": "smoke", "layer": "subsuelo", "depthM": [0.5, 80], "fase": 1, "noteEs": "Más denso y somero cerca del cráter" },
+				{ "island": "teeth", "layer": "subsuelo", "depthM": [0.5, 60], "fase": 1 },
+				{ "island": "mangrove", "layer": "subsuelo", "depthM": [3, 60], "fase": 2 },
+				{ "island": "whitesands", "layer": "subsuelo", "depthM": [5, 60], "fase": 2 },
+				{ "island": "mesa", "layer": "profundo", "depthM": [40, 80], "fase": 2 }
+			]
+		},
+		{
+			"id": "hierro_meteorito", "nameEs": "Hierro de meteorito", "nameEn": "Meteoric iron", "material": "basalto", "item": "hierro_meteorito",
+			"surfaceSource": false,
+			"vein": { "veinUnits": 4, "respawnDays": null },
+			"occurrences": [
+				{ "island": "teeth", "layer": "subsuelo", "depthM": [1, 5], "fase": 1, "noteEs": "Solo bajo los cráteres de impacto; no reaparece" }
+			]
+		},
+		{
+			"id": "obsidiana", "nameEs": "Veta de obsidiana", "nameEn": "Obsidian vein", "material": "obsidiana", "item": "obsidiana",
+			"surfaceSource": true,
+			"occurrences": [
+				{ "island": "smoke", "layer": "subsuelo", "depthM": [1, 30], "fase": 1, "noteEs": "Junto al cráter y en los tubos de lava; hay cantos sueltos en la ladera" }
+			]
+		},
+		{
+			"id": "cristal", "nameEs": "Cristal de cuarzo", "nameEn": "Quartz crystal", "material": "obsidiana", "item": "cristal_cuarzo",
+			"surfaceSource": false,
+			"vein": { "veinUnits": 12, "respawnDays": null },
+			"occurrences": [
+				{ "island": "emerald", "layer": "profundo", "depthM": [25, 60], "fase": 1, "noteEs": "Solo en las cavernas de cristal generadas" },
+				{ "island": "smoke", "layer": "profundo", "depthM": [25, 80], "fase": 1 },
+				{ "island": "teeth", "layer": "profundo", "depthM": [25, 60], "fase": 1 }
+			]
+		}
+	],
+	"tools": [
+		{ "tier": 0, "id": "mano", "nameEs": "A mano", "nameEn": "Bare hands", "template": null, "heads": [] },
+		{ "tier": 1, "id": "pala_tosca", "nameEs": "Pala tosca", "nameEn": "Crude shovel", "template": "pala", "heads": [] },
+		{ "tier": 2, "id": "pico_piedra", "nameEs": "Pico de piedra", "nameEn": "Stone pick", "template": "pico",
+			"heads": ["canto_rodado", "piedra_plana", "pedernal", "basalto", "caliza", "mineral_cobre", "cristal_cuarzo"] },
+		{ "tier": 3, "id": "pico_tallado", "nameEs": "Pico tallado", "nameEn": "Knapped pick", "template": "pico",
+			"heads": ["basalto_tallado"] },
+		{ "tier": 4, "id": "pico_obsidiana", "nameEs": "Pico de obsidiana", "nameEn": "Obsidian pick", "template": "pico",
+			"heads": ["obsidiana"],
+			"fragile": { "minHardness": 3, "chance": 0.08, "durabilityLoss": 15 } },
+		{ "tier": 4, "id": "pico_rescatado", "nameEs": "Pico de hierro", "nameEn": "Iron pick", "template": "pico",
+			"heads": ["hierro_meteorito"] }
+	]
+}

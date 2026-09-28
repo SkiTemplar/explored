@@ -7,9 +7,9 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 619 |
+| Textos en el catálogo | 626 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
-| … de `Content/Data` (campos bilingües) | 316 |
+| … de `Content/Data` (campos bilingües) | 323 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 0 |
 | Literales sin localizar | 0 |

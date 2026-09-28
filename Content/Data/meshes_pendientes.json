@@ -2,10 +2,13 @@
   "version": 1,
   "note": "Objetos, piezas y etapas que usan un marcador de /Engine/BasicShapes o mesh null. Lo mantiene Tools/DataCheck (uv run datacheck --write-pending); quita la entrada al añadir su script en Tools/Blender.",
   "items": [
+    "basalto_tallado",
     "caliza",
     "cristal_cuarzo",
     "hierro_meteorito",
-    "mineral_cobre"
+    "mineral_cobre",
+    "pico",
+    "tierra_suelta"
   ],
   "buildingPieces": [
     "astillero",

@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 619,
+		"total": 626,
 		"cpp": 303,
-		"datos": 316,
+		"datos": 323,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3708,6 +3708,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "basalto_tallado.nameEs",
+			"es": "Cabeza de basalto tallada",
+			"en": "Knapped basalt head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «basalto_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "batata.nameEs",
 			"es": "Batata",
 			"en": "Sweet potato",
@@ -4628,6 +4638,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "pico.nameEs",
+			"es": "Pico",
+			"en": "Pick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "piedra_plana.nameEs",
 			"es": "Piedra plana",
 			"en": "Flat stone",
@@ -4844,6 +4864,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «tendon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "tierra_suelta.nameEs",
+			"es": "Tierra suelta",
+			"en": "Loose soil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tierra_suelta» nameEs/nameEn"
 			]
 		},
 		{
@@ -5778,6 +5808,26 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_por_tallado.nameEs",
+			"es": "Cabeza de pico por tallado",
+			"en": "Carved pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_por_tallado.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cesta.nameEs",
 			"es": "Cesta",
 			"en": "Basket",
@@ -6034,6 +6084,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pegado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pico.nameEs",
+			"es": "Pico",
+			"en": "Pick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pico.nameTemplate",
+			"es": "Pico de {0} con mango de {1}, atado con {2}",
+			"en": "{0} pick with a {1} handle, lashed with {2}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pico» nameTemplate/nameTemplateEn"
 			]
 		},
 		{
