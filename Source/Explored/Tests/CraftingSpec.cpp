@@ -102,6 +102,8 @@ void FCraftingSpec::Define()
 			UCraftingLibrary::ApplyWithData(MakeInstance(TEXT("fibra_coco")), MakeInstance(TEXT("corteza")), TEXT("Trenzar"), Items, Templates, CordelB, FailReason);
 			TestTrue(TEXT("cuerda alcanzable con dos cordeles"),
 				UCraftingLibrary::ApplyWithData(CordelA, CordelB, TEXT("Trenzar"), Items, Templates, Cuerda, FailReason));
+			// El cordel hereda Fibroso 4 y casa también con «cordel»: «cuerda» va antes en el fichero.
+			TestEqual(TEXT("dos cordeles dan cuerda, no otro cordel"), Cuerda.DefinitionId.ToString(), FString(TEXT("cuerda")));
 
 			// Dos pasos: atar un mango y después la cabeza (hacha, lanza).
 			FItemInstance MangoAtado;

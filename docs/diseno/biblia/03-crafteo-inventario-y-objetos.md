@@ -1,6 +1,6 @@
 # EXPLORED — Biblia de diseño · 03. Crafteo, inventario y objetos
 
-Versión 1 · 2026-09-27 · Complementa `docs/diseno/gdd_v2.md` (manda) y
+Versión 1.1 · 2026-09-28 (recetas de acceso anticipado, §2.4, §3.11, §4.1) · Complementa `docs/diseno/gdd_v2.md` (manda) y
 `docs/design/biblia-de-contenido.md` (catálogo y sistema de combinación, sin
 cambios). Este documento cierra los tres huecos que esos dos dejan abiertos:
 el inventario completo (manos, mochila, contenedores, transporte, muerte), las
@@ -194,13 +194,13 @@ completa del sistema de propiedades; esta tabla es la que existe en datos:
 
 | Verbo | Qué hace | Plantillas reales que lo usan |
 |---|---|---|
-| **Golpear** | Contundente sobre duro → lasca | `lasca_por_golpeo` |
-| **Tallar** | Filo sobre madera/hueso → estaca | `estaca_por_tallado` |
-| **Atar** | Ata + dos piezas → herramienta compuesta | `atado_generico`, `angarillas`, `hacha`, `lanza`, `cuchillo`, `martillo`, `antorcha`, `flecha`, `pala`, `arco` |
-| **Pegar** | Adhesivo + dos piezas → unión más duradera | `pegado_generico`, `hacha`, `lanza`, `antorcha` |
+| **Golpear** | Contundente sobre duro → lasca | `lasca_por_golpeo`, `cabeza_pico_de_chapa`, `cabeza_pico_de_hierro` |
+| **Tallar** | Filo sobre madera/hueso → estaca | `estaca_por_tallado`, `cabeza_pico_por_tallado`, `punta_de_canto_por_tallado`, `anzuelo_por_tallado`, `sierra`, `cincel`, `remo`, `rodillo` |
+| **Atar** | Ata + dos piezas → herramienta compuesta | `atado_generico`, `angarillas`, `pico`, `hacha`, `lanza`, `cuchillo`, `martillo`, `antorcha`, `flecha`, `pala`, `arco`, `odre`, `filtro_de_arena`, `cana_de_pescar`, `arpon`, `trampa_de_lazo`, `arco_de_fuego`, `lampara_de_coco`, `farol_de_bambu`, `capa_de_hojas`, `sandalias`, `abrigo`, `azada`, `hoz`, `garfio`, `ancla` |
+| **Pegar** | Adhesivo + dos piezas → unión más duradera | `pegado_generico`, `pico`, `hacha`, `lanza`, `antorcha` |
 | **Afilar** | Abrasivo sobre filo → recupera filo y durabilidad | `afilar_generico` |
-| **Trenzar** | Fibroso ×2 → cordel, cuerda, cesta | `cordel`, `cuerda`, `cesta` |
-| **Machacar** | Contundente sobre blando → pasta | `pasta_medicinal_por_machacado` |
+| **Trenzar** | Fibroso ×2 → cordel, cuerda, cesta | `cuerda`, `cordel`, `cesta`, `red_de_mano`, `honda`, `tela_en_telar`, `sombrero_de_palma`, `lazo_de_trepar`, `cabo_de_amarre` |
+| **Machacar** | Contundente sobre blando → pasta | `pasta_medicinal_por_machacado`, `yesca_machacada` |
 | **Raspar** | Filo sobre coco/piel → recipiente, cuero en bruto | `recipiente_de_coco` |
 
 Cada plantilla define **roles** (Cabeza, Mango, Unión…) con requisitos
@@ -209,27 +209,38 @@ Largo≥2 y Rigido≥3, Unión Ata≥2 o Adhesivo≥2) y genera el nombre y las
 estadísticas por fórmula, no por tabla fija — es el sistema descrito en la
 biblia §2.3, ya implementado tal cual.
 
-**Plantilla nueva que falta para que la minería (GDD §3.4) sea jugable —
-NUEVO, `pico`. [Decisión] Definición única: la biblia 02 §2.2 y esta tabla
-citaban dos versiones distintas de la misma plantilla (Cabeza por Punta aquí,
-por Contundente/Rígido allí; `baseMaxDurability` 40 aquí, 55 allí); manda la
-versión de 02 §2.2 porque ata la Cabeza a las propiedades reales de
-`canto_rodado`/`basalto` (Contundente, §3.3 de este documento) en vez de a
-una propiedad (Punta) que esos materiales no tienen:**
+**Quién gana cuando casan varias** (`UCraftingLibrary`, replicado en
+`Tools/DataCheck/src/datacheck/crafting.py`): cada hueco lo cubre cualquiera
+de las dos piezas, una pieza compuesta hereda el máximo de cada propiedad de
+sus piezas, gana la plantilla con **más huecos** y, a igualdad, **la primera
+del fichero**. Consecuencia de diseño que fija esta versión (2026-09-28): toda
+plantilla nueva lleva un hueco con **etiqueta** que solo tienen sus piezas
+(`anzuelo`, `lampara`, `tela`, `piel`, `concha`, `filtrante`…) o un requisito
+que las combinaciones de siempre no cumplen (Flota ≥ 4 del remo, Pesado ≥ 3
+del rodillo), para no quitarle el resultado a las de siempre. Cada plantilla
+lleva en `ejemplo` su combinación canónica, y DataCheck comprueba que esa
+combinación da **esa** plantilla y no otra. Al añadirla salió un fallo que ya
+estaba en `main`: dos cordeles trenzados daban otro cordel (el cordel hereda
+Fibroso 4 de la fibra y la plantilla `cordel` empataba con `cuerda` e iba
+antes); `cuerda` pasa a ir delante de `cordel` en el fichero.
+
+**`pico` — definición única, la de 02 §2.2 (integración del 2026-09-28).** La
+versión anterior de esta sección (Cabeza con Contundente ≥ 3 o Rígido ≥ 3) se
+retira: con ella, `canto_rodado` + mango daba un pico en vez del **hacha de
+piedra** (empate a tres huecos con `hacha`) y el mango atado solo, que ya tiene
+Rígido 3, cubría la Cabeza. Manda la de 02 §2.2 y `Content/Data/templates.json`:
 
 | Rol | Requisito |
 |---|---|
-| Cabeza | Contundente ≥ 3 o Rígido ≥ 3 (rompe la roca por impacto, no por punta) |
+| Cabeza | Punta ≥ 2, y etiqueta `piedra`, `mineral` o `metal` (cabezas preparadas: `canto_aguzado`, `basalto_tallado`, `obsidiana`, `cabeza_pico_rescatada`) |
 | Mango | Largo ≥ 2 y Rígido ≥ 3 |
 | Unión | Ata ≥ 2 o Adhesivo ≥ 2 |
 
 `nameTemplate`: «Pico de {0} con mango de {1}, atado con {2}» /
-«{0} pick with a {1} handle, lashed with {2}» (igual que 02 §2.2; no
-«pickaxe», para no tener dos nombres en inglés del mismo objeto).
-`baseMaxDurability`: 55. Verbos: Atar, Pegar (igual que hacha/lanza). Sin
-este objeto no hay forma de picar caliza, basalto ni obsidiana (§3.3 más
-abajo), y el GDD lo exige desde la porción vertical de Landing (§6.1:
-«minería manual básica»).
+«{0} pick with a {1} handle, lashed with {2}»; nombre en inglés «Pick» en
+objeto y plantilla (no «pickaxe», para no tener dos nombres del mismo objeto).
+`baseMaxDurability`: 55. Verbos: Atar, Pegar. El nivel de cada cabeza está en
+`Content/Data/mining.json/tools` (02 §2.2).
 
 ### 2.2 Bancos de trabajo y estaciones
 
@@ -242,7 +253,9 @@ Toda estación real es una pieza de `building_pieces.json` (categoría
 | Hoguera de señal | `hoguera_senal` | `rama_seca` ×12, `tronco_pequeno` ×2 | Cocina de nivel superior, señal visible a distancia | [AA] |
 | Piedra de trabajo | `piedra_trabajo` | `piedra_plana` ×1, `canto_rodado` ×2 | Tallado fino, afilado con bonificación, ensamblado de piezas grandes (angarillas, carretilla) | [AA] |
 | Secadero | `secadero` | `bambu_fino` ×6, `cordel` ×4 | Ahumar y secar (técnicas `ahumar`/`secar`, `recipes.json`) | [AA] |
-| Telar de fibra | `telar` | `bambu_fino` ×4, `madera_dura` ×2 | Trenzado avanzado: tela, estera, cordaje de barco | [AA] |
+| Telar de fibra | `telar` | `bambu_fino` ×4, `madera_dura` ×2, `cordel` ×6 | Trenzado avanzado: `tela_en_telar` (40 min) → `tela_fibra`, base del abrigo y de la hamaca | [AA] |
+| Banco de tallado — NUEVO | `banco_tallado` | `madera_dura` ×3, `tronco_pequeno` ×1, `cuerda` ×2; herramienta `hacha` | Tallado que necesita sujetar la pieza: `sierra` (30 min), `cincel` (20 min), `remo` (45 min) | [AA] |
+| Ahumadero — NUEVO | `ahumadero` | `tronco_pequeno` ×4, `hoja_palma` ×8, `canto_rodado` ×6; herramienta `hacha` | Ahumar como el secadero, 8 piezas en vez de 6 y con el fuego bajo techo | [AA] |
 | Horno de barro | `horno_barro` | `arcilla_roja` ×8, `canto_rodado` ×6 | Hornear (vasija cocida, carbón vegetal), técnica `hornear` de `recipes.json`, nivel de fuego `horno_arcilla` | [AA] |
 | Mesa de cartografía | `mesa_cartografia` | `madera_dura` ×6, `cuerda` ×2 | Copiar el mapa grande de la base | [AA] |
 | Astillero | `astillero` | `tronco_pequeno` ×6, `madera_dura` ×4 | Construir barcos (`boats.json`) | [AA]/[F3] según barco |
@@ -281,6 +294,160 @@ Tres vías, ya descritas en la biblia §2.5, con su mecanismo concreto:
    ruina (no en el museo, donde ya está a salvo) enseña la plantilla
    asociada a su `kind` la primera vez que se examina; ver §3.10 para el
    listado id-a-plantilla.
+
+### 2.4 DESCUBRIBILIDAD: libreta, pistas e inspección
+
+*Añadido el 2026-09-28 con las 27 plantillas de acceso anticipado de §4.1.* Con 51
+plantillas y 8 verbos, probar combinaciones a ciegas deja de ser divertido hacia la
+quinta hora. Este apartado fija cómo se entera el jugador de que una receta existe
+sin tutorial, sin árbol de tecnología y sin menú de recetas: todo sale del mundo o
+de las manos del náufrago, y todo se apunta en la libreta del mapa. Ninguna vía es
+un candado: combinar funciona siempre que se cumplan los requisitos (§2.3).
+
+#### 2.4.1 La libreta de recetas
+
+Es la pestaña **Recetas** del mapa en las manos (`SExploredMapInHands`, ya existe:
+`FMapRecipeNote` en `FCartographyModel`, «Aún no has anotado recetas al margen.»).
+No es un objeto aparte: son las páginas del final del cuaderno de mapas.
+
+Cada plantilla de `templates.json` y cada pieza con `usoEs` de
+`building_pieces.json` está en uno de tres estados:
+
+| Estado | Cómo se ve en la libreta | Qué la pone así |
+|---|---|---|
+| **Desconocida** | No aparece | — |
+| **Pista** | Boceto tenue de los dos papeles (siluetas, sin nombre de material) y el texto de pista | Idea del personaje, petroglifo, inspección repetida (ver abajo) |
+| **Anotada** | Boceto a tinta, nombre, las dos piezas del `ejemplo`, verbo, estación y tiempo, y `usoEs`/`usoEn` | Fabricarla una vez, o un boceto de Halden |
+
+Números:
+
+- **Tope:** ninguno; en acceso anticipado caben las 51 plantillas y las 8 piezas con
+  `usoEs` (58 entradas, 6 páginas de 10 con la última a medias).
+- **Orden:** por fecha de anotación, las pistas al final. No hay filtros ni buscador:
+  6 páginas se hojean.
+- **Una sola libreta por mundo.** En cooperativo es la misma hoja compartida del mapa
+  (08 §5.3): la anota quien la descubre, con su tono de tinta.
+- **Fase:** una plantilla con `fase` F2 o F3 nunca aparece en acceso anticipado, ni
+  como pista.
+
+Textos de la libreta (ES / EN, máx. 8 palabras en la línea de pista, como la idea del
+personaje de 07 §1.3):
+
+| Clave | ES | EN |
+|---|---|---|
+| `RecipeHint` | «{RolA} y {RolB}. Queda probarlo.» | "{RolA} and {RolB}. Still to try it." |
+| `RecipeNoted` | «{Nombre}: {PiezaA} y {PiezaB}, {Verbo}.» | "{Nombre}: {PiezaA} and {PiezaB}, {Verbo}." |
+| `RecipeStation` | «En el {Estacion}, {Minutos} min.» | "At the {Estacion}, {Minutos} min." |
+| `RecipeFromHalden` | «Copiado de un boceto de Halden, 1974.» | "Copied from a Halden sketch, 1974." |
+| `RecipeFromPetroglyph` | «Visto en la roca. Creo que es esto.» | "Seen on the rock. I think it's this." |
+
+(`{RolA}`/`{RolB}` son los nombres de familia de §2.4.4, en minúscula y con
+artículo: «un mango y una hoja». `{Minutos}` con `FText::AsNumber`, 07 §5.3.)
+
+#### 2.4.2 Bocetos de Halden
+
+La expedición Halden de 1974 recorrió las cuatro islas del acceso anticipado antes de
+montar su campamento en el Manglar (04 §2.5, [F2]), y dejó hojas de cuaderno en latas
+de galletas (el diario `halden_03` ya cuenta que guardaban así los cuadernos). Cada
+hoja es el dibujo técnico de un invento de supervivencia de la época y **anota la
+receta completa** al leerla (Examinar la lata, 2 s).
+
+| Boceto | Isla y sitio | Anota | Texto de la hoja (ES / EN) |
+|---|---|---|---|
+| `halden_boceto_01` | Landing, junto a la botella varada (`Bottle`) | `destilador_solar` | «Hoyo, hojas, un cuenco en medio. Cinco horas de sol, un vaso de agua.» / "Pit, leaves, a bowl in the middle. Five hours of sun, one glass of water." |
+| `halden_boceto_02` | Esmeralda, pie de la cascada | `filtro_de_arena` | «Arena arriba, carbón abajo. Mejor que nada; peor que hervirla.» / "Sand on top, charcoal below. Better than nothing, worse than boiling." |
+| `halden_boceto_03` | Esmeralda, refugio de roca | `capa_de_hojas` | «Hojas de plátano cosidas en tejas. Marchena ya no se queja del monzón.» / "Banana leaves stitched like roof tiles. Marchena has stopped moaning about the monsoon." |
+| `halden_boceto_04` | Isla del Humo, boca del tubo de lava | `farol_de_bambu` | «Lámpara dentro de una caña con ventana. Dentro del tubo, el viento la apaga.» / "Lamp inside a cane with a window cut in it. In the tube the draught blows it out." |
+| `halden_boceto_05` | Los Dientes, pie del faro | `garfio` | «Garfio y cabo para subir al faro. Al tercer intento.» / "Hook and line to get up to the lighthouse. Third try." |
+| `halden_boceto_06` | Los Dientes, rampa de la cala del faro | `rodillo` | «Tres troncos pelados bajo la barca. Dos personas bastan.» / "Three peeled logs under the boat. Two people are enough." |
+
+Números: **6 hojas en acceso anticipado** (1 Landing, 2 Esmeralda, 1 Humo, 2 Los
+Dientes) y 4 más en el campamento del Manglar en F2. Ninguna está en el camino
+obligatorio: todas a menos de 60 m de un punto de interés que ya existe.
+
+#### 2.4.3 Petroglifos
+
+Un petroglifo es un dibujo, no un manual: **da la pista, no la receta** (los dos
+papeles, sin materiales). Se usan los motivos de `story_es.json::petroglyph_themes` que
+la biblia 04 §7.2 deja libres (14 de 30), más uno de ruina, como petroglifos sueltos
+en roca de costa o de cueva. Leerlo es Examinar 3 s, igual que un petroglifo de ruina.
+
+| Motivo (ES / EN, ya en datos) | Isla | Pista de | Línea del náufrago (ES / EN) |
+|---|---|---|---|
+| Canoa de doble casco bajo una estrella / Double-hulled canoe beneath a star (`ruin_landing`) | Landing | `remo` | «Llevan remos anchos, de madera que flota.» / "Wide paddles, made of wood that floats." |
+| Cesta de pesca / Fishing basket | Landing | `nasa` | «Una cesta con la boca hacia dentro.» / "A basket with its mouth turned inwards." |
+| Palmera doblada por el viento / Wind-bent palm | Landing | `lazo_de_trepar` | «Sube a la palmera con un lazo en los pies.» / "Going up the palm with a loop round the feet." |
+| Pez volador / Flying fish | Esmeralda | `red_de_mano` | «Peces saltando dentro de un aro.» / "Fish jumping into a hoop." |
+| Espiral de marea / Tidal spiral | Esmeralda | `cabo_de_amarre` | «Una canoa atada a una piedra, y la marea girando.» / "A canoe tied to a stone, the tide turning round it." |
+| Tiburón y círculo / Shark and circle | Isla del Humo | `arpon` | «Punta con lengüeta y una cuerda larga.» / "A barbed point and a long line." |
+| Ballena con cría / Whale with calf | Los Dientes | `anzuelo_por_tallado` | «Un anzuelo de hueso, más grande que el pez.» / "A bone hook, bigger than the fish." |
+| Ola de oleaje marcada / Marked ocean swell | Los Dientes | `ancla` | «Una piedra con cuerda, al fondo, bajo la ola.» / "A stone on a rope, down under the wave." |
+
+Números: **8 petroglifos con pista en acceso anticipado** (3 Landing, 2 Esmeralda, 1
+Humo, 2 Los Dientes). El de `ruin_landing` sigue contando para la técnica de su ruina
+(`RequiredPetroglyphs`); los otros siete son sueltos y no cuentan para ninguna ruina.
+
+#### 2.4.4 Inspección: «esto sirve de mango»
+
+Examinar un objeto que tienes en la mano (el verbo de contexto que ya existe para
+tesoros y petroglifos) dice **para qué papel sirve**, con una línea del náufrago. Es
+la pista más barata y la más usada.
+
+Regla, reproducible y sin azar:
+
+1. Se toman las plantillas de la fase actual (`fase` AA en acceso anticipado) y, en
+   cada una, los huecos que el objeto cumple **solo** (`slot_satisfied`, §2.1); los
+   huecos comodín (sin requisitos ni etiquetas) no cuentan.
+2. Cada hueco pertenece a una **familia** según su papel (tabla de abajo). Gana la
+   familia con más huecos cumplidos; a igualdad, la más rara del catálogo (menos
+   huecos en total: dice más), y si aún empatan, la que aparece antes en el fichero.
+3. Si ninguna familia cuenta, la línea es la de «nada».
+4. Tras examinar el mismo objeto **3 veces** en días de juego distintos, la plantilla
+   con más huecos de esa familia que el objeto cumple pasa a **Pista** en la libreta
+   (si estaba Desconocida): quien insiste, aprende.
+
+Familias (papeles tal cual están en `templates.json`; recuento de huecos de las 51
+plantillas entre paréntesis), con su línea (ES ≤ 8 palabras):
+
+| Familia | Papeles | ES | EN |
+|---|---|---|---|
+| mango (21) | Mango, Asta, Astil, Vara, Varales, Madera, Asa, Aro, Largo, Firme, Pala del `arco` | «Esto sirve de mango.» | "This would make a handle." |
+| hoja (15) | Hoja, Filo, Dientes, Herramienta | «Esto corta. Serviría de hoja.» | "This cuts. It'd make a blade." |
+| cabeza (15) | Cabeza, Percutor, Mazo, Nucleo, Piedra, Chatarra, Hierro, Barra, Superficie | «Pesa y aguanta golpes. Una cabeza.» | "Heavy and tough. A tool head." |
+| punta (10) | Punta, Gancho, Estaca, Pieza, Anzuelo | «Tiene punta. Anzuelo, flecha, algo así.» | "Pointed. A hook, an arrow, that sort of thing." |
+| atadura (30) | Union, Ligadura, Lazo, Nudo, Cuerda, Sedal, Correa, Cabo, CaboA, CaboB, Amarre, Cinta, Costura, Malla, Urdimbre, Atado, CordelA, CordelB | «Esto ata bien.» | "This ties things well." |
+| fibra (13) | FibraA, FibraB, Fibra, Trama, Relleno, Copa, Tira, Gaza, Lecho de `angarillas` | «Se puede trenzar.» | "This could be braided." |
+| recipiente (5) | Recipiente, Cuenco, Cuerpo, Pantalla, Coco | «Aquí dentro cabría agua.» | "This would hold water." |
+| fuego (5) | Combustible, Aceite, Lampara, Arco, Fibra de `yesca_machacada` | «Esto prendería.» | "This would catch fire." |
+| ropa (10) | Piel, Suela, Bolsa, Cobertura, Forro, Tela, Hombros, Talon, Cierre, Ala | «Con esto me haría algo de ropa.» | "I could make something to wear out of this." |
+| peso (2) | Peso, Tronco | «Pesa lo bastante para anclar algo.» | "Heavy enough to anchor something." |
+| agua (2) | Lecho del `filtro_de_arena`, Pala del `remo` | «Algo que ver con el agua.» | "Something to do with water." |
+| abrasivo (1) | Abrasivo | «Con esto se afila.» | "This would sharpen a blade." |
+| medicina (1) | Planta | «Huele a medicina.» | "Smells like medicine." |
+| nada | — | «No se me ocurre para qué.» | "Can't think what this is for." |
+
+Los huecos comodín (`Base` de `atado_generico` y `pegado_generico`) no tienen familia.
+Resultado con los datos de hoy (comprobado con `crafting.slot_satisfied`):
+`palo_recto` → mango, `liana` y `resina` → atadura, `basalto` y `canto_rodado` →
+cabeza, `lasca_pedernal` → hoja, `hueso_pequeno` → punta, `cascara_coco` →
+recipiente, `hoja_platano` y `cuero_curtido` → ropa, `fibra_coco` → fibra, `grasa` →
+fuego, `arena` y `arenisca` → abrasivo, `planta_medicinal_aloe` → medicina, `huevo` →
+nada.
+
+Números: la línea tarda **1,5 s** en aparecer (la animación de girar el objeto en la
+mano); el mismo objeto no repite línea en **10 min** de juego (se muestra la última en
+gris); cuesta 0 de energía y no gasta durabilidad.
+
+#### 2.4.5 Red (08)
+
+| Qué | Autoridad | Réplica | Coste |
+|---|---|---|---|
+| Libreta (estado de cada receta) | Servidor | Parte de la hoja compartida del mapa (08 §2.11, §5.3) | `uint16` plantilla + `uint8` estado + `uint8` autor = 4 B por cambio, fiable; al unirse, 58 × 4 = 232 B |
+| Boceto de Halden, petroglifo | Servidor | Lo aprende el grupo: todo jugador a menos de 15 m al leerlo (misma regla que las técnicas de wayfinding, 08 §5.5) | 4 B por jugador alcanzado |
+| Inspección (línea y contador de 3 veces) | Cliente | Nada: es la voz del náufrago, individual como el diario (08 §2.11). Solo el paso a Pista del punto 4 va al servidor | 4 B, una vez |
+
+La regla del punto 4 cuenta por jugador (cada uno insiste por su cuenta); la pista que
+resulta es del grupo.
 
 ---
 
@@ -499,11 +666,39 @@ Los muebles de exposición (`estanteria_museo`, `vitrina_museo`,
 `panel_museo`) y sus huecos por tamaño ya están completos en
 `artifacts.json`; no hace falta redefinirlos aquí.
 
+### 3.11 Ropa y estados del cuerpo — NUEVO (2026-09-28)
+
+Cuatro prendas de acceso anticipado, cada una en una ranura (`wear.slot` en
+`items.json`: cabeza, torso, espalda, pies) y cada una atada a un estado de la biblia
+01 con un número que ya lee `FSurvivalModel` o que se fija aquí. Una prenda por
+ranura; se lleva puesta (no ocupa mano ni mochila) y se quita con el mismo verbo.
+
+| Prenda | Ranura | Estado (biblia 01) | Efecto, con números | Entrada del modelo |
+|---|---|---|---|---|
+| `sombrero_palma` | cabeza | Quemadura solar (§6.8) | La dosis sube 0,3 pt/h al sol en vez de 1: la quemadura llega a las 6,7 h en vez de a las 2 h | `FSurvivalInputs::bHasHat` → `HatSunFactor` 0,3 (`wear.sunFactor`, ya existe) |
+| `capa_impermeable` | espalda | Mojado (§6.6) y temperatura (§6.5) | Bajo lluvia sin techo `Mojando = Lluvia × 2 × 0,4`: te mojas al 40 %. Aislamiento 0,1: +0,8 °C de temperatura efectiva | `wear.rainFactor` 0,4 (NUEVO en el modelo), `ClothingInsulation` += 0,1 |
+| `ropa_abrigo` | torso | Temperatura (§6.5) | Aislamiento 0,5: +4 °C de temperatura efectiva (8 × 0,5). Una noche de monzón a 21 °C, mojado 0,5 y viento 0,5 pasa de 14,5 °C efectivos a 18,5 °C | `ClothingInsulation` += 0,5 (ya existe, hoy siempre 0) |
+| `sandalias` | pies | Heridas (§6.7) | Descalzo sobre arrecife somero o roca volcánica: 3 % por minuto de caminar de abrir un corte de profundidad 0,15 (sangra 1,5 pts/h). Con sandalias, 0 %. No evitan la raya (§6.12): esa pica igual si la pisas | `wear.footGuard` (NUEVO: tipo de suelo bajo los pies + tirada por minuto) |
+
+Reglas comunes:
+
+- **Aislamiento total** = suma de `wear.insulation` de lo puesto, tope 1
+  (`ClothingInsulation` es 0–1). Capa y abrigo juntos: 0,6.
+- **Calor** (biblia 01 §6.5, «quitarse ropa»): con temperatura efectiva por encima de
+  32 °C, cada 0,1 de aislamiento resta 0,5 al Ánimo por hora. Quitarse el abrigo al sol
+  es parte del juego, no un castigo escondido.
+- **Desgaste:** 1 punto de `maxDurability` por hora de juego puesta (la capa, por hora
+  de lluvia); a 0 se rompe y cae como `hoja_platano`/`cuero_curtido` según su pieza
+  principal, igual que una herramienta rota.
+- **Cooperativo (08 §2.4):** la ropa es inventario del dueño (réplica solo a él), pero
+  lo que lleva puesto se ve: 4 ranuras × `uint16` = 8 B replicados a todos al cambiar,
+  como las manos. El efecto sobre el cuerpo lo calcula el servidor con su copia (08 §2.9).
+
 ---
 
 ## 4. Tabla maestra de recetas
 
-### 4.1 Combinar en las manos (`templates.json`, reales + `pico` NUEVO)
+### 4.1 Combinar en las manos (`templates.json`, reales)
 
 | Plantilla | Entradas (roles) | Salida | Estación | Tiempo |
 |---|---|---|---|---|
@@ -515,7 +710,7 @@ Los muebles de exposición (`estanteria_museo`, `vitrina_museo`,
 | `recipiente_de_coco` | Herramienta (Filo≥1 o Contundente≥1) + Coco | `recipiente_coco` | Ninguna | Instantáneo |
 | `pasta_medicinal_por_machacado` | Mazo (Contundente≥2) + Planta (Medicinal≥1) | `pasta_medicinal` | Ninguna | Instantáneo |
 | `hacha` | Cabeza (Filo≥2, Contundente≥2) + Mango (Largo≥2, Rígido≥3) + Unión (Ata≥2 o Adhesivo≥2) | `hacha` | Ninguna (mejor calidad en `piedra_trabajo`) | Instantáneo |
-| `pico` — NUEVO | Cabeza (Contundente≥3 o Rígido≥3) + Mango (Largo≥2, Rígido≥3) + Unión (Ata≥2 o Adhesivo≥2) | `pico` | Ninguna (mejor calidad en `piedra_trabajo`) | Instantáneo |
+| `pico` | Cabeza (Punta≥2, etiqueta `piedra`/`mineral`/`metal`) + Mango (Largo≥2, Rígido≥3) + Unión (Ata≥2 o Adhesivo≥2) | `pico` | Ninguna (mejor calidad en `piedra_trabajo`) | Instantáneo |
 | `lanza` | Asta (Largo≥4, Rígido≥2) + Punta (Punta≥3) + Unión | `lanza` | Ninguna | Instantáneo |
 | `cuchillo` | Hoja (Filo≥3) + Mango (Largo≥1) | `cuchillo` | Ninguna | Instantáneo |
 | `martillo` | Cabeza (Contundente≥3) + Mango (Largo≥2) | `martillo` | Ninguna | Instantáneo |
@@ -526,13 +721,82 @@ Los muebles de exposición (`estanteria_museo`, `vitrina_museo`,
 | `afilar_generico` | Herramienta (Filo/Contundente/Punta≥1) + Abrasivo (Abrasivo≥2) | Restaura filo/durabilidad | Ninguna (bonificación en `piedra_trabajo`) | Instantáneo |
 | `angarillas` | Varales (Largo≥4, Rígido≥3) + Lecho (Fibroso≥2) + Unión (Ata≥3) | `angarillas` | Ninguna | Instantáneo |
 
+**Ampliación de acceso anticipado (2026-09-28): 27 plantillas nuevas.** Cada una
+desbloquea algo concreto que el jugador quiere hacer; papeles con propiedades y
+etiquetas reales de `items.json`. El `ejemplo` es la combinación que DataCheck
+comprueba (entre corchetes, un paso previo: su verbo y sus dos piezas). Las
+estaciones solo cambian el tiempo: el C++ aún no lee `station` ni `craftMinutes`
+(TODO al final).
+
+| Plantilla | Verbo | Papeles | Ejemplo canónico | Salida | Estación | Tiempo | Fase | Qué desbloquea (ES / EN) |
+|---|---|---|---|---|---|---|---|---|
+| `odre` | Atar | Piel (Impermeable≥1, etiqueta `piel`) + Costura (Ata≥2) + Cierre (Fibroso≥1) | `cuero_curtido` + `tendon` | `odre_piel` (dur. 25) | En la mano | Instantáneo | [AA] | «Un litro de agua a la espalda: ya puedes alejarte del río más de medio día.» / "A litre of water on your back: you can stray from the river for more than half a day." |
+| `filtro_de_arena` | Atar | Cuerpo (Recipiente≥2, etiqueta `bambu`/`coco`) + Lecho (etiqueta `filtrante`) + Relleno (Abrasivo≥2 o Combustible≥3) | `bambu_grueso` + `arena` | `filtro_agua` (dur. 20) | En la mano | Instantáneo | [AA] | «Limpia el agua de charca sin gastar leña; no la deja tan segura como hervirla.» / "Cleans pond water without burning wood. Not as safe as boiling it." |
+| `anzuelo_por_tallado` | Tallar | Filo (Filo≥2) + Pieza (Punta≥1, etiqueta `hueso`/`concha`) | `lasca_pedernal` + `hueso_pequeno` | `anzuelo` (dur. 12) | En la mano | Instantáneo | [AA] | «Con un anzuelo pescas desde la orilla lo que no alcanzas con la lanza.» / "A hook catches from the shore what the spear can't reach." |
+| `cana_de_pescar` | Atar | Vara (Largo≥3 y Flexible≥2) + Sedal (Ata≥2) + Anzuelo (etiqueta `anzuelo`) + Punta (Punta≥2) | [Atar `bambu_fino` + `liana`] + [Tallar `lasca_pedernal` + `hueso_pequeno`] | `cana_pesca` (dur. 30) | En la mano | Instantáneo | [AA] | «Lanza lejos de la rompiente, donde están los peces grandes.» / "Cast beyond the breakers, where the big fish are." |
+| `red_de_mano` | Trenzar | Malla (Ata≥2) + Aro (Flexible≥2 y Largo≥3, etiqueta `madera`/`bambu`) + Fibra (Fibroso≥1) | `cordel` + `bambu_fino` | `red_mano` (dur. 25) | En la mano | Instantáneo | [AA] | «Saca cangrejos y peces pequeños de las pozas de marea sin cebo.» / "Scoops crabs and small fish out of rock pools, no bait needed." |
+| `arpon` | Atar | Asta (Largo≥4 y Rígido≥2) + Punta (Punta≥2, etiqueta `hueso`) + Cabo (Ata≥4) | [Atar `bambu_grueso` + `liana`] + `espina_pescado` | `arpon` (dur. 45) | En la mano | Instantáneo | [AA] | «El pez clavado queda atado: los meros grandes ya no se escapan con la punta.» / "A struck fish stays on the line: big groupers stop swimming off with your point." |
+| `trampa_de_lazo` | Atar | Estaca (etiqueta `punta`) + Lazo (Ata≥2) + Largo (Largo≥2) + Firme (Rígido≥2) | [Tallar `lasca_pedernal` + `palo_recto`] + `cordel` | `trampa_lazo` (dur. 10) | En la mano | Instantáneo | [AA] | «Déjala en un sendero de cerdos y vuelve por la mañana.» / "Leave it on a pig trail and come back in the morning." |
+| `honda` | Trenzar | Bolsa (Fibroso≥1, etiqueta `piel`) + Correa (Ata≥2) + Tira (Fibroso≥1) | `cuero_curtido` + `cordel` | `honda` (dur. 20) | En la mano | Instantáneo | [AA] | «Un canto rodado bien lanzado tumba un ave o un coco a veinte metros.» / "A well-thrown pebble drops a bird or a coconut at twenty metres." |
+| `arco_de_fuego` | Atar | Arco (Flexible≥3 y Largo≥2) + Cuerda (Ata≥2) | `rama_verde` + `cordel` | `arco_fuego` (dur. 25) | En la mano | Instantáneo | [AA] | «Fuego sin cerillas: cuesta brazo, pero no se acaba nunca.» / "Fire without matches. Hard on the arm, but it never runs out." |
+| `yesca_machacada` | Machacar | Mazo (Contundente≥2) + Fibra (Inflamable≥2, etiqueta `fibra`) | `canto_rodado` + `fibra_coco` | `yesca` (dur. 0) | En la mano | Instantáneo | [AA] | «Prende con la primera brasa del arco o la primera chispa del pedernal.» / "Catches from the first ember of the drill or the first spark off the flint." |
+| `lampara_de_coco` | Atar | Cuenco (Recipiente≥2, etiqueta `coco`) + Aceite (Combustible≥3 y Impermeable≥2) | `cascara_coco` + `aceite_coco` | `lampara_aceite_coco` (dur. 60) | En la mano | Instantáneo | [AA] | «Luz quieta para toda la noche dentro del refugio, sin humo en los ojos.» / "A steady light all night in the shelter, and no smoke in your eyes." |
+| `farol_de_bambu` | Atar | Lampara (etiqueta `lampara`) + Pantalla (Recipiente≥2, etiqueta `bambu`) + Asa (Largo≥2) | [Atar `cascara_coco` + `aceite_coco`] + `bambu_grueso` | `farol` (dur. 50) | En la mano | Instantáneo | [AA] | «La lámpara, protegida del viento y la lluvia: se lleva en la mano o en la canoa.» / "The lamp, sheltered from wind and rain. Carry it by hand or in the canoe." |
+| `tela_en_telar` | Trenzar | Urdimbre (Ata≥2) + Trama (Aislante≥2 y Fibroso≥3) + Relleno (Fibroso≥1) | `liana` + `algodon_silvestre` | `tela_fibra` (dur. 0) | `telar` | 40 min | [AA] | «La base del abrigo y de la hamaca.» / "What the coat and the hammock are made from." |
+| `sombrero_de_palma` | Trenzar | Ala (etiqueta `techado`) + Copa (Fibroso≥2) + Cinta (Ata≥2) | `hoja_palma` + `cordel` | `sombrero_palma` (dur. 20) | En la mano | Instantáneo | [AA] | «A mediodía el sol quema tres veces más despacio.» / "At midday the sun burns you three times more slowly." |
+| `capa_de_hojas` | Atar | Cobertura (Impermeable≥3, etiqueta `fibra`/`piel`) + Atado (Ata≥2) + Hombros (Aislante≥1) | `hoja_platano` + `cordel` | `capa_impermeable` (dur. 15) | En la mano | Instantáneo | [AA] | «Bajo el aguacero te mojas menos de la mitad y no pierdes el calor tan rápido.» / "In a downpour you get less than half as wet, and hold on to your warmth." |
+| `sandalias` | Atar | Suela (Abrasivo≥2, etiqueta `piel`) + Correa (Ata≥2) + Talon (Fibroso≥1) | `piel_bruto` + `cordel` | `sandalias` (dur. 30) | En la mano | Instantáneo | [AA] | «Cruzas el arrecife y la roca volcánica sin cortarte los pies.» / "Cross the reef flats and the lava rock without cutting your feet." |
+| `abrigo` | Atar | Tela (etiqueta `tela`) + Forro (Aislante≥2) + Costura (Ata≥2) + Cuerpo (Fibroso≥2) | [Trenzar `liana` + `algodon_silvestre`] + `cuero_curtido` | `ropa_abrigo` (dur. 40) | En la mano | Instantáneo | [AA] | «Las noches del monzón y la cumbre de los Dientes dejan de ser un riesgo.» / "Monsoon nights and the peaks of the Teeth stop being a danger." |
+| `azada` | Atar | Hoja (Contundente≥1 o Recipiente≥2, etiqueta `concha`) + Mango (Largo≥2 y Rígido≥3) + Union (Ata≥2 o Adhesivo≥2) | [Atar `palo_recto` + `liana`] + `concha_grande` | `azada` (dur. 40) | En la mano | Instantáneo | [AA] | «Abre un bancal en la mitad de tiempo que con la pala.» / "Digs a garden bed in half the time a shovel takes." |
+| `hoz` | Atar | Hoja (Filo≥2) + Mango (Flexible≥3 y Largo≥2) + Union (Ata≥2) | [Atar `rama_verde` + `liana`] + `lasca_pedernal` | `hoz` (dur. 30) | En la mano | Instantáneo | [AA] | «Siega el bancal entero de una pasada y corta fibra a manojos.» / "Reaps a whole bed in one pass and cuts fibre by the armful." |
+| `sierra` | Tallar | Filo (Filo≥3) + Hoja (Filo≥2 y Rígido≥3, etiqueta `metal`/`hueso`) + Dientes (Rígido≥3) | `lasca_pedernal` + `chapa_fuselaje` | `sierra` (dur. 40) | `banco_tallado` | 30 min | [AA] | «Corta tablas y hueso limpio, sin astillar lo que vas a ensamblar.» / "Cuts planks and bone cleanly, without splitting what you mean to join." |
+| `cincel` | Tallar | Filo (Filo≥3) + Barra (Rígido≥4, etiqueta `hueso`) + Punta (Punta≥2) | `lasca_obsidiana` + `hueso_largo` | `cincel` (dur. 35) | `banco_tallado` | 20 min | [AA] | «Talla muescas y encajes: la canoa y los muebles dejan de depender de la cuerda.» / "Cuts notches and joints, so the canoe and the furniture stop relying on rope." |
+| `garfio` | Atar | Gancho (Punta≥3 y Rígido≥4, etiqueta `hueso`/`metal`) + Cabo (Ata≥4) + Punta (Punta≥3) | `hueso_largo` + `cuerda` | `garfio` (dur. 30) | En la mano | Instantáneo | [AA] | «Sube a una cornisa de hasta seis metros o recupera lo que se llevó la corriente.» / "Climbs a ledge up to six metres, or pulls back what the current took." |
+| `lazo_de_trepar` | Trenzar | Fibra (Fibroso≥3) + Lazo (Ata≥3) + Nudo (Flexible≥3) | `fibra_coco` + `liana` | `pie_de_palmera` (dur. 25) | En la mano | Instantáneo | [AA] | «Trepas cualquier palmera y bajas los cocos verdes sin sacudirla.» / "Climb any palm and bring the green coconuts down without shaking it." |
+| `remo` | Tallar | Filo (Filo≥2) + Pala (Flota≥4 y Largo≥3) + Madera (etiqueta `madera`) | `lasca_pedernal` + `madera_blanda` | `remo` (dur. 40) | `banco_tallado` | 45 min | [AA] | «La canoa avanza el doble que remando con un palo.» / "The canoe moves twice as fast as paddling with a stick." |
+| `rodillo` | Tallar | Filo (Filo≥2) + Tronco (Largo≥4 y Pesado≥3) + Madera (etiqueta `madera`) | `lasca_pedernal` + `tronco_pequeno` | `rodillos` (dur. 60) | `astillero` | 30 min | [AA] | «Tres rodillos bajo el casco y dos personas botan una canoa sin cargarla.» / "Three rollers under the hull and two people launch a canoe without lifting it." |
+| `cabo_de_amarre` | Trenzar | CaboA (Ata≥4 y Fibroso≥1) + CaboB (etiqueta `ata`) + Gaza (Fibroso≥1) | `cuerda` + `cuerda` | `cabo_amarre` (dur. 0) | En la mano | Instantáneo | [AA] | «Amarras el barco al muelle y la marea ya no se lo lleva de noche.» / "Tie the boat to the jetty and the tide stops taking it at night." |
+| `ancla` | Atar | Peso (Pesado≥3 y Rígido≥3, etiqueta `piedra`) + Amarre (Ata≥4) + Cabo (Fibroso≥1) | `basalto` + `cuerda` | `ancla_piedra` (dur. 80) | En la mano | Instantáneo | [AA] | «Fondeas en cualquier cala y pescas o buceas sin que la canoa se aleje.» / "Drop anchor in any cove and fish or dive without the canoe drifting off." |
+
+**Piezas nuevas o reutilizadas** (`building_pieces.json`, con `fase` y `usoEs`/`usoEn`;
+se construyen con el kit de siempre, la pieza fantasma es la receta, §4.4):
+
+| Pieza | Coste | Herramienta | Minutos | Qué desbloquea (ES / EN) | Fase |
+|---|---|---|---|---|---|
+| `recolector_lluvia` (ya existía: el colector de lluvia) | `bambu_grueso` ×3, `hoja_platano` ×4, `cordel` ×2 | `cuchillo` | 25 | «Llena de agua de lluvia lo que dejes debajo, sin hervirla.» / "Fills whatever you leave under it with rainwater that needs no boiling." | [AA] |
+| `destilador_solar` | `hoja_platano` ×4, `cascara_coco` ×1, `canto_rodado` ×3 | `pala` | 30 | «Un hoyo, hojas encima y un cuenco: saca agua dulce del mar en cinco horas de sol.» / "A pit, leaves on top and a bowl: fresh water from the sea in five hours of sun." | [AA] |
+| `nasa` | `bambu_fino` ×5, `cordel` ×3 | `cuchillo` | 25 | «Se deja en la corriente del arrecife y pesca sola mientras duermes.» / "Set it in the reef current and it fishes on its own while you sleep." | [AA] |
+| `trampa_cangrejos` | `bambu_fino` ×3, `liana` ×2 | — | 15 | «Con cebo dentro, amanece con uno o dos cangrejos.» / "Baited, it has a crab or two in it by morning." | [AA] |
+| `trampa_caida` | `tronco_pequeno` ×2, `estaca` ×4, `hoja_palma` ×4 | `pala` | 45 | «Un foso con estacas tapado con hojas: para el cerdo salvaje que no se deja ver.» / "A staked pit under leaves, for the wild pig that never shows itself." | [AA] |
+| `hamaca` | `tela_fibra` ×2, `cuerda` ×2 | — | 20 | «Duermes lejos del suelo húmedo y de los cangrejos; descansas como en una cama.» / "You sleep off the damp ground and away from the crabs, as well as in a bed." | [AA] |
+| `banco_tallado` | `madera_dura` ×3, `tronco_pequeno` ×1, `cuerda` ×2 | `hacha` | 40 | «Sujeta la pieza mientras tallas: aquí salen el remo, el cincel y la sierra.» / "Holds the work while you carve. Paddles, chisels and saws are made here." | [AA] |
+| `ahumadero` | `tronco_pequeno` ×4, `hoja_palma` ×8, `canto_rodado` ×6 | `hacha` | 60 | «Ahúma ocho piezas a la vez, con el fuego a cubierto de la lluvia.» / "Smokes eight pieces at once, with the fire kept out of the rain." | [AA] |
+| `telar` (ya existía) | ver §2.2 | `cuchillo` | 45 | Desbloquea `tela_en_telar` → `tela_fibra`, que piden el abrigo y la hamaca | [AA] |
+
+Decisiones de esta ampliación:
+
+- **Colector de lluvia:** ya existe como `recolector_lluvia`; el WIP añadía un
+  `colector_lluvia` duplicado que se retira. Recoge según `FRainCatchModel` (02 §5.4).
+- **Pico:** se reutiliza la plantilla de `main` (definición de 02 §2.2, §2.1 de este
+  documento); el WIP traía un segundo `pico` con otra Cabeza y otro nombre inglés.
+- **Arpón:** Asta + Punta de hueso (Punta ≥ 2) + Cabo (Ata ≥ 4). Con `hueso_largo`
+  (Punta 3) empata a tres huecos con `lanza`, que va antes y gana: el mismo mango
+  atado da **lanza** con hueso largo y **arpón** con `espina_pescado` o `hueso_pequeno`.
+- **Tiempo:** combinar en la mano sigue siendo instantáneo (regla de abajo); solo las
+  recetas con estación tienen minutos (`tela_en_telar` 40, `sierra` 30, `cincel` 20,
+  `remo` 45, `rodillo` 30 en el `astillero`, y las dos cabezas de pico del
+  `banco_chatarra`, 20 y 30). DataCheck lo exige: estación ⇔ `craftMinutes` > 0.
+- **Lámpara y yesca:** el `aceite_coco` sale de hervir dos `coco_maduro` (§4.2); la
+  mecha va implícita en la cáscara (fibra de coco), para no pedir tres piezas en una
+  combinación de dos manos.
+
 Combinar en la mano no cuesta tiempo de juego: la fricción está en reunir los
 materiales, no en esperar delante de un menú (coherente con «máximo tres
 verbos», biblia §8.3).
 
 ### 4.2 Cocina y conservación
 
-`Content/Data/recipes.json`, reales — 16 recetas con nombre; el resto es
+`Content/Data/recipes.json`, reales — 19 recetas con nombre; el resto es
 `guiso_improvisado`.
 
 | id | Entrada | Estación / nivel de fuego | Minutos | Se quema a los |
@@ -553,6 +817,18 @@ verbos», biblia §8.3).
 | `fruta_seca` | `tag:fruta` ×1 | `secadero`, sin fuego | 480 | — |
 | `vasija_barro` | `arcilla_roja` ×2 | Sin recipiente, `horno_arcilla` | 180 | — |
 | `carbon_vegetal` | `tronco_pequeno` ×1 (da 2) | Sin recipiente, `horno_arcilla` | 240 | — |
+| `agua_filtrada` — NUEVO | `agua_sin_tratar` ×1 | `filtro` (objeto `filtro_agua`, 40 usos), sin fuego | 15 | — |
+| `agua_destilada` — NUEVO | `agua_mar` ×1 | `destilador` (pieza `destilador_solar`), sin fuego | 300 | — |
+| `aceite_coco` — NUEVO | `coco_maduro` ×2 | `olla_coco`/`vasija_barro`, `fogata` | 90 | +45 |
+| `pescado_ahumado` (ampliada) | `tag:pescado` ×1 | `secadero` o `ahumadero` (NUEVO, capacidad 8), sin fuego | 360 | — |
+
+**Agua sin fuego (2026-09-28).** `agua_filtrada` deja la toxicidad en **0,10**
+(la sin tratar tiene 0,35; hervirla la quita: `cookingRemovesToxicity`), así que el
+filtro ahorra leña pero no sustituye al fuego. `agua_destilada` es agua limpia (0). Las
+dos usan la técnica `secar` del modelo de cocina porque es la única sin fuego que
+avanza sola: al sol el ritmo es 1,0 (15 y 300 min), a la sombra 0,3 (50 y 1000 min), y
+con lluvia sin techo se para — para el destilador es justo lo que pasa; para el filtro
+es una aproximación hasta tener una técnica `filtrar` propia (TODO).
 
 **Preservación** (real, `preservation` de `recipes.json`): crudo dura 24 h,
 cocinado 72 h, ahumado 336 h (2 semanas), salado 480 h (20 días), seco 400 h.
@@ -651,7 +927,7 @@ la única puerta.
 - [ ] [AA] `Carry`: fijar `BackpackComfortBonusKg` real para `mochila` (+8 kg), `mochila_fibra` (+10 kg) y `mochila_cuero_bambu` (+20 kg) en el sitio donde `UCarryComponent::SetCustomBackpack` recibe hoy solo volumen/peso del objeto.
 - [ ] [AA] `Carry`/`InventoryModel`: implementar el apilado de hasta 10 unidades por hueco para objetos sin `maxDurability` ni `LiquidCapacityLiters` (§1.3); hoy `FInventoryEntry` es un objeto por hueco.
 - [ ] [AA] `Items`: añadir a `Content/Data/items.json` las entradas `pico`, `lingote_cobre`, `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `vendaje_tela`, `antidoto_corteza`, `carbon_activado`, `te_corteza_sauce`, `ferula_bambu`, `gel_aloe`, `tela_fibra`, `carretilla`.
-- [ ] [AA] `Items`/`Templates`: añadir la plantilla `pico` a `Content/Data/templates.json` (slots Cabeza/Mango/Unión, §2.1) — bloqueante para la minería manual de la porción vertical (GDD §6.1).
+- [x] [AA] `Items`/`Templates`: plantilla `pico` en `Content/Data/templates.json` (slots Cabeza/Mango/Unión, §2.1), con la definición única de 02 §2.2. *(verificado: `templates.json` e `items.json` de `main`; la definición antigua de esta sección se retira el 2026-09-28)*
 - [ ] [AA] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras con ella enganchada, §1.5).
 - [ ] [AA] `Building`: añadir a `Content/Data/building_pieces.json` las piezas `cesta_almacen`, `estanteria_almacen`, `arcon`, `banco_chatarra`, `horno_fundicion`, `yunque` con el coste de §1.4 y §2.2.
 - [ ] [AA] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4) en `Content/Data/fuels.json`, y las recetas de fundición de §4.3 en un fichero nuevo `Content/Data/recipes_smithing.json` (mismo patrón que `recipes.json`).
@@ -662,3 +938,12 @@ la única puerta.
 - [ ] [F3] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts` (`Fuselage`, `Wing`, `Tail`, `Engine`) antes de permitir la receta, y que consume `canoa_balancin` como indica `requiresBoat`/`consumesRequiredBoat` (ya en `boats.json`, solo falta el mesh `SM_Limon` pendiente).
 - [ ] [F3] `Ruins`/`Artifacts`: cablear el examen de `figura_navegante`, `figura_gemelos`, `figura_mira_cielo`, `carta_varillas`, `carta_oleaje`, `tapa_estrellas` a las técnicas de wayfinding de §3.10 (hoy `artifacts.json` no tiene ese vínculo; solo lo tiene `ruins.json` por sitio, no por artefacto individual).
 - [ ] [AA] `Tests`: extender `Source/Explored/Tests/CarrySpec.cpp` con la carretilla y el apilado; extender `Tools/DataCheck` para validar que toda plantilla nueva de §2–4 es alcanzable con materiales de al menos una isla en AA (regla ya exigida por la biblia §12).
+- [x] [AA] `Templates`/`Items`/`Building`: 27 plantillas, 30 objetos y 7 piezas de acceso anticipado de §4.1 con `fase`, `craftMinutes`, `usoEs`/`usoEn` y `ejemplo`; ropa con `wear` (§3.11); DataCheck comprueba que cada `ejemplo` da su plantilla. *(2026-09-28)*
+- [ ] [AA] `Items`/`Crafting` (C++): leer `station` y `craftMinutes` de `templates.json` en `ParseTemplateObject` y exigir la estación a menos de 3 m al combinar; hoy solo son datos.
+- [ ] [AA] `Survival`: leer `wear` de lo puesto → `bHasHat`, `ClothingInsulation` (suma, tope 1), `rainFactor` en el término `Mojando` y `footGuard` con la tirada de corte por suelo (§3.11), con su spec en `SurvivalModelSpec.cpp`.
+- [ ] [AA] `Carry`: cuatro ranuras de ropa (cabeza, torso, espalda, pies) en `FInventoryModel`, fuera de manos y mochila, con el desgaste por hora de §3.11.
+- [ ] [AA] Modelo puro `FRecipeHintModel` (solo `CoreMinimal.h`) con su `RecipeHintModelSpec.cpp`: familia de inspección de §2.4.4 (desempate por rareza y orden), contador de 3 inspecciones en días distintos y estados Desconocida/Pista/Anotada; registrarlo en `pure_sources.txt` y `pure_specs.txt`.
+- [ ] [AA] `Cartography`: `FMapRecipeNote` con estado (Pista/Anotada) y autor, textos de §2.4.1 en `NSLOCTEXT` y réplica de 4 B por cambio (§2.4.5).
+- [ ] [AA] `WorldGen`/`Ruins`: 6 latas con bocetos de Halden y 7 petroglifos sueltos con pista de receta en las islas de §2.4.2–2.4.3 (`PointsOfInterest.cpp`).
+- [ ] [AA] `Cooking`: técnica `filtrar` propia para `agua_filtrada` (hoy usa `secar`, §4.2).
+- [ ] [AA] Arte: mallas de los 30 objetos y 7 piezas nuevos que DataCheck deja en `meshes_pendientes.json`.

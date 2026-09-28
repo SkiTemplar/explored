@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
+		"total": 787,
 		"cpp": 303,
-		"datos": 334,
+		"datos": 484,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3058,6 +3058,26 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "ahumadero.nameEs",
+			"es": "Ahumadero",
+			"en": "Smokehouse",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «ahumadero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "ahumadero.usoEs",
+			"es": "Ahúma ocho piezas a la vez, con el fuego a cubierto de la lluvia.",
+			"en": "Smokes eight pieces at once, with the fire kept out of the rain.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «ahumadero» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "arriate_limonero.nameEs",
 			"es": "Arriate del limonero",
 			"en": "Lemon tree bed",
@@ -3098,6 +3118,26 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "banco_tallado.nameEs",
+			"es": "Banco de tallado",
+			"en": "Carving bench",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «banco_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "banco_tallado.usoEs",
+			"es": "Sujeta la pieza mientras tallas: aquí salen el remo, el cincel y la sierra.",
+			"en": "Holds the work while you carve. Paddles, chisels and saws are made here.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «banco_tallado» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "cama_hojas.nameEs",
 			"es": "Cama de hojas",
 			"en": "Leaf bed",
@@ -3134,6 +3174,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «cimiento_piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "destilador_solar.nameEs",
+			"es": "Destilador solar",
+			"en": "Solar still",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «destilador_solar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "destilador_solar.usoEs",
+			"es": "Un hoyo, hojas encima y un cuenco: saca agua dulce del mar en cinco horas de sol.",
+			"en": "A pit, leaves on top and a bowl: fresh water from the sea in five hours of sun.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «destilador_solar» usoEs/usoEn"
 			]
 		},
 		{
@@ -3198,6 +3258,26 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "hamaca.nameEs",
+			"es": "Hamaca",
+			"en": "Hammock",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «hamaca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "hamaca.usoEs",
+			"es": "Duermes lejos del suelo húmedo y de los cangrejos; descansas como en una cama.",
+			"en": "You sleep off the damp ground and away from the crabs, as well as in a bed.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «hamaca» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "hoguera_senal.nameEs",
 			"es": "Hoguera de señal",
 			"en": "Signal fire",
@@ -3254,6 +3334,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «muro_piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "nasa.nameEs",
+			"es": "Nasa",
+			"en": "Fish trap",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «nasa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "nasa.usoEs",
+			"es": "Se deja en la corriente del arrecife y pesca sola mientras duermes.",
+			"en": "Set it in the reef current and it fishes on its own while you sleep.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «nasa» usoEs/usoEn"
 			]
 		},
 		{
@@ -3378,6 +3478,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "recolector_lluvia.usoEs",
+			"es": "Llena de agua de lluvia lo que dejes debajo, sin hervirla.",
+			"en": "Fills whatever you leave under it with rainwater that needs no boiling.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «recolector_lluvia» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "refugio_inclinado.nameEs",
 			"es": "Refugio inclinado",
 			"en": "Lean-to shelter",
@@ -3468,6 +3578,46 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "trampa_caida.nameEs",
+			"es": "Trampa de foso",
+			"en": "Pit trap",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «trampa_caida» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "trampa_caida.usoEs",
+			"es": "Un foso con estacas tapado con hojas: para el cerdo salvaje que no se deja ver.",
+			"en": "A staked pit under leaves, for the wild pig that never shows itself.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «trampa_caida» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "trampa_cangrejos.nameEs",
+			"es": "Trampa de cangrejos",
+			"en": "Crab trap",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «trampa_cangrejos» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "trampa_cangrejos.usoEs",
+			"es": "Con cebo dentro, amanece con uno o dos cangrejos.",
+			"en": "Baited, it has a crab or two in it by morning.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «trampa_cangrejos» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "vitrina_museo.nameEs",
 			"es": "Vitrina",
 			"en": "Display case",
@@ -3518,12 +3668,42 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "aceite_coco.nameEs",
+			"es": "Aceite de coco",
+			"en": "Coconut oil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «aceite_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "aceite_pescado.nameEs",
 			"es": "Aceite de pescado",
 			"en": "Fish oil",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «aceite_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "agua_destilada.nameEs",
+			"es": "Agua destilada",
+			"en": "Distilled water",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «agua_destilada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "agua_filtrada.nameEs",
+			"es": "Agua filtrada",
+			"en": "Filtered water",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «agua_filtrada» nameEs/nameEn"
 			]
 		},
 		{
@@ -3588,6 +3768,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "ancla_piedra.nameEs",
+			"es": "Ancla de piedra",
+			"en": "Stone anchor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «ancla_piedra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "angarillas.nameEs",
 			"es": "Angarillas",
 			"en": "Travois",
@@ -3604,6 +3794,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «antorcha» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "anzuelo.nameEs",
+			"es": "Anzuelo",
+			"en": "Fish hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «anzuelo» nameEs/nameEn"
 			]
 		},
 		{
@@ -3638,6 +3838,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "arco_fuego.nameEs",
+			"es": "Arco de fuego",
+			"en": "Bow drill",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arco_fuego» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "arena.nameEs",
 			"es": "Arena",
 			"en": "Sand",
@@ -3658,6 +3868,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "arpon.nameEs",
+			"es": "Arpón",
+			"en": "Harpoon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «arpon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "atado_generico.nameEs",
 			"es": "Atado",
 			"en": "Bound piece",
@@ -3674,6 +3894,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «atun» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "azada.nameEs",
+			"es": "Azada",
+			"en": "Hoe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «azada» nameEs/nameEn"
 			]
 		},
 		{
@@ -3808,12 +4038,32 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "cabo_amarre.nameEs",
+			"es": "Cabo de amarre",
+			"en": "Mooring line",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cabo_amarre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "caliza.nameEs",
 			"es": "Caliza",
 			"en": "Limestone",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «caliza» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cana_pesca.nameEs",
+			"es": "Caña de pescar",
+			"en": "Fishing rod",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cana_pesca» nameEs/nameEn"
 			]
 		},
 		{
@@ -3878,6 +4128,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "capa_impermeable.nameEs",
+			"es": "Capa de hojas",
+			"en": "Leaf rain cape",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «capa_impermeable» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "caracola.nameEs",
 			"es": "Caracola",
 			"en": "Conch shell",
@@ -3934,6 +4194,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «chapa_fuselaje» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "cincel.nameEs",
+			"es": "Cincel",
+			"en": "Chisel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cincel» nameEs/nameEn"
 			]
 		},
 		{
@@ -4148,6 +4418,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "farol.nameEs",
+			"es": "Farol de bambú",
+			"en": "Bamboo lantern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «farol» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "fibra_coco.nameEs",
 			"es": "Fibra de coco",
 			"en": "Coconut fibre",
@@ -4164,6 +4444,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «filete_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "filtro_agua.nameEs",
+			"es": "Filtro de arena y carbón",
+			"en": "Sand and charcoal filter",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «filtro_agua» nameEs/nameEn"
 			]
 		},
 		{
@@ -4194,6 +4484,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «fruta_seca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "garfio.nameEs",
+			"es": "Garfio con cabo",
+			"en": "Grappling hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «garfio» nameEs/nameEn"
 			]
 		},
 		{
@@ -4268,6 +4568,26 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "honda.nameEs",
+			"es": "Honda",
+			"en": "Sling",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «honda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "hoz.nameEs",
+			"es": "Hoz",
+			"en": "Sickle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «hoz» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "hueso_largo.nameEs",
 			"es": "Hueso largo",
 			"en": "Long bone",
@@ -4314,6 +4634,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «jurel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lampara_aceite_coco.nameEs",
+			"es": "Lámpara de aceite de coco",
+			"en": "Coconut oil lamp",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lampara_aceite_coco» nameEs/nameEn"
 			]
 		},
 		{
@@ -4558,6 +4888,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "odre_piel.nameEs",
+			"es": "Odre de cuero",
+			"en": "Waterskin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «odre_piel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "pala.nameEs",
 			"es": "Pala",
 			"en": "Shovel",
@@ -4698,6 +5038,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "pie_de_palmera.nameEs",
+			"es": "Lazo de trepar",
+			"en": "Climbing loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pie_de_palmera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "piedra_plana.nameEs",
 			"es": "Piedra plana",
 			"en": "Flat stone",
@@ -4818,12 +5168,52 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "red_mano.nameEs",
+			"es": "Red de mano",
+			"en": "Hand net",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «red_mano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "remo.nameEs",
+			"es": "Remo",
+			"en": "Paddle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «remo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "resina.nameEs",
 			"es": "Resina",
 			"en": "Resin",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «resina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "rodillos.nameEs",
+			"es": "Rodillo de tronco",
+			"en": "Log roller",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «rodillos» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "ropa_abrigo.nameEs",
+			"es": "Abrigo de tela y cuero",
+			"en": "Cloth and leather coat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «ropa_abrigo» nameEs/nameEn"
 			]
 		},
 		{
@@ -4844,6 +5234,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «salmonete» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "sandalias.nameEs",
+			"es": "Sandalias",
+			"en": "Sandals",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sandalias» nameEs/nameEn"
 			]
 		},
 		{
@@ -4878,6 +5278,26 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "sierra.nameEs",
+			"es": "Sierra",
+			"en": "Saw",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sierra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "sombrero_palma.nameEs",
+			"es": "Sombrero de palma",
+			"en": "Palm-leaf hat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «sombrero_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "sopa_pescado.nameEs",
 			"es": "Sopa de pescado",
 			"en": "Fish soup",
@@ -4908,6 +5328,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "tela_fibra.nameEs",
+			"es": "Tela de fibra",
+			"en": "Woven cloth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «tela_fibra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "tendon.nameEs",
 			"es": "Tendón",
 			"en": "Sinew",
@@ -4924,6 +5354,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «tierra_suelta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "trampa_lazo.nameEs",
+			"es": "Trampa de lazo",
+			"en": "Snare",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «trampa_lazo» nameEs/nameEn"
 			]
 		},
 		{
@@ -4984,6 +5424,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «visceras_pescado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "yesca.nameEs",
+			"es": "Nido de yesca",
+			"en": "Tinder bundle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «yesca» nameEs/nameEn"
 			]
 		},
 		{
@@ -5768,12 +6218,82 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "abrigo.nameEs",
+			"es": "Abrigo",
+			"en": "Coat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «abrigo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "abrigo.nameTemplate",
+			"es": "Abrigo de {0}",
+			"en": "{0} coat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «abrigo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "abrigo.usoEs",
+			"es": "Las noches del monzón y la cumbre de los Dientes dejan de ser un riesgo.",
+			"en": "Monsoon nights and the peaks of the Teeth stop being a danger.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «abrigo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "afilar_generico.nameEs",
 			"es": "Afilar",
 			"en": "Sharpen",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «afilar_generico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "afilar_generico.usoEs",
+			"es": "Devuelve el filo y parte del desgaste.",
+			"en": "Restores the edge and some of the wear.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «afilar_generico» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "ancla.nameEs",
+			"es": "Ancla de piedra",
+			"en": "Stone anchor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «ancla» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "ancla.nameTemplate",
+			"es": "Ancla de {0}",
+			"en": "{0} anchor",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «ancla» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "ancla.usoEs",
+			"es": "Fondeas en cualquier cala y pescas o buceas sin que la canoa se aleje.",
+			"en": "Drop anchor in any cove and fish or dive without the canoe drifting off.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «ancla» usoEs/usoEn"
 			]
 		},
 		{
@@ -5798,6 +6318,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "angarillas.usoEs",
+			"es": "Arrastra troncos y piedra que no podrías cargar.",
+			"en": "Drag logs and stone you could never carry.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «angarillas» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "antorcha.nameEs",
 			"es": "Antorcha",
 			"en": "Torch",
@@ -5814,6 +6344,46 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «antorcha» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "antorcha.usoEs",
+			"es": "Luz para la cueva; se apaga con la lluvia.",
+			"en": "Light for the cave. Rain puts it out.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «antorcha» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "anzuelo_por_tallado.nameEs",
+			"es": "Anzuelo tallado",
+			"en": "Carved hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «anzuelo_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "anzuelo_por_tallado.nameTemplate",
+			"es": "Anzuelo de {1}",
+			"en": "{1} hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «anzuelo_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "anzuelo_por_tallado.usoEs",
+			"es": "Con un anzuelo pescas desde la orilla lo que no alcanzas con la lanza.",
+			"en": "A hook catches from the shore what the spear can't reach.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «anzuelo_por_tallado» usoEs/usoEn"
 			]
 		},
 		{
@@ -5838,6 +6408,76 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "arco.usoEs",
+			"es": "Caza y pesca a distancia sin espantar a la presa.",
+			"en": "Hunt and fish at range without scaring the prey.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arco_de_fuego.nameEs",
+			"es": "Arco de fuego",
+			"en": "Bow drill",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco_de_fuego» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arco_de_fuego.nameTemplate",
+			"es": "Arco de fuego de {0}",
+			"en": "{0} bow drill",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco_de_fuego» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arco_de_fuego.usoEs",
+			"es": "Fuego sin cerillas: cuesta brazo, pero no se acaba nunca.",
+			"en": "Fire without matches. Hard on the arm, but it never runs out.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arco_de_fuego» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arpon.nameEs",
+			"es": "Arpón",
+			"en": "Harpoon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arpon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arpon.nameTemplate",
+			"es": "Arpón de {1}",
+			"en": "{1} harpoon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arpon» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "arpon.usoEs",
+			"es": "El pez clavado queda atado: los meros grandes ya no se escapan con la punta.",
+			"en": "A struck fish stays on the line: big groupers stop swimming off with your point.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «arpon» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "atado_generico.nameEs",
 			"es": "Atado genérico",
 			"en": "Simple lashing",
@@ -5854,6 +6494,46 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «atado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "atado_generico.usoEs",
+			"es": "Une dos piezas para seguir fabricando con ellas.",
+			"en": "Joins two pieces so you can keep building with them.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «atado_generico» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "azada.nameEs",
+			"es": "Azada",
+			"en": "Hoe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «azada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "azada.nameTemplate",
+			"es": "Azada de {0}",
+			"en": "{0} hoe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «azada» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "azada.usoEs",
+			"es": "Abre un bancal en la mitad de tiempo que con la pala.",
+			"en": "Digs a garden bed in half the time a shovel takes.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «azada» usoEs/usoEn"
 			]
 		},
 		{
@@ -5878,6 +6558,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_chapa.usoEs",
+			"es": "Cabeza de pico que dura el doble que la de piedra.",
+			"en": "A pick head that lasts twice as long as stone.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_chapa» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cabeza_pico_de_hierro.nameEs",
 			"es": "Cabeza de pico de hierro",
 			"en": "Iron pick head",
@@ -5894,6 +6584,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «cabeza_pico_de_hierro» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_hierro.usoEs",
+			"es": "La mejor cabeza de pico del archipiélago.",
+			"en": "The best pick head in the archipelago.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_hierro» usoEs/usoEn"
 			]
 		},
 		{
@@ -5918,6 +6618,106 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_por_tallado.usoEs",
+			"es": "La cabeza del pico tallado: pica basalto.",
+			"en": "The knapped pick head. It breaks basalt.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_por_tallado» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabo_de_amarre.nameEs",
+			"es": "Cabo de amarre",
+			"en": "Mooring line",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabo_de_amarre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabo_de_amarre.nameTemplate",
+			"es": "Cabo de amarre",
+			"en": "Mooring line",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabo_de_amarre» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabo_de_amarre.usoEs",
+			"es": "Amarras el barco al muelle y la marea ya no se lo lleva de noche.",
+			"en": "Tie the boat to the jetty and the tide stops taking it at night.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabo_de_amarre» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cana_de_pescar.nameEs",
+			"es": "Caña de pescar",
+			"en": "Fishing rod",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cana_de_pescar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cana_de_pescar.nameTemplate",
+			"es": "Caña de {0}",
+			"en": "{0} rod",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cana_de_pescar» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cana_de_pescar.usoEs",
+			"es": "Lanza lejos de la rompiente, donde están los peces grandes.",
+			"en": "Cast beyond the breakers, where the big fish are.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cana_de_pescar» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "capa_de_hojas.nameEs",
+			"es": "Capa de hojas",
+			"en": "Leaf cape",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «capa_de_hojas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "capa_de_hojas.nameTemplate",
+			"es": "Capa de {0}",
+			"en": "{0} cape",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «capa_de_hojas» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "capa_de_hojas.usoEs",
+			"es": "Bajo el aguacero te mojas menos de la mitad y no pierdes el calor tan rápido.",
+			"en": "In a downpour you get less than half as wet, and hold on to your warmth.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «capa_de_hojas» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cesta.nameEs",
 			"es": "Cesta",
 			"en": "Basket",
@@ -5934,6 +6734,46 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «cesta» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cesta.usoEs",
+			"es": "Diez cocos en un viaje en vez de dos.",
+			"en": "Ten coconuts in one trip instead of two.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cesta» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cincel.nameEs",
+			"es": "Cincel",
+			"en": "Chisel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cincel» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cincel.nameTemplate",
+			"es": "Cincel de {1}",
+			"en": "{1} chisel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cincel» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cincel.usoEs",
+			"es": "Talla muescas y encajes: la canoa y los muebles dejan de depender de la cuerda.",
+			"en": "Cuts notches and joints, so the canoe and the furniture stop relying on rope.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cincel» usoEs/usoEn"
 			]
 		},
 		{
@@ -5958,6 +6798,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cordel.usoEs",
+			"es": "Ata lo pequeño; dos cordeles hacen una cuerda.",
+			"en": "Ties small things. Two lengths make a rope.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cordel» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cuchillo.nameEs",
 			"es": "Cuchillo",
 			"en": "Knife",
@@ -5974,6 +6824,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «cuchillo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cuchillo.usoEs",
+			"es": "Despieza, corta fibra y raspa piel.",
+			"en": "Butchers, cuts fibre and scrapes hide.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuchillo» usoEs/usoEn"
 			]
 		},
 		{
@@ -5998,6 +6858,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cuerda.usoEs",
+			"es": "Aguanta el peso de una balsa o de una persona.",
+			"en": "Holds the weight of a raft, or of a person.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cuerda» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "estaca_por_tallado.nameEs",
 			"es": "Estaca por tallado",
 			"en": "Carved stake",
@@ -6014,6 +6884,76 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «estaca_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "estaca_por_tallado.usoEs",
+			"es": "Estacas para trampas, cercas y espetos.",
+			"en": "Stakes for traps, fences and spits.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «estaca_por_tallado» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "farol_de_bambu.nameEs",
+			"es": "Farol",
+			"en": "Lantern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «farol_de_bambu» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "farol_de_bambu.nameTemplate",
+			"es": "Farol de {1}",
+			"en": "{1} lantern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «farol_de_bambu» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "farol_de_bambu.usoEs",
+			"es": "La lámpara, protegida del viento y la lluvia: se lleva en la mano o en la canoa.",
+			"en": "The lamp, sheltered from wind and rain. Carry it by hand or in the canoe.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «farol_de_bambu» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "filtro_de_arena.nameEs",
+			"es": "Filtro de arena",
+			"en": "Sand filter",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «filtro_de_arena» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "filtro_de_arena.nameTemplate",
+			"es": "Filtro de {0} con {1}",
+			"en": "{0} filter with {1}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «filtro_de_arena» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "filtro_de_arena.usoEs",
+			"es": "Limpia el agua de charca sin gastar leña; no la deja tan segura como hervirla.",
+			"en": "Cleans pond water without burning wood. Not as safe as boiling it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «filtro_de_arena» usoEs/usoEn"
 			]
 		},
 		{
@@ -6038,6 +6978,46 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "flecha.usoEs",
+			"es": "Munición del arco; se pierden a menudo.",
+			"en": "Ammunition for the bow. You lose plenty.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «flecha» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "garfio.nameEs",
+			"es": "Garfio con cabo",
+			"en": "Grappling hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «garfio» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "garfio.nameTemplate",
+			"es": "Garfio con cabo de {0}",
+			"en": "{0} grappling hook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «garfio» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "garfio.usoEs",
+			"es": "Sube a una cornisa de hasta seis metros o recupera lo que se llevó la corriente.",
+			"en": "Climbs a ledge up to six metres, or pulls back what the current took.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «garfio» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "hacha.nameEs",
 			"es": "Hacha",
 			"en": "Axe",
@@ -6054,6 +7034,106 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «hacha» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hacha.usoEs",
+			"es": "Tala árboles y parte leña.",
+			"en": "Fells trees and splits firewood.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hacha» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "honda.nameEs",
+			"es": "Honda",
+			"en": "Sling",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «honda» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "honda.nameTemplate",
+			"es": "Honda de {0}",
+			"en": "{0} sling",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «honda» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "honda.usoEs",
+			"es": "Un canto rodado bien lanzado tumba un ave o un coco a veinte metros.",
+			"en": "A well-thrown pebble drops a bird or a coconut at twenty metres.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «honda» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hoz.nameEs",
+			"es": "Hoz",
+			"en": "Sickle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hoz» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hoz.nameTemplate",
+			"es": "Hoz de {0}",
+			"en": "{0} sickle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hoz» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "hoz.usoEs",
+			"es": "Siega el bancal entero de una pasada y corta fibra a manojos.",
+			"en": "Reaps a whole bed in one pass and cuts fibre by the armful.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «hoz» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lampara_de_coco.nameEs",
+			"es": "Lámpara de aceite",
+			"en": "Oil lamp",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lampara_de_coco» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lampara_de_coco.nameTemplate",
+			"es": "Lámpara de {0}",
+			"en": "{0} lamp",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lampara_de_coco» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lampara_de_coco.usoEs",
+			"es": "Luz quieta para toda la noche dentro del refugio, sin humo en los ojos.",
+			"en": "A steady light all night in the shelter, and no smoke in your eyes.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lampara_de_coco» usoEs/usoEn"
 			]
 		},
 		{
@@ -6078,6 +7158,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "lanza.usoEs",
+			"es": "Pesca en los bajíos y defiéndete de un tiburón.",
+			"en": "Spear fish in the shallows and keep a shark at bay.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lanza» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "lasca_por_golpeo.nameEs",
 			"es": "Lasca por golpeo",
 			"en": "Struck flake",
@@ -6094,6 +7184,46 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «lasca_por_golpeo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lasca_por_golpeo.usoEs",
+			"es": "Tu primer filo sale de dos piedras.",
+			"en": "Your first edge comes from two stones.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lasca_por_golpeo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lazo_de_trepar.nameEs",
+			"es": "Lazo de trepar",
+			"en": "Climbing loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lazo_de_trepar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lazo_de_trepar.nameTemplate",
+			"es": "Lazo de trepar de {0}",
+			"en": "{0} climbing loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lazo_de_trepar» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "lazo_de_trepar.usoEs",
+			"es": "Trepas cualquier palmera y bajas los cocos verdes sin sacudirla.",
+			"en": "Climb any palm and bring the green coconuts down without shaking it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «lazo_de_trepar» usoEs/usoEn"
 			]
 		},
 		{
@@ -6118,6 +7248,46 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "martillo.usoEs",
+			"es": "Clava estacas y monta piezas de madera.",
+			"en": "Drives stakes and fits timber together.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «martillo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "odre.nameEs",
+			"es": "Odre",
+			"en": "Waterskin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «odre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "odre.nameTemplate",
+			"es": "Odre de {0}",
+			"en": "{0} waterskin",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «odre» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "odre.usoEs",
+			"es": "Un litro de agua a la espalda: ya puedes alejarte del río más de medio día.",
+			"en": "A litre of water on your back: you can stray from the river for more than half a day.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «odre» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "pala.nameEs",
 			"es": "Pala",
 			"en": "Shovel",
@@ -6134,6 +7304,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pala» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pala.usoEs",
+			"es": "Cava tierra, arena y arcilla.",
+			"en": "Digs soil, sand and clay.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pala» usoEs/usoEn"
 			]
 		},
 		{
@@ -6158,6 +7338,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "pasta_medicinal_por_machacado.usoEs",
+			"es": "Cura cortes leves antes de que se infecten.",
+			"en": "Treats small cuts before they get infected.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pasta_medicinal_por_machacado» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "pegado_generico.nameEs",
 			"es": "Pegado genérico",
 			"en": "Simple gluing",
@@ -6174,6 +7364,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pegado_generico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pegado_generico.usoEs",
+			"es": "Como atar, pero la unión aguanta más golpes.",
+			"en": "Like lashing, but the joint takes more knocks.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pegado_generico» usoEs/usoEn"
 			]
 		},
 		{
@@ -6198,6 +7398,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "pico.usoEs",
+			"es": "Abre la roca: caliza, cobre, basalto, según la cabeza.",
+			"en": "Opens the rock. Limestone, copper or basalt, depending on the head.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pico» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "punta_de_canto_por_tallado.nameEs",
 			"es": "Punta de canto por tallado",
 			"en": "Knapped cobble point",
@@ -6218,6 +7428,16 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "punta_de_canto_por_tallado.usoEs",
+			"es": "La cabeza del primer pico: pica caliza y cobre.",
+			"en": "The first pick head. It breaks limestone and copper.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «punta_de_canto_por_tallado» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "recipiente_de_coco.nameEs",
 			"es": "Recipiente de coco",
 			"en": "Coconut bowl",
@@ -6234,6 +7454,286 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «recipiente_de_coco» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "recipiente_de_coco.usoEs",
+			"es": "Tu primer cuenco: recoge lluvia y hierve agua.",
+			"en": "Your first bowl. It catches rain and boils water.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «recipiente_de_coco» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "red_de_mano.nameEs",
+			"es": "Red de mano",
+			"en": "Hand net",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «red_de_mano» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "red_de_mano.nameTemplate",
+			"es": "Red de {0}",
+			"en": "{0} net",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «red_de_mano» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "red_de_mano.usoEs",
+			"es": "Saca cangrejos y peces pequeños de las pozas de marea sin cebo.",
+			"en": "Scoops crabs and small fish out of rock pools, no bait needed.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «red_de_mano» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "remo.nameEs",
+			"es": "Remo",
+			"en": "Paddle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «remo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "remo.nameTemplate",
+			"es": "Remo de {1}",
+			"en": "{1} paddle",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «remo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "remo.usoEs",
+			"es": "La canoa avanza el doble que remando con un palo.",
+			"en": "The canoe moves twice as fast as paddling with a stick.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «remo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "rodillo.nameEs",
+			"es": "Rodillo",
+			"en": "Log roller",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «rodillo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "rodillo.nameTemplate",
+			"es": "Rodillo de {1}",
+			"en": "{1} roller",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «rodillo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "rodillo.usoEs",
+			"es": "Tres rodillos bajo el casco y dos personas botan una canoa sin cargarla.",
+			"en": "Three rollers under the hull and two people launch a canoe without lifting it.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «rodillo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sandalias.nameEs",
+			"es": "Sandalias",
+			"en": "Sandals",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sandalias» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sandalias.nameTemplate",
+			"es": "Sandalias de {0}",
+			"en": "{0} sandals",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sandalias» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sandalias.usoEs",
+			"es": "Cruzas el arrecife y la roca volcánica sin cortarte los pies.",
+			"en": "Cross the reef flats and the lava rock without cutting your feet.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sandalias» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sierra.nameEs",
+			"es": "Sierra",
+			"en": "Saw",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sierra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sierra.nameTemplate",
+			"es": "Sierra de {1}",
+			"en": "{1} saw",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sierra» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sierra.usoEs",
+			"es": "Corta tablas y hueso limpio, sin astillar lo que vas a ensamblar.",
+			"en": "Cuts planks and bone cleanly, without splitting what you mean to join.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sierra» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sombrero_de_palma.nameEs",
+			"es": "Sombrero de palma",
+			"en": "Palm-leaf hat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sombrero_de_palma» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sombrero_de_palma.nameTemplate",
+			"es": "Sombrero de {0}",
+			"en": "{0} hat",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sombrero_de_palma» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "sombrero_de_palma.usoEs",
+			"es": "A mediodía el sol quema tres veces más despacio.",
+			"en": "At midday the sun burns you three times more slowly.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «sombrero_de_palma» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "tela_en_telar.nameEs",
+			"es": "Tela",
+			"en": "Cloth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «tela_en_telar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "tela_en_telar.nameTemplate",
+			"es": "Tela de {1}",
+			"en": "{1} cloth",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «tela_en_telar» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "tela_en_telar.usoEs",
+			"es": "La base del abrigo y de la hamaca.",
+			"en": "What the coat and the hammock are made from.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «tela_en_telar» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "trampa_de_lazo.nameEs",
+			"es": "Trampa de lazo",
+			"en": "Snare",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «trampa_de_lazo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "trampa_de_lazo.nameTemplate",
+			"es": "Trampa de lazo con {1}",
+			"en": "Snare with {1}",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «trampa_de_lazo» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "trampa_de_lazo.usoEs",
+			"es": "Déjala en un sendero de cerdos y vuelve por la mañana.",
+			"en": "Leave it on a pig trail and come back in the morning.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «trampa_de_lazo» usoEs/usoEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "yesca_machacada.nameEs",
+			"es": "Yesca",
+			"en": "Tinder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «yesca_machacada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "yesca_machacada.nameTemplate",
+			"es": "Nido de {1}",
+			"en": "{1} tinder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «yesca_machacada» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "yesca_machacada.usoEs",
+			"es": "Prende con la primera brasa del arco o la primera chispa del pedernal.",
+			"en": "Catches from the first ember of the drill or the first spark off the flint.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «yesca_machacada» usoEs/usoEn"
 			]
 		},
 		{

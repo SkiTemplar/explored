@@ -22,7 +22,13 @@
     { "id": "bandeja", "nameEs": "Piedra plana o concha", "items": ["piedra_plana", "concha_grande"], "piece": null,
       "capacity": 1, "watertight": false, "maxUses": 0 },
     { "id": "secadero", "nameEs": "Secadero y ahumadero", "items": [], "piece": "secadero",
-      "capacity": 6, "watertight": false, "maxUses": 0 }
+      "capacity": 6, "watertight": false, "maxUses": 0 },
+    { "id": "ahumadero", "nameEs": "Ahumadero", "items": [], "piece": "ahumadero",
+      "capacity": 8, "watertight": false, "maxUses": 0 },
+    { "id": "filtro", "nameEs": "Filtro de arena y carbón", "items": ["filtro_agua"], "piece": null,
+      "capacity": 2, "watertight": true, "maxUses": 40 },
+    { "id": "destilador", "nameEs": "Destilador solar", "items": [], "piece": "destilador_solar",
+      "capacity": 2, "watertight": true, "maxUses": 0 }
   ],
   "recipes": [
     { "id": "agua_hervida", "nameEs": "Agua hervida", "technique": "hervir", "vessels": ["olla_coco", "vasija_barro"], "minFireLevel": "fogata",
@@ -47,7 +53,7 @@
       "ingredients": [ { "tag": "pescado", "count": 1 }, { "tag": "agua_dulce", "count": 1 } ], "result": "sopa_pescado", "resultCount": 1, "cookMinutes": 45, "burnAfterMinutes": 40 },
     { "id": "estofado_pescado", "nameEs": "Estofado de pescado", "technique": "guisar", "vessels": ["vasija_barro"], "minFireLevel": "fogata",
       "ingredients": [ { "tag": "pescado", "count": 1 }, { "tag": "tuberculo", "count": 1 }, { "tag": "agua_dulce", "count": 1 } ], "result": "estofado_pescado", "resultCount": 2, "cookMinutes": 60, "burnAfterMinutes": 40 },
-    { "id": "pescado_ahumado", "nameEs": "Pescado ahumado", "technique": "ahumar", "vessels": ["secadero"], "minFireLevel": null,
+    { "id": "pescado_ahumado", "nameEs": "Pescado ahumado", "technique": "ahumar", "vessels": ["secadero", "ahumadero"], "minFireLevel": null,
       "ingredients": [ { "tag": "pescado", "count": 1 } ], "result": "pescado_ahumado", "resultCount": 1, "cookMinutes": 360, "burnAfterMinutes": null },
     { "id": "pescado_salado", "nameEs": "Pescado en salazón", "technique": "salar", "vessels": [], "minFireLevel": null,
       "ingredients": [ { "tag": "pescado", "count": 1 }, { "item": "sal_marina", "count": 1 } ], "result": "pescado_salado", "resultCount": 1, "cookMinutes": 120, "burnAfterMinutes": null },
@@ -56,7 +62,13 @@
     { "id": "vasija_barro", "nameEs": "Vasija de barro cocido", "technique": "hornear", "vessels": [], "minFireLevel": "horno_arcilla",
       "ingredients": [ { "item": "arcilla_roja", "count": 2 } ], "result": "vasija_barro", "resultCount": 1, "cookMinutes": 180, "burnAfterMinutes": null },
     { "id": "carbon_vegetal", "nameEs": "Carbón vegetal", "technique": "hornear", "vessels": [], "minFireLevel": "horno_arcilla",
-      "ingredients": [ { "item": "tronco_pequeno", "count": 1 } ], "result": "carbon_vegetal", "resultCount": 2, "cookMinutes": 240, "burnAfterMinutes": null }
+      "ingredients": [ { "item": "tronco_pequeno", "count": 1 } ], "result": "carbon_vegetal", "resultCount": 2, "cookMinutes": 240, "burnAfterMinutes": null },
+    { "id": "agua_filtrada", "nameEs": "Agua filtrada", "technique": "secar", "vessels": ["filtro"], "minFireLevel": null,
+      "ingredients": [ { "item": "agua_sin_tratar", "count": 1 } ], "result": "agua_filtrada", "resultCount": 1, "cookMinutes": 15, "burnAfterMinutes": null },
+    { "id": "agua_destilada", "nameEs": "Agua destilada al sol", "technique": "secar", "vessels": ["destilador"], "minFireLevel": null,
+      "ingredients": [ { "item": "agua_mar", "count": 1 } ], "result": "agua_destilada", "resultCount": 1, "cookMinutes": 300, "burnAfterMinutes": null },
+    { "id": "aceite_coco", "nameEs": "Aceite de coco", "technique": "hervir", "vessels": ["olla_coco", "vasija_barro"], "minFireLevel": "fogata",
+      "ingredients": [ { "item": "coco_maduro", "count": 2 } ], "result": "aceite_coco", "resultCount": 1, "cookMinutes": 90, "burnAfterMinutes": 45 }
   ],
   "improvised": { "technique": "guisar", "result": "guiso_improvisado", "cookMinutes": 45, "burnAfterMinutes": 30,
     "efficiency": 0.9, "warmth": 4, "morale": 2 },
@@ -98,6 +110,8 @@
     { "item": "sal_marina", "state": "crudo", "family": "mineral", "food": 0, "water": -2, "warmth": 0, "morale": 0, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "agua_sin_tratar", "state": "crudo", "family": "agua", "food": 0, "water": 30, "warmth": 0, "morale": 0, "toxicity": 0.35, "cookingRemovesToxicity": true },
     { "item": "agua_hervida", "state": "crudo", "family": "agua", "food": 0, "water": 30, "warmth": 1, "morale": 1, "toxicity": 0, "cookingRemovesToxicity": false },
+    { "item": "agua_filtrada", "state": "crudo", "family": "agua", "food": 0, "water": 30, "warmth": 0, "morale": 0, "toxicity": 0.1, "cookingRemovesToxicity": true },
+    { "item": "agua_destilada", "state": "crudo", "family": "agua", "food": 0, "water": 30, "warmth": 0, "morale": 1, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "agua_mar", "state": "crudo", "family": "agua", "food": 0, "water": -10, "warmth": 0, "morale": -2, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "pescado_asado", "state": "cocinado", "family": "pescado", "food": 22, "water": 0, "warmth": 3, "morale": 3, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "cangrejo_caparazon", "state": "cocinado", "family": "marisco", "food": 12, "water": 0, "warmth": 3, "morale": 3, "toxicity": 0, "cookingRemovesToxicity": false },
