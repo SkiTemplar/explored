@@ -721,6 +721,28 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("recarga entera"), Loaded.GetHull().GetPieces().Num(), FRaftYardModel::MaxSavedPieces);
 			TestEqual(TEXT("sin descartes"), Discarded, 0);
 		});
+
+		It("al atar tampoco se pasa de MaxSavedJoints, así que las uniones se recargan todas", [this]()
+		{
+			// 64 troncos en el mismo sitio: 2016 pares que se pueden atar, más que el tope de 1024.
+			FRaftYardModel Yard;
+			for (int32 I = 0; I < 64; ++I)
+			{
+				Yard.AddPiece(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));
+			}
+			for (int32 A = 0; A < 64; ++A)
+			{
+				for (int32 B = A + 1; B < 64; ++B)
+				{
+					Yard.AddJoint(A, B, ERaftJointKind::Rope);
+				}
+			}
+			TestEqual(TEXT("se queda en el tope"), Yard.GetJoints().Num(), FRaftYardModel::MaxSavedJoints);
+			int32 Discarded = -1;
+			const FRaftYardModel Loaded = FRaftYardModel::FromHullSaveData(Yard.ToHullSaveData(), &Discarded);
+			TestEqual(TEXT("recarga todas las uniones"), Loaded.GetJoints().Num(), FRaftYardModel::MaxSavedJoints);
+			TestEqual(TEXT("sin descartes"), Discarded, 0);
+		});
 	});
 
 	Describe("los estados degenerados", [this]()

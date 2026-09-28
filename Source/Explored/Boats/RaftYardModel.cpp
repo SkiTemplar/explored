@@ -215,8 +215,9 @@ float FRaftYardModel::GapCm(const FHullPiece& A, const FHullPiece& B)
 int32 FRaftYardModel::AddJoint(int32 PieceA, int32 PieceB, ERaftJointKind Kind)
 {
 	const TArray<FHullPiece>& Pieces = Hull.GetPieces();
+	// Mismo tope que al cargar (FromHullSaveData): lo que se ata se puede guardar y recargar entero.
 	if (!Pieces.IsValidIndex(PieceA) || !Pieces.IsValidIndex(PieceB) || PieceA == PieceB
-		|| Kind >= ERaftJointKind::Count)
+		|| Kind >= ERaftJointKind::Count || Joints.Num() >= MaxSavedJoints)
 	{
 		return INDEX_NONE;
 	}
