@@ -46,6 +46,19 @@ struct TSaveEnumNames<EBoatCondition>
 };
 
 template <>
+struct TSaveEnumNames<EHullPieceType>
+{
+	static constexpr const TCHAR* Names[] = { TEXT("Log"), TEXT("Plank"), TEXT("Bamboo"), TEXT("Float"), TEXT("Mast"), TEXT("Sail"),
+		TEXT("Oars"), TEXT("Paddle") };
+};
+
+template <>
+struct TSaveEnumNames<ERaftJointKind>
+{
+	static constexpr const TCHAR* Names[] = { TEXT("Fiber"), TEXT("Rope"), TEXT("Nails") };
+};
+
+template <>
 struct TSaveEnumNames<ETrapKind>
 {
 	static constexpr const TCHAR* Names[] = { TEXT("Nasa"), TEXT("CrabTrap"), TEXT("StoneCorral") };
@@ -86,6 +99,8 @@ static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EWeatherState>::Names) == static_cas
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishBait>::Names) == static_cast<int32>(EFishBait::Count), "Nombres de EFishBait");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishHabitat>::Names) == static_cast<int32>(EFishHabitat::Count), "Nombres de EFishHabitat");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ETrapKind>::Names) == static_cast<int32>(ETrapKind::Count), "Nombres de ETrapKind");
+static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EHullPieceType>::Names) == static_cast<int32>(EHullPieceType::Count), "Nombres de EHullPieceType");
+static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ERaftJointKind>::Names) == static_cast<int32>(ERaftJointKind::Count), "Nombres de ERaftJointKind");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EBoatType>::Names) == static_cast<int32>(EBoatType::Count), "Nombres de EBoatType");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ECookTechnique>::Names) == static_cast<int32>(ECookTechnique::Count), "Nombres de ECookTechnique");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFireLevel>::Names) == static_cast<int32>(EFireLevel::Count), "Nombres de EFireLevel");
@@ -928,6 +943,66 @@ namespace ExploredSaveStates
 		Ar.Read(TEXT("moored"), OutBoat.bMoored);
 		Ar.Read(TEXT("mooringAnchor"), OutBoat.MooringAnchorCm);
 		Ar.Read(TEXT("mooringLength"), OutBoat.MooringLengthCm);
+	}
+
+	void SaveRaftHull(FSaveArchive& Ar, const FRaftHullSaveData& Hull)
+	{
+		WriteList(Ar, TEXT("pieces"), Hull.Pieces, [](FSaveArchive& Out, const FHullPiece& Piece)
+		{
+			Out.Write(TEXT("type"), Piece.Type);
+			Out.Write(TEXT("center"), Piece.CenterCm);
+			Out.Write(TEXT("size"), Piece.SizeCm);
+		});
+		WriteList(Ar, TEXT("joints"), Hull.Joints, [](FSaveArchive& Out, const FRaftJoint& Joint)
+		{
+			Out.Write(TEXT("a"), Joint.PieceA);
+			Out.Write(TEXT("b"), Joint.PieceB);
+			Out.Write(TEXT("kind"), Joint.Kind);
+			Out.Write(TEXT("health"), Joint.Health01);
+		});
+	}
+
+	void LoadRaftHull(const FSaveArchive& Ar, FRaftHullSaveData& OutHull)
+	{
+		OutHull = FRaftHullSaveData();
+		// No se usa ReadList para las piezas: las uniones las citan por índice, así que hay
+		// que saber qué índice guardado acaba en cuál al descartar una ilegible.
+		TArray<int32> Remap;
+		if (const FSaveValue* List = Ar.FindValue(TEXT("pieces")); List && List->IsArray())
+		{
+			Remap.Init(INDEX_NONE, List->Num());
+			for (int32 I = 0; I < List->Num(); ++I)
+			{
+				const FSaveValue& Entry = List->At(I);
+				if (!Entry.IsObject())
+				{
+					continue;
+				}
+				const FSaveArchive PieceAr(Entry);
+				FHullPiece Piece;
+				// Sin tipo o sin centro no hay pieza: un tronco inventado en el origen cambiaría el casco.
+				if (!PieceAr.Read(TEXT("type"), Piece.Type) || !PieceAr.Read(TEXT("center"), Piece.CenterCm))
+				{
+					continue;
+				}
+				// Sin tamaño: el del tipo (SizeCm a cero).
+				PieceAr.Read(TEXT("size"), Piece.SizeCm);
+				Remap[I] = OutHull.Pieces.Add(Piece);
+			}
+		}
+		ReadList(Ar, TEXT("joints"), OutHull.Joints, [&Remap](const FSaveArchive& In, FRaftJoint& Joint)
+		{
+			int32 A = INDEX_NONE;
+			int32 B = INDEX_NONE;
+			if (!In.Read(TEXT("a"), A) || !In.Read(TEXT("b"), B) || !In.Read(TEXT("kind"), Joint.Kind))
+			{
+				return false;
+			}
+			Joint.PieceA = Remap.IsValidIndex(A) ? Remap[A] : INDEX_NONE;
+			Joint.PieceB = Remap.IsValidIndex(B) ? Remap[B] : INDEX_NONE;
+			In.Read(TEXT("health"), Joint.Health01);
+			return Joint.PieceA != INDEX_NONE && Joint.PieceB != INDEX_NONE;
+		});
 	}
 
 	// --- Pesca ------------------------------------------------------------------------------------
