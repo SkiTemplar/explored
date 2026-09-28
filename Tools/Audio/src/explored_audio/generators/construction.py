@@ -17,6 +17,8 @@ from ..rng import rng_for
 SR = SAMPLE_RATE
 # Ganancia de desmontar: sonoridad momentanea como la de clavar (~ -13 LUFS).
 GAIN_DISMANTLE = 0.85
+# Ganancia de techar: algo mas flojo que colocar pieza (hojas, no madera maciza).
+GAIN_THATCH = 0.62
 
 
 def build_place(name: str) -> np.ndarray:
@@ -87,14 +89,96 @@ def build_snap(name: str) -> np.ndarray:
 
 
 def build_thatch(name: str) -> np.ndarray:
-    """Techo de hojas/paja: crujido breve al colocar o pisar una plancha de
-    techado."""
+    """Colocar una plancha de techo de palma (hojas de cocotero atadas a una
+    vara) sobre las correas, por capas.
+
+    Antes era 0,4-0,6 s de granos de ruido a 2,2-6,5 kHz con una envolvente
+    plana: el 96 % de la energia por encima de 2 kHz (centroide ~6 kHz), un
+    siseo sin peso ni golpe. Una plancha de palma pesa: se oye
+
+    - el vuelo de la plancha al bajarla: un soplo de hojas en el aire que
+      sube de 700 Hz a ~2,5 kHz en 60-100 ms, flojo;
+    - el golpe: la vara contra la correa (chasquido de contacto y modos
+      inarmonicos de madera a 260-360 Hz, muy amortiguados) y la masa de
+      hojas que cae a la vez (golpe sordo de ruido por debajo de ~300 Hz);
+    - el chasquido de los foliolos al aplastarse: una rafaga densa de
+      micro-chasquidos secos de 1-3 ms entre 1,5 y 6 kHz;
+    - el asiento: los foliolos siguen crujiendo cada vez menos (la tasa cae
+      de ~180 a ~12 por segundo) sobre un roce de hojas que se apaga;
+    - a veces la plancha resbala un poco en la correa: un roce corto de
+      adherencia-deslizamiento de la vara (tension que baja).
+    """
     rng = rng_for(name)
-    dur = rng.uniform(0.4, 0.6)
+    dur = rng.uniform(0.6, 0.75)
     n = int(dur * SR)
-    rustle = render_noise_grains(n, SR, rng, rate_hz=45.0, grain_len_s_range=(0.01, 0.03), band_hz_range=(2200, 6500), q=1.4, amp_scale=0.6)
-    env = fit_length(ar_envelope(SR, 0.03, dur - 0.05, shape=1.2), n)
-    return rustle * env
+    out = np.zeros(n)
+    hit = int(rng.uniform(0.07, 0.1) * SR)
+
+    # Vuelo de la plancha: soplo de hojas que sube de tono y crece hasta el golpe.
+    swish_n = hit
+    u = np.arange(swish_n) / swish_n
+    fc = 700.0 * (rng.uniform(3.2, 3.8)) ** u
+    swish = time_varying_filter(pink_noise(swish_n, rng), SR, fc, q=0.9, kind="bandpass")
+    swish /= np.max(np.abs(swish)) + 1e-9
+    _place(out, swish * u**2 * 0.12, 0)
+
+    # Golpe: contacto de la vara, modos de la vara/correa y masa de hojas.
+    _place(out, _hammer_burst(rng, int(0.001 * SR), fc=rng.uniform(2200, 2800), q=0.7, kind="highpass", decay_s=0.0003) * 0.3, hit)
+    pole = modal_hit(
+        SR, 0.12, base_freq=rng.uniform(260, 360),
+        mode_ratios=[1.0, 2.3, 3.9], mode_dampings_s=[0.03, 0.016, 0.008],
+        mode_amps=[1.0, 0.5, 0.25], rng=rng, detune=0.04,
+    )
+    _place(out, pole * 0.2, hit)
+    _place(out, _hammer_burst(rng, int(0.05 * SR), fc=rng.uniform(600, 900), q=1.0, kind="bandpass", decay_s=0.01) * 0.25, hit)
+    _place(out, _hammer_burst(rng, int(0.09 * SR), fc=300.0, q=0.7, kind="lowpass", decay_s=0.025) * 0.3, hit + int(0.002 * SR))
+
+    # Foliolos: micro-chasquidos secos, rafaga al aplastarse y asiento cada vez
+    # mas espaciado (proceso de Poisson con tasa que decae).
+    tail_n = n - hit
+    t = 0.0
+    rate0, rate1 = rng.uniform(160, 200), rng.uniform(10, 14)
+    tail_s = tail_n / SR
+    while True:
+        frac = t / tail_s
+        rate = rate0 * (rate1 / rate0) ** frac
+        # La rafaga del aplastamiento (primeros 40 ms) es mucho mas densa.
+        if t < 0.04:
+            rate *= 6.0
+        t += rng.exponential(1.0 / rate)
+        if t >= tail_s:
+            break
+        glen = int(rng.uniform(0.001, 0.003) * SR)
+        g = static_filter(rng.standard_normal(glen), SR, fc=rng.uniform(1500, 6000), q=1.3, kind="bandpass")
+        g *= np.exp(-np.arange(glen) / (glen / 4.0))
+        g /= np.max(np.abs(g)) + 1e-9
+        amp = rng.uniform(0.3, 1.0) * (1.0 - 0.75 * (t / tail_s)) * (1.4 if t < 0.04 else 1.0)
+        _place(out, g * amp * 0.32, hit + int(t * SR))
+
+    # Roce de las hojas contra hojas: colchon que se apaga tras el golpe.
+    bed = static_filter(pink_noise(tail_n, rng), SR, fc=rng.uniform(1800, 2600), q=0.8, kind="bandpass")
+    bed /= np.max(np.abs(bed)) + 1e-9
+    tt = np.arange(tail_n) / SR
+    bed *= np.exp(-tt / rng.uniform(0.09, 0.13)) * np.minimum(tt / 0.004, 1.0)
+    _place(out, bed * 0.22, hit)
+
+    # A veces la plancha resbala en la correa: la vara roza y se frena.
+    if rng.uniform() < 0.5:
+        slide_n = int(rng.uniform(0.05, 0.08) * SR)
+        rate = np.linspace(rng.uniform(260, 340), 60.0, slide_n)
+        ticks = np.zeros(slide_n)
+        ticks[np.nonzero(np.diff(np.floor(np.cumsum(rate) / SR), prepend=0.0))[0]] = 1.0
+        ticks *= rng.uniform(0.5, 1.0, slide_n)
+        slide = static_filter(ticks, SR, fc=rng.uniform(900, 1300), q=3.5, kind="bandpass")
+        slide /= np.max(np.abs(slide)) + 1e-9
+        slide *= np.linspace(1.0, 0.0, slide_n) ** 1.2
+        _place(out, slide * 0.14, hit + int(rng.uniform(0.12, 0.2) * SR))
+
+    out = static_filter(out, SR, fc=40.0, q=0.707, kind="highpass")
+    out = np.tanh(2.0 * out / (np.max(np.abs(out)) + 1e-9)) / np.tanh(2.0)
+    fade = int(0.02 * SR)
+    out[-fade:] *= np.linspace(1.0, 0.0, fade) ** 2
+    return out * GAIN_THATCH
 
 
 def _place(out: np.ndarray, x: np.ndarray, pos: int) -> None:
