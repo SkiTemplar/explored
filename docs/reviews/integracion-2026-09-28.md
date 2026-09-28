@@ -601,3 +601,166 @@ comprobar.
   pide el spec de host. La cola, la comprobación de chunk y NetBudget no se marcan.
 - La tabla de recuento ya iba una casilla por detrás en «hechas» y en «en parte» antes de
   esta pasada, así que no se ha tocado.
+
+## Ejecución 13:00 UTC
+
+Base: `origin/main` en `8410a6d` al empezar y en `7891b2f` (más esta PR) al acabar. Había 28 PR abiertas (#70–#98, sin #83) y durante la pasada llegaron #100 y #101. Las revisiones se hicieron en paralelo con subagentes de solo lectura, y las comprobaciones, sobre cada rama con `main` fusionado.
+
+**Aviso: esta ejecución se solapó con otras tres fuentes de fusiones.** La larga de las 11:00 fusionó #73, #74, #78 y #88. La de las 15:00 fusionó #71. La sesión local del director fusionó #94 y #89. En cada caso, antes de fusionar volví a leer la cabeza de la rama y `main` (`expectedHeadSha`). #73, #74 y #78 ya las había probado y daba el mismo veredicto. En #78 me quedo con la resolución de `00-TODO.md` de la otra ejecución: todo el combate como «en parte». Con una pasada de más de 3 h en una máquina de 4 núcleos, las ejecuciones cada 2 h se pisan. Conviene espaciarlas o usar un cerrojo: una etiqueta o una rama `nube/integrando`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #70 | `nocturno/revision-2026-09-28` | **Fusionada en parte** (#99, `a83d987`) + `necesita-unreal` | Su parte hasta `160e6fe` está verde y sin fallos, y entró por #99 apuntando a ese mismo commit, sin reescribir nada. Incluye: `Advance` del incendio en uint64, cotas de `Load`, arena con 4 revisiones como máximo, agua de lluvia ajena que no se vuelve potable, amarre al cargar, flotación del astillero y chapoteos. Después, el autor subió `eb71200`, que cambia el HLSL de `M_Terrain` (un material, así que se verifica en Unreal); eso y el paso en arena siguen en #70. |
+| #71 | `nube/mundo-2026-09-28-cocos` | Cambios pedidos → fusionada a las 15:00 (`b7037a9`) | Al talar soltaba `coco_verde` y repartía de 0 a 6 cocos, contra la biblia 02 §1.2 y §13.1. El autor lo corrigió en `ef8b2d6` y `eda1d95`. |
+| #72 | `debug/playtest-automatico` | `necesita-unreal` + cambios | Hay dos cosas que moverían el pawn y harían capturas a la vez: el bot y `ExploredShotSubsystem`. Además, el bot apunta con `SetWorldRotation`, que pisa la rotación de control. |
+| #73 | `nube/packs-2026-09-28` | Fusionada (a las 11:00, `4a5b1ad`) | La comprobé con `main`, con los lotes 6 y 7: DataCheck 0 errores, pytest 189 passed, Packs 7 passed. |
+| #74 | `nocturno/datos-2026-09-28b` | Fusionada (a las 11:00, `d184e03`) | DataCheck 0 errores, pytest 206 passed, Localization 27 passed. Los peligros coinciden con la biblia 02 §2.4. |
+| #75 | `arte/fondo-marino` | `necesita-unreal` + cambios | Toca el commandlet. Problemas: el tope de 2000 por celda se reparte mal por especie, hay celdas sembradas dos veces y «lote6» choca con #73. |
+| #76 | `nube/mecanicas-2026-09-28-entradas` | **Fusionada** (`a6108d3`) | Validación de entradas del terreno editable: `InWorld`, `ValidExtent`, topes de escalera y `bRejected`. Modelo puro con spec. |
+| #77 | `claude/update-todo-checklist-g6y9m0` | **Fusionada** (`77e3f53`) | Auditoría de `00-TODO.md`. Se resolvió el choque con #83 en H4, se rehizo el recuento y se cambiaron por «anterior a #41» los hashes `22ec751` y `af649e9`, que eran la raíz del clon superficial. |
+| #78 | `claude/implement-combat-model-h1-qweffn` | Fusionada (a las 11:00, `b030518`) | La comprobé: 878/0 en normal y con ASan, DataCheck 0 errores y 198 passed. La replicación está definida según la biblia 08. |
+| #79 | `claude/h4-text-content-iytug5` | `necesita-unreal` | `AchievementsDataSpec` depende de un subsistema. Los textos cumplen la guía anti-IA. Va después de #80. |
+| #80 | `claude/complete-h5-achievements-localization-be97tx` | `necesita-unreal` | Toca `AchievementsSubsystem`. Es el catálogo canónico de logros y tiene que entrar antes que #79, #81, #90 y #91. Quedan decisiones abiertas: fase publicada, «mil» cocos frente a 500 y la rareza de `buscador_de_vetas`. |
+| #81 | `claude/livestock-pens-phase-2-be63wr` | `necesita-unreal` + cambios | Las piezas F2 (gallinero, pocilga y corral) acabarían en el menú del acceso anticipado, porque nadie lee `phase`. Además es trabajo de F2. |
+| #82 | `claude/harvesting-h0-complete-lqtnfp` | `necesita-unreal` + cambios | Toca `ExploredWiringSubsystem`. `FVegetationNetKey`/`FVegetationNetState` están duplicados con #93 y con semántica opuesta. |
+| #84 | `claude/h0-survival-conditions-2z1wec` | `necesita-unreal` | Toca componentes y el HUD. Nadie llama a `ApplyContactBurn`, y la cesta, la estantería y el arcón no son contenedores. |
+| #85 | `claude/climb-model-h1-t20vxc` | `necesita-unreal` | Está apilada sobre #72. Lo suyo es puro: si se rebasa sin #72, puede entrar por la nube. |
+| #86 | `claude/h1-inventory-completion-y9tnyv` | `necesita-unreal` | Toca `CarryComponent` y el panel de inventario. Sin fallos serios. Choca con #84. |
+| #87 | `claude/fix-beach-terrain-profile-tvvrs3` | `necesita-unreal` | El código es puro y correcto, pero el terreno está horneado: hay que fusionarla y rehornear en la misma sesión local. |
+| #88 | `claude/terrain-edits-pipeline-alwur4` | Cambios pedidos → fusionada a las 11:00 (`c807d8d`) | Aquí pedí cambios por el cuelgue de la pala con `Center = (1e10, 0, 0.3)`. En `main` ya no pasa: `Shovel` rechaza con `InWorld` (#76) y `ForEachSampleInBox` corta las cajas desmesuradas (#97). Sigue abierto el duplicado de la tabla de herramientas con #95 (0,35 frente a 0,50 m), que decide el director. |
+| #89 | `claude/h0-network-codec-queue-o6u5gq` | Fusionada (por el director, `b6a9503`) + arreglo en la PR de esta integración | Códec de deltas, cola, checksum y NetBudget, todo puro; el formato coincide con la biblia 08 §2.2. Entró sin mi arreglo (`IsNaN` → `!IsFinite` en la distancia de la cola), así que va aparte en la PR de este informe. |
+| #90 | `claude/boat-pieces-pure-models-1vfxhd` | `necesita-unreal` + cambios | Duplica `FHullAssemblyModel`/`FRaftYardModel`, que ya están en `main`. Tiene que decidirlo el director. |
+| #91 | `claude/add-h2-game-data-l4x8pd` | `necesita-unreal` + cambios | «Sal con vida» contradice el aire no letal. Batir chapa hace inútil fundir chatarra. `viga_apoyo`, `tablon_contencion` y `clavija_roca` están repetidas en otras PR. |
+| #92 | `claude/phase-3-pure-models-65r78m` | Cambios pedidos | F3 queda fuera del acceso anticipado (GDD v2 §6.2). Hay NaN con matemáticas rápidas en `BarterModel.cpp:62` y en `RaiderCampsModel`. El machete tiene 1,5 m y la biblia dice 1,2. Marca `[x]` sin estar hecho. |
+| #93 | `claude/network-pieces-h1-h3-6jsk6r` | Cambios pedidos | Los tipos de vegetación chocan con #82. `EntryBytes = 13`, pero son 12 (lo demuestra #86). Repite constantes de NetBudget de #89. |
+| #94 | `audio/soundfont-acustico` | Cambios pedidos → fusionada por el director (`7d26939`) | Entró con el bloqueo sin resolver: sin `fluidsynth` cae la suite de Audio (ver abajo). Las licencias están bien (MIT). |
+| #95 | `claude/mining-terrain-h2-models-fnc9sw` | Cambios pedidos | Duplica la tabla de herramientas de #88. El guardado de vetas no es idempotente (`ExhaustedDay`). `CompactStrip` no tiene topes. |
+| #96 | `claude/early-access-crafting-recipes-vwbw8s` | `necesita-unreal` + cambios | `wear` promete efectos que no existen. Filtrar y destilar usan la técnica «secar». Hay un superlativo vacío en `templates.json:116`. |
+| #97 | `claude/audit-pure-models-quality-l5fwix` | **Fusionada** (`4e6a7b3`) | Auditoría de NaN, cuelgues y desbordes, y `PropertyFuzzSpec`. Resolví los conflictos con #70 y #76 (detalle abajo). |
+| #98 | `claude/improve-python-tools-quality-duaxgr` | Esperando (la última) | Está bien: salida de audio idéntica al bit y ninguna regla relajada. Pero su CI pondría en rojo unas 12 PR abiertas, así que tiene que entrar la última y rebasada. Hay que añadir `permissions: contents: read`. |
+| #100 | `nube/paleta-2026-09-28` | **Fusionada** (`2c74aea`) | Siete muestras de comida en celdas libres y un test cruzado con el catálogo de packs. Textures: 375 passed. |
+| #101 | `claude/open-licensed-soundtrack-2v46dz` | Sin decidir: revisión en curso; mantiene `necesita-unreal` | Llegó durante la pasada. No toca `Source`, `Config` ni `Content`: son `Tools/Audio` y docs. La etiqueta la puso su autor. La revisión de licencias (`music_sources.json`) y la suite de Audio no acabaron a tiempo; queda para la próxima pasada. |
+
+### Comprobaciones
+
+| PR | HostTests | + ASan/UBSan | + matemáticas rápidas | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|---|
+| #70 (#99) | 821 / 0 | 821 / 0 | — | — | Audio: 109 passed |
+| #73 | `nube/packs-2026-09-28` | Fusionada (a las 11:00, `4a5b1ad`) | La comprobé con `main`, con los lotes 6 y 7: DataCheck 0 errores, pytest 189 passed, Packs 7 passed. |
+| #74 | `nocturno/datos-2026-09-28b` | Fusionada (a las 11:00, `d184e03`) | DataCheck 0 errores, pytest 206 passed, Localization 27 passed. Los peligros coinciden con la biblia 02 §2.4. |
+| #76 | 824 / 0 | 824 / 0 | — | — | |
+| #78 | `claude/implement-combat-model-h1-qweffn` | Fusionada (a las 11:00, `b030518`) | La comprobé: 878/0 en normal y con ASan, DataCheck 0 errores y 198 passed. La replicación está definida según la biblia 08. |
+| #89 | `claude/h0-network-codec-queue-o6u5gq` | Fusionada (por el director, `b6a9503`) + arreglo en la PR de esta integración | Códec de deltas, cola, checksum y NetBudget, todo puro; el formato coincide con la biblia 08 §2.2. Entró sin mi arreglo (`IsNaN` → `!IsFinite` en la distancia de la cola), así que va aparte en la PR de este informe. |
+| #97 | 939 / 0 | 939 / 0 | 939 / 0 | — | Sobre `main` con #78 |
+| #100 | — | — | — | — | Textures: 375 passed |
+
+### Arreglos subidos
+
+- **#77 `9e56f9d`:** merge de `main`. Se conservan en H4 la nota de rugosidad y la casilla de texturas de #83, se rehace el recuento y se cambian los hashes de la raíz del clon por «anterior a #41».
+- **#97 `cf2e949`:** resolución de los arreglos duplicados con #70 y #76.
+  - Amarre: me quedo con el de #70, medido desde la posición ya saneada.
+  - Clave de arena: tiene que cumplir las dos cotas.
+  - Minutos del incendio: hasta 1e12.
+  - `TerrainEditModel`: me quedo con las validaciones de #76 y quito la segunda definición de `IsFiniteVector`, `InReach` y `MaxToolReach`. Añado `IsFinite` explícito en la escalera.
+  - `PlaceSoil`: vuelve al orden de #76. Sin ese cambio, un presupuesto infinito no daba `bRejected`, y lo detectó el spec de #76.
+- **#89 (en esta PR, `5d066e0`):** `SanitizeDistance` usaba `FMath::IsNaN`, que con matemáticas rápidas puede desaparecer al compilar. Además, −∞ pasaba como 0, es decir, como chunk prioritario. Ahora usa `!FMath::IsFinite`, y el spec añade ±∞: con el código anterior, el caso −∞ sale de la cola y falla.
+- **#89:** los merges de `main` (`833143c` y `3750771`) no llegaron a subir, porque el director la fusionó antes con su propio merge.
+- **`00-TODO.md` (en esta PR, `4ac213e`):** la casilla de `FExploredTerrainDeltaPacket` estaba `[x]` con una nota «En parte», y la tabla no cuadraba. Queda con su línea «Hecho»: la casilla pide el formato y el spec de host. Rehago el recuento contando las casillas del fichero.
+- **Audio:** probé un `conftest.py` que salta solo lo que necesita FluidSynth. No basta: 12 tests más renderizan música directamente. Lo deshice y lo dejo como tarea (ver abajo).
+
+### Duplicados y choques
+
+- **Tabla de herramientas de picado:** #88 y #95 (pala tosca de 0,35 m frente a 0,50 m; botín de 6/m³ frente a 1 por golpe). Tiene que quedar una sola, y lo más limpio es que `FTerrainEdits` lea `FMiningModel::ToolInfo`.
+- **Estado de red de la vegetación:** #82 y #93 definen los mismos tipos con semántica opuesta. Propuesta: el dueño es #82.
+- **Logros:** #80 es el catálogo canónico. #79, #81, #90 y #91 tienen que quedarse con su versión al rebasar.
+- **Piezas de mina:** `viga_apoyo` está en #74 (ya en `main`), #91 y #95, y `tablon_contencion` en #91 y #95. Al rebasar, #91 y #95 tienen que quitarlas.
+- **Objetos de escalada:** `clavija_roca` está en #85 y #91; `pie_de_palmera` en #85 y #96.
+- **Barcos:** #90 duplica `FHullAssemblyModel`/`FRaftYardModel` de `main`.
+- **#85** está apilada sobre #72.
+- **«lote6»:** lo usan #73 (ya en `main`) y #75.
+
+### Notas para el director
+
+- **`Tools/Audio` desde #94:** sin `fluidsynth`, fallan 12 tests y dan error 68. Con `apt install fluidsynth` pasan los 170. La forma más sencilla de arreglarlo es instalar `fluidsynth` en el script de configuración del entorno de la nube. La otra es marcar con un `skip` los tests que dependen de FluidSynth: la fixture `rendered`, la muestra de flauta, `test_determinism`, `test_build_and_manifest`, `test_music_*` y `test_new_content`.
+
+- **#70/#99:** el amarre de un guardado con posición NaN ya queda descartado. Con #97, la posición se sanea antes de medir la distancia al poste.
+- **#80:** hay que decidir si los 5 logros del GDD §16 que dependen de fases posteriores quedan fuera del acceso anticipado (`las_siete_islas`, `el_mapa_entero`, `limon_zarpa`, `naufrago_de_verdad`, `sin_mapa`).
+- **#74** marca como propuesta que la piña vuelva a dar fruto cada 8 días. Además deja anotadas dos contradicciones entre `FFarmModel` y la biblia 02 §10.1, que tiene que decidir el director: la planta muere a los 4 días sin riego y el espantapájaros cubre 15 m frente a los 4 m de la biblia.
+- **Choque interno de la biblia:** la 02 §2.5 pone las cavernas bioluminiscentes en Manglar y Meseta, y la 04 §2.3 al fondo de los tubos de lava de Humo. `mining.json` sigue a la 04.
+- **Máquina:** con 4 núcleos, el pytest completo de DataCheck tarda unos 20 min y una pasada limpia de HostTests, unos 10. #96 dice que acelera DataCheck 8 veces.
+
+### 00-TODO.md
+
+- **#89:** la casilla «`FExploredTerrainDeltaPacket`…» queda `[x]` con su línea «Hecho». Pide el formato y el spec de host, y `FTerrainDeltaCodecModel` lo cumple entero. La cola, la comprobación de integridad y `Explored.NetBudget` siguen «en parte», como las dejó el director.
+- **#78:** se mantiene lo que dejó la ejecución de las 11:00: las casillas de combate y las estadísticas de fauna, «en parte». Es coherente con el criterio de #77 (modelo puro sin componente ni RPC).
+- **#76, #97, #99, #73, #74 y #100** no completan ninguna casilla: son endurecimiento, arreglos, datos o arte sin importar.
+- El recuento se rehace contando las casillas del fichero: 19 hechas, 44 en parte y 148 sin empezar, de 211.
+
+## Ejecución 17:00 UTC
+
+Base: `origin/main` en `eb79756` al empezar y en `8bf25cb` al acabar, sin contar esta PR. Había 23 PR abiertas (#70–#108). Solo se revisa lo que ha cambiado desde la pasada de las 13:00:
+
+- las PR nuevas #102, #105, #106 y #108;
+- #101, que quedó a medias;
+- los commits nuevos de #70 y #93.
+
+Las revisiones las hicieron subagentes de solo lectura. Las comprobaciones se pasaron sobre cada rama con `main` fusionado, y se repitieron tras cada fusión cuando la PR tocaba el mismo código.
+
+| PR | Rama | Decisión | Motivo |
+|---|---|---|---|
+| #105 | `nube/packs-2026-09-28` | **Fusionada** (`713aa65`) | Lote 8 de Quaternius (piedras de suelo y madera flotante). Las licencias son CC0 y ya estaban en `packs.json`. El esquema es el de los lotes 6 y 7, sin duplicados. |
+| #101 | `claude/open-licensed-soundtrack-2v46dz` | **Fusionada** con arreglo (`f01b9eb`) | Banda sonora grabada: 11 piezas CC0 y 10 CC BY 4.0, sin NC, ND ni SA. Solo toca `Tools/Audio` y docs, así que le quité `necesita-unreal`. `pin` descargaba sin validar el `id` ni la URL (arreglado). Resolví el choque de `00-TODO.md` con `main`. |
+| #108 | `nube/mecanicas-2026-09-28-guardado-casco` | **Fusionada** con arreglo (`06e9e0e`) | El casco se guarda y se recarga (clave `hull` opcional). Faltaba el tope de uniones al cargar (carga cuadrática) y el tope de piezas al construir. |
+| #102 | `nube/mundo-2026-09-28-surco` | **Fusionada** con arreglo (`86c0606`) | Surco de la balsa arrastrada. La superficie se tomaba bajo el centro, así que cavaba la roca bajo la popa. `WetSand` se hundía como arena seca y las piezas desmesuradas colgaban el bucle. En la GDD queda como propuesta pendiente del director. |
+| #106 | `nocturno/datos-2026-09-28c` | **Fusionada** con arreglo (`8bf25cb`) | Fauna por nivel de detalle, población por isla y guano de Los Dientes. El validador se rompía con datos mal formados (arreglado). Coherente con la biblia 04 §2.4 y la 08 §2.3 y §2.7. |
+| #70 | `nocturno/revision-2026-09-28` | Sigue `necesita-unreal` | Commits nuevos: huella mínima de la escalera y `MaxVolume` negativo, ambos puros y correctos, y pasos en arena en Audio. También toca el HLSL de `M_Terrain` en `build_materials.py`, que hay que ver en el editor. Durante la pasada llegaron `a39b2cb` (merge de `main` con la misma resolución de `CarveStairs` que la mía), `08dbb7b` (racha de rápidos en combate) y `ecfb1ae` (l10n). Esos tres no los he probado. |
+| #93 | `claude/network-pieces-h1-h3-6jsk6r` | Cambios pedidos (siguen) | `9d64173` arregla `EntryBytes = 12` y los techos de NetBudget. Sigue el choque de ODR con #82 en `FVegetationNetKey`/`FVegetationNetState`, que decide el director. |
+| #72, #75, #79–#82, #84–#87, #90–#92, #95, #96, #98 | — | Sin cambios | No tienen commits nuevos desde la pasada de las 13:00. Siguen como allí. |
+
+### Comprobaciones
+
+| PR | HostTests | + ASan/UBSan | DataCheck `--strict` | Otros |
+|---|---|---|---|---|
+| #105 | — | — | 0 errores | Packs 7 passed; `l10n export --check` limpio |
+| #101 | — | — | — | Audio 239 passed, 106 skipped (con FluidSynth) |
+| #108 | 1062 / 0 | 1062 / 0 | 0 errores | `l10n --check` limpio |
+| #102 | 1084 / 0 | 1084 / 0 | 0 errores | `l10n --check` limpio; sobre `main` con #108 |
+| #106 | — | — | 0 errores; pytest 257 passed | Localization 27 passed |
+| #70 (hasta `97f3d37` + `main`) | 1084 / 0 | 1084 / 0 | — | Audio 172 passed |
+
+### Arreglos subidos
+
+- **#101:**
+  - `0a1c6cd`: `safe_to_fetch` comprueba el `id` y el dominio antes de `ensure_original` en `pin`, que se salta `validate()` porque las piezas nuevas no tienen sha256. Añado un test parametrizado con `../`, `file://` y otro dominio; falla sin el arreglo.
+  - `2130a9c`: merge de `main`, con `00-TODO.md` sobre la tabla de seis columnas y H5 recontado (4 hechas, 22 sin empezar, 26 en total).
+- **#108 `2433d3a`:**
+  - `MaxSavedJoints = 4 × MaxSavedPieces` al cargar.
+  - `AddPiece` rechaza la pieza 257 y las que pasan de `MaxSavedExtentCm`, así que lo que se arma se guarda entero.
+  - Specs de los dos topes.
+- **#102 `d3e19b0`:**
+  - La superficie se toma en `S + LX` de cada columna.
+  - `WetSand` cuenta como mojada.
+  - Las piezas de más de 50 m de lado no se marcan.
+  - Tres specs nuevos; los tres fallan sin el arreglo.
+  - En la GDD, el surco queda como «[propuesta, pendiente del director]». Se corrige que la marea lo borre por encima de la pleamar, y `QueueChanged` queda como API por hacer.
+- **#106 `139a135`:** con un nivel `null`, una entrada de población que no es objeto o `groups: true`, `fauna.py` ahora da error de validación en vez de lanzar una excepción o aceptarlo. Hay un test para cada caso; los tres fallan sin el arreglo.
+- **#70:** preparé el merge de `main` (en `CarveStairs`, los `IsFinite` de `main` más la huella mínima `StairGrid` de la rama), pero no lo subí: su rutina había fusionado ya `main` con la misma resolución.
+- **Entorno:** instalé `fluidsynth` con apt en esta sesión. Con él, `Tools/Audio` pasa entero.
+
+### Notas para el director
+
+- **#102:** hay que decidir si el surco entra en el alcance y, si entra, cómo se borra por encima de la pleamar. Hoy se queda para siempre en la capa `sand` del guardado.
+- **#101:**
+  - La autoría de «Romance anónimo» está disputada (la reclamó Narciso Yepes). Conviene revisarla legalmente o cambiar la pieza.
+  - Los OGG (unos 60 MB) no se versionan, y los −16 LUFS no se han comprobado en CI porque no hay caché de audio.
+- **#105:** la arenisca, el pedernal y la madera flotante salen más grandes que las mallas propias de `kit-construccion.md`. Lo tiene que confirmar dirección de arte.
+- **#106:** en PIE, comprobar que las fragatas que pasan a replicarse al lanzarse en picado no se saltan el tope de replicados.
+- **#90** frente a **#108:** la clave `hull` del guardado pertenece al casco de `FRaftYardModel`. Si entra `FBoatPiecesModel`, tendrá que tener su propia clave.
+- **`Tools/Audio`:** sigue haciendo falta `fluidsynth` en el script de configuración de la nube (ver la pasada de las 15:00).
+
+### 00-TODO.md
+
+- Ninguna PR de esta pasada completa una casilla de la lista original.
+- **#101** trae su propia casilla `[x]`: las herramientas de la banda sonora grabada existen de verdad. Añade además dos `[ ]`: importar los OGG en el editor y los créditos en el juego y en Steam.
+- **#106** se anota en la nota «en parte» de la fauna terrestre (datos de LOD y población; faltan la especie C++, el LOD aplicado y la navegación).
+- Recuento: 20 hechas, 44 en parte y 150 sin empezar, de 214.

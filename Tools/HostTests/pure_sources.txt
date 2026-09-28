@@ -4,6 +4,7 @@ Audio/MusicDirectorModel.cpp
 Boats/BoatModel.cpp
 Boats/HullAssemblyModel.cpp
 Boats/RaftYardModel.cpp
+Boats/RaftFurrowModel.cpp
 Building/BuildingModel.cpp
 Carry/InventoryModel.cpp
 Carry/ContainerReplicationModel.cpp

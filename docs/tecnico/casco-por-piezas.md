@@ -32,9 +32,10 @@ Modelo: `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), puro
    actualizan las cargas del modelo, se reevalúa y se pasa a `FBoatModel` la nueva GM
    y el ángulo de vuelco. Si el nuevo veredicto es `Capsizes` o `Sinks`, `FBoatModel`
    lo aplica con su condición `Capsized` o `Wrecked`.
-5. **Guardado.** Hay que añadir la lista de piezas (tipo, centro y tamaño) a
-   `FBoatSaveData`. Las cargas no se guardan: se reconstruyen desde el inventario del
-   barco.
+5. **Guardado.** Resuelto en los modelos puros; falta el enganche. El casco va aparte
+   de `FBoatSaveData` (ver `astillero-balsas.md`, «Persistencia»): piezas (tipo, centro y
+   tamaño) y uniones con `ExploredSaveStates::SaveRaftHull` / `LoadRaftHull`. Las cargas
+   no se guardan: se reconstruyen desde el inventario del barco y de quién va a bordo.
 
 ## Convenciones
 

@@ -166,6 +166,15 @@ FVector FLaunchPath::WorldAt(float S) const
 
 int32 FRaftYardModel::AddPiece(const FHullPiece& Piece)
 {
+	const auto InRange = [](const FVector& V)
+	{
+		return FMath::Abs(V.X) <= MaxSavedExtentCm && FMath::Abs(V.Y) <= MaxSavedExtentCm && FMath::Abs(V.Z) <= MaxSavedExtentCm;
+	};
+	// El mismo tope que al cargar: un casco que se puede armar se puede guardar y recargar entero.
+	if (Hull.GetPieces().Num() >= MaxSavedPieces || !InRange(Piece.CenterCm) || !InRange(Piece.SizeCm))
+	{
+		return INDEX_NONE;
+	}
 	Invalidate();
 	return Hull.AddPiece(Piece);
 }
@@ -736,6 +745,63 @@ void FRaftYardModel::Substep(float H, float PushForceN, FRaftPushReport& Report)
 		// Una pieza que nadie ató se va flotando al tocar el agua.
 		Report.Damage.Released.Append(ReleaseLoosePieces());
 	}
+}
+
+FRaftHullSaveData FRaftYardModel::ToHullSaveData() const
+{
+	FRaftHullSaveData Data;
+	Data.Pieces = Hull.GetPieces();
+	Data.Joints = Joints;
+	return Data;
+}
+
+FRaftYardModel FRaftYardModel::FromHullSaveData(const FRaftHullSaveData& Data, int32* OutDiscarded)
+{
+	FRaftYardModel Yard;
+	int32 Discarded = 0;
+
+	// Índice guardado → índice en el casco rehecho (INDEX_NONE si se descarta).
+	TArray<int32> Remap;
+	Remap.Init(INDEX_NONE, Data.Pieces.Num());
+	const auto InRange = [](const FVector& V)
+	{
+		return FMath::Abs(V.X) <= MaxSavedExtentCm && FMath::Abs(V.Y) <= MaxSavedExtentCm && FMath::Abs(V.Z) <= MaxSavedExtentCm;
+	};
+	for (int32 I = 0; I < Data.Pieces.Num(); ++I)
+	{
+		const FHullPiece& Piece = Data.Pieces[I];
+		// InRange descarta también los NaN (toda comparación con NaN es falsa), pero con
+		// matemáticas rápidas no se puede contar con eso: AddPiece los filtra por bits.
+		const bool bValid = Piece.Type < EHullPieceType::Count && InRange(Piece.CenterCm) && InRange(Piece.SizeCm)
+			&& Yard.Hull.GetPieces().Num() < MaxSavedPieces;
+		Remap[I] = bValid ? Yard.AddPiece(Piece) : INDEX_NONE;
+		Discarded += Remap[I] == INDEX_NONE ? 1 : 0;
+	}
+
+	for (const FRaftJoint& Saved : Data.Joints)
+	{
+		if (Yard.Joints.Num() >= MaxSavedJoints)
+		{
+			++Discarded;
+			continue;
+		}
+		const int32 A = Remap.IsValidIndex(Saved.PieceA) ? Remap[Saved.PieceA] : INDEX_NONE;
+		const int32 B = Remap.IsValidIndex(Saved.PieceB) ? Remap[Saved.PieceB] : INDEX_NONE;
+		// AddJoint rechaza la pieza inexistente, la repetida, consigo misma, el tipo desconocido y el hueco.
+		const int32 Index = (A == INDEX_NONE || B == INDEX_NONE) ? INDEX_NONE : Yard.AddJoint(A, B, Saved.Kind);
+		if (Index == INDEX_NONE)
+		{
+			++Discarded;
+			continue;
+		}
+		Yard.Joints[Index].Health01 = RaftYardDetail::IsFiniteValue(Saved.Health01) ? FMath::Clamp(Saved.Health01, 0.0f, 1.0f) : 0.0f;
+	}
+
+	if (OutDiscarded)
+	{
+		*OutDiscarded = Discarded;
+	}
+	return Yard;
 }
 
 FBoatDefinition FRaftYardModel::ToBoatDefinition() const

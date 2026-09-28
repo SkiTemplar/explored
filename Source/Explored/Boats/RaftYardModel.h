@@ -150,6 +150,20 @@ struct EXPLORED_API FRaftPushReport
 };
 
 /**
+ * Casco por piezas tal como se guarda (GDD v2 §3.14 y §3.17): piezas y uniones.
+ * Las cargas y los pasajeros no se guardan, porque salen del inventario del barco
+ * y de quién va a bordo al cargar.
+ */
+struct EXPLORED_API FRaftHullSaveData
+{
+	TArray<FHullPiece> Pieces;
+	/** Índices de pieza en Pieces. */
+	TArray<FRaftJoint> Joints;
+
+	bool IsEmpty() const { return Pieces.Num() == 0; }
+};
+
+/**
  * Modelo puro del astillero de balsas (GDD v2 §3.17): uniones entre piezas,
  * botadura desde tierra (arrastre, rodillos, rampa) y daño por roce y golpes.
  *
@@ -192,12 +206,20 @@ public:
 	/** Frenado del agua en la orilla (1/s por unidad de peso sostenido). */
 	static constexpr float ShallowWaterDragPerS = 0.5f;
 
+	/** Tope de piezas de un casco guardado: un guardado manipulado no puede dejar Evaluate calculando minutos. */
+	static constexpr int32 MaxSavedPieces = 256;
+	/** Tope de cada coordenada del centro y de cada lado de una pieza guardada (cm). */
+	static constexpr float MaxSavedExtentCm = 5000.0f;
+	/** Tope de uniones de un casco guardado: sin él, cargar uniones repetidas es cuadrático. */
+	static constexpr int32 MaxSavedJoints = 4 * MaxSavedPieces;
+
 	static const FRaftJointSpec& JointSpec(ERaftJointKind Kind);
 	static const FLaunchSurfaceSpec& SurfaceSpec(ELaunchSurface Surface);
 	static float PushForceN(int32 People) { return PushForcePerPersonN * FMath::Max(People, 0); }
 
 	// --- Construcción
 
+	/** INDEX_NONE si ya hay MaxSavedPieces o la pieza pasa de MaxSavedExtentCm: lo que se arma se puede guardar. */
 	int32 AddPiece(const FHullPiece& Piece);
 	/** Desmonta una pieza: se quitan sus uniones y se renumeran las demás. */
 	bool RemovePiece(int32 Index);
@@ -267,6 +289,21 @@ public:
 
 	/** Empuja (N, positivo hacia el mar) durante DeltaSeconds. Sin efecto si no está en tierra. */
 	FRaftPushReport Push(float PushForceN, float DeltaSeconds);
+
+	// --- Guardado
+
+	/** Piezas y uniones en el orden actual, con la salud de cada unión. */
+	FRaftHullSaveData ToHullSaveData() const;
+	/**
+	 * Rehace el casco de un guardado, en tierra y sin camino (quien llama pone
+	 * SetAfloat o PlaceOnPath). Descarta, sin tocar el resto, las piezas con
+	 * valores no finitos o más allá de MaxSavedExtentCm, las que pasan de
+	 * MaxSavedPieces, las uniones que pasan de MaxSavedJoints y las que ya no se podrían hacer (pieza descartada o
+	 * inexistente, repetida, consigo misma, tipo desconocido o piezas separadas).
+	 * Una salud no finita cuenta como unión rota; las demás se recortan a 0–1.
+	 * Con un guardado válido, ToHullSaveData devuelve exactamente lo guardado.
+	 */
+	static FRaftYardModel FromHullSaveData(const FRaftHullSaveData& Data, int32* OutDiscarded = nullptr);
 
 	/** Ficha de navegación del casco actual (FHullAssemblyModel::ToBoatDefinition). */
 	FBoatDefinition ToBoatDefinition() const;
