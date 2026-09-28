@@ -1,7 +1,7 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: 30 logros, ids ASCII, textos en ES y EN, los ejemplos
+tipo compatible) y añade las de diseño: entre 30 y 60 logros, ids ASCII, textos en ES y EN, los ejemplos
 del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
 
@@ -11,12 +11,16 @@ import math
 import re
 from pathlib import Path
 
-ACHIEVEMENT_COUNT = 30
+from . import estilo
+
+# 30 de partida (GDD §16); biblia 07 §2 los lleva a 54 dentro del rango 40–60.
+ACHIEVEMENT_MIN = 30
+ACHIEVEMENT_MAX = 60
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 STAT_KINDS = {"counter", "max", "set", "flag"}
 STAT_SCOPES = {"profile", "run"}
 COMPARE_OPS = {">=", ">", "<=", "<", "=="}
-VALUE_SOURCES = {"items", "plants", "building_pieces"}
+VALUE_SOURCES = {"items", "plants", "building_pieces", "artifacts"}
 STATS_DOC = Path("docs") / "tecnico" / "estadisticas.md"
 DOC_ROW = re.compile(r"^\|\s*`([a-z0-9_]+)`\s*\|\s*([a-z]+)\s*\|\s*([a-z]+)\s*\|")
 
@@ -53,6 +57,8 @@ def allowed_values(ds, stat: dict) -> set[str] | None:
         return {p.get("id") for p in ds.plants}
     if source == "building_pieces":
         return {p.get("id") for p in ds.building.get("pieces", [])}
+    if source == "artifacts":
+        return {a.get("id") for a in ds.data.get("artifacts.json", {}).get("artifacts", [])}
     return None
 
 
@@ -176,8 +182,9 @@ def check_achievements(ds, r) -> None:
 
     # Logros.
     achievements = doc.get("achievements", [])
-    if len(achievements) != ACHIEVEMENT_COUNT:
-        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 fija {ACHIEVEMENT_COUNT}")
+    if not ACHIEVEMENT_MIN <= len(achievements) <= ACHIEVEMENT_MAX:
+        r.error(f"achievements.json: {len(achievements)} logros; el GDD §16 y la biblia 07 §2 piden "
+                f"entre {ACHIEVEMENT_MIN} y {ACHIEVEMENT_MAX}")
     seen: set[str] = set()
     used: set[str] = set()
     for ach in achievements:
@@ -194,6 +201,12 @@ def check_achievements(ds, r) -> None:
                 r.error(f"{where}: falta {key}")
             elif "almudena" in text.lower():
                 r.error(f"{where}: {key} usa el nombre de la dedicatoria; va solo en el menú y los créditos")
+            else:
+                # Guía anti-IA (biblia 07 §1) sin los límites de longitud: dos de los 30 logros de
+                # partida y varios de los 24 de biblia 07 §2.3 ya se pasan de §1.3 y sus textos
+                # están fijados; la longitud la revisa una persona.
+                for problem in estilo.lint(text, "en" if key.endswith("En") else "es", "sin_limite"):
+                    r.error(f"{where}: {key}: {problem}")
         if not isinstance(ach.get("hidden"), bool):
             r.error(f"{where}: hidden debe ser true o false")
         icon = ach.get("icon")

@@ -361,14 +361,14 @@ def achievement(ds: DataSet, aid: str) -> dict[str, Any]:
     return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
 
 
-def test_logros_reales_son_treinta_con_los_del_gdd(real: DataSet) -> None:
+def test_logros_reales_entre_30_y_60_con_los_del_gdd(real: DataSet) -> None:
     ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
-    assert len(ids) == 30
+    assert 30 <= len(ids) <= 60
     assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa"} <= ids
 
 
 def test_detecta_numero_de_logros(ds: DataSet) -> None:
-    ds.data["achievements.json"]["achievements"].pop()
+    del ds.data["achievements.json"]["achievements"][29:]
     assert any_error(errors_of(ds), "29 logros")
 
 

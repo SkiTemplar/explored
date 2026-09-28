@@ -139,6 +139,34 @@ def test_falta_ingles_en_datos(src: Sources) -> None:
     assert has(build(src).report.errors, "Golpear.description", "sin inglés")
 
 
+def test_contenido_de_h4_en_el_catalogo(real_cat: Catalogue) -> None:
+    ids = {e.id for e in real_cat.entries}
+    assert "Data.halden_diaries.entries,halden_05.textEs" in ids
+    assert "Data.journal_entries.entries,diario_amaraje.textEs" in ids
+    assert "Data.map_clues.clues,pista_tapa_estrellas.clueEs" in ids
+    assert "Data.shells.pieces,cauri_anillado.descriptionEs" in ids
+    assert "Data.museum_collections.collections,tesoros.rewardEs" in ids
+    assert "Data.fish.legendary,el_viejo.nameEs" in ids
+    assert "Data.ruins.sites,ruin_compass.nameEs" in ids
+
+
+def test_contenido_de_h4_sin_avisos(real_cat: Catalogue) -> None:
+    files = ("halden_diaries", "journal_entries", "map_clues", "museum_collections", "shells",
+             "herbarium", "insects", "fossils", "minerals")
+    assert not [w for w in real_cat.report.warnings if any(f"Content/Data/{f}.json" in w for f in files)]
+
+
+def test_diario_sin_marcador_de_dia_en_ingles(src: Sources) -> None:
+    entry = next(e for e in src.data["journal_entries.json"]["entries"] if e["id"] == "diario_primer_fuego")
+    entry["textEn"] = entry["textEn"].replace("{Day}", "1")
+    assert has(build(src).report.errors, "diario_primer_fuego", "marcadores distintos")
+
+
+def test_ficha_de_museo_sin_ingles(src: Sources) -> None:
+    del src.data["insects.json"]["pieces"][0]["descriptionEn"]
+    assert has(build(src).report.errors, "mariposa_azul_manglar.descriptionEs", "sin inglés")
+
+
 def test_valor_vacio(src: Sources) -> None:
     src.data["plants.json"]["plants"][0]["stages"][0]["nameEn"] = "   "
     assert has(build(src).report.errors, "limonero.esqueje", "sin inglés")

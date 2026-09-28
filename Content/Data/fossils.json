@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "note": "Colección «Fósiles» del museo de la base (biblia 07 §3.2-3.6). Cada pieza: nombre de vitrina (≤6 palabras) y ficha (≤2 frases, ≤160 caracteres ES / ≤200 EN) bilingües, islas donde aparece (minúsculas de EIslandArchetype), hábitat, cómo se consigue y fase. Lo valida Tools/DataCheck. Red (biblia 08 §2.11, §5.5): el museo es uno por mundo, estado del servidor replicado en el GameState; el texto es dato local.",
+  "collection": "fosiles",
+  "display": "panel_fosiles",
+  "pieces": [
+    {
+      "id": "diente_tiburon_fosil",
+      "nameEs": "Diente de tiburón fósil",
+      "nameEn": "Fossil shark tooth",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Diente de tiburón fósil. Mucho más viejo que la isla donde apareció: la caliza lo subió desde el fondo de otro mar.",
+      "descriptionEn": "Fossil shark tooth. Much older than the island it turned up on; the limestone carried it up from the floor of another sea."
+    },
+    {
+      "id": "amonite_caliza",
+      "nameEs": "Amonita en caliza",
+      "nameEn": "Ammonite in limestone",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Amonita en caliza. La espiral está entera, y cada cámara se rellenó de una piedra más clara.",
+      "descriptionEn": "Ammonite in limestone. The spiral is whole, and each chamber filled with paler stone."
+    },
+    {
+      "id": "coral_fosil_ramificado",
+      "nameEs": "Coral fósil ramificado",
+      "nameEn": "Branching fossil coral",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Coral fósil ramificado. Las ramas ya son piedra, pero conservan los poros donde vivían los pólipos.",
+      "descriptionEn": "Branching fossil coral. The branches are stone now, but they keep the pores where the polyps lived."
+    },
+    {
+      "id": "huella_ave_ceniza",
+      "nameEs": "Huella de ave en ceniza",
+      "nameEn": "Bird track in ash",
+      "islands": [
+        "smoke"
+      ],
+      "habitat": "ceniza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Huella de ave en ceniza. Tres dedos marcados en una capa de ceniza que se endureció antes de que lloviera.",
+      "descriptionEn": "Bird track in ash. Three toes pressed into a layer of ash that hardened before the rain came."
+    },
+    {
+      "id": "vertebra_pez_fosil",
+      "nameEs": "Vértebra de pez fósil",
+      "nameEn": "Fossil fish vertebra",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Vértebra de pez fósil. Un disco de piedra con un agujero en el centro, como una cuenta de collar.",
+      "descriptionEn": "Fossil fish vertebra. A stone disc with a hole through the middle, like a necklace bead."
+    },
+    {
+      "id": "madera_petrificada",
+      "nameEs": "Madera petrificada",
+      "nameEn": "Petrified wood",
+      "islands": [
+        "smoke",
+        "mesa"
+      ],
+      "habitat": "ceniza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Madera petrificada. Pesa como una piedra y todavía tiene los anillos del árbol, uno por año.",
+      "descriptionEn": "Petrified wood. Weighs like a stone and still has the tree's rings, one per year."
+    },
+    {
+      "id": "huevo_fosil",
+      "nameEs": "Huevo fósil",
+      "nameEn": "Fossil egg",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Huevo fósil. Del tamaño de un puño, con la cáscara hecha piedra, y nadie sabe qué ave lo puso.",
+      "descriptionEn": "Fossil egg. Fist-sized, the shell turned to stone, and no one knows which bird laid it."
+    },
+    {
+      "id": "concha_gigante_fosilizada",
+      "nameEs": "Concha gigante fosilizada",
+      "nameEn": "Giant fossilised shell",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "caliza",
+      "obtain": "minar",
+      "phase": "F2",
+      "descriptionEs": "Concha gigante fosilizada. Una almeja como las de la laguna de hoy, pero de piedra y el doble de grande.",
+      "descriptionEn": "Giant fossilised shell. A clam like the ones in today's lagoon, but made of stone and twice the size."
+    }
+  ]
+}

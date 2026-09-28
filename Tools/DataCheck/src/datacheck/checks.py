@@ -9,7 +9,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import achievements, combat, cooking, crafting, farm, fases, fauna, mining, music, packs
+from . import (
+    achievements, combat, contenido, cooking, crafting, farm, fases, fauna, mining, music, packs,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -49,7 +51,7 @@ DATA_FILES = [
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
-    "fases_futuras.json", "fauna_terrestre.json", "combat.json",
+    "fases_futuras.json", "fauna_terrestre.json", "combat.json", *contenido.CONTENT_FILES,
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -1251,6 +1253,7 @@ def run_all(ds: DataSet) -> Report:
     achievements.check_achievements(ds, r)
     check_ruins(ds, r)
     check_artifacts(ds, r)
+    contenido.check_content(ds, r)
     check_fish(ds, r)
     music.check_music(ds, r)
     check_forbidden_terms(ds, r)

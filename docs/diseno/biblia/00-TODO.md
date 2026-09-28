@@ -20,14 +20,14 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | Hito | Hechas `[x]` | En parte | Sin empezar | Total | % hecho | % ponderado¹ |
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
-| H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
+| H1 — Mundo interactivo | 3 | 10 | 23 | 36 | 8 % | 22 % |
 | H2 — Minería y construcción | 3 | 14 | 15 | 32 | 9 % | 31 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
-| H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
+| H4 — Contenido de acceso anticipado | 9 | 2 | 12 | 23 | 39 % | 43 % |
 | H5 — Lanzamiento del acceso anticipado | 4 | 0 | 22 | 26 | 15 % | 15 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **20** | **47** | **148** | **215** | **9 %** | **20 %** |
+| **Total** | **29** | **47** | **141** | **217** | **13 %** | **24 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -716,16 +716,21 @@ Rellenar Landing, Esmeralda, Isla del Humo y Los Dientes (las 3–4 islas del ac
 anticipado, GDD §6.2) con el contenido que la biblia ya diseñó pero que no existe en
 datos todavía.
 
-- [ ] `Content/Data/`: crear `halden_diaries.json` (id, texto ES/EN, isla, POI asociado)
-      con las 5 entradas de la biblia 04 §7.1; añadir su parseo a `RuinsSubsystem` o a
-      un `HaldenLoreSubsystem` nuevo, con check en `Tools/DataCheck`. *(biblia 04 §7.1)*
+- [x] `Content/Data/`: crear `halden_diaries.json` (id, texto ES/EN, isla, POI asociado)
+      con las 5 entradas de la biblia 04 §7.1, con check en `Tools/DataCheck` (POI y
+      `ContentId` contra `PointsOfInterest.cpp`). *(biblia 04 §7.1,
+      `docs/tecnico/contenido-textos.md`)*
+- [ ] `Ruins`/`Narrative`: leer `halden_diaries.json` en `RuinsSubsystem` o en un
+      `HaldenLoreSubsystem` nuevo y mostrar cada cuaderno al interactuar con su POI por
+      `ContentId`; «leído» es estado del mundo en el servidor. *(biblia 04 §7.1, biblia 08
+      §2.11)*
 - [ ] `Fauna/FaunaTypes.h`: añadir `EFaunaSpecies::WildBoar` y `EFaunaSpecies::WildGoat`
       y sus reglas de aparición (Esmeralda para el jabalí). *(biblia 04 §2.2)*
-- [ ] `Content/Data/ruins.json`: asignar `Teaches` y `StarPathTarget` a los 8 `sites`
+- [x] `Content/Data/ruins.json`: asignar `Teaches` y `StarPathTarget` a los 8 `sites`
       según biblia 04 §2 (Landing→Esmeralda, Brújula del Humo→Los Dientes, y las
-      técnicas globales del resto). *(biblia 04 §7.2)*
-- [ ] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato a las
-      6 pistas en prosa de biblia 04 §6. *(biblia 04 §6)*
+      técnicas globales del resto). *(biblia 04 §7.2; `FRuinsLayout` aún no los lee)*
+- [x] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato a las
+      6 pistas en prosa de biblia 04 §6. *(biblia 04 §6; `map_clues.json`)*
 - [ ] Landing: confirmar en `PointsOfInterest.cpp` que `SextantCave` solo es accesible
       con `FOceanTide::Level < 0` (bajamar). *(biblia 04 §2.1)*
 - [ ] `Villages` (stub, sin bloquear H0-H4): dejar preparado el punto de extensión
@@ -733,20 +738,24 @@ datos todavía.
       `Villages` exista en F3. *(biblia 03 §2.3)*
 - [ ] `Fauna`: extender la primera pasada de fauna salvaje terrestre a cabra montés en
       La Meseta cuando esa isla entre en su parche de contenido. *(biblia 04 §2.7)*
-- [ ] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
+- [x] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
       reunir los tres anzuelos del pueblo navegante) y `bajo_el_templo` («Bajo el
       templo», tesoro en templo enterrado) junto a su stat `underground_treasure_found`
       y `artifact_ids_found`. *(biblia 07 §2.1, §2.3)*
-- [ ] `Building`: añadir a `building_pieces.json` las piezas de museo nuevas:
+- [x] `Building`: añadir a `building_pieces.json` las piezas de museo nuevas:
       `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`,
       `vitrina_minerales`, `panel_fosiles` (categoría `museo`). *(biblia 07 §3.3)*
-- [ ] Crear `Content/Data/shells.json`, `herbarium.json`, `insects.json` y
+- [x] Crear `Content/Data/shells.json`, `herbarium.json`, `insects.json` y
       `fossils.json` con las piezas listadas en biblia 07 §3.6, patrón bilingüe
-      `nameEs`/`nameEn`. *(biblia 07 §3.6)*
-- [ ] Añadir el subconjunto «tesoros» a `artifacts.json` como consulta derivada
+      `nameEs`/`nameEn`. *(biblia 07 §3.6; también `minerals.json` y
+      `museum_collections.json`)*
+- [x] Añadir el subconjunto «tesoros» a `artifacts.json` como consulta derivada
       (`rarity` en `["raro", "unico"]`), sin duplicar el catálogo. *(biblia 07 §3.2)*
-- [ ] Crear `Content/Data/journal_entries.json` (`id`, `trigger`, `textEs`, `textEn`,
+- [x] Crear `Content/Data/journal_entries.json` (`id`, `trigger`, `textEs`, `textEn`,
       marcador `{Day}`) con las 15 entradas de biblia 07 §4.2. *(biblia 07 §4.1)*
+- [ ] `Narrative`/`UI`: diario del náufrago que lee `journal_entries.json`, evalúa los
+      disparadores con `FAchievementsModel` y los sucesos de `events`, y se guarda por
+      jugador; individual y sin red. *(biblia 07 §4, biblia 08 §2.11)*
 - [ ] Arte: material del terreno con `Roughness` 0,85–0,95, sin especular en arena seca,
       arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
       de detalle con la paleta low poly (hecho en las texturas, 2026-09-28: falta que
@@ -766,7 +775,7 @@ datos todavía.
       → **En parte:** PR #45, #48, #56 y #60 (packs CC0) y #42, #54, #63 (paleta),
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
         general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
-        estrella, laurel, candado y reloj de arena); 25 pistas de logro siguen en
+        estrella, laurel, candado y reloj de arena); 26 pistas de logro siguen en
         `iconsPending`.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)

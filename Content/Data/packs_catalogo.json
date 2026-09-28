@@ -2012,6 +2012,10 @@
       "reason": "Sin candidato que encaje en los packs revisados (ver iconsDiscarded para mapa, brújula, estaciones y piedra). Candidato: silueta propia en SVG."
     },
     {
+      "achievementIcon": "tesoro",
+      "reason": "Pista del logro «Bajo el templo» (PR #79), posterior a la revisión de packs del 2026-09-28. Candidato: silueta propia en SVG (cofre o ídolo)."
+    },
+    {
       "achievementIcon": "avion",
       "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
     },

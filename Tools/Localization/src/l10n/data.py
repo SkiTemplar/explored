@@ -85,6 +85,23 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),
     FieldSpec("story_es.json", "map_marks", _sub("map_marks"), "label", "labelEn", "sello del mapa"),
     FieldSpec("story_es.json", "artifact_kinds", _sub("artifact_kinds"), "label", "labelEn", "tipo de tesoro del museo"),
+    FieldSpec("ruins.json", "techniques", _sub("techniques"), "nameEs", "nameEn", "técnica de wayfinding"),
+    FieldSpec("ruins.json", "techniques", _sub("techniques"), "revealsEs", "revealsEn", "qué revela la técnica"),
+    FieldSpec("ruins.json", "elements", _sub("elements"), "nameEs", "nameEn", "elemento de ruina"),
+    FieldSpec("ruins.json", "sites", _sub("sites"), "nameEs", "nameEn", "nombre de la ruina"),
+    FieldSpec("fish.json", "species", _sub("species"), "nameEs", "nameEn", "pez (pecera del museo)"),
+    FieldSpec("fish.json", "legendary", _sub("legendary"), "nameEs", "nameEn", "captura legendaria"),
+    FieldSpec("halden_diaries.json", "entries", _sub("entries"), "textEs", "textEn", "cuaderno de la expedición Halden"),
+    FieldSpec("journal_entries.json", "entries", _sub("entries"), "textEs", "textEn",
+              "entrada del diario del náufrago ({Day} = día de la partida)"),
+    FieldSpec("map_clues.json", "clues", _sub("clues"), "clueEs", "clueEn", "pista en prosa de un tesoro"),
+    FieldSpec("museum_collections.json", "collections", _sub("collections"), "nameEs", "nameEn", "colección del museo"),
+    FieldSpec("museum_collections.json", "collections", _sub("collections"), "rewardEs", "rewardEn",
+              "recompensa por completar la colección"),
+    *(FieldSpec(f, "pieces", _sub("pieces"), es, en, purpose)
+      for f in ("shells.json", "herbarium.json", "insects.json", "fossils.json", "minerals.json")
+      for es, en, purpose in (("nameEs", "nameEn", "etiqueta de vitrina"),
+                              ("descriptionEs", "descriptionEn", "ficha de vitrina"))),
 ]
 
 # Listas paralelas: la inglesa va en otra clave del mismo objeto, en el mismo orden.

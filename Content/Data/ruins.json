@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Textos de las ruinas del pueblo navegante y de las técnicas de wayfinding (GDD §6, biblia §9). La disposición y la asignación de técnicas las calcula FRuinsLayout a partir de la semilla; ids y constantes deben coincidir con Source/Explored/Ruins/RuinsModel.{h,cpp} (lo comprueba Tools/DataCheck).",
+  "note": "Textos de las ruinas del pueblo navegante y de las técnicas de wayfinding (GDD §6, biblia §9). La disposición y la asignación de técnicas las calcula FRuinsLayout a partir de la semilla; ids y constantes deben coincidir con Source/Explored/Ruins/RuinsModel.{h,cpp} (lo comprueba Tools/DataCheck). sites.island/teaches/starPathTarget: asignación de diseño de biblia 04 §2 para la semilla oficial (starPathTarget: isla en minúsculas, «hidden» para la isla oculta, null si no enseña camino de estrellas); hoy FRuinsLayout la baraja por semilla y DataCheck anota las diferencias.",
   "requiredStarPaths": 3,
   "petroglyphsPerSite": 2,
   "techniques": [
@@ -76,42 +76,66 @@
     {
       "id": "ruin_landing",
       "nameEs": "Marae del palmeral",
-      "nameEn": "Palm grove marae"
+      "nameEn": "Palm grove marae",
+      "island": "landing",
+      "teaches": "star_path",
+      "starPathTarget": "emerald"
     },
     {
       "id": "ruin_emerald",
       "nameEs": "Marae de la cascada",
-      "nameEn": "Waterfall marae"
+      "nameEn": "Waterfall marae",
+      "island": "emerald",
+      "teaches": "swell_reading",
+      "starPathTarget": null
     },
     {
       "id": "ruin_smoke",
       "nameEs": "Marae del tubo de lava",
-      "nameEn": "Lava tube marae"
+      "nameEn": "Lava tube marae",
+      "island": "smoke",
+      "teaches": "birds_at_dusk",
+      "starPathTarget": null
     },
     {
       "id": "ruin_teeth",
       "nameEs": "Marae de los acantilados",
-      "nameEn": "Cliff marae"
+      "nameEn": "Cliff marae",
+      "island": "teeth",
+      "teaches": "fixed_clouds",
+      "starPathTarget": null
     },
     {
       "id": "ruin_mangrove",
       "nameEs": "Marae de las raíces",
-      "nameEn": "Root marae"
+      "nameEn": "Root marae",
+      "island": "mangrove",
+      "teaches": "water_colour",
+      "starPathTarget": null
     },
     {
       "id": "ruin_whitesands",
       "nameEs": "Marae de las canoas",
-      "nameEn": "Canoe marae"
+      "nameEn": "Canoe marae",
+      "island": "whitesands",
+      "teaches": "star_path",
+      "starPathTarget": "mesa"
     },
     {
       "id": "ruin_mesa",
       "nameEs": "Marae de la meseta",
-      "nameEn": "Plateau marae"
+      "nameEn": "Plateau marae",
+      "island": "mesa",
+      "teaches": "star_path",
+      "starPathTarget": "hidden"
     },
     {
       "id": "ruin_compass",
       "nameEs": "Brújula estelar del Humo",
-      "nameEn": "Star compass of Smoke Island"
+      "nameEn": "Star compass of Smoke Island",
+      "island": "smoke",
+      "teaches": "star_path",
+      "starPathTarget": "teeth"
     }
   ]
 }
