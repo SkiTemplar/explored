@@ -21,13 +21,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
-| H2 — Minería y construcción | 2 | 11 | 18 | 31 | 6 % | 24 % |
+| H2 — Minería y construcción | 3 | 11 | 17 | 31 | 10 % | 27 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
 | H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
-| H5 — Lanzamiento del acceso anticipado | 1 | 0 | 19 | 20 | 5 % | 5 % |
+| H5 — Lanzamiento del acceso anticipado | 3 | 0 | 20 | 23 | 13 % | 13 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **16** | **44** | **148** | **208** | **8 %** | **18 %** |
+| **Total** | **19** | **44** | **148** | **211** | **9 %** | **19 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -546,14 +546,15 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       tope duro de 512 B por paquete. Spec de host: ida y vuelta sin pérdida, fusión de
       dos paquetes del mismo chunk idempotente y conmutativa, paquete truncado o
       manipulado rechazado sin tocar el estado. *(biblia 08 §2.2)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:250` — existe el paquete de arena
-        (cabecera de 11 B). PR #89: `FTerrainDeltaCodecModel`
+      → **Hecho:** PR #89, `FTerrainDeltaCodecModel`
         (`WorldGen/TerrainDeltaCodecModel.h/.cpp`, `TerrainDeltaCodecModelSpec`) — ida y
         vuelta exacta, límites de 512 B, cuantización a mm con saturación, `DecodeAndApply`
-        atómico y fusión idempotente y conmutativa. Solo modelo puro: falta la RPC y el
-        cableado. *Pendiente de diseño:* un delta de más de ±32,767 m no cabe en el `int16`
-        del cable (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero
-        hay que decidir si se acota el delta o se cambia el formato.
+        atómico y fusión idempotente y conmutativa: es lo que pide la casilla (formato y
+        spec de host). La RPC y el cableado son las casillas siguientes. El paquete de arena
+        (cabecera de 11 B) ya existía: `e6c89d1` (PR #46), `SandModel.h:250`. *Pendiente de
+        diseño:* un delta de más de ±32,767 m no cabe en el `int16` del cable
+        (`FTerrainEditModel` admite ±1000 m); el códec lo rechaza y lo cuenta, pero hay que
+        decidir si se acota el delta o se cambia el formato.
 - [ ] `WorldGen`: cola de salida por cliente con una entrada por chunk y fusión de
       muestras al reeditar, tope de 8 KB/s con ráfaga de 16 KB/s durante 5 s, prioridad
       para los chunks a menos de 30 m y relevancia limitada a 120 m del receptor.

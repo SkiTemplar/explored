@@ -2,7 +2,8 @@
 
 double FTerrainDeltaQueueModel::SanitizeDistance(double DistanceToReceiverM)
 {
-	if (FMath::IsNaN(DistanceToReceiverM))
+	// IsFinite y no IsNaN: con matemáticas rápidas IsNaN puede desaparecer, y −∞ pasaría como 0 (prioritario).
+	if (!FMath::IsFinite(DistanceToReceiverM))
 	{
 		// Sin una distancia fiable no se puede decir que sea relevante: se espera a la siguiente.
 		return TNumericLimits<double>::Max();
