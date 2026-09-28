@@ -88,7 +88,7 @@ void FNetBudgetTableModelSpec::Define()
 		It("el pico realista ronda los 80 kbps y cabe en 256", [this]()
 		{
 			const TArray<FNetBudgetChannel> Peak = FNetBudgetTableModel::PeakTable(4);
-			TestEqual(TEXT("≈ 80 kbps (79,6 con los paquetes reales)"), FNetBudgetTableModel::TotalKbps(Peak), 79.55, 0.01);
+			TestEqual(TEXT("≈ 80 kbps (79,3 con los paquetes reales: entradas de 12 B)"), FNetBudgetTableModel::TotalKbps(Peak), 79.30, 0.01);
 			FString Reason;
 			TestTrue(TEXT("Cabe en 256"), FNetBudgetTableModel::FitsTarget(Peak, FNetBudgetTableModel::PeakTargetKbps, Reason));
 			TestFalse(TEXT("Pero no en el objetivo de reposo"), FNetBudgetTableModel::FitsTarget(Peak, FNetBudgetTableModel::RestTargetKbps, Reason));
@@ -100,7 +100,7 @@ void FNetBudgetTableModelSpec::Define()
 		It("incluso con la ráfaga entera de terreno queda por debajo de 256 (≈ 208)", [this]()
 		{
 			const TArray<FNetBudgetChannel> Burst = FNetBudgetTableModel::PeakWithTerrainBurstTable(4);
-			TestEqual(TEXT("≈ 208 kbps"), FNetBudgetTableModel::TotalKbps(Burst), 207.55, 0.01);
+			TestEqual(TEXT("≈ 208 kbps"), FNetBudgetTableModel::TotalKbps(Burst), 207.30, 0.01);
 			FString Reason;
 			TestTrue(TEXT("Cabe en 256"), FNetBudgetTableModel::FitsTarget(Burst, FNetBudgetTableModel::PeakTargetKbps, Reason));
 		});
