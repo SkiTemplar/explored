@@ -137,7 +137,7 @@ struct EXPLORED_API FInventoryContainerSpec
 	static FInventoryContainerSpec Backpack(float VolumeLiters, float WeightKg);
 	/** Angarillas: mucha carga de madera, piedra y material de obra, incluidos troncos DosManos. */
 	static FInventoryContainerSpec Sledge();
-	/** Contenedores del mundo (biblia §3.9). */
+	/** Contenedores del mundo (biblia 03 §1.4): cesta 15 L; estante 30 L/40 kg, hasta Mediano; arcón 60 L/80 kg, estanco. */
 	static FInventoryContainerSpec Basket();
 	static FInventoryContainerSpec Shelf();
 	static FInventoryContainerSpec Chest();
@@ -315,8 +315,16 @@ public:
 	bool UnequipBackpack(EInventorySlot Hand, EInventoryFail& OutFail);
 	/** Vuelve al cinturón básico: los enganches que sobran tienen que estar vacíos. */
 	bool UnequipBelt(EInventorySlot Hand, EInventoryFail& OutFail);
-	/** Mochila sin objeto con capacidad fija (UCarryComponent::SetBackpack, tests). */
-	bool SetCustomBackpack(bool bEquipped, float VolumeLiters, float WeightKg, EInventoryFail& OutFail);
+	/**
+	 * Mochila sin objeto con capacidad fija (UCarryComponent::SetBackpack, tests).
+	 * ComfortBonusKg es la carga cómoda que suma puesta (biblia 03 §1.1; ver
+	 * BackpackComfortBonusKgFor); 0 si no se da.
+	 */
+	bool SetCustomBackpack(bool bEquipped, float VolumeLiters, float WeightKg, EInventoryFail& OutFail,
+		float ComfortBonusKg = 0.0f);
+
+	/** Carga cómoda extra de una mochila por su id de items.json (+8/+10/+20 kg); 0 si no es mochila. */
+	static float BackpackComfortBonusKgFor(FName ItemId);
 	bool HasBackpack() const { return State.bHasBackpack; }
 	bool HasPouch() const;
 	int32 GetBeltHooks() const { return State.Belt.Spec.MaxSlots; }

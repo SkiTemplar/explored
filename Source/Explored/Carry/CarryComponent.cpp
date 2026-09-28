@@ -62,7 +62,7 @@ void UCarryComponent::BeginPlay()
 	if (bHasBackpack && !Model.HasBackpack())
 	{
 		EInventoryFail Ignored = EInventoryFail::None;
-		Model.SetCustomBackpack(true, BackpackCapacityVolumeLiters, BackpackCapacityWeightKg, Ignored);
+		Model.SetCustomBackpack(true, BackpackCapacityVolumeLiters, BackpackCapacityWeightKg, Ignored, BackpackComfortBonusKg);
 		SyncFromModel();
 	}
 }
@@ -653,14 +653,15 @@ bool UCarryComponent::IsHandEmpty(EHand Hand) const
 	return Model.IsHandEmpty(CarryComponentDetail::ToModelHand(Hand));
 }
 
-void UCarryComponent::SetBackpack(bool bInHasBackpack, float CapacityVolumeLiters, float CapacityWeightKg)
+void UCarryComponent::SetBackpack(bool bInHasBackpack, float CapacityVolumeLiters, float CapacityWeightKg, float ComfortBonusKg)
 {
 	EInventoryFail Fail = EInventoryFail::None;
-	if (Model.SetCustomBackpack(bInHasBackpack, CapacityVolumeLiters, CapacityWeightKg, Fail))
+	if (Model.SetCustomBackpack(bInHasBackpack, CapacityVolumeLiters, CapacityWeightKg, Fail, ComfortBonusKg))
 	{
 		bHasBackpack = bInHasBackpack;
 		BackpackCapacityVolumeLiters = CapacityVolumeLiters;
 		BackpackCapacityWeightKg = CapacityWeightKg;
+		BackpackComfortBonusKg = ComfortBonusKg;
 		SyncFromModel();
 	}
 	else
