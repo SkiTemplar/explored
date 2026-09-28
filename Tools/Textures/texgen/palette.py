@@ -503,7 +503,7 @@ def to_json() -> dict:
         islands[isl.key] = {
             "nombre": isl.name, "arquetipo": isl.archetype, "textura": palette_texture_name(isl),
             "ambiente": isl.mood,
-            "grado_oklab": dict(zip(("dL", "croma", "da", "db"), isl.grade)),
+            "grado_oklab": dict(zip(("dL", "croma", "da", "db"), isl.grade, strict=True)),
             "color_vertice_terreno": {k: list(v) for k, v in isl.vertex.items()},
             "colores": colors,
         }

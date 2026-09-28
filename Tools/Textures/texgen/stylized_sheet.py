@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
-from .output import _font, lit_preview, linear_to_srgb, srgb_to_linear, to_u8
+from .output import _font, linear_to_srgb, lit_preview, srgb_to_linear, to_u8
 from .palette import ISLANDS, TERRAIN_TARGETS, oklab_to_srgb, vertex_tint
 from .stylized import PALETTES, swatch_ramp
 
@@ -61,17 +61,18 @@ def material_sheet(name: str, maps: dict, seed: int, tile_m: float, use: str, pa
 
     # 1. Iluminada 3 × 3.
     y = head
-    sheet.paste(_img(np.tile(lit, (3, 3, 1))).resize((BIG, BIG), Image.LANCZOS), (PAD, y))
+    sheet.paste(_img(np.tile(lit, (3, 3, 1))).resize((BIG, BIG), Image.Resampling.LANCZOS), (PAD, y))
     draw.text((PAD, y + BIG + 6), f"iluminada, 3 × 3 tiles ({3 * tile_m:g} m)", fill=DIM, font=f_lab)
 
     # 2. Campo lejano: se repite el tile hasta cubrir FAR_M y se reduce por caja (como un mip).
     reps = max(2, int(round(FAR_M / tile_m)))
-    small = _img(lit).resize((max(8, BIG // reps + 1),) * 2, Image.BOX)
+    side = max(8, BIG // reps + 1)
+    small = _img(lit).resize((side, side), Image.Resampling.BOX)
     far = Image.new("RGB", (small.width * reps, small.height * reps))
     for i in range(reps):
         for j in range(reps):
             far.paste(small, (i * small.width, j * small.height))
-    sheet.paste(far.resize((BIG, BIG), Image.BOX), (PAD * 2 + BIG, y))
+    sheet.paste(far.resize((BIG, BIG), Image.Resampling.BOX), (PAD * 2 + BIG, y))
     draw.text((PAD * 2 + BIG, y + BIG + 6), f"{FAR_M:g} m de lado, {reps} × {reps} tiles: escala de pantalla a ~50 m",
               fill=DIM, font=f_lab)
 
@@ -84,7 +85,7 @@ def material_sheet(name: str, maps: dict, seed: int, tile_m: float, use: str, pa
             bc = _tinted(maps["BC"], island.vertex[TERRAIN_TARGETS[name][4]])
         else:
             bc = maps["BC"]
-        tile = _img(_lit(maps, bc)).resize((island_px, island_px), Image.LANCZOS)
+        tile = _img(_lit(maps, bc)).resize((island_px, island_px), Image.Resampling.LANCZOS)
         sheet.paste(tile, (x, y))
         label = f"{island.key}" + ("  (teñida por M_Terrain)" if terrain else "  (sin tinte)")
         draw.text((x, y + island_px + 6), label, fill=DIM, font=f_lab)
@@ -96,7 +97,7 @@ def material_sheet(name: str, maps: dict, seed: int, tile_m: float, use: str, pa
               (f"rugosidad {arh[..., 1].min():.2f}–{arh[..., 1].max():.2f}", arh[..., 1]), ("altura", arh[..., 2])]
     for k, (label, arr) in enumerate(thumbs):
         x = PAD + k * (map_px + PAD)
-        sheet.paste(_img(arr).resize((map_px, map_px), Image.LANCZOS), (x, y))
+        sheet.paste(_img(arr).resize((map_px, map_px), Image.Resampling.LANCZOS), (x, y))
         draw.text((x, y + map_px + 6), label, fill=DIM, font=f_lab)
 
     # 5. Paleta: una tira por muestra con su tramo abajo → medio → arriba.

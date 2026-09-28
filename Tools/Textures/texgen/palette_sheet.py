@@ -12,14 +12,14 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
-from .output import _font, to_u8
+from .output import SHEET_MAX_BYTES, _font, to_u8
 from .palette import (
     ATLAS,
     ENTORNO,
+    ENTORNO_ROW,
     FAMILIES,
     ISLANDS,
     TERRAIN_ROW,
-    ENTORNO_ROW,
     TERRAIN_TARGETS,
     build_atlas,
     island_swatches,
@@ -215,7 +215,10 @@ def render_scene(island, atlas, swatches, ground_bc, ground2_bc, tint_sand, tint
     depth = np.full((h, w), np.inf)
     down = dirs[..., 1] < -1e-4
     tg = np.where(down, cam[1] / np.maximum(-dirs[..., 1], 1e-4), np.inf)
-    gp = cam + dirs * tg[..., None]
+    # Punto de suelo solo donde el rayo baja; en el resto (cielo), 0 en vez de inf: con inf
+    # salían NaN (inf * 0) que se convertían a índice entero con avisos. Esos píxeles se
+    # descartan igual con las máscaras `ground`/`sea`, así que la imagen no cambia.
+    gp = cam + dirs * np.where(down, tg, 0.0)[..., None]
     sea_z = 7.0
     ground = down & (gp[..., 2] < sea_z)
     sea = down & ~ground
@@ -335,7 +338,7 @@ def contact_sheet(path: Path, terrain: dict[str, np.ndarray], raw_terrain: dict[
         draw.text((pad, y), f"{isl.name}  ·  T_Palette_{isl.key}", fill=(250, 244, 230), font=f_big)
         draw.text((pad + label_w + atlas_px + pad, y + 4), isl.mood, fill=(175, 178, 186), font=f_small)
         y0 = y + 30
-        img = Image.fromarray(to_u8(atlas)).resize((atlas_px, atlas_px), Image.NEAREST)
+        img = Image.fromarray(to_u8(atlas)).resize((atlas_px, atlas_px), Image.Resampling.NEAREST)
         sheet.paste(img, (pad + label_w, y0))
         rows = {f.row: f.key for f in FAMILIES}
         rows[TERRAIN_ROW], rows[ENTORNO_ROW] = "terreno", "entorno"
@@ -354,8 +357,8 @@ def contact_sheet(path: Path, terrain: dict[str, np.ndarray], raw_terrain: dict[
     x = pad
     half = tile // 2
     for m in TERRAIN_TARGETS:
-        before = Image.fromarray(to_u8(raw_terrain[m][..., :3])).resize((tile, tile), Image.LANCZOS)
-        after = Image.fromarray(to_u8(terrain[m][..., :3])).resize((tile, tile), Image.LANCZOS)
+        before = Image.fromarray(to_u8(raw_terrain[m][..., :3])).resize((tile, tile), Image.Resampling.LANCZOS)
+        after = Image.fromarray(to_u8(terrain[m][..., :3])).resize((tile, tile), Image.Resampling.LANCZOS)
         sheet.paste(before.crop((0, 0, tile, half)), (x, y + 40))
         sheet.paste(after.crop((0, half, tile, tile)), (x, y + 40 + half))
         _, L, C, hh, _ = TERRAIN_TARGETS[m]
@@ -367,7 +370,7 @@ def contact_sheet(path: Path, terrain: dict[str, np.ndarray], raw_terrain: dict[
     path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(path, optimize=True)
     for bits in (6, 5):
-        if path.stat().st_size <= 1_900_000:
+        if path.stat().st_size <= SHEET_MAX_BYTES:
             break
         ImageOps.posterize(sheet, bits).save(path, optimize=True)
     return path
