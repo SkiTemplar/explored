@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "note": "Ids de la fauna terrestre con esqueleto (GDD v2 §3.6 y §3.7, biblia 02 §11 y 04 §2). Solo registra qué especies existen, dónde y en qué fase, para que packs_catalogo.json (kind fauna) y el futuro EFaunaSpecies terrestre usen los mismos ids; las reglas (percepción, rutina, caza) siguen en la biblia. La fauna marina y las bandadas por shader no van aquí (EFaunaSpecies ya existente, sin esqueleto).",
+  "units": {
+    "islands": "EIslandArchetype: Landing, Emerald, Smoke, Teeth, Mangrove, WhiteSands, Mesa",
+    "phase": "AA (acceso anticipado, GDD v2 §6.2), F2 o F3",
+    "enum": "nombre previsto en EFaunaSpecies (biblia 04, TODO de Source/Explored/Fauna/FaunaTypes.h)"
+  },
+  "species": [
+    { "id": "cerdo_salvaje", "nameEs": "Cerdo salvaje", "nameEn": "Wild boar", "wild": true, "islands": ["Emerald"], "phase": "AA", "enum": "WildBoar", "source": "biblia 02 §11.2; biblia 04 §2.2" },
+    { "id": "cabra_salvaje", "nameEs": "Cabra salvaje", "nameEn": "Wild goat", "wild": true, "islands": ["Mesa"], "phase": "F2", "enum": "WildGoat", "source": "biblia 02 §11.2; biblia 04 §2.7" },
+    { "id": "gallina", "nameEs": "Gallina", "nameEn": "Chicken", "wild": false, "islands": [], "phase": "F2", "enum": "Chicken", "source": "GDD v2 §3.6; biblia 02 §11.5" },
+    { "id": "cerdo", "nameEs": "Cerdo", "nameEn": "Pig", "wild": false, "islands": [], "phase": "F2", "enum": "Pig", "source": "GDD v2 §3.6; biblia 02 §11.5" },
+    { "id": "cabra", "nameEs": "Cabra", "nameEn": "Goat", "wild": false, "islands": [], "phase": "F2", "enum": "Goat", "source": "GDD v2 §3.6; biblia 02 §11.5" }
+  ]
+}

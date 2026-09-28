@@ -115,7 +115,7 @@
         "obj"
       ],
       "sha256": "b4bc5f209368cafc21962934e7d676cf1cfb1f746a363086cd9f45c4385db70e",
-      "note": "Preparado para la fauna (prioridad 4); aún sin entradas en el catálogo (ver PR)."
+      "note": "Cerdo salvaje (lote5-fauna) desde Blends/Pig.blend: el FBX del pack solo exporta Idle y Jump porque las acciones compartidas animan huesos Tail1-4 que el cerdo no tiene; normalize.py quita esas curvas y exporta las seis acciones."
     },
     {
       "id": "kenney_fantasy_town_kit",

@@ -41,4 +41,5 @@ Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
+Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
