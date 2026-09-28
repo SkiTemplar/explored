@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
+		"total": 640,
 		"cpp": 303,
-		"datos": 334,
+		"datos": 337,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3138,6 +3138,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "corral.nameEs",
+			"es": "Corral",
+			"en": "Pen",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «corral» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "escalera_bambu.nameEs",
 			"es": "Escalera de bambú",
 			"en": "Bamboo ladder",
@@ -3194,6 +3204,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «fogata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "gallinero.nameEs",
+			"es": "Gallinero",
+			"en": "Coop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «gallinero» nameEs/nameEn"
 			]
 		},
 		{
@@ -3334,6 +3354,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «pilote_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "pocilga.nameEs",
+			"es": "Pocilga",
+			"en": "Sty",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «pocilga» nameEs/nameEn"
 			]
 		},
 		{

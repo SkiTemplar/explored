@@ -25,6 +25,8 @@ REQUIRED_VERBS = {"Golpear", "Tallar", "Atar", "Pegar", "Afilar", "Trenzar", "Ma
 SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 # Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
 BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
+# Fases de una pieza (campo opcional ``phase``; si falta, AA). Orden para los requisitos.
+BUILDING_PHASES = {"AA": 1, "F2": 2, "F3": 3}
 # Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
 SCARECROW_PIECE = "espantapajaros"
 # Compost del huerto (biblia de contenido §7.2, biblia 02 §10.1): sus efectos copian FFarmModel.
@@ -427,9 +429,14 @@ def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
                 r.error(f"building_pieces.json «{pid}»: herramienta «{tool}» no está en items.json")
             elif tool not in obtainable:
                 r.error(f"building_pieces.json «{pid}»: herramienta «{tool}» no obtenible")
+        phase = p.get("phase", "AA")
+        if phase not in BUILDING_PHASES:
+            r.error(f"building_pieces.json «{pid}»: phase {phase!r} no es una de {sorted(BUILDING_PHASES)}")
         for req in p.get("requiresPieces", []):
             if req not in pieces:
                 r.error(f"building_pieces.json «{pid}»: requiere «{req}», que no existe")
+            elif BUILDING_PHASES.get(pieces[req].get("phase", "AA"), 0) > BUILDING_PHASES.get(phase, 0):
+                r.error(f"building_pieces.json «{pid}»: requiere «{req}», que entra en una fase posterior")
         if not _type_ok(p.get("buildMinutes"), (int, float)) or not 1 <= p["buildMinutes"] <= 600:
             r.error(f"building_pieces.json «{pid}»: buildMinutes fuera de [1, 600]")
         if not isinstance(p.get("integrity"), int) or not 1 <= p["integrity"] <= 100:

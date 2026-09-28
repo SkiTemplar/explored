@@ -16,8 +16,11 @@
   "buildingPieces": [
     "astillero",
     "banco_chatarra",
+    "corral",
     "espantapajaros",
-    "pila_compost"
+    "gallinero",
+    "pila_compost",
+    "pocilga"
   ],
   "plantStages": [
     "batata.brote",
