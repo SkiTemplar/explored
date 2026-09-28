@@ -21,11 +21,11 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
-| H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
+| H4 — Contenido de acceso anticipado | 8 | 14 | 22 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **17** | **192** | **209** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -511,16 +511,21 @@ Rellenar Landing, Esmeralda, Isla del Humo y Los Dientes (las 3–4 islas del ac
 anticipado, GDD §6.2) con el contenido que la biblia ya diseñó pero que no existe en
 datos todavía.
 
-- [ ] `Content/Data/`: crear `halden_diaries.json` (id, texto ES/EN, isla, POI asociado)
-      con las 5 entradas de la biblia 04 §7.1; añadir su parseo a `RuinsSubsystem` o a
-      un `HaldenLoreSubsystem` nuevo, con check en `Tools/DataCheck`. *(biblia 04 §7.1)*
+- [x] `Content/Data/`: crear `halden_diaries.json` (id, texto ES/EN, isla, POI asociado)
+      con las 5 entradas de la biblia 04 §7.1, con check en `Tools/DataCheck` (POI y
+      `ContentId` contra `PointsOfInterest.cpp`). *(biblia 04 §7.1,
+      `docs/tecnico/contenido-textos.md`)*
+- [ ] `Ruins`/`Narrative`: leer `halden_diaries.json` en `RuinsSubsystem` o en un
+      `HaldenLoreSubsystem` nuevo y mostrar cada cuaderno al interactuar con su POI por
+      `ContentId`; «leído» es estado del mundo en el servidor. *(biblia 04 §7.1, biblia 08
+      §2.11)*
 - [ ] `Fauna/FaunaTypes.h`: añadir `EFaunaSpecies::WildBoar` y `EFaunaSpecies::WildGoat`
       y sus reglas de aparición (Esmeralda para el jabalí). *(biblia 04 §2.2)*
-- [ ] `Content/Data/ruins.json`: asignar `Teaches` y `StarPathTarget` a los 8 `sites`
+- [x] `Content/Data/ruins.json`: asignar `Teaches` y `StarPathTarget` a los 8 `sites`
       según biblia 04 §2 (Landing→Esmeralda, Brújula del Humo→Los Dientes, y las
-      técnicas globales del resto). *(biblia 04 §7.2)*
-- [ ] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato a las
-      6 pistas en prosa de biblia 04 §6. *(biblia 04 §6)*
+      técnicas globales del resto). *(biblia 04 §7.2; `FRuinsLayout` aún no los lee)*
+- [x] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato a las
+      6 pistas en prosa de biblia 04 §6. *(biblia 04 §6; `map_clues.json`)*
 - [ ] Landing: confirmar en `PointsOfInterest.cpp` que `SextantCave` solo es accesible
       con `FOceanTide::Level < 0` (bajamar). *(biblia 04 §2.1)*
 - [ ] `Villages` (stub, sin bloquear H0-H4): dejar preparado el punto de extensión
@@ -528,20 +533,24 @@ datos todavía.
       `Villages` exista en F3. *(biblia 03 §2.3)*
 - [ ] `Fauna`: extender la primera pasada de fauna salvaje terrestre a cabra montés en
       La Meseta cuando esa isla entre en su parche de contenido. *(biblia 04 §2.7)*
-- [ ] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
+- [x] Añadir a `achievements.json` el logro `juego_de_anzuelos` («Juego de anzuelos»,
       reunir los tres anzuelos del pueblo navegante) y `bajo_el_templo` («Bajo el
       templo», tesoro en templo enterrado) junto a su stat `underground_treasure_found`
       y `artifact_ids_found`. *(biblia 07 §2.1, §2.3)*
-- [ ] `Building`: añadir a `building_pieces.json` las piezas de museo nuevas:
+- [x] `Building`: añadir a `building_pieces.json` las piezas de museo nuevas:
       `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`,
       `vitrina_minerales`, `panel_fosiles` (categoría `museo`). *(biblia 07 §3.3)*
-- [ ] Crear `Content/Data/shells.json`, `herbarium.json`, `insects.json` y
+- [x] Crear `Content/Data/shells.json`, `herbarium.json`, `insects.json` y
       `fossils.json` con las piezas listadas en biblia 07 §3.6, patrón bilingüe
-      `nameEs`/`nameEn`. *(biblia 07 §3.6)*
-- [ ] Añadir el subconjunto «tesoros» a `artifacts.json` como consulta derivada
+      `nameEs`/`nameEn`. *(biblia 07 §3.6; también `minerals.json` y
+      `museum_collections.json`)*
+- [x] Añadir el subconjunto «tesoros» a `artifacts.json` como consulta derivada
       (`rarity` en `["raro", "unico"]`), sin duplicar el catálogo. *(biblia 07 §3.2)*
-- [ ] Crear `Content/Data/journal_entries.json` (`id`, `trigger`, `textEs`, `textEn`,
+- [x] Crear `Content/Data/journal_entries.json` (`id`, `trigger`, `textEs`, `textEn`,
       marcador `{Day}`) con las 15 entradas de biblia 07 §4.2. *(biblia 07 §4.1)*
+- [ ] `Narrative`/`UI`: diario del náufrago que lee `journal_entries.json`, evalúa los
+      disparadores con `FAchievementsModel` y los sucesos de `events`, y se guarda por
+      jugador; individual y sin red. *(biblia 07 §4, biblia 08 §2.11)*
 - [ ] Arte: material del terreno con `Roughness` 0,85–0,95, sin especular en arena seca,
       arena mojada más oscura y algo más brillante solo en la banda de resaca, texturas
       de detalle con la paleta low poly; comprobar con capturas antes/después
