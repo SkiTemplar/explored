@@ -27,6 +27,8 @@ SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 # Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
 SCARECROW_PIECE = "espantapajaros"
+# Compost del huerto (biblia de contenido §7.2, biblia 02 §10.1): sus efectos copian FFarmModel.
+FARM_MODEL_H = "Farming/FarmModel.h"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
@@ -325,6 +327,71 @@ def check_plants(ds: DataSet, r: Report, obtainable: set[str]) -> None:
                 r.error("plants.json «limonero»: debe cosechar «limon» (cura el escorbuto)")
     if doc and not has_lemon_tree:
         r.error("plants.json: falta el limonero (GDD §8.7)")
+
+
+def check_compost(ds: DataSet, r: Report, obtainable: set[str]) -> None:
+    """Pila de compost: restos obtenibles, pieza del primer bancal y efectos iguales a FFarmModel."""
+    doc = ds.data.get("plants.json", {})
+    if not doc:
+        return
+    c = doc.get("compost")
+    if not isinstance(c, dict):
+        r.error("plants.json: falta el bloque «compost» (GDD v2 §3.6, biblia §7.2)")
+        return
+    pieces = {p.get("id"): p for p in ds.building.get("pieces", [])}
+    tiers = [t.get("id") for t in ds.building.get("tiers", [])]
+    piece = pieces.get(c.get("piece"))
+    if piece is None:
+        r.error(f"plants.json/compost: piece «{c.get('piece')}» no está en building_pieces.json")
+    else:
+        bed = pieces.get("bancal")
+        if bed and piece.get("tier") in tiers and bed.get("tier") in tiers \
+                and tiers.index(piece["tier"]) > tiers.index(bed["tier"]):
+            r.error(f"plants.json/compost: la pieza «{piece['id']}» llega en un tier posterior al bancal")
+    result = next((i for i in ds.items if i.get("id") == c.get("result")), None)
+    if result is None:
+        r.error(f"plants.json/compost: result «{c.get('result')}» no está en items.json")
+    elif "comida" in result.get("tags", []):
+        r.error(f"plants.json/compost: «{result['id']}» no puede ser comida (se echaría a sí mismo a la pila)")
+    per = c.get("inputsPerResult")
+    cap = c.get("capacity")
+    if not (isinstance(per, int) and 1 <= per <= 10):
+        r.error(f"plants.json/compost: inputsPerResult={per!r} fuera de [1, 10]")
+    elif not (isinstance(cap, int) and cap >= per and cap % per == 0):
+        r.error(f"plants.json/compost: capacity={cap!r} debe ser múltiplo de inputsPerResult ({per})")
+    days = c.get("daysToMature")
+    if not (isinstance(days, int) and 1 <= days <= 8):
+        r.error(f"plants.json/compost: daysToMature={days!r} fuera de [1, 8]")
+    tags = {t for i in ds.items for t in i.get("tags", [])}
+    usable = False
+    for entry in c.get("inputs", []):
+        if "item" in entry:
+            ref = entry["item"]
+            if ref not in ds.item_ids:
+                r.error(f"plants.json/compost: input «{ref}» no está en items.json")
+            elif ref == c.get("result"):
+                r.error("plants.json/compost: el compost no puede ser su propio resto")
+            else:
+                usable |= ref in obtainable
+        elif "tag" in entry:
+            if entry["tag"] not in tags:
+                r.error(f"plants.json/compost: ninguna entrada de items.json tiene la etiqueta «{entry['tag']}»")
+            else:
+                usable |= any(entry["tag"] in i.get("tags", []) and i["id"] in obtainable for i in ds.items)
+        else:
+            r.error(f"plants.json/compost: input sin «item» ni «tag»: {entry!r}")
+    if not usable:
+        r.error("plants.json/compost: ningún resto aceptado es obtenible")
+    header = _read_source(ds, FARM_MODEL_H)
+    if header:
+        growth = _cpp_float(header, r"CompostGrowth = ([0-9.]+)f;")
+        cpp_days = _cpp_int(ds.repo_root, f"Source/Explored/{FARM_MODEL_H}", "CompostDays")
+        if growth is None or cpp_days is None:
+            r.error("plants.json/compost: no encuentro CompostGrowth o CompostDays en FarmModel.h")
+        if growth is not None and c.get("growthMultiplier") != growth:
+            r.error(f"plants.json/compost: growthMultiplier={c.get('growthMultiplier')} y FFarmModel::CompostGrowth={growth}")
+        if cpp_days is not None and c.get("durationDays") != cpp_days:
+            r.error(f"plants.json/compost: durationDays={c.get('durationDays')} y FFarmModel::CompostDays={cpp_days}")
 
 
 def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
@@ -1107,6 +1174,7 @@ def run_all(ds: DataSet) -> Report:
     reach = check_crafting_reachability(ds, r)
     obtainable = _obtainable(ds, reach)
     check_plants(ds, r, obtainable)
+    check_compost(ds, r, obtainable)
     check_building(ds, r, obtainable)
     check_boats(ds, r, obtainable)
     check_meshes(ds, r)

@@ -224,6 +224,48 @@ def test_espantapajaros_en_el_primer_tier(real: DataSet) -> None:
     assert p["tier"] == "palma" and p["category"] == "huerto" and p["tools"] == []
 
 
+def test_compost_en_el_primer_tier_y_con_restos_de_landing(real: DataSet) -> None:
+    # El compost acompaña al primer bancal: pila del tier palma y restos que ya se recogen en Landing.
+    c = real.data["plants.json"]["compost"]
+    pile = next(p for p in real.building["pieces"] if p["id"] == c["piece"])
+    assert pile["tier"] == "palma" and pile["tools"] == []
+    assert {"item": "hoja_palma"} in c["inputs"] and {"tag": "comida"} in c["inputs"]
+
+
+def test_detecta_compost_sin_bloque(ds: DataSet) -> None:
+    del ds.data["plants.json"]["compost"]
+    assert any_error(errors_of(ds), "falta el bloque «compost»")
+
+
+def test_detecta_compost_distinto_del_cpp(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["growthMultiplier"] = 2.0
+    ds.data["plants.json"]["compost"]["durationDays"] = 5
+    errors = errors_of(ds)
+    assert any_error(errors, "CompostGrowth") and any_error(errors, "CompostDays")
+
+
+def test_detecta_compost_como_resto_de_si_mismo(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["inputs"].append({"item": "compost"})
+    assert any_error(errors_of(ds), "su propio resto")
+
+
+def test_detecta_compost_con_capacidad_no_multiplo(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["capacity"] = 10
+    assert any_error(errors_of(ds), "múltiplo de inputsPerResult")
+
+
+def test_detecta_pila_de_compost_tardia(ds: DataSet) -> None:
+    pile = next(p for p in ds.building["pieces"] if p["id"] == "pila_compost")
+    pile["tier"] = "madera"
+    assert any_error(errors_of(ds), "tier posterior al bancal")
+
+
+def test_detecta_compost_con_etiqueta_inexistente(ds: DataSet) -> None:
+    ds.data["plants.json"]["compost"]["inputs"] = [{"tag": "estiercol"}]
+    errors = errors_of(ds)
+    assert any_error(errors, "estiercol") and any_error(errors, "ningún resto aceptado")
+
+
 def test_detecta_limonero_arrancable(ds: DataSet) -> None:
     ds.data["plants.json"]["plants"][0]["neverRemoved"] = False
     assert any_error(errors_of(ds), "neverRemoved")
