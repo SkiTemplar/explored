@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "note": "Diario del náufrago (biblia 07 §4). Una entrada por hito, en primera persona y en pasado; {Day} es el día real de la partida. trigger usa el mismo lenguaje de condiciones que achievements.json ({stat, op, value}, {stat, contains}, {flag}, all/any/not) sobre sus estadísticas, o {event} con un suceso de la lista events cuando el hito aún no tiene estadística. Red (biblia 08 §2.11): individual, en el cliente y sin replicar; cada jugador tiene su diario y se guarda en su perfil (biblia 08 §4.4).",
+  "units": {
+    "phase": "AA acceso anticipado, F2 fase 2, F3 fase 3 (biblia 07, leyenda de fases)",
+    "trigger": "condición de achievements.json o {event: id de events}",
+    "{Day}": "número del día de juego en que se escribe la entrada"
+  },
+  "events": [
+    {
+      "id": "run_start",
+      "phase": "AA",
+      "reportedBy": "Save / GameMode (partida nueva, tras el amaraje)",
+      "descriptionEs": "Empieza una partida nueva, con el Albatros ya en la laguna."
+    },
+    {
+      "id": "ruin_discovered",
+      "phase": "AA",
+      "reportedBy": "URuinsSubsystem (primer elemento de ruina a la vista)",
+      "descriptionEs": "El jugador ve de cerca el primer elemento de una ruina del pueblo navegante."
+    },
+    {
+      "id": "storm_survived",
+      "phase": "AA",
+      "reportedBy": "Weather (fin de un temporal o ciclón con el jugador vivo)",
+      "descriptionEs": "Termina el primer temporal o ciclón y el jugador sigue con vida."
+    },
+    {
+      "id": "terrain_dug",
+      "phase": "AA",
+      "reportedBy": "Mining (primer golpe de pala o pico que resta densidad)",
+      "descriptionEs": "Primera edición de terreno. Pasará a {stat: terrain_edits_made} cuando esa estadística exista en achievements.json."
+    },
+    {
+      "id": "cave_opened",
+      "phase": "AA",
+      "reportedBy": "Mining (una edición abre una cavidad cerrada de más de 8 m³)",
+      "descriptionEs": "El pico atraviesa la roca y abre una cámara que nadie había pisado."
+    },
+    {
+      "id": "palisade_built",
+      "phase": "F2",
+      "reportedBy": "Building (primera empalizada colocada)",
+      "descriptionEs": "Primera empalizada. Pasará a {stat: building_pieces_built, contains: empalizada} cuando la pieza exista."
+    },
+    {
+      "id": "first_barter",
+      "phase": "F3",
+      "reportedBy": "Villages (primer trueque completado)",
+      "descriptionEs": "Primer trueque con el pueblo del arrecife. Pasará a {stat: barter_trades_completed} cuando exista."
+    }
+  ],
+  "entries": [
+    {
+      "id": "diario_amaraje",
+      "phase": "AA",
+      "trigger": { "event": "run_start" },
+      "textEs": "Día {Day}. El avión ya no vuela. Yo sí puedo caminar, así que empiezo por ahí.",
+      "textEn": "Day {Day}. The plane doesn't fly anymore. I can still walk, so that's where I start."
+    },
+    {
+      "id": "diario_primera_noche",
+      "phase": "AA",
+      "trigger": { "stat": "days_survived", "op": ">=", "value": 1 },
+      "textEs": "Día {Day}. Pasé la primera noche entera. El fuego aguantó despierto más que yo.",
+      "textEn": "Day {Day}. Got through the first whole night. The fire stayed awake longer than I did."
+    },
+    {
+      "id": "diario_primer_fuego",
+      "phase": "AA",
+      "trigger": { "stat": "fires_lit", "op": ">=", "value": 1 },
+      "textEs": "Día {Day}. Primera hoguera. Tuve que tapar la llama con el cuerpo hasta que el viento dejó de apagarla.",
+      "textEn": "Day {Day}. First fire. I had to shield the flame with my body until the wind stopped putting it out."
+    },
+    {
+      "id": "diario_primer_refugio",
+      "phase": "AA",
+      "trigger": {
+        "any": [
+          { "stat": "building_pieces_built", "contains": "refugio_inclinado" },
+          { "stat": "building_pieces_built", "contains": "techo_palma" }
+        ]
+      },
+      "textEs": "Día {Day}. Cuatro palos y hojas de palma encima. Esta noche no me llueve en la cara.",
+      "textEn": "Day {Day}. Four sticks with palm leaves on top. Tonight the rain stays off my face."
+    },
+    {
+      "id": "diario_primer_trazo",
+      "phase": "AA",
+      "trigger": { "flag": "coast_drawn" },
+      "textEs": "Día {Day}. Empecé el mapa. Una línea torcida donde la playa se acaba y empieza la roca.",
+      "textEn": "Day {Day}. Started the map. One crooked line where the beach ends and the rock begins."
+    },
+    {
+      "id": "diario_primera_ruina",
+      "phase": "AA",
+      "trigger": { "event": "ruin_discovered" },
+      "textEs": "Día {Day}. Piedras puestas en fila bajo la maleza. El mar no las dejó así. Alguien vivió aquí antes que yo.",
+      "textEn": "Day {Day}. Stones set in a row under the undergrowth. The sea didn't leave them like that. Someone lived here before me."
+    },
+    {
+      "id": "diario_lectura_oleaje",
+      "phase": "AA",
+      "trigger": { "stat": "wayfinding_techniques", "contains": "swell_reading" },
+      "textEs": "Día {Day}. Aprendí a leer el oleaje. Ahora el mar me dice hacia dónde queda tierra antes de verla.",
+      "textEn": "Day {Day}. Learned to read the swell. Now the sea tells me where land is before I see it."
+    },
+    {
+      "id": "diario_primera_tormenta",
+      "phase": "AA",
+      "trigger": { "event": "storm_survived" },
+      "textEs": "Día {Day}. El techo aguantó. Yo también. Mañana reviso qué se llevó el viento.",
+      "textEn": "Day {Day}. The roof held. So did I. Tomorrow I check what the wind took."
+    },
+    {
+      "id": "diario_primera_palada",
+      "phase": "AA",
+      "trigger": { "event": "terrain_dug" },
+      "textEs": "Día {Day}. Empecé a cavar en serio. Debajo de la tierra hay tanta isla como encima.",
+      "textEn": "Day {Day}. Started digging in earnest. There's as much island underground as above it."
+    },
+    {
+      "id": "diario_primera_cueva",
+      "phase": "AA",
+      "trigger": { "event": "cave_opened" },
+      "textEs": "Día {Day}. El pico atravesó la roca y detrás no había más roca. Una cámara entera que nadie había visto.",
+      "textEn": "Day {Day}. The pick went through the rock and there was no more rock behind it. A whole chamber nobody had seen."
+    },
+    {
+      "id": "diario_primer_limon",
+      "phase": "AA",
+      "trigger": { "stat": "crops_harvested", "contains": "limonero" },
+      "textEs": "Día {Day}. El limonero dio su primer limón. Pequeño y ácido. Me lo comí entero.",
+      "textEn": "Day {Day}. The lemon tree gave its first lemon. Small and sour. I ate the whole thing."
+    },
+    {
+      "id": "diario_primera_leyenda",
+      "phase": "AA",
+      "trigger": { "stat": "legendary_catches", "op": ">=", "value": 1 },
+      "textEs": "Día {Day}. Rompió el sedal dos veces antes de rendirse. Pesaba más que yo, o eso me pareció.",
+      "textEn": "Day {Day}. It snapped the line twice before it gave up. It weighed more than me, or felt like it."
+    },
+    {
+      "id": "diario_primera_empalizada",
+      "phase": "F2",
+      "trigger": { "event": "palisade_built" },
+      "textEs": "Día {Day}. Clavé la última estaca antes de que oscureciera. No sé si aguantará un asalto, pero ya no duermo con la puerta abierta.",
+      "textEn": "Day {Day}. Drove the last stake in before dark. I don't know if it'll hold off a raid, but I'm done sleeping with the door open."
+    },
+    {
+      "id": "diario_primer_trueque",
+      "phase": "F3",
+      "trigger": { "event": "first_barter" },
+      "textEs": "Día {Day}. Les llevé cuerda y aluminio trabajado. Me dieron semillas que no había visto nunca. Ninguno de los dos contó monedas.",
+      "textEn": "Day {Day}. Brought them rope and worked aluminium. They gave me seeds I'd never seen. Neither of us counted coins."
+    },
+    {
+      "id": "diario_zarpa_limon",
+      "phase": "F3",
+      "trigger": { "stat": "boats_built", "contains": "barco_limon" },
+      "textEs": "Día {Day}. Última entrada desde tierra. A partir de esta noche llevo el barco solo con lo que aprendí del cielo.",
+      "textEn": "Day {Day}. Last entry from land. From tonight I steer by nothing but what the sky taught me."
+    }
+  ]
+}
