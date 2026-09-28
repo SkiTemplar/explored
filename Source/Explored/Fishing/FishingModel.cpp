@@ -835,19 +835,29 @@ TArray<FTrapCatch> FFishingModel::CastNet(const FFishingConditions& Conditions, 
 void FFishingModel::AdvanceTrap(FPlacedTrap& Trap, float ToDays, uint32 WorldSeed)
 {
 	using namespace FishingModelDetail;
-	if (ToDays <= Trap.SimulatedToDays)
+	// Un guardado corrupto puede traer NaN o infinitos: sin IsFinite, FloorToInt(NaN)
+	// da INT_MIN y el bucle de horas no acaba nunca.
+	const bool bSimulatedValid = FMath::IsFinite(Trap.SimulatedToDays);
+	if (!FMath::IsFinite(ToDays) || (bSimulatedValid && ToDays <= Trap.SimulatedToDays))
 	{
 		return;
 	}
 	// Horas enteras de juego en (SimulatedToDays, ToDays]: simular de una vez
-	// o a trozos da exactamente lo mismo.
-	const int32 FirstHour = FMath::FloorToInt(static_cast<double>(Trap.SimulatedToDays) * 24.0) + 1;
-	const int32 LastHour = FMath::FloorToInt(static_cast<double>(ToDays) * 24.0);
+	// o a trozos da exactamente lo mismo. Se acota antes de convertir a entero.
+	constexpr double HourLimit = 1.0e9;
+	const int64 LastHour = FMath::FloorToInt64(FMath::Clamp(static_cast<double>(ToDays) * 24.0, -HourLimit, HourLimit));
+	int64 FirstHour = LastHour - 24 * static_cast<int64>(MaxTrapCatchUpDays) + 1;
+	if (bSimulatedValid)
+	{
+		FirstHour = FMath::Max(FirstHour,
+			FMath::FloorToInt64(FMath::Clamp(static_cast<double>(Trap.SimulatedToDays) * 24.0, -HourLimit, HourLimit)) + 1);
+	}
 	const int32 Capacity = TrapCapacity(Trap.Kind);
 	const uint32 Salt = WorldSeed ^ TrapSalt ^ (static_cast<uint32>(Trap.Kind) << 24);
 
-	for (int32 Hour = FirstHour; Hour <= LastHour; ++Hour)
+	for (int64 Hour64 = FirstHour; Hour64 <= LastHour; ++Hour64)
 	{
+		const int32 Hour = static_cast<int32>(Hour64);
 		const float Days = static_cast<float>(static_cast<double>(Hour) / 24.0);
 		const float Level = FOceanTide::Level(Days);
 		const float Flow = FOceanTide::Flow(Days);
@@ -896,6 +906,10 @@ void FFishingModel::AdvanceTrap(FPlacedTrap& Trap, float ToDays, uint32 WorldSee
 
 TArray<FTrapCatch> FFishingModel::CollectTrap(FPlacedTrap& Trap, float NowDays, uint32 WorldSeed)
 {
+	if (!FMath::IsFinite(NowDays))
+	{
+		return {};
+	}
 	AdvanceTrap(Trap, NowDays, WorldSeed);
 	TArray<FTrapCatch> Out = MoveTemp(Trap.Contents);
 	Trap.Contents.Reset();

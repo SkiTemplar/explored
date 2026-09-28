@@ -310,6 +310,8 @@ struct EXPLORED_API FFishingModel
 	static constexpr float SpearMaxDepthM = 5.0f;
 	/** Índice de refracción del agua de mar. */
 	static constexpr float WaterRefractiveIndex = 1.34f;
+	/** Una trampa olvidada se simula como mucho estos días atrás (a los 60 ya está llena). */
+	static constexpr int32 MaxTrapCatchUpDays = 60;
 
 	// --- Tablas -----------------------------------------------------------
 
@@ -378,10 +380,13 @@ struct EXPLORED_API FFishingModel
 
 	// --- Trampas y pozas (sin animal visible, GDD §10) -------------------------
 
-	/** Simula la trampa hasta ToDays, hora a hora, sin pasar de su capacidad. */
+	/**
+	 * Simula la trampa hasta ToDays, hora a hora, sin pasar de su capacidad y como mucho
+	 * MaxTrapCatchUpDays hacia atrás. Un ToDays no finito no hace nada.
+	 */
 	static void AdvanceTrap(FPlacedTrap& Trap, float ToDays, uint32 WorldSeed);
 
-	/** Revisa la trampa: la simula hasta NowDays y se lleva lo que haya. */
+	/** Revisa la trampa: la simula hasta NowDays y se lleva lo que haya (nada si NowDays no es finito). */
 	static TArray<FTrapCatch> CollectTrap(FPlacedTrap& Trap, float NowDays, uint32 WorldSeed);
 
 	/** Índice de la bajamar más cercana (dos al día). */

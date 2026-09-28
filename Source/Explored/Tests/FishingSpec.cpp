@@ -4,6 +4,8 @@
 #include "Fishing/FishingTension.h"
 #include "Ocean/OceanCurrents.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace FishingTest
@@ -467,6 +469,30 @@ void FFishingSpec::Define()
 			{
 				TestEqual(TEXT("Fresco al sacarlo"), Catch.CaughtAtDays, 30.0f);
 			}
+		});
+
+		It("un tiempo NaN, infinito o enorme no cuelga la trampa", [this]()
+		{
+			const float NaN = std::numeric_limits<float>::quiet_NaN();
+			const float Inf = std::numeric_limits<float>::infinity();
+			FFishingSaveState State;
+			FPlacedTrap& Trap = State.PlaceTrap(ETrapKind::Nasa, EFishHabitat::Reef, FVector::ZeroVector, EFishBait::Visceras, 2.0f);
+			TestEqual(TEXT("revisar en NaN no se lleva nada"), FFishingModel::CollectTrap(Trap, NaN, 5u).Num(), 0);
+			TestEqual(TEXT("ni guarda el NaN"), Trap.SimulatedToDays, 2.0f);
+			FFishingModel::AdvanceTrap(Trap, Inf, 5u);
+			TestEqual(TEXT("infinito no avanza"), Trap.SimulatedToDays, 2.0f);
+
+			// Guardado corrupto: se recupera como mucho MaxTrapCatchUpDays.
+			Trap.SimulatedToDays = NaN;
+			FFishingModel::AdvanceTrap(Trap, 3.0f, 5u);
+			TestEqual(TEXT("NaN guardado: sigue desde ahora"), Trap.SimulatedToDays, 3.0f);
+			TestTrue(TEXT("sin pasar de la capacidad"), Trap.Contents.Num() <= FFishingModel::TrapCapacity(ETrapKind::Nasa));
+
+			Trap.SimulatedToDays = -Inf;
+			FFishingModel::AdvanceTrap(Trap, 1.0e30f, 5u);
+			TestEqual(TEXT("un salto enorme termina"), Trap.SimulatedToDays, 1.0e30f);
+			const int32 Inside = Trap.Contents.Num();
+			TestEqual(TEXT("revisarla antes no simula hacia atrás"), FFishingModel::CollectTrap(Trap, 4.0f, 5u).Num(), Inside);
 		});
 
 		It("el cebo llena antes las trampas (media de 200 nasas en un día)", [this]()
