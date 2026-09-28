@@ -643,8 +643,8 @@ def test_cuenta_setas_por_tipo(ds: DataSet) -> None:
 
 
 def test_estratos_de_mineria_del_gdd_v2(real_report: Report) -> None:
-    assert not any("GDD v2 §3.4" in e for e in real_report.errors)
-    assert any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
+    assert not any("GDD v2 §3.4" in e or "mining.json" in e for e in real_report.errors)
+    assert not any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
 
 
 def test_detecta_estrato_de_mineria_que_desaparece(ds: DataSet) -> None:
@@ -760,3 +760,95 @@ def test_malla_de_base_sin_pieza_es_nota_no_error(real_report: Report) -> None:
 def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
     ds.data["building_pieces.json"]["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "catre_bambu"]
     assert "SM_Base_Bed" in _idle_base_note(run_all(ds))
+
+
+# --------------------------------------------------------------------------- minería (GDD v2 §3.4)
+
+from datacheck import mining
+
+
+def mining_errors(ds: DataSet) -> list[str]:
+    r = Report()
+    mining.check_mining(ds, r)
+    return r.errors
+
+
+def stratum(ds: DataSet, sid: str) -> dict:
+    return next(s for s in ds.data["mining.json"]["strata"] if s["id"] == sid)
+
+
+def material(ds: DataSet, mid: str) -> dict:
+    return next(m for m in ds.data["mining.json"]["materials"] if m["id"] == mid)
+
+
+def without_tool(ds: DataSet, tid: str) -> None:
+    ds.data["mining.json"]["tools"] = [t for t in ds.data["mining.json"]["tools"] if t["id"] != tid]
+
+
+def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
+    assert mining_errors(real) == []
+    cpp = mining.cpp_materials(real)
+    assert cpp and cpp["Basalto"] == (3.0, 3)
+    assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
+
+
+def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
+    m = material(ds, "basalto")
+    m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
+    assert any_error(mining_errors(ds), "basalto", "MaterialInfo")
+
+
+def test_mineria_golpes_fuera_de_la_formula(ds: DataSet) -> None:
+    material(ds, "caliza")["hitsPerM3"]["3"] = 10
+    assert any_error(mining_errors(ds), "caliza", "fórmula")
+
+
+def test_mineria_isla_que_no_existe(ds: DataSet) -> None:
+    stratum(ds, "basalto")["occurrences"][0]["island"] = "atlantida"
+    assert any_error(mining_errors(ds), "atlantida", "EIslandArchetype")
+
+
+def test_mineria_falta_estrato_del_gdd(ds: DataSet) -> None:
+    ds.data["mining.json"]["strata"] = [s for s in ds.data["mining.json"]["strata"] if s["id"] != "azufre"]
+    assert any_error(mining_errors(ds), "azufre", "GDD v2")
+
+
+def test_mineria_cabeza_de_pico_sin_nivel(ds: DataSet) -> None:
+    ds.data["items.json"] = ds.items + [{"id": "granito", "tags": ["piedra"], "properties": [{"name": "Rigido", "value": 4}]}]
+    assert any_error(mining_errors(ds), "granito", "no tiene nivel")
+
+
+def test_mineria_hacha_delante_roba_el_pico(ds: DataSet) -> None:
+    tpl = ds.data["templates.json"]
+    pico = template(ds, "pico")
+    tpl.remove(pico)
+    tpl.append(pico)
+    assert any_error(mining_errors(ds), "canto_rodado", "hacha")
+
+
+def test_mineria_pico_de_obsidiana_solo_en_fase_2(ds: DataSet) -> None:
+    obs = stratum(ds, "obsidiana")
+    obs["surfaceSource"] = False
+    for occ in obs["occurrences"]:
+        occ["fase"] = 2
+    without_tool(ds, "pico_rescatado")
+    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
+
+
+def test_mineria_ciclo_obsidiana_solo_con_obsidiana(ds: DataSet) -> None:
+    stratum(ds, "obsidiana")["surfaceSource"] = False
+    without_tool(ds, "pico_rescatado")
+    errors = mining_errors(ds)
+    assert any_error(errors, "se queda en el nivel 3")
+    assert any_error(errors, "obsidiana", "ninguna herramienta")
+
+
+def test_mineria_veta_mal_formada(ds: DataSet) -> None:
+    stratum(ds, "veta_cobre")["vein"]["veinUnits"] = 0
+    assert any_error(mining_errors(ds), "veta_cobre", "veinUnits")
+
+
+def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> None:
+    items = {i["id"]: i for i in real.items}
+    best = crafting.best_template(real.templates, "Tallar", crafting.leaf(items["lasca_pedernal"]), crafting.leaf(items["basalto"]))
+    assert best and best["resultDefinitionId"] == "basalto_tallado"

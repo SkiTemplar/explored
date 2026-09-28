@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, music
+from . import achievements, cooking, crafting, mining, music
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -42,7 +42,7 @@ DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json",
+    "fish.json", "music_layers.json", "mining.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
@@ -1070,9 +1070,8 @@ MINING_TOOLS = ("pala", "pico")
 def check_gdd_mining(ds: DataSet, r: Report) -> None:
     """Cada estrato del GDD v2 §3.4 deja un objeto en items.json (error si falta).
 
-    El pico aún no tiene plantilla: toda cabeza de pico (Punta o Contundente con Rigido)
-    la captura antes «hacha», así que queda como nota hasta decidir la regla
-    (docs/balance/2026-09-27-mineria.md).
+    Las herramientas, los estratos por isla y la progresión de picos los valida
+    ``mining.check_mining`` sobre mining.json.
     """
     ids = {i["id"] for i in ds.items}
     for name, cands in GDD_MINING.items():
@@ -1110,4 +1109,5 @@ def run_all(ds: DataSet) -> Report:
     check_forbidden_terms(ds, r)
     check_gdd_food_coverage(ds, r)
     check_gdd_mining(ds, r)
+    mining.check_mining(ds, r)
     return r

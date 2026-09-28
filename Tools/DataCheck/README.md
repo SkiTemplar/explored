@@ -18,15 +18,20 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
   `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json` y `music_layers.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json` y `mining.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
   Si una planta tiene `birdsEat`, debe existir la pieza `espantapajaros`
   (`FFarmModel::ScarecrowRadius`, GDD §8.7).
 - **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
-  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`;
-  nota mientras falte la plantilla del pico.
+  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`.
+  `mining.json`: materiales espejo de `ETerrainMaterial`/`FTerrainEditModel::MaterialInfo`
+  (dureza, nivel mínimo, `SecondsPerPickaxeHit`, `TierBonus`, `MinHitsPerCubicMeter`) y
+  golpes/m³ según la fórmula del GDD; estratos con objeto, islas de `EIslandArchetype`,
+  capa, profundidad, fase y vetas finitas; niveles de herramienta 0–4 en los que cada
+  cabeza produce de verdad un `pico` (no la captura `hacha`) y toda pieza que cabe como
+  cabeza tiene nivel; progresión de picos sin ciclos y completa solo con islas de fase 1.
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).
