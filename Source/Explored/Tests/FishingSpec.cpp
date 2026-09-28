@@ -377,6 +377,28 @@ void FFishingSpec::Define()
 			Long.Tick(0.5f, 1.0f);
 			TestTrue(TEXT("Paso largo troceado"), Long.GetState().ElapsedSeconds > 0.49f);
 		});
+
+		It("un paso NaN o enorme no cuelga la pelea", [this]()
+		{
+			FFishFightParams P;
+			// Pelea que no acaba sola: sin el tope, restar 1/60 a 1e30 no cambia nada y el
+			// bucle no terminaría nunca.
+			P.StrengthKgf = 1.0f;
+			P.StaminaSeconds = 1.0e6f;
+			P.ApplyTackle(FFishingTackle());
+			P.SpoolLengthM = 1.0e9f;
+			P.MaxSeconds = 1.0e9f;
+			P.SlackGraceSeconds = 1.0e9f;
+			FFishFight Fight(P, 3u);
+			Fight.Tick(std::numeric_limits<float>::quiet_NaN(), 0.0f);
+			TestEqual(TEXT("NaN no avanza"), Fight.GetState().ElapsedSeconds, 0.0f);
+			Fight.Tick(0.1f, std::numeric_limits<float>::quiet_NaN());
+			TestTrue(TEXT("recoger NaN: tensión finita"), FMath::IsFinite(Fight.GetState().Tension01));
+			const float Before = Fight.GetState().ElapsedSeconds;
+			Fight.Tick(1.0e30f, 0.0f);
+			TestTrue(TEXT("un paso enorme avanza como mucho MaxTickSeconds"),
+				Fight.GetState().ElapsedSeconds <= Before + FFishFight::MaxTickSeconds + 0.01f);
+		});
 	});
 
 	Describe("Arpón", [this]()
