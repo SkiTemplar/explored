@@ -65,12 +65,14 @@ FBoidBand FBoidsModel::BandAt(const FVector& P, const FBoidsEnvironment& Environ
 
 void FBoidsModel::Step(float DeltaSeconds, const FBoidsEnvironment& Environment)
 {
-	if (DeltaSeconds <= 0.0f || Agents.Num() == 0)
+	// NaN pasaría el guarda `<= 0` y CeilToInt(NaN) es indefinido.
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f || Agents.Num() == 0)
 	{
 		return;
 	}
-	const int32 Steps = FMath::Max(1, FMath::CeilToInt(DeltaSeconds / MaxSubstep));
-	const float Dt = DeltaSeconds / Steps;
+	const float Simulated = FMath::Min(DeltaSeconds, MaxSubstep * MaxSubstepsPerStep);
+	const int32 Steps = FMath::Clamp(FMath::CeilToInt(Simulated / MaxSubstep), 1, MaxSubstepsPerStep);
+	const float Dt = Simulated / Steps;
 	for (int32 I = 0; I < Steps; ++I)
 	{
 		SubStep(Dt, Environment);
@@ -202,7 +204,8 @@ void FBoidsModel::SubStep(float Dt, const FBoidsEnvironment& Env)
 		{
 			const double Inv = 1.0 / Count;
 			Steer += (SumV * Inv - V) * (Params.AlignmentWeight * Env.AlignmentScale);
-			Steer += ((SumP * Inv - P) / Params.NeighborRadiusCm) * (MaxSpeed * Params.CohesionWeight * Env.CohesionScale);
+			// Cell es el radio con el mismo mínimo que el hash: un radio 0 daría 0/0 = NaN.
+			Steer += ((SumP * Inv - P) / Cell) * (MaxSpeed * Params.CohesionWeight * Env.CohesionScale);
 		}
 
 		if (Env.bHasTarget)

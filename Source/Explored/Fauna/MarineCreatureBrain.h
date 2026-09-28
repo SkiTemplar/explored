@@ -105,6 +105,14 @@ public:
 	 */
 	static bool ReefSharkAttackRoll(uint32 Seed, int32 Encounter, float Smell, bool bPeaceful);
 
+	/** Paso máximo de simulación (s): las embestidas y los saltos no atraviesan nada. */
+	static constexpr float MaxStepSeconds = 0.05f;
+	/**
+	 * Tope de pasos por Tick (2 s). Un Tick más largo (una pausa, un tirón) pierde el resto
+	 * en vez de hacer miles de pasos.
+	 */
+	static constexpr int32 MaxStepsPerTick = 40;
+
 	// Ajustes de diseño (cm, s y puntos de daño).
 	static constexpr float RayStingRadiusCm = 70.0f;
 	static constexpr float RayFleeDistanceCm = 1500.0f;

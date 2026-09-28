@@ -6,6 +6,8 @@
 #include "Fauna/FaunaTypes.h"
 #include "Fauna/MarineCreatureBrain.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace MarineFaunaSpecDetail
@@ -472,6 +474,26 @@ void FMarineFaunaSpec::Define()
 			TestFalse(TEXT("No pica lejos"), Jelly.IsStingHazard(Jelly.GetPosition() + FVector(200.0, 0.0, 0.0)));
 			const FMarineBrainEvents E = Jelly.Tick(0.05f, SwimmerAt(Jelly.GetPosition() + FVector(50.0, 0.0, 0.0), 0.0f), Q);
 			TestTrue(TEXT("Evento de picadura"), E.bSting);
+		});
+
+		It("un Tick no finito no hace nada y uno enorme simula como mucho MaxStepsPerTick pasos", [this]()
+		{
+			FTestWorld World = OneIsland();
+			World.Current = FVector2D(30.0, -10.0);
+			const FFaunaWorldQuery Q = World.Query();
+			const FVector Start(60000.0, 0.0, -500.0);
+			FMarineCreatureBrain Jelly(Creature(EFaunaSpecies::Jellyfish, Start, 2), Q);
+			Jelly.Tick(std::numeric_limits<float>::quiet_NaN(), FFaunaStimuli(), Q);
+			Jelly.Tick(std::numeric_limits<float>::infinity(), FFaunaStimuli(), Q);
+			TestTrue(TEXT("Quieta"), Jelly.GetPosition() == Start);
+			TestEqual(TEXT("Sin tiempo de estado"), Jelly.GetStateSeconds(), 0.0f);
+
+			// 1e9 s: CeilToInt(2e10) desbordaría int32; la medusa deriva solo 2 s de corriente.
+			Jelly.Tick(1.0e9f, FFaunaStimuli(), Q);
+			const float Simulated = FMarineCreatureBrain::MaxStepSeconds * FMarineCreatureBrain::MaxStepsPerTick;
+			const FVector2D Drift(Jelly.GetPosition().X - Start.X, Jelly.GetPosition().Y - Start.Y);
+			TestTrue(FString::Printf(TEXT("Deriva de 2 s (%.2f, %.2f)"), Drift.X, Drift.Y),
+				Drift.Equals(FVector2D(30.0 * Simulated, -10.0 * Simulated), 0.1));
 		});
 
 		It("el tiburón de arrecife se acerca curioso y da vueltas sin atacar", [this]()
