@@ -82,6 +82,8 @@ FTramwayModel::FTramwayModel(const FTramwaySettings& InSettings)
 	Settings.MaxRiseSteps = FMath::Clamp(Settings.MaxRiseSteps, 0, 127);
 	Settings.EmptyCogHeight = FMath::Max(Settings.EmptyCogHeight, 0.01f);
 	Settings.FullCogHeight = FMath::Max(Settings.FullCogHeight, 0.01f);
+	// Vagón sin masa: Integrate divide entre ella.
+	Settings.CartMassKg = FMath::Max(Settings.CartMassKg, 1.0f);
 	Settings.SubstepsPerSecond = FMath::Max(Settings.SubstepsPerSecond, 1);
 }
 
@@ -601,11 +603,15 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 		Cart.V = 0.0;
 		R.Derailed = Cause;
 	};
-	if (SegmentLength(Cart.From, Cart.To) <= 0.0)
+	const double StartLength = SegmentLength(Cart.From, Cart.To);
+	if (StartLength <= 0.0)
 	{
 		Derail(ECartDerailCause::MissingTrack);
 		return R;
 	}
+	// Un S fuera del tramo (guardado manipulado o de otra versión) haría cruzar nodos sin
+	// fin en una vía cerrada: con S = 1e300, S − Length no baja nunca.
+	Cart.S = FMath::Clamp(Cart.S, 0.0, StartLength);
 	if (IsDamaged(Cart.From, Cart.To))
 	{
 		Derail(ECartDerailCause::DamagedTrack);

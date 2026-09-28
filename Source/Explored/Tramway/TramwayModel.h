@@ -215,7 +215,8 @@ public:
 	/**
 	 * Marca dañado todo tramo que pase a menos de Radius del centro (distancia al
 	 * segmento que une sus nodos). Devuelve los tramos recién dañados como pares
-	 * (A, B) con A < B, ordenados.
+	 * (A, B) en los que B es el vecino de A hacia +X o +Y (A no es siempre el menor:
+	 * en una bajada B tiene menos Z), ordenados por A.
 	 */
 	TArray<TPair<FIntVector, FIntVector>> DamageInSphere(const FVector& Center, float Radius);
 	bool IsDamaged(const FIntVector& A, const FIntVector& B) const;
