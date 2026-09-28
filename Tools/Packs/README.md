@@ -1,0 +1,55 @@
+# Packs CC0 (Kenney, KayKit, Quaternius)
+
+GDD v2 §7.1: el arte genérico sale de packs CC0 y se retoca a la paleta por isla
+(`docs/art/paleta.md`). Lo propio del juego (marae, petroglifos, campamento Halden, el
+«Limón», objetos narrativos) sigue en `Tools/Blender`. **Nunca se versionan los ficheros de
+los packs ni los FBX**: solo este código, el manifiesto, el catálogo y hojas de contacto
+pequeñas.
+
+| Fichero | Qué es |
+|---|---|
+| `packs.json` | Manifiesto: autor, página oficial, versión, fuente de descarga, licencia CC0 verificada (fecha y texto leído) y sha256 del zip. |
+| `fetch_packs.py` | Descarga reproducible a `Art/Packs/` (ignorado; `$EXPLORED_PACKS_CACHE` lo cambia) y verifica el sha256. |
+| `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
+| `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
+| `contact_sheet.py` | Compone `docs/art/packs/<lote>.png` (< 1 MB) con el original y el normalizado. |
+
+```bash
+cd Tools/Packs
+uv run python fetch_packs.py                    # descarga y verifica todo
+uv run pytest -q
+cd ../..
+blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote lote1-herramientas --tiles
+uv run --with pillow python Tools/Packs/contact_sheet.py lote1-herramientas
+# Para escribir reglas de color de una entrada nueva:
+blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote <lote> --ids <id> --analyze
+```
+
+Workbench necesita EGL: en un Linux sin GPU, instala `libegl1 libgl1-mesa-dri`.
+
+## Fuentes
+
+- **Kenney**: URL directa del zip (la ruta lleva el hash de la versión).
+- **itch.io** (KayKit, Quaternius): páginas de precio libre. Se usa el flujo del botón
+  «No thanks, just take me to the downloads» (POST a `/file/<uploadId>`); `uploadId` fija el
+  fichero y el sha256 detecta cualquier cambio del autor.
+- **Google Drive** (enlaces de quaternius.com): no se usa, porque la cuota de descarga falla
+  («Quota exceeded») y no es reproducible.
+
+## Recoloreado
+
+Cada cara toma su color del pack (textura en el centro UV o color del material) y se le
+asigna la muestra de `paleta.json` de la regla más cercana en Oklab. La salida lleva **UV de
+la paleta** (u en la columna, v por la altura: arriba claro, abajo oscuro) para `M_LowPoly`
+con `T_Palette_<Isla>`, y el mismo degradado como color de vértice `Col`. La UV no cambia
+entre islas: el atlas pone el grado de cada isla.
+
+Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen dientes de sierra
+(pasó con el mazo del lote 1): esa pieza se deja con una sola muestra.
+
+## Import en Unreal (local)
+
+Importar `Art/Export/Packs/<lote>/*.fbx` en `/Game/Packs/<lote>/` con `M_LowPoly`, sin
+materiales ni texturas del FBX. Cambiar el `meshPath` de `items.json` a la malla nueva
+(`replaces` dice cuál sustituye) y quitar el script propio de `Tools/Blender` solo cuando la
+malla esté en el repo, para que DataCheck siga en verde.
