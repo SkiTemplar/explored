@@ -4,6 +4,21 @@
 #include "Save/SaveArchive.h"
 
 /**
+ * Base64 estándar sin relleno para meter bytes en el texto de la partida. La
+ * decodificación es estricta (codificación canónica): rechaza caracteres ajenos, una
+ * longitud imposible o bits sobrantes distintos de cero, así que un texto truncado o
+ * manipulado nunca decodifica a medias.
+ */
+struct EXPLORED_API FSaveBase64
+{
+	static FString Encode(const TArray<uint8>& Bytes);
+	/** Devuelve false (y deja Out vacío) si el texto no es válido o pasaría de MaxBytes. */
+	static bool Decode(const FString& Text, TArray<uint8>& Out, int32 MaxBytes = MAX_int32);
+	/** Igual que Decode, pero sobre [Data, Data + Len). */
+	static bool Decode(const TCHAR* Data, int32 Len, TArray<uint8>& Out, int32 MaxBytes = MAX_int32);
+};
+
+/**
  * Conjunto de índices no negativos (instancias de una celda) como mapa de bits.
  * Se codifica en texto con la forma más corta de dos:
  * - «r:0-4,9,12-40»: rangos ascendentes (recolección en claros contiguos);

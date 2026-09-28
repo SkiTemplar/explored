@@ -55,6 +55,76 @@ namespace SaveWorldDeltasDetail
 }
 
 // ---------------------------------------------------------------------------
+// FSaveBase64
+// ---------------------------------------------------------------------------
+
+FString FSaveBase64::Encode(const TArray<uint8>& Bytes)
+{
+	FString Out;
+	const ANSICHAR* const Alphabet = SaveWorldDeltasDetail::Base64Alphabet;
+	for (int32 I = 0; I < Bytes.Num(); I += 3)
+	{
+		const int32 Remaining = Bytes.Num() - I;
+		const uint32 Chunk = (static_cast<uint32>(Bytes[I]) << 16)
+			| (Remaining > 1 ? static_cast<uint32>(Bytes[I + 1]) << 8 : 0u)
+			| (Remaining > 2 ? static_cast<uint32>(Bytes[I + 2]) : 0u);
+		Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 18) & 63]));
+		Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 12) & 63]));
+		if (Remaining > 1)
+		{
+			Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 6) & 63]));
+		}
+		if (Remaining > 2)
+		{
+			Out.AppendChar(static_cast<TCHAR>(Alphabet[Chunk & 63]));
+		}
+	}
+	return Out;
+}
+
+bool FSaveBase64::Decode(const FString& Text, TArray<uint8>& Out, int32 MaxBytes)
+{
+	return Decode(*Text, Text.Len(), Out, MaxBytes);
+}
+
+bool FSaveBase64::Decode(const TCHAR* Data, int32 Len, TArray<uint8>& Out, int32 MaxBytes)
+{
+	Out.Reset();
+	// Cada 4 caracteres son 3 bytes; un resto de 1 carácter no codifica ningún byte.
+	const int64 Decoded = static_cast<int64>(Len) / 4 * 3 + FMath::Max(0, Len % 4 - 1);
+	if (Len < 0 || Len % 4 == 1 || Decoded > MaxBytes)
+	{
+		return false;
+	}
+	Out.Reserve(static_cast<int32>(Decoded));
+	uint32 Buffer = 0;
+	int32 BufferBits = 0;
+	for (int32 I = 0; I < Len; ++I)
+	{
+		const int32 Value = SaveWorldDeltasDetail::Base64Value(Data[I]);
+		if (Value < 0)
+		{
+			Out.Reset();
+			return false;
+		}
+		Buffer = (Buffer << 6) | static_cast<uint32>(Value);
+		BufferBits += 6;
+		if (BufferBits >= 8)
+		{
+			BufferBits -= 8;
+			Out.Add(static_cast<uint8>((Buffer >> BufferBits) & 0xFF));
+		}
+	}
+	// Los bits sobrantes del último carácter deben ser cero (codificación canónica).
+	if ((Buffer & ((1u << BufferBits) - 1u)) != 0)
+	{
+		Out.Reset();
+		return false;
+	}
+	return true;
+}
+
+// ---------------------------------------------------------------------------
 // FSaveIndexSet
 // ---------------------------------------------------------------------------
 
@@ -240,26 +310,7 @@ FString FSaveIndexSet::EncodeBits() const
 	{
 		Bytes.Pop();
 	}
-	FString Out = TEXT("b:");
-	const ANSICHAR* const Alphabet = SaveWorldDeltasDetail::Base64Alphabet;
-	for (int32 I = 0; I < Bytes.Num(); I += 3)
-	{
-		const int32 Remaining = Bytes.Num() - I;
-		const uint32 Chunk = (static_cast<uint32>(Bytes[I]) << 16)
-			| (Remaining > 1 ? static_cast<uint32>(Bytes[I + 1]) << 8 : 0u)
-			| (Remaining > 2 ? static_cast<uint32>(Bytes[I + 2]) : 0u);
-		Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 18) & 63]));
-		Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 12) & 63]));
-		if (Remaining > 1)
-		{
-			Out.AppendChar(static_cast<TCHAR>(Alphabet[(Chunk >> 6) & 63]));
-		}
-		if (Remaining > 2)
-		{
-			Out.AppendChar(static_cast<TCHAR>(Alphabet[Chunk & 63]));
-		}
-	}
-	return Out;
+	return TEXT("b:") + FSaveBase64::Encode(Bytes);
 }
 
 FString FSaveIndexSet::Encode() const
@@ -316,37 +367,8 @@ bool FSaveIndexSet::DecodeRanges(const FString& Text)
 
 bool FSaveIndexSet::DecodeBits(const FString& Text)
 {
-	const TCHAR* Data = *Text;
-	const int32 Len = Text.Len() - 2;
-	if (Len % 4 == 1 || Len > ((MaxIndex + 1) / 8 * 4 + 2) / 3)
-	{
-		return false;
-	}
 	TArray<uint8> Bytes;
-	Bytes.Reserve(Len * 3 / 4 + 1);
-	uint32 Buffer = 0;
-	int32 BufferBits = 0;
-	for (int32 I = 0; I < Len; ++I)
-	{
-		const int32 Value = SaveWorldDeltasDetail::Base64Value(Data[I + 2]);
-		if (Value < 0)
-		{
-			return false;
-		}
-		Buffer = (Buffer << 6) | static_cast<uint32>(Value);
-		BufferBits += 6;
-		if (BufferBits >= 8)
-		{
-			BufferBits -= 8;
-			Bytes.Add(static_cast<uint8>((Buffer >> BufferBits) & 0xFF));
-		}
-	}
-	// Los bits sobrantes del último carácter deben ser cero (codificación canónica).
-	if ((Buffer & ((1u << BufferBits) - 1u)) != 0)
-	{
-		return false;
-	}
-	if (Bytes.Num() > (MaxIndex + 1) / 8)
+	if (!FSaveBase64::Decode(*Text + 2, Text.Len() - 2, Bytes, (MaxIndex + 1) / 8))
 	{
 		return false;
 	}
