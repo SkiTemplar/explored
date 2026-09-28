@@ -292,6 +292,8 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
 
     covered = {g for _, g in seen_game}
     all_ids = set().union(*ids.values())
+    chosen = {(e.get("gameId"), e.get("pack"), e.get("file")) for e in catalog.get("entries", [])}
+    pending_seen: set[str] = set()
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
@@ -307,3 +309,11 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{CATALOG}: discarded: «{gid}» no existe en los datos del juego")
             if key == "pending" and gid in covered:
                 error(f"{CATALOG}: pending: «{gid}» ya está cubierto en entries")
+            if key == "discarded" and (gid, d.get("pack"), d.get("file")) in chosen:
+                error(f"{CATALOG}: discarded: «{gid}» descarta {d.get('file')}, que es el fichero de su entrada")
+            if key == "pending":
+                if gid in pending_seen:
+                    error(f"{CATALOG}: pending: «{gid}» repetido")
+                pending_seen.add(gid)
+                if GAME_ID.match(gid) and "." not in gid and gid not in all_ids:
+                    error(f"{CATALOG}: pending: «{gid}» no existe en los datos del juego")

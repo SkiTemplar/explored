@@ -1244,6 +1244,29 @@ def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "rig solo va en kind fauna")
 
 
+def test_packs_catalogo_cubre_la_mineria_manual(real: DataSet) -> None:
+    entries = {e["gameId"]: e for e in _catalog(real)["entries"]}
+    assert {"pico", "caliza", "canto_rodado"} <= set(entries)
+    assert entries["pico"]["pivot"]["kind"] == "agarre"
+
+
+def test_packs_catalogo_pendiente_con_id_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["pending"].append({"gameId": "pico_de_diamante", "reason": "prueba"})
+    assert any_error(errors_of(ds), "pico_de_diamante", "no existe")
+
+
+def test_packs_catalogo_pendiente_repetido(ds: DataSet) -> None:
+    cat = _catalog(ds)
+    cat["pending"].append(dict(cat["pending"][0]))
+    assert any_error(errors_of(ds), cat["pending"][0]["gameId"], "repetido")
+
+
+def test_packs_catalogo_descarte_del_fichero_elegido(ds: DataSet) -> None:
+    e = _catalog(ds)["entries"][0]
+    _catalog(ds)["discarded"].append({"gameId": e["gameId"], "pack": e["pack"], "file": e["file"], "reason": "prueba"})
+    assert any_error(errors_of(ds), e["gameId"], "fichero de su entrada")
+
+
 def test_fauna_y_fauna_terrestre_nombran_igual(ds: DataSet) -> None:
     sp = next(s for s in ds.data["fauna.json"]["species"] if s["id"] == "cerdo_salvaje")
     sp["nameEn"] = "Wild pig"
