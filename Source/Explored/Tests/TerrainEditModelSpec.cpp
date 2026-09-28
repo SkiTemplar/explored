@@ -810,6 +810,8 @@ void FTerrainEditModelSpec::Define()
 				Carve([](FStairCarve& S) { S.Width = 40.0f; }),
 				Carve([](FStairCarve& S) { S.Headroom = 1.0e6f; }),
 				Carve([](FStairCarve& S) { S.StepRun = 5.0f; }),
+				Carve([](FStairCarve& S) { S.StepRun = 1.0e-30f; }),
+				Carve([](FStairCarve& S) { S.StepRun = 0.05f; }),
 				Carve([](FStairCarve& S) { S.StepRise = -3.0f; }),
 				Carve([&](FStairCarve& S) { S.StepRise = NaNf; }),
 				Carve([&](FStairCarve& S) { S.Width = NaNf; }),

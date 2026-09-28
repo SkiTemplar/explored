@@ -203,7 +203,7 @@ public:
 	FTerrainEditResult Pickaxe(const FPickaxeHit& Hit, FBaseDensity Base);
 	FTerrainEditResult Shovel(const FShovelStroke& Stroke, FBaseDensity Base);
 	FTerrainEditResult PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base);
-	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes. */
+	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes o tiene una huella menor que StairGrid. */
 	FTerrainEditResult CarveStairs(const FStairCarve& Stairs, FBaseDensity Base);
 
 	// --- Consultas ---

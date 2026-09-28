@@ -642,11 +642,12 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	FTerrainEditResult Result;
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
 	// Holgura para los valores que SnapStairs deja justo en el tope (0,45 = 3 × 0,15 en float).
+	// La huella mínima es la de SnapStairs: con una huella casi nula, U / Run desborda int32.
 	static constexpr float Slack = 1.0e-4f;
 	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || !TerrainEditDetail::InWorld(Stairs.Start)
 		|| !TerrainEditDetail::IsFiniteVector(Stairs.Direction) || Flat.SizeSquared() < 1.0e-6
 		|| Stairs.NumSteps < 1 || Stairs.NumSteps > MaxStairSteps
-		|| !(Stairs.StepRun > 0.0f) || Stairs.StepRun > MaxStairRun + Slack
+		|| !(Stairs.StepRun >= StairGrid - Slack) || Stairs.StepRun > MaxStairRun + Slack
 		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
 		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack
 		|| !(Stairs.Headroom > 0.0f) || Stairs.Headroom > MaxStairHeadroom + Slack
