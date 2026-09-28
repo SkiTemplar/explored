@@ -511,7 +511,22 @@ TArray<FHullPiece> FRaftYardModel::ReleaseLoosePieces()
 
 void FRaftYardModel::PlaceOnPath(const FLaunchPath& InPath, float InCenterS)
 {
+	using RaftYardDetail::IsFiniteValue;
 	Path = InPath;
+	// El camino llega del mundo (trazas, marea): lo no finito toma el valor por defecto
+	// para no contagiar NaN a la posición y a la flotación de la balsa.
+	const FLaunchPath Defaults;
+	if (!FMath::IsFinite(Path.StartCm.X) || !FMath::IsFinite(Path.StartCm.Y) || !FMath::IsFinite(Path.StartCm.Z))
+	{
+		Path.StartCm = Defaults.StartCm;
+	}
+	Path.YawDeg = IsFiniteValue(Path.YawDeg) ? Path.YawDeg : Defaults.YawDeg;
+	Path.WaterLevelZCm = IsFiniteValue(Path.WaterLevelZCm) ? Path.WaterLevelZCm : Defaults.WaterLevelZCm;
+	for (FLaunchSegment& Segment : Path.Segments)
+	{
+		Segment.LengthCm = IsFiniteValue(Segment.LengthCm) ? Segment.LengthCm : 0.0f;
+		Segment.DropCm = IsFiniteValue(Segment.DropCm) ? Segment.DropCm : 0.0f;
+	}
 	State = ERaftYardState::Ashore;
 	CenterS = FMath::Clamp(RaftYardDetail::IsFiniteValue(InCenterS) ? InCenterS : 0.0f, 0.0f, Path.TotalLengthCm());
 	VelocityCmS = 0.0f;

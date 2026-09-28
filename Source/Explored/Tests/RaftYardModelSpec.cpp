@@ -576,6 +576,28 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("daño a unión inexistente"), Yard.DamageJoint(99, 1.0f).JointsDamaged, 0);
 		});
 
+		It("un camino con valores no finitos toma los valores por defecto", [this]()
+		{
+			FLaunchPath Path = FlatPath(ELaunchSurface::Sand, 1000.0f);
+			FLaunchSegment Broken;
+			Broken.LengthCm = NaN;
+			Broken.DropCm = INFINITY;
+			Path.Segments.Add(Broken);
+			Path.StartCm = FVector(static_cast<double>(NaN), 0.0, 0.0);
+			Path.YawDeg = INFINITY;
+			Path.WaterLevelZCm = NaN;
+			FRaftYardModel Yard = SixLogRaft();
+			Yard.PlaceOnPath(Path, 500.0f);
+			const FLaunchPath& Placed = Yard.GetPath();
+			TestEqual(TEXT("largo del camino"), Placed.TotalLengthCm(), 1000.0f);
+			TestEqual(TEXT("rumbo por defecto"), Placed.YawDeg, 0.0f);
+			TestEqual(TEXT("agua por defecto: en seco"), Placed.WaterLevelZCm, FLaunchPath().WaterLevelZCm);
+			const FVector End = Placed.WorldAt(Placed.TotalLengthCm());
+			TestTrue(TEXT("posición finita"), FMath::IsFinite(End.X) && FMath::IsFinite(End.Y) && FMath::IsFinite(End.Z));
+			TestTrue(TEXT("empuja sin NaN"), FMath::IsFinite(Yard.Push(FRaftYardModel::PushForceN(10), 0.5f).MovedCm));
+			TestTrue(TEXT("centro finito"), FMath::IsFinite(Yard.GetCenterS()));
+		});
+
 		It("empuja hasta el final de un camino sin agua y se detiene en el borde, también marcha atrás", [this]()
 		{
 			FRaftYardModel Yard = SixLogRaft();
