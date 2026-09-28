@@ -123,3 +123,29 @@ def test_paso_en_hierba_cruje_a_tallos_y_no_sisea(rendered):
         assert centroid < 2600.0, f"{name}: centroide {centroid:.0f} Hz"
         assert air < 0.03, f"{name}: {air:.1%} sobre 8 kHz"
         assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a soplo de ruido"
+
+
+def test_paso_en_roca_tritura_y_rebota_sin_sisear(rendered):
+    """La roca no cede: arena triturada bajo la planta, guijarros que rebotan
+    y un rascado al despegar, todo impulsivo. Menos de un 4 % de energia sobre
+    8 kHz, centroide por debajo de 2,2 kHz y banda de 2-8 kHz impulsiva
+    (curtosis >= 5,5 tras normalizar por su envolvente de 20 ms). La version
+    con barrido de ruido de 3 a 1,2 kHz daba 5-8 %, 2,0-2,5 kHz y 3,6-5,0."""
+    from scipy.stats import kurtosis
+
+    sos = signal.butter(4, [2000.0, 8000.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.02 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_rock_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        air = float(spectrum[freqs > 8000.0].sum() / spectrum.sum())
+        band = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(band**2, np.ones(win) / win, mode="same")) + 1e-12
+        active = env > env.max() * 0.05
+        crackle = float(kurtosis((band / env)[active], fisher=False))
+        assert centroid < 2200.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert air < 0.04, f"{name}: {air:.1%} sobre 8 kHz"
+        assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a siseo"

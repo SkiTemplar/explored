@@ -290,23 +290,117 @@ def _footstep_grass(rng: np.random.Generator) -> np.ndarray:
     return out
 
 
-def _footstep_rock(rng: np.random.Generator) -> np.ndarray:
-    n = int(rng.uniform(0.26, 0.32) * SR)
+def _pebble(n: int, onset: int, rng: np.random.Generator, amp: float) -> np.ndarray:
+    """Guijarro que salta al pisarlo: rebota 2-4 veces y cada rebote llega
+    antes y mas flojo que el anterior (coeficiente de restitucion 0,35-0,6,
+    como una pelota que se para). Cada impacto es un tic modal de piedra
+    pequeña, 2-5 kHz, que se apaga en 2-4 ms."""
     out = np.zeros(n)
-    for onset, w in _contacts(rng, n, (0.06, 0.09)):
-        out += w * 0.3 * _thump(n, onset, rng, fc=rng.uniform(220, 300), tau_s=0.014)
-        out += w * 0.3 * _click(n, onset, rng, fc=rng.uniform(2500, 4000), dur_s=0.006)
-        # Grava suelta: pocos guijarros que saltan con un "tic" modal breve.
-        for _ in range(int(rng.integers(2, 6))):
-            pos = onset + int(min(rng.exponential(0.025), 0.075) * SR)
-            if pos >= n - 64:
-                continue
-            pebble = modal_hit(SR, 0.03, base_freq=rng.uniform(2200, 4800), mode_ratios=[1.0, 1.6, 2.3],
-                               mode_dampings_s=[0.004, 0.003, 0.002], mode_amps=[1.0, 0.5, 0.3], rng=rng, detune=0.05)
-            end = min(pos + len(pebble), n)
-            out[pos:end] += w * rng.uniform(0.06, 0.14) * pebble[: end - pos]
-        # Roce de la suela: raspado corto de media frecuencia.
-        out += w * 0.3 * _swish(n, onset, rng, rng.uniform(0.06, 0.09), 3000, 1200, q=0.8)
+    base = rng.uniform(2000.0, 4800.0)
+    restitution = rng.uniform(0.35, 0.6)
+    gap = rng.uniform(0.012, 0.03)
+    pos, a = onset, amp
+    for _ in range(int(rng.integers(2, 5))):
+        if pos >= n - 64:
+            break
+        hit = modal_hit(SR, 0.015, base_freq=base * rng.uniform(0.97, 1.03), mode_ratios=[1.0, 1.59, 2.31],
+                        mode_dampings_s=[0.004, 0.0028, 0.0018], mode_amps=[1.0, 0.55, 0.3], rng=rng, detune=0.04)
+        end = min(pos + len(hit), n)
+        out[pos:end] += a * hit[: end - pos]
+        pos += int(gap * SR)
+        gap *= restitution
+        a *= restitution * rng.uniform(0.9, 1.1)
+    return out
+
+
+def _scuff(n: int, onset: int, rng: np.random.Generator, dur_s: float) -> np.ndarray:
+    """Roce de la planta al despegar sobre roca aspera: adherencia y
+    deslizamiento, un tren irregular de 150-350 pulsos/s que el grano de la
+    roca filtra en 1,2-3 kHz. Rasca en vez de sisear."""
+    out = np.zeros(n)
+    length = min(int(dur_s * SR), n - onset)
+    if length <= 64:
+        return out
+    pulses = np.zeros(length)
+    t = rng.uniform(0.0, 0.003)
+    while True:
+        t += 1.0 / rng.uniform(150.0, 350.0)
+        idx = int(t * SR)
+        if idx >= length:
+            break
+        pulses[idx] = rng.uniform(0.4, 1.0) * rng.choice((-1.0, 1.0))
+    body = static_filter(pulses, SR, fc=rng.uniform(1200.0, 3000.0), q=2.5, kind="bandpass")
+    body = static_filter(body, SR, fc=6000.0, q=0.7, kind="lowpass")
+    k = np.arange(length) / length
+    out[onset : onset + length] = body * np.minimum(k * 5.0, 1.0) * (1.0 - k) ** 1.5
+    peak = np.max(np.abs(out))
+    return out / peak if peak > 1e-9 else out
+
+
+def _stone_knock(n: int, onset: int, rng: np.random.Generator, freq: float) -> np.ndarray:
+    """Respuesta de la losa al golpe: tres modos inarmonicos de 0,4-2 kHz
+    que se apagan en 6-15 ms (piedra maciza, no campana), mezclados con
+    ruido en la misma banda para que no suene a tono."""
+    out = np.zeros(n)
+    length = min(int(0.08 * SR), n - onset)
+    if length <= 64:
+        return out
+    knock = modal_hit(SR, length / SR, base_freq=freq, mode_ratios=[1.0, 1.73, 2.9],
+                      mode_dampings_s=[0.022, 0.012, 0.007], mode_amps=[1.0, 0.7, 0.45], rng=rng, detune=0.03)
+    knock = fit_length(knock, length)
+    grit = static_filter(rng.standard_normal(length), SR, fc=freq * 1.8, q=0.9, kind="bandpass")
+    grit *= np.exp(-np.arange(length) / SR / 0.01)
+    body = knock / (np.max(np.abs(knock)) + 1e-9) * 0.6 + grit / (np.max(np.abs(grit)) + 1e-9) * 0.4
+    out[onset : onset + length] = body
+    peak = np.max(np.abs(out))
+    return out / peak if peak > 1e-9 else out
+
+
+def _footstep_rock(rng: np.random.Generator) -> np.ndarray:
+    """Paso en roca volcanica o coral con una pelicula de arena y guijarros.
+    La roca no cede: todo pasa en unos milisegundos.
+
+    - El talon se para en seco: golpe grave corto (tau 8-12 ms, mas agudo
+      que en arena o hierba) y un "toc" de contacto de 2-3 ms en 1,5-3 kHz.
+    - Los granos de arena atrapados entre la planta y la piedra se
+      trituran en el instante del apoyo: crujido muy denso de chasquidos de
+      0,2-0,8 ms que se agota en 10-20 ms (lo que dice "roca", no "suelo").
+    - Algun guijarro sale despedido y rebota 2-4 veces, cada vez antes y
+      mas flojo, hasta pararse.
+    - Al despegar la punta, la planta rasca la roca un instante (adherencia
+      y deslizamiento), no un soplo.
+
+    La version anterior sumaba un barrido de ruido de 3 a 1,2 kHz a cada
+    contacto: un 5-8 % de la energia sobre 8 kHz y una banda de 2-8 kHz
+    poco impulsiva (curtosis 3,6-5,0, casi ruido gaussiano), un siseo mas
+    que un paso."""
+    n = int(rng.uniform(0.28, 0.34) * SR)
+    out = np.zeros(n)
+    t = np.arange(n) / SR
+    contacts = _contacts(rng, n, (0.06, 0.09))
+    slab_freq = rng.uniform(420.0, 700.0)  # misma losa para talon y punta
+    for onset, w in contacts:
+        out += w * 0.12 * _thump(n, onset, rng, fc=rng.uniform(240, 340), tau_s=rng.uniform(0.012, 0.016))
+        out += w * 0.10 * _click(n, onset, rng, fc=rng.uniform(1500, 3000), dur_s=rng.uniform(0.002, 0.003))
+        # La losa responde con un "toc" sordo y breve: modos de piedra
+        # maciza (inarmonicos, muy amortiguados) excitados con ruido.
+        out += w * 0.22 * _stone_knock(n, onset, rng, slab_freq)
+        # Arena triturada bajo la planta: tasa altisima que se agota enseguida.
+        # Sube en 3-5 ms (la planta se aplasta contra la piedra) y se agota.
+        tc = np.clip(t - onset / SR, 0.0, None)
+        press = rng.uniform(0.003, 0.005)
+        grind = np.where(t * SR < onset, 0.0, np.sin(0.5 * np.pi * np.minimum(tc / press, 1.0)) ** 2
+                         * np.exp(-np.maximum(tc - press, 0.0) / rng.uniform(0.025, 0.035)))
+        grit = _crunch(n, rng, 9000.0 * grind, band_hz=(1500.0, 6000.0), click_s=(0.0002, 0.0008), kernels=10)
+        grit = static_filter(grit, SR, fc=7000.0, q=0.6, kind="lowpass")
+        out += w * 0.30 * grit * np.sqrt(grind)
+        for _ in range(int(rng.integers(1, 4))):
+            pos = onset + int(rng.uniform(0.003, 0.02) * SR)
+            out += w * rng.uniform(0.05, 0.10) * _pebble(n, pos, rng, 1.0)
+    # La punta rasca al despegar.
+    lift = contacts[-1][0] + int(rng.uniform(0.03, 0.05) * SR)
+    if lift < n - int(0.05 * SR):
+        out += 0.07 * _scuff(n, lift, rng, rng.uniform(0.03, 0.05))
     return out
 
 
