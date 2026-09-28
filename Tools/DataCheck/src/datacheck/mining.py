@@ -8,6 +8,10 @@
 - Herramientas: niveles 0-4, cada cabeza de pico la acepta la plantilla ``pico`` y
   produce de verdad un pico (no la captura otra plantilla); toda pieza que cabe como
   cabeza tiene nivel asignado.
+- Espejo de ``FMiningModel`` (``MiningModel.cpp``): estratos (objeto, material, nivel
+  mínimo, vetas) y herramientas (radio, ritmo, durabilidad, fragilidad).
+- Piezas de terreno: ``viga_apoyo`` y las piezas que sujetan la arena
+  (``FSandModel::SandAnchorPieces``) existen en ``building_pieces.json``.
 - Progresión: cada nivel se alcanza sin ciclos (la cabeza sale de la superficie o de un
   estrato que cava un nivel inferior) y, en acceso anticipado, solo con islas de fase 1.
 """
@@ -20,6 +24,11 @@ from . import crafting
 
 TERRAIN_H = "Source/Explored/WorldGen/TerrainEditModel.h"
 TERRAIN_CPP = "Source/Explored/WorldGen/TerrainEditModel.cpp"
+MINING_CPP = "Source/Explored/WorldGen/MiningModel.cpp"
+MINING_H = "Source/Explored/WorldGen/MiningModel.h"
+SAND_CPP = "Source/Explored/WorldGen/SandModel.cpp"
+# biblia 02 §2.4 y §2.7: la pieza que apuntala una galería.
+BEAM_PIECE = ("viga_apoyo", "terreno")
 ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
 PICK_TEMPLATE = "pico"
 # GDD v2 §3.4: estrato -> id de mining.json.
@@ -216,6 +225,10 @@ def check_mining(ds, r) -> None:
                 got = best["id"] if best else "nada"
                 r.error(f"mining.json/tools: «{h}» + mango atado con «{verb}» produce «{got}», no un pico")
 
+    # ------------------------------------------------------------------ C++ y piezas
+    _check_mining_model(ds, doc, materials, strata, r)
+    _check_terrain_pieces(ds, r)
+
     # ------------------------------------------------------------------ progresión
     _check_progression(ds, doc, materials, strata, tier_heads, r)
 
@@ -302,3 +315,123 @@ def _head_available(head: str, have: set[str], recipe_inputs: dict[str, list[set
     if head in have:
         return True
     return any(inputs <= have for inputs in recipe_inputs.get(head, []))
+
+
+def cpp_strata(ds) -> dict[str, dict] | None:
+    """Filas de ``FMiningModel::StratumInfo``: id -> objeto, material, dureza, nivel, vetas, anfitrión."""
+
+    text = _read(ds, MINING_CPP)
+    table = re.search(r"StratumInfo\(EMineStratum Stratum\)\s*\{.*?Table\[\] = \{(.*?)\n\t\};", text, re.S)
+    if not table:
+        return None
+    rows = re.findall(
+        r'\{ TEXT\("(\w+)"\), TEXT\("(\w+)"\), ETerrainMaterial::(\w+), (\d+), (\d+), (\d+), (\d+), EMineStratum::(\w+) \}',
+        table.group(1))
+    return {sid: {"item": item, "cpp": mat, "hardness": int(h), "minToolTier": int(t), "veinUnits": int(v),
+                  "respawnDays": int(d), "host": host} for sid, item, mat, h, t, v, d, host in rows}
+
+
+def cpp_tools(ds) -> dict[str, dict] | None:
+    """Filas de ``FMiningModel::ToolInfo``: id -> nivel, radio, segundos, durabilidad, frágil."""
+
+    text = _read(ds, MINING_CPP)
+    table = re.search(r"ToolInfo\(EMineTool Tool\)\s*\{.*?Table\[\] = \{(.*?)\n\t\};", text, re.S)
+    if not table:
+        return None
+    out = {}
+    for tid, tier, radius, seconds, dur, fragile in re.findall(
+            r'\{ TEXT\("(\w+)"\), (\d+), ([\d.]+)f, ([^,]+), (\d+), (true|false) \}', table.group(1)):
+        seconds = seconds.strip()
+        if seconds.endswith("f"):
+            value = float(seconds[:-1])
+        else:
+            # Constante de FTerrainEditModel (p. ej. SecondsPerShovelStroke).
+            value = _cpp_const(ds, seconds.split("::")[-1])
+        out[tid] = {"tier": int(tier), "radiusM": float(radius), "secondsPerHit": value, "durability": int(dur),
+                    "fragile": fragile == "true"}
+    return out
+
+
+def _mining_h_const(ds, name: str) -> float | None:
+    m = re.search(rf"static constexpr (?:float|int32) {name} = ([\d.]+)f?;", _read(ds, MINING_H))
+    return float(m.group(1)) if m else None
+
+
+def _check_mining_model(ds, doc, materials, strata, r) -> None:
+    cpp = cpp_strata(ds)
+    if cpp is None:
+        r.warn("mining.json: no se lee FMiningModel::StratumInfo de MiningModel.cpp; no se compara con el C++")
+    else:
+        if set(cpp) != set(strata):
+            r.error(f"mining.json/strata {sorted(strata)} no coincide con FMiningModel::StratumInfo {sorted(cpp)}")
+        by_cpp_material = {m.get("cpp"): mid for mid, m in materials.items()}
+        for sid, row in cpp.items():
+            s = strata.get(sid)
+            if s is None:
+                continue
+            where = f"mining.json/strata «{sid}» y MiningModel.cpp"
+            if s.get("item") != row["item"]:
+                r.error(f"{where}: objeto {s.get('item')!r} frente a {row['item']!r}")
+            if by_cpp_material.get(row["cpp"]) != s.get("material"):
+                r.error(f"{where}: material {s.get('material')!r} frente a ETerrainMaterial::{row['cpp']}")
+            want_tier = 0 if s.get("handPickable") else materials.get(s.get("material"), {}).get("minToolTier")
+            if row["minToolTier"] != want_tier:
+                r.error(f"{where}: nivel mínimo {want_tier!r} frente a {row['minToolTier']}")
+            vein = s.get("vein") or {}
+            if row["veinUnits"] != (vein.get("veinUnits") or 0) or row["respawnDays"] != (vein.get("respawnDays") or 0):
+                r.error(f"{where}: veta {vein!r} frente a {row['veinUnits']} unidades / {row['respawnDays']} días")
+            host = re.sub(r"(?<!^)([A-Z])", r"_\1", row["host"]).lower()
+            if row["veinUnits"] > 0 and (host not in cpp or cpp[host]["veinUnits"] > 0):
+                r.error(f"{where}: una veta agotada deja «{host}», que no es un estrato sin veta")
+
+    tools = cpp_tools(ds)
+    if tools is None:
+        r.warn("mining.json: no se lee FMiningModel::ToolInfo de MiningModel.cpp; no se compara con el C++")
+        return
+    data_tools = {t.get("id"): t for t in doc.get("tools", [])}
+    if set(tools) != set(data_tools):
+        r.error(f"mining.json/tools {sorted(data_tools)} no coincide con FMiningModel::ToolInfo {sorted(tools)}")
+    chance = _mining_h_const(ds, "FragileChance")
+    loss = _mining_h_const(ds, "FragileDurabilityLoss")
+    min_hardness = _mining_h_const(ds, "FragileMinHardness")
+    floor = doc.get("secondsPerHit")
+    for tid, row in tools.items():
+        t = data_tools.get(tid)
+        if t is None:
+            continue
+        where = f"mining.json/tools «{tid}» y MiningModel.cpp"
+        for key in ("tier", "radiusM", "secondsPerHit", "durability"):
+            v = t.get(key)
+            if not isinstance(v, (int, float)) or row[key] is None or abs(v - row[key]) > 1e-6:
+                r.error(f"{where}: {key}={v!r} frente a {row[key]!r}")
+        if isinstance(floor, (int, float)) and isinstance(t.get("secondsPerHit"), (int, float)) and t["secondsPerHit"] < floor:
+            r.error(f"mining.json/tools «{tid}»: {t['secondsPerHit']} s por golpe, por debajo del mínimo de red {floor} s")
+        frag = t.get("fragile")
+        if bool(frag) != row["fragile"]:
+            r.error(f"{where}: fragile {'sí' if frag else 'no'} en los datos y {'sí' if row['fragile'] else 'no'} en el C++")
+        elif frag and None not in (chance, loss, min_hardness):
+            if (abs(frag.get("chance", -1) - chance) > 1e-9 or frag.get("durabilityLoss") != loss
+                    or frag.get("minHardness") != min_hardness):
+                r.error(f"{where}: fragile {frag!r} frente a {chance}/{loss}/{min_hardness} de MiningModel.h")
+
+
+def cpp_sand_anchor_pieces(ds) -> list[str] | None:
+    text = _read(ds, SAND_CPP)
+    block = re.search(r"SandAnchorPieces\(\)\s*\{.*?Pieces = \{(.*?)\};", text, re.S)
+    return re.findall(r'TEXT\("(\w+)"\)', block.group(1)) if block else None
+
+
+def _check_terrain_pieces(ds, r) -> None:
+    pieces = {p.get("id"): p for p in ds.data.get("building_pieces.json", {}).get("pieces", [])}
+    beam, socket = BEAM_PIECE
+    if beam not in pieces:
+        r.error(f"building_pieces.json: falta «{beam}» (biblia 02 §2.7; FMineHazardModel la usa como viga)")
+    elif pieces[beam].get("socket") != socket:
+        r.error(f"building_pieces.json «{beam}»: socket {pieces[beam].get('socket')!r}, debe ser «{socket}» (biblia 02 §2.7)")
+    anchors = cpp_sand_anchor_pieces(ds)
+    if anchors is None:
+        r.warn("building_pieces.json: no se lee FSandModel::SandAnchorPieces; no se comprueban las piezas que sujetan arena")
+        return
+    for pid in anchors:
+        if pid not in pieces:
+            r.error(f"SandModel.cpp: la pieza que sujeta arena «{pid}» no está en building_pieces.json (biblia 02 §5.3)")
