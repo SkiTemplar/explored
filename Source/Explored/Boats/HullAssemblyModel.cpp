@@ -376,9 +376,30 @@ const FHullPieceSpec& FHullAssemblyModel::Spec(EHullPieceType Type)
 	return Specs[Index];
 }
 
+namespace HullAssemblyDetail
+{
+	bool IsFiniteVector(const FVector& V)
+	{
+		return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z);
+	}
+}
+
 int32 FHullAssemblyModel::AddPiece(const FHullPiece& Piece)
 {
+	// Un NaN en una pieza lo contagiaría a toda la hidrostática del casco.
+	if (!HullAssemblyDetail::IsFiniteVector(Piece.CenterCm) || !HullAssemblyDetail::IsFiniteVector(Piece.SizeCm))
+	{
+		return INDEX_NONE;
+	}
 	return Pieces.Add(Piece);
+}
+
+void FHullAssemblyModel::AddLoad(const FHullLoad& Load)
+{
+	if (FMath::IsFinite(Load.MassKg) && HullAssemblyDetail::IsFiniteVector(Load.CenterCm))
+	{
+		Loads.Add(Load);
+	}
 }
 
 bool FHullAssemblyModel::RemovePiece(int32 Index)
