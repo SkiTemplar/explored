@@ -27,6 +27,10 @@ SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 PHASES = (1, 2, 3)
 NET_CLASSES = {"ambiente", "replicada"}
 NET_ANCHORS = {"bandada", "colonia", "banco", "enjambre"}
+# fauna_terrestre.json (ids para packs_catalogo.json, #60) y fauna.json deben nombrar igual a
+# las especies que comparten; su «phase» usa AA/F2/F3 y sus islas, EIslandArchetype.
+REGISTRY = "fauna_terrestre.json"
+REGISTRY_PHASES = {"AA": 1, "F2": 2, "F3": 3}
 
 
 def cpp_species(ds) -> set[str]:
@@ -169,6 +173,28 @@ def check_fauna(ds, r, properties: set[str]) -> None:
             r.error(f"fauna.json «{sid}»: no vive en ninguna isla")
         elif sp.get("fase") == 1 and 1 not in phases:
             r.error(f"fauna.json «{sid}»: es de fase 1 pero solo vive en islas de fase {sorted(phases)}")
+    homes = {sid: {iid for iid, isl in listed.items() if sid in isl.get("species", [])} for sid in species}
+    _check_registry(ds, species, homes, r)
+
+
+def _check_registry(ds, species: dict[str, dict], homes: dict[str, set[str]], r) -> None:
+    """Las especies de fauna_terrestre.json coinciden con fauna.json en id, nombres, fase e islas."""
+    for reg in ds.data.get(REGISTRY, {}).get("species", []):
+        rid = reg.get("id")
+        sp = species.get(rid)
+        if sp is None:
+            if reg.get("wild"):
+                r.error(f"{REGISTRY} «{rid}»: especie salvaje que no está en fauna.json (mismo id en los dos)")
+            continue
+        where = f"fauna.json «{rid}»"
+        for key in ("nameEs", "nameEn"):
+            if sp.get(key) != reg.get(key):
+                r.error(f"{where}: {key} «{sp.get(key)}» y {REGISTRY} dice «{reg.get(key)}»")
+        if REGISTRY_PHASES.get(reg.get("phase")) != sp.get("fase"):
+            r.error(f"{where}: fase {sp.get('fase')} y {REGISTRY} dice {reg.get('phase')}")
+        reg_islands = {i.lower() for i in reg.get("islands", [])}
+        if reg.get("wild") and reg_islands != homes.get(rid, set()):
+            r.error(f"{where}: vive en {sorted(homes.get(rid, set()))} y {REGISTRY} dice {sorted(reg_islands)}")
 
 
 def _check_net(s: dict, where: str, r) -> None:

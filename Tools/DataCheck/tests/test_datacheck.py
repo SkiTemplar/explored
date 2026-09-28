@@ -994,8 +994,8 @@ def test_fauna_botin_inexistente(ds: DataSet) -> None:
 
 
 def test_fauna_isla_de_fase_1_con_especie_de_fase_2(ds: DataSet) -> None:
-    fauna_island(ds, "landing")["species"].append("cabra_montes")
-    assert any_error(fauna_errors(ds), "landing", "cabra_montes", "fase 2")
+    fauna_island(ds, "landing")["species"].append("cabra_salvaje")
+    assert any_error(fauna_errors(ds), "landing", "cabra_salvaje", "fase 2")
 
 
 def test_fauna_falta_isla_del_acceso_anticipado(ds: DataSet) -> None:
@@ -1242,6 +1242,27 @@ def test_packs_catalogo_comportamiento_con_clip_inexistente(ds: DataSet) -> None
 def test_packs_catalogo_rig_fuera_de_fauna(ds: DataSet) -> None:
     _catalog(ds)["entries"][0]["rig"] = {"skeleton": "SKEL_Pack_Hacha", "animations": ["Idle"]}
     assert any_error(errors_of(ds), "rig solo va en kind fauna")
+
+
+def test_fauna_y_fauna_terrestre_nombran_igual(ds: DataSet) -> None:
+    sp = next(s for s in ds.data["fauna.json"]["species"] if s["id"] == "cerdo_salvaje")
+    sp["nameEn"] = "Wild pig"
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "nameEn", "fauna_terrestre.json")
+
+
+def test_fauna_terrestre_salvaje_sin_ficha_en_fauna(ds: DataSet) -> None:
+    for s in ds.data["fauna.json"]["species"]:
+        if s["id"] == "cabra_salvaje":
+            s["id"] = "cabra_montes"
+    for isl in ds.data["fauna.json"]["islands"]:
+        isl["species"] = ["cabra_montes" if x == "cabra_salvaje" else x for x in isl["species"]]
+    assert any_error(fauna_errors(ds), "fauna_terrestre.json", "cabra_salvaje", "no está en fauna.json")
+
+
+def test_fauna_terrestre_con_otra_isla(ds: DataSet) -> None:
+    reg = next(s for s in ds.data["fauna_terrestre.json"]["species"] if s["id"] == "cerdo_salvaje")
+    reg["islands"] = ["Landing"]
+    assert any_error(fauna_errors(ds), "cerdo_salvaje", "vive en")
 
 
 def test_fauna_terrestre_isla_desconocida(ds: DataSet) -> None:
