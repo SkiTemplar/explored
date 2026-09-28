@@ -30,7 +30,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("fibra_coco"), 0, 2),
 			MakeDrop(TEXT("cascara_coco"), 0, 1),
 		};
-		R.RegrowHours = 0.0f; // la instancia no reaparece: rebrota su tocón (FFellingModel), salvo que se arranque con pala.
+		R.RegrowHours = 18.0f * 24.0f; // con fruto: 18 días (biblia 02 §1.2), igual que FFellingModel::Palm.
 		Rules.Add(R);
 	}
 	{
@@ -46,7 +46,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("corteza"), 1, 2),
 			MakeDrop(TEXT("resina"), 0, 1),
 		};
-		R.RegrowHours = 0.0f;
+		R.RegrowHours = 24.0f * 24.0f; // madera sin fruto: 24 días.
 		Rules.Add(R);
 	}
 	{
@@ -60,7 +60,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("tronco_pequeno"), 1, 2),
 			MakeDrop(TEXT("corteza"), 1, 1),
 		};
-		R.RegrowHours = 0.0f;
+		R.RegrowHours = 24.0f * 24.0f;
 		Rules.Add(R);
 	}
 	{
@@ -75,7 +75,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("tronco_pequeno"), 1, 2),
 			MakeDrop(TEXT("madera_flotante"), 1, 1),
 		};
-		R.RegrowHours = 480.0f; // 20 días de juego: rebrota, pero despacio.
+		R.RegrowHours = 24.0f * 24.0f; // madera sin fruto: 24 días.
 		Rules.Add(R);
 	}
 	{
@@ -91,7 +91,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("rama_seca"), 1, 2),
 			MakeDrop(TEXT("hoja_platano"), 0, 2),
 		};
-		R.RegrowHours = 240.0f; // 10 días.
+		R.RegrowHours = 24.0f * 24.0f; // madera sin fruto: 24 días.
 		Rules.Add(R);
 	}
 	{
@@ -107,7 +107,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("liana"), 0, 1),
 			MakeDrop(TEXT("algodon_silvestre"), 0, 1),
 		};
-		R.RegrowHours = 72.0f; // 3 días.
+		R.RegrowHours = 4.0f * 24.0f; // arbustos: 4 días.
 		Rules.Add(R);
 	}
 	{
@@ -122,7 +122,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("algodon_silvestre"), 1, 1),
 			MakeDrop(TEXT("musgo"), 0, 1),
 		};
-		R.RegrowHours = 48.0f; // 2 días.
+		R.RegrowHours = 4.0f * 24.0f; // matas de hierba: 4 días (biblia 02 §1.2).
 		Rules.Add(R);
 	}
 	{

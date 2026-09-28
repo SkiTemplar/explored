@@ -65,8 +65,77 @@ void FFellingModelSpec::Define()
 					TestTrue(*FString::Printf(TEXT("%s/%s: 0 ≤ mín ≤ máx"), *P.Species.ToString(), *Y.ItemId.ToString()), 0 <= Y.MinCount && Y.MinCount <= Y.MaxCount);
 				}
 				TestTrue(TEXT("rebrota (el director: todo árbol vuelve salvo que se arranque)"), P.StumpRegrowDays > 0);
+				TestTrue(TEXT("el brote asoma antes de que vuelva a ser talable"), 0 < P.SproutDays && P.SproutDays < P.StumpRegrowDays);
 				TestTrue(TEXT("se puede arrancar con pala"), P.UprootShovelHits > 0);
 				TestFalse(TEXT("ramas del suelo con objeto"), P.GroundBranchCapacity > 0 && P.GroundBranchItem.IsNone());
+			}
+		});
+
+		It("rebrotan a los días de la biblia 02 §1.2: 18 con fruto, 24 madera sin fruto, 4 arbustos", [this]()
+		{
+			const TArray<FHarvestSpeciesRule> Rules = FHarvestModel::DefaultRules();
+			for (const TPair<const TCHAR*, int32>& Expected : TArray<TPair<const TCHAR*, int32>>{
+				{ TEXT("Palm"), 18 }, { TEXT("JungleGiant"), 24 }, { TEXT("JungleWide"), 24 },
+				{ TEXT("Mangrove"), 24 }, { TEXT("Understory"), 24 }, { TEXT("Shrub"), 4 } })
+			{
+				const FFellingProfile& P = Get(Expected.Key);
+				TestEqual(*FString::Printf(TEXT("%s: días"), Expected.Key), P.StumpRegrowDays, Expected.Value);
+				TestEqual(*FString::Printf(TEXT("%s: minutos"), Expected.Key), FFellingModel::RegrowMinutes(P), (int64)Expected.Value * FFellingModel::MinutesPerDay);
+				const FHarvestSpeciesRule* R = FHarvestModel::FindRule(Rules, FName(Expected.Key));
+				if (TestNotNull(TEXT("regla"), R))
+				{
+					TestEqual(*FString::Printf(TEXT("%s: FHarvestModel dice lo mismo"), Expected.Key), R->RegrowHours, (float)Expected.Value * 24.0f);
+				}
+			}
+			const FHarvestSpeciesRule* Grass = FHarvestModel::FindRule(Rules, FName(TEXT("Grass")));
+			if (TestNotNull(TEXT("hierba"), Grass))
+			{
+				TestEqual(TEXT("la mata de hierba también a los 4 días"), Grass->RegrowHours, 96.0f);
+			}
+		});
+
+		It("la tala de la palmera suelta coco_maduro y nunca coco_verde (se coge trepando, biblia 02 §13.1)", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			bool bRipe = false;
+			for (const FFellingYield& Y : Palm.Yields)
+			{
+				TestFalse(TEXT("sin coco_verde"), Y.ItemId == FName(TEXT("coco_verde")));
+				if (Y.ItemId == FName(TEXT("coco_maduro")))
+				{
+					bRipe = true;
+					TestTrue(TEXT("1–3 cocos maduros"), Y.MinCount == 1 && Y.MaxCount == 3);
+				}
+			}
+			TestTrue(TEXT("con coco_maduro"), bRipe);
+			for (const FHarvestSpeciesRule& R : FHarvestModel::DefaultRules())
+			{
+				for (const FHarvestDrop& D : R.FellDrops) { TestFalse(TEXT("FHarvestModel tampoco suelta coco_verde"), D.ItemId == FName(TEXT("coco_verde"))); }
+				for (const FHarvestDrop& D : R.PerHitDrops) { TestFalse(TEXT("ni golpe a golpe"), D.ItemId == FName(TEXT("coco_verde"))); }
+			}
+		});
+
+		It("cada árbol suelta rama_seca, de 2 a 4 por ciclo y con tope de 6; el arbusto no (biblia 02 §1.3)", [this]()
+		{
+			for (const FFellingProfile& P : Profiles)
+			{
+				if (P.Species == FName(TEXT("Shrub")))
+				{
+					TestEqual(TEXT("el arbusto no es un árbol"), P.GroundBranchCapacity, 0);
+					continue;
+				}
+				TestTrue(*FString::Printf(TEXT("%s: rama_seca"), *P.Species.ToString()), P.GroundBranchItem == FName(TEXT("rama_seca")));
+				TestEqual(TEXT("tope 6"), P.GroundBranchCapacity, 6);
+				TestTrue(TEXT("2–4 por ciclo"), P.GroundBranchCycleMin == 2 && P.GroundBranchCycleMax == 4);
+			}
+		});
+
+		It("el viento desvía ±20°, la palmera ±15° y el arbusto no cae", [this]()
+		{
+			for (const FFellingProfile& P : Profiles)
+			{
+				const float Expected = P.Species == FName(TEXT("Palm")) ? 15.0f : (P.Species == FName(TEXT("Shrub")) ? 0.0f : 20.0f);
+				TestEqual(*FString::Printf(TEXT("%s"), *P.Species.ToString()), P.WindDeviationDeg, Expected);
 			}
 		});
 
@@ -124,7 +193,7 @@ void FFellingModelSpec::Define()
 			FFellingProgress Progress;
 			TestFalse(TEXT("la pala no tala"), FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Shovel, FVector2D(1.0, 0.0)));
 			TestEqual(TEXT("sin trabajo"), Progress.Work, 0);
-			TestTrue(TEXT("sin empuje"), Progress.Push.IsZero());
+			TestTrue(TEXT("sin golpe que cuente"), Progress.LastHit.IsZero());
 			while (!FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0))) {}
 			TestFalse(TEXT("un golpe más no cae otra vez"), FFellingModel::ApplyHit(Giant, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0)));
 			TestEqual(TEXT("trabajo saturado"), Progress.Work, FFellingModel::WorkToFell);
@@ -163,12 +232,31 @@ void FFellingModelSpec::Define()
 			TestEqual(TEXT("unitaria"), Dir.Size(), 1.0, 1.0e-9);
 		});
 
-		It("con golpes opuestos en llano cae hacia una dirección determinista por semilla", [this]()
+		It("manda el golpe final aunque los anteriores empujaran hacia el otro lado (biblia 02 §1.2)", [this]()
 		{
 			FFellingProgress Progress;
 			const FFellingProfile& Palm = Get(TEXT("Palm"));
-			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(1.0, 0.0));
-			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(-1.0, 0.0));
+			for (int32 i = 0; i < 3; ++i) { FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(1.0, 0.0)); }
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(-2.0, 0.0));
+			TestTrue(TEXT("hacia -X"), FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 7u).Equals(FVector2D(-1.0, 0.0), 1.0e-9));
+		});
+
+		It("un golpe sin dirección (cero o NaN) cuenta como trabajo pero no cambia la caída", [this]()
+		{
+			FFellingProgress Progress;
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0));
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D::ZeroVector);
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(NAN, 1.0));
+			TestTrue(TEXT("sigue hacia +Y"), Progress.LastHit.Equals(FVector2D(0.0, 1.0), 1.0e-12));
+			TestTrue(TEXT("cuarto golpe tumba"), FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D::ZeroVector));
+			const FVector2D Dir = FFellingModel::ResolveFallDirection(Progress, FVector2D(NAN, NAN), 3u);
+			TestTrue(TEXT("pendiente NaN ignorada"), Dir.Equals(FVector2D(0.0, 1.0), 1.0e-9));
+		});
+
+		It("sin golpe válido en llano cae hacia una dirección determinista por semilla", [this]()
+		{
+			FFellingProgress Progress;
 			const FVector2D A = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 42u);
 			const FVector2D B = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 42u);
 			const FVector2D C = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 43u);
@@ -312,8 +400,9 @@ void FFellingModelSpec::Define()
 			FStumpState Stump;
 			Stump.FelledAtMinute = 10000;
 			const int64 Day = FFellingModel::MinutesPerDay;
-			const int64 Sprout = Stump.FelledAtMinute + Palm.StumpRegrowDays * Day;
-			const int64 Mature = Sprout + Palm.SaplingToMatureDays * Day;
+			const int64 Sprout = Stump.FelledAtMinute + Palm.SproutDays * Day;
+			const int64 Mature = Stump.FelledAtMinute + Palm.StumpRegrowDays * Day;
+			TestEqual(TEXT("talable a los 18 días"), Mature - Stump.FelledAtMinute, (int64)18 * Day);
 			TestTrue(TEXT("recién talado"), FFellingModel::StageAt(Palm, Stump, Stump.FelledAtMinute) == EStumpStage::Stump);
 			TestTrue(TEXT("un minuto antes del brote"), FFellingModel::StageAt(Palm, Stump, Sprout - 1) == EStumpStage::Stump);
 			TestTrue(TEXT("brota justo a su hora"), FFellingModel::StageAt(Palm, Stump, Sprout) == EStumpStage::Sapling);
@@ -329,6 +418,33 @@ void FFellingModelSpec::Define()
 				TestTrue(TEXT("crece monótona"), S >= Prev);
 				Prev = S;
 			}
+		});
+
+		It("el rebrote atraviesa el cambio de día: talado a las 23:50, vuelve a las 23:50 del día 18 después, no a medianoche", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			const int64 Day = FFellingModel::MinutesPerDay;
+			FStumpState Stump;
+			Stump.FelledAtMinute = 3 * Day + 23 * 60 + 50; // día 3, 23:50
+			const int64 Due = Stump.FelledAtMinute + 18 * Day; // día 21, 23:50
+			TestTrue(TEXT("a medianoche del día 21 sigue siendo brote"), FFellingModel::StageAt(Palm, Stump, 21 * Day) == EStumpStage::Sapling);
+			TestTrue(TEXT("a las 23:49 también"), FFellingModel::StageAt(Palm, Stump, Due - 1) == EStumpStage::Sapling);
+			TestTrue(TEXT("a las 23:50 es talable"), FFellingModel::StageAt(Palm, Stump, Due) == EStumpStage::Mature);
+			TestTrue(TEXT("y pasada la medianoche siguiente, también"), FFellingModel::StageAt(Palm, Stump, 22 * Day + 1) == EStumpStage::Mature);
+			// El brote de la palmera asoma a los 6 días, también a la misma hora del día.
+			TestTrue(TEXT("tocón a las 23:49 del día 9"), FFellingModel::StageAt(Palm, Stump, Stump.FelledAtMinute + 6 * Day - 1) == EStumpStage::Stump);
+			TestTrue(TEXT("brote a las 23:50 del día 9"), FFellingModel::StageAt(Palm, Stump, Stump.FelledAtMinute + 6 * Day) == EStumpStage::Sapling);
+		});
+
+		It("un SproutDays fuera de rango se acota entre la tala y el rebrote", [this]()
+		{
+			FFellingProfile P = Get(TEXT("Shrub"));
+			P.SproutDays = 0;
+			TestEqual(TEXT("como pronto un minuto"), FFellingModel::SproutMinutes(P), (int64)1);
+			P.SproutDays = 99;
+			TestEqual(TEXT("como tarde un minuto antes de adulto"), FFellingModel::SproutMinutes(P), FFellingModel::RegrowMinutes(P) - 1);
+			P.StumpRegrowDays = 0;
+			TestEqual(TEXT("sin rebrote, sin brote"), FFellingModel::SproutMinutes(P), (int64)0);
 		});
 
 		It("con reloj anterior a la tala (partida manipulada) sigue siendo tocón", [this]()
@@ -366,9 +482,9 @@ void FFellingModelSpec::Define()
 			const FFellingProfile& Shrub = Get(TEXT("Shrub"));
 			const int64 Day = FFellingModel::MinutesPerDay;
 			FStumpState Sapling;
-			TestTrue(TEXT("brote arrancado de un golpe"), FFellingModel::ApplyUprootHit(Shrub, Sapling, EFellingTool::Shovel, Shrub.StumpRegrowDays * Day));
+			TestTrue(TEXT("brote arrancado de un golpe"), FFellingModel::ApplyUprootHit(Shrub, Sapling, EFellingTool::Shovel, Shrub.SproutDays * Day));
 			FStumpState Adult;
-			TestFalse(TEXT("adulto no"), FFellingModel::ApplyUprootHit(Shrub, Adult, EFellingTool::Shovel, (Shrub.StumpRegrowDays + Shrub.SaplingToMatureDays) * Day));
+			TestFalse(TEXT("adulto no"), FFellingModel::ApplyUprootHit(Shrub, Adult, EFellingTool::Shovel, Shrub.StumpRegrowDays * Day));
 		});
 	});
 }
