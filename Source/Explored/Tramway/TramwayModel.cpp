@@ -604,6 +604,20 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 		Cart.V = 0.0;
 		R.Derailed = Cause;
 	};
+	// LoadKg es público y V/S pueden venir de fuera: con un NaN la masa y la velocidad son NaN,
+	// S nunca vuelve al tramo y el cruce de nodos no acaba en una vía cerrada.
+	if (!FMath::IsFinite(Cart.LoadKg))
+	{
+		Cart.LoadKg = 0.0f;
+	}
+	if (!FMath::IsFinite(Cart.V))
+	{
+		Cart.V = 0.0;
+	}
+	if (!FMath::IsFinite(Cart.S))
+	{
+		Cart.S = 0.0;
+	}
 	const double StartLength = SegmentLength(Cart.From, Cart.To);
 	if (StartLength <= 0.0)
 	{
@@ -668,12 +682,20 @@ FCartStepResult FTramwayModel::Substep(FMineCart& Cart, const FCartControl& Cont
 	Cart.S += V * Settings.SubstepSeconds();
 	R.Distance = FMath::Abs(V) * Settings.SubstepSeconds();
 
+	// Red de seguridad: en un subpaso no se puede dar la vuelta entera a la red.
+	const int32 MaxCrossings = Nodes.Num() + 2;
 	for (;;)
 	{
 		const double Length = SegmentLength(Cart.From, Cart.To);
 		const bool bForward = Cart.S > Length;
 		if (!bForward && Cart.S >= 0.0)
 		{
+			break;
+		}
+		if (R.NodesCrossed >= MaxCrossings)
+		{
+			Cart.S = FMath::Clamp(Cart.S, 0.0, Length);
+			Derail(ECartDerailCause::MissingTrack);
 			break;
 		}
 		const FIntVector Node = bForward ? Cart.To : Cart.From;

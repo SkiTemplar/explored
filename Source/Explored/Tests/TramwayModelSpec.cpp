@@ -647,6 +647,38 @@ void FTramwayModelSpec::Define()
 				}
 			}
 		});
+
+		It("una carga, velocidad o posición NaN en el vagón no cuelga el paso en una vía cerrada", [this]()
+		{
+			FTramwayModel Model;
+			Line(Model, FIntVector(0, 0, 0), 1, 0, ERailDir::PosX);
+			Line(Model, FIntVector(1, 0, 0), 1, 0, ERailDir::PosY);
+			Line(Model, FIntVector(1, 1, 0), 1, 0, ERailDir::NegX);
+			Line(Model, FIntVector(0, 1, 0), 1, 0, ERailDir::NegY);
+			for (int32 Field = 0; Field < 3; ++Field)
+			{
+				FMineCart Cart;
+				Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0), 0.5);
+				Cart.V = 0.5;
+				if (Field == 0)
+				{
+					Cart.LoadKg = NAN;
+				}
+				else if (Field == 1)
+				{
+					Cart.V = static_cast<double>(NAN);
+				}
+				else
+				{
+					Cart.S = static_cast<double>(NAN);
+				}
+				double Acc = 0.0;
+				Model.Step(Cart, Push(), 0.5, Acc);
+				const double Length = Model.SegmentLength(Cart.From, Cart.To);
+				TestTrue(TEXT("sobre su tramo"), Cart.S >= 0.0 && Cart.S <= Length);
+				TestTrue(TEXT("todo finito"), FMath::IsFinite(Cart.S) && FMath::IsFinite(Cart.V) && FMath::IsFinite(Cart.LoadKg));
+			}
+		});
 	});
 }
 
