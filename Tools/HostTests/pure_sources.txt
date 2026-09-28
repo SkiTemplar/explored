@@ -6,6 +6,7 @@ Boats/HullAssemblyModel.cpp
 Boats/RaftYardModel.cpp
 Building/BuildingModel.cpp
 Carry/InventoryModel.cpp
+Carry/ContainerReplicationModel.cpp
 Cartography/CartographyModel.cpp
 Cartography/CoastlineTrace.cpp
 Cartography/MapStroke.cpp

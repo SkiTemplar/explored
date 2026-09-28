@@ -9,6 +9,7 @@ Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
 Tests/CookingSpec.cpp
+Tests/ContainerReplicationModelSpec.cpp
 Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
