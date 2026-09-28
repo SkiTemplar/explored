@@ -186,6 +186,53 @@
       ],
       "sha256": "1017144f85a994f405b731befa71ced360f5b60ed0b9c00c72e711c1633ce2d2",
       "note": "Lanza, arco y flecha (lote2-caza)."
+    },
+    {
+      "id": "kenney_nature_kit",
+      "name": "Nature Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/nature-kit",
+      "version": "2.1",
+      "source": {
+        "kind": "direct",
+        "url": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip"
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página: «License: Creative Commons CC0». License.txt del zip: «Nature Kit (2.1)» y «License: (Creative Commons Zero, CC0)»."
+      },
+      "formats": [
+        "glb",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "fa7974a0d342bfe63c38664ba9f8ec1a4aab8ea25f099bdc56870e33588c4d9d",
+      "note": "Plantas y cultivos por fases (lote4-huerto)."
+    },
+    {
+      "id": "quaternius_stylized_nature_megakit",
+      "name": "Stylized Nature MegaKit (Standard)",
+      "author": "Quaternius",
+      "page": "https://quaternius.itch.io/stylized-nature-megakit",
+      "version": "Standard",
+      "source": {
+        "kind": "itch",
+        "page": "https://quaternius.itch.io/stylized-nature-megakit",
+        "uploadId": 11055123
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Página itch.io: «CC0 License» y metadato de licencia «Creative Commons Zero v1.0 Universal». Upload «Stylized Nature MegaKit[Standard].zip» de precio libre (la página da price 0; Pro y Source son de pago y no se usan)."
+      },
+      "formats": [
+        "gltf",
+        "fbx",
+        "obj"
+      ],
+      "sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+      "note": "Revisado en lote4-huerto: el follaje (hojas con alfa) no se puede recolorear por cara y se descarta. Candidato abierto: Pebble_Round_* para canto_rodado."
     }
   ]
 }
