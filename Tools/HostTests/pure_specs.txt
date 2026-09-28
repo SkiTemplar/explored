@@ -48,3 +48,4 @@ Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
 Tests/InventoryStackModelSpec.cpp
 Tests/ContentIdTableModelSpec.cpp
+Tests/InventoryNetModelSpec.cpp
