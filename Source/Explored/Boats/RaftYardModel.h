@@ -210,6 +210,8 @@ public:
 	static constexpr int32 MaxSavedPieces = 256;
 	/** Tope de cada coordenada del centro y de cada lado de una pieza guardada (cm). */
 	static constexpr float MaxSavedExtentCm = 5000.0f;
+	/** Tope de uniones de un casco guardado: sin él, cargar uniones repetidas es cuadrático. */
+	static constexpr int32 MaxSavedJoints = 4 * MaxSavedPieces;
 
 	static const FRaftJointSpec& JointSpec(ERaftJointKind Kind);
 	static const FLaunchSurfaceSpec& SurfaceSpec(ELaunchSurface Surface);
@@ -217,6 +219,7 @@ public:
 
 	// --- Construcción
 
+	/** INDEX_NONE si ya hay MaxSavedPieces o la pieza pasa de MaxSavedExtentCm: lo que se arma se puede guardar. */
 	int32 AddPiece(const FHullPiece& Piece);
 	/** Desmonta una pieza: se quitan sus uniones y se renumeran las demás. */
 	bool RemovePiece(int32 Index);
@@ -295,7 +298,7 @@ public:
 	 * Rehace el casco de un guardado, en tierra y sin camino (quien llama pone
 	 * SetAfloat o PlaceOnPath). Descarta, sin tocar el resto, las piezas con
 	 * valores no finitos o más allá de MaxSavedExtentCm, las que pasan de
-	 * MaxSavedPieces y las uniones que ya no se podrían hacer (pieza descartada o
+	 * MaxSavedPieces, las uniones que pasan de MaxSavedJoints y las que ya no se podrían hacer (pieza descartada o
 	 * inexistente, repetida, consigo misma, tipo desconocido o piezas separadas).
 	 * Una salud no finita cuenta como unión rota; las demás se recortan a 0–1.
 	 * Con un guardado válido, ToHullSaveData devuelve exactamente lo guardado.

@@ -166,6 +166,15 @@ FVector FLaunchPath::WorldAt(float S) const
 
 int32 FRaftYardModel::AddPiece(const FHullPiece& Piece)
 {
+	const auto InRange = [](const FVector& V)
+	{
+		return FMath::Abs(V.X) <= MaxSavedExtentCm && FMath::Abs(V.Y) <= MaxSavedExtentCm && FMath::Abs(V.Z) <= MaxSavedExtentCm;
+	};
+	// El mismo tope que al cargar: un casco que se puede armar se puede guardar y recargar entero.
+	if (Hull.GetPieces().Num() >= MaxSavedPieces || !InRange(Piece.CenterCm) || !InRange(Piece.SizeCm))
+	{
+		return INDEX_NONE;
+	}
 	Invalidate();
 	return Hull.AddPiece(Piece);
 }
@@ -771,6 +780,11 @@ FRaftYardModel FRaftYardModel::FromHullSaveData(const FRaftHullSaveData& Data, i
 
 	for (const FRaftJoint& Saved : Data.Joints)
 	{
+		if (Yard.Joints.Num() >= MaxSavedJoints)
+		{
+			++Discarded;
+			continue;
+		}
 		const int32 A = Remap.IsValidIndex(Saved.PieceA) ? Remap[Saved.PieceA] : INDEX_NONE;
 		const int32 B = Remap.IsValidIndex(Saved.PieceB) ? Remap[Saved.PieceB] : INDEX_NONE;
 		// AddJoint rechaza la pieza inexistente, la repetida, consigo misma, el tipo desconocido y el hueco.

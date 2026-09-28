@@ -682,6 +682,45 @@ void FRaftYardModelSpec::Define()
 			TestEqual(TEXT("veredicto vacío"), Empty.GetHydrostatics().Verdict, EHullVerdict::Empty);
 			TestTrue(TEXT("sin piezas guardadas"), Empty.ToHullSaveData().IsEmpty());
 		});
+
+		It("no pasa de MaxSavedJoints aunque el guardado venga inundado de uniones", [this]()
+		{
+			// Todas las piezas en el mismo sitio: cada par se puede unir y, sin tope, cargar sería cuadrático.
+			FRaftHullSaveData Data;
+			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
+			{
+				Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));
+			}
+			for (int32 A = 0; A < 64; ++A)
+			{
+				for (int32 B = A + 1; B < 64; ++B)
+				{
+					Data.Joints.Add({ A, B, ERaftJointKind::Rope, 1.0f });
+				}
+			}
+			const int32 Saved = Data.Joints.Num();
+			int32 Discarded = 0;
+			const FRaftYardModel Yard = FRaftYardModel::FromHullSaveData(Data, &Discarded);
+			TestEqual(TEXT("se queda en el tope"), Yard.GetJoints().Num(), FRaftYardModel::MaxSavedJoints);
+			TestEqual(TEXT("las demás, descartadas"), Discarded, Saved - FRaftYardModel::MaxSavedJoints);
+		});
+
+		It("al construir tampoco se pasa del tope de piezas ni del de tamaño, así que lo armado se guarda entero", [this]()
+		{
+			FRaftYardModel Yard;
+			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
+			{
+				TestNotEqual(TEXT("cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector((I % 16) * 60.0, (I / 16) * 40.0, 20.0))), INDEX_NONE);
+			}
+			TestEqual(TEXT("una más no cabe"), Yard.AddPiece(Piece(EHullPieceType::Float, FVector(0.0, 0.0, 200.0))), INDEX_NONE);
+			FRaftYardModel Small;
+			TestEqual(TEXT("centro fuera de rango"), Small.AddPiece(Piece(EHullPieceType::Log, FVector(1.0e6, 0.0, 11.0))), INDEX_NONE);
+			TestEqual(TEXT("lado desmesurado"), Small.AddPiece(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0), FVector(300.0, 22.0, 1.0e7))), INDEX_NONE);
+			int32 Discarded = -1;
+			const FRaftYardModel Loaded = FRaftYardModel::FromHullSaveData(Yard.ToHullSaveData(), &Discarded);
+			TestEqual(TEXT("recarga entera"), Loaded.GetHull().GetPieces().Num(), FRaftYardModel::MaxSavedPieces);
+			TestEqual(TEXT("sin descartes"), Discarded, 0);
+		});
 	});
 
 	Describe("los estados degenerados", [this]()
