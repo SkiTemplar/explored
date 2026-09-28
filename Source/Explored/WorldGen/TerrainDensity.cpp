@@ -695,12 +695,30 @@ FLinearColor FTerrainDensity::SurfaceColor(const FVector& P, const FVector& InNo
 
 void FTerrainDensity::HeightBounds(const FBox2D& Rect, float SampleSpacing, float& OutMin, float& OutMax) const
 {
+	// Paso no válido, rectángulo no finito, vacío o con un muestreo absurdo: rango nulo. Sin
+	// muestras OutMin quedaba en FLT_MAX y el FloorToInt32 de FindCandidateChunks era UB.
+	OutMin = 0.0f;
+	OutMax = 0.0f;
+	constexpr double MaxSamples = 1 << 22;
+	const double Width = Rect.Max.X - Rect.Min.X + KINDA_SMALL_NUMBER;
+	const double Depth = Rect.Max.Y - Rect.Min.Y + KINDA_SMALL_NUMBER;
+	if (!FMath::IsFinite(SampleSpacing) || SampleSpacing <= 0.0f
+		|| !FMath::IsFinite(Rect.Min.X) || !FMath::IsFinite(Rect.Min.Y) || !FMath::IsFinite(Width) || !FMath::IsFinite(Depth)
+		|| Width < 0.0 || Depth < 0.0 || (Width / SampleSpacing + 1.0) * (Depth / SampleSpacing + 1.0) > MaxSamples)
+	{
+		return;
+	}
+	// Contador entero y posición en double: con |X| ~ 1e8 un X += paso en float no avanzaba.
+	const int32 NumX = static_cast<int32>(FMath::FloorToDouble(Width / SampleSpacing)) + 1;
+	const int32 NumY = static_cast<int32>(FMath::FloorToDouble(Depth / SampleSpacing)) + 1;
 	OutMin = TNumericLimits<float>::Max();
 	OutMax = TNumericLimits<float>::Lowest();
-	for (float X = Rect.Min.X; X <= Rect.Max.X + KINDA_SMALL_NUMBER; X += SampleSpacing)
+	for (int32 IX = 0; IX < NumX; ++IX)
 	{
-		for (float Y = Rect.Min.Y; Y <= Rect.Max.Y + KINDA_SMALL_NUMBER; Y += SampleSpacing)
+		const float X = static_cast<float>(Rect.Min.X + static_cast<double>(IX) * SampleSpacing);
+		for (int32 IY = 0; IY < NumY; ++IY)
 		{
+			const float Y = static_cast<float>(Rect.Min.Y + static_cast<double>(IY) * SampleSpacing);
 			const float H = SampleColumn(X, Y).Height;
 			OutMin = FMath::Min(OutMin, H);
 			OutMax = FMath::Max(OutMax, H);
