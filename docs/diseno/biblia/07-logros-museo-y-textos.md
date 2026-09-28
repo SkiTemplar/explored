@@ -264,8 +264,9 @@ oculto: no. ES: «Extrae tu primera veta de obsidiana en la Isla del Humo.» EN:
 metres below the surface.» Condición:
 `{stat: "max_mining_depth_m", op: ">=", value: 20}`.
 
-**`el_aire_que_falta`** — El aire que falta / The Air That Ran Out — [AA] · Raro ·
-**oculto: sí**. ES: «Sal con vida de una bolsa de aire viciado justo a tiempo.»
+**`el_aire_que_falta`** — El aire que falta / Running Out of Air — [AA] · Raro ·
+**oculto: sí**. *[Decisión 2026-09-28: «The Air That Ran Out» tenía 5 palabras y §1.3
+fija 4.]* ES: «Sal con vida de una bolsa de aire viciado justo a tiempo.»
 EN: «Get out of a foul-air pocket alive, just in time.» Condición:
 `{flag: "air_pocket_survived"}`.
 
@@ -372,8 +373,9 @@ Coconuts — [AA] · Muy raro · **oculto: sí**. ES: «Abre quinientos cocos en
 total.» EN: «Open five hundred coconuts in total.» Condición:
 `{stat: "coconuts_opened", op: ">=", value: 500}`.
 
-**`el_cangrejo_se_lo_llevo`** — El cangrejo se lo llevó / The Crab Took It —
-[AA] · Infrecuente · **oculto: sí**. ES: «Deja que un cangrejo se lleve algo que
+**`el_cangrejo_se_lo_llevo`** — Cangrejo ladrón / The Crab Took It —
+[AA] · Infrecuente · **oculto: sí**. *[Decisión 2026-09-28: «El cangrejo se lo llevó»
+tenía 5 palabras y §1.3 fija 4; el id no cambia.]* ES: «Deja que un cangrejo se lleve algo que
 habías dejado en la arena.» EN: «Let a crab make off with something you left on
 the sand.» Condición: `{flag: "crab_stole_item"}`.
 

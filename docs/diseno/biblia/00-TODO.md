@@ -19,13 +19,18 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
-| H2 — Minería y construcción | 2 | 29 | 31 |
+| H2 — Minería y construcción | 13 | 25 | 38 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
-| H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
+| H5 — Lanzamiento del acceso anticipado | 2 | 19 | 21 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **21** | **194** | **215** |
+
+Revisión del 2026-09-28 (datos de H2): 11 casillas de H2 y una de H5 pasan a `[x]` con
+los datos de metal, piezas de mina y escalada, y logros de minería; las casillas que
+mezclaban datos y código se parten en dos, así que H2 pasa de 31 a 38 (con una casilla nueva de `Crafting`) y H5 de 20 a 21.
+Detalle en `docs/balance/2026-09-28-datos-h2-metal-y-mina.md`.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -353,8 +358,10 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
       −15 durabilidad). *(biblia 02 §2)*
-- [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
-      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
+- [x] `Building`: pieza `viga_apoyo` (apuntalamiento) en `building_pieces.json`
+      (categoría `mina`, 2× `tronco_pequeno` + 1× `cuerda`). *(biblia 02 §2.7)*
+- [ ] `Building`: regla de derrumbe (hueco > 3 m de luz sin apoyo, colapsa a los 8 s) con
+      la `viga_apoyo` como apoyo. *(biblia 02 §2.4)*
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
 - [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
@@ -371,42 +378,61 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
 - [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
-- [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
-      en 1 m). *(biblia 02 §5.3)*
-- [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
-      `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
-      `carretilla`. *(biblia 03 §3.2–3.4)*
+- [x] `Building`: pieza `tablon_contencion` en `building_pieces.json` (tier `bambu`,
+      socket `pared`, 3× `bambu_grueso` + 2× `cordel`). *(biblia 02 §5.3)*
+- [ ] `WorldGen`: el `tablon_contencion` ancla la arena (detiene deslizamiento y relleno
+      en 1 m mientras siga en pie). *(biblia 02 §5.3)*
+- [x] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
+      `lingote_hierro`, `lingote_aluminio`, `alambre`, `clavos` y `carretilla` (plantilla
+      en `piedra_trabajo`). *(biblia 03 §3.2–3.4, §1.5)*
+- [ ] `Items`/`Templates`: añadir `sierra_diente_tiburon` y `tela_fibra` (con la receta de
+      telar de biblia 03 §4.3). *(biblia 03 §3.2, §3.4)*
 - [ ] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor
       propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras
       enganchada). *(biblia 03 §1.5)*
-- [ ] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
+- [x] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
       `yunque`, con su coste. *(biblia 03 §2.2)*
-- [ ] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4); recetas de
-      fundición en un fichero nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [x] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4) en
+      `fuels.json/smeltingLevels`; recetas de fundición, chatarra y forja en un fichero
+      nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [ ] `Cooking`: `EFireLevel::HornoFundicion`, pasar `smeltingLevels` a `levels` (y a
+      `FireData.inl` con `--write-cooking`) y un modelo puro que lea
+      `recipes_smithing.json` con su spec; replicación como el resto de estaciones
+      (biblia 08 §2.4: el servidor valida y consume). *(biblia 03 §2.2, §4.3)*
 - [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
       de lava del Humo tiene una boca visible desde el marae de la cumbre, para que las
       ruinas queden junto a una entrada real. *(biblia 04 §7.1 TODO)*
-- [ ] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de
-      colocación con el pico equipado como herramienta de golpeo, para ampliar la
-      escalada de roca más allá de 3 m. *(biblia 02 §13.4 — director, 2026-09-27)*
-- [ ] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
+- [x] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta 2, sin mango) y su plantilla
+      `clavija_roca` (Tallar `hueso_largo` o `lingote_hierro`). *(biblia 02 §13.4)*
+- [ ] `Player`/`WorldGen`: verbo de colocación de `clavija_roca` con el pico equipado como
+      herramienta de golpeo, para ampliar la escalada de roca más allá de 3 m.
+      *(biblia 02 §13.4 — director, 2026-09-27)*
+- [x] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
       *(biblia 02 §13.3)*
 - [ ] Confirmar en pipeline de terreno editable en runtime el recorrido completo
       capa-de-ediciones → remallado → guardado → hoja subterránea del mapa, de extremo a
       extremo (GDD §7.3: `FTerrainDensity` + `FTerrainEdits` + `FSurfaceNets`, **no**
       `UDynamicMeshComponent` — el proyecto ya tiene su propio pipeline volumétrico
       procedural y no usa el componente genérico de Unreal). *(GDD §7.3, §7.4)*
-- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
-      para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
-      al menos una isla en AA. *(biblia 03 §Tests)*
-- [ ] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
+- [x] `Tests`: extender `Tools/DataCheck` para validar que toda plantilla nueva de
+      crafteo es alcanzable y que cada receta de metal sale de materiales de al menos una
+      isla en AA (`smithing.py`: vetas de fase 1, chatarra del Albatros o recetas
+      posibles; lingotes y carbón sin receta no cuentan como material en bruto).
+      *(biblia 03 §Tests)*
+- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla. *(biblia 03 §Tests)*
+- [ ] `Crafting`: `UCraftingLibrary::FindActionsWithData` corta en 3 verbos por orden del
+      fichero y esconde Atar con un mango de `madera_dura` atado (no hay hacha, pico ni
+      cuchillo de obsidiana, pedernal o metal con ese mango). Priorizar el verbo de la
+      plantilla con más huecos antes de cortar, o subir `lasca_por_golpeo` y `cuerda` de
+      orden; DataCheck lo lista como nota («MaxActions»). *(biblia 03 §2.1, datos de H2)*
+- [x] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
       `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
       `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
       *(biblia 07 §2.1)*
-- [ ] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
+- [x] Añadir a `achievements.json` los 6 logros de minería: `primera_palada`,
       `buscador_de_vetas`, `filo_de_obsidiana`, `topo_de_isla`, `el_aire_que_falta`,
       `viga_a_tiempo`. *(biblia 07 §2.3)*
-- [ ] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
+- [x] Añadir el logro `manazas` («Manazas») ligado a `tools_broken_on_wrong_material`.
       *(biblia 07 §2.3)*
 - [x] `FBuildingModel::RecomputeStability` y el sistema de integridad/encaje de piezas
       ya implementados — base sobre la que se añaden `viga_apoyo` y `tablon_contencion`.
@@ -592,9 +618,10 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
       *(biblia 07 §2.1)*
 - [ ] Añadir un campo `rarity` (`comun`/`infrecuente`/`raro`/`muy_raro`) a los 54 logros
       de `achievements.json` con los valores de biblia 07 §2. *(biblia 07 §2)*
-- [ ] Añadir el logro `banquete_de_mil_cocos` y `el_cangrejo_se_lo_llevo`
-      (absurdos/graciosos, §2.3 «humor», máximo 3 de 54) con su stat
-      `coconuts_opened`/`crab_stole_item`. *(biblia 07 §2.3)*
+- [x] Añadir el logro `el_cangrejo_se_lo_llevo` («Cangrejo ladrón») con su stat
+      `crab_stole_item`. *(biblia 07 §2.3)*
+- [ ] Añadir el logro `banquete_de_mil_cocos` (absurdos/graciosos, §2.3 «humor», máximo 3
+      de 54) con su stat `coconuts_opened`. *(biblia 07 §2.3)*
 - [ ] Añadir el logro candidato `museo_completo` a una revisión posterior de
       `achievements.json` cuando el total lo permita sin salir del rango 40–60, o como
       contenido post-lanzamiento. *(biblia 07 §3.4)*
