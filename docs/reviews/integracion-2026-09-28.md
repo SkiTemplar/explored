@@ -311,3 +311,36 @@ Sin casillas marcadas:
   tala, y eso no está hecho.
 - #60 solo avanza el arte de la fauna, porque el cerdo salvaje aún no está importado en
   Unreal.
+
+## Ejecución 09:00 UTC
+
+Base: `origin/main` en `6053172` al empezar y en `2b6d17c` después de fusionar #65. Solo había
+una PR abierta.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #65 | `fix/amarre-nan` | **Fusionada** (`2b6d17c`) | Solo toca el modelo puro `FBoatModel::Moor` y su spec. Sustituye la comparación en positivo `!(x > 0)`, que con matemáticas rápidas no descarta NaN, por `FMath::IsFinite` sobre el cabo y el poste. Es un arreglo y no añade mecánica, así que no hay replicación nueva que definir. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #65 | 819 / 0 fallos | 819 / 0 fallos | — | El autor dice que en el editor pasan 880/880 con `Tools/test.ps1` |
+
+### Arreglos subidos
+
+- #65: el cambio también rechaza un cabo infinito con un poste finito, que antes amarraba.
+  Se añaden los casos «cabo infinito» y «poste infinito» a `BoatSpec.cpp`. Con el
+  `BoatModel.cpp` anterior, «cabo infinito» falla, así que el test caza el cambio.
+  Commit `4c4793b`.
+
+### Nota para el director
+
+- Una posición del barco con NaN ya no la descarta `Moor`: la distancia NaN hace falsa la
+  comparación `>` y el barco amarraría. Antes tampoco se descartaba en el editor, porque las
+  matemáticas rápidas anulaban el truco. Si interesa, se puede comprobar `IsFinite` sobre
+  `State.LocationCm` o sobre la distancia.
+
+### 00-TODO.md
+
+Sin casillas marcadas: #65 corrige un fallo y no completa ninguna tarea de la lista.
