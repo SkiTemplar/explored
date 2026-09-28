@@ -115,6 +115,14 @@ def _item_meshes(data: dict) -> dict[str, str]:
     return out
 
 
+def _piece_meshes(data: dict) -> dict[str, str]:
+    return {
+        p.get("id"): p.get("mesh")
+        for p in data.get("building_pieces.json", {}).get("pieces", [])
+        if p.get("mesh")
+    }
+
+
 def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
     catalog = data.get(CATALOG)
     if catalog is None:
@@ -127,7 +135,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
     known_packs = {p.get("id") for p in manifest.get("packs", [])}
     samples = palette_samples(repo_root)
     ids = _game_ids(data)
-    item_meshes = _item_meshes(data)
+    current_meshes = {"item": _item_meshes(data), "pieza": _piece_meshes(data)}
 
     lotes = set()
     for lote in catalog.get("lotes", []):
@@ -176,8 +184,8 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         if mesh in seen_mesh:
             error(f"{where}: malla «{mesh}» repetida")
         seen_mesh.add(mesh)
-        if "replaces" in e and kind == "item" and item_meshes.get(gid) != e["replaces"]:
-            error(f"{where}: replaces «{e['replaces']}» no es la malla actual ({item_meshes.get(gid)})")
+        if "replaces" in e and kind in current_meshes and current_meshes[kind].get(gid) != e["replaces"]:
+            error(f"{where}: replaces «{e['replaces']}» no es la malla actual ({current_meshes[kind].get(gid)})")
         rot = e.get("rotateDeg", [0, 0, 0])
         if not (isinstance(rot, list) and len(rot) == 3 and all(isinstance(a, (int, float)) for a in rot)):
             error(f"{where}: rotateDeg debe ser [x, y, z] en grados")
@@ -200,6 +208,8 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{where}: gripFromEndM debe estar dentro del mango (0 < g < size.m)")
             if pivot.get("end", "bottom") not in ("bottom", "top"):
                 error(f"{where}: end debe ser bottom o top")
+            if pivot.get("centerAt", "end") not in ("end", "grip"):
+                error(f"{where}: centerAt debe ser end o grip")
         rc = e.get("recolor", {})
         targets = [r.get("to") for r in rc.get("rules", [])] + ([rc["default"]] if "default" in rc else [])
         if not targets:
@@ -212,6 +222,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{where}: color de origen «{r.get('from')}» no es #rrggbb en minúsculas")
 
     covered = {g for _, g in seen_game}
+    all_ids = set().union(*ids.values())
     for key in ("discarded", "pending"):
         for d in catalog.get(key, []):
             gid = d.get("gameId", "")
@@ -221,5 +232,7 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
                 error(f"{CATALOG}: {key}: «{gid}» sin motivo")
             if key == "discarded" and d.get("pack") not in known_packs:
                 error(f"{CATALOG}: discarded: «{gid}» cita el pack «{d.get('pack')}», que no está en packs.json")
+            if key == "discarded" and gid not in all_ids:
+                error(f"{CATALOG}: discarded: «{gid}» no existe en los datos del juego")
             if key == "pending" and gid in covered:
                 error(f"{CATALOG}: pending: «{gid}» ya está cubierto en entries")
