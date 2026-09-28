@@ -233,6 +233,28 @@
       ],
       "sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
       "note": "Revisado en lote4-huerto: el follaje (hojas con alfa) no se puede recolorear por cara y se descarta. Candidato abierto: Pebble_Round_* para canto_rodado."
+    },
+    {
+      "id": "quaternius_polypizza_foliage",
+      "name": "Quaternius (via Poly Pizza)",
+      "author": "Quaternius",
+      "page": "https://poly.pizza/u/Quaternius",
+      "version": "n/a (modelos individuales, sin version de pack)",
+      "source": {
+        "kind": "polypizza",
+        "page": "https://poly.pizza/u/Quaternius",
+        "note": "Sin API key: download_polypizza.py scrapea el JSON de estado embebido en la pagina de cada modelo (https://poly.pizza/m/<publicID>), que trae licencia, autor y la URL directa del .glb en static.poly.pizza; aborta la descarga si autor o licencia no coinciden con Quaternius/CC0. No usa fetch_packs.py (esquema de descarga distinto: modelo a modelo, no un zip)."
+      },
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-27",
+        "evidence": "Pagina de cada modelo en poly.pizza reporta licencia CC0 y autor Quaternius; verificado por download_polypizza.py antes de cada descarga."
+      },
+      "formats": [
+        "glb"
+      ],
+      "sha256": "n/a (verificacion por licencia/autor scrapeados, no por hash de un unico zip; ver Tools/Packs/download_polypizza.py)",
+      "note": "Sustituye el follaje generico de Kenney Nature Kit (copas en bloques/bolas, troncos planos, sin degradado) tras el rechazo del director. Material nativo con degradado base oscura/punta clara ya horneado. used_for: Palm (palm_a A6cKJYFsIb, palm_b DsrrAYmucG, palm_c P0tgwyXBgr, palm_d nr1B5DbICA), JungleWide (jungle_wide_a i4QMw4L64D, jungle_wide_b qZtx0AHhcy, jungle_wide_c 9nvGuZlbpE, jungle_wide_d YWjGDJ9F7g), Shrub (shrub_a ooG6CkLyE8, shrub_b 92EytlU1El, shrub_flowering U1ymDy8tbY, shrub_banana ruOFtE0B6Z), Fern (fern_a jqcanvH7D6, fern_b xH5gNlQxAZ), Grass (grass_a iw6l7gqcdQ, grass_b JSIYtscPmP, grass_c vUJjrRsFp4), Flower (flower_a NBUxHir6FJ, flower_b hfPzQAedOe, flower_c dOO6kMDd8L)."
     }
   ]
 }
