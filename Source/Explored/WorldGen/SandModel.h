@@ -221,6 +221,13 @@ public:
 	 * Se cuentan referencias: dos estructuras solapadas sujetan hasta que se quitan las dos.
 	 */
 	FSandResult SetAnchor(const FVector2D& Min, const FVector2D& Max, bool bAnchor, FBaseHeight Base);
+	/**
+	 * Piezas de `building_pieces.json` que sujetan la arena (biblia 02 §5.3): el tablón de
+	 * contención, los pilotes y el muelle. El sistema de construcción llama a `SetAnchor` con
+	 * la huella de cada una al ponerla o quitarla; el resto de piezas no toca la arena.
+	 */
+	static const TArray<FString>& SandAnchorPieces();
+	static bool PieceAnchorsSand(const FString& PieceId);
 	/** Bajo la huella de alguna estructura. */
 	bool IsAnchored(const FIntPoint& Column) const;
 	/** A menos de 1 m de alguna estructura: no desliza ni la rellena el oleaje. */

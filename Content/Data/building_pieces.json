@@ -544,6 +544,32 @@
       "mesh": "SM_Kit_Bamboo_Foundation"
     },
     {
+      "id": "tablon_contencion",
+      "nameEs": "Tablón de contención",
+      "nameEn": "Retaining board",
+      "tier": "bambu",
+      "category": "exterior",
+      "socket": "pared",
+      "cost": [
+        {
+          "item": "bambu_grueso",
+          "count": 3
+        },
+        {
+          "item": "cordel",
+          "count": 2
+        }
+      ],
+      "tools": [
+        "cuchillo"
+      ],
+      "requiresPieces": [],
+      "buildMinutes": 15,
+      "integrity": 40,
+      "maxCycloneCategory": 1,
+      "mesh": null
+    },
+    {
       "id": "escalera_bambu",
       "nameEs": "Escalera de bambú",
       "nameEn": "Bamboo ladder",

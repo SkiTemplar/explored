@@ -21,13 +21,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 2 | 10 | 24 | 36 | 6 % | 19 % |
-| H2 — Minería y construcción | 3 | 11 | 17 | 31 | 10 % | 27 % |
+| H2 — Minería y construcción | 3 | 14 | 15 | 32 | 9 % | 31 % |
 | H3 — Mar y barcos | 1 | 6 | 7 | 14 | 7 % | 29 % |
 | H4 — Contenido de acceso anticipado | 1 | 2 | 18 | 21 | 5 % | 10 % |
 | H5 — Lanzamiento del acceso anticipado | 4 | 0 | 22 | 26 | 15 % | 15 % |
 | F2 | 1 | 4 | 11 | 16 | 6 % | 19 % |
 | F3 | 1 | 0 | 26 | 27 | 4 % | 4 % |
-| **Total** | **20** | **44** | **150** | **214** | **9 %** | **20 %** |
+| **Total** | **20** | **47** | **148** | **215** | **9 %** | **20 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -43,6 +43,11 @@ como «en parte» y no como hechas. Cerrar H0 pasa sobre todo por enganchar
 `FTerrainEditModel` (picado, remallado y guardado) y `FFellingModel` a actores, trabajo
 que necesita Unreal. Sigue sin haber una sola línea de replicación en `Source/`: las 43
 casillas de red están pendientes.
+
+Minería y terreno de H2 (PR #95): `FMiningModel`, `FMineHazardModel` y `FShovelPathModel`
+con sus specs y las piezas `viga_apoyo` y `tablon_contencion` en datos. Con el mismo
+criterio, sus casillas cuentan como «en parte» (modelo puro sin enganchar) y se añade la
+casilla de conectarlos al juego.
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -400,8 +405,10 @@ posterior.
 ### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
 
 - [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
-      13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
+      12 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
       Coalescencia a 10 Hz. *(biblia 08 §2.4)*
+      *(presupuesto ya modelado: `FNetBudgetTableModel` cuenta las entradas de 12 B de
+      `FContainerReplicationModel::EntryBytes` a 10 Hz; falta el `FFastArraySerializer`.)*
 - [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
       (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`
       (FNV-1a de 64 bits) en el saludo de conexión, con rechazo y el texto de biblia 08
@@ -410,6 +417,12 @@ posterior.
       (`Server_SubscribeContainer`, baja al cerrar); la carrera de dos jugadores sobre el
       mismo hueco se resuelve con `EInventoryFail::NotFound`, sin bloqueos.
       *(biblia 08 §2.4)*
+      *(modelo puro ya implementado: `FContainerReplicationModel`
+      (`Source/Explored/Carry/ContainerReplicationModel.h/.cpp`), spec
+      `Tests/ContainerReplicationModelSpec.cpp` — suscripción al abrir a menos de 3 m,
+      contenido entero y luego solo huecos, baja al cerrar, alejarse o desconectarse, y la
+      carrera con `NotFound` y hueco refrescado; falta el RPC `Server_SubscribeContainer`
+      en `AExploredContainer`.)*
 - [ ] `Items/ExploredItemActor`: `bReplicateMovement` a 10 Hz, dormir el cuerpo físico a
       los 3 s de quietud (y dejar de replicar), `NetCullDistanceSquared` 6 000 cm y tope
       de 32 objetos sueltos despiertos a la vez. *(biblia 08 §2.5)*
@@ -418,20 +431,39 @@ posterior.
       etapa, golpes, día de rebrote ×4), tope de 4096 entradas con compactación a
       snapshot por celda reusando `FSaveIndexSet::Encode`. Progreso de tala solo a
       clientes a < 60 m. *(biblia 08 §2.3)*
+      *(modelo puro ya implementado: `FVegetationNetStateModel`
+      (`Source/Explored/WorldGen/VegetationNetStateModel.h/.cpp`), spec
+      `Tests/VegetationNetStateModelSpec.cpp` — clave y estado de 10 B, tabla de especies,
+      filtro de 60 m, tope de 4096 con compactación y sincronía servidor-cliente; falta el
+      `FFastArraySerializer` en el `GameState` que lo alimente.)*
 - [ ] `Fauna`: anclas por grupo cada 2 s (10 B: id, centroide cuantizado, estado) para la
       fauna de ambiente que cada cliente simula en local, y actores replicados (14 B) para
       la terrestre cazable, con el tope duro de 12 a 10 Hz + 24 a 2 Hz enganchado a
       `FFaunaLod`. `ReefSharkAttackRoll` solo en el servidor, una tirada por nadador.
       *(biblia 08 §2.7)*
+      *(anclas ya como modelo puro: `FFaunaAnchorNetModel`
+      (`Source/Explored/Fauna/FaunaAnchorNetModel.h/.cpp`), spec
+      `Tests/FaunaAnchorNetModelSpec.cpp` — 10 B por grupo, 24 grupos a < 150 m, fase de
+      envío por id y arrastre de 1 s; falta la fauna terrestre replicada y el enganche con
+      `AExploredFaunaManager`.)*
 - [ ] `Sky`/`Weather`: replicar los 11 B de reloj, estación, viento, lluvia, mar y
       tormenta a 0,2 Hz en el `GameState`; el cliente avanza su reloj local y corrige con
       `TimeScale` entre 0,95 y 1,05, con salto duro solo por encima de 6 minutos de juego
       de error. Olas, mareas y corrientes se calculan en local. *(biblia 08 §2.8)*
-- [ ] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
+      *(modelo puro ya implementado: `FWorldClockNetModel`
+      (`Source/Explored/Sky/WorldClockNetModel.h/.cpp`), spec
+      `Tests/WorldClockNetModelSpec.cpp` — 11 B con cuantización e ida y vuelta canónica,
+      envío a 0,2 Hz o al cambiar y corrección entre 0,95 y 1,05 con salto a 6 min; falta
+      la propiedad replicada en `AExploredGameState` y el ajuste de `UTimeOfDaySubsystem`.)*
+- [x] `Core/SystemLinks`: reglas puras de cooperativo con spec de host — dormir en grupo
       (`TimeScale` ×120 solo con todos acostados, vuelta a ×1 al levantarse uno,
       conservando las horas ganadas) y `Derribado` (90 s, reanimación de 6 s o 3 s con
       medicina, alta al 25 % de salud y ánimo −6, tope de 2 reanimaciones por día, sin
       `Derribado` en Náufrago). *(biblia 08 §5.1, §5.2)*
+      *(hecho: `ExploredLinks::DecideGroupSleep`, `FGroupSleepSession`, `OnHealthZero`,
+      `AdvanceRevive`, `FinishRevive` y `TickGroupDowned` en `Core/SystemLinks.h`, spec
+      `Tests/CoopRulesSpec.cpp`; textos de §6.6 y §6.8 pendientes de integrar en
+      `translations/en.json`, espacio `ExploredCoop`.)*
 - [ ] `UI`: `SExploredPlayerList` como pestaña de `SExploredPauseMenu` (tinta, nombre,
       retardo, expulsar), nombres sobre la cabeza (hasta 60 m, desvanecido 45–60 m, sin
       verse a través del terreno, sin barra de vida), rueda de ping de tres opciones
@@ -455,16 +487,22 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       de meteorito, obsidiana, azufre y cristal (tabla completa de biblia 02 §2.3), con
       la regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe,
       −15 durabilidad). *(biblia 02 §2)*
-      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50), `TerrainEditModel.h:12-19`,
-        `mining.json:75-132` — el modelo tiene 5 materiales; cobre, hierro, azufre y cristal
-        solo están en datos y la rotura de la obsidiana solo en JSON.
+      → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50) + PR #95: `FMiningModel`
+        (`WorldGen/MiningModel.h`, `MiningModelSpec`) con estratos, vetas finitas, radio y
+        ritmo por herramienta, rebote y mella — modelo puro sin enganchar.
 - [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
       luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
+      → **En parte:** PR #95, pieza en `building_pieces.json` y regla en `FMineHazardModel`
+        (`MineHazardModelSpec`) — sin enganchar.
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals`
+        (respiración y mareo) — sin enganchar a las señales del cuerpo.
 - [ ] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático
       (1 m/40 s sin sellar) y crecida de monzón (30 % durante la estación).
       *(biblia 02 §2.4)*
+      → **En parte:** PR #95, `FMineHazardModel` (galerías, marea, sellado con `pared`,
+        lluvia +50 %) y `MonsoonFloodFraction` — sin enganchar.
 - [ ] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos
       subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` mayores, con
       radio de exclusión de 1,5 m alrededor de un tesoro. *(biblia 02 §2.5, §12)*
@@ -472,20 +510,27 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       02 §2 TODO)*
 - [ ] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento
       sobre camino terminado). *(biblia 02 §3)*
-      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h:87, 163` (`bMarkPath`) — falta
-        el −15 % de coste de movimiento y enganchar la pala.
+      → **En parte:** `cb4e5a6` (PR #40), `TerrainEditModel.h` (`bMarkPath`) + PR #95:
+        `FShovelPathModel` (`ShovelPathModelSpec`) — falta enganchar la pala y el −15 % en
+        el movimiento.
 - [ ] `WorldGen`: simulación de ángulo de reposo de arena (34° seca / 45° húmeda,
       revisión de pendiente 1/s por chunk activo). *(biblia 02 §5.1)*
-      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h:139` (34°/45°,
+      → **En parte:** `e6c89d1` (PR #46): `FSandModel`, `WorldGen/SandModel.h` (34°/45°,
         revisión 1 s) — modelo puro sin enganchar.
 - [ ] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:142-145` (`ApplyHalfTide` 20 %/35 %)
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`ApplyHalfTide` 20 %/35 %)
         — nadie lo llama desde la marea.
 - [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
       en 1 m). *(biblia 02 §5.3)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h:149, 196` (`SetAnchor` a 1 m) — falta
-        la pieza en `building_pieces.json`.
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95: pieza
+        en `building_pieces.json` y `FSandModel::PieceAnchorsSand` — falta llamar a
+        `SetAnchor` al colocarla.
+- [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
+      `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
+      (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
+      las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
+      −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
 - [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
       `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
       `carretilla`. *(biblia 03 §3.2–3.4)*
@@ -720,7 +765,9 @@ datos todavía.
       (GDD §7.1). *(GDD §7.1)*
       → **En parte:** PR #45, #48, #56 y #60 (packs CC0) y #42, #54, #63 (paleta),
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
-        general, mobiliario y props.
+        general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
+        estrella, laurel, candado y reloj de arena); 25 pistas de logro siguen en
+        `iconsPending`.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
@@ -752,6 +799,10 @@ datos todavía.
       `GameState` para los logros de restricción, y escalado por número de jugadores de
       biblia 08 §5.6 como función pura en `ExploredLinks` con su spec de host.
       *(biblia 08 §5.6, §5.7)*
+      *(funciones puras ya hechas: `CoopAbundanceScale`, `ScaleFiniteVein`,
+      `PirateRaidersForPlayers`, `PirateCategoryBonus`, `ParseCoopScope` y
+      `AchievementRecipients` en `Core/SystemLinks.h`, spec `Tests/CoopRulesSpec.cpp`;
+      falta el campo `coopScope` en `achievements.json` y la bandera de restricción.)*
 
 ---
 
@@ -839,6 +890,11 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
 - [ ] Red: verificar con el CSV de `Explored.NetBudget` el objetivo de **menos de 64 kbps
       por cliente en reposo** y **menos de 256 kbps en pico** con 4 jugadores, sobre las 16
       filas de la matriz. Criterio de salida, no estimación. *(biblia 08 §3)*
+      *(estimación de diseño ya comprobada en host: `FNetBudgetTableModel`
+      (`Source/Explored/Debug/NetBudgetTableModel.h/.cpp`), spec
+      `Tests/NetBudgetTableModelSpec.cpp` — reposo ≈ 33 kbps con 1–4 jugadores, pico
+      ≈ 80 y ≈ 208 con la ráfaga de terreno, con los tamaños reales de los paquetes; el
+      criterio sigue siendo el CSV medido.)*
 - [ ] Red: ajustar con datos de la beta cerrada las cifras de biblia 08 §5 (×120 al dormir,
       90 s y 6/3 s de `Derribado`, y el escalado de vetas, fauna y asaltos por número de
       jugadores). Están escritas con número justo para poder moverlas de una en una.

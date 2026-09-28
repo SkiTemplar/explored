@@ -114,6 +114,8 @@ cliente):
 | Terreno editable (`FTerrainEditModel`) | Servidor | Servidor | Deltas replicados + remallado local (§2.2) |
 | Tala y recolección (`FFellingModel`, `FHarvestModel`) | Servidor | Servidor | Estado por instancia (§2.3) |
 | Arena viva (§2.6) | Servidor | **Solo servidor** | Deltas de terreno normales |
+| Minería por estrato y vetas (`FMiningModel`), camino de pala (`FShovelPathModel`) | Servidor | Servidor | Deltas de terreno + sonido del golpe local (§2.12) |
+| Riesgos de mina: derrumbe, aire, agua (`FMineHazardModel`) | Servidor | **Solo servidor** | Escombro como deltas, avisos cosméticos, nivel de agua (§2.12) |
 | Construcción (`FBuildingModel`) | Servidor | Servidor | Actores replicados + fantasma local (§2.10) |
 | Barcos (`FBoatModel`) | Servidor | Servidor | Estado replicado + extrapolación (§2.5) |
 | Olas y corrientes (`FOceanWaves`) | Nadie: función pura | **Cada cliente, local** | Idéntico por construcción (§2.5) |
@@ -303,7 +305,7 @@ resolver «llevo un pico» a la vista), replicado a todos como 2 × (`uint16` id
 definición + `uint8` calidad) = 6 B.
 
 Estructura replicada del inventario propio: `FFastArraySerializer` de entradas de
-**13 bytes**:
+**12 bytes** (1+1+2+4+1+1+1+1):
 
 ```
 uint8  Slot           // EInventorySlot
@@ -316,9 +318,9 @@ uint8  Count           // apilado (biblia 03 §1.3, tope 10)
 uint8  Flags           // mojado, encendido, etc.
 ```
 
-Coste: fabricar mueve 2–3 huecos → **39 B por operación**; coalescido a 10 Hz da un
-techo de **3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
-inventario completo (24 huecos) son 312 B: lo que se manda al unirse.
+Coste: fabricar mueve 2–3 huecos → **36 B por operación**; coalescido a 10 Hz da un
+techo de **≈3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
+inventario completo (24 huecos) son 288 B: lo que se manda al unirse.
 
 **Piezas y nombre generado** de un objeto fabricado (que `UCarryComponent` guarda
 aparte de `FInventoryModel`) no van en el array: se piden por RPC fiable la primera vez
@@ -561,6 +563,44 @@ cuatro jugadores vean el mismo relámpago.
   wayfinding aprendida la aprende **el grupo** (§5.5).
 - **Diario del jugador** (`journal_entries.json`): **individual**, cliente, sin red. Es
   la voz del personaje, y cada jugador tiene el suyo.
+
+### 2.12 Minería, vetas y riesgos de mina
+
+Añadido el 2026-09-28 con los modelos puros de H2 (`FMiningModel`, `FMineHazardModel`,
+`FShovelPathModel`). Todo lo decide y lo simula el servidor; al cliente le llegan
+consecuencias, nunca la simulación.
+
+- **Golpe de pico** (`FMiningModel::Hit`): el cliente manda `Server_MineHit(Punto,
+  Dirección)`; el servidor lee el estrato del punto, la herramienta de **su** copia del
+  inventario y valida la cadencia con el ritmo de esa herramienta
+  (`FMiningModel::ToolInfo(...).SecondsPerHit`, de 1,0 a 1,5 s, con el −15 % de
+  tolerancia de §1.2; nunca por debajo de los 0,9 s generales). La semilla del golpe es
+  `FMiningModel::HitSeed(semilla de partida, jugador, contador de golpes)`: la forma del
+  hueco y la mella del pico de obsidiana salen de ahí, así que un golpe repetido da lo
+  mismo y el cliente no puede elegir su suerte. El hueco sale por la cola de §2.2; el
+  botín y el desgaste, por el inventario replicado (§2.4). El rebote es solo sonido: el
+  cliente lo reproduce al instante porque no cambia el mundo.
+- **Vetas:** el estado (unidades que quedan y día de agotamiento) vive **solo en el
+  servidor** y en el guardado del anfitrión. No se replica: el cliente ve la veta por la
+  malla del terreno y por el objeto que le llega.
+- **Camino de pala** (`FShovelPathModel`): cada golpe es una pasada por toda la franja
+  (unas 5 pasadas de pala en bytes, ≈ 5 KB en crudo, 2 KB comprimido, cada 1,2 s); la
+  compactación va en el mismo chunk al terminar. Entra en la cola de §2.2 con la
+  prioridad de las ediciones del jugador.
+- **Derrumbe:** la cuenta de 8 s corre en el servidor. El crujido (a los 6 s) y el
+  derrumbe son **multicast cosméticos** de 13 B (tipo + posición a `int32` en cm), con
+  relevancia de 60 m. El escombro sale como deltas de terreno normales: el cliente no
+  sabe de rejillas de riesgo. La viga es una pieza más (§2.10).
+- **Aire viciado:** la distancia a la salida la calcula el servidor; el aire de cada
+  jugador es parte de **su cuerpo** (§2.9): un `uint8` más en el paquete a su dueño, a
+  1 Hz. A los demás solo les llega la respiración agitada como bandera visible (1 bit
+  de los 2 B de §2.9).
+- **Agua en una galería:** por cada galería inundada a menos de 120 m del cliente, el
+  servidor replica `uint16` id de galería + `int16` nivel en cm, a **1 Hz** y solo si
+  ha cambiado. Una mina que se llena son 4 B/s por galería; en reposo, 0.
+- **Guardado:** el agua (una celda y un nivel por galería) y las vetas van en el
+  guardado del anfitrión; la cuenta de derrumbe no se guarda (al cargar vuelve a
+  empezar: 8 s de margen para el jugador).
 
 ---
 

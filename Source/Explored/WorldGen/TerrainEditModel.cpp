@@ -694,7 +694,8 @@ FTerrainEditResult FTerrainEditModel::Pickaxe(const FPickaxeHit& Hit, FBaseDensi
 		/ HardnessAt(Hit.Material, Hit.ImpactPoint);
 	const FVector Dir = Hit.Direction.SizeSquared() > 1.0e-8 ? Hit.Direction.GetSafeNormal() : FVector(0.0, 0.0, -1.0);
 	const FVector Center = Hit.ImpactPoint + Dir * PickaxeBite;
-	const float MaxRadius = PickaxeRadius * (1.0f + PickaxeIrregularity);
+	const float Nominal = FMath::IsFinite(Hit.Radius) ? FMath::Clamp(Hit.Radius, MinPickaxeRadius, MaxPickaxeRadius) : PickaxeRadius;
+	const float MaxRadius = Nominal * (1.0f + PickaxeIrregularity);
 	const TerrainEditDetail::FLobes Lobes(Hit.Seed);
 
 	TArray<FProposal> Proposals;
@@ -704,7 +705,7 @@ FTerrainEditResult FTerrainEditModel::Pickaxe(const FPickaxeHit& Hit, FBaseDensi
 			const FVector Offset = P - Center;
 			const float Dist = static_cast<float>(Offset.Size());
 			const FVector Unit = Dist > 1.0e-6f ? Offset / Dist : FVector(0.0, 0.0, 1.0);
-			const float Radius = PickaxeRadius * (1.0f + PickaxeIrregularity * Lobes.Eval(Unit));
+			const float Radius = Nominal * (1.0f + PickaxeIrregularity * Lobes.Eval(Unit));
 			if (Dist >= Radius)
 			{
 				return;
@@ -807,6 +808,40 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 			{
 				ChunksReadingSample(FIntVector(X, Y, Z), Result.DirtyChunks);
 			}
+		}
+	}
+	TerrainEditDetail::Finish(Result);
+	return Result;
+}
+
+FTerrainEditResult FTerrainEditModel::CompactStrip(const FVector& A, const FVector& B, float HalfWidth)
+{
+	FTerrainEditResult Result;
+	if (!FMath::IsFinite(HalfWidth) || HalfWidth <= 0.0f || !FMath::IsFinite(A.X) || !FMath::IsFinite(A.Y)
+		|| !FMath::IsFinite(A.Z) || !FMath::IsFinite(B.X) || !FMath::IsFinite(B.Y) || !FMath::IsFinite(B.Z))
+	{
+		return Result;
+	}
+	const double H = Settings.CellSize;
+	const FVector2D PA(A.X, A.Y);
+	const FVector2D PB(B.X, B.Y);
+	const FVector2D AB = PB - PA;
+	const double Len2 = AB.SizeSquared();
+	const FIntPoint Min = ColumnOf(FMath::Min(A.X, B.X) - HalfWidth, FMath::Min(A.Y, B.Y) - HalfWidth);
+	const FIntPoint Max = ColumnOf(FMath::Max(A.X, B.X) + HalfWidth, FMath::Max(A.Y, B.Y) + HalfWidth);
+	for (int32 Y = Min.Y; Y <= Max.Y; ++Y)
+	{
+		for (int32 X = Min.X; X <= Max.X; ++X)
+		{
+			const FVector2D C((X + 0.5) * H, (Y + 0.5) * H);
+			const double T = Len2 > 1.0e-12 ? FMath::Clamp(FVector2D::DotProduct(C - PA, AB) / Len2, 0.0, 1.0) : 0.0;
+			if (FVector2D::Distance(C, PA + AB * T) > HalfWidth + 1.0e-6)
+			{
+				continue;
+			}
+			PathColumns.FindOrAdd(FIntPoint(X, Y)) = 100;
+			const int32 Z = FMath::RoundToInt32((A.Z + (B.Z - A.Z) * T) / H);
+			ChunksReadingSample(FIntVector(X, Y, Z), Result.DirtyChunks);
 		}
 	}
 	TerrainEditDetail::Finish(Result);
