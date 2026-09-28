@@ -111,18 +111,18 @@ void FBoatNetStateSpec::Define()
 			N.WaterDeciKg = 0x0102;
 			uint8 Raw[FExploredBoatNetState::SizeBytes];
 			N.ToBytes(Raw);
-			TestEqual(TEXT("X en el bit 0"), Raw[0], static_cast<uint8>(0x01));
+			TestTrue(TEXT("X en el bit 0"), Raw[0] == static_cast<uint8>(0x01));
 			// Y = -1 en 21 bits ocupa los bits 21–41: byte 2 bits 5–7, bytes 3–4 y byte 5 bits 0–1.
-			TestEqual(TEXT("Y byte 2"), Raw[2], static_cast<uint8>(0xE0));
-			TestEqual(TEXT("Y byte 3"), Raw[3], static_cast<uint8>(0xFF));
-			TestEqual(TEXT("Y byte 4"), Raw[4], static_cast<uint8>(0xFF));
-			TestEqual(TEXT("Y byte 5"), Raw[5], static_cast<uint8>(0x03));
-			TestEqual(TEXT("Velocidad X baja"), Raw[7], static_cast<uint8>(0x34));
-			TestEqual(TEXT("Velocidad X alta"), Raw[8], static_cast<uint8>(0x12));
-			TestEqual(TEXT("Rumbo bajo"), Raw[11], static_cast<uint8>(0xCD));
-			TestEqual(TEXT("Rumbo alto"), Raw[12], static_cast<uint8>(0xAB));
-			TestEqual(TEXT("Agua baja"), Raw[15], static_cast<uint8>(0x02));
-			TestEqual(TEXT("Integridad intacta por defecto"), Raw[17], static_cast<uint8>(0xFF));
+			TestTrue(TEXT("Y byte 2"), Raw[2] == static_cast<uint8>(0xE0));
+			TestTrue(TEXT("Y byte 3"), Raw[3] == static_cast<uint8>(0xFF));
+			TestTrue(TEXT("Y byte 4"), Raw[4] == static_cast<uint8>(0xFF));
+			TestTrue(TEXT("Y byte 5"), Raw[5] == static_cast<uint8>(0x03));
+			TestTrue(TEXT("Velocidad X baja"), Raw[7] == static_cast<uint8>(0x34));
+			TestTrue(TEXT("Velocidad X alta"), Raw[8] == static_cast<uint8>(0x12));
+			TestTrue(TEXT("Rumbo bajo"), Raw[11] == static_cast<uint8>(0xCD));
+			TestTrue(TEXT("Rumbo alto"), Raw[12] == static_cast<uint8>(0xAB));
+			TestTrue(TEXT("Agua baja"), Raw[15] == static_cast<uint8>(0x02));
+			TestTrue(TEXT("Integridad intacta por defecto"), Raw[17] == static_cast<uint8>(0xFF));
 		});
 	});
 

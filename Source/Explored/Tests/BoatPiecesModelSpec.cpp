@@ -153,7 +153,7 @@ void FBoatPiecesModelSpec::Define()
 				const FBoatPiecesModel Model = FBoatPiecesModel::Blueprint(Type);
 				const FBoatHullReport R = Model.EvaluateWithCrew();
 				const FString Name = LexToString(Type);
-				TestEqual(Name + TEXT(": completo"), R.Issues, 0u);
+				TestTrue(Name + TEXT(": completo"), R.Issues == 0u);
 				TestTrue(Name + TEXT(": flota"), R.Verdict == EBoatHullVerdict::Floats);
 				TestTrue(Name + TEXT(": calado < diseño"), R.EquilibriumDraftCm < R.DesignDraftCm);
 				TestEqual(Name + TEXT(": diseño al 60 % del puntal"), R.DesignDraftCm, 0.6f * R.DepthCm, 1e-3f);
@@ -216,8 +216,8 @@ void FBoatPiecesModelSpec::Define()
 
 		It("el «Limón» exige las cuatro piezas del Albatros y los demás ninguna", [this]()
 		{
-			TestEqual(TEXT("Cuatro partes"), FBoatPiecesModel::RequiredShipPartsMask(EBoatType::Limon), FBoatPiecesModel::AllShipPartsMask);
-			TestFalse(TEXT("Con tres no"), FBoatPiecesModel::HasShipPartsFor(EBoatType::Limon, 0x7u));
+			TestTrue(TEXT("Cuatro partes"), FBoatPiecesModel::RequiredShipPartsMask(EBoatType::Limon) == FBoatPiecesModel::AllShipPartsMask);
+			TestFalse(TEXT("Sin cola no"), FBoatPiecesModel::HasShipPartsFor(EBoatType::Limon, 0xBu));
 			TestFalse(TEXT("Sin motor no"), FBoatPiecesModel::HasShipPartsFor(EBoatType::Limon, 0x7u));
 			TestFalse(TEXT("Sin fuselaje no"), FBoatPiecesModel::HasShipPartsFor(EBoatType::Limon, 0xEu));
 			TestTrue(TEXT("Con las cuatro sí"), FBoatPiecesModel::HasShipPartsFor(EBoatType::Limon, 0xFu));
@@ -263,7 +263,7 @@ void FBoatPiecesModelSpec::Define()
 			Plank.Type = EBoatPieceType::HullPlank;
 			Plank.CenterCm = FVector(0.0, 300.0, 14.0);
 			Loose.AddPiece(Plank);
-			TestEqual(TEXT("Solo el tablón suelto"), Loose.FindIssues(), static_cast<uint32>(EBoatHullIssue::PlankUnsupported));
+			TestTrue(TEXT("Solo el tablón suelto"), Loose.FindIssues() == static_cast<uint32>(EBoatHullIssue::PlankUnsupported));
 			TestEqual(TEXT("Sin entrada de agua por sobrecarga"), Loose.EvaluateWithCrew().OverloadIngressKgS, 0.0f);
 		});
 
@@ -271,7 +271,7 @@ void FBoatPiecesModelSpec::Define()
 		{
 			FBoatPiecesModel NoMast = FBoatPiecesModel::Blueprint(EBoatType::Outrigger);
 			NoMast.RemovePiece(IndexOf(NoMast, EBoatPieceType::Mast));
-			TestEqual(TEXT("Vela sin mástil"), NoMast.FindIssues(), static_cast<uint32>(EBoatHullIssue::SailWithoutMast));
+			TestTrue(TEXT("Vela sin mástil"), NoMast.FindIssues() == static_cast<uint32>(EBoatHullIssue::SailWithoutMast));
 			TestFalse(TEXT("No se iza"), NoMast.CanRaiseSail());
 			TestEqual(TEXT("Sin superficie vélica útil"), NoMast.Evaluate(FBoatLoadout()).SailAreaM2, 0.0f);
 
@@ -280,7 +280,7 @@ void FBoatPiecesModelSpec::Define()
 			Mast.Type = EBoatPieceType::Mast;
 			Mast.CenterCm = FVector(0.0, 0.0, 500.0);
 			FloatingMast.AddPiece(Mast);
-			TestEqual(TEXT("Mástil al aire"), FloatingMast.FindIssues(), static_cast<uint32>(EBoatHullIssue::MastUnstepped));
+			TestTrue(TEXT("Mástil al aire"), FloatingMast.FindIssues() == static_cast<uint32>(EBoatHullIssue::MastUnstepped));
 
 			FBoatPiecesModel NoBooms = FBoatPiecesModel::Blueprint(EBoatType::Outrigger);
 			for (int32 I = NoBooms.GetPieces().Num() - 1; I >= 0; --I)
@@ -298,7 +298,7 @@ void FBoatPiecesModelSpec::Define()
 			Frame.Type = EBoatPieceType::Frame;
 			Frame.CenterCm = FVector(0.0, 0.0, -300.0);
 			StrayFrame.AddPiece(Frame);
-			TestEqual(TEXT("Cuaderna suelta"), StrayFrame.FindIssues(), static_cast<uint32>(EBoatHullIssue::FrameUnattached));
+			TestTrue(TEXT("Cuaderna suelta"), StrayFrame.FindIssues() == static_cast<uint32>(EBoatHullIssue::FrameUnattached));
 		});
 
 		It("quitar una cuaderna deja el casco entero y las demás uniones con su integridad", [this]()
@@ -319,7 +319,7 @@ void FBoatPiecesModelSpec::Define()
 				}
 			}
 			TestTrue(TEXT("Se quita"), Model.RemovePiece(Bow));
-			TestEqual(TEXT("Sigue completa"), Model.FindIssues(), 0u);
+			TestTrue(TEXT("Sigue completa"), Model.FindIssues() == 0u);
 			TestEqual(TEXT("Cuatro uniones menos"), Model.GetJoints().Num(), Joints - 4);
 			double Lost = 0.0;
 			for (const FBoatHullJoint& J : Model.GetJoints())
@@ -411,7 +411,7 @@ void FBoatPiecesModelSpec::Define()
 			Float.Type = EBoatPieceType::Outrigger;
 			Float.CenterCm = FVector(0.0, 44.0, 25.0);
 			WithFloat.AddPiece(Float);
-			TestEqual(TEXT("Unido a las cuadernas"), WithFloat.FindIssues(), 0u);
+			TestTrue(TEXT("Unido a las cuadernas"), WithFloat.FindIssues() == 0u);
 
 			FBoatLoadout Starboard;
 			Starboard.Masses.Add(Mass(75.0f, 0.0, 30.0, 30.0));
@@ -574,6 +574,26 @@ void FBoatPiecesModelSpec::Define()
 			TestEqual(TEXT("Sin pasarse del máximo"), Canoe.GetJoints()[Broken].Integrity, Canoe.GetJoints()[Broken].MaxIntegrity);
 			TestEqual(TEXT("Una brecha menos"), Canoe.BreachCount(), Before - 1);
 			TestFalse(TEXT("Entera no se repara"), Canoe.RepairJoint(Broken, 10.0f));
+		});
+
+		It("no depende del orden de montaje: las mismas piezas al revés dan el mismo casco", [this]()
+		{
+			for (int32 T = 0; T < static_cast<int32>(EBoatType::Count); ++T)
+			{
+				const FBoatPiecesModel Forward = FBoatPiecesModel::Blueprint(static_cast<EBoatType>(T));
+				FBoatPiecesModel Backward;
+				for (int32 I = Forward.GetPieces().Num() - 1; I >= 0; --I)
+				{
+					Backward.AddPiece(Forward.GetPieces()[I]);
+				}
+				const FBoatHullReport A = Forward.EvaluateWithCrew();
+				const FBoatHullReport B = Backward.EvaluateWithCrew();
+				TestTrue(TEXT("Mismo veredicto"), A.Verdict == B.Verdict && A.Issues == B.Issues);
+				TestEqual(TEXT("Misma masa"), A.StructureMassKg, B.StructureMassKg, 1e-3f);
+				TestEqual(TEXT("Misma flotabilidad"), A.MaxBuoyancyKg, B.MaxBuoyancyKg, 1e-3f);
+				TestEqual(TEXT("Misma GM"), A.EffectiveGMCm, B.EffectiveGMCm, 1e-3f);
+				TestEqual(TEXT("Mismas uniones"), Backward.GetJoints().Num(), Forward.GetJoints().Num());
+			}
 		});
 
 		It("es determinista: la misma secuencia de golpes da lo mismo bit a bit", [this]()
