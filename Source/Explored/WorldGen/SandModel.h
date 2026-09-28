@@ -274,6 +274,11 @@ private:
 	TMap<FIntPoint, uint8> Dirty;
 	/** Arena del mar (mm·columna): sube cuando el oleaje alisa un montón y baja cuando rellena un hoyo. */
 	int64 SeaBank = 0;
+	/**
+	 * Chunks con deltas a los que no ha llegado el último cambio de pleamar o de lluvia por
+	 * estar lejos de todos los jugadores: se revisan cuando alguien se acerca.
+	 */
+	TMap<FIntPoint, uint8> StaleWetChunks;
 	int32 AccumulatedMs = 0;
 	/** Pleamar (mm) y lluvia de la última revisión de columnas editadas. */
 	int64 LastWakeHighMm = 0;

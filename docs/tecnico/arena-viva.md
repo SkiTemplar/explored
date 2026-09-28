@@ -1,6 +1,6 @@
 # Arena viva: cómo enganchar `FSandModel` en el motor
 
-Estado: el modelo es puro y tiene spec en el host (`Explored.Sand`, 41 casos). Falta la
+Estado: el modelo es puro y tiene spec en el host (`Explored.Sand`, 42 casos). Falta la
 integración con Unreal, que tiene que hacer una sesión con el editor. Diseño de juego:
 biblia 02 §5 (reglas), biblia 08 §2.6 (red y presupuesto) y GDD v2 §3.13 (números que
 la biblia deja abiertos).
@@ -139,7 +139,9 @@ la biblia deja abiertos).
   shim es lineal. El conjunto se rehace entero en cada revisión y así no depende de ello.
 - La pleamar y la lluvia despiertan la arena editada de los chunks activos cuando la
   pleamar cambia 5 cm o cuando empieza o deja de llover. Solo se recorren los chunks que
-  tienen deltas.
+  tienen deltas. Los chunks con deltas que en ese momento están lejos de todos los
+  jugadores quedan pendientes y se despiertan cuando alguien se acerca: una playa que se
+  ha secado sin nadie cerca se derrumba a 34° al volver, no se queda a 45°.
 - Memoria: 4 arrays de 1 024 elementos por chunk tocado (delta y base en `int32`,
   huella y sujeción en `uint8`), unos 10 KB. Un chunk se crea aunque solo se lea como
   vecino o quede dentro del metro de una estructura. Si en una partida larga pasa de unos

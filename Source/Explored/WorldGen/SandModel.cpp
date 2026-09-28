@@ -440,27 +440,45 @@ FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bo
 void FSandModel::WakeForTide(const FSandEnvironment& Env)
 {
 	const int64 HighMm = SandModelDetail::MetersToMm(Env.HighTide);
-	if (bHasWoken && Env.bRaining == bLastWakeRaining && FMath::Abs(HighMm - LastWakeHighMm) < TideWakeStepMm)
+	if (!bHasWoken || Env.bRaining != bLastWakeRaining || FMath::Abs(HighMm - LastWakeHighMm) >= TideWakeStepMm)
+	{
+		bHasWoken = true;
+		LastWakeHighMm = HighMm;
+		bLastWakeRaining = Env.bRaining;
+		// La pleamar del día o la lluvia cambian qué arena está húmeda: todos los chunks con
+		// deltas quedan pendientes de revisar (los chunks sin deltas se saltan).
+		for (const FIntPoint& Key : EditedChunks())
+		{
+			StaleWetChunks.FindOrAdd(Key);
+		}
+	}
+	if (StaleWetChunks.Num() == 0)
 	{
 		return;
 	}
-	bHasWoken = true;
-	LastWakeHighMm = HighMm;
-	bLastWakeRaining = Env.bRaining;
 
-	// La pleamar del día o la lluvia cambian qué arena está húmeda: se revisan las columnas
-	// editadas de los chunks activos (los chunks sin deltas se saltan).
+	// Se despiertan las columnas editadas de los pendientes que están cerca de algún jugador.
+	// Los lejanos siguen pendientes y se despiertan cuando llega alguien: si la arena se ha
+	// secado mientras tanto, se derrumba a 34° en vez de quedarse a 45° para siempre.
+	TArray<FIntPoint> Pending;
+	StaleWetChunks.GetKeys(Pending);
+	Pending.Sort(&SandModelDetail::ColumnLess);
 	const int32 N = Settings.CellsPerChunk;
-	for (const FIntPoint& Key : EditedChunks())
+	for (const FIntPoint& Key : Pending)
 	{
 		if (!ChunkIsActive(Key, Env))
 		{
 			continue;
 		}
-		const FChunk& C = Chunks.FindChecked(Key);
+		StaleWetChunks.Remove(Key);
+		const FChunk* C = Chunks.Find(Key);
+		if (!C || C->NonZero == 0)
+		{
+			continue;
+		}
 		for (int32 I = 0; I < N * N; ++I)
 		{
-			if (C.Delta[I] != 0)
+			if (C->Delta[I] != 0)
 			{
 				Dirty.FindOrAdd(FIntPoint(Key.X * N + I % N, Key.Y * N + I / N));
 			}
@@ -853,6 +871,7 @@ void FSandModel::Reset()
 {
 	Chunks.Reset();
 	Dirty.Reset();
+	StaleWetChunks.Reset();
 	SeaBank = 0;
 	AccumulatedMs = 0;
 	LastWakeHighMm = 0;

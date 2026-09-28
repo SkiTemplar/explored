@@ -287,6 +287,28 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("ahora a 34°"), MaxDrop(Model, FIntPoint(0, 0), 20) <= FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
 		});
 
+		It("la arena que se seca lejos de todos los jugadores se derrumba a 34° cuando llega alguien", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D::ZeroVector, 30000), Flat);
+			FSandEnvironment Wet = Dry();
+			Wet.HighTide = 1.0;
+			TestTrue(TEXT("se asienta húmedo"), Settle(Model, Wet, Flat) >= 0);
+			TestTrue(TEXT("a más de 34°"), MaxDrop(Model, FIntPoint(0, 0), 20) > FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+			// La pleamar baja mientras el jugador está a 500 m: la arena se congela, pero seca.
+			FSandEnvironment DryFar = Dry();
+			DryFar.Focus = FVector2D(500.0, 0.0);
+			for (int32 T = 0; T < 10; ++T)
+			{
+				Model.Tick(DryFar, Flat);
+			}
+			TestTrue(TEXT("congelada mientras nadie mira"), MaxDrop(Model, FIntPoint(0, 0), 20) > FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+			const FSandResult R = Model.Tick(Dry(), Flat);
+			TestTrue(TEXT("despierta al volver"), R.ActiveColumns > 0);
+			Settle(Model, Dry(), Flat);
+			TestTrue(TEXT("ahora a 34°"), MaxDrop(Model, FIntPoint(0, 0), 20) <= FSandModel::ReposeDropMm(FSandModel::DryReposeDeg, 0.25f));
+		});
+
 		It("un agujero de paredes verticales se derrumba y el borde cae dentro", [this, Flat]()
 		{
 			FSandModel Model;
