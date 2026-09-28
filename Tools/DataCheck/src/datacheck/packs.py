@@ -3,7 +3,7 @@
 El catálogo dice qué fichero de qué pack CC0 cubre cada id de juego; ``Tools/Packs/normalize.py``
 lo aplica en Blender. Aquí se mira que los ids existan, que todo pack sea CC0 verificado y
 con sha256, que no haya duplicados y que cada regla de color apunte a una muestra real de
-``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json``)
+``Tools/Textures/paleta.json``. La fauna (``kind: fauna``, ids de ``fauna_terrestre.json`` o ``fauna.json``)
 lleva malla con esqueleto ``SK_Pack_*`` y un bloque ``rig`` con sus acciones.
 """
 
@@ -112,7 +112,10 @@ def _game_ids(data: dict) -> dict[str, set[str]]:
         for pl in data.get("plants.json", {}).get("plants", [])
         for s in pl.get("stages", [])
     }
+    # fauna.json trae también la fauna de ambiente (cangrejo, gaviota, fragata), que no está
+    # en fauna_terrestre.json pero sale en meshes_pendientes.json y se busca en los packs.
     fauna = {f.get("id") for f in data.get(FAUNA, {}).get("species", [])}
+    fauna |= {f.get("id") for f in data.get("fauna.json", {}).get("species", [])}
     return {"item": items, "pieza": pieces, "planta": stages, "fauna": fauna}
 
 
