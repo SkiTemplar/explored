@@ -143,6 +143,15 @@
 				},
 				{
 					"Source": {
+						"Text": "No llevas tantos."
+					},
+					"Translation": {
+						"Text": "No llevas tantos."
+					},
+					"Key": "Carry_InvalidCount"
+				},
+				{
+					"Source": {
 						"Text": "Ese objeto no se puede coger."
 					},
 					"Translation": {
@@ -224,6 +233,15 @@
 				},
 				{
 					"Source": {
+						"Text": "No son iguales: no se juntan."
+					},
+					"Translation": {
+						"Text": "No son iguales: no se juntan."
+					},
+					"Key": "Carry_NotStackable"
+				},
+				{
+					"Source": {
 						"Text": "Aquí no hay nada que coger."
 					},
 					"Translation": {
@@ -284,6 +302,15 @@
 						"Text": "Las angarillas son para madera y piedra."
 					},
 					"Key": "Carry_SledgeOnlyMaterial"
+				},
+				{
+					"Source": {
+						"Text": "Ahí ya hay diez."
+					},
+					"Translation": {
+						"Text": "Ahí ya hay diez."
+					},
+					"Key": "Carry_StackFull"
 				},
 				{
 					"Source": {
@@ -1352,6 +1379,15 @@
 						"Text": "Angarillas ({0} kg)"
 					},
 					"Key": "InvSledge"
+				},
+				{
+					"Source": {
+						"Text": "{0} ×{1}"
+					},
+					"Translation": {
+						"Text": "{0} ×{1}"
+					},
+					"Key": "InvStackCount"
 				},
 				{
 					"Source": {

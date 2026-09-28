@@ -159,6 +159,10 @@ namespace SaveSystemStatesDetail
 		Ar.Write(TEXT("tags"), Item.Tags);
 		Ar.Write(TEXT("liquidLiters"), Item.LiquidLiters);
 		Ar.Write(TEXT("liquidCapacityLiters"), Item.LiquidCapacityLiters);
+		// Pilas (biblia 03 §1.3). Una partida anterior no trae estas claves: Count 1 y MaxStack 1.
+		Ar.Write(TEXT("count"), Item.Count);
+		Ar.Write(TEXT("maxStack"), Item.MaxStack);
+		Ar.Write(TEXT("quality"), Item.Quality);
 	}
 
 	void ReadInventoryItem(const FSaveArchive& Ar, FInventoryItem& Out)
@@ -172,6 +176,9 @@ namespace SaveSystemStatesDetail
 		Ar.Read(TEXT("tags"), Out.Tags);
 		Ar.Read(TEXT("liquidLiters"), Out.LiquidLiters);
 		Ar.Read(TEXT("liquidCapacityLiters"), Out.LiquidCapacityLiters);
+		Ar.Read(TEXT("count"), Out.Count);
+		Ar.Read(TEXT("maxStack"), Out.MaxStack);
+		Ar.Read(TEXT("quality"), Out.Quality);
 	}
 
 	void WriteItemField(FSaveArchive& Ar, const TCHAR* Key, const FInventoryItem& Item)

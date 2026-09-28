@@ -89,6 +89,7 @@ constexpr float UE_DELTA = 0.00001f;
 #define MAX_flt FLT_MAX
 #define MAX_int32 INT32_MAX
 #define MIN_int32 INT32_MIN
+#define MAX_uint16 UINT16_MAX
 #define MAX_uint32 UINT32_MAX
 
 template <typename T>

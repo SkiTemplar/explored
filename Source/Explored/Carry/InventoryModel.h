@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/Function.h"
 
 /**
  * Inventario diegético (GDD §8.2, biblia §3.8 y §3.9) como modelo puro.
@@ -15,6 +16,10 @@
  * cinturón, bolsa estanca, mochila, angarillas y contenedores del mundo.
  * Toda operación que mueve objetos es atómica: si falla, el estado no cambia y
  * se devuelve el motivo (EInventoryFail).
+ *
+ * Pilas (biblia 03 §1.3): un registro puede llevar hasta MaxStackSize unidades
+ * iguales en un solo hueco. WeightKg y VolumeLiters son de UNA unidad; el peso y
+ * el volumen que cuentan para la mochila y el límite de carga son unidad × Count.
  */
 
 /** Tamaño a efectos de transporte. Espejo de EItemSize (Items/ItemTypes.h), mismo orden. */
@@ -68,20 +73,27 @@ enum class EInventoryFail : uint8
 	OverCarryLimit,
 	NotALiquidContainer,
 	DuplicateId,
-	CorruptState
+	CorruptState,
+	/** Las dos pilas no son del mismo objeto (definición, calidad o tamaño distintos) o no apilan. */
+	NotStackable,
+	/** La pila de destino ya tiene MaxStackSize unidades. */
+	StackFull,
+	/** Cantidad fuera de rango al partir o gastar una pila. */
+	InvalidCount
 };
 
 /** Descripción corta en español para registros y mensajes de depuración. */
 EXPLORED_API const TCHAR* LexToString(EInventoryFail Fail);
 
-/** Registro plano de un objeto transportable. */
+/** Registro plano de un objeto transportable (o de una pila de objetos iguales). */
 struct EXPLORED_API FInventoryItem
 {
 	/** Estable durante toda la partida; 0 = registro vacío. */
 	int64 InstanceId = 0;
 	FName DefinitionId;
-	/** Peso efectivo del objeto (ya con Count y piezas), sin el líquido que contenga. */
+	/** Peso efectivo de UNA unidad (ya con sus piezas), sin el líquido que contenga. */
 	float WeightKg = 0.0f;
+	/** Volumen de UNA unidad. */
 	float VolumeLiters = 0.0f;
 	EInventorySize Size = EInventorySize::Pequeno;
 	TArray<FName> Tags;
@@ -89,11 +101,26 @@ struct EXPLORED_API FInventoryItem
 	float LiquidLiters = 0.0f;
 	/** 0 = no guarda líquido. Ver FInventoryModel::LiquidCapacityFromRecipiente. */
 	float LiquidCapacityLiters = 0.0f;
+	/** Unidades de la pila (1 = objeto suelto). */
+	int32 Count = 1;
+	/** Tope de la pila para este objeto: 1 = no apila; ver FInventoryModel::ComputeMaxStack. */
+	int32 MaxStack = 1;
+	/** Calidad 1–5 (biblia §2.4): dos pilas de calidad distinta no se funden. */
+	uint8 Quality = 3;
 
 	bool IsValid() const { return InstanceId != 0 && !DefinitionId.IsNone(); }
 	bool IsTwoHanded() const { return Size == EInventorySize::DosManos; }
 	bool HasTag(FName Tag) const { return Tags.Contains(Tag); }
-	float GetTotalWeightKg() const { return WeightKg + LiquidLiters; }
+	/** Peso de toda la pila más el líquido que lleve dentro. */
+	float GetTotalWeightKg() const { return WeightKg * static_cast<float>(Count) + LiquidLiters; }
+	float GetTotalVolumeLiters() const { return VolumeLiters * static_cast<float>(Count); }
+	bool IsStackable() const { return MaxStack > 1; }
+	/** Unidades que aún caben en esta pila. */
+	int32 GetStackRoom() const { return FMath::Max(0, MaxStack - Count); }
+	/** Misma definición, calidad, tamaño, peso y volumen por unidad, y los dos apilan (sin líquido). */
+	bool CanStackWith(const FInventoryItem& Other) const;
+	/** Copia con otra cantidad (mismo id); la usa el modelo al partir y fundir pilas. */
+	FInventoryItem WithCount(int32 NewCount) const;
 
 	bool operator==(const FInventoryItem& Other) const;
 	bool operator!=(const FInventoryItem& Other) const { return !(*this == Other); }
@@ -158,6 +185,11 @@ struct EXPLORED_API FInventoryContainer
 
 	/** Comprueba tamaño, etiquetas, huecos, volumen y peso sin modificar nada. */
 	EInventoryFail CanAccept(const FInventoryItem& Item) const;
+	/**
+	 * Unidades de Item que caben en la pila IntoInstanceId de este contenedor por
+	 * tope de pila, volumen y peso (no usa un hueco nuevo). 0 si no es compatible.
+	 */
+	int32 UnitsThatFitInStack(const FInventoryItem& Item, int64 IntoInstanceId) const;
 	/** Guarda en el primer hueco libre. Devuelve false (y no cambia nada) si no cabe. */
 	bool Add(const FInventoryItem& Item, EInventoryFail& OutFail);
 	bool RemoveById(int64 InstanceId, FInventoryItem& OutItem);
@@ -193,6 +225,41 @@ struct EXPLORED_API FInventoryEquipmentSpec
 	/** La mochila trae un bolsillo impermeable (abre la bolsa estanca). */
 	bool bWaterproofPocket = false;
 	int32 BeltHooks = 0;
+};
+
+/** Resultado de guardar fundiendo con las pilas que ya hay (FInventoryModel::StowMerging). */
+struct EXPLORED_API FInventoryStowResult
+{
+	/** Unidades que han llegado al destino. */
+	int32 MovedUnits = 0;
+	/** Pilas del destino que han crecido, con cuántas unidades cada una. */
+	TArray<TPair<int64, int32>> ToppedUp;
+	/** El registro original ha ocupado un hueco nuevo en el destino (conserva su id). */
+	bool bMovedWhole = false;
+	/** El registro original ha desaparecido: todas sus unidades se fundieron en otras pilas. */
+	bool bSourceRemoved = false;
+	/**
+	 * Id nuevo si solo parte del resto cabía en un hueco nuevo (peso o volumen al
+	 * límite): esa parte es otra pila y el original sigue en el origen. 0 si no.
+	 */
+	int64 NewStackId = 0;
+	/** Unidades que siguen en el origen (la pila original, más pequeña). */
+	int32 LeftAtSource = 0;
+};
+
+/**
+ * Qué ha quitado FInventoryModel::SanitizeUnknownDefinitions de una partida
+ * guardada. Nada se pierde en silencio: lo desconocido se registra y lo conocido
+ * que se queda sin sitio (la mochila desconocida desaparece) cae al suelo.
+ */
+struct EXPLORED_API FInventoryLoadReport
+{
+	/** Objetos cuya definición ya no existe (contenido retirado en una actualización). */
+	TArray<FInventoryItem> Unknown;
+	/** Objetos conocidos que se han quedado sin sitio: la capa de UE los suelta a los pies. */
+	TArray<FInventoryItem> Orphaned;
+
+	bool IsClean() const { return Unknown.Num() == 0 && Orphaned.Num() == 0; }
 };
 
 /** Lo que queda en el suelo al soltar las angarillas (al nadar o a voluntad). */
@@ -249,7 +316,19 @@ public:
 	static constexpr int32 PocketSlots = 4;
 	static constexpr int32 BaseBeltHooks = 3;
 	static constexpr int32 PouchSlots = 2;
+	/** Unidades por hueco para lo que apila (biblia 03 §1.3). Espejo en Tools/DataCheck. */
+	static constexpr int32 MaxStackSize = 10;
 
+	/**
+	 * Tope de pila de una definición (biblia 03 §1.3): MaxStackSize para recursos
+	 * sin durabilidad ni líquido propio; 1 para herramientas y armas (durabilidad),
+	 * recipientes (líquido), objetos DosManos, objetos compuestos (cada uno lleva
+	 * sus piezas) y lo que tiene una etiqueta de NonStackableTags (equipo,
+	 * contenedores, piezas legendarias únicas).
+	 */
+	static int32 ComputeMaxStack(float MaxDurability, float LiquidCapacityLiters, EInventorySize Size, const TArray<FName>& Tags, bool bComposite);
+	/** Etiquetas que nunca apilan. Tools/DataCheck lee esta lista del .cpp. */
+	static const TArray<FName>& GetNonStackableTags();
 	FInventoryModel();
 
 	/** Ids nuevos para objetos que entran en el inventario (recogidos, fabricados...). */
@@ -275,6 +354,32 @@ public:
 
 	// ------------------------------------------------------------- traslados
 
+	/** A la mano: si una mano ya lleva una pila compatible con sitio para todo, se funde en ella (OutMergedInto = su id). */
+	bool PickUpMerging(const FInventoryItem& Item, int64& OutMergedInto, EInventoryFail& OutFail);
+
+	// ----------------------------------------------------------------- pilas
+
+	/**
+	 * Separa Count unidades de una pila (1..Count-1) y las pone en To (una mano
+	 * libre o un contenedor del cuerpo con un hueco libre) con un id nuevo.
+	 */
+	bool SplitStack(int64 InstanceId, int32 Count, EInventorySlot To, int64& OutNewId, EInventoryFail& OutFail);
+	/**
+	 * Pasa unidades de FromId a IntoId (dos pilas compatibles que lleva el jugador):
+	 * tantas como quepan por tope, volumen, peso y límite de carga. Si FromId se
+	 * queda sin unidades, desaparece. Falla (sin cambios) si no cabe ninguna.
+	 */
+	bool MergeStacks(int64 FromId, int64 IntoId, int32& OutMoved, EInventoryFail& OutFail);
+	/**
+	 * Guarda en To completando primero las pilas compatibles que ya hay (por orden
+	 * de hueco visible) y, si sobra algo, en un hueco nuevo. Si no cabe todo, se
+	 * guarda lo que quepa y el resto sigue en el origen. Falla sin cambios si no
+	 * cabe ni una unidad. Un objeto que no apila se comporta como Move.
+	 */
+	bool StowMerging(int64 InstanceId, EInventorySlot To, FInventoryStowResult& OutResult, EInventoryFail& OutFail);
+	/** Gasta Count unidades de una pila (comer, echar al fuego, construir); con todas, la quita. */
+	bool RemoveUnits(int64 InstanceId, int32 Count, EInventoryFail& OutFail);
+
 	/** Dónde está un objeto del jugador (None si no lo lleva). */
 	EInventorySlot FindItem(int64 InstanceId) const;
 	const FInventoryItem* FindItemById(int64 InstanceId) const;
@@ -299,6 +404,8 @@ public:
 	EInventorySlot SuggestStowSlot(const FInventoryItem& Item) const;
 	/** Guarda lo de una mano donde propone SuggestStowSlot. */
 	bool AutoStowFromHand(EInventorySlot Hand, EInventorySlot& OutWhere, EInventoryFail& OutFail);
+	/** Como AutoStowFromHand, pero fundiendo con las pilas del destino (StowMerging). */
+	bool AutoStowMergingFromHand(EInventorySlot Hand, EInventorySlot& OutWhere, FInventoryStowResult& OutResult, EInventoryFail& OutFail);
 
 	// ----------------------------------------------------------------- equipo
 
@@ -391,8 +498,15 @@ public:
 	const FInventoryState& GetState() const { return State; }
 	/** Carga un estado guardado; si no es coherente, no cambia nada y devuelve false. */
 	bool LoadState(const FInventoryState& InState, EInventoryFail& OutFail);
-	/** Comprueba ids únicos, manos, capacidades y equipo. */
+	/** Comprueba ids únicos, manos, capacidades, equipo y pilas (1..MaxStack unidades). */
 	static bool ValidateState(const FInventoryState& InState, EInventoryFail& OutFail);
+	/**
+	 * Quita de una partida guardada los objetos cuya definición ya no existe
+	 * (IsKnown devuelve false). Si lo desconocido era equipo (mochila, cinturón,
+	 * angarillas), lo que llevaba y ya no cabe pasa a OutReport.Orphaned. Llamar
+	 * antes de LoadState. Devuelve true si ha cambiado algo.
+	 */
+	static bool SanitizeUnknownDefinitions(FInventoryState& InOut, TFunctionRef<bool(FName)> IsKnown, FInventoryLoadReport& OutReport);
 
 private:
 	/** Recalcula las capacidades del cinturón, la bolsa, la mochila y las angarillas según el equipo. */
@@ -409,6 +523,10 @@ private:
 	/** Quitar este objeto de donde está dejaría la bolsa estanca sin soporte con cosas dentro. */
 	bool WouldOrphanPouch(int64 InstanceId, EInventorySlot From, EInventorySlot To) const;
 	FInventoryItem* FindMutableItemById(int64 InstanceId);
+	/** Escribe el registro en su sitio (y en las dos manos si es el DosManos). */
+	void CommitItem(const FInventoryItem& Updated);
+	/** Unidades de Item que caben en la pila IntoId del jugador, con el límite de carga del cuerpo. */
+	int32 UnitsThatFitOnPlayerStack(const FInventoryItem& Item, int64 IntoId, bool bAlreadyOnBody) const;
 
 	FInventoryState State;
 };

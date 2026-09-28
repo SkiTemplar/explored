@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
-		"cpp": 303,
+		"total": 641,
+		"cpp": 307,
 		"datos": 334,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
-		"revisar": 71
+		"revisar": 74
 	},
 	"entries": [
 		{
@@ -59,7 +59,7 @@
 			"en": "It's already there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:111"
+				"Source/Explored/Carry/CarryComponent.cpp:117"
 			]
 		},
 		{
@@ -69,7 +69,7 @@
 			"en": "It won't fit in the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:151"
+				"Source/Explored/Carry/CarryComponent.cpp:157"
 			]
 		},
 		{
@@ -79,7 +79,7 @@
 			"en": "Too heavy for the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:145"
+				"Source/Explored/Carry/CarryComponent.cpp:151"
 			]
 		},
 		{
@@ -89,7 +89,7 @@
 			"en": "No free loops left on your belt.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:139"
+				"Source/Explored/Carry/CarryComponent.cpp:145"
 			]
 		},
 		{
@@ -99,7 +99,7 @@
 			"en": "Your belt only holds tools and containers.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:125"
+				"Source/Explored/Carry/CarryComponent.cpp:131"
 			]
 		},
 		{
@@ -109,7 +109,7 @@
 			"en": "No room left.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:141"
+				"Source/Explored/Carry/CarryComponent.cpp:147"
 			]
 		},
 		{
@@ -119,7 +119,7 @@
 			"en": "Empty it first.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:159"
+				"Source/Explored/Carry/CarryComponent.cpp:165"
 			]
 		},
 		{
@@ -129,7 +129,7 @@
 			"en": "You can't do that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:162"
+				"Source/Explored/Carry/CarryComponent.cpp:171"
 			]
 		},
 		{
@@ -139,10 +139,12 @@
 			"en": "That hand is empty.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:277",
-				"Source/Explored/Carry/CarryComponent.cpp:306",
-				"Source/Explored/Carry/CarryComponent.cpp:428",
-				"Source/Explored/Carry/CarryComponent.cpp:589"
+				"Source/Explored/Carry/CarryComponent.cpp:312",
+				"Source/Explored/Carry/CarryComponent.cpp:341",
+				"Source/Explored/Carry/CarryComponent.cpp:467",
+				"Source/Explored/Carry/CarryComponent.cpp:489",
+				"Source/Explored/Carry/CarryComponent.cpp:527",
+				"Source/Explored/Carry/CarryComponent.cpp:688"
 			]
 		},
 		{
@@ -152,7 +154,7 @@
 			"en": "That hand is already full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:112"
+				"Source/Explored/Carry/CarryComponent.cpp:118"
 			]
 		},
 		{
@@ -162,7 +164,17 @@
 			"en": "Both your hands are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:114"
+				"Source/Explored/Carry/CarryComponent.cpp:120"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_InvalidCount",
+			"es": "No llevas tantos.",
+			"en": "Not that many.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:170"
 			]
 		},
 		{
@@ -172,8 +184,8 @@
 			"en": "You can't pick that up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:109",
-				"Source/Explored/Carry/CarryComponent.cpp:224"
+				"Source/Explored/Carry/CarryComponent.cpp:115",
+				"Source/Explored/Carry/CarryComponent.cpp:254"
 			]
 		},
 		{
@@ -183,9 +195,9 @@
 			"en": "Nothing there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:110",
-				"Source/Explored/Carry/CarryComponent.cpp:327",
-				"Source/Explored/Carry/CarryComponent.cpp:614"
+				"Source/Explored/Carry/CarryComponent.cpp:116",
+				"Source/Explored/Carry/CarryComponent.cpp:367",
+				"Source/Explored/Carry/CarryComponent.cpp:714"
 			]
 		},
 		{
@@ -195,7 +207,7 @@
 			"en": "You need both hands free for this.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:113"
+				"Source/Explored/Carry/CarryComponent.cpp:119"
 			]
 		},
 		{
@@ -205,7 +217,7 @@
 			"en": "You have no backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:154"
+				"Source/Explored/Carry/CarryComponent.cpp:160"
 			]
 		},
 		{
@@ -215,7 +227,7 @@
 			"en": "You have nowhere to keep it dry.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:155"
+				"Source/Explored/Carry/CarryComponent.cpp:161"
 			]
 		},
 		{
@@ -225,7 +237,7 @@
 			"en": "It won't fit.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:153"
+				"Source/Explored/Carry/CarryComponent.cpp:159"
 			]
 		},
 		{
@@ -235,8 +247,8 @@
 			"en": "You have no travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:156",
-				"Source/Explored/Carry/CarryComponent.cpp:505"
+				"Source/Explored/Carry/CarryComponent.cpp:162",
+				"Source/Explored/Carry/CarryComponent.cpp:604"
 			]
 		},
 		{
@@ -246,7 +258,7 @@
 			"en": "That can't hold water.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:161"
+				"Source/Explored/Carry/CarryComponent.cpp:167"
 			]
 		},
 		{
@@ -256,7 +268,17 @@
 			"en": "You can't wear that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:158"
+				"Source/Explored/Carry/CarryComponent.cpp:164"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_NotStackable",
+			"es": "No son iguales: no se juntan.",
+			"en": "Not the same: they won't stack.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:168"
 			]
 		},
 		{
@@ -266,7 +288,7 @@
 			"en": "There's nothing here to pick up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:218"
+				"Source/Explored/Carry/CarryComponent.cpp:248"
 			]
 		},
 		{
@@ -276,7 +298,7 @@
 			"en": "You can't carry any more weight.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:160"
+				"Source/Explored/Carry/CarryComponent.cpp:166"
 			]
 		},
 		{
@@ -286,7 +308,7 @@
 			"en": "Only small things fit in your pockets.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:119"
+				"Source/Explored/Carry/CarryComponent.cpp:125"
 			]
 		},
 		{
@@ -296,7 +318,7 @@
 			"en": "Your pockets are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:135"
+				"Source/Explored/Carry/CarryComponent.cpp:141"
 			]
 		},
 		{
@@ -306,7 +328,7 @@
 			"en": "It's a single object: it can't combine with itself.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:115"
+				"Source/Explored/Carry/CarryComponent.cpp:121"
 			]
 		},
 		{
@@ -316,7 +338,7 @@
 			"en": "You're already dragging a travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:157"
+				"Source/Explored/Carry/CarryComponent.cpp:163"
 			]
 		},
 		{
@@ -326,7 +348,17 @@
 			"en": "The travois is for wood and stone.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:129"
+				"Source/Explored/Carry/CarryComponent.cpp:135"
+			]
+		},
+		{
+			"namespace": "Explored",
+			"key": "Carry_StackFull",
+			"es": "Ahí ya hay diez.",
+			"en": "Already ten there.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Carry/CarryComponent.cpp:169"
 			]
 		},
 		{
@@ -336,7 +368,7 @@
 			"en": "It's too big to store there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:121"
+				"Source/Explored/Carry/CarryComponent.cpp:127"
 			]
 		},
 		{
@@ -346,7 +378,7 @@
 			"en": "It's too heavy.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:147"
+				"Source/Explored/Carry/CarryComponent.cpp:153"
 			]
 		},
 		{
@@ -356,7 +388,7 @@
 			"en": "That takes both hands; it can't be stowed.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:314"
+				"Source/Explored/Carry/CarryComponent.cpp:353"
 			]
 		},
 		{
@@ -366,7 +398,7 @@
 			"en": "That doesn't go there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:131"
+				"Source/Explored/Carry/CarryComponent.cpp:137"
 			]
 		},
 		{
@@ -1407,7 +1439,7 @@
 			"en": "In both hands: {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:173"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:177"
 			]
 		},
 		{
@@ -1417,7 +1449,7 @@
 			"en": "empty",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:168"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:172"
 			]
 		},
 		{
@@ -1427,7 +1459,7 @@
 			"en": "You're weighed down: you tire sooner and make more noise.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:227"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:231"
 			]
 		},
 		{
@@ -1437,7 +1469,7 @@
 			"en": "Left hand: {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:180"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:184"
 			]
 		},
 		{
@@ -1447,7 +1479,7 @@
 			"en": "nothing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:201"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:205"
 			]
 		},
 		{
@@ -1457,7 +1489,7 @@
 			"en": "You can't carry any more.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:228"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:232"
 			]
 		},
 		{
@@ -1487,7 +1519,7 @@
 			"en": "Right hand: {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:185"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:189"
 			]
 		},
 		{
@@ -1502,12 +1534,22 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "InvStackCount",
+			"es": "{0} ×{1}",
+			"en": "{0} ×{1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:152"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "InvTitle",
 			"es": "Lo que llevas",
 			"en": "What you carry",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:164"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:168"
 			]
 		},
 		{
@@ -1517,7 +1559,7 @@
 			"en": "Load: {0} kg of {1} kg comfortable",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:219"
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:223"
 			]
 		},
 		{

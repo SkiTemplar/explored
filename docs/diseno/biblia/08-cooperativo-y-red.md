@@ -296,22 +296,25 @@ resolver «llevo un pico» a la vista), replicado a todos como 2 × (`uint16` id
 definición + `uint8` calidad) = 6 B.
 
 Estructura replicada del inventario propio: `FFastArraySerializer` de entradas de
-**13 bytes**:
+**12 bytes** (la primera versión de esta sección decía 13 por un error de suma):
 
 ```
-uint8  Slot           // EInventorySlot
+uint8  Slot           // EInventorySlot (1–7) o equipo puesto (8–10: mochila, cinturón, angarillas)
 uint8  SlotIndex
 uint16 DefinitionId   // índice en la tabla de items.json, no FName
 uint32 InstanceId     // el id estable que ya usa FInventoryModel
-uint8  Quality01x255
+uint8  Quality01x255  // calidad 1–5 → 0, 64, 128, 191, 255
 uint8  Durability01x255
-uint8  Count           // apilado (biblia 03 §1.3, tope 10)
-uint8  Flags           // mojado, encendido, etc.
+uint8  Count           // apilado (biblia 03 §1.3, tope 10); en recipientes, centilitros
+uint8  Flags           // DosManos, líquido en Count, mojado, encendido
 ```
 
-Coste: fabricar mueve 2–3 huecos → **39 B por operación**; coalescido a 10 Hz da un
-techo de **3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
-inventario completo (24 huecos) son 312 B: lo que se manda al unirse.
+Coste: fabricar mueve 2–3 huecos → **36 B por operación** (un id que desaparece, 4 B);
+coalescido a 10 Hz da un techo de **≈ 3 kbps** para el dueño mientras fabrica a
+máquina, y **0** en reposo. Un inventario completo (24 huecos) son 288 B: lo que se
+manda al unirse. Un objeto `DosManos` es una sola entrada en `HandLeft` con su bit.
+Implementado como modelo puro en `Carry/InventoryNetModel.{h,cpp}` (foto, diferencia,
+bytes y coalescencia), con su spec de host; falta el `USTRUCT` que lo envuelve.
 
 **Piezas y nombre generado** de un objeto fabricado (que `UCarryComponent` guarda
 aparte de `FInventoryModel`) no van en el array: se piden por RPC fiable la primera vez
@@ -330,9 +333,19 @@ devuelve el motivo», `InventoryModel.h`). Quien pierde la carrera recibe
 sacado de ordenar los ids de `Content/Data/items.json`; lo mismo para plantillas,
 piezas de construcción, plantas, barcos y logros. Para que las dos puntas coincidan
 siempre, el saludo de conexión lleva un `FExploredContentHash`: FNV-1a de 64 bits de
-todos los `Content/Data/*.json` concatenados en orden de nombre. Si no coincide, el
-servidor rechaza la conexión con el texto de §6.5. Es la única defensa realista contra
-un cliente con datos distintos, y cuesta 8 bytes.
+todos los `Content/Data/*.json` en orden de nombre. Si no coincide, el servidor rechaza
+la conexión con el texto de §6.5. Es la única defensa realista contra un cliente con
+datos distintos, y cuesta 8 bytes.
+
+*Versionado (decisión de implementación, `Items/ContentIdTableModel.h`):* el orden es
+por bytes de los ids en ASCII minúsculo (`[a-z0-9_]`, lo exige `Tools/DataCheck`), así
+que la tabla sale igual en cualquier máquina. Un id nuevo **sí** desplaza a los que van
+detrás en su fichero, y no pasa nada: el `uint16` solo vive dentro de una sesión (el
+guardado escribe siempre el id de texto) y el hash impide que hablen dos versiones de
+los datos. Cada fichero entra en el hash como nombre, un byte 0, su longitud en 8 bytes
+little-endian y su contenido, para que mover texto de un fichero al siguiente también
+cambie el hash; `Tools/DataCheck` calcula el mismo valor y los dos lados tienen un
+valor de referencia común en sus tests.
 
 ### 2.5 Barcos y física
 
