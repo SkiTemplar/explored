@@ -1,7 +1,10 @@
 #include "Misc/AutomationTest.h"
 
+#include <limits>
+
 #include "Core/ExploredRandom.h"
 #include "WorldGen/TerrainErosion.h"
+#include "WorldGen/TerrainMetricsModel.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -180,6 +183,136 @@ void FTerrainErosionSpec::Define()
 			const float VarianceAfter = Variance(SampleRing(Grid, 14.0f, 32));
 
 			TestTrue(TEXT("La erosión rompe la simetría del cono en canales"), VarianceAfter > VarianceBefore * 3.0f);
+		});
+
+		It("talla cauces sin dirección preferente de la rejilla ni pozos de gotas", [this]()
+		{
+			FErosionParams Params;
+			Params.Seed = 5;
+			Params.CellSizeMeters = 4.0f;
+			Params.DropletCount = 30000;
+			Params.ErosionRadius = 3;
+			Params.ThermalIterations = 30;
+			Params.TalusAngleTangent = 0.8f;
+
+			FErosionHeightGrid Grid = RoughConeGrid(121, 90.0f, 21);
+			const FErosionHeightGrid Before = Grid;
+			FTerrainErosionModel::Erode(Grid, Params);
+
+			// Cauces: celdas rebajadas, dentro del disco (las esquinas del cuadrado sesgan a 45°).
+			TArray<uint8> Carved;
+			Carved.Init(0, Grid.Heights.Num());
+			for (int32 Y = 0; Y < Grid.Height; ++Y)
+			{
+				for (int32 X = 0; X < Grid.Width; ++X)
+				{
+					const int32 I = Y * Grid.Width + X;
+					const bool bInDisc = FMath::Square(X - 60) + FMath::Square(Y - 60) < 50 * 50;
+					Carved[I] = bInDisc && Grid.Heights[I] < Before.Heights[I] - 0.05f ? 1 : 0;
+				}
+			}
+			const FOrientationStats Stats = FTerrainMetricsModel::GradientOrientation(Grid.Heights, Grid.Width, Grid.Height, Carved, 0.05f);
+			TestTrue(TEXT("hay cauces"), Stats.SampleCount > 1000);
+			TestTrue(*FString::Printf(TEXT("ejes %.2f"), Stats.AxisExcess), Stats.AxisExcess > 0.75f && Stats.AxisExcess < 1.3f);
+			TestTrue(*FString::Printf(TEXT("diagonales %.2f"), Stats.DiagonalExcess), Stats.DiagonalExcess > 0.75f && Stats.DiagonalExcess < 1.3f);
+			const int32 Pits = FTerrainMetricsModel::CountPits(Grid.Heights, Grid.Width, Grid.Height, 1.0f, 0.3f);
+			TestTrue(*FString::Printf(TEXT("pozos %d"), Pits), Pits <= 3);
+		});
+
+		It("no deja NaN ni infinitos aunque la rejilla o los parámetros los traigan", [this]()
+		{
+			FErosionHeightGrid Grid = RoughConeGrid(33, 40.0f, 2);
+			Grid.At(10, 10) = std::numeric_limits<float>::quiet_NaN();
+			Grid.At(20, 5) = std::numeric_limits<float>::infinity();
+			FErosionParams Params;
+			Params.DropletCount = 2000;
+			Params.CellSizeMeters = 4.0f;
+			Params.Inertia = std::numeric_limits<float>::quiet_NaN();
+			Params.TalusAngleTangent = -std::numeric_limits<float>::infinity();
+			FTerrainErosionModel::Erode(Grid, Params);
+			int32 NonFinite = 0;
+			for (float H : Grid.Heights)
+			{
+				NonFinite += FMath::IsFinite(H) ? 0 : 1;
+			}
+			TestEqual(TEXT("alturas no finitas"), NonFinite, 0);
+		});
+
+		It("acota el trabajo aunque se pidan cantidades absurdas", [this]()
+		{
+			FErosionParams Params;
+			Params.DropletCount = TNumericLimits<int32>::Max();
+			Params.MaxDropletLifetime = TNumericLimits<int32>::Max();
+			Params.ThermalIterations = TNumericLimits<int32>::Max();
+			Params.ErosionRadius = 1000;
+			Params.CellSizeMeters = 0.0f;
+			const FErosionParams Safe = FTerrainErosionModel::SanitizeParams(Params);
+			TestTrue(TEXT("gotas"), Safe.DropletCount <= FTerrainErosionModel::MaxDroplets);
+			TestTrue(TEXT("vida"), Safe.MaxDropletLifetime <= FTerrainErosionModel::MaxLifetime);
+			TestTrue(TEXT("pasadas térmicas"), Safe.ThermalIterations <= FTerrainErosionModel::MaxThermalIterations);
+			TestTrue(TEXT("pincel"), Safe.ErosionRadius <= FTerrainErosionModel::MaxBrushRadius);
+			TestTrue(TEXT("celda"), Safe.CellSizeMeters > 0.0f);
+		});
+
+		It("las gotas se paran al llegar al mar: una laguna bajo el nivel del mar no se ciega", [this]()
+		{
+			FErosionParams Params;
+			Params.Seed = 8;
+			Params.CellSizeMeters = 4.0f;
+			Params.DropletCount = 61 * 61 * 2 / 5; // la misma densidad que las islas (FIslandReliefModel)
+			Params.ThermalIterations = 0;
+			Params.SeaLevel = 0.0f;
+
+			// Cubeta: llano a +4 m que baja en rampa hasta una laguna de fondo -3 m en el centro.
+			FErosionHeightGrid Grid;
+			Grid.Init(61, 61, 0.0f);
+			for (int32 Y = 0; Y < 61; ++Y)
+			{
+				for (int32 X = 0; X < 61; ++X)
+				{
+					const float R = FMath::Sqrt(static_cast<float>(FMath::Square(X - 30) + FMath::Square(Y - 30)));
+					const float Rough = (ExploredHash::ToUnitFloat(ExploredHash::Hash2D(6, X, Y)) - 0.5f) * 0.3f;
+					Grid.At(X, Y) = -3.0f + 7.0f * FMath::SmoothStep(5.0f, 14.0f, R) + 0.02f * R * R * 0.1f + Rough;
+				}
+			}
+			FErosionHeightGrid NoSea = Grid;
+			FTerrainErosionModel::Erode(Grid, Params);
+			Params.SeaLevel = -1.0e9f;
+			FTerrainErosionModel::Erode(NoSea, Params);
+			TestTrue(*FString::Printf(TEXT("sin mar, la cubeta se rellena (%.2f m)"), NoSea.At(30, 30)), NoSea.At(30, 30) > Grid.At(30, 30));
+			TestTrue(*FString::Printf(TEXT("la laguna sigue honda (%.2f m)"), Grid.At(30, 30)), Grid.At(30, 30) < -2.5f);
+		});
+
+		It("no rebaja las celdas duras: una torre caliza conserva sus paredes", [this]()
+		{
+			FErosionParams Params;
+			Params.Seed = 3;
+			Params.CellSizeMeters = 4.0f;
+			Params.DropletCount = 5000;
+			Params.ThermalIterations = 80;
+			Params.TalusAngleTangent = 0.6f;
+
+			FErosionHeightGrid Grid = RoughConeGrid(41, 20.0f, 4);
+			Grid.Erodibility.Init(1.0f, Grid.Heights.Num());
+			for (int32 Y = 16; Y <= 24; ++Y)
+			{
+				for (int32 X = 16; X <= 24; ++X)
+				{
+					Grid.At(X, Y) = 150.0f;
+					Grid.Erodibility[Y * Grid.Width + X] = 0.0f;
+				}
+			}
+			FTerrainErosionModel::Erode(Grid, Params);
+			float Lowest = 1.0e9f;
+			for (int32 Y = 16; Y <= 24; ++Y)
+			{
+				for (int32 X = 16; X <= 24; ++X)
+				{
+					Lowest = FMath::Min(Lowest, Grid.At(X, Y));
+				}
+			}
+			TestTrue(*FString::Printf(TEXT("la torre no baja (%.2f)"), Lowest), Lowest >= 150.0f - 0.01f);
+			TestTrue(TEXT("pared casi vertical"), Grid.At(20, 24) - Grid.At(20, 26) > 100.0f);
 		});
 	});
 }

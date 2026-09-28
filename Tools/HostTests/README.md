@@ -44,3 +44,19 @@ Requisitos: `cmake` ≥ 3.20 y un compilador C++20 (g++ 13 o clang 18). Funciona
 
 Ya ha encontrado un fallo real: `WorldGenSpec` tomaba un puntero al interior de un
 `FArchipelagoLayout` temporal (uso tras liberar; en el editor pasaba por suerte).
+
+## Diagnóstico del terreno
+
+`tools/TerrainDiagnostics.cpp` es un programa aparte (no entra en la suite): muestrea el
+archipiélago, imprime las métricas de realismo de `FTerrainSurvey` (bultos sueltos, cota
+dominante y picos del histograma del fondo, saltos, varianza fina, orientación de cauces,
+pozos) y escribe el relieve sombreado y la pendiente en PPM. Se compila con el mismo
+include path que la suite y los `.cpp` de `pure_sources.txt`; uso:
+
+```bash
+terrain_diag /tmp/terreno 20260926 6        # mundo entero, paso de 6 m
+terrain_diag /tmp/mesa 20260926 2 2         # zoom a la isla 2 del layout, paso de 2 m
+```
+
+Las imágenes y volcados no se suben (ver `.gitignore`); las métricas que importan ya son
+asserts en `TerrainRealismSpec`.

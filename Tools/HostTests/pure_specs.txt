@@ -65,3 +65,9 @@ Tests/MineHazardModelSpec.cpp
 Tests/ShovelPathModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
 Tests/CombatModelSpec.cpp
+Tests/TerrainMetricsModelSpec.cpp
+Tests/DrainageModelSpec.cpp
+Tests/SeafloorModelSpec.cpp
+Tests/KarstTowerModelSpec.cpp
+Tests/IslandReliefModelSpec.cpp
+Tests/TerrainRealismSpec.cpp
