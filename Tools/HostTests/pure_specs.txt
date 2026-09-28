@@ -26,6 +26,7 @@ Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
+Tests/NetQuantizeSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
 Tests/RuinsSpec.cpp
@@ -44,6 +45,7 @@ Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
+Tests/WorldClockNetModelSpec.cpp
 Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp

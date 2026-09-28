@@ -39,6 +39,7 @@ Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
+Sky/WorldClockNetModel.cpp
 Survival/BodyModel.cpp
 Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
