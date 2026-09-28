@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "note": "Mallas por especie de FSeabedScatterModel (Source/Explored/WorldGen/SeabedScatterModel.h), resueltas por ResolveSeabedMeshes en Source/ExploredEditor/WorldGenCommandlet.cpp. A propósito FUERA de Content/Data/packs_catalogo.json: Tools/DataCheck/src/datacheck/packs.py exige un gameId 1:1 de items.json/building_pieces.json/plants.json/fauna_terrestre.json (KINDS = item/pieza/planta/fauna) y este fichero no lo tiene, es un pool de variantes de decorado por especie de scatter, no un objeto de inventario. Por eso tampoco lo valida DataCheck; la trazabilidad de licencia vive en Tools/Packs/packs.json (CC0) y Tools/Packs/packs_cc_by.json (CC-BY con crédito, ver license.attribution de cada pack).",
+  "pipeline": "necesita Unreal: 1) uv run python Tools/Packs/fetch_packs.py <ids CC0> && uv run python Tools/Packs/fetch_packs.py --manifest packs_cc_by.json <ids CC-BY>; 2) blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote lote6-fondomarino --tiles (normalize.py no tiene todavía una entrada para 'lote6-fondomarino': hay que añadirle las reglas de recolor de este fichero, ver Tools/Packs/README.md); 3) importar Art/Export/Packs/lote6-fondomarino/*.fbx en /Game/Packs/lote6-fondomarino/ con M_LowPoly; 4) confirmar que node->exportedMesh de abajo coincide con lo exportado (los 8 nodos de minipoly_coral_reef_set son variantes sin clasificar visualmente: repartirlos entre CoralCerebro/CoralCuernoCiervo/CoralMesa según su forma real al verlos en Blender, no por este fichero).",
+  "species": [
+    {
+      "species": "CoralCerebro",
+      "category": "ReefCoral",
+      "recolor": "coral.cerebro",
+      "variants": [
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef", "exportedMesh": "SM_Pack_CoralCerebroA" },
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.001", "exportedMesh": "SM_Pack_CoralCerebroB" }
+      ]
+    },
+    {
+      "species": "CoralCuernoCiervo",
+      "category": "ReefCoral",
+      "recolor": "coral.cuerno_ciervo",
+      "variants": [
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.002", "exportedMesh": "SM_Pack_CoralCuernoCiervoA" },
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.003", "exportedMesh": "SM_Pack_CoralCuernoCiervoB" },
+        { "pack": "polybygoogle_coral_staghorn", "exportedMesh": "SM_Pack_CoralCuernoCiervoC" }
+      ]
+    },
+    {
+      "species": "CoralMesa",
+      "category": "ReefCoral",
+      "recolor": "coral.mesa",
+      "variants": [
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.004", "exportedMesh": "SM_Pack_CoralMesaA" },
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.005", "exportedMesh": "SM_Pack_CoralMesaB" },
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.006", "exportedMesh": "SM_Pack_CoralMesaC" },
+        { "pack": "minipoly_coral_reef_set", "node": "A_CoralReef.007", "exportedMesh": "SM_Pack_CoralMesaD" },
+        { "pack": "devicelab_orange_coral", "exportedMesh": "SM_Pack_CoralMesaE" }
+      ]
+    },
+    {
+      "species": "CoralAbanico",
+      "category": "ReefEdge",
+      "recolor": "coral.abanico",
+      "variants": [
+        { "pack": "godappeasers_coral_fan", "exportedMesh": "SM_Pack_CoralAbanico" }
+      ]
+    },
+    {
+      "species": "EsponjaBarril",
+      "category": "ReefEdge",
+      "recolor": "coral.esponja",
+      "variants": [
+        { "pack": "polybygoogle_sponge", "exportedMesh": "SM_Pack_EsponjaBarril" }
+      ]
+    },
+    {
+      "species": "Anemona",
+      "category": "ReefEdge",
+      "recolor": "coral.anemona",
+      "variants": [
+        { "pack": "polybygoogle_anemone", "exportedMesh": "SM_Pack_Anemona" }
+      ]
+    },
+    {
+      "species": "PraderaMarina",
+      "category": "SandMeadow",
+      "recolor": "coral.pradera",
+      "variants": [
+        { "pack": "laneyxrlabs_seaweed", "exportedMesh": "SM_Pack_PraderaMarina" }
+      ]
+    },
+    {
+      "species": "ConchaGrande",
+      "category": "SandShell",
+      "recolor": "recurso.concha",
+      "variants": [
+        { "pack": "polybygoogle_clam", "exportedMesh": "SM_Pack_ConchaGrande" }
+      ]
+    },
+    {
+      "species": "ConchaPequena",
+      "category": "SandShell",
+      "recolor": "recurso.caracola",
+      "variants": [
+        { "pack": "dook_seashell", "exportedMesh": "SM_Pack_ConchaPequena" }
+      ]
+    },
+    {
+      "species": "AlgaKelp",
+      "category": "RockKelp",
+      "recolor": "coral.kelp",
+      "variants": [
+        { "pack": "msmithjonn_kelp", "exportedMesh": "SM_Pack_AlgaKelp" }
+      ]
+    },
+    {
+      "species": "ErizoMar",
+      "category": "RockUrchin",
+      "recolor": "recurso.erizo",
+      "variants": [
+        { "pack": "polybygoogle_seaurchin", "exportedMesh": "SM_Pack_ErizoMar" }
+      ]
+    },
+    {
+      "species": "EstrellaMar",
+      "category": "RockUrchin",
+      "recolor": "coral.estrella",
+      "variants": [
+        { "pack": "polybygoogle_starfish", "exportedMesh": "SM_Pack_EstrellaMar" }
+      ]
+    },
+    {
+      "species": "RocaSubmarina",
+      "category": "RockFormation",
+      "recolor": "piedra.basalto",
+      "variants": [
+        { "pack": "quaternius_underwater_rock", "exportedMesh": "SM_Pack_RocaSubmarinaA" },
+        { "pack": "quaternius_pebble_square", "exportedMesh": "SM_Pack_RocaSubmarinaB" }
+      ]
+    }
+  ]
+}

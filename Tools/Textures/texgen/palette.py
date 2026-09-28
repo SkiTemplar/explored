@@ -281,6 +281,23 @@ FAMILIES: tuple[Family, ...] = (
         ("cresta", "#c93a33", "Cresta y barbilla de la gallina (acento)."),
         ("pico", "#dcae45", "Pico y patas de ave."),
     )),
+    # Fondo marino (lote6-fondomarino, packs.json/packs_cc_by.json): coral vivo y flora
+    # submarina de FSeabedScatterModel. Identidad, como recurso/fauna (un coral cerebro se ve
+    # igual en cualquier isla con arrecife: no hay grade por isla para el fondo marino
+    # todavía). Acento: un arrecife apagado al nivel del CHROMA_CAP de entorno (0.14) se lee
+    # muerto; el director pidió «saturado pero coherente», así que se deja saltar como la
+    # comida y los recursos, no como el terreno.
+    Family("coral", 14, False, True, "Coral vivo y flora del fondo marino (arrecife, algas, praderas).", (
+        ("cerebro", "#c65a86", "Coral cerebro, surcos densos (arrecife somero)."),
+        ("cuerno_ciervo", "#e2703a", "Coral cuerno de ciervo, ramas finas (arrecife somero)."),
+        ("abanico", "#8f5fb8", "Coral en abanico, borde del arrecife."),
+        ("mesa", "#f2916a", "Coral mesa/plato (arrecife somero)."),
+        ("esponja", "#d9a441", "Esponja de barril, borde del arrecife."),
+        ("anemona", "#4fb08a", "Anémona, tentáculos vivos (borde del arrecife)."),
+        ("pradera", "#3f8f6b", "Pradera marina, hoja de posidonia (zona de arena)."),
+        ("kelp", "#5c6b3f", "Alga kelp, fronda larga (zona de roca)."),
+        ("estrella", "#d9622f", "Estrella de mar (zona de roca; recurso.erizo y recurso.concha cubren erizo y conchas)."),
+    )),
 )
 
 # Terreno: objetivos globales (Oklab L, C, h°) a los que se armonizan las texturas del

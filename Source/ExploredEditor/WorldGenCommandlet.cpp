@@ -38,6 +38,7 @@
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
 #include "WorldGen/ExploredVegetationCell.h"
+#include "WorldGen/SeabedScatterModel.h"
 #include "WorldGen/VegetationScatter.h"
 
 namespace
@@ -1099,7 +1100,243 @@ namespace
 			SpawnedFormations, SpawnedBeachDebris, Cells.Num(), FPlatformTime::Seconds() - Start);
 	}
 
-	int32 ComposeMap(const FTerrainDensity& Density, const TArray<FTerrainPiece>& Terrain, bool bVegetation, bool bFormations)
+	// ------------------------------------------------------------------------------------
+	// Fondo marino (corales, borde del arrecife, praderas y conchas, algas y erizos, roca
+	// submarina). Bloque aislado a propósito, como el de formaciones: único punto de
+	// entrada SpawnSeabed(...), llamado una vez desde ComposeMap. No toca VegetationScatter.
+	// ------------------------------------------------------------------------------------
+
+	/**
+	 * Adaptador temporal a FSeabedScatterModel::FSampleColumn: la rama worldgen/realismo-terreno
+	 * todavía no expone la zona arena/arrecife/roca real (ver Source/Explored/WorldGen/SeabedScatterModel.h),
+	 * así que esta heurística (pendiente por profundidad para arrecife, pendiente del terreno
+	 * para roca) basta para hornear algo hoy. Sustituir el cuerpo de esta función por la
+	 * consulta real de esa rama es el único cambio que hará falta: FSeabedScatterModel no
+	 * depende de esto.
+	 */
+	FSeabedColumn SampleSeabedColumn(const FTerrainDensity& Density, float X, float Y)
+	{
+		const FTerrainColumn Sample = Density.SampleColumn(X, Y);
+		FSeabedColumn Out;
+		Out.DepthM = -Sample.Height;
+		if (Out.DepthM <= 0.0f)
+		{
+			Out.Zone = ESeabedZone::Sand;
+			Out.SlopeDeg = 0.0f;
+			return Out;
+		}
+		const FVector Normal = Density.Normal(FVector(X, Y, Sample.Height), 0.5f);
+		Out.SlopeDeg = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(Normal.Z, -1.0f, 1.0f)));
+		if (Out.SlopeDeg > 35.0f)
+		{
+			Out.Zone = ESeabedZone::Rock;
+		}
+		else if (Out.DepthM <= 6.0f)
+		{
+			Out.Zone = ESeabedZone::Reef;
+		}
+		else
+		{
+			Out.Zone = ESeabedZone::Sand;
+		}
+		return Out;
+	}
+
+	/**
+	 * Mallas por especie desde Content/Data/seabed_scatter.json (fuera de packs_catalogo.json
+	 * a propósito: ver la nota de ese fichero). No comprueba que el asset exista todavía
+	 * (normalize.py e importarlo en Unreal es trabajo de otra sesión, ver su campo
+	 * "pipeline"): igual que ResolveBeachDebrisMeshes, si falta se resuelve a nullptr al
+	 * hornear y esa instancia se descarta sin fallar.
+	 */
+	void ResolveSeabedMeshes(TArray<FSeabedScatterRule>& Rules)
+	{
+		const FString Path = FPaths::ProjectDir() / TEXT("Content/Data/seabed_scatter.json");
+		FString Text;
+		if (!FFileHelper::LoadFileToString(Text, *Path))
+		{
+			return;
+		}
+		TSharedPtr<FJsonValue> Root;
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+		if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
+		{
+			return;
+		}
+		const TSharedPtr<FJsonObject> RootObj = Root->AsObject();
+		if (!RootObj)
+		{
+			return;
+		}
+		for (const TSharedPtr<FJsonValue>& Entry : RootObj->GetArrayField(TEXT("species")))
+		{
+			const TSharedPtr<FJsonObject> Obj = Entry->AsObject();
+			if (!Obj)
+			{
+				continue;
+			}
+			const FName Species(*Obj->GetStringField(TEXT("species")));
+			FSeabedScatterRule* Rule = Rules.FindByPredicate([&Species](const FSeabedScatterRule& R) { return R.Species == Species; });
+			if (!Rule)
+			{
+				continue;
+			}
+			for (const TSharedPtr<FJsonValue>& VariantValue : Obj->GetArrayField(TEXT("variants")))
+			{
+				const TSharedPtr<FJsonObject> Variant = VariantValue->AsObject();
+				if (!Variant)
+				{
+					continue;
+				}
+				const FString MeshName = Variant->GetStringField(TEXT("exportedMesh"));
+				const FString PackagePath = FString::Printf(TEXT("/Game/Packs/lote6-fondomarino/%s.%s"), *MeshName, *MeshName);
+				Rule->Meshes.Add(FSoftObjectPath(PackagePath));
+			}
+		}
+	}
+
+	AExploredVegetationCell* GetOrCreateSeabedCell(UWorld* World, TMap<FIntPoint, AExploredVegetationCell*>& Cells,
+		const FVector& LocationCm, float CellSizeCm)
+	{
+		const FIntPoint Key(FMath::FloorToInt32(LocationCm.X / CellSizeCm), FMath::FloorToInt32(LocationCm.Y / CellSizeCm));
+		AExploredVegetationCell*& Cell = Cells.FindOrAdd(Key);
+		if (!Cell)
+		{
+			const FVector CellOrigin(Key.X * CellSizeCm + CellSizeCm * 0.5f, Key.Y * CellSizeCm + CellSizeCm * 0.5f, 0.0f);
+			Cell = World->SpawnActor<AExploredVegetationCell>(CellOrigin, FRotator::ZeroRotator);
+			Cell->CellCoord = Key;
+			Cell->SetActorLabel(FString::Printf(TEXT("Seabed_%d_%d"), Key.X, Key.Y));
+			Cell->SetFolderPath(FName(TEXT("Seabed")));
+			// Misma rejilla y capa HLOD que vegetación y formaciones (ver GetOrCreateFormationCell).
+			Cell->SetRuntimeGrid(FName(VegetationGridName));
+			Cell->SetHLODLayer(FindObject<UHLODLayer>(nullptr,
+				*FString::Printf(TEXT("%s/HLOD_Vegetation.HLOD_Vegetation"), HLODFolder)));
+		}
+		return Cell;
+	}
+
+	/**
+	 * Siembra el fondo marino en el halo de cada isla (radio de la isla + ReefHaloMeters,
+	 * donde puede haber arrecife o roca submarina). Se hornea por celdas de 512 m (misma
+	 * rejilla que vegetación y formaciones) para poder documentar y acotar el presupuesto de
+	 * instancias por celda.
+	 *
+	 * Presupuesto de instancias por celda: InstanceBudgetPerCell (2 000, el valor por defecto
+	 * de FSeabedScatterModel::Generate). Con el paso más corto de las reglas por defecto
+	 * (1,2 m, PraderaMarina) una celda de 512 m llena de esa única regla daría hasta
+	 * (512 / 1,2)² ≈ 182 000 instancias: muy por encima de lo razonable para un HISM. El
+	 * filtro por profundidad, zona, agrupación y probabilidad dejan la cifra real muy por
+	 * debajo salvo que la celda entera sea arrecife somero llano de una sola especie; el tope
+	 * es la red de seguridad para ese caso patológico, no la densidad esperada en juego.
+	 */
+	void SpawnSeabed(UWorld* World, const FTerrainDensity& Density)
+	{
+		const double Start = FPlatformTime::Seconds();
+		constexpr float CellSizeCm = 51200.0f;
+		constexpr float CellSizeM = CellSizeCm / 100.0f;
+		constexpr int32 InstanceBudgetPerCell = 2000;
+		// Sin datos de rutas de navegación de balsas todavía (no existe ese concepto en
+		// ArchipelagoLayout ni en Boats/*): de momento se reutilizan los mismos puntos
+		// protegidos que las formaciones (spawn y puntos de interés, ver SpawnFormations)
+		// como aproximación. El radio es la única pieza que pide el diseño como
+		// configurable; en cuanto exista una ruta de balsa real, sustituir AvoidPoints3D por
+		// sus puntos no toca este fichero más que estas líneas.
+		constexpr float RaftChannelAvoidRadiusM = 10.0f;
+		TArray<FVector> AvoidPoints3D;
+		AvoidPoints3D.Add(FindSpawnPoint(Density));
+		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		{
+			AvoidPoints3D.Add(Poi.Location);
+		}
+
+		TArray<FSeabedScatterRule> Rules = FSeabedScatterModel::DefaultRules();
+		ResolveSeabedMeshes(Rules);
+		Rules.RemoveAll([](const FSeabedScatterRule& R) { return R.Meshes.IsEmpty(); });
+		if (Rules.IsEmpty())
+		{
+			UE_LOG(LogExplored, Display, TEXT("Fondo marino: sin mallas resueltas (falta importar lote6-fondomarino), se omite"));
+			return;
+		}
+
+		TArray<FVector2D> AvoidPoints2D;
+		AvoidPoints2D.Reserve(AvoidPoints3D.Num());
+		for (const FVector& P : AvoidPoints3D)
+		{
+			AvoidPoints2D.Add(FVector2D(P));
+		}
+
+		const uint32 Seed = Density.GetLayout().Seed;
+		constexpr float ReefHaloMeters = 60.0f;
+		TMap<FIntPoint, AExploredVegetationCell*> Cells;
+		int32 SpawnedSeabed = 0;
+
+		for (const FIslandDesc& Island : Density.GetLayout().Islands)
+		{
+			const float Extent = Island.Radius + ReefHaloMeters;
+			const int32 MinCellX = FMath::FloorToInt32((Island.Center.X - Extent) / CellSizeM);
+			const int32 MaxCellX = FMath::FloorToInt32((Island.Center.X + Extent) / CellSizeM);
+			const int32 MinCellY = FMath::FloorToInt32((Island.Center.Y - Extent) / CellSizeM);
+			const int32 MaxCellY = FMath::FloorToInt32((Island.Center.Y + Extent) / CellSizeM);
+
+			for (int32 CY = MinCellY; CY <= MaxCellY; ++CY)
+			{
+				for (int32 CX = MinCellX; CX <= MaxCellX; ++CX)
+				{
+					const FBox2D CellBoundsM(FVector2D(CX * CellSizeM, CY * CellSizeM),
+						FVector2D((CX + 1) * CellSizeM, (CY + 1) * CellSizeM));
+					const FVector2D Closest(FMath::Clamp(Island.Center.X, CellBoundsM.Min.X, CellBoundsM.Max.X),
+						FMath::Clamp(Island.Center.Y, CellBoundsM.Min.Y, CellBoundsM.Max.Y));
+					if (FVector2D::DistSquared(Closest, Island.Center) > Extent * Extent)
+					{
+						continue; // esquina de la caja fuera del halo circular de la isla.
+					}
+
+					const TArray<FSeabedScatterInstance> Instances = FSeabedScatterModel::Generate(
+						CellBoundsM,
+						[&Density](float X, float Y) { return SampleSeabedColumn(Density, X, Y); },
+						Rules, Seed, Island.Archetype, AvoidPoints2D, RaftChannelAvoidRadiusM, InstanceBudgetPerCell);
+
+					for (const FSeabedScatterInstance& Instance : Instances)
+					{
+						const FSeabedScatterRule* Rule = Rules.FindByPredicate([&Instance](const FSeabedScatterRule& R)
+						{
+							return R.Species == Instance.Species;
+						});
+						if (!Rule || !Rule->Meshes.IsValidIndex(Instance.MeshIndex))
+						{
+							continue;
+						}
+						UStaticMesh* Mesh = Cast<UStaticMesh>(Rule->Meshes[Instance.MeshIndex].TryLoad());
+						if (!Mesh)
+						{
+							continue;
+						}
+						AExploredVegetationCell* Cell = GetOrCreateSeabedCell(World, Cells, Instance.Transform.GetLocation(), CellSizeCm);
+						UHierarchicalInstancedStaticMeshComponent* Component = Cell->GetOrCreateComponent(Mesh, Instance.Species,
+							Rule->bCollisionEnabled, Rule->CullEndDistanceM, /*bCastShadow=*/true);
+						Component->AddInstance(Instance.Transform, true);
+						++SpawnedSeabed;
+					}
+				}
+			}
+		}
+
+		for (const auto& Pair : Cells)
+		{
+			for (UActorComponent* C : Pair.Value->GetComponents())
+			{
+				if (UHierarchicalInstancedStaticMeshComponent* H = Cast<UHierarchicalInstancedStaticMeshComponent>(C))
+				{
+					H->BuildTreeIfOutdated(false, true);
+				}
+			}
+		}
+
+		UE_LOG(LogExplored, Display, TEXT("Fondo marino: %d instancias en %d celdas (%.1f s)"),
+			SpawnedSeabed, Cells.Num(), FPlatformTime::Seconds() - Start);
+	}
+
+	int32 ComposeMap(const FTerrainDensity& Density, const TArray<FTerrainPiece>& Terrain, bool bVegetation, bool bFormations, bool bSeabed)
 	{
 		// El mapa se recrea desde cero para que el proceso sea idempotente.
 		UPackage* MapPackage = CreatePackage(MapPath);
@@ -1147,6 +1384,10 @@ namespace
 		if (bFormations)
 		{
 			SpawnFormations(World, Density);
+		}
+		if (bSeabed)
+		{
+			SpawnSeabed(World, Density);
 		}
 
 		const bool bActorsSaved = SaveExternalActorPackages(World);
@@ -1213,7 +1454,8 @@ int32 UExploredWorldGenCommandlet::Main(const FString& Params)
 		}
 		const bool bVegetation = !FParse::Param(*Params, TEXT("novegetation"));
 		const bool bFormations = !FParse::Param(*Params, TEXT("noformations"));
-		return ComposeMap(Density, FindTerrainPieces(Settings), bVegetation, bFormations);
+		const bool bSeabed = !FParse::Param(*Params, TEXT("noseabed"));
+		return ComposeMap(Density, FindTerrainPieces(Settings), bVegetation, bFormations, bSeabed);
 	}
 
 	UE_LOG(LogExplored, Error, TEXT("Modo desconocido: %s"), *Mode);

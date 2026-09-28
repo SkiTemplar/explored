@@ -99,9 +99,16 @@ def download(pack: dict, dest: Path) -> None:
 
 
 def fetch(pack: dict, root: Path, *, update_sha: bool = False) -> Path:
-    """Descarga (si falta), verifica sha256 y extrae. Devuelve la carpeta extraída."""
+    """Descarga (si falta), verifica sha256 y extrae. Devuelve la carpeta extraída.
+
+    ``pack["archive"]`` (opcional, por defecto ``"zip"``) da la extensión real del fichero
+    descargado. Con ``"zip"`` se descomprime como siempre; con cualquier otra extensión
+    (p. ej. ``"glb"``) el fichero se copia tal cual dentro de ``out/`` sin descomprimir, para
+    los modelos sueltos de Poly Pizza (CC0 o CC-BY, un único ``.glb`` sin zip).
+    """
     root.mkdir(parents=True, exist_ok=True)
-    archive = root / f"{pack['id']}.zip"
+    ext = pack.get("archive", "zip")
+    archive = root / f"{pack['id']}.{ext}"
     out = root / pack["id"]
     expected = pack.get("sha256") or ""
     if archive.exists() and expected and sha256_of(archive) != expected:
@@ -120,24 +127,30 @@ def fetch(pack: dict, root: Path, *, update_sha: bool = False) -> Path:
     if not (stamp.exists() and stamp.read_text().strip() == got):
         if out.exists():
             shutil.rmtree(out)
-        with zipfile.ZipFile(archive) as z:
-            for info in z.infolist():
-                target = (out / info.filename).resolve()
-                if not target.is_relative_to(out.resolve()):
-                    raise RuntimeError(f"{pack['id']}: ruta fuera de la carpeta en el zip: {info.filename}")
-            z.extractall(out)
+        if ext == "zip":
+            with zipfile.ZipFile(archive) as z:
+                for info in z.infolist():
+                    target = (out / info.filename).resolve()
+                    if not target.is_relative_to(out.resolve()):
+                        raise RuntimeError(f"{pack['id']}: ruta fuera de la carpeta en el zip: {info.filename}")
+                z.extractall(out)
+        else:
+            out.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(archive, out / archive.name)
         stamp.write_text(got + "\n")
     return out
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("ids", nargs="*", help="ids de packs.json (por defecto, todos)")
+    parser.add_argument("ids", nargs="*", help="ids del manifiesto (por defecto, todos)")
     parser.add_argument("--list", action="store_true", help="lista los packs sin descargar")
-    parser.add_argument("--update-sha", action="store_true", help="escribe en packs.json los sha256 vacíos")
+    parser.add_argument("--update-sha", action="store_true", help="escribe en el manifiesto los sha256 vacíos")
+    parser.add_argument("--manifest", type=Path, default=MANIFEST,
+        help="manifiesto a usar (por defecto packs.json; packs_cc_by.json para los CC-BY con crédito)")
     args = parser.parse_args(argv)
 
-    manifest = load_manifest()
+    manifest = load_manifest(args.manifest)
     packs = {p["id"]: p for p in manifest["packs"]}
     if args.list:
         for p in packs.values():
@@ -157,7 +170,7 @@ def main(argv: list[str] | None = None) -> int:
             failed += 1
             print(f"[packs] {pid}: ERROR {e}", file=sys.stderr)
     if args.update_sha:
-        MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        args.manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return 1 if failed else 0
 
 

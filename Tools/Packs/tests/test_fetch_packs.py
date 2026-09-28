@@ -81,3 +81,48 @@ def test_catalogo_usa_packs_del_manifiesto() -> None:
     catalog = json.loads((fp.REPO_ROOT / "Content" / "Data" / "packs_catalogo.json").read_text(encoding="utf-8"))
     ids = {p["id"] for p in fp.load_manifest()["packs"]}
     assert {e["pack"] for e in catalog["entries"]} <= ids
+
+
+def _pack_raw(src: Path, sha: str, ext: str) -> dict:
+    return {"id": "demo_raw", "source": {"kind": "direct", "url": src.as_uri()}, "sha256": sha, "archive": ext}
+
+
+def test_archive_no_zip_se_copia_sin_descomprimir(tmp_path: Path) -> None:
+    """Un pack.json sin ``archive`` sigue siendo un zip; con ``archive: glb`` (Poly Pizza,
+    un único modelo suelto sin zip) fetch() lo copia tal cual dentro de out/."""
+    src = tmp_path / "src.glb"
+    src.write_bytes(b"modelo-glb-de-prueba")
+    sha = hashlib.sha256(src.read_bytes()).hexdigest()
+    out = fp.fetch(_pack_raw(src, sha, "glb"), tmp_path / "cache")
+    assert (out / "demo_raw.glb").read_bytes() == b"modelo-glb-de-prueba"
+    assert (out / ".sha256").read_text().strip() == sha
+
+
+def test_archive_no_zip_sha_distinto_falla(tmp_path: Path) -> None:
+    src = tmp_path / "src.glb"
+    src.write_bytes(b"otro-modelo")
+    with pytest.raises(RuntimeError, match="sha256"):
+        fp.fetch(_pack_raw(src, "0" * 64, "glb"), tmp_path / "cache")
+
+
+def test_manifiesto_cc_by_con_credito_y_sha() -> None:
+    """packs_cc_by.json: fuera del CC0 estricto de packs.json (Tools/DataCheck no lo valida a
+    propósito), pero con la misma trazabilidad: licencia, fecha, evidencia, sha256 y el texto
+    de crédito exacto que exige la licencia CC-BY."""
+    manifest = fp.load_manifest(fp.HERE / "packs_cc_by.json")
+    ids = [p["id"] for p in manifest["packs"]]
+    assert len(ids) == len(set(ids))
+    for p in manifest["packs"]:
+        assert p["license"]["spdx"] == "CC-BY-3.0", p["id"]
+        assert p["license"]["attribution"], p["id"]
+        assert len(p["sha256"]) == 64, p["id"]
+        assert p["source"]["kind"] == "direct"
+        assert p.get("archive") == "glb"
+
+
+def test_cc0_y_cc_by_sin_ids_repetidos() -> None:
+    """Los dos manifiestos comparten Art/Packs/<id>/ como caché: un id repetido entre ambos
+    pisaría la carpeta del otro."""
+    cc0_ids = {p["id"] for p in fp.load_manifest()["packs"]}
+    cc_by_ids = {p["id"] for p in fp.load_manifest(fp.HERE / "packs_cc_by.json")["packs"]}
+    assert not (cc0_ids & cc_by_ids)

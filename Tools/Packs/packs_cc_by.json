@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "note": "Assets CC-BY con crédito, fuera de packs.json a propósito: Tools/DataCheck/src/datacheck/packs.py exige CC0-1.0 en TODO lo que aparezca en packs.json (SPDX_CC0, sin excepción por uso), así que un pack CC-BY ahí rompería DataCheck aunque no lo use ningún lote. Mismo esquema y mismo fetch_packs.py (uv run python fetch_packs.py --manifest packs_cc_by.json), pero sin pasar por el validador de packs_catalogo.json: estos assets se catalogan aparte en Content/Data/seabed_scatter.json (ver su cabecera), no en packs_catalogo.json (pensado para un gameId 1:1 de items/piezas/plantas/fauna, no para un pool de variantes de decorado). El campo license.attribution es el crédito exacto a mostrar en los créditos del juego (GDD v2 §7.1) para cada obra derivada.",
+  "packs": [
+    {
+      "id": "polybygoogle_coral_staghorn",
+      "name": "Coral",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/4KUXdtDdgHR",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/7fc1ccd0-aa82-4eff-8881-dd7a83ebf6ea.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google» (modelo heredado del antiguo Google Poly, que Poly Pizza redistribuye con la misma licencia CC-BY declarada).",
+        "attribution": "«Coral» de Poly by Google (poly.pizza/m/4KUXdtDdgHR), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "63219c5123ce4a69b2283de514dca9ae08e9ec2c1bcad3094afd2ec5043b12b7",
+      "note": "Lote6-fondomarino: coral_cuerno_ciervo (arrecife somero)."
+    },
+    {
+      "id": "devicelab_orange_coral",
+      "name": "Orange Coral",
+      "author": "Device Lab",
+      "page": "https://poly.pizza/m/3HEc6LvqCJd",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/7296b910-cb6a-4384-b1fd-17f9bb03885f.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Device Lab».",
+        "attribution": "«Orange Coral» de Device Lab (poly.pizza/m/3HEc6LvqCJd), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "905ef2c048ac0bda8de4d05eaedd2b428aae715b3d587a58e512b01972196b5d",
+      "note": "Lote6-fondomarino: coral_mesa (arrecife somero; forma de mesa/plato de la malla)."
+    },
+    {
+      "id": "godappeasers_coral_fan",
+      "name": "underwater_enviro_coral",
+      "author": "God Appeasers",
+      "page": "https://poly.pizza/m/0CrDBiCnI5e",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/31c3360e-e648-4770-bfe0-cc00bda8ec62.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «God Appeasers».",
+        "attribution": "«underwater_enviro_coral» de God Appeasers (poly.pizza/m/0CrDBiCnI5e), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "20279c0377459939da1e6f8365ee552c04367b964fbd0894df36881c6482a774",
+      "note": "Lote6-fondomarino: coral_abanico (borde del arrecife; forma abierta en abanico)."
+    },
+    {
+      "id": "polybygoogle_sponge",
+      "name": "Sponge",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/0ICnrmv06-S",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/51de7a72-6dda-4455-98f0-317f033a1e15.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google».",
+        "attribution": "«Sponge» de Poly by Google (poly.pizza/m/0ICnrmv06-S), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "7ee833204a7f25eff48e1f9840a9224120abe8bf45b710818f6bbec55b4f3c47",
+      "note": "Lote6-fondomarino: esponja_barril (borde del arrecife)."
+    },
+    {
+      "id": "polybygoogle_anemone",
+      "name": "Sea anemone",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/5mWGVL6VgMd",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/c6ffcde1-2142-42b3-af6f-178df67318bf.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google».",
+        "attribution": "«Sea anemone» de Poly by Google (poly.pizza/m/5mWGVL6VgMd), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "fa930939fba002d485ebc40477a479ecba0ecade74031e2b866136985f5381a1",
+      "note": "Lote6-fondomarino: anemona (borde del arrecife)."
+    },
+    {
+      "id": "laneyxrlabs_seaweed",
+      "name": "Seaweed",
+      "author": "Laney XR Labs",
+      "page": "https://poly.pizza/m/461xlaa6SZW",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/913ee326-9e00-48c1-aad8-3d442749b499.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Laney XR Labs».",
+        "attribution": "«Seaweed» de Laney XR Labs (poly.pizza/m/461xlaa6SZW), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "a30dd45c26e04659b61b86b4e85ded4f6d2f505cc02b644c2a1f1669c43742d5",
+      "note": "Lote6-fondomarino: pradera_marina (zona arena; mata baja de hoja ancha, no la kelp alta)."
+    },
+    {
+      "id": "msmithjonn_kelp",
+      "name": "kelp",
+      "author": "M Smith Jonn",
+      "page": "https://poly.pizza/m/5ECC8rIOZJl",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/e9a93dde-bb25-4efe-8961-67ad3633fb82.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «M Smith Jonn».",
+        "attribution": "«kelp» de M Smith Jonn (poly.pizza/m/5ECC8rIOZJl), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "971c92e5218c868c639d1974d512b22d10cde2f62e61893836f3fb81781394f5",
+      "note": "Lote6-fondomarino: alga_kelp (zona roca; fronda alta que se agita, tallo largo)."
+    },
+    {
+      "id": "polybygoogle_clam",
+      "name": "Clam",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/65ObbG0O7Ze",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/bc603c49-00b1-40e3-89d5-aa7fb26582dc.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google».",
+        "attribution": "«Clam» de Poly by Google (poly.pizza/m/65ObbG0O7Ze), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "bd222fa3f13f39f6516f8c93d83c6a09f9b1795512567466d9b477c7a13f368f",
+      "note": "Lote6-fondomarino: concha_grande (zona arena; almeja gigante entreabierta)."
+    },
+    {
+      "id": "dook_seashell",
+      "name": "Seashell",
+      "author": "dook",
+      "page": "https://poly.pizza/m/5ovn4mnRejL",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/8c6c9226-c174-4ae4-b766-65a7a418cfee.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «dook».",
+        "attribution": "«Seashell» de dook (poly.pizza/m/5ovn4mnRejL), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "ee2227271abddce34227a8c46aee0c52f81cd2d13e90043a5fc47d83f9852577",
+      "note": "Lote6-fondomarino: concha_pequena, variante suelta junto a concha_grande en la zona de arena."
+    },
+    {
+      "id": "polybygoogle_seaurchin",
+      "name": "Sea Urchin",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/f4iwEhEP3-d",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/aac25f73-615e-4c08-bc5b-7d8fb291d359.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google».",
+        "attribution": "«Sea Urchin» de Poly by Google (poly.pizza/m/f4iwEhEP3-d), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "c8f3b959813b5222db1ba9947492196214d8508c46ba0a682adaf3a070d962e9",
+      "note": "Lote6-fondomarino: erizo_mar (zona roca)."
+    },
+    {
+      "id": "polybygoogle_starfish",
+      "name": "Starfish",
+      "author": "Poly by Google",
+      "page": "https://poly.pizza/m/6H-0K9IEr56",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/c9c1bc97-d76e-4e87-bd3a-87ab44b78aac.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC-BY-3.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC-BY 3.0», autor «Poly by Google».",
+        "attribution": "«Starfish» de Poly by Google (poly.pizza/m/6H-0K9IEr56), CC BY 3.0."
+      },
+      "formats": ["glb"],
+      "sha256": "71f088ab919dbb4961532d325a04e03504910f5c4ed72fcb67a5876adc390a4a",
+      "note": "Lote6-fondomarino: estrella_mar (zona arena, junto a las conchas)."
+    }
+  ]
+}

@@ -29,6 +29,7 @@ Tests/MusicDirectorSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
 Tests/RuinsSpec.cpp
+Tests/SeabedScatterModelSpec.cpp
 Tests/SaveArchiveSpec.cpp
 Tests/SaveSlotsSpec.cpp
 Tests/SaveSystemsSpec.cpp

@@ -233,6 +233,72 @@
       ],
       "sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
       "note": "Revisado en lote4-huerto: el follaje (hojas con alfa) no se puede recolorear por cara y se descarta. Candidato abierto: Pebble_Round_* para canto_rodado."
+    },
+    {
+      "id": "minipoly_coral_reef_set",
+      "name": "Coral Reef Set",
+      "author": "MiniPoly",
+      "page": "https://poly.pizza/m/74GL45Fvdh",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/a9cdd3fc-df4b-437d-a3a0-c12cda93e250.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC0 1.0» junto al autor «MiniPoly». Poly Pizza solo redistribuye con la licencia que declaró el autor al subirlo."
+      },
+      "formats": [
+        "glb"
+      ],
+      "sha256": "6e88ef745c36a30e62c251c6d4a5f99d072d241cb7ac42263aac81bbaf3687f0",
+      "note": "Lote6-fondomarino: un único glb con varias formas de coral (varía la malla según la instancia del glb), para «corales densos y variados» del arrecife somero. Único pack CC0 de coral encontrado; el resto de MiniPoly (Coral Reef Set2-6) es CC-BY 3.0 y va en packs_cc_by.json."
+    },
+    {
+      "id": "quaternius_underwater_rock",
+      "name": "Rock",
+      "author": "Quaternius",
+      "page": "https://poly.pizza/m/34W5ymEePk",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/0ffcfce1-6983-4cb1-b055-77f71d50f3f1.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC0 1.0» junto al autor «Quaternius» (Quaternius publica todo su catálogo como CC0)."
+      },
+      "formats": [
+        "glb"
+      ],
+      "sha256": "b51a7737c6322b241336c621e0568344c58d34d4e741fc2e0ca176763b852ff7",
+      "note": "Lote6-fondomarino: roca_submarina (zona roca)."
+    },
+    {
+      "id": "quaternius_pebble_square",
+      "name": "Pebble Square",
+      "author": "Quaternius",
+      "page": "https://poly.pizza/m/2YtLzwgsWp",
+      "version": "1.0",
+      "source": {
+        "kind": "direct",
+        "url": "https://static.poly.pizza/802d6e7e-73a5-4a54-8848-54ae9350077c.glb"
+      },
+      "archive": "glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "verifiedOn": "2026-09-28",
+        "evidence": "Poly Pizza, ficha del modelo: insignia de licencia «CC0 1.0» junto al autor «Quaternius»."
+      },
+      "formats": [
+        "glb"
+      ],
+      "sha256": "a22dcb68e335ab89c874f56cbc6d4ea0a390d282247ea9604d83babb23d47b8c",
+      "note": "Lote6-fondomarino: roca_submarina_pequena / canto del fondo (zona roca y borde de arena)."
     }
   ]
 }
