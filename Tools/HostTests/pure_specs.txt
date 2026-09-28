@@ -45,4 +45,5 @@ Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
 Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
+Tests/CoconutPalmModelSpec.cpp
 Tests/TramwayModelSpec.cpp
