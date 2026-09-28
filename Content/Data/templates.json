@@ -33,6 +33,17 @@
 		]
 	},
 	{
+		"id": "clavija_roca_por_tallado", "nameEs": "Clavija de roca por tallado", "nameEn": "Carved rock piton",
+		"verbs": ["Tallar"],
+		"resultDefinitionId": "clavija_roca",
+		"nameTemplate": "Clavija de {1}", "nameTemplateEn": "{1} piton",
+		"baseMaxDurability": 0,
+		"slots": [
+			{ "role": "Filo", "requireAll": false, "requirements": [ { "property": "Filo", "min": 3 } ] },
+			{ "role": "Pieza", "requireAll": true, "requirements": [ { "property": "Punta", "min": 2 }, { "property": "Rigido", "min": 4 }, { "property": "Largo", "min": 2 } ], "tags": ["hueso", "metal"] }
+		]
+	},
+	{
 		"id": "estaca_por_tallado", "nameEs": "Estaca por tallado", "nameEn": "Carved stake",
 		"verbs": ["Tallar"],
 		"resultDefinitionId": "estaca",
@@ -131,6 +142,17 @@
 		"slots": [
 			{ "role": "Pala", "requireAll": true, "requirements": [ { "property": "Flexible", "min": 4 }, { "property": "Largo", "min": 4 } ] },
 			{ "role": "Cuerda", "requireAll": false, "requirements": [ { "property": "Ata", "min": 3 } ] }
+		]
+	},
+	{
+		"id": "pie_de_palmera", "nameEs": "Pie de palmera", "nameEn": "Palm foot loop",
+		"verbs": ["Atar"],
+		"resultDefinitionId": "pie_de_palmera",
+		"nameTemplate": "Pie de palmera de {0}", "nameTemplateEn": "{0} palm foot loop",
+		"baseMaxDurability": 40,
+		"slots": [
+			{ "role": "Anilla", "requireAll": true, "requirements": [ { "property": "Ata", "min": 4 } ], "tags": ["ata"] },
+			{ "role": "Acolchado", "requireAll": true, "requirements": [ { "property": "Fibroso", "min": 2 } ], "tags": ["fibra"] }
 		]
 	},
 	{

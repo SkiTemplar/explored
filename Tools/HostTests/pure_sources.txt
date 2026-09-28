@@ -15,6 +15,7 @@ Core/ExploredLocalization.cpp
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
 Core/SystemLinks.cpp
+Debug/PlaytestReportModel.cpp
 Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp
@@ -62,3 +63,4 @@ WorldGen/GroundBranchModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 Tramway/TramwayModel.cpp
+Player/ClimbModel.cpp

@@ -67,6 +67,11 @@
 		"Verb_TidePool": { "es": "Marisquear", "en": "Forage the pool" },
 		"Verb_Water": { "es": "Regar", "en": "Water" }
 	},
+	"ExploredClimb": {
+		"Exhausted": { "es": "No llego más arriba así.", "en": "Can't get higher like this." },
+		"NoPitonSpot": { "es": "Aquí no hay donde clavar nada.", "en": "Nothing to drive a piton into here." },
+		"CarryingSledge": { "es": "Con las angarillas no puedo trepar.", "en": "Can't climb with the sledge on." }
+	},
 	"ExploredHarvest": {
 		"VerbGather": { "es": "Recoger", "en": "Gather" },
 		"VerbMine": { "es": "Picar", "en": "Mine" },

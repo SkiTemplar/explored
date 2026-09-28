@@ -146,9 +146,14 @@ float FSurvivalModel::EffectiveTemperature(const FSurvivalState& State, const FS
 	return T;
 }
 
+float FSurvivalModel::EnergyWeightFactor(float CarriedWeightRatio)
+{
+	return 1.0f + FMath::Max(0.0f, CarriedWeightRatio - 0.5f) * 1.2f;
+}
+
 float FSurvivalModel::EnergyDrainPerSecond(EActivity Activity, float CarriedWeightRatio)
 {
-	const float Weight = 1.0f + FMath::Max(0.0f, CarriedWeightRatio - 0.5f) * 1.2f;
+	const float Weight = EnergyWeightFactor(CarriedWeightRatio);
 	switch (Activity)
 	{
 	case EActivity::Sprinting: return 11.0f * Weight;

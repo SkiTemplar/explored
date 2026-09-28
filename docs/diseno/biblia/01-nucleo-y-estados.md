@@ -235,6 +235,8 @@ necesidad de dormir. Fuente: `SurvivalModel.cpp` (`EnergyDrainPerSecond`,
   | Actividad | Δ Energía/s |
   |---|---|
   | Esprintar | −11 × peso |
+  | Trepar a pulso o escalar roca (`FClimbModel`, 02 §13) | −9 × peso |
+  | Trepar con pie de palmera | −6 × peso |
   | Nadar | −5 × peso |
   | Trabajar (talar, picar, construir) | −3 |
   | Caminar / nado suave | +8 |

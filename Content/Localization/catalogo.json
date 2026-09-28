@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
-		"cpp": 303,
-		"datos": 334,
+		"total": 646,
+		"cpp": 306,
+		"datos": 340,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
-		"invariantes": 2,
-		"revisar": 71
+		"invariantes": 3,
+		"revisar": 113
 	},
 	"entries": [
 		{
@@ -778,6 +778,36 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Building/BuildingSubsystem.cpp:279"
+			]
+		},
+		{
+			"namespace": "ExploredClimb",
+			"key": "CarryingSledge",
+			"es": "Con las angarillas no puedo trepar.",
+			"en": "Can't climb with the sledge on.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Player/ClimbModel.cpp:94"
+			]
+		},
+		{
+			"namespace": "ExploredClimb",
+			"key": "Exhausted",
+			"es": "No llego más arriba así.",
+			"en": "Can't get higher like this.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Player/ClimbModel.cpp:92"
+			]
+		},
+		{
+			"namespace": "ExploredClimb",
+			"key": "NoPitonSpot",
+			"es": "Aquí no hay donde clavar nada.",
+			"en": "Nothing to drive a piton into here.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Player/ClimbModel.cpp:93"
 			]
 		},
 		{
@@ -3958,6 +3988,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "clavija_roca.nameEs",
+			"es": "Clavija de roca",
+			"en": "Rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «clavija_roca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "coco_maduro.nameEs",
 			"es": "Coco maduro",
 			"en": "Ripe coconut",
@@ -4694,6 +4734,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «pico» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "pie_de_palmera.nameEs",
+			"es": "Pie de palmera",
+			"en": "Palm foot loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «pie_de_palmera» nameEs/nameEn"
 			]
 		},
 		{
@@ -5938,6 +5988,26 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "clavija_roca_por_tallado.nameEs",
+			"es": "Clavija de roca por tallado",
+			"en": "Carved rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "clavija_roca_por_tallado.nameTemplate",
+			"es": "Clavija de {1}",
+			"en": "{1} piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca_por_tallado» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cordel.nameEs",
 			"es": "Cordel",
 			"en": "Twine",
@@ -6194,6 +6264,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pie_de_palmera.nameEs",
+			"es": "Pie de palmera",
+			"en": "Palm foot loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pie_de_palmera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "pie_de_palmera.nameTemplate",
+			"es": "Pie de palmera de {0}",
+			"en": "{0} palm foot loop",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «pie_de_palmera» nameTemplate/nameTemplateEn"
 			]
 		},
 		{

@@ -8,6 +8,7 @@ Tests/BodySpec.cpp
 Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
+Tests/PlaytestReportSpec.cpp
 Tests/CookingSpec.cpp
 Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
@@ -46,3 +47,4 @@ Tests/WorldGenSpec.cpp
 Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/TramwayModelSpec.cpp
+Tests/ClimbModelSpec.cpp
