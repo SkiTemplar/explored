@@ -20,12 +20,12 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
-| H3 — Mar y barcos | 1 | 13 | 14 |
+| H3 — Mar y barcos | 7 | 7 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **15** | **192** | **207** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -456,23 +456,27 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
 
 ## H3 — Mar y barcos
 
-- [ ] `Boats`: piezas de casco (quilla, cuaderna, tablón, cubierta, mástil, vela,
+- [x] `Boats`: piezas de casco (quilla, cuaderna, tablón, cubierta, mástil, vela,
       balancín, timón, banco de remo, amarre) en un nuevo `Content/Data/boat_pieces.json`.
-      *(biblia 02 §8.1)*
-- [ ] `Boats/BoatModel`: sustituir la tabla fija por `EBoatType` por el cálculo de
+      *(biblia 02 §8.1)* *(hecho: `FBoatPiecesModel` en `Boats/BoatPiecesModel.h`, espejo
+      comprobado por `Tools/DataCheck`)*
+- [x] `Boats/BoatModel`: sustituir la tabla fija por `EBoatType` por el cálculo de
       `TotalMassKg`/`EquilibriumDraftCm`/`SwampWaterKg`/escora a partir de las piezas
-      ancladas. *(biblia 02 §8.2)*
-- [ ] `Boats`: integridad por unión cuaderna–tablón, daño por impacto sobre
-      `SafeImpactSpeedCmS`, vía de agua por brecha (0,5 L/s). *(biblia 02 §8.3)*
+      ancladas. *(biblia 02 §8.2)* *(hecho: `FBoatModel::Definition` sale de
+      `FBoatPiecesModel::Blueprint(...).ToBoatDefinition`; la tabla solo guarda el tacto de
+      mando. Vuelco 55° 4 s / 75° en `FBoatCapsizeTimer`, aún sin cablear en `FBoatModel`)*
+- [x] `Boats`: integridad por unión cuaderna–tablón, daño por impacto sobre
+      `SafeImpactSpeedCmS`, vía de agua por brecha (0,5 L/s). *(biblia 02 §8.3)* *(hecho en
+      el modelo puro; falta que `AExploredBoat` pase los golpes y sume `LeakKgS`)*
 - [ ] `Boats`: botadura sobre rodillos en tierra (8 s/tonelada) y deriva por corriente si
       no está amarrado en el agua. *(biblia 02 §8.4)*
-- [ ] `Boats`: actualizar `boats.json` para que los cuatro planos canónicos listen piezas
+- [x] `Boats`: actualizar `boats.json` para que los cuatro planos canónicos listen piezas
       en vez de un coste plano. *(biblia 02 §8.4)*
 - [ ] Diseñar y cablear la fila de «Estado del barco» del HUD: nueva
       `AExploredHUD::DrawBoatStatus`, solo mientras se está a bordo y solo si hay algo
       urgente (vela mal trimada, casco <40 %, haciendo agua, capotado).
       *(biblia 06 §2.4)*
-- [ ] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
+- [x] Añadir a `achievements.json` el logro `primera_canoa` («Primera canoa»).
       *(biblia 07 §2.3)*
 - [x] `FBoatModel` con `TotalMassKg`, `EquilibriumDraftCm`, `SwampWaterKg`,
       `MaxAbsRollDeg`, `ApplyDamage` ya implementado — base sobre la que se calculan las
@@ -480,9 +484,12 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `Source/Explored/Boats/BoatModel.h`)*
 - [ ] Pendiente de siempre (roadmap): malla del barco «Limón» y astillero final.
       *(GDD §3.10)*
-- [ ] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts`
+- [x] `Boats`: verificar que `barco_limon` exige las 4 `requiresShipParts`
       (`Fuselage`, `Wing`, `Tail`, `Engine`) y consume `canoa_balancin` como indica
       `boats.json` — solo falta el mesh `SM_Limon`. *(biblia 03 §3.8 TODO — [F3])*
+      *(verificado: DataCheck y `FBoatPiecesModel::HasShipPartsFor`; `boats.json` pide
+      `canoa_balancin` con `consumesRequiredBoat: false`, así que no la gasta. La malla sigue
+      en la casilla del roadmap)*
 - [ ] Confirmar en `Tools/DataCheck` que ninguna combinación de daño nuevo rompe el
       invariante «ninguna plantilla produce un objeto sin malla». *(biblia 05 §Tests)*
 
@@ -493,7 +500,8 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       de 4 B a 20 Hz desde el timonel; el cliente extrapola con el mismo
       `FBoatModel::Step` y corrige hacia el estado recibido en 200 ms.
       `NetCullDistanceSquared` 25 000 cm. Olas y corrientes **no se replican**.
-      *(biblia 08 §2.5)*
+      *(biblia 08 §2.5)* *(estado puro hecho: `FExploredBoatNetState` en
+      `Boats/BoatNetState.h`, 19 B con ida y vuelta; falta la capa de red del actor)*
 - [ ] `Boats`: pasajeros con `AttachToActor` replicado, aforo por plano canónico (balsa 2,
       canoa 2, canoa con balancín 3, «Limón» 4 — al lleno el verbo «Subir» no se ofrece),
       timón cedible con el verbo de interacción sobre el asiento y liberado si el timonel
