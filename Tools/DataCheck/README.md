@@ -32,6 +32,12 @@ Qué comprueba:
   capa, profundidad, fase y vetas finitas; niveles de herramienta 0–4 en los que cada
   cabeza produce de verdad un `pico` (no la captura `hacha`) y toda pieza que cabe como
   cabeza tiene nivel; progresión de picos sin ciclos y completa solo con islas de fase 1.
+  Peligros (biblia 02 §2.4): derrumbe con una pieza de apoyo real sobre el terreno que cubre la
+  luz máxima y avisa antes de caer, luces que existen, aire viciado que nunca mata, sellado con
+  un encaje del kit y crecida en una estación conocida. Lugares subterráneos (§2.5): acceso y
+  nivel de entrada, fase 1 solo en las islas del acceso anticipado, objetos de estrato presentes
+  en esa isla y fase, la cueva de Landing que se cava con la pala sin tocar un estrato más duro
+  (GDD v2 §6.1), y los tubos de lava del Humo y las grutas marinas de Los Dientes (§6.2).
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).

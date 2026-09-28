@@ -947,6 +947,82 @@ def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> Non
     assert best and best["resultDefinitionId"] == "basalto_tallado"
 
 
+# --------------------------------------------------------------------------- peligros y lugares de la mina (biblia 02 §2.4-2.5)
+
+def hazard(ds: DataSet, hid: str) -> dict:
+    return ds.data["mining.json"]["hazards"][hid]
+
+
+def place(ds: DataSet, pid: str) -> dict:
+    return next(p for p in ds.data["mining.json"]["places"] if p["id"] == pid)
+
+
+def test_mineria_viga_de_apoyo_es_pieza_de_madera_bajo_tierra(real: DataSet) -> None:
+    viga = piece(real, hazard(real, "derrumbe")["supportPiece"])
+    assert viga["id"] == "viga_apoyo" and viga["tier"] == "madera" and viga["socket"] == "terreno"
+    assert {c["item"]: c["count"] for c in viga["cost"]} == {"tronco_pequeno": 2, "cuerda": 1}
+
+
+def test_mineria_falta_un_peligro(ds: DataSet) -> None:
+    del ds.data["mining.json"]["hazards"]["aire_viciado"]
+    assert any_error(mining_errors(ds), "aire_viciado", "biblia 02")
+
+
+def test_mineria_viga_inexistente(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportPiece"] = "puntal_magico"
+    assert any_error(mining_errors(ds), "puntal_magico", "building_pieces.json")
+
+
+def test_mineria_viga_que_no_cubre_la_luz(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["supportRadiusM"] = 1.0
+    assert any_error(mining_errors(ds), "derrumbe", "luz")
+
+
+def test_mineria_aviso_despues_del_derrumbe(ds: DataSet) -> None:
+    hazard(ds, "derrumbe")["warningSeconds"] = 9
+    assert any_error(mining_errors(ds), "derrumbe", "aviso")
+
+
+def test_mineria_aire_viciado_nunca_mata(ds: DataSet) -> None:
+    hazard(ds, "aire_viciado")["lethal"] = True
+    assert any_error(mining_errors(ds), "aire_viciado", "nunca mata")
+
+
+def test_mineria_luz_pendiente_que_ya_existe(ds: DataSet) -> None:
+    hazard(ds, "oscuridad")["lightItemsPendientes"].append("antorcha")
+    assert any_error(mining_errors(ds), "oscuridad", "antorcha", "lightItems")
+
+
+def test_mineria_crecida_en_estacion_desconocida(ds: DataSet) -> None:
+    hazard(ds, "crecida")["season"] = "invierno"
+    assert any_error(mining_errors(ds), "crecida", "invierno")
+
+
+def test_mineria_lugar_de_fase_1_fuera_del_acceso_anticipado(ds: DataSet) -> None:
+    place(ds, "cenotes")["occurrences"][0]["fase"] = 1
+    assert any_error(mining_errors(ds), "cenotes", "mesa", "acceso anticipado")
+
+
+def test_mineria_lugar_con_objeto_de_estrato_ausente(ds: DataSet) -> None:
+    place(ds, "grutas_marinas")["items"] = ["obsidiana"]
+    assert any_error(mining_errors(ds), "grutas_marinas", "teeth", "obsidiana")
+
+
+def test_mineria_cueva_de_landing_mas_honda_que_la_pala(ds: DataSet) -> None:
+    place(ds, "cueva_landing")["occurrences"][0]["depthM"] = [0, 6]
+    assert any_error(mining_errors(ds), "cueva_landing", "basalto", "nivel 1")
+
+
+def test_mineria_falta_la_cueva_de_landing(ds: DataSet) -> None:
+    ds.data["mining.json"]["places"] = [p for p in ds.data["mining.json"]["places"] if p["id"] != "cueva_landing"]
+    assert any_error(mining_errors(ds), "Landing", "GDD v2 §6.1")
+
+
+def test_mineria_rio_subterraneo_sin_barco(ds: DataSet) -> None:
+    place(ds, "rios_subterraneos")["requiresBoat"] = "submarino"
+    assert any_error(mining_errors(ds), "rios_subterraneos", "boats.json")
+
+
 # --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
 
 from datacheck import fauna
