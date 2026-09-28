@@ -25,7 +25,9 @@ Por cada entrada del lote:
    uniforme para que la medida del eje ``size.axis`` sea ``size.m`` metros.
 5. Pivote: ``base`` (centro de la huella, z = 0 en el punto más bajo) o ``agarre``
    (socket de mano ``hand_r``: a ``gripFromEndM`` del extremo ``end`` del mango, ``bottom``
-   por defecto o ``top`` para la mano alta de la pala, en el eje del mango).
+   por defecto o ``top`` para la mano alta de la pala, en el eje del mango). El eje se
+   mide en el extremo (``centerAt: end``, por defecto) o a la altura del agarre
+   (``centerAt: grip``, para arcos y lanzas).
 6. Exporta ``Art/Export/Packs/<lote>/<mesh>.fbx`` (ignorado en git) con un único
    material ``M_LowPoly``, triangulado, mismos ajustes FBX que ``Tools/Blender``.
 
@@ -156,6 +158,8 @@ def import_file(path: Path) -> bpy.types.Object:
     else:
         raise ValueError(f"formato no admitido: {path}")
     new = [o for o in bpy.data.objects if o not in before]
+    # Nombres, no referencias: join() borra las mallas unidas y sus referencias caducan.
+    new_names = [o.name for o in new]
     meshes = [o for o in new if o.type == "MESH"]
     if not meshes:
         raise RuntimeError(f"{path.name}: sin mallas")
@@ -164,6 +168,10 @@ def import_file(path: Path) -> bpy.types.Object:
     for o in meshes:
         for m in list(o.modifiers):
             o.modifiers.remove(m)
+        # Las claves de forma (cuerda de arco de KayKit) guardan su propia copia de los
+        # vértices: si quedan, ni el render ni el FBX ven la escala ni el giro aplicados.
+        if o.data.shape_keys:
+            o.shape_key_clear()
         o.parent_type = "OBJECT"
     bpy.ops.object.select_all(action="DESELECT")
     for o in meshes:
@@ -176,8 +184,9 @@ def import_file(path: Path) -> bpy.types.Object:
         bpy.ops.object.join()
     obj = bpy.context.view_layer.objects.active
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    for o in [o for o in new if o != obj]:
-        if o.name in bpy.data.objects:
+    for name in new_names:
+        o = bpy.data.objects.get(name)
+        if o is not None and o != obj:
             bpy.data.objects.remove(o, do_unlink=True)
     obj.name = path.stem
     return obj
@@ -388,6 +397,11 @@ def orient_scale_pivot(obj, entry: dict) -> None:
         else:
             ring = [v for v in vs if v.z <= zmin + 0.15 * height]
             z = zmin + pivot["gripFromEndM"]
+        if pivot.get("centerAt", "end") == "grip":
+            # Arcos y lanzas: el eje del mango se toma a la altura del agarre, no en la
+            # punta (las palas de un arco se curvan hacia la cuerda).
+            band = 0.04 * height
+            ring = [v for v in vs if abs(v.z - z) <= band] or ring
         cx = sum(v.x for v in ring) / len(ring)
         cy = sum(v.y for v in ring) / len(ring)
         origin = Vector((cx, cy, z))
