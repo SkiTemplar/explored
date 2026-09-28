@@ -217,6 +217,27 @@ catálogo salvo donde se indica «nuevo»).
 | **Inundación** | Galería que conecta con el mar o con el nivel freático (por debajo de la cota 0 del mapa) sin sellar: el agua sube **1 m cada 40 s** | Sonido de agua entrando, reflejo en el suelo | Sellar la brecha con una pieza `pared` del kit de construcción calzada contra la roca |
 | **Crecida de monzón** | Una mina bajo el nivel del río se inunda al **30 %** durante una crecida (GDD §6.1 «Monzón», biblia §6.2) y evacúa en **2 días** tras acabar | Aviso previo idéntico al de la crecida en superficie (biblia §6.2) | Apuntalar y sellar antes de la estación, o evitar minar bajo el cauce en monzón |
 
+**Cómo se mide en el modelo [2026-09-28, `FMineHazardModel`]:**
+
+- `[Decisión]` «Más de 3 m de luz» se aplica punto a punto: un trozo de techo está sin
+  apoyo si no tiene roca, `pared` ni `viga_apoyo` a 1,5 m o menos en su misma altura.
+  Una galería de 1 m de ancho y 20 m de largo aguanta (la luz es la anchura); una sala
+  de 3 m justos aguanta y una de 3,5 m, no. La viga apoya en un radio de 1,5 m, así que
+  una viga en el centro salva una sala de hasta 4 m; una de 6 m pide varias. La viga
+  va de suelo a techo y mide 3 m como mucho (dos troncos).
+- El derrumbe llena de escombro el trozo de techo suelto y todo lo que hay debajo hasta
+  el suelo; lo demás de la sala queda apoyado en ese escombro.
+- La distancia a la boca o a la chimenea se mide **por dentro** de la galería. Una
+  salida es cualquier hueco que ve el cielo en vertical. Una bolsa sin camino a una
+  salida está viciada aunque quede cerca.
+- `[Decisión]` Al volver a aire limpio se recupera un **25 %/min**; la gracia de 2 min
+  vuelve a empezar.
+- El agua sube hasta el nivel de su fuente (el mar con su marea o la cota 0) y baja al
+  mismo ritmo si la fuente baja. Una galería sellada conserva el agua que ya tenía.
+- `[Decisión]` Una veta de cristal agotada deja basalto (las cavernas de cristal están
+  en el basalto profundo); una de cobre, caliza; una de hierro, basalto. A mano (solo
+  azufre) el hueco es de 0,30 m y 1,5 s; la pala tosca abre 0,50 m en 1,2 s.
+
 ### 2.5 Lugares increíbles generados
 
 Carvings deterministas por semilla, variantes de tamaño y forma de
@@ -758,12 +779,12 @@ Frases cortas, tono de superviviente seco, sin exclamaciones grandilocuentes.
 - [x] [AA] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) según GDD §7.3 punto 1.
 - [x] [AA] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes de evaluar el ruido.
 - [ ] [AA] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados por una edición.
-- [x] [AA] `WorldGen`: implementar picado por esfera con radio y tiempo por golpe de la tabla 2.3, por estrato y herramienta.
+- [x] [AA] `WorldGen`: implementar picado por esfera con radio y tiempo por golpe de la tabla 2.3, por estrato y herramienta. *(`FMiningModel`, 2026-09-28)*
 - [ ] [AA] `Items`/`Crafting`: añadir item `pico` y plantilla `pico` a `items.json`/`templates.json` (sección 2.2), con las cuatro combinaciones canónicas balanceadas por `Rigido`/`Contundente`/`Filo` de la cabeza.
-- [ ] [AA] `Crafting`: regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe, −15 durabilidad).
-- [ ] [AA] `Survival`/`WorldGen`: indicador de aire viciado (bolsas cerradas a > 15 m de una salida), sin HUD, leído en el cuerpo.
-- [ ] [AA] `Building`: pieza `viga_apoyo` (apuntalamiento de galería) y regla de derrumbe (hueco > 3 m de luz sin apoyo, 8 s).
-- [ ] [AA] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático (1 m/40 s sin sellar).
+- [x] [AA] `Crafting`: regla de rotura extra del pico de obsidiana contra dureza ≥ 3 (8 % por golpe, −15 durabilidad). *(`FMiningModel::RollChip`)*
+- [x] [AA] `Survival`/`WorldGen`: indicador de aire viciado (bolsas cerradas a > 15 m de una salida), sin HUD, leído en el cuerpo. *(`FMineHazardModel`)*
+- [x] [AA] `Building`: pieza `viga_apoyo` (apuntalamiento de galería) y regla de derrumbe (hueco > 3 m de luz sin apoyo, 8 s). *(`FMineHazardModel`)*
+- [x] [AA] `WorldGen`/`Ocean`: inundación de galería conectada al mar o al nivel freático (1 m/40 s sin sellar). *(`FMineHazardModel`)*
 - [ ] [AA] `Cartography`: hoja subterránea por sistema de galerías (GDD §3.2), generada bajo demanda al entrar la primera vez.
 - [x] [AA] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk).
 - [ ] [AA] `WorldGen`: carvings grandes (cenotes, tubos de lava, cavernas de cristal, ríos subterráneos, templos enterrados, grutas de marea) como `FCaveDesc` de mayor tamaño, con radio de exclusión de 1,5 m alrededor de un tesoro.
@@ -779,10 +800,10 @@ Frases cortas, tono de superviviente seco, sin exclamaciones grandilocuentes.
 ### Pala, caminos y arena
 
 - [ ] [AA] `Items`: nuevo item `tierra_suelta` en `items.json`.
-- [ ] [AA] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento sobre camino terminado).
-- [ ] [AA] `WorldGen`: simulación de ángulo de reposo de arena (34°/45°, revisión de pendiente 1/s por chunk activo).
-- [ ] [AA] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal (20 %/35 % por medio ciclo de marea).
-- [ ] [AA] `Building`: pieza `tablon_contencion` (ancla arena y detiene el deslizamiento/relleno en 1 m).
+- [x] [AA] `WorldGen`: modo «camino» de la pala (aplanar franja, −15 % coste de movimiento sobre camino terminado). *(`FShovelPathModel`)*
+- [x] [AA] `WorldGen`: simulación de ángulo de reposo de arena (34°/45°, revisión de pendiente 1/s por chunk activo). *(`FSandModel`)*
+- [x] [AA] `WorldGen`/`Ocean`: relleno de arena excavada por oleaje en franja intermareal (20 %/35 % por medio ciclo de marea). *(`FSandModel`)*
+- [x] [AA] `Building`: pieza `tablon_contencion` (ancla arena y detiene el deslizamiento/relleno en 1 m). *(`building_pieces.json`, `FSandModel::PieceAnchorsSand`)*
 
 ### Fuego
 
