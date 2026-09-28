@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
+#include "Async/TaskGraphInterfaces.h"
 #include "CollisionQueryParams.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -164,9 +165,53 @@ namespace TerrainRuntimeTestDetail
 		return true;
 	}
 
+	/**
+	 * Fotogramas como en el juego (presupuesto de 1,5 ms, cocinado asíncrono) hasta que no
+	 * queda nada pendiente; comprueba y apunta el coste por fotograma en el hilo de juego.
+	 */
+	void RunBudgetedFrames(FContext& C, const TCHAR* Label)
+	{
+		double EndOfFrameMsMax = 0.0;
+		int32 Frames = 0;
+		const double Start = FPlatformTime::Seconds();
+		const double Deadline = Start + 60.0;
+		while ((C.Mesher->NeedsTick() || C.Mesher->IsCollisionCookPending()) && FPlatformTime::Seconds() < Deadline)
+		{
+			// El fin del cocinado asíncrono llega como tarea del hilo de juego.
+			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
+			C.Mesher->Tick(C.Terrain->GetModel(), C.Surface, 1.5);
+			const double EndOfFrameStart = FPlatformTime::Seconds();
+			C.World->SendAllEndOfFrameUpdates();
+			EndOfFrameMsMax = FMath::Max(EndOfFrameMsMax, (FPlatformTime::Seconds() - EndOfFrameStart) * 1000.0);
+			++Frames;
+			FPlatformProcess::Sleep(0.004f);
+		}
+		const FTerrainRemeshStats Stats = C.Terrain->GetRemeshStats();
+		C.Test.TestFalse(FString::Printf(TEXT("%s: remallado terminado"), Label), C.Mesher->NeedsTick());
+		C.Test.TestFalse(FString::Printf(TEXT("%s: colisión cocinada"), Label), C.Mesher->IsCollisionCookPending());
+		C.Test.TestTrue(FString::Printf(TEXT("%s: hilo de juego por fotograma < 4 ms (máx %.3f ms)"), Label, Stats.GameThreadMsMax),
+			Stats.GameThreadMsMax < 4.0f);
+		C.Test.AddInfo(FString::Printf(TEXT("%s: %d chunks en %d fotogramas (%.2f s); hilo de juego máx %.3f ms/fotograma, volcado máx %.3f ms/chunk, fin de fotograma máx %.3f ms; tarea media %.2f ms (máx %.2f)"),
+			Label, Stats.ChunksApplied, Frames, FPlatformTime::Seconds() - Start, Stats.GameThreadMsMax, Stats.ApplyMsMax, EndOfFrameMsMax,
+			Stats.TaskMsAverage, Stats.TaskMsMax));
+	}
+
+	/** 4) Primer golpe en un chunk horneado, con el presupuesto del juego: sustituir 64 m. */
+	void MeasureBudgetedReplacement(FContext& C)
+	{
+		C.Terrain->ResetEdits();
+		C.Mesher->SetAsyncCollisionCooking(true);
+		C.Mesher->ResetStats();
+		C.Terrain->EnsureReplacedAt(C.Surface);
+		RunBudgetedFrames(C, TEXT("Sustitución con presupuesto"));
+		C.Mesher->SetAsyncCollisionCooking(false);
+	}
+
 	/** 2) Cavar con el pico (autoridad: partida sola) y remallar con el presupuesto del juego. */
 	void DigAndRemesh(FContext& C)
 	{
+		// Como en el juego: colisión cocinada fuera del hilo de juego.
+		C.Mesher->SetAsyncCollisionCooking(true);
 		C.Mesher->ResetStats();
 		double Removed = 0.0;
 		for (int32 I = 0; I < 16; ++I)
@@ -178,23 +223,8 @@ namespace TerrainRuntimeTestDetail
 			Removed += C.Terrain->Dig(Hit).Edit.VolumeRemoved;
 		}
 		C.Test.TestTrue(FString::Printf(TEXT("el pico arranca tierra (%.2f m³)"), Removed), Removed > 0.5);
-		double EndOfFrameMsMax = 0.0;
-		int32 Frames = 0;
-		const double Deadline = FPlatformTime::Seconds() + 30.0;
-		while (C.Mesher->NeedsTick() && FPlatformTime::Seconds() < Deadline)
-		{
-			C.Mesher->Tick(C.Terrain->GetModel(), C.Surface, 1.5);
-			const double EndOfFrameStart = FPlatformTime::Seconds();
-			C.World->SendAllEndOfFrameUpdates();
-			EndOfFrameMsMax = FMath::Max(EndOfFrameMsMax, (FPlatformTime::Seconds() - EndOfFrameStart) * 1000.0);
-			++Frames;
-			FPlatformProcess::Sleep(0.004f);
-		}
-		const FTerrainRemeshStats Stats = C.Terrain->GetRemeshStats();
-		C.Test.TestFalse(TEXT("remallado terminado"), C.Mesher->NeedsTick());
-		C.Test.TestTrue(FString::Printf(TEXT("hilo de juego por fotograma < 8 ms (máx %.3f ms)"), Stats.GameThreadMsMax), Stats.GameThreadMsMax < 8.0f);
-		C.Test.AddInfo(FString::Printf(TEXT("16 golpes: %d chunks remallados en %d fotogramas; hilo de juego máx %.3f ms/fotograma, volcado máx %.3f ms/chunk, fin de fotograma máx %.3f ms; tarea media %.2f ms (máx %.2f)"),
-			Stats.ChunksApplied, Frames, Stats.GameThreadMsMax, Stats.ApplyMsMax, EndOfFrameMsMax, Stats.TaskMsAverage, Stats.TaskMsMax));
+		RunBudgetedFrames(C, TEXT("16 golpes"));
+		C.Mesher->SetAsyncCollisionCooking(false);
 
 		TickWorld(C.World, 2);
 		C.GroundDug = GroundCm(C.World, C.Surface);
@@ -260,6 +290,7 @@ bool FTerrainRuntimeEditTest::RunTest(const FString& Parameters)
 	{
 		DigAndRemesh(C);
 		SaveResetLoad(C);
+		MeasureBudgetedReplacement(C);
 	}
 	return true;
 }

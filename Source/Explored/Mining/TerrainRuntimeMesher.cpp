@@ -24,7 +24,6 @@ struct FTerrainRemeshOutput
 
 namespace TerrainRuntimeMesherDetail
 {
-	const TCHAR* const MaterialPath = TEXT("/Game/Materials/M_Terrain.M_Terrain");
 	/** Tope de la caché del campo base (156 KB por chunk). */
 	constexpr int32 MaxCachedBases = 96;
 	constexpr int32 MaxStartsPerTick = 6;
@@ -119,7 +118,7 @@ void UTerrainRuntimeMesher::Initialize(UWorld& InWorld, TSharedRef<const FTerrai
 	EditPerRender = FMath::Max(1, FTerrainRemeshModel::EditChunksPerRenderChunk(InRender, InEdit));
 	SkirtSamples = FMath::Max(0, FMath::RoundToInt32(InRender.VoxelSize / FMath::Max(0.01f, InEdit.CellSize)));
 	Replacement = FTerrainReplacementModel(EditPerRender);
-	Material = LoadObject<UMaterialInterface>(nullptr, TerrainRuntimeMesherDetail::MaterialPath, nullptr, LOAD_Quiet | LOAD_NoWarn);
+	// El material sale del primer chunk horneado que se registre (SetMaterialFromBaked).
 	for (ULevel* Level : InWorld.GetLevels())
 	{
 		RegisterBakedActorsInLevel(Level);

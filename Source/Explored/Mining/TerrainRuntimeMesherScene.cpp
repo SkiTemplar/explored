@@ -108,10 +108,7 @@ void UTerrainRuntimeMesher::RegisterBakedActorsInLevel(ULevel* Level)
 			continue;
 		}
 		BakedActors.Add(Coord, MeshActor);
-		if (!Material)
-		{
-			Material = MeshComponent->GetMaterial(0);
-		}
+		SetMaterialFromBaked(MeshComponent->GetMaterial(0));
 		// Un chunk que vuelve a cargarse por streaming ya sustituido se oculta al momento.
 		if (Replacement.GetState(Coord) == ETerrainReplacementState::Replaced)
 		{
@@ -146,6 +143,48 @@ void UTerrainRuntimeMesher::OnRenderChunkReplaced(const FIntVector& RenderChunk)
 	++Stats.RenderChunksReplaced;
 	UE_LOG(LogExplored, Verbose, TEXT("[Terreno] Chunk horneado (%d, %d, %d) sustituido por mallas finas"),
 		RenderChunk.X, RenderChunk.Y, RenderChunk.Z);
+}
+
+void UTerrainRuntimeMesher::SetAsyncCollisionCooking(bool bAsync)
+{
+	bAsyncCooking = bAsync;
+	for (const auto& Pair : ChunkComponents)
+	{
+		if (UProceduralMeshComponent* Component = Pair.Value.Get())
+		{
+			Component->bUseAsyncCooking = bAsync;
+		}
+	}
+}
+
+bool UTerrainRuntimeMesher::IsCollisionCookPending()
+{
+	TArray<FIntVector> Chunks;
+	PendingCookSetups.GetKeys(Chunks);
+	bool bPending = false;
+	for (const FIntVector& Chunk : Chunks)
+	{
+		bPending |= IsCollisionPending(Chunk);
+	}
+	return bPending;
+}
+
+void UTerrainRuntimeMesher::SetMaterialFromBaked(UMaterialInterface* BakedMaterial)
+{
+	if (Material || !BakedMaterial)
+	{
+		return;
+	}
+	// El material de las mallas finas es el de los chunks horneados (M_Terrain): así no se
+	// carga nada por ruta y las que se crearon antes de verlo lo reciben ahora.
+	Material = BakedMaterial;
+	for (const auto& Pair : ChunkComponents)
+	{
+		if (UProceduralMeshComponent* Component = Pair.Value.Get())
+		{
+			Component->SetMaterial(0, Material);
+		}
+	}
 }
 
 bool UTerrainRuntimeMesher::IsCollisionPending(const FIntVector& EditChunk)

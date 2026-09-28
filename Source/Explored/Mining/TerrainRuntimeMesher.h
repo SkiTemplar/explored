@@ -102,8 +102,13 @@ public:
 	ETerrainReplacementState GetReplacementState(const FIntVector& RenderChunk) const { return Replacement.GetState(RenderChunk); }
 	const FTerrainRemeshStats& GetStats() const { return Stats; }
 	void ResetStats() { Stats = FTerrainRemeshStats(); }
-	/** Cocinado de colisión asíncrono (por defecto). Los tests lo quitan para comprobar la colisión al momento. */
-	void SetAsyncCollisionCooking(bool bAsync) { bAsyncCooking = bAsync; }
+	/**
+	 * Cocinado de colisión asíncrono (por defecto; también cambia los componentes que ya
+	 * existen). Los tests lo quitan para comprobar la colisión al momento.
+	 */
+	void SetAsyncCollisionCooking(bool bAsync);
+	/** Algún componente tiene colisión nueva sin cocinar todavía. */
+	bool IsCollisionCookPending();
 	int32 EditChunksPerRender() const { return EditPerRender; }
 
 	/** Etiqueta de los actores de terreno (horneados y el de las mallas finas). */
@@ -146,6 +151,7 @@ private:
 	AActor* EnsureRuntimeActor();
 	void SetBakedHidden(const FIntVector& RenderChunk, bool bHidden);
 	void SetBakedCollision(const FIntVector& RenderChunk, bool bEnabled);
+	void SetMaterialFromBaked(UMaterialInterface* BakedMaterial);
 	void CacheBase(const FIntVector& Chunk, TSharedPtr<const FDensityGrid> Grid);
 
 	TWeakObjectPtr<UWorld> World;
