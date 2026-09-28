@@ -51,7 +51,10 @@ def build_template(entry_name: str):
         src_path = pls.CACHE_DIR_POLYPIZZA / entry["src"]
         obj = pls.import_glb(src_path)
     else:
-        src_path = pls.CACHE_DIR / entry["pack"] / entry["src"]
+        pack = entry.get("pack")
+        if not pack:
+            raise ValueError(f"{entry['name']}: kind=\"obj\" requiere \"pack\"")
+        src_path = pls.CACHE_DIR / pack / entry["src"]
         obj = pls.import_obj(src_path)
         pls.remap_to_palette(obj, entry.get("force_role"))
     pls.normalize_scale_and_pivot(obj, entry["metric"], entry["target"])

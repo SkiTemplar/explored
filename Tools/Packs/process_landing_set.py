@@ -28,9 +28,23 @@ produccion (generado por Tools/Blender/run_all.py).
 import json
 import sys
 from pathlib import Path
+from typing import NotRequired, TypedDict
 
-import bpy
-from mathutils import Vector
+import bpy  # type: ignore[import-not-found]
+from mathutils import Vector  # type: ignore[import-not-found]
+
+
+class LandingEntry(TypedDict):
+    """Una fila de ``ENTRIES``: origen y normalizacion de una malla del set."""
+
+    slot: str
+    name: str
+    kind: str  # "glb" (Quaternius/Poly Pizza) u "obj" (Kenney)
+    src: str
+    metric: str  # "height" o "length"
+    target: float
+    pack: NotRequired[str]  # solo kind="obj": id en packs.json / carpeta de cache
+    force_role: NotRequired[str]  # solo kind="obj": swatch fija en vez de remapeo por material
 
 TOOLS_PACKS = Path(__file__).resolve().parent
 REPO_ROOT = TOOLS_PACKS.parents[1]
@@ -73,56 +87,56 @@ def role_uv(role: str) -> tuple:
 # normaliza por Z; 'length' por la mayor dimension horizontal (troncos/ramas
 # tumbados). force_role fija una unica swatch (solo obj).
 # ---------------------------------------------------------------------------
-ENTRIES = [
+ENTRIES: list[LandingEntry] = [
     # --- Palmeras cocoteras: 15-25 m, 4 variantes (Quaternius/Poly Pizza) ---
-    dict(slot="Palm", name="SM_LowPolyPalmA_01", kind="glb", src="palm_a.glb", metric="height", target=18.0),
-    dict(slot="Palm", name="SM_LowPolyPalmB_01", kind="glb", src="palm_b.glb", metric="height", target=22.0),
-    dict(slot="Palm", name="SM_LowPolyPalmC_01", kind="glb", src="palm_c.glb", metric="height", target=25.0),
-    dict(slot="Palm", name="SM_LowPolyPalmD_01", kind="glb", src="palm_d.glb", metric="height", target=15.0),
+    LandingEntry(slot="Palm", name="SM_LowPolyPalmA_01", kind="glb", src="palm_a.glb", metric="height", target=18.0),
+    LandingEntry(slot="Palm", name="SM_LowPolyPalmB_01", kind="glb", src="palm_b.glb", metric="height", target=22.0),
+    LandingEntry(slot="Palm", name="SM_LowPolyPalmC_01", kind="glb", src="palm_c.glb", metric="height", target=25.0),
+    LandingEntry(slot="Palm", name="SM_LowPolyPalmD_01", kind="glb", src="palm_d.glb", metric="height", target=15.0),
     # --- Arboles de selva de copa ancha (Quaternius/Poly Pizza) -------------
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=16.0),
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideB_01", kind="glb", src="jungle_wide_b.glb", metric="height", target=18.0),
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideC_01", kind="glb", src="jungle_wide_c.glb", metric="height", target=14.0),
-    dict(slot="JungleWide", name="SM_LowPolyJungleWideD_01", kind="glb", src="jungle_wide_d.glb", metric="height", target=17.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideA_01", kind="glb", src="jungle_wide_a.glb", metric="height", target=16.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideB_01", kind="glb", src="jungle_wide_b.glb", metric="height", target=18.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideC_01", kind="glb", src="jungle_wide_c.glb", metric="height", target=14.0),
+    LandingEntry(slot="JungleWide", name="SM_LowPolyJungleWideD_01", kind="glb", src="jungle_wide_d.glb", metric="height", target=17.0),
     # --- Arbustos (Quaternius/Poly Pizza) -----------------------------------
-    dict(slot="Shrub", name="SM_LowPolyShrubA_01", kind="glb", src="shrub_a.glb", metric="height", target=1.4),
-    dict(slot="Shrub", name="SM_LowPolyShrubB_01", kind="glb", src="shrub_b.glb", metric="height", target=1.0),
-    dict(slot="Shrub", name="SM_LowPolyShrubFlowering_01", kind="glb", src="shrub_flowering.glb", metric="height", target=1.6),
-    dict(slot="Shrub", name="SM_LowPolyShrubBanana_01", kind="glb", src="shrub_banana.glb", metric="height", target=2.0),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubA_01", kind="glb", src="shrub_a.glb", metric="height", target=1.4),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubB_01", kind="glb", src="shrub_b.glb", metric="height", target=1.0),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubFlowering_01", kind="glb", src="shrub_flowering.glb", metric="height", target=1.6),
+    LandingEntry(slot="Shrub", name="SM_LowPolyShrubBanana_01", kind="glb", src="shrub_banana.glb", metric="height", target=2.0),
     # --- Helechos / sotobosque (Quaternius/Poly Pizza) ----------------------
-    dict(slot="Fern", name="SM_LowPolyFernA_01", kind="glb", src="fern_a.glb", metric="height", target=0.7),
-    dict(slot="Fern", name="SM_LowPolyFernB_01", kind="glb", src="fern_b.glb", metric="height", target=0.55),
+    LandingEntry(slot="Fern", name="SM_LowPolyFernA_01", kind="glb", src="fern_a.glb", metric="height", target=0.7),
+    LandingEntry(slot="Fern", name="SM_LowPolyFernB_01", kind="glb", src="fern_b.glb", metric="height", target=0.55),
     # --- Hierba en matas (Quaternius/Poly Pizza) ----------------------------
-    dict(slot="Grass", name="SM_LowPolyGrassA_01", kind="glb", src="grass_a.glb", metric="height", target=0.4),
-    dict(slot="Grass", name="SM_LowPolyGrassB_01", kind="glb", src="grass_b.glb", metric="height", target=0.55),
-    dict(slot="Grass", name="SM_LowPolyGrassC_01", kind="glb", src="grass_c.glb", metric="height", target=0.35),
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassA_01", kind="glb", src="grass_a.glb", metric="height", target=0.4),
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassB_01", kind="glb", src="grass_b.glb", metric="height", target=0.55),
+    LandingEntry(slot="Grass", name="SM_LowPolyGrassC_01", kind="glb", src="grass_c.glb", metric="height", target=0.35),
     # --- Flores (Quaternius/Poly Pizza) -------------------------------------
-    dict(slot="Flower", name="SM_LowPolyFlowerA_01", kind="glb", src="flower_a.glb", metric="height", target=0.3),
-    dict(slot="Flower", name="SM_LowPolyFlowerB_01", kind="glb", src="flower_b.glb", metric="height", target=0.4),
-    dict(slot="Flower", name="SM_LowPolyFlowerC_01", kind="glb", src="flower_c.glb", metric="height", target=0.3),
+    LandingEntry(slot="Flower", name="SM_LowPolyFlowerA_01", kind="glb", src="flower_a.glb", metric="height", target=0.3),
+    LandingEntry(slot="Flower", name="SM_LowPolyFlowerB_01", kind="glb", src="flower_b.glb", metric="height", target=0.4),
+    LandingEntry(slot="Flower", name="SM_LowPolyFlowerC_01", kind="glb", src="flower_c.glb", metric="height", target=0.3),
     # --- Rocas de orilla (Kenney, mantenidas por peticion del director) ----
-    dict(slot="Rock", name="SM_LowPolyRockShoreA_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Rock", name="SM_LowPolyRockShoreA_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallA.obj", metric="height", target=0.4),
-    dict(slot="Rock", name="SM_LowPolyRockShoreB_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Rock", name="SM_LowPolyRockShoreB_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallB.obj", metric="height", target=0.5),
-    dict(slot="Rock", name="SM_LowPolyRockShoreC_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Rock", name="SM_LowPolyRockShoreC_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/rock_smallC.obj", metric="height", target=0.35),
-    dict(slot="Rock", name="SM_LowPolyRockSandA_01", kind="obj", pack="kenney-survival-kit",
+    LandingEntry(slot="Rock", name="SM_LowPolyRockSandA_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/rock-sand-a.obj", metric="height", target=0.6, force_role="RockGrey"),
-    dict(slot="Rock", name="SM_LowPolyRockSandB_01", kind="obj", pack="kenney-survival-kit",
+    LandingEntry(slot="Rock", name="SM_LowPolyRockSandB_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/rock-sand-b.obj", metric="height", target=0.5, force_role="RockGrey"),
     # --- Troncos, ramas caidas y setas (Kenney, mantenidas) -----------------
-    dict(slot="Debris", name="SM_LowPolyLog_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyLog_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/log.obj", metric="length", target=2.5),
-    dict(slot="Debris", name="SM_LowPolyLogLarge_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyLogLarge_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/log_large.obj", metric="length", target=4.0),
-    dict(slot="Debris", name="SM_LowPolyStump_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyStump_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/stump_round.obj", metric="height", target=0.8),
-    dict(slot="Debris", name="SM_LowPolyBranch_01", kind="obj", pack="kenney-survival-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyBranch_01", kind="obj", pack="kenney-survival-kit",
          src="Models/OBJ format/tree-log-small.obj", metric="length", target=1.2, force_role="BarkWarm"),
-    dict(slot="Debris", name="SM_LowPolyMushroomRed_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyMushroomRed_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/mushroom_red.obj", metric="height", target=0.35),
-    dict(slot="Debris", name="SM_LowPolyMushroomTan_01", kind="obj", pack="kenney-nature-kit",
+    LandingEntry(slot="Debris", name="SM_LowPolyMushroomTan_01", kind="obj", pack="kenney-nature-kit",
          src="Models/OBJ format/mushroom_tan.obj", metric="height", target=0.3),
 ]
 
@@ -309,7 +323,10 @@ def main():
         if entry["kind"] == "glb":
             src_path = CACHE_DIR_POLYPIZZA / entry["src"]
         else:
-            src_path = CACHE_DIR / entry["pack"] / entry["src"]
+            pack = entry.get("pack")
+            if not pack:
+                raise ValueError(f"{entry['name']}: kind=\"obj\" requiere \"pack\"")
+            src_path = CACHE_DIR / pack / entry["src"]
         if not src_path.exists():
             print(f"[skip] {entry['name']}: no existe {src_path} (¿bajaste el pack?)")
             continue
