@@ -56,7 +56,7 @@ const FMineToolInfo& FMiningModel::ToolInfo(EMineTool Tool)
 	// durabilidad la fija la plantilla `pala` (aquí 0 = no es de este catálogo).
 	static const FMineToolInfo Table[] = {
 		{ TEXT("mano"), 0, 0.30f, 1.5f, 0, false },
-		{ TEXT("pala_tosca"), 1, 0.50f, FTerrainEditModel::SecondsPerShovelStroke, 0, false },
+		{ TEXT("pala_tosca"), 1, 0.35f, FTerrainEditModel::SecondsPerShovelStroke, 0, false }, // = FTerrainEdits::ToolInfo(PalaTosca)
 		{ TEXT("pico_piedra"), 2, 0.40f, 1.3f, 55, false },
 		{ TEXT("pico_tallado"), 3, 0.42f, 1.2f, 75, false },
 		{ TEXT("pico_obsidiana"), 4, 0.50f, 1.0f, 30, true },

@@ -191,6 +191,13 @@ Cabecera 9 B + 3 B por tramo + 2 B por muestra. **Tope duro por paquete: 512 byt
 (≈ 240 muestras), por debajo de `MaxPacketSize` para que nunca fragmente. Una edición
 más grande se parte en varios paquetes del mismo chunk, en orden.
 
+Implementado y probado en el host: `FTerrainDeltaCodecModel` (códec, `DecodeAndApply`
+atómico), `FTerrainDeltaQueueModel` (la cola de abajo) y `FTerrainChunkChecksumModel` (la
+comprobación de cada 30 s). **Límite del `int16`:** un delta de más de ±32,767 m no cabe.
+Como la densidad base es una distancia a la superficie, una galería a más de ~32 m de
+profundidad lo supera; el códec rechaza esas muestras y las cuenta en vez de truncarlas.
+Pendiente de decidir: acotar el delta en `FTerrainEditModel` o subir de formato.
+
 **Versión 2, con capa** (para la arena de §2.6, que no es densidad sino un campo de
 alturas de 32×32 columnas por chunk de 8 m; ver 02 §5.1):
 
@@ -298,7 +305,7 @@ resolver «llevo un pico» a la vista), replicado a todos como 2 × (`uint16` id
 definición + `uint8` calidad) = 6 B.
 
 Estructura replicada del inventario propio: `FFastArraySerializer` de entradas de
-**13 bytes**:
+**12 bytes** (1+1+2+4+1+1+1+1):
 
 ```
 uint8  Slot           // EInventorySlot
@@ -311,9 +318,9 @@ uint8  Count           // apilado (biblia 03 §1.3, tope 10)
 uint8  Flags           // mojado, encendido, etc.
 ```
 
-Coste: fabricar mueve 2–3 huecos → **39 B por operación**; coalescido a 10 Hz da un
-techo de **3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
-inventario completo (24 huecos) son 312 B: lo que se manda al unirse.
+Coste: fabricar mueve 2–3 huecos → **36 B por operación**; coalescido a 10 Hz da un
+techo de **≈3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
+inventario completo (24 huecos) son 288 B: lo que se manda al unirse.
 
 **Piezas y nombre generado** de un objeto fabricado (que `UCarryComponent` guarda
 aparte de `FInventoryModel`) no van en el array: se piden por RPC fiable la primera vez

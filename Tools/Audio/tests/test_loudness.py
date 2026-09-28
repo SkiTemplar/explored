@@ -6,14 +6,10 @@ no exigir una sonoridad exacta."""
 
 from __future__ import annotations
 
-from explored_audio.levels import lufs_approx
+from explored_audio.levels import integrated_lufs, lufs_approx
 
 
 def _expected_range(name: str) -> tuple[float, float]:
-    if name.startswith("mus_"):
-        # La musica se normaliza a MUSIC_TARGET_LUFS en build.py: rango
-        # estrecho a proposito, es una comprobacion real de esa normalizacion.
-        return (-20.0, -12.0)
     if name.startswith("amb_"):
         # Los colchones de ambiente se normalizan a una sonoridad de
         # referencia (ver AMBIENCE_TARGET_LUFS en build.py): el rango es
@@ -38,7 +34,19 @@ def _expected_range(name: str) -> tuple[float, float]:
 
 def test_lufs_dentro_de_rango_por_familia(catalog, rendered):
     for spec in catalog:
+        if spec.category == "Musica":
+            continue  # se mide con sonoridad integrada, ver el test siguiente
         audio = rendered[spec.name]
         lufs = lufs_approx(audio)
         low, high = _expected_range(spec.name)
         assert low <= lufs <= high, f"{spec.name}: {lufs:.1f} LUFS fuera de [{low}, {high}]"
+
+
+def test_musica_a_menos_16_lufs_integrados(catalog, rendered):
+    """La musica se masteriza a MUSIC_TARGET_LUFS (-16) integrados con puertas
+    BS.1770: tolerancia de medio LU, es la comprobacion real del master."""
+    for spec in catalog:
+        if spec.category != "Musica":
+            continue
+        lufs = integrated_lufs(rendered[spec.name])
+        assert abs(lufs - (-16.0)) <= 0.5, f"{spec.name}: {lufs:.2f} LUFS integrados, se esperaban -16"

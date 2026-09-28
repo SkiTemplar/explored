@@ -43,7 +43,8 @@ namespace ExploredLinks
 	{
 		InOut.FireHeat = FMath::Max(InOut.FireHeat, FMath::Clamp(Links.FireHeat, 0.0f, 1.0f));
 		InOut.bSheltered = InOut.bSheltered || Links.bBuildingShelter;
-		InOut.CarriedWeightRatio = FMath::Max(0.0f, Links.CarriedWeightRatio);
+		// Max(0, NaN) devuelve NaN: una carga no finita cuenta como nada.
+		InOut.CarriedWeightRatio = FMath::IsFinite(Links.CarriedWeightRatio) ? FMath::Max(0.0f, Links.CarriedWeightRatio) : 0.0f;
 		InOut.bPlayingMusic = Links.bPlayingMusic;
 		InOut.bHasHat = InOut.bHasHat || Links.bHasHat;
 	}
@@ -266,7 +267,17 @@ namespace ExploredLinks
 
 	int32 DaysSurvived(float TotalDays, float RunStartDays)
 	{
-		return FMath::Max(0, FMath::FloorToInt(TotalDays - RunStartDays));
+		// FloorToInt de un valor no finito o fuera de int32 es UB (llega del reloj guardado).
+		const float Days = TotalDays - RunStartDays;
+		if (!FMath::IsFinite(Days) || Days <= 0.0f)
+		{
+			return 0;
+		}
+		if (Days >= 2147483648.0f)
+		{
+			return TNumericLimits<int32>::Max();
+		}
+		return FMath::FloorToInt(Days);
 	}
 
 	int32 FSailingOdometer::Step(const FVector2D& PositionCm, bool bUnderSail)
@@ -279,7 +290,8 @@ namespace ExploredLinks
 		if (bHasLast)
 		{
 			const double StepCm = FVector2D::Distance(PositionCm, Last);
-			if (StepCm <= MaxStepCm)
+			// Con matemáticas rápidas «NaN <= MaxStepCm» puede darse por cierto y luego FloorToInt(NaN).
+			if (FMath::IsFinite(StepCm) && StepCm <= MaxStepCm)
 			{
 				PendingCm += StepCm;
 			}
@@ -413,5 +425,299 @@ namespace ExploredLinks
 			}
 		}
 		return true;
+	}
+
+	// --- Cooperativo: dormir en grupo (biblia 08 §5.1) ----------------------------------
+
+	FGroupSleepDecision DecideGroupSleep(const TArray<FCoopSleeper>& Players)
+	{
+		FGroupSleepDecision Out;
+		int32 InBed = 0;
+		bool bAnyDowned = false;
+		for (const FCoopSleeper& Player : Players)
+		{
+			// Un derribado no puede estar acostado aunque la bandera diga lo contrario.
+			if (Player.bDowned)
+			{
+				bAnyDowned = true;
+			}
+			else if (Player.bInBed)
+			{
+				++InBed;
+			}
+		}
+		Out.StillUp = Players.Num() - InBed;
+		if (InBed == 0 && !bAnyDowned)
+		{
+			Out.Status = EGroupSleepStatus::NobodyInBed;
+		}
+		else if (bAnyDowned)
+		{
+			// Solo hace falta el aviso si alguien intenta dormir; sin nadie en la cama, silencio.
+			Out.Status = InBed > 0 ? EGroupSleepStatus::BlockedByDowned : EGroupSleepStatus::NobodyInBed;
+		}
+		else
+		{
+			Out.Status = Out.StillUp == 0 ? EGroupSleepStatus::AllInBed : EGroupSleepStatus::WaitingForOthers;
+		}
+		return Out;
+	}
+
+	float HoursUntilDawn(float HoursOfDay)
+	{
+		const float Safe = FMath::IsFinite(HoursOfDay) ? HoursOfDay : 0.0f;
+		float Hours = FMath::Fmod(GroupSleepDawnHour - Safe, 24.0f);
+		if (Hours <= 0.0f)
+		{
+			Hours += 24.0f;
+		}
+		return Hours;
+	}
+
+	FGroupSleepSession::FResult FGroupSleepSession::Update(const TArray<FCoopSleeper>& Players, float HoursOfDay, float DeltaGameHours)
+	{
+		FResult Out;
+		Out.Decision = DecideGroupSleep(Players);
+		const float Delta = (FMath::IsFinite(DeltaGameHours) && DeltaGameHours > 0.0f) ? DeltaGameHours : 0.0f;
+
+		auto Finish = [this, &Out](EGroupSleepEvent Event)
+		{
+			Out.Event = Event;
+			Out.HoursSlept = FMath::Min(HoursSlept, TargetHours);
+			Out.Recovery01 = FMath::Clamp(Out.HoursSlept / GroupSleepMaxHours, 0.0f, 1.0f);
+			Out.TimeScale = 1.0f;
+			bActive = false;
+			HoursSlept = 0.0f;
+			TargetHours = 0.0f;
+		};
+
+		if (Out.Decision.Status != EGroupSleepStatus::AllInBed)
+		{
+			bCompletedLatch = false;
+			if (bActive)
+			{
+				Finish(EGroupSleepEvent::Interrupted);
+			}
+			return Out;
+		}
+
+		if (bCompletedLatch)
+		{
+			return Out;
+		}
+
+		if (!bActive)
+		{
+			bActive = true;
+			HoursSlept = 0.0f;
+			TargetHours = FMath::Min(GroupSleepMaxHours, HoursUntilDawn(HoursOfDay));
+			Out.Event = EGroupSleepEvent::Started;
+			Out.TimeScale = GroupSleepTimeScale;
+			return Out;
+		}
+
+		HoursSlept += Delta;
+		if (HoursSlept >= TargetHours)
+		{
+			Finish(EGroupSleepEvent::Completed);
+			bCompletedLatch = true;
+			return Out;
+		}
+		Out.TimeScale = GroupSleepTimeScale;
+		return Out;
+	}
+
+	// --- Cooperativo: derribado y reanimación (biblia 08 §5.2) --------------------------
+
+	int32 RevivesUsedOn(const FCoopDownState& State, int32 Day)
+	{
+		return State.RevivesDay == Day ? State.RevivesToday : 0;
+	}
+
+	ECoopHealthZero OnHealthZero(FCoopDownState& State, const FSurvivalModeSettings& Mode, int32 PlayersConnected, int32 Day)
+	{
+		if (PlayersConnected <= 1)
+		{
+			return ECoopHealthZero::Dead;
+		}
+		if (Mode.HasPermadeath())
+		{
+			return ECoopHealthZero::Spectator;
+		}
+		if (State.bDowned)
+		{
+			// Seguir a cero de salud estando en el suelo no reinicia la cuenta atrás.
+			return ECoopHealthZero::Downed;
+		}
+		State.bDowned = true;
+		State.ReviveProgressSeconds = 0.0f;
+		State.SecondsLeft = RevivesUsedOn(State, Day) >= MaxRevivesPerDay ? DownedSecondsAfterCap : DownedSeconds;
+		return ECoopHealthZero::Downed;
+	}
+
+	bool IsReviveMedicine(FName ItemId)
+	{
+		static const FName Medicines[] = { FName(TEXT("botiquin")), FName(TEXT("vendaje_tela")), FName(TEXT("gel_aloe")) };
+		for (const FName& Medicine : Medicines)
+		{
+			if (ItemId == Medicine)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool AdvanceRevive(FCoopDownState& State, float DeltaSeconds, bool bMedicineInHand)
+	{
+		if (!State.bDowned)
+		{
+			return false;
+		}
+		if (FMath::IsFinite(DeltaSeconds) && DeltaSeconds > 0.0f)
+		{
+			State.ReviveProgressSeconds += DeltaSeconds;
+		}
+		const float Required = bMedicineInHand ? ReviveSecondsWithMedicine : ReviveSeconds;
+		return State.ReviveProgressSeconds >= Required;
+	}
+
+	void CancelRevive(FCoopDownState& State)
+	{
+		State.ReviveProgressSeconds = 0.0f;
+	}
+
+	void FinishRevive(FCoopDownState& State, FSurvivalState& Body, int32 Day)
+	{
+		if (!State.bDowned)
+		{
+			return;
+		}
+		const int32 Used = RevivesUsedOn(State, Day);
+		State.bDowned = false;
+		State.SecondsLeft = 0.0f;
+		State.ReviveProgressSeconds = 0.0f;
+		State.RevivesDay = Day;
+		State.RevivesToday = Used + 1;
+		Body.Health = RevivedHealth;
+		Body.Morale = FMath::Clamp(Body.Morale + RevivedMoraleDelta, 0.0f, 100.0f);
+	}
+
+	void TickGroupDowned(TArray<FCoopDownState>& Players, float DeltaSeconds, TArray<int32>& OutDied)
+	{
+		OutDied.Reset();
+		const float Delta = (FMath::IsFinite(DeltaSeconds) && DeltaSeconds > 0.0f) ? DeltaSeconds : 0.0f;
+		bool bAnyExpired = false;
+		for (FCoopDownState& Player : Players)
+		{
+			if (!Player.bDowned)
+			{
+				continue;
+			}
+			Player.SecondsLeft = FMath::Max(0.0f, Player.SecondsLeft - Delta);
+			bAnyExpired |= Player.SecondsLeft <= 0.0f;
+		}
+		if (!bAnyExpired)
+		{
+			return;
+		}
+		int32 Standing = 0;
+		for (const FCoopDownState& Player : Players)
+		{
+			Standing += Player.bDowned ? 0 : 1;
+		}
+		for (int32 Index = 0; Index < Players.Num(); ++Index)
+		{
+			FCoopDownState& Player = Players[Index];
+			if (Player.bDowned && (Player.SecondsLeft <= 0.0f || Standing == 0))
+			{
+				Player.bDowned = false;
+				Player.SecondsLeft = 0.0f;
+				Player.ReviveProgressSeconds = 0.0f;
+				OutDied.Add(Index);
+			}
+		}
+	}
+
+	// --- Cooperativo: escalado y reparto (biblia 08 §5.6, §5.7) -------------------------
+
+	int32 CoopPlayersClamped(int32 Players)
+	{
+		return FMath::Clamp(Players, 1, 4);
+	}
+
+	float CoopAbundanceScale(int32 Players)
+	{
+		return 1.0f + 0.25f * static_cast<float>(CoopPlayersClamped(Players) - 1);
+	}
+
+	int32 ScaleFiniteVein(int32 BaseUnits, int32 Players)
+	{
+		// En enteros: Base × (4 + N − 1) / 4, sin el error de coma flotante del 1,25 × Base.
+		const int64 Base = FMath::Max(0, BaseUnits);
+		return static_cast<int32>(FMath::Min<int64>(Base * (3 + CoopPlayersClamped(Players)) / 4, MAX_int32));
+	}
+
+	int32 PirateRaidersForPlayers(int32 Players, int32 BaseRaiders)
+	{
+		// Base × (1 + 0,4·(N−1)) = Base × (6 + 4N) / 10, redondeado en enteros: 5 × 1,4
+		// en float da 6,9999 y un truncado daría 6 asaltantes en vez de 7.
+		const int64 Base = FMath::Max(0, BaseRaiders);
+		const int64 Tenths = Base * (6 + 4 * CoopPlayersClamped(Players));
+		return static_cast<int32>(FMath::Min<int64>((Tenths + 5) / 10, MAX_int32));
+	}
+
+	int32 PirateCategoryBonus(int32 Players)
+	{
+		return (CoopPlayersClamped(Players) - 1) / 2;
+	}
+
+	bool ParseCoopScope(const FString& Text, ECoopScope& OutScope)
+	{
+		if (Text.Equals(TEXT("actor"), ESearchCase::IgnoreCase))
+		{
+			OutScope = ECoopScope::Actor;
+			return true;
+		}
+		if (Text.Equals(TEXT("world"), ESearchCase::IgnoreCase))
+		{
+			OutScope = ECoopScope::World;
+			return true;
+		}
+		if (Text.Equals(TEXT("witness"), ESearchCase::IgnoreCase))
+		{
+			OutScope = ECoopScope::Witness;
+			return true;
+		}
+		return false;
+	}
+
+	TArray<int32> AchievementRecipients(ECoopScope Scope, int32 ActorId, const FVector& EventCm, const TArray<FCoopPlayerSpot>& Players)
+	{
+		TArray<int32> Out;
+		const bool bEventFinite = FMath::IsFinite(EventCm.X) && FMath::IsFinite(EventCm.Y) && FMath::IsFinite(EventCm.Z);
+		for (const FCoopPlayerSpot& Player : Players)
+		{
+			if (!Player.bConnected || Player.PlayerId == INDEX_NONE || Out.Contains(Player.PlayerId))
+			{
+				continue;
+			}
+			bool bGets = Player.PlayerId == ActorId;
+			if (Scope == ECoopScope::World)
+			{
+				bGets = true;
+			}
+			else if (Scope == ECoopScope::Witness && !bGets && bEventFinite)
+			{
+				const double DistSq = FVector::DistSquared(Player.PositionCm, EventCm);
+				// Una posición NaN da una distancia NaN: se descarta de forma explícita.
+				bGets = FMath::IsFinite(DistSq) && DistSq < CoopWitnessRadiusCm * CoopWitnessRadiusCm;
+			}
+			if (bGets)
+			{
+				Out.Add(Player.PlayerId);
+			}
+		}
+		return Out;
 	}
 }

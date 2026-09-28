@@ -4,6 +4,7 @@
 
 #include "Achievements/AchievementsModel.h"
 #include "Boats/BoatTypes.h"
+#include "Boats/RaftYardModel.h"
 #include "Building/BuildingTypes.h"
 #include "Carry/InventoryModel.h"
 #include "Cartography/CartographyModel.h"
@@ -185,6 +186,16 @@ namespace ExploredSaveStates
 	// --- Embarcaciones («boats») ------------------------------------------------------
 	EXPLORED_API void SaveBoat(FSaveArchive& Ar, const FBoatSaveData& Boat);
 	EXPLORED_API void LoadBoat(const FSaveArchive& Ar, FBoatSaveData& OutBoat);
+
+	/**
+	 * Casco por piezas de una embarcación construida por el jugador (GDD v2 §3.14 y §3.17),
+	 * junto a «data» en cada entrada de la sección «boats». Solo lo tienen los barcos armados
+	 * por piezas: sin él, el barco carga con la ficha estándar de su tipo. Una pieza ilegible
+	 * se descarta y las uniones que la usaban también; los índices del resto se renumeran.
+	 * La validación física (valores no finitos, topes, huecos) la hace FRaftYardModel::FromHullSaveData.
+	 */
+	EXPLORED_API void SaveRaftHull(FSaveArchive& Ar, const FRaftHullSaveData& Hull);
+	EXPLORED_API void LoadRaftHull(const FSaveArchive& Ar, FRaftHullSaveData& OutHull);
 
 	// --- Pesca («fishing») -----------------------------------------------------------
 	EXPLORED_API void SaveFishing(FSaveArchive& Ar, const FFishingSaveState& State);

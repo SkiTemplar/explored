@@ -129,6 +129,10 @@ void FTramwayModelSpec::Define()
 			FTramwayModel Model;
 			TestTrue(TEXT("redondeo"), Model.SnapNode(FVector(-1.1, -2.9, -0.07)) == FIntVector(-1, -1, -1));
 			TestTrue(TEXT("ida y vuelta"), Model.SnapNode(Model.NodePosition(FIntVector(-7, 3, -12))) == FIntVector(-7, 3, -12));
+			// Sin acotar, convertir estos valores a int32 es UB (lo caza HOST_TESTS_SANITIZE).
+			TestTrue(TEXT("NaN al origen"), Model.SnapNode(FVector(static_cast<double>(NAN), 0.0, 0.0)).X == 0);
+			const FIntVector Far = Model.SnapNode(FVector(1.0e300, -1.0e300, static_cast<double>(INFINITY)));
+			TestTrue(TEXT("lejanísimo: acotado"), Far.X > 0 && Far.Y < 0 && Far.Z == 0);
 		});
 	});
 
@@ -409,6 +413,7 @@ void FTramwayModelSpec::Define()
 			TestFalse(TEXT("200,5 kg"), Model.SetLoad(Cart, 200.5f));
 			TestFalse(TEXT("negativa"), Model.SetLoad(Cart, -1.0f));
 			TestFalse(TEXT("NaN"), Model.SetLoad(Cart, NAN));
+			TestFalse(TEXT("infinita"), Model.SetLoad(Cart, INFINITY));
 			TestEqual(TEXT("se queda con 200"), Cart.LoadKg, 200.0f);
 			TestEqual(TEXT("masa total"), Model.CartMass(Cart), 260.0);
 		});
@@ -427,6 +432,8 @@ void FTramwayModelSpec::Define()
 			TestEqual(TEXT("cuenta"), Model.NumDamaged(), 1);
 			TestTrue(TEXT("dañado en los dos sentidos"), Model.IsDamaged(FIntVector(3, 0, 0), FIntVector(2, 0, 0)));
 			TestEqual(TEXT("lejos no toca nada"), Model.DamageInSphere(FVector(5.0, 5.0, 0.0), 2.0f).Num(), 0);
+			TestEqual(TEXT("radio NaN no toca nada"), Model.DamageInSphere(FVector(5.0, 0.3, 0.0), NAN).Num(), 0);
+			TestEqual(TEXT("radio infinito no toca nada"), Model.DamageInSphere(FVector(5.0, 0.3, 0.0), INFINITY).Num(), 0);
 
 			FMineCart Cart;
 			Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0));
@@ -611,6 +618,13 @@ void FTramwayModelSpec::Define()
 			BadCart = FTramwayModel::CartToValue(Cart);
 			BadCart.Set(TEXT("s"), FSaveValue::MakeString(TEXT("NaN")));
 			TestFalse(TEXT("posición no finita"), FTramwayModel::CartFromValue(BadCart, Cart));
+			BadCart = FTramwayModel::CartToValue(Cart);
+			BadCart.Set(TEXT("load"), FSaveValue::MakeString(TEXT("NaN")));
+			TestFalse(TEXT("carga no finita"), FTramwayModel::CartFromValue(BadCart, Cart));
+
+			FTramwayModel Track;
+			Line(Track, FIntVector(0, 0, 0), 1, 0);
+			TestFalse(TEXT("colocar en S NaN"), Track.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0), static_cast<double>(NAN)));
 		});
 
 		It("un vagón cargado con la posición fuera de su tramo no cuelga el paso en una vía cerrada", [this]()
@@ -635,6 +649,38 @@ void FTramwayModelSpec::Define()
 					const double Length = Model.SegmentLength(Loaded.From, Loaded.To);
 					TestTrue(TEXT("sobre su tramo"), Loaded.S >= 0.0 && Loaded.S <= Length);
 				}
+			}
+		});
+
+		It("una carga, velocidad o posición NaN en el vagón no cuelga el paso en una vía cerrada", [this]()
+		{
+			FTramwayModel Model;
+			Line(Model, FIntVector(0, 0, 0), 1, 0, ERailDir::PosX);
+			Line(Model, FIntVector(1, 0, 0), 1, 0, ERailDir::PosY);
+			Line(Model, FIntVector(1, 1, 0), 1, 0, ERailDir::NegX);
+			Line(Model, FIntVector(0, 1, 0), 1, 0, ERailDir::NegY);
+			for (int32 Field = 0; Field < 3; ++Field)
+			{
+				FMineCart Cart;
+				Model.PlaceCart(Cart, FIntVector(0, 0, 0), FIntVector(1, 0, 0), 0.5);
+				Cart.V = 0.5;
+				if (Field == 0)
+				{
+					Cart.LoadKg = NAN;
+				}
+				else if (Field == 1)
+				{
+					Cart.V = static_cast<double>(NAN);
+				}
+				else
+				{
+					Cart.S = static_cast<double>(NAN);
+				}
+				double Acc = 0.0;
+				Model.Step(Cart, Push(), 0.5, Acc);
+				const double Length = Model.SegmentLength(Cart.From, Cart.To);
+				TestTrue(TEXT("sobre su tramo"), Cart.S >= 0.0 && Cart.S <= Length);
+				TestTrue(TEXT("todo finito"), FMath::IsFinite(Cart.S) && FMath::IsFinite(Cart.V) && FMath::IsFinite(Cart.LoadKg));
 			}
 		});
 	});

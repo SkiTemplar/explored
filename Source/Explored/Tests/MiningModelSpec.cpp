@@ -79,7 +79,7 @@ void FMiningModelSpec::Define()
 			struct FRow { EMineTool T; const TCHAR* Id; int32 Tier; float Radius; float Seconds; int32 Durability; bool bFragile; };
 			const FRow Rows[] = {
 				{ EMineTool::Mano, TEXT("mano"), 0, 0.30f, 1.5f, 0, false },
-				{ EMineTool::PalaTosca, TEXT("pala_tosca"), 1, 0.50f, 1.2f, 0, false },
+				{ EMineTool::PalaTosca, TEXT("pala_tosca"), 1, 0.35f, 1.2f, 0, false },
 				{ EMineTool::PicoPiedra, TEXT("pico_piedra"), 2, 0.40f, 1.3f, 55, false },
 				{ EMineTool::PicoTallado, TEXT("pico_tallado"), 3, 0.42f, 1.2f, 75, false },
 				{ EMineTool::PicoObsidiana, TEXT("pico_obsidiana"), 4, 0.50f, 1.0f, 30, true },

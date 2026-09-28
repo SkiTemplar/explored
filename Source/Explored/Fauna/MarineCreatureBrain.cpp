@@ -320,13 +320,15 @@ bool FMarineCreatureBrain::ReefSharkAttackRoll(uint32 Seed, int32 Encounter, flo
 FMarineBrainEvents FMarineCreatureBrain::Tick(float DeltaSeconds, const FFaunaStimuli& Stimuli, const FFaunaWorldQuery& World)
 {
 	FMarineBrainEvents Events;
-	if (DeltaSeconds <= 0.0f)
+	// NaN pasaría el guarda `<= 0` y CeilToInt(NaN) es indefinido.
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f)
 	{
 		return Events;
 	}
 	// Pasos de como mucho 1/20 s para que las embestidas y los saltos no atraviesen nada.
-	const int32 Steps = FMath::Max(1, FMath::CeilToInt(DeltaSeconds / 0.05f));
-	const float Dt = DeltaSeconds / Steps;
+	const float Simulated = FMath::Min(DeltaSeconds, MaxStepSeconds * MaxStepsPerTick);
+	const int32 Steps = FMath::Clamp(FMath::CeilToInt(Simulated / MaxStepSeconds), 1, MaxStepsPerTick);
+	const float Dt = Simulated / Steps;
 	for (int32 I = 0; I < Steps; ++I)
 	{
 		LocalTime += Dt;

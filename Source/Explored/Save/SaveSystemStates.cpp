@@ -46,6 +46,19 @@ struct TSaveEnumNames<EBoatCondition>
 };
 
 template <>
+struct TSaveEnumNames<EHullPieceType>
+{
+	static constexpr const TCHAR* Names[] = { TEXT("Log"), TEXT("Plank"), TEXT("Bamboo"), TEXT("Float"), TEXT("Mast"), TEXT("Sail"),
+		TEXT("Oars"), TEXT("Paddle") };
+};
+
+template <>
+struct TSaveEnumNames<ERaftJointKind>
+{
+	static constexpr const TCHAR* Names[] = { TEXT("Fiber"), TEXT("Rope"), TEXT("Nails") };
+};
+
+template <>
 struct TSaveEnumNames<ETrapKind>
 {
 	static constexpr const TCHAR* Names[] = { TEXT("Nasa"), TEXT("CrabTrap"), TEXT("StoneCorral") };
@@ -86,6 +99,8 @@ static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EWeatherState>::Names) == static_cas
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishBait>::Names) == static_cast<int32>(EFishBait::Count), "Nombres de EFishBait");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishHabitat>::Names) == static_cast<int32>(EFishHabitat::Count), "Nombres de EFishHabitat");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ETrapKind>::Names) == static_cast<int32>(ETrapKind::Count), "Nombres de ETrapKind");
+static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EHullPieceType>::Names) == static_cast<int32>(EHullPieceType::Count), "Nombres de EHullPieceType");
+static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ERaftJointKind>::Names) == static_cast<int32>(ERaftJointKind::Count), "Nombres de ERaftJointKind");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EBoatType>::Names) == static_cast<int32>(EBoatType::Count), "Nombres de EBoatType");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ECookTechnique>::Names) == static_cast<int32>(ECookTechnique::Count), "Nombres de ECookTechnique");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFireLevel>::Names) == static_cast<int32>(EFireLevel::Count), "Nombres de EFireLevel");
@@ -144,8 +159,27 @@ namespace SaveSystemStatesDetail
 	void ReadStatValues(const FSaveArchive& Ar, FAchievementStatValues& Out)
 	{
 		Out = FAchievementStatValues();
-		Ar.Read(TEXT("numbers"), Out.Numbers);
-		Ar.Read(TEXT("sets"), Out.Sets);
+		TMap<FName, double> Numbers;
+		Ar.Read(TEXT("numbers"), Numbers);
+		for (const TPair<FName, double>& Number : Numbers)
+		{
+			// "NaN" o "Infinity" (el formato los lee como reales) desbloquearían o romperían el progreso.
+			if (FMath::IsFinite(Number.Value))
+			{
+				Out.Numbers.Add(Number.Key, Number.Value);
+			}
+		}
+		TMap<FName, TArray<FName>> Sets;
+		Ar.Read(TEXT("sets"), Sets);
+		for (const TPair<FName, TArray<FName>>& Set : Sets)
+		{
+			// Sin repetidos: ["a", "a"] contaría dos en GetSetSize.
+			TArray<FName>& Items = Out.Sets.Add(Set.Key);
+			for (const FName& Item : Set.Value)
+			{
+				Items.AddUnique(Item);
+			}
+		}
 		Ar.Read(TEXT("flags"), Out.Flags);
 	}
 
@@ -208,6 +242,29 @@ namespace SaveSystemStatesDetail
 		}
 	}
 
+	/**
+	 * Coordenada de celda guardada como real: false si no es finita o no cabe en
+	 * int32 ("cell": [1e30, 0, 0] o ["NaN", 0, 0]); convertirla sería UB.
+	 */
+	bool RoundCellCoord(double Value, int32& Out)
+	{
+		if (!FMath::IsFinite(Value) || Value < -2147483648.0 || Value > 2147483647.0)
+		{
+			return false;
+		}
+		Out = FMath::RoundToInt(Value);
+		return true;
+	}
+
+	/**
+	 * Real cargado dentro de [Lo, Hi]; uno no finito toma Default. El formato lee
+	 * "NaN" e "Infinity" como reales y FMath::Clamp(NaN) devolvería Hi.
+	 */
+	float SaneFloat(float Value, float Lo, float Hi, float Default)
+	{
+		return FMath::IsFinite(Value) ? FMath::Clamp(Value, Lo, Hi) : Default;
+	}
+
 	/** Une B en A sin repetir y conservando el orden de A. */
 	void UnionInto(TArray<FName>& A, const TArray<FName>& B)
 	{
@@ -260,11 +317,12 @@ namespace ExploredSaveStates
 		ReadList(Ar, TEXT("pieces"), OutState.Pieces, [](const FSaveArchive& In, FBuildingPieceState& Piece)
 		{
 			FVector Cell = FVector::ZeroVector;
-			if (!In.Read(TEXT("id"), Piece.Id) || !In.Read(TEXT("defId"), Piece.DefId) || !In.Read(TEXT("cell"), Cell))
+			if (!In.Read(TEXT("id"), Piece.Id) || !In.Read(TEXT("defId"), Piece.DefId) || !In.Read(TEXT("cell"), Cell)
+				|| !RoundCellCoord(Cell.X, Piece.Placement.Cell.X) || !RoundCellCoord(Cell.Y, Piece.Placement.Cell.Y)
+				|| !RoundCellCoord(Cell.Z, Piece.Placement.Cell.Z))
 			{
 				return false;
 			}
-			Piece.Placement.Cell = FIntVector(FMath::RoundToInt(Cell.X), FMath::RoundToInt(Cell.Y), FMath::RoundToInt(Cell.Z));
 			In.Read(TEXT("baseId"), Piece.Placement.BaseId);
 			In.Read(TEXT("rotation"), Piece.Placement.Rotation);
 			In.Read(TEXT("integrity"), Piece.Integrity);
@@ -529,6 +587,8 @@ namespace ExploredSaveStates
 			State.Read(TEXT("signalSmokeHours"), OutFire.Fire.SignalSmokeHours);
 			State.Read(TEXT("heat"), OutFire.Fire.Heat);
 			State.Read(TEXT("smoke"), OutFire.Fire.Smoke);
+			// El formato admite NaN/Infinity: un combustible NaN dejaría el fuego ardiendo para siempre.
+			FFireModel::Sanitize(OutFire.Fire);
 		}
 		FSaveArchive Pot;
 		if (Ar.Read(TEXT("pot"), Pot))
@@ -539,6 +599,7 @@ namespace ExploredSaveStates
 			Pot.Read(TEXT("recipe"), OutFire.Pot.RecipeId);
 			Pot.Read(TEXT("ingredients"), OutFire.Pot.IngredientIds);
 			Pot.Read(TEXT("progressMinutes"), OutFire.Pot.ProgressMinutes);
+			FCookingModel::SanitizePot(OutFire.Pot);
 		}
 	}
 
@@ -593,6 +654,11 @@ namespace ExploredSaveStates
 		Out.Profile = Current.Profile;
 		for (const TPair<FName, double>& Number : Loaded.Profile.Numbers)
 		{
+			// Max(Valor, NaN) devuelve NaN y pisaría el progreso del perfil.
+			if (!FMath::IsFinite(Number.Value))
+			{
+				continue;
+			}
 			double& Value = Out.Profile.Numbers.FindOrAdd(Number.Key, Number.Value);
 			Value = FMath::Max(Value, Number.Value);
 		}
@@ -645,7 +711,9 @@ namespace ExploredSaveStates
 		{
 			ReadInventoryItem(In, Entry.Item);
 			In.Read(TEXT("slotIndex"), Entry.SlotIndex);
-			return Entry.Item.IsValid();
+			// Un id negativo o enorme haría rechazar el inventario entero en ValidateState:
+			// se pierde ese objeto y no todo lo demás.
+			return Entry.Item.IsValid() && FInventoryModel::IsUsableInstanceId(Entry.Item.InstanceId);
 		});
 	}
 
@@ -794,7 +862,7 @@ namespace ExploredSaveStates
 			const int32 Num = FMath::Min(Conditions.Num(), static_cast<int32>(ECondition::Count));
 			for (int32 I = 0; I < Num; ++I)
 			{
-				OutState.ConditionTime[I] = FMath::Max(0.0f, Conditions[I]);
+				OutState.ConditionTime[I] = SaneFloat(Conditions[I], 0.0f, TNumericLimits<float>::Max(), 0.0f);
 			}
 		}
 		Ar.Read(TEXT("scurvySeverity"), OutState.ScurvySeverity);
@@ -808,8 +876,36 @@ namespace ExploredSaveStates
 			In.Read(TEXT("bandaged"), Wound.bBandaged);
 			In.Read(TEXT("medicinal"), Wound.bMedicinal);
 			In.Read(TEXT("infected"), Wound.bInfected);
-			return In.Read(TEXT("depth"), Wound.Depth);
+			// Una herida sin profundidad legible se descarta. Fuera de [0, 1] el sangrado
+			// crece sin tope (profundidad 2) o cura (sangrado -50).
+			if (!In.Read(TEXT("depth"), Wound.Depth) || !FMath::IsFinite(Wound.Depth))
+			{
+				return false;
+			}
+			Wound.Depth = FMath::Clamp(Wound.Depth, 0.0f, 1.0f);
+			Wound.Bleeding = SaneFloat(Wound.Bleeding, 0.0f, 1.0f, Wound.Depth);
+			Wound.Healed = SaneFloat(Wound.Healed, 0.0f, 1.0f, 0.0f);
+			Wound.HoursUntreated = SaneFloat(Wound.HoursUntreated, 0.0f, TNumericLimits<float>::Max(), 0.0f);
+			return true;
 		});
+
+		// Valores del cuerpo en los rangos que usa FSurvivalModel; uno no finito vuelve al de partida nueva.
+		const FSurvivalState Defaults;
+		OutState.Health = SaneFloat(OutState.Health, 0.0f, 100.0f, Defaults.Health);
+		OutState.Hunger = SaneFloat(OutState.Hunger, 0.0f, 100.0f, Defaults.Hunger);
+		OutState.Thirst = SaneFloat(OutState.Thirst, 0.0f, 100.0f, Defaults.Thirst);
+		OutState.Energy = SaneFloat(OutState.Energy, 0.0f, 100.0f, Defaults.Energy);
+		OutState.Rest = SaneFloat(OutState.Rest, 0.0f, 100.0f, Defaults.Rest);
+		OutState.Morale = SaneFloat(OutState.Morale, 0.0f, 100.0f, Defaults.Morale);
+		OutState.Protein = SaneFloat(OutState.Protein, 0.0f, 100.0f, Defaults.Protein);
+		OutState.Carbs = SaneFloat(OutState.Carbs, 0.0f, 100.0f, Defaults.Carbs);
+		OutState.Vitamins = SaneFloat(OutState.Vitamins, 0.0f, 100.0f, Defaults.Vitamins);
+		// Margen amplio: el modelo nunca se aleja tanto de 37 °C.
+		OutState.BodyTemperature = SaneFloat(OutState.BodyTemperature, 25.0f, 45.0f, Defaults.BodyTemperature);
+		OutState.Wetness = SaneFloat(OutState.Wetness, 0.0f, 1.0f, Defaults.Wetness);
+		OutState.ScurvySeverity = SaneFloat(OutState.ScurvySeverity, 0.0f, 1.0f, Defaults.ScurvySeverity);
+		OutState.SunDose = SaneFloat(OutState.SunDose, 0.0f, TNumericLimits<float>::Max(), Defaults.SunDose);
+		OutState.MonotonyHours = SaneFloat(OutState.MonotonyHours, 0.0f, TNumericLimits<float>::Max(), Defaults.MonotonyHours);
 	}
 
 	// --- Embarcaciones -------------------------------------------------------------------------
@@ -847,6 +943,66 @@ namespace ExploredSaveStates
 		Ar.Read(TEXT("moored"), OutBoat.bMoored);
 		Ar.Read(TEXT("mooringAnchor"), OutBoat.MooringAnchorCm);
 		Ar.Read(TEXT("mooringLength"), OutBoat.MooringLengthCm);
+	}
+
+	void SaveRaftHull(FSaveArchive& Ar, const FRaftHullSaveData& Hull)
+	{
+		WriteList(Ar, TEXT("pieces"), Hull.Pieces, [](FSaveArchive& Out, const FHullPiece& Piece)
+		{
+			Out.Write(TEXT("type"), Piece.Type);
+			Out.Write(TEXT("center"), Piece.CenterCm);
+			Out.Write(TEXT("size"), Piece.SizeCm);
+		});
+		WriteList(Ar, TEXT("joints"), Hull.Joints, [](FSaveArchive& Out, const FRaftJoint& Joint)
+		{
+			Out.Write(TEXT("a"), Joint.PieceA);
+			Out.Write(TEXT("b"), Joint.PieceB);
+			Out.Write(TEXT("kind"), Joint.Kind);
+			Out.Write(TEXT("health"), Joint.Health01);
+		});
+	}
+
+	void LoadRaftHull(const FSaveArchive& Ar, FRaftHullSaveData& OutHull)
+	{
+		OutHull = FRaftHullSaveData();
+		// No se usa ReadList para las piezas: las uniones las citan por índice, así que hay
+		// que saber qué índice guardado acaba en cuál al descartar una ilegible.
+		TArray<int32> Remap;
+		if (const FSaveValue* List = Ar.FindValue(TEXT("pieces")); List && List->IsArray())
+		{
+			Remap.Init(INDEX_NONE, List->Num());
+			for (int32 I = 0; I < List->Num(); ++I)
+			{
+				const FSaveValue& Entry = List->At(I);
+				if (!Entry.IsObject())
+				{
+					continue;
+				}
+				const FSaveArchive PieceAr(Entry);
+				FHullPiece Piece;
+				// Sin tipo o sin centro no hay pieza: un tronco inventado en el origen cambiaría el casco.
+				if (!PieceAr.Read(TEXT("type"), Piece.Type) || !PieceAr.Read(TEXT("center"), Piece.CenterCm))
+				{
+					continue;
+				}
+				// Sin tamaño: el del tipo (SizeCm a cero).
+				PieceAr.Read(TEXT("size"), Piece.SizeCm);
+				Remap[I] = OutHull.Pieces.Add(Piece);
+			}
+		}
+		ReadList(Ar, TEXT("joints"), OutHull.Joints, [&Remap](const FSaveArchive& In, FRaftJoint& Joint)
+		{
+			int32 A = INDEX_NONE;
+			int32 B = INDEX_NONE;
+			if (!In.Read(TEXT("a"), A) || !In.Read(TEXT("b"), B) || !In.Read(TEXT("kind"), Joint.Kind))
+			{
+				return false;
+			}
+			Joint.PieceA = Remap.IsValidIndex(A) ? Remap[A] : INDEX_NONE;
+			Joint.PieceB = Remap.IsValidIndex(B) ? Remap[B] : INDEX_NONE;
+			In.Read(TEXT("health"), Joint.Health01);
+			return Joint.PieceA != INDEX_NONE && Joint.PieceB != INDEX_NONE;
+		});
 	}
 
 	// --- Pesca ------------------------------------------------------------------------------------
@@ -948,9 +1104,15 @@ namespace ExploredSaveStates
 		OutClock = FSavedClock();
 		Ar.Read(TEXT("day"), OutClock.Day);
 		Ar.Read(TEXT("hours"), OutClock.Hours);
-		OutClock.Hours = FMath::Clamp(OutClock.Hours, 0.0f, 23.999f);
+		OutClock.Hours = SaneFloat(OutClock.Hours, 0.0f, 23.999f, FSavedClock().Hours);
 		OutClock.Day = FMath::Max(0, OutClock.Day);
 		Ar.Read(TEXT("forcedWeather"), OutClock.ForcedWeather);
 		Ar.Read(TEXT("forcedUntilDays"), OutClock.ForcedUntilDays);
+		// "Infinity" forzaría el clima para siempre: un plazo no finito anula el forzado.
+		if (!FMath::IsFinite(OutClock.ForcedUntilDays))
+		{
+			OutClock.ForcedWeather = EWeatherState::Count;
+			OutClock.ForcedUntilDays = 0.0f;
+		}
 	}
 }

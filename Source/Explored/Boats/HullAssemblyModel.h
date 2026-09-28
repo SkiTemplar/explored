@@ -220,11 +220,12 @@ public:
 
 	static const FHullPieceSpec& Spec(EHullPieceType Type);
 
-	/** Añade una pieza; devuelve su índice. */
+	/** Añade una pieza; devuelve su índice, o INDEX_NONE si su centro o su tamaño no son finitos. */
 	int32 AddPiece(const FHullPiece& Piece);
 	/** Quita una pieza; false si el índice no existe. */
 	bool RemovePiece(int32 Index);
-	void AddLoad(const FHullLoad& Load) { Loads.Add(Load); }
+	/** Añade una carga; una con masa o centro no finitos se ignora. */
+	void AddLoad(const FHullLoad& Load);
 	void ClearLoads() { Loads.Reset(); }
 
 	const TArray<FHullPiece>& GetPieces() const { return Pieces; }

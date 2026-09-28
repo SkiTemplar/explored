@@ -4,6 +4,8 @@
 #include "Survival/BodySignals.h"
 #include "Survival/SurvivalModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace BodyTest
@@ -203,6 +205,32 @@ void FBodySpec::Define()
 			TestEqual(TEXT("Con tela cierra después"), Cloth.Wounds.Num(), 0);
 		});
 
+		It("una herida fuera de rango se acota: ni sangra sin tope ni cura", [this]()
+		{
+			FSurvivalState Deep;
+			FWound& W = Deep.Wounds.AddDefaulted_GetRef();
+			W.Depth = 3.0f;
+			W.Bleeding = 0.5f;
+			W.bBandaged = true;
+			TArray<ESurvivalEvent> Events;
+			Simulate(Deep, Mild(), 2.0f, Survivor(), Events);
+			TestTrue(FString::Printf(TEXT("El sangrado no crece (%.2f)"), Deep.Wounds[0].Bleeding), Deep.Wounds[0].Bleeding <= 0.5f);
+			TestTrue(TEXT("Profundidad acotada"), Deep.Wounds[0].Depth <= 1.0f);
+
+			FSurvivalState Clean;
+			Clean.Health = 50.0f;
+			FSurvivalState Negative = Clean;
+			FWound& N = Negative.Wounds.AddDefaulted_GetRef();
+			N.Depth = 0.2f;
+			N.Bleeding = -5.0f;
+			N.bBandaged = true;
+			N.HoursUntreated = std::numeric_limits<float>::quiet_NaN();
+			Simulate(Clean, Mild(), 1.0f, Survivor(), Events);
+			Simulate(Negative, Mild(), 1.0f, Survivor(), Events);
+			TestTrue(TEXT("Sangrar en negativo no cura"), Negative.Health <= Clean.Health);
+			TestTrue(TEXT("Horas sin tratar finitas"), Negative.Wounds.Num() == 1 && FMath::IsFinite(Negative.Wounds[0].HoursUntreated));
+		});
+
 		It("la pasta de cúrcuma cura la infección", [this]()
 		{
 			FSurvivalState S;
@@ -244,6 +272,16 @@ void FBodySpec::Define()
 			TestTrue(TEXT("Roca > tierra > arena"), Rock > Ground && Ground > Sand);
 			TestEqual(TEXT("Al agua desde 10 m, sin daño"), FBodyModel::FallDamage(10.0f, ELandingSurface::Water).Damage, 0.0f);
 			TestEqual(TEXT("Altura no válida"), FBodyModel::FallDamage(-4.0f, ELandingSurface::Rock).Damage, 0.0f);
+			for (const float Bad : { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity() })
+			{
+				const FFallResult R = FBodyModel::FallDamage(Bad, ELandingSurface::Rock);
+				TestTrue(TEXT("Altura no finita: sin daño ni esguince"), R.Damage == 0.0f && R.SprainHours == 0.0f);
+			}
+			for (const ELandingSurface Surface : { ELandingSurface::Rock, ELandingSurface::Water })
+			{
+				const FFallResult Huge = FBodyModel::FallDamage(1.0e30f, Surface);
+				TestTrue(TEXT("Altura enorme: daño finito y mortal"), FMath::IsFinite(Huge.Damage) && Huge.Damage >= 100.0f);
+			}
 		});
 
 		It("tuercen el tobillo desde unos 4.5 m y la férula lo cura", [this]()

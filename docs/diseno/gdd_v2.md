@@ -252,6 +252,11 @@ mapa.
     tierra la escalera es un túnel) y hasta 64 peldaños. Tallarla cuesta golpes: cada
     golpe sobre la escalera marcada arranca como mucho el volumen de un golpe de pico en
     ese material, y la escalera se va definiendo poco a poco hasta quedar completa.
+  - **Peticiones imposibles.** Si una edición llega con valores no finitos, fuera del
+    mundo, con una pala o un montón de tierra de más de 4 m de radio o con una escalera
+    que pasa de los topes anteriores, no se toca nada y la herramienta rebota, igual que
+    contra un material demasiado duro. Así ni un fallo ni un cliente del cooperativo
+    pueden colgar la partida o estropear el guardado del terreno.
   - **Persistencia.** Todo queda en la capa `"terrain"` de la sección `world` del
     guardado (deltas por chunk de 8 m en milímetros enteros). Un agujero sigue cavado
     al recargar la partida (criterio de salida de §6.1).
@@ -494,7 +499,9 @@ catálogo y la misma vitrina.
 
 Principio aprobado por el director: **el mundo entero es interactivo y se comporta de
 forma natural.** Esta sección cubre la primera mecánica de ese principio. Después
-vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones naturales.
+vendrán la arena viva (§3.13), el astillero de balsas (§3.17) y otras interacciones
+naturales: el incendio (§3.15), la lluvia en recipientes (§3.16) y los cocos que caen
+al sacudir (§3.18).
 
 - **Objetivo:** que cualquier árbol, palmera o arbusto se pueda talar o modificar, y que
   el bosque se regenere sin necesitar reglas especiales.
@@ -744,8 +751,15 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
   8 troncos así una balsa no aguanta a una persona. La pieza «tronco» del casco es un
   tronco de balsa de verdad (72,6 kg: se lleva a hombros entre dos o se hace rodar).
   Hay que decidir si es un objeto nuevo (`tronco_balsa`) o si se revisa el peso.
-- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (montaje
-  por piezas en la sección de barcos, pendiente).
+- **Al guardar y cargar.** Un barco armado por piezas se guarda con sus piezas y sus
+  uniones, cada una con su salud, y al cargar navega exactamente igual: mismo calado,
+  misma GM y la misma unión a medio romper. Las cargas y los pasajeros no se guardan,
+  porque salen del inventario del barco y de quién sube. Si una pieza del guardado es
+  imposible (valores no finitos, más de 50 m, un tipo que no existe) se pierde solo esa
+  pieza y sus uniones. Un casco tiene como mucho 256 piezas.
+- **Dependencias:** `Boats` (`FBoatModel`), `Building` (astillero), `Save` (casco por
+  piezas junto a cada barco de la sección `boats`: `SaveRaftHull`/`LoadRaftHull`, falta el
+  enganche en el motor, `docs/tecnico/astillero-balsas.md`).
 
 ### 3.15 Mundo interactivo: incendio de vegetación **[números de la biblia 02 §6; duraciones de quema pendientes de validar]**
 
@@ -950,6 +964,33 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
   | Cuerda | −31 % | se rompen a los 9,6 m |
   | Clavos | −16 % | −52 % |
 
+  - **Surco en la arena [propuesta, pendiente del director]** (`FRaftFurrowModel`).
+    Arrastrada sin rodillos por arena seca o mojada, la balsa abre un surco con dos
+    cordones a los lados. Sobre rodillos, hierba, roca o la rampa no deja marca; cuenta la
+    superficie que hay debajo de cada parte del casco, no la del centro.
+    - Hondo del surco = presión del fondo × 12 mm/kPa en arena seca o × 4 mm/kPa en arena
+      húmeda (bajo la pleamar o con lluvia). La presión es el peso que no sostiene el agua
+      entre el área en planta de las piezas del fondo. Tope de 60 mm; por debajo de 3 mm
+      no queda marca.
+    - El fondo rasa la arena hasta ese hondo respecto a la original: aplana un montón que
+      haya en el camino y no toca un hoyo más hondo. Volver a pasar no ahonda el surco.
+    - La arena del surco va al costado más cercano, a la primera columna fuera de la
+      huella. Si ese costado es huella de una estructura o ya está al tope del montón
+      (2 m), va al otro; si tampoco cabe, se queda. La masa se conserva siempre.
+    - Después actúa la arena viva (§3.13): la avalancha derrumba los cordones que pasen
+      de 34° (45° mojados) y el oleaje rellena el surco de la franja intermareal.
+
+    | Balsa | Presión | Surco en seco | Surco en mojado |
+    |---|---|---|---|
+    | 6 troncos (451 kg, 3,96 m²) | 1,1 kPa | 13 mm | 4 mm |
+    | 6 troncos + 3 personas + 200 kg | 2,2 kPa | 26 mm | 8 mm |
+    | Catamarán de 2 troncos (211 kg, 1,32 m²) | 1,6 kPa | 18 mm | 6 mm |
+
+    Es el rastro que dice «por aquí se botó una balsa»: dos cordones paralelos hasta el
+    agua. En la franja intermareal el oleaje lo rellena; por encima de la pleamar no hay
+    nada que lo borre y se queda en el guardado (pendiente del director: si debe borrarse
+    y cómo).
+
 - **En el agua.**
   - **Golpes:** cuando `FBoatModel` encalla o choca por encima de su velocidad segura
     (0,8 m/s), el astillero reparte el golpe entre las uniones cercanas al punto de
@@ -997,6 +1038,83 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
 - **Dependencias:** `Boats` (`FHullAssemblyModel`, `FBoatModel`), `Building`
   (astillero y postes de amarre), `WorldGen` (troncos de la tala para los rodillos),
   `Save` (uniones y rodillos en la sección de barcos).
+
+### 3.18 Mundo interactivo: los cocos caen al sacudir **[biblia 02 §1.2 y §13.1; números pendientes de validar]**
+
+Tercera de las «otras interacciones naturales» del principio del director (§3.12). La
+biblia ya fija que la tala suelta el coco maduro y que trepando se coge el verde
+(biblia 02 §1.2 y §13.1). Esta sección añade lo que faltaba: que la palmera tenga
+cocos de verdad en la copa, que maduren y caigan solos, y que sacudirla los suelte.
+
+- **Objetivo:** que el primer alimento del día 1 (biblia 01, «un coco al alcance»)
+  salga de mirar la palmera y actuar, sin menús: debajo hay cocos caídos, arriba se ven
+  verdes y maduros, y sacudir el tronco trae los maduros.
+- **Reglas:**
+  - **La copa tiene huecos.** Cada palmera adulta tiene 6. En cada hueco cuaja un coco
+    verde a los 2–4 días de quedarse vacío. Pasa 5 días verde, cuelga maduro 3–8 días
+    y cae solo. En el suelo aguanta 6 días y se pudre; entonces el hueco vuelve a
+    cuajar. De media, una palmera sin tocar tiene ~2,2 verdes, ~2,5 maduros y ~2,6
+    cocos en el suelo, y suelta ~0,44 cocos al día.
+  - **Sacudir.** Verbo del tronco sin herramienta en la mano (el golpe con herramienta
+    es talar y E mantenido es trepar, biblia 02 §13.1). Cada maduro cae con
+    probabilidad `fuerza × (0,35 + 0,65 × flojera)`. La flojera va de 0 al madurar a 1
+    justo antes de caer solo, así que sacudir sirve sobre todo para los que ya iban a
+    caer. **El verde no cae nunca**, ni sacudiendo ni con viento: para él hay que trepar.
+  - **Fuerza a mano.** 1 en palmeras de hasta 4,5 m; después, `4,5 / altura`, con un
+    mínimo de 0,15. Una palmera adulta de 9 m se sacude con fuerza 0,5: suelta ~1/3 de
+    sus maduros por sacudida.
+  - **Dónde caen.** En un anillo de 0,5 m a 0,6 × copa (1,8 m en la palmera) alrededor
+    del tronco, repartidos por área. Pueden caer en la celda de vegetación vecina, pero
+    siguen siendo de su palmera.
+  - **En la cabeza.** Un coco que cae a menos de 35 cm de quien sacude le da. Pegado al
+    tronco pasa en ~3 % de los cocos. El daño lo fija la biblia 01 (propuesta: 5 de
+    salud, sin esguince).
+  - **Rachas.** Con viento por encima de 0,6, cada hora de juego sacude la copa con
+    fuerza `0,5 × (viento − 0,6) / 0,4` (0,5 en un ciclón). Las rachas son parte del
+    ciclo natural y afectan a **todas** las palmeras, cargadas o no: las horas de
+    temporal salen del tiempo del mundo (determinista por semilla) y una palmera que se
+    reconstruye al volver da los mismos cocos que si se hubiera simulado cargada. Así no
+    depende de qué celdas tenga cargadas el servidor en el cooperativo.
+  - **Trepar.** Arriba se coge un coco de la copa y el hueco queda vacío. La biblia 02
+    §13.1 solo habla del `coco_verde`; poder coger también el maduro es una
+    **extensión** de este GDD, pendiente de validar.
+  - **Talar.** La copa cae con la palmera. Con M maduros en la copa, cada uno se abre
+    con probabilidad 0,3 y después se acota: quedan enteros entre 1 y mín(3, M − 1)
+    (biblia 02 §1.2: «1–3× `coco_maduro` […], nunca los 100 %»), y el resto quedan en
+    `cascara_coco`. **Los verdes se pierden con el golpe**: el agua del verde solo se
+    consigue trepando (biblia 02 §1.2 y §13.1). La copa se vacía, así que **sacudir y
+    luego talar no da cocos de más**. Estos cocos sustituyen a los `coco_*` de la tabla
+    de la palmera en §3.12.
+    - **Discrepancia para el director:** con 0 o 1 maduros en la copa (una palmera ya
+      sacudida, o con todo verde), la tala da 0 maduros enteros (con 1, se abre). La
+      biblia pide «1–3» sin decir qué pasa si la copa no los tiene; aquí manda la copa
+      para que sacudir y luego talar no regale cocos.
+  - **Rebrote.** Cuando el tocón vuelve a ser adulto (§3.12), la copa empieza vacía y
+    cuaja su primer coco a los 2–4 días.
+
+  | Número | Valor | Dónde |
+  |---|---|---|
+  | Huecos por palmera | 6 | `FCoconutPalmProfile::Slots` |
+  | Cuajar tras vaciarse | 2–4 días | `RefillMinDays`/`RefillMaxDays` |
+  | Verde | 5 días | `GreenDays` |
+  | Maduro colgando | 3–8 días | `HangMinDays`/`HangMaxDays` |
+  | En el suelo hasta pudrirse | 6 días | `GroundLifeDays` |
+  | Flojera mínima de un maduro | 0,35 | `BaseLooseness` |
+  | Fuerza a mano | 1 hasta 4,5 m, luego 4,5 / altura (mín. 0,15) | `HandShakeStrength` |
+  | Racha | desde viento 0,6; máx. 0,5 | `GustStrength` |
+  | Anillo de caída | 0,5 m – 0,6 × copa | `MinFallRadiusMeters`, `FallRadiusCrownFraction` |
+  | Radio de la cabeza | 0,35 m | `HeadHitRadiusMeters` |
+  | Maduros que se abren al talar | 30 % por coco, después acotado | `CrackChanceOnFell` |
+  | Maduros enteros al talar | 1 – mín(3, M − 1); 0 con M ≤ 1 | `MaxFellMature`, `FellMatureKept` |
+
+- **Determinismo.** Todo el ciclo sale de un hash de (semilla, hueco, generación) y va en
+  minutos enteros: avanzar 30 días de golpe o minuto a minuto da lo mismo (hay spec). Una
+  palmera que nadie ha tocado no guarda nada.
+- **Interfaz:** sin barra ni contador. Los cocos se ven en la copa (verdes o pardos); la
+  copa se agita al sacudir y suena el golpe sordo de cada coco al caer.
+- **Dependencias:** `WorldGen` (`FCoconutPalmModel`, `FFellingModel`), `Weather`
+  (viento), `Survival` (daño en la cabeza), `Save` (sección `coconuts`). Integración en
+  `docs/tecnico/cocos-palmeras.md`.
 
 ---
 
@@ -1162,7 +1280,9 @@ garantías de rendimiento:
    de densidad dispersos por chunk de 8 m sobre una rejilla de 0,25 m, aplicados
    **encima** de la densidad procedural pura (se guardan muestras editadas, no
    operaciones, así que el coste de consulta no crece con el número de golpes).
-   `FTerrainDensity` no cambia: el remallado lee base + delta con
+   `FTerrainEdits` (hecho) envuelve esa capa con las reglas de minería, y
+   `FTerrainDensity::Density` la consulta antes que el ruido (`SetEdits`); el campo sin
+   editar sigue en `ProceduralDensity`. El remallado fino lee base + delta con
    `FTerrainEditModel::BuildChunkGrid`, y el terreno no tocado no paga nada.
 2. **Persistencia en el guardado.** Mismo patrón que `FSaveScatterDeltas`
    (`docs/tecnico/guardado.md`): las ediciones se guardan como deltas por celda de
@@ -1195,7 +1315,11 @@ garantías de rendimiento:
 - **Guardado:** una partida larga con minería extensa puede acumular muchos deltas de
   terreno; el mismo mecanismo de rangos/mapa de bits que ya usa `FSaveScatterDeltas`
   (`"r:0-39,57"` o base64) debería bastar, pero no está probado a la escala de una
-  mina completa — verificar con una prueba de estrés antes de M3.
+  mina completa — verificar con una prueba de estrés antes de M3. **Medido en el host
+  (2026-09-28):** 50 000 golpes (≈ 4 000 m³, 400 000 muestras) ocupan ≈ 580 KB con la
+  versión 2 binaria de la capa `"terrain"` (1,45 B por muestra; la versión 1 en texto
+  daba 3 MB) y se escriben y leen en menos de 0,1 s. Falta repetirlo en PIE con el
+  remallado.
 - **Navegación de fauna sobre terreno editable** (§3.6, §3.7): cada remallado que
   afecte a una zona con fauna cercana debe invalidar y reconstruir su campo de
   navegación local, no el del archipiélago entero.
