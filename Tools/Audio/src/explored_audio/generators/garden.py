@@ -13,6 +13,7 @@ from ..constants import SAMPLE_RATE
 from ..envelopes import ar_envelope, fit_length, smooth_random_walk
 from ..filters import static_filter, time_varying_filter
 from ..granular import render_noise_grains
+from ..levels import k_weighted_momentary_max
 from ..modal import modal_hit
 from ..noise import pink_noise
 from ..rng import rng_for
@@ -38,43 +39,106 @@ def _bubble(rng: np.random.Generator, radius_mm: float) -> np.ndarray:
     return np.sin(phase) * np.exp(-t / tau)
 
 
+def _burst(rng: np.random.Generator, dur_s: float, fc: float, tau_s: float, kind: str = "lowpass", q: float = 0.7, attack_s: float = 0.002) -> np.ndarray:
+    """Rafaga de ruido filtrado con ataque corto y caida exponencial: el
+    golpe de una masa blanda (tierra, cepellon) no tiene tono, es un soplo
+    grave de banda ancha que se apaga enseguida."""
+    n = int(dur_s * SR)
+    t = np.arange(n) / SR
+    env = np.minimum(t / attack_s, 1.0) * np.exp(-t / tau_s)
+    x = static_filter(rng.standard_normal(n), SR, fc=fc, q=q, kind=kind)
+    if kind == "lowpass":
+        x = static_filter(x, SR, fc=60.0, q=0.7, kind="highpass")
+    return x * env
+
+
+def _crackle_train(n: int, rng: np.random.Generator, rate: np.ndarray, band: tuple[float, float], click_s: tuple[float, float] = (0.0006, 0.003)) -> np.ndarray:
+    """Chasquidos de Poisson con tasa instantanea `rate` (por muestra, en
+    chasquidos/s): cada uno es un impulso de ruido pasabanda de pocos ms,
+    como una fibra de raiz o un terron que se rompe."""
+    out = np.zeros(n)
+    prob = np.clip(rate / SR, 0.0, 1.0)
+    for pos in np.nonzero(rng.random(n) < prob)[0]:
+        cn = max(int(rng.uniform(*click_s) * SR), 8)
+        fc = float(np.exp(rng.uniform(np.log(band[0]), np.log(band[1]))))
+        click = static_filter(rng.standard_normal(cn), SR, fc=fc, q=1.2, kind="bandpass")
+        click *= np.exp(-np.arange(cn) / cn * 4.0) * rng.uniform(0.3, 1.0)
+        _place(out, click, int(pos))
+    return out
+
+
+def _to_loudness(out: np.ndarray, target_lufs: float) -> np.ndarray:
+    """Lleva el maximo de sonoridad momentanea (100 ms) a `target_lufs`, y si
+    algun chasquido suelto se pasa del techo lo recorta con suavidad: con
+    chasquidos de 1 ms el pico no dice nada de lo fuerte que se oye."""
+    out = out * 10 ** ((target_lufs - k_weighted_momentary_max(out, sr=SR)) / 20.0)
+    if np.max(np.abs(out)) > 0.85:
+        out = 0.85 * np.tanh(out / 0.85)
+    return out
+
+
+def _pebbles(out: np.ndarray, rng: np.random.Generator, start: int, span_s: float, count: int, gain: float) -> None:
+    """Chinas que suenan contra la hoja o entre si: tics cortos y agudos,
+    con un modo pequeño (piedra de 1-2 cm, 2.5-5 kHz)."""
+    for _ in range(count):
+        pos = start + int(rng.uniform(0.0, span_s) * SR)
+        tick = modal_hit(SR, 0.03, base_freq=rng.uniform(2500, 5000), mode_ratios=[1.0, 1.6], mode_dampings_s=[0.004, 0.002], mode_amps=[1.0, 0.4], rng=rng, detune=0.05)
+        _place(out, tick * rng.uniform(0.05, 0.14) * gain, pos)
+
+
 def garden_dig(name: str) -> np.ndarray:
-    """Cavar: la hoja de la pala entra en la tierra (golpe grave y roce
-    denso de terrones), se levanta la palada y los terrones caen sueltos
-    un instante despues."""
+    """Cavar con pala: la hoja entra en la tierra (roce granular denso y un
+    "chuf" grave sin tono al compactarla, con alguna china contra el metal y
+    un breve timbre de la hoja), el pie empuja y la hoja se hunde un poco
+    mas con fibras que se rompen, y la palada cae a un lado: golpe sordo de
+    la masa de tierra y un reguero de terrones que se va espaciando.
+
+    El peso viene de ruido grave filtrado, no de un modo resonante: un seno
+    a 80-100 Hz sonaba a tambor."""
     rng = rng_for(name)
-    dur = rng.uniform(0.9, 1.2)
+    dur = rng.uniform(1.0, 1.25)
     n = int(dur * SR)
     out = np.zeros(n)
 
-    # Entrada de la hoja: peso sordo mas el "chac" de la tierra compacta.
-    thump = modal_hit(
-        SR, 0.18, base_freq=rng.uniform(75, 105),
-        mode_ratios=[1.0, 2.1, 3.3], mode_dampings_s=[0.05, 0.025, 0.012],
-        mode_amps=[1.0, 0.35, 0.15], rng=rng, detune=0.03,
-    )
-    _place(out, thump * 0.9, 0)
-    bite_n = int(rng.uniform(0.16, 0.22) * SR)
-    bite = static_filter(pink_noise(bite_n, rng), SR, fc=1400.0, q=0.6, kind="lowpass")
-    bite *= fit_length(ar_envelope(SR, 0.004, bite_n / SR * 0.8, shape=2.0), bite_n)
-    _place(out, bite * 0.8, 0)
-    grind = render_noise_grains(bite_n, SR, rng, rate_hz=260.0, grain_len_s_range=(0.002, 0.008), band_hz_range=(400, 2600), q=1.1, amp_scale=0.6)
-    grind *= fit_length(ar_envelope(SR, 0.01, bite_n / SR * 0.9, shape=1.5), bite_n)
-    _place(out, grind, 0)
+    # 1) Entrada de la hoja: compresion de la tierra (grave de banda ancha)
+    # mas el roce del metal contra el grano, que se frena en 150-200 ms.
+    _place(out, _burst(rng, 0.25, fc=rng.uniform(220, 300), tau_s=0.045) * 1.5, 0)
+    _place(out, _burst(rng, 0.12, fc=rng.uniform(700, 1000), tau_s=0.02, kind="bandpass", q=0.8) * 0.5, 0)
+    bite_n = int(rng.uniform(0.15, 0.2) * SR)
+    rate = 900.0 * np.linspace(1.0, 0.15, bite_n) ** 1.5
+    grind = _crackle_train(bite_n, rng, rate, band=(600.0, 4500.0))
+    _place(out, grind * 0.5, int(0.003 * SR))
+    ring = modal_hit(SR, 0.12, base_freq=rng.uniform(1700, 2300), mode_ratios=[1.0, 2.7, 5.2], mode_dampings_s=[0.03, 0.015, 0.008], mode_amps=[1.0, 0.5, 0.3], rng=rng, detune=0.02)
+    _place(out, ring * 0.035, 0)
+    _pebbles(out, rng, 0, 0.12, int(rng.integers(1, 4)), 1.0)
 
-    # Palada que se levanta y terrones que caen: granos dispersos con su
-    # propio golpecito grave, cada vez mas espaciados.
-    fall_start = int(rng.uniform(0.35, 0.5) * SR)
-    fall_n = n - fall_start
-    clods = render_noise_grains(fall_n, SR, rng, rate_hz=70.0, grain_len_s_range=(0.004, 0.015), band_hz_range=(900, 4500), q=1.0, amp_scale=0.45)
-    clods *= fit_length(ar_envelope(SR, 0.02, fall_n / SR * 0.95, shape=2.2), fall_n)
-    _place(out, clods, fall_start)
+    # 2) Empuje con el pie: la hoja se hunde otro poco (grave mas debil y
+    # fibras de raiz que ceden).
+    push = int(rng.uniform(0.2, 0.28) * SR)
+    _place(out, _burst(rng, 0.18, fc=rng.uniform(250, 350), tau_s=0.035) * 0.8, push)
+    push_n = int(0.12 * SR)
+    _place(out, _crackle_train(push_n, rng, 350.0 * np.linspace(1.0, 0.2, push_n), band=(500.0, 3000.0)) * 0.35, push)
+
+    # Se levanta la palada: la tierra se asienta y resbala sobre la hoja.
+    dump = int(rng.uniform(0.52, 0.62) * SR)
+    lift = push + int(0.1 * SR)
+    lift_n = dump - lift
+    settle = _crackle_train(lift_n, rng, np.full(lift_n, 70.0), band=(500.0, 2500.0), click_s=(0.002, 0.006))
+    _place(out, settle * np.sin(np.pi * np.arange(lift_n) / lift_n) * 0.2, lift)
+
+    # 3) La palada cae a un lado: golpe sordo de la masa y terrones.
+    _place(out, _burst(rng, 0.3, fc=rng.uniform(300, 420), tau_s=0.06, attack_s=0.008) * 1.2, dump)
+    trickle_n = n - dump
+    t = np.arange(trickle_n) / SR
+    trickle_rate = 260.0 * np.exp(-t / 0.12) + 12.0 * np.exp(-t / 0.3)
+    _place(out, _crackle_train(trickle_n, rng, trickle_rate, band=(400.0, 3500.0), click_s=(0.002, 0.008)) * 0.45, dump)
     for _ in range(int(rng.integers(3, 6))):
-        pos = fall_start + int(rng.uniform(0.0, 0.25) * SR)
-        tap = modal_hit(SR, 0.06, base_freq=rng.uniform(140, 260), mode_ratios=[1.0, 2.4], mode_dampings_s=[0.015, 0.008], mode_amps=[1.0, 0.3], rng=rng, detune=0.05)
-        _place(out, tap * rng.uniform(0.15, 0.3), pos)
+        pos = dump + int(rng.exponential(0.12) * SR)
+        _place(out, _burst(rng, 0.06, fc=rng.uniform(350, 700), tau_s=0.012) * rng.uniform(0.15, 0.35), pos)
+    _pebbles(out, rng, dump, 0.3, int(rng.integers(1, 3)), 0.8)
 
-    return out * fit_length(ar_envelope(SR, 0.001, 0.05, hold_s=dur - 0.051), n)
+    out *= fit_length(ar_envelope(SR, 0.001, 0.06, hold_s=dur - 0.061), n)
+    return _to_loudness(out, -12.0)
 
 
 def _impact_bank(rng: np.random.Generator, count: int, length_s: float, fc_range: tuple[float, float],
@@ -206,36 +270,62 @@ def garden_water(name: str) -> np.ndarray:
     return out * fade * 0.5
 
 
+def _leaf_swish(rng: np.random.Generator, dur_s: float) -> np.ndarray:
+    """Sacudida de follaje: roce de hojas (granos agudos) bajo una envolvente
+    en campana, con el brillo subiendo y bajando con la velocidad del gesto."""
+    n = int(dur_s * SR)
+    leaves = render_noise_grains(n, SR, rng, rate_hz=420.0, grain_len_s_range=(0.004, 0.018), band_hz_range=(1500, 5500), q=1.2, amp_scale=0.5)
+    speed = np.sin(np.pi * np.arange(n) / n) ** 1.5
+    return time_varying_filter(leaves, SR, 2000.0 + 4000.0 * speed, q=0.6, kind="lowpass") * speed
+
+
 def garden_harvest(name: str) -> np.ndarray:
-    """Cosechar: tiron de la planta (tension creciente de raices que se
-    desgarran), el "pop" grave cuando la raiz cede y un sacudon de hojas
-    con tierra suelta despues."""
+    """Cosechar arrancando la planta: la mano agarra el tallo (roce breve de
+    hojas), se tira y la tension crece (chasquidos de fibras de raiz cada vez
+    mas seguidos sobre el crujir grave de la tierra que se agrieta), la raiz
+    cede con un "tup" sordo del cepellon al soltarse y un desgarro final, y
+    se sacude la planta: dos pasadas de hojas y tierra suelta que cae.
+
+    El grave del cepellon es ruido filtrado, no un modo resonante: un seno a
+    100 Hz dominaba el sonido (8 de cada 10 partes de la energia) y sonaba a
+    bombo."""
     rng = rng_for(name)
-    dur = rng.uniform(0.9, 1.2)
+    dur = rng.uniform(1.0, 1.3)
     n = int(dur * SR)
     out = np.zeros(n)
 
+    # 1) Agarre: roce corto de hojas.
+    _place(out, _leaf_swish(rng, rng.uniform(0.08, 0.12)) * 0.3, 0)
+
+    # 2) Tiron: fibras que chasquean cada vez mas seguidas y tierra que se
+    # agrieta por debajo, las dos siguiendo la tension.
+    pull_start = int(rng.uniform(0.08, 0.12) * SR)
     pull_n = int(rng.uniform(0.3, 0.42) * SR)
-    tear = render_noise_grains(pull_n, SR, rng, rate_hz=320.0, grain_len_s_range=(0.001, 0.005), band_hz_range=(700, 3800), q=1.4, amp_scale=0.55)
-    # Tension creciente: sube y corta en seco al soltarse la raiz.
-    tear *= np.linspace(0.15, 1.0, pull_n) ** 1.6
-    _place(out, tear, 0)
+    tension = np.linspace(0.0, 1.0, pull_n) ** 1.8
+    fibers = _crackle_train(pull_n, rng, 30.0 + 420.0 * tension, band=(700.0, 3500.0), click_s=(0.0005, 0.002))
+    _place(out, fibers * (0.25 + 0.75 * tension) * 0.6, pull_start)
+    crack = _crackle_train(pull_n, rng, 40.0 + 160.0 * tension, band=(180.0, 700.0), click_s=(0.004, 0.012))
+    _place(out, crack * tension * 0.6, pull_start)
 
-    pop = modal_hit(
-        SR, 0.2, base_freq=rng.uniform(95, 130),
-        mode_ratios=[1.0, 1.9, 3.1], mode_dampings_s=[0.04, 0.02, 0.01],
-        mode_amps=[1.0, 0.4, 0.2], rng=rng, detune=0.03,
-    )
-    snap_n = int(0.03 * SR)
-    snap = static_filter(rng.standard_normal(snap_n), SR, fc=1800.0, q=0.8, kind="bandpass") * np.exp(-np.arange(snap_n) / SR / 0.006)
-    _place(out, pop * 0.9, pull_n)
-    _place(out, snap * 0.6, pull_n)
+    # 3) La raiz cede: golpe sordo del cepellon y desgarro final.
+    release = pull_start + pull_n
+    _place(out, _burst(rng, 0.2, fc=rng.uniform(220, 300), tau_s=0.03, kind="bandpass", q=0.9, attack_s=0.001) * 1.4, release)
+    snap_n = int(0.05 * SR)
+    snap = _crackle_train(snap_n, rng, np.full(snap_n, 1500.0), band=(800.0, 4000.0))
+    _place(out, snap * np.exp(-np.arange(snap_n) / SR / 0.015) * 0.8, release)
 
-    shake_start = pull_n + int(0.05 * SR)
-    shake_n = n - shake_start
-    leaves = render_noise_grains(shake_n, SR, rng, rate_hz=90.0, grain_len_s_range=(0.008, 0.025), band_hz_range=(2500, 7000), q=1.3, amp_scale=0.35)
-    soil = render_noise_grains(shake_n, SR, rng, rate_hz=40.0, grain_len_s_range=(0.004, 0.012), band_hz_range=(800, 3000), q=1.0, amp_scale=0.3)
-    shake_env = fit_length(ar_envelope(SR, 0.03, shake_n / SR * 0.9, shape=1.8), shake_n)
-    _place(out, (leaves + soil) * shake_env, shake_start)
+    # 4) Sacudida: dos pasadas de hojas y la tierra que suelta el cepellon.
+    shake = release + int(rng.uniform(0.08, 0.12) * SR)
+    for k in range(2):
+        pos = shake + int(k * rng.uniform(0.16, 0.22) * SR)
+        _place(out, _leaf_swish(rng, rng.uniform(0.14, 0.2)) * (0.3 if k == 0 else 0.2), pos)
+    soil_n = n - shake
+    t = np.arange(soil_n) / SR
+    soil = _crackle_train(soil_n, rng, 120.0 * np.exp(-t / 0.2), band=(400.0, 2500.0), click_s=(0.002, 0.007))
+    _place(out, soil * 0.35, shake)
+    for _ in range(int(rng.integers(2, 4))):
+        pos = shake + int(rng.exponential(0.12) * SR)
+        _place(out, _burst(rng, 0.05, fc=rng.uniform(350, 650), tau_s=0.01) * rng.uniform(0.1, 0.25), pos)
 
-    return out * fit_length(ar_envelope(SR, 0.002, 0.04, hold_s=dur - 0.042), n)
+    out *= fit_length(ar_envelope(SR, 0.002, 0.06, hold_s=dur - 0.062), n)
+    return _to_loudness(out, -14.0)

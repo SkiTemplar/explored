@@ -144,3 +144,37 @@ def test_pluma_sigue_el_gesto_de_la_mano(rendered):
 
         assert _band_share(audio, 4000.0, 7000.0) <= 0.65
         assert _band_share(audio, 2000.0, 4000.0) >= 0.2
+
+
+def test_cavar_son_dos_golpes_de_tierra_sin_tono(rendered):
+    """Entrada de la hoja y palada que cae (dos arranques separados 0.3-0.8 s)
+    y el grave de banda ancha, no un seno: por debajo de 150 Hz no hay mas de
+    la mitad de la energia (el modo a 80-100 Hz se llevaba ~75 % y sonaba a
+    tambor)."""
+    for i in (1, 2, 3):
+        audio = rendered[f"sfx_garden_dig_{i:02d}"]
+        assert _band_share(audio, 0.0, 150.0) <= 0.45
+        assert _band_share(audio, 400.0, 4000.0) >= 0.2
+        onsets = _onsets(audio, min_gap_s=0.25)
+        assert len(onsets) >= 2, onsets
+        gap = (onsets[-1] - onsets[0]) / SAMPLE_RATE
+        assert 0.3 <= gap <= 0.8, f"dig_{i:02d}: {gap:.2f} s entre entrada y caida"
+
+
+def test_cosechar_tension_creciente_y_sin_bombo(rendered):
+    """Las fibras de la raiz chasquean cada vez mas seguidas antes de soltarse
+    (mas energia a 0.7-3.5 kHz en la segunda mitad del tiron que en la
+    primera) y el cepellon no es un bombo: poco por debajo de 150 Hz y el
+    grueso en medios."""
+    for i in (1, 2):
+        audio = rendered[f"sfx_garden_harvest_{i:02d}"]
+        assert _band_share(audio, 0.0, 150.0) <= 0.2
+        assert _band_share(audio, 400.0, 3000.0) >= 0.3
+        sos = signal.butter(4, [700.0, 3500.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+        mids = signal.sosfiltfilt(sos, audio)
+        onsets = _onsets(audio, min_gap_s=0.1)
+        release = max(o for o in onsets if o < 0.7 * len(audio))
+        pull = mids[int(0.12 * SAMPLE_RATE) : release]
+        half = len(pull) // 2
+        early, late = float(np.mean(pull[:half] ** 2)), float(np.mean(pull[half:] ** 2))
+        assert late >= 2.0 * early, f"harvest_{i:02d}: tension {late / early:.1f}x"
