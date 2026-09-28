@@ -749,10 +749,18 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
       cargar/descargar celdas de World Partition; medir el tiempo de frame con el modo
       bench ya existente (`-ExploredBench`, `Tools/bench.ps1`). *(director, 2026-09-27;
       infraestructura de medida ya existe, el objetivo en sí no está verificado)*
-- [ ] Audio: pipeline de música y efectos con soundfont acústico (sin sintetizador
+- [x] Audio: pipeline de música y efectos con soundfont acústico (sin sintetizador
       genérico), coherente con el director de música adaptativa y la flauta ya
-      implementados (`docs/roadmap.md`, P-MUSIC) — hoy no hay soundfont en
-      `Tools/Audio`. *(GDD §7.2, transversal)*
+      implementados (`docs/roadmap.md`, P-MUSIC). Hecho: la música y la muestra de
+      la flauta se renderizan con FluidR3Mono_GM (MIT, commit fijado y SHA256 en
+      `Tools/Audio/THIRD_PARTY_SOUNDFONT.md`), sala por convolución, -16 LUFS
+      integrados y limitador; `uv run explored-audio music` genera las capas de
+      `music_layers.json`. Los efectos y ambientes siguen siendo síntesis propia.
+      *(GDD §7.2, transversal)*
+- [ ] Audio: añadir los créditos del soundfont (Frank Wen, Michael Cowgill,
+      S. Christian Collins, Ethan Winer, Michael Schorsch; licencia MIT) a la
+      pantalla de créditos o al fichero de licencias de terceros del build.
+      *(`Tools/Audio/THIRD_PARTY_SOUNDFONT.md`)*
 - [ ] Empaquetado Win64 reproducible (`Tools/build.ps1` ya existe genérico; falta el
       paso de empaquetado final con configuración Shipping y verificación de tamaño de
       build). *(GDD §7.2, `docs/roadmap.md` P-M9)*
