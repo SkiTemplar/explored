@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 626,
+		"total": 635,
 		"cpp": 303,
-		"datos": 323,
+		"datos": 332,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3088,6 +3088,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "banco_chatarra.nameEs",
+			"es": "Banco de chatarra",
+			"en": "Scrap bench",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «banco_chatarra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "cama_hojas.nameEs",
 			"es": "Cama de hojas",
 			"en": "Leaf bed",
@@ -3768,6 +3778,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "cabeza_pico_rescatada.nameEs",
+			"es": "Cabeza de pico rescatada",
+			"en": "Salvaged pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «cabeza_pico_rescatada» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cable_electrico.nameEs",
 			"es": "Cable eléctrico",
 			"en": "Electrical cable",
@@ -3824,6 +3844,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cantimplora» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "canto_aguzado.nameEs",
+			"es": "Canto aguzado",
+			"en": "Pointed cobble",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «canto_aguzado» nameEs/nameEn"
 			]
 		},
 		{
@@ -5808,6 +5838,46 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_chapa.nameEs",
+			"es": "Cabeza de pico de chapa",
+			"en": "Sheet-metal pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_chapa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_chapa.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_chapa» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_hierro.nameEs",
+			"es": "Cabeza de pico de hierro",
+			"en": "Iron pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_hierro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "cabeza_pico_de_hierro.nameTemplate",
+			"es": "Cabeza de pico de {1}",
+			"en": "{1} pick head",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «cabeza_pico_de_hierro» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cabeza_pico_por_tallado.nameEs",
 			"es": "Cabeza de pico por tallado",
 			"en": "Carved pick head",
@@ -6104,6 +6174,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «pico» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "punta_de_canto_por_tallado.nameEs",
+			"es": "Punta de canto por tallado",
+			"en": "Knapped cobble point",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «punta_de_canto_por_tallado» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "punta_de_canto_por_tallado.nameTemplate",
+			"es": "Punta de {1}",
+			"en": "{1} point",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «punta_de_canto_por_tallado» nameTemplate/nameTemplateEn"
 			]
 		},
 		{
