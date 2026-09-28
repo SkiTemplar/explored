@@ -61,4 +61,5 @@ WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
+WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
