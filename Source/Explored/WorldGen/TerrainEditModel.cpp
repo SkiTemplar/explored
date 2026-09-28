@@ -147,7 +147,7 @@ bool FTerrainEditModel::SnapStairs(const FStairCarve& In, FStairCarve& Out)
 	const float Rise = FMath::Clamp(TerrainEditDetail::SnapTo(FMath::Abs(In.StepRise), HalfGrid), HalfGrid, 3.0f * HalfGrid);
 	Out.StepRise = In.StepRise < 0.0f ? -Rise : Rise;
 	Out.StepRun = FMath::Clamp(TerrainEditDetail::SnapTo(In.StepRun, HalfGrid), StairGrid, 3.0f * StairGrid);
-	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, 64);
+	Out.NumSteps = FMath::Clamp(In.NumSteps, 1, MaxStairSteps);
 	Out.Width = FMath::Clamp(In.Width, 0.6f, 3.0f);
 	Out.Headroom = FMath::Clamp(In.Headroom, 1.8f, 3.0f);
 	return true;
@@ -280,6 +280,27 @@ void FTerrainEditModel::ForEachSampleInBox(const FBox& Box,
 	TFunctionRef<void(const FIntVector&, const FVector&)> Visit) const
 {
 	const double H = Settings.CellSize;
+	// Caja no finita, fuera de la rejilla o absurda: nada. Con NaN, CeilToInt32 daba INT_MIN y las
+	// ediciones caían en chunks que FromValue rechaza (se perdía todo el guardado).
+	constexpr double MaxAbsSample = 1.0e8;
+	constexpr double MaxSamples = 1 << 22;
+	const double Los[3] = { Box.Min.X / H, Box.Min.Y / H, Box.Min.Z / H };
+	const double His[3] = { Box.Max.X / H, Box.Max.Y / H, Box.Max.Z / H };
+	double Count = 1.0;
+	for (int32 Axis = 0; Axis < 3; ++Axis)
+	{
+		const double Lo = Los[Axis];
+		const double Hi = His[Axis];
+		if (!FMath::IsFinite(Lo) || !FMath::IsFinite(Hi) || FMath::Abs(Lo) > MaxAbsSample || FMath::Abs(Hi) > MaxAbsSample)
+		{
+			return;
+		}
+		Count *= FMath::Max(0.0, Hi - Lo + 1.0);
+	}
+	if (Count > MaxSamples)
+	{
+		return;
+	}
 	const FIntVector Min(FMath::CeilToInt32(Box.Min.X / H), FMath::CeilToInt32(Box.Min.Y / H), FMath::CeilToInt32(Box.Min.Z / H));
 	const FIntVector Max(FMath::FloorToInt32(Box.Max.X / H), FMath::FloorToInt32(Box.Max.Y / H), FMath::FloorToInt32(Box.Max.Z / H));
 	for (int32 Z = Min.Z; Z <= Max.Z; ++Z)
@@ -452,13 +473,26 @@ namespace TerrainEditDetail
 	{
 		Result.DirtyChunks.Sort(&ChunkLess);
 	}
+
+	bool IsFiniteVector(const FVector& V)
+	{
+		return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z);
+	}
+
+	/** Medida de herramienta finita y en [Min, MaxToolReach]. */
+	bool InReach(float Value, float Min)
+	{
+		return FMath::IsFinite(Value) && Value >= Min && Value <= FTerrainEditModel::MaxToolReach;
+	}
 }
 
 FTerrainEditResult FTerrainEditModel::Pickaxe(const FPickaxeHit& Hit, FBaseDensity Base)
 {
 	FTerrainEditResult Result;
 	const FTerrainMaterialInfo& Info = MaterialInfo(Hit.Material);
-	if (Hit.ToolTier < Info.MinToolTier)
+	// Posición o dirección no finitas (red, guardado): se rechaza antes de tocar la rejilla.
+	if (Hit.ToolTier < Info.MinToolTier || !TerrainEditDetail::IsFiniteVector(Hit.ImpactPoint)
+		|| !TerrainEditDetail::IsFiniteVector(Hit.Direction))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -507,7 +541,10 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 {
 	FTerrainEditResult Result;
 	const float Factor = ToolFactor(Stroke.Material, Stroke.ToolTier);
-	if (Factor <= 0.0f)
+	// Entradas no finitas o medidas absurdas: el camino recorrería columnas sin tope.
+	if (Factor <= 0.0f || !TerrainEditDetail::IsFiniteVector(Stroke.Center) || !TerrainEditDetail::IsFiniteVector(Stroke.PlaneNormal)
+		|| !TerrainEditDetail::InReach(Stroke.Radius, -MaxToolReach) || !TerrainEditDetail::InReach(Stroke.EdgeWidth, -MaxToolReach)
+		|| !TerrainEditDetail::InReach(Stroke.VerticalReach, -MaxToolReach))
 	{
 		Result.bRejected = true;
 		return Result;
@@ -584,6 +621,11 @@ FTerrainEditResult FTerrainEditModel::PlaceSoil(const FSoilPlacement& Placement,
 	{
 		return Result;
 	}
+	if (!TerrainEditDetail::IsFiniteVector(Placement.Center) || !TerrainEditDetail::InReach(Placement.Radius, 0.0f))
+	{
+		Result.bRejected = true;
+		return Result;
+	}
 	const float Reach = Placement.Radius + Settings.CellSize;
 	TArray<FProposal> Proposals;
 	ForEachSampleInBox(FBox(Placement.Center - FVector(Reach), Placement.Center + FVector(Reach)),
@@ -613,7 +655,10 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	FTerrainEditResult Result;
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
 	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || Flat.SizeSquared() < 1.0e-6
-		|| Stairs.NumSteps < 1 || Stairs.StepRun <= 0.0f || Stairs.Width <= 0.0f || Stairs.Headroom <= 0.0f)
+		|| Stairs.NumSteps < 1 || Stairs.StepRun <= 0.0f || Stairs.Width <= 0.0f || Stairs.Headroom <= 0.0f
+		|| Stairs.NumSteps > MaxStairSteps || !TerrainEditDetail::IsFiniteVector(Stairs.Start) || !TerrainEditDetail::IsFiniteVector(Stairs.Direction)
+		|| !TerrainEditDetail::InReach(Stairs.StepRun, 0.0f) || !TerrainEditDetail::InReach(Stairs.Width, 0.0f)
+		|| !TerrainEditDetail::InReach(Stairs.Headroom, 0.0f) || !TerrainEditDetail::InReach(Stairs.StepRise, -MaxToolReach))
 	{
 		Result.bRejected = true;
 		return Result;

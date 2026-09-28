@@ -165,6 +165,10 @@ public:
 	static constexpr float CompactedHardnessBonus = 0.5f;
 	/** Rejilla de las escaleras: origen y huella en múltiplos de 30 cm, contrahuella de 15 en 15 cm. */
 	static constexpr float StairGrid = 0.3f;
+	/** Tope de peldaños de una escalera (SnapStairs no pasa de aquí). */
+	static constexpr int32 MaxStairSteps = 64;
+	/** Tope de radio, borde, alcance y medidas de peldaño (m): más es una entrada corrupta. */
+	static constexpr float MaxToolReach = 16.0f;
 
 	static const FTerrainMaterialInfo& MaterialInfo(ETerrainMaterial Material);
 	/** Golpes por m³ de diseño: 6 × dureza con la herramienta mínima, ÷ 1,5 por nivel extra, nunca menos de 6; 0 si no puede. */
