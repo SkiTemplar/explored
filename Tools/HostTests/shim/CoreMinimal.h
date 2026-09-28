@@ -90,6 +90,11 @@ constexpr float UE_DELTA = 0.00001f;
 #define MAX_int32 INT32_MAX
 #define MIN_int32 INT32_MIN
 #define MAX_uint32 UINT32_MAX
+// Como en NumericLimits.h de Unreal: con el tipo exacto, no int.
+#define MAX_uint8 ((uint8)0xff)
+#define MAX_uint16 ((uint16)0xffff)
+#define MAX_int16 ((int16)0x7fff)
+#define MIN_int16 ((int16)0x8000)
 
 template <typename T>
 struct TNumericLimits

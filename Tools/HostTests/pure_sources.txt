@@ -60,6 +60,7 @@ WorldGen/TerrainEditModel.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
+WorldGen/VegetationNetStateModel.cpp
 WorldGen/FellingModel.cpp
 WorldGen/GroundBranchModel.cpp
 WorldGen/SandModel.cpp

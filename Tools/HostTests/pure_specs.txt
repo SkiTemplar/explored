@@ -43,6 +43,7 @@ Tests/CoopRulesSpec.cpp
 Tests/TerrainEditModelSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
+Tests/VegetationNetStateModelSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
