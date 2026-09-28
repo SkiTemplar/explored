@@ -426,9 +426,18 @@ bool FCartographyModel::NoteRecipe(FName RecipeId, bool bDoodle)
 
 void FCartographyModel::TickWetness(const FCartographyExposure& Exposure, float DeltaSeconds)
 {
-	if (DeltaSeconds <= 0.0f)
+	if (!FMath::IsFinite(DeltaSeconds) || DeltaSeconds <= 0.0f)
 	{
 		return;
+	}
+	// Un guardado corrupto puede traer NaN o infinitos: se empieza de papel seco.
+	if (!FMath::IsFinite(State.Wetness))
+	{
+		State.Wetness = 0.0f;
+	}
+	if (!FMath::IsFinite(State.InkRunProgress) || State.InkRunProgress < 0.0f)
+	{
+		State.InkRunProgress = 0.0f;
 	}
 	float Gain = 0.0f;
 	if (!Exposure.bStoredDry)
@@ -441,10 +450,15 @@ void FCartographyModel::TickWetness(const FCartographyExposure& Exposure, float 
 	{
 		const float Soak = (State.Wetness - InkRunThreshold) / (1.0f - InkRunThreshold);
 		State.InkRunProgress += Soak * DeltaSeconds / InkRunSeconds;
-		while (State.InkRunProgress >= 1.0f)
+		if (State.InkRunProgress >= 1.0f)
 		{
-			State.InkRunProgress -= 1.0f;
-			ApplyInkRun();
+			// Acotado: un progreso enorme (guardado o DeltaSeconds gigante) no deja el bucle girando.
+			const int32 Runs = static_cast<int32>(FMath::Min(FMath::FloorToDouble(State.InkRunProgress), static_cast<double>(MaxInkRunsPerTick)));
+			State.InkRunProgress = FMath::Frac(State.InkRunProgress);
+			for (int32 Run = 0; Run < Runs; ++Run)
+			{
+				ApplyInkRun();
+			}
 		}
 	}
 }

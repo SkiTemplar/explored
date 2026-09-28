@@ -379,6 +379,36 @@ void FCartographySpec::Define()
 		TestTrue(TEXT("deriva finita"), FMath::IsFinite(Model.GetState().Drift.X) && FMath::IsFinite(Model.GetState().Drift.Y));
 	});
 
+	It("el agua con tiempos o progreso no finitos o enormes no cuelga el mapa", [this]()
+	{
+		FCartographyExposure Sea;
+		Sea.bInSeaWater = true;
+		FCartographyState Soaked;
+		Soaked.Wetness = 1.0f;
+		// Por encima de 2^24, restar 1 a un float no cambia nada.
+		Soaked.InkRunProgress = 3.0e7f;
+		FCartographyModel Model(Seed);
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, 0.1f);
+		TestTrue(TEXT("progreso guardado enorme: pocas pasadas"), Model.GetState().InkRuns <= FCartographyModel::MaxInkRunsPerTick);
+		TestTrue(TEXT("y queda en [0, 1)"), Model.GetState().InkRunProgress >= 0.0f && Model.GetState().InkRunProgress < 1.0f);
+
+		Soaked.InkRunProgress = std::numeric_limits<float>::infinity();
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, 0.1f);
+		TestTrue(TEXT("progreso infinito: finito después"), FMath::IsFinite(Model.GetState().InkRunProgress));
+
+		Soaked.InkRunProgress = 0.0f;
+		Model.LoadState(Soaked);
+		Model.TickWetness(Sea, std::numeric_limits<float>::quiet_NaN());
+		TestEqual(TEXT("DeltaSeconds NaN no hace nada"), Model.GetWetness(), 1.0f);
+		TestEqual(TEXT("ni corre la tinta"), Model.GetState().InkRuns, 0);
+		TestEqual(TEXT("ni ensucia el progreso"), Model.GetState().InkRunProgress, 0.0f);
+		Model.TickWetness(Sea, 1.0e30f);
+		TestTrue(TEXT("DeltaSeconds enorme: pocas pasadas"), Model.GetState().InkRuns <= FCartographyModel::MaxInkRunsPerTick);
+		TestTrue(TEXT("humedad finita"), FMath::IsFinite(Model.GetWetness()));
+	});
+
 	It("mide la cobertura de costa en una isla circular sintética", [this]()
 	{
 		FCartographyModel Model(Seed);
