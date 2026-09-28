@@ -18,14 +18,14 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
-| H1 — Mundo interactivo | 1 | 35 | 36 |
+| H1 — Mundo interactivo | 5 | 34 | 39 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
 | H4 — Contenido de acceso anticipado | 0 | 20 | 20 |
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **13** | **197** | **210** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -257,9 +257,13 @@ posterior.
 
 ### Inventario y UI general
 
-- [ ] `Carry`/`InventoryModel`: implementar el apilado de hasta 10 unidades por hueco
+- [x] `Carry`/`InventoryModel`: implementar el apilado de hasta 10 unidades por hueco
       para objetos sin `maxDurability` ni `LiquidCapacityLiters` — hoy `FInventoryEntry`
-      es un objeto por hueco. *(biblia 03 §1.3)*
+      es un objeto por hueco. *(biblia 03 §1.3)* *(hecho: `FInventoryItem::Count`/`MaxStack`,
+      `FInventoryModel::ComputeMaxStack`, `PickUpMerging`, `SplitStack`, `MergeStacks`,
+      `StowMerging`, `RemoveUnits` y `SanitizeUnknownDefinitions`; `UCarryComponent`
+      los usa y el panel muestra «×N». Specs: `InventoryStackModelSpec.cpp` en host y
+      `CarrySpec.cpp` en el editor, pendiente de pasar en local)*
 - [ ] `BuildPreviewComponent::SetupInput`: añadir mapeo de mando (`LB` entra/sale, `RB`
       rota, D-Pad cicla pieza, Face Bottom confirma) — hoy solo tecla/ratón.
       *(biblia 06 §2.7)*
@@ -297,13 +301,22 @@ posterior.
 
 ### Red y cooperativo — inventario, fauna, reloj y reglas de grupo (biblia 08)
 
-- [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de entradas de
-      13 B con `COND_OwnerOnly`, y las dos manos a todos (6 B) para la malla visible.
-      Coalescencia a 10 Hz. *(biblia 08 §2.4)*
-- [ ] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
-      (items, plantillas, piezas, plantas, barcos, logros) + `FExploredContentHash`
-      (FNV-1a de 64 bits) en el saludo de conexión, con rechazo y el texto de biblia 08
-      §6.5 si no coincide. *(biblia 08 §2.4)*
+- [x] `Carry`: modelo puro del formato replicado del inventario propio: entradas de
+      12 B (la biblia sumaba 13), manos de 6 B, deltas de lo cambiado y lo quitado, bytes
+      que rechazan paquetes corruptos y coalescencia a 10 Hz. *(biblia 08 §2.4)*
+      *(hecho: `Carry/InventoryNetModel.{h,cpp}`, `Tests/InventoryNetModelSpec.cpp`)*
+- [ ] `Carry`: replicar el inventario propio como `FFastArraySerializer` de esas entradas
+      con `COND_OwnerOnly`, y las dos manos a todos para la malla visible, leyendo
+      `FInventoryNetModel::BuildSnapshot`/`BuildHands` y `FInventoryNetCoalescer`.
+      *(biblia 08 §2.4)*
+- [x] `Items`: tabla de ids `uint16` derivada de ordenar los ids de `Content/Data/*.json`
+      (items, plantillas, piezas, plantas, barcos, logros) y hash FNV-1a de 64 bits de
+      esos ficheros, con la estrategia de versionado documentada. *(biblia 08 §2.4)*
+      *(hecho: `Items/ContentIdTableModel.{h,cpp}`, `Tests/ContentIdTableModelSpec.cpp`;
+      `Tools/DataCheck` valida los ids y da el hash)*
+- [ ] `Items`/`GameMode`: construir `FContentIdTableModel` desde el registro al arrancar y
+      mandar `ComputeContentHash` en el saludo de conexión (`FExploredContentHash`), con
+      rechazo y el texto de biblia 08 §6.5 si no coincide. *(biblia 08 §2.4)*
 - [ ] `Carry/ExploredContainer`: el contenido no se replica hasta abrir el cofre
       (`Server_SubscribeContainer`, baja al cerrar); la carrera de dos jugadores sobre el
       mismo hueco se resuelve con `EInventoryFail::NotFound`, sin bloqueos.
@@ -339,8 +352,12 @@ posterior.
 
 ### Tests
 
-- [ ] `Tests`: extender `CarrySpec.cpp` con el apilado de inventario; añadir specs de
-      host para `ContactBurn` (patrón de `BodySpec.cpp`). *(biblia 01 §Tests, 03 §Tests)*
+- [x] `Tests`: extender `CarrySpec.cpp` con el apilado de inventario. *(biblia 03 §Tests)*
+      *(hecho: `Describe("Las pilas")` en `CarrySpec.cpp`; en host,
+      `InventoryStackModelSpec.cpp` cubre apilar, partir, fundir, pila llena, peso en el
+      límite e ids desconocidos al cargar)*
+- [ ] `Tests`: añadir specs de host para `ContactBurn` (patrón de `BodySpec.cpp`).
+      *(biblia 01 §Tests)*
 
 ---
 

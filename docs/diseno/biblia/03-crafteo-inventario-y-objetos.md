@@ -83,8 +83,7 @@ suelo sea una decisión, no un descuido.
 
 ### 1.3 Pilas
 
-*El motor no apila hoy (`FInventoryEntry` es un objeto por hueco); se
-define aquí la regla que sí falta.* **Decisión:** apilan hasta **10 unidades
+**Decisión:** apilan hasta **10 unidades
 por hueco** los recursos sin durabilidad ni líquido propio — materiales
 naturales, materiales procesados, comida cruda o cocinada, medicina de un
 solo uso. **No apilan nunca**: nada con `maxDurability > 0` (herramientas,
@@ -95,6 +94,25 @@ volumen suman los de cada unidad para la capacidad de la mochila. Justifica
 por qué: sin esto, 4 bolsillos para 400 objetos distintos sería
 inmanejable — rompería la regla anti-agobio de la biblia (§8.3, «sin
 microgestión»).
+
+**Implementado** en `FInventoryModel` (`Carry/InventoryModel.{h,cpp}`):
+
+- `ComputeMaxStack` aplica la regla de arriba y, además, deja en 1 lo compuesto (cada
+  objeto fabricado lleva sus piezas) y lo que tiene etiqueta `mochila`, `cinturon`,
+  `angarillas`, `contenedor`, `legendario` o `interno` (la mochila del Albatros no tiene
+  durabilidad y aun así no apila). Dos pilas se juntan solo si son de la misma
+  definición y calidad.
+- Recoger algo igual a lo que hay en una mano lo junta en esa pila; guardar en un
+  contenedor completa primero las pilas que ya hay y el resto va a un hueco nuevo. Si
+  el peso o el volumen no dan para todo, se guarda lo que quepa y el resto sigue en la
+  mano. Partir (`SplitStack`) y juntar (`MergeStacks`) son operaciones propias.
+- `WeightKg` y `VolumeLiters` del registro son de una unidad; la mochila y el límite de
+  carga cuentan unidad × `Count`.
+- Consecuencia a vigilar en balance: `bambu_fino` y `bambu_grueso` tienen `Recipiente`
+  y guardan agua, así que no apilan aunque sean material de obra.
+- Replicación: el `Count` de cada hueco viaja en la entrada de inventario de biblia 08
+  §2.4 (`Carry/InventoryNetModel`); partir una pila manda dos entradas y juntarla del
+  todo, una entrada y un borrado.
 
 ### 1.4 Contenedores
 
