@@ -1193,11 +1193,11 @@
     },
     {
       "gameId": "platanera.planta_con_racimo",
-      "reason": "Ningún pack trae platanera con racimo. Opción: SM_Pack_Platanera_Joven + racimo propio de Tools/Blender como socket; se decide al montar el huerto en Unreal."
+      "reason": "Ningún pack trae platanera con racimo. Opción: SM_Pack_PlataneraJoven + racimo propio de Tools/Blender como socket; se decide al montar el huerto en Unreal."
     },
     {
       "gameId": "pina.con_fruto",
-      "reason": "La roseta (plant_bushDetailed) sirve de base; falta el fruto en el centro. Opción: combinar SM_Pack_Pina_Roseta con SM_Pack_Pina (lote 3) en Unreal o en un script propio."
+      "reason": "La roseta (plant_bushDetailed) sirve de base; falta el fruto en el centro. Opción: combinar SM_Pack_PinaRoseta con SM_Pack_Pina (lote 3) en Unreal o en un script propio."
     },
     {
       "gameId": "limonero.arbol_adulto",
