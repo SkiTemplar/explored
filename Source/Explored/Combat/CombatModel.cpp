@@ -80,6 +80,9 @@ namespace
 				EnterPhase(S, ECombatPhase::Idle, End, 0);
 				break;
 			case ECombatPhase::Charging:
+				// Solo el cargado que llega corta la racha: cargar y cancelar no la reinicia.
+				S.ChainCount = 0;
+				S.bHasQuick = false;
 				S.bChargedImpactPending = true;
 				S.ChargedImpactMs = End;
 				EnterPhase(S, ECombatPhase::Recovery, End, FCombatModel::ChargeRecoveryMs);
@@ -341,9 +344,8 @@ FCombatActionResult FCombatModel::StartCharge(FCombatTimingState& S, int64 NowMs
 	{
 		return Rejected(ECombatReject::Busy);
 	}
-	// El cargado es otra variante de la misma acción: corta la racha de rápidos.
-	S.ChainCount = 0;
-	S.bHasQuick = false;
+	// El cargado corta la racha de rápidos cuando llega (CloseExpired), no al empezar:
+	// si no, cargar y cancelar daría rápidos sin la pausa obligatoria.
 	EnterPhase(S, ECombatPhase::Charging, T, ChargeTelegraphMs);
 
 	FCombatActionResult R;

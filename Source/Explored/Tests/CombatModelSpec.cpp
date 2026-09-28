@@ -483,6 +483,19 @@ void FCombatModelSpec::Define()
 			TestFalse(TEXT("cancelar sin carga"), FCombatModel::CancelCharge(Late, 9000));
 		});
 
+		It("cargar y cancelar no reinicia la racha: nunca más de 3 rápidos sin pausa", [this]()
+		{
+			FCombatTimingState S;
+			FCombatModel::TryQuick(S, 0);
+			FCombatModel::TryQuick(S, 450);
+			TestTrue(TEXT("carga"), FCombatModel::StartCharge(S, 900).bAccepted);
+			TestTrue(TEXT("y cancela"), FCombatModel::CancelCharge(S, 900));
+			TestEqual(TEXT("sigue siendo el 3.º"), FCombatModel::TryQuick(S, 900).ComboIndex, 3);
+			FCombatModel::StartCharge(S, 1350);
+			FCombatModel::CancelCharge(S, 1350);
+			TestEqual(TEXT("el 4.º exige la pausa"), (int32)FCombatModel::TryQuick(S, 1350).Reject, (int32)ECombatReject::ChainPause);
+		});
+
 		It("el cargado corta la racha de rápidos y no se puede empezar en la pausa", [this]()
 		{
 			FCombatTimingState S;
