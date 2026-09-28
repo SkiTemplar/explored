@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
+		"total": 654,
 		"cpp": 303,
-		"datos": 334,
+		"datos": 351,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3138,6 +3138,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "cuerda_fija.nameEs",
+			"es": "Cuerda fija",
+			"en": "Fixed rope",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «cuerda_fija» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "escalera_bambu.nameEs",
 			"es": "Escalera de bambú",
 			"en": "Bamboo ladder",
@@ -3154,6 +3164,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «escalera_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "escalera_mano.nameEs",
+			"es": "Escalera de mano",
+			"en": "Lashed ladder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «escalera_mano» nameEs/nameEn"
 			]
 		},
 		{
@@ -3214,6 +3234,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «horno_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "horno_fundicion.nameEs",
+			"es": "Horno de fundición",
+			"en": "Smelting furnace",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «horno_fundicion» nameEs/nameEn"
 			]
 		},
 		{
@@ -3428,6 +3458,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "tablon_contencion.nameEs",
+			"es": "Tablón de contención",
+			"en": "Retaining board",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «tablon_contencion» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "techo_bambu.nameEs",
 			"es": "Techo de bambú y palma",
 			"en": "Bamboo and palm roof",
@@ -3468,12 +3508,32 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "viga_apoyo.nameEs",
+			"es": "Viga de apoyo",
+			"en": "Support beam",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «viga_apoyo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "vitrina_museo.nameEs",
 			"es": "Vitrina",
 			"en": "Display case",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "yunque.nameEs",
+			"es": "Yunque",
+			"en": "Anvil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «yunque» nameEs/nameEn"
 			]
 		},
 		{
@@ -3564,6 +3624,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «aguijon_manta_negra» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "alambre.nameEs",
+			"es": "Alambre de cobre",
+			"en": "Copper wire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «alambre» nameEs/nameEn"
 			]
 		},
 		{
@@ -3898,6 +3968,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "carretilla.nameEs",
+			"es": "Carretilla",
+			"en": "Wheelbarrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «carretilla» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cascara_coco.nameEs",
 			"es": "Cáscara de coco",
 			"en": "Coconut shell",
@@ -3954,6 +4034,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cinturon_cuero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "clavija_roca.nameEs",
+			"es": "Clavija de roca",
+			"en": "Rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «clavija_roca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "clavos.nameEs",
+			"es": "Clavos",
+			"en": "Nails",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «clavos» nameEs/nameEn"
 			]
 		},
 		{
@@ -4404,6 +4504,36 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «limon» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lingote_aluminio.nameEs",
+			"es": "Lingote de aluminio",
+			"en": "Aluminium ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_aluminio» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lingote_cobre.nameEs",
+			"es": "Lingote de cobre",
+			"en": "Copper ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_cobre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lingote_hierro.nameEs",
+			"es": "Lingote de hierro",
+			"en": "Iron ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_hierro» nameEs/nameEn"
 			]
 		},
 		{
@@ -5918,6 +6048,26 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "carretilla.nameEs",
+			"es": "Carretilla",
+			"en": "Wheelbarrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «carretilla» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "carretilla.nameTemplate",
+			"es": "Carretilla de {0} con rueda de {1}",
+			"en": "{0} wheelbarrow with a {1} wheel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «carretilla» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cesta.nameEs",
 			"es": "Cesta",
 			"en": "Basket",
@@ -5934,6 +6084,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «cesta» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "clavija_roca.nameEs",
+			"es": "Clavija de roca",
+			"en": "Rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "clavija_roca.nameTemplate",
+			"es": "Clavija de {1}",
+			"en": "{1} piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca» nameTemplate/nameTemplateEn"
 			]
 		},
 		{
