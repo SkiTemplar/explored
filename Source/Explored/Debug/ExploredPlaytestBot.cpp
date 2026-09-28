@@ -24,7 +24,7 @@
 namespace
 {
 	/** Espera tras el asentamiento de shaders/streaming antes de empezar a moverse. */
-	constexpr float WarmupSeconds = 4.0f;
+	constexpr float BotWarmupSeconds = 4.0f;
 	/** Tiempo mirando al punto para que UInteractionComponent (20 Hz) fije el foco. */
 	constexpr float FocusWaitSeconds = 2.5f;
 	/** Tiempo tras interactuar antes de comparar el inventario (animación, spawn de recursos...). */
@@ -197,7 +197,7 @@ void UExploredPlaytestBot::Tick(float DeltaTime)
 	if (!bWarmedUp)
 	{
 		WarmupTimer += DeltaTime;
-		if (WarmupTimer < WarmupSeconds)
+		if (WarmupTimer < BotWarmupSeconds)
 		{
 			return;
 		}

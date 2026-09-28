@@ -10,6 +10,7 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/HitResult.h"
+#include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Character.h"
@@ -17,6 +18,7 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -181,8 +183,8 @@ void UExploredPlaytestAuditor::AuditMaterials()
 			{
 				UMaterialInterface* Mat = Comp->GetMaterial(Slot);
 				const bool bMissing = Mat == nullptr;
-				const bool bDefault = GEngine && Mat == GEngine->DefaultMaterial;
-				const bool bGrid = GEngine && GEngine->WorldGridMaterial && Mat == GEngine->WorldGridMaterial;
+				const bool bDefault = Mat == UMaterial::GetDefaultMaterial(MD_Surface);
+				const bool bGrid = Mat && Mat->GetName().Contains(TEXT("WorldGridMaterial"));
 				if (!bMissing && !bDefault && !bGrid)
 				{
 					continue;
