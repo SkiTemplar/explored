@@ -44,6 +44,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote6-mineria.png",
       "scope": "Minería manual de las primeras horas (GDD v2 §3.4, prioridad 1): pico de piedra, canto rodado y caliza."
+    },
+    {
+      "id": "lote7-cuarzo-taro",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote7-cuarzo-taro.png",
+      "scope": "Pendientes con candidato en dos packs de Quaternius revisados hoy: cristal de cuarzo de las cuevas (minería, prioridad 1) y las tres fases del taro del huerto (prioridad 3)."
     }
   ],
   "entries": [
@@ -1246,6 +1252,101 @@
         "default": "piedra.caliza"
       },
       "note": "Trozo de caliza de La Meseta (GDD v2 §3.4). Rock_Medium_1 es una roca de 3 m: a 11 cm queda un terrón redondeado y facetado. Musgo del pack fuera: todo a piedra.caliza. Cubre un id de meshes_pendientes.json."
+    },
+    {
+      "gameId": "cristal_cuarzo",
+      "kind": "item",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Powerups and Pickups/glTF/Gem_Blue.gltf",
+      "mesh": "SM_Pack_CristalCuarzo",
+      "size": {
+        "axis": "z",
+        "m": 0.12
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "mineral.cuarzo"
+      },
+      "note": "Prisma hexagonal con puntas piramidales (44 triángulos): la forma natural del cuarzo. Una sola muestra. Para las vetas de cristal de las cuevas (mining.json, estrato cristal) se agrupan instancias en Unreal."
+    },
+    {
+      "gameId": "taro.brote",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroBrote",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hoja_clara"
+      },
+      "note": "Misma malla que hojas_grandes a un tercio: hoja tierna más clara."
+    },
+    {
+      "gameId": "taro.hojas_grandes",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroHojas",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.9
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hoja"
+      },
+      "note": "Hojas anchas sobre peciolo largo; estrechada al 50 % en planta (el original mide 2 m de ancho y 0,8 m de alto)."
+    },
+    {
+      "gameId": "taro.listo",
+      "kind": "planta",
+      "lote": "lote7-cuarzo-taro",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_4.obj",
+      "mesh": "SM_Pack_TaroListo",
+      "stretch": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "vegetacion.hierba_seca"
+      },
+      "note": "El taro está listo cuando las hojas amarillean: misma malla, algo más baja, en hierba seca."
     }
   ],
   "discarded": [
@@ -1398,6 +1499,24 @@
       "pack": "kaykit_restaurant_bits",
       "file": "KayKit_Restaurant_Bits_1.0_FREE/Assets/gltf/jar_A_large.gltf",
       "reason": "Tarro de cocina cilíndrico con tapa de rosca (igual jar_B, jar_C y jar_D): sin cuello ni boca de vasija; en terracota sigue pareciendo un bote de mermelada. Se queda SM_Item_VasijaBarro."
+    },
+    {
+      "gameId": "cangrejo_cocotero_salvaje",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Enemies/glTF/Crab.gltf",
+      "reason": "Enemigo de plataformas: cabeza redonda con ojos grandes y dientes, superficie suavizada (3704 triángulos) y sin el abdomen ni las pinzas del cangrejo cocotero. Rompe el low poly pulido y el tono de la fauna."
+    },
+    {
+      "gameId": "cristal_cuarzo",
+      "pack": "quaternius_ultimate_platformer",
+      "file": "Ultimate Platformer Pack - Dec 2021/Powerups and Pickups/glTF/Gem_Green.gltf",
+      "reason": "Talla brillante de joya (Gem_Pink igual): se lee como gema de tienda, no como cristal natural. Se elige Gem_Blue."
+    },
+    {
+      "gameId": "taro.brote",
+      "pack": "quaternius_ultimate_nature",
+      "file": "OBJ/Plant_1.obj",
+      "reason": "Hojas lanceoladas arqueadas: otra planta. Se usa Plant_4 a 0,3 m para que el brote y la planta adulta tengan la misma silueta."
     }
   ],
   "pending": [
@@ -1446,18 +1565,6 @@
       "reason": "Ningún pack revisado trae planta rastrera."
     },
     {
-      "gameId": "taro.brote",
-      "reason": "Sin hoja en punta de flecha en los packs revisados (ver discarded de taro.hojas_grandes)."
-    },
-    {
-      "gameId": "taro.hojas_grandes",
-      "reason": "Ver discarded."
-    },
-    {
-      "gameId": "taro.listo",
-      "reason": "Ver discarded de taro.hojas_grandes."
-    },
-    {
       "gameId": "maracuya.brote",
       "reason": "La maracuyá trepa por la espaldera (pieza propia): enredadera a medida de esa pieza, mejor en Tools/Blender."
     },
@@ -1494,16 +1601,20 @@
       "reason": "Cabeza de basalto tallada por percusión: ningún pack trae una lasca o cabeza de piedra suelta. La del hacha y el pico (lotes 1 y 6) está pegada al mango."
     },
     {
-      "gameId": "cristal_cuarzo",
-      "reason": "Ninguno de los 12 packs del manifiesto trae cristales. Buscar en un pack CC0 de mazmorra o cueva (KayKit Dungeon, Quaternius) y verificar licencia antes de añadirlo."
-    },
-    {
       "gameId": "tierra_suelta",
       "reason": "Ver discarded: el montón de Kenney Nature (crops_dirtSingle) es una meseta hexagonal que se lee como losa, no como tierra suelta."
     },
     {
       "gameId": "cabeza_pico_rescatada",
       "reason": "Objeto rescatado del Albatros (metal): Blender propio por GDD v2 §7.1, como la cantimplora."
+    },
+    {
+      "gameId": "cangrejo_cocotero_salvaje",
+      "reason": "Fauna de Landing (porción vertical). Revisados el 2026-09-28: el cangrejo de Quaternius Ultimate Platformer se descarta (ver discarded); Easy Animated Enemy Pack (rana, araña, avispa y dos alimañas eliminadas por el GDD §12) y Fish Pack no traen cangrejo. Candidato: malla y rig propios en Tools/Blender o un pack CC0 futuro."
+    },
+    {
+      "gameId": "gaviota_posada",
+      "reason": "Fauna de Landing y Los Dientes. Ningún pack de Quaternius con descarga reproducible por itch.io trae aves (revisados Farm Animals, Easy Animated Enemy Pack, Ultimate Platformer, Ultimate Nature y Fish Pack el 2026-09-28). El Ultimate Animated Animal Pack solo está en Google Drive (no reproducible)."
     }
   ]
 }
