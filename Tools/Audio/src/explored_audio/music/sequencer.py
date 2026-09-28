@@ -97,7 +97,6 @@ def render_flute_phrase(
     freq_env = np.zeros(total_n)
     amp_env = np.zeros(total_n)
 
-    prev_end_sample = 0
     prev_freq = notes[0][2]
     for start_beat, dur_beats, freq, velocity in notes:
         note_start = int((start_beat * sec_per_beat - start_s) * sr)
@@ -125,7 +124,6 @@ def render_flute_phrase(
         amp_env[note_start:note_end] = np.maximum(amp_env[note_start:note_end], shape * velocity)
 
         prev_freq = freq
-        prev_end_sample = note_end
 
     freq_env[freq_env == 0] = prev_freq
     audio = ins.bamboo_flute_contour(freq_env, amp_env, sr, rng)

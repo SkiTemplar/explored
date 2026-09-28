@@ -60,7 +60,7 @@ def linear_safety_clamp(x: np.ndarray, ceiling: float = PEAK_CEILING_LINEAR) -> 
 
 def _k_weight(mono: np.ndarray) -> np.ndarray:
     stage1 = signal.lfilter(_STAGE1_B, _STAGE1_A, mono)
-    return signal.lfilter(_STAGE2_B, _STAGE2_A, stage1)
+    return np.asarray(signal.lfilter(_STAGE2_B, _STAGE2_A, stage1))
 
 
 def match_lufs(x: np.ndarray, target_lufs: float, max_gain_db: float = 24.0) -> np.ndarray:
@@ -83,6 +83,9 @@ def lufs_approx(x: np.ndarray) -> float:
 
     `x` puede ser mono (N,) o estereo (2, N).
     """
+    if x.shape[-1] == 0:
+        # Sin muestras la media es NaN, y NaN acababa en el manifiesto (JSON invalido).
+        return -120.0
     channels = [x] if x.ndim == 1 else [x[c] for c in range(x.shape[0])]
     weighted_mean_sq = sum(float(np.mean(_k_weight(ch) ** 2)) for ch in channels) / len(channels)
     if weighted_mean_sq <= 1e-12:
@@ -96,6 +99,8 @@ def k_weighted_momentary_max(x: np.ndarray, window_s: float = 0.1, sr: int = 48_
 
     Para transitorios cortos (pasos, golpes) es mas representativo de lo que
     se oye que `lufs_approx`, que promedia tambien la cola y el silencio."""
+    if len(x) == 0:
+        return -120.0
     weighted_sq = _k_weight(x) ** 2
     win = max(int(window_s * sr), 1)
     if len(weighted_sq) <= win:

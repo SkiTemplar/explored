@@ -23,7 +23,7 @@ def _by_phase(x: np.ndarray, delay: int, b: list[float], a: list[float]) -> np.n
     pad = (-n) % delay
     xp = np.pad(x, (0, pad)) if pad else x
     reshaped = xp.reshape(-1, delay)
-    filtered = signal.lfilter(b, a, reshaped, axis=0)
+    filtered = np.asarray(signal.lfilter(b, a, reshaped, axis=0))
     return filtered.reshape(-1)[:n]
 
 
@@ -45,6 +45,9 @@ def schroeder_reverb(
     """Reverberacion sintetica de Schroeder (4 peines + 2 todo-paso) mezclada
     con la señal seca. `room_size` en [0,1] alarga los peines y sube su
     realimentacion; `damping` amortigua algo la cola."""
+    if len(x) == 0:
+        # `np.max` de un buffer vacio lanza ValueError: sin señal no hay cola.
+        return np.zeros(0)
     comb_ms = [29.7, 37.1, 41.1, 43.7]
     allpass_ms = [5.0, 1.7]
     size = 0.7 + 0.6 * room_size

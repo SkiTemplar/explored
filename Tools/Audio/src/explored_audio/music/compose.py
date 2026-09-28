@@ -14,6 +14,8 @@ bpm, beats_per_bar, reverb_wet, reverb_room)`. `generate()` la renderiza y
 
 from __future__ import annotations
 
+from typing import NotRequired, TypedDict
+
 import numpy as np
 
 from ..constants import SAMPLE_RATE
@@ -48,6 +50,44 @@ DEFAULT_PROGRESSION = [(0, "min", 2), (10, "maj", 2), (8, "maj", 2), (10, "maj",
 BRIGHT_PROGRESSION = [(0, "maj", 2), (5, "maj", 2), (7, "maj", 2), (0, "maj", 2)]  # I-IV-V-I (mixolidio/mayor)
 DARK_PROGRESSION = [(0, "min", 2), (3, "maj", 2), (5, "min", 2), (10, "maj", 2)]
 CLUSTER_PROGRESSION = [(0, "sus2", 2), (10, "sus4", 2), (8, "sus2", 2), (10, "sus4", 2)]
+
+Degrees = list[tuple[int | None, float, float]]
+Progression = list[tuple[int, str, int]]
+
+
+class IslandConfig(TypedDict):
+    """Arreglo de la musica de exploracion de una isla (ver `_explore_variant`)."""
+
+    bpm: int
+    scale: str
+    progression: Progression
+    melody: str | None
+    pad: str
+    perc: str | None
+    arpeggio: NotRequired[bool]
+    flute: NotRequired[bool]
+    root_shift: NotRequired[int]
+    wet: NotRequired[float]
+    room: NotRequired[float]
+
+
+class DiscoveryFragment(TypedDict):
+    """Fragmento corto de descubrimiento: una frase suelta de un instrumento."""
+
+    instrument: str
+    bpm: int
+    octave_shift: int
+    degrees: Degrees
+
+
+class FinaleConfig(TypedDict):
+    """Variante del final (rescate, viaje o quedarse en la isla)."""
+
+    bpm: int
+    scale: str
+    progression: Progression
+    root_shift: int
+    flute: bool
 
 
 def add_melody_phrase(
@@ -190,14 +230,14 @@ def _theme() -> tuple:
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, 0.32, 0.7
 
 
-ISLAND_CONFIGS = {
-    "landing": dict(bpm=82, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="pad", perc="light", arpeggio=True),
-    "emerald": dict(bpm=84, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="kalimba", pad="pad", perc="full"),
-    "smoke": dict(bpm=70, scale="minor_pentatonic", progression=DARK_PROGRESSION, melody=None, pad="tremolo_strings", perc="sparse", root_shift=-3, wet=0.4, room=0.75),
-    "teeth": dict(bpm=86, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody=None, pad="pad", perc=None, flute=True, wet=0.38),
-    "mangrove": dict(bpm=74, scale="minor_pentatonic", progression=CLUSTER_PROGRESSION, melody="kalimba", pad="pad", perc=None, root_shift=-1, wet=0.45, room=0.8),
-    "whitesands": dict(bpm=88, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, melody="marimba", pad="pad", perc="full", root_shift=2, arpeggio=True),
-    "mesa": dict(bpm=78, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="strings", perc="light", wet=0.4, room=0.78),
+ISLAND_CONFIGS: dict[str, IslandConfig] = {
+    "landing": IslandConfig(bpm=82, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="pad", perc="light", arpeggio=True),
+    "emerald": IslandConfig(bpm=84, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="kalimba", pad="pad", perc="full"),
+    "smoke": IslandConfig(bpm=70, scale="minor_pentatonic", progression=DARK_PROGRESSION, melody=None, pad="tremolo_strings", perc="sparse", root_shift=-3, wet=0.4, room=0.75),
+    "teeth": IslandConfig(bpm=86, scale="major_pentatonic", progression=DEFAULT_PROGRESSION, melody=None, pad="pad", perc=None, flute=True, wet=0.38),
+    "mangrove": IslandConfig(bpm=74, scale="minor_pentatonic", progression=CLUSTER_PROGRESSION, melody="kalimba", pad="pad", perc=None, root_shift=-1, wet=0.45, room=0.8),
+    "whitesands": IslandConfig(bpm=88, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, melody="marimba", pad="pad", perc="full", root_shift=2, arpeggio=True),
+    "mesa": IslandConfig(bpm=78, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, melody="marimba", pad="strings", perc="light", wet=0.4, room=0.78),
 }
 
 
@@ -222,8 +262,9 @@ def _explore_variant(island: str) -> tuple:
         add_bass(tracks, root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.5)
         if cfg.get("arpeggio"):
             add_arpeggio(tracks, "guitar", root_freq, beats_per_bar, bar_offset, cfg["progression"], vel=0.3, pan=0.12 if p % 2 == 0 else -0.12)
-        if cfg.get("perc"):
-            add_percussion(tracks, beats_per_bar, bar_offset, phrase_bars, density=cfg["perc"])
+        perc = cfg["perc"]
+        if perc:
+            add_percussion(tracks, beats_per_bar, bar_offset, phrase_bars, density=perc)
 
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, cfg.get("wet", 0.32), cfg.get("room", 0.65)
 
@@ -373,11 +414,11 @@ def _credits() -> tuple:
     return tracks, flute_phrases, total_bars, bpm, beats_per_bar, 0.4, 0.82
 
 
-DISCOVERY_FRAGMENTS = {
-    "01": dict(instrument="marimba", bpm=90, octave_shift=1, degrees=[(0, 0.5, 0.9), (4, 0.5, 0.95), (7, 1.0, 1.0)]),
-    "02": dict(instrument="kalimba", bpm=88, octave_shift=1, degrees=[(0, 0.4, 0.8), (2, 0.4, 0.85), (4, 0.4, 0.9), (7, 1.2, 1.0)]),
-    "03": dict(instrument="marimba", bpm=92, octave_shift=1, degrees=[(4, 0.4, 0.9), (7, 0.4, 0.95), (9, 0.4, 1.0), (12, 1.4, 1.0)]),
-    "04": dict(instrument="kalimba", bpm=76, octave_shift=0, degrees=[(7, 0.6, 0.7), (4, 0.6, 0.65), (0, 1.4, 0.6)]),
+DISCOVERY_FRAGMENTS: dict[str, DiscoveryFragment] = {
+    "01": DiscoveryFragment(instrument="marimba", bpm=90, octave_shift=1, degrees=[(0, 0.5, 0.9), (4, 0.5, 0.95), (7, 1.0, 1.0)]),
+    "02": DiscoveryFragment(instrument="kalimba", bpm=88, octave_shift=1, degrees=[(0, 0.4, 0.8), (2, 0.4, 0.85), (4, 0.4, 0.9), (7, 1.2, 1.0)]),
+    "03": DiscoveryFragment(instrument="marimba", bpm=92, octave_shift=1, degrees=[(4, 0.4, 0.9), (7, 0.4, 0.95), (9, 0.4, 1.0), (12, 1.4, 1.0)]),
+    "04": DiscoveryFragment(instrument="kalimba", bpm=76, octave_shift=0, degrees=[(7, 0.6, 0.7), (4, 0.6, 0.65), (0, 1.4, 0.6)]),
 }
 
 
@@ -390,10 +431,10 @@ def _discovery(variant: str) -> tuple:
     return tracks, [], total_beats / beats_per_bar, cfg["bpm"], beats_per_bar, 0.35, 0.7
 
 
-FINALE_CONFIGS = {
-    "rescue": dict(bpm=84, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, root_shift=0, flute=False),
-    "voyage": dict(bpm=80, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=0, flute=True),
-    "stay": dict(bpm=72, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=-1, flute=False),
+FINALE_CONFIGS: dict[str, FinaleConfig] = {
+    "rescue": FinaleConfig(bpm=84, scale="major_pentatonic", progression=BRIGHT_PROGRESSION, root_shift=0, flute=False),
+    "voyage": FinaleConfig(bpm=80, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=0, flute=True),
+    "stay": FinaleConfig(bpm=72, scale="minor_pentatonic", progression=DEFAULT_PROGRESSION, root_shift=-1, flute=False),
 }
 
 
@@ -489,9 +530,7 @@ def _dispatch(name: str) -> tuple:
 
 
 def is_loop(name: str) -> bool:
-    if name in ("mus_theme", "mus_credits") or name.startswith("mus_discovery_") or name.startswith("mus_finale_"):
-        return False
-    return True
+    return not (name in ("mus_theme", "mus_credits") or name.startswith(("mus_discovery_", "mus_finale_")))
 
 
 def metadata(name: str) -> dict:

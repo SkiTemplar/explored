@@ -167,7 +167,7 @@ def _scatter_impacts(n: int, rate: np.ndarray, rng: np.random.Generator, bank: l
     amps = rng.uniform(0.3, 1.0, len(positions)) ** 1.5 * rng.choice([-1.0, 1.0], len(positions))
     trains[choice, positions] = amps
     out = np.zeros(n)
-    for train, kernel in zip(trains, bank):
+    for train, kernel in zip(trains, bank, strict=True):
         out += fftconvolve(train, kernel)[:n]
     return out, positions.tolist()
 

@@ -28,7 +28,7 @@ def plot_spectrogram(audio: np.ndarray, name: str, out_path: Path) -> None:
     # introduce un filtro en peine que no existe en la señal real en estereo.
     mono = audio if audio.ndim == 1 else audio[0]
     fig, ax = plt.subplots(figsize=(10, 4))
-    spec, freqs, t, im = ax.specgram(mono, NFFT=2048, Fs=SAMPLE_RATE, noverlap=1024, cmap="magma")
+    _spec, _freqs, _t, im = ax.specgram(mono, NFFT=2048, Fs=SAMPLE_RATE, noverlap=1024, cmap="magma")
     ax.set_ylim(0, 12000)
     ax.set_xlabel("tiempo (s)")
     ax.set_ylabel("frecuencia (Hz)")
