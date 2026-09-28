@@ -202,3 +202,28 @@ def test_parse_rechaza_estructura_invalida(raw, breaker):
 def test_parse_rechaza_raiz_no_objeto():
     with pytest.raises(ValueError):
         parse_sources([])
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"id": "mus_rec_../../fuera"},
+        {"download_url": "file:///etc/passwd"},
+        {"download_url": "https://ejemplo.invalid/pieza.ogg"},
+    ],
+)
+def test_pin_no_descarga_ids_ni_urls_inseguros(raw, changes, tmp_path, monkeypatch):
+    from explored_audio.recorded import cli
+
+    data = copy.deepcopy(raw)
+    data["pieces"][0].update(changes)
+    data["pieces"][0]["sha256"] = ""
+    path = tmp_path / "music_sources.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+    def no_network(*_args, **_kwargs):
+        raise AssertionError("pin no debe descargar una pieza insegura")
+
+    monkeypatch.setattr(cli, "ensure_original", no_network)
+    rc = cli.main(["--sources", str(path), "--cache", str(tmp_path / "cache"), "pin", data["pieces"][0]["id"]])
+    assert rc == 1

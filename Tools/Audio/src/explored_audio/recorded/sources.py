@@ -173,6 +173,15 @@ def _host_allowed(url: str, hosts: tuple[str, ...]) -> bool:
     return any(host == h or host.endswith("." + h) for h in hosts)
 
 
+def safe_to_fetch(p: Piece) -> bool:
+    """El id sirve de nombre en la cache y la URL es https de un dominio de su fuente.
+
+    Es lo minimo antes de descargar nada, tambien en `pin`, que corre sin sha256."""
+    if not _ID_RE.match(p.id) or p.source not in SOURCES:
+        return False
+    return _host_allowed(p.download_url, SOURCES[p.source][1])
+
+
 def _official_musopen(p: Piece) -> bool:
     for url, prefix in ((p.source_url, "/details/"), (p.download_url, "/download/")):
         parsed = urlparse(url)

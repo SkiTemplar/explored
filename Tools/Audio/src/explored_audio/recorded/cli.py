@@ -15,7 +15,14 @@ from pathlib import Path
 
 from .credits import write_credits
 from .fetch import build_all, ensure_original
-from .sources import default_cache_root, default_sources_path, load_layer_roles, load_sources, validate
+from .sources import (
+    default_cache_root,
+    default_sources_path,
+    load_layer_roles,
+    load_sources,
+    safe_to_fetch,
+    validate,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -71,6 +78,11 @@ def _pin(sources_path: Path, cache: Path, ids: set[str]) -> int:
     unknown = ids - set(by_id)
     if unknown:
         print(f"ERROR ids desconocidos: {sorted(unknown)}", file=sys.stderr)
+        return 1
+    unsafe = sorted(i for i in ids if not safe_to_fetch(by_id[i]))
+    if unsafe:
+        print(f"ERROR id o download_url no validos (se descargaria fuera de la cache o de un dominio no admitido): {unsafe}",
+              file=sys.stderr)
         return 1
     failed = False
     for entry in raw["pieces"]:
