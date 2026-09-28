@@ -44,7 +44,7 @@
 		"breeding": { "dailyChance": 0.15, "daysToAdult": 6 },
 		"taming": { "daysFedToTame": 3, "daysUnfedToWild": 2 },
 		"species": [
-			{ "id": "gallina", "nameEs": "Gallina", "nameEn": "Hen", "fase": 2, "structure": "gallinero", "wildSource": null,
+			{ "id": "gallina", "nameEs": "Gallina", "nameEn": "Chicken", "fase": 2, "structure": "gallinero", "wildSource": null,
 				"product": { "item": "huevo", "everyDays": 1, "requires": "adulta" } },
 			{ "id": "cerdo", "nameEs": "Cerdo", "nameEn": "Pig", "fase": 2, "structure": "pocilga", "wildSource": "cerdo_salvaje",
 				"product": null },
@@ -104,13 +104,13 @@
 			{ "id": "alta", "nameEs": "Alta", "nameEn": "High", "min": 90, "max": 100, "rate": 1.5, "tradeOpen": true }
 		],
 		"wants": [
-			{ "id": "fruta_y_pescado", "nameEs": "Fruta común y pescado fresco", "value": 1, "tags": ["fruta", "pescado"] },
-			{ "id": "comida_preparada", "nameEs": "Comida preparada o conservada", "value": 2, "tags": ["cocinado", "conserva"] },
-			{ "id": "fibra_y_ceramica", "nameEs": "Cerámica, tela y cordelería", "value": 2, "tags": ["fibra", "ceramica"], "items": ["cordel", "cuerda", "cesta"] },
-			{ "id": "pieles", "nameEs": "Cuero y pieles", "value": 3, "items": ["cuero_curtido", "piel_bruto"] },
-			{ "id": "herramientas_buenas", "nameEs": "Herramientas de nivel 2-3", "value": 3, "items": ["hacha", "cuchillo", "lanza", "pico"] },
-			{ "id": "medicina", "nameEs": "Medicina", "value": 4, "tags": ["medicinal"], "items": ["pasta_medicinal"] },
-			{ "id": "metal_trabajado", "nameEs": "Metal trabajado", "value": 5, "items": ["chapa_fuselaje", "tubo_aluminio", "lingote_hierro", "clavos"] }
+			{ "id": "fruta_y_pescado", "nameEs": "Fruta común y pescado fresco", "nameEn": "Fruit and fresh fish", "value": 1, "tags": ["fruta", "pescado"] },
+			{ "id": "comida_preparada", "nameEs": "Comida preparada o conservada", "nameEn": "Cooked or preserved food", "value": 2, "tags": ["cocinado", "conserva"] },
+			{ "id": "fibra_y_ceramica", "nameEs": "Cerámica, tela y cordelería", "nameEn": "Pottery, cloth and cordage", "value": 2, "tags": ["fibra", "ceramica"], "items": ["cordel", "cuerda", "cesta"] },
+			{ "id": "pieles", "nameEs": "Cuero y pieles", "nameEn": "Leather and hides", "value": 3, "items": ["cuero_curtido", "piel_bruto"] },
+			{ "id": "herramientas_buenas", "nameEs": "Herramientas de nivel 2-3", "nameEn": "Level 2-3 tools", "value": 3, "items": ["hacha", "cuchillo", "lanza", "pico"] },
+			{ "id": "medicina", "nameEs": "Medicina", "nameEn": "Medicine", "value": 4, "tags": ["medicinal"], "items": ["pasta_medicinal"] },
+			{ "id": "metal_trabajado", "nameEs": "Metal trabajado", "nameEn": "Worked metal", "value": 5, "items": ["chapa_fuselaje", "tubo_aluminio", "lingote_hierro", "clavos"] }
 		],
 		"offers": [
 			{ "item": "batata_violeta", "value": 2, "minTier": "cauta" },
@@ -125,19 +125,19 @@
 			{ "livestock": "cabra", "value": 5, "minTier": "alta" }
 		],
 		"favors": [
-			{ "id": "ensenar_wayfinding", "nameEs": "Enseñar una técnica de navegación", "minTier": "buena" },
-			{ "id": "aviso_asalto", "nameEs": "Avisar de un asalto pirata", "minTier": "alta" }
+			{ "id": "ensenar_wayfinding", "nameEs": "Enseñar una técnica de navegación", "nameEn": "Teach a wayfinding technique", "minTier": "buena" },
+			{ "id": "aviso_asalto", "nameEs": "Avisar de un asalto pirata", "nameEn": "Warn of a raid", "minTier": "alta" }
 		],
 		"reputationActions": [
-			{ "id": "trueque", "nameEs": "Trueque (máx. 1 al día)", "delta": 3 },
-			{ "id": "devolver_ritual", "nameEs": "Devolver un objeto ritual a su marae", "delta": 5 },
-			{ "id": "encargo_tablon", "nameEs": "Completar un encargo del tablón", "delta": 4 },
-			{ "id": "jornada_respetuosa", "nameEs": "Un día sin minar, talar ni cazar cerca de la aldea o de un marae", "delta": 2 },
-			{ "id": "defender_asalto", "nameEs": "Ayudar a repeler un asalto pirata", "delta": 10 },
-			{ "id": "cazar_cerca", "nameEs": "Cazar a menos de 150 m de la aldea", "delta": -15 },
-			{ "id": "minar_talar_marae", "nameEs": "Minar o talar a menos de 50 m de un marae activo", "delta": -10 },
-			{ "id": "saquear", "nameEs": "Saquear un contenedor o las ofrendas", "delta": -20 },
-			{ "id": "golpear_aldeano", "nameEs": "Golpear a un aldeano", "delta": -25 }
+			{ "id": "trueque", "nameEs": "Trueque (máx. 1 al día)", "nameEn": "Barter (max. 1 a day)", "delta": 3 },
+			{ "id": "devolver_ritual", "nameEs": "Devolver un objeto ritual a su marae", "nameEn": "Return a ritual object to its marae", "delta": 5 },
+			{ "id": "encargo_tablon", "nameEs": "Completar un encargo del tablón", "nameEn": "Finish a job from the board", "delta": 4 },
+			{ "id": "jornada_respetuosa", "nameEs": "Un día sin minar, talar ni cazar cerca de la aldea o de un marae", "nameEn": "A day without mining, felling or hunting near the village or a marae", "delta": 2 },
+			{ "id": "defender_asalto", "nameEs": "Ayudar a repeler un asalto pirata", "nameEn": "Help repel a raid", "delta": 10 },
+			{ "id": "cazar_cerca", "nameEs": "Cazar a menos de 150 m de la aldea", "nameEn": "Hunt within 150 m of the village", "delta": -15 },
+			{ "id": "minar_talar_marae", "nameEs": "Minar o talar a menos de 50 m de un marae activo", "nameEn": "Mine or fell within 50 m of an active marae", "delta": -10 },
+			{ "id": "saquear", "nameEs": "Saquear un contenedor o las ofrendas", "nameEn": "Loot a container or the offerings", "delta": -20 },
+			{ "id": "golpear_aldeano", "nameEs": "Golpear a un aldeano", "nameEn": "Strike a villager", "delta": -25 }
 		],
 		"questRotationDays": 4
 	}

@@ -77,7 +77,7 @@
       "type": "Limon",
       "order": 3,
       "nameEs": "Barco «Limón»",
-      "nameEn": "The Lemon",
+      "nameEn": "The «Limón»",
       "station": "astillero",
       "cost": [
         { "item": "madera_dura", "count": 16 },

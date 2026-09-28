@@ -215,6 +215,32 @@ void FExploredScreensLogicSpec::Define()
 			const TArray<FAchievementRow> Castaway = BuildAchievementRows(Model);
 			TestTrue(TEXT("En Náufrago sí"), Castaway.Num() == 4 && Castaway[3].bAvailableInMode);
 		});
+
+		It("oculta los de una fase sin publicar salvo que ya estén conseguidos", [this]()
+		{
+			FString Error;
+			FAchievementsModel Model = TestAchievements(Error);
+			TArray<FAchievementDef> Defs = Model.GetAchievements();
+			Defs[1].Phase = EAchievementPhase::Phase2;
+			FAchievementsModel Phased;
+			if (!TestTrue(TEXT("Configura"), Phased.Configure(Model.GetStats(), Defs, Error)))
+			{
+				return;
+			}
+			Phased.Report(FName(TEXT("fires_lit")), 10.0);
+			TestTrue(TEXT("Con todo publicado, diez fuegos"), Phased.IsUnlocked(Defs[1].Id));
+
+			Phased.SetReleasedPhase(EAchievementPhase::EarlyAccess);
+			TestEqual(TEXT("Ya conseguido: sigue en la lista"), BuildAchievementRows(Phased).Num(), 4);
+
+			FAchievementsModel Fresh;
+			Fresh.Configure(Model.GetStats(), Defs, Error);
+			Fresh.SetReleasedPhase(EAchievementPhase::EarlyAccess);
+			const TArray<FAchievementRow> Rows = BuildAchievementRows(Fresh);
+			TestEqual(TEXT("Sin conseguir: fuera de la lista"), Rows.Num(), 3);
+			TestFalse(TEXT("Ninguna fila es la de F2"), Rows.ContainsByPredicate([&](const FAchievementRow& Row) { return Row.Id == Defs[1].Id; }));
+			TestEqual(TEXT("El total no cuenta la F2"), SummarizeAchievements(Fresh).Total, 3);
+		});
 	});
 
 	Describe("ranuras de guardado", [this]()
