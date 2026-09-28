@@ -12,8 +12,10 @@ junto a los packs.
   `gen_palette.py`; un test falla si el JSON no coincide con el generador.
 - Atlas: `T_Palette_Landing`, `T_Palette_Esmeralda`, `T_Palette_Humo`, `T_Palette_Dientes`
   (512×512, en `Art/Export/Textures/`, no versionados).
-- Hoja de contacto: [`paleta-2026-09-27.png`](paleta-2026-09-27.png) — atlas de cada isla,
-  una muestra aplicada a formas low poly a 1-3 m sobre el suelo armonizado de la isla (con
+- Hoja de contacto: [`paleta-2026-09-28.png`](paleta-2026-09-28.png) (anterior:
+  [`paleta-2026-09-27.png`](paleta-2026-09-27.png)) — atlas de cada isla, una muestra
+  aplicada a formas low poly a 1-3 m (con recursos sueltos: hueso, concha, pluma, azufre,
+  vasija de terracota) sobre el suelo armonizado de la isla (con
   cielo y mar actuales), y el antes/después del terreno.
 
 ```bash
@@ -33,10 +35,10 @@ Los colores se manipulan en **Oklab** (perceptual: ΔE ≈ 0.02 apenas visible, 
 | Albedo | sRGB en [0.035, 0.95] en medio, arriba y abajo | Igual que las texturas: ni negro ni blanco puros. |
 | Degradado | ΔL entre arriba y abajo de 0.08 a 0.2 | Se lee volumen sin ensuciar ni quedar plano. |
 | Distinguibles | ΔE > 0.035 entre muestras de una familia | Piezas contiguas de un objeto a 1-2 m (mango y hoja de un hacha, aros de un barril). |
-| Comida | ΔE > 0.06 contra **todos** los suelos de la isla | Lo recogible tiene que saltar a la vista en arena, hierba, basalto, caliza y ceniza. |
+| Recogible | ΔE > 0.06 contra **todos** los suelos de la isla (familias con `recogible`: comida, recurso, mineral) | Lo recogible tiene que saltar a la vista en arena, hierba, basalto, caliza y ceniza. Por eso la concha es rosada y no crema: en crema quedaba a ΔE 0.045 de la arena seca. |
 | Croma del entorno | C ≤ 0.14 (salvo acentos: comida, UI, flores) | El agua del arrecife (C ≈ 0.11) es lo más saturado del paisaje; el entorno no le roba protagonismo. |
 | Coherencia con el terreno | `piedra.basalto`, `piedra.caliza`, `vegetacion.hierba` a ΔE < 0.05 del terreno teñido de su isla | Una roca KayKit junto al acantilado escaneado no desentona. |
-| Identidad | comida, metal, tela y UI iguales en las 4 islas | Un mango es el mismo mango en todas partes; solo cambia el entorno. |
+| Identidad | comida, metal, tela, UI, recurso y mineral iguales en las 4 islas | Un mango es el mismo mango en todas partes; solo cambia el entorno. |
 
 ## Islas
 
@@ -56,11 +58,12 @@ tono medio de la textura armonizada multiplicado por el tinte de color de vérti
 ## Atlas
 
 512×512, rejilla de 16×16 celdas de 32 px (una fila por familia; columnas libres en gris
-`#808080`, filas 11-15 libres para crecer).
+`#808080`, filas 13-15 libres para crecer). Un test impide que dos familias compartan fila.
 
 ```
 fila 0 madera · 1 palma · 2 bambú · 3 piedra · 4 metal · 5 tela · 6 vegetación · 7 comida
      8 UI · 9 terreno (referencia) · 10 entorno (agua y cielo, referencia)
+     11 recurso · 12 mineral
 celda (32 px, de arriba abajo):
   4 px margen = color «arriba»      ← v_rango[0]
  10 px rampa arriba → medio (Oklab, suavizada)
@@ -182,6 +185,22 @@ Color medio por isla (`=`: igual que Landing). Arriba/abajo y lineal en `paleta.
 | `ui.info` | 5,8 | `#4f8ec0` | = | = | = | Información, agua. |
 | `ui.neutro` | 6,8 | `#8c8579` | = | = | = | Deshabilitado. |
 | `ui.hueso` | 7,8 | `#f1f0ec` | = | = | = | Blanco roto de la UI. |
+| `recurso.hueso` | 0,11 | `#ece5d3` | = | = | = | Huesos, espinas grandes, anzuelo de hueso. |
+| `recurso.concha` | 1,11 | `#ebc6c8` | = | = | = | Conchas pequeñas y grandes (rosado pálido: la arena es amarilla). |
+| `recurso.nacar` | 2,11 | `#bfd0d4` | = | = | = | Interior nacarado, lapa, cuentas. |
+| `recurso.caracola` | 3,11 | `#e59a86` | = | = | = | Caracola, labio rosado de las conchas grandes. |
+| `recurso.pluma` | 4,11 | `#7d6450` | = | = | = | Plumas de ave marina, emplumado de flechas. |
+| `recurso.alga` | 5,11 | `#56703d` | = | = | = | Alga fibrosa, esponja de mar seca. |
+| `recurso.erizo` | 6,11 | `#4a2f55` | = | = | = | Erizo de mar, tinta de pulpo. |
+| `recurso.resina` | 7,11 | `#c47a26` | = | = | = | Resina y ámbar, pegamento, yesca de hongo. |
+| `mineral.arcilla` | 0,12 | `#9c4f36` | = | = | = | Arcilla roja cruda. |
+| `mineral.terracota` | 1,12 | `#c5704a` | = | = | = | Barro cocido: vasijas, tejas. |
+| `mineral.azufre` | 2,12 | `#e3d54c` | = | = | = | Azufre del Humo (acento). |
+| `mineral.cuarzo` | 3,12 | `#e2dcec` | = | = | = | Cristal de cuarzo (blanco frío con un punto lila). |
+| `mineral.sal` | 4,12 | `#efeee8` | = | = | = | Sal marina. |
+| `mineral.aluminio` | 5,12 | `#c0c9d3` | = | = | = | Tubo de aluminio y chapa del fuselaje del Albatros. |
+| `mineral.malaquita` | 6,12 | `#3f8a70` | = | = | = | Mineral de cobre. |
+| `mineral.hematites` | 7,12 | `#6b3a37` | = | = | = | Hierro del meteorito, óxido rojo. |
 | `terreno.arena_seca` | 0,9 | `#e7c691` | `#e7c691` | `#e6c592` | `#e6c692` | `T_SandDry_BC` teñido por M_Terrain |
 | `terreno.arena_mojada` | 1,9 | `#ae8e65` | `#ae8e65` | `#ad8e66` | `#ad8e65` | `T_SandWet_BC` teñido por M_Terrain |
 | `terreno.hierba` | 2,9 | `#639243` | `#629343` | `#649143` | `#639143` | `T_Grass_BC` teñido por M_Terrain |
@@ -193,10 +212,23 @@ Fila 10 (`entorno.*`, solo referencia, lineal del motor): laguna `(0.30, 0.86, 0
 arrecife `(0.05, 0.45, 0.62)`, profundo `(0.02, 0.10, 0.22)`, espuma `(0.94, 0.97, 0.98)`
 (`M_Ocean`) y cielo `(0.32, 0.52, 0.80)` (niebla de día de `ExploredSkyController`).
 
+## Recursos y minerales (2026-09-28)
+
+`items.json` tiene ~40 recursos sueltos (huesos, conchas, plumas, resina, arcilla, azufre,
+cuarzo, sal, chapa del fuselaje...) que no encajaban en ninguna familia: el catálogo de
+packs los habría mandado a `piedra.caliza` o `tela.crudo` y se confundirían con el suelo.
+Las filas 11 (`recurso`) y 12 (`mineral`) son de identidad (iguales en las 4 islas),
+marcadas `recogible` en `paleta.json` y sujetas a la misma regla de contraste que la
+comida. Alias nuevos para los packs: `Bone`, `Shell`, `Feather`, `Clay`, `Crystal`,
+`Aluminium`. Los atlas y las UV de las filas 0-10 no cambian: las mallas ya
+recoloreadas no hay que reimportarlas.
+
 ## Pendiente
 
 - Verificar en Unreal: importación con kind `palette`, compilación de `M_LowPoly` (nodo
   Custom con `CalculateLevelOfDetail`/`Texture2DSampleLevel`) y las `MI_LowPoly_<Isla>`.
+- Usar `recurso.*` y `mineral.*` en `packs_catalogo.json` cuando se cataloguen conchas,
+  huesos, plumas o vasijas (flecha: emplumado → `recurso.pluma`).
 - Remapeo de UV de cada pack a las celdas (script de Blender o de importación) usando
   `alias_packs`.
 - Comprobar la legibilidad en juego con Lumen (la hoja usa un sombreado simple).

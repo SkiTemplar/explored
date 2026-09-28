@@ -152,6 +152,12 @@ def scene(island: str) -> list[dict]:
         box((-1.45, 0, 1.9), (0.5, 0.04, 0.12), "madera.deriva", rot=0.6),
         icosphere((1.15, 0, 1.9), 0.09, "palma.coco", squash=(1.0, 0.95, 1.0)),
         box((0.3, 0, 2.2), (0.35, 0.22, 0.25), "palma.paja", rot=-0.4),
+        # Recursos sueltos y minerales (filas 11-12): lo que se recoge del suelo.
+        prism((1.45, 0, 1.55), 0.1, 0.2, 8, "mineral.terracota", top_scale=0.6),
+        prism((-1.15, 0, 1.35), 0.04, 0.07, 6, "recurso.hueso", top_scale=0.8),
+        icosphere((0.3, 0, 1.25), 0.05, "recurso.concha", squash=(1.3, 0.45, 1.0)),
+        box((-0.15, 0, 1.2), (0.2, 0.012, 0.035), "recurso.pluma", rot=-0.5),
+        icosphere((1.05, 0, 1.35), 0.05, "mineral.azufre", seed=11, jitter=0.4),
     ]
     return ms
 
@@ -322,7 +328,7 @@ def contact_sheet(path: Path, terrain: dict[str, np.ndarray], raw_terrain: dict[
         rows[TERRAIN_ROW], rows[ENTORNO_ROW] = "terreno", "entorno"
         for r, name in rows.items():
             draw.text((pad, y0 + r * cell_draw + 6), name, fill=(200, 200, 205), font=f_small)
-        draw.text((pad, y0 + 12 * cell_draw), "(libres)", fill=(120, 120, 128), font=f_small)
+        draw.text((pad, y0 + (max(rows) + 1) * cell_draw + 6), "(libres)", fill=(120, 120, 128), font=f_small)
         g1, g2 = GROUNDS[isl.key]
         layer = {m: TERRAIN_TARGETS[m][4] for m in TERRAIN_TARGETS}
         render = render_scene(isl.key, atlas, sws, terrain[g1], terrain[g2],

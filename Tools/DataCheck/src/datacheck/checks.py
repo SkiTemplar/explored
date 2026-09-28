@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import achievements, cooking, crafting, fases, fauna, mining, music
+from . import achievements, cooking, crafting, fases, fauna, mining, music, packs
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -45,7 +45,7 @@ DATA_FILES = [
     "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json", "mining.json", "fauna.json",
+    "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
     "fases_futuras.json",
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
@@ -1118,4 +1118,5 @@ def run_all(ds: DataSet) -> Report:
     mining.check_mining(ds, r)
     fauna.check_fauna(ds, r, PROPERTIES)
     fases.check_future_phases(ds, r, BUILDING_SOCKETS)
+    packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r
