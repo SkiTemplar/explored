@@ -300,6 +300,27 @@ void FTerrainEditModel::ForEachSampleInBox(const FBox& Box,
 	TFunctionRef<void(const FIntVector&, const FVector&)> Visit) const
 {
 	const double H = Settings.CellSize;
+	// Caja no finita, fuera de la rejilla o absurda: nada. Con NaN, CeilToInt32 daba INT_MIN y las
+	// ediciones caían en chunks que FromValue rechaza (se perdía todo el guardado).
+	constexpr double MaxAbsSample = 1.0e8;
+	constexpr double MaxSamples = 1 << 22;
+	const double Los[3] = { Box.Min.X / H, Box.Min.Y / H, Box.Min.Z / H };
+	const double His[3] = { Box.Max.X / H, Box.Max.Y / H, Box.Max.Z / H };
+	double Count = 1.0;
+	for (int32 Axis = 0; Axis < 3; ++Axis)
+	{
+		const double Lo = Los[Axis];
+		const double Hi = His[Axis];
+		if (!FMath::IsFinite(Lo) || !FMath::IsFinite(Hi) || FMath::Abs(Lo) > MaxAbsSample || FMath::Abs(Hi) > MaxAbsSample)
+		{
+			return;
+		}
+		Count *= FMath::Max(0.0, Hi - Lo + 1.0);
+	}
+	if (Count > MaxSamples)
+	{
+		return;
+	}
 	const FIntVector Min(FMath::CeilToInt32(Box.Min.X / H), FMath::CeilToInt32(Box.Min.Y / H), FMath::CeilToInt32(Box.Min.Z / H));
 	const FIntVector Max(FMath::FloorToInt32(Box.Max.X / H), FMath::FloorToInt32(Box.Max.Y / H), FMath::FloorToInt32(Box.Max.Z / H));
 	for (int32 Z = Min.Z; Z <= Max.Z; ++Z)
@@ -576,7 +597,9 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 
 	// Lo que se rellena sale de lo que se lleva más lo que corta esta misma pasada.
 	const double CutVolume = -ProposalVolume(Cut, 1.0f);
-	const double Allowed = FMath::Max(0.0, Stroke.SoilBudget) + CutVolume;
+	// Un presupuesto no finito no es tierra que se lleve: con NaN o infinito se rellenaba sin tope.
+	const double Budget = FMath::IsFinite(Stroke.SoilBudget) ? FMath::Max(0.0, Stroke.SoilBudget) : 0.0;
+	const double Allowed = Budget + CutVolume;
 	Commit(Cut, 1.0f, Result);
 	Commit(Fill, ScaleToVolume(Fill, Allowed), Result);
 
@@ -646,6 +669,9 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || !TerrainEditDetail::InWorld(Stairs.Start)
 		|| !TerrainEditDetail::IsFiniteVector(Stairs.Direction) || Flat.SizeSquared() < 1.0e-6
 		|| Stairs.NumSteps < 1 || Stairs.NumSteps > MaxStairSteps
+		// IsFinite explícito: con matemáticas rápidas la comparación en positivo no descarta los NaN.
+		|| !FMath::IsFinite(Stairs.StepRun) || !FMath::IsFinite(Stairs.StepRise)
+		|| !FMath::IsFinite(Stairs.Width) || !FMath::IsFinite(Stairs.Headroom)
 		|| !(Stairs.StepRun > 0.0f) || Stairs.StepRun > MaxStairRun + Slack
 		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
 		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack

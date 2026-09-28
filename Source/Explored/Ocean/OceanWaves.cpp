@@ -28,8 +28,9 @@ FVector FOceanWaves::Displacement(const FVector2D& Position, float Time) const
 		const float K = UE_TWO_PI / W.Wavelength;
 		const float Speed = FMath::Sqrt(Gravity / K);
 		const float Phase = K * (FVector2D::DotProduct(W.Direction, Position) - Speed * Time);
-		// Q normalizado por número de olas para que las crestas no se crucen.
-		const float Q = W.Steepness / (K * W.Amplitude * NumWaves);
+		// Q normalizado por número de olas para que las crestas no se crucen. Una ola de
+		// amplitud 0 no mueve nada (sin la guarda, Q infinito × 0 daría NaN).
+		const float Q = W.Amplitude > 0.0f ? W.Steepness / (K * W.Amplitude * NumWaves) : 0.0f;
 		Offset.X += Q * W.Amplitude * W.Direction.X * FMath::Cos(Phase);
 		Offset.Y += Q * W.Amplitude * W.Direction.Y * FMath::Cos(Phase);
 		Offset.Z += W.Amplitude * FMath::Sin(Phase);

@@ -3,6 +3,8 @@
 #include "WorldGen/FellingModel.h"
 #include "WorldGen/HarvestModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(FFellingModelSpec, "Explored.Felling",
@@ -301,6 +303,13 @@ void FFellingModelSpec::Define()
 			TestTrue(TEXT("-100,001 → -2"), FFellingModel::CellOf(FVector2D(-100.001, 0.0), 100.0) == FIntPoint(-2, 0));
 			TestTrue(TEXT("100 → 1"), FFellingModel::CellOf(FVector2D(100.0, 99.999), 100.0) == FIntPoint(1, 0));
 			TestTrue(TEXT("tamaño de celda inválido → origen"), FFellingModel::CellOf(FVector2D(5000.0, 5000.0), 0.0) == FIntPoint(0, 0));
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			TestTrue(TEXT("tamaño NaN → origen"), FFellingModel::CellOf(FVector2D(5000.0, 5000.0), NaN) == FIntPoint(0, 0));
+			TestTrue(TEXT("posición NaN → origen"), FFellingModel::CellOf(FVector2D(NaN, 5000.0), 100.0) == FIntPoint(0, 0));
+			TestTrue(TEXT("posición infinita → origen"), FFellingModel::CellOf(FVector2D(5000.0, -Inf), 100.0) == FIntPoint(0, 0));
+			const FIntPoint Far = FFellingModel::CellOf(FVector2D(1.0e300, -1.0e300), 100.0);
+			TestTrue(TEXT("lejísimos: recortado sin desbordar"), Far.X > 0 && Far.Y < 0);
 		});
 	});
 
@@ -337,6 +346,18 @@ void FFellingModelSpec::Define()
 			Stump.FelledAtMinute = 5000;
 			TestTrue(TEXT("tocón"), FFellingModel::StageAt(Get(TEXT("Palm")), Stump, 0) == EStumpStage::Stump);
 			TestEqual(TEXT("escala 0"), FFellingModel::GrowthScaleAt(Get(TEXT("Palm")), Stump, -100000), 0.0f);
+		});
+
+		It("con minutos extremos guardados no desborda", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			FStumpState Stump;
+			// Antes 100 - INT64_MIN desbordaba a negativo: tocón para siempre.
+			Stump.FelledAtMinute = TNumericLimits<int64>::Min();
+			TestTrue(TEXT("talado hace muchísimo: adulto"), FFellingModel::StageAt(Palm, Stump, 100) == EStumpStage::Mature);
+			TestEqual(TEXT("escala 1"), FFellingModel::GrowthScaleAt(Palm, Stump, 100), 1.0f);
+			Stump.FelledAtMinute = TNumericLimits<int64>::Max();
+			TestTrue(TEXT("talado en el futuro: tocón"), FFellingModel::StageAt(Palm, Stump, TNumericLimits<int64>::Min()) == EStumpStage::Stump);
 		});
 
 		It("no rebrota si el perfil tiene 0 días de rebrote", [this]()
