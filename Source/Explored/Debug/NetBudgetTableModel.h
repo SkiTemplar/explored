@@ -19,9 +19,9 @@ struct EXPLORED_API FNetBudgetChannel
 /**
  * Tabla de presupuesto de ancho de banda servidor → cliente (biblia 08 §3), escrita con
  * los tamaños reales de los paquetes de los modelos de red (reloj de 11 B, anclas de 10 B,
- * vegetación de 14 B por cambio, barco de 19 B) para que un cambio de formato que rompa
+ * vegetación de 14 B por cambio, cofres de 13 B por hueco) para que un cambio de formato que rompa
  * el objetivo lo cace un test, no la beta. Los canales que aún no tienen modelo propio
- * (personajes, terreno, cartografía) llevan la cifra de la biblia como reserva fija.
+ * (personajes, terreno, barco, cartografía) llevan la cifra de la biblia.
  *
  * Es la estimación de diseño; la medida real es el CSV de `Explored.NetBudget` (H0) y el
  * criterio de salida de H5 se cumple con ese CSV, no con esta tabla.
@@ -51,6 +51,9 @@ public:
 	static constexpr double LooseObjectBytes = 12.0;
 	static constexpr int32 LooseObjectsAwakeCap = 32;
 	static constexpr double LooseObjectHz = 10.0;
+	/** `FExploredBoatNetState` de 08 §2.5 (su modelo va en la rama de barcos por piezas). */
+	static constexpr double BoatStateBytes = 19.0;
+	static constexpr double BoatStateHz = 20.0;
 	/** Ráfaga completa de terreno al unirse o entrar en chunks nuevos (08 §3), durante 5 s. */
 	static constexpr double TerrainBurstKbps = 128.0;
 

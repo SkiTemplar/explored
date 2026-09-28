@@ -521,10 +521,6 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       `FBoatModel::Step` y corrige hacia el estado recibido en 200 ms.
       `NetCullDistanceSquared` 25 000 cm. Olas y corrientes **no se replican**.
       *(biblia 08 §2.5)*
-      *(formato ya como modelo puro: `FBoatNetStateModel`
-      (`Source/Explored/Boats/BoatNetStateModel.h/.cpp`), spec
-      `Tests/BoatNetStateModelSpec.cpp` — estado de 19 B, mandos de 4 B con rechazo de
-      manipulados y corrección de 200 ms; falta el RPC y la propiedad en `AExploredBoat`.)*
 - [ ] `Boats`: pasajeros con `AttachToActor` replicado, aforo por plano canónico (balsa 2,
       canoa 2, canoa con balancín 3, «Limón» 4 — al lleno el verbo «Subir» no se ofrece),
       timón cedible con el verbo de interacción sobre el asiento y liberado si el timonel

@@ -1,6 +1,5 @@
 #include "Misc/AutomationTest.h"
 
-#include "Boats/BoatNetStateModel.h"
 #include "Debug/NetBudgetTableModel.h"
 #include "Fauna/FaunaAnchorNetModel.h"
 #include "Sky/WorldClockNetModel.h"
@@ -93,7 +92,7 @@ void FNetBudgetTableModelSpec::Define()
 			FString Reason;
 			TestTrue(TEXT("Cabe en 256"), FNetBudgetTableModel::FitsTarget(Peak, FNetBudgetTableModel::PeakTargetKbps, Reason));
 			TestFalse(TEXT("Pero no en el objetivo de reposo"), FNetBudgetTableModel::FitsTarget(Peak, FNetBudgetTableModel::RestTargetKbps, Reason));
-			TestEqual(TEXT("Dos barcos: 6,08"), ChannelKbps(Peak, TEXT("barcos_ocupados")), 2.0 * FBoatNetStateModel::KbpsPerBoat(), 1e-9);
+			TestEqual(TEXT("Dos barcos: 6,08"), ChannelKbps(Peak, TEXT("barcos_ocupados")), 6.08, 1e-9);
 			TestEqual(TEXT("32 objetos sueltos: 30,7"), ChannelKbps(Peak, TEXT("objetos_sueltos_despiertos")), 30.72, 1e-9);
 			TestTrue(TEXT("Inventario y cofre dentro de los 4 kbps de la biblia"), ChannelKbps(Peak, TEXT("inventario_propio_fabricando")) + ChannelKbps(Peak, TEXT("cofre_abierto")) <= 4.0);
 		});

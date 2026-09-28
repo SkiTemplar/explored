@@ -1,6 +1,5 @@
 #include "Debug/NetBudgetTableModel.h"
 
-#include "Boats/BoatNetStateModel.h"
 #include "Carry/ContainerReplicationModel.h"
 #include "Core/SystemLinks.h"
 #include "Fauna/FaunaAnchorNetModel.h"
@@ -55,7 +54,7 @@ TArray<FNetBudgetChannel> FNetBudgetTableModel::PeakTable(int32 Players)
 	T.Add(Fixed(TEXT("arena_viva"), 0.6));
 	// Dos talas a la vez a menos de 60 m: un golpe por segundo cada una.
 	T.Add(Rate(TEXT("tala_dos_arboles"), FVegetationNetStateModel::BytesPerChange, 1.0, 2.0));
-	T.Add(Rate(TEXT("barcos_ocupados"), FBoatNetStateModel::StateBytes, FBoatNetStateModel::SendHz, 2.0));
+	T.Add(Rate(TEXT("barcos_ocupados"), BoatStateBytes, BoatStateHz, 2.0));
 	T.Add(Rate(TEXT("objetos_sueltos_despiertos"), LooseObjectBytes, LooseObjectHz, LooseObjectsAwakeCap));
 	// Fabricar mueve 2–3 huecos por operación, coalescido a 10 Hz (08 §2.4).
 	T.Add(Rate(TEXT("inventario_propio_fabricando"), 3.0 * FContainerReplicationModel::EntryBytes, 10.0));
