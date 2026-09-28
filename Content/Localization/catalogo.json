@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 637,
+		"total": 638,
 		"cpp": 303,
-		"datos": 334,
+		"datos": 335,
 		"pendientes": 0,
 		"sin_en": 0,
 		"literales": 0,
@@ -3464,6 +3464,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «telar» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "viga_apoyo.nameEs",
+			"es": "Viga de apoyo",
+			"en": "Support beam",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «viga_apoyo» nameEs/nameEn"
 			]
 		},
 		{
