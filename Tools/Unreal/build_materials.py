@@ -387,7 +387,8 @@ OCEAN_CREST_HLSL = GERSTNER_COMMON + r"""
 // como bandas blancas paralelas por todo el océano, no solo cerca de la costa. El mar en calma real
 // no hace whitecaps: se retrasa el arranque a partir de SeaState~0.3 (mar picado, Beaufort 3+) para
 // que a 0.15 la máscara de cresta salga a 0 y solo dejen espuma visible la orilla y la marejada.
-float crest = saturate(smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55))) * saturate((SeaState - 0.3) * 3.0);
+float crestShape = saturate(smoothstep(0.45, 0.9, offset.z / (sumAmp * 0.55)));
+float crest = crestShape * saturate((SeaState - 0.3) * 3.0);
 
 float3 n = normalize(cross(tangent, binormal));
 float3 camDir = normalize(V);
@@ -396,7 +397,9 @@ float3 lightDir = normalize(L);
 float backlight = saturate(-dot(camDir, lightDir));
 // Más fuerte en la cara de la ola que mira hacia el sol desde atrás (normal opuesta a la luz).
 float facing = saturate(dot(n, lightDir) * -0.5 + 0.5);
-float sss = crest * backlight * facing;
+// La translucidez a contraluz sí existe con mar de fondo (ola lisa, sin espuma): usa la forma de la
+// cresta con el freno antiguo, no la máscara de espuma, que ahora vale 0 por debajo de SeaState 0.3.
+float sss = crestShape * saturate(SeaState * 1.4) * backlight * facing;
 float3 sssColor = sss * SubsurfaceColor * SubsurfaceStrength;
 return float4(crest, sssColor);
 """
