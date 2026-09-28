@@ -83,6 +83,7 @@
       "fila": 0,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Madera de construcción, herramientas y muebles.",
       "muestras": {
         "clara": "Tabla nueva, mangos, cajas KayKit claras.",
@@ -99,6 +100,7 @@
       "fila": 1,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Palma, paja y coco: techos, cestos, cuerdas.",
       "muestras": {
         "paja": "Techo de paja (PalmThatch).",
@@ -115,6 +117,7 @@
       "fila": 2,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Bambú: estructuras ligeras, cañas, balsas.",
       "muestras": {
         "verde": "Caña viva.",
@@ -129,6 +132,7 @@
       "fila": 3,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Piedra: rocas sueltas, muros, herramientas líticas.",
       "muestras": {
         "basalto": "Basalto del Humo (= terreno VolcanicRock).",
@@ -145,6 +149,7 @@
       "fila": 4,
       "por_isla": false,
       "acento": false,
+      "recogible": false,
       "descripcion": "Metal: restos del avión, herramientas, clavos.",
       "muestras": {
         "hierro": "Hierro forjado, clavos.",
@@ -161,6 +166,7 @@
       "fila": 5,
       "por_isla": false,
       "acento": false,
+      "recogible": false,
       "descripcion": "Tela y cuero: velas, toldos, ropa, bolsas.",
       "muestras": {
         "lona": "Vela y toldo (Canvas).",
@@ -177,6 +183,7 @@
       "fila": 6,
       "por_isla": true,
       "acento": false,
+      "recogible": false,
       "descripcion": "Vegetación de props (arbustos, flores, hierba) de los packs.",
       "muestras": {
         "hoja": "Hoja por defecto.",
@@ -194,6 +201,7 @@
       "fila": 7,
       "por_isla": false,
       "acento": true,
+      "recogible": true,
       "descripcion": "Comida recogible: tiene que saltar a la vista sobre arena, hierba y roca.",
       "muestras": {
         "mango": "Mango, papaya.",
@@ -211,6 +219,7 @@
       "fila": 8,
       "por_isla": false,
       "acento": true,
+      "recogible": false,
       "descripcion": "Interfaz y objetos de UI en el mundo (mapa, marcadores).",
       "muestras": {
         "tinta": "Texto, tinta del mapa.",
@@ -221,6 +230,40 @@
         "info": "Información, agua.",
         "neutro": "Deshabilitado.",
         "hueso": "Blanco roto de la UI."
+      }
+    },
+    "recurso": {
+      "fila": 11,
+      "por_isla": false,
+      "acento": true,
+      "recogible": true,
+      "descripcion": "Recursos naturales sueltos: fauna, playa y arrecife.",
+      "muestras": {
+        "hueso": "Huesos, espinas grandes, anzuelo de hueso.",
+        "concha": "Conchas pequeñas y grandes (rosado pálido: la arena es amarilla).",
+        "nacar": "Interior nacarado, lapa, cuentas.",
+        "caracola": "Caracola, labio rosado de las conchas grandes.",
+        "pluma": "Plumas de ave marina, emplumado de flechas.",
+        "alga": "Alga fibrosa, esponja de mar seca.",
+        "erizo": "Erizo de mar, tinta de pulpo.",
+        "resina": "Resina y ámbar, pegamento, yesca de hongo."
+      }
+    },
+    "mineral": {
+      "fila": 12,
+      "por_isla": false,
+      "acento": true,
+      "recogible": true,
+      "descripcion": "Minerales y restos del avión que se recogen o se extraen.",
+      "muestras": {
+        "arcilla": "Arcilla roja cruda.",
+        "terracota": "Barro cocido: vasijas, tejas.",
+        "azufre": "Azufre del Humo (acento).",
+        "cuarzo": "Cristal de cuarzo (blanco frío con un punto lila).",
+        "sal": "Sal marina.",
+        "aluminio": "Tubo de aluminio y chapa del fuselaje del Albatros.",
+        "malaquita": "Mineral de cobre.",
+        "hematites": "Hierro del meteorito, óxido rojo."
       }
     },
     "terreno": {
@@ -280,6 +323,12 @@
     "Straw": "palma.paja",
     "Thatch": "palma.paja",
     "Bamboo": "bambu.maduro",
+    "Bone": "recurso.hueso",
+    "Shell": "recurso.concha",
+    "Feather": "recurso.pluma",
+    "Clay": "mineral.terracota",
+    "Crystal": "mineral.cuarzo",
+    "Aluminium": "mineral.aluminio",
     "Sand": "terreno.arena_seca",
     "Dirt": "terreno.arena_mojada",
     "Water": "entorno.laguna"
@@ -3047,6 +3096,614 @@
               0.6514,
               0.6724,
               0.6939
+            ]
+          }
+        },
+        "recurso.hueso": {
+          "celda": [
+            0,
+            11
+          ],
+          "uv": [
+            0.03125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ece5d3",
+            "lineal": [
+              0.8388,
+              0.7835,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#ceccc2",
+            "lineal": [
+              0.6172,
+              0.6038,
+              0.5395
+            ]
+          }
+        },
+        "recurso.concha": {
+          "celda": [
+            1,
+            11
+          ],
+          "uv": [
+            0.09375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ebc6c8",
+            "lineal": [
+              0.8308,
+              0.5647,
+              0.5776
+            ]
+          },
+          "arriba": {
+            "srgb": "#f1dfde",
+            "lineal": [
+              0.8796,
+              0.7379,
+              0.7305
+            ]
+          },
+          "abajo": {
+            "srgb": "#ccaeb6",
+            "lineal": [
+              0.6038,
+              0.4233,
+              0.4678
+            ]
+          }
+        },
+        "recurso.nacar": {
+          "celda": [
+            2,
+            11
+          ],
+          "uv": [
+            0.15625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#bfd0d4",
+            "lineal": [
+              0.521,
+              0.6308,
+              0.6584
+            ]
+          },
+          "arriba": {
+            "srgb": "#d4e4e2",
+            "lineal": [
+              0.6584,
+              0.7758,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b7c1",
+            "lineal": [
+              0.3663,
+              0.4735,
+              0.5333
+            ]
+          }
+        },
+        "recurso.caracola": {
+          "celda": [
+            3,
+            11
+          ],
+          "uv": [
+            0.21875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#e59a86",
+            "lineal": [
+              0.7835,
+              0.3231,
+              0.2384
+            ]
+          },
+          "arriba": {
+            "srgb": "#eeb39f",
+            "lineal": [
+              0.855,
+              0.4508,
+              0.3467
+            ]
+          },
+          "abajo": {
+            "srgb": "#c48478",
+            "lineal": [
+              0.552,
+              0.2307,
+              0.1878
+            ]
+          }
+        },
+        "recurso.pluma": {
+          "celda": [
+            4,
+            11
+          ],
+          "uv": [
+            0.28125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#7d6450",
+            "lineal": [
+              0.2051,
+              0.1274,
+              0.0802
+            ]
+          },
+          "arriba": {
+            "srgb": "#92755a",
+            "lineal": [
+              0.2874,
+              0.1779,
+              0.1022
+            ]
+          },
+          "abajo": {
+            "srgb": "#624f43",
+            "lineal": [
+              0.1221,
+              0.0782,
+              0.0561
+            ]
+          }
+        },
+        "recurso.alga": {
+          "celda": [
+            5,
+            11
+          ],
+          "uv": [
+            0.34375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#56703d",
+            "lineal": [
+              0.0931,
+              0.162,
+              0.0467
+            ]
+          },
+          "arriba": {
+            "srgb": "#698245",
+            "lineal": [
+              0.1413,
+              0.2232,
+              0.0595
+            ]
+          },
+          "abajo": {
+            "srgb": "#3d5932",
+            "lineal": [
+              0.0467,
+              0.0999,
+              0.0319
+            ]
+          }
+        },
+        "recurso.erizo": {
+          "celda": [
+            6,
+            11
+          ],
+          "uv": [
+            0.40625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#4a2f55",
+            "lineal": [
+              0.0685,
+              0.0284,
+              0.0908
+            ]
+          },
+          "arriba": {
+            "srgb": "#5c3f63",
+            "lineal": [
+              0.107,
+              0.0497,
+              0.1248
+            ]
+          },
+          "abajo": {
+            "srgb": "#321b42",
+            "lineal": [
+              0.0319,
+              0.011,
+              0.0545
+            ]
+          }
+        },
+        "recurso.resina": {
+          "celda": [
+            7,
+            11
+          ],
+          "uv": [
+            0.46875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#c47a26",
+            "lineal": [
+              0.552,
+              0.1946,
+              0.0194
+            ]
+          },
+          "arriba": {
+            "srgb": "#dc8b29",
+            "lineal": [
+              0.7157,
+              0.2582,
+              0.0222
+            ]
+          },
+          "abajo": {
+            "srgb": "#a46522",
+            "lineal": [
+              0.3712,
+              0.1301,
+              0.016
+            ]
+          }
+        },
+        "mineral.arcilla": {
+          "celda": [
+            0,
+            12
+          ],
+          "uv": [
+            0.03125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#9c4f36",
+            "lineal": [
+              0.3325,
+              0.0782,
+              0.0369
+            ]
+          },
+          "arriba": {
+            "srgb": "#b35f3e",
+            "lineal": [
+              0.4508,
+              0.1144,
+              0.0482
+            ]
+          },
+          "abajo": {
+            "srgb": "#7d3c2c",
+            "lineal": [
+              0.2051,
+              0.0452,
+              0.0252
+            ]
+          }
+        },
+        "mineral.terracota": {
+          "celda": [
+            1,
+            12
+          ],
+          "uv": [
+            0.09375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c5704a",
+            "lineal": [
+              0.5583,
+              0.162,
+              0.0685
+            ]
+          },
+          "arriba": {
+            "srgb": "#dd8051",
+            "lineal": [
+              0.7231,
+              0.2159,
+              0.0823
+            ]
+          },
+          "abajo": {
+            "srgb": "#a55c40",
+            "lineal": [
+              0.3763,
+              0.107,
+              0.0513
+            ]
+          }
+        },
+        "mineral.azufre": {
+          "celda": [
+            2,
+            12
+          ],
+          "uv": [
+            0.15625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e3d54c",
+            "lineal": [
+              0.7682,
+              0.6654,
+              0.0723
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2e890",
+            "lineal": [
+              0.8879,
+              0.807,
+              0.2789
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4bc49",
+            "lineal": [
+              0.552,
+              0.5029,
+              0.0666
+            ]
+          }
+        },
+        "mineral.cuarzo": {
+          "celda": [
+            3,
+            12
+          ],
+          "uv": [
+            0.21875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e2dcec",
+            "lineal": [
+              0.7605,
+              0.7157,
+              0.8388
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4c3d8",
+            "lineal": [
+              0.552,
+              0.5457,
+              0.6867
+            ]
+          }
+        },
+        "mineral.sal": {
+          "celda": [
+            4,
+            12
+          ],
+          "uv": [
+            0.28125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#efeee8",
+            "lineal": [
+              0.8632,
+              0.855,
+              0.807
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#d1d4d5",
+            "lineal": [
+              0.6376,
+              0.6584,
+              0.6654
+            ]
+          }
+        },
+        "mineral.aluminio": {
+          "celda": [
+            5,
+            12
+          ],
+          "uv": [
+            0.34375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c0c9d3",
+            "lineal": [
+              0.5271,
+              0.5841,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#d5dde2",
+            "lineal": [
+              0.6654,
+              0.7231,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b0bf",
+            "lineal": [
+              0.3663,
+              0.4342,
+              0.521
+            ]
+          }
+        },
+        "mineral.malaquita": {
+          "celda": [
+            6,
+            12
+          ],
+          "uv": [
+            0.40625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#3f8a70",
+            "lineal": [
+              0.0497,
+              0.2542,
+              0.162
+            ]
+          },
+          "arriba": {
+            "srgb": "#529d7c",
+            "lineal": [
+              0.0844,
+              0.3372,
+              0.2016
+            ]
+          },
+          "abajo": {
+            "srgb": "#227260",
+            "lineal": [
+              0.016,
+              0.1683,
+              0.117
+            ]
+          }
+        },
+        "mineral.hematites": {
+          "celda": [
+            7,
+            12
+          ],
+          "uv": [
+            0.46875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#6b3a37",
+            "lineal": [
+              0.147,
+              0.0423,
+              0.0382
+            ]
+          },
+          "arriba": {
+            "srgb": "#804941",
+            "lineal": [
+              0.2159,
+              0.0666,
+              0.0529
+            ]
+          },
+          "abajo": {
+            "srgb": "#50272a",
+            "lineal": [
+              0.0802,
+              0.0203,
+              0.0232
             ]
           }
         },
@@ -6235,6 +6892,614 @@
             ]
           }
         },
+        "recurso.hueso": {
+          "celda": [
+            0,
+            11
+          ],
+          "uv": [
+            0.03125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ece5d3",
+            "lineal": [
+              0.8388,
+              0.7835,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#ceccc2",
+            "lineal": [
+              0.6172,
+              0.6038,
+              0.5395
+            ]
+          }
+        },
+        "recurso.concha": {
+          "celda": [
+            1,
+            11
+          ],
+          "uv": [
+            0.09375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ebc6c8",
+            "lineal": [
+              0.8308,
+              0.5647,
+              0.5776
+            ]
+          },
+          "arriba": {
+            "srgb": "#f1dfde",
+            "lineal": [
+              0.8796,
+              0.7379,
+              0.7305
+            ]
+          },
+          "abajo": {
+            "srgb": "#ccaeb6",
+            "lineal": [
+              0.6038,
+              0.4233,
+              0.4678
+            ]
+          }
+        },
+        "recurso.nacar": {
+          "celda": [
+            2,
+            11
+          ],
+          "uv": [
+            0.15625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#bfd0d4",
+            "lineal": [
+              0.521,
+              0.6308,
+              0.6584
+            ]
+          },
+          "arriba": {
+            "srgb": "#d4e4e2",
+            "lineal": [
+              0.6584,
+              0.7758,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b7c1",
+            "lineal": [
+              0.3663,
+              0.4735,
+              0.5333
+            ]
+          }
+        },
+        "recurso.caracola": {
+          "celda": [
+            3,
+            11
+          ],
+          "uv": [
+            0.21875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#e59a86",
+            "lineal": [
+              0.7835,
+              0.3231,
+              0.2384
+            ]
+          },
+          "arriba": {
+            "srgb": "#eeb39f",
+            "lineal": [
+              0.855,
+              0.4508,
+              0.3467
+            ]
+          },
+          "abajo": {
+            "srgb": "#c48478",
+            "lineal": [
+              0.552,
+              0.2307,
+              0.1878
+            ]
+          }
+        },
+        "recurso.pluma": {
+          "celda": [
+            4,
+            11
+          ],
+          "uv": [
+            0.28125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#7d6450",
+            "lineal": [
+              0.2051,
+              0.1274,
+              0.0802
+            ]
+          },
+          "arriba": {
+            "srgb": "#92755a",
+            "lineal": [
+              0.2874,
+              0.1779,
+              0.1022
+            ]
+          },
+          "abajo": {
+            "srgb": "#624f43",
+            "lineal": [
+              0.1221,
+              0.0782,
+              0.0561
+            ]
+          }
+        },
+        "recurso.alga": {
+          "celda": [
+            5,
+            11
+          ],
+          "uv": [
+            0.34375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#56703d",
+            "lineal": [
+              0.0931,
+              0.162,
+              0.0467
+            ]
+          },
+          "arriba": {
+            "srgb": "#698245",
+            "lineal": [
+              0.1413,
+              0.2232,
+              0.0595
+            ]
+          },
+          "abajo": {
+            "srgb": "#3d5932",
+            "lineal": [
+              0.0467,
+              0.0999,
+              0.0319
+            ]
+          }
+        },
+        "recurso.erizo": {
+          "celda": [
+            6,
+            11
+          ],
+          "uv": [
+            0.40625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#4a2f55",
+            "lineal": [
+              0.0685,
+              0.0284,
+              0.0908
+            ]
+          },
+          "arriba": {
+            "srgb": "#5c3f63",
+            "lineal": [
+              0.107,
+              0.0497,
+              0.1248
+            ]
+          },
+          "abajo": {
+            "srgb": "#321b42",
+            "lineal": [
+              0.0319,
+              0.011,
+              0.0545
+            ]
+          }
+        },
+        "recurso.resina": {
+          "celda": [
+            7,
+            11
+          ],
+          "uv": [
+            0.46875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#c47a26",
+            "lineal": [
+              0.552,
+              0.1946,
+              0.0194
+            ]
+          },
+          "arriba": {
+            "srgb": "#dc8b29",
+            "lineal": [
+              0.7157,
+              0.2582,
+              0.0222
+            ]
+          },
+          "abajo": {
+            "srgb": "#a46522",
+            "lineal": [
+              0.3712,
+              0.1301,
+              0.016
+            ]
+          }
+        },
+        "mineral.arcilla": {
+          "celda": [
+            0,
+            12
+          ],
+          "uv": [
+            0.03125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#9c4f36",
+            "lineal": [
+              0.3325,
+              0.0782,
+              0.0369
+            ]
+          },
+          "arriba": {
+            "srgb": "#b35f3e",
+            "lineal": [
+              0.4508,
+              0.1144,
+              0.0482
+            ]
+          },
+          "abajo": {
+            "srgb": "#7d3c2c",
+            "lineal": [
+              0.2051,
+              0.0452,
+              0.0252
+            ]
+          }
+        },
+        "mineral.terracota": {
+          "celda": [
+            1,
+            12
+          ],
+          "uv": [
+            0.09375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c5704a",
+            "lineal": [
+              0.5583,
+              0.162,
+              0.0685
+            ]
+          },
+          "arriba": {
+            "srgb": "#dd8051",
+            "lineal": [
+              0.7231,
+              0.2159,
+              0.0823
+            ]
+          },
+          "abajo": {
+            "srgb": "#a55c40",
+            "lineal": [
+              0.3763,
+              0.107,
+              0.0513
+            ]
+          }
+        },
+        "mineral.azufre": {
+          "celda": [
+            2,
+            12
+          ],
+          "uv": [
+            0.15625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e3d54c",
+            "lineal": [
+              0.7682,
+              0.6654,
+              0.0723
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2e890",
+            "lineal": [
+              0.8879,
+              0.807,
+              0.2789
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4bc49",
+            "lineal": [
+              0.552,
+              0.5029,
+              0.0666
+            ]
+          }
+        },
+        "mineral.cuarzo": {
+          "celda": [
+            3,
+            12
+          ],
+          "uv": [
+            0.21875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e2dcec",
+            "lineal": [
+              0.7605,
+              0.7157,
+              0.8388
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4c3d8",
+            "lineal": [
+              0.552,
+              0.5457,
+              0.6867
+            ]
+          }
+        },
+        "mineral.sal": {
+          "celda": [
+            4,
+            12
+          ],
+          "uv": [
+            0.28125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#efeee8",
+            "lineal": [
+              0.8632,
+              0.855,
+              0.807
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#d1d4d5",
+            "lineal": [
+              0.6376,
+              0.6584,
+              0.6654
+            ]
+          }
+        },
+        "mineral.aluminio": {
+          "celda": [
+            5,
+            12
+          ],
+          "uv": [
+            0.34375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c0c9d3",
+            "lineal": [
+              0.5271,
+              0.5841,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#d5dde2",
+            "lineal": [
+              0.6654,
+              0.7231,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b0bf",
+            "lineal": [
+              0.3663,
+              0.4342,
+              0.521
+            ]
+          }
+        },
+        "mineral.malaquita": {
+          "celda": [
+            6,
+            12
+          ],
+          "uv": [
+            0.40625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#3f8a70",
+            "lineal": [
+              0.0497,
+              0.2542,
+              0.162
+            ]
+          },
+          "arriba": {
+            "srgb": "#529d7c",
+            "lineal": [
+              0.0844,
+              0.3372,
+              0.2016
+            ]
+          },
+          "abajo": {
+            "srgb": "#227260",
+            "lineal": [
+              0.016,
+              0.1683,
+              0.117
+            ]
+          }
+        },
+        "mineral.hematites": {
+          "celda": [
+            7,
+            12
+          ],
+          "uv": [
+            0.46875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#6b3a37",
+            "lineal": [
+              0.147,
+              0.0423,
+              0.0382
+            ]
+          },
+          "arriba": {
+            "srgb": "#804941",
+            "lineal": [
+              0.2159,
+              0.0666,
+              0.0529
+            ]
+          },
+          "abajo": {
+            "srgb": "#50272a",
+            "lineal": [
+              0.0802,
+              0.0203,
+              0.0232
+            ]
+          }
+        },
         "terreno.arena_seca": {
           "celda": [
             0,
@@ -9420,6 +10685,614 @@
             ]
           }
         },
+        "recurso.hueso": {
+          "celda": [
+            0,
+            11
+          ],
+          "uv": [
+            0.03125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ece5d3",
+            "lineal": [
+              0.8388,
+              0.7835,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#ceccc2",
+            "lineal": [
+              0.6172,
+              0.6038,
+              0.5395
+            ]
+          }
+        },
+        "recurso.concha": {
+          "celda": [
+            1,
+            11
+          ],
+          "uv": [
+            0.09375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ebc6c8",
+            "lineal": [
+              0.8308,
+              0.5647,
+              0.5776
+            ]
+          },
+          "arriba": {
+            "srgb": "#f1dfde",
+            "lineal": [
+              0.8796,
+              0.7379,
+              0.7305
+            ]
+          },
+          "abajo": {
+            "srgb": "#ccaeb6",
+            "lineal": [
+              0.6038,
+              0.4233,
+              0.4678
+            ]
+          }
+        },
+        "recurso.nacar": {
+          "celda": [
+            2,
+            11
+          ],
+          "uv": [
+            0.15625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#bfd0d4",
+            "lineal": [
+              0.521,
+              0.6308,
+              0.6584
+            ]
+          },
+          "arriba": {
+            "srgb": "#d4e4e2",
+            "lineal": [
+              0.6584,
+              0.7758,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b7c1",
+            "lineal": [
+              0.3663,
+              0.4735,
+              0.5333
+            ]
+          }
+        },
+        "recurso.caracola": {
+          "celda": [
+            3,
+            11
+          ],
+          "uv": [
+            0.21875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#e59a86",
+            "lineal": [
+              0.7835,
+              0.3231,
+              0.2384
+            ]
+          },
+          "arriba": {
+            "srgb": "#eeb39f",
+            "lineal": [
+              0.855,
+              0.4508,
+              0.3467
+            ]
+          },
+          "abajo": {
+            "srgb": "#c48478",
+            "lineal": [
+              0.552,
+              0.2307,
+              0.1878
+            ]
+          }
+        },
+        "recurso.pluma": {
+          "celda": [
+            4,
+            11
+          ],
+          "uv": [
+            0.28125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#7d6450",
+            "lineal": [
+              0.2051,
+              0.1274,
+              0.0802
+            ]
+          },
+          "arriba": {
+            "srgb": "#92755a",
+            "lineal": [
+              0.2874,
+              0.1779,
+              0.1022
+            ]
+          },
+          "abajo": {
+            "srgb": "#624f43",
+            "lineal": [
+              0.1221,
+              0.0782,
+              0.0561
+            ]
+          }
+        },
+        "recurso.alga": {
+          "celda": [
+            5,
+            11
+          ],
+          "uv": [
+            0.34375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#56703d",
+            "lineal": [
+              0.0931,
+              0.162,
+              0.0467
+            ]
+          },
+          "arriba": {
+            "srgb": "#698245",
+            "lineal": [
+              0.1413,
+              0.2232,
+              0.0595
+            ]
+          },
+          "abajo": {
+            "srgb": "#3d5932",
+            "lineal": [
+              0.0467,
+              0.0999,
+              0.0319
+            ]
+          }
+        },
+        "recurso.erizo": {
+          "celda": [
+            6,
+            11
+          ],
+          "uv": [
+            0.40625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#4a2f55",
+            "lineal": [
+              0.0685,
+              0.0284,
+              0.0908
+            ]
+          },
+          "arriba": {
+            "srgb": "#5c3f63",
+            "lineal": [
+              0.107,
+              0.0497,
+              0.1248
+            ]
+          },
+          "abajo": {
+            "srgb": "#321b42",
+            "lineal": [
+              0.0319,
+              0.011,
+              0.0545
+            ]
+          }
+        },
+        "recurso.resina": {
+          "celda": [
+            7,
+            11
+          ],
+          "uv": [
+            0.46875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#c47a26",
+            "lineal": [
+              0.552,
+              0.1946,
+              0.0194
+            ]
+          },
+          "arriba": {
+            "srgb": "#dc8b29",
+            "lineal": [
+              0.7157,
+              0.2582,
+              0.0222
+            ]
+          },
+          "abajo": {
+            "srgb": "#a46522",
+            "lineal": [
+              0.3712,
+              0.1301,
+              0.016
+            ]
+          }
+        },
+        "mineral.arcilla": {
+          "celda": [
+            0,
+            12
+          ],
+          "uv": [
+            0.03125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#9c4f36",
+            "lineal": [
+              0.3325,
+              0.0782,
+              0.0369
+            ]
+          },
+          "arriba": {
+            "srgb": "#b35f3e",
+            "lineal": [
+              0.4508,
+              0.1144,
+              0.0482
+            ]
+          },
+          "abajo": {
+            "srgb": "#7d3c2c",
+            "lineal": [
+              0.2051,
+              0.0452,
+              0.0252
+            ]
+          }
+        },
+        "mineral.terracota": {
+          "celda": [
+            1,
+            12
+          ],
+          "uv": [
+            0.09375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c5704a",
+            "lineal": [
+              0.5583,
+              0.162,
+              0.0685
+            ]
+          },
+          "arriba": {
+            "srgb": "#dd8051",
+            "lineal": [
+              0.7231,
+              0.2159,
+              0.0823
+            ]
+          },
+          "abajo": {
+            "srgb": "#a55c40",
+            "lineal": [
+              0.3763,
+              0.107,
+              0.0513
+            ]
+          }
+        },
+        "mineral.azufre": {
+          "celda": [
+            2,
+            12
+          ],
+          "uv": [
+            0.15625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e3d54c",
+            "lineal": [
+              0.7682,
+              0.6654,
+              0.0723
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2e890",
+            "lineal": [
+              0.8879,
+              0.807,
+              0.2789
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4bc49",
+            "lineal": [
+              0.552,
+              0.5029,
+              0.0666
+            ]
+          }
+        },
+        "mineral.cuarzo": {
+          "celda": [
+            3,
+            12
+          ],
+          "uv": [
+            0.21875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e2dcec",
+            "lineal": [
+              0.7605,
+              0.7157,
+              0.8388
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4c3d8",
+            "lineal": [
+              0.552,
+              0.5457,
+              0.6867
+            ]
+          }
+        },
+        "mineral.sal": {
+          "celda": [
+            4,
+            12
+          ],
+          "uv": [
+            0.28125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#efeee8",
+            "lineal": [
+              0.8632,
+              0.855,
+              0.807
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#d1d4d5",
+            "lineal": [
+              0.6376,
+              0.6584,
+              0.6654
+            ]
+          }
+        },
+        "mineral.aluminio": {
+          "celda": [
+            5,
+            12
+          ],
+          "uv": [
+            0.34375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c0c9d3",
+            "lineal": [
+              0.5271,
+              0.5841,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#d5dde2",
+            "lineal": [
+              0.6654,
+              0.7231,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b0bf",
+            "lineal": [
+              0.3663,
+              0.4342,
+              0.521
+            ]
+          }
+        },
+        "mineral.malaquita": {
+          "celda": [
+            6,
+            12
+          ],
+          "uv": [
+            0.40625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#3f8a70",
+            "lineal": [
+              0.0497,
+              0.2542,
+              0.162
+            ]
+          },
+          "arriba": {
+            "srgb": "#529d7c",
+            "lineal": [
+              0.0844,
+              0.3372,
+              0.2016
+            ]
+          },
+          "abajo": {
+            "srgb": "#227260",
+            "lineal": [
+              0.016,
+              0.1683,
+              0.117
+            ]
+          }
+        },
+        "mineral.hematites": {
+          "celda": [
+            7,
+            12
+          ],
+          "uv": [
+            0.46875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#6b3a37",
+            "lineal": [
+              0.147,
+              0.0423,
+              0.0382
+            ]
+          },
+          "arriba": {
+            "srgb": "#804941",
+            "lineal": [
+              0.2159,
+              0.0666,
+              0.0529
+            ]
+          },
+          "abajo": {
+            "srgb": "#50272a",
+            "lineal": [
+              0.0802,
+              0.0203,
+              0.0232
+            ]
+          }
+        },
         "terreno.arena_seca": {
           "celda": [
             0,
@@ -12602,6 +14475,614 @@
               0.6514,
               0.6724,
               0.6939
+            ]
+          }
+        },
+        "recurso.hueso": {
+          "celda": [
+            0,
+            11
+          ],
+          "uv": [
+            0.03125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ece5d3",
+            "lineal": [
+              0.8388,
+              0.7835,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#ceccc2",
+            "lineal": [
+              0.6172,
+              0.6038,
+              0.5395
+            ]
+          }
+        },
+        "recurso.concha": {
+          "celda": [
+            1,
+            11
+          ],
+          "uv": [
+            0.09375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#ebc6c8",
+            "lineal": [
+              0.8308,
+              0.5647,
+              0.5776
+            ]
+          },
+          "arriba": {
+            "srgb": "#f1dfde",
+            "lineal": [
+              0.8796,
+              0.7379,
+              0.7305
+            ]
+          },
+          "abajo": {
+            "srgb": "#ccaeb6",
+            "lineal": [
+              0.6038,
+              0.4233,
+              0.4678
+            ]
+          }
+        },
+        "recurso.nacar": {
+          "celda": [
+            2,
+            11
+          ],
+          "uv": [
+            0.15625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#bfd0d4",
+            "lineal": [
+              0.521,
+              0.6308,
+              0.6584
+            ]
+          },
+          "arriba": {
+            "srgb": "#d4e4e2",
+            "lineal": [
+              0.6584,
+              0.7758,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b7c1",
+            "lineal": [
+              0.3663,
+              0.4735,
+              0.5333
+            ]
+          }
+        },
+        "recurso.caracola": {
+          "celda": [
+            3,
+            11
+          ],
+          "uv": [
+            0.21875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#e59a86",
+            "lineal": [
+              0.7835,
+              0.3231,
+              0.2384
+            ]
+          },
+          "arriba": {
+            "srgb": "#eeb39f",
+            "lineal": [
+              0.855,
+              0.4508,
+              0.3467
+            ]
+          },
+          "abajo": {
+            "srgb": "#c48478",
+            "lineal": [
+              0.552,
+              0.2307,
+              0.1878
+            ]
+          }
+        },
+        "recurso.pluma": {
+          "celda": [
+            4,
+            11
+          ],
+          "uv": [
+            0.28125,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#7d6450",
+            "lineal": [
+              0.2051,
+              0.1274,
+              0.0802
+            ]
+          },
+          "arriba": {
+            "srgb": "#92755a",
+            "lineal": [
+              0.2874,
+              0.1779,
+              0.1022
+            ]
+          },
+          "abajo": {
+            "srgb": "#624f43",
+            "lineal": [
+              0.1221,
+              0.0782,
+              0.0561
+            ]
+          }
+        },
+        "recurso.alga": {
+          "celda": [
+            5,
+            11
+          ],
+          "uv": [
+            0.34375,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#56703d",
+            "lineal": [
+              0.0931,
+              0.162,
+              0.0467
+            ]
+          },
+          "arriba": {
+            "srgb": "#698245",
+            "lineal": [
+              0.1413,
+              0.2232,
+              0.0595
+            ]
+          },
+          "abajo": {
+            "srgb": "#3d5932",
+            "lineal": [
+              0.0467,
+              0.0999,
+              0.0319
+            ]
+          }
+        },
+        "recurso.erizo": {
+          "celda": [
+            6,
+            11
+          ],
+          "uv": [
+            0.40625,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#4a2f55",
+            "lineal": [
+              0.0685,
+              0.0284,
+              0.0908
+            ]
+          },
+          "arriba": {
+            "srgb": "#5c3f63",
+            "lineal": [
+              0.107,
+              0.0497,
+              0.1248
+            ]
+          },
+          "abajo": {
+            "srgb": "#321b42",
+            "lineal": [
+              0.0319,
+              0.011,
+              0.0545
+            ]
+          }
+        },
+        "recurso.resina": {
+          "celda": [
+            7,
+            11
+          ],
+          "uv": [
+            0.46875,
+            0.71875
+          ],
+          "v_rango": [
+            0.695312,
+            0.742188
+          ],
+          "medio": {
+            "srgb": "#c47a26",
+            "lineal": [
+              0.552,
+              0.1946,
+              0.0194
+            ]
+          },
+          "arriba": {
+            "srgb": "#dc8b29",
+            "lineal": [
+              0.7157,
+              0.2582,
+              0.0222
+            ]
+          },
+          "abajo": {
+            "srgb": "#a46522",
+            "lineal": [
+              0.3712,
+              0.1301,
+              0.016
+            ]
+          }
+        },
+        "mineral.arcilla": {
+          "celda": [
+            0,
+            12
+          ],
+          "uv": [
+            0.03125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#9c4f36",
+            "lineal": [
+              0.3325,
+              0.0782,
+              0.0369
+            ]
+          },
+          "arriba": {
+            "srgb": "#b35f3e",
+            "lineal": [
+              0.4508,
+              0.1144,
+              0.0482
+            ]
+          },
+          "abajo": {
+            "srgb": "#7d3c2c",
+            "lineal": [
+              0.2051,
+              0.0452,
+              0.0252
+            ]
+          }
+        },
+        "mineral.terracota": {
+          "celda": [
+            1,
+            12
+          ],
+          "uv": [
+            0.09375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c5704a",
+            "lineal": [
+              0.5583,
+              0.162,
+              0.0685
+            ]
+          },
+          "arriba": {
+            "srgb": "#dd8051",
+            "lineal": [
+              0.7231,
+              0.2159,
+              0.0823
+            ]
+          },
+          "abajo": {
+            "srgb": "#a55c40",
+            "lineal": [
+              0.3763,
+              0.107,
+              0.0513
+            ]
+          }
+        },
+        "mineral.azufre": {
+          "celda": [
+            2,
+            12
+          ],
+          "uv": [
+            0.15625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e3d54c",
+            "lineal": [
+              0.7682,
+              0.6654,
+              0.0723
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2e890",
+            "lineal": [
+              0.8879,
+              0.807,
+              0.2789
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4bc49",
+            "lineal": [
+              0.552,
+              0.5029,
+              0.0666
+            ]
+          }
+        },
+        "mineral.cuarzo": {
+          "celda": [
+            3,
+            12
+          ],
+          "uv": [
+            0.21875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#e2dcec",
+            "lineal": [
+              0.7605,
+              0.7157,
+              0.8388
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#c4c3d8",
+            "lineal": [
+              0.552,
+              0.5457,
+              0.6867
+            ]
+          }
+        },
+        "mineral.sal": {
+          "celda": [
+            4,
+            12
+          ],
+          "uv": [
+            0.28125,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#efeee8",
+            "lineal": [
+              0.8632,
+              0.855,
+              0.807
+            ]
+          },
+          "arriba": {
+            "srgb": "#f2f2f2",
+            "lineal": [
+              0.8879,
+              0.8879,
+              0.8879
+            ]
+          },
+          "abajo": {
+            "srgb": "#d1d4d5",
+            "lineal": [
+              0.6376,
+              0.6584,
+              0.6654
+            ]
+          }
+        },
+        "mineral.aluminio": {
+          "celda": [
+            5,
+            12
+          ],
+          "uv": [
+            0.34375,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#c0c9d3",
+            "lineal": [
+              0.5271,
+              0.5841,
+              0.6514
+            ]
+          },
+          "arriba": {
+            "srgb": "#d5dde2",
+            "lineal": [
+              0.6654,
+              0.7231,
+              0.7605
+            ]
+          },
+          "abajo": {
+            "srgb": "#a3b0bf",
+            "lineal": [
+              0.3663,
+              0.4342,
+              0.521
+            ]
+          }
+        },
+        "mineral.malaquita": {
+          "celda": [
+            6,
+            12
+          ],
+          "uv": [
+            0.40625,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#3f8a70",
+            "lineal": [
+              0.0497,
+              0.2542,
+              0.162
+            ]
+          },
+          "arriba": {
+            "srgb": "#529d7c",
+            "lineal": [
+              0.0844,
+              0.3372,
+              0.2016
+            ]
+          },
+          "abajo": {
+            "srgb": "#227260",
+            "lineal": [
+              0.016,
+              0.1683,
+              0.117
+            ]
+          }
+        },
+        "mineral.hematites": {
+          "celda": [
+            7,
+            12
+          ],
+          "uv": [
+            0.46875,
+            0.78125
+          ],
+          "v_rango": [
+            0.757812,
+            0.804688
+          ],
+          "medio": {
+            "srgb": "#6b3a37",
+            "lineal": [
+              0.147,
+              0.0423,
+              0.0382
+            ]
+          },
+          "arriba": {
+            "srgb": "#804941",
+            "lineal": [
+              0.2159,
+              0.0666,
+              0.0529
+            ]
+          },
+          "abajo": {
+            "srgb": "#50272a",
+            "lineal": [
+              0.0802,
+              0.0203,
+              0.0232
             ]
           }
         },
