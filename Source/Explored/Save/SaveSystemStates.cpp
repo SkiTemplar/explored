@@ -1002,9 +1002,15 @@ namespace ExploredSaveStates
 		OutClock = FSavedClock();
 		Ar.Read(TEXT("day"), OutClock.Day);
 		Ar.Read(TEXT("hours"), OutClock.Hours);
-		OutClock.Hours = FMath::Clamp(OutClock.Hours, 0.0f, 23.999f);
+		OutClock.Hours = SaneFloat(OutClock.Hours, 0.0f, 23.999f, FSavedClock().Hours);
 		OutClock.Day = FMath::Max(0, OutClock.Day);
 		Ar.Read(TEXT("forcedWeather"), OutClock.ForcedWeather);
 		Ar.Read(TEXT("forcedUntilDays"), OutClock.ForcedUntilDays);
+		// "Infinity" forzaría el clima para siempre: un plazo no finito anula el forzado.
+		if (!FMath::IsFinite(OutClock.ForcedUntilDays))
+		{
+			OutClock.ForcedWeather = EWeatherState::Count;
+			OutClock.ForcedUntilDays = 0.0f;
+		}
 	}
 }

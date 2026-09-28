@@ -667,6 +667,22 @@ void FSaveSystemsSpec::Define()
 			LoadClock(NoForced, Default);
 			TestEqual(TEXT("Sin clima forzado"), Default.ForcedWeather, EWeatherState::Count);
 		});
+
+		It("no carga una hora NaN ni un clima forzado para siempre", [this]()
+		{
+			FSavedClock Clock;
+			Clock.ForcedWeather = EWeatherState::Cyclone;
+			Clock.ForcedUntilDays = 18.1f;
+			FSaveArchive Ar;
+			SaveClock(Ar, Clock);
+			Ar.SetValue(TEXT("hours"), FSaveValue::MakeString(TEXT("NaN")));
+			Ar.SetValue(TEXT("forcedUntilDays"), FSaveValue::MakeString(TEXT("Infinity")));
+			FSavedClock Loaded;
+			LoadClock(ThroughText(Ar), Loaded);
+			TestEqual(TEXT("Hora NaN: la de partida nueva"), Loaded.Hours, FSavedClock().Hours);
+			TestEqual(TEXT("Sin clima forzado"), Loaded.ForcedWeather, EWeatherState::Count);
+			TestTrue(TEXT("Plazo finito"), FMath::IsFinite(Loaded.ForcedUntilDays));
+		});
 	});
 }
 
