@@ -38,6 +38,7 @@ Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/SystemLinksSpec.cpp
 Tests/TerrainEditModelSpec.cpp
+Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/WeatherSpec.cpp
