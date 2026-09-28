@@ -7,6 +7,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from . import cpp, data
 
@@ -68,12 +69,16 @@ class Sources:
 
     loctexts: list[cpp.LocText]
     literals: list[cpp.Literal]
-    data: dict[str, object]
-    translations: dict[str, dict[str, dict]]
+    data: dict[str, Any]  # JSON tal cual: la estructura se comprueba al construir el catálogo
+    translations: dict[str, Any]
     repo_root: Path = REPO_ROOT
+    problems: list[str] = field(default_factory=list)  # p. ej. claves repetidas en un JSON
 
     @classmethod
-    def load(cls, repo_root: Path = REPO_ROOT, translations_path: Path = TRANSLATIONS) -> "Sources":
+    def load(cls, repo_root: Path = REPO_ROOT, translations_path: Path | None = None) -> Sources:
+        # Se resuelve al llamar (no al definir) para que los tests puedan apuntar a otro en.json.
+        translations_path = translations_path or TRANSLATIONS
+        problems: list[str] = []
         loctexts: list[cpp.LocText] = []
         literals: list[cpp.Literal] = []
         for path, rel in cpp.iter_sources(repo_root, CPP_ROOTS, (".h", ".cpp"), CPP_EXCLUDE):
@@ -82,15 +87,19 @@ class Sources:
             literals += cpp.scan_literals(code, rel)
         for path, rel in cpp.iter_sources(repo_root, INI_ROOTS, (".ini",), INI_EXCLUDE):
             loctexts += cpp.extract_loctext(path.read_text(encoding="utf-8"), rel)
-        docs = {}
+        docs: dict[str, Any] = {}
         for name in DATA_FILES:
             p = repo_root / "Content" / "Data" / name
             if p.exists():
-                docs[name] = json.loads(p.read_text(encoding="utf-8"))
-        translations = json.loads(translations_path.read_text(encoding="utf-8")) if translations_path.exists() else {}
-        return cls(loctexts, literals, docs, translations, repo_root)
+                docs[name] = load_json(p, f"Content/Data/{name}", problems)
+        translations: Any = {}
+        if translations_path.exists():
+            translations = load_json(translations_path, "translations/en.json", problems)
+        if not isinstance(translations, dict):
+            raise ValueError("translations/en.json: la raíz debe ser un objeto {espacio: {clave: {es, en}}}")
+        return cls(loctexts, literals, docs, translations, repo_root, problems)
 
-    def copy(self) -> "Sources":
+    def copy(self) -> Sources:
         return copy.deepcopy(self)
 
 
@@ -119,6 +128,43 @@ class Catalogue:
         }
 
 
+def load_json(path: Path, label: str, problems: list[str]) -> Any:
+    """Lee un JSON avisando de las claves repetidas (``json`` se queda con la última sin decir nada)."""
+
+    def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
+        doc: dict[str, Any] = {}
+        for key, value in items:
+            if key in doc:
+                problems.append(f"{label}: clave «{key}» repetida en el mismo objeto; solo cuenta la última")
+            doc[key] = value
+        return doc
+
+    try:
+        return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=pairs)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{label}: JSON mal formado ({exc})") from exc
+
+
+def _valid_translations(raw: dict[str, Any], r: Report) -> dict[str, dict[str, dict[str, str]]]:
+    """Las entradas de translations/en.json bien formadas; las demás, como errores."""
+    out: dict[str, dict[str, dict[str, str]]] = {}
+    for ns, keys in raw.items():
+        if not isinstance(keys, dict):
+            r.errors.append(f"translations/en.json: {ns} debe ser un objeto {{clave: {{es, en}}}}")
+            continue
+        out[ns] = {}
+        for key, tr in keys.items():
+            if not isinstance(tr, dict):
+                r.errors.append(f"translations/en.json: {ns},{key} debe ser un objeto {{es, en}}")
+                continue
+            bad = sorted(f for f, v in tr.items() if not isinstance(v, str))
+            if bad:
+                r.errors.append(f"translations/en.json: {ns},{key}: {', '.join(bad)} debe ser texto")
+                continue
+            out[ns][key] = tr
+    return out
+
+
 def placeholders(text: str | None) -> set[str]:
     return set(PLACEHOLDER_RE.findall(text or ""))
 
@@ -127,6 +173,8 @@ def build(src: Sources) -> Catalogue:
     r = Report()
     entries: list[Entry] = []
     by_id: dict[str, Entry] = {}
+    r.errors += src.problems
+    translations = _valid_translations(src.translations, r)
 
     # --- C++ e .ini: el español está en el código; el inglés, en translations/en.json.
     for t in src.loctexts:
@@ -140,7 +188,7 @@ def build(src: Sources) -> Catalogue:
             prev.locations.append(where)
             continue
         origin = "ini" if t.path.endswith(".ini") else "cpp"
-        tr = src.translations.get(t.namespace, {}).get(t.key)
+        tr = translations.get(t.namespace, {}).get(t.key)
         en = None
         if tr is not None:
             en = tr.get("en")
@@ -154,7 +202,7 @@ def build(src: Sources) -> Catalogue:
         entries.append(e)
 
     # --- Traducciones sin código: pendientes de integrar (documentadas) o huérfanas.
-    for ns, keys in sorted(src.translations.items()):
+    for ns, keys in sorted(translations.items()):
         for key, tr in sorted(keys.items()):
             eid = f"{ns},{key}"
             if eid in by_id:
@@ -188,20 +236,27 @@ def build(src: Sources) -> Catalogue:
 
 def _check_entry(e: Entry, r: Report) -> None:
     where = e.locations[0] if e.locations else e.id
-    if not (e.es or "").strip():
+    # Los datos son JSON sin esquema: un número o una lista en lugar de texto no debe romper la herramienta.
+    for lang, value in (("es", e.es), ("en", e.en)):
+        if value is not None and not isinstance(value, str):
+            r.errors.append(f"{where}: {e.id}: el texto «{lang}» debe ser una cadena, no {type(value).__name__}")
+            return
+    es, en = e.es or "", e.en or ""
+    if not es.strip():
         r.errors.append(f"{where}: {e.id} sin texto en español")
         return
-    if not (e.en or "").strip():
-        r.errors.append(f"{where}: {e.id} sin inglés («{e.es}»)")
+    if not en.strip():
+        r.errors.append(f"{where}: {e.id} sin inglés («{es}»)")
         return
-    if placeholders(e.es) != placeholders(e.en):
-        r.errors.append(f"{where}: {e.id}: marcadores distintos {sorted(placeholders(e.es))} (ES) "
-                        f"y {sorted(placeholders(e.en))} (EN)")
-    if DEDICATION in e.es and e.en != e.es:
+    if placeholders(es) != placeholders(en):
+        r.errors.append(f"{where}: {e.id}: marcadores distintos {sorted(placeholders(es))} (ES) "
+                        f"y {sorted(placeholders(en))} (EN)")
+    if DEDICATION in es and en != es:
         r.errors.append(f"{where}: {e.id}: la dedicatoria «{DEDICATION}» no se traduce")
-    if e.es != e.es.strip() or e.en != e.en.strip():
-        if (e.es[:1].isspace(), e.es[-1:].isspace()) != (e.en[:1].isspace(), e.en[-1:].isspace()):
-            r.warnings.append(f"{where}: {e.id}: espacios al principio o al final distintos entre ES y EN")
-    if len(e.en) >= LENGTH_MIN and len(e.en) > LENGTH_RATIO * len(e.es):
-        r.warnings.append(f"{where}: {e.id}: el inglés ({len(e.en)} car.) es más de {LENGTH_RATIO:.1f}× "
-                          f"el español ({len(e.es)}); comprueba que cabe")
+    edges_es = (es[:1].isspace(), es[-1:].isspace())
+    edges_en = (en[:1].isspace(), en[-1:].isspace())
+    if edges_es != edges_en:
+        r.warnings.append(f"{where}: {e.id}: espacios al principio o al final distintos entre ES y EN")
+    if len(en) >= LENGTH_MIN and len(en) > LENGTH_RATIO * len(es):
+        r.warnings.append(f"{where}: {e.id}: el inglés ({len(en)} car.) es más de {LENGTH_RATIO:.1f}× "
+                          f"el español ({len(es)}); comprueba que cabe")

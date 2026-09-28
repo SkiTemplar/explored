@@ -310,11 +310,5 @@
 		"UnknownInstance": { "es": "Esa pieza ya no existe", "en": "That piece no longer exists" },
 		"UnknownPiece": { "es": "Pieza desconocida", "en": "Unknown piece" },
 		"Unstable": { "es": "Demasiado lejos de un apoyo", "en": "Too far from a support" }
-	},
-	"ExploredHarvest": {
-		"VerbGather": { "es": "Recoger", "en": "Gather" },
-		"VerbMine": { "es": "Picar", "en": "Mine" },
-		"VerbChop": { "es": "Talar", "en": "Chop" },
-		"VerbProgress": { "es": "{Verb} ({Hits}/{Required})", "en": "{Verb} ({Hits}/{Required})" }
 	}
 }
