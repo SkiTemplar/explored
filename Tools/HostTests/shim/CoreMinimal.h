@@ -138,8 +138,10 @@ struct FMath
 	static constexpr auto Min(A X, B Y) -> std::common_type_t<A, B> { return X < Y ? X : Y; }
 	template <typename T> static constexpr T Max3(T A, T B, T C) { return Max(Max(A, B), C); }
 	template <typename T> static constexpr T Min3(T A, T B, T C) { return Min(Min(A, B), C); }
+	// Misma forma que UnrealMathUtility.h: con NaN, Max/Min devuelven el segundo argumento y
+	// Clamp devuelve el máximo (no el NaN), así que los tests ven lo mismo que el editor.
 	template <typename T, typename U, typename V>
-	static constexpr T Clamp(T X, U Lo, V Hi) { return X < T(Lo) ? T(Lo) : (X > T(Hi) ? T(Hi) : X); }
+	static constexpr T Clamp(T X, U Lo, V Hi) { return X < T(Lo) ? T(Lo) : (X < T(Hi) ? X : T(Hi)); }
 	template <typename T> static constexpr T Abs(T A) { return A < T(0) ? -A : A; }
 	template <typename T> static constexpr T Sign(T A) { return A > T(0) ? T(1) : (A < T(0) ? T(-1) : T(0)); }
 	template <typename T> static constexpr T Square(T A) { return A * A; }
