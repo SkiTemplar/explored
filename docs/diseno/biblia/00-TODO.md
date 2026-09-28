@@ -17,7 +17,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 
 | Hito | Hechas `[x]` | Pendientes `[ ]` | Total |
 |---|---|---|---|
-| H0 — Porción vertical jugable en Landing | 3 | 40 | 43 |
+| H0 — Porción vertical jugable en Landing | 8 | 35 | 43 |
 | H1 — Mundo interactivo | 1 | 35 | 36 |
 | H2 — Minería y construcción | 2 | 29 | 31 |
 | H3 — Mar y barcos | 1 | 13 | 14 |
@@ -25,7 +25,7 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 | H5 — Lanzamiento del acceso anticipado | 1 | 19 | 20 |
 | F2 | 1 | 15 | 16 |
 | F3 | 0 | 27 | 27 |
-| **Total** | **9** | **198** | **207** |
+| **Total** | **14** | **193** | **207** |
 
 Revisión del 2026-09-27 (tarde): **+43 casillas de red y cooperativo** repartidas de H0
 a H5 más dos en F2/F3, tras la decisión del director de meter cooperativo de 2 a 4
@@ -99,22 +99,32 @@ salir de la isla.
 
 ### Minería y terreno (pipeline mínimo para la cueva de Landing)
 
-- [ ] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
+- [x] `WorldGen`: añadir `FTerrainEdits` (capa de ediciones dispersa por chunk) sobre
       `FTerrainDensity`. *(GDD §7.3 punto 1, biblia 02 §7.3)*
-- [ ] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
+      *(verificado: `Source/Explored/WorldGen/TerrainEdits.h`, spec `Explored.TerrainEdits`)*
+- [x] `WorldGen`: `FTerrainDensity::Density` consulta primero la capa de ediciones antes
       de evaluar el ruido procedural. *(GDD §7.3 punto 1)*
+      *(verificado: `FTerrainDensity::SetEdits` y `DensityWithColumn` en `TerrainDensity.cpp`)*
 - [ ] `WorldGen/TerrainChunkBuilder`: invalidar y reconstruir solo los chunks tocados
-      por una edición. *(GDD §7.3 punto 3)*
-- [ ] `WorldGen`: implementar el picado por esfera (radio y tiempo por golpe según
+      por una edición. *(GDD §7.3 punto 3)* — el cálculo está hecho y probado en el host
+      (`FTerrainDigResult::RenderChunks`, `FTerrainEdits::ChunksToInvalidate`, esferas
+      que cruzan caras, aristas y esquinas); falta el remallado en el motor
+      (`docs/tecnico/terreno-editable.md`).
+- [x] `WorldGen`: implementar el picado por esfera (radio y tiempo por golpe según
       herramienta/estrato, tabla de biblia 02 §2.3) para tierra/arena/arcilla (dureza 1,
       pala tosca) — el resto de estratos no hace falta para Landing. *(biblia 02 §2)*
-- [ ] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
+      *(verificado: `FTerrainEdits::Dig` y `ToolInfo`, espejo de `mining.json/tools`)*
+- [x] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
       mismo patrón que `FSaveScatterDeltas`) — condición dura del criterio de salida
       («se queda cavado al recargar la partida»). *(GDD §7.3 punto 2, biblia 02 §2.8)*
+      *(verificado: `FTerrainEdits::SaveTo`/`LoadFrom`, formato versión 2 de
+      `FTerrainEditModel::ToValue`; prueba de estrés de 50 000 golpes en el host)*
 - [ ] `Cartography`: hoja subterránea por sistema de galerías, generada bajo demanda al
       entrar la primera vez, para la cueva pequeña de Landing. *(GDD §3.2)*
-- [ ] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
+- [x] `Items`: nuevo item `tierra_suelta` (paralelo a `arena`, ya existente) en
       `items.json`. *(biblia 02 §2.7)*
+      *(verificado: `Content/Data/items.json` con malla `SM_Item_TierraSuelta` de
+      `Tools/Blender/props/items_orilla.py`, botín de `FTerrainEdits::LootItemId`)*
 
 ### Tala y recolección
 

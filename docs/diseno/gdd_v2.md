@@ -1158,7 +1158,9 @@ garantías de rendimiento:
    de densidad dispersos por chunk de 8 m sobre una rejilla de 0,25 m, aplicados
    **encima** de la densidad procedural pura (se guardan muestras editadas, no
    operaciones, así que el coste de consulta no crece con el número de golpes).
-   `FTerrainDensity` no cambia: el remallado lee base + delta con
+   `FTerrainEdits` (hecho) envuelve esa capa con las reglas de minería, y
+   `FTerrainDensity::Density` la consulta antes que el ruido (`SetEdits`); el campo sin
+   editar sigue en `ProceduralDensity`. El remallado fino lee base + delta con
    `FTerrainEditModel::BuildChunkGrid`, y el terreno no tocado no paga nada.
 2. **Persistencia en el guardado.** Mismo patrón que `FSaveScatterDeltas`
    (`docs/tecnico/guardado.md`): las ediciones se guardan como deltas por celda de
@@ -1191,7 +1193,11 @@ garantías de rendimiento:
 - **Guardado:** una partida larga con minería extensa puede acumular muchos deltas de
   terreno; el mismo mecanismo de rangos/mapa de bits que ya usa `FSaveScatterDeltas`
   (`"r:0-39,57"` o base64) debería bastar, pero no está probado a la escala de una
-  mina completa — verificar con una prueba de estrés antes de M3.
+  mina completa — verificar con una prueba de estrés antes de M3. **Medido en el host
+  (2026-09-28):** 50 000 golpes (≈ 4 000 m³, 400 000 muestras) ocupan ≈ 580 KB con la
+  versión 2 binaria de la capa `"terrain"` (1,45 B por muestra; la versión 1 en texto
+  daba 3 MB) y se escriben y leen en menos de 0,1 s. Falta repetirlo en PIE con el
+  remallado.
 - **Navegación de fauna sobre terreno editable** (§3.6, §3.7): cada remallado que
   afecte a una zona con fauna cercana debe invalidar y reconstruir su campo de
   navegación local, no el del archipiélago entero.
