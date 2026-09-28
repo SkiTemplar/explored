@@ -11,7 +11,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 | … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
 | … de `Content/Data` (campos bilingües) | 334 |
 | Textos sin inglés | 0 |
-| Claves propuestas pendientes de integrar | 0 |
+| Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
 | Literales para revisar | 71 |
@@ -114,6 +114,16 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
 Ya traducidas en `Tools/Localization/translations/en.json`; el paquete que toque el fichero
 las usa con exactamente este espacio de nombres, clave y texto.
+
+| Espacio,clave | ES | EN | Dónde |
+|---|---|---|---|
+| `ExploredCoop,PlayerBackUp` | {Name} vuelve a estar en pie. | {Name} is back up. | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,PlayerDown` | {Name} está en el suelo. | {Name} is down. | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,ReviveVerb` | Levantar a {Name} | Help {Name} up | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,ReviveVerbMedicine` | Atender a {Name} | Patch {Name} up | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,SleepBlockedByDowned` | No se duerme con alguien en el suelo. | Nobody sleeps with someone down. | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,SleepOneStillUp` | Queda uno en pie. | One still up. | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
+| `ExploredCoop,SleepStillUp` | Hay {Count} en pie todavía. | {Count} still up. | UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks |
 
 ## Errores (0)
 

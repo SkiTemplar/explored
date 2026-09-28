@@ -60,7 +60,7 @@ TArray<FNetBudgetChannel> FNetBudgetTableModel::PeakTable(int32 Players)
 	// Fabricar mueve 2–3 huecos por operación, coalescido a 10 Hz (08 §2.4).
 	T.Add(Rate(TEXT("inventario_propio_fabricando"), 3.0 * FContainerReplicationModel::EntryBytes, 10.0));
 	// Cofre abierto con otro jugador sacando cosas: un hueco cambiado por segundo.
-	T.Add(Rate(TEXT("cofre_abierto"), FContainerReplicationModel::MessageHeaderBytes + FContainerReplicationModel::EntryBytes, 1.0));
+	T.Add(Rate(TEXT("cofre_abierto"), FContainerReplicationModel::MessageHeaderBytes + FContainerReplicationModel::EntryBytes, 1.0)); // loc: ignorar
 	T.Add(Fixed(TEXT("cartografia_explorando"), 0.3));
 	T.Add(Fixed(TEXT("multicast_cosmeticos"), 2.0));
 	return T;
@@ -103,7 +103,7 @@ bool FNetBudgetTableModel::FitsTarget(const TArray<FNetBudgetChannel>& Channels,
 	}
 	TArray<FNetBudgetChannel> Sorted = Channels;
 	Sorted.StableSort([](const FNetBudgetChannel& A, const FNetBudgetChannel& B) { return A.Kbps() > B.Kbps(); });
-	OutReason = FString::Printf(TEXT("%.2f kbps no cabe en %.2f kbps; los más caros:"), Total, TargetKbps);
+	OutReason = FString::Printf(TEXT("%.2f kbps no cabe en %.2f kbps; los más caros:"), Total, TargetKbps); // loc: ignorar
 	for (int32 i = 0; i < FMath::Min(3, Sorted.Num()); ++i)
 	{
 		OutReason += FString::Printf(TEXT(" %s %.2f"), *Sorted[i].Name, Sorted[i].Kbps());
@@ -113,11 +113,11 @@ bool FNetBudgetTableModel::FitsTarget(const TArray<FNetBudgetChannel>& Channels,
 
 FString FNetBudgetTableModel::ToCsv(const TArray<FNetBudgetChannel>& Channels)
 {
-	FString Out = TEXT("canal;kbps\n");
+	FString Out = TEXT("canal;kbps\n"); // loc: ignorar
 	for (const FNetBudgetChannel& C : Channels)
 	{
 		Out += FString::Printf(TEXT("%s;%.3f\n"), *C.Name, C.Kbps());
 	}
-	Out += FString::Printf(TEXT("total;%.3f\n"), TotalKbps(Channels));
+	Out += FString::Printf(TEXT("total;%.3f\n"), TotalKbps(Channels)); // loc: ignorar
 	return Out;
 }
