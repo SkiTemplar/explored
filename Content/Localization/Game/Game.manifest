@@ -861,6 +861,44 @@
 			]
 		},
 		{
+			"Namespace": "ExploredClimb",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Aquí no hay donde clavar nada."
+					},
+					"Keys": [
+						{
+							"Key": "NoPitonSpot",
+							"Path": "Source/Explored/Player/ClimbModel.cpp - line 93"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Con las angarillas no puedo trepar."
+					},
+					"Keys": [
+						{
+							"Key": "CarryingSledge",
+							"Path": "Source/Explored/Player/ClimbModel.cpp - line 94"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llego más arriba así."
+					},
+					"Keys": [
+						{
+							"Key": "Exhausted",
+							"Path": "Source/Explored/Player/ClimbModel.cpp - line 92"
+						}
+					]
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredHarvest",
 			"Children": [
 				{

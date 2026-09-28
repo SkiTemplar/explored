@@ -707,6 +707,38 @@
 			]
 		},
 		{
+			"Namespace": "ExploredClimb",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Con las angarillas no puedo trepar."
+					},
+					"Translation": {
+						"Text": "Can't climb with the sledge on."
+					},
+					"Key": "CarryingSledge"
+				},
+				{
+					"Source": {
+						"Text": "No llego más arriba así."
+					},
+					"Translation": {
+						"Text": "Can't get higher like this."
+					},
+					"Key": "Exhausted"
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay donde clavar nada."
+					},
+					"Translation": {
+						"Text": "Nothing to drive a piton into here."
+					},
+					"Key": "NoPitonSpot"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredHarvest",
 			"Children": [
 				{
