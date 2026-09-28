@@ -814,3 +814,28 @@ def test_packs_manifiesto_rechaza_licencia_no_cc0(real: DataSet) -> None:
     assert any("CC-BY-4.0" in e for e in errs)
     assert any("sha256" in e for e in errs)
     assert manifest["packs"][0]["id"] not in usable and manifest["packs"][1]["id"] not in usable
+
+
+def test_packs_catalogo_cubre_la_lanza_y_la_caza(real: DataSet) -> None:
+    covered = {e["gameId"] for e in _catalog(real)["entries"]}
+    pending = {p["gameId"] for p in _catalog(real)["pending"]}
+    assert {"lanza", "arco", "flecha"} <= covered
+    assert "lanza" not in pending
+
+
+def test_packs_catalogo_centro_del_agarre_desconocido(ds: DataSet) -> None:
+    e = next(e for e in _catalog(ds)["entries"] if e["pivot"]["kind"] == "agarre")
+    e["pivot"]["centerAt"] = "punta"
+    assert any_error(errors_of(ds), "centerAt")
+
+
+def test_packs_catalogo_replaces_de_pieza_comprueba_la_malla(ds: DataSet) -> None:
+    e = dict(next(e for e in _catalog(ds)["entries"] if e["pivot"]["kind"] == "base"))
+    e.update(gameId="muelle", kind="pieza", mesh="SM_Pack_MuellePrueba", replaces="SM_Base_Muelle")
+    _catalog(ds)["entries"].append(e)
+    assert any_error(errors_of(ds), "muelle", "replaces", "SM_Base_Dock")
+
+
+def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
+    _catalog(ds)["discarded"][0]["gameId"] = "pared_de_neon"
+    assert any_error(errors_of(ds), "pared_de_neon", "no existe")

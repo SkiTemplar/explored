@@ -13,6 +13,18 @@
       "date": "2026-09-27",
       "sheet": "docs/art/packs/lote1-herramientas.png",
       "scope": "Herramientas y materiales de las primeras horas (prioridad 1, porción vertical de Landing, GDD v2 §6.1)."
+    },
+    {
+      "id": "lote2-caza",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote2-caza.png",
+      "scope": "Lanza, arco y flecha: cierra la prioridad 1 (lanza pendiente del lote 1) con piedra y fibra en vez de acero."
+    },
+    {
+      "id": "lote3-comida",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote3-comida.png",
+      "scope": "Fruta y comida de recolección de Landing (prioridad 3) con Kenney Food Kit."
     }
   ],
   "entries": [
@@ -546,6 +558,318 @@
         "default": "metal.hierro"
       },
       "note": "Fragmento de meteorito: costra oscura de basalto y caras de hierro. Cubre un id de meshes_pendientes.json."
+    },
+    {
+      "gameId": "lanza",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/spear_A.gltf",
+      "mesh": "SM_Pack_Lanza",
+      "replaces": "SM_Item_Lanza",
+      "size": {
+        "axis": "z",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.75,
+        "centerAt": "grip"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#6f838e",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#5d7280",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#4c6270",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#2795d0",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#2475b5",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#78685d",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#8e7d70",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#9e8c7e",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#56483f",
+            "to": "bambu.nudo"
+          },
+          {
+            "from": "#6f4f42",
+            "to": "bambu.nudo"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Punta de obsidiana atada con fibra; el acero y las borlas azules de KayKit pasan a piedra y fibra (nada forjado en las primeras horas). Agarre a 0,75 m del regatón, como SM_Item_Lanza."
+    },
+    {
+      "gameId": "arco",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/bow_A_withString.gltf",
+      "mesh": "SM_Pack_Arco",
+      "replaces": "SM_Item_Arco",
+      "rotateDeg": [
+        0,
+        -90,
+        90
+      ],
+      "size": {
+        "axis": "z",
+        "m": 1.3
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.65,
+        "centerAt": "grip"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#7e6e62",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#978675",
+            "to": "bambu.maduro"
+          },
+          {
+            "from": "#615248",
+            "to": "bambu.nudo"
+          },
+          {
+            "from": "#d2c0aa",
+            "to": "palma.fibra"
+          },
+          {
+            "from": "#a79786",
+            "to": "palma.fibra"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Arco de bambú rajado con cuerda de fibra. Palas por ±Z, espalda a +X y cuerda a -X; agarre en el centro de la empuñadura (centerAt grip)."
+    },
+    {
+      "gameId": "flecha",
+      "kind": "item",
+      "lote": "lote2-caza",
+      "pack": "kaykit_fantasy_weapons_bits",
+      "file": "KayKit_FantasyWeaponsBits_1.0_FREE/Assets/gltf/arrow_A.gltf",
+      "mesh": "SM_Pack_Flecha",
+      "replaces": "SM_Item_Flecha",
+      "rotateDeg": [
+        -90,
+        0,
+        0
+      ],
+      "size": {
+        "axis": "z",
+        "m": 0.78
+      },
+      "pivot": {
+        "kind": "agarre",
+        "socket": "hand_r",
+        "gripFromEndM": 0.01
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#795747",
+            "to": "bambu.seco"
+          },
+          {
+            "from": "#225b9f",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#2474b4",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#2794cf",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#204a91",
+            "to": "tela.crudo"
+          },
+          {
+            "from": "#778a95",
+            "to": "piedra.obsidiana"
+          },
+          {
+            "from": "#354b5b",
+            "to": "piedra.obsidiana"
+          }
+        ],
+        "default": "bambu.seco"
+      },
+      "note": "Flecha de caña con punta de obsidiana y plumas claras; pivote en el culatín, punta en +Z."
+    },
+    {
+      "gameId": "platano",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/banana.glb",
+      "mesh": "SM_Pack_Platano",
+      "replaces": "SM_Item_Platano",
+      "size": {
+        "axis": "max",
+        "m": 0.19
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#ffb046",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#ff9731",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#ffc759",
+            "to": "comida.platano"
+          },
+          {
+            "from": "#a95e41",
+            "to": "palma.coco"
+          }
+        ],
+        "default": "comida.platano"
+      }
+    },
+    {
+      "gameId": "limon",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/lemon.glb",
+      "mesh": "SM_Pack_Limon",
+      "replaces": "SM_Item_Limon",
+      "size": {
+        "axis": "max",
+        "m": 0.08
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#ffb54a",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ff9d36",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ffcd5e",
+            "to": "comida.limon"
+          },
+          {
+            "from": "#ab5e41",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#845442",
+            "to": "palma.coco"
+          }
+        ],
+        "default": "comida.limon"
+      }
+    },
+    {
+      "gameId": "pina",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/pineapple.glb",
+      "mesh": "SM_Pack_Pina",
+      "replaces": "SM_Item_Pina",
+      "size": {
+        "axis": "z",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#43ad7d",
+            "to": "vegetacion.hoja"
+          },
+          {
+            "from": "#ff9d36",
+            "to": "comida.mango"
+          }
+        ],
+        "default": "comida.mango"
+      }
+    },
+    {
+      "gameId": "seta_comestible",
+      "kind": "item",
+      "lote": "lote3-comida",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/mushroom.glb",
+      "mesh": "SM_Pack_SetaComestible",
+      "replaces": "SM_Item_SetaComestible",
+      "size": {
+        "axis": "max",
+        "m": 0.09
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#a55d41",
+            "to": "tela.tapa"
+          },
+          {
+            "from": "#cd8860",
+            "to": "palma.pulpa"
+          },
+          {
+            "from": "#dc9e76",
+            "to": "palma.pulpa"
+          }
+        ],
+        "default": "palma.pulpa"
+      }
     }
   ],
   "discarded": [
@@ -578,6 +902,60 @@
       "pack": "kaykit_resource_bits",
       "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Stone_Chunks_Small.gltf",
       "reason": "Montón de piedras angulosas, no un canto redondeado suelto. Kenney resource-stone y rock-sand-* son igual de angulosos. Se queda SM_Item_CantoRodado."
+    },
+    {
+      "gameId": "coco_maduro",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut.glb",
+      "reason": "Blob de 76 triángulos sin los tres ojos ni la fibra: se lee como una patata o un kiwi (hoja de contacto del lote 3). Se queda SM_Item_CocoMaduro."
+    },
+    {
+      "gameId": "coco_verde",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut.glb",
+      "reason": "Mismo coconut.glb recoloreado a verde: sale un óvalo liso que se lee como lima o aguacate, sin las tres aristas del coco verde. Se queda SM_Item_CocoVerde."
+    },
+    {
+      "gameId": "huevo",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/egg.glb",
+      "reason": "44 triángulos con facetas muy marcadas: en la hoja de contacto parece un canto rodado, no un huevo. Se queda SM_Item_Huevo."
+    },
+    {
+      "gameId": "pared_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-wood.glb",
+      "reason": "Paneles de 1 × 1 m y 10 cm de grosor, lisos y de pueblo europeo (paredes enlucidas, arcos, tejas). Llevados a la rejilla de 2 × 2,5 m pierden la proporción y quedan más pobres que el kit propio (kit-construccion-montaje.png). Lo mismo vale para wall, wall-door, wall-wood-door y los tejados roof-* (teja, no existe en el juego)."
+    },
+    {
+      "gameId": "escalera_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/stairs-wood.glb",
+      "reason": "Escalera de 1 × 0,5 × 1 m; la del juego sube 2,65 m en 1 × 4 m con 13 peldaños. Estirarla ×4 en planta deforma los peldaños. Se queda SM_Kit_Wood_Stairs."
+    },
+    {
+      "gameId": "pilote_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/pillar-wood.glb",
+      "reason": "Poste con zapata de piedra de 16 cm: encaja, pero mezclado con el resto del kit propio desentona (otro grosor y otro remate). Se reevalúa si algún día se sustituye el kit entero."
+    },
+    {
+      "gameId": "muelle",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-platform.glb",
+      "reason": "Plataforma de 2,5 × 2,5 m con patas de 0,9 m; el muelle del juego es de 2 × 4 m sobre pilotes de 2 m hasta el fondo, con franja de algas. Habría que estirarlo ×1,6 en largo y ×2 en alto. Se queda SM_Base_Dock."
+    },
+    {
+      "gameId": "muelle_final",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-platform-dock.glb",
+      "reason": "Mismo problema de proporción que structure-platform; sin escala de bajada ni bolardos con cabo. Se queda SM_Base_DockEnd."
+    },
+    {
+      "gameId": "techo_palma",
+      "pack": "kenney_pirate_kit",
+      "file": "Models/GLB format/structure-roof.glb",
+      "reason": "Es una choza entera (cúpula de paja sobre cuatro postes de 3,4 m), no una vertiente modular de 2 m a 35°. Se queda SM_Roof_PalmThatch."
     }
   ],
   "pending": [
@@ -586,20 +964,20 @@
       "reason": "No hay id pico en items.json ni plantilla (DataCheck ya da una nota). El candidato es KayKit pickaxe.gltf, con cabeza de piedra; se cataloga cuando exista el id."
     },
     {
-      "gameId": "lanza",
-      "reason": "Ninguno de los packs descargados trae lanza. Siguiente candidato: KayKit Fantasy Weapons Bits (itch.io, falta verificar licencia y contenido)."
-    },
-    {
       "gameId": "fibra_coco",
       "reason": "No hay candidato en los packs descargados."
     },
     {
-      "gameId": "cesta",
-      "reason": "No hay candidato en los packs descargados. Mirar KayKit Restaurant Bits y Furniture Bits."
-    },
-    {
       "gameId": "cantimplora",
       "reason": "Objeto rescatado del Albatros: Blender propio (GDD v2 §7.1)."
+    },
+    {
+      "gameId": "pared_palma",
+      "reason": "Ningún pack CC0 revisado (Kenney Survival, Fantasy Town y Pirate; KayKit Medieval Builder, Resource y RPG Tools) trae paredes de hoja de palma ni de bambú. El kit propio de Tools/Blender (4 materiales, rejilla de 2 m) se mantiene hasta que aparezca uno mejor. Vale igual para suelo, techo y puerta de palma y bambú."
+    },
+    {
+      "gameId": "cesta",
+      "reason": "Sin candidato en los packs descargados. KayKit Furniture Bits y Restaurant Bits son CC0 de precio libre (uploads 8655517 y 8784350); falta descargarlos y mirarlos."
     }
   ]
 }

@@ -47,6 +47,25 @@ entre islas: el atlas pone el grado de cada isla.
 Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen dientes de sierra
 (pasó con el mazo del lote 1): esa pieza se deja con una sola muestra.
 
+## Lotes
+
+| Lote | Qué cubre | Hoja |
+|---|---|---|
+| `lote1-herramientas` | Hacha, cuchillo, pala, mazo, antorcha, cuerda, cordel, tronco, cobre, hierro | `docs/art/packs/lote1-herramientas.png` |
+| `lote2-caza` | Lanza, arco y flecha (KayKit Fantasy Weapons Bits) en obsidiana, bambú y fibra | `docs/art/packs/lote2-caza.png` |
+| `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
+
+Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
+revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
+trae palma ni bambú, y los de madera y piedra son de pueblo europeo o no cuadran con la
+rejilla de 2 m. El kit propio de `Tools/Blender` se mantiene.
+
+## Trampas de importación
+
+- Ficheros con varias mallas (puertas con hoja, arcos con cuerda): `import_file` las une.
+- Claves de forma (cuerda de los arcos de KayKit): se borran al importar; si no, la escala y
+  el giro se aplican a la malla pero no a la clave base y el FBX sale sin normalizar.
+
 ## Import en Unreal (local)
 
 Importar `Art/Export/Packs/<lote>/*.fbx` en `/Game/Packs/<lote>/` con `M_LowPoly`, sin
