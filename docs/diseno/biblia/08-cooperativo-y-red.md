@@ -303,7 +303,7 @@ resolver «llevo un pico» a la vista), replicado a todos como 2 × (`uint16` id
 definición + `uint8` calidad) = 6 B.
 
 Estructura replicada del inventario propio: `FFastArraySerializer` de entradas de
-**13 bytes**:
+**12 bytes** (1+1+2+4+1+1+1+1):
 
 ```
 uint8  Slot           // EInventorySlot
@@ -316,9 +316,9 @@ uint8  Count           // apilado (biblia 03 §1.3, tope 10)
 uint8  Flags           // mojado, encendido, etc.
 ```
 
-Coste: fabricar mueve 2–3 huecos → **39 B por operación**; coalescido a 10 Hz da un
-techo de **3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
-inventario completo (24 huecos) son 312 B: lo que se manda al unirse.
+Coste: fabricar mueve 2–3 huecos → **36 B por operación**; coalescido a 10 Hz da un
+techo de **≈3 kbps** para el dueño mientras fabrica a máquina, y **0** en reposo. Un
+inventario completo (24 huecos) son 288 B: lo que se manda al unirse.
 
 **Piezas y nombre generado** de un objeto fabricado (que `UCarryComponent` guarda
 aparte de `FInventoryModel`) no van en el array: se piden por RPC fiable la primera vez

@@ -10,9 +10,11 @@ Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
 Tests/CookingSpec.cpp
+Tests/ContainerReplicationModelSpec.cpp
 Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
 Tests/FarmSpec.cpp
+Tests/FaunaAnchorNetModelSpec.cpp
 Tests/FireSpec.cpp
 Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
@@ -28,6 +30,8 @@ Tests/MoonSpec.cpp
 Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
 Tests/NetBudgetModelSpec.cpp
+Tests/NetBudgetTableModelSpec.cpp
+Tests/NetQuantizeSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
 Tests/RuinsSpec.cpp
@@ -39,6 +43,7 @@ Tests/SettingsLogicSpec.cpp
 Tests/SurvivalSpec.cpp
 Tests/SwimSpec.cpp
 Tests/SystemLinksSpec.cpp
+Tests/CoopRulesSpec.cpp
 Tests/TerrainChunkChecksumModelSpec.cpp
 Tests/TerrainDeltaCodecModelSpec.cpp
 Tests/TerrainDeltaQueueModelSpec.cpp
@@ -46,9 +51,11 @@ Tests/TerrainEditModelSpec.cpp
 Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
+Tests/VegetationNetStateModelSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
+Tests/WorldClockNetModelSpec.cpp
 Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/CoconutPalmModelSpec.cpp
