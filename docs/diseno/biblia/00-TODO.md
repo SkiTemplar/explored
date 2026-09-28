@@ -224,6 +224,11 @@ salir de la isla.
 - [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
+      → **Más:** PR #112 (`bb04f04`) añade el aloe y la cúrcuma silvestre como cultivos
+        medicinales (GDD v3 §8.7, «especias y plantas medicinales»), con `rizoma_curcuma` y
+        la regla de DataCheck «todo cultivo da comida o medicina». Faltan las mallas
+        (`meshes_pendientes.json`), dónde aparece el primer rizoma y añadirlos a
+        `DataPlants()` de `FarmSpec.cpp`.
 
 ### Red y cooperativo — cimientos (biblia 08)
 
