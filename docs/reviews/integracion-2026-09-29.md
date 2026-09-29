@@ -186,3 +186,21 @@ commits nuevos y siguen con `necesita-unreal`.
 |---|---|---|---|
 | #141 | `nocturno/revision-2026-09-29` | **Fusionada** (`87ee43a`) | Solo toca `Tools/Audio` y el informe `docs/reviews/2026-09-29-1335.md`. `sfx_fire_ignite` deja de ser chispas de ruido agudo sobre un soplo rosa grave y pasa a dos o tres soplidos (0,85-1,2 kHz) con la yesca crujiendo cada vez más seguido, un bufido de combustión en ruido marrón (170-650 Hz) con aleteo de 9-12 Hz y el crepitar de las ramitas. Revisé los índices de `_tinder_crackle` (acota `stop` a `len(out)`), el cálculo de `catch_at` frente a `n` y que el nivel final (−16,5) cuadra con las demás herramientas. El test nuevo mide cosas que la versión anterior no cumplía (≤ 20 % de energía bajo 150 Hz, antes un 31 %; pico de modulación en 7-15 Hz) y es determinista (`rng_for(name)`). El informe solo trae tres notas LOW sin cambios de código. |
 | #140 | `nube/mundo-2026-09-29-arena-guardado` | **Fusionada** (`a454b69`) | Modelo puro y specs (`FSandModel`) más documentación. `ColumnLimit()` acota toda edición (pincel, anclaje y `Transfer`) a ±32 767 chunks, la cota del `int16` del paquete y de `FromValue`: antes, cavar a 300 km dejaba una partida que no cargaba. `Transfer` compara en `int64`, así que `MIN_int32` ya no desborda en `Abs`. `Brush` acota la profundidad antes de pasar a milímetros y `ApplyHalfTide` ignora mareas de más de 1 000 km (dos UB en `int64`). El guardado añade el reloj (`frozen`, `stale`, `acc`, `wake`), opcional al cargar; comprobé que `FromValue` empieza y falla con `Reset()`, que ya limpia esos cuatro campos, y que rechaza deudas fuera de 1-4, repetidas o fuera del `int16`. Los specs prueban que una partida cargada sigue igual que la original, también con un chunk congelado y con una pleamar pendiente. Nota menor sin arreglar: `stale` repetido se acepta sin error (un `FindOrAdd`), inofensivo. Es solo del servidor, sin estado replicado nuevo. |
+| #117 | `feat/pico-pala-runtime` | Sin fusionar, `necesita-unreal` | Commits nuevos `17fe1dc` y `f6d3e13`. Resuelven la nota de las 23:22: el servidor ya no se fía de la herramienta ni de la acción que manda el cliente. `ServerUseTool(bSecondary, Impacto)` saca la herramienta de `UCarryComponent`. `ValidateUse` devuelve `WrongAction` si la acción no es de esa herramienta, y la cadencia se valida antes que la densidad. Sigue tocando componentes, subsistemas y `Build.cs`. |
+| #118 | `worldgen/terreno-jugable` | Sin fusionar, `necesita-unreal`, con `1dbcfdc` | Commits nuevos `f676c3f`, `f1392bf` y `6cd627e`: el talud no propaga un fondo no finito y `DrainagePattern` aparta los no finitos antes de ordenar. Los dos llevan su spec. `TerrainRealismSpec` rebaja los suelos del sesgo de orientación, pero el techo de 1,3, que es el que caza la rejilla, no cambia. Tenía un conflicto con `main` en `.gitignore`: lo resolví con un merge (`1dbcfdc`) que conserva las dos secciones. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #141 (rebasada sobre `main`, sin conflictos) | — (no toca Source) | — | — (no toca datos) | Audio: ruff sin avisos · basedpyright 0 errores · pytest 299 passed, 106 skipped, cobertura 93 % (hizo falta `apt-get update` antes de instalar `fluidsynth`) · CI en verde (7/7) |
+| #140 (rebasada sobre `main`, sin conflictos) | 1377 casos, 0 fallos | 1377 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+| #117 (con `main` en `a454b69` integrado en local) | 1412 casos, 0 fallos | 1412 casos, 0 fallos, sin avisos | — | — |
+| #118 (en `1dbcfdc`) | 1446 casos, 0 fallos | 1446 casos, 0 fallos, sin avisos | — | — |
+
+### 00-TODO.md
+
+- No se marca ninguna casilla nueva como `[x]`. #140 cierra fallos de guardado y de rango de
+  la arena, pero la arena sigue sin ejecutarse en el servidor.
+- #140 se anota en la nota «en parte» de la arena viva (biblia 08 §2.6). El TODO no tiene
+  casilla para el audio de #141.
