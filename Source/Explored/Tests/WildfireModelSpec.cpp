@@ -379,6 +379,15 @@ void FWildfireModelSpec::Define()
 			TestFalse(TEXT("celda fuera de la cota de CellAt"), M.Ignite(FIntPoint(MAX_int32, 0), 0));
 		});
 
+		It("mojar «para siempre» con un reloj normal se puede guardar y cargar", [this]()
+		{
+			FWildfireModel A(8u, Everywhere());
+			A.Douse(FIntPoint(0, 0), 1, 100, INT64_MAX);
+			FWildfireModel B(8u, Everywhere());
+			TestTrue(TEXT("carga (WetUntil = INT64_MAX tiraba la capa entera)"), B.Load(A.Save()));
+			TestTrue(TEXT("sigue mojada mucho después"), B.IsWet(FIntPoint(1, 0), 100 + 1000000000ll));
+		});
+
 		It("ceniza 3 días, hierba a los 12 y matorral a los 25; Prune olvida lo rebrotado", [this]()
 		{
 			const int64 Day = FWildfireModel::MinutesPerDay;

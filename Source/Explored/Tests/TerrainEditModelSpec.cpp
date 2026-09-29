@@ -900,12 +900,15 @@ void FTerrainEditModelSpec::Define()
 				Carve([](FStairCarve& S) { S.Width = 40.0f; }),
 				Carve([](FStairCarve& S) { S.Headroom = 1.0e6f; }),
 				Carve([](FStairCarve& S) { S.StepRun = 5.0f; }),
+				Carve([](FStairCarve& S) { S.StepRun = 1.0e-30f; }),
+				Carve([](FStairCarve& S) { S.StepRun = 0.05f; }),
 				Carve([](FStairCarve& S) { S.StepRise = -3.0f; }),
 				Carve([&](FStairCarve& S) { S.StepRise = NaNf; }),
 				Carve([&](FStairCarve& S) { S.Width = NaNf; }),
 				Carve([](FStairCarve& S) { S.Start.Z = std::numeric_limits<double>::quiet_NaN(); }),
 				Carve([](FStairCarve& S) { S.Direction = FVector(std::numeric_limits<double>::infinity(), 0.0, 0.0); }),
 				Carve([](FStairCarve& S) { S.MaxVolume = std::numeric_limits<double>::quiet_NaN(); }),
+				Carve([](FStairCarve& S) { S.MaxVolume = -1.0; }),
 			};
 			for (const FStairCarve& S : Bad)
 			{

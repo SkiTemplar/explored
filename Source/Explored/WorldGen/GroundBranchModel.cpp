@@ -69,7 +69,8 @@ int32 FGroundBranchModel::Advance(FGroundBranchCell& Cell, const TArray<FGroundB
 	const int64 Cap = Missing * MilliPerBranch;
 	// Acumulador cargado acotado antes de sumar, y la ganancia saturada: ninguna suma desborda.
 	const int64 Gain = Rate > Cap / Step ? Cap : Step * Rate;
-	Cell.Accumulator = FMath::Min(FMath::Min(Cell.Accumulator, Cap) + Gain, Cap);
+	// También por abajo: un acumulador negativo de un guardado corrupto frenaba el rebrote para siempre.
+	Cell.Accumulator = FMath::Min(FMath::Clamp<int64>(Cell.Accumulator, 0, Cap) + Gain, Cap);
 
 	int32 Spawned = 0;
 	while (Cell.Accumulator >= MilliPerBranch && Cell.Present.Num() < Capacity)

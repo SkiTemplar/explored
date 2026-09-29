@@ -77,6 +77,14 @@ void FGroundBranchModelSpec::Define()
 		TestEqual(TEXT("acumulador a cero al llenarse"), Cell.Accumulator, (int64)0);
 	});
 
+	It("un acumulador negativo de un guardado corrupto no frena el rebrote", [this]()
+	{
+		FGroundBranchCell Cell = FGroundBranchModel::Initialize(1u, Sources, 0);
+		EmptyCell(Cell);
+		Cell.Accumulator = -(int64(1) << 60);
+		TestEqual(TEXT("1 día → 2, como con el acumulador a cero"), FGroundBranchModel::Advance(Cell, Sources, Day), 2);
+	});
+
 	It("da exactamente lo mismo en un paso de 3 días que en 4320 pasos de un minuto", [this]()
 	{
 		FGroundBranchCell Big = FGroundBranchModel::Initialize(77u, Sources, 0);

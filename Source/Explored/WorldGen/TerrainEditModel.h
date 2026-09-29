@@ -137,7 +137,7 @@ struct EXPLORED_API FStairCarve
 	float Headroom = 2.2f;
 	ETerrainMaterial Material = ETerrainMaterial::Tierra;
 	int32 ToolTier = 2;
-	/** Sólido máximo que arranca esta llamada (m³); 0 = sin tope. Tallar cuesta golpes. */
+	/** Sólido máximo que arranca esta llamada (m³); 0 = sin tope, negativo = petición inválida. Tallar cuesta golpes. */
 	double MaxVolume = 0.0;
 };
 
@@ -228,7 +228,7 @@ public:
 	FTerrainEditResult Pickaxe(const FPickaxeHit& Hit, FBaseDensity Base);
 	FTerrainEditResult Shovel(const FShovelStroke& Stroke, FBaseDensity Base);
 	FTerrainEditResult PlaceSoil(const FSoilPlacement& Placement, FBaseDensity Base);
-	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes. */
+	/** Talla la escalera tal cual (llamar antes a SnapStairs para ajustarla a la rejilla); rechaza la que pasa de los topes o tiene una huella menor que StairGrid. */
 	FTerrainEditResult CarveStairs(const FStairCarve& Stairs, FBaseDensity Base);
 	/**
 	 * Camino terminado (biblia 02 §3): compactación 100 en las columnas cuyo centro queda a

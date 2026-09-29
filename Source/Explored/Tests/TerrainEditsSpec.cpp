@@ -428,6 +428,20 @@ void FTerrainEditsSpec::Define()
 			Sphere.Radius = 0.4f;
 			Sphere.MaxVolume = -1.0;
 			TestFalse(TEXT("tope negativo"), Edits.GetModel().DigSphere(Sphere, Flat).Changed());
+			// Finito pero fuera del mundo: sus chunks no caben en el int16 del códec de red.
+			Sphere.MaxVolume = 0.0;
+			Sphere.Center = FVector(3.0e5, 0.0, 0.0);
+			const FTerrainEditResult Far = Edits.GetModel().DigSphere(Sphere, Flat);
+			TestFalse(TEXT("esfera fuera del mundo"), Far.Changed());
+			TestTrue(TEXT("y se marca como rechazada"), Far.bRejected);
+			// Radio desmesurado: con MaxVolume = 0 («sin tope») vaciaba unos 7000 m³ de una vez.
+			Sphere.Center = FVector(0.1, 0.1, -3.0);
+			Sphere.Radius = 12.0f;
+			TestTrue(TEXT("radio de 12 m (> MaxBrushExtent)"), Edits.GetModel().DigSphere(Sphere, Flat).bRejected);
+			// Tope NaN: con -ffast-math `!(MaxVolume >= 0)` lo dejaba pasar y salía la esfera entera.
+			Sphere.Radius = 0.5f;
+			Sphere.MaxVolume = std::numeric_limits<double>::quiet_NaN();
+			TestFalse(TEXT("tope NaN"), Edits.GetModel().DigSphere(Sphere, Flat).Changed());
 			TestTrue(TEXT("nada editado"), Edits.IsEmpty());
 			// El pico y la pala de la PR #40 pasan por la misma consulta de camino.
 			FPickaxeHit NaNHit;

@@ -893,6 +893,7 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 	FTerrainEditResult Result;
 	const FVector Flat(Stairs.Direction.X, Stairs.Direction.Y, 0.0);
 	// Holgura para los valores que SnapStairs deja justo en el tope (0,45 = 3 × 0,15 en float).
+	// La huella mínima es la de SnapStairs: con una huella casi nula, U / Run desborda int32.
 	static constexpr float Slack = 1.0e-4f;
 	if (ToolFactor(Stairs.Material, Stairs.ToolTier) <= 0.0f || !TerrainEditDetail::InWorld(Stairs.Start)
 		|| !TerrainEditDetail::IsFiniteVector(Stairs.Direction) || Flat.SizeSquared() < 1.0e-6
@@ -900,11 +901,11 @@ FTerrainEditResult FTerrainEditModel::CarveStairs(const FStairCarve& Stairs, FBa
 		// IsFinite explícito: con matemáticas rápidas la comparación en positivo no descarta los NaN.
 		|| !FMath::IsFinite(Stairs.StepRun) || !FMath::IsFinite(Stairs.StepRise)
 		|| !FMath::IsFinite(Stairs.Width) || !FMath::IsFinite(Stairs.Headroom)
-		|| !(Stairs.StepRun > 0.0f) || Stairs.StepRun > MaxStairRun + Slack
+		|| !(Stairs.StepRun >= StairGrid - Slack) || Stairs.StepRun > MaxStairRun + Slack
 		|| !(FMath::Abs(Stairs.StepRise) <= MaxStairRise + Slack)
 		|| !(Stairs.Width > 0.0f) || Stairs.Width > MaxStairWidth + Slack
 		|| !(Stairs.Headroom > 0.0f) || Stairs.Headroom > MaxStairHeadroom + Slack
-		|| !FMath::IsFinite(Stairs.MaxVolume))
+		|| !FMath::IsFinite(Stairs.MaxVolume) || Stairs.MaxVolume < 0.0)
 	{
 		Result.bRejected = true;
 		return Result;
@@ -985,9 +986,18 @@ FTerrainEditResult FTerrainEditModel::DigSphere(const FSphereDig& Dig, FBaseDens
 		Result.bRejected = true;
 		return Result;
 	}
+	// IsFinite explícito: con matemáticas rápidas `!(MaxVolume >= 0)` deja pasar un NaN y la
+	// esfera sale entera, sin tope.
 	if (!(Dig.Radius > 0.0f) || !FMath::IsFinite(Dig.Radius) || !TerrainEditDetail::IsFiniteVector(Dig.Center)
-		|| !(Dig.MaxVolume >= 0.0))
+		|| !FMath::IsFinite(Dig.MaxVolume) || Dig.MaxVolume < 0.0)
 	{
+		return Result;
+	}
+	if (!TerrainEditDetail::InWorld(Dig.Center) || !TerrainEditDetail::ValidExtent(Dig.Radius))
+	{
+		// Como Pickaxe o Shovel: fuera del mundo sus chunks no caben en el códec de red, y un
+		// radio mayor que MaxBrushExtent vaciaría miles de m³ de una vez.
+		Result.bRejected = true;
 		return Result;
 	}
 	// Distancia con signo a la esfera (aire dentro). Con la ocupación lineal de una celda,

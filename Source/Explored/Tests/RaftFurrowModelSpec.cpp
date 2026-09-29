@@ -158,6 +158,9 @@ void FRaftFurrowModelSpec::Define()
 			Moves.Add({ FIntPoint(0, 0), FIntPoint(4, 0), 100 });
 			Moves.Add({ FIntPoint(4, 0), FIntPoint(0, 0), 100 });
 			Moves.Add({ FIntPoint(0, 0), FIntPoint(MAX_int32, 0), 100 });
+			// Abs(MIN_int32) en int32 desborda (UB) y pasaba el tope de columnas.
+			Moves.Add({ FIntPoint(MIN_int32, 0), FIntPoint(0, 0), 100 });
+			Moves.Add({ FIntPoint(0, 0), FIntPoint(0, MIN_int32), 100 });
 			const FSandResult R = Sand.Transfer(Moves, Flat);
 			TestEqual(TEXT("nada"), R.Mass, static_cast<int64>(0));
 			TestTrue(TEXT("vacía"), Sand.IsEmpty());

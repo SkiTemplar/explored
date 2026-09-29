@@ -243,7 +243,10 @@ void FWildfireModel::Douse(FIntPoint Center, int32 RadiusCells, int64 NowMinute,
 	const int32 R = FMath::Clamp(RadiusCells, 0, WildfirePriv::MaxDouseRadiusCells);
 	// Saturar en vez de sumar: NowMinute + WetMinutes desborda con valores extremos.
 	const int64 Wet = FMath::Max<int64>(0, WetMinutes);
-	const int64 WetUntil = NowMinute > INT64_MAX - Wet ? INT64_MAX : NowMinute + Wet;
+	// Con un reloj dentro del rango de Load, acotar a ese rango: un INT64_MAX guardado («mojada
+	// para siempre») haría que Load rechazase toda la capa de incendios.
+	const int64 Saturated = NowMinute > INT64_MAX - Wet ? INT64_MAX : NowMinute + Wet;
+	const int64 WetUntil = NowMinute <= WildfirePriv::MaxAbsMinute ? FMath::Min(Saturated, WildfirePriv::MaxAbsMinute) : Saturated;
 	bool bRemovedBurning = false;
 	for (int32 DY = -R; DY <= R; ++DY)
 	{

@@ -76,3 +76,96 @@ def test_paso_en_agua_suena_a_burbujas_y_gotas(rendered):
         env = np.sqrt(np.convolve(audio**2, np.ones(win) / win, mode="same"))[:: win // 2]
         peaks, _ = signal.find_peaks(20.0 * np.log10(env + 1e-9), prominence=6.0)
         assert len(peaks) >= 4, f"{name}: {len(peaks)} repuntes, no se oyen las gotas"
+
+
+def test_paso_en_arena_cruje_grave_y_se_prolonga(rendered):
+    """La arena cede y se come los agudos: crujido denso bajo 2,5 kHz que dura
+    mientras el pie se hunde y se asienta, no granos agudos y secos. Centroide
+    por debajo de 1,6 kHz, menos de un 6 % de energia sobre 4 kHz y al menos
+    220 ms con la envolvente (5 ms) a menos de 30 dB de su maximo. La version
+    de granos de 600-3200 Hz daba 2,2-2,7 kHz, 16-23 % y 160-190 ms."""
+    win = int(0.005 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_sand_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        high = float(spectrum[freqs > 4000.0].sum() / spectrum.sum())
+        env = np.sqrt(np.convolve(audio**2, np.ones(win) / win, mode="same"))
+        active_ms = (env > env.max() * 10 ** (-30 / 20)).sum() / SAMPLE_RATE * 1000.0
+        assert centroid < 1600.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert high < 0.06, f"{name}: {high:.1%} sobre 4 kHz"
+        assert active_ms >= 220.0, f"{name}: solo {active_ms:.0f} ms de crujido"
+
+
+def test_paso_en_hierba_cruje_a_tallos_y_no_sisea(rendered):
+    """La hierba son tallos que se doblan y se quiebran, no un soplo de ruido:
+    centroide por debajo de 2,6 kHz, menos de un 3 % de energia sobre 8 kHz y
+    una banda de 1-5 kHz impulsiva (curtosis >= 5,5 tras normalizar por su
+    envolvente de 20 ms; el ruido gaussiano da ~3). La version de barrido de
+    1,8-6 kHz daba 2,7-3,4 kHz, 7-9 % y curtosis 3,2-5,0."""
+    from scipy.stats import kurtosis
+
+    sos = signal.butter(4, [1000.0, 5000.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.02 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_grass_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        air = float(spectrum[freqs > 8000.0].sum() / spectrum.sum())
+        band = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(band**2, np.ones(win) / win, mode="same")) + 1e-12
+        active = env > env.max() * 0.05
+        crackle = float(kurtosis((band / env)[active], fisher=False))
+        assert centroid < 2600.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert air < 0.03, f"{name}: {air:.1%} sobre 8 kHz"
+        assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a soplo de ruido"
+
+
+def test_paso_en_roca_tritura_y_rebota_sin_sisear(rendered):
+    """La roca no cede: arena triturada bajo la planta, guijarros que rebotan
+    y un rascado al despegar, todo impulsivo. Menos de un 4 % de energia sobre
+    8 kHz, centroide por debajo de 2,2 kHz y banda de 2-8 kHz impulsiva
+    (curtosis >= 5,5 tras normalizar por su envolvente de 20 ms). La version
+    con barrido de ruido de 3 a 1,2 kHz daba 5-8 %, 2,0-2,5 kHz y 3,6-5,0."""
+    from scipy.stats import kurtosis
+
+    sos = signal.butter(4, [2000.0, 8000.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.02 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_rock_" not in name:
+            continue
+        spectrum = np.abs(np.fft.rfft(audio)) ** 2
+        freqs = np.fft.rfftfreq(len(audio), 1.0 / SAMPLE_RATE)
+        centroid = float((freqs * spectrum).sum() / spectrum.sum())
+        air = float(spectrum[freqs > 8000.0].sum() / spectrum.sum())
+        band = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(band**2, np.ones(win) / win, mode="same")) + 1e-12
+        active = env > env.max() * 0.05
+        crackle = float(kurtosis((band / env)[active], fisher=False))
+        assert centroid < 2200.0, f"{name}: centroide {centroid:.0f} Hz"
+        assert air < 0.04, f"{name}: {air:.1%} sobre 8 kHz"
+        assert crackle >= 5.5, f"{name}: curtosis {crackle:.1f}, suena a siseo"
+
+
+def test_paso_en_madera_suena_a_tablon_y_no_a_bombo(rendered):
+    """Un tablon atado es madera hueca pero muy amortiguada: tras el apoyo de
+    la punta, la banda de 100-400 Hz (primer modo del tablon y golpe del peso)
+    cae 30 dB en menos de 100 ms (envolvente de 5 ms). La version con el
+    primer modo a 150-230 Hz y 55 ms de decaimiento tardaba 130-190 ms y
+    sonaba a bombo."""
+    sos = signal.butter(4, [100.0, 400.0], btype="bandpass", fs=SAMPLE_RATE, output="sos")
+    win = int(0.005 * SAMPLE_RATE)
+    for name, audio in _footsteps(rendered).items():
+        if "_wood_" not in name:
+            continue
+        low = signal.sosfiltfilt(sos, audio)
+        env = np.sqrt(np.convolve(low**2, np.ones(win) / win, mode="same"))
+        lo = int(0.05 * SAMPLE_RATE)
+        toe = lo + int(np.argmax(env[lo : int(0.16 * SAMPLE_RATE)]))
+        below = np.nonzero(env[toe:] < env[toe] * 10 ** (-30 / 20))[0]
+        decay_ms = below[0] / SAMPLE_RATE * 1000.0 if below.size else float("inf")
+        assert decay_ms < 100.0, f"{name}: la banda grave tarda {decay_ms:.0f} ms en caer 30 dB"

@@ -418,8 +418,8 @@ FSandResult FSandModel::Transfer(const TArray<FSandMove>& Moves, FBaseHeight Bas
 	for (const FSandMove& Move : Moves)
 	{
 		if (Move.Mm <= 0 || Move.From == Move.To
-			|| FMath::Abs(Move.From.X) > MaxAbsColumn || FMath::Abs(Move.From.Y) > MaxAbsColumn
-			|| FMath::Abs(Move.To.X) > MaxAbsColumn || FMath::Abs(Move.To.Y) > MaxAbsColumn
+			|| FMath::Abs(static_cast<int64>(Move.From.X)) > MaxAbsColumn || FMath::Abs(static_cast<int64>(Move.From.Y)) > MaxAbsColumn
+			|| FMath::Abs(static_cast<int64>(Move.To.X)) > MaxAbsColumn || FMath::Abs(static_cast<int64>(Move.To.Y)) > MaxAbsColumn
 			|| IsAnchored(Move.From) || IsAnchored(Move.To))
 		{
 			continue;
