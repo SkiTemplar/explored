@@ -120,6 +120,21 @@ void FFellingModelSpec::Define()
 			TestTrue(TEXT("el golpe que completa lo tumba"), FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Hands, FVector2D(1.0, 0.0)));
 		});
 
+		It("un golpe con dirección infinita o NaN cuenta como trabajo sin dejar NaN en el empuje", [this]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			FFellingProgress Progress;
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(std::numeric_limits<double>::infinity(), 0.0));
+			FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(std::numeric_limits<double>::quiet_NaN(), 1.0));
+			TestTrue(TEXT("empuje finito"), FMath::IsFinite(Progress.Push.X) && FMath::IsFinite(Progress.Push.Y));
+			TestTrue(TEXT("los dos golpes cuentan"), Progress.Work >= FFellingModel::WorkToFell / 2);
+			bool bFelled = false;
+			for (int32 i = 0; i < 2; ++i) { bFelled = FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(0.0, 1.0)); }
+			TestTrue(TEXT("cae al cuarto golpe"), bFelled);
+			const FVector2D Fall = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 7u);
+			TestTrue(TEXT("los golpes buenos deciden la caída"), Fall.Y > 0.9);
+		});
+
 		It("una herramienta que no sirve no avanza y un árbol ya tumbado no vuelve a caer", [this]()
 		{
 			const FFellingProfile& Giant = Get(TEXT("JungleGiant"));
