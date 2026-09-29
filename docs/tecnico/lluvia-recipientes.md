@@ -22,6 +22,9 @@ Las reglas y los números están en el GDD v2 §3.16 y en la biblia 02 §5.4.
 2. **Reloj.**
    - `NowMinute` es el minuto entero de juego de `UTimeOfDaySubsystem`, el mismo reloj
      que usan la tala y las ramas del suelo (`vegetationClock`).
+   - Un `NowMinute` fuera de ±`MaxSupportedMinute` se ignora sin tomarlo como hora
+     actual. Un `LastUpdateMinute` cargado más allá del tope se corrige a la hora actual
+     en el primer `Advance`, sin simular el hueco. No hace falta sanearlo al cargar.
    - El `FWeatherModel` es el del `UExploredWeatherSubsystem`, con la semilla del
      mundo, envuelto en un `FRainCatchSky` que vive en el subsistema. **No** hay que pasar la muestra en vivo del cielo: el modelo muestrea él
      mismo por franjas de 10 min alineadas con el minuto 0, y así el resultado no

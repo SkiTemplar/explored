@@ -83,6 +83,19 @@ conectarlo a la capa de Unreal. Las reglas y los números están en el GDD v2 §
 - Al talar, la entrada se queda (los cocos del suelo siguen pudriéndose) hasta que el
   suelo esté vacío; entonces se borra. Al rebrotar se crea otra con `Initialize(..., false)`.
 - Las partidas antiguas no tienen la sección: todas las palmeras se reconstruyen sin tocar.
+- **Al cargar una entrada:**
+  - Se rellena el estado. Las posiciones del suelo salen de `FallPosition`.
+  - Se comprueba con `FCoconutPalmModel::IsValidSaved(estado, perfil)`.
+  - Si da false, la entrada se descarta y la palmera se reconstruye como una sin tocar,
+    igual que hace `LoadCell` en las ramas del suelo.
+  - Motivos de rechazo:
+    - minutos fuera de ±`MaxSupportedMinute`;
+    - un ciclo que empieza después de `lastMinute`;
+    - un número de huecos distinto del del perfil;
+    - un `id` imposible o repetido;
+    - una generación que no cabe en los 24 bits del `id`.
+  - Sin esta comprobación, un `cycleStart` corrupto no colgaría el servidor, porque
+    `Advance` no avanza con relojes fuera de rango, pero la palmera quedaría congelada.
 
 ## Coste por frame
 

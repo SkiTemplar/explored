@@ -883,6 +883,10 @@ duraciones de quema son una propuesta y no las ha validado nadie.
   vecina de origen), y las celdas que prenden no contagian hasta el segundo siguiente.
   El resultado no depende del orden de visita ni de cómo se trocee el avance, y una
   partida guardada a mitad de incendio sigue exactamente igual.
+- **Relojes fuera de partida:** un minuto fuera de ±10¹² (unos 1,9 millones de años) o
+  un segundo de simulación por encima de 6 · 10¹³ no salen de ninguna partida. Prender,
+  mojar y avanzar los ignoran sin guardarlos, así que todo lo que el juego guarda se
+  vuelve a cargar, y un segundo absurdo no deja el fuego ardiendo para siempre.
 - **Interfaz:** humo que avisa desde lejos, crepitar, suelo ennegrecido y ceniza gris
   que se puede recoger. Sin barras ni avisos de texto.
 - **Dependencias:** `WorldGen` (`FWildfireModel`), `Weather` (`ESeason`,
@@ -953,7 +957,9 @@ Esta sección fija cuánto se llena, cuándo se vacía y qué pasa si se mezcla.
     mismo recipiente) encaja en el modelo, pero no existe como pieza de construcción.
   - Los números de esta sección no los ha validado el director.
 - **Riesgos técnicos:** ver `docs/tecnico/lluvia-recipientes.md`. Ponerse al día al
-  cargar recorre como mucho 60 días de juego.
+  cargar recorre como mucho 60 días de juego. Un reloj fuera de ±10 000 días no se
+  simula ni se toma como hora actual; un reloj guardado más allá se corrige a la hora
+  actual. Así el recipiente nunca se queda congelado.
 - **Dependencias:** `Weather` (`FRainCatchModel`, `FWeatherModel`), `Carry`
   (`LiquidCapacityFromRecipiente`), `Save` (capa de recipientes del mundo).
 
@@ -999,6 +1005,10 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
     pasa a `FBoatModel` con la arrancada que llevaba.
   - **Rodillos.** Son troncos atravesados en el camino. Con al menos uno bajo cada
     mitad del casco, la balsa rueda: resistencia de rodadura de 0,05 y ningún desgaste.
+    - Las mitades se miden sobre el tramo que ocupan de verdad las piezas, aunque la
+      balsa no se haya construido centrada.
+    - Un solo rodillo justo en el centro no basta: la balsa hace de balancín, así que
+      hacen falta al menos dos.
     Los rodillos de debajo avanzan la mitad que la balsa, así que se quedan atrás y hay
     que recogerlos y volver a ponerlos delante. Es el trabajo de la botadura, y en
     cooperativo lo hace uno mientras los demás empujan.
@@ -1171,6 +1181,13 @@ cocos de verdad en la copa, que maduren y caigan solos, y que sacudirla los suel
 - **Determinismo.** Todo el ciclo sale de un hash de (semilla, hueco, generación) y va en
   minutos enteros: avanzar 30 días de golpe o minuto a minuto da lo mismo (hay spec). Una
   palmera que nadie ha tocado no guarda nada.
+- **Relojes fuera de partida.**
+  - Un minuto fuera de ±10 000 días (el mismo tope que la lluvia y el tiempo) no avanza
+    la copa ni se toma como hora actual. Antes recorría miles de millones de ciclos.
+  - Un estado cargado que no cuadra se descarta y la palmera se reconstruye como si
+    nadie la hubiera tocado. No cuadra si tiene minutos fuera de rango, un ciclo que
+    empieza en el futuro, cocos con un Id imposible o repetido, o una generación que
+    no cabe en los 24 bits del Id.
 - **Interfaz:** sin barra ni contador. Los cocos se ven en la copa (verdes o pardos); la
   copa se agita al sacudir y suena el golpe sordo de cada coco al caer.
 - **Dependencias:** `WorldGen` (`FCoconutPalmModel`, `FFellingModel`), `Weather`

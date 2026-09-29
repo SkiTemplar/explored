@@ -66,6 +66,11 @@ Las reglas y los números están en el GDD v2 §3.15 y en la biblia 02 §6.
 - `Load` rechaza entero cualquier formato raro: celda repetida, fuego sin combustible,
   estado o combustible fuera de rango, o coordenadas fuera de `int32`. Si lo rechaza,
   no toca el estado.
+- También rechaza minutos fuera de ±`MaxAbsMinute` (10¹²) y un `lastSecond` por encima
+  de `MaxAbsSecond`. Como `Ignite`, `Douse` y `Advance` ignoran esos relojes sin
+  guardarlos, todo lo que guarda el juego se vuelve a cargar (hay spec). Si el reloj del
+  subsistema pudiera dar un valor absurdo, el fuego no se congela: ese avance se descarta
+  y el siguiente segundo bueno sigue.
 - Las partidas antiguas no tienen la sección y empiezan sin incendio.
 - Al guardar se llama antes a `Prune(NowMinute)` para no arrastrar celdas ya rebrotadas.
   Tras un incendio de 1 ha (2 500 celdas) la sección ocupa unos 60 kB de texto hasta
