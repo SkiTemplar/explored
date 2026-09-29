@@ -14,7 +14,7 @@ BEGIN_DEFINE_SPEC(FGroundBranchModelSpec, "Explored.GroundBranch",
 	{
 		while (Cell.Present.Num() > 0)
 		{
-			FGroundBranchModel::Pick(Cell, Cell.Present[0].Serial);
+			FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Cell.Present[0].Serial);
 		}
 	}
 	bool SameCell(const FGroundBranchCell& A, const FGroundBranchCell& B)
@@ -85,8 +85,41 @@ void FGroundBranchModelSpec::Define()
 	{
 		FGroundBranchCell Cell = FGroundBranchModel::Initialize(1u, Sources, 0);
 		TestEqual(TEXT("100 días llena, nada nuevo"), FGroundBranchModel::Advance(Cell, Sources, 100 * Day), 0);
-		FGroundBranchModel::Pick(Cell, Cell.Present[0].Serial);
+		FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Cell.Present[0].Serial);
 		TestEqual(TEXT("un minuto después, nada"), FGroundBranchModel::Advance(Cell, Sources, 100 * Day + 1), 0);
+	});
+
+	It("recoger sin haber avanzado la celda llena tampoco suelta una ráfaga", [this]()
+	{
+		// El motor no avanza las celdas lejanas: la primera llamada tras 100 días puede ser Pick.
+		FGroundBranchCell Cell = FGroundBranchModel::Initialize(1u, Sources, 0);
+		int32 Spawned = -1;
+		TestTrue(TEXT("recoge"), FGroundBranchModel::Pick(Cell, Sources, 100 * Day, Cell.Present[0].Serial, nullptr, &Spawned));
+		TestEqual(TEXT("llena, el avance previo no suelta nada"), Spawned, 0);
+		TestEqual(TEXT("reloj en la hora de la recogida"), Cell.LastUpdateMinute, 100 * Day);
+		TestEqual(TEXT("un minuto después, nada"), FGroundBranchModel::Advance(Cell, Sources, 100 * Day + 1), 0);
+		// Ritmo 2 ramas/día: el hueco se rellena a las 12 h de la recogida, no antes.
+		TestEqual(TEXT("11 h después, nada"), FGroundBranchModel::Advance(Cell, Sources, 100 * Day + 11 * 60), 0);
+		TestEqual(TEXT("12 h después, una"), FGroundBranchModel::Advance(Cell, Sources, 100 * Day + 12 * 60), 1);
+	});
+
+	It("Pick a una hora equivale a Advance hasta esa hora y después Pick", [this]()
+	{
+		FGroundBranchCell A = FGroundBranchModel::Initialize(31u, Sources, 0);
+		EmptyCell(A);
+		FGroundBranchModel::Advance(A, Sources, Day);
+		FGroundBranchCell B = A;
+		const uint32 Serial = A.Present[0].Serial;
+		int32 Spawned = -1;
+		FGroundBranch Picked;
+		TestTrue(TEXT("recoge con avance previo"), FGroundBranchModel::Pick(A, Sources, 2 * Day, Serial, &Picked, &Spawned));
+		TestEqual(TEXT("cuenta las del avance previo"), Spawned, FGroundBranchModel::Advance(B, Sources, 2 * Day));
+		TestTrue(TEXT("recoge tras Advance"), FGroundBranchModel::Pick(B, Sources, 2 * Day, Serial));
+		TestTrue(TEXT("mismo estado"), SameBranches(A, B));
+		TestEqual(TEXT("devuelve la rama pedida"), Picked.Serial, Serial);
+		// Una hora anterior (reloj que retrocede) no rebobina ni impide recoger.
+		TestTrue(TEXT("recoge con hora pasada"), FGroundBranchModel::Pick(A, Sources, Day, A.Present[0].Serial));
+		TestEqual(TEXT("no rebobina"), A.LastUpdateMinute, 2 * Day);
 	});
 
 	It("reaparecen al ritmo del perfil y se detienen en la capacidad", [this]()
@@ -130,7 +163,7 @@ void FGroundBranchModelSpec::Define()
 	{
 		FGroundBranchCell Cell = FGroundBranchModel::Initialize(9u, Sources, 0);
 		const int32 Before = Cell.Present.Num();
-		FGroundBranchModel::Pick(Cell, Cell.Present[0].Serial);
+		FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Cell.Present[0].Serial);
 		const TArray<FGroundBranchSource> None;
 		TestEqual(TEXT("nada nuevo"), FGroundBranchModel::Advance(Cell, None, 50 * Day), 0);
 		TestEqual(TEXT("las del suelo siguen"), Cell.Present.Num(), Before - 1);
@@ -175,8 +208,8 @@ void FGroundBranchModelSpec::Define()
 	{
 		FGroundBranchCell Cell = FGroundBranchModel::Initialize(8u, Sources, 0);
 		const uint32 Serial = Cell.Present[1].Serial;
-		TestTrue(TEXT("primera vez"), FGroundBranchModel::Pick(Cell, Serial));
-		TestFalse(TEXT("segunda vez"), FGroundBranchModel::Pick(Cell, Serial));
+		TestTrue(TEXT("primera vez"), FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Serial));
+		TestFalse(TEXT("segunda vez"), FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Serial));
 		FGroundBranchModel::Advance(Cell, Sources, 10 * Day);
 		TSet<uint32> Seen;
 		for (const FGroundBranch& B : Cell.Present)
@@ -223,7 +256,7 @@ void FGroundBranchModelSpec::Define()
 			Felled.RemoveAt(1);
 			TestTrue(TEXT("fuentes distintas"), FGroundBranchModel::NeedsSave(Cell, Felled));
 
-			FGroundBranchModel::Pick(Cell, Cell.Present.Last().Serial);
+			FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, Cell.Present.Last().Serial);
 			TestTrue(TEXT("con una recogida"), FGroundBranchModel::NeedsSave(Cell, Sources));
 			FGroundBranchModel::Advance(Cell, Sources, 41 * Day);
 			TestTrue(TEXT("rellenada con otra serie"), FGroundBranchModel::NeedsSave(Cell, Sources));
@@ -236,8 +269,8 @@ void FGroundBranchModelSpec::Define()
 		It("guardar y cargar da la misma celda y el mismo futuro", [this]()
 		{
 			FGroundBranchCell Cell = FGroundBranchModel::Initialize(4242u, Sources, 0);
-			FGroundBranchModel::Pick(Cell, 1);
-			FGroundBranchModel::Pick(Cell, 4);
+			FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, 1);
+			FGroundBranchModel::Pick(Cell, Sources, Cell.LastUpdateMinute, 4);
 			FGroundBranchModel::Advance(Cell, Sources, 1 * Day + 37); // acumulado a medias
 			FGroundBranchCell Loaded;
 			if (!TestTrue(TEXT("carga"), RoundTrip(Cell, Loaded))) { return; }
@@ -246,7 +279,7 @@ void FGroundBranchModelSpec::Define()
 			FGroundBranchModel::Advance(Cell, Sources, 5 * Day);
 			FGroundBranchModel::Advance(Loaded, Sources, 5 * Day);
 			TestTrue(TEXT("mismo futuro"), SameBranches(Cell, Loaded));
-			TestTrue(TEXT("se recoge por su serie"), FGroundBranchModel::Pick(Loaded, Loaded.Present[0].Serial));
+			TestTrue(TEXT("se recoge por su serie"), FGroundBranchModel::Pick(Loaded, Sources, Loaded.LastUpdateMinute, Loaded.Present[0].Serial));
 		});
 
 		It("sin series libres no aparece ninguna rama ni se repite una serie", [this]()

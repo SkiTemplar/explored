@@ -67,7 +67,10 @@ Todo pasa hoy por `UExploredWiringSubsystem::HarvestInstance` (`Core/ExploredWir
      sacan de las instancias en pie de las especies leñosas; se reconstruyen al talar y al
      rebrotar a `Mature`.
    - Cada rama se pinta como una instancia de un HISM `GroundBranch` de la celda, y el
-     jugador la recoge con `Pick(Serial)`.
+     jugador la recoge con `Pick(Celda, Fuentes, NowMinute, Serial, &Rama, &Nuevas)`.
+     `Pick` avanza antes la celda hasta `NowMinute`, así que da igual que el barrido de
+     `Advance` no haya pasado por ella; si en ese avance aparecen ramas (`Nuevas > 0`),
+     son las últimas de `Present` y hay que añadir sus instancias igual que tras `Advance`.
    - Una rama puede quedar fuera del cuadrado de su celda, porque la copa lo cruza.
      Sigue perteneciendo a la celda de su árbol: la clave de guardado es la celda del
      árbol, no `CellOf(posición)`.
