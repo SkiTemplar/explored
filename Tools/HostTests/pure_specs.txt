@@ -53,6 +53,7 @@ Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/VegetationNetStateModelSpec.cpp
+Tests/VegetationClockModelSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
