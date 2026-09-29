@@ -24,7 +24,10 @@
  *   Quien llama también puede entregarlo antes (sale del radio activo).
  *
  * Cada pieza está siempre en un solo estado y ninguna desaparece sin pasar por
- * Collect, HandOver o el deshecho: el número de piezas no cambia nunca.
+ * Collect, HandOver o el deshecho. Una pieza ya resuelta deja su hueco a la
+ * siguiente que entre con AddPiece (el índice más bajo libre): el índice de una
+ * pieza activa no cambia nunca, pero el de una resuelta deja de ser suyo, así que
+ * quien llama lee el informe de Advance antes de volver a llamar a AddPiece.
  *
  * Paso fijo de FixedStepS con acumulador: el resultado no depende del ritmo de
  * fotogramas. Ningún tramo de un paso avanza más de MaxSegmentCm sin mirar la
@@ -104,7 +107,7 @@ public:
 	static constexpr float HandoverFloatingS = 600.0f;
 	/** Tope de velocidad de corriente que se acepta (cm/s): un dato disparatado no teletransporta nada. */
 	static constexpr double MaxCurrentCmS = 500.0;
-	/** Tope de piezas: un guardado manipulado no puede dejar Advance calculando minutos. */
+	/** Tope de piezas activas a la vez: un guardado manipulado no puede dejar Advance calculando minutos. */
 	static constexpr int32 MaxPieces = 1024;
 
 	static int32 HandoverSteps() { return FMath::CeilToInt(HandoverFloatingS / FixedStepS); }
@@ -125,7 +128,8 @@ public:
 
 	/**
 	 * Añade una unidad suelta por la tala. Flota ya si hay agua bastante bajo
-	 * ella. INDEX_NONE si hay MaxPieces o la posición no es finita.
+	 * ella. Ocupa el hueco más bajo de una pieza ya resuelta o, si no hay, uno
+	 * nuevo. INDEX_NONE si hay MaxPieces activas o la posición no es finita.
 	 */
 	int32 AddPiece(const FFellingDrop& Drop, FWaterDepth WaterDepth);
 

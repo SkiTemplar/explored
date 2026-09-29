@@ -90,7 +90,23 @@ float FFelledDriftModel::SafeDepth(FWaterDepth WaterDepth, const FVector2D& At)
 
 int32 FFelledDriftModel::AddPiece(const FFellingDrop& Drop, FWaterDepth WaterDepth)
 {
-	if (Pieces.Num() >= MaxPieces || !FMath::IsFinite(Drop.Position.X) || !FMath::IsFinite(Drop.Position.Y))
+	if (!FMath::IsFinite(Drop.Position.X) || !FMath::IsFinite(Drop.Position.Y))
+	{
+		return INDEX_NONE;
+	}
+	// Lo ya resuelto (recogido, entregado o deshecho) deja su hueco: si no, una sesión
+	// larga talando junto al mar llenaría el modelo. El más bajo, para que el índice
+	// dependa solo de la historia y no del orden de un contenedor.
+	int32 Slot = INDEX_NONE;
+	for (int32 i = 0; i < Pieces.Num(); ++i)
+	{
+		if (!Pieces[i].IsActive())
+		{
+			Slot = i;
+			break;
+		}
+	}
+	if (Slot == INDEX_NONE && Pieces.Num() >= MaxPieces)
 	{
 		return INDEX_NONE;
 	}
@@ -101,7 +117,12 @@ int32 FFelledDriftModel::AddPiece(const FFellingDrop& Drop, FWaterDepth WaterDep
 	{
 		Piece.State = EFelledPieceState::Floating;
 	}
-	return Pieces.Add(Piece);
+	if (Slot == INDEX_NONE)
+	{
+		return Pieces.Add(Piece);
+	}
+	Pieces[Slot] = Piece;
+	return Slot;
 }
 
 FFelledDriftReport FFelledDriftModel::Advance(float DeltaSeconds, FWaterDepth WaterDepth, FWaterCurrent Current)

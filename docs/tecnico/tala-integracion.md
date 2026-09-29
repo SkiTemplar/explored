@@ -171,6 +171,10 @@ a ser madera flotante normal. Modelo puro `WorldGen/FelledDriftModel.h`, spec
 - Por paso y pieza varada que flota: una consulta de profundidad para ver si sube el
   agua. Lo hundido, lo recogido y lo entregado no cuesta nada (lo prueba el spec).
 - Un gigante talado al agua son unas 10 piezas: menos de 0,01 ms por paso. El tope de
-  `MaxPieces` (1024) solo protege de un guardado manipulado.
+  `MaxPieces` (1024) cuenta solo las piezas activas y protege de un guardado manipulado.
+  Lo recogido, entregado o deshecho deja su hueco a la siguiente pieza, así que el array
+  no crece en una sesión larga. Por eso el subsistema procesa `Report.HandedOver` y
+  `Report.Decayed` (lee `HandoverItemId` y destruye el actor) antes de la siguiente
+  llamada a `AddPiece`, y el actor suelta su índice al recogerse.
 - Si el subsistema se queda atrás, `MaxStepsPerAdvance` (2 min) descarta el resto de
   pasos, como la arena viva al acercarse.
