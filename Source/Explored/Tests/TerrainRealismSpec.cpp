@@ -161,8 +161,11 @@ void FTerrainRealismSpec::Define()
 		{
 			// Se mide en la rejilla de erosión (celdas rebajadas): en el mundo muestreado, el pie
 			// de las paredes kársticas también cuenta como "cauce" y su orientación es la de las
-			// torres, no la de la rejilla. Banda 0,9-1,3; en diagonales, desde 0,85: en el cono de
-			// Smoke el reparto de los barrancos por rumbos ya daba 0,88 (no es un sesgo de rejilla).
+			// torres, no la de la rejilla. El sesgo de rejilla se ve como exceso (> 1,3 en un eje o
+			// en las diagonales; unos surcos alineados dan > 3). En el cono de Smoke los barrancos
+			// son pocos y radiales y dejan ambos por debajo de 1: ejes 0,92-0,95 y diagonales
+			// 0,85-0,88 según el compilador (g++, clang, -ffast-math), porque la erosión por gotas
+			// es caótica ante el redondeo. Suelos 0,85 y 0,8: el doble de esa dispersión por debajo.
 			const FFixture& F = Fixture();
 			for (int32 I = 0; I < F.Density.GetLayout().Islands.Num(); ++I)
 			{
@@ -174,8 +177,8 @@ void FTerrainRealismSpec::Define()
 				const FOrientationStats& C = Relief->GetChannelOrientation();
 				const TCHAR* Name = LexToString(F.Density.GetLayout().Islands[I].Archetype);
 				AddInfo(FString::Printf(TEXT("%s: ejes %.2f diagonales %.2f (%d)"), Name, C.AxisExcess, C.DiagonalExcess, C.SampleCount));
-			TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.9f && C.AxisExcess < 1.3f);
-				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.85f && C.DiagonalExcess < 1.3f);
+				TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.85f && C.AxisExcess < 1.3f);
+				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.8f && C.DiagonalExcess < 1.3f);
 			}
 		});
 
