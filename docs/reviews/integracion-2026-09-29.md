@@ -125,3 +125,28 @@ revisión y siguen con `necesita-unreal`.
 ### 00-TODO.md
 
 - Ninguna casilla nueva en `[x]`: el TODO no tiene casilla para los ambientes de lluvia.
+
+## Ejecución 11:00 UTC
+
+Base: `origin/main` en `6305d52` al empezar. Hay dos PR nuevas, #134 y #135. Las demás PR
+abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen
+commits desde su última revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #134 | `nube/packs-2026-09-29d` | **Fusionada** (`d9b5eca`), con `66395e6` | Lote 14 de packs: 8 iconos de logro de Kenney (arco, bandera, escudo, muralla, herramienta, viga, trueque y pueblo). Los ocho logros existen en `achievements.json`, y en la hoja de contacto las siluetas se leen bien con los dos tintes. `structure_church` se usa para «pueblo» y se descarta para «templo». No es una contradicción: sin cruz, el icono se ve como un grupo de casas. Añadí `66395e6` porque el motivo de corral y empalizada era falso. Decía «se cataloga cuando el logro entre en `achievements.json`», pero esos logros ya están ahí (F2). Lo que falta es que las piezas dejen de tener `propuesta: true` en `fases_futuras.json`. El alcance del lote también ponía vagón como pieza de fase futura, cuando lo que le falta es una silueta que encaje. La hoja PNG todavía conserva la frase antigua en el subtítulo. |
+| #135 | `nube/mundo-2026-09-29-persistencia` | **Fusionada** (`f2b228e`) | Añade `FVegetationClockModel`, un modelo puro con solo `CoreMinimal.h` y dependencias de `Save/` y `WorldGen/` que ya están en `pure_sources.txt`. Es la sección `vegetationClock`, que guarda la hora de tala y el trabajo de pala de cada tocón. También añade `NeedsSave`, `SaveCell` y `LoadCell` en `FGroundBranchModel`. Lo revisé así: la búsqueda binaria usa un orden que no distingue mayúsculas, igual que el `==` de `FName`; `Load` comprueba los rangos antes de estrechar a `int32` y rechaza claves repetidas; `LoadCell` exige series crecientes por debajo de `NextSerial`, con lo que `Pick` no puede recoger la rama equivocada; `Reconcile` aplica «más tarde, nunca antes». Los 42 días de la palmera que cita el GDD (12 + 30) coinciden con la tabla de la §3.12. Los specs cubren el orden estable del texto, que guardar y cargar no mueva el rebrote, las ramas que no se mueven tras talar y el rechazo de ficheros manipulados. Es solo guardado en el servidor, sin estado replicado nuevo. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #134 (al día con `main`, con `66395e6`) | — (no toca Source) | — | 0 errores, 0 avisos · 550 passed | Packs: ruff sin avisos · 64 passed, 1 skipped · CI en verde (7/7) |
+| #135 (al día con `main`) | 1366 casos, 0 fallos | 1366 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+
+### 00-TODO.md
+
+- No se marca ninguna casilla nueva como `[x]`.
+- #135 se anota en la nota «en parte» del tocón con rebrote. Falta engancharlo a
+  `USaveSubsystem`.
+- #134 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.
