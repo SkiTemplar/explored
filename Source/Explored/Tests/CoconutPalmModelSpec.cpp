@@ -304,6 +304,8 @@ void FCoconutPalmModelSpec::Define()
 			TestTrue(TEXT("generación que no cabe en el Id"), Broken([](FCoconutPalmState& S) { S.Slots[0].Generation = 0x1000000; }));
 			TestTrue(TEXT("racha posterior al reloj"), Broken([](FCoconutPalmState& S) { S.LastGustHour = S.LastUpdateMinute / 60 + 1; }));
 			TestTrue(TEXT("tronco NaN"), Broken([](FCoconutPalmState& S) { S.TrunkPosition.X = std::numeric_limits<double>::quiet_NaN(); }));
+			TestTrue(TEXT("coco del suelo en NaN"), Broken([](FCoconutPalmState& S) { S.Ground[0].Position.Y = std::numeric_limits<double>::quiet_NaN(); }));
+			TestTrue(TEXT("coco del suelo en el infinito"), Broken([](FCoconutPalmState& S) { S.Ground[0].Position.X = std::numeric_limits<double>::infinity(); }));
 			TestTrue(TEXT("coco de un hueco que no existe"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = FCoconutPalmModel::MakeId(40, 0); }));
 			TestTrue(TEXT("coco de una generación que aún no ha salido"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = FCoconutPalmModel::MakeId(0, S.Slots[0].Generation); }));
 			TestTrue(TEXT("Id 0"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = 0; }));
