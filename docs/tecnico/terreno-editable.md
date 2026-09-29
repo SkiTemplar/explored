@@ -16,7 +16,12 @@ sesión con el editor. Diseño de juego: GDD v2 §3.4 y biblia 02 §2; pipeline:
 - Cada edición devuelve `FTerrainEditResult`: `DirtyChunks` (coordenadas de chunk de
   edición, ordenadas y sin repetir), `VolumeRemoved` y `VolumeAdded` en m³ para el
   inventario de tierra y roca, y `bRejected` cuando la herramienta no llega al material
-  o la petición no es válida.
+  o la petición no es válida. Los volúmenes son los realizados tras redondear cada
+  muestra al milímetro hacia su densidad de partida: se pueden restar y sumar al
+  inventario tal cual, sin que el jugador acabe con tierra negativa. El test de host
+  `Tools/HostTests/tests/TerrainEditPropertyTest.cpp` lo comprueba con ediciones
+  aleatorias junto con el alcance del pincel, los chunks sucios, el guardado y la
+  repetición.
 - **Entradas validadas.** Cada herramienta rechaza entera (`bRejected`, sin chunks
   sucios) una petición con valores no finitos, con coordenadas fuera de
   ±`MaxWorldCoordinate` (100 km) o con un pincel de pala o de tierra de más de
