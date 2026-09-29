@@ -1,13 +1,14 @@
 # Tala universal: integración en el motor
 
 Nota para la sesión local con Unreal. Los modelos puros ya están hechos y probados en
-`Tools/HostTests` (`Explored.Felling`, `Explored.GroundBranch`); falta conectarlos a la capa
+`Tools/HostTests` (`Explored.Felling`, `Explored.GroundBranch`, `Explored.FelledDrift`); falta conectarlos a la capa
 de Unreal. Reglas y números: GDD v2 §3.12.
 
 | Modelo | Fichero | Qué decide |
 |---|---|---|
 | `FFellingModel` | `WorldGen/FellingModel.h` | Golpes por herramienta, dirección de caída, dónde cae cada unidad, etapas del tocón, arrancar con pala |
 | `FGroundBranchModel` | `WorldGen/GroundBranchModel.h` | Ramas sueltas por celda: capacidad, reaparición, posición, recogida |
+| `FFelledDriftModel` | `WorldGen/FelledDriftModel.h` | Lo que cae al agua: flota o se hunde, deriva, vara, se refloata con la marea y se entrega como madera flotante |
 | `FHarvestModel` | `WorldGen/HarvestModel.h` | Sigue igual para hierba y roca, y para `PerHitDrops` (lo que suelta cada golpe) |
 
 ## Dónde se engancha
@@ -117,3 +118,59 @@ que rebrota eso ya no basta:
     `MarkRenderStateDirty` por componente y barrido.
   - Nunca `RemoveInstance`, porque desplaza índices y rompería los deltas. Se usa escala
     0, como ya hace `HideVegetationInstance`.
+
+## Caída al agua (`FFelledDriftModel`)
+
+Biblia 02 §1.5: lo que suelta un árbol que cae al agua flota y, si nadie lo recoge, pasa
+a ser madera flotante normal. Modelo puro `WorldGen/FelledDriftModel.h`, spec
+`Explored.FelledDrift`. Reglas y números en el GDD v2 §3.12 («Caída al agua»).
+
+### Dónde se engancha
+
+- **Al caer.** En el paso 3, después de `ComputeFellDrops`, el servidor mira cada unidad:
+  - `FindFloatSpec(Specs, ItemId)` y `NeedsTracking(Spec, ProfundidadConPleamar)`.
+  - La profundidad con la pleamar sale de `FOceanTide` (pleamar del día) menos la Z del
+    suelo, que da la misma traza hacia abajo que ya coloca el `AExploredItemActor`.
+  - Lo que no hace falta seguir se genera como siempre, un `AExploredItemActor` en el
+    suelo. Lo que sí, entra en el `FFelledDriftModel` de un `UFelledDriftSubsystem`
+    (`UWorldSubsystem`, solo en el servidor) con `AddPiece`, y su actor lleva el índice.
+- **Consultas.** `WaterDepth(P)` = `AExploredOcean::GetWaterHeightAt` (sin olas; basta
+  con la marea) menos la altura del suelo. La altura del suelo se toma de la arena viva
+  si el chunk tiene capa `sand` y, si no, de `FTerrainDensity`, con caché por celda de
+  0,25 m. `Current(P)` = `FOceanCurrents::CurrentAt(Straits, P, Flow, Spring, Wind)`, la
+  misma que ya recibe `FBoatModel`.
+- **Tick.** `Advance(DeltaSeconds, ...)` en el tick del subsistema. Después se mueve cada
+  actor que flota a `Drop.Position` (Z = superficie del agua más el balanceo de
+  `FOceanWaves::HeightAt`, que es solo visual). Los que varan se quedan con Z del suelo.
+- **Recoger.** La interacción normal del `AExploredItemActor`. Antes de dar el objeto se
+  llama a `Collect(Índice)`. Lo hundido (`madera_dura`, `resina`) se recoge buceando,
+  sin cambios en la interacción.
+- **Entregar.**
+  - `Report.HandedOver`: se destruye el actor y se pasa `HandoverItemId` a la madera
+    flotante de las playas (`FBeachDebrisModel`, categoría `debris`). El coco pasa como
+    coco.
+  - `Report.Decayed`: se destruye el actor sin más.
+  - Si ningún jugador está a menos de 80 m, el mismo radio activo de la arena viva, se
+    llama a `HandOver` en lugar de congelar la pieza.
+- **Red.** Solo simula el servidor. El actor replica su posición con el movimiento
+  replicado normal, sin nada propio, porque las piezas son pocas y lentas.
+
+### Persistencia en WorldDeltas
+
+- Las piezas que flotan no se guardan. Al guardar, cada pieza `Floating` se entrega
+  (`HandOver`), porque un tronco a la deriva no tiene un sitio estable.
+- Las piezas `Resting` son objetos sueltos normales y se guardan como cualquier
+  `AExploredItemActor`. Al cargar, las que cumplan `NeedsTracking` vuelven a entrar con
+  `AddPiece`. `FloatingSteps` vuelve a 0: lo peor que pasa es que un tronco tarde un poco
+  más en convertirse en madera flotante.
+
+### Coste por frame
+
+- A 2 Hz. Por paso y pieza que flota: una consulta de corriente y de 2 a 11 de
+  profundidad (la del sitio y una por tramo de 25 cm; a 1 m/s son 3), más 8 al varar.
+- Por paso y pieza varada que flota: una consulta de profundidad para ver si sube el
+  agua. Lo hundido, lo recogido y lo entregado no cuesta nada (lo prueba el spec).
+- Un gigante talado al agua son unas 10 piezas: menos de 0,01 ms por paso. El tope de
+  `MaxPieces` (1024) solo protege de un guardado manipulado.
+- Si el subsistema se queda atrás, `MaxStepsPerAdvance` (2 min) descarta el resto de
+  pasos, como la arena viva al acercarse.
