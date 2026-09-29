@@ -326,8 +326,15 @@ void FRainCatchModelSpec::Define()
 			FRainCatchState Future;
 			FRainCatchModel::Pour(Future, Spec, 1234, ERainCatchLiquid::None);
 			TestEqual(TEXT("reloj absurdo no simula"), FRainCatchModel::Advance(Future, Spec, Weather, TNumericLimits<int64>::Max() / 4), (int64)0);
-			TestEqual(TEXT("pero adopta la hora"), Future.LastUpdateMinute, TNumericLimits<int64>::Max() / 4);
+			TestEqual(TEXT("ni adopta la hora"), Future.LastUpdateMinute, (int64)0);
 			TestEqual(TEXT("y no toca el agua"), Future.TotalMicroL(), (int64)1234);
+			// Antes adoptaba la hora absurda y el reloj real quedaba siempre atrás: el recipiente se congelaba.
+			TestTrue(TEXT("el reloj real sigue llenándolo"), FRainCatchModel::Advance(Future, Spec, Weather, MonsoonStart + Day) > 0);
+			FRainCatchState Frozen;
+			Frozen.LastUpdateMinute = TNumericLimits<int64>::Max();
+			TestEqual(TEXT("reloj guardado corrupto no simula"), FRainCatchModel::Advance(Frozen, Spec, Weather, MonsoonStart), (int64)0);
+			TestEqual(TEXT("pero se corrige a la hora actual"), Frozen.LastUpdateMinute, MonsoonStart);
+			TestTrue(TEXT("y vuelve a llenarse"), FRainCatchModel::Advance(Frozen, Spec, Weather, MonsoonStart + Day) > 0);
 			FRainCatchState Edge;
 			Edge.LastUpdateMinute = FRainCatchModel::MaxSupportedMinute - Day;
 			FRainCatchModel::Advance(Edge, Spec, Weather, FRainCatchModel::MaxSupportedMinute);
