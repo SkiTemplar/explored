@@ -86,7 +86,7 @@
       "id": "lote13-construccion",
       "date": "2026-09-29",
       "sheet": "docs/art/packs/lote13-construccion.png",
-      "scope": "Kit de construcción libre (prioridad 2): suelo y puerta de madera, y mesa de cartografía. Descartados en la misma revisión: techo, muro y cimiento de piedra y estantería."
+      "scope": "Kit de construcción libre (prioridad 2): mesa de cartografía. Descartados en la misma revisión: techo, muro y cimiento de piedra y estantería; en la integración, suelo y puerta de madera (no cuadran con las cotas de docs/art/kit-construccion.md)."
     }
   ],
   "entries": [
@@ -1835,46 +1835,6 @@
         "default": "madera.miel"
       },
       "note": "Mesa de 1,7 x 1,7 m y 0,85 m de alto (KayKit table_medium) teñida a madera.miel; base = centro de la huella, z = 0 en el suelo."
-    },
-    {
-      "gameId": "suelo_madera",
-      "kind": "pieza",
-      "lote": "lote13-construccion",
-      "pack": "kenney_survival_kit",
-      "file": "Models/GLB format/floor.glb",
-      "mesh": "SM_Pack_SueloMadera",
-      "size": {
-        "axis": "max",
-        "m": 2.0
-      },
-      "pivot": {
-        "kind": "base"
-      },
-      "recolor": {
-        "rules": [],
-        "default": "madera.miel"
-      },
-      "note": "Cubierta de tablones de 2 x 2 m y 20 cm de canto (Kenney Survival floor) a la rejilla de 2 m del kit; base = centro de la huella."
-    },
-    {
-      "gameId": "puerta_madera",
-      "kind": "pieza",
-      "lote": "lote13-construccion",
-      "pack": "kenney_fantasy_town_kit",
-      "file": "Models/GLB format/wall-wood-door.glb",
-      "mesh": "SM_Pack_PuertaMadera",
-      "size": {
-        "axis": "max",
-        "m": 2.0
-      },
-      "pivot": {
-        "kind": "base"
-      },
-      "recolor": {
-        "rules": [],
-        "default": "madera.miel"
-      },
-      "note": "Panel de pared con vano de puerta y hoja de 2 x 2 m y 20 cm de grosor (Kenney Fantasy Town wall-wood-door), madera.miel; base = centro del borde inferior."
     }
   ],
   "discarded": [
@@ -2081,6 +2041,18 @@
       "pack": "kenney_fantasy_town_kit",
       "file": "Models/GLB format/pillar-stone.glb",
       "reason": "Kenney Fantasy Town pillar-stone es un poste de 19 cm de sección a 1,2 m: demasiado fino para un cimiento. Sigue con el kit propio."
+    },
+    {
+      "gameId": "suelo_madera",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/floor.glb",
+      "reason": "Kenney Survival floor es un palé de tablones con huecos entre ellos y durmientes debajo, de 20 cm de canto: el kit pide FLOOR_T = 0,15 m con la cara inferior en z = 0 (docs/art/kit-construccion.md), así que las paredes se hundirían 5 cm y el suelo no casaría con los de bambú y piedra. La escala es uniforme y no se puede corregir desde el catálogo. Sigue con el kit propio."
+    },
+    {
+      "gameId": "puerta_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-wood-door.glb",
+      "reason": "Kenney wall-wood-door es un panel de pared entero de 2 x 2 m con arco y la hoja fija dentro. El socket puerta del kit es solo la hoja (0,96 x 2,02 m, bisagra en x = 0) que gira dentro del hueco de SM_Kit_*_WallDoor, y la pared mide 2,50 m: la del pack no abre y queda 0,50 m más baja. Sigue con SM_Kit_Wood_Door."
     }
   ],
   "pending": [
