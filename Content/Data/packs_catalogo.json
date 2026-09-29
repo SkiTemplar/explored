@@ -87,6 +87,12 @@
       "date": "2026-09-29",
       "sheet": "docs/art/packs/lote13-construccion.png",
       "scope": "Kit de construcción libre (prioridad 2): mesa de cartografía. Descartados en la misma revisión: techo, muro y cimiento de piedra y estantería; en la integración, suelo y puerta de madera (no cuadran con las cotas de docs/art/kit-construccion.md)."
+    },
+    {
+      "id": "lote14-iconos-logros",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote14-iconos-logros.png",
+      "scope": "Iconos de los logros nuevos (PR #80) de Early Access buscados en Board Game Icons y Game Icons de Kenney: 8 cubiertos. Corral, empalizada y vagón son de fase 2/3 (fases_futuras.json) y no se catalogan todavía."
     }
   ],
   "entries": [
@@ -2257,6 +2263,134 @@
         "guardando": "ColorInkDim"
       },
       "note": "Reloj de arena junto al texto «Guardando…». Se prefiere al disquete de Game Icons (save.png), que no pega en una isla."
+    },
+    {
+      "texture": "T_Pack_Icon_Arco",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/bow.png",
+      "slots": [
+        {
+          "achievementIcon": "arco"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Arco con flecha: el logro de no disparar ninguna se lee bien con el arco solo."
+    },
+    {
+      "texture": "T_Pack_Icon_Bandera",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/flag_square.png",
+      "slots": [
+        {
+          "achievementIcon": "bandera"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Bandera de asta y tela cuadrada ondeando; flag_triangle, más picuda, se lee como pendón de regata."
+    },
+    {
+      "texture": "T_Pack_Icon_Escudo",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/shield.png",
+      "slots": [
+        {
+          "achievementIcon": "escudo"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Escudo heráldico liso; se lee como defensa."
+    },
+    {
+      "texture": "T_Pack_Icon_Muralla",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_wall.png",
+      "slots": [
+        {
+          "achievementIcon": "muralla"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Lienzo almenado."
+    },
+    {
+      "texture": "T_Pack_Icon_Herramienta",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_game_icons",
+      "file": "PNG/White/2x/wrench.png",
+      "slots": [
+        {
+          "achievementIcon": "herramienta"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Llave inglesa de Game Icons (mismo trazo redondeado que la estrella del lote 9)."
+    },
+    {
+      "texture": "T_Pack_Icon_Viga",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_lumber.png",
+      "slots": [
+        {
+          "achievementIcon": "viga"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Tronco cortado: la madera estructural; resource_planks se descartó por leerse como ladrillos."
+    },
+    {
+      "texture": "T_Pack_Icon_Trueque",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/token_give.png",
+      "slots": [
+        {
+          "achievementIcon": "trueque"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Mano que entrega una pieza: dar y recibir."
+    },
+    {
+      "texture": "T_Pack_Icon_Pueblo",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_church.png",
+      "slots": [
+        {
+          "achievementIcon": "pueblo"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Casas agrupadas con una más alta; se usa por la silueta de conjunto, no por el uso religioso."
     }
   ],
   "iconsDiscarded": [
@@ -2307,6 +2441,24 @@
       "pack": "kenney_board_game_icons",
       "file": "PNG/Double (128px)/hourglass.png",
       "reason": "Se lee como espera, no como año o estaciones; se reserva para el indicador de guardado."
+    },
+    {
+      "achievementIcon": "viga",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_planks.png",
+      "reason": "Se lee como pila de ladrillos, no como viga."
+    },
+    {
+      "achievementIcon": "bandera",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/flag_triangle.png",
+      "reason": "Pendón picudo: se lee como regata o marca de ruta, no como campamento tomado."
+    },
+    {
+      "achievementIcon": "templo",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_church.png",
+      "reason": "Es una iglesia europea; el templo del juego es el marae. Queda para silueta propia."
     }
   ],
   "iconsPending": [
@@ -2411,80 +2563,48 @@
       "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
     },
     {
-      "achievementIcon": "arco",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "bandera",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
       "achievementIcon": "cangrejo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "canoa",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "corral",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "empalizada",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "escudo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "herramienta",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "huevo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "mina",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "muralla",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "obsidiana",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "pala",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "pico",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "pueblo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "templo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "trueque",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "vagon",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
-      "achievementIcon": "viga",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "achievementIcon": "corral",
+      "reason": "Logro de fase 2/3 (fases_futuras.json), fuera del acceso anticipado. Candidato ya revisado el 2026-09-29: structure_farm.png (establo, Board Game Icons); se cataloga cuando el logro entre en achievements.json."
+    },
+    {
+      "achievementIcon": "empalizada",
+      "reason": "Logro de fase 2/3 (fases_futuras.json), fuera del acceso anticipado. Candidato ya revisado el 2026-09-29: structure_gate.png (lienzo con puerta, Board Game Icons); se cataloga cuando el logro entre en achievements.json."
     }
   ]
 }
