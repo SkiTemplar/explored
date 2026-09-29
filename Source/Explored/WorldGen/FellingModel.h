@@ -59,6 +59,8 @@ struct EXPLORED_API FFellingProfile
 	float HeightMeters = 0.0f;
 	/** Radio de la copa, en metros: frutos al caer y ramas del suelo bajo el árbol en pie. */
 	float CrownRadiusMeters = 1.0f;
+	/** Desviación máxima de la caída por el viento, en grados (biblia 02 §1.2: ±20°, ±15° la palmera). */
+	float WindDeviationMaxDeg = 20.0f;
 
 	/** Días de juego desde la tala hasta que el tocón echa un brote. 0 = no rebrota. */
 	int32 StumpRegrowDays = 0;
@@ -84,6 +86,29 @@ struct EXPLORED_API FFellingProgress
 	int32 Work = 0;
 	/** Suma de las direcciones de los golpes (hacia dónde empuja cada golpe), ponderada por el trabajo de cada uno. */
 	FVector2D Push = FVector2D::ZeroVector;
+};
+
+/** Pieza de construcción que el tronco puede encontrarse al caer (la capa de UE la saca de UBuildingSubsystem). */
+struct EXPLORED_API FFellingObstacle
+{
+	/** FBuildingPieceState::Id. */
+	int32 PieceId = 0;
+	/** Centro de la huella en el plano, en centímetros. */
+	FVector2D Position = FVector2D::ZeroVector;
+	/** Radio de la huella, en centímetros (media diagonal de la pieza). */
+	float RadiusCm = 100.0f;
+	/** Orden del nivel (FBuildingCatalog::TierOrderOf): 0 palma, 1 bambú, 2 madera, 3 piedra. */
+	int32 TierOrder = 0;
+	/** Integridad máxima de la pieza (FBuildingPieceDef::Integrity, 1–100). */
+	float MaxIntegrity = 50.0f;
+};
+
+/** Daño de aplastamiento a una pieza. */
+struct EXPLORED_API FFellingCrush
+{
+	int32 PieceId = 0;
+	/** Puntos de integridad que pierde (se restan de FBuildingPieceState::Integrity). */
+	float Damage = 0.0f;
 };
 
 /** Una unidad suelta en el suelo al caer el árbol. */
@@ -124,6 +149,14 @@ struct EXPLORED_API FFellingModel
 	static constexpr double SlopeWeight = 2.0;
 	/** Escala del brote recién salido respecto al adulto. */
 	static constexpr float SaplingStartScale = 0.15f;
+	/** Tope de la desviación por viento que admite un perfil, en grados. */
+	static constexpr float MaxWindDeviationDeg = 45.0f;
+	/** Radio del tronco que cae a efectos de aplastar, en centímetros. */
+	static constexpr double TrunkRadiusCm = 25.0;
+	/** Nivel más alto que aplasta un árbol: palma (0) y bambú (1). */
+	static constexpr int32 MaxCrushTierOrder = 1;
+	/** Fracción de la integridad máxima que pierde una pieza ligera aplastada (biblia 02 §1.2: 40 %). */
+	static constexpr float CrushIntegrityFraction = 0.4f;
 
 	/** Perfiles por defecto de las especies leñosas de FVegetationScatter (Palm, JungleGiant, JungleWide, Mangrove, Understory, Shrub). */
 	static TArray<FFellingProfile> DefaultProfiles();
@@ -147,6 +180,31 @@ struct EXPLORED_API FFellingModel
 	 * en llano), cae hacia una dirección fija derivada de InstanceSeed.
 	 */
 	static FVector2D ResolveFallDirection(const FFellingProgress& Progress, const FVector2D& Downhill, uint32 InstanceSeed);
+
+	/**
+	 * Desvía la caída con el viento del momento (biblia 02 §1.2). El viento solo
+	 * tuerce la parte lateral: el giro es MaxDeviationDeg · Wind01 · sen θ, con θ
+	 * el ángulo de la caída al viento, hacia el lado al que sopla. Así el viento
+	 * de cara o de espaldas no desvía, el de costado desvía el máximo y el giro
+	 * nunca rebasa la dirección del viento (sen θ · 0,35 rad < θ). Entradas no
+	 * finitas o viento nulo devuelven la caída sin tocar; Wind01 se acota a 0–1 y
+	 * MaxDeviationDeg a 0–MaxWindDeviationDeg.
+	 */
+	static FVector2D ApplyWindToFall(const FVector2D& FallDirection, const FVector2D& WindDirection, float Wind01, float MaxDeviationDeg);
+
+	/** ResolveFallDirection seguida de ApplyWindToFall con la desviación máxima del perfil. */
+	static FVector2D ResolveFallDirectionWithWind(const FFellingProfile& Profile, const FFellingProgress& Progress, const FVector2D& Downhill, uint32 InstanceSeed, const FVector2D& WindDirection, float Wind01);
+
+	/**
+	 * Piezas que aplasta el tronco al caer (biblia 02 §1.2). El tronco es un
+	 * segmento de HeightMeters desde Base en FallDirection con TrunkRadiusCm de
+	 * grosor; toca una pieza si la distancia de su centro al segmento es menor
+	 * que la suma de radios. Solo daña construcción ligera (TierOrder ≤
+	 * MaxCrushTierOrder): pierde CrushIntegrityFraction de su integridad máxima.
+	 * Las piezas de madera o piedra aguantan y no aparecen. Un arbusto (altura 0)
+	 * no aplasta nada. Salida ordenada por PieceId; un id repetido cuenta una vez.
+	 */
+	static TArray<FFellingCrush> ComputeCrush(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, const TArray<FFellingObstacle>& Obstacles);
 
 	/**
 	 * Tira el rendimiento y coloca cada unidad: troncos repartidos a lo largo

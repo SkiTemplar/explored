@@ -1,8 +1,9 @@
 """Comprobaciones de Content/Data/achievements.json (GDD §16) y de su catálogo de estadísticas.
 
 Replica las reglas de validación de FAchievementsModel::Configure (estadística conocida y de
-tipo compatible) y añade las de diseño: entre 40 y 60 logros (biblia 07 §2 fija 54), ids ASCII,
-textos en ES y EN, fase, rareza y alcance cooperativo (biblia 07 §2, biblia 08 §5.7), los
+tipo compatible) y añade las de diseño: entre 40 y 60 logros (biblia 07 §2 fija 54) con los
+30 del GDD §16 intactos, ids ASCII, textos en ES y EN que cumplen la guía anti-IA (biblia 07
+§1), fase, rareza y alcance cooperativo (biblia 07 §2, biblia 08 §5.7), los
 ejemplos del GDD y el catálogo sincronizado con docs/tecnico/estadisticas.md.
 """
 
@@ -12,10 +13,20 @@ import math
 import re
 from pathlib import Path
 
-from . import estilo
+from . import estilo, textos
 
 # Biblia 07 §2: 54 logros, dentro del rango de 40 a 60 que pidió el director.
 ACHIEVEMENT_RANGE = (40, 60)
+# Los 30 del GDD §16 (biblia 07 §2.2) no cambian de id.
+LEGACY_IDS = frozenset({
+    "primer_fuego", "diez_amaneceres", "un_ano_de_islas", "rey_del_cocotero", "tierra_firme",
+    "las_siete_islas", "cartografo", "el_mapa_entero", "bajo_el_volcan", "restos_del_albatros",
+    "primer_techo", "cimientos_de_piedra", "ojo_de_ciclon", "el_limonero", "huerto_en_flor",
+    "cocina_de_isla", "primera_captura", "una_historia_que_contar", "pulmones_de_perla",
+    "mar_abierto", "luz_en_el_agua", "madrugada_de_tortugas", "canto_de_ballenas",
+    "deseos_a_punados", "melodia_junto_al_fuego", "coleccionista", "wayfinder", "limon_zarpa",
+    "naufrago_de_verdad", "sin_mapa",
+})
 PHASES = ("AA", "F2", "F3")
 RARITIES = ("comun", "infrecuente", "raro", "muy_raro")
 COOP_SCOPES = {"actor", "world", "witness"}
@@ -144,6 +155,11 @@ def check_condition(ds, cond, stats: dict[str, dict], where: str, r) -> None:
         r.error(f"{where}: la condición debe ser un objeto")
         return
     keys = set(cond)
+    # Ids y operador son cadenas: una lista o un número aquí es JSON corrupto, no una condición.
+    for key in ("stat", "flag", "op", "contains"):
+        if key in cond and not isinstance(cond[key], str):
+            r.error(f"{where}: «{key}» debe ser una cadena, no {type(cond[key]).__name__}")
+            return
     if keys == {"stat", "op", "value"}:
         stat = stats.get(cond["stat"])
         if stat is None:
@@ -275,16 +291,24 @@ def check_achievements(ds, r) -> None:
             r.error(f"{where}: phase «{phase}» (admite {', '.join(PHASES)}, biblia 07 §2)")
         if ach.get("rarity") not in RARITIES:
             r.error(f"{where}: rarity «{ach.get('rarity')}» (admite {', '.join(RARITIES)}, biblia 07 §2)")
-        if ach.get("coopScope") not in COOP_SCOPES:
+        scope = ach.get("coopScope")
+        if not isinstance(scope, str) or scope not in COOP_SCOPES:
             r.error(f"{where}: coopScope «{ach.get('coopScope')}» (admite {sorted(COOP_SCOPES)}, biblia 08 §5.7)")
         check_condition(ds, ach.get("condition"), stats, where, r)
         _stats_used(ach.get("condition"), used)
+        # Los 30 del GDD conservan su texto (biblia 07 §2.2); los nuevos cumplen los límites de §1.3.
+        if aid not in LEGACY_IDS:
+            for problem in textos.achievement_length_problems(ach):
+                r.error(f"{where}: {problem} (biblia 07 §1.3)")
         if phase in PHASES:
             needed = required_phase(ds, ach.get("condition"), stats)
             if _phase_index(needed) > _phase_index(phase):
                 r.error(f"{where}: es de {phase} pero su condición depende de algo de {needed}; "
                         f"no se podría conseguir en {phase}")
 
+    lost = LEGACY_IDS - seen
+    if lost:
+        r.error(f"achievements.json: faltan logros del GDD §16 que biblia 07 §2.2 conserva: {sorted(lost)}")
     missing = REQUIRED - seen
     if missing:
         r.error(f"achievements.json: faltan los logros del GDD §16 {sorted(missing)}")

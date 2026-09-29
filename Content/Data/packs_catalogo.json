@@ -63,6 +63,36 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote9-iconos.png",
       "scope": "Iconos de UI de Kenney (prioridad 5): logros y estados de la pantalla de logros y del indicador de guardado. Familia única de siluetas blancas redondeadas (Board Game Icons, y Game Icons solo para la estrella)."
+    },
+    {
+      "id": "lote10-mar-y-coco",
+      "date": "2026-09-28",
+      "sheet": "docs/art/packs/lote10-mar-y-coco.png",
+      "scope": "Mitad de coco, pescado de arrecife y espina de pescado de las primeras horas en Landing con Kenney Food Kit."
+    },
+    {
+      "id": "lote11-herreria",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote11-herreria.png",
+      "scope": "Herrería de la fase de metal (prioridad 2, banco de producción): clavos y yunque con KayKit RPG Tools Bits."
+    },
+    {
+      "id": "lote12-lingotes",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote12-lingotes.png",
+      "scope": "Lingotes de cobre, hierro y aluminio de la fase de metal con KayKit Resource Bits."
+    },
+    {
+      "id": "lote13-construccion",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote13-construccion.png",
+      "scope": "Kit de construcción libre (prioridad 2): mesa de cartografía. Descartados en la misma revisión: techo, muro y cimiento de piedra y estantería; en la integración, suelo y puerta de madera (no cuadran con las cotas de docs/art/kit-construccion.md)."
+    },
+    {
+      "id": "lote14-iconos-logros",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote14-iconos-logros.png",
+      "scope": "Iconos de los logros nuevos (PR #80) de Early Access buscados en Board Game Icons y Game Icons de Kenney: 8 cubiertos. Corral y empalizada tienen candidato, pero sus piezas siguen como propuesta en fases_futuras.json y se catalogan cuando tengan cotas; vagón no tiene silueta que encaje."
     }
   ],
   "entries": [
@@ -1486,6 +1516,331 @@
         "default": "madera.deriva"
       },
       "note": "Tronco con muñón de rama; en gris plata de deriva. Una sola muestra."
+    },
+    {
+      "gameId": "cascara_coco",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/coconut-half.glb",
+      "mesh": "SM_Pack_CascaraCoco",
+      "replaces": "SM_Item_CascaraCoco",
+      "size": {
+        "axis": "max",
+        "m": 0.14
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#8e5641",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#ab5e41",
+            "to": "palma.coco"
+          },
+          {
+            "from": "#fafafc",
+            "to": "palma.pulpa"
+          },
+          {
+            "from": "#c1c1d8",
+            "to": "palma.pulpa"
+          }
+        ],
+        "default": "palma.coco"
+      },
+      "note": "Mitad de coco hueca con pulpa clara; sirve también de recipiente_coco (mismo fichero, otra entrada si el diseño lo pide)."
+    },
+    {
+      "gameId": "pescado_arrecife",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/fish.glb",
+      "mesh": "SM_Pack_PescadoArrecife",
+      "replaces": "SM_Item_PescadoArrecife",
+      "size": {
+        "axis": "x",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#626880",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#737990",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#848aa6",
+            "to": "comida.pescado"
+          },
+          {
+            "from": "#9ca3c4",
+            "to": "recurso.nacar"
+          },
+          {
+            "from": "#acb4d7",
+            "to": "recurso.nacar"
+          },
+          {
+            "from": "#dfdfeb",
+            "to": "recurso.nacar"
+          }
+        ],
+        "default": "comida.pescado"
+      },
+      "rotateDeg": [
+        0,
+        0,
+        -90
+      ],
+      "note": "Pez genérico de arrecife, largo en +X con la cabeza hacia +X; los peces con nombre (pargo, mero...) siguen en Tools/Blender."
+    },
+    {
+      "gameId": "espina_pescado",
+      "kind": "item",
+      "lote": "lote10-mar-y-coco",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/fish-bones.glb",
+      "mesh": "SM_Pack_EspinaPescado",
+      "replaces": "SM_Item_EspinaPescado",
+      "size": {
+        "axis": "x",
+        "m": 0.3
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#979ebe",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#a7afd2",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#848aa6",
+            "to": "recurso.hueso"
+          },
+          {
+            "from": "#bbc3ea",
+            "to": "recurso.hueso"
+          }
+        ],
+        "default": "recurso.hueso"
+      },
+      "rotateDeg": [
+        0,
+        0,
+        -90
+      ],
+      "note": "Espina de pez de Kenney; larga en +X."
+    },
+    {
+      "gameId": "clavos",
+      "kind": "item",
+      "lote": "lote11-herreria",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/nail.gltf",
+      "mesh": "SM_Pack_Clavos",
+      "size": {
+        "axis": "max",
+        "m": 0.05
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#738692",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#8a9ba5",
+            "to": "metal.acero"
+          }
+        ],
+        "default": "metal.hierro"
+      },
+      "note": "Clavo forjado de 5 cm: el yunque los estira (recipes_smithing.json). Un solo clavo de malla; la pila de N la pone el icono del inventario. Cabeza más clara (metal.acero) para leerse a distancia de mano."
+    },
+    {
+      "gameId": "yunque",
+      "kind": "pieza",
+      "lote": "lote11-herreria",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/anvil.gltf",
+      "mesh": "SM_Pack_Yunque",
+      "size": {
+        "axis": "max",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#3b5161",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#506775",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#6e818e",
+            "to": "metal.hierro"
+          }
+        ],
+        "default": "piedra.basalto"
+      },
+      "note": "Yunque de bloque de basalto con cara de trabajo de hierro (coste: 4 basalto + 1 lingote de hierro). 80 cm de largo con la punta; base = centro de la huella, z = 0 en el suelo."
+    },
+    {
+      "gameId": "lingote_cobre",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Copper_Bar.gltf",
+      "mesh": "SM_Pack_LingoteCobre",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#8f3d26",
+            "to": "metal.oxido"
+          },
+          {
+            "from": "#ab522d",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#bf6231",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#dd7234",
+            "to": "metal.cobre"
+          }
+        ],
+        "default": "metal.cobre"
+      },
+      "note": "Lingote de cobre fundido (fase de metal, GDD v2 §3.4): 16 cm de largo, ~0,08 m de ancho."
+    },
+    {
+      "gameId": "lingote_hierro",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Iron_Bar.gltf",
+      "mesh": "SM_Pack_LingoteHierro",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#586d7b",
+            "to": "metal.plomo"
+          },
+          {
+            "from": "#6b7e8b",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#7c8e99",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#98a8b1",
+            "to": "metal.acero"
+          }
+        ],
+        "default": "metal.hierro"
+      },
+      "note": "Lingote de hierro."
+    },
+    {
+      "gameId": "lingote_aluminio",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Silver_Bar.gltf",
+      "mesh": "SM_Pack_LingoteAluminio",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#7598a8",
+            "to": "metal.acero"
+          },
+          {
+            "from": "#91b0be",
+            "to": "mineral.aluminio"
+          },
+          {
+            "from": "#a5bfcb",
+            "to": "mineral.aluminio"
+          },
+          {
+            "from": "#baced6",
+            "to": "mineral.aluminio"
+          }
+        ],
+        "default": "mineral.aluminio"
+      },
+      "note": "Lingote de aluminio de la chatarra del Albatros: KayKit no trae aluminio, la barra de plata da la misma silueta y se tiñe de mineral.aluminio."
+    },
+    {
+      "gameId": "mesa_cartografia",
+      "kind": "pieza",
+      "lote": "lote13-construccion",
+      "pack": "kaykit_furniture_bits",
+      "file": "KayKit_Furniture_Bits_1.0_FREE/Assets/gltf/table_medium.gltf",
+      "mesh": "SM_Pack_MesaCartografia",
+      "size": {
+        "axis": "z",
+        "m": 0.85
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.miel"
+      },
+      "note": "Mesa de 1,7 x 1,7 m y 0,85 m de alto (KayKit table_medium) teñida a madera.miel; base = centro de la huella, z = 0 en el suelo."
     }
   ],
   "discarded": [
@@ -1662,6 +2017,48 @@
       "pack": "quaternius_stylized_nature_megakit",
       "file": "glTF/Rock_Medium_2.gltf",
       "reason": "En la hoja de contacto del lote 8 una cara grande queda como mancha clara plana (ya está en el original) que al recolorear a obsidiana rompe la pieza. Se usa Pebble_Square_3."
+    },
+    {
+      "gameId": "concha_pequena",
+      "pack": "kenney_food_kit",
+      "file": "Models/GLB format/mussel.glb",
+      "reason": "Bloque hexagonal de 38 triángulos que, recoloreado, se lee como piedra rosada y no como concha (hoja del lote 10). Se queda la malla propia SM_Item_ConchaPequena."
+    },
+    {
+      "gameId": "estanteria_museo",
+      "pack": "kaykit_furniture_bits",
+      "file": "KayKit_Furniture_Bits_1.0_FREE/Assets/gltf/shelf_B_large.gltf",
+      "reason": "KayKit shelf_B_large es una repisa baja con ménsulas (0,32 m de alto): no sirve de estantería de museo. Sigue con la malla propia."
+    },
+    {
+      "gameId": "techo_madera",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/structure-roof.glb",
+      "reason": "Kenney structure-roof es una pérgola de listones de 2,4 m de alto sin cubierta de palma: no encaja con el techo de madera y palma. Sigue con SM_Kit_Wood_Roof."
+    },
+    {
+      "gameId": "muro_piedra",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-block.glb",
+      "reason": "Kenney Fantasy Town wall-block es un cubo liso con postes de madera: no lee como piedra seca y queda casi negro con la paleta. Sigue con el kit propio."
+    },
+    {
+      "gameId": "cimiento_piedra",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/pillar-stone.glb",
+      "reason": "Kenney Fantasy Town pillar-stone es un poste de 19 cm de sección a 1,2 m: demasiado fino para un cimiento. Sigue con el kit propio."
+    },
+    {
+      "gameId": "suelo_madera",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/floor.glb",
+      "reason": "Kenney Survival floor es un palé de tablones con huecos entre ellos y durmientes debajo, de 20 cm de canto: el kit pide FLOOR_T = 0,15 m con la cara inferior en z = 0 (docs/art/kit-construccion.md), así que las paredes se hundirían 5 cm y el suelo no casaría con los de bambú y piedra. La escala es uniforme y no se puede corregir desde el catálogo. Sigue con el kit propio."
+    },
+    {
+      "gameId": "puerta_madera",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-wood-door.glb",
+      "reason": "Kenney wall-wood-door es un panel de pared entero de 2 x 2 m con arco y la hoja fija dentro. El socket puerta del kit es solo la hoja (0,96 x 2,02 m, bisagra en x = 0) que gira dentro del hueco de SM_Kit_*_WallDoor, y la pared mide 2,50 m: la del pack no abre y queda 0,50 m más baja. Sigue con SM_Kit_Wood_Door."
     }
   ],
   "pending": [
@@ -1866,6 +2263,134 @@
         "guardando": "ColorInkDim"
       },
       "note": "Reloj de arena junto al texto «Guardando…». Se prefiere al disquete de Game Icons (save.png), que no pega en una isla."
+    },
+    {
+      "texture": "T_Pack_Icon_Arco",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/bow.png",
+      "slots": [
+        {
+          "achievementIcon": "arco"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Arco con flecha: el logro de no disparar ninguna se lee bien con el arco solo."
+    },
+    {
+      "texture": "T_Pack_Icon_Bandera",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/flag_square.png",
+      "slots": [
+        {
+          "achievementIcon": "bandera"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Bandera de asta y tela cuadrada ondeando; flag_triangle, más picuda, se lee como pendón de regata."
+    },
+    {
+      "texture": "T_Pack_Icon_Escudo",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/shield.png",
+      "slots": [
+        {
+          "achievementIcon": "escudo"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Escudo heráldico liso; se lee como defensa."
+    },
+    {
+      "texture": "T_Pack_Icon_Muralla",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_wall.png",
+      "slots": [
+        {
+          "achievementIcon": "muralla"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Lienzo almenado."
+    },
+    {
+      "texture": "T_Pack_Icon_Herramienta",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_game_icons",
+      "file": "PNG/White/2x/wrench.png",
+      "slots": [
+        {
+          "achievementIcon": "herramienta"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Llave inglesa de Game Icons (mismo trazo redondeado que la estrella del lote 9)."
+    },
+    {
+      "texture": "T_Pack_Icon_Viga",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_lumber.png",
+      "slots": [
+        {
+          "achievementIcon": "viga"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Tronco cortado: la madera estructural; resource_planks se descartó por leerse como ladrillos."
+    },
+    {
+      "texture": "T_Pack_Icon_Trueque",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/token_give.png",
+      "slots": [
+        {
+          "achievementIcon": "trueque"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Mano que entrega una pieza: dar y recibir."
+    },
+    {
+      "texture": "T_Pack_Icon_Pueblo",
+      "lote": "lote14-iconos-logros",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_church.png",
+      "slots": [
+        {
+          "achievementIcon": "pueblo"
+        }
+      ],
+      "tint": {
+        "conseguido": "ColorAccent",
+        "pendiente": "ColorDisabled"
+      },
+      "note": "Casas agrupadas con una más alta; se usa por la silueta de conjunto, no por el uso religioso."
     }
   ],
   "iconsDiscarded": [
@@ -1916,6 +2441,24 @@
       "pack": "kenney_board_game_icons",
       "file": "PNG/Double (128px)/hourglass.png",
       "reason": "Se lee como espera, no como año o estaciones; se reserva para el indicador de guardado."
+    },
+    {
+      "achievementIcon": "viga",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/resource_planks.png",
+      "reason": "Se lee como pila de ladrillos, no como viga."
+    },
+    {
+      "achievementIcon": "bandera",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/flag_triangle.png",
+      "reason": "Pendón picudo: se lee como regata o marca de ruta, no como campamento tomado."
+    },
+    {
+      "achievementIcon": "templo",
+      "pack": "kenney_board_game_icons",
+      "file": "PNG/Double (128px)/structure_church.png",
+      "reason": "Es una iglesia europea; el templo del juego es el marae. Queda para silueta propia."
     }
   ],
   "iconsPending": [
@@ -2020,80 +2563,48 @@
       "reason": "Objetos narrativos (restos del Albatros y flauta de bambú): van a mano, como sus mallas (GDD v2 §7.1)."
     },
     {
-      "achievementIcon": "arco",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "bandera",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
       "achievementIcon": "cangrejo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "canoa",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "corral",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "empalizada",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "escudo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "herramienta",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "huevo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "mina",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "muralla",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "obsidiana",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "pala",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "pico",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "pueblo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "templo",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
-    },
-    {
-      "achievementIcon": "trueque",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
       "achievementIcon": "vagon",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "reason": "Revisados el 2026-09-29 Board Game Icons y Game Icons (lote 14): sin silueta que encaje. Candidato: silueta propia en SVG con el mismo grosor y esquinas redondeadas."
     },
     {
-      "achievementIcon": "viga",
-      "reason": "Pista de los 24 logros nuevos de la PR #80 (biblia 07 §2.3), posteriores a la revisión de packs del 2026-09-28: falta buscarla en los packs de Kenney o dibujar la silueta en SVG."
+      "achievementIcon": "corral",
+      "reason": "El logro ya está en achievements.json (F2), pero la pieza «corral» sigue con propuesta: true en fases_futuras.json. Candidato revisado el 2026-09-29: structure_farm.png (establo, Board Game Icons); se cataloga cuando la pieza deje de ser propuesta."
+    },
+    {
+      "achievementIcon": "empalizada",
+      "reason": "El logro ya está en achievements.json (F2), pero la pieza «empalizada» sigue con propuesta: true en fases_futuras.json. Candidato revisado el 2026-09-29: structure_gate.png (lienzo con puerta, Board Game Icons); se cataloga cuando la pieza deje de ser propuesta."
     }
   ]
 }

@@ -77,6 +77,10 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote7-cuarzo-taro` | Cristal de cuarzo (Quaternius Ultimate Platformer) y tres fases del taro (Quaternius Ultimate Nature) | `docs/art/packs/lote7-cuarzo-taro.png` |
 | `lote8-suelo` | Piedra plana, basalto, arenisca, obsidiana, pedernal (Quaternius Stylized Nature MegaKit) y madera flotante (Quaternius Ultimate Nature) | `docs/art/packs/lote8-suelo.png` |
 | `lote9-iconos` | Iconos de UI: fuego, refugio y estrella de los logros; laurel, candado y reloj de arena de las pantallas de logros y de guardado (Kenney Board Game Icons y Game Icons) | `docs/art/packs/lote9-iconos.png` |
+| `lote10-mar-y-coco` | Mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit) | `docs/art/packs/lote10-mar-y-coco.png` |
+| `lote11-herreria` | Clavos y yunque de la herrería de la fase de metal (KayKit RPG Tools Bits) | `docs/art/packs/lote11-herreria.png` |
+| `lote12-lingotes` | Lingotes de cobre, hierro y aluminio de la fase de metal (KayKit Resource Bits; el aluminio tiñe la barra de plata) | `docs/art/packs/lote12-lingotes.png` |
+| `lote13-construccion` | Mesa de cartografía (KayKit Furniture Bits); el suelo y la puerta de madera se descartaron por no cuadrar con las cotas del kit de construcción | `docs/art/packs/lote13-construccion.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
@@ -148,3 +152,8 @@ está en `iconsPending` (DataCheck lo exige). Kenney no tiene iconos de mar ni d
 tropical con esta silueta: 25 pistas siguen pendientes de siluetas propias. Revisados y
 descartados sin entrar en el manifiesto: Generic Items (objetos planos a color, de oficina),
 Minimap Pack (pixel art) y UI Pack Adventure (marcos y paneles, no iconos).
+
+Mar y coco (lote 10): el pez de Kenney Food Kit (233 triángulos) queda bien como pescado genérico de
+arrecife, con lomo oscuro y vientre nacarado; los peces con nombre siguen en `Tools/Blender`. Se
+descartaron la concha (mejillón `mussel.glb`: bloque hexagonal que recoloreado parece piedra rosada) y,
+ya desde el lote 3, el coco entero y el huevo.

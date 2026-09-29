@@ -818,8 +818,11 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 FTerrainEditResult FTerrainEditModel::CompactStrip(const FVector& A, const FVector& B, float HalfWidth)
 {
 	FTerrainEditResult Result;
-	if (!FMath::IsFinite(HalfWidth) || HalfWidth <= 0.0f || !FMath::IsFinite(A.X) || !FMath::IsFinite(A.Y)
-		|| !FMath::IsFinite(A.Z) || !FMath::IsFinite(B.X) || !FMath::IsFinite(B.Y) || !FMath::IsFinite(B.Z))
+	// Como el resto de herramientas: dentro del mundo y con una huella acotada. Sin esto,
+	// X = 1e9 da la columna centinela MAX_int32 y el bucle desborda, y un tramo de
+	// cientos de km recorre ~10^12 columnas.
+	if (!TerrainEditDetail::ValidExtent(HalfWidth) || HalfWidth <= 0.0f || !TerrainEditDetail::InWorld(A)
+		|| !TerrainEditDetail::InWorld(B) || FVector2D::Distance(FVector2D(A.X, A.Y), FVector2D(B.X, B.Y)) > 2.0 * MaxBrushExtent)
 	{
 		return Result;
 	}

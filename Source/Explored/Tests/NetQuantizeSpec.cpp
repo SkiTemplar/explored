@@ -72,6 +72,8 @@ void FNetQuantizeSpec::Define()
 		{
 			TestTrue(TEXT("1e300"), RoundClamped(1e300, -5, 5) == 5);
 			TestTrue(TEXT("-1e300"), RoundClamped(-1e300, -5, 5) == -5);
+			TestTrue(TEXT("tope INT64_MAX"), RoundClamped(1e300, 0, TNumericLimits<int64>::Max()) == TNumericLimits<int64>::Max());
+			TestTrue(TEXT("tope INT64_MIN"), RoundClamped(-1e300, TNumericLimits<int64>::Min(), 0) == TNumericLimits<int64>::Min());
 			TestTrue(TEXT("NaN → 0 dentro del rango"), RoundClamped(NaN, -5, 5) == 0);
 			TestTrue(TEXT("NaN → Lo si 0 no cabe"), RoundClamped(NaN, 3, 5) == 3);
 			TestTrue(TEXT("-inf"), RoundClamped(-Inf, 0, 9) == 0);

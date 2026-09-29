@@ -21,13 +21,13 @@ PIE — la verificación de compilación es tarea propia de H0/H1, ya listada ab
 |---|---|---|---|---|---|---|
 | H0 — Porción vertical jugable en Landing | 7 | 11 | 25 | 43 | 16 % | 29 % |
 | H1 — Mundo interactivo | 3 | 10 | 23 | 36 | 8 % | 22 % |
-| H2 — Minería y construcción | 6 | 14 | 12 | 32 | 19 % | 41 % |
+| H2 — Minería y construcción | 14 | 12 | 13 | 39 | 36 % | 51 % |
 | H3 — Mar y barcos | 2 | 6 | 6 | 14 | 14 % | 36 % |
 | H4 — Contenido de acceso anticipado | 9 | 2 | 12 | 23 | 39 % | 43 % |
 | H5 — Lanzamiento del acceso anticipado | 11 | 0 | 15 | 26 | 42 % | 42 % |
 | F2 | 2 | 4 | 10 | 16 | 12 % | 25 % |
-| F3 | 2 | 6 | 20 | 28 | 7 % | 18 % |
-| **Total** | **42** | **53** | **123** | **218** | **19 %** | **31 %** |
+| F3 | 2 | 0 | 26 | 28 | 7 % | 7 % |
+| **Total** | **50** | **45** | **130** | **225** | **22 %** | **32 %** |
 
 ¹ Cuenta cada casilla «en parte» como media. «En parte» sigue siendo `[ ]`: lleva debajo
 una línea `→ **En parte:**` con el commit, la PR y lo que falta.
@@ -185,16 +185,26 @@ salir de la isla.
         de la biblia y retirar `HitsBareHands`/`HitsWithTool` de `HarvestModel`.
 - [ ] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
       ligera/terreno al talar. *(biblia 02 §1.2)*
-      → **En parte:** `6fb9833` (PR #39), `FellingModel.h:149` (`ResolveFallDirection`,
-        golpes + pendiente) — falta el viento, la colisión con construcción y engancharlo a
-        un actor.
+      → **En parte:** `6fb9833` (PR #39), `FellingModel.h` (`ResolveFallDirection`,
+        golpes + pendiente) y `6d5c1b7` (PR #123): `ApplyWindToFall` (±20°, ±15°
+        la palmera) y `ComputeCrush` (40 % de integridad a palma y bambú) en el modelo puro
+        — falta engancharlo a un actor y a `UBuildingSubsystem`.
+- [ ] `WorldGen`: lo que suelta un árbol talado que cae al agua flota y, si nadie lo
+      recoge, pasa a madera flotante normal. *(biblia 02 §1.5)*
+      → **En parte:** PR #127, `WorldGen/FelledDriftModel.h` (`FFelledDriftModel`: flota o
+        se hunde, deriva con `FOceanCurrents`, vara, se refloata con la marea y se entrega
+        como `madera_flotante`) — falta el `UFelledDriftSubsystem` del motor
+        (`docs/tecnico/tala-integracion.md`) y que el director decida si la flotación sale
+        de la propiedad `Flota` de `items.json` o de la tabla de densidades del modelo.
 - [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
       según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
       `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
       diseño nueva de la biblia, pendiente de aplicar al código. *(biblia 02 §1.2, 02 §1.6)*
       → **En parte:** `6fb9833` (PR #39), `FellingModel.h:100-113` — el tocón con rebrote
         existe, pero con 12/20/15/20 días en vez de 18/24/4, y `VegetationHarvestState` aún
-        no lo usa.
+        no lo usa. PR #135: `WorldGen/VegetationClockModel.h` (`FVegetationClockModel`,
+        sección de guardado `vegetationClock` con la hora de tala de cada tocón) y guardado
+        de celdas de ramas en `GroundBranchModel.h` — falta engancharlo a `USaveSubsystem`.
 - [ ] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
       tope 6). *(biblia 02 §1.3)*
       → **En parte:** `bb07614` (PR #39), `WorldGen/GroundBranchModel.h:55-71` — modelo puro
@@ -224,6 +234,11 @@ salir de la isla.
 - [x] Cultivos (limonero, platanera, taro, batata, piña, maracuyá) ya en `plants.json`
       con etapas estáticas por días, estación y riego.
       *(verificado: `Content/Data/plants.json`)*
+      → **Más:** PR #112 (`bb04f04`) añade el aloe y la cúrcuma silvestre como cultivos
+        medicinales (GDD v3 §8.7, «especias y plantas medicinales»), con `rizoma_curcuma` y
+        la regla de DataCheck «todo cultivo da comida o medicina». Faltan las mallas
+        (`meshes_pendientes.json`), dónde aparece el primer rizoma y añadirlos a
+        `DataPlants()` de `FarmSpec.cpp`.
 
 ### Red y cooperativo — cimientos (biblia 08)
 
@@ -494,10 +509,12 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       → **En parte:** `cb4e5a6` (PR #40) + `46382a9` (PR #50) + PR #95: `FMiningModel`
         (`WorldGen/MiningModel.h`, `MiningModelSpec`) con estratos, vetas finitas, radio y
         ritmo por herramienta, rebote y mella — modelo puro sin enganchar.
-- [ ] `Building`: pieza `viga_apoyo` (apuntalamiento) y regla de derrumbe (hueco > 3 m de
-      luz sin apoyo, colapsa a los 8 s). *(biblia 02 §2.4, §2.7)*
-      → **En parte:** PR #95, pieza en `building_pieces.json` y regla en `FMineHazardModel`
-        (`MineHazardModelSpec`) — sin enganchar.
+- [x] `Building`: pieza `viga_apoyo` (apuntalamiento) en `building_pieces.json`
+      (categoría `mina`, 2× `tronco_pequeno` + 1× `cuerda`). *(biblia 02 §2.7)*
+- [ ] `Building`: regla de derrumbe (hueco > 3 m de luz sin apoyo, colapsa a los 8 s) con
+      la `viga_apoyo` como apoyo. *(biblia 02 §2.4)*
+      → **En parte:** PR #95, regla en `FMineHazardModel` (`MineHazardModelSpec`) — sin
+        enganchar.
 - [ ] `Survival`/`WorldGen`: indicador de aire viciado en bolsas cerradas a más de 15 m
       de una salida, sin HUD, leído en el cuerpo. *(biblia 02 §2.4)*
       → **En parte:** PR #95, `FMineHazardModel::IsStaleAir`, `AdvanceAir` y `AirSignals`
@@ -525,35 +542,43 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       (20 %/35 % por medio ciclo de marea). *(biblia 02 §5.2)*
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`ApplyHalfTide` 20 %/35 %)
         — nadie lo llama desde la marea.
-- [ ] `Building`: pieza `tablon_contencion` (ancla arena, detiene deslizamiento/relleno
-      en 1 m). *(biblia 02 §5.3)*
-      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95: pieza
-        en `building_pieces.json` y `FSandModel::PieceAnchorsSand` — falta llamar a
-        `SetAnchor` al colocarla.
+- [x] `Building`: pieza `tablon_contencion` en `building_pieces.json` (tier `bambu`,
+      socket `pared`, 3× `bambu_grueso` + 2× `cordel`). *(biblia 02 §5.3)*
+- [ ] `WorldGen`: el `tablon_contencion` ancla la arena (detiene deslizamiento y relleno
+      en 1 m mientras siga en pie). *(biblia 02 §5.3)*
+      → **En parte:** `e6c89d1` (PR #46), `SandModel.h` (`SetAnchor` a 1 m) + PR #95:
+        `FSandModel::PieceAnchorsSand` — falta llamar a `SetAnchor` al colocarla.
 - [ ] `WorldGen`/`Building`/`Player` **[necesita Unreal]**: conectar `FMiningModel`,
       `FMineHazardModel` y `FShovelPathModel` al subsistema de terreno y al personaje
       (`Server_MineHit`, rejilla de riesgos alrededor de la mina, `SetAnchor` al colocar
       las piezas de `FSandModel::SandAnchorPieces`, aire en las señales del cuerpo,
       −15 % de resistencia sobre camino) y a la red según biblia 08 §2.12.
-- [ ] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
-      `lingote_hierro`, `alambre`, `clavos`, `sierra_diente_tiburon`, `tela_fibra`,
-      `carretilla`. *(biblia 03 §3.2–3.4)*
+- [x] `Items`/`Templates`: añadir a `items.json`/`templates.json` `lingote_cobre`,
+      `lingote_hierro`, `lingote_aluminio`, `alambre`, `clavos` y `carretilla` (plantilla
+      en `piedra_trabajo`). *(biblia 03 §3.2–3.4, §1.5)*
+- [ ] `Items`/`Templates`: añadir `sierra_diente_tiburon` y `tela_fibra` (con la receta de
+      telar de biblia 03 §4.3). *(biblia 03 §3.2, §3.4)*
 - [ ] `Carry`: nuevo `ECarrySlot`/actor `carretilla` (empuje `DosManos`, contenedor
       propio 40 L/25 kg, −30 % velocidad mientras se empuja, sin nadar/correr/escaleras
       enganchada). *(biblia 03 §1.5)*
-- [ ] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
+- [x] `Building`: añadir a `building_pieces.json` `banco_chatarra`, `horno_fundicion`,
       `yunque`, con su coste. *(biblia 03 §2.2)*
-      → **En parte:** `46382a9` (PR #50), `building_pieces.json:1205` (`banco_chatarra`) —
-        faltan `horno_fundicion` y `yunque`.
-- [ ] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4); recetas de
-      fundición en un fichero nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [x] `Cooking`/`Fuels`: nuevo nivel de fuego `horno_fundicion` (heat 1.4) en
+      `fuels.json/smeltingLevels`; recetas de fundición, chatarra y forja en un fichero
+      nuevo `recipes_smithing.json`. *(biblia 03 §2.2, §4.3)*
+- [ ] `Cooking`: `EFireLevel::HornoFundicion`, pasar `smeltingLevels` a `levels` (y a
+      `FireData.inl` con `--write-cooking`) y un modelo puro que lea
+      `recipes_smithing.json` con su spec; replicación como el resto de estaciones
+      (biblia 08 §2.4: el servidor valida y consume). *(biblia 03 §2.2, §4.3)*
 - [ ] `WorldGen/TerrainDensity`/`WorldGenCommandlet`: verificar que el carving del tubo
       de lava del Humo tiene una boca visible desde el marae de la cumbre, para que las
       ruinas queden junto a una entrada real. *(biblia 04 §7.1 TODO)*
-- [ ] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta≥2, sin mango) y verbo de
-      colocación con el pico equipado como herramienta de golpeo, para ampliar la
-      escalada de roca más allá de 3 m. *(biblia 02 §13.4 — director, 2026-09-27)*
-- [ ] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
+- [x] `Items`/`Crafting`: nuevo item `clavija_roca` (Punta 2, sin mango) y su plantilla
+      `clavija_roca` (Tallar `hueso_largo` o `lingote_hierro`). *(biblia 02 §13.4)*
+- [ ] `Player`/`WorldGen`: verbo de colocación de `clavija_roca` con el pico equipado como
+      herramienta de golpeo, para ampliar la escalada de roca más allá de 3 m.
+      *(biblia 02 §13.4 — director, 2026-09-27)*
+- [x] `Building`: piezas `escalera_mano` y `cuerda_fija` en `building_pieces.json`.
       *(biblia 02 §13.3)*
 - [ ] Confirmar en pipeline de terreno editable en runtime el recorrido completo
       capa-de-ediciones → remallado → guardado → hoja subterránea del mapa, de extremo a
@@ -562,12 +587,17 @@ mineral y las piezas de construcción avanzadas que dependen de ellos.
       procedural y no usa el componente genérico de Unreal). *(GDD §7.3, §7.4)*
       → **En parte:** `cb4e5a6` + `064b73a` (PR #40): capa de ediciones y guardado — faltan
         el remallado en runtime y la hoja subterránea; el recorrido no está cableado.
-- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla; extender `Tools/DataCheck`
-      para validar que toda plantilla nueva de crafteo es alcanzable con materiales de
-      al menos una isla en AA. *(biblia 03 §Tests)*
-      → **En parte:** `46382a9` (PR #50), `Tools/DataCheck/src/datacheck/checks.py:252` — el
-        alcance de plantillas es global, no por isla de AA; falta el `CarrySpec` de la
-        carretilla.
+- [x] `Tests`: extender `Tools/DataCheck` para validar que toda plantilla nueva de
+      crafteo es alcanzable y que cada receta de metal sale de materiales de al menos una
+      isla en AA (`smithing.py`: vetas de fase 1, chatarra del Albatros o recetas
+      posibles; lingotes y carbón sin receta no cuentan como material en bruto).
+      *(biblia 03 §Tests)*
+- [ ] `Tests`: extender `CarrySpec.cpp` con la carretilla. *(biblia 03 §Tests)*
+- [ ] `Crafting`: `UCraftingLibrary::FindActionsWithData` corta en 3 verbos por orden del
+      fichero y esconde Atar con un mango de `madera_dura` atado (no hay hacha, pico ni
+      cuchillo de obsidiana, pedernal o metal con ese mango). Priorizar el verbo de la
+      plantilla con más huecos antes de cortar, o subir `lasca_por_golpeo` y `cuerda` de
+      orden; DataCheck lo lista como nota («MaxActions»). *(biblia 03 §2.1, datos de H2)*
 - [x] Añadir a `achievements.json` los stats de minería: `terrain_edits_made`,
       `strata_mined`, `max_mining_depth_m`, `air_pocket_survived`,
       `cave_collapse_avoided`, `tools_broken_on_wrong_material`, `crab_stole_item`.
@@ -780,7 +810,17 @@ datos todavía.
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
         general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
         estrella, laurel, candado y reloj de arena); 44 pistas de logro siguen en
-        `iconsPending`.
+        `iconsPending`. PR #134: 8 iconos de logro más (arco, bandera, escudo, muralla,
+        herramienta, viga, trueque y pueblo), sin normalizar todavía en Unreal.
+        PR #116: mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit),
+        sin normalizar todavía en Unreal.
+        PR #121: clavos y yunque de la herrería (KayKit RPG Tools Bits), sin normalizar
+        todavía en Unreal.
+        PR #126: lingotes de cobre, hierro y aluminio (KayKit Resource Bits), sin
+        normalizar todavía en Unreal.
+        PR #130: mesa de cartografía (KayKit Furniture Bits), sin normalizar todavía en
+        Unreal; el suelo y la puerta de madera de ese lote se descartaron (no cuadran con
+        `docs/art/kit-construccion.md`).
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 

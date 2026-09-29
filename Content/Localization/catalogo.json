@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 1109,
+		"total": 1141,
 		"cpp": 303,
-		"datos": 806,
+		"datos": 838,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
@@ -4538,6 +4538,16 @@
 		},
 		{
 			"namespace": "Data.building_pieces.pieces",
+			"key": "cuerda_fija.nameEs",
+			"es": "Cuerda fija",
+			"en": "Fixed rope",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «cuerda_fija» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
 			"key": "escalera_bambu.nameEs",
 			"es": "Escalera de bambú",
 			"en": "Bamboo ladder",
@@ -4554,6 +4564,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «escalera_madera» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "escalera_mano.nameEs",
+			"es": "Escalera de mano",
+			"en": "Lashed ladder",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «escalera_mano» nameEs/nameEn"
 			]
 		},
 		{
@@ -4614,6 +4634,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «horno_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "horno_fundicion.nameEs",
+			"es": "Horno de fundición",
+			"en": "Smelting furnace",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «horno_fundicion» nameEs/nameEn"
 			]
 		},
 		{
@@ -4934,6 +4964,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.building_pieces.pieces",
+			"key": "yunque.nameEs",
+			"es": "Yunque",
+			"en": "Anvil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/building_pieces.json «yunque» nameEs/nameEn"
 			]
 		},
 		{
@@ -5378,32 +5418,12 @@
 		},
 		{
 			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "clavos.nameEs",
-			"es": "Clavos",
-			"en": "Nails",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «clavos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
 			"key": "leche_cabra.nameEs",
 			"es": "Leche de cabra",
 			"en": "Goat's milk",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/fases_futuras.json «leche_cabra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "lingote_hierro.nameEs",
-			"es": "Lingote de hierro",
-			"en": "Iron ingot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «lingote_hierro» nameEs/nameEn"
 			]
 		},
 		{
@@ -6267,6 +6287,16 @@
 			]
 		},
 		{
+			"namespace": "Data.fuels.smeltingLevels",
+			"key": "horno_fundicion.nameEs",
+			"es": "Horno de fundición",
+			"en": "Smelting furnace",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/fuels.json «horno_fundicion» nameEs/nameEn"
+			]
+		},
+		{
 			"namespace": "Data.halden_diaries.entries",
 			"key": "halden_01.textEs",
 			"es": "Día 14. La radio se moja más de lo que transmite. Marchena dice que es la antena. Yo digo que es la isla.",
@@ -6768,6 +6798,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "alambre.nameEs",
+			"es": "Alambre de cobre",
+			"en": "Copper wire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «alambre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "alga_fibra.nameEs",
 			"es": "Alga de fibra",
 			"en": "Fibre seaweed",
@@ -7098,6 +7138,16 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "carretilla.nameEs",
+			"es": "Carretilla",
+			"en": "Wheelbarrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «carretilla» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "cascara_coco.nameEs",
 			"es": "Cáscara de coco",
 			"en": "Coconut shell",
@@ -7154,6 +7204,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cinturon_cuero» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "clavija_roca.nameEs",
+			"es": "Clavija de roca",
+			"en": "Rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «clavija_roca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "clavos.nameEs",
+			"es": "Clavos",
+			"en": "Nails",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «clavos» nameEs/nameEn"
 			]
 		},
 		{
@@ -7618,6 +7688,36 @@
 		},
 		{
 			"namespace": "Data.items.items",
+			"key": "lingote_aluminio.nameEs",
+			"es": "Lingote de aluminio",
+			"en": "Aluminium ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_aluminio» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lingote_cobre.nameEs",
+			"es": "Lingote de cobre",
+			"en": "Copper ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_cobre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "lingote_hierro.nameEs",
+			"es": "Lingote de hierro",
+			"en": "Iron ingot",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «lingote_hierro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
 			"key": "lombriz.nameEs",
 			"es": "Lombriz",
 			"en": "Earthworm",
@@ -8034,6 +8134,16 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «resina» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.items.items",
+			"key": "rizoma_curcuma.nameEs",
+			"es": "Rizoma de cúrcuma silvestre",
+			"en": "Wild turmeric root",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/items.json «rizoma_curcuma» nameEs/nameEn"
 			]
 		},
 		{
@@ -9128,12 +9238,32 @@
 		},
 		{
 			"namespace": "Data.plants.plants",
+			"key": "aloe.nameEs",
+			"es": "Aloe",
+			"en": "Aloe",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
 			"key": "batata.nameEs",
 			"es": "Batata",
 			"en": "Sweet potato",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/plants.json «batata» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.plants",
+			"key": "curcuma.nameEs",
+			"es": "Cúrcuma silvestre",
+			"en": "Wild turmeric",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma» nameEs/nameEn"
 			]
 		},
 		{
@@ -9188,6 +9318,36 @@
 		},
 		{
 			"namespace": "Data.plants.stages",
+			"key": "aloe.hijuelo.nameEs",
+			"es": "Hijuelo",
+			"en": "Offset",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.hijuelo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "aloe.hojas_carnosas.nameEs",
+			"es": "Hojas carnosas",
+			"en": "Fleshy leaves",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.hojas_carnosas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "aloe.roseta.nameEs",
+			"es": "Roseta",
+			"en": "Rosette",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «aloe.roseta» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
 			"key": "batata.brote.nameEs",
 			"es": "Brote",
 			"en": "Sprout",
@@ -9214,6 +9374,36 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/plants.json «batata.listo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.brote.nameEs",
+			"es": "Brote",
+			"en": "Sprout",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.brote» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.hojas_anchas.nameEs",
+			"es": "Hojas anchas",
+			"en": "Broad leaves",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.hojas_anchas» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.plants.stages",
+			"key": "curcuma.listo.nameEs",
+			"es": "Listo para arrancar",
+			"en": "Ready to pull up",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/plants.json «curcuma.listo» nameEs/nameEn"
 			]
 		},
 		{
@@ -9584,6 +9774,96 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/recipes.json «vasija_barro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "batir_chapa.nameEs",
+			"es": "Batir chapa",
+			"en": "Hammer out sheet metal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "batir_tubo.nameEs",
+			"es": "Batir tubo",
+			"en": "Hammer out tubing",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «batir_tubo» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "clavos_de_alambre.nameEs",
+			"es": "Clavos de alambre",
+			"en": "Wire nails",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «clavos_de_alambre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "clavos_de_hierro.nameEs",
+			"es": "Clavos de hierro",
+			"en": "Iron nails",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «clavos_de_hierro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "estirar_alambre.nameEs",
+			"es": "Estirar alambre",
+			"en": "Draw wire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «estirar_alambre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "fundir_chapa.nameEs",
+			"es": "Fundir chapa",
+			"en": "Melt down sheet metal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "fundir_cobre.nameEs",
+			"es": "Fundir cobre",
+			"en": "Smelt copper",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «fundir_cobre» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "fundir_hierro.nameEs",
+			"es": "Fundir hierro",
+			"en": "Smelt iron",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «fundir_hierro» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.recipes_smithing.recipes",
+			"key": "fundir_tubo.nameEs",
+			"es": "Fundir tubo",
+			"en": "Melt down tubing",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn"
 			]
 		},
 		{
@@ -10638,6 +10918,26 @@
 		},
 		{
 			"namespace": "Data.templates.templates",
+			"key": "carretilla.nameEs",
+			"es": "Carretilla",
+			"en": "Wheelbarrow",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «carretilla» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "carretilla.nameTemplate",
+			"es": "Carretilla de {0} con rueda de {1}",
+			"en": "{0} wheelbarrow with a {1} wheel",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «carretilla» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
 			"key": "cesta.nameEs",
 			"es": "Cesta",
 			"en": "Basket",
@@ -10654,6 +10954,26 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/templates.json «cesta» nameTemplate/nameTemplateEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "clavija_roca.nameEs",
+			"es": "Clavija de roca",
+			"en": "Rock piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.templates.templates",
+			"key": "clavija_roca.nameTemplate",
+			"es": "Clavija de {1}",
+			"en": "{1} piton",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/templates.json «clavija_roca» nameTemplate/nameTemplateEn"
 			]
 		},
 		{

@@ -22,19 +22,92 @@ SR = SAMPLE_RATE
 
 
 def carve(name: str) -> np.ndarray:
-    """Tallar: varias pasadas de rasguño (granulado de banda alta), cada una
-    con su propia envolvente de vaiven."""
+    """Tallar una vara con un filo de piedra o de concha: tres a cinco
+    pasadas que levantan una viruta cada una.
+
+    Cada pasada empieza con el filo mordiendo la fibra (un "tic" que excita
+    los modos de la vara), sigue con la viruta que se levanta y termina
+    cuando la viruta se parte o el filo sale de la madera. El corte no es un
+    ruido continuo: la hoja avanza a saltos por adherencia-deslizamiento, y
+    cada salto es un impulso cuyo ritmo sigue la velocidad de la mano
+    (perfil de minimo tiron: 0 al empezar y al acabar, 180-420 saltos/s a
+    media pasada). Esos impulsos suenan a traves de la vara sujeta en la mano
+    (modos de barra libre, 1 : 2,76 : 5,40, a 380-620 Hz y muy amortiguados)
+    y de la resonancia de la fibra (1,6-2,6 kHz), con fibras que se rompen
+    sueltas por encima. La vara se gira entre pasada y pasada, asi que los
+    modos cambian un poco.
+
+    Antes eran granos de ruido de 1,8-5,2 kHz con envolventes de vaiven: un
+    centroide de 4,5-5 kHz, nada por debajo de 1 kHz y ~7 dB por debajo del
+    resto de herramientas. Sonaba a lija, no a madera."""
     rng = rng_for(name)
     n_strokes = int(rng.integers(3, 6))
-    pieces = []
-    for _ in range(n_strokes):
-        dur = rng.uniform(0.12, 0.22)
+    stick_freq = rng.uniform(380.0, 620.0)
+    fibre_fc = rng.uniform(1600.0, 2600.0)
+    pieces: list[np.ndarray] = [np.zeros(int(0.008 * SR))]
+    for k in range(n_strokes):
+        dur = rng.uniform(0.15, 0.26)
         n = int(dur * SR)
-        scrape = render_noise_grains(n, SR, rng, rate_hz=60.0, grain_len_s_range=(0.006, 0.018), band_hz_range=(1800, 5200), q=1.3, amp_scale=0.5)
-        env = fit_length(ar_envelope(SR, dur * 0.15, dur * 0.7, shape=1.3), n)
-        pieces.append(scrape * env)
-        pieces.append(np.zeros(int(rng.uniform(0.04, 0.09) * SR)))
-    return np.concatenate(pieces) if pieces else np.zeros(1)
+        u = np.arange(n) / n
+        # Velocidad de la hoja: derivada del perfil de minimo tiron (bell de
+        # grado 4), con algo de irregularidad de la mano.
+        velocity = 30.0 * u**2 * (1.0 - u) ** 2 / 1.875
+        velocity *= smooth_random_walk(n, rng, smoothing_hz=30.0, sr=SR, low=0.75, high=1.25)
+        rate = rng.uniform(180.0, 420.0) * velocity
+        slips = np.nonzero(np.diff(np.floor(np.cumsum(rate) / SR)) > 0)[0] + 1
+        pulses = np.zeros(n)
+        # Salto mas fuerte cuanto mas rapida va la hoja (mas fibra por salto).
+        pulses[slips] = rng.uniform(0.5, 1.0, slips.size) * (0.4 + 0.6 * velocity[slips] / (velocity.max() + 1e-9))
+
+        # Fibras que se rompen sueltas: pocos chasquidos mas fuertes y agudos
+        # repartidos donde la hoja va deprisa.
+        tears = np.zeros(n)
+        n_tears = int(rng.integers(3, 8))
+        weights = velocity / velocity.sum()
+        tears[rng.choice(n, size=n_tears, p=weights)] = rng.uniform(1.0, 2.2, n_tears)
+
+        # La vara gira un poco entre pasadas: sus modos se mueven un 3 %.
+        f0 = stick_freq * (1.0 + 0.03 * rng.uniform(-1.0, 1.0))
+        stick = np.zeros(n)
+        for ratio, amp, q in ((1.0, 1.0, 9.0), (2.76, 0.55, 12.0), (5.40, 0.25, 14.0)):
+            stick += amp * static_filter(pulses + 0.4 * tears, SR, fc=f0 * ratio, q=q, kind="bandpass")
+        fibre = static_filter(pulses, SR, fc=fibre_fc * rng.uniform(0.92, 1.08), q=3.0, kind="bandpass")
+        crack = static_filter(tears, SR, fc=rng.uniform(2800.0, 4200.0), q=2.0, kind="bandpass")
+        # La viruta que se riza roza contra la hoja: un soplo suave y apagado.
+        curl = static_filter(pink_noise(n, rng), SR, fc=rng.uniform(1800.0, 2600.0), q=0.8, kind="bandpass") * velocity
+
+        def _norm(x: np.ndarray) -> np.ndarray:
+            return x / (np.max(np.abs(x)) + 1e-9)
+
+        stroke = 0.7 * _norm(stick) + 0.55 * _norm(fibre) + 0.35 * _norm(crack) + 0.08 * _norm(curl)
+
+        # Mordida: el filo entra en la fibra y golpea la vara.
+        bite = modal_hit(
+            SR, 0.06, base_freq=f0, mode_ratios=[1.0, 2.76, 5.40],
+            mode_dampings_s=[0.018, 0.01, 0.005], mode_amps=[1.0, 0.5, 0.3], rng=rng, detune=0.02,
+        )
+        bite_click_n = int(0.0012 * SR)
+        bite_click = static_filter(rng.standard_normal(bite_click_n), SR, fc=2000.0, q=0.7, kind="highpass")
+        bite_click *= np.exp(-np.arange(bite_click_n) / (bite_click_n / 3.0))
+        stroke = np.concatenate([stroke, np.zeros(len(bite))])
+        stroke[: len(bite)] += 0.45 * _norm(bite)
+        stroke[:bite_click_n] += 0.25 * _norm(bite_click)
+
+        # Final: la viruta se parte (chasquido seco) o el filo sale limpio.
+        if rng.uniform() < 0.65:
+            snap = modal_hit(
+                SR, 0.03, base_freq=rng.uniform(1100.0, 1600.0), mode_ratios=[1.0, 2.3],
+                mode_dampings_s=[0.006, 0.003], mode_amps=[1.0, 0.4], rng=rng, detune=0.05,
+            )
+            pos = n - int(rng.uniform(0.004, 0.015) * SR)
+            stroke[pos : pos + len(snap)] += 0.5 * _norm(snap)
+
+        # Los filtros de la vara se cortan al final de la pasada: sin este
+        # desvanecido la union con el silencio siguiente daria un clic.
+        stroke = _tail_fade(stroke, 0.006)
+        pieces.append(stroke * (1.0 if k == 0 else rng.uniform(0.75, 1.0)))
+        pieces.append(np.zeros(int(rng.uniform(0.06, 0.12) * SR)))
+    return _to_momentary(_tail_fade(np.concatenate(pieces)), -16.0)
 
 
 def tie_cord(name: str) -> np.ndarray:

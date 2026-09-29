@@ -143,6 +143,25 @@ void FMiningModelSpec::Define()
 			TestEqual(TEXT("sin botín"), R.LootUnits, 0);
 			TestEqual(TEXT("sin desgaste"), R.DurabilityLoss, 0);
 		});
+
+		It("un estrato o una herramienta fuera de rango no pican ni abren vetas", [this]()
+		{
+			FMiningModel Mining;
+			FTerrainEditModel Terrain;
+			const FMineHitResult Stratum = Mining.Hit(Fresh(static_cast<EMineStratum>(200), EMineTool::PicoRescatado, 0), Terrain, Flat);
+			TestTrue(TEXT("estrato roto: nada"), Stratum.Cue == EMineHitCue::Miss);
+			TestEqual(TEXT("estrato roto: sin botín"), Stratum.LootUnits, 0);
+			const FMineHitResult Tool = Mining.Hit(Fresh(EMineStratum::Obsidiana, static_cast<EMineTool>(77), 1), Terrain, Flat);
+			TestTrue(TEXT("herramienta rota: nada"), Tool.Cue == EMineHitCue::Miss);
+			TestEqual(TEXT("sin vetas nuevas"), Mining.NumTrackedVeins(), 0);
+			TestEqual(TEXT("ninguna veta que consultar"), Mining.VeinRemaining(static_cast<EMineStratum>(200), FIntVector::ZeroValue, 0), 0);
+
+			// El guardado sigue cargando después.
+			Mining.Hit(Fresh(EMineStratum::Cristal, EMineTool::PicoRescatado, 2), Terrain, Flat);
+			FMiningModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Mining.ToValue()));
+			TestEqual(TEXT("una sola veta"), Loaded.NumTrackedVeins(), 1);
+		});
 	});
 
 	Describe("picado por esfera en todos los estratos", [this]()

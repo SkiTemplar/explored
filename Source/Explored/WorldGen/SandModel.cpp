@@ -289,7 +289,7 @@ void FSandModel::FinishDirtyChunks(TArray<FIntPoint>& List)
 FSandResult FSandModel::Brush(const FSandBrush& In, FBaseHeight Base, bool bDig)
 {
 	FSandResult Result;
-	if (!(In.Radius > 0.0f) || !(In.Depth > 0.0f) || (!bDig && In.MassBudget <= 0) || In.MassBudget < 0
+	if (!(In.Radius > 0.0f) || In.Radius > MaxBrushRadius || !(In.Depth > 0.0f) || (!bDig && In.MassBudget <= 0) || In.MassBudget < 0
 		|| !FMath::IsFinite(In.Center.X) || !FMath::IsFinite(In.Center.Y) || !FMath::IsFinite(In.Radius) || !FMath::IsFinite(In.Depth))
 	{
 		return Result;

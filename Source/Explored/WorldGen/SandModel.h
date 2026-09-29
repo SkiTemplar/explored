@@ -181,6 +181,12 @@ public:
 	static constexpr int32 TideWakeStepMm = 50;
 	/** Cota de columna (en celdas): lejos del borde de int32, así Column + 1 y los bucles X <= Hi no desbordan. */
 	static constexpr int32 MaxAbsColumn = 1000000000;
+	/**
+	 * Radio máximo de un pincel (m): el lado de un chunk, unas 3 200 columnas. La pala usa
+	 * 0,6 m. Un radio mayor, por un dato malo o una petición de red manipulada, no hace
+	 * nada: con 10 km el servidor recorría 6 400 millones de columnas.
+	 */
+	static constexpr float MaxBrushRadius = 8.0f;
 	/** Tope de columnas sucias en una partida guardada (~16 000 m² de arena sin asentar en celdas de 0,25 m). */
 	static constexpr int32 MaxSavedDirtyColumns = 1 << 18;
 
@@ -199,7 +205,10 @@ public:
 
 	// --- Herramientas ---
 
-	/** Cava con la pala; `Mass` es lo que va al cubo. Bajo la huella de una estructura no se cava. */
+	/**
+	 * Cava con la pala; `Mass` es lo que va al cubo. Bajo la huella de una estructura no se cava.
+	 * Un pincel con radio ≤ 0 o > MaxBrushRadius, o con datos no finitos, no hace nada (también en Pile).
+	 */
 	FSandResult Dig(const FSandBrush& Brush, FBaseHeight Base);
 	/** Echa arena; `Mass` es lo que sale del inventario (≤ MassBudget). */
 	FSandResult Pile(const FSandBrush& Brush, FBaseHeight Base);

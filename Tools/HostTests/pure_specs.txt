@@ -20,6 +20,7 @@ Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/FellingModelSpec.cpp
+Tests/FelledDriftModelSpec.cpp
 Tests/GroundBranchModelSpec.cpp
 Tests/HarvestModelSpec.cpp
 Tests/InventorySpec.cpp
@@ -52,6 +53,7 @@ Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/VegetationNetStateModelSpec.cpp
+Tests/VegetationClockModelSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
