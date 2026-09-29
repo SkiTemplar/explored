@@ -42,6 +42,21 @@ namespace
 		OutFall = OutMature + DaysBetween(SlotHash(State.Seed, SaltHang, SlotIndex, Slot.Generation), P.HangMinDays, P.HangMaxDays);
 	}
 
+	bool InClockRange(int64 Minute)
+	{
+		return Minute >= -FCoconutPalmModel::MaxSupportedMinute && Minute <= FCoconutPalmModel::MaxSupportedMinute;
+	}
+
+	/**
+	 * Inicio de ciclo admitido: una copa creada con bStocked en el primer minuto
+	 * admitido lo retrasa hasta un ciclo entero (≤ 3 × MaxDays), así que el margen
+	 * por abajo es mayor. Ponerse al día sigue acotado a unos 40 000 días.
+	 */
+	bool InCycleRange(int64 Minute)
+	{
+		return Minute >= -3 * FCoconutPalmModel::MaxSupportedMinute && Minute <= FCoconutPalmModel::MaxSupportedMinute;
+	}
+
 	float Clamp01OrZero(float V)
 	{
 		return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0f, 1.0f) : 0.0f;
@@ -264,9 +279,17 @@ FCoconutPalmState FCoconutPalmModel::Initialize(uint32 Seed, const FVector2D& Tr
 
 int32 FCoconutPalmModel::Advance(FCoconutPalmState& State, const FCoconutPalmProfile& InProfile, int64 NowMinute, const TArray<FCoconutGust>& Gusts)
 {
-	if (NowMinute < State.LastUpdateMinute)
+	if (NowMinute < State.LastUpdateMinute || !InClockRange(NowMinute) || !InClockRange(State.LastUpdateMinute))
 	{
 		return 0;
+	}
+	// Un ciclo fuera de rango haría que ponerse al día recorriera millones de ciclos (o desbordara).
+	for (const FCoconutSlot& Slot : State.Slots)
+	{
+		if (!InCycleRange(Slot.CycleStartMinute))
+		{
+			return 0;
+		}
 	}
 	const FCoconutPalmProfile P = Sanitize(InProfile);
 	int32 Fallen = 0;
@@ -473,4 +496,39 @@ int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfil
 	}
 	State.bFelled = true;
 	return Taken;
+}
+
+bool FCoconutPalmModel::IsValidSaved(const FCoconutPalmState& State, const FCoconutPalmProfile& InProfile)
+{
+	const FCoconutPalmProfile P = Sanitize(InProfile);
+	const int64 Now = State.LastUpdateMinute;
+	if (!InClockRange(Now) || State.Slots.Num() != P.Slots
+		|| State.LastGustHour < -1 || State.LastGustHour > FMath::Max<int64>(-1, Now / 60)
+		|| !FMath::IsFinite(State.TrunkPosition.X) || !FMath::IsFinite(State.TrunkPosition.Y))
+	{
+		return false;
+	}
+	for (const FCoconutSlot& Slot : State.Slots)
+	{
+		// El Id guarda 24 bits de generación: más allá, dos cocos del mismo hueco compartirían Id.
+		if (Slot.Generation < 0 || Slot.Generation > 0xFFFFFF || !InCycleRange(Slot.CycleStartMinute) || Slot.CycleStartMinute > Now)
+		{
+			return false;
+		}
+	}
+	TSet<uint32> Ids;
+	for (int32 i = 0; i < State.Ground.Num(); ++i)
+	{
+		const FFallenCoconut& C = State.Ground[i];
+		const int32 SlotIndex = static_cast<int32>(C.Id >> 24) - 1;
+		const bool bDuplicate = Ids.Contains(C.Id);
+		Ids.Add(C.Id);
+		if (bDuplicate || !State.Slots.IsValidIndex(SlotIndex) || static_cast<int32>(C.Id & 0xFFFFFFu) >= State.Slots[SlotIndex].Generation
+			|| !InClockRange(C.LandedMinute) || C.LandedMinute > Now
+			|| (i > 0 && !SortGround(State.Ground[i - 1], C)))
+		{
+			return false;
+		}
+	}
+	return true;
 }

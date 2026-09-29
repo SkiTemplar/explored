@@ -248,6 +248,68 @@ void FCoconutPalmModelSpec::Define()
 			FCoconutPalmModel::Shake(Palm, Profile, 0.0f, FVector2D::ZeroVector, Start, Calm, Drops);
 			TestEqual(TEXT("sacudir en el pasado se hace en el último minuto conocido"), Palm.LastUpdateMinute, Start + 10 * Day);
 		});
+
+		It("un reloj fuera de partida no cuelga, no desborda ni congela la copa", [this]()
+		{
+			const int64 Max = FCoconutPalmModel::MaxSupportedMinute;
+			FCoconutPalmState Palm = FCoconutPalmModel::Initialize(9, FVector2D::ZeroVector, Profile, Start, true);
+			const FCoconutPalmState Before = Palm;
+			// Antes recorría todos los ciclos hasta ahí (~2e9 vueltas) y desbordaba Fall + vida.
+			TestEqual(TEXT("minuto absurdo"), FCoconutPalmModel::Advance(Palm, Profile, TNumericLimits<int64>::Max() - 5, Calm), 0);
+			TestEqual(TEXT("un minuto más allá del tope"), FCoconutPalmModel::Advance(Palm, Profile, Max + 1, Calm), 0);
+			TestTrue(TEXT("no adopta la hora"), SameState(Before, Palm));
+			// Y como no la adopta, el reloj real sigue haciendo caer cocos.
+			TestTrue(TEXT("sigue viva"), FCoconutPalmModel::Advance(Palm, Profile, Start + 30 * Day, Calm) > 0);
+			TArray<FCoconutDrop> Drops;
+			FCoconutPalmModel::Shake(Palm, Profile, 1.0f, FVector2D::ZeroVector, TNumericLimits<int64>::Max(), Calm, Drops);
+			TestEqual(TEXT("sacudir con reloj absurdo lo hace en el último minuto conocido"), Palm.LastUpdateMinute, Start + 30 * Day);
+			TestTrue(TEXT("se conserva"), Conserved(Palm));
+
+			// El último minuto admitido sí se simula, desde el principio y sin desbordar.
+			FCoconutPalmState Edge = FCoconutPalmModel::Initialize(4, FVector2D::ZeroVector, Profile, -Max, true);
+			FCoconutPalmModel::Advance(Edge, Profile, Max, Calm);
+			TestEqual(TEXT("reloj al tope"), Edge.LastUpdateMinute, Max);
+			TestTrue(TEXT("se conserva de extremo a extremo"), Conserved(Edge));
+
+			// Un ciclo cargado corrupto (muy en el pasado) tampoco hace dar millones de vueltas.
+			FCoconutPalmState Corrupt = FCoconutPalmModel::Initialize(9, FVector2D::ZeroVector, Profile, Start, true);
+			Corrupt.Slots[0].CycleStartMinute = -1000000000000000ll;
+			const FCoconutPalmState CorruptBefore = Corrupt;
+			TestEqual(TEXT("ciclo corrupto no avanza"), FCoconutPalmModel::Advance(Corrupt, Profile, Start + Day, Calm), 0);
+			TestTrue(TEXT("ni toca nada"), SameState(CorruptBefore, Corrupt));
+		});
+
+		It("IsValidSaved acepta lo que produce el juego y rechaza un estado imposible", [this]()
+		{
+			uint32 Seed = 3;
+			FCoconutPalmState Palm = PalmWithMature(Seed);
+			TArray<FCoconutDrop> Drops;
+			FCoconutPalmModel::Shake(Palm, Profile, 1.0f, FVector2D::ZeroVector, Start + Day, Calm, Drops);
+			FCoconutPalmModel::Advance(Palm, Profile, Start + 40 * Day, Calm);
+			TestTrue(TEXT("hay cocos en el suelo"), Palm.Ground.Num() > 0);
+			TestTrue(TEXT("lo del juego vale"), FCoconutPalmModel::IsValidSaved(Palm, Profile));
+			TestTrue(TEXT("una recién creada vale"), FCoconutPalmModel::IsValidSaved(FCoconutPalmModel::Initialize(1, FVector2D::ZeroVector, Profile, 0, true), Profile));
+
+			auto Broken = [&](TFunction<void(FCoconutPalmState&)> Break)
+			{
+				FCoconutPalmState S = Palm;
+				Break(S);
+				return !FCoconutPalmModel::IsValidSaved(S, Profile);
+			};
+			TestTrue(TEXT("reloj fuera de rango"), Broken([](FCoconutPalmState& S) { S.LastUpdateMinute = FCoconutPalmModel::MaxSupportedMinute + 1; }));
+			TestTrue(TEXT("ciclo que empieza en el futuro"), Broken([](FCoconutPalmState& S) { S.Slots[1].CycleStartMinute = S.LastUpdateMinute + 1; }));
+			TestTrue(TEXT("ciclo fuera de rango"), Broken([](FCoconutPalmState& S) { S.Slots[1].CycleStartMinute = TNumericLimits<int64>::Lowest(); }));
+			TestTrue(TEXT("huecos de más"), Broken([](FCoconutPalmState& S) { S.Slots.AddDefaulted(); }));
+			TestTrue(TEXT("generación negativa"), Broken([](FCoconutPalmState& S) { S.Slots[0].Generation = -1; }));
+			TestTrue(TEXT("generación que no cabe en el Id"), Broken([](FCoconutPalmState& S) { S.Slots[0].Generation = 0x1000000; }));
+			TestTrue(TEXT("racha posterior al reloj"), Broken([](FCoconutPalmState& S) { S.LastGustHour = S.LastUpdateMinute / 60 + 1; }));
+			TestTrue(TEXT("tronco NaN"), Broken([](FCoconutPalmState& S) { S.TrunkPosition.X = std::numeric_limits<double>::quiet_NaN(); }));
+			TestTrue(TEXT("coco de un hueco que no existe"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = FCoconutPalmModel::MakeId(40, 0); }));
+			TestTrue(TEXT("coco de una generación que aún no ha salido"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = FCoconutPalmModel::MakeId(0, S.Slots[0].Generation); }));
+			TestTrue(TEXT("Id 0"), Broken([](FCoconutPalmState& S) { S.Ground[0].Id = 0; }));
+			TestTrue(TEXT("coco repetido"), Broken([](FCoconutPalmState& S) { const FFallenCoconut Copy = S.Ground[0]; S.Ground.Add(Copy); }));
+			TestTrue(TEXT("coco caído en el futuro"), Broken([](FCoconutPalmState& S) { S.Ground.Last().LandedMinute = S.LastUpdateMinute + 1; }));
+		});
 	});
 
 	Describe("sacudir", [this]()
