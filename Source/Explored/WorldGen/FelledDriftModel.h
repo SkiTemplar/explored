@@ -24,7 +24,7 @@
  *   Quien llama también puede entregarlo antes (sale del radio activo).
  *
  * Cada pieza está siempre en un solo estado y ninguna desaparece sin pasar por
- * Collect, HandOver o el deshecho. Una pieza ya resuelta deja su hueco a la
+ * Collect, HandOver, Release o el deshecho. Una pieza ya resuelta deja su hueco a la
  * siguiente que entre con AddPiece (el índice más bajo libre): el índice de una
  * pieza activa no cambia nunca, pero el de una resuelta deja de ser suyo, así que
  * quien llama lee el informe de Advance antes de volver a llamar a AddPiece.
@@ -62,7 +62,12 @@ enum class EFelledPieceState : uint8
 	/** Entregada al sistema de madera flotante como HandoverItemId. */
 	HandedOver,
 	/** Se ha deshecho en el mar (hojas, fibra, cáscaras, ramas finas). */
-	Decayed
+	Decayed,
+	/**
+	 * Estaba quieta y salió del modelo con Release: sigue en Drop.Position como un
+	 * objeto normal del suelo (o del fondo), que se guarda y se recoge como cualquier otro.
+	 */
+	Released
 };
 
 EXPLORED_API const TCHAR* LexToString(EFelledPieceState State);
@@ -144,6 +149,14 @@ public:
 	bool Collect(int32 Index);
 	/** La entrega ya (sale del radio activo). Solo lo que está flotando; lo que se deshace queda Decayed. */
 	bool HandOver(int32 Index);
+	/**
+	 * Saca del modelo una pieza activa porque se descarga su chunk o nadie está cerca.
+	 * Lo que flota se entrega como en HandOver (HandedOver o Decayed); lo que está quieto
+	 * (varado, en seco o en el fondo) pasa a Released y queda donde está como objeto
+	 * normal. Quien llama lee GetPieces()[Index].State justo después, antes de AddPiece.
+	 * False si el índice no es válido o la pieza ya no está activa.
+	 */
+	bool Release(int32 Index);
 
 	const TArray<FFelledPiece>& GetPieces() const { return Pieces; }
 	int32 NumActive() const;

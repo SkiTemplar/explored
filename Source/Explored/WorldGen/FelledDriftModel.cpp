@@ -22,6 +22,7 @@ const TCHAR* LexToString(EFelledPieceState State)
 	case EFelledPieceState::Collected:  return TEXT("Collected");
 	case EFelledPieceState::HandedOver: return TEXT("HandedOver");
 	case EFelledPieceState::Decayed:    return TEXT("Decayed");
+	case EFelledPieceState::Released:   return TEXT("Released");
 	}
 	return TEXT("Unknown");
 }
@@ -257,6 +258,21 @@ bool FFelledDriftModel::HandOver(int32 Index)
 	}
 	FFelledDriftReport Ignored;
 	Finish(Index, Ignored);
+	return true;
+}
+
+bool FFelledDriftModel::Release(int32 Index)
+{
+	if (!Pieces.IsValidIndex(Index) || !Pieces[Index].IsActive())
+	{
+		return false;
+	}
+	if (Pieces[Index].State == EFelledPieceState::Floating)
+	{
+		return HandOver(Index);
+	}
+	// Quieta: sin agua que la mueva no hace falta seguirla. Se queda donde está.
+	Pieces[Index].State = EFelledPieceState::Released;
 	return true;
 }
 
