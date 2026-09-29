@@ -150,3 +150,27 @@ commits desde su última revisión y siguen con `necesita-unreal`.
 - #135 se anota en la nota «en parte» del tocón con rebrote. Falta engancharlo a
   `USaveSubsystem`.
 - #134 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.
+
+## Ejecución 13:00 UTC
+
+Base: `origin/main` en `5bfa5dd` al empezar. Hay dos PR nuevas, #137 y #138. Las demás PR
+abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen
+commits desde su última revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #137 | `nube/mundo-2026-09-29-robustez` | **Fusionada** (`8ed2845`), por otra sesión mientras corrían mis pruebas | Revisada y aprobada por mi parte. Solo toca modelos puros, sus specs y documentación. `FSandModel::Brush` rechaza un radio mayor que `MaxBrushRadius` (8 m, el lado de un chunk; unas 3 200 columnas en celdas de 0,25 m). Un radio NaN ya lo paraba `!(Radius > 0)`. Los specs comprueban que por encima del tope no se consulta ni una vez la altura base, y que en el tope, cruzando cuatro chunks en coordenadas negativas, la masa neta vuelve a cero. `FFelledDriftModel::Release` entrega lo que flota con `HandOver` y deja lo quieto en el estado nuevo `Released`, que no cuenta como activo (`IsActive`), así que `Advance` no lo refloata ni gasta consultas y `AddPiece` reutiliza su hueco. Es solo del servidor, sin estado replicado nuevo. El merge usó el head original `02ee6ab`; el árbol resultante es idéntico al de mi rebase `aaf7f7b`, que es el que probé. |
+| #138 | `nube/packs-2026-09-29e` | **Fusionada** (`dd56886`), con `5e19070` | Cuatro pendientes nuevos en `packs_catalogo.json`: carretilla, escalera de mano, espantapájaros y horno de fundición. Comprobé que los cuatro ids existen en `building_pieces.json`/`items.json`, que no estaban ya en el catálogo y que los packs citados (Fantasy Town Kit, Restaurant Bits) están en `Tools/Packs/packs.json`. Añadí `5e19070`: la carretilla citaba un «lote 15» que no existe en `lotes` (el último es el 14), y las otras tres entradas no citan lote. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #137 (rebasada sobre `main`) | 1370 casos, 0 fallos | 1370 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) en el head original |
+| #138 (al día con `5bfa5dd`, con `5e19070`) | — (no toca Source) | — | 0 errores, 0 avisos · 550 passed | Packs: 64 passed, 1 skipped · CI en verde (7/7) |
+
+### 00-TODO.md
+
+- No se marca ninguna casilla nueva como `[x]`: #137 cierra pendientes de revisión, no
+  tareas del TODO.
+- #137 se anota en las notas «en parte» de la caída al agua de la tala y de la arena viva.
