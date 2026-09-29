@@ -124,3 +124,25 @@ def test_lluvia_en_hojas_tiene_cascadas_con_las_rachas(rendered):
     light = rendered["amb_rain_light"]
     assert np.std(_envelope_db(leaves, 1.0)) >= 1.0
     assert np.std(_envelope_db(leaves, 1.0)) > 1.5 * np.std(_envelope_db(light, 1.0))
+
+
+def test_encender_la_hoguera_sopla_y_luego_prende_con_aleteo(rendered):
+    ignite = _mono(rendered["sfx_fire_ignite"])
+    # Sin retumbo: la version anterior dejaba un tercio de la energia por
+    # debajo de 150 Hz. El cuerpo de la llama va en 150-1500 Hz.
+    assert _band_share(ignite, 20.0, 150.0) <= 0.2
+    assert _band_share(ignite, 150.0, 1500.0) >= 0.6
+    # Soplos primero y la llama despues: el ultimo tercio suena bastante mas
+    # fuerte que el primero.
+    env = _envelope_db(ignite, 0.05)
+    third = len(env) // 3
+    assert np.mean(env[-third:]) - np.mean(env[:third]) >= 8.0
+    # La llama aletea a 8-14 Hz: pico de la envolvente (sin chasquidos ni
+    # tendencia lenta) en esa banda.
+    flame = ignite[-int(0.7 * SAMPLE_RATE) :]
+    smooth = np.convolve(flame, np.ones(24) / 24, "same")
+    frames = np.abs(smooth)[: len(smooth) // 480 * 480].reshape(-1, 480).mean(axis=1)
+    frames = frames - np.convolve(frames, np.ones(25) / 25, "same")
+    spectrum = np.abs(np.fft.rfft(frames * np.hanning(len(frames))))
+    freqs = np.fft.rfftfreq(len(frames), 1.0 / 100.0)
+    assert 7.0 <= freqs[1 + int(np.argmax(spectrum[1:]))] <= 15.0

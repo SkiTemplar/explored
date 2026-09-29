@@ -15,7 +15,7 @@ from ..granular import render_noise_grains
 from ..levels import k_weighted_momentary_max
 from ..loop import seamless_loop
 from ..modal import modal_hit
-from ..noise import pink_noise
+from ..noise import brown_noise, pink_noise
 from ..rng import rng_for
 
 SR = SAMPLE_RATE
@@ -295,25 +295,100 @@ def wood_saw(name: str) -> np.ndarray:
     return _to_momentary(_tail_fade(out * env), -15.5)
 
 
+def _tinder_click(rng: np.random.Generator) -> np.ndarray:
+    """Una fibra seca que se parte al calor: impulso de 1-3 ms, agudo."""
+    glen = max(int(rng.uniform(0.001, 0.003) * SR), 16)
+    click = rng.standard_normal(glen) * np.exp(-np.arange(glen) / SR / rng.uniform(0.0004, 0.0012))
+    click = static_filter(click, SR, fc=rng.uniform(1500, 3500), q=0.7, kind="highpass")
+    return static_filter(click, SR, fc=7000, q=0.7, kind="lowpass")
+
+
+def _tinder_crackle(out: np.ndarray, start: int, end: int, rate_from: float, rate_to: float,
+                    level: float, rng: np.random.Generator) -> None:
+    """Racimos de fibras que se parten entre `start` y `end`, con una
+    densidad que pasa de `rate_from` a `rate_to` chasquidos por segundo."""
+    t = float(start)
+    while t < end:
+        u = (t - start) / max(end - start, 1)
+        rate = rate_from + (rate_to - rate_from) * u
+        pos = int(t)
+        click = _tinder_click(rng) * level * rng.uniform(0.3, 1.0) * 0.3
+        stop = min(pos + len(click), len(out))
+        out[pos:stop] += click[: stop - pos]
+        t += SR * rng.exponential(1.0 / max(rate, 1e-3))
+
+
 def fire_ignite(name: str) -> np.ndarray:
-    """Hoguera encendiendose (complementa el bucle de crepitar,
-    `sfx_fire_loop`): unas pocas chispas sueltas que se espesan en un breve
-    soplo de llama prendiendo."""
+    """Prender la hoguera (complementa el bucle `sfx_fire_loop`): la brasa
+    del arco de fuego o la chispa del pedernal cae en la yesca y hay que
+    soplarla hasta que la llama prende.
+
+    - Soplos: dos o tres soplidos cortos (aire por los labios, banda de
+      0,5-2 kHz con un siseo encima). Con cada uno la yesca brilla mas y
+      cruje mas: fibras que se parten al calor, chasquidos de 1-3 ms cada vez
+      mas seguidos.
+    - Llama: el aire que de pronto arde. Un bufido de combustion (100-700 Hz)
+      que se hincha en ~80 ms, con el aleteo de 8-14 Hz de una llama pequena,
+      y se asienta en un rumor bajo.
+    - Ramitas: la paja y las ramitas finas que prenden detras, un crepitar
+      denso que se va espaciando y algun chasquido con cuerpo de madera.
+
+    La version anterior eran chispas de ruido agudo sobre un soplo rosa
+    grave: un tercio de la energia caia por debajo de 150 Hz y sonaba a
+    retumbo con siseo, no a fuego que prende."""
     rng = rng_for(name)
-    dur = rng.uniform(1.0, 1.4)
-    n = int(dur * SR)
-    sparks = np.zeros(n)
-    n_sparks = int(rng.integers(5, 9))
-    for i in range(n_sparks):
-        pos = int((i / n_sparks) * n * rng.uniform(0.6, 0.9))
-        glen = max(int(rng.uniform(0.008, 0.02) * SR), 8)
-        pop = static_filter(rng.standard_normal(glen), SR, fc=rng.uniform(2000, 5000), q=1.4, kind="highpass")
-        pop = pop * np.exp(-np.arange(glen) / SR / 0.012)
-        end = min(pos + glen, n)
-        sparks[pos:end] += pop[: end - pos] * rng.uniform(0.4, 0.7)
-    whoosh = static_filter(pink_noise(n, rng), SR, fc=1600, q=0.6, kind="lowpass")
-    whoosh_env = fit_length(ar_envelope(SR, dur * 0.55, dur * 0.4, shape=1.4), n)
-    return sparks * 0.8 + whoosh * whoosh_env * 0.35
+    n_breaths = int(rng.integers(2, 4))
+    breath_lens = [rng.uniform(0.2, 0.28) for _ in range(n_breaths)]
+    gaps = [rng.uniform(0.06, 0.11) for _ in range(n_breaths)]
+    catch_at = int((0.03 + sum(breath_lens[:-1]) + sum(gaps[:-1]) + 0.6 * breath_lens[-1]) * SR)
+    flame_s = rng.uniform(0.75, 0.95)
+    n = catch_at + int(flame_s * SR)
+    out = np.zeros(n)
+
+    # Soplos y yesca que se aviva con cada uno.
+    cursor = int(0.03 * SR)
+    for k, (blen, gap) in enumerate(zip(breath_lens, gaps, strict=True)):
+        bn = int(blen * SR)
+        air = static_filter(pink_noise(bn, rng), SR, fc=rng.uniform(850, 1200), q=0.8, kind="bandpass")
+        air += 0.35 * static_filter(rng.standard_normal(bn), SR, fc=rng.uniform(3500, 4500), q=0.9, kind="bandpass")
+        air /= np.max(np.abs(air)) + 1e-9
+        air *= fit_length(ar_envelope(SR, 0.05, blen - 0.09, hold_s=0.04, shape=1.3), bn)
+        air *= smooth_random_walk(bn, rng, smoothing_hz=18.0, sr=SR, low=0.75, high=1.0)
+        stop = min(cursor + bn, n)
+        out[cursor:stop] += 0.07 * air[: stop - cursor]
+        glow = (k + 1) / n_breaths
+        _tinder_crackle(out, cursor + int(0.03 * SR), min(cursor + bn + int(gap * SR), n),
+                        12.0 + 25.0 * glow, 25.0 + 45.0 * glow, 0.25 + 0.35 * glow, rng)
+        cursor += bn + int(gap * SR)
+
+    # La llama: bufido de combustion con aleteo.
+    fn = n - catch_at
+    u = np.arange(fn) / SR
+    roar = static_filter(brown_noise(fn, rng, leak=0.995), SR, fc=rng.uniform(550, 750), q=0.7, kind="lowpass")
+    roar = static_filter(roar, SR, fc=170, q=0.6, kind="highpass")
+    roar /= np.max(np.abs(roar)) + 1e-9
+    lick = static_filter(pink_noise(fn, rng), SR, fc=rng.uniform(900, 1300), q=0.9, kind="bandpass")
+    lick /= np.max(np.abs(lick)) + 1e-9
+    swell = np.minimum(u / 0.08, 1.0) ** 1.5
+    settle = 0.45 + 0.55 * np.exp(-np.maximum(u - 0.08, 0.0) / 0.22)
+    # Aleteo casi periodico (una llama pequena "respira" a 8-14 Hz), con la frecuencia algo suelta.
+    flutter_hz = rng.uniform(9.0, 12.0) * smooth_random_walk(fn, rng, smoothing_hz=3.0, sr=SR, low=0.85, high=1.15)
+    flutter = 0.65 + 0.35 * np.sin(2.0 * np.pi * np.cumsum(flutter_hz) / SR + rng.uniform(0.0, 2.0 * np.pi))
+    flame = (0.55 * roar + 0.3 * lick * np.exp(-u / 0.18)) * swell * settle * flutter
+    out[catch_at:] += 0.9 * flame
+
+    # Paja y ramitas que prenden: crepitar denso que se espacia, y algun chasquido con cuerpo.
+    _tinder_crackle(out, catch_at + int(0.04 * SR), n, 70.0, 18.0, 1.4, rng)
+    for _ in range(int(rng.integers(1, 3))):
+        pos = catch_at + int(rng.uniform(0.15, 0.6) * SR)
+        snap = modal_hit(SR, 0.06, base_freq=rng.uniform(700, 1300), mode_ratios=[1.0, 2.2, 3.7],
+                         mode_dampings_s=[0.012, 0.006, 0.003], mode_amps=[1.0, 0.4, 0.2], rng=rng, detune=0.04)
+        crack = _tinder_click(rng)
+        snap[: len(crack)] += crack
+        stop = min(pos + len(snap), n)
+        out[pos:stop] += 0.2 * snap[: stop - pos]
+
+    return _to_momentary(_tail_fade(out, 0.12), -16.5)
 
 
 def cooking_sizzle(name: str) -> np.ndarray:
