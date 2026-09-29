@@ -1059,6 +1059,10 @@ Usa el casco por piezas de §3.14 (`FHullAssemblyModel`) para la forma y la flot
     - La arena del surco va al costado más cercano, a la primera columna fuera de la
       huella. Si ese costado es huella de una estructura o ya está al tope del montón
       (2 m), va al otro; si tampoco cabe, se queda. La masa se conserva siempre.
+    - El cordón cae al costado del tramo que el casco ya ha barrido, nunca delante de la
+      proa ni detrás de la popa: así el surco sale igual se arrastre de un tirón o en
+      muchos fotogramas, con cualquier rumbo (en diagonal, antes el cordón de un paso
+      corto caía delante y el siguiente lo volvía a mover, hasta 104 mm frente a 39 mm).
     - Después actúa la arena viva (§3.13): la avalancha derrumba los cordones que pasen
       de 34° (45° mojados) y el oleaje rellena el surco de la franja intermareal.
 
