@@ -249,6 +249,20 @@ void FGroundBranchModelSpec::Define()
 			TestTrue(TEXT("se recoge por su serie"), FGroundBranchModel::Pick(Loaded, Loaded.Present[0].Serial));
 		});
 
+		It("sin series libres no aparece ninguna rama ni se repite una serie", [this]()
+		{
+			FGroundBranchCell Cell = FGroundBranchModel::Initialize(4242u, Sources, 0);
+			EmptyCell(Cell);
+			Cell.NextSerial = MAX_uint32 - 1;
+			// Antes NextSerial++ pasaba de 4294967295 a 0 y la rama nueva repetía una serie.
+			FGroundBranchModel::Advance(Cell, Sources, 60 * Day);
+			TestEqual(TEXT("solo cabe una"), Cell.Present.Num(), 1);
+			TestEqual(TEXT("con la última serie"), Cell.Present[0].Serial, MAX_uint32 - 1);
+			TestEqual(TEXT("NextSerial no da la vuelta"), Cell.NextSerial, MAX_uint32);
+			FGroundBranchCell Loaded;
+			TestTrue(TEXT("y se vuelve a cargar"), RoundTrip(Cell, Loaded) && SameCell(Cell, Loaded));
+		});
+
 		It("las ramas caídas no se mueven al cargar aunque se haya talado su árbol", [this]()
 		{
 			FGroundBranchCell Cell = FGroundBranchModel::Initialize(9u, Sources, 0);

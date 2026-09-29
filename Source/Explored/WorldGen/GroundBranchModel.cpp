@@ -72,7 +72,9 @@ int32 FGroundBranchModel::Advance(FGroundBranchCell& Cell, const TArray<FGroundB
 	Cell.Accumulator = FMath::Min(FMath::Min(Cell.Accumulator, Cap) + Gain, Cap);
 
 	int32 Spawned = 0;
-	while (Cell.Accumulator >= MilliPerBranch && Cell.Present.Num() < Capacity)
+	// Sin series libres (solo con una partida manipulada: harían falta 4e9 ramas) no aparece
+	// ninguna más: NextSerial++ daría la vuelta a 0 y repetiría una serie que Pick confundiría.
+	while (Cell.Accumulator >= MilliPerBranch && Cell.Present.Num() < Capacity && Cell.NextSerial < MAX_uint32)
 	{
 		Cell.Present.Add(PlaceBranch(Cell.CellSeed, Cell.NextSerial++, Sources));
 		Cell.Accumulator -= MilliPerBranch;
