@@ -159,6 +159,8 @@ salir de la isla.
         esfera solo en el modelo puro; falta enganchar pala y pico a un actor. El tope de
         1/6 m³ por golpe de #88 está pendiente de que el director lo confirme frente a la
         «esfera completa» de la biblia 02 §2.1.
+        PR #144: cada muestra se redondea al milímetro hacia su densidad de partida, así que
+        ni el golpe ni la pala rebasan su tope de volumen (test de propiedades en host).
 - [x] `Save`: nueva capa `"terrain"` en `FSaveWorldDeltas` (deltas de edición por chunk,
       mismo patrón que `FSaveScatterDeltas`) — condición dura del criterio de salida
       («se queda cavado al recargar la partida»). *(GDD §7.3 punto 2, biblia 02 §2.8)*
@@ -706,6 +708,8 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       no está amarrado en el agua. *(biblia 02 §8.4)*
       → **En parte:** `58e38da` (PR #53), `RaftYardModel.h:256, 269`, `BoatModel.cpp:634`
         (amarre) — falta la regla de 8 s/tonelada y enganchar astillero y amarre a un actor.
+        PR #142: las mitades se miden sobre el tramo real de las piezas del casco y un solo
+        rodillo en el centro ya no basta.
 - [ ] `Boats`: actualizar `boats.json` para que los cuatro planos canónicos listen piezas
       en vez de un coste plano. *(biblia 02 §8.4)*
 - [ ] Diseñar y cablear la fila de «Estado del barco» del HUD: nueva
@@ -948,6 +952,9 @@ Equilibrado, rendimiento objetivo, empaquetado, localización, salida a mercado.
       `FBodyModel::AddCut(NaN)`, límite de carga en `CartFromValue`, reloj del incendio por
       delante, radio máximo del pincel de arena y límite de peso al cargar el inventario.
       *(docs/reviews/auditoria-modelos-puros-2026-09-28.md, «Pendiente»)*
+      → **En parte:** PR #142 acota el reloj del incendio (`MaxAbsSecond`: `Advance` no lo
+        adopta y `Load` lo rechaza). Un `lastSecond` válido por delante del reloj real
+        sigue congelando el fuego.
 - [ ] QA de cierre: pasar `Tools/HostTests/run.sh` (specs de host) y
       `Tools/test.ps1` (Automation Tests del editor) en verde antes de empaquetar.
       *(CLAUDE.md del proyecto, «Tests»)*

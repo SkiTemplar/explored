@@ -204,3 +204,28 @@ commits nuevos y siguen con `necesita-unreal`.
   la arena, pero la arena sigue sin ejecutarse en el servidor.
 - #140 se anota en la nota «en parte» de la arena viva (biblia 08 §2.6). El TODO no tiene
   casilla para el audio de #141.
+
+## Ejecución 17:00 UTC
+
+Base: `origin/main` en `f2720b0` al empezar. Hay dos PR nuevas, #142 y #144. Las demás PR
+abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen
+commits desde su última revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #142 | `nube/mundo-2026-09-29-reloj` | **Fusionada** (`e7781b6`) | Solo toca modelos puros, sus specs y documentación. Relojes fuera de partida: `FCoconutPalmModel` ignora minutos fuera de ±10 000 días y ciclos fuera de [−3, 1] × ese tope (antes recorría miles de millones de ciclos). Añade `IsValidSaved` para descartar un estado cargado incoherente, aunque de momento no lo llama nadie: lo tendrá que usar el actor de la palmera al cargar. `FRainCatchModel` ya no adopta un reloj absurdo, que dejaba el recipiente congelado. `FWildfireModel` acota el minuto en `Ignite`, `Douse` y `Advance`, y el segundo en `Advance` y `Load` (`MaxAbsSecond`), para que nada guarde lo que `Load` rechazaría. Comprobé que `Douse` no desborda: el mojado se acota a 2 × 10¹² y el resultado a la cota. En `FGroundBranchModel`, `NextSerial` ya no da la vuelta a 0. `FRaftYardModel` mide las mitades sobre el tramo real de las piezas (`HullSpanS`) y no sobre `CenterS` ± eslora / 2, y un solo rodillo justo en el centro deja de contar para las dos mitades. Es un cambio de comportamiento documentado en el GDD §3.x y coherente con la biblia 02 §8.4. Todo es del servidor y no añade estado replicado. |
+| #144 | `nube/mecanicas-2026-09-29b` | **Fusionada** (`6694e3b`) | Modelo puro `FTerrainEditModel`, su spec, un test de propiedades en host y documentación. `Commit` redondea cada muestra al milímetro hacia su densidad de partida (con `Floor`/`Ceil` y sin retroceder más allá de `OldMm`). Como la ocupación es monótona, el volumen realizado no pasa del propuesto. La pala rellena con lo cortado de verdad (`Result.VolumeRemoved`), no con lo propuesto. Los specs endurecen la tolerancia de 1e-3 a 1e-9 y el test nuevo (`TerrainEditPropertyTest.cpp`, semilla fija) comprueba alcance del pincel, volumen declarado frente a real, chunks sucios, guardado y repetición. Riesgo menor que queda: `TargetMm` se calcula en `float`, aunque los tests con 1e-9 pasan también con ASan/UBSan. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #142 (rebasada sobre `f2720b0`, sin conflictos) | 1384 casos, 0 fallos | 1384 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+| #144 (rebasada sobre `f2720b0`, sin conflictos) | 1379 casos, 0 fallos | 1379 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+
+### 00-TODO.md
+
+- No se marca ninguna casilla nueva como `[x]`: las dos PR corrigen modelos que ya existían.
+- #142 se anota en la nota «en parte» de la botadura sobre rodillos y en los pendientes de
+  la auditoría (reloj del incendio, solo en parte).
+- #144 se anota en la nota «en parte» del picado por esfera.
