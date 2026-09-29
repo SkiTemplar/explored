@@ -545,8 +545,11 @@ al sacudir (§3.18).
       todos más de 80 m), el tronco pasa a ser `madera_flotante` normal, la de las playas
       y la pesca. El coco sigue siendo coco. Las hojas, la fibra, la corteza, las
       cáscaras y las ramas finas se deshacen.
-    - Ninguna pieza desaparece sin pasar por recogida, entrega o deshecho (lo comprueba
-      el spec).
+    - **Al alejarse todos** (se descarga el chunk), lo que flota se entrega como arriba
+      y lo que está quieto (varado, en seco o en el fondo) sale del modelo y se queda
+      donde está como un objeto normal del suelo: ya no lo mueve la marea.
+    - Ninguna pieza desaparece sin pasar por recogida, entrega, suelta o deshecho (lo
+      comprueba el spec).
 
     | Objeto | Flota | Calado (cm) | Si nadie lo recoge |
     |---|---|---|---|

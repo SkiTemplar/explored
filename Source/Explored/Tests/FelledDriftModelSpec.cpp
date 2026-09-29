@@ -394,6 +394,48 @@ void FFelledDriftModelSpec::Define()
 			TestFalse(TEXT("no se recoge lo entregado"), Model.Collect(Floating));
 			TestFalse(TEXT("índice negativo"), Model.Collect(-1));
 		});
+
+		It("Release saca lo quieto como objeto del suelo y entrega lo que flota", [this]()
+		{
+			// Revisión 2026-09-29 L1: al descargar su chunk, HandOver no aceptaba lo varado.
+			FFelledDriftModel Model;
+			const FBeach Beach;
+			const int32 Floating = Model.AddPiece(MakeDrop(TEXT("tronco_pequeno"), 300.0), Beach);
+			const int32 Leaf = Model.AddPiece(MakeDrop(TEXT("hoja_palma"), 300.0), Beach);
+			const int32 Sunk = Model.AddPiece(MakeDrop(TEXT("madera_dura"), 300.0), Beach);
+			const int32 Dry = Model.AddPiece(MakeDrop(TEXT("coco_maduro"), -300.0, -40.0), Beach);
+			TestTrue(TEXT("el que flota"), Model.Release(Floating));
+			TestEqual(TEXT("se entrega"), Model.GetPieces()[Floating].State, EFelledPieceState::HandedOver);
+			TestTrue(TEXT("la hoja"), Model.Release(Leaf));
+			TestEqual(TEXT("se deshace"), Model.GetPieces()[Leaf].State, EFelledPieceState::Decayed);
+			TestTrue(TEXT("lo hundido"), Model.Release(Sunk));
+			TestEqual(TEXT("queda en el fondo"), Model.GetPieces()[Sunk].State, EFelledPieceState::Released);
+			TestTrue(TEXT("lo varado"), Model.Release(Dry));
+			TestEqual(TEXT("queda en el suelo"), Model.GetPieces()[Dry].State, EFelledPieceState::Released);
+			TestEqual(TEXT("donde estaba"), Model.GetPieces()[Dry].Drop.Position, FVector2D(-300.0, -40.0));
+			TestFalse(TEXT("no dos veces"), Model.Release(Dry));
+			TestFalse(TEXT("ni recogerlo luego del modelo"), Model.Collect(Dry));
+			TestFalse(TEXT("ni un índice fuera"), Model.Release(4));
+			TestFalse(TEXT("ni negativo"), Model.Release(-1));
+			TestEqual(TEXT("nada activo"), Model.NumActive(), 0);
+			TestEqual(TEXT("nombre"), FString(LexToString(EFelledPieceState::Released)), FString(TEXT("Released")));
+		});
+
+		It("lo soltado no vuelve a flotar con la pleamar ni gasta consultas, y deja su hueco", [this]()
+		{
+			FFelledDriftModel Model;
+			FBeach Beach;
+			const int32 Log = Model.AddPiece(MakeDrop(TEXT("tronco_pequeno"), -50.0), Beach);
+			TestTrue(TEXT("suelta"), Model.Release(Log));
+			Beach.WaterRiseCm = 500.0;
+			int32 Queries = 0;
+			auto Counting = [&Queries, &Beach](const FVector2D& P) { ++Queries; return Beach(P); };
+			const FFelledDriftReport Report = Model.Advance(30.0f, Counting, [](const FVector2D&) { return FVector2D(40.0, 0.0); });
+			TestEqual(TEXT("no se refloata"), Report.Refloated.Num(), 0);
+			TestEqual(TEXT("sin consultas"), Queries, 0);
+			TestEqual(TEXT("quieto"), Model.GetPieces()[Log].Drop.Position, FVector2D(-50.0, 0.0));
+			TestEqual(TEXT("el hueco es para la siguiente"), Model.AddPiece(MakeDrop(TEXT("coco_verde"), 300.0), Beach), Log);
+		});
 	});
 
 	Describe("las piezas", [this]()
