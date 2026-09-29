@@ -803,6 +803,8 @@ datos todavía.
         `iconsPending`.
         PR #116: mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit),
         sin normalizar todavía en Unreal.
+        PR #121: clavos y yunque de la herrería (KayKit RPG Tools Bits), sin normalizar
+        todavía en Unreal.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
