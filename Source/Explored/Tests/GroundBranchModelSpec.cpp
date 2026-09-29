@@ -1,5 +1,6 @@
 #include "Misc/AutomationTest.h"
 
+#include "Save/SaveValue.h"
 #include "WorldGen/FellingModel.h"
 #include "WorldGen/GroundBranchModel.h"
 
@@ -25,6 +26,29 @@ BEGIN_DEFINE_SPEC(FGroundBranchModelSpec, "Explored.GroundBranch",
 		for (int32 i = 0; i < A.Present.Num(); ++i)
 		{
 			if (A.Present[i].Serial != B.Present[i].Serial || A.Present[i].Position != B.Present[i].Position)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	/** Guarda la celda, la pasa por texto compacto y la carga con la misma semilla. */
+	bool RoundTrip(const FGroundBranchCell& In, FGroundBranchCell& Out)
+	{
+		FSaveValue Parsed;
+		FString Error;
+		return FSaveText::Parse(FSaveText::Write(FGroundBranchModel::SaveCell(In), ESaveTextStyle::Compact), Parsed, Error)
+			&& FGroundBranchModel::LoadCell(Parsed, In.CellSeed, Out);
+	}
+	bool SameBranches(const FGroundBranchCell& A, const FGroundBranchCell& B)
+	{
+		if (!SameCell(A, B) || A.LastUpdateMinute != B.LastUpdateMinute)
+		{
+			return false;
+		}
+		for (int32 i = 0; i < A.Present.Num(); ++i)
+		{
+			if (A.Present[i].ItemId != B.Present[i].ItemId || A.Present[i].SourceIndex != B.Present[i].SourceIndex)
 			{
 				return false;
 			}
@@ -183,6 +207,108 @@ void FGroundBranchModelSpec::Define()
 		// Gigante 4, palmera 2: dos tercios bajo el gigante (±5 %).
 		const double Share = (double)BySource[0] / 6000.0;
 		TestTrue(*FString::Printf(TEXT("proporción %.3f ≈ 0,667"), Share), FMath::Abs(Share - 2.0 / 3.0) < 0.05);
+	});
+
+	Describe("guardado", [this]()
+	{
+		It("una celda sin tocar no se guarda; al recoger, al acumular o al talar, sí", [this]()
+		{
+			FGroundBranchCell Cell = FGroundBranchModel::Initialize(77u, Sources, 0);
+			TestFalse(TEXT("recién generada"), FGroundBranchModel::NeedsSave(Cell, Sources));
+			FGroundBranchModel::Advance(Cell, Sources, 40 * Day);
+			TestFalse(TEXT("llena tras mucho tiempo"), FGroundBranchModel::NeedsSave(Cell, Sources));
+
+			// Talar la palmera cambia las fuentes: Initialize ya no la reproduciría.
+			TArray<FGroundBranchSource> Felled = Sources;
+			Felled.RemoveAt(1);
+			TestTrue(TEXT("fuentes distintas"), FGroundBranchModel::NeedsSave(Cell, Felled));
+
+			FGroundBranchModel::Pick(Cell, Cell.Present.Last().Serial);
+			TestTrue(TEXT("con una recogida"), FGroundBranchModel::NeedsSave(Cell, Sources));
+			FGroundBranchModel::Advance(Cell, Sources, 41 * Day);
+			TestTrue(TEXT("rellenada con otra serie"), FGroundBranchModel::NeedsSave(Cell, Sources));
+
+			// Sin árboles y sin ramas nunca: nada que guardar.
+			const TArray<FGroundBranchSource> None;
+			TestFalse(TEXT("celda sin árboles"), FGroundBranchModel::NeedsSave(FGroundBranchModel::Initialize(5u, None, 0), None));
+		});
+
+		It("guardar y cargar da la misma celda y el mismo futuro", [this]()
+		{
+			FGroundBranchCell Cell = FGroundBranchModel::Initialize(4242u, Sources, 0);
+			FGroundBranchModel::Pick(Cell, 1);
+			FGroundBranchModel::Pick(Cell, 4);
+			FGroundBranchModel::Advance(Cell, Sources, 1 * Day + 37); // acumulado a medias
+			FGroundBranchCell Loaded;
+			if (!TestTrue(TEXT("carga"), RoundTrip(Cell, Loaded))) { return; }
+			TestTrue(TEXT("misma celda, bit a bit"), SameBranches(Cell, Loaded));
+			// Mismo futuro: las series nuevas no chocan con las cargadas y caen en el mismo sitio.
+			FGroundBranchModel::Advance(Cell, Sources, 5 * Day);
+			FGroundBranchModel::Advance(Loaded, Sources, 5 * Day);
+			TestTrue(TEXT("mismo futuro"), SameBranches(Cell, Loaded));
+			TestTrue(TEXT("se recoge por su serie"), FGroundBranchModel::Pick(Loaded, Loaded.Present[0].Serial));
+		});
+
+		It("las ramas caídas no se mueven al cargar aunque se haya talado su árbol", [this]()
+		{
+			FGroundBranchCell Cell = FGroundBranchModel::Initialize(9u, Sources, 0);
+			// Se tala el gigante (fuente 0): las fuentes que se reconstruyen al cargar son otras.
+			TArray<FGroundBranchSource> AfterFelling = Sources;
+			AfterFelling.RemoveAt(0);
+			FGroundBranchCell Loaded;
+			if (!TestTrue(TEXT("carga"), RoundTrip(Cell, Loaded))) { return; }
+			TestTrue(TEXT("mismas posiciones"), SameBranches(Cell, Loaded));
+			// Con PlaceBranch y las fuentes nuevas alguna rama habría saltado de sitio.
+			bool bWouldMove = false;
+			for (const FGroundBranch& B : Cell.Present)
+			{
+				bWouldMove |= FGroundBranchModel::PlaceBranch(Cell.CellSeed, B.Serial, AfterFelling).Position != B.Position;
+			}
+			TestTrue(TEXT("recalcular las movería"), bWouldMove);
+			// Y con más ramas que capacidad no aparece ninguna hasta recoger.
+			TestEqual(TEXT("sin ramas nuevas"), FGroundBranchModel::Advance(Loaded, AfterFelling, 30 * Day), 0);
+		});
+
+		It("rechaza celdas imposibles sin tocar la salida", [this]()
+		{
+			const FGroundBranchCell Good = FGroundBranchModel::Initialize(3u, Sources, 0);
+			const FSaveValue Base = FGroundBranchModel::SaveCell(Good);
+			auto WithBranch = [&Base](int32 Row, int32 Column, FSaveValue Value)
+			{
+				FSaveValue V = Base;
+				*V.Find(TEXT("branches"))->AtMutable(Row)->AtMutable(Column) = MoveTemp(Value);
+				return V;
+			};
+			auto WithField = [&Base](const TCHAR* Key, FSaveValue Value)
+			{
+				FSaveValue V = Base;
+				V.Set(Key, MoveTemp(Value));
+				return V;
+			};
+			const TArray<FSaveValue> Bad = {
+				WithField(TEXT("version"), FSaveValue::MakeInt(2)),
+				WithField(TEXT("accumulator"), FSaveValue::MakeInt(-1)),
+				WithField(TEXT("lastMinute"), FSaveValue::MakeInt(TNumericLimits<int64>::Min())),
+				// NextSerial por debajo de una serie presente: la próxima rama la repetiría.
+				WithField(TEXT("nextSerial"), FSaveValue::MakeInt(Good.Present.Last().Serial)),
+				WithField(TEXT("nextSerial"), FSaveValue::MakeInt((int64)MAX_uint32 + 1)),
+				// Serie repetida (la 1 pasa a ser 0) y posición no finita.
+				WithBranch(1, 0, FSaveValue::MakeInt(0)),
+				WithBranch(0, 1, FSaveValue::MakeString(TEXT("NaN"))),
+				WithBranch(0, 2, FSaveValue::MakeDouble(2.0e9)),
+				WithBranch(0, 4, FSaveValue::MakeInt(-2)),
+				WithBranch(0, 3, FSaveValue::MakeInt(7)),
+			};
+			for (int32 i = 0; i < Bad.Num(); ++i)
+			{
+				FGroundBranchCell Out;
+				Out.NextSerial = 12345u;
+				TestFalse(*FString::Printf(TEXT("caso %d rechazado"), i), FGroundBranchModel::LoadCell(Bad[i], 3u, Out));
+				TestTrue(*FString::Printf(TEXT("caso %d salida intacta"), i), Out.NextSerial == 12345u);
+			}
+			FGroundBranchCell Out;
+			TestTrue(TEXT("la buena carga"), FGroundBranchModel::LoadCell(Base, 3u, Out));
+		});
 	});
 }
 

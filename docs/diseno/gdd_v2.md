@@ -596,13 +596,25 @@ al sacudir (§3.18).
   base, astillero).
 - **Interfaz:** sin barra de progreso. El árbol tiembla más con cada golpe y cruje en el
   penúltimo. El brote se ve crecer.
+- **Guardado [regla técnica; no cambia la jugabilidad].**
+  - Cada tocón guarda su hora de tala y el trabajo de pala a medias en la sección
+    `vegetationClock` (`FVegetationClockModel`): recargar no adelanta ni retrasa el
+    rebrote ni un minuto, y los golpes de pala dados no se pierden.
+  - Ante la duda, más tarde y nunca antes: un tocón sin hora (sección perdida o
+    ilegible) cuenta como talado al cargar, y una hora futura se acota a la de carga.
+    Así una partida dañada nunca deja un tocón sin rebrotar para siempre.
+  - Al volver a ser adulto, el tocón sale del reloj. Con una tala por hora durante un
+    año de juego, el reloj de palmeras nunca pasa de las taladas en sus 42 días de
+    rebrote más un día.
+  - Una celda de ramas que sigue como al generarse no se guarda. Si se ha tocado, se
+    guardan sus ramas con la posición exacta: talar un árbol no mueve las ramas que ya
+    estaban en el suelo, y una celda sin árboles no gana ramas nuevas hasta que se
+    recogen.
 - **Riesgos técnicos:**
-  - Guardar la hora de tala de cada tocón exige una sección nueva, porque los deltas
-    actuales no tienen tiempo.
   - La caída es un actor temporal, no física.
   - Ver `docs/tecnico/tala-integracion.md`.
 - **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`,
-  `FFelledDriftModel`), `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry`
+  `FFelledDriftModel`, `FVegetationClockModel`), `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry`
   (clase de herramienta), `Ocean` (`FOceanCurrents`, `FOceanTide`).
 
 ### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**

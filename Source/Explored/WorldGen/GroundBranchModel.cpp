@@ -137,3 +137,100 @@ FGroundBranch FGroundBranchModel::PlaceBranch(uint32 CellSeed, uint32 Serial, co
 	Branch.Position = Source.Position + FVector2D(FMath::Cos(Angle), FMath::Sin(Angle)) * Radius;
 	return Branch;
 }
+
+bool FGroundBranchModel::NeedsSave(const FGroundBranchCell& Cell, const TArray<FGroundBranchSource>& Sources)
+{
+	const int32 Capacity = TotalCapacity(Sources);
+	if (Cell.Accumulator != 0 || Cell.Present.Num() != Capacity || Cell.NextSerial != (uint32)Capacity)
+	{
+		return true;
+	}
+	for (int32 i = 0; i < Cell.Present.Num(); ++i)
+	{
+		const FGroundBranch& Branch = Cell.Present[i];
+		const FGroundBranch Fresh = PlaceBranch(Cell.CellSeed, (uint32)i, Sources);
+		// PlaceBranch es determinista: con las mismas fuentes la posición es la misma bit a bit.
+		if (Branch.Serial != (uint32)i || Branch.Position != Fresh.Position || Branch.ItemId != Fresh.ItemId
+			|| Branch.SourceIndex != Fresh.SourceIndex)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+FSaveValue FGroundBranchModel::SaveCell(const FGroundBranchCell& Cell)
+{
+	FSaveValue Root = FSaveValue::MakeObject();
+	Root.Set(TEXT("version"), FSaveValue::MakeInt(SaveVersion));
+	Root.Set(TEXT("lastMinute"), FSaveValue::MakeInt(Cell.LastUpdateMinute));
+	Root.Set(TEXT("accumulator"), FSaveValue::MakeInt(Cell.Accumulator));
+	Root.Set(TEXT("nextSerial"), FSaveValue::MakeInt((int64)Cell.NextSerial));
+	FSaveValue& List = Root.Set(TEXT("branches"), FSaveValue::MakeArray());
+	for (const FGroundBranch& Branch : Cell.Present)
+	{
+		FSaveValue Row = FSaveValue::MakeArray();
+		Row.Add(FSaveValue::MakeInt((int64)Branch.Serial));
+		Row.Add(FSaveValue::MakeDouble(Branch.Position.X));
+		Row.Add(FSaveValue::MakeDouble(Branch.Position.Y));
+		Row.Add(FSaveValue::MakeString(Branch.ItemId.IsNone() ? FString() : Branch.ItemId.ToString()));
+		Row.Add(FSaveValue::MakeInt(Branch.SourceIndex));
+		List.Add(MoveTemp(Row));
+	}
+	return Root;
+}
+
+bool FGroundBranchModel::LoadCell(const FSaveValue& Value, uint32 CellSeed, FGroundBranchCell& OutCell)
+{
+	const FSaveValue* Version = Value.Find(TEXT("version"));
+	const FSaveValue* Last = Value.Find(TEXT("lastMinute"));
+	const FSaveValue* Acc = Value.Find(TEXT("accumulator"));
+	const FSaveValue* Next = Value.Find(TEXT("nextSerial"));
+	const FSaveValue* List = Value.Find(TEXT("branches"));
+	int64 V = 0, LastMinute = 0, Accumulator = 0, NextSerial = 0;
+	if (!Version || !Version->TryGetInt(V) || V != SaveVersion
+		|| !Last || !Last->TryGetInt(LastMinute) || LastMinute < -MaxAbsMinute || LastMinute > MaxAbsMinute
+		|| !Acc || !Acc->TryGetInt(Accumulator) || Accumulator < 0 || Accumulator > (int64)MaxSavedBranches * MilliPerBranch
+		|| !Next || !Next->TryGetInt(NextSerial) || NextSerial < 0 || NextSerial > (int64)MAX_uint32
+		|| !List || !List->IsArray() || List->Num() > MaxSavedBranches)
+	{
+		return false;
+	}
+	FGroundBranchCell Cell;
+	Cell.CellSeed = CellSeed;
+	Cell.LastUpdateMinute = LastMinute;
+	Cell.Accumulator = Accumulator;
+	Cell.NextSerial = (uint32)NextSerial;
+	Cell.Present.Reserve(List->Num());
+	int64 PreviousSerial = -1;
+	for (int32 i = 0; i < List->Num(); ++i)
+	{
+		const FSaveValue& Row = List->At(i);
+		int64 Serial = 0, SourceIndex = 0;
+		double X = 0.0, Y = 0.0;
+		FString Item;
+		if (!Row.IsArray() || Row.Num() != 5
+			|| !Row.At(0).TryGetInt(Serial) || !Row.At(1).TryGetDouble(X) || !Row.At(2).TryGetDouble(Y)
+			|| !Row.At(3).TryGetString(Item) || !Row.At(4).TryGetInt(SourceIndex))
+		{
+			return false;
+		}
+		// Series crecientes (así las deja Advance y así las conserva Pick) y por debajo de NextSerial:
+		// si no, la próxima rama repetiría una serie y Pick recogería la que no es.
+		if (Serial <= PreviousSerial || Serial >= NextSerial
+			|| !FMath::IsFinite(X) || !FMath::IsFinite(Y) || X < -MaxAbsPositionCm || X > MaxAbsPositionCm
+			|| Y < -MaxAbsPositionCm || Y > MaxAbsPositionCm
+			|| SourceIndex < INDEX_NONE || SourceIndex >= MaxSavedBranches)
+		{
+			return false;
+		}
+		PreviousSerial = Serial;
+		FGroundBranch& Branch = Cell.Present.AddDefaulted_GetRef();
+		Branch.Serial = (uint32)Serial;
+		Branch.Position = FVector2D(X, Y);
+		Branch.ItemId = Item.IsEmpty() ? FName() : FName(*Item);
+		Branch.SourceIndex = (int32)SourceIndex;
+	}
+	OutCell = MoveTemp(Cell);
+	return true;
+}

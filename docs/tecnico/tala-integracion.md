@@ -76,21 +76,48 @@ Todo pasa hoy por `UExploredWiringSubsystem::HarvestInstance` (`Core/ExploredWir
 
 Hoy `FSaveScatterDeltas` solo guarda conjuntos de índices, sin tiempo. Por eso el rebrote
 actual es de sesión y no se guarda (ver el comentario en `HarvestInstance`). Con el tocón
-que rebrota eso ya no basta:
+que rebrota eso ya no basta. Los dos modelos puros que faltaban ya están hechos:
+`FVegetationClockModel` (`WorldGen/VegetationClockModel.h`, spec
+`Explored.VegetationClock`) y el guardado de celdas de `FGroundBranchModel` (spec
+`Explored.GroundBranch`, bloque «guardado»).
 
 - **Capa `felled:<componente>`**: índices talados de cada celda, igual que ahora.
 - **Capa `uprooted:<componente>`**: índices arrancados. Nunca rebrotan.
-- **Tiempo de tala.** Se guarda en una sección nueva `vegetationClock` con la forma
-  `[[X, Y, "<componente>", Índice, FelledAtMinute], ...]`, ordenada como
-  `FSaveScatterDeltas`, y se carga en `FStumpState`.
-  - Si se descarta la sección porque no se puede leer, el árbol se toma como talado
-    ahora: rebrota más tarde, nunca antes.
-  - Cuando la etapa llega a `Mature`, el índice sale de `felled` y del reloj, así que el
-    guardado no crece sin límite.
-- **Ramas del suelo.** No se guarda cada rama. Se guardan `LastUpdateMinute`,
-  `Accumulator`, `NextSerial` y la lista de series presentes; las posiciones se vuelven a
-  calcular con `PlaceBranch` desde las fuentes. Una celda que nunca se ha tocado no se
-  guarda: al cargarla, `Initialize` la deja llena.
+- **Sección `vegetationClock`** = `FVegetationClockModel::Save()`:
+  `{"version": 1, "stumps": [[X, Y, "<componente>", Índice, FelledAtMinute, UprootWork], ...]}`.
+  - Ordenada por (Y, X), componente (sin distinguir mayúsculas, como `FName`) e índice:
+    el texto no depende del orden de tala.
+  - `UprootWork` guarda los golpes de pala a medias; `bUprooted` se deduce
+    (`UprootWork ≥ WorkToFell`).
+  - `Load` rechaza la sección entera (y deja el reloj vacío) ante versión, tipo, rango o
+    clave repetida. Tope de 2^20 entradas.
+- **Al cargar la partida**, en este orden:
+  1. `Clock.Load(Sección)`. Si devuelve false, se sigue con el reloj vacío.
+  2. Por cada capa `felled:<componente>`, `Clock.Reconcile(Componente, Capa, Ahora)`.
+     Un índice talado sin hora entra como talado ahora: rebrota más tarde, nunca antes.
+     Una entrada cuyo índice ya no está en `felled` se descarta. Una hora futura (reloj
+     manipulado) se acota a la de carga.
+- **En partida.**
+  - Al tumbar un ejemplar: `felled.Add(Celda, Índice)` y `Clock.RecordFelled(Clave, Ahora)`.
+    Talar un brote reinicia su hora.
+  - El golpe de pala usa `FFellingModel::ApplyUprootHit(Perfil, *Clock.FindMutable(Clave), ...)`.
+    Si arranca: `uprooted.Add`, `felled.Remove` y `Clock.Remove(Clave)`.
+  - En el barrido de rebrote (cada 10 s de juego), `Clock.PruneMature(ProfileOf, Ahora, &Maduras)`
+    y `felled.Remove` de cada madura: el guardado no crece sin límite. `ProfileOf` traduce el
+    componente HISM a su `FFellingProfile`; un componente sin perfil no se toca.
+- **Ramas del suelo.**
+  - Al guardar, solo las celdas con `FGroundBranchModel::NeedsSave(Celda, Fuentes)`. Una
+    celda que `Initialize` reproduciría exactamente (llena, series 0…capacidad−1 en su
+    sitio) no ocupa nada.
+  - Forma: `SaveCell` → `{"version", "lastMinute", "accumulator", "nextSerial",
+    "branches": [[Serie, X, Y, "objeto", SourceIndex], ...]}`, bajo la clave de la celda
+    del árbol (no `CellOf(posición)`).
+  - **Se guardan las posiciones** (reales exactos). No se recalculan con `PlaceBranch`,
+    porque al talar cambian las fuentes y las ramas ya caídas saltarían de sitio al cargar
+    (lo prueba un spec). Son unos 60 B por rama y, como mucho, unas decenas de ramas por
+    celda tocada.
+  - `LoadCell` rechaza series repetidas o desordenadas y un `nextSerial` que no quede por
+    encima de todas, porque se repetirían al avanzar. Si falla, `Initialize` (celda llena).
 - **Hora del juego.** Todo va en minutos de juego enteros (`int64`), con el reloj de
   `Sky`. No se usan segundos reales.
 
@@ -108,6 +135,11 @@ que rebrota eso ya no basta:
     `GrowthScaleAt`, que es O(1).
   - Solo se actualiza el transform de las instancias cuya escala ha cambiado más de 1 %.
   - La presupuestamos por debajo de 0,05 ms por barrido.
+- **Reloj de tocones.** `RecordFelled`, `Find` y `Remove` hacen una búsqueda binaria
+  (O(log n) comparaciones, cada una con dos `ToString` del componente) y `RecordFelled`
+  inserta con un desplazamiento O(n). Con los cientos o pocos miles de tocones vivos de
+  una partida son microsegundos, y solo ocurren al talar o arrancar. `PruneMature` es
+  O(n) y va en el barrido de 10 s; `Reconcile` es O(n + talados) y solo al cargar.
 - **Ramas del suelo.**
   - `Advance` es O(ramas nuevas). Solo se llama al cargar la celda y en un barrido lento
     (cada minuto de juego) de las celdas a menos de 150 m del jugador.
