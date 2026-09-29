@@ -52,3 +52,33 @@ lo traía y tuve que instalarlo con apt antes de ejecutarlos.
 - Ninguna casilla nueva en `[x]`. La de viento y colisión al talar (biblia 02 §1.2) sigue en
   «en parte» porque falta engancharla al actor y a `UBuildingSubsystem`. Su nota ahora apunta
   a `6d5c1b7` (PR #123) en vez de a la rama.
+
+## Ejecución 05:00 UTC
+
+Base: `origin/main` en `0902e94` al empezar. Son nuevas #126, #127 y #128. Las demás PR
+abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen
+commits desde su última revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #126 | `nube/packs-2026-09-29b` | **Fusionada** (`7edef53`) | Lote 12 de packs: lingotes de cobre, hierro y aluminio (KayKit Resource Bits, ya declarado en `Tools/Packs/packs.json`). Solo toca el catálogo, la hoja de contacto y el README de Packs. Los tres `gameId` existen en `items.json`. En la hoja, el recoloreado a la paleta se lee bien. |
+| #128 | `nube/mecanicas-2026-09-29` | **Fusionada** (`7a51a70`) | Spec nuevo en `FTerrainEditModelSpec`: echar tierra en la esquina de cuatro chunks no cambia nada fuera de la esfera más una celda, el modelo guarda solo lo cambiado y marca sucios justo los chunks que leen esas muestras, a los dos lados de la frontera. También añade la frase correspondiente en el GDD v2 §3.4. |
+| #127 | `nube/mundo-2026-09-29` | **Fusionada** (`59a121a`) | `FFelledDriftModel`, un modelo puro con su spec (`Explored.FelledDrift`), para lo que cae al agua al talar (biblia 02 §1.5). Decide si flota o se hunde según el calado, lo deja derivar con la corriente, lo vara en el punto de contacto buscado por bisección y sin oscilar, lo refloata con la marea y lo entrega como `madera_flotante`. El paso fijo es de 0,5 s y tiene topes de pasos, de piezas y de velocidad. La replicación está definida según la biblia 08: solo simula el servidor y el actor usa el movimiento replicado normal. Los specs cubren casos reales: independencia de los fotogramas, la barra de arena de una columna, coordenadas negativas, entradas no finitas y el coste por consultas. Le añadí `fafc1b4`: la biblia dice «`Flota` heredado del material», pero en `items.json` esa propiedad de crafteo solo la llevan `madera_blanda` y `madera_flotante`, mientras que el modelo usa una tabla de densidades en la que también flotan `tronco_pequeno`, los cocos, las hojas y demás. Lo dejé escrito en el modelo y en el GDD §3.12 como decisión pendiente del director. No es un fallo del modelo: el GDD da 500 kg/m³ para el tronco. Durante la revisión, la rutina autora subió `3bdd86d` (reusa el hueco de las piezas resueltas para que el array no crezca en una sesión larga, con su spec), así que revisé y probé de nuevo ese head antes de fusionar. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #126 (rebasada sobre `main`) | — (no toca Source) | — | 0 errores, 0 avisos · 550 passed | Packs: 64 passed, 1 skipped · ruff sin avisos |
+| #128 (rebasada sobre `main`) | 1324 casos, 0 fallos | 1324 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+| #127 `d7ec547` (rebasada) | 1346 casos, 0 fallos | 1346 casos, 0 fallos, sin avisos | — | — |
+| #127 `24dedd4` + `main` con #128 | 1349 casos, 0 fallos | 1349 casos, 0 fallos, sin avisos | — | CI en verde (7/7) |
+
+#127 y #128 tocan secciones distintas de `gdd_v2.md` y se fusionaron sin conflicto.
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]`.
+- Nueva casilla «en parte» en Tala y recolección para la caída al agua (biblia 02 §1.5,
+  PR #127): falta el subsistema del motor y la decisión sobre `Flota`.
+- #126 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.
