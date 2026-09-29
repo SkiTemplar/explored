@@ -81,6 +81,12 @@
       "date": "2026-09-29",
       "sheet": "docs/art/packs/lote12-lingotes.png",
       "scope": "Lingotes de cobre, hierro y aluminio de la fase de metal con KayKit Resource Bits."
+    },
+    {
+      "id": "lote13-construccion",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote13-construccion.png",
+      "scope": "Kit de construcción libre (prioridad 2): suelo y puerta de madera, y mesa de cartografía. Descartados en la misma revisión: techo, muro y cimiento de piedra y estantería."
     }
   ],
   "entries": [
@@ -1809,6 +1815,66 @@
         "default": "mineral.aluminio"
       },
       "note": "Lingote de aluminio de la chatarra del Albatros: KayKit no trae aluminio, la barra de plata da la misma silueta y se tiñe de mineral.aluminio."
+    },
+    {
+      "gameId": "mesa_cartografia",
+      "kind": "pieza",
+      "lote": "lote13-construccion",
+      "pack": "kaykit_furniture_bits",
+      "file": "KayKit_Furniture_Bits_1.0_FREE/Assets/gltf/table_medium.gltf",
+      "mesh": "SM_Pack_MesaCartografia",
+      "size": {
+        "axis": "z",
+        "m": 0.85
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.miel"
+      },
+      "note": "Mesa de 1,7 x 1,7 m y 0,85 m de alto (KayKit table_medium) teñida a madera.miel; base = centro de la huella, z = 0 en el suelo."
+    },
+    {
+      "gameId": "suelo_madera",
+      "kind": "pieza",
+      "lote": "lote13-construccion",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/floor.glb",
+      "mesh": "SM_Pack_SueloMadera",
+      "size": {
+        "axis": "max",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.miel"
+      },
+      "note": "Cubierta de tablones de 2 x 2 m y 20 cm de canto (Kenney Survival floor) a la rejilla de 2 m del kit; base = centro de la huella."
+    },
+    {
+      "gameId": "puerta_madera",
+      "kind": "pieza",
+      "lote": "lote13-construccion",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-wood-door.glb",
+      "mesh": "SM_Pack_PuertaMadera",
+      "size": {
+        "axis": "max",
+        "m": 2.0
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [],
+        "default": "madera.miel"
+      },
+      "note": "Panel de pared con vano de puerta y hoja de 2 x 2 m y 20 cm de grosor (Kenney Fantasy Town wall-wood-door), madera.miel; base = centro del borde inferior."
     }
   ],
   "discarded": [
@@ -1991,6 +2057,30 @@
       "pack": "kenney_food_kit",
       "file": "Models/GLB format/mussel.glb",
       "reason": "Bloque hexagonal de 38 triángulos que, recoloreado, se lee como piedra rosada y no como concha (hoja del lote 10). Se queda la malla propia SM_Item_ConchaPequena."
+    },
+    {
+      "gameId": "estanteria_museo",
+      "pack": "kaykit_furniture_bits",
+      "file": "KayKit_Furniture_Bits_1.0_FREE/Assets/gltf/shelf_B_large.gltf",
+      "reason": "KayKit shelf_B_large es una repisa baja con ménsulas (0,32 m de alto): no sirve de estantería de museo. Sigue con la malla propia."
+    },
+    {
+      "gameId": "techo_madera",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/structure-roof.glb",
+      "reason": "Kenney structure-roof es una pérgola de listones de 2,4 m de alto sin cubierta de palma: no encaja con el techo de madera y palma. Sigue con SM_Kit_Wood_Roof."
+    },
+    {
+      "gameId": "muro_piedra",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/wall-block.glb",
+      "reason": "Kenney Fantasy Town wall-block es un cubo liso con postes de madera: no lee como piedra seca y queda casi negro con la paleta. Sigue con el kit propio."
+    },
+    {
+      "gameId": "cimiento_piedra",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/pillar-stone.glb",
+      "reason": "Kenney Fantasy Town pillar-stone es un poste de 19 cm de sección a 1,2 m: demasiado fino para un cimiento. Sigue con el kit propio."
     }
   ],
   "pending": [
