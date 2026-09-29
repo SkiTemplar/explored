@@ -9,7 +9,7 @@
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
-		"revisar": 78
+		"revisar": 79
 	},
 	"entries": [
 		{
@@ -787,7 +787,7 @@
 			"en": "Chop",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:876"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:878"
 			]
 		},
 		{
@@ -797,7 +797,7 @@
 			"en": "Gather",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:868"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:870"
 			]
 		},
 		{
@@ -807,7 +807,7 @@
 			"en": "Mine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:872"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:874"
 			]
 		},
 		{
@@ -817,7 +817,7 @@
 			"en": "{Verb} ({Hits}/{Required})",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:885"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:887"
 			]
 		},
 		{

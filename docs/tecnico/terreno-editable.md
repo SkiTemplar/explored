@@ -67,7 +67,97 @@ de H0 (biblia 02 §2):
   ediciones no se escribe la capa; una capa ilegible deja el mundo sin cavar y devuelve
   false para avisar en el registro.
 
-## Enganche propuesto
+## Integración en el juego (hecha: pico, pala, remallado, red y guardado)
+
+Código de motor en `Source/Explored/Mining/`; la lógica nueva está en modelos puros de
+`WorldGen/` con sus specs en el host.
+
+- **`UTerrainEditSubsystem`** (subsistema de mundo, partida y PIE). Dueño de la capa
+  `FTerrainEdits` de esta máquina y de una `FTerrainDensity` sin ediciones enganchadas (las
+  tareas de fondo solo leen `ProceduralDensity`, que es inmutable). API en metros:
+  `Dig`, `Shovel`, `PlaceSoil` (solo con autoridad), `ApplyNetworkPacket` (solo cliente),
+  `Density`, `MaterialAt`, `SaveTo`/`LoadFrom`, `FlushRemeshing`.
+- **Herramientas (`UTerrainToolComponent`, en el personaje).** Clic principal con el pico en
+  la mano: picado por esfera (`FTerrainEdits::Dig`). Pala: el principal aplana hacia el
+  plano de los pies (`FTerrainEditModel::Shovel`) y el secundario echa la tierra que se
+  lleva (`PlaceSoil`). Traza de 3 m desde la cámara contra actores con la etiqueta
+  `ExploredTerrain`. Reglas puras en `FTerrainToolModel`: objeto → herramienta, botón →
+  acción, estrato por isla y profundidad (tabla de `mining.json/strata` medida desde la
+  superficie sin editar), validación del servidor y tierra transportada (m³, tope 2 m³).
+- **Remallado (`UTerrainRuntimeMesher`).** La primera edición en un chunk horneado de 64 m
+  lanza un sondeo en una tarea (`FTerrainRemeshModel::SurfaceEditChunks`, retícula de
+  2 m) que dice qué chunks de 8 m pueden tener superficie; se mallan todos a 0,25 m en
+  tareas (`UE::Tasks`) y, cuando están todos, el horneado se oculta de golpe (antes, la
+  malla fina crece debajo sin verse). Su colisión se apaga cuando la fina ya está cocinada
+  (o a los 2 s). Cada chunk sucio se remalla en una tarea con el campo base cacheado (LRU
+  de 96 chunks editados) más los deltas que copia el hilo de juego
+  (`FTerrainRemeshModel::GatherDeltas`); normales del gradiente de la rejilla, color y
+  capas de `FTerrainDensity`, y la `FProcMeshSection` ya montada. El hilo de juego solo
+  vuelca secciones en `UProceduralMeshComponent` (colisión compleja, cocinado asíncrono)
+  con un presupuesto de `explored.Terrain.RemeshBudgetMs` (1,0 ms): el primer volcado del
+  fotograma siempre entra y los siguientes solo si caben según una estimación del coste por
+  chunk (sube al momento con un pico, baja despacio). Cola pura en
+  `FTerrainRemeshQueueModel` (un chunk no se relanza hasta que vuelve su tarea ni antes de
+  0,15 s; prioridad por distancia) y estado de sustitución en `FTerrainReplacementModel`.
+  Se usa `UProceduralMeshComponent` y no `UDynamicMeshComponent`: ya es dependencia del
+  módulo, admite los cuatro canales de UV y el color de vértice que lee `M_Terrain` y
+  cocina la colisión fuera del hilo de juego.
+- **Material de las mallas finas.** Ajuste de proyecto `UExploredTerrainSettings`
+  (Project Settings → Game → Explored Terreno, `RuntimeTerrainMaterial` en
+  `DefaultGame.ini`, por defecto `M_Terrain`). El subsistema lo pide por referencia blanda
+  con carga asíncrona (`FStreamableManager`) y lo pasa con `UTerrainRuntimeMesher::SetMaterial`,
+  que también lo aplica a las mallas ya creadas. Si el ajuste está vacío, el remallador usa
+  el material del primer chunk horneado que se registra. Nada se carga por ruta en
+  `Initialize`.
+- **Red (autoridad del anfitrión).** El cliente predice solo el sonido y las partículas
+  (`OnToolCue`) y pide el uso con `ServerUseTool`, que solo lleva el botón (principal o
+  secundario) y el punto. El servidor saca la herramienta de las manos del personaje
+  (`UCarryComponent`), deduce la acción con `FTerrainToolModel::ActionFor` y valida primero
+  lo barato (`ValidateUse`: acción de la herramienta, alcance de 3 m + 1,5 m y cadencia del
+  85 % de la duración) y solo entonces la superficie (|densidad| ≤ 0,75 m); después edita.
+  Mientras el inventario no se replique, el servidor solo ve las manos de sus propios
+  personajes: un cliente remoto no puede cavar hasta que `UCarryComponent` tenga autoridad
+  en el servidor. Cada edición
+  sale por `UTerrainEditSubsystem::OnPatches` con el valor final de las muestras cambiadas
+  (`FTerrainEditResult::ChangedSamples` → `FTerrainNetSyncModel::PatchesForSamples`) y
+  `UTerrainSyncComponent` (en el PlayerController) lo encola por cliente en
+  `FTerrainDeltaQueueModel` y lo manda por RPC fiable. Un cliente que entra tarde recibe el
+  estado completo. El cliente aplica con `FTerrainNetSyncModel::ApplyPacket` y remalla.
+- **Guardado.** `UExploredWiringSubsystem::SaveWorld/LoadWorld` pasan la capa «terrain» por
+  `UTerrainEditSubsystem`; al cargar se vuelven a sustituir los chunks editados.
+- **Test del editor:** `Explored.TerrainRuntime.EditRemeshCollisionSave` (mundo de juego
+  vacío): sustituye un chunk de Landing con el presupuesto del juego y cocinado asíncrono,
+  cava 16 golpes, comprueba malla, colisión (traza y esfera de 25 cm dentro del hueco), coste
+  por fotograma (< 2 ms en el hilo de juego), guardado → mundo sin cavar → carga con el mismo
+  hueco, tierra echada que sube el fondo, pasadas de pala que devuelven el suelo al plano y
+  el material del ajuste de proyecto en las mallas ya creadas.
+- **Coste medido** (editor sin RHI, Development, 2026-09-29): sustituir un chunk de 64 m son
+  146 chunks de 8 m en ~50 fotogramas (0,25 s), con 0,72–0,82 ms máx por fotograma en el hilo
+  de juego y 0,38–0,41 ms máx por volcado; cada tarea de fondo tarda 14–15 ms de media (máx
+  ~32 ms). Un golpe ya sustituido remalla 1 chunk: 0,2–0,3 ms máx por fotograma. Ningún
+  fotograma llegó a 2 ms. Con el presupuesto anterior (1,5 ms) y la máquina cargada se vieron
+  picos de 2–3 ms.
+
+Borde con los chunks horneados vecinos (faldón): Surface Nets reparte las caras de modo que
+la malla de un chunk entra una celda en el chunk de abajo de cada eje y acaba en su propia
+cara alta. En la cara alta del chunk sustituido, la malla horneada del vecino ya se mete
+una celda de 2 m y solapa con la fina. En la cara baja, el vecino horneado acaba dentro de
+su última celda y la malla fina empieza a 0,25 m del borde: entre las dos quedaría una
+rendija de hasta 2 m por la que se ve el vacío. Por eso los chunks de edición de la cara
+baja de un chunk de render amplían su rejilla 8 muestras (una celda horneada) hacia fuera
+(`FTerrainRemeshModel::ChunkWindow` con faldón): solapan con el vecino horneado y, si el
+vecino también está sustituido, sus triángulos coinciden exactamente con los del vecino.
+Donde las dos aproximaciones difieren puede verse un escalón de centímetros. Una edición a
+menos de 3 m del borde sustituye también al vecino.
+
+Pendiente de esta integración: comprobar en PIE ese escalón, capa de camino en el color del vértice,
+réplica de la compactación de caminos, botín en el inventario (hoy la tierra se cuenta en
+m³ en el componente), desgaste de la herramienta, comprobar en el servidor el objeto de
+la mano (el inventario aún no se replica), deltas de más de ±32 m (minas muy profundas: el
+códec de red usa `int16`), campos de distancia de Lumen para las mallas finas y navegación
+de la fauna.
+
+## Enganche propuesto (diseño original)
 
 1. **Subsistema de mundo `UTerrainEditSubsystem`.** Es dueño de un `FTerrainEditModel` y
    de una referencia al `FTerrainDensity` del generador. Al golpear, el componente de

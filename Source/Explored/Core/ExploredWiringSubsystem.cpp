@@ -28,6 +28,7 @@
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
 #include "Items/ItemTypes.h"
+#include "Mining/TerrainEditSubsystem.h"
 #include "Player/ExploredCharacter.h"
 #include "Player/SwimComponent.h"
 #include "Ruins/RuinsSubsystem.h"
@@ -152,6 +153,7 @@ void UExploredWiringSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Collection.InitializeDependency<UBuildingSubsystem>();
 	Collection.InitializeDependency<UExploredFishingSubsystem>();
 	Collection.InitializeDependency<UExploredMusicSubsystem>();
+	Collection.InitializeDependency<UTerrainEditSubsystem>();
 
 	Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
 	WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;
@@ -1357,12 +1359,22 @@ void UExploredWiringSubsystem::LoadProgress(const FSaveArchive& Ar)
 
 void UExploredWiringSubsystem::SaveWorld(FSaveArchive& Ar) const
 {
-	WorldDeltas.Save(Ar);
+	// Capa «terrain»: la lleva el subsistema del terreno editable (pico y pala).
+	FSaveWorldDeltas Out = WorldDeltas;
+	if (const UTerrainEditSubsystem* Terrain = UTerrainEditSubsystem::Get(this))
+	{
+		Terrain->SaveTo(Out);
+	}
+	Out.Save(Ar);
 }
 
 void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 {
 	WorldDeltas.Load(Ar);
+	if (UTerrainEditSubsystem* Terrain = UTerrainEditSubsystem::Get(this))
+	{
+		Terrain->LoadFrom(WorldDeltas);
+	}
 	if (WorldDeltas.Seed == 0)
 	{
 		WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;

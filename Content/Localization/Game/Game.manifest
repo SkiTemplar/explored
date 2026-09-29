@@ -870,7 +870,7 @@
 					"Keys": [
 						{
 							"Key": "VerbMine",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 872"
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 874"
 						}
 					]
 				},
@@ -881,7 +881,7 @@
 					"Keys": [
 						{
 							"Key": "VerbGather",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 868"
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 870"
 						}
 					]
 				},
@@ -892,7 +892,7 @@
 					"Keys": [
 						{
 							"Key": "VerbChop",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 876"
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 878"
 						}
 					]
 				},
@@ -903,7 +903,7 @@
 					"Keys": [
 						{
 							"Key": "VerbProgress",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 885"
+							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 887"
 						}
 					]
 				}

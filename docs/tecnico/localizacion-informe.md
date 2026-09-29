@@ -14,7 +14,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 2 |
-| Literales para revisar | 78 |
+| Literales para revisar | 79 |
 | Errores / avisos | 0 / 5 |
 
 ## Literales del C++
@@ -32,7 +32,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (78)
+### Revisar (79)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -95,6 +95,7 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Fishing/FishingModel.cpp:269` | `El Errante` | `FLegendaryCatch L = MakeLegend(TEXT("el_errante"), TEXT("El Errante"), TEXT("arrecife_arenas_blancas"), Spear \| Rod,` |
 | `Source/Explored/Fishing/FishingModel.cpp:277` | `El Rey de Plata` | `FLegendaryCatch L = MakeLegend(TEXT("rey_de_plata"), TEXT("El Rey de Plata"), TEXT("mar_abierto"), Rod,` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
+| `Source/Explored/Mining/TerrainEditSubsystem.cpp:22` | `Presupuesto del remallado del terreno en el hilo de juego por fotograma (ms).` | `TEXT("Presupuesto del remallado del terreno en el hilo de juego por fotograma (ms)."));` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |

@@ -19,6 +19,7 @@ class UInputMappingContext;
 class UInteractionComponent;
 class USwimComponent;
 class UStaticMeshComponent;
+class UTerrainToolComponent;
 struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBackpackToggled, bool, bOpen);
@@ -156,6 +157,9 @@ private:
 	TObjectPtr<UBodySignalsComponent> Body;
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Pesca")
 	TObjectPtr<UFishingComponent> Fishing;
+	/** Pico y pala sobre el terreno volumétrico (GDD v2 §3.4). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Terreno")
+	TObjectPtr<UTerrainToolComponent> TerrainTool;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;

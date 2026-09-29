@@ -604,6 +604,7 @@ void FTerrainEditModel::Commit(const TArray<FProposal>& Proposals, float Scale, 
 			Result.VolumeAdded += Volume;
 		}
 		++Result.SamplesChanged;
+		Result.ChangedSamples.Add(P.Global);
 		ChunksReadingSample(P.Global, Result.DirtyChunks);
 	}
 }

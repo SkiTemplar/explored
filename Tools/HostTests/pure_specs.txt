@@ -71,3 +71,7 @@ Tests/MineHazardModelSpec.cpp
 Tests/ShovelPathModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
 Tests/CombatModelSpec.cpp
+Tests/TerrainToolModelSpec.cpp
+Tests/TerrainNetSyncModelSpec.cpp
+Tests/TerrainRemeshModelSpec.cpp
+Tests/TerrainRemeshQueueModelSpec.cpp
