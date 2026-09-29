@@ -90,7 +90,9 @@ que rebrota eso ya no basta. Los dos modelos puros que faltaban ya están hechos
   - `UprootWork` guarda los golpes de pala a medias; `bUprooted` se deduce
     (`UprootWork ≥ WorkToFell`).
   - `Load` rechaza la sección entera (y deja el reloj vacío) ante versión, tipo, rango o
-    clave repetida. Tope de 2^20 entradas.
+    clave repetida. Tope de 2^20 entradas, que `RecordFelled` y `Reconcile` también
+    respetan: el reloj nunca escribe un guardado que luego rechazaría (una capa «felled»
+    manipulada con millones de índices ya no deja la partida sin reloj en cada carga).
 - **Al cargar la partida**, en este orden:
   1. `Clock.Load(Sección)`. Si devuelve false, se sigue con el reloj vacío.
   2. Por cada capa `felled:<componente>`, `Clock.Reconcile(Componente, Capa, Ahora)`.
