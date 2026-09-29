@@ -182,6 +182,20 @@ public:
 	/** Cota de columna (en celdas): lejos del borde de int32, así Column + 1 y los bucles X <= Hi no desbordan. */
 	static constexpr int32 MaxAbsColumn = 1000000000;
 	/**
+	 * Cota de la clave de chunk: el paquete de red la manda en int16 y FromValue rechaza un
+	 * chunk fuera de él. Con N = 32 y celdas de 0,25 m son ±262 km desde el origen.
+	 */
+	static constexpr int32 MaxChunkKey = 32767;
+	/**
+	 * Columna más lejana que se puede editar: la menor de MaxAbsColumn y MaxChunkKey · N.
+	 * Una edición más allá dejaba un chunk que no se podía guardar ni mandar, y al cargar se
+	 * perdía toda la arena de la partida.
+	 */
+	int64 ColumnLimit() const
+	{
+		return FMath::Min<int64>(MaxAbsColumn, static_cast<int64>(MaxChunkKey) * FMath::Max(1, Settings.CellsPerChunk));
+	}
+	/**
 	 * Radio máximo de un pincel (m): el lado de un chunk, unas 3 200 columnas. La pala usa
 	 * 0,6 m. Un radio mayor, por un dato malo o una petición de red manipulada, no hace
 	 * nada: con 10 km el servidor recorría 6 400 millones de columnas.
@@ -311,7 +325,7 @@ public:
 	// --- Guardado ---
 
 	/**
-	 * {"v":1,"cell":0.25,"n":32,"chunks":[[CX,CY,[Inicio,Cuenta,d…,…]],…],"dirty":[X,Y,…],"sea":S}.
+	 * {"v":1,"cell":0.25,"n":32,"chunks":[[CX,CY,[Inicio,Cuenta,d…,…]],…],"dirty":[X,Y,…],"sea":S.
 	 * Los anclajes no se guardan: los vuelve a poner el sistema de construcción al cargar.
 	 */
 	FSaveValue ToValue() const;

@@ -481,6 +481,90 @@ void FSandModelSpec::Define()
 			TestTrue(TEXT("vacío"), Model.IsEmpty());
 		});
 
+		It("no edita más allá del último chunk que cabe en el int16 del paquete", [this, Flat]()
+		{
+			// Con celdas de 0,25 m y N = 32, la clave 32 767 llega a 262 136 m del origen. Antes se
+			// podía cavar a 300 km: ese chunk no se mandaba a los clientes y, al cargar, FromValue
+			// fallaba y se perdía toda la arena de la partida, también la de cerca del origen.
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(1.0, 1.0), 4000), Flat);
+			TestEqual(TEXT("cota de columna"), Model.ColumnLimit(), static_cast<int64>(32767) * 32);
+			FSandBrush B;
+			B.Center = FVector2D(300000.0, 0.0);
+			TestFalse(TEXT("a 300 km no cava"), Model.Dig(B, Flat).Changed());
+			B.Center = FVector2D(-0.25 * static_cast<double>(Model.ColumnLimit()) - 1.0, 0.0);
+			TestFalse(TEXT("pasado el borde negativo no cava"), Model.Dig(B, Flat).Changed());
+			TestFalse(TEXT("ni ancla"), Model.SetAnchor(FVector2D(300000.0, 0.0), FVector2D(300001.0, 1.0), true, Flat).Changed());
+
+			// Justo dentro del tope sí se cava, se guarda, se carga y se manda.
+			B.Center = FVector2D(262000.0, -262000.0);
+			const FSandResult Far = Model.Dig(B, Flat);
+			TestTrue(TEXT("cerca del tope cava"), Far.Changed());
+			FSandModel Loaded;
+			TestTrue(TEXT("la partida se carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("igual"), Loaded == Model);
+			for (const FIntPoint& Chunk : Far.DirtyChunks)
+			{
+				TestTrue(TEXT("el chunk lejano se manda"), Model.EncodeFullChunk(Chunk).Num() > 0);
+			}
+		});
+
+		It("Transfer rechaza columnas de MIN_int32 y fuera del tope sin mover arena", [this, Flat]()
+		{
+			// FMath::Abs(MIN_int32) desbordaba en int32, la comprobación pasaba y se movían 10 mm
+			// a una columna cuyo chunk ya no se podía guardar.
+			FSandModel Model;
+			const int32 Limit = static_cast<int32>(Model.ColumnLimit());
+			const FIntPoint Bad[] = { FIntPoint(MIN_int32, 0), FIntPoint(0, MIN_int32), FIntPoint(Limit + 1, 0), FIntPoint(0, -Limit - 1) };
+			for (const FIntPoint& Column : Bad)
+			{
+				TArray<FSandMove> Moves;
+				Moves.Add(FSandMove{ Column, FIntPoint(0, 0), 10 });
+				Moves.Add(FSandMove{ FIntPoint(0, 0), Column, 10 });
+				TestEqual(*FString::Printf(TEXT("(%d, %d)"), Column.X, Column.Y), Model.Transfer(Moves, Flat).Mass, static_cast<int64>(0));
+			}
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+			TArray<FSandMove> Edge;
+			Edge.Add(FSandMove{ FIntPoint(Limit, -Limit), FIntPoint(Limit - 1, -Limit), 10 });
+			TestEqual(TEXT("en el tope sí"), Model.Transfer(Edge, Flat).Mass, static_cast<int64>(10));
+			FSandModel Loaded;
+			TestTrue(TEXT("y se carga"), Loaded.FromValue(Model.ToValue()));
+		});
+
+		It("una profundidad enorme cava lo mismo que la máxima, sin pasar a int64 fuera de rango", [this, Flat]()
+		{
+			// Depth = 1e17 m daba 1,7e19 mm: FloorToInt64 fuera de rango (UB). En x86 el centro no
+			// se cavaba y el anillo de fuera sí; en ARM se saturaba: distinto según el servidor.
+			FSandModel Reference;
+			FSandBrush B;
+			B.Center = FVector2D(0.3, -0.2);
+			B.Depth = (FSandModel::MaxDigDepthMm + FSandModel::MaxPileHeightMm) * 0.001f;
+			const int64 Mass = Reference.Dig(B, Flat).Mass;
+			TestEqual(TEXT("toda la capa en el centro"), Reference.DeltaMm(Reference.ColumnOf(0.3, -0.2)), -FSandModel::MaxDigDepthMm);
+			for (const float Depth : { 1.0e17f, 3.0e38f })
+			{
+				FSandModel Model;
+				B.Depth = Depth;
+				TestEqual(*FString::Printf(TEXT("masa con %g m"), Depth), Model.Dig(B, Flat).Mass, Mass);
+				TestTrue(TEXT("mismas columnas"), Model == Reference);
+			}
+		});
+
+		It("una marea finita pero absurda no rellena ni desborda", [this, Flat]()
+		{
+			// (HighMm − BaseMm) · 400 desbordaba int64 en RefillMilli con una pleamar de 3·10¹³ m.
+			FSandModel Model;
+			FSandBrush B;
+			Model.Dig(B, Flat);
+			const FSandModel Before = Model;
+			TestFalse(TEXT("pleamar"), Model.ApplyHalfTide(Tide(3.0e13, -0.5), Flat).Changed());
+			TestFalse(TEXT("bajamar"), Model.ApplyHalfTide(Tide(0.5, -3.0e13), Flat).Changed());
+			TestFalse(TEXT("las dos"), Model.ApplyHalfTide(Tide(1.0e300, -1.0e300), Flat).Changed());
+			TestTrue(TEXT("sin cambios"), Model == Before);
+			TestEqual(TEXT("banco"), Model.SeaBankMass(), static_cast<int64>(0));
+			TestTrue(TEXT("una marea normal sí rellena"), Model.ApplyHalfTide(Tide(0.5, -0.5), Flat).Changed());
+		});
+
 		It("el radio justo en el tope cava y devuelve al montón la misma masa", [this, Flat]()
 		{
 			FSandModel Model;
