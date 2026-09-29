@@ -180,6 +180,189 @@ void FFellingModelSpec::Define()
 		});
 	});
 
+	Describe("ApplyWindToFall", [this]()
+	{
+		// Ángulo con signo de A a B, en grados (antihorario positivo).
+		auto SignedDeg = [](const FVector2D& A, const FVector2D& B)
+		{
+			return FMath::RadiansToDegrees(FMath::Atan2(A.X * B.Y - A.Y * B.X, A.X * B.X + A.Y * B.Y));
+		};
+
+		It("el viento de costado desvía el máximo hacia donde sopla", [this, SignedDeg]()
+		{
+			const FVector2D Fall(1.0, 0.0);
+			const FVector2D Left = FFellingModel::ApplyWindToFall(Fall, FVector2D(0.0, 5.0), 1.0f, 20.0f);
+			const FVector2D Right = FFellingModel::ApplyWindToFall(Fall, FVector2D(0.0, -0.2), 1.0f, 20.0f);
+			TestEqual(TEXT("+20° con viento hacia +Y"), SignedDeg(Fall, Left), 20.0, 1.0e-4);
+			TestEqual(TEXT("-20° con viento hacia -Y"), SignedDeg(Fall, Right), -20.0, 1.0e-4);
+			TestEqual(TEXT("unitaria"), Left.Size(), 1.0, 1.0e-9);
+		});
+
+		It("escala con la fuerza del viento y la acota a 0–1", [this, SignedDeg]()
+		{
+			const FVector2D Fall(0.0, 1.0);
+			const FVector2D Wind(-1.0, 0.0);
+			TestEqual(TEXT("medio viento, media desviación"), SignedDeg(Fall, FFellingModel::ApplyWindToFall(Fall, Wind, 0.5f, 20.0f)), 10.0, 1.0e-4);
+			TestEqual(TEXT("viento > 1 cuenta como 1"), SignedDeg(Fall, FFellingModel::ApplyWindToFall(Fall, Wind, 7.0f, 20.0f)), 20.0, 1.0e-4);
+			TestTrue(TEXT("viento negativo no desvía"), FFellingModel::ApplyWindToFall(Fall, Wind, -1.0f, 20.0f) == Fall);
+			TestTrue(TEXT("calma, sin cambio"), FFellingModel::ApplyWindToFall(Fall, Wind, 0.0f, 20.0f) == Fall);
+		});
+
+		It("el viento de cara o de espaldas no desvía", [this]()
+		{
+			const FVector2D Fall(1.0, 0.0);
+			TestTrue(TEXT("de espaldas"), FFellingModel::ApplyWindToFall(Fall, FVector2D(3.0, 0.0), 1.0f, 20.0f).Equals(Fall, 1.0e-9));
+			TestTrue(TEXT("de cara"), FFellingModel::ApplyWindToFall(Fall, FVector2D(-3.0, 0.0), 1.0f, 20.0f).Equals(Fall, 1.0e-9));
+		});
+
+		It("nunca gira más allá del viento ni cambia de lado, ni con el tope de 45°", [this, SignedDeg]()
+		{
+			const FVector2D Fall(0.6, 0.8);
+			for (int32 Deg = -179; Deg <= 179; ++Deg)
+			{
+				const double Rad = FMath::DegreesToRadians((double)Deg);
+				const FVector2D Wind(Fall.X * FMath::Cos(Rad) - Fall.Y * FMath::Sin(Rad), Fall.X * FMath::Sin(Rad) + Fall.Y * FMath::Cos(Rad));
+				const double Turn = SignedDeg(Fall, FFellingModel::ApplyWindToFall(Fall, Wind, 1.0f, 90.0f));
+				if (!TestTrue(*FString::Printf(TEXT("θ=%d°: giro %.4f° del mismo lado y sin rebasar"), Deg, Turn),
+					FMath::Abs(Turn) <= FMath::Abs((double)Deg) + 1.0e-6 && Turn * Deg >= 0.0 && FMath::Abs(Turn) <= 45.0 + 1.0e-6))
+				{
+					break;
+				}
+			}
+		});
+
+		It("entradas no finitas o desviación ≤ 0 devuelven la caída sin tocar", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const FVector2D Fall(0.0, -1.0);
+			const FVector2D Wind(1.0, 0.0);
+			TestTrue(TEXT("viento NaN"), FFellingModel::ApplyWindToFall(Fall, FVector2D(NaN, 0.0), 1.0f, 20.0f) == Fall);
+			TestTrue(TEXT("fuerza NaN"), FFellingModel::ApplyWindToFall(Fall, Wind, (float)NaN, 20.0f) == Fall);
+			TestTrue(TEXT("desviación infinita"), FFellingModel::ApplyWindToFall(Fall, Wind, 1.0f, std::numeric_limits<float>::infinity()) == Fall);
+			TestTrue(TEXT("desviación negativa"), FFellingModel::ApplyWindToFall(Fall, Wind, 1.0f, -20.0f) == Fall);
+			TestTrue(TEXT("viento sin dirección"), FFellingModel::ApplyWindToFall(Fall, FVector2D::ZeroVector, 1.0f, 20.0f) == Fall);
+			TestTrue(TEXT("caída nula se queda nula"), FFellingModel::ApplyWindToFall(FVector2D::ZeroVector, Wind, 1.0f, 20.0f).IsZero());
+		});
+
+		It("usa la desviación del perfil: palmera 15°, gigante 20°, arbusto 0", [this, SignedDeg]()
+		{
+			FFellingProgress Progress;
+			const FFellingProfile& Palm = Get(TEXT("Palm"));
+			for (int32 i = 0; i < 4; ++i) { FFellingModel::ApplyHit(Palm, Progress, EFellingTool::Edge, FVector2D(1.0, 0.0)); }
+			const FVector2D Base = FFellingModel::ResolveFallDirection(Progress, FVector2D::ZeroVector, 3u);
+			const FVector2D Wind(0.0, 1.0);
+			TestEqual(TEXT("palmera"), SignedDeg(Base, FFellingModel::ResolveFallDirectionWithWind(Palm, Progress, FVector2D::ZeroVector, 3u, Wind, 1.0f)), 15.0, 1.0e-4);
+			TestEqual(TEXT("gigante"), SignedDeg(Base, FFellingModel::ResolveFallDirectionWithWind(Get(TEXT("JungleGiant")), Progress, FVector2D::ZeroVector, 3u, Wind, 1.0f)), 20.0, 1.0e-4);
+			TestTrue(TEXT("arbusto sin desviación"), FFellingModel::ResolveFallDirectionWithWind(Get(TEXT("Shrub")), Progress, FVector2D::ZeroVector, 3u, Wind, 1.0f) == Base);
+			for (const FFellingProfile& P : Profiles)
+			{
+				TestTrue(*FString::Printf(TEXT("%s: 0 ≤ desviación ≤ tope"), *P.Species.ToString()),
+					P.WindDeviationMaxDeg >= 0.0f && P.WindDeviationMaxDeg <= FFellingModel::MaxWindDeviationDeg);
+			}
+		});
+	});
+
+	Describe("ComputeCrush", [this]()
+	{
+		auto Piece = [](int32 Id, double X, double Y, int32 Tier, float MaxIntegrity = 30.0f, float Radius = 100.0f)
+		{
+			FFellingObstacle O;
+			O.PieceId = Id;
+			O.Position = FVector2D(X, Y);
+			O.RadiusCm = Radius;
+			O.TierOrder = Tier;
+			O.MaxIntegrity = MaxIntegrity;
+			return O;
+		};
+
+		It("aplasta la construcción ligera en la línea del tronco con el 40 % de su integridad", [this, Piece]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm")); // 9 m
+			const TArray<FFellingObstacle> Pieces = {
+				Piece(3, 500.0, 0.0, 0, 30.0f),		// choza de palma a 5 m
+				Piece(1, 400.0, 50.0, 1, 60.0f),		// pared de bambú casi en la línea
+				Piece(2, 600.0, 0.0, 2, 80.0f),		// pared de madera: aguanta
+				Piece(4, 300.0, 0.0, 3, 90.0f)		// piedra: aguanta
+			};
+			const TArray<FFellingCrush> Crushed = FFellingModel::ComputeCrush(Palm, FVector2D::ZeroVector, FVector2D(2.0, 0.0), Pieces);
+			if (TestEqual(TEXT("dos piezas ligeras"), Crushed.Num(), 2))
+			{
+				TestEqual(TEXT("ordenadas por id"), Crushed[0].PieceId, 1);
+				TestEqual(TEXT("bambú: 40 % de 60"), Crushed[0].Damage, 24.0f, 1.0e-4f);
+				TestEqual(TEXT("palma"), Crushed[1].PieceId, 3);
+				TestEqual(TEXT("palma: 40 % de 30"), Crushed[1].Damage, 12.0f, 1.0e-4f);
+			}
+		});
+
+		It("no toca lo que queda detrás del tocón, más allá de la punta o a un lado", [this, Piece]()
+		{
+			const FFellingProfile& Palm = Get(TEXT("Palm")); // 900 cm; tronco 25 cm + pieza 100 cm = 125 cm
+			const FVector2D Dir(1.0, 0.0);
+			auto Hits = [&](double X, double Y)
+			{
+				return FFellingModel::ComputeCrush(Palm, FVector2D::ZeroVector, Dir, { Piece(1, X, Y, 0) }).Num() == 1;
+			};
+			TestFalse(TEXT("detrás del tocón"), Hits(-200.0, 0.0));
+			TestTrue(TEXT("pegada al tocón por detrás"), Hits(-124.0, 0.0));
+			TestTrue(TEXT("rozando la punta"), Hits(1024.0, 0.0));
+			TestFalse(TEXT("pasada la punta"), Hits(1025.0, 0.0));
+			TestTrue(TEXT("a un lado, dentro"), Hits(450.0, 124.9));
+			TestFalse(TEXT("a un lado, justo en el borde (estricto)"), Hits(450.0, 125.0));
+			TestFalse(TEXT("al otro lado"), Hits(450.0, -300.0));
+		});
+
+		It("el arbusto, una caída nula o entradas no finitas no aplastan nada", [this, Piece]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const TArray<FFellingObstacle> One = { Piece(1, 100.0, 0.0, 0) };
+			TestEqual(TEXT("arbusto"), FFellingModel::ComputeCrush(Get(TEXT("Shrub")), FVector2D::ZeroVector, FVector2D(1.0, 0.0), One).Num(), 0);
+			TestEqual(TEXT("caída nula"), FFellingModel::ComputeCrush(Get(TEXT("Palm")), FVector2D::ZeroVector, FVector2D::ZeroVector, One).Num(), 0);
+			TestEqual(TEXT("caída NaN"), FFellingModel::ComputeCrush(Get(TEXT("Palm")), FVector2D::ZeroVector, FVector2D(NaN, 1.0), One).Num(), 0);
+			TestEqual(TEXT("base NaN"), FFellingModel::ComputeCrush(Get(TEXT("Palm")), FVector2D(NaN, 0.0), FVector2D(1.0, 0.0), One).Num(), 0);
+			const TArray<FFellingObstacle> Bad = {
+				Piece(1, NaN, 0.0, 0), Piece(2, 100.0, 0.0, 0, 30.0f, (float)NaN), Piece(3, 100.0, 0.0, -1),
+				Piece(4, 100.0, 0.0, 0, 0.0f), Piece(5, 100.0, 0.0, 0, std::numeric_limits<float>::infinity())
+			};
+			TestEqual(TEXT("piezas corruptas ignoradas"), FFellingModel::ComputeCrush(Get(TEXT("Palm")), FVector2D::ZeroVector, FVector2D(1.0, 0.0), Bad).Num(), 0);
+		});
+
+		It("una pieza repetida cuenta una vez y el radio negativo cuenta como 0", [this, Piece]()
+		{
+			const TArray<FFellingCrush> Crushed = FFellingModel::ComputeCrush(Get(TEXT("Palm")), FVector2D::ZeroVector, FVector2D(0.0, 1.0),
+				{ Piece(7, 0.0, 300.0, 0), Piece(7, 0.0, 400.0, 0), Piece(8, 20.0, 500.0, 1, 50.0f, -500.0f), Piece(9, 30.0, 500.0, 1, 50.0f, -500.0f) });
+			if (TestEqual(TEXT("7 una vez y 8 por el tronco; 9 fuera"), Crushed.Num(), 2))
+			{
+				TestEqual(TEXT("7"), Crushed[0].PieceId, 7);
+				TestEqual(TEXT("8"), Crushed[1].PieceId, 8);
+			}
+		});
+
+		It("da lo mismo lejos del origen (bordes de chunk y coordenadas negativas)", [this, Piece]()
+		{
+			const FFellingProfile& Giant = Get(TEXT("JungleGiant"));
+			const FVector2D Dir = FVector2D(-1.0, -1.0).GetSafeNormal();
+			TArray<FFellingObstacle> Near;
+			for (int32 i = 0; i < 40; ++i)
+			{
+				Near.Add(Piece(i, -60.0 * i, -55.0 * i + 90.0, i % 4, 10.0f + i));
+			}
+			const FVector2D Offset(-2560000.0, 1280000.0);
+			TArray<FFellingObstacle> Far = Near;
+			for (FFellingObstacle& O : Far) { O.Position += Offset; }
+			const TArray<FFellingCrush> A = FFellingModel::ComputeCrush(Giant, FVector2D::ZeroVector, Dir, Near);
+			const TArray<FFellingCrush> B = FFellingModel::ComputeCrush(Giant, Offset, Dir, Far);
+			TestTrue(TEXT("aplasta algo"), A.Num() > 0);
+			if (TestEqual(TEXT("mismas piezas"), A.Num(), B.Num()))
+			{
+				for (int32 i = 0; i < A.Num(); ++i)
+				{
+					TestEqual(TEXT("id"), A[i].PieceId, B[i].PieceId);
+					TestEqual(TEXT("daño"), A[i].Damage, B[i].Damage);
+				}
+			}
+		});
+	});
+
 	Describe("ComputeFellDrops", [this]()
 	{
 		It("conserva el recuento: cada unidad tirada aparece una vez, y ningún tipo sale de su rango", [this]()

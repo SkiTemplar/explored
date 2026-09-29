@@ -28,6 +28,21 @@ Todo pasa hoy por `UExploredWiringSubsystem::HarvestInstance` (`Core/ExploredWir
      normalizar).
    - `InstanceSeed = Hash3D(Seed, Cell.X, Cell.Y, Index)`, igual que el resto de
      semillas por instancia.
+   - La dirección sale de `ResolveFallDirectionWithWind(Profile, Progress, Downhill,
+     InstanceSeed, WindDirection, Wind)`. `Wind` es `FWeatherSample::Wind` (0–1) del
+     subsistema de tiempo en el momento del último golpe, y `WindDirection` la misma
+     dirección en el plano que ya recibe `FWildfireConditions`. Solo el servidor la
+     calcula; los clientes reciben la dirección ya resuelta con el evento de caída, así
+     que el viento no puede desincronizar la caída entre jugadores.
+   - **Aplastamiento.** Antes de lanzar la animación, el servidor pide a
+     `UBuildingSubsystem` las piezas cuya huella toca la caja del tronco (base, dirección,
+     `HeightMeters` y 1,5 m de margen) y las pasa como `FFellingObstacle` (`PieceId`,
+     centro XY, media diagonal como radio, `TierOrderOf` e `Integrity` de la ficha).
+     `ComputeCrush` devuelve el daño de cada pieza; se aplica restando de
+     `FBuildingPieceState::Integrity` al final de la animación, cuando el tronco toca el
+     suelo, y después se llama a `CollapseUnsupported` como con cualquier otro daño.
+     Las piezas de madera y piedra no reciben nada: el tronco se queda encima (el actor
+     temporal puede detener la rotación al tocarlas, pero eso es solo visual).
    - La animación es un actor temporal `AExploredFallingTree`: coge la malla de la
      instancia, la hace rotar sobre la base hacia la dirección de caída en unos 1,5 s y
      después se destruye.
@@ -82,6 +97,10 @@ que rebrota eso ya no basta:
 
 - **Golpe.** Son operaciones O(1) enteras, sin asignaciones. `ComputeFellDrops` asigna una
   sola vez, al caer el árbol, entre 3 y 12 unidades.
+- **Viento y aplastamiento.** Una sola vez por árbol caído: `ApplyWindToFall` es O(1) y
+  `ComputeCrush` es O(piezas candidatas), que tras el filtro por caja son unas pocas
+  decenas como mucho. El daño no se guarda aparte: queda en la integridad de la pieza,
+  que ya persiste `FBuildingPieceState`.
 - **Rebrote.**
   - No se hace tick por instancia. Un barrido cada 10 s de juego recorre solo los tocones
     de las celdas cargadas (`VegetationRuntime`, decenas o cientos) y llama a
