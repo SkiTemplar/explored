@@ -519,6 +519,16 @@ al sacudir (§3.18).
     fuerzas pesan igual con unos 27° de pendiente (peso 2 × tangente). Con más
     pendiente cae cuesta abajo aunque se golpee desde abajo. Si los golpes se anulan
     en terreno llano, cae hacia una dirección fija de cada ejemplar.
+  - **Viento.** Después se tuerce la caída con el viento del momento (biblia 02 §1.2):
+    gira `máx · viento · sen θ` grados hacia donde sopla, con `viento` de 0 a 1
+    (`FWeatherSample::Wind`) y θ el ángulo entre la caída y el viento. El máximo es 20°
+    y 15° en la palmera, y el arbusto no se desvía. Así el viento de costado desvía del
+    todo, el de cara o de espaldas no desvía, y la caída nunca pasa de largo la
+    dirección del viento. Ningún perfil puede pasar de 45°.
+  - **Aplastamiento.** El tronco que cae es un segmento de la altura del árbol con 25 cm
+    de radio. Las piezas de palma o bambú que toca pierden el 40 % de su integridad
+    máxima (biblia 02 §1.2); las de madera y piedra aguantan. El arbusto no aplasta.
+    Cada pieza cuenta una vez aunque el tronco la cruce entera.
   - **Tocón.**
     - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
       hasta adulto y entonces se puede volver a talar.
