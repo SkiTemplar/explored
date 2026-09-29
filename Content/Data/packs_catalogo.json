@@ -2059,6 +2059,18 @@
       "pack": "kenney_fantasy_town_kit",
       "file": "Models/GLB format/wall-wood-door.glb",
       "reason": "Kenney wall-wood-door es un panel de pared entero de 2 x 2 m con arco y la hoja fija dentro. El socket puerta del kit es solo la hoja (0,96 x 2,02 m, bisagra en x = 0) que gira dentro del hueco de SM_Kit_*_WallDoor, y la pared mide 2,50 m: la del pack no abre y queda 0,50 m más baja. Sigue con SM_Kit_Wood_Door."
+    },
+    {
+      "gameId": "carretilla",
+      "pack": "kenney_fantasy_town_kit",
+      "file": "Models/GLB format/cart.glb",
+      "reason": "Es un carro de mano de dos ruedas con barandillas (608 triángulos), no una carretilla de una rueda con cubeta: al lado de KayKit se lee como otro objeto y las aristas de bloque rompen el low poly pulido (hoja del 2026-09-29). Se queda el marcador hasta tener malla propia en Tools/Blender."
+    },
+    {
+      "gameId": "banco_chatarra",
+      "pack": "kenney_survival_kit",
+      "file": "Models/GLB format/workbench.glb",
+      "reason": "Cubo macizo de 236 triángulos con un papel y un martillo fundidos en el tablero: no trae chapa de fuselaje ni tubo de aluminio (coste de la pieza) y recoloreado parece un arcón de madera. Queda para Tools/Blender."
     }
   ],
   "pending": [
