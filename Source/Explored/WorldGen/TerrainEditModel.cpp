@@ -948,14 +948,17 @@ FTerrainEditResult FTerrainEditModel::DigSphere(const FSphereDig& Dig, FBaseDens
 		Result.bRejected = true;
 		return Result;
 	}
+	// IsFinite explícito: con matemáticas rápidas `!(MaxVolume >= 0)` deja pasar un NaN y la
+	// esfera sale entera, sin tope.
 	if (!(Dig.Radius > 0.0f) || !FMath::IsFinite(Dig.Radius) || !TerrainEditDetail::IsFiniteVector(Dig.Center)
-		|| !(Dig.MaxVolume >= 0.0))
+		|| !FMath::IsFinite(Dig.MaxVolume) || Dig.MaxVolume < 0.0)
 	{
 		return Result;
 	}
-	if (!TerrainEditDetail::InWorld(Dig.Center))
+	if (!TerrainEditDetail::InWorld(Dig.Center) || !TerrainEditDetail::ValidExtent(Dig.Radius))
 	{
-		// Como Pickaxe o Shovel: fuera del mundo sus chunks no caben en el códec de red.
+		// Como Pickaxe o Shovel: fuera del mundo sus chunks no caben en el códec de red, y un
+		// radio mayor que MaxBrushExtent vaciaría miles de m³ de una vez.
 		Result.bRejected = true;
 		return Result;
 	}
