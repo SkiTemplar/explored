@@ -748,6 +748,12 @@ Modelo puro `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), 
 
   Carga y pasajeros son masas puntuales. Un pasajero pesa 75 kg y, de pie, tiene su
   centro de masas a 90 cm sobre la cubierta; sentado, a unos 50 cm.
+- **Cada pieza ocupa su sitio.** Dos piezas con volumen no se pueden meter una en otra
+  más de 2 cm en los tres ejes (`MaxOverlapCm`). Ese margen deja encajar el mástil en
+  la cubierta y absorbe el redondeo de la colocación, pero impide apilar troncos en el
+  mismo hueco: sin él, cinco troncos en el sitio de uno flotarían como cinco. Vela,
+  remos y pala no tienen volumen y se pueden cruzar con cualquier pieza. Un guardado
+  antiguo con piezas solapadas pierde solo las que sobran, con sus uniones.
 - **Hidrostática (agua de mar, 1025 kg/m³).** El calado es el que desplaza el peso
   total (Arquímedes). El centro de carena es el centroide de lo sumergido. La **altura
   metacéntrica** GM = KB + BM − KG sale de la pendiente del brazo adrizante en 0°. El

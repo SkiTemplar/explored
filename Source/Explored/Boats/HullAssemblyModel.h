@@ -217,10 +217,15 @@ public:
 	static constexpr float HullSpeedFroude = 0.4f;
 	/** Radio de giro en esloras. */
 	static constexpr float TurnRadiusLengths = 1.5f;
+	/** Lo que se pueden meter una en otra dos piezas con volumen (cm, en los tres ejes): encajes y redondeo, no apilar. */
+	static constexpr float MaxOverlapCm = 2.0f;
 
 	static const FHullPieceSpec& Spec(EHullPieceType Type);
 
-	/** Añade una pieza; devuelve su índice, o INDEX_NONE si su centro o su tamaño no son finitos. */
+	/**
+	 * Añade una pieza; devuelve su índice, o INDEX_NONE si su centro o su tamaño no son
+	 * finitos o si tiene volumen y se mete más de MaxOverlapCm en otra pieza con volumen.
+	 */
 	int32 AddPiece(const FHullPiece& Piece);
 	/** Quita una pieza; false si el índice no existe. */
 	bool RemovePiece(int32 Index);
