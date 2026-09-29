@@ -67,6 +67,35 @@ def test_tejado_de_palma_tiene_goteos_del_alero(rendered):
     assert np.percentile(env, 99.5) - np.median(env) >= 6.0
 
 
+def test_tejado_de_palma_son_golpes_sordos_con_cuerpo(rendered):
+    thatch = rendered["amb_rain_on_thatch"]
+    # Cada gota es un golpe discreto que sobresale del lecho en ventanas de
+    # 5 ms (la version anterior eran granos de ruido: unos 16 dB, pero todo
+    # en 0,8-4 kHz y sin cuerpo).
+    env = _envelope_db(thatch, 0.005)
+    assert np.percentile(env, 99.5) - np.median(env) >= 10.0
+    # Los foliolos que ceden y el agua de las canales llevan energia a
+    # 150-800 Hz; antes era un 3 %.
+    assert _band_share(thatch, 150.0, 800.0) >= 0.3
+    # La paja se come el agudo.
+    assert _band_share(thatch, 4000.0, 20000.0) <= 0.05
+
+
+def test_tejado_de_palma_tiene_gotera_en_la_cascara(rendered):
+    # La gotera cae siempre en la misma cascara: un tono fijo de 650-900 Hz
+    # que destaca sobre la lluvia en el espectro medio de todo el bucle.
+    thatch = _mono(rendered["amb_rain_on_thatch"])
+    spectrum = np.abs(np.fft.rfft(thatch)) ** 2
+    freqs = np.fft.rfftfreq(len(thatch), 1.0 / SAMPLE_RATE)
+    # Energia en 5 Hz frente a la de los 100 Hz de alrededor: sin tono la
+    # razon ronda 1; la cascara (afinada con un ±1 %) da unas 4.
+    bin_hz = freqs[1]
+    narrow = np.convolve(spectrum, np.ones(int(5.0 / bin_hz)), mode="same") / int(5.0 / bin_hz)
+    wide = np.convolve(spectrum, np.ones(int(100.0 / bin_hz)), mode="same") / int(100.0 / bin_hz)
+    band = (freqs >= 650.0) & (freqs < 900.0)
+    assert float((narrow[band] / wide[band]).max()) >= 2.0
+
+
 def test_viento_en_palmeras_suena_a_hojas(rendered):
     palms = rendered["amb_wind_palms"]
     wind = rendered["amb_wind_light"]
