@@ -477,6 +477,44 @@ void FTerrainEditModelSpec::Define()
 			TestEqual(TEXT("mismo sólido que al principio"), Model.SolidVolume(Box, Flat), Original, 2.0e-3);
 		});
 
+		It("echar tierra no toca nada fuera de su esfera más una celda y remalla justo los chunks que la leen", [this]()
+		{
+			FTerrainEditModel Model;
+			// El hoyo está en la esquina de cuatro chunks (X = 0 e Y = 0 son fronteras).
+			FSoilPlacement Place;
+			Place.Center = FVector(0.0, 0.0, -0.3);
+			Place.Radius = 0.6f;
+			Place.SoilBudget = 10.0;
+			const FBox Box(FVector(-2.0), FVector(2.0));
+			const FSamples Before = Snapshot(Model, Box, Pit);
+			const FTerrainEditResult R = Model.PlaceSoil(Place, Pit);
+			const TArray<FIntVector> Moved = Changed(Before, Snapshot(Model, Box, Pit));
+			TestTrue(TEXT("rellena algo"), Moved.Num() > 0 && R.VolumeAdded > 0.0);
+			const float Reach = Place.Radius + Model.GetSettings().CellSize;
+			TArray<FIntVector> Expected;
+			for (const FIntVector& G : Moved)
+			{
+				const FVector P = Model.SamplePosition(G);
+				TestTrue(*FString::Printf(TEXT("muestra cambiada dentro del pincel (%.2f, %.2f, %.2f)"), P.X, P.Y, P.Z),
+					FVector::Dist(P, Place.Center) < Reach);
+				Model.ChunksReadingSample(G, Expected);
+			}
+			TestEqual(TEXT("el modelo solo guarda lo que ha cambiado"), Model.NumEditedSamples(), Moved.Num());
+			TestEqual(TEXT("mismos chunks sucios"), R.DirtyChunks.Num(), Expected.Num());
+			for (const FIntVector& C : Expected)
+			{
+				TestTrue(*FString::Printf(TEXT("chunk (%d, %d, %d) marcado"), C.X, C.Y, C.Z), R.DirtyChunks.Contains(C));
+			}
+			bool bLeft = false;
+			bool bRight = false;
+			for (const FIntVector& C : R.DirtyChunks)
+			{
+				bLeft |= C.X == -1;
+				bRight |= C.X == 0;
+			}
+			TestTrue(TEXT("remalla los dos lados de la frontera"), bLeft && bRight);
+		});
+
 		It("echar tierra sin llevar nada no hace nada", [this]()
 		{
 			FTerrainEditModel Model;
