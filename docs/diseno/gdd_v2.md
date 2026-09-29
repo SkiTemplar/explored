@@ -625,7 +625,9 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
     cosa del pico (§3.4).
   - **Pala.** Cada pasada es un cono de 0,6 m de radio y 15 cm en el centro (unos
     0,06 m³). Lo cavado va al cubo como arena, que tiene masa exacta. Al apilar se echa
-    lo que se lleva y nada más.
+    lo que se lleva y nada más. Ningún pincel pasa de **8 m** de radio (el lado de un
+    chunk); uno mayor no hace nada, para que un dato malo o una petición manipulada no
+    deje al servidor recorriendo millones de columnas.
   - **La arena no desaparece.** La avalancha es un traspaso entre columnas vecinas. El
     oleaje cambia arena con el **banco del mar** (la arena en suspensión de la resaca):
     lo que alisa de un montón va al banco y lo que rellena un hoyo sale de él. La suma
