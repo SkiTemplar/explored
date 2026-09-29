@@ -92,7 +92,7 @@
       "id": "lote14-iconos-logros",
       "date": "2026-09-29",
       "sheet": "docs/art/packs/lote14-iconos-logros.png",
-      "scope": "Iconos de los logros nuevos (PR #80) de Early Access buscados en Board Game Icons y Game Icons de Kenney: 8 cubiertos. Corral, empalizada y vagón son de fase 2/3 (fases_futuras.json) y no se catalogan todavía."
+      "scope": "Iconos de los logros nuevos (PR #80) de Early Access buscados en Board Game Icons y Game Icons de Kenney: 8 cubiertos. Corral y empalizada tienen candidato, pero sus piezas siguen como propuesta en fases_futuras.json y se catalogan cuando tengan cotas; vagón no tiene silueta que encaje."
     }
   ],
   "entries": [
@@ -2600,11 +2600,11 @@
     },
     {
       "achievementIcon": "corral",
-      "reason": "Logro de fase 2/3 (fases_futuras.json), fuera del acceso anticipado. Candidato ya revisado el 2026-09-29: structure_farm.png (establo, Board Game Icons); se cataloga cuando el logro entre en achievements.json."
+      "reason": "El logro ya está en achievements.json (F2), pero la pieza «corral» sigue con propuesta: true en fases_futuras.json. Candidato revisado el 2026-09-29: structure_farm.png (establo, Board Game Icons); se cataloga cuando la pieza deje de ser propuesta."
     },
     {
       "achievementIcon": "empalizada",
-      "reason": "Logro de fase 2/3 (fases_futuras.json), fuera del acceso anticipado. Candidato ya revisado el 2026-09-29: structure_gate.png (lienzo con puerta, Board Game Icons); se cataloga cuando el logro entre en achievements.json."
+      "reason": "El logro ya está en achievements.json (F2), pero la pieza «empalizada» sigue con propuesta: true en fases_futuras.json. Candidato revisado el 2026-09-29: structure_gate.png (lienzo con puerta, Board Game Icons); se cataloga cuando la pieza deje de ser propuesta."
     }
   ]
 }
