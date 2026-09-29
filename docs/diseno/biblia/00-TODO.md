@@ -202,7 +202,9 @@ salir de la isla.
       diseño nueva de la biblia, pendiente de aplicar al código. *(biblia 02 §1.2, 02 §1.6)*
       → **En parte:** `6fb9833` (PR #39), `FellingModel.h:100-113` — el tocón con rebrote
         existe, pero con 12/20/15/20 días en vez de 18/24/4, y `VegetationHarvestState` aún
-        no lo usa.
+        no lo usa. PR #135: `WorldGen/VegetationClockModel.h` (`FVegetationClockModel`,
+        sección de guardado `vegetationClock` con la hora de tala de cada tocón) y guardado
+        de celdas de ramas en `GroundBranchModel.h` — falta engancharlo a `USaveSubsystem`.
 - [ ] `WorldGen`: generación periódica de `rama_seca` bajo cada árbol (2–4 cada 6 h,
       tope 6). *(biblia 02 §1.3)*
       → **En parte:** `bb07614` (PR #39), `WorldGen/GroundBranchModel.h:55-71` — modelo puro
@@ -808,7 +810,8 @@ datos todavía.
         `packs_catalogo.json` — hay herramientas, comida, huerto y jabalí; falta vegetación
         general, mobiliario y props. PR #110: iconos de UI de Kenney (fuego, refugio,
         estrella, laurel, candado y reloj de arena); 44 pistas de logro siguen en
-        `iconsPending`.
+        `iconsPending`. PR #134: 8 iconos de logro más (arco, bandera, escudo, muralla,
+        herramienta, viga, trueque y pueblo), sin normalizar todavía en Unreal.
         PR #116: mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit),
         sin normalizar todavía en Unreal.
         PR #121: clavos y yunque de la herrería (KayKit RPG Tools Bits), sin normalizar
