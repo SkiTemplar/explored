@@ -2161,6 +2161,22 @@
     {
       "gameId": "viga_apoyo",
       "reason": "Pieza de mina (poste y dintel que apuntalan 1,5 m). Revisados el 2026-09-28 (lote 8): KayKit Resource Bits solo trae troncos cortos de pie (Wood_Log_A/B) y tablones sueltos, y Kenney Survival y Fantasy Town no traen entibado. Candidato: pieza propia en Tools/Blender reutilizando SM_Pack_TroncoPequeno."
+    },
+    {
+      "gameId": "carretilla",
+      "reason": "Revisado el 2026-09-29 (lote 15, sin malla): la única candidata es cart/cart-high de Kenney Fantasy Town Kit, un carro de caballo con barriles y dos ruedas, no una carretilla de mano de una rueda. Queda para Tools/Blender."
+    },
+    {
+      "gameId": "escalera_mano",
+      "reason": "Revisado el 2026-09-29: ningún pack descargado trae escalera de mano; Stairs* de KayKit y stairs-* de Kenney son escaleras de obra y escalera_madera ya está descartada. Queda para Tools/Blender."
+    },
+    {
+      "gameId": "espantapajaros",
+      "reason": "Revisado el 2026-09-29: ningún pack descargado trae espantapájaros ni muñeco de paja. Queda para Tools/Blender."
+    },
+    {
+      "gameId": "horno_fundicion",
+      "reason": "Revisado el 2026-09-29: oven.gltf de KayKit Restaurant Bits es un horno de cocina con puerta y no un horno de fundición de barro y piedra; campfire_bricks/stones de Kenney son hogueras. Queda para Tools/Blender."
     }
   ],
   "icons": [
