@@ -587,7 +587,13 @@ void FTerrainEditModel::Commit(const TArray<FProposal>& Proposals, float Scale, 
 			continue;
 		}
 		const int32 OldMm = GetDeltaMm(P.Global);
-		const int32 NewMm = FMath::Clamp(FMath::RoundToInt32((Value - P.Base) * 1000.0f), -MaxDeltaMm, MaxDeltaMm);
+		// Se redondea hacia la densidad de partida: la ocupación es monótona, así que el
+		// volumen realizado nunca pasa del propuesto y un tope (golpe, tierra que se lleva)
+		// no se rebasa por los milímetros. Al más cercano, 100 muestras daban hasta 0,6 L de más.
+		const float TargetMm = (Value - P.Base) * 1000.0f;
+		const int32 RoundedMm = Value > From ? FMath::Max(FMath::FloorToInt32(TargetMm), OldMm)
+			: FMath::Min(FMath::CeilToInt32(TargetMm), OldMm);
+		const int32 NewMm = FMath::Clamp(RoundedMm, -MaxDeltaMm, MaxDeltaMm);
 		if (NewMm == OldMm)
 		{
 			continue;
@@ -786,13 +792,12 @@ FTerrainEditResult FTerrainEditModel::Shovel(const FShovelStroke& Stroke, FBaseD
 			(Change > 0.0f ? Cut : Fill).Add({ G, BaseValue, Old, From + Change });
 		});
 
-	// Lo que se rellena sale de lo que se lleva más lo que corta esta misma pasada.
-	const double CutVolume = -ProposalVolume(Cut, 1.0f);
+	// Lo que se rellena sale de lo que se lleva más lo que corta esta misma pasada: lo
+	// cortado de verdad, ya en milímetros, no lo propuesto (que es algo más).
 	// Un presupuesto no finito no es tierra que se lleve: con NaN o infinito se rellenaba sin tope.
 	const double Budget = FMath::IsFinite(Stroke.SoilBudget) ? FMath::Max(0.0, Stroke.SoilBudget) : 0.0;
-	const double Allowed = Budget + CutVolume;
 	Commit(Cut, 1.0f, Result);
-	Commit(Fill, ScaleToVolume(Fill, Allowed), Result);
+	Commit(Fill, ScaleToVolume(Fill, Budget + Result.VolumeRemoved), Result);
 
 	if (Stroke.bMarkPath)
 	{

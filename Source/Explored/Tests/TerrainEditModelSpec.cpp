@@ -385,7 +385,7 @@ void FTerrainEditModelSpec::Define()
 			Stroke.SoilBudget = 0.05;
 			const FTerrainEditResult R = Model.Shovel(Stroke, Pit);
 			TestTrue(TEXT("rellena algo"), R.VolumeAdded > 0.01);
-			TestTrue(*FString::Printf(TEXT("no más de lo que lleva (%.4f)"), R.VolumeAdded), R.VolumeAdded <= Stroke.SoilBudget + R.VolumeRemoved + 1.0e-3);
+			TestTrue(*FString::Printf(TEXT("no más de lo que lleva (%.4f)"), R.VolumeAdded), R.VolumeAdded <= Stroke.SoilBudget + R.VolumeRemoved + 1.0e-9);
 
 			FTerrainEditModel Rich;
 			Stroke.SoilBudget = 10.0;
@@ -469,7 +469,7 @@ void FTerrainEditModelSpec::Define()
 				Place.Radius = 0.6f;
 				Place.SoilBudget = Budget;
 				const FTerrainEditResult R = Model.PlaceSoil(Place, Flat);
-				TestTrue(TEXT("no echa más de lo que lleva"), R.VolumeAdded <= Budget + 1.0e-3);
+				TestTrue(TEXT("no echa más de lo que lleva"), R.VolumeAdded <= Budget + 1.0e-9);
 				TestTrue(TEXT("echar tierra no quita"), R.VolumeRemoved < 1.0e-9);
 				Budget -= R.VolumeAdded;
 			}
@@ -608,7 +608,7 @@ void FTerrainEditModelSpec::Define()
 			for (; Calls < 200; ++Calls)
 			{
 				const FTerrainEditResult R = Model.CarveStairs(Stairs, Slope);
-				TestTrue(TEXT("cada llamada respeta el tope"), R.VolumeRemoved <= Stairs.MaxVolume + 2.0e-3);
+				TestTrue(TEXT("cada llamada respeta el tope"), R.VolumeRemoved <= Stairs.MaxVolume + 1.0e-9);
 				if (!R.Changed())
 				{
 					break;
@@ -714,6 +714,53 @@ void FTerrainEditModelSpec::Define()
 				FStairCarve Stairs;
 				Stairs.MaxVolume = Budget;
 				TestTrue(TEXT("escalera rechazada"), Model.CarveStairs(Stairs, Slope).bRejected);
+			}
+		});
+
+		It("el redondeo a milímetros no rebasa el tope de volumen de echar tierra, picar una esfera, tallar ni la pala", [this]()
+		{
+			// Presupuestos que cortan el pincel a medias en posiciones fuera de la rejilla: al
+			// redondear cada muestra al milímetro más cercano se pasaban hasta 0,6 L por llamada.
+			for (int32 I = 0; I < 12; ++I)
+			{
+				const double Budget = 0.013 + 0.037 * I;
+				const FVector Offset(0.07 * I, -0.05 * I, 0.031 * I);
+
+				FTerrainEditModel Model;
+				FSoilPlacement Place;
+				Place.Center = FVector(0.11, 0.0, 0.2) + Offset;
+				Place.Radius = 0.9f;
+				Place.SoilBudget = Budget;
+				const FTerrainEditResult Soil = Model.PlaceSoil(Place, Flat);
+				TestTrue(*FString::Printf(TEXT("echar tierra: %.7f ≤ %.7f"), Soil.VolumeAdded, Budget), Soil.VolumeAdded <= Budget);
+
+				FSphereDig Dig;
+				Dig.Center = FVector(0.13, 0.0, -0.1) + Offset;
+				Dig.Radius = 0.8f;
+				Dig.ToolTier = 2;
+				Dig.MaxVolume = Budget;
+				const FTerrainEditResult Hole = Model.DigSphere(Dig, Flat);
+				TestTrue(*FString::Printf(TEXT("esfera: %.7f ≤ %.7f"), Hole.VolumeRemoved, Budget), Hole.VolumeRemoved <= Budget);
+
+				FStairCarve Stairs;
+				Stairs.Start = FVector(0.05, 0.02, 0.0) + Offset;
+				Stairs.Direction = FVector(1.0, 0.3, 0.0);
+				Stairs.MaxVolume = Budget;
+				const FTerrainEditResult Cut = Model.CarveStairs(Stairs, Slope);
+				TestTrue(*FString::Printf(TEXT("escalera: %.7f ≤ %.7f"), Cut.VolumeRemoved, Budget), Cut.VolumeRemoved <= Budget);
+
+				// La pala en ladera corta arriba y rellena abajo: solo con lo cortado de verdad.
+				FTerrainEditModel Hill;
+				FShovelStroke Stroke;
+				Stroke.Center = FVector(0.09, 0.0, 0.1) + Offset;
+				Stroke.Radius = 0.6f + 0.05f * I;
+				Stroke.SoilBudget = 0.0;
+				Stroke.bMarkPath = false;
+				for (int32 Pass = 0; Pass < 3; ++Pass)
+				{
+					const FTerrainEditResult R = Hill.Shovel(Stroke, Slope);
+					TestTrue(*FString::Printf(TEXT("pala: %.7f ≤ %.7f"), R.VolumeAdded, R.VolumeRemoved), R.VolumeAdded <= R.VolumeRemoved);
+				}
 			}
 		});
 	});
