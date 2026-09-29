@@ -151,7 +151,9 @@ struct EXPLORED_API FRainCatchModel
 	/**
 	 * Avanza hasta NowMinute con el tiempo del FWeatherModel, franja a franja
 	 * (muestra en el centro de cada franja). Devuelve los microlitros de lluvia
-	 * recogidos en esta llamada. Un reloj que retrocede no hace nada.
+	 * recogidos en esta llamada. Un reloj que retrocede no hace nada; uno fuera de
+	 * ±MaxSupportedMinute tampoco (ni se adopta). Un LastUpdateMinute guardado más
+	 * allá de MaxSupportedMinute se corrige a NowMinute sin simular.
 	 */
 	static int64 Advance(FRainCatchState& State, const FRainCatchSpec& Spec, const FRainCatchSky& Sky, int64 NowMinute);
 

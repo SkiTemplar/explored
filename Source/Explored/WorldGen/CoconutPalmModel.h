@@ -133,6 +133,13 @@ struct EXPLORED_API FCoconutPalmState
 struct EXPLORED_API FCoconutPalmModel
 {
 	static constexpr int64 MinutesPerDay = 1440;
+	/**
+	 * Reloj máximo que se simula (10 000 días de juego, como FRainCatchModel y
+	 * FWeatherModel). Un minuto fuera de ±MaxSupportedMinute no sale de ninguna
+	 * partida: Advance no hace nada con él (ni lo adopta, para no congelar la copa),
+	 * y así ni las sumas del ciclo desbordan ni ponerse al día recorre millones de ciclos.
+	 */
+	static constexpr int64 MaxSupportedMinute = 10000 * MinutesPerDay;
 	/** Fuerza mínima que tiene cualquier maduro al sacudir, aunque acabe de madurar. */
 	static constexpr float BaseLooseness = 0.35f;
 	/** Una sacudida a mano de una palmera de esta altura (en metros) tiene fuerza 1. */
@@ -173,7 +180,9 @@ struct EXPLORED_API FCoconutPalmModel
 	 * (Hour·60) y los caídos que cumplen su tiempo se pudren. Gusts va ordenada por
 	 * hora; se ignoran las horas ya aplicadas y las anteriores a LastUpdateMinute.
 	 * Devuelve cuántos han caído (solos y por las rachas). Una hora anterior a
-	 * LastUpdateMinute no hace nada.
+	 * LastUpdateMinute no hace nada, y tampoco un NowMinute o un LastUpdateMinute fuera
+	 * de ±MaxSupportedMinute ni un CycleStartMinute fuera de [−3, 1] × MaxSupportedMinute
+	 * (estado corrupto: ver IsValidSaved).
 	 */
 	static int32 Advance(FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int64 NowMinute, const TArray<FCoconutGust>& Gusts);
 
@@ -231,4 +240,14 @@ struct EXPLORED_API FCoconutPalmModel
 	static FVector2D FallPosition(const FCoconutPalmState& State, const FCoconutPalmProfile& Profile, int32 SlotIndex, int32 Generation);
 
 	static uint32 MakeId(int32 SlotIndex, int32 Generation);
+
+	/**
+	 * ¿Es coherente un estado leído de la partida (docs/tecnico/cocos-palmeras.md)?
+	 * Minutos dentro de los rangos de Advance, ningún ciclo que empiece después de
+	 * LastUpdateMinute, tantos huecos como el perfil, generaciones que caben en el
+	 * Id, rachas no posteriores al reloj y cocos del suelo con Id de un hueco que
+	 * existe, sin repetir y caídos antes del reloj. Si no lo es, quien carga
+	 * reconstruye la palmera como si nadie la hubiera tocado.
+	 */
+	static bool IsValidSaved(const FCoconutPalmState& State, const FCoconutPalmProfile& Profile);
 };

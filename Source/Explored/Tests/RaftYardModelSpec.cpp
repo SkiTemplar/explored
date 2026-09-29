@@ -336,6 +336,43 @@ void FRaftYardModelSpec::Define()
 			TestTrue(TEXT("y avanza"), Yard.Push(FRaftYardModel::PushForceN(1), 1.0f).MovedCm > 0.0f);
 		});
 
+		It("los rodillos se miden bajo las piezas reales, aunque el casco no esté centrado en su origen", [this]()
+		{
+			// Un tronco de 3 m que va de X = 0 a X = 300: con CenterS = 500 ocupa S 500..800.
+			FRaftYardModel Yard;
+			const double Length = FHullAssemblyModel::Spec(EHullPieceType::Log).DefaultSizeCm.X;
+			Yard.AddPiece(Piece(EHullPieceType::Log, FVector(Length * 0.5, 0.0, 11.0)));
+			Yard.PlaceOnPath(FlatPath(ELaunchSurface::Sand, 2000.0f), 500.0f);
+			const float Aft = 500.0f, Fore = 500.0f + static_cast<float>(Length);
+			// Antes contaba CenterS ± eslora / 2 (350..650): el rodillo de 360 «estaba debajo».
+			Yard.PlaceRoller(Aft - 140.0f);
+			Yard.PlaceRoller(Aft + 0.25f * (Fore - Aft));
+			TestFalse(TEXT("el de detrás del casco no lo sostiene"), Yard.IsOnRollers());
+			TestTrue(TEXT("y se puede recoger"), Yard.TakeRoller(0));
+			Yard.PlaceRoller(Aft + 0.9f * (Fore - Aft));
+			TestTrue(TEXT("uno bajo cada mitad real"), Yard.IsOnRollers());
+			TestFalse(TEXT("el de proa está debajo y no se puede recoger"), Yard.TakeRoller(1));
+
+			// Los rodillos que se mueven son los de debajo de verdad.
+			const float Before = Yard.GetCenterS();
+			Yard.Push(FRaftYardModel::PushForceN(1), 0.5f);
+			const float Moved = Yard.GetCenterS() - Before;
+			// Poco recorrido: el de popa (a un cuarto) sigue debajo hasta que el casco avanza 150 cm.
+			TestTrue(TEXT("rueda sin dejar atrás el de popa"), Moved > 0.0f && Moved < 150.0f && Yard.IsOnRollers());
+			TestEqual(TEXT("el de popa avanza la mitad"), Yard.GetRollers()[0], Aft + 0.25f * (Fore - Aft) + Moved * 0.5f, 1e-2f);
+			TestEqual(TEXT("el de proa avanza la mitad"), Yard.GetRollers()[1], Aft + 0.9f * (Fore - Aft) + Moved * 0.5f, 1e-2f);
+		});
+
+		It("un solo rodillo en el centro no cuenta como uno bajo cada mitad", [this]()
+		{
+			FRaftYardModel Yard = SixLogRaft();
+			Yard.PlaceOnPath(FlatPath(ELaunchSurface::Sand, 2000.0f), 400.0f);
+			Yard.PlaceRoller(400.0f);
+			TestFalse(TEXT("balancín: no rueda"), Yard.IsOnRollers());
+			Yard.PlaceRoller(450.0f);
+			TestTrue(TEXT("con otro delante, sí"), Yard.IsOnRollers());
+		});
+
 		It("arrastrarla 10 m por la arena gasta ~31 % las uniones de cuerda (Archard exacto)", [this]()
 		{
 			FRaftYardModel Yard = SixLogRaft();

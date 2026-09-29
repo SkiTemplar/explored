@@ -10,8 +10,12 @@ namespace WildfireModelPrivate
 	constexpr int32 MaxDouseRadiusCells = 8;
 	/** Cota de celda (la misma que CellAt): ±1e9 deja margen para sumar vecinas sin desbordar int32. */
 	constexpr int64 MaxAbsCell = 1000000000;
-	/** Cota de minuto de juego en una partida cargada (~1,9 millones de años): sumar rebrotes no desborda. */
-	constexpr int64 MaxAbsMinute = 1000000000000ll;
+	constexpr int64 MaxAbsMinute = FWildfireModel::MaxAbsMinute;
+
+	bool InMinuteRange(int64 Minute)
+	{
+		return Minute >= -MaxAbsMinute && Minute <= MaxAbsMinute;
+	}
 
 	/** Minutos transcurridos desde From hasta Now (Now >= From), sin desbordar con valores extremos. */
 	uint64 MinutesSince(int64 Now, int64 From)
@@ -198,7 +202,8 @@ bool FWildfireModel::IsWet(FIntPoint Cell, int64 NowMinute) const
 bool FWildfireModel::Ignite(FIntPoint Cell, int64 NowMinute)
 {
 	// Fuera de la cota de CellAt: las vecinas (Cell.X + 1) desbordarían int32.
-	if (FMath::Abs((int64)Cell.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Cell.Y) > WildfirePriv::MaxAbsCell)
+	if (FMath::Abs((int64)Cell.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Cell.Y) > WildfirePriv::MaxAbsCell
+		|| !WildfirePriv::InMinuteRange(NowMinute))
 	{
 		return false;
 	}
@@ -236,14 +241,16 @@ void FWildfireModel::Extinguish(FIntPoint Cell, int64 NowMinute)
 
 void FWildfireModel::Douse(FIntPoint Center, int32 RadiusCells, int64 NowMinute, int64 WetMinutes)
 {
-	if (FMath::Abs((int64)Center.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Center.Y) > WildfirePriv::MaxAbsCell)
+	// Un minuto fuera de la cota no se guarda: Load lo rechazaría y se perdería todo el incendio.
+	if (FMath::Abs((int64)Center.X) > WildfirePriv::MaxAbsCell || FMath::Abs((int64)Center.Y) > WildfirePriv::MaxAbsCell
+		|| !WildfirePriv::InMinuteRange(NowMinute))
 	{
 		return;
 	}
 	const int32 R = FMath::Clamp(RadiusCells, 0, WildfirePriv::MaxDouseRadiusCells);
-	// Saturar en vez de sumar: NowMinute + WetMinutes desborda con valores extremos.
-	const int64 Wet = FMath::Max<int64>(0, WetMinutes);
-	const int64 WetUntil = NowMinute > INT64_MAX - Wet ? INT64_MAX : NowMinute + Wet;
+	// Acotar en vez de sumar: NowMinute + WetMinutes desborda, y lo mojado se guarda dentro de la cota.
+	const int64 Wet = FMath::Clamp<int64>(WetMinutes, 0, 2 * WildfirePriv::MaxAbsMinute);
+	const int64 WetUntil = FMath::Min(NowMinute + Wet, WildfirePriv::MaxAbsMinute);
 	bool bRemovedBurning = false;
 	for (int32 DY = -R; DY <= R; ++DY)
 	{
@@ -427,7 +434,9 @@ void FWildfireModel::Step(int64 StepIndex, int64 NowMinute, const FWildfireCondi
 FWildfireStepResult FWildfireModel::Advance(int64 NowSecond, int64 NowMinute, const FWildfireConditions& Conditions, const TArray<FVector2D>& ObserversCm)
 {
 	FWildfireStepResult Out;
-	if (NowSecond <= LastSecond)
+	// Un reloj fuera de la cota no se simula ni se adopta: si se adoptara, todo segundo real
+	// quedaría «en el pasado» y lo que arde no se apagaría nunca.
+	if (NowSecond <= LastSecond || NowSecond > MaxAbsSecond || !WildfirePriv::InMinuteRange(NowMinute))
 	{
 		return Out;
 	}
@@ -515,7 +524,7 @@ bool FWildfireModel::Load(const FSaveValue& Value)
 	const FSaveValue* List = Value.Find(TEXT("cells"));
 	int64 V = 0, LastValue = 0;
 	// Un segundo negativo no sale de ningún reloj de partida (y con INT64_MIN la resta de Advance desbordaba).
-	if (!Version || !Version->TryGetInt(V) || V != WildfirePriv::SaveVersion || !Last || !Last->TryGetInt(LastValue) || LastValue < 0
+	if (!Version || !Version->TryGetInt(V) || V != WildfirePriv::SaveVersion || !Last || !Last->TryGetInt(LastValue) || LastValue < 0 || LastValue > MaxAbsSecond
 		|| !List || !List->IsArray())
 	{
 		return false;

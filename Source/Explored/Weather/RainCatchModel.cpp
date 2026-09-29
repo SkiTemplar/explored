@@ -274,15 +274,22 @@ int64 FRainCatchModel::Advance(FRainCatchState& State, const FRainCatchSpec& Spe
 
 int64 FRainCatchModel::Advance(FRainCatchState& State, const FRainCatchSpec& Spec, const FRainCatchSky& Sky, int64 NowMinute)
 {
-	if (NowMinute <= State.LastUpdateMinute)
-	{
-		return 0;
-	}
 	if (NowMinute > MaxSupportedMinute || NowMinute < -MaxSupportedMinute)
 	{
-		// Reloj fuera de toda partida posible (estado corrupto): FWeatherModel no
-		// admite esos días. Se adopta la hora sin simular nada.
+		// Reloj fuera de toda partida posible: FWeatherModel no admite esos días. No se
+		// simula ni se adopta la hora; si se adoptara, el reloj real quedaría siempre
+		// «en el pasado» y el recipiente no volvería a llenarse ni a evaporarse.
+		return 0;
+	}
+	if (State.LastUpdateMinute > MaxSupportedMinute)
+	{
+		// Reloj guardado corrupto (más allá de toda partida): lo mismo, se congelaría.
+		// Se toma la hora actual sin simular el hueco.
 		State.LastUpdateMinute = NowMinute;
+		return 0;
+	}
+	if (NowMinute <= State.LastUpdateMinute)
+	{
 		return 0;
 	}
 	// Comparar en vez de restar: con un LastUpdateMinute cargado corrupto la resta desborda.
