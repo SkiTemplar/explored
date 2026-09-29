@@ -391,6 +391,28 @@ int32 FHullAssemblyModel::AddPiece(const FHullPiece& Piece)
 	{
 		return INDEX_NONE;
 	}
+	// Dos piezas con volumen no pueden ocupar el mismo sitio: cada caja suma su volumen y su
+	// flotación, y cinco troncos apilados en el hueco de uno flotarían como cinco.
+	if (HullAssemblyDetail::IsBuoyant(Piece))
+	{
+		const HullAssemblyDetail::FPieceBox Box = HullAssemblyDetail::BoxOf(Piece);
+		for (const FHullPiece& Other : Pieces)
+		{
+			if (!HullAssemblyDetail::IsBuoyant(Other))
+			{
+				continue;
+			}
+			const HullAssemblyDetail::FPieceBox OtherBox = HullAssemblyDetail::BoxOf(Other);
+			const FVector Overlap(
+				FMath::Min(Box.Max.X, OtherBox.Max.X) - FMath::Max(Box.Min.X, OtherBox.Min.X),
+				FMath::Min(Box.Max.Y, OtherBox.Max.Y) - FMath::Max(Box.Min.Y, OtherBox.Min.Y),
+				FMath::Min(Box.Max.Z, OtherBox.Max.Z) - FMath::Max(Box.Min.Z, OtherBox.Min.Z));
+			if (Overlap.X > MaxOverlapCm && Overlap.Y > MaxOverlapCm && Overlap.Z > MaxOverlapCm)
+			{
+				return INDEX_NONE;
+			}
+		}
+	}
 	return Pieces.Add(Piece);
 }
 

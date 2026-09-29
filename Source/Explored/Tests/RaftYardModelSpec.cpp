@@ -723,10 +723,11 @@ void FRaftYardModelSpec::Define()
 		It("no pasa de MaxSavedJoints aunque el guardado venga inundado de uniones", [this]()
 		{
 			// Todas las piezas en el mismo sitio: cada par se puede unir y, sin tope, cargar sería cuadrático.
+			// Son palas porque dos piezas con volumen ya no pueden ocupar el mismo sitio.
 			FRaftHullSaveData Data;
 			for (int32 I = 0; I < FRaftYardModel::MaxSavedPieces; ++I)
 			{
-				Data.Pieces.Add(Piece(EHullPieceType::Log, FVector(0.0, 0.0, 11.0)));
+				Data.Pieces.Add(Piece(EHullPieceType::Paddle, FVector(0.0, 0.0, 11.0)));
 			}
 			for (int32 A = 0; A < 64; ++A)
 			{

@@ -340,6 +340,41 @@ void FHullAssemblyModelSpec::Define()
 			TestEqual(TEXT("misma masa"), After.TotalMassKg, Before.TotalMassKg);
 			TestTrue(TEXT("sigue a flote"), After.IsAfloat());
 		});
+
+		It("no deja apilar piezas con volumen en el mismo sitio para ganar flotación", [this]()
+		{
+			// Un tronco solo no aguanta a un pasajero con su fardo; cinco en el hueco de uno flotarían como cinco.
+			FHullAssemblyModel Model;
+			AddPiece(Model, EHullPieceType::Log, FVector(0.0, 0.0, 11.0));
+			Model.AddLoad(Passenger());
+			Model.AddLoad(Cargo(30.0f));
+			TestTrue(TEXT("un tronco con pasajero y fardo se hunde"), Model.Evaluate().Verdict == EHullVerdict::Sinks);
+			FHullPiece Stacked;
+			Stacked.Type = EHullPieceType::Log;
+			Stacked.CenterCm = FVector(0.0, 0.0, 11.0);
+			for (int32 I = 0; I < 4; ++I)
+			{
+				TestEqual(TEXT("el mismo sitio está ocupado"), Model.AddPiece(Stacked), INDEX_NONE);
+			}
+			TestTrue(TEXT("sigue hundiéndose"), Model.Evaluate().Verdict == EHullVerdict::Sinks);
+
+			const double Width = FHullAssemblyModel::Spec(EHullPieceType::Log).DefaultSizeCm.Y;
+			const double Tol = FHullAssemblyModel::MaxOverlapCm;
+			Stacked.CenterCm = FVector(0.0, Width, 11.0);
+			TestNotEqual(TEXT("al lado, tocándose, sí"), Model.AddPiece(Stacked), int32(INDEX_NONE));
+			Stacked.CenterCm = FVector(0.0, -(Width - 0.5 * Tol), 11.0);
+			TestNotEqual(TEXT("encajado menos del margen, sí"), Model.AddPiece(Stacked), int32(INDEX_NONE));
+			Stacked.CenterCm = FVector(0.0, 2.0 * Width - 2.0 * Tol, 11.0);
+			TestEqual(TEXT("metido más del margen en el vecino, no"), Model.AddPiece(Stacked), INDEX_NONE);
+
+			// El mástil se apoya en la cubierta con su encaje; vela y pala no tienen volumen y se pueden cruzar con todo.
+			const double MastHeight = FHullAssemblyModel::Spec(EHullPieceType::Mast).DefaultSizeCm.Z;
+			AddPiece(Model, EHullPieceType::Mast, FVector(0.0, 0.0, 22.0 - 0.5 * Tol + 0.5 * MastHeight));
+			TestEqual(TEXT("mástil encajado en la cubierta"), Model.GetPieces().Num(), 4);
+			AddPiece(Model, EHullPieceType::Sail, FVector(0.0, 0.0, 11.0));
+			AddPiece(Model, EHullPieceType::Paddle, FVector(0.0, 0.0, 11.0));
+			TestEqual(TEXT("vela y pala dentro de un tronco"), Model.GetPieces().Num(), 6);
+		});
 	});
 
 	Describe("la propulsión y la forma", [this]()
