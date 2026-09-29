@@ -1,9 +1,10 @@
-"""Herramientas: sierra, talla de piedra y atar con cuerda.
+"""Herramientas: sierra, talla de piedra, tallar madera y atar con cuerda.
 
 La sierra suena por los dientes que muerden y el tronco que resuena, con la
 ida mas fuerte que la vuelta (antes era ruido de 1,5-8 kHz modulado por un
 seno, sin graves). La talla es un golpe vitreo corto con la lasca cayendo.
-La cuerda son tirones con crujido de fibra, no un siseo continuo."""
+La cuerda son tirones con crujido de fibra, no un siseo continuo. Tallar
+madera son pasadas separadas que suenan a traves de la vara, no a lija."""
 
 from __future__ import annotations
 
@@ -82,9 +83,36 @@ def test_atar_son_tirones_separados(rendered):
     assert bursts >= 3
 
 
+def test_tallar_suena_a_vara_y_no_a_lija(rendered):
+    # La version de granos de ruido tenia un 1 % de la energia en 300-1000 Hz
+    # y un centroide de 4,5-5 kHz.
+    for name in ("sfx_carve_01", "sfx_carve_02"):
+        x = _mono(rendered[name])
+        assert _band_share(x, 300, 1000) >= 0.2, name
+        assert _band_share(x, 4000, 24000) <= 0.2, name
+
+
+def test_tallar_son_pasadas_con_saltos_de_la_hoja(rendered):
+    for name in ("sfx_carve_01", "sfx_carve_02"):
+        x = _mono(rendered[name])
+        env = _envelope_db(x, 0.02)
+        loud = env > env.max() - 30.0
+        assert int(np.count_nonzero(loud[1:] & ~loud[:-1]) + loud[0]) >= 3, name
+        # La envolvente de la banda de la fibra late al ritmo de los saltos
+        # de adherencia-deslizamiento (120-450 por segundo).
+        band = static_filter(x, SR, fc=2000.0, q=0.8, kind="bandpass")
+        envelope = static_filter(np.abs(band), SR, fc=800.0, q=0.7, kind="lowpass")
+        envelope = envelope - static_filter(envelope, SR, fc=60.0, q=0.7, kind="lowpass")
+        spectrum = np.abs(np.fft.rfft(envelope * np.hanning(len(envelope))))
+        freqs = np.fft.rfftfreq(len(envelope), 1.0 / SR)
+        slips = spectrum[(freqs > 120) & (freqs < 450)].mean()
+        above = spectrum[(freqs > 600) & (freqs < 900)].mean()
+        assert 20.0 * np.log10(slips / above) >= 3.0, name
+
+
 def test_herramientas_a_nivel_de_los_pasos(rendered):
     # Sonoridad momentanea en la franja de los pasos (-14 a -15 dB) y de los
     # golpes de herramienta: ninguna se dispara ni se pierde.
-    for name in ("sfx_wood_saw", "sfx_tie_cord", "sfx_stone_knap_01", "sfx_stone_knap_02"):
+    for name in ("sfx_wood_saw", "sfx_tie_cord", "sfx_stone_knap_01", "sfx_stone_knap_02", "sfx_carve_01", "sfx_carve_02"):
         level = k_weighted_momentary_max(_mono(rendered[name]))
         assert -19.0 <= level <= -12.0, f"{name}: {level:.1f}"

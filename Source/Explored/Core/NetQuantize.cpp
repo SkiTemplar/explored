@@ -49,7 +49,18 @@ namespace ExploredNet
 		// entero es comportamiento indefinido (UBSan lo caza con float-cast-overflow).
 		const double Safe = Finite(V, 0.0);
 		const double Clamped = FMath::Clamp(Safe, static_cast<double>(Lo), static_cast<double>(Hi));
-		return FMath::Clamp(static_cast<int64>(FMath::FloorToDouble(Clamped + 0.5)), Lo, Hi);
+		const double Rounded = FMath::FloorToDouble(Clamped + 0.5);
+		// double(INT64_MAX) redondea a 2^63, que ya no cabe en int64: los extremos se
+		// devuelven sin convertir.
+		if (Rounded >= static_cast<double>(Hi))
+		{
+			return Hi;
+		}
+		if (Rounded <= static_cast<double>(Lo))
+		{
+			return Lo;
+		}
+		return static_cast<int64>(Rounded);
 	}
 
 	uint8 Quantize01(float V)

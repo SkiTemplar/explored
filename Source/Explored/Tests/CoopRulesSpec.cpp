@@ -198,6 +198,19 @@ void FCoopRulesSpec::Define()
 			TestEqual(TEXT("Quedan 30 s"), Group[0].SecondsLeft, 30.0f, 1e-4f);
 		});
 
+		It("derribado y el compañero se va: muere una sola vez", [this]()
+		{
+			const FSurvivalModeSettings Mode = FSurvivalModeSettings::FromMode(ESurvivalMode::Survivor);
+			FCoopDownState S;
+			OnHealthZero(S, Mode, 2, 5);
+			TestTrue(TEXT("solo: muere"), OnHealthZero(S, Mode, 1, 5) == ECoopHealthZero::Dead);
+			TestFalse(TEXT("ya no está derribado"), S.bDowned);
+			TArray<FCoopDownState> Group = {S};
+			TArray<int32> Died;
+			TickGroupDowned(Group, 120.0f, Died);
+			TestEqual(TEXT("no muere otra vez tras reaparecer"), Died.Num(), 0);
+		});
+
 		It("reanima en 6 s, o en 3 s con medicina, y soltar vuelve a empezar", [this]()
 		{
 			FCoopDownState S;

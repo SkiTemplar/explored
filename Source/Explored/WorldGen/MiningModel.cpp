@@ -130,6 +130,10 @@ int32 FMiningModel::RemainingOn(const FMineStratumInfo& Info, const FVeinState* 
 
 int32 FMiningModel::VeinRemaining(EMineStratum Stratum, const FIntVector& Vein, int32 Day) const
 {
+	if (static_cast<uint8>(Stratum) >= static_cast<uint8>(EMineStratum::Count))
+	{
+		return 0;
+	}
 	const FMineStratumInfo& Info = StratumInfo(Stratum);
 	return RemainingOn(Info, Veins.Find(FVeinKey{ Stratum, Vein }), Day);
 }
@@ -137,6 +141,14 @@ int32 FMiningModel::VeinRemaining(EMineStratum Stratum, const FIntVector& Vein, 
 FMineHitResult FMiningModel::Hit(const FMineHitRequest& Request, FTerrainEditModel& Terrain, FTerrainEditModel::FBaseDensity Base)
 {
 	FMineHitResult Result;
+	// Un enum fuera de rango (paquete o guardado corrupto) no se acota a la última fila:
+	// abriría una veta de cristal nueva por valor y `ToValue` escribiría filas repetidas
+	// que `FromValue` rechaza, con lo que se perderían todas las vetas.
+	if (static_cast<uint8>(Request.Stratum) >= static_cast<uint8>(EMineStratum::Count)
+		|| static_cast<uint8>(Request.Tool) >= static_cast<uint8>(EMineTool::Count))
+	{
+		return Result;
+	}
 	const FMineToolInfo& Tool = ToolInfo(Request.Tool);
 	Result.Seconds = Tool.SecondsPerHit;
 

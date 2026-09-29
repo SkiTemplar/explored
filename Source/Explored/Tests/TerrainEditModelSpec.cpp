@@ -871,6 +871,20 @@ void FTerrainEditModelSpec::Define()
 			TestFalse(TEXT("pala en el tope admitida"), Model.Shovel(Max, Mound).bRejected);
 		});
 
+		It("compactar una franja fuera del mundo o desmesurada no recorre nada", [this]()
+		{
+			FTerrainEditModel Model;
+			// X = 1e9 da la columna centinela MAX_int32: el bucle desbordaba (UB).
+			TestEqual(TEXT("fuera del mundo"), Model.CompactStrip(FVector(1.0e9, 0.0, 0.0), FVector(1.0e9, 1.0, 0.0), 0.75f).DirtyChunks.Num(), 0);
+			// Dentro del mundo pero a 200 km: ~10^12 columnas.
+			TestEqual(TEXT("tramo desmesurado"), Model.CompactStrip(FVector(-99000.0, 0.0, 0.0), FVector(99000.0, 0.0, 0.0), 0.75f).DirtyChunks.Num(), 0);
+			TestEqual(TEXT("ancho desmesurado"), Model.CompactStrip(FVector::ZeroVector, FVector(1.0, 0.0, 0.0), 500.0f).DirtyChunks.Num(), 0);
+			TestEqual(TEXT("sin camino"), Model.NumPathColumns(), 0);
+			// Un tramo de pala normal sí compacta.
+			TestTrue(TEXT("tramo de 4 m"), Model.CompactStrip(FVector::ZeroVector, FVector(4.0, 0.0, 0.0), 0.75f).DirtyChunks.Num() > 0);
+			TestTrue(TEXT("con camino"), Model.NumPathColumns() > 0);
+		});
+
 		It("las escaleras rechazan lo que pasa de los topes y lo no finito; lo ajustado siempre se talla", [this]()
 		{
 			const float NaNf = std::numeric_limits<float>::quiet_NaN();
