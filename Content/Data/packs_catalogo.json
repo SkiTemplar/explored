@@ -75,6 +75,12 @@
       "date": "2026-09-29",
       "sheet": "docs/art/packs/lote11-herreria.png",
       "scope": "Herrería de la fase de metal (prioridad 2, banco de producción): clavos y yunque con KayKit RPG Tools Bits."
+    },
+    {
+      "id": "lote12-lingotes",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote12-lingotes.png",
+      "scope": "Lingotes de cobre, hierro y aluminio de la fase de metal con KayKit Resource Bits."
     }
   ],
   "entries": [
@@ -1692,6 +1698,117 @@
         "default": "piedra.basalto"
       },
       "note": "Yunque de bloque de basalto con cara de trabajo de hierro (coste: 4 basalto + 1 lingote de hierro). 80 cm de largo con la punta; base = centro de la huella, z = 0 en el suelo."
+    },
+    {
+      "gameId": "lingote_cobre",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Copper_Bar.gltf",
+      "mesh": "SM_Pack_LingoteCobre",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#8f3d26",
+            "to": "metal.oxido"
+          },
+          {
+            "from": "#ab522d",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#bf6231",
+            "to": "metal.cobre"
+          },
+          {
+            "from": "#dd7234",
+            "to": "metal.cobre"
+          }
+        ],
+        "default": "metal.cobre"
+      },
+      "note": "Lingote de cobre fundido (fase de metal, GDD v2 §3.4): 16 cm de largo, ~0,08 m de ancho."
+    },
+    {
+      "gameId": "lingote_hierro",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Iron_Bar.gltf",
+      "mesh": "SM_Pack_LingoteHierro",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#586d7b",
+            "to": "metal.plomo"
+          },
+          {
+            "from": "#6b7e8b",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#7c8e99",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#98a8b1",
+            "to": "metal.acero"
+          }
+        ],
+        "default": "metal.hierro"
+      },
+      "note": "Lingote de hierro."
+    },
+    {
+      "gameId": "lingote_aluminio",
+      "kind": "item",
+      "lote": "lote12-lingotes",
+      "pack": "kaykit_resource_bits",
+      "file": "KayKit_ResourceBits_1.0_FREE/Assets/gltf/Silver_Bar.gltf",
+      "mesh": "SM_Pack_LingoteAluminio",
+      "size": {
+        "axis": "max",
+        "m": 0.16
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#7598a8",
+            "to": "metal.acero"
+          },
+          {
+            "from": "#91b0be",
+            "to": "mineral.aluminio"
+          },
+          {
+            "from": "#a5bfcb",
+            "to": "mineral.aluminio"
+          },
+          {
+            "from": "#baced6",
+            "to": "mineral.aluminio"
+          }
+        ],
+        "default": "mineral.aluminio"
+      },
+      "note": "Lingote de aluminio de la chatarra del Albatros: KayKit no trae aluminio, la barra de plata da la misma silueta y se tiñe de mineral.aluminio."
     }
   ],
   "discarded": [
