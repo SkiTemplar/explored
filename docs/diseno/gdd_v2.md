@@ -556,6 +556,11 @@ al sacudir (§3.18).
     | `hoja_palma`, `hoja_platano`, `fibra_coco`, `corteza`, `liana`, `algodon_silvestre`, `cascara_coco` | sí | 1–3 | se deshace |
 
     Paso fijo de 0,5 s. El resultado no depende de los fotogramas.
+
+    La columna «Flota» sale de la densidad del material, no de la propiedad de crafteo
+    `Flota` de `items.json`, que solo llevan `madera_blanda` y `madera_flotante`. La
+    biblia 02 §1.5 dice «`Flota` heredado del material»: falta que el director decida si
+    se añade esa propiedad a los demás objetos o si manda esta tabla.
   - **Tocón.**
     - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
       hasta adulto y entonces se puede volver a talar.

@@ -36,7 +36,11 @@
 struct EXPLORED_API FDriftFloatSpec
 {
 	FName ItemId;
-	/** Menos denso que el agua de mar (propiedad `Flota` del material). */
+	/**
+	 * Menos denso que el agua de mar, según la densidad real del material. No es la
+	 * propiedad de crafteo `Flota` de items.json, que hoy solo llevan madera_blanda y
+	 * madera_flotante (ver la nota de «Caída al agua» en el GDD v2 §3.12).
+	 */
 	bool bFloats = false;
 	/** Lo que se hunde bajo la superficie flotando (cm): con menos agua que esto, vara. */
 	float DraftCm = 0.0f;
