@@ -460,6 +460,44 @@ void FSandModelSpec::Define()
 			TestFalse(TEXT("muy fuera de la rejilla"), Model.Dig(B, Flat).Changed());
 			TestTrue(TEXT("vacío"), Model.IsEmpty());
 		});
+
+		It("un radio por encima de MaxBrushRadius no hace nada y no recorre la rejilla", [this, Flat]()
+		{
+			FSandModel Model;
+			int32 BaseQueries = 0;
+			auto CountingFlat = [&BaseQueries](double, double) { ++BaseQueries; return 0.0; };
+			FSandBrush B;
+			B.Depth = 0.15f;
+			// Antes, 1e4 m recorrían (8e4)² columnas: el servidor se quedaba colgado.
+			for (const float Radius : { FSandModel::MaxBrushRadius * 1.0001f, 1.0e4f, 3.0e38f })
+			{
+				B.Radius = Radius;
+				TestFalse(*FString::Printf(TEXT("cavar r=%g"), Radius), Model.Dig(B, CountingFlat).Changed());
+				B.MassBudget = 1000;
+				TestFalse(*FString::Printf(TEXT("apilar r=%g"), Radius), Model.Pile(B, CountingFlat).Changed());
+				B.MassBudget = 0;
+			}
+			TestEqual(TEXT("ni una consulta de la altura base"), BaseQueries, 0);
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+		});
+
+		It("el radio justo en el tope cava y devuelve al montón la misma masa", [this, Flat]()
+		{
+			FSandModel Model;
+			FSandBrush B;
+			// En la esquina de cuatro chunks y en negativo: el pincel grande cruza bordes.
+			B.Center = FVector2D(-0.05, 0.05);
+			B.Radius = FSandModel::MaxBrushRadius;
+			B.Depth = 0.15f;
+			const FSandResult Dug = Model.Dig(B, Flat);
+			TestTrue(TEXT("cava"), Dug.Changed());
+			TestTrue(TEXT("más de 3 000 columnas"), Dug.ColumnsChanged > 3000);
+			TestEqual(TEXT("Σ delta = −cavado"), Model.TotalMass(), -Dug.Mass);
+			B.MassBudget = Dug.Mass;
+			const FSandResult Piled = Model.Pile(B, Flat);
+			TestEqual(TEXT("se echa lo cavado"), Piled.Mass, Dug.Mass);
+			TestEqual(TEXT("masa neta cero"), Model.TotalMass(), static_cast<int64>(0));
+		});
 	});
 
 	Describe("relleno por oleaje (biblia 02 §5.2)", [this, Flat]()
