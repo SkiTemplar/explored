@@ -242,8 +242,10 @@ mapa.
   - **Transportar y echar tierra.** Todo lo que se arranca sale en m³ exactos
     (`VolumeRemoved`) y se puede volver a colocar: echar tierra rellena una esfera de
     0,5 m hasta agotar lo que se lleva. **El volumen se conserva:** cavar y volver a
-    echar la misma tierra deja el mismo sólido, y nunca se coloca más de lo que se lleva
-    (lo comprueba el spec).
+    echar la misma tierra deja el mismo sólido, y nunca se coloca más de lo que se lleva.
+    Echar tierra no toca nada a más de una celda (25 cm) de su esfera y remalla justo los
+    chunks que leen lo que cambia, también a los dos lados de una frontera (lo comprueba
+    el spec).
   - **Escaleras picadas.** El jugador marca el arranque y la dirección, y la escalera
     se ajusta a una **rejilla de 30 cm**: origen en múltiplos de 30 cm, 8 rumbos como el
     kit de construcción, contrahuella de 15, 30 (por defecto) o 45 cm (sube por una
