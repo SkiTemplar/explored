@@ -550,12 +550,12 @@ FMineHazardResult FMineHazardModel::Advance(int32 DeltaMs, const FMineWaterEnvir
 
 void FMineHazardModel::Step(const FMineWaterEnvironment& Env, FMineHazardResult& Result)
 {
-	const bool bWasDirty = bDirty;
 	EnsureComputed();
 
 	// Vigas que se han quedado sin suelo o sin techo (o bajo el escombro).
-	if (bWasDirty)
+	if (bBeamsDirty)
 	{
+		bBeamsDirty = false;
 		for (int32 I = Beams.Num() - 1; I >= 0; --I)
 		{
 			int32 Bottom = 0;
@@ -832,6 +832,10 @@ bool FMineHazardModel::FromValue(const FSaveValue& Value)
 {
 	using namespace MineHazardDetail;
 	PendingWater.Reset();
+	// La cuenta de derrumbe no se guarda: al cargar vuelve a empezar también si se
+	// carga sobre un modelo ya vivo.
+	Exposure.Reset();
+	AccumulatedMs = 0;
 	for (FGallery& G : Galleries)
 	{
 		G.Level = G.Floor;
