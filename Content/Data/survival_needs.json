@@ -11,7 +11,7 @@
     { "id": "hambre", "nameEs": "Hambre", "nameEn": "Hunger", "state": "Hunger", "initial": 85, "hoursToEmpty": 36, "cppConstant": "HungerHours",
       "recoversWith": ["comida"], "atZero": "Menos energía máxima y 2 de salud por hora" },
     { "id": "sed", "nameEs": "Sed", "nameEn": "Thirst", "state": "Thirst", "initial": 70, "hoursToEmpty": 20, "cppConstant": "ThirstHours",
-      "recoversWith": ["coco"], "atZero": "Visión borrosa y 5 de salud por hora" },
+      "recoversWith": ["coco", "agua_dulce", "sopa"], "atZero": "Visión borrosa y 5 de salud por hora" },
     { "id": "sueno", "nameEs": "Sueño", "nameEn": "Sleep", "state": "Rest", "initial": 90, "hoursToEmpty": 30, "cppConstant": "RestHours",
       "recoversWith": [], "atZero": "Agotamiento: torpeza, alucinaciones leves" },
     { "id": "proteina", "nameEs": "Proteína", "nameEn": "Protein", "state": "Protein", "initial": 50, "hoursToEmpty": 72, "cppConstant": "NutrientHours",

@@ -64,6 +64,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 			MakeYield(TEXT("cascara_coco"), K::Fruit, 0, 1),
 		};
 		P.HeightMeters = 9.0f;
+		P.WindDeviationMaxDeg = 15.0f;
 		P.CrownRadiusMeters = 3.0f;
 		P.StumpRegrowDays = 12;
 		P.SaplingToMatureDays = 30;
@@ -185,6 +186,7 @@ TArray<FFellingProfile> FFellingModel::DefaultProfiles()
 			MakeYield(TEXT("algodon_silvestre"), K::Leaf, 0, 1),
 		};
 		P.HeightMeters = 0.0f;
+		P.WindDeviationMaxDeg = 0.0f;
 		P.CrownRadiusMeters = 1.0f;
 		P.StumpRegrowDays = 3; // 72 h de FHarvestModel
 		P.SaplingToMatureDays = 2;
@@ -245,6 +247,74 @@ FVector2D FFellingModel::ResolveFallDirection(const FFellingProgress& Progress, 
 	}
 	const double Angle = (double)ExploredHash::ToUnitFloat(ExploredHash::Hash32(InstanceSeed)) * 2.0 * UE_DOUBLE_PI;
 	return FVector2D(FMath::Cos(Angle), FMath::Sin(Angle));
+}
+
+FVector2D FFellingModel::ApplyWindToFall(const FVector2D& FallDirection, const FVector2D& WindDirection, float Wind01, float MaxDeviationDeg)
+{
+	if (!FMath::IsFinite(FallDirection.X) || !FMath::IsFinite(FallDirection.Y) ||
+		!FMath::IsFinite(WindDirection.X) || !FMath::IsFinite(WindDirection.Y) ||
+		!FMath::IsFinite(Wind01) || !FMath::IsFinite(MaxDeviationDeg))
+	{
+		return FallDirection;
+	}
+	const FVector2D Fall = FallDirection.GetSafeNormal();
+	const FVector2D Wind = WindDirection.GetSafeNormal();
+	const double Strength = FMath::Clamp((double)Wind01, 0.0, 1.0);
+	const double MaxRad = FMath::DegreesToRadians(FMath::Clamp((double)MaxDeviationDeg, 0.0, (double)MaxWindDeviationDeg));
+	if (Fall.IsZero() || Wind.IsZero() || Strength <= 0.0 || MaxRad <= 0.0)
+	{
+		return FallDirection;
+	}
+	// Seno con signo del ángulo de la caída al viento: positivo si el viento está a la izquierda (giro antihorario).
+	const double SinTheta = FMath::Clamp(Fall.X * Wind.Y - Fall.Y * Wind.X, -1.0, 1.0);
+	const double Turn = MaxRad * Strength * SinTheta;
+	const double C = FMath::Cos(Turn);
+	const double S = FMath::Sin(Turn);
+	return FVector2D(Fall.X * C - Fall.Y * S, Fall.X * S + Fall.Y * C).GetSafeNormal();
+}
+
+FVector2D FFellingModel::ResolveFallDirectionWithWind(const FFellingProfile& Profile, const FFellingProgress& Progress, const FVector2D& Downhill, uint32 InstanceSeed, const FVector2D& WindDirection, float Wind01)
+{
+	return ApplyWindToFall(ResolveFallDirection(Progress, Downhill, InstanceSeed), WindDirection, Wind01, Profile.WindDeviationMaxDeg);
+}
+
+TArray<FFellingCrush> FFellingModel::ComputeCrush(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, const TArray<FFellingObstacle>& Obstacles)
+{
+	TArray<FFellingCrush> Crushed;
+	const FVector2D Dir = FallDirection.GetSafeNormal();
+	const double HeightCm = FMath::IsFinite(Profile.HeightMeters) ? FMath::Max(0.0f, Profile.HeightMeters) * 100.0 : 0.0;
+	if (HeightCm <= 0.0 || Dir.IsZero() || !FMath::IsFinite(Base.X) || !FMath::IsFinite(Base.Y) ||
+		!FMath::IsFinite(Dir.X) || !FMath::IsFinite(Dir.Y))
+	{
+		return Crushed;
+	}
+	for (const FFellingObstacle& Obstacle : Obstacles)
+	{
+		if (Obstacle.TierOrder < 0 || Obstacle.TierOrder > MaxCrushTierOrder ||
+			!FMath::IsFinite(Obstacle.Position.X) || !FMath::IsFinite(Obstacle.Position.Y) ||
+			!FMath::IsFinite(Obstacle.RadiusCm) || !FMath::IsFinite(Obstacle.MaxIntegrity) || Obstacle.MaxIntegrity <= 0.0f)
+		{
+			continue;
+		}
+		// Distancia del centro de la pieza al segmento del tronco caído.
+		const FVector2D Rel = Obstacle.Position - Base;
+		const double Along = FMath::Clamp(FVector2D::DotProduct(Rel, Dir), 0.0, HeightCm);
+		const double Dist = (Rel - Dir * Along).Size();
+		if (Dist >= TrunkRadiusCm + FMath::Max(0.0, (double)Obstacle.RadiusCm))
+		{
+			continue;
+		}
+		const bool bSeen = Crushed.ContainsByPredicate([&](const FFellingCrush& C) { return C.PieceId == Obstacle.PieceId; });
+		if (!bSeen)
+		{
+			FFellingCrush Crush;
+			Crush.PieceId = Obstacle.PieceId;
+			Crush.Damage = Obstacle.MaxIntegrity * CrushIntegrityFraction;
+			Crushed.Add(Crush);
+		}
+	}
+	Crushed.Sort([](const FFellingCrush& A, const FFellingCrush& B) { return A.PieceId < B.PieceId; });
+	return Crushed;
 }
 
 TArray<FFellingDrop> FFellingModel::ComputeFellDrops(const FFellingProfile& Profile, const FVector2D& Base, const FVector2D& FallDirection, FExploredRandom& Random)

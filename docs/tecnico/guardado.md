@@ -298,5 +298,9 @@ planos a la espera de un componente de supervivencia en el personaje.
 - Llamar a `RequestAutosave(ESaveTrigger::Sleep)` desde la cama cuando exista (las hogueras ya
   llaman a `Campfire` al encenderse).
 - Selector de ranura en la UI (hoy «Guardar partida» usa `auto`).
+- [F3] Secciones `reputation` (`FReputationModel::Save`/`Load`) y `raiders`
+  (`FPirateThreatModel::Save`/`Load`): el formato y la carga tolerante ya están en los
+  modelos puros con sus specs; falta que las registren `UVillagesSubsystem` y
+  `URaidersSubsystem` (ver `docs/tecnico/navegantes-piratas.md`).
 - La capa de Unreal está **sin compilar**: verificar en local con `Tools/build.ps1` y
   `Tools/test.ps1`.

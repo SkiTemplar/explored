@@ -13,13 +13,13 @@ varas a lo largo de +X). Escala real en metros.
 import math
 import os
 import sys
+from itertools import pairwise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-import _materials as M  # noqa: E402
 import _items as I  # noqa: E402
+import _materials as M  # noqa: E402
+import common as C  # noqa: E402
 import kit_construccion as K  # noqa: E402
-
 from mathutils import Matrix, Vector  # noqa: E402
 
 GROUP = I.GROUP
@@ -139,7 +139,7 @@ def _buckle(p, rnd, center, normal, w, h, rgb, name, mat='M_Metal', r=0.0025):
     c = Vector(center) + nrm * r
     corners = [c + u * (w / 2) * sx + vv * (h / 2) * sy for sx, sy in ((1, 1), (-1, 1), (-1, -1), (1, -1), (1, 1))]
     pts = []
-    for a, b in zip(corners[:-1], corners[1:]):
+    for a, b in pairwise(corners):
         for k in range(3):
             pts.append(a.lerp(b, k / 3))
     pts.append(corners[0])

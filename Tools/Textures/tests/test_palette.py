@@ -132,3 +132,15 @@ def test_grass_reads_as_blades_not_blotches(generated):
     assert fine > 0.055, f"sin hojas legibles (detalle fino {fine:.3f})"
     assert fine > 2.5 * macro, f"la mancha macro domina ({macro:.3f} frente a {fine:.3f})"
     assert (lum < 0.1).mean() < 0.01, "huecos casi negros entre matas"
+
+
+def test_armonizar_conserva_el_alfa_y_el_rgb():
+    """Un BC RGBA (atlas recortado) se armoniza en RGB y conserva el recorte intacto."""
+    from texgen.palette import harmonize_albedo
+
+    rng = np.random.default_rng(1)
+    rgba = np.concatenate([0.3 + 0.4 * rng.random((16, 16, 3)), rng.random((16, 16, 1))], axis=-1)
+    out = harmonize_albedo(rgba, "Grass")
+    assert out.shape == (16, 16, 4)
+    np.testing.assert_array_equal(out[..., 3], rgba[..., 3])
+    np.testing.assert_array_equal(out[..., :3], harmonize_albedo(rgba[..., :3], "Grass"))

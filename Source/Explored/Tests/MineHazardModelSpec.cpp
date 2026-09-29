@@ -284,6 +284,22 @@ void FMineHazardModelSpec::Define()
 			TestEqual(TEXT("sin vigas"), M.NumBeams(), 0);
 			TestTrue(TEXT("el techo vuelve a estar suelto"), M.UnsupportedRoofCells().Num() > 0);
 		});
+
+		It("una consulta entre el pico y el paso no salva la viga", [this]()
+		{
+			// Las consultas const rehacen la caché; la revisión de vigas de
+			// Step no puede depender de que nadie haya preguntado antes.
+			FMineHazardModel M(Box());
+			Ground(M);
+			Chamber(M, 2.0, 6.0, 2.0, 6.0);
+			M.PlaceBeam(FVector(4.1, 4.1, 4.2));
+			Carve(M, FVector(4.0, 4.0, 1.0), FVector(4.5, 4.5, 4.0));
+			M.NumGalleries();
+			M.IsStaleAir(FVector(3.0, 3.0, 4.5));
+			const FMineHazardResult R = M.Advance(250, Dry());
+			TestEqual(TEXT("viga perdida"), Count(R, EMineHazardEventKind::BeamLost), 1);
+			TestEqual(TEXT("sin vigas"), M.NumBeams(), 0);
+		});
 	});
 
 	Describe("aire viciado a más de 15 m de una salida", [this]()

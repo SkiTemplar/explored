@@ -536,12 +536,22 @@ namespace ExploredLinks
 
 	ECoopHealthZero OnHealthZero(FCoopDownState& State, const FSurvivalModeSettings& Mode, int32 PlayersConnected, int32 Day)
 	{
+		// Si estaba derribado y ya no toca (el compañero se ha ido o cambió el modo), se
+		// cierra el derribado: si no, TickGroupDowned lo mataría otra vez tras reaparecer.
+		const auto EndDowned = [&State]()
+		{
+			State.bDowned = false;
+			State.SecondsLeft = 0.0f;
+			State.ReviveProgressSeconds = 0.0f;
+		};
 		if (PlayersConnected <= 1)
 		{
+			EndDowned();
 			return ECoopHealthZero::Dead;
 		}
 		if (Mode.HasPermadeath())
 		{
+			EndDowned();
 			return ECoopHealthZero::Spectator;
 		}
 		if (State.bDowned)

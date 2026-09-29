@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "note": "Pistas en prosa de los tesoros raros y únicos (biblia 04 §6). Nunca dan coordenadas: el jugador las traduce a una marca en su propio mapa con el instrumento que tenga, y esa hoja es el mapa del tesoro. artifact es un id de artifacts.json; island la isla en minúsculas; poi, si lo hay, un EPoiType que PointsOfInterest.cpp coloca en esa isla; source dice quién da la pista (petroglyph o altar de una ruina de ruins.json, o diary con un id de halden_diaries.json). hiddenIn debe cuadrar con la procedencia del artefacto. Lo valida Tools/DataCheck. Red (biblia 08 §5.3, §5.5): una pista leída se apunta en el mapa compartido, así que es del grupo; el tesoro es único en el mundo y lo coge quien llega primero.",
+  "hiddenIn": {
+    "enterrado": ["marae"],
+    "cueva": ["cueva_ritual"],
+    "pecio": ["pecio"],
+    "sumergido": ["ruina_sumergida"]
+  },
+  "clues": [
+    {
+      "id": "pista_carta_varillas",
+      "artifact": "carta_varillas",
+      "island": "landing",
+      "poi": null,
+      "hiddenIn": "enterrado",
+      "source": { "kind": "petroglyph", "site": "ruin_landing" },
+      "clueEs": "Cuenta siete palmeras desde el marae hacia el mar. Bajo la séptima, a un palmo de arena.",
+      "clueEn": "Count seven palms from the marae towards the sea. Under the seventh, a hand's depth into the sand."
+    },
+    {
+      "id": "pista_anzuelo_ceremonial",
+      "artifact": "anzuelo_ceremonial",
+      "island": "emerald",
+      "poi": "Waterfall",
+      "hiddenIn": "cueva",
+      "source": { "kind": "altar", "site": "ruin_emerald" },
+      "clueEs": "Detrás del agua que cae, donde ya no llega la luz, la roca tiene una repisa a la altura del pecho.",
+      "clueEn": "Behind the falling water, where the light no longer reaches, the rock has a ledge at chest height."
+    },
+    {
+      "id": "pista_figura_navegante",
+      "artifact": "figura_navegante",
+      "island": "smoke",
+      "poi": "Petroglyph",
+      "hiddenIn": "enterrado",
+      "source": { "kind": "diary", "diary": "halden_02" },
+      "clueEs": "Donde el tubo de lava se abre al cielo, la ceniza tapa una losa plana. No la levantamos.",
+      "clueEn": "Where the lava tube opens to the sky, ash covers a flat slab. We didn't lift it."
+    },
+    {
+      "id": "pista_colgante_carey",
+      "artifact": "colgante_carey",
+      "island": "teeth",
+      "poi": null,
+      "hiddenIn": "pecio",
+      "source": { "kind": "altar", "site": "ruin_teeth" },
+      "clueEs": "Entre el segundo y el tercer islote, con bajamar, asoma la cuaderna de un casco viejo. Hay que bucear junto a ella.",
+      "clueEn": "Between the second and third islets, at low tide, the rib of an old hull breaks the surface. Dive beside it."
+    },
+    {
+      "id": "pista_pectoral_nacar",
+      "artifact": "pectoral_nacar",
+      "island": "whitesands",
+      "poi": null,
+      "hiddenIn": "sumergido",
+      "source": { "kind": "petroglyph", "site": "ruin_whitesands" },
+      "clueEs": "Con la marea más baja del año, la laguna enseña un muro de coral cortado a mano. Lo que dejaron está al pie.",
+      "clueEn": "At the lowest tide of the year, the lagoon shows a wall of hand-cut coral. What they left lies at its foot."
+    },
+    {
+      "id": "pista_tapa_estrellas",
+      "artifact": "tapa_estrellas",
+      "island": "mesa",
+      "poi": "Petroglyph",
+      "hiddenIn": "enterrado",
+      "source": { "kind": "altar", "site": "ruin_mesa" },
+      "clueEs": "Al pie del farallón partido, donde la costa gira al este, el suelo suena hueco al pisarlo.",
+      "clueEn": "At the foot of the split sea stack, where the coast turns east, the ground sounds hollow underfoot."
+    }
+  ]
+}

@@ -457,8 +457,10 @@ Tres capas, sin diálogos ni texto largo (regla dura del GDD §7.2), coherentes 
 
 ### 7.1 Diarios (campamento Halden, 1974)
 
-No existe hoy un fichero de datos para estas entradas (`Content/Data/` no tiene
-`halden_diaries.json` ni equivalente); §8 lo deja como tarea. Contenido decidido aquí,
+Datos en `Content/Data/halden_diaries.json` (2026-09-28). Cada cuaderno está en un POI
+que coloca `PointsOfInterest.cpp`: `halden_01` en la estación de radio del Manglar y los
+otros cuatro en los campamentos Halden de ese fichero (Humo, Esmeralda, Arenas Blancas y
+La Meseta, en ese orden); ver `docs/tecnico/contenido-textos.md`. Contenido decidido aquí,
 tono seco de expedición científica, nunca grandilocuente:
 
 | Id | ES | EN |
@@ -492,7 +494,7 @@ muerte. Es el mismo principio que ya rige los pecios y las ruinas.
 
 ## TODO de implementación
 
-- [ ] [AA] `Content/Data/`: crear `halden_diaries.json` (id, texto ES, texto EN, isla,
+- [x] [AA] `Content/Data/`: crear `halden_diaries.json` (id, texto ES, texto EN, isla,
       POI asociado) con las 5 entradas de §7.1; añadir su parseo a `RuinsSubsystem` o a
       un nuevo `HaldenLoreSubsystem` ligero, y su check a `Tools/DataCheck`.
 - [ ] [AA] `Source/Explored/Fauna/FaunaTypes.h`: añadir `EFaunaSpecies::WildBoar` y
@@ -503,12 +505,12 @@ muerte. Es el mismo principio que ya rige los pecios y las ruinas.
       variante «boca visible desde el marae de la cumbre» para que `StarCompass`
       (`ruin_compass`) y `ruin_smoke` queden junto a entradas de cueva reales, no solo
       conceptualmente cerca.
-- [ ] [AA] `Content/Data/ruins.json`: asignar explícitamente `Teaches` y
+- [x] [AA] `Content/Data/ruins.json`: asignar explícitamente `Teaches` y
       `StarPathTarget` a los 8 `sites` según §2 (Landing→Esmeralda, Brújula del
       Humo→Los Dientes, Arenas Blancas→La Meseta, La Meseta→isla oculta; los otros 4
       sitios con las técnicas globales de §2) si el fichero de datos real aún no trae
       esa asignación cableada en el lado de gameplay (`RuinsLayout`).
-- [ ] [AA] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato
+- [x] [AA] `Content/Data/artifacts.json` o un nuevo `map_clues.json`: dar forma de dato
       a las «pistas en prosa» de §6 (una por artefacto raro/único, 6 pistas) en vez de
       dejarlas solo en este documento.
 - [ ] [AA] Landing: confirmar en `PointsOfInterest.cpp` que `SextantCave` solo es

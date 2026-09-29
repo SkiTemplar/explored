@@ -803,3 +803,79 @@ esas pistas a `iconsPending` o DataCheck se pondrá en rojo.
 
 - Ninguna casilla nueva en `[x]`. #110 se anota en la nota «en parte» de la casilla de
   arte del GDD §7.1: iconos de UI, con 25 pistas de logro aún pendientes.
+
+## Ejecución 21:00 UTC
+
+Base: `origin/main` en `fdb0983` al empezar. Durante la pasada, el director fusionó en local
+#79, #80, #115, #92 y #98, y `main` llegó a `d68f84b`. Solo se revisa lo que es nuevo o tiene
+commits desde la pasada de las 19:00: #70, #112 y #114. #79 y #92 también tenían commits
+nuevos, pero se fusionaron fuera de esta pasada.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #112 | `nocturno/datos-2026-09-28d` | **Fusionada** (`bb04f04`, por el director a la vez que yo) | Añade el aloe y la cúrcuma silvestre como cultivos medicinales del huerto (GDD v2 §3.6, que remite al GDD v3 §8.7: «especias y plantas medicinales»; biblia 01 para el gel de aloe y la pasta de cúrcuma). Añade el objeto `rizoma_curcuma`, las mallas pendientes, la regla de DataCheck «todo cultivo da comida o medicina» con 3 tests, y el informe de balance. Solo toca datos JSON, `Tools/` y docs. No duplica nada de otra PR. Le integré `main` tres veces porque el director fusionaba mientras tanto. `catalogo.json` y `localizacion-informe.md` chocaban y los regeneré con `l10n export`, nunca a mano. |
+| #114 | `worldgen/realismo-terreno` | Cambios pedidos; sigue `necesita-unreal` | Los modelos son puros y los HostTests pasan (1269 / 0). Pero hay cuatro problemas serios. (1) La erosión es caótica sobre una base en `float` y ahora se aplica también a las islas del acceso anticipado: en cooperativo, dos máquinas pueden generar bases distintas (biblia 08 §2.6). (2) Cambia la Meseta F2 por torres a plomo y una laguna salada que no están en la biblia 04 §2.7. (3) Contradice el GDD v2 §7.3, que dice que el terreno no guarda rejillas, y cambia el significado de los deltas guardados. (4) Choca con #87 en `TerrainDensity`. Detalle en la revisión de la PR. |
+| #70 | `nocturno/revision-2026-09-28` | Sigue `necesita-unreal` | Siete arreglos de robustez nuevos en modelos puros, todos correctos: `AddJoint` con tope, aturdimiento en int64, acumulador de ramas acotado, `Abs` en int64, `Accrue`, `DigSphere` fuera del mundo y `WetUntil`. Sigue tocando el HLSL de `M_Terrain`. Le dejé un comentario con lo que hay que comprobar en PIE. |
+| #72, #75, #81, #82, #84–#87, #90, #91, #96, #98, #111 | — | Sin cambios | No tienen commits nuevos desde la pasada de las 19:00. Siguen como allí. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #112 + `main` (`c164885`, luego `d61fb14`) | — | — | 0 errores · 356 passed | Localization: `export --check` al día, 60 passed · CI de GitHub en verde en `6ab6655` (siete trabajos, con ruff y basedpyright de #98) |
+| #70 + `main` (`fdb0983`) | 1231 / 0 | 1231 / 0 | — | — |
+| #114 + `main` (`fdb0983`) | 1269 / 0 | — | — | Rendimiento en el host: la columna pasa de 1,65 a 2,91 µs y el constructor, de 0,6 a 4,3 s |
+
+### Notas para el director
+
+- **#114 frente a #87:** hay que decidir el orden. Propuesta: primero #114 y después #87
+  rebasada, con el perfil de playa aplicado después de la erosión.
+- **#114:** si se quieren las torres de El Nido en la Meseta, hay que escribirlo antes en la
+  biblia 04 §2.7. La biblia dice «farallones sueltos y cenotes».
+- **DataCheck:** `pytest` tarda unos 23 minutos en la nube, lo que obliga a repetirlo cada
+  vez que `main` avanza durante una pasada. Pasará lo mismo en cuanto se fusione #96, que
+  dice acelerarlo 8 veces.
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]`. #112 se anota junto a la casilla ya hecha de los cultivos
+  de Landing: el aloe y la cúrcuma silvestre completan las «especias y plantas medicinales»
+  del huerto a nivel de datos. Faltan las mallas y dónde se encuentra el primer rizoma.
+
+## Ejecución 23:00 UTC
+
+Base: `origin/main` en `bde0f36` al empezar. Solo se revisa lo que tiene commits desde la
+pasada de las 21:00: #91, #116, #117 y #118. #114 no tiene commits nuevos desde su revisión.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #91 | `claude/add-h2-game-data-l4x8pd` | **Fusionada** (`725ff1c`) | Ya no toca `Source/`: los logros y `AchievementsDataSpec.cpp` entraron con #80. Solo toca datos JSON, `Tools/` y docs, así que se le quita `necesita-unreal`. Los duplicados `viga_apoyo` y `tablon_contencion` están resueltos. `cuerda_fija` en `terreno` y el cobre detrás del hierro coinciden con la biblia 02 §13.3 y la biblia 03 §2.2. El recuento de 00-TODO.md lo he contado otra vez con un script y cuadra; además corrige la fila F3, que estaba mal. |
+| #116 | `nube/packs-2026-09-28b` | **Fusionada** (`b034c9a`) | Lote 10 de packs: mitad de coco, pescado de arrecife y espina (Kenney Food Kit, CC0). Solo toca el catálogo, el README y la hoja de contacto. Le integré `main` después de fusionar #91. |
+| #117 | `feat/pico-pala-runtime` | `necesita-unreal` | Toca `Build.cs` (`DeveloperSettings`), un subsistema, componentes, `UDeveloperSettings`, el personaje y el PlayerController. Los modelos puros están bien y la replicación sigue la biblia 08. Aviso: el servidor se fía de la herramienta y de la acción que manda el cliente. Choca con `main` solo en `localizacion-informe.md`, que se resuelve regenerándolo con `l10n export`. |
+| #118 | `worldgen/terreno-jugable` | `necesita-unreal` + cambios | Está apilada sobre #114 y hereda sus cuatro problemas serios. Añade un acantilado en Landing que contradice la biblia 04 §2.1 («la isla más llana y segura»). Emerald y Smoke pasan a tener un 23 % y un 30 % de costa acantilada, y eso lo tiene que confirmar el director. Mueve los cayos, así que hay que revisar los POI. |
+| #70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114 | — | Sin cambios | No tienen commits nuevos desde la pasada de las 21:00. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests + ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #91 + `main` (`17dd997`) | — | — | 0 errores, 0 avisos · 550 passed | Localization: 103 passed · `export --check` al día |
+| #116 + `main` (`e8c49b2`) | — | — | 0 errores, 0 avisos · 550 passed | Packs: 64 passed, 1 skipped |
+| #117 + `main` (`bde0f36`, en local) | 1340 / 0 | 1340 / 0 | — | `l10n export --check` al día tras regenerar |
+| #118 + `main` (`bde0f36`, en local) | 1375 / 0 | 1375 / 0 | — | — |
+
+### Notas para el director
+
+- **#91:** la biblia 03 se contradice con el aluminio. §2.2 dice que el banco de chatarra
+  lo recupera «sin fundir» y §4.3 pone carbón en las dos estaciones. Con la decisión de la
+  PR, `fundir_chapa` y `fundir_tubo` no sirven para nada mientras el banco dé lo mismo sin
+  carbón.
+- **#85:** al integrar `main` tiene que quitar su `clavija_roca`, que ya entró con #91.
+- **#118:** hay que decidir si Landing lleva acantilado. Si se quiere, primero hay que
+  escribirlo en la biblia 04 §2.1.
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]` aparte de las que marca #91 con su propia PR: los datos
+  de H2 del metal, las piezas de mina y escalada, la carretilla y la regla de DataCheck.
+  #116 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.

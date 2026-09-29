@@ -78,13 +78,14 @@ def normalize(src: Image.Image, size: int = SIZE, margin: float = MARGIN) -> Ima
 def tinted(icon: Image.Image, rgba: tuple[int, int, int, int], bg: tuple[int, int, int]) -> Image.Image:
     """Lo que pinta Slate: el blanco del icono multiplicado por el tinte, sobre el fondo."""
     layer = Image.new("RGBA", icon.size, rgba[:3] + (255,))
-    a = icon.getchannel("A").point(lambda v: v * rgba[3] // 255)
+    alpha_scale = rgba[3]
+    a = icon.getchannel("A").point([v * alpha_scale // 255 for v in range(256)])
     layer.putalpha(a)
     base = Image.new("RGBA", icon.size, bg + (255,))
     return Image.alpha_composite(base, layer).convert("RGB")
 
 
-def font(size: int) -> ImageFont.ImageFont:
+def font(size: int) -> ImageFont.ImageFont | ImageFont.FreeTypeFont:
     for name in ("DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
         try:
             return ImageFont.truetype(name, size)
@@ -95,7 +96,7 @@ def font(size: int) -> ImageFont.ImageFont:
 
 def build(lote: str) -> Path:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    info = next(l for l in catalog["lotes"] if l["id"] == lote)
+    info = next(entry for entry in catalog["lotes"] if entry["id"] == lote)
     icons = [i for i in catalog.get("icons", []) if i["lote"] == lote]
     colors = style_colors()
     paper = colors["ColorPaper"][:3]

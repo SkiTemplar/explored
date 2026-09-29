@@ -137,6 +137,15 @@ porción vertical de Landing tiene sentido (GDD §6.1).
   pie, antes de que existan los raíles (§3.5 del GDD ya avisa de que esa
   fase «se sepa cuánto pesa de verdad transportar mineral a mano»: la
   carretilla es la respuesta intermedia, no un sustituto de los raíles).
+  *[Decisión 2026-09-28, datos de H2] La plantilla combina dos piezas en las manos,
+  así que la receta de cuatro materiales se traduce a propiedades: **Bastidor** de
+  bambú (Largo ≥ 4, Rígido ≥ 3, etiqueta `bambu`), **Rueda** atada con cuerda
+  (Contundente ≥ 2, Rígido ≥ 3: `piedra_plana` o `canto_rodado`) y **Unión** (Ata ≥ 3).
+  Se hace así: primero `piedra_plana` + `cuerda` (atado), luego `bambu_grueso` + ese
+  atado, en `piedra_trabajo`. El eje de `tronco_pequeno` desaparece de la receta: con
+  dos manos no hay hueco para un tercer material sin un paso más, y el tronco solo
+  añadía peso. Va antes que `hacha` en `templates.json` para que el bambú con piedra
+  atada no dé un hacha.*
 
 ### 1.6 Soltar y lanzar
 
@@ -255,6 +264,12 @@ Toda estación real es una pieza de `building_pieces.json` (categoría
 | `banco_chatarra` | `chapa_fuselaje` ×2, `tubo_aluminio` ×2, `piedra_plana` ×2 | Recupera piezas del Albatros: convierte chatarra suelta en `lingote_aluminio` sin fundir (solo martillo y corte) | [AA] |
 | `horno_fundicion` | `arcilla_roja` ×10, `canto_rodado` ×10, `carbon_vegetal` ×4 | Funde mineral: `mineral_cobre`→`lingote_cobre`, `hierro_meteorito`→`lingote_hierro`, `chapa_fuselaje`/`tubo_aluminio`→`lingote_aluminio`. Nivel de fuego propio `horno_fundicion` (heat 1.4, por encima de `horno_arcilla`) | [AA] |
 | `yunque` | `basalto` ×4, `lingote_hierro` ×1 (el primer yunque se trae ya forjado en un pecio; después se puede fabricar uno propio) | Forjar con metal fundido: da +1 calidad fija a cualquier herramienta de cobre/hierro fabricada sobre él, y es donde se reparan (biblia §2.4) | [AA] |
+
+*[Decisión 2026-09-28, datos de H2] `horno_fundicion` pide `horno_barro` en
+`requiresPieces` (el carbón de su coste sale de ahí) y `yunque` pide `horno_fundicion`
+(su lingote de hierro sale de ahí). El nivel de fuego `horno_fundicion` vive en
+`fuels.json/smeltingLevels` y no en `levels` hasta que `EFireLevel` tenga su valor:
+`levels` genera `FireData.inl` y un id que el enum no conoce se leería como fogata.*
 
 *Decisión: se mantienen fuera de un módulo `Tramway` o `Smelting` aparte —
 son piezas del mismo kit de construcción con coste y función propios, igual
@@ -569,6 +584,13 @@ Pasado el 75 % de su vida (`staleFraction`) la comida pasa a «pasada»
 | Estirar alambre — NUEVO | `lingote_cobre` ×1 | `yunque` | `alambre` ×4 | 10 |
 | Forjar clavos — NUEVO | `alambre` ×1 o `lingote_hierro` ×1 | `yunque` | `clavos` ×8 | 10 |
 | Tela de fibra — NUEVO | `algodon_silvestre` ×3 o `pita` ×3 | `telar` | `tela_fibra` ×1 | 40 |
+
+*[Decisión 2026-09-28, datos de H2] En `recipes_smithing.json` cada «o» es una receta
+aparte (`fundir_chapa`/`fundir_tubo`, `clavos_de_alambre`/`clavos_de_hierro`). En el
+`banco_chatarra` el aluminio sale **sin fuego ni carbón** (`batir_chapa`, `batir_tubo`,
+con martillo): §2.2 dice que el banco recupera la chatarra «sin fundir», así que no
+tiene sentido que gaste combustible. Estirar alambre y forjar clavos piden martillo en
+el yunque. La tela de fibra queda para su propia tarea (no es metal).*
 
 ### 4.4 Construcción y barcos (referencia)
 

@@ -52,3 +52,7 @@ Tools/HostTests/*.ppm
 Tools/HostTests/baseline_report*.txt
 Tools/HostTests/terrain_*
 Tools/HostTests/build*/
+
+# Herramientas Python: cachés de ruff y datos de cobertura de pytest-cov.
+.ruff_cache/
+.coverage

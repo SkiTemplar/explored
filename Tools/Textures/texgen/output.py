@@ -63,6 +63,9 @@ def linear_to_srgb(c: np.ndarray) -> np.ndarray:
     return np.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - 0.055)
 
 
+# Tamaño máximo de la hoja de contacto para versionarla (margen bajo los 2 MB).
+SHEET_MAX_BYTES = 1_900_000
+
 LIGHT = np.array([-0.5, -0.55, 0.67])
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
 
@@ -100,7 +103,7 @@ def _thumb(arr: np.ndarray, px: int, tiles: int = 1) -> Image.Image:
     if arr.ndim == 3 and arr.shape[-1] == 4:
         arr = arr[..., :3]
     img = Image.fromarray(to_u8(np.tile(arr, (tiles, tiles, 1) if arr.ndim == 3 else (tiles, tiles))))
-    return img.convert("RGB").resize((px, px), Image.LANCZOS)
+    return img.convert("RGB").resize((px, px), Image.Resampling.LANCZOS)
 
 
 def contact_sheet(cards: list[dict], path: Path, title: str, cols: int = 5, big: int = 300) -> Path:
@@ -133,7 +136,7 @@ def contact_sheet(cards: list[dict], path: Path, title: str, cols: int = 5, big:
     # Límite de 2 MB para versionarla: se recorta precisión por canal (6 y luego 5 bits). Una
     # paleta global de 256 colores falseaba tonos (manchas verdosas en la arena mojada).
     for bits in (6, 5):
-        if path.stat().st_size <= 1_900_000:
+        if path.stat().st_size <= SHEET_MAX_BYTES:
             break
         ImageOps.posterize(sheet, bits).save(path, optimize=True)
     return path

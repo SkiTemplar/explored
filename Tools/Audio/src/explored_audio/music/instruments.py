@@ -24,7 +24,6 @@ import numpy as np
 
 from ..envelopes import ar_envelope, exp_decay, fit_length
 from ..filters import static_filter
-from ..granular import render_noise_grains
 from ..modal import modal_hit
 from .humanize import micro_detune_ratio
 
@@ -77,7 +76,6 @@ def marimba(freq: float, duration_s: float, velocity: float, sr: int, rng: np.ra
     """Barra de madera: modos muy inarmonicos, ataque brillante, caida rapida."""
     rng = rng or np.random.default_rng()
     n = max(int(duration_s * sr), 1)
-    t = np.arange(n) / sr
     mallet = static_filter(rng.standard_normal(min(n, int(0.006 * sr) or 1)), sr, fc=2500, q=0.6, kind="highpass")
     mallet = fit_length(mallet * np.exp(-np.arange(len(mallet)) / sr / 0.003), n)
     body = modal_hit(

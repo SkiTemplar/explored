@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 import re
+from typing import Any, TypeGuard
 
 from . import mining
 
@@ -80,15 +81,16 @@ def cpp_creatures(ds) -> list[dict]:
     return rows
 
 
-def _get(doc: dict, path: tuple[str, ...]):
+def _get(doc: object, path: tuple[str, ...]) -> Any:
+    node: Any = doc
     for key in path:
-        if not isinstance(doc, dict):
+        if not isinstance(node, dict):
             return None
-        doc = doc.get(key)
-    return doc
+        node = node.get(key)
+    return node
 
 
-def _num(v) -> bool:
+def _num(v: object) -> TypeGuard[int | float]:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
@@ -137,7 +139,7 @@ def _check_bow(doc: dict, cpp: dict[str, float], r) -> None:
         r.error(f"{FILE}/bow: deben ser {len(BOW_BANDS)} tramos (100/70/40 %) y luego beyondPct")
         return
     prev_to, prev_pct = 0, 101
-    for band, (to_name, pct_name) in zip(bands, BOW_BANDS):
+    for band, (to_name, pct_name) in zip(bands, BOW_BANDS, strict=True):
         frm, to, pct = band.get("fromM"), band.get("toM"), band.get("accuracyPct")
         if not (_num(frm) and _num(to) and _num(pct)):
             r.error(f"{FILE}/bow: tramo {band!r} incompleto")
@@ -211,7 +213,7 @@ def _compare_cpp(c: dict, row: dict, where: str, r) -> None:
     pairs = [
         ("id", c.get("id"), row["id"]),
         ("healthPoints", c.get("healthPoints"), row["healthPoints"]),
-        ("attack.property", KIND_OF_PROPERTY.get(attack.get("property")), row["kind"]),
+        ("attack.property", KIND_OF_PROPERTY.get(str(attack.get("property"))), row["kind"]),
         ("attack.value", attack.get("value"), row["value"]),
         ("damage", c.get("damage"), row["damage"]),
         ("cutDepth", c.get("cutDepth"), row["cutDepth"]),

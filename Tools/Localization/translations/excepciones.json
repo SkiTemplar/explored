@@ -1,0 +1,26 @@
+{
+  "longitud": {
+    "ExploredUI,Achievements": "«Achievements» es la palabra de Steam; el botón del menú tiene ancho de sobra",
+    "ExploredUI,AchievementsTitle": "título de pantalla, sin límite de ancho",
+    "Data.items.items,palo_recto.nameEs": "«Straight stick»: no hay forma más corta que no pierda el sentido",
+    "Data.items.items,batata.nameEs": "«Sweet potato» no tiene forma corta en inglés británico",
+    "Data.plants.plants,batata.nameEs": "«Sweet potato» no tiene forma corta en inglés británico",
+    "Data.items.items,maracuya.nameEs": "«Passion fruit» no tiene forma corta",
+    "Data.plants.plants,maracuya.nameEs": "«Passion fruit» no tiene forma corta",
+    "Data.items.items,batata_asada.nameEs": "«Roast sweet potato»: cabe en la ficha del inventario (2 líneas)",
+    "Data.recipes.recipes,batata_asada.nameEs": "mismo nombre que el objeto",
+    "Data.building_pieces.pieces,vitrina_museo.nameEs": "«Display case» es el término del glosario (biblia 07 §5.2)",
+    "Data.artifacts.displays,vitrina_museo.nameEs": "«Display case» es el término del glosario (biblia 07 §5.2)",
+    "Data.artifacts.artifacts,pectoral_nacar.nameEs": "«Mother-of-pearl» es el nácar en todo el museo",
+    "Data.artifacts.artifacts,tapa_pintada.nameEs": "«tapa» es «bark cloth» en inglés; «tapa» a secas no se entiende",
+    "Data.fases_futuras.pendingItems,batata_violeta.nameEs": "«Purple sweet potato» no tiene forma corta",
+    "Data.fases_futuras.pendingItems,nacar_trabajado.nameEs": "«Mother-of-pearl» es el nácar en todo el museo",
+    "Data.achievements.achievements,ojo_de_ciclon.nameEs": "nombre de logro: la lista de Steam y la del menú tienen ancho de sobra",
+    "Data.achievements.achievements,deseos_a_punados.nameEs": "nombre de logro: la lista de Steam y la del menú tienen ancho de sobra",
+    "Data.achievements.achievements,limon_zarpa.nameEs": "nombre de logro: la lista de Steam y la del menú tienen ancho de sobra",
+    "Data.achievements.achievements,manazas.nameEs": "«Butterfingers» es una sola palabra; el español es más corto por suerte"
+  },
+  "estilo": {
+    "ExploredUI,QualityEpic": "«Épica/Epic» es el nombre del nivel de escalabilidad de Unreal que el jugador conoce de otros juegos"
+  }
+}

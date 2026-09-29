@@ -8,9 +8,9 @@ topología), así que «hierba alta» no dispara el presupuesto.
 Presupuesto orientativo: < 700 triángulos.
 """
 
+import math
 import os
 import sys
-import math
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402

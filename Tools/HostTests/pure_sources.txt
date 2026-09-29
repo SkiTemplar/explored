@@ -70,11 +70,17 @@ WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
 WorldGen/VegetationNetStateModel.cpp
 WorldGen/FellingModel.cpp
+WorldGen/FelledDriftModel.cpp
 WorldGen/GroundBranchModel.cpp
+WorldGen/VegetationClockModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 WorldGen/CoconutPalmModel.cpp
 Tramway/TramwayModel.cpp
+Villages/ReputationModel.cpp
+Villages/BarterModel.cpp
+Raiders/PirateThreatModel.cpp
+Raiders/RaiderCampsModel.cpp
 WorldGen/MiningModel.cpp
 WorldGen/MineHazardModel.cpp
 WorldGen/ShovelPathModel.cpp

@@ -12,9 +12,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
-
 import bpy  # noqa: E402
+
+import common as C  # noqa: E402
 
 
 def bevel_obj(obj, width=0.012, segments=2, limit_angle_deg=35.0):

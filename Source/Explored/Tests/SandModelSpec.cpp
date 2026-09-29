@@ -460,6 +460,128 @@ void FSandModelSpec::Define()
 			TestFalse(TEXT("muy fuera de la rejilla"), Model.Dig(B, Flat).Changed());
 			TestTrue(TEXT("vacío"), Model.IsEmpty());
 		});
+
+		It("un radio por encima de MaxBrushRadius no hace nada y no recorre la rejilla", [this, Flat]()
+		{
+			FSandModel Model;
+			int32 BaseQueries = 0;
+			auto CountingFlat = [&BaseQueries](double, double) { ++BaseQueries; return 0.0; };
+			FSandBrush B;
+			B.Depth = 0.15f;
+			// Antes, 1e4 m recorrían (8e4)² columnas: el servidor se quedaba colgado.
+			for (const float Radius : { FSandModel::MaxBrushRadius * 1.0001f, 1.0e4f, 3.0e38f })
+			{
+				B.Radius = Radius;
+				TestFalse(*FString::Printf(TEXT("cavar r=%g"), Radius), Model.Dig(B, CountingFlat).Changed());
+				B.MassBudget = 1000;
+				TestFalse(*FString::Printf(TEXT("apilar r=%g"), Radius), Model.Pile(B, CountingFlat).Changed());
+				B.MassBudget = 0;
+			}
+			TestEqual(TEXT("ni una consulta de la altura base"), BaseQueries, 0);
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+		});
+
+		It("no edita más allá del último chunk que cabe en el int16 del paquete", [this, Flat]()
+		{
+			// Con celdas de 0,25 m y N = 32, la clave 32 767 llega a 262 136 m del origen. Antes se
+			// podía cavar a 300 km: ese chunk no se mandaba a los clientes y, al cargar, FromValue
+			// fallaba y se perdía toda la arena de la partida, también la de cerca del origen.
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(1.0, 1.0), 4000), Flat);
+			TestEqual(TEXT("cota de columna"), Model.ColumnLimit(), static_cast<int64>(32767) * 32);
+			FSandBrush B;
+			B.Center = FVector2D(300000.0, 0.0);
+			TestFalse(TEXT("a 300 km no cava"), Model.Dig(B, Flat).Changed());
+			B.Center = FVector2D(-0.25 * static_cast<double>(Model.ColumnLimit()) - 1.0, 0.0);
+			TestFalse(TEXT("pasado el borde negativo no cava"), Model.Dig(B, Flat).Changed());
+			TestFalse(TEXT("ni ancla"), Model.SetAnchor(FVector2D(300000.0, 0.0), FVector2D(300001.0, 1.0), true, Flat).Changed());
+
+			// Justo dentro del tope sí se cava, se guarda, se carga y se manda.
+			B.Center = FVector2D(262000.0, -262000.0);
+			const FSandResult Far = Model.Dig(B, Flat);
+			TestTrue(TEXT("cerca del tope cava"), Far.Changed());
+			FSandModel Loaded;
+			TestTrue(TEXT("la partida se carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("igual"), Loaded == Model);
+			for (const FIntPoint& Chunk : Far.DirtyChunks)
+			{
+				TestTrue(TEXT("el chunk lejano se manda"), Model.EncodeFullChunk(Chunk).Num() > 0);
+			}
+		});
+
+		It("Transfer rechaza columnas de MIN_int32 y fuera del tope sin mover arena", [this, Flat]()
+		{
+			// FMath::Abs(MIN_int32) desbordaba en int32, la comprobación pasaba y se movían 10 mm
+			// a una columna cuyo chunk ya no se podía guardar.
+			FSandModel Model;
+			const int32 Limit = static_cast<int32>(Model.ColumnLimit());
+			const FIntPoint Bad[] = { FIntPoint(MIN_int32, 0), FIntPoint(0, MIN_int32), FIntPoint(Limit + 1, 0), FIntPoint(0, -Limit - 1) };
+			for (const FIntPoint& Column : Bad)
+			{
+				TArray<FSandMove> Moves;
+				Moves.Add(FSandMove{ Column, FIntPoint(0, 0), 10 });
+				Moves.Add(FSandMove{ FIntPoint(0, 0), Column, 10 });
+				TestEqual(*FString::Printf(TEXT("(%d, %d)"), Column.X, Column.Y), Model.Transfer(Moves, Flat).Mass, static_cast<int64>(0));
+			}
+			TestTrue(TEXT("vacío"), Model.IsEmpty());
+			TArray<FSandMove> Edge;
+			Edge.Add(FSandMove{ FIntPoint(Limit, -Limit), FIntPoint(Limit - 1, -Limit), 10 });
+			TestEqual(TEXT("en el tope sí"), Model.Transfer(Edge, Flat).Mass, static_cast<int64>(10));
+			FSandModel Loaded;
+			TestTrue(TEXT("y se carga"), Loaded.FromValue(Model.ToValue()));
+		});
+
+		It("una profundidad enorme cava lo mismo que la máxima, sin pasar a int64 fuera de rango", [this, Flat]()
+		{
+			// Depth = 1e17 m daba 1,7e19 mm: FloorToInt64 fuera de rango (UB). En x86 el centro no
+			// se cavaba y el anillo de fuera sí; en ARM se saturaba: distinto según el servidor.
+			FSandModel Reference;
+			FSandBrush B;
+			B.Center = FVector2D(0.3, -0.2);
+			B.Depth = (FSandModel::MaxDigDepthMm + FSandModel::MaxPileHeightMm) * 0.001f;
+			const int64 Mass = Reference.Dig(B, Flat).Mass;
+			TestEqual(TEXT("toda la capa en el centro"), Reference.DeltaMm(Reference.ColumnOf(0.3, -0.2)), -FSandModel::MaxDigDepthMm);
+			for (const float Depth : { 1.0e17f, 3.0e38f })
+			{
+				FSandModel Model;
+				B.Depth = Depth;
+				TestEqual(*FString::Printf(TEXT("masa con %g m"), Depth), Model.Dig(B, Flat).Mass, Mass);
+				TestTrue(TEXT("mismas columnas"), Model == Reference);
+			}
+		});
+
+		It("una marea finita pero absurda no rellena ni desborda", [this, Flat]()
+		{
+			// (HighMm − BaseMm) · 400 desbordaba int64 en RefillMilli con una pleamar de 3·10¹³ m.
+			FSandModel Model;
+			FSandBrush B;
+			Model.Dig(B, Flat);
+			const FSandModel Before = Model;
+			TestFalse(TEXT("pleamar"), Model.ApplyHalfTide(Tide(3.0e13, -0.5), Flat).Changed());
+			TestFalse(TEXT("bajamar"), Model.ApplyHalfTide(Tide(0.5, -3.0e13), Flat).Changed());
+			TestFalse(TEXT("las dos"), Model.ApplyHalfTide(Tide(1.0e300, -1.0e300), Flat).Changed());
+			TestTrue(TEXT("sin cambios"), Model == Before);
+			TestEqual(TEXT("banco"), Model.SeaBankMass(), static_cast<int64>(0));
+			TestTrue(TEXT("una marea normal sí rellena"), Model.ApplyHalfTide(Tide(0.5, -0.5), Flat).Changed());
+		});
+
+		It("el radio justo en el tope cava y devuelve al montón la misma masa", [this, Flat]()
+		{
+			FSandModel Model;
+			FSandBrush B;
+			// En la esquina de cuatro chunks y en negativo: el pincel grande cruza bordes.
+			B.Center = FVector2D(-0.05, 0.05);
+			B.Radius = FSandModel::MaxBrushRadius;
+			B.Depth = 0.15f;
+			const FSandResult Dug = Model.Dig(B, Flat);
+			TestTrue(TEXT("cava"), Dug.Changed());
+			TestTrue(TEXT("más de 3 000 columnas"), Dug.ColumnsChanged > 3000);
+			TestEqual(TEXT("Σ delta = −cavado"), Model.TotalMass(), -Dug.Mass);
+			B.MassBudget = Dug.Mass;
+			const FSandResult Piled = Model.Pile(B, Flat);
+			TestEqual(TEXT("se echa lo cavado"), Piled.Mass, Dug.Mass);
+			TestEqual(TEXT("masa neta cero"), Model.TotalMass(), static_cast<int64>(0));
+		});
 	});
 
 	Describe("relleno por oleaje (biblia 02 §5.2)", [this, Flat]()
@@ -1134,6 +1256,102 @@ void FSandModelSpec::Define()
 			Loaded.ApplyHalfTide(Tide(0.5, -0.5), Flat);
 			TestTrue(TEXT("sigue igual"), Loaded == Model);
 			TestEqual(TEXT("masa"), Loaded.TotalMass(), Model.TotalMass());
+		});
+
+		It("ida y vuelta con un chunk congelado recupera la misma deuda de revisiones", [this, Flat]()
+		{
+			// Antes no se guardaba la deuda: la original hacía 4 revisiones de golpe al llegar el
+			// jugador y la cargada ninguna, y a partir de ahí divergían.
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(200.0, 0.0), 30000), Flat);
+			FSandEnvironment Env = Dry();
+			for (int32 T = 0; T < 4; ++T)
+			{
+				Model.Tick(Env, Flat);
+			}
+			FSandModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("guardar lo cargado da lo mismo"), Loaded.ToValue() == Model.ToValue());
+			Env.Focus = FVector2D(200.0, 0.0);
+			const FSandResult A = Model.Tick(Env, Flat);
+			const FSandResult B = Loaded.Tick(Env, Flat);
+			TestEqual(TEXT("revisiones de recuperación"), B.CatchUpRevisions, A.CatchUpRevisions);
+			TestEqual(TEXT("las 4"), A.CatchUpRevisions, FSandModel::MaxCatchUpRevisions);
+			TestTrue(TEXT("sigue igual"), Loaded == Model);
+			Settle(Model, Env, Flat);
+			Settle(Loaded, Env, Flat);
+			TestTrue(TEXT("asentada igual"), Loaded == Model);
+		});
+
+		It("ida y vuelta a mitad de segundo y de marea pendiente continúa igual", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(0.5, 0.5), 20000), Flat);
+			FSandModel Far;
+			FSandEnvironment Env = Dry();
+			TestEqual(TEXT("medio segundo no revisa"), Model.Advance(500, Env, Flat).Ticks, 0);
+			FSandModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
+			TestEqual(TEXT("la fracción se guarda"), Loaded.Advance(500, Env, Flat).Ticks, Model.Advance(500, Env, Flat).Ticks);
+			TestTrue(TEXT("igual"), Loaded == Model);
+
+			// Un montón lejano, con la pleamar subiendo mientras nadie está cerca: el chunk queda
+			// pendiente de mojar. Al cargar se conserva qué pleamar vio y qué falta por revisar.
+			Far.Pile(Spike(FVector2D(300.0, 0.0), 20000), Flat);
+			Far.Tick(Env, Flat);
+			Env.HighTide = 5.0;
+			Far.Tick(Env, Flat);
+			FSandModel FarLoaded;
+			TestTrue(TEXT("carga lejos"), FarLoaded.FromValue(Far.ToValue()));
+			TestTrue(TEXT("guardar lo cargado da lo mismo"), FarLoaded.ToValue() == Far.ToValue());
+			Env.Focus = FVector2D(300.0, 0.0);
+			for (int32 T = 0; T < 6; ++T)
+			{
+				TestEqual(TEXT("mismas columnas activas"), FarLoaded.Tick(Env, Flat).ActiveColumns, Far.Tick(Env, Flat).ActiveColumns);
+			}
+			TestTrue(TEXT("sigue igual"), FarLoaded == Far);
+		});
+
+		It("rechaza un estado del reloj manipulado y acepta partidas sin él", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D::ZeroVector, 5000), Flat);
+			const FSaveValue Good = Model.ToValue();
+			FSandModel Probe;
+			FSaveValue Old = Good;
+			Old.Remove(TEXT("frozen"));
+			Old.Remove(TEXT("stale"));
+			Old.Remove(TEXT("acc"));
+			Old.Remove(TEXT("wake"));
+			TestTrue(TEXT("partida anterior"), Probe.FromValue(Old));
+
+			auto With = [&Good](const TCHAR* Key, std::initializer_list<int64> Values)
+			{
+				FSaveValue V = Good;
+				FSaveValue List = FSaveValue::MakeArray();
+				for (const int64 X : Values)
+				{
+					List.Add(FSaveValue::MakeInt(X));
+				}
+				V.Set(Key, MoveTemp(List));
+				return V;
+			};
+			TestTrue(TEXT("deuda válida"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 4 })));
+			TestFalse(TEXT("deuda de más"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, FSandModel::MaxCatchUpRevisions + 1 })));
+			TestFalse(TEXT("deuda cero"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 0 })));
+			TestFalse(TEXT("deuda repetida"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 1, 3, -2, 1 })));
+			TestFalse(TEXT("chunk congelado fuera del int16"), Probe.FromValue(With(TEXT("frozen"), { 40000, 0, 1 })));
+			TestFalse(TEXT("pendientes impares"), Probe.FromValue(With(TEXT("stale"), { 1 })));
+			TestFalse(TEXT("pendiente fuera del int16"), Probe.FromValue(With(TEXT("stale"), { 0, -40000 })));
+			TestFalse(TEXT("marea sin lluvia"), Probe.FromValue(With(TEXT("wake"), { 500 })));
+			TestFalse(TEXT("lluvia que no es 0 o 1"), Probe.FromValue(With(TEXT("wake"), { 500, 2 })));
+			TestFalse(TEXT("pleamar absurda"), Probe.FromValue(With(TEXT("wake"), { 1000000000001LL, 0 })));
+			FSaveValue BadAcc = Good;
+			BadAcc.Set(TEXT("acc"), FSaveValue::MakeInt(FSandModel::TickMs));
+			TestFalse(TEXT("un segundo entero pendiente"), Probe.FromValue(BadAcc));
+			BadAcc.Set(TEXT("acc"), FSaveValue::MakeInt(-1));
+			TestFalse(TEXT("fracción negativa"), Probe.FromValue(BadAcc));
+			TestTrue(TEXT("vacío tras fallar"), Probe.IsEmpty());
 		});
 
 		It("rechaza datos de otra rejilla o manipulados", [this, Flat]()

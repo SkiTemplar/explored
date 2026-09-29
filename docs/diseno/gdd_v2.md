@@ -242,8 +242,10 @@ mapa.
   - **Transportar y echar tierra.** Todo lo que se arranca sale en m³ exactos
     (`VolumeRemoved`) y se puede volver a colocar: echar tierra rellena una esfera de
     0,5 m hasta agotar lo que se lleva. **El volumen se conserva:** cavar y volver a
-    echar la misma tierra deja el mismo sólido, y nunca se coloca más de lo que se lleva
-    (lo comprueba el spec).
+    echar la misma tierra deja el mismo sólido, y nunca se coloca más de lo que se lleva.
+    Echar tierra no toca nada a más de una celda (25 cm) de su esfera y remalla justo los
+    chunks que leen lo que cambia, también a los dos lados de una frontera (lo comprueba
+    el spec).
   - **Escaleras picadas.** El jugador marca el arranque y la dirección, y la escalera
     se ajusta a una **rejilla de 30 cm**: origen en múltiplos de 30 cm, 8 rumbos como el
     kit de construcción, contrahuella de 15, 30 (por defecto) o 45 cm (sube por una
@@ -519,6 +521,51 @@ al sacudir (§3.18).
     fuerzas pesan igual con unos 27° de pendiente (peso 2 × tangente). Con más
     pendiente cae cuesta abajo aunque se golpee desde abajo. Si los golpes se anulan
     en terreno llano, cae hacia una dirección fija de cada ejemplar.
+  - **Viento.** Después se tuerce la caída con el viento del momento (biblia 02 §1.2):
+    gira `máx · viento · sen θ` grados hacia donde sopla, con `viento` de 0 a 1
+    (`FWeatherSample::Wind`) y θ el ángulo entre la caída y el viento. El máximo es 20°
+    y 15° en la palmera, y el arbusto no se desvía. Así el viento de costado desvía del
+    todo, el de cara o de espaldas no desvía, y la caída nunca pasa de largo la
+    dirección del viento. Ningún perfil puede pasar de 45°.
+  - **Aplastamiento.** El tronco que cae es un segmento de la altura del árbol con 25 cm
+    de radio. Las piezas de palma o bambú que toca pierden el 40 % de su integridad
+    máxima (biblia 02 §1.2); las de madera y piedra aguantan. El arbusto no aplasta.
+    Cada pieza cuenta una vez aunque el tronco la cruce entera.
+  - **Caída al agua [biblia 02 §1.5; números pendientes de validar].** Lo que el árbol
+    suelta en el agua (`FFelledDriftModel`) se comporta así:
+    - **Flota o se hunde.** Flota si es menos denso que el agua de mar y tiene más agua
+      debajo que su calado. La madera dura y la resina se hunden y se recogen buceando.
+    - **Deriva** con la corriente local (`FOceanCurrents`), la misma que arrastra un
+      barco sin amarrar.
+    - **Vara** donde toca fondo (el primer punto con menos agua que su calado). Solo
+      vuelve a flotar si sube el agua: un tronco caído en la franja intermareal con la
+      bajamar se lo lleva la pleamar si nadie lo recoge. Nunca salta una barra de arena:
+      mira la profundidad cada 25 cm.
+    - **Entrega.** A los 10 min reales flotando sin que nadie lo recoja (o al alejarse
+      todos más de 80 m), el tronco pasa a ser `madera_flotante` normal, la de las playas
+      y la pesca. El coco sigue siendo coco. Las hojas, la fibra, la corteza, las
+      cáscaras y las ramas finas se deshacen.
+    - **Al alejarse todos** (se descarga el chunk), lo que flota se entrega como arriba
+      y lo que está quieto (varado, en seco o en el fondo) sale del modelo y se queda
+      donde está como un objeto normal del suelo: ya no lo mueve la marea.
+    - Ninguna pieza desaparece sin pasar por recogida, entrega, suelta o deshecho (lo
+      comprueba el spec).
+
+    | Objeto | Flota | Calado (cm) | Si nadie lo recoge |
+    |---|---|---|---|
+    | `tronco_pequeno` | sí | 20 | `madera_flotante` |
+    | `madera_blanda`, `madera_flotante` | sí | 8 | `madera_flotante` |
+    | `madera_dura`, `resina` | no, al fondo | — | se queda en el fondo |
+    | `coco_maduro` / `coco_verde` | sí | 8 / 10 | sigue siendo coco |
+    | `rama_seca`, `rama_verde`, `palo_recto`, `vara_flexible` | sí | 2–4 | se deshace |
+    | `hoja_palma`, `hoja_platano`, `fibra_coco`, `corteza`, `liana`, `algodon_silvestre`, `cascara_coco` | sí | 1–3 | se deshace |
+
+    Paso fijo de 0,5 s. El resultado no depende de los fotogramas.
+
+    La columna «Flota» sale de la densidad del material, no de la propiedad de crafteo
+    `Flota` de `items.json`, que solo llevan `madera_blanda` y `madera_flotante`. La
+    biblia 02 §1.5 dice «`Flota` heredado del material»: falta que el director decida si
+    se añade esa propiedad a los demás objetos o si manda esta tabla.
   - **Tocón.**
     - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
       hasta adulto y entonces se puede volver a talar.
@@ -552,14 +599,26 @@ al sacudir (§3.18).
   base, astillero).
 - **Interfaz:** sin barra de progreso. El árbol tiembla más con cada golpe y cruje en el
   penúltimo. El brote se ve crecer.
+- **Guardado [regla técnica; no cambia la jugabilidad].**
+  - Cada tocón guarda su hora de tala y el trabajo de pala a medias en la sección
+    `vegetationClock` (`FVegetationClockModel`): recargar no adelanta ni retrasa el
+    rebrote ni un minuto, y los golpes de pala dados no se pierden.
+  - Ante la duda, más tarde y nunca antes: un tocón sin hora (sección perdida o
+    ilegible) cuenta como talado al cargar, y una hora futura se acota a la de carga.
+    Así una partida dañada nunca deja un tocón sin rebrotar para siempre.
+  - Al volver a ser adulto, el tocón sale del reloj. Con una tala por hora durante un
+    año de juego, el reloj de palmeras nunca pasa de las taladas en sus 42 días de
+    rebrote más un día.
+  - Una celda de ramas que sigue como al generarse no se guarda. Si se ha tocado, se
+    guardan sus ramas con la posición exacta: talar un árbol no mueve las ramas que ya
+    estaban en el suelo, y una celda sin árboles no gana ramas nuevas hasta que se
+    recogen.
 - **Riesgos técnicos:**
-  - Guardar la hora de tala de cada tocón exige una sección nueva, porque los deltas
-    actuales no tienen tiempo.
   - La caída es un actor temporal, no física.
   - Ver `docs/tecnico/tala-integracion.md`.
-- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
-  `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
-  herramienta).
+- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`,
+  `FFelledDriftModel`, `FVegetationClockModel`), `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry`
+  (clase de herramienta), `Ocean` (`FOceanCurrents`, `FOceanTide`).
 
 ### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**
 
@@ -581,7 +640,11 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
     cosa del pico (§3.4).
   - **Pala.** Cada pasada es un cono de 0,6 m de radio y 15 cm en el centro (unos
     0,06 m³). Lo cavado va al cubo como arena, que tiene masa exacta. Al apilar se echa
-    lo que se lleva y nada más.
+    lo que se lleva y nada más. Ningún pincel pasa de **8 m** de radio (el lado de un
+    chunk); uno mayor no hace nada, para que un dato malo o una petición manipulada no
+    deje al servidor recorriendo millones de columnas. Tampoco se edita arena a más de
+    **262 km** del origen (la clave de chunk va en 16 bits en la red y en el guardado):
+    toda isla cabe de sobra, y así una edición lejana no puede estropear la partida.
   - **La arena no desaparece.** La avalancha es un traspaso entre columnas vecinas. El
     oleaje cambia arena con el **banco del mar** (la arena en suspensión de la resaca):
     lo que alisa de un montón va al banco y lo que rellena un hoyo sale de él. La suma
@@ -630,7 +693,8 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
   | Arena sujeta por una estructura | ≤ 1 m de la huella | biblia 02 §5.3 |
   | Radio activo alrededor de cada jugador | 80 m hasta el borde del chunk | biblia 08 §2.6 |
   | Tope de columnas cambiadas | 64 por chunk y revisión | biblia 08 §2.6 |
-  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta | biblia 08 §2.6 |
+  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta; se guardan con la partida | biblia 08 §2.6 |
+  | Alcance de la edición | ±262 km del origen (clave de chunk de 16 bits) | biblia 08 §2.2 |
   | Paquete de red | versión 2, capa 1, ≤ 512 B | biblia 08 §2.2 |
 
 - **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo

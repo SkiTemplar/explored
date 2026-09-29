@@ -1,6 +1,9 @@
 """Genera las texturas procedurales periódicas (sin costuras) de Explored.
 
-Uso (desde la raíz del repositorio):
+Uso (desde la raíz del repositorio; las dependencias salen de Tools/Textures/pyproject.toml):
+    uv run --project Tools/Textures python Tools/Textures/gen_textures.py
+    uv run --project Tools/Textures python Tools/Textures/gen_textures.py --size 64 --only Rope --out /tmp/tex
+Sigue valiendo la forma antigua, sin proyecto:
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --size 2048 --only SandDry Grass
     uv run --with numpy --with pillow python Tools/Textures/gen_textures.py --sheet docs/art/texturas-AAAA-MM-DD.png
@@ -35,11 +38,11 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from texgen.legacy import LEGACY_KINDS, generate_legacy  # noqa: E402
-from texgen.materials import MATERIALS, default_seed, generate  # noqa: E402
-from texgen.palette import PALETTE_TEXTURES  # noqa: E402
-from texgen.stylized import STYLIZED  # noqa: E402
-from texgen.output import KINDS, contact_sheet, lit_preview, texture_name, write_manifest, write_maps  # noqa: E402
+from texgen.legacy import LEGACY_KINDS, generate_legacy
+from texgen.materials import MATERIALS, default_seed, generate
+from texgen.output import KINDS, contact_sheet, lit_preview, texture_name, write_manifest, write_maps
+from texgen.palette import PALETTE_TEXTURES
+from texgen.stylized import STYLIZED
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Art" / "Export" / "Textures"
