@@ -182,8 +182,13 @@ a ser madera flotante normal. Modelo puro `WorldGen/FelledDriftModel.h`, spec
     flotante de las playas (`FBeachDebrisModel`, categoría `debris`). El coco pasa como
     coco.
   - `Report.Decayed`: se destruye el actor sin más.
-  - Si ningún jugador está a menos de 80 m, el mismo radio activo de la arena viva, se
-    llama a `HandOver` en lugar de congelar la pieza.
+  - Si ningún jugador está a menos de 80 m, el mismo radio activo de la arena viva, o
+    se descarga el chunk de la pieza, se llama a `Release` en lugar de congelarla (sin
+    el chunk no hay suelo para `WaterDepth`). Justo después se lee el estado:
+    `HandedOver`/`Decayed` se tratan como arriba; `Released` deja el actor como un
+    `AExploredItemActor` normal (suelta el índice) que se guarda con su chunk. Al volver
+    a cargar el chunk, si cumple `NeedsTracking`, vuelve a entrar con `AddPiece`, igual
+    que al cargar la partida.
 - **Red.** Solo simula el servidor. El actor replica su posición con el movimiento
   replicado normal, sin nada propio, porque las piezas son pocas y lentas.
 

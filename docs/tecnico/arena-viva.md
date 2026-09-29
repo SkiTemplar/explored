@@ -75,7 +75,10 @@ la biblia deja abiertos).
 2. **Pala.** Si el material bajo el golpe es arena (`SurfaceLayers(...).X > 0,5`), la pala
    llama a `Dig` o a `Pile` en vez de a `FTerrainEditModel::Shovel`. El cubo guarda la
    masa (`int64`), no m³, para que cavar y echar cuadre al milímetro. En tierra o roca
-   sigue mandando la edición volumétrica de §3.4.
+   sigue mandando la edición volumétrica de §3.4. El radio del pincel lo pone el
+   servidor (la herramienta), nunca el cliente; aun así, `Dig`/`Pile` ignoran un radio
+   por encima de `MaxBrushRadius` (8 m), así que en el peor caso una llamada toca unas
+   3 200 columnas.
 3. **Malla: desplazamiento vertical, no remallado volumétrico.**
    - La playa sigue siendo la malla del terreno. Cada chunk de arena de 8 m con
      `EditedChunks()` sustituye su trozo por un `UDynamicMeshComponent` de rejilla
