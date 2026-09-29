@@ -229,3 +229,27 @@ commits desde su última revisión y siguen con `necesita-unreal`.
 - #142 se anota en la nota «en parte» de la botadura sobre rodillos y en los pendientes de
   la auditoría (reloj del incendio, solo en parte).
 - #144 se anota en la nota «en parte» del picado por esfera.
+
+## Ejecución 19:00 UTC
+
+Base: `origin/main` en `9bb30df` al empezar. Hay dos PR nuevas, #146 y #147. Las demás PR
+abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen
+commits desde su última revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #147 | `nube/mundo-2026-09-29-ramas` | **Fusionada** (`7253dc9`) | Modelo puro `FGroundBranchModel`, su spec y documentación (GDD v2 §3.12, «Ramas sueltas», y `docs/tecnico/tala-integracion.md`). `Pick` recibe ahora las fuentes y la hora y llama antes a `Advance`: con la celda llena, ese avance pone el acumulador a cero y el reloj en la hora de la recogida. Antes, si el motor no había barrido la celda, el siguiente `Advance` contaba como acumulado todo el tiempo que estuvo llena y soltaba una ráfaga. Las ramas que aparezcan en ese avance salen en `OutSpawned` para que el motor las pinte. Un reloj que retrocede no rebobina (`Advance` ignora `NowMinute <= LastUpdateMinute`). Comprobé que nadie fuera de los tests llama a `Pick` en `main` ni en las ramas abiertas (#70, #82, #117 y #118 conservan la firma vieja solo dentro del propio modelo), así que el cambio de firma no rompe código de motor. Los specs nuevos cazan el fallo: recoger a los 100 días sin avance previo y comprobar que el hueco tarda 12 h, y que `Pick` a una hora equivale a `Advance` + `Pick`. Nota menor: si la serie no existe, el avance se aplica igual; es inocuo. Solo del servidor, sin estado replicado nuevo. |
+| #146 | `nube/packs-2026-09-29f` | **Fusionada** (`1fad40a`) | Solo datos: añade `carretilla` (`cart.glb`, Fantasy Town Kit) y `banco_chatarra` (`workbench.glb`, Survival Kit) a `discarded` de `packs_catalogo.json`, con motivos concretos (carro de dos ruedas frente a carretilla de una; banco sin chapa ni tubo del coste). Ambas siguen en `meshes_pendientes.json`. `carretilla` queda en `discarded` y en `pending` a la vez, como otros cinco ids que ya estaban así. El commit quitaba el salto de línea final del JSON: lo restauré (`06c1028`). |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #147 (ya sobre `9bb30df`) | 1388 casos, 0 fallos | 1388 casos, 0 fallos, sin avisos | — (no toca datos) | CI en verde (7/7) |
+| #146 (ya sobre `9bb30df`, con `06c1028`) | — (no toca Source) | — | 0 errores, 0 avisos, 66 notas · 550 passed | Packs: pytest 64 passed, 1 skipped · CI en verde (7/7) |
+
+### 00-TODO.md
+
+- No se marca ninguna casilla nueva como `[x]`: #147 corrige un modelo que ya existía y #146
+  solo cataloga descartes.
+- #147 se anota en la nota «en parte» de la generación periódica de `rama_seca`.
