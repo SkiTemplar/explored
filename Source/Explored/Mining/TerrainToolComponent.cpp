@@ -16,14 +16,25 @@
 
 namespace TerrainToolComponentDetail
 {
-	ETerrainToolAction ToModel(EExploredTerrainAction Action)
+	/**
+	 * Objeto de las manos que hace de herramienta para ese botón, o NAME_None. Principal: la
+	 * mano derecha. Secundario: la izquierda; con la izquierda libre, la de la derecha.
+	 */
+	FName HeldToolItem(const UCarryComponent& Carry, bool bSecondary)
 	{
-		switch (Action)
+		FItemInstance Item;
+		ETerrainDigTool Tool = ETerrainDigTool::Count;
+		const EHand First = bSecondary ? EHand::Left : EHand::Right;
+		if (Carry.GetHandItem(First, Item) && FTerrainToolModel::ToolFromItem(Item.DefinitionId, Tool))
 		{
-		case EExploredTerrainAction::ShovelFlatten: return ETerrainToolAction::ShovelFlatten;
-		case EExploredTerrainAction::PlaceSoil: return ETerrainToolAction::PlaceSoil;
-		default: return ETerrainToolAction::Pick;
+			return Item.DefinitionId;
 		}
+		if (bSecondary && Carry.IsHandEmpty(EHand::Left) && Carry.GetHandItem(EHand::Right, Item)
+			&& FTerrainToolModel::ToolFromItem(Item.DefinitionId, Tool))
+		{
+			return Item.DefinitionId;
+		}
+		return NAME_None;
 	}
 
 	EExploredTerrainAction FromModel(ETerrainToolAction Action)
@@ -70,20 +81,8 @@ bool UTerrainToolComponent::TryUseFromHands(const UCarryComponent* Carry, bool b
 	{
 		return false;
 	}
-	FItemInstance Item;
-	ETerrainDigTool Tool = ETerrainDigTool::Count;
-	const EHand First = bSecondary ? EHand::Left : EHand::Right;
-	if (Carry->GetHandItem(First, Item) && FTerrainToolModel::ToolFromItem(Item.DefinitionId, Tool))
-	{
-		return TryUseHeldTool(Item.DefinitionId, bSecondary);
-	}
-	// Clic secundario con la mano izquierda libre: uso secundario de la herramienta de la derecha.
-	if (bSecondary && Carry->IsHandEmpty(EHand::Left) && Carry->GetHandItem(EHand::Right, Item)
-		&& FTerrainToolModel::ToolFromItem(Item.DefinitionId, Tool))
-	{
-		return TryUseHeldTool(Item.DefinitionId, true);
-	}
-	return false;
+	const FName ItemId = TerrainToolComponentDetail::HeldToolItem(*Carry, bSecondary);
+	return !ItemId.IsNone() && TryUseHeldTool(ItemId, bSecondary);
 }
 
 bool UTerrainToolComponent::TryUseHeldTool(FName ItemId, bool bSecondary)
@@ -118,7 +117,7 @@ bool UTerrainToolComponent::TryUseHeldTool(FName ItemId, bool bSecondary)
 	const ETerrainMaterial Material = Terrain->MaterialAt(ImpactMeters);
 	const EMineHitCue Predicted = FTerrainToolModel::PredictCue(Action, Tool, Material, CarriedSoilM3);
 	PlayCue(FromModel(Action), FromModel(Predicted), Hit.ImpactPoint);
-	ServerUseTool(FromModel(Action), static_cast<uint8>(Tool), FVector_NetQuantize10(Hit.ImpactPoint));
+	ServerUseTool(bSecondary, FVector_NetQuantize10(Hit.ImpactPoint));
 	return true;
 }
 
@@ -154,33 +153,53 @@ void UTerrainToolComponent::PlayCue(EExploredTerrainAction Action, EExploredTerr
 	}
 }
 
-void UTerrainToolComponent::ServerUseTool_Implementation(EExploredTerrainAction Action, uint8 Tool, FVector_NetQuantize10 ImpactCm)
+void UTerrainToolComponent::ServerUseTool_Implementation(bool bSecondary, FVector_NetQuantize10 ImpactCm)
 {
 	using namespace TerrainToolComponentDetail;
-	const APawn* Pawn = Cast<APawn>(GetOwner());
 	UTerrainEditSubsystem* Terrain = UTerrainEditSubsystem::Get(this);
 	const UWorld* World = GetWorld();
-	const FVector ImpactMeters = FVector(ImpactCm) / 100.0;
-	if (!Pawn || !Terrain || !World || Tool >= static_cast<uint8>(ETerrainDigTool::Count) || !IsFinite(ImpactMeters))
+	FTerrainToolRequest Request;
+	if (!Terrain || !World || !MakeServerRequest(bSecondary, FVector(ImpactCm) / 100.0, Request))
 	{
 		return;
 	}
-	FTerrainToolRequest Request;
-	Request.Action = ToModel(Action);
-	Request.Tool = static_cast<ETerrainDigTool>(Tool);
-	Request.ImpactPoint = ImpactMeters;
-	Request.EyeLocation = Pawn->GetPawnViewLocation() / 100.0;
-	Request.SecondsSinceLastUse = static_cast<float>(World->GetTimeSeconds() - LastServerUseSeconds);
-	Request.DensityAtImpact = Terrain->Density(ImpactMeters);
-	const ETerrainToolVerdict Verdict = FTerrainToolModel::Validate(Request);
+	// Lo barato primero (acción, alcance, cadencia): una ráfaga descartada no evalúa la densidad.
+	ETerrainToolVerdict Verdict = FTerrainToolModel::ValidateUse(Request);
+	if (Verdict == ETerrainToolVerdict::Accepted)
+	{
+		FTerrainToolRequest WithDensity = Request;
+		WithDensity.DensityAtImpact = Terrain->Density(Request.ImpactPoint);
+		Verdict = FTerrainToolModel::Validate(WithDensity);
+	}
 	if (Verdict != ETerrainToolVerdict::Accepted)
 	{
 		UE_LOG(LogExplored, Verbose, TEXT("[Terreno] Uso descartado por el servidor (%d)"), static_cast<int32>(Verdict));
 		return;
 	}
 	LastServerUseSeconds = World->GetTimeSeconds();
-	const EExploredTerrainCue Cue = ApplyOnServer(Action, Tool, ImpactMeters);
+	const EExploredTerrainAction Action = FromModel(Request.Action);
+	const EExploredTerrainCue Cue = ApplyOnServer(Action, static_cast<uint8>(Request.Tool), Request.ImpactPoint);
 	MulticastToolCue(Action, Cue, ImpactCm);
+}
+
+bool UTerrainToolComponent::MakeServerRequest(bool bSecondary, const FVector& ImpactMeters, FTerrainToolRequest& OutRequest) const
+{
+	using namespace TerrainToolComponentDetail;
+	const APawn* Pawn = Cast<APawn>(GetOwner());
+	const UWorld* World = GetWorld();
+	// La herramienta sale de las manos en el servidor, nunca de lo que diga el cliente.
+	const UCarryComponent* Carry = Pawn ? Pawn->FindComponentByClass<UCarryComponent>() : nullptr;
+	ETerrainDigTool Tool = ETerrainDigTool::Count;
+	if (!Carry || !World || !IsFinite(ImpactMeters) || !FTerrainToolModel::ToolFromItem(HeldToolItem(*Carry, bSecondary), Tool))
+	{
+		return false;
+	}
+	OutRequest.Action = FTerrainToolModel::ActionFor(Tool, bSecondary);
+	OutRequest.Tool = Tool;
+	OutRequest.ImpactPoint = ImpactMeters;
+	OutRequest.EyeLocation = Pawn->GetPawnViewLocation() / 100.0;
+	OutRequest.SecondsSinceLastUse = static_cast<float>(World->GetTimeSeconds() - LastServerUseSeconds);
+	return true;
 }
 
 EExploredTerrainCue UTerrainToolComponent::ApplyOnServer(EExploredTerrainAction Action, uint8 Tool, const FVector& ImpactMeters)

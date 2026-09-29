@@ -110,8 +110,14 @@ Código de motor en `Source/Explored/Mining/`; la lógica nueva está en modelos
   el material del primer chunk horneado que se registra. Nada se carga por ruta en
   `Initialize`.
 - **Red (autoridad del anfitrión).** El cliente predice solo el sonido y las partículas
-  (`OnToolCue`) y pide el uso con `ServerUseTool`; el servidor valida alcance (3 m + 1,5 m),
-  cadencia (85 % de la duración), superficie (|densidad| ≤ 0,75 m) y edita. Cada edición
+  (`OnToolCue`) y pide el uso con `ServerUseTool`, que solo lleva el botón (principal o
+  secundario) y el punto. El servidor saca la herramienta de las manos del personaje
+  (`UCarryComponent`), deduce la acción con `FTerrainToolModel::ActionFor` y valida primero
+  lo barato (`ValidateUse`: acción de la herramienta, alcance de 3 m + 1,5 m y cadencia del
+  85 % de la duración) y solo entonces la superficie (|densidad| ≤ 0,75 m); después edita.
+  Mientras el inventario no se replique, el servidor solo ve las manos de sus propios
+  personajes: un cliente remoto no puede cavar hasta que `UCarryComponent` tenga autoridad
+  en el servidor. Cada edición
   sale por `UTerrainEditSubsystem::OnPatches` con el valor final de las muestras cambiadas
   (`FTerrainEditResult::ChangedSamples` → `FTerrainNetSyncModel::PatchesForSamples`) y
   `UTerrainSyncComponent` (en el PlayerController) lo encola por cliente en

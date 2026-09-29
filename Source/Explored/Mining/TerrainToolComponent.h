@@ -9,6 +9,7 @@
 class UCarryComponent;
 class USoundBase;
 struct FHitResult;
+struct FTerrainToolRequest;
 
 /** Uso de una herramienta de terreno (espejo de ETerrainToolAction para Blueprint y red). */
 UENUM(BlueprintType)
@@ -35,8 +36,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTerrainToolCue, EExploredTerra
  * Pico y pala sobre el terreno volumétrico (GDD v2 §3.4), en el personaje.
  *
  * Cliente que controla al personaje: traza desde la cámara (3 m), predice el sonido y las
- * partículas (`OnToolCue`) y pide el uso al servidor. Servidor: valida alcance, cadencia y
- * superficie (`FTerrainToolModel::Validate`), edita con `UTerrainEditSubsystem` y lleva la
+ * partículas (`OnToolCue`) y pide el uso al servidor (solo el botón y el punto). Servidor:
+ * saca la herramienta de las manos del personaje (`UCarryComponent`, nunca la del cliente),
+ * valida acción, alcance, cadencia y superficie (`FTerrainToolModel::Validate`), edita con
+ * `UTerrainEditSubsystem` y lleva la
  * tierra transportada (replicada solo al dueño). Los demás jugadores oyen el golpe por
  * una multidifusión no fiable; el hueco les llega por la cola de terreno.
  *
@@ -61,7 +64,10 @@ public:
 	 */
 	bool TryUseFromHands(const UCarryComponent* Carry, bool bSecondary);
 
-	/** Usa el objeto como herramienta de terreno. false si no es pico ni pala. */
+	/**
+	 * Usa el objeto como herramienta de terreno. false si no es pico ni pala. ItemId solo
+	 * decide la predicción local: el servidor usa lo que el personaje lleva en las manos.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Terreno")
 	bool TryUseHeldTool(FName ItemId, bool bSecondary);
 
@@ -80,8 +86,9 @@ public:
 	TObjectPtr<USoundBase> ReboundSound;
 
 protected:
+	/** El cliente solo dice qué botón (principal o secundario) y dónde ha golpeado. */
 	UFUNCTION(Server, Reliable)
-	void ServerUseTool(EExploredTerrainAction Action, uint8 Tool, FVector_NetQuantize10 ImpactCm);
+	void ServerUseTool(bool bSecondary, FVector_NetQuantize10 ImpactCm);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastToolCue(EExploredTerrainAction Action, EExploredTerrainCue Cue, FVector_NetQuantize10 LocationCm);
@@ -89,6 +96,8 @@ protected:
 private:
 	bool TraceTerrain(FHitResult& OutHit) const;
 	void PlayCue(EExploredTerrainAction Action, EExploredTerrainCue Cue, const FVector& LocationCm);
+	/** Petición del servidor con la herramienta de las manos; false si no lleva pico ni pala. */
+	bool MakeServerRequest(bool bSecondary, const FVector& ImpactMeters, FTerrainToolRequest& OutRequest) const;
 	/** Aplica un uso ya validado en el servidor; devuelve lo que ha pasado. */
 	EExploredTerrainCue ApplyOnServer(EExploredTerrainAction Action, uint8 Tool, const FVector& ImpactMeters);
 
