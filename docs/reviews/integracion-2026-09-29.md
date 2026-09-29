@@ -174,3 +174,15 @@ commits desde su última revisión y siguen con `necesita-unreal`.
 - No se marca ninguna casilla nueva como `[x]`: #137 cierra pendientes de revisión, no
   tareas del TODO.
 - #137 se anota en las notas «en parte» de la caída al agua de la tala y de la arena viva.
+
+## Ejecución 15:00 UTC
+
+Base: `origin/main` en `973b8b7` al empezar. Hay dos PR nuevas, #140 y #141. #117 y #118
+tienen commits nuevos desde su última revisión (13:39-13:42 UTC) y se vuelven a probar. Las
+demás PR abiertas (#70, #72, #75, #81, #82, #84–#87, #90, #96, #111 y #114) no tienen
+commits nuevos y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #141 | `nocturno/revision-2026-09-29` | **Fusionada** (`87ee43a`) | Solo toca `Tools/Audio` y el informe `docs/reviews/2026-09-29-1335.md`. `sfx_fire_ignite` deja de ser chispas de ruido agudo sobre un soplo rosa grave y pasa a dos o tres soplidos (0,85-1,2 kHz) con la yesca crujiendo cada vez más seguido, un bufido de combustión en ruido marrón (170-650 Hz) con aleteo de 9-12 Hz y el crepitar de las ramitas. Revisé los índices de `_tinder_crackle` (acota `stop` a `len(out)`), el cálculo de `catch_at` frente a `n` y que el nivel final (−16,5) cuadra con las demás herramientas. El test nuevo mide cosas que la versión anterior no cumplía (≤ 20 % de energía bajo 150 Hz, antes un 31 %; pico de modulación en 7-15 Hz) y es determinista (`rng_for(name)`). El informe solo trae tres notas LOW sin cambios de código. |
+| #140 | `nube/mundo-2026-09-29-arena-guardado` | **Fusionada** (`a454b69`) | Modelo puro y specs (`FSandModel`) más documentación. `ColumnLimit()` acota toda edición (pincel, anclaje y `Transfer`) a ±32 767 chunks, la cota del `int16` del paquete y de `FromValue`: antes, cavar a 300 km dejaba una partida que no cargaba. `Transfer` compara en `int64`, así que `MIN_int32` ya no desborda en `Abs`. `Brush` acota la profundidad antes de pasar a milímetros y `ApplyHalfTide` ignora mareas de más de 1 000 km (dos UB en `int64`). El guardado añade el reloj (`frozen`, `stale`, `acc`, `wake`), opcional al cargar; comprobé que `FromValue` empieza y falla con `Reset()`, que ya limpia esos cuatro campos, y que rechaza deudas fuera de 1-4, repetidas o fuera del `int16`. Los specs prueban que una partida cargada sigue igual que la original, también con un chunk congelado y con una pleamar pendiente. Nota menor sin arreglar: `stale` repetido se acepta sin error (un `FindOrAdd`), inofensivo. Es solo del servidor, sin estado replicado nuevo. |
