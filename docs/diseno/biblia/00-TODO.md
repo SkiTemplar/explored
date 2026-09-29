@@ -196,6 +196,8 @@ salir de la isla.
         como `madera_flotante`) — falta el `UFelledDriftSubsystem` del motor
         (`docs/tecnico/tala-integracion.md`) y que el director decida si la flotación sale
         de la propiedad `Flota` de `items.json` o de la tabla de densidades del modelo.
+        PR #137 añade `Release` (estado `Released`) para sacar una pieza del modelo al
+        descargarse su chunk.
 - [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
       según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
       `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
@@ -672,7 +674,8 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       de terreno con prioridad más baja que las ediciones del jugador. *(biblia 08 §2.6)*
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h:38, 159, 175` (80 m, 64 columnas, 4
         revisiones) — presupuestos en el modelo; falta ejecutarlo en el servidor y sacarlo
-        por la cola.
+        por la cola. PR #137: `Dig`/`Pile` ignoran un pincel de más de 8 m de radio
+        (`FSandModel::MaxBrushRadius`).
 - [ ] Medir la compresión real de los deltas de terreno con `OodleNetwork` y entrenar el
       diccionario (`Tools/net-dictionary.ps1`, nuevo) sobre una captura de 10 min de
       minería; anotar el factor en `docs/tecnico/red.md`. Si no llega a ×2, bajar el tope
