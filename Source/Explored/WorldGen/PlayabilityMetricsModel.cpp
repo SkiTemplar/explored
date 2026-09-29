@@ -193,7 +193,9 @@ namespace
 		Order.Reserve(Filled.Num());
 		for (int32 I = 0; I < Filled.Num(); ++I)
 		{
-			if (Graph.Land[I])
+			// Un no finito rompe el orden débil estricto del comparador; con /fp:fast el
+			// "Heights > SeaLevel" de la tierra no garantiza haberlo descartado.
+			if (Graph.Land[I] && FMath::IsFinite(Filled[I]))
 			{
 				Order.Add(I);
 			}

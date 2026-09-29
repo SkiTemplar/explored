@@ -143,6 +143,32 @@ void FPlayabilityMetricsModelSpec::Define()
 			TestTrue(*FString::Printf(TEXT("ladera: resultante %.2f"), Side.MouthResultant), Side.MouthResultant > 0.8f);
 			TestTrue(*FString::Printf(TEXT("ladera: sinuosidad %.2f"), Side.Sinuosity), Side.Sinuosity > Star.Sinuosity + 0.1f);
 		});
+
+		It("aparta las alturas no finitas antes de ordenar el caudal y sigue viendo la estrella", [this]()
+		{
+			// Un NaN en la ordenación rompe el orden débil estricto del comparador (UB en el Sort).
+			constexpr int32 N = 121;
+			TArray<float> Cone;
+			TArray<uint8> Mask;
+			MakeGrid(N, N, [](int32 X, int32 Y)
+			{
+				const float Dx = X - 60.0f;
+				const float Dy = Y - 60.0f;
+				const float R = FMath::Sqrt(Dx * Dx + Dy * Dy);
+				return R < 55.0f ? 20.0f * (1.0f - R / 55.0f) + 0.6f * FMath::Cos(8.0f * FMath::Atan2(Dy, Dx)) * R / 55.0f : -2.0f;
+			}, Cone, Mask);
+			const float Bad[] = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
+				-std::numeric_limits<float>::infinity()};
+			for (int32 I = 0; I < 90; ++I)
+			{
+				Cone[(I * 7919 + 1237) % Cone.Num()] = Bad[I % 3];
+			}
+			const FDrainagePattern P = FPlayabilityMetricsModel::DrainagePattern(Cone, N, N, FVector2D(60.0f), 150.0f, 0.0f);
+			TestTrue(*FString::Printf(TEXT("radial %.2f"), P.Radiality), FMath::IsFinite(P.Radiality) && P.Radiality > 0.7f);
+			TestTrue(*FString::Printf(TEXT("resultante %.2f"), P.MouthResultant), FMath::IsFinite(P.MouthResultant));
+			TestTrue(*FString::Printf(TEXT("sinuosidad %.2f"), P.Sinuosity), FMath::IsFinite(P.Sinuosity));
+			TestTrue(*FString::Printf(TEXT("desembocaduras %d"), P.Mouths), P.Mouths > 0);
+		});
 	});
 }
 
