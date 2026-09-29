@@ -937,7 +937,10 @@ Esta sección fija cuánto se llena, cuándo se vacía y qué pasa si se mezcla.
     - **Sin tratar** con cualquier rastro de agua ajena por debajo de eso. Cuenta como
       `agua_sin_tratar` (se hierve).
     - **Lluvia** solo si no queda nada ajeno. Se bebe sin riesgo.
-    - El agua de mar manda sobre la sin tratar al mezclarse.
+    - El agua de mar manda sobre la sin tratar al mezclarse, pero el umbral se mide solo
+      con el agua de mar: un chorro de mar en una vasija de agua de río la deja sin
+      tratar mientras el mar no llegue al 3 % del total. Al rebosar, al beber o al
+      evaporarse, el mar sale en la misma proporción que el resto del agua ajena.
   - **Qué recipientes recogen.** Solo los abiertos del catálogo, con su boca:
 
     | Objeto | Boca (m²) | Capacidad (L) | Horas de chubasco para llenarse |
