@@ -7,6 +7,8 @@ sin relacion con ella). Colocar pieza es madera que toca, bascula y asienta
 
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 from scipy.signal import find_peaks
 
@@ -75,7 +77,7 @@ def test_el_descubrimiento_sube_y_se_queda_sonando(rendered):
     x = rendered["sfx_ui_discovery_notify"]
     win = int(0.06 * SR)
     pitches = [_dominant_pitches(x[i * int(0.075 * SR):][:win], 1)[0] for i in range(4)]
-    assert all(b > a for a, b in zip(pitches, pitches[1:])), pitches
+    assert all(b > a for a, b in itertools.pairwise(pitches)), pitches
     tail = x[int(0.6 * SR):int(0.7 * SR)]
     assert 20 * np.log10(np.sqrt(np.mean(tail**2)) / np.max(np.abs(x))) > -40.0
 

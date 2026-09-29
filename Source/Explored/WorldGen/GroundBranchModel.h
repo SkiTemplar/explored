@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Save/SaveValue.h"
+
 /**
  * Ramas sueltas del suelo (GDD v2 §3.12): se recogen a mano y reaparecen bajo
  * los árboles en pie con el tiempo. Una celda de vegetación lleva su propio
@@ -69,4 +71,37 @@ struct EXPLORED_API FGroundBranchModel
 
 	/** Dónde aparece la rama número Serial: bajo un ejemplar elegido por capacidad y dentro de su copa. Determinista. */
 	static FGroundBranch PlaceBranch(uint32 CellSeed, uint32 Serial, const TArray<FGroundBranchSource>& Sources);
+
+	// --- Guardado (docs/tecnico/tala-integracion.md, «Persistencia en WorldDeltas») ---
+
+	static constexpr int32 SaveVersion = 1;
+	/** Ramas que admite una celda guardada: muy por encima de la capacidad de cualquier celda de 32 m. */
+	static constexpr int32 MaxSavedBranches = 4096;
+	/** Tope de |X| e |Y| de una rama guardada, en centímetros (±10 000 km). */
+	static constexpr double MaxAbsPositionCm = 1.0e9;
+	/** Tope de |LastUpdateMinute| guardado: ±2^40 minutos. */
+	static constexpr int64 MaxAbsMinute = (int64)1 << 40;
+
+	/**
+	 * ¿Hay que guardar la celda? No, si Initialize con las fuentes actuales la
+	 * reproduce exactamente: llena, sin acumulado y con las series 0…capacidad−1
+	 * en su sitio. Una celda talada (fuentes distintas) o con ramas recogidas sí.
+	 */
+	static bool NeedsSave(const FGroundBranchCell& Cell, const TArray<FGroundBranchSource>& Sources);
+
+	/**
+	 * {"version", "lastMinute", "accumulator", "nextSerial", "branches": [[Serial, X, Y,
+	 * "objeto", SourceIndex], ...]}. Las posiciones se guardan (reales exactos) en vez de
+	 * recalcularse con PlaceBranch: al talar cambian las fuentes y las ramas ya caídas no
+	 * deben moverse al cargar. SourceIndex es el de las fuentes de cuando apareció.
+	 */
+	static FSaveValue SaveCell(const FGroundBranchCell& Cell);
+
+	/**
+	 * Carga una celda guardada con SaveCell. Devuelve false (sin tocar OutCell) si no es
+	 * válida: versión, tipos, rangos, series repetidas o desordenadas, o NextSerial que
+	 * no queda por encima de todas (se repetirían al avanzar). Quien llama usa entonces
+	 * Initialize: la celda vuelve llena, que es lo que ve quien llega a un bosque.
+	 */
+	static bool LoadCell(const FSaveValue& Value, uint32 CellSeed, FGroundBranchCell& OutCell);
 };

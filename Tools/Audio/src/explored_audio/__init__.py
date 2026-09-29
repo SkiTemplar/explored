@@ -5,6 +5,6 @@ aditiva y granular). No se usan muestras externas. Punto de entrada:
 `explored_audio.build.main()` (tambien expuesto como script `explored-audio`).
 """
 
-from .constants import SAMPLE_RATE, BIT_DEPTH
+from .constants import BIT_DEPTH, SAMPLE_RATE
 
 __all__ = ["SAMPLE_RATE", "BIT_DEPTH"]

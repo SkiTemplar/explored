@@ -21,6 +21,7 @@
     {
       "id": "pez_loro",
       "nameEs": "Pez loro",
+      "nameEn": "Parrotfish",
       "habitats": [
         "arrecife"
       ],
@@ -79,6 +80,7 @@
     {
       "id": "pez_cirujano",
       "nameEs": "Pez cirujano",
+      "nameEn": "Surgeonfish",
       "habitats": [
         "arrecife",
         "laguna"
@@ -138,6 +140,7 @@
     {
       "id": "pargo",
       "nameEs": "Pargo",
+      "nameEn": "Snapper",
       "habitats": [
         "arrecife",
         "talud"
@@ -195,6 +198,7 @@
     {
       "id": "mero",
       "nameEs": "Mero",
+      "nameEn": "Grouper",
       "habitats": [
         "arrecife",
         "talud"
@@ -252,6 +256,7 @@
     {
       "id": "salmonete",
       "nameEs": "Salmonete",
+      "nameEn": "Goatfish",
       "habitats": [
         "laguna"
       ],
@@ -310,6 +315,7 @@
     {
       "id": "pez_ballesta",
       "nameEs": "Pez ballesta",
+      "nameEn": "Triggerfish",
       "habitats": [
         "arrecife"
       ],
@@ -367,6 +373,7 @@
     {
       "id": "barracuda",
       "nameEs": "Barracuda",
+      "nameEn": "Barracuda",
       "habitats": [
         "laguna",
         "arrecife"
@@ -424,6 +431,7 @@
     {
       "id": "jurel",
       "nameEs": "Jurel",
+      "nameEn": "Trevally",
       "habitats": [
         "arrecife",
         "talud"
@@ -482,6 +490,7 @@
     {
       "id": "bonito",
       "nameEs": "Bonito",
+      "nameEn": "Bonito",
       "habitats": [
         "talud",
         "profundo"
@@ -538,6 +547,7 @@
     {
       "id": "dorado",
       "nameEs": "Dorado",
+      "nameEn": "Mahi-mahi",
       "habitats": [
         "profundo"
       ],
@@ -593,6 +603,7 @@
     {
       "id": "atun",
       "nameEs": "Atún",
+      "nameEn": "Tuna",
       "habitats": [
         "profundo"
       ],
@@ -648,6 +659,7 @@
     {
       "id": "langosta",
       "nameEs": "Langosta de arrecife",
+      "nameEn": "Spiny lobster",
       "habitats": [
         "arrecife"
       ],
@@ -707,6 +719,7 @@
     {
       "id": "el_viejo",
       "nameEs": "El Viejo",
+      "nameEn": "The Old One",
       "spot": "cueva_arenas_blancas",
       "methods": [
         "cana"
@@ -738,6 +751,7 @@
     {
       "id": "sombra",
       "nameEs": "Sombra",
+      "nameEn": "Shadow",
       "spot": "canal_profundo",
       "methods": [
         "arpon"
@@ -769,6 +783,7 @@
     {
       "id": "manta_negra",
       "nameEs": "La Manta Negra",
+      "nameEn": "The Black Ray",
       "spot": "bajios_manglar",
       "methods": [
         "arpon"
@@ -800,6 +815,7 @@
     {
       "id": "el_errante",
       "nameEs": "El Errante",
+      "nameEn": "The Wanderer",
       "spot": "arrecife_arenas_blancas",
       "methods": [
         "arpon",
@@ -832,6 +848,7 @@
     {
       "id": "rey_de_plata",
       "nameEs": "El Rey de Plata",
+      "nameEn": "The Silver King",
       "spot": "mar_abierto",
       "methods": [
         "cana"

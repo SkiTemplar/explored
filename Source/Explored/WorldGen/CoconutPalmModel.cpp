@@ -25,11 +25,11 @@ namespace
 		return ExploredHash::Hash3D(ExploredHash::Hash32(Seed ^ Salt), Slot, Generation, static_cast<int32>(Extra));
 	}
 
-	/** Minutos en [MinDays, MaxDays] días, sorteados al minuto. */
-	int64 DaysBetween(uint32 Hash, int32 MinDays, int32 MaxDays)
+	/** Minutos en [LoDays, HiDays] días, sorteados al minuto. */
+	int64 DaysBetween(uint32 Hash, int32 LoDays, int32 HiDays)
 	{
-		const int64 Lo = static_cast<int64>(MinDays) * FCoconutPalmModel::MinutesPerDay;
-		const int64 Span = static_cast<int64>(MaxDays - MinDays) * FCoconutPalmModel::MinutesPerDay;
+		const int64 Lo = static_cast<int64>(LoDays) * FCoconutPalmModel::MinutesPerDay;
+		const int64 Span = static_cast<int64>(HiDays - LoDays) * FCoconutPalmModel::MinutesPerDay;
 		return Lo + (Span > 0 ? static_cast<int64>(Hash % static_cast<uint64>(Span + 1)) : 0);
 	}
 

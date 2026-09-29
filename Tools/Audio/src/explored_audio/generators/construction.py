@@ -7,9 +7,8 @@ from __future__ import annotations
 import numpy as np
 
 from ..constants import SAMPLE_RATE
-from ..envelopes import ar_envelope, fit_length, smooth_random_walk
+from ..envelopes import fit_length, smooth_random_walk
 from ..filters import static_filter, time_varying_filter
-from ..granular import render_noise_grains
 from ..modal import modal_hit
 from ..noise import pink_noise
 from ..rng import rng_for

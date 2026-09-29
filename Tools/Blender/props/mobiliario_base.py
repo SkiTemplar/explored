@@ -15,13 +15,13 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import common as C  # noqa: E402
+import bpy  # noqa: E402
+
 import _materials as M  # noqa: E402
 import _shapes as S  # noqa: E402
-import kit_construccion as K  # noqa: E402
-
 import bmesh  # noqa: E402
-import bpy  # noqa: E402
+import common as C  # noqa: E402
+import kit_construccion as K  # noqa: E402
 from mathutils import Matrix  # noqa: E402
 
 CATEGORY = 'base_furniture'
@@ -161,7 +161,7 @@ def _b_bed(v, rnd, name):
 @_register('workbench')
 def _b_workbench(v, rnd, name):
     p = K.Parts()
-    Lx, Wy, H = 1.6, 0.8, 0.9
+    Lx, H = 1.6, 0.9
     for i, y in enumerate((-0.2, 0.2)):
         p.add(K._box(f'Top{i}', (Lx, 0.39, 0.08), (0, y, H - 0.04), 'M_Wood', _pick(rnd, 'wood'), rnd), 'wood')
     for i, (x, y) in enumerate([(-0.68, -0.3), (0.68, -0.3), (-0.68, 0.3), (0.68, 0.3)]):

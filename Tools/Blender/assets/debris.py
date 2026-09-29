@@ -8,17 +8,15 @@ suelo). Categoría de manifest: 'debris'.
 Presupuesto orientativo: 100-4 500 triángulos.
 """
 
+import math
 import os
 import random
 import sys
-import math
-
-import bpy
-from mathutils import Vector
-from mathutils import noise as mnoise
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import common as C  # noqa: E402
+from mathutils import Vector  # noqa: E402
+from mathutils import noise as mnoise  # noqa: E402
 
 CATEGORY = 'debris'
 

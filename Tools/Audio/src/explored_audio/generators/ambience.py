@@ -515,40 +515,122 @@ def _water_drop(rng: np.random.Generator) -> np.ndarray:
     return tone
 
 
+def _thatch_hit(rng: np.random.Generator, size: float) -> np.ndarray:
+    """Una gota contra el tejado de palma, oida desde debajo.
+
+    La paja son capas de foliolos secos solapados: el golpe no llega como el
+    chasquido agudo de una hoja suelta (`_leaf_tap`), sino filtrado por las
+    fibras. Tres capas: un «tup» sordo (impulso por debajo de 1-2 kHz), el
+    cuerpo de los foliolos que ceden, con modos graves (250-700 Hz) muy
+    amortiguados por el haz, y un roce breve de fibra seca cuando la capa
+    se asienta. `size` (0..1) es el tamaño de la gota: mas grave y mas
+    larga cuanto mayor."""
+    dur = 0.025 + 0.045 * size
+    dn = int(dur * SR)
+    out = np.zeros(dn)
+
+    tup_len = max(int(rng.uniform(0.002, 0.004) * SR), 16)
+    tup = static_filter(rng.standard_normal(tup_len), SR, fc=rng.uniform(900.0, 1900.0) - 500.0 * size, q=0.7, kind="lowpass")
+    out[:tup_len] += tup * np.exp(-np.arange(tup_len) / SR / 0.0012) * 0.8
+
+    f0 = (700.0 - 420.0 * size) * rng.uniform(0.85, 1.15)
+    tau = 0.004 + 0.008 * size
+    body = modal_hit(
+        SR, dur, base_freq=f0,
+        mode_ratios=[1.0, rng.uniform(1.6, 1.9), rng.uniform(2.7, 3.2)],
+        mode_dampings_s=[tau, tau * 0.7, tau * 0.45], mode_amps=[1.0, 0.55, 0.3],
+    )
+    out += body[:dn] * (0.25 + 0.2 * size)
+
+    rub_len = min(int(rng.uniform(0.008, 0.02) * SR), dn)
+    rub_at = min(int(rng.uniform(0.001, 0.004) * SR), dn - rub_len)
+    rub = static_filter(rng.standard_normal(rub_len), SR, fc=rng.uniform(1600.0, 3200.0), q=1.2, kind="bandpass")
+    out[rub_at : rub_at + rub_len] += rub * np.hanning(rub_len) * rng.uniform(0.05, 0.12)
+    return out
+
+
+def _heavy_drop(rng: np.random.Generator) -> np.ndarray:
+    """Goteron de un arbol que cuelga sobre el refugio: cae de varios metros y
+    hace sonar el armazon de caña y madera con un golpe grave (90-200 Hz) que
+    la paja no alcanza a apagar del todo."""
+    dur = 0.12
+    thump = modal_hit(
+        SR, dur, base_freq=rng.uniform(90.0, 200.0),
+        mode_ratios=[1.0, rng.uniform(2.2, 2.8)], mode_dampings_s=[0.03, 0.012], mode_amps=[1.0, 0.35],
+    )
+    return thump * 0.9 + fit_length(_thatch_hit(rng, 1.0), len(thump)) * 0.6
+
+
+def _shell_drip(rng: np.random.Generator, pitch_hz: float) -> np.ndarray:
+    """Gotera dentro del refugio sobre una cascara de coco medio llena: la
+    gota excita la cavidad (un «plic» con tono casi fijo, porque el cuenco es
+    siempre el mismo) y deja una burbuja breve en el agua que ya hay dentro."""
+    dur = 0.16
+    shell = modal_hit(
+        SR, dur, base_freq=pitch_hz * rng.uniform(0.99, 1.01),
+        mode_ratios=[1.0, 2.33, 3.9], mode_dampings_s=[0.045, 0.02, 0.01], mode_amps=[1.0, 0.3, 0.12],
+    )
+    bubble = fit_length(_water_drop(rng), len(shell))
+    return shell * 0.5 + bubble * 0.35
+
+
 def amb_rain_on_thatch(name: str) -> np.ndarray:
     """Lluvia oida desde dentro de un refugio con tejado de palma.
 
-    La paja es fibrosa: absorbe el agudo del impacto, asi que el repiqueteo es
-    mas sordo y denso que sobre hojas (`amb_rain_on_leaves`), con un lavado
-    medio continuo y un leve retumbe del armazon. Lo que da la sensacion de
-    estar "a cubierto" son los goteos del alero: unos pocos puntos fijos que
-    gotean casi con periodo propio sobre charcos, colocados en el estereo."""
+    La paja es fibrosa: absorbe el agudo, asi que cada gota es un golpe sordo
+    y discreto (`_thatch_hit`), mas grave que sobre hojas sueltas
+    (`amb_rain_on_leaves`). Capas:
+    - el tejado entero: miles de golpes debiles sumados, bajo un lavado medio
+      y el agua que corre por las canales de la paja (escorrentia grave que
+      crece con el cuadrado de la intensidad);
+    - golpes cercanos, justo encima, cada uno en su punto del estereo;
+    - goterones de un arbol cercano que hacen sonar el armazon;
+    - la lluvia de fuera, que entra por los lados abiertos, lejana;
+    - lo que da la sensacion de estar «a cubierto»: goteos del alero sobre
+      charcos en puntos fijos, casi periodicos y mas rapidos cuanto mas
+      llueve, y una gotera dentro que cae en una cascara de coco.
+    La intensidad sube y baja despacio."""
     rng = rng_for(name)
     n, loop_len, fade_len = _lens(40.0, 4.0)
+    intensity = smooth_random_walk(n, rng, smoothing_hz=0.04, sr=SR, low=0.55, high=1.0)
 
-    patter = render_noise_grains(
-        n, SR, rng, rate_hz=260.0, grain_len_s_range=(0.004, 0.012),
-        band_hz_range=(700, 3000), q=1.1, amp_scale=0.3,
-    )
-    wash = static_filter(pink_noise(n, rng), SR, fc=1300, q=0.8, kind="bandpass")
-    wash = static_filter(wash, SR, fc=3500, q=0.7, kind="lowpass")
-    intensity = smooth_random_walk(n, rng, smoothing_hz=0.05, sr=SR, low=0.7, high=1.0)
-    frame = static_filter(brown_noise(n, rng, leak=0.998), SR, fc=160, q=0.7, kind="lowpass")
+    roof = np.zeros(n)
+    for pos, event in _scatter_events(n, rng, 240.0 * intensity, lambda r: _thatch_hit(r, r.uniform(0.0, 1.0)), (-25.0, -9.0)):
+        end = min(pos + len(event), n)
+        roof[pos:end] += event[: end - pos]
+    roof = static_filter(roof, SR, fc=5000, q=0.6, kind="lowpass")
+    wash = static_filter(pink_noise(n, rng), SR, fc=900, q=0.7, kind="bandpass")
+    runoff = static_filter(brown_noise(n, rng, leak=0.999), SR, fc=380, q=1.2, kind="bandpass")
+    runoff *= smooth_random_walk(n, rng, smoothing_hz=3.0, sr=SR, low=0.5, high=1.0)
+    outside = static_filter(pink_noise(n, rng), SR, fc=1500, q=0.6, kind="highpass")
+    outside = static_filter(outside, SR, fc=6000, q=0.6, kind="lowpass")
+    bed = roof + wash * intensity * 0.09 + runoff * intensity**2 * 0.2 + outside * intensity * 0.05
+    stereo = decorrelate(bed, rng, SR, spread_ms=16)
 
-    mono = (patter + wash * 0.35 + frame * 0.12) * intensity
-    stereo = decorrelate(mono, rng, SR, spread_ms=14)
+    for pos, event in _scatter_events(n, rng, 18.0 * intensity, lambda r: _thatch_hit(r, r.uniform(0.3, 1.0)), (-21.0, -6.0)):
+        _add_panned(stereo, event, pos, rng.uniform(-0.8, 0.8))
+    for pos, event in _scatter_events(n, rng, 0.25 * intensity, _heavy_drop, (-14.0, -6.0)):
+        _add_panned(stereo, event, pos, rng.uniform(-0.6, 0.6))
 
-    # Goteos del alero: cada punto tiene su periodo (el agua se acumula en la
-    # punta de la hoja a ritmo casi constante) con algo de irregularidad.
+    # Goteos del alero: el agua se acumula en la punta de la paja a un ritmo
+    # que sigue a la lluvia, asi que el periodo se acorta cuando arrecia.
     for _ in range(5):
-        pan = rng.uniform(-0.9, 0.9)
-        period = rng.uniform(0.35, 1.4)
-        level = rng.uniform(0.15, 0.4)
+        pan = rng.choice([-1.0, 1.0]) * rng.uniform(0.5, 0.95)
+        period = rng.uniform(0.4, 1.3)
+        level = rng.uniform(0.07, 0.16)
         t = rng.uniform(0.0, period)
         while t < n / SR:
             drop = _water_drop(rng) * level * rng.uniform(0.7, 1.0)
             _add_panned(stereo, drop, int(t * SR), pan)
-            t += period * rng.uniform(0.8, 1.25)
+            t += period / intensity[min(int(t * SR), n - 1)] * rng.uniform(0.85, 1.2)
+
+    # Gotera dentro: lenta, siempre en la misma cascara.
+    pitch = rng.uniform(650.0, 900.0)
+    pan = rng.uniform(-0.4, 0.4)
+    t = rng.uniform(0.5, 2.0)
+    while t < n / SR:
+        _add_panned(stereo, _shell_drip(rng, pitch) * rng.uniform(0.12, 0.18), int(t * SR), pan)
+        t += rng.uniform(2.2, 3.6) / intensity[min(int(t * SR), n - 1)] ** 0.5
 
     return seamless_loop(stereo, loop_len, fade_len)
 

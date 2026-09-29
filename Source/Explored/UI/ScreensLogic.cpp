@@ -76,6 +76,11 @@ namespace ExploredScreens
 		const bool bInRun = !Model.GetState().RunMode.IsNone();
 		for (const FAchievementDef& Def : Model.GetAchievements())
 		{
+			// Los de una fase aún no publicada no salen (biblia 07 §2), salvo que ya estén conseguidos.
+			if (!Model.IsReleased(Def) && !Model.IsUnlocked(Def.Id))
+			{
+				continue;
+			}
 			FAchievementRow& Row = Out.AddDefaulted_GetRef();
 			Row.Id = Def.Id;
 			Row.bUnlocked = Model.IsUnlocked(Def.Id);
@@ -92,6 +97,10 @@ namespace ExploredScreens
 		FAchievementsSummary Out;
 		for (const FAchievementDef& Def : Model.GetAchievements())
 		{
+			if (!Model.IsReleased(Def) && !Model.IsUnlocked(Def.Id))
+			{
+				continue;
+			}
 			++Out.Total;
 			Out.Unlocked += Model.IsUnlocked(Def.Id) ? 1 : 0;
 		}

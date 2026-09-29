@@ -1,7 +1,7 @@
 # Genera, valida y previsualiza el kit de vegetación y rocas de Explored.
 #
 # Encadena, con Blender 5.2 en modo headless:
-#   1. run_all.py       -> genera y exporta las 18 mallas + manifest.json
+#   1. run_all.py       -> genera y exporta todas las mallas + manifest.json
 #   2. validate.py      -> reimporta cada FBX y comprueba presupuesto de
 #                           triángulos, geometría degenerada, dimensiones
 #                           plausibles, color de vértice y colisión watertight

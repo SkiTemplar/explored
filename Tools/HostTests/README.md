@@ -50,7 +50,10 @@ Ya ha encontrado un fallo real: `WorldGenSpec` tomaba un puntero al interior de 
 `tools/TerrainDiagnostics.cpp` es un programa aparte (no entra en la suite): muestrea el
 archipiélago, imprime las métricas de realismo de `FTerrainSurvey` (bultos sueltos, cota
 dominante y picos del histograma del fondo, saltos, varianza fina, orientación de cauces,
-pozos) y escribe el relieve sombreado y la pendiente en PPM. Se compila con el mismo
+pozos), las de jugabilidad de `FTerrainPlayabilitySurvey` (llanos construibles con pendiente
+< 15°, acantilados de costa, variación de la plataforma, motas del mar con su índice de
+Clark-Evans, patrón de drenaje y lagunas interiores) y escribe en PPM el relieve sombreado, la
+pendiente y el mapa de zonas construibles (verde < 15°, rojo > 60°). Se compila con el mismo
 include path que la suite y los `.cpp` de `pure_sources.txt`; uso:
 
 ```bash

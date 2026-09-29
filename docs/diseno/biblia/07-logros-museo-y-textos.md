@@ -165,9 +165,10 @@ caracteres, `localizacion.md`).
 ## 2. Logros de Steam
 
 54 logros (dentro del rango pedido de 40–60). **Reconciliación con
-`Content/Data/achievements.json`:** se conservan los 30 ids existentes sin cambiar
-nombre, descripción ni condición — solo se les asigna fase (ninguno estaba
-marcado). Dos pasan a **[F2]** (`las_siete_islas`, `el_mapa_entero`: exigen las
+`Content/Data/achievements.json`:** se conservan los 30 ids existentes y sus
+condiciones; se les asigna fase, rareza y alcance cooperativo (ninguno los tenía), y
+la segunda pasada del checklist anti-IA (§1.5, H5) retocó siete textos que se
+alargaban o explicaban de más. Dos pasan a **[F2]** (`las_siete_islas`, `el_mapa_entero`: exigen las
 siete islas, que según GDD §6.2 no están completas hasta la fase 2) y tres a
 **[F3]** (`limon_zarpa`, `naufrago_de_verdad`, `sin_mapa`: exigen la isla oculta,
 que GDD §6.2 sitúa en fase 3). El resto queda en **[AA]**. Se añaden 24 logros
@@ -180,6 +181,14 @@ Steam, no un dato medido — se revisa en playtesting): **Común** (se espera qu
 consiga más del 40 % de quienes empiezan a jugar), **Infrecuente** (15–40 %),
 **Raro** (4–15 %), **Muy raro** (menos del 4 %).
 
+**Alcance cooperativo** (`coopScope`, biblia 08 §5.7): `actor` solo lo consigue quien
+hace la acción; `world`, todos los conectados; `witness`, quien esté a menos de 50 m.
+
+`achievements.json` es la fuente de verdad de estos textos: §2.2 y §2.3 se regeneran
+desde el fichero, no al revés. `Tools/DataCheck` comprueba fase, rareza, alcance y que un
+logro no dependa de una estadística o pieza de una fase posterior; `uv run l10n --strict`
+comprueba la longitud, la lista negra y el glosario de cada texto.
+
 Formato de condición: mismo esquema que `achievements.json` (`units` del propio
 fichero) — `{stat, op, value}` compara un contador/máximo/tamaño de conjunto;
 `{stat, contains}` pide un id en un conjunto; `{flag}` pide una marca; `{all}` /
@@ -187,14 +196,14 @@ fichero) — `{stat, op, value}` compara un contador/máximo/tamaño de conjunto
 
 ### 2.1 Extensión del catálogo de estadísticas
 
-Estadísticas nuevas que hace falta añadir a `achievements.json` (`stats`) para
-soportar los logros de §2.3 en adelante. Mismo formato que las 22 ya existentes en
-el fichero.
+Estadísticas nuevas de `achievements.json` (`stats`) para los logros de §2.3. Mismo
+formato que las 24 anteriores, más un campo `phase` cuando las informa un sistema de
+F2 o F3.
 
 | id | kind | scope | reportedBy | Descripción | Fase |
 |---|---|---|---|---|---|
 | `terrain_edits_made` | counter | run | Mining | Ediciones de terreno hechas (golpes de pala o pico que restan o suman densidad). | [AA] |
-| `strata_mined` | set | run | Mining | Estratos de los que se ha extraído al menos una unidad: `tierra`, `arcilla`, `caliza`, `basalto`, `obsidiana`, `cobre`, `hierro_meteorito`, `azufre`, `cristal`. | [AA] |
+| `strata_mined` | set | run | Mining | Estratos de los que se ha extraído al menos una unidad: los ids de `mining.json → strata` (`tierra`, `arena`, `arcilla`, `azufre`, `caliza`, `veta_cobre`, `basalto`, `hierro_meteorito`, `obsidiana`, `cristal`); DataCheck exige que coincidan. | [AA] |
 | `max_mining_depth_m` | max | run | Mining | Profundidad máxima cavada bajo la superficie, en metros. | [AA] |
 | `air_pocket_survived` | flag | run | Mining | Se marca la primera vez que el indicador de aire llega al mínimo en una bolsa cerrada y el jugador sale con vida. | [AA] |
 | `cave_collapse_avoided` | flag | run | Mining / Building | Se marca al colocar una viga de apoyo en una galería a punto de colapsar. | [AA] |
@@ -208,7 +217,7 @@ el fichero.
 | `barter_trades_completed` | counter | profile | Villages | Trueques completados con el pueblo del arrecife. | [F3] |
 | `reputation_village_tier` | max | run | Villages | Nivel de reputación alcanzado (0 neutral, 1 básica, 2 alta, 3 aliado de facto). | [F3] |
 | `wayfinding_taught_by_village` | flag | run | Villages | Se marca al aprender una técnica de wayfinding directamente del pueblo. | [F3] |
-| `village_defended_from_raid` | flag | run | Villages / Raiders | Se marca cuando un asalto sobre el pueblo se repele con ayuda del jugador. | [F3] |
+| `village_defended_from_raid` | flag | run | Villages / Raiders | Se marca cuando un asalto sobre el pueblo se repele con ayuda del jugador y sin que nadie de la sesión dispare una flecha (restricción de biblia 08 §5.7). | [F3] |
 | `raids_defended` | counter | profile | Raiders | Asaltos piratas a la propia base repelidos sin pérdidas. | [F3] |
 | `raider_camps_defeated` | counter | profile | Raiders | Campamentos pirata derrotados. | [F3] |
 
@@ -220,162 +229,188 @@ producción).
 
 ### 2.2 Logros existentes (30, ids sin cambios)
 
-Reproducidos aquí solo con su fase, para no duplicar texto que ya vive en
-`Content/Data/achievements.json` y que ese fichero sigue gobernando:
+Los textos y condiciones viven en `Content/Data/achievements.json`, que sigue
+gobernándolos; aquí van la fase, la rareza y el alcance cooperativo que se les asignó.
+Dos pasan a **[F2]** (`las_siete_islas`, `el_mapa_entero`) y tres a **[F3]**
+(`limon_zarpa`, `naufrago_de_verdad`, `sin_mapa`); el resto queda en **[AA]**.
 
-**[AA]** `primer_fuego`, `diez_amaneceres`, `un_ano_de_islas`, `rey_del_cocotero`,
-`tierra_firme`, `cartografo`, `bajo_el_volcan`, `restos_del_albatros`,
-`primer_techo`, `cimientos_de_piedra`, `ojo_de_ciclon`, `el_limonero`,
-`huerto_en_flor`, `cocina_de_isla`, `primera_captura`, `una_historia_que_contar`,
-`pulmones_de_perla`, `mar_abierto`, `luz_en_el_agua`, `madrugada_de_tortugas`,
-`canto_de_ballenas`, `deseos_a_punados`, `melodia_junto_al_fuego`, `coleccionista`,
-`wayfinder`.
-
-**[F2]** `las_siete_islas`, `el_mapa_entero`.
-
-**[F3]** `limon_zarpa`, `naufrago_de_verdad`, `sin_mapa`.
+| id | Nombre ES / EN | Fase | Rareza | Alcance | Oculto |
+|---|---|---|---|---|---|
+| `primer_fuego` | Primer fuego / First Fire | [AA] | Común | `actor` | no |
+| `diez_amaneceres` | Diez amaneceres / Ten Sunrises | [AA] | Común | `world` | no |
+| `un_ano_de_islas` | Un año de islas / A Year of Islands | [AA] | Raro | `world` | no |
+| `rey_del_cocotero` | Rey del cocotero / Coconut King | [AA] | Infrecuente | `actor` | no |
+| `tierra_firme` | Tierra firme / Solid Ground | [AA] | Común | `actor` | no |
+| `las_siete_islas` | Las siete islas / The Seven Islands | [F2] | Raro | `actor` | no |
+| `cartografo` | Cartógrafo / Cartographer | [AA] | Infrecuente | `world` | no |
+| `el_mapa_entero` | El mapa entero / The Whole Map | [F2] | Muy raro | `world` | no |
+| `bajo_el_volcan` | Bajo el volcán / Under the Volcano | [AA] | Infrecuente | `actor` | no |
+| `restos_del_albatros` | Restos del Albatros / What the Albatross Left | [AA] | Infrecuente | `world` | no |
+| `primer_techo` | Un techo propio / Your Own Roof | [AA] | Común | `world` | no |
+| `cimientos_de_piedra` | Cimientos de piedra / Stone Foundations | [AA] | Infrecuente | `world` | no |
+| `ojo_de_ciclon` | Ojo de ciclón / Eye of the Cyclone | [AA] | Raro | `world` | no |
+| `el_limonero` | El limonero / The Lemon Tree | [AA] | Infrecuente | `world` | no |
+| `huerto_en_flor` | Huerto en flor / Garden in Bloom | [AA] | Infrecuente | `world` | no |
+| `cocina_de_isla` | Cocina de isla / Island Kitchen | [AA] | Raro | `actor` | no |
+| `primera_captura` | Primera captura / First Catch | [AA] | Común | `actor` | no |
+| `una_historia_que_contar` | Una historia que contar / A Tale to Tell | [AA] | Raro | `witness` | sí |
+| `pulmones_de_perla` | Pulmones de perla / Pearl Lungs | [AA] | Infrecuente | `actor` | no |
+| `mar_abierto` | Mar abierto / Open Sea | [AA] | Infrecuente | `actor` | no |
+| `luz_en_el_agua` | Luz en el agua / Light in the Water | [AA] | Infrecuente | `witness` | no |
+| `madrugada_de_tortugas` | Madrugada de tortugas / Turtle Dawn | [AA] | Infrecuente | `witness` | no |
+| `canto_de_ballenas` | Canto de ballenas / Whale Song | [AA] | Infrecuente | `witness` | no |
+| `deseos_a_punados` | Deseos a puñados / Wishes by the Handful | [AA] | Raro | `witness` | sí |
+| `melodia_junto_al_fuego` | Melodía junto al fuego / Fireside Tune | [AA] | Infrecuente | `actor` | no |
+| `coleccionista` | Coleccionista / Collector | [AA] | Raro | `world` | no |
+| `wayfinder` | Wayfinder / Wayfinder | [AA] | Raro | `actor` | no |
+| `limon_zarpa` | Limón zarpa / Limón Sets Sail | [F3] | Raro | `world` | no |
+| `naufrago_de_verdad` | Náufrago de verdad / True Castaway | [F3] | Muy raro | `world` | no |
+| `sin_mapa` | Sin mapa / No Map | [F3] | Muy raro | `world` | sí |
 
 `una_historia_que_contar` (una captura legendaria) se queda en [AA] aunque cuatro
 de las cinco legendarias viven en islas de fase 2/3 (biblia §4.6): «El Rey de
 Plata», en mar abierto, es alcanzable desde el acceso anticipado.
 
+**Segunda pasada anti-IA (H5).** Textos retocados, con id y condición intactos:
+`un_ano_de_islas` (la descripción pasaba de 90 caracteres), `primer_techo` (nombre
+inglés de cinco palabras), `cimientos_de_piedra` (explicaba por qué la piedra es
+buena), `ojo_de_ciclon` («without a single scratch», relleno), `madrugada_de_tortugas`
+(«acompaña con la mirada»), `luz_en_el_agua` («contempla el mar encendido») y
+`rey_del_cocotero` («a lo alto de», sobraba).
+
 ### 2.3 Logros nuevos (24), por categoría
 
-Formato por logro: `id` — nombre ES / nombre EN — fase · rareza · oculto: sí/no.
-Luego la descripción ES y EN, y la condición exacta.
+Formato por logro: `id` — nombre ES / nombre EN — fase · rareza · alcance · oculto.
+Luego la descripción ES y EN, y la condición exacta. Los ids no cambian aunque el
+nombre sí lo haga (`primer_tren_de_isla`, `primera_pareja`, `el_cangrejo_se_lo_llevo`):
+Steam los identifica por id.
 
 #### Minería [AA]
 
-**`primera_palada`** — Primera palada / First Shovelful — [AA] · Común · oculto: no
-ES: «Cava tu primer agujero en la tierra o la arena.» EN: «Dig your first hole in
-earth or sand.» Condición: `{stat: "terrain_edits_made", op: ">=", value: 1}`.
+**`primera_palada`** — Primera palada / First Shovelful — [AA] · Común · `actor` · oculto: no.
+ES: «Cava tu primer agujero en la tierra o la arena.» EN: «Dig your first hole in earth or sand.»
+Condición: `{stat: "terrain_edits_made", op: ">=", value: 1}`.
 
-**`buscador_de_vetas`** — Buscador de vetas / Seam Seeker — [AA] · Infrecuente ·
-oculto: no. ES: «Extrae mineral de tres estratos distintos.» EN: «Mine ore from
-three different strata.» Condición: `{stat: "strata_mined", op: ">=", value: 3}`.
+**`buscador_de_vetas`** — Buscador de vetas / Seam Seeker — [AA] · Infrecuente · `actor` · oculto: no.
+ES: «Extrae mineral de tres estratos distintos.» EN: «Mine ore from three different strata.»
+Condición: `{stat: "strata_mined", op: ">=", value: 3}`.
 
-**`filo_de_obsidiana`** — Filo de obsidiana / Obsidian Edge — [AA] · Raro ·
-oculto: no. ES: «Extrae tu primera veta de obsidiana en la Isla del Humo.» EN:
-«Mine your first obsidian seam on Smoke Island.» Condición:
-`{stat: "strata_mined", contains: "obsidiana"}`.
+**`filo_de_obsidiana`** — Filo de obsidiana / Obsidian Edge — [AA] · Raro · `actor` · oculto: no.
+ES: «Extrae tu primera veta de obsidiana en la Isla del Humo.» EN: «Mine your first obsidian seam on Smoke Island.»
+Condición: `{stat: "strata_mined", contains: "obsidiana"}`.
 
-**`topo_de_isla`** — Topo de isla / Island Mole — [AA] · Raro · oculto: no. ES:
-«Cava una galería de veinte metros bajo la superficie.» EN: «Dig a tunnel twenty
-metres below the surface.» Condición:
-`{stat: "max_mining_depth_m", op: ">=", value: 20}`.
+**`topo_de_isla`** — Topo de isla / Island Mole — [AA] · Raro · `actor` · oculto: no.
+ES: «Cava hasta veinte metros bajo la superficie.» EN: «Dig twenty metres below the surface.»
+Condición: `{stat: "max_mining_depth_m", op: ">=", value: 20}`.
 
-**`el_aire_que_falta`** — El aire que falta / The Air That Ran Out — [AA] · Raro ·
-**oculto: sí**. ES: «Sal con vida de una bolsa de aire viciado justo a tiempo.»
-EN: «Get out of a foul-air pocket alive, just in time.» Condición:
-`{flag: "air_pocket_survived"}`.
+**`el_aire_que_falta`** — El aire que falta / Running Out of Air — [AA] · Raro · `witness` · oculto: **sí**.
+ES: «Sal de una bolsa de aire viciado antes de desmayarte.» EN: «Get out of a pocket of foul air before you pass out.»
+Condición: `{flag: "air_pocket_survived"}`.
 
-**`viga_a_tiempo`** — Viga a tiempo / Beam in Time — [AA] · Infrecuente ·
-**oculto: sí**. ES: «Coloca un apoyo en una galería a punto de derrumbarse.» EN:
-«Place a support beam in a tunnel about to cave in.» Condición:
-`{flag: "cave_collapse_avoided"}`.
+**`viga_a_tiempo`** — Viga a tiempo / Beam in Time — [AA] · Infrecuente · `actor` · oculto: **sí**.
+ES: «Coloca un apoyo en una galería a punto de derrumbarse.» EN: «Prop up a tunnel that is about to cave in.»
+Condición: `{flag: "cave_collapse_avoided"}`.
 
 #### Minas y vagones [F2]
 
-**`primer_tren_de_isla`** — El primer tren de la isla / The Island's First Train
-— [F2] · Infrecuente · oculto: no. ES: «Tiende una vía y mueve por ella un vagón
-cargado.» EN: «Lay track and move a loaded cart along it.» Condición:
-`{flag: "rail_track_and_cart_used"}`.
+**`primer_tren_de_isla`** — El primer tren / The First Train — [F2] · Infrecuente · `world` · oculto: no.
+ES: «Tiende una vía y mueve por ella un vagón cargado.» EN: «Lay track and push a loaded cart along it.»
+Condición: `{flag: "rail_track_and_cart_used"}`.
 
 #### Construcción — murallas [F2]
 
-**`primera_empalizada`** — Primera empalizada / First Palisade — [F2] · Común ·
-oculto: no. ES: «Construye tu primera empalizada.» EN: «Build your first
-palisade.» Condición:
-`{stat: "building_pieces_built", contains: "empalizada"}`.
+**`primera_empalizada`** — Primera empalizada / First Palisade — [F2] · Común · `world` · oculto: no.
+ES: «Construye tu primera empalizada.» EN: «Build your first palisade.»
+Condición: `{stat: "building_pieces_built", contains: "empalizada"}`.
 
-**`muralla_de_piedra`** — Muralla de piedra / Stone Wall — [F2] · Infrecuente ·
-oculto: no. ES: «Completa una muralla de piedra con al menos una torre.» EN:
-«Complete a stone wall with at least one tower.» Condición:
-`{all: [{stat: "building_pieces_built", contains: "muralla_piedra"}, {stat: "building_pieces_built", contains: "torre_defensa"}]}`.
+**`muralla_de_piedra`** — Muralla de piedra / Stone Wall — [F2] · Infrecuente · `world` · oculto: no.
+ES: «Completa una muralla de piedra con al menos una torre.» EN: «Finish a stone wall with at least one tower.»
+Condición: `{all: [{stat: "building_pieces_built", contains: "muralla_piedra"}, {stat: "building_pieces_built", contains: "torre_defensa"}]}`.
 
 #### Granja [F2]
 
-**`primera_pareja`** — La primera pareja / The First Pair — [F2] · Común ·
-oculto: no. ES: «Consigue tu primera pareja de animales domésticos.» EN: «Get
-your first pair of domestic animals.» Condición:
-`{stat: "livestock_species_raised", op: ">=", value: 1}`.
+**`primera_pareja`** — Primera cría / A New Arrival — [F2] · Común · `world` · oculto: no.
+ES: «Consigue la primera cría en un corral.» EN: «Breed your first animal in a pen.»
+Condición: `{stat: "livestock_species_raised", op: ">=", value: 1}`.
 
-**`corral_completo`** — Corral completo / Full Pen — [F2] · Infrecuente ·
-oculto: no. ES: «Cría tres especies domésticas distintas a la vez.» EN: «Raise
-three different domestic species at once.» Condición:
-`{stat: "livestock_species_raised", op: ">=", value: 3}`.
+**`corral_completo`** — Corral completo / Full Pen — [F2] · Infrecuente · `world` · oculto: no.
+ES: «Cría las tres especies domésticas.» EN: «Breed all three farm species.»
+Condición: `{stat: "livestock_species_raised", op: ">=", value: 3}`.
 
-**`huevos_por_docenas`** — Huevos por docenas / Eggs by the Dozen — [F2] ·
-Infrecuente · oculto: no. ES: «Recoge cien huevos.» EN: «Collect a hundred
-eggs.» Condición: `{stat: "eggs_collected", op: ">=", value: 100}`.
+**`huevos_por_docenas`** — Huevos por docenas / Eggs by the Dozen — [F2] · Infrecuente · `actor` · oculto: no.
+ES: «Recoge cien huevos.» EN: «Collect a hundred eggs.»
+Condición: `{stat: "eggs_collected", op: ">=", value: 100}`.
 
 #### Piratas [F3]
 
-**`asalto_repelido`** — Asalto repelido / Raid Repelled — [F3] · Raro ·
-oculto: no. ES: «Repele tu primer asalto pirata sin perder nada.» EN: «Repel
-your first raid without losing anything.» Condición:
-`{stat: "raids_defended", op: ">=", value: 1}`.
+**`asalto_repelido`** — Asalto repelido / Raid Repelled — [F3] · Raro · `world` · oculto: no.
+ES: «Repele tu primer asalto pirata sin perder nada.» EN: «Fight off your first raid without losing anything.»
+Condición: `{stat: "raids_defended", op: ">=", value: 1}`.
 
-**`campamento_tomado`** — Campamento tomado / Camp Taken — [F3] · Raro ·
-oculto: no. ES: «Derrota un campamento pirata.» EN: «Defeat a raider camp.»
+**`campamento_tomado`** — Campamento tomado / Camp Taken — [F3] · Raro · `world` · oculto: no.
+ES: «Derrota un campamento pirata.» EN: «Defeat a raider camp.»
 Condición: `{stat: "raider_camps_defeated", op: ">=", value: 1}`.
 
 #### Navegantes del arrecife [F3]
 
-**`primer_trueque`** — Primer trueque / First Trade — [F3] · Común · oculto: no.
-ES: «Completa tu primer trueque con el pueblo del arrecife.» EN: «Complete your
-first trade with the reef village.» Condición:
-`{stat: "barter_trades_completed", op: ">=", value: 1}`.
+**`primer_trueque`** — Primer trueque / First Barter — [F3] · Común · `actor` · oculto: no.
+ES: «Completa tu primer trueque con el pueblo del arrecife.» EN: «Barter with the reef village for the first time.»
+Condición: `{stat: "barter_trades_completed", op: ">=", value: 1}`.
 
-**`aliado_de_facto`** — Aliado de facto / Ally in All but Name — [F3] · Raro ·
-oculto: no. ES: «Alcanza la reputación más alta con el pueblo del arrecife.» EN:
-«Reach the highest standing with the reef village.» Condición:
-`{stat: "reputation_village_tier", op: ">=", value: 3}`.
+**`aliado_de_facto`** — Aliado de facto / Ally in Practice — [F3] · Raro · `world` · oculto: no.
+ES: «Alcanza la reputación más alta con el pueblo del arrecife.» EN: «Reach the highest standing with the reef village.»
+Condición: `{stat: "reputation_village_tier", op: ">=", value: 3}`.
 
-**`otra_forma_de_aprender`** — Otra forma de aprender / Another Way to Learn —
-[F3] · Infrecuente · **oculto: sí**. ES: «Aprende una técnica de wayfinding
-directamente del pueblo del arrecife.» EN: «Learn a wayfinding technique
-straight from the reef village.» Condición: `{flag: "wayfinding_taught_by_village"}`.
+**`otra_forma_de_aprender`** — Otra forma de aprender / Another Way to Learn — [F3] · Infrecuente · `actor` · oculto: **sí**.
+ES: «Aprende una técnica de wayfinding del pueblo del arrecife.» EN: «Learn a wayfinding technique from the reef village.»
+Condición: `{flag: "wayfinding_taught_by_village"}`.
 
-**`sin_disparar_una_flecha`** — Sin disparar una flecha / Without Loosing an
-Arrow — [F3] · Muy raro · **oculto: sí**. ES: «Ayuda a repeler un asalto pirata
-sobre el pueblo del arrecife.» EN: «Help repel a raid on the reef village.»
+**`sin_disparar_una_flecha`** — Sin disparar una flecha / Without Loosing an Arrow — [F3] · Muy raro · `world` · oculto: **sí**.
+ES: «Ayuda a defender el pueblo del arrecife de un asalto sin disparar.» EN: «Help the reef village fight off a raid without shooting.»
 Condición: `{flag: "village_defended_from_raid"}`.
 
 #### Barcos [AA]
 
-**`primera_canoa`** — Primera canoa / First Canoe — [AA] · Común · oculto: no.
-ES: «Termina tu primera canoa en el astillero.» EN: «Finish your first canoe at
-the shipyard.» Condición: `{stat: "boats_built", contains: "canoa"}`.
+**`primera_canoa`** — Primera canoa / First Canoe — [AA] · Común · `actor` · oculto: no.
+ES: «Termina tu primera canoa en el astillero.» EN: «Finish your first canoe at the shipyard.»
+Condición: `{stat: "boats_built", contains: "canoa"}`.
 
 #### Tesoros
 
-**`bajo_el_templo`** — Bajo el templo / Under the Temple — [F2] · Raro ·
-**oculto: sí**. ES: «Encuentra un tesoro en un templo enterrado bajo tierra.» EN:
-«Find a treasure inside a buried temple.» Condición:
-`{flag: "underground_treasure_found"}`.
+**`bajo_el_templo`** — Bajo el templo / Under the Temple — [F2] · Raro · `witness` · oculto: **sí**.
+ES: «Encuentra un tesoro en un templo enterrado.» EN: «Find a treasure inside a buried temple.»
+Condición: `{flag: "underground_treasure_found"}`.
 
-**`juego_de_anzuelos`** — Juego de anzuelos / Set of Hooks — [AA] · Raro ·
-oculto: no. ES: «Reúne los tres anzuelos del pueblo navegante.» EN: «Collect all
-three of the voyaging people's fish hooks.» Condición:
-`{all: [{stat: "artifact_ids_found", contains: "anzuelo_hueso"}, {stat: "artifact_ids_found", contains: "anzuelo_nacar"}, {stat: "artifact_ids_found", contains: "anzuelo_ceremonial"}]}`.
+**`juego_de_anzuelos`** — Juego de anzuelos / Set of Hooks — [AA] · Raro · `world` · oculto: no.
+ES: «Reúne los tres anzuelos del pueblo navegante.» EN: «Find all three of the voyagers' fish hooks.»
+Condición: `{all: [{stat: "artifact_ids_found", contains: "anzuelo_hueso"}, {stat: "artifact_ids_found", contains: "anzuelo_nacar"}, {stat: "artifact_ids_found", contains: "anzuelo_ceremonial"}]}`.
 
 #### Absurdos y graciosos [AA]
 
-**`manazas`** — Manazas / Butterfingers — [AA] · Infrecuente · oculto: no. ES:
-«Rompe veinte herramientas golpeando algo demasiado duro para ellas.» EN: «Break
-twenty tools on something too hard for them.» Condición:
-`{stat: "tools_broken_on_wrong_material", op: ">=", value: 20}`.
+**`manazas`** — Manazas / Butterfingers — [AA] · Infrecuente · `actor` · oculto: no.
+ES: «Rompe veinte herramientas golpeando algo demasiado duro para ellas.» EN: «Break twenty tools on something too hard for them.»
+Condición: `{stat: "tools_broken_on_wrong_material", op: ">=", value: 20}`.
 
-**`banquete_de_mil_cocos`** — Banquete de mil cocos / Feast of a Thousand
-Coconuts — [AA] · Muy raro · **oculto: sí**. ES: «Abre quinientos cocos en
-total.» EN: «Open five hundred coconuts in total.» Condición:
-`{stat: "coconuts_opened", op: ">=", value: 500}`.
+**`banquete_de_mil_cocos`** — Banquete de mil cocos / Thousand-Coconut Feast — [AA] · Muy raro · `actor` · oculto: **sí**.
+ES: «Abre quinientos cocos en total.» EN: «Open five hundred coconuts in total.»
+Condición: `{stat: "coconuts_opened", op: ">=", value: 500}`.
 
-**`el_cangrejo_se_lo_llevo`** — El cangrejo se lo llevó / The Crab Took It —
-[AA] · Infrecuente · **oculto: sí**. ES: «Deja que un cangrejo se lleve algo que
-habías dejado en la arena.» EN: «Let a crab make off with something you left on
-the sand.» Condición: `{flag: "crab_stole_item"}`.
+**`el_cangrejo_se_lo_llevo`** — Lo robó un cangrejo / The Crab Took It — [AA] · Infrecuente · `actor` · oculto: **sí**.
+ES: «Un cangrejo se lleva algo que dejaste en la arena.» EN: «A crab makes off with something you left on the sand.»
+Condición: `{flag: "crab_stole_item"}`.
+
+**Cambios de la segunda pasada anti-IA (H5)** respecto a la primera redacción:
+`primer_tren_de_isla` («El primer tren de la isla», seis palabras), `primera_pareja`
+(el nombre hablaba de una pareja y la condición es la primera cría), `corral_completo`
+(«a la vez» no era la condición), `topo_de_isla` (una galería de veinte metros no es
+bajar veinte metros), `el_aire_que_falta` («con vida» y «justo a tiempo» decían lo mismo),
+`bajo_el_templo` («enterrado bajo tierra»), `otra_forma_de_aprender` («directamente»),
+`sin_disparar_una_flecha` (la descripción no decía la restricción del nombre),
+`aliado_de_facto` y `banquete_de_mil_cocos` (nombre inglés de cinco palabras),
+`el_cangrejo_se_lo_llevo` (nombre de cinco palabras, y la descripción repetía «dejar»),
+`primer_trueque` (glosario: *barter*) y las descripciones inglesas de `viga_a_tiempo`,
+`muralla_de_piedra`, `asalto_repelido` y `juego_de_anzuelos`, reescritas en inglés
+en vez de calcadas.
 
 ---
 
@@ -398,14 +433,14 @@ museo no tiene un final fijo: sigue aceptando piezas nuevas después de que el
 | Conchas | `Content/Data/items.json` (tag `concha`) + nuevas | 8 | [AA] |
 | Herbario (plantas silvestres) | Nueva | 10 | [AA] |
 | Insectos | Nueva | 10 | [AA] |
-| Artefactos y tesoros de ruinas | `Content/Data/artifacts.json` | 15 | [AA]/[F2] según procedencia |
+| Artefactos y tesoros de ruinas | `Content/Data/artifacts.json` | 16 | [AA]/[F2] según procedencia |
 | Minerales y cristales | `Content/Data/items.json` (tag `mineral`) + nuevas | 10 | [AA] |
 | Fósiles | Nueva | 8 | [F2] |
 
 **Artefactos vs. tesoros — decisión de reutilización de datos:** en vez de crear un
 segundo catálogo, «Tesoros» es el subconjunto de `artifacts.json` con
-`rarity: "raro"` o `"unico"` (10 de las 15 piezas ya existentes); «Artefactos» es
-la colección completa (las 15). Evita que el museo tenga dos sistemas de datos
+`rarity: "raro"` o `"unico"` (12 de las 16 piezas del fichero, recontadas en la
+revisión de H5); «Artefactos» es la colección completa (las 16). Evita que el museo tenga dos sistemas de datos
 para lo mismo — el director pidió las dos palabras, no dos catálogos distintos.
 
 ### 3.3 Cómo se expone cada colección
@@ -432,7 +467,7 @@ supervivencia.
 | Conchas | Móvil de conchas (decoración con sonido ambiental propio al viento). |
 | Herbario | Una semilla ornamental rara (flor decorativa, no alimenticia) para el huerto. |
 | Insectos | Farol de luciérnagas: fuente de luz cosmética que no gasta combustible. |
-| Artefactos (las 15) | Estandarte ceremonial para la base — un gesto de respeto hacia el pueblo navegante, coherente con la regla de nunca tratarlo como recurso a saquear (GDD §8). |
+| Artefactos (las 16) | Estandarte ceremonial para la base — un gesto de respeto hacia el pueblo navegante, coherente con la regla de nunca tratarlo como recurso a saquear (GDD §8). |
 | Tesoros (subconjunto raro/único) | Placa grabada con una inscripción elegida por el jugador — condición de `museo_completo`, ver nota abajo. |
 | Minerales y cristales | Pigmento fosforescente para pintar paredes de la base (variante del pigmento ya descrito en biblia §3.2). |
 | Fósiles | Aldaba tallada con forma de amonita para la puerta principal. |
@@ -443,8 +478,10 @@ oculto de cierre de partida. No se añade a la lista de 54 de §2 para no
 sobrepasar el rango pedido (40–60); queda documentado aquí como **logro
 candidato para una actualización posterior de contenido**, con id propuesto
 `museo_completo` y condición
-`{stat: "artifact_ids_found", op: ">=", value: 10}` sobre los ids de rareza
-raro/único.
+`{stat: "artifact_ids_found", op: ">=", value: 12}` sobre los ids de rareza
+raro/único. `artifact_ids_found` ya existe, pero cuenta los 16: el logro necesitará
+una estadística propia con los 12 ids (lista cerrada que DataCheck compare con la
+rareza de `artifacts.json`) antes de poder escribirse con esa condición.
 
 ### 3.5 Ficha de ejemplo por colección
 
@@ -468,10 +505,9 @@ hold on, roots wedged straight into the rock.» Procedencia: acantilados de La
 Meseta. Cómo se consigue: se corta con cuchillo y se prensa en el herbario.
 
 **Insectos — Luciérnaga de caverna** (`luciernaga_caverna`, nueva)
-ES: «Luciérnaga de caverna. Parpadea despacio en la oscuridad de las cuevas más
-profundas — no hace falta antorcha para verla venir.» EN: «Cave firefly.
-Flickers slowly in the dark of the deepest caves — you don't need a torch to
-see it coming.» Procedencia: cuevas profundas, cualquier isla con galería
+ES: «Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no
+llega otra luz.» EN: «Cave firefly. Blinks slowly in the deepest caves, where no
+other light reaches.» Procedencia: cuevas profundas, cualquier isla con galería
 minera. Cómo se consigue: se observa y se dibuja en el cuaderno, sin capturarla.
 
 **Artefactos y tesoros — Carta de varillas y conchas** (`carta_varillas`, ya en
@@ -481,18 +517,16 @@ marae. Rareza: raro. Cómo se consigue: hallazgo en la exploración de un marae 
 descrito (biblia §9.1).
 
 **Minerales y cristales — Obsidiana arcoíris** (`obsidiana_arcoiris`, nueva)
-ES: «Obsidiana arcoíris. Solo se ve el color si la giras contra el sol — el
-resto del tiempo es negra como cualquier otra.» EN: «Rainbow obsidian. The
-colour only shows if you turn it against the sun — the rest of the time it's
-black like any other.» Procedencia: Isla del Humo, cerca del cráter. Rareza:
+ES: «Obsidiana arcoíris. Negra como cualquier otra hasta que la giras contra el
+sol y sale el color.» EN: «Rainbow obsidian. Black like any other, until you tilt
+it to the sun and the colour shows.» Procedencia: Isla del Humo, cerca del cráter. Rareza:
 raro (variante infrecuente de la obsidiana común). Cómo se consigue: minada con
 pico de obsidiana o rescatado.
 
 **Fósiles — Diente de tiburón fósil** (`diente_tiburon_fosil`, nueva)
-ES: «Diente de tiburón fósil. Mucho más viejo que la isla en la que apareció —
-la caliza lo trajo desde el fondo de otro mar.» EN: «Fossil shark tooth. Much
-older than the island it turned up on — the limestone carried it up from the
-floor of another sea.» Procedencia: caliza de La Meseta, o charcas secas
+ES: «Diente de tiburón fósil. Es más viejo que la isla donde apareció: la caliza
+lo subió del fondo de otro mar.» EN: «Fossil shark tooth. Older than the island
+it turned up on. The limestone brought it up from the floor of another sea.» Procedencia: caliza de La Meseta, o charcas secas
 durante una ola de calor (biblia §6.2). Cómo se consigue: minado en caliza, o
 recogido en una charca seca durante el temporal.
 
@@ -520,13 +554,14 @@ recogido en una charca seca durante el temporal.
 | `el_errante` | El Errante | The Wanderer |
 | `rey_de_plata` | El Rey de Plata | The Silver King |
 
-**Artefactos y tesoros (15 — de `artifacts.json`, sin cambios, reproducidos aquí
-por ser la colección de referencia):** `anzuelo_hueso`, `anzuelo_nacar`,
+**Artefactos y tesoros (16 — de `artifacts.json`, reproducidos aquí por ser la
+colección de referencia):** `anzuelo_hueso`, `anzuelo_nacar`,
 `anzuelo_ceremonial`, `colgante_concha`, `collar_conchas`, `pectoral_nacar`,
 `colgante_carey`, `figura_navegante`, `figura_gemelos`, `figura_mira_cielo`,
 `carta_varillas`, `carta_oleaje`, `tapa_pintada`, `tapa_estrellas`,
-`remo_ceremonial`, `remo_canoa_doble` — quince ids, nombres ES/EN ya definidos en
-el propio fichero (§ leída de origen).
+`remo_ceremonial`, `remo_canoa_doble` — dieciséis ids, nombres ES/EN ya definidos en
+el propio fichero. La revisión de H5 acortó dos etiquetas que pasaban de seis
+palabras: «Figura de basalto mirando al cielo» y «Carta del oleaje de siete islas».
 
 **Minerales y cristales (10, nuevas):**
 
@@ -593,18 +628,19 @@ número de día real de la partida.
 2. **Primera noche superada** — ES: «Día 1, de noche. Primera noche entera.
    El fuego aguantó más que yo despierto.» EN: «Day 1, night. First whole night
    through. The fire outlasted me staying awake.»
-3. **Primer fuego** — ES: «Día 1. Chispa, yesca, humo, y por fin una llama que
-   no se apaga con el viento.» EN: «Day 1. Spark, tinder, smoke, and finally a
-   flame the wind doesn't kill.»
-4. **Primer refugio** — ES: «Día 3. Cuatro palos y una hoja de palma encima.
-   No es una casa. Es un techo, que ya es bastante.» EN: «Day 3. Four sticks and
-   a palm leaf on top. Not a house. A roof, which is already a lot.»
+3. **Primer fuego** — ES: «Día 1. Tres intentos con el mechero mojado. Al cuarto
+   prendió la yesca y el viento ya no pudo con ella.» EN: «Day 1. Three goes with
+   the wet lighter. On the fourth the tinder caught, and the wind couldn't put it
+   out.»
+4. **Primer refugio** — ES: «Día 3. Cuatro palos y una hoja de palma encima. Un
+   techo, que ya es bastante.» EN: «Day 3. Four sticks and a palm leaf on top. A
+   roof, which is already a lot.»
 5. **Primer trazo de costa** — ES: «Día 4. Empecé el mapa hoy. Una línea
    torcida donde la playa se acaba y empieza la roca.» EN: «Day 4. Started the
    map today. One crooked line where the beach ends and the rock begins.»
-6. **Primera ruina** — ES: «Día 9. Piedras que no puso el mar. Alguien vivió
-   aquí antes que yo, y dejó su huella tallada.» EN: «Day 9. Stones the sea
-   didn't place. Someone lived here before me, and carved their mark into it.»
+6. **Primera ruina** — ES: «Día 9. Piedras que no puso el mar, con marcas
+   talladas. Alguien vivió aquí antes que yo.» EN: «Day 9. Stones the sea didn't
+   place, with carvings on them. Someone lived here before me.»
 7. **Primera técnica de wayfinding** — ES: «Día 11. Aprendí a leer el oleaje
    hoy. Ahora el mar me dice hacia dónde está tierra, antes de que la vea.» EN:
    «Day 11. Learned to read the swell today. Now the sea tells me where land is
@@ -616,27 +652,35 @@ número de día real de la partida.
    de la tierra hay tanta isla como encima.» EN: «Day 16. Started digging in
    earnest today. There's as much island underground as above it.»
 10. **Primera cueva descubierta** — ES: «Día 18. El pico rompió la roca y detrás
-    no había más roca. Una cámara entera, y nadie la había visto.» EN: «Day 18.
+    no había más roca. Una cámara entera, a oscuras.» EN: «Day 18.
     The pick broke through the rock and there was no more rock behind it. A
-    whole chamber, and no one had ever seen it.»
+    whole chamber, pitch dark.»
 11. **Primer limón** — ES: «Día 22. El limonero dio su primer fruto. Lo planté
     el día 1. Ha tardado, pero ha llegado.» EN: «Day 22. The lemon tree gave its
     first fruit. I planted it on day one. It took a while, but it got here.»
 12. **Primera captura legendaria** — ES: «Día 30. Rompió el sedal dos veces
-    antes de rendirse. Le llaman El Viejo por algo.» EN: «Day 30. It snapped the
-    line twice before it gave up. They call it The Old One for a reason.»
+    antes de rendirse. Pesa más que mi mochila llena.» EN: «Day 30. It snapped the
+    line twice before it gave up. It weighs more than my full pack.»
 13. **Primera empalizada [F2]** — ES: «Día 38. Clavé la última estaca antes de
     que oscureciera. No sé si aguantará un asalto, pero ya no duermo con la
     puerta abierta.» EN: «Day 38. Drove the last stake before dark. I don't know
-    if it'll hold off a raid, but I stop sleeping with the door open.»
+    if it'll hold off a raid, but I'm done sleeping with the door open.»
 14. **Primer trueque con el pueblo [F3]** — ES: «Día 52. Les llevé cuerda y
     aluminio trabajado. Me dieron semillas que no había visto nunca. Ninguno de
     los dos contó monedas.» EN: «Day 52. Brought them rope and worked aluminium.
     They gave me seeds I'd never seen before. Neither of us counted coins.»
-15. **Zarpa el «Limón» [F3]** — ES: «Día 70. Última entrada desde tierra. A
-    partir de esta noche, guío el barco solo con lo que aprendí del cielo.» EN:
-    «Day 70. Last entry from land. From tonight on, I steer by nothing but what
-    the sky taught me.»
+15. **Zarpa el «Limón» [F3]** — ES: «Día 70. Última entrada desde tierra. Esta
+    noche zarpo en el «Limón» y el rumbo lo marcan las estrellas.» EN: «Day 70.
+    Last entry from land. Tonight I sail on the «Limón», and the stars set the
+    course.»
+
+**Segunda pasada anti-IA (H5).** Se reescribieron la 3 (enumeración de tres
+sustantivos), la 4 («No es una casa. Es un techo»: la falsa disyuntiva de §1.2 partida
+en dos frases), la 6 («dejó su huella», frase hecha), la 10 (el náufrago no puede saber
+que nadie la había visto), la 12 («le llaman» ¿quién?, si está solo), la 13 (calco en
+inglés: *I stop sleeping*) y la 15 (demasiado solemne para un diario). En §3.5 se
+quitaron las rayas que hacían de coma en tres fichas y el «verla venir» de la
+luciérnaga, que era un juego de palabras (§1.4, regla 1).
 
 ---
 
@@ -668,10 +712,13 @@ entrada de diario):
    catálogo (`catalogo.json`) y el informe. Solo entonces el texto está listo
    para compilarse en el editor (`localizacion.md`, «Compilar en el editor»).
 
-### 5.2 Glosario ES/EN (66 términos)
+### 5.2 Glosario ES/EN (69 términos)
 
 Términos propios del juego, para que ningún texto nuevo traduzca dos veces la
-misma palabra de dos formas distintas. Decisiones de nombre propio marcadas
+misma palabra de dos formas distintas. La primera versión decía 66 en el título;
+la tabla siempre tuvo 69 filas. La copia de trabajo, con la regla que comprueba
+`uv run l10n` en 39 de ellos, está en `docs/tecnico/glosario.md`: si cambias un
+término, cámbialo en los dos sitios. Decisiones de nombre propio marcadas
 **(decisión)** cuando había más de una opción razonable.
 
 | Español | Inglés | Nota |
@@ -765,8 +812,11 @@ misma palabra de dos formas distintas. Decisiones de nombre propio marcadas
   de dos claves separadas:
   `{Count} {Count}|plural(one=pez,other=peces)` (ES) /
   `{Count} {Count}|plural(one=fish,other=fish)` (EN) — mismo marcador `{Count}`
-  en los dos idiomas, verificado por el chequeo de marcadores de
-  `Tools/Localization`.
+  en los dos idiomas. `Tools/Localization` (`src/l10n/icu.py`) comprueba la
+  sintaxis del modificador, que estén las categorías que cada idioma necesita
+  (`one` y `other` en los dos; `one`, `two`, `few` y `other` en el ordinal
+  inglés), avisa de las que el idioma no usa nunca (`zero` en inglés: el 0 cae en
+  `other`) y exige que los dos idiomas pluralicen los mismos argumentos.
 - **Comillas.** Español: comillas angulares («»), ya en uso para el barco
   «Limón» y en la dedicatoria. Inglés: comillas dobles rectas, salvo en el
   nombre propio del barco, que se mantiene con «» en los dos idiomas por ser un
@@ -807,17 +857,17 @@ cambio grande para una necesidad que hoy no existe):
 
 ## TODO de implementación
 
-- [ ] Añadir a `Content/Data/achievements.json` los 18 stats nuevos de §2.1 (`terrain_edits_made` … `raider_camps_defeated`), con `values`/`valuesFrom` donde aplique.
-- [ ] Añadir a `Content/Data/achievements.json` los 24 logros nuevos de §2.3, con `condition`, `hidden`, `icon` e id de fase como campo de datos (hoy `achievements.json` no tiene campo de fase: añadirlo, p. ej. `"phase": "AA" | "F2" | "F3"`).
-- [ ] Añadir el campo `phase` a los 30 logros ya existentes en `achievements.json`, con los valores de §2.2.
-- [ ] Añadir un campo de rareza (`rarity: "comun" | "infrecuente" | "raro" | "muy_raro"`) a los 54 logros de `achievements.json`, con los valores asignados en §2.
+- [x] Añadir a `Content/Data/achievements.json` los 18 stats nuevos de §2.1 (`terrain_edits_made` … `raider_camps_defeated`), con `values`/`valuesFrom` donde aplique.
+- [x] Añadir a `Content/Data/achievements.json` los 24 logros nuevos de §2.3, con `condition`, `hidden`, `icon` e id de fase como campo de datos (hoy `achievements.json` no tiene campo de fase: añadirlo, p. ej. `"phase": "AA" | "F2" | "F3"`).
+- [x] Añadir el campo `phase` a los 30 logros ya existentes en `achievements.json`, con los valores de §2.2.
+- [x] Añadir un campo de rareza (`rarity: "comun" | "infrecuente" | "raro" | "muy_raro"`) a los 54 logros de `achievements.json`, con los valores asignados en §2.
 - [ ] Añadir a `Content/Data/building_pieces.json` las piezas de muralla: `empalizada`, `muralla_piedra`, `torre_defensa` (categoría nueva `defensa`, sin equivalente hoy en el fichero).
-- [ ] Añadir a `Content/Data/building_pieces.json` las piezas de museo nuevas: `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`, `vitrina_minerales`, `panel_fosiles` (categoría `museo`, mismo patrón que `estanteria_museo`/`vitrina_museo`/`panel_museo`).
-- [ ] Crear `Content/Data/shells.json`, `Content/Data/herbarium.json`, `Content/Data/insects.json` y `Content/Data/fossils.json` con las piezas listadas en §3.6, siguiendo el patrón bilingüe (`nameEs`/`nameEn`) de `artifacts.json`.
-- [ ] Añadir el subconjunto «tesoros» a `artifacts.json` como campo derivado o consulta (`rarity` en `["raro", "unico"]`), documentado en §3.2, sin duplicar el catálogo.
-- [ ] Crear `Content/Data/journal_entries.json` con el esquema de §4.1 (`id`, `trigger`, `textEs`, `textEn`, marcador `{Day}`) y las 15 entradas de §4.2 como contenido inicial.
+- [x] Añadir a `Content/Data/building_pieces.json` las piezas de museo nuevas: `pecera_museo`, `bandeja_conchas`, `marco_herbario`, `atril_cuaderno`, `vitrina_minerales`, `panel_fosiles` (categoría `museo`, mismo patrón que `estanteria_museo`/`vitrina_museo`/`panel_museo`).
+- [x] Crear `Content/Data/shells.json`, `Content/Data/herbarium.json`, `Content/Data/insects.json` y `Content/Data/fossils.json` con las piezas listadas en §3.6, siguiendo el patrón bilingüe (`nameEs`/`nameEn`) de `artifacts.json`.
+- [x] Añadir el subconjunto «tesoros» a `artifacts.json` como campo derivado o consulta (`rarity` en `["raro", "unico"]`), documentado en §3.2, sin duplicar el catálogo.
+- [x] Crear `Content/Data/journal_entries.json` con el esquema de §4.1 (`id`, `trigger`, `textEs`, `textEn`, marcador `{Day}`) y las 15 entradas de §4.2 como contenido inicial.
 - [ ] Añadir el logro candidato `museo_completo` (§3.4) a una futura revisión de `achievements.json` cuando el total de logros lo permita sin salir del rango 40–60, o en una actualización de contenido posterior al lanzamiento.
-- [ ] Añadir las 66 entradas del glosario de §5.2 a `docs/tecnico/localizacion.md` o a un fichero de glosario propio referenciado desde ahí, para que el equipo de traducción futuro (o Codex/Antigravity delegados en localización) no reinvente ninguna de estas decisiones de nombre propio.
-- [ ] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de plural ICU (`{Count}|plural(...)`) descritos en §5.3, hoy no verificados explícitamente por el chequeo de marcadores.
-- [ ] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de datos nuevo en cuanto exista, antes de darlo por escrito definitivo.
-- [ ] Pasar cada logro, ficha de museo y entrada de diario de este documento por el checklist de §1.5 una segunda vez en revisión de contenido, no solo en la redacción inicial.
+- [x] Añadir las 66 entradas del glosario de §5.2 a `docs/tecnico/localizacion.md` o a un fichero de glosario propio referenciado desde ahí, para que el equipo de traducción futuro (o Codex/Antigravity delegados en localización) no reinvente ninguna de estas decisiones de nombre propio.
+- [x] Actualizar `Tools/Localization/src/l10n/` para comprobar los modificadores de plural ICU (`{Count}|plural(...)`) descritos en §5.3, hoy no verificados explícitamente por el chequeo de marcadores.
+- [x] Ejecutar `cd Tools/Localization && uv run l10n --strict` sobre cada fichero de datos nuevo en cuanto exista, antes de darlo por escrito definitivo.
+- [x] Pasar cada logro, ficha de museo y entrada de diario de este documento por el checklist de §1.5 una segunda vez en revisión de contenido, no solo en la redacción inicial.

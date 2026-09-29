@@ -20,6 +20,7 @@ Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
 Tests/GaitSpec.cpp
 Tests/FellingModelSpec.cpp
+Tests/FelledDriftModelSpec.cpp
 Tests/GroundBranchModelSpec.cpp
 Tests/HarvestModelSpec.cpp
 Tests/InventorySpec.cpp
@@ -52,6 +53,7 @@ Tests/TerrainEditsSpec.cpp
 Tests/TerrainErosionSpec.cpp
 Tests/VegetationScatterSpec.cpp
 Tests/VegetationNetStateModelSpec.cpp
+Tests/VegetationClockModelSpec.cpp
 Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/WorldGenSpec.cpp
@@ -60,6 +62,10 @@ Tests/SandModelSpec.cpp
 Tests/WildfireModelSpec.cpp
 Tests/CoconutPalmModelSpec.cpp
 Tests/TramwayModelSpec.cpp
+Tests/ReputationModelSpec.cpp
+Tests/BarterModelSpec.cpp
+Tests/PirateThreatModelSpec.cpp
+Tests/RaiderCampsModelSpec.cpp
 Tests/MiningModelSpec.cpp
 Tests/MineHazardModelSpec.cpp
 Tests/ShovelPathModelSpec.cpp
@@ -71,3 +77,6 @@ Tests/SeafloorModelSpec.cpp
 Tests/KarstTowerModelSpec.cpp
 Tests/IslandReliefModelSpec.cpp
 Tests/TerrainRealismSpec.cpp
+Tests/PlayabilityMetricsModelSpec.cpp
+Tests/IslandShelfModelSpec.cpp
+Tests/CoastalCliffModelSpec.cpp

@@ -12,8 +12,8 @@ import pytest
 from texgen.materials import generate
 from texgen.palette import (
     ACCENT_SWATCHES,
-    ALBEDO_MIN,
     ALBEDO_MAX,
+    ALBEDO_MIN,
     ATLAS,
     CHROMA_CAP,
     ENTORNO_ROW,
@@ -146,7 +146,10 @@ def _bilinear(img, x, y):
     h, w = img.shape[:2]
     x0, y0 = int(np.floor(x - 0.5)), int(np.floor(y - 0.5))
     tx, ty = x - 0.5 - x0, y - 0.5 - y0
-    p = lambda yy, xx: img[yy % h, xx % w]  # noqa: E731 (wrap como el sampler)
+
+    def p(yy, xx):  # envuelve como el sampler
+        return img[yy % h, xx % w]
+
     return ((p(y0, x0) * (1 - tx) + p(y0, x0 + 1) * tx) * (1 - ty)
             + (p(y0 + 1, x0) * (1 - tx) + p(y0 + 1, x0 + 1) * tx) * ty)
 

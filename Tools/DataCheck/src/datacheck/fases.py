@@ -14,16 +14,27 @@ trueque con el pueblo del arrecife (§3.9, §5). Comprueba:
 from __future__ import annotations
 
 import json
+import re
+from typing import Any, Iterator, TypeGuard
 
 from . import mining
 
 FILE = "fases_futuras.json"
+REPUTATION_CPP = "Source/Explored/Villages/ReputationModel.cpp"
+REPUTATION_H = "Source/Explored/Villages/ReputationModel.h"
+BARTER_CPP = "Source/Explored/Villages/BarterModel.cpp"
+BARTER_H = "Source/Explored/Villages/BarterModel.h"
 DRAFT_PHASES = (2, 3)
 DRAFT_SOCKETS = {"via"}
 MONEY_KEYS = {"price", "precio", "moneda", "currency", "coins", "monedas", "cost_coins", "gold", "oro"}
 
 
-def _walk_keys(node):
+def _num(value: Any) -> TypeGuard[float]:
+    """Número JSON (no booleano): lo único que se puede comparar con < sin romper."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _walk_keys(node: Any) -> Iterator[str]:
     if isinstance(node, dict):
         for k, v in node.items():
             yield k
@@ -69,7 +80,9 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         for group in ("pieces", "traps", "species"):
             for e in sec.get(group, []):
                 eid = e.get("id")
-                if e.get("fase") not in DRAFT_PHASES or e.get("fase") < sec.get("fase", 0):
+                sec_phase = sec.get("fase", 0)
+                floor = sec_phase if _num(sec_phase) else 0
+                if e.get("fase") not in DRAFT_PHASES or e["fase"] < floor:
                     r.error(f"{FILE}/{name} «{eid}»: fase {e.get('fase')!r} no es 2/3 o es anterior a su sección")
                 if eid in draft_ids:
                     r.error(f"{FILE}/{name}: id repetido «{eid}»")
@@ -103,7 +116,8 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
         prod = s.get("product")
         if prod and prod.get("item") not in known:
             r.error(f"{FILE}/livestock «{s.get('id')}»: producto «{prod.get('item')}» no existe")
-    if not 0 < live.get("breeding", {}).get("dailyChance", 0) < 1:
+    chance = live.get("breeding", {}).get("dailyChance", 0)
+    if not (_num(chance) and 0 < chance < 1):
         r.error(f"{FILE}/livestock: breeding.dailyChance fuera de (0, 1)")
 
     trade = sections.get("trade", {})
@@ -111,22 +125,27 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
     tier_ids = [t.get("id") for t in tiers]
     expect_min, last_rate = 0, -1.0
     for t in tiers:
-        if t.get("min") != expect_min or t.get("max", -1) < t.get("min", 0):
-            r.error(f"{FILE}/trade: tramo «{t.get('id')}» [{t.get('min')}, {t.get('max')}] no continúa en {expect_min}")
-        expect_min = t.get("max", 0) + 1
-        if t.get("rate", -1) < last_rate:
+        lo, hi, rate = t.get("min"), t.get("max"), t.get("rate", -1)
+        if lo != expect_min or not _num(hi) or hi < lo:
+            r.error(f"{FILE}/trade: tramo «{t.get('id')}» [{lo}, {hi}] no continúa en {expect_min}")
+        # Un máximo que no es número rompe la cadena: el tramo siguiente y el final se informan también.
+        expect_min = hi + 1 if _num(hi) else -1
+        if not _num(rate) or rate < last_rate:
             r.error(f"{FILE}/trade: la tasa del tramo «{t.get('id')}» baja respecto al anterior")
-        last_rate = t.get("rate", -1)
+        else:
+            last_rate = rate
     if tiers and expect_min != 101:
         r.error(f"{FILE}/trade: los tramos de reputación deben acabar en 100")
     islands = mining.cpp_islands(ds)
     for s in trade.get("settlements", []):
         if islands and s.get("island") not in islands:
             r.error(f"{FILE}/trade: asentamiento en «{s.get('island')}», que no es un EIslandArchetype")
-        if not 0 <= s.get("initialReputation", -1) <= 100:
+        rep = s.get("initialReputation", -1)
+        if not (_num(rep) and 0 <= rep <= 100):
             r.error(f"{FILE}/trade: reputación inicial fuera de 0-100")
     for w in trade.get("wants", []):
-        if not 1 <= w.get("value", 0) <= 5:
+        value = w.get("value", 0)
+        if not (_num(value) and 1 <= value <= 5):
             r.error(f"{FILE}/trade/wants «{w.get('id')}»: valor fuera de 1-5 (biblia 05 §1.4)")
         for tag in w.get("tags", []):
             if tag not in tags:
@@ -135,7 +154,8 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
             if it not in known:
                 r.error(f"{FILE}/trade/wants «{w.get('id')}»: objeto «{it}» no existe")
     for o in trade.get("offers", []) + trade.get("favors", []):
-        if not 1 <= o.get("value", 1) <= 5:
+        value = o.get("value", 1)
+        if not (_num(value) and 1 <= value <= 5):
             r.error(f"{FILE}/trade/offers: valor {o.get('value')!r} fuera de 1-5")
         if o.get("minTier") not in tier_ids:
             r.error(f"{FILE}/trade: tramo «{o.get('minTier')}» no existe")
@@ -143,6 +163,7 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
             r.error(f"{FILE}/trade/offers: objeto «{o['item']}» no existe")
         if "livestock" in o and o["livestock"] not in live_species:
             r.error(f"{FILE}/trade/offers: animal «{o['livestock']}» no está en livestock")
+    check_trade_matches_cpp(ds, r, trade)
     artifacts = {a.get("id") for a in ds.data.get("artifacts.json", {}).get("artifacts", [])}
     for w in trade.get("wants", []):
         for it in w.get("items", []):
@@ -160,9 +181,96 @@ def check_future_phases(ds, r, building_sockets: set[str]) -> None:
                 r.error(f"{name}: usa «{did}», que solo existe en el borrador de fase 2/3 ({FILE})")
 
 
-def _phase1_view(name: str, content):
+def _cpp_function(text: str, signature: str) -> str:
+    """Cuerpo de una función de un .cpp (hasta la primera llave de cierre en la columna 0)."""
+    start = text.find(signature)
+    if start < 0:
+        return ""
+    end = text.find("\n}\n", start)
+    return text[start : end if end >= 0 else len(text)]
+
+
+def _cpp_enum_ids(text: str, enum: str) -> dict[str, str]:
+    """Enumerador → id de LexToString (``case EFoo::Bar: return TEXT("bar");``)."""
+    return dict(re.findall(rf'case {enum}::(\w+): return TEXT\("([^"]+)"\);', text))
+
+
+def _cpp_switch_ints(body: str, enum: str) -> dict[str, int]:
+    return {k: int(v) for k, v in re.findall(rf"case {enum}::(\w+): return (-?\d+);", body)}
+
+
+def _cpp_constexpr(text: str, name: str) -> float | None:
+    m = re.search(rf"static constexpr (?:int32|float) {name} = (-?[\d.]+)f?;", text)
+    return float(m.group(1)) if m else None
+
+
+def check_trade_matches_cpp(ds, r, trade: dict) -> None:
+    """El modelo puro del trueque (``Source/Explored/Villages``) y el borrador dicen lo mismo.
+
+    Tramos, tasas, cambios de reputación, valores por categoría, ventana horaria, enfriamiento
+    y reputación inicial: si alguien retoca uno de los dos lados, DataCheck lo caza. Sin los
+    ficheros de C++ (copia parcial del repo) no comprueba nada.
+    """
+    rep_cpp, rep_h = mining._read(ds, REPUTATION_CPP), mining._read(ds, REPUTATION_H)
+    bar_cpp, bar_h = mining._read(ds, BARTER_CPP), mining._read(ds, BARTER_H)
+    if not (rep_cpp and rep_h and bar_cpp and bar_h):
+        return
+    where = f"{FILE}/trade frente a Villages/"
+
+    tier_ids = _cpp_enum_ids(rep_cpp, "EReputationTier")
+    mins = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::TierMin("), "EReputationTier")
+    quarters = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::TradeRateQuarters("), "EReputationTier")
+    json_tiers = {t.get("id"): t for t in trade.get("tiers", [])}
+    if set(tier_ids.values()) != set(json_tiers):
+        r.error(f"{where}ReputationModel: tramos {sorted(tier_ids.values())} en C++ y {sorted(json_tiers)} en el borrador")
+    for enum, tid in tier_ids.items():
+        t = json_tiers.get(tid)
+        if t is None:
+            continue
+        if mins.get(enum) != t.get("min"):
+            r.error(f"{where}ReputationModel: el tramo «{tid}» empieza en {mins.get(enum)} en C++ y en {t.get('min')} en el borrador")
+        if quarters.get(enum, 0) * 0.25 != t.get("rate"):
+            r.error(f"{where}ReputationModel: tasa de «{tid}» ×{quarters.get(enum, 0) / 4} en C++ y ×{t.get('rate')} en el borrador")
+
+    action_ids = _cpp_enum_ids(rep_cpp, "EReputationAction")
+    deltas = _cpp_switch_ints(_cpp_function(rep_cpp, "int32 FReputationModel::ActionDelta("), "EReputationAction")
+    json_actions = {a.get("id"): a.get("delta") for a in trade.get("reputationActions", [])}
+    for enum, aid in action_ids.items():
+        if json_actions.get(aid) != deltas.get(enum):
+            r.error(f"{where}ReputationModel: la acción «{aid}» da {deltas.get(enum)} en C++ y {json_actions.get(aid)} en el borrador")
+    for aid in sorted(set(json_actions) - set(action_ids.values())):
+        r.error(f"{where}ReputationModel: la acción «{aid}» del borrador no existe en EReputationAction")
+
+    category_ids = _cpp_enum_ids(bar_cpp, "EBarterCategory")
+    values = _cpp_switch_ints(_cpp_function(bar_cpp, "int32 FBarterModel::CategoryValue("), "EBarterCategory")
+    json_wants = {w.get("id"): w.get("value") for w in trade.get("wants", [])}
+    for enum, cid in category_ids.items():
+        if enum == "None":
+            continue
+        if json_wants.get(cid) != values.get(enum):
+            r.error(f"{where}BarterModel: «{cid}» vale {values.get(enum)} en C++ y {json_wants.get(cid)} en el borrador")
+
+    hours = [_cpp_constexpr(bar_h, "OpenHour"), _cpp_constexpr(bar_h, "CloseHour")]
+    if hours != [float(h) for h in trade.get("hours", [])]:
+        r.error(f"{where}BarterModel: ventana horaria {hours} en C++ y {trade.get('hours')} en el borrador")
+    cooldown = _cpp_constexpr(rep_h, "HostileCooldownDays")
+    if cooldown != trade.get("hostileCooldownDays"):
+        r.error(f"{where}ReputationModel: enfriamiento de {cooldown} días en C++ y {trade.get('hostileCooldownDays')} en el borrador")
+    initial = _cpp_constexpr(rep_h, "FirstContactReputation")
+    for st in trade.get("settlements", []):
+        if st.get("initialReputation") != initial:
+            r.error(f"{where}ReputationModel: reputación inicial {initial} en C++ y {st.get('initialReputation')} en «{st.get('island')}»")
+    settlement_ids = set(_cpp_enum_ids(rep_cpp, "ESettlement").values())
+    if settlement_ids != {st.get("island") for st in trade.get("settlements", [])}:
+        r.error(f"{where}ReputationModel: asentamientos {sorted(settlement_ids)} en C++ distintos de los del borrador")
+    if trade.get("passiveDecay") is not False:
+        r.error(f"{FILE}/trade: passiveDecay debe ser false (biblia 05 §1.5: la reputación no baja sola)")
+
+
+def _phase1_view(name: str, content: Any) -> Any:
     """Lo que de verdad es fase 1 en un fichero de datos.
 
+    ``achievements.json`` lleva los logros de F2/F3 marcados con ``phase`` (biblia 07 §2).
     ``fauna_terrestre.json`` lista también las especies de F2/F3 con su ``phase`` y el
     catálogo de packs guarda en ``discarded`` y ``pending`` los ids que aún no tienen malla
     (entre ellos los animales de granja de F2): ninguno de los dos los usa en el acceso
@@ -170,6 +278,12 @@ def _phase1_view(name: str, content):
     """
     if name == "fauna_terrestre.json" and isinstance(content, dict):
         return dict(content, species=[s for s in content.get("species", []) if s.get("phase") == "AA"])
+    if name == "achievements.json" and isinstance(content, dict):
+        # Los logros y estadísticas de F2/F3 nombran piezas y especies del borrador a propósito.
+        return dict(content,
+                    stats=[s for s in content.get("stats", []) if s.get("phase", "AA") == "AA"],
+                    achievements=[a for a in content.get("achievements", []) if a.get("phase", "AA") == "AA"])
     if name == "packs_catalogo.json" and isinstance(content, dict):
-        return {k: v for k, v in content.items() if k not in ("discarded", "pending")}
+        # iconsPending repite las pistas de icono de los logros (también los de F2/F3), no ids de objetos.
+        return {k: v for k, v in content.items() if k not in ("discarded", "pending", "iconsPending")}
     return content

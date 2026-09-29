@@ -38,7 +38,7 @@ def _ticks(rng: np.random.Generator, n: int, times_s: np.ndarray, amps: np.ndarr
     granos que rebotan. Cada impulso lleva su propia frecuencia de banda."""
     out = np.zeros(n)
     tick_n = int(0.004 * SR)
-    for t0, amp in zip(times_s, amps):
+    for t0, amp in zip(times_s, amps, strict=True):
         pos = int(t0 * SR)
         if pos + tick_n >= n:
             continue

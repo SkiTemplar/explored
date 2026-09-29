@@ -10,7 +10,6 @@ import numpy as np
 from ..constants import SAMPLE_RATE
 from ..envelopes import ar_envelope, fit_length, smooth_random_walk
 from ..filters import static_filter, time_varying_filter
-from ..granular import render_noise_grains
 from ..modal import modal_hit
 from ..noise import pink_noise
 from ..rng import rng_for
@@ -176,7 +175,7 @@ def map_unfold(name: str) -> np.ndarray:
     slide *= smooth_random_walk(n, rng, smoothing_hz=6.0, sr=SR, low=0.3, high=1.0) * slide_env
     density = 10.0 + 25.0 * slide_env
 
-    for i, st in enumerate(starts):
+    for st in starts:
         # Soplo por delante del pandeo: la hoja gira y luego salta.
         sw_n = int(rng.uniform(0.09, 0.16) * SR)
         _place(out, _sheet_swish(rng, sw_n, rng.uniform(260.0, 340.0), rng.uniform(900.0, 1200.0)) * rng.uniform(0.18, 0.26), max(int(st * SR) - sw_n // 2, 0))

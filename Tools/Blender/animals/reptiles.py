@@ -9,11 +9,8 @@ característica de un reptil reptando en vez de trotando. Locomoción:
 reptile (columna ondulante vía SpineYaw además del ciclo de las 4 patas).
 """
 
-import math
 import os
 import sys
-
-import bpy
 
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))

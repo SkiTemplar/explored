@@ -254,7 +254,7 @@ private:
 	void ComputeAir() const;
 	void Step(const FMineWaterEnvironment& Env, FMineHazardResult& Result);
 	void Collapse(const TArray<int32>& Region, FMineHazardResult& Result);
-	void MarkDirty() { bDirty = true; }
+	void MarkDirty() { bDirty = true; bBeamsDirty = true; }
 
 	FMineGridSettings Settings;
 	int32 NumCells = 0;
@@ -264,6 +264,10 @@ private:
 	/** Tiempo de exposición de cada celda de techo sin apoyo. */
 	TMap<int32, int32> Exposure;
 	int32 AccumulatedMs = 0;
+	/** La rejilla ha cambiado desde la última revisión de vigas de `Step`. Va
+	 *  aparte de `bDirty` porque las consultas `const` limpian `bDirty` y la
+	 *  revisión no puede depender de si alguien ha preguntado antes. */
+	bool bBeamsDirty = true;
 
 	// Caché derivada de la rejilla (se rehace al cambiar una celda o una viga).
 	mutable bool bDirty = true;

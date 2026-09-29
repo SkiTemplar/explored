@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any, TypeGuard
 
 from . import mining
 
@@ -45,6 +46,16 @@ PICKUP_BLOCKS = ("nest", "groundPickup", "deposit")
 # las especies que comparten; su «phase» usa AA/F2/F3 y sus islas, EIslandArchetype.
 REGISTRY = "fauna_terrestre.json"
 REGISTRY_PHASES = {"AA": 1, "F2": 2, "F3": 3}
+
+
+def _num(value: Any) -> TypeGuard[float]:
+    """Número JSON (no booleano): lo único que se puede comparar con < sin romper."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _ordered(lo: Any, hi: Any) -> bool:
+    """0 ≤ lo ≤ hi con los dos numéricos."""
+    return _num(lo) and _num(hi) and 0 <= lo <= hi
 
 
 def cpp_species(ds) -> set[str]:
@@ -121,18 +132,20 @@ def check_fauna(ds, r, properties: set[str]) -> None:
         for key in ("sightConeDeg", "sightM", "hearingM", "smellM"):
             if not isinstance(per.get(key), (int, float)) or per[key] < 0:
                 r.error(f"{where}: perception.{key} inválido")
-        if not 0 < per.get("sightConeDeg", 0) <= 360:
+        cone = per.get("sightConeDeg", 0)
+        if not (_num(cone) and 0 < cone <= 360):
             r.error(f"{where}: sightConeDeg fuera de (0, 360]")
         if not _hours_ok(s.get("routine", [])):
             r.error(f"{where}: la rutina debe cubrir las 24 h exactamente una vez")
         flee = s.get("flee", {})
         hf = flee.get("healthFraction")
-        if hf is not None and not 0 < hf <= 1:
+        if hf is not None and not (_num(hf) and 0 < hf <= 1):
             r.error(f"{where}: flee.healthFraction={hf!r} fuera de (0, 1]")
         attack = s.get("attack")
         if attack is not None:
             eq = attack.get("equiv", {})
-            if eq.get("property") not in properties or not 0 < eq.get("value", 0) <= 5:
+            eq_value = eq.get("value", 0)
+            if eq.get("property") not in properties or not (_num(eq_value) and 0 < eq_value <= 5):
                 r.error(f"{where}: attack.equiv {eq!r} no es una propiedad 1-5 (biblia 05 §3.0)")
             if not isinstance(attack.get("damage"), (int, float)) or attack["damage"] <= 0:
                 r.error(f"{where}: attack.damage debe ser > 0")
@@ -143,7 +156,7 @@ def check_fauna(ds, r, properties: set[str]) -> None:
                 r.error(f"{where}: botín «{entry.get('item')}» no está en items.json")
             if entry.get("tool") is not None and entry["tool"] not in items:
                 r.error(f"{where}: herramienta de despiece «{entry['tool']}» no está en items.json")
-            if not 0 <= entry.get("min", -1) <= entry.get("max", -1):
+            if not _ordered(entry.get("min"), entry.get("max")):
                 r.error(f"{where}: botín «{entry.get('item')}» con min/max incoherentes")
         for key in PICKUP_BLOCKS:
             block = s.get(key)
@@ -151,7 +164,8 @@ def check_fauna(ds, r, properties: set[str]) -> None:
                 continue
             if block.get("item") not in items:
                 r.error(f"{where}: {key} con objeto «{block.get('item')}» que no está en items.json")
-            if not 0 <= block.get("min", -1) <= block.get("max", -1) or block.get("everyDays", 0) <= 0:
+            every = block.get("everyDays", 0)
+            if not _ordered(block.get("min"), block.get("max")) or not (_num(every) and every > 0):
                 r.error(f"{where}: {key} con min/max/everyDays incoherentes")
             bad = set(block.get("seasons", [])) - SEASONS
             if bad:
@@ -284,7 +298,7 @@ def _check_population(isl: dict, species: dict[str, dict], r) -> None:
             r.error(f"{where}: cada entrada de population debe ser un objeto, no {entry!r}")
             continue
         sid = entry.get("species")
-        if sid not in isl.get("species", []):
+        if not isinstance(sid, str) or sid not in isl.get("species", []):
             r.error(f"{where}: población de «{sid}», que no está en species de la isla")
             continue
         if sid in seen:

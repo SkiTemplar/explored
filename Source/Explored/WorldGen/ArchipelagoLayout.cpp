@@ -1,6 +1,8 @@
 #include "WorldGen/ArchipelagoLayout.h"
 
+#include "Core/ExploredNoise.h"
 #include "Core/ExploredRandom.h"
+#include "WorldGen/IslandShapeModel.h"
 
 namespace
 {
@@ -78,6 +80,27 @@ namespace
 		}
 	}
 
+	/** Distancia (m) desde el centro hasta la costa más exterior de la isla en la dirección Dir. */
+	float OuterCoastDistance(const FIslandDesc& Island, const FVector2D& Dir)
+	{
+		const FExploredNoise N(Island.Seed);
+		auto CoastTAt = [&](float D)
+		{
+			const FVector2D P = Island.Center + Dir * D;
+			const FVector2D Q = FIslandShapeModel::WarpedLocal(Island, N, static_cast<float>(P.X), static_cast<float>(P.Y));
+			return FIslandShapeModel::CoastT(Island, N, Q);
+		};
+		const float Step = Island.Radius * 0.02f;
+		for (float D = Island.Radius * 2.5f; D > 0.0f; D -= Step)
+		{
+			if (CoastTAt(D) < 1.0f)
+			{
+				return D + Step * 0.5f;
+			}
+		}
+		return Island.Radius;
+	}
+
 	void GenerateCays(FIslandDesc& Island, const FArchetypeTemplate& T, const TArray<FIslandDesc>& All, FExploredRandom& Rng)
 	{
 		const int32 Count = Rng.RangeInt(T.MinCays, T.MaxCays);
@@ -85,10 +108,15 @@ namespace
 		for (int32 I = 0, Tries = 0; I < Count && Tries < 40; ++Tries)
 		{
 			const float Angle = Rng.RangeFloat(0.0f, UE_TWO_PI);
+			const float Offshore = Rng.RangeFloat(0.0f, 1.0f);
 			FCayDesc Cay;
-			Cay.Center = Island.Center + FVector2D(FMath::Cos(Angle), FMath::Sin(Angle)) * Island.Radius * Rng.RangeFloat(1.45f, 1.75f);
 			Cay.bRocky = bRockyIsland && Rng.Chance(0.7f);
 			Cay.Radius = Cay.bRocky ? Rng.RangeFloat(18.0f, 40.0f) : Rng.RangeFloat(22.0f, 60.0f);
+			// Sobre la plataforma, a poca distancia de la costa real (no de la nominal): a 1,45-1,75
+			// radios del centro quedaban al borde del alcance de la isla, sueltos en aguas hondas.
+			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+			const float Coast = OuterCoastDistance(Island, Dir);
+			Cay.Center = Island.Center + Dir * (Coast + Cay.Radius * 1.8f + Offshore * Island.Radius * 0.12f);
 			Cay.Height = Cay.bRocky ? Rng.RangeFloat(7.0f, 18.0f) : Rng.RangeFloat(1.4f, 3.2f);
 			Cay.Aspect = Rng.RangeFloat(0.4f, 0.9f);
 			Cay.Angle = Rng.RangeFloat(0.0f, UE_PI);

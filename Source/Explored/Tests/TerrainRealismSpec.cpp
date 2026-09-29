@@ -5,6 +5,7 @@
 #include "WorldGen/SurfaceNets.h"
 #include "WorldGen/TerrainChunkBuilder.h"
 #include "WorldGen/TerrainDensity.h"
+#include "WorldGen/TerrainPlayabilitySurvey.h"
 #include "WorldGen/TerrainSurvey.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -29,6 +30,13 @@ namespace TerrainRealismTest
 	const FFixture& Fixture()
 	{
 		static const FFixture Instance;
+		return Instance;
+	}
+
+	/** Jugabilidad del archipiélago oficial (llanos cada 4 m, 360 rayos de costa por isla). */
+	const FPlayabilityReport& Playability()
+	{
+		static const FPlayabilityReport Instance = FTerrainPlayabilitySurvey::Measure(Fixture().Density, 4.0f);
 		return Instance;
 	}
 
@@ -97,7 +105,7 @@ void FTerrainRealismSpec::Define()
 		{
 			// Antes: 117 bultos sin isla (129 con el fondo a -30 m), alguno emergía hasta 16,5 m.
 			const FTerrainRealismReport& R = Fixture().Report;
-			TestTrue(*FString::Printf(TEXT("bultos sin explicar: %d"), R.UnexplainedBumps), R.UnexplainedBumps <= 8);
+			TestTrue(*FString::Printf(TEXT("bultos sin explicar: %d"), R.UnexplainedBumps), R.UnexplainedBumps <= 6);
 			TestTrue(*FString::Printf(TEXT("el más alto a %.2f m"), R.HighestUnexplainedBump), R.HighestUnexplainedBump < -2.3f);
 		});
 
@@ -153,7 +161,11 @@ void FTerrainRealismSpec::Define()
 		{
 			// Se mide en la rejilla de erosión (celdas rebajadas): en el mundo muestreado, el pie
 			// de las paredes kársticas también cuenta como "cauce" y su orientación es la de las
-			// torres, no la de la rejilla.
+			// torres, no la de la rejilla. El sesgo de rejilla se ve como exceso (> 1,3 en un eje o
+			// en las diagonales; unos surcos alineados dan > 3). En el cono de Smoke los barrancos
+			// son pocos y radiales y dejan ambos por debajo de 1: ejes 0,92-0,95 y diagonales
+			// 0,85-0,88 según el compilador (g++, clang, -ffast-math), porque la erosión por gotas
+			// es caótica ante el redondeo. Suelos 0,85 y 0,8: el doble de esa dispersión por debajo.
 			const FFixture& F = Fixture();
 			for (int32 I = 0; I < F.Density.GetLayout().Islands.Num(); ++I)
 			{
@@ -164,8 +176,9 @@ void FTerrainRealismSpec::Define()
 				}
 				const FOrientationStats& C = Relief->GetChannelOrientation();
 				const TCHAR* Name = LexToString(F.Density.GetLayout().Islands[I].Archetype);
-				TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.75f && C.AxisExcess < 1.3f);
-				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.75f && C.DiagonalExcess < 1.35f);
+				AddInfo(FString::Printf(TEXT("%s: ejes %.2f diagonales %.2f (%d)"), Name, C.AxisExcess, C.DiagonalExcess, C.SampleCount));
+				TestTrue(*FString::Printf(TEXT("%s: ejes %.2f"), Name, C.AxisExcess), C.AxisExcess > 0.85f && C.AxisExcess < 1.3f);
+				TestTrue(*FString::Printf(TEXT("%s: diagonales %.2f"), Name, C.DiagonalExcess), C.DiagonalExcess > 0.8f && C.DiagonalExcess < 1.3f);
 			}
 		});
 
@@ -179,6 +192,124 @@ void FTerrainRealismSpec::Define()
 			}
 			TestNull(TEXT("atolón"), Density.GetRelief(FindIsland(Density, EIslandArchetype::WhiteSands)));
 			TestNull(TEXT("islotes"), Density.GetRelief(FindIsland(Density, EIslandArchetype::Teeth)));
+		});
+	});
+
+	Describe("Jugabilidad", [this]()
+	{
+		It("deja llanos para construir sin aplanar las islas montañosas", [this]()
+		{
+			// Antes: Smoke 10,2 % llano; el resto ya pasaba (Landing 89 %, Emerald 43 %, Mesa 60 %).
+			const FTerrainDensity& Density = Fixture().Density;
+			const FPlayabilityReport& P = Playability();
+			struct FGoal { EIslandArchetype Archetype; float MinFlat; float MaxFlat; float PatchArea; int32 MinPatches; };
+			const FGoal Goals[] = {
+				{EIslandArchetype::Landing, 0.40f, 1.0f, 2000.0f, 2},
+				{EIslandArchetype::Emerald, 0.15f, 0.65f, 400.0f, 3},
+				{EIslandArchetype::Smoke, 0.15f, 0.45f, 400.0f, 3},
+				{EIslandArchetype::Mesa, 0.20f, 1.0f, 2000.0f, 2},
+			};
+			for (const FGoal& Goal : Goals)
+			{
+				const FFlatPatchStats& Flat = P.Islands[FindIsland(Density, Goal.Archetype)].Flat;
+				const TCHAR* Name = LexToString(Goal.Archetype);
+				AddInfo(FString::Printf(TEXT("%s: %.1f %% llano, %d parches de %.0f m²"), Name, Flat.FlatFraction * 100.0f,
+					Flat.CountAtLeast(Goal.PatchArea), Goal.PatchArea));
+				TestTrue(*FString::Printf(TEXT("%s: %.1f %% llano"), Name, Flat.FlatFraction * 100.0f),
+					Flat.FlatFraction >= Goal.MinFlat && Flat.FlatFraction <= Goal.MaxFlat);
+				TestTrue(*FString::Printf(TEXT("%s: %d parches de %.0f m²"), Name, Flat.CountAtLeast(Goal.PatchArea), Goal.PatchArea),
+					Flat.CountAtLeast(Goal.PatchArea) >= Goal.MinPatches);
+			}
+		});
+
+		It("deja en El Nido una laguna interior somera de fondo llano, navegable y vadeable", [this]()
+		{
+			// La llanura costera ya la cubre el caso anterior; aquí, el fondo de la laguna entre torres.
+			const FLagoonStats& L = Playability().Islands[FindIsland(Fixture().Density, EIslandArchetype::Mesa)].Lagoon;
+			TestTrue(*FString::Printf(TEXT("laguna de %.0f m²"), L.Area), L.Area >= 8000.0f);
+			TestTrue(*FString::Printf(TEXT("profundidad mediana %.1f m"), L.MedianDepth), L.MedianDepth >= 1.0f && L.MedianDepth <= 5.0f);
+			TestTrue(*FString::Printf(TEXT("fondo llano %.1f %%"), L.Floor.FlatFraction * 100.0f), L.Floor.FlatFraction >= 0.6f);
+			TestTrue(*FString::Printf(TEXT("parches de 2.000 m²: %d"), L.Floor.CountAtLeast(2000.0f)), L.Floor.CountAtLeast(2000.0f) >= 1);
+		});
+
+		It("tiene acantilados marinos en Smoke, Emerald y algo de Landing, lejos de la bahía y del spawn", [this]()
+		{
+			// Antes: Smoke 8 %, Emerald 0,3 %, Landing 0 % de la costa con pared de más de 60°.
+			const FTerrainDensity& Density = Fixture().Density;
+			const FPlayabilityReport& P = Playability();
+			for (EIslandArchetype A : {EIslandArchetype::Smoke, EIslandArchetype::Emerald})
+			{
+				const FCoastStats& C = P.Islands[FindIsland(Density, A)].Coast;
+				AddInfo(FString::Printf(TEXT("%s: %.1f %% acantilado, altura mediana %.0f m"), LexToString(A), C.CliffFraction * 100.0f,
+					C.CliffMedianHeight));
+				TestTrue(*FString::Printf(TEXT("%s: %.1f %% acantilado"), LexToString(A), C.CliffFraction * 100.0f),
+					C.CliffFraction >= 0.15f && C.CliffFraction <= 0.35f);
+				TestTrue(*FString::Printf(TEXT("%s: altura mediana %.0f m"), LexToString(A), C.CliffMedianHeight),
+					C.CliffMedianHeight >= 10.0f && C.CliffMedianHeight <= 60.0f);
+			}
+			const int32 LandingIdx = FindIsland(Density, EIslandArchetype::Landing);
+			const FCoastStats& L = P.Islands[LandingIdx].Coast;
+			TestTrue(*FString::Printf(TEXT("Landing: %.1f %% acantilado"), L.CliffFraction * 100.0f), L.CliffFraction >= 0.04f && L.CliffFraction <= 0.35f);
+			// La bahía del amaraje está en +X local y el spawn en la playa de -X local.
+			const float Rotation = Density.GetLayout().Islands[LandingIdx].Rotation;
+			for (float Angle : L.CliffAngles)
+			{
+				const float Local = FMath::Abs(FMath::FindDeltaAngleRadians(Rotation, Angle));
+				TestTrue(*FString::Printf(TEXT("acantilado a %.0f° del eje de la bahía"), FMath::RadiansToDegrees(Local)),
+					Local > FMath::DegreesToRadians(50.0f) && Local < FMath::DegreesToRadians(130.0f));
+			}
+		});
+
+		It("varía la plataforma a lo largo del perímetro, sin anillo de cota constante ni borde en sierra", [this]()
+		{
+			// Antes: plataforma cv 0,16-0,30 y dentado del borde 0,022-0,066 (segunda diferencia por
+			// grado entre la anchura media).
+			const FTerrainDensity& Density = Fixture().Density;
+			const FPlayabilityReport& P = Playability();
+			for (int32 I = 0; I < P.Islands.Num(); ++I)
+			{
+				const FCoastStats& C = P.Islands[I].Coast;
+				const TCHAR* Name = LexToString(Density.GetLayout().Islands[I].Archetype);
+				if (C.ShelfWidths.Num() < 90)
+				{
+					continue; // rodeada de otras islas: pocos rayos llegan al talud
+				}
+				TestTrue(*FString::Printf(TEXT("%s: plataforma cv %.2f"), Name, C.ShelfWidthCV), C.ShelfWidthCV >= 0.33f);
+				TestTrue(*FString::Printf(TEXT("%s: talud cv %.2f"), Name, C.SlopeWidthCV), C.SlopeWidthCV >= 0.35f);
+				TestTrue(*FString::Printf(TEXT("%s: dentado %.3f"), Name, C.ShelfJaggedness), C.ShelfJaggedness <= 0.045f);
+			}
+		});
+
+		It("agrupa las pocas motas del mar en cadenas en vez de repartirlas en malla", [this]()
+		{
+			// Antes: 19 motas (7 montículos y 12 cayos sueltos), Clark-Evans 1,13 (tirando a regular).
+			const FPlayabilityReport& P = Playability();
+			TestTrue(*FString::Printf(TEXT("motas: %d"), P.SeaMotes.Num()), P.SeaMotes.Num() >= 3 && P.SeaMotes.Num() <= 8);
+			TestTrue(*FString::Printf(TEXT("Clark-Evans %.2f"), P.SeaMoteClarkEvans), P.SeaMoteClarkEvans < 0.8f);
+		});
+
+		It("drena el manglar en red dendrítica hacia un lado, no en estrella desde el centro", [this]()
+		{
+			// Antes: resultante 0,17 (desembocaduras en todas direcciones), radial 0,64, sinuosidad 1,28.
+			const FDrainagePattern& D = Playability().Islands[FindIsland(Fixture().Density, EIslandArchetype::Mangrove)].Drainage;
+			AddInfo(FString::Printf(TEXT("manglar: %d desembocaduras, resultante %.2f, radialidad %.2f, sinuosidad %.2f"), D.Mouths,
+				D.MouthResultant, D.Radiality, D.Sinuosity));
+			TestTrue(*FString::Printf(TEXT("desembocaduras: %d"), D.Mouths), D.Mouths >= 1);
+			TestTrue(*FString::Printf(TEXT("resultante %.2f"), D.MouthResultant), D.MouthResultant >= 0.4f);
+			TestTrue(*FString::Printf(TEXT("radialidad %.2f"), D.Radiality), D.Radiality <= 0.5f);
+			TestTrue(*FString::Printf(TEXT("sinuosidad %.2f"), D.Sinuosity), D.Sinuosity >= 1.35f);
+		});
+
+		It("no deja alturas no finitas en el mundo", [this]()
+		{
+			for (float H : Fixture().Grid.Heights)
+			{
+				if (!FMath::IsFinite(H))
+				{
+					AddError(TEXT("altura no finita"));
+					return;
+				}
+			}
 		});
 	});
 

@@ -134,8 +134,8 @@ precio en una moneda inexistente.
 
 | Objeto que el pueblo ofrece | Valor de trueque | Requisito de reputación |
 |---|---|---|
-| Semillas y esquejes de una variedad exclusiva («batata violeta», no disponible en ninguna isla) | 2 | Neutral (40+) |
-| Cerámica decorada, tinte, sal refinada | 2 | Neutral (40+) |
+| Semillas y esquejes de una variedad exclusiva («batata violeta», no disponible en ninguna isla) | 2 | Cauta (20+) |
+| Cerámica decorada, tinte, sal refinada | 2 | Cauta (20+) |
 | Cabos, vela de lona reforzada, tablas de mareas detalladas (ayuda de cartografía) | 3 | Neutral (40+) |
 | Perlas, nácar trabajado | 3 | Buena (70+) |
 | Enseñanza de una técnica de wayfinding aún no aprendida | — (no se trueca, se enseña) | Buena (70+) |
@@ -150,6 +150,21 @@ precio en una moneda inexistente.
 - **Ventana horaria:** el trueque solo está disponible de **8:00 a 18:00** hora de
   juego; fuera de esa franja los trocadores están en su rutina (pesca, tejido) o en la
   ofrenda del atardecer y no atienden — coherente con «pueblo con horario» (GDD §2.3).
+  A las 18:00 en punto ya no atienden.
+- `[Decisión]` **Qué se trueca con Cauta.** La tabla de tramos dice que con Cauta hay
+  trueque «solo de objetos básicos», pero todas las ofertas del pueblo pedían Neutral:
+  con Cauta el trueque estaba abierto y no había nada que recibir. Se resuelve así: con
+  Cauta el pueblo **acepta** solo comida, fibra y cerámica (valor 1–2) y **ofrece** solo
+  sus bienes básicos de valor 2 (batata violeta, cerámica decorada, sal refinada), que
+  bajan a «Cauta (20+)» en la tabla de arriba y en `fases_futuras.json`. Así el trueque
+  sigue siendo la vía para salir de Cauta, que es para lo que sirve el +3 diario.
+- `[Decisión]` **Cuenta exacta.** El valor ofrecido (suma de valor × cantidad) se
+  multiplica por la tasa y tiene que cubrir valor × cantidad de lo pedido; lo que sobra no
+  se devuelve (no hay cambio sin moneda). Las tasas se calculan en cuartos (0,75 = 3/4)
+  con enteros, para que servidor y clientes den el mismo resultado.
+- `[Decisión]` **El trueque «gratis» del tablón** (§1.6) es un objeto de la oferta del
+  pueblo, una unidad, sin entregar nada; no da reputación ni gasta el trueque que sí la
+  da ese día. Caduca al acabar el día.
 
 ### 1.5 Reputación
 
@@ -194,6 +209,15 @@ comparten valor, aunque compartan el mismo pueblo — respetar a uno no compra a
   aislado se perdone al día siguiente.
 - **Sin decaimiento pasivo:** la reputación no baja sola con el tiempo; solo cambia por
   acción directa del jugador.
+- `[Decisión]` **Detalles del enfriamiento y de las acciones** (fijados al escribir
+  `Villages/ReputationModel`): el plazo empieza con cualquier acción que baje y deje la
+  reputación por debajo de 20, también si ya estaba en 0 (pegar a un aldeano con la
+  reputación en el suelo no sale gratis); una ofensa nueva durante el plazo lo alarga a
+  15 días desde ese día y nunca lo acorta. Una acción sobre un pueblo sin visitar hace
+  antes el primer contacto (quien caza junto a la aldea ya está allí). Devolver un objeto
+  ritual cuenta **una vez por objeto en toda la partida**, se devuelva donde se devuelva,
+  vale a cualquier hora y también durante el enfriamiento (no es trueque), y solo sirve
+  con objetos de marae o de cueva ritual: lo del pecio no es suyo.
 
 ### 1.6 Enseñanzas y encargos
 
@@ -280,6 +304,22 @@ reputación de la aldea más cercana es Hostil). Si ninguna de las dos se cumple
 asalto de ese ciclo se cancela sin gastar el contador de días — se reintenta en el
 siguiente.
 
+`[Decisión]` Cómo lo lee el programador (`Raiders/PirateThreatModel`, una evaluación por
+día de juego en el servidor):
+
+- «Se reintenta en el siguiente» es **el día siguiente**: el asalto se aplaza un día sin
+  volver a tirar el intervalo, y el humo sigue en el horizonte mientras tanto.
+- El intervalo se tira al programar el asalto, con la categoría de ese momento. Si la
+  Amenaza baja de 25 o desaparece la base marcada, el asalto programado se borra.
+- La categoría del grupo se calcula el día del asalto. El +1 de aldea Hostil y el de
+  jugadores (biblia 08 §5.6) **nunca crean un asalto** donde la Amenaza no lo pide: solo
+  suben uno que ya existe, con tope en 3.
+- El escalado por jugadores (`×(1 + 0,4·(N−1))`, redondeado) se aplica al grupo de la
+  categoría; los que se añaden son Saqueadores, Arqueros e Incendiarios por turnos, nunca
+  un segundo Capitán. «A veces 2 Saqueadores» en categoría 2 es un 50 % (propuesta).
+- Calendario y grupos salen de la semilla de la partida y del número de asalto: misma
+  partida, mismos asaltos, también tras guardar y cargar.
+
 ### 2.4 Qué quieren
 
 Orden de prioridad de saqueo dentro de la base: 1) metal trabajado y herramientas de
@@ -297,6 +337,12 @@ ya marcadas como peligrosas o poco exploradas en el GDD (§4):
 |---|---|---|
 | **Cala Rota** / **Broken Cove** | Los Dientes | Tienda de mando, hoguera, cofre de botín, 1 canoa de asalto varada |
 | **Fondeadero Podrido** / **Rotten Anchorage** | Manglar de las Voces | Tienda de mando, hoguera, cofre de botín, 1 balandra negra fondeada |
+
+`[Decisión]` Los Dientes no tienen playa: con la semilla oficial no hay ni una celda
+entre 0 y 3 m, se pasa del agua al acantilado. Cala Rota se planta en la **cornisa llana
+más baja** con agua a menos de 90 m, y su piragua queda a flote al pie de la cornisa en
+lugar de varada. El sitio exacto sale de la semilla del mundo y se separa al menos 60 m
+de los puntos de interés (`Raiders/RaiderCampsModel`).
 
 | Barco ES / EN | Tripulación | Uso |
 |---|---|---|
@@ -489,13 +535,13 @@ piratas); raya y medusa **ya están implementadas** con sus propias constantes e
 ### Navegantes (§1)
 
 - [ ] [F3] Nuevo módulo `Villages`: spawn de la aldea (Arenas Blancas, 10 NPC) y el puesto de trueque (La Meseta, 4 NPC) con los roles de §1.1.
-- [ ] [F3] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
+- [x] [F3] Sección `reputation` en `Save` (por asentamiento, 0–100, sin decaimiento pasivo).
 - [ ] [F3] Prop nuevo «tablón de peticiones» (malla + rotación de icono cada 4 días de juego) reutilizando `story_es.json.petroglyph_themes`.
-- [ ] [F3] Lógica de trueque: valor 1–5 por objeto (tabla §1.4) × tasa de reputación (§1.5), ventana horaria 8:00–18:00.
+- [x] [F3] Lógica de trueque: valor 1–5 por objeto (tabla §1.4) × tasa de reputación (§1.5), ventana horaria 8:00–18:00.
 - [ ] [F3] Enganchar «devolver objeto ritual» a `Ruins` (+5 reputación, sin trueque de por medio).
 - [ ] [F3] Wayfinding enseñado por el guardián del marae con reputación ≥70 (biblia §9.2), sin duplicar entre Arenas Blancas y La Meseta.
 - [ ] [F3] Aldeanos invulnerables al daño de arma (solo reacción de huida + penalización de reputación).
-- [ ] [F3] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
+- [x] [F3] Enfriamiento de 15 días de juego cuando la reputación cae por debajo de 20.
 - [ ] [F3] Añadir a `Content/Data/achievements.json`: «Primer trueque»/«First Trade», «Amigos del arrecife»/«Friends of the Reef».
 
 ### Piratas (§2)
@@ -503,9 +549,9 @@ piratas); raya y medusa **ya están implementadas** con sus propias constantes e
 - [ ] [F2] Piezas de muralla/torre/puerta nuevas en `Content/Data/building_pieces.json` (tabla §4.1), reutilizando el sistema de integridad ya existente en `Building`.
 - [ ] [F2] Trampas de defensa (estacas ocultas) como pieza colocable con verbo «Rearmar».
 - [ ] [F3] Nuevo módulo `Raiders`: percepción reutilizando `Fauna`, patrulla por semilla entre los dos campamentos, 4 tipos de pirata (§2.1) con sus daños y vidas.
-- [ ] [F3] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de §2.3.
-- [ ] [F3] Programador de asaltos: categoría según Amenaza, condición de recursos visibles/reputación Hostil, aviso previo (humo + tambor).
-- [ ] [F3] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes, Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
+- [x] [F3] Contador `Amenaza pirata` (0–100) en `Save`, con las reglas de subida/bajada de §2.3.
+- [x] [F3] Programador de asaltos: categoría según Amenaza, condición de recursos visibles/reputación Hostil, aviso previo (humo + tambor).
+- [x] [F3] Generar por semilla los dos campamentos fijos (Cala Rota en Los Dientes, Fondeadero Podrido en el Manglar) con cofre de botín y barco propio.
 - [ ] [F3] Dos plantillas de barco pirata (Piragua de asalto, Balandra negra) sobre el mismo `FBoatModel` que el resto de embarcaciones.
 - [ ] [F3] Botín: nueva skin «Machete pirata» (misma plantilla que el machete de Nivel 2) y accesorio cosmético único «Capa de vigía» al derrotar a un Capitán.
 - [ ] [F3] Daño a estructuras por tipo de atacante (tabla §4.3), incluida la propagación «ardiendo» sobre piezas inflamables y su apagado con agua/arena.

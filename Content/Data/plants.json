@@ -47,7 +47,7 @@
     {
       "id": "platanera",
       "nameEs": "Platanera",
-      "nameEn": "Banana plant",
+      "nameEn": "Banana tree",
       "plantedFrom": "hijuelo_platano",
       "requiresPiece": "bancal",
       "seasons": ["primeras_lluvias", "monzon"],
@@ -121,6 +121,38 @@
         { "id": "en_flor_y_fruto", "nameEs": "En flor y con fruto", "nameEn": "Flowering and fruiting", "days": 0, "mesh": null }
       ],
       "harvest": { "item": "maracuya", "min": 3, "max": 6, "everyDays": 3 }
+    },
+    {
+      "id": "aloe",
+      "nameEs": "Aloe",
+      "nameEn": "Aloe",
+      "plantedFrom": "planta_medicinal_aloe",
+      "requiresPiece": "bancal",
+      "seasons": ["seca", "primeras_lluvias", "ciclones"],
+      "waterPerDay": 0,
+      "stages": [
+        { "id": "hijuelo", "nameEs": "Hijuelo", "nameEn": "Offset", "days": 3, "mesh": null },
+        { "id": "roseta", "nameEs": "Roseta", "nameEn": "Rosette", "days": 5, "mesh": null },
+        { "id": "hojas_carnosas", "nameEs": "Hojas carnosas", "nameEn": "Fleshy leaves", "days": 0, "mesh": null }
+      ],
+      "harvest": { "item": "planta_medicinal_aloe", "min": 1, "max": 2, "everyDays": 4 },
+      "noteEs": "Propuesta (GDD v3 §8.7 «plantas medicinales»): se cortan hojas y la mata sigue. No pide riego ni se da en el monzón, que la pudre; fuera de estación no se pierde (rules.outOfSeasonGrowth)."
+    },
+    {
+      "id": "curcuma",
+      "nameEs": "Cúrcuma silvestre",
+      "nameEn": "Wild turmeric",
+      "plantedFrom": "rizoma_curcuma",
+      "requiresPiece": "bancal",
+      "seasons": ["primeras_lluvias", "monzon"],
+      "waterPerDay": 1,
+      "stages": [
+        { "id": "brote", "nameEs": "Brote", "nameEn": "Sprout", "days": 3, "mesh": null },
+        { "id": "hojas_anchas", "nameEs": "Hojas anchas", "nameEn": "Broad leaves", "days": 6, "mesh": null },
+        { "id": "listo", "nameEs": "Listo para arrancar", "nameEn": "Ready to pull up", "days": 0, "mesh": null }
+      ],
+      "harvest": { "item": "rizoma_curcuma", "min": 3, "max": 5, "everyDays": 0 },
+      "noteEs": "Propuesta (GDD v3 §8.7 «especias y plantas medicinales»; biblia de contenido §3.7 «pasta de cúrcuma silvestre»): se arranca entero y se replanta un rizoma. Machacada da pasta_medicinal hasta que exista la pasta de cúrcuma propia."
     }
   ],
   "compost": {

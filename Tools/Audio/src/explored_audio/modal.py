@@ -20,7 +20,7 @@ def modal_hit(
     n = max(int(duration_s * sr), 1)
     t = np.arange(n) / sr
     out = np.zeros(n)
-    for ratio, tau, amp in zip(mode_ratios, mode_dampings_s, mode_amps):
+    for ratio, tau, amp in zip(mode_ratios, mode_dampings_s, mode_amps, strict=True):
         freq = base_freq * ratio
         if detune and rng is not None:
             freq *= 1.0 + rng.uniform(-detune, detune)

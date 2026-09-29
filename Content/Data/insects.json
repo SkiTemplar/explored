@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "note": "Colección «Insectos» del museo de la base (biblia 07 §3.2-3.6). Cada pieza: nombre de vitrina (≤6 palabras) y ficha (≤2 frases, ≤160 caracteres ES / ≤200 EN) bilingües, islas donde aparece (minúsculas de EIslandArchetype), hábitat, cómo se consigue y fase. Lo valida Tools/DataCheck. Red (biblia 08 §2.11, §5.5): el museo es uno por mundo, estado del servidor replicado en el GameState; el texto es dato local.",
+  "collection": "insectos",
+  "display": "atril_cuaderno",
+  "pieces": [
+    {
+      "id": "mariposa_azul_manglar",
+      "nameEs": "Mariposa azul del manglar",
+      "nameEn": "Mangrove blue butterfly",
+      "islands": [
+        "mangrove"
+      ],
+      "habitat": "manglar",
+      "obtain": "observar_y_dibujar",
+      "phase": "F2",
+      "descriptionEs": "Mariposa azul del manglar. Vuela a ras del agua entre las raíces y solo enseña el azul cuando abre las alas.",
+      "descriptionEn": "Mangrove blue butterfly. Flies low over the water between the roots and only shows the blue when it opens its wings."
+    },
+    {
+      "id": "mariposa_cristal",
+      "nameEs": "Mariposa de cristal",
+      "nameEn": "Glasswing butterfly",
+      "islands": [
+        "emerald"
+      ],
+      "habitat": "suelo_de_selva",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Mariposa de cristal. Las alas son tan transparentes que a través de ellas se ve la hoja de detrás.",
+      "descriptionEn": "Glasswing butterfly. The wings are so clear you can see the leaf behind through them."
+    },
+    {
+      "id": "libelula_roja_cenote",
+      "nameEs": "Libélula roja del cenote",
+      "nameEn": "Cenote red dragonfly",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "cenote",
+      "obtain": "observar_y_dibujar",
+      "phase": "F2",
+      "descriptionEs": "Libélula roja del cenote. Patrulla siempre el mismo tramo de orilla y vuelve a posarse en el mismo junco.",
+      "descriptionEn": "Cenote red dragonfly. Patrols the same stretch of shore and always lands back on the same reed."
+    },
+    {
+      "id": "luciernaga_caverna",
+      "nameEs": "Luciérnaga de caverna",
+      "nameEn": "Cave firefly",
+      "islands": [
+        "emerald",
+        "smoke"
+      ],
+      "habitat": "caverna",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no llega otra luz.",
+      "descriptionEn": "Cave firefly. Flickers slowly in the deepest caves, where no other light reaches."
+    },
+    {
+      "id": "escarabajo_rinoceronte",
+      "nameEs": "Escarabajo rinoceronte",
+      "nameEn": "Rhinoceros beetle",
+      "islands": [
+        "landing",
+        "emerald"
+      ],
+      "habitat": "palmeral",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Escarabajo rinoceronte. El macho lleva un cuerno curvo, y al anochecer se le oye zumbar entre las palmas.",
+      "descriptionEn": "Rhinoceros beetle. The male carries a curved horn, and at dusk you hear it droning among the palms."
+    },
+    {
+      "id": "mantis_hoja_esmeralda",
+      "nameEs": "Mantis hoja de Esmeralda",
+      "nameEn": "Emerald leaf mantis",
+      "islands": [
+        "emerald"
+      ],
+      "habitat": "suelo_de_selva",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Mantis hoja de Esmeralda. Se queda quieta en una rama y pasa por una hoja más hasta que gira la cabeza.",
+      "descriptionEn": "Emerald leaf mantis. Sits still on a branch, passing for one more leaf until it turns its head."
+    },
+    {
+      "id": "polilla_luna_meseta",
+      "nameEs": "Polilla luna de la Meseta",
+      "nameEn": "Mesa moon moth",
+      "islands": [
+        "mesa"
+      ],
+      "habitat": "acantilado",
+      "obtain": "observar_y_dibujar",
+      "phase": "F2",
+      "descriptionEs": "Polilla luna de la Meseta. Verde pálido, con colas largas en las alas de atrás; acude a la luz del fuego.",
+      "descriptionEn": "Mesa moon moth. Pale green, with long tails on the hind wings; drawn to firelight."
+    },
+    {
+      "id": "abeja_islena",
+      "nameEs": "Abeja isleña",
+      "nameEn": "Island bee",
+      "islands": [
+        "emerald"
+      ],
+      "habitat": "suelo_de_selva",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Abeja isleña. Pequeña y oscura, anida en troncos huecos de Esmeralda, y la miel sale del mismo tronco.",
+      "descriptionEn": "Island bee. Small and dark, it nests in hollow trunks on Emerald, and the honey comes from the same trunk."
+    },
+    {
+      "id": "hormiga_cortadora",
+      "nameEs": "Hormiga cortadora",
+      "nameEn": "Leafcutter ant",
+      "islands": [
+        "landing",
+        "emerald"
+      ],
+      "habitat": "linde_de_selva",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Hormiga cortadora. Una fila de trozos de hoja cruza el sendero, y debajo de cada trozo va una hormiga.",
+      "descriptionEn": "Leafcutter ant. A line of leaf pieces crosses the path, and under each piece walks an ant."
+    },
+    {
+      "id": "saltamontes_hierba_seca",
+      "nameEs": "Saltamontes de hierba seca",
+      "nameEn": "Dry-grass grasshopper",
+      "islands": [
+        "landing",
+        "teeth"
+      ],
+      "habitat": "herbazal",
+      "obtain": "observar_y_dibujar",
+      "phase": "AA",
+      "descriptionEs": "Saltamontes de hierba seca. Tiene el color de la hierba en la estación seca y solo se le ve cuando salta.",
+      "descriptionEn": "Dry-grass grasshopper. The colour of the grass in the dry season; you only see it when it jumps."
+    }
+  ]
+}

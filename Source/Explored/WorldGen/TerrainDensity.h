@@ -3,6 +3,9 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/CoastalCliffModel.h"
+#include "WorldGen/IslandShapeModel.h"
+#include "WorldGen/IslandShelfModel.h"
 #include "WorldGen/IslandReliefModel.h"
 #include "WorldGen/KarstTowerModel.h"
 #include "WorldGen/SeafloorModel.h"
@@ -114,11 +117,21 @@ private:
 	{
 		TSharedPtr<const FIslandReliefGrid> Grid;
 		TSharedPtr<const FKarstLayout> Karst;
+		/** Plataforma submarina tabulada por rumbo (FIslandShelfModel); todas las islas. */
+		TSharedPtr<const FIslandShelf> Shelf;
+		/** Tramos de acantilado marino (FCoastalCliffModel); solo las islas que los tienen. */
+		TSharedPtr<const FCoastalCliffs> Cliffs;
 	};
 	TArray<FIslandRelief> Reliefs;
 
 	void BuildReliefs();
+	void BuildCoast(int32 IslandIndex);
 	const FIslandRelief* FindRelief(const FIslandDesc& Island) const;
+	/** Perfil submarino (plataforma, talud y fondo real) de la isla en T >= 1; pie de costa en T < 1. */
+	float UnderwaterHeight(const FIslandDesc& Island, const FIslandRelief* Relief, const FExploredNoise& N, const FVector2D& Q,
+		float T, float Angle, float X, float Y) const;
+	/** Tierra ya erosionada: diferencia de la erosión y torres kársticas sobre la base. */
+	float FinishLand(const FIslandDesc& Island, const FIslandRelief* Relief, const FVector2D& Q, float T, float Land) const;
 
 	/** Capa de ediciones del jugador; nula en el mundo recién generado. */
 	TSharedPtr<const FTerrainEdits> Edits;
