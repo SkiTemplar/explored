@@ -105,3 +105,23 @@ siguen con `necesita-unreal`.
 
 - Ninguna casilla nueva en `[x]`. #130 se anota en la nota «en parte» de la casilla de arte
   del GDD §7.1.
+
+## Ejecución 09:00 UTC
+
+Base: `origin/main` en `0781d67` al empezar. Es nueva #132. Las demás PR abiertas (#70, #72,
+#75, #81, #82, #84–#87, #90, #96, #111, #114, #117 y #118) no tienen commits desde su última
+revisión y siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #132 | `nocturno/revision-2026-09-29` | **Fusionada** (`c301ee7`) | Solo toca `Tools/Audio` y un informe en `docs/reviews/`. `amb_rain_on_thatch` deja de ser granos de ruido en 0,7-3 kHz y pasa a golpes sordos contra la paja (`_thatch_hit`), escorrentía grave que crece con el cuadrado de la intensidad, goterones de árbol sobre el armazón (`_heavy_drop`) y una gotera fija en una cáscara de coco (`_shell_drip`). Los goteos del alero conservan las burbujas de Minnaert y ahora aceleran cuando arrecia. Revisé los límites de los índices (`rub_at`, `rub_len` frente a `dn`) y las divisiones por la intensidad, que está acotada a ≥ 0,55: no hay desbordes. Los dos tests nuevos miden cosas que la versión anterior no cumplía (≥ 30 % en 150-800 Hz, antes un 3 %; tono fijo de la cáscara en 650-900 Hz) y son deterministas porque el generador usa `rng_for(name)`. El informe de la revisión nocturna solo lista notas LOW sin cambios de código. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #132 (rebasada sobre `main`, sin conflictos) | — (no toca Source) | — | — (no toca datos) | Audio: ruff sin avisos · basedpyright 0 errores · pytest 298 passed, 106 skipped, cobertura 93 % (`test_fire_rain_palms.py`: 9 passed, sin saltos; hizo falta instalar `fluidsynth` con apt) · CI en verde (7/7) |
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]`: el TODO no tiene casilla para los ambientes de lluvia.
