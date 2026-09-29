@@ -138,6 +138,53 @@ void FFelledDriftModelSpec::Define()
 			TestEqual(TEXT("piezas"), Model.GetPieces().Num(), FFelledDriftModel::MaxPieces);
 		});
 
+		It("una sesión larga no lo agota: lo resuelto deja su hueco y lo activo conserva el índice", [this]()
+		{
+			// Unos 10 objetos por árbol talado al agua: 1024 son unos 100 árboles en una sesión.
+			FFelledDriftModel Model;
+			const FBeach Beach;
+			const int32 Kept = Model.AddPiece(MakeDrop(TEXT("tronco_pequeno"), -300.0), Beach);
+			for (int32 i = 1; i < FFelledDriftModel::MaxPieces; ++i)
+			{
+				const int32 Index = Model.AddPiece(MakeDrop(TEXT("rama_seca"), 100.0), Beach);
+				Model.Collect(Index);
+			}
+			const FVector2D KeptAt = Model.GetPieces()[Kept].Drop.Position;
+			for (int32 i = 0; i < 3 * FFelledDriftModel::MaxPieces; ++i)
+			{
+				const int32 Index = Model.AddPiece(MakeDrop(TEXT("tronco_pequeno"), 300.0), Beach);
+				if (Index == INDEX_NONE)
+				{
+					AddError(FString::Printf(TEXT("la pieza %d no entra con %d activas"), i, Model.NumActive()));
+					return;
+				}
+				TestNotEqual(TEXT("no pisa la pieza activa"), Index, Kept);
+				TestEqual(TEXT("entra flotando"), Model.GetPieces()[Index].State, EFelledPieceState::Floating);
+				TestEqual(TEXT("sin pasos heredados"), Model.GetPieces()[Index].FloatingSteps, 0);
+				Model.HandOver(Index);
+			}
+			TestTrue(TEXT("el array no crece"), Model.GetPieces().Num() <= FFelledDriftModel::MaxPieces);
+			TestEqual(TEXT("la activa sigue en su sitio"), Model.GetPieces()[Kept].State, EFelledPieceState::Resting);
+			TestEqual(TEXT("y en su posición"), Model.GetPieces()[Kept].Drop.Position, KeptAt);
+			TestEqual(TEXT("una activa"), Model.NumActive(), 1);
+		});
+
+		It("reutiliza el hueco más bajo, así que dos servidores con la misma historia dan los mismos índices", [this]()
+		{
+			FFelledDriftModel Model;
+			const FBeach Beach;
+			for (int32 i = 0; i < 5; ++i)
+			{
+				Model.AddPiece(MakeDrop(TEXT("tronco_pequeno"), 300.0), Beach);
+			}
+			Model.Collect(3);
+			Model.HandOver(1);
+			TestEqual(TEXT("primero el 1"), Model.AddPiece(MakeDrop(TEXT("coco_maduro"), 300.0), Beach), 1);
+			TestEqual(TEXT("luego el 3"), Model.AddPiece(MakeDrop(TEXT("coco_maduro"), 300.0), Beach), 3);
+			TestEqual(TEXT("después crece"), Model.AddPiece(MakeDrop(TEXT("coco_maduro"), 300.0), Beach), 5);
+			TestEqual(TEXT("el hueco toma la ficha nueva"), Model.GetPieces()[1].Drop.ItemId, FName(TEXT("coco_maduro")));
+		});
+
 		It("una palmera talada hacia el mar deja la copa flotando y la base en tierra", [this]()
 		{
 			const TArray<FFellingProfile> Profiles = FFellingModel::DefaultProfiles();
