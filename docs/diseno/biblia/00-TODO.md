@@ -675,7 +675,9 @@ filas **3, 4 y 13** de la matriz de biblia 08 §7.3 pasan en «Normal».
       → **En parte:** `e6c89d1` (PR #46), `SandModel.h:38, 159, 175` (80 m, 64 columnas, 4
         revisiones) — presupuestos en el modelo; falta ejecutarlo en el servidor y sacarlo
         por la cola. PR #137: `Dig`/`Pile` ignoran un pincel de más de 8 m de radio
-        (`FSandModel::MaxBrushRadius`).
+        (`FSandModel::MaxBrushRadius`). PR #140: la deuda de revisiones, la fracción de
+        segundo y los chunks pendientes de marea se guardan, y ninguna edición sale del
+        `int16` de la clave de chunk (`FSandModel::ColumnLimit()`).
 - [ ] Medir la compresión real de los deltas de terreno con `OodleNetwork` y entrenar el
       diccionario (`Tools/net-dictionary.ps1`, nuevo) sobre una captura de 10 min de
       minería; anotar el factor en `docs/tecnico/red.md`. Si no llega a ×2, bajar el tope
