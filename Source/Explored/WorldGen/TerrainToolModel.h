@@ -23,6 +23,8 @@ enum class ETerrainToolVerdict : uint8
 	Accepted,
 	/** Algún valor no es finito o la acción no existe. */
 	Invalid,
+	/** La acción no es de esa herramienta (`ActionFor`): p. ej. aplanar con un pico. */
+	WrongAction,
 	/** El punto de impacto está más lejos de los ojos que el alcance (con tolerancia de red). */
 	TooFar,
 	/** Más rápido que la duración del golpe (−15 %, `FTerrainEdits::CadenceTolerance`). */
@@ -104,8 +106,13 @@ public:
 
 	/** Duración de un uso (s): la del golpe de la herramienta o la de una pasada de pala. */
 	static float SecondsPerUse(ETerrainToolAction Action, ETerrainDigTool Tool);
-	/** Validación del servidor, en este orden: valores, alcance, cadencia y superficie. */
+	/** Validación del servidor, en este orden: valores, acción de la herramienta, alcance, cadencia y superficie. */
 	static ETerrainToolVerdict Validate(const FTerrainToolRequest& Request);
+	/**
+	 * Lo barato de `Validate`, sin mirar `DensityAtImpact`: el servidor lo comprueba antes de
+	 * evaluar la densidad, para que una ráfaga de peticiones descartadas no cueste nada.
+	 */
+	static ETerrainToolVerdict ValidateUse(const FTerrainToolRequest& Request);
 
 	/** Pasada de pala hacia el plano horizontal de los pies (FeetZ), centrada en el impacto. */
 	static FShovelStroke MakeShovelStroke(const FVector& ImpactPoint, double FeetZ, ETerrainMaterial Material,

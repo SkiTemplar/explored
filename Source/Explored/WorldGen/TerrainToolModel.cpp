@@ -129,12 +129,34 @@ float FTerrainToolModel::SecondsPerUse(ETerrainToolAction Action, ETerrainDigToo
 
 ETerrainToolVerdict FTerrainToolModel::Validate(const FTerrainToolRequest& Request)
 {
-	using namespace TerrainToolModelDetail;
-	const bool bKnown = Request.Action < ETerrainToolAction::Count && Request.Tool < ETerrainDigTool::Count;
-	if (!bKnown || !IsFinite(Request.ImpactPoint) || !IsFinite(Request.EyeLocation)
-		|| !FMath::IsFinite(Request.SecondsSinceLastUse) || !FMath::IsFinite(Request.DensityAtImpact))
+	const ETerrainToolVerdict Use = ValidateUse(Request);
+	if (Use != ETerrainToolVerdict::Accepted)
+	{
+		return Use;
+	}
+	if (!FMath::IsFinite(Request.DensityAtImpact))
 	{
 		return ETerrainToolVerdict::Invalid;
+	}
+	if (FMath::Abs(Request.DensityAtImpact) > MaxSurfaceDistance)
+	{
+		return ETerrainToolVerdict::NotSurface;
+	}
+	return ETerrainToolVerdict::Accepted;
+}
+
+ETerrainToolVerdict FTerrainToolModel::ValidateUse(const FTerrainToolRequest& Request)
+{
+	using namespace TerrainToolModelDetail;
+	const bool bKnown = Request.Action < ETerrainToolAction::Count && Request.Tool < ETerrainDigTool::Count;
+	if (!bKnown || !IsFinite(Request.ImpactPoint) || !IsFinite(Request.EyeLocation) || !FMath::IsFinite(Request.SecondsSinceLastUse))
+	{
+		return ETerrainToolVerdict::Invalid;
+	}
+	// La cadencia sale del par (acción, herramienta): una acción ajena daría otro ritmo.
+	if (Request.Action != ActionFor(Request.Tool, false) && Request.Action != ActionFor(Request.Tool, true))
+	{
+		return ETerrainToolVerdict::WrongAction;
 	}
 	const double Reach = static_cast<double>(ReachMeters + ServerReachTolerance);
 	if (FVector::DistSquared(Request.ImpactPoint, Request.EyeLocation) > Reach * Reach)
@@ -145,10 +167,6 @@ ETerrainToolVerdict FTerrainToolModel::Validate(const FTerrainToolRequest& Reque
 	if (Request.SecondsSinceLastUse < MinSeconds)
 	{
 		return ETerrainToolVerdict::TooSoon;
-	}
-	if (FMath::Abs(Request.DensityAtImpact) > MaxSurfaceDistance)
-	{
-		return ETerrainToolVerdict::NotSurface;
 	}
 	return ETerrainToolVerdict::Accepted;
 }

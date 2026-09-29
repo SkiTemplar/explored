@@ -131,6 +131,43 @@ void FTerrainToolModelSpec::Define()
 			Shovel.SecondsSinceLastUse = 0.9f;
 			TestEqual(TEXT("0,9 s es pronto"), AsInt(FTerrainToolModel::Validate(Shovel)), AsInt(ETerrainToolVerdict::TooSoon));
 		});
+
+		It("descarta una acción que no es de la herramienta", [this]()
+		{
+			FTerrainToolRequest PickFlattens = ValidPick();
+			PickFlattens.Action = ETerrainToolAction::ShovelFlatten;
+			TestEqual(TEXT("aplanar con pico"), AsInt(FTerrainToolModel::Validate(PickFlattens)), AsInt(ETerrainToolVerdict::WrongAction));
+
+			FTerrainToolRequest PickPlaces = ValidPick();
+			PickPlaces.Action = ETerrainToolAction::PlaceSoil;
+			TestEqual(TEXT("echar tierra con pico"), AsInt(FTerrainToolModel::Validate(PickPlaces)), AsInt(ETerrainToolVerdict::WrongAction));
+
+			FTerrainToolRequest ShovelPicks = ValidPick();
+			ShovelPicks.Tool = ETerrainDigTool::PalaTosca;
+			TestEqual(TEXT("picar con pala"), AsInt(FTerrainToolModel::Validate(ShovelPicks)), AsInt(ETerrainToolVerdict::WrongAction));
+		});
+
+		It("no deja elegir la cadencia de otra acción", [this]()
+		{
+			// Pico rescatado pidiendo aplanar: la cadencia saldría de la pasada de pala, no de su golpe.
+			FTerrainToolRequest Faster = ValidPick();
+			Faster.Tool = ETerrainDigTool::PicoRescatado;
+			Faster.Action = ETerrainToolAction::ShovelFlatten;
+			Faster.SecondsSinceLastUse = FTerrainToolModel::SecondsPerUse(ETerrainToolAction::ShovelFlatten, ETerrainDigTool::PalaTosca);
+			TestTrue(TEXT("pico a ritmo de pala"), FTerrainToolModel::Validate(Faster) != ETerrainToolVerdict::Accepted);
+		});
+
+		It("la parte barata no mira la densidad y ya descarta la cadencia", [this]()
+		{
+			FTerrainToolRequest Air = ValidPick();
+			Air.DensityAtImpact = std::numeric_limits<float>::quiet_NaN();
+			TestEqual(TEXT("sin densidad todavía"), AsInt(FTerrainToolModel::ValidateUse(Air)), AsInt(ETerrainToolVerdict::Accepted));
+			TestEqual(TEXT("densidad NaN al final"), AsInt(FTerrainToolModel::Validate(Air)), AsInt(ETerrainToolVerdict::Invalid));
+
+			FTerrainToolRequest Fast = ValidPick();
+			Fast.SecondsSinceLastUse = 0.0f;
+			TestEqual(TEXT("pronto"), AsInt(FTerrainToolModel::ValidateUse(Fast)), AsInt(ETerrainToolVerdict::TooSoon));
+		});
 	});
 
 	Describe("tierra transportada y señales", [this]()
