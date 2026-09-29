@@ -110,7 +110,13 @@ la biblia deja abiertos).
    `FromValue` falla, la playa se queda sin cambios y se avisa en el registro, pero la
    carga no se aborta. Las columnas sucias se guardan, así que un montón que se estaba
    derrumbando sigue haciéndolo al cargar. El banco del mar se guarda en `"sea"`, para
-   que la cuenta de masa siga cuadrando. Tamaño: unos 5 caracteres por columna
+   que la cuenta de masa siga cuadrando. El reloj también se guarda, para que la partida
+   cargada siga exactamente igual: la deuda de los chunks congelados (`"frozen"`), los
+   chunks lejanos que aún no han visto la última pleamar o lluvia (`"stale"`), la
+   fracción de segundo (`"acc"`) y la pleamar y la lluvia de la última revisión
+   (`"wake"`). Las cuatro claves son opcionales: una partida anterior carga sin ellas.
+   Ninguna edición sale de ±32 767 chunks (`ColumnLimit()`), la cota que `FromValue` y
+   el paquete de red aceptan; antes, cavar a 300 km dejaba una partida que no cargaba. Tamaño: unos 5 caracteres por columna
    editada, unos 3 KB por un hoyo de 1 m².
 
 ## Coste por fotograma
@@ -172,9 +178,9 @@ la biblia deja abiertos).
   revisiones que se salta (`FrozenRevisions`, hasta 4). Al volver alguien, `Tick` las
   recupera de golpe solo en esos chunks (`CatchUpRevisions`) y después la arena sigue a
   su ritmo (1 por segundo). Esa ráfaga puede sacar hasta 5 × 64 columnas de un chunk en
-  un segundo; entra en la ráfaga de 16 KB/s de 08 §2.2. El contador no se guarda: al
-  cargar, la arena empieza sin deuda. Hay que comprobar en PIE que el arranque no se
-  note.
+  un segundo; entra en la ráfaga de 16 KB/s de 08 §2.2. El contador se guarda
+  (`"frozen"`), así que una partida cargada recupera la misma deuda que la original.
+  Hay que comprobar en PIE que la ráfaga al llegar no se note.
 - **Tope del montón:** la avalancha no deja que una columna pase de 2 m sobre su suelo,
   ni siquiera al pie de un escalón. La arena que no cabe se queda arriba, así que el
   guardado nunca contiene un delta que `FromValue` rechace.

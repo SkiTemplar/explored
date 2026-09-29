@@ -37,10 +37,16 @@ namespace SandModelDetail
 		return (FMath::IsFinite(Meters) && FMath::Abs(Meters) <= 1.0e6) ? MetersToMm(Meters) : Fallback;
 	}
 
-	/** |Meters| + Margin cabe en la rejilla de columnas sin acercarse al borde de int32. */
-	bool InColumnRange(double Meters, double Margin, double CellSize)
+	/** |Meters| + Margin cabe en la rejilla de columnas (|columna| ≤ Limit, ver FSandModel::ColumnLimit). */
+	bool InColumnRange(double Meters, double Margin, double CellSize, int64 Limit)
 	{
-		return FMath::IsFinite(Meters) && (FMath::Abs(Meters) + Margin) / CellSize <= FSandModel::MaxAbsColumn;
+		return FMath::IsFinite(Meters) && (FMath::Abs(Meters) + Margin) / CellSize <= static_cast<double>(Limit);
+	}
+
+	/** |Column| ≤ Limit en int64: FMath::Abs de MIN_int32 en int32 desborda. */
+	bool ColumnInRange(const FIntPoint& Column, int64 Limit)
+	{
+		return FMath::Abs(static_cast<int64>(Column.X)) <= Limit && FMath::Abs(static_cast<int64>(Column.Y)) <= Limit;
 	}
 
 	/** Estado de una columna leído antes de aplicar ningún flujo del paso. */
@@ -295,13 +301,16 @@ FSandResult FSandModel::Brush(const FSandBrush& In, FBaseHeight Base, bool bDig)
 		return Result;
 	}
 	// Con una coordenada enorme el cast a int32 de ColumnOf envuelve y los bucles X <= Hi no terminan.
-	if (!SandModelDetail::InColumnRange(In.Center.X, In.Radius, Settings.CellSize)
-		|| !SandModelDetail::InColumnRange(In.Center.Y, In.Radius, Settings.CellSize))
+	if (!SandModelDetail::InColumnRange(In.Center.X, In.Radius, Settings.CellSize, ColumnLimit())
+		|| !SandModelDetail::InColumnRange(In.Center.Y, In.Radius, Settings.CellSize, ColumnLimit()))
 	{
 		return Result;
 	}
 	const FIntPoint Lo = ColumnOf(In.Center.X - In.Radius, In.Center.Y - In.Radius);
 	const FIntPoint Hi = ColumnOf(In.Center.X + In.Radius, In.Center.Y + In.Radius);
+	// Ninguna columna mueve más que MaxDigDepthMm + MaxPileHeightMm: acotar la profundidad no
+	// cambia nada por debajo y evita que un Depth enorme pase a int64 fuera de rango (UB).
+	const double Depth = FMath::Min<double>(In.Depth, (MaxDigDepthMm + MaxPileHeightMm) * 0.001);
 
 	struct FWant
 	{
@@ -321,7 +330,7 @@ FSandResult FSandModel::Brush(const FSandBrush& In, FBaseHeight Base, bool bDig)
 				continue;
 			}
 			// Cono: toda la profundidad en el centro y nada en el borde.
-			int64 Amount = SandModelDetail::MetersToMm(In.Depth * (1.0 - R / In.Radius));
+			int64 Amount = SandModelDetail::MetersToMm(Depth * (1.0 - R / In.Radius));
 			const int32 D = DeltaMm(Column);
 			Amount = bDig ? FMath::Min<int64>(Amount, static_cast<int64>(D) + MaxDigDepthMm)
 			              : FMath::Min<int64>(Amount, static_cast<int64>(MaxPileHeightMm) - D);
@@ -418,8 +427,7 @@ FSandResult FSandModel::Transfer(const TArray<FSandMove>& Moves, FBaseHeight Bas
 	for (const FSandMove& Move : Moves)
 	{
 		if (Move.Mm <= 0 || Move.From == Move.To
-			|| FMath::Abs(Move.From.X) > MaxAbsColumn || FMath::Abs(Move.From.Y) > MaxAbsColumn
-			|| FMath::Abs(Move.To.X) > MaxAbsColumn || FMath::Abs(Move.To.Y) > MaxAbsColumn
+			|| !SandModelDetail::ColumnInRange(Move.From, ColumnLimit()) || !SandModelDetail::ColumnInRange(Move.To, ColumnLimit())
 			|| IsAnchored(Move.From) || IsAnchored(Move.To))
 		{
 			continue;
@@ -461,8 +469,9 @@ FSandResult FSandModel::SetAnchor(const FVector2D& Min, const FVector2D& Max, bo
 	const double Cell = Settings.CellSize;
 	const double Reach = AnchorHoldMeters;
 	// Igual que en Brush: fuera de la rejilla el cast a int32 envuelve y los bucles no terminan.
-	if (!SandModelDetail::InColumnRange(Min.X, Reach + Cell, Cell) || !SandModelDetail::InColumnRange(Min.Y, Reach + Cell, Cell)
-		|| !SandModelDetail::InColumnRange(Max.X, Reach + Cell, Cell) || !SandModelDetail::InColumnRange(Max.Y, Reach + Cell, Cell))
+	const int64 Limit = ColumnLimit();
+	if (!SandModelDetail::InColumnRange(Min.X, Reach + Cell, Cell, Limit) || !SandModelDetail::InColumnRange(Min.Y, Reach + Cell, Cell, Limit)
+		|| !SandModelDetail::InColumnRange(Max.X, Reach + Cell, Cell, Limit) || !SandModelDetail::InColumnRange(Max.Y, Reach + Cell, Cell, Limit))
 	{
 		return Result;
 	}
@@ -981,7 +990,10 @@ FSandResult FSandModel::ApplyHalfTide(const FSandTide& Tide, FBaseHeight Base)
 {
 	using namespace SandModelDetail;
 	FSandResult Result;
-	if (!FMath::IsFinite(Tide.HighTide) || !FMath::IsFinite(Tide.LowTide))
+	// Una marea no finita o absurda (más de 1 000 km, como en TideMm) no hace nada: con
+	// 3·10¹³ m, (HighMm − BaseMm) · 400 desbordaba int64 en RefillMilli.
+	auto Sane = [](double Meters) { return FMath::IsFinite(Meters) && FMath::Abs(Meters) <= 1.0e6; };
+	if (!Sane(Tide.HighTide) || !Sane(Tide.LowTide))
 	{
 		return Result;
 	}
@@ -1128,6 +1140,39 @@ FSaveValue FSandModel::ToValue() const
 	}
 	Root.Set(TEXT("dirty"), MoveTemp(DirtyList));
 	Root.Set(TEXT("sea"), FSaveValue::MakeInt(SeaBank));
+
+	// Estado del reloj: sin él, una partida cargada sigue distinto que la original (pierde la
+	// deuda de los chunks congelados, la fracción de segundo y qué chunks quedan por mojar).
+	auto ChunkKeys = [](const TArray<FIntPoint>& Keys, const TMap<FIntPoint, int32>* Counts)
+	{
+		FSaveValue List = FSaveValue::MakeArray();
+		for (const FIntPoint& Key : Keys)
+		{
+			List.Add(FSaveValue::MakeInt(Key.X));
+			List.Add(FSaveValue::MakeInt(Key.Y));
+			if (Counts)
+			{
+				List.Add(FSaveValue::MakeInt(Counts->FindChecked(Key)));
+			}
+		}
+		return List;
+	};
+	TArray<FIntPoint> Frozen;
+	FrozenRevisions.GetKeys(Frozen);
+	Frozen.Sort(&SandModelDetail::ColumnLess);
+	Root.Set(TEXT("frozen"), ChunkKeys(Frozen, &FrozenRevisions));
+	TArray<FIntPoint> Stale;
+	StaleWetChunks.GetKeys(Stale);
+	Stale.Sort(&SandModelDetail::ColumnLess);
+	Root.Set(TEXT("stale"), ChunkKeys(Stale, nullptr));
+	Root.Set(TEXT("acc"), FSaveValue::MakeInt(AccumulatedMs));
+	if (bHasWoken)
+	{
+		FSaveValue Wake = FSaveValue::MakeArray();
+		Wake.Add(FSaveValue::MakeInt(LastWakeHighMm));
+		Wake.Add(FSaveValue::MakeInt(bLastWakeRaining ? 1 : 0));
+		Root.Set(TEXT("wake"), MoveTemp(Wake));
+	}
 	return Root;
 }
 
@@ -1242,6 +1287,71 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 			return Fail();
 		}
 		SeaBank = Bank;
+	}
+
+	// Estado del reloj (opcional: las partidas anteriores no lo tienen y empiezan de cero).
+	// Una clave de chunk debe caber en el int16 del paquete, como las de "chunks".
+	auto ReadChunkKey = [](const FSaveValue& X, const FSaveValue& Y, FIntPoint& Out)
+	{
+		return ReadInt32(X, Out.X) && ReadInt32(Y, Out.Y) && Out.X >= -MaxChunkKey - 1 && Out.X <= MaxChunkKey
+			&& Out.Y >= -MaxChunkKey - 1 && Out.Y <= MaxChunkKey;
+	};
+	if (const FSaveValue* Frozen = Value.Find(TEXT("frozen")))
+	{
+		if (!Frozen->IsArray() || Frozen->Num() % 3 != 0 || Frozen->Num() / 3 > MaxSavedDirtyColumns)
+		{
+			return Fail();
+		}
+		for (int32 I = 0; I < Frozen->Num(); I += 3)
+		{
+			FIntPoint Key;
+			int32 Missed = 0;
+			if (!ReadChunkKey(Frozen->At(I), Frozen->At(I + 1), Key) || !ReadInt32(Frozen->At(I + 2), Missed)
+				|| Missed < 1 || Missed > MaxCatchUpRevisions || FrozenRevisions.Contains(Key))
+			{
+				return Fail();
+			}
+			FrozenRevisions.Add(Key, Missed);
+		}
+	}
+	if (const FSaveValue* Stale = Value.Find(TEXT("stale")))
+	{
+		if (!Stale->IsArray() || Stale->Num() % 2 != 0 || Stale->Num() / 2 > MaxSavedDirtyColumns)
+		{
+			return Fail();
+		}
+		for (int32 I = 0; I < Stale->Num(); I += 2)
+		{
+			FIntPoint Key;
+			if (!ReadChunkKey(Stale->At(I), Stale->At(I + 1), Key))
+			{
+				return Fail();
+			}
+			StaleWetChunks.FindOrAdd(Key);
+		}
+	}
+	if (const FSaveValue* Acc = Value.Find(TEXT("acc")))
+	{
+		int32 Ms = 0;
+		if (!ReadInt32(*Acc, Ms) || Ms < 0 || Ms >= TickMs)
+		{
+			return Fail();
+		}
+		AccumulatedMs = Ms;
+	}
+	if (const FSaveValue* Wake = Value.Find(TEXT("wake")))
+	{
+		int64 HighMm = 0;
+		int32 Raining = 0;
+		// La pleamar, en la misma cota que TideMm (±1 000 km).
+		if (!Wake->IsArray() || Wake->Num() != 2 || !Wake->At(0).TryGetInt(HighMm) || FMath::Abs(HighMm) > 1000000000
+			|| !ReadInt32(Wake->At(1), Raining) || (Raining != 0 && Raining != 1))
+		{
+			return Fail();
+		}
+		bHasWoken = true;
+		LastWakeHighMm = HighMm;
+		bLastWakeRaining = Raining == 1;
 	}
 	return true;
 }
