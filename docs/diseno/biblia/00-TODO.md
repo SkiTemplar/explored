@@ -213,7 +213,8 @@ salir de la isla.
       tope 6). *(biblia 02 §1.3)*
       → **En parte:** `bb07614` (PR #39), `WorldGen/GroundBranchModel.h:55-71` — modelo puro
         con otro ritmo y tope (1,5/día, tope 4); falta ajustar a 2–4 cada 6 h con tope 6 y
-        engancharlo.
+        engancharlo. PR #147: `Pick` avanza la celda hasta la hora de la recogida, así que
+        recoger en una celda que llevaba días sin simularse ya no suelta una ráfaga.
 - [x] Tala de la Palmera de coco ya suelta `coco_maduro` ×1-3 al caer (no un mix de
       `coco_verde`/`coco_maduro`) — corregido en la tabla de biblia 02 §1.2 para que
       coincida con `HarvestModel.cpp::Palm.FellDrops`.
