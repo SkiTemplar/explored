@@ -43,3 +43,7 @@ Modelo: `FHullAssemblyModel` (`Source/Explored/Boats/HullAssemblyModel.h`), puro
   la Z mínima de las piezas que flotan.
 - Escora positiva: estribor abajo. Asiento positivo: proa abajo.
 - El mástil flota (tiene volumen), pero no cuenta como cubierta para el francobordo.
+- `AddPiece` rechaza (`INDEX_NONE`) una pieza con volumen que se mete más de
+  `MaxOverlapCm` (2 cm) en otra con volumen en los tres ejes: la hidrostática suma el
+  volumen de cada caja y no calcula su unión. El fantasma del astillero tiene que
+  mostrarse en rojo en ese caso, con la misma comprobación, antes de soltar la pieza.
