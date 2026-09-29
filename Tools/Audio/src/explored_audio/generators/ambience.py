@@ -661,12 +661,53 @@ def _trunk_creak(rng: np.random.Generator) -> np.ndarray:
     return body * env
 
 
+def _frond(n: int, rng: np.random.Generator, gust: np.ndarray) -> np.ndarray:
+    """Una hoja de palma que aletea con la racha (mono).
+
+    Cada hoja responde a la racha con un retardo propio (la rafaga cruza el
+    palmeral) y solo por encima de un umbral: con brisa floja apenas se mueve.
+    Al moverse, sus foliolos baten a un ritmo casi periodico de 5-11 Hz que
+    sube con la fuerza del viento; cada batida es un soplo de papel agudo
+    (2,5-9 kHz) y en los extremos del recorrido los foliolos chocan entre si
+    con uno o varios clics secos."""
+    delay = int(rng.uniform(0.0, 1.8) * SR)
+    g = np.roll(gust, delay) * rng.uniform(0.8, 1.15)
+    threshold = rng.uniform(0.08, 0.3)
+    drive = np.clip((g - threshold) / (1.0 - threshold), 0.0, 1.0) ** 1.2
+
+    base_hz = rng.uniform(5.0, 11.0)
+    wobble = smooth_random_walk(n, rng, smoothing_hz=0.8, sr=SR, low=0.85, high=1.15)
+    rate = base_hz * wobble * (0.8 + 0.45 * drive)
+    phase = 2.0 * np.pi * np.cumsum(rate) / SR
+    beat = np.abs(np.sin(phase)) ** 3.0
+
+    paper = static_filter(rng.standard_normal(n), SR, fc=rng.uniform(2600, 4600), q=0.9, kind="bandpass")
+    paper += static_filter(rng.standard_normal(n), SR, fc=7500, q=0.7, kind="highpass") * 0.08
+    out = paper * drive * (0.12 + 0.88 * beat) * 0.35
+
+    # Choques de foliolos: al pasar la batida por su extremo (fase multiplo de
+    # pi), con mas probabilidad y mas clics cuanto mas fuerte sopla.
+    turns = np.flatnonzero(np.diff(np.floor(phase / np.pi)) > 0)
+    for pos in turns:
+        strength = drive[pos]
+        if rng.random() > strength**1.6:
+            continue
+        cursor = int(pos)
+        for _ in range(int(rng.integers(1, 2 + int(3 * strength)))):
+            click = _frond_click(rng) * rng.uniform(0.4, 1.0) * strength
+            end = min(cursor + len(click), n)
+            out[cursor:end] += click[: end - cursor]
+            cursor += int(rng.uniform(0.003, 0.02) * SR)
+    return out
+
+
 def amb_wind_palms(name: str) -> np.ndarray:
     """Viento entre palmeras: a diferencia de `amb_wind_light`, que es solo
-    aire, aqui suenan las hojas. Los foliolos de palma son rigidos: con cada
-    racha aletean (ruido agudo modulado a 8-20 Hz) y se golpean entre si con
-    un tableteo seco que solo aparece cuando la racha es fuerte. De vez en
-    cuando cruje un tronco."""
+    aire, aqui suenan las hojas. Los foliolos de palma son rigidos y ligeros:
+    cada hoja (`_frond`) aletea con la racha a su propio ritmo y en su propio
+    sitio del panorama, con un soplo de papel agudo por batida y un tableteo
+    seco cuando la racha es fuerte. Debajo, el aire que atraviesa la copa; de
+    vez en cuando cruje un tronco."""
     rng = rng_for(name)
     n, loop_len, fade_len = _lens(40.0, 4.0)
 
@@ -675,21 +716,12 @@ def amb_wind_palms(name: str) -> np.ndarray:
 
     air_track = 380.0 + gust * 700.0
     air = time_varying_filter(pink_noise(n, rng), SR, air_track, q=1.0, kind="bandpass")
+    stereo = decorrelate(air * (0.2 + 0.7 * gust), rng, SR, spread_ms=24)
 
-    flutter = smooth_random_walk(n, rng, smoothing_hz=14.0, sr=SR, low=0.3, high=1.0)
-    rustle = static_filter(pink_noise(n, rng), SR, fc=2200, q=0.7, kind="highpass")
-    rustle = static_filter(rustle, SR, fc=8000, q=0.7, kind="lowpass")
-
-    clatter = np.zeros(n)
-    for pos, amp in place_grains(n, SR, rng, rate_hz=90.0, jitter=1.0):
-        if rng.random() > gust[pos] ** 2:
-            continue
-        piece = _frond_click(rng) * amp
-        end = min(pos + len(piece), n)
-        clatter[pos:end] += piece[: end - pos]
-
-    mono = air * (0.15 + 0.6 * gust) + rustle * (0.03 + 0.6 * gust) * flutter + clatter * 1.0
-    stereo = decorrelate(mono, rng, SR, spread_ms=24)
+    fronds = 7
+    for k in range(fronds):
+        pan = -0.85 + 1.7 * (k + rng.uniform(0.1, 0.9)) / fronds
+        stereo += pan_constant_power(_frond(n, rng, gust), pan)
 
     for pos, _amp in place_grains(n, SR, rng, rate_hz=0.05, jitter=0.6):
         _add_panned(stereo, _trunk_creak(rng) * 0.35, pos, rng.uniform(-0.7, 0.7))
