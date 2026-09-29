@@ -261,7 +261,12 @@ mapa.
     pueden colgar la partida o estropear el guardado del terreno.
   - **Persistencia.** Todo queda en la capa `"terrain"` de la sección `world` del
     guardado (deltas por chunk de 8 m en milímetros enteros). Un agujero sigue cavado
-    al recargar la partida (criterio de salida de §6.1).
+    al recargar la partida (criterio de salida de §6.1). Cada muestra se redondea al
+    milímetro hacia su densidad de partida, así que los milímetros nunca regalan tierra:
+    ningún golpe ni escalera arranca más de su tope, ningún montón pasa de lo que se
+    lleva y la pala solo rellena con lo que se lleva más lo que ha cortado de verdad en
+    esa pasada (antes se colaban hasta 0,6 L por llamada; lo comprueba un test de
+    propiedades con ediciones aleatorias).
 - **Progresión:** pala tosca (tierra/arcilla) → pico de piedra (caliza, cobre) → pico
   tallado (basalto, hierro) → pico de obsidiana/rescatado (obsidiana, cristal, minas
   profundas con más riesgo de derrumbe y aire viciado).
