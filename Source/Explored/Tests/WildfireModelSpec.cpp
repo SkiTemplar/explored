@@ -369,14 +369,50 @@ void FWildfireModelSpec::Define()
 	{
 		It("minutos y celdas extremos no desbordan", [this]()
 		{
-			const int64 Late = INT64_MAX - 5;
+			// En la cota todo funciona sin desbordar (BurntMinute + rebrote, NowMinute + WetMinutes).
+			const int64 Late = FWildfireModel::MaxAbsMinute - 10;
 			FWildfireModel M(8u, Everywhere());
 			TestTrue(TEXT("prende"), M.Ignite(FIntPoint(0, 0), Late));
 			M.Douse(FIntPoint(0, 0), 1, Late, INT64_MAX);
-			TestTrue(TEXT("sigue quemada (BurntMinute + rebrote desbordaba)"), M.StateAt(FIntPoint(0, 0), Late) == EFireCellState::Burnt);
+			TestTrue(TEXT("sigue quemada"), M.StateAt(FIntPoint(0, 0), Late) == EFireCellState::Burnt);
 			TestEqual(TEXT("con ceniza"), M.AshAt(FIntPoint(0, 0), Late), 1);
-			TestTrue(TEXT("la vecina queda mojada (NowMinute + WetMinutes desbordaba)"), M.IsWet(FIntPoint(1, 0), Late));
+			TestTrue(TEXT("la vecina queda mojada"), M.IsWet(FIntPoint(1, 0), Late));
 			TestFalse(TEXT("celda fuera de la cota de CellAt"), M.Ignite(FIntPoint(MAX_int32, 0), 0));
+			// Fuera de la cota no se escribe nada.
+			const FSaveValue Before = M.Save();
+			TestFalse(TEXT("no prende fuera de la cota"), M.Ignite(FIntPoint(5, 5), INT64_MAX - 5));
+			M.Douse(FIntPoint(5, 5), 1, INT64_MIN, 60);
+			TestTrue(TEXT("ni moja fuera de la cota"), M.Save() == Before);
+		});
+
+		It("lo que guarda el juego se vuelve a cargar, también con minutos en la cota", [this]()
+		{
+			// Antes Douse saturaba WetUntil a INT64_MAX y Load rechazaba la partida entera.
+			FWildfireModel M(8u, Everywhere());
+			M.Ignite(FIntPoint(0, 0), -FWildfireModel::MaxAbsMinute);
+			M.Douse(FIntPoint(0, 0), 2, -FWildfireModel::MaxAbsMinute, INT64_MAX);
+			M.Douse(FIntPoint(9, 0), 1, FWildfireModel::MaxAbsMinute - 1, INT64_MAX);
+			M.Ignite(FIntPoint(20, 0), 0);
+			M.Advance(FWildfireModel::MaxAbsSecond, 0, Dry(), At(FIntPoint(20, 0)));
+			const FSaveValue Saved = M.Save();
+			FWildfireModel B(8u, Everywhere());
+			TestTrue(TEXT("se carga"), B.Load(Saved));
+			TestTrue(TEXT("igual"), B.Save() == Saved);
+			TestTrue(TEXT("sigue mojada"), B.IsWet(FIntPoint(10, 0), FWildfireModel::MaxAbsMinute - 1));
+		});
+
+		It("un reloj fuera de la cota no congela el fuego", [this]()
+		{
+			FWildfireModel M(8u, Everywhere());
+			M.Ignite(FIntPoint(0, 0), 0);
+			// Antes adoptaba el segundo 1e15 y ningún segundo real volvía a simular: ardía para siempre.
+			TestEqual(TEXT("segundo absurdo"), M.Advance(FWildfireModel::MaxAbsSecond + 1, 0, Dry(), At(FIntPoint(0, 0))).StepsSimulated, 0);
+			TestEqual(TEXT("minuto absurdo"), M.Advance(5, INT64_MIN, Dry(), At(FIntPoint(0, 0))).StepsSimulated, 0);
+			TestEqual(TEXT("no los adopta"), M.GetLastSecond(), (int64)0);
+			TestEqual(TEXT("el reloj real sigue"), M.Advance(1, 0, Dry(), At(FIntPoint(0, 0))).StepsSimulated, 1);
+			FSaveValue Bad = M.Save();
+			Bad.Set(TEXT("lastSecond"), FSaveValue::MakeInt(FWildfireModel::MaxAbsSecond + 1));
+			TestFalse(TEXT("Load rechaza un segundo fuera de la cota"), M.Load(Bad));
 		});
 
 		It("ceniza 3 días, hierba a los 12 y matorral a los 25; Prune olvida lo rebrotado", [this]()

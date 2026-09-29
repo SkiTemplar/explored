@@ -116,6 +116,15 @@ public:
 	static constexpr int32 GrassBurnSteps = 20;
 	static constexpr int32 ShrubBurnSteps = 60;
 
+	/**
+	 * Cota de minuto de juego (~1,9 millones de años): sumar rebrotes no desborda.
+	 * Ignite, Douse y Advance ignoran un minuto fuera de ±MaxAbsMinute, así que nada
+	 * guarda un valor que Load vaya a rechazar.
+	 */
+	static constexpr int64 MaxAbsMinute = 1000000000000ll;
+	/** Cota del segundo de simulación: Advance no lo adopta por encima y Load lo rechaza. */
+	static constexpr int64 MaxAbsSecond = MaxAbsMinute * 60;
+
 	/** Rebrote y ceniza en minutos de juego (biblia 02 §6). */
 	static constexpr int64 MinutesPerDay = 1440;
 	static constexpr int64 GrassRegrowMinutes = 12 * MinutesPerDay;
@@ -148,7 +157,9 @@ public:
 	/**
 	 * Avanza hasta el segundo de simulación NowSecond. Si hay más de
 	 * MaxCatchUpSteps pasos pendientes, solo se simulan los últimos
-	 * MaxCatchUpSteps. Un segundo anterior o igual al último no hace nada.
+	 * MaxCatchUpSteps. Un segundo anterior o igual al último no hace nada, y
+	 * tampoco uno por encima de MaxAbsSecond o un NowMinute fuera de ±MaxAbsMinute
+	 * (ni se adoptan: el fuego no se congela).
 	 */
 	FWildfireStepResult Advance(int64 NowSecond, int64 NowMinute, const FWildfireConditions& Conditions, const TArray<FVector2D>& ObserversCm);
 
