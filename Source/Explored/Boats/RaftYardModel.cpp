@@ -307,6 +307,23 @@ void FRaftYardModel::HullBoundsX(double& OutMinX, double& OutMaxX) const
 	}
 }
 
+void FRaftYardModel::HullSpanS(float& OutAftS, float& OutForeS) const
+{
+	// Las piezas van en coordenadas del casco con el origen en CenterS (como en MakeBoat y el
+	// surco): un casco que no está centrado en X = 0 no ocupa CenterS ± eslora / 2.
+	double MinX, MaxX;
+	HullBoundsX(MinX, MaxX);
+	OutAftS = static_cast<float>(static_cast<double>(CenterS) + MinX);
+	OutForeS = static_cast<float>(static_cast<double>(CenterS) + MaxX);
+}
+
+bool FRaftYardModel::IsUnderHull(float RollerS) const
+{
+	float Aft, Fore;
+	HullSpanS(Aft, Fore);
+	return RollerS >= Aft && RollerS <= Fore;
+}
+
 float FRaftYardModel::HullLengthCm() const
 {
 	double MinX, MaxX;
@@ -571,8 +588,7 @@ bool FRaftYardModel::TakeRoller(int32 Index)
 	{
 		return false;
 	}
-	const float HalfLength = HullLengthCm() * 0.5f;
-	if (State == ERaftYardState::Ashore && FMath::Abs(Rollers[Index] - CenterS) <= HalfLength)
+	if (State == ERaftYardState::Ashore && Hull.GetPieces().Num() > 0 && IsUnderHull(Rollers[Index]))
 	{
 		return false;
 	}
@@ -586,19 +602,23 @@ bool FRaftYardModel::IsOnRollers() const
 	{
 		return false;
 	}
-	const float HalfLength = HullLengthCm() * 0.5f;
-	bool bAft = false;
-	bool bFore = false;
+	float Aft, Fore;
+	HullSpanS(Aft, Fore);
+	const float Mid = 0.5f * (Aft + Fore);
+	// Uno bajo cada mitad. Un rodillo justo en el centro sirve para cualquiera de las dos,
+	// pero no para las dos a la vez: con uno solo la balsa hace de balancín.
+	int32 NumAft = 0, NumFore = 0, NumMid = 0;
 	for (float R : Rollers)
 	{
-		const float Offset = R - CenterS;
-		if (FMath::Abs(Offset) <= HalfLength)
+		if (R < Aft || R > Fore)
 		{
-			bAft |= Offset <= 0.0f;
-			bFore |= Offset >= 0.0f;
+			continue;
 		}
+		NumAft += R < Mid ? 1 : 0;
+		NumFore += R > Mid ? 1 : 0;
+		NumMid += R == Mid ? 1 : 0;
 	}
-	return bAft && bFore;
+	return NumAft + NumMid >= 1 && NumFore + NumMid >= 1 && NumAft + NumFore + NumMid >= 2;
 }
 
 float FRaftYardModel::WaterSupport01() const
@@ -717,10 +737,11 @@ void FRaftYardModel::Substep(float H, float PushForceN, FRaftPushReport& Report)
 	// Los rodillos de debajo ruedan sin deslizar: avanzan la mitad que el casco.
 	if (bRolling)
 	{
-		const float HalfLength = HullLengthCm() * 0.5f;
+		float Aft, Fore;
+		HullSpanS(Aft, Fore);
 		for (float& R : Rollers)
 		{
-			if (FMath::Abs(R - CenterS) <= HalfLength)
+			if (R >= Aft && R <= Fore)
 			{
 				R = FMath::Clamp(R + Moved * 0.5f, 0.0f, Total);
 			}

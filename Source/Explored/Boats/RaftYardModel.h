@@ -279,7 +279,11 @@ public:
 	/** Recoge un rodillo. False si no existe o está bajo el casco (lo aplasta la balsa). */
 	bool TakeRoller(int32 Index);
 	const TArray<float>& GetRollers() const { return Rollers; }
-	/** Hay rodillo bajo cada mitad del casco: rueda en lugar de arrastrarse. */
+	/**
+	 * Hay rodillo bajo cada mitad del casco (el tramo real de las piezas, no CenterS ±
+	 * eslora / 2): rueda en lugar de arrastrarse. Uno justo en el centro cuenta para una
+	 * sola mitad, así que hacen falta al menos dos.
+	 */
 	bool IsOnRollers() const;
 
 	/** Fracción del peso que sostiene el agua en la posición actual (0–1). */
@@ -317,6 +321,9 @@ private:
 	FRaftDamageReport ApplyJointDamage(const TArray<float>& Damage01);
 	float BottomZ() const;
 	void HullBoundsX(double& OutMinX, double& OutMaxX) const;
+	/** Tramo del camino que ocupa el casco: CenterS más la X mínima y máxima de las piezas. */
+	void HullSpanS(float& OutAftS, float& OutForeS) const;
+	bool IsUnderHull(float RollerS) const;
 
 	FHullAssemblyModel Hull;
 	TArray<FRaftJoint> Joints;
