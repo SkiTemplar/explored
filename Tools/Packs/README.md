@@ -79,6 +79,7 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 | `lote9-iconos` | Iconos de UI: fuego, refugio y estrella de los logros; laurel, candado y reloj de arena de las pantallas de logros y de guardado (Kenney Board Game Icons y Game Icons) | `docs/art/packs/lote9-iconos.png` |
 | `lote10-mar-y-coco` | Mitad de coco, pescado de arrecife y espina de pescado (Kenney Food Kit) | `docs/art/packs/lote10-mar-y-coco.png` |
 | `lote11-herreria` | Clavos y yunque de la herrería de la fase de metal (KayKit RPG Tools Bits) | `docs/art/packs/lote11-herreria.png` |
+| `lote12-lingotes` | Lingotes de cobre, hierro y aluminio de la fase de metal (KayKit Resource Bits; el aluminio tiñe la barra de plata) | `docs/art/packs/lote12-lingotes.png` |
 
 Kit de construcción (prioridad 2): Kenney Fantasy Town y Pirate y KayKit Medieval Builder se
 revisaron el 2026-09-28 y se descartaron (ver `discarded` del catálogo): ningún pack CC0
