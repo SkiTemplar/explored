@@ -815,6 +815,9 @@ datos todavía.
         todavía en Unreal.
         PR #126: lingotes de cobre, hierro y aluminio (KayKit Resource Bits), sin
         normalizar todavía en Unreal.
+        PR #130: mesa de cartografía (KayKit Furniture Bits), sin normalizar todavía en
+        Unreal; el suelo y la puerta de madera de ese lote se descartaron (no cuadran con
+        `docs/art/kit-construccion.md`).
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 

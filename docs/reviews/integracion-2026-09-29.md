@@ -82,3 +82,26 @@ commits desde su última revisión y siguen con `necesita-unreal`.
 - Nueva casilla «en parte» en Tala y recolección para la caída al agua (biblia 02 §1.5,
   PR #127): falta el subsistema del motor y la decisión sobre `Flota`.
 - #126 se anota en la nota «en parte» de la casilla de arte del GDD §7.1.
+
+## Ejecución 07:00 UTC
+
+Base: `origin/main` en `f6a9c8f` al empezar. Es nueva #130. #70 tiene dos commits nuevos
+(`71fd0ff` y `0c9ee8b`, de las 05:44 UTC). Las demás PR abiertas (#72, #75, #81, #82,
+#84–#87, #90, #96, #111, #114, #117 y #118) no tienen commits desde su última revisión y
+siguen con `necesita-unreal`.
+
+| PR | Rama | Decisión | Por qué |
+|---|---|---|---|
+| #130 | `nube/packs-2026-09-29c` | **Fusionada** (`4d2a46c`), solo con la mesa | Lote 13 de packs (kit de construcción). La mesa de cartografía (KayKit `table_medium`, 1,7 × 1,7 × 0,85 m) está bien. Añadí `0dd29dd`, que pasa a descartes dos piezas que no cuadran con `docs/art/kit-construccion.md`. **Suelo de madera:** el `floor.glb` de Kenney es un palé con huecos de 20 cm de canto y el kit pide `FLOOR_T = 0,15 m`, así que las paredes se hundirían 5 cm y quedaría un escalón junto a los suelos de bambú y piedra. **Puerta de madera:** `wall-wood-door.glb` es un panel de pared entero de 2 × 2 m con la hoja fija, pero el socket `puerta` es solo la hoja de 0,96 × 2,02 m con bisagra en x = 0, dentro de una pared de 2,50 m. `size_factor` solo escala de forma uniforme, así que ninguna de las dos se arregla desde el catálogo. Añadí también la fila del lote 13 al README de Packs. |
+| #70 | `nocturno/revision-2026-09-28` | Sin fusionar (`necesita-unreal`) | Revisé los commits nuevos. `71fd0ff` es correcto: `DigSphere` rechaza un `MaxVolume` NaN con `IsFinite` explícito, porque con matemáticas rápidas `!(x >= 0)` lo dejaba pasar, y rechaza radios mayores que `MaxBrushExtent`. Lleva su spec. El fallo sigue en `main`, así que comenté en la PR que conviene sacarlo en una PR aparte de modelo puro para poder fusionarlo desde la nube. |
+
+### Comprobaciones
+
+| PR | HostTests | HostTests ASan/UBSan | DataCheck `--strict` + pytest | Otros |
+|---|---|---|---|---|
+| #130 (rebasada sobre `main`, con `0dd29dd`) | — (no toca Source) | — | 0 errores, 0 avisos · 550 passed | Packs: ruff sin avisos · 64 passed, 1 skipped · CI en verde (7/7) |
+
+### 00-TODO.md
+
+- Ninguna casilla nueva en `[x]`. #130 se anota en la nota «en parte» de la casilla de arte
+  del GDD §7.1.
