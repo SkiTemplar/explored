@@ -531,6 +531,38 @@ al sacudir (§3.18).
     de radio. Las piezas de palma o bambú que toca pierden el 40 % de su integridad
     máxima (biblia 02 §1.2); las de madera y piedra aguantan. El arbusto no aplasta.
     Cada pieza cuenta una vez aunque el tronco la cruce entera.
+  - **Caída al agua [biblia 02 §1.5; números pendientes de validar].** Lo que el árbol
+    suelta en el agua (`FFelledDriftModel`) se comporta así:
+    - **Flota o se hunde.** Flota si es menos denso que el agua de mar y tiene más agua
+      debajo que su calado. La madera dura y la resina se hunden y se recogen buceando.
+    - **Deriva** con la corriente local (`FOceanCurrents`), la misma que arrastra un
+      barco sin amarrar.
+    - **Vara** donde toca fondo (el primer punto con menos agua que su calado). Solo
+      vuelve a flotar si sube el agua: un tronco caído en la franja intermareal con la
+      bajamar se lo lleva la pleamar si nadie lo recoge. Nunca salta una barra de arena:
+      mira la profundidad cada 25 cm.
+    - **Entrega.** A los 10 min reales flotando sin que nadie lo recoja (o al alejarse
+      todos más de 80 m), el tronco pasa a ser `madera_flotante` normal, la de las playas
+      y la pesca. El coco sigue siendo coco. Las hojas, la fibra, la corteza, las
+      cáscaras y las ramas finas se deshacen.
+    - Ninguna pieza desaparece sin pasar por recogida, entrega o deshecho (lo comprueba
+      el spec).
+
+    | Objeto | Flota | Calado (cm) | Si nadie lo recoge |
+    |---|---|---|---|
+    | `tronco_pequeno` | sí | 20 | `madera_flotante` |
+    | `madera_blanda`, `madera_flotante` | sí | 8 | `madera_flotante` |
+    | `madera_dura`, `resina` | no, al fondo | — | se queda en el fondo |
+    | `coco_maduro` / `coco_verde` | sí | 8 / 10 | sigue siendo coco |
+    | `rama_seca`, `rama_verde`, `palo_recto`, `vara_flexible` | sí | 2–4 | se deshace |
+    | `hoja_palma`, `hoja_platano`, `fibra_coco`, `corteza`, `liana`, `algodon_silvestre`, `cascara_coco` | sí | 1–3 | se deshace |
+
+    Paso fijo de 0,5 s. El resultado no depende de los fotogramas.
+
+    La columna «Flota» sale de la densidad del material, no de la propiedad de crafteo
+    `Flota` de `items.json`, que solo llevan `madera_blanda` y `madera_flotante`. La
+    biblia 02 §1.5 dice «`Flota` heredado del material»: falta que el director decida si
+    se añade esa propiedad a los demás objetos o si manda esta tabla.
   - **Tocón.**
     - Al talar queda un tocón. A los N días echa un brote, que crece desde el 15 %
       hasta adulto y entonces se puede volver a talar.
@@ -569,9 +601,9 @@ al sacudir (§3.18).
     actuales no tienen tiempo.
   - La caída es un actor temporal, no física.
   - Ver `docs/tecnico/tala-integracion.md`.
-- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`),
-  `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry` (clase de
-  herramienta).
+- **Dependencias:** `WorldGen` (`FFellingModel`, `FGroundBranchModel`, `FHarvestModel`,
+  `FFelledDriftModel`), `Save` (sección `vegetationClock`), `Sky` (reloj de juego), `Carry`
+  (clase de herramienta), `Ocean` (`FOceanCurrents`, `FOceanTide`).
 
 ### 3.13 Mundo interactivo: arena viva **[director, 2026-09-27]**
 
