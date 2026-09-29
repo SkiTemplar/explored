@@ -90,7 +90,8 @@ float FIslandShelfModel::Profile(const FIslandShelf& Shelf, float Angle, float T
 		return H;
 	}
 	// Talud: Hermite desde el borde con la pendiente de la rampa hasta el fondo, sin arista.
-	const float Target = FMath::Min(Floor, Edge);
+	// Fondo no finito: el talud se queda en la cota del borde (FMath::Min no descarta NaN con /fp:fast).
+	const float Target = FMath::IsFinite(Floor) ? FMath::Min(Floor, Edge) : Edge;
 	const float Slope = FMath::Max(Shelf.SlopeWidth(Angle), 0.02f);
 	const float Y = FMath::Min((X - 1.0f) * Width / Slope, 1.0f);
 	const float Drop = Target - Edge;

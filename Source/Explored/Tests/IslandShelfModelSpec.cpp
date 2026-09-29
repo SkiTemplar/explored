@@ -92,6 +92,19 @@ void FIslandShelfModelSpec::Define()
 			}
 		});
 
+		It("no propaga un fondo no finito al talud: se queda en la cota del borde", [this]()
+		{
+			const FIslandShelf Shelf = FIslandShelfModel::Build(5u, {});
+			const float Bad[] = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
+				-std::numeric_limits<float>::infinity()};
+			for (const float BadFloor : Bad)
+			{
+				// T 1,9 queda más allá de la plataforma (anchura máxima 0,41): es el tramo del talud.
+				const float H = FIslandShelfModel::Profile(Shelf, 0.5f, 1.9f, BadFloor, Foot, 0.0f);
+				TestTrue(*FString::Printf(TEXT("fondo %f: altura %f"), BadFloor, H), FMath::IsFinite(H) && H < Foot);
+			}
+		});
+
 		It("no devuelve alturas no finitas con entradas no finitas", [this]()
 		{
 			const FIslandShelf Shelf = FIslandShelfModel::Build(5u, {});
