@@ -642,7 +642,9 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
     0,06 m³). Lo cavado va al cubo como arena, que tiene masa exacta. Al apilar se echa
     lo que se lleva y nada más. Ningún pincel pasa de **8 m** de radio (el lado de un
     chunk); uno mayor no hace nada, para que un dato malo o una petición manipulada no
-    deje al servidor recorriendo millones de columnas.
+    deje al servidor recorriendo millones de columnas. Tampoco se edita arena a más de
+    **262 km** del origen (la clave de chunk va en 16 bits en la red y en el guardado):
+    toda isla cabe de sobra, y así una edición lejana no puede estropear la partida.
   - **La arena no desaparece.** La avalancha es un traspaso entre columnas vecinas. El
     oleaje cambia arena con el **banco del mar** (la arena en suspensión de la resaca):
     lo que alisa de un montón va al banco y lo que rellena un hoyo sale de él. La suma
@@ -691,7 +693,8 @@ tamaño de la rejilla, la capa de arena y las pasadas por revisión.
   | Arena sujeta por una estructura | ≤ 1 m de la huella | biblia 02 §5.3 |
   | Radio activo alrededor de cada jugador | 80 m hasta el borde del chunk | biblia 08 §2.6 |
   | Tope de columnas cambiadas | 64 por chunk y revisión | biblia 08 §2.6 |
-  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta | biblia 08 §2.6 |
+  | Revisiones acumuladas al acercarse | 4 como máximo, de golpe; el resto se descarta; se guardan con la partida | biblia 08 §2.6 |
+  | Alcance de la edición | ±262 km del origen (clave de chunk de 16 bits) | biblia 08 §2.2 |
   | Paquete de red | versión 2, capa 1, ≤ 512 B | biblia 08 §2.2 |
 
 - **Progresión:** con la pala tosca desde el primer día (hoyos para cocinar bajo
