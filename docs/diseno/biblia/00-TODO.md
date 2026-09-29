@@ -189,6 +189,13 @@ salir de la isla.
         golpes + pendiente) y `6d5c1b7` (PR #123): `ApplyWindToFall` (±20°, ±15°
         la palmera) y `ComputeCrush` (40 % de integridad a palma y bambú) en el modelo puro
         — falta engancharlo a un actor y a `UBuildingSubsystem`.
+- [ ] `WorldGen`: lo que suelta un árbol talado que cae al agua flota y, si nadie lo
+      recoge, pasa a madera flotante normal. *(biblia 02 §1.5)*
+      → **En parte:** PR #127, `WorldGen/FelledDriftModel.h` (`FFelledDriftModel`: flota o
+        se hunde, deriva con `FOceanCurrents`, vara, se refloata con la marea y se entrega
+        como `madera_flotante`) — falta el `UFelledDriftSubsystem` del motor
+        (`docs/tecnico/tala-integracion.md`) y que el director decida si la flotación sale
+        de la propiedad `Flota` de `items.json` o de la tabla de densidades del modelo.
 - [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
       según especie) — hoy `RegrowHours` es `0.0f` (permanente) para
       `Palm`/`JungleGiant`/`JungleWide` y solo `Mangrove` rebrota (480 h). Decisión de
@@ -806,6 +813,8 @@ datos todavía.
         sin normalizar todavía en Unreal.
         PR #121: clavos y yunque de la herrería (KayKit RPG Tools Bits), sin normalizar
         todavía en Unreal.
+        PR #126: lingotes de cobre, hierro y aluminio (KayKit Resource Bits), sin
+        normalizar todavía en Unreal.
 
 ### Red y cooperativo — mapa compartido, guardado y sesiones (biblia 08)
 
