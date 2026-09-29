@@ -7,6 +7,11 @@ namespace VegetationClockPriv
 	/** Orden del componente por texto sin mayúsculas: FName compara sin distinguirlas, así que el orden tampoco puede. */
 	int32 CompareComponents(FName A, FName B)
 	{
+		// Casi siempre es el mismo componente: sin crear dos cadenas por comparación.
+		if (A == B)
+		{
+			return 0;
+		}
 		return A.ToString().ToLower().Compare(B.ToString().ToLower());
 	}
 
@@ -73,6 +78,12 @@ void FVegetationClockModel::RecordFelled(const FVegetationStumpKey& Key, int64 N
 	if (Entries.IsValidIndex(At) && !KeyLess(Key, Entries[At].Key))
 	{
 		Entries[At].Stump = Stump;
+		return;
+	}
+	if (Entries.Num() >= MaxEntries)
+	{
+		// Lleno: Load rechazaría un guardado con más, y tras ese rechazo todos los tocones
+		// volverían con la hora de carga. El que no entra queda como un talado sin hora.
 		return;
 	}
 	FVegetationStumpEntry Entry;
@@ -171,7 +182,7 @@ int32 FVegetationClockModel::Reconcile(FName Component, const FSaveScatterDeltas
 		Key.Cell = Cell;
 		Key.Component = Component;
 		Key.Index = Index;
-		if (VegetationClockPriv::IsValidKey(Key) && !Find(Key))
+		if (Entries.Num() + Missing.Num() < MaxEntries && VegetationClockPriv::IsValidKey(Key) && !Find(Key))
 		{
 			Missing.Add(Key);
 		}

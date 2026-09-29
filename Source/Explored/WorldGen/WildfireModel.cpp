@@ -149,9 +149,16 @@ int32 FWildfireModel::SpreadChancePermille(const FWildfireConditions& Conditions
 		return 0;
 	}
 	int32 Bonus = 0;
-	const FVector2D Wind = Conditions.WindDirection;
+	// Escalado por la mayor componente antes de medirlo: una dirección finita pero enorme (1e308)
+	// desbordaría el producto escalar a infinito y el coseno saldría NaN.
+	FVector2D Wind = Conditions.WindDirection;
 	const bool bWindValid = FMath::IsFinite(Wind.X) && FMath::IsFinite(Wind.Y) && FMath::IsFinite(Conditions.Wind);
-	const double WindLen = bWindValid ? Wind.Size() : 0.0;
+	const double WindMax = bWindValid ? FMath::Max(FMath::Abs(Wind.X), FMath::Abs(Wind.Y)) : 0.0;
+	if (WindMax > 0.0)
+	{
+		Wind /= WindMax;
+	}
+	const double WindLen = WindMax > UE_KINDA_SMALL_NUMBER ? Wind.Size() : 0.0;
 	if (bWindValid && Conditions.Wind >= CalmWind && WindLen > UE_KINDA_SMALL_NUMBER && (Offset.X != 0 || Offset.Y != 0))
 	{
 		const FVector2D Dir((double)Offset.X, (double)Offset.Y);

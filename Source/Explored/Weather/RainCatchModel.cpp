@@ -35,7 +35,9 @@ namespace
 		{
 			return 0;
 		}
-		return static_cast<int64>(FMath::RoundToDouble(MmPerHour * AreaM2 * static_cast<double>(FRainCatchModel::MicroLPerLiter) / 60.0));
+		// Acotado antes de convertir: un double por encima de int64 es comportamiento indefinido.
+	const double PerMinute = MmPerHour * AreaM2 * static_cast<double>(FRainCatchModel::MicroLPerLiter) / 60.0;
+	return static_cast<int64>(FMath::RoundToDouble(FMath::Min(PerMinute, static_cast<double>(FRainCatchModel::MaxCapacityMicroL))));
 	}
 
 	/**
@@ -65,12 +67,26 @@ namespace
 			}
 			FromOther = FMath::Min(FromOther, State.OtherMicroL);
 		}
+		// El mar sale en proporción de lo ajeno, con el mismo redondeo (los dos ≤ 1e9 tras Sanitize).
+		int64 FromSea = 0;
+		if (FromOther > 0 && State.SeaMicroL > 0)
+		{
+			FromSea = FromOther == State.OtherMicroL
+				? State.SeaMicroL
+				: (FromOther * State.SeaMicroL + (bRoundOtherUp ? State.OtherMicroL - 1 : 0)) / State.OtherMicroL;
+			FromSea = FMath::Min(FromSea, State.SeaMicroL);
+		}
 		const int64 FromRain = FMath::Min(Amount - FromOther, State.RainMicroL);
 		State.OtherMicroL -= FromOther;
+		State.SeaMicroL -= FromSea;
 		State.RainMicroL -= FromRain;
 		if (State.OtherMicroL == 0)
 		{
 			State.OtherKind = ERainCatchLiquid::None;
+		}
+		else if (State.SeaMicroL == 0 && State.OtherKind == ERainCatchLiquid::Sea)
+		{
+			State.OtherKind = ERainCatchLiquid::Untreated;
 		}
 		if (OutRain) { *OutRain = FromRain; }
 		if (OutOther) { *OutOther = FromOther; }
@@ -93,6 +109,7 @@ void FRainCatchModel::Sanitize(FRainCatchState& State)
 {
 	State.RainMicroL = FMath::Clamp<int64>(State.RainMicroL, 0, MaxCapacityMicroL);
 	State.OtherMicroL = FMath::Clamp<int64>(State.OtherMicroL, 0, MaxCapacityMicroL);
+	State.SeaMicroL = FMath::Clamp<int64>(State.SeaMicroL, 0, State.OtherMicroL);
 	if (State.OtherMicroL == 0 || static_cast<uint8>(State.OtherKind) > static_cast<uint8>(ERainCatchLiquid::Sea))
 	{
 		State.OtherKind = State.OtherMicroL == 0 ? ERainCatchLiquid::None : ERainCatchLiquid::Sea;
@@ -101,6 +118,15 @@ void FRainCatchModel::Sanitize(FRainCatchState& State)
 	{
 		// Agua ajena sin tipo: se trata como sin tratar, nunca como limpia.
 		State.OtherKind = ERainCatchLiquid::Untreated;
+	}
+	if (State.OtherKind == ERainCatchLiquid::Sea && State.SeaMicroL == 0)
+	{
+		// Guardado sin la parte de mar (o tipo corrupto): todo lo ajeno cuenta como mar, nunca menos salado.
+		State.SeaMicroL = State.OtherMicroL;
+	}
+	else if (State.SeaMicroL > 0)
+	{
+		State.OtherKind = ERainCatchLiquid::Sea;
 	}
 }
 
@@ -194,7 +220,8 @@ FRainCatchSpec FRainCatchModel::SpecForItem(FName ItemId, float RecipienteValue,
 	FRainCatchSpec Spec;
 	Spec.MouthAreaM2 = MouthAreaM2ForItem(ItemId);
 	const float Liters = FMath::IsFinite(RecipienteValue) ? FInventoryModel::LiquidCapacityFromRecipiente(RecipienteValue) : 0.0f;
-	Spec.CapacityMicroL = Spec.MouthAreaM2 > 0.0 ? static_cast<int64>(FMath::RoundToDouble(static_cast<double>(Liters) * MicroLPerLiter)) : 0;
+	const double MicroL = FMath::Clamp(static_cast<double>(Liters) * MicroLPerLiter, 0.0, static_cast<double>(MaxCapacityMicroL));
+	Spec.CapacityMicroL = Spec.MouthAreaM2 > 0.0 ? static_cast<int64>(FMath::RoundToDouble(MicroL)) : 0;
 	Spec.bSheltered = bSheltered;
 	return Spec;
 }
@@ -329,6 +356,10 @@ int64 FRainCatchModel::Pour(FRainCatchState& State, const FRainCatchSpec& Spec, 
 	else
 	{
 		State.OtherMicroL += Accepted;
+		if (Kind == ERainCatchLiquid::Sea)
+		{
+			State.SeaMicroL += Accepted;
+		}
 		State.OtherKind = static_cast<ERainCatchLiquid>(FMath::Max(static_cast<uint8>(State.OtherKind), static_cast<uint8>(Kind)));
 	}
 	return Accepted;
@@ -358,8 +389,7 @@ ERainCatchQuality FRainCatchModel::Quality(const FRainCatchState& InState)
 	{
 		return ERainCatchQuality::Rain;
 	}
-	if (State.OtherKind == ERainCatchLiquid::Sea &&
-		static_cast<double>(State.OtherMicroL) >= SeaFractionForSalty * static_cast<double>(Total))
+	if (static_cast<double>(State.SeaMicroL) >= SeaFractionForSalty * static_cast<double>(Total))
 	{
 		return ERainCatchQuality::Sea;
 	}

@@ -284,6 +284,27 @@ void FVegetationClockModelSpec::Define()
 			TestEqual(TEXT("idempotente"), Clock.Reconcile(FName(TEXT("PalmHISM")), Felled, LoadMinute + 5), 0);
 		});
 
+		It("no pasa de MaxEntries aunque la capa «felled» tenga más: el guardado sigue cargando", [this]()
+		{
+			FSaveScatterDeltas Felled;
+			for (int32 I = 0; I <= FSaveIndexSet::MaxIndex; ++I)
+			{
+				Felled.Add(FIntPoint(0, 0), I);
+			}
+			Felled.Add(FIntPoint(1, 0), 3);
+			FVegetationClockModel Clock;
+			Clock.RecordFelled(Key(-1, 0, TEXT("GiantHISM"), 0), 5);
+			TestEqual(TEXT("se llena hasta el tope"), Clock.Reconcile(FName(TEXT("PalmHISM")), Felled, 7), FVegetationClockModel::MaxEntries - 1);
+			TestEqual(TEXT("tope"), Clock.Num(), FVegetationClockModel::MaxEntries);
+			Clock.RecordFelled(Key(2, 0, TEXT("PalmHISM"), 0), 9);
+			TestEqual(TEXT("una tala más no entra"), Clock.Num(), FVegetationClockModel::MaxEntries);
+			TestNull(TEXT("ni queda a medias"), Clock.Find(Key(2, 0, TEXT("PalmHISM"), 0)));
+			Clock.RecordFelled(Key(-1, 0, TEXT("GiantHISM"), 0), 11);
+			const FStumpState* Again = Clock.Find(Key(-1, 0, TEXT("GiantHISM"), 0));
+			TestTrue(TEXT("volver a talar uno que ya está sí reinicia su hora"), Again && Again->FelledAtMinute == 11);
+			TestEqual(TEXT("reconciliar otra vez no añade"), Clock.Reconcile(FName(TEXT("PalmHISM")), Felled, 8), 0);
+		});
+
 		It("tras una sección ilegible, todos los tocones vuelven con la hora de carga", [this]()
 		{
 			FSaveScatterDeltas PalmFelled, GiantFelled;

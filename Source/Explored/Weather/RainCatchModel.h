@@ -65,7 +65,11 @@ struct EXPLORED_API FRainCatchRates
 struct EXPLORED_API FRainCatchState
 {
 	int64 RainMicroL = 0;
+	/** Agua ajena (sin tratar más la de mar). */
 	int64 OtherMicroL = 0;
+	/** Parte de OtherMicroL que es agua de mar: el umbral de salobre se mide con ella. */
+	int64 SeaMicroL = 0;
+	/** El tipo más fuerte presente: Sea si SeaMicroL > 0. Un estado antiguo sin SeaMicroL con Sea se toma todo como mar. */
 	ERainCatchLiquid OtherKind = ERainCatchLiquid::None;
 	int64 LastUpdateMinute = 0;
 

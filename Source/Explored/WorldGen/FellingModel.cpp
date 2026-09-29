@@ -232,7 +232,9 @@ bool FFellingModel::ApplyHit(const FFellingProfile& Profile, FFellingProgress& P
 		return false;
 	}
 	const int32 Work = WorkPerHit(Hits);
-	Progress.Push += HitDirection.GetSafeNormal() * ((double)Work / (double)WorkToFell);
+	// Un golpe con dirección no finita cuenta como trabajo sin empuje: si no, el NaN se quedaría en Push para siempre.
+	const bool bFiniteDir = FMath::IsFinite(HitDirection.X) && FMath::IsFinite(HitDirection.Y);
+	Progress.Push += (bFiniteDir ? HitDirection.GetSafeNormal() : FVector2D::ZeroVector) * ((double)Work / (double)WorkToFell);
 	Progress.Work = FMath::Min(Progress.Work + Work, WorkToFell);
 	return Progress.Work >= WorkToFell;
 }
