@@ -69,6 +69,12 @@
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote10-mar-y-coco.png",
       "scope": "Mitad de coco, pescado de arrecife y espina de pescado de las primeras horas en Landing con Kenney Food Kit."
+    },
+    {
+      "id": "lote11-herreria",
+      "date": "2026-09-29",
+      "sheet": "docs/art/packs/lote11-herreria.png",
+      "scope": "Herrería de la fase de metal (prioridad 2, banco de producción): clavos y yunque con KayKit RPG Tools Bits."
     }
   ],
   "entries": [
@@ -1624,6 +1630,68 @@
         -90
       ],
       "note": "Espina de pez de Kenney; larga en +X."
+    },
+    {
+      "gameId": "clavos",
+      "kind": "item",
+      "lote": "lote11-herreria",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/nail.gltf",
+      "mesh": "SM_Pack_Clavos",
+      "size": {
+        "axis": "max",
+        "m": 0.05
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#738692",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#8a9ba5",
+            "to": "metal.acero"
+          }
+        ],
+        "default": "metal.hierro"
+      },
+      "note": "Clavo forjado de 5 cm: el yunque los estira (recipes_smithing.json). Un solo clavo de malla; la pila de N la pone el icono del inventario. Cabeza más clara (metal.acero) para leerse a distancia de mano."
+    },
+    {
+      "gameId": "yunque",
+      "kind": "pieza",
+      "lote": "lote11-herreria",
+      "pack": "kaykit_rpg_tools_bits",
+      "file": "KayKit_RPGToolsBits_1.0_FREE/Assets/gltf/anvil.gltf",
+      "mesh": "SM_Pack_Yunque",
+      "size": {
+        "axis": "max",
+        "m": 0.8
+      },
+      "pivot": {
+        "kind": "base"
+      },
+      "recolor": {
+        "rules": [
+          {
+            "from": "#3b5161",
+            "to": "piedra.basalto"
+          },
+          {
+            "from": "#506775",
+            "to": "metal.hierro"
+          },
+          {
+            "from": "#6e818e",
+            "to": "metal.hierro"
+          }
+        ],
+        "default": "piedra.basalto"
+      },
+      "note": "Yunque de bloque de basalto con cara de trabajo de hierro (coste: 4 basalto + 1 lingote de hierro). 80 cm de largo con la punta; base = centro de la huella, z = 0 en el suelo."
     }
   ],
   "discarded": [
