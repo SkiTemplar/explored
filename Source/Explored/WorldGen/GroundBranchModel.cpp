@@ -87,8 +87,16 @@ int32 FGroundBranchModel::Advance(FGroundBranchCell& Cell, const TArray<FGroundB
 	return Spawned;
 }
 
-bool FGroundBranchModel::Pick(FGroundBranchCell& Cell, uint32 Serial, FGroundBranch* OutBranch)
+bool FGroundBranchModel::Pick(FGroundBranchCell& Cell, const TArray<FGroundBranchSource>& Sources, int64 NowMinute, uint32 Serial,
+	FGroundBranch* OutBranch, int32* OutSpawned)
 {
+	// Con la celda llena, este avance pone el acumulador a cero y el reloj en NowMinute: el
+	// hueco que deja la recogida solo empieza a rellenarse desde ahora.
+	const int32 Spawned = Advance(Cell, Sources, NowMinute);
+	if (OutSpawned)
+	{
+		*OutSpawned = Spawned;
+	}
 	for (int32 i = 0; i < Cell.Present.Num(); ++i)
 	{
 		if (Cell.Present[i].Serial == Serial)

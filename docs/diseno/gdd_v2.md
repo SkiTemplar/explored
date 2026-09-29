@@ -576,7 +576,9 @@ al sacudir (§3.18).
   - **Ramas sueltas.** Bajo cada ejemplar en pie se encuentran ramas en el suelo (hojas
     secas bajo las palmeras). Se recogen a mano y reaparecen a su ritmo hasta llenar la
     capacidad. Con la celda llena no se acumula nada, así que no aparece una ráfaga de
-    ramas al volver. Un tocón no da ramas: un bosque talado se queda sin leña fácil.
+    ramas al volver. El hueco que deja una rama recogida empieza a rellenarse en el
+    momento de recogerla, aunque la celda llevara días sin simularse: con 2 ramas al día,
+    la siguiente aparece a las 12 horas. Un tocón no da ramas: un bosque talado se queda sin leña fácil.
 
   | Especie | Mano / contundente / filo | Altura (m) | Copa (m) | Rebrote + adulto (días) | Pala para arrancar | Ramas del suelo (máx., por día) |
   |---|---|---|---|---|---|---|

@@ -66,8 +66,15 @@ struct EXPLORED_API FGroundBranchModel
 	 */
 	static int32 Advance(FGroundBranchCell& Cell, const TArray<FGroundBranchSource>& Sources, int64 NowMinute);
 
-	/** Recoge la rama con ese número. Devuelve false si no está (ya recogida o inexistente). */
-	static bool Pick(FGroundBranchCell& Cell, uint32 Serial, FGroundBranch* OutBranch = nullptr);
+	/**
+	 * Recoge la rama con ese número a la hora NowMinute. Devuelve false si no está (ya
+	 * recogida o inexistente). Antes avanza la celda hasta NowMinute: si no, el siguiente
+	 * Advance contaría como acumulación el tiempo en que estuvo llena y soltaría una ráfaga.
+	 * Las ramas que aparezcan en ese avance quedan en Present y se cuentan en OutSpawned,
+	 * como las que devuelve Advance, para que el motor las pinte.
+	 */
+	static bool Pick(FGroundBranchCell& Cell, const TArray<FGroundBranchSource>& Sources, int64 NowMinute, uint32 Serial,
+		FGroundBranch* OutBranch = nullptr, int32* OutSpawned = nullptr);
 
 	/** Dónde aparece la rama número Serial: bajo un ejemplar elegido por capacidad y dentro de su copa. Determinista. */
 	static FGroundBranch PlaceBranch(uint32 CellSeed, uint32 Serial, const TArray<FGroundBranchSource>& Sources);
