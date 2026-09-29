@@ -325,7 +325,10 @@ public:
 	// --- Guardado ---
 
 	/**
-	 * {"v":1,"cell":0.25,"n":32,"chunks":[[CX,CY,[Inicio,Cuenta,d…,…]],…],"dirty":[X,Y,…],"sea":S.
+	 * {"v":1,"cell":0.25,"n":32,"chunks":[[CX,CY,[Inicio,Cuenta,d…,…]],…],"dirty":[X,Y,…],"sea":S,
+	 *  "frozen":[CX,CY,Deuda,…],"stale":[CX,CY,…],"acc":Ms,"wake":[PleamarMm,Lluvia]}.
+	 * Las cuatro últimas son el reloj (opcionales al cargar: las partidas anteriores no las
+	 * tienen), para que la partida cargada siga exactamente igual que la original.
 	 * Los anclajes no se guardan: los vuelve a poner el sistema de construcción al cargar.
 	 */
 	FSaveValue ToValue() const;

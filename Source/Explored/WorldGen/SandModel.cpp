@@ -1140,6 +1140,39 @@ FSaveValue FSandModel::ToValue() const
 	}
 	Root.Set(TEXT("dirty"), MoveTemp(DirtyList));
 	Root.Set(TEXT("sea"), FSaveValue::MakeInt(SeaBank));
+
+	// Estado del reloj: sin él, una partida cargada sigue distinto que la original (pierde la
+	// deuda de los chunks congelados, la fracción de segundo y qué chunks quedan por mojar).
+	auto ChunkKeys = [](const TArray<FIntPoint>& Keys, const TMap<FIntPoint, int32>* Counts)
+	{
+		FSaveValue List = FSaveValue::MakeArray();
+		for (const FIntPoint& Key : Keys)
+		{
+			List.Add(FSaveValue::MakeInt(Key.X));
+			List.Add(FSaveValue::MakeInt(Key.Y));
+			if (Counts)
+			{
+				List.Add(FSaveValue::MakeInt(Counts->FindChecked(Key)));
+			}
+		}
+		return List;
+	};
+	TArray<FIntPoint> Frozen;
+	FrozenRevisions.GetKeys(Frozen);
+	Frozen.Sort(&SandModelDetail::ColumnLess);
+	Root.Set(TEXT("frozen"), ChunkKeys(Frozen, &FrozenRevisions));
+	TArray<FIntPoint> Stale;
+	StaleWetChunks.GetKeys(Stale);
+	Stale.Sort(&SandModelDetail::ColumnLess);
+	Root.Set(TEXT("stale"), ChunkKeys(Stale, nullptr));
+	Root.Set(TEXT("acc"), FSaveValue::MakeInt(AccumulatedMs));
+	if (bHasWoken)
+	{
+		FSaveValue Wake = FSaveValue::MakeArray();
+		Wake.Add(FSaveValue::MakeInt(LastWakeHighMm));
+		Wake.Add(FSaveValue::MakeInt(bLastWakeRaining ? 1 : 0));
+		Root.Set(TEXT("wake"), MoveTemp(Wake));
+	}
 	return Root;
 }
 
@@ -1254,6 +1287,71 @@ bool FSandModel::FromValue(const FSaveValue& Value)
 			return Fail();
 		}
 		SeaBank = Bank;
+	}
+
+	// Estado del reloj (opcional: las partidas anteriores no lo tienen y empiezan de cero).
+	// Una clave de chunk debe caber en el int16 del paquete, como las de "chunks".
+	auto ReadChunkKey = [](const FSaveValue& X, const FSaveValue& Y, FIntPoint& Out)
+	{
+		return ReadInt32(X, Out.X) && ReadInt32(Y, Out.Y) && Out.X >= -MaxChunkKey - 1 && Out.X <= MaxChunkKey
+			&& Out.Y >= -MaxChunkKey - 1 && Out.Y <= MaxChunkKey;
+	};
+	if (const FSaveValue* Frozen = Value.Find(TEXT("frozen")))
+	{
+		if (!Frozen->IsArray() || Frozen->Num() % 3 != 0 || Frozen->Num() / 3 > MaxSavedDirtyColumns)
+		{
+			return Fail();
+		}
+		for (int32 I = 0; I < Frozen->Num(); I += 3)
+		{
+			FIntPoint Key;
+			int32 Missed = 0;
+			if (!ReadChunkKey(Frozen->At(I), Frozen->At(I + 1), Key) || !ReadInt32(Frozen->At(I + 2), Missed)
+				|| Missed < 1 || Missed > MaxCatchUpRevisions || FrozenRevisions.Contains(Key))
+			{
+				return Fail();
+			}
+			FrozenRevisions.Add(Key, Missed);
+		}
+	}
+	if (const FSaveValue* Stale = Value.Find(TEXT("stale")))
+	{
+		if (!Stale->IsArray() || Stale->Num() % 2 != 0 || Stale->Num() / 2 > MaxSavedDirtyColumns)
+		{
+			return Fail();
+		}
+		for (int32 I = 0; I < Stale->Num(); I += 2)
+		{
+			FIntPoint Key;
+			if (!ReadChunkKey(Stale->At(I), Stale->At(I + 1), Key))
+			{
+				return Fail();
+			}
+			StaleWetChunks.FindOrAdd(Key);
+		}
+	}
+	if (const FSaveValue* Acc = Value.Find(TEXT("acc")))
+	{
+		int32 Ms = 0;
+		if (!ReadInt32(*Acc, Ms) || Ms < 0 || Ms >= TickMs)
+		{
+			return Fail();
+		}
+		AccumulatedMs = Ms;
+	}
+	if (const FSaveValue* Wake = Value.Find(TEXT("wake")))
+	{
+		int64 HighMm = 0;
+		int32 Raining = 0;
+		// La pleamar, en la misma cota que TideMm (±1 000 km).
+		if (!Wake->IsArray() || Wake->Num() != 2 || !Wake->At(0).TryGetInt(HighMm) || FMath::Abs(HighMm) > 1000000000
+			|| !ReadInt32(Wake->At(1), Raining) || (Raining != 0 && Raining != 1))
+		{
+			return Fail();
+		}
+		bHasWoken = true;
+		LastWakeHighMm = HighMm;
+		bLastWakeRaining = Raining == 1;
 	}
 	return true;
 }

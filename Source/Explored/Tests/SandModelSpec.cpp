@@ -1258,6 +1258,102 @@ void FSandModelSpec::Define()
 			TestEqual(TEXT("masa"), Loaded.TotalMass(), Model.TotalMass());
 		});
 
+		It("ida y vuelta con un chunk congelado recupera la misma deuda de revisiones", [this, Flat]()
+		{
+			// Antes no se guardaba la deuda: la original hacía 4 revisiones de golpe al llegar el
+			// jugador y la cargada ninguna, y a partir de ahí divergían.
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(200.0, 0.0), 30000), Flat);
+			FSandEnvironment Env = Dry();
+			for (int32 T = 0; T < 4; ++T)
+			{
+				Model.Tick(Env, Flat);
+			}
+			FSandModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
+			TestTrue(TEXT("guardar lo cargado da lo mismo"), Loaded.ToValue() == Model.ToValue());
+			Env.Focus = FVector2D(200.0, 0.0);
+			const FSandResult A = Model.Tick(Env, Flat);
+			const FSandResult B = Loaded.Tick(Env, Flat);
+			TestEqual(TEXT("revisiones de recuperación"), B.CatchUpRevisions, A.CatchUpRevisions);
+			TestEqual(TEXT("las 4"), A.CatchUpRevisions, FSandModel::MaxCatchUpRevisions);
+			TestTrue(TEXT("sigue igual"), Loaded == Model);
+			Settle(Model, Env, Flat);
+			Settle(Loaded, Env, Flat);
+			TestTrue(TEXT("asentada igual"), Loaded == Model);
+		});
+
+		It("ida y vuelta a mitad de segundo y de marea pendiente continúa igual", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D(0.5, 0.5), 20000), Flat);
+			FSandModel Far;
+			FSandEnvironment Env = Dry();
+			TestEqual(TEXT("medio segundo no revisa"), Model.Advance(500, Env, Flat).Ticks, 0);
+			FSandModel Loaded;
+			TestTrue(TEXT("carga"), Loaded.FromValue(Model.ToValue()));
+			TestEqual(TEXT("la fracción se guarda"), Loaded.Advance(500, Env, Flat).Ticks, Model.Advance(500, Env, Flat).Ticks);
+			TestTrue(TEXT("igual"), Loaded == Model);
+
+			// Un montón lejano, con la pleamar subiendo mientras nadie está cerca: el chunk queda
+			// pendiente de mojar. Al cargar se conserva qué pleamar vio y qué falta por revisar.
+			Far.Pile(Spike(FVector2D(300.0, 0.0), 20000), Flat);
+			Far.Tick(Env, Flat);
+			Env.HighTide = 5.0;
+			Far.Tick(Env, Flat);
+			FSandModel FarLoaded;
+			TestTrue(TEXT("carga lejos"), FarLoaded.FromValue(Far.ToValue()));
+			TestTrue(TEXT("guardar lo cargado da lo mismo"), FarLoaded.ToValue() == Far.ToValue());
+			Env.Focus = FVector2D(300.0, 0.0);
+			for (int32 T = 0; T < 6; ++T)
+			{
+				TestEqual(TEXT("mismas columnas activas"), FarLoaded.Tick(Env, Flat).ActiveColumns, Far.Tick(Env, Flat).ActiveColumns);
+			}
+			TestTrue(TEXT("sigue igual"), FarLoaded == Far);
+		});
+
+		It("rechaza un estado del reloj manipulado y acepta partidas sin él", [this, Flat]()
+		{
+			FSandModel Model;
+			Model.Pile(Spike(FVector2D::ZeroVector, 5000), Flat);
+			const FSaveValue Good = Model.ToValue();
+			FSandModel Probe;
+			FSaveValue Old = Good;
+			Old.Remove(TEXT("frozen"));
+			Old.Remove(TEXT("stale"));
+			Old.Remove(TEXT("acc"));
+			Old.Remove(TEXT("wake"));
+			TestTrue(TEXT("partida anterior"), Probe.FromValue(Old));
+
+			auto With = [&Good](const TCHAR* Key, std::initializer_list<int64> Values)
+			{
+				FSaveValue V = Good;
+				FSaveValue List = FSaveValue::MakeArray();
+				for (const int64 X : Values)
+				{
+					List.Add(FSaveValue::MakeInt(X));
+				}
+				V.Set(Key, MoveTemp(List));
+				return V;
+			};
+			TestTrue(TEXT("deuda válida"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 4 })));
+			TestFalse(TEXT("deuda de más"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, FSandModel::MaxCatchUpRevisions + 1 })));
+			TestFalse(TEXT("deuda cero"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 0 })));
+			TestFalse(TEXT("deuda repetida"), Probe.FromValue(With(TEXT("frozen"), { 3, -2, 1, 3, -2, 1 })));
+			TestFalse(TEXT("chunk congelado fuera del int16"), Probe.FromValue(With(TEXT("frozen"), { 40000, 0, 1 })));
+			TestFalse(TEXT("pendientes impares"), Probe.FromValue(With(TEXT("stale"), { 1 })));
+			TestFalse(TEXT("pendiente fuera del int16"), Probe.FromValue(With(TEXT("stale"), { 0, -40000 })));
+			TestFalse(TEXT("marea sin lluvia"), Probe.FromValue(With(TEXT("wake"), { 500 })));
+			TestFalse(TEXT("lluvia que no es 0 o 1"), Probe.FromValue(With(TEXT("wake"), { 500, 2 })));
+			TestFalse(TEXT("pleamar absurda"), Probe.FromValue(With(TEXT("wake"), { 1000000000001LL, 0 })));
+			FSaveValue BadAcc = Good;
+			BadAcc.Set(TEXT("acc"), FSaveValue::MakeInt(FSandModel::TickMs));
+			TestFalse(TEXT("un segundo entero pendiente"), Probe.FromValue(BadAcc));
+			BadAcc.Set(TEXT("acc"), FSaveValue::MakeInt(-1));
+			TestFalse(TEXT("fracción negativa"), Probe.FromValue(BadAcc));
+			TestTrue(TEXT("vacío tras fallar"), Probe.IsEmpty());
+		});
+
 		It("rechaza datos de otra rejilla o manipulados", [this, Flat]()
 		{
 			FSandModel Model;
