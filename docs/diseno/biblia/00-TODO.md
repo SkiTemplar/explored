@@ -186,7 +186,7 @@ salir de la isla.
 - [ ] `WorldGen`: dirección de caída (golpe + viento) y colisión contra construcción
       ligera/terreno al talar. *(biblia 02 §1.2)*
       → **En parte:** `6fb9833` (PR #39), `FellingModel.h` (`ResolveFallDirection`,
-        golpes + pendiente) y rama `nube/mundo-2026-09-29`: `ApplyWindToFall` (±20°, ±15°
+        golpes + pendiente) y `6d5c1b7` (PR #123): `ApplyWindToFall` (±20°, ±15°
         la palmera) y `ComputeCrush` (40 % de integridad a palma y bambú) en el modelo puro
         — falta engancharlo a un actor y a `UBuildingSubsystem`.
 - [ ] `WorldGen/VegetationHarvestState`: estado `Stump` con día de rebrote (18/24/4 días
