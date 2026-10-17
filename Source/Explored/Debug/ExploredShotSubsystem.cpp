@@ -20,6 +20,8 @@
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Explored.h"
 #include "Narrative/ExploredVoyageSubsystem.h"
+#include "Interaction/InteractionComponent.h"
+#include "Player/ExploredCharacter.h"
 #include "WorldGen/PointsOfInterest.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
@@ -271,6 +273,9 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Rotation = (Target - Shot.Location).Rotation();
 			Shot.Hours = 11.0f;
 			Shot.bShowUI = true;
+			// El personaje se pone delante del pecio y pulsa interactuar (camino real del jugador).
+			Shot.Action = TEXT("interact");
+			Shot.Target = Target;
 			Shots.Add(Shot);
 		}
 		FVector YardMeters;
@@ -316,6 +321,33 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shots.Add(Shot);
 		}
 	}
+}
+
+void UExploredShotSubsystem::PlacePawnFacing(const FVector& Target)
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (!Pawn)
+	{
+		return;
+	}
+	// A 2,5 m del pecio, del lado de la cámara de la vista, con los ojos a la altura del centro.
+	const FVector Center = Target + FVector(0.0, 0.0, 60.0);
+	const FVector Away = FVector(-900.0, -600.0, 0.0).GetSafeNormal();
+	const FVector Location = Center + Away * 250.0 + FVector(0.0, 0.0, 40.0);
+	Pawn->SetActorLocation(Location, false, nullptr, ETeleportType::TeleportPhysics);
+	PC->SetControlRotation((Center - Location).Rotation());
+}
+
+void UExploredShotSubsystem::InteractWithFocus(const FString& ShotName)
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	const AExploredCharacter* Character = PC ? Cast<AExploredCharacter>(PC->GetPawn()) : nullptr;
+	UInteractionComponent* Interaction = Character ? Character->GetInteractionComponent() : nullptr;
+	const AActor* Focus = Interaction ? Interaction->GetFocusedActor() : nullptr;
+	const bool bDone = Interaction && Interaction->InteractWithFocus();
+	UE_LOG(LogExplored, Display, TEXT("[Shots] %s: foco %s, interacción %s"), *ShotName,
+		Focus ? *Focus->GetClass()->GetName() : TEXT("ninguno"), bDone ? TEXT("hecha") : TEXT("fallida"));
 }
 
 void UExploredShotSubsystem::BeginShot(int32 Index)
@@ -398,6 +430,10 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		VoyagePC->ResumeGame();
 		VoyagePC->SetViewTarget(Camera);
 	}
+	if (Shot.Action == TEXT("interact"))
+	{
+		PlacePawnFacing(Shot.Target);
+	}
 	if (UExploredVoyageSubsystem* Voyage = Shot.Action.IsNone() ? nullptr : World->GetSubsystem<UExploredVoyageSubsystem>())
 	{
 		if (Shot.Action == TEXT("build"))
@@ -453,6 +489,10 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		if (bBenchMode)
 		{
 			LogBenchSample(Current);
+		}
+		if (Shots[Current].Action == TEXT("interact"))
+		{
+			InteractWithFocus(Shots[Current].Name);
 		}
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, Shots[Current].bShowUI, false);
