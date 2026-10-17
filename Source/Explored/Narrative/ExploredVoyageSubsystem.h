@@ -65,7 +65,11 @@ private:
 	void PlayDepartureSequence();
 	void FinishDepartureSequence();
 
+	/** Texto «a 120 m, delante» hacia el pecio sin rescatar más cercano (vacío si no hay). */
+	FText DescribeNearestSalvage() const;
+
 	TWeakObjectPtr<AExploredShipyard> Shipyard;
+	TArray<TWeakObjectPtr<class AExploredSalvageSite>> SalvageSites;
 	FTimerHandle DepartureTimer;
 	bool bDepartureRunning = false;
 	/** Hora a la que se pulsó zarpar (para anotar el final aunque la secuencia cruce las 05:00). */

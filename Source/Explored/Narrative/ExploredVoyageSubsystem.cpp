@@ -91,6 +91,7 @@ void UExploredVoyageSubsystem::SpawnSalvageSites(UWorld& World)
 		}
 		Site->Configure(Part);
 		Site->FinishSpawning(Transform);
+		SalvageSites.Add(Site);
 		++Spawned;
 		UE_LOG(LogExplored, Display, TEXT("[Viaje] Pecio %s en (%.0f, %.0f, %.1f) m%s"), LexToString(Poi.Type),
 			Location.X, Location.Y, Location.Z, Poi.bUnderwater ? TEXT(" bajo el agua") : TEXT(""));
@@ -335,7 +336,11 @@ FText UExploredVoyageSubsystem::GetObjectiveText() const
 	switch (GetStage())
 	{
 	case EVoyageStage::Salvage:
-		return FText::Format(NSLOCTEXT("ExploredVoyage", "ObjSalvage", "Rescata las piezas del Albatros ({0}/4)"), CountParts());
+	{
+		const FText Base = FText::Format(NSLOCTEXT("ExploredVoyage", "ObjSalvage", "Rescata las piezas del Albatros ({0}/4)"), CountParts());
+		const FText Hint = DescribeNearestSalvage();
+		return Hint.IsEmpty() ? Base : FText::Format(NSLOCTEXT("ExploredVoyage", "ObjSalvageHint", "{0} · la más cercana {1}"), Base, Hint);
+	}
 	case EVoyageStage::Build:
 		return NSLOCTEXT("ExploredVoyage", "ObjBuild", "Construye el Limón en la grada de la playa");
 	case EVoyageStage::SetSail:
@@ -345,6 +350,59 @@ FText UExploredVoyageSubsystem::GetObjectiveText() const
 	default:
 		return FText::GetEmpty();
 	}
+}
+
+FText UExploredVoyageSubsystem::DescribeNearestSalvage() const
+{
+	const APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	const APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (!Pawn)
+	{
+		return FText::GetEmpty();
+	}
+	const FVector From = Pawn->GetActorLocation();
+	const AExploredSalvageSite* Nearest = nullptr;
+	double BestDistSq = TNumericLimits<double>::Max();
+	for (const TWeakObjectPtr<AExploredSalvageSite>& Weak : SalvageSites)
+	{
+		const AExploredSalvageSite* Site = Weak.Get();
+		if (!Site || HasPart(Site->GetPart()))
+		{
+			continue;
+		}
+		const double DistSq = FVector::DistSquared2D(From, Site->GetActorLocation());
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			Nearest = Site;
+		}
+	}
+	if (!Nearest)
+	{
+		return FText::GetEmpty();
+	}
+	// Dirección relativa a la vista (sin brújula en la v1): delante, detrás, izquierda o derecha.
+	const FVector ToSite = (Nearest->GetActorLocation() - From).GetSafeNormal2D();
+	const FVector Forward = PC->GetControlRotation().Vector().GetSafeNormal2D();
+	const float Dot = FVector::DotProduct(Forward, ToSite);
+	const float Cross = FVector::CrossProduct(Forward, ToSite).Z;
+	FText Side;
+	if (Dot > 0.7071f)
+	{
+		Side = NSLOCTEXT("ExploredVoyage", "DirAhead", "delante");
+	}
+	else if (Dot < -0.7071f)
+	{
+		Side = NSLOCTEXT("ExploredVoyage", "DirBehind", "detrás");
+	}
+	else
+	{
+		Side = Cross > 0.0f ? NSLOCTEXT("ExploredVoyage", "DirRight", "a la derecha") : NSLOCTEXT("ExploredVoyage", "DirLeft", "a la izquierda");
+	}
+	const int32 Meters = FMath::RoundToInt32(FMath::Sqrt(BestDistSq) / 100.0);
+	const FText Depth = Nearest->GetActorLocation().Z < 0.0
+		? NSLOCTEXT("ExploredVoyage", "DirUnderwater", " (bajo el agua)") : FText::GetEmpty();
+	return FText::Format(NSLOCTEXT("ExploredVoyage", "DirFormat", "a {0} m, {1}{2}"), Meters, Side, Depth);
 }
 
 FText UExploredVoyageSubsystem::PartName(EShipPart Part)

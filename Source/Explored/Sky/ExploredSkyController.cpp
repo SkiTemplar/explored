@@ -22,7 +22,7 @@
 namespace
 {
 	constexpr float SunIlluminanceLux = 9.0f;
-	constexpr float MoonIlluminanceLux = 0.35f;
+	constexpr float MoonIlluminanceLux = 0.6f;
 }
 
 AExploredSkyController::AExploredSkyController()
@@ -76,7 +76,7 @@ AExploredSkyController::AExploredSkyController()
 	SkyLight->SetMobility(EComponentMobility::Movable);
 	SkyLight->bRealTimeCapture = true;
 	SkyLight->SourceType = SLS_CapturedScene;
-	SkyLight->Intensity = 0.85f;
+	SkyLight->Intensity = 1.0f;
 	SkyLight->bLowerHemisphereIsBlack = false;
 	SkyLight->LowerHemisphereColor = FLinearColor(0.02f, 0.05f, 0.06f);
 
@@ -111,7 +111,8 @@ AExploredSkyController::AExploredSkyController()
 	// (las luces del cielo están en lux de juego, no fotométricos reales; en manual salían
 	// negras). ApplyTime mueve el centro con AutoExposureBias según la hora.
 	PP.bOverride_AutoExposureMinBrightness = true;
-	PP.AutoExposureMinBrightness = -1.5f;
+	// La vista se adapta más a la oscuridad: la noche de luna se lee sin linterna.
+	PP.AutoExposureMinBrightness = -2.6f;
 	PP.bOverride_AutoExposureMaxBrightness = true;
 	PP.AutoExposureMaxBrightness = 2.0f;
 	PP.bOverride_AutoExposureSpeedUp = true;
