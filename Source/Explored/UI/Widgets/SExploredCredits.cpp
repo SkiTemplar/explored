@@ -21,7 +21,8 @@ namespace ExploredCreditsDetail
 			.Text(Text)
 			.Font(bHeading ? Style.FontHeading() : Style.FontBody())
 			.ColorAndOpacity(FSlateColor(bHeading ? Style.ColorAccent() : Style.ColorInk()))
-			.Justification(ETextJustify::Center);
+			.Justification(ETextJustify::Center)
+			.AutoWrapText(true);
 	}
 }
 
@@ -59,17 +60,21 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 24.0f, 0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsAuthor", "Un juego de Rodrigo Fernández")) ]
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsClaude", "Desarrollado con Claude (Anthropic)")) ]
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsEngine", "Motor: Unreal Engine 5.6")) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f, 0.0f, 24.0f))
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f))
 						[
-							Line(NSLOCTEXT("ExploredUI", "CreditsArt", "Todo el arte, sonido y música generados por código"))
+							Line(NSLOCTEXT("ExploredUI", "CreditsArt", "Terreno, props, texturas, sonido y música generados por código"))
 						]
-						// TODO(creditos-cc-by): desde 2026-09-28 la vegetación tropical de selva usa unos
-						// pocos modelos CC-BY 3.0 (Poly by Google, Zacharylll; ver
-						// Tools/Packs/creditos_cc_by.md) porque no hay equivalente CC0 con especie
-						// reconocible. CC-BY exige atribución: falta añadir aquí una línea con el texto
-						// de ese fichero (en es/en) y regenerar Content/Localization/Game con el
-						// commandlet de localización del proyecto. No se ha hecho en este cambio porque
-						// se preparó sin el editor abierto.
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 16.0f, 0.0f, 4.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsModelsTitle", "Modelos 3D de vegetación"), true) ]
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsQuaternius", "Quaternius y Kenney (CC0), vía Poly Pizza")) ]
+						// Atribución CC BY 3.0 exigida por la licencia (Tools/Packs/creditos_cc_by.md).
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f))
+						[
+							Line(NSLOCTEXT("ExploredUI", "CreditsPolyGoogle", "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"))
+						]
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f, 0.0f, 24.0f))
+						[
+							Line(NSLOCTEXT("ExploredUI", "CreditsZacharylll", "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"))
+						]
 						// Dedicatoria (GDD §15): la misma clave que el menú principal, idéntica en los dos idiomas.
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f, 0.0f, 24.0f))
 						[
