@@ -1,0 +1,52 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Subsystems/WorldSubsystem.h"
+
+#include "Narrative/ExploredProgress.h"
+
+#include "ExploredVoyageSubsystem.generated.h"
+
+class AExploredShipyard;
+
+/**
+ * Bucle del final del juego (GDD §0, §6.3): rescatar las cuatro piezas del Albatros,
+ * construir el «Limón» en la grada de la playa y zarpar de noche guiándose por las
+ * estrellas. El estado vive en FExploredProgress (UExploredWiringSubsystem lo guarda);
+ * este subsistema coloca los pecios y la grada, aplica las reglas y avisa al HUD y al
+ * PlayerController.
+ */
+UCLASS()
+class EXPLORED_API UExploredVoyageSubsystem : public UWorldSubsystem
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
+	EVoyageStage GetStage() const;
+	int32 CountParts() const;
+	bool HasPart(EShipPart Part) const;
+
+	/** Rescata una pieza. Devuelve true si es nueva. */
+	bool RecoverPart(EShipPart Part);
+	/** Construye el barco en la grada si hay todas las piezas. */
+	bool TryBuildShip();
+	/** Zarpa si el barco está hecho y es de noche; si no, avisa de por qué. */
+	bool TryDepart();
+	bool IsStarNightNow() const;
+
+	/** Línea del objetivo actual para el HUD (vacía tras el final). */
+	FText GetObjectiveText() const;
+
+	static FText PartName(EShipPart Part);
+
+private:
+	void SpawnSalvageSites(UWorld& World);
+	void SpawnShipyard(UWorld& World);
+	void Notify(const FText& Text, const FLinearColor& Color) const;
+	float GetHours() const;
+
+	TWeakObjectPtr<AExploredShipyard> Shipyard;
+};

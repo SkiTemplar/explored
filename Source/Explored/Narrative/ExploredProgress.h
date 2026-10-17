@@ -24,6 +24,20 @@ enum class EExploredEnding : uint8
 	Stayed
 };
 
+/** Qué le falta al jugador para el final del «Limón» (GDD §6.3), en orden. */
+UENUM()
+enum class EVoyageStage : uint8
+{
+	/** Faltan piezas del Albatros. */
+	Salvage,
+	/** Están todas: falta construir el barco en la grada. */
+	Build,
+	/** El barco está hecho: hay que zarpar de noche. */
+	SetSail,
+	/** Ya zarpó (final visto). */
+	Departed
+};
+
 /**
  * Progreso de exploración de una partida (mapa, colecciones, barco). Es
  * serializable (se guarda tal cual en la partida) y sus reglas son funciones puras.
@@ -71,6 +85,22 @@ struct EXPLORED_API FExploredProgress
 
 	/** Quedarse (modo libre) es la alternativa a zarpar, una vez construido el barco. */
 	bool CanChooseStay() const { return bShipBuilt; }
+
+	int32 CountShipParts() const;
+
+	/** Construye el «Limón» si hay todas las piezas. Devuelve true si se construye ahora. */
+	bool BuildShip();
+
+	/** De noche se navega por las estrellas: desde NightStartHours hasta NightEndHours. */
+	static constexpr float NightStartHours = 20.0f;
+	static constexpr float NightEndHours = 5.0f;
+	static bool IsStarNight(float Hours);
+
+	/** Zarpa si el barco está hecho y es de noche; anota el final. Devuelve true si zarpa ahora. */
+	bool Depart(float Hours);
+	bool HasDeparted() const { return EndingsSeen.Contains(EExploredEnding::Departed); }
+
+	EVoyageStage GetVoyageStage() const;
 
 	/** Porcentaje del mapa completado (petroglifos, botellas, miradores; 0–100). */
 	float MapCompletion() const;

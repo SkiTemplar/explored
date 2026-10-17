@@ -22,7 +22,7 @@ class UStaticMeshComponent;
  * - altar: se deja una ofrenda (una unidad de lo que se lleve en una mano);
  * - el resto: basta con examinarlo.
  *
- * Mallas marcadoras de /Engine/BasicShapes hasta que existan las del pueblo navegante.
+ * Mallas del pueblo navegante de /Game/Generated/Meshes (RuinasTallas, BrujulaEstelar).
  */
 UCLASS()
 class EXPLORED_API AExploredRuinElement : public AActor, public IExploredInteractable

@@ -25,6 +25,8 @@
 #include "UI/Widgets/SExploredAchievementToast.h"
 #include "UI/Widgets/SExploredAchievements.h"
 #include "UI/Widgets/SExploredCredits.h"
+#include "UI/Widgets/SExploredEnding.h"
+#include "Sky/TimeOfDaySubsystem.h"
 #include "UI/Widgets/SExploredFade.h"
 #include "UI/Widgets/SExploredInventoryPanel.h"
 #include "UI/Widgets/SExploredMainMenu.h"
@@ -599,6 +601,49 @@ void AExploredPlayerController::ExitToMainMenu()
 {
 	HideOverlay();
 	UGameplayStatics::OpenLevel(this, MainMenuMapName);
+}
+
+void AExploredPlayerController::ShowEnding()
+{
+	const UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	const int32 Days = Time ? FMath::FloorToInt32(Time->GetTotalDays()) + 1 : 1;
+	const TWeakObjectPtr<AExploredPlayerController> WeakThis(this);
+	auto Show = [WeakThis, Days]()
+	{
+		AExploredPlayerController* PC = WeakThis.Get();
+		if (!PC)
+		{
+			return;
+		}
+		// El final no pasa por la pila de navegación: solo sale de él «Volver al menú».
+		PC->HideOverlay();
+		PC->SetUIMode(EExploredUIMode::Paused);
+		TSharedRef<SExploredEnding> Widget = SNew(SExploredEnding)
+			.DaysSurvived(Days)
+			.OnContinue(FSimpleDelegate::CreateUObject(PC, &AExploredPlayerController::ExitToMainMenu));
+		PC->CurrentOverlay = Widget;
+		PC->CurrentFocusTarget = Widget->GetInitialFocus();
+		if (UGameViewportClient* Viewport = PC->GetWorld()->GetGameViewport())
+		{
+			Viewport->AddViewportWidgetContent(Widget, 500);
+		}
+		FInputModeUIOnly InputMode;
+		InputMode.SetWidgetToFocus(PC->CurrentFocusTarget);
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PC->SetInputMode(InputMode);
+		if (PC->FadeWidget.IsValid())
+		{
+			PC->FadeWidget->FadeFromBlack(1.5f);
+		}
+	};
+	if (FadeWidget.IsValid())
+	{
+		FadeWidget->FadeToBlack(2.0f, Show);
+	}
+	else
+	{
+		Show();
+	}
 }
 
 void AExploredPlayerController::QuitToDesktop()

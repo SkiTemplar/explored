@@ -32,6 +32,55 @@ bool FExploredProgress::HasAllShipParts() const
 	return true;
 }
 
+int32 FExploredProgress::CountShipParts() const
+{
+	int32 Count = 0;
+	for (uint8 P = 0; P < static_cast<uint8>(EShipPart::Count); ++P)
+	{
+		Count += HasShipPart(static_cast<EShipPart>(P)) ? 1 : 0;
+	}
+	return Count;
+}
+
+bool FExploredProgress::BuildShip()
+{
+	if (!CanBuildShip())
+	{
+		return false;
+	}
+	bShipBuilt = true;
+	return true;
+}
+
+bool FExploredProgress::IsStarNight(float Hours)
+{
+	const float Wrapped = FMath::Fmod(FMath::Fmod(Hours, 24.0f) + 24.0f, 24.0f);
+	return Wrapped >= NightStartHours || Wrapped < NightEndHours;
+}
+
+bool FExploredProgress::Depart(float Hours)
+{
+	if (!CanDepart() || HasDeparted() || !IsStarNight(Hours))
+	{
+		return false;
+	}
+	EndingsSeen.Add(EExploredEnding::Departed);
+	return true;
+}
+
+EVoyageStage FExploredProgress::GetVoyageStage() const
+{
+	if (HasDeparted())
+	{
+		return EVoyageStage::Departed;
+	}
+	if (bShipBuilt)
+	{
+		return EVoyageStage::SetSail;
+	}
+	return HasAllShipParts() ? EVoyageStage::Build : EVoyageStage::Salvage;
+}
+
 float FExploredProgress::MapCompletion() const
 {
 	struct FCategory

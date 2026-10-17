@@ -126,6 +126,40 @@ void FNarrativeSpec::Define()
 			TestTrue(TEXT("Puede quedarse"), P.CanChooseStay());
 		});
 
+		It("avanza el viaje: piezas, grada y zarpar solo de noche", [this]()
+		{
+			FExploredProgress P;
+			TestTrue(TEXT("Empieza rescatando"), P.GetVoyageStage() == EVoyageStage::Salvage);
+			TestFalse(TEXT("Sin piezas no se construye"), P.BuildShip());
+			P.AddShipPart(EShipPart::Wing);
+			P.AddShipPart(EShipPart::Wing);
+			TestEqual(TEXT("Una pieza repetida cuenta una vez"), P.CountShipParts(), 1);
+			for (const EShipPart Part : {EShipPart::Fuselage, EShipPart::Tail, EShipPart::Engine})
+			{
+				P.AddShipPart(Part);
+			}
+			TestEqual(TEXT("Cuatro piezas"), P.CountShipParts(), 4);
+			TestTrue(TEXT("Toca construir"), P.GetVoyageStage() == EVoyageStage::Build);
+			TestFalse(TEXT("No zarpa sin barco"), P.Depart(22.0f));
+			TestTrue(TEXT("Se construye"), P.BuildShip());
+			TestFalse(TEXT("No se construye dos veces"), P.BuildShip());
+			TestTrue(TEXT("Toca zarpar"), P.GetVoyageStage() == EVoyageStage::SetSail);
+			TestFalse(TEXT("De día no zarpa"), P.Depart(13.0f));
+			TestTrue(TEXT("De noche zarpa"), P.Depart(23.5f));
+			TestFalse(TEXT("No zarpa dos veces"), P.Depart(23.6f));
+			TestTrue(TEXT("Final visto"), P.GetVoyageStage() == EVoyageStage::Departed);
+		});
+
+		It("considera noche de 20:00 a 05:00, también con horas acumuladas", [this]()
+		{
+			TestTrue(TEXT("20:00"), FExploredProgress::IsStarNight(20.0f));
+			TestTrue(TEXT("04:59"), FExploredProgress::IsStarNight(4.98f));
+			TestFalse(TEXT("05:00"), FExploredProgress::IsStarNight(5.0f));
+			TestFalse(TEXT("19:59"), FExploredProgress::IsStarNight(19.98f));
+			TestTrue(TEXT("Día 3 a las 22:00"), FExploredProgress::IsStarNight(70.0f));
+			TestTrue(TEXT("Negativas"), FExploredProgress::IsStarNight(-1.0f));
+		});
+
 		It("cuenta el mapa y no duplica descubrimientos", [this]()
 		{
 			FExploredProgress P;

@@ -143,6 +143,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void ExitToMainMenu();
 
+	/** Final «Zarpar» (UExploredVoyageSubsystem): funde a negro y muestra SExploredEnding. */
+	void ShowEnding();
+
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void QuitToDesktop();
 

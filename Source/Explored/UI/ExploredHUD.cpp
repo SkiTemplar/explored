@@ -12,6 +12,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ItemRegistrySubsystem.h"
+#include "Narrative/ExploredVoyageSubsystem.h"
+#include "UI/ExploredPlayerController.h"
 #include "Player/ExploredCharacter.h"
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
@@ -32,7 +34,15 @@ void AExploredHUD::DrawHUD()
 		return;
 	}
 
+	// Con el menú, la pausa o el final encima no se dibuja el HUD de juego.
+	const AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(GetOwningPlayerController());
+	if (ExploredPC && ExploredPC->GetUIMode() != EExploredUIMode::Playing && ExploredPC->GetUIMode() != EExploredUIMode::InHands)
+	{
+		return;
+	}
+
 	DrawReticle();
+	DrawObjective();
 
 	if (AExploredCharacter* Character = GetExploredCharacter())
 	{
@@ -44,6 +54,28 @@ void AExploredHUD::DrawHUD()
 	}
 
 	DrawNotifications();
+}
+
+void AExploredHUD::DrawObjective()
+{
+	const UExploredVoyageSubsystem* Voyage = GetWorld() ? GetWorld()->GetSubsystem<UExploredVoyageSubsystem>() : nullptr;
+	if (!Voyage)
+	{
+		return;
+	}
+	const FText Objective = Voyage->GetObjectiveText();
+	if (Objective.IsEmpty())
+	{
+		return;
+	}
+	constexpr float Margin = 24.0f;
+	const FString Text = Objective.ToString();
+	float Width = 0.0f;
+	float Height = 0.0f;
+	GetTextSize(Text, Width, Height);
+	const float X = Canvas->SizeX - Margin - Width;
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), X - 10.0f, Margin - 6.0f, Width + 20.0f, Height + 12.0f);
+	DrawText(Text, FLinearColor(1.0f, 0.9f, 0.55f, 0.95f), X, Margin);
 }
 
 void AExploredHUD::DrawReticle()

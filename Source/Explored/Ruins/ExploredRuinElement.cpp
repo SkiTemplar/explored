@@ -14,35 +14,39 @@
 
 namespace ExploredRuinElementDetail
 {
-	/** Malla marcadora y escala por tipo, hasta que existan las mallas del pueblo navegante. */
-	void MarkerFor(ERuinElementKind Kind, const TCHAR*& OutMesh, FVector& OutScale)
+	/** Malla del pueblo navegante por tipo (Art/Export/Props: RuinasTallas, BrujulaEstelar, Petroglifos). */
+	void MarkerFor(ERuinElementKind Kind, FName ElementId, const TCHAR*& OutMesh, FVector& OutScale)
 	{
+		OutScale = FVector::OneVector;
 		switch (Kind)
 		{
 		case ERuinElementKind::StatueAlignment:
-			OutMesh = TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
-			OutScale = FVector(0.6, 0.6, 2.2);
+			OutMesh = TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Statue_Navigator.SM_Ruin_Statue_Navigator");
 			break;
 		case ERuinElementKind::AltarOffering:
-			OutMesh = TEXT("/Engine/BasicShapes/Cube.Cube");
-			OutScale = FVector(1.4, 0.9, 0.7);
+			OutMesh = TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Altar_Table.SM_Ruin_Altar_Table");
 			break;
 		case ERuinElementKind::DoubleCanoe:
-			OutMesh = TEXT("/Engine/BasicShapes/Cube.Cube");
-			OutScale = FVector(6.0, 2.2, 0.5);
+			OutMesh = TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Canoe_DoubleWreck.SM_Ruin_Canoe_DoubleWreck");
 			break;
 		case ERuinElementKind::StarCompass:
-			OutMesh = TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
-			OutScale = FVector(4.0, 4.0, 0.15);
+			OutMesh = TEXT("/Game/Generated/Meshes/BrujulaEstelar/SM_StarCompass_Monument.SM_StarCompass_Monument");
 			break;
 		case ERuinElementKind::RitualCave:
-			OutMesh = TEXT("/Engine/BasicShapes/Cube.Cube");
-			OutScale = FVector(0.2, 1.5, 1.5);
+			OutMesh = TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Star.SM_Ruin_Petroglyph_Star");
 			break;
 		default:
-			OutMesh = TEXT("/Engine/BasicShapes/Cube.Cube");
-			OutScale = FVector(0.15, 1.0, 1.0);
+		{
+			// Petroglifos: se reparte el motivo por id para que no sean todos iguales.
+			static const TCHAR* const Petroglyphs[] = {
+				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Bird.SM_Ruin_Petroglyph_Bird"),
+				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Canoe.SM_Ruin_Petroglyph_Canoe"),
+				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Honu.SM_Ruin_Petroglyph_Honu"),
+				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Star.SM_Ruin_Petroglyph_Star"),
+			};
+			OutMesh = Petroglyphs[GetTypeHash(ElementId) % UE_ARRAY_COUNT(Petroglyphs)];
 			break;
+		}
 		}
 	}
 
@@ -104,7 +108,7 @@ void AExploredRuinElement::ApplyMarkerMesh()
 	}
 	const TCHAR* MeshPath = nullptr;
 	FVector Scale = FVector::OneVector;
-	ExploredRuinElementDetail::MarkerFor(Kind, MeshPath, Scale);
+	ExploredRuinElementDetail::MarkerFor(Kind, ElementId, MeshPath, Scale);
 	if (UStaticMesh* Marker = Cast<UStaticMesh>(FSoftObjectPath(MeshPath).TryLoad()))
 	{
 		Mesh->SetStaticMesh(Marker);
