@@ -4,6 +4,7 @@ caracter que lo distingue de su pariente mas generico del catalogo."""
 from __future__ import annotations
 
 import numpy as np
+from scipy.signal import butter, sosfiltfilt
 
 from explored_audio.constants import SAMPLE_RATE
 
@@ -104,6 +105,32 @@ def test_viento_en_palmeras_suena_a_hojas(rendered):
     assert _band_share(palms, 2000.0, 6000.0) >= 2.0 * _band_share(wind, 2000.0, 6000.0)
     # Y las rachas se oyen: la sonoridad por segundo varia mas que en el viento solo.
     assert np.std(_envelope_db(palms, 1.0)) > np.std(_envelope_db(wind, 1.0))
+
+
+def _flutter_index(audio: np.ndarray) -> float:
+    """Profundidad del aleteo: cuanto late a 4-20 Hz la envolvente de la banda de
+    2-6 kHz, relativa a su nivel, en los tramos de racha (el 40 % mas fuerte)."""
+    x = audio[0] if audio.ndim == 2 else audio
+    band = sosfiltfilt(butter(4, [2000.0, 6000.0], btype="band", fs=SAMPLE_RATE, output="sos"), x)
+    hop = SAMPLE_RATE // 200
+    env = np.sqrt(np.convolve(band**2, np.ones(hop) / hop, "same"))[::hop]
+    fast = sosfiltfilt(butter(2, [4.0, 20.0], btype="band", fs=200, output="sos"), env)
+    slow = sosfiltfilt(butter(2, 1.0, btype="low", fs=200, output="sos"), env)
+    loud = slow > np.percentile(slow, 60)
+    return float(fast[loud].std() / slow[loud].mean())
+
+
+def test_viento_en_palmeras_aletea(rendered):
+    # Los foliolos baten a 5-11 Hz: la banda aguda late con ese ritmo. En el
+    # viento solo (y en la version anterior, ruido con una modulacion aleatoria
+    # comun) ese indice rondaba 0,07-0,10; con las hojas, mas del doble.
+    palms = _flutter_index(rendered["amb_wind_palms"])
+    wind = _flutter_index(rendered["amb_wind_light"])
+    assert palms >= 0.18
+    assert palms >= 2.5 * wind
+    # Brillo de papel, no siseo: la mayor parte de lo agudo queda por debajo de 6 kHz.
+    share_hi = _band_share(rendered["amb_wind_palms"], 6000.0, 20000.0)
+    assert share_hi <= 0.6 * _band_share(rendered["amb_wind_palms"], 2000.0, 6000.0)
 
 
 def test_lluvia_en_hojas_son_gotas_discretas(rendered):
