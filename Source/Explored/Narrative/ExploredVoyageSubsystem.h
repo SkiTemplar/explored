@@ -38,6 +38,8 @@ public:
 	/** Zarpa si el barco está hecho y es de noche; si no, avisa de por qué. */
 	bool TryDepart();
 	bool IsStarNightNow() const;
+	/** De día, junto al barco: funde a negro y adelanta el reloj a la noche (20:30). */
+	void WaitForNight();
 
 	/** Línea del objetivo actual para el HUD (vacía tras el final). */
 	FText GetObjectiveText() const;

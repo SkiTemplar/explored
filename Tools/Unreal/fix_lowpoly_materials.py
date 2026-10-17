@@ -13,8 +13,8 @@ MATERIAL_DIR = '/Game/Generated/Materials/LowPolyFlat'
 # Nombre -> (color lineal, rugosidad, dos caras). Tonos saturados pero no planos de más.
 PALETTE = {
     'M_LP_Wood': ((0.16, 0.075, 0.035), 0.9, False),
-    'M_LP_Leaf': ((0.06, 0.24, 0.045), 0.8, True),
-    'M_LP_LeafDark': ((0.03, 0.13, 0.03), 0.8, True),
+    'M_LP_Leaf': ((0.11, 0.38, 0.07), 0.8, True),
+    'M_LP_LeafDark': ((0.055, 0.22, 0.05), 0.8, True),
     'M_LP_Flower': ((0.75, 0.12, 0.25), 0.7, True),
     'M_LP_Yellow': ((0.85, 0.6, 0.06), 0.7, True),
     'M_LP_Cyan': ((0.08, 0.45, 0.55), 0.7, True),
@@ -31,9 +31,17 @@ KEYWORDS = [
 
 def get_or_create_material(name: str) -> unreal.Material:
     path = f'{MATERIAL_DIR}/{name}'
-    if unreal.EditorAssetLibrary.does_asset_exist(path):
-        return unreal.EditorAssetLibrary.load_asset(path)
     color, roughness, two_sided = PALETTE[name]
+    if unreal.EditorAssetLibrary.does_asset_exist(path):
+        # Ya existe: solo se actualiza el color (para retocar la paleta sin recrear nada).
+        material = unreal.EditorAssetLibrary.load_asset(path)
+        expression = unreal.MaterialEditingLibrary.get_material_property_input_node(
+            material, unreal.MaterialProperty.MP_BASE_COLOR)
+        if isinstance(expression, unreal.MaterialExpressionConstant3Vector):
+            expression.set_editor_property('constant', unreal.LinearColor(color[0], color[1], color[2], 1.0))
+            unreal.MaterialEditingLibrary.recompile_material(material)
+            unreal.EditorAssetLibrary.save_loaded_asset(material)
+        return material
     tools = unreal.AssetToolsHelpers.get_asset_tools()
     material = tools.create_asset(name, MATERIAL_DIR, unreal.Material, unreal.MaterialFactoryNew())
     lib = unreal.MaterialEditingLibrary

@@ -27,6 +27,8 @@ namespace ExploredVoyageDetail
 	/** Secuencia de salida: dónde arranca el barco (por delante de la grada) y cuánto dura. */
 	constexpr double DepartureStartAheadCm = 1800.0;
 	constexpr float DepartureSequenceSeconds = 9.0f;
+	/** Hora a la que deja el reloj «Esperar a la noche junto al Limón». */
+	constexpr float WaitUntilHours = 20.5f;
 	/** Altura (m) del claro tierra adentro donde cae el motor en la isla de inicio. */
 	constexpr float InlandMinHeight = 3.0f;
 	constexpr float InlandMaxHeight = 25.0f;
@@ -238,7 +240,7 @@ bool UExploredVoyageSubsystem::TryDepart()
 	{
 		if (Wiring->GetProgress().CanDepart() && !IsStarNightNow())
 		{
-			Notify(NSLOCTEXT("ExploredVoyage", "WaitNight", "De día no se ven las estrellas: vuelve a partir de las 20:00"),
+			Notify(NSLOCTEXT("ExploredVoyage", "WaitNight", "De día no se ven las estrellas: espera a la noche junto al Limón"),
 				FLinearColor(0.75f, 0.85f, 1.0f, 1.0f));
 		}
 		return false;
@@ -300,6 +302,21 @@ void UExploredVoyageSubsystem::FinishDepartureSequence()
 	{
 		PC->ShowEnding();
 	}
+}
+
+void UExploredVoyageSubsystem::WaitForNight()
+{
+	UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	if (!Time || IsStarNightNow())
+	{
+		return;
+	}
+	// Si ya pasó la medianoche (antes de las 05:00 cuenta como noche), aquí siempre es de día:
+	// la noche siguiente es la de hoy a las 20:30.
+	Time->SetTime(Time->GetDay(), ExploredVoyageDetail::WaitUntilHours);
+	Notify(NSLOCTEXT("ExploredVoyage", "NightFell", "Cae la noche. Las estrellas ya marcan el rumbo."),
+		FLinearColor(0.75f, 0.85f, 1.0f, 1.0f));
+	UE_LOG(LogExplored, Display, TEXT("[Viaje] Espera junto al Limón hasta las %.1f h"), ExploredVoyageDetail::WaitUntilHours);
 }
 
 bool UExploredVoyageSubsystem::IsStarNightNow() const

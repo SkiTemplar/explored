@@ -177,7 +177,7 @@ void AExploredShipyard::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) 
 	case EVoyageStage::SetSail:
 		OutVerbs.Add(Voyage->IsStarNightNow()
 			? NSLOCTEXT("ExploredVoyage", "VerbYardSail", "Zarpar guiándote por las estrellas")
-			: NSLOCTEXT("ExploredVoyage", "VerbYardWait", "Zarpar (solo de noche)"));
+			: NSLOCTEXT("ExploredVoyage", "VerbYardWait", "Esperar a la noche junto al Limón"));
 		break;
 	default:
 		break;
@@ -203,7 +203,14 @@ void AExploredShipyard::Interact_Implementation(AActor* InInstigator)
 		Voyage->TryBuildShip();
 		break;
 	case EVoyageStage::SetSail:
-		Voyage->TryDepart();
+		if (Voyage->IsStarNightNow())
+		{
+			Voyage->TryDepart();
+		}
+		else
+		{
+			Voyage->WaitForNight();
+		}
 		break;
 	default:
 		break;
