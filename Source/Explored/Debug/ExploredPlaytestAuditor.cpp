@@ -39,7 +39,7 @@
 namespace
 {
 	/** Espera tras terminar shaders/streaming a que la escena (física incluida) se asiente. */
-	constexpr float WarmupSeconds = 6.0f;
+	constexpr float AuditorWarmupSeconds = 6.0f;
 	/** Nº máximo de instancias de un mismo componente HISM que se muestrean con traza vertical
 	 * (vegetación y rocas pueden tener miles; una traza por instancia sería demasiado coste en
 	 * una pasada que corre una sola vez, así que se toma una muestra determinista repartida). */
@@ -97,7 +97,7 @@ void UExploredPlaytestAuditor::Tick(float DeltaTime)
 
 	if (Phase == EPhase::Warmup)
 	{
-		if (Timer >= WarmupSeconds)
+		if (Timer >= AuditorWarmupSeconds)
 		{
 			AuditMaterials();
 			AuditGroundClearance();
