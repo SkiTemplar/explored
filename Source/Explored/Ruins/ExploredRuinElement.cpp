@@ -113,6 +113,7 @@ void AExploredRuinElement::ApplyMarkerMesh()
 	{
 		Mesh->SetStaticMesh(Marker);
 		Mesh->SetRelativeScale3D(Scale);
+		ExploredInteraction::AddFocusBox(*this, *Mesh);
 	}
 }
 

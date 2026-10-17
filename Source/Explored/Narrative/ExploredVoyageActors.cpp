@@ -70,6 +70,7 @@ void AExploredSalvageSite::BeginPlay()
 	if (UStaticMesh* Wreck = Cast<UStaticMesh>(FSoftObjectPath(ExploredVoyageActorsDetail::WreckMeshFor(Part)).TryLoad()))
 	{
 		Mesh->SetStaticMesh(Wreck);
+		ExploredInteraction::AddFocusBox(*this, *Mesh);
 	}
 	else
 	{
@@ -118,6 +119,8 @@ void AExploredShipyard::BeginPlay()
 {
 	Super::BeginPlay();
 	RefreshMesh();
+	// El armazón y el barco ocupan casi lo mismo: basta con la caja del primero.
+	ExploredInteraction::AddFocusBox(*this, *Mesh);
 }
 
 void AExploredShipyard::RefreshMesh()

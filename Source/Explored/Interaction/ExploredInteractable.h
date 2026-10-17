@@ -33,3 +33,15 @@ public:
 	void Interact(AActor* Instigator);
 	virtual void Interact_Implementation(AActor* Instigator);
 };
+
+class UStaticMeshComponent;
+
+namespace ExploredInteraction
+{
+	/**
+	 * Añade al actor una caja que solo bloquea el trazado de visibilidad de UInteractionComponent,
+	 * ajustada a los límites de la malla. Las mallas importadas sin colisión (props por script)
+	 * serían invisibles para la interacción; la caja no bloquea al jugador ni a la física.
+	 */
+	EXPLORED_API void AddFocusBox(AActor& Owner, const UStaticMeshComponent& Mesh);
+}
