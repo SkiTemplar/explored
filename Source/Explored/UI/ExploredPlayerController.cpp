@@ -18,6 +18,7 @@
 #include "Ruins/RuinsSubsystem.h"
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredGameUserSettings.h"
+#include "UI/ExploredHUD.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/ExploredMenuCamera.h"
 #include "UI/ExploredSaveSubsystem.h"
@@ -446,6 +447,15 @@ void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
 		Achievements->BeginRun(Mode);
 	}
 	FadeIntoGameplay();
+	// Ayuda de inicio: los controles básicos y el objetivo del viaje (v1, docs/v1-alcance.md).
+	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
+	{
+		const FLinearColor HelpColor(0.92f, 0.95f, 1.0f, 1.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"), HelpColor, 8.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa"), HelpColor, 8.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpGoal", "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."),
+			FLinearColor(1.0f, 0.9f, 0.55f, 1.0f), 10.0f);
+	}
 }
 
 void AExploredPlayerController::OpenSettings()

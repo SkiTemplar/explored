@@ -19,6 +19,8 @@
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Explored.h"
+#include "Narrative/ExploredVoyageSubsystem.h"
+#include "WorldGen/PointsOfInterest.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
 #include "WorldGen/ArchipelagoLayout.h"
@@ -246,6 +248,52 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		Shots.Add(Shot);
 	}
 
+	if (Set == TEXT("voyage"))
+	{
+		// Bucle del final: cada pecio del Albatros, la grada con el armazón, el Limón
+		// terminado y la pantalla del final (con la interfaz en la captura).
+		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		{
+			if (Poi.Type != EPoiType::WreckFuselage && Poi.Type != EPoiType::WreckWing
+				&& Poi.Type != EPoiType::WreckTail && Poi.Type != EPoiType::WreckEngine)
+			{
+				continue;
+			}
+			FExploredShot Shot;
+			Shot.Name = FString::Printf(TEXT("voyage_%s"), LexToString(Poi.Type));
+			FVector Meters = Poi.Location;
+			if (Poi.Type == EPoiType::WreckEngine)
+			{
+				UExploredVoyageSubsystem::FindLandingInland(Density, Meters);
+			}
+			const FVector Target = Meters * 100.0;
+			Shot.Location = Target + FVector(-900.0, -600.0, 450.0);
+			Shot.Rotation = (Target - Shot.Location).Rotation();
+			Shot.Hours = 11.0f;
+			Shot.bShowUI = true;
+			Shots.Add(Shot);
+		}
+		FVector YardMeters;
+		FRotator YardRotation;
+		if (UExploredVoyageSubsystem::FindShipyardLocation(Density, YardMeters, YardRotation))
+		{
+			const FVector Target = YardMeters * 100.0 + FVector(0.0, 0.0, 150.0);
+			const FVector Offset = YardRotation.RotateVector(FVector(-300.0, 900.0, 350.0));
+			for (const TCHAR* Name : {TEXT("voyage_yard_frame"), TEXT("voyage_yard_ship"), TEXT("voyage_ending")})
+			{
+				FExploredShot Shot;
+				Shot.Name = Name;
+				Shot.Location = Target + Offset;
+				Shot.Rotation = (Target - Shot.Location).Rotation();
+				Shot.Hours = FCString::Strcmp(Name, TEXT("voyage_ending")) == 0 ? 22.0f : 16.5f;
+				Shot.bShowUI = true;
+				Shot.Action = FCString::Strcmp(Name, TEXT("voyage_yard_ship")) == 0 ? FName(TEXT("build"))
+					: FCString::Strcmp(Name, TEXT("voyage_ending")) == 0 ? FName(TEXT("depart")) : NAME_None;
+				Shots.Add(Shot);
+			}
+		}
+	}
+
 	if (Set == TEXT("menu"))
 	{
 		// El menú principal ya está en pantalla por defecto al arrancar el
@@ -253,13 +301,14 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		// Ajustes y a Pausa que se abran para el resto de capturas (ver
 		// BeginShot). La cámara y la hora no importan: se ven detrás del
 		// panel de UI, que es lo que hay que verificar.
-		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause") })
+		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause"), TEXT("menu_map") })
 		{
 			FExploredShot Shot;
 			Shot.Name = Name;
 			Shot.Location = FVector(0.0, -3000.0 * 100.0, 1200.0 * 100.0);
 			Shot.Rotation = FRotator(-20.0f, 90.0f, 0.0f);
 			Shot.Hours = 12.0f;
+			Shot.bShowUI = true;
 			Shots.Add(Shot);
 		}
 	}
@@ -325,12 +374,40 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 			{
 				ExploredPC->OpenPauseMenu();
 			}
+			else if (Shot.Name == TEXT("menu_map"))
+			{
+				ExploredPC->ResumeGame();
+				ExploredPC->OpenMap();
+			}
 		}
 	}
 	if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
 	{
 		Time->SetTime(Time->GetDay(), Shot.Hours);
 		Time->SetTimeScale(0.0f);
+	}
+	// Conjunto «voyage»: se juega (sin el menú principal encima) para ver el HUD de juego.
+	AExploredPlayerController* VoyagePC = Shot.Name.StartsWith(TEXT("voyage"))
+		? Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)) : nullptr;
+	if (VoyagePC && VoyagePC->GetUIMode() == EExploredUIMode::Menu)
+	{
+		VoyagePC->ResumeGame();
+		VoyagePC->SetViewTarget(Camera);
+	}
+	if (UExploredVoyageSubsystem* Voyage = Shot.Action.IsNone() ? nullptr : World->GetSubsystem<UExploredVoyageSubsystem>())
+	{
+		if (Shot.Action == TEXT("build"))
+		{
+			for (uint8 Part = 0; Part < static_cast<uint8>(EShipPart::Count); ++Part)
+			{
+				Voyage->RecoverPart(static_cast<EShipPart>(Part));
+			}
+			Voyage->TryBuildShip();
+		}
+		else if (Shot.Action == TEXT("depart"))
+		{
+			Voyage->TryDepart();
+		}
 	}
 	Timer = 0.0f;
 	bRequested = false;
@@ -373,7 +450,7 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 			LogBenchSample(Current);
 		}
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
-		FScreenshotRequest::RequestScreenshot(File, false, false);
+		FScreenshotRequest::RequestScreenshot(File, Shots[Current].bShowUI, false);
 		bRequested = true;
 		UE_LOG(LogExplored, Display, TEXT("[Shots] %s"), *File);
 		return;

@@ -22,6 +22,9 @@ namespace ExploredVoyageDetail
 	constexpr float ShipyardMaxHeight = 1.4f;
 	/** Desplazamiento lateral de la grada respecto a la línea del punto de aparición (m). */
 	constexpr float ShipyardSideOffset = 7.0f;
+	/** Altura (m) del claro tierra adentro donde cae el motor en la isla de inicio. */
+	constexpr float InlandMinHeight = 3.0f;
+	constexpr float InlandMaxHeight = 25.0f;
 
 	bool PartForPoi(EPoiType Type, EShipPart& OutPart)
 	{
@@ -65,7 +68,14 @@ void UExploredVoyageSubsystem::SpawnSalvageSites(UWorld& World)
 		{
 			continue;
 		}
-		const FTransform Transform(FRotator(0.0f, Poi.Yaw, 0.0f), Poi.Location * 100.0);
+		FVector Location = Poi.Location;
+		// v1: sin barcos que lleguen a otras islas, todas las piezas están en la isla de inicio.
+		// El motor (en Esmeralda según FPoiLayout) se lleva tierra adentro de la isla de llegada.
+		if (Part == EShipPart::Engine && !FindLandingInland(Density, Location))
+		{
+			UE_LOG(LogExplored, Warning, TEXT("[Viaje] No hay sitio para el motor en la isla de inicio; se queda en Esmeralda"));
+		}
+		const FTransform Transform(FRotator(0.0f, Poi.Yaw, 0.0f), Location * 100.0);
 		AExploredSalvageSite* Site = World.SpawnActorDeferred<AExploredSalvageSite>(AExploredSalvageSite::StaticClass(), Transform);
 		if (!Site)
 		{
@@ -76,7 +86,7 @@ void UExploredVoyageSubsystem::SpawnSalvageSites(UWorld& World)
 		Site->FinishSpawning(Transform);
 		++Spawned;
 		UE_LOG(LogExplored, Display, TEXT("[Viaje] Pecio %s en (%.0f, %.0f, %.1f) m%s"), LexToString(Poi.Type),
-			Poi.Location.X, Poi.Location.Y, Poi.Location.Z, Poi.bUnderwater ? TEXT(" bajo el agua") : TEXT(""));
+			Location.X, Location.Y, Location.Z, Poi.bUnderwater ? TEXT(" bajo el agua") : TEXT(""));
 	}
 	if (Spawned != static_cast<int32>(EShipPart::Count))
 	{
@@ -84,38 +94,66 @@ void UExploredVoyageSubsystem::SpawnSalvageSites(UWorld& World)
 	}
 }
 
-void UExploredVoyageSubsystem::SpawnShipyard(UWorld& World)
+bool UExploredVoyageSubsystem::FindLandingInland(const FTerrainDensity& Density, FVector& OutMeters)
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 	const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
 	if (!Landing)
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[Viaje] Sin isla de inicio: no hay grada del Limón"));
-		return;
+		return false;
+	}
+	// Al otro lado de la isla respecto a la playa de llegada, a media distancia del centro:
+	// obliga a cruzar la selva sin salir de la isla.
+	const float Angle = Landing->Rotation + PI * 0.6f;
+	const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+	for (float R = Landing->Radius * 0.35f; R < Landing->Radius * 0.9f; R += 2.0f)
+	{
+		const FVector2D P = Landing->Center + Dir * R;
+		const float H = Density.SampleColumn(P.X, P.Y).Height;
+		if (H > ExploredVoyageDetail::InlandMinHeight && H < ExploredVoyageDetail::InlandMaxHeight)
+		{
+			OutMeters = FVector(P.X, P.Y, H);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UExploredVoyageSubsystem::FindShipyardLocation(const FTerrainDensity& Density, FVector& OutMeters, FRotator& OutRotation)
+{
+	const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
+	if (!Landing)
+	{
+		return false;
 	}
 	// Misma recta que FindSpawnPoint del horneado: del centro de la isla hacia la laguna.
 	// La grada va más allá del punto de aparición, en la arena junto a la orilla.
 	const FVector2D Dir(FMath::Cos(Landing->Rotation), FMath::Sin(Landing->Rotation));
 	const FVector2D Side(-Dir.Y, Dir.X);
-	FVector Location = FVector::ZeroVector;
-	bool bFound = false;
-	for (float R = 0.0f; R < Landing->Radius * 1.4f && !bFound; R += 1.0f)
+	for (float R = 0.0f; R < Landing->Radius * 1.4f; R += 1.0f)
 	{
 		const FVector2D P = Landing->Center - Dir * R + Side * ExploredVoyageDetail::ShipyardSideOffset;
 		const float H = Density.SampleColumn(P.X, P.Y).Height;
 		if (H > ExploredVoyageDetail::ShipyardMinHeight && H < ExploredVoyageDetail::ShipyardMaxHeight)
 		{
-			Location = FVector(P.X, P.Y, H);
-			bFound = true;
+			OutMeters = FVector(P.X, P.Y, H);
+			// Proa (+X de la malla) hacia el mar.
+			OutRotation = FVector(-Dir.X, -Dir.Y, 0.0f).Rotation();
+			return true;
 		}
 	}
-	if (!bFound)
+	return false;
+}
+
+void UExploredVoyageSubsystem::SpawnShipyard(UWorld& World)
+{
+	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	FVector Location;
+	FRotator Rotation;
+	if (!FindShipyardLocation(Density, Location, Rotation))
 	{
 		UE_LOG(LogExplored, Warning, TEXT("[Viaje] No se encontró arena para la grada del Limón"));
 		return;
 	}
-	// Proa (+X de la malla) hacia el mar.
-	const FRotator Rotation = FVector(-Dir.X, -Dir.Y, 0.0f).Rotation();
 	const FTransform Transform(Rotation, Location * 100.0);
 	Shipyard = World.SpawnActor<AExploredShipyard>(AExploredShipyard::StaticClass(), Transform);
 	UE_LOG(LogExplored, Display, TEXT("[Viaje] Grada del Limón en (%.0f, %.0f, %.1f) m"), Location.X, Location.Y, Location.Z);

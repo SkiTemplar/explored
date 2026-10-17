@@ -14,6 +14,10 @@ struct FExploredShot
 	FVector Location = FVector::ZeroVector;
 	FRotator Rotation = FRotator::ZeroRotator;
 	float Hours = 12.0f;
+	/** Incluye la interfaz (HUD y Slate) en la captura. */
+	bool bShowUI = false;
+	/** Acción de juego antes de la vista (conjunto «voyage»): «build» o «depart». */
+	FName Action;
 };
 
 /**
@@ -42,6 +46,8 @@ public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Tick(float DeltaTime) override;
+	/** El final del juego pausa el mundo; las capturas tienen que seguir. */
+	virtual bool IsTickableWhenPaused() const override { return true; }
 	virtual TStatId GetStatId() const override;
 	virtual bool IsTickable() const override { return bActive; }
 

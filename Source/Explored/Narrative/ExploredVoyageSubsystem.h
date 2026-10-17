@@ -8,6 +8,7 @@
 #include "ExploredVoyageSubsystem.generated.h"
 
 class AExploredShipyard;
+class FTerrainDensity;
 
 /**
  * Bucle del final del juego (GDD §0, §6.3): rescatar las cuatro piezas del Albatros,
@@ -41,6 +42,15 @@ public:
 	FText GetObjectiveText() const;
 
 	static FText PartName(EShipPart Part);
+
+	/**
+	 * Sitio de la grada (metros) en la arena de la isla de inicio, junto a la orilla y al
+	 * lado del punto de aparición; la proa mira al mar. False si no hay arena.
+	 */
+	static bool FindShipyardLocation(const FTerrainDensity& Density, FVector& OutMeters, FRotator& OutRotation);
+
+	/** Punto tierra adentro de la isla de inicio (metros) donde cae el motor del Albatros en la v1. */
+	static bool FindLandingInland(const FTerrainDensity& Density, FVector& OutMeters);
 
 private:
 	void SpawnSalvageSites(UWorld& World);
