@@ -1,5 +1,6 @@
 #include "Narrative/ExploredVoyageActors.h"
 
+#include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -113,6 +114,15 @@ AExploredShipyard::AExploredShipyard()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	Mesh = ExploredVoyageActorsDetail::MakeMesh(*this);
 	Mesh->SetupAttachment(RootComponent);
+	// A popa y a la altura del farol de la malla (SM_Limon), luz cálida y suave.
+	Lantern = CreateDefaultSubobject<UPointLightComponent>(TEXT("Lantern"));
+	Lantern->SetupAttachment(RootComponent);
+	Lantern->SetRelativeLocation(FVector(-280.0, 0.0, 260.0));
+	Lantern->SetIntensity(9000.0f);
+	Lantern->SetAttenuationRadius(1800.0f);
+	Lantern->SetLightColor(FLinearColor(1.0f, 0.72f, 0.38f));
+	Lantern->SetCastShadows(false);
+	Lantern->SetVisibility(false);
 }
 
 void AExploredShipyard::BeginPlay()
@@ -129,6 +139,7 @@ void AExploredShipyard::RefreshMesh()
 	const UExploredVoyageSubsystem* Voyage = ExploredVoyageActorsDetail::GetVoyage(GetWorld());
 	const EVoyageStage Stage = Voyage ? Voyage->GetStage() : EVoyageStage::Salvage;
 	const bool bShip = Stage == EVoyageStage::SetSail || Stage == EVoyageStage::Departed;
+	Lantern->SetVisibility(Stage == EVoyageStage::SetSail && Voyage && Voyage->IsStarNightNow());
 	// Partida cargada después de zarpar: el barco ya no está en la grada.
 	if (Stage == EVoyageStage::Departed)
 	{

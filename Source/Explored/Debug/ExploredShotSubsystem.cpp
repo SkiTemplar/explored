@@ -618,6 +618,9 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 				Voyage->RecoverPart(static_cast<EShipPart>(Part));
 			}
 			Voyage->TryBuildShip();
+			// Camino del jugador de día: «Esperar a la noche junto al Limón».
+			Voyage->WaitForNight();
+			UE_LOG(LogExplored, Display, TEXT("[Shots] Tras esperar a la noche: %s"), Voyage->IsStarNightNow() ? TEXT("de noche") : TEXT("de día"));
 		}
 		else if (Shot.Action == TEXT("depart"))
 		{

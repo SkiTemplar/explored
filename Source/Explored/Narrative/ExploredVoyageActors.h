@@ -8,6 +8,7 @@
 
 #include "ExploredVoyageActors.generated.h"
 
+class UPointLightComponent;
 class UStaticMeshComponent;
 
 /**
@@ -71,6 +72,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Viaje")
 	TObjectPtr<UStaticMeshComponent> Mesh;
+
+	/** Farol del Limón: se enciende de noche con el barco terminado, para encontrarlo y zarpar. */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Viaje")
+	TObjectPtr<UPointLightComponent> Lantern;
 
 private:
 	bool bShowingShip = false;
