@@ -453,6 +453,14 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Target = Target;
 			Shots.Add(Shot);
 		}
+		// El mapa en las manos tras rescatar los cuatro pecios: deben salir sus marcas.
+		if (!Shots.IsEmpty())
+		{
+			FExploredShot MapShot = Shots.Last();
+			MapShot.Name = TEXT("voyage_map");
+			MapShot.Action = TEXT("map");
+			Shots.Add(MapShot);
+		}
 		FVector YardMeters;
 		FRotator YardRotation;
 		if (UExploredVoyageSubsystem::FindShipyardLocation(Density, YardMeters, YardRotation))
@@ -621,10 +629,14 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	// Conjunto «voyage»: se juega (sin el menú principal encima) para ver el HUD de juego.
 	AExploredPlayerController* VoyagePC = Shot.Name.StartsWith(TEXT("voyage"))
 		? Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)) : nullptr;
-	if (VoyagePC && VoyagePC->GetUIMode() == EExploredUIMode::Menu)
+	if (VoyagePC && VoyagePC->GetUIMode() != EExploredUIMode::Playing)
 	{
 		VoyagePC->ResumeGame();
 		VoyagePC->SetViewTarget(Camera);
+	}
+	if (VoyagePC && Shot.Action == TEXT("map"))
+	{
+		VoyagePC->OpenMap();
 	}
 	if (Shot.Action == TEXT("interact"))
 	{

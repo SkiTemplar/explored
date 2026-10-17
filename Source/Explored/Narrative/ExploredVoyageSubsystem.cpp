@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerStart.h"
 
 #include "Audio/ExploredMusicSubsystem.h"
+#include "Cartography/CartographyComponent.h"
 #include "Core/ExploredWiringSubsystem.h"
 #include "Explored.h"
 #include "Narrative/ExploredVoyageActors.h"
@@ -198,6 +199,7 @@ bool UExploredVoyageSubsystem::RecoverPart(EShipPart Part)
 	const int32 Count = Progress.CountShipParts();
 	Notify(FText::Format(NSLOCTEXT("ExploredVoyage", "PartRecovered", "{0} del Albatros rescatado ({1}/4)"), PartName(Part), Count),
 		FLinearColor(1.0f, 0.86f, 0.35f, 1.0f));
+	MarkRecoveryOnMap(Part);
 	if (Progress.HasAllShipParts())
 	{
 		Notify(NSLOCTEXT("ExploredVoyage", "AllParts", "Ya tienes todo: construye el Limón en la grada de la playa"),
@@ -208,6 +210,20 @@ bool UExploredVoyageSubsystem::RecoverPart(EShipPart Part)
 		Yard->RefreshMesh();
 	}
 	return true;
+}
+
+void UExploredVoyageSubsystem::MarkRecoveryOnMap(EShipPart Part) const
+{
+	// El jugador está junto al pecio al rescatarlo: marca a mano donde está, con su deriva.
+	const APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	const APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	UCartographyComponent* Cartography = Pawn ? Pawn->FindComponentByClass<UCartographyComponent>() : nullptr;
+	if (!Cartography)
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Viaje] Sin mapa en el jugador: el pecio no queda marcado"));
+		return;
+	}
+	Cartography->AddMarkHere(TEXT("wreck"), PartName(Part).ToString());
 }
 
 bool UExploredVoyageSubsystem::TryBuildShip()
