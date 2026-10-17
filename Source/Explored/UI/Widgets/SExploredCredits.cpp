@@ -63,6 +63,13 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 						[
 							Line(NSLOCTEXT("ExploredUI", "CreditsArt", "Todo el arte, sonido y música generados por código"))
 						]
+						// TODO(creditos-cc-by): desde 2026-09-28 la vegetación tropical de selva usa unos
+						// pocos modelos CC-BY 3.0 (Poly by Google, Zacharylll; ver
+						// Tools/Packs/creditos_cc_by.md) porque no hay equivalente CC0 con especie
+						// reconocible. CC-BY exige atribución: falta añadir aquí una línea con el texto
+						// de ese fichero (en es/en) y regenerar Content/Localization/Game con el
+						// commandlet de localización del proyecto. No se ha hecho en este cambio porque
+						// se preparó sin el editor abierto.
 						// Dedicatoria (GDD §15): la misma clave que el menú principal, idéntica en los dos idiomas.
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f, 0.0f, 24.0f))
 						[

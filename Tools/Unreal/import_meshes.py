@@ -17,15 +17,29 @@ Qué hace, en orden:
        save=True) y unreal.FbxImportUI + unreal.FbxStaticMeshImportData
        para traer el color de vértice (VertexColorImportOption.REPLACE) sin
        generar materiales ni colisión automática (los del kit se aplican
-       aparte).
+       aparte) -salvo el follaje "material_slots": ["NATIVE"], ver el punto
+       2bis-.
     2. Crea o reutiliza 4 materiales simples en /Game/Generated/Materials/
        (M_Bark, M_Leaf, M_Rock, M_Grass) vía unreal.MaterialEditingLibrary:
        un color base constante (MaterialExpressionConstant3Vector)
        multiplicado (MaterialExpressionMultiply) por el atributo de color
        de vértice de la malla (MaterialExpressionVertexColor), conectado a
        Base Color; una constante simple a Roughness.
-    3. Asigna esos materiales a los slots de cada malla importada, en el
-       mismo orden que anota manifest.json (material_slots), vía
+    2bis. Excepción "material_slots": ["NATIVE"] (diagnosticado 2026-09-28,
+       follaje Quaternius/Poly Pizza gris-marrón en el mapa horneado): el
+       follaje low poly vía Tools/Packs/process_landing_set.py NO tiene
+       vértices coloreados para M_Bark/M_Leaf -conserva el atlas con
+       degradado propio de su .glb de origen (ver Tools/Packs/packs.json)-,
+       así que forzarle los materiales de constante×color-de-vértice del
+       punto 2 lo deja con el vertex color por defecto (blanco) multiplicado
+       por un gris de base: plano y sin vida. Para estas entradas se activa
+       import_materials/import_textures en el FbxImportUI (la malla trae su
+       material y su textura incrustada, no vertex color) y se SALTA
+       _assign_materials por completo: el material que trae el FBX es el
+       bueno y no hay que tocarlo.
+    3. Para el resto (material_slots reales), asigna los 4 materiales
+       estables a los slots de cada malla importada, en el mismo orden que
+       anota manifest.json (material_slots), vía
        unreal.EditorStaticMeshLibrary.set_material (con una vía alternativa
        de reserva por si el nombre exacto del método difiere en 5.6).
     4. Activa Nanite (StaticMesh.nanite_settings.enabled) en las mallas de
@@ -86,6 +100,12 @@ FAMILY_FOLDERS = {
 # de Nanite ahí no compensa el coste de recorte por instancia.
 NANITE_CATEGORIES = {'rock', 'tree'}
 
+# Convencion de manifest.json para el follaje low poly (ver 2bis arriba):
+# "material_slots": ["NATIVE"] significa "el FBX ya trae su material y su
+# textura, no lo toques". Cualquier otro valor sigue asignando los 4
+# materiales estables de MATERIAL_DEFS como hasta ahora.
+NATIVE_MATERIAL_SENTINEL = ['NATIVE']
+
 MATERIAL_DEFS = {
     'M_Bark':  dict(base_color=(0.16, 0.10, 0.07), roughness=0.9),
     'M_Leaf':  dict(base_color=(0.07, 0.26, 0.10), roughness=0.5),
@@ -145,10 +165,15 @@ def _ensure_material(name):
     return material
 
 
-def _import_mesh(fbx_path, dest_path, mesh_name):
+def _import_mesh(fbx_path, dest_path, mesh_name, native_material=False):
     """Importa un FBX como AssetImportTask automatizado. Devuelve el
     StaticMesh importado, o None si algo falló (se deja log de error, no
-    se interrumpe el resto del lote)."""
+    se interrumpe el resto del lote).
+
+    native_material=True (follaje low poly, material_slots=["NATIVE"]):
+    importa el material y la textura que trae el FBX en vez de dejarlos
+    fuera para que _assign_materials los sustituya luego (ver 2bis en el
+    docstring del módulo)."""
     # Reimportar sobre un asset ya existente reutiliza los ajustes de import
     # GUARDADOS en su AssetImportData (incluida la escala) e ignora los de
     # esta tarea nueva: sin borrarlo antes, un cambio en import_uniform_scale
@@ -169,8 +194,8 @@ def _import_mesh(fbx_path, dest_path, mesh_name):
     options = unreal.FbxImportUI()
     options.set_editor_property('import_mesh', True)
     options.set_editor_property('import_as_skeletal', False)
-    options.set_editor_property('import_materials', False)
-    options.set_editor_property('import_textures', False)
+    options.set_editor_property('import_materials', native_material)
+    options.set_editor_property('import_textures', native_material)
 
     smi = options.static_mesh_import_data
     smi.set_editor_property('combine_meshes', True)
@@ -247,12 +272,16 @@ def main():
         dest_path = f'{MESH_DEST_ROOT}/{folder}'
         fbx_path = os.path.join(EXPORT_DIR, entry['file'])
 
-        static_mesh = _import_mesh(fbx_path, dest_path, entry['name'])
+        is_native = entry['material_slots'] == NATIVE_MATERIAL_SENTINEL
+        static_mesh = _import_mesh(fbx_path, dest_path, entry['name'], native_material=is_native)
         if static_mesh is None:
             failed += 1
             continue
 
-        _assign_materials(static_mesh, entry['material_slots'])
+        if is_native:
+            unreal.log(f"[import_meshes] {entry['name']}: material_slots=NATIVE, se conserva el material del FBX")
+        else:
+            _assign_materials(static_mesh, entry['material_slots'])
 
         if entry['category'] in NANITE_CATEGORIES:
             _enable_nanite(static_mesh)

@@ -118,7 +118,11 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.ClusterScale = 60.0f;
 		R.ClusterThreshold = -0.25f;
 		R.MinScale = 0.8f;
-		R.MaxScale = 1.25f;
+		// Tope bajado de 1.25 a 1.1 (2026-09-28, PIE desde el spawn: el sotobosque se
+		// veia desproporcionado junto al dosel medio, sobre todo con las variantes
+		// reutilizadas de JungleWide a media escala). Mantiene clara la jerarquia
+		// Understory < JungleWide < JungleGiant.
+		R.MaxScale = 1.1f;
 		R.Sink = 0.3f;
 		R.CullDistance = 450.0f;
 		Rules.Add(R);
@@ -149,11 +153,16 @@ TArray<FScatterRule> FVegetationScatter::DefaultRules()
 		R.MinHeight = 2.2f;
 		R.MaxHeight = 220.0f;
 		R.MinNormalZ = 0.65f;
-		R.Spacing = 4.2f;
+		// Separacion subida de 4.2 a 6.0 m y tope de escala bajado de 1.4 a 1.15
+		// (2026-09-28, PIE desde el spawn de Landing: el jugador aparecia metido
+		// dentro de un arbusto/helecho de primer plano; junto al radio despejado
+		// de VegetationClearRadiusM en WorldGenCommandlet.cpp, esto baja tambien la
+		// densidad general donde tapaba la vista, no solo en el punto de aparicion).
+		R.Spacing = 6.0f;
 		R.ClusterScale = 25.0f;
 		R.ClusterThreshold = -0.3f;
 		R.MinScale = 0.7f;
-		R.MaxScale = 1.4f;
+		R.MaxScale = 1.15f;
 		R.AlignToNormal = 0.4f;
 		R.Sink = 0.1f;
 		R.CullDistance = 120.0f;
@@ -241,7 +250,7 @@ bool FVegetationScatter::FindSurface(const FTerrainDensity& Density, float X, fl
 }
 
 FScatterResult FVegetationScatter::Generate(const FTerrainDensity& Density, const TArray<FScatterRule>& Rules,
-	const FBox2D& Region, uint32 Seed)
+	const FBox2D& Region, uint32 Seed, const TArray<FVector>& AvoidPoints, float ClearRadiusM)
 {
 	FScatterResult Result;
 	Result.PerRule.SetNum(Rules.Num());
@@ -275,6 +284,24 @@ FScatterResult FVegetationScatter::Generate(const FTerrainDensity& Density, cons
 				if (!Region.IsInside(FVector2D(X, Y)))
 				{
 					continue;
+				}
+
+				if (ClearRadiusM > 0.0f)
+				{
+					const float ClearRadiusSqM = ClearRadiusM * ClearRadiusM;
+					bool bTooClose = false;
+					for (const FVector& Avoid : AvoidPoints)
+					{
+						if (FVector2D::DistSquared(FVector2D(X, Y), FVector2D(Avoid)) < ClearRadiusSqM)
+						{
+							bTooClose = true;
+							break;
+						}
+					}
+					if (bTooClose)
+					{
+						continue;
+					}
 				}
 
 				const FTerrainColumn Column = Density.SampleColumn(X, Y);
