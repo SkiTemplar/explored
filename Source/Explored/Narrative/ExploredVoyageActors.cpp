@@ -200,3 +200,38 @@ void AExploredShipyard::Interact_Implementation(AActor* InInstigator)
 		break;
 	}
 }
+
+AExploredDepartingShip::AExploredDepartingShip()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bTickEvenWhenPaused = false;
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetMobility(EComponentMobility::Movable);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RootComponent = Mesh;
+}
+
+void AExploredDepartingShip::BeginPlay()
+{
+	Super::BeginPlay();
+	if (UStaticMesh* Ship = ExploredVoyageActorsDetail::LoadFirst({
+		TEXT("/Game/Generated/Meshes/Limon/SM_Limon.SM_Limon"),
+		TEXT("/Game/Generated/Meshes/Embarcaciones/SM_Canoe_Outrigger.SM_Canoe_Outrigger")}))
+	{
+		Mesh->SetStaticMesh(Ship);
+	}
+	BaseYaw = GetActorRotation().Yaw;
+	BaseZ = GetActorLocation().Z;
+}
+
+void AExploredDepartingShip::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	Age += DeltaSeconds;
+	// Arranca suave y cabecea/escora poco: se lee como un barco pequeño con marejada.
+	const float Speed = SpeedCmPerSecond * FMath::Clamp(Age / 3.0f, 0.15f, 1.0f);
+	FVector Location = GetActorLocation() + GetActorForwardVector() * Speed * DeltaSeconds;
+	Location.Z = BaseZ + FMath::Sin(Age * 1.3f) * 12.0f;
+	const FRotator Rotation(FMath::Sin(Age * 1.1f) * 2.5f, BaseYaw, FMath::Sin(Age * 0.8f + 1.0f) * 4.0f);
+	SetActorLocationAndRotation(Location, Rotation);
+}

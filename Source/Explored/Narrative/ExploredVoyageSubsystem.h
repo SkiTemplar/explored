@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "TimerManager.h"
 
 #include "Narrative/ExploredProgress.h"
 
@@ -58,5 +59,10 @@ private:
 	void Notify(const FText& Text, const FLinearColor& Color) const;
 	float GetHours() const;
 
+	/** Secuencia de salida: el Limón mar adentro con la cámara detrás; luego el final. */
+	void PlayDepartureSequence();
+	void FinishDepartureSequence();
+
 	TWeakObjectPtr<AExploredShipyard> Shipyard;
+	FTimerHandle DepartureTimer;
 };

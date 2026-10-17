@@ -279,16 +279,20 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		{
 			const FVector Target = YardMeters * 100.0 + FVector(0.0, 0.0, 150.0);
 			const FVector Offset = YardRotation.RotateVector(FVector(-300.0, 900.0, 350.0));
-			for (const TCHAR* Name : {TEXT("voyage_yard_frame"), TEXT("voyage_yard_ship"), TEXT("voyage_ending")})
+			for (const TCHAR* Name : {TEXT("voyage_yard_frame"), TEXT("voyage_yard_ship"), TEXT("voyage_departure"), TEXT("voyage_ending")})
 			{
 				FExploredShot Shot;
 				Shot.Name = Name;
 				Shot.Location = Target + Offset;
 				Shot.Rotation = (Target - Shot.Location).Rotation();
-				Shot.Hours = FCString::Strcmp(Name, TEXT("voyage_ending")) == 0 ? 22.0f : 16.5f;
+				const FString ShotName(Name);
+				const bool bNight = ShotName == TEXT("voyage_departure") || ShotName == TEXT("voyage_ending");
+				Shot.Hours = bNight ? 22.0f : 16.5f;
 				Shot.bShowUI = true;
-				Shot.Action = FCString::Strcmp(Name, TEXT("voyage_yard_ship")) == 0 ? FName(TEXT("build"))
-					: FCString::Strcmp(Name, TEXT("voyage_ending")) == 0 ? FName(TEXT("depart")) : NAME_None;
+				// La salida dura unos segundos (UExploredVoyageSubsystem): la vista del final espera.
+				Shot.Action = ShotName == TEXT("voyage_yard_ship") ? FName(TEXT("build"))
+					: ShotName == TEXT("voyage_departure") ? FName(TEXT("depart"))
+					: ShotName == TEXT("voyage_ending") ? FName(TEXT("wait")) : NAME_None;
 				Shots.Add(Shot);
 			}
 		}
@@ -409,7 +413,8 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 			Voyage->TryDepart();
 		}
 	}
-	Timer = 0.0f;
+	// «wait»: deja correr la secuencia de salida (9 s) y el fundido antes de capturar.
+	Timer = Shot.Action == TEXT("wait") ? -10.0f : 0.0f;
 	bRequested = false;
 }
 

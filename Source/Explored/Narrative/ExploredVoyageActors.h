@@ -76,3 +76,33 @@ private:
 	bool bShowingShip = false;
 	bool bHasMesh = false;
 };
+
+/**
+ * El Limón saliendo de la laguna en la secuencia del final: avanza mar adentro por la proa
+ * y balancea un poco con la marejada. Solo decorado: sin física ni interacción.
+ */
+UCLASS()
+class EXPLORED_API AExploredDepartingShip : public AActor
+{
+	GENERATED_BODY()
+
+public:
+	AExploredDepartingShip();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	/** Velocidad mar adentro (cm/s). */
+	UPROPERTY(EditAnywhere, Category = "Explored|Viaje")
+	float SpeedCmPerSecond = 350.0f;
+
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Viaje")
+	TObjectPtr<UStaticMeshComponent> Mesh;
+
+private:
+	float Age = 0.0f;
+	float BaseYaw = 0.0f;
+	float BaseZ = 0.0f;
+};

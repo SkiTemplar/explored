@@ -1,6 +1,8 @@
 #include "Narrative/ExploredVoyageSubsystem.h"
 
+#include "Camera/CameraActor.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
@@ -22,6 +24,9 @@ namespace ExploredVoyageDetail
 	constexpr float ShipyardMaxHeight = 1.4f;
 	/** Desplazamiento lateral de la grada respecto a la línea del punto de aparición (m). */
 	constexpr float ShipyardSideOffset = 7.0f;
+	/** Secuencia de salida: dónde arranca el barco (por delante de la grada) y cuánto dura. */
+	constexpr double DepartureStartAheadCm = 1800.0;
+	constexpr float DepartureSequenceSeconds = 9.0f;
 	/** Altura (m) del claro tierra adentro donde cae el motor en la isla de inicio. */
 	constexpr float InlandMinHeight = 3.0f;
 	constexpr float InlandMaxHeight = 25.0f;
@@ -234,11 +239,51 @@ bool UExploredVoyageSubsystem::TryDepart()
 		return false;
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Viaje] El jugador zarpa en el Limón"));
-	if (AExploredPlayerController* PC = Cast<AExploredPlayerController>(GetWorld()->GetFirstPlayerController()))
+	PlayDepartureSequence();
+	return true;
+}
+
+void UExploredVoyageSubsystem::PlayDepartureSequence()
+{
+	UWorld* World = GetWorld();
+	AExploredShipyard* Yard = Shipyard.Get();
+	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
+	if (!World || !Yard || !PC)
+	{
+		FinishDepartureSequence();
+		return;
+	}
+	// La grada queda vacía: el barco ya está en el agua, unos metros por delante de la proa.
+	Yard->SetActorHiddenInGame(true);
+	const FVector Forward = Yard->GetActorForwardVector().GetSafeNormal2D();
+	FVector Start = Yard->GetActorLocation() + Forward * ExploredVoyageDetail::DepartureStartAheadCm;
+	Start.Z = 0.0;
+	const FRotator Heading(0.0f, Forward.Rotation().Yaw, 0.0f);
+	World->SpawnActor<AExploredDepartingShip>(AExploredDepartingShip::StaticClass(), Start, Heading);
+
+	// Cámara fija en la orilla, detrás y a un lado, mirando cómo se aleja.
+	const FVector Side(-Forward.Y, Forward.X, 0.0);
+	const FVector CameraLocation = Yard->GetActorLocation() - Forward * 600.0 + Side * 900.0 + FVector(0.0, 0.0, 350.0);
+	const FVector LookAt = Start + Forward * 2500.0 + FVector(0.0, 0.0, 200.0);
+	if (ACameraActor* Camera = World->SpawnActor<ACameraActor>(CameraLocation, (LookAt - CameraLocation).Rotation()))
+	{
+		PC->SetViewTargetWithBlend(Camera, 1.5f, VTBlend_EaseInOut, 2.0f);
+	}
+	if (APawn* Pawn = PC->GetPawn())
+	{
+		Pawn->DisableInput(PC);
+		Pawn->SetActorHiddenInGame(true);
+	}
+	World->GetTimerManager().SetTimer(DepartureTimer, FTimerDelegate::CreateUObject(this, &UExploredVoyageSubsystem::FinishDepartureSequence),
+		ExploredVoyageDetail::DepartureSequenceSeconds, false);
+}
+
+void UExploredVoyageSubsystem::FinishDepartureSequence()
+{
+	if (AExploredPlayerController* PC = GetWorld() ? Cast<AExploredPlayerController>(GetWorld()->GetFirstPlayerController()) : nullptr)
 	{
 		PC->ShowEnding();
 	}
-	return true;
 }
 
 bool UExploredVoyageSubsystem::IsStarNightNow() const
