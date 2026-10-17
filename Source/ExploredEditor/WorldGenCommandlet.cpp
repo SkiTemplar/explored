@@ -799,6 +799,13 @@ namespace
 				continue;
 			}
 			const FString Name = Obj->GetStringField(TEXT("name"));
+			// Mallas cuyo único material era un atlas de textura que no sobrevive a la importación.
+			static const TSet<FString> AtlasOnly = {TEXT("SM_LowPolyPalmA_01"), TEXT("SM_LowPolyPalmB_01"),
+				TEXT("SM_LowPolyPalmC_01"), TEXT("SM_LowPolyGrassA_01")};
+			if (AtlasOnly.Contains(Name))
+			{
+				continue;
+			}
 			const FAssetData* Asset = Imported.FindByPredicate([&Name](const FAssetData& A)
 			{
 				return A.AssetName.ToString() == Name && A.PackagePath.ToString().Contains(TEXT("/LowPoly"));
@@ -817,7 +824,15 @@ namespace
 		{
 			if (const TArray<FSoftObjectPath>* Meshes = BySpecies.Find(Rule.Species))
 			{
-				Rule.Meshes = *Meshes;
+				// Solo queda una palmera low poly: se mezcla con las procedurales en vez de sustituirlas.
+				if (Rule.Species == TEXT("Palm"))
+				{
+					Rule.Meshes.Append(*Meshes);
+				}
+				else
+				{
+					Rule.Meshes = *Meshes;
+				}
 			}
 		}
 	}
