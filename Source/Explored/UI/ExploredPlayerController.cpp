@@ -206,6 +206,10 @@ void AExploredPlayerController::SetupInputComponent()
 
 void AExploredPlayerController::HandleMapKey()
 {
+	if (bCutsceneActive)
+	{
+		return;
+	}
 	if (UIMode == EExploredUIMode::Playing && Navigation.Current() == ExploredSettingsLogic::EMenuScreen::None)
 	{
 		OpenMap();
@@ -214,6 +218,10 @@ void AExploredPlayerController::HandleMapKey()
 
 void AExploredPlayerController::HandleEscape()
 {
+	if (bCutsceneActive)
+	{
+		return;
+	}
 	using ExploredSettingsLogic::EMenuScreen;
 	// Ajustes descarta lo no aplicado al volver (M11): se pasa por el panel.
 	if (Navigation.Current() == EMenuScreen::Settings)
@@ -626,6 +634,7 @@ void AExploredPlayerController::ShowEnding()
 			return;
 		}
 		// El final no pasa por la pila de navegación: solo sale de él «Volver al menú».
+		PC->SetCutsceneActive(false);
 		PC->HideOverlay();
 		PC->SetUIMode(EExploredUIMode::Paused);
 		TSharedRef<SExploredEnding> Widget = SNew(SExploredEnding)

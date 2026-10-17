@@ -96,6 +96,9 @@ struct EXPLORED_API FExploredProgress
 	static constexpr float NightEndHours = 5.0f;
 	static bool IsStarNight(float Hours);
 
+	/** Puede zarpar ahora: barco hecho, de noche y sin haber zarpado ya. */
+	bool CanDepartAt(float Hours) const { return CanDepart() && !HasDeparted() && IsStarNight(Hours); }
+
 	/** Zarpa si el barco está hecho y es de noche; anota el final. Devuelve true si zarpa ahora. */
 	bool Depart(float Hours);
 	bool HasDeparted() const { return EndingsSeen.Contains(EExploredEnding::Departed); }

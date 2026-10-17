@@ -65,4 +65,7 @@ private:
 
 	TWeakObjectPtr<AExploredShipyard> Shipyard;
 	FTimerHandle DepartureTimer;
+	bool bDepartureRunning = false;
+	/** Hora a la que se pulsó zarpar (para anotar el final aunque la secuencia cruce las 05:00). */
+	float DepartureHours = 0.0f;
 };

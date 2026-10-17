@@ -121,6 +121,7 @@ void AExploredShipyard::BeginPlay()
 	RefreshMesh();
 	// El armazón y el barco ocupan casi lo mismo: basta con la caja del primero.
 	ExploredInteraction::AddFocusBox(*this, *Mesh);
+	GetWorldTimerManager().SetTimer(RefreshTimer, this, &AExploredShipyard::RefreshMesh, 1.0f, true);
 }
 
 void AExploredShipyard::RefreshMesh()
@@ -128,6 +129,11 @@ void AExploredShipyard::RefreshMesh()
 	const UExploredVoyageSubsystem* Voyage = ExploredVoyageActorsDetail::GetVoyage(GetWorld());
 	const EVoyageStage Stage = Voyage ? Voyage->GetStage() : EVoyageStage::Salvage;
 	const bool bShip = Stage == EVoyageStage::SetSail || Stage == EVoyageStage::Departed;
+	// Partida cargada después de zarpar: el barco ya no está en la grada.
+	if (Stage == EVoyageStage::Departed)
+	{
+		SetActorHiddenInGame(true);
+	}
 	if (bHasMesh && bShip == bShowingShip)
 	{
 		return;

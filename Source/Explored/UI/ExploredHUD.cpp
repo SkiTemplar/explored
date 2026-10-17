@@ -36,7 +36,8 @@ void AExploredHUD::DrawHUD()
 
 	// Con el menú, la pausa o el final encima no se dibuja el HUD de juego.
 	const AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(GetOwningPlayerController());
-	if (ExploredPC && ExploredPC->GetUIMode() != EExploredUIMode::Playing && ExploredPC->GetUIMode() != EExploredUIMode::InHands)
+	if (ExploredPC && (ExploredPC->IsCutsceneActive()
+		|| (ExploredPC->GetUIMode() != EExploredUIMode::Playing && ExploredPC->GetUIMode() != EExploredUIMode::InHands)))
 	{
 		return;
 	}

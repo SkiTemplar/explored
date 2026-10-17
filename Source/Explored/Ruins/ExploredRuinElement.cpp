@@ -44,7 +44,7 @@ namespace ExploredRuinElementDetail
 				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Honu.SM_Ruin_Petroglyph_Honu"),
 				TEXT("/Game/Generated/Meshes/RuinasTallas/SM_Ruin_Petroglyph_Star.SM_Ruin_Petroglyph_Star"),
 			};
-			OutMesh = Petroglyphs[GetTypeHash(ElementId) % UE_ARRAY_COUNT(Petroglyphs)];
+			OutMesh = Petroglyphs[FCrc::StrCrc32(*ElementId.ToString()) % UE_ARRAY_COUNT(Petroglyphs)];
 			break;
 		}
 		}

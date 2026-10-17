@@ -60,7 +60,7 @@ bool FExploredProgress::IsStarNight(float Hours)
 
 bool FExploredProgress::Depart(float Hours)
 {
-	if (!CanDepart() || HasDeparted() || !IsStarNight(Hours))
+	if (!CanDepartAt(Hours))
 	{
 		return false;
 	}

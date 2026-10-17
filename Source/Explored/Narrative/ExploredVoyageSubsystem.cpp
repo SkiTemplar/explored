@@ -229,7 +229,12 @@ bool UExploredVoyageSubsystem::TryDepart()
 	{
 		return false;
 	}
-	if (!Wiring->GetProgress().Depart(GetHours()))
+	if (bDepartureRunning)
+	{
+		return false;
+	}
+	DepartureHours = GetHours();
+	if (!Wiring->GetProgress().CanDepartAt(DepartureHours))
 	{
 		if (Wiring->GetProgress().CanDepart() && !IsStarNightNow())
 		{
@@ -239,6 +244,7 @@ bool UExploredVoyageSubsystem::TryDepart()
 		return false;
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Viaje] El jugador zarpa en el Limón"));
+	bDepartureRunning = true;
 	PlayDepartureSequence();
 	return true;
 }
@@ -252,6 +258,10 @@ void UExploredVoyageSubsystem::PlayDepartureSequence()
 	{
 		FinishDepartureSequence();
 		return;
+	}
+	if (AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(PC))
+	{
+		ExploredPC->SetCutsceneActive(true);
 	}
 	// La grada queda vacía: el barco ya está en el agua, unos metros por delante de la proa.
 	Yard->SetActorHiddenInGame(true);
@@ -280,6 +290,12 @@ void UExploredVoyageSubsystem::PlayDepartureSequence()
 
 void UExploredVoyageSubsystem::FinishDepartureSequence()
 {
+	// El final se anota al terminar la secuencia: si se interrumpe, la partida sigue pudiendo zarpar.
+	if (UExploredWiringSubsystem* Wiring = GetWorld() ? GetWorld()->GetSubsystem<UExploredWiringSubsystem>() : nullptr)
+	{
+		Wiring->GetProgress().Depart(DepartureHours);
+	}
+	bDepartureRunning = false;
 	if (AExploredPlayerController* PC = GetWorld() ? Cast<AExploredPlayerController>(GetWorld()->GetFirstPlayerController()) : nullptr)
 	{
 		PC->ShowEnding();

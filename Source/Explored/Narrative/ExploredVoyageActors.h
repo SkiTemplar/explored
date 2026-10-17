@@ -75,6 +75,8 @@ protected:
 private:
 	bool bShowingShip = false;
 	bool bHasMesh = false;
+	/** Cargar partida llega después de BeginPlay: la malla se revisa cada segundo. */
+	FTimerHandle RefreshTimer;
 };
 
 /**

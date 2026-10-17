@@ -146,6 +146,10 @@ public:
 	/** Final «Zarpar» (UExploredVoyageSubsystem): funde a negro y muestra SExploredEnding. */
 	void ShowEnding();
 
+	/** Secuencia de salida del Limón: sin pausa, mapa ni HUD de juego mientras dura. */
+	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
+	bool IsCutsceneActive() const { return bCutsceneActive; }
+
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void QuitToDesktop();
 
@@ -171,6 +175,7 @@ private:
 	AExploredMenuCamera* FindOrSpawnMenuCamera();
 
 	EExploredUIMode UIMode = EExploredUIMode::Menu;
+	bool bCutsceneActive = false;
 	/** Pantalla actual y camino hasta ella (la base es None jugando o MainMenu). */
 	ExploredSettingsLogic::FMenuNavigation Navigation;
 
