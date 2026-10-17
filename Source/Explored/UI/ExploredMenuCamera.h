@@ -31,6 +31,11 @@ public:
 	AExploredMenuCamera();
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
+
+	/** v1: la órbita rodea la isla de llegada (playa, laguna y el Limón) en vez del archipiélago entero. */
+	UPROPERTY(EditAnywhere, Category = "Explored|Cámara de menú")
+	bool bOrbitLandingIsland = true;
 
 	UPROPERTY(EditAnywhere, Category = "Explored|Cámara de menú")
 	FVector OrbitCenter = FVector(0.0f, 0.0f, 4000.0f);
