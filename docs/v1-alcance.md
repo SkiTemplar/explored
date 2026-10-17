@@ -23,8 +23,28 @@ fuera de la v1 (sigue en `docs/roadmap.md` y en las PR abiertas, sin fusionar).
   barcos por piezas (#90), granja (#81), escalada (#85), museo ampliado, combate, aldeas y piratas.
 - Rehorneado del terreno: no se tocan las PR de terreno (#87, #114, #118) en la v1.
 
+## Arte de la v1
+
+- Kit Limón (barco terminado y armazón en grada) y Albatros rehecho, por script
+  (`Tools/Blender/props/limon.py`, `albatros.py`; validación con `check_props.py`).
+- Vegetación low poly de Quaternius/Poly Pizza (PR #111) conectada al horneado
+  (`WorldGenCommandlet::ApplyLowPolySet`), importada con `Tools/Unreal/import_lowpoly_native.py`
+  y con colores planos por slot (`Tools/Unreal/fix_lowpoly_materials.py`).
+- Ruinas con las mallas de `RuinasTallas` y `BrujulaEstelar`.
+
+## Rehacer el mundo y el paquete
+
+```powershell
+powershell -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_lowpoly_native.py
+powershell -File Tools/unreal_python.ps1 -Script Tools/Unreal/fix_lowpoly_materials.py
+powershell -File Tools/worldgen.ps1 -Mode map; powershell -File Tools/worldgen.ps1 -Mode hlod
+powershell -File Tools/package.ps1   # Saved/Package/Windows/Explored.exe
+```
+
 ## Verificación
 
 - `Tools/test.ps1 -Filter Explored.Narrative` (etapas del viaje).
-- `Tools/shots.ps1 -Set voyage`: pecios, grada, Limón construido y pantalla del final.
+- `Tools/shots.ps1 -Set voyage`: interactúa con cada pecio por el camino del jugador (el log
+  debe decir «foco ExploredSalvageSite, interacción hecha» 4 veces), grada, Limón, salida y final.
+- `Tools/test.ps1`: 1460/1462 en verde el 2026-10-17 (0 fallos).
 - `Tools/shots.ps1 -Set menu`: menú, ajustes, pausa y mapa con la interfaz en la captura.
