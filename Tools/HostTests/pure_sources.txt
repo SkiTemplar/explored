@@ -20,6 +20,7 @@ Core/NetQuantize.cpp
 Core/SystemLinks.cpp
 Debug/NetBudgetModel.cpp
 Debug/NetBudgetTableModel.cpp
+Debug/PlaytestReportModel.cpp
 Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp

@@ -9,6 +9,7 @@ Tests/BodySpec.cpp
 Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
+Tests/PlaytestReportSpec.cpp
 Tests/CookingSpec.cpp
 Tests/ContainerReplicationModelSpec.cpp
 Tests/ExplorationContentSpec.cpp
