@@ -1,5 +1,6 @@
 #include "Narrative/ExploredVoyageActors.h"
 
+#include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -10,6 +11,9 @@
 
 namespace ExploredVoyageActorsDetail
 {
+	/** Altura a la que se sube el Limón terminado para que la quilla quede sobre la arena (cm). */
+	constexpr double BeachedShipLiftCm = 55.0;
+
 	UExploredVoyageSubsystem* GetVoyage(const UWorld* World)
 	{
 		return World ? World->GetSubsystem<UExploredVoyageSubsystem>() : nullptr;
@@ -104,8 +108,10 @@ void AExploredSalvageSite::Interact_Implementation(AActor* InInstigator)
 AExploredShipyard::AExploredShipyard()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	// Raíz aparte: el barco terminado se sube sobre la arena sin mover el actor.
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	Mesh = ExploredVoyageActorsDetail::MakeMesh(*this);
-	RootComponent = Mesh;
+	Mesh->SetupAttachment(RootComponent);
 }
 
 void AExploredShipyard::BeginPlay()
@@ -136,6 +142,9 @@ void AExploredShipyard::RefreshMesh()
 		return;
 	}
 	Mesh->SetStaticMesh(NewMesh);
+	// SM_Limon tiene el origen en la línea de flotación y ~0,5 m de calado: varado en la arena
+	// se apoya en la quilla. El armazón (SM_Limon_Frame) ya tiene el origen en el suelo.
+	Mesh->SetRelativeLocation(FVector(0.0, 0.0, bShip ? ExploredVoyageActorsDetail::BeachedShipLiftCm : 0.0));
 	bShowingShip = bShip;
 	bHasMesh = true;
 }
