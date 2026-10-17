@@ -48,7 +48,9 @@ private:
 	/** Se conecta una sola vez a UCarryComponent::OnItemPickedUp en cuanto hay personaje (el orden de BeginPlay no está garantizado). */
 	void EnsureBoundToCarry(const AExploredCharacter& Character);
 	/** Texto centrado en horizontal a la altura Y, con la fuente por defecto del HUD. */
-	void DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y);
+	/** Escala del texto del HUD según la resolución vertical. */
+	float TextScale() const;
+	void DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y, bool bBacking = false);
 
 	UFUNCTION()
 	void HandleItemPickedUp(FText DisplayName);

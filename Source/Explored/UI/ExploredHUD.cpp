@@ -71,12 +71,21 @@ void AExploredHUD::DrawObjective()
 	}
 	constexpr float Margin = 24.0f;
 	const FString Text = Objective.ToString();
+	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
+	if (!Font)
+	{
+		return;
+	}
+	const float Scale = TextScale();
 	float Width = 0.0f;
 	float Height = 0.0f;
-	GetTextSize(Text, Width, Height);
+	Canvas->TextSize(Font, Text, Width, Height, Scale, Scale);
 	const float X = Canvas->SizeX - Margin - Width;
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), X - 10.0f, Margin - 6.0f, Width + 20.0f, Height + 12.0f);
-	DrawText(Text, FLinearColor(1.0f, 0.9f, 0.55f, 0.95f), X, Margin);
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X - 12.0f, Margin - 7.0f, Width + 24.0f, Height + 14.0f);
+	FCanvasTextItem Item(FVector2D(X, Margin), Objective, Font, FLinearColor(1.0f, 0.9f, 0.55f, 0.97f));
+	Item.Scale = FVector2D(Scale, Scale);
+	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
+	Canvas->DrawItem(Item);
 }
 
 void AExploredHUD::DrawReticle()
@@ -234,7 +243,8 @@ void AExploredHUD::DrawNotifications()
 		}
 	}
 
-	float Y = Canvas->SizeY * 0.42f;
+	// Tercio inferior, por debajo del texto de interacción (60 %): no tapa la retícula.
+	float Y = Canvas->SizeY * 0.70f;
 	for (const FExploredHUDNotification& Notification : Notifications)
 	{
 		// Se desvanece en el último cuarto de su vida en vez de cortarse en seco.
@@ -242,8 +252,8 @@ void AExploredHUD::DrawNotifications()
 		const float Alpha = FadeWindow > 0.0f ? FMath::Clamp(Notification.RemainingSeconds / FadeWindow, 0.0f, 1.0f) : 1.0f;
 		FLinearColor Color = Notification.Color;
 		Color.A = Alpha;
-		DrawCenteredText(Notification.Text, Color, Y);
-		Y += 22.0f;
+		DrawCenteredText(Notification.Text, Color, Y, true);
+		Y += 30.0f * TextScale();
 	}
 }
 
@@ -342,7 +352,13 @@ void AExploredHUD::DrawBodyNeeds(const AExploredCharacter& Character)
 	}
 }
 
-void AExploredHUD::DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y)
+float AExploredHUD::TextScale() const
+{
+	// Tamaño pensado para 1080p; nunca por debajo del de la fuente mediana del motor.
+	return Canvas ? FMath::Max(1.0f, Canvas->SizeY / 1080.0f * 1.15f) : 1.0f;
+}
+
+void AExploredHUD::DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y, bool bBacking)
 {
 	// FText directo al Canvas (sin pasar por FString): se re-traduce solo al cambiar de idioma.
 	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
@@ -350,8 +366,17 @@ void AExploredHUD::DrawCenteredText(const FText& Text, const FLinearColor& Color
 	{
 		return;
 	}
+	const float Scale = TextScale();
 	float TextWidth = 0.0f, TextHeight = 0.0f;
-	Canvas->TextSize(Font, Text.ToString(), TextWidth, TextHeight);
+	Canvas->TextSize(Font, Text.ToString(), TextWidth, TextHeight, Scale, Scale);
+	if (bBacking)
+	{
+		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.38f * Color.A), (Canvas->SizeX - TextWidth) * 0.5f - 14.0f, Y - 4.0f,
+			TextWidth + 28.0f, TextHeight + 8.0f);
+	}
 	FCanvasTextItem Item(FVector2D((Canvas->SizeX - TextWidth) * 0.5f, Y), Text, Font, Color);
+	Item.Scale = FVector2D(Scale, Scale);
+	// Sombra: el texto se lee igual sobre arena clara que sobre el cielo.
+	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, Color.A * 0.75f));
 	Canvas->DrawItem(Item);
 }

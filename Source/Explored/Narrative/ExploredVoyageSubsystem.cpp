@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
 
+#include "Audio/ExploredMusicSubsystem.h"
 #include "Core/ExploredWiringSubsystem.h"
 #include "Explored.h"
 #include "Narrative/ExploredVoyageActors.h"
@@ -419,6 +420,11 @@ FText UExploredVoyageSubsystem::PartName(EShipPart Part)
 
 void UExploredVoyageSubsystem::Notify(const FText& Text, const FLinearColor& Color) const
 {
+	// Cada hito del viaje lleva el acento musical de descubrimiento.
+	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
+	{
+		Music->NotifyDiscovery();
+	}
 	const APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
 	if (AExploredHUD* HUD = PC ? Cast<AExploredHUD>(PC->GetHUD()) : nullptr)
 	{

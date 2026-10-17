@@ -272,6 +272,9 @@ return normalize(n + perturb);
 """
 
 
+TERRAIN_SPECULAR = 0.12
+
+
 def build_terrain():
     m = recreate_material("M_Terrain")
     m.set_editor_property("tangent_space_normal", False)
@@ -320,7 +323,8 @@ def build_terrain():
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
     spec = expr(m, unreal.MaterialExpressionConstant, -400, 300)
-    spec.set_editor_property("r", 0.35)
+    # Suelo mate de dibujo: con 0,35 la arena en sombra brillaba como si estuviera mojada.
+    spec.set_editor_property("r", TERRAIN_SPECULAR)
     to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
     finish(m)
 

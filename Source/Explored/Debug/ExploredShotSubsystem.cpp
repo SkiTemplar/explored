@@ -485,7 +485,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		// Ajustes y a Pausa que se abran para el resto de capturas (ver
 		// BeginShot). La cámara y la hora no importan: se ven detrás del
 		// panel de UI, que es lo que hay que verificar.
-		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause"), TEXT("menu_map"), TEXT("menu_credits") })
+		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause"), TEXT("menu_map"), TEXT("menu_credits"), TEXT("menu_newgame") })
 		{
 			FExploredShot Shot;
 			Shot.Name = Name;
@@ -584,6 +584,23 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 			else if (Shot.Name == TEXT("menu_pause"))
 			{
 				ExploredPC->OpenPauseMenu();
+			}
+			else if (Shot.Name == TEXT("menu_newgame"))
+			{
+				// Nueva partida de verdad: el jugador vuelve a su PlayerStart, visible, y el fundido
+				// de StartNewGame pone la vista en sus ojos (HUD, ayuda inicial y objetivo).
+				if (APawn* Pawn = PC->GetPawn())
+				{
+					for (TActorIterator<APlayerStart> It(World); It; ++It)
+					{
+						Pawn->SetActorLocation(It->GetActorLocation(), false, nullptr, ETeleportType::TeleportPhysics);
+						PC->SetControlRotation(It->GetActorRotation());
+						break;
+					}
+					Pawn->SetActorHiddenInGame(false);
+				}
+				ExploredPC->ResumeGame();
+				ExploredPC->StartNewGame(EExploredGameplayMode::Survivor);
 			}
 			else if (Shot.Name == TEXT("menu_credits"))
 			{
