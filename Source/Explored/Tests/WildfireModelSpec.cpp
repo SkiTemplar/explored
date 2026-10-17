@@ -104,6 +104,17 @@ void FWildfireModelSpec::Define()
 			C.Wind = NAN;
 			TestEqual(TEXT("fuerza NaN"), FWildfireModel::SpreadChancePermille(C, FIntPoint(1, 0)), 450);
 		});
+
+		It("una dirección finita pero enorme sesga igual que la unitaria", [this]()
+		{
+			FWildfireConditions C = Dry();
+			C.Wind = 1.0f;
+			C.WindDirection = FVector2D(1.0e308, 1.0e308);
+			TestEqual(TEXT("diagonal a favor"), FWildfireModel::SpreadChancePermille(C, FIntPoint(1, 1)), 700);
+			TestEqual(TEXT("diagonal en contra"), FWildfireModel::SpreadChancePermille(C, FIntPoint(-1, -1)), 200);
+			C.WindDirection = FVector2D(-1.0e300, 0.0);
+			TestEqual(TEXT("de frente"), FWildfireModel::SpreadChancePermille(C, FIntPoint(-1, 0)), 700);
+		});
 	});
 
 	Describe("rejilla y chunks", [this]()

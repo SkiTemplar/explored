@@ -200,16 +200,39 @@ FRaftFurrowResult FRaftFurrowModel::Drag(const FRaftYardModel& Yard, float SFrom
 	Footprint.GetKeys(Columns);
 	Columns.Sort(&ColumnLess);
 
+	// Tramo a lo largo del camino que cubre la huella de esta llamada (cm desde el inicio).
+	double BoxMinX = TNumericLimits<double>::Max();
+	double BoxMaxX = -BoxMinX;
+	for (const FFootBox& Box : Boxes)
+	{
+		BoxMinX = FMath::Min(BoxMinX, Box.MinX);
+		BoxMaxX = FMath::Max(BoxMaxX, Box.MaxX);
+	}
+	const double AlongLo = FMath::Min(S0, S1) + BoxMinX;
+	const double AlongHi = FMath::Max(S0, S1) + BoxMaxX;
+
 	// Primera columna fuera de la huella hacia un costado y cuántos pasos de celda ha costado.
+	// En diagonal, redondear el paso lateral a la rejilla puede caer una celda por delante de
+	// la proa o por detrás de la popa: esa arena la volvería a mover el fotograma siguiente y
+	// el surco dependería del tamaño del paso. Solo vale una columna al costado del tramo
+	// barrido y más hacia fuera que la de partida.
 	const int32 MaxWalk = 256;
 	auto Berm = [&](const FIntPoint& From, double Side, int32& OutSteps)
 	{
 		const FVector2D P = Sand.ColumnPosition(From);
+		const double FromLY = FVector2D::DotProduct(P - Start, Right) * 100.0;
 		for (int32 K = 1; K <= MaxWalk; ++K)
 		{
 			const FVector2D Q = P + Right * (Side * K * Cell);
 			const FIntPoint To = Sand.ColumnOf(Q.X, Q.Y);
-			if (To != From && !Footprint.Contains(To))
+			if (To == From || Footprint.Contains(To))
+			{
+				continue;
+			}
+			const FVector2D T = Sand.ColumnPosition(To) - Start;
+			const double Along = FVector2D::DotProduct(T, Fwd) * 100.0;
+			const double LY = FVector2D::DotProduct(T, Right) * 100.0;
+			if (Along >= AlongLo && Along <= AlongHi && Side * (LY - FromLY) > 0.0)
 			{
 				OutSteps = K;
 				return To;

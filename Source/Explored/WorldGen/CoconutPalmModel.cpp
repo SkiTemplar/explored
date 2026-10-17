@@ -525,6 +525,7 @@ bool FCoconutPalmModel::IsValidSaved(const FCoconutPalmState& State, const FCoco
 		Ids.Add(C.Id);
 		if (bDuplicate || !State.Slots.IsValidIndex(SlotIndex) || static_cast<int32>(C.Id & 0xFFFFFFu) >= State.Slots[SlotIndex].Generation
 			|| !InClockRange(C.LandedMinute) || C.LandedMinute > Now
+			|| !FMath::IsFinite(C.Position.X) || !FMath::IsFinite(C.Position.Y)
 			|| (i > 0 && !SortGround(State.Ground[i - 1], C)))
 		{
 			return false;

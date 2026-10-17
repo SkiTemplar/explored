@@ -104,6 +104,21 @@ namespace RaftFurrowSpecDetail
 		}
 		return Min;
 	}
+	/** El cordón más alto en una ventana de columnas alrededor del camino. */
+	int32 MaxDeltaAround(const FSandModel& Sand, const FVector2D& LoM, const FVector2D& HiM)
+	{
+		const FIntPoint Lo = Sand.ColumnOf(LoM.X, LoM.Y);
+		const FIntPoint Hi = Sand.ColumnOf(HiM.X, HiM.Y);
+		int32 Max = MIN_int32;
+		for (int32 Y = Lo.Y; Y <= Hi.Y; ++Y)
+		{
+			for (int32 X = Lo.X; X <= Hi.X; ++X)
+			{
+				Max = FMath::Max(Max, Sand.DeltaMm(FIntPoint(X, Y)));
+			}
+		}
+		return Max;
+	}
 }
 
 BEGIN_DEFINE_SPEC(FRaftFurrowModelSpec, "Explored.RaftFurrow",
@@ -239,6 +254,30 @@ void FRaftFurrowModelSpec::Define()
 			FSandModel Many;
 			DragInSteps(Yard, Many, 200.0f, 600.0f, 1.7f, DryTide, Flat);
 			TestTrue(TEXT("mismo surco"), One == Many);
+		});
+
+		It("en diagonal da el mismo surco en un tramo que en fotogramas: el cordón no cae delante de la proa", [this, Flat]()
+		{
+			for (const float Yaw : { 20.0f, 30.0f, -63.0f })
+			{
+				FRaftYardModel Yard = SixLogRaft();
+				Yard.PlaceOnPath(Path(ELaunchSurface::Sand, 2000.0f, FVector::ZeroVector, Yaw), 200.0f);
+				FSandModel One;
+				Yard.PlaceOnPath(Yard.GetPath(), 1200.0f);
+				const FRaftFurrowResult ROne = FRaftFurrowModel::Drag(Yard, 200.0f, 1200.0f, DryTide, false, One, Flat);
+				FSandModel Many;
+				const FRaftFurrowResult RMany = DragInSteps(Yard, Many, 200.0f, 1200.0f, 10.0f, DryTide, Flat);
+				const FVector2D Lo(-16.0, -16.0);
+				const FVector2D Hi(16.0, 16.0);
+				const int32 BermOne = MaxDeltaAround(One, Lo, Hi);
+				const int32 BermMany = MaxDeltaAround(Many, Lo, Hi);
+				TestEqual(FString::Printf(TEXT("masa a %.0f°"), Yaw), Many.TotalMass(), static_cast<int64>(0));
+				// Cada columna del surco se vacía una vez: la arena no se vuelve a mover en el fotograma siguiente.
+				TestTrue(FString::Printf(TEXT("arena movida parecida a %.0f° (%lld frente a %lld)"), Yaw, RMany.Sand.Mass, ROne.Sand.Mass),
+					RMany.Sand.Mass <= ROne.Sand.Mass * 5 / 4);
+				TestTrue(FString::Printf(TEXT("cordón parecido a %.0f° (%d frente a %d mm)"), Yaw, BermMany, BermOne),
+					BermMany <= BermOne + RMany.DrySinkMm);
+			}
 		});
 
 		It("es determinista y conserva la masa con cualquier rumbo", [this, Flat]()

@@ -62,7 +62,10 @@ public:
 	/** Longitud máxima del nombre de un componente. */
 	static constexpr int32 MaxComponentLength = 128;
 
-	/** Registra la tala de esa instancia. Si ya tenía tocón (talar el brote), la hora vuelve a empezar y se pierde el trabajo de pala. */
+	/**
+	 * Registra la tala de esa instancia. Si ya tenía tocón (talar el brote), la hora vuelve a empezar y se pierde el trabajo de pala.
+	 * Con MaxEntries entradas no añade ninguna nueva: el reloj nunca escribe un guardado que Load rechazaría.
+	 */
 	void RecordFelled(const FVegetationStumpKey& Key, int64 NowMinute);
 
 	/** Tocón de esa instancia, o nullptr si no está en el reloj. */

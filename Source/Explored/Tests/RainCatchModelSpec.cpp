@@ -26,7 +26,7 @@ BEGIN_DEFINE_SPEC(FRainCatchModelSpec, "Explored.RainCatch",
 	}
 	bool SameState(const FRainCatchState& A, const FRainCatchState& B)
 	{
-		return A.RainMicroL == B.RainMicroL && A.OtherMicroL == B.OtherMicroL && A.OtherKind == B.OtherKind &&
+		return A.RainMicroL == B.RainMicroL && A.OtherMicroL == B.OtherMicroL && A.SeaMicroL == B.SeaMicroL && A.OtherKind == B.OtherKind &&
 			A.LastUpdateMinute == B.LastUpdateMinute && A.CaughtMicroL == B.CaughtMicroL &&
 			A.SpilledMicroL == B.SpilledMicroL && A.EvaporatedMicroL == B.EvaporatedMicroL;
 	}
@@ -188,6 +188,58 @@ void FRainCatchModelSpec::Define()
 			TestEqual(TEXT("3 % exacto: salobre"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Sea);
 			FRainCatchModel::Pour(S, Spec, 1, ERainCatchLiquid::Untreated);
 			TestTrue(TEXT("el mar manda sobre lo sin tratar"), S.OtherKind == ERainCatchLiquid::Sea);
+		});
+
+		It("un rastro de mar sobre agua sin tratar no la vuelve salobre", [this]()
+		{
+			FRainCatchSpec Spec;
+			Spec.CapacityMicroL = 10 * Liter;
+			Spec.MouthAreaM2 = 0.02;
+			FRainCatchState S;
+			FRainCatchModel::Pour(S, Spec, 9 * Liter, ERainCatchLiquid::Untreated);
+			FRainCatchModel::Pour(S, Spec, 1000, ERainCatchLiquid::Sea);
+			TestEqual(TEXT("un mililitro de mar en 9 L: sin tratar"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Untreated);
+			TestEqual(TEXT("el mar se cuenta aparte"), S.SeaMicroL, (int64)1000);
+			TestTrue(TEXT("el tipo más fuerte sigue siendo el mar"), S.OtherKind == ERainCatchLiquid::Sea);
+			FRainCatchModel::Pour(S, Spec, 3 * Liter / 10, ERainCatchLiquid::Sea);
+			TestEqual(TEXT("con un 3 % de mar ya es salobre"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Sea);
+		});
+
+		It("al rebosar y al beber el mar sale en proporción y nunca supera lo ajeno", [this]()
+		{
+			const FRainCatchSpec Spec = FRainCatchModel::SpecForItem(FName(TEXT("vasija_barro")), 3.0f, false);
+			FRainCatchState S;
+			FRainCatchModel::Pour(S, Spec, Spec.CapacityMicroL / 2, ERainCatchLiquid::Untreated);
+			FRainCatchModel::Pour(S, Spec, Spec.CapacityMicroL / 2, ERainCatchLiquid::Sea);
+			TestEqual(TEXT("mitad de mar: salobre"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Sea);
+			int64 R = 0;
+			int64 O = 0;
+			FRainCatchModel::Take(S, Spec.CapacityMicroL / 5, &R, &O);
+			TestEqual(TEXT("sale mitad y mitad de lo ajeno"), S.SeaMicroL, S.OtherMicroL - S.OtherMicroL / 2);
+			const FRainCatchRates Storm = FRainCatchModel::RatesFor(Spec, SampleWithRain(0.95f));
+			bool bSawUntreated = false;
+			for (int32 Minute = 0; Minute < 3 * Day && S.OtherMicroL > 0; ++Minute)
+			{
+				FRainCatchModel::StepMinutes(S, Spec, Storm, 1);
+				if (!TestTrue(TEXT("el mar nunca supera lo ajeno"), S.SeaMicroL >= 0 && S.SeaMicroL <= S.OtherMicroL)) { return; }
+				bSawUntreated |= FRainCatchModel::Quality(S) == ERainCatchQuality::Untreated;
+			}
+			TestTrue(TEXT("pasa por sin tratar"), bSawUntreated);
+			TestEqual(TEXT("la lluvia lo desplaza todo"), S.SeaMicroL, (int64)0);
+			TestTrue(TEXT("tipo limpio"), S.OtherKind == ERainCatchLiquid::None);
+		});
+
+		It("al evaporarse el mar se concentra como el resto de lo ajeno", [this]()
+		{
+			const FRainCatchSpec Spec = Coconut();
+			FRainCatchState S;
+			FRainCatchModel::Pour(S, Spec, Spec.CapacityMicroL - 20000, ERainCatchLiquid::Untreated);
+			FRainCatchModel::Pour(S, Spec, 10000, ERainCatchLiquid::Sea);
+			TestEqual(TEXT("un 2 %: sin tratar"), (int32)FRainCatchModel::Quality(S), (int32)ERainCatchQuality::Untreated);
+			const int64 SeaBefore = S.SeaMicroL;
+			FRainCatchModel::StepMinutes(S, Spec, FRainCatchModel::RatesFor(Spec, SampleWithRain(0.0f, 0.0f)), 2 * Day);
+			TestTrue(TEXT("se evapora"), S.EvaporatedMicroL > 0);
+			TestTrue(TEXT("no se va más mar del que toca"), S.SeaMicroL <= SeaBefore && S.SeaMicroL >= SeaBefore * S.OtherMicroL / (Spec.CapacityMicroL - 10000) - 1);
 		});
 
 		It("verter y sacar respetan la capacidad y la proporción", [this]()
@@ -399,6 +451,19 @@ void FRainCatchModelSpec::Define()
 			TestTrue(TEXT("tiempo NaN: ritmos finitos"), R.InPerMinute == 0 && R.EvaporationPerMinute >= 0);
 		});
 
+		It("una capacidad o una boca desmesuradas se acotan sin desbordar", [this]()
+		{
+			const FRainCatchSpec Huge = FRainCatchModel::SpecForItem(FName(TEXT("cascara_coco")), 1.0e30f, false);
+			TestEqual(TEXT("capacidad al tope"), Huge.CapacityMicroL, FRainCatchModel::MaxCapacityMicroL);
+			const FRainCatchSpec Negative = FRainCatchModel::SpecForItem(FName(TEXT("cascara_coco")), -4.0f, false);
+			TestEqual(TEXT("capacidad negativa a cero"), Negative.CapacityMicroL, (int64)0);
+			FRainCatchSpec Wide;
+			Wide.CapacityMicroL = Liter;
+			Wide.MouthAreaM2 = 1.0e300;
+			const FRainCatchRates R = FRainCatchModel::RatesFor(Wide, SampleWithRain(1.0f));
+			TestTrue(TEXT("ritmo acotado"), R.InPerMinute > 0 && R.InPerMinute <= FRainCatchModel::MaxCapacityMicroL);
+		});
+
 		It("un estado cargado fuera de rango se sanea sin desbordar", [this]()
 		{
 			FRainCatchState S;
@@ -412,6 +477,18 @@ void FRainCatchModelSpec::Define()
 			const FRainCatchSpec Spec = Coconut();
 			FRainCatchModel::StepMinutes(S, Spec, FRainCatchModel::RatesFor(Spec, SampleWithRain(0.3f)), 1);
 			TestEqual(TEXT("rebosa hasta su capacidad"), S.TotalMicroL(), Spec.CapacityMicroL);
+
+			FRainCatchState Legacy;
+			Legacy.RainMicroL = 900000;
+			Legacy.OtherMicroL = 100000;
+			Legacy.OtherKind = ERainCatchLiquid::Sea;
+			TestEqual(TEXT("guardado sin la parte de mar: todo lo ajeno es mar"), (int32)FRainCatchModel::Quality(Legacy), (int32)ERainCatchQuality::Sea);
+			FRainCatchState TooMuchSea;
+			TooMuchSea.OtherMicroL = 10;
+			TooMuchSea.SeaMicroL = 500;
+			TooMuchSea.OtherKind = ERainCatchLiquid::Untreated;
+			FRainCatchModel::Sanitize(TooMuchSea);
+			TestTrue(TEXT("el mar se acota a lo ajeno y manda el tipo"), TooMuchSea.SeaMicroL == 10 && TooMuchSea.OtherKind == ERainCatchLiquid::Sea);
 
 			FRainCatchState Untyped;
 			Untyped.OtherMicroL = 10;

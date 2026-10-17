@@ -68,8 +68,11 @@ Las reglas y los números están en el GDD v2 §3.16 y en la biblia 02 §5.4.
 
 - Una capa nueva, `"raincatch"`, junto a `WorldDeltas`, con una entrada por objeto del
   mundo que lleve agua: `instanceId`, `rain` (int64 µL), `other` (int64 µL),
-  `otherKind` (uint8) y `lastMinute` (int64). Son 33 B por recipiente. Los contadores
+  `sea` (int64 µL, la parte de `other` que es agua de mar), `otherKind` (uint8) y
+  `lastMinute` (int64). Son 41 B por recipiente. Los contadores
   `Caught`/`Spilled`/`Evaporated` no se guardan.
+- Un guardado sin `sea` (anterior a este campo) con `otherKind` de mar se carga como si
+  todo lo ajeno fuera mar: `Sanitize` nunca lo deja menos salado de lo que era.
 - Un recipiente vacío y sin agua ajena no se escribe.
 - Al cargar, `Sanitize` deja el estado dentro de rango: cantidades negativas o enormes
   y un tipo desconocido. Hay spec.
