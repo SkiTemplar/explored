@@ -694,6 +694,8 @@ namespace
 	}
 
 	/** Lee Art/Export/Meshes/manifest.json y asigna mallas importadas a cada regla por categoría. */
+	void ApplyLowPolySet(TArray<FScatterRule>& Rules, const TArray<FAssetData>& Imported);
+
 	void ResolveScatterMeshes(TArray<FScatterRule>& Rules)
 	{
 		const FString ManifestPath = FPaths::ProjectDir() / TEXT("Art/Export/Meshes/manifest.json");
@@ -753,9 +755,70 @@ namespace
 				}
 			}
 		}
+		ApplyLowPolySet(Rules, Imported);
 		for (const FScatterRule& Rule : Rules)
 		{
 			UE_LOG(LogExplored, Display, TEXT("  %s: %d mallas"), *Rule.Species.ToString(), Rule.Meshes.Num());
+		}
+	}
+
+	/**
+	 * Set low poly de Quaternius/Poly Pizza (Tools/Packs/process_landing_set.py, PR #111): si está
+	 * importado en /Game/Generated/Meshes/LowPoly, sustituye a las mallas procedurales de cada
+	 * especie que cubre. El manglar no tiene equivalente y sigue siendo procedural.
+	 */
+	void ApplyLowPolySet(TArray<FScatterRule>& Rules, const TArray<FAssetData>& Imported)
+	{
+		const FString ManifestPath = FPaths::ProjectDir() / TEXT("Art/Export/Meshes/LowPoly/lowpoly_manifest.json");
+		FString Text;
+		TSharedPtr<FJsonObject> Root;
+		if (!FFileHelper::LoadFileToString(Text, *ManifestPath)
+			|| !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
+		{
+			UE_LOG(LogExplored, Display, TEXT("Sin set low poly (%s): vegetación procedural"), *ManifestPath);
+			return;
+		}
+		// Ranura del set -> especies de las reglas que reemplaza.
+		const TMap<FString, TArray<FName>> SlotToSpecies = {
+			{TEXT("Palm"), {TEXT("Palm")}},
+			{TEXT("JungleWide"), {TEXT("JungleWide"), TEXT("JungleGiant"), TEXT("Understory")}},
+			{TEXT("Shrub"), {TEXT("Shrub")}},
+			{TEXT("Fern"), {TEXT("Shrub")}},
+			{TEXT("Grass"), {TEXT("Grass")}},
+			{TEXT("Flower"), {TEXT("Grass")}},
+			{TEXT("Rock"), {TEXT("Rock")}},
+			{TEXT("Debris"), {TEXT("Debris")}},
+		};
+		TMap<FName, TArray<FSoftObjectPath>> BySpecies;
+		for (const TSharedPtr<FJsonValue>& Entry : Root->GetArrayField(TEXT("meshes")))
+		{
+			const TSharedPtr<FJsonObject> Obj = Entry->AsObject();
+			const TArray<FName>* Species = Obj ? SlotToSpecies.Find(Obj->GetStringField(TEXT("slot"))) : nullptr;
+			if (!Species)
+			{
+				continue;
+			}
+			const FString Name = Obj->GetStringField(TEXT("name"));
+			const FAssetData* Asset = Imported.FindByPredicate([&Name](const FAssetData& A)
+			{
+				return A.AssetName.ToString() == Name && A.PackagePath.ToString().Contains(TEXT("/LowPoly"));
+			});
+			if (!Asset)
+			{
+				UE_LOG(LogExplored, Warning, TEXT("Malla low poly %s sin importar"), *Name);
+				continue;
+			}
+			for (const FName& S : *Species)
+			{
+				BySpecies.FindOrAdd(S).Add(Asset->GetSoftObjectPath());
+			}
+		}
+		for (FScatterRule& Rule : Rules)
+		{
+			if (const TArray<FSoftObjectPath>* Meshes = BySpecies.Find(Rule.Species))
+			{
+				Rule.Meshes = *Meshes;
+			}
 		}
 	}
 

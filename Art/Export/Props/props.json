@@ -1,6 +1,6 @@
 {
   "generated_by": "Tools/Blender/props/run_props.py",
-  "prop_count": 23,
+  "prop_count": 30,
   "props": [
     {
       "id": "SM_CliffWall_Basalt01",
@@ -254,6 +254,83 @@
         "z": 152.4
       },
       "triangles": 214
+    },
+    {
+      "id": "SM_Albatros_Full",
+      "file": "Albatros/SM_Albatros_Full.fbx",
+      "group": "Albatros",
+      "dimensions_cm": {
+        "x": 1120.0,
+        "y": 1320.0,
+        "z": 320.0
+      },
+      "triangles": 3460
+    },
+    {
+      "id": "SM_Albatros_Fuselage_Wreck",
+      "file": "Albatros/SM_Albatros_Fuselage_Wreck.fbx",
+      "group": "Albatros",
+      "dimensions_cm": {
+        "x": 833.1,
+        "y": 348.1,
+        "z": 268.0
+      },
+      "triangles": 1648
+    },
+    {
+      "id": "SM_Albatros_Wing_Wreck",
+      "file": "Albatros/SM_Albatros_Wing_Wreck.fbx",
+      "group": "Albatros",
+      "dimensions_cm": {
+        "x": 302.7,
+        "y": 590.7,
+        "z": 195.2
+      },
+      "triangles": 1092
+    },
+    {
+      "id": "SM_Albatros_Tail_Wreck",
+      "file": "Albatros/SM_Albatros_Tail_Wreck.fbx",
+      "group": "Albatros",
+      "dimensions_cm": {
+        "x": 344.4,
+        "y": 286.0,
+        "z": 221.0
+      },
+      "triangles": 1184
+    },
+    {
+      "id": "SM_Albatros_Engine_Wreck",
+      "file": "Albatros/SM_Albatros_Engine_Wreck.fbx",
+      "group": "Albatros",
+      "dimensions_cm": {
+        "x": 190.9,
+        "y": 169.0,
+        "z": 157.4
+      },
+      "triangles": 1958
+    },
+    {
+      "id": "SM_Limon",
+      "file": "Limon/SM_Limon.fbx",
+      "group": "Limon",
+      "dimensions_cm": {
+        "x": 732.6,
+        "y": 219.6,
+        "z": 685.0
+      },
+      "triangles": 3472
+    },
+    {
+      "id": "SM_Limon_Frame",
+      "file": "Limon/SM_Limon_Frame.fbx",
+      "group": "Limon",
+      "dimensions_cm": {
+        "x": 679.1,
+        "y": 308.0,
+        "z": 190.6
+      },
+      "triangles": 2836
     }
   ]
 }

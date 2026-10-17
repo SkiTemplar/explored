@@ -1,0 +1,29 @@
+{
+  "generated_by": "Tools/Blender/ai/run_ai_props.py",
+  "overrides": {
+    "ItemStoneAxe": {
+      "file": "ObjetosPequenos/SM_ItemStoneAxe.fbx",
+      "triangles": 900,
+      "dimensions_cm": {
+        "x": 19.2,
+        "y": 6.3,
+        "z": 34.1
+      },
+      "material_slots": [
+        "M_Wood"
+      ]
+    },
+    "ItemStoneKnife": {
+      "file": "ObjetosPequenos/SM_ItemStoneKnife.fbx",
+      "triangles": 700,
+      "dimensions_cm": {
+        "x": 5.6,
+        "y": 22.2,
+        "z": 4.8
+      },
+      "material_slots": [
+        "M_Wood"
+      ]
+    }
+  }
+}

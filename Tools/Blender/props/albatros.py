@@ -1,37 +1,67 @@
 """
-albatros.py — hidroavion Albatros (chárter que se estrella en el prólogo)
-y sus 4 restos narrativos: fuselaje, ala, cola y motor, esparcidos por el
-archipiélago para la baliza de rescate.
+albatros.py — hidrocanoa «Albatros» (chárter de los años 70 que se estrella
+en el prólogo) y sus 4 restos narrativos, esparcidos por el archipiélago para
+la baliza de rescate.
 
-Pasada de arte 2026-09-26 (revisión visual): silueta tipo De Havilland
-Beaver (ala alta arriostrada con tirantes en V, fuselaje panzudo y
-redondeado, capó de motor radial romo, flotadores gemelos), librea pintada
-(carena crema + franja de color) en vez de metal gris liso, y bisel suave
-en las piezas finales para que las cajas no se lean como "un plano en
-cruz" — la silueta cuadrada y el gris apagado eran justo la queja de la
-primera pasada.
+Pasada de arte 2026-10-17: se rehace el kit entero (la versión anterior eran
+cilindros y cajas desnudas). Casco-fuselaje de hidrocanoa con redan,
+ventanillas, cabina y puerta; ala alta con flotadores de punta y alerones;
+dos motores radiales; cola con deriva, timón, estabilizadores y matrícula
+F-OALB. Librea blanca y roja desgastada (parches de aluminio desnudo y
+óxido), metal oscuro en motor y bancada.
+
+- SM_Albatros_Full: el avión intacto (Z = 0 en la quilla).
+- SM_Albatros_Fuselage_Wreck: fuselaje partido por detrás de la puerta, con
+  chapa abollada, puerta abierta y muñón del ala en el techo (~8 m).
+- SM_Albatros_Wing_Wreck: ala de estribor arrancada en el encastre, con
+  flotador, alerón caído y el muñón de la góndola del motor (~6 m).
+- SM_Albatros_Tail_Wreck: cono de cola con deriva, timón, estabilizadores
+  (uno doblado) y matrícula (~3 m).
+- SM_Albatros_Engine_Wreck: motor radial de 9 cilindros sobre su bancada y
+  cortafuegos, con la hélice de 3 palas doblada (~1,8 m).
+
+Los restos llevan el origen en la base (Z = 0 suelo, centrados en XY). Color
+por vértice escrito por cara sobre M_Metal / M_Glass, como el resto del kit.
 """
+
 import math
 import os
 import sys
 
+from mathutils import Matrix, Vector
+
+sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import _materials as M  # noqa: E402
+import _albatros_shape as A  # noqa: E402
+import _prims as P  # noqa: E402
 import _shapes as S  # noqa: E402
 import common as C  # noqa: E402
 
+CATEGORY = 'albatros'
+
 VARIANTS = [
-    dict(name='Albatros_Full', seed=1001, builder='full',
-         tri_budget=(300, 3600), needs_collision=True, collision_complex=True),
+    dict(name='Albatros_Full', seed=1001, builder='full', tri_budget=(1000, 4000), wear=0.12,
+         needs_collision=True, collision_complex=True,
+         bbox_cm=dict(x=(1000.0, 1250.0), y=(1200.0, 1400.0), z=(250.0, 420.0)),
+         z_range_cm=(0.0, 420.0)),
     dict(name='Albatros_Fuselage_Wreck', seed=1002, builder='fuselage_wreck',
-         tri_budget=(100, 900), needs_collision=True, collision_complex=True),
+         tri_budget=(1000, 4000), needs_collision=True, collision_complex=True,
+         bbox_cm=dict(x=(700.0, 900.0)), z_range_cm=(0.0, 400.0)),
     dict(name='Albatros_Wing_Wreck', seed=1003, builder='wing_wreck',
-         tri_budget=(60, 700), needs_collision=True),
+         tri_budget=(1000, 4000), needs_collision=True,
+         bbox_cm=dict(y=(520.0, 680.0)), z_range_cm=(0.0, 400.0)),
     dict(name='Albatros_Tail_Wreck', seed=1004, builder='tail_wreck',
-         tri_budget=(60, 700), needs_collision=True),
+         tri_budget=(1000, 4000), needs_collision=True,
+         bbox_cm=dict(x=(260.0, 380.0)), z_range_cm=(0.0, 400.0)),
     dict(name='Albatros_Engine_Wreck', seed=1005, builder='engine_wreck',
-         tri_budget=(150, 1500), needs_collision=True),
+         tri_budget=(1000, 4000), needs_collision=True,
+         z_range_cm=(0.0, 220.0)),
 ]
+
+SLOTS = ['M_Metal', 'M_Glass']
+REGISTRATION = 'F-OALB'
+ROUND = 60.0
+HARD = 38.0
 
 _BUILDERS = {}
 
@@ -45,340 +75,454 @@ def _register(key):
 
 def build(variant):
     rnd = C.seeded_rng(variant['seed'])
+    A.WEAR[0] = variant.get('wear', 1.0)
     return _BUILDERS[variant['builder']](variant, rnd)
 
 
-def _drop_to_ground(obj):
-    """Traslada el objeto en Z para que su punto más bajo quede en z=0
-    (regla de pivote en la base). Red de seguridad para restos con bordes
-    rotos, jitter o piezas dobladas donde el cálculo manual del mínimo es
-    frágil."""
-    obj.data.update()
-    min_z = min(v[2] for v in obj.bound_box)
-    if abs(min_z) > 1e-6:
-        C.select_only(obj)
-        import bpy
-        bpy.ops.transform.translate(value=(0.0, 0.0, -min_z))
-        bpy.ops.object.transform_apply(location=True)
-    return obj
+def _solid(obj, rgb, rnd, angle=HARD, slot='M_Metal', bevel=0.0, jitter=0.02):
+    P.solid(obj, SLOTS, slot, rgb, rnd=rnd, jitter=jitter)
+    if bevel > 0.0:
+        S.bevel_obj(obj, width=bevel, segments=1, limit_angle_deg=35.0)
+    return P.smooth(obj, angle)
 
 
-def _finish(parts, name, bevel_width=0.014, bevel_segments=2, grounded=True):
-    """Une, bisela (redondea las aristas duras de las cajas: la parte del
-    look "animado" que más se notaba) y solo entonces sombrea suave + UV.
-    El bisel debe ir ANTES de shade_smooth_auto para que el ángulo de
-    sombreado suave vea las caras nuevas del bisel."""
-    obj = C.join_objects(parts, name) if len(parts) > 1 else parts[0]
-    if grounded:
-        _drop_to_ground(obj)
-    S.bevel_obj(obj, width=bevel_width, segments=bevel_segments, limit_angle_deg=40.0)
-    C.shade_smooth_auto(obj, angle_deg=32.0)
+def _finish(parts, name):
+    obj = C.join_objects(parts, name)
     C.add_basic_uv(obj)
     return obj
 
 
-# Librea: carena clara cálida + franja de color vivo + filete de acento.
-_HULL_CREAM = (0.90, 0.86, 0.74)
-_STRIPE_RED = (0.78, 0.24, 0.11)
-_STRIPE_GOLD = (0.86, 0.64, 0.16)
-_METAL_WARM = (0.62, 0.60, 0.55)
-_METAL_DARK = (0.30, 0.29, 0.27)
-_RUST = (0.55, 0.26, 0.10)
-_GLASS = (0.55, 0.80, 0.86)
-_WOOD_PROP = (0.62, 0.42, 0.20)
+# ---------------------------------------------------------------------------
+# Fuselaje
+# ---------------------------------------------------------------------------
+
+def _fuselage_face(xs, tag, rnd, wear, door_open):
+    """Color de una cara exterior del fuselaje según su tramo y segmento."""
+    span, seg = tag[1], tag[2]
+    x0, x1 = xs[span], xs[span + 1]
+    cat = A.RING_CATS[seg]
+    port = seg >= 8
+    cockpit = A.in_span(x0, x1, [A.COCKPIT])
+    if cockpit and (cat == 'window' or seg in (1, 14)):
+        return 'M_Glass', A.GLASS
+    if A.in_span(x0, x1, [(4.0, 4.4)]) and seg in (0, 15):
+        return 'M_Glass', A.GLASS
+    if cat == 'window' and A.in_span(x0, x1, A.WINDOW_SPANS):
+        return 'M_Glass', A.GLASS
+    if door_open and port and cat in ('window', 'cheat', 'side') and A.in_span(x0, x1, [A.DOOR]):
+        return 'M_Metal', A.INTERIOR
+    base = dict(top=A.WHITE, window=A.WHITE, cheat=A.RED, side=A.WHITE,
+                chine=A.RED, bottom=A.RED_DARK)[cat]
+    if 0.5 * (x0 + x1) > 5.1:
+        base = A.RED
+    return 'M_Metal', A.worn(base, rnd, bare=0.12 * wear, rust=0.05 * wear)
 
 
-def _h_cylinder(name, y0, y1, r_at_y0, r_at_y1, x=0.0, z=0.0, segments=14, cap_ends=True):
-    """Cilindro (o tronco de cono) horizontal a lo largo de Y: radio
-    «r_at_y0» en y=y0 y «r_at_y1» en y=y1, con el eje a altura «z» y
-    desplazamiento lateral «x». make_cylinder crece nativamente en Z, así
-    que se construye a lo largo de Z y se rota +90 grados sobre X."""
-    length = y1 - y0
-    y_center = (y0 + y1) * 0.5
-    obj = C.make_cylinder(name, radius=r_at_y1, depth=length, segments=segments,
-                           center=(x, z, -y_center), cap_ends=cap_ends, radius2=r_at_y0)
-    C.select_only(obj)
-    import bpy
-    bpy.ops.transform.rotate(value=math.radians(90), orient_axis='X')
-    bpy.ops.object.transform_apply(rotation=True)
-    return obj
+def _paint_fuselage(obj, tags, xs, rnd, wear, door_open):
+    def face(poly):
+        tag = tags[poly.index]
+        if tag[0] == 'outer':
+            return _fuselage_face(xs, tag, rnd, wear, door_open)
+        if tag[0] == 'cap_out':
+            return 'M_Metal', A.RED
+        if tag[0] == 'rim':
+            return 'M_Metal', A.BARE
+        return 'M_Metal', A.INTERIOR
+    P.paint(obj, SLOTS, face)
+    return P.smooth(obj, 40.0)
 
 
-def _paint_fuselage(rnd, axis_z, fuselage_r):
-    """Franja de color a la altura del eje del fuselaje (cheatline clásica
-    de hidroavión de los años 30-50), con un filete dorado fino encima."""
-    return S.stripe_tint(
-        _HULL_CREAM, _STRIPE_RED, 'z',
-        axis_z - fuselage_r * 0.30, axis_z + fuselage_r * 0.30,
-        accent_rgb=_STRIPE_GOLD, accent_at=axis_z + fuselage_r * 0.34, accent_width=0.04,
-        jitter=0.015, rnd=rnd)
+def _door(rnd, open_deg):
+    ring = A.hull_ring(-0.6)
+    z_lo, z_hi = ring[4].z + 0.02, ring[2].z - 0.02
+    w = A.hull_half_width(-0.6)
+    x0, x1 = A.DOOR
+    pts = [(x1, z_lo), (x0, z_lo), (x0, z_hi), (x1, z_hi)]
+    door, _ = P.slab('Door', pts, 0.04, P.xz(-(w + 0.025)))
+    A.rotate_mesh(door, open_deg, 'Z', pivot=(x1, -(w + 0.025), 0.0))
+    return _solid(door, A.worn(A.WHITE, rnd, bare=0.3), rnd, bevel=0.012)
 
 
 # ---------------------------------------------------------------------------
-# 1. Hidroavión Albatros completo (prólogo) — silueta De Havilland Beaver:
-#    ala alta arriostrada, fuselaje panzudo, flotadores gemelos, capó
-#    redondo con hélice de 3 palas. ~9 m de largo, envergadura ~11 m.
+# Superficies: ala, cola, flotadores
 # ---------------------------------------------------------------------------
+
+def _wing_loft(name, ys, rnd, tip_red_from=6.05, torn_root=False, cuts=(A.AILERON,),
+               dents=0.0):
+    """Ala por estaciones de envergadura: recorta el borde de salida en los
+    tramos `cuts` (hueco de alerón y flap), punta redondeada y, en el resto,
+    abolladuras de `dents` metros en el extradós."""
+    rings = []
+    for i, y in enumerate(ys):
+        ay = abs(y)
+        cut = 0.75 if any(a <= ay <= b for a, b in cuts) else 1.0
+        scale = 0.55 if ay >= A.WING_SPAN - 1e-6 else 1.0
+        ring = A.wing_ring(y, cut=cut, scale=scale)
+        if dents and 0 < i < len(ys) - 3:
+            ring = [p - Vector((0.0, 0.0, rnd.uniform(0.0, dents))) if k in (2, 3, 4)
+                    and rnd.random() < 0.4 else p for k, p in enumerate(ring)]
+        rings.append(ring)
+    if torn_root:
+        rings[0] = [p + Vector((0.0, rnd.uniform(-0.18, 0.18), rnd.uniform(-0.02, 0.02)))
+                    for p in rings[0]]
+    obj, tags = P.loft(name, rings)
+
+    def face(poly):
+        tag = tags[poly.index]
+        if tag[0] == 'cap0' and torn_root:
+            return 'M_Metal', A.INTERIOR
+        if tag[0] != 'side':
+            return 'M_Metal', A.RED
+        y_mid = abs(0.5 * (ys[tag[1]] + ys[tag[1] + 1]))
+        upper = tag[2] in A.AIRFOIL_UPPER
+        if y_mid >= tip_red_from:
+            base = A.RED
+        elif upper:
+            base = A.RED if tag[2] in (5, 6) and y_mid > 1.0 else A.WHITE
+        else:
+            base = (0.62, 0.62, 0.62)
+        return 'M_Metal', A.worn(base, rnd, bare=0.10, rust=0.04)
+    P.paint(obj, SLOTS, face)
+    return P.smooth(obj, HARD)
+
+
+def _aileron(y0, y1, angle, rnd):
+    obj, _ = P.loft('Aileron', [A.aileron_ring(y0, angle), A.aileron_ring(y1, angle)])
+    return _solid(obj, A.worn(A.WHITE, rnd, bare=0.2), rnd)
+
+
+def _float(y, rnd):
+    obj, tags = P.loft('Float', A.float_rings(y))
+    P.paint(obj, SLOTS, lambda p: ('M_Metal', A.worn(
+        A.RED if tags[p.index][0] == 'side' and tags[p.index][2] in range(4, 8) else A.WHITE,
+        rnd, bare=0.12, rust=0.05)))
+    parts = [P.smooth(obj, 50.0)]
+    wz = A.wing_z(y) - 0.035 * A.wing_chord(y)
+    pylon, _ = P.slab('Pylon', [(1.15, 1.22), (1.95, 1.22), (1.80, wz + 0.02), (1.30, wz + 0.02)],
+                      0.06, P.xz(y))
+    parts.append(_solid(pylon, A.WHITE, rnd, bevel=0.01))
+    strut, _ = P.sweep('FloatStrut', [(2.05, y, 1.22), (1.6, y - 0.9 * math.copysign(1, y), wz + 0.03)],
+                       0.025, sides=6)
+    parts.append(_solid(strut, A.GREY, rnd, angle=ROUND))
+    return parts
+
+
+def _cut_profile(prof, cut):
+    """Recorta un perfil 2D en xn = cut y quita los puntos alineados con sus
+    vecinos: en las tapas (n-gonos) un punto alineado acaba en un triángulo
+    de área cero al triangular el FBX."""
+    pts = [(min(a, cut), b) for a, b in prof]
+    changed = True
+    while changed and len(pts) > 3:
+        changed = False
+        for i in range(len(pts)):
+            a, b, c = pts[i - 1], pts[i], pts[(i + 1) % len(pts)]
+            cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])
+            if abs(cross) < 1e-9 or a == b:
+                pts.pop(i)
+                changed = True
+                break
+    return pts
+
+
+FIN_PROFILE = _cut_profile(
+    [(1.0, 0.0), (0.88, 0.6), (0.75, 1.0), (0.45, 1.0), (0.12, 1.0), (0.03, 0.6),
+     (0.0, 0.0), (0.03, -0.6), (0.12, -1.0), (0.45, -1.0), (0.75, -1.0), (0.88, -0.6)], 0.72)
+STAB_PROFILE = _cut_profile(A.AIRFOIL, 0.72)
+
+
+def _foil_v(le_x, chord, z, scale=1.0, half_t=0.045):
+    """Perfil vertical de la deriva (simétrico, caras planas en el centro
+    para que la matrícula asiente), recortado donde empieza el timón."""
+    ctr = Vector((le_x - 0.4 * chord, 0.0, z))
+    return [ctr + (Vector((le_x - xn * chord, yn * half_t, z)) - ctr) * scale
+            for xn, yn in FIN_PROFILE]
+
+
+def _tail_surfaces(rnd, rudder_deg, elev_deg, bent_deg=0.0):
+    """Deriva + timón + estabilizadores + timones de profundidad + matrícula,
+    en coordenadas del avión."""
+    parts = []
+    fin_st = [(1.55, -3.70, 1.60), (2.40, -4.05, 1.35), (3.00, -4.40, 1.10), (3.20, -4.55, 0.95)]
+    rings = []
+    for i, (z, le, c) in enumerate(fin_st):
+        rings.append(_foil_v(le, c, z, scale=0.6 if i == len(fin_st) - 1 else 1.0))
+    fin, tags = P.loft('Fin', rings)
+    P.paint(fin, SLOTS, lambda p: ('M_Metal', A.worn(
+        A.RED if (tags[p.index][0] == 'side' and tags[p.index][1] == 2) or tags[p.index][0] == 'cap1'
+        else A.WHITE, rnd, bare=0.10, rust=0.04)))
+    parts.append(P.smooth(fin, HARD))
+
+    rud = []
+    for z, le, c in ((1.75, -3.7 - (0.2 / 0.85) * 0.35, 1.55), (3.1, -4.48, 1.02)):
+        hinge = Vector((le - 0.72 * c, 0.0, z))
+        pts = [Vector((le - 0.72 * c, 0.04, z)), Vector((le - c, 0.0, z)),
+               Vector((le - 0.72 * c, -0.04, z))]
+        rud.append([hinge + (Matrix.Rotation(math.radians(rudder_deg), 3, 'Z') @ (p - hinge))
+                    for p in pts])
+    rudder, _ = P.loft('Rudder', rud)
+    parts.append(_solid(rudder, A.worn(A.RED, rnd, bare=0.15), rnd))
+
+    for side in (-1.0, 1.0):
+        st = []
+        for y, le, c in ((0.12, -4.30, 0.95), (1.45, -4.55, 0.62)):
+            zz = 1.78
+            ring = [Vector((le - xn * c, side * y, zz + zn * c * 0.75))
+                    for xn, zn in STAB_PROFILE]
+            st.append(ring)
+        if side > 0 and bent_deg:
+            st[1] = [p + Vector((rnd.uniform(-0.05, 0.05), rnd.uniform(-0.12, 0.05), 0.0))
+                     for p in st[1]]
+        stab, tags = P.loft('Stab', st)
+        P.paint(stab, SLOTS, lambda p: ('M_Metal', A.worn(A.WHITE, rnd, bare=0.12, rust=0.05)))
+        elev_rings = []
+        for y, le, c in ((0.14, -4.30, 0.95), (1.40, -4.55, 0.62)):
+            hinge = Vector((le - 0.72 * c, side * y, 1.78))
+            pts = [Vector((le - 0.72 * c, side * y, 1.78 + 0.03 * c)),
+                   Vector((le - c, side * y, 1.78)),
+                   Vector((le - 0.72 * c, side * y, 1.78 - 0.02 * c))]
+            elev_rings.append([hinge + (Matrix.Rotation(math.radians(elev_deg), 3, 'Y') @ (p - hinge))
+                               for p in pts])
+        elev, _ = P.loft('Elevator', elev_rings)
+        P.solid(elev, SLOTS, 'M_Metal', A.worn(A.RED, rnd, bare=0.15), rnd=rnd)
+        pair = [P.smooth(stab, HARD), P.smooth(elev, HARD)]
+        if side > 0 and bent_deg:
+            for o in pair:
+                A.rotate_mesh(o, bent_deg, 'X', pivot=(-4.4, 0.12, 1.78))
+        parts += pair
+
+    zc, c_mid = 2.45, 1.33
+    xc = -3.70 - 0.35 * (zc - 1.55) / 0.85 - 0.42 * c_mid
+    for side in (-1.0, 1.0):
+        reg = A.text_mesh('Registration', REGISTRATION, 0.20)
+        A.rotate_mesh(reg, 90.0, 'X')
+        if side > 0:
+            A.rotate_mesh(reg, 180.0, 'Z')
+        P.translate_mesh(reg, (xc, side * 0.049, zc))
+        parts.append(_solid(reg, A.DARK, rnd, jitter=0.0))
+    return parts
+
+
+# ---------------------------------------------------------------------------
+# Motor radial y hélice
+# ---------------------------------------------------------------------------
+
+def _propeller(rnd, x, centre, bends):
+    """Buje + 3 palas en el plano YZ a la cota x; bends = [(rad, dir, r)]."""
+    parts = []
+    hub, _ = P.sweep('Hub', [(x - 0.10, centre.y, centre.z), (x + 0.06, centre.y, centre.z),
+                             (x + 0.16, centre.y, centre.z)], [0.13, 0.12, 0.03], sides=10)
+    parts.append(_solid(hub, A.GREY, rnd, angle=ROUND))
+    for k, (bend, bdir, radius) in enumerate(bends):
+        bl, tags = A.blade('Blade', radius=radius, bend=bend, bend_dir=bdir)
+        n_sp = max(t[1] for t in tags if t[0] == 'side')
+        P.paint(bl, SLOTS, lambda p, t=tags, n=n_sp: (
+            'M_Metal', A.YELLOW if (t[p.index][0] == 'cap1' or
+                                    (t[p.index][0] == 'side' and t[p.index][1] == n)) else A.DARK),
+            rnd=rnd, jitter=0.015)
+        A.rotate_mesh(bl, 120.0 * k + 15.0, 'X')
+        P.translate_mesh(bl, (x, centre.y, centre.z))
+        parts.append(P.smooth(bl, 50.0))
+    return parts
+
+
+def _radial_engine(rnd):
+    """Motor radial de 9 cilindros con su bancada, eje +X, en el origen."""
+    parts = []
+    case, _ = P.sweep('Crankcase', [(-0.28, 0, 0), (-0.05, 0, 0), (0.10, 0, 0), (0.30, 0, 0)],
+                      [0.24, 0.30, 0.27, 0.13], sides=14)
+    parts.append(_solid(case, A.GREY, rnd, angle=ROUND))
+    for k in range(9):
+        a = 2.0 * math.pi * k / 9.0
+        d = Vector((0.0, math.cos(a), math.sin(a)))
+        c0 = Vector((-0.06, 0.0, 0.0))
+        rs = [0.26, 0.31, 0.36, 0.41, 0.46, 0.51, 0.56, 0.62]
+        rad = [0.085, 0.10, 0.085, 0.10, 0.085, 0.10, 0.09, 0.06]
+        cyl, tags = P.sweep('Cylinder', [c0 + d * r for r in rs], rad, sides=8,
+                            up=(1.0, 0.0, 0.0))
+        P.paint(cyl, SLOTS, lambda p, t=tags: ('M_Metal', A.BRONZE if t[p.index][0] != 'side'
+                                               or t[p.index][1] >= 5 else A.DARK),
+                rnd=rnd, jitter=0.02)
+        parts.append(P.smooth(cyl, 50.0))
+    ring = [(-0.24, 0.47 * math.cos(2 * math.pi * i / 14), 0.47 * math.sin(2 * math.pi * i / 14))
+            for i in range(14)]
+    exhaust, _ = P.sweep('Exhaust', ring, 0.04, sides=5, closed=True, up=(1.0, 0.0, 0.0))
+    parts.append(_solid(exhaust, A.RUST, rnd, angle=ROUND))
+    mount = [(-0.40, 0.33 * math.cos(2 * math.pi * i / 10), 0.33 * math.sin(2 * math.pi * i / 10))
+             for i in range(10)]
+    mring, _ = P.sweep('MountRing', mount, 0.03, sides=4, closed=True, up=(1.0, 0.0, 0.0))
+    parts.append(_solid(mring, A.DARK, rnd, angle=ROUND))
+    for sy, sz in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        a = Vector((-0.40, sy * 0.233, sz * 0.233))
+        b = Vector((-0.95, sy * 0.42, sz * 0.42))
+        tube, _ = P.sweep('MountTube', [a, b], 0.028, sides=6)
+        parts.append(_solid(tube, A.DARK, rnd, angle=ROUND))
+    wall = []
+    for i in range(10):
+        a = 2.0 * math.pi * (i + 0.5) / 10
+        r = 0.50 * rnd.uniform(0.85, 1.08)
+        wall.append((r * math.cos(a), r * math.sin(a)))
+    fw, _ = P.slab('Firewall', wall, 0.035, lambda a, b, d: Vector((-0.98 + d, a, b)))
+    parts.append(_solid(fw, A.GREY, rnd, bevel=0.01))
+    return parts
+
+
+def _cowl_band(rnd, a0=0.6, a1=3.9, n=10):
+    """Resto del capó: banda curvada abollada, roja y blanca."""
+    rings = []
+    for i in range(n):
+        a = a0 + (a1 - a0) * i / (n - 1)
+        r = 0.68 + rnd.uniform(-0.05, 0.03)
+        cs, sn = math.cos(a), math.sin(a)
+        sec = [(-0.16, r), (0.20, r - 0.05), (0.20, r - 0.03), (-0.16, r + 0.02)]
+        rings.append([Vector((x, rr * cs, rr * sn)) for x, rr in sec])
+    obj, tags = P.loft('CowlBand', rings)
+    P.paint(obj, SLOTS, lambda p: ('M_Metal', A.worn(A.RED, rnd, bare=0.25, rust=0.1)))
+    return P.smooth(obj, HARD)
+
+
+# ---------------------------------------------------------------------------
+# Builders
+# ---------------------------------------------------------------------------
+
 @_register('full')
 def _build_full(variant, rnd):
-    import bpy
-    fuselage_r = 0.66
-    axis_z = 1.55  # altura del eje del fuselaje sobre la base de los flotadores
+    xs = A.STATIONS + [5.58]
+    rings = [A.hull_ring(x) for x in A.STATIONS] + [A.nose_tip_ring()]
+    tail_tip = [Vector((-5.62, p.y * 0.45, A.hull_centre_z(-5.5) + (p.z - A.hull_centre_z(-5.5)) * 0.45))
+                for p in rings[0]]
+    rings = [tail_tip] + rings
+    xs = [-5.62] + xs
+    obj, raw = P.loft('Fuselage', rings)
+    tags = [('outer', t[1], t[2]) if t[0] == 'side' else ('cap_out',) for t in raw]
+    parts = [_paint_fuselage(obj, tags, xs, rnd, wear=0.15, door_open=False)]
 
-    nose = _h_cylinder('Nose', 2.7, 4.0, fuselage_r, fuselage_r * 0.55, z=axis_z, segments=16)
-    mid = _h_cylinder('MidFuselage', -2.2, 2.7, fuselage_r, fuselage_r,
-                       z=axis_z, segments=16, cap_ends=False)
-    tail = _h_cylinder('TailCone', -4.3, -2.2, 0.09, fuselage_r, z=axis_z, segments=16)
-    fuselage = C.join_objects([nose, mid, tail], 'Fuselage')
-    C.merge_by_distance(fuselage, dist=0.01)
-    M.assign(fuselage, ['M_Metal'])
-    C.set_vertex_colors(fuselage, _paint_fuselage(rnd, axis_z, fuselage_r))
-
-    # capó de motor redondo (romo, tipo radial) + pequeño cono de morro
-    cowl = _h_cylinder('EngineCowl', 4.0, 4.55, fuselage_r * 0.55, fuselage_r * 0.42,
-                        z=axis_z, segments=16)
-    spinner = _h_cylinder('Spinner', 4.55, 4.80, fuselage_r * 0.42, 0.04,
-                           z=axis_z, segments=12)
-    cowl_grp = C.join_objects([cowl, spinner], 'Cowling')
-    M.assign(cowl_grp, ['M_Metal'])
-    C.set_vertex_colors(cowl_grp, C.constant_tint(_METAL_DARK, alpha=0.0, jitter=0.03, rnd=rnd))
-
-    # cabina: dos ventanas enmarcadas en vez de un único cristal liso, para
-    # que se lea como cabina de verdad y no como un bloque de vidrio.
-    win_frame = C.make_box('WinFrame', (0.92, 1.30, 0.50), center=(0.0, 3.05, axis_z + 0.46))
-    M.assign(win_frame, ['M_Metal'])
-    C.set_vertex_colors(win_frame, C.constant_tint(_METAL_DARK, alpha=0.0, jitter=0.02, rnd=rnd))
-    win_l = C.make_box('WinL', (0.94, 0.52, 0.32), center=(0.0, 2.78, axis_z + 0.47))
-    win_r = C.make_box('WinR', (0.94, 0.52, 0.32), center=(0.0, 3.32, axis_z + 0.47))
-    glass_grp = C.join_objects([win_l, win_r], 'CabinGlass')
-    M.assign(glass_grp, ['M_Glass'])
-    C.set_vertex_colors(glass_grp, C.constant_tint(_GLASS, alpha=0.30, jitter=0.02, rnd=rnd))
-
-    hub = _h_cylinder('PropHub', 4.80, 4.94, 0.13, 0.13, z=axis_z, segments=10)
-    blades = []
-    for i in range(3):
-        blade = C.make_box(f'Blade{i}', (0.13, 0.025, 1.0), center=(0.0, 0.0, 0.52))
-        me = blade.data
-        z_max = max(v.co.z for v in me.vertices)
-        for v in me.vertices:  # ahusa la punta de la pala (menos "tabla", más pala)
-            if v.co.z >= z_max - 1e-6:
-                v.co.x *= 0.35
-        me.update()
-        C.select_only(blade)
-        bpy.ops.transform.rotate(value=math.radians(120 * i), orient_axis='Y')
-        bpy.ops.object.transform_apply(rotation=True)
-        bpy.ops.transform.translate(value=(0.0, 4.90, axis_z))
-        bpy.ops.object.transform_apply(location=True)
-        blades.append(blade)
-    prop = C.join_objects([hub] + blades, 'Propeller')
-    C.merge_by_distance(prop, dist=0.002)
-    M.assign(prop, ['M_Wood'])
-    C.set_vertex_colors(prop, C.constant_tint(_WOOD_PROP, alpha=0.0, jitter=0.03, rnd=rnd))
-
-    # ala alta: caja central + puntas ahusadas, con un filete de color en
-    # el borde de ataque (la franja que "explica" la librea en vista de
-    # planta) en vez de un rectángulo gris liso.
-    wing_z = axis_z + fuselage_r + 0.62
-    wing = C.make_box('Wing', (11.0, 1.55, 0.16), center=(0.0, 0.15, wing_z))
-    me = wing.data
-    x_max = max(v.co.x for v in me.vertices)
-    for v in me.vertices:  # puntas de ala ahusadas en cuerda (menos "tablón")
-        if abs(v.co.x) >= x_max - 1e-6:
-            v.co.y *= 0.45
-    me.update()
-    M.assign(wing, ['M_Fabric'])
-    C.set_vertex_colors(wing, S.stripe_tint(
-        _HULL_CREAM, _STRIPE_RED, 'y', -0.55, -0.15, jitter=0.02, rnd=rnd))
-
-    # tirantes en V (arriostrado clásico del ala alta): del fuselaje al
-    # ala, dos por lado — sin esto el ala "flota" y se lee como una cruz.
-    # orient_and_place_zaxis coloca el extremo base del tirante (local
-    # z=0) exactamente en «base» y lo extiende «length» a lo largo de
-    # «direction»: a diferencia de rotar con bpy.ops.transform (que gira
-    # sobre el punto medio de la selección, no sobre el extremo), esto no
-    # depende del pivote de la escena y coloca el tirante donde se pide.
-    struts = []
-    for side in (-1, 1):
-        base = C.Vector((side * 0.55, 0.6, axis_z - fuselage_r * 0.2))
-        top = C.Vector((side * 3.0, 0.15, wing_z))
-        direction = top - base
-        length = direction.length
-        strut, _ld = C.make_curved_trunk(
-            f'WingStrut{side}', height=length, base_radius=0.035, tip_radius=0.03,
-            curvature=0.0, n_points=3, bevel_resolution=4, rnd=rnd, lean_dir=0.0)
-        C.orient_and_place_zaxis(strut, base, direction.normalized())
-        struts.append(strut)
-    strut_grp = C.join_objects(struts, 'WingStruts')
-    M.assign(strut_grp, ['M_Metal'])
-    C.set_vertex_colors(strut_grp, C.constant_tint(_METAL_WARM, alpha=0.0, jitter=0.02, rnd=rnd))
-
-    float_r = 0.22
-    floats = []
-    for side in (-1, 1):
-        fl = _h_cylinder(f'Float{side}', -2.15, 2.35, float_r * 0.55, float_r,
-                          x=side * 1.20, z=float_r, segments=12)
-        floats.append(fl)
-    float_grp = C.join_objects(floats, 'Floats')
-    M.assign(float_grp, ['M_Metal'])
-    C.set_vertex_colors(float_grp, S.stripe_tint(
-        _HULL_CREAM, _METAL_DARK, 'z', 0.0, float_r * 0.35, jitter=0.02, rnd=rnd))
-
-    strut_h = float_r + axis_z - fuselage_r * 0.35
-    float_struts = []
-    for side in (-1, 1):
-        for yoff in (-1.3, 1.3):
-            st = C.make_box(f'FloatStrut{side}_{yoff}', (0.05, 0.05, strut_h),
-                             center=(side * 1.0, yoff, strut_h * 0.5 + float_r * 0.4))
-            float_struts.append(st)
-    fstrut_grp = C.join_objects(float_struts, 'FloatStruts')
-    M.assign(fstrut_grp, ['M_Metal'])
-    C.set_vertex_colors(fstrut_grp, C.constant_tint(_METAL_DARK, alpha=0.0, jitter=0.02, rnd=rnd))
-
-    vert_stab = C.make_box('VertStab', (0.11, 0.95, 1.05),
-                            center=(0.0, -4.0, axis_z + fuselage_r * 0.5 + 0.525))
-    horiz_stab = C.make_box('HorizStab', (2.7, 0.85, 0.09),
-                             center=(0.0, -3.9, axis_z + fuselage_r * 0.5 + 0.28))
-    tail_grp = C.join_objects([vert_stab, horiz_stab], 'TailPlanes')
-    M.assign(tail_grp, ['M_Fabric'])
-    C.set_vertex_colors(tail_grp, S.stripe_tint(
-        _HULL_CREAM, _STRIPE_RED, 'z', axis_z + fuselage_r * 0.5, axis_z + fuselage_r * 0.5 + 0.5,
-        jitter=0.02, rnd=rnd))
-
-    return _finish([fuselage, cowl_grp, win_frame, glass_grp, prop, wing, strut_grp,
-                     float_grp, fstrut_grp, tail_grp], 'SM_' + variant['name'],
-                    bevel_width=0.02, grounded=False)
+    ys = [6.6, 6.45, 6.11, 6.1, 5.3, 4.5, 3.8, 3.79, 3.2, 2.4, 1.6, 0.0]
+    ys = [-y for y in ys] + ys[::-1][1:]
+    parts.append(_wing_loft('Wing', ys, rnd))
+    for side in (-1.0, 1.0):
+        parts.append(_aileron(side * 3.83, side * 6.07, 0.0, rnd))
+        parts += _float(side * 5.4, rnd)
+        y = side * 2.2
+        zc = A.wing_z(2.2) + 0.02
+        cowl, tags = P.sweep('Nacelle', [(3.05, y, zc), (2.90, y, zc), (2.45, y, zc),
+                                         (1.60, y, zc - 0.04), (0.80, y, zc - 0.02)],
+                             [0.30, 0.40, 0.42, 0.33, 0.10], sides=12)
+        P.paint(cowl, SLOTS, lambda p, t=tags: ('M_Metal', A.DARK if t[p.index][0] == 'cap0' else (
+            A.RED if t[p.index][0] == 'side' and t[p.index][1] == 0 else A.WHITE)), rnd=rnd,
+            jitter=0.015)
+        parts.append(P.smooth(cowl, 50.0))
+        parts += _propeller(rnd, 3.12, Vector((0.0, y, zc)), [(0.0, (-1, 0, 0), 0.95)] * 3)
+    parts += _tail_surfaces(rnd, rudder_deg=0.0, elev_deg=0.0)
+    return _finish(parts, 'SM_' + variant['name'])
 
 
-# ---------------------------------------------------------------------------
-# 2. Resto de fuselaje (~3.5 m): tramo pintado con parches de óxido
-#    orgánicos (no un degradado uniforme) y borde desgarrado.
-# ---------------------------------------------------------------------------
 @_register('fuselage_wreck')
 def _build_fuselage_wreck(variant, rnd):
-    fuselage_r = 0.62
-    length = 3.5
-    body = _h_cylinder('Body', 0.0, length, fuselage_r, fuselage_r * 0.90,
-                        z=fuselage_r, segments=14, cap_ends=False)
-    M.assign(body, ['M_Metal'])
-    C.set_vertex_colors(body, S.weathered_tint(
-        _HULL_CREAM, _RUST, seed=variant['seed'], patchiness=2.6, wear_amount=0.55,
-        jitter=0.03, rnd=rnd))
+    xs = [x for x in A.STATIONS if x >= A.X_BREAK] + [5.58]
+    rings = [A.hull_ring(x) for x in xs[:-1]] + [A.nose_tip_ring()]
+    rings[0] = [p + Vector((rnd.uniform(-0.35, 0.30), 0.0, 0.0)) for p in rings[0]]
+    rings[0] = A.dent(rings[0], A.hull_centre_z, rnd, prob=0.6, depth=0.12)
+    for i in range(1, len(rings) - 1):
+        crash = 1.0 if xs[i] > 4.4 or i < 3 else 0.0
+        rings[i] = A.dent(rings[i], A.hull_centre_z, rnd, prob=0.15 + 0.45 * crash,
+                          depth=0.035 + 0.08 * crash)
+    shell, tags = A.shell('Fuselage', rings, 0.045, A.hull_centre_z, break_at_start=True)
+    parts = [_paint_fuselage(shell, tags, xs, rnd, wear=1.0, door_open=True)]
+    parts.append(_door(rnd, 105.0))
 
-    shards = []
-    n_shards = rnd.randint(7, 10)
-    for i in range(n_shards):
-        ang = (2.0 * math.pi * i / n_shards) + rnd.uniform(-0.25, 0.25)
-        sx = fuselage_r * 0.95 * math.cos(ang)
-        sz = fuselage_r + fuselage_r * 0.95 * math.sin(ang)
-        w = rnd.uniform(0.08, 0.22)
-        h = rnd.uniform(0.10, 0.30)
-        shard = C.make_box(f'Shard{i}', (w, 0.02, h),
-                            center=(sx, length + rnd.uniform(-0.05, 0.12), sz))
-        shards.append(shard)
-    shard_grp = C.join_objects(shards, 'BrokenEdge')
-    M.assign(shard_grp, ['M_Metal'])
-    C.set_vertex_colors(shard_grp, C.constant_tint(_RUST, alpha=0.0, jitter=0.06, rnd=rnd))
+    ys = [-1.35, -0.85, 0.0, 0.85, 1.35]
+    stub = [A.wing_ring(y) for y in ys]
+    for i in (0, -1):
+        stub[i] = [p + Vector((0.0, rnd.uniform(-0.15, 0.15), rnd.uniform(-0.03, 0.03)))
+                   for p in stub[i]]
+    wing, wtags = P.loft('WingStub', stub)
+    P.paint(wing, SLOTS, lambda p: ('M_Metal', A.INTERIOR if wtags[p.index][0] != 'side'
+                                    else A.worn(A.WHITE, rnd, bare=0.15, rust=0.06)))
+    parts.append(P.smooth(wing, HARD))
 
-    return _finish([body, shard_grp], 'SM_' + variant['name'], bevel_width=0.01)
-
-
-# ---------------------------------------------------------------------------
-# 3. Resto de ala (~4 m): punta doblada, franja de color aún visible bajo
-#    el óxido — cuenta una historia, no solo "caja gris rota".
-# ---------------------------------------------------------------------------
-@_register('wing_wreck')
-def _build_wing_wreck(variant, rnd):
-    import bpy
-    span = 4.0
-    root = C.make_box('WingRoot', (span * 0.62, 1.2, 0.16), center=(-span * 0.19, 0.0, 0.08))
-    tip = C.make_box('WingTip', (span * 0.42, 0.95, 0.13), center=(span * 0.29, -0.05, 0.30))
-    C.select_only(tip)
-    bpy.ops.transform.rotate(value=math.radians(-22.0), orient_axis='Y')
-    bpy.ops.object.transform_apply(rotation=True)
-    wing = C.join_objects([root, tip], 'Wing')
-    C.merge_by_distance(wing, dist=0.02)
-    M.assign(wing, ['M_Fabric'])
-    C.set_vertex_colors(wing, S.weathered_tint(
-        _HULL_CREAM, _RUST, seed=variant['seed'] + 1, patchiness=2.2, wear_amount=0.45,
-        jitter=0.03, rnd=rnd))
-
-    stripe = C.make_box('StripeRemnant', (span * 0.5, 0.30, 0.02), center=(-span * 0.1, 0.35, 0.17))
-    M.assign(stripe, ['M_Fabric'])
-    C.set_vertex_colors(stripe, C.constant_tint(_STRIPE_RED, alpha=0.0, jitter=0.03, rnd=rnd))
-
-    return _finish([wing, stripe], 'SM_' + variant['name'], bevel_width=0.012)
+    obj = _finish(parts, 'SM_' + variant['name'])
+    A.rotate_mesh(obj, -14.0, 'X')
+    A.rotate_mesh(obj, 4.0, 'Y')
+    A.rotate_mesh(obj, 8.0, 'Z')
+    return A.ground_and_center(obj)
 
 
-# ---------------------------------------------------------------------------
-# 4. Resto de cola: tramo trasero de fuselaje + estabilizadores, torcido
-# ---------------------------------------------------------------------------
 @_register('tail_wreck')
 def _build_tail_wreck(variant, rnd):
-    import bpy
-    fuselage_r = 0.55
-    length = 2.6
-    body = _h_cylinder('TailSection', 0.0, length, fuselage_r * 0.15, fuselage_r,
-                        z=fuselage_r, segments=14)
-    M.assign(body, ['M_Metal'])
-    C.set_vertex_colors(body, S.weathered_tint(
-        _HULL_CREAM, _RUST, seed=variant['seed'] + 2, patchiness=2.4, wear_amount=0.5,
-        jitter=0.03, rnd=rnd))
-
-    vert_stab = C.make_box('VertStab', (0.10, 0.8, 1.0), center=(0.0, length * 0.15, fuselage_r + 0.5))
-    horiz_stab = C.make_box('HorizStab', (2.2, 0.7, 0.08), center=(0.0, length * 0.10, fuselage_r + 0.25))
-    stabs = C.join_objects([vert_stab, horiz_stab], 'Stabilizers')
-    M.assign(stabs, ['M_Fabric'])
-    C.set_vertex_colors(stabs, S.stripe_tint(
-        _HULL_CREAM, _STRIPE_RED, 'z', fuselage_r + 0.5, fuselage_r + 0.9, jitter=0.02, rnd=rnd))
-    C.select_only(stabs)
-    bpy.ops.transform.rotate(value=math.radians(9.0), orient_axis='Y')
-    bpy.ops.object.transform_apply(rotation=True)
-
-    return _finish([body, stabs], 'SM_' + variant['name'], bevel_width=0.012)
+    xs = [x for x in A.STATIONS if x <= A.X_BREAK]
+    rings = [A.hull_ring(x) for x in xs]
+    cz = A.hull_centre_z(-5.5)
+    tip = [Vector((-5.62, p.y * 0.45, cz + (p.z - cz) * 0.45)) for p in rings[0]]
+    rings = [tip] + rings
+    xs = [-5.62] + xs
+    rings[-1] = [p + Vector((rnd.uniform(-0.30, 0.35), 0.0, 0.0)) for p in rings[-1]]
+    rings[-1] = A.dent(rings[-1], A.hull_centre_z, rnd, prob=0.6, depth=0.10)
+    for i in range(1, len(rings) - 1):
+        rings[i] = A.dent(rings[i], A.hull_centre_z, rnd, prob=0.3, depth=0.05)
+    shell, tags = A.shell('TailCone', rings, 0.04, A.hull_centre_z, break_at_start=False)
+    parts = [_paint_fuselage(shell, tags, xs, rnd, wear=1.0, door_open=False)]
+    parts += _tail_surfaces(rnd, rudder_deg=-18.0, elev_deg=12.0, bent_deg=-24.0)
+    obj = _finish(parts, 'SM_' + variant['name'])
+    A.rotate_mesh(obj, 20.0, 'X')
+    A.rotate_mesh(obj, -6.0, 'Y')
+    return A.ground_and_center(obj)
 
 
-# ---------------------------------------------------------------------------
-# 5. Resto de motor: bloque radial + 7 cilindros + hélice doblada
-# ---------------------------------------------------------------------------
+@_register('wing_wreck')
+def _build_wing_wreck(variant, rnd):
+    ys = [0.9, 1.15, 1.16, 1.6, 2.0, 2.2, 2.4, 2.8, 3.2, 3.55, 3.56, 3.79, 3.8, 4.0, 4.2,
+          4.6, 5.0, 5.4, 5.8, 6.1, 6.11, 6.3, 6.45, 6.6]
+    flap = (1.16, 3.55)
+    parts = [_wing_loft('Wing', ys, rnd, torn_root=True, cuts=(A.AILERON, flap), dents=0.025)]
+    parts.append(_aileron(3.83, 6.07, 24.0, rnd))
+    parts.append(_aileron(1.19, 3.52, 38.0, rnd))  # flap colgando, medio arrancado
+    parts += _float(5.4, rnd)
+    for xn in (0.25, 0.62):
+        c, le = A.wing_chord(0.9), A.wing_le_x(0.9)
+        spar = C.make_box('Spar', (0.06, 0.55, 0.12 - 0.05 * xn),
+                            center=(le - xn * c, 0.75, A.wing_z(0.9) + 0.01))
+        parts.append(_solid(spar, A.BARE, rnd))
+    zc = A.wing_z(2.2) + 0.02
+    nac, ntags = P.sweep('NacelleStub', [(2.70, 2.2, zc), (2.45, 2.2, zc), (1.60, 2.2, zc - 0.04),
+                                         (0.80, 2.2, zc - 0.02)], [0.36, 0.42, 0.33, 0.10], sides=12)
+    P.paint(nac, SLOTS, lambda p: ('M_Metal', A.INTERIOR if ntags[p.index][0] == 'cap0'
+                                   else A.worn(A.WHITE, rnd, bare=0.2, rust=0.08)))
+    parts.append(P.smooth(nac, 50.0))
+    parts += _torn_skin(rnd, 0.9)
+    light, _ = P.sweep('NavLight', [(1.30, 6.55, A.wing_z(6.6)), (1.10, 6.62, A.wing_z(6.6))],
+                       [0.05, 0.02], sides=6)
+    parts.append(_solid(light, (0.10, 0.60, 0.20), rnd, slot='M_Glass', jitter=0.0))
+    obj = _finish(parts, 'SM_' + variant['name'])
+    A.rotate_mesh(obj, 14.8, 'X')
+    A.rotate_mesh(obj, 12.0, 'Z')
+    return A.ground_and_center(obj)
+
+
+def _torn_skin(rnd, y_root, n=6):
+    """Jirones de chapa arrancada que asoman del encastre roto del ala."""
+    ring = A.wing_ring(y_root)
+    parts = []
+    for k in rnd.sample(range(1, 13), n):
+        p0, p1 = ring[k], ring[k + 1]
+        up = Vector((0.0, 0.0, 0.012 if k < 7 else -0.012))
+        reach = Vector((rnd.uniform(-0.08, 0.08), -rnd.uniform(0.18, 0.40),
+                        rnd.uniform(0.05, 0.22) * (1 if k < 7 else -1)))
+        p3, p2 = p0 + reach, p1 + reach * rnd.uniform(0.5, 0.9)
+        shard, _ = P.loft('Shard', [[p0, p1, p1 + up, p0 + up], [p3, p2, p2 + up, p3 + up]])
+        parts.append(_solid(shard, A.BARE if rnd.random() < 0.5 else A.WHITE, rnd))
+    return parts
+
+
 @_register('engine_wreck')
 def _build_engine_wreck(variant, rnd):
-    import bpy
-    core_r = 0.32
-    core = C.make_cylinder('Core', radius=core_r, depth=0.30, segments=16,
-                            center=(0.0, 0.0, 0.15))
-    M.assign(core, ['M_Metal'])
-    C.set_vertex_colors(core, S.weathered_tint(
-        _METAL_WARM, _RUST, seed=variant['seed'] + 3, patchiness=3.2, wear_amount=0.5,
-        jitter=0.03, rnd=rnd))
-
-    cyls = []
-    n = 7
-    for i in range(n):
-        ang = 2.0 * math.pi * i / n
-        cx = math.cos(ang) * core_r * 1.15
-        cy = math.sin(ang) * core_r * 1.15
-        cyl = C.make_cylinder(f'Cyl{i}', radius=0.10, depth=0.34, segments=10,
-                               center=(0.0, 0.0, 0.17))
-        C.select_only(cyl)
-        bpy.ops.transform.translate(value=(cx, cy, 0.0))
-        bpy.ops.object.transform_apply(location=True)
-        cyls.append(cyl)
-    cyl_grp = C.join_objects(cyls, 'Cylinders')
-    M.assign(cyl_grp, ['M_Metal'])
-    C.set_vertex_colors(cyl_grp, S.weathered_tint(
-        _METAL_WARM, _RUST, seed=variant['seed'] + 4, patchiness=3.0, wear_amount=0.55,
-        jitter=0.03, rnd=rnd))
-
-    hub = C.make_cylinder('Hub', radius=0.10, depth=0.10, segments=10, center=(0.0, 0.0, 0.35))
-    blades = []
-    for i in range(2):  # una pala arrancada: solo quedan 2
-        blade = C.make_box(f'Blade{i}', (0.13, 0.02, 0.75), center=(0.0, 0.0, 0.40))
-        C.select_only(blade)
-        bpy.ops.transform.rotate(value=math.radians(180 * i + 25), orient_axis='Y')
-        bpy.ops.object.transform_apply(rotation=True)
-        blades.append(blade)
-    prop = C.join_objects([hub] + blades, 'BentProp')
-    M.assign(prop, ['M_Wood'])
-    C.set_vertex_colors(prop, C.constant_tint(_WOOD_PROP, alpha=0.0, jitter=0.03, rnd=rnd))
-
-    return _finish([core, cyl_grp, prop], 'SM_' + variant['name'], bevel_width=0.012)
+    parts = _radial_engine(rnd)
+    parts.append(_cowl_band(rnd))
+    bends = [(1.25, (-1.0, 0.0, 0.0), 0.92), (0.45, (-0.6, 0.8, 0.0), 0.95),
+             (-0.7, (-1.0, 0.0, 0.0), 0.78)]
+    parts += _propeller(rnd, 0.40, Vector((0.0, 0.0, 0.0)), bends)
+    obj = _finish(parts, 'SM_' + variant['name'])
+    A.rotate_mesh(obj, -28.0, 'Y')
+    A.rotate_mesh(obj, 12.0, 'X')
+    A.rotate_mesh(obj, 25.0, 'Z')
+    return A.ground_and_center(obj)

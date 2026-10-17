@@ -51,6 +51,7 @@ MODULE_GROUPS = [
     ('beacon', 'Baliza'),
     ('small_items', 'ObjetosPequenos'),
     ('boats', 'Embarcaciones'),
+    ('limon', 'Limon'),  # barco final: SM_Limon y SM_Limon_Frame (en grada)
     ('building_kit', 'Construccion'),
     # kit modular de la base: una carpeta por material (KitPalma, KitBambu,
     # KitMadera, KitPiedra), que cada variante declara en su clave 'group'.

@@ -67,7 +67,7 @@ ALLOWED_MATERIALS_PROPS = {'M_Wood', 'M_Metal', 'M_Fabric', 'M_Stone', 'M_Glass'
 # (los grupos mezclan piezas sueltas pequeñas con estructuras grandes, así
 # que el rango es deliberadamente ancho por grupo).
 PLAUSIBLE_RANGES_CM_PROPS = {
-    'Albatros':        (100.0, 1200.0),   # restos sueltos ~1 m .. avión entero ~11-12 m
+    'Albatros':        (100.0, 1400.0),   # motor ~1,8 m .. hidrocanoa entera (13,2 m de envergadura)
     'Faro':            (30.0, 1400.0),    # escombro suelto .. torre entera
     'Halden':          (30.0, 900.0),     # herramienta de mano .. caseta con mástil
     'BrujulaEstelar':  (40.0, 600.0),
@@ -77,6 +77,7 @@ PLAUSIBLE_RANGES_CM_PROPS = {
     'Baliza':          (30.0, 300.0),
     'ObjetosPequenos': (2.0, 90.0),
     'Embarcaciones':   (60.0, 500.0),
+    'Limon':           (500.0, 800.0),    # barco final ~7,3 m y su armazón en grada
     'Construccion':    (2.0, 300.0),
     # kit modular (rejilla de 2 m): pilote de 0.6 m .. escalera de 4 m y
     # tejados de 2 m + alero

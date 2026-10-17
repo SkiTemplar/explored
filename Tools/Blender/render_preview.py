@@ -280,7 +280,7 @@ MANIFEST_PATH_PROPS = os.path.join(EXPORT_DIR_PROPS, 'manifest.json')
 
 GROUP_ORDER_PROPS = [
     'Albatros', 'Faro', 'Baliza', 'Halden', 'BrujulaEstelar',
-    'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
+    'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Limon', 'Construccion',
     'ObjetosPequenos', 'KitPalma', 'KitBambu', 'KitMadera', 'KitPiedra',
     'MobiliarioBase', 'ProduccionBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
     'AcantiladoFormaciones', 'AcantiladoBloques',
@@ -288,7 +288,7 @@ GROUP_ORDER_PROPS = [
 GROUP_TARGET_HEIGHT_PROPS = {
     'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3, 'Halden': 1.6,
     'BrujulaEstelar': 1.4, 'Petroglifos': 0.9, 'Marae': 1.4, 'Pecio': 1.4,
-    'Embarcaciones': 1.4, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
+    'Embarcaciones': 1.4, 'Limon': 2.2, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
     'KitPalma': 1.4, 'KitBambu': 1.4, 'KitMadera': 1.4, 'KitPiedra': 1.4,
     'MobiliarioBase': 1.4, 'ProduccionBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
     'Tesoros': 0.7, 'Items': 0.7,

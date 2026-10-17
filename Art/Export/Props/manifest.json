@@ -1,6 +1,6 @@
 {
   "generated_by": "Tools/Blender/props/run_props.py",
-  "mesh_count": 23,
+  "mesh_count": 30,
   "meshes": [
     {
       "name": "SM_CliffWall_Basalt01",
@@ -529,6 +529,177 @@
       ],
       "needs_collision": true,
       "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_Albatros_Full",
+      "group": "Albatros",
+      "file": "Albatros/SM_Albatros_Full.fbx",
+      "seed": 1001,
+      "triangles": 3460,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 1120.0,
+        "y": 1320.0,
+        "z": 320.0
+      },
+      "material_slots": [
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": true,
+      "interactable": false
+    },
+    {
+      "name": "SM_Albatros_Fuselage_Wreck",
+      "group": "Albatros",
+      "file": "Albatros/SM_Albatros_Fuselage_Wreck.fbx",
+      "seed": 1002,
+      "triangles": 1648,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 833.1,
+        "y": 348.1,
+        "z": 268.0
+      },
+      "material_slots": [
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": true,
+      "interactable": false
+    },
+    {
+      "name": "SM_Albatros_Wing_Wreck",
+      "group": "Albatros",
+      "file": "Albatros/SM_Albatros_Wing_Wreck.fbx",
+      "seed": 1003,
+      "triangles": 1092,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 302.7,
+        "y": 590.7,
+        "z": 195.2
+      },
+      "material_slots": [
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_Albatros_Tail_Wreck",
+      "group": "Albatros",
+      "file": "Albatros/SM_Albatros_Tail_Wreck.fbx",
+      "seed": 1004,
+      "triangles": 1184,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 344.4,
+        "y": 286.0,
+        "z": 221.0
+      },
+      "material_slots": [
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_Albatros_Engine_Wreck",
+      "group": "Albatros",
+      "file": "Albatros/SM_Albatros_Engine_Wreck.fbx",
+      "seed": 1005,
+      "triangles": 1958,
+      "triangle_budget": {
+        "min": 1000,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 190.9,
+        "y": 169.0,
+        "z": 157.4
+      },
+      "material_slots": [
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": false,
+      "interactable": false
+    },
+    {
+      "name": "SM_Limon",
+      "group": "Limon",
+      "file": "Limon/SM_Limon.fbx",
+      "seed": 2601,
+      "triangles": 3472,
+      "triangle_budget": {
+        "min": 1500,
+        "max": 4000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 732.6,
+        "y": 219.6,
+        "z": 685.0
+      },
+      "material_slots": [
+        "M_Wood",
+        "M_Fabric",
+        "M_Metal",
+        "M_Glass"
+      ],
+      "needs_collision": true,
+      "collision_complex": true,
+      "interactable": false
+    },
+    {
+      "name": "SM_Limon_Frame",
+      "group": "Limon",
+      "file": "Limon/SM_Limon_Frame.fbx",
+      "seed": 2602,
+      "triangles": 2836,
+      "triangle_budget": {
+        "min": 800,
+        "max": 3000,
+        "in_budget": true
+      },
+      "dimensions_cm": {
+        "x": 679.1,
+        "y": 308.0,
+        "z": 190.6
+      },
+      "material_slots": [
+        "M_Wood",
+        "M_Fabric",
+        "M_Metal"
+      ],
+      "needs_collision": true,
+      "collision_complex": true,
       "interactable": false
     }
   ]
