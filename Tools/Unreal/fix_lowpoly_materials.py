@@ -29,6 +29,11 @@ KEYWORDS = [
 ]
 
 
+def set_usage(material: unreal.Material) -> None:
+    """La vegetación se dibuja con HISM: sin este uso, el juego cae al material por defecto."""
+    material.set_editor_property('used_with_instanced_static_meshes', True)
+
+
 def get_or_create_material(name: str) -> unreal.Material:
     path = f'{MATERIAL_DIR}/{name}'
     color, roughness, two_sided = PALETTE[name]
@@ -39,8 +44,9 @@ def get_or_create_material(name: str) -> unreal.Material:
             material, unreal.MaterialProperty.MP_BASE_COLOR)
         if isinstance(expression, unreal.MaterialExpressionConstant3Vector):
             expression.set_editor_property('constant', unreal.LinearColor(color[0], color[1], color[2], 1.0))
-            unreal.MaterialEditingLibrary.recompile_material(material)
-            unreal.EditorAssetLibrary.save_loaded_asset(material)
+        set_usage(material)
+        unreal.MaterialEditingLibrary.recompile_material(material)
+        unreal.EditorAssetLibrary.save_loaded_asset(material)
         return material
     tools = unreal.AssetToolsHelpers.get_asset_tools()
     material = tools.create_asset(name, MATERIAL_DIR, unreal.Material, unreal.MaterialFactoryNew())
@@ -52,16 +58,24 @@ def get_or_create_material(name: str) -> unreal.Material:
     rough.set_editor_property('r', roughness)
     lib.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
     material.set_editor_property('two_sided', two_sided)
+    set_usage(material)
     lib.recompile_material(material)
     unreal.EditorAssetLibrary.save_loaded_asset(material)
     return material
 
 
-def material_for_slot(slot_name: str):
+# Slot 0 heredado del set antiguo (paleta en atlas): en el follaje se pinta de hoja; rocas y
+# restos conservan la paleta, que sí casa con sus UV.
+FOLIAGE_FOLDERS = ('/Palm', '/JungleWide', '/Shrub', '/Fern', '/Grass', '/Flower')
+
+
+def material_for_slot(slot_name: str, package_path: str):
     lowered = slot_name.lower()
     for keyword, material in KEYWORDS:
         if keyword in lowered:
             return material
+    if 'placeholder' in lowered and any(folder in package_path for folder in FOLIAGE_FOLDERS):
+        return 'M_LP_Leaf'
     return None
 
 
@@ -76,9 +90,12 @@ def main() -> None:
         dirty = False
         for index, slot in enumerate(mesh.static_materials):
             current = slot.material_interface
-            if current is not None and current.get_name() != 'WorldGridMaterial':
+            current_name = current.get_name() if current else ''
+            if current is not None and current_name not in ('WorldGridMaterial', 'MI_LowPoly_Landing'):
                 continue
-            target = material_for_slot(str(slot.material_slot_name))
+            target = material_for_slot(str(slot.material_slot_name), str(data.package_path))
+            if target is None and current_name == 'MI_LowPoly_Landing':
+                continue
             if target is None:
                 unreal.log_warning(f'[lpfix] {data.asset_name}: slot «{slot.material_slot_name}» sin regla')
                 continue
