@@ -1,6 +1,5 @@
 #include "UI/ExploredPlayerController.h"
 
-#include "Achievements/AchievementsSubsystem.h"
 #include "Components/InputComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
@@ -13,9 +12,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "Misc/CommandLine.h"
-#include "Cartography/CartographyComponent.h"
+#include "Core/ExploredWiringSubsystem.h"
 #include "Player/ExploredCharacter.h"
-#include "Ruins/RuinsSubsystem.h"
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredHUD.h"
@@ -23,17 +21,12 @@
 #include "UI/ExploredMenuCamera.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "UI/ScreensLogic.h"
-#include "UI/Widgets/SExploredAchievementToast.h"
-#include "UI/Widgets/SExploredAchievements.h"
 #include "UI/Widgets/SExploredCredits.h"
 #include "UI/Widgets/SExploredEnding.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/Widgets/SExploredFade.h"
 #include "UI/Widgets/SExploredInventoryPanel.h"
 #include "UI/Widgets/SExploredMainMenu.h"
-#include "UI/Widgets/SExploredMapInHands.h"
-#include "UI/Widgets/SExploredModeSelect.h"
-#include "UI/Widgets/SExploredMuseum.h"
 #include "UI/Widgets/SExploredPauseMenu.h"
 #include "UI/Widgets/SExploredSaveSlots.h"
 #include "UI/Widgets/SExploredSavingIndicator.h"
@@ -57,8 +50,6 @@ namespace ExploredUI
 		{
 		case EExploredUIMode::Playing: return EExploredUIMode::Paused;
 		case EExploredUIMode::Paused: return EExploredUIMode::Playing;
-		// Con el mapa en las manos, Escape lo guarda y se sigue jugando.
-		case EExploredUIMode::InHands: return EExploredUIMode::Playing;
 		default: return Current;
 		}
 	}
@@ -92,14 +83,12 @@ void AExploredPlayerController::BeginPlay()
 
 	FadeWidget = SNew(SExploredFade);
 	SavingIndicator = SNew(SExploredSavingIndicator);
-	AchievementToast = SNew(SExploredAchievementToast);
 	InventoryPanel = SNew(SExploredInventoryPanel).Owner(TWeakObjectPtr<APlayerController>(this));
 	if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
 	{
 		// Bajo los menús (500): la mochila abierta no tapa la pausa.
 		Viewport->AddViewportWidgetContent(InventoryPanel.ToSharedRef(), 400);
 		Viewport->AddViewportWidgetContent(SavingIndicator.ToSharedRef(), 900);
-		Viewport->AddViewportWidgetContent(AchievementToast.ToSharedRef(), 950);
 		Viewport->AddViewportWidgetContent(FadeWidget.ToSharedRef(), 1000);
 	}
 
@@ -111,20 +100,6 @@ void AExploredPlayerController::BeginPlay()
 			if (SavingIndicator.IsValid())
 			{
 				SavingIndicator->Show();
-			}
-		});
-	}
-
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		TWeakObjectPtr<UAchievementsSubsystem> WeakAchievements(Achievements);
-		AchievementsBound = Achievements;
-		AchievementUnlockedHandle = Achievements->OnAchievementUnlocked.AddWeakLambda(this, [this, WeakAchievements](FName AchievementId)
-		{
-			const UAchievementsSubsystem* Source = WeakAchievements.Get();
-			if (Source && AchievementToast.IsValid())
-			{
-				AchievementToast->Enqueue(Source->GetDisplayName(AchievementId), Source->GetDescription(AchievementId));
 			}
 		});
 	}
@@ -151,12 +126,6 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 	}
 	SaveSubsystemBound.Reset();
 	SaveCompletedHandle.Reset();
-	if (UAchievementsSubsystem* Achievements = AchievementsBound.Get())
-	{
-		Achievements->OnAchievementUnlocked.Remove(AchievementUnlockedHandle);
-	}
-	AchievementsBound.Reset();
-	AchievementUnlockedHandle.Reset();
 
 	// M8: los widgets añadidos al viewport no son del mundo; si no se retiran,
 	// se quedan pintados (y referenciados) tras parar PIE o cambiar de mapa.
@@ -172,10 +141,6 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 		{
 			Viewport->RemoveViewportWidgetContent(SavingIndicator.ToSharedRef());
 		}
-		if (AchievementToast.IsValid())
-		{
-			Viewport->RemoveViewportWidgetContent(AchievementToast.ToSharedRef());
-		}
 		if (InventoryPanel.IsValid())
 		{
 			Viewport->RemoveViewportWidgetContent(InventoryPanel.ToSharedRef());
@@ -184,7 +149,6 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 	FadeWidget.Reset();
 	InventoryPanel.Reset();
 	SavingIndicator.Reset();
-	AchievementToast.Reset();
 	CurrentFocusTarget.Reset();
 
 	Super::EndPlay(EndPlayReason);
@@ -199,21 +163,6 @@ void AExploredPlayerController::SetupInputComponent()
 	// bExecuteWhenPaused cubre el caso de que llegue aquí con el juego pausado.
 	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
 	InputComponent->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
-	// Mapa en las manos (P-UI2): M y View del mando. Con el mapa fuera, la tecla la atiende el widget.
-	InputComponent->BindKey(EKeys::M, IE_Pressed, this, &AExploredPlayerController::HandleMapKey);
-	InputComponent->BindKey(EKeys::Gamepad_Special_Left, IE_Pressed, this, &AExploredPlayerController::HandleMapKey);
-}
-
-void AExploredPlayerController::HandleMapKey()
-{
-	if (bCutsceneActive)
-	{
-		return;
-	}
-	if (UIMode == EExploredUIMode::Playing && Navigation.Current() == ExploredSettingsLogic::EMenuScreen::None)
-	{
-		OpenMap();
-	}
 }
 
 void AExploredPlayerController::HandleEscape()
@@ -256,13 +205,9 @@ void AExploredPlayerController::NavigateTo(ExploredSettingsLogic::EMenuScreen Sc
 	{
 	case EMenuScreen::None: ResumeGame(); break;
 	case EMenuScreen::MainMenu: ShowMainMenu(); break;
-	case EMenuScreen::ModeSelect: OpenModeSelect(); break;
 	case EMenuScreen::Settings: OpenSettings(); break;
 	case EMenuScreen::Credits: OpenCredits(); break;
 	case EMenuScreen::Pause: OpenPauseMenu(); break;
-	case EMenuScreen::Map: OpenMap(); break;
-	case EMenuScreen::Museum: OpenMuseum(); break;
-	case EMenuScreen::Achievements: OpenAchievements(); break;
 	// Cargar desde el menú principal, Guardar desde la partida: lo dice la raíz de la pila.
 	case EMenuScreen::SaveSlots: ShowSaveSlots(Navigation.Root() == EMenuScreen::MainMenu); break;
 	default: break;
@@ -373,10 +318,9 @@ void AExploredPlayerController::ShowMainMenu()
 	TSharedRef<SExploredMainMenu> Menu = SNew(SExploredMainMenu)
 		.bCanContinue(bCanContinue)
 		.OnContinue(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ContinueGame))
-		.OnNewGame(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenModeSelect))
+		.OnNewGame(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::StartNewGame))
 		.OnLoad(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenLoadGame))
 		.OnSettings(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSettings))
-		.OnAchievements(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenAchievements))
 		.OnCredits(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenCredits))
 		.OnQuit(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::QuitToDesktop));
 	ShowOverlay(Menu, Menu->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::MainMenu);
@@ -421,38 +365,22 @@ void AExploredPlayerController::ContinueGame()
 	FadeIntoGameplay();
 }
 
-void AExploredPlayerController::OpenModeSelect()
-{
-	TSharedRef<SExploredModeSelect> Widget = SNew(SExploredModeSelect)
-		.OnChosen(FOnExploredModeChosen::CreateUObject(this, &AExploredPlayerController::StartNewGame))
-		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::NavigateBack));
-	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::ModeSelect);
-}
-
-void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
+void AExploredPlayerController::StartNewGame()
 {
 	// El personaje ya está generado y posee su PlayerStart desde el flujo
-	// normal de AGameModeBase; aquí solo se retira el menú y se entra a
-	// jugar. El modo (Explorador/Superviviente/Náufrago) se pasa al cuerpo
-	// del jugador (UBodySignalsComponent, GDD §7 y §11).
-	UE_LOG(LogTemp, Display, TEXT("[Explored] Nueva partida, modo %d"), static_cast<int32>(Mode));
+	// normal de AGameModeBase; aquí se reinicia el estado de la partida y se
+	// retira el menú para entrar a jugar.
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Nueva partida"));
 	if (const APawn* PlayerPawn = GetPawn())
 	{
 		if (UBodySignalsComponent* Body = PlayerPawn->FindComponentByClass<UBodySignalsComponent>())
 		{
-			switch (Mode)
-			{
-			case EExploredGameplayMode::Explorer: Body->SetMode(ESurvivalMode::Explorer); break;
-			case EExploredGameplayMode::Castaway: Body->SetMode(ESurvivalMode::Castaway); break;
-			default: Body->SetMode(ESurvivalMode::Survivor); break;
-			}
+			Body->SetMode(ESurvivalMode::Survivor);
 		}
 	}
-
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+	if (UExploredWiringSubsystem* Wiring = UExploredWiringSubsystem::Get(this))
 	{
-		// Vacía las estadísticas de partida y fija el modo para logros como «Náufrago de verdad».
-		Achievements->BeginRun(Mode);
+		Wiring->BeginNewRun();
 	}
 	FadeIntoGameplay();
 	// Ayuda de inicio: los controles básicos y el objetivo del viaje (v1, docs/v1-alcance.md).
@@ -460,7 +388,7 @@ void AExploredPlayerController::StartNewGame(EExploredGameplayMode Mode)
 	{
 		const FLinearColor HelpColor(0.92f, 0.95f, 1.0f, 1.0f);
 		// PushNotification apila la más reciente arriba: se empuja en orden inverso al de lectura.
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa"), HelpColor, 10.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · H reloj · Esc pausa"), HelpColor, 10.0f);
 		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"), HelpColor, 10.0f);
 		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpGoal", "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."),
 			FLinearColor(1.0f, 0.9f, 0.55f, 1.0f), 10.0f);
@@ -504,9 +432,6 @@ void AExploredPlayerController::OpenPauseMenu()
 	SetUIMode(EExploredUIMode::Paused);
 	TSharedRef<SExploredPauseMenu> Widget = SNew(SExploredPauseMenu)
 		.OnResume(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ResumeGame))
-		.OnMap(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenMap))
-		.OnMuseum(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenMuseum))
-		.OnAchievements(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenAchievements))
 		.OnSettings(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSettings))
 		.OnSave(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSaveGame))
 		.OnExitToMenu(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ExitToMainMenu))
@@ -526,55 +451,6 @@ void AExploredPlayerController::RequestSaveGame()
 	{
 		SaveSubsystem->RequestSave();
 	}
-}
-
-void AExploredPlayerController::OpenMap()
-{
-	const AExploredCharacter* OwnerCharacter = Cast<AExploredCharacter>(GetPawn());
-	UCartographyComponent* Cartography = OwnerCharacter ? OwnerCharacter->GetCartographyComponent() : nullptr;
-	if (!Cartography)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Explored] No hay mapa que sacar: el peón no tiene UCartographyComponent"));
-		return;
-	}
-
-	// Jugando, el mundo sigue (sin pausa ni cámara lenta) y la entrada pasa al mapa;
-	// desde la pausa se queda pausado. Ver SExploredMapInHands.
-	if (UIMode == EExploredUIMode::Playing)
-	{
-		SetUIMode(EExploredUIMode::InHands);
-	}
-
-	TArray<FWayfindingAnnotation> Annotations;
-	if (const URuinsSubsystem* Ruins = GetWorld() ? GetWorld()->GetSubsystem<URuinsSubsystem>() : nullptr)
-	{
-		Annotations = Ruins->GetMapAnnotations();
-	}
-
-	TSharedRef<SExploredMapInHands> Widget = SNew(SExploredMapInHands)
-		.Cartography(TWeakObjectPtr<UCartographyComponent>(Cartography))
-		.Annotations(Annotations)
-		.WorldContextObject(TWeakObjectPtr<const UObject>(this))
-		.OnClose(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::NavigateBack))
-		.OnOpenCollection(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenMuseum));
-	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Map);
-}
-
-void AExploredPlayerController::OpenMuseum()
-{
-	const URuinsSubsystem* Ruins = GetWorld() ? GetWorld()->GetSubsystem<URuinsSubsystem>() : nullptr;
-	TSharedRef<SExploredMuseum> Widget = SNew(SExploredMuseum)
-		.Ruins(TWeakObjectPtr<const URuinsSubsystem>(Ruins))
-		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::NavigateBack));
-	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Museum);
-}
-
-void AExploredPlayerController::OpenAchievements()
-{
-	TSharedRef<SExploredAchievements> Widget = SNew(SExploredAchievements)
-		.Achievements(TWeakObjectPtr<const UAchievementsSubsystem>(UAchievementsSubsystem::Get(this)))
-		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::NavigateBack));
-	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Achievements);
 }
 
 void AExploredPlayerController::OpenSaveGame()

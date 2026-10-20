@@ -22,9 +22,9 @@ excepción, y los campos de tipo equivocado (texto donde va un número, ids nulo
 Qué comprueba:
 
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
-  `plants.json`, `building_pieces.json`, `survival_needs.json`, `artifacts.json`,
-  `ruins.json`, `meshes_pendientes.json`, `achievements.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json`, `fases_futuras.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `plants.json`, `building_pieces.json`, `survival_needs.json`,
+  `meshes_pendientes.json`, `fuels.json`, `recipes.json`,
+  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -58,18 +58,7 @@ Qué comprueba:
   `meshes_pendientes.json`, y nada obsoleto puede quedarse allí.
   Nota (no error) con las `SM_Base_*` de mobiliario sin ninguna pieza construible.
 - **Espejo del C++**: `survival_needs.json` contra las constantes de
-  `Source/Explored/Survival/SurvivalModel.{h,cpp}`; `ruins.json` y `artifacts.json`
-  contra los ids de `LexToString` y las constantes de `Source/Explored/Ruins/*Model.{h,cpp}`
-  (técnicas, elementos, ruinas por isla, caminos de estrellas, umbral de «Coleccionista»).
-- **Museo**: cada tesoro tiene un tipo de `story_es.json`, una malla de `tesoros.py` y
-  algún hueco de mueble donde cabe; los muebles apuntan a piezas `museo` existentes.
-- **Logros (GDD §16, biblia 07 §2)**: entre 40 y 60 con los 30 del GDD siempre presentes,
-  ids ASCII únicos, textos en ES y EN con la longitud de biblia 07 §1.3 en los nuevos, los
-  ejemplos del GDD presentes, `phase`, `rarity` y `coopScope` válidos (biblia 08 §5.7),
-  `strata_mined` igual a `mining.json → strata`, condiciones con estadísticas conocidas y de tipo
-  compatible (la misma regla que `FAchievementsModel::Configure`), ids de conjuntos
-  admitidos (listas cerradas o `items`/`plants`/`building_pieces`), metas alcanzables,
-  y el catálogo de estadísticas igual al de `docs/tecnico/estadisticas.md`.
+  `Source/Explored/Survival/SurvivalModel.{h,cpp}`.
 - **Fuego y cocina**: niveles fogata → hoguera → horno con piezas de construcción
   reales y mejoras crecientes; combustibles que de verdad arden; recetas con técnica,
   utensilio (estanco para hervir y guisar), capacidad, ingredientes y resultados
@@ -116,21 +105,11 @@ Qué comprueba:
   botín/nidos con objetos reales; las cuatro islas del acceso anticipado con ficha y
   ninguna isla de fase 1 con especies de fase 2/3. Especies sin malla, en
   `meshes_pendientes.json/fauna`.
-- **Borradores de fase 2 y 3** (`fases_futuras.json`, GDD v2 §6.2): raíles y vagones,
-  animales domésticos, murallas y trampas, y trueque con reputación. Todo con `fase` 2 o 3;
-  objetos del catálogo o declarados en `pendingItems`; ningún otro fichero de datos (fase 1)
-  nombra un id que solo existe en el borrador; sin claves de precio ni moneda (§5), valores
-  de trueque 1–5 y tramos de reputación contiguos de 0 a 100 con tasa creciente.
 - **Contenido de texto de H4** (`contenido.py`, `docs/tecnico/contenido-textos.md`):
   `halden_diaries.json` (los 5 cuadernos de biblia 04 §7.1, cada uno en un POI que de verdad
   coloca `PointsOfInterest.cpp` en esa isla y con su `ContentId`), `journal_entries.json`
-  (al menos 15 entradas, `{Day}` en los dos idiomas, disparadores con el lenguaje de condiciones
-  de `achievements.json` o un suceso declarado y usado, sin sucesos de una fase posterior),
-  `map_clues.json` (tesoros raros o únicos, escondite que cuadra con la procedencia, fuente en una
-  ruina o un cuaderno de la misma isla), `ruins.json` (`teaches`/`starPathTarget`: cada técnica
-  global una vez, caminos a islas distintas de la propia, al menos `requiredStarPaths` y uno a la
-  isla oculta) y el museo (`museum_collections.json` con sus ficheros, recuentos, muebles
-  `museo` existentes y usados, y fase de cada pieza coherente con sus islas y su colección).
+  (al menos 15 entradas, `{Day}` en los dos idiomas, disparadores con un suceso declarado y
+  usado, sin sucesos de una fase posterior).
   Islas: `LexToString(EIslandArchetype)` en minúsculas; POI: `EPoiType`.
 - **Guía anti-IA** (`estilo.py`, biblia 07 §1): lista negra ES/EN, exclamaciones, emoji, puntos
   suspensivos, rayas de muletilla y límites de longitud y de frases por tipo de texto en los

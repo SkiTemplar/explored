@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "Building/BuildingTypes.h"
 #include "Carry/CarryTypes.h"
 #include "Carry/InventoryModel.h"
 #include "Items/ItemTypes.h"
@@ -12,7 +11,6 @@
 
 class AExploredContainer;
 class AExploredItemActor;
-class AExploredSledge;
 class UItemRegistrySubsystem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCarryChanged);
@@ -95,11 +93,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
 	bool UnequipBelt(EHand Hand, FText& OutFailReason);
 
-	/** Engancha unas angarillas que estaban en el suelo, con su carga. */
-	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
-	bool AttachSledge(AExploredSledge* Sledge, FText& OutFailReason);
-
-	/** Suelta las angarillas detrás del jugador con toda su carga. */
+	/** Suelta las angarillas en el suelo con toda su carga. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Carga")
 	bool DetachSledge();
 
@@ -198,13 +192,6 @@ public:
 	 */
 	void CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>& OutTools) const;
 
-	/**
-	 * Gasta materiales (P-WIRE): primero de las angarillas, luego de la mochila y
-	 * los contenedores del cuerpo y al final de las manos (ExploredLinks::PlanMaterialTakes).
-	 * Todo o nada: false si no alcanza, sin tocar nada.
-	 */
-	bool ConsumeMaterials(const TArray<FBuildingCost>& Costs);
-
 	/** Guardado (P-SAVE): estado plano del modelo y las instancias completas por id. */
 	void ExportState(FInventoryState& OutState, TMap<int64, FItemInstance>& OutInstances) const;
 	bool ImportState(const FInventoryState& InState, const TMap<int64, FItemInstance>& InInstances);
@@ -235,7 +222,6 @@ private:
 	FItemInstance TakePayload(const FInventoryItem& Record);
 	/** Rehace las copias en FItemInstance que usan el HUD y el personaje, y avisa del cambio. */
 	void SyncFromModel();
-	void PlaceSledgeActorBehindOwner(AExploredSledge* Sledge) const;
 
 	/** Fuente de verdad de lo que se lleva y dónde (datos planos, sin UObject). */
 	FInventoryModel Model;
@@ -243,10 +229,6 @@ private:
 	/** Instancias completas por id de instancia del modelo. */
 	UPROPERTY()
 	TMap<int64, FItemInstance> Payloads;
-
-	/** Angarillas enganchadas: el actor se queda detrás del jugador como imagen de la carga. */
-	UPROPERTY()
-	TWeakObjectPtr<AExploredSledge> AttachedSledge;
 
 	// Copias para la API existente (HUD, personaje, tests); se rehacen en SyncFromModel.
 	UPROPERTY(Transient)

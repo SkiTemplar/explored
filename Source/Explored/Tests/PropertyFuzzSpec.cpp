@@ -2,7 +2,6 @@
 
 #include "Boats/BoatModel.h"
 #include "Carry/InventoryModel.h"
-#include "Cartography/CartographyModel.h"
 #include "Core/ExploredRandom.h"
 #include "Player/SwimModel.h"
 #include "Survival/BodyModel.h"
@@ -287,7 +286,7 @@ void FPropertyFuzzSpec::Define()
 
 	Describe("los valores hostiles en las entradas públicas", [this]()
 	{
-		It("no dejan NaN ni infinitos en el estado del barco, el nado y el mapa, ni cuelgan", [this]()
+		It("no dejan NaN ni infinitos en el estado del barco y el nado, ni cuelgan", [this]()
 		{
 			for (int32 Seed = 1; Seed <= Seeds; ++Seed)
 			{
@@ -332,33 +331,6 @@ void FPropertyFuzzSpec::Define()
 					Swim.Tick(Tuning, In, Hostile(Rng, 0.0f, 0.05f));
 				}
 				TestTrue(At + TEXT(": oxígeno finito y en rango"), FMath::IsFinite(Swim.GetOxygen()) && Swim.GetOxygen() >= 0.0f && Swim.GetOxygen() <= 100.0f);
-
-				// Mapa: posiciones, distancias y agua rotas.
-				FCartographyModel Map(static_cast<uint32>(Seed));
-				for (int32 I = 0; I < 300; ++I)
-				{
-					FCartographySample Sample;
-					Sample.WorldPosition = FVector2D(Rng.Chance(0.9f) ? I * 0.8f : Hostile(Rng, -10.0f, 10.0f), Hostile(Rng, -5.0f, 5.0f));
-					Sample.DistanceToShore = Hostile(Rng, 0.0f, 10.0f);
-					Map.Sample(Sample);
-					if (Rng.Chance(0.1f))
-					{
-						FCartographyExposure Water;
-						Water.Rain = Hostile(Rng, 0.0f, 1.0f);
-						Water.bInSeaWater = Rng.Chance(0.3f);
-						Map.TickWetness(Water, Hostile(Rng, 0.0f, 5.0f));
-					}
-				}
-				bool bMapFinite = IsFiniteVec(Map.GetState().Drift);
-				for (const FMapStroke& Stroke : Map.GetState().Strokes)
-				{
-					bMapFinite &= FMath::IsFinite(Stroke.Ink) && FMath::IsFinite(Stroke.Blur);
-					for (const FVector2D& P : Stroke.Points)
-					{
-						bMapFinite &= IsFiniteVec(P);
-					}
-				}
-				TestTrue(At + TEXT(": mapa finito"), bMapFinite);
 
 				// Funciones puras: resultado finito y en rango, sin conversiones con UB (UBSan).
 				for (int32 I = 0; I < 50; ++I)

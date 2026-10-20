@@ -87,15 +87,6 @@ def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
     return records
 
 
-def _landmarks(doc: object) -> Iterator[tuple[str, object]]:
-    for i, island in enumerate(_items(doc, "islands")):
-        if not isinstance(island, dict):
-            yield _id(island, i), island
-            continue
-        for j, mark in enumerate(_items(island, "landmarks")):
-            yield _id(mark, j), mark
-
-
 def _stages(doc: object) -> Iterator[tuple[str, object]]:
     for i, plant in enumerate(_items(doc, "plants")):
         if not isinstance(plant, dict):
@@ -119,16 +110,7 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),
     FieldSpec("story_es.json", "map_marks", _sub("map_marks"), "label", "labelEn", "sello del mapa"),
     FieldSpec("story_es.json", "artifact_kinds", _sub("artifact_kinds"), "label", "labelEn", "tipo de tesoro del museo"),
-    FieldSpec("achievements.json", "achievements", _sub("achievements"), "nameEs", "nameEn", "nombre del logro (Steam y menú)"),
-    FieldSpec("achievements.json", "achievements", _sub("achievements"), "descriptionEs", "descriptionEn",
-              "descripción del logro (Steam y menú)"),
-    FieldSpec("artifacts.json", "artifacts", _sub("artifacts"), "nameEs", "nameEn", "etiqueta de vitrina del museo"),
-    FieldSpec("artifacts.json", "displays", _sub("displays"), "nameEs", "nameEn", "mueble del museo"),
-    FieldSpec("artifacts.json", "provenances", _sub("provenances"), "nameEs", "nameEn", "procedencia de un tesoro"),
-    FieldSpec("artifacts.json", "rarities", _sub("rarities"), "nameEs", "nameEn", "rareza de un tesoro"),
     FieldSpec("boats.json", "boats", _sub("boats"), "nameEs", "nameEn", "embarcación del astillero"),
-    FieldSpec("exploration.json", "kinds", _sub("kinds"), "nameEs", "nameEn", "tipo de lugar del mapa"),
-    FieldSpec("exploration.json", "landmarks", _landmarks, "nameEs", "nameEn", "lugar con nombre del mapa"),
     FieldSpec("fauna.json", "species", _sub("species"), "nameEs", "nameEn", "especie marina"),
     FieldSpec("fauna.json", "lod", _path("lod", "tiers"), "nameEs", "nameEn", "nivel de detalle de fauna (ajustes)"),
     FieldSpec("fauna_terrestre.json", "species", _sub("species"), "nameEs", "nameEn", "especie terrestre"),
@@ -146,31 +128,11 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("mining.json", "hazards", _keyed("hazards"), "nameEs", "nameEn", "peligro de la mina"),
     FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
-    FieldSpec("ruins.json", "elements", _sub("elements"), "nameEs", "nameEn", "elemento de una ruina"),
-    FieldSpec("ruins.json", "sites", _sub("sites"), "nameEs", "nameEn", "tipo de ruina"),
-    FieldSpec("ruins.json", "techniques", _sub("techniques"), "nameEs", "nameEn", "técnica de wayfinding"),
-    FieldSpec("ruins.json", "techniques", _sub("techniques"), "revealsEs", "revealsEn", "lo que revela una técnica"),
-    FieldSpec("fases_futuras.json", "pendingItems", _sub("pendingItems"), "nameEs", "nameEn", "objeto de fase 2/3"),
-    FieldSpec("fases_futuras.json", "tramway", _path("tramway", "pieces"), "nameEs", "nameEn", "pieza de raíles [F2]"),
-    FieldSpec("fases_futuras.json", "livestock.pieces", _path("livestock", "pieces"), "nameEs", "nameEn", "pieza de granja [F2]"),
-    FieldSpec("fases_futuras.json", "livestock.species", _path("livestock", "species"), "nameEs", "nameEn",
-              "animal doméstico [F2]"),
-    FieldSpec("fases_futuras.json", "defenses.pieces", _path("defenses", "pieces"), "nameEs", "nameEn", "muralla [F2]"),
-    FieldSpec("fases_futuras.json", "defenses.traps", _path("defenses", "traps"), "nameEs", "nameEn", "trampa [F2]"),
-    FieldSpec("fases_futuras.json", "trade.tiers", _path("trade", "tiers"), "nameEs", "nameEn", "reputación del pueblo [F3]"),
-    FieldSpec("fases_futuras.json", "trade.wants", _path("trade", "wants"), "nameEs", "nameEn", "lo que pide el pueblo [F3]"),
-    FieldSpec("fases_futuras.json", "trade.favors", _path("trade", "favors"), "nameEs", "nameEn", "favor del pueblo [F3]"),
-    FieldSpec("fases_futuras.json", "trade.reputationActions", _path("trade", "reputationActions"), "nameEs", "nameEn",
-              "acción que mueve la reputación [F3]"),
     FieldSpec("halden_diaries.json", "entries", _sub("entries"), "textEs", "textEn", "cuaderno de la expedición Halden"),
     FieldSpec("journal_entries.json", "entries", _sub("entries"), "textEs", "textEn",
               "entrada del diario del náufrago ({Day} = día de la partida)"),
-    FieldSpec("map_clues.json", "clues", _sub("clues"), "clueEs", "clueEn", "pista en prosa de un tesoro"),
-    FieldSpec("museum_collections.json", "collections", _sub("collections"), "nameEs", "nameEn", "colección del museo"),
-    FieldSpec("museum_collections.json", "collections", _sub("collections"), "rewardEs", "rewardEn",
-              "recompensa por completar la colección"),
     *(FieldSpec(f, "pieces", _sub("pieces"), es, en, purpose)
-      for f in ("shells.json", "herbarium.json", "insects.json", "fossils.json", "minerals.json")
+      for f in ("minerals.json",)
       for es, en, purpose in (("nameEs", "nameEn", "etiqueta de vitrina"),
                               ("descriptionEs", "descriptionEn", "ficha de vitrina"))),
 ]
@@ -179,8 +141,6 @@ FIELDS: list[FieldSpec] = [
 DESIGN_NOTES: set[tuple[str, str]] = {
     ("*", "noteEs"),
     ("*", "redNotaEs"),
-    ("exploration.json", "accessEs"),  # guion de diseño de cada lugar, con referencias al GDD
-    ("exploration.json", "rewardEs"),
     ("journal_entries.json", "descriptionEs"),  # catálogo de sucesos que disparan el diario
 }
 
@@ -206,8 +166,7 @@ def _unregistered(file: str, doc: object, covered: set[tuple[int, str]]) -> Iter
             for key, value in node.items():
                 if isinstance(value, str):
                     if (key.endswith("Es") and len(key) > 2 and value.strip() and (id(node), key) not in covered
-                            and not _is_note(file, key)
-                            and not (file == "achievements.json" and path == ".stats[]")):  # documentación del catálogo
+                            and not _is_note(file, key)):
                         yield f"{path}.{key}" + (f" «{node.get('id')}»" if node.get("id") else "")
                 else:
                     yield from walk(value, f"{path}.{key}")

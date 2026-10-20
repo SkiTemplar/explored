@@ -7,11 +7,9 @@
 
 #include "ExploredCharacter.generated.h"
 
-class UBuildPreviewComponent;
 class UBodySignalsComponent;
 class UCameraComponent;
 class UCarryComponent;
-class UCartographyComponent;
 class UExploredInputSettingsSubsystem;
 class UFishingComponent;
 class UInputAction;
@@ -56,10 +54,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Nado")
 	USwimComponent* GetSwimComponent() const { return Swim; }
 
-	UFUNCTION(BlueprintPure, Category = "Explored|Mapa")
-	UCartographyComponent* GetCartographyComponent() const { return Cartography; }
-	UFUNCTION(BlueprintPure, Category = "Explored|Construcción")
-	UBuildPreviewComponent* GetBuildPreviewComponent() const { return BuildPreview; }
 	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
 	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
 	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
@@ -145,12 +139,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Nado")
 	TObjectPtr<USwimComponent> Swim;
 
-	/** Mapa dibujado a mano (GDD §5). */
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Mapa")
-	TObjectPtr<UCartographyComponent> Cartography;
-	/** Modo construcción: fantasma, giro y confirmación (GDD §8.6). */
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Construcción")
-	TObjectPtr<UBuildPreviewComponent> BuildPreview;
 	/** Cuerpo como HUD: supervivencia, señales corporales y reloj de pulsera (GDD §8.3). */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
 	TObjectPtr<UBodySignalsComponent> Body;

@@ -142,17 +142,11 @@ namespace ExploredSettingsLogic
 	{
 		switch (Current)
 		{
-		case EMenuScreen::ModeSelect:
 		case EMenuScreen::Credits:
 			return EMenuScreen::MainMenu;
 		case EMenuScreen::Settings:
-		case EMenuScreen::Achievements:
 		case EMenuScreen::SaveSlots:
 			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::MainMenu;
-		case EMenuScreen::Map:
-			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::None;
-		case EMenuScreen::Museum:
-			return bOpenedFromPause ? EMenuScreen::Pause : EMenuScreen::Map;
 		case EMenuScreen::Pause:
 			return EMenuScreen::None;
 		case EMenuScreen::MainMenu:
@@ -172,15 +166,11 @@ namespace ExploredSettingsLogic
 		switch (From)
 		{
 		case EMenuScreen::MainMenu:
-			return To == EMenuScreen::ModeSelect || To == EMenuScreen::Settings || To == EMenuScreen::Credits
-				|| To == EMenuScreen::Achievements || To == EMenuScreen::SaveSlots;
+			return To == EMenuScreen::Settings || To == EMenuScreen::Credits || To == EMenuScreen::SaveSlots;
 		case EMenuScreen::None:
-			return To == EMenuScreen::Pause || To == EMenuScreen::Map;
+			return To == EMenuScreen::Pause;
 		case EMenuScreen::Pause:
-			return To == EMenuScreen::Settings || To == EMenuScreen::Map || To == EMenuScreen::Museum
-				|| To == EMenuScreen::Achievements || To == EMenuScreen::SaveSlots;
-		case EMenuScreen::Map:
-			return To == EMenuScreen::Museum;
+			return To == EMenuScreen::Settings || To == EMenuScreen::SaveSlots;
 		default:
 			return false;
 		}
@@ -234,10 +224,5 @@ namespace ExploredSettingsLogic
 	bool IsPauseToggleKey(FName KeyName)
 	{
 		return KeyName == FName(TEXT("Escape")) || KeyName == FName(TEXT("Gamepad_Special_Right"));
-	}
-
-	bool IsMapToggleKey(FName KeyName)
-	{
-		return KeyName == FName(TEXT("M")) || KeyName == FName(TEXT("Gamepad_Special_Left"));
 	}
 }

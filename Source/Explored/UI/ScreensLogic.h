@@ -1,98 +1,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Achievements/AchievementsModel.h"
 #include "Carry/InventoryModel.h"
-#include "Ruins/MuseumModel.h"
 #include "Save/SaveSlots.h"
 
 /**
  * Lógica pura de las pantallas de P-UI2 (solo modelos puros y CoreMinimal):
  * qué filas muestra cada una y en qué estado, para que los widgets Slate
- * (SExploredMuseum, SExploredAchievements, SExploredSaveSlots,
- * SExploredInventoryPanel) se limiten a pintar. ScreensLogicSpec las prueba
+ * (SExploredSaveSlots, SExploredInventoryPanel) se limiten a pintar. ScreensLogicSpec las prueba
  * en el editor y en Tools/HostTests.
  */
 namespace ExploredScreens
 {
-	// --- Museo y catálogo (GDD §7) -----------------------------------------------
-
-	/** Qué sabe el jugador de un tesoro, de menos a más. */
-	enum class EMuseumEntryState : uint8
-	{
-		/** Silueta: ni hallado ni fotografiado. */
-		Unknown,
-		/** Registrado por una foto de la cámara desechable, sin recogerlo. */
-		Photographed,
-		/** Recogido (en las manos, la mochila o un arcón). */
-		Found,
-		/** Recogido y colocado en un mueble del museo. */
-		Exhibited
-	};
-
-	/** Una ficha del catálogo. */
-	struct FMuseumEntry
-	{
-		FName ArtifactId;
-		EMuseumEntryState State = EMuseumEntryState::Unknown;
-		/** El catálogo trae silueta y procedencia de cada tesoro, completo o no (GDD §7). */
-		EArtifactProvenance Provenance = EArtifactProvenance::Marae;
-		EArtifactRarity Rarity = EArtifactRarity::Common;
-		EArtifactSize Size = EArtifactSize::Small;
-		/** Se muestra el nombre (registrado); si no, «???» y la silueta. */
-		bool bShowName = false;
-		/** Lugar y isla donde se recogió (solo si se ha recogido). */
-		FName FoundAt;
-		int32 FoundIsland = INDEX_NONE;
-	};
-
-	/** Fichas en el orden del catálogo (artifacts.json). */
-	EXPLORED_API TArray<FMuseumEntry> BuildMuseumEntries(const FMuseumModel& Museum);
-
-	/** Recuentos de la cabecera del museo. */
-	struct FMuseumSummary
-	{
-		int32 Total = 0;
-		int32 Registered = 0;
-		int32 Found = 0;
-		int32 Exhibited = 0;
-		/** Tesoros expuestos para el logro «Coleccionista» (FMuseumModel::CollectorThreshold). */
-		int32 CollectorTarget = FMuseumModel::CollectorThreshold;
-		/** Expuestos / objetivo, en [0, 1]. */
-		float CollectorProgress = 0.0f;
-		bool bCollectorDone = false;
-		/** Registrados / total, en [0, 1]. */
-		float CatalogProgress = 0.0f;
-	};
-
-	EXPLORED_API FMuseumSummary SummarizeMuseum(const FMuseumModel& Museum);
-
-	// --- Logros (GDD §16) --------------------------------------------------------
-
-	struct FAchievementRow
-	{
-		FName Id;
-		bool bUnlocked = false;
-		/** Oculto y aún sin conseguir: nombre «???», sin descripción ni barra. */
-		bool bMasked = false;
-		/** Se puede conseguir en el modo de la partida actual (o fuera de partida). */
-		bool bAvailableInMode = true;
-		/** Barra de progreso en [0, 1]; 1 si está conseguido y 0 si está oculto. */
-		float Progress = 0.0f;
-	};
-
-	/** Filas en el orden de achievements.json. */
-	EXPLORED_API TArray<FAchievementRow> BuildAchievementRows(const FAchievementsModel& Model);
-
-	struct FAchievementsSummary
-	{
-		int32 Unlocked = 0;
-		int32 Total = 0;
-		float Fraction = 0.0f;
-	};
-
-	EXPLORED_API FAchievementsSummary SummarizeAchievements(const FAchievementsModel& Model);
-
 	// --- Ranuras de guardado (GDD §15) -------------------------------------------
 
 	/** Para qué se abre el selector: «Guardar» (pausa) o «Cargar» (menú principal). */

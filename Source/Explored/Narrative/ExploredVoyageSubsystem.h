@@ -59,8 +59,6 @@ private:
 	void SpawnSalvageSites(UWorld& World);
 	void SpawnShipyard(UWorld& World);
 	void Notify(const FText& Text, const FLinearColor& Color) const;
-	/** Anota en el mapa del jugador el pecio recién rescatado (sello «wreck»). */
-	void MarkRecoveryOnMap(EShipPart Part) const;
 	float GetHours() const;
 
 	/** Secuencia de salida: el Limón mar adentro con la cámara detrás; luego el final. */

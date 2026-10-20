@@ -1,19 +1,11 @@
 # Automation Specs de Source/Explored/Tests que también se ejecutan en el host (solo modelos puros).
-Tests/AchievementsSpec.cpp
 Tests/BeachDebrisSpec.cpp
 Tests/BoatSpec.cpp
-Tests/HullAssemblyModelSpec.cpp
-Tests/RaftYardModelSpec.cpp
-Tests/RaftFurrowModelSpec.cpp
 Tests/BodySpec.cpp
 Tests/BoidsSpec.cpp
-Tests/BuildingSpec.cpp
-Tests/CartographySpec.cpp
 Tests/PlaytestReportSpec.cpp
 Tests/CookingSpec.cpp
-Tests/ExplorationContentSpec.cpp
 Tests/ExploredRandomNoiseSpec.cpp
-Tests/FarmSpec.cpp
 Tests/FireSpec.cpp
 Tests/FormationPlacementSpec.cpp
 Tests/FishingSpec.cpp
@@ -24,14 +16,11 @@ Tests/GroundBranchModelSpec.cpp
 Tests/HarvestModelSpec.cpp
 Tests/InventorySpec.cpp
 Tests/LocalizationSpec.cpp
-Tests/MapViewLogicSpec.cpp
 Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
-Tests/MuseumSpec.cpp
 Tests/MusicDirectorSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
-Tests/RuinsSpec.cpp
 Tests/SaveArchiveSpec.cpp
 Tests/SaveSlotsSpec.cpp
 Tests/SaveSystemsSpec.cpp

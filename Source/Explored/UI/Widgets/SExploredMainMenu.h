@@ -5,7 +5,7 @@
 
 /**
  * Menú principal (GDD §10, §15): título, subtítulo, la dedicatoria «Para
- * Almudena, mi Limón» y Continuar, Nueva partida, Cargar, Ajustes, Logros,
+ * Almudena, mi Limón» y Continuar, Nueva partida, Cargar, Ajustes,
  * Créditos y Salir sobre el mundo real.
  * Escape no hace nada aquí (ver ExploredSettingsLogic::ScreenAfterBack).
  */
@@ -20,7 +20,6 @@ public:
 		SLATE_EVENT(FSimpleDelegate, OnNewGame)
 		SLATE_EVENT(FSimpleDelegate, OnLoad)
 		SLATE_EVENT(FSimpleDelegate, OnSettings)
-		SLATE_EVENT(FSimpleDelegate, OnAchievements)
 		SLATE_EVENT(FSimpleDelegate, OnCredits)
 		SLATE_EVENT(FSimpleDelegate, OnQuit)
 	SLATE_END_ARGS()
@@ -37,7 +36,6 @@ private:
 	FSimpleDelegate OnNewGame;
 	FSimpleDelegate OnLoad;
 	FSimpleDelegate OnSettings;
-	FSimpleDelegate OnAchievements;
 	FSimpleDelegate OnCredits;
 	FSimpleDelegate OnQuit;
 	TSharedPtr<SWidget> InitialFocus;
@@ -46,7 +44,6 @@ private:
 	FReply HandleNewGame();
 	FReply HandleLoad();
 	FReply HandleSettings();
-	FReply HandleAchievements();
 	FReply HandleCredits();
 	FReply HandleQuit();
 };

@@ -6,10 +6,8 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
-#include "Achievements/AchievementsSubsystem.h"
 #include "Carry/CarryComponent.h"
 #include "Fishing/ExploredFishingSubsystem.h"
-#include "Fishing/ExploredTrap.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemTypes.h"
 #include "Player/SwimComponent.h"
@@ -18,8 +16,6 @@ namespace FishingComponentDetail
 {
 	/** Filo con que se despieza una legendaria al sacarla (la escena ya la da abierta). */
 	constexpr float LegendaryButcherEdge = 0.6f;
-	/** Alcance para colocar una trampa (cm). */
-	constexpr float TrapPlaceDistanceCm = 400.0f;
 }
 
 UFishingComponent::UFishingComponent()
@@ -212,16 +208,6 @@ void UFishingComponent::HandleCatch()
 	const float Now = Fishing->GetNowDays();
 	FFishingModel::RegisterCatch(Fishing->GetState(), FFishingModel::ZoneKeyAt(FVector2D(CastPoint)), Now);
 
-	// Estadísticas (docs/tecnico/estadisticas.md): toda captura cuenta; las legendarias, además, por su id.
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		Achievements->ReportStat(TEXT("fish_caught"));
-		if (PendingBite.bLegendary)
-		{
-			Achievements->ReportStatItem(TEXT("legendary_catches"), PendingBite.Id);
-		}
-	}
-
 	const FVector DropLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 80.0f + FVector(0.0, 0.0, 20.0);
 	if (!PendingBite.bLegendary)
 	{
@@ -281,32 +267,4 @@ AExploredItemActor* UFishingComponent::SpawnCatchActor(UWorld* World, FName Item
 		Actor->InitializeFromInstance(Instance);
 	}
 	return Actor;
-}
-
-AExploredTrap* UFishingComponent::PlaceTrap(FName KindName, FName BaitItemId)
-{
-	AActor* Owner = GetOwner();
-	UWorld* World = GetWorld();
-	if (!Owner || !World)
-	{
-		return nullptr;
-	}
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	Owner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-	const FVector End = EyeLocation + EyeRotation.Vector() * FishingComponentDetail::TrapPlaceDistanceCm;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(ExploredPlaceTrap), false, Owner);
-	FHitResult Hit;
-	if (!World->LineTraceSingleByChannel(Hit, EyeLocation, End, ECC_WorldStatic, Params))
-	{
-		return nullptr;
-	}
-	const FTransform Transform(FRotator(0.0, EyeRotation.Yaw, 0.0), Hit.ImpactPoint);
-	AExploredTrap* Trap = World->SpawnActorDeferred<AExploredTrap>(AExploredTrap::StaticClass(), Transform, Owner);
-	if (Trap)
-	{
-		Trap->Configure(KindName, BaitItemId);
-		Trap->FinishSpawning(Transform);
-	}
-	return Trap;
 }

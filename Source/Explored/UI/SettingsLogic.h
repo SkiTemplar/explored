@@ -145,16 +145,9 @@ namespace ExploredSettingsLogic
 	{
 		None,
 		MainMenu,
-		ModeSelect,
 		Settings,
 		Credits,
 		Pause,
-		/** Mapa en las manos (GDD §5.6): se abre jugando (M o View) o desde la pausa. */
-		Map,
-		/** Museo y catálogo de tesoros (GDD §7): desde la pausa o desde el apartado de colección del mapa. */
-		Museum,
-		/** Lista de logros (GDD §15, §16): desde el menú principal o la pausa. */
-		Achievements,
 		/** Selector de ranura: «Guardar» en la pausa y «Cargar» en el menú principal. */
 		SaveSlots
 	};
@@ -162,11 +155,10 @@ namespace ExploredSettingsLogic
 	/**
 	 * A qué pantalla lleva «Volver» (botón, Escape o B del mando) desde Current
 	 * cuando solo se sabe si se abrió desde la pausa (tabla por defecto):
-	 * - Ajustes, Logros y Ranuras vuelven a la pausa o al menú principal.
-	 * - El mapa vuelve a la pausa o al juego (None).
-	 * - El museo vuelve a la pausa o al mapa (su apartado de colección).
+	 * - Ajustes y Ranuras vuelven a la pausa o al menú principal.
+	 * - Créditos vuelve al menú principal y la pausa, al juego (None).
 	 * En el menú principal no hace nada (devuelve MainMenu). Con varias
-	 * pantallas encadenadas (juego → mapa → museo) manda FMenuNavigation.
+	 * pantallas encadenadas (juego → pausa → ajustes) manda FMenuNavigation.
 	 */
 	EXPLORED_API EMenuScreen ScreenAfterBack(EMenuScreen Current, bool bOpenedFromPause);
 
@@ -178,8 +170,8 @@ namespace ExploredSettingsLogic
 
 	/**
 	 * Pila de pantallas del frontend: recuerda desde dónde se abrió cada una
-	 * para que «Volver» regrese allí aunque se encadenen (juego → mapa → museo
-	 * → mapa → juego). La base es la raíz: None (jugando) o MainMenu.
+	 * para que «Volver» regrese allí aunque se encadenen (juego → pausa → ajustes
+	 * → pausa → juego). La base es la raíz: None (jugando) o MainMenu.
 	 */
 	class EXPLORED_API FMenuNavigation
 	{
@@ -221,7 +213,4 @@ namespace ExploredSettingsLogic
 
 	/** Teclas que abren y cierran la pausa: Escape y Start (Menu) del mando. */
 	EXPLORED_API bool IsPauseToggleKey(FName KeyName);
-
-	/** Teclas que sacan y guardan el mapa: M y View (Back) del mando. */
-	EXPLORED_API bool IsMapToggleKey(FName KeyName);
 }

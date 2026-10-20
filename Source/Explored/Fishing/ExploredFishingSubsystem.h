@@ -13,7 +13,7 @@ class AExploredOcean;
  * Estado de la pesca del mundo: trampas colocadas, legendarias capturadas,
  * pozas vaciadas y presión de pesca por zona (FFishingSaveState, que P-SAVE
  * guardará tal cual). También traduce el mundo a FFishingConditions (hora,
- * marea, luna, clima, profundidad) para UFishingComponent y AExploredTrap.
+ * marea, luna, clima, profundidad) para UFishingComponent.
  */
 UCLASS()
 class EXPLORED_API UExploredFishingSubsystem : public UWorldSubsystem

@@ -4,12 +4,6 @@
 // se usan en este fichero: las demás unidades guardan a través de estas funciones.
 
 template <>
-struct TSaveEnumNames<EMapMarkSource>
-{
-	static constexpr const TCHAR* Names[] = { TEXT("Hand"), TEXT("Spyglass"), TEXT("Sextant") };
-};
-
-template <>
 struct TSaveEnumNames<EFireLevel>
 {
 	static constexpr const TCHAR* Names[] = { TEXT("Fogata"), TEXT("Hoguera"), TEXT("HornoArcilla") };
@@ -43,19 +37,6 @@ template <>
 struct TSaveEnumNames<EBoatCondition>
 {
 	static constexpr const TCHAR* Names[] = { TEXT("Afloat"), TEXT("Swamped"), TEXT("Capsized"), TEXT("Wrecked") };
-};
-
-template <>
-struct TSaveEnumNames<EHullPieceType>
-{
-	static constexpr const TCHAR* Names[] = { TEXT("Log"), TEXT("Plank"), TEXT("Bamboo"), TEXT("Float"), TEXT("Mast"), TEXT("Sail"),
-		TEXT("Oars"), TEXT("Paddle") };
-};
-
-template <>
-struct TSaveEnumNames<ERaftJointKind>
-{
-	static constexpr const TCHAR* Names[] = { TEXT("Fiber"), TEXT("Rope"), TEXT("Nails") };
 };
 
 template <>
@@ -99,8 +80,6 @@ static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EWeatherState>::Names) == static_cas
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishBait>::Names) == static_cast<int32>(EFishBait::Count), "Nombres de EFishBait");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFishHabitat>::Names) == static_cast<int32>(EFishHabitat::Count), "Nombres de EFishHabitat");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ETrapKind>::Names) == static_cast<int32>(ETrapKind::Count), "Nombres de ETrapKind");
-static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EHullPieceType>::Names) == static_cast<int32>(EHullPieceType::Count), "Nombres de EHullPieceType");
-static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ERaftJointKind>::Names) == static_cast<int32>(ERaftJointKind::Count), "Nombres de ERaftJointKind");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EBoatType>::Names) == static_cast<int32>(EBoatType::Count), "Nombres de EBoatType");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<ECookTechnique>::Names) == static_cast<int32>(ECookTechnique::Count), "Nombres de ECookTechnique");
 static_assert(UE_ARRAY_COUNT(TSaveEnumNames<EFireLevel>::Names) == static_cast<int32>(EFireLevel::Count), "Nombres de EFireLevel");
@@ -147,40 +126,6 @@ namespace SaveSystemStatesDetail
 				Out.Add(MoveTemp(Item));
 			}
 		}
-	}
-
-	void WriteStatValues(FSaveArchive& Ar, const FAchievementStatValues& Values)
-	{
-		Ar.Write(TEXT("numbers"), Values.Numbers);
-		Ar.Write(TEXT("sets"), Values.Sets);
-		Ar.Write(TEXT("flags"), Values.Flags);
-	}
-
-	void ReadStatValues(const FSaveArchive& Ar, FAchievementStatValues& Out)
-	{
-		Out = FAchievementStatValues();
-		TMap<FName, double> Numbers;
-		Ar.Read(TEXT("numbers"), Numbers);
-		for (const TPair<FName, double>& Number : Numbers)
-		{
-			// "NaN" o "Infinity" (el formato los lee como reales) desbloquearían o romperían el progreso.
-			if (FMath::IsFinite(Number.Value))
-			{
-				Out.Numbers.Add(Number.Key, Number.Value);
-			}
-		}
-		TMap<FName, TArray<FName>> Sets;
-		Ar.Read(TEXT("sets"), Sets);
-		for (const TPair<FName, TArray<FName>>& Set : Sets)
-		{
-			// Sin repetidos: ["a", "a"] contaría dos en GetSetSize.
-			TArray<FName>& Items = Out.Sets.Add(Set.Key);
-			for (const FName& Item : Set.Value)
-			{
-				Items.AddUnique(Item);
-			}
-		}
-		Ar.Read(TEXT("flags"), Out.Flags);
 	}
 
 	void WriteInventoryItem(FSaveArchive& Ar, const FInventoryItem& Item)
@@ -243,20 +188,6 @@ namespace SaveSystemStatesDetail
 	}
 
 	/**
-	 * Coordenada de celda guardada como real: false si no es finita o no cabe en
-	 * int32 ("cell": [1e30, 0, 0] o ["NaN", 0, 0]); convertirla sería UB.
-	 */
-	bool RoundCellCoord(double Value, int32& Out)
-	{
-		if (!FMath::IsFinite(Value) || Value < -2147483648.0 || Value > 2147483647.0)
-		{
-			return false;
-		}
-		Out = FMath::RoundToInt(Value);
-		return true;
-	}
-
-	/**
 	 * Real cargado dentro de [Lo, Hi]; uno no finito toma Default. El formato lee
 	 * "NaN" e "Infinity" como reales y FMath::Clamp(NaN) devolvería Hi.
 	 */
@@ -265,283 +196,11 @@ namespace SaveSystemStatesDetail
 		return FMath::IsFinite(Value) ? FMath::Clamp(Value, Lo, Hi) : Default;
 	}
 
-	/** Une B en A sin repetir y conservando el orden de A. */
-	void UnionInto(TArray<FName>& A, const TArray<FName>& B)
-	{
-		for (const FName& Item : B)
-		{
-			A.AddUnique(Item);
-		}
-	}
 }
 
 namespace ExploredSaveStates
 {
 	using namespace SaveSystemStatesDetail;
-
-	// --- Construcción ------------------------------------------------------------------
-
-	void SaveBuilding(FSaveArchive& Ar, const FBuildingSaveState& State)
-	{
-		Ar.Write(TEXT("version"), State.Version);
-		Ar.Write(TEXT("nextPieceId"), State.NextPieceId);
-		Ar.Write(TEXT("nextBaseId"), State.NextBaseId);
-		WriteList(Ar, TEXT("bases"), State.Bases, [](FSaveArchive& Out, const FBuildingBaseState& Base)
-		{
-			Out.Write(TEXT("id"), Base.Id);
-			Out.Write(TEXT("origin"), Base.Origin);
-		});
-		WriteList(Ar, TEXT("pieces"), State.Pieces, [](FSaveArchive& Out, const FBuildingPieceState& Piece)
-		{
-			Out.Write(TEXT("id"), Piece.Id);
-			Out.Write(TEXT("defId"), Piece.DefId);
-			Out.Write(TEXT("baseId"), Piece.Placement.BaseId);
-			Out.Write(TEXT("cell"), FVector(Piece.Placement.Cell.X, Piece.Placement.Cell.Y, Piece.Placement.Cell.Z));
-			Out.Write(TEXT("rotation"), Piece.Placement.Rotation);
-			Out.Write(TEXT("integrity"), Piece.Integrity);
-			Out.Write(TEXT("groundContact"), Piece.bGroundContact);
-			Out.Write(TEXT("lit"), Piece.bLit);
-		});
-	}
-
-	void LoadBuilding(const FSaveArchive& Ar, FBuildingSaveState& OutState)
-	{
-		OutState = FBuildingSaveState();
-		Ar.Read(TEXT("version"), OutState.Version);
-		Ar.Read(TEXT("nextPieceId"), OutState.NextPieceId);
-		Ar.Read(TEXT("nextBaseId"), OutState.NextBaseId);
-		ReadList(Ar, TEXT("bases"), OutState.Bases, [](const FSaveArchive& In, FBuildingBaseState& Base)
-		{
-			return In.Read(TEXT("id"), Base.Id) && In.Read(TEXT("origin"), Base.Origin);
-		});
-		ReadList(Ar, TEXT("pieces"), OutState.Pieces, [](const FSaveArchive& In, FBuildingPieceState& Piece)
-		{
-			FVector Cell = FVector::ZeroVector;
-			if (!In.Read(TEXT("id"), Piece.Id) || !In.Read(TEXT("defId"), Piece.DefId) || !In.Read(TEXT("cell"), Cell)
-				|| !RoundCellCoord(Cell.X, Piece.Placement.Cell.X) || !RoundCellCoord(Cell.Y, Piece.Placement.Cell.Y)
-				|| !RoundCellCoord(Cell.Z, Piece.Placement.Cell.Z))
-			{
-				return false;
-			}
-			In.Read(TEXT("baseId"), Piece.Placement.BaseId);
-			In.Read(TEXT("rotation"), Piece.Placement.Rotation);
-			In.Read(TEXT("integrity"), Piece.Integrity);
-			In.Read(TEXT("groundContact"), Piece.bGroundContact);
-			In.Read(TEXT("lit"), Piece.bLit);
-			return true;
-		});
-	}
-
-	// --- Huerto --------------------------------------------------------------------------
-
-	void SaveFarm(FSaveArchive& Ar, const FFarmState& State)
-	{
-		Ar.Write(TEXT("lastEndedDay"), State.LastEndedDay);
-		Ar.Write(TEXT("nextPlotId"), State.NextPlotId);
-		Ar.Write(TEXT("scarecrows"), State.Scarecrows);
-		WriteList(Ar, TEXT("plots"), State.Plots, [](FSaveArchive& Out, const FFarmPlot& Plot)
-		{
-			Out.Write(TEXT("id"), Plot.Id);
-			Out.Write(TEXT("location"), Plot.Location);
-			Out.Write(TEXT("pieces"), Plot.Pieces);
-			Out.Write(TEXT("compostDaysLeft"), Plot.CompostDaysLeft);
-			FSaveArchive Crop;
-			Crop.Write(TEXT("plantId"), Plot.Crop.PlantId);
-			Crop.Write(TEXT("plantedDay"), Plot.Crop.PlantedDay);
-			Crop.Write(TEXT("growthDays"), Plot.Crop.GrowthDays);
-			Crop.Write(TEXT("harvestClock"), Plot.Crop.HarvestClock);
-			Crop.Write(TEXT("waterToday"), Plot.Crop.WaterToday);
-			Crop.Write(TEXT("dryDays"), Plot.Crop.DryDays);
-			Crop.Write(TEXT("harvestReady"), Plot.Crop.bHarvestReady);
-			Crop.Write(TEXT("dead"), Plot.Crop.bDead);
-			Crop.Write(TEXT("harvests"), Plot.Crop.Harvests);
-			Out.Write(TEXT("crop"), Crop);
-		});
-	}
-
-	void LoadFarm(const FSaveArchive& Ar, FFarmState& OutState)
-	{
-		OutState = FFarmState();
-		Ar.Read(TEXT("lastEndedDay"), OutState.LastEndedDay);
-		Ar.Read(TEXT("nextPlotId"), OutState.NextPlotId);
-		Ar.Read(TEXT("scarecrows"), OutState.Scarecrows);
-		ReadList(Ar, TEXT("plots"), OutState.Plots, [](const FSaveArchive& In, FFarmPlot& Plot)
-		{
-			if (!In.Read(TEXT("id"), Plot.Id))
-			{
-				return false;
-			}
-			In.Read(TEXT("location"), Plot.Location);
-			In.Read(TEXT("pieces"), Plot.Pieces);
-			In.Read(TEXT("compostDaysLeft"), Plot.CompostDaysLeft);
-			FSaveArchive Crop;
-			if (In.Read(TEXT("crop"), Crop))
-			{
-				Crop.Read(TEXT("plantId"), Plot.Crop.PlantId);
-				Crop.Read(TEXT("plantedDay"), Plot.Crop.PlantedDay);
-				Crop.Read(TEXT("growthDays"), Plot.Crop.GrowthDays);
-				Crop.Read(TEXT("harvestClock"), Plot.Crop.HarvestClock);
-				Crop.Read(TEXT("waterToday"), Plot.Crop.WaterToday);
-				Crop.Read(TEXT("dryDays"), Plot.Crop.DryDays);
-				Crop.Read(TEXT("harvestReady"), Plot.Crop.bHarvestReady);
-				Crop.Read(TEXT("dead"), Plot.Crop.bDead);
-				Crop.Read(TEXT("harvests"), Plot.Crop.Harvests);
-			}
-			return true;
-		});
-	}
-
-	// --- Mapa --------------------------------------------------------------------------------
-
-	void SaveCartography(FSaveArchive& Ar, const FCartographyState& State)
-	{
-		WriteList(Ar, TEXT("strokes"), State.Strokes, [](FSaveArchive& Out, const FMapStroke& Stroke)
-		{
-			Out.Write(TEXT("island"), Stroke.IslandIndex);
-			Out.Write(TEXT("points"), Stroke.Points);
-			Out.Write(TEXT("ink"), Stroke.Ink);
-			Out.Write(TEXT("blur"), Stroke.Blur);
-			Out.Write(TEXT("toleranceMeters"), Stroke.ToleranceMeters);
-		});
-		WriteList(Ar, TEXT("sketches"), State.Sketches, [](FSaveArchive& Out, const FMapSketch& Sketch)
-		{
-			Out.Write(TEXT("island"), Sketch.IslandIndex);
-			Out.Write(TEXT("points"), Sketch.Points);
-			Out.Write(TEXT("confirmed"), Sketch.Confirmed);
-			Out.Write(TEXT("ink"), Sketch.Ink);
-		});
-		WriteList(Ar, TEXT("marks"), State.Marks, [](FSaveArchive& Out, const FMapMark& Mark)
-		{
-			Out.Write(TEXT("stamp"), Mark.StampId);
-			Out.Write(TEXT("position"), Mark.Position);
-			Out.Write(TEXT("text"), Mark.Text);
-			Out.Write(TEXT("source"), Mark.Source);
-			Out.Write(TEXT("ink"), Mark.Ink);
-		});
-		WriteList(Ar, TEXT("recipes"), State.Recipes, [](FSaveArchive& Out, const FMapRecipeNote& Note)
-		{
-			Out.Write(TEXT("recipe"), Note.RecipeId);
-			Out.Write(TEXT("doodle"), Note.bDoodle);
-		});
-		WriteList(Ar, TEXT("coverage"), State.Coverage, [](FSaveArchive& Out, const FMapIslandCoverage& Coverage)
-		{
-			Out.Write(TEXT("island"), Coverage.IslandIndex);
-			Out.Write(TEXT("coast"), Coverage.Coast);
-			Out.Write(TEXT("visited"), Coverage.Visited);
-		});
-		Ar.Write(TEXT("wetness"), State.Wetness);
-		Ar.Write(TEXT("inkRunProgress"), State.InkRunProgress);
-		Ar.Write(TEXT("inkRuns"), State.InkRuns);
-		Ar.Write(TEXT("hasDrawnAnyCoast"), State.bHasDrawnAnyCoast);
-		Ar.Write(TEXT("drift"), State.Drift);
-		Ar.Write(TEXT("travelDistance"), State.TravelDistance);
-		Ar.Write(TEXT("markSerial"), State.MarkSerial);
-	}
-
-	void LoadCartography(const FSaveArchive& Ar, FCartographyState& OutState)
-	{
-		OutState = FCartographyState();
-		ReadList(Ar, TEXT("strokes"), OutState.Strokes, [](const FSaveArchive& In, FMapStroke& Stroke)
-		{
-			In.Read(TEXT("island"), Stroke.IslandIndex);
-			In.Read(TEXT("ink"), Stroke.Ink);
-			In.Read(TEXT("blur"), Stroke.Blur);
-			In.Read(TEXT("toleranceMeters"), Stroke.ToleranceMeters);
-			return In.Read(TEXT("points"), Stroke.Points);
-		});
-		ReadList(Ar, TEXT("sketches"), OutState.Sketches, [](const FSaveArchive& In, FMapSketch& Sketch)
-		{
-			In.Read(TEXT("island"), Sketch.IslandIndex);
-			In.Read(TEXT("ink"), Sketch.Ink);
-			if (!In.Read(TEXT("points"), Sketch.Points))
-			{
-				return false;
-			}
-			In.Read(TEXT("confirmed"), Sketch.Confirmed);
-			// Un boceto con una marca por punto: si no cuadra, se da por no confirmado.
-			if (Sketch.Confirmed.Num() != Sketch.Points.Num())
-			{
-				Sketch.Confirmed.Init(0, Sketch.Points.Num());
-			}
-			return true;
-		});
-		ReadList(Ar, TEXT("marks"), OutState.Marks, [](const FSaveArchive& In, FMapMark& Mark)
-		{
-			In.Read(TEXT("stamp"), Mark.StampId);
-			In.Read(TEXT("text"), Mark.Text);
-			In.Read(TEXT("source"), Mark.Source);
-			In.Read(TEXT("ink"), Mark.Ink);
-			return In.Read(TEXT("position"), Mark.Position);
-		});
-		ReadList(Ar, TEXT("recipes"), OutState.Recipes, [](const FSaveArchive& In, FMapRecipeNote& Note)
-		{
-			In.Read(TEXT("doodle"), Note.bDoodle);
-			return In.Read(TEXT("recipe"), Note.RecipeId);
-		});
-		ReadList(Ar, TEXT("coverage"), OutState.Coverage, [](const FSaveArchive& In, FMapIslandCoverage& Coverage)
-		{
-			if (!In.Read(TEXT("island"), Coverage.IslandIndex) || !In.Read(TEXT("coast"), Coverage.Coast))
-			{
-				return false;
-			}
-			In.Read(TEXT("visited"), Coverage.Visited);
-			if (Coverage.Visited.Num() != Coverage.Coast.Num())
-			{
-				Coverage.Visited.Init(0, Coverage.Coast.Num());
-			}
-			return true;
-		});
-		Ar.Read(TEXT("wetness"), OutState.Wetness);
-		Ar.Read(TEXT("inkRunProgress"), OutState.InkRunProgress);
-		Ar.Read(TEXT("inkRuns"), OutState.InkRuns);
-		Ar.Read(TEXT("hasDrawnAnyCoast"), OutState.bHasDrawnAnyCoast);
-		Ar.Read(TEXT("drift"), OutState.Drift);
-		Ar.Read(TEXT("travelDistance"), OutState.TravelDistance);
-		Ar.Read(TEXT("markSerial"), OutState.MarkSerial);
-	}
-
-	// --- Ruinas y museo ------------------------------------------------------------------
-
-	void SaveRuins(FSaveArchive& Ar, const FRuinsState& Ruins, const FMuseumState& Museum)
-	{
-		Ar.Write(TEXT("discoveredElements"), Ruins.DiscoveredElements);
-		Ar.Write(TEXT("completedSites"), Ruins.CompletedSites);
-		WriteList(Ar, TEXT("artifacts"), Museum.Records, [](FSaveArchive& Out, const FArtifactRecord& Record)
-		{
-			Out.Write(TEXT("id"), Record.ArtifactId);
-			Out.Write(TEXT("found"), Record.bFound);
-			Out.Write(TEXT("photographed"), Record.bPhotographed);
-			Out.Write(TEXT("foundAt"), Record.FoundAt);
-			Out.Write(TEXT("foundIsland"), Record.FoundIsland);
-		});
-		WriteList(Ar, TEXT("displays"), Museum.Displays, [](FSaveArchive& Out, const FDisplayState& Display)
-		{
-			Out.Write(TEXT("key"), Display.Key);
-			Out.Write(TEXT("display"), Display.DisplayId);
-			Out.Write(TEXT("slots"), Display.Slots);
-		});
-	}
-
-	void LoadRuins(const FSaveArchive& Ar, FRuinsState& OutRuins, FMuseumState& OutMuseum)
-	{
-		OutRuins = FRuinsState();
-		OutMuseum = FMuseumState();
-		Ar.Read(TEXT("discoveredElements"), OutRuins.DiscoveredElements);
-		Ar.Read(TEXT("completedSites"), OutRuins.CompletedSites);
-		ReadList(Ar, TEXT("artifacts"), OutMuseum.Records, [](const FSaveArchive& In, FArtifactRecord& Record)
-		{
-			In.Read(TEXT("found"), Record.bFound);
-			In.Read(TEXT("photographed"), Record.bPhotographed);
-			In.Read(TEXT("foundAt"), Record.FoundAt);
-			In.Read(TEXT("foundIsland"), Record.FoundIsland);
-			return In.Read(TEXT("id"), Record.ArtifactId);
-		});
-		ReadList(Ar, TEXT("displays"), OutMuseum.Displays, [](const FSaveArchive& In, FDisplayState& Display)
-		{
-			In.Read(TEXT("slots"), Display.Slots);
-			return In.Read(TEXT("key"), Display.Key) && In.Read(TEXT("display"), Display.DisplayId);
-		});
-	}
 
 	// --- Fuego -----------------------------------------------------------------------------
 
@@ -614,63 +273,6 @@ namespace ExploredSaveStates
 	{
 		OutState = FWorldEventsState();
 		Ar.Read(TEXT("consumedOutcomes"), OutState.ConsumedOutcomes);
-	}
-
-	// --- Logros ------------------------------------------------------------------------------
-
-	void SaveAchievements(FSaveArchive& Ar, const FAchievementsState& State)
-	{
-		FSaveArchive Profile, Run;
-		WriteStatValues(Profile, State.Profile);
-		WriteStatValues(Run, State.Run);
-		Ar.Write(TEXT("profile"), Profile);
-		Ar.Write(TEXT("run"), Run);
-		Ar.Write(TEXT("runMode"), State.RunMode);
-		Ar.Write(TEXT("unlocked"), State.Unlocked);
-	}
-
-	void LoadAchievements(const FSaveArchive& Ar, FAchievementsState& OutState)
-	{
-		OutState = FAchievementsState();
-		FSaveArchive Profile, Run;
-		if (Ar.Read(TEXT("profile"), Profile))
-		{
-			ReadStatValues(Profile, OutState.Profile);
-		}
-		if (Ar.Read(TEXT("run"), Run))
-		{
-			ReadStatValues(Run, OutState.Run);
-		}
-		Ar.Read(TEXT("runMode"), OutState.RunMode);
-		Ar.Read(TEXT("unlocked"), OutState.Unlocked);
-	}
-
-	FAchievementsState MergeLoadedAchievements(const FAchievementsState& Current, const FAchievementsState& Loaded)
-	{
-		FAchievementsState Out;
-		Out.Run = Loaded.Run;
-		Out.RunMode = Loaded.RunMode;
-
-		Out.Profile = Current.Profile;
-		for (const TPair<FName, double>& Number : Loaded.Profile.Numbers)
-		{
-			// Max(Valor, NaN) devuelve NaN y pisaría el progreso del perfil.
-			if (!FMath::IsFinite(Number.Value))
-			{
-				continue;
-			}
-			double& Value = Out.Profile.Numbers.FindOrAdd(Number.Key, Number.Value);
-			Value = FMath::Max(Value, Number.Value);
-		}
-		for (const TPair<FName, TArray<FName>>& Set : Loaded.Profile.Sets)
-		{
-			UnionInto(Out.Profile.Sets.FindOrAdd(Set.Key), Set.Value);
-		}
-		UnionInto(Out.Profile.Flags, Loaded.Profile.Flags);
-
-		Out.Unlocked = Current.Unlocked;
-		UnionInto(Out.Unlocked, Loaded.Unlocked);
-		return Out;
 	}
 
 	// --- Inventario ----------------------------------------------------------------------------
@@ -943,66 +545,6 @@ namespace ExploredSaveStates
 		Ar.Read(TEXT("moored"), OutBoat.bMoored);
 		Ar.Read(TEXT("mooringAnchor"), OutBoat.MooringAnchorCm);
 		Ar.Read(TEXT("mooringLength"), OutBoat.MooringLengthCm);
-	}
-
-	void SaveRaftHull(FSaveArchive& Ar, const FRaftHullSaveData& Hull)
-	{
-		WriteList(Ar, TEXT("pieces"), Hull.Pieces, [](FSaveArchive& Out, const FHullPiece& Piece)
-		{
-			Out.Write(TEXT("type"), Piece.Type);
-			Out.Write(TEXT("center"), Piece.CenterCm);
-			Out.Write(TEXT("size"), Piece.SizeCm);
-		});
-		WriteList(Ar, TEXT("joints"), Hull.Joints, [](FSaveArchive& Out, const FRaftJoint& Joint)
-		{
-			Out.Write(TEXT("a"), Joint.PieceA);
-			Out.Write(TEXT("b"), Joint.PieceB);
-			Out.Write(TEXT("kind"), Joint.Kind);
-			Out.Write(TEXT("health"), Joint.Health01);
-		});
-	}
-
-	void LoadRaftHull(const FSaveArchive& Ar, FRaftHullSaveData& OutHull)
-	{
-		OutHull = FRaftHullSaveData();
-		// No se usa ReadList para las piezas: las uniones las citan por índice, así que hay
-		// que saber qué índice guardado acaba en cuál al descartar una ilegible.
-		TArray<int32> Remap;
-		if (const FSaveValue* List = Ar.FindValue(TEXT("pieces")); List && List->IsArray())
-		{
-			Remap.Init(INDEX_NONE, List->Num());
-			for (int32 I = 0; I < List->Num(); ++I)
-			{
-				const FSaveValue& Entry = List->At(I);
-				if (!Entry.IsObject())
-				{
-					continue;
-				}
-				const FSaveArchive PieceAr(Entry);
-				FHullPiece Piece;
-				// Sin tipo o sin centro no hay pieza: un tronco inventado en el origen cambiaría el casco.
-				if (!PieceAr.Read(TEXT("type"), Piece.Type) || !PieceAr.Read(TEXT("center"), Piece.CenterCm))
-				{
-					continue;
-				}
-				// Sin tamaño: el del tipo (SizeCm a cero).
-				PieceAr.Read(TEXT("size"), Piece.SizeCm);
-				Remap[I] = OutHull.Pieces.Add(Piece);
-			}
-		}
-		ReadList(Ar, TEXT("joints"), OutHull.Joints, [&Remap](const FSaveArchive& In, FRaftJoint& Joint)
-		{
-			int32 A = INDEX_NONE;
-			int32 B = INDEX_NONE;
-			if (!In.Read(TEXT("a"), A) || !In.Read(TEXT("b"), B) || !In.Read(TEXT("kind"), Joint.Kind))
-			{
-				return false;
-			}
-			Joint.PieceA = Remap.IsValidIndex(A) ? Remap[A] : INDEX_NONE;
-			Joint.PieceB = Remap.IsValidIndex(B) ? Remap[B] : INDEX_NONE;
-			In.Read(TEXT("health"), Joint.Health01);
-			return Joint.PieceA != INDEX_NONE && Joint.PieceB != INDEX_NONE;
-		});
 	}
 
 	// --- Pesca ------------------------------------------------------------------------------------

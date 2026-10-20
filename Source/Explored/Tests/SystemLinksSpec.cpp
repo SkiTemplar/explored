@@ -152,19 +152,8 @@ void FSystemLinksSpec::Define()
 		});
 	});
 
-	Describe("Estadísticas", [this]()
+	Describe("Islas, eventos y días", [this]()
 	{
-		It("usa los ids de docs/tecnico/estadisticas.md", [this]()
-		{
-			TestEqual(TEXT("Limón"), BoatStatId(EBoatType::Limon), FName(TEXT("barco_limon")));
-			TestEqual(TEXT("Balancín"), BoatStatId(EBoatType::Outrigger), FName(TEXT("canoa_balancin")));
-			TestEqual(TEXT("Bioluminiscencia"), WorldEventStatId(EWorldEventType::Bioluminescence), FName(TEXT("Bioluminescence")));
-			TestEqual(TEXT("Camino de estrellas"), TechniqueStatId(EWayfindingTechnique::StarPath), FName(TEXT("star_path")));
-			TestEqual(TEXT("Faro"), PlaceStatId(EPoiType::Lighthouse), FName(TEXT("faro_dientes")));
-			TestEqual(TEXT("Un mirador no es un lugar"), PlaceStatId(EPoiType::Viewpoint), FName(NAME_None));
-			TestEqual(TEXT("Tubo de lava"), PlaceStatIdForRuinSite(FName(TEXT("ruin_smoke"))), FName(TEXT("tubo_lava")));
-		});
-
 		It("encuentra la isla que se pisa y la presencia de los eventos", [this]()
 		{
 			const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
@@ -200,69 +189,18 @@ void FSystemLinksSpec::Define()
 			TestEqual(TEXT("Nunca negativo"), DaysSurvived(1.0f, 4.3f), 0);
 		});
 
-		It("cuenta los metros a vela y no los saltos ni el remo", [this]()
-		{
-			FSailingOdometer Odometer;
-			TestEqual(TEXT("Primera muestra"), Odometer.Step(FVector2D(0.0, 0.0), true), 0);
-			TestEqual(TEXT("Medio metro"), Odometer.Step(FVector2D(50.0, 0.0), true), 0);
-			TestEqual(TEXT("Metro y medio"), Odometer.Step(FVector2D(150.0, 0.0), true), 1);
-			TestEqual(TEXT("A remo no"), Odometer.Step(FVector2D(1150.0, 0.0), false), 0);
-			TestEqual(TEXT("Reanuda sin contar el remo"), Odometer.Step(FVector2D(1150.0, 0.0), true), 0);
-			TestEqual(TEXT("Teletransporte no"), Odometer.Step(FVector2D(900000.0, 0.0), true), 0);
-			TestEqual(TEXT("Sigue desde el salto"), Odometer.Step(FVector2D(900250.0, 0.0), true), 3);
-		});
-
 		It("no se rompe con valores no finitos", [this]()
 		{
-			const double NaN = std::numeric_limits<double>::quiet_NaN();
 			const float Inf = std::numeric_limits<float>::infinity();
 			TestEqual(TEXT("Días con reloj NaN"), DaysSurvived(std::numeric_limits<float>::quiet_NaN(), 4.3f), 0);
 			TestEqual(TEXT("Días con reloj infinito"), DaysSurvived(Inf, 4.3f), 0);
 			TestEqual(TEXT("Días fuera de int32"), DaysSurvived(1.0e30f, 0.0f), TNumericLimits<int32>::Max());
-
-			FSailingOdometer Odometer;
-			Odometer.Step(FVector2D(0.0, 0.0), true);
-			TestEqual(TEXT("Muestra NaN no cuenta"), Odometer.Step(FVector2D(NaN, 0.0), true), 0);
-			TestEqual(TEXT("La siguiente tampoco (salto desde NaN)"), Odometer.Step(FVector2D(100.0, 0.0), true), 0);
-			TestEqual(TEXT("Y después cuenta bien"), Odometer.Step(FVector2D(350.0, 0.0), true), 2);
 
 			FSurvivalInputs Inputs;
 			FSurvivalLinkInputs Links;
 			Links.CarriedWeightRatio = std::numeric_limits<float>::quiet_NaN();
 			ApplySurvivalLinks(Inputs, Links);
 			TestEqual(TEXT("Carga NaN cuenta como nada"), Inputs.CarriedWeightRatio, 0.0f);
-		});
-
-		It("da el ciclón por superado solo si la base sale intacta", [this]()
-		{
-			FCycloneWatch Watch;
-			const TArray<FPieceIntegrity> Base = {{1, 50.0f, 50.0f}, {2, 30.0f, 40.0f}};
-			TestFalse(TEXT("Empieza"), Watch.Update(true, Base));
-			TestFalse(TEXT("Durante"), Watch.Update(true, Base));
-			const TArray<FPieceIntegrity> Worn = {{1, 49.0f, 50.0f}, {2, 29.5f, 40.0f}};
-			TestTrue(TEXT("Desgaste normal: superado"), Watch.Update(false, Worn));
-			TestFalse(TEXT("Solo una vez"), Watch.Update(false, Worn));
-
-			TestFalse(TEXT("Otro ciclón"), Watch.Update(true, Base));
-			const TArray<FPieceIntegrity> Damaged = {{1, 30.0f, 50.0f}, {2, 30.0f, 40.0f}};
-			TestFalse(TEXT("Con daño: no"), Watch.Update(false, Damaged));
-
-			TestFalse(TEXT("Y otro"), Watch.Update(true, Base));
-			TestFalse(TEXT("Pieza perdida: no"), Watch.Update(false, {{1, 50.0f, 50.0f}}));
-
-			FCycloneWatch NoBase;
-			NoBase.Update(true, {});
-			TestFalse(TEXT("Sin base no cuenta"), NoBase.Update(false, {}));
-		});
-
-		It("cuenta una melodía al empezar a tocar junto a un fuego", [this]()
-		{
-			FFluteMelodyWatch Watch;
-			TestFalse(TEXT("Sin fuego"), Watch.Update(true, 0.0f));
-			TestTrue(TEXT("Con fuego"), Watch.Update(true, 0.8f));
-			TestFalse(TEXT("Sigue la misma"), Watch.Update(true, 0.8f));
-			TestFalse(TEXT("Para"), Watch.Update(false, 0.8f));
-			TestTrue(TEXT("Otra melodía"), Watch.Update(true, 0.8f));
 		});
 	});
 
@@ -297,47 +235,6 @@ void FSystemLinksSpec::Define()
 				}
 			}
 			TestTrue(TEXT("Hay ciclones en cuatro años"), CycloneSamples > 0);
-		});
-	});
-
-	Describe("Estatuas", [this]()
-	{
-		It("se alinea mirando hacia donde mira la estatua", [this]()
-		{
-			TestTrue(TEXT("Mismo rumbo"), IsFacingAlong(90.0f, 95.0f));
-			TestTrue(TEXT("Cruzando 360"), IsFacingAlong(355.0f, 5.0f));
-			TestFalse(TEXT("De frente a ella"), IsFacingAlong(270.0f, 90.0f));
-		});
-	});
-
-	Describe("Materiales", [this]()
-	{
-		It("calcula lo gastado y lo reparte entre las pilas", [this]()
-		{
-			TMap<FName, int32> Before;
-			Before.Add(FName(TEXT("bambu")), 10);
-			Before.Add(FName(TEXT("cuerda")), 3);
-			TMap<FName, int32> After;
-			After.Add(FName(TEXT("bambu")), 4);
-			After.Add(FName(TEXT("cuerda")), 3);
-			const TArray<FBuildingCost> Spent = SpentMaterials(Before, After);
-			TestEqual(TEXT("Solo bambú"), Spent.Num(), 1);
-			TestTrue(TEXT("Seis"), Spent.Num() == 1 && Spent[0] == FBuildingCost{FName(TEXT("bambu")), 6});
-
-			const TArray<FMaterialStack> Stacks = {
-				{1, FName(TEXT("bambu")), 2, 2},   // en la mano: al final
-				{2, FName(TEXT("bambu")), 3, 0},   // angarillas: primero
-				{3, FName(TEXT("bambu")), 5, 1},   // mochila
-			};
-			TArray<FMaterialTake> Takes;
-			TestTrue(TEXT("Alcanza"), PlanMaterialTakes(Stacks, Spent, Takes));
-			TestEqual(TEXT("Dos pilas"), Takes.Num(), 2);
-			TestTrue(TEXT("Angarillas enteras"), Takes.Contains(FMaterialTake{2, 3}));
-			TestTrue(TEXT("Tres de la mochila"), Takes.Contains(FMaterialTake{3, 3}));
-
-			TArray<FMaterialTake> None;
-			TestFalse(TEXT("No alcanza"), PlanMaterialTakes(Stacks, {{FName(TEXT("bambu")), 11}}, None));
-			TestEqual(TEXT("Sin plan"), None.Num(), 0);
 		});
 	});
 }

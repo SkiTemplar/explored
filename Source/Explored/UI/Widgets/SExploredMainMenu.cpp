@@ -13,7 +13,6 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 	OnNewGame = InArgs._OnNewGame;
 	OnLoad = InArgs._OnLoad;
 	OnSettings = InArgs._OnSettings;
-	OnAchievements = InArgs._OnAchievements;
 	OnCredits = InArgs._OnCredits;
 	OnQuit = InArgs._OnQuit;
 	const bool bCanContinue = InArgs._bCanContinue;
@@ -76,11 +75,6 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Achievements", "Logros"),
-						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleAchievements))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
 					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Credits", "Créditos"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleCredits))
 				]
@@ -109,12 +103,6 @@ FReply SExploredMainMenu::HandleNewGame()
 FReply SExploredMainMenu::HandleLoad()
 {
 	OnLoad.ExecuteIfBound();
-	return FReply::Handled();
-}
-
-FReply SExploredMainMenu::HandleAchievements()
-{
-	OnAchievements.ExecuteIfBound();
 	return FReply::Handled();
 }
 

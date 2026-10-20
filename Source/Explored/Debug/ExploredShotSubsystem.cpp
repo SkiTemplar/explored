@@ -453,14 +453,6 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			Shot.Target = Target;
 			Shots.Add(Shot);
 		}
-		// El mapa en las manos tras rescatar los cuatro pecios: deben salir sus marcas.
-		if (!Shots.IsEmpty())
-		{
-			FExploredShot MapShot = Shots.Last();
-			MapShot.Name = TEXT("voyage_map");
-			MapShot.Action = TEXT("map");
-			Shots.Add(MapShot);
-		}
 		FVector YardMeters;
 		FRotator YardRotation;
 		if (UExploredVoyageSubsystem::FindShipyardLocation(Density, YardMeters, YardRotation))
@@ -493,7 +485,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		// Ajustes y a Pausa que se abran para el resto de capturas (ver
 		// BeginShot). La cámara y la hora no importan: se ven detrás del
 		// panel de UI, que es lo que hay que verificar.
-		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause"), TEXT("menu_map"), TEXT("menu_credits"), TEXT("menu_newgame") })
+		for (const TCHAR* Name : { TEXT("menu_main"), TEXT("menu_settings"), TEXT("menu_pause"), TEXT("menu_credits"), TEXT("menu_newgame") })
 		{
 			FExploredShot Shot;
 			Shot.Name = Name;
@@ -608,16 +600,11 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 					Pawn->SetActorHiddenInGame(false);
 				}
 				ExploredPC->ResumeGame();
-				ExploredPC->StartNewGame(EExploredGameplayMode::Survivor);
+				ExploredPC->StartNewGame();
 			}
 			else if (Shot.Name == TEXT("menu_credits"))
 			{
 				ExploredPC->OpenCredits();
-			}
-			else if (Shot.Name == TEXT("menu_map"))
-			{
-				ExploredPC->ResumeGame();
-				ExploredPC->OpenMap();
 			}
 		}
 	}
@@ -633,10 +620,6 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	{
 		VoyagePC->ResumeGame();
 		VoyagePC->SetViewTarget(Camera);
-	}
-	if (VoyagePC && Shot.Action == TEXT("map"))
-	{
-		VoyagePC->OpenMap();
 	}
 	if (Shot.Action == TEXT("interact"))
 	{

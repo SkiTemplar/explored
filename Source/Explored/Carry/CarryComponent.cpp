@@ -4,8 +4,6 @@
 #include "GameFramework/Actor.h"
 
 #include "Carry/ExploredContainer.h"
-#include "Core/SystemLinks.h"
-#include "Carry/ExploredSledge.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
 
@@ -191,14 +189,6 @@ void UCarryComponent::SyncFromModel()
 	Rebuild(State.Backpack, BackpackItems);
 	Rebuild(State.Pouch, PouchItems);
 	Rebuild(State.Sledge, SledgeItems);
-
-	if (AExploredSledge* Sledge = AttachedSledge.Get())
-	{
-		// La carga enganchada se ve encima de las angarillas.
-		FInventoryContainer& Shown = Sledge->GetMutableContainer();
-		Shown.Entries = State.Sledge.Entries;
-		Sledge->RefreshStoredVisuals();
-	}
 
 	OnCarryChanged.Broadcast();
 }
@@ -429,9 +419,6 @@ bool UCarryComponent::EquipFromHand(EHand Hand, FText& OutFailReason)
 		return false;
 	}
 	const FInventoryItem HeldCopy = *Held;
-	FInventoryEquipmentSpec Spec;
-	const bool bIsSledge = FInventoryModel::FindEquipmentSpec(HeldCopy, Spec) && Spec.Kind == EInventoryEquipment::Sledge;
-
 	EInventoryFail Fail = EInventoryFail::None;
 	if (!Model.EquipFromHand(HandSlot, Fail))
 	{
@@ -439,22 +426,6 @@ bool UCarryComponent::EquipFromHand(EHand Hand, FText& OutFailReason)
 		return false;
 	}
 
-	if (bIsSledge)
-	{
-		// Las angarillas que estaban en las manos pasan a arrastrarse detrás.
-		UWorld* World = GetWorld();
-		AActor* Owner = GetOwner();
-		if (World && Owner)
-		{
-			AExploredSledge* Sledge = World->SpawnActor<AExploredSledge>(AExploredSledge::StaticClass(), Owner->GetActorTransform());
-			if (Sledge)
-			{
-				Sledge->SetSledgeItem(HeldCopy.InstanceId, Payloads.FindRef(HeldCopy.InstanceId));
-				PlaceSledgeActorBehindOwner(Sledge);
-				AttachedSledge = Sledge;
-			}
-		}
-	}
 	SyncFromModel();
 	return true;
 }
@@ -485,55 +456,6 @@ bool UCarryComponent::UnequipBelt(EHand Hand, FText& OutFailReason)
 	return true;
 }
 
-void UCarryComponent::PlaceSledgeActorBehindOwner(AExploredSledge* Sledge) const
-{
-	AActor* Owner = GetOwner();
-	if (!Sledge || !Owner)
-	{
-		return;
-	}
-	const FVector Location = Owner->GetActorTransform().TransformPosition(Sledge->AttachOffsetCm);
-	Sledge->SetActorLocationAndRotation(Location, Owner->GetActorRotation());
-	Sledge->AttachToActor(Owner, FAttachmentTransformRules::KeepWorldTransform);
-	Sledge->SetAttached(true);
-}
-
-bool UCarryComponent::AttachSledge(AExploredSledge* Sledge, FText& OutFailReason)
-{
-	if (!Sledge || Sledge->IsAttached())
-	{
-		OutFailReason = NSLOCTEXT("Explored", "Carry_NoSledge", "No llevas angarillas.");
-		return false;
-	}
-
-	// Registros para el modelo: la carga conserva sus ids (salieron de este modelo).
-	const UItemRegistrySubsystem* Registry = GetRegistry();
-	const int64 SledgeId = Sledge->GetSledgeInstanceId() != 0 ? Sledge->GetSledgeInstanceId() : Model.AllocateInstanceId();
-	const FInventoryItem SledgeRecord = MakeRecord(Sledge->GetSledgeInstance(), SledgeId, Registry);
-
-	EInventoryFail Fail = EInventoryFail::None;
-	if (!Model.AttachSledge(SledgeRecord, Sledge->GetContainer(), Fail))
-	{
-		OutFailReason = FailToText(Fail, EInventorySlot::Sledge);
-		return false;
-	}
-
-	Payloads.Add(SledgeId, Sledge->GetSledgeInstance());
-	for (const FInventoryEntry& Entry : Model.GetState().Sledge.Entries)
-	{
-		FItemInstance Instance;
-		if (Sledge->RemovePayload(Entry.Item.InstanceId, Instance))
-		{
-			Payloads.Add(Entry.Item.InstanceId, Instance);
-		}
-	}
-	Sledge->GetMutableContainer().Entries.Reset();
-	PlaceSledgeActorBehindOwner(Sledge);
-	AttachedSledge = Sledge;
-	SyncFromModel();
-	return true;
-}
-
 bool UCarryComponent::DetachSledge()
 {
 	FInventorySledgeDrop Drop;
@@ -541,31 +463,12 @@ bool UCarryComponent::DetachSledge()
 	{
 		return false;
 	}
-
-	AExploredSledge* Sledge = AttachedSledge.Get();
-	AttachedSledge.Reset();
-	if (!Sledge)
-	{
-		// El actor desapareció (no debería): se crea otro donde está el jugador.
-		UWorld* World = GetWorld();
-		AActor* Owner = GetOwner();
-		Sledge = (World && Owner) ? World->SpawnActor<AExploredSledge>(AExploredSledge::StaticClass(), Owner->GetActorTransform()) : nullptr;
-	}
-	if (!Sledge)
-	{
-		return true;
-	}
-
-	Sledge->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	Sledge->SetSledgeItem(Drop.SledgeItem.InstanceId, TakePayload(Drop.SledgeItem));
-	FInventoryContainer& Container = Sledge->GetMutableContainer();
-	Container.Entries = Drop.Load.Entries;
+	// Sin actor de angarillas: el bastidor y su carga quedan sueltos en el suelo.
+	SpawnDropped(TakePayload(Drop.SledgeItem));
 	for (const FInventoryEntry& Entry : Drop.Load.Entries)
 	{
-		Sledge->AddPayload(Entry.Item.InstanceId, TakePayload(Entry.Item));
+		SpawnDropped(TakePayload(Entry.Item));
 	}
-	Sledge->SetAttached(false);
-	Sledge->RefreshStoredVisuals();
 	SyncFromModel();
 	return true;
 }
@@ -680,23 +583,6 @@ const FItemInstance* UCarryComponent::GetHandItemPtr(EHand Hand) const
 
 // --------------------------------------------------------------------------- materiales
 
-namespace CarryComponentDetail
-{
-	/** Orden de gasto: lo que se arrastra o va en la espalda antes que lo que va en la mano. */
-	int32 SpendPriority(EInventorySlot Slot)
-	{
-		switch (Slot)
-		{
-		case EInventorySlot::Sledge: return 0;
-		case EInventorySlot::Backpack: return 1;
-		case EInventorySlot::Pockets:
-		case EInventorySlot::Belt:
-		case EInventorySlot::Pouch: return 2;
-		default: return 3;
-		}
-	}
-}
-
 void UCarryComponent::CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>& OutTools) const
 {
 	const FInventoryState& State = Model.GetState();
@@ -725,79 +611,6 @@ void UCarryComponent::CountMaterials(TMap<FName, int32>& OutCounts, TSet<FName>&
 	}
 }
 
-bool UCarryComponent::ConsumeMaterials(const TArray<FBuildingCost>& Costs)
-{
-	if (Costs.Num() == 0)
-	{
-		return true;
-	}
-	const FInventoryState& State = Model.GetState();
-	TArray<ExploredLinks::FMaterialStack> Stacks;
-	auto AddStack = [this, &Stacks](const FInventoryItem& Record, EInventorySlot Slot)
-	{
-		if (!Record.IsValid())
-		{
-			return;
-		}
-		const FItemInstance* Payload = Payloads.Find(Record.InstanceId);
-		Stacks.Add({Record.InstanceId, Record.DefinitionId, FMath::Max(Payload ? Payload->Count : 1, 1),
-			CarryComponentDetail::SpendPriority(Slot)});
-	};
-	AddStack(State.HandLeft, EInventorySlot::HandLeft);
-	if (!State.bHandsHoldTwoHanded)
-	{
-		AddStack(State.HandRight, EInventorySlot::HandRight);
-	}
-	const TPair<const FInventoryContainer*, EInventorySlot> Containers[] = {
-		{&State.Sledge, EInventorySlot::Sledge}, {&State.Backpack, EInventorySlot::Backpack},
-		{&State.Pockets, EInventorySlot::Pockets}, {&State.Belt, EInventorySlot::Belt}, {&State.Pouch, EInventorySlot::Pouch}};
-	for (const TPair<const FInventoryContainer*, EInventorySlot>& Container : Containers)
-	{
-		for (const FInventoryEntry& Entry : Container.Key->Entries)
-		{
-			AddStack(Entry.Item, Container.Value);
-		}
-	}
-
-	TArray<ExploredLinks::FMaterialTake> Takes;
-	if (!ExploredLinks::PlanMaterialTakes(Stacks, Costs, Takes))
-	{
-		return false;
-	}
-	for (const ExploredLinks::FMaterialTake& Take : Takes)
-	{
-		FItemInstance* Payload = Payloads.Find(Take.InstanceId);
-		const int32 Count = Payload ? FMath::Max(Payload->Count, 1) : 1;
-		EInventoryFail Fail = EInventoryFail::None;
-		if (Take.Count >= Count)
-		{
-			FInventoryItem Removed;
-			if (Model.ConsumeItem(Take.InstanceId, Removed, Fail))
-			{
-				Payloads.Remove(Take.InstanceId);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo gastar el objeto %lld: %s"), Take.InstanceId, LexToString(Fail));
-			}
-			continue;
-		}
-		// Pila que mengua: el registro se rehace con el nuevo Count y conserva su sitio y su líquido.
-		Payload->Count = Count - Take.Count;
-		FInventoryItem Record = MakeRecord(*Payload, Take.InstanceId, GetRegistry());
-		if (const FInventoryItem* Current = Model.FindItemById(Take.InstanceId))
-		{
-			Record.LiquidLiters = Current->LiquidLiters;
-		}
-		if (!Model.ShrinkItem(Record, Fail))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo mermar la pila %lld: %s"), Take.InstanceId, LexToString(Fail));
-		}
-	}
-	SyncFromModel();
-	return true;
-}
-
 // --------------------------------------------------------------------------- guardado
 
 void UCarryComponent::ExportState(FInventoryState& OutState, TMap<int64, FItemInstance>& OutInstances) const
@@ -815,22 +628,6 @@ bool UCarryComponent::ImportState(const FInventoryState& InState, const TMap<int
 		return false;
 	}
 	Payloads = InInstances;
-	// Las angarillas cargadas se vuelven a ver detrás del jugador.
-	if (Model.HasSledge() && !AttachedSledge.IsValid())
-	{
-		UWorld* World = GetWorld();
-		AActor* Owner = GetOwner();
-		if (World && Owner)
-		{
-			if (AExploredSledge* Sledge = World->SpawnActor<AExploredSledge>(AExploredSledge::StaticClass(), Owner->GetActorTransform()))
-			{
-				const FInventoryItem& SledgeRecord = Model.GetState().SledgeItem;
-				Sledge->SetSledgeItem(SledgeRecord.InstanceId, Payloads.FindRef(SledgeRecord.InstanceId));
-				PlaceSledgeActorBehindOwner(Sledge);
-				AttachedSledge = Sledge;
-			}
-		}
-	}
 	SyncFromModel();
 	return true;
 }

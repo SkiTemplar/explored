@@ -2,19 +2,12 @@
 
 #include "CoreMinimal.h"
 
-#include "Achievements/AchievementsModel.h"
 #include "Boats/BoatTypes.h"
-#include "Boats/RaftYardModel.h"
-#include "Building/BuildingTypes.h"
 #include "Carry/InventoryModel.h"
-#include "Cartography/CartographyModel.h"
 #include "Cooking/CookingModel.h"
 #include "Cooking/FireModel.h"
 #include "Events/WorldEventsModel.h"
-#include "Farming/FarmModel.h"
 #include "Fishing/FishingModel.h"
-#include "Ruins/MuseumModel.h"
-#include "Ruins/RuinsModel.h"
 #include "Save/SaveArchive.h"
 #include "Survival/SurvivalModel.h"
 #include "Weather/WeatherModel.h"
@@ -35,22 +28,6 @@
  */
 namespace ExploredSaveStates
 {
-	// --- Construcción («building») ------------------------------------------------
-	EXPLORED_API void SaveBuilding(FSaveArchive& Ar, const FBuildingSaveState& State);
-	EXPLORED_API void LoadBuilding(const FSaveArchive& Ar, FBuildingSaveState& OutState);
-
-	// --- Huerto («farm») -----------------------------------------------------------
-	EXPLORED_API void SaveFarm(FSaveArchive& Ar, const FFarmState& State);
-	EXPLORED_API void LoadFarm(const FSaveArchive& Ar, FFarmState& OutState);
-
-	// --- Mapa dibujado a mano («cartography») --------------------------------------
-	EXPLORED_API void SaveCartography(FSaveArchive& Ar, const FCartographyState& State);
-	EXPLORED_API void LoadCartography(const FSaveArchive& Ar, FCartographyState& OutState);
-
-	// --- Ruinas y museo («ruins») ---------------------------------------------------
-	EXPLORED_API void SaveRuins(FSaveArchive& Ar, const FRuinsState& Ruins, const FMuseumState& Museum);
-	EXPLORED_API void LoadRuins(const FSaveArchive& Ar, FRuinsState& OutRuins, FMuseumState& OutMuseum);
-
 	// --- Un fuego del mundo (dentro de la sección «cooking») -----------------------
 	/** Lo que se guarda de un AExploredFire; el utensilio va aparte como objeto aplanado. */
 	struct EXPLORED_API FSavedFire
@@ -66,17 +43,6 @@ namespace ExploredSaveStates
 	// --- Eventos del mundo («events») -----------------------------------------------
 	EXPLORED_API void SaveWorldEvents(FSaveArchive& Ar, const FWorldEventsState& State);
 	EXPLORED_API void LoadWorldEvents(const FSaveArchive& Ar, FWorldEventsState& OutState);
-
-	// --- Logros («achievements») ----------------------------------------------------
-	EXPLORED_API void SaveAchievements(FSaveArchive& Ar, const FAchievementsState& State);
-	EXPLORED_API void LoadAchievements(const FSaveArchive& Ar, FAchievementsState& OutState);
-	/**
-	 * Combina el estado en memoria con el de una partida que se carga: la partida
-	 * trae sus estadísticas de partida (Run, RunMode); el perfil nunca retrocede
-	 * (máximo de cada número, unión de conjuntos, marcas y logros conseguidos).
-	 * Así cargar una partida antigua no borra logros ni progreso del perfil.
-	 */
-	EXPLORED_API FAchievementsState MergeLoadedAchievements(const FAchievementsState& Current, const FAchievementsState& Loaded);
 
 	// --- Inventario del jugador («inventory») ---------------------------------------
 	EXPLORED_API void SaveInventory(FSaveArchive& Ar, const FInventoryState& State);
@@ -186,16 +152,6 @@ namespace ExploredSaveStates
 	// --- Embarcaciones («boats») ------------------------------------------------------
 	EXPLORED_API void SaveBoat(FSaveArchive& Ar, const FBoatSaveData& Boat);
 	EXPLORED_API void LoadBoat(const FSaveArchive& Ar, FBoatSaveData& OutBoat);
-
-	/**
-	 * Casco por piezas de una embarcación construida por el jugador (GDD v2 §3.14 y §3.17),
-	 * junto a «data» en cada entrada de la sección «boats». Solo lo tienen los barcos armados
-	 * por piezas: sin él, el barco carga con la ficha estándar de su tipo. Una pieza ilegible
-	 * se descarta y las uniones que la usaban también; los índices del resto se renumeran.
-	 * La validación física (valores no finitos, topes, huecos) la hace FRaftYardModel::FromHullSaveData.
-	 */
-	EXPLORED_API void SaveRaftHull(FSaveArchive& Ar, const FRaftHullSaveData& Hull);
-	EXPLORED_API void LoadRaftHull(const FSaveArchive& Ar, FRaftHullSaveData& OutHull);
 
 	// --- Pesca («fishing») -----------------------------------------------------------
 	EXPLORED_API void SaveFishing(FSaveArchive& Ar, const FFishingSaveState& State);

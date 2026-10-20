@@ -13,12 +13,10 @@ from datacheck.checks import (
     DataSet,
     Report,
     blender_mesh_names,
-    check_artifacts,
     check_building,
     check_cooking,
     check_crafting_reachability,
     check_gdd_food_coverage,
-    check_ruins,
     run_all,
 )
 
@@ -245,13 +243,6 @@ def test_detecta_compost_sin_bloque(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "falta el bloque «compost»")
 
 
-def test_detecta_compost_distinto_del_cpp(ds: DataSet) -> None:
-    ds.data["plants.json"]["compost"]["growthMultiplier"] = 2.0
-    ds.data["plants.json"]["compost"]["durationDays"] = 5
-    errors = errors_of(ds)
-    assert any_error(errors, "CompostGrowth") and any_error(errors, "CompostDays")
-
-
 def test_detecta_compost_como_resto_de_si_mismo(ds: DataSet) -> None:
     ds.data["plants.json"]["compost"]["inputs"].append({"item": "compost"})
     assert any_error(errors_of(ds), "su propio resto")
@@ -351,221 +342,6 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
 def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
     ds.data["story_es.json"]["petroglyph_themes"].pop()
     assert any_error(errors_of(ds), "petroglifo")
-
-
-# --------------------------------------------------------------------------- logros (GDD §16)
-
-
-def achievement(ds: DataSet, aid: str) -> dict[str, Any]:
-    return next(a for a in ds.data["achievements.json"]["achievements"] if a["id"] == aid)
-
-
-def test_logros_reales_son_los_54_de_la_biblia(real: DataSet) -> None:
-    achs = real.data["achievements.json"]["achievements"]
-    ids = {a["id"] for a in achs}
-    assert len(ids) == len(achs) == 54
-    assert {"primer_fuego", "tierra_firme", "sin_mapa", "naufrago_de_verdad", "limon_zarpa",
-            "banquete_de_mil_cocos", "el_cangrejo_se_lo_llevo", "manazas"} <= ids
-    # Biblia 07 §2.2: dos de los 30 originales pasan a F2 y tres a F3.
-    phase = {a["id"]: a["phase"] for a in achs}
-    assert [i for i in phase if phase[i] == "F2" and i in ("las_siete_islas", "el_mapa_entero")] == ["las_siete_islas", "el_mapa_entero"]
-    assert {i for i in ("limon_zarpa", "naufrago_de_verdad", "sin_mapa") if phase[i] == "F3"} == {"limon_zarpa", "naufrago_de_verdad", "sin_mapa"}
-    assert sum(1 for a in achs if a["phase"] == "AA") == 36
-
-
-def test_detecta_numero_de_logros(ds: DataSet) -> None:
-    achs = ds.data["achievements.json"]["achievements"]
-    del achs[39:]
-    assert any_error(errors_of(ds), "39 logros", "entre 40 y 60")
-    achs.extend(dict(achs[0], id=f"extra_{i}") for i in range(22))
-    assert any_error(errors_of(ds), "61 logros")
-
-
-def test_detecta_fase_rareza_y_alcance_invalidos(ds: DataSet) -> None:
-    achievement(ds, "primer_fuego")["phase"] = "F4"
-    del achievement(ds, "tierra_firme")["rarity"]
-    achievement(ds, "cartografo")["coopScope"] = "todos"
-    errors = errors_of(ds)
-    assert any_error(errors, "primer_fuego", "phase «F4»")
-    assert any_error(errors, "tierra_firme", "rarity «None»")
-    assert any_error(errors, "cartografo", "coopScope «todos»")
-
-
-def test_detecta_logro_de_aa_que_depende_de_f2(ds: DataSet) -> None:
-    # Una estadística de F2 (la granja) no puede sostener un logro del acceso anticipado.
-    achievement(ds, "huevos_por_docenas")["phase"] = "AA"
-    assert any_error(errors_of(ds), "huevos_por_docenas", "depende de algo de F2")
-
-
-def test_detecta_pieza_futura_en_logro_de_aa(ds: DataSet) -> None:
-    # La empalizada solo existe en el borrador de F2: pedirla desde un logro de AA es error.
-    achievement(ds, "primera_empalizada")["phase"] = "AA"
-    errors = errors_of(ds)
-    assert any_error(errors, "primera_empalizada", "depende de algo de F2")
-
-
-def test_piezas_futuras_admitidas_en_building_pieces_built(real_report: Report) -> None:
-    assert not any_error(real_report.errors, "empalizada", "no es un id admitido")
-
-
-def test_detecta_estratos_desincronizados(ds: DataSet) -> None:
-    strata = ds.data["mining.json"]["strata"]
-    strata.append(dict(strata[-1], id="jade"))
-    assert any_error(errors_of(ds), "strata_mined", "mining.json → strata")
-
-
-def test_detecta_tesoro_inexistente(ds: DataSet) -> None:
-    achievement(ds, "juego_de_anzuelos")["condition"]["all"][0]["contains"] = "anzuelo_oro"
-    assert any_error(errors_of(ds), "anzuelo_oro", "no es un id admitido")
-
-
-def test_detecta_estadistica_con_fase_invalida(ds: DataSet) -> None:
-    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "eggs_collected")["phase"] = "F9"
-    assert any_error(errors_of(ds), "eggs_collected", "phase «F9»")
-
-
-def test_detecta_logro_duplicado(ds: DataSet) -> None:
-    achievement(ds, "wayfinder")["id"] = "cartografo"
-    assert any_error(errors_of(ds), "id duplicado", "cartografo")
-
-
-def test_detecta_id_con_tilde(ds: DataSet) -> None:
-    achievement(ds, "cartografo")["id"] = "cartógrafo"
-    assert any_error(errors_of(ds), "id inválido")
-
-
-def test_detecta_falta_de_ingles(ds: DataSet) -> None:
-    del achievement(ds, "primer_fuego")["descriptionEn"]
-    assert any_error(errors_of(ds), "primer_fuego", "descriptionEn")
-
-
-def test_detecta_estadistica_desconocida(ds: DataSet) -> None:
-    achievement(ds, "primer_fuego")["condition"] = {"stat": "hogueras", "op": ">=", "value": 1}
-    assert any_error(errors_of(ds), "estadística desconocida", "hogueras")
-
-
-def test_detecta_tipo_incompatible(ds: DataSet) -> None:
-    achievement(ds, "primer_fuego")["condition"] = {"stat": "fires_lit", "contains": "fogata"}
-    assert any_error(errors_of(ds), "no es un conjunto")
-
-
-def test_detecta_id_no_admitido_en_conjunto(ds: DataSet) -> None:
-    achievement(ds, "el_limonero")["condition"] = {"stat": "crops_harvested", "contains": "naranjo"}
-    assert any_error(errors_of(ds), "naranjo", "no es un id admitido")
-
-
-def test_detecta_meta_inalcanzable(ds: DataSet) -> None:
-    achievement(ds, "wayfinder")["condition"]["value"] = 6
-    assert any_error(errors_of(ds), "wayfinder", "solo admite 5")
-
-
-def test_detecta_sin_mapa_mal_escrito(ds: DataSet) -> None:
-    achievement(ds, "sin_mapa")["condition"] = {"flag": "hidden_island_reached"}
-    assert any_error(errors_of(ds), "sin_mapa")
-
-
-def test_detecta_nombre_de_la_dedicatoria(ds: DataSet) -> None:
-    achievement(ds, "el_limonero")["nameEs"] = "Para Almudena"
-    assert any_error(errors_of(ds), "dedicatoria")
-
-
-def test_detecta_estadistica_sin_documentar(ds: DataSet) -> None:
-    ds.data["achievements.json"]["stats"].append(
-        {"id": "shells_found", "kind": "counter", "scope": "profile", "descriptionEs": "Conchas."})
-    assert any_error(errors_of(ds), "estadisticas.md", "shells_found")
-
-
-def test_detecta_ambito_distinto_del_documentado(ds: DataSet) -> None:
-    next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "fires_lit")["scope"] = "run"
-    assert any_error(errors_of(ds), "estadisticas.md", "fires_lit")
-
-
-# --------------------------------------------------------------------------- ruinas y museo
-
-
-def ruins_errors(ds: DataSet) -> list[str]:
-    r = Report()
-    check_ruins(ds, r)
-    return r.errors
-
-
-def artifacts_errors(ds: DataSet) -> list[str]:
-    r = Report()
-    check_artifacts(ds, r)
-    return r.errors
-
-
-def artifact(ds: DataSet, aid: str) -> dict[str, Any]:
-    return next(a for a in ds.data["artifacts.json"]["artifacts"] if a["id"] == aid)
-
-
-def test_ruinas_y_tesoros_reales_sin_errores(real: DataSet) -> None:
-    assert ruins_errors(real) == []
-    assert artifacts_errors(real) == []
-
-
-def test_detecta_tecnica_que_no_esta_en_el_cpp(ds: DataSet) -> None:
-    ds.data["ruins.json"]["techniques"][0]["id"] = "star_trail"
-    assert any_error(ruins_errors(ds), "RuinsModel.cpp")
-
-
-def test_detecta_constante_de_caminos_distinta_del_cpp(ds: DataSet) -> None:
-    ds.data["ruins.json"]["requiredStarPaths"] = 5
-    assert any_error(ruins_errors(ds), "RequiredStarPaths")
-
-
-def test_detecta_ruina_de_isla_que_falta(ds: DataSet) -> None:
-    ds.data["ruins.json"]["sites"].pop(0)
-    assert any_error(ruins_errors(ds), "islas del C++")
-
-
-def test_detecta_tipo_de_tesoro_desconocido(ds: DataSet) -> None:
-    artifact(ds, "anzuelo_hueso")["kind"] = "golden_idol"
-    assert any_error(artifacts_errors(ds), "golden_idol")
-
-
-def test_detecta_tesoro_con_malla_inventada(ds: DataSet) -> None:
-    artifact(ds, "tapa_pintada")["mesh"] = "SM_Treasure_Crown"
-    assert any_error(artifacts_errors(ds), "SM_Treasure_Crown")
-
-
-def test_detecta_tesoro_que_no_cabe_en_ningun_mueble(ds: DataSet) -> None:
-    for d in ds.data["artifacts.json"]["displays"]:
-        for slot in d["slots"]:
-            slot["maxSize"] = "Mediano"
-    assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco")
-
-
-def test_detecta_tesoro_grande_sin_mueble_construible(ds: DataSet) -> None:
-    # regresión: el panel de pared existía en artifacts.json sin pieza en
-    # building_pieces.json, así que los tesoros grandes no se podían exponer
-    for d in ds.data["artifacts.json"]["displays"]:
-        if d["id"] == "panel_museo":
-            d["piece"] = None
-    assert any_error(artifacts_errors(ds), "remo_ceremonial", "sin ningún hueco construible")
-
-
-def test_muebles_del_museo_son_piezas_construibles(ds: DataSet) -> None:
-    pieces = {p["id"]: p for p in ds.building["pieces"]}
-    for d in ds.data["artifacts.json"]["displays"]:
-        assert d["piece"] in pieces, d["id"]
-        assert pieces[d["piece"]]["category"] == "museo"
-        assert pieces[d["piece"]]["mesh"] == d["mesh"], d["id"]
-
-
-def test_detecta_mueble_con_pieza_inexistente(ds: DataSet) -> None:
-    ds.data["artifacts.json"]["displays"][1]["piece"] = "vitrina_de_oro"
-    assert any_error(artifacts_errors(ds), "vitrina_de_oro")
-
-
-def test_detecta_id_de_tesoro_con_tilde(ds: DataSet) -> None:
-    artifact(ds, "pectoral_nacar")["id"] = "pectoral_nácar"
-    assert any_error(artifacts_errors(ds), "id inválido")
-
-
-def test_detecta_pocos_tesoros_para_coleccionista(ds: DataSet) -> None:
-    ds.data["artifacts.json"]["artifacts"] = ds.data["artifacts.json"]["artifacts"][:9]
-    assert any_error(artifacts_errors(ds), "Coleccionista")
 
 
 # --------------------------------------------------------------------------- fuego y cocina
@@ -709,20 +485,6 @@ def test_pesca_trampa_desincronizada_del_cpp(ds: DataSet) -> None:
 def test_pesca_once_peces(ds: DataSet) -> None:
     fish(ds)["species"] = [s for s in fish(ds)["species"] if s["id"] != "dorado"]
     assert any_error(errors_of(ds), "11")
-
-
-def test_detecta_conjunto_desfasado_con_su_catalogo(ds: DataSet) -> None:
-    stats = ds.data["achievements.json"]["stats"]
-    boats = next(s for s in stats if s["id"] == "boats_built")
-    boats["values"] = ["balsa", "canoa", "canoa_balancin", "limon"]
-    assert any_error(errors_of(ds), "boats_built", "boats.json")
-
-
-def test_detecta_tecnica_con_id_distinto_de_ruins(ds: DataSet) -> None:
-    stats = ds.data["achievements.json"]["stats"]
-    techniques = next(s for s in stats if s["id"] == "wayfinding_techniques")
-    techniques["values"] = ["camino_estrellas", "lectura_oleaje", "aves_atardecer", "nubes_fijas", "color_agua"]
-    assert any_error(errors_of(ds), "wayfinding_techniques", "ruins.json")
 
 
 def _food_notes(ds: DataSet) -> list[str]:
@@ -1433,14 +1195,7 @@ def test_fauna_terrestre_de_fase_2_no_rompe_el_aislamiento(real: DataSet) -> Non
     assert not any_error(errors_of(real), "packs_catalogo.json", "borrador")
 
 
-def test_fauna_terrestre_de_acceso_anticipado_con_id_del_borrador(ds: DataSet) -> None:
-    sp = next(s for s in ds.data["fauna_terrestre.json"]["species"] if s["id"] == "gallina")
-    sp["phase"] = "AA"
-    assert any_error(errors_of(ds), "fauna_terrestre.json", "gallina", "borrador")
-
-
 # --------------------------------------------------------------------------- metal en estación (biblia 03 §2.2, §4.3)
-
 
 
 @pytest.fixture(scope="module")
@@ -1682,75 +1437,6 @@ def test_carretilla_pide_la_piedra_de_trabajo(real: DataSet) -> None:
     assert template(real, "carretilla")["station"] == "piedra_trabajo"
 
 
-# --------------------------------------------------------------------------- logros de minería (biblia 07 §2)
-
-
-def test_logros_de_mineria_presentes(real: DataSet) -> None:
-    ids = {a["id"] for a in real.data["achievements.json"]["achievements"]}
-    assert {"primera_palada", "buscador_de_vetas", "filo_de_obsidiana", "topo_de_isla",
-            "el_aire_que_falta", "viga_a_tiempo", "manazas"} <= ids
-    manazas = achievement(real, "manazas")["condition"]
-    assert manazas == {"stat": "tools_broken_on_wrong_material", "op": ">=", "value": 20}
-
-
-def test_logros_conjunto_de_estratos_igual_que_mining(ds: DataSet) -> None:
-    stat = next(s for s in ds.data["achievements.json"]["stats"] if s["id"] == "strata_mined")
-    stat["values"] = [v for v in stat["values"] if v != "cristal"]
-    r = Report()
-    from datacheck import achievements as ach_mod
-    ach_mod.check_achievements(ds, r)
-    assert any_error(r.errors, "strata_mined", "mining.json")
-
-
-def test_logros_estrato_que_no_existe(ds: DataSet) -> None:
-    achievement(ds, "filo_de_obsidiana")["condition"] = {"stat": "strata_mined", "contains": "mithril"}
-    assert any_error(_ach_errors(ds), "mithril", "no es un id admitido")
-
-
-def _ach_errors(ds: DataSet) -> list[str]:
-    from datacheck import achievements as ach_mod
-    r = Report()
-    ach_mod.check_achievements(ds, r)
-    return r.errors + r.warnings
-
-
-def test_logros_estadistica_sin_logro_avisa(ds: DataSet) -> None:
-    ds.data["achievements.json"]["achievements"] = [
-        a for a in ds.data["achievements.json"]["achievements"] if a["id"] != "manazas"]
-    assert any_error(_ach_errors(ds), "tools_broken_on_wrong_material", "no la usa ningún logro")
-
-
-def test_logros_del_gdd_no_se_pierden(ds: DataSet) -> None:
-    achievement(ds, "primer_techo")["id"] = "primer_tejado"
-    assert any_error(_ach_errors(ds), "primer_techo", "biblia 07 §2.2")
-
-
-def test_logro_nuevo_con_nombre_largo(ds: DataSet) -> None:
-    achievement(ds, "topo_de_isla")["nameEn"] = "The Mole Of The Island"
-    assert any_error(_ach_errors(ds), "topo_de_isla", "nameEn", "5 palabras")
-
-
-def test_logro_nuevo_con_nombre_puntuado(ds: DataSet) -> None:
-    achievement(ds, "topo_de_isla")["nameEs"] = "Topo de isla."
-    assert any_error(_ach_errors(ds), "topo_de_isla", "puntuación")
-
-
-def test_logro_nuevo_con_descripcion_larga(ds: DataSet) -> None:
-    achievement(ds, "viga_a_tiempo")["descriptionEs"] = "Coloca " + "una viga " * 12 + "a tiempo."
-    assert any_error(_ach_errors(ds), "viga_a_tiempo", "descriptionEs", "máximo 90")
-
-
-def test_logro_nuevo_con_dos_frases(ds: DataSet) -> None:
-    achievement(ds, "manazas")["descriptionEn"] = "Break twenty tools. On rocks."
-    assert any_error(_ach_errors(ds), "manazas", "más de una frase")
-
-
-def test_logro_antiguo_conserva_su_texto(ds: DataSet) -> None:
-    # Los 30 del GDD §16 conservan su texto (biblia 07 §2.2): la longitud de §1.3 no se les mide.
-    achievement(ds, "primer_techo")["nameEn"] = "A Roof Of Your Own"
-    assert not any_error(_ach_errors(ds), "primer_techo")
-
-
 # --------------------------------------------------------------------------- guía anti-IA (biblia 07 §1)
 
 
@@ -1817,31 +1503,6 @@ def test_metal_receta_corrupta_no_rompe(ds, real_reach, corrupt) -> None:
 def test_metal_ingrediente_corrupto_no_rompe(ds, real_reach) -> None:
     smithing_recipe(ds, "fundir_cobre")["ingredients"].append("mineral_cobre")
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no es un objeto")
-
-
-@pytest.mark.parametrize("scope", ["todos", "", None, 1, ["actor"], {"a": 1}])
-def test_logro_con_coop_scope_desconocido(ds: DataSet, scope) -> None:
-    achievement(ds, "manazas")["coopScope"] = scope
-    assert any_error(_ach_errors(ds), "manazas", "coopScope")
-
-
-def test_logro_sin_coop_scope(ds: DataSet) -> None:
-    # Desde H5 (PR #80) los 54 logros llevan coopScope, también los 30 del GDD.
-    del achievement(ds, "primera_palada")["coopScope"]
-    assert any_error(_ach_errors(ds), "primera_palada", "coopScope «None»")
-
-
-@pytest.mark.parametrize("cond", [
-    {"stat": ["tools_broken_on_wrong_material"], "op": ">=", "value": 20},
-    {"stat": "tools_broken_on_wrong_material", "op": [">="], "value": 20},
-    {"flag": ["cave_collapse_avoided"]},
-    {"stat": "strata_mined", "contains": ["obsidiana"]},
-    {"stat": "strata_mined", "contains": 3},
-    {"all": [{"flag": 7}]},
-])
-def test_logro_condicion_corrupta_no_rompe(ds: DataSet, cond) -> None:
-    achievement(ds, "manazas")["condition"] = cond
-    assert any_error(_ach_errors(ds), "manazas", "debe ser una cadena")
 
 
 # --------------------------------------------------------------------------- verbos escondidos (UCraftingLibrary::MaxActions)
@@ -1914,42 +1575,6 @@ def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> No
 # --------------------------------------------------------------------------- huerto: reglas y cosecha neta
 
 
-def farm_errors(ds: DataSet) -> list[str]:
-    from datacheck import farm
-    r = Report()
-    farm.check_farm(ds, r)
-    return r.errors
-
-
-def test_huerto_reglas_espejo_de_farm_model(real: DataSet) -> None:
-    assert farm_errors(real) == []
-    assert real.data["plants.json"]["rules"]["scarecrowRadiusM"] == 15
-
-
-def test_huerto_sin_reglas(ds: DataSet) -> None:
-    del ds.data["plants.json"]["rules"]
-    assert any_error(farm_errors(ds), "falta el bloque «rules»")
-
-
-def test_huerto_regla_distinta_del_cpp(ds: DataSet) -> None:
-    ds.data["plants.json"]["rules"]["scarecrowRadiusM"] = 4
-    ds.data["plants.json"]["rules"]["dryDaysToDie"] = 5
-    errs = farm_errors(ds)
-    assert any_error(errs, "scarecrowRadiusM=4", "ScarecrowRadius=1500 cm")
-    assert any_error(errs, "dryDaysToDie=5", "DryDaysToDie=4")
-
-
-def test_huerto_marchita_despues_de_morir(ds: DataSet) -> None:
-    ds.data["plants.json"]["rules"]["dryDaysToWilt"] = 4
-    assert any_error(farm_errors(ds), "se marchita")
-
-
-def test_huerto_cosecha_neta_nula(ds: DataSet) -> None:
-    pina = next(p for p in ds.plants if p["id"] == "pina")
-    pina["harvest"]["everyDays"] = 0
-    assert any_error(farm_errors(ds), "«pina»", "cosecha neta nula")
-
-
 def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> None:
     for p in real.plants:
         h = p["harvest"]
@@ -1962,16 +1587,6 @@ def test_huerto_cultivos_medicinales(real: DataSet) -> None:
     assert plantas["aloe"]["harvest"]["item"] == "planta_medicinal_aloe"
     assert plantas["curcuma"]["plantedFrom"] == "rizoma_curcuma"
     assert "especia" in item(real, "rizoma_curcuma")["tags"]
-
-
-def test_huerto_cultivo_que_no_sirve_para_nada(ds: DataSet) -> None:
-    next(p for p in ds.plants if p["id"] == "taro")["harvest"]["item"] = "palo_recto"
-    assert any_error(farm_errors(ds), "«taro»", "palo_recto", "Medicinal")
-
-
-def test_huerto_sin_cultivo_medicinal(ds: DataSet) -> None:
-    ds.data["plants.json"]["plants"] = [p for p in ds.plants if p["id"] not in ("aloe", "curcuma")]
-    assert any_error(farm_errors(ds), "ningún cultivo medicinal")
 
 
 # --------------------------------------------------------------------------- mina: quema de la luz
@@ -2000,53 +1615,3 @@ def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
 # --------------------------------------------------------------------------- iconos de UI (lote 9)
 
 
-def test_packs_iconos_cubren_o_dejan_pendiente_cada_pista_de_logro(real: DataSet) -> None:
-    cat = _catalog(real)
-    hints = {a["icon"] for a in real.data["achievements.json"]["achievements"]}
-    covered = {s["achievementIcon"] for i in cat["icons"] for s in i["slots"] if "achievementIcon" in s}
-    assert {"fuego", "refugio", "estrella"} <= covered
-    assert hints == covered | {p["achievementIcon"] for p in cat["iconsPending"]}
-    assert not any_error(errors_of(real), "icono")
-
-
-def test_packs_icono_con_pista_inexistente(ds: DataSet) -> None:
-    _catalog(ds)["icons"][0]["slots"] = [{"achievementIcon": "unicornio"}]
-    assert any_error(errors_of(ds), "unicornio", "achievements.json")
-
-
-def test_packs_icono_de_widget_inexistente(ds: DataSet) -> None:
-    _catalog(ds)["icons"][0]["slots"] = [{"widget": "SExploredRadar", "role": "punto"}]
-    assert any_error(errors_of(ds), "SExploredRadar", "no existe")
-
-
-def test_packs_icono_con_tinte_fuera_del_estilo(ds: DataSet) -> None:
-    _catalog(ds)["icons"][0]["tint"] = {"conseguido": "ColorNeon"}
-    assert any_error(errors_of(ds), "ColorNeon", "ExploredUIStyle")
-
-
-def test_packs_icono_slot_repetido(ds: DataSet) -> None:
-    icons = _catalog(ds)["icons"]
-    icons[1]["slots"] = list(icons[0]["slots"])
-    assert any_error(errors_of(ds), "ya tiene icono")
-
-
-def test_packs_icono_textura_repetida(ds: DataSet) -> None:
-    icons = _catalog(ds)["icons"]
-    icons[1]["texture"] = icons[0]["texture"]
-    assert any_error(errors_of(ds), "textura repetida")
-
-
-def test_packs_icono_pista_sin_cubrir(ds: DataSet) -> None:
-    cat = _catalog(ds)
-    cat["iconsPending"] = [p for p in cat["iconsPending"] if p["achievementIcon"] != "ballena"]
-    assert any_error(errors_of(ds), "ballena", "ni está en iconsPending")
-
-
-def test_packs_icono_pendiente_ya_cubierto(ds: DataSet) -> None:
-    _catalog(ds)["iconsPending"].append({"achievementIcon": "fuego", "reason": "prueba"})
-    assert any_error(errors_of(ds), "fuego", "ya tiene icono")
-
-
-def test_packs_icono_de_pack_sin_licencia(ds: DataSet) -> None:
-    _catalog(ds)["icons"][0]["pack"] = "iconos_de_pago"
-    assert any_error(errors_of(ds), "iconos_de_pago", "packs.json")

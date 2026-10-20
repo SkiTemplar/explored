@@ -10,7 +10,6 @@
 #include "FishingComponent.generated.h"
 
 class AExploredItemActor;
-class AExploredTrap;
 class UExploredFishingSubsystem;
 
 /** Fase de la sesión con la caña. */
@@ -74,10 +73,6 @@ public:
 	/** Sitio con nombre en el que se está (lo fijan volúmenes del mundo; legendarias, biblia §4.6). */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Pesca")
 	void SetSpotTag(FName Tag) { SpotTag = Tag; }
-
-	/** Coloca una trampa («nasa», «trampa_cangrejos», «corral_piedras») donde mira el jugador. */
-	UFUNCTION(BlueprintCallable, Category = "Explored|Pesca")
-	AExploredTrap* PlaceTrap(FName KindName, FName BaitItemId);
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
 	EFishingSessionState GetSessionState() const { return SessionState; }

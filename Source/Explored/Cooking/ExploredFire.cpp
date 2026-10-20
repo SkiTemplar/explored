@@ -1,6 +1,5 @@
 #include "Cooking/ExploredFire.h"
 
-#include "Achievements/AchievementsSubsystem.h"
 #include "Carry/CarryComponent.h"
 #include "Engine/GameInstance.h"
 #include "CollisionQueryParams.h"
@@ -11,6 +10,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Explored.h"
+#include "ExploredGameMode.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -171,9 +171,9 @@ FCookEnvironment AExploredFire::MakeCookEnvironment() const
 	return Env;
 }
 
-void AExploredFire::ReportEvents(const TArray<EFireEvent>& Events) const
+void AExploredFire::ReportEvents(const TArray<EFireEvent>& Events)
 {
-	// Sonidos y textos llegarán con el audio y la UI; aquí, estadísticas y autoguardado.
+	// Sonidos y textos llegarán con el audio y la UI; aquí, punto de reaparición y autoguardado.
 	for (const EFireEvent Event : Events)
 	{
 		UE_LOG(LogExplored, Verbose, TEXT("%s: suceso de fuego %d"), *GetName(), static_cast<int32>(Event));
@@ -181,13 +181,13 @@ void AExploredFire::ReportEvents(const TArray<EFireEvent>& Events) const
 		{
 			continue;
 		}
-		// Cada encendido cuenta uno (docs/tecnico/estadisticas.md).
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
+		// El último fuego encendido es el punto de reaparición (AExploredGameMode::HandlePlayerDeath).
+		UWorld* World = GetWorld();
+		if (AExploredGameMode* GameMode = World ? World->GetAuthGameMode<AExploredGameMode>() : nullptr)
 		{
-			Achievements->ReportStat(TEXT("fires_lit"));
+			GameMode->NotifyFireLit(this);
 		}
 		// Encender una hoguera autoguarda, con el intervalo mínimo de FSaveSlotPolicy.
-		const UWorld* World = GetWorld();
 		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
 		if (UExploredSaveSubsystem* Save = GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
 		{

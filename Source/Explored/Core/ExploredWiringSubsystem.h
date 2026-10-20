@@ -9,11 +9,9 @@
 #include "Events/WorldEventsModel.h"
 #include "Fauna/FaunaTypes.h"
 #include "Narrative/ExploredProgress.h"
-#include "Ruins/RuinsModel.h"
 #include "Save/SaveArchive.h"
 #include "Save/SaveWorldDeltas.h"
 #include "Survival/SurvivalModel.h"
-#include "UI/ExploredGameplayMode.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/HarvestModel.h"
 #include "WorldGen/VegetationHarvestState.h"
@@ -33,19 +31,14 @@ class UHierarchicalInstancedStaticMeshComponent;
  * reglas están en ExploredLinks (Core/SystemLinks.h, probadas en el host).
  *
  * - Guardado: registra las secciones de lo que vive en el personaje o en actores
- *   sueltos («inventory», «body», «cartography», «fishing», «cooking», «boats»,
- *   «time», «progress», «world» y «wiring»). Construcción, huerto, ruinas, eventos
- *   y logros registran la suya en su propio subsistema.
- * - Estadísticas de logros que dependen de dónde está el jugador: islas pisadas,
- *   lugares, profundidad de buceo, días vividos, metros a vela, eventos
- *   presenciados, técnicas, tesoros expuestos, mapa, ciclón superado intacto,
- *   melodías junto al fuego, isla oculta.
+ *   sueltos («inventory», «body», «fishing», «cooking», «boats», «time»,
+ *   «progress», «world» y «wiring»). Los eventos registran la suya en su propio
+ *   subsistema.
  * - Juego: calor de los fuegos, carga y música → cuerpo; muerte → modo de juego;
- *   brújula y bolsa estanca → mapa; hoguera de señal → barco del horizonte;
- *   erupción → obsidiana; paso de ballenas y desove → fauna; daño de fauna →
- *   heridas y picaduras; peligro, navegación y descubrimientos → música;
- *   miradores → bocetos del mapa; barca → delfines y pesca desde la barca;
- *   ciclón → daño de las embarcaciones.
+ *   hoguera de señal → barco del horizonte; paso de ballenas → fauna; daño de
+ *   fauna → heridas y picaduras; peligro, navegación y eventos presenciados →
+ *   música; barca → delfines y pesca desde la barca; ciclón → daño de las
+ *   embarcaciones.
  *
  * Sin compilar en la nube: verificar en local (Tools/build.ps1, Tools/test.ps1).
  */
@@ -63,6 +56,9 @@ public:
 	virtual TStatId GetStatId() const override;
 
 	static UExploredWiringSubsystem* Get(const UObject* WorldContextObject);
+
+	/** «Nueva partida» (AExploredPlayerController::StartNewGame): reinicia los contadores de la partida. */
+	void BeginNewRun();
 
 	// --- Recolección de vegetación y rocas (P-HARVEST) --------------------------
 	// Lo llama AExploredVegetationCell::GetContextVerbs_Implementation / CanInteract_Implementation /
@@ -91,14 +87,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Explored|Enlaces")
 	float FireSearchRadiusCm = 1500.0f;
 
-	/** Distancia (m) a un mirador para que se dibuje su boceto. */
-	UPROPERTY(EditAnywhere, Category = "Explored|Enlaces")
-	float ViewpointRadiusMeters = 20.0f;
-
-	/** Distancia (m) al centro de la isla oculta para darla por alcanzada. */
-	UPROPERTY(EditAnywhere, Category = "Explored|Enlaces")
-	float HiddenIslandRadiusMeters = 400.0f;
-
 private:
 	// --- Guardado --------------------------------------------------------------
 	void RegisterSections(UExploredSaveSubsystem& Save);
@@ -107,8 +95,6 @@ private:
 	void LoadInventory(const FSaveArchive& Ar);
 	void SaveBody(FSaveArchive& Ar) const;
 	void LoadBody(const FSaveArchive& Ar);
-	void SaveCartography(FSaveArchive& Ar) const;
-	void LoadCartography(const FSaveArchive& Ar);
 	void SaveFishing(FSaveArchive& Ar) const;
 	void LoadFishing(const FSaveArchive& Ar);
 	void SaveFires(FSaveArchive& Ar) const;
@@ -132,7 +118,6 @@ private:
 	void UnbindPawn();
 	void BindFaunaManager();
 	void Sample(float DeltaSeconds);
-	void UpdatePlace(AExploredCharacter& Character, const FVector2D& PositionMeters);
 	void UpdateBody(AExploredCharacter& Character, float GameHours);
 	void UpdateBoat(AExploredCharacter& Character, const FVector2D& PositionMeters);
 	void UpdateDanger(AExploredCharacter& Character);
@@ -163,18 +148,9 @@ private:
 	bool HasHarvestTool(const AActor* Instigator, FName RequiredTag) const;
 
 	void HandleSurvivalEvent(ESurvivalEvent Event);
-	void HandleRuinDiscovery(FName ElementId, const FRuinDiscovery& Result);
-	void HandleMuseumChanged();
 	void HandleEventStarted(const FWorldEvent& Event);
 	void HandleEventEnded(const FWorldEvent& Event);
 	void HandleFaunaDamage(EFaunaSpecies Species, float Damage, const FVector& LocationCm);
-	void HandleRunStarted(EExploredGameplayMode Mode);
-
-	UFUNCTION()
-	void HandleIslandCharted(int32 IslandIndex);
-
-	UFUNCTION()
-	void HandleFirstCoastDrawn();
 
 	UPROPERTY(Transient)
 	FExploredProgress Progress;
@@ -195,29 +171,20 @@ private:
 	/** Secciones del personaje que llegaron antes de que existiera. */
 	TOptional<FSaveArchive> PendingInventory;
 	TOptional<FSaveArchive> PendingBody;
-	TOptional<FSaveArchive> PendingCartography;
 
 	TWeakObjectPtr<AExploredCharacter> BoundPawn;
 	TWeakObjectPtr<AExploredFaunaManager> BoundFauna;
 	FDelegateHandle BodyEventHandle;
 	FDelegateHandle FaunaDamageHandle;
-	FDelegateHandle RuinDiscoveryHandle;
-	FDelegateHandle MuseumChangedHandle;
 	FDelegateHandle EventStartedHandle;
 	FDelegateHandle EventEndedHandle;
-	FDelegateHandle RunStartedHandle;
 
-	ExploredLinks::FSailingOdometer Odometer;
-	ExploredLinks::FCycloneWatch CycloneWatch;
-	ExploredLinks::FFluteMelodyWatch MelodyWatch;
 	/** Eventos ya presenciados en esta sesión (por id), para no informar en cada muestra. */
 	TSet<uint64> WitnessedEvents;
-	/** Día total en que empezó la partida (para «days_survived»); < 0 = aún no se sabe. */
+	/** Día total en que empezó la partida; < 0 = aún no se sabe. */
 	float RunStartDays = -1.0f;
 	float LastSampleDays = -1.0f;
 	bool bStarterKitSpawned = false;
-	float MaxDiveReportedM = 0.0f;
-	int32 LastDaysReported = -1;
 	float SampleTimer = 0.0f;
 	bool bSectionsRegistered = false;
 };

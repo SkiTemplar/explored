@@ -16,10 +16,7 @@
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
 
-#include "Achievements/AchievementsSubsystem.h"
-#include "Building/BuildPreviewComponent.h"
 #include "Carry/CarryComponent.h"
-#include "Cartography/CartographyComponent.h"
 #include "Cooking/CookingModel.h"
 #include "Crafting/CraftingLibrary.h"
 #include "Fishing/FishingComponent.h"
@@ -114,8 +111,6 @@ AExploredCharacter::AExploredCharacter()
 	Carry = CreateDefaultSubobject<UCarryComponent>(TEXT("Carry"));
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
-	Cartography = CreateDefaultSubobject<UCartographyComponent>(TEXT("Cartography"));
-	BuildPreview = CreateDefaultSubobject<UBuildPreviewComponent>(TEXT("BuildPreview"));
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
 
@@ -556,12 +551,6 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
 	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
 	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
-
-	// Modo construcción: contexto propio (B, R, Z/X y clic izquierdo) con prioridad 1.
-	if (BuildPreview)
-	{
-		BuildPreview->SetupInput(Input);
-	}
 	Input->BindAction(WatchAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleWatchStarted);
 	Input->BindAction(WatchAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleWatchCompleted);
 	Input->BindAction(FishAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleFish);
@@ -693,16 +682,6 @@ void AExploredCharacter::UseHand(EHand Hand)
 	if (Food && Body && !Carry->IsHoldingTwoHandedItem() && Carry->ConsumeOneFromHand(Hand))
 	{
 		Body->Consume(Food->Effects);
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStatItem(TEXT("foods_eaten"), Item.DefinitionId);
-			const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
-			FItemDefinition Definition;
-			if (Registry && Registry->FindDefinition(Item.DefinitionId, Definition) && Definition.HasTag(TEXT("coco")))
-			{
-				Achievements->ReportStat(TEXT("coconuts_opened"));
-			}
-		}
 		return;
 	}
 	// El resto de usos (cortar leña, beber, encender una antorcha...) llegarán con
@@ -713,11 +692,6 @@ void AExploredCharacter::UseHand(EHand Hand)
 
 void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 {
-	// En modo construcción el clic izquierdo coloca la pieza (UBuildPreviewComponent).
-	if (BuildPreview && BuildPreview->IsBuildModeActive())
-	{
-		return;
-	}
 	// Pescando, los gatillos del mando son el eje del sedal (IA_Reel): no usar la mano.
 	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
 	{

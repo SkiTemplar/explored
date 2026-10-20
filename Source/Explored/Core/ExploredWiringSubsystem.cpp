@@ -8,21 +8,15 @@
 #include "Stats/Stats.h"
 #include "Subsystems/SubsystemCollection.h"
 
-#include "Achievements/AchievementsSubsystem.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Audio/ExploredMusicSubsystem.h"
 #include "Boats/ExploredBoat.h"
-#include "Building/BuildingModel.h"
-#include "Building/BuildingSubsystem.h"
-#include "Camera/CameraComponent.h"
 #include "Carry/CarryComponent.h"
-#include "Cartography/CartographyComponent.h"
 #include "Cooking/ExploredFire.h"
 #include "Events/WorldEventsSubsystem.h"
 #include "ExploredGameMode.h"
 #include "Fauna/ExploredFaunaManager.h"
 #include "Fishing/ExploredFishingSubsystem.h"
-#include "Fishing/ExploredTrap.h"
 #include "Fishing/FishingComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "Items/ExploredItemActor.h"
@@ -30,7 +24,6 @@
 #include "Items/ItemTypes.h"
 #include "Player/ExploredCharacter.h"
 #include "Player/SwimComponent.h"
-#include "Ruins/RuinsSubsystem.h"
 #include "Save/SaveSystemStates.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Survival/BodySignalsComponent.h"
@@ -44,7 +37,6 @@ namespace ExploredWiringDetail
 	// Secciones de la partida que registra este subsistema (docs/tecnico/guardado.md).
 	const TCHAR* const SectionInventory = TEXT("inventory");
 	const TCHAR* const SectionBody = TEXT("body");
-	const TCHAR* const SectionCartography = TEXT("cartography");
 	const TCHAR* const SectionFishing = TEXT("fishing");
 	const TCHAR* const SectionCooking = TEXT("cooking");
 	const TCHAR* const SectionBoats = TEXT("boats");
@@ -55,17 +47,10 @@ namespace ExploredWiringDetail
 
 	/** Un fuego guardado se reconoce por su sitio con esta tolerancia (cm). */
 	constexpr double FireMatchToleranceCm = 100.0;
-	/** Obsidiana que deja una erupción alrededor de la cumbre del Humo. */
-	constexpr int32 ObsidianPerEruption = 6;
-	constexpr float ObsidianRadiusCm = 1500.0f;
 	/** Lo que trae el paquete del barco del horizonte (ids de items.json). */
 	const TCHAR* const ShipPackageItems[] = { TEXT("cerillas"), TEXT("cantimplora"), TEXT("cuerda"), TEXT("bolsa_impermeable") };
-	/** Radio de la playa en el que acuden las tortugas a desovar (cm). */
-	constexpr float TurtleBeachRadiusCm = 3000.0f;
-	/** Velocidad mínima (cm/s) para que la vela cuente como navegar. */
+	/** Velocidad mínima (cm/s) para que la vela cuente como navegar (música de travesía). */
 	constexpr float SailingMinSpeedCmS = 50.0f;
-	/** Profundidad (m) que tiene que mejorar el buceo para volver a informar. */
-	constexpr float DiveReportStepM = 0.5f;
 
 	const FName DangerBody(TEXT("body"));
 	const FName DangerStorm(TEXT("storm"));
@@ -148,8 +133,6 @@ void UExploredWiringSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Collection.InitializeDependency<UTimeOfDaySubsystem>();
 	Collection.InitializeDependency<UExploredWeatherSubsystem>();
 	UWorldEventsSubsystem* Events = Collection.InitializeDependency<UWorldEventsSubsystem>();
-	URuinsSubsystem* Ruins = Collection.InitializeDependency<URuinsSubsystem>();
-	Collection.InitializeDependency<UBuildingSubsystem>();
 	Collection.InitializeDependency<UExploredFishingSubsystem>();
 	Collection.InitializeDependency<UExploredMusicSubsystem>();
 
@@ -160,15 +143,6 @@ void UExploredWiringSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		EventStartedHandle = Events->OnEventStarted.AddUObject(this, &UExploredWiringSubsystem::HandleEventStarted);
 		EventEndedHandle = Events->OnEventEnded.AddUObject(this, &UExploredWiringSubsystem::HandleEventEnded);
-	}
-	if (Ruins)
-	{
-		RuinDiscoveryHandle = Ruins->OnRuinDiscovery.AddUObject(this, &UExploredWiringSubsystem::HandleRuinDiscovery);
-		MuseumChangedHandle = Ruins->OnMuseumChanged.AddUObject(this, &UExploredWiringSubsystem::HandleMuseumChanged);
-	}
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		RunStartedHandle = Achievements->OnRunStarted.AddUObject(this, &UExploredWiringSubsystem::HandleRunStarted);
 	}
 	if (UExploredSaveSubsystem* Save = ExploredWiringDetail::FindSave(GetWorld()))
 	{
@@ -201,15 +175,6 @@ void UExploredWiringSubsystem::Deinitialize()
 	{
 		Events->OnEventStarted.Remove(EventStartedHandle);
 		Events->OnEventEnded.Remove(EventEndedHandle);
-	}
-	if (URuinsSubsystem* Ruins = World ? World->GetSubsystem<URuinsSubsystem>() : nullptr)
-	{
-		Ruins->OnRuinDiscovery.Remove(RuinDiscoveryHandle);
-		Ruins->OnMuseumChanged.Remove(MuseumChangedHandle);
-	}
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		Achievements->OnRunStarted.Remove(RunStartedHandle);
 	}
 	if (UExploredSaveSubsystem* Save = ExploredWiringDetail::FindSave(World))
 	{
@@ -294,22 +259,10 @@ void UExploredWiringSubsystem::Sample(float DeltaSeconds)
 	}
 	const FVector Location = Character->GetActorLocation();
 	const FVector2D PositionMeters(Location.X / 100.0, Location.Y / 100.0);
-	UpdatePlace(*Character, PositionMeters);
 	UpdateBody(*Character, GameHours);
 	UpdateBoat(*Character, PositionMeters);
 	UpdateDanger(*Character);
 	UpdateWorldEvents(PositionMeters);
-
-	// Días completos vividos (se informa el total: la estadística es un máximo).
-	const int32 DaysSurvived = ExploredLinks::DaysSurvived(Days, RunStartDays);
-	if (DaysSurvived != LastDaysReported)
-	{
-		LastDaysReported = DaysSurvived;
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStat(TEXT("days_survived"), DaysSurvived);
-		}
-	}
 }
 
 void UExploredWiringSubsystem::NotifyDiscovery(bool bMorale) const
@@ -328,99 +281,6 @@ void UExploredWiringSubsystem::NotifyDiscovery(bool bMorale) const
 		if (UBodySignalsComponent* Body = Character->GetBodySignalsComponent())
 		{
 			Body->ApplyMoraleEvent(EMoraleEvent::Discovery);
-		}
-	}
-}
-
-void UExploredWiringSubsystem::UpdatePlace(AExploredCharacter& Character, const FVector2D& PositionMeters)
-{
-	UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this);
-	UWorld* World = GetWorld();
-	const USwimComponent* Swim = Character.GetSwimComponent();
-	const bool bInWater = Swim && Swim->IsInWater();
-
-	// Isla pisada (en tierra, no nadando junto a ella).
-	const int32 Island = bInWater ? INDEX_NONE : ExploredLinks::FindIslandAt(Layout, PositionMeters);
-	if (Achievements && Layout.Islands.IsValidIndex(Island))
-	{
-		const FName IslandId(LexToString(Layout.Islands[Island].Archetype));
-		if (!Achievements->GetModel().SetContains(TEXT("islands_visited"), IslandId))
-		{
-			Achievements->ReportStatItem(TEXT("islands_visited"), IslandId);
-			NotifyDiscovery();
-		}
-	}
-
-	const URuinsSubsystem* Ruins = World ? World->GetSubsystem<URuinsSubsystem>() : nullptr;
-	if (!Ruins)
-	{
-		return;
-	}
-	// Lugares singulares y miradores.
-	for (const FPointOfInterest& Poi : Ruins->GetPointsOfInterest())
-	{
-		const float Distance = static_cast<float>(FVector2D::Distance(PositionMeters, FVector2D(Poi.Location.X, Poi.Location.Y)));
-		const FName Place = ExploredLinks::PlaceStatId(Poi.Type);
-		if (Achievements && !Place.IsNone() && Distance <= ExploredLinks::PlaceVisitRadiusMeters &&
-			!Achievements->GetModel().SetContains(TEXT("places_visited"), Place))
-		{
-			Achievements->ReportStatItem(TEXT("places_visited"), Place);
-			NotifyDiscovery();
-		}
-		if (Poi.Type == EPoiType::Viewpoint && Distance <= ViewpointRadiusMeters)
-		{
-			const FName ViewId = Poi.ContentId.IsNone() ? FName(*FString::Printf(TEXT("view_%d"), Poi.IslandIndex)) : Poi.ContentId;
-			if (Progress.Discover(ViewId))
-			{
-				// Desde el mirador se esbozan las costas que se ven (GDD §5.3).
-				if (UCartographyComponent* Cartography = Character.GetCartographyComponent())
-				{
-					Cartography->SketchFromViewpoint();
-				}
-				NotifyDiscovery();
-			}
-		}
-	}
-	// El Marae del tubo de lava.
-	if (Achievements)
-	{
-		for (const FRuinSite& Site : Ruins->GetRuins().GetLayout().Sites)
-		{
-			const FName Place = ExploredLinks::PlaceStatIdForRuinSite(Site.Id);
-			if (!Place.IsNone() &&
-				FVector2D::Distance(PositionMeters, FVector2D(Site.Anchor.X, Site.Anchor.Y)) <= ExploredLinks::PlaceVisitRadiusMeters &&
-				!Achievements->GetModel().SetContains(TEXT("places_visited"), Place))
-			{
-				Achievements->ReportStatItem(TEXT("places_visited"), Place);
-				NotifyDiscovery();
-			}
-		}
-		// La isla oculta (fuera del mapa jugable): solo se llega navegando.
-		const FVector2D Hidden = Ruins->GetRuins().GetLayout().HiddenIslandCenter;
-		if (!Hidden.IsZero() && FVector2D::Distance(PositionMeters, Hidden) <= HiddenIslandRadiusMeters &&
-			!Achievements->GetModel().HasFlag(TEXT("hidden_island_reached")))
-		{
-			Achievements->ReportStat(TEXT("hidden_island_reached"));
-			Progress.bReachedHiddenIsland = true;
-			if (UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
-			{
-				Music->NotifyKeyMoment();
-			}
-		}
-	}
-
-	// Profundidad de buceo: agua sobre la cámara con la cabeza sumergida.
-	const UExploredFishingSubsystem* Fishing = World ? World->GetSubsystem<UExploredFishingSubsystem>() : nullptr;
-	const UCameraComponent* Camera = Character.GetCamera();
-	float WaterZ = 0.0f;
-	if (Achievements && Swim && Swim->IsHeadUnderwater() && Fishing && Camera &&
-		Fishing->GetWaterHeightAt(Camera->GetComponentLocation(), WaterZ))
-	{
-		const float DepthM = static_cast<float>(WaterZ - Camera->GetComponentLocation().Z) / 100.0f;
-		if (DepthM >= MaxDiveReportedM + ExploredWiringDetail::DiveReportStepM)
-		{
-			MaxDiveReportedM = DepthM;
-			Achievements->ReportStat(TEXT("max_dive_depth_m"), DepthM);
 		}
 	}
 }
@@ -458,20 +318,6 @@ void UExploredWiringSubsystem::UpdateBody(AExploredCharacter& Character, float G
 			Body->AddMorale(Music->GetFluteMoraleRatePerHour(FireHeat) * GameHours);
 		}
 	}
-	if (MelodyWatch.Update(bPerforming, FireHeat))
-	{
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStat(TEXT("flute_played_by_fire"));
-		}
-	}
-
-	// Brújula y bolsa estanca → mapa (GDD §5.1, §5.5).
-	if (UCartographyComponent* Cartography = Character.GetCartographyComponent())
-	{
-		Cartography->SetHasCompass(Carry && Carry->HasCompassAtHand());
-		Cartography->SetMapStoredDry(Carry && Carry->GetInventoryModel().HasPouch());
-	}
 }
 
 void UExploredWiringSubsystem::UpdateBoat(AExploredCharacter& Character, const FVector2D& PositionMeters)
@@ -488,17 +334,6 @@ void UExploredWiringSubsystem::UpdateBoat(AExploredCharacter& Character, const F
 	}
 	const bool bAboard = Boat != nullptr;
 	const bool bUnderSail = bAboard && Boat->IsSailRaised() && Boat->GetSpeedCmS() >= ExploredWiringDetail::SailingMinSpeedCmS;
-
-	// Metros a vela (no a remo).
-	const FVector Location = Character.GetActorLocation();
-	const int32 Meters = Odometer.Step(FVector2D(Location.X, Location.Y), bUnderSail);
-	if (Meters > 0)
-	{
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStat(TEXT("distance_sailed_m"), Meters);
-		}
-	}
 
 	// Música de travesía: a vela y lejos de tierra.
 	if (UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
@@ -558,7 +393,6 @@ void UExploredWiringSubsystem::UpdateWorldEvents(const FVector2D& PositionMeters
 		return;
 	}
 	// Presenciar: los activos cuentan en cuanto el jugador está donde se ven.
-	UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this);
 	for (const FWorldEvent& Event : Events->GetActiveEvents())
 	{
 		if (WitnessedEvents.Contains(Event.Id) || !ExploredLinks::IsEventWitnessed(Event, Layout, PositionMeters))
@@ -566,10 +400,6 @@ void UExploredWiringSubsystem::UpdateWorldEvents(const FVector2D& PositionMeters
 			continue;
 		}
 		WitnessedEvents.Add(Event.Id);
-		if (Achievements)
-		{
-			Achievements->ReportStatItem(TEXT("events_witnessed"), ExploredLinks::WorldEventStatId(Event.Type));
-		}
 		NotifyDiscovery(/*bMorale*/ false);
 	}
 
@@ -602,29 +432,6 @@ void UExploredWiringSubsystem::UpdateStorms(float GameHours)
 	{
 		return;
 	}
-	const bool bCyclone = Weather->GetState() == EWeatherState::Cyclone;
-
-	// «Ojo del ciclón»: la base sale intacta del temporal.
-	if (const UBuildingSubsystem* Building = World->GetSubsystem<UBuildingSubsystem>())
-	{
-		if (const FBuildingModel* Model = Building->GetModel())
-		{
-			TArray<ExploredLinks::FPieceIntegrity> Pieces;
-			for (const FBuildingPieceState& Piece : Model->GetPieces())
-			{
-				const FBuildingPieceDef* Def = Model->FindPieceDef(Piece.Id);
-				Pieces.Add({Piece.Id, Piece.Integrity, Def ? Def->Integrity : 1.0f});
-			}
-			if (CycloneWatch.Update(bCyclone, Pieces))
-			{
-				if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-				{
-					Achievements->ReportStat(TEXT("cyclones_survived_intact"));
-				}
-			}
-		}
-	}
-
 	// El ciclón también castiga a las embarcaciones (varadas, la mitad).
 	const int32 Category = Weather->GetCycloneCategory();
 	if (Category > 0 && GameHours > 0.0f)
@@ -983,11 +790,6 @@ void UExploredWiringSubsystem::BindPawn(AExploredCharacter* Character)
 	{
 		BodyEventHandle = Body->OnSurvivalEvent.AddUObject(this, &UExploredWiringSubsystem::HandleSurvivalEvent);
 	}
-	if (UCartographyComponent* Cartography = Character->GetCartographyComponent())
-	{
-		Cartography->OnIslandCharted.AddDynamic(this, &UExploredWiringSubsystem::HandleIslandCharted);
-		Cartography->OnFirstCoastDrawn.AddDynamic(this, &UExploredWiringSubsystem::HandleFirstCoastDrawn);
-	}
 }
 
 void UExploredWiringSubsystem::UnbindPawn()
@@ -997,11 +799,6 @@ void UExploredWiringSubsystem::UnbindPawn()
 		if (UBodySignalsComponent* Body = Character->GetBodySignalsComponent())
 		{
 			Body->OnSurvivalEvent.Remove(BodyEventHandle);
-		}
-		if (UCartographyComponent* Cartography = Character->GetCartographyComponent())
-		{
-			Cartography->OnIslandCharted.RemoveDynamic(this, &UExploredWiringSubsystem::HandleIslandCharted);
-			Cartography->OnFirstCoastDrawn.RemoveDynamic(this, &UExploredWiringSubsystem::HandleFirstCoastDrawn);
 		}
 	}
 	BodyEventHandle.Reset();
@@ -1041,99 +838,21 @@ void UExploredWiringSubsystem::HandleSurvivalEvent(ESurvivalEvent Event)
 	}
 }
 
-void UExploredWiringSubsystem::HandleRuinDiscovery(FName ElementId, const FRuinDiscovery& Result)
-{
-	Progress.Discover(ElementId);
-	NotifyDiscovery();
-	if (Result.bTechniqueLearned)
-	{
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStatItem(TEXT("wayfinding_techniques"), ExploredLinks::TechniqueStatId(Result.Technique));
-		}
-	}
-}
-
-void UExploredWiringSubsystem::HandleMuseumChanged()
-{
-	const UWorld* World = GetWorld();
-	const URuinsSubsystem* Ruins = World ? World->GetSubsystem<URuinsSubsystem>() : nullptr;
-	UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this);
-	if (Ruins && Achievements)
-	{
-		// Máximo: se informa el total expuesto ahora.
-		Achievements->ReportStat(TEXT("museum_treasures_on_display"), Ruins->GetMuseum().CountExhibited());
-	}
-}
-
 void UExploredWiringSubsystem::HandleEventStarted(const FWorldEvent& Event)
 {
-	UWorld* World = GetWorld();
 	AExploredFaunaManager* Fauna = BoundFauna.Get();
-	if (!Fauna)
+	if (Fauna && Event.Type == EWorldEventType::WhalePassage)
 	{
-		return;
-	}
-	switch (Event.Type)
-	{
-	case EWorldEventType::WhalePassage:
 		Fauna->SetWhalePassage(true);
-		break;
-	case EWorldEventType::TurtleNesting:
-	{
-		// Las tortugas acuden a la playa de desove de la isla del evento.
-		const URuinsSubsystem* Ruins = World ? World->GetSubsystem<URuinsSubsystem>() : nullptr;
-		if (!Ruins)
-		{
-			break;
-		}
-		for (const FPointOfInterest& Poi : Ruins->GetPointsOfInterest())
-		{
-			const bool bSameIsland = !Layout.Islands.IsValidIndex(Poi.IslandIndex) || Event.Island == EIslandArchetype::Count ||
-				Layout.Islands[Poi.IslandIndex].Archetype == Event.Island;
-			if (Poi.Type == EPoiType::TurtleBeach && bSameIsland)
-			{
-				Fauna->StartTurtleNesting(Poi.Location * 100.0, ExploredWiringDetail::TurtleBeachRadiusCm);
-				break;
-			}
-		}
-		break;
-	}
-	default:
-		break;
 	}
 }
 
 void UExploredWiringSubsystem::HandleEventEnded(const FWorldEvent& Event)
 {
-	UWorld* World = GetWorld();
-	if (Event.Type == EWorldEventType::WhalePassage)
+	AExploredFaunaManager* Fauna = BoundFauna.Get();
+	if (Fauna && Event.Type == EWorldEventType::WhalePassage)
 	{
-		if (AExploredFaunaManager* Fauna = BoundFauna.Get())
-		{
-			Fauna->SetWhalePassage(false);
-		}
-		return;
-	}
-	if (Event.Type != EWorldEventType::MinorEruption)
-	{
-		return;
-	}
-	// La erupción deja obsidiana nueva junto a la cumbre del Humo, una sola vez.
-	UWorldEventsSubsystem* Events = World ? World->GetSubsystem<UWorldEventsSubsystem>() : nullptr;
-	const URuinsSubsystem* Ruins = World ? World->GetSubsystem<URuinsSubsystem>() : nullptr;
-	if (!Events || !Ruins || !Events->TryDepositObsidian(Event))
-	{
-		return;
-	}
-	for (const FPointOfInterest& Poi : Ruins->GetPointsOfInterest())
-	{
-		if (Poi.Type == EPoiType::StarCompass)
-		{
-			SpawnItemsAround(Poi.Location * 100.0, FName(TEXT("obsidiana")), ExploredWiringDetail::ObsidianPerEruption,
-				ExploredWiringDetail::ObsidianRadiusCm);
-			break;
-		}
+		Fauna->SetWhalePassage(false);
 	}
 }
 
@@ -1161,47 +880,11 @@ void UExploredWiringSubsystem::HandleFaunaDamage(EFaunaSpecies Species, float Da
 	}
 }
 
-void UExploredWiringSubsystem::HandleRunStarted(EExploredGameplayMode Mode)
+void UExploredWiringSubsystem::BeginNewRun()
 {
 	RunStartDays = GetTotalDays();
-	LastDaysReported = -1;
-	Odometer.Reset();
-	CycloneWatch = ExploredLinks::FCycloneWatch();
 	WitnessedEvents.Reset();
 	Progress = FExploredProgress();
-	if (AExploredFaunaManager* Fauna = BoundFauna.Get())
-	{
-		Fauna->SetPeaceful(Mode == EExploredGameplayMode::Explorer);
-	}
-}
-
-void UExploredWiringSubsystem::HandleIslandCharted(int32 IslandIndex)
-{
-	if (!Layout.Islands.IsValidIndex(IslandIndex))
-	{
-		return;
-	}
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		Achievements->ReportStatItem(TEXT("islands_mapped"), FName(LexToString(Layout.Islands[IslandIndex].Archetype)));
-	}
-	NotifyDiscovery(/*bMorale*/ false);
-	if (const AExploredCharacter* Character = BoundPawn.Get())
-	{
-		if (UBodySignalsComponent* Body = Character->GetBodySignalsComponent())
-		{
-			Body->ApplyMoraleEvent(EMoraleEvent::IslandMapped);
-		}
-	}
-}
-
-void UExploredWiringSubsystem::HandleFirstCoastDrawn()
-{
-	if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-	{
-		Achievements->ReportStat(TEXT("coast_drawn"));
-	}
-	NotifyDiscovery(/*bMorale*/ false);
 }
 
 // ---------------------------------------------------------------------------
@@ -1238,7 +921,6 @@ void UExploredWiringSubsystem::RegisterSections(UExploredSaveSubsystem& Save)
 	Register(SectionWorld, &UExploredWiringSubsystem::SaveWorld, &UExploredWiringSubsystem::LoadWorld);
 	Register(SectionInventory, &UExploredWiringSubsystem::SaveInventory, &UExploredWiringSubsystem::LoadInventory);
 	Register(SectionBody, &UExploredWiringSubsystem::SaveBody, &UExploredWiringSubsystem::LoadBody);
-	Register(SectionCartography, &UExploredWiringSubsystem::SaveCartography, &UExploredWiringSubsystem::LoadCartography);
 	Register(SectionFishing, &UExploredWiringSubsystem::SaveFishing, &UExploredWiringSubsystem::LoadFishing);
 	Register(SectionCooking, &UExploredWiringSubsystem::SaveFires, &UExploredWiringSubsystem::LoadFires);
 	Register(SectionBoats, &UExploredWiringSubsystem::SaveBoats, &UExploredWiringSubsystem::LoadBoats);
@@ -1248,7 +930,7 @@ void UExploredWiringSubsystem::RegisterSections(UExploredSaveSubsystem& Save)
 void UExploredWiringSubsystem::UnregisterSections(UExploredSaveSubsystem& Save)
 {
 	using namespace ExploredWiringDetail;
-	for (const TCHAR* Name : {SectionInventory, SectionBody, SectionCartography, SectionFishing, SectionCooking, SectionBoats,
+	for (const TCHAR* Name : {SectionInventory, SectionBody, SectionFishing, SectionCooking, SectionBoats,
 		SectionTime, SectionProgress, SectionWorld, SectionWiring})
 	{
 		Save.UnregisterSection(Name);
@@ -1309,9 +991,6 @@ void UExploredWiringSubsystem::LoadWiring(const FSaveArchive& Ar)
 	// PlayerStart, no una regresión.
 	bStarterKitSpawned = false;
 	Ar.Read(TEXT("starterKitSpawned"), bStarterKitSpawned);
-	LastDaysReported = -1;
-	Odometer.Reset();
-	CycloneWatch = ExploredLinks::FCycloneWatch();
 	WitnessedEvents.Reset();
 }
 
@@ -1384,7 +1063,7 @@ void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 	bVegetationDeltasApplied = false;
 }
 
-// --- Personaje: inventario, cuerpo y mapa ---------------------------------------
+// --- Personaje: inventario y cuerpo ---------------------------------------
 
 void UExploredWiringSubsystem::SaveInventory(FSaveArchive& Ar) const
 {
@@ -1452,32 +1131,6 @@ void UExploredWiringSubsystem::LoadBody(const FSaveArchive& Ar)
 	ApplyPendingPawnSections();
 }
 
-void UExploredWiringSubsystem::SaveCartography(FSaveArchive& Ar) const
-{
-	const AExploredCharacter* Character = GetPlayerCharacter();
-	const UCartographyComponent* Cartography = Character ? Character->GetCartographyComponent() : nullptr;
-	if (!Cartography)
-	{
-		if (PendingCartography.IsSet())
-		{
-			Ar = PendingCartography.GetValue();
-		}
-		return;
-	}
-	ExploredSaveStates::SaveCartography(Ar, Cartography->GetModel().GetState());
-}
-
-void UExploredWiringSubsystem::LoadCartography(const FSaveArchive& Ar)
-{
-	PendingCartography.Reset();
-	if (Ar.IsEmpty())
-	{
-		return;
-	}
-	PendingCartography = Ar;
-	ApplyPendingPawnSections();
-}
-
 void UExploredWiringSubsystem::ApplyPendingPawnSections()
 {
 	AExploredCharacter* Character = GetPlayerCharacter();
@@ -1528,16 +1181,6 @@ void UExploredWiringSubsystem::ApplyPendingPawnSections()
 		}
 		PendingBody.Reset();
 	}
-	if (PendingCartography.IsSet())
-	{
-		if (UCartographyComponent* Cartography = Character->GetCartographyComponent())
-		{
-			FCartographyState State;
-			ExploredSaveStates::LoadCartography(PendingCartography.GetValue(), State);
-			Cartography->LoadState(State);
-		}
-		PendingCartography.Reset();
-	}
 }
 
 // --- Pesca, fuegos y barcos ---------------------------------------------------------
@@ -1559,25 +1202,7 @@ void UExploredWiringSubsystem::LoadFishing(const FSaveArchive& Ar)
 	{
 		return;
 	}
-	// Primero se retiran las trampas del mundo actual (al destruirse se borran del estado)...
-	TArray<AExploredTrap*> Existing;
-	for (TActorIterator<AExploredTrap> It(World); It; ++It)
-	{
-		if (!It->IsTidePool())
-		{
-			Existing.Add(*It);
-		}
-	}
-	for (AExploredTrap* Trap : Existing)
-	{
-		Trap->Destroy();
-	}
-	// ...y después se carga el estado y se vuelven a crear las guardadas.
 	ExploredSaveStates::LoadFishing(Ar, Fishing->GetState());
-	for (const FPlacedTrap& Placed : Fishing->GetState().Traps)
-	{
-		AExploredTrap::SpawnRestored(World, Placed);
-	}
 }
 
 void UExploredWiringSubsystem::SaveFires(FSaveArchive& Ar) const

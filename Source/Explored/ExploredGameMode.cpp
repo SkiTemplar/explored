@@ -9,8 +9,6 @@
 #include "TimerManager.h"
 
 #include "Boats/ExploredBoat.h"
-#include "Building/BuildingSubsystem.h"
-#include "Building/ExploredBuildingPiece.h"
 #include "Cooking/ExploredFire.h"
 #include "Core/SystemLinks.h"
 #include "Player/ExploredCharacter.h"
@@ -31,33 +29,18 @@ AExploredGameMode::AExploredGameMode()
 	PlayerControllerClass = AExploredPlayerController::StaticClass();
 }
 
-void AExploredGameMode::GatherRespawnPoints(TArray<FVector>& OutPoints) const
+void AExploredGameMode::NotifyFireLit(AExploredFire* Fire)
 {
-	UWorld* World = GetWorld();
-	if (!World)
+	if (Fire)
 	{
-		return;
+		LastLitFire = Fire;
 	}
-	for (TActorIterator<AExploredFire> It(World); It; ++It)
-	{
-		if (It->IsRespawnPoint())
-		{
-			OutPoints.Add(It->GetActorLocation());
-		}
-	}
-	if (const UBuildingSubsystem* Building = World->GetSubsystem<UBuildingSubsystem>())
-	{
-		if (const FBuildingModel* Model = Building->GetModel())
-		{
-			for (const int32 PieceId : Model->GetRespawnPoints())
-			{
-				if (const AExploredBuildingPiece* Actor = Building->FindActor(PieceId))
-				{
-					OutPoints.Add(Actor->GetActorLocation());
-				}
-			}
-		}
-	}
+}
+
+const AExploredFire* AExploredGameMode::GetRespawnFire() const
+{
+	const AExploredFire* Fire = LastLitFire.Get();
+	return (Fire && Fire->IsRespawnPoint()) ? Fire : nullptr;
 }
 
 void AExploredGameMode::HandlePlayerDeath(APawn* Pawn)
@@ -69,9 +52,7 @@ void AExploredGameMode::HandlePlayerDeath(APawn* Pawn)
 	const UBodySignalsComponent* Body = Pawn->FindComponentByClass<UBodySignalsComponent>();
 	const FSurvivalModeSettings Mode = Body ? Body->GetModeSettings() : FSurvivalModeSettings();
 
-	TArray<FVector> Points;
-	GatherRespawnPoints(Points);
-	const ExploredLinks::ERespawnDecision Decision = ExploredLinks::DecideRespawn(Mode, Points.Num() > 0);
+	const ExploredLinks::ERespawnDecision Decision = ExploredLinks::DecideRespawn(Mode, GetRespawnFire() != nullptr);
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Muerte del jugador: %s"),
 		Decision == ExploredLinks::ERespawnDecision::GameOver ? TEXT("sin reaparición (Náufrago)") : TEXT("reaparece"));
 
@@ -110,15 +91,12 @@ void AExploredGameMode::RespawnPawn(TWeakObjectPtr<APawn> WeakPawn)
 	{
 		return;
 	}
-	// Los fuegos pueden haberse apagado durante la espera: se vuelve a mirar.
-	TArray<FVector> Points;
-	GatherRespawnPoints(Points);
+	// El fuego puede haberse apagado durante la espera: se vuelve a mirar.
 	FVector Location = Pawn->GetActorLocation();
 	FRotator Rotation = Pawn->GetActorRotation();
-	const int32 Nearest = ExploredLinks::NearestPoint(Points, Pawn->GetActorLocation());
-	if (Nearest != INDEX_NONE)
+	if (const AExploredFire* Fire = GetRespawnFire())
 	{
-		Location = Points[Nearest] + ExploredGameModeDetail::RespawnOffset;
+		Location = Fire->GetActorLocation() + ExploredGameModeDetail::RespawnOffset;
 	}
 	else if (AActor* Start = FindPlayerStart(Pawn->GetController()))
 	{

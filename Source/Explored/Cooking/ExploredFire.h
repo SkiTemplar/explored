@@ -119,7 +119,7 @@ private:
 	void UpdateShelter();
 	FFireEnvironment MakeFireEnvironment() const;
 	FCookEnvironment MakeCookEnvironment() const;
-	void ReportEvents(const TArray<EFireEvent>& Events) const;
+	void ReportEvents(const TArray<EFireEvent>& Events);
 	void RefreshVisuals();
 
 	bool TryIgniteWith(UCarryComponent& Carry, EHand Hand, const FIgnitionDef& Ignition);

@@ -210,65 +210,43 @@ void FExploredSettingsLogicSpec::Define()
 			TestEqual(TEXT("Desde el menú principal"), ScreenAfterEscape(EMenuScreen::Settings, false), EMenuScreen::MainMenu);
 		});
 
-		It("créditos y selección de modo vuelven al menú principal, que no hace nada", [this]()
+		It("créditos vuelve al menú principal, que no hace nada", [this]()
 		{
 			TestEqual(TEXT("Créditos"), ScreenAfterBack(EMenuScreen::Credits, false), EMenuScreen::MainMenu);
-			TestEqual(TEXT("Selección de modo"), ScreenAfterBack(EMenuScreen::ModeSelect, true), EMenuScreen::MainMenu);
 			TestEqual(TEXT("Menú principal"), ScreenAfterEscape(EMenuScreen::MainMenu, false), EMenuScreen::MainMenu);
 			TestEqual(TEXT("Volver jugando no hace nada"), ScreenAfterBack(EMenuScreen::None, false), EMenuScreen::None);
 		});
 
-		It("las pantallas de P-UI2 vuelven a donde se abrieron por defecto", [this]()
+		It("las ranuras vuelven a donde se abrieron por defecto", [this]()
 		{
-			TestEqual(TEXT("Mapa jugando vuelve al juego"), ScreenAfterBack(EMenuScreen::Map, false), EMenuScreen::None);
-			TestEqual(TEXT("Mapa desde la pausa"), ScreenAfterBack(EMenuScreen::Map, true), EMenuScreen::Pause);
-			TestEqual(TEXT("Museo desde el mapa"), ScreenAfterBack(EMenuScreen::Museum, false), EMenuScreen::Map);
-			TestEqual(TEXT("Museo desde la pausa"), ScreenAfterBack(EMenuScreen::Museum, true), EMenuScreen::Pause);
-			TestEqual(TEXT("Logros desde el menú"), ScreenAfterEscape(EMenuScreen::Achievements, false), EMenuScreen::MainMenu);
-			TestEqual(TEXT("Logros desde la pausa"), ScreenAfterEscape(EMenuScreen::Achievements, true), EMenuScreen::Pause);
 			TestEqual(TEXT("Cargar vuelve al menú"), ScreenAfterBack(EMenuScreen::SaveSlots, false), EMenuScreen::MainMenu);
 			TestEqual(TEXT("Guardar vuelve a la pausa"), ScreenAfterBack(EMenuScreen::SaveSlots, true), EMenuScreen::Pause);
+			TestEqual(TEXT("La pausa vuelve al juego"), ScreenAfterBack(EMenuScreen::Pause, false), EMenuScreen::None);
 		});
 
 		It("solo existen las transiciones de los botones y teclas del frontend", [this]()
 		{
-			TestTrue(TEXT("Jugando: mapa"), CanOpenScreenFrom(EMenuScreen::None, EMenuScreen::Map));
-			TestFalse(TEXT("Jugando: museo no"), CanOpenScreenFrom(EMenuScreen::None, EMenuScreen::Museum));
-			TestTrue(TEXT("Mapa: museo"), CanOpenScreenFrom(EMenuScreen::Map, EMenuScreen::Museum));
-			TestFalse(TEXT("Mapa: ajustes no"), CanOpenScreenFrom(EMenuScreen::Map, EMenuScreen::Settings));
-			TestTrue(TEXT("Pausa: mapa, museo, logros y guardar"), CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::Map)
-				&& CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::Museum) && CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::Achievements)
+			TestTrue(TEXT("Jugando: pausa"), CanOpenScreenFrom(EMenuScreen::None, EMenuScreen::Pause));
+			TestFalse(TEXT("Jugando: ajustes no"), CanOpenScreenFrom(EMenuScreen::None, EMenuScreen::Settings));
+			TestTrue(TEXT("Pausa: ajustes y guardar"), CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::Settings)
 				&& CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::SaveSlots));
-			TestTrue(TEXT("Menú: logros y cargar"), CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Achievements)
-				&& CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::SaveSlots));
-			TestFalse(TEXT("Menú: mapa no"), CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Map));
-			TestFalse(TEXT("Menú: museo no (sin partida)"), CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Museum));
+			TestFalse(TEXT("Pausa: créditos no"), CanOpenScreenFrom(EMenuScreen::Pause, EMenuScreen::Credits));
+			TestTrue(TEXT("Menú: ajustes, créditos y cargar"), CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Settings)
+				&& CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Credits) && CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::SaveSlots));
+			TestFalse(TEXT("Menú: pausa no"), CanOpenScreenFrom(EMenuScreen::MainMenu, EMenuScreen::Pause));
 		});
 
-		It("la pila recuerda el camino: juego → mapa → museo → mapa → juego", [this]()
+		It("la pila recuerda el camino: juego → pausa → ajustes → pausa → juego", [this]()
 		{
 			FMenuNavigation Nav;
 			Nav.Reset(EMenuScreen::None);
 			TestEqual(TEXT("Escape jugando abre la pausa"), Nav.EscapeTarget(), EMenuScreen::Pause);
-			TestTrue(TEXT("Abre el mapa"), Nav.Open(EMenuScreen::Map));
-			TestTrue(TEXT("Abre el museo"), Nav.Open(EMenuScreen::Museum));
+			TestTrue(TEXT("Abre la pausa"), Nav.Open(EMenuScreen::Pause));
+			TestTrue(TEXT("Abre los ajustes"), Nav.Open(EMenuScreen::Settings));
 			TestEqual(TEXT("Profundidad"), Nav.Depth(), 3);
-			TestEqual(TEXT("Volver del museo va al mapa"), Nav.BackTarget(), EMenuScreen::Map);
-			TestTrue(TEXT("Vuelve al mapa"), Nav.Open(Nav.BackTarget()));
+			TestEqual(TEXT("Volver de ajustes va a la pausa"), Nav.BackTarget(), EMenuScreen::Pause);
+			TestTrue(TEXT("Vuelve a la pausa"), Nav.Open(Nav.BackTarget()));
 			TestEqual(TEXT("Recorta la pila"), Nav.Depth(), 2);
-			TestEqual(TEXT("Volver del mapa va al juego"), Nav.EscapeTarget(), EMenuScreen::None);
-		});
-
-		It("la pila recuerda el camino: pausa → mapa → museo vuelve a la pausa", [this]()
-		{
-			FMenuNavigation Nav;
-			Nav.Reset(EMenuScreen::None);
-			TestTrue(TEXT("Pausa"), Nav.Open(EMenuScreen::Pause));
-			TestTrue(TEXT("Mapa"), Nav.Open(EMenuScreen::Map));
-			TestTrue(TEXT("Museo"), Nav.Open(EMenuScreen::Museum));
-			TestTrue(TEXT("Se abrió desde la pausa"), Nav.IsInStack(EMenuScreen::Pause));
-			TestTrue(TEXT("Salta a la pausa"), Nav.Open(EMenuScreen::Pause));
-			TestEqual(TEXT("Queda juego → pausa"), Nav.Depth(), 2);
 			TestEqual(TEXT("Volver de la pausa reanuda"), Nav.BackTarget(), EMenuScreen::None);
 		});
 
@@ -276,20 +254,17 @@ void FExploredSettingsLogicSpec::Define()
 		{
 			FMenuNavigation Nav;
 			Nav.Reset(EMenuScreen::MainMenu);
-			TestFalse(TEXT("Menú → mapa"), Nav.Open(EMenuScreen::Map));
+			TestFalse(TEXT("Menú → pausa"), Nav.Open(EMenuScreen::Pause));
 			TestEqual(TEXT("Sin cambios"), Nav.Current(), EMenuScreen::MainMenu);
 			TestEqual(TEXT("Volver en el menú"), Nav.BackTarget(), EMenuScreen::MainMenu);
 			TestTrue(TEXT("Abrir la actual no cambia nada"), Nav.Open(EMenuScreen::MainMenu));
-			TestTrue(TEXT("Logros"), Nav.Open(EMenuScreen::Achievements));
-			TestEqual(TEXT("Volver de logros"), Nav.BackTarget(), EMenuScreen::MainMenu);
-			TestFalse(TEXT("Logros → ajustes no"), Nav.Open(EMenuScreen::Settings));
+			TestTrue(TEXT("Créditos"), Nav.Open(EMenuScreen::Credits));
+			TestEqual(TEXT("Volver de créditos"), Nav.BackTarget(), EMenuScreen::MainMenu);
+			TestFalse(TEXT("Créditos → ajustes no"), Nav.Open(EMenuScreen::Settings));
 		});
 
-		It("M y View sacan el mapa y M queda reservada para él", [this]()
+		It("M sigue reservada y no se puede remapear", [this]()
 		{
-			TestTrue(TEXT("M"), IsMapToggleKey(FName(TEXT("M"))));
-			TestTrue(TEXT("View"), IsMapToggleKey(FName(TEXT("Gamepad_Special_Left"))));
-			TestFalse(TEXT("Start no"), IsMapToggleKey(FName(TEXT("Gamepad_Special_Right"))));
 			TestTrue(TEXT("M reservada"), IsReservedKey(FName(TEXT("M"))));
 			TestEqual(TEXT("No se puede remapear a M"), CheckRemap(DefaultBindings(), FName(TEXT("IA_Jump")), FName(TEXT("M"))).Result, ERemapCheck::ReservedKey);
 		});

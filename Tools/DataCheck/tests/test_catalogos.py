@@ -1,146 +1,15 @@
-"""Reglas de logros, fuego y cocina con catálogos sintéticos (sin el catálogo real: rápidos)."""
+"""Reglas de fuego y cocina con catálogos sintéticos (sin el catálogo real: rápidos)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
-import pytest
-
-from datacheck import achievements, cooking
-from datacheck.checks import DataSet, Report
+from datacheck import cooking
 
 
 def _has(errors: list[str], *needles: str) -> bool:
     return any(all(n in e for n in needles) for e in errors)
-
-
-# --------------------------------------------------------------------------- logros: condiciones
-
-
-STATS: dict[str, dict[str, Any]] = {
-    "peces": {"kind": "counter"},
-    "fuego": {"kind": "flag"},
-    "barcos": {"kind": "set", "values": ["balsa", "limon"]},
-    "plantas": {"kind": "set", "valuesFrom": "plants"},
-    "abierto": {"kind": "set"},
-}
-
-
-def _ds(tmp_path: Path) -> DataSet:
-    data: dict[str, Any] = {
-        "items.json": [{"id": "coco"}],
-        "plants.json": {"plants": [{"id": "taro"}, {"id": "limonero"}]},
-        "building_pieces.json": {"tiers": [], "pieces": [{"id": "fogata"}]},
-    }
-    return DataSet(data, tmp_path)
-
-
-def _cond_errors(tmp_path: Path, cond: Any) -> list[str]:
-    r = Report()
-    achievements.check_condition(_ds(tmp_path), cond, STATS, "logro", r)
-    return r.errors
-
-
-@pytest.mark.parametrize(("cond", "needle"), [
-    ("fuego", "debe ser un objeto"),
-    ({"stat": "nada", "op": ">=", "value": 1}, "estadística desconocida «nada»"),
-    ({"stat": "fuego", "op": ">=", "value": 1}, "es una marca"),
-    ({"stat": "peces", "op": "=>", "value": 1}, "operador «=>»"),
-    ({"stat": "peces", "op": ">=", "value": float("inf")}, "número finito"),
-    ({"stat": "peces", "op": ">=", "value": True}, "número finito"),
-    ({"stat": "barcos", "op": ">=", "value": 3}, "solo admite 2 ids"),
-    ({"stat": "plantas", "op": ">", "value": 5}, "solo admite 2 ids"),
-    ({"stat": "nada", "contains": "x"}, "estadística desconocida"),
-    ({"stat": "peces", "contains": "x"}, "no es un conjunto"),
-    ({"stat": "barcos", "contains": "canoa"}, "«canoa» no es un id admitido"),
-    ({"flag": "nada"}, "estadística desconocida"),
-    ({"flag": "peces"}, "no es una marca"),
-    ({"all": []}, "«all» necesita una lista no vacía"),
-    ({"any": "fuego"}, "«any» necesita una lista no vacía"),
-    ({"not": {"flag": "peces"}}, "no es una marca"),
-    ({"all": [{"flag": "fuego"}, {"stat": "nada", "op": ">=", "value": 1}]}, "desconocida «nada»"),
-    ({"stat": "peces", "value": 1}, "no reconocida"),
-])
-def test_condicion_invalida(tmp_path: Path, cond: Any, needle: str) -> None:
-    assert _has(_cond_errors(tmp_path, cond), needle)
-
-
-@pytest.mark.parametrize("cond", [
-    {"stat": "peces", "op": ">=", "value": 10},
-    {"stat": "barcos", "op": ">=", "value": 2},
-    {"stat": "abierto", "op": ">=", "value": 99},
-    {"stat": "barcos", "contains": "limon"},
-    {"stat": "abierto", "contains": "cualquiera"},
-    {"any": [{"flag": "fuego"}, {"not": {"flag": "fuego"}}]},
-])
-def test_condicion_valida(tmp_path: Path, cond: Any) -> None:
-    assert _cond_errors(tmp_path, cond) == []
-
-
-def test_valores_admitidos_por_origen(tmp_path: Path) -> None:
-    ds = _ds(tmp_path)
-    assert achievements.allowed_values(ds, {"valuesFrom": "items"}) == {"coco"}
-    assert achievements.allowed_values(ds, {"valuesFrom": "plants"}) == {"taro", "limonero"}
-    assert achievements.allowed_values(ds, {"valuesFrom": "building_pieces"}) == {"fogata"}
-    assert achievements.allowed_values(ds, {"kind": "set"}) is None
-
-
-def test_estadisticas_usadas_recorre_toda_la_condicion() -> None:
-    used: set[str] = set()
-    achievements._stats_used({"all": [{"stat": "a"}, {"any": [{"flag": "b"}]}, {"not": {"stat": "c"}}],
-                              "any": "no es lista"}, used)
-    achievements._stats_used("texto", used)
-    assert used == {"a", "b", "c"}
-
-
-def test_catalogo_de_estadisticas_mal_formado(tmp_path: Path) -> None:
-    doc = {
-        "modes": ["Explorer"],
-        "stats": [
-            {"id": "Mal-Id"},
-            {"id": "peces", "kind": "contador", "scope": "mundo"},
-            {"id": "peces", "kind": "counter", "scope": "run", "descriptionEs": "x", "values": ["a"]},
-            {"id": "lista", "kind": "set", "scope": "run", "descriptionEs": "x", "values": ["a", "a"],
-             "valuesFrom": "rocas"},
-        ],
-        "achievements": [{"id": "uno", "nameEs": "Almudena", "hidden": "no", "icon": "Icono", "modes": ["Dios"],
-                          "condition": {"stat": "peces", "op": ">=", "value": 1}}],
-    }
-    ds = DataSet({"achievements.json": doc}, tmp_path)
-    r = Report()
-    achievements.check_achievements(ds, r)
-    e = r.errors
-    assert _has(e, "Explorer, Survivor y Castaway")
-    assert _has(e, "id de estadística inválido «Mal-Id»")
-    assert _has(e, "«peces» con kind «contador»") and _has(e, "«peces» con scope «mundo»")
-    assert _has(e, "estadística duplicada «peces»")
-    assert _has(e, "«peces» tiene values/valuesFrom pero no es un conjunto")
-    assert _has(e, "«lista».values debe ser una lista no vacía sin repetidos")
-    assert _has(e, "valuesFrom «rocas»")
-    assert _has(e, "1 logros; biblia 07 §2 pide entre")
-    assert _has(e, "«uno»: falta nameEn") and _has(e, "«uno»: nameEs usa el nombre de la dedicatoria")
-    assert _has(e, "hidden debe ser true o false") and _has(e, "icon debe ser")
-    assert _has(e, "modes ['Dios']")
-    assert _has(e, "faltan los logros del GDD §16")
-    assert _has(e, "Falta docs/tecnico/estadisticas.md")
-    assert _has(r.warnings, "«lista» no la usa ningún logro")
-
-
-def test_catalogo_documentado_desfasado(tmp_path: Path) -> None:
-    doc_path = tmp_path / achievements.STATS_DOC
-    doc_path.parent.mkdir(parents=True)
-    doc_path.write_text("| `peces` | counter | profile |\n| `viejo` | flag | run |\n", encoding="utf-8")
-    assert achievements.doc_stats(tmp_path) == {"peces": ("counter", "profile"), "viejo": ("flag", "run")}
-    doc = {"modes": ["Explorer", "Survivor", "Castaway"],
-           "stats": [{"id": "peces", "kind": "counter", "scope": "run", "descriptionEs": "x"},
-                     {"id": "nuevo", "kind": "flag", "scope": "run", "descriptionEs": "x"}],
-           "achievements": []}
-    r = Report()
-    achievements.check_achievements(DataSet({"achievements.json": doc}, tmp_path), r)
-    assert _has(r.errors, "«peces» documentada como ('counter', 'profile')")
-    assert _has(r.errors, "falta la estadística «nuevo»")
-    assert _has(r.errors, "«viejo» no está en el catálogo")
 
 
 # --------------------------------------------------------------------------- fuego

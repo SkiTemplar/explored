@@ -20,7 +20,6 @@
 #include "UObject/SoftObjectPath.h"
 #include "UObject/SoftObjectPtr.h"
 
-#include "Achievements/AchievementsSubsystem.h"
 #include "Core/SystemLinks.h"
 #include "Ocean/ExploredOcean.h"
 #include "Ocean/OceanWaves.h"
@@ -128,13 +127,6 @@ void AExploredBoat::BeginPlay()
 	Straits = FOceanCurrents::BuildStraits(Layout);
 	Ocean = Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(GetWorld(), AExploredOcean::StaticClass()));
 
-	if (bBuiltByPlayer)
-	{
-		if (UAchievementsSubsystem* Achievements = UAchievementsSubsystem::Get(this))
-		{
-			Achievements->ReportStatItem(TEXT("boats_built"), ExploredLinks::BoatStatId(Model.GetState().Type));
-		}
-	}
 }
 
 void AExploredBoat::EndPlay(const EEndPlayReason::Type EndPlayReason)

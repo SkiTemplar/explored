@@ -2,13 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "UI/ExploredGameplayMode.h"
 #include "UI/SettingsLogic.h"
 
 #include "ExploredPlayerController.generated.h"
 
 class AExploredMenuCamera;
-class SExploredAchievementToast;
 class SExploredFade;
 class SExploredInventoryPanel;
 class SExploredSavingIndicator;
@@ -22,12 +20,7 @@ enum class EExploredUIMode : uint8
 {
 	Menu,
 	Playing,
-	Paused,
-	/**
-	 * Mapa en las manos jugando (GDD §5.6, P-UI2): el mundo sigue sin pausa ni
-	 * cámara lenta, pero la entrada es del mapa (el personaje se queda quieto).
-	 */
-	InHands
+	Paused
 };
 
 /** Funciones puras del estado de UI, separadas para poder testearlas sin un UWorld en marcha. */
@@ -56,12 +49,11 @@ namespace ExploredUI
  *
  * Las pantallas se encadenan con ExploredSettingsLogic::FMenuNavigation (pila
  * pura con spec): «Volver» regresa a la pantalla desde la que se abrió cada
- * una, también en cadenas como juego → mapa → museo → mapa → juego.
+ * una, también en cadenas como juego → pausa → ajustes → pausa → juego.
  *
- * P-UI2: M o View del mando sacan el mapa en las manos (SExploredMapInHands);
- * la pausa abre Mapa, Museo, Logros y el selector de ranura para Guardar; el
- * menú principal abre Cargar y Logros; la vista del inventario
- * (SExploredInventoryPanel) sale sola mientras la mochila está abierta.
+ * La pausa abre Ajustes y el selector de ranura para Guardar; el menú
+ * principal abre Cargar; la vista del inventario (SExploredInventoryPanel)
+ * sale sola mientras la mochila está abierta.
  *
  * Guardado: «Guardar» de la pausa abre el selector de ranuras manuales,
  * RequestSaveGame() guarda en la automática y ContinueGame() carga la ranura
@@ -89,11 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void ContinueGame();
 
+	/** «Nueva partida»: reinicia los contadores de la partida y entra a jugar. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
-	void OpenModeSelect();
-
-	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
-	void StartNewGame(EExploredGameplayMode Mode);
+	void StartNewGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void OpenSettings();
@@ -116,18 +106,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void RequestSaveGame();
 
-	/** Saca el mapa en las manos (jugando o desde la pausa). No hace nada sin personaje con mapa. */
-	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
-	void OpenMap();
-
-	/** Museo y catálogo de tesoros (pausa o apartado «Colección» del mapa). */
-	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
-	void OpenMuseum();
-
-	/** Lista de logros (menú principal o pausa). */
-	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
-	void OpenAchievements();
-
 	/** Selector de ranura para guardar (pausa → «Guardar»). */
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void OpenSaveGame();
@@ -146,7 +124,7 @@ public:
 	/** Final «Zarpar» (UExploredVoyageSubsystem): funde a negro y muestra SExploredEnding. */
 	void ShowEnding();
 
-	/** Secuencia de salida del Limón: sin pausa, mapa ni HUD de juego mientras dura. */
+	/** Secuencia de salida del Limón: sin pausa ni HUD de juego mientras dura. */
 	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
 	bool IsCutsceneActive() const { return bCutsceneActive; }
 
@@ -159,8 +137,6 @@ public:
 
 private:
 	void HandleEscape();
-	/** M o View jugando: saca el mapa. Con el mapa fuera la tecla la atiende el propio mapa. */
-	void HandleMapKey();
 	/** «Volver» de la pantalla actual (botón, Escape o B). */
 	void NavigateBack();
 	void NavigateTo(ExploredSettingsLogic::EMenuScreen Screen);
@@ -181,7 +157,6 @@ private:
 
 	TSharedPtr<SExploredFade> FadeWidget;
 	TSharedPtr<SExploredSavingIndicator> SavingIndicator;
-	TSharedPtr<SExploredAchievementToast> AchievementToast;
 	/** Vista del inventario: siempre en el viewport, visible solo con la mochila abierta. */
 	TSharedPtr<SExploredInventoryPanel> InventoryPanel;
 	TSharedPtr<SWidget> CurrentOverlay;
@@ -195,7 +170,4 @@ private:
 	/** Suscripción a UExploredSaveSubsystem::OnSaveCompleted; se retira en EndPlay (H1/M8). */
 	TWeakObjectPtr<UExploredSaveSubsystem> SaveSubsystemBound;
 	FDelegateHandle SaveCompletedHandle;
-	/** Igual que el guardado: el subsistema de logros sobrevive a OpenLevel (M8). */
-	TWeakObjectPtr<class UAchievementsSubsystem> AchievementsBound;
-	FDelegateHandle AchievementUnlockedHandle;
 };

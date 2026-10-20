@@ -98,8 +98,6 @@ PLAYER_FIELDS = (
     ("templates.json", None, "nameTemplate", "nameTemplateEn"),
     ("building_pieces.json", "pieces", "nameEs", "nameEn"),
     ("recipes_smithing.json", "recipes", "nameEs", "nameEn"),
-    ("achievements.json", "achievements", "nameEs", "nameEn"),
-    ("achievements.json", "achievements", "descriptionEs", "descriptionEn"),
 )
 
 

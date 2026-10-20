@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 1173,
-		"cpp": 339,
-		"datos": 834,
+		"total": 756,
+		"cpp": 245,
+		"datos": 511,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 3,
-		"revisar": 113
+		"revisar": 108
 	},
 	"entries": [
 		{
@@ -19,7 +19,7 @@
 			"en": "the canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
+				"Source/Explored/Boats/ExploredBoat.cpp:78"
 			]
 		},
 		{
@@ -29,7 +29,7 @@
 			"en": "the «Limón»",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:81"
+				"Source/Explored/Boats/ExploredBoat.cpp:80"
 			]
 		},
 		{
@@ -39,7 +39,7 @@
 			"en": "the outrigger canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:80"
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
 			]
 		},
 		{
@@ -49,7 +49,7 @@
 			"en": "the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:78"
+				"Source/Explored/Boats/ExploredBoat.cpp:77"
 			]
 		},
 		{
@@ -59,7 +59,7 @@
 			"en": "Already there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:111"
+				"Source/Explored/Carry/CarryComponent.cpp:109"
 			]
 		},
 		{
@@ -69,7 +69,7 @@
 			"en": "It won't fit in the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:151"
+				"Source/Explored/Carry/CarryComponent.cpp:149"
 			]
 		},
 		{
@@ -79,7 +79,7 @@
 			"en": "Too heavy for the backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:145"
+				"Source/Explored/Carry/CarryComponent.cpp:143"
 			]
 		},
 		{
@@ -89,7 +89,7 @@
 			"en": "No free loops left on your belt.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:139"
+				"Source/Explored/Carry/CarryComponent.cpp:137"
 			]
 		},
 		{
@@ -99,7 +99,7 @@
 			"en": "Your belt only holds tools and containers.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:125"
+				"Source/Explored/Carry/CarryComponent.cpp:123"
 			]
 		},
 		{
@@ -109,7 +109,7 @@
 			"en": "No room left.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:141"
+				"Source/Explored/Carry/CarryComponent.cpp:139"
 			]
 		},
 		{
@@ -119,7 +119,7 @@
 			"en": "Empty it first.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:159"
+				"Source/Explored/Carry/CarryComponent.cpp:157"
 			]
 		},
 		{
@@ -129,7 +129,7 @@
 			"en": "Can't do that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:162"
+				"Source/Explored/Carry/CarryComponent.cpp:160"
 			]
 		},
 		{
@@ -139,10 +139,10 @@
 			"en": "That hand is empty.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:277",
-				"Source/Explored/Carry/CarryComponent.cpp:306",
-				"Source/Explored/Carry/CarryComponent.cpp:428",
-				"Source/Explored/Carry/CarryComponent.cpp:589"
+				"Source/Explored/Carry/CarryComponent.cpp:267",
+				"Source/Explored/Carry/CarryComponent.cpp:296",
+				"Source/Explored/Carry/CarryComponent.cpp:418",
+				"Source/Explored/Carry/CarryComponent.cpp:492"
 			]
 		},
 		{
@@ -152,7 +152,7 @@
 			"en": "That hand is already full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:112"
+				"Source/Explored/Carry/CarryComponent.cpp:110"
 			]
 		},
 		{
@@ -162,7 +162,7 @@
 			"en": "Both your hands are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:114"
+				"Source/Explored/Carry/CarryComponent.cpp:112"
 			]
 		},
 		{
@@ -172,8 +172,8 @@
 			"en": "You can't pick that up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:109",
-				"Source/Explored/Carry/CarryComponent.cpp:224"
+				"Source/Explored/Carry/CarryComponent.cpp:107",
+				"Source/Explored/Carry/CarryComponent.cpp:214"
 			]
 		},
 		{
@@ -183,9 +183,9 @@
 			"en": "Nothing there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:110",
-				"Source/Explored/Carry/CarryComponent.cpp:327",
-				"Source/Explored/Carry/CarryComponent.cpp:614"
+				"Source/Explored/Carry/CarryComponent.cpp:108",
+				"Source/Explored/Carry/CarryComponent.cpp:317",
+				"Source/Explored/Carry/CarryComponent.cpp:517"
 			]
 		},
 		{
@@ -195,7 +195,7 @@
 			"en": "You need both hands free for this.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:113"
+				"Source/Explored/Carry/CarryComponent.cpp:111"
 			]
 		},
 		{
@@ -205,7 +205,7 @@
 			"en": "You have no backpack.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:154"
+				"Source/Explored/Carry/CarryComponent.cpp:152"
 			]
 		},
 		{
@@ -215,7 +215,7 @@
 			"en": "You have nowhere to keep it dry.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:155"
+				"Source/Explored/Carry/CarryComponent.cpp:153"
 			]
 		},
 		{
@@ -225,7 +225,7 @@
 			"en": "Won't fit.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:153"
+				"Source/Explored/Carry/CarryComponent.cpp:151"
 			]
 		},
 		{
@@ -235,8 +235,7 @@
 			"en": "You have no travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:156",
-				"Source/Explored/Carry/CarryComponent.cpp:505"
+				"Source/Explored/Carry/CarryComponent.cpp:154"
 			]
 		},
 		{
@@ -246,7 +245,7 @@
 			"en": "That can't hold water.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:161"
+				"Source/Explored/Carry/CarryComponent.cpp:159"
 			]
 		},
 		{
@@ -256,7 +255,7 @@
 			"en": "You can't wear that.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:158"
+				"Source/Explored/Carry/CarryComponent.cpp:156"
 			]
 		},
 		{
@@ -266,7 +265,7 @@
 			"en": "There's nothing here to pick up.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:218"
+				"Source/Explored/Carry/CarryComponent.cpp:208"
 			]
 		},
 		{
@@ -276,7 +275,7 @@
 			"en": "You can't carry more.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:160"
+				"Source/Explored/Carry/CarryComponent.cpp:158"
 			]
 		},
 		{
@@ -286,7 +285,7 @@
 			"en": "Only small things fit in your pockets.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:119"
+				"Source/Explored/Carry/CarryComponent.cpp:117"
 			]
 		},
 		{
@@ -296,7 +295,7 @@
 			"en": "Your pockets are full.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:135"
+				"Source/Explored/Carry/CarryComponent.cpp:133"
 			]
 		},
 		{
@@ -306,7 +305,7 @@
 			"en": "It's a single object: it can't combine with itself.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:115"
+				"Source/Explored/Carry/CarryComponent.cpp:113"
 			]
 		},
 		{
@@ -316,7 +315,7 @@
 			"en": "You're already dragging a travois.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:157"
+				"Source/Explored/Carry/CarryComponent.cpp:155"
 			]
 		},
 		{
@@ -326,7 +325,7 @@
 			"en": "The travois is for wood and stone.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:129"
+				"Source/Explored/Carry/CarryComponent.cpp:127"
 			]
 		},
 		{
@@ -336,7 +335,7 @@
 			"en": "It's too big to store there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:121"
+				"Source/Explored/Carry/CarryComponent.cpp:119"
 			]
 		},
 		{
@@ -346,7 +345,7 @@
 			"en": "It's too heavy.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:147"
+				"Source/Explored/Carry/CarryComponent.cpp:145"
 			]
 		},
 		{
@@ -356,7 +355,7 @@
 			"en": "That takes both hands; it can't be stowed.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:314"
+				"Source/Explored/Carry/CarryComponent.cpp:304"
 			]
 		},
 		{
@@ -366,7 +365,7 @@
 			"en": "That doesn't go there.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/CarryComponent.cpp:131"
+				"Source/Explored/Carry/CarryComponent.cpp:129"
 			]
 		},
 		{
@@ -472,62 +471,12 @@
 		},
 		{
 			"namespace": "Explored",
-			"key": "Verb_AttachSledge",
-			"es": "Enganchar las angarillas",
-			"en": "Hitch the travois",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Carry/ExploredSledge.cpp:40"
-			]
-		},
-		{
-			"namespace": "Explored",
 			"key": "Verb_Board",
 			"es": "Subir a {0}",
 			"en": "Board {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:483"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_CheckTrap",
-			"es": "Revisar la trampa",
-			"en": "Check the trap",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Fishing/ExploredTrap.cpp:135"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_ClearDeadPlant",
-			"es": "Arrancar la planta seca",
-			"en": "Pull up the dead plant",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Farming/ExploredPlantActor.cpp:253"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_Harvest",
-			"es": "Cosechar {0}",
-			"en": "Harvest {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Farming/ExploredPlantActor.cpp:250"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_LoadSledge",
-			"es": "Cargar en las angarillas",
-			"en": "Load onto the travois",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Carry/ExploredSledge.cpp:41"
+				"Source/Explored/Boats/ExploredBoat.cpp:475"
 			]
 		},
 		{
@@ -542,82 +491,12 @@
 		},
 		{
 			"namespace": "Explored",
-			"key": "Verb_Plant",
-			"es": "Plantar {0}",
-			"en": "Plant {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Farming/ExploredPlantActor.cpp:256"
-			]
-		},
-		{
-			"namespace": "Explored",
 			"key": "Verb_RightBoat",
 			"es": "Adrizar {0}",
 			"en": "Right {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:479"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinCanoe",
-			"es": "Examinar la canoa doble",
-			"en": "Examine the double canoe",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:144"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinCave",
-			"es": "Examinar las pinturas",
-			"en": "Examine the paintings",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:147"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinCompass",
-			"es": "Estudiar la brújula estelar",
-			"en": "Study the star compass",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:141"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinOffering",
-			"es": "Dejar una ofrenda",
-			"en": "Leave an offering",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:138"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinPetroglyph",
-			"es": "Examinar el petroglifo",
-			"en": "Study the petroglyph",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:150"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RuinStatue",
-			"es": "Mirar hacia donde mira la estatua",
-			"en": "Look where the statue looks",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:135"
+				"Source/Explored/Boats/ExploredBoat.cpp:471"
 			]
 		},
 		{
@@ -641,153 +520,13 @@
 			]
 		},
 		{
-			"namespace": "Explored",
-			"key": "Verb_TidePool",
-			"es": "Marisquear",
-			"en": "Forage",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Fishing/ExploredTrap.cpp:132"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_Water",
-			"es": "Regar",
-			"en": "Water",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Farming/ExploredPlantActor.cpp:260"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "InvalidRotation",
-			"es": "Giro no válido",
-			"en": "Invalid rotation",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:275"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "MissingMaterials",
-			"es": "Faltan materiales",
-			"en": "Not enough materials",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:283"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "MissingRequiredPiece",
-			"es": "Falta otra pieza en la base",
-			"en": "The base needs another piece",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:281"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "MissingTools",
-			"es": "Falta una herramienta",
-			"en": "A tool is missing",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:282"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "NeedsGround",
-			"es": "Tiene que ir sobre el terreno",
-			"en": "Must go on the ground",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:280"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "NoSupport",
-			"es": "No tiene dónde apoyarse",
-			"en": "Nothing to rest on",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:278"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "NothingToRepair",
-			"es": "No hay nada que reparar",
-			"en": "Nothing to repair",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:284"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "Occupied",
-			"es": "Ya hay algo ahí",
-			"en": "Something's there",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:277"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "UnknownBase",
-			"es": "Fuera de la base",
-			"en": "Outside the base",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:276"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "UnknownInstance",
-			"es": "Esa pieza ya no existe",
-			"en": "That piece no longer exists",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:285"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "UnknownPiece",
-			"es": "Pieza desconocida",
-			"en": "Unknown piece",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:274"
-			]
-		},
-		{
-			"namespace": "ExploredBuilding",
-			"key": "Unstable",
-			"es": "Demasiado lejos de un apoyo",
-			"en": "Too far from a support",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Building/BuildingSubsystem.cpp:279"
-			]
-		},
-		{
 			"namespace": "ExploredHarvest",
 			"key": "VerbChop",
 			"es": "Talar",
 			"en": "Chop",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:876"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:683"
 			]
 		},
 		{
@@ -797,7 +536,7 @@
 			"en": "Gather",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:868"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:675"
 			]
 		},
 		{
@@ -807,7 +546,7 @@
 			"en": "Mine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:872"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:679"
 			]
 		},
 		{
@@ -817,88 +556,7 @@
 			"en": "{Verb} ({Hits}/{Required})",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:885"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementDone",
-			"es": "Conseguido",
-			"en": "Unlocked",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:67"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementHidden",
-			"es": "Logro oculto: se revela al conseguirlo.",
-			"en": "Hidden achievement: revealed once unlocked.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:44"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementOtherMode",
-			"es": "{0} (no se puede conseguir en este modo)",
-			"en": "{0} (can't be earned in this mode)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:48"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementUnlocked",
-			"es": "Logro conseguido",
-			"en": "Achievement unlocked",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievementToast.cpp:32"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "Achievements",
-			"es": "Logros",
-			"en": "Achievements",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:61"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementsSummary",
-			"es": "Conseguidos: {0} de {1}",
-			"en": "Unlocked: {0} of {1}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:37"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementsTitle",
-			"es": "Logros",
-			"en": "Achievements",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:105"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "AchievementsUnavailable",
-			"es": "Los logros no están disponibles.",
-			"en": "Achievements aren't available.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:28"
+				"Source/Explored/Core/ExploredWiringSubsystem.cpp:692"
 			]
 		},
 		{
@@ -1008,10 +666,7 @@
 			"en": "Back",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:24",
 				"Source/Explored/UI/Widgets/SExploredCredits.cpp:36",
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:63",
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:83",
 				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:33",
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:551"
 			]
@@ -1074,16 +729,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:375"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ChooseMode",
-			"es": "Elige cómo quieres sobrevivir",
-			"en": "Choose how you want to survive",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:41"
 			]
 		},
 		{
@@ -1173,7 +818,7 @@
 			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:23"
 			]
 		},
 		{
@@ -1183,7 +828,7 @@
 			"en": "Credits",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:84"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:78"
 			]
 		},
 		{
@@ -1308,7 +953,7 @@
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredCredits.cpp:82",
 				"Source/Explored/UI/Widgets/SExploredEnding.cpp:83",
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:65"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:64"
 			],
 			"note": "Dedicatoria: idéntica en los dos idiomas."
 		},
@@ -1369,7 +1014,7 @@
 			"en": "Exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:76"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:58"
 			]
 		},
 		{
@@ -1449,7 +1094,7 @@
 			"en": "The Albatros broke into four parts. With them you can build a boat.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:465"
+				"Source/Explored/UI/ExploredPlayerController.cpp:393"
 			]
 		},
 		{
@@ -1459,17 +1104,17 @@
 			"en": "WASD move · Space jump · Shift run · Ctrl dive",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:464"
+				"Source/Explored/UI/ExploredPlayerController.cpp:392"
 			]
 		},
 		{
 			"namespace": "ExploredUI",
 			"key": "HelpUse",
-			"es": "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa",
-			"en": "E interact · Tab backpack · M map · H watch · Esc pause",
+			"es": "E interactuar · Tab mochila · H reloj · Esc pausa",
+			"en": "E interact · Tab backpack · H watch · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:463"
+				"Source/Explored/UI/ExploredPlayerController.cpp:391"
 			]
 		},
 		{
@@ -1682,400 +1327,7 @@
 			"en": "Load",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:29"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapAnnotationBearing",
-			"es": "Rumbo {0}°, {1} m",
-			"en": "Bearing {0}°, {1} m",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:467"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapAnnotationRadius",
-			"es": "Radio de {0} m",
-			"en": "{0} m radius",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:465"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapCharsLeft",
-			"es": "{0} caracteres libres",
-			"en": "{0} characters left",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:789"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapCollection",
-			"es": "Colección",
-			"en": "Collection",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:251"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapControlsHint",
-			"es": "Arrastra o usa las flechas para moverte; rueda o LB/RB para acercar. Y cambia entre la hoja y el cuaderno.",
-			"en": "Drag or use the arrows to move; wheel or LB/RB to zoom. Y switches between sheet and notebook.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:322"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapDamp",
-			"es": "El papel está húmedo.",
-			"en": "The paper is damp.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:782"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapHintPlace",
-			"es": "Pulsa en la hoja para poner la marca.",
-			"en": "Tap the sheet to place the mark.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:91",
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:678"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapInkRunning",
-			"es": "El papel está empapado: la tinta se corre. Guárdalo en seco.",
-			"en": "The paper is soaked: the ink is running. Keep it dry.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:778"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkHand",
-			"es": "dibujada a mano",
-			"en": "drawn by hand",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:70"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkHere",
-			"es": "Marcar donde estoy",
-			"en": "Mark where I am",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:395"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkPlaced",
-			"es": "Marca dibujada.",
-			"en": "Mark drawn.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:661"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkPlacedHere",
-			"es": "Marca dibujada donde crees estar.",
-			"en": "Mark drawn where you think you are.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:692"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkSextant",
-			"es": "situada con el sextante",
-			"en": "fixed with the sextant",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:69"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkSpyglass",
-			"es": "vista con el catalejo",
-			"en": "sighted with the spyglass",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:68"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarkTextHint",
-			"es": "Texto corto (opcional)",
-			"en": "Short note (optional)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:420"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapMarksFull",
-			"es": "No caben más marcas en la hoja.",
-			"en": "No room for more marks on the sheet.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:670",
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:701"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapNeedStampOrText",
-			"es": "Elige un sello o escribe una nota.",
-			"en": "Choose a stamp or write a note.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:655"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapNoRecipes",
-			"es": "Aún no has anotado recetas al margen.",
-			"en": "No recipes noted in the margin yet.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:567"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapNoWayfinding",
-			"es": "Aún no has aprendido ninguna técnica de navegación. Las ruinas completas enseñan una.",
-			"en": "You haven't learnt any wayfinding yet. Each complete ruin teaches one.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:493"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapPutAway",
-			"es": "Guardar el mapa",
-			"en": "Put the map away",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:262"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapSelectedMark",
-			"es": "{0}: «{1}», {2}",
-			"en": "{0}: “{1}”, {2}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:768"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapShowWayfinding",
-			"es": "Mostrar las anotaciones de rumbo",
-			"en": "Show bearing notes",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:519"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapStamp",
-			"es": "Sello",
-			"en": "Stamp",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:408"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapStampNote",
-			"es": "Nota",
-			"en": "Note",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:215",
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:385"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTabMarks",
-			"es": "Marcas",
-			"en": "Marks",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:288"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTabRecipes",
-			"es": "Recetas",
-			"en": "Recipes",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:296"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTabWayfinding",
-			"es": "Rumbos",
-			"en": "Bearings",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:292"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTechniqueBirds",
-			"es": "Aves al atardecer",
-			"en": "Birds at dusk",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:58"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTechniqueClouds",
-			"es": "Nubes fijas",
-			"en": "Fixed clouds",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:59"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTechniqueStarPath",
-			"es": "Camino de estrellas",
-			"en": "Star path",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:56"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTechniqueSwell",
-			"es": "Lectura del oleaje",
-			"en": "Swell reading",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:57"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTechniqueWater",
-			"es": "Color del agua",
-			"en": "Water colour",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:60"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MapTitle",
-			"es": "Mapa",
-			"en": "Map",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMapInHands.cpp:271"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeCastaway",
-			"es": "Náufrago",
-			"en": "Castaway",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:58"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeCastawayDesc",
-			"es": "Necesidades más duras y sin reaparición en fogatas.",
-			"en": "Harsher needs and no respawning at campfires.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:59"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeExplorer",
-			"es": "Explorador",
-			"en": "Explorer",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:48"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeExplorerDesc",
-			"es": "Las necesidades no matan; la fauna es pacífica. Para disfrutar del mundo y la historia.",
-			"en": "Needs never kill and wildlife is peaceful. For enjoying the world and its story.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:49"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeSurvivor",
-			"es": "Superviviente",
-			"en": "Survivor",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:23"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "ModeSurvivorDesc",
-			"es": "La experiencia prevista.",
-			"en": "The intended experience.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:24"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:28"
 			]
 		},
 		{
@@ -2086,186 +1338,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:356"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumCollector",
-			"es": "Coleccionista: {0} de {1} tesoros expuestos",
-			"en": "Collector: {0} of {1} treasures on display",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:104"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumCollectorDone",
-			"es": "Coleccionista: {0} tesoros expuestos (conseguido)",
-			"en": "Collector: {0} treasures on display (unlocked)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:103"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumCommon",
-			"es": "común",
-			"en": "common",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:40"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumExhibited",
-			"es": "Expuesto en el museo",
-			"en": "On display in the museum",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:128"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumFound",
-			"es": "Hallado",
-			"en": "Found",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:129"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumFromCave",
-			"es": "Cueva ritual",
-			"en": "Ritual cave",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:28"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumFromMarae",
-			"es": "Marae",
-			"en": "Marae",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:27"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumFromSunken",
-			"es": "Ruina sumergida",
-			"en": "Sunken ruin",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:30"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumFromWreck",
-			"es": "Pecio",
-			"en": "Shipwreck",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:29"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumPhotographed",
-			"es": "Fotografiado, sin recoger",
-			"en": "Photographed, not collected",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:130"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumProvenance",
-			"es": "Procedencia: {0} · {1}",
-			"en": "Provenance: {0} · {1}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:142"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumRare",
-			"es": "raro",
-			"en": "rare",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:38"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumStateAt",
-			"es": "{0} · {1}",
-			"en": "{0} · {1}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:139"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumSummary",
-			"es": "Catálogo: {0} de {1} registrados · {2} hallados",
-			"en": "Catalogue: {0} of {1} recorded · {2} found",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:94"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumTitle",
-			"es": "Museo",
-			"en": "Museum",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:192"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumUnavailable",
-			"es": "El catálogo no está disponible en este mundo.",
-			"en": "The catalogue isn't available in this world.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:88"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumUnique",
-			"es": "único",
-			"en": "unique",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:39"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "MuseumUnknown",
-			"es": "Sin descubrir",
-			"en": "Undiscovered",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:131"
 			]
 		},
 		{
@@ -2365,7 +1437,7 @@
 			"en": "New game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:26"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:25"
 			]
 		},
 		{
@@ -2400,32 +1472,12 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "PauseMap",
-			"es": "Mapa",
-			"en": "Map",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:51"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "PauseMuseum",
-			"es": "Museo",
-			"en": "Museum",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:56"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "Paused",
 			"es": "Pausa",
 			"en": "Paused",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:44"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:41"
 			]
 		},
 		{
@@ -2515,7 +1567,7 @@
 			"en": "Quit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:89"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:83"
 			]
 		},
 		{
@@ -2525,7 +1577,7 @@
 			"en": "Quit game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:81"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:63"
 			]
 		},
 		{
@@ -2605,7 +1657,7 @@
 			"en": "Resume",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:26"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:23"
 			]
 		},
 		{
@@ -2615,7 +1667,7 @@
 			"en": "Save game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:71"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:53"
 			]
 		},
 		{
@@ -2665,8 +1717,8 @@
 			"en": "Settings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:74",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:66"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:73",
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:48"
 			]
 		},
 		{
@@ -2886,7 +1938,7 @@
 			"en": "An archipelago on no map",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:57"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:56"
 			]
 		},
 		{
@@ -3006,7 +2058,7 @@
 			"en": "EXPLORED",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:50"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:49"
 			]
 		},
 		{
@@ -3176,7 +2228,7 @@
 			"en": "You have everything: build the Limón on the beach slipway",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:205"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:203"
 			]
 		},
 		{
@@ -3186,7 +2238,7 @@
 			"en": "ahead",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:409"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:393"
 			]
 		},
 		{
@@ -3196,7 +2248,7 @@
 			"en": "behind",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:413"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:397"
 			]
 		},
 		{
@@ -3206,7 +2258,7 @@
 			"en": "{0} m away, {1}{2}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:422"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:406"
 			]
 		},
 		{
@@ -3216,7 +2268,7 @@
 			"en": "to the left",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:417"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:401"
 			]
 		},
 		{
@@ -3226,7 +2278,7 @@
 			"en": "to the right",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:417"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:401"
 			]
 		},
 		{
@@ -3236,7 +2288,7 @@
 			"en": " (underwater)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:421"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:405"
 			]
 		},
 		{
@@ -3246,7 +2298,7 @@
 			"en": "Night falls. The stars now mark the course.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:335"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:319"
 			]
 		},
 		{
@@ -3256,7 +2308,7 @@
 			"en": "Build the Limón on the beach slipway",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:362"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:346"
 			]
 		},
 		{
@@ -3266,7 +2318,7 @@
 			"en": "It's night: sail the Limón",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:365"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:349"
 			]
 		},
 		{
@@ -3276,7 +2328,7 @@
 			"en": "Wait for night to sail the Limón",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:366"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:350"
 			]
 		},
 		{
@@ -3286,7 +2338,7 @@
 			"en": "Salvage the Albatros parts ({0}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:357"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:341"
 			]
 		},
 		{
@@ -3296,7 +2348,7 @@
 			"en": "{0} · nearest {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:359"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:343"
 			]
 		},
 		{
@@ -3306,7 +2358,7 @@
 			"en": "Engine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:432"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:416"
 			]
 		},
 		{
@@ -3316,7 +2368,7 @@
 			"en": "Fuselage",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:429"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:413"
 			]
 		},
 		{
@@ -3326,7 +2378,7 @@
 			"en": "{0} of the Albatros salvaged ({1}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:200"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:199"
 			]
 		},
 		{
@@ -3336,7 +2388,7 @@
 			"en": "Tail",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:431"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:415"
 			]
 		},
 		{
@@ -3346,7 +2398,7 @@
 			"en": "Wing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:430"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:414"
 			]
 		},
 		{
@@ -3356,7 +2408,7 @@
 			"en": "The Limón is ready. Sail at night, guided by the stars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:236"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:220"
 			]
 		},
 		{
@@ -3416,1347 +2468,7 @@
 			"en": "Stars don't show by day: wait for night by the Limón",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:261"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "aliado_de_facto.descriptionEs",
-			"es": "Alcanza la reputación más alta con el pueblo del arrecife.",
-			"en": "Reach the highest standing with the reef village.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «aliado_de_facto» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "aliado_de_facto.nameEs",
-			"es": "Aliado de facto",
-			"en": "Ally in Practice",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «aliado_de_facto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "asalto_repelido.descriptionEs",
-			"es": "Repele tu primer asalto pirata sin perder nada.",
-			"en": "Fight off your first raid without losing anything.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «asalto_repelido» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "asalto_repelido.nameEs",
-			"es": "Asalto repelido",
-			"en": "Raid Repelled",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «asalto_repelido» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "bajo_el_templo.descriptionEs",
-			"es": "Encuentra un tesoro en un templo enterrado.",
-			"en": "Find a treasure inside a buried temple.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «bajo_el_templo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "bajo_el_templo.nameEs",
-			"es": "Bajo el templo",
-			"en": "Under the Temple",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «bajo_el_templo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "bajo_el_volcan.descriptionEs",
-			"es": "Atraviesa el tubo de lava que corre bajo el volcán de la Isla del Humo.",
-			"en": "Walk through the lava tube beneath the volcano on Smoke Island.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «bajo_el_volcan» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "bajo_el_volcan.nameEs",
-			"es": "Bajo el volcán",
-			"en": "Under the Volcano",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «bajo_el_volcan» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "banquete_de_mil_cocos.descriptionEs",
-			"es": "Abre quinientos cocos en total.",
-			"en": "Open five hundred coconuts in total.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «banquete_de_mil_cocos» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "banquete_de_mil_cocos.nameEs",
-			"es": "Banquete de mil cocos",
-			"en": "Thousand-Coconut Feast",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «banquete_de_mil_cocos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "buscador_de_vetas.descriptionEs",
-			"es": "Extrae mineral de tres estratos distintos.",
-			"en": "Mine ore from three different strata.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «buscador_de_vetas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "buscador_de_vetas.nameEs",
-			"es": "Buscador de vetas",
-			"en": "Seam Seeker",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «buscador_de_vetas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "campamento_tomado.descriptionEs",
-			"es": "Derrota un campamento pirata.",
-			"en": "Defeat a raider camp.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «campamento_tomado» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "campamento_tomado.nameEs",
-			"es": "Campamento tomado",
-			"en": "Camp Taken",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «campamento_tomado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "canto_de_ballenas.descriptionEs",
-			"es": "Avista el paso de las ballenas.",
-			"en": "Spot the whales passing by.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «canto_de_ballenas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "canto_de_ballenas.nameEs",
-			"es": "Canto de ballenas",
-			"en": "Whale Song",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «canto_de_ballenas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cartografo.descriptionEs",
-			"es": "Completa el mapa de una isla con tu propia mano.",
-			"en": "Complete the map of one island by your own hand.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cartografo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cartografo.nameEs",
-			"es": "Cartógrafo",
-			"en": "Cartographer",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cartografo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cimientos_de_piedra.descriptionEs",
-			"es": "Construye tu primera pieza de piedra.",
-			"en": "Build your first piece in stone.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cimientos_de_piedra» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cimientos_de_piedra.nameEs",
-			"es": "Cimientos de piedra",
-			"en": "Stone Foundations",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cimientos_de_piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cocina_de_isla.descriptionEs",
-			"es": "Prueba veinte comidas distintas.",
-			"en": "Taste twenty different foods.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cocina_de_isla» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "cocina_de_isla.nameEs",
-			"es": "Cocina de isla",
-			"en": "Island Kitchen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «cocina_de_isla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "coleccionista.descriptionEs",
-			"es": "Expón diez tesoros a la vez en el museo de tu base.",
-			"en": "Display ten treasures at once in your home museum.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «coleccionista» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "coleccionista.nameEs",
-			"es": "Coleccionista",
-			"en": "Collector",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «coleccionista» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "corral_completo.descriptionEs",
-			"es": "Cría las tres especies domésticas.",
-			"en": "Breed all three farm species.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «corral_completo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "corral_completo.nameEs",
-			"es": "Corral completo",
-			"en": "Full Pen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «corral_completo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "deseos_a_punados.descriptionEs",
-			"es": "Pasa en vela una noche de lluvia de estrellas.",
-			"en": "Stay up through a night of shooting stars.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «deseos_a_punados» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "deseos_a_punados.nameEs",
-			"es": "Deseos a puñados",
-			"en": "Wishes by the Handful",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «deseos_a_punados» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "diez_amaneceres.descriptionEs",
-			"es": "Aguanta diez días en las islas.",
-			"en": "Last ten days on the islands.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «diez_amaneceres» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "diez_amaneceres.nameEs",
-			"es": "Diez amaneceres",
-			"en": "Ten Sunrises",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «diez_amaneceres» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_aire_que_falta.descriptionEs",
-			"es": "Sal de una bolsa de aire viciado antes de desmayarte.",
-			"en": "Get out of a pocket of foul air before you pass out.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_aire_que_falta» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_aire_que_falta.nameEs",
-			"es": "El aire que falta",
-			"en": "Running Out of Air",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_aire_que_falta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_cangrejo_se_lo_llevo.descriptionEs",
-			"es": "Un cangrejo se lleva algo que dejaste en la arena.",
-			"en": "A crab makes off with something you left on the sand.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_cangrejo_se_lo_llevo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_cangrejo_se_lo_llevo.nameEs",
-			"es": "Lo robó un cangrejo",
-			"en": "The Crab Took It",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_cangrejo_se_lo_llevo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_limonero.descriptionEs",
-			"es": "Cosecha el primer limón de tu limonero.",
-			"en": "Harvest the first lemon from your lemon tree.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_limonero» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_limonero.nameEs",
-			"es": "El limonero",
-			"en": "The Lemon Tree",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_limonero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_mapa_entero.descriptionEs",
-			"es": "Completa el mapa de las siete islas.",
-			"en": "Complete the map of all seven islands.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_mapa_entero» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "el_mapa_entero.nameEs",
-			"es": "El mapa entero",
-			"en": "The Whole Map",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «el_mapa_entero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "filo_de_obsidiana.descriptionEs",
-			"es": "Extrae tu primera veta de obsidiana en la Isla del Humo.",
-			"en": "Mine your first obsidian seam on Smoke Island.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «filo_de_obsidiana» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "filo_de_obsidiana.nameEs",
-			"es": "Filo de obsidiana",
-			"en": "Obsidian Edge",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «filo_de_obsidiana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "huerto_en_flor.descriptionEs",
-			"es": "Cosecha cinco cultivos distintos.",
-			"en": "Harvest five different crops.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «huerto_en_flor» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "huerto_en_flor.nameEs",
-			"es": "Huerto en flor",
-			"en": "Garden in Bloom",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «huerto_en_flor» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "huevos_por_docenas.descriptionEs",
-			"es": "Recoge cien huevos.",
-			"en": "Collect a hundred eggs.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «huevos_por_docenas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "huevos_por_docenas.nameEs",
-			"es": "Huevos por docenas",
-			"en": "Eggs by the Dozen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «huevos_por_docenas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "juego_de_anzuelos.descriptionEs",
-			"es": "Reúne los tres anzuelos del pueblo navegante.",
-			"en": "Find all three of the voyagers' fish hooks.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «juego_de_anzuelos» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "juego_de_anzuelos.nameEs",
-			"es": "Juego de anzuelos",
-			"en": "Set of Hooks",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «juego_de_anzuelos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "las_siete_islas.descriptionEs",
-			"es": "Pisa las siete islas del archipiélago.",
-			"en": "Set foot on all seven islands.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «las_siete_islas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "las_siete_islas.nameEs",
-			"es": "Las siete islas",
-			"en": "The Seven Islands",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «las_siete_islas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "limon_zarpa.descriptionEs",
-			"es": "Construye el barco «Limón» y llega con él a la isla oculta.",
-			"en": "Build the boat «Limón» and sail her to the hidden island.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «limon_zarpa» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "limon_zarpa.nameEs",
-			"es": "Limón zarpa",
-			"en": "Limón Sets Sail",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «limon_zarpa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "luz_en_el_agua.descriptionEs",
-			"es": "Mira el mar cuando brilla de bioluminiscencia.",
-			"en": "See the sea glow with bioluminescence.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «luz_en_el_agua» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "luz_en_el_agua.nameEs",
-			"es": "Luz en el agua",
-			"en": "Light in the Water",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «luz_en_el_agua» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "madrugada_de_tortugas.descriptionEs",
-			"es": "Mira cómo las crías de tortuga llegan al mar.",
-			"en": "Watch the turtle hatchlings reach the sea.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «madrugada_de_tortugas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "madrugada_de_tortugas.nameEs",
-			"es": "Madrugada de tortugas",
-			"en": "Turtle Dawn",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «madrugada_de_tortugas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "manazas.descriptionEs",
-			"es": "Rompe veinte herramientas golpeando algo demasiado duro para ellas.",
-			"en": "Break twenty tools on something too hard for them.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «manazas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "manazas.nameEs",
-			"es": "Manazas",
-			"en": "Butterfingers",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «manazas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "mar_abierto.descriptionEs",
-			"es": "Navega diez kilómetros a vela.",
-			"en": "Sail ten kilometres.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «mar_abierto» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "mar_abierto.nameEs",
-			"es": "Mar abierto",
-			"en": "Open Sea",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «mar_abierto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "melodia_junto_al_fuego.descriptionEs",
-			"es": "Toca la flauta de bambú junto al fuego.",
-			"en": "Play the bamboo flute by the fire.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «melodia_junto_al_fuego» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "melodia_junto_al_fuego.nameEs",
-			"es": "Melodía junto al fuego",
-			"en": "Fireside Tune",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «melodia_junto_al_fuego» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "muralla_de_piedra.descriptionEs",
-			"es": "Completa una muralla de piedra con al menos una torre.",
-			"en": "Finish a stone wall with at least one tower.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «muralla_de_piedra» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "muralla_de_piedra.nameEs",
-			"es": "Muralla de piedra",
-			"en": "Stone Wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «muralla_de_piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "naufrago_de_verdad.descriptionEs",
-			"es": "Llega a la isla oculta en modo Náufrago.",
-			"en": "Reach the hidden island in Castaway mode.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «naufrago_de_verdad» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "naufrago_de_verdad.nameEs",
-			"es": "Náufrago de verdad",
-			"en": "True Castaway",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «naufrago_de_verdad» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "ojo_de_ciclon.descriptionEs",
-			"es": "Sobrevive a un ciclón sin que tu base sufra ningún daño.",
-			"en": "Weather a cyclone without any damage to your base.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «ojo_de_ciclon» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "ojo_de_ciclon.nameEs",
-			"es": "Ojo de ciclón",
-			"en": "Eye of the Cyclone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «ojo_de_ciclon» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "otra_forma_de_aprender.descriptionEs",
-			"es": "Aprende una técnica de wayfinding del pueblo del arrecife.",
-			"en": "Learn a wayfinding technique from the reef village.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «otra_forma_de_aprender» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "otra_forma_de_aprender.nameEs",
-			"es": "Otra forma de aprender",
-			"en": "Another Way to Learn",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «otra_forma_de_aprender» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_fuego.descriptionEs",
-			"es": "Enciende tu primera hoguera en el archipiélago.",
-			"en": "Light your first fire on the archipelago.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_fuego» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_fuego.nameEs",
-			"es": "Primer fuego",
-			"en": "First Fire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_fuego» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_techo.descriptionEs",
-			"es": "Construye tu primer refugio o tu primer techo.",
-			"en": "Build your first shelter or your first roof.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_techo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_techo.nameEs",
-			"es": "Un techo propio",
-			"en": "Your Own Roof",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_techo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_tren_de_isla.descriptionEs",
-			"es": "Tiende una vía y mueve por ella un vagón cargado.",
-			"en": "Lay track and push a loaded cart along it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_tren_de_isla» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_tren_de_isla.nameEs",
-			"es": "El primer tren",
-			"en": "The First Train",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_tren_de_isla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_trueque.descriptionEs",
-			"es": "Completa tu primer trueque con el pueblo del arrecife.",
-			"en": "Barter with the reef village for the first time.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_trueque» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primer_trueque.nameEs",
-			"es": "Primer trueque",
-			"en": "First Barter",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primer_trueque» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_canoa.descriptionEs",
-			"es": "Termina tu primera canoa en el astillero.",
-			"en": "Finish your first canoe at the shipyard.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_canoa» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_canoa.nameEs",
-			"es": "Primera canoa",
-			"en": "First Canoe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_canoa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_captura.descriptionEs",
-			"es": "Pesca tu primer pez.",
-			"en": "Catch your first fish.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_captura» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_captura.nameEs",
-			"es": "Primera captura",
-			"en": "First Catch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_captura» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_empalizada.descriptionEs",
-			"es": "Construye tu primera empalizada.",
-			"en": "Build your first palisade.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_empalizada» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_empalizada.nameEs",
-			"es": "Primera empalizada",
-			"en": "First Palisade",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_empalizada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_palada.descriptionEs",
-			"es": "Cava tu primer agujero en la tierra o la arena.",
-			"en": "Dig your first hole in earth or sand.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_palada» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_palada.nameEs",
-			"es": "Primera palada",
-			"en": "First Shovelful",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_palada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_pareja.descriptionEs",
-			"es": "Consigue la primera cría en un corral.",
-			"en": "Breed your first animal in a pen.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_pareja» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "primera_pareja.nameEs",
-			"es": "Primera cría",
-			"en": "A New Arrival",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «primera_pareja» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "pulmones_de_perla.descriptionEs",
-			"es": "Bucea hasta veinte metros de profundidad.",
-			"en": "Dive down to twenty metres.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «pulmones_de_perla» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "pulmones_de_perla.nameEs",
-			"es": "Pulmones de perla",
-			"en": "Pearl Lungs",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «pulmones_de_perla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "restos_del_albatros.descriptionEs",
-			"es": "Recupera los cuatro restos del Albatros: fuselaje, ala, cola y motor.",
-			"en": "Recover all four pieces of the Albatross: fuselage, wing, tail and engine.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «restos_del_albatros» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "restos_del_albatros.nameEs",
-			"es": "Restos del Albatros",
-			"en": "What the Albatross Left",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «restos_del_albatros» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "rey_del_cocotero.descriptionEs",
-			"es": "Trepa a un cocotero y abre cincuenta cocos.",
-			"en": "Climb a coconut palm and open fifty coconuts.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «rey_del_cocotero» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "rey_del_cocotero.nameEs",
-			"es": "Rey del cocotero",
-			"en": "Coconut King",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «rey_del_cocotero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "sin_disparar_una_flecha.descriptionEs",
-			"es": "Ayuda a defender el pueblo del arrecife de un asalto sin disparar.",
-			"en": "Help the reef village fight off a raid without shooting.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «sin_disparar_una_flecha» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "sin_disparar_una_flecha.nameEs",
-			"es": "Sin disparar una flecha",
-			"en": "Without Loosing an Arrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «sin_disparar_una_flecha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "sin_mapa.descriptionEs",
-			"es": "Llega a la isla oculta sin haber dibujado ninguna costa.",
-			"en": "Reach the hidden island without ever drawing a coastline.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «sin_mapa» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "sin_mapa.nameEs",
-			"es": "Sin mapa",
-			"en": "No Map",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «sin_mapa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "tierra_firme.descriptionEs",
-			"es": "Pisa una segunda isla del archipiélago.",
-			"en": "Set foot on a second island.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «tierra_firme» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "tierra_firme.nameEs",
-			"es": "Tierra firme",
-			"en": "Solid Ground",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «tierra_firme» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "topo_de_isla.descriptionEs",
-			"es": "Cava hasta veinte metros bajo la superficie.",
-			"en": "Dig twenty metres below the surface.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «topo_de_isla» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "topo_de_isla.nameEs",
-			"es": "Topo de isla",
-			"en": "Island Mole",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «topo_de_isla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "un_ano_de_islas.descriptionEs",
-			"es": "Vive las cuatro estaciones del archipiélago en modo Superviviente o Náufrago.",
-			"en": "Live through all four island seasons in Survivor or Castaway mode.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «un_ano_de_islas» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "un_ano_de_islas.nameEs",
-			"es": "Un año de islas",
-			"en": "A Year of Islands",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «un_ano_de_islas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "una_historia_que_contar.descriptionEs",
-			"es": "Captura una de las cinco presas legendarias del archipiélago.",
-			"en": "Land one of the archipelago's five legendary catches.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «una_historia_que_contar» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "una_historia_que_contar.nameEs",
-			"es": "Una historia que contar",
-			"en": "A Tale to Tell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «una_historia_que_contar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "viga_a_tiempo.descriptionEs",
-			"es": "Coloca un apoyo en una galería a punto de derrumbarse.",
-			"en": "Prop up a tunnel that is about to cave in.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «viga_a_tiempo» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "viga_a_tiempo.nameEs",
-			"es": "Viga a tiempo",
-			"en": "Beam in Time",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «viga_a_tiempo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "wayfinder.descriptionEs",
-			"es": "Aprende las cinco técnicas de navegación ancestral.",
-			"en": "Learn all five ancestral wayfinding techniques.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «wayfinder» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.achievements.achievements",
-			"key": "wayfinder.nameEs",
-			"es": "Wayfinder",
-			"en": "Wayfinder",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/achievements.json «wayfinder» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "anzuelo_ceremonial.nameEs",
-			"es": "Anzuelo ceremonial de hueso de ballena",
-			"en": "Ceremonial whalebone hook",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «anzuelo_ceremonial» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "anzuelo_hueso.nameEs",
-			"es": "Anzuelo de hueso tallado",
-			"en": "Carved bone fish hook",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «anzuelo_hueso» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "anzuelo_nacar.nameEs",
-			"es": "Anzuelo de nácar",
-			"en": "Mother-of-pearl hook",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «anzuelo_nacar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "carta_oleaje.nameEs",
-			"es": "Carta del oleaje de siete islas",
-			"en": "Swell chart of the seven islands",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «carta_oleaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "carta_varillas.nameEs",
-			"es": "Carta de varillas y conchas",
-			"en": "Stick and shell chart",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «carta_varillas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "colgante_carey.nameEs",
-			"es": "Colgante de carey con tortuga",
-			"en": "Tortoiseshell turtle pendant",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «colgante_carey» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "colgante_concha.nameEs",
-			"es": "Colgante de concha",
-			"en": "Shell pendant",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «colgante_concha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "collar_conchas.nameEs",
-			"es": "Collar de conchas",
-			"en": "Shell necklace",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «collar_conchas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "figura_gemelos.nameEs",
-			"es": "Figura de los gemelos",
-			"en": "Twin figure",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «figura_gemelos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "figura_mira_cielo.nameEs",
-			"es": "Figura de basalto mirando al cielo",
-			"en": "Basalt sky-gazer figure",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «figura_mira_cielo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "figura_navegante.nameEs",
-			"es": "Figura del navegante",
-			"en": "Navigator figure",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «figura_navegante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "pectoral_nacar.nameEs",
-			"es": "Pectoral de nácar",
-			"en": "Pearl-shell breastplate",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «pectoral_nacar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "remo_canoa_doble.nameEs",
-			"es": "Remo tallado de la canoa doble",
-			"en": "Carved double-canoe paddle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «remo_canoa_doble» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "remo_ceremonial.nameEs",
-			"es": "Remo ceremonial",
-			"en": "Ceremonial paddle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «remo_ceremonial» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "tapa_estrellas.nameEs",
-			"es": "Tapa de las estrellas",
-			"en": "Star tapa cloth",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «tapa_estrellas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.artifacts",
-			"key": "tapa_pintada.nameEs",
-			"es": "Tapa pintada",
-			"en": "Painted tapa cloth",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «tapa_pintada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.displays",
-			"key": "estanteria_museo.nameEs",
-			"es": "Estantería del museo",
-			"en": "Museum shelf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «estanteria_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.displays",
-			"key": "panel_museo.nameEs",
-			"es": "Panel de pared del museo",
-			"en": "Museum wall panel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «panel_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.displays",
-			"key": "vitrina_museo.nameEs",
-			"es": "Vitrina",
-			"en": "Display case",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «vitrina_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.provenances",
-			"key": "cueva_ritual.nameEs",
-			"es": "Cueva ritual",
-			"en": "Ritual cave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «cueva_ritual» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.provenances",
-			"key": "marae.nameEs",
-			"es": "Marae",
-			"en": "Marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «marae» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.provenances",
-			"key": "pecio.nameEs",
-			"es": "Pecio",
-			"en": "Shipwreck",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «pecio» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.provenances",
-			"key": "ruina_sumergida.nameEs",
-			"es": "Ruina sumergida",
-			"en": "Sunken ruin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «ruina_sumergida» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.rarities",
-			"key": "comun.nameEs",
-			"es": "Común",
-			"en": "Common",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «comun» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.rarities",
-			"key": "raro.nameEs",
-			"es": "Raro",
-			"en": "Rare",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «raro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.artifacts.rarities",
-			"key": "unico.nameEs",
-			"es": "Único",
-			"en": "Unique",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/artifacts.json «unico» nameEs/nameEn"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:245"
 			]
 		},
 		{
@@ -5380,716 +3092,6 @@
 			]
 		},
 		{
-			"namespace": "Data.exploration.kinds",
-			"key": "arco_marino.nameEs",
-			"es": "Arco marino",
-			"en": "Sea arch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «arco_marino» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "cala.nameEs",
-			"es": "Cala",
-			"en": "Cove",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «cala» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "campamento.nameEs",
-			"es": "Campamento",
-			"en": "Camp",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «campamento» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "cascada.nameEs",
-			"es": "Cascada",
-			"en": "Waterfall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «cascada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "cueva.nameEs",
-			"es": "Cueva",
-			"en": "Cave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «cueva» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "cumbre.nameEs",
-			"es": "Cumbre",
-			"en": "Summit",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «cumbre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "jardin_coral.nameEs",
-			"es": "Jardín de coral",
-			"en": "Coral garden",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «jardin_coral» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "mirador.nameEs",
-			"es": "Mirador",
-			"en": "Viewpoint",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «mirador» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "naufragio.nameEs",
-			"es": "Naufragio",
-			"en": "Wreckage",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «naufragio» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "poza.nameEs",
-			"es": "Poza de marea",
-			"en": "Tide pool",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «poza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "recurso.nameEs",
-			"es": "Recurso",
-			"en": "Resource",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «recurso» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "ruina.nameEs",
-			"es": "Ruina",
-			"en": "Ruin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «ruina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.kinds",
-			"key": "vista.nameEs",
-			"es": "Vista",
-			"en": "Vista",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «vista» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_cueva_sextante.nameEs",
-			"es": "Cueva del Sextante",
-			"en": "Sextant Cave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_cueva_sextante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_laguna_amaraje.nameEs",
-			"es": "Laguna del Amaraje",
-			"en": "Splashdown Lagoon",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_laguna_amaraje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_marae_palmeral.nameEs",
-			"es": "Marae del Palmeral",
-			"en": "Palm Grove Marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_marae_palmeral» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_mirador_cresta.nameEs",
-			"es": "Mirador de la Cresta",
-			"en": "Ridge Viewpoint",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_mirador_cresta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_playa_ala_rota.nameEs",
-			"es": "Playa del Ala Rota",
-			"en": "Broken Wing Beach",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_playa_ala_rota» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "landing_poza_marea_baja.nameEs",
-			"es": "Poza de la Marea Baja",
-			"en": "Low-Tide Pool",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «landing_poza_marea_baja» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "mesa_farallones_paso.nameEs",
-			"es": "Farallones del Paso",
-			"en": "Passage Stacks",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «mesa_farallones_paso» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.exploration.landmarks",
-			"key": "teeth_arco_centinela.nameEs",
-			"es": "Arco del Centinela",
-			"en": "Sentinel Arch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/exploration.json «teeth_arco_centinela» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.pieces",
-			"key": "cerca_estacas.nameEs",
-			"es": "Cerca de estacas",
-			"en": "Stake fence",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cerca_estacas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.pieces",
-			"key": "empalizada.nameEs",
-			"es": "Empalizada de madera",
-			"en": "Wooden palisade",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «empalizada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.pieces",
-			"key": "muralla_piedra.nameEs",
-			"es": "Muralla de piedra",
-			"en": "Stone wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «muralla_piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.pieces",
-			"key": "puerta_muralla.nameEs",
-			"es": "Puerta de muralla",
-			"en": "Wall gate",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «puerta_muralla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.pieces",
-			"key": "torre_defensa.nameEs",
-			"es": "Torre de defensa",
-			"en": "Defence tower",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «torre_defensa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.traps",
-			"key": "estacas_ocultas.nameEs",
-			"es": "Estacas ocultas",
-			"en": "Hidden stakes",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «estacas_ocultas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.defenses.traps",
-			"key": "foso_estacas.nameEs",
-			"es": "Foso con estacas",
-			"en": "Staked pit",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «foso_estacas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.pieces",
-			"key": "corral.nameEs",
-			"es": "Corral",
-			"en": "Pen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «corral» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.pieces",
-			"key": "gallinero.nameEs",
-			"es": "Gallinero",
-			"en": "Coop",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «gallinero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.pieces",
-			"key": "pocilga.nameEs",
-			"es": "Pocilga",
-			"en": "Sty",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «pocilga» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.species",
-			"key": "cabra.nameEs",
-			"es": "Cabra",
-			"en": "Goat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cabra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.species",
-			"key": "cerdo.nameEs",
-			"es": "Cerdo",
-			"en": "Pig",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cerdo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.livestock.species",
-			"key": "gallina.nameEs",
-			"es": "Gallina",
-			"en": "Chicken",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «gallina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "batata_violeta.nameEs",
-			"es": "Batata violeta",
-			"en": "Purple sweet potato",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «batata_violeta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "ceramica_decorada.nameEs",
-			"es": "Cerámica decorada",
-			"en": "Decorated pottery",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «ceramica_decorada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "leche_cabra.nameEs",
-			"es": "Leche de cabra",
-			"en": "Goat's milk",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «leche_cabra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "nacar_trabajado.nameEs",
-			"es": "Nácar trabajado",
-			"en": "Worked mother-of-pearl",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «nacar_trabajado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "perla.nameEs",
-			"es": "Perla",
-			"en": "Pearl",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «perla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "sal_refinada.nameEs",
-			"es": "Sal refinada",
-			"en": "Refined salt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «sal_refinada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "tabla_mareas.nameEs",
-			"es": "Tabla de mareas",
-			"en": "Tide table",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «tabla_mareas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.pendingItems",
-			"key": "vela_lona_reforzada.nameEs",
-			"es": "Vela de lona reforzada",
-			"en": "Reinforced canvas sail",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «vela_lona_reforzada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.favors",
-			"key": "aviso_asalto.nameEs",
-			"es": "Avisar de un asalto pirata",
-			"en": "Warn of a raid",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «aviso_asalto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.favors",
-			"key": "ensenar_wayfinding.nameEs",
-			"es": "Enseñar una técnica de navegación",
-			"en": "Teach a wayfinding technique",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «ensenar_wayfinding» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "cazar_cerca.nameEs",
-			"es": "Cazar a menos de 150 m de la aldea",
-			"en": "Hunt within 150 m of the village",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cazar_cerca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "defender_asalto.nameEs",
-			"es": "Ayudar a repeler un asalto pirata",
-			"en": "Help repel a raid",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «defender_asalto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "devolver_ritual.nameEs",
-			"es": "Devolver un objeto ritual a su marae",
-			"en": "Return a ritual object to its marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «devolver_ritual» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "encargo_tablon.nameEs",
-			"es": "Completar un encargo del tablón",
-			"en": "Finish a job from the board",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «encargo_tablon» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "golpear_aldeano.nameEs",
-			"es": "Golpear a un aldeano",
-			"en": "Strike a villager",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «golpear_aldeano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "jornada_respetuosa.nameEs",
-			"es": "Un día sin minar, talar ni cazar cerca de la aldea o de un marae",
-			"en": "A day without mining, felling or hunting near the village or a marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «jornada_respetuosa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "minar_talar_marae.nameEs",
-			"es": "Minar o talar a menos de 50 m de un marae activo",
-			"en": "Mine or fell within 50 m of an active marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «minar_talar_marae» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "saquear.nameEs",
-			"es": "Saquear un contenedor o las ofrendas",
-			"en": "Loot a container or the offerings",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «saquear» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.reputationActions",
-			"key": "trueque.nameEs",
-			"es": "Trueque (máx. 1 al día)",
-			"en": "Barter (max. 1 a day)",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «trueque» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.tiers",
-			"key": "alta.nameEs",
-			"es": "Alta",
-			"en": "High",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «alta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.tiers",
-			"key": "buena.nameEs",
-			"es": "Buena",
-			"en": "Good",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «buena» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.tiers",
-			"key": "cauta.nameEs",
-			"es": "Cauta",
-			"en": "Wary",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cauta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.tiers",
-			"key": "hostil.nameEs",
-			"es": "Hostil",
-			"en": "Hostile",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «hostil» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.tiers",
-			"key": "neutral.nameEs",
-			"es": "Neutral",
-			"en": "Neutral",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «neutral» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "comida_preparada.nameEs",
-			"es": "Comida preparada o conservada",
-			"en": "Cooked or preserved food",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «comida_preparada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "fibra_y_ceramica.nameEs",
-			"es": "Cerámica, tela y cordelería",
-			"en": "Pottery, cloth and cordage",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «fibra_y_ceramica» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "fruta_y_pescado.nameEs",
-			"es": "Fruta común y pescado fresco",
-			"en": "Fruit and fresh fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «fruta_y_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "herramientas_buenas.nameEs",
-			"es": "Herramientas de nivel 2-3",
-			"en": "Level 2-3 tools",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «herramientas_buenas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "medicina.nameEs",
-			"es": "Medicina",
-			"en": "Medicine",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «medicina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "metal_trabajado.nameEs",
-			"es": "Metal trabajado",
-			"en": "Worked metal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «metal_trabajado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.trade.wants",
-			"key": "pieles.nameEs",
-			"es": "Cuero y pieles",
-			"en": "Leather and hides",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «pieles» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "ascensor_pozo.nameEs",
-			"es": "Ascensor de pozo",
-			"en": "Shaft lift",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «ascensor_pozo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "cambio_agujas.nameEs",
-			"es": "Cambio de agujas",
-			"en": "Points switch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «cambio_agujas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "rail_curvo.nameEs",
-			"es": "Tramo de raíl curvo",
-			"en": "Curved rail section",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «rail_curvo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "rail_recto.nameEs",
-			"es": "Tramo de raíl recto",
-			"en": "Straight rail section",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «rail_recto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "torno_cuerda.nameEs",
-			"es": "Torno de cuerda",
-			"en": "Rope winch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «torno_cuerda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fases_futuras.tramway",
-			"key": "vagon.nameEs",
-			"es": "Vagón",
-			"en": "Mine cart",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fases_futuras.json «vagon» nameEs/nameEn"
-			]
-		},
-		{
 			"namespace": "Data.fauna.lod",
 			"key": "Frozen.nameEs",
 			"es": "Congelado",
@@ -6390,166 +3392,6 @@
 			]
 		},
 		{
-			"namespace": "Data.fossils.pieces",
-			"key": "amonite_caliza.descriptionEs",
-			"es": "Amonita en caliza. La espiral está entera, y cada cámara se rellenó de una piedra más clara.",
-			"en": "Ammonite in limestone. The spiral is whole, and each chamber filled with paler stone.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «amonite_caliza» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "amonite_caliza.nameEs",
-			"es": "Amonita en caliza",
-			"en": "Ammonite in limestone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «amonite_caliza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "concha_gigante_fosilizada.descriptionEs",
-			"es": "Concha gigante fosilizada. Una almeja como las de la laguna de hoy, pero de piedra y el doble de grande.",
-			"en": "Giant fossilised shell. A clam like the ones in today's lagoon, but made of stone and twice the size.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «concha_gigante_fosilizada» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "concha_gigante_fosilizada.nameEs",
-			"es": "Concha gigante fosilizada",
-			"en": "Giant fossilised shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «concha_gigante_fosilizada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "coral_fosil_ramificado.descriptionEs",
-			"es": "Coral fósil ramificado. Las ramas ya son piedra, pero conservan los poros donde vivían los pólipos.",
-			"en": "Branching fossil coral. The branches are stone now, but they keep the pores where the polyps lived.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «coral_fosil_ramificado» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "coral_fosil_ramificado.nameEs",
-			"es": "Coral fósil ramificado",
-			"en": "Branching fossil coral",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «coral_fosil_ramificado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "diente_tiburon_fosil.descriptionEs",
-			"es": "Diente de tiburón fósil. Mucho más viejo que la isla donde apareció: la caliza lo subió desde el fondo de otro mar.",
-			"en": "Fossil shark tooth. Much older than the island it turned up on; the limestone carried it up from the floor of another sea.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «diente_tiburon_fosil» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "diente_tiburon_fosil.nameEs",
-			"es": "Diente de tiburón fósil",
-			"en": "Fossil shark tooth",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «diente_tiburon_fosil» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "huella_ave_ceniza.descriptionEs",
-			"es": "Huella de ave en ceniza. Tres dedos marcados en una capa de ceniza que se endureció antes de que lloviera.",
-			"en": "Bird track in ash. Three toes pressed into a layer of ash that hardened before the rain came.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «huella_ave_ceniza» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "huella_ave_ceniza.nameEs",
-			"es": "Huella de ave en ceniza",
-			"en": "Bird track in ash",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «huella_ave_ceniza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "huevo_fosil.descriptionEs",
-			"es": "Huevo fósil. Del tamaño de un puño, con la cáscara hecha piedra, y nadie sabe qué ave lo puso.",
-			"en": "Fossil egg. Fist-sized, the shell turned to stone, and no one knows which bird laid it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «huevo_fosil» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "huevo_fosil.nameEs",
-			"es": "Huevo fósil",
-			"en": "Fossil egg",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «huevo_fosil» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "madera_petrificada.descriptionEs",
-			"es": "Madera petrificada. Pesa como una piedra y todavía tiene los anillos del árbol, uno por año.",
-			"en": "Petrified wood. Weighs like a stone and still has the tree's rings, one per year.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «madera_petrificada» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "madera_petrificada.nameEs",
-			"es": "Madera petrificada",
-			"en": "Petrified wood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «madera_petrificada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "vertebra_pez_fosil.descriptionEs",
-			"es": "Vértebra de pez fósil. Un disco de piedra con un agujero en el centro, como una cuenta de collar.",
-			"en": "Fossil fish vertebra. A stone disc with a hole through the middle, like a necklace bead.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «vertebra_pez_fosil» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.fossils.pieces",
-			"key": "vertebra_pez_fosil.nameEs",
-			"es": "Vértebra de pez fósil",
-			"en": "Fossil fish vertebra",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fossils.json «vertebra_pez_fosil» nameEs/nameEn"
-			]
-		},
-		{
 			"namespace": "Data.fuels.ignition",
 			"key": "cerillas.nameEs",
 			"es": "Cerillas",
@@ -6667,406 +3509,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/halden_diaries.json «halden_05» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "alga_roja_seca.descriptionEs",
-			"es": "Alga roja seca. La marea la deja en la línea de resaca; seca conserva el color, pero ya no huele a mar.",
-			"en": "Dried red seaweed. The tide leaves it along the wrack line; dried, it keeps its colour but loses the sea smell.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «alga_roja_seca» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "alga_roja_seca.nameEs",
-			"es": "Alga roja seca",
-			"en": "Dried red seaweed",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «alga_roja_seca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "campanas_manglar.descriptionEs",
-			"es": "Campanas de manglar. Flores colgantes que las abejas visitan en cuanto sale el sol.",
-			"en": "Mangrove bells. Hanging flowers the bees visit as soon as the sun is up.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «campanas_manglar» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "campanas_manglar.nameEs",
-			"es": "Campanas de manglar",
-			"en": "Mangrove bells",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «campanas_manglar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "flor_fantasma_nocturna.descriptionEs",
-			"es": "Flor fantasma nocturna. Blanca y sin hojas, sale del suelo de la selva y solo se abre de noche.",
-			"en": "Night ghost flower. White and leafless, it comes up from the forest floor and only opens at night.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «flor_fantasma_nocturna» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "flor_fantasma_nocturna.nameEs",
-			"es": "Flor fantasma nocturna",
-			"en": "Night ghost flower",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «flor_fantasma_nocturna» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "frangipani.descriptionEs",
-			"es": "Frangipani. Cinco pétalos blancos con el centro amarillo; el olor se queda en los dedos un buen rato.",
-			"en": "Frangipani. Five white petals with a yellow centre; the scent stays on your fingers for a good while.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «frangipani» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "frangipani.nameEs",
-			"es": "Frangipani",
-			"en": "Frangipani",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «frangipani» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "helecho_de_cueva.descriptionEs",
-			"es": "Helecho de cueva. Vive en la penumbra de la entrada, justo hasta donde llega la luz.",
-			"en": "Cave fern. Lives in the half-dark of the entrance, exactly as far in as the light reaches.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «helecho_de_cueva» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "helecho_de_cueva.nameEs",
-			"es": "Helecho de cueva",
-			"en": "Cave fern",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «helecho_de_cueva» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "hibisco_silvestre.descriptionEs",
-			"es": "Hibisco silvestre. Cada flor dura un solo día, así que la que se prensa hay que cortarla por la mañana.",
-			"en": "Wild hibiscus. Each flower lasts a single day, so the one you press has to be cut in the morning.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «hibisco_silvestre» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "hibisco_silvestre.nameEs",
-			"es": "Hibisco silvestre",
-			"en": "Wild hibiscus",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «hibisco_silvestre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "liquen_de_lava.descriptionEs",
-			"es": "Liquen de lava. Es lo primero que vive sobre la roca nueva del Humo, en manchas grises del tamaño de una moneda.",
-			"en": "Lava lichen. The first thing to live on Smoke Island's new rock, in grey patches the size of a coin.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «liquen_de_lava» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "liquen_de_lava.nameEs",
-			"es": "Liquen de lava",
-			"en": "Lava lichen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «liquen_de_lava» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "loto_de_cenote.descriptionEs",
-			"es": "Loto de cenote. Las hojas flotan en el agua dulce y la flor se cierra al caer la tarde.",
-			"en": "Cenote lotus. Its leaves float on the fresh water and the flower closes as evening falls.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «loto_de_cenote» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "loto_de_cenote.nameEs",
-			"es": "Loto de cenote",
-			"en": "Cenote lotus",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «loto_de_cenote» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "musgo_luminoso.descriptionEs",
-			"es": "Musgo luminoso. En la mano no brilla; hay que devolverlo a la oscuridad para ver el verde.",
-			"en": "Glowing moss. In your hand it doesn't shine; put it back in the dark to see the green.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «musgo_luminoso» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "musgo_luminoso.nameEs",
-			"es": "Musgo luminoso",
-			"en": "Glowing moss",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «musgo_luminoso» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "orquidea_acantilado.descriptionEs",
-			"es": "Orquídea de acantilado. Crece donde nada más se sostiene, con las raíces metidas en la propia roca.",
-			"en": "Cliff orchid. Grows where nothing else can hold on, roots wedged into the rock itself.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «orquidea_acantilado» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.herbarium.pieces",
-			"key": "orquidea_acantilado.nameEs",
-			"es": "Orquídea de acantilado",
-			"en": "Cliff orchid",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/herbarium.json «orquidea_acantilado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "abeja_islena.descriptionEs",
-			"es": "Abeja isleña. Pequeña y oscura, anida en troncos huecos de Esmeralda, y la miel sale del mismo tronco.",
-			"en": "Island bee. Small and dark, it nests in hollow trunks on Emerald, and the honey comes from the same trunk.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «abeja_islena» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "abeja_islena.nameEs",
-			"es": "Abeja isleña",
-			"en": "Island bee",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «abeja_islena» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "escarabajo_rinoceronte.descriptionEs",
-			"es": "Escarabajo rinoceronte. El macho lleva un cuerno curvo, y al anochecer se le oye zumbar entre las palmas.",
-			"en": "Rhinoceros beetle. The male carries a curved horn, and at dusk you hear it droning among the palms.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «escarabajo_rinoceronte» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "escarabajo_rinoceronte.nameEs",
-			"es": "Escarabajo rinoceronte",
-			"en": "Rhinoceros beetle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «escarabajo_rinoceronte» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "hormiga_cortadora.descriptionEs",
-			"es": "Hormiga cortadora. Una fila de trozos de hoja cruza el sendero, y debajo de cada trozo va una hormiga.",
-			"en": "Leafcutter ant. A line of leaf pieces crosses the path, and under each piece walks an ant.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «hormiga_cortadora» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "hormiga_cortadora.nameEs",
-			"es": "Hormiga cortadora",
-			"en": "Leafcutter ant",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «hormiga_cortadora» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "libelula_roja_cenote.descriptionEs",
-			"es": "Libélula roja del cenote. Patrulla siempre el mismo tramo de orilla y vuelve a posarse en el mismo junco.",
-			"en": "Cenote red dragonfly. Patrols the same stretch of shore and always lands back on the same reed.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «libelula_roja_cenote» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "libelula_roja_cenote.nameEs",
-			"es": "Libélula roja del cenote",
-			"en": "Cenote red dragonfly",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «libelula_roja_cenote» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "luciernaga_caverna.descriptionEs",
-			"es": "Luciérnaga de caverna. Parpadea despacio en las cuevas más hondas, donde no llega otra luz.",
-			"en": "Cave firefly. Flickers slowly in the deepest caves, where no other light reaches.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «luciernaga_caverna» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "luciernaga_caverna.nameEs",
-			"es": "Luciérnaga de caverna",
-			"en": "Cave firefly",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «luciernaga_caverna» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mantis_hoja_esmeralda.descriptionEs",
-			"es": "Mantis hoja de Esmeralda. Se queda quieta en una rama y pasa por una hoja más hasta que gira la cabeza.",
-			"en": "Emerald leaf mantis. Sits still on a branch, passing for one more leaf until it turns its head.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mantis_hoja_esmeralda» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mantis_hoja_esmeralda.nameEs",
-			"es": "Mantis hoja de Esmeralda",
-			"en": "Emerald leaf mantis",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mantis_hoja_esmeralda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mariposa_azul_manglar.descriptionEs",
-			"es": "Mariposa azul del manglar. Vuela a ras del agua entre las raíces y solo enseña el azul cuando abre las alas.",
-			"en": "Mangrove blue butterfly. Flies low over the water between the roots and only shows the blue when it opens its wings.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mariposa_azul_manglar» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mariposa_azul_manglar.nameEs",
-			"es": "Mariposa azul del manglar",
-			"en": "Mangrove blue butterfly",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mariposa_azul_manglar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mariposa_cristal.descriptionEs",
-			"es": "Mariposa de cristal. Las alas son tan transparentes que a través de ellas se ve la hoja de detrás.",
-			"en": "Glasswing butterfly. The wings are so clear you can see the leaf behind through them.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mariposa_cristal» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "mariposa_cristal.nameEs",
-			"es": "Mariposa de cristal",
-			"en": "Glasswing butterfly",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «mariposa_cristal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "polilla_luna_meseta.descriptionEs",
-			"es": "Polilla luna de la Meseta. Verde pálido, con colas largas en las alas de atrás; acude a la luz del fuego.",
-			"en": "Mesa moon moth. Pale green, with long tails on the hind wings; drawn to firelight.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «polilla_luna_meseta» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "polilla_luna_meseta.nameEs",
-			"es": "Polilla luna de la Meseta",
-			"en": "Mesa moon moth",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «polilla_luna_meseta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "saltamontes_hierba_seca.descriptionEs",
-			"es": "Saltamontes de hierba seca. Tiene el color de la hierba en la estación seca y solo se le ve cuando salta.",
-			"en": "Dry-grass grasshopper. The colour of the grass in the dry season; you only see it when it jumps.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «saltamontes_hierba_seca» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.insects.pieces",
-			"key": "saltamontes_hierba_seca.nameEs",
-			"es": "Saltamontes de hierba seca",
-			"en": "Dry-grass grasshopper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/insects.json «saltamontes_hierba_seca» nameEs/nameEn"
 			]
 		},
 		{
@@ -8810,66 +5252,6 @@
 			]
 		},
 		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_anzuelo_ceremonial.clueEs",
-			"es": "Detrás del agua que cae, donde ya no llega la luz, la roca tiene una repisa a la altura del pecho.",
-			"en": "Behind the falling water, where the light no longer reaches, the rock has a ledge at chest height.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_anzuelo_ceremonial» clueEs/clueEn"
-			]
-		},
-		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_carta_varillas.clueEs",
-			"es": "Cuenta siete palmeras desde el marae hacia el mar. Bajo la séptima, a un palmo de arena.",
-			"en": "Count seven palms from the marae towards the sea. Under the seventh, a hand's depth into the sand.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_carta_varillas» clueEs/clueEn"
-			]
-		},
-		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_colgante_carey.clueEs",
-			"es": "Entre el segundo y el tercer islote, con bajamar, asoma la cuaderna de un casco viejo. Hay que bucear junto a ella.",
-			"en": "Between the second and third islets, at low tide, the rib of an old hull breaks the surface. Dive beside it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_colgante_carey» clueEs/clueEn"
-			]
-		},
-		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_figura_navegante.clueEs",
-			"es": "Donde el tubo de lava se abre al cielo, la ceniza tapa una losa plana. No la levantamos.",
-			"en": "Where the lava tube opens to the sky, ash covers a flat slab. We didn't lift it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_figura_navegante» clueEs/clueEn"
-			]
-		},
-		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_pectoral_nacar.clueEs",
-			"es": "Con la marea más baja del año, la laguna enseña un muro de coral cortado a mano. Lo que dejaron está al pie.",
-			"en": "At the lowest tide of the year, the lagoon shows a wall of hand-cut coral. What they left lies at its foot.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_pectoral_nacar» clueEs/clueEn"
-			]
-		},
-		{
-			"namespace": "Data.map_clues.clues",
-			"key": "pista_tapa_estrellas.clueEs",
-			"es": "Al pie del farallón partido, donde la costa gira al este, el suelo suena hueco al pisarlo.",
-			"en": "At the foot of the split sea stack, where the coast turns east, the ground sounds hollow underfoot.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/map_clues.json «pista_tapa_estrellas» clueEs/clueEn"
-			]
-		},
-		{
 			"namespace": "Data.minerals.pieces",
 			"key": "amatista_caverna.descriptionEs",
 			"es": "Amatista de caverna. Violeta por dentro de una piedra hueca que por fuera parecía un canto cualquiera.",
@@ -9397,166 +5779,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/mining.json «pico_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "artefactos.nameEs",
-			"es": "Artefactos",
-			"en": "Artefacts",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «artefactos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "artefactos.rewardEs",
-			"es": "Un estandarte ceremonial para la base, por respeto al pueblo navegante.",
-			"en": "A ceremonial banner for the base, out of respect for the voyaging people.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «artefactos» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "conchas.nameEs",
-			"es": "Conchas",
-			"en": "Shells",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «conchas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "conchas.rewardEs",
-			"es": "Un móvil de conchas que suena cuando sopla el viento.",
-			"en": "A shell mobile that clinks when the wind blows.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «conchas» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "fosiles.nameEs",
-			"es": "Fósiles",
-			"en": "Fossils",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «fosiles» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "fosiles.rewardEs",
-			"es": "Una aldaba tallada con forma de amonita para la puerta principal.",
-			"en": "A carved ammonite knocker for the front door.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «fosiles» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "herbario.nameEs",
-			"es": "Herbario",
-			"en": "Herbarium",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «herbario» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "herbario.rewardEs",
-			"es": "La semilla de una flor rara para el huerto. No se come.",
-			"en": "The seed of a rare flower for the garden. Not for eating.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «herbario» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "insectos.nameEs",
-			"es": "Insectos",
-			"en": "Insects",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «insectos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "insectos.rewardEs",
-			"es": "Un farol que atrae luciérnagas de noche y alumbra sin gastar combustible.",
-			"en": "A lantern that draws fireflies at night and gives light without fuel.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «insectos» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "minerales.nameEs",
-			"es": "Minerales y cristales",
-			"en": "Minerals and crystals",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «minerales» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "minerales.rewardEs",
-			"es": "Un pigmento que brilla a oscuras, para pintar las paredes de la base.",
-			"en": "A pigment that glows in the dark, for painting the base walls.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «minerales» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "peces.nameEs",
-			"es": "Peces",
-			"en": "Fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «peces» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "peces.rewardEs",
-			"es": "Una pecera central grande para la base, solo de adorno.",
-			"en": "A large central fish tank for the base, purely for show.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «peces» rewardEs/rewardEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "tesoros.nameEs",
-			"es": "Tesoros",
-			"en": "Treasures",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «tesoros» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.museum_collections.collections",
-			"key": "tesoros.rewardEs",
-			"es": "Una placa grabada con la inscripción que elijas.",
-			"en": "An engraved plaque with an inscription of your choice.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/museum_collections.json «tesoros» rewardEs/rewardEn"
 			]
 		},
 		{
@@ -10187,406 +6409,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "altar.nameEs",
-			"es": "Ofrenda en el altar",
-			"en": "Altar offering",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «altar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "canoe.nameEs",
-			"es": "Canoa doble fosilizada",
-			"en": "Fossilised double canoe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «canoe» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "cave.nameEs",
-			"es": "Cueva ritual",
-			"en": "Ritual cave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «cave» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "compass.nameEs",
-			"es": "Brújula estelar",
-			"en": "Star compass",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «compass» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "petroglyph.nameEs",
-			"es": "Petroglifo",
-			"en": "Petroglyph",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «petroglyph» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.elements",
-			"key": "statue.nameEs",
-			"es": "Estatua alineada",
-			"en": "Aligned statue",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «statue» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_compass.nameEs",
-			"es": "Brújula estelar del Humo",
-			"en": "Star compass of Smoke Island",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_compass» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_emerald.nameEs",
-			"es": "Marae de la cascada",
-			"en": "Waterfall marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_emerald» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_landing.nameEs",
-			"es": "Marae del palmeral",
-			"en": "Palm grove marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_landing» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_mangrove.nameEs",
-			"es": "Marae de las raíces",
-			"en": "Root marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_mangrove» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_mesa.nameEs",
-			"es": "Marae de la meseta",
-			"en": "Plateau marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_mesa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_smoke.nameEs",
-			"es": "Marae del tubo de lava",
-			"en": "Lava tube marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_smoke» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_teeth.nameEs",
-			"es": "Marae de los acantilados",
-			"en": "Cliff marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_teeth» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.sites",
-			"key": "ruin_whitesands.nameEs",
-			"es": "Marae de las canoas",
-			"en": "Canoe marae",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «ruin_whitesands» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "birds_at_dusk.nameEs",
-			"es": "Aves al atardecer",
-			"en": "Birds at dusk",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «birds_at_dusk» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "birds_at_dusk.revealsEs",
-			"es": "Las bandadas vuelven a la isla más cercana",
-			"en": "Flocks fly back to the nearest island",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «birds_at_dusk» revealsEs/revealsEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "fixed_clouds.nameEs",
-			"es": "Nubes fijas",
-			"en": "Fixed clouds",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «fixed_clouds» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "fixed_clouds.revealsEs",
-			"es": "Una nube quieta delata una isla alta y lejana",
-			"en": "A still cloud gives away a distant high island",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «fixed_clouds» revealsEs/revealsEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "star_path.nameEs",
-			"es": "Camino de estrellas",
-			"en": "Star path",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «star_path» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "star_path.revealsEs",
-			"es": "Rumbo nocturno hacia otra isla concreta",
-			"en": "Night bearing towards a specific island",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «star_path» revealsEs/revealsEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "swell_reading.nameEs",
-			"es": "Lectura del oleaje",
-			"en": "Swell reading",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «swell_reading» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "swell_reading.revealsEs",
-			"es": "Distancia y dirección a tierra por el mar de fondo",
-			"en": "Distance and direction to land from the swell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «swell_reading» revealsEs/revealsEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "water_colour.nameEs",
-			"es": "Color del agua",
-			"en": "Water colour",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «water_colour» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.ruins.techniques",
-			"key": "water_colour.revealsEs",
-			"es": "El tono del agua marca bajíos y arrecifes",
-			"en": "The water's hue marks shoals and reefs",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/ruins.json «water_colour» revealsEs/revealsEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "almeja_gigante.descriptionEs",
-			"es": "Concha de almeja gigante. Pesa como un cubo de agua, y el borde ondulado corta si la coges mal.",
-			"en": "Giant clam shell. As heavy as a bucket of water, and the wavy rim cuts if you grip it wrong.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «almeja_gigante» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "almeja_gigante.nameEs",
-			"es": "Concha de almeja gigante",
-			"en": "Giant clam shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «almeja_gigante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "caracola_trompeta.descriptionEs",
-			"es": "Caracola trompeta. Vacía y limpia, suena si soplas por la punta rota.",
-			"en": "Trumpet conch. Empty and clean, it sounds if you blow through the broken tip.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «caracola_trompeta» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "caracola_trompeta.nameEs",
-			"es": "Caracola trompeta",
-			"en": "Trumpet conch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «caracola_trompeta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "casco_real.descriptionEs",
-			"es": "Concha de casco real. Tiene la boca naranja y aparece en la arena negra al pie del volcán.",
-			"en": "Royal helmet shell. Orange-lipped, it turns up in the black sand below the volcano.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «casco_real» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "casco_real.nameEs",
-			"es": "Concha de casco real",
-			"en": "Royal helmet shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «casco_real» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "cauri_anillado.descriptionEs",
-			"es": "Cauri anillado. La marea lo deja entre las rocas después de una noche de luna llena.",
-			"en": "Ringed cowrie. The tide leaves it among the rocks after a full-moon night.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «cauri_anillado» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "cauri_anillado.nameEs",
-			"es": "Cauri anillado",
-			"en": "Ringed cowrie",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «cauri_anillado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "concha_abanico.descriptionEs",
-			"es": "Concha de abanico rosado. El color se apaga al sol en pocos días, así que se guarda a la sombra.",
-			"en": "Pink fan shell. The colour fades in the sun within days, so it's kept in the shade.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «concha_abanico» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "concha_abanico.nameEs",
-			"es": "Concha de abanico rosado",
-			"en": "Pink fan shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «concha_abanico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "dolar_de_arena.descriptionEs",
-			"es": "Dólar de arena. Aparece en la playa después de un temporal, blanco y tan fino que se parte con dos dedos.",
-			"en": "Sand dollar. It turns up on the beach after a storm, white and thin enough to snap between two fingers.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «dolar_de_arena» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "dolar_de_arena.nameEs",
-			"es": "Dólar de arena",
-			"en": "Sand dollar",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «dolar_de_arena» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "oreja_de_mar.descriptionEs",
-			"es": "Oreja de mar nacarada. Se agarra a la roca batida de Los Dientes y hay que despegarla con la hoja del cuchillo.",
-			"en": "Pearly abalone. It grips the wave-beaten rock of the Teeth and has to be prised off with a knife blade.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «oreja_de_mar» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "oreja_de_mar.nameEs",
-			"es": "Oreja de mar nacarada",
-			"en": "Pearly abalone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «oreja_de_mar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "turbante_verde.descriptionEs",
-			"es": "Turbante verde. Bajo la costra verde hay una espiral de nácar que asoma donde el oleaje la ha gastado.",
-			"en": "Green turban shell. Under the green crust there's a spiral of mother-of-pearl, showing where the surf has worn it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «turbante_verde» descriptionEs/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.shells.pieces",
-			"key": "turbante_verde.nameEs",
-			"es": "Turbante verde",
-			"en": "Green turban shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/shells.json «turbante_verde» nameEs/nameEn"
 			]
 		},
 		{
