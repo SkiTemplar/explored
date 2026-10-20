@@ -6,6 +6,12 @@ Tests/HullAssemblyModelSpec.cpp
 Tests/RaftYardModelSpec.cpp
 Tests/RaftFurrowModelSpec.cpp
 Tests/BodySpec.cpp
+Tests/BeaconProgressSpec.cpp
+Tests/BodyEventsSpec.cpp
+Tests/NotebookSpec.cpp
+Tests/StormClockSpec.cpp
+Tests/SupplyCrateSpec.cpp
+Tests/TutorialHintSpec.cpp
 Tests/BoidsSpec.cpp
 Tests/BuildingSpec.cpp
 Tests/CartographySpec.cpp
