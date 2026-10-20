@@ -1,0 +1,65 @@
+{
+  "generador": "uv run style-pilotos",
+  "mallas": [
+    {
+      "malla": "SM_PalmA",
+      "fbx": "SM_PalmA.fbx",
+      "presupuesto": "palmera",
+      "tris": 1386,
+      "dimensiones_m": [
+        4.532,
+        4.794,
+        6.0
+      ],
+      "colores": [
+        "hierba_oscura",
+        "madera_media",
+        "madera_oscura",
+        "verde_palma"
+      ],
+      "origen": "generado por Tools/Style/explored_style/pilots.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Cuchillo",
+      "fbx": "SM_Cuchillo.fbx",
+      "presupuesto": "objeto_mano",
+      "tris": 220,
+      "dimensiones_m": [
+        0.284,
+        0.048,
+        0.025
+      ],
+      "colores": [
+        "acero",
+        "laton",
+        "madera_oscura",
+        "papel",
+        "roca_media"
+      ],
+      "origen": "generado por Tools/Style/explored_style/pilots.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_BarrilLluvia",
+      "fbx": "SM_BarrilLluvia.fbx",
+      "presupuesto": "estructura",
+      "tris": 744,
+      "dimensiones_m": [
+        0.7,
+        0.798,
+        0.98
+      ],
+      "colores": [
+        "agua_media",
+        "hierro",
+        "laton",
+        "madera_clara",
+        "madera_media",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/pilots.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    }
+  ]
+}
