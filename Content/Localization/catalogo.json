@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 1177,
+		"total": 1173,
 		"cpp": 339,
-		"datos": 838,
+		"datos": 834,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 3,
-		"revisar": 120
+		"revisar": 113
 	},
 	"entries": [
 		{
@@ -5377,46 +5377,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/building_pieces.json «piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.combat.creatures",
-			"key": "cabra_salvaje.nameEs",
-			"es": "Cabra salvaje",
-			"en": "Wild goat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/combat.json «cabra_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.combat.creatures",
-			"key": "cangrejo_cocotero_salvaje.nameEs",
-			"es": "Cangrejo de los cocoteros",
-			"en": "Coconut crab",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/combat.json «cangrejo_cocotero_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.combat.creatures",
-			"key": "cerdo_salvaje.nameEs",
-			"es": "Cerdo salvaje",
-			"en": "Wild boar",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/combat.json «cerdo_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.combat.creatures",
-			"key": "tiburon_arrecife.nameEs",
-			"es": "Tiburón de arrecife",
-			"en": "Reef shark",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/combat.json «tiburon_arrecife» nameEs/nameEn"
 			]
 		},
 		{

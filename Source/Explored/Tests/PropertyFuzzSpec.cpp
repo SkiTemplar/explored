@@ -5,9 +5,7 @@
 #include "Cartography/CartographyModel.h"
 #include "Core/ExploredRandom.h"
 #include "Player/SwimModel.h"
-#include "Save/SaveValue.h"
 #include "Survival/BodyModel.h"
-#include "Tramway/TramwayModel.h"
 #include "Weather/RainCatchModel.h"
 #include "WorldGen/FellingModel.h"
 #include "WorldGen/WildfireModel.h"
@@ -115,37 +113,6 @@ namespace PropertyFuzzDetail
 	int64 RandomOf(const TArray<int64>& Ids, FExploredRandom& Rng)
 	{
 		return Ids.Num() == 0 ? 0 : Ids[Rng.RangeInt(0, Ids.Num() - 1)];
-	}
-
-	// ------------------------------------------------------------------ tranvía
-
-	/** Tramos colocables de un paseo aleatorio por la rejilla (con subidas y bajadas). */
-	TArray<TPair<FIntVector, FIntVector>> RandomTrack(FExploredRandom& Rng, int32 Steps)
-	{
-		FTramwayModel Probe;
-		TArray<TPair<FIntVector, FIntVector>> Placed;
-		FIntVector A(0, 0, 0);
-		for (int32 I = 0; I < Steps; ++I)
-		{
-			const ERailDir Dir = static_cast<ERailDir>(Rng.RangeInt(0, 3));
-			const FIntVector B = A + FTramwayModel::DirOffset(Dir) + FIntVector(0, 0, Rng.RangeInt(-2, 2));
-			if (Probe.Place(A, B) == ERailPlaceResult::Ok)
-			{
-				Placed.Add(TPair<FIntVector, FIntVector>(A, B));
-				A = B;
-			}
-			else if (Placed.Num() > 0 && Rng.Chance(0.3f))
-			{
-				// Salta a un nodo ya colocado para abrir ramales y cruces.
-				A = Placed[Rng.RangeInt(0, Placed.Num() - 1)].Value;
-			}
-		}
-		return Placed;
-	}
-
-	FString SaveText(const FTramwayModel& Model)
-	{
-		return FSaveText::Write(Model.ToValue(), ESaveTextStyle::Compact);
 	}
 
 	// ------------------------------------------------------------------ valores hostiles
@@ -320,7 +287,7 @@ void FPropertyFuzzSpec::Define()
 
 	Describe("los valores hostiles en las entradas públicas", [this]()
 	{
-		It("no dejan NaN ni infinitos en el estado del barco, el nado, el vagón y el mapa, ni cuelgan", [this]()
+		It("no dejan NaN ni infinitos en el estado del barco, el nado y el mapa, ni cuelgan", [this]()
 		{
 			for (int32 Seed = 1; Seed <= Seeds; ++Seed)
 			{
@@ -366,32 +333,6 @@ void FPropertyFuzzSpec::Define()
 				}
 				TestTrue(At + TEXT(": oxígeno finito y en rango"), FMath::IsFinite(Swim.GetOxygen()) && Swim.GetOxygen() >= 0.0f && Swim.GetOxygen() <= 100.0f);
 
-				// Vagón: carga, colocación y pasos rotos en una vía cerrada.
-				FTramwayModel Tram;
-				const FIntVector Corners[] = { FIntVector(0, 0, 0), FIntVector(1, 0, 0), FIntVector(1, 1, 0), FIntVector(0, 1, 0) };
-				for (int32 I = 0; I < 4; ++I)
-				{
-					Tram.Place(Corners[I], Corners[(I + 1) % 4]);
-				}
-				FMineCart Cart;
-				Tram.PlaceCart(Cart, Corners[0], Corners[1]);
-				double Acc = 0.0;
-				FCartControl Push;
-				Push.Propulsion = ECartPropulsion::Push;
-				for (int32 I = 0; I < 200 && !Cart.IsDerailed(); ++I)
-				{
-					if (Rng.Chance(0.1f))
-					{
-						Tram.SetLoad(Cart, Hostile(Rng, 0.0f, 200.0f));
-					}
-					if (Rng.Chance(0.05f))
-					{
-						Tram.PlaceCart(Cart, Corners[1], Corners[2], Hostile(Rng, 0.0f, 2.0f));
-					}
-					Tram.Step(Cart, Push, Hostile(Rng, 0.0f, 0.05f), Acc);
-				}
-				TestTrue(At + TEXT(": vagón finito"), FMath::IsFinite(Cart.S) && FMath::IsFinite(Cart.V) && FMath::IsFinite(Cart.LoadKg) && FMath::IsFinite(Acc));
-
 				// Mapa: posiciones, distancias y agua rotas.
 				FCartographyModel Map(static_cast<uint32>(Seed));
 				for (int32 I = 0; I < 300; ++I)
@@ -433,131 +374,6 @@ void FPropertyFuzzSpec::Define()
 					FFellingModel::CellOf(Where, Hostile(Rng, 1.0f, 3200.0f));
 					FWildfireModel::CellAt(Where);
 				}
-			}
-		});
-	});
-
-	Describe("el tranvía con vías al azar", [this]()
-	{
-		It("guarda lo mismo sea cual sea el orden de colocación, con retiradas intermedias, y cargar es idempotente", [this]()
-		{
-			for (int32 Seed = 1; Seed <= Seeds; ++Seed)
-			{
-				FExploredRandom Rng(static_cast<uint64>(Seed) * 104729u);
-				const TArray<TPair<FIntVector, FIntVector>> Track = RandomTrack(Rng, 80);
-
-				FTramwayModel InOrder;
-				for (const auto& Segment : Track)
-				{
-					InOrder.Place(Segment.Key, Segment.Value);
-				}
-
-				// Mismo trazado en orden barajado y con tramos al revés.
-				TArray<TPair<FIntVector, FIntVector>> Shuffled = Track;
-				for (int32 I = Shuffled.Num() - 1; I > 0; --I)
-				{
-					Shuffled.Swap(I, Rng.RangeInt(0, I));
-				}
-				FTramwayModel Shuffle;
-				for (const auto& Segment : Shuffled)
-				{
-					if (Rng.Chance(0.5f))
-					{
-						Shuffle.Place(Segment.Key, Segment.Value);
-					}
-					else
-					{
-						Shuffle.Place(Segment.Value, Segment.Key);
-					}
-				}
-
-				// Y con retiradas: todo, quitar la mitad al azar y volver a ponerla.
-				FTramwayModel Churn;
-				for (const auto& Segment : Track)
-				{
-					Churn.Place(Segment.Key, Segment.Value);
-				}
-				TArray<TPair<FIntVector, FIntVector>> Removed;
-				for (const auto& Segment : Shuffled)
-				{
-					if (Rng.Chance(0.5f) && Churn.Remove(Segment.Key, Segment.Value))
-					{
-						Removed.Add(Segment);
-					}
-				}
-				for (int32 I = Removed.Num() - 1; I >= 0; --I)
-				{
-					Churn.Place(Removed[I].Key, Removed[I].Value);
-				}
-
-				const FString Reference = SaveText(InOrder);
-				TestEqual(FString::Printf(TEXT("semilla %d: barajado"), Seed), SaveText(Shuffle), Reference);
-				TestEqual(FString::Printf(TEXT("semilla %d: con retiradas"), Seed), SaveText(Churn), Reference);
-				TestEqual(FString::Printf(TEXT("semilla %d: tramos"), Seed), Churn.NumSegments(), Track.Num());
-
-				FTramwayModel Loaded;
-				TestTrue(FString::Printf(TEXT("semilla %d: carga"), Seed), Loaded.FromValue(InOrder.ToValue()));
-				TestEqual(FString::Printf(TEXT("semilla %d: guardar lo cargado da lo mismo"), Seed), SaveText(Loaded), Reference);
-			}
-		});
-
-		It("mueve el vagón con órdenes al azar sin salirse de su tramo ni dar valores no finitos, y siempre igual", [this]()
-		{
-			for (int32 Seed = 1; Seed <= Seeds; ++Seed)
-			{
-				auto Simulate = [Seed](TArray<FString>& OutErrors)
-				{
-					FExploredRandom Rng(static_cast<uint64>(Seed) * 15485863u);
-					FTramwayModel Model;
-					const TArray<TPair<FIntVector, FIntVector>> Track = RandomTrack(Rng, 60);
-					for (const auto& Segment : Track)
-					{
-						Model.Place(Segment.Key, Segment.Value);
-					}
-					if (Rng.Chance(0.5f) && Track.Num() > 0)
-					{
-						Model.AddWinch(Track.Last().Value);
-					}
-					FMineCart Cart;
-					if (Track.Num() == 0 || !Model.PlaceCart(Cart, Track[0].Key, Track[0].Value))
-					{
-						return Cart;
-					}
-					Model.SetLoad(Cart, Rng.RangeFloat(0.0f, 200.0f));
-					double Acc = 0.0;
-					FCartControl Control;
-					for (int32 Frame = 0; Frame < 1800 && !Cart.IsDerailed(); ++Frame)
-					{
-						if (Frame % 60 == 0)
-						{
-							Control.Propulsion = static_cast<ECartPropulsion>(Rng.RangeInt(0, 2));
-							Control.PushSign = Rng.Chance(0.5f) ? 1 : -1;
-							Control.bBrake = Rng.Chance(0.2f);
-						}
-						// Fotogramas irregulares, como en el juego.
-						Model.Step(Cart, Control, Rng.RangeFloat(0.005f, 0.05f), Acc);
-						const double Length = Model.SegmentLength(Cart.From, Cart.To);
-						if (!FMath::IsFinite(Cart.S) || !FMath::IsFinite(Cart.V) || !FMath::IsFinite(Acc))
-						{
-							OutErrors.Add(FString::Printf(TEXT("semilla %d fotograma %d: valores no finitos"), Seed, Frame));
-							break;
-						}
-						if (!Cart.IsDerailed() && (Length <= 0.0 || Cart.S < -1e-9 || Cart.S > Length + 1e-9))
-						{
-							OutErrors.Add(FString::Printf(TEXT("semilla %d fotograma %d: S = %f fuera del tramo (%f)"), Seed, Frame, Cart.S, Length));
-							break;
-						}
-					}
-					return Cart;
-				};
-				TArray<FString> Errors;
-				const FMineCart A = Simulate(Errors);
-				const FMineCart B = Simulate(Errors);
-				for (const FString& Error : Errors)
-				{
-					AddError(Error);
-				}
-				TestTrue(FString::Printf(TEXT("semilla %d: misma entrada, mismo vagón"), Seed), A == B);
 			}
 		});
 	});

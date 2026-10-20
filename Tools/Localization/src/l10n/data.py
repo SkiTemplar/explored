@@ -144,7 +144,6 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("mining.json", "tools", _sub("tools"), "nameEs", "nameEn", "herramienta de excavación"),
     FieldSpec("mining.json", "places", _sub("places"), "nameEs", "nameEn", "lugar subterráneo"),
     FieldSpec("mining.json", "hazards", _keyed("hazards"), "nameEs", "nameEn", "peligro de la mina"),
-    FieldSpec("combat.json", "creatures", _sub("creatures"), "nameEs", "nameEn", "criatura con la que se combate"),
     FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
     FieldSpec("ruins.json", "elements", _sub("elements"), "nameEs", "nameEn", "elemento de una ruina"),

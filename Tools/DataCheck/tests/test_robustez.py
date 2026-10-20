@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from datacheck import checks, cooking, fases, fauna, mining, music, packs
+from datacheck import checks, cooking, fauna, mining, music, packs
 from datacheck.checks import REPO_ROOT, DataSet, Report
 
 
@@ -197,17 +197,7 @@ def test_mineria_formula_de_golpes() -> None:
     assert mining.design_hits(1.0, 1, 4, 3.0, 5.0) == 5.0
 
 
-# --------------------------------------------------------------------------- fases futuras y fauna
-
-
-def test_fases_seccion_con_fase_nula(tmp_path: Path) -> None:
-    sec = {"fase": None, "redNotaEs": "x", "pieces": [{"id": "rail", "fase": 2}]}
-    doc = {"tramway": sec, "livestock": {"fase": 2, "redNotaEs": "x"}, "defenses": {"fase": 2, "redNotaEs": "x"},
-           "trade": {"fase": 2, "redNotaEs": "x", "tiers": [{"id": "a", "min": 0, "max": None, "rate": 1}]}}
-    r = Report()
-    fases.check_future_phases(_ds(tmp_path, fases_futuras_json=doc, items_json=[]), r, checks.BUILDING_SOCKETS)
-    assert _has(r.errors, "tramway", "fase None")
-    assert _has(r.errors, "tramo «a»")
+# --------------------------------------------------------------------------- fauna
 
 
 def test_fauna_valores_de_tipo_equivocado(tmp_path: Path) -> None:

@@ -6,10 +6,9 @@ from typing import Any
 
 import pytest
 
-from datacheck import cooking, crafting, fases, fauna, mining, music, smithing, textos
+from datacheck import cooking, crafting, fauna, mining, music, smithing, textos
 from datacheck import packs as packs_check
 from datacheck.checks import (
-    BUILDING_SOCKETS,
     PROPERTIES,
     DataSet,
     Report,
@@ -403,7 +402,6 @@ def test_detecta_pieza_futura_en_logro_de_aa(ds: DataSet) -> None:
     achievement(ds, "primera_empalizada")["phase"] = "AA"
     errors = errors_of(ds)
     assert any_error(errors, "primera_empalizada", "depende de algo de F2")
-    assert any_error(errors, "usa «empalizada», que solo existe en el borrador")
 
 
 def test_piezas_futuras_admitidas_en_building_pieces_built(real_report: Report) -> None:
@@ -1200,98 +1198,6 @@ def test_fauna_terrestre_ya_no_es_termino_prohibido(real_report: Report) -> None
     assert not any("cerdo" in e or "cabra" in e for e in real_report.errors)
 
 
-# --------------------------------------------------------------------------- borradores de fase 2 y 3
-
-def fases_errors(ds: DataSet) -> list[str]:
-    r = Report()
-    fases.check_future_phases(ds, r, BUILDING_SOCKETS)
-    return r.errors
-
-
-def future(ds: DataSet) -> dict[str, Any]:
-    return ds.data["fases_futuras.json"]
-
-
-def test_fases_real_sin_errores(real: DataSet) -> None:
-    assert fases_errors(real) == []
-
-
-def test_fases_dato_de_fase_1_usa_el_borrador(ds: DataSet) -> None:
-    piece(ds, "muro_piedra")["cost"].append({"item": "leche_cabra", "count": 1})
-    assert any_error(fases_errors(ds), "building_pieces.json", "leche_cabra", "fase 2/3")
-
-
-def test_fases_pendiente_que_ya_es_objeto_de_h2(ds: DataSet) -> None:
-    # lingote_hierro y clavos salieron del borrador al entrar en items.json (H2).
-    future(ds)["pendingItems"].append({"id": "lingote_hierro", "nameEs": "Lingote de hierro",
-                                       "nameEn": "Iron ingot", "fase": 2})
-    assert any_error(fases_errors(ds), "lingote_hierro", "ya existe en items.json")
-
-
-def test_fases_entrada_sin_fase_de_borrador(ds: DataSet) -> None:
-    future(ds)["tramway"]["pieces"][0]["fase"] = 1
-    assert any_error(fases_errors(ds), "rail_recto", "fase")
-
-
-def test_fases_coste_con_objeto_inexistente(ds: DataSet) -> None:
-    future(ds)["defenses"]["pieces"][0]["cost"].append({"item": "cemento", "count": 2})
-    assert any_error(fases_errors(ds), "cemento", "pendingItems")
-
-
-def test_fases_pendiente_que_ya_existe(ds: DataSet) -> None:
-    future(ds)["pendingItems"].append({"id": "cuerda", "fase": 2})
-    assert any_error(fases_errors(ds), "cuerda", "ya existe")
-
-
-def test_fases_trueque_con_precio(ds: DataSet) -> None:
-    future(ds)["trade"]["offers"][0]["precio"] = 10
-    assert any_error(fases_errors(ds), "precio", "tienda")
-
-
-def test_fases_tramos_de_reputacion_con_hueco(ds: DataSet) -> None:
-    future(ds)["trade"]["tiers"][2]["min"] = 45
-    assert any_error(fases_errors(ds), "neutral", "no continúa")
-
-
-def test_fases_animal_domestico_sin_origen_salvaje(ds: DataSet) -> None:
-    future(ds)["livestock"]["species"][1]["wildSource"] = "jabali_gigante"
-    assert any_error(fases_errors(ds), "jabali_gigante", "fauna.json")
-
-
-def test_fases_trueque_cpp_y_borrador_coinciden(real: DataSet) -> None:
-    r = Report()
-    fases.check_trade_matches_cpp(real, r, future(real)["trade"])
-    assert r.errors == []
-
-
-def test_fases_tasa_de_tramo_distinta_del_cpp(ds: DataSet) -> None:
-    next(t for t in future(ds)["trade"]["tiers"] if t["id"] == "buena")["rate"] = 1.3
-    assert any_error(fases_errors(ds), "buena", "C++")
-
-
-def test_fases_accion_de_reputacion_distinta_del_cpp(ds: DataSet) -> None:
-    next(a for a in future(ds)["trade"]["reputationActions"] if a["id"] == "devolver_ritual")["delta"] = 6
-    assert any_error(fases_errors(ds), "devolver_ritual", "C++")
-
-
-def test_fases_valor_de_categoria_distinto_del_cpp(ds: DataSet) -> None:
-    next(w for w in future(ds)["trade"]["wants"] if w["id"] == "medicina")["value"] = 3
-    assert any_error(fases_errors(ds), "medicina", "C++")
-
-
-def test_fases_ventana_y_enfriamiento_distintos_del_cpp(ds: DataSet) -> None:
-    future(ds)["trade"]["hours"] = [7, 18]
-    future(ds)["trade"]["hostileCooldownDays"] = 10
-    errors = fases_errors(ds)
-    assert any_error(errors, "ventana horaria")
-    assert any_error(errors, "enfriamiento")
-
-
-def test_fases_reputacion_con_decaimiento_pasivo(ds: DataSet) -> None:
-    future(ds)["trade"]["passiveDecay"] = True
-    assert any_error(fases_errors(ds), "passiveDecay")
-
-
 # --------------------------------------------------------------------------- packs CC0 (GDD v2 §7.1)
 
 def _catalog(ds: DataSet) -> dict[str, Any]:
@@ -1416,11 +1322,6 @@ def test_fauna_cazable_como_ambiente(ds: DataSet) -> None:
 def test_fauna_nidos_sin_estado_en_servidor(ds: DataSet) -> None:
     species(ds, "gaviota_posada")["red"]["recogidas"] = None
     assert any_error(fauna_errors(ds), "gaviota_posada", "nidos")
-
-
-def test_fases_futuras_sin_nota_de_red(ds: DataSet) -> None:
-    del ds.data["fases_futuras.json"]["trade"]["redNotaEs"]
-    assert any_error(run_all(ds).errors, "trade", "redNotaEs")
 
 
 def _fauna_entry(ds: DataSet) -> dict[str, Any]:
@@ -2010,103 +1911,6 @@ def test_metal_pieza_de_nivel_corrupta_no_rompe(ds, real_reach) -> None:
 def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> None:
     smithing_recipe(ds, "fundir_cobre")["ingredients"][0]["item"] = value
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no está en items.json")
-# --------------------------------------------------------------------------- combate (biblia 05 §3 y §5)
-
-from datacheck import combat  # noqa: E402
-
-
-def combat_errors(ds: DataSet) -> list[str]:
-    r = Report()
-    combat.check_combat(ds, r)
-    return r.errors
-
-
-def creature(ds: DataSet, cid: str) -> dict:
-    return next(c for c in ds.data["combat.json"]["creatures"] if c["id"] == cid)
-
-
-def test_combate_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
-    assert combat_errors(real) == []
-    cpp = combat.cpp_constants(real)
-    assert cpp["QuickMultiplierPct"] == 70 and cpp["DodgeInvulnerableMs"] == 300
-    assert combat.cpp_creature_enum(real) == ["WildBoar", "WildGoat", "CoconutCrab", "ReefShark"]
-    assert [row["id"] for row in combat.cpp_creatures(real)] == [
-        "cerdo_salvaje", "cabra_salvaje", "cangrejo_cocotero_salvaje", "tiburon_arrecife"]
-
-
-def test_combate_constante_distinta_del_cpp(ds: DataSet) -> None:
-    ds.data["combat.json"]["dodge"]["invulnerableMs"] = 350
-    assert any_error(combat_errors(ds), "invulnerableMs", "DodgeInvulnerableMs")
-
-
-def test_combate_constante_ausente(ds: DataSet) -> None:
-    del ds.data["combat.json"]["melee"]["quick"]["chainPauseMs"]
-    assert any_error(combat_errors(ds), "chainPauseMs", "falta")
-
-
-def test_combate_tramo_de_arco_con_hueco(ds: DataSet) -> None:
-    ds.data["combat.json"]["bow"]["bands"][1]["fromM"] = 16
-    assert any_error(combat_errors(ds), "bow", "no sigue")
-
-
-def test_combate_precision_que_sube_con_la_distancia(ds: DataSet) -> None:
-    ds.data["combat.json"]["bow"]["bands"][2]["accuracyPct"] = 80
-    assert any_error(combat_errors(ds), "bow", "sube")
-
-
-def test_combate_arco_acierta_mas_alla_de_45(ds: DataSet) -> None:
-    ds.data["combat.json"]["bow"]["beyondPct"] = 10
-    assert any_error(combat_errors(ds), "beyondPct")
-
-
-def test_combate_dano_que_no_sale_de_la_formula(ds: DataSet) -> None:
-    creature(ds, "cangrejo_cocotero_salvaje")["damage"] = 9
-    errors = combat_errors(ds)
-    assert any_error(errors, "cangrejo_cocotero_salvaje", "Contundente 2 da 8")
-    assert any_error(errors, "cangrejo_cocotero_salvaje", "CreatureTable")
-
-
-def test_combate_contundente_que_corta(ds: DataSet) -> None:
-    creature(ds, "cerdo_salvaje")["cutDepth"] = 0.2
-    assert any_error(combat_errors(ds), "cerdo_salvaje", "no abre corte")
-
-
-def test_combate_distinto_de_fauna_json(ds: DataSet) -> None:
-    animal(ds, "cerdo_salvaje")["healthPoints"] = 40
-    assert any_error(combat_errors(ds), "cerdo_salvaje", "healthPoints", "fauna.json")
-
-
-def test_combate_aturdimiento_distinto_de_fauna_json(ds: DataSet) -> None:
-    animal(ds, "cerdo_salvaje")["attack"]["stunSeconds"] = 1.5
-    assert any_error(combat_errors(ds), "cerdo_salvaje", "stunMs", "fauna.json")
-
-
-def test_combate_orden_distinto_del_enum(ds: DataSet) -> None:
-    cs = ds.data["combat.json"]["creatures"]
-    cs[0], cs[1] = cs[1], cs[0]
-    assert any_error(combat_errors(ds), "ECombatCreature")
-
-
-def test_combate_animal_terrestre_sin_ficha_de_fauna(ds: DataSet) -> None:
-    creature(ds, "cabra_salvaje")["id"] = "cabra_montes"
-    assert any_error(combat_errors(ds), "cabra_montes", "fauna.json")
-
-
-def test_combate_bytes_de_red_distintos_del_cpp(ds: DataSet) -> None:
-    ds.data["combat.json"]["red"]["mensajes"][1]["bytes"] = 12
-    assert any_error(combat_errors(ds), "impacto", "ImpactMsgBytes")
-
-
-def test_combate_sin_autoridad_del_servidor(ds: DataSet) -> None:
-    ds.data["combat.json"]["red"]["autoridad"] = "cliente"
-    assert any_error(combat_errors(ds), "servidor")
-
-
-def test_combate_falta_el_fichero(ds: DataSet) -> None:
-    del ds.data["combat.json"]
-    assert any_error(errors_of(ds), "combat.json")
-
-
 # --------------------------------------------------------------------------- huerto: reglas y cosecha neta
 
 

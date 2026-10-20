@@ -2,7 +2,6 @@
 
 #include <limits>
 
-#include "Debug/NetBudgetModel.h"
 #include "WorldGen/TerrainDeltaQueueModel.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -269,8 +268,6 @@ void FTerrainDeltaQueueModelSpec::Define()
 			constexpr int32 Hz = 30;
 			constexpr int32 Seconds = 20;
 			TArray<int32> BytesAtTick;
-			FNetBudgetModel Budget;
-			const FName Client(TEXT("Cliente"));
 			FQueue::FOutgoingPacket Out;
 			for (int32 Tick = 0; Tick < Hz * Seconds; ++Tick)
 			{
@@ -282,7 +279,6 @@ void FTerrainDeltaQueueModelSpec::Define()
 				while (Queue.TryPopPacket(Out))
 				{
 					Sent += Out.Bytes.Num();
-					Budget.RecordBytes(Client, FNetBudgetModel::TerrainChannel(), Out.Bytes.Num(), (Tick + 0.5) / Hz);
 				}
 				BytesAtTick.Add(Sent);
 			}
@@ -314,14 +310,6 @@ void FTerrainDeltaQueueModelSpec::Define()
 			int32 Total = 0;
 			for (const int32 B : BytesAtTick) { Total += B; }
 			TestTrue(TEXT("En total no pasa de crédito + 8 KB/s"), Total <= FQueue::BurstCreditBytes + FQueue::SustainedBytesPerSecond * Seconds);
-
-			// El validador de Explored.NetBudget está de acuerdo con la cola.
-			Budget.CloseAllOpenSeconds();
-			TArray<FNetBudgetModel::FSecondSummary> Rows;
-			Budget.DrainClosedSeconds(Rows);
-			TArray<FString> Violations;
-			TestTrue(TEXT("La serie de la cola pasa el validador en pico"), FNetBudgetModel::ValidateSeries(Rows, FNetBudgetModel::EScenario::Peak, Violations));
-			for (const FString& V : Violations) { AddError(V); }
 		});
 
 		It("es determinista: las mismas llamadas dan los mismos bytes en el mismo orden", [this]()

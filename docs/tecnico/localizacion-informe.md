@@ -7,14 +7,14 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 1177 |
+| Textos en el catálogo | 1173 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 339 |
-| … de `Content/Data` (campos bilingües) | 838 |
+| … de `Content/Data` (campos bilingües) | 834 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
-| Literales para revisar | 120 |
+| Literales para revisar | 113 |
 | Errores / avisos | 0 / 10 |
 
 ## Literales del C++
@@ -33,7 +33,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (120)
+### Revisar (113)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -79,13 +79,6 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:775` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:780` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:808` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:96` | `%s en el segundo %lld: %.2f kbps supera el tope de %.2f kbps` | `OutReason = FString::Printf(TEXT("%s en el segundo %lld: %.2f kbps supera el tope de %.2f kbps"),` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:158` | `%s en el segundo %lld: %.3f kbps en total supera el tope de %s (%.0f kbps)` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: %.3f kbps en total supera el tope de %s (%.0f kbps)"),` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:167` | `%s en el segundo %lld: el canal %s no tiene un valor finito` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: el canal %s no tiene un valor finito"),` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:179` | `%s en el segundo %lld: la cola de terreno manda %.3f kbps y su ráfaga es de %.0f kbps` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: la cola de terreno manda %.3f kbps y su ráfaga es de %.0f kbps"),` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:185` | `%s en el segundo %lld: la cola de terreno lleva más ráfaga de la permitida (%.0f kbps durante %.0f s)` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: la cola de terreno lleva más ráfaga de la permitida (%.0f kbps durante %.0f s)"),` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:194` | `cliente,segundo,canal,kbps\n` | `FString Csv(TEXT("cliente,segundo,canal,kbps\n"));` |
-| `Source/Explored/Debug/NetBudgetModel.cpp:204` | `,total,` | `Csv += Client + TEXT(",") + Second + TEXT(",total,") + NetBudgetDetail::FormatKbps(Row.TotalKbps) + TEXT("\n");` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:36` | `%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m` | `Issue.Summary = FString::Printf(TEXT("%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:51` | `por debajo del terreno` | `Flags.Add(TEXT("por debajo del terreno"));` |

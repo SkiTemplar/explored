@@ -7,7 +7,6 @@ Boats/RaftYardModel.cpp
 Boats/RaftFurrowModel.cpp
 Building/BuildingModel.cpp
 Carry/InventoryModel.cpp
-Carry/ContainerReplicationModel.cpp
 Cartography/CartographyModel.cpp
 Cartography/CoastlineTrace.cpp
 Cartography/MapStroke.cpp
@@ -16,16 +15,12 @@ Cooking/FireModel.cpp
 Core/ExploredLocalization.cpp
 Core/ExploredNoise.cpp
 Core/ExploredRandom.cpp
-Core/NetQuantize.cpp
 Core/SystemLinks.cpp
-Debug/NetBudgetModel.cpp
-Debug/NetBudgetTableModel.cpp
 Debug/PlaytestReportModel.cpp
 Events/WorldEventsModel.cpp
 Exploration/ExplorationContentModel.cpp
 Farming/FarmModel.cpp
 Fauna/BoidsModel.cpp
-Fauna/FaunaAnchorNetModel.cpp
 Fauna/FaunaAnimation.cpp
 Fauna/FaunaGroups.cpp
 Fauna/FaunaSpawning.cpp
@@ -45,7 +40,6 @@ Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
-Sky/WorldClockNetModel.cpp
 Survival/BodyModel.cpp
 Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
@@ -69,7 +63,6 @@ WorldGen/TerrainEdits.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/TerrainErosion.cpp
 WorldGen/VegetationScatter.cpp
-WorldGen/VegetationNetStateModel.cpp
 WorldGen/FellingModel.cpp
 WorldGen/FelledDriftModel.cpp
 WorldGen/GroundBranchModel.cpp
@@ -77,12 +70,6 @@ WorldGen/VegetationClockModel.cpp
 WorldGen/SandModel.cpp
 WorldGen/WildfireModel.cpp
 WorldGen/CoconutPalmModel.cpp
-Tramway/TramwayModel.cpp
-Villages/ReputationModel.cpp
-Villages/BarterModel.cpp
-Raiders/PirateThreatModel.cpp
-Raiders/RaiderCampsModel.cpp
 WorldGen/MiningModel.cpp
 WorldGen/MineHazardModel.cpp
 WorldGen/ShovelPathModel.cpp
-Combat/CombatModel.cpp

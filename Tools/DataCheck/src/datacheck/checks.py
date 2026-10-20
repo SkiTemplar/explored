@@ -11,12 +11,10 @@ from typing import Any
 
 from . import (
     achievements,
-    combat,
     contenido,
     cooking,
     crafting,
     farm,
-    fases,
     fauna,
     mining,
     music,
@@ -63,7 +61,7 @@ DATA_FILES = [
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json", "achievements.json",
     "artifacts.json", "ruins.json", "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
-    "fases_futuras.json", "fauna_terrestre.json", "combat.json", "recipes_smithing.json",
+    "fases_futuras.json", "fauna_terrestre.json", "recipes_smithing.json",
     *contenido.CONTENT_FILES,
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
@@ -1284,7 +1282,5 @@ def run_all(ds: DataSet) -> Report:
     check_gdd_mining(ds, r)
     mining.check_mining(ds, r)
     fauna.check_fauna(ds, r, PROPERTIES)
-    combat.check_combat(ds, r)
-    fases.check_future_phases(ds, r, BUILDING_SOCKETS)
     packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r
