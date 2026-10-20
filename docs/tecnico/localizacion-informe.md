@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 1141 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 303 |
+| Textos en el catálogo | 1177 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 339 |
 | … de `Content/Data` (campos bilingües) | 838 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
-| Literales invariantes | 2 |
-| Literales para revisar | 78 |
-| Errores / avisos | 0 / 5 |
+| Literales invariantes | 3 |
+| Literales para revisar | 120 |
+| Errores / avisos | 0 / 10 |
 
 ## Literales del C++
 
@@ -23,16 +23,17 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
 
-### Invariante (2)
+### Invariante (3)
 
 Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FText::AsNumber`, sin traducir.
 
 | Fichero:línea | Texto | Código |
 |---|---|---|
+| `Source/Explored/Debug/PlaytestReportModel.cpp:182` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
-### Revisar (78)
+### Revisar (120)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -71,12 +72,13 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Cooking/CookingModel.cpp:275` | `No cabe tanto en %s.` | `OutFailReason = FString::Printf(TEXT("No cabe tanto en %s."), *Vessel->NameEs);` |
 | `Source/Explored/Cooking/CookingModel.cpp:281` | `Hace falta un recipiente que no pierda agua.` | `OutFailReason = TEXT("Hace falta un recipiente que no pierda agua.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:291` | `Así no se puede %s.` | `OutFailReason = FString::Printf(TEXT("Así no se puede %s."), LexToString(Technique));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:411` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:412` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:413` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:414` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:419` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:447` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:71` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:772` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:773` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:774` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:775` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:780` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:808` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
 | `Source/Explored/Debug/NetBudgetModel.cpp:96` | `%s en el segundo %lld: %.2f kbps supera el tope de %.2f kbps` | `OutReason = FString::Printf(TEXT("%s en el segundo %lld: %.2f kbps supera el tope de %.2f kbps"),` |
 | `Source/Explored/Debug/NetBudgetModel.cpp:158` | `%s en el segundo %lld: %.3f kbps en total supera el tope de %s (%.0f kbps)` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: %.3f kbps en total supera el tope de %s (%.0f kbps)"),` |
 | `Source/Explored/Debug/NetBudgetModel.cpp:167` | `%s en el segundo %lld: el canal %s no tiene un valor finito` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: el canal %s no tiene un valor finito"),` |
@@ -84,6 +86,47 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/NetBudgetModel.cpp:185` | `%s en el segundo %lld: la cola de terreno lleva más ráfaga de la permitida (%.0f kbps durante %.0f s)` | `OutViolations.Add(FString::Printf(TEXT("%s en el segundo %lld: la cola de terreno lleva más ráfaga de la permitida (%.0f kbps durante %.0f s)"),` |
 | `Source/Explored/Debug/NetBudgetModel.cpp:194` | `cliente,segundo,canal,kbps\n` | `FString Csv(TEXT("cliente,segundo,canal,kbps\n"));` |
 | `Source/Explored/Debug/NetBudgetModel.cpp:204` | `,total,` | `Csv += Client + TEXT(",") + Second + TEXT(",total,") + NetBudgetDetail::FormatKbps(Row.TotalKbps) + TEXT("\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:36` | `%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m` | `Issue.Summary = FString::Printf(TEXT("%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:51` | `por debajo del terreno` | `Flags.Add(TEXT("por debajo del terreno"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:55` | `por debajo del agua` | `Flags.Add(TEXT("por debajo del agua"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:57` | `inicio (%.2f, %.2f, %.2f) m -> %.1f s (%.2f, %.2f, %.2f) m` | `Issue.Detail = FString::Printf(TEXT("inicio (%.2f, %.2f, %.2f) m -> %.1f s (%.2f, %.2f, %.2f) m"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:65` | `%s se movió solo %.1f m en %.0f s%s%s` | `Issue.Summary = FString::Printf(TEXT("%s se movió solo %.1f m en %.0f s%s%s"), *ActorName,` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:78` | `clearance %.1f cm` | `Issue.Detail = FString::Printf(TEXT("clearance %.1f cm"), ClearanceCm);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:79` | `%s %s (%.1f cm) en (%.0f, %.0f, %.0f) m` | `Issue.Summary = FString::Printf(TEXT("%s %s (%.1f cm) en (%.0f, %.0f, %.0f) m"), *SubjectName,` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:80` | `flotando sobre el terreno` | `bFloating ? TEXT("flotando sobre el terreno") : TEXT("enterrado bajo el terreno"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:80` | `enterrado bajo el terreno` | `bFloating ? TEXT("flotando sobre el terreno") : TEXT("enterrado bajo el terreno"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:93` | `%s bloqueado por: %s` | `Issue.Summary = FString::Printf(TEXT("%s bloqueado por: %s"), *SpawnName, *BlockingActorsCsv);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:111` | `\n` | `return In.Replace(TEXT("\\"), TEXT("\\\\")).Replace(TEXT("\""), TEXT("\\\"")).Replace(TEXT("\n"), TEXT("\\n"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:118` | `  "issues": [\n` | `Out += TEXT(" \"issues\": [\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:123` | `      "type": "%s",\n` | `Out += FString::Printf(TEXT(" \"type\": \"%s\",\n"), LexToString(Issue.Type));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:124` | `      "subject": "%s",\n` | `Out += FString::Printf(TEXT(" \"subject\": \"%s\",\n"), *EscapeJsonString(Issue.SubjectName));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:125` | `      "detail": "%s",\n` | `Out += FString::Printf(TEXT(" \"detail\": \"%s\",\n"), *EscapeJsonString(Issue.Detail));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:126` | `      "summary": "%s",\n` | `Out += FString::Printf(TEXT(" \"summary\": \"%s\",\n"), *EscapeJsonString(Issue.Summary));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:127` | `      "location_m": [%.3f, %.3f, %.3f],\n` | `Out += FString::Printf(TEXT(" \"location_m\": [%.3f, %.3f, %.3f],\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:129` | `      "instance_count": %d\n` | `Out += FString::Printf(TEXT(" \"instance_count\": %d\n"), Issue.InstanceCount);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:134` | `  "frame_samples": [\n` | `Out += TEXT(" \"frame_samples\": [\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:139` | `      "shot": "%s",\n` | `Out += FString::Printf(TEXT(" \"shot\": \"%s\",\n"), *EscapeJsonString(Sample.ShotName));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:140` | `      "avg_fps": %.1f,\n` | `Out += FString::Printf(TEXT(" \"avg_fps\": %.1f,\n"), Sample.AvgFPS);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:141` | `      "min_fps": %.1f,\n` | `Out += FString::Printf(TEXT(" \"min_fps\": %.1f,\n"), Sample.MinFPS);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:142` | `      "vram_mb": %.1f\n` | `Out += FString::Printf(TEXT(" \"vram_mb\": %.1f\n"), Sample.VRAMUsedMB);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:147` | `  "bot_steps": [\n` | `Out += TEXT(" \"bot_steps\": [\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:152` | `      "waypoint": "%s",\n` | `Out += FString::Printf(TEXT(" \"waypoint\": \"%s\",\n"), *EscapeJsonString(Step.WaypointName));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:153` | `      "location_m": [%.3f, %.3f, %.3f],\n` | `Out += FString::Printf(TEXT(" \"location_m\": [%.3f, %.3f, %.3f],\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:155` | `      "focused_actor": "%s",\n` | `Out += FString::Printf(TEXT(" \"focused_actor\": \"%s\",\n"), *EscapeJsonString(Step.FocusedActorName));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:156` | `      "interacted": %s,\n` | `Out += FString::Printf(TEXT(" \"interacted\": %s,\n"), Step.bInteracted ? TEXT("true") : TEXT("false"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:157` | `      "inventory_delta": "%s"\n` | `Out += FString::Printf(TEXT(" \"inventory_delta\": \"%s\"\n"), *EscapeJsonString(Step.InventoryDelta));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:169` | `Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n` | `Out += FString::Printf(TEXT("Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:190` | `Materiales nulos o por defecto` | `AppendSection(EPlaytestIssueType::MaterialMissing, TEXT("Materiales nulos o por defecto"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:191` | `Física a la deriva` | `AppendSection(EPlaytestIssueType::PhysicsDrift, TEXT("Física a la deriva"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:192` | `Flotando o enterrado` | `AppendSection(EPlaytestIssueType::FloatingOrBuried, TEXT("Flotando o enterrado"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:193` | `Puntos de aparición bloqueados` | `AppendSection(EPlaytestIssueType::SpawnBlocked, TEXT("Puntos de aparición bloqueados"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:195` | `== Rendimiento por punto de captura ==\n` | `Out += TEXT("== Rendimiento por punto de captura ==\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:198` | `- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n` | `Out += FString::Printf(TEXT("- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:203` | `== Bot de juego (%d paso(s)) ==\n` | `Out += FString::Printf(TEXT("== Bot de juego (%d paso(s)) ==\n"), Report.BotSteps.Num());` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:206` | `- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n` | `Out += FString::Printf(TEXT("- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:209` | `sí` | `Step.bInteracted ? TEXT("sí") : TEXT("no"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:210` | `sin cambios` | `Step.InventoryDelta.IsEmpty() ? TEXT("sin cambios") : *Step.InventoryDelta);` |
 | `Source/Explored/Exploration/ExplorationContentModel.cpp:73` | `<sin id>` | `const FString Tag = L.Id.IsNone() ? TEXT("<sin id>") : L.Id.ToString();` |
 | `Source/Explored/Fishing/FishingModel.cpp:76` | `Pez loro` | `FFishSpecies S = MakeSpecies(TEXT("pez_loro"), TEXT("Pez loro"), FishBit(EHab::Reef), Rod \| Spear \| Net \| Trap,` |
 | `Source/Explored/Fishing/FishingModel.cpp:86` | `Pez cirujano` | `FFishSpecies S = MakeSpecies(TEXT("pez_cirujano"), TEXT("Pez cirujano"), FishBit(EHab::Reef) \| FishBit(EHab::Lagoon),` |
@@ -136,8 +179,13 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (5)
+## Avisos (10)
 
+- Source/Explored/Narrative/ExploredVoyageActors.cpp:92: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageActors.cpp:182: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:200: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:357: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/UI/ExploredPlayerController.cpp:465: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_chapa.nameEs: el inglés (21 car.) es más de 1.3× el español (12); comprueba que cabe
 - Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_tubo.nameEs: el inglés (16 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,batir_chapa.nameEs: el inglés (22 car.) es más de 1.3× el español (11); comprueba que cabe

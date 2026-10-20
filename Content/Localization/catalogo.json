@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 1141,
-		"cpp": 303,
+		"total": 1177,
+		"cpp": 339,
 		"datos": 838,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
-		"invariantes": 2,
-		"revisar": 78
+		"invariantes": 3,
+		"revisar": 120
 	},
 	"entries": [
 		{
@@ -567,7 +567,7 @@
 			"en": "Examine the double canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:139"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:144"
 			]
 		},
 		{
@@ -577,7 +577,7 @@
 			"en": "Examine the paintings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:142"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:147"
 			]
 		},
 		{
@@ -587,7 +587,7 @@
 			"en": "Study the star compass",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:136"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:141"
 			]
 		},
 		{
@@ -597,7 +597,7 @@
 			"en": "Leave an offering",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:133"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:138"
 			]
 		},
 		{
@@ -607,7 +607,7 @@
 			"en": "Study the petroglyph",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:145"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:150"
 			]
 		},
 		{
@@ -617,7 +617,7 @@
 			"en": "Look where the statue looks",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Ruins/ExploredRuinElement.cpp:130"
+				"Source/Explored/Ruins/ExploredRuinElement.cpp:135"
 			]
 		},
 		{
@@ -1009,7 +1009,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredAchievements.cpp:24",
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:35",
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:36",
 				"Source/Explored/UI/Widgets/SExploredModeSelect.cpp:63",
 				"Source/Explored/UI/Widgets/SExploredMuseum.cpp:83",
 				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:33",
@@ -1103,7 +1103,7 @@
 			"en": "Bleeding",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:273"
+				"Source/Explored/UI/ExploredHUD.cpp:316"
 			]
 		},
 		{
@@ -1113,7 +1113,7 @@
 			"en": "Fever",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:281"
+				"Source/Explored/UI/ExploredHUD.cpp:324"
 			]
 		},
 		{
@@ -1123,7 +1123,7 @@
 			"en": "Infected wound",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:285"
+				"Source/Explored/UI/ExploredHUD.cpp:328"
 			]
 		},
 		{
@@ -1133,7 +1133,7 @@
 			"en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:302"
+				"Source/Explored/UI/ExploredHUD.cpp:345"
 			]
 		},
 		{
@@ -1143,7 +1143,7 @@
 			"en": "Scurvy",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:295"
+				"Source/Explored/UI/ExploredHUD.cpp:338"
 			]
 		},
 		{
@@ -1153,7 +1153,7 @@
 			"en": "Sprain",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:289"
+				"Source/Explored/UI/ExploredHUD.cpp:332"
 			]
 		},
 		{
@@ -1163,7 +1163,7 @@
 			"en": "Sunburn",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:277"
+				"Source/Explored/UI/ExploredHUD.cpp:320"
 			]
 		},
 		{
@@ -1189,11 +1189,11 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "CreditsArt",
-			"es": "Todo el arte, sonido y música generados por código",
-			"en": "All art, sound and music generated in code",
+			"es": "Terreno, props, texturas, sonido y música generados por código",
+			"en": "Terrain, props, textures, sound and music generated in code",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:64"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:65"
 			]
 		},
 		{
@@ -1203,7 +1203,8 @@
 			"en": "A game by Rodrigo Fernández",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:60",
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:79"
 			]
 		},
 		{
@@ -1213,7 +1214,7 @@
 			"en": "Made with Claude (Anthropic)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:60"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:61"
 			]
 		},
 		{
@@ -1223,7 +1224,37 @@
 			"en": "Engine: Unreal Engine 5.6",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:61"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:62"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsModelsTitle",
+			"es": "Modelos 3D de vegetación",
+			"en": "3D vegetation models",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:67"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsPolyGoogle",
+			"es": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza",
+			"en": "“Rubber tree”, “Macassar tree”, “Tree”, “Brazil nut tree”, “Balsa tree”, “Tree roots”, “Banana Tree”, “Heliconia flower”, “Bromeliad” and “Hibiscus flower” by Poly by Google (CC BY 3.0), via Poly Pizza",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:72"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsQuaternius",
+			"es": "Quaternius y Kenney (CC0), vía Poly Pizza",
+			"en": "Quaternius and Kenney (CC0), via Poly Pizza",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:68"
 			]
 		},
 		{
@@ -1233,7 +1264,18 @@
 			"en": "EXPLORED",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:58"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59",
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:75"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "CreditsZacharylll",
+			"es": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza",
+			"en": "“Vine Covered Tree” by Zacharylll (CC BY 3.0), via Poly Pizza",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:76"
 			]
 		},
 		{
@@ -1264,7 +1306,8 @@
 			"en": "Para Almudena, mi Limón",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:70",
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:82",
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:83",
 				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:65"
 			],
 			"note": "Dedicatoria: idéntica en los dos idiomas."
@@ -1277,6 +1320,46 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:318"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "EndingContinue",
+			"es": "Volver al menú",
+			"en": "Back to menu",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:44"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "EndingDays",
+			"es": "{0} {0}|plural(one=día,other=días) en el archipiélago.",
+			"en": "{0} {0}|plural(one=day,other=days) in the archipelago.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:49"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "EndingLine1",
+			"es": "El Limón dejó la laguna con la marea de la noche.",
+			"en": "The Limón left the lagoon on the night tide.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:63"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "EndingLine2",
+			"es": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes.",
+			"en": "No compass, no map: only the stars the navigators taught.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:67"
 			]
 		},
 		{
@@ -1306,7 +1389,7 @@
 			"en": "Line out: {0} m · [R] reel in · [T] let out",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:144"
+				"Source/Explored/UI/ExploredHUD.cpp:186"
 			]
 		},
 		{
@@ -1316,7 +1399,7 @@
 			"en": "Waiting for a bite… [F] reel in",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:131"
+				"Source/Explored/UI/ExploredHUD.cpp:173"
 			]
 		},
 		{
@@ -1361,6 +1444,36 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "HelpGoal",
+			"es": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco.",
+			"en": "The Albatros broke into four parts. With them you can build a boat.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredPlayerController.cpp:465"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "HelpMove",
+			"es": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear",
+			"en": "WASD move · Space jump · Shift run · Ctrl dive",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredPlayerController.cpp:464"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "HelpUse",
+			"es": "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa",
+			"en": "E interact · Tab backpack · M map · H watch · Esc pause",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredPlayerController.cpp:463"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "HoldCrouch",
 			"es": "Agacharse manteniendo pulsado",
 			"en": "Hold to crouch",
@@ -1376,7 +1489,7 @@
 			"en": "[{Key}] {Actions}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:89"
+				"Source/Explored/UI/ExploredHUD.cpp:131"
 			],
 			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
 		},
@@ -2172,7 +2285,7 @@
 			"en": "Energy",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:241"
+				"Source/Explored/UI/ExploredHUD.cpp:284"
 			]
 		},
 		{
@@ -2202,7 +2315,7 @@
 			"en": "Hunger",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:239"
+				"Source/Explored/UI/ExploredHUD.cpp:282"
 			]
 		},
 		{
@@ -2222,7 +2335,7 @@
 			"en": "Sleep",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:242"
+				"Source/Explored/UI/ExploredHUD.cpp:285"
 			]
 		},
 		{
@@ -2232,7 +2345,7 @@
 			"en": "Thirst",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:240"
+				"Source/Explored/UI/ExploredHUD.cpp:283"
 			]
 		},
 		{
@@ -2242,7 +2355,7 @@
 			"en": "Temperature",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:243"
+				"Source/Explored/UI/ExploredHUD.cpp:286"
 			]
 		},
 		{
@@ -2322,7 +2435,7 @@
 			"en": "Picked up: {Item}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:169"
+				"Source/Explored/UI/ExploredHUD.cpp:211"
 			]
 		},
 		{
@@ -3054,6 +3167,256 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:260"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "AllParts",
+			"es": "Ya tienes todo: construye el Limón en la grada de la playa",
+			"en": "You have everything: build the Limón on the beach slipway",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:205"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirAhead",
+			"es": "delante",
+			"en": "ahead",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:409"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirBehind",
+			"es": "detrás",
+			"en": "behind",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:413"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirFormat",
+			"es": "a {0} m, {1}{2}",
+			"en": "{0} m away, {1}{2}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:422"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirLeft",
+			"es": "a la izquierda",
+			"en": "to the left",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:417"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirRight",
+			"es": "a la derecha",
+			"en": "to the right",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:417"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "DirUnderwater",
+			"es": " (bajo el agua)",
+			"en": " (underwater)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:421"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "NightFell",
+			"es": "Cae la noche. Las estrellas ya marcan el rumbo.",
+			"en": "Night falls. The stars now mark the course.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:335"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ObjBuild",
+			"es": "Construye el Limón en la grada de la playa",
+			"en": "Build the Limón on the beach slipway",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:362"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ObjSailNow",
+			"es": "Es de noche: zarpa en el Limón",
+			"en": "It's night: sail the Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:365"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ObjSailWait",
+			"es": "Espera a la noche para zarpar en el Limón",
+			"en": "Wait for night to sail the Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:366"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ObjSalvage",
+			"es": "Rescata las piezas del Albatros ({0}/4)",
+			"en": "Salvage the Albatros parts ({0}/4)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:357"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ObjSalvageHint",
+			"es": "{0} · la más cercana {1}",
+			"en": "{0} · nearest {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:359"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "PartEngine",
+			"es": "Motor",
+			"en": "Engine",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:432"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "PartFuselage",
+			"es": "Fuselaje",
+			"en": "Fuselage",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:429"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "PartRecovered",
+			"es": "{0} del Albatros rescatado ({1}/4)",
+			"en": "{0} of the Albatros salvaged ({1}/4)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:200"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "PartTail",
+			"es": "Cola",
+			"en": "Tail",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:431"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "PartWing",
+			"es": "Ala",
+			"en": "Wing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:430"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "ShipBuilt",
+			"es": "El Limón está listo. Zarpa de noche, guiándote por las estrellas",
+			"en": "The Limón is ready. Sail at night, guided by the stars",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:236"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "VerbSalvage",
+			"es": "Rescatar: {0} del Albatros",
+			"en": "Salvage: {0} from the Albatros",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:92"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "VerbYardBuild",
+			"es": "Construir el Limón",
+			"en": "Build the Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:186"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "VerbYardMissing",
+			"es": "Grada del Limón: faltan piezas del Albatros ({0}/4)",
+			"en": "Limón slipway: Albatros parts missing ({0}/4)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:182"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "VerbYardSail",
+			"es": "Zarpar guiándote por las estrellas",
+			"en": "Set sail by the stars",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:190"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "VerbYardWait",
+			"es": "Esperar a la noche junto al Limón",
+			"en": "Wait for nightfall by the Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:191"
+			]
+		},
+		{
+			"namespace": "ExploredVoyage",
+			"key": "WaitNight",
+			"es": "De día no se ven las estrellas: espera a la noche junto al Limón",
+			"en": "Stars don't show by day: wait for night by the Limón",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:261"
 			]
 		},
 		{

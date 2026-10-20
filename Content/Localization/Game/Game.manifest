@@ -112,7 +112,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinOffering",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 133"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 138"
 						}
 					]
 				},
@@ -277,7 +277,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinCompass",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 136"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 141"
 						}
 					]
 				},
@@ -288,7 +288,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinPetroglyph",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 145"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 150"
 						}
 					]
 				},
@@ -299,7 +299,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinCanoe",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 139"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 144"
 						}
 					]
 				},
@@ -310,7 +310,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinCave",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 142"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 147"
 						}
 					]
 				},
@@ -376,7 +376,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RuinStatue",
-							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 130"
+							"Path": "Source/Explored/Ruins/ExploredRuinElement.cpp - line 135"
 						}
 					]
 				},
@@ -1469,7 +1469,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsClaude",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 60"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 61"
 						}
 					]
 				},
@@ -1497,12 +1497,23 @@
 				},
 				{
 					"Source": {
+						"Text": "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa"
+					},
+					"Keys": [
+						{
+							"Key": "HelpUse",
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 463"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "EXPLORED"
 					},
 					"Keys": [
 						{
 							"Key": "CreditsTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 58"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
 						},
 						{
 							"Key": "Title",
@@ -1522,6 +1533,28 @@
 						{
 							"Key": "VolEffects",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 340"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."
+					},
+					"Keys": [
+						{
+							"Key": "HelpGoal",
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 465"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El Limón dejó la laguna con la marea de la noche."
+					},
+					"Keys": [
+						{
+							"Key": "EndingLine1",
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 63"
 						}
 					]
 				},
@@ -1631,7 +1664,7 @@
 					"Keys": [
 						{
 							"Key": "NeedEnergy",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 241"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 284"
 						}
 					]
 				},
@@ -1653,7 +1686,7 @@
 					"Keys": [
 						{
 							"Key": "CondScurvy",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 295"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 338"
 						}
 					]
 				},
@@ -1664,7 +1697,7 @@
 					"Keys": [
 						{
 							"Key": "CondSprain",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 289"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 332"
 						}
 					]
 				},
@@ -1686,7 +1719,7 @@
 					"Keys": [
 						{
 							"Key": "FishingWaiting",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 131"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 173"
 						}
 					]
 				},
@@ -1719,7 +1752,7 @@
 					"Keys": [
 						{
 							"Key": "CondFever",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 281"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 324"
 						}
 					]
 				},
@@ -1822,7 +1855,7 @@
 					"Keys": [
 						{
 							"Key": "NeedHunger",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 239"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 282"
 						}
 					]
 				},
@@ -1833,7 +1866,7 @@
 					"Keys": [
 						{
 							"Key": "CondInfection",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 285"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 328"
 						}
 					]
 				},
@@ -2166,6 +2199,17 @@
 				},
 				{
 					"Source": {
+						"Text": "Modelos 3D de vegetación"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsModelsTitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 67"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Modo daltónico"
 					},
 					"Keys": [
@@ -2204,7 +2248,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsEngine",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 61"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 62"
 						}
 					]
 				},
@@ -2362,7 +2406,7 @@
 					"Keys": [
 						{
 							"Key": "Dedication",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 70"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 82"
 						}
 					]
 				},
@@ -2467,12 +2511,23 @@
 				},
 				{
 					"Source": {
+						"Text": "Quaternius y Kenney (CC0), vía Poly Pizza"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsQuaternius",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 68"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Quemadura solar"
 					},
 					"Keys": [
 						{
 							"Key": "CondSunBurn",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 277"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 320"
 						}
 					]
 				},
@@ -2527,7 +2582,7 @@
 					"Keys": [
 						{
 							"Key": "PickedUpItem",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 169"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 211"
 						}
 					]
 				},
@@ -2670,7 +2725,7 @@
 					"Keys": [
 						{
 							"Key": "CondBleeding",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 273"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 316"
 						}
 					]
 				},
@@ -2681,7 +2736,7 @@
 					"Keys": [
 						{
 							"Key": "NeedThirst",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 240"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 283"
 						}
 					]
 				},
@@ -2692,7 +2747,7 @@
 					"Keys": [
 						{
 							"Key": "FishingLineOut",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 144"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 186"
 						}
 					]
 				},
@@ -2726,6 +2781,17 @@
 						{
 							"Key": "MouseSensitivity",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 356"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."
+					},
+					"Keys": [
+						{
+							"Key": "EndingLine2",
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 67"
 						}
 					]
 				},
@@ -2813,7 +2879,7 @@
 					"Keys": [
 						{
 							"Key": "NeedRest",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 242"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 285"
 						},
 						{
 							"Key": "WatchRest",
@@ -2850,7 +2916,18 @@
 					"Keys": [
 						{
 							"Key": "NeedWarmth",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 243"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 286"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Terreno, props, texturas, sonido y música generados por código"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsArt",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 65"
 						}
 					]
 				},
@@ -2873,17 +2950,6 @@
 						{
 							"Key": "Textures",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 317"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Todo el arte, sonido y música generados por código"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsArt",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 64"
 						}
 					]
 				},
@@ -2916,7 +2982,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsAuthor",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 60"
 						}
 					]
 				},
@@ -3032,12 +3098,34 @@
 				},
 				{
 					"Source": {
+						"Text": "Volver al menú"
+					},
+					"Keys": [
+						{
+							"Key": "EndingContinue",
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 44"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"
+					},
+					"Keys": [
+						{
+							"Key": "HelpMove",
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 464"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "[{Key}] {Actions}"
 					},
 					"Keys": [
 						{
 							"Key": "InteractPrompt",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 89"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 131"
 						}
 					]
 				},
@@ -3219,6 +3307,17 @@
 				},
 				{
 					"Source": {
+						"Text": "{0} {0}|plural(one=día,other=días) en el archipiélago."
+					},
+					"Keys": [
+						{
+							"Key": "EndingDays",
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 49"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
 					},
 					"Keys": [
@@ -3268,7 +3367,29 @@
 					"Keys": [
 						{
 							"Key": "CondOpenWounds",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 302"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 345"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsPolyGoogle",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 72"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"
+					},
+					"Keys": [
+						{
+							"Key": "CreditsZacharylll",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 76"
 						}
 					]
 				},
@@ -3302,6 +3423,286 @@
 						{
 							"Key": "MuseumUnique",
 							"Path": "Source/Explored/UI/Widgets/SExploredMuseum.cpp - line 39"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredVoyage",
+			"Children": [
+				{
+					"Source": {
+						"Text": " (bajo el agua)"
+					},
+					"Keys": [
+						{
+							"Key": "DirUnderwater",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 421"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ala"
+					},
+					"Keys": [
+						{
+							"Key": "PartWing",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 430"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cae la noche. Las estrellas ya marcan el rumbo."
+					},
+					"Keys": [
+						{
+							"Key": "NightFell",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 335"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cola"
+					},
+					"Keys": [
+						{
+							"Key": "PartTail",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 431"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Construir el Limón"
+					},
+					"Keys": [
+						{
+							"Key": "VerbYardBuild",
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 186"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Construye el Limón en la grada de la playa"
+					},
+					"Keys": [
+						{
+							"Key": "ObjBuild",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 362"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+					},
+					"Keys": [
+						{
+							"Key": "WaitNight",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 261"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+					},
+					"Keys": [
+						{
+							"Key": "ShipBuilt",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 236"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Es de noche: zarpa en el Limón"
+					},
+					"Keys": [
+						{
+							"Key": "ObjSailNow",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 365"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Espera a la noche para zarpar en el Limón"
+					},
+					"Keys": [
+						{
+							"Key": "ObjSailWait",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 366"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esperar a la noche junto al Limón"
+					},
+					"Keys": [
+						{
+							"Key": "VerbYardWait",
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 191"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Fuselaje"
+					},
+					"Keys": [
+						{
+							"Key": "PartFuselage",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 429"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+					},
+					"Keys": [
+						{
+							"Key": "VerbYardMissing",
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 182"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Motor"
+					},
+					"Keys": [
+						{
+							"Key": "PartEngine",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 432"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Rescata las piezas del Albatros ({0}/4)"
+					},
+					"Keys": [
+						{
+							"Key": "ObjSalvage",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 357"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Rescatar: {0} del Albatros"
+					},
+					"Keys": [
+						{
+							"Key": "VerbSalvage",
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 92"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+					},
+					"Keys": [
+						{
+							"Key": "AllParts",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 205"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Zarpar guiándote por las estrellas"
+					},
+					"Keys": [
+						{
+							"Key": "VerbYardSail",
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 190"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "a la derecha"
+					},
+					"Keys": [
+						{
+							"Key": "DirRight",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 417"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "a la izquierda"
+					},
+					"Keys": [
+						{
+							"Key": "DirLeft",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 417"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "a {0} m, {1}{2}"
+					},
+					"Keys": [
+						{
+							"Key": "DirFormat",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 422"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "delante"
+					},
+					"Keys": [
+						{
+							"Key": "DirAhead",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 409"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "detrás"
+					},
+					"Keys": [
+						{
+							"Key": "DirBehind",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 413"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} del Albatros rescatado ({1}/4)"
+					},
+					"Keys": [
+						{
+							"Key": "PartRecovered",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 200"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} · la más cercana {1}"
+					},
+					"Keys": [
+						{
+							"Key": "ObjSalvageHint",
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 359"
 						}
 					]
 				}

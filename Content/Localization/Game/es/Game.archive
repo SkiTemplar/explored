@@ -1076,10 +1076,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Todo el arte, sonido y música generados por código"
+						"Text": "Terreno, props, texturas, sonido y música generados por código"
 					},
 					"Translation": {
-						"Text": "Todo el arte, sonido y música generados por código"
+						"Text": "Terreno, props, texturas, sonido y música generados por código"
 					},
 					"Key": "CreditsArt"
 				},
@@ -1112,12 +1112,48 @@
 				},
 				{
 					"Source": {
+						"Text": "Modelos 3D de vegetación"
+					},
+					"Translation": {
+						"Text": "Modelos 3D de vegetación"
+					},
+					"Key": "CreditsModelsTitle"
+				},
+				{
+					"Source": {
+						"Text": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"
+					},
+					"Translation": {
+						"Text": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"
+					},
+					"Key": "CreditsPolyGoogle"
+				},
+				{
+					"Source": {
+						"Text": "Quaternius y Kenney (CC0), vía Poly Pizza"
+					},
+					"Translation": {
+						"Text": "Quaternius y Kenney (CC0), vía Poly Pizza"
+					},
+					"Key": "CreditsQuaternius"
+				},
+				{
+					"Source": {
 						"Text": "EXPLORED"
 					},
 					"Translation": {
 						"Text": "EXPLORED"
 					},
 					"Key": "CreditsTitle"
+				},
+				{
+					"Source": {
+						"Text": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"
+					},
+					"Translation": {
+						"Text": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"
+					},
+					"Key": "CreditsZacharylll"
 				},
 				{
 					"Source": {
@@ -1154,6 +1190,42 @@
 						"Text": "Efectos"
 					},
 					"Key": "Effects"
+				},
+				{
+					"Source": {
+						"Text": "Volver al menú"
+					},
+					"Translation": {
+						"Text": "Volver al menú"
+					},
+					"Key": "EndingContinue"
+				},
+				{
+					"Source": {
+						"Text": "{0} {0}|plural(one=día,other=días) en el archipiélago."
+					},
+					"Translation": {
+						"Text": "{0} {0}|plural(one=día,other=días) en el archipiélago."
+					},
+					"Key": "EndingDays"
+				},
+				{
+					"Source": {
+						"Text": "El Limón dejó la laguna con la marea de la noche."
+					},
+					"Translation": {
+						"Text": "El Limón dejó la laguna con la marea de la noche."
+					},
+					"Key": "EndingLine1"
+				},
+				{
+					"Source": {
+						"Text": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."
+					},
+					"Translation": {
+						"Text": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."
+					},
+					"Key": "EndingLine2"
 				},
 				{
 					"Source": {
@@ -1226,6 +1298,33 @@
 						"Text": "Sensibilidad del mando"
 					},
 					"Key": "GamepadSensitivity"
+				},
+				{
+					"Source": {
+						"Text": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."
+					},
+					"Translation": {
+						"Text": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."
+					},
+					"Key": "HelpGoal"
+				},
+				{
+					"Source": {
+						"Text": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"
+					},
+					"Translation": {
+						"Text": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"
+					},
+					"Key": "HelpMove"
+				},
+				{
+					"Source": {
+						"Text": "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa"
+					},
+					"Translation": {
+						"Text": "E interactuar · Tab mochila · M mapa · H reloj · Esc pausa"
+					},
+					"Key": "HelpUse"
 				},
 				{
 					"Source": {
@@ -2747,6 +2846,236 @@
 						"Text": "Ventana"
 					},
 					"Key": "WindowWindowed"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredVoyage",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+					},
+					"Translation": {
+						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+					},
+					"Key": "AllParts"
+				},
+				{
+					"Source": {
+						"Text": "delante"
+					},
+					"Translation": {
+						"Text": "delante"
+					},
+					"Key": "DirAhead"
+				},
+				{
+					"Source": {
+						"Text": "detrás"
+					},
+					"Translation": {
+						"Text": "detrás"
+					},
+					"Key": "DirBehind"
+				},
+				{
+					"Source": {
+						"Text": "a {0} m, {1}{2}"
+					},
+					"Translation": {
+						"Text": "a {0} m, {1}{2}"
+					},
+					"Key": "DirFormat"
+				},
+				{
+					"Source": {
+						"Text": "a la izquierda"
+					},
+					"Translation": {
+						"Text": "a la izquierda"
+					},
+					"Key": "DirLeft"
+				},
+				{
+					"Source": {
+						"Text": "a la derecha"
+					},
+					"Translation": {
+						"Text": "a la derecha"
+					},
+					"Key": "DirRight"
+				},
+				{
+					"Source": {
+						"Text": " (bajo el agua)"
+					},
+					"Translation": {
+						"Text": " (bajo el agua)"
+					},
+					"Key": "DirUnderwater"
+				},
+				{
+					"Source": {
+						"Text": "Cae la noche. Las estrellas ya marcan el rumbo."
+					},
+					"Translation": {
+						"Text": "Cae la noche. Las estrellas ya marcan el rumbo."
+					},
+					"Key": "NightFell"
+				},
+				{
+					"Source": {
+						"Text": "Construye el Limón en la grada de la playa"
+					},
+					"Translation": {
+						"Text": "Construye el Limón en la grada de la playa"
+					},
+					"Key": "ObjBuild"
+				},
+				{
+					"Source": {
+						"Text": "Es de noche: zarpa en el Limón"
+					},
+					"Translation": {
+						"Text": "Es de noche: zarpa en el Limón"
+					},
+					"Key": "ObjSailNow"
+				},
+				{
+					"Source": {
+						"Text": "Espera a la noche para zarpar en el Limón"
+					},
+					"Translation": {
+						"Text": "Espera a la noche para zarpar en el Limón"
+					},
+					"Key": "ObjSailWait"
+				},
+				{
+					"Source": {
+						"Text": "Rescata las piezas del Albatros ({0}/4)"
+					},
+					"Translation": {
+						"Text": "Rescata las piezas del Albatros ({0}/4)"
+					},
+					"Key": "ObjSalvage"
+				},
+				{
+					"Source": {
+						"Text": "{0} · la más cercana {1}"
+					},
+					"Translation": {
+						"Text": "{0} · la más cercana {1}"
+					},
+					"Key": "ObjSalvageHint"
+				},
+				{
+					"Source": {
+						"Text": "Motor"
+					},
+					"Translation": {
+						"Text": "Motor"
+					},
+					"Key": "PartEngine"
+				},
+				{
+					"Source": {
+						"Text": "Fuselaje"
+					},
+					"Translation": {
+						"Text": "Fuselaje"
+					},
+					"Key": "PartFuselage"
+				},
+				{
+					"Source": {
+						"Text": "{0} del Albatros rescatado ({1}/4)"
+					},
+					"Translation": {
+						"Text": "{0} del Albatros rescatado ({1}/4)"
+					},
+					"Key": "PartRecovered"
+				},
+				{
+					"Source": {
+						"Text": "Cola"
+					},
+					"Translation": {
+						"Text": "Cola"
+					},
+					"Key": "PartTail"
+				},
+				{
+					"Source": {
+						"Text": "Ala"
+					},
+					"Translation": {
+						"Text": "Ala"
+					},
+					"Key": "PartWing"
+				},
+				{
+					"Source": {
+						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+					},
+					"Translation": {
+						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+					},
+					"Key": "ShipBuilt"
+				},
+				{
+					"Source": {
+						"Text": "Rescatar: {0} del Albatros"
+					},
+					"Translation": {
+						"Text": "Rescatar: {0} del Albatros"
+					},
+					"Key": "VerbSalvage"
+				},
+				{
+					"Source": {
+						"Text": "Construir el Limón"
+					},
+					"Translation": {
+						"Text": "Construir el Limón"
+					},
+					"Key": "VerbYardBuild"
+				},
+				{
+					"Source": {
+						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+					},
+					"Translation": {
+						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+					},
+					"Key": "VerbYardMissing"
+				},
+				{
+					"Source": {
+						"Text": "Zarpar guiándote por las estrellas"
+					},
+					"Translation": {
+						"Text": "Zarpar guiándote por las estrellas"
+					},
+					"Key": "VerbYardSail"
+				},
+				{
+					"Source": {
+						"Text": "Esperar a la noche junto al Limón"
+					},
+					"Translation": {
+						"Text": "Esperar a la noche junto al Limón"
+					},
+					"Key": "VerbYardWait"
+				},
+				{
+					"Source": {
+						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+					},
+					"Translation": {
+						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+					},
+					"Key": "WaitNight"
 				}
 			]
 		}
