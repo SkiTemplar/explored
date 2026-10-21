@@ -46,6 +46,9 @@ jobs:
           - tool: Blender
             python: "3.13"
             egl: true
+          - tool: Island
+            python: "3.13"
+            extra: uv run island-props-check
     defaults:
       run:
         working-directory: Tools/${{ matrix.tool }}

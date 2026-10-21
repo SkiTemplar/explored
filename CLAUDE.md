@@ -19,7 +19,7 @@ Ver README.md de este proyecto.
   modelos (`pure_specs.txt`) más los tests de `Tools/HostTests/tests`. Con
   `HOST_TESTS_SANITIZE=ON` añade ASan/UBSan. Ver `Tools/HostTests/README.md`.
 - **Con Unreal (local):** `Tools/test.ps1` ejecuta todos los Automation Tests del editor.
-- Herramientas Python (`Tools/Packs`, `Textures`, `Audio`, `DataCheck`, `Localization`,
+- Herramientas Python (`Tools/Packs`, `Textures`, `Audio`, `DataCheck`, `Localization`, `Island`,
   `Blender`): cada una con su `pyproject.toml` y `uv.lock`. Desde su carpeta:
   `uv run ruff check .`, `uv run basedpyright` y `uv run pytest -q --cov` (mínimo 80 %).
   `Tools/Blender` y los tests de Blender de `Tools/Packs` (`--group blender`) usan

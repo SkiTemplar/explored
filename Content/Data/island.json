@@ -1,23 +1,59 @@
 {
-  "version": 1,
-  "_comment": "Isla de Sal (GDD v3 §6), disposición provisional. Metros; +X es el norte, +Y el este. Copia en código: FIslandLayout::Provisional().",
+  "version": 2,
+  "_comment": "Isla de Sal (GDD v3 §6). Metros; +X es el norte, +Y el este. Copia en código: FIslandLayout::Provisional(). El relieve analítico (tierras, colinas de zona y rocas) lo comparten FIslandLayout::SampleColumn y Tools/Island (malla del terreno); «paths» y «terrain» solo los usa Tools/Island.",
   "seed": 20260926,
   "islands": [
-    { "id": "isla_sal", "biome": "Landing", "center": [0, 0], "radius": 165, "aspect": 0.787879, "rotationDeg": 90, "maxHeight": 4 },
-    { "id": "islote_carguero", "biome": "Teeth", "center": [232, 150], "radius": 35, "aspect": 0.714286, "rotationDeg": 45, "maxHeight": 6 }
+    { "id": "isla_sal", "biome": "Landing", "center": [0, 0], "radius": 165, "aspect": 0.787879, "rotationDeg": 90, "maxHeight": 4,
+      "coast": [[2, 0.03, 20], [3, 0.05, 70], [5, 0.035, 200], [7, 0.02, 130]] },
+    { "id": "islote_carguero", "biome": "Teeth", "center": [232, 150], "radius": 35, "aspect": 0.714286, "rotationDeg": 45, "maxHeight": 6,
+      "coast": [[3, 0.07, 40], [5, 0.04, 160]] }
   ],
   "zones": [
     { "id": "cala_varada", "name": "Cala Varada", "biome": "Landing", "center": [-100, 10], "radius": 35, "hill": 0 },
     { "id": "palmar", "name": "Palmar", "biome": "Landing", "center": [-30, -5], "radius": 48, "hill": 0 },
-    { "id": "rocas_pescador", "name": "Rocas del Pescador", "biome": "Teeth", "center": [-15, -128], "radius": 30, "hill": 2 },
+    { "id": "rocas_pescador", "name": "Rocas del Pescador", "biome": "Teeth", "center": [-15, -140], "radius": 30, "hill": 2 },
     { "id": "bosque_bambu", "name": "Bosque de Bambú", "biome": "Emerald", "center": [55, -85], "radius": 42, "hill": 5 },
     { "id": "playa_norte", "name": "Playa Norte", "biome": "WhiteSands", "center": [110, 55], "radius": 28, "hill": 0 },
-    { "id": "colina_faro", "name": "Colina del Faro", "biome": "Mesa", "center": [45, 15], "radius": 47, "hill": 31 },
+    { "id": "colina_faro", "name": "Colina del Faro", "biome": "Mesa", "center": [45, 15], "radius": 47, "hill": 32.5, "hillSigma": 42 },
     { "id": "isla_carguero", "name": "Isla del Carguero", "biome": "Teeth", "center": [232, 150], "radius": 32, "hill": 0 }
   ],
+  "rocks": [
+    { "id": "roca_pescador_grande", "center": [-20, -140], "radius": 9, "height": 5 },
+    { "id": "roca_pescador_sur", "center": [-34, -150], "radius": 7, "height": 3.5 },
+    { "id": "roca_pescador_centro", "center": [-10, -153], "radius": 7, "height": 3.2 },
+    { "id": "roca_pescador_norte", "center": [8, -149], "radius": 6, "height": 3 },
+    { "id": "repisa_pescador_sur", "center": [-30, -162], "radius": 6, "height": 1.6 },
+    { "id": "repisa_pescador_centro", "center": [-14, -163], "radius": 6, "height": 1.5 },
+    { "id": "repisa_pescador_norte", "center": [2, -161], "radius": 6, "height": 1.5 },
+    { "id": "farallon_pescador_a", "center": [-26, -173], "radius": 4.5, "height": 7 },
+    { "id": "farallon_pescador_b", "center": [2, -172], "radius": 3.5, "height": 5 },
+    { "id": "risco_colina_este", "center": [52, 40], "radius": 8, "height": 6 },
+    { "id": "risco_colina_noroeste", "center": [74, -12], "radius": 8, "height": 5 },
+    { "id": "risco_colina_sureste", "center": [18, 44], "radius": 7, "height": 5 },
+    { "id": "risco_islote_norte", "center": [258, 172], "radius": 9, "height": 7 },
+    { "id": "risco_islote_este", "center": [244, 182], "radius": 6, "height": 5 },
+    { "id": "risco_islote_oeste", "center": [262, 146], "radius": 6, "height": 4 },
+    { "id": "farallon_islote", "center": [276, 186], "radius": 4, "height": 6 },
+    { "id": "roca_cala_este", "center": [-118, 52], "radius": 6, "height": 3 },
+    { "id": "roca_cala_oeste", "center": [-120, -38], "radius": 5, "height": 2.5 },
+    { "id": "hondonada_cala_varada", "center": [-138, 8], "radius": 32, "height": -3.5 }
+  ],
+  "paths": [
+    { "id": "camino_cala_palmar", "width": 3, "points": [[-112, 10], [-88, 6], [-62, 0], [-30, -5]] },
+    { "id": "camino_palmar_faro", "width": 3, "points": [[-30, -5], [-2, -5], [20, -5], [30, 0], [40, 10], [45, 15]] },
+    { "id": "camino_playa_faro", "width": 3, "points": [[109, 55], [100, 53], [84, 54], [72, 61], [60, 67], [48, 67], [36, 62], [32, 48], [34, 36], [40, 24], [45, 15]] }
+  ],
+  "terrain": {
+    "_comment": "Malla facetada de Tools/Island: rectángulo [min, max] en metros, celda de la rejilla y fondo marino somero.",
+    "min": [-190, -220],
+    "max": [300, 220],
+    "cell": 2.6,
+    "seabed": -6,
+    "skirt": -30
+  },
   "points": [
     { "id": "player_start", "position": [-112, 10], "yaw": 0 },
-    { "id": "raft_site", "position": [120, 62], "yaw": 40 },
+    { "id": "raft_site", "position": [109, 55], "yaw": 40 },
     { "id": "lighthouse", "position": [45, 15], "yaw": 0 }
   ]
 }

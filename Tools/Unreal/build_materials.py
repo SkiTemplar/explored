@@ -8,14 +8,27 @@ Materiales:
     /Game/Materials/M_Stars    cúpula de estrellas aditiva controlada por el parámetro «Night».
     /Game/Materials/M_PP_Body  postproceso del cuerpo: viñeta (color y fuerza) y desaturación
                                 según FBodySignals (VignetteAmount, TintColor, DesaturationAmount).
+    /Game/Art/Materials/T_Paleta  hoja de paleta de Tools/Style (Art/Export/Style/T_Paleta.png, 32 x 1):
+                                filtro Nearest, sin mipmaps, sRGB, compresión sin pérdidas.
+    /Game/Art/Materials/M_Toon  material provisional del estilo (F3a): Default Lit, base color = T_Paleta
+                                muestreada con el UV 0 (cada cara en el centro de su celda), rugosidad 1,
+                                especular 0. «PaletteIndex» + «UsePaletteIndex» = 1 fuerzan una celda
+                                (primitivas de reserva de AExploredPlaceholder). La integración de arte lo
+                                refina (3 bandas de sombreado, GDD §11).
 
 El terreno, la vegetación y los materiales low poly del arte v1 se borraron en el reset v2;
 el material maestro nuevo (M_Toon con hoja de paleta) llega en F2 (docs/v3/plan.md).
 """
 
+import os
+
 import unreal
 
 MATERIALS_PATH = "/Game/Materials"
+ART_MATERIALS_PATH = "/Game/Art/Materials"
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+PALETTE_PNG = os.path.join(REPO_ROOT, "Art", "Export", "Style", "T_Paleta.png")
+PALETTE_SIZE = 32
 MEL = unreal.MaterialEditingLibrary
 ASSET_TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 # Las texturas de detalle del agua (T_WaterRipple, T_WaterFoam) eran arte v1: se usan texturas
@@ -24,14 +37,14 @@ OCEAN_RIPPLE_TEXTURE = "/Engine/EngineMaterials/DefaultNormal"
 OCEAN_FOAM_TEXTURE = "/Engine/EngineResources/Black"
 
 
-def recreate_material(name: str) -> unreal.Material:
+def recreate_material(name: str, folder: str = MATERIALS_PATH) -> unreal.Material:
     """Reutiliza el material si existe (vaciando su grafo) para no romper referencias; si no, lo crea."""
-    full = f"{MATERIALS_PATH}/{name}"
+    full = f"{folder}/{name}"
     if unreal.EditorAssetLibrary.does_asset_exist(full):
         material = unreal.EditorAssetLibrary.load_asset(full)
         MEL.delete_all_material_expressions(material)
         return material
-    material = ASSET_TOOLS.create_asset(name, MATERIALS_PATH, unreal.Material, unreal.MaterialFactoryNew())
+    material = ASSET_TOOLS.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
     if material is None:
         raise RuntimeError(f"No se pudo crear {full}")
     return material
@@ -571,11 +584,88 @@ def build_pp_body():
 # Low poly (packs CC0: Kenney, KayKit, Quaternius) — atlas de paleta por isla
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Estilo low poly (F3a): hoja de paleta y M_Toon provisional
+# ---------------------------------------------------------------------------
+
+def import_palette_texture() -> unreal.Texture2D:
+    """Importa la hoja de paleta con muestreo exacto (cada texel es un color de paleta.json)."""
+    if not os.path.isfile(PALETTE_PNG):
+        raise RuntimeError(f"Falta {PALETTE_PNG} (uv run style-paleta en Tools/Style)")
+    task = unreal.AssetImportTask()
+    task.set_editor_property("filename", PALETTE_PNG)
+    task.set_editor_property("destination_path", ART_MATERIALS_PATH)
+    task.set_editor_property("destination_name", "T_Paleta")
+    task.set_editor_property("automated", True)
+    task.set_editor_property("replace_existing", True)
+    task.set_editor_property("save", False)
+    ASSET_TOOLS.import_asset_tasks([task])
+    texture = unreal.load_asset(f"{ART_MATERIALS_PATH}/T_Paleta")
+    if texture is None:
+        raise RuntimeError("No se pudo importar T_Paleta")
+    texture.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
+    texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+    texture.set_editor_property("srgb", True)
+    # UserInterface2D (BGRA8 sin compresión por bloques): los 32 colores salen exactos.
+    texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
+    texture.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_PIXELS2D)
+    texture.set_editor_property("never_stream", True)
+    unreal.EditorAssetLibrary.save_loaded_asset(texture)
+    unreal.log(f"[Explored] Textura lista: {texture.get_path_name()}")
+    return texture
+
+
+TOON_UV_HLSL = r"""
+float Cell = clamp(floor(Index), 0.0, PaletteSize - 1.0);
+float2 Forced = float2((Cell + 0.5) / PaletteSize, 0.5);
+return lerp(UV, Forced, saturate(UseIndex));
+"""
+
+
+def build_toon(palette: unreal.Texture2D):
+    m = recreate_material("M_Toon", ART_MATERIALS_PATH)
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
+
+    uv = expr(m, unreal.MaterialExpressionTextureCoordinate, -900, 0)
+    index = expr(m, unreal.MaterialExpressionScalarParameter, -900, 120)
+    index.set_editor_property("parameter_name", "PaletteIndex")
+    index.set_editor_property("default_value", 0.0)
+    use_index = expr(m, unreal.MaterialExpressionScalarParameter, -900, 220)
+    use_index.set_editor_property("parameter_name", "UsePaletteIndex")
+    use_index.set_editor_property("default_value", 0.0)
+    size = expr(m, unreal.MaterialExpressionConstant, -900, 320)
+    size.set_editor_property("r", float(PALETTE_SIZE))
+
+    cell_uv = custom(m, -600, 100, TOON_UV_HLSL, ["UV", "Index", "UseIndex", "PaletteSize"],
+                     unreal.CustomMaterialOutputType.CMOT_FLOAT2, "PaletteCellUV")
+    connect(uv, "", cell_uv, "UV")
+    connect(index, "", cell_uv, "Index")
+    connect(use_index, "", cell_uv, "UseIndex")
+    connect(size, "", cell_uv, "PaletteSize")
+
+    sample = expr(m, unreal.MaterialExpressionTextureSample, -300, 0)
+    sample.set_editor_property("texture", palette)
+    sample.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_COLOR)
+    connect(cell_uv, "", sample, "UVs")
+    to_property(sample, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    roughness = expr(m, unreal.MaterialExpressionConstant, -300, 250)
+    roughness.set_editor_property("r", 1.0)
+    to_property(roughness, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    specular = expr(m, unreal.MaterialExpressionConstant, -300, 330)
+    specular.set_editor_property("r", 0.0)
+    to_property(specular, "", unreal.MaterialProperty.MP_SPECULAR)
+    finish(m)
+
+
 def main():
     unreal.EditorAssetLibrary.make_directory(MATERIALS_PATH)
     build_ocean()
     build_stars()
     build_pp_body()
+    unreal.EditorAssetLibrary.make_directory(ART_MATERIALS_PATH)
+    build_toon(import_palette_texture())
 
 
 main()

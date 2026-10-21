@@ -45,3 +45,5 @@ WorldGen/IslandLayout.cpp
 WorldGen/HarvestModel.cpp
 WorldGen/GroundBranchModel.cpp
 WorldGen/CoconutPalmModel.cpp
+WorldGen/IslandPropsModel.cpp
+Debug/WalkProbeModel.cpp

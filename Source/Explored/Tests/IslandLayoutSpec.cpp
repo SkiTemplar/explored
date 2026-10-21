@@ -34,8 +34,9 @@ void FIslandLayoutSpec::Define()
 			}
 			TestEqual(TEXT("primera tierra"), Layout.Islands[0].Id, FName(TEXT("isla_sal")));
 			TestEqual(TEXT("centrada"), Main->Center, FVector2D::ZeroVector);
-			TestEqual(TEXT("330 m de este a oeste"), Main->RadiusAlong(FVector2D(0.0, 1.0)) * 2.0f, 330.0f, 1.0f);
-			TestEqual(TEXT("260 m de norte a sur"), Main->RadiusAlong(FVector2D(1.0, 0.0)) * 2.0f, 260.0f, 1.0f);
+			// La costa armónica se aparta de la elipse nominal (330 × 260 m) unos metros en cada rumbo.
+			TestEqual(TEXT("330 m de este a oeste"), Main->RadiusAlong(FVector2D(0.0, 1.0)) + Main->RadiusAlong(FVector2D(0.0, -1.0)), 330.0f, 15.0f);
+			TestEqual(TEXT("260 m de norte a sur"), Main->RadiusAlong(FVector2D(1.0, 0.0)) + Main->RadiusAlong(FVector2D(-1.0, 0.0)), 260.0f, 15.0f);
 		});
 
 		It("pone el islote del carguero a unos 150 m al nordeste de Playa Norte", [this]()
@@ -124,11 +125,56 @@ void FIslandLayoutSpec::Define()
 		It("baja a cero en la costa nominal y por debajo fuera", [this]()
 		{
 			const FIslandDesc& Main = Layout.Islands[0];
-			const FVector2D West(0.0, -1.0);
-			const float Coast = Main.RadiusAlong(West);
-			TestEqual(TEXT("costa"), Layout.SampleColumn(0.0f, -Coast).Height, 0.0f, 0.05f);
-			TestTrue(TEXT("mar"), Layout.SampleColumn(0.0f, -Coast - 20.0f).Height < 0.0f);
-			TestEqual(TEXT("normalizada en la costa"), Layout.SampleColumn(0.0f, -Coast).NormalizedDistance, 1.0f, 0.01f);
+			// Hacia el este: al oeste están las repisas de las Rocas del Pescador, que levantan la orilla.
+			const FVector2D East(0.0, 1.0);
+			const float Coast = Main.RadiusAlong(East);
+			TestEqual(TEXT("costa"), Layout.SampleColumn(0.0f, Coast).Height, 0.0f, 0.05f);
+			TestTrue(TEXT("mar"), Layout.SampleColumn(0.0f, Coast + 20.0f).Height < 0.0f);
+			TestEqual(TEXT("normalizada en la costa"), Layout.SampleColumn(0.0f, Coast).NormalizedDistance, 1.0f, 0.01f);
+		});
+
+		It("levanta el suelo en las rocas y lo baja en la hondonada de la cala", [this]()
+		{
+			FIslandLayout Flat = Layout;
+			Flat.Rocks.Reset();
+			for (const FIslandRock& Rock : Layout.Rocks)
+			{
+				const float With = Layout.SampleColumn(Rock.Center.X, Rock.Center.Y).Height;
+				const float Without = Flat.SampleColumn(Rock.Center.X, Rock.Center.Y).Height;
+				TestTrue(*FString::Printf(TEXT("%s suma su altura"), *Rock.Id.ToString()),
+					Rock.Height > 0.0f ? With > Without + Rock.Height * 0.9f : With < Without + Rock.Height * 0.9f);
+			}
+			const FIslandRock Probe = Layout.Rocks[0];
+			TestEqual(TEXT("nada en el borde"), Probe.HeightAt(Probe.Center + FVector2D(Probe.Radius, 0.0)), 0.0f, 1e-4f);
+		});
+
+		It("deforma la costa con sus armónicos", [this]()
+		{
+			FIslandDesc Ellipse = Layout.Islands[0];
+			Ellipse.Coast.Reset();
+			const FIslandDesc& Main = Layout.Islands[0];
+			float MaxDiff = 0.0f;
+			for (int32 Step = 0; Step < 16; ++Step)
+			{
+				const float Angle = UE_TWO_PI * Step / 16.0f;
+				const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
+				MaxDiff = FMath::Max(MaxDiff, FMath::Abs(Main.RadiusAlong(Dir) - Ellipse.RadiusAlong(Dir)));
+			}
+			TestTrue(TEXT("la costa se aparta de la elipse más de 5 m en algún rumbo"), MaxDiff > 5.0f);
+		});
+
+		It("usa la sigma propia de la colina y deja la ladera norte transitable", [this]()
+		{
+			const FIslandZone* Hill = Layout.FindZone(TEXT("colina_faro"));
+			if (!TestNotNull(TEXT("colina"), Hill))
+			{
+				return;
+			}
+			TestEqual(TEXT("sigma"), Hill->GetHillSigma(), 42.0f);
+			// Pendiente media del camino de Playa Norte (GDD §6: ≤ 30°) entre la orilla y la cima.
+			const float Rise = Layout.SampleColumn(Hill->Center.X, Hill->Center.Y).Height - Layout.SampleColumn(100.0f, 53.0f).Height;
+			const float Run = static_cast<float>(FVector2D::Distance(Hill->Center, FVector2D(100.0f, 53.0f)));
+			TestTrue(TEXT("pendiente media < 30°"), FMath::RadiansToDegrees(FMath::Atan(Rise / Run)) < 30.0f);
 		});
 
 		It("dice en qué zona está el punto", [this]()
@@ -198,6 +244,17 @@ void FIslandLayoutSpec::Define()
 			Layout.Zones.Add(Lost);
 			FString Error;
 			TestFalse(TEXT("inválido"), Layout.Validate(Error));
+		});
+
+		It("rechaza rocas sin radio o con id repetido", [this]()
+		{
+			FString Error;
+			FIslandLayout Bad = Layout;
+			Bad.Rocks[0].Radius = 0.0f;
+			TestFalse(TEXT("radio cero"), Bad.Validate(Error));
+			Bad = Layout;
+			Bad.Rocks[1].Id = Bad.Rocks[0].Id;
+			TestFalse(TEXT("id repetido"), Bad.Validate(Error));
 		});
 
 		It("rechaza un layout sin tierras", [this]()

@@ -96,7 +96,7 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 void UExploredShotSubsystem::BuildShotList(const FString& Set)
 {
 	// Vistas sobre la disposición de autor (island.json). Las alturas salen del relieve
-	// aproximado de FIslandLayout hasta que exista el Landscape de F3.
+	// analítico de FIslandLayout, el mismo con el que Tools/Island genera la malla del terreno.
 	const FIslandLayout& Layout = *ExploredIsland::Get();
 	const bool bAll = Set == TEXT("all");
 	const bool bBench = Set == TEXT("bench");
@@ -208,6 +208,18 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 	{
 		// Toda la isla y el islote desde el suroeste.
 		AddShot(TEXT("aerial"), FVector(-320.0f, -260.0f, 180.0f), FVector(40.0f, 20.0f, 0.0f), 15.5f);
+	}
+
+	if (Set == TEXT("f3a"))
+	{
+		// Terreno de F3a (docs/v3/capturas/f3a-*.png): cenital con el norte arriba, Cala Varada desde
+		// el mar, la Colina del Faro desde el Palmar y el islote del carguero desde Playa Norte.
+		AddShot(TEXT("f3a-cenital"), FVector(52.0f, 0.0f, 430.0f), FVector(52.5f, 0.0f, 0.0f), 13.0f);
+		AddShot(TEXT("f3a-cala"), FVector(-178.0f, -28.0f, 12.0f), FVector(-100.0f, 12.0f, 1.0f), 10.5f);
+		const FVector2D Palmar(-22.0f, -28.0f);
+		AddShot(TEXT("f3a-faro"), FVector(Palmar.X, Palmar.Y, GroundAt(Palmar) + 6.0f), FVector(45.0f, 15.0f, 32.0f), 15.0f);
+		const FVector2D North(112.0f, 58.0f);
+		AddShot(TEXT("f3a-islote"), FVector(North.X, North.Y, GroundAt(North) + 8.0f), FVector(232.0f, 150.0f, 4.0f), 16.5f);
 	}
 
 	if (Set == TEXT("menu"))

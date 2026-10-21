@@ -79,6 +79,61 @@ namespace IslandLayoutLoaderDetail
 		return true;
 	}
 
+	/** «coast»: lista opcional de [k, amplitud, fase en grados]. */
+	bool ParseCoast(const FJsonObject& Obj, TArray<FCoastHarmonic>& Out)
+	{
+		const FJsonArray* Values = nullptr;
+		if (!Obj.TryGetArrayField(TEXT("coast"), Values) || !Values)
+		{
+			return true;
+		}
+		for (const TSharedPtr<FJsonValue>& Value : *Values)
+		{
+			const FJsonArray* Triple = nullptr;
+			double K = 0.0;
+			double Amplitude = 0.0;
+			double PhaseDeg = 0.0;
+			if (!Value.IsValid() || !Value->TryGetArray(Triple) || !Triple || Triple->Num() != 3
+				|| !(*Triple)[0]->TryGetNumber(K) || !(*Triple)[1]->TryGetNumber(Amplitude) || !(*Triple)[2]->TryGetNumber(PhaseDeg)
+				|| K < 1.0 || FMath::Abs(Amplitude) >= 0.5)
+			{
+				return false;
+			}
+			FCoastHarmonic& Harmonic = Out.AddDefaulted_GetRef();
+			Harmonic.K = static_cast<int32>(K);
+			Harmonic.Amplitude = static_cast<float>(Amplitude);
+			Harmonic.Phase = FMath::DegreesToRadians(static_cast<float>(PhaseDeg));
+		}
+		return true;
+	}
+
+	bool ParseRock(const FJsonObject& Obj, FIslandRock& Out)
+	{
+		return ReadId(Obj, Out.Id) && ReadVector2D(Obj, TEXT("center"), Out.Center) && ReadFloat(Obj, TEXT("radius"), Out.Radius, true)
+			&& ReadFloat(Obj, TEXT("height"), Out.Height, true);
+	}
+
+	bool ParsePath(const FJsonObject& Obj, FIslandPath& Out)
+	{
+		const FJsonArray* Values = nullptr;
+		if (!ReadId(Obj, Out.Id) || !ReadFloat(Obj, TEXT("width"), Out.Width, false) || !Obj.TryGetArrayField(TEXT("points"), Values) || !Values)
+		{
+			return false;
+		}
+		for (const TSharedPtr<FJsonValue>& Value : *Values)
+		{
+			const FJsonArray* Pair = nullptr;
+			double X = 0.0;
+			double Y = 0.0;
+			if (!Value.IsValid() || !Value->TryGetArray(Pair) || !Pair || Pair->Num() != 2 || !(*Pair)[0]->TryGetNumber(X) || !(*Pair)[1]->TryGetNumber(Y))
+			{
+				return false;
+			}
+			Out.Points.Add(FVector2D(X, Y));
+		}
+		return true;
+	}
+
 	bool ParseIsland(const FJsonObject& Obj, FIslandDesc& Out)
 	{
 		float RotationDeg = 0.0f;
@@ -86,14 +141,14 @@ namespace IslandLayoutLoaderDetail
 			&& ReadFloat(Obj, TEXT("radius"), Out.Radius, true) && ReadFloat(Obj, TEXT("aspect"), Out.Aspect, false)
 			&& ReadFloat(Obj, TEXT("rotationDeg"), RotationDeg, false) && ReadFloat(Obj, TEXT("maxHeight"), Out.MaxHeight, true);
 		Out.Rotation = FMath::DegreesToRadians(RotationDeg);
-		return bOk;
+		return bOk && ParseCoast(Obj, Out.Coast);
 	}
 
 	bool ParseZone(const FJsonObject& Obj, FIslandZone& Out)
 	{
 		return ReadId(Obj, Out.Id) && Obj.TryGetStringField(TEXT("name"), Out.Name) && ReadBiome(Obj, Out.Biome)
 			&& ReadVector2D(Obj, TEXT("center"), Out.Center) && ReadFloat(Obj, TEXT("radius"), Out.Radius, true)
-			&& ReadFloat(Obj, TEXT("hill"), Out.Hill, false);
+			&& ReadFloat(Obj, TEXT("hill"), Out.Hill, false) && ReadFloat(Obj, TEXT("hillSigma"), Out.HillSigma, false);
 	}
 
 	bool ParsePoint(const FJsonObject& Obj, FIslandPoint& Out)
@@ -117,8 +172,8 @@ namespace IslandLayoutLoaderDetail
 		}
 		else
 		{
-			UE_LOG(LogExplored, Display, TEXT("[Isla] %d tierras, %d zonas y %d puntos desde island.json"),
-				Layout.Islands.Num(), Layout.Zones.Num(), Layout.Points.Num());
+			UE_LOG(LogExplored, Display, TEXT("[Isla] %d tierras, %d zonas, %d rocas y %d puntos desde island.json"),
+				Layout.Islands.Num(), Layout.Zones.Num(), Layout.Rocks.Num(), Layout.Points.Num());
 			return MakeShared<const FIslandLayout>(MoveTemp(Layout));
 		}
 		return MakeShared<const FIslandLayout>(FIslandLayout::Provisional());
@@ -175,6 +230,33 @@ namespace ExploredIsland
 			if (!ParseZone(*Obj, Layout.Zones.AddDefaulted_GetRef()))
 			{
 				OutError = FString::Printf(TEXT("zona %d incompleta"), Layout.Zones.Num() - 1);
+				return false;
+			}
+		}
+		// «rocks» es opcional (los layouts de prueba antiguos no lo traen).
+		TArray<TSharedPtr<FJsonObject>> Rocks;
+		if (Root->HasField(TEXT("rocks")) && !ReadObjects(*Root, TEXT("rocks"), Rocks, OutError))
+		{
+			return false;
+		}
+		for (const TSharedPtr<FJsonObject>& Obj : Rocks)
+		{
+			if (!ParseRock(*Obj, Layout.Rocks.AddDefaulted_GetRef()))
+			{
+				OutError = FString::Printf(TEXT("roca %d incompleta"), Layout.Rocks.Num() - 1);
+				return false;
+			}
+		}
+		TArray<TSharedPtr<FJsonObject>> Paths;
+		if (Root->HasField(TEXT("paths")) && !ReadObjects(*Root, TEXT("paths"), Paths, OutError))
+		{
+			return false;
+		}
+		for (const TSharedPtr<FJsonObject>& Obj : Paths)
+		{
+			if (!ParsePath(*Obj, Layout.Paths.AddDefaulted_GetRef()))
+			{
+				OutError = FString::Printf(TEXT("camino %d incompleto"), Layout.Paths.Num() - 1);
 				return false;
 			}
 		}

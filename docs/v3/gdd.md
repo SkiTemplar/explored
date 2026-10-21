@@ -211,7 +211,7 @@ Una ranura «Continuar». Autoguardado al amanecer de cada día y el día 3 a la
 
 ## 6. Isla de Sal
 
-Mapa nuevo `/Game/Maps/Map_IslaSal`. Terreno: un `Landscape` generado por script (`Tools/Island/gen_heightmap.py` a partir de `Content/Data/island.json`: elipses y gaussianas a mano, determinista) más mallas estáticas de acantilado. Máximo 400 × 400 m. Isla principal ≈ 330 × 260 m; islote del carguero a 150 m al nordeste. Material `M_ToonLandscape`: capas de color plano (arena, hierba, roca) tomadas de la paleta. El mapa incluye `PlayerStart`, `ExploredSkyController`, `ExploredOcean`, `PostProcessVolume` (`M_PP_Body`) y un solo `DirectionalLight`.
+Mapa nuevo `/Game/Maps/Map_IslaSal`. **Decisión de F3a (sustituye al `Landscape` de este párrafo):** el terreno es una malla estática facetada low poly (`SM_IslaSal_Terrain`, triángulos de ~3 m, normales planas, color por celda de la hoja de paleta) que genera `Tools/Island` desde `island.json`; `M_Toon` sustituye a `M_ToonLandscape`; las colocaciones viven en `Content/Data/island_props.json` y las crea `AExploredIslandPopulator`. Texto original: terreno: un `Landscape` generado por script (`Tools/Island/gen_heightmap.py` a partir de `Content/Data/island.json`: elipses y gaussianas a mano, determinista) más mallas estáticas de acantilado. Máximo 400 × 400 m. Isla principal ≈ 330 × 260 m; islote del carguero a 150 m al nordeste. Material `M_ToonLandscape`: capas de color plano (arena, hierba, roca) tomadas de la paleta. El mapa incluye `PlayerStart`, `ExploredSkyController`, `ExploredOcean`, `PostProcessVolume` (`M_PP_Body`) y un solo `DirectionalLight`.
 
 | Zona | Tamaño aprox. | Contenido |
 |---|---|---|

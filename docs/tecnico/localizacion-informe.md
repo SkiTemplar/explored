@@ -13,8 +13,8 @@ La guía está en [`localizacion.md`](localizacion.md).
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
-| Literales invariantes | 2 |
-| Literales para revisar | 114 |
+| Literales invariantes | 3 |
+| Literales para revisar | 116 |
 | Errores / avisos | 0 / 9 |
 
 ## Literales del C++
@@ -23,7 +23,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
 
-### Invariante (2)
+### Invariante (3)
 
 Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FText::AsNumber`, sin traducir.
 
@@ -31,8 +31,9 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 |---|---|---|
 | `Source/Explored/Debug/PlaytestReportModel.cpp:182` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
+| `Source/Explored/WorldGen/ExploredPlaceholder.cpp:94` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (114)
+### Revisar (116)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -68,12 +69,14 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Cooking/CookingModel.cpp:281` | `Hace falta un recipiente que no pierda agua.` | `OutFailReason = TEXT("Hace falta un recipiente que no pierda agua.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:291` | `Así no se puede %s.` | `OutFailReason = FString::Printf(TEXT("Así no se puede %s."), LexToString(Technique));` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:71` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:465` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:466` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:467` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:468` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:473` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:501` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:477` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:478` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:479` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:480` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:485` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:513` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredWalkProbe.cpp:160` | `{\n  "status": "%s",\n  "start_zone": "%s",\n  "start_m": [%.2f, %.2f, %.2f],\n  "end_m": [%.2f, %.2f, %.2f],\n` | `TEXT("{\n \"status\": \"%s\",\n \"start_zone\": \"%s\",\n \"start_m\": [%.2f, %.2f, %.2f],\n \"end_m\": [%.2f, %.2f, %.2f],\n")` |
+| `Source/Explored/Debug/ExploredWalkProbe.cpp:161` | `  "waypoints_reached": %d,\n  "waypoints": %d,\n  "elapsed_s": %.1f,\n  "travelled_m": %.1f,\n  "max_height_m": %.2f\n}\n` | `TEXT(" \"waypoints_reached\": %d,\n \"waypoints\": %d,\n \"elapsed_s\": %.1f,\n \"travelled_m\": %.1f,\n \"max_height_m\": %.2f\n}\n"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:36` | `%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m` | `Issue.Summary = FString::Printf(TEXT("%s (slot %s): material nulo o por defecto en %d instancia(s), cerca de (%.0f, %.0f, %.0f) m"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:51` | `por debajo del terreno` | `Flags.Add(TEXT("por debajo del terreno"));` |
@@ -146,12 +149,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Save/SaveValue.cpp:754` | `se esperaba «,» o «]»` | `return Fail(TEXT("se esperaba «,» o «]»"));` |
 | `Source/Explored/Save/SaveValue.cpp:781` | `carácter inesperado` | `return Fail(TEXT("carácter inesperado"));` |
 | `Source/Explored/Save/SaveValue.cpp:1227` | `texto sobrante tras el valor` | `Parser.Fail(TEXT("texto sobrante tras el valor"));` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:134` | `Cala Varada` | `AddZone(TEXT("cala_varada"), TEXT("Cala Varada"), EIslandArchetype::Landing, FVector2D(-100.0f, 10.0f), 35.0f, 0.0f);` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:136` | `Rocas del Pescador` | `AddZone(TEXT("rocas_pescador"), TEXT("Rocas del Pescador"), EIslandArchetype::Teeth, FVector2D(-15.0f, -128.0f), 30.0f, 2.0f);` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:137` | `Bosque de Bambú` | `AddZone(TEXT("bosque_bambu"), TEXT("Bosque de Bambú"), EIslandArchetype::Emerald, FVector2D(55.0f, -85.0f), 42.0f, 5.0f);` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:138` | `Playa Norte` | `AddZone(TEXT("playa_norte"), TEXT("Playa Norte"), EIslandArchetype::WhiteSands, FVector2D(110.0f, 55.0f), 28.0f, 0.0f);` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:139` | `Colina del Faro` | `AddZone(TEXT("colina_faro"), TEXT("Colina del Faro"), EIslandArchetype::Mesa, FVector2D(45.0f, 15.0f), 47.0f, 31.0f);` |
-| `Source/Explored/WorldGen/IslandLayout.cpp:140` | `Isla del Carguero` | `AddZone(TEXT("isla_carguero"), TEXT("Isla del Carguero"), EIslandArchetype::Teeth, FVector2D(232.0f, 150.0f), 32.0f, 0.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:168` | `Cala Varada` | `AddZone(TEXT("cala_varada"), TEXT("Cala Varada"), EIslandArchetype::Landing, FVector2D(-100.0f, 10.0f), 35.0f, 0.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:170` | `Rocas del Pescador` | `AddZone(TEXT("rocas_pescador"), TEXT("Rocas del Pescador"), EIslandArchetype::Teeth, FVector2D(-15.0f, -140.0f), 30.0f, 2.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:171` | `Bosque de Bambú` | `AddZone(TEXT("bosque_bambu"), TEXT("Bosque de Bambú"), EIslandArchetype::Emerald, FVector2D(55.0f, -85.0f), 42.0f, 5.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:172` | `Playa Norte` | `AddZone(TEXT("playa_norte"), TEXT("Playa Norte"), EIslandArchetype::WhiteSands, FVector2D(110.0f, 55.0f), 28.0f, 0.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:173` | `Colina del Faro` | `AddZone(TEXT("colina_faro"), TEXT("Colina del Faro"), EIslandArchetype::Mesa, FVector2D(45.0f, 15.0f), 47.0f, 32.5f, 42.0f);` |
+| `Source/Explored/WorldGen/IslandLayout.cpp:174` | `Isla del Carguero` | `AddZone(TEXT("isla_carguero"), TEXT("Isla del Carguero"), EIslandArchetype::Teeth, FVector2D(232.0f, 150.0f), 32.0f, 0.0f);` |
 
 ## Claves propuestas pendientes de integrar
 

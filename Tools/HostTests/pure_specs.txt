@@ -36,3 +36,5 @@ Tests/WeatherSpec.cpp
 Tests/WorldEventsSpec.cpp
 Tests/CoconutPalmModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
+Tests/IslandPropsSpec.cpp
+Tests/WalkProbeSpec.cpp
