@@ -13,7 +13,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RightBoat",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 471"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 472"
 						}
 					]
 				},
@@ -68,7 +68,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_PickUp",
-							"Path": "Source/Explored/Items/ExploredItemActor.cpp - line 74"
+							"Path": "Source/Explored/Items/ExploredItemActor.cpp - line 69"
 						}
 					]
 				},
@@ -233,7 +233,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_StoreIn",
-							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 153"
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 154"
 						}
 					]
 				},
@@ -420,7 +420,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_TakeFrom",
-							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 156"
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 157"
 						}
 					]
 				},
@@ -442,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_Board",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 475"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 476"
 						}
 					]
 				},
@@ -497,7 +497,7 @@
 					"Keys": [
 						{
 							"Key": "Container_Chest",
-							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 28"
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 29"
 						}
 					]
 				},
@@ -508,7 +508,7 @@
 					"Keys": [
 						{
 							"Key": "Container_Basket",
-							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 30"
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 31"
 						}
 					]
 				},
@@ -519,7 +519,7 @@
 					"Keys": [
 						{
 							"Key": "Container_Shelf",
-							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 27"
+							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 28"
 						}
 					]
 				},
@@ -530,7 +530,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Raft",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 81"
 						}
 					]
 				},
@@ -541,7 +541,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Canoe",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
 						}
 					]
 				},
@@ -552,7 +552,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Outrigger",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
 						}
 					]
 				}
@@ -2301,7 +2301,7 @@
 					"Keys": [
 						{
 							"Key": "VerbYardBuild",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 184"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 185"
 						}
 					]
 				},
@@ -2367,7 +2367,7 @@
 					"Keys": [
 						{
 							"Key": "VerbYardWait",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 189"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 190"
 						}
 					]
 				},
@@ -2389,7 +2389,7 @@
 					"Keys": [
 						{
 							"Key": "VerbYardMissing",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 180"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 181"
 						}
 					]
 				},
@@ -2422,7 +2422,7 @@
 					"Keys": [
 						{
 							"Key": "VerbSalvage",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 92"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 93"
 						}
 					]
 				},
@@ -2444,7 +2444,7 @@
 					"Keys": [
 						{
 							"Key": "VerbYardSail",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 188"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 189"
 						}
 					]
 				},

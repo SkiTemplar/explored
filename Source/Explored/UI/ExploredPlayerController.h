@@ -132,7 +132,7 @@ public:
 
 	/** Ruta del mapa a la que vuelve «Salir al menú» (GameDefaultMap, ver Config/DefaultEngine.ini). */
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|UI")
-	FName MainMenuMapName = "/Game/Maps/Archipelago";
+	FName MainMenuMapName = "/Game/Maps/Map_IslaSal";
 
 private:
 	void HandleEscape();

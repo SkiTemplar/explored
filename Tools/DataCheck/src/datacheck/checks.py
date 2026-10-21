@@ -515,25 +515,6 @@ def check_boats(ds: DataSet, r: Report, obtainable: set[str]) -> None:
 # --------------------------------------------------------------------------- mallas
 
 
-def blender_mesh_names(repo_root: Path) -> set[str]:
-    names: set[str] = set()
-    props = repo_root / "Tools" / "Blender" / "props"
-    for py in props.glob("*.py"):
-        src = py.read_text(encoding="utf-8")
-        for m in re.finditer(r"dict\(name='([A-Za-z0-9_]+)'", src):
-            names.add("SM_" + m.group(1))
-        # kit modular (kit_construccion.py): los nombres se generan como
-        # name=f'Kit_{_mat}_{_key}' cruzando MATERIALS x PIECES
-        if "name=f'Kit_{_mat}_{_key}'" in src:
-            mats = re.search(r"^MATERIALS = \[([^\]]*)\]", src, re.M)
-            pieces = re.search(r"^PIECES = \[(.*?)^\]", src, re.M | re.S)
-            if mats and pieces:
-                for mat in re.findall(r"'(\w+)'", mats.group(1)):
-                    for key in re.findall(r"^\s*\('(\w+)',", pieces.group(1), re.M):
-                        names.add(f"SM_Kit_{mat}_{key}")
-    return names
-
-
 def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
@@ -544,30 +525,15 @@ def pending_expected(ds: DataSet) -> dict[str, set[str]]:
 
 
 def check_meshes(ds: DataSet, r: Report) -> None:
-    known = blender_mesh_names(ds.repo_root)
+    # Solo se comprueba el formato de la ruta: el kit de mallas v1 (Tools/Blender/props) se
+    # borró en el reset v2 y el juego carga con forma básica del motor lo que aún no exista
+    # (Source/Explored/Core/ExploredAssetFallback.h).
     for item in ds.items:
         path = item.get("meshPath", "")
-        m = GENERATED_MESH.match(path)
         if BASIC_SHAPES.match(path):
             continue
-        if not m:
+        if not GENERATED_MESH.match(path):
             r.error(f"items.json «{item['id']}»: meshPath {path!r} no es /Engine/BasicShapes ni /Game/Generated/Meshes/.../SM_*")
-        elif m.group(1) not in known:
-            r.error(f"items.json «{item['id']}»: malla {m.group(1)} no la genera ningún script de Tools/Blender/props")
-    for p in ds.building.get("pieces", []):
-        if p.get("mesh") is not None and p["mesh"] not in known:
-            r.error(f"building_pieces.json «{p['id']}»: malla {p['mesh']} no existe en Tools/Blender/props")
-    for b in ds.boats:
-        if b.get("mesh") is not None and b["mesh"] not in known:
-            r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
-
-    # Mobiliario de la base ya modelado (SM_Base_*) que ninguna pieza usa: es
-    # contenido listo que el jugador no puede construir. Nota, no error: puede
-    # faltar un sistema (p. ej. el banco de chatarra) antes de darlo de alta.
-    used = {p.get("mesh") for p in ds.building.get("pieces", [])}
-    idle = sorted(n for n in known if n.startswith("SM_Base_") and n not in used)
-    if idle:
-        r.info.append(f"building_pieces.json: mallas de base sin pieza construible: {', '.join(idle)}")
 
     pending = ds.data.get("meshes_pendientes.json", {})
     for group, expected in pending_expected(ds).items():

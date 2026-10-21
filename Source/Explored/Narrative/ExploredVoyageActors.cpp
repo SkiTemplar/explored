@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "UObject/SoftObjectPath.h"
 
+#include "Core/ExploredAssetFallback.h"
 #include "Explored.h"
 #include "Narrative/ExploredVoyageSubsystem.h"
 
@@ -31,17 +32,17 @@ namespace ExploredVoyageActorsDetail
 		}
 	}
 
-	/** Primera malla de la lista que exista (el kit del barco puede no estar importado aún). */
+	/** Primera malla de la lista que exista; si no hay ninguna, el cubo del motor (kit sin importar). */
 	UStaticMesh* LoadFirst(std::initializer_list<const TCHAR*> Paths)
 	{
 		for (const TCHAR* Path : Paths)
 		{
-			if (UStaticMesh* Mesh = Cast<UStaticMesh>(FSoftObjectPath(Path).TryLoad()))
+			if (UStaticMesh* Mesh = ExploredAssets::LoadMeshIfPresent(FSoftObjectPath(Path)))
 			{
 				return Mesh;
 			}
 		}
-		return nullptr;
+		return Cast<UStaticMesh>(FSoftObjectPath(ExploredAssets::FallbackCubePath).TryLoad());
 	}
 
 	UStaticMeshComponent* MakeMesh(AActor& Owner)
@@ -68,7 +69,7 @@ void AExploredSalvageSite::Configure(EShipPart InPart)
 void AExploredSalvageSite::BeginPlay()
 {
 	Super::BeginPlay();
-	if (UStaticMesh* Wreck = Cast<UStaticMesh>(FSoftObjectPath(ExploredVoyageActorsDetail::WreckMeshFor(Part)).TryLoad()))
+	if (UStaticMesh* Wreck = ExploredAssets::LoadMeshOrFallback(FSoftObjectPath(ExploredVoyageActorsDetail::WreckMeshFor(Part))))
 	{
 		Mesh->SetStaticMesh(Wreck);
 		ExploredInteraction::AddFocusBox(*this, *Mesh);

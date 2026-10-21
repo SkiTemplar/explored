@@ -19,7 +19,7 @@
 			"en": "the canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:78"
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
 			]
 		},
 		{
@@ -29,7 +29,7 @@
 			"en": "the outrigger canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
+				"Source/Explored/Boats/ExploredBoat.cpp:80"
 			]
 		},
 		{
@@ -39,7 +39,7 @@
 			"en": "the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:80"
+				"Source/Explored/Boats/ExploredBoat.cpp:81"
 			]
 		},
 		{
@@ -365,7 +365,7 @@
 			"en": "basket",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/ExploredContainer.cpp:30"
+				"Source/Explored/Carry/ExploredContainer.cpp:31"
 			]
 		},
 		{
@@ -375,7 +375,7 @@
 			"en": "chest",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/ExploredContainer.cpp:28"
+				"Source/Explored/Carry/ExploredContainer.cpp:29"
 			]
 		},
 		{
@@ -385,7 +385,7 @@
 			"en": "shelf",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/ExploredContainer.cpp:27"
+				"Source/Explored/Carry/ExploredContainer.cpp:28"
 			]
 		},
 		{
@@ -466,7 +466,7 @@
 			"en": "Board {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:475"
+				"Source/Explored/Boats/ExploredBoat.cpp:476"
 			]
 		},
 		{
@@ -476,7 +476,7 @@
 			"en": "Pick up {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Items/ExploredItemActor.cpp:74"
+				"Source/Explored/Items/ExploredItemActor.cpp:69"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Right {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:471"
+				"Source/Explored/Boats/ExploredBoat.cpp:472"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "Put in {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/ExploredContainer.cpp:153"
+				"Source/Explored/Carry/ExploredContainer.cpp:154"
 			]
 		},
 		{
@@ -506,7 +506,7 @@
 			"en": "Take from {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Carry/ExploredContainer.cpp:156"
+				"Source/Explored/Carry/ExploredContainer.cpp:157"
 			]
 		},
 		{
@@ -2265,7 +2265,7 @@
 			"en": "Salvage: {0} from the Albatros",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:92"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:93"
 			]
 		},
 		{
@@ -2275,7 +2275,7 @@
 			"en": "Build the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:184"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:185"
 			]
 		},
 		{
@@ -2285,7 +2285,7 @@
 			"en": "Boat slipway: Albatros parts missing ({0}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:180"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:181"
 			]
 		},
 		{
@@ -2295,7 +2295,7 @@
 			"en": "Set sail by the stars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:188"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:189"
 			]
 		},
 		{
@@ -2305,7 +2305,7 @@
 			"en": "Wait for nightfall by the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:189"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:190"
 			]
 		},
 		{

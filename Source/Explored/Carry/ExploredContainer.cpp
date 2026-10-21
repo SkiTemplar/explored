@@ -1,4 +1,5 @@
 #include "Carry/ExploredContainer.h"
+#include "Core/ExploredAssetFallback.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -122,7 +123,7 @@ void AExploredContainer::RefreshStoredVisuals()
 		FItemDefinition Definition;
 		if (Registry && Registry->FindDefinition(Entry.Item.DefinitionId, Definition))
 		{
-			StaticMesh = Cast<UStaticMesh>(Definition.MeshPath.TryLoad());
+			StaticMesh = ExploredAssets::LoadMeshOrFallback(Definition.MeshPath, ExploredAssets::FallbackSpherePath);
 		}
 		ItemMesh->SetStaticMesh(StaticMesh);
 		ItemMesh->SetRelativeTransform(GetSlotTransform(Entry.SlotIndex));

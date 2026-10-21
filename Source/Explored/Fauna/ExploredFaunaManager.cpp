@@ -1,4 +1,5 @@
 #include "Fauna/ExploredFaunaManager.h"
+#include "Core/ExploredAssetFallback.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
@@ -557,10 +558,10 @@ UStaticMesh* AExploredFaunaManager::LoadMesh(FName MeshName)
 	{
 		return Cached->Get();
 	}
-	// Ruta de import_meshes.py (familia «Fauna»): /Game/Generated/Meshes/Fauna/<Especie>/SM_<Especie>_Body.
+	// Ruta del kit de fauna (/Game/Generated/Meshes/Fauna/<Especie>/SM_<Especie>_Body); si falta, esfera del motor.
 	const FString Name = MeshName.ToString();
 	const FString Path = FString::Printf(TEXT("/Game/Generated/Meshes/Fauna/%s/SM_%s_Body.SM_%s_Body"), *Name, *Name, *Name);
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path, nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UStaticMesh* Mesh = ExploredAssets::LoadMeshOrFallback(FSoftObjectPath(Path), ExploredAssets::FallbackSpherePath);
 	MeshCache.Add(MeshName, Mesh);
 	return Mesh;
 }

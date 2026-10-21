@@ -1,4 +1,5 @@
 #include "Boats/ExploredBoat.h"
+#include "Core/ExploredAssetFallback.h"
 
 #include "CollisionQueryParams.h"
 #include "Components/SceneComponent.h"
@@ -43,7 +44,7 @@ namespace ExploredBoatDetail
 		return static_cast<EBoatType>(static_cast<uint8>(Kind));
 	}
 
-	/** Ruta de importación de las mallas de Tools/Blender/props (grupo «Embarcaciones» de run_props.py). */
+	/** Ruta de importación de las mallas del kit de embarcaciones; si falta, el casco se dibuja como caja. */
 	FSoftObjectPath MeshPath(const TCHAR* MeshName)
 	{
 		return FSoftObjectPath(FString::Printf(TEXT("/Game/Generated/Meshes/Embarcaciones/%s.%s"), MeshName, MeshName));
@@ -145,7 +146,7 @@ void AExploredBoat::ApplyMeshes()
 	UStaticMesh* HullMesh = nullptr;
 	if (D.MeshName && D.MeshName[0] != TEXT('\0'))
 	{
-		HullMesh = TSoftObjectPtr<UStaticMesh>(ExploredBoatDetail::MeshPath(D.MeshName)).LoadSynchronous();
+		HullMesh = ExploredAssets::LoadMeshIfPresent(ExploredBoatDetail::MeshPath(D.MeshName));
 	}
 	if (HullMesh)
 	{
@@ -158,7 +159,7 @@ void AExploredBoat::ApplyMeshes()
 	{
 		// Sin malla importada: caja con las medidas del casco
 		// y la quilla en el origen, para poder probar la navegación en PIE.
-		UStaticMesh* Cube = TSoftObjectPtr<UStaticMesh>(FSoftObjectPath(TEXT("/Engine/BasicShapes/Cube.Cube"))).LoadSynchronous();
+		UStaticMesh* Cube = Cast<UStaticMesh>(FSoftObjectPath(ExploredAssets::FallbackCubePath).TryLoad());
 		Hull->SetStaticMesh(Cube);
 		Hull->SetRelativeRotation(FRotator::ZeroRotator);
 		Hull->SetRelativeScale3D(FVector(D.LengthCm, D.BeamCm, D.HullDepthCm) / 100.0f);
@@ -167,7 +168,7 @@ void AExploredBoat::ApplyMeshes()
 
 	if (D.HasSail())
 	{
-		if (UStaticMesh* SailMesh = TSoftObjectPtr<UStaticMesh>(ExploredBoatDetail::MeshPath(TEXT("SM_Sail"))).LoadSynchronous())
+		if (UStaticMesh* SailMesh = ExploredAssets::LoadMeshIfPresent(ExploredBoatDetail::MeshPath(TEXT("SM_Sail"))))
 		{
 			Sail->SetStaticMesh(SailMesh);
 		}

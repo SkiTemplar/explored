@@ -29,7 +29,7 @@ import pytest
 
 BLENDER_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BLENDER_DIR.parents[1]
-SUBDIRS = ('lib', 'assets', 'animals', 'props')
+SUBDIRS = ('lib', 'animals')
 
 _SYS_PATH_ORIGINAL = list(sys.path)
 _SYS_ARGV_ORIGINAL = list(sys.argv)
@@ -43,18 +43,15 @@ sys.argv = ['blender']
 ESCANEOS = ('namaqualand_cliff_01', 'namaqualand_cliff_02', 'coastal_cliff_04',
             'namaqualand_boulder_02', 'moon_rock_01')
 
-
 def importar(nombre):
     """Importa un script del kit por nombre (como hace Blender tras insertar
     sus carpetas en sys.path)."""
     return importlib.import_module(nombre)
 
-
 def _foto_de(carpeta):
     if not carpeta.exists():
         return {}
     return {str(p): p.stat().st_mtime_ns for p in carpeta.rglob('*') if p.is_file()}
-
 
 @pytest.fixture(scope='session', autouse=True)
 def _repo_intacto():
@@ -69,13 +66,11 @@ def _repo_intacto():
     for carpeta, a, d in zip(vigiladas, antes, despues, strict=True):
         assert a == d, f'los tests han modificado {carpeta}'
 
-
 @pytest.fixture(scope='session')
 def mp_sesion():
     """MonkeyPatch de ámbito de sesión (el de pytest es por función)."""
     with pytest.MonkeyPatch.context() as mp:
         yield mp
-
 
 # ---------------------------------------------------------------------------
 # Texturas y escaneos sintéticos (sustituyen a Art/Export/Textures y a la
@@ -89,7 +84,6 @@ def _png(ruta, w=8, h=8, rgba=(0.3, 0.5, 0.2, 1.0)):
     img.save()
     bpy.data.images.remove(img)
 
-
 @pytest.fixture(scope='session', autouse=True)
 def texturas_sinteticas(tmp_path_factory, mp_sesion):
     """Texturas PNG mínimas con los nombres que busca common.get_material,
@@ -100,7 +94,6 @@ def texturas_sinteticas(tmp_path_factory, mp_sesion):
     common = importar('common')
     mp_sesion.setattr(common, 'TEXTURES_DIR', str(carpeta))
     return carpeta
-
 
 def escaneo_sintetico(ruta_gltf, semilla, islas=True, nombre_malla='Scan'):
     """Escribe un glTF que imita un escaneo fotogramétrico: una lámina
@@ -135,7 +128,6 @@ def escaneo_sintetico(ruta_gltf, semilla, islas=True, nombre_malla='Scan'):
                               export_materials='NONE')
     common.reset_scene()
 
-
 @pytest.fixture(scope='session')
 def escaneos_cc0(tmp_path_factory, mp_sesion):
     """Caché de escaneos CC0 sintética: el pipeline real de _cliffscan.py
@@ -149,7 +141,6 @@ def escaneos_cc0(tmp_path_factory, mp_sesion):
     mp_sesion.setattr(cliffscan, 'CACHE_DIR', str(carpeta))
     return carpeta
 
-
 # ---------------------------------------------------------------------------
 # Kits exportados (una vez por sesión)
 # ---------------------------------------------------------------------------
@@ -157,33 +148,10 @@ def _leer_json(ruta):
     with open(ruta, encoding='utf-8') as f:
         return json.load(f)
 
-
 def _cronometrar(etiqueta, fn):
     t0 = time.perf_counter()
     fn()
     print(f'\n[tests] {etiqueta}: {time.perf_counter() - t0:.1f} s')
-
-
-@pytest.fixture(scope='session')
-def kit_vegetacion(tmp_path_factory, mp_sesion):
-    """Vegetación completa (run_all.main) exportada a un directorio temporal."""
-    salida = tmp_path_factory.mktemp('Meshes')
-    run_all = importar('run_all')
-    mp_sesion.setattr(run_all, 'EXPORT_DIR', str(salida))
-    _cronometrar('run_all.main', run_all.main)
-    return salida, _leer_json(salida / 'manifest.json')
-
-
-@pytest.fixture(scope='session')
-def kit_props(tmp_path_factory, mp_sesion, escaneos_cc0):
-    """Kit de props completo (run_props.main) exportado a un directorio
-    temporal, con los escaneos CC0 sintéticos."""
-    salida = tmp_path_factory.mktemp('Props')
-    run_props = importar('run_props')
-    mp_sesion.setattr(run_props, 'EXPORT_DIR', str(salida))
-    _cronometrar('run_props.main', run_props.main)
-    return salida, _leer_json(salida / 'manifest.json'), _leer_json(salida / 'props.json')
-
 
 @pytest.fixture(scope='session')
 def kit_fauna(tmp_path_factory, mp_sesion):
@@ -194,7 +162,6 @@ def kit_fauna(tmp_path_factory, mp_sesion):
     mp_sesion.setattr(run_animals, 'EXPORT_DIR', str(salida))
     _cronometrar('run_animals.main', run_animals.main)
     return salida, _leer_json(salida / 'animals.json')
-
 
 @pytest.fixture
 def validate_en(monkeypatch):
@@ -214,7 +181,6 @@ def validate_en(monkeypatch):
             monkeypatch.setattr(validate, 'FAUNA_MANIFEST_PATH', os.path.join(str(fauna), 'animals.json'))
         return validate
     return apuntar
-
 
 def hash_malla(obj, decimales=4):
     """Huella de las coordenadas de los vértices redondeadas (determinismo)."""

@@ -20,10 +20,10 @@ Art/Export/Packs/
 Art/Export/Audio/
 Art/Packs/
 
-# Mundo horneado por ExploredWorldGen (se regenera con Tools/worldgen.ps1 -Mode bake).
-# Con World Partition y OFPA cada actor es un paquete propio: miles de ficheros.
-Content/Maps/
-Content/World/
+# Mapas: solo se versiona el mapa de autor; los de prueba locales no.
+Content/Maps/*
+!Content/Maps/Map_IslaSal.umap
+# Paquetes OFPA de World Partition (el mapa actual no los usa).
 Content/__ExternalActors__/
 Content/__ExternalObjects__/
 

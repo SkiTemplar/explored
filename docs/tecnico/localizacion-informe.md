@@ -174,8 +174,8 @@ Ninguno.
 
 ## Avisos (9)
 
-- Source/Explored/Narrative/ExploredVoyageActors.cpp:92: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/Narrative/ExploredVoyageActors.cpp:180: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageActors.cpp:93: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageActors.cpp:181: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:105: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:247: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/UI/ExploredPlayerController.cpp:364: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)

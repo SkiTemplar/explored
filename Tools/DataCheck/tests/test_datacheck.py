@@ -12,7 +12,6 @@ from datacheck.checks import (
     PROPERTIES,
     DataSet,
     Report,
-    blender_mesh_names,
     check_building,
     check_cooking,
     check_crafting_reachability,
@@ -201,17 +200,6 @@ def test_detecta_tier_que_no_mejora(ds: DataSet) -> None:
         if p["tier"] == "piedra":
             p["integrity"] = 10
     assert any_error(errors_of(ds), "integridad media", "piedra")
-
-
-def test_detecta_malla_inventada(ds: DataSet) -> None:
-    piece(ds, "pared_bambu")["mesh"] = "SM_Wall_Bamboo"
-    assert any_error(errors_of(ds), "SM_Wall_Bamboo")
-
-
-def test_reconoce_mallas_del_kit_modular(real: DataSet) -> None:
-    names = blender_mesh_names(real.repo_root)
-    assert {"SM_Kit_Palm_Wall", "SM_Kit_Stone_Foundation", "SM_Kit_Bamboo_GableShed"} <= names
-    assert "SM_Kit_Palm_Nada" not in names
 
 
 def test_detecta_pendiente_obsoleto(ds: DataSet) -> None:
@@ -506,30 +494,6 @@ def test_musica_flauta_con_notas_de_mas(ds: DataSet) -> None:
     ds.data["music_layers.json"]["flute"]["semitones"] = [0, 2, 4, 5, 7, 9]
     assert any_error(music_errors(ds), "NumNotes")
 
-
-# --------------------------------------------------------------------------- mobiliario de base sin pieza
-
-def _idle_base_note(report: Report) -> str:
-    return next((n for n in report.info if "mallas de base sin pieza" in n), "")
-
-
-def test_catre_y_muelle_usan_mallas_existentes(real: DataSet) -> None:
-    meshes = {p["id"]: p["mesh"] for p in real.building["pieces"]}
-    assert meshes["catre_bambu"] == "SM_Base_Bed"
-    assert meshes["muelle"] == "SM_Base_Dock"
-    assert meshes["muelle_final"] == "SM_Base_DockEnd"
-    assert "muelle" in piece(real, "muelle_final")["requiresPieces"]
-
-
-def test_malla_de_base_sin_pieza_es_nota_no_error(real_report: Report) -> None:
-    note = _idle_base_note(real_report)
-    assert "SM_Base_Bed" not in note and "SM_Base_Dock," not in note
-    assert not any("mallas de base sin pieza" in e for e in real_report.errors + real_report.warnings)
-
-
-def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
-    ds.data["building_pieces.json"]["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "catre_bambu"]
-    assert "SM_Base_Bed" in _idle_base_note(run_all(ds))
 
 
 # --------------------------------------------------------------------------- herramientas de piedra (crafting)

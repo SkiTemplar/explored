@@ -248,10 +248,6 @@ def assign_materials(obj, slot_names):
         obj.data.materials.append(get_material(name))
 
 
-def set_face_material_index(obj, poly_indices, slot_index):
-    me = obj.data
-    for i in poly_indices:
-        me.polygons[i].material_index = slot_index
 
 
 # ---------------------------------------------------------------------------
@@ -276,9 +272,6 @@ def shade_smooth_auto(obj, angle_deg=40.0):
             bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
-def shade_flat(obj):
-    select_only(obj)
-    bpy.ops.object.shade_flat()
 
 
 # ---------------------------------------------------------------------------
@@ -376,31 +369,6 @@ def gradient_along_axis(base_color, tip_color, axis, v_min, v_max, curve=1.0,
     return fn
 
 
-def bark_streaks_tint(dark_color, light_color, height, seed, streak_count=9,
-                       jitter=0.03, alpha=0.0):
-    """Vetas verticales de corteza: mezcla dark/light según una onda que
-    depende del ángulo alrededor del eje del tronco (co.x/co.y), para que
-    la corteza no quede de un marrón plano sino con vetas longitudinales
-    de grosor irregular. La máscara de viento (alfa) sigue la altura."""
-    rnd = random.Random(seed)
-    phase = rnd.uniform(0.0, 2.0 * math.pi)
-    freq_jitter = rnd.uniform(0.85, 1.15)
-    cache = {}
-
-    def fn(v):
-        if v.index not in cache:
-            ang = math.atan2(v.co.y, v.co.x)
-            streak = 0.5 + 0.5 * math.sin(ang * streak_count * freq_jitter + phase)
-            streak = streak ** 1.4
-            j = rnd.uniform(-jitter, jitter)
-            cache[v.index] = (streak, j)
-        streak, j = cache[v.index]
-        r = _clamp01(dark_color[0] + (light_color[0] - dark_color[0]) * streak + j)
-        g = _clamp01(dark_color[1] + (light_color[1] - dark_color[1]) * streak + j)
-        b = _clamp01(dark_color[2] + (light_color[2] - dark_color[2]) * streak + j)
-        a = height_mask(v.co.z, 0.0, height, curve=1.0) if height > 0 else alpha
-        return (r, g, b, a)
-    return fn
 
 
 # ---------------------------------------------------------------------------
@@ -657,83 +625,10 @@ def make_curved_trunk(name, height, base_radius, tip_radius, curvature,
     return obj, lean_dir
 
 
-def make_buttress_root(name, attach_height, ground_depth, width_base, width_tip, ang,
-                        rnd, seed, thickness=0.35, s_curve_amt=None, segments=6,
-                        bark_v_tile_m=1.4):
-    """Contrafuerte tabular (raíz de tablón de ceiba/kapok): una tarjeta
-    curvada (make_leaf_blade) que crece del punto de anclaje en el tronco
-    (`attach_height`, estrecha: `width_base`) hasta un punto en el suelo
-    `ground_depth` metros POR DEBAJO de Z=0 (ancha: `width_tip`),
-    abriéndose hacia fuera por el camino — para que entre en el suelo con
-    cualquier pendiente en vez de quedar flotando como una «pata de araña»
-    sobre el terreno (encargo 2026-09-27). Un Solidify real le da
-    `thickness` (0,25-0,5 m) en el eje TANGENCIAL (perpendicular a `ang`,
-    ver la nota de vectores abajo): un volumen de verdad, no una tarjeta
-    de grosor cero.
-
-    Base de vectores: al colocar la tarjeta con orient_and_place(forward,
-    up=tangencial), como el tangencial ya es exactamente perpendicular a
-    `forward` (que vive en el plano radial-vertical que define `ang`), la
-    base ortonormal que calcula orient_and_place cae limpia: el eje Z
-    local (así, el grosor que añade Solidify) queda EXACTO en la
-    tangencial, y el ancho de la tarjeta (eje X local, `width_base` ->
-    `width_tip`) queda EXACTO en el plano radial-vertical -el «alto»
-    visible del tablón visto de frente-. No hace falta aplastar nada
-    después (a diferencia de un bisel circular): la tarjeta ya nace con
-    la sección correcta."""
-    if s_curve_amt is None:
-        s_curve_amt = (attach_height + ground_depth) * rnd.uniform(0.05, 0.12)
-        if rnd.random() < 0.5:
-            s_curve_amt = -s_curve_amt
-    outward = ground_depth * rnd.uniform(0.8, 1.2)
-    tangent = Vector((-math.sin(ang), math.cos(ang), 0.0))
-    radial = Vector((math.cos(ang), math.sin(ang), 0.0))
-
-    attach_pt = radial * (width_base * 0.3) + Vector((0.0, 0.0, attach_height))
-    ground_pt = radial * outward + Vector((0.0, 0.0, -ground_depth))
-    direction = ground_pt - attach_pt
-    total_len = direction.length
-    forward = direction.normalized()
-
-    card = make_leaf_blade(
-        name, length=total_len, width_base=width_base, width_tip=width_tip,
-        curve_amount=s_curve_amt, segments=segments, double_sided=False,
-        uv_v_repeat=max(total_len / bark_v_tile_m, 1.0),
-    )
-    select_only(card)
-    mod = card.modifiers.new('Thickness', 'SOLIDIFY')
-    mod.thickness = thickness
-    mod.offset = 0.0
-    bpy.context.view_layer.objects.active = card
-    bpy.ops.object.modifier_apply(modifier=mod.name)
-
-    orient_and_place(card, attach_pt, forward, tangent)
-    return card
 
 
-def spline_point(height, t, curvature, lean_dir, z_offset=0.0, s_curve=0.0):
-    """Punto (Vector) sobre el mismo perfil de curvatura que make_curved_trunk
-    (incluido el término s_curve, si el tronco lo usa), útil para anclar
-    hojas/ramas a lo largo de un tronco sin duplicar curvas."""
-    bend = curvature * (t ** 1.6)
-    s_wave = s_curve * math.sin(t * math.pi)
-    z = height * t + z_offset
-    dir_x, dir_y = math.cos(lean_dir), math.sin(lean_dir)
-    perp_x, perp_y = -dir_y, dir_x
-    x = dir_x * bend + perp_x * s_wave
-    y = dir_y * bend + perp_y * s_wave
-    return Vector((x, y, z))
 
 
-def spline_tangent(height, t, curvature, lean_dir, dt=1e-3, z_offset=0.0, s_curve=0.0):
-    p0 = spline_point(height, max(0.0, t - dt), curvature, lean_dir, z_offset, s_curve)
-    p1 = spline_point(height, min(1.0, t + dt), curvature, lean_dir, z_offset, s_curve)
-    d = (p1 - p0)
-    if d.length > 1e-8:
-        d.normalize()
-    else:
-        d = Vector((0, 0, 1))
-    return d
 
 
 # ---------------------------------------------------------------------------
@@ -833,31 +728,6 @@ def make_blob(name, center, radius, seed, subdivisions=2, noise_scale=1.8,
     return obj
 
 
-def displace_mesh_noise(obj, seed, strength=0.15, scale=1.5, octaves=2):
-    """Desplaza los vértices de una malla ya construida a lo largo de su
-    normal usando ruido Perlin determinista (offset derivado de la semilla).
-    Pensado para rocas creadas a partir de un cubo subdividido."""
-    me = obj.data
-    rnd = random.Random(seed)
-    offset = Vector((rnd.uniform(-90, 90), rnd.uniform(-90, 90), rnd.uniform(-90, 90)))
-    bm = bmesh.new()
-    bm.from_mesh(me)
-    bm.normal_update()
-    for v in bm.verts:
-        total = 0.0
-        amp = 1.0
-        p = v.co * scale + offset
-        acc = 0.0
-        for o in range(octaves):
-            acc += mnoise.noise(p * (2 ** o)) * amp
-            total += amp
-            amp *= 0.5
-        disp = acc / total
-        v.co += v.normal * disp * strength
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bm.to_mesh(me)
-    bm.free()
-    me.update()
 
 
 def _bake_matrix(obj, mat):
@@ -940,24 +810,6 @@ def orient_and_place_zaxis(obj, origin, direction, up_hint=None):
     _bake_matrix(obj, mat)
 
 
-def add_ring_bumps(obj, spacing, amplitude, rnd=None, sharpness=6):
-    """Añade bultos periódicos a lo largo de Z (anillos de tronco de
-    palmera, nudos de bambú) desplazando cada vértice a lo largo de su
-    propia normal según una onda coseno elevada a «sharpness» (pulsos
-    estrechos en vez de una onda sinusoidal ancha)."""
-    me = obj.data
-    phase = rnd.uniform(0.0, spacing) if rnd is not None else 0.0
-    bm = bmesh.new()
-    bm.from_mesh(me)
-    bm.normal_update()
-    for v in bm.verts:
-        wave = 0.5 + 0.5 * math.cos(2.0 * math.pi * (v.co.z + phase) / spacing)
-        wave = wave ** sharpness
-        v.co += v.normal * wave * amplitude
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bm.to_mesh(me)
-    bm.free()
-    me.update()
 
 
 def _add_leaflet(bm, uv_layer, uv_rect, origin, forward, right, up, length, width, curve, rnd):
@@ -1632,32 +1484,6 @@ def make_skin_mesh(name, verts_local, edges, radii, subsurf_levels=1,
     return obj
 
 
-def make_skin_capsule(name, direction, length, radii, subsurf_levels=1,
-                       decimate_ratio=None, root_start=False, root_end=False,
-                       up_hint=None):
-    """Sustituye a make_tapered_capsule pieza a pieza: «radii» es una lista
-    de 2 o más radios (float o (rx, ry)) muestreados a intervalos
-    regulares entre el origen (pivote) y la punta a lo largo de
-    «direction», igual que antes -mismo contrato-, pero cada muestra es
-    ahora un nodo del esqueleto de Skin en vez de un anillo de vértices
-    hecho a mano, así que las transiciones de grosor quedan suaves y los
-    remates redondeados por construcción. «up_hint» no cambia el resultado
-    -el modificador Skin no expone control de «roll» por Python-; se
-    conserva solo para no romper firmas de llamada existentes."""
-    fwd = Vector(direction)
-    if fwd.length < 1e-8:
-        fwd = Vector((0.0, 0.0, 1.0))
-    fwd.normalize()
-    n = len(radii)
-    verts = [tuple(fwd * (length * i / (n - 1))) for i in range(n)]
-    edges = [(i, i + 1) for i in range(n - 1)]
-    roots = set()
-    if root_start:
-        roots.add(0)
-    if root_end:
-        roots.add(n - 1)
-    return make_skin_mesh(name, verts, edges, radii, subsurf_levels=subsurf_levels,
-                           decimate_ratio=decimate_ratio, root_indices=roots)
 
 
 def make_skin_blob(name, center, radii, subsurf_levels=2, decimate_ratio=None,
@@ -1796,45 +1622,6 @@ def export_fbx(filepath, objects):
 # arbitrarios que decide el llamador.
 # ---------------------------------------------------------------------------
 
-def get_material_ext(name, base_color, roughness, metallic=0.0, alpha_blend=False):
-    """Como get_material(), pero para materiales fuera del kit estable de
-    vegetación: nombre y color los define el llamador (p.ej. el kit de
-    props con M_Wood/M_Metal/M_Fabric/M_Stone/M_Glass/M_Paper/M_Leaf). Mismo
-    grafo de nodos: Attribute «Col» multiplicado por un color base
-    constante -> Base Color, para que el tinte de vértice siga funcionando
-    igual que en el resto del proyecto."""
-    if name in bpy.data.materials:
-        return bpy.data.materials[name]
-    mat = bpy.data.materials.new(name=name)
-    mat.use_nodes = True
-    nt = mat.node_tree
-    bsdf = nt.nodes.get('Principled BSDF')
-
-    attr = nt.nodes.new('ShaderNodeAttribute')
-    attr.attribute_name = 'Col'
-    attr.attribute_type = 'GEOMETRY'
-
-    base = nt.nodes.new('ShaderNodeRGB')
-    base.outputs[0].default_value = (base_color[0], base_color[1], base_color[2], 1.0)
-
-    mix = nt.nodes.new('ShaderNodeMixRGB')
-    mix.blend_type = 'MULTIPLY'
-    mix.inputs['Fac'].default_value = 1.0
-    nt.links.new(base.outputs[0], mix.inputs['Color1'])
-    nt.links.new(attr.outputs['Color'], mix.inputs['Color2'])
-    nt.links.new(mix.outputs[0], bsdf.inputs['Base Color'])
-
-    bsdf.inputs['Roughness'].default_value = roughness
-    if 'Metallic' in bsdf.inputs:
-        bsdf.inputs['Metallic'].default_value = metallic
-
-    if alpha_blend:
-        mat.blend_method = 'BLEND'
-        mat.show_transparent_back = False
-        if 'Alpha' in bsdf.inputs:
-            bsdf.inputs['Alpha'].default_value = 0.35
-            nt.links.new(attr.outputs['Alpha'], bsdf.inputs['Alpha'])
-    return mat
 
 
 # ---------------------------------------------------------------------------
@@ -1864,147 +1651,14 @@ def make_box(name, size, center=(0.0, 0.0, 0.0)):
     return obj
 
 
-def make_cylinder(name, radius, depth, segments=16, center=(0.0, 0.0, 0.0),
-                   cap_ends=True, radius2=None):
-    """Cilindro (o cono/tronco de cono si radius2 se indica) a lo largo de
-    Z, centrado en «center»."""
-    bm = bmesh.new()
-    bmesh.ops.create_cone(
-        bm, cap_ends=cap_ends, cap_tris=False, segments=segments,
-        radius1=radius, radius2=(radius if radius2 is None else radius2),
-        depth=depth)
-    cx, cy, cz = center
-    for v in bm.verts:
-        v.co += Vector((cx, cy, cz))
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    obj = bpy.data.objects.new(name, me)
-    link_object(obj)
-    return obj
 
 
-def point_ring(center, radius, segments, normal='z', start_angle=0.0):
-    """Anillo de puntos (list[Vector]) en el plano perpendicular a
-    «normal» ('x'/'y'/'z'), para construir loft a mano con ring_loft() o
-    make_tube()."""
-    pts = []
-    for i in range(segments):
-        a = start_angle + 2.0 * math.pi * i / segments
-        u, w = math.cos(a) * radius, math.sin(a) * radius
-        if normal == 'z':
-            pts.append(Vector(center) + Vector((u, w, 0.0)))
-        elif normal == 'y':
-            pts.append(Vector(center) + Vector((u, 0.0, w)))
-        else:
-            pts.append(Vector(center) + Vector((0.0, u, w)))
-    return pts
 
 
-def ring_loft(name, rings_pts, cap_start=False, cap_end=False, skip_fn=None):
-    """Construye una malla uniendo anillos de puntos consecutivos con caras
-    (loft): rings_pts es una lista de anillos (cada uno list[Vector], todos
-    con el mismo número de puntos). Pensado para fuselajes, cascos, torres y
-    cualquier perfil que varíe de sección en sección.
-
-    skip_fn(ring_index, point_index) -> bool: si se indica, omite la cara
-    entre ese anillo y el siguiente en esa posición angular — sirve para
-    abrir huecos (cabina del Albatros, puertas, ventanas) sin recurrir a
-    una operación booleana.
-    """
-    bm = bmesh.new()
-    vert_rings = [[bm.verts.new(p) for p in ring_pts] for ring_pts in rings_pts]
-    n = len(vert_rings[0])
-    for r in range(len(vert_rings) - 1):
-        a, b = vert_rings[r], vert_rings[r + 1]
-        for i in range(n):
-            if skip_fn is not None and skip_fn(r, i):
-                continue
-            i2 = (i + 1) % n
-            bm.faces.new((a[i], a[i2], b[i2], b[i]))
-    if cap_start:
-        bm.faces.new(list(reversed(vert_rings[0])))
-    if cap_end:
-        bm.faces.new(vert_rings[-1])
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    obj = bpy.data.objects.new(name, me)
-    link_object(obj)
-    return obj
 
 
-def make_tube(name, height, segments, outer_radii, inner_radii,
-              cap_bottom=True, cap_top=False, z0=0.0):
-    """Tubo hueco (pared con espesor) a lo largo de Z: pared exterior,
-    pared interior (normales hacia adentro) y tapas de anillo opcionales.
-    outer_radii/inner_radii son listas de radios (un valor por nivel; la
-    altura se reparte uniformemente entre z0 y z0+height). Pensado para
-    volúmenes transitables por dentro: la torre del faro, pozos, chimeneas.
-    """
-    n_levels = len(outer_radii)
-    if n_levels != len(inner_radii) or n_levels < 2:
-        raise ValueError('make_tube: outer_radii/inner_radii deben tener la misma '
-                          'longitud (>=2 niveles)')
-    bm = bmesh.new()
-    outer_rings, inner_rings = [], []
-    for li in range(n_levels):
-        z = z0 + height * li / (n_levels - 1)
-        outer_rings.append([bm.verts.new(Vector((
-            math.cos(2.0 * math.pi * i / segments) * outer_radii[li],
-            math.sin(2.0 * math.pi * i / segments) * outer_radii[li], z)))
-            for i in range(segments)])
-        inner_rings.append([bm.verts.new(Vector((
-            math.cos(2.0 * math.pi * i / segments) * inner_radii[li],
-            math.sin(2.0 * math.pi * i / segments) * inner_radii[li], z)))
-            for i in range(segments)])
-
-    for li in range(n_levels - 1):
-        a, b = outer_rings[li], outer_rings[li + 1]
-        for i in range(segments):
-            i2 = (i + 1) % segments
-            bm.faces.new((a[i], a[i2], b[i2], b[i]))
-        a, b = inner_rings[li], inner_rings[li + 1]
-        for i in range(segments):
-            i2 = (i + 1) % segments
-            bm.faces.new((b[i], b[i2], a[i2], a[i]))  # normal hacia el eje
-
-    if cap_bottom:
-        a, b = outer_rings[0], inner_rings[0]
-        for i in range(segments):
-            i2 = (i + 1) % segments
-            bm.faces.new((a[i], a[i2], b[i2], b[i]))
-    if cap_top:
-        a, b = outer_rings[-1], inner_rings[-1]
-        for i in range(segments):
-            i2 = (i + 1) % segments
-            bm.faces.new((b[i], b[i2], a[i2], a[i]))
-
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    obj = bpy.data.objects.new(name, me)
-    link_object(obj)
-    return obj
 
 
-def boolean_cut(obj, cutter, delete_cutter=True, solver='EXACT'):
-    """Recorte booleano (DIFFERENCE) aplicado como modificador. Se reserva
-    para huecos irregulares donde construir el hueco a mano (skip_fn de
-    ring_loft, o cajas encajadas) no compensa: p.ej. los 32 agujeros de la
-    brújula estelar sobre un disco ya deformado por ruido."""
-    select_only(obj)
-    mod = obj.modifiers.new('Cut', 'BOOLEAN')
-    mod.operation = 'DIFFERENCE'
-    mod.object = cutter
-    mod.solver = solver
-    bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.modifier_apply(modifier=mod.name)
-    if delete_cutter:
-        bpy.data.objects.remove(cutter, do_unlink=True)
 
 
 # ---------------------------------------------------------------------------

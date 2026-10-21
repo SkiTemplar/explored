@@ -1,4 +1,5 @@
 #include "Player/ExploredCharacter.h"
+#include "Core/ExploredAssetFallback.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -374,13 +375,7 @@ void AExploredCharacter::RefreshHandMeshes()
 		FItemDefinition Definition;
 		if (Registry->FindDefinition(Item->DefinitionId, Definition))
 		{
-			if (UObject* Loaded = Definition.MeshPath.TryLoad())
-			{
-				if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(Loaded))
-				{
-					MeshComp->SetStaticMesh(StaticMesh);
-				}
-			}
+			MeshComp->SetStaticMesh(ExploredAssets::LoadMeshOrFallback(Definition.MeshPath, ExploredAssets::FallbackSpherePath));
 		}
 		MeshComp->SetVisibility(true);
 	};

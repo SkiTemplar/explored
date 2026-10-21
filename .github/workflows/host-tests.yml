@@ -33,8 +33,6 @@ jobs:
             python: "3.13"
             groups: --group blender
             egl: true
-          - tool: Textures
-            python: "3.11"
           - tool: Audio
             python: "3.11"
             # La música se renderiza con FluidSynth; music/soundfont.py solo lo descarga en Windows.

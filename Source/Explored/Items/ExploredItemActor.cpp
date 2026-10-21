@@ -1,4 +1,5 @@
 #include "Items/ExploredItemActor.h"
+#include "Core/ExploredAssetFallback.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -49,13 +50,7 @@ void AExploredItemActor::RefreshFromRegistry()
 
 	CachedSize = Registry->GetEffectiveSize(Instance);
 
-	if (UObject* Loaded = Definition.MeshPath.TryLoad())
-	{
-		if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(Loaded))
-		{
-			Mesh->SetStaticMesh(StaticMesh);
-		}
-	}
+	Mesh->SetStaticMesh(ExploredAssets::LoadMeshOrFallback(Definition.MeshPath, ExploredAssets::FallbackSpherePath));
 }
 
 void AExploredItemActor::SetHighlighted(bool bHighlighted)

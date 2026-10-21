@@ -13,7 +13,6 @@ pequeñas.
 | `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
 | `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
 | `normalize_core.py` | Lógica pura de `normalize.py` (color Oklab, reglas, degradado de paleta, medida y pivote), sin `bpy`. |
-| `contact_sheet.py` | Compone `docs/art/packs/<lote>.png` (< 1 MB) con el original y el normalizado. |
 | `icons.py` | Iconos de UI (`icons` del catálogo): silueta blanca de 128 px a `Art/Export/Packs/<lote>/T_Pack_Icon_*.png` (ignorado) y su hoja de contacto. |
 
 ```bash
@@ -22,7 +21,6 @@ uv run python fetch_packs.py                    # descarga y verifica todo
 uv run pytest -q
 cd ../..
 blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote lote1-herramientas --tiles
-uv run --with pillow python Tools/Packs/contact_sheet.py lote1-herramientas
 uv run --with pillow python Tools/Packs/icons.py lote9-iconos   # iconos de UI, sin Blender
 # Para escribir reglas de color de una entrada nueva:
 blender -b --factory-startup --python Tools/Packs/normalize.py -- --lote <lote> --ids <id> --analyze
