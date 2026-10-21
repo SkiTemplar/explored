@@ -38,9 +38,9 @@ Hitos a 1× de la ruta competente: Faro 4,1 min · Balsa 13,0 · Carguero 21,4 �
 
 ## Pendiente
 
-- **Riesgo residual conocido:** quemar la leña dos veces (la caja ya entregó su leña) sigue siendo un softlock. Propuesta para F6: leña de deriva en Cala Varada al amanecer, o que la hoguera fija del faro no se apague mientras haya tarros por hervir.
+- **Cerrado en F5:** quemar la leña dos veces ya no es softlock: el mar deja leña de deriva en Cala Varada al amanecer si faltan tarros y no hay fuego (`FSupplyCrateModel::DriftwoodAtDawn`).
 - Rutas «lenta» y «sin páginas opcionales» del criterio de F6: el guion admite `-BalizaRun=<ruta>`, pero solo existe la competente.
-- `ExploredPlaytestBotRun.cpp` tiene 805 líneas (tope 800): partir el guion por días en dos ficheros.
+- **Cerrado en F5:** `ExploredPlaytestBotRun.cpp` partido en dos ficheros (611 + 249 líneas).
 - El auditor antiguo marca 240 «flotando o enterrado» en las primitivas de la isla facetada: hay que revisarlo cuando entren las mallas de F4.
 - `HostTests` con sanitizers en CI tras el push.
 - El margen de duración es justo (48,5 min frente a 47): si F6 acorta trayectos o tareas, revisar con el bot.

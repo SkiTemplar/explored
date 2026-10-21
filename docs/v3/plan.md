@@ -184,6 +184,7 @@ Respuesta a «bastante cutrón» tras F4. Capturas `docs/v3/capturas/f4b-*.png` 
   4. Desde el menú principal se llega a «Nueva partida», se juega, se guarda, se vuelve al menú y «Continuar» restaura el estado.
 - Agente: `unreal-engine-engineer`.
 - Dependencias: F3.
+- **Estado (2026-10-21): hecha.** 13 capturas `docs/v3/capturas/f5-*.png` (1080p, `shots.ps1 -Set f5`), revisadas una a una; `Tools/frontend_flow.ps1` 8/8 pasos (menú → nueva partida → guardar → menú → continuar con etapa, páginas, mochila, reloj y posición iguales); suite del editor 813/814 sin fallos (1 omitido). Desviación: el inventario combina con clic en la receta (sin arrastrar). Fuente e iconos: `docs/creditos-interfaz.md`.
 
 ### F6 — Contenido, audio y final (2 sesiones)
 
