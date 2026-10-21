@@ -107,6 +107,58 @@ En resumen: no apareció ningún error de Shipping que corregir; el tramo deja l
 
 Los controles del `README.md` no cambian: no listaban F, R, T ni H.
 
+## F8: césped continuo y arena estilizada (2026-10-22)
+
+Encargo: el césped K6 se leía como matas sueltas sobre suelo desnudo y la arena como una superficie lisa
+(`investigacion-cesped-arena.md`). Hecho:
+
+- **Alfombra de parches.** `FGrassFieldModel` siembra `SM_GrassPatch_A/B/C_01` a 5,5-6 por m² (zonas en
+  `grass.json`, versión 2), con flores, tréboles, helechos y hierba alta como acentos (≈ 4 % en la mezcla
+  común, 29 % de hierba alta en bordes de camino, 20 % de helechos al pie de las palmeras). Escala
+  0,8-1,3, giro al azar. Mismas exclusiones que antes.
+- **Adelgazamiento continuo sin LOD** (`FGrassThinning`, `WorldGen/GrassThinning.*`): f(d) = 1 hasta
+  25 m, (25/d)² hasta 75 m y fundido a 0 en 75-100 m. Cada parche lleva un rango (dato por instancia 0);
+  `M_ToonCesped` lo encoge a 0 cuando f(d)·1,2 baja de él y agranda los que quedan (hasta ×2,6 en
+  planta y ×1,6 en altura). Las celdas (8 m) guardan niveles f_k = 0,5^k (8 niveles): suben 4 m antes de
+  hacer falta generando solo la franja de rangos que falta y bajan con 3 m más de histéresis quitando
+  del final, así que nada aparece ni desaparece con tamaño (spec «Sin saltos»: 1 800 frames caminando,
+  0 parches que saltan). Una LOD por malla (`import_props.py` falla si hay más) y sin Nanite.
+- **Suelo bajo el césped** (`M_TerrainToon`, alfa del color por vértice = tipo de suelo desde
+  `Tools/Island`): verde de la base de las hojas cerca y verde de la alfombra lejos con la misma f(d)
+  (`MPC_Terreno`); las hojas lejanas tienden a ese mismo verde. Medido en `f8-cesped-lejos`: alfombra
+  (124-130, 157-164, 84-88) frente a suelo (120, 153, 85) en sRGB.
+- **Sin sombras** en todo el césped (también hierba alta y helecho; DataCheck lo exige), sin colisión,
+  viento apagado entre 30 y 45 m. El actor ya no recrea el proxy del ISM en cada cambio (solo sube las
+  ranuras tocadas).
+- **Arena** (`M_TerrainToon`, sin texturas): ondas de viento de 14 cm con crestas onduladas por ruido
+  suave y repartidas en manchas, dos tonos (0,91-1,02) y su tono medio de lejos (12-30 m); grano de
+  1,5 cm hasta 9 m; brillos escasos (8 % de celdas de 1,2 cm, umbral R·V 0,992, más fuertes de cara al
+  sol; `AExploredSkyController` escribe `SunDirection`/`SunGlint` en `MPC_Terreno`); orilla por altura:
+  mojada hasta 0,32 m (×0,76, algo especular), borde claro y espuma fina que late, reducida en los bajíos
+  planos.
+- **Manchas blancas de la playa:** eran la espuma de orilla de `M_Ocean`, calculada con la profundidad del
+  relieve analítico (se separa de la malla hasta ~3 m): en las playas de poca pendiente pintaba bandas
+  blancas planas de varios metros. `ShoreFoam` = 0 en `M_Ocean`; la espuma la dibuja el terreno por su
+  altura real (`f8-arena-cala` frente a `f6-relieve-cala`).
+
+Cifras (Development Editor, `-game`, 1080p):
+
+| Medida | Valor |
+|---|---|
+| Triángulos de césped a la vista (peor dirección, host `GrassRealData`) | 1,10-1,26 M (tope 1,5 M) |
+| Parches y matas vivos | 22 000-55 000 según la zona, en ~590 celdas |
+| Siembra al caminar (host, 5 m/s) | 0,10 ms de media, peor frame 1,7 ms |
+| Siembra al caminar (juego, `f8-cesped-paseo`) | 0,015 ms de media, máx. 0,81 ms |
+| Relleno tras un teletransporte | 80-175 frames, 0,3-0,45 ms de media; el primer frame llega a 6-8 ms (oculta las ranuras de todas las celdas que se van) |
+| `bench.ps1` | cala 197,0 / 99,8 · palmar 158,7 / 93,5 · faro 182,0 / 109,8 · galería 137,5 / 88,4 · ciclón 228,2 / 127,7 (media / mínimo); resumen 180,7 / 88,4: OK |
+
+No hay cifra de bench anterior con el césped viejo (el paso 10 de `pendiente-motor.md` no se había
+medido), así que no hay «antes» que comparar; no hizo falta bajar densidad ni radio.
+
+Para revisar (sin rehacer mallas, como pedía el encargo): de cerca (`f8-cesped-cerca`, `f8-cesped-cala`)
+las hojas de 10-15 cm de los parches se leen como esquirlas planas y anchas, de punta triangular; a
+partir de ~3 m la alfombra funciona. Decidirá el crítico si se afinan las hojas en `k6_cesped.py`.
+
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 
 - **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Un

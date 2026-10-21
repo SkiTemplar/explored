@@ -244,6 +244,10 @@ Apuntar en `docs/creditos-musica.md` cualquier cambio de pista. En la misma part
 
 ## 10. Rendimiento a 1080p en el editor (criterio 1 de F7)
 
+**[x] Hecho 2026-10-22 con el césped continuo (F8): OK.** `[Bench] Resumen: 5 vistas, media 180,7 fps,
+mínimo 88,4 fps: OK` (cala 197,0 / 99,8; palmar 158,7 / 93,5; faro 182,0 / 109,8; galería 137,5 / 88,4;
+ciclón 228,2 / 127,7). Detalle y coste del césped en [`estado-f7.md`](estado-f7.md) § F8.
+
 ```powershell
 powershell -NoProfile -File Tools/bench.ps1                 # editor en -game, fuera de pantalla
 powershell -NoProfile -File Tools/bench.ps1 -Window         # con ventana, para mirarlo
@@ -305,3 +309,29 @@ powershell -NoProfile -File Tools/bench.ps1 -Exe Saved/Package/Windows/Explored.
   `Saved/Logs/PlaytestV3.log`.
 - El bench sobre el paquete es la cifra que cuenta para la entrega: mismos objetivos que el paso 10;
   apuntarla en `estado-f7.md`.
+
+## 13. F8: césped continuo y arena estilizada
+
+**[x] Hecho 2026-10-22.** Orden (cada paso deja listo el siguiente; los dos scripts de materiales crean o
+actualizan `MPC_Terreno` con los valores de `grass.json`, así que da igual cuál vaya primero):
+
+```powershell
+cd Tools/Island; uv run island-terrain; cd ../..        # FBX con el tipo de suelo en el alfa del color
+powershell -NoProfile -File Tools/build.ps1
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_cesped.py
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_f6.py
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_lowpoly.py
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_island.py
+$env:EXPLORED_KITS = 'K6_Cesped'
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_props.py
+Remove-Item Env:EXPLORED_KITS
+powershell -NoProfile -File Tools/shots.ps1 -Set f8 -Width 1920 -Height 1080
+powershell -NoProfile -File Tools/bench.ps1
+```
+
+- Los cuatro scripts terminan sin `Error`; `import_props.py` importa 11 mallas de K6 (los tres parches de
+  61-74 triángulos) con una sola LOD.
+- Capturas en `docs/v3/capturas/f8-cesped-*.png` (Palmar, colina, Cala, de cerca, el adelgazamiento desde
+  la ladera y dos pasos separados 1 s) y `f8-arena-*.png` (orilla, de cerca, de cara al sol y el encuadre
+  de `f6-relieve-cala`). Log: `[Césped] … denso hasta 25 m y adelgazado hasta 100 m (8 niveles)` y
+  `[Shots] césped <vista>: … triángulos a la vista, siembra media …`; ningún aviso `[Césped] falta`.
