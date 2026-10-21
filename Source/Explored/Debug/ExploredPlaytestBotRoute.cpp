@@ -1,5 +1,7 @@
 // Guion de la partida completa de Baliza Siete por bot (UExploredPlaytestBot con «-BalizaRun»): la ruta
 // competente del GDD v3 §3 por días. Las utilidades y el bucle están en ExploredPlaytestBotRun.cpp.
+// Variantes (criterio 2 de F6): «lenta» se entretiene tras cada trayecto; «sin_paginas» no lee las
+// páginas opcionales (2-8), así que termina con el epílogo parcial.
 
 #include "Debug/ExploredPlaytestBot.h"
 
@@ -24,6 +26,9 @@
 
 namespace BalizaRouteDetail
 {
+	/** Pausa de la ruta lenta tras cada trayecto (s a 1×). */
+	constexpr double DawdleSeconds1x = 12.0;
+
 	double At(int32 Day, double Hour)
 	{
 		return FStormClockModel::ToAbsoluteHours(Day, Hour);
@@ -33,6 +38,32 @@ namespace BalizaRouteDetail
 // ---------------------------------------------------------------------------------------------
 // Guion
 // ---------------------------------------------------------------------------------------------
+
+bool UExploredPlaytestBot::ReadsOptionalPages() const
+{
+	return RouteName != TEXT("sin_paginas");
+}
+
+bool UExploredPlaytestBot::IsSlowRoute() const
+{
+	return RouteName == TEXT("lenta");
+}
+
+void UExploredPlaytestBot::AddOptionalPage(const FString& PageId)
+{
+	if (ReadsOptionalPages())
+	{
+		AddGoTo(PageId);
+		AddUse(PageId, 1, true);
+	}
+}
+
+void UExploredPlaytestBot::AddDawdle(const FString& Where)
+{
+	// Ruta lenta: mirar alrededor, equivocarse de camino, leer despacio (segundos a 1×).
+	AddStep(TEXT("entretenerse en ") + Where, [] { return true; },
+		[this]() { return Run.Clock.Est1xSeconds - StepStart1x >= BalizaRouteDetail::DawdleSeconds1x; }, 120.0);
+}
 
 void UExploredPlaytestBot::BuildRunScript()
 {
@@ -60,14 +91,12 @@ void UExploredPlaytestBot::AddDayOne()
 		AddUse(Fiber);
 	}
 	AddCraft(TEXT("cuerda"));
-	AddGoTo(TEXT("pagina_3"));
-	AddUse(TEXT("pagina_3"), 1, true);
+	AddOptionalPage(TEXT("pagina_3"));
 	// Bosque de Bambú: caña de pescar y página 4.
 	AddGoTo(TEXT("cana_bambu_1"));
 	AddUse(TEXT("cana_bambu_1"));
 	AddCraft(TEXT("cana_pescar"));
-	AddGoTo(TEXT("pagina_4"));
-	AddUse(TEXT("pagina_4"), 1, true);
+	AddOptionalPage(TEXT("pagina_4"));
 	// Rocas del Pescador: fuego, pesca, asar y comer; página 2.
 	AddGoTo(TEXT("lena_rocas_1"));
 	AddCraft(TEXT("hoguera"));
@@ -79,13 +108,11 @@ void UExploredPlaytestBot::AddDayOne()
 	AddFireJob([this]() { return NearestFire(); }, TEXT("cocinar"), TEXT("pez_asado"));
 	AddStep(TEXT("comer un pez asado"), [this]() { return UseItem(TEXT("pez_asado")); },
 		[] { return true; }, 10.0);
-	AddGoTo(TEXT("pagina_2"));
-	AddUse(TEXT("pagina_2"), 1, true);
+	AddOptionalPage(TEXT("pagina_2"));
 	// Colina del Faro: casa, página 1 y mirador (página 7).
 	AddGoTo(TEXT("pagina_1"));
 	AddUse(TEXT("pagina_1"));
-	AddGoTo(TEXT("pagina_7"));
-	AddUse(TEXT("pagina_7"), 1, true);
+	AddOptionalPage(TEXT("pagina_7"));
 	AddStep(TEXT("beber el segundo coco (cuenco para el aceite)"), [this]() { return Count(TEXT("coco")) == 0 || UseItem(TEXT("coco")); },
 		[this]() { return Count(TEXT("coco")) == 0; }, 10.0);
 	// Tarde: fibras para las 3 cuerdas de la balsa y el remo; el chubasco llena el barril.
@@ -126,8 +153,7 @@ void UExploredPlaytestBot::AddDayTwo()
 	AddGoTo(TEXT("tronco_bambu_5"));
 	AddUse(TEXT("tronco_bambu_5"));
 	AddCraft(TEXT("remo"));
-	AddGoTo(TEXT("pagina_5"));
-	AddUse(TEXT("pagina_5"), 1, true);
+	AddOptionalPage(TEXT("pagina_5"));
 	AddGoTo(TEXT("balsa_sitio"));
 	AddUse(TEXT("balsa_sitio"));
 	auto Site = [this]() -> AExploredRaftSite*
@@ -148,8 +174,7 @@ void UExploredPlaytestBot::AddDayTwo()
 		Site()->GetRaft()->Leave();
 		return true;
 	}, [] { return true; }, 5.0);
-	AddGoTo(TEXT("pagina_6"));
-	AddUse(TEXT("pagina_6"), 1, true);
+	AddOptionalPage(TEXT("pagina_6"));
 	AddGoTo(TEXT("lente"));
 	AddUse(TEXT("lente"));
 	AddGoToActor(TEXT("la balsa"), RaftActor);
@@ -228,8 +253,11 @@ void UExploredPlaytestBot::AddDayThree()
 		const AExploredLighthouseTower* Tower = Cast<AExploredLighthouseTower>(Prop(TEXT("faro_torre")));
 		return Tower && Character.IsValid() && Tower->IsUp(*Character.Get()) && Idle();
 	}, 30.0);
-	AddStep(TEXT("leer la página 8"), [this]() { return InteractWith(Prop(TEXT("pagina_8"))); },
-		[this]() { return Idle(); }, 10.0);
+	if (ReadsOptionalPages())
+	{
+		AddStep(TEXT("leer la página 8"), [this]() { return InteractWith(Prop(TEXT("pagina_8"))); },
+			[this]() { return Idle(); }, 10.0);
+	}
 	for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })
 	{
 		AddStep(Slot, [this]() { return InteractWith(Prop(TEXT("faro_linterna"))); },

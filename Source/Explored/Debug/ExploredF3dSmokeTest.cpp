@@ -124,7 +124,7 @@ void UExploredF3dSmokeTest::BuildSteps()
 	Add(TEXT("reloj D1 07:00 con días de 24 min"), [] { return true; }, [this]()
 	{
 		const UTimeOfDaySubsystem* Time = GetWorld()->GetSubsystem<UTimeOfDaySubsystem>();
-		return Time && Time->GetDay() == 1 && Time->GetHours() >= 7.0f && Time->GetHours() < 7.5f && Time->GetDayLengthMinutes() == 24.0f;
+		return Time && Time->GetDay() == 1 && Time->GetHours() >= 7.0f && Time->GetHours() < 7.5f && Time->GetDayLengthMinutes() == 26.0f;
 	});
 	Add(TEXT("una barra bajo 25 frena un 20 %"), [this]() { return Console(TEXT("BalizaBody 20 70 70 100")); }, [this]()
 	{

@@ -231,6 +231,10 @@ void UExploredPlaytestBot::AddStep(const FString& Name, TFunction<bool()> Start,
 void UExploredPlaytestBot::AddGoTo(const FString& PropId)
 {
 	AddGoToActor(PropId, [this, PropId]() { return Prop(PropId); });
+	if (IsSlowRoute())
+	{
+		AddDawdle(PropId);
+	}
 }
 
 void UExploredPlaytestBot::AddGoToActor(const FString& Label, TFunction<AActor*()> Target)

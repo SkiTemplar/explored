@@ -119,7 +119,7 @@ void FStormClockSpec::Define()
 			TestEqual(TEXT("Muro 1"), Wall1, 3.0);
 			TestEqual(TEXT("Ojo (s reales)"), Eye * FStormClockConfig::RealSecondsPerHour, 65.0, 1e-6);
 			TestEqual(TEXT("Muro 2"), Wall2, 4.0 - FStormClockConfig::EyeHours, 1e-9);
-			TestEqual(TEXT("1 h = 60 s (decisión de F3e)"), FStormClockConfig::RealSecondsPerHour, 60.0);
+			TestEqual(TEXT("1 h = 65 s (equilibrio de F6)"), FStormClockConfig::RealSecondsPerHour, 65.0);
 			TestTrue(TEXT("Ojo es ciclón"), Clock.IsCyclone(At(2, 23.0)));
 			TestFalse(TEXT("Mar cerrado aún no es ciclón"), Clock.IsCyclone(At(2, 18.5)));
 		});
@@ -131,7 +131,7 @@ void FStormClockSpec::Define()
 		{
 			TestTrue(TEXT("Muro 1"), Clock.ExtinguishesOutdoorFires(At(2, 20.0)));
 			TestTrue(TEXT("Muro 2"), Clock.ExtinguishesOutdoorFires(At(3, 1.0)));
-			TestFalse(TEXT("Ojo"), Clock.ExtinguishesOutdoorFires(At(2, 23.0)));
+			TestFalse(TEXT("Ojo"), Clock.ExtinguishesOutdoorFires(At(2, 22.5)));
 			TestFalse(TEXT("Chubasco"), Clock.ExtinguishesOutdoorFires(At(1, 16.0)));
 			TestFalse(TEXT("Mar cerrado"), Clock.ExtinguishesOutdoorFires(At(2, 18.5)));
 			TestFalse(TEXT("Despejado"), Clock.ExtinguishesOutdoorFires(At(3, 10.0)));
@@ -168,7 +168,7 @@ void FStormClockSpec::Define()
 			const FStormRain Wall = Clock.RainAt(At(2, 20.0));
 			TestTrue(TEXT("Muro"), Wall.bRaining);
 			TestEqual(TEXT("Intensidad del muro"), Wall.Intensity, 1.0f);
-			TestFalse(TEXT("Ojo"), Clock.RainAt(At(2, 23.0)).bRaining);
+			TestFalse(TEXT("Ojo"), Clock.RainAt(At(2, 22.5)).bRaining);
 			TestFalse(TEXT("Nubes altas"), Clock.RainAt(At(2, 12.0)).bRaining);
 			TestEqual(TEXT("Sin lluvia no llena"), Clock.RainAt(At(2, 12.0)).ChargesPerHour, 0.0f);
 		});

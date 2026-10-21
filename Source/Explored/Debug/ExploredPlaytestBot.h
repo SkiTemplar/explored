@@ -84,6 +84,11 @@ private:
 	void AddDayThree();
 	void AddStep(const FString& Name, TFunction<bool()> Start, TFunction<bool()> IsDone, double Timeout1x = 120.0, bool bFast = false);
 	void AddGoTo(const FString& PropId);
+	/** Variantes de ruta (-BalizaRun=competente|lenta|sin_paginas). */
+	bool ReadsOptionalPages() const;
+	bool IsSlowRoute() const;
+	void AddOptionalPage(const FString& PageId);
+	void AddDawdle(const FString& Where);
 	void AddGoToActor(const FString& Label, TFunction<AActor*()> Target);
 	void AddUse(const FString& PropId, int32 Times = 1, bool bOptional = false);
 	void AddCraft(const FString& RecipeId);

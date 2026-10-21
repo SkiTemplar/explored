@@ -155,7 +155,7 @@ protected:
 
 	/** Duración del día si no hay UTimeOfDaySubsystem (minutos reales). */
 	UPROPERTY(EditAnywhere, Category = "Explored|Cuerpo")
-	float FallbackDayLengthMinutes = 24.0f;
+	float FallbackDayLengthMinutes = 26.0f;
 
 	/** Cada cuánto (s reales) se avanza el modelo de supervivencia. */
 	UPROPERTY(EditAnywhere, Category = "Explored|Cuerpo")
