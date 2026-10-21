@@ -37,27 +37,35 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 		SNew(SBox)
 		.HAlign(HAlign_Left)
 		.VAlign(VAlign_Bottom)
-		.Padding(FMargin(90.0f, 0.0f, 0.0f, 90.0f))
+		.Padding(FMargin(110.0f, 0.0f, 0.0f, 80.0f))
 		[
+			SNew(SVerticalBox)
+			// El título va sobre la escena del atardecer, en papel con sombra de tinta.
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(NSLOCTEXT("ExploredUI", "Title", "Baliza Siete"))
+				.Font(Style.SerifBold(104.0f))
+				.ColorAndOpacity(FSlateColor(Style.ColorOnScene()))
+				.ShadowOffset(FVector2D(3.0, 3.0))
+				.ShadowColorAndOpacity(Style.ColorInk() * FLinearColor(1.0f, 1.0f, 1.0f, 0.55f))
+			]
+			+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(8.0f, 0.0f, 0.0f, 26.0f))
+			[
+				SNew(STextBlock)
+				.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Isla de Sal"))
+				.Font(Style.SerifItalic(34.0f))
+				.ColorAndOpacity(FSlateColor(Style.ColorOnScene()))
+				.ShadowOffset(FVector2D(2.0, 2.0))
+				.ShadowColorAndOpacity(Style.ColorInk() * FLinearColor(1.0f, 1.0f, 1.0f, 0.55f))
+			]
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left)
+			[
 			SNew(SBorder)
 			.BorderImage(Style.BrushPanel())
-			.Padding(FMargin(40.0f, 32.0f))
+			.Padding(FMargin(24.0f, 18.0f))
 			[
 				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()
-				[
-					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Title", "BALIZA SIETE"))
-					.Font(Style.FontTitle())
-					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 28.0f))
-				[
-					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Isla de Sal"))
-					.Font(Style.FontSubtitle())
-					.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
-				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ContinueButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ NewGameButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ LoadButton ]
@@ -86,9 +94,10 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 						.Text(Notice)
 						.Font(Style.FontBody())
 						.AutoWrapText(true)
-						.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
+						.ColorAndOpacity(FSlateColor(Style.ColorWarning()))
 					]
 				]
+			]
 			]
 		]
 	];

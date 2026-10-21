@@ -279,6 +279,23 @@ void FExploredSettingsLogicSpec::Define()
 			TestFalse(TEXT("B no pausa"), IsPauseToggleKey(FName(TEXT("Gamepad_FaceButton_Right"))));
 		});
 	});
+
+	Describe("calidad en 3 niveles", [this]()
+	{
+		It("baja, media y alta van a 0, 1 y 3 y vuelven", [this]()
+		{
+			TestEqual("Baja", ExploredSettingsLogic::QualityPresetToScalability(0), 0);
+			TestEqual("Media", ExploredSettingsLogic::QualityPresetToScalability(1), 1);
+			TestEqual("Alta", ExploredSettingsLogic::QualityPresetToScalability(2), 3);
+			TestEqual("Fuera de rango, alta", ExploredSettingsLogic::QualityPresetToScalability(9), 3);
+			TestEqual("Negativo, baja", ExploredSettingsLogic::QualityPresetToScalability(-1), 0);
+			for (int32 Preset = 0; Preset < ExploredSettingsLogic::QualityPresetCount; ++Preset)
+			{
+				TestEqual("Ida y vuelta", ExploredSettingsLogic::ScalabilityToQualityPreset(ExploredSettingsLogic::QualityPresetToScalability(Preset)), Preset);
+			}
+			TestEqual("Cinemática del motor cuenta como alta", ExploredSettingsLogic::ScalabilityToQualityPreset(4), 2);
+		});
+	});
 }
 
 #endif // WITH_DEV_AUTOMATION_TESTS

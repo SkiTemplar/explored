@@ -407,11 +407,27 @@ void AExploredRaftSite::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	WatchClock();
+	ReturnRaftIfOccupantFainted();
 	// La posición de la balsa se guarda con la partida (queda donde se dejó).
 	if (Raft.IsValid())
 	{
 		SaveToIslandState();
 	}
+}
+
+void AExploredRaftSite::ReturnRaftIfOccupantFainted()
+{
+	AExploredRaft* Existing = Raft.Get();
+	AExploredCharacter* Occupant = Existing ? Existing->GetOccupant() : nullptr;
+	const UIslandBodyComponent* Body = UIslandBodyComponent::FindOn(Occupant);
+	if (!Body || !Body->IsFainting())
+	{
+		return;
+	}
+	// Iria despierta en su refugio: la balsa no se queda a la deriva sin nadie; vuelve varada a Playa Norte.
+	Existing->Leave();
+	Existing->PlaceAt(FindLaunchLocation(), RouteYawDeg);
+	UE_LOG(LogExplored, Display, TEXT("[Balsa] Desmayo a bordo: la balsa vuelve a Playa Norte"));
 }
 
 void AExploredRaftSite::WatchClock()

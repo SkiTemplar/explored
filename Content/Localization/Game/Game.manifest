@@ -524,7 +524,7 @@
 					"Keys": [
 						{
 							"Key": "LampWick",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 221"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 224"
 						}
 					]
 				},
@@ -546,7 +546,7 @@
 					"Keys": [
 						{
 							"Key": "PageTitle",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 461"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 519"
 						}
 					]
 				},
@@ -557,7 +557,18 @@
 					"Keys": [
 						{
 							"Key": "LampLight",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 226"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 229"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Esta noche el mar ha dejado leña en la Cala Varada."
+					},
+					"Keys": [
+						{
+							"Key": "Driftwood",
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 454"
 						}
 					]
 				},
@@ -568,7 +579,7 @@
 					"Keys": [
 						{
 							"Key": "MissingLens",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 91"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 95"
 						}
 					]
 				},
@@ -579,7 +590,7 @@
 					"Keys": [
 						{
 							"Key": "MissingWick",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 93"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 97"
 						}
 					]
 				},
@@ -590,7 +601,7 @@
 					"Keys": [
 						{
 							"Key": "MissingOil",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 92"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 96"
 						}
 					]
 				},
@@ -601,7 +612,7 @@
 					"Keys": [
 						{
 							"Key": "LampLit",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 226"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 229"
 						}
 					]
 				},
@@ -623,7 +634,7 @@
 					"Keys": [
 						{
 							"Key": "LampLens",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 215"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 218"
 						}
 					]
 				},
@@ -656,7 +667,7 @@
 					"Keys": [
 						{
 							"Key": "LampOil",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 218"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 221"
 						}
 					]
 				}
@@ -778,19 +789,222 @@
 			]
 		},
 		{
-			"Namespace": "ExploredInventory",
+			"Namespace": "ExploredCredits",
 			"Children": [
 				{
 					"Source": {
-						"Text": " + "
+						"Text": "Baliza Siete"
 					},
 					"Keys": [
 						{
-							"Key": "InputSeparator",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 55"
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 77"
 						}
 					]
 				},
+				{
+					"Source": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Keys": [
+						{
+							"Key": "Code",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 82"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Gracias por encender la baliza."
+					},
+					"Keys": [
+						{
+							"Key": "Thanks",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 98"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Isla de Sal"
+					},
+					"Keys": [
+						{
+							"Key": "Subtitle",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 78"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados."
+					},
+					"Keys": [
+						{
+							"Key": "MusicLicense",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 96"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Lora, de The Lora Project Authors"
+					},
+					"Keys": [
+						{
+							"Key": "Font",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 87"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mallas low poly generadas con Blender por script; una sola paleta de 41 colores"
+					},
+					"Keys": [
+						{
+							"Key": "Art",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 83"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Motor"
+					},
+					"Keys": [
+						{
+							"Key": "EngineHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 84"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Música"
+					},
+					"Keys": [
+						{
+							"Key": "MusicHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 89"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Música adicional de Kevin MacLeod (incompetech.com)"
+					},
+					"Keys": [
+						{
+							"Key": "MusicExtra",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 91"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Piezas compuestas por código para el juego"
+					},
+					"Keys": [
+						{
+							"Key": "MusicOwn",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 90"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Programación, arte y sonido por código"
+					},
+					"Keys": [
+						{
+							"Key": "CodeHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 81"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Rodrigo Fernández"
+					},
+					"Keys": [
+						{
+							"Key": "Author",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 80"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "SIL Open Font License 1.1"
+					},
+					"Keys": [
+						{
+							"Key": "FontLicense",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 88"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Tipografía"
+					},
+					"Keys": [
+						{
+							"Key": "FontHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 86"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Un juego de"
+					},
+					"Keys": [
+						{
+							"Key": "AuthorHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 79"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Unreal Engine 5.6"
+					},
+					"Keys": [
+						{
+							"Key": "Engine",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 85"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Volver"
+					},
+					"Keys": [
+						{
+							"Key": "Back",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 66"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "«{0}»"
+					},
+					"Keys": [
+						{
+							"Key": "Track",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 94"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredInventory",
+			"Children": [
 				{
 					"Source": {
 						"Text": "Atar"
@@ -798,18 +1012,18 @@
 					"Keys": [
 						{
 							"Key": "VerbTie",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 26"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 31"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "Clic: usar, soltar o hacer · Tab: cerrar"
+						"Text": "Clic: elegir, usar o hacer · Tab: cerrar"
 					},
 					"Keys": [
 						{
 							"Key": "Hint",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 259"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 367"
 						}
 					]
 				},
@@ -820,7 +1034,7 @@
 					"Keys": [
 						{
 							"Key": "VerbCook",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 27"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 32"
 						}
 					]
 				},
@@ -831,7 +1045,7 @@
 					"Keys": [
 						{
 							"Key": "Heavy",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 186"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 303"
 						}
 					]
 				},
@@ -842,7 +1056,7 @@
 					"Keys": [
 						{
 							"Key": "VerbLight",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 24"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 29"
 						}
 					]
 				},
@@ -853,18 +1067,29 @@
 					"Keys": [
 						{
 							"Key": "VerbBoil",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 28"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 33"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "Mochila ({0}/{1})"
+						"Text": "La mochila está vacía."
+					},
+					"Keys": [
+						{
+							"Key": "Empty",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 221"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mochila · {0}/{1}"
 					},
 					"Keys": [
 						{
 							"Key": "Title",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 179"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 296"
 						}
 					]
 				},
@@ -875,7 +1100,7 @@
 					"Keys": [
 						{
 							"Key": "VerbMount",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 29"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 34"
 						}
 					]
 				},
@@ -886,7 +1111,7 @@
 					"Keys": [
 						{
 							"Key": "Recipes",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 226"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 318"
 						}
 					]
 				},
@@ -897,7 +1122,7 @@
 					"Keys": [
 						{
 							"Key": "Drop",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 212"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 244"
 						}
 					]
 				},
@@ -908,7 +1133,7 @@
 					"Keys": [
 						{
 							"Key": "VerbBraid",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 25"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 30"
 						}
 					]
 				},
@@ -919,7 +1144,7 @@
 					"Keys": [
 						{
 							"Key": "Use",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 199"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 231"
 						}
 					]
 				},
@@ -930,18 +1155,7 @@
 					"Keys": [
 						{
 							"Key": "EntrySips",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 38"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "{0} {1}"
-					},
-					"Keys": [
-						{
-							"Key": "InputAmount",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 49"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 43"
 						}
 					]
 				},
@@ -952,18 +1166,18 @@
 					"Keys": [
 						{
 							"Key": "EntryCount",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 41"
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 46"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "{0}: {1}"
+						"Text": "×{0}"
 					},
 					"Keys": [
 						{
-							"Key": "RecipeButton",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 236"
+							"Key": "InputCount",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 338"
 						}
 					]
 				}
@@ -1012,7 +1226,7 @@
 					"Keys": [
 						{
 							"Key": "FireFeed",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 35"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 39"
 						}
 					]
 				},
@@ -1056,7 +1270,7 @@
 					"Keys": [
 						{
 							"Key": "FireCook",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 33"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 36"
 						}
 					]
 				},
@@ -1067,7 +1281,18 @@
 					"Keys": [
 						{
 							"Key": "PickUpItem",
-							"Path": "Source/Explored/Items/ExploredPickup.cpp - line 50"
+							"Path": "Source/Explored/Items/ExploredPickup.cpp - line 59"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Echar aceite sobrante"
+					},
+					"Keys": [
+						{
+							"Key": "FireFeedOil",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 38"
 						}
 					]
 				},
@@ -1089,7 +1314,7 @@
 					"Keys": [
 						{
 							"Key": "FireLight",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 32"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 35"
 						}
 					]
 				},
@@ -1100,7 +1325,7 @@
 					"Keys": [
 						{
 							"Key": "FireBoil",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 34"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 37"
 						}
 					]
 				},
@@ -1177,7 +1402,7 @@
 					"Keys": [
 						{
 							"Key": "FireNothing",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 190"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 202"
 						}
 					]
 				},
@@ -1221,7 +1446,7 @@
 					"Keys": [
 						{
 							"Key": "FireNeedsWood",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 191"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 203"
 						}
 					]
 				},
@@ -1243,7 +1468,7 @@
 					"Keys": [
 						{
 							"Key": "FireCollect",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 31"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 34"
 						}
 					]
 				},
@@ -1305,6 +1530,92 @@
 			]
 		},
 		{
+			"Namespace": "ExploredNotebook",
+			"Children": [
+				{
+					"Source": {
+						"Text": "A / D: pasar página · J: cerrar"
+					},
+					"Keys": [
+						{
+							"Key": "Help",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 198"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro."
+					},
+					"Keys": [
+						{
+							"Key": "NoPages",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 178"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cuaderno de guardia"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 110"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Faro de Isla de Sal · páginas {0}/{1}"
+					},
+					"Keys": [
+						{
+							"Key": "Count",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Objetivo"
+					},
+					"Keys": [
+						{
+							"Key": "Objective",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 163"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Página {0}"
+					},
+					"Keys": [
+						{
+							"Key": "PageHeading",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 188"
+						},
+						{
+							"Key": "PageRead",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 121"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Página {0} · sin encontrar"
+					},
+					"Keys": [
+						{
+							"Key": "PageMissing",
+							"Path": "Source/Explored/UI/Widgets/SExploredNotebook.cpp - line 122"
+						}
+					]
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredRaft",
 			"Children": [
 				{
@@ -1325,7 +1636,7 @@
 					"Keys": [
 						{
 							"Key": "ForcedReturn",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 471"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 487"
 						}
 					]
 				},
@@ -1358,7 +1669,7 @@
 					"Keys": [
 						{
 							"Key": "SeaClosing",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 424"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 440"
 						}
 					]
 				},
@@ -1402,7 +1713,7 @@
 					"Keys": [
 						{
 							"Key": "BoardRaft",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 597"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 613"
 						}
 					]
 				}
@@ -1429,7 +1740,7 @@
 					"Keys": [
 						{
 							"Key": "TabAccessibility",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 206"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 204"
 						}
 					]
 				},
@@ -1451,7 +1762,7 @@
 					"Keys": [
 						{
 							"Key": "HoldCrouch",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 379"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 364"
 						}
 					]
 				},
@@ -1462,7 +1773,7 @@
 					"Keys": [
 						{
 							"Key": "Settings",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 66"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 74"
 						}
 					]
 				},
@@ -1484,7 +1795,7 @@
 					"Keys": [
 						{
 							"Key": "VolAmbient",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 341"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 327"
 						}
 					]
 				},
@@ -1495,7 +1806,7 @@
 					"Keys": [
 						{
 							"Key": "Apply",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 543"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 528"
 						}
 					]
 				},
@@ -1506,7 +1817,7 @@
 					"Keys": [
 						{
 							"Key": "TabAudio",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 203"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 201"
 						}
 					]
 				},
@@ -1528,7 +1839,7 @@
 					"Keys": [
 						{
 							"Key": "SoundCues",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 534"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 519"
 						}
 					]
 				},
@@ -1539,11 +1850,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 59"
-						},
-						{
-							"Key": "Title",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 50"
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 68"
 						}
 					]
 				},
@@ -1565,7 +1872,18 @@
 					"Keys": [
 						{
 							"Key": "CameraBob",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 375"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 360"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Baliza Siete"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 47"
 						}
 					]
 				},
@@ -1576,7 +1894,7 @@
 					"Keys": [
 						{
 							"Key": "Brightness",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 303"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 296"
 						}
 					]
 				},
@@ -1587,7 +1905,7 @@
 					"Keys": [
 						{
 							"Key": "SectionQuality",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 306"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 299"
 						}
 					]
 				},
@@ -1598,7 +1916,7 @@
 					"Keys": [
 						{
 							"Key": "OverallQuality",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 309"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 302"
 						}
 					]
 				},
@@ -1609,7 +1927,7 @@
 					"Keys": [
 						{
 							"Key": "FOV",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 370"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 355"
 						}
 					]
 				},
@@ -1648,17 +1966,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Cinemática"
-					},
-					"Keys": [
-						{
-							"Key": "QualityCinematic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 130"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Combinar"
 					},
 					"Keys": [
@@ -1690,7 +1997,7 @@
 						},
 						{
 							"Key": "EndingContinue",
-							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 44"
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 45"
 						}
 					]
 				},
@@ -1701,7 +2008,7 @@
 					"Keys": [
 						{
 							"Key": "TabControls",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 204"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 202"
 						}
 					]
 				},
@@ -1723,7 +2030,7 @@
 					"Keys": [
 						{
 							"Key": "Credits",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 71"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 79"
 						}
 					]
 				},
@@ -1745,18 +2052,7 @@
 					"Keys": [
 						{
 							"Key": "NoFlashing",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 530"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Desarrollado con Claude (Anthropic)"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsClaude",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 61"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 515"
 						}
 					]
 				},
@@ -1767,7 +2063,7 @@
 					"Keys": [
 						{
 							"Key": "CVDDeuteranopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 512"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 497"
 						}
 					]
 				},
@@ -1778,7 +2074,7 @@
 					"Keys": [
 						{
 							"Key": "PromptSleep",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 311"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 345"
 						}
 					]
 				},
@@ -1789,18 +2085,18 @@
 					"Keys": [
 						{
 							"Key": "DayLength",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 475"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 460"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "E interactuar · Tab mochila · Esc pausa"
+						"Text": "E interactuar · Tab mochila · J cuaderno · Esc pausa"
 					},
 					"Keys": [
 						{
 							"Key": "HelpUse",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 400"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 468"
 						}
 					]
 				},
@@ -1810,12 +2106,8 @@
 					},
 					"Keys": [
 						{
-							"Key": "Effects",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 318"
-						},
-						{
 							"Key": "VolEffects",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 340"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 326"
 						}
 					]
 				},
@@ -1859,7 +2151,7 @@
 					"Keys": [
 						{
 							"Key": "LangEn",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 469"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 454"
 						}
 					]
 				},
@@ -1870,7 +2162,7 @@
 					"Keys": [
 						{
 							"Key": "LangEs",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 468"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 453"
 						}
 					]
 				},
@@ -1881,7 +2173,7 @@
 					"Keys": [
 						{
 							"Key": "TextLarge",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 465"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 450"
 						}
 					]
 				},
@@ -1892,7 +2184,7 @@
 					"Keys": [
 						{
 							"Key": "TabGraphics",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 202"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 200"
 						}
 					]
 				},
@@ -1935,23 +2227,23 @@
 				},
 				{
 					"Source": {
-						"Text": "Idioma"
+						"Text": "Hay una partida de una versión anterior del juego. No se puede continuar: empieza una nueva."
 					},
 					"Keys": [
 						{
-							"Key": "Language",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 494"
+							"Key": "MenuObsoleteSave",
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 375"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "Iluminación global"
+						"Text": "Idioma"
 					},
 					"Keys": [
 						{
-							"Key": "GI",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 314"
+							"Key": "Language",
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 479"
 						}
 					]
 				},
@@ -1968,23 +2260,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Interfaz"
-					},
-					"Keys": [
-						{
-							"Key": "VolUI",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 342"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Invertir eje Y"
 					},
 					"Keys": [
 						{
 							"Key": "InvertY",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 366"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 351"
 						}
 					]
 				},
@@ -1995,7 +2276,7 @@
 					"Keys": [
 						{
 							"Key": "Subtitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 57"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 56"
 						}
 					]
 				},
@@ -2006,18 +2287,7 @@
 					"Keys": [
 						{
 							"Key": "TabGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 205"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "La partida guardada es de una versión anterior del juego y no se puede continuar."
-					},
-					"Keys": [
-						{
-							"Key": "MenuObsoleteSave",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 317"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 203"
 						}
 					]
 				},
@@ -2028,7 +2298,7 @@
 					"Keys": [
 						{
 							"Key": "RemapGamepad",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 431"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 416"
 						}
 					]
 				},
@@ -2039,18 +2309,7 @@
 					"Keys": [
 						{
 							"Key": "FpsLimit",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 296"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Maestro"
-					},
-					"Keys": [
-						{
-							"Key": "VolMaster",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 338"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 289"
 						}
 					]
 				},
@@ -2072,7 +2331,7 @@
 					"Keys": [
 						{
 							"Key": "TextMedium",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 464"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 449"
 						}
 					]
 				},
@@ -2089,23 +2348,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Modelos 3D de vegetación"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsModelsTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 67"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Modo daltónico"
 					},
 					"Keys": [
 						{
 							"Key": "Colorblind",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 519"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 504"
 						}
 					]
 				},
@@ -2116,18 +2364,7 @@
 					"Keys": [
 						{
 							"Key": "WindowMode",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 285"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Motor: Unreal Engine 5.6"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsEngine",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 62"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 278"
 						}
 					]
 				},
@@ -2138,7 +2375,7 @@
 					"Keys": [
 						{
 							"Key": "VolMusic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 339"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 325"
 						}
 					]
 				},
@@ -2149,7 +2386,18 @@
 					"Keys": [
 						{
 							"Key": "CVDNone",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 510"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 495"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No se ha podido cargar la partida guardada. Prueba con «Cargar» o empieza una nueva."
+					},
+					"Keys": [
+						{
+							"Key": "ContinueFailed",
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 421"
 						}
 					]
 				},
@@ -2182,7 +2430,7 @@
 					"Keys": [
 						{
 							"Key": "SectionDisplay",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 275"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 268"
 						}
 					]
 				},
@@ -2193,7 +2441,7 @@
 					"Keys": [
 						{
 							"Key": "WindowFullscreen",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 258"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 256"
 						}
 					]
 				},
@@ -2226,18 +2474,7 @@
 					"Keys": [
 						{
 							"Key": "TextSmall",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 463"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Postproceso"
-					},
-					"Keys": [
-						{
-							"Key": "PostProcess",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 316"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 448"
 						}
 					]
 				},
@@ -2248,7 +2485,7 @@
 					"Keys": [
 						{
 							"Key": "CVDProtanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 511"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 496"
 						}
 					]
 				},
@@ -2260,17 +2497,6 @@
 						{
 							"Key": "PressAnyKey",
 							"Path": "Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp - line 34"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Quaternius y Kenney (CC0), vía Poly Pizza"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsQuaternius",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 68"
 						}
 					]
 				},
@@ -2303,7 +2529,7 @@
 					"Keys": [
 						{
 							"Key": "PickedUpItem",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 541"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 688"
 						}
 					]
 				},
@@ -2314,18 +2540,7 @@
 					"Keys": [
 						{
 							"Key": "ReduceMotion",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 526"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Reflejos"
-					},
-					"Keys": [
-						{
-							"Key": "Reflections",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 315"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 511"
 						}
 					]
 				},
@@ -2336,7 +2551,7 @@
 					"Keys": [
 						{
 							"Key": "SectionRemap",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 384"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 369"
 						}
 					]
 				},
@@ -2347,7 +2562,7 @@
 					"Keys": [
 						{
 							"Key": "Resolution",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 278"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 271"
 						}
 					]
 				},
@@ -2358,7 +2573,7 @@
 					"Keys": [
 						{
 							"Key": "RestoreDefaults",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 547"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 532"
 						}
 					]
 				},
@@ -2369,7 +2584,7 @@
 					"Keys": [
 						{
 							"Key": "Quit",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 76"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 84"
 						}
 					]
 				},
@@ -2413,7 +2628,7 @@
 					"Keys": [
 						{
 							"Key": "GamepadSensitivity",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 361"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 346"
 						}
 					]
 				},
@@ -2424,7 +2639,7 @@
 					"Keys": [
 						{
 							"Key": "MouseSensitivity",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 356"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 341"
 						}
 					]
 				},
@@ -2446,7 +2661,7 @@
 					"Keys": [
 						{
 							"Key": "Unlimited",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 266"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 264"
 						}
 					]
 				},
@@ -2474,23 +2689,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Sombras"
-					},
-					"Keys": [
-						{
-							"Key": "Shadows",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 313"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Subtítulos"
 					},
 					"Keys": [
 						{
 							"Key": "Subtitles",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 483"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 468"
 						}
 					]
 				},
@@ -2501,29 +2705,7 @@
 					"Keys": [
 						{
 							"Key": "TextSize",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 487"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Terreno, props, texturas, sonido y música generados por código"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsArt",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 65"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Texturas"
-					},
-					"Keys": [
-						{
-							"Key": "Textures",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 317"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 472"
 						}
 					]
 				},
@@ -2534,7 +2716,7 @@
 					"Keys": [
 						{
 							"Key": "CVDTritanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 513"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 498"
 						}
 					]
 				},
@@ -2545,7 +2727,7 @@
 					"Keys": [
 						{
 							"Key": "CreditsAuthor",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 60"
+							"Path": "Source/Explored/UI/Widgets/SExploredEnding.cpp - line 72"
 						}
 					]
 				},
@@ -2578,7 +2760,7 @@
 					"Keys": [
 						{
 							"Key": "VSync",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 292"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 285"
 						}
 					]
 				},
@@ -2595,23 +2777,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Vegetación"
-					},
-					"Keys": [
-						{
-							"Key": "Foliage",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 319"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Ventana"
 					},
 					"Keys": [
 						{
 							"Key": "WindowWindowed",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 260"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 258"
 						}
 					]
 				},
@@ -2622,18 +2793,7 @@
 					"Keys": [
 						{
 							"Key": "WindowBorderless",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 259"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Vista"
-					},
-					"Keys": [
-						{
-							"Key": "ViewDistance",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 312"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 257"
 						}
 					]
 				},
@@ -2644,7 +2804,7 @@
 					"Keys": [
 						{
 							"Key": "Back",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 36"
+							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 33"
 						}
 					]
 				},
@@ -2655,7 +2815,7 @@
 					"Keys": [
 						{
 							"Key": "HelpMove",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 401"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 467"
 						}
 					]
 				},
@@ -2666,7 +2826,7 @@
 					"Keys": [
 						{
 							"Key": "RemapReserved",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 435"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 420"
 						}
 					]
 				},
@@ -2677,7 +2837,7 @@
 					"Keys": [
 						{
 							"Key": "DayLengthMinutes",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 459"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 444"
 						}
 					]
 				},
@@ -2688,7 +2848,7 @@
 					"Keys": [
 						{
 							"Key": "RemapInUse",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 439"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 424"
 						}
 					]
 				},
@@ -2716,45 +2876,12 @@
 				},
 				{
 					"Source": {
-						"Text": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsPolyGoogle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 72"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"
-					},
-					"Keys": [
-						{
-							"Key": "CreditsZacharylll",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 76"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad."
 					},
 					"Keys": [
 						{
 							"Key": "SlotsOverwrite",
 							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 212"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Épica"
-					},
-					"Keys": [
-						{
-							"Key": "QualityEpic",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 129"
 						}
 					]
 				}

@@ -277,6 +277,11 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		Shots.Last().Action = TEXT("light");
 	}
 
+	if (Set == TEXT("f5"))
+	{
+		BuildUiShots();
+	}
+
 	if (Set == TEXT("menu"))
 	{
 		// El menú principal ya está en pantalla por defecto al arrancar el
@@ -363,6 +368,15 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 {
 	const FExploredShot& Shot = Shots[Index];
 	UWorld* World = GetWorld();
+	if (BeginUiShot(Shot))
+	{
+		// El final funde a negro 2 s antes de enseñar el epílogo: se espera más que en el resto.
+		// El desmayo dura 2,5 s (negro con el texto): se captura a mitad.
+		Timer = Shot.Action == FName(TEXT("ui_ending")) ? -4.0f : Shot.Action == FName(TEXT("ui_faint")) ? 2.2f : 0.0f;
+		bRequested = false;
+		CurrentShotFrameRates.Reset();
+		return;
+	}
 
 	if (!Camera)
 	{

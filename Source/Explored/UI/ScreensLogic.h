@@ -109,4 +109,34 @@ namespace ExploredScreens
 	 * pintan aparte (HandLeft/HandRight del estado).
 	 */
 	EXPLORED_API TArray<FInventorySection> BuildInventorySections(const FInventoryState& State, bool bHasPouch);
+
+	// --- Cuaderno de guardia (J, GDD v3 §9.2) ----------------------------------------
+
+	constexpr int32 NotebookPages = 8;
+
+	struct FNotebookPageRow
+	{
+		/** 1-8. */
+		int32 Page = 0;
+		bool bRead = false;
+		bool bSelected = false;
+	};
+
+	struct FNotebookView
+	{
+		/** Siempre las 8 páginas, en orden. */
+		TArray<FNotebookPageRow> Rows;
+		int32 ReadCount = 0;
+		/** Página que se enseña (1-8); 0 si no hay ninguna leída. */
+		int32 Shown = 0;
+	};
+
+	/**
+	 * Lo que pinta el cuaderno con la máscara de páginas leídas (bit i = página i + 1). Se enseña
+	 * Requested si está leída; si no, la última leída; sin ninguna, 0.
+	 */
+	EXPLORED_API FNotebookView BuildNotebookView(uint8 PagesMask, int32 Requested);
+
+	/** Siguiente página leída en Direction (+1 o -1) desde Current, sin dar la vuelta; Current si no hay. */
+	EXPLORED_API int32 StepNotebookPage(uint8 PagesMask, int32 Current, int32 Direction);
 }

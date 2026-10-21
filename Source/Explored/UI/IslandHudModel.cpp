@@ -24,6 +24,11 @@ FString FIslandHudModel::BarometerText(float Hpa, EBarometerTrend Trend)
 	return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);
 }
 
+FString FIslandHudModel::BarometerValueText(float Hpa)
+{
+	return FString::Printf(TEXT("%d hPa"), FMath::IsFinite(Hpa) ? FMath::RoundToInt32(Hpa) : 0);
+}
+
 FString FIslandHudModel::PromptText(const FString& KeyName, const FString& VerbAndObject)
 {
 	if (KeyName.IsEmpty() || VerbAndObject.IsEmpty())

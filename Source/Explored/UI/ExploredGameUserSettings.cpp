@@ -187,7 +187,7 @@ void UExploredGameUserSettings::ApplyToWorld(const UObject* WorldContextObject)
 
 	ApplyAudioSettings(World);
 
-	// La duración del día ya no es un ajuste: Baliza Siete la fija en 18 min (GDD v3 §3).
+	// La duración del día ya no es un ajuste: Baliza Siete la fija en 24 min (GDD v3 §3, decisión de F3e).
 	if (UExploredAmbienceSubsystem* Ambience = World->GetSubsystem<UExploredAmbienceSubsystem>())
 	{
 		Ambience->SetAmbienceVolume(GetAmbienceLayerGain());

@@ -26,42 +26,49 @@ void SExploredPauseMenu::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		SNew(SBox)
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
+		SNew(SBorder)
+		.BorderImage(Style.BrushWhite())
+		// Velo de tinta: el juego queda detrás, apagado, y el panel se lee como lo único activo.
+		.BorderBackgroundColor(FLinearColor(Style.ColorInk().R, Style.ColorInk().G, Style.ColorInk().B, 0.45f))
+		.Padding(0.0f)
 		[
-			SNew(SBorder)
-			.BorderImage(Style.BrushPanel())
-			.Padding(FMargin(40.0f, 32.0f))
+			SNew(SBox)
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
 			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 20.0f))
+				SNew(SBorder)
+				.BorderImage(Style.BrushPanel())
+				.Padding(FMargin(40.0f, 32.0f))
 				[
-					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Paused", "Pausa"))
-					.Font(Style.FontHeading())
-					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ResumeButton ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),
-						FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleSettings))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "SaveGame", "Guardar partida"),
-						FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleSave))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "ExitToMenu", "Salir al menú"),
-						FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleExitToMenu))
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "QuitGame", "Salir del juego"),
-						FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleQuit))
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 20.0f))
+					[
+						SNew(STextBlock)
+						.Text(NSLOCTEXT("ExploredUI", "Paused", "Pausa"))
+						.Font(Style.SerifBold(44.0f))
+						.ColorAndOpacity(FSlateColor(Style.ColorAccent()))
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ResumeButton ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
+					[
+						ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),
+							FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleSettings))
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
+					[
+						ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "SaveGame", "Guardar partida"),
+							FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleSave))
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
+					[
+						ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "ExitToMenu", "Salir al menú"),
+							FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleExitToMenu))
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
+					[
+						ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "QuitGame", "Salir del juego"),
+							FOnClicked::CreateSP(this, &SExploredPauseMenu::HandleQuit))
+					]
 				]
 			]
 		]

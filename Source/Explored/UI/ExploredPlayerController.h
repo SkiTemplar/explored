@@ -150,6 +150,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void QuitToDesktop();
 
+	/** Cuaderno de guardia (J): se abre jugando, pausa el mundo y se cierra con J, Tab o Esc. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
+	void ToggleNotebook();
+	void OpenNotebook();
+	void CloseNotebook();
+	UFUNCTION(BlueprintPure, Category = "Explored|UI")
+	bool IsNotebookOpen() const { return NotebookWidget.IsValid(); }
+
+	/** Aviso del menú principal (partida de otra versión, carga fallida). */
+	const FText& GetMenuNotice() const { return MenuNotice; }
+
+	/** Hora a la que se ve la isla detrás del menú principal (atardecer, baliza apagada). */
+	static constexpr float MenuBackdropHour = 17.9f;
+
+	/** Menú principal (Continuar, Nueva partida, Cargar, Ajustes, Créditos, Salir) sobre la isla al atardecer. */
+	void ShowMainMenu();
+	/** Menú principal con un aviso (partida de otra versión, carga fallida). */
+	void ShowMainMenuWithNotice(const FText& Notice);
+	/** Aviso al encontrar una partida de la versión anterior (formato 1). */
+	static FText ObsoleteSaveNotice();
+
 	/** Ruta del mapa a la que vuelve «Salir al menú» (GameDefaultMap, ver Config/DefaultEngine.ini). */
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|UI")
 	FName MainMenuMapName = "/Game/Maps/Map_IslaSal";
@@ -159,7 +180,8 @@ private:
 	/** «Volver» de la pantalla actual (botón, Escape o B). */
 	void NavigateBack();
 	void NavigateTo(ExploredSettingsLogic::EMenuScreen Screen);
-	void ShowMainMenu();
+	/** Congela el reloj (y con él el cuerpo) mientras se está en el menú principal. */
+	void FreezeWorldClock(bool bFreeze);
 	/** Selector de ranura en modo Cargar (bLoading) o Guardar. */
 	void ShowSaveSlots(bool bLoading);
 	/** Añade el overlay al viewport y da el foco a FocusTarget (o al propio overlay). */
@@ -185,6 +207,11 @@ private:
 	TWeakPtr<SExploredSettingsPanel> SettingsPanel;
 
 	TWeakObjectPtr<AExploredMenuCamera> MenuCamera;
+
+	TSharedPtr<SWidget> NotebookWidget;
+	FText MenuNotice;
+	/** Escala del reloj guardada al congelarlo en el menú; < 0 = no está congelado. */
+	float FrozenTimeScale = -1.0f;
 
 	/** Vuelta al menú tras los créditos del final; con el mundo en pausa no corren los temporizadores del mundo. */
 	FTSTicker::FDelegateHandle EndCreditsTicker;

@@ -144,6 +144,37 @@ void FExploredScreensLogicSpec::Define()
 			TestEqual(TEXT("Angarillas al final"), Sections[4].Slot, EInventorySlot::Sledge);
 		});
 	});
+
+	Describe("cuaderno", [this]()
+	{
+		It("enseña la página pedida si está leída y cuenta las leídas", [this]()
+		{
+			const uint8 Mask = 0b00010101; // páginas 1, 3 y 5
+			const FNotebookView View = BuildNotebookView(Mask, 3);
+			TestEqual("8 filas", View.Rows.Num(), 8);
+			TestEqual("3 leídas", View.ReadCount, 3);
+			TestEqual("Enseña la 3", View.Shown, 3);
+			TestTrue("La 3 marcada", View.Rows[2].bSelected);
+			TestFalse("La 2 sin leer", View.Rows[1].bRead);
+		});
+
+		It("con una página sin leer enseña la última leída y sin ninguna, nada", [this]()
+		{
+			TestEqual("Pide la 2 (sin leer): la 5", BuildNotebookView(0b00010101, 2).Shown, 5);
+			const FNotebookView Empty = BuildNotebookView(0, 1);
+			TestEqual("Ninguna", Empty.Shown, 0);
+			TestEqual("0 leídas", Empty.ReadCount, 0);
+		});
+
+		It("pasa de página saltando las no leídas y se queda en los extremos", [this]()
+		{
+			const uint8 Mask = 0b00010101;
+			TestEqual("1 → 3", StepNotebookPage(Mask, 1, 1), 3);
+			TestEqual("5 → 3", StepNotebookPage(Mask, 5, -1), 3);
+			TestEqual("5 sin más", StepNotebookPage(Mask, 5, 1), 5);
+			TestEqual("1 sin menos", StepNotebookPage(Mask, 1, -1), 1);
+		});
+	});
 }
 
 #endif // WITH_DEV_AUTOMATION_TESTS

@@ -171,3 +171,13 @@ FSupplyCrateOpenResult FSupplyCrateModel::Open(const FSupplyCrateState& State, c
 	Result.bDelivered = true;
 	return Result;
 }
+
+int32 FSupplyCrateModel::DriftwoodAtDawn(const TMap<FName, int32>& Inventory, const FBeaconProgressState& Progress,
+	const TMap<FName, int32>& WorldRemaining, bool bAnyFireBurning)
+{
+	if (bAnyFireBurning)
+	{
+		return 0;
+	}
+	return ComputeMissing(Inventory, Progress, WorldRemaining).FindRef(WoodId());
+}

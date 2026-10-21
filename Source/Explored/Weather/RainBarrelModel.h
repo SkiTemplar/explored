@@ -33,7 +33,7 @@ struct EXPLORED_API FRainBarrelModel
 {
 	static constexpr int32 MaxCharges = 4;
 	static constexpr int32 ShowerCharges = 2;
-	/** El chubasco guiado dura 90 s y da 2 cargas: 45 s de lluvia por carga. */
+	/** El chubasco guiado (2 h de juego, 120 s reales) da 2 cargas: una cada 45 s de lluvia. */
 	static constexpr float ShowerSeconds = 90.0f;
 	static constexpr float RainSecondsPerCharge = ShowerSeconds / ShowerCharges;
 	/** Lluvia (0-1 de FWeatherSample::Rain) a partir de la cual cuenta. */

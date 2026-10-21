@@ -213,4 +213,14 @@ namespace ExploredSettingsLogic
 
 	/** Teclas que abren y cierran la pausa: Escape y Start (Menu) del mando. */
 	EXPLORED_API bool IsPauseToggleKey(FName KeyName);
+
+	// --- Calidad (GDD v3 §9.2: 3 niveles) ---------------------------------------
+
+	constexpr int32 QualityPresetCount = 3;
+
+	/** Nivel de escalabilidad del motor (0-4) para el nivel de calidad del juego (0 baja, 1 media, 2 alta). */
+	EXPLORED_API int32 QualityPresetToScalability(int32 Preset);
+
+	/** Nivel de calidad del juego más cercano a un nivel de escalabilidad del motor. */
+	EXPLORED_API int32 ScalabilityToQualityPreset(int32 Scalability);
 }

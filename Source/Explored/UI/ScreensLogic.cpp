@@ -128,4 +128,40 @@ namespace ExploredScreens
 		}
 		return Out;
 	}
+
+	FNotebookView BuildNotebookView(uint8 PagesMask, int32 Requested)
+	{
+		FNotebookView View;
+		const auto IsRead = [PagesMask](int32 Page) { return Page >= 1 && Page <= NotebookPages && (PagesMask & (1u << (Page - 1))) != 0; };
+		for (int32 Page = 1; Page <= NotebookPages; ++Page)
+		{
+			if (IsRead(Page))
+			{
+				++View.ReadCount;
+				View.Shown = Page;
+			}
+		}
+		if (IsRead(Requested))
+		{
+			View.Shown = Requested;
+		}
+		for (int32 Page = 1; Page <= NotebookPages; ++Page)
+		{
+			View.Rows.Add({ Page, IsRead(Page), Page == View.Shown });
+		}
+		return View;
+	}
+
+	int32 StepNotebookPage(uint8 PagesMask, int32 Current, int32 Direction)
+	{
+		const int32 Step = Direction >= 0 ? 1 : -1;
+		for (int32 Page = Current + Step; Page >= 1 && Page <= NotebookPages; Page += Step)
+		{
+			if ((PagesMask & (1u << (Page - 1))) != 0)
+			{
+				return Page;
+			}
+		}
+		return Current;
+	}
 }

@@ -80,6 +80,8 @@ private:
 	FVector FindLaunchLocation() const;
 	void WatchClock();
 	void ForceReturn();
+	/** Si Iria se desmaya en la balsa, la baja y la deja varada en el sitio de Playa Norte. */
+	void ReturnRaftIfOccupantFainted();
 	void SaveToIslandState() const;
 	bool IsPlayerOnIslet(const APawn& Pawn) const;
 

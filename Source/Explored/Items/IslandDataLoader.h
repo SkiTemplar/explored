@@ -30,6 +30,8 @@ struct EXPLORED_API FIslandData
 	FStormClockConfig Storm;
 	/** Nombres bilingües de los objetos (id → es/en). */
 	TMap<FName, TPair<FString, FString>> ItemNames;
+	/** Descripción breve del inventario (descEs, descEn). */
+	TMap<FName, TPair<FString, FString>> ItemDescriptions;
 
 	/** Valores por defecto de los modelos (sin leer ficheros). */
 	static FIslandData Defaults();
@@ -52,4 +54,6 @@ namespace ExploredIslandData
 
 	/** Nombre del objeto en el idioma actual (el id si no está en items.json). */
 	EXPLORED_API FText ItemName(FName ItemId);
+	/** Descripción breve del objeto en el idioma activo; vacía si no la tiene. */
+	EXPLORED_API FText ItemDescription(FName ItemId);
 }

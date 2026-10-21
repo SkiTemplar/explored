@@ -71,6 +71,23 @@ void FSupplyCrateSpec::Define()
 			TestEqual(TEXT("Con los tarros, nada"), Get(FSupplyCrateModel::ComputeMissing(Pack, S, TMap<FName, int32>()), TEXT("lena")), 0);
 		});
 
+		It(TEXT("leña quemada dos veces (caja ya abierta): el mar deja leña de deriva al amanecer"), [this]()
+		{
+			TMap<FName, int32> Pack;
+			Pack.Add(TEXT("cana_pescar"), 1);
+			FBeaconProgressState S;
+			S.bLensCollected = true;
+			S.OilJars = 1;
+			const TMap<FName, int32> Bare;
+			TestEqual(TEXT("Sin leña en ningún sitio: 3"), FSupplyCrateModel::DriftwoodAtDawn(Pack, S, Bare, false), 3);
+			TestEqual(TEXT("Con un fuego encendido no hace falta"), FSupplyCrateModel::DriftwoodAtDawn(Pack, S, Bare, true), 0);
+			TMap<FName, int32> Island;
+			Island.Add(TEXT("lena"), 4);
+			TestEqual(TEXT("Con leña en la isla, nada"), FSupplyCrateModel::DriftwoodAtDawn(Pack, S, Island, false), 0);
+			S.OilJars = 2;
+			TestEqual(TEXT("Con los tarros hechos, nada"), FSupplyCrateModel::DriftwoodAtDawn(Pack, S, Bare, false), 0);
+		});
+
 		It(TEXT("fibras agotadas en la isla: cuerda y fibras para lo que falte"), [this]()
 		{
 			TMap<FName, int32> Pack;

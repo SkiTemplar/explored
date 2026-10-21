@@ -14,6 +14,9 @@ namespace ExploredUIWidgets
 	/** Botón de menú a ancho de texto, con la tipografía y colores de FExploredUIStyle. */
 	EXPLORED_API TSharedRef<SWidget> MakeMenuButton(const FText& Label, FOnClicked OnClicked, bool bLarge = true);
 
+	/** Botón sobre la escena o un fondo oscuro (final, créditos): texto de papel con sombra. */
+	EXPLORED_API TSharedRef<SWidget> MakeSceneButton(const FText& Label, FOnClicked OnClicked);
+
 	/** Botón de pestaña (Ajustes): resaltado si bActive. */
 	EXPLORED_API TSharedRef<SWidget> MakeTabButton(const FText& Label, bool bActive, FOnClicked OnClicked);
 

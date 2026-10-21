@@ -11,11 +11,15 @@
 #include "UObject/SoftObjectPath.h"
 
 #include "Audio/ExploredMusicSubsystem.h"
+#include "Boats/ExploredRaft.h"
 #include "Cooking/ExploredFire.h"
 #include "Explored.h"
 #include "Items/BackpackModel.h"
 #include "Items/ExploredSurvivorComponent.h"
+#include "Items/ExploredIslandStateSubsystem.h"
 #include "Narrative/BeaconTexts.h"
+#include "Narrative/ExploredSupplyCrate.h"
+#include "Narrative/SupplyCrateModel.h"
 #include "Narrative/ExploredBeaconActors.h"
 #include "Save/SaveIslandSections.h"
 #include "Sky/TimeOfDaySubsystem.h"
@@ -245,11 +249,12 @@ void UBeaconSubsystem::LoadProgress(const FSaveArchive& Ar)
 	{
 		UE_LOG(LogExplored, Warning, TEXT("[Baliza] La sección «progress» de la partida no es coherente: se empieza desde el prólogo"));
 	}
-	// Si se guardó con el Mistral ya llegado, el final se vuelve a ver.
+	// Si se guardó con el Mistral ya llegado, el final se vuelve a ver: nada del final en curso sobrevive a la carga.
 	Run.bMistralArrived = false;
 	bRunActive = true;
-	bEndingStarted = false;
-	bHasStartLocation = false;
+	SampleTimer = 0.0f;
+	ResetEnding();
+	LastDriftwoodDay = 0;
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Partida cargada en la etapa %s"), FBeaconDirectorModel::StageName(Run.Progress.Stage));
 }
 
@@ -292,22 +297,15 @@ void UBeaconSubsystem::BeginNewRun()
 {
 	Run = FBeaconRunState();
 	bRunActive = true;
-	bEndingStarted = false;
-	bHasStartLocation = false;
 	SampleTimer = 0.0f;
+	ResetEnding();
+	LastDriftwoodDay = 0;
 	if (UWorld* World = GetWorld())
 	{
-		World->GetTimerManager().ClearTimer(HornTimer);
-		World->GetTimerManager().ClearTimer(FadeTimer);
 		if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
 		{
 			Time->SetTime(BeaconSubsystemDetail::StartDay, BeaconSubsystemDetail::StartHour);
 		}
-	}
-	if (Mistral)
-	{
-		Mistral->Destroy();
-		Mistral = nullptr;
 	}
 	if (UIslandBodyComponent* Body = UIslandBodyComponent::FindOn(GetPlayerPawn()))
 	{
@@ -318,6 +316,26 @@ void UBeaconSubsystem::BeginNewRun()
 		HUD->ShowCard(ExploredBeaconTexts::Get().Get(TEXT("cartel_inicio")), BeaconSubsystemDetail::CardSeconds);
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Nueva partida: día 1, 07:00"));
+}
+
+void UBeaconSubsystem::ResetEnding()
+{
+	bEndingStarted = false;
+	bHasStartLocation = false;
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(HornTimer);
+		World->GetTimerManager().ClearTimer(FadeTimer);
+	}
+	if (Mistral)
+	{
+		Mistral->Destroy();
+		Mistral = nullptr;
+	}
+	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
+	{
+		Music->SetFinale(false, EMusicFinale::Rescue);
+	}
 }
 
 APawn* UBeaconSubsystem::GetPlayerPawn() const
@@ -355,6 +373,10 @@ FBeaconFacts UBeaconSubsystem::MeasureFacts(const APawn& Pawn) const
 		Facts.OilJarsInPack = FBackpackModel::Count(Pack, OilItem);
 		Facts.bHasWick = FBackpackModel::Count(Pack, WickItem) > 0;
 		Facts.bHasLens = FBackpackModel::Count(Pack, LensItem) > 0;
+	}
+	for (TActorIterator<AExploredRaftSite> It(GetWorld()); It && !Facts.bRaftBuilt; ++It)
+	{
+		Facts.bRaftBuilt = It->IsRaftBuilt();
 	}
 	for (TActorIterator<AExploredFire> It(GetWorld()); It && !Facts.bFireLit; ++It)
 	{
@@ -395,6 +417,42 @@ void UBeaconSubsystem::Sample()
 		bSheltered = It->IsActorSheltered(Pawn);
 	}
 	Apply(FBeaconDirectorModel::Step(Run, MeasureFacts(*Pawn), Tuning));
+	WashUpDriftwood(*Pawn);
+}
+
+void UBeaconSubsystem::WashUpDriftwood(const APawn& Pawn)
+{
+	UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	if (!Time || Time->GetDay() <= 1 || Time->GetHours() < 6.0f || Time->GetDay() == LastDriftwoodDay)
+	{
+		return;
+	}
+	LastDriftwoodDay = Time->GetDay();
+	const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(&Pawn);
+	UExploredIslandStateSubsystem* Island = UExploredIslandStateSubsystem::Get(this);
+	if (!Survivor || !Island)
+	{
+		return;
+	}
+	bool bFireBurning = false;
+	for (TActorIterator<AExploredFire> It(World); It && !bFireBurning; ++It)
+	{
+		bFireBurning = It->IsBurning();
+	}
+	const int32 Wood = FSupplyCrateModel::DriftwoodAtDawn(FBackpackModel::ToCounts(Survivor->GetBackpack()), Run.Progress,
+		AExploredSupplyCrate::CountIslandResources(World), bFireBurning);
+	const FIslandProp* Beach = ExploredIslandProps::Get()->FindProp(FName(TEXT("lena_cala_1")));
+	if (Wood <= 0 || !Beach)
+	{
+		return;
+	}
+	Island->SpawnDropped(FSupplyCrateModel::WoodId(), Wood, IslandPropsPlacement::WorldLocation(*Beach, 0.0f) + FVector(0.0, 0.0, 30.0));
+	UE_LOG(LogExplored, Display, TEXT("[Baliza] Leña de deriva en la Cala Varada: %d (día %d)"), Wood, LastDriftwoodDay);
+	if (AExploredHUD* HUD = BeaconSubsystemDetail::FindHUD(this))
+	{
+		HUD->ShowSubtitle(LOCTEXT("Driftwood", "Esta noche el mar ha dejado leña en la Cala Varada."), 5.0f);
+	}
 }
 
 void UBeaconSubsystem::Apply(const FBeaconStepResult& Result)

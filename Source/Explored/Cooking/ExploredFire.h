@@ -98,7 +98,9 @@ protected:
 private:
 	bool StartCooking(UExploredSurvivorComponent& Survivor, FName RecipeId);
 	bool LightWithRecipe(UExploredSurvivorComponent& Survivor);
-	bool Feed(UExploredSurvivorComponent& Survivor);
+	bool Feed(UExploredSurvivorComponent& Survivor, FName FuelItem);
+	/** Tarros de aceite de la mochila que la linterna ya no necesita (los únicos que se pueden quemar). */
+	int32 SpareOilJars(const UExploredSurvivorComponent& Survivor) const;
 	bool Collect(UExploredSurvivorComponent& Survivor);
 	void UpdateShelter();
 	void Refresh();

@@ -28,6 +28,9 @@
 #include "UI/Widgets/SExploredFade.h"
 #include "UI/Widgets/SExploredInventoryPanel.h"
 #include "UI/Widgets/SExploredMainMenu.h"
+#include "UI/Widgets/SExploredNotebook.h"
+#include "Narrative/BeaconTexts.h"
+#include "Narrative/NotebookModel.h"
 #include "UI/Widgets/SExploredPauseMenu.h"
 #include "UI/Widgets/SExploredSaveSlots.h"
 #include "UI/Widgets/SExploredSettingsPanel.h"
@@ -119,6 +122,11 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 			Viewport->RemoveViewportWidgetContent(InventoryPanel.ToSharedRef());
 		}
 	}
+	if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr; Viewport && NotebookWidget.IsValid())
+	{
+		Viewport->RemoveViewportWidgetContent(NotebookWidget.ToSharedRef());
+	}
+	NotebookWidget.Reset();
 	FadeWidget.Reset();
 	InventoryPanel.Reset();
 	CurrentFocusTarget.Reset();
@@ -137,12 +145,18 @@ void AExploredPlayerController::SetupInputComponent()
 	// bExecuteWhenPaused cubre el caso de que llegue aquí con el juego pausado.
 	InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
 	InputComponent->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AExploredPlayerController::HandleEscape).bExecuteWhenPaused = true;
+	InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AExploredPlayerController::ToggleNotebook).bExecuteWhenPaused = true;
 }
 
 void AExploredPlayerController::HandleEscape()
 {
 	if (bCutsceneActive)
 	{
+		return;
+	}
+	if (IsNotebookOpen())
+	{
+		CloseNotebook();
 		return;
 	}
 	using ExploredSettingsLogic::EMenuScreen;
@@ -193,6 +207,8 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 	UIMode = NewMode;
 	bShowMouseCursor = ExploredUI::ShouldShowCursor(NewMode);
 	SetPause(ExploredUI::ShouldPauseGame(NewMode));
+	// En el menú principal el mundo sigue vivo detrás (mar, nubes, cámara), pero la partida no corre.
+	FreezeWorldClock(NewMode == EExploredUIMode::Menu);
 
 	if (NewMode == EExploredUIMode::Playing)
 	{
@@ -248,6 +264,23 @@ void AExploredPlayerController::ApplyBackpackInputMode(bool bOpen)
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
+}
+
+void AExploredPlayerController::FreezeWorldClock(bool bFreeze)
+{
+	UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	if (!Time || bFreeze == (FrozenTimeScale >= 0.0f))
+	{
+		return;
+	}
+	if (bFreeze)
+	{
+		FrozenTimeScale = Time->GetTimeScale();
+		Time->SetTimeScale(0.0f);
+		return;
+	}
+	Time->SetTimeScale(FrozenTimeScale);
+	FrozenTimeScale = -1.0f;
 }
 
 AExploredMenuCamera* AExploredPlayerController::FindOrSpawnMenuCamera()
@@ -313,9 +346,16 @@ void AExploredPlayerController::ShowMainMenu()
 	UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
 	const bool bCanContinue = SaveSubsystem && SaveSubsystem->HasSaveGame();
 	// Una partida de la historia anterior (formato 1) no se carga: se explica en vez de fallar en silencio.
-	const FText Notice = SaveSubsystem && SaveSubsystem->HasObsoleteSave()
-		? NSLOCTEXT("ExploredUI", "MenuObsoleteSave", "La partida guardada es de una versión anterior del juego y no se puede continuar.")
-		: FText::GetEmpty();
+	if (MenuNotice.IsEmpty() && SaveSubsystem && SaveSubsystem->HasObsoleteSave())
+	{
+		MenuNotice = ObsoleteSaveNotice();
+	}
+	const FText Notice = MenuNotice;
+	// Fondo: la isla al atardecer con la baliza apagada (el reloj queda congelado ahí hasta jugar).
+	if (UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr)
+	{
+		Time->SetTime(1, MenuBackdropHour);
+	}
 
 	Navigation.Reset(ExploredSettingsLogic::EMenuScreen::MainMenu);
 	TSharedRef<SExploredMainMenu> Menu = SNew(SExploredMainMenu)
@@ -328,6 +368,19 @@ void AExploredPlayerController::ShowMainMenu()
 		.OnCredits(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenCredits))
 		.OnQuit(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::QuitToDesktop));
 	ShowOverlay(Menu, Menu->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::MainMenu);
+}
+
+FText AExploredPlayerController::ObsoleteSaveNotice()
+{
+	return NSLOCTEXT("ExploredUI", "MenuObsoleteSave",
+		"Hay una partida de una versión anterior del juego. No se puede continuar: empieza una nueva.");
+}
+
+void AExploredPlayerController::ShowMainMenuWithNotice(const FText& Notice)
+{
+	MenuNotice = Notice;
+	SetUIMode(EExploredUIMode::Menu);
+	ShowMainMenu();
 }
 
 void AExploredPlayerController::FadeIntoGameplay()
@@ -359,12 +412,20 @@ void AExploredPlayerController::FadeIntoGameplay()
 
 void AExploredPlayerController::ContinueGame()
 {
-	// Carga la ranura más reciente: cada sistema recibe su sección y el
-	// personaje vuelve a su posición (ver UExploredSaveSubsystem). Si no hay
-	// ninguna legible, se entra a jugar tal cual.
-	if (UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
+	// Carga la ranura más reciente: cada sistema recibe su sección y el personaje vuelve a su
+	// posición (ver UExploredSaveSubsystem). Si falla, se queda en el menú y lo explica.
+	UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
+	if (!SaveSubsystem || !SaveSubsystem->LoadContinueGame())
 	{
-		SaveSubsystem->LoadContinueGame();
+		UE_LOG(LogTemp, Warning, TEXT("[Explored] Continuar: no se pudo cargar la partida"));
+		ShowMainMenuWithNotice(NSLOCTEXT("ExploredUI", "ContinueFailed",
+			"No se ha podido cargar la partida guardada. Prueba con «Cargar» o empieza una nueva."));
+		return;
+	}
+	MenuNotice = FText::GetEmpty();
+	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
+	{
+		ExploredHUD->ClearTransient();
 	}
 	FadeIntoGameplay();
 }
@@ -375,6 +436,13 @@ void AExploredPlayerController::StartNewGame()
 	// normal de AGameModeBase; aquí se reinicia el estado de la partida y se
 	// retira el menú para entrar a jugar.
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Nueva partida"));
+	MenuNotice = FText::GetEmpty();
+	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
+	{
+		ExploredHUD->ClearTransient();
+	}
+	// La partida empieza con el reloj en marcha (BeginNewRun lo pone en el día 1, 07:00).
+	FreezeWorldClock(false);
 	if (const APawn* PlayerPawn = GetPawn())
 	{
 		if (UBodySignalsComponent* Body = PlayerPawn->FindComponentByClass<UBodySignalsComponent>())
@@ -395,10 +463,9 @@ void AExploredPlayerController::StartNewGame()
 	// Ayuda de inicio: los controles del GDD v3 §9.2 (el objetivo ya lo enseña el HUD).
 	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
 	{
-		const FLinearColor HelpColor(0.92f, 0.95f, 1.0f, 1.0f);
-		// PushNotification apila la más reciente arriba: se empuja en orden inverso al de lectura.
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · Esc pausa"), HelpColor, 10.0f);
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr"), HelpColor, 10.0f);
+		// Los avisos se apilan hacia arriba desde las barras: el último empujado queda abajo.
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr"), FLinearColor::White, 10.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · J cuaderno · Esc pausa"), FLinearColor::White, 10.0f);
 	}
 }
 
@@ -496,6 +563,11 @@ void AExploredPlayerController::LoadSlotAndPlay(const FString& SlotId)
 		UE_LOG(LogTemp, Warning, TEXT("[Explored] No se pudo cargar %s: %s"), *SlotId, *Error);
 		return;
 	}
+	MenuNotice = FText::GetEmpty();
+	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
+	{
+		ExploredHUD->ClearTransient();
+	}
 	FadeIntoGameplay();
 }
 
@@ -574,6 +646,69 @@ void AExploredPlayerController::ShowEndCredits()
 		return false;
 	}), FMath::Max(1.0f, EndCreditsSeconds));
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final"));
+}
+
+void AExploredPlayerController::ToggleNotebook()
+{
+	if (IsNotebookOpen())
+	{
+		CloseNotebook();
+	}
+	else
+	{
+		OpenNotebook();
+	}
+}
+
+void AExploredPlayerController::OpenNotebook()
+{
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	UGameViewportClient* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr;
+	if (IsNotebookOpen() || bCutsceneActive || UIMode != EExploredUIMode::Playing || !Beacon || !Viewport)
+	{
+		return;
+	}
+	if (AExploredCharacter* PlayerCharacter = Cast<AExploredCharacter>(GetPawn()); PlayerCharacter && PlayerCharacter->IsBackpackOpen())
+	{
+		PlayerCharacter->SetBackpackOpen(false);
+	}
+	const FBeaconTexts& Texts = ExploredBeaconTexts::Get();
+	TArray<FText> Pages;
+	TArray<FText> Notes;
+	for (int32 Page = 1; Page <= FNotebookModel::PageCount; ++Page)
+	{
+		Pages.Add(Texts.Get(FNotebookModel::PageTextId(Page)));
+		Notes.Add(Texts.Get(FNotebookModel::NoteTextId(Page)));
+	}
+	TSharedRef<SExploredNotebook> Widget = SNew(SExploredNotebook)
+		.PagesMask(Beacon->GetRunState().Notebook.PagesMask)
+		.PageTexts(Pages)
+		.NoteTexts(Notes)
+		.Objective(Beacon->GetObjectiveText())
+		.OnClose(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::CloseNotebook));
+	NotebookWidget = Widget;
+	Viewport->AddViewportWidgetContent(Widget, 450);
+	SetPause(true);
+	bShowMouseCursor = true;
+	FInputModeGameAndUI InputMode;
+	InputMode.SetWidgetToFocus(Widget);
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(InputMode);
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Cuaderno abierto (%d/8)"), FNotebookModel::ReadCount(Beacon->GetRunState().Notebook));
+}
+
+void AExploredPlayerController::CloseNotebook()
+{
+	if (!IsNotebookOpen())
+	{
+		return;
+	}
+	if (UGameViewportClient* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+	{
+		Viewport->RemoveViewportWidgetContent(NotebookWidget.ToSharedRef());
+	}
+	NotebookWidget.Reset();
+	SetUIMode(EExploredUIMode::Playing);
 }
 
 void AExploredPlayerController::QuitToDesktop()

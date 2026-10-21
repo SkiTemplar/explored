@@ -288,7 +288,14 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 
 	FSaveArchive PackArchive;
 	FBackpackState Pack;
-	if (Ar.Read(TEXT("backpack"), PackArchive) && ExploredSaveStates::LoadBackpack(PackArchive, Pack))
+	const bool bHasPack = Ar.Read(TEXT("backpack"), PackArchive);
+	const bool bPackOk = bHasPack && ExploredSaveStates::LoadBackpack(PackArchive, Pack);
+	if (!bPackOk)
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Isla] La mochila guardada %s: se conserva la actual"),
+			bHasPack ? TEXT("no es válida") : TEXT("no está en la partida"));
+	}
+	if (bPackOk)
 	{
 		const APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 		UExploredSurvivorComponent* Survivor = Pawn ? Pawn->FindComponentByClass<UExploredSurvivorComponent>() : nullptr;

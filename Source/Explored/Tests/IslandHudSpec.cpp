@@ -28,6 +28,8 @@ void FIslandHudSpec::Define()
 			TestEqual(TEXT("Baja"), FIslandHudModel::BarometerText(1007.6f, EBarometerTrend::Falling), FString(TEXT("1008 hPa ↓")));
 			TestEqual(TEXT("Sube"), FIslandHudModel::BarometerText(995.0f, EBarometerTrend::Rising), FString(TEXT("995 hPa ↑")));
 			TestEqual(TEXT("Estable"), FIslandHudModel::BarometerText(1014.0f, EBarometerTrend::Steady), FString(TEXT("1014 hPa →")));
+			TestEqual(TEXT("Sin flecha"), FIslandHudModel::BarometerValueText(1007.6f), FString(TEXT("1008 hPa")));
+			TestEqual(TEXT("No finito"), FIslandHudModel::BarometerValueText(NAN), FString(TEXT("0 hPa")));
 		});
 
 		It(TEXT("aviso «E · Verbo objeto», vacío si falta algo"), [this]()

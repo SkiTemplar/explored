@@ -227,11 +227,25 @@ void FBeaconSaveSpec::Define()
 		TestTrue(TEXT("Sin sección, partida nueva"), LoadPages(FSaveArchive(), Notebook));
 	});
 
-	It(TEXT("la mochila sin pilas no se lee y los ids vacíos se descartan"), [this]()
+	It(TEXT("la mochila sin pilas o con pilas inválidas no se lee y los ids vacíos se descartan"), [this]()
 	{
 		using namespace ExploredSaveStates;
 		FBackpackState Pack;
 		TestFalse(TEXT("Sin pilas"), LoadBackpack(FSaveArchive(), Pack));
+		const auto PackWith = [](const TCHAR* Id, int32 Count)
+		{
+			FSaveArchive Stack;
+			Stack.Write(TEXT("id"), FName(Id));
+			Stack.Write(TEXT("count"), Count);
+			FSaveArchive Ar;
+			Ar.Write(TEXT("stacks"), TArray<FSaveArchive>({ Stack }));
+			return Ar;
+		};
+		TestTrue(TEXT("Pila válida"), LoadBackpack(PackWith(TEXT("lena"), 2), Pack));
+		TestEqual(TEXT("Dos leñas"), Pack.Stacks.Num() > 0 ? Pack.Stacks[0].Count : 0, 2);
+		TestFalse(TEXT("Cantidad cero"), LoadBackpack(PackWith(TEXT("lena"), 0), Pack));
+		TestEqual(TEXT("Mochila vacía tras el rechazo"), Pack.Stacks.Num(), 0);
+		TestFalse(TEXT("Id vacío"), LoadBackpack(PackWith(TEXT(""), 1), Pack));
 		FSaveArchive Ids;
 		Ids.Write(TEXT("collected"), TArray<FString>({ TEXT("pagina_1"), TEXT(""), TEXT("lente") }));
 		TSet<FName> Collected;

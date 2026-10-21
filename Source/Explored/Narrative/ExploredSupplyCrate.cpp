@@ -28,7 +28,7 @@ TMap<FName, int32> AExploredSupplyCrate::CountIslandResources(const UWorld* Worl
 	}
 	for (TActorIterator<AExploredPickup> It(World); It; ++It)
 	{
-		if (!It->IsActorBeingDestroyed() && !It->GetItemId().IsNone() && It->GetCount() > 0)
+		if (It->IsAvailable() && !It->GetItemId().IsNone() && It->GetCount() > 0)
 		{
 			Remaining.FindOrAdd(It->GetItemId()) += It->GetCount();
 		}

@@ -70,4 +70,12 @@ struct EXPLORED_API FSupplyCrateModel
 		const FBeaconProgressState& Progress);
 	static FSupplyCrateOpenResult Open(const FSupplyCrateState& State, const TMap<FName, int32>& Inventory,
 		const FBeaconProgressState& Progress, const TMap<FName, int32>& WorldRemaining);
+
+	/**
+	 * Leña de deriva que el mar deja en Cala Varada al amanecer (cierra el softlock de quemar la leña
+	 * dos veces, docs/v3/estado-f3.md): la que falta para encender una hoguera si aún quedan tarros
+	 * por hervir y no hay ningún fuego encendido; 0 en otro caso. Se repite cada amanecer.
+	 */
+	static int32 DriftwoodAtDawn(const TMap<FName, int32>& Inventory, const FBeaconProgressState& Progress,
+		const TMap<FName, int32>& WorldRemaining, bool bAnyFireBurning);
 };

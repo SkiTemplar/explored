@@ -84,6 +84,8 @@ struct EXPLORED_API FBeaconFacts
 	int32 OilJarsInPack = 0;
 	bool bHasWick = false;
 	bool bHasLens = false;
+	/** La balsa está atada en Playa Norte (AExploredRaftSite). */
+	bool bRaftBuilt = false;
 };
 
 /** Estado de la partida que guarda el director (secciones «progress» y «pages»). */

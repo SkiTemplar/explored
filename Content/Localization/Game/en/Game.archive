@@ -427,6 +427,15 @@
 			"Children": [
 				{
 					"Source": {
+						"Text": "Esta noche el mar ha dejado leña en la Cala Varada."
+					},
+					"Translation": {
+						"Text": "Last night the sea left firewood in Cala Varada."
+					},
+					"Key": "Driftwood"
+				},
+				{
+					"Source": {
 						"Text": "Poner la lente"
 					},
 					"Translation": {
@@ -640,6 +649,182 @@
 			]
 		},
 		{
+			"Namespace": "ExploredCredits",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Mallas low poly generadas con Blender por script; una sola paleta de 41 colores"
+					},
+					"Translation": {
+						"Text": "Low poly meshes generated with Blender scripts; a single 41-colour palette"
+					},
+					"Key": "Art"
+				},
+				{
+					"Source": {
+						"Text": "Rodrigo Fernández"
+					},
+					"Translation": {
+						"Text": "Rodrigo Fernández"
+					},
+					"Key": "Author"
+				},
+				{
+					"Source": {
+						"Text": "Un juego de"
+					},
+					"Translation": {
+						"Text": "A game by"
+					},
+					"Key": "AuthorHeading"
+				},
+				{
+					"Source": {
+						"Text": "Volver"
+					},
+					"Translation": {
+						"Text": "Back"
+					},
+					"Key": "Back"
+				},
+				{
+					"Source": {
+						"Text": "Desarrollado con Claude (Anthropic)"
+					},
+					"Translation": {
+						"Text": "Developed with Claude (Anthropic)"
+					},
+					"Key": "Code"
+				},
+				{
+					"Source": {
+						"Text": "Programación, arte y sonido por código"
+					},
+					"Translation": {
+						"Text": "Code-made programming, art and sound"
+					},
+					"Key": "CodeHeading"
+				},
+				{
+					"Source": {
+						"Text": "Unreal Engine 5.6"
+					},
+					"Translation": {
+						"Text": "Unreal Engine 5.6"
+					},
+					"Key": "Engine"
+				},
+				{
+					"Source": {
+						"Text": "Motor"
+					},
+					"Translation": {
+						"Text": "Engine"
+					},
+					"Key": "EngineHeading"
+				},
+				{
+					"Source": {
+						"Text": "Lora, de The Lora Project Authors"
+					},
+					"Translation": {
+						"Text": "Lora, by The Lora Project Authors"
+					},
+					"Key": "Font"
+				},
+				{
+					"Source": {
+						"Text": "Tipografía"
+					},
+					"Translation": {
+						"Text": "Typeface"
+					},
+					"Key": "FontHeading"
+				},
+				{
+					"Source": {
+						"Text": "SIL Open Font License 1.1"
+					},
+					"Translation": {
+						"Text": "SIL Open Font License 1.1"
+					},
+					"Key": "FontLicense"
+				},
+				{
+					"Source": {
+						"Text": "Música adicional de Kevin MacLeod (incompetech.com)"
+					},
+					"Translation": {
+						"Text": "Additional music by Kevin MacLeod (incompetech.com)"
+					},
+					"Key": "MusicExtra"
+				},
+				{
+					"Source": {
+						"Text": "Música"
+					},
+					"Translation": {
+						"Text": "Music"
+					},
+					"Key": "MusicHeading"
+				},
+				{
+					"Source": {
+						"Text": "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados."
+					},
+					"Translation": {
+						"Text": "Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). Changes: normalised volume and trimmed silences."
+					},
+					"Key": "MusicLicense"
+				},
+				{
+					"Source": {
+						"Text": "Piezas compuestas por código para el juego"
+					},
+					"Translation": {
+						"Text": "Pieces composed in code for the game"
+					},
+					"Key": "MusicOwn"
+				},
+				{
+					"Source": {
+						"Text": "Isla de Sal"
+					},
+					"Translation": {
+						"Text": "Salt Island"
+					},
+					"Key": "Subtitle"
+				},
+				{
+					"Source": {
+						"Text": "Gracias por encender la baliza."
+					},
+					"Translation": {
+						"Text": "Thank you for lighting the beacon."
+					},
+					"Key": "Thanks"
+				},
+				{
+					"Source": {
+						"Text": "Baliza Siete"
+					},
+					"Translation": {
+						"Text": "Beacon Seven"
+					},
+					"Key": "Title"
+				},
+				{
+					"Source": {
+						"Text": "«{0}»"
+					},
+					"Translation": {
+						"Text": "\"{0}\""
+					},
+					"Key": "Track"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredInventory",
 			"Children": [
 				{
@@ -650,6 +835,15 @@
 						"Text": "Drop"
 					},
 					"Key": "Drop"
+				},
+				{
+					"Source": {
+						"Text": "La mochila está vacía."
+					},
+					"Translation": {
+						"Text": "The backpack is empty."
+					},
+					"Key": "Empty"
 				},
 				{
 					"Source": {
@@ -680,39 +874,21 @@
 				},
 				{
 					"Source": {
-						"Text": "Clic: usar, soltar o hacer · Tab: cerrar"
+						"Text": "Clic: elegir, usar o hacer · Tab: cerrar"
 					},
 					"Translation": {
-						"Text": "Click: use, drop or make · Tab: close"
+						"Text": "Click: select, use or craft · Tab: close"
 					},
 					"Key": "Hint"
 				},
 				{
 					"Source": {
-						"Text": "{0} {1}"
+						"Text": "×{0}"
 					},
 					"Translation": {
-						"Text": "{0} {1}"
+						"Text": "×{0}"
 					},
-					"Key": "InputAmount"
-				},
-				{
-					"Source": {
-						"Text": " + "
-					},
-					"Translation": {
-						"Text": " + "
-					},
-					"Key": "InputSeparator"
-				},
-				{
-					"Source": {
-						"Text": "{0}: {1}"
-					},
-					"Translation": {
-						"Text": "{0}: {1}"
-					},
-					"Key": "RecipeButton"
+					"Key": "InputCount"
 				},
 				{
 					"Source": {
@@ -725,10 +901,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Mochila ({0}/{1})"
+						"Text": "Mochila · {0}/{1}"
 					},
 					"Translation": {
-						"Text": "Backpack ({0}/{1})"
+						"Text": "Backpack · {0}/{1}"
 					},
 					"Key": "Title"
 				},
@@ -919,6 +1095,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Echar aceite sobrante"
+					},
+					"Translation": {
+						"Text": "Add spare oil"
+					},
+					"Key": "FireFeedOil"
+				},
+				{
+					"Source": {
 						"Text": "Encender"
 					},
 					"Translation": {
@@ -1069,6 +1254,83 @@
 						"Text": "Reel in"
 					},
 					"Key": "ReelIn"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredNotebook",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Faro de Isla de Sal · páginas {0}/{1}"
+					},
+					"Translation": {
+						"Text": "Salt Island lighthouse · pages {0}/{1}"
+					},
+					"Key": "Count"
+				},
+				{
+					"Source": {
+						"Text": "A / D: pasar página · J: cerrar"
+					},
+					"Translation": {
+						"Text": "A / D: turn page · J: close"
+					},
+					"Key": "Help"
+				},
+				{
+					"Source": {
+						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro."
+					},
+					"Translation": {
+						"Text": "You haven't found any page of Roig's logbook yet. Look in the lighthouse."
+					},
+					"Key": "NoPages"
+				},
+				{
+					"Source": {
+						"Text": "Objetivo"
+					},
+					"Translation": {
+						"Text": "Objective"
+					},
+					"Key": "Objective"
+				},
+				{
+					"Source": {
+						"Text": "Página {0}"
+					},
+					"Translation": {
+						"Text": "Page {0}"
+					},
+					"Key": "PageHeading"
+				},
+				{
+					"Source": {
+						"Text": "Página {0} · sin encontrar"
+					},
+					"Translation": {
+						"Text": "Page {0} · not found"
+					},
+					"Key": "PageMissing"
+				},
+				{
+					"Source": {
+						"Text": "Página {0}"
+					},
+					"Translation": {
+						"Text": "Page {0}"
+					},
+					"Key": "PageRead"
+				},
+				{
+					"Source": {
+						"Text": "Cuaderno de guardia"
+					},
+					"Translation": {
+						"Text": "Keeper's logbook"
+					},
+					"Key": "Title"
 				}
 			]
 		},
@@ -1334,21 +1596,21 @@
 				},
 				{
 					"Source": {
+						"Text": "No se ha podido cargar la partida guardada. Prueba con «Cargar» o empieza una nueva."
+					},
+					"Translation": {
+						"Text": "The saved game could not be loaded. Try «Load» or start a new game."
+					},
+					"Key": "ContinueFailed"
+				},
+				{
+					"Source": {
 						"Text": "Créditos"
 					},
 					"Translation": {
 						"Text": "Credits"
 					},
 					"Key": "Credits"
-				},
-				{
-					"Source": {
-						"Text": "Terreno, props, texturas, sonido y música generados por código"
-					},
-					"Translation": {
-						"Text": "Terrain, props, textures, sound and music generated in code"
-					},
-					"Key": "CreditsArt"
 				},
 				{
 					"Source": {
@@ -1361,66 +1623,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Desarrollado con Claude (Anthropic)"
-					},
-					"Translation": {
-						"Text": "Made with Claude (Anthropic)"
-					},
-					"Key": "CreditsClaude"
-				},
-				{
-					"Source": {
-						"Text": "Motor: Unreal Engine 5.6"
-					},
-					"Translation": {
-						"Text": "Engine: Unreal Engine 5.6"
-					},
-					"Key": "CreditsEngine"
-				},
-				{
-					"Source": {
-						"Text": "Modelos 3D de vegetación"
-					},
-					"Translation": {
-						"Text": "3D vegetation models"
-					},
-					"Key": "CreditsModelsTitle"
-				},
-				{
-					"Source": {
-						"Text": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"
-					},
-					"Translation": {
-						"Text": "“Rubber tree”, “Macassar tree”, “Tree”, “Brazil nut tree”, “Balsa tree”, “Tree roots”, “Banana Tree”, “Heliconia flower”, “Bromeliad” and “Hibiscus flower” by Poly by Google (CC BY 3.0), via Poly Pizza"
-					},
-					"Key": "CreditsPolyGoogle"
-				},
-				{
-					"Source": {
-						"Text": "Quaternius y Kenney (CC0), vía Poly Pizza"
-					},
-					"Translation": {
-						"Text": "Quaternius and Kenney (CC0), via Poly Pizza"
-					},
-					"Key": "CreditsQuaternius"
-				},
-				{
-					"Source": {
 						"Text": "BALIZA SIETE"
 					},
 					"Translation": {
 						"Text": "BEACON SEVEN"
 					},
 					"Key": "CreditsTitle"
-				},
-				{
-					"Source": {
-						"Text": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"
-					},
-					"Translation": {
-						"Text": "“Vine Covered Tree” by Zacharylll (CC BY 3.0), via Poly Pizza"
-					},
-					"Key": "CreditsZacharylll"
 				},
 				{
 					"Source": {
@@ -1439,15 +1647,6 @@
 						"Text": "{0} min"
 					},
 					"Key": "DayLengthMinutes"
-				},
-				{
-					"Source": {
-						"Text": "Efectos"
-					},
-					"Translation": {
-						"Text": "Effects"
-					},
-					"Key": "Effects"
 				},
 				{
 					"Source": {
@@ -1478,30 +1677,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Vegetación"
-					},
-					"Translation": {
-						"Text": "Foliage"
-					},
-					"Key": "Foliage"
-				},
-				{
-					"Source": {
 						"Text": "Límite de FPS"
 					},
 					"Translation": {
 						"Text": "FPS limit"
 					},
 					"Key": "FpsLimit"
-				},
-				{
-					"Source": {
-						"Text": "Iluminación global"
-					},
-					"Translation": {
-						"Text": "Global illumination"
-					},
-					"Key": "GI"
 				},
 				{
 					"Source": {
@@ -1523,10 +1704,10 @@
 				},
 				{
 					"Source": {
-						"Text": "E interactuar · Tab mochila · Esc pausa"
+						"Text": "E interactuar · Tab mochila · J cuaderno · Esc pausa"
 					},
 					"Translation": {
-						"Text": "E interact · Tab backpack · Esc pause"
+						"Text": "E interact · Tab backpack · J notebook · Esc pause"
 					},
 					"Key": "HelpUse"
 				},
@@ -1586,10 +1767,10 @@
 				},
 				{
 					"Source": {
-						"Text": "La partida guardada es de una versión anterior del juego y no se puede continuar."
+						"Text": "Hay una partida de una versión anterior del juego. No se puede continuar: empieza una nueva."
 					},
 					"Translation": {
-						"Text": "The saved game is from an earlier version of the game and can't be continued."
+						"Text": "There is a save from an earlier version of the game. It cannot be continued: start a new game."
 					},
 					"Key": "MenuObsoleteSave"
 				},
@@ -1658,15 +1839,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Postproceso"
-					},
-					"Translation": {
-						"Text": "Post-process"
-					},
-					"Key": "PostProcess"
-				},
-				{
-					"Source": {
 						"Text": "Pulsa una tecla..."
 					},
 					"Translation": {
@@ -1682,24 +1854,6 @@
 						"Text": "Sleep"
 					},
 					"Key": "PromptSleep"
-				},
-				{
-					"Source": {
-						"Text": "Cinemática"
-					},
-					"Translation": {
-						"Text": "Cinematic"
-					},
-					"Key": "QualityCinematic"
-				},
-				{
-					"Source": {
-						"Text": "Épica"
-					},
-					"Translation": {
-						"Text": "Epic"
-					},
-					"Key": "QualityEpic"
 				},
 				{
 					"Source": {
@@ -1754,15 +1908,6 @@
 						"Text": "Reduce motion"
 					},
 					"Key": "ReduceMotion"
-				},
-				{
-					"Source": {
-						"Text": "Reflejos"
-					},
-					"Translation": {
-						"Text": "Reflections"
-					},
-					"Key": "Reflections"
 				},
 				{
 					"Source": {
@@ -1862,15 +2007,6 @@
 						"Text": "Settings"
 					},
 					"Key": "Settings"
-				},
-				{
-					"Source": {
-						"Text": "Sombras"
-					},
-					"Translation": {
-						"Text": "Shadows"
-					},
-					"Key": "Shadows"
 				},
 				{
 					"Source": {
@@ -2162,19 +2298,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Texturas"
+						"Text": "Baliza Siete"
 					},
 					"Translation": {
-						"Text": "Textures"
-					},
-					"Key": "Textures"
-				},
-				{
-					"Source": {
-						"Text": "BALIZA SIETE"
-					},
-					"Translation": {
-						"Text": "BEACON SEVEN"
+						"Text": "Beacon Seven"
 					},
 					"Key": "Title"
 				},
@@ -2198,15 +2325,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Vista"
-					},
-					"Translation": {
-						"Text": "View range"
-					},
-					"Key": "ViewDistance"
-				},
-				{
-					"Source": {
 						"Text": "Ambiente"
 					},
 					"Translation": {
@@ -2225,30 +2343,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Maestro"
-					},
-					"Translation": {
-						"Text": "Master"
-					},
-					"Key": "VolMaster"
-				},
-				{
-					"Source": {
 						"Text": "Música"
 					},
 					"Translation": {
 						"Text": "Music"
 					},
 					"Key": "VolMusic"
-				},
-				{
-					"Source": {
-						"Text": "Interfaz"
-					},
-					"Translation": {
-						"Text": "Interface"
-					},
-					"Key": "VolUI"
 				},
 				{
 					"Source": {

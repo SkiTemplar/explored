@@ -16,6 +16,7 @@
 
 namespace LighthouseLampDetail
 {
+	constexpr float IdleTickSeconds = 0.5f;
 	const TCHAR* const LensMesh = TEXT("/Game/Art/K3_Objetos/SM_Lente_01.SM_Lente_01");
 	const TCHAR* const OilMesh = TEXT("/Game/Art/K3_Objetos/SM_TarroAceite_01.SM_TarroAceite_01");
 	const TCHAR* const WickMesh = TEXT("/Game/Art/K3_Objetos/SM_Mecha_01.SM_Mecha_01");
@@ -41,8 +42,9 @@ namespace LighthouseLampDetail
 
 ALighthouseLamp::ALighthouseLamp()
 {
+	// Apagada solo mira el progreso dos veces por segundo; encendida gira el haz cada fotograma.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.0f;
+	PrimaryActorTick.TickInterval = LighthouseLampDetail::IdleTickSeconds;
 
 	Beam = CreateDefaultSubobject<USpotLightComponent>(TEXT("Beam"));
 	Beam->SetupAttachment(Root);
@@ -171,6 +173,7 @@ void ALighthouseLamp::RefreshFromProgress()
 		bShowingLit = Progress.bBeaconLit;
 		Beam->SetVisibility(bShowingLit);
 		Glow->SetVisibility(bShowingLit);
+		SetActorTickInterval(bShowingLit ? 0.0f : LighthouseLampDetail::IdleTickSeconds);
 	}
 }
 

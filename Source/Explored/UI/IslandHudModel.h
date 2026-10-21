@@ -34,6 +34,9 @@ struct EXPLORED_API FIslandHudModel
 	/** «1008 hPa ↓» (↑ sube, ↓ baja, → estable). */
 	static FString BarometerText(float Hpa, EBarometerTrend Trend);
 
+	/** «1008 hPa» sin flecha (el HUD la dibuja como icono). No finito = 0. */
+	static FString BarometerValueText(float Hpa);
+
 	/** «E · Beber coco». Sin tecla o sin texto, vacío. */
 	static FString PromptText(const FString& KeyName, const FString& VerbAndObject);
 

@@ -37,6 +37,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Recolección")
 	int32 GetCount() const { return Count; }
 
+	/** Se puede coger: no está recogido (oculto) ni destruyéndose. */
+	bool IsAvailable() const { return !bTaken && !IsActorBeingDestroyed(); }
+
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
 	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;
 	virtual void Interact_Implementation(AActor* InInstigator) override;
@@ -50,12 +53,16 @@ protected:
 
 private:
 	void Collect(AActor* InInstigator);
+	/** Oculta (recogido) o vuelve a mostrar un recurso colocado. */
+	void SetTaken(bool bInTaken);
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Recolección")
 	FName ItemId;
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Recolección")
 	int32 Count = 1;
+
+	bool bTaken = false;
 
 	/** Soltado en partida: al cogerlo se borra de la lista de soltados en vez de marcarse recogido. */
 	bool bLoose = false;

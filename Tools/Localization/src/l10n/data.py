@@ -89,6 +89,7 @@ def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
 
 FIELDS: list[FieldSpec] = [
     FieldSpec("items.json", "items", _list, "nameEs", "nameEn", "nombre del objeto (mano, suelo, mochila)"),
+    FieldSpec("items.json", "items", _list, "descEs", "descEn", "descripción breve del objeto (inventario)"),
         FieldSpec("verbs.json", "verbs", _list, "nameEs", "nameEn", "verbo de fabricación"),
     FieldSpec("verbs.json", "verbs", _list, "description", "descriptionEn", "ayuda del verbo"),
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "barra del cuerpo (HUD)"),

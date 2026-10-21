@@ -86,6 +86,10 @@ namespace BeaconDirectorDetail
 				break;
 			}
 		}
+		if (Facts.bRaftBuilt && !Result.State.Progress.bRaftBuilt)
+		{
+			Record(Result, EBeaconMilestone::RaftBuilt);
+		}
 		if (Facts.bHasWick && !Result.State.Progress.bWickMade)
 		{
 			Record(Result, EBeaconMilestone::WickMade);

@@ -5,9 +5,17 @@
 
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
+#include "WorldGen/IslandPropsLoader.h"
+#include "WorldGen/IslandPropsModel.h"
 
 namespace ExploredMenuCameraDetail
 {
+	/** Órbita lenta alrededor del faro (GDD v3 §9.2: la isla al atardecer con la baliza apagada). */
+	constexpr float LighthouseOrbitRadiusCm = 15000.0f;
+	constexpr float LighthouseOrbitHeightCm = 3600.0f;
+	constexpr float LighthouseLookHeightCm = 1400.0f;
+	constexpr float LighthouseOrbitDegreesPerSecond = 1.2f;
+	const FName TowerProp(TEXT("faro_torre"));
 	/** Órbita sobre la isla de llegada: distancia en radios de isla, altura y velocidad. */
 	constexpr float LandingOrbitRadii = 1.45f;
 	constexpr float LandingOrbitHeightCm = 13000.0f;
@@ -33,6 +41,18 @@ void AExploredMenuCamera::BeginPlay()
 	Super::BeginPlay();
 	if (!bOrbitLandingIsland)
 	{
+		return;
+	}
+	using namespace ExploredMenuCameraDetail;
+	if (const FIslandProp* Tower = ExploredIslandProps::Get()->FindProp(TowerProp))
+	{
+		const FVector Base = IslandPropsPlacement::WorldLocation(*Tower, 0.0f);
+		OrbitCenter = Base + FVector(0.0, 0.0, LighthouseLookHeightCm);
+		OrbitRadius = LighthouseOrbitRadiusCm;
+		OrbitHeight = LighthouseOrbitHeightCm;
+		OrbitDegreesPerSecond = LighthouseOrbitDegreesPerSecond;
+		// Empieza con el sol de la tarde detrás del faro (oeste, -Y en island.json).
+		OrbitAngleDeg = 70.0f;
 		return;
 	}
 	const FIslandLayout Layout = *ExploredIsland::Get();

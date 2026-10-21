@@ -86,6 +86,10 @@ namespace IslandDataDetail
 			Obj->TryGetStringField(TEXT("nameEs"), Es);
 			Obj->TryGetStringField(TEXT("nameEn"), En);
 			Data.ItemNames.Add(Rule.Id, TPair<FString, FString>(Es, En));
+			FString DescEs, DescEn;
+			Obj->TryGetStringField(TEXT("descEs"), DescEs);
+			Obj->TryGetStringField(TEXT("descEn"), DescEn);
+			Data.ItemDescriptions.Add(Rule.Id, TPair<FString, FString>(DescEs, DescEn));
 		}
 		if (Rules.Items.Num() > 0)
 		{
@@ -522,6 +526,17 @@ void ExploredIslandData::Reload()
 		UE_LOG(LogExplored, Warning, TEXT("[Isla] %s (se usan los valores por defecto)"), *Error);
 	}
 	Cache() = MoveTemp(Data);
+}
+
+FText ExploredIslandData::ItemDescription(FName ItemId)
+{
+	const TPair<FString, FString>* Texts = Get().ItemDescriptions.Find(ItemId);
+	if (!Texts)
+	{
+		return FText::GetEmpty();
+	}
+	const FString Culture = FInternationalization::Get().GetCurrentCulture()->GetName();
+	return FText::FromString(ExploredLocalization::Pick(Texts->Key, Texts->Value, Culture));
 }
 
 FText ExploredIslandData::ItemName(FName ItemId)

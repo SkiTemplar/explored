@@ -1,292 +1,1101 @@
 {
 	"Explored": {
-		"Title": { "es": "Explored", "en": "Explored" },
-		"Carry_NeedBothHands": { "es": "Necesitas las dos manos libres para esto.", "en": "You need both hands free for this." },
-		"Carry_HandsFull": { "es": "Tienes las dos manos ocupadas.", "en": "Both your hands are full." },
-		"Carry_NothingToPickUp": { "es": "Aquí no hay nada que coger.", "en": "There's nothing here to pick up." },
-		"Carry_InvalidItem": { "es": "Ese objeto no se puede coger.", "en": "You can't pick that up." },
-		"Carry_HandEmpty": { "es": "No llevas nada en esa mano.", "en": "That hand is empty." },
-		"Carry_TwoHandedNoStore": { "es": "Eso ocupa las dos manos: no se guarda.", "en": "That takes both hands; it can't be stowed." },
-		"Carry_PocketTooSmall": { "es": "Solo los objetos pequeños caben en los bolsillos.", "en": "Only small things fit in your pockets." },
-		"Carry_PocketsFull": { "es": "Los bolsillos están llenos.", "en": "Your pockets are full." },
-		"Carry_BeltNotTool": { "es": "El cinturón solo lleva herramientas o recipientes.", "en": "Your belt only holds tools and containers." },
-		"Carry_BeltFull": { "es": "El cinturón no tiene enganches libres.", "en": "No free loops left on your belt." },
-		"Carry_NoBackpack": { "es": "No tienes mochila.", "en": "You have no backpack." },
-		"Carry_BackpackTooHeavy": { "es": "Pesa demasiado para la mochila.", "en": "Too heavy for the backpack." },
-		"Carry_BackpackTooBig": { "es": "No entra en la mochila.", "en": "It won't fit in the backpack." },
-		"Carry_HandOccupied": { "es": "Esa mano ya está ocupada.", "en": "That hand is already full." },
-		"Carry_InvalidSlotIndex": { "es": "Ahí no hay nada.", "en": "Nothing there." },
-		"Crafting_NoRegistry": { "es": "El registro de objetos no está disponible.", "en": "The item registry isn't available." },
-		"Crafting_NeedTwo": { "es": "Necesitas un objeto en cada mano.", "en": "You need something in each hand." },
-		"Crafting_NoMatch": { "es": "Estos objetos no se pueden combinar así.", "en": "These don't go together that way." },
-		"Verb_PickUp": { "es": "Coger {0}", "en": "Pick up {0}" },
-		"Boat_Canoe": { "es": "la canoa", "en": "the canoe" },
-		"Boat_Outrigger": { "es": "la canoa con balancín", "en": "the outrigger canoe" },
-		"Boat_Raft": { "es": "la balsa", "en": "the raft" },
-		"Carry_AlreadyThere": { "es": "Ya está ahí.", "en": "Already there." },
-		"Carry_ContainerFull": { "es": "No queda sitio.", "en": "No room left." },
-		"Carry_ContainerNotEmpty": { "es": "Vacíalo antes.", "en": "Empty it first." },
-		"Carry_Generic": { "es": "No se puede.", "en": "Can't do that." },
-		"Carry_NoPouch": { "es": "No tienes dónde guardarlo seco.", "en": "You have nowhere to keep it dry." },
-		"Carry_NoRoom": { "es": "No entra.", "en": "Won't fit." },
-		"Carry_NoSledge": { "es": "No llevas angarillas.", "en": "You have no travois." },
-		"Carry_NotALiquidContainer": { "es": "Ahí no se lleva agua.", "en": "That can't hold water." },
-		"Carry_NotEquippable": { "es": "Eso no se lleva puesto.", "en": "You can't wear that." },
-		"Carry_OverCarryLimit": { "es": "No puedes con más peso.", "en": "You can't carry more." },
-		"Carry_SameItem": { "es": "Es un solo objeto: no se combina consigo mismo.", "en": "It's a single object: it can't combine with itself." },
-		"Carry_SledgeAttached": { "es": "Ya arrastras unas angarillas.", "en": "You're already dragging a travois." },
-		"Carry_SledgeOnlyMaterial": { "es": "Las angarillas son para madera y piedra.", "en": "The travois is for wood and stone." },
-		"Carry_TooBig": { "es": "Es demasiado grande para guardarlo ahí.", "en": "It's too big to store there." },
-		"Carry_TooHeavy": { "es": "Pesa demasiado.", "en": "It's too heavy." },
-		"Carry_WrongKind": { "es": "Eso no se guarda ahí.", "en": "That doesn't go there." },
-		"Container_Basket": { "es": "cesta", "en": "basket" },
-		"Container_Chest": { "es": "arcón", "en": "chest" },
-		"Container_Shelf": { "es": "estante", "en": "shelf" },
-		"Verb_Board": { "es": "Subir a {0}", "en": "Board {0}" },
-		"Verb_RightBoat": { "es": "Adrizar {0}", "en": "Right {0}" },
-		"Verb_StoreIn": { "es": "Guardar en {0}", "en": "Put in {0}" },
-		"Verb_TakeFrom": { "es": "Sacar de {0}", "en": "Take from {0}" }
+		"Title": {
+			"es": "Explored",
+			"en": "Explored"
+		},
+		"Carry_NeedBothHands": {
+			"es": "Necesitas las dos manos libres para esto.",
+			"en": "You need both hands free for this."
+		},
+		"Carry_HandsFull": {
+			"es": "Tienes las dos manos ocupadas.",
+			"en": "Both your hands are full."
+		},
+		"Carry_NothingToPickUp": {
+			"es": "Aquí no hay nada que coger.",
+			"en": "There's nothing here to pick up."
+		},
+		"Carry_InvalidItem": {
+			"es": "Ese objeto no se puede coger.",
+			"en": "You can't pick that up."
+		},
+		"Carry_HandEmpty": {
+			"es": "No llevas nada en esa mano.",
+			"en": "That hand is empty."
+		},
+		"Carry_TwoHandedNoStore": {
+			"es": "Eso ocupa las dos manos: no se guarda.",
+			"en": "That takes both hands; it can't be stowed."
+		},
+		"Carry_PocketTooSmall": {
+			"es": "Solo los objetos pequeños caben en los bolsillos.",
+			"en": "Only small things fit in your pockets."
+		},
+		"Carry_PocketsFull": {
+			"es": "Los bolsillos están llenos.",
+			"en": "Your pockets are full."
+		},
+		"Carry_BeltNotTool": {
+			"es": "El cinturón solo lleva herramientas o recipientes.",
+			"en": "Your belt only holds tools and containers."
+		},
+		"Carry_BeltFull": {
+			"es": "El cinturón no tiene enganches libres.",
+			"en": "No free loops left on your belt."
+		},
+		"Carry_NoBackpack": {
+			"es": "No tienes mochila.",
+			"en": "You have no backpack."
+		},
+		"Carry_BackpackTooHeavy": {
+			"es": "Pesa demasiado para la mochila.",
+			"en": "Too heavy for the backpack."
+		},
+		"Carry_BackpackTooBig": {
+			"es": "No entra en la mochila.",
+			"en": "It won't fit in the backpack."
+		},
+		"Carry_HandOccupied": {
+			"es": "Esa mano ya está ocupada.",
+			"en": "That hand is already full."
+		},
+		"Carry_InvalidSlotIndex": {
+			"es": "Ahí no hay nada.",
+			"en": "Nothing there."
+		},
+		"Crafting_NoRegistry": {
+			"es": "El registro de objetos no está disponible.",
+			"en": "The item registry isn't available."
+		},
+		"Crafting_NeedTwo": {
+			"es": "Necesitas un objeto en cada mano.",
+			"en": "You need something in each hand."
+		},
+		"Crafting_NoMatch": {
+			"es": "Estos objetos no se pueden combinar así.",
+			"en": "These don't go together that way."
+		},
+		"Verb_PickUp": {
+			"es": "Coger {0}",
+			"en": "Pick up {0}"
+		},
+		"Boat_Canoe": {
+			"es": "la canoa",
+			"en": "the canoe"
+		},
+		"Boat_Outrigger": {
+			"es": "la canoa con balancín",
+			"en": "the outrigger canoe"
+		},
+		"Boat_Raft": {
+			"es": "la balsa",
+			"en": "the raft"
+		},
+		"Carry_AlreadyThere": {
+			"es": "Ya está ahí.",
+			"en": "Already there."
+		},
+		"Carry_ContainerFull": {
+			"es": "No queda sitio.",
+			"en": "No room left."
+		},
+		"Carry_ContainerNotEmpty": {
+			"es": "Vacíalo antes.",
+			"en": "Empty it first."
+		},
+		"Carry_Generic": {
+			"es": "No se puede.",
+			"en": "Can't do that."
+		},
+		"Carry_NoPouch": {
+			"es": "No tienes dónde guardarlo seco.",
+			"en": "You have nowhere to keep it dry."
+		},
+		"Carry_NoRoom": {
+			"es": "No entra.",
+			"en": "Won't fit."
+		},
+		"Carry_NoSledge": {
+			"es": "No llevas angarillas.",
+			"en": "You have no travois."
+		},
+		"Carry_NotALiquidContainer": {
+			"es": "Ahí no se lleva agua.",
+			"en": "That can't hold water."
+		},
+		"Carry_NotEquippable": {
+			"es": "Eso no se lleva puesto.",
+			"en": "You can't wear that."
+		},
+		"Carry_OverCarryLimit": {
+			"es": "No puedes con más peso.",
+			"en": "You can't carry more."
+		},
+		"Carry_SameItem": {
+			"es": "Es un solo objeto: no se combina consigo mismo.",
+			"en": "It's a single object: it can't combine with itself."
+		},
+		"Carry_SledgeAttached": {
+			"es": "Ya arrastras unas angarillas.",
+			"en": "You're already dragging a travois."
+		},
+		"Carry_SledgeOnlyMaterial": {
+			"es": "Las angarillas son para madera y piedra.",
+			"en": "The travois is for wood and stone."
+		},
+		"Carry_TooBig": {
+			"es": "Es demasiado grande para guardarlo ahí.",
+			"en": "It's too big to store there."
+		},
+		"Carry_TooHeavy": {
+			"es": "Pesa demasiado.",
+			"en": "It's too heavy."
+		},
+		"Carry_WrongKind": {
+			"es": "Eso no se guarda ahí.",
+			"en": "That doesn't go there."
+		},
+		"Container_Basket": {
+			"es": "cesta",
+			"en": "basket"
+		},
+		"Container_Chest": {
+			"es": "arcón",
+			"en": "chest"
+		},
+		"Container_Shelf": {
+			"es": "estante",
+			"en": "shelf"
+		},
+		"Verb_Board": {
+			"es": "Subir a {0}",
+			"en": "Board {0}"
+		},
+		"Verb_RightBoat": {
+			"es": "Adrizar {0}",
+			"en": "Right {0}"
+		},
+		"Verb_StoreIn": {
+			"es": "Guardar en {0}",
+			"en": "Put in {0}"
+		},
+		"Verb_TakeFrom": {
+			"es": "Sacar de {0}",
+			"en": "Take from {0}"
+		}
 	},
 	"ExploredUI": {
-		"PromptSleep": { "es": "Dormir", "en": "Sleep" },
-		"Title": { "es": "BALIZA SIETE", "en": "BEACON SEVEN" },
-		"Subtitle": { "es": "Isla de Sal", "en": "Salt Island" },
-		"MenuObsoleteSave": { "es": "La partida guardada es de una versión anterior del juego y no se puede continuar.", "en": "The saved game is from an earlier version of the game and can't be continued." },
-		"SlotObsolete": { "es": "Guardada con una versión anterior: no se puede cargar", "en": "Saved with an earlier version: can't be loaded" },
-		"NewGame": { "es": "Nueva partida", "en": "New game" },
-		"Continue": { "es": "Continuar", "en": "Continue" },
-		"Settings": { "es": "Ajustes", "en": "Settings" },
-		"Credits": { "es": "Créditos", "en": "Credits" },
-		"Quit": { "es": "Salir", "en": "Quit" },
-		"Back": { "es": "Volver", "en": "Back" },
-		"CreditsTitle": { "es": "BALIZA SIETE", "en": "BEACON SEVEN" },
-		"CreditsAuthor": { "es": "Un juego de Rodrigo Fernández", "en": "A game by Rodrigo Fernández" },
-		"CreditsClaude": { "es": "Desarrollado con Claude (Anthropic)", "en": "Made with Claude (Anthropic)" },
-		"CreditsEngine": { "es": "Motor: Unreal Engine 5.6", "en": "Engine: Unreal Engine 5.6" },
-		"CreditsArt": { "es": "Terreno, props, texturas, sonido y música generados por código", "en": "Terrain, props, textures, sound and music generated in code" },
-		"Paused": { "es": "Pausa", "en": "Paused" },
-		"Resume": { "es": "Reanudar", "en": "Resume" },
-		"SaveGame": { "es": "Guardar partida", "en": "Save game" },
-		"ExitToMenu": { "es": "Salir al menú", "en": "Exit to menu" },
-		"QuitGame": { "es": "Salir del juego", "en": "Quit game" },
-		"PressAnyKey": { "es": "Pulsa una tecla...", "en": "Press a key..." },
-		"NoKey": { "es": "(sin asignar)", "en": "(unbound)" },
-		"TabGraphics": { "es": "Gráficos", "en": "Graphics" },
-		"TabAudio": { "es": "Audio", "en": "Audio" },
-		"TabControls": { "es": "Controles", "en": "Controls" },
-		"TabGame": { "es": "Juego", "en": "Game" },
-		"TabAccessibility": { "es": "Accesibilidad", "en": "Accessibility" },
-		"SectionDisplay": { "es": "Pantalla", "en": "Display" },
-		"Resolution": { "es": "Resolución", "en": "Resolution" },
-		"WindowMode": { "es": "Modo de ventana", "en": "Window mode" },
-		"WindowFullscreen": { "es": "Pantalla completa", "en": "Fullscreen" },
-		"WindowBorderless": { "es": "Ventana sin bordes", "en": "Borderless window" },
-		"WindowWindowed": { "es": "Ventana", "en": "Windowed" },
-		"VSync": { "es": "VSync", "en": "VSync" },
-		"FpsLimit": { "es": "Límite de FPS", "en": "FPS limit" },
-		"Unlimited": { "es": "Sin límite", "en": "Unlimited" },
-		"Brightness": { "es": "Brillo", "en": "Brightness" },
-		"SectionQuality": { "es": "Calidad", "en": "Quality" },
-		"OverallQuality": { "es": "Calidad general", "en": "Overall quality" },
-		"QualityLow": { "es": "Baja", "en": "Low" },
-		"QualityMedium": { "es": "Media", "en": "Medium" },
-		"QualityHigh": { "es": "Alta", "en": "High" },
-		"QualityEpic": { "es": "Épica", "en": "Epic" },
-		"QualityCinematic": { "es": "Cinemática", "en": "Cinematic" },
-		"ViewDistance": { "es": "Vista", "en": "View range" },
-		"Shadows": { "es": "Sombras", "en": "Shadows" },
-		"GI": { "es": "Iluminación global", "en": "Global illumination" },
-		"Reflections": { "es": "Reflejos", "en": "Reflections" },
-		"PostProcess": { "es": "Postproceso", "en": "Post-process" },
-		"Textures": { "es": "Texturas", "en": "Textures" },
-		"Effects": { "es": "Efectos", "en": "Effects" },
-		"Foliage": { "es": "Vegetación", "en": "Foliage" },
-		"VolMaster": { "es": "Maestro", "en": "Master" },
-		"VolMusic": { "es": "Música", "en": "Music" },
-		"VolEffects": { "es": "Efectos", "en": "Effects" },
-		"VolAmbient": { "es": "Ambiente", "en": "Ambience" },
-		"VolUI": { "es": "Interfaz", "en": "Interface" },
-		"MouseSensitivity": { "es": "Sensibilidad del ratón", "en": "Mouse sensitivity" },
-		"GamepadSensitivity": { "es": "Sensibilidad del mando", "en": "Controller sensitivity" },
-		"InvertY": { "es": "Invertir eje Y", "en": "Invert Y axis" },
-		"FOV": { "es": "Campo de visión", "en": "Field of view" },
-		"CameraBob": { "es": "Balanceo de cámara", "en": "Camera bob" },
-		"HoldCrouch": { "es": "Agacharse manteniendo pulsado", "en": "Hold to crouch" },
-		"SectionRemap": { "es": "Remapeo de teclas", "en": "Key bindings" },
-		"ActionJump": { "es": "Saltar", "en": "Jump" },
-		"ActionSprint": { "es": "Correr", "en": "Sprint" },
-		"DayLength": { "es": "Duración del día", "en": "Day length" },
-		"DayLengthMinutes": { "es": "{0} min", "en": "{0} min", "nota": "FText::Format(..., FText::AsNumber(Minutes))." },
-		"Subtitles": { "es": "Subtítulos", "en": "Subtitles" },
-		"TextSize": { "es": "Tamaño del texto", "en": "Text size" },
-		"TextSmall": { "es": "Pequeño", "en": "Small" },
-		"TextMedium": { "es": "Mediano", "en": "Medium" },
-		"TextLarge": { "es": "Grande", "en": "Large" },
-		"Language": { "es": "Idioma", "en": "Language" },
-		"LangEs": { "es": "Español", "en": "Español", "nota": "Cada idioma se nombra en su propia lengua." },
-		"LangEn": { "es": "English", "en": "English", "nota": "Cada idioma se nombra en su propia lengua." },
-		"Colorblind": { "es": "Modo daltónico", "en": "Colour-blind mode" },
-		"CVDNone": { "es": "Ninguno", "en": "None" },
-		"CVDProtanopia": { "es": "Protanopía", "en": "Protanopia" },
-		"CVDDeuteranopia": { "es": "Deuteranopía", "en": "Deuteranopia" },
-		"CVDTritanopia": { "es": "Tritanopía", "en": "Tritanopia" },
-		"ReduceMotion": { "es": "Reducir movimiento", "en": "Reduce motion" },
-		"NoFlashing": { "es": "Desactivar destellos", "en": "Disable flashing" },
-		"SoundCues": { "es": "Avisos visuales de sonido", "en": "Visual sound cues" },
-		"Apply": { "es": "Aplicar", "en": "Apply" },
-		"RestoreDefaults": { "es": "Restaurar valores por defecto", "en": "Restore defaults" },
-		"InteractPrompt": { "es": "[{Key}] {Actions}", "en": "[{Key}] {Actions}", "nota": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)." },
-		"ActionBackpack": { "es": "Mochila", "en": "Backpack" },
-		"ActionCombine": { "es": "Combinar", "en": "Combine" },
-		"ActionDive": { "es": "Agacharse / bucear", "en": "Crouch / dive" },
-		"ActionDrop": { "es": "Soltar", "en": "Drop" },
-		"ActionInteract": { "es": "Interactuar / coger", "en": "Interact / pick up" },
-		"ActionUsePrimary": { "es": "Usar mano derecha", "en": "Use right hand" },
-		"ActionUseSecondary": { "es": "Usar mano izquierda", "en": "Use left hand" },
-		"RemapGamepad": { "es": "Los botones del mando no se pueden remapear.", "en": "Gamepad buttons can't be remapped." },
-		"RemapInUse": { "es": "{0} ya se usa para «{1}».", "en": "{0} is already used for «{1}»." },
-		"RemapReserved": { "es": "{0} está reservada (movimiento o menú).", "en": "{0} is reserved (movement or menu)." },
-		"FishingLineOut": { "es": "Sedal fuera: {0} m · [R] recoger · [T] soltar", "en": "Line out: {0} m · [R] reel in · [T] let out" },
-		"FishingWaiting": { "es": "Esperando la picada… [F] recoger", "en": "Waiting for a bite… [F] reel in" },
-		"LoadGame": { "es": "Cargar", "en": "Load" },
-		"SlotsSaveHint": { "es": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras.", "en": "Choose a manual slot. The autosave is written when you sleep and at campfires." },
-		"SlotsLoadHint": { "es": "Elige la partida que quieres cargar.", "en": "Choose the game you want to load." },
-		"SlotsSaveTitle": { "es": "Guardar partida", "en": "Save game" },
-		"SlotsLoadTitle": { "es": "Cargar partida", "en": "Load game" },
-		"SlotsUnavailable": { "es": "El guardado no está disponible.", "en": "Saving isn't available." },
-		"SlotAuto": { "es": "Autoguardado", "en": "Autosave" },
-		"SlotManual": { "es": "Ranura {0}", "en": "Slot {0}" },
-		"SlotEmpty": { "es": "Vacía", "en": "Empty" },
-		"SlotDamaged": { "es": "Dañada: no se puede leer", "en": "Damaged: can't be read" },
-		"SlotFuture": { "es": "Guardada con una versión más nueva del juego", "en": "Saved with a newer version of the game" },
-		"SlotSavedAt": { "es": "{0} · {1} h {2} min jugados", "en": "{0} · {1} h {2} min played" },
-		"SlotRecovered": { "es": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)", "en": "{0} · restored from the backup (the main file was damaged)" },
-		"SlotHasBackup": { "es": "Con copia de seguridad", "en": "Backup available" },
-		"SlotNoBackup": { "es": "Sin copia de seguridad", "en": "No backup" },
-		"SlotsCancel": { "es": "Cancelar", "en": "Cancel" },
-		"SlotsOverwrite": { "es": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad.", "en": "Overwrite {0}? The previous game is kept as a backup." },
-		"SlotsConfirmOverwrite": { "es": "Sobrescribir", "en": "Overwrite" },
-		"SlotsSaved": { "es": "Partida guardada en la {0}.", "en": "Game saved in {0}." },
-		"SlotsSaveFailed": { "es": "No se pudo guardar la partida.", "en": "The game couldn't be saved." },
-		"PickedUpItem": { "es": "Recogido: {Item}", "en": "Picked up: {Item}" },
-		"NeedHunger": { "es": "Hambre", "en": "Hunger" },
-		"NeedThirst": { "es": "Sed", "en": "Thirst" },
-		"NeedEnergy": { "es": "Energía", "en": "Energy" },
-		"NeedRest": { "es": "Sueño", "en": "Sleep" },
-		"NeedWarmth": { "es": "Temperatura", "en": "Temperature" },
-		"CondBleeding": { "es": "Sangrando", "en": "Bleeding" },
-		"CondSunBurn": { "es": "Quemadura solar", "en": "Sunburn" },
-		"CondFever": { "es": "Fiebre", "en": "Fever" },
-		"CondInfection": { "es": "Herida infectada", "en": "Infected wound" },
-		"CondSprain": { "es": "Esguince", "en": "Sprain" },
-		"CondScurvy": { "es": "Escorbuto", "en": "Scurvy" },
-		"CondOpenWounds": { "es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar", "en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)" },
-		"HelpUse": { "es": "E interactuar · Tab mochila · Esc pausa", "en": "E interact · Tab backpack · Esc pause" },
-		"HelpMove": { "es": "WASD moverse · Espacio saltar · Mayús correr", "en": "WASD move · Space jump · Shift run" },
-		"CreditsModelsTitle": { "es": "Modelos 3D de vegetación", "en": "3D vegetation models" },
-		"CreditsQuaternius": { "es": "Quaternius y Kenney (CC0), vía Poly Pizza", "en": "Quaternius and Kenney (CC0), via Poly Pizza" },
-		"CreditsPolyGoogle": { "es": "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza", "en": "“Rubber tree”, “Macassar tree”, “Tree”, “Brazil nut tree”, “Balsa tree”, “Tree roots”, “Banana Tree”, “Heliconia flower”, “Bromeliad” and “Hibiscus flower” by Poly by Google (CC BY 3.0), via Poly Pizza" },
-		"CreditsZacharylll": { "es": "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza", "en": "“Vine Covered Tree” by Zacharylll (CC BY 3.0), via Poly Pizza" },
-		"EndingContinue": { "es": "Continuar", "en": "Continue" }
+		"PromptSleep": {
+			"es": "Dormir",
+			"en": "Sleep"
+		},
+		"Title": {
+			"es": "Baliza Siete",
+			"en": "Beacon Seven"
+		},
+		"Subtitle": {
+			"es": "Isla de Sal",
+			"en": "Salt Island"
+		},
+		"MenuObsoleteSave": {
+			"es": "Hay una partida de una versión anterior del juego. No se puede continuar: empieza una nueva.",
+			"en": "There is a save from an earlier version of the game. It cannot be continued: start a new game."
+		},
+		"SlotObsolete": {
+			"es": "Guardada con una versión anterior: no se puede cargar",
+			"en": "Saved with an earlier version: can't be loaded"
+		},
+		"NewGame": {
+			"es": "Nueva partida",
+			"en": "New game"
+		},
+		"Continue": {
+			"es": "Continuar",
+			"en": "Continue"
+		},
+		"Settings": {
+			"es": "Ajustes",
+			"en": "Settings"
+		},
+		"Credits": {
+			"es": "Créditos",
+			"en": "Credits"
+		},
+		"Quit": {
+			"es": "Salir",
+			"en": "Quit"
+		},
+		"Back": {
+			"es": "Volver",
+			"en": "Back"
+		},
+		"CreditsTitle": {
+			"es": "BALIZA SIETE",
+			"en": "BEACON SEVEN"
+		},
+		"CreditsAuthor": {
+			"es": "Un juego de Rodrigo Fernández",
+			"en": "A game by Rodrigo Fernández"
+		},
+		"Paused": {
+			"es": "Pausa",
+			"en": "Paused"
+		},
+		"Resume": {
+			"es": "Reanudar",
+			"en": "Resume"
+		},
+		"SaveGame": {
+			"es": "Guardar partida",
+			"en": "Save game"
+		},
+		"ExitToMenu": {
+			"es": "Salir al menú",
+			"en": "Exit to menu"
+		},
+		"QuitGame": {
+			"es": "Salir del juego",
+			"en": "Quit game"
+		},
+		"PressAnyKey": {
+			"es": "Pulsa una tecla...",
+			"en": "Press a key..."
+		},
+		"NoKey": {
+			"es": "(sin asignar)",
+			"en": "(unbound)"
+		},
+		"TabGraphics": {
+			"es": "Gráficos",
+			"en": "Graphics"
+		},
+		"TabAudio": {
+			"es": "Audio",
+			"en": "Audio"
+		},
+		"TabControls": {
+			"es": "Controles",
+			"en": "Controls"
+		},
+		"TabGame": {
+			"es": "Juego",
+			"en": "Game"
+		},
+		"TabAccessibility": {
+			"es": "Accesibilidad",
+			"en": "Accessibility"
+		},
+		"SectionDisplay": {
+			"es": "Pantalla",
+			"en": "Display"
+		},
+		"Resolution": {
+			"es": "Resolución",
+			"en": "Resolution"
+		},
+		"WindowMode": {
+			"es": "Modo de ventana",
+			"en": "Window mode"
+		},
+		"WindowFullscreen": {
+			"es": "Pantalla completa",
+			"en": "Fullscreen"
+		},
+		"WindowBorderless": {
+			"es": "Ventana sin bordes",
+			"en": "Borderless window"
+		},
+		"WindowWindowed": {
+			"es": "Ventana",
+			"en": "Windowed"
+		},
+		"VSync": {
+			"es": "VSync",
+			"en": "VSync"
+		},
+		"FpsLimit": {
+			"es": "Límite de FPS",
+			"en": "FPS limit"
+		},
+		"Unlimited": {
+			"es": "Sin límite",
+			"en": "Unlimited"
+		},
+		"Brightness": {
+			"es": "Brillo",
+			"en": "Brightness"
+		},
+		"SectionQuality": {
+			"es": "Calidad",
+			"en": "Quality"
+		},
+		"OverallQuality": {
+			"es": "Calidad general",
+			"en": "Overall quality"
+		},
+		"QualityLow": {
+			"es": "Baja",
+			"en": "Low"
+		},
+		"QualityMedium": {
+			"es": "Media",
+			"en": "Medium"
+		},
+		"QualityHigh": {
+			"es": "Alta",
+			"en": "High"
+		},
+		"VolMusic": {
+			"es": "Música",
+			"en": "Music"
+		},
+		"VolEffects": {
+			"es": "Efectos",
+			"en": "Effects"
+		},
+		"VolAmbient": {
+			"es": "Ambiente",
+			"en": "Ambience"
+		},
+		"MouseSensitivity": {
+			"es": "Sensibilidad del ratón",
+			"en": "Mouse sensitivity"
+		},
+		"GamepadSensitivity": {
+			"es": "Sensibilidad del mando",
+			"en": "Controller sensitivity"
+		},
+		"InvertY": {
+			"es": "Invertir eje Y",
+			"en": "Invert Y axis"
+		},
+		"FOV": {
+			"es": "Campo de visión",
+			"en": "Field of view"
+		},
+		"CameraBob": {
+			"es": "Balanceo de cámara",
+			"en": "Camera bob"
+		},
+		"HoldCrouch": {
+			"es": "Agacharse manteniendo pulsado",
+			"en": "Hold to crouch"
+		},
+		"SectionRemap": {
+			"es": "Remapeo de teclas",
+			"en": "Key bindings"
+		},
+		"ActionJump": {
+			"es": "Saltar",
+			"en": "Jump"
+		},
+		"ActionSprint": {
+			"es": "Correr",
+			"en": "Sprint"
+		},
+		"DayLength": {
+			"es": "Duración del día",
+			"en": "Day length"
+		},
+		"DayLengthMinutes": {
+			"es": "{0} min",
+			"en": "{0} min",
+			"nota": "FText::Format(..., FText::AsNumber(Minutes))."
+		},
+		"Subtitles": {
+			"es": "Subtítulos",
+			"en": "Subtitles"
+		},
+		"TextSize": {
+			"es": "Tamaño del texto",
+			"en": "Text size"
+		},
+		"TextSmall": {
+			"es": "Pequeño",
+			"en": "Small"
+		},
+		"TextMedium": {
+			"es": "Mediano",
+			"en": "Medium"
+		},
+		"TextLarge": {
+			"es": "Grande",
+			"en": "Large"
+		},
+		"Language": {
+			"es": "Idioma",
+			"en": "Language"
+		},
+		"LangEs": {
+			"es": "Español",
+			"en": "Español",
+			"nota": "Cada idioma se nombra en su propia lengua."
+		},
+		"LangEn": {
+			"es": "English",
+			"en": "English",
+			"nota": "Cada idioma se nombra en su propia lengua."
+		},
+		"Colorblind": {
+			"es": "Modo daltónico",
+			"en": "Colour-blind mode"
+		},
+		"CVDNone": {
+			"es": "Ninguno",
+			"en": "None"
+		},
+		"CVDProtanopia": {
+			"es": "Protanopía",
+			"en": "Protanopia"
+		},
+		"CVDDeuteranopia": {
+			"es": "Deuteranopía",
+			"en": "Deuteranopia"
+		},
+		"CVDTritanopia": {
+			"es": "Tritanopía",
+			"en": "Tritanopia"
+		},
+		"ReduceMotion": {
+			"es": "Reducir movimiento",
+			"en": "Reduce motion"
+		},
+		"NoFlashing": {
+			"es": "Desactivar destellos",
+			"en": "Disable flashing"
+		},
+		"SoundCues": {
+			"es": "Avisos visuales de sonido",
+			"en": "Visual sound cues"
+		},
+		"Apply": {
+			"es": "Aplicar",
+			"en": "Apply"
+		},
+		"RestoreDefaults": {
+			"es": "Restaurar valores por defecto",
+			"en": "Restore defaults"
+		},
+		"ActionBackpack": {
+			"es": "Mochila",
+			"en": "Backpack"
+		},
+		"ActionCombine": {
+			"es": "Combinar",
+			"en": "Combine"
+		},
+		"ActionDive": {
+			"es": "Agacharse / bucear",
+			"en": "Crouch / dive"
+		},
+		"ActionDrop": {
+			"es": "Soltar",
+			"en": "Drop"
+		},
+		"ActionInteract": {
+			"es": "Interactuar / coger",
+			"en": "Interact / pick up"
+		},
+		"ActionUsePrimary": {
+			"es": "Usar mano derecha",
+			"en": "Use right hand"
+		},
+		"ActionUseSecondary": {
+			"es": "Usar mano izquierda",
+			"en": "Use left hand"
+		},
+		"RemapGamepad": {
+			"es": "Los botones del mando no se pueden remapear.",
+			"en": "Gamepad buttons can't be remapped."
+		},
+		"RemapInUse": {
+			"es": "{0} ya se usa para «{1}».",
+			"en": "{0} is already used for «{1}»."
+		},
+		"RemapReserved": {
+			"es": "{0} está reservada (movimiento o menú).",
+			"en": "{0} is reserved (movement or menu)."
+		},
+		"LoadGame": {
+			"es": "Cargar",
+			"en": "Load"
+		},
+		"SlotsSaveHint": {
+			"es": "Elige una ranura manual. La automática se guarda al dormir y en las hogueras.",
+			"en": "Choose a manual slot. The autosave is written when you sleep and at campfires."
+		},
+		"SlotsLoadHint": {
+			"es": "Elige la partida que quieres cargar.",
+			"en": "Choose the game you want to load."
+		},
+		"SlotsSaveTitle": {
+			"es": "Guardar partida",
+			"en": "Save game"
+		},
+		"SlotsLoadTitle": {
+			"es": "Cargar partida",
+			"en": "Load game"
+		},
+		"SlotsUnavailable": {
+			"es": "El guardado no está disponible.",
+			"en": "Saving isn't available."
+		},
+		"SlotAuto": {
+			"es": "Autoguardado",
+			"en": "Autosave"
+		},
+		"SlotManual": {
+			"es": "Ranura {0}",
+			"en": "Slot {0}"
+		},
+		"SlotEmpty": {
+			"es": "Vacía",
+			"en": "Empty"
+		},
+		"SlotDamaged": {
+			"es": "Dañada: no se puede leer",
+			"en": "Damaged: can't be read"
+		},
+		"SlotFuture": {
+			"es": "Guardada con una versión más nueva del juego",
+			"en": "Saved with a newer version of the game"
+		},
+		"SlotSavedAt": {
+			"es": "{0} · {1} h {2} min jugados",
+			"en": "{0} · {1} h {2} min played"
+		},
+		"SlotRecovered": {
+			"es": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)",
+			"en": "{0} · restored from the backup (the main file was damaged)"
+		},
+		"SlotHasBackup": {
+			"es": "Con copia de seguridad",
+			"en": "Backup available"
+		},
+		"SlotNoBackup": {
+			"es": "Sin copia de seguridad",
+			"en": "No backup"
+		},
+		"SlotsCancel": {
+			"es": "Cancelar",
+			"en": "Cancel"
+		},
+		"SlotsOverwrite": {
+			"es": "¿Sobrescribir la {0}? La partida anterior queda como copia de seguridad.",
+			"en": "Overwrite {0}? The previous game is kept as a backup."
+		},
+		"SlotsConfirmOverwrite": {
+			"es": "Sobrescribir",
+			"en": "Overwrite"
+		},
+		"SlotsSaved": {
+			"es": "Partida guardada en la {0}.",
+			"en": "Game saved in {0}."
+		},
+		"SlotsSaveFailed": {
+			"es": "No se pudo guardar la partida.",
+			"en": "The game couldn't be saved."
+		},
+		"PickedUpItem": {
+			"es": "Recogido: {Item}",
+			"en": "Picked up: {Item}"
+		},
+		"HelpUse": {
+			"es": "E interactuar · Tab mochila · J cuaderno · Esc pausa",
+			"en": "E interact · Tab backpack · J notebook · Esc pause"
+		},
+		"HelpMove": {
+			"es": "WASD moverse · Espacio saltar · Mayús correr",
+			"en": "WASD move · Space jump · Shift run"
+		},
+		"EndingContinue": {
+			"es": "Continuar",
+			"en": "Continue"
+		},
+		"ContinueFailed": {
+			"es": "No se ha podido cargar la partida guardada. Prueba con «Cargar» o empieza una nueva.",
+			"en": "The saved game could not be loaded. Try «Load» or start a new game."
+		}
 	},
-	"ExploredBuilding": {
-	},
+	"ExploredBuilding": {},
 	"ExploredCoop": {
-		"SleepStillUp": { "es": "Hay {Count} en pie todavía.", "en": "{Count} still up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"SleepOneStillUp": { "es": "Queda uno en pie.", "en": "One still up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"SleepBlockedByDowned": { "es": "No se duerme con alguien en el suelo.", "en": "Nobody sleeps with someone down.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"ReviveVerb": { "es": "Levantar a {Name}", "en": "Help {Name} up", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"ReviveVerbMedicine": { "es": "Atender a {Name}", "en": "Patch {Name} up", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"PlayerDown": { "es": "{Name} está en el suelo.", "en": "{Name} is down.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
-		"PlayerBackUp": { "es": "{Name} vuelve a estar en pie.", "en": "{Name} is back up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" }
+		"SleepStillUp": {
+			"es": "Hay {Count} en pie todavía.",
+			"en": "{Count} still up.",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"SleepOneStillUp": {
+			"es": "Queda uno en pie.",
+			"en": "One still up.",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"SleepBlockedByDowned": {
+			"es": "No se duerme con alguien en el suelo.",
+			"en": "Nobody sleeps with someone down.",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"ReviveVerb": {
+			"es": "Levantar a {Name}",
+			"en": "Help {Name} up",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"ReviveVerbMedicine": {
+			"es": "Atender a {Name}",
+			"en": "Patch {Name} up",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"PlayerDown": {
+			"es": "{Name} está en el suelo.",
+			"en": "{Name} is down.",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		},
+		"PlayerBackUp": {
+			"es": "{Name} vuelve a estar en pie.",
+			"en": "{Name} is back up.",
+			"pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks"
+		}
 	},
 	"ExploredRaft": {
-		"NeedPaddle": { "es": "Sin remo no voy a ningún sitio.", "en": "Without a paddle I'm going nowhere." },
-		"SeaClosedNoBoard": { "es": "El mar se cierra. A tierra.", "en": "The sea is closing. Back to land." },
-		"TieRaft": { "es": "Atar balsa", "en": "Lash raft" },
-		"PlaceLog": { "es": "Dejar tronco ({0}/{1})", "en": "Lay log ({0}/{1})" },
-		"NeedLog": { "es": "Hacen falta troncos: se traen de uno en uno.", "en": "It needs logs, carried one at a time." },
-		"RaftDone": { "es": "Cuatro troncos y dos cuerdas. Flota.", "en": "Four logs and two ropes. It floats." },
-		"SeaClosing": { "es": "El mar se cierra.", "en": "The sea is closing." },
-		"ForcedReturn": { "es": "Cruzas como puedes. Playa Norte.", "en": "You make it across somehow. North Beach." },
-		"BoardRaft": { "es": "Subir a la balsa", "en": "Board the raft" }
+		"NeedPaddle": {
+			"es": "Sin remo no voy a ningún sitio.",
+			"en": "Without a paddle I'm going nowhere."
+		},
+		"SeaClosedNoBoard": {
+			"es": "El mar se cierra. A tierra.",
+			"en": "The sea is closing. Back to land."
+		},
+		"TieRaft": {
+			"es": "Atar balsa",
+			"en": "Lash raft"
+		},
+		"PlaceLog": {
+			"es": "Dejar tronco ({0}/{1})",
+			"en": "Lay log ({0}/{1})"
+		},
+		"NeedLog": {
+			"es": "Hacen falta troncos: se traen de uno en uno.",
+			"en": "It needs logs, carried one at a time."
+		},
+		"RaftDone": {
+			"es": "Cuatro troncos y dos cuerdas. Flota.",
+			"en": "Four logs and two ropes. It floats."
+		},
+		"SeaClosing": {
+			"es": "El mar se cierra.",
+			"en": "The sea is closing."
+		},
+		"ForcedReturn": {
+			"es": "Cruzas como puedes. Playa Norte.",
+			"en": "You make it across somehow. North Beach."
+		},
+		"BoardRaft": {
+			"es": "Subir a la balsa",
+			"en": "Board the raft"
+		}
 	},
 	"ExploredBody": {
-		"WarnThirst": { "es": "Tengo sed.", "en": "I'm thirsty." },
-		"WarnHunger": { "es": "Tengo hambre.", "en": "I'm hungry." },
-		"WarnEnergy": { "es": "Estoy agotada.", "en": "I'm exhausted." },
-		"WarnWarmth": { "es": "Tengo frío.", "en": "I'm cold." },
-		"SleepNoRoof": { "es": "Solo puedo dormir bajo techo.", "en": "I can only sleep under a roof." },
-		"SleepWrongHour": { "es": "Aún no es hora de dormir.", "en": "It's not time to sleep yet." },
-		"SleepStorm": { "es": "Con este temporal no hay quien duerma.", "en": "Nobody could sleep through this storm." },
-		"SleepThirsty": { "es": "Tienes demasiada sed para dormir", "en": "You're too thirsty to sleep" },
-		"FaintShore": { "es": "Despiertas en Playa Norte…", "en": "You wake up on North Beach…" },
-		"FaintShelter": { "es": "Despiertas en el refugio…", "en": "You wake up in the shelter…" }
+		"WarnThirst": {
+			"es": "Tengo sed.",
+			"en": "I'm thirsty."
+		},
+		"WarnHunger": {
+			"es": "Tengo hambre.",
+			"en": "I'm hungry."
+		},
+		"WarnEnergy": {
+			"es": "Estoy agotada.",
+			"en": "I'm exhausted."
+		},
+		"WarnWarmth": {
+			"es": "Tengo frío.",
+			"en": "I'm cold."
+		},
+		"SleepNoRoof": {
+			"es": "Solo puedo dormir bajo techo.",
+			"en": "I can only sleep under a roof."
+		},
+		"SleepWrongHour": {
+			"es": "Aún no es hora de dormir.",
+			"en": "It's not time to sleep yet."
+		},
+		"SleepStorm": {
+			"es": "Con este temporal no hay quien duerma.",
+			"en": "Nobody could sleep through this storm."
+		},
+		"SleepThirsty": {
+			"es": "Tienes demasiada sed para dormir",
+			"en": "You're too thirsty to sleep"
+		},
+		"FaintShore": {
+			"es": "Despiertas en Playa Norte…",
+			"en": "You wake up on North Beach…"
+		},
+		"FaintShelter": {
+			"es": "Despiertas en el refugio…",
+			"en": "You wake up in the shelter…"
+		}
 	},
 	"ExploredBeacon": {
-		"MissingLens": { "es": "Falta la lente: está en el «Sáhara»", "en": "The lens is missing: it's on the «Sáhara»" },
-		"MissingOil": { "es": "Hacen falta dos tarros de aceite", "en": "Two jars of oil are needed" },
-		"MissingWick": { "es": "Falta la mecha", "en": "Wick missing" },
-		"PageTitle": { "es": "Cuaderno de guardia · página {0} de {1}", "en": "Watch log · page {0} of {1}" },
-		"PageRead": { "es": "Leer la página", "en": "Read the page" },
-		"PageReread": { "es": "Releer la página", "en": "Read the page again" },
-		"TowerUp": { "es": "Subir a la linterna", "en": "Climb to the lantern" },
-		"TowerDown": { "es": "Bajar del faro", "en": "Climb down" },
-		"LampLens": { "es": "Poner la lente", "en": "Set the lens" },
-		"LampOil": { "es": "Verter los tarros", "en": "Pour the jars" },
-		"LampWick": { "es": "Apretar la mecha", "en": "Tighten the wick" },
-		"LampLight": { "es": "Encender la baliza", "en": "Light the beacon" },
-		"LampLit": { "es": "La baliza está encendida", "en": "The beacon is lit" }
+		"MissingLens": {
+			"es": "Falta la lente: está en el «Sáhara»",
+			"en": "The lens is missing: it's on the «Sáhara»"
+		},
+		"MissingOil": {
+			"es": "Hacen falta dos tarros de aceite",
+			"en": "Two jars of oil are needed"
+		},
+		"MissingWick": {
+			"es": "Falta la mecha",
+			"en": "Wick missing"
+		},
+		"PageTitle": {
+			"es": "Cuaderno de guardia · página {0} de {1}",
+			"en": "Watch log · page {0} of {1}"
+		},
+		"PageRead": {
+			"es": "Leer la página",
+			"en": "Read the page"
+		},
+		"PageReread": {
+			"es": "Releer la página",
+			"en": "Read the page again"
+		},
+		"TowerUp": {
+			"es": "Subir a la linterna",
+			"en": "Climb to the lantern"
+		},
+		"TowerDown": {
+			"es": "Bajar del faro",
+			"en": "Climb down"
+		},
+		"LampLens": {
+			"es": "Poner la lente",
+			"en": "Set the lens"
+		},
+		"LampOil": {
+			"es": "Verter los tarros",
+			"en": "Pour the jars"
+		},
+		"LampWick": {
+			"es": "Apretar la mecha",
+			"en": "Tighten the wick"
+		},
+		"LampLight": {
+			"es": "Encender la baliza",
+			"en": "Light the beacon"
+		},
+		"LampLit": {
+			"es": "La baliza está encendida",
+			"en": "The beacon is lit"
+		},
+		"Driftwood": {
+			"es": "Esta noche el mar ha dejado leña en la Cala Varada.",
+			"en": "Last night the sea left firewood in Cala Varada."
+		}
 	},
 	"ExploredIsland": {
-		"FireCollect": { "es": "Recoger", "en": "Collect" },
-		"FireLight": { "es": "Encender", "en": "Light" },
-		"FireCook": { "es": "Cocinar", "en": "Cook" },
-		"FireBoil": { "es": "Hervir", "en": "Boil" },
-		"FireFeed": { "es": "Añadir leña", "en": "Add firewood" },
-		"FireNothing": { "es": "No llevas nada para el fuego", "en": "You carry nothing for the fire" },
-		"FireNeedsWood": { "es": "Para encenderla: 3 de leña y el cuchillo", "en": "To light it: 3 firewood and the knife" },
-		"CastLine": { "es": "Lanzar el sedal", "en": "Cast the line" },
-		"ReelIn": { "es": "Recoger el sedal", "en": "Reel in" },
-		"PullFish": { "es": "Sacar el pez", "en": "Pull the fish" },
-		"NeedRod": { "es": "Necesitas una caña de pescar", "en": "You need a fishing rod" },
-		"FishBite": { "es": "Pica: pulsa ahora", "en": "A bite: press now" },
-		"FishEscaped": { "es": "Se ha escapado", "en": "It got away" },
-		"NoFishing": { "es": "Ahora no pican", "en": "Nothing bites now" },
-		"PickUpItem": { "es": "Coger {0}", "en": "Take {0}" },
-		"NotValid": { "es": "No sirve así", "en": "That won't work" },
-		"BackpackFull": { "es": "No te cabe más", "en": "No more room" },
-		"HandsBusy": { "es": "Ya llevas algo pesado en las manos", "en": "Your hands are full" },
-		"MissingInputs": { "es": "Te falta material", "en": "Missing materials" },
-		"CanteenEmpty": { "es": "La cantimplora está vacía", "en": "The canteen is empty" },
-		"NoGround": { "es": "Aquí no hay suelo despejado", "en": "No clear ground here" },
-		"CrateEmpty": { "es": "Caja vacía", "en": "Empty crate" },
-		"OpenCrate": { "es": "Abrir la caja", "en": "Open the crate" },
-		"CrateNothing": { "es": "No te hace falta nada de la caja", "en": "You need nothing from the crate" },
-		"FillCanteen": { "es": "Llenar la cantimplora ({0}/{1})", "en": "Fill the canteen ({0}/{1})" },
-		"CanteenFilled": { "es": "Cantimplora llena", "en": "Canteen filled" },
-		"BarrelEmpty": { "es": "El barril está vacío", "en": "The barrel is empty" },
-		"NoCanteen": { "es": "No llevas la cantimplora", "en": "You don't have the canteen" },
-		"CanteenAlreadyFull": { "es": "La cantimplora ya está llena", "en": "The canteen is already full" },
-		"PickCoconut": { "es": "Bajar un coco ({0})", "en": "Pick a coconut ({0})" }
+		"FireCollect": {
+			"es": "Recoger",
+			"en": "Collect"
+		},
+		"FireLight": {
+			"es": "Encender",
+			"en": "Light"
+		},
+		"FireCook": {
+			"es": "Cocinar",
+			"en": "Cook"
+		},
+		"FireBoil": {
+			"es": "Hervir",
+			"en": "Boil"
+		},
+		"FireFeed": {
+			"es": "Añadir leña",
+			"en": "Add firewood"
+		},
+		"FireNothing": {
+			"es": "No llevas nada para el fuego",
+			"en": "You carry nothing for the fire"
+		},
+		"FireNeedsWood": {
+			"es": "Para encenderla: 3 de leña y el cuchillo",
+			"en": "To light it: 3 firewood and the knife"
+		},
+		"CastLine": {
+			"es": "Lanzar el sedal",
+			"en": "Cast the line"
+		},
+		"ReelIn": {
+			"es": "Recoger el sedal",
+			"en": "Reel in"
+		},
+		"PullFish": {
+			"es": "Sacar el pez",
+			"en": "Pull the fish"
+		},
+		"NeedRod": {
+			"es": "Necesitas una caña de pescar",
+			"en": "You need a fishing rod"
+		},
+		"FishBite": {
+			"es": "Pica: pulsa ahora",
+			"en": "A bite: press now"
+		},
+		"FishEscaped": {
+			"es": "Se ha escapado",
+			"en": "It got away"
+		},
+		"NoFishing": {
+			"es": "Ahora no pican",
+			"en": "Nothing bites now"
+		},
+		"PickUpItem": {
+			"es": "Coger {0}",
+			"en": "Take {0}"
+		},
+		"NotValid": {
+			"es": "No sirve así",
+			"en": "That won't work"
+		},
+		"BackpackFull": {
+			"es": "No te cabe más",
+			"en": "No more room"
+		},
+		"HandsBusy": {
+			"es": "Ya llevas algo pesado en las manos",
+			"en": "Your hands are full"
+		},
+		"MissingInputs": {
+			"es": "Te falta material",
+			"en": "Missing materials"
+		},
+		"CanteenEmpty": {
+			"es": "La cantimplora está vacía",
+			"en": "The canteen is empty"
+		},
+		"NoGround": {
+			"es": "Aquí no hay suelo despejado",
+			"en": "No clear ground here"
+		},
+		"CrateEmpty": {
+			"es": "Caja vacía",
+			"en": "Empty crate"
+		},
+		"OpenCrate": {
+			"es": "Abrir la caja",
+			"en": "Open the crate"
+		},
+		"CrateNothing": {
+			"es": "No te hace falta nada de la caja",
+			"en": "You need nothing from the crate"
+		},
+		"FillCanteen": {
+			"es": "Llenar la cantimplora ({0}/{1})",
+			"en": "Fill the canteen ({0}/{1})"
+		},
+		"CanteenFilled": {
+			"es": "Cantimplora llena",
+			"en": "Canteen filled"
+		},
+		"BarrelEmpty": {
+			"es": "El barril está vacío",
+			"en": "The barrel is empty"
+		},
+		"NoCanteen": {
+			"es": "No llevas la cantimplora",
+			"en": "You don't have the canteen"
+		},
+		"CanteenAlreadyFull": {
+			"es": "La cantimplora ya está llena",
+			"en": "The canteen is already full"
+		},
+		"PickCoconut": {
+			"es": "Bajar un coco ({0})",
+			"en": "Pick a coconut ({0})"
+		},
+		"FireFeedOil": {
+			"es": "Echar aceite sobrante",
+			"en": "Add spare oil"
+		}
 	},
 	"ExploredInventory": {
-		"VerbLight": { "es": "Encender", "en": "Light" },
-		"VerbBraid": { "es": "Trenzar", "en": "Braid" },
-		"VerbTie": { "es": "Atar", "en": "Tie" },
-		"VerbCook": { "es": "Cocinar", "en": "Cook" },
-		"VerbBoil": { "es": "Hervir", "en": "Boil" },
-		"VerbMount": { "es": "Montar", "en": "Mount" },
-		"EntrySips": { "es": "{0} ({1}/{2} sorbos)", "en": "{0} ({1}/{2} sips)" },
-		"EntryCount": { "es": "{0} ×{1}", "en": "{0} ×{1}" },
-		"InputAmount": { "es": "{0} {1}", "en": "{0} {1}" },
-		"InputSeparator": { "es": " + ", "en": " + " },
-		"Title": { "es": "Mochila ({0}/{1})", "en": "Backpack ({0}/{1})" },
-		"Heavy": { "es": "En las manos: {0}", "en": "In your hands: {0}" },
-		"Use": { "es": "Usar", "en": "Use" },
-		"Drop": { "es": "Soltar", "en": "Drop" },
-		"Recipes": { "es": "Recetas", "en": "Recipes" },
-		"RecipeButton": { "es": "{0}: {1}", "en": "{0}: {1}" },
-		"Hint": { "es": "Clic: usar, soltar o hacer · Tab: cerrar", "en": "Click: use, drop or make · Tab: close" }
+		"VerbLight": {
+			"es": "Encender",
+			"en": "Light"
+		},
+		"VerbBraid": {
+			"es": "Trenzar",
+			"en": "Braid"
+		},
+		"VerbTie": {
+			"es": "Atar",
+			"en": "Tie"
+		},
+		"VerbCook": {
+			"es": "Cocinar",
+			"en": "Cook"
+		},
+		"VerbBoil": {
+			"es": "Hervir",
+			"en": "Boil"
+		},
+		"VerbMount": {
+			"es": "Montar",
+			"en": "Mount"
+		},
+		"EntrySips": {
+			"es": "{0} ({1}/{2} sorbos)",
+			"en": "{0} ({1}/{2} sips)"
+		},
+		"EntryCount": {
+			"es": "{0} ×{1}",
+			"en": "{0} ×{1}"
+		},
+		"Title": {
+			"es": "Mochila · {0}/{1}",
+			"en": "Backpack · {0}/{1}"
+		},
+		"Heavy": {
+			"es": "En las manos: {0}",
+			"en": "In your hands: {0}"
+		},
+		"Use": {
+			"es": "Usar",
+			"en": "Use"
+		},
+		"Drop": {
+			"es": "Soltar",
+			"en": "Drop"
+		},
+		"Recipes": {
+			"es": "Recetas",
+			"en": "Recipes"
+		},
+		"Hint": {
+			"es": "Clic: elegir, usar o hacer · Tab: cerrar",
+			"en": "Click: select, use or craft · Tab: close"
+		},
+		"Empty": {
+			"es": "La mochila está vacía.",
+			"en": "The backpack is empty."
+		},
+		"InputCount": {
+			"es": "×{0}",
+			"en": "×{0}"
+		}
+	},
+	"ExploredCredits": {
+		"Back": {
+			"es": "Volver",
+			"en": "Back"
+		},
+		"Title": {
+			"es": "Baliza Siete",
+			"en": "Beacon Seven"
+		},
+		"Subtitle": {
+			"es": "Isla de Sal",
+			"en": "Salt Island"
+		},
+		"AuthorHeading": {
+			"es": "Un juego de",
+			"en": "A game by"
+		},
+		"Author": {
+			"es": "Rodrigo Fernández",
+			"en": "Rodrigo Fernández"
+		},
+		"CodeHeading": {
+			"es": "Programación, arte y sonido por código",
+			"en": "Code-made programming, art and sound"
+		},
+		"Code": {
+			"es": "Desarrollado con Claude (Anthropic)",
+			"en": "Developed with Claude (Anthropic)"
+		},
+		"Art": {
+			"es": "Mallas low poly generadas con Blender por script; una sola paleta de 41 colores",
+			"en": "Low poly meshes generated with Blender scripts; a single 41-colour palette"
+		},
+		"EngineHeading": {
+			"es": "Motor",
+			"en": "Engine"
+		},
+		"Engine": {
+			"es": "Unreal Engine 5.6",
+			"en": "Unreal Engine 5.6"
+		},
+		"FontHeading": {
+			"es": "Tipografía",
+			"en": "Typeface"
+		},
+		"Font": {
+			"es": "Lora, de The Lora Project Authors",
+			"en": "Lora, by The Lora Project Authors"
+		},
+		"FontLicense": {
+			"es": "SIL Open Font License 1.1",
+			"en": "SIL Open Font License 1.1"
+		},
+		"MusicHeading": {
+			"es": "Música",
+			"en": "Music"
+		},
+		"MusicOwn": {
+			"es": "Piezas compuestas por código para el juego",
+			"en": "Pieces composed in code for the game"
+		},
+		"MusicExtra": {
+			"es": "Música adicional de Kevin MacLeod (incompetech.com)",
+			"en": "Additional music by Kevin MacLeod (incompetech.com)"
+		},
+		"Track": {
+			"es": "«{0}»",
+			"en": "\"{0}\""
+		},
+		"MusicLicense": {
+			"es": "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados.",
+			"en": "Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). Changes: normalised volume and trimmed silences."
+		},
+		"Thanks": {
+			"es": "Gracias por encender la baliza.",
+			"en": "Thank you for lighting the beacon."
+		}
+	},
+	"ExploredNotebook": {
+		"Title": {
+			"es": "Cuaderno de guardia",
+			"en": "Keeper's logbook"
+		},
+		"Count": {
+			"es": "Faro de Isla de Sal · páginas {0}/{1}",
+			"en": "Salt Island lighthouse · pages {0}/{1}"
+		},
+		"PageRead": {
+			"es": "Página {0}",
+			"en": "Page {0}"
+		},
+		"PageMissing": {
+			"es": "Página {0} · sin encontrar",
+			"en": "Page {0} · not found"
+		},
+		"Objective": {
+			"es": "Objetivo",
+			"en": "Objective"
+		},
+		"NoPages": {
+			"es": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro.",
+			"en": "You haven't found any page of Roig's logbook yet. Look in the lighthouse."
+		},
+		"PageHeading": {
+			"es": "Página {0}",
+			"en": "Page {0}"
+		},
+		"Help": {
+			"es": "A / D: pasar página · J: cerrar",
+			"en": "A / D: turn page · J: close"
+		}
 	}
 }

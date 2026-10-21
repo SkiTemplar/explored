@@ -241,11 +241,11 @@ void FCarrySpec::Define()
 			UCarryComponent* Carry = NewObject<UCarryComponent>(Owner);
 			Carry->RegisterComponent();
 
-			AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>(); // Pequeño
-			Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
+			AExploredItemActor* Fibra = TestWorld.Get()->SpawnActor<AExploredItemActor>();
+			Fibra->InitializeFromInstance(MakeInstance(TEXT("fibra")));
 			FText FailReason;
-			TestTrue(TEXT("Coco a la mano"), Carry->TryPickUp(Coco, FailReason));
-			TestTrue(TEXT("Coco al bolsillo"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
+			TestTrue(TEXT("Fibra a la mano"), Carry->TryPickUp(Fibra, FailReason));
+			TestTrue(TEXT("Fibra al bolsillo"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 
 			AExploredItemActor* Hacha = TestWorld.Get()->SpawnActor<AExploredItemActor>(); // Mediano
 			Hacha->InitializeFromInstance(MakeInstance(TEXT("pez_crudo")));
@@ -264,14 +264,14 @@ void FCarrySpec::Define()
 
 			for (int32 Index = 0; Index < UCarryComponent::MaxPocketSlots; ++Index)
 			{
-				AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-				Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
-				TestTrue(TEXT("Se coge"), Carry->TryPickUp(Coco, FailReason));
-				TestTrue(FString::Printf(TEXT("Bolsillo %d acepta el coco"), Index), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
+				AExploredItemActor* Fibra = TestWorld.Get()->SpawnActor<AExploredItemActor>();
+				Fibra->InitializeFromInstance(MakeInstance(TEXT("fibra")));
+				TestTrue(TEXT("Se coge"), Carry->TryPickUp(Fibra, FailReason));
+				TestTrue(FString::Printf(TEXT("Bolsillo %d acepta la fibra"), Index), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 			}
 
 			AExploredItemActor* OneMore = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			OneMore->InitializeFromInstance(MakeInstance(TEXT("coco")));
+			OneMore->InitializeFromInstance(MakeInstance(TEXT("fibra")));
 			TestTrue(TEXT("Se coge el quinto"), Carry->TryPickUp(OneMore, FailReason));
 			TestFalse(TEXT("El quinto bolsillo no existe"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 		});

@@ -5,13 +5,22 @@ FName FFireActionsModel::Light() { return FName(TEXT("encender")); }
 FName FFireActionsModel::Cook() { return FName(TEXT("cocinar")); }
 FName FFireActionsModel::Boil() { return FName(TEXT("hervir")); }
 FName FFireActionsModel::Feed() { return FName(TEXT("avivar")); }
+FName FFireActionsModel::FeedOil() { return FName(TEXT("echar_aceite")); }
+FName FFireActionsModel::WoodItem() { return FName(TEXT("lena")); }
+FName FFireActionsModel::OilItem() { return FName(TEXT("tarro_aceite")); }
+
+int32 FFireActionsModel::SpareOilJars(int32 JarsInPack, bool bOilSlotFilled, int32 RequiredJars)
+{
+	const int32 Needed = bOilSlotFilled ? 0 : FMath::Max(RequiredJars, 0);
+	return FMath::Max(JarsInPack - Needed, 0);
+}
 
 FName FFireActionsModel::CampfireRecipe() { return FName(TEXT("hoguera")); }
 FName FFireActionsModel::GrillRecipe() { return FName(TEXT("pez_asado")); }
 FName FFireActionsModel::OilRecipe() { return FName(TEXT("tarro_aceite")); }
 
 TArray<FName> FFireActionsModel::Available(const FCampfireState& State, const FBackpackState& Pack, const FRecipeBook& Recipes,
-	const FCampfireConfig& Config)
+	const FCampfireConfig& Config, int32 SpareOilJars)
 {
 	TArray<FName> Actions;
 	const TMap<FName, int32> NoStation;
@@ -41,13 +50,13 @@ TArray<FName> FFireActionsModel::Available(const FCampfireState& State, const FB
 			}
 		}
 	}
-	for (const TPair<FName, float>& Fuel : Config.FuelSeconds)
+	if (Config.FuelSeconds.Contains(WoodItem()) && FBackpackModel::Count(Pack, WoodItem()) > 0)
 	{
-		if (FBackpackModel::Count(Pack, Fuel.Key) > 0)
-		{
-			Actions.Add(Feed());
-			break;
-		}
+		Actions.Add(Feed());
+	}
+	if (Config.FuelSeconds.Contains(OilItem()) && SpareOilJars > 0 && FBackpackModel::Count(Pack, OilItem()) > 0)
+	{
+		Actions.Add(FeedOil());
 	}
 	return Actions;
 }

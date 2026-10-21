@@ -7,6 +7,8 @@
 #include "Cooking/FireActionsModel.h"
 #include "Interaction/VerbChoiceModel.h"
 #include "Kismet/GameplayStatics.h"
+#include "Narrative/BeaconProgressModel.h"
+#include "Narrative/BeaconSubsystem.h"
 #include "Items/BackpackModel.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "Items/IslandDataLoader.h"
@@ -21,6 +23,7 @@ namespace ExploredFireDetail
 	const FName ActCook = FFireActionsModel::Cook();
 	const FName ActBoil = FFireActionsModel::Boil();
 	const FName ActFeed = FFireActionsModel::Feed();
+	const FName ActFeedOil = FFireActionsModel::FeedOil();
 	const FName CampfireRecipe = FFireActionsModel::CampfireRecipe();
 	const FName GrillRecipe = FFireActionsModel::GrillRecipe();
 	const FName OilRecipe = FFireActionsModel::OilRecipe();
@@ -32,6 +35,7 @@ namespace ExploredFireDetail
 		if (Action == ActLight) { return LOCTEXT("FireLight", "Encender"); }
 		if (Action == ActCook) { return LOCTEXT("FireCook", "Cocinar"); }
 		if (Action == ActBoil) { return LOCTEXT("FireBoil", "Hervir"); }
+		if (Action == ActFeedOil) { return LOCTEXT("FireFeedOil", "Echar aceite sobrante"); }
 		return LOCTEXT("FireFeed", "Añadir leña");
 	}
 }
@@ -131,7 +135,15 @@ TArray<FName> AExploredFire::GetAvailableActions(AActor* InInstigator) const
 		return TArray<FName>();
 	}
 	const FIslandData& Data = ExploredIslandData::Get();
-	return FFireActionsModel::Available(State, Survivor->GetBackpack(), Data.Recipes, Data.Campfire);
+	return FFireActionsModel::Available(State, Survivor->GetBackpack(), Data.Recipes, Data.Campfire, SpareOilJars(*Survivor));
+}
+
+int32 AExploredFire::SpareOilJars(const UExploredSurvivorComponent& Survivor) const
+{
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	const bool bSlotFilled = Beacon && FBeaconProgressModel::IsSlotFilled(Beacon->GetRunState().Progress, ELanternSlot::Oil);
+	return FFireActionsModel::SpareOilJars(Survivor.GetItemCount(FFireActionsModel::OilItem()), bSlotFilled,
+		FBeaconProgressModel::RequiredOilJars);
 }
 
 FName AExploredFire::GetChosenAction(AActor* InInstigator) const
@@ -204,7 +216,8 @@ bool AExploredFire::PerformAction(AActor* InInstigator, FName Action)
 	if (Action == ActLight) { return LightWithRecipe(*Survivor); }
 	if (Action == ActCook) { return StartCooking(*Survivor, GrillRecipe); }
 	if (Action == ActBoil) { return StartCooking(*Survivor, OilRecipe); }
-	if (Action == ExploredFireDetail::ActFeed) { return this->Feed(*Survivor); }
+	if (Action == ActFeed) { return this->Feed(*Survivor, FFireActionsModel::WoodItem()); }
+	if (Action == ActFeedOil && SpareOilJars(*Survivor) > 0) { return this->Feed(*Survivor, FFireActionsModel::OilItem()); }
 	Survivor->ReportCraft(ECraftResult::NotValid);
 	return false;
 }
@@ -285,26 +298,20 @@ bool AExploredFire::StartCooking(UExploredSurvivorComponent& Survivor, FName Rec
 	return true;
 }
 
-bool AExploredFire::Feed(UExploredSurvivorComponent& Survivor)
+bool AExploredFire::Feed(UExploredSurvivorComponent& Survivor, FName FuelItem)
 {
+	// Solo el combustible pedido: «Añadir leña» nunca quema un tarro de aceite (GDD v3 §5.2).
 	const FIslandData& Data = ExploredIslandData::Get();
-	for (const TPair<FName, float>& Fuel : Data.Campfire.FuelSeconds)
+	FCampfireState NextFire;
+	FBackpackState Next;
+	if (Survivor.GetItemCount(FuelItem) > 0 && FCampfireModel::AddFuel(State, Data.Campfire, FuelItem, NextFire)
+		&& FBackpackModel::Remove(Survivor.GetBackpack(), FuelItem, 1, Next) == EBackpackResult::Ok)
 	{
-		if (Survivor.GetItemCount(Fuel.Key) <= 0)
-		{
-			continue;
-		}
-		FCampfireState NextFire;
-		FBackpackState Next;
-		if (FCampfireModel::AddFuel(State, Data.Campfire, Fuel.Key, NextFire)
-			&& FBackpackModel::Remove(Survivor.GetBackpack(), Fuel.Key, 1, Next) == EBackpackResult::Ok)
-		{
-			Survivor.ApplyBackpack(Next);
-			State = NextFire;
-			UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s: +%s (%.0f s)"), *GetName(), *Fuel.Key.ToString(), State.BurnSeconds);
-			Refresh();
-			return true;
-		}
+		Survivor.ApplyBackpack(Next);
+		State = NextFire;
+		UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s: +%s (%.0f s)"), *GetName(), *FuelItem.ToString(), State.BurnSeconds);
+		Refresh();
+		return true;
 	}
 	Survivor.ReportCraft(ECraftResult::MissingInputs);
 	return false;

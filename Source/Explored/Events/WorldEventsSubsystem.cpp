@@ -15,7 +15,7 @@ namespace WorldEventsSubsystemDetail
 {
 	/** Semilla del calendario de eventos, derivada de la del mundo oficial. */
 	constexpr uint32 EventsSeed = FIslandLayout::OfficialSeed ^ 0xE7E47u;
-	/** Cada cuánto se sondea el modelo (s reales): con días de 40 min son unos 18 s de juego. */
+	/** Cada cuánto se sondea el modelo (s reales): con el día de 24 min (1 h = 60 s) son 30 s de juego. */
 	constexpr float PollInterval = 0.5f;
 	/** Sección de la partida (docs/tecnico/guardado.md). */
 	const TCHAR* const SaveSection = TEXT("events");

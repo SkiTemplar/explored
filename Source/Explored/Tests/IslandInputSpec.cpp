@@ -119,6 +119,21 @@ void FIslandInputSpec::Define()
 			TestFalse(TEXT("Sin cocinar"), Actions.Contains(FFireActionsModel::Cook()));
 			TestFalse(TEXT("Sin hervir"), Actions.Contains(FFireActionsModel::Boil()));
 		});
+
+		It(TEXT("«Añadir leña» nunca quema aceite y solo se echa el tarro sobrante"), [this]()
+		{
+			const FCampfireState Lit = FCampfireModel::Ignite(FCampfireState(), Config);
+			const FBackpackState OnlyOil = Pack({ { TEXT("tarro_aceite"), 2 } });
+			const TArray<FName> Needed = FFireActionsModel::Available(Lit, OnlyOil, Book, Config, 0);
+			TestFalse(TEXT("Sin leña no se aviva con aceite"), Needed.Contains(FFireActionsModel::Feed()));
+			TestFalse(TEXT("Los 2 tarros de la linterna no se queman"), Needed.Contains(FFireActionsModel::FeedOil()));
+			const TArray<FName> Spare = FFireActionsModel::Available(Lit, Pack({ { TEXT("tarro_aceite"), 3 } }), Book, Config, 1);
+			TestTrue(TEXT("El tercero sí, con su verbo"), Spare.Contains(FFireActionsModel::FeedOil()));
+			TestFalse(TEXT("Y no como leña"), Spare.Contains(FFireActionsModel::Feed()));
+			TestEqual(TEXT("3 tarros, ranura vacía: 1 sobra"), FFireActionsModel::SpareOilJars(3, false, 2), 1);
+			TestEqual(TEXT("2 tarros, ranura vacía: ninguno"), FFireActionsModel::SpareOilJars(2, false, 2), 0);
+			TestEqual(TEXT("Ranura llena: todos sobran"), FFireActionsModel::SpareOilJars(1, true, 2), 1);
+		});
 	});
 
 	Describe(TEXT("aviso con elección"), [this]()

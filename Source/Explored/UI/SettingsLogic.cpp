@@ -225,4 +225,16 @@ namespace ExploredSettingsLogic
 	{
 		return KeyName == FName(TEXT("Escape")) || KeyName == FName(TEXT("Gamepad_Special_Right"));
 	}
+
+	int32 QualityPresetToScalability(int32 Preset)
+	{
+		// Baja, media y alta (épica del motor: la isla es pequeña y el estilo es plano).
+		constexpr int32 Levels[QualityPresetCount] = { 0, 1, 3 };
+		return Levels[FMath::Clamp(Preset, 0, QualityPresetCount - 1)];
+	}
+
+	int32 ScalabilityToQualityPreset(int32 Scalability)
+	{
+		return Scalability <= 0 ? 0 : Scalability <= 2 ? 1 : 2;
+	}
 }

@@ -38,22 +38,31 @@ void AExploredPickup::BeginPlay()
 
 void AExploredPickup::RefreshFromIslandState()
 {
+	// Los recursos colocados no se destruyen al cogerlos: se ocultan, para que cargar una partida
+	// anterior a la recogida los vuelva a poner en su sitio.
 	const UExploredIslandStateSubsystem* Island = UExploredIslandStateSubsystem::Get(this);
-	if (!bLoose && Island && Island->IsCollected(GetPropId()))
+	if (!bLoose && Island)
 	{
-		Destroy();
+		SetTaken(Island->IsCollected(GetPropId()));
 	}
+}
+
+void AExploredPickup::SetTaken(bool bInTaken)
+{
+	bTaken = bInTaken;
+	SetActorHiddenInGame(bTaken);
+	SetActorEnableCollision(!bTaken);
 }
 
 void AExploredPickup::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const
 {
-	OutVerbs.Add(FText::Format(LOCTEXT("PickUpItem", "Coger {0}"), ExploredIslandData::ItemName(ItemId)));
+	OutVerbs.Add(FText::Format(LOCTEXT("PickUpItem", "Coger {0}"), ExploredIslandData::ItemName(ItemId).ToLower()));
 }
 
 bool AExploredPickup::CanInteract_Implementation(AActor* InInstigator) const
 {
 	const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
-	return Survivor && !Survivor->IsBusy() && !ItemId.IsNone();
+	return Survivor && !Survivor->IsBusy() && !ItemId.IsNone() && IsAvailable();
 }
 
 void AExploredPickup::Interact_Implementation(AActor* InInstigator)
@@ -84,7 +93,7 @@ void AExploredPickup::Interact_Implementation(AActor* InInstigator)
 void AExploredPickup::Collect(AActor* InInstigator)
 {
 	UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
-	if (!Survivor || IsActorBeingDestroyed() || !Survivor->TryAddItem(ItemId, Count))
+	if (!Survivor || !IsAvailable() || !Survivor->TryAddItem(ItemId, Count))
 	{
 		return;
 	}
@@ -100,7 +109,14 @@ void AExploredPickup::Collect(AActor* InInstigator)
 		}
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Isla] Recogido %s (%d %s)"), *GetPropId().ToString(), Count, *ItemId.ToString());
-	Destroy();
+	if (bLoose)
+	{
+		Destroy();
+	}
+	else
+	{
+		SetTaken(true);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

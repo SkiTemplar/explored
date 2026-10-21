@@ -108,6 +108,10 @@ private:
 	void PlaySound2D(const TCHAR* Path, float Pitch = 1.0f) const;
 
 	void StartMistral();
+	/** Cancela el final en curso (temporizadores de bocina y fundido, luces del Mistral, música del final). */
+	void ResetEnding();
+	/** Al amanecer, si la leña quemada deja la partida sin hoguera posible, el mar deja leña en la Cala Varada. */
+	void WashUpDriftwood(const APawn& Pawn);
 	void SoundHorn();
 	void FinishEnding();
 
@@ -133,6 +137,8 @@ private:
 	bool bSheltered = false;
 	bool bSectionsRegistered = false;
 	bool bEndingStarted = false;
+	/** Último día en que se miró la leña de deriva del amanecer (FSupplyCrateModel::DriftwoodAtDawn). */
+	int32 LastDriftwoodDay = 0;
 
 	UPROPERTY(Transient)
 	TObjectPtr<AExploredMistralLights> Mistral;

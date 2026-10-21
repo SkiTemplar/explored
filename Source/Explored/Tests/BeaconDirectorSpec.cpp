@@ -113,6 +113,23 @@ void FBeaconDirectorSpec::Define()
 		});
 	});
 
+	Describe(TEXT("hito de la balsa"), [this]()
+	{
+		It(TEXT("se registra cuando la balsa está atada y no antes"), [this]()
+		{
+			FBeaconRunState State = InStage(EBeaconStage::Balsa);
+			State.Progress.bRaftBuilt = false;
+			FBeaconFacts Facts = FactsAt(At(2, 9.0));
+			const FBeaconStepResult Without = FBeaconDirectorModel::Step(State, Facts);
+			TestFalse(TEXT("Sin balsa no hay hito"), Without.State.Progress.bRaftBuilt);
+			Facts.bRaftBuilt = true;
+			const FBeaconStepResult With = FBeaconDirectorModel::Step(State, Facts);
+			TestTrue(TEXT("Con la balsa atada, hito"), With.State.Progress.bRaftBuilt);
+			TestEqual(TEXT("El objetivo pasa a cruzar"), FBeaconProgressModel::CurrentObjective(With.State.Progress, FBeaconObjectiveContext()),
+				FName(TEXT("obj_cruza_bajo")));
+		});
+	});
+
 	Describe(TEXT("pensamientos"), [this]()
 	{
 		It(TEXT("se muestran una vez y con su umbral"), [this]()

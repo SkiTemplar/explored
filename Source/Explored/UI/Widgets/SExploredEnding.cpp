@@ -5,6 +5,7 @@
 #include "Rendering/DrawElements.h"
 #include "InputCoreTypes.h"
 #include "Styling/CoreStyle.h"
+#include "UI/ExploredUIPalette.h"
 #include "UI/ExploredUIStyle.h"
 #include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
@@ -16,9 +17,9 @@
 namespace ExploredEndingDetail
 {
 	/** Azul de la noche en alta mar, el fondo de toda la pantalla. */
-	const FLinearColor NightSky(0.012f, 0.025f, 0.07f, 1.0f);
-	const FLinearColor StarWhite(0.93f, 0.91f, 0.82f, 1.0f);
-	const FLinearColor BeaconAmber(1.0f, 0.86f, 0.22f, 1.0f);
+	const FLinearColor NightSky = ExploredPalette::Linear(ExploredPalette::NocheCenit);
+	const FLinearColor StarWhite = ExploredPalette::Linear(ExploredPalette::Papel);
+	const FLinearColor BeaconAmber = ExploredPalette::Linear(ExploredPalette::Laton);
 	constexpr int32 StarCount = 160;
 	constexpr int32 StarSeed = 1974;
 
@@ -40,9 +41,9 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 	OnContinue = InArgs._OnContinue;
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
-	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeMenuButton(
+	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeSceneButton(
 		NSLOCTEXT("ExploredUI", "EndingContinue", "Continuar"),
-		FOnClicked::CreateSP(this, &SExploredEnding::HandleContinue), false);
+		FOnClicked::CreateSP(this, &SExploredEnding::HandleContinue));
 	InitialFocus = ContinueButton;
 
 	ChildSlot

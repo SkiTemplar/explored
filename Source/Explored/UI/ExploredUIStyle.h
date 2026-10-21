@@ -5,11 +5,14 @@
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Styling/SlateTypes.h"
 
+class UTexture2D;
+enum class EExploredIcon : uint8;
+
 /**
- * Estilo visual compartido del frontend: «diario de explorador» cálido y
- * limpio. Todo en código, sin assets de UI (pinceles de color/redondeados y
- * tipografía por defecto del motor). Un único punto de verdad para que todos
- * los widgets Slate del módulo compartan look & feel.
+ * Estilo visual compartido de la interfaz de Baliza Siete (GDD v3 §9): cuaderno de papel y tinta.
+ * Todos los colores salen de la paleta única (ExploredUIPalette.h, generado desde
+ * Tools/Style/paleta.json); la tipografía es Lora (serif, OFL, Content/Slate/Fonts) y los iconos,
+ * siluetas de una hoja generada por script (Content/Slate/T_IconosUI.png, la única textura de UI).
  *
  * Es un singleton de vida estática (Get() nunca se destruye durante la
  * ejecución): los widgets pueden guardar punteros a los FButtonStyle/etc.
@@ -21,22 +24,30 @@ class EXPLORED_API FExploredUIStyle
 public:
 	static FExploredUIStyle& Get();
 
-	// Paleta cálida: papel envejecido, tinta sepia, acento ámbar.
-	FLinearColor ColorPaper() const { return FLinearColor(0.114f, 0.090f, 0.071f, 0.82f); }
-	FLinearColor ColorPaperLight() const { return FLinearColor(0.160f, 0.130f, 0.100f, 0.90f); }
-	FLinearColor ColorInk() const { return FLinearColor(0.96f, 0.90f, 0.78f, 1.0f); }
-	FLinearColor ColorInkDim() const { return FLinearColor(0.80f, 0.72f, 0.60f, 0.85f); }
-	FLinearColor ColorAccent() const { return FLinearColor(0.86f, 0.55f, 0.18f, 1.0f); }
-	FLinearColor ColorAccentDim() const { return FLinearColor(0.60f, 0.38f, 0.13f, 1.0f); }
-	FLinearColor ColorDisabled() const { return FLinearColor(0.35f, 0.32f, 0.28f, 0.6f); }
-	/** Papel de las hojas que se sostienen (mapa, fichas del museo): crema opaco. */
-	FLinearColor ColorSheet() const { return FLinearColor(0.93f, 0.87f, 0.74f, 1.0f); }
-	/** Tinta sobre el papel crema: sepia oscuro opaco. */
-	FLinearColor ColorSheetInk() const { return FLinearColor(0.20f, 0.14f, 0.09f, 1.0f); }
-	/** Pulgares que sujetan el mapa (un tono de piel neutro y cálido). */
-	FLinearColor ColorSkin() const { return FLinearColor(0.72f, 0.52f, 0.40f, 1.0f); }
-	/** Aviso (sobrescribir, ranura dañada, carga al tope). */
-	FLinearColor ColorWarning() const { return FLinearColor(0.85f, 0.25f, 0.18f, 1.0f); }
+	// Papel y tinta del cuaderno (paleta: papel, arena_clara, tinta, madera_oscura, rojo_faro, cielo_ocaso).
+	FLinearColor ColorPaper() const;
+	FLinearColor ColorPaperLight() const;
+	FLinearColor ColorInk() const;
+	FLinearColor ColorInkDim() const;
+	FLinearColor ColorAccent() const;
+	FLinearColor ColorAccentDim() const;
+	FLinearColor ColorDisabled() const;
+	/** Papel de las hojas que se sostienen: igual que el panel, opaco. */
+	FLinearColor ColorSheet() const;
+	FLinearColor ColorSheetInk() const;
+	FLinearColor ColorSkin() const;
+	/** Aviso (sobrescribir, ranura dañada, barra baja). */
+	FLinearColor ColorWarning() const;
+	/** Nota de Iria en el cuaderno: tinta azul (agua_profunda). */
+	FLinearColor ColorNoteInk() const;
+	/** Texto claro sobre la escena (menú principal, carteles): papel. */
+	FLinearColor ColorOnScene() const;
+
+	/** Fuentes por tamaño en píxeles de diseño (1080p). Nada por debajo de 22 px (GDD v3 §9). */
+	FSlateFontInfo Serif(float Pixels) const;
+	FSlateFontInfo SerifBold(float Pixels) const;
+	FSlateFontInfo SerifItalic(float Pixels) const;
+	static constexpr float MinTextPixels = 22.0f;
 
 	FSlateFontInfo FontTitle() const;
 	FSlateFontInfo FontSubtitle() const;
@@ -52,9 +63,20 @@ public:
 	const FSlateBrush* BrushThumb() const { return &ThumbBrush; }
 	/** Relleno liso blanco para teñir (siluetas, manchas). */
 	const FSlateBrush* BrushWhite() const { return &WhiteBrush; }
+	/** Caja blanca redondeada para teñir: radio pequeño (4), medio (10) o píldora. */
+	const FSlateBrush* BrushRound(int32 RadiusClass) const;
+	/** Solo el contorno redondeado (blanco, 3 px), para teñir. */
+	const FSlateBrush* BrushOutline() const { return &OutlineBrush; }
+
+	/** Icono plano de la hoja, en blanco: se tiñe con ColorAndOpacity o el tinte del dibujo. Nunca nulo. */
+	const FSlateBrush* IconBrush(EExploredIcon Icon) const;
+	/** Textura de la hoja de iconos (cargada del PNG la primera vez; nula sin el fichero). */
+	UTexture2D* IconTexture() const;
 
 	/** Botón de menú: fondo transparente en reposo, resalte ámbar al pasar el ratón, hueco al pulsar. */
 	const FButtonStyle& ButtonStyle() const { return MenuButtonStyle; }
+	/** Botón sobre fondo oscuro: transparente, velo de tinta al pasar el ratón. */
+	const FButtonStyle& SceneButtonStyle() const { return SceneButtonStyleValue; }
 	/** Botón secundario más pequeño (pestañas de ajustes). */
 	const FButtonStyle& TabButtonStyle(bool bActive) const { return bActive ? TabButtonActiveStyle : TabButtonInactiveStyle; }
 	const FCheckBoxStyle& CheckBoxStyle() const { return CheckBoxStyleValue; }
@@ -77,8 +99,20 @@ private:
 	FSlateRoundedBoxBrush SheetBrush;
 	FSlateRoundedBoxBrush ThumbBrush;
 	FSlateColorBrush WhiteBrush;
+	FSlateRoundedBoxBrush RoundSmallBrush;
+	FSlateRoundedBoxBrush RoundMediumBrush;
+	FSlateRoundedBoxBrush RoundPillBrush;
+	FSlateRoundedBoxBrush OutlineBrush;
+	mutable TArray<FSlateBrush> IconBrushes;
+	mutable UTexture2D* IconSheet = nullptr;
+	mutable bool bTriedIconSheet = false;
+	TSharedPtr<const struct FCompositeFont> RegularFont;
+	TSharedPtr<const struct FCompositeFont> BoldFont;
+	TSharedPtr<const struct FCompositeFont> ItalicFont;
 
 	FButtonStyle MenuButtonStyle;
+	FButtonStyle SceneButtonStyleValue;
+	FSlateRoundedBoxBrush SceneHoverBrush;
 	FButtonStyle TabButtonActiveStyle;
 	FButtonStyle TabButtonInactiveStyle;
 	FCheckBoxStyle CheckBoxStyleValue;

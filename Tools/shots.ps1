@@ -14,7 +14,7 @@ $outDir = Join-Path $ProjectRoot 'Saved\Shots'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 Get-ChildItem $outDir -Filter *.png -ErrorAction SilentlyContinue | Remove-Item -Force
 
-$cmdArgs = @($UProject, '-game', "-ExploredShots=$Set", "-ShotsDir=$outDir", '-windowed', "-ResX=$Width", "-ResY=$Height",
+$cmdArgs = @($UProject, '-game', "-ExploredShots=$Set", "-ShotsDir=$outDir", '-windowed', "-ResX=$Width", "-ResY=$Height", '-ForceRes',
     '-NoSound', '-nosplash', '-unattended', '-log', "-ABSLOG=$ProjectRoot\Saved\Logs\Shots.log")
 if ($ExecCmds) { $cmdArgs += "-ExecCmds=`"$ExecCmds`"" }
 $proc = Start-Process -FilePath $Editor -ArgumentList $cmdArgs -PassThru

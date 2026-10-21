@@ -77,21 +77,27 @@ namespace ExploredSettingsPanelDetail
 			.Text_Lambda([GetIndex, Labels, Count]() { return Labels.IsValidIndex(((GetIndex() % Count) + Count) % Count) ? Labels[((GetIndex() % Count) + Count) % Count] : FText::GetEmpty(); });
 
 		return SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth()
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
 				SNew(SButton).ButtonStyle(&S().ButtonStyle())
-				.Text(INVTEXT("<"))
 				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex(((GetIndex() - 1) % Count + Count) % Count); return FReply::Handled(); })
+				.ContentPadding(FMargin(10.0f, 0.0f))
+				[
+					SNew(STextBlock).Text(INVTEXT("<")).Font(S().SerifBold(30.0f)).ColorAndOpacity(FSlateColor(S().ColorAccent()))
+				]
 			]
-			+ SHorizontalBox::Slot().AutoWidth().Padding(FMargin(6.0f, 0.0f))
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(FMargin(6.0f, 0.0f))
 			[
 				Text
 			]
-			+ SHorizontalBox::Slot().AutoWidth()
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
 				SNew(SButton).ButtonStyle(&S().ButtonStyle())
-				.Text(INVTEXT(">"))
 				.OnClicked_Lambda([GetIndex, SetIndex, Count]() { SetIndex(((GetIndex() + 1) % Count + Count) % Count); return FReply::Handled(); })
+				.ContentPadding(FMargin(10.0f, 0.0f))
+				[
+					SNew(STextBlock).Text(INVTEXT(">")).Font(S().SerifBold(30.0f)).ColorAndOpacity(FSlateColor(S().ColorAccent()))
+				]
 			];
 	}
 
@@ -125,9 +131,7 @@ namespace ExploredSettingsPanelDetail
 		return {
 			NSLOCTEXT("ExploredUI", "QualityLow", "Baja"),
 			NSLOCTEXT("ExploredUI", "QualityMedium", "Media"),
-			NSLOCTEXT("ExploredUI", "QualityHigh", "Alta"),
-			NSLOCTEXT("ExploredUI", "QualityEpic", "Épica"),
-			NSLOCTEXT("ExploredUI", "QualityCinematic", "Cinemática")
+			NSLOCTEXT("ExploredUI", "QualityHigh", "Alta")
 		};
 	}
 }
@@ -266,11 +270,6 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 		FText::AsNumber(144), NSLOCTEXT("ExploredUI", "Unlimited", "Sin límite")
 	};
 
-	auto QualityRow = [](const FText& Label, TFunction<int32()> Get, TFunction<void(int32)> Set)
-	{
-		return MakeRow(Label, MakeCycler(QualityLabels(), MoveTemp(Get), MoveTemp(Set)));
-	};
-
 	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 8.0f)) [ MakeSectionTitle(NSLOCTEXT("ExploredUI", "SectionDisplay", "Pantalla")) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
@@ -307,16 +306,10 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGraphicsTab()
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "OverallQuality", "Calidad general"),
-				MakeCycler(QualityLabels(), [GS]() { return GS->GetOverallScalabilityLevel(); }, [GS](int32 V) { GS->SetOverallScalabilityLevel(V); }))
-		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "ViewDistance", "Vista"), [GS]() { return GS->GetViewDistanceQuality(); }, [GS](int32 V) { GS->SetViewDistanceQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "Shadows", "Sombras"), [GS]() { return GS->GetShadowQuality(); }, [GS](int32 V) { GS->SetShadowQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "GI", "Iluminación global"), [GS]() { return GS->GetGlobalIlluminationQuality(); }, [GS](int32 V) { GS->SetGlobalIlluminationQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "Reflections", "Reflejos"), [GS]() { return GS->GetReflectionQuality(); }, [GS](int32 V) { GS->SetReflectionQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "PostProcess", "Postproceso"), [GS]() { return GS->GetPostProcessingQuality(); }, [GS](int32 V) { GS->SetPostProcessingQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "Textures", "Texturas"), [GS]() { return GS->GetTextureQuality(); }, [GS](int32 V) { GS->SetTextureQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "Effects", "Efectos"), [GS]() { return GS->GetVisualEffectQuality(); }, [GS](int32 V) { GS->SetVisualEffectQuality(V); }) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ QualityRow(NSLOCTEXT("ExploredUI", "Foliage", "Vegetación"), [GS]() { return GS->GetFoliageQuality(); }, [GS](int32 V) { GS->SetFoliageQuality(V); }) ];
+				MakeCycler(QualityLabels(),
+					[GS]() { return ExploredSettingsLogic::ScalabilityToQualityPreset(GS->GetOverallScalabilityLevel()); },
+					[GS](int32 V) { GS->SetOverallScalabilityLevel(ExploredSettingsLogic::QualityPresetToScalability(V)); }))
+		];
 }
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildAudioTab()
@@ -335,11 +328,9 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildAudioTab()
 	};
 
 	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolMaster", "Maestro"), EExploredAudioChannel::Master) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolMusic", "Música"), EExploredAudioChannel::Music) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolEffects", "Efectos"), EExploredAudioChannel::Effects) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolAmbient", "Ambiente"), EExploredAudioChannel::Ambient) ]
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolUI", "Interfaz"), EExploredAudioChannel::Interface) ];
+		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ VolumeRow(NSLOCTEXT("ExploredUI", "VolAmbient", "Ambiente"), EExploredAudioChannel::Ambient) ];
 }
 
 TSharedRef<SWidget> SExploredSettingsPanel::BuildControlsTab()

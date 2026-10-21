@@ -125,15 +125,23 @@ namespace ExploredSaveStates
 		{
 			return false;
 		}
+		// Una pila sin id o con cantidad no positiva invalida la mochila entera: mejor avisar que cargar a medias.
 		for (const FSaveArchive& Entry : Stacks)
 		{
 			FBackpackStack Stack;
-			Entry.Read(TEXT("id"), Stack.Id);
-			Entry.Read(TEXT("count"), Stack.Count);
+			if (!Entry.Read(TEXT("id"), Stack.Id) || !Entry.Read(TEXT("count"), Stack.Count) || Stack.Id.IsNone() || Stack.Count <= 0)
+			{
+				OutPack = FBackpackState();
+				return false;
+			}
 			OutPack.Stacks.Add(Stack);
 		}
 		Ar.Read(TEXT("heldHeavy"), OutPack.HeldHeavy);
-		Ar.Read(TEXT("canteenSips"), OutPack.CanteenSips);
+		if (Ar.Read(TEXT("canteenSips"), OutPack.CanteenSips) && OutPack.CanteenSips < 0)
+		{
+			OutPack = FBackpackState();
+			return false;
+		}
 		return true;
 	}
 

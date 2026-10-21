@@ -7,19 +7,19 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 358 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 250 |
-| … de `Content/Data` (campos bilingües) | 108 |
+| Textos en el catálogo | 385 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 260 |
+| … de `Content/Data` (campos bilingües) | 125 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
-| Literales sin localizar | 3 |
+| Literales sin localizar | 2 |
 | Literales invariantes | 4 |
-| Literales para revisar | 348 |
-| Errores / avisos | 0 / 18 |
+| Literales para revisar | 362 |
+| Errores / avisos | 0 / 2 |
 
 ## Literales del C++
 
-### Literal (3)
+### Literal (2)
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
 
@@ -27,7 +27,6 @@ Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o 
 |---|---|---|
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:238` | `ir a ` | `AddStep(TEXT("ir a ") + Label, [this, Target]() { return TeleportNear(Target(), true); }, [this]() { return TravelLeft1x <= 0.0; },` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:341` | `remar hasta ` | `AddStep(TEXT("remar hasta ") + Label, [Raft]() { return Raft() && Raft()->IsOccupied(); }, [this, Raft, Target, ArriveMeters]()` |
-| `Source/Explored/UI/ExploredHUD.cpp:299` | `IA_Combine` | `const FString Choice = FIslandHudModel::ChoicePromptText(InteractKeyName(), KeyNameFor(FName(TEXT("IA_Combine"))), Names);` |
 
 ### Invariante (4)
 
@@ -37,10 +36,10 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 |---|---|---|
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:51` | `%s: %s` | `Errors.Add(FString::Printf(TEXT("%s: %s"), *Category.ToString(), Message));` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:184` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
-| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
+| `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:252` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:95` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (348)
+### Revisar (362)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -178,6 +177,13 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:335` | `dormir a las 21:00 hasta las 06:00 con energía 100` | `Add(TEXT("dormir a las 21:00 hasta las 06:00 con energía 100"), [this]()` |
 | `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:337` | `BalizaTime 3 21` | `return Console(TEXT("BalizaTime 3 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));` |
 | `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:337` | `BalizaBody 50 50 30 80` | `return Console(TEXT("BalizaTime 3 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:104` | `menú principal al arrancar` | `Steps.Add({ TEXT("menú principal al arrancar"), [] { return true; }, [this, Menu] { return InMode(Menu); }, 60.0f });` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:105` | `con el menú abierto no corren ni el reloj ni las barras` | `Steps.Add({ TEXT("con el menú abierto no corren ni el reloj ni las barras"), [this]` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:129` | `nueva partida` | `Steps.Add({ TEXT("nueva partida"), [this] { Controller()->StartNewGame(); return true; }, [this, Playing] { return InMode(Playing); } });` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:130` | `jugar: etapa, página, mochila, reloj y sitio` | `Steps.Add({ TEXT("jugar: etapa, página, mochila, reloj y sitio"), [this]` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:144` | `guardar en manual2` | `Steps.Add({ TEXT("guardar en manual2"), [this]` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:156` | `volver al menú (recarga el mapa)` | `Steps.Add({ TEXT("volver al menú (recarga el mapa)"), [this] { Controller()->ExitToMainMenu(); return true; },` |
+| `Source/Explored/Debug/ExploredFrontendFlowTest.cpp:159` | `el estado es el guardado` | `Steps.Add({ TEXT("el estado es el guardado"), [] { return true; }, [this]` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:120` | `kit inicial` | `Add(TEXT("kit inicial"), [this]() { return Count(TEXT("cuchillo")) == 1 && Count(TEXT("cantimplora")) == 1 && Count(TEXT("barometro")) == 1; },` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:122` | `recoger leña 1` | `Add(TEXT("recoger leña 1"), [this]() { return Interact(TEXT("lena_cala_1")); }, [this]() { return Idle() && Count(TEXT("lena")) == 2; });` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:123` | `recoger leña 2` | `Add(TEXT("recoger leña 2"), [this]() { return Interact(TEXT("lena_cala_2")); }, [this]() { return Idle() && Count(TEXT("lena")) == 4; });` |
@@ -201,6 +207,38 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:74` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:455` | `historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)` | `Report.Softlocks.Add({ TEXT("historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)"), StoryFailures.IsEmpty(),` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:456` | `todos llegan al final` | `StoryFailures.IsEmpty() ? FString(TEXT("todos llegan al final")) : FString::Join(StoryFailures, TEXT(" \| ")) });` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:50` | `beber un coco` | `AddStep(TEXT("beber un coco"), [this]() { return UseItem(TEXT("coco")); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:77` | `la hoguera de las rocas` | `AddGoToActor(TEXT("la hoguera de las rocas"), [this]() { return Cast<AActor>(NearestFire()); });` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:80` | `comer un pez asado` | `AddStep(TEXT("comer un pez asado"), [this]() { return UseItem(TEXT("pez_asado")); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:89` | `beber el segundo coco (cuenco para el aceite)` | `AddStep(TEXT("beber el segundo coco (cuenco para el aceite)"), [this]() { return Count(TEXT("coco")) == 0 \|\| UseItem(TEXT("coco")); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:102` | `fin del chubasco` | `AddWaitUntil(1, 17.1, TEXT("fin del chubasco"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:106` | `hora de dormir` | `AddWaitUntil(1, 20.05, TEXT("hora de dormir"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:107` | `dormir en el refugio del faro` | `AddStep(TEXT("dormir en el refugio del faro"), [this]() { return Body() && Body()->TrySleep(); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:113` | `desayunar el pez asado de ayer` | `AddStep(TEXT("desayunar el pez asado de ayer"), [this]() { return Count(TEXT("pez_asado")) == 0 \|\| UseItem(TEXT("pez_asado")); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:139` | `subir a la balsa` | `AddStep(TEXT("subir a la balsa"), [this, RaftActor]() { return InteractWith(RaftActor()); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:141` | `el islote del carguero` | `AddRow(TEXT("el islote del carguero"), [this]()` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:146` | `bajar en el islote` | `AddStep(TEXT("bajar en el islote"), [Site]()` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:155` | `la balsa` | `AddGoToActor(TEXT("la balsa"), RaftActor);` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:156` | `volver a subir con la lente` | `AddStep(TEXT("volver a subir con la lente"), [this, RaftActor]() { return InteractWith(RaftActor()); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:158` | `Playa Norte` | `AddRow(TEXT("Playa Norte"), [Site]() { return Site()->GetShoreLocation(); }, 12.0);` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:159` | `bajar en Playa Norte` | `AddStep(TEXT("bajar en Playa Norte"), [Site]()` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:165` | `dejar la lente junto al faro` | `AddStep(TEXT("dejar la lente junto al faro"), [this]() { return Survivor() && Survivor()->DropHeavy(); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:172` | `noche del ciclón` | `AddWaitUntil(2, 20.1, TEXT("noche del ciclón"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:173` | `en el ciclón no se duerme` | `AddStep(TEXT("en el ciclón no se duerme"), [this]() { return Body() && Body()->IsSheltered() && !Body()->TrySleep(); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:175` | `ojo del ciclón` | `AddWaitUntil(2, 22.2, TEXT("ojo del ciclón"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:179` | `fin del ciclón` | `AddWaitUntil(3, 2.05, TEXT("fin del ciclón"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:180` | `dormir tras el ciclón` | `AddStep(TEXT("dormir tras el ciclón"), [this]() { return Body() && Body()->TrySleep(); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:186` | `soltar el remo (ya no hace falta)` | `AddStep(TEXT("soltar el remo (ya no hace falta)"), [this]() { return Survivor() && Survivor()->DropItem(TEXT("remo")); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:222` | `la lente` | `AddGoToActor(TEXT("la lente"), DroppedLens);` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:223` | `coger la lente` | `AddStep(TEXT("coger la lente"), [this, DroppedLens]() { return InteractWith(DroppedLens()); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:226` | `subir a la linterna` | `AddStep(TEXT("subir a la linterna"), [this]() { return InteractWith(Prop(TEXT("faro_torre"))); }, [this]()` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:231` | `leer la página 8` | `AddStep(TEXT("leer la página 8"), [this]() { return InteractWith(Prop(TEXT("pagina_8"))); },` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:233` | `poner la lente` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:233` | `verter los tarros` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:233` | `apretar la mecha` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:238` | `la noche` | `AddWaitUntil(3, 20.05, TEXT("la noche"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:239` | `encender la baliza` | `AddStep(TEXT("encender la baliza"), [this]() { return InteractWith(Prop(TEXT("faro_linterna"))); }, [this]()` |
+| `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:244` | `Mistral, bocina y epílogo` | `AddStep(TEXT("Mistral, bocina y epílogo"), [] { return true; }, [this]()` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:164` | `sin objetivo interactuable (%s)` | `Note(FString::Printf(TEXT("sin objetivo interactuable (%s)"), Target ? *Target->GetName() : TEXT("nulo")));` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:169` | `%s no admite interacción ahora` | `Note(FString::Printf(TEXT("%s no admite interacción ahora"), *Target->GetName()));` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:247` | `usar ` | `AddStep(TEXT("usar ") + PropId, [this, PropId, bOptional]() { return InteractWith(Prop(PropId)) \|\| bOptional; },` |
@@ -209,53 +247,21 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:271` | `pescar hasta %d peces` | `AddStep(FString::Printf(TEXT("pescar hasta %d peces"), Target), [this]() { return InteractWith(Prop(TEXT("punto_pesca_1"))); },` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:294` | `hoguera: %s` | `AddStep(FString::Printf(TEXT("hoguera: %s"), *Action), [this, FireGetter, Action, Product]()` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:356` | `balsa a %.1f m del destino (encallada %d)` | `Note(FString::Printf(TEXT("balsa a %.1f m del destino (encallada %d)"), Distance, R->IsGrounded() ? 1 : 0));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:383` | `beber un coco` | `AddStep(TEXT("beber un coco"), [this]() { return UseItem(TEXT("coco")); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:410` | `la hoguera de las rocas` | `AddGoToActor(TEXT("la hoguera de las rocas"), [this]() { return Cast<AActor>(NearestFire()); });` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:413` | `comer un pez asado` | `AddStep(TEXT("comer un pez asado"), [this]() { return UseItem(TEXT("pez_asado")); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:422` | `beber el segundo coco (cuenco para el aceite)` | `AddStep(TEXT("beber el segundo coco (cuenco para el aceite)"), [this]() { return Count(TEXT("coco")) == 0 \|\| UseItem(TEXT("coco")); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:435` | `fin del chubasco` | `AddWaitUntil(1, 17.1, TEXT("fin del chubasco"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:439` | `hora de dormir` | `AddWaitUntil(1, 20.05, TEXT("hora de dormir"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:440` | `dormir en el refugio del faro` | `AddStep(TEXT("dormir en el refugio del faro"), [this]() { return Body() && Body()->TrySleep(); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:446` | `desayunar el pez asado de ayer` | `AddStep(TEXT("desayunar el pez asado de ayer"), [this]() { return Count(TEXT("pez_asado")) == 0 \|\| UseItem(TEXT("pez_asado")); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:472` | `subir a la balsa` | `AddStep(TEXT("subir a la balsa"), [this, RaftActor]() { return InteractWith(RaftActor()); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:474` | `el islote del carguero` | `AddRow(TEXT("el islote del carguero"), [this]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:479` | `bajar en el islote` | `AddStep(TEXT("bajar en el islote"), [Site]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:488` | `la balsa` | `AddGoToActor(TEXT("la balsa"), RaftActor);` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:489` | `volver a subir con la lente` | `AddStep(TEXT("volver a subir con la lente"), [this, RaftActor]() { return InteractWith(RaftActor()); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:491` | `Playa Norte` | `AddRow(TEXT("Playa Norte"), [Site]() { return Site()->GetShoreLocation(); }, 12.0);` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:492` | `bajar en Playa Norte` | `AddStep(TEXT("bajar en Playa Norte"), [Site]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:498` | `dejar la lente junto al faro` | `AddStep(TEXT("dejar la lente junto al faro"), [this]() { return Survivor() && Survivor()->DropHeavy(); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:505` | `noche del ciclón` | `AddWaitUntil(2, 20.1, TEXT("noche del ciclón"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:506` | `en el ciclón no se duerme` | `AddStep(TEXT("en el ciclón no se duerme"), [this]() { return Body() && Body()->IsSheltered() && !Body()->TrySleep(); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:508` | `ojo del ciclón` | `AddWaitUntil(2, 22.2, TEXT("ojo del ciclón"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:512` | `fin del ciclón` | `AddWaitUntil(3, 2.05, TEXT("fin del ciclón"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:513` | `dormir tras el ciclón` | `AddStep(TEXT("dormir tras el ciclón"), [this]() { return Body() && Body()->TrySleep(); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:519` | `soltar el remo (ya no hace falta)` | `AddStep(TEXT("soltar el remo (ya no hace falta)"), [this]() { return Survivor() && Survivor()->DropItem(TEXT("remo")); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:555` | `la lente` | `AddGoToActor(TEXT("la lente"), DroppedLens);` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:556` | `coger la lente` | `AddStep(TEXT("coger la lente"), [this, DroppedLens]() { return InteractWith(DroppedLens()); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:559` | `subir a la linterna` | `AddStep(TEXT("subir a la linterna"), [this]() { return InteractWith(Prop(TEXT("faro_torre"))); }, [this]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:564` | `leer la página 8` | `AddStep(TEXT("leer la página 8"), [this]() { return InteractWith(Prop(TEXT("pagina_8"))); },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:566` | `poner la lente` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:566` | `verter los tarros` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:566` | `apretar la mecha` | `for (const TCHAR* Slot : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:571` | `la noche` | `AddWaitUntil(3, 20.05, TEXT("la noche"));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:572` | `encender la baliza` | `AddStep(TEXT("encender la baliza"), [this]() { return InteractWith(Prop(TEXT("faro_linterna"))); }, [this]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:577` | `Mistral, bocina y epílogo` | `AddStep(TEXT("Mistral, bocina y epílogo"), [] { return true; }, [this]()` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:599` | `Partida completa, ruta %s, reloj ×%.0f en esperas` | `Note(FString::Printf(TEXT("Partida completa, ruta %s, reloj ×%.0f en esperas"), *RouteName, FastScale));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:690` | ` carga: ` | `bLoaded ? TEXT("") : *(TEXT(" carga: ") + Error), bSameStory ? TEXT("") : TEXT(" historia distinta"),` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:690` | ` historia distinta` | `bLoaded ? TEXT("") : *(TEXT(" carga: ") + Error), bSameStory ? TEXT("") : TEXT(" historia distinta"),` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:691` | ` mochila distinta` | `bSamePack ? TEXT("") : TEXT(" mochila distinta"), bSameBody && bSameClock ? TEXT("") : TEXT(" cuerpo o reloj distinto")));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:691` | ` cuerpo o reloj distinto` | `bSamePack ? TEXT("") : TEXT(" mochila distinta"), bSameBody && bSameClock ? TEXT("") : TEXT(" cuerpo o reloj distinto")));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:708` | `etapa %s (%.1f min a 1×)` | `Note(FString::Printf(TEXT("etapa %s (%.1f min a 1×)"), *Name, Run.Clock.Est1xSeconds / 60.0));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:772` | `RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s` | `Note(FString::Printf(TEXT("RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s"),` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:774` | ` · falló: ` | `Run.StagesReached.Num(), Run.LogErrors, FailedStep.IsEmpty() ? TEXT("") : *(TEXT(" · falló: ") + FailedStep)));` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:811` | `tope de tiempo real` | `EndRun(TEXT("tope de tiempo real"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:567` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:568` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:569` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:570` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:575` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:603` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:382` | `Partida completa, ruta %s, reloj ×%.0f en esperas` | `Note(FString::Printf(TEXT("Partida completa, ruta %s, reloj ×%.0f en esperas"), *RouteName, FastScale));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:473` | ` carga: ` | `bLoaded ? TEXT("") : *(TEXT(" carga: ") + Error), bSameStory ? TEXT("") : TEXT(" historia distinta"),` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:473` | ` historia distinta` | `bLoaded ? TEXT("") : *(TEXT(" carga: ") + Error), bSameStory ? TEXT("") : TEXT(" historia distinta"),` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:474` | ` mochila distinta` | `bSamePack ? TEXT("") : TEXT(" mochila distinta"), bSameBody && bSameClock ? TEXT("") : TEXT(" cuerpo o reloj distinto")));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:474` | ` cuerpo o reloj distinto` | `bSamePack ? TEXT("") : TEXT(" mochila distinta"), bSameBody && bSameClock ? TEXT("") : TEXT(" cuerpo o reloj distinto")));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:491` | `etapa %s (%.1f min a 1×)` | `Note(FString::Printf(TEXT("etapa %s (%.1f min a 1×)"), *Name, Run.Clock.Est1xSeconds / 60.0));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:555` | `RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s` | `Note(FString::Printf(TEXT("RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s"),` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:557` | ` · falló: ` | `Run.StagesReached.Num(), Run.LogErrors, FailedStep.IsEmpty() ? TEXT("") : *(TEXT(" · falló: ") + FailedStep)));` |
+| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:594` | `tope de tiempo real` | `EndRun(TEXT("tope de tiempo real"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:581` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:582` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:583` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:584` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:589` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:617` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:160` | `{\n  "status": "%s",\n  "start_zone": "%s",\n  "start_m": [%.2f, %.2f, %.2f],\n  "end_m": [%.2f, %.2f, %.2f],\n` | `TEXT("{\n \"status\": \"%s\",\n \"start_zone\": \"%s\",\n \"start_m\": [%.2f, %.2f, %.2f],\n \"end_m\": [%.2f, %.2f, %.2f],\n")` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:161` | `  "waypoints_reached": %d,\n  "waypoints": %d,\n  "elapsed_s": %.1f,\n  "travelled_m": %.1f,\n  "max_height_m": %.2f\n}\n` | `TEXT(" \"waypoints_reached\": %d,\n \"waypoints\": %d,\n \"elapsed_s\": %.1f,\n \"travelled_m\": %.1f,\n \"max_height_m\": %.2f\n}\n"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
@@ -353,17 +359,17 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:30` | `%s: JSON mal formado o sin objeto raíz` | `Errors.Add(FString::Printf(TEXT("%s: JSON mal formado o sin objeto raíz"), File));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:67` | `items.json: JSON mal formado o sin lista raíz` | `Errors.Add(TEXT("items.json: JSON mal formado o sin lista raíz"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:78` | `items.json: objeto sin id` | `Errors.Add(TEXT("items.json: objeto sin id"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:155` | `recipes.json: falta la lista «recipes»` | `Errors.Add(TEXT("recipes.json: falta la lista «recipes»"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:167` | `recipes.json: receta incompleta (id, verb, place y output)` | `Errors.Add(TEXT("recipes.json: receta incompleta (id, verb, place y output)"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:174` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:179` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:284` | `survival_needs.json: valores del cuerpo no válidos` | `Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:467` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:495` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:159` | `recipes.json: falta la lista «recipes»` | `Errors.Add(TEXT("recipes.json: falta la lista «recipes»"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:171` | `recipes.json: receta incompleta (id, verb, place y output)` | `Errors.Add(TEXT("recipes.json: receta incompleta (id, verb, place y output)"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:178` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:183` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:288` | `survival_needs.json: valores del cuerpo no válidos` | `Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:471` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:499` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:150` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:153` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:156` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:154` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:157` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:160` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |
@@ -388,6 +394,13 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/UI/IslandHudModel.cpp:12` | `Día %d · %02d:%02d` | `return FString::Printf(TEXT("Día %d · %02d:%02d"), FMath::Max(1, Day), Minutes / 60, Minutes % 60);` |
 | `Source/Explored/UI/IslandHudModel.cpp:17` | `Día %d` | `return FString::Printf(TEXT("Día %d"), FMath::Max(1, Day));` |
 | `Source/Explored/UI/IslandHudModel.cpp:24` | `%d hPa %s` | `return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);` |
+| `Source/Explored/UI/IslandHudModel.cpp:29` | `%d hPa` | `return FString::Printf(TEXT("%d hPa"), FMath::IsFinite(Hpa) ? FMath::RoundToInt32(Hpa) : 0);` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:54` | `Clear Air` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:54` | `Gymnopedie No. 3` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Enchanted Journey` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:168` | `Cala Varada` | `AddZone(TEXT("cala_varada"), TEXT("Cala Varada"), EIslandArchetype::Landing, FVector2D(-100.0f, 10.0f), 35.0f, 0.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:170` | `Rocas del Pescador` | `AddZone(TEXT("rocas_pescador"), TEXT("Rocas del Pescador"), EIslandArchetype::Teeth, FVector2D(-15.0f, -140.0f), 30.0f, 2.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:171` | `Bosque de Bambú` | `AddZone(TEXT("bosque_bambu"), TEXT("Bosque de Bambú"), EIslandArchetype::Emerald, FVector2D(55.0f, -85.0f), 42.0f, 5.0f);` |
@@ -414,23 +427,7 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (18)
+## Avisos (2)
 
-- translations/en.json: ExploredUI,CondBleeding no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondFever no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondInfection no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondOpenWounds no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondScurvy no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondSprain no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,CondSunBurn no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,FishingLineOut no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,FishingWaiting no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,InteractPrompt no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,NeedEnergy no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,NeedHunger no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,NeedRest no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,NeedThirst no aparece en el código (¿clave renombrada o borrada?)
-- translations/en.json: ExploredUI,NeedWarmth no aparece en el código (¿clave renombrada o borrada?)
 - Source/Explored/Debug/ExploredPlaytestBotRun.cpp:238: literal sin localizar «ir a »
 - Source/Explored/Debug/ExploredPlaytestBotRun.cpp:341: literal sin localizar «remar hasta »
-- Source/Explored/UI/ExploredHUD.cpp:299: literal sin localizar «IA_Combine»

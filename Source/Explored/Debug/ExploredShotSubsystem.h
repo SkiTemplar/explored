@@ -66,6 +66,10 @@ public:
 private:
 	void BuildShotList(const FString& Set);
 	void BeginShot(int32 Index);
+	/** Conjunto «f5»: cada pantalla y elemento de la interfaz a 1080p (ExploredShotSubsystemUi.cpp). */
+	void BuildUiShots();
+	/** Prepara una vista «ui_*»; devuelve false si la vista no es de interfaz. */
+	bool BeginUiShot(const FExploredShot& Shot);
 	/** Escribe la muestra de rendimiento de la posición actual (stat unit/gpu, Nanite, memreport). */
 	void LogBenchSample(int32 Index);
 	/** Media y mínimo de fps de la vista actual en el log (decisión de Lumen y presupuesto de F7). */

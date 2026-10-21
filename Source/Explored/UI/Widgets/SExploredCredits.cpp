@@ -2,88 +2,136 @@
 
 #include "Input/Events.h"
 #include "InputCoreTypes.h"
+#include "UI/ExploredUIPalette.h"
 #include "UI/ExploredUIStyle.h"
 #include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
-#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
+
+#define LOCTEXT_NAMESPACE "ExploredCredits"
 
 // Espacio de nombres con nombre (no anónimo) para no chocar en el Unity build.
 namespace ExploredCreditsDetail
 {
-	TSharedRef<SWidget> Line(const FText& Text, bool bHeading = false)
+	/** Los créditos completos pasan en 60 s (GDD v3 §9.2). */
+	constexpr float RollSeconds = 60.0f;
+
+	enum class ELine : uint8 { Title, Heading, Body, Small };
+
+	TSharedRef<SWidget> Line(const FText& Text, ELine Kind)
 	{
 		const FExploredUIStyle& Style = FExploredUIStyle::Get();
+		const FSlateFontInfo Font = Kind == ELine::Title ? Style.FontTitle() : Kind == ELine::Heading ? Style.SerifBold(32.0f)
+			: Kind == ELine::Body ? Style.Serif(28.0f) : Style.SerifItalic(23.0f);
+		const FLinearColor Color = Kind == ELine::Heading ? ExploredPalette::Linear(ExploredPalette::Laton)
+			: Kind == ELine::Small ? ExploredPalette::Linear(ExploredPalette::ArenaOscura) : Style.ColorOnScene();
 		return SNew(STextBlock)
 			.Text(Text)
-			.Font(bHeading ? Style.FontHeading() : Style.FontBody())
-			.ColorAndOpacity(FSlateColor(bHeading ? Style.ColorAccent() : Style.ColorInk()))
+			.Font(Font)
+			.ColorAndOpacity(FSlateColor(Color))
 			.Justification(ETextJustify::Center)
 			.AutoWrapText(true);
 	}
+
+	/** Sin las sombras de los bordes del SScrollBox: el rollo entra y sale limpio sobre la noche. */
+	const FScrollBoxStyle& NoShadowStyle()
+	{
+		static const FScrollBoxStyle Style = FScrollBoxStyle()
+			.SetTopShadowBrush(FSlateNoResource())
+			.SetBottomShadowBrush(FSlateNoResource())
+			.SetLeftShadowBrush(FSlateNoResource())
+			.SetRightShadowBrush(FSlateNoResource());
+		return Style;
+	}
+
+	/** Pistas de música CC BY (docs/creditos-musica.md, generado por Tools/Audio): título y licencia. */
+	const TCHAR* const MusicTracks[] = {
+		TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),
+		TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),
+	};
 }
 
 void SExploredCredits::Construct(const FArguments& InArgs)
 {
-	using ExploredCreditsDetail::Line;
+	using namespace ExploredCreditsDetail;
 
 	OnBack = InArgs._OnBack;
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
-	TSharedRef<SWidget> BackButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Back", "Volver"),
-		FOnClicked::CreateSP(this, &SExploredCredits::HandleBack), false);
+	TSharedRef<SWidget> BackButton = ExploredUIWidgets::MakeSceneButton(LOCTEXT("Back", "Volver"),
+		FOnClicked::CreateSP(this, &SExploredCredits::HandleBack));
 	InitialFocus = BackButton;
+
+	TSharedRef<SVerticalBox> Roll = SNew(SVerticalBox);
+	const auto Add = [&Roll](const FText& Text, ELine Kind, float Top)
+	{
+		Roll->AddSlot().AutoHeight().Padding(FMargin(0.0f, Top, 0.0f, 0.0f))[Line(Text, Kind)];
+	};
+	// Hueco de una pantalla: el rollo entra desde abajo.
+	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(380.0f)];
+	Add(LOCTEXT("Title", "Baliza Siete"), ELine::Title, 0.0f);
+	Add(LOCTEXT("Subtitle", "Isla de Sal"), ELine::Small, 4.0f);
+	Add(LOCTEXT("AuthorHeading", "Un juego de"), ELine::Heading, 90.0f);
+	Add(LOCTEXT("Author", "Rodrigo Fernández"), ELine::Body, 8.0f);
+	Add(LOCTEXT("CodeHeading", "Programación, arte y sonido por código"), ELine::Heading, 70.0f);
+	Add(LOCTEXT("Code", "Desarrollado con Claude (Anthropic)"), ELine::Body, 8.0f);
+	Add(LOCTEXT("Art", "Mallas low poly generadas con Blender por script; una sola paleta de 41 colores"), ELine::Small, 8.0f);
+	Add(LOCTEXT("EngineHeading", "Motor"), ELine::Heading, 70.0f);
+	Add(LOCTEXT("Engine", "Unreal Engine 5.6"), ELine::Body, 8.0f);
+	Add(LOCTEXT("FontHeading", "Tipografía"), ELine::Heading, 70.0f);
+	Add(LOCTEXT("Font", "Lora, de The Lora Project Authors"), ELine::Body, 8.0f);
+	Add(LOCTEXT("FontLicense", "SIL Open Font License 1.1"), ELine::Small, 4.0f);
+	Add(LOCTEXT("MusicHeading", "Música"), ELine::Heading, 70.0f);
+	Add(LOCTEXT("MusicOwn", "Piezas compuestas por código para el juego"), ELine::Body, 8.0f);
+	Add(LOCTEXT("MusicExtra", "Música adicional de Kevin MacLeod (incompetech.com)"), ELine::Body, 24.0f);
+	for (const TCHAR* Track : MusicTracks)
+	{
+		Add(FText::Format(LOCTEXT("Track", "«{0}»"), FText::FromString(Track)), ELine::Body, 6.0f);
+	}
+	Add(LOCTEXT("MusicLicense", "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados."),
+		ELine::Small, 12.0f);
+	Add(LOCTEXT("Thanks", "Gracias por encender la baliza."), ELine::Heading, 120.0f);
+	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(1000.0f)];
 
 	ChildSlot
 	[
-		SNew(SBox)
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
+		SNew(SOverlay)
+		+ SOverlay::Slot()[SNew(SImage).Image(Style.BrushWhite()).ColorAndOpacity(FSlateColor(ExploredPalette::Linear(ExploredPalette::NocheCenit)))]
+		+ SOverlay::Slot().HAlign(HAlign_Center)
 		[
-			SNew(SBorder)
-			.BorderImage(Style.BrushPanel())
-			.Padding(FMargin(48.0f, 36.0f))
+			SNew(SBox)
+			.WidthOverride(1000.0f)
 			[
-				SNew(SBox)
-				.WidthOverride(620.0f)
-				.HeightOverride(420.0f)
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().FillHeight(1.0f)
-					[
-						SNew(SScrollBox)
-						.ScrollBarStyle(&Style.ScrollBarStyle())
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "BALIZA SIETE"), true) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 24.0f, 0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsAuthor", "Un juego de Rodrigo Fernández")) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsClaude", "Desarrollado con Claude (Anthropic)")) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsEngine", "Motor: Unreal Engine 5.6")) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f))
-						[
-							Line(NSLOCTEXT("ExploredUI", "CreditsArt", "Terreno, props, texturas, sonido y música generados por código"))
-						]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 16.0f, 0.0f, 4.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsModelsTitle", "Modelos 3D de vegetación"), true) ]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsQuaternius", "Quaternius y Kenney (CC0), vía Poly Pizza")) ]
-						// Atribución CC BY 3.0 exigida por la licencia (Tools/Packs/creditos_cc_by.md).
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f))
-						[
-							Line(NSLOCTEXT("ExploredUI", "CreditsPolyGoogle", "«Rubber tree», «Macassar tree», «Tree», «Brazil nut tree», «Balsa tree», «Tree roots», «Banana Tree», «Heliconia flower», «Bromeliad» y «Hibiscus flower» por Poly by Google (CC BY 3.0), vía Poly Pizza"))
-						]
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 4.0f, 0.0f, 24.0f))
-						[
-							Line(NSLOCTEXT("ExploredUI", "CreditsZacharylll", "«Vine Covered Tree» por Zacharylll (CC BY 3.0), vía Poly Pizza"))
-						]
-					]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(FMargin(0.0f, 16.0f, 0.0f, 0.0f))
-					[
-						BackButton
-					]
-				]
+				SAssignNew(Scroll, SScrollBox)
+				.Style(&ExploredCreditsDetail::NoShadowStyle())
+				.ScrollBarVisibility(EVisibility::Collapsed)
+				.ConsumeMouseWheel(EConsumeMouseWheel::Never)
+				+ SScrollBox::Slot()[Roll]
 			]
 		]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(FMargin(0.0f, 0.0f, 48.0f, 40.0f))
+		[
+			BackButton
+		]
 	];
+}
+
+void SExploredCredits::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
+{
+	SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+	if (!Scroll.IsValid())
+	{
+		return;
+	}
+	// Velocidad para que todo el rollo pase en RollSeconds (con el mundo en pausa: tiempo de Slate).
+	Elapsed += InDeltaTime;
+	const float Total = Scroll->GetScrollOffsetOfEnd();
+	Scroll->SetScrollOffset(FMath::Clamp(Elapsed / ExploredCreditsDetail::RollSeconds, 0.0f, 1.0f) * Total);
 }
 
 FReply SExploredCredits::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
@@ -100,3 +148,5 @@ FReply SExploredCredits::HandleBack()
 	OnBack.ExecuteIfBound();
 	return FReply::Handled();
 }
+
+#undef LOCTEXT_NAMESPACE

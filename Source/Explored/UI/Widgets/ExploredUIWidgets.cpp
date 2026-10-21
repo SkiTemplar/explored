@@ -109,3 +109,21 @@ TSharedRef<SWidget> ExploredUIWidgets::MakeProgressBar(TAttribute<TOptional<floa
 			.FillColorAndOpacity(FSlateColor(FLinearColor::White))
 		];
 }
+
+TSharedRef<SWidget> ExploredUIWidgets::MakeSceneButton(const FText& Label, FOnClicked OnClicked)
+{
+	const FExploredUIStyle& Style = FExploredUIStyle::Get();
+	return SNew(SButton)
+		.ButtonStyle(&Style.SceneButtonStyle())
+		.OnClicked(OnClicked)
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.Text(Label)
+			.Font(Style.SerifBold(30.0f))
+			.ColorAndOpacity(FSlateColor(Style.ColorOnScene()))
+			.ShadowOffset(FVector2D(2.0, 2.0))
+			.ShadowColorAndOpacity(Style.ColorInk() * FLinearColor(1.0f, 1.0f, 1.0f, 0.6f))
+		];
+}

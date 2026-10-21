@@ -1,19 +1,21 @@
 #include "UI/ExploredHUD.h"
 
 #include "Carry/CarryComponent.h"
-#include "CanvasItem.h"
-#include "Engine/Canvas.h"
-#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
-#include "InputCoreTypes.h"
 #include "GameFramework/PlayerController.h"
+#include "InputCoreTypes.h"
 #include "Interaction/InteractionComponent.h"
 #include "Narrative/BeaconSubsystem.h"
-#include "UI/ExploredPlayerController.h"
 #include "Player/ExploredCharacter.h"
+#include "UI/ExploredHudPainter.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
+#include "UI/ExploredPlayerController.h"
+#include "UI/ExploredUIPalette.h"
+#include "UI/ExploredUIStyle.h"
 #include "UI/SettingsLogic.h"
+#include "UI/Widgets/SExploredHudOverlay.h"
 
 #include "Cooking/ExploredFire.h"
 #include "Items/ExploredSurvivorComponent.h"
@@ -25,76 +27,175 @@
 
 namespace HUDDetail
 {
+	using namespace ExploredPalette;
+
 	const FName BarometerItem(TEXT("barometro"));
+	constexpr float Margin = 36.0f;
+	constexpr float TagHeight = 54.0f;
+	constexpr float TagPadding = 16.0f;
+	constexpr float TagIcon = 30.0f;
+	constexpr float TextPx = 26.0f;
+	constexpr float SlotSize = 92.0f;
+	constexpr float SlotGap = 16.0f;
+
+	FLinearColor PaperTag(float Alpha = 1.0f) { return Linear(Papel, 0.93f * Alpha); }
+	FLinearColor Ink(float Alpha = 1.0f) { return Linear(Tinta, Alpha); }
+
+	/** Etiqueta de papel con icono y texto; devuelve su ancho. Si bRightAligned, Pos.X es el borde derecho. */
+	float Tag(FExploredHudPainter& P, FVector2f Pos, EExploredIcon Icon, const FString& Text, bool bRightAligned,
+		const FLinearColor& IconColor, EExploredIcon TrailingIcon = EExploredIcon::Count, const FLinearColor& TrailingColor = FLinearColor::White)
+	{
+		const FSlateFontInfo Font = FExploredUIStyle::Get().Serif(TextPx);
+		const FVector2f TextSize = FExploredHudPainter::Measure(Text, Font);
+		const bool bTrailing = TrailingIcon != EExploredIcon::Count;
+		const float Width = TagPadding * 2.0f + TagIcon + 12.0f + TextSize.X + (bTrailing ? 10.0f + TagIcon * 0.8f : 0.0f);
+		const float X = bRightAligned ? Pos.X - Width : Pos.X;
+		P.Round(FVector2f(X, Pos.Y), FVector2f(Width, TagHeight), 1, PaperTag());
+		P.Icon(FVector2f(X + TagPadding, Pos.Y + (TagHeight - TagIcon) * 0.5f), TagIcon, Icon, IconColor);
+		const float TextX = X + TagPadding + TagIcon + 12.0f;
+		P.Text(FVector2f(TextX, Pos.Y + (TagHeight - TextSize.Y) * 0.5f), Text, Font, Ink());
+		if (bTrailing)
+		{
+			const float Side = TagIcon * 0.8f;
+			P.Icon(FVector2f(TextX + TextSize.X + 10.0f, Pos.Y + (TagHeight - Side) * 0.5f), Side, TrailingIcon, TrailingColor);
+		}
+		return Width;
+	}
+
+	/** Tecla dibujada como una tapa de papel con borde de tinta; devuelve su ancho. */
+	float KeyCap(FExploredHudPainter& P, FVector2f Pos, const FString& Key, float Height)
+	{
+		const FSlateFontInfo Font = FExploredUIStyle::Get().SerifBold(24.0f);
+		const FVector2f TextSize = FExploredHudPainter::Measure(Key, Font);
+		const float Width = FMath::Max(Height, TextSize.X + 20.0f);
+		P.Round(Pos, FVector2f(Width, Height), 0, Linear(Papel));
+		P.Outline(Pos, FVector2f(Width, Height), Ink(0.9f));
+		P.Text(FVector2f(Pos.X + (Width - TextSize.X) * 0.5f, Pos.Y + (Height - TextSize.Y) * 0.5f), Key, Font, Ink());
+		return Width;
+	}
 }
+
+AExploredHUD::AExploredHUD()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AExploredHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	UGameViewportClient* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr;
+	if (!Viewport)
+	{
+		return;
+	}
+	Overlay = SNew(SExploredHudOverlay).HUD(TWeakObjectPtr<AExploredHUD>(this));
+	// Debajo de la mochila (400), los menús (500) y el fundido (1000).
+	Viewport->AddViewportWidgetContent(Overlay.ToSharedRef(), 10);
+}
+
+void AExploredHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UWorld* World = GetWorld();
+	if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr; Viewport && Overlay.IsValid())
+	{
+		Viewport->RemoveViewportWidgetContent(Overlay.ToSharedRef());
+	}
+	Overlay.Reset();
+	Super::EndPlay(EndPlayReason);
+}
+
 AExploredCharacter* AExploredHUD::GetExploredCharacter() const
 {
 	const APlayerController* PC = GetOwningPlayerController();
 	return PC ? Cast<AExploredCharacter>(PC->GetPawn()) : nullptr;
 }
 
-void AExploredHUD::DrawHUD()
+bool AExploredHUD::ShouldPaint() const
 {
-	Super::DrawHUD();
-
-	if (!Canvas)
-	{
-		return;
-	}
-
-	// Con el menú, la pausa o el final encima no se dibuja el HUD de juego.
-	const AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(GetOwningPlayerController());
-	if (ExploredPC && (ExploredPC->IsCutsceneActive()
-		|| ExploredPC->GetUIMode() != EExploredUIMode::Playing))
-	{
-		return;
-	}
-
-	DrawReticle();
-	DrawObjective();
-	UpdateDayCard();
-
-	AExploredCharacter* Character = GetExploredCharacter();
-	DrawClock(Character);
-	if (Character)
-	{
-		EnsureBoundToCarry(*Character);
-		EnsureBoundToSurvivor(*Character);
-		DrawContextPrompt(*Character);
-		DrawActionBar(*Character);
-		DrawBodyBars(*Character);
-		DrawQuickSlots(*Character);
-	}
-
-	DrawNotifications();
-	DrawSubtitle();
-	DrawPage();
-	DrawCard();
+	// Con el menú, la pausa, el cuaderno abierto o el final encima no se pinta el HUD de juego.
+	const AExploredPlayerController* PC = Cast<AExploredPlayerController>(GetOwningPlayerController());
+	return !PC || (!PC->IsCutsceneActive() && !PC->IsNotebookOpen() && PC->GetUIMode() == EExploredUIMode::Playing);
 }
 
-void AExploredHUD::DrawObjective()
+void AExploredHUD::Tick(float DeltaSeconds)
 {
-	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
-	if (!Beacon)
+	Super::Tick(DeltaSeconds);
+	for (int32 Index = Notifications.Num() - 1; Index >= 0; --Index)
+	{
+		if (AgeItem(Notifications[Index], DeltaSeconds) <= 0.0f)
+		{
+			Notifications.RemoveAt(Index);
+		}
+	}
+	while (Subtitles.Num() > 0 && AgeItem(Subtitles[0], DeltaSeconds) <= 0.0f)
+	{
+		Subtitles.RemoveAt(0);
+	}
+	AgeItem(Page, DeltaSeconds);
+	if (AgeItem(Card, DeltaSeconds) <= 0.0f && PendingCards.Num() > 0)
+	{
+		Card = PendingCards[0];
+		PendingCards.RemoveAt(0);
+	}
+	if (ShouldPaint())
+	{
+		UpdateDayCard();
+	}
+	if (const AExploredCharacter* Character = GetExploredCharacter())
+	{
+		EnsureBound(*Character);
+	}
+}
+
+float AExploredHUD::AgeItem(FExploredHUDNotification& Item, float DeltaSeconds)
+{
+	if (Item.RemainingSeconds <= 0.0f)
+	{
+		return 0.0f;
+	}
+	Item.RemainingSeconds -= DeltaSeconds;
+	return AlphaOf(Item);
+}
+
+float AExploredHUD::AlphaOf(const FExploredHUDNotification& Item)
+{
+	// Se desvanece en el último cuarto de su vida en vez de cortarse en seco.
+	const float FadeWindow = FMath::Min(Item.TotalSeconds * 0.25f, 1.0f);
+	return FadeWindow > 0.0f ? FMath::Clamp(Item.RemainingSeconds / FadeWindow, 0.0f, 1.0f) : 0.0f;
+}
+
+void AExploredHUD::ClearTransient()
+{
+	Notifications.Reset();
+	Subtitles.Reset();
+	PendingCards.Reset();
+	Page = FExploredHUDNotification();
+	Card = FExploredHUDNotification();
+	LastCardDay = 0;
+}
+
+void AExploredHUD::PaintOverlay(FExploredHudPainter& Painter)
+{
+	if (!ShouldPaint())
 	{
 		return;
 	}
-	const FText Objective = Beacon->GetObjectiveText();
-	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
-	if (Objective.IsEmpty() || !Font)
+	AExploredCharacter* Character = GetExploredCharacter();
+	PaintReticle(Painter);
+	PaintObjective(Painter);
+	PaintClock(Painter, Character);
+	BarsTop = Painter.Size().Y - HUDDetail::Margin;
+	if (Character)
 	{
-		return;
+		PaintBodyBars(Painter, *Character);
+		PaintQuickSlots(Painter, *Character);
+		PaintPrompt(Painter, *Character);
+		PaintActionBar(Painter, *Character);
 	}
-	constexpr float Margin = 24.0f;
-	const float Scale = TextScale();
-	float Width = 0.0f;
-	float Height = 0.0f;
-	Canvas->TextSize(Font, Objective.ToString(), Width, Height, Scale, Scale);
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), Margin - 12.0f, Margin - 7.0f, Width + 24.0f, Height + 14.0f);
-	FCanvasTextItem Item(FVector2D(Margin, Margin), Objective, Font, FLinearColor(1.0f, 0.9f, 0.55f, 0.97f));
-	Item.Scale = FVector2D(Scale, Scale);
-	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
-	Canvas->DrawItem(Item);
+	PaintNotifications(Painter);
+	PaintSubtitle(Painter);
+	PaintPage(Painter);
+	PaintCard(Painter);
 }
 
 void AExploredHUD::ShowSubtitle(const FText& Text, float DurationSeconds)
@@ -105,7 +206,6 @@ void AExploredHUD::ShowSubtitle(const FText& Text, float DurationSeconds)
 	}
 	FExploredHUDNotification& Line = Subtitles.AddDefaulted_GetRef();
 	Line.Text = Text;
-	Line.Color = FLinearColor(0.96f, 0.94f, 0.86f, 1.0f);
 	Line.TotalSeconds = FMath::Max(0.5f, DurationSeconds);
 	Line.RemainingSeconds = Line.TotalSeconds;
 }
@@ -115,16 +215,23 @@ void AExploredHUD::ShowPage(const FText& Title, const FText& Body, const FText& 
 	PageTitle = Title;
 	PageNote = Note;
 	Page.Text = Body;
-	Page.Color = FLinearColor(0.16f, 0.12f, 0.08f, 1.0f);
 	Page.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
 	Page.RemainingSeconds = Page.TotalSeconds;
+}
+
+void AExploredHUD::ShowBlackout(const FText& Text, float DurationSeconds)
+{
+	// Va delante de cualquier cartel en cola: es lo que se ve durante el desmayo.
+	Card.Text = Text;
+	Card.bVeil = true;
+	Card.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
+	Card.RemainingSeconds = Card.TotalSeconds;
 }
 
 void AExploredHUD::ShowCard(const FText& Text, float DurationSeconds)
 {
 	FExploredHUDNotification Next;
 	Next.Text = Text;
-	Next.Color = FLinearColor::White;
 	Next.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
 	Next.RemainingSeconds = Next.TotalSeconds;
 	if (Card.RemainingSeconds > 0.0f)
@@ -135,139 +242,71 @@ void AExploredHUD::ShowCard(const FText& Text, float DurationSeconds)
 	Card = Next;
 }
 
-float AExploredHUD::Age(FExploredHUDNotification& Item) const
+void AExploredHUD::PushNotification(const FText& Text, FLinearColor Color, float DurationSeconds)
 {
-	if (Item.RemainingSeconds <= 0.0f)
+	FExploredHUDNotification Notification;
+	Notification.Text = Text;
+	Notification.Color = Color;
+	Notification.RemainingSeconds = DurationSeconds;
+	Notification.TotalSeconds = FMath::Max(DurationSeconds, KINDA_SMALL_NUMBER);
+	Notifications.Insert(Notification, 0);
+	constexpr int32 MaxVisibleNotifications = 4;
+	if (Notifications.Num() > MaxVisibleNotifications)
 	{
-		return 0.0f;
-	}
-	Item.RemainingSeconds -= GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
-	const float FadeWindow = Item.TotalSeconds * 0.25f;
-	return FadeWindow > 0.0f ? FMath::Clamp(Item.RemainingSeconds / FadeWindow, 0.0f, 1.0f) : 1.0f;
-}
-
-TArray<FString> AExploredHUD::WrapLines(const FString& Text, UFont* Font, float Scale, float MaxWidth) const
-{
-	TArray<FString> Words;
-	Text.ParseIntoArrayWS(Words);
-	TArray<FString> Lines;
-	FString Current;
-	for (const FString& Word : Words)
-	{
-		const FString Candidate = Current.IsEmpty() ? Word : Current + TEXT(" ") + Word;
-		float Width = 0.0f;
-		float Height = 0.0f;
-		Canvas->TextSize(Font, Candidate, Width, Height, Scale, Scale);
-		if (Width > MaxWidth && !Current.IsEmpty())
-		{
-			Lines.Add(Current);
-			Current = Word;
-		}
-		else
-		{
-			Current = Candidate;
-		}
-	}
-	if (!Current.IsEmpty())
-	{
-		Lines.Add(Current);
-	}
-	return Lines;
-}
-
-void AExploredHUD::DrawSubtitle()
-{
-	while (Subtitles.Num() > 0)
-	{
-		const float Alpha = Age(Subtitles[0]);
-		if (Alpha <= 0.0f)
-		{
-			Subtitles.RemoveAt(0);
-			continue;
-		}
-		FLinearColor Color = Subtitles[0].Color;
-		Color.A = Alpha;
-		// Abajo, por encima de las barras del cuerpo (GDD v3 §9.1).
-		DrawCenteredText(Subtitles[0].Text, Color, Canvas->SizeY * 0.74f, true);
-		return;
+		Notifications.SetNum(MaxVisibleNotifications);
 	}
 }
 
-void AExploredHUD::DrawPage()
+void AExploredHUD::PaintReticle(FExploredHudPainter& P)
 {
-	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
-	const float Alpha = Age(Page);
-	if (Alpha <= 0.0f || !Font)
+	// Retícula de punto (GDD v3 §9.1): papel con un aro de tinta, se ve sobre arena y sobre cielo.
+	const FVector2f Center = P.Size() * 0.5f;
+	P.Round(Center - FVector2f(5.0f, 5.0f), FVector2f(10.0f, 10.0f), 2, HUDDetail::Ink(0.7f));
+	P.Round(Center - FVector2f(3.0f, 3.0f), FVector2f(6.0f, 6.0f), 2, ExploredPalette::Linear(ExploredPalette::Papel));
+}
+
+void AExploredHUD::PaintObjective(FExploredHudPainter& P)
+{
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	const FText Objective = Beacon ? Beacon->GetObjectiveText() : FText::GetEmpty();
+	if (Objective.IsEmpty())
 	{
 		return;
 	}
-	const float Scale = TextScale();
-	const float PanelWidth = FMath::Min(Canvas->SizeX * 0.6f, 900.0f * Scale);
-	const float Padding = 28.0f * Scale;
-	const float LineHeight = 28.0f * Scale;
-	const TArray<FString> Body = WrapLines(Page.Text.ToString(), Font, Scale, PanelWidth - 2.0f * Padding);
-	const TArray<FString> Note = WrapLines(PageNote.ToString(), Font, Scale, PanelWidth - 2.0f * Padding);
-	const float PanelHeight = Padding * 2.0f + LineHeight * (Body.Num() + Note.Num() + 2.5f);
-	const float X = (Canvas->SizeX - PanelWidth) * 0.5f;
-	float Y = (Canvas->SizeY - PanelHeight) * 0.42f;
-	// Papel: el panel del cuaderno es claro, con tinta oscura (Roig) y azul (la nota de Iria).
-	DrawRect(FLinearColor(0.93f, 0.88f, 0.76f, 0.95f * Alpha), X, Y, PanelWidth, PanelHeight);
-	Y += Padding;
-	const auto DrawLine = [this, Font, Scale, X, Padding](const FString& Line, float LineY, const FLinearColor& Color)
-	{
-		FCanvasTextItem Item(FVector2D(X + Padding, LineY), FText::FromString(Line), Font, Color);
-		Item.Scale = FVector2D(Scale, Scale);
-		Canvas->DrawItem(Item);
-	};
-	FLinearColor Ink = Page.Color;
-	Ink.A = Alpha;
-	DrawLine(PageTitle.ToString(), Y, FLinearColor(0.45f, 0.18f, 0.12f, Alpha));
-	Y += LineHeight * 1.5f;
-	for (const FString& Line : Body)
-	{
-		DrawLine(Line, Y, Ink);
-		Y += LineHeight;
-	}
-	Y += LineHeight;
-	for (const FString& Line : Note)
-	{
-		DrawLine(Line, Y, FLinearColor(0.10f, 0.22f, 0.50f, Alpha));
-		Y += LineHeight;
-	}
+	HUDDetail::Tag(P, FVector2f(HUDDetail::Margin, HUDDetail::Margin), EExploredIcon::Faro, Objective.ToString(), false,
+		ExploredPalette::Linear(ExploredPalette::RojoFaro));
 }
 
-void AExploredHUD::DrawCard()
+void AExploredHUD::PaintClock(FExploredHudPainter& P, const AExploredCharacter* Character)
 {
-	float Alpha = Age(Card);
-	if (Alpha <= 0.0f && PendingCards.Num() > 0)
-	{
-		Card = PendingCards[0];
-		PendingCards.RemoveAt(0);
-		Alpha = Age(Card);
-	}
-	if (Alpha <= 0.0f)
+	using namespace ExploredPalette;
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	if (!Time)
 	{
 		return;
 	}
-	DrawCenteredText(Card.Text, FLinearColor(1.0f, 1.0f, 1.0f, Alpha), Canvas->SizeY * 0.38f, true);
-}
-
-void AExploredHUD::DrawReticle()
-{
-	// Retícula de punto (GDD v3 §9.1).
-	const float Size = FMath::Max(3.0f, 4.0f * TextScale());
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.5f), Canvas->SizeX * 0.5f - Size * 0.5f - 1.0f, Canvas->SizeY * 0.5f - Size * 0.5f - 1.0f, Size + 2.0f, Size + 2.0f);
-	DrawRect(FLinearColor(1.0f, 1.0f, 1.0f, 0.9f), Canvas->SizeX * 0.5f - Size * 0.5f, Canvas->SizeY * 0.5f - Size * 0.5f, Size, Size);
-}
-
-FString AExploredHUD::InteractKeyName() const
-{
-	// La tecla es la que tenga asignada Interactuar (se puede remapear), no una «E» fija.
-	return KeyNameFor(FName(TEXT("IA_Interact")));
+	const float Right = P.Size().X - HUDDetail::Margin;
+	const bool bNight = Time->IsNight();
+	HUDDetail::Tag(P, FVector2f(Right, HUDDetail::Margin), bNight ? EExploredIcon::Luna : EExploredIcon::Sol,
+		FIslandHudModel::ClockText(Time->GetDay(), Time->GetHours()), true, Linear(bNight ? CieloNoche : Fuego));
+	const UExploredSurvivorComponent* Survivor = Character ? Character->GetSurvivorComponent() : nullptr;
+	const UExploredWeatherSubsystem* Weather = World->GetSubsystem<UExploredWeatherSubsystem>();
+	if (!Survivor || !Weather || Survivor->GetItemCount(HUDDetail::BarometerItem) <= 0)
+	{
+		return;
+	}
+	const EBarometerTrend Trend = Weather->GetPressureTrend();
+	const EExploredIcon Arrow = Trend == EBarometerTrend::Rising ? EExploredIcon::FlechaSube
+		: Trend == EBarometerTrend::Falling ? EExploredIcon::FlechaBaja : EExploredIcon::Estable;
+	const FLinearColor ArrowColor = Linear(Trend == EBarometerTrend::Falling ? RojoFaro : Trend == EBarometerTrend::Rising ? HierbaOscura : Tinta);
+	HUDDetail::Tag(P, FVector2f(Right, HUDDetail::Margin + HUDDetail::TagHeight + 12.0f), EExploredIcon::Barometro,
+		FIslandHudModel::BarometerValueText(Weather->GetPressureHpa()), true, Linear(Laton), Arrow, ArrowColor);
 }
 
 FString AExploredHUD::KeyNameFor(FName ActionName) const
 {
+	// La tecla es la que tenga asignada la acción (se puede remapear), no una letra fija.
 	FKey Key(ExploredSettingsLogic::GetDefaultKeyFor(ActionName));
 	const APlayerController* PC = GetOwningPlayerController();
 	if (const ULocalPlayer* LocalPlayer = PC ? PC->GetLocalPlayer() : nullptr)
@@ -280,174 +319,161 @@ FString AExploredHUD::KeyNameFor(FName ActionName) const
 	return Key.GetDisplayName(false).ToString();
 }
 
-void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
+void AExploredHUD::PaintPrompt(FExploredHudPainter& P, const AExploredCharacter& Character)
 {
 	const UInteractionComponent* InteractionComp = Character.GetInteractionComponent();
 	const UIslandBodyComponent* Body = Character.GetIslandBodyComponent();
-	FString Action;
+	TArray<TPair<FString, FString>> Segments;
+	const FString InteractKey = KeyNameFor(FName(TEXT("IA_Interact")));
 	if (InteractionComp && InteractionComp->GetFocusedActor())
 	{
 		const TArray<FText> Verbs = InteractionComp->GetContextVerbs();
 		if (InteractionComp->FocusHasVerbChoice() && Verbs.Num() > 1)
 		{
 			// Hoguera con varios verbos: E ejecuta el primero y la tecla de combinar elige el siguiente.
-			TArray<FString> Names;
-			for (const FText& Verb : Verbs)
-			{
-				Names.Add(Verb.ToString());
-			}
-			const FString Choice = FIslandHudModel::ChoicePromptText(InteractKeyName(), KeyNameFor(FName(TEXT("IA_Combine"))), Names);
-			DrawCenteredText(FText::FromString(Choice), FLinearColor::White, Canvas->SizeY * 0.55f, true);
-			return;
+			Segments.Emplace(InteractKey, Verbs[0].ToString());
+			Segments.Emplace(KeyNameFor(FName(TEXT("IA_Combine"))), Verbs[1].ToString());
 		}
-		if (Verbs.Num() > 0)
+		else if (Verbs.Num() > 0)
 		{
-			Action = FText::Join(INVTEXT(" · "), Verbs).ToString();
+			Segments.Emplace(InteractKey, FText::Join(INVTEXT(" · "), Verbs).ToString());
 		}
 	}
-	else if (Body && Body->IsSheltered())
+	else if (Body && Body->IsSheltered() && Body->CanSleepNow())
 	{
 		// Sin foco, dentro de un refugio: E es «Dormir» (solo a su hora).
-		Action = Body->CanSleepNow() ? NSLOCTEXT("ExploredUI", "PromptSleep", "Dormir").ToString() : FString();
+		Segments.Emplace(InteractKey, NSLOCTEXT("ExploredUI", "PromptSleep", "Dormir").ToString());
 	}
-	const FString Prompt = FIslandHudModel::PromptText(InteractKeyName(), Action);
-	if (!Prompt.IsEmpty())
+	if (Segments.Num() == 0 || InteractKey.IsEmpty())
 	{
-		DrawCenteredText(FText::FromString(Prompt), FLinearColor::White, Canvas->SizeY * 0.55f, true);
+		return;
+	}
+	const FSlateFontInfo Font = FExploredUIStyle::Get().Serif(HUDDetail::TextPx);
+	constexpr float Height = 50.0f;
+	constexpr float KeyHeight = 38.0f;
+	float Width = 0.0f;
+	for (const TPair<FString, FString>& Segment : Segments)
+	{
+		Width += FMath::Max(KeyHeight, FExploredHudPainter::Measure(Segment.Key, FExploredUIStyle::Get().SerifBold(24.0f)).X + 20.0f)
+			+ 12.0f + FExploredHudPainter::Measure(Segment.Value, Font).X + 22.0f;
+	}
+	Width += 12.0f;
+	float X = (P.Size().X - Width) * 0.5f;
+	const float Y = P.Size().Y * 0.5f + 40.0f;
+	P.Round(FVector2f(X, Y), FVector2f(Width, Height), 2, HUDDetail::PaperTag());
+	X += 12.0f;
+	for (const TPair<FString, FString>& Segment : Segments)
+	{
+		X += HUDDetail::KeyCap(P, FVector2f(X, Y + (Height - KeyHeight) * 0.5f), Segment.Key, KeyHeight) + 12.0f;
+		const FVector2f TextSize = FExploredHudPainter::Measure(Segment.Value, Font);
+		P.Text(FVector2f(X, Y + (Height - TextSize.Y) * 0.5f), Segment.Value, Font, HUDDetail::Ink());
+		X += TextSize.X + 22.0f;
 	}
 }
 
-void AExploredHUD::DrawBodyBars(const AExploredCharacter& Character)
+void AExploredHUD::PaintBodyBars(FExploredHudPainter& P, const AExploredCharacter& Character)
 {
+	using namespace ExploredPalette;
 	const UIslandBodyComponent* Body = Character.GetIslandBodyComponent();
-	UFont* Font = GEngine ? GEngine->GetSmallFont() : nullptr;
-	if (!Body || !Font)
+	if (!Body)
 	{
 		return;
 	}
 	struct FBarStyle
 	{
 		EBodyBar Bar;
-		const TCHAR* Glyph;
-		FLinearColor Color;
+		EExploredIcon Icon;
+		FColor Color;
 	};
-	// Iconos planos de un color (provisionales hasta F5): la inicial de la barra sobre su color.
 	const FBarStyle Styles[] = {
-		{ EBodyBar::Thirst, TEXT("S"), FLinearColor(0.36f, 0.62f, 0.86f) },
-		{ EBodyBar::Hunger, TEXT("H"), FLinearColor(0.80f, 0.55f, 0.24f) },
-		{ EBodyBar::Energy, TEXT("E"), FLinearColor(0.85f, 0.78f, 0.30f) },
-		{ EBodyBar::Warmth, TEXT("C"), FLinearColor(0.85f, 0.33f, 0.22f) },
+		{ EBodyBar::Thirst, EExploredIcon::Sed, AguaMedia },
+		{ EBodyBar::Hunger, EExploredIcon::Hambre, MaderaOscura },
+		{ EBodyBar::Energy, EExploredIcon::Energia, HierbaOscura },
+		{ EBodyBar::Warmth, EExploredIcon::Calor, Fuego },
 	};
-	const float Scale = TextScale();
-	const float Icon = 22.0f * Scale;
-	const float BarWidth = 150.0f * Scale;
-	const float BarHeight = 6.0f * Scale;
-	const float Gap = 8.0f * Scale;
-	const float Margin = 28.0f * Scale;
+	constexpr float Icon = 34.0f;
+	constexpr float Row = 44.0f;
+	constexpr float BarWidth = 200.0f;
+	constexpr float BarHeight = 12.0f;
+	constexpr float Pad = 14.0f;
+	const FVector2f CardSize(Pad * 2.0f + Icon + 14.0f + BarWidth, Pad * 2.0f + Row * 4.0f - (Row - Icon));
+	const FVector2f CardPos(HUDDetail::Margin, P.Size().Y - HUDDetail::Margin - CardSize.Y);
+	BarsTop = CardPos.Y;
+	P.Round(CardPos, CardSize, 1, HUDDetail::PaperTag());
 	const double Now = GetWorld() ? GetWorld()->GetRealTimeSeconds() : 0.0;
 	const float Low = Body->GetTuning().LowThreshold;
-	float Y = Canvas->SizeY - Margin - 4.0f * (Icon + Gap);
+	float Y = CardPos.Y + Pad;
 	for (const FBarStyle& Style : Styles)
 	{
 		const float Value = FIslandBodyModel::Get(Body->GetBars(), Style.Bar);
-		if (FIslandHudModel::IsBarVisible(Value, Low, Now))
+		const bool bLow = Value < Low;
+		const bool bVisible = FIslandHudModel::IsBarVisible(Value, Low, Now);
+		P.Icon(FVector2f(CardPos.X + Pad, Y), Icon, Style.Icon, Linear(bLow && !bVisible ? RojoFaro : Style.Color));
+		const FVector2f BarPos(CardPos.X + Pad + Icon + 14.0f, Y + (Icon - BarHeight) * 0.5f);
+		P.Round(BarPos, FVector2f(BarWidth, BarHeight), 2, Linear(ArenaOscura, 0.55f));
+		const float Fill = BarWidth * FMath::Clamp(Value / 100.0f, 0.0f, 1.0f);
+		if (bVisible && Fill > 1.0f)
 		{
-			DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), Margin - 4.0f, Y - 4.0f, Icon + BarWidth + Gap + 12.0f, Icon + 8.0f);
-			DrawRect(Style.Color, Margin, Y, Icon, Icon);
-			FCanvasTextItem Glyph(FVector2D(Margin + Icon * 0.28f, Y + Icon * 0.05f), FText::FromString(Style.Glyph), Font, FLinearColor(0.08f, 0.08f, 0.08f));
-			Glyph.Scale = FVector2D(Scale, Scale);
-			Canvas->DrawItem(Glyph);
-			const float BarY = Y + (Icon - BarHeight) * 0.5f;
-			DrawRect(FLinearColor(1.0f, 1.0f, 1.0f, 0.18f), Margin + Icon + Gap, BarY, BarWidth, BarHeight);
-			DrawRect(Style.Color, Margin + Icon + Gap, BarY, BarWidth * FMath::Clamp(Value / 100.0f, 0.0f, 1.0f), BarHeight);
+			P.Round(BarPos, FVector2f(FMath::Max(Fill, BarHeight), BarHeight), 2, Linear(bLow ? RojoFaro : Style.Color));
 		}
-		Y += Icon + Gap;
+		Y += Row;
 	}
 }
 
-void AExploredHUD::DrawQuickSlots(const AExploredCharacter& Character)
+void AExploredHUD::PaintQuickSlots(FExploredHudPainter& P, const AExploredCharacter& Character)
 {
+	using namespace ExploredPalette;
 	const UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent();
-	UFont* Font = GEngine ? GEngine->GetSmallFont() : nullptr;
-	if (!Survivor || !Font)
+	if (!Survivor)
 	{
 		return;
 	}
+	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 	const TArray<FHudQuickSlot> Slots = FIslandHudModel::QuickSlots(Survivor->GetBackpack(), Survivor->GetSelectedQuickSlot());
-	const float Scale = TextScale();
-	const float Size = 72.0f * Scale;
-	const float Gap = 10.0f * Scale;
-	const float Total = Slots.Num() * Size + (Slots.Num() - 1) * Gap;
-	const float Top = Canvas->SizeY - 28.0f * Scale - Size;
-	float X = (Canvas->SizeX - Total) * 0.5f;
+	constexpr float Size = HUDDetail::SlotSize;
+	const float Total = Slots.Num() * Size + (Slots.Num() - 1) * HUDDetail::SlotGap;
+	const float Bottom = P.Size().Y - HUDDetail::Margin;
+	float X = (P.Size().X - Total) * 0.5f;
+	FString SelectedName;
 	for (int32 Index = 0; Index < Slots.Num(); ++Index)
 	{
 		const FHudQuickSlot& Slot = Slots[Index];
-		const FLinearColor Border = Slot.bSelected ? FLinearColor(0.85f, 0.64f, 0.25f, 1.0f) : FLinearColor(1.0f, 1.0f, 1.0f, 0.25f);
-		const float Thick = Slot.bSelected ? 3.0f : 1.5f;
-		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X, Top, Size, Size);
-		DrawRect(Border, X, Top, Size, Thick);
-		DrawRect(Border, X, Top + Size - Thick, Size, Thick);
-		DrawRect(Border, X, Top, Thick, Size);
-		DrawRect(Border, X + Size - Thick, Top, Thick, Size);
-		const auto Text = [this, Font, Scale](const FString& Line, float TX, float TY, const FLinearColor& Color)
+		const float Lift = Slot.bSelected ? 8.0f : 0.0f;
+		const FVector2f Pos(X, Bottom - Size - Lift);
+		P.Round(Pos, FVector2f(Size, Size), 1, HUDDetail::PaperTag(Slot.IsEmpty() ? 0.6f : 1.0f));
+		if (Slot.bSelected)
 		{
-			FCanvasTextItem Item(FVector2D(TX, TY), FText::FromString(Line), Font, Color);
-			Item.Scale = FVector2D(Scale, Scale);
-			Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
-			Canvas->DrawItem(Item);
-		};
-		Text(FString::FromInt(Index + 1), X + 5.0f * Scale, Top + 3.0f * Scale, FLinearColor(1.0f, 1.0f, 1.0f, 0.7f));
+			P.Outline(Pos, FVector2f(Size, Size), Linear(Laton));
+		}
 		if (!Slot.IsEmpty())
 		{
-			const TArray<FString> Lines = WrapLines(ExploredIslandData::ItemName(Slot.ItemId).ToString(), Font, Scale, Size - 8.0f * Scale);
-			float LineY = Top + Size * 0.36f;
-			for (int32 Line = 0; Line < FMath::Min(2, Lines.Num()); ++Line)
-			{
-				Text(Lines[Line], X + 5.0f * Scale, LineY, FLinearColor::White);
-				LineY += 14.0f * Scale;
-			}
+			P.Icon(Pos + FVector2f(14.0f, 14.0f), Size - 28.0f, ExploredIconSheet::FromId(Slot.ItemId), HUDDetail::Ink());
 			if (Slot.Count > 1)
 			{
-				Text(FString::Printf(TEXT("×%d"), Slot.Count), X + Size - 26.0f * Scale, Top + 3.0f * Scale, FLinearColor(1.0f, 0.9f, 0.6f));
+				const FString Count = FString::Printf(TEXT("×%d"), Slot.Count);
+				const FSlateFontInfo CountFont = Style.SerifBold(HUDDetail::TextPx - 2.0f);
+				const FVector2f CountSize = FExploredHudPainter::Measure(Count, CountFont);
+				P.Text(Pos + FVector2f(Size - CountSize.X - 8.0f, Size - CountSize.Y - 2.0f), Count, CountFont, Linear(RojoFaro));
+			}
+			if (Slot.bSelected)
+			{
+				SelectedName = ExploredIslandData::ItemName(Slot.ItemId).ToString();
 			}
 		}
-		X += Size + Gap;
+		// Número de la tecla en un círculo de tinta sobre la esquina.
+		const FString Key = FString::FromInt(Index + 1);
+		const FSlateFontInfo KeyFont = Style.SerifBold(HUDDetail::TextPx - 3.0f);
+		const FVector2f KeySize = FExploredHudPainter::Measure(Key, KeyFont);
+		const FVector2f Badge = Pos - FVector2f(10.0f, 10.0f);
+		P.Round(Badge, FVector2f(34.0f, 34.0f), 2, HUDDetail::Ink(0.92f));
+		P.Text(Badge + (FVector2f(34.0f, 34.0f) - KeySize) * 0.5f, Key, KeyFont, Linear(Papel));
+		X += Size + HUDDetail::SlotGap;
 	}
-}
-
-void AExploredHUD::DrawClock(const AExploredCharacter* Character)
-{
-	const UWorld* World = GetWorld();
-	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
-	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
-	if (!Time || !Font)
+	if (!SelectedName.IsEmpty())
 	{
-		return;
-	}
-	const float Scale = TextScale();
-	const float Margin = 24.0f;
-	TArray<FString> Lines;
-	Lines.Add(FIslandHudModel::ClockText(Time->GetDay(), Time->GetHours()));
-	const UExploredSurvivorComponent* Survivor = Character ? Character->GetSurvivorComponent() : nullptr;
-	const UExploredWeatherSubsystem* Weather = World->GetSubsystem<UExploredWeatherSubsystem>();
-	if (Survivor && Weather && Survivor->GetItemCount(HUDDetail::BarometerItem) > 0)
-	{
-		Lines.Add(FIslandHudModel::BarometerText(Weather->GetPressureHpa(), Weather->GetPressureTrend()));
-	}
-	float Y = Margin;
-	for (const FString& Line : Lines)
-	{
-		float Width = 0.0f;
-		float Height = 0.0f;
-		Canvas->TextSize(Font, Line, Width, Height, Scale, Scale);
-		const float X = Canvas->SizeX - Margin - Width;
-		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X - 12.0f, Y - 7.0f, Width + 24.0f, Height + 14.0f);
-		FCanvasTextItem Item(FVector2D(X, Y), FText::FromString(Line), Font, FLinearColor(0.97f, 0.95f, 0.88f, 0.97f));
-		Item.Scale = FVector2D(Scale, Scale);
-		Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
-		Canvas->DrawItem(Item);
-		Y += Height + 18.0f;
+		const FSlateFontInfo Font = Style.SerifItalic(HUDDetail::TextPx - 2.0f);
+		const FVector2f NameSize = FExploredHudPainter::Measure(SelectedName, Font);
+		P.Text(FVector2f((P.Size().X - NameSize.X) * 0.5f, Bottom - Size - 10.0f - NameSize.Y - 6.0f), SelectedName, Font, Linear(Papel), true);
 	}
 }
 
@@ -470,20 +496,18 @@ float AExploredHUD::CurrentActionProgress(const AExploredCharacter& Character) c
 	return FMath::Max(0.001f, FIslandHudModel::Progress01(Total - Job.RemainingSeconds, Total));
 }
 
-void AExploredHUD::DrawActionBar(const AExploredCharacter& Character)
+void AExploredHUD::PaintActionBar(FExploredHudPainter& P, const AExploredCharacter& Character)
 {
 	const float Progress = CurrentActionProgress(Character);
 	if (Progress <= 0.0f)
 	{
 		return;
 	}
-	const float Scale = TextScale();
-	const float Width = 320.0f * Scale;
-	const float Height = 8.0f * Scale;
-	const float X = (Canvas->SizeX - Width) * 0.5f;
-	const float Y = Canvas->SizeY * 0.62f;
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.5f), X - 2.0f, Y - 2.0f, Width + 4.0f, Height + 4.0f);
-	DrawRect(FLinearColor(0.85f, 0.64f, 0.25f, 0.95f), X, Y, Width * Progress, Height);
+	constexpr float Width = 360.0f;
+	constexpr float Height = 14.0f;
+	const FVector2f Pos((P.Size().X - Width) * 0.5f, P.Size().Y * 0.5f + 108.0f);
+	P.Round(Pos - FVector2f(4.0f, 4.0f), FVector2f(Width + 8.0f, Height + 8.0f), 2, HUDDetail::Ink(0.6f));
+	P.Round(Pos, FVector2f(FMath::Max(Width * Progress, Height), Height), 2, ExploredPalette::Linear(ExploredPalette::Laton));
 }
 
 void AExploredHUD::UpdateDayCard()
@@ -500,33 +524,152 @@ void AExploredHUD::UpdateDayCard()
 	{
 		// El primero (día 1) va detrás del cartel de inicio, que ya está en cola.
 		LastCardDay = Day;
-		ShowCard(FText::FromString(FIslandHudModel::DayCardText(Day)), 3.0f);
+		ShowCard(FText::FromString(FIslandHudModel::DayCardText(Day)), 3.5f);
 	}
 }
 
-void AExploredHUD::EnsureBoundToSurvivor(const AExploredCharacter& Character)
+void AExploredHUD::PaintNotifications(FExploredHudPainter& P)
 {
-	UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent();
-	if (!Survivor || BoundSurvivor.Get() == Survivor)
+	const FSlateFontInfo Font = FExploredUIStyle::Get().Serif(HUDDetail::TextPx - 2.0f);
+	// Encima de la tarjeta de las barras, apiladas hacia arriba: no tapan la retícula ni las ranuras.
+	float Y = BarsTop - 14.0f;
+	for (const FExploredHUDNotification& Notification : Notifications)
+	{
+		const float Alpha = AlphaOf(Notification);
+		const FString Line = Notification.Text.ToString();
+		const FVector2f TextSize = FExploredHudPainter::Measure(Line, Font);
+		const FVector2f Box(TextSize.X + 32.0f, 44.0f);
+		Y -= Box.Y;
+		P.Round(FVector2f(HUDDetail::Margin, Y), Box, 1, HUDDetail::PaperTag(Alpha));
+		P.Text(FVector2f(HUDDetail::Margin + 16.0f, Y + (Box.Y - TextSize.Y) * 0.5f), Line, Font, HUDDetail::Ink(Alpha));
+		Y -= 8.0f;
+	}
+}
+
+void AExploredHUD::PaintSubtitle(FExploredHudPainter& P)
+{
+	if (Subtitles.Num() == 0)
 	{
 		return;
 	}
-	Survivor->OnMessage.AddDynamic(this, &AExploredHUD::HandleSurvivorMessage);
-	BoundSurvivor = Survivor;
+	const float Alpha = AlphaOf(Subtitles[0]);
+	const FSlateFontInfo Font = FExploredUIStyle::Get().SerifItalic(28.0f);
+	const TArray<FString> Lines = FExploredHudPainter::Wrap(Subtitles[0].Text.ToString(), Font, 1040.0f);
+	constexpr float LineHeight = 38.0f;
+	float Width = 0.0f;
+	for (const FString& Line : Lines)
+	{
+		Width = FMath::Max(Width, FExploredHudPainter::Measure(Line, Font).X);
+	}
+	// Abajo, sobre las ranuras rápidas (GDD v3 §9.1).
+	const FVector2f Box(Width + 48.0f, LineHeight * Lines.Num() + 20.0f);
+	const FVector2f Pos((P.Size().X - Box.X) * 0.5f, P.Size().Y - HUDDetail::Margin - HUDDetail::SlotSize - 64.0f - Box.Y);
+	P.Round(Pos, Box, 1, HUDDetail::Ink(0.74f * Alpha));
+	float Y = Pos.Y + 10.0f;
+	for (const FString& Line : Lines)
+	{
+		const float LineWidth = FExploredHudPainter::Measure(Line, Font).X;
+		P.Text(FVector2f((P.Size().X - LineWidth) * 0.5f, Y), Line, Font, ExploredPalette::Linear(ExploredPalette::Papel, Alpha));
+		Y += LineHeight;
+	}
 }
 
-void AExploredHUD::HandleSurvivorMessage(const FText& Message)
+void AExploredHUD::PaintPage(FExploredHudPainter& P)
 {
-	ShowSubtitle(Message, 3.0f);
+	using namespace ExploredPalette;
+	const float Alpha = AlphaOf(Page);
+	if (Alpha <= 0.0f)
+	{
+		return;
+	}
+	const FExploredUIStyle& Style = FExploredUIStyle::Get();
+	constexpr float Width = 940.0f;
+	constexpr float Pad = 44.0f;
+	constexpr float MarginLine = 72.0f;
+	constexpr float LineHeight = 36.0f;
+	const FSlateFontInfo BodyFont = Style.Serif(25.0f);
+	const FSlateFontInfo NoteFont = Style.SerifItalic(25.0f);
+	const TArray<FString> Body = FExploredHudPainter::Wrap(Page.Text.ToString(), BodyFont, Width - MarginLine - Pad);
+	const TArray<FString> Note = FExploredHudPainter::Wrap(PageNote.ToString(), NoteFont, Width - MarginLine - Pad);
+	const float Height = Pad * 2.0f + 52.0f + LineHeight * (Body.Num() + Note.Num()) + (Note.Num() > 0 ? 24.0f : 0.0f);
+	const FVector2f Pos((P.Size().X - Width) * 0.5f, FMath::Max(40.0f, (P.Size().Y - Height) * 0.42f));
+	// Hoja de cuaderno: papel, margen rojo, texto de Roig en tinta y la nota de Iria en azul.
+	P.Round(Pos + FVector2f(6.0f, 8.0f), FVector2f(Width, Height), 0, Linear(Tinta, 0.35f * Alpha));
+	P.Round(Pos, FVector2f(Width, Height), 0, Linear(Papel, Alpha));
+	P.Round(Pos + FVector2f(MarginLine - 16.0f, 0.0f), FVector2f(2.0f, Height), 0, Linear(RojoFaro, 0.7f * Alpha));
+	const float TextX = Pos.X + MarginLine;
+	float Y = Pos.Y + Pad;
+	P.Text(FVector2f(TextX, Y), PageTitle.ToString(), Style.SerifBold(27.0f), Linear(MaderaOscura, Alpha));
+	Y += 52.0f;
+	for (const FString& Line : Body)
+	{
+		P.Text(FVector2f(TextX, Y), Line, BodyFont, Linear(Tinta, Alpha));
+		Y += LineHeight;
+	}
+	Y += 24.0f;
+	for (const FString& Line : Note)
+	{
+		P.Text(FVector2f(TextX, Y), Line, NoteFont, Linear(AguaProfunda, Alpha));
+		Y += LineHeight;
+	}
 }
 
-void AExploredHUD::EnsureBoundToCarry(const AExploredCharacter& Character)
+void AExploredHUD::PaintCard(FExploredHudPainter& P)
 {
+	using namespace ExploredPalette;
+	const float Alpha = AlphaOf(Card);
+	if (Alpha <= 0.0f)
+	{
+		return;
+	}
+	const FExploredUIStyle& Style = FExploredUIStyle::Get();
+	const FString Text = Card.Text.ToString();
+	if (Card.bVeil)
+	{
+		P.Round(FVector2f::ZeroVector, P.Size(), 0, Linear(Tinta, FMath::Min(1.0f, Alpha * 1.5f)));
+	}
+	const FSlateFontInfo Big = Style.SerifBold(84.0f);
+	const FVector2f BigSize = FExploredHudPainter::Measure(Text, Big);
+	const float Y = P.Size().Y * 0.26f;
+	if (BigSize.X <= 900.0f)
+	{
+		// «Día 2»: grande, en papel con sombra y una raya de latón debajo.
+		P.Text(FVector2f((P.Size().X - BigSize.X) * 0.5f, Y), Text, Big, Linear(Papel, Alpha), true);
+		const float Rule = FMath::Max(160.0f, BigSize.X * 0.6f);
+		P.Round(FVector2f((P.Size().X - Rule) * 0.5f + 2.0f, Y + BigSize.Y + 6.0f), FVector2f(Rule, 4.0f), 2, Linear(Tinta, 0.5f * Alpha));
+		P.Round(FVector2f((P.Size().X - Rule) * 0.5f, Y + BigSize.Y + 4.0f), FVector2f(Rule, 4.0f), 2, Linear(Laton, Alpha));
+		return;
+	}
+	// Carteles largos (inicio, desmayo): cursiva sobre una banda de tinta.
+	const FSlateFontInfo Font = Style.SerifItalic(34.0f);
+	const TArray<FString> Lines = FExploredHudPainter::Wrap(Text, Font, 1100.0f);
+	constexpr float LineHeight = 46.0f;
+	const FVector2f Box(1180.0f, LineHeight * Lines.Num() + 36.0f);
+	// El desmayo va centrado en el negro; el resto de carteles largos, en el tercio superior.
+	const FVector2f Pos((P.Size().X - Box.X) * 0.5f, Card.bVeil ? (P.Size().Y - Box.Y) * 0.5f : Y);
+	P.Round(Pos, Box, 1, Linear(Tinta, 0.72f * Alpha));
+	float LineY = Pos.Y + 18.0f;
+	for (const FString& Line : Lines)
+	{
+		const float LineWidth = FExploredHudPainter::Measure(Line, Font).X;
+		P.Text(FVector2f((P.Size().X - LineWidth) * 0.5f, LineY), Line, Font, Linear(Papel, Alpha));
+		LineY += LineHeight;
+	}
+}
+
+void AExploredHUD::EnsureBound(const AExploredCharacter& Character)
+{
+	UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent();
+	if (Survivor && BoundSurvivor.Get() != Survivor)
+	{
+		Survivor->OnMessage.AddDynamic(this, &AExploredHUD::HandleSurvivorMessage);
+		BoundSurvivor = Survivor;
+	}
 	if (bBoundToCarry)
 	{
 		return;
 	}
-	// GetCarryComponent es const; el delegado no lo es, así que hace falta el puntero mutable.
+	// El orden de BeginPlay no está garantizado: se conecta en cuanto hay personaje.
 	if (UCarryComponent* Carry = Character.GetCarryComponent())
 	{
 		Carry->OnItemPickedUp.AddDynamic(this, &AExploredHUD::HandleItemPickedUp);
@@ -534,84 +677,14 @@ void AExploredHUD::EnsureBoundToCarry(const AExploredCharacter& Character)
 	}
 }
 
+void AExploredHUD::HandleSurvivorMessage(const FText& Message)
+{
+	ShowSubtitle(Message, 3.0f);
+}
+
 void AExploredHUD::HandleItemPickedUp(FText DisplayName)
 {
 	FFormatNamedArguments Args;
 	Args.Add(TEXT("Item"), DisplayName);
 	PushNotification(FText::Format(NSLOCTEXT("ExploredUI", "PickedUpItem", "Recogido: {Item}"), Args));
-}
-
-void AExploredHUD::PushNotification(const FText& Text, FLinearColor Color, float DurationSeconds)
-{
-	FExploredHUDNotification Notification;
-	Notification.Text = Text;
-	Notification.Color = Color;
-	Notification.RemainingSeconds = DurationSeconds;
-	Notification.TotalSeconds = FMath::Max(DurationSeconds, KINDA_SMALL_NUMBER);
-	Notifications.Insert(Notification, 0);
-	constexpr int32 MaxVisibleNotifications = 4;
-	if (Notifications.Num() > MaxVisibleNotifications)
-	{
-		Notifications.SetNum(MaxVisibleNotifications);
-	}
-}
-
-void AExploredHUD::DrawNotifications()
-{
-	if (Notifications.Num() == 0)
-	{
-		return;
-	}
-
-	const float DeltaSeconds = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
-	for (int32 Index = Notifications.Num() - 1; Index >= 0; --Index)
-	{
-		Notifications[Index].RemainingSeconds -= DeltaSeconds;
-		if (Notifications[Index].RemainingSeconds <= 0.0f)
-		{
-			Notifications.RemoveAt(Index);
-		}
-	}
-
-	// Tercio inferior, por debajo del texto de interacción (60 %): no tapa la retícula.
-	float Y = Canvas->SizeY * 0.70f;
-	for (const FExploredHUDNotification& Notification : Notifications)
-	{
-		// Se desvanece en el último cuarto de su vida en vez de cortarse en seco.
-		const float FadeWindow = Notification.TotalSeconds * 0.25f;
-		const float Alpha = FadeWindow > 0.0f ? FMath::Clamp(Notification.RemainingSeconds / FadeWindow, 0.0f, 1.0f) : 1.0f;
-		FLinearColor Color = Notification.Color;
-		Color.A = Alpha;
-		DrawCenteredText(Notification.Text, Color, Y, true);
-		Y += 30.0f * TextScale();
-	}
-}
-
-float AExploredHUD::TextScale() const
-{
-	// Tamaño pensado para 1080p; nunca por debajo del de la fuente mediana del motor.
-	return Canvas ? FMath::Max(1.0f, Canvas->SizeY / 1080.0f * 1.15f) : 1.0f;
-}
-
-void AExploredHUD::DrawCenteredText(const FText& Text, const FLinearColor& Color, float Y, bool bBacking)
-{
-	// FText directo al Canvas (sin pasar por FString): se re-traduce solo al cambiar de idioma.
-	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
-	if (!Canvas || !Font)
-	{
-		return;
-	}
-	const float Scale = TextScale();
-	float TextWidth = 0.0f, TextHeight = 0.0f;
-	Canvas->TextSize(Font, Text.ToString(), TextWidth, TextHeight, Scale, Scale);
-	if (bBacking)
-	{
-		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.38f * Color.A), (Canvas->SizeX - TextWidth) * 0.5f - 14.0f, Y - 4.0f,
-			TextWidth + 28.0f, TextHeight + 8.0f);
-	}
-	FCanvasTextItem Item(FVector2D((Canvas->SizeX - TextWidth) * 0.5f, Y), Text, Font, Color);
-	Item.Scale = FVector2D(Scale, Scale);
-	// Sombra: el texto se lee igual sobre arena clara que sobre el cielo.
-	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, Color.A * 0.75f));
-	Canvas->DrawItem(Item);
 }

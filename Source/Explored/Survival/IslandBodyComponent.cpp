@@ -422,6 +422,15 @@ void UIslandBodyComponent::PlayBlackout(TFunction<void()> OnBlack, const FText& 
 			Self->PendingOnBlack = nullptr;
 		}
 		Self->ApplyBodyOutputs();
+		// GDD v3 §9.2: negro con el texto («Despiertas en el refugio…») mientras dura el fundido.
+		if (!Self->PendingText.IsEmpty())
+		{
+			if (AExploredHUD* HUD = IslandBodyComponentDetail::FindHUD(Cast<APawn>(Self->GetOwner())))
+			{
+				HUD->ShowBlackout(Self->PendingText, Self->BlackSeconds + Self->FadeSeconds * 0.5f);
+			}
+			Self->PendingText = FText::GetEmpty();
+		}
 		if (UWorld* InnerWorld = Self->GetWorld())
 		{
 			InnerWorld->GetTimerManager().SetTimer(Self->FadeBackTimer, FTimerDelegate::CreateUObject(Self, &UIslandBodyComponent::FinishFade),
@@ -443,14 +452,6 @@ void UIslandBodyComponent::FinishFade()
 		{
 			PC->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, FadeSeconds, FLinearColor::Black, true, false);
 		}
-	}
-	if (!PendingText.IsEmpty())
-	{
-		if (AExploredHUD* HUD = IslandBodyComponentDetail::FindHUD(Pawn))
-		{
-			HUD->ShowCard(PendingText, 3.0f);
-		}
-		PendingText = FText::GetEmpty();
 	}
 }
 
