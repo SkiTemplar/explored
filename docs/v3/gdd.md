@@ -72,6 +72,8 @@ Cada página se desbloquea al interactuar con el objeto-página en su lugar. Sol
 
 ## 3. Estructura y duración (primera partida: 45-75 min; objetivo del bot 50 min)
 
+**Decisión de F3e (sustituye a los 18 min de este párrafo y del pilar 1):** 24 h de juego = 24 min reales (1 h = 60 s). Con 18 min la partida competente del bot duraba 36,7 min a 1×, por debajo del mínimo de 47: la duración la fija el reloj (dormir a las 20:00, ciclón de 19:00 a 02:00, encender de noche el día 3), no las tareas. La tabla de abajo conserva los minutos originales; las cifras medidas están en `docs/v3/estado-f3.md`. El ojo sigue durando 65 s (≈ 1,08 h) y el chubasco dura 2 h de juego (120 s).
+
 Reloj: 24 h de juego = 18 min reales (1 h = 45 s). Luz de 06:00 a 20:00 (10,5 min); noche de 20:00 a 06:00. Inicio: día 1, 04:10 (despertar), el jugador pasa a la mañana por fundido corto a las 07:00.
 
 | Fase | Reloj de juego | Minutos reales | Contenido | Objetivo en HUD |

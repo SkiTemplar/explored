@@ -134,7 +134,7 @@ Se sigue el inventario §2-3 con estas decisiones: crear `Maps/Map_IslaSal` y ca
   - Ciclón con ojo (solo clima y audio).
   - Autoguardado en amanecer y D3 20:00; guardar/cargar en cualquier etapa.
   - Final provisional: linterna encendida, luces de prueba, texto de epílogo.
-  - `PlaytestBot` con un script de partida completa y modo de reloj acelerado.
+  - `PlaytestBot` con un script de partida completa y modo de reloj acelerado. **Decisiones de F3e:** el día dura 24 min reales (1 h = 60 s; con 18 min la partida competente medía 36,7 min); el mar vuelve a abrirse a las 06:00 del día 3; no se duerme durante el ciclón; la caja de suministros cuenta lo que queda en la isla y da 3 leñas si faltan tarros; G suelta la última pila que no sea del kit. Resultado en `docs/v3/estado-f3.md`.
 - Ficheros: `Source/Explored/Narrative/*`, `Weather/*`, `Survival/*`, `Items/*`, `Crafting/*`, `Boats/*`, `Fishing/*`, `Cooking/*`, `Save/*`, `Debug/*`, `Content/Data/*`, `Content/Maps/Map_IslaSal.umap`, `Tools/Island/*`.
 - Criterio de salida:
   1. `PlaytestBot` completa la partida de principio a fin en blockout; el informe (`PlaytestReportModel`) da duración de juego entre 47 y 65 min a 1×.
