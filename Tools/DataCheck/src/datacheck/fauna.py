@@ -25,7 +25,7 @@ from typing import Any, TypeGuard
 
 FAUNA_H = "Source/Explored/Fauna/FaunaTypes.h"
 SPAWNING_H = "Source/Explored/Fauna/FaunaSpawning.h"
-ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
+ARCHIPELAGO_CPP = "Source/Explored/WorldGen/IslandLayout.cpp"
 
 
 def _read(ds, rel: str) -> str:

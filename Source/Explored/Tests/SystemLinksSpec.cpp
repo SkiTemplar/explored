@@ -2,7 +2,7 @@
 
 #include "Core/SystemLinks.h"
 #include "Weather/WeatherModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 #include <limits>
 
@@ -156,28 +156,28 @@ void FSystemLinksSpec::Define()
 	{
 		It("encuentra la isla que se pisa y la presencia de los eventos", [this]()
 		{
-			const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
+			const FIslandLayout Layout = FIslandLayout::Provisional();
 			for (int32 I = 0; I < Layout.Islands.Num(); ++I)
 			{
 				TestEqual(TEXT("El centro es de su isla"), FindIslandAt(Layout, Layout.Islands[I].Center), I);
 			}
-			const FVector2D OpenSea(FArchipelagoLayout::WorldHalfExtent * 2.0f, FArchipelagoLayout::WorldHalfExtent * 2.0f);
+			const FVector2D OpenSea(FIslandLayout::WorldHalfExtent * 20.0f, FIslandLayout::WorldHalfExtent * 20.0f);
 			TestEqual(TEXT("En alta mar"), FindIslandAt(Layout, OpenSea), static_cast<int32>(INDEX_NONE));
 
 			FWorldEvent Sea;
 			Sea.Island = EIslandArchetype::Count;
 			TestTrue(TEXT("El mar se ve desde cualquier sitio"), IsEventWitnessed(Sea, Layout, OpenSea));
 
-			FWorldEvent Turtles;
-			Turtles.Island = EIslandArchetype::WhiteSands;
-			const FIslandDesc* Sands = Layout.FindIsland(EIslandArchetype::WhiteSands);
-			TestTrue(TEXT("Hay Arenas Blancas"), Sands != nullptr);
-			if (Sands)
+			FWorldEvent OnIslet;
+			OnIslet.Island = EIslandArchetype::Teeth;
+			const FIslandDesc* Islet = Layout.FindIsland(EIslandArchetype::Teeth);
+			TestTrue(TEXT("Hay islote rocoso"), Islet != nullptr);
+			if (Islet)
 			{
-				TestTrue(TEXT("En la isla"), IsEventWitnessed(Turtles, Layout, Sands->Center));
-				TestFalse(TEXT("Lejos"), IsEventWitnessed(Turtles, Layout, OpenSea));
+				TestTrue(TEXT("En el islote"), IsEventWitnessed(OnIslet, Layout, Islet->Center));
+				TestFalse(TEXT("Lejos"), IsEventWitnessed(OnIslet, Layout, OpenSea));
 				float Distance = 0.0f;
-				TestEqual(TEXT("La más cercana"), Layout.Islands[NearestIsland(Layout, Sands->Center, Distance)].Archetype, EIslandArchetype::WhiteSands);
+				TestEqual(TEXT("La más cercana"), Layout.Islands[NearestIsland(Layout, Islet->Center, Distance)].Archetype, EIslandArchetype::Teeth);
 				TestEqual(TEXT("Dentro"), Distance, 0.0f);
 			}
 		});

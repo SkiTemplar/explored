@@ -14,37 +14,18 @@
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredHUD.h"
 #include "UI/ExploredPlayerController.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/PointsOfInterest.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace ExploredVoyageDetail
 {
-	/** Altura de la arena (m) en la que se busca sitio para la grada, junto a la orilla. */
-	constexpr float ShipyardMinHeight = 0.5f;
-	constexpr float ShipyardMaxHeight = 1.4f;
-	/** Desplazamiento lateral de la grada respecto a la línea del punto de aparición (m). */
-	constexpr float ShipyardSideOffset = 7.0f;
 	/** Secuencia de salida: dónde arranca el barco (por delante de la grada) y cuánto dura. */
 	constexpr double DepartureStartAheadCm = 1800.0;
 	constexpr float DepartureSequenceSeconds = 9.0f;
 	/** Hora a la que deja el reloj «Esperar a la noche junto al barco». */
 	constexpr float WaitUntilHours = 20.5f;
-	/** Altura (m) del claro tierra adentro donde cae el motor en la isla de inicio. */
-	constexpr float InlandMinHeight = 3.0f;
-	constexpr float InlandMaxHeight = 25.0f;
-
-	bool PartForPoi(EPoiType Type, EShipPart& OutPart)
-	{
-		switch (Type)
-		{
-		case EPoiType::WreckFuselage: OutPart = EShipPart::Fuselage; return true;
-		case EPoiType::WreckWing: OutPart = EShipPart::Wing; return true;
-		case EPoiType::WreckTail: OutPart = EShipPart::Tail; return true;
-		case EPoiType::WreckEngine: OutPart = EShipPart::Engine; return true;
-		default: return false;
-		}
-	}
+	/** Punto de autor de island.json donde va la grada (sitio de la balsa, GDD §5.7). */
+	const FName RaftSitePoint(TEXT("raft_site"));
 
 	const FExploredProgress* GetProgress(const UWorld* World)
 	{
@@ -61,106 +42,31 @@ bool UExploredVoyageSubsystem::DoesSupportWorldType(const EWorldType::Type World
 void UExploredVoyageSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	SpawnSalvageSites(InWorld);
+	// Los pecios del bucle anterior se retiraron con el procedural; la balsa de F3 sustituye a la grada.
 	SpawnShipyard(InWorld);
 }
 
-void UExploredVoyageSubsystem::SpawnSalvageSites(UWorld& World)
+bool UExploredVoyageSubsystem::FindShipyardLocation(const FIslandLayout& Layout, FVector& OutMeters, FRotator& OutRotation)
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
-	int32 Spawned = 0;
-	for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
-	{
-		EShipPart Part;
-		if (!ExploredVoyageDetail::PartForPoi(Poi.Type, Part))
-		{
-			continue;
-		}
-		FVector Location = Poi.Location;
-		// v1: sin barcos que lleguen a otras islas, todas las piezas están en la isla de inicio.
-		// El motor (en Esmeralda según FPoiLayout) se lleva tierra adentro de la isla de llegada.
-		if (Part == EShipPart::Engine && !FindLandingInland(Density, Location))
-		{
-			UE_LOG(LogExplored, Warning, TEXT("[Viaje] No hay sitio para el motor en la isla de inicio; se queda en Esmeralda"));
-		}
-		const FTransform Transform(FRotator(0.0f, Poi.Yaw, 0.0f), Location * 100.0);
-		AExploredSalvageSite* Site = World.SpawnActorDeferred<AExploredSalvageSite>(AExploredSalvageSite::StaticClass(), Transform);
-		if (!Site)
-		{
-			UE_LOG(LogExplored, Warning, TEXT("[Viaje] No se pudo crear el pecio %s"), LexToString(Poi.Type));
-			continue;
-		}
-		Site->Configure(Part);
-		Site->FinishSpawning(Transform);
-		SalvageSites.Add(Site);
-		++Spawned;
-		UE_LOG(LogExplored, Display, TEXT("[Viaje] Pecio %s en (%.0f, %.0f, %.1f) m%s"), LexToString(Poi.Type),
-			Location.X, Location.Y, Location.Z, Poi.bUnderwater ? TEXT(" bajo el agua") : TEXT(""));
-	}
-	if (Spawned != static_cast<int32>(EShipPart::Count))
-	{
-		UE_LOG(LogExplored, Warning, TEXT("[Viaje] Se esperaban %d pecios y se colocaron %d"), static_cast<int32>(EShipPart::Count), Spawned);
-	}
-}
-
-bool UExploredVoyageSubsystem::FindLandingInland(const FTerrainDensity& Density, FVector& OutMeters)
-{
-	const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-	if (!Landing)
+	const FIslandPoint* Site = Layout.FindPoint(ExploredVoyageDetail::RaftSitePoint);
+	if (!Site)
 	{
 		return false;
 	}
-	// Al otro lado de la isla respecto a la playa de llegada, a media distancia del centro:
-	// obliga a cruzar la selva sin salir de la isla.
-	const float Angle = Landing->Rotation + PI * 0.6f;
-	const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
-	for (float R = Landing->Radius * 0.35f; R < Landing->Radius * 0.9f; R += 2.0f)
-	{
-		const FVector2D P = Landing->Center + Dir * R;
-		const float H = Density.SampleColumn(P.X, P.Y).Height;
-		if (H > ExploredVoyageDetail::InlandMinHeight && H < ExploredVoyageDetail::InlandMaxHeight)
-		{
-			OutMeters = FVector(P.X, P.Y, H);
-			return true;
-		}
-	}
-	return false;
-}
-
-bool UExploredVoyageSubsystem::FindShipyardLocation(const FTerrainDensity& Density, FVector& OutMeters, FRotator& OutRotation)
-{
-	const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-	if (!Landing)
-	{
-		return false;
-	}
-	// Misma recta que FindSpawnPoint del horneado: del centro de la isla hacia la laguna.
-	// La grada va más allá del punto de aparición, en la arena junto a la orilla.
-	const FVector2D Dir(FMath::Cos(Landing->Rotation), FMath::Sin(Landing->Rotation));
-	const FVector2D Side(-Dir.Y, Dir.X);
-	for (float R = 0.0f; R < Landing->Radius * 1.4f; R += 1.0f)
-	{
-		const FVector2D P = Landing->Center - Dir * R + Side * ExploredVoyageDetail::ShipyardSideOffset;
-		const float H = Density.SampleColumn(P.X, P.Y).Height;
-		if (H > ExploredVoyageDetail::ShipyardMinHeight && H < ExploredVoyageDetail::ShipyardMaxHeight)
-		{
-			OutMeters = FVector(P.X, P.Y, H);
-			// Proa (+X de la malla) hacia el mar.
-			OutRotation = FVector(-Dir.X, -Dir.Y, 0.0f).Rotation();
-			return true;
-		}
-	}
-	return false;
+	const float Height = FMath::Max(Layout.SampleColumn(Site->Location.X, Site->Location.Y).Height, FIslandLayout::SeaLevel);
+	OutMeters = FVector(Site->Location.X, Site->Location.Y, Height);
+	// Proa (+X de la malla) hacia el mar, según el yaw de autor del punto.
+	OutRotation = FRotator(0.0f, Site->Yaw, 0.0f);
+	return true;
 }
 
 void UExploredVoyageSubsystem::SpawnShipyard(UWorld& World)
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
 	FVector Location;
 	FRotator Rotation;
-	if (!FindShipyardLocation(Density, Location, Rotation))
+	if (!FindShipyardLocation(*ExploredIsland::Get(), Location, Rotation))
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[Viaje] No se encontró arena para la grada del barco"));
+		UE_LOG(LogExplored, Warning, TEXT("[Viaje] island.json no tiene el punto «raft_site»; no hay grada"));
 		return;
 	}
 	const FTransform Transform(Rotation, Location * 100.0);

@@ -1,6 +1,6 @@
 ﻿# Regenera todo el contenido del juego a partir del código: texturas, mallas, audio,
 # importación a Unreal, materiales y horneado del archipiélago.
-# Uso: Tools\build_content.ps1 [-Skip textures,meshes,audio,import,materials,world]
+# Uso: Tools\build_content.ps1 [-Skip textures,meshes,audio,import,materials]
 param([string[]]$Skip = @())
 . "$PSScriptRoot\common.ps1"
 # Con `powershell -File` la lista llega como una sola cadena "a,b": se separa aquí.
@@ -36,9 +36,6 @@ try {
     }
     Step 'materials' {
         & "$PSScriptRoot\unreal_python.ps1" -Script Tools/Unreal/build_materials.py
-    }
-    Step 'world' {
-        & "$PSScriptRoot\worldgen.ps1" -Mode bake
     }
 }
 finally {

@@ -33,8 +33,8 @@
 #include "Debug/ExploredPlaytestBot.h"
 #include "Explored.h"
 #include "Items/ExploredItemActor.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace
 {
@@ -379,7 +379,8 @@ void UExploredPlaytestAuditor::BeginPhysicsTracking()
 
 void UExploredPlaytestAuditor::SamplePhysicsDrift()
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	// Relieve aproximado de island.json: sustituir por una traza contra el Landscape en F3.
+	const FIslandLayout& Layout = *ExploredIsland::Get();
 
 	int32 Found = 0;
 	for (const FTrackedPhysicsActor& Tracked : TrackedPhysicsActors)
@@ -397,9 +398,9 @@ void UExploredPlaytestAuditor::SamplePhysicsDrift()
 			continue;
 		}
 
-		const float GroundHeight = Density.SampleColumn(NowMeters.X, NowMeters.Y).Height;
+		const float GroundHeight = Layout.SampleColumn(NowMeters.X, NowMeters.Y).Height;
 		const bool bBelowTerrain = NowMeters.Z < GroundHeight - 0.1f;
-		const bool bBelowWater = NowMeters.Z < FArchipelagoLayout::SeaLevel - 0.1f;
+		const bool bBelowWater = NowMeters.Z < FIslandLayout::SeaLevel - 0.1f;
 		FPlaytestReportModel::AppendPhysicsDriftIssue(Report, Actor->GetName(), Tracked.StartLocationMeters, NowMeters, bBelowTerrain, bBelowWater);
 		++Found;
 	}

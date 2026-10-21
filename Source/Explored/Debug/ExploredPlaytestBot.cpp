@@ -17,9 +17,8 @@
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Player/ExploredCharacter.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/PointsOfInterest.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace
 {
@@ -69,45 +68,28 @@ void UExploredPlaytestBot::OnWorldBeginPlay(UWorld& InWorld)
 
 void UExploredPlaytestBot::BuildRoute()
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
-	const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-	if (!Landing)
+	// Un punto por zona de island.json (GDD §6), en el orden del fichero, mirando al centro de su tierra.
+	const FIslandLayout& Layout = *ExploredIsland::Get();
+	for (const FIslandZone& Zone : Layout.Zones)
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[PlaytestBot] No se encontró la isla Landing; ruta vacía"));
-		return;
-	}
-
-	FVector Beach = FVector::ZeroVector;
-	bool bHasBeach = false;
-	for (int32 Step = 0; Step < 12 && !bHasBeach; ++Step)
-	{
-		bHasBeach = FPoiLayout::FindBeach(Density, *Landing, Landing->Rotation + Step * (UE_PI / 6.0f), Beach);
-	}
-
-	FVector Inland = FVector::ZeroVector;
-	bool bHasInland = false;
-	for (int32 Step = 0; Step < 12 && !bHasInland; ++Step)
-	{
-		bHasInland = FPoiLayout::FindInland(Density, *Landing, Landing->Rotation + Step * (UE_PI / 6.0f), 0.5f, Inland);
-	}
-
-	auto AddWaypoint = [this, Landing](const FString& Name, const FVector& PointMeters)
-	{
+		const FIslandColumn Column = Layout.SampleColumn(Zone.Center.X, Zone.Center.Y);
+		if (Column.Height <= FIslandLayout::SeaLevel || !Layout.Islands.IsValidIndex(Column.IslandIndex))
+		{
+			UE_LOG(LogExplored, Warning, TEXT("[PlaytestBot] La zona %s no está sobre tierra; se salta"), *Zone.Id.ToString());
+			continue;
+		}
 		FWaypoint Waypoint;
-		Waypoint.Name = Name;
-		Waypoint.LocationMeters = PointMeters + FVector(0, 0, 1.7f);
-		const FVector Target(Landing->Center.X, Landing->Center.Y, Waypoint.LocationMeters.Z);
-		Waypoint.AimRotation = (Target - Waypoint.LocationMeters).Rotation();
+		Waypoint.Name = Zone.Id.ToString();
+		Waypoint.LocationMeters = FVector(Zone.Center.X, Zone.Center.Y, Column.Height + 1.7f);
+		const FVector2D LandCenter = Layout.Islands[Column.IslandIndex].Center;
+		const FVector Target(LandCenter.X, LandCenter.Y, Waypoint.LocationMeters.Z);
+		Waypoint.AimRotation = Target.Equals(Waypoint.LocationMeters, 1.0f)
+			? FRotator::ZeroRotator : (Target - Waypoint.LocationMeters).Rotation();
 		Route.Add(Waypoint);
-	};
-
-	if (bHasBeach)
-	{
-		AddWaypoint(TEXT("Landing_playa"), Beach);
 	}
-	if (bHasInland)
+	if (Route.IsEmpty())
 	{
-		AddWaypoint(TEXT("Landing_jungla"), Inland);
+		UE_LOG(LogExplored, Warning, TEXT("[PlaytestBot] island.json no tiene zonas sobre tierra; ruta vacía"));
 	}
 }
 

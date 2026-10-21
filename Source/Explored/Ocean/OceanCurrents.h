@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-struct FArchipelagoLayout;
+struct FIslandLayout;
 
 /**
  * Marea del archipiélago: dos pleamares al día (GDD §5.1), con las mareas
@@ -59,7 +59,7 @@ struct EXPLORED_API FOceanCurrents
 	static constexpr float MaxSpeedCmS = 180.0f;
 
 	/** Un estrecho por cada par de islas consecutivas (Layout.Islands[i], Islands[i + 1]). */
-	static TArray<FOceanStrait> BuildStraits(const FArchipelagoLayout& Layout);
+	static TArray<FOceanStrait> BuildStraits(const FIslandLayout& Layout);
 
 	/**
 	 * Corriente (cm/s, mundo) en PositionCm. FlowSign en [-1, 1] (ver

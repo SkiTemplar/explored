@@ -16,8 +16,8 @@
 #include "Player/SwimComponent.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 /** Estado que cambia cada fotograma y que leen las consultas del mundo (sin punteros a UObject). */
 struct FFaunaQueryState
@@ -89,7 +89,7 @@ AExploredFaunaManager::AExploredFaunaManager()
 void AExploredFaunaManager::BeginPlay()
 {
 	Super::BeginPlay();
-	Density = MakeShared<FTerrainDensity>(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	IslandData = ExploredIsland::Get();
 	Ocean = Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(this, AExploredOcean::StaticClass()));
 	BuildWorldQuery();
 }
@@ -112,7 +112,7 @@ void AExploredFaunaManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AExploredFaunaManager::BuildWorldQuery()
 {
 	using namespace FaunaManagerDetail;
-	const FArchipelagoLayout& Layout = Density->GetLayout();
+	const FIslandLayout& Layout = *IslandData;
 	TArray<FVector2D> IslandCenters;
 	for (const FIslandDesc& Island : Layout.Islands)
 	{
@@ -120,11 +120,11 @@ void AExploredFaunaManager::BuildWorldQuery()
 	}
 	const TArray<FOceanStrait> Straits = FOceanCurrents::BuildStraits(Layout);
 	const TSharedRef<FFaunaQueryState> State = MakeShared<FFaunaQueryState>();
-	const TSharedPtr<FTerrainDensity> DensityRef = Density;
+	const TSharedPtr<const FIslandLayout> IslandRef = IslandData;
 	const TWeakObjectPtr<AExploredOcean> WeakOcean = Ocean;
 
 	// Nada de UObject crudos en las lambdas: densidad y estado compartidos, océano débil.
-	WorldQuery.Seabed = [DensityRef, State](const FVector2D& P)
+	WorldQuery.Seabed = [IslandRef, State](const FVector2D& P)
 	{
 		const FIntPoint Key(FMath::FloorToInt(P.X / HeightCacheStepCm), FMath::FloorToInt(P.Y / HeightCacheStepCm));
 		if (const float* Cached = State->SeabedCache.Find(Key))
@@ -137,7 +137,7 @@ void AExploredFaunaManager::BuildWorldQuery()
 		}
 		const float X = (Key.X + 0.5f) * HeightCacheStepCm / MetersToCm;
 		const float Y = (Key.Y + 0.5f) * HeightCacheStepCm / MetersToCm;
-		const float Height = DensityRef->SampleColumn(X, Y).Height * MetersToCm;
+		const float Height = IslandRef->SampleColumn(X, Y).Height * MetersToCm;
 		State->SeabedCache.Add(Key, Height);
 		return Height;
 	};
@@ -297,13 +297,13 @@ FFaunaCellContext AExploredFaunaManager::CellContext(const FIntPoint& Cell) cons
 	FFaunaCellContext Ctx;
 	const FVector2D CenterCm = FFaunaSpawnRules::CellCenter(Cell);
 	const FVector2D CenterM = CenterCm / MetersToCm;
-	const FTerrainColumn Column = Density->SampleColumn(CenterM.X, CenterM.Y);
+	const FIslandColumn Column = IslandData->SampleColumn(CenterM.X, CenterM.Y);
 	Ctx.SeabedZCm = Column.Height * MetersToCm;
 
 	float BestCoast = TNumericLimits<float>::Max();
 	const FIslandDesc* Nearest = nullptr;
 	float NearestDist = TNumericLimits<float>::Max();
-	for (const FIslandDesc& Island : Density->GetLayout().Islands)
+	for (const FIslandDesc& Island : IslandData->Islands)
 	{
 		const float Dist = static_cast<float>(FVector2D::Distance(CenterM, Island.Center));
 		BestCoast = FMath::Min(BestCoast, FMath::Max(0.0f, Dist - Island.Radius) * MetersToCm);
@@ -364,7 +364,7 @@ void AExploredFaunaManager::RefreshCells(const FVector& Center)
 		}
 		LoadedCells.Add(Cell);
 		TArray<FFaunaSpawn> Spawns;
-		FFaunaSpawnRules::SpawnsForCell(FArchipelagoLayout::OfficialSeed, Cell, CellContext(Cell), Spawns);
+		FFaunaSpawnRules::SpawnsForCell(FIslandLayout::OfficialSeed, Cell, CellContext(Cell), Spawns);
 		for (const FFaunaSpawn& Spawn : Spawns)
 		{
 			SpawnGroup(Spawn, Cell);
@@ -603,7 +603,7 @@ void AExploredFaunaManager::Tick(float DeltaSeconds)
 {
 	using namespace FaunaManagerDetail;
 	Super::Tick(DeltaSeconds);
-	if (!Density)
+	if (!IslandData)
 	{
 		return;
 	}

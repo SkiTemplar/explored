@@ -13,7 +13,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RightBoat",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 470"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 471"
 						}
 					]
 				},
@@ -442,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_Board",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 474"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 475"
 						}
 					]
 				},
@@ -530,7 +530,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Raft",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
 						}
 					]
 				},
@@ -541,7 +541,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Canoe",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 77"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
 						}
 					]
 				},
@@ -552,56 +552,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Outrigger",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
-						}
-					]
-				}
-			]
-		},
-		{
-			"Namespace": "ExploredHarvest",
-			"Children": [
-				{
-					"Source": {
-						"Text": "Picar"
-					},
-					"Keys": [
-						{
-							"Key": "VerbMine",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 679"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Recoger"
-					},
-					"Keys": [
-						{
-							"Key": "VerbGather",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 675"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Talar"
-					},
-					"Keys": [
-						{
-							"Key": "VerbChop",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 683"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "{Verb} ({Hits}/{Required})"
-					},
-					"Keys": [
-						{
-							"Key": "VerbProgress",
-							"Path": "Source/Explored/Core/ExploredWiringSubsystem.cpp - line 692"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
 						}
 					]
 				}
@@ -2306,7 +2257,7 @@
 					"Keys": [
 						{
 							"Key": "DirUnderwater",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 405"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 311"
 						}
 					]
 				},
@@ -2317,7 +2268,7 @@
 					"Keys": [
 						{
 							"Key": "PartWing",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 414"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 320"
 						}
 					]
 				},
@@ -2328,7 +2279,7 @@
 					"Keys": [
 						{
 							"Key": "NightFell",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 319"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 225"
 						}
 					]
 				},
@@ -2339,7 +2290,7 @@
 					"Keys": [
 						{
 							"Key": "PartTail",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 415"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 321"
 						}
 					]
 				},
@@ -2361,7 +2312,7 @@
 					"Keys": [
 						{
 							"Key": "ObjBuild",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 346"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 252"
 						}
 					]
 				},
@@ -2372,7 +2323,7 @@
 					"Keys": [
 						{
 							"Key": "WaitNight",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 245"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 151"
 						}
 					]
 				},
@@ -2383,7 +2334,7 @@
 					"Keys": [
 						{
 							"Key": "ShipBuilt",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 220"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 126"
 						}
 					]
 				},
@@ -2394,7 +2345,7 @@
 					"Keys": [
 						{
 							"Key": "ObjSailNow",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 349"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 255"
 						}
 					]
 				},
@@ -2405,7 +2356,7 @@
 					"Keys": [
 						{
 							"Key": "ObjSailWait",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 350"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 256"
 						}
 					]
 				},
@@ -2427,7 +2378,7 @@
 					"Keys": [
 						{
 							"Key": "PartFuselage",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 413"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 319"
 						}
 					]
 				},
@@ -2449,7 +2400,7 @@
 					"Keys": [
 						{
 							"Key": "PartEngine",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 416"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 322"
 						}
 					]
 				},
@@ -2460,7 +2411,7 @@
 					"Keys": [
 						{
 							"Key": "ObjSalvage",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 341"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 247"
 						}
 					]
 				},
@@ -2482,7 +2433,7 @@
 					"Keys": [
 						{
 							"Key": "AllParts",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 203"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 109"
 						}
 					]
 				},
@@ -2504,7 +2455,7 @@
 					"Keys": [
 						{
 							"Key": "DirRight",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 401"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 307"
 						}
 					]
 				},
@@ -2515,7 +2466,7 @@
 					"Keys": [
 						{
 							"Key": "DirLeft",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 401"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 307"
 						}
 					]
 				},
@@ -2526,7 +2477,7 @@
 					"Keys": [
 						{
 							"Key": "DirFormat",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 406"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 312"
 						}
 					]
 				},
@@ -2537,7 +2488,7 @@
 					"Keys": [
 						{
 							"Key": "DirAhead",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 393"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 299"
 						}
 					]
 				},
@@ -2548,7 +2499,7 @@
 					"Keys": [
 						{
 							"Key": "DirBehind",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 397"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 303"
 						}
 					]
 				},
@@ -2559,7 +2510,7 @@
 					"Keys": [
 						{
 							"Key": "PartRecovered",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 199"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 105"
 						}
 					]
 				},
@@ -2570,7 +2521,7 @@
 					"Keys": [
 						{
 							"Key": "ObjSalvageHint",
-							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 343"
+							"Path": "Source/Explored/Narrative/ExploredVoyageSubsystem.cpp - line 249"
 						}
 					]
 				}

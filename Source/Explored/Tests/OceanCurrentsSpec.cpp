@@ -2,7 +2,7 @@
 
 #include "Ocean/OceanCurrents.h"
 #include "Ocean/OceanWaves.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -87,7 +87,7 @@ void FOceanCurrentsSpec::Define()
 	{
 		It("construye un estrecho por cada par de islas consecutivas de la cadena", [this]()
 		{
-			const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
+			const FIslandLayout Layout = FIslandLayout::Provisional();
 			const TArray<FOceanStrait> Straits = FOceanCurrents::BuildStraits(Layout);
 			TestEqual(TEXT("N - 1 estrechos"), Straits.Num(), FMath::Max(0, Layout.Islands.Num() - 1));
 		});

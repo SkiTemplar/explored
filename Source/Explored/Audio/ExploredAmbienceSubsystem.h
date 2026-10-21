@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 #include "ExploredAmbienceSubsystem.generated.h"
 
 class AExploredOcean;
 class UAudioComponent;
 class USoundBase;
-class FTerrainDensity;
+struct FIslandLayout;
 
 /** Capas del paisaje sonoro. */
 enum class EAmbienceLayer : uint8
@@ -87,7 +87,7 @@ private:
 
 	TArray<float> CurrentVolumes;
 	TArray<float> TargetVolumes;
-	TSharedPtr<FTerrainDensity> Density;
+	TSharedPtr<const FIslandLayout> IslandData;
 	/** Océano del nivel: la superficie real (con oleaje) decide si el oyente está sumergido. */
 	TWeakObjectPtr<AExploredOcean> Ocean;
 	FAmbienceEnvironment ListenerEnvironment;

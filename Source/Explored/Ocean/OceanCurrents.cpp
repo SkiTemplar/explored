@@ -1,12 +1,11 @@
 #include "Ocean/OceanCurrents.h"
 
 #include "Sky/MoonModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 namespace
 {
-	// WorldGen trabaja en metros (ver TerrainChunkBuilder::Build); el resto del
-	// juego (Ocean, Player) en centímetros.
+	// FIslandLayout trabaja en metros; el resto del juego (Ocean, Player) en centímetros.
 	constexpr float MetersToCm = 100.0f;
 }
 
@@ -32,7 +31,7 @@ float FOceanTide::SpringNeapFactorAt(float TotalDays)
 	return SpringNeapFactor(FMoonModel::Phase(TotalDays));
 }
 
-TArray<FOceanStrait> FOceanCurrents::BuildStraits(const FArchipelagoLayout& Layout)
+TArray<FOceanStrait> FOceanCurrents::BuildStraits(const FIslandLayout& Layout)
 {
 	TArray<FOceanStrait> Straits;
 	Straits.Reserve(FMath::Max(0, Layout.Islands.Num() - 1));
@@ -48,8 +47,8 @@ TArray<FOceanStrait> FOceanCurrents::BuildStraits(const FArchipelagoLayout& Layo
 			continue;
 		}
 		FOceanStrait Strait;
-		Strait.CoastA = CenterA + Dir * (A.Radius * MetersToCm);
-		Strait.CoastB = CenterB - Dir * (B.Radius * MetersToCm);
+		Strait.CoastA = CenterA + Dir * (A.RadiusAlong(Dir) * MetersToCm);
+		Strait.CoastB = CenterB - Dir * (B.RadiusAlong(-Dir) * MetersToCm);
 		// Medio ancho del canal real entre las dos costas; nunca cero para evitar dividir por él.
 		Strait.HalfWidthCm = FMath::Max(50.0f, FVector2D::Distance(Strait.CoastA, Strait.CoastB) * 0.5f);
 		Straits.Add(Strait);

@@ -20,12 +20,12 @@
 #include "UI/ExploredPlayerController.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "Weather/WeatherModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 namespace ExploredMusicDetail
 {
 	/** Semilla del director: fija por mundo para que la música sea reproducible. */
-	constexpr uint32 MusicSeed = FArchipelagoLayout::OfficialSeed ^ 0x4D55u;
+	constexpr uint32 MusicSeed = FIslandLayout::OfficialSeed ^ 0x4D55u;
 	/** Frecuencia con la que se recoge el contexto (s). */
 	constexpr float ContextInterval = 0.25f;
 	/** Frecuencia con la que se busca el próximo ciclón en el planificador (s). */

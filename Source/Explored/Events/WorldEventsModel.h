@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Weather/WeatherModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 /** Eventos del mundo vivo (GDD §9.3, §10; biblia §6.3 y §11). */
 enum class EWorldEventType : uint8

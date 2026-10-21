@@ -9,12 +9,12 @@
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 namespace WorldEventsSubsystemDetail
 {
 	/** Semilla del calendario de eventos, derivada de la del mundo oficial. */
-	constexpr uint32 EventsSeed = FArchipelagoLayout::OfficialSeed ^ 0xE7E47u;
+	constexpr uint32 EventsSeed = FIslandLayout::OfficialSeed ^ 0xE7E47u;
 	/** Cada cuánto se sondea el modelo (s reales): con días de 40 min son unos 18 s de juego. */
 	constexpr float PollInterval = 0.5f;
 	/** Sección de la partida (docs/tecnico/guardado.md). */

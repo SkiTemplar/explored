@@ -459,47 +459,6 @@
 			]
 		},
 		{
-			"Namespace": "ExploredHarvest",
-			"Children": [
-				{
-					"Source": {
-						"Text": "Talar"
-					},
-					"Translation": {
-						"Text": "Talar"
-					},
-					"Key": "VerbChop"
-				},
-				{
-					"Source": {
-						"Text": "Recoger"
-					},
-					"Translation": {
-						"Text": "Recoger"
-					},
-					"Key": "VerbGather"
-				},
-				{
-					"Source": {
-						"Text": "Picar"
-					},
-					"Translation": {
-						"Text": "Picar"
-					},
-					"Key": "VerbMine"
-				},
-				{
-					"Source": {
-						"Text": "{Verb} ({Hits}/{Required})"
-					},
-					"Translation": {
-						"Text": "{Verb} ({Hits}/{Required})"
-					},
-					"Key": "VerbProgress"
-				}
-			]
-		},
-		{
 			"Namespace": "ExploredUI",
 			"Children": [
 				{

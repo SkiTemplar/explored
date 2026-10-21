@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 594,
-		"cpp": 234,
+		"total": 590,
+		"cpp": 230,
 		"datos": 360,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 2,
-		"revisar": 108
+		"revisar": 114
 	},
 	"entries": [
 		{
@@ -19,7 +19,7 @@
 			"en": "the canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:77"
+				"Source/Explored/Boats/ExploredBoat.cpp:78"
 			]
 		},
 		{
@@ -29,7 +29,7 @@
 			"en": "the outrigger canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:78"
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
 			]
 		},
 		{
@@ -39,7 +39,7 @@
 			"en": "the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
+				"Source/Explored/Boats/ExploredBoat.cpp:80"
 			]
 		},
 		{
@@ -466,7 +466,7 @@
 			"en": "Board {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:474"
+				"Source/Explored/Boats/ExploredBoat.cpp:475"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Right {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:470"
+				"Source/Explored/Boats/ExploredBoat.cpp:471"
 			]
 		},
 		{
@@ -507,46 +507,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Carry/ExploredContainer.cpp:156"
-			]
-		},
-		{
-			"namespace": "ExploredHarvest",
-			"key": "VerbChop",
-			"es": "Talar",
-			"en": "Chop",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:683"
-			]
-		},
-		{
-			"namespace": "ExploredHarvest",
-			"key": "VerbGather",
-			"es": "Recoger",
-			"en": "Gather",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:675"
-			]
-		},
-		{
-			"namespace": "ExploredHarvest",
-			"key": "VerbMine",
-			"es": "Picar",
-			"en": "Mine",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:679"
-			]
-		},
-		{
-			"namespace": "ExploredHarvest",
-			"key": "VerbProgress",
-			"es": "{Verb} ({Hits}/{Required})",
-			"en": "{Verb} ({Hits}/{Required})",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Core/ExploredWiringSubsystem.cpp:692"
 			]
 		},
 		{
@@ -2115,7 +2075,7 @@
 			"en": "You have everything: build the boat on the beach slipway",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:203"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:109"
 			]
 		},
 		{
@@ -2125,7 +2085,7 @@
 			"en": "ahead",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:393"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:299"
 			]
 		},
 		{
@@ -2135,7 +2095,7 @@
 			"en": "behind",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:397"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:303"
 			]
 		},
 		{
@@ -2145,7 +2105,7 @@
 			"en": "{0} m away, {1}{2}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:406"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:312"
 			]
 		},
 		{
@@ -2155,7 +2115,7 @@
 			"en": "to the left",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:401"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:307"
 			]
 		},
 		{
@@ -2165,7 +2125,7 @@
 			"en": "to the right",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:401"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:307"
 			]
 		},
 		{
@@ -2175,7 +2135,7 @@
 			"en": " (underwater)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:405"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:311"
 			]
 		},
 		{
@@ -2185,7 +2145,7 @@
 			"en": "Night falls. The stars now mark the course.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:319"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:225"
 			]
 		},
 		{
@@ -2195,7 +2155,7 @@
 			"en": "Build the boat on the beach slipway",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:346"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:252"
 			]
 		},
 		{
@@ -2205,7 +2165,7 @@
 			"en": "It's night: sail the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:349"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:255"
 			]
 		},
 		{
@@ -2215,7 +2175,7 @@
 			"en": "Wait for night to sail the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:350"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:256"
 			]
 		},
 		{
@@ -2225,7 +2185,7 @@
 			"en": "Salvage the Albatros parts ({0}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:341"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:247"
 			]
 		},
 		{
@@ -2235,7 +2195,7 @@
 			"en": "{0} · nearest {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:343"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:249"
 			]
 		},
 		{
@@ -2245,7 +2205,7 @@
 			"en": "Engine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:416"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:322"
 			]
 		},
 		{
@@ -2255,7 +2215,7 @@
 			"en": "Fuselage",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:413"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:319"
 			]
 		},
 		{
@@ -2265,7 +2225,7 @@
 			"en": "{0} of the Albatros salvaged ({1}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:199"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:105"
 			]
 		},
 		{
@@ -2275,7 +2235,7 @@
 			"en": "Tail",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:415"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:321"
 			]
 		},
 		{
@@ -2285,7 +2245,7 @@
 			"en": "Wing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:414"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:320"
 			]
 		},
 		{
@@ -2295,7 +2255,7 @@
 			"en": "The boat is ready. Sail at night, guided by the stars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:220"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:126"
 			]
 		},
 		{
@@ -2355,7 +2315,7 @@
 			"en": "Stars don't show by day: wait for night by the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:245"
+				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:151"
 			]
 		},
 		{

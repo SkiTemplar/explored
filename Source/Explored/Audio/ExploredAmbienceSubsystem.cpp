@@ -10,8 +10,8 @@
 #include "Ocean/ExploredOcean.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredGameUserSettings.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace
 {
@@ -71,7 +71,7 @@ bool UExploredAmbienceSubsystem::DoesSupportWorldType(const EWorldType::Type Wor
 void UExploredAmbienceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	Density = MakeShared<FTerrainDensity>(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	IslandData = ExploredIsland::Get();
 
 	CurrentVolumes.Init(0.0f, NumLayers);
 	TargetVolumes.Init(0.0f, NumLayers);
@@ -122,13 +122,13 @@ FAmbienceEnvironment UExploredAmbienceSubsystem::Evaluate(const FVector& Listene
 	FAmbienceEnvironment Env;
 	Env.Rain = Rain;
 	Env.SeaState = SeaState;
-	if (!Density)
+	if (!IslandData)
 	{
 		return Env;
 	}
 
 	const FVector P = ListenerCm / 100.0;
-	const FTerrainColumn Here = Density->SampleColumn(P.X, P.Y);
+	const FIslandColumn Here = IslandData->SampleColumn(P.X, P.Y);
 	// Sumergido respecto a la superficie real del oleaje, con el mismo margen que el cielo
 	// (ExploredSkyController::ApplyUnderwater): con el nivel del mar fijo, la cámara del
 	// nadador cruzaba -30 cm en cada seno de ola y el ambiente se apagaba a cada ola.
@@ -155,7 +155,7 @@ FAmbienceEnvironment UExploredAmbienceSubsystem::Evaluate(const FVector& Listene
 			const float Angle = Dir * UE_TWO_PI / 8.0f;
 			for (float R = 10.0f; R < Nearest; R += 15.0f)
 			{
-				if (Density->SampleColumn(P.X + FMath::Cos(Angle) * R, P.Y + FMath::Sin(Angle) * R).Height < 0.0f)
+				if (IslandData->SampleColumn(P.X + FMath::Cos(Angle) * R, P.Y + FMath::Sin(Angle) * R).Height < 0.0f)
 				{
 					Nearest = R;
 					break;
@@ -167,7 +167,7 @@ FAmbienceEnvironment UExploredAmbienceSubsystem::Evaluate(const FVector& Listene
 
 	if (Here.IslandIndex != INDEX_NONE && Here.Height > 2.5f)
 	{
-		Env.Vegetation = VegetationWeight(Density->GetLayout().Islands[Here.IslandIndex].Archetype) *
+		Env.Vegetation = VegetationWeight(IslandData->BiomeAt(Here)) *
 			(1.0f - FMath::SmoothStep(120.0f, 260.0f, Here.Height));
 	}
 
@@ -195,13 +195,10 @@ void UExploredAmbienceSubsystem::Tick(float DeltaTime)
 			const FVector Listener = PC->PlayerCameraManager->GetCameraLocation();
 			ListenerEnvironment = Evaluate(Listener);
 			ListenerIsland = EIslandArchetype::Count;
-			if (Density)
+			if (IslandData)
 			{
-				const FTerrainColumn Column = Density->SampleColumn(static_cast<float>(Listener.X / 100.0), static_cast<float>(Listener.Y / 100.0));
-				if (Density->GetLayout().Islands.IsValidIndex(Column.IslandIndex))
-				{
-					ListenerIsland = Density->GetLayout().Islands[Column.IslandIndex].Archetype;
-				}
+				const FIslandColumn Column = IslandData->SampleColumn(static_cast<float>(Listener.X / 100.0), static_cast<float>(Listener.Y / 100.0));
+				ListenerIsland = IslandData->BiomeAt(Column);
 			}
 			float Mix[NumLayers];
 			FAmbienceMixer::Mix(ListenerEnvironment, Mix);

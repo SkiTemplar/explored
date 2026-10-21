@@ -2,21 +2,10 @@
 
 namespace SystemLinksDetail
 {
-	/** Margen sobre el radio nominal de una isla: los lóbulos llegan a 1,1 radios. */
-	constexpr float IslandRadiusMargin = 1.1f;
-	/** Radio de un islote de Los Dientes frente al radio de la isla. */
-	constexpr float IsletRadiusFraction = 0.35f;
-
-	/** Distancia (m) de un punto al borde nominal de una isla (0 dentro), incluidos sus islotes. */
+	/** Distancia (m) de un punto a la costa nominal de una tierra (0 dentro). */
 	float DistanceToIsland(const FIslandDesc& Island, const FVector2D& Position)
 	{
-		float Best = FMath::Max(0.0f, static_cast<float>(FVector2D::Distance(Position, Island.Center)) - Island.Radius * IslandRadiusMargin);
-		for (const FVector2D& Islet : Island.Islets)
-		{
-			const float ToIslet = static_cast<float>(FVector2D::Distance(Position, Island.Center + Islet)) - Island.Radius * IsletRadiusFraction;
-			Best = FMath::Min(Best, FMath::Max(0.0f, ToIslet));
-		}
-		return Best;
+		return Island.DistanceToCoast(Position);
 	}
 
 	float Ramp(float Value, float From, float To)
@@ -177,7 +166,7 @@ namespace ExploredLinks
 		return Harm;
 	}
 
-	int32 FindIslandAt(const FArchipelagoLayout& Layout, const FVector2D& PositionMeters)
+	int32 FindIslandAt(const FIslandLayout& Layout, const FVector2D& PositionMeters)
 	{
 		int32 Best = INDEX_NONE;
 		double BestDist = 0.0;
@@ -198,7 +187,7 @@ namespace ExploredLinks
 		return Best;
 	}
 
-	int32 NearestIsland(const FArchipelagoLayout& Layout, const FVector2D& PositionMeters, float& OutDistanceToCoastMeters)
+	int32 NearestIsland(const FIslandLayout& Layout, const FVector2D& PositionMeters, float& OutDistanceToCoastMeters)
 	{
 		int32 Best = INDEX_NONE;
 		OutDistanceToCoastMeters = TNumericLimits<float>::Max();
@@ -214,7 +203,7 @@ namespace ExploredLinks
 		return Best;
 	}
 
-	bool IsEventWitnessed(const FWorldEvent& Event, const FArchipelagoLayout& Layout, const FVector2D& PlayerMeters)
+	bool IsEventWitnessed(const FWorldEvent& Event, const FIslandLayout& Layout, const FVector2D& PlayerMeters)
 	{
 		if (Event.Island == EIslandArchetype::Count)
 		{

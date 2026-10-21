@@ -3,7 +3,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/WorldPartitionStreamingSourceComponent.h"
 
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace ExploredMenuCameraDetail
 {
@@ -34,7 +35,7 @@ void AExploredMenuCamera::BeginPlay()
 	{
 		return;
 	}
-	const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
+	const FIslandLayout Layout = *ExploredIsland::Get();
 	if (const FIslandDesc* Landing = Layout.FindIsland(EIslandArchetype::Landing))
 	{
 		using namespace ExploredMenuCameraDetail;

@@ -17,19 +17,15 @@
 #include "UnrealClient.h"
 #include "WorldPartition/WorldPartitionSubsystem.h"
 
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Debug/ExploredPlaytestAuditor.h"
 #include "Explored.h"
 #include "Narrative/ExploredVoyageSubsystem.h"
 #include "Interaction/InteractionComponent.h"
 #include "Player/ExploredCharacter.h"
-#include "WorldGen/PointsOfInterest.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/ExploredVegetationCell.h"
-#include "WorldGen/PointsOfInterest.h"
-#include "WorldGen/TerrainDensity.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 // Contadores de RenderCore/RHI que alimentan el HUD de «stat unit»/«stat gpu» (ciclos del último
 // fotograma, ver RenderTimer.h): se leen directamente para volcarlos a texto en -ExploredBench sin
@@ -99,135 +95,52 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 void UExploredShotSubsystem::BuildShotList(const FString& Set)
 {
-	const FTerrainDensity Density(FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed));
+	// Vistas sobre la disposición de autor (island.json). Las alturas salen del relieve
+	// aproximado de FIslandLayout hasta que exista el Landscape de F3.
+	const FIslandLayout& Layout = *ExploredIsland::Get();
 	const bool bAll = Set == TEXT("all");
 	const bool bBench = Set == TEXT("bench");
+	const FIslandDesc* Main = Layout.Islands.IsEmpty() ? nullptr : &Layout.Islands[0];
+	auto GroundAt = [&Layout](const FVector2D& P)
+	{
+		return FMath::Max(Layout.SampleColumn(P.X, P.Y).Height, FIslandLayout::SeaLevel);
+	};
+	auto AddShot = [this](const FString& Name, const FVector& EyeMeters, const FVector& LookAtMeters, float ShotHours)
+	{
+		FExploredShot Shot;
+		Shot.Name = Name;
+		Shot.Location = EyeMeters * 100.0;
+		Shot.Rotation = ((LookAtMeters - EyeMeters) * 100.0).Rotation();
+		Shot.Hours = ShotHours;
+		Shots.Add(Shot);
+	};
 
-	if (bAll || bBench || Set == TEXT("spawn"))
+	if ((bAll || bBench || Set == TEXT("spawn")) && Main)
 	{
 		for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
 		{
-			FExploredShot Shot;
-			Shot.Name = TEXT("spawn");
-			Shot.Location = It->GetActorLocation() + FVector(0, 0, 70);
-			// Mira hacia el centro de la isla de inicio.
-			const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-			const FVector Target(Landing->Center.X * 100.0, Landing->Center.Y * 100.0, Shot.Location.Z);
-			Shot.Rotation = (Target - Shot.Location).Rotation();
-			Shot.Rotation.Pitch = -3.0f;
-			Shot.Hours = 9.5f;
-			Shots.Add(Shot);
+			const FVector Eye = It->GetActorLocation() / 100.0 + FVector(0, 0, 0.7f);
+			AddShot(TEXT("spawn"), Eye, FVector(Main->Center.X, Main->Center.Y, Eye.Z - 1.0f), 9.5f);
 			break;
 		}
 	}
 
 	if (bAll || Set == TEXT("islands"))
 	{
-		for (const FIslandDesc& Island : Density.GetLayout().Islands)
+		// Cada tierra desde el mar, a 1,45 radios del centro y por encima de su meseta.
+		for (const FIslandDesc& Island : Layout.Islands)
 		{
-			// Cámara en el mar, a 1,6 radios del centro, mirando a la isla desde 40 m.
-			const float Angle = Island.Rotation + 0.9f;
-			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
-			const FVector2D Cam2D = Island.Center + Dir * Island.Radius * 1.45f;
-			const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 25.0f + Island.MaxHeight * 0.25f;
-			FExploredShot Shot;
-			Shot.Name = FString::Printf(TEXT("island_%s"), LexToString(Island.Archetype));
-			Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
-			const FVector Target(Island.Center.X * 100.0, Island.Center.Y * 100.0, Island.MaxHeight * 35.0);
-			Shot.Rotation = (Target - Shot.Location).Rotation();
-			Shot.Hours = 16.0f;
-			Shots.Add(Shot);
-		}
-
-		// Vista cercana y oblicua del macizo kárstico (La Meseta): a poca distancia del agua
-		// y mirando de refilón a la pared, para revisar de cerca la erosión (barrancos,
-		// taludes, muesca de marea) en vez del silueteado general del resto de islas.
-		if (const FIslandDesc* Karst = Density.GetLayout().FindIsland(EIslandArchetype::Mesa))
-		{
-			const float Angle = Karst->Rotation + 2.3f;
-			const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
-			const FVector2D Cam2D = Karst->Center + Dir * Karst->Radius * 0.85f;
-			const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 10.0f;
-			FExploredShot Shot;
-			Shot.Name = TEXT("island_Mesa_close");
-			Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
-			const FVector Target(Karst->Center.X * 100.0, Karst->Center.Y * 100.0, Karst->MaxHeight * 55.0);
-			Shot.Rotation = (Target - Shot.Location).Rotation();
-			Shot.Hours = 16.5f;
-			Shots.Add(Shot);
+			const FVector2D Dir(FMath::Cos(Island.Rotation + 0.9f), FMath::Sin(Island.Rotation + 0.9f));
+			const FVector2D Cam2D = Island.Center + Dir * Island.RadiusAlong(Dir) * 1.45f;
+			const FVector Eye(Cam2D.X, Cam2D.Y, GroundAt(Cam2D) + 25.0f + Island.MaxHeight);
+			AddShot(FString::Printf(TEXT("island_%s"), *Island.Id.ToString()), Eye,
+				FVector(Island.Center.X, Island.Center.Y, Island.MaxHeight), 16.0f);
 		}
 	}
 
-	// Tres vistas para juzgar el cambio de vegetación de Landing (encargo
-	// 2026-09-27, sustitución de la vegetación por el pack low poly de
-	// Quaternius/Kenney): altura de jugador en la playa, dentro de la selva y
-	// la isla vista desde el mar. No están en "bench" (ese trío es
-	// spawn/orilla/aérea, para fps) ni en "islands" (esa vista de Landing
-	// desde el mar es más lejana, pensada para las 7 islas a la vez).
-	if (bAll || Set == TEXT("landing_report"))
-	{
-		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-		if (Landing)
-		{
-			// Playa a la altura del jugador: mismo criterio que "spawn" (ojos a 1.7 m), pero desde
-			// la orilla mirando hacia dentro para que las palmeras de la franja de costa entren en
-			// cuadro junto con el mar detrás de la cámara.
-			{
-				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
-				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 1.02f;
-				const float GroundZ = FMath::Max(Density.SampleColumn(CamXY.X, CamXY.Y).Height, 0.0f);
-				FExploredShot Shot;
-				Shot.Name = TEXT("landing_beach");
-				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
-				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.5f;
-				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
-				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 3.0f) * 100.0 - Shot.Location).Rotation();
-				Shot.Hours = 10.0f;
-				Shots.Add(Shot);
-			}
-			// Dentro de la selva: a media isla, altura de jugador, mirando hacia el centro (más
-			// densidad de JungleWide/Shrub según FVegetationScatter::DefaultRules).
-			{
-				const FVector2D Dir = FVector2D(0.85f, 0.35f).GetSafeNormal();
-				const FVector2D CamXY = Landing->Center + Dir * Landing->Radius * 0.55f;
-				const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
-				FExploredShot Shot;
-				Shot.Name = TEXT("landing_jungle");
-				Shot.Location = FVector(CamXY.X, CamXY.Y, GroundZ + 1.7f) * 100.0;
-				const FVector2D TargetXY = Landing->Center + Dir * Landing->Radius * 0.1f;
-				const float TargetZ = Density.SampleColumn(TargetXY.X, TargetXY.Y).Height;
-				Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ + 1.5f) * 100.0 - Shot.Location).Rotation();
-				Shot.Hours = 12.0f;
-				Shots.Add(Shot);
-			}
-			// La isla desde el mar: mismo criterio que el bucle de "islands" pero solo para
-			// Landing, para no pagar las otras 6 vistas cuando solo hace falta juzgar esta.
-			{
-				const float Angle = Landing->Rotation + 0.9f;
-				const FVector2D Dir(FMath::Cos(Angle), FMath::Sin(Angle));
-				const FVector2D Cam2D = Landing->Center + Dir * Landing->Radius * 1.45f;
-				const float Height = FMath::Max(Density.SampleColumn(Cam2D.X, Cam2D.Y).Height, 0.0f) + 25.0f + Landing->MaxHeight * 0.25f;
-				FExploredShot Shot;
-				Shot.Name = TEXT("landing_from_sea");
-				Shot.Location = FVector(Cam2D.X, Cam2D.Y, Height) * 100.0;
-				const FVector Target(Landing->Center.X * 100.0, Landing->Center.Y * 100.0, Landing->MaxHeight * 35.0);
-				Shot.Rotation = (Target - Shot.Location).Rotation();
-				Shot.Hours = 16.0f;
-				Shots.Add(Shot);
-			}
-		}
-	}
-
-	// Playtest automático (auditor de defectos, ver ExploredPlaytestAuditor): recorrido «a pie»
-	// por cada isla y sus puntos de interés garantizados. Altura de jugador, en la orilla, dentro
-	// de la vegetación, en la cima y en la boca de una cueva si la isla tiene una, cada una a
-	// cuatro horas del día (mismos valores que «day», para reaprovechar el mismo punto de
-	// asentamiento de iluminación ya validado). Los puntos de interés garantizados (FPoiLayout) se
-	// capturan aparte, uno por punto a mediodía: multiplicarlos también por las cuatro horas
-	// dispararía el número de capturas sin aportar tanto (la luz importa más para el paisaje
-	// general que para verificar un objeto concreto).
 	if (bAll || Set == TEXT("playtest"))
 	{
+		// Recorrido a pie: una vista por zona a varias horas y una por punto de autor a mediodía.
 		struct FHourNamed { const TCHAR* Name; float Hours; };
 		const FHourNamed Hours[] = {
 			{ TEXT("amanecer"), 6.2f },
@@ -235,180 +148,56 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 			{ TEXT("atardecer"), 17.6f },
 			{ TEXT("noche"), 22.0f },
 		};
-
-		// Busca, en pasos de 30° desde Island.Rotation, un ángulo donde FindBeach/FindInland
-		// encuentren un punto válido. Doce intentos cubren toda la vuelta.
-		auto FindBeachAround = [&Density](const FIslandDesc& Island, FVector& Out) -> bool
+		for (const FIslandZone& Zone : Layout.Zones)
 		{
-			for (int32 Step = 0; Step < 12; ++Step)
-			{
-				if (FPoiLayout::FindBeach(Density, Island, Island.Rotation + Step * (UE_PI / 6.0f), Out))
-				{
-					return true;
-				}
-			}
-			return false;
-		};
-		auto FindInlandAround = [&Density](const FIslandDesc& Island, FVector& Out) -> bool
-		{
-			for (int32 Step = 0; Step < 12; ++Step)
-			{
-				if (FPoiLayout::FindInland(Density, Island, Island.Rotation + Step * (UE_PI / 6.0f), 0.5f, Out))
-				{
-					return true;
-				}
-			}
-			return false;
-		};
-		auto AddWalkShot = [this](const FString& Name, const FVector& StandLocationMeters, const FVector& LookAtMeters, float ShotHours)
-		{
-			FExploredShot Shot;
-			Shot.Name = Name;
-			Shot.Location = StandLocationMeters * 100.0;
-			Shot.Rotation = ((LookAtMeters - StandLocationMeters) * 100.0).Rotation();
-			Shot.Hours = ShotHours;
-			Shots.Add(Shot);
-		};
-
-		for (const FIslandDesc& Island : Density.GetLayout().Islands)
-		{
-			const FString IslandName = LexToString(Island.Archetype);
-
-			FVector Beach = FVector::ZeroVector;
-			FVector Inland = FVector::ZeroVector;
-			const bool bHasBeach = FindBeachAround(Island, Beach);
-			const bool bHasInland = FindInlandAround(Island, Inland);
-			const FVector Summit = FPoiLayout::FindSummit(Density, Island);
-
-			// Cueva más cercana al centro de esta isla (si el layout generó alguna ahí).
-			const FCaveDesc* IslandCave = nullptr;
-			for (const FCaveDesc& Cave : Density.GetCaves())
-			{
-				const FVector2D CaveXY(Cave.Start.X, Cave.Start.Y);
-				if ((CaveXY - Island.Center).Size() <= Island.Radius * 1.5f)
-				{
-					IslandCave = &Cave;
-					break;
-				}
-			}
-
+			const FIslandColumn Column = Layout.SampleColumn(Zone.Center.X, Zone.Center.Y);
+			const FVector2D LandCenter = Layout.Islands.IsValidIndex(Column.IslandIndex) ? Layout.Islands[Column.IslandIndex].Center : Zone.Center;
+			// Un paso hacia el exterior de la tierra para mirar hacia dentro, a la zona.
+			const FVector2D Out = (Zone.Center - LandCenter).GetSafeNormal();
+			const FVector2D Stand2D = Zone.Center + (Out.IsNearlyZero() ? FVector2D(-1.0, 0.0) : Out) * Zone.Radius * 0.5f;
+			const FVector Eye(Stand2D.X, Stand2D.Y, GroundAt(Stand2D) + 1.7f);
 			for (const FHourNamed& Hour : Hours)
 			{
-				if (bHasBeach)
-				{
-					const FVector Stand = Beach + FVector(0, 0, 1.7f);
-					AddWalkShot(FString::Printf(TEXT("%s_orilla_%s"), *IslandName, Hour.Name), Stand,
-						FVector(Island.Center.X, Island.Center.Y, Stand.Z), Hour.Hours);
-				}
-				if (bHasInland)
-				{
-					const FVector Stand = Inland + FVector(0, 0, 1.7f);
-					AddWalkShot(FString::Printf(TEXT("%s_vegetacion_%s"), *IslandName, Hour.Name), Stand,
-						FVector(Island.Center.X, Island.Center.Y, Stand.Z), Hour.Hours);
-				}
-				{
-					const FVector Stand = Summit + FVector(0, 0, 1.7f);
-					AddWalkShot(FString::Printf(TEXT("%s_cima_%s"), *IslandName, Hour.Name), Stand,
-						FVector(Island.Center.X, Island.Center.Y, Summit.Z - 5.0f), Hour.Hours);
-				}
-				if (IslandCave)
-				{
-					const FVector Stand = IslandCave->Start + FVector(0, 0, 1.0f);
-					AddWalkShot(FString::Printf(TEXT("%s_cueva_%s"), *IslandName, Hour.Name), Stand, IslandCave->End, Hour.Hours);
-				}
+				AddShot(FString::Printf(TEXT("%s_%s"), *Zone.Id.ToString(), Hour.Name), Eye,
+					FVector(Zone.Center.X, Zone.Center.Y, GroundAt(Zone.Center) + 1.7f), Hour.Hours);
 			}
 		}
-
-		// Puntos de interés garantizados: uno por punto, a mediodía, altura de jugador.
-		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
+		for (const FIslandPoint& Point : Layout.Points)
 		{
-			const FIslandDesc* Island = Density.GetLayout().Islands.IsValidIndex(Poi.IslandIndex)
-				? &Density.GetLayout().Islands[Poi.IslandIndex] : nullptr;
-			const FString IslandName = Island ? LexToString(Island->Archetype) : TEXT("Mar");
-			const FVector Stand = Poi.Location + FVector(0, 0, Poi.bUnderwater ? 0.3f : 1.7f);
-			const FVector LookAt = Island ? FVector(Island->Center.X, Island->Center.Y, Stand.Z) : Stand + FVector(5.0f, 0.0f, 0.0f);
-			AddWalkShot(FString::Printf(TEXT("%s_%s_mediodia"), *IslandName, LexToString(Poi.Type)), Stand, LookAt, 13.0f);
+			const FVector Eye(Point.Location.X, Point.Location.Y, GroundAt(Point.Location) + 1.7f);
+			const FVector Ahead = Eye + FRotator(0.0f, Point.Yaw, 0.0f).Vector() * 10.0;
+			AddShot(FString::Printf(TEXT("punto_%s_mediodia"), *Point.Id.ToString()), Eye, Ahead, 13.0f);
 		}
 	}
 
-	if (bAll || Set == TEXT("day"))
+	if ((bAll || Set == TEXT("day")) && Main)
 	{
-		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-		const FVector2D Cam2D = Landing->Center + FVector2D(Landing->Radius * 1.3f, -Landing->Radius * 0.4f);
-		const FVector Location(Cam2D.X * 100.0, Cam2D.Y * 100.0, 1500.0);
-		const FRotator Rotation = (FVector(Landing->Center.X * 100.0, Landing->Center.Y * 100.0, 800.0) - Location).Rotation();
+		const FVector2D Dir = FVector2D(1.0, -0.3).GetSafeNormal();
+		const FVector2D Cam2D = Main->Center + Dir * Main->RadiusAlong(Dir) * 1.3f;
+		const FVector Eye(Cam2D.X, Cam2D.Y, 15.0f);
 		for (const float Hours : {6.2f, 9.0f, 13.0f, 17.6f, 18.4f, 22.0f})
 		{
-			FExploredShot Shot;
-			Shot.Name = FString::Printf(TEXT("day_%04.1f"), Hours);
-			Shot.Location = Location;
-			Shot.Rotation = Rotation;
-			Shot.Hours = Hours;
-			Shots.Add(Shot);
+			AddShot(FString::Printf(TEXT("day_%04.1f"), Hours), Eye, FVector(Main->Center.X, Main->Center.Y, 8.0f), Hours);
 		}
 	}
 
-	if (bAll || bBench || Set == TEXT("water"))
+	if ((bAll || bBench || Set == TEXT("water")) && Main)
 	{
-		const FIslandDesc* Landing = Density.GetLayout().FindIsland(EIslandArchetype::Landing);
-		// Mismo sector que «day» (donde se sabe que hay playa despejada cerca), con un ángulo
-		// algo distinto para variar la composición.
-		const FVector2D ShoreDir = FVector2D(1.0f, -0.3f).GetSafeNormal();
-
-		// Las islas no son círculos perfectos (cabos, calas, arroyos que abren huecos por
-		// debajo del nivel del mar tierra adentro): en vez de la altura (contaminada por
-		// esos arroyos) se usa NormalizedDistance, la métrica radial propia de WorldGen
-		// donde 1.0 es, por construcción, la costa nominal en cualquier dirección.
-		float ShoreR = Landing->Radius;
-		{
-			const int32 Steps = 120;
-			const float MinR = Landing->Radius * 0.2f;
-			const float MaxR = Landing->Radius * 2.0f;
-			for (int32 I = 0; I <= Steps; ++I)
-			{
-				const float R = FMath::Lerp(MinR, MaxR, static_cast<float>(I) / Steps);
-				const FVector2D P = Landing->Center + ShoreDir * R;
-				if (Density.SampleColumn(P.X, P.Y).NormalizedDistance >= 1.0f)
-				{
-					ShoreR = R;
-					break;
-				}
-			}
-		}
-		{
-			const FVector2D ShoreP = Landing->Center + ShoreDir * ShoreR;
-			UE_LOG(LogExplored, Display, TEXT("[Shots] Landing Radius=%.1f ShoreR=%.1f HeightAtShore=%.2f"),
-				Landing->Radius, ShoreR, Density.SampleColumn(ShoreP.X, ShoreP.Y).Height);
-		}
-
-		// Orilla de cerca: casi a ras de agua, a caballo entre la arena y la laguna, para ver
-		// la espuma neta que avanza y se retira y la banda de color turquesa.
-		{
-			const FVector2D CamXY = Landing->Center + ShoreDir * (ShoreR + 2.5f);
-			const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
-			FExploredShot Shot;
-			Shot.Name = TEXT("shore_closeup");
-			// Todo el vector en metros y se pasa a centimetros junto (X e Y también, no solo Z).
-			Shot.Location = FVector(CamXY.X, CamXY.Y, FMath::Max(GroundZ, -0.3f) + 0.6f) * 100.0;
-			const FVector2D TargetXY = Landing->Center + ShoreDir * (ShoreR - 5.0f);
-			const float TargetZ = FMath::Max(Density.SampleColumn(TargetXY.X, TargetXY.Y).Height, 0.0f);
-			Shot.Rotation = (FVector(TargetXY.X, TargetXY.Y, TargetZ) * 100.0 - Shot.Location).Rotation();
-			Shot.Hours = 10.5f;
-			Shots.Add(Shot);
-		}
-
-		// Bajo el agua: bien pasada la orilla, dentro de la laguna, mirando hacia la
-		// superficie iluminada. No forma parte de las tres posiciones de -ExploredBench
-		// (orilla ya cubre la escena de costa; el benchmark quiere spawn/aérea/orilla).
+		// Orilla de cerca, casi a ras de agua, y (solo en «water») una vista bajo el agua.
+		const FVector2D ShoreDir = FVector2D(1.0, -0.3).GetSafeNormal();
+		const float ShoreR = Main->RadiusAlong(ShoreDir);
+		const FVector2D CamXY = Main->Center + ShoreDir * (ShoreR + 2.5f);
+		const FVector2D TargetXY = Main->Center + ShoreDir * (ShoreR - 5.0f);
+		const FVector Eye(CamXY.X, CamXY.Y, FMath::Max(Layout.SampleColumn(CamXY.X, CamXY.Y).Height, -0.3f) + 0.6f);
+		AddShot(TEXT("shore_closeup"), Eye, FVector(TargetXY.X, TargetXY.Y, GroundAt(TargetXY)), 10.5f);
 		if (bAll || Set == TEXT("water"))
 		{
-			const FVector2D CamXY = Landing->Center + ShoreDir * (ShoreR + 50.0f);
-			const float GroundZ = Density.SampleColumn(CamXY.X, CamXY.Y).Height;
-			const float LowerBound = FMath::Min(GroundZ + 0.5f, -0.6f);
-			const float SafeZ = FMath::Clamp(-1.6f, LowerBound, -0.6f);
+			const FVector2D DeepXY = Main->Center + ShoreDir * (ShoreR + 50.0f);
+			const float Floor = Layout.SampleColumn(DeepXY.X, DeepXY.Y).Height;
+			const float SafeZ = FMath::Clamp(-1.6f, FMath::Min(Floor + 0.5f, -0.6f), -0.6f);
 			FExploredShot Shot;
 			Shot.Name = TEXT("underwater");
-			Shot.Location = FVector(CamXY.X, CamXY.Y, SafeZ) * 100.0;
+			Shot.Location = FVector(DeepXY.X, DeepXY.Y, SafeZ) * 100.0;
 			Shot.Rotation = FRotator(20.0f, 200.0f, 0.0f);
 			Shot.Hours = 12.5f;
 			Shots.Add(Shot);
@@ -417,65 +206,8 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 
 	if (bAll || bBench || Set == TEXT("aerial"))
 	{
-		FExploredShot Shot;
-		Shot.Name = TEXT("aerial");
-		Shot.Location = FVector(0.0, -4200.0 * 100.0, 1800.0 * 100.0);
-		Shot.Rotation = FRotator(-32.0f, 90.0f, 0.0f);
-		Shot.Hours = 15.5f;
-		Shots.Add(Shot);
-	}
-
-	if (Set == TEXT("voyage"))
-	{
-		// Bucle del final: cada pecio del Albatros, la grada con el armazón, el barco
-		// terminado y la pantalla del final (con la interfaz en la captura).
-		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
-		{
-			if (Poi.Type != EPoiType::WreckFuselage && Poi.Type != EPoiType::WreckWing
-				&& Poi.Type != EPoiType::WreckTail && Poi.Type != EPoiType::WreckEngine)
-			{
-				continue;
-			}
-			FExploredShot Shot;
-			Shot.Name = FString::Printf(TEXT("voyage_%s"), LexToString(Poi.Type));
-			FVector Meters = Poi.Location;
-			if (Poi.Type == EPoiType::WreckEngine)
-			{
-				UExploredVoyageSubsystem::FindLandingInland(Density, Meters);
-			}
-			const FVector Target = Meters * 100.0;
-			Shot.Location = Target + FVector(-900.0, -600.0, 450.0);
-			Shot.Rotation = (Target - Shot.Location).Rotation();
-			Shot.Hours = 11.0f;
-			Shot.bShowUI = true;
-			// El personaje se pone delante del pecio y pulsa interactuar (camino real del jugador).
-			Shot.Action = TEXT("interact");
-			Shot.Target = Target;
-			Shots.Add(Shot);
-		}
-		FVector YardMeters;
-		FRotator YardRotation;
-		if (UExploredVoyageSubsystem::FindShipyardLocation(Density, YardMeters, YardRotation))
-		{
-			const FVector Target = YardMeters * 100.0 + FVector(0.0, 0.0, 150.0);
-			const FVector Offset = YardRotation.RotateVector(FVector(-300.0, 900.0, 350.0));
-			for (const TCHAR* Name : {TEXT("voyage_yard_frame"), TEXT("voyage_yard_ship"), TEXT("voyage_departure"), TEXT("voyage_ending")})
-			{
-				FExploredShot Shot;
-				Shot.Name = Name;
-				Shot.Location = Target + Offset;
-				Shot.Rotation = (Target - Shot.Location).Rotation();
-				const FString ShotName(Name);
-				const bool bNight = ShotName == TEXT("voyage_departure") || ShotName == TEXT("voyage_ending");
-				Shot.Hours = bNight ? 22.0f : 16.5f;
-				Shot.bShowUI = true;
-				// La salida dura unos segundos (UExploredVoyageSubsystem): la vista del final espera.
-				Shot.Action = ShotName == TEXT("voyage_yard_ship") ? FName(TEXT("build"))
-					: ShotName == TEXT("voyage_departure") ? FName(TEXT("depart"))
-					: ShotName == TEXT("voyage_ending") ? FName(TEXT("wait")) : NAME_None;
-				Shots.Add(Shot);
-			}
-		}
+		// Toda la isla y el islote desde el suroeste.
+		AddShot(TEXT("aerial"), FVector(-320.0f, -260.0f, 180.0f), FVector(40.0f, 20.0f, 0.0f), 15.5f);
 	}
 
 	if (Set == TEXT("menu"))
@@ -489,8 +221,8 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		{
 			FExploredShot Shot;
 			Shot.Name = Name;
-			Shot.Location = FVector(0.0, -3000.0 * 100.0, 1200.0 * 100.0);
-			Shot.Rotation = FRotator(-20.0f, 90.0f, 0.0f);
+			Shot.Location = FVector(-300.0 * 100.0, -200.0 * 100.0, 120.0 * 100.0);
+			Shot.Rotation = FRotator(-20.0f, 35.0f, 0.0f);
 			Shot.Hours = 12.0f;
 			Shot.bShowUI = true;
 			Shots.Add(Shot);
@@ -529,28 +261,6 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 {
 	const FExploredShot& Shot = Shots[Index];
 	UWorld* World = GetWorld();
-
-	if (Index == 0)
-	{
-		// Diagnóstico puntual: ¿existen de verdad las celdas de vegetación y sus instancias
-		// en el mundo de juego en ejecución, o algo las quita/oculta solo en -game?
-		int32 Cells = 0;
-		int64 TotalInstances = 0;
-		for (TActorIterator<AExploredVegetationCell> It(World); It; ++It)
-		{
-			++Cells;
-			TArray<UHierarchicalInstancedStaticMeshComponent*> Comps;
-			It->GetComponents(Comps);
-			for (const UHierarchicalInstancedStaticMeshComponent* Comp : Comps)
-			{
-				if (Comp)
-				{
-					TotalInstances += Comp->GetInstanceCount();
-				}
-			}
-		}
-		UE_LOG(LogExplored, Display, TEXT("[Shots] Vegetación en el mundo de juego: %d celdas, %lld instancias"), Cells, TotalInstances);
-	}
 
 	if (!Camera)
 	{

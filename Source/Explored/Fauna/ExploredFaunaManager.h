@@ -14,7 +14,7 @@
 
 class AExploredMarineCreature;
 class AExploredOcean;
-class FTerrainDensity;
+struct FIslandLayout;
 class UInstancedStaticMeshComponent;
 class UStaticMesh;
 struct FFaunaQueryState;
@@ -138,7 +138,7 @@ private:
 	FFaunaWorldQuery WorldQuery;
 	/** Marea y viento del instante y caché del fondo, compartidos con las lambdas de WorldQuery. */
 	TSharedPtr<FFaunaQueryState> DynamicState;
-	TSharedPtr<FTerrainDensity> Density;
+	TSharedPtr<const FIslandLayout> IslandData;
 	TArray<TWeakObjectPtr<AActor>> StealableFish;
 	TArray<FBloodSource> Blood;
 

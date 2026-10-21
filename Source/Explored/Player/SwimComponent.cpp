@@ -13,7 +13,8 @@
 #include "Player/SwimModel.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace SwimComponentDetail
 {
@@ -58,7 +59,7 @@ void USwimComponent::BeginPlay()
 		Carry = Character->FindComponentByClass<UCarryComponent>();
 	}
 
-	const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
+	const FIslandLayout Layout = *ExploredIsland::Get();
 	Straits = FOceanCurrents::BuildStraits(Layout);
 	Ocean = FindOcean();
 }

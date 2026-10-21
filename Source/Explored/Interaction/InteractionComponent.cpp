@@ -9,7 +9,6 @@
 #include "Components/PrimitiveComponent.h"
 #include "Interaction/ExploredInteractable.h"
 #include "Items/ExploredItemActor.h"
-#include "WorldGen/ExploredVegetationCell.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -56,14 +55,6 @@ void UInteractionComponent::UpdateFocus()
 	{
 		if (AActor* HitActor = Hit.GetActor())
 		{
-			// Hit.Item es el índice de instancia cuando el componente golpeado es un HISM
-			// (vegetación y rocas: muchas instancias, un único actor «celda»). Se fija ANTES
-			// de preguntar CanInteract: AExploredVegetationCell lo necesita para saber a qué
-			// instancia responde (una celda entera no es «interactuable» en bloque).
-			if (AExploredVegetationCell* VegetationCell = Cast<AExploredVegetationCell>(HitActor))
-			{
-				VegetationCell->SetInteractionFocus(Hit.Component.Get(), Hit.Item);
-			}
 			if (HitActor->GetClass()->ImplementsInterface(UExploredInteractable::StaticClass())
 				&& IExploredInteractable::Execute_CanInteract(HitActor, Owner))
 			{

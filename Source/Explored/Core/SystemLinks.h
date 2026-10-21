@@ -9,7 +9,7 @@
 #include "Survival/BodyModel.h"
 #include "Survival/SurvivalModel.h"
 #include "Weather/WeatherModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 /**
  * Pegamento entre sistemas (paquete P-WIRE): las reglas que deciden cómo se
@@ -103,16 +103,16 @@ namespace ExploredLinks
 	 * lóbulos, y los islotes de Los Dientes); la más cercana si hay varias.
 	 * INDEX_NONE en el mar.
 	 */
-	EXPLORED_API int32 FindIslandAt(const FArchipelagoLayout& Layout, const FVector2D& PositionMeters);
+	EXPLORED_API int32 FindIslandAt(const FIslandLayout& Layout, const FVector2D& PositionMeters);
 
 	/** Isla más cercana y distancia (m) a su costa nominal (0 dentro). INDEX_NONE sin islas. */
-	EXPLORED_API int32 NearestIsland(const FArchipelagoLayout& Layout, const FVector2D& PositionMeters, float& OutDistanceToCoastMeters);
+	EXPLORED_API int32 NearestIsland(const FIslandLayout& Layout, const FVector2D& PositionMeters, float& OutDistanceToCoastMeters);
 
 	/**
 	 * ¿Presencia el jugador el evento? Los de todo el mar (Island == Count) sí; los
 	 * de una isla, si está en ella o a menos de EventWitnessRangeMeters de su costa.
 	 */
-	EXPLORED_API bool IsEventWitnessed(const FWorldEvent& Event, const FArchipelagoLayout& Layout, const FVector2D& PlayerMeters);
+	EXPLORED_API bool IsEventWitnessed(const FWorldEvent& Event, const FIslandLayout& Layout, const FVector2D& PlayerMeters);
 
 	/** Días completos vividos en la partida desde su inicio (días totales de juego). */
 	EXPLORED_API int32 DaysSurvived(float TotalDays, float RunStartDays);

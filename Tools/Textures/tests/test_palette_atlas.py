@@ -3,7 +3,6 @@ JSON está en el atlas, los mips no mezclan celdas, contraste y coherencia con e
 
 import itertools
 import json
-import re
 from pathlib import Path
 
 import numpy as np
@@ -67,17 +66,6 @@ def test_json_linear_values_match_srgb():
             for k in ("medio", "arriba", "abajo"):
                 lin = srgb_to_linear(hex_to_srgb(entry[k]["srgb"]))
                 np.testing.assert_allclose(entry[k]["lineal"], lin, atol=6e-5)
-
-
-def test_vertex_colors_match_terrain_density():
-    """El tinte de terreno de cada isla replica FTerrainDensity::PaletteFor."""
-    src = (ROOT / "Source/Explored/WorldGen/TerrainDensity.cpp").read_text(encoding="utf-8")
-    for isl in ISLANDS:
-        m = re.search(rf"EIslandArchetype::{isl.archetype}: return \{{C\((\d+), (\d+), (\d+)\), "
-                      rf"C\((\d+), (\d+), (\d+)\), C\((\d+), (\d+), (\d+)\)\}}", src)
-        assert m, f"no encuentro la paleta de {isl.archetype} en TerrainDensity.cpp"
-        v = [int(x) for x in m.groups()]
-        assert isl.vertex == {"Sand": tuple(v[0:3]), "Grass": tuple(v[3:6]), "Rock": tuple(v[6:9])}
 
 
 # --- Atlas ---------------------------------------------------------------------------

@@ -7,11 +7,11 @@
 #include "Ocean/ExploredOcean.h"
 #include "Sky/ExploredSkyController.h"
 #include "Sky/TimeOfDaySubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 namespace
 {
-	constexpr uint32 WeatherSeed = FArchipelagoLayout::OfficialSeed ^ 0x77EA7u;
+	constexpr uint32 WeatherSeed = FIslandLayout::OfficialSeed ^ 0x77EA7u;
 	/** Frecuencia con que se reparten los valores (s). */
 	constexpr float ApplyInterval = 0.25f;
 }

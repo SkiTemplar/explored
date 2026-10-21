@@ -12,18 +12,14 @@
 #include "Save/SaveArchive.h"
 #include "Save/SaveWorldDeltas.h"
 #include "Survival/SurvivalModel.h"
-#include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/HarvestModel.h"
-#include "WorldGen/VegetationHarvestState.h"
+#include "WorldGen/IslandLayout.h"
 
 #include "ExploredWiringSubsystem.generated.h"
 
 class AExploredBoat;
 class AExploredCharacter;
 class AExploredFaunaManager;
-class AExploredVegetationCell;
 class UExploredSaveSubsystem;
-class UHierarchicalInstancedStaticMeshComponent;
 
 /**
  * Conexión entre sistemas (paquete P-WIRE). Cada sistema expone ganchos que no
@@ -59,14 +55,6 @@ public:
 
 	/** «Nueva partida» (AExploredPlayerController::StartNewGame): reinicia los contadores de la partida. */
 	void BeginNewRun();
-
-	// --- Recolección de vegetación y rocas (P-HARVEST) --------------------------
-	// Lo llama AExploredVegetationCell::GetContextVerbs_Implementation / CanInteract_Implementation /
-	// Interact_Implementation con la instancia exacta que fijó SetInteractionFocus.
-
-	void GetHarvestVerbs(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, TArray<FText>& OutVerbs) const;
-	bool CanHarvestInstance(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex) const;
-	void HarvestInstance(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, AActor* Instigator);
 
 	/** Progreso de exploración de la partida (petroglifos, miradores, piezas del Albatros...). */
 	FExploredProgress& GetProgress() { return Progress; }
@@ -137,16 +125,6 @@ private:
 	 */
 	void SpawnLandingStarterKitIfNeeded();
 
-	// --- Recolección de vegetación y rocas --------------------------------------
-	/** Una vez por carga: oculta en todas las celdas del mapa lo que ya venía talado en la partida. */
-	void ApplyVegetationDeltasIfNeeded();
-	/** Oculta en esta celda las instancias que ya venían taladas en la partida (una sola vez por celda y carga). */
-	void EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell);
-	void HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const;
-	void TickVegetationRegrowth();
-	/** true si Instigator lleva RequiredTag en una mano (NAME_None = no hace falta ninguna herramienta). */
-	bool HasHarvestTool(const AActor* Instigator, FName RequiredTag) const;
-
 	void HandleSurvivalEvent(ESurvivalEvent Event);
 	void HandleEventStarted(const FWorldEvent& Event);
 	void HandleEventEnded(const FWorldEvent& Event);
@@ -156,17 +134,7 @@ private:
 	FExploredProgress Progress;
 
 	FSaveWorldDeltas WorldDeltas;
-	FArchipelagoLayout Layout;
-
-	// --- Recolección de vegetación y rocas --------------------------------------
-	TArray<FHarvestSpeciesRule> HarvestRules = FHarvestModel::DefaultRules();
-	TMap<FVegetationInstanceKey, FVegetationRuntimeState> VegetationRuntime;
-	/** Celdas cuyos deltas guardados ya se aplicaron esta sesión (ver EnsureVegetationDeltasApplied). */
-	TSet<FIntPoint> VegetationDeltasAppliedCells;
-	/** false tras cada LoadWorld: el próximo Sample recorre todas las celdas (ApplyVegetationDeltasIfNeeded). */
-	bool bVegetationDeltasApplied = false;
-	/** Semilla propia para las tiradas de recolección; se realinea con WorldDeltas.Seed al cargar. */
-	FExploredRandom HarvestRandom = FExploredRandom(0x9E3779B97F4A7C15ULL);
+	FIslandLayout Layout;
 
 	/** Secciones del personaje que llegaron antes de que existiera. */
 	TOptional<FSaveArchive> PendingInventory;

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "_comment": "Isla de Sal (GDD v3 §6), disposición provisional. Metros; +X es el norte, +Y el este. Copia en código: FIslandLayout::Provisional().",
+  "seed": 20260926,
+  "islands": [
+    { "id": "isla_sal", "biome": "Landing", "center": [0, 0], "radius": 165, "aspect": 0.787879, "rotationDeg": 90, "maxHeight": 4 },
+    { "id": "islote_carguero", "biome": "Teeth", "center": [232, 150], "radius": 35, "aspect": 0.714286, "rotationDeg": 45, "maxHeight": 6 }
+  ],
+  "zones": [
+    { "id": "cala_varada", "name": "Cala Varada", "biome": "Landing", "center": [-100, 10], "radius": 35, "hill": 0 },
+    { "id": "palmar", "name": "Palmar", "biome": "Landing", "center": [-30, -5], "radius": 48, "hill": 0 },
+    { "id": "rocas_pescador", "name": "Rocas del Pescador", "biome": "Teeth", "center": [-15, -128], "radius": 30, "hill": 2 },
+    { "id": "bosque_bambu", "name": "Bosque de Bambú", "biome": "Emerald", "center": [55, -85], "radius": 42, "hill": 5 },
+    { "id": "playa_norte", "name": "Playa Norte", "biome": "WhiteSands", "center": [110, 55], "radius": 28, "hill": 0 },
+    { "id": "colina_faro", "name": "Colina del Faro", "biome": "Mesa", "center": [45, 15], "radius": 47, "hill": 31 },
+    { "id": "isla_carguero", "name": "Isla del Carguero", "biome": "Teeth", "center": [232, 150], "radius": 32, "hill": 0 }
+  ],
+  "points": [
+    { "id": "player_start", "position": [-112, 10], "yaw": 0 },
+    { "id": "raft_site", "position": [120, 62], "yaw": 40 },
+    { "id": "lighthouse", "position": [45, 15], "yaw": 0 }
+  ]
+}

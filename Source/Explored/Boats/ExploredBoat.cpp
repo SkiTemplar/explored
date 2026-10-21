@@ -27,7 +27,8 @@
 #include "Player/SwimComponent.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace ExploredBoatDetail
 {
@@ -122,7 +123,7 @@ void AExploredBoat::BeginPlay()
 	Model = FBoatModel(ExploredBoatDetail::ToModelType(BoatKind), GetActorLocation(), GetActorRotation().Yaw);
 	ApplyMeshes();
 
-	const FArchipelagoLayout Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
+	const FIslandLayout Layout = *ExploredIsland::Get();
 	Straits = FOceanCurrents::BuildStraits(Layout);
 	Ocean = Cast<AExploredOcean>(UGameplayStatics::GetActorOfClass(GetWorld(), AExploredOcean::StaticClass()));
 
@@ -213,7 +214,7 @@ float AExploredBoat::TraceDepthCm(const FVector2D& Position) const
 	const FVector End(Position.X, Position.Y, -MaxProbeDepthCm);
 	if (World->LineTraceSingleByObjectType(Hit, Start, End, FCollisionObjectQueryParams(ECC_WorldStatic), Params))
 	{
-		// El nivel medio del mar está en Z = 0 (FArchipelagoLayout::SeaLevel).
+		// El nivel medio del mar está en Z = 0 (FIslandLayout::SeaLevel).
 		return static_cast<float>(-Hit.ImpactPoint.Z);
 	}
 	return MaxProbeDepthCm;

@@ -10,7 +10,7 @@
 #include "Ocean/ExploredOcean.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 namespace ExploredFishingSubsystemDetail
 {
@@ -29,7 +29,7 @@ void UExploredFishingSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	Collection.InitializeDependency<UTimeOfDaySubsystem>();
-	Seed = FArchipelagoLayout::OfficialSeed ^ 0xF15B0Au;
+	Seed = FIslandLayout::OfficialSeed ^ 0xF15B0Au;
 }
 
 float UExploredFishingSubsystem::GetNowDays() const

@@ -8,7 +8,6 @@
 #include "Stats/Stats.h"
 #include "Subsystems/SubsystemCollection.h"
 
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Audio/ExploredMusicSubsystem.h"
 #include "Boats/ExploredBoat.h"
 #include "Carry/CarryComponent.h"
@@ -30,7 +29,7 @@
 #include "UI/ExploredPlayerController.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "WorldGen/ExploredVegetationCell.h"
+#include "WorldGen/IslandLayoutLoader.h"
 
 namespace ExploredWiringDetail
 {
@@ -136,8 +135,8 @@ void UExploredWiringSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Collection.InitializeDependency<UExploredFishingSubsystem>();
 	Collection.InitializeDependency<UExploredMusicSubsystem>();
 
-	Layout = FArchipelagoLayout::Generate(FArchipelagoLayout::OfficialSeed);
-	WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;
+	Layout = *ExploredIsland::Get();
+	WorldDeltas.Seed = FIslandLayout::OfficialSeed;
 
 	if (Events)
 	{
@@ -214,7 +213,6 @@ void UExploredWiringSubsystem::Tick(float DeltaTime)
 {
 	// El rebrote de sesión necesita granularidad fina para no notarse a saltos; el resto del
 	// muestreo (cuerpo, clima, descubrimientos...) va a la cadencia más gorda de siempre.
-	TickVegetationRegrowth();
 
 	SampleTimer -= DeltaTime;
 	if (SampleTimer > 0.0f)
@@ -241,7 +239,6 @@ void UExploredWiringSubsystem::Sample(float DeltaSeconds)
 	BindFaunaManager();
 	ApplyPendingPawnSections();
 	SpawnLandingStarterKitIfNeeded();
-	ApplyVegetationDeltasIfNeeded();
 
 	const float Days = GetTotalDays();
 	if (RunStartDays < 0.0f)
@@ -509,269 +506,6 @@ void UExploredWiringSubsystem::SpawnItemsAround(const FVector& Center, FName Ite
 			Instance.DefinitionId = ItemId;
 			Item->InitializeFromInstance(Instance);
 		}
-	}
-}
-
-// ---------------------------------------------------------------------------
-// Recolección de vegetación y rocas (P-HARVEST)
-// ---------------------------------------------------------------------------
-
-void UExploredWiringSubsystem::ApplyVegetationDeltasIfNeeded()
-{
-	if (bVegetationDeltasApplied)
-	{
-		return;
-	}
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-	bVegetationDeltasApplied = true;
-	// Las celdas están horneadas en el mapa (sin World Partition): todas existen ya aquí. Sin esta
-	// pasada, lo talado de la partida guardada solo desaparecía al golpear otra planta de su celda.
-	for (TActorIterator<AExploredVegetationCell> It(World); It; ++It)
-	{
-		EnsureVegetationDeltasApplied(**It);
-	}
-}
-
-void UExploredWiringSubsystem::EnsureVegetationDeltasApplied(AExploredVegetationCell& Cell)
-{
-	if (VegetationDeltasAppliedCells.Contains(Cell.CellCoord))
-	{
-		return;
-	}
-	VegetationDeltasAppliedCells.Add(Cell.CellCoord);
-
-	// Una celda agrupa varias especies (un HISM por malla): cada una tiene su propia capa de
-	// deltas, con nombre el del componente (estable entre partidas, ver ExploredVegetationCell.cpp
-	// GetOrCreateComponent), porque los índices de instancia no se comparten entre componentes.
-	for (const auto& Pair : Cell.GetComponentSpecies())
-	{
-		UHierarchicalInstancedStaticMeshComponent* CellComponent = Pair.Key;
-		if (!CellComponent)
-		{
-			continue;
-		}
-		const FSaveScatterDeltas* Layer = WorldDeltas.FindLayer(CellComponent->GetFName());
-		const FSaveIndexSet* Indices = Layer ? Layer->FindCell(Cell.CellCoord) : nullptr;
-		if (!Indices)
-		{
-			continue;
-		}
-		for (const int32 Index : Indices->ToArray())
-		{
-			if (Index < 0 || Index >= CellComponent->GetInstanceCount())
-			{
-				continue;
-			}
-			FVegetationInstanceKey Key{ Cell.CellCoord, CellComponent->GetFName(), Index };
-			FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
-			if (State.bHidden)
-			{
-				continue;
-			}
-			HideVegetationInstance(*CellComponent, Index, State);
-			// Ya venía talada de la partida guardada: sin rebrote de sesión (se persistió
-			// precisamente porque su especie no rebrota, ver HarvestInstance).
-			State.RegrowAtDays = -1.0f;
-			State.Hits = 1;
-		}
-	}
-}
-
-void UExploredWiringSubsystem::HideVegetationInstance(UHierarchicalInstancedStaticMeshComponent& Component, int32 InstanceIndex, FVegetationRuntimeState& OutState) const
-{
-	FTransform Original;
-	Component.GetInstanceTransform(InstanceIndex, Original, true);
-	OutState.OriginalTransform = Original;
-	OutState.Component = &Component;
-	OutState.bHidden = true;
-
-	FTransform Hidden = Original;
-	Hidden.SetScale3D(FVector::ZeroVector);
-	// HISM no permite quitar una única instancia sin desplazar los índices de las demás (rompería
-	// cualquier progreso o delta guardado con índices más altos); se oculta a escala cero y sin
-	// colisión de la forma en su lugar. UpdateInstanceTransform con bTeleport evita el rastro físico.
-	Component.UpdateInstanceTransform(InstanceIndex, Hidden, true, true, true);
-}
-
-void UExploredWiringSubsystem::TickVegetationRegrowth()
-{
-	if (VegetationRuntime.Num() == 0)
-	{
-		return;
-	}
-	const float Days = GetTotalDays();
-	for (auto& Pair : VegetationRuntime)
-	{
-		FVegetationRuntimeState& State = Pair.Value;
-		if (!State.bHidden || State.RegrowAtDays < 0.0f || Days < State.RegrowAtDays)
-		{
-			continue;
-		}
-		UHierarchicalInstancedStaticMeshComponent* Component = State.Component.Get();
-		if (Component)
-		{
-			Component->UpdateInstanceTransform(Pair.Key.Index, State.OriginalTransform, true, true, true);
-		}
-		State.bHidden = false;
-		State.Hits = 0;
-		State.RegrowAtDays = -1.0f;
-	}
-}
-
-bool UExploredWiringSubsystem::HasHarvestTool(const AActor* Instigator, FName RequiredTag) const
-{
-	if (RequiredTag.IsNone())
-	{
-		return true;
-	}
-	const AExploredCharacter* Character = Cast<AExploredCharacter>(Instigator);
-	const UCarryComponent* Carry = Character ? Character->GetCarryComponent() : nullptr;
-	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
-	if (!Carry || !Registry)
-	{
-		return false;
-	}
-	for (const EHand Hand : { EHand::Left, EHand::Right })
-	{
-		FItemInstance HandItem;
-		// «Filo» y «Contundente» son propiedades de items.json (canto_rodado, lascas, pedernal y las
-		// piezas de un compuesto), no etiquetas: se acepta cualquiera de las dos cosas.
-		if (Carry->GetHandItem(Hand, HandItem)
-			&& (ItemEffective::GetProperty(HandItem, RequiredTag, Registry->GetItems()) > 0.0f
-				|| ItemEffective::HasTag(HandItem, RequiredTag, Registry->GetItems())))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void UExploredWiringSubsystem::GetHarvestVerbs(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, TArray<FText>& OutVerbs) const
-{
-	if (!Component || InstanceIndex == INDEX_NONE)
-	{
-		return;
-	}
-	const FName Species = Cell.GetSpecies(Component);
-	const FHarvestSpeciesRule* Rule = FHarvestModel::FindRule(HarvestRules, Species);
-	if (!Rule)
-	{
-		return;
-	}
-
-	const bool bHasTool = HasHarvestTool(GetPlayerCharacter(), Rule->RequiredToolTag);
-	const int32 Required = FHarvestModel::HitsRequired(*Rule, bHasTool);
-	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
-	const FVegetationRuntimeState* State = VegetationRuntime.Find(Key);
-	const int32 CurrentHits = State ? State->Hits : 0;
-
-	FText Verb;
-	if (Required <= 1)
-	{
-		Verb = NSLOCTEXT("ExploredHarvest", "VerbGather", "Recoger");
-	}
-	else if (Species == FName(TEXT("Rock")))
-	{
-		Verb = NSLOCTEXT("ExploredHarvest", "VerbMine", "Picar");
-	}
-	else
-	{
-		Verb = NSLOCTEXT("ExploredHarvest", "VerbChop", "Talar");
-	}
-
-	if (Required > 1)
-	{
-		FFormatNamedArguments Args;
-		Args.Add(TEXT("Verb"), Verb);
-		Args.Add(TEXT("Hits"), CurrentHits);
-		Args.Add(TEXT("Required"), Required);
-		Verb = FText::Format(NSLOCTEXT("ExploredHarvest", "VerbProgress", "{Verb} ({Hits}/{Required})"), Args);
-	}
-	OutVerbs.Add(Verb);
-}
-
-bool UExploredWiringSubsystem::CanHarvestInstance(const AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex) const
-{
-	if (!Component || InstanceIndex == INDEX_NONE)
-	{
-		return false;
-	}
-	const FName Species = Cell.GetSpecies(Component);
-	if (Species.IsNone() || !FHarvestModel::FindRule(HarvestRules, Species))
-	{
-		return false;
-	}
-	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
-	if (const FVegetationRuntimeState* State = VegetationRuntime.Find(Key))
-	{
-		// Talada (permanente o a la espera de rebrotar): no se puede volver a golpear.
-		return !State->bHidden;
-	}
-	return true;
-}
-
-void UExploredWiringSubsystem::HarvestInstance(AExploredVegetationCell& Cell, UHierarchicalInstancedStaticMeshComponent* Component, int32 InstanceIndex, AActor* Instigator)
-{
-	if (!Component || InstanceIndex == INDEX_NONE)
-	{
-		return;
-	}
-	EnsureVegetationDeltasApplied(Cell);
-	if (!CanHarvestInstance(Cell, Component, InstanceIndex))
-	{
-		return;
-	}
-	const FName Species = Cell.GetSpecies(Component);
-	const FHarvestSpeciesRule* Rule = FHarvestModel::FindRule(HarvestRules, Species);
-	if (!Rule)
-	{
-		return;
-	}
-
-	const bool bHasTool = HasHarvestTool(Instigator, Rule->RequiredToolTag);
-	const FVegetationInstanceKey Key{ Cell.CellCoord, Component->GetFName(), InstanceIndex };
-	FVegetationRuntimeState& State = VegetationRuntime.FindOrAdd(Key);
-
-	bool bFelled = false;
-	State.Hits = FHarvestModel::ApplyHit(*Rule, State.Hits, bHasTool, bFelled);
-
-	FTransform InstanceTransform;
-	Component->GetInstanceTransform(InstanceIndex, InstanceTransform, true);
-	const FVector DropLocation = InstanceTransform.GetLocation();
-
-	for (const FHarvestDrop& Drop : FHarvestModel::RollDrops(Rule->PerHitDrops, HarvestRandom))
-	{
-		SpawnItemsAround(DropLocation, Drop.ItemId, Drop.MinCount, 60.0f);
-	}
-
-	if (!bFelled)
-	{
-		return;
-	}
-
-	for (const FHarvestDrop& Drop : FHarvestModel::RollDrops(Rule->FellDrops, HarvestRandom))
-	{
-		SpawnItemsAround(DropLocation, Drop.ItemId, Drop.MinCount, 110.0f);
-	}
-
-	HideVegetationInstance(*Component, InstanceIndex, State);
-	if (Rule->RegrowHours > 0.0f)
-	{
-		// Simplificación deliberada: el rebrote es de sesión, en horas de juego (sigue la duración
-		// del día elegida en ajustes y el sueño), y no se guarda instancia a instancia — el formato de
-		// guardado (FSaveScatterDeltas) es un conjunto de índices sin marca de tiempo. Por eso
-		// estas especies NO se añaden a WorldDeltas: si la partida se recarga antes de que
-		// rebrote en esta sesión, aparecen disponibles de nuevo en vez de seguir taladas.
-		State.RegrowAtDays = GetTotalDays() + Rule->RegrowHours / 24.0f;
-	}
-	else
-	{
-		State.RegrowAtDays = -1.0f;
-		WorldDeltas.Layer(Component->GetFName()).Add(Cell.CellCoord, InstanceIndex);
 	}
 }
 
@@ -1044,23 +778,8 @@ void UExploredWiringSubsystem::LoadWorld(const FSaveArchive& Ar)
 	WorldDeltas.Load(Ar);
 	if (WorldDeltas.Seed == 0)
 	{
-		WorldDeltas.Seed = FArchipelagoLayout::OfficialSeed;
+		WorldDeltas.Seed = FIslandLayout::OfficialSeed;
 	}
-	// Misma semilla, mismas tiradas de recolección (biblia: determinismo por semilla).
-	HarvestRandom = FExploredRandom(static_cast<uint64>(WorldDeltas.Seed) ^ 0x9E3779B97F4A7C15ULL);
-	// Lo ocultado antes de esta carga (menú, otra partida en el mismo mapa) vuelve a su sitio;
-	// los deltas de la partida cargada los aplica ApplyVegetationDeltasIfNeeded en el próximo Sample.
-	for (const auto& Pair : VegetationRuntime)
-	{
-		UHierarchicalInstancedStaticMeshComponent* Component = Pair.Value.Component.Get();
-		if (Pair.Value.bHidden && Component)
-		{
-			Component->UpdateInstanceTransform(Pair.Key.Index, Pair.Value.OriginalTransform, true, true, true);
-		}
-	}
-	VegetationDeltasAppliedCells.Reset();
-	VegetationRuntime.Reset();
-	bVegetationDeltasApplied = false;
 }
 
 // --- Personaje: inventario y cuerpo ---------------------------------------

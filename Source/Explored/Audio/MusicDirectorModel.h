@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 
 /**
  * Director de música adaptativa (GDD §14.3) y flauta de bambú diegética (§8.12).

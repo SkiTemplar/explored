@@ -13,7 +13,7 @@
 #include "Subsystems/SubsystemCollection.h"
 #include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
-#include "WorldGen/ArchipelagoLayout.h"
+#include "WorldGen/IslandLayout.h"
 #include "WorldPartition/WorldPartitionSubsystem.h"
 
 namespace ExploredSaveDisk
@@ -56,7 +56,7 @@ void UExploredSaveSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	WorldSeed = static_cast<int64>(FArchipelagoLayout::OfficialSeed);
+	WorldSeed = static_cast<int64>(FIslandLayout::OfficialSeed);
 	SessionStartSeconds = FPlatformTime::Seconds();
 	RegisterPlayerSection();
 	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UExploredSaveSubsystem::HandlePostLoadMap);
