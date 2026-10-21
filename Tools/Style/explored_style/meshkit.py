@@ -88,14 +88,16 @@ class MeshBuilder:
         return sum(len(f) - 2 for f in self.faces)
 
 
-def lathe(builder: MeshBuilder, profile: Sequence[tuple[float, float]], sides: int, colors: Sequence[int],
+def lathe(builder: MeshBuilder, profile: Sequence[tuple[float, float]], sides: int,
+          colors: Sequence[int | Sequence[int]],
           origin: Vector | None = None, axis: Matrix | None = None, phase: float = 0.0,
           cap_bottom: int | None = None, cap_top: int | None = None, closed: bool = False,
           tips: tuple[float, float] | None = None) -> list[list[int]]:
     """Sólido de revolución: «profile» es [(radio, altura)] y «colors» un
     color por tramo (uno más si «closed» une el último anillo con el primero,
     como en un aro). El perfil debe recorrerse en sentido antihorario en el
-    plano (radio, altura) para que las normales queden hacia fuera. «axis»
+    plano (radio, altura) para que las normales queden hacia fuera. Cada
+    color de tramo puede ser una lista con uno por cara del anillo. «axis»
     orienta el eje local Z (por defecto el Z del mundo). «tips» fija la altura
     de los vértices de las tapas (abajo, arriba); por defecto, tapas planas.
     Devuelve los anillos."""
@@ -114,6 +116,101 @@ def lathe(builder: MeshBuilder, profile: Sequence[tuple[float, float]], sides: i
     if cap_top is not None:
         builder.cap(rings[-1], base + w * tip_top, cap_top)
     return rings
+
+
+def vec(co: Coord) -> Vector:
+    """Coord (secuencia o Vector) -> Vector nuevo."""
+    return Vector((float(co[0]), float(co[1]), float(co[2])))
+
+
+Radius = float | tuple[float, float]
+
+
+def _sweep_frames(points: Sequence[Vector], up: Vector, closed: bool) -> list[tuple[Vector, Vector]]:
+    """(u, v) de cada estación: u es «up» proyectado sobre el plano normal a
+    la tangente (si es paralelo, se hereda el de la estación anterior) y
+    v = t x u, de modo que u x v = t y las normales quedan hacia fuera."""
+    n = len(points)
+    frames: list[tuple[Vector, Vector]] = []
+    prev_u = None
+    for i in range(n):
+        if closed:
+            a, b = points[(i - 1) % n], points[(i + 1) % n]
+        else:
+            a, b = points[max(i - 1, 0)], points[min(i + 1, n - 1)]
+        t = (b - a).normalized()
+        u = up - t * up.dot(t)
+        if u.length < 1e-6:
+            if prev_u is None:
+                raise ValueError('sweep: la primera tangente es paralela a «up»')
+            u = prev_u - t * prev_u.dot(t)
+        u = u.normalized()
+        frames.append((u, cross(t, u)))
+        prev_u = u
+    return frames
+
+
+def sweep(builder: MeshBuilder, path: Sequence[Coord], radii: Sequence[Radius], sides: int,
+          colors: int | Sequence[int | Sequence[int]], up: Coord = (0.0, 0.0, 1.0), phase: float = 0.0,
+          cap_start: int | None = None, cap_end: int | None = None, closed: bool = False,
+          tips: tuple[Coord | None, Coord | None] = (None, None)) -> list[list[int]]:
+    """Tubo a lo largo de una polilínea (cuerdas, cañas, cuerpos de peces).
+
+    «radii» da un radio por estación: un número (sección circular) o
+    (radio_u, radio_v) para secciones elípticas, con u = «up» proyectado.
+    «colors» es un color, o uno por tramo (cada uno, color o lista por cara).
+    «closed» une la última estación con la primera (aros) y no admite tapas;
+    «tips» desplaza el vértice central de cada tapa (por defecto, plana)."""
+    if len(path) < 2 or len(radii) != len(path):
+        raise ValueError('sweep: se necesitan 2 o más estaciones y un radio por estación')
+    if closed and (cap_start is not None or cap_end is not None):
+        raise ValueError('sweep: un tubo cerrado no lleva tapas')
+    points = [vec(p) for p in path]
+    spans = len(points) if closed else len(points) - 1
+    span_colors = [colors] * spans if isinstance(colors, int) else list(colors)
+    if len(span_colors) != spans:
+        raise ValueError('sweep: se necesita un color por tramo')
+    rings = []
+    for p, r, (u, v) in zip(points, radii, _sweep_frames(points, vec(up), closed), strict=True):
+        ru, rv = (r, r) if isinstance(r, (int, float)) else r
+        rings.append(builder.ring(p, u, v, ru, sides, phase, rv))
+    for k in range(spans):
+        builder.bridge(rings[k], rings[(k + 1) % len(rings)], span_colors[k])
+    if cap_start is not None:
+        builder.cap(rings[0], points[0] if tips[0] is None else tips[0], cap_start, flip=True)
+    if cap_end is not None:
+        builder.cap(rings[-1], points[-1] if tips[1] is None else tips[1], cap_end)
+    return rings
+
+
+def slab(builder: MeshBuilder, outline: Sequence[Coord], thickness: Coord, color: int,
+         rim: int | None = None, center: Coord | None = None) -> None:
+    """Placa con grosor (aletas, hojas, plumas): «outline» es el contorno en
+    sentido antihorario visto desde «thickness» (vector que da grosor y
+    sentido de la cara superior). Sin «center», abanico desde el primer
+    vértice (contorno convexo); con «center», abanico desde ese punto
+    (contornos estrellados respecto a él). «rim» colorea el canto."""
+    if len(outline) < 3:
+        raise ValueError('slab: el contorno necesita 3 o más puntos')
+    half = vec(thickness) * 0.5
+    pts = [vec(p) for p in outline]
+    top = [builder.vert(p + half) for p in pts]
+    bottom = [builder.vert(p - half) for p in pts]
+    n = len(pts)
+    if center is None:
+        for k in range(1, n - 1):
+            builder.face((top[0], top[k], top[k + 1]), color)
+            builder.face((bottom[0], bottom[k + 1], bottom[k]), color)
+    else:
+        c = vec(center)
+        ct, cb = builder.vert(c + half), builder.vert(c - half)
+        for k in range(n):
+            builder.face((ct, top[k], top[(k + 1) % n]), color)
+            builder.face((cb, bottom[(k + 1) % n], bottom[k]), color)
+    edge = color if rim is None else rim
+    for k in range(n):
+        j = (k + 1) % n
+        builder.face((bottom[k], bottom[j], top[j], top[k]), edge)
 
 
 def mesh_of(obj: bpy.types.Object) -> bpy.types.Mesh:

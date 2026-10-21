@@ -11,6 +11,7 @@ check-style = "explored_style.check_style:main"
 style-paleta = "explored_style.palette:main"
 style-pilotos = "explored_style.pilots:main"
 style-lamina = "explored_style.lamina:main"
+style-kit-k3 = "explored_style.kits.k3:main"
 
 [build-system]
 requires = ["uv_build>=0.8.18,<0.9"]

@@ -14,7 +14,8 @@ import pytest
 from explored_style import meshkit, pilots
 from explored_style.palette import REPO_ROOT
 
-VIGILADAS = (REPO_ROOT / 'Art' / 'Export' / 'Style', REPO_ROOT / 'docs' / 'v3' / 'laminas',
+VIGILADAS = (REPO_ROOT / 'Art' / 'Export' / 'Style', REPO_ROOT / 'Art' / 'Export' / 'K3_Objetos',
+             REPO_ROOT / 'docs' / 'v3' / 'laminas',
              REPO_ROOT / 'Tools' / 'Style' / 'paleta.json')
 
 
