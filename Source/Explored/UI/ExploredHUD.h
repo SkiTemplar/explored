@@ -43,7 +43,7 @@ private:
 	/** Anillos/barras discretos de hambre, sed, energía y temperatura, más avisos de heridas, quemaduras y escorbuto. */
 	void DrawBodyNeeds(const AExploredCharacter& Character);
 	void DrawNotifications();
-	/** Objetivo del viaje del Limón, discreto arriba a la derecha. */
+	/** Objetivo del viaje del barco, discreto arriba a la derecha. */
 	void DrawObjective();
 	/** Se conecta una sola vez a UCarryComponent::OnItemPickedUp en cuanto hay personaje (el orden de BeginPlay no está garantizado). */
 	void EnsureBoundToCarry(const AExploredCharacter& Character);

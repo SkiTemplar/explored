@@ -1,11 +1,5 @@
 #include "Misc/AutomationTest.h"
 
-#include "Dom/JsonObject.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
-
 #include "Narrative/ExploredProgress.h"
 #include "WorldGen/ArchipelagoLayout.h"
 #include "WorldGen/PointsOfInterest.h"
@@ -92,26 +86,9 @@ void FNarrativeSpec::Define()
 		});
 	});
 
-	Describe("Historia", [this]()
-	{
-		It("tiene en story_es.json los 30 temas de petroglifo", [this]()
-		{
-			FString Text;
-			const FString Path = FPaths::ProjectContentDir() / TEXT("Data/story_es.json");
-			TestTrue(TEXT("Existe el fichero"), FFileHelper::LoadFileToString(Text, *Path));
-			TSharedPtr<FJsonObject> Root;
-			TestTrue(TEXT("JSON válido"), FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) && Root.IsValid());
-			if (!Root)
-			{
-				return;
-			}
-			TestEqual(TEXT("30 temas"), Root->GetArrayField(TEXT("petroglyph_themes")).Num(), FExploredProgress::TotalPetroglyphs);
-		});
-	});
-
 	Describe("FExploredProgress", [this]()
 	{
-		It("exige las cuatro piezas del Albatros para construir el barco «Limón»", [this]()
+		It("exige las cuatro piezas del Albatros para construir el barco", [this]()
 		{
 			FExploredProgress P;
 			P.AddShipPart(EShipPart::Fuselage);

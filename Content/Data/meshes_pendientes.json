@@ -4,22 +4,41 @@
   "items": [
     "alambre",
     "basalto_tallado",
+    "batata",
+    "batata_asada",
     "cabeza_pico_rescatada",
     "caliza",
     "canto_aguzado",
     "carretilla",
     "clavija_roca",
     "clavos",
+    "coco_maduro",
+    "coco_verde",
+    "comida_quemada",
     "compost",
     "cristal_cuarzo",
+    "fruta_fermentada",
+    "fruta_seca",
     "guano",
     "hierro_meteorito",
+    "huevo",
+    "huevo_brasa",
+    "lima_silvestre",
     "lingote_aluminio",
     "lingote_cobre",
     "lingote_hierro",
+    "mango_fruta",
+    "maracuya",
     "mineral_cobre",
     "pico",
-    "rizoma_curcuma"
+    "pina",
+    "platano",
+    "rizoma_curcuma",
+    "seta_comestible",
+    "taro",
+    "taro_hervido",
+    "yuca",
+    "yuca_cocida"
   ],
   "buildingPieces": [
     "astillero",
@@ -39,9 +58,7 @@
     "vitrina_minerales",
     "yunque"
   ],
-  "boats": [
-    "barco_limon"
-  ],
+  "boats": [],
   "fauna": [
     "cabra_salvaje",
     "cangrejo_cocotero_salvaje",

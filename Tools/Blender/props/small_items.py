@@ -1,7 +1,7 @@
 """
 small_items.py — objetos pequeños recogibles del inventario diegético.
 
-12 props: cuaderno de vuelo de Inés, página suelta del diario Halden,
+12 props: cuaderno de vuelo de Inés, página suelta de cuaderno,
 botella con mensaje, radio del Albatros, batería, antena plegable, pistola
 de bengalas, brújula del Albatros, mochila, cámara desechable, termo y
 botiquín. Presupuesto: <800 triángulos cada uno (todos se quedan muy por
@@ -22,7 +22,7 @@ CATEGORY = 'small_items'
 VARIANTS = [
     dict(name='ItemFlightLog', seed=3001, builder='notebook',
          tri_budget=(20, 800), needs_collision=True, interactable=True),
-    dict(name='ItemHaldenPage', seed=3002, builder='page',
+    dict(name='ItemLoosePage', seed=3002, builder='page',
          tri_budget=(10, 400), needs_collision=False, interactable=True),
     dict(name='ItemMessageBottle', seed=3003, builder='bottle',
          tri_budget=(40, 800), needs_collision=True, interactable=True),
@@ -93,7 +93,7 @@ def _build_notebook(variant, rnd):
 
 
 # ---------------------------------------------------------------------------
-# 2. Página suelta del diario Halden (papel amarillento, doblada)
+# 2. Página suelta de cuaderno (papel amarillento, doblada)
 # ---------------------------------------------------------------------------
 @_register('page')
 def _build_page(variant, rnd):

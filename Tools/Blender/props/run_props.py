@@ -1,6 +1,6 @@
 """
 run_props.py — genera el kit de props narrativos y de puntos de interés de
-«Explored» (avión Albatros, campamentos Halden, faro, brújula estelar,
+«Explored» (avión Albatros, faro, brújula estelar,
 petroglifos, marae, pecio, baliza, objetos pequeños, embarcaciones y piezas
 de construcción del jugador).
 
@@ -42,7 +42,6 @@ import common as C  # noqa: E402
 # del encargo, sin acentos ni espacios para que sean rutas limpias).
 MODULE_GROUPS = [
     ('albatros', 'Albatros'),
-    ('halden_camp', 'Halden'),
     ('lighthouse', 'Faro'),
     ('star_compass', 'BrujulaEstelar'),
     ('petroglyphs', 'Petroglifos'),
@@ -51,7 +50,6 @@ MODULE_GROUPS = [
     ('beacon', 'Baliza'),
     ('small_items', 'ObjetosPequenos'),
     ('boats', 'Embarcaciones'),
-    ('limon', 'Limon'),  # barco final: SM_Limon y SM_Limon_Frame (en grada)
     ('building_kit', 'Construccion'),
     # kit modular de la base: una carpeta por material (KitPalma, KitBambu,
     # KitMadera, KitPiedra), que cada variante declara en su clave 'group'.
@@ -72,7 +70,6 @@ MODULE_GROUPS = [
     ('items_rescatados', 'Items'),
     ('items_recursos', 'Items'),
     ('items_armas', 'Items'),
-    ('items_frutas', 'Items'),
     ('items_pescados', 'Items'),
     ('items_despojos', 'Items'),
     ('items_orilla', 'Items'),

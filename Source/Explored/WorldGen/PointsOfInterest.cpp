@@ -12,7 +12,7 @@ const TCHAR* LexToString(EPoiType Type)
 	case EPoiType::WreckWing: return TEXT("WreckWing");
 	case EPoiType::WreckTail: return TEXT("WreckTail");
 	case EPoiType::WreckEngine: return TEXT("WreckEngine");
-	case EPoiType::HaldenCamp: return TEXT("HaldenCamp");
+	case EPoiType::ExpeditionCamp: return TEXT("ExpeditionCamp");
 	case EPoiType::RadioStation: return TEXT("RadioStation");
 	case EPoiType::TideObservatory: return TEXT("TideObservatory");
 	case EPoiType::Lighthouse: return TEXT("Lighthouse");
@@ -228,7 +228,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		}
 		if (FindInland(Density, Island, Island.Rotation + 2.2f, 0.55f, P))
 		{
-			Add(EPoiType::HaldenCamp, EmeraldIndex, P, Rng.RangeFloat(0.0f, 360.0f), FName(TEXT("camp_halden_1")));
+			Add(EPoiType::ExpeditionCamp, EmeraldIndex, P, Rng.RangeFloat(0.0f, 360.0f), FName(TEXT("camp_expedition_1")));
 		}
 		if (FindInland(Density, Island, Island.Rotation - 0.8f, 0.8f, P)) { Add(EPoiType::WreckEngine, EmeraldIndex, P, Rng.RangeFloat(0.0f, 360.0f)); }
 	}
@@ -258,7 +258,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 			Add(EPoiType::Shipwreck, SandsIndex, Wreck, YawTowards(Wreck, Island.Center), NAME_None, Wreck.Z < -1.0f);
 		}
 		if (FindBeach(Density, Island, Island.Rotation + 2.5f, P)) { Add(EPoiType::TurtleBeach, SandsIndex, P, 0.0f); }
-		if (FindBeach(Density, Island, Island.Rotation - 1.6f, P)) { Add(EPoiType::HaldenCamp, SandsIndex, P, 0.0f, FName(TEXT("camp_halden_3"))); }
+		if (FindBeach(Density, Island, Island.Rotation - 1.6f, P)) { Add(EPoiType::ExpeditionCamp, SandsIndex, P, 0.0f, FName(TEXT("camp_expedition_3"))); }
 	}
 
 	// Humo: marae con brújula estelar en la cumbre, aguas termales, campamento II.
@@ -271,7 +271,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		FVector P;
 		if (FindInland(Density, Island, Island.Rotation + 0.6f, 0.75f, P))
 		{
-			Add(EPoiType::HaldenCamp, SmokeIndex, P, 0.0f, FName(TEXT("camp_halden_2")));
+			Add(EPoiType::ExpeditionCamp, SmokeIndex, P, 0.0f, FName(TEXT("camp_expedition_2")));
 		}
 		if (FindInland(Density, Island, Island.Rotation - 1.2f, 0.85f, P)) { Add(EPoiType::HotSpring, SmokeIndex, P, 0.0f); }
 	}
@@ -288,7 +288,7 @@ TArray<FPointOfInterest> FPoiLayout::Generate(const FTerrainDensity& Density)
 		}
 		if (FindInland(Density, Island, Island.Rotation + 2.6f, 0.6f, P))
 		{
-			Add(EPoiType::HaldenCamp, MesaIndex, P, 0.0f, FName(TEXT("camp_halden_4")));
+			Add(EPoiType::ExpeditionCamp, MesaIndex, P, 0.0f, FName(TEXT("camp_expedition_4")));
 		}
 	}
 

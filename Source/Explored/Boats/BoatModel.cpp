@@ -11,7 +11,6 @@ const TCHAR* LexToString(EBoatType Type)
 	case EBoatType::Raft: return TEXT("Raft");
 	case EBoatType::Canoe: return TEXT("Canoe");
 	case EBoatType::Outrigger: return TEXT("Outrigger");
-	case EBoatType::Limon: return TEXT("Limon");
 	default: return TEXT("Unknown");
 	}
 }
@@ -30,7 +29,7 @@ const TCHAR* LexToString(EBoatCondition Condition)
 
 namespace BoatModelDetail
 {
-	/** Tabla de embarcaciones. Medidas de Tools/Blender/props/boats.py; el «Limón» es una canoa doble sin malla aún. */
+	/** Tabla de embarcaciones. Medidas de Tools/Blender/props/boats.py. */
 	FBoatDefinition MakeDefinition(EBoatType Type)
 	{
 		FBoatDefinition D;
@@ -120,35 +119,7 @@ namespace BoatModelDetail
 			D.MaxLeakKgS = 3.0f;
 			D.ImpactDamageScale = 1.0f;
 			break;
-		case EBoatType::Limon:
 		default:
-			// Canoa doble de 6,5 m con chapa y tubos del Albatros, amarilla: el viaje final.
-			D.Type = EBoatType::Limon;
-			D.MeshName = TEXT("");
-			D.LengthCm = 650.0f;
-			D.BeamCm = 280.0f;
-			D.HullDepthCm = 70.0f;
-			D.HullMassKg = 420.0f;
-			D.WaterplaneCoefficient = 0.28f;
-			D.MaxCargoKg = 500.0f;
-			D.MaxPaddleSpeedCmS = 150.0f;
-			D.PaddleThrustN = 80.0f;
-			D.StrokeDurationS = 1.0f;
-			D.StrokeLeverCm = 100.0f;
-			D.CoastTimeConstantS = 18.0f;
-			D.LateralResistance = 70.0f;
-			D.YawTimeConstantS = 3.0f;
-			D.RudderTurnRateDegS = 12.0f;
-			D.SailAreaM2 = 12.0f;
-			D.SailCenterOfEffortCm = 200.0f;
-			D.WindageAreaM2 = 1.5f;
-			D.MetacentricHeightCm = 160.0f;
-			D.RollPeriodS = 3.4f;
-			D.RollDamping = 0.3f;
-			D.WaveRollResponse = 0.4f;
-			D.CapsizeRollDeg = 65.0f;
-			D.MaxLeakKgS = 2.0f;
-			D.ImpactDamageScale = 0.6f;
 			break;
 		}
 		return D;

@@ -43,7 +43,7 @@ namespace SaveArchiveTest
 		Root.Set(TEXT("entero"), FSaveValue::MakeInt(-1234567890123LL));
 		Root.Set(TEXT("real"), FSaveValue::MakeDouble(0.1 + 0.2));
 		Root.Set(TEXT("float"), FSaveValue::MakeFloat(3.14159274f));
-		Root.Set(TEXT("texto"), FSaveValue::MakeString(TEXT("Mañana: «Limón» bajo el árbol 🐢\n\t\"cita\" \\ fin")));
+		Root.Set(TEXT("texto"), FSaveValue::MakeString(TEXT("Mañana: «Baliza» bajo el árbol 🐢\n\t\"cita\" \\ fin")));
 		FSaveValue List = FSaveValue::MakeArray();
 		List.Add(FSaveValue::MakeDouble(1.5e300));
 		List.Add(FSaveValue::MakeDouble(-2.5e-310));
@@ -213,7 +213,7 @@ void FSaveArchiveSpec::Define()
 
 		It("conserva cadenas con tildes, eñes, emojis, comillas y controles", [this]()
 		{
-			const FString Original = TEXT("Año nuevo en la isla: canción, pingüino, «Limón» ☀ 🐢 \"x\" \\ /\n\t\r\b\f");
+			const FString Original = TEXT("Año nuevo en la isla: canción, pingüino, «Baliza» ☀ 🐢 \"x\" \\ /\n\t\r\b\f");
 			FString WithControl = Original;
 			WithControl.AppendChar(static_cast<TCHAR>(1));
 			const FSaveValue Value = FSaveValue::MakeString(WithControl);
@@ -542,22 +542,22 @@ void FSaveArchiveSpec::Define()
 		{
 			struct FFarm
 			{
-				int32 Lemons = 0;
+				int32 Coconuts = 0;
 				FString Stage = TEXT("semilla");
 			};
 			FFarm Farm;
-			Farm.Lemons = 5;
+			Farm.Coconuts = 5;
 			Farm.Stage = TEXT("flor");
 			int32 Loads = 0;
 
 			FSaveSectionRegistry Registry;
 			TestTrue(TEXT("Registra"), Registry.Register(TEXT("farm"),
-				[&Farm](FSaveArchive& Ar) { Ar.Write(TEXT("lemons"), Farm.Lemons); Ar.Write(TEXT("stage"), Farm.Stage); },
+				[&Farm](FSaveArchive& Ar) { Ar.Write(TEXT("coconuts"), Farm.Coconuts); Ar.Write(TEXT("stage"), Farm.Stage); },
 				[&Farm, &Loads](const FSaveArchive& Ar)
 				{
 					++Loads;
 					Farm = FFarm();
-					Ar.Read(TEXT("lemons"), Farm.Lemons);
+					Ar.Read(TEXT("coconuts"), Farm.Coconuts);
 					Ar.Read(TEXT("stage"), Farm.Stage);
 				}));
 			TestFalse(TEXT("Nombre repetido"), Registry.Register(TEXT("farm"), nullptr, nullptr));
@@ -566,12 +566,12 @@ void FSaveArchiveSpec::Define()
 			const FSaveValue Captured = Registry.Capture();
 			Farm = FFarm();
 			Registry.Apply(Captured);
-			TestEqual(TEXT("Recupera los limones"), Farm.Lemons, 5);
+			TestEqual(TEXT("Recupera los cocos"), Farm.Coconuts, 5);
 			TestEqual(TEXT("Recupera la etapa"), Farm.Stage, FString(TEXT("flor")));
 
-			Farm.Lemons = 99;
+			Farm.Coconuts = 99;
 			Registry.Apply(FSaveValue::MakeObject());
-			TestEqual(TEXT("Sin sección: valores por defecto"), Farm.Lemons, 0);
+			TestEqual(TEXT("Sin sección: valores por defecto"), Farm.Coconuts, 0);
 			TestEqual(TEXT("Sin sección: etapa por defecto"), Farm.Stage, FString(TEXT("semilla")));
 			TestEqual(TEXT("Load se llamó en ambos casos"), Loads, 2);
 		});

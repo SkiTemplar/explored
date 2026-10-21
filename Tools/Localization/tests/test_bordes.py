@@ -80,7 +80,7 @@ B = LOCTEXT("B", "b");
 
 @pytest.mark.parametrize(("raw", "esperado"), [
     (r"\x41\x42", "AB"),  # antes quedaba «\x41\x42» literal y no coincidía con en.json
-    (r"Lim\u00f3n", "Limón"),
+    (r"Cami\u00f3n", "Camión"),
     (r"\U0001F34B", "\U0001f34b"),
     (r"\uZZZZ", r"\uZZZZ"),  # escape inválido: se deja tal cual en vez de lanzar ValueError
     (r"a\n\t\"\\", 'a\n\t"\\'),
@@ -283,7 +283,7 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (tmp_path / "Source/Explored/X.cpp").write_text(CPP_OK, encoding="utf-8")
     (tmp_path / "Content/Data").mkdir(parents=True)
     (tmp_path / "Content/Data/items.json").write_text(
-        json.dumps([{"id": "limon", "nameEs": "Limón", "nameEn": "Lemon"}]), encoding="utf-8")
+        json.dumps([{"id": "coco", "nameEs": "Coco", "nameEn": "Coconut"}]), encoding="utf-8")
     # El glosario de biblia 07 §5.2 es obligatorio; aquí basta con la cabecera de la tabla.
     (tmp_path / "docs/tecnico").mkdir(parents=True)
     (tmp_path / "docs/tecnico/glosario.md").write_text(

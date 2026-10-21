@@ -21,7 +21,7 @@ excepción, y los campos de tipo equivocado (texto donde va un número, ids nulo
 
 Qué comprueba:
 
-- **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
+- **Esquema** de `items.json`, `templates.json`, `verbs.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`,
   `meshes_pendientes.json`, `fuels.json`, `recipes.json`,
   `boats.json`, `fish.json`, `music_layers.json`, `fauna.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
@@ -71,9 +71,8 @@ Qué comprueba:
   caracteres) en los logros que no son de los 30 del GDD.
 - **Barcos**: `boats.json` contra `EBoatType` y `FBoatDefinition::MeshName` (`Boats/`) y
   contra `EShipPart` (`Narrative/ExploredProgress.h`).
-- **Astillero** (`boats.json`): progresión balsa → canoa → balancín → «Limón», estación
-  existente, ingredientes y herramientas obtenibles, y el «Limón» con las cuatro piezas
-  del Albatros y material rescatado (GDD §4.3, §8.10).
+- **Astillero** (`boats.json`): progresión balsa → canoa → balancín, estación
+  existente, ingredientes y herramientas obtenibles (GDD §8.10).
 - **Pesca**: `fish.json` contra las tablas de `Source/Explored/Fishing/FishingModel.cpp`
   (especies, legendarias y trampas); 11 peces de caña + langosta, 5 legendarias, y que
   capturas, cebos, recompensas, trampas, pozas y despiece existan en `items.json`.
@@ -83,19 +82,13 @@ Qué comprueba:
   diurnas (la propia primero, solo exploración), finales de `FinaleKey` con el de por defecto,
   bucles con compases enteros, `seconds_per_bar`/`duration_s` coherentes con el tempo,
   descubrimientos ≤ 5 s y la flauta con `FFluteModel::NumNotes` notas. Los finales distintos
-  del «Limón» quedan como nota (GDD §2: sin finales narrativos).
+  del de por defecto quedan como nota (GDD §2: sin finales narrativos).
 - **Fauna salvaje (GDD v2 §3.7)**: `fauna.json` contra `EFaunaSpecies` (especie existente
   o un `cppSpeciesPropuesto` nuevo) y `FFaunaLodSettings` (radios, histéresis, intervalo);
   vida, percepción, huida, ataque con propiedad equivalente, rutina que cubre las 24 h,
   botín/nidos con objetos reales; las cuatro islas del acceso anticipado con ficha y
   ninguna isla de fase 1 con especies de fase 2/3. Especies sin malla, en
   `meshes_pendientes.json/fauna`.
-- **Contenido de texto de H4** (`contenido.py`, `docs/tecnico/contenido-textos.md`):
-  `halden_diaries.json` (los 5 cuadernos de biblia 04 §7.1, cada uno en un POI que de verdad
-  coloca `PointsOfInterest.cpp` en esa isla y con su `ContentId`), `journal_entries.json`
-  (al menos 15 entradas, `{Day}` en los dos idiomas, disparadores con un suceso declarado y
-  usado, sin sucesos de una fase posterior).
-  Islas: `LexToString(EIslandArchetype)` en minúsculas; POI: `EPoiType`.
 - **Guía anti-IA** (`estilo.py`, biblia 07 §1): lista negra ES/EN, exclamaciones, emoji, puntos
   suspensivos, rayas de muletilla y límites de longitud y de frases por tipo de texto en los
   ficheros de contenido; en los logros, todo menos la longitud (hay textos fijados que se pasan).

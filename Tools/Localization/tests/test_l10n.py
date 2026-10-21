@@ -47,8 +47,7 @@ def test_catalogo_une_cpp_ini_y_datos(real_cat: Catalogue) -> None:
     ids = {e.id for e in real_cat.entries}
     assert "ExploredUI,NewGame" in ids
     assert "Explored,Title" in ids  # ProjectDisplayedTitle de DefaultGame.ini
-    assert "Data.items.items,limon.nameEs" in ids
-    assert "Data.story_es.petroglyph_themes,29" in ids
+    assert "Data.items.items,lima_silvestre.nameEs" in ids
 
 
 def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
@@ -133,22 +132,9 @@ def test_falta_ingles_en_datos(src: Sources) -> None:
     assert has(build(src).report.errors, "Golpear.description", "sin inglés")
 
 
-def test_contenido_de_h4_en_el_catalogo(real_cat: Catalogue) -> None:
+def test_pesca_en_el_catalogo(real_cat: Catalogue) -> None:
     ids = {e.id for e in real_cat.entries}
-    assert "Data.halden_diaries.entries,halden_05.textEs" in ids
-    assert "Data.journal_entries.entries,diario_amaraje.textEs" in ids
     assert "Data.fish.legendary,el_viejo.nameEs" in ids
-
-
-def test_contenido_de_h4_sin_avisos(real_cat: Catalogue) -> None:
-    files = ("halden_diaries", "journal_entries")
-    assert not [w for w in real_cat.report.warnings if any(f"Content/Data/{f}.json" in w for f in files)]
-
-
-def test_diario_sin_marcador_de_dia_en_ingles(src: Sources) -> None:
-    entry = next(e for e in src.data["journal_entries.json"]["entries"] if e["id"] == "diario_primer_fuego")
-    entry["textEn"] = entry["textEn"].replace("{Day}", "1")
-    assert has(build(src).report.errors, "diario_primer_fuego", "marcadores distintos")
 
 
 def test_valor_vacio(src: Sources) -> None:
@@ -191,11 +177,6 @@ def test_pendiente_ya_integrada(src: Sources) -> None:
     cat = build(src)
     assert has(cat.report.warnings, "ExploredUI,Apply", "quita «pendiente»")
     assert any(e.id == "ExploredUI,Apply" for e in cat.exported)
-
-
-def test_listas_paralelas_desparejas(src: Sources) -> None:
-    src.data["story_es.json"]["petroglyph_themes_en"].pop()
-    assert has(build(src).report.errors, "petroglyph_themes_en", "29")
 
 
 def test_plantilla_sin_nombre_no_se_exige() -> None:
@@ -420,8 +401,9 @@ def test_glosario_detecta_traduccion_distinta(real: Sources) -> None:
 
 
 def test_glosario_llega_al_informe(src: Sources) -> None:
-    next(b for b in src.data["boats.json"]["boats"] if b["id"] == "barco_limon")["nameEn"] = "The Lemon"
-    assert has(build(src).report.warnings, "barco_limon", "«Limón»", "glosario")
+    boat = src.data["boats.json"]["boats"][0]
+    boat["nameEs"], boat["nameEn"] = "Balsa del Albatros", "Albatros raft"
+    assert has(build(src).report.warnings, boat["id"], "«Albatros»", "glosario")
 
 
 def test_glosario_mal_formado() -> None:

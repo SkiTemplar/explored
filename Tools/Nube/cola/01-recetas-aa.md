@@ -15,7 +15,7 @@ Para cada una, usa roles y propiedades reales de items.json, con estación, tiem
 
 Añade también a biblia/03 un apartado de DESCUBRIBILIDAD, con números y textos ES y EN:
 - libreta de recetas;
-- pistas en los bocetos de Halden y en los petroglifos;
+- pistas en los petroglifos;
 - inspección del tipo «esto sirve de mango».
 
 datacheck, pytest y l10n tienen que salir en verde. Abre la PR.

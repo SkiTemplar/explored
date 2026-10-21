@@ -7,7 +7,7 @@ struct FOceanWaves;
 /**
  * Embarcaciones del jugador en orden de progresión (GDD §8.10): balsa (lenta,
  * solo aguas someras) → canoa (rápida) → canoa con balancín y vela (mar
- * abierto) → barco «Limón» (piezas del Albatros, objetivo final opcional).
+ * abierto).
  * Los nombres coinciden con el campo «type» de Content/Data/boats.json
  * (Tools/DataCheck lo comprueba).
  */
@@ -16,7 +16,6 @@ enum class EBoatType : uint8
 	Raft,
 	Canoe,
 	Outrigger,
-	Limon,
 	Count
 };
 

@@ -279,16 +279,16 @@ EXPORT_DIR_PROPS = os.path.join(REPO_ROOT, 'Art', 'Export', 'Props')
 MANIFEST_PATH_PROPS = os.path.join(EXPORT_DIR_PROPS, 'manifest.json')
 
 GROUP_ORDER_PROPS = [
-    'Albatros', 'Faro', 'Baliza', 'Halden', 'BrujulaEstelar',
-    'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Limon', 'Construccion',
+    'Albatros', 'Faro', 'Baliza', 'BrujulaEstelar',
+    'Petroglifos', 'Marae', 'Pecio', 'Embarcaciones', 'Construccion',
     'ObjetosPequenos', 'KitPalma', 'KitBambu', 'KitMadera', 'KitPiedra',
     'MobiliarioBase', 'ProduccionBase', 'RuinasMarae', 'RuinasTallas', 'Tesoros', 'Items',
     'AcantiladoFormaciones', 'AcantiladoBloques',
 ]
 GROUP_TARGET_HEIGHT_PROPS = {
-    'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3, 'Halden': 1.6,
+    'Albatros': 2.2, 'Faro': 2.2, 'Baliza': 1.3,
     'BrujulaEstelar': 1.4, 'Petroglifos': 0.9, 'Marae': 1.4, 'Pecio': 1.4,
-    'Embarcaciones': 1.4, 'Limon': 2.2, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
+    'Embarcaciones': 1.4, 'Construccion': 1.2, 'ObjetosPequenos': 0.7,
     'KitPalma': 1.4, 'KitBambu': 1.4, 'KitMadera': 1.4, 'KitPiedra': 1.4,
     'MobiliarioBase': 1.4, 'ProduccionBase': 1.4, 'RuinasMarae': 1.4, 'RuinasTallas': 1.4,
     'Tesoros': 0.7, 'Items': 0.7,
@@ -444,7 +444,7 @@ def _render_props_group(entries, target_height, out_path, max_cols=PROPS_GRID_MA
     # metálico grande y brillante (p.ej. el domo de la sala de la lámpara
     # del faro) sobreexpusiera TODA la lámina por luz rebotada — se detectó
     # comparando la lámina de Faro (lavada casi a blanco) con las de
-    # Albatros/Halden (bien expuestas) con el mismo código de luces.
+    # Albatros (bien expuesta) con el mismo código de luces.
     _render_still(scene, out_path, 1600, 1200, samples=64, raytracing=False)
     return True
 

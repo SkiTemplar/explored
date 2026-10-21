@@ -18,7 +18,7 @@ class USoundBase;
  *
  * Otros sistemas avisan con NotifyDiscovery() (punto de interés, tramo del mapa),
  * NotifyKeyMoment(), SetDanger() (fauna, cuerpo), SetSailing() (barcos) y
- * SetFinale() (partida del «Limón»).
+ * SetFinale() (partida del barco).
  *
  * Las piezas se leen de Content/Data/music_layers.json (lo genera Tools/Audio).
  */
@@ -60,7 +60,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Música")
 	void SetCredits(bool bInCredits) { bCredits = bInCredits; }
 
-	/** Partida final (por defecto el «Limón» zarpando). */
+	/** Partida final (por defecto el barco zarpando). */
 	void SetFinale(bool bActive, EMusicFinale Finale = EMusicFinale::Voyage);
 
 	/** Flauta de bambú: toca la nota 0–4 y devuelve false si no hay muestra cargada. */

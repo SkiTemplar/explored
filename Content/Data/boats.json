@@ -2,7 +2,7 @@
   "version": 1,
   "units": {
     "type": "nombre de EBoatType en Source/Explored/Boats/BoatTypes.h; la física (eslora, calado, velocidades, vela) vive solo en FBoatModel",
-    "order": "posición en la progresión del GDD §8.10 (balsa → canoa → balancín → «Limón»)",
+    "order": "posición en la progresión del GDD §8.10 (balsa → canoa → balancín)",
     "station": "pieza de building_pieces.json donde se construye",
     "cost[].count": "unidades del objeto de items.json que se consumen",
     "tools": "ids de items.json que el jugador debe llevar (no se consumen); deben ser fabricables",
@@ -71,31 +71,6 @@
       "requiresShipParts": [],
       "buildMinutes": 180,
       "mesh": "SM_Canoe_Outrigger"
-    },
-    {
-      "id": "barco_limon",
-      "type": "Limon",
-      "order": 3,
-      "nameEs": "Barco «Limón»",
-      "nameEn": "The «Limón»",
-      "station": "astillero",
-      "cost": [
-        { "item": "madera_dura", "count": 16 },
-        { "item": "tronco_pequeno", "count": 6 },
-        { "item": "chapa_fuselaje", "count": 6 },
-        { "item": "tubo_aluminio", "count": 4 },
-        { "item": "cable_electrico", "count": 3 },
-        { "item": "cinta_americana", "count": 2 },
-        { "item": "cuerda", "count": 12 },
-        { "item": "resina", "count": 6 },
-        { "item": "hoja_palma", "count": 20 }
-      ],
-      "tools": ["hacha", "cuchillo", "martillo"],
-      "requiresBoat": "canoa_balancin",
-      "consumesRequiredBoat": false,
-      "requiresShipParts": ["Fuselage", "Wing", "Tail", "Engine"],
-      "buildMinutes": 600,
-      "mesh": null
     }
   ]
 }

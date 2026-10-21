@@ -68,7 +68,6 @@
     { "item": "mango_fruta", "state": "crudo", "family": "fruta", "food": 10, "water": 5, "warmth": 0, "morale": 2, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "pina", "state": "crudo", "family": "fruta", "food": 14, "water": 6, "warmth": 0, "morale": 2, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "maracuya", "state": "crudo", "family": "fruta", "food": 5, "water": 2, "warmth": 0, "morale": 1, "toxicity": 0, "cookingRemovesToxicity": false },
-    { "item": "limon", "state": "crudo", "family": "fruta", "food": 2, "water": 1, "warmth": 0, "morale": -1, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "lima_silvestre", "state": "crudo", "family": "fruta", "food": 2, "water": 1, "warmth": 0, "morale": -1, "toxicity": 0, "cookingRemovesToxicity": false },
     { "item": "taro", "state": "crudo", "family": "tuberculo", "food": 8, "water": 0, "warmth": 0, "morale": -2, "toxicity": 0.2, "cookingRemovesToxicity": true },
     { "item": "batata", "state": "crudo", "family": "tuberculo", "food": 10, "water": 1, "warmth": 0, "morale": -1, "toxicity": 0, "cookingRemovesToxicity": false },

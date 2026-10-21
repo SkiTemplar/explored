@@ -32,7 +32,7 @@
       "id": "lote4-huerto",
       "date": "2026-09-28",
       "sheet": "docs/art/packs/lote4-huerto.png",
-      "scope": "Fases de cultivo del huerto de Landing (prioridad 3) con Kenney Nature Kit: platanera, piña y limonero."
+      "scope": "Fases de cultivo del huerto de Landing (prioridad 3) con Kenney Nature Kit: platanera y piña."
     },
     {
       "id": "lote5-fauna",
@@ -806,7 +806,6 @@
       "pack": "kenney_food_kit",
       "file": "Models/GLB format/banana.glb",
       "mesh": "SM_Pack_Platano",
-      "replaces": "SM_Item_Platano",
       "size": {
         "axis": "max",
         "m": 0.19
@@ -837,54 +836,12 @@
       }
     },
     {
-      "gameId": "limon",
-      "kind": "item",
-      "lote": "lote3-comida",
-      "pack": "kenney_food_kit",
-      "file": "Models/GLB format/lemon.glb",
-      "mesh": "SM_Pack_Limon",
-      "replaces": "SM_Item_Limon",
-      "size": {
-        "axis": "max",
-        "m": 0.08
-      },
-      "pivot": {
-        "kind": "base"
-      },
-      "recolor": {
-        "rules": [
-          {
-            "from": "#ffb54a",
-            "to": "comida.limon"
-          },
-          {
-            "from": "#ff9d36",
-            "to": "comida.limon"
-          },
-          {
-            "from": "#ffcd5e",
-            "to": "comida.limon"
-          },
-          {
-            "from": "#ab5e41",
-            "to": "palma.coco"
-          },
-          {
-            "from": "#845442",
-            "to": "palma.coco"
-          }
-        ],
-        "default": "comida.limon"
-      }
-    },
-    {
       "gameId": "pina",
       "kind": "item",
       "lote": "lote3-comida",
       "pack": "kenney_food_kit",
       "file": "Models/GLB format/pineapple.glb",
       "mesh": "SM_Pack_Pina",
-      "replaces": "SM_Item_Pina",
       "size": {
         "axis": "z",
         "m": 0.3
@@ -913,7 +870,6 @@
       "pack": "kenney_food_kit",
       "file": "Models/GLB format/mushroom.glb",
       "mesh": "SM_Pack_SetaComestible",
-      "replaces": "SM_Item_SetaComestible",
       "size": {
         "axis": "max",
         "m": 0.09

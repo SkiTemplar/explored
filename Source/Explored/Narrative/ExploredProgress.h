@@ -4,7 +4,7 @@
 
 #include "ExploredProgress.generated.h"
 
-/** Piezas del Albatros necesarias para construir el barco «Limón» (GDD §8.10). */
+/** Piezas del Albatros necesarias para construir el barco (GDD §8.10). */
 UENUM()
 enum class EShipPart : uint8
 {
@@ -24,7 +24,7 @@ enum class EExploredEnding : uint8
 	Stayed
 };
 
-/** Qué le falta al jugador para el final del «Limón» (GDD §6.3), en orden. */
+/** Qué le falta al jugador para el final del barco (GDD §6.3), en orden. */
 UENUM()
 enum class EVoyageStage : uint8
 {
@@ -88,7 +88,7 @@ struct EXPLORED_API FExploredProgress
 
 	int32 CountShipParts() const;
 
-	/** Construye el «Limón» si hay todas las piezas. Devuelve true si se construye ahora. */
+	/** Construye el barco si hay todas las piezas. Devuelve true si se construye ahora. */
 	bool BuildShip();
 
 	/** De noche se navega por las estrellas: desde NightStartHours hasta NightEndHours. */

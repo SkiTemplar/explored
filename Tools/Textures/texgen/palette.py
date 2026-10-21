@@ -225,7 +225,7 @@ FAMILIES: tuple[Family, ...] = (
         ("mango", "#e8983a", "Mango, papaya."),
         ("platano", "#f0c04a", "Plátano maduro."),
         ("lima", "#9cc24b", "Lima, fruta verde."),
-        ("limon", "#d6d940", "Limón (el del barco «Limón» y el escorbuto)."),
+        ("citrico", "#d6d940", "Cítrico amarillo (escorbuto)."),
         ("carne_cruda", "#d9787a", "Carne y pescado crudos."),
         ("asado", "#8b4a2f", "Carne asada, pan de fruta tostado."),
         ("pescado", "#7b97ad", "Pescado plateado."),

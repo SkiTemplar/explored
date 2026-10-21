@@ -641,7 +641,7 @@ def _b_dorado(v, rnd, name):
 def _b_jurel(v, rnd, name):
     """Jurel gigante (55 cm): cuerpo alto y comprimido de frente empinada,
     plata oliva con puntitos negros, escudetes a lo largo de la cola y
-    aletas amarillo limón con la pectoral en hoz."""
+    aletas amarillo vivo con la pectoral en hoz."""
     p = K.Parts()
     L = 0.55
     prof = [(0.0, 0.0, 0.0, 0.0), (0.03, 0.06, 0.04, 0.025), (0.12, 0.16, 0.11, 0.05),

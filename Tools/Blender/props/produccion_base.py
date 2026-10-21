@@ -2,7 +2,7 @@
 produccion_base.py — estaciones de producción, huerto y estructura de la
 base que Content/Data/building_pieces.json todavía tenía sin malla (lista
 «buildingPieces» de meshes_pendientes.json): piedra de trabajo, horno de
-barro, chimenea, telar de fibra, espaldera (maracuyá), arriate del limonero
+barro, chimenea, telar de fibra, espaldera (maracuyá), arriate de cultivo
 y mesa de cartografía (biblia §3.10 y §7).
 
 Mismo lenguaje visual que el kit modular y el mobiliario (reutiliza sus
@@ -37,7 +37,7 @@ VARIANTS = [
          interactable=True),
     dict(name='Base_Loom', seed=2904, builder='loom', tri_budget=(200, 6000), interactable=True),
     dict(name='Base_Trellis', seed=2905, builder='trellis', tri_budget=(200, 7000), interactable=True),
-    dict(name='Base_LemonBed', seed=2906, builder='lemon_bed', tri_budget=(200, 6000), interactable=True),
+    dict(name='Base_PlanterBed', seed=2906, builder='planter_bed', tri_budget=(200, 6000), interactable=True),
     dict(name='Base_ChartTable', seed=2907, builder='chart_table', tri_budget=(200, 6000), interactable=True),
 ]
 for _v in VARIANTS:
@@ -471,12 +471,12 @@ def _b_trellis(v, rnd, name):
 
 
 # ---------------------------------------------------------------------------
-# Arriate del limonero: anillo elevado de piedras con tierra mullida, sitio
+# Arriate de cultivo: anillo elevado de piedras con tierra mullida, sitio
 # para el esqueje (el árbol va aparte, por etapas de plants.json), cuenco
 # de coco para regar y marca de caña
 # ---------------------------------------------------------------------------
-@_register('lemon_bed')
-def _b_lemon_bed(v, rnd, name):
+@_register('planter_bed')
+def _b_planter_bed(v, rnd, name):
     p = K.Parts()
     R = 0.8
     n = 14
@@ -517,7 +517,7 @@ def _b_lemon_bed(v, rnd, name):
         lf.data.transform(Matrix.Translation((math.cos(a) * r, math.sin(a) * r, z))
                           @ Matrix.Rotation(rnd.uniform(0, 6.28), 4, 'Z'))
         p.add(lf, 'none')
-    # marca de caña con cinta de tapa (se lee a distancia: aquí va el limonero)
+    # marca de caña con cinta de tapa (se lee a distancia: aquí va el cultivo)
     p.add(K._bamboo('Marker', (0.42, 0.3, 0.3), (0.42, 0.3, 1.05), 0.018, rnd, segs=8, node_step=0.3), 'none')
     p.add(K._box('Ribbon', (0.14, 0.01, 0.05), (0.49, 0.3, 0.97), 'M_Fabric', (0.75, 0.62, 0.08), rnd,
                  jitter=0.01), 'none')

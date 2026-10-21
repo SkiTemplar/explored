@@ -114,19 +114,18 @@ void FBoatSpec::Define()
 
 	Describe("Definiciones", [this]()
 	{
-		It("siguen la progresión balsa → canoa → balancín → «Limón» (GDD §8.10)", [this]()
+		It("siguen la progresión balsa → canoa → balancín (GDD §8.10)", [this]()
 		{
 			const FBoatDefinition& Raft = FBoatModel::Definition(EBoatType::Raft);
 			const FBoatDefinition& Canoe = FBoatModel::Definition(EBoatType::Canoe);
 			const FBoatDefinition& Outrigger = FBoatModel::Definition(EBoatType::Outrigger);
-			const FBoatDefinition& Limon = FBoatModel::Definition(EBoatType::Limon);
 			TestTrue(TEXT("Solo la balsa se limita a aguas someras"), Raft.bShallowWaterOnly
-				&& !Canoe.bShallowWaterOnly && !Outrigger.bShallowWaterOnly && !Limon.bShallowWaterOnly);
+				&& !Canoe.bShallowWaterOnly && !Outrigger.bShallowWaterOnly);
 			TestTrue(TEXT("La balsa es la más lenta remando"), Raft.MaxPaddleSpeedCmS < Canoe.MaxPaddleSpeedCmS);
-			TestTrue(TEXT("Solo el balancín y el «Limón» llevan vela"), !Raft.HasSail() && !Canoe.HasSail()
-				&& Outrigger.HasSail() && Limon.HasSail());
+			TestTrue(TEXT("Solo el balancín lleva vela"), !Raft.HasSail() && !Canoe.HasSail()
+				&& Outrigger.HasSail());
 			TestTrue(TEXT("La carga crece con la progresión"), Raft.MaxCargoKg < Canoe.MaxCargoKg
-				&& Canoe.MaxCargoKg < Outrigger.MaxCargoKg && Outrigger.MaxCargoKg < Limon.MaxCargoKg);
+				&& Canoe.MaxCargoKg < Outrigger.MaxCargoKg);
 			TestTrue(TEXT("El balancín aguanta más escora que la canoa"), Outrigger.CapsizeRollDeg > Canoe.CapsizeRollDeg);
 			TestEqual(TEXT("Malla de la balsa (boats.py)"), FString(Raft.MeshName), FString(TEXT("SM_Raft")));
 			TestEqual(TEXT("Malla de la canoa"), FString(Canoe.MeshName), FString(TEXT("SM_Canoe")));
@@ -376,13 +375,6 @@ void FBoatSpec::Define()
 			TestTrue(FString::Printf(TEXT("Balancín de través con alisio: %.2f m/s"), Speeds[6]), Speeds[6] > 4.0f && Speeds[6] < 6.0f);
 		});
 
-		It("el «Limón» navega bien de través y más rápido que remando", [this]()
-		{
-			const float Sailing = SteadySailSpeedMS(EBoatType::Limon, 90.0f);
-			TestTrue(FString::Printf(TEXT("«Limón» de través %.2f m/s"), Sailing), Sailing > 3.5f && Sailing < 6.5f);
-			TestTrue(TEXT("Más rápido que remando"), Sailing * 100.0f > 2.0f * FBoatModel::Definition(EBoatType::Limon).MaxPaddleSpeedCmS);
-		});
-
 		It("el viento importa: más viento, más velocidad", [this]()
 		{
 			const float Light = SteadySailSpeedMS(EBoatType::Outrigger, 90.0f, 0.05f);
@@ -547,14 +539,13 @@ void FBoatSpec::Define()
 			}
 		});
 
-		It("con temporal vuelcan la balsa y la canoa, pero no el balancín ni el «Limón»", [this]()
+		It("con temporal vuelcan la balsa y la canoa, pero no el balancín", [this]()
 		{
 			float MaxRoll = 0.0f;
 			TestTrue(TEXT("La canoa vuelca"), CountCapsizes(EBoatType::Canoe, 1.0f, 1.0f, MaxRoll) >= 4);
 			TestTrue(TEXT("La balsa vuelca"), CountCapsizes(EBoatType::Raft, 1.0f, 1.0f, MaxRoll) >= 1);
 			TestEqual(TEXT("El balancín aguanta"), CountCapsizes(EBoatType::Outrigger, 1.0f, 1.0f, MaxRoll), 0);
 			TestTrue(TEXT("Con margen"), MaxRoll < 0.6f * FBoatModel::Definition(EBoatType::Outrigger).CapsizeRollDeg);
-			TestEqual(TEXT("El «Limón» aguanta"), CountCapsizes(EBoatType::Limon, 1.0f, 1.0f, MaxRoll), 0);
 		});
 
 		It("volcado deriva quilla arriba y al adrizarlo queda anegado", [this]()

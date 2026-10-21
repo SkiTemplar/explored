@@ -112,18 +112,18 @@ void FBodySpec::Define()
 			TestEqual(TEXT("Sin escorbuto la primera semana"), (int32)FBodyModel::ScurvyStage(S.ScurvySeverity), (int32)EScurvyStage::None);
 		});
 
-		It("los limones lo curan y lo previenen", [this]()
+		It("los cítricos lo curan y lo previenen", [this]()
 		{
 			FSurvivalState S;
 			S.Vitamins = 0.0f;
 			S.ScurvySeverity = 0.8f;
-			FConsumable Lemon;
-			Lemon.Vitamins = 50.0f;
-			Lemon.Water = 5.0f;
+			FConsumable Citrus;
+			Citrus.Vitamins = 50.0f;
+			Citrus.Water = 5.0f;
 			TArray<ESurvivalEvent> Events;
 			for (int32 Day = 0; Day < 3; ++Day)
 			{
-				FSurvivalModel::Consume(S, Lemon, 0.5f, Events);
+				FSurvivalModel::Consume(S, Citrus, 0.5f, Events);
 				Simulate(S, Mild(), 24.0f, Survivor(), Events);
 			}
 			TestEqual(TEXT("Curado en unos días"), S.ScurvySeverity, 0.0f);
@@ -134,11 +134,11 @@ void FBodySpec::Define()
 			{
 				if (Day % 4 == 0)
 				{
-					FSurvivalModel::Consume(Prevented, Lemon, 0.5f, Events);
+					FSurvivalModel::Consume(Prevented, Citrus, 0.5f, Events);
 				}
 				Simulate(Prevented, Mild(), 24.0f, Survivor(), Events);
 			}
-			TestEqual(TEXT("Un limón cada pocos días lo previene"), (int32)FBodyModel::ScurvyStage(Prevented.ScurvySeverity), (int32)EScurvyStage::None);
+			TestEqual(TEXT("Un cítrico cada pocos días lo previene"), (int32)FBodyModel::ScurvyStage(Prevented.ScurvySeverity), (int32)EScurvyStage::None);
 		});
 	});
 

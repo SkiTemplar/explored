@@ -483,25 +483,6 @@
 }
 {
 	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
-	F.ItemId = FName(TEXT("limon"));
-	F.State = EFoodState::Raw;
-	F.Family = FName(TEXT("fruta"));
-	F.Tags.Add(FName(TEXT("comida")));
-	F.Tags.Add(FName(TEXT("fruta")));
-	F.Tags.Add(FName(TEXT("citrico")));
-	F.Tags.Add(FName(TEXT("semilla")));
-	F.Effects.Food = 2.0f;
-	F.Effects.Water = 1.0f;
-	F.Effects.Protein = 0.0f;
-	F.Effects.Carbs = 0.0f;
-	F.Effects.Vitamins = 40.0f;
-	F.Effects.Warmth = 0.0f;
-	F.Effects.Morale = -1.0f;
-	F.Effects.Toxicity = 0.0f;
-	F.bCookingRemovesToxicity = false;
-}
-{
-	FFoodDef& F = D.Foods.AddDefaulted_GetRef();
 	F.ItemId = FName(TEXT("lima_silvestre"));
 	F.State = EFoodState::Raw;
 	F.Family = FName(TEXT("fruta"));

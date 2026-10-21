@@ -74,10 +74,9 @@ namespace ExploredBoatDetail
 	{
 		switch (Type)
 		{
-		case EBoatType::Raft: return NSLOCTEXT("Explored", "Boat_Raft", "la balsa");
 		case EBoatType::Canoe: return NSLOCTEXT("Explored", "Boat_Canoe", "la canoa");
 		case EBoatType::Outrigger: return NSLOCTEXT("Explored", "Boat_Outrigger", "la canoa con balancín");
-		default: return NSLOCTEXT("Explored", "Boat_Limon", "el «Limón»");
+		default: return NSLOCTEXT("Explored", "Boat_Raft", "la balsa");
 		}
 	}
 }
@@ -156,7 +155,7 @@ void AExploredBoat::ApplyMeshes()
 	}
 	else
 	{
-		// Sin malla importada (o el «Limón», aún sin modelar): caja con las medidas del casco
+		// Sin malla importada: caja con las medidas del casco
 		// y la quilla en el origen, para poder probar la navegación en PIE.
 		UStaticMesh* Cube = TSoftObjectPtr<UStaticMesh>(FSoftObjectPath(TEXT("/Engine/BasicShapes/Cube.Cube"))).LoadSynchronous();
 		Hull->SetStaticMesh(Cube);

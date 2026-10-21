@@ -12,7 +12,7 @@
 
 namespace ExploredVoyageActorsDetail
 {
-	/** Altura a la que se sube el Limón terminado para que la quilla quede sobre la arena (cm). */
+	/** Altura a la que se sube el barco terminado para que la quilla quede sobre la arena (cm). */
 	constexpr double BeachedShipLiftCm = 55.0;
 
 	UExploredVoyageSubsystem* GetVoyage(const UWorld* World)
@@ -31,7 +31,7 @@ namespace ExploredVoyageActorsDetail
 		}
 	}
 
-	/** Primera malla de la lista que exista (el kit del Limón puede no estar importado aún). */
+	/** Primera malla de la lista que exista (el kit del barco puede no estar importado aún). */
 	UStaticMesh* LoadFirst(std::initializer_list<const TCHAR*> Paths)
 	{
 		for (const TCHAR* Path : Paths)
@@ -114,7 +114,7 @@ AExploredShipyard::AExploredShipyard()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	Mesh = ExploredVoyageActorsDetail::MakeMesh(*this);
 	Mesh->SetupAttachment(RootComponent);
-	// A popa y a la altura del farol de la malla (SM_Limon), luz cálida y suave.
+	// A popa y a la altura del farol, luz cálida y suave.
 	Lantern = CreateDefaultSubobject<UPointLightComponent>(TEXT("Lantern"));
 	Lantern->SetupAttachment(RootComponent);
 	Lantern->SetRelativeLocation(FVector(-280.0, 0.0, 260.0));
@@ -151,19 +151,17 @@ void AExploredShipyard::RefreshMesh()
 	}
 	UStaticMesh* NewMesh = bShip
 		? ExploredVoyageActorsDetail::LoadFirst({
-			TEXT("/Game/Generated/Meshes/Limon/SM_Limon.SM_Limon"),
 			TEXT("/Game/Generated/Meshes/Embarcaciones/SM_Canoe_Outrigger.SM_Canoe_Outrigger")})
 		: ExploredVoyageActorsDetail::LoadFirst({
-			TEXT("/Game/Generated/Meshes/Limon/SM_Limon_Frame.SM_Limon_Frame"),
 			TEXT("/Game/Generated/Meshes/Embarcaciones/SM_Raft.SM_Raft")});
 	if (!NewMesh)
 	{
-		UE_LOG(LogExplored, Warning, TEXT("%s: no hay malla para la grada del Limón"), *GetName());
+		UE_LOG(LogExplored, Warning, TEXT("%s: no hay malla para la grada del barco"), *GetName());
 		return;
 	}
 	Mesh->SetStaticMesh(NewMesh);
-	// SM_Limon tiene el origen en la línea de flotación y ~0,5 m de calado: varado en la arena
-	// se apoya en la quilla. El armazón (SM_Limon_Frame) ya tiene el origen en el suelo.
+	// La malla del barco tiene el origen en la línea de flotación y ~0,5 m de calado: varado en la
+	// arena se apoya en la quilla. El armazón ya tiene el origen en el suelo.
 	Mesh->SetRelativeLocation(FVector(0.0, 0.0, bShip ? ExploredVoyageActorsDetail::BeachedShipLiftCm : 0.0));
 	bShowingShip = bShip;
 	bHasMesh = true;
@@ -179,16 +177,16 @@ void AExploredShipyard::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) 
 	switch (Voyage->GetStage())
 	{
 	case EVoyageStage::Salvage:
-		OutVerbs.Add(FText::Format(NSLOCTEXT("ExploredVoyage", "VerbYardMissing", "Grada del Limón: faltan piezas del Albatros ({0}/4)"),
+		OutVerbs.Add(FText::Format(NSLOCTEXT("ExploredVoyage", "VerbYardMissing", "Grada del barco: faltan piezas del Albatros ({0}/4)"),
 			Voyage->CountParts()));
 		break;
 	case EVoyageStage::Build:
-		OutVerbs.Add(NSLOCTEXT("ExploredVoyage", "VerbYardBuild", "Construir el Limón"));
+		OutVerbs.Add(NSLOCTEXT("ExploredVoyage", "VerbYardBuild", "Construir el barco"));
 		break;
 	case EVoyageStage::SetSail:
 		OutVerbs.Add(Voyage->IsStarNightNow()
 			? NSLOCTEXT("ExploredVoyage", "VerbYardSail", "Zarpar guiándote por las estrellas")
-			: NSLOCTEXT("ExploredVoyage", "VerbYardWait", "Esperar a la noche junto al Limón"));
+			: NSLOCTEXT("ExploredVoyage", "VerbYardWait", "Esperar a la noche junto al barco"));
 		break;
 	default:
 		break;
@@ -242,7 +240,6 @@ void AExploredDepartingShip::BeginPlay()
 {
 	Super::BeginPlay();
 	if (UStaticMesh* Ship = ExploredVoyageActorsDetail::LoadFirst({
-		TEXT("/Game/Generated/Meshes/Limon/SM_Limon.SM_Limon"),
 		TEXT("/Game/Generated/Meshes/Embarcaciones/SM_Canoe_Outrigger.SM_Canoe_Outrigger")}))
 	{
 		Mesh->SetStaticMesh(Ship);

@@ -322,32 +322,6 @@
       "mesh": "SM_Base_GardenPlot_Logs"
     },
     {
-      "id": "arriate_limonero",
-      "nameEs": "Arriate del limonero",
-      "nameEn": "Lemon tree bed",
-      "tier": "palma",
-      "category": "huerto",
-      "socket": "terreno",
-      "cost": [
-        {
-          "item": "canto_rodado",
-          "count": 8
-        },
-        {
-          "item": "arena",
-          "count": 2
-        }
-      ],
-      "tools": [
-        "pala"
-      ],
-      "requiresPieces": [],
-      "buildMinutes": 30,
-      "integrity": 80,
-      "maxCycloneCategory": 3,
-      "mesh": "SM_Base_LemonBed"
-    },
-    {
       "id": "espantapajaros",
       "nameEs": "Espantapájaros",
       "nameEn": "Scarecrow",

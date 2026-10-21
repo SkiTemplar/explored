@@ -207,7 +207,7 @@
         "mango": "Mango, papaya.",
         "platano": "Plátano maduro.",
         "lima": "Lima, fruta verde.",
-        "limon": "Limón (el del barco «Limón» y el escorbuto).",
+        "citrico": "Cítrico amarillo (escorbuto).",
         "carne_cruda": "Carne y pescado crudos.",
         "asado": "Carne asada, pan de fruta tostado.",
         "pescado": "Pescado plateado.",
@@ -2603,7 +2603,7 @@
             ]
           }
         },
-        "comida.limon": {
+        "comida.citrico": {
           "celda": [
             3,
             7
@@ -7080,7 +7080,7 @@
             ]
           }
         },
-        "comida.limon": {
+        "comida.citrico": {
           "celda": [
             3,
             7
@@ -11557,7 +11557,7 @@
             ]
           }
         },
-        "comida.limon": {
+        "comida.citrico": {
           "celda": [
             3,
             7
@@ -16034,7 +16034,7 @@
             ]
           }
         },
-        "comida.limon": {
+        "comida.citrico": {
           "celda": [
             3,
             7

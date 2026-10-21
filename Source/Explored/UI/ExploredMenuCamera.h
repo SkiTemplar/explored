@@ -33,7 +33,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void BeginPlay() override;
 
-	/** v1: la órbita rodea la isla de llegada (playa, laguna y el Limón) en vez del archipiélago entero. */
+	/** v1: la órbita rodea la isla de llegada (playa, laguna y el barco) en vez del archipiélago entero. */
 	UPROPERTY(EditAnywhere, Category = "Explored|Cámara de menú")
 	bool bOrbitLandingIsland = true;
 

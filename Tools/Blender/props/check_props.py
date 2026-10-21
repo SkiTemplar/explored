@@ -3,7 +3,7 @@ check_props.py — criterio de aceptación por script de uno o varios módulos
 de props YA exportados por run_props.py, y lámina de revisión de su grupo.
 
     blender -b --factory-startup --python Tools/Blender/props/check_props.py -- \
-        --modules=limon [--render] [--review-dir=<carpeta>]
+        --modules=albatros [--render] [--review-dir=<carpeta>]
 
 Por cada variante del módulo reimporta su FBX (Art/Export/Props/<Grupo>/) y
 comprueba:

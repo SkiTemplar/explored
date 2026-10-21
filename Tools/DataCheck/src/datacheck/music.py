@@ -21,7 +21,7 @@ ID_RE = re.compile(r"^mus_[a-z0-9_]+$")
 BPM_RANGE = (40.0, 200.0)
 # «Motivo corto» del GDD §14.3: un descubrimiento no debería pasar de unos segundos.
 DISCOVERY_MAX_S = 5.0
-# GDD §2 y §14.3: el único final es la partida del «Limón».
+# GDD §2 y §14.3: el único final es la partida en barco.
 GDD_FINALE = "voyage"
 
 
@@ -168,10 +168,10 @@ def check_music(ds, r) -> None:
                 r.error(f"{where} «{p.get('id')}»: final «{p.get('variant')}» desconocido para "
                         f"EMusicFinale {sorted(finale_keys)}; nunca se elegiría")
     if finale_default and finale_default not in finale_vars:
-        r.error(f"{where}: falta el final por defecto «{finale_default}» (partida del «Limón»)")
+        r.error(f"{where}: falta el final por defecto «{finale_default}» (partida en barco)")
     extra = sorted(str(v) for v in finale_vars if v != GDD_FINALE)
     if extra:
-        r.info.append(f"{where}: finales de música fuera del GDD §2/§14.3 (solo la partida del «Limón»): "
+        r.info.append(f"{where}: finales de música fuera del GDD §2/§14.3 (solo la partida en barco): "
                       f"{', '.join(extra)}")
 
     # Flauta de bambú (§8.12).

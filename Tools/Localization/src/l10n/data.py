@@ -97,8 +97,6 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("building_pieces.json", "tiers", _sub("tiers"), "nameEs", "nameEn", "nivel de construcción"),
     FieldSpec("building_pieces.json", "pieces", _sub("pieces"), "nameEs", "nameEn", "pieza de construcción"),
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),
-    FieldSpec("story_es.json", "map_marks", _sub("map_marks"), "label", "labelEn", "sello del mapa"),
-    FieldSpec("story_es.json", "artifact_kinds", _sub("artifact_kinds"), "label", "labelEn", "tipo de tesoro del museo"),
     FieldSpec("boats.json", "boats", _sub("boats"), "nameEs", "nameEn", "embarcación del astillero"),
     FieldSpec("fauna.json", "species", _sub("species"), "nameEs", "nameEn", "especie marina"),
     FieldSpec("fauna.json", "lod", _path("lod", "tiers"), "nameEs", "nameEn", "nivel de detalle de fauna (ajustes)"),
@@ -112,16 +110,12 @@ FIELDS: list[FieldSpec] = [
               "receta de fundición, chatarra o forja"),
     FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
-    FieldSpec("halden_diaries.json", "entries", _sub("entries"), "textEs", "textEn", "cuaderno de la expedición Halden"),
-    FieldSpec("journal_entries.json", "entries", _sub("entries"), "textEs", "textEn",
-              "entrada del diario del náufrago ({Day} = día de la partida)"),
 ]
 
 # Campos «…Es» que no ve el jugador: notas de diseño y documentación interna.
 DESIGN_NOTES: set[tuple[str, str]] = {
     ("*", "noteEs"),
     ("*", "redNotaEs"),
-    ("journal_entries.json", "descriptionEs"),  # catálogo de sucesos que disparan el diario
 }
 
 # Listas paralelas: la inglesa va en otra clave del mismo objeto, en el mismo orden.

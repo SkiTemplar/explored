@@ -34,9 +34,9 @@ void FLocalizationSpec::Define()
 	{
 		It("elige el texto del idioma de la cultura", [this]()
 		{
-			const FExploredLocalizedString Name(TEXT("Limón"), TEXT("Lemon"));
-			TestEqual(TEXT("es"), Name.Get(TEXT("es")), FString(TEXT("Limón")));
-			TestEqual(TEXT("en-GB"), Name.Get(TEXT("en-GB")), FString(TEXT("Lemon")));
+			const FExploredLocalizedString Name(TEXT("Coco"), TEXT("Coconut"));
+			TestEqual(TEXT("es"), Name.Get(TEXT("es")), FString(TEXT("Coco")));
+			TestEqual(TEXT("en-GB"), Name.Get(TEXT("en-GB")), FString(TEXT("Coconut")));
 			TestTrue(TEXT("completo"), Name.IsComplete());
 		});
 

@@ -1,7 +1,7 @@
 """
 Tools/Blender/animals/birds.py — gaviota y fragata (encargo 4ª pasada del
-autor: fuera TODA fauna que se detenga o se pose — piquero, loro genérico,
-Limón y cualquier ave con patas quedan fuera del juego. Solo quedan
+autor: fuera TODA fauna que se detenga o se pose — piquero, loro genérico
+y cualquier ave con patas quedan fuera del juego. Solo quedan
 bandadas de aves marinas que SIEMPRE están volando lejos, en silueta:
 sin patas -nunca se posan, no hace falta- y con las alas en pose ABIERTA
 de vuelo (antes plegada de reposo). Constructor paramétrico único (build):

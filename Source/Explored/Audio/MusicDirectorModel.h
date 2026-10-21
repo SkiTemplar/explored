@@ -53,7 +53,7 @@ enum class EMusicMood : uint8
 	Tension,      // Depredador cerca, hipotermia, cuerpo al límite.
 	Storm,        // Ciclón o temporal en curso.
 	CycloneHush,  // Silencio antes del ciclón (§14.2).
-	Finale,       // Partida del «Limón»: tema principal orquestado.
+	Finale,       // Partida del barco: tema principal orquestado.
 	Count
 };
 
@@ -63,7 +63,7 @@ EXPLORED_API const TCHAR* LexToString(EMusicMood Mood);
 enum class EMusicFinale : uint8
 {
 	Rescue,
-	Voyage,  // Zarpar en el «Limón».
+	Voyage,  // Zarpar en el barco.
 	Stay
 };
 
@@ -131,7 +131,7 @@ struct EXPLORED_API FMusicContext
 {
 	bool bInMenu = false;
 	bool bCredits = false;
-	/** Partida del «Limón» (o el final elegido) en curso. */
+	/** Partida del barco (o el final elegido) en curso. */
 	bool bFinale = false;
 	EMusicFinale Finale = EMusicFinale::Voyage;
 	/** Isla en la que está el oyente; Count si está lejos de cualquiera. */

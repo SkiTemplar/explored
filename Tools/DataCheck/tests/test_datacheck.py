@@ -72,12 +72,6 @@ def test_toda_plantilla_alcanzable(real: DataSet) -> None:
     assert {t["id"] for t in real.templates} <= set(reach.reached_templates)
 
 
-def test_limon_existe_y_cura_escorbuto(real: DataSet) -> None:
-    limon = item(real, "limon")
-    assert limon["nutritionVitamins"] == 5
-    assert "citrico" in limon["tags"]
-
-
 # --------------------------------------------------------------------------- réplica del C++
 
 
@@ -273,11 +267,6 @@ def test_no_confunde_rescatado_con_rescate(ds: DataSet) -> None:
     assert not any_error(errors_of(ds), "«rescate»")
 
 
-def test_detecta_petroglifos_incompletos(ds: DataSet) -> None:
-    ds.data["story_es.json"]["petroglyph_themes"].pop()
-    assert any_error(errors_of(ds), "petroglifo")
-
-
 # --------------------------------------------------------------------------- fuego y cocina
 
 
@@ -348,24 +337,13 @@ def boat(ds: DataSet, bid: str) -> dict[str, Any]:
     return next(b for b in ds.boats if b["id"] == bid)
 
 
-def test_limon_exige_piezas_del_albatros(real: DataSet) -> None:
-    limon = boat(real, "barco_limon")
-    assert set(limon["requiresShipParts"]) == {"Fuselage", "Wing", "Tail", "Engine"}
-    assert {"chapa_fuselaje", "tubo_aluminio"} <= {c["item"] for c in limon["cost"]}
-
-
 def test_detecta_ingrediente_de_barco_inexistente(ds: DataSet) -> None:
     boat(ds, "canoa")["cost"].append({"item": "tronco_de_teca", "count": 1})
     assert any_error(errors_of(ds), "canoa", "tronco_de_teca")
 
 
-def test_detecta_limon_sin_piezas_del_albatros(ds: DataSet) -> None:
-    boat(ds, "barco_limon")["requiresShipParts"] = ["Fuselage"]
-    assert any_error(errors_of(ds), "cuatro piezas del Albatros")
-
-
 def test_detecta_pieza_del_albatros_inventada(ds: DataSet) -> None:
-    boat(ds, "barco_limon")["requiresShipParts"].append("Helice")
+    boat(ds, "canoa_balancin").setdefault("requiresShipParts", []).append("Helice")
     assert any_error(errors_of(ds), "Helice")
 
 

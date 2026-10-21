@@ -17,15 +17,6 @@
 				},
 				{
 					"Source": {
-						"Text": "el «Limón»"
-					},
-					"Translation": {
-						"Text": "el «Limón»"
-					},
-					"Key": "Boat_Limon"
-				},
-				{
-					"Source": {
 						"Text": "la canoa con balancín"
 					},
 					"Translation": {
@@ -882,10 +873,10 @@
 				},
 				{
 					"Source": {
-						"Text": "El Limón dejó la laguna con la marea de la noche."
+						"Text": "El barco dejó la laguna con la marea de la noche."
 					},
 					"Translation": {
-						"Text": "El Limón dejó la laguna con la marea de la noche."
+						"Text": "El barco dejó la laguna con la marea de la noche."
 					},
 					"Key": "EndingLine1"
 				},
@@ -1913,10 +1904,10 @@
 			"Children": [
 				{
 					"Source": {
-						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+						"Text": "Ya tienes todo: construye el barco en la grada de la playa"
 					},
 					"Translation": {
-						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+						"Text": "Ya tienes todo: construye el barco en la grada de la playa"
 					},
 					"Key": "AllParts"
 				},
@@ -1985,28 +1976,28 @@
 				},
 				{
 					"Source": {
-						"Text": "Construye el Limón en la grada de la playa"
+						"Text": "Construye el barco en la grada de la playa"
 					},
 					"Translation": {
-						"Text": "Construye el Limón en la grada de la playa"
+						"Text": "Construye el barco en la grada de la playa"
 					},
 					"Key": "ObjBuild"
 				},
 				{
 					"Source": {
-						"Text": "Es de noche: zarpa en el Limón"
+						"Text": "Es de noche: zarpa en el barco"
 					},
 					"Translation": {
-						"Text": "Es de noche: zarpa en el Limón"
+						"Text": "Es de noche: zarpa en el barco"
 					},
 					"Key": "ObjSailNow"
 				},
 				{
 					"Source": {
-						"Text": "Espera a la noche para zarpar en el Limón"
+						"Text": "Espera a la noche para zarpar en el barco"
 					},
 					"Translation": {
-						"Text": "Espera a la noche para zarpar en el Limón"
+						"Text": "Espera a la noche para zarpar en el barco"
 					},
 					"Key": "ObjSailWait"
 				},
@@ -2075,10 +2066,10 @@
 				},
 				{
 					"Source": {
-						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+						"Text": "El barco está listo. Zarpa de noche, guiándote por las estrellas"
 					},
 					"Translation": {
-						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+						"Text": "El barco está listo. Zarpa de noche, guiándote por las estrellas"
 					},
 					"Key": "ShipBuilt"
 				},
@@ -2093,19 +2084,19 @@
 				},
 				{
 					"Source": {
-						"Text": "Construir el Limón"
+						"Text": "Construir el barco"
 					},
 					"Translation": {
-						"Text": "Construir el Limón"
+						"Text": "Construir el barco"
 					},
 					"Key": "VerbYardBuild"
 				},
 				{
 					"Source": {
-						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+						"Text": "Grada del barco: faltan piezas del Albatros ({0}/4)"
 					},
 					"Translation": {
-						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+						"Text": "Grada del barco: faltan piezas del Albatros ({0}/4)"
 					},
 					"Key": "VerbYardMissing"
 				},
@@ -2120,19 +2111,19 @@
 				},
 				{
 					"Source": {
-						"Text": "Esperar a la noche junto al Limón"
+						"Text": "Esperar a la noche junto al barco"
 					},
 					"Translation": {
-						"Text": "Esperar a la noche junto al Limón"
+						"Text": "Esperar a la noche junto al barco"
 					},
 					"Key": "VerbYardWait"
 				},
 				{
 					"Source": {
-						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+						"Text": "De día no se ven las estrellas: espera a la noche junto al barco"
 					},
 					"Translation": {
-						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+						"Text": "De día no se ven las estrellas: espera a la noche junto al barco"
 					},
 					"Key": "WaitNight"
 				}

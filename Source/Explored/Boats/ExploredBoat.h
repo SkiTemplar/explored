@@ -24,11 +24,10 @@ enum class EExploredBoatKind : uint8
 {
 	Raft UMETA(DisplayName = "Balsa"),
 	Canoe UMETA(DisplayName = "Canoa"),
-	Outrigger UMETA(DisplayName = "Canoa con balancín y vela"),
-	Limon UMETA(DisplayName = "Barco «Limón»")
+	Outrigger UMETA(DisplayName = "Canoa con balancín y vela")
 };
 
-static_assert(static_cast<uint8>(EExploredBoatKind::Limon) + 1 == static_cast<uint8>(EBoatType::Count),
+static_assert(static_cast<uint8>(EExploredBoatKind::Outrigger) + 1 == static_cast<uint8>(EBoatType::Count),
 	"EExploredBoatKind debe reflejar EBoatType");
 
 /**
@@ -177,7 +176,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Barcos")
 	TObjectPtr<UStaticMeshComponent> Hull;
 
-	/** Vela suelta de boats.py (SM_Sail) sobre el mástil; solo en el balancín y el «Limón». */
+	/** Vela suelta de boats.py (SM_Sail) sobre el mástil; solo en el balancín. */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Barcos")
 	TObjectPtr<UStaticMeshComponent> Sail;
 

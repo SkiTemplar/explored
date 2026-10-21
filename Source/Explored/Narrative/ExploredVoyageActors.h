@@ -14,7 +14,7 @@ class UStaticMeshComponent;
 /**
  * Pieza del Albatros esparcida por el archipiélago (GDD §3, §8.10). UExploredVoyageSubsystem
  * la crea en el punto de interés de cada pecio; al interactuar se rescata la pieza para el
- * barco «Limón». La malla sigue en su sitio: el pecio forma parte del paisaje.
+ * barco. La malla sigue en su sitio: el pecio forma parte del paisaje.
  */
 UCLASS()
 class EXPLORED_API AExploredSalvageSite : public AActor, public IExploredInteractable
@@ -47,7 +47,7 @@ private:
 };
 
 /**
- * Grada del barco «Limón» en la playa de llegada (GDD §6.3). Muestra el armazón hasta que
+ * Grada del barco en la playa de llegada (GDD §6.3). Muestra el armazón hasta que
  * se construye y el barco terminado después; con el barco hecho y de noche, interactuar
  * zarpa y abre el final.
  */
@@ -73,7 +73,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Viaje")
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
-	/** Farol del Limón: se enciende de noche con el barco terminado, para encontrarlo y zarpar. */
+	/** Farol del barco: se enciende de noche con el barco terminado, para encontrarlo y zarpar. */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Viaje")
 	TObjectPtr<UPointLightComponent> Lantern;
 
@@ -85,7 +85,7 @@ private:
 };
 
 /**
- * El Limón saliendo de la laguna en la secuencia del final: avanza mar adentro por la proa
+ * El barco saliendo de la laguna en la secuencia del final: avanza mar adentro por la proa
  * y balancea un poco con la marejada. Solo decorado: sin física ni interacción.
  */
 UCLASS()

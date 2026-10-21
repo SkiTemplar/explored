@@ -1,6 +1,6 @@
 """
 _prims.py — primitivas de malla con caras etiquetadas y pintor por cara,
-compartidas por los kits de props hechos a medida (limon.py, albatros.py).
+compartidas por los kits de props hechos a medida (albatros.py).
 
 - loft / sweep / slab / cloth devuelven (obj, tags): tags[i] describe la cara
   i de la malla (anillo, segmento, tapa...) para colorearla después.

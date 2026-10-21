@@ -123,7 +123,7 @@ public:
 	/** Final «Zarpar» (UExploredVoyageSubsystem): funde a negro y muestra SExploredEnding. */
 	void ShowEnding();
 
-	/** Secuencia de salida del Limón: sin pausa ni HUD de juego mientras dura. */
+	/** Secuencia de salida del barco: sin pausa ni HUD de juego mientras dura. */
 	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
 	bool IsCutsceneActive() const { return bCutsceneActive; }
 

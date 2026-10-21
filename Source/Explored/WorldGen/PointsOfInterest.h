@@ -12,7 +12,7 @@ enum class EPoiType : uint8
 	WreckWing,        // Ala en la playa (mochila, pieza para el barco).
 	WreckTail,        // Cola en el fondo del canal (pieza para el barco).
 	WreckEngine,      // Motor en Esmeralda (piezas y cable, pieza para el barco).
-	HaldenCamp,       // Campamento abandonado de la expedición de 1974 (ruina, recursos).
+	ExpeditionCamp,       // Campamento abandonado de la expedición de 1974 (ruina, recursos).
 	RadioStation,     // Estación de radio abandonada (Manglar): ruina, recursos.
 	TideObservatory,  // Observatorio de mareas abandonado (Meseta): ruina, tabla de mareas.
 	Lighthouse,       // Faro en ruinas (Los Dientes): objetivo emergente de reparación.

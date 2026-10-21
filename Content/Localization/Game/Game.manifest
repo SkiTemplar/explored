@@ -13,7 +13,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_RightBoat",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 471"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 470"
 						}
 					]
 				},
@@ -442,7 +442,7 @@
 					"Keys": [
 						{
 							"Key": "Verb_Board",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 475"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 474"
 						}
 					]
 				},
@@ -514,17 +514,6 @@
 				},
 				{
 					"Source": {
-						"Text": "el «Limón»"
-					},
-					"Keys": [
-						{
-							"Key": "Boat_Limon",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "estante"
 					},
 					"Keys": [
@@ -541,7 +530,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Raft",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 77"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
 						}
 					]
 				},
@@ -552,7 +541,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Canoe",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 77"
 						}
 					]
 				},
@@ -563,7 +552,7 @@
 					"Keys": [
 						{
 							"Key": "Boat_Outrigger",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
+							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 78"
 						}
 					]
 				}
@@ -1082,7 +1071,7 @@
 				},
 				{
 					"Source": {
-						"Text": "El Limón dejó la laguna con la marea de la noche."
+						"Text": "El barco dejó la laguna con la marea de la noche."
 					},
 					"Keys": [
 						{
@@ -2356,18 +2345,18 @@
 				},
 				{
 					"Source": {
-						"Text": "Construir el Limón"
+						"Text": "Construir el barco"
 					},
 					"Keys": [
 						{
 							"Key": "VerbYardBuild",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 186"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 184"
 						}
 					]
 				},
 				{
 					"Source": {
-						"Text": "Construye el Limón en la grada de la playa"
+						"Text": "Construye el barco en la grada de la playa"
 					},
 					"Keys": [
 						{
@@ -2378,7 +2367,7 @@
 				},
 				{
 					"Source": {
-						"Text": "De día no se ven las estrellas: espera a la noche junto al Limón"
+						"Text": "De día no se ven las estrellas: espera a la noche junto al barco"
 					},
 					"Keys": [
 						{
@@ -2389,7 +2378,7 @@
 				},
 				{
 					"Source": {
-						"Text": "El Limón está listo. Zarpa de noche, guiándote por las estrellas"
+						"Text": "El barco está listo. Zarpa de noche, guiándote por las estrellas"
 					},
 					"Keys": [
 						{
@@ -2400,7 +2389,7 @@
 				},
 				{
 					"Source": {
-						"Text": "Es de noche: zarpa en el Limón"
+						"Text": "Es de noche: zarpa en el barco"
 					},
 					"Keys": [
 						{
@@ -2411,7 +2400,7 @@
 				},
 				{
 					"Source": {
-						"Text": "Espera a la noche para zarpar en el Limón"
+						"Text": "Espera a la noche para zarpar en el barco"
 					},
 					"Keys": [
 						{
@@ -2422,12 +2411,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Esperar a la noche junto al Limón"
+						"Text": "Esperar a la noche junto al barco"
 					},
 					"Keys": [
 						{
 							"Key": "VerbYardWait",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 191"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 189"
 						}
 					]
 				},
@@ -2444,12 +2433,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Grada del Limón: faltan piezas del Albatros ({0}/4)"
+						"Text": "Grada del barco: faltan piezas del Albatros ({0}/4)"
 					},
 					"Keys": [
 						{
 							"Key": "VerbYardMissing",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 182"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 180"
 						}
 					]
 				},
@@ -2488,7 +2477,7 @@
 				},
 				{
 					"Source": {
-						"Text": "Ya tienes todo: construye el Limón en la grada de la playa"
+						"Text": "Ya tienes todo: construye el barco en la grada de la playa"
 					},
 					"Keys": [
 						{
@@ -2504,7 +2493,7 @@
 					"Keys": [
 						{
 							"Key": "VerbYardSail",
-							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 190"
+							"Path": "Source/Explored/Narrative/ExploredVoyageActors.cpp - line 188"
 						}
 					]
 				},

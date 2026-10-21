@@ -413,7 +413,7 @@ def _b_sal_marina(v, rnd, name):
 
 @_register('azufre')
 def _b_azufre(v, rnd, name):
-    """Terrón de azufre de fumarola (10 cm): amarillo limón con facetas de
+    """Terrón de azufre de fumarola (10 cm): amarillo azufre con facetas de
     fractura, drusas de cristalitos puntiagudos más claros y costra ocre
     rojiza en la base."""
     p = K.Parts()

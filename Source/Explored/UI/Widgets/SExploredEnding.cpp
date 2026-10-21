@@ -60,7 +60,7 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 28.0f))
 				[
-					Line(NSLOCTEXT("ExploredUI", "EndingLine1", "El Limón dejó la laguna con la marea de la noche."), Style.FontSubtitle(), StarWhite)
+					Line(NSLOCTEXT("ExploredUI", "EndingLine1", "El barco dejó la laguna con la marea de la noche."), Style.FontSubtitle(), StarWhite)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 28.0f))
 				[

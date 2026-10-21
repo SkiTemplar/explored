@@ -30,7 +30,6 @@ Qué comprueba:
 - Los marcadores (`{0}`, `{Name}`) coinciden entre idiomas.
 - La misma clave no tiene dos textos distintos (Unreal lo trataría como conflicto).
 - Traducciones desfasadas (el español cambió) y huérfanas (la clave ya no existe).
-- La dedicatoria «Para Almudena, mi Limón» es idéntica en los dos idiomas.
 - Avisos de longitud: el inglés más de 1,3 veces el español (desde 12 caracteres).
 - Literales `TEXT("...")` que llegan a la pantalla sin pasar por `NSLOCTEXT`/`LOCTEXT`
   (se clasifican en *literal*, *invariante* y *revisar*; `// loc: ignorar` en la línea

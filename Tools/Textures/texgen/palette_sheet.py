@@ -143,7 +143,7 @@ def scene(island: str) -> list[dict]:
         prism((0.35, 0, 1.75), 0.14, 0.18, 8, "metal.cobre", top_scale=1.1),
         box((-0.6, 0, 1.45), (0.5, 0.05, 0.3), "tela.lona", rot=-0.2),
         icosphere((-0.35, 0, 1.45), 0.07, "comida.mango", squash=(1.0, 1.2, 1.0)),
-        icosphere((-0.52, 0, 1.4), 0.06, "comida.limon"),
+        icosphere((-0.52, 0, 1.4), 0.06, "comida.citrico"),
         icosphere((0.05, 0, 1.3), 0.065, "comida.carne_cruda", squash=(1.4, 0.6, 1.0)),
         icosphere((-0.8, 0, 1.52), 0.07, "comida.platano", squash=(1.8, 0.6, 0.7)),
         prism((0.65, 0, 1.6), 0.02, 0.5, 5, "bambu.maduro"),

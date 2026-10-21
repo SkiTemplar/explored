@@ -427,7 +427,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 
 	if (Set == TEXT("voyage"))
 	{
-		// Bucle del final: cada pecio del Albatros, la grada con el armazón, el Limón
+		// Bucle del final: cada pecio del Albatros, la grada con el armazón, el barco
 		// terminado y la pantalla del final (con la interfaz en la captura).
 		for (const FPointOfInterest& Poi : FPoiLayout::Generate(Density))
 		{
@@ -634,7 +634,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 				Voyage->RecoverPart(static_cast<EShipPart>(Part));
 			}
 			Voyage->TryBuildShip();
-			// Camino del jugador de día: «Esperar a la noche junto al Limón».
+			// Camino del jugador de día: «Esperar a la noche junto al barco».
 			Voyage->WaitForNight();
 			UE_LOG(LogExplored, Display, TEXT("[Shots] Tras esperar a la noche: %s"), Voyage->IsStarNightNow() ? TEXT("de noche") : TEXT("de día"));
 		}

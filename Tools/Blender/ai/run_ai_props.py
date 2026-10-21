@@ -15,7 +15,7 @@ trazabilidad) y la malla cruda de Hunyuan3D en
 Art/Generated/Props3D/<name>.glb. Un prop sin .glb todavia se salta con un
 aviso: permite ir generando el kit de a poco sin romper una pasada previa.
 
-Para regenerar solo algunos: blender.exe -b --python run_ai_props.py -- --only=Boat_Limon,ItemCoconut
+Para regenerar solo algunos: blender.exe -b --python run_ai_props.py -- --only=ItemCoconut
 """
 
 import json

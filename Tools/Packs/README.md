@@ -1,8 +1,8 @@
 # Packs CC0 (Kenney, KayKit, Quaternius)
 
 GDD v2 §7.1: el arte genérico sale de packs CC0 y se retoca a la paleta por isla
-(`docs/art/paleta.md`). Lo propio del juego (marae, petroglifos, campamento Halden, el
-«Limón», objetos narrativos) sigue en `Tools/Blender`. **Nunca se versionan los ficheros de
+(`docs/art/paleta.md`). Lo propio del juego (marae, petroglifos, objetos
+narrativos) sigue en `Tools/Blender`. **Nunca se versionan los ficheros de
 los packs ni los FBX**: solo este código, el manifiesto, el catálogo y hojas de contacto
 pequeñas.
 
@@ -70,8 +70,8 @@ Si dos muestras vecinas se alternan cara a cara en una misma pieza, salen diente
 |---|---|---|
 | `lote1-herramientas` | Hacha, cuchillo, pala, mazo, antorcha, cuerda, cordel, tronco, cobre, hierro | `docs/art/packs/lote1-herramientas.png` |
 | `lote2-caza` | Lanza, arco y flecha (KayKit Fantasy Weapons Bits) en obsidiana, bambú y fibra | `docs/art/packs/lote2-caza.png` |
-| `lote3-comida` | Plátano, limón, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
-| `lote4-huerto` | Fases de platanera, piña y limonero (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
+| `lote3-comida` | Plátano, piña y seta (Kenney Food Kit) | `docs/art/packs/lote3-comida.png` |
+| `lote4-huerto` | Fases de platanera y piña (Kenney Nature Kit) | `docs/art/packs/lote4-huerto.png` |
 | `lote5-fauna` | Cerdo salvaje de Esmeralda con rig y 6 acciones (Quaternius Farm Animals) | `docs/art/packs/lote5-fauna.png` |
 | `lote6-mineria` | Pico (KayKit RPG Tools), canto rodado y caliza (Quaternius Stylized Nature MegaKit) | `docs/art/packs/lote6-mineria.png` |
 | `lote7-cuarzo-taro` | Cristal de cuarzo (Quaternius Ultimate Platformer) y tres fases del taro (Quaternius Ultimate Nature) | `docs/art/packs/lote7-cuarzo-taro.png` |

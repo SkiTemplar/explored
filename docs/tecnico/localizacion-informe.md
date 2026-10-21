@@ -7,9 +7,9 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 660 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 235 |
-| … de `Content/Data` (campos bilingües) | 425 |
+| Textos en el catálogo | 594 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 234 |
+| … de `Content/Data` (campos bilingües) | 360 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
@@ -169,7 +169,7 @@ Ninguno.
 ## Avisos (9)
 
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:92: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/Narrative/ExploredVoyageActors.cpp:182: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/Narrative/ExploredVoyageActors.cpp:180: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:199: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:341: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/UI/ExploredPlayerController.cpp:364: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)

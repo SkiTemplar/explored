@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from . import (
-    contenido,
     cooking,
     crafting,
     fauna,
@@ -45,22 +44,18 @@ GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z
 # ningún documento vigente contempla y el perro del prólogo eliminado.
 FORBIDDEN_TERMS = [
     "rata", "murcielago", "murciélago", "serpiente",
-    "lagarto", "iguana", "perro", "canela", "almudena_", "rodrigo", "ines", "inés",
-    "diario halden", "pagina halden", "página halden", "haldenpage", "beacon", "baliza",
+    "lagarto", "iguana", "perro", "canela", "rodrigo", "ines", "inés",
     "rescate", "mascota",
 ]
 
 DATA_FILES = [
-    "items.json", "templates.json", "verbs.json", "story_es.json",
+    "items.json", "templates.json", "verbs.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
     "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "fauna.json",
     "fauna_terrestre.json", "recipes_smithing.json",
-    *contenido.CONTENT_FILES,
 ]
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
-# Objetos rescatados del Albatros (biblia §3.3): el barco «Limón» debe usar alguno (GDD §4.3, §8.10).
-ALBATROS_ITEMS = {"chapa_fuselaje", "tubo_aluminio", "cable_electrico", "cinta_americana"}
 
 
 @dataclass
@@ -512,14 +507,6 @@ def check_boats(ds: DataSet, r: Report, obtainable: set[str]) -> None:
         if btype in cpp_meshes and (cpp_meshes[btype] or None) != b.get("mesh"):
             r.error(f"boats.json «{bid}»: mesh={b.get('mesh')!r} pero FBoatDefinition::MeshName dice {cpp_meshes[btype]!r}")
 
-    limon = next((b for b in boats.values() if b.get("type") == "Limon"), None)
-    if limon is None:
-        r.error("boats.json: falta el barco «Limón» (GDD §8.10)")
-    else:
-        if ship_parts and set(limon.get("requiresShipParts", [])) != ship_parts:
-            r.error("boats.json: el «Limón» debe exigir las cuatro piezas del Albatros (GDD §4.3)")
-        if not {c.get("item") for c in limon.get("cost", [])} & ALBATROS_ITEMS:
-            r.error("boats.json: el «Limón» debe usar material rescatado del Albatros (GDD §8.10)")
     first = next((b for b in boats.values() if b.get("order") == 0), None)
     if first is not None and first.get("type") != "Raft":
         r.error("boats.json: la progresión empieza por la balsa (GDD §8.10)")
@@ -852,29 +839,7 @@ def check_fish(ds: DataSet, r: Report) -> None:
     _check_fish_mirror(ds, doc, r)
 
 
-# --------------------------------------------------------------------------- story y reglas
-
-
-def check_story(ds: DataSet, r: Report) -> None:
-    doc = ds.data.get("story_es.json", {})
-    themes = doc.get("petroglyph_themes", [])
-    if len(themes) != 30:
-        r.error(f"story_es.json: {len(themes)} temas de petroglifo; el GDD §6.1 fija 30")
-    if len(set(themes)) != len(themes):
-        r.error("story_es.json: temas de petroglifo repetidos")
-    for group in ("map_marks", "artifact_kinds"):
-        ids = [e.get("id") for e in doc.get(group, [])]
-        if len(set(ids)) != len(ids):
-            r.error(f"story_es.json/{group}: ids repetidos")
-        for e in doc.get(group, []):
-            label = e.get("label", "")
-            if not label or len(label) > 60:
-                r.error(f"story_es.json/{group} «{e.get('id')}»: etiqueta vacía o de más de 60 caracteres (GDD §3: una línea)")
-    for required in ("water", "cave", "danger", "resource"):
-        if required not in {e.get("id") for e in doc.get("map_marks", [])}:
-            r.error(f"story_es.json: falta el sello de mapa «{required}» (GDD §5.4)")
-    if len(doc.get("artifact_kinds", [])) < 6:
-        r.error("story_es.json: el GDD §7 enumera 6 tipos de artefacto")
+# --------------------------------------------------------------------------- reglas
 
 
 def check_forbidden_terms(ds: DataSet, r: Report) -> None:
@@ -942,8 +907,6 @@ def run_all(ds: DataSet) -> Report:
     check_cooking(ds, r)
     smithing.check_smithing(ds, r, obtainable)
     textos.check_player_texts(ds.data, r.error)
-    check_story(ds, r)
-    contenido.check_content(ds, r)
     check_fish(ds, r)
     music.check_music(ds, r)
     check_forbidden_terms(ds, r)

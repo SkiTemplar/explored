@@ -169,7 +169,7 @@ void FMusicDirectorSpec::Define()
 		C = DayOn(EIslandArchetype::Landing);
 		C.bFinale = true;
 		C.Danger = 1.0f;
-		TestEqual(TEXT("Partida del «Limón»"), Mood(C), EMusicMood::Finale);
+		TestEqual(TEXT("Partida del barco"), Mood(C), EMusicMood::Finale);
 		C.bInMenu = true;
 		TestEqual(TEXT("Menú por encima de todo"), Mood(C), EMusicMood::Menu);
 	});

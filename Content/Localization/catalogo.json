@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 660,
-		"cpp": 235,
-		"datos": 425,
+		"total": 594,
+		"cpp": 234,
+		"datos": 360,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
@@ -19,17 +19,7 @@
 			"en": "the canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:78"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Boat_Limon",
-			"es": "el «Limón»",
-			"en": "the «Limón»",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:80"
+				"Source/Explored/Boats/ExploredBoat.cpp:77"
 			]
 		},
 		{
@@ -39,7 +29,7 @@
 			"en": "the outrigger canoe",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
+				"Source/Explored/Boats/ExploredBoat.cpp:78"
 			]
 		},
 		{
@@ -49,7 +39,7 @@
 			"en": "the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:77"
+				"Source/Explored/Boats/ExploredBoat.cpp:79"
 			]
 		},
 		{
@@ -476,7 +466,7 @@
 			"en": "Board {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:475"
+				"Source/Explored/Boats/ExploredBoat.cpp:474"
 			]
 		},
 		{
@@ -496,7 +486,7 @@
 			"en": "Right {0}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:471"
+				"Source/Explored/Boats/ExploredBoat.cpp:470"
 			]
 		},
 		{
@@ -977,8 +967,8 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "EndingLine1",
-			"es": "El Limón dejó la laguna con la marea de la noche.",
-			"en": "The Limón left the lagoon on the night tide.",
+			"es": "El barco dejó la laguna con la marea de la noche.",
+			"en": "The boat left the lagoon on the night tide.",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredEnding.cpp:63"
@@ -2121,8 +2111,8 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "AllParts",
-			"es": "Ya tienes todo: construye el Limón en la grada de la playa",
-			"en": "You have everything: build the Limón on the beach slipway",
+			"es": "Ya tienes todo: construye el barco en la grada de la playa",
+			"en": "You have everything: build the boat on the beach slipway",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:203"
@@ -2201,8 +2191,8 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "ObjBuild",
-			"es": "Construye el Limón en la grada de la playa",
-			"en": "Build the Limón on the beach slipway",
+			"es": "Construye el barco en la grada de la playa",
+			"en": "Build the boat on the beach slipway",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:346"
@@ -2211,8 +2201,8 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "ObjSailNow",
-			"es": "Es de noche: zarpa en el Limón",
-			"en": "It's night: sail the Limón",
+			"es": "Es de noche: zarpa en el barco",
+			"en": "It's night: sail the boat",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:349"
@@ -2221,8 +2211,8 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "ObjSailWait",
-			"es": "Espera a la noche para zarpar en el Limón",
-			"en": "Wait for night to sail the Limón",
+			"es": "Espera a la noche para zarpar en el barco",
+			"en": "Wait for night to sail the boat",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:350"
@@ -2301,8 +2291,8 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "ShipBuilt",
-			"es": "El Limón está listo. Zarpa de noche, guiándote por las estrellas",
-			"en": "The Limón is ready. Sail at night, guided by the stars",
+			"es": "El barco está listo. Zarpa de noche, guiándote por las estrellas",
+			"en": "The boat is ready. Sail at night, guided by the stars",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:220"
@@ -2321,21 +2311,21 @@
 		{
 			"namespace": "ExploredVoyage",
 			"key": "VerbYardBuild",
-			"es": "Construir el Limón",
-			"en": "Build the Limón",
+			"es": "Construir el barco",
+			"en": "Build the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:186"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:184"
 			]
 		},
 		{
 			"namespace": "ExploredVoyage",
 			"key": "VerbYardMissing",
-			"es": "Grada del Limón: faltan piezas del Albatros ({0}/4)",
-			"en": "Limón slipway: Albatros parts missing ({0}/4)",
+			"es": "Grada del barco: faltan piezas del Albatros ({0}/4)",
+			"en": "Boat slipway: Albatros parts missing ({0}/4)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:182"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:180"
 			]
 		},
 		{
@@ -2345,24 +2335,24 @@
 			"en": "Set sail by the stars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:190"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:188"
 			]
 		},
 		{
 			"namespace": "ExploredVoyage",
 			"key": "VerbYardWait",
-			"es": "Esperar a la noche junto al Limón",
-			"en": "Wait for nightfall by the Limón",
+			"es": "Esperar a la noche junto al barco",
+			"en": "Wait for nightfall by the boat",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:191"
+				"Source/Explored/Narrative/ExploredVoyageActors.cpp:189"
 			]
 		},
 		{
 			"namespace": "ExploredVoyage",
 			"key": "WaitNight",
-			"es": "De día no se ven las estrellas: espera a la noche junto al Limón",
-			"en": "Stars don't show by day: wait for night by the Limón",
+			"es": "De día no se ven las estrellas: espera a la noche junto al barco",
+			"en": "Stars don't show by day: wait for night by the boat",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:245"
@@ -2376,16 +2366,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/boats.json «balsa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.boats.boats",
-			"key": "barco_limon.nameEs",
-			"es": "Barco «Limón»",
-			"en": "The «Limón»",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/boats.json «barco_limon» nameEs/nameEn"
 			]
 		},
 		{
@@ -2406,16 +2386,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/boats.json «canoa_balancin» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "arriate_limonero.nameEs",
-			"es": "Arriate del limonero",
-			"en": "Lemon tree bed",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «arriate_limonero» nameEs/nameEn"
 			]
 		},
 		{
@@ -3359,56 +3329,6 @@
 			]
 		},
 		{
-			"namespace": "Data.halden_diaries.entries",
-			"key": "halden_01.textEs",
-			"es": "Día 14. La radio se moja más de lo que transmite. Marchena dice que es la antena. Yo digo que es la isla.",
-			"en": "Day 14. The radio gets wetter than it transmits. Marchena blames the antenna. I blame the island.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/halden_diaries.json «halden_01» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.halden_diaries.entries",
-			"key": "halden_02.textEs",
-			"es": "Encontramos tallas en la roca, bajo el tubo de lava. Nadie las esperaba. Fotografiamos, no tocamos nada.",
-			"en": "Found carvings in the rock, under the lava tube. Nobody expected them. We photograph, we touch nothing.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/halden_diaries.json «halden_02» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.halden_diaries.entries",
-			"key": "halden_03.textEs",
-			"es": "El barómetro no ha dejado de bajar en dos días. Guardamos los cuadernos en la lata de galletas, por si acaso.",
-			"en": "The barometer hasn't stopped falling in two days. Notebooks go in the biscuit tin, just in case.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/halden_diaries.json «halden_03» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.halden_diaries.entries",
-			"key": "halden_04.textEs",
-			"es": "Se acabó el café el martes. Se acabó la paciencia el jueves. Quedan tres semanas de expedición.",
-			"en": "Coffee ran out Tuesday. Patience ran out Thursday. Three weeks of expedition left.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/halden_diaries.json «halden_04» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.halden_diaries.entries",
-			"key": "halden_05.textEs",
-			"es": "Si alguien lee esto: la radio nunca funcionó del todo bien. No busquéis un mensaje de socorro, no lo hubo. Solo nos fuimos con la siguiente marea baja.",
-			"en": "If anyone reads this: the radio never really worked. Don't look for a distress call, there wasn't one. We just left on the next low tide.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/halden_diaries.json «halden_05» textEs/textEn"
-			]
-		},
-		{
 			"namespace": "Data.items.items",
 			"key": "aceite_pescado.nameEs",
 			"es": "Aceite de pescado",
@@ -4340,16 +4260,6 @@
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "limon.nameEs",
-			"es": "Limón",
-			"en": "Lemon",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «limon» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
 			"key": "lingote_aluminio.nameEs",
 			"es": "Lingote de aluminio",
 			"en": "Aluminium ingot",
@@ -4999,156 +4909,6 @@
 			]
 		},
 		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_amaraje.textEs",
-			"es": "Día {Day}. El avión ya no vuela. Yo sí puedo caminar, así que empiezo por ahí.",
-			"en": "Day {Day}. The plane doesn't fly any more. I can still walk, so that's where I start.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_amaraje» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_lectura_oleaje.textEs",
-			"es": "Día {Day}. Aprendí a leer el oleaje. Ahora el mar me dice hacia dónde queda tierra antes de verla.",
-			"en": "Day {Day}. Learned to read the swell. Now the sea tells me where land is before I see it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_lectura_oleaje» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primer_fuego.textEs",
-			"es": "Día {Day}. Primera hoguera. Tuve que tapar la llama con el cuerpo hasta que el viento dejó de apagarla.",
-			"en": "Day {Day}. First fire. I had to shield the flame with my body until the wind stopped putting it out.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primer_fuego» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primer_limon.textEs",
-			"es": "Día {Day}. El limonero dio su primer limón. Pequeño y ácido. Me lo comí entero.",
-			"en": "Day {Day}. The lemon tree gave its first lemon. Small and sour. I ate the whole thing.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primer_limon» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primer_refugio.textEs",
-			"es": "Día {Day}. Cuatro palos y hojas de palma encima. Esta noche no me llueve en la cara.",
-			"en": "Day {Day}. Four sticks with palm leaves on top. Tonight the rain stays off my face.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primer_refugio» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primer_trazo.textEs",
-			"es": "Día {Day}. Empecé el mapa. Una línea torcida donde la playa se acaba y empieza la roca.",
-			"en": "Day {Day}. Started the map. One crooked line where the beach ends and the rock begins.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primer_trazo» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primer_trueque.textEs",
-			"es": "Día {Day}. Les llevé cuerda y aluminio trabajado. Me dieron semillas que no había visto nunca. Ninguno de los dos contó monedas.",
-			"en": "Day {Day}. Brought them rope and worked aluminium. They gave me seeds I'd never seen. Neither of us counted coins.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primer_trueque» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_cueva.textEs",
-			"es": "Día {Day}. El pico atravesó la roca y detrás no había más roca. Una cámara entera que nadie había visto.",
-			"en": "Day {Day}. The pick went through the rock and there was no more rock behind it. A whole chamber nobody had seen.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_cueva» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_empalizada.textEs",
-			"es": "Día {Day}. Clavé la última estaca antes de que oscureciera. No sé si aguantará un asalto, pero ya no duermo con la puerta abierta.",
-			"en": "Day {Day}. Drove the last stake in before dark. I don't know if it'll hold off a raid, but I'm done sleeping with the door open.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_empalizada» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_leyenda.textEs",
-			"es": "Día {Day}. Rompió el sedal dos veces antes de rendirse. Pesaba más que yo, o eso me pareció.",
-			"en": "Day {Day}. It snapped the line twice before it gave up. It weighed more than me, or felt like it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_leyenda» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_noche.textEs",
-			"es": "Día {Day}. Pasé la primera noche entera. El fuego aguantó despierto más que yo.",
-			"en": "Day {Day}. Got through the first whole night. The fire stayed awake longer than I did.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_noche» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_palada.textEs",
-			"es": "Día {Day}. Empecé a cavar en serio. Debajo de la tierra hay tanta isla como encima.",
-			"en": "Day {Day}. Started digging in earnest. There's as much island underground as above it.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_palada» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_ruina.textEs",
-			"es": "Día {Day}. Piedras puestas en fila bajo la maleza. El mar no las dejó así. Alguien vivió aquí antes que yo.",
-			"en": "Day {Day}. Stones set in a row under the undergrowth. The sea didn't leave them like that. Someone lived here before me.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_ruina» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_primera_tormenta.textEs",
-			"es": "Día {Day}. El techo aguantó. Yo también. Mañana reviso qué se llevó el viento.",
-			"en": "Day {Day}. The roof held. So did I. Tomorrow I check what the wind took.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_primera_tormenta» textEs/textEn"
-			]
-		},
-		{
-			"namespace": "Data.journal_entries.entries",
-			"key": "diario_zarpa_limon.textEs",
-			"es": "Día {Day}. Última entrada desde tierra. A partir de esta noche llevo el barco solo con lo que aprendí del cielo.",
-			"en": "Day {Day}. Last entry from land. From tonight I steer by nothing but what the sky taught me.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/journal_entries.json «diario_zarpa_limon» textEs/textEn"
-			]
-		},
-		{
 			"namespace": "Data.recipes.recipes",
 			"key": "agua_hervida.nameEs",
 			"es": "Agua hervida",
@@ -5446,426 +5206,6 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "ceremonial_paddle.label",
-			"es": "Remo ceremonial",
-			"en": "Ceremonial paddle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «ceremonial_paddle» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "hook_bone.label",
-			"es": "Anzuelo de hueso tallado",
-			"en": "Carved bone fishhook",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «hook_bone» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "shell_ornament.label",
-			"es": "Adorno de concha",
-			"en": "Shell ornament",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «shell_ornament» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "stick_chart.label",
-			"es": "Carta de navegación de varillas y conchas",
-			"en": "Stick-and-shell sailing chart",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «stick_chart» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "stone_figure.label",
-			"es": "Figura de piedra",
-			"en": "Stone figure",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «stone_figure» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.artifact_kinds",
-			"key": "tapa_cloth.label",
-			"es": "Tapa (tela vegetal pintada)",
-			"en": "Tapa (painted bark cloth)",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «tapa_cloth» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "cave.label",
-			"es": "Cueva",
-			"en": "Cave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «cave» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "danger.label",
-			"es": "Peligro",
-			"en": "Danger",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «danger» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "resource.label",
-			"es": "Recurso",
-			"en": "Resource",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «resource» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "ruin.label",
-			"es": "Ruina",
-			"en": "Ruin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «ruin» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "water.label",
-			"es": "Agua dulce",
-			"en": "Fresh water",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «water» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.map_marks",
-			"key": "wreck.label",
-			"es": "Resto del Albatros",
-			"en": "Albatross wreckage",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «wreck» label/labelEn"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "00",
-			"es": "Canoa de doble casco bajo una estrella",
-			"en": "Double-hulled canoe beneath a star",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «0» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "01",
-			"es": "Espiral de marea",
-			"en": "Tidal spiral",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «1» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "02",
-			"es": "Tortuga con siete puntos (las siete islas)",
-			"en": "Turtle with seven dots (the seven islands)",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «2» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "03",
-			"es": "Figura mirando al cielo",
-			"en": "Figure gazing at the sky",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «3» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "04",
-			"es": "Pez volador",
-			"en": "Flying fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «4» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "05",
-			"es": "Ballena con cría",
-			"en": "Whale with calf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «5» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "06",
-			"es": "Fragata en vuelo",
-			"en": "Frigatebird aloft",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «6» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "07",
-			"es": "Estrella de ocho brazos",
-			"en": "Eight-armed star",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «7» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "08",
-			"es": "Ola que se retira",
-			"en": "Receding wave",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «8» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "09",
-			"es": "Isla que emerge",
-			"en": "Emerging island",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «9» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "10",
-			"es": "Mano abierta",
-			"en": "Open hand",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «10» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "11",
-			"es": "Luna nueva",
-			"en": "New moon",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «11» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "12",
-			"es": "Cangrejo de los cocoteros",
-			"en": "Coconut crab",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «12» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "13",
-			"es": "Volcán con humo",
-			"en": "Smoking volcano",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «13» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "14",
-			"es": "Camino de estrellas",
-			"en": "Star path",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «14» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "15",
-			"es": "Cesta de pesca",
-			"en": "Fishing basket",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «15» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "16",
-			"es": "Tambor",
-			"en": "Drum",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «16» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "17",
-			"es": "Tiburón y círculo",
-			"en": "Shark and circle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «17» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "18",
-			"es": "Tres canoas",
-			"en": "Three canoes",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «18» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "19",
-			"es": "Palmera doblada por el viento",
-			"en": "Wind-bent palm",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «19» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "20",
-			"es": "Ojo",
-			"en": "Eye",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «20» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "21",
-			"es": "Raíces de manglar",
-			"en": "Mangrove roots",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «21» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "22",
-			"es": "Nube fija sobre el horizonte",
-			"en": "Still cloud on the horizon",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «22» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "23",
-			"es": "Ola de oleaje marcada",
-			"en": "Marked ocean swell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «23» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "24",
-			"es": "Cascada",
-			"en": "Waterfall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «24» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "25",
-			"es": "Pareja de aves",
-			"en": "Pair of birds",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «25» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "26",
-			"es": "Faro (grabado moderno)",
-			"en": "Lighthouse (modern carving)",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «26» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "27",
-			"es": "Limonero (grabado moderno)",
-			"en": "Lemon tree (modern carving)",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «27» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "28",
-			"es": "Sol naciente sobre el mar",
-			"en": "Sun rising over the sea",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «28» petroglyph_themes/petroglyph_themes_en"
-			]
-		},
-		{
-			"namespace": "Data.story_es.petroglyph_themes",
-			"key": "29",
-			"es": "Marae con estatua",
-			"en": "Marae with statue",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/story_es.json «29» petroglyph_themes/petroglyph_themes_en"
 			]
 		},
 		{

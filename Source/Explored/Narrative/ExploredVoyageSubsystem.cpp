@@ -28,7 +28,7 @@ namespace ExploredVoyageDetail
 	/** Secuencia de salida: dónde arranca el barco (por delante de la grada) y cuánto dura. */
 	constexpr double DepartureStartAheadCm = 1800.0;
 	constexpr float DepartureSequenceSeconds = 9.0f;
-	/** Hora a la que deja el reloj «Esperar a la noche junto al Limón». */
+	/** Hora a la que deja el reloj «Esperar a la noche junto al barco». */
 	constexpr float WaitUntilHours = 20.5f;
 	/** Altura (m) del claro tierra adentro donde cae el motor en la isla de inicio. */
 	constexpr float InlandMinHeight = 3.0f;
@@ -160,12 +160,12 @@ void UExploredVoyageSubsystem::SpawnShipyard(UWorld& World)
 	FRotator Rotation;
 	if (!FindShipyardLocation(Density, Location, Rotation))
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[Viaje] No se encontró arena para la grada del Limón"));
+		UE_LOG(LogExplored, Warning, TEXT("[Viaje] No se encontró arena para la grada del barco"));
 		return;
 	}
 	const FTransform Transform(Rotation, Location * 100.0);
 	Shipyard = World.SpawnActor<AExploredShipyard>(AExploredShipyard::StaticClass(), Transform);
-	UE_LOG(LogExplored, Display, TEXT("[Viaje] Grada del Limón en (%.0f, %.0f, %.1f) m"), Location.X, Location.Y, Location.Z);
+	UE_LOG(LogExplored, Display, TEXT("[Viaje] Grada del barco en (%.0f, %.0f, %.1f) m"), Location.X, Location.Y, Location.Z);
 }
 
 EVoyageStage UExploredVoyageSubsystem::GetStage() const
@@ -200,7 +200,7 @@ bool UExploredVoyageSubsystem::RecoverPart(EShipPart Part)
 		FLinearColor(1.0f, 0.86f, 0.35f, 1.0f));
 	if (Progress.HasAllShipParts())
 	{
-		Notify(NSLOCTEXT("ExploredVoyage", "AllParts", "Ya tienes todo: construye el Limón en la grada de la playa"),
+		Notify(NSLOCTEXT("ExploredVoyage", "AllParts", "Ya tienes todo: construye el barco en la grada de la playa"),
 			FLinearColor(1.0f, 0.95f, 0.55f, 1.0f));
 	}
 	if (AExploredShipyard* Yard = Shipyard.Get())
@@ -217,7 +217,7 @@ bool UExploredVoyageSubsystem::TryBuildShip()
 	{
 		return false;
 	}
-	Notify(NSLOCTEXT("ExploredVoyage", "ShipBuilt", "El Limón está listo. Zarpa de noche, guiándote por las estrellas"),
+	Notify(NSLOCTEXT("ExploredVoyage", "ShipBuilt", "El barco está listo. Zarpa de noche, guiándote por las estrellas"),
 		FLinearColor(1.0f, 0.92f, 0.3f, 1.0f));
 	if (AExploredShipyard* Yard = Shipyard.Get())
 	{
@@ -242,12 +242,12 @@ bool UExploredVoyageSubsystem::TryDepart()
 	{
 		if (Wiring->GetProgress().CanDepart() && !IsStarNightNow())
 		{
-			Notify(NSLOCTEXT("ExploredVoyage", "WaitNight", "De día no se ven las estrellas: espera a la noche junto al Limón"),
+			Notify(NSLOCTEXT("ExploredVoyage", "WaitNight", "De día no se ven las estrellas: espera a la noche junto al barco"),
 				FLinearColor(0.75f, 0.85f, 1.0f, 1.0f));
 		}
 		return false;
 	}
-	UE_LOG(LogExplored, Display, TEXT("[Viaje] El jugador zarpa en el Limón"));
+	UE_LOG(LogExplored, Display, TEXT("[Viaje] El jugador zarpa en el barco"));
 	bDepartureRunning = true;
 	PlayDepartureSequence();
 	return true;
@@ -318,7 +318,7 @@ void UExploredVoyageSubsystem::WaitForNight()
 	Time->SetTime(Time->GetDay(), ExploredVoyageDetail::WaitUntilHours);
 	Notify(NSLOCTEXT("ExploredVoyage", "NightFell", "Cae la noche. Las estrellas ya marcan el rumbo."),
 		FLinearColor(0.75f, 0.85f, 1.0f, 1.0f));
-	UE_LOG(LogExplored, Display, TEXT("[Viaje] Espera junto al Limón hasta las %.1f h"), ExploredVoyageDetail::WaitUntilHours);
+	UE_LOG(LogExplored, Display, TEXT("[Viaje] Espera junto al barco hasta las %.1f h"), ExploredVoyageDetail::WaitUntilHours);
 }
 
 bool UExploredVoyageSubsystem::IsStarNightNow() const
@@ -343,11 +343,11 @@ FText UExploredVoyageSubsystem::GetObjectiveText() const
 		return Hint.IsEmpty() ? Base : FText::Format(NSLOCTEXT("ExploredVoyage", "ObjSalvageHint", "{0} · la más cercana {1}"), Base, Hint);
 	}
 	case EVoyageStage::Build:
-		return NSLOCTEXT("ExploredVoyage", "ObjBuild", "Construye el Limón en la grada de la playa");
+		return NSLOCTEXT("ExploredVoyage", "ObjBuild", "Construye el barco en la grada de la playa");
 	case EVoyageStage::SetSail:
 		return IsStarNightNow()
-			? NSLOCTEXT("ExploredVoyage", "ObjSailNow", "Es de noche: zarpa en el Limón")
-			: NSLOCTEXT("ExploredVoyage", "ObjSailWait", "Espera a la noche para zarpar en el Limón");
+			? NSLOCTEXT("ExploredVoyage", "ObjSailNow", "Es de noche: zarpa en el barco")
+			: NSLOCTEXT("ExploredVoyage", "ObjSailWait", "Espera a la noche para zarpar en el barco");
 	default:
 		return FText::GetEmpty();
 	}

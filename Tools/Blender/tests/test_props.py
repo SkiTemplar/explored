@@ -66,7 +66,7 @@ def test_items_coinciden_con_items_json(kit_props):
 
 @pytest.mark.parametrize(('modulo', 'indice'), [
     ('kit_construccion', 0), ('ruinas_polinesias', 0), ('items_pescados', 0), ('tesoros', 3),
-    ('rocks_cliffs', 13), ('limon', 0), ('limon', 1), ('albatros', 1), ('albatros', 2),
+    ('rocks_cliffs', 13), ('albatros', 1), ('albatros', 2),
 ])
 def test_misma_semilla_mismos_vertices(modulo, indice):
     common = importar('common')

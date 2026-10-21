@@ -13,7 +13,7 @@ class FTerrainDensity;
 
 /**
  * Bucle del final del juego (GDD §0, §6.3): rescatar las cuatro piezas del Albatros,
- * construir el «Limón» en la grada de la playa y zarpar de noche guiándose por las
+ * construir el barco en la grada de la playa y zarpar de noche guiándose por las
  * estrellas. El estado vive en FExploredProgress (UExploredWiringSubsystem lo guarda);
  * este subsistema coloca los pecios y la grada, aplica las reglas y avisa al HUD y al
  * PlayerController.
@@ -61,7 +61,7 @@ private:
 	void Notify(const FText& Text, const FLinearColor& Color) const;
 	float GetHours() const;
 
-	/** Secuencia de salida: el Limón mar adentro con la cámara detrás; luego el final. */
+	/** Secuencia de salida: el barco mar adentro con la cámara detrás; luego el final. */
 	void PlayDepartureSequence();
 	void FinishDepartureSequence();
 

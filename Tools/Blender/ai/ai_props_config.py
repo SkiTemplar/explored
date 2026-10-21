@@ -110,13 +110,4 @@ AI_PROPS = [
             dict(z_frac=(0.92, 1.0), color=(0.35, 0.24, 0.12)),
         ],
     ),
-    dict(
-        name='Boat_Limon', group='Embarcaciones', target_size_m=3.2,
-        target_faces=3000, material_slot='M_Wood', base_color=(0.90, 0.78, 0.20),
-        rules=[
-            dict(z_frac=(0.55, 1.0), color=(0.90, 0.88, 0.80)),
-            dict(island='thinnest', color=(0.30, 0.22, 0.12)),
-            dict(z_frac=(0.0, 0.10), color=(0.15, 0.12, 0.10)),
-        ],
-    ),
 ]

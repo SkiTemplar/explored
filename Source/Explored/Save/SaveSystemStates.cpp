@@ -30,7 +30,7 @@ struct TSaveEnumNames<ECookTechnique>
 template <>
 struct TSaveEnumNames<EBoatType>
 {
-	static constexpr const TCHAR* Names[] = { TEXT("Raft"), TEXT("Canoe"), TEXT("Outrigger"), TEXT("Limon") };
+	static constexpr const TCHAR* Names[] = { TEXT("Raft"), TEXT("Canoe"), TEXT("Outrigger") };
 };
 
 template <>
