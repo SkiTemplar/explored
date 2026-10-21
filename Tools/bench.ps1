@@ -1,11 +1,13 @@
 # Lanza el juego con -ExploredBench, recorre spawn/aerea/orilla, vuelca stat unit/gpu/rhi/
 # streaming, r.Nanite.ShowStats y memreport -full a Saved/Logs y lo cierra.
-# Uso: Tools\bench.ps1 [-Width 1920] [-Height 1080]
+# Uso: Tools\bench.ps1 [-Width 1920] [-Height 1080] [-Window]
 # Lee después: Saved\Logs\Bench.log (líneas «[Bench] ...») y Saved\Profiling\MemReports\*.memreport.
 param(
     [int]$Width = 1920,
     [int]$Height = 1080,
-    [int]$TimeoutMinutes = 15
+    [int]$TimeoutMinutes = 15,
+    # Sin -Window se renderiza fuera de pantalla (-RenderOffscreen) y no aparece ninguna ventana.
+    [switch]$Window
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -13,6 +15,7 @@ $logFile = Join-Path $ProjectRoot 'Saved\Logs\Bench.log'
 
 $cmdArgs = @($UProject, '-game', '-ExploredBench', '-windowed', "-ResX=$Width", "-ResY=$Height",
     '-NoSound', '-nosplash', '-unattended', '-log', "-ABSLOG=$logFile")
+if (-not $Window) { $cmdArgs += '-RenderOffscreen' }
 $proc = Start-Process -FilePath $Editor -ArgumentList $cmdArgs -PassThru
 if (-not $proc.WaitForExit($TimeoutMinutes * 60 * 1000)) {
     $proc.Kill()
