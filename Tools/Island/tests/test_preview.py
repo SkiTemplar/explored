@@ -45,7 +45,7 @@ def sin_lfs(monkeypatch, ficheros):
 
 def test_vistas_de_las_capturas(layout):
     views = {v.key: v for v in preview.views(layout)}
-    assert set(views) == {'cala', 'palmar', 'faro', 'suelo'}
+    assert set(views) == {'cala', 'palmar', 'faro', 'suelo', 'islote'}
     assert views['cala'].eye == (-150.0, -12.0, 7.0)
     assert views['faro'].eye[2] > 20.0  # en la ladera de la colina, a 4 m del suelo
     assert preview.to_blender(1.0, 2.0, 3.0) == (1.0, -2.0, 3.0)

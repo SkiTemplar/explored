@@ -32,6 +32,17 @@ FACET_NOISE = 0.22      # m de ruido vertical en tierra firme (fuera de caminos)
 ROCK_NOISE = 0.2        # m de ruido vertical sobre las rocas
 SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve base
 FACET_MIX = 0.4         # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
+# En pendiente fuerte la normal de cara domina la lectura (losas grandes y oscuras en las laderas del
+# islote): la mezcla baja de FACET_MIX a STEEP_FACET_MIX entre estas pendientes de cara (grados).
+STEEP_FACET_SLOPE = (25.0, 45.0)
+STEEP_FACET_MIX = 0.12
+# Pasadas del núcleo 3 × 3 sobre las normales con las que se decide la roca por pendiente: sin ellas,
+# el ruido de facetas (±0,22 m en celdas de 1,8 m) inclina cada vértice ±14° y la roca sale salpicada
+# vértice a vértice (triángulos grises sueltos).
+SLOPE_SMOOTH_PASSES = 2
+# Color de la roca por pendiente en rampa, no en escalón: entre ROCK_SLOPE ∓ ROCK_RAMP grados el color
+# por vértice pasa de suelo a roca (el tipo de suelo de ground_field sigue usando el umbral).
+ROCK_RAMP = 6.0
 NO_PALMS = np.zeros((0, 2))
 
 
@@ -153,10 +164,46 @@ def vertex_normals(verts: np.ndarray, tris: np.ndarray) -> np.ndarray:
     return acc / np.maximum(np.linalg.norm(acc, axis=1, keepdims=True), 1e-12)
 
 
-def corner_normals(smooth: np.ndarray, faces: np.ndarray, tris: np.ndarray, mix: float) -> np.ndarray:
-    """(M, 3, 3) normal de cada esquina: (1 − mix) · suave del vértice + mix · normal de la cara."""
-    blended = (1.0 - mix) * smooth[tris] + mix * faces[:, None, :]
+def corner_normals(smooth: np.ndarray, faces: np.ndarray, tris: np.ndarray, mix: float | np.ndarray) -> np.ndarray:
+    """(M, 3, 3) normal de cada esquina: (1 − mix) · suave del vértice + mix · normal de la cara.
+    «mix» es un escalar o un peso por triángulo (M,)."""
+    w = np.broadcast_to(np.asarray(mix, dtype=np.float64), (tris.shape[0],))[:, None, None]
+    blended = (1.0 - w) * smooth[tris] + w * faces[:, None, :]
     return blended / np.maximum(np.linalg.norm(blended, axis=2, keepdims=True), 1e-12)
+
+
+def facet_weights(slopes: np.ndarray, mix: float) -> np.ndarray:
+    """Peso de la normal de cara por triángulo: «mix» en llano y hasta STEEP_FACET_MIX en pendiente fuerte."""
+    lo, hi = STEEP_FACET_SLOPE
+    steep = np.clip((slopes - lo) / (hi - lo), 0.0, 1.0)
+    steep = steep * steep * (3.0 - 2.0 * steep)
+    return mix + (min(mix, STEEP_FACET_MIX) - mix) * steep
+
+
+def smoothed_slopes(normals: np.ndarray, nx: int, ny: int, passes: int = SLOPE_SMOOTH_PASSES) -> np.ndarray:
+    """Pendiente (grados) de cada vértice con la normal fundida en la rejilla: roca en manchas, no salpicada."""
+    n = blend_grid(normals.reshape(nx, ny, 3), passes).reshape(-1, 3)
+    n = n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+    return np.degrees(np.arccos(np.clip(n[:, 2], -1.0, 1.0)))
+
+
+def blend_colors(lin_colors: np.ndarray, rocky: np.ndarray, nx: int, ny: int) -> np.ndarray:
+    """Color por vértice fundido: una pasada en general y dos donde hay roca cerca (borde de 1-2 celdas)."""
+    grid = lin_colors.reshape(nx, ny, 3)
+    near_rock = blend_grid(rocky.astype(np.float64).reshape(nx, ny, 1), 2).reshape(-1)
+    w = np.clip(near_rock * 3.0, 0.0, 1.0)[:, None]
+    return (1.0 - w) * blend_grid(grid).reshape(-1, 3) + w * blend_grid(grid, 2).reshape(-1, 3)
+
+
+def slope_rock_colors(layout: Layout, verts: np.ndarray, vertex_slopes: np.ndarray, fields: ReliefFields,
+                      palms: np.ndarray, lin: np.ndarray) -> np.ndarray:
+    """Color lineal por vértice con la roca de pendiente en rampa: el color de suelo (sin regla de
+    pendiente) se funde con el de roca entre ROCK_SLOPE − ROCK_RAMP y ROCK_SLOPE + ROCK_RAMP grados."""
+    ground = point_colors(layout, verts, np.zeros_like(vertex_slopes), fields, palms)
+    rock = point_colors(layout, verts, np.maximum(vertex_slopes, ROCK_SLOPE + 1e-3), fields, palms)
+    w = np.clip((vertex_slopes - (ROCK_SLOPE - ROCK_RAMP)) / (2.0 * ROCK_RAMP), 0.0, 1.0)
+    w = (w * w * (3.0 - 2.0 * w))[:, None]
+    return (1.0 - w) * lin[ground] + w * lin[rock]
 
 
 def build_terrain(layout: Layout, props: dict | None, linear_palette: np.ndarray | None = None,
@@ -175,12 +222,14 @@ def build_terrain(layout: Layout, props: dict | None, linear_palette: np.ndarray
     colors = point_colors(layout, centroids, slopes, relief_fields(layout, props, cx, cy, centroid_base, profiles),
                           palms)
     smooth = vertex_normals(verts, tris)
-    vertex_slopes = np.degrees(np.arccos(np.clip(smooth[:, 2], -1.0, 1.0)))
-    index = point_colors(layout, verts, vertex_slopes, relief_fields(layout, props, verts[:, 0], verts[:, 1], base, profiles), palms)
+    vertex_slopes = smoothed_slopes(smooth, nx, ny)
+    vfields = relief_fields(layout, props, verts[:, 0], verts[:, 1], base, profiles)
+    index = point_colors(layout, verts, vertex_slopes, vfields, palms)
     lin = linear_palette if linear_palette is not None else np.full((64, 3), 0.5)
-    vcolors = blend_grid(lin[index].reshape(nx, ny, 3)).reshape(-1, 3)
+    rocky = np.isin(index, [PALETTE['roca_oscura'], PALETTE['roca_media'], PALETTE['roca_clara']])
+    vcolors = blend_colors(slope_rock_colors(layout, verts, vertex_slopes, vfields, palms, lin), rocky, nx, ny)
     return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors,
-                       corner_normals(smooth, faces, tris, facet_mix), base, index)
+                       corner_normals(smooth, faces, tris, facet_weights(slopes, facet_mix)), base, index)
 
 
 def surface_height(mesh: TerrainMesh, layout: Layout, x: float, y: float) -> float:

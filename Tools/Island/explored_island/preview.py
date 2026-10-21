@@ -65,7 +65,7 @@ def ground(layout: Layout, x: float, y: float) -> float:
 
 
 def views(layout: Layout) -> tuple[View, ...]:
-    """Las vistas cala, palmar y faro del conjunto f4b de ExploredShotSubsystem y un primer plano."""
+    """Las vistas cala, palmar, faro e islote del conjunto f4b de ExploredShotSubsystem y un primer plano."""
     palm_eye, palm_target = (-62.0, -38.0), (-30.0, -8.0)
     faro_eye = (22.0, -6.0)
     suelo_eye, suelo_target = (-8.0, -26.0), (4.0, -14.0)
@@ -75,6 +75,8 @@ def views(layout: Layout) -> tuple[View, ...]:
         View('faro', (*faro_eye, ground(layout, *faro_eye) + 4.0), (42.0, 15.0, ground(layout, 45.0, 15.0) + 6.0)),
         # Primer plano a la altura de los ojos en la ladera del Palmar: textura y relieve de cerca.
         View('suelo', (*suelo_eye, ground(layout, *suelo_eye) + 1.7), (*suelo_target, ground(layout, *suelo_target))),
+        # El islote del carguero desde Playa Norte (f4b-islote): la ladera rocosa en primer plano.
+        View('islote', (200.0, 166.0, ground(layout, 200.0, 166.0) + 9.0), (229.0, 148.0, 3.0)),
     )
 
 
@@ -311,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog='island-preview', description='Lámina antes/después del terreno.')
     parser.add_argument('--out', type=Path, default=OUT)
     parser.add_argument('--column', action='append', default=None, help='ETIQUETA=REVISIÓN («.» = árbol)')
-    parser.add_argument('--view', action='append', default=None, help='cala, palmar o faro (por defecto, todas)')
+    parser.add_argument('--view', action='append', default=None, help='cala, palmar, faro, suelo o islote (por defecto, todas)')
     parser.add_argument('--percent', type=int, default=100)
     args = parser.parse_args(argv)
     layout = load_layout()

@@ -11,9 +11,13 @@ from explored_island.terrain import (
     PALETTE,
     ROCK_SLOPE,
     SMOOTH_RADIUS,
+    STEEP_FACET_MIX,
+    blend_colors,
     build_terrain,
     corner_normals,
+    facet_weights,
     smoothed_height,
+    smoothed_slopes,
     surface_height,
     terrain_height,
 )
@@ -237,3 +241,57 @@ def test_mancha_de_tierra_bajo_las_palmeras(layout, props):
     ring = (np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0) > 3.5) & (np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0) < 4.5)
     assert (with_palm.colors[near] == PALETTE['tierra']).all()
     assert (with_palm.colors[ring] == PALETTE['tierra']).mean() < 0.5
+
+
+def test_mezcla_de_cara_baja_en_pendiente_fuerte():
+    w = facet_weights(np.array([0.0, 20.0, 35.0, 45.0, 70.0]), FACET_MIX)
+    assert w[0] == pytest.approx(FACET_MIX) and w[1] == pytest.approx(FACET_MIX)
+    assert STEEP_FACET_MIX < w[2] < FACET_MIX
+    assert w[3] == pytest.approx(STEEP_FACET_MIX) and w[4] == pytest.approx(STEEP_FACET_MIX)
+    assert (w <= FACET_MIX + 1e-12).all()
+    # Sin facetas en llano, tampoco en pendiente.
+    assert np.allclose(facet_weights(np.array([0.0, 60.0]), 0.0), 0.0)
+    # Peso por triángulo en corner_normals.
+    smooth = np.array([[0.0, 0.0, 1.0]] * 3)
+    face = np.array([[0.6, 0.0, 0.8], [0.6, 0.0, 0.8]])
+    tris = np.array([[0, 1, 2], [0, 1, 2]])
+    out = corner_normals(smooth, face, tris, np.array([0.0, 1.0]))
+    assert np.allclose(out[0], smooth) and np.allclose(out[1], np.repeat(face[1:], 3, axis=0))
+
+
+def test_pendiente_fundida_quita_el_ruido_de_un_vertice():
+    normals = np.tile(np.array([0.0, 0.0, 1.0]), (25, 1))
+    normals[12] = [0.8, 0.0, 0.6]          # un vértice suelto inclinado 53°
+    raw = np.degrees(np.arccos(normals[:, 2]))
+    fused = smoothed_slopes(normals, 5, 5)
+    assert raw[12] > 50.0 and fused[12] < 35.0
+    assert smoothed_slopes(normals, 5, 5, passes=0)[12] == pytest.approx(raw[12])
+
+
+def test_color_de_roca_fundido_en_dos_celdas():
+    green, grey = np.array([0.1, 0.5, 0.1]), np.array([0.5, 0.5, 0.5])
+    colors = np.tile(green, (49, 1))
+    colors[24] = grey
+    rocky = np.zeros(49, dtype=bool)
+    rocky[24] = True
+    out = blend_colors(colors, rocky, 7, 7).reshape(7, 7, 3)
+    # Dos pasadas junto a la roca: el gris llega a dos celdas y el centro ya no es gris puro.
+    assert out[3, 3, 0] < 0.3 and out[3, 5, 0] > green[0] + 1e-6
+    # Lejos de la roca, el color no cambia.
+    assert np.allclose(out[0, 0], green)
+
+
+def test_roca_por_pendiente_en_manchas_no_salpicada(layout, terreno):
+    # f6-relieve-islote: con la pendiente de cada vértice sin fundir, el 7,8 % de los vértices de roca
+    # quedaban sueltos (≤ 2 vecinos de roca) y se leían como triángulos grises en la ladera.
+    t = layout.terrain
+    nx = int(np.ceil((t.max_xy[0] - t.min_xy[0]) / t.cell)) + 1
+    ny = int(np.ceil((t.max_xy[1] - t.min_xy[1]) / t.cell)) + 1
+    rock = np.isin(terreno.vertex_palette, list(ROCK)) & (terreno.verts[:, 2] > 0.5)
+    grid = rock.reshape(nx, ny).astype(int)
+    pad = np.pad(grid, 1)
+    neighbours = sum(pad[1 + di:1 + di + nx, 1 + dj:1 + dj + ny]
+                     for di in (-1, 0, 1) for dj in (-1, 0, 1) if di or dj)
+    loose = ((grid == 1) & (neighbours <= 2)).sum()
+    assert grid.sum() > 500
+    assert loose / grid.sum() < 0.05
