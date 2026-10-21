@@ -42,29 +42,40 @@ def test_datos_reales_sin_errores(real: DataSet) -> None:
 
 
 def test_espejo_con_el_cpp(ds: DataSet) -> None:
-    grass(ds)["radiusM"] = 80.0
+    grass(ds)["workPerFrame"] = 800
     grass(ds)["density"]["zones"]["palmar"] = 3.0
+    grass(ds)["thinning"]["denseM"] = 30.0
     errors = errors_of(ds)
-    assert has(errors, "radiusM=80", "DefaultRadiusM")
+    assert has(errors, "workPerFrame=800", "DefaultWorkPerFrame")
     assert has(errors, "density.zones.palmar=3", "ZonePalmarDensity")
+    assert has(errors, "thinning.denseM=30", "DefaultDenseM", "GrassThinning.h")
 
 
 def test_rangos_y_forma(ds: DataSet) -> None:
     g = grass(ds)
-    g["cellsPerFrame"] = 0
+    g["workPerFrame"] = 0
     g["scale"] = [1.5, 1.0]
-    g["version"] = 2
-    g["fade"] = {"startM": 60.0, "endM": 50.0}
+    g["version"] = 1
+    g["wind"] = {"fadeStartM": 60.0, "fadeEndM": 50.0}
     g["palms"] = {"trunkM": 4.0, "radiusM": 3.0}
     g["clearings"]["density"] = 2.0
+    g["thinning"]["band"] = 0.0
     errors = errors_of(ds)
-    for needle in ("cellsPerFrame", "scale", "version", "fade", "palms", "clearings.density"):
+    for needle in ("workPerFrame", "scale", "version", "wind", "palms", "clearings.density", "thinning.band"):
         assert has(errors, needle), needle
 
 
-def test_fundido_mas_alla_del_radio(ds: DataSet) -> None:
-    grass(ds)["fade"]["endM"] = 90.0
-    assert has(errors_of(ds), "fade.endM")
+def test_adelgazamiento(ds: DataSet) -> None:
+    thin = grass(ds)["thinning"]
+    thin["endFadeM"] = 90.0
+    grass(ds)["wind"]["fadeEndM"] = 150.0
+    errors = errors_of(ds)
+    assert has(errors, "thinning.endFadeM")
+    assert has(errors, "wind.fadeEndM")
+    thin["denseM"] = 120.0
+    assert has(errors_of(ds), "denseM debe ser menor que endM")
+    del grass(ds)["thinning"]
+    assert has(errors_of(ds), "thinning: falta")
 
 
 def test_zonas_y_densidades(ds: DataSet) -> None:
@@ -84,12 +95,18 @@ def test_mallas_y_materiales(ds: DataSet) -> None:
     g = grass(ds)
     g["meshes"]["fern"]["mesh"] = "/Game/Art/K6_Cesped/SM_Inventada_01"
     g["meshes"]["clover"]["castShadow"] = "no"
+    g["meshes"]["patch_a"]["castShadow"] = True
+    g["meshes"]["patch_b"]["footprintM"] = 3.0
     g["meshes"]["tall"] = "x"
     g["material"] = "/Game/Otro/M_X"
+    g["parameterCollection"] = "/Game/Art/Materials/M_NoEsMPC"
     g["fallbackMesh"] = "/Game/Art/K1_Naturaleza/SM_Nada_01"
     errors = errors_of(ds)
     assert has(errors, "SM_Inventada_01", "manifest")
     assert has(errors, "clover.castShadow")
+    assert has(errors, "patch_a.castShadow", "sombras")
+    assert has(errors, "patch_b.footprintM")
+    assert has(errors, "parameterCollection")
     assert has(errors, "meshes.tall")
     assert has(errors, "grass.json material")
     assert has(errors, "fallbackMesh", "SM_Nada_01")
@@ -116,10 +133,11 @@ def test_mezclas(ds: DataSet) -> None:
 def test_no_objeto(ds: DataSet) -> None:
     ds.data["grass.json"] = []
     assert has(errors_of(ds), "grass.json: debe ser un objeto")
-    ds.data["grass.json"] = {"version": 1}
+    ds.data["grass.json"] = {"version": 2}
     errors = errors_of(ds)
     assert has(errors, "density: falta")
     assert has(errors, "clearings: falta")
+    assert has(errors, "thinning: falta")
 
 
 def test_decoracion(ds: DataSet) -> None:

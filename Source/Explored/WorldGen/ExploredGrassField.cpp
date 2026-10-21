@@ -5,8 +5,11 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/PlatformTime.h"
+#include "Kismet/KismetMaterialLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "Misc/FileHelper.h"
 
 #include "Explored.h"
@@ -22,13 +25,19 @@
 namespace GrassFieldActorDetail
 {
 	constexpr double MetersToCm = 100.0;
+	/** Un salto de cámara mayor que esto en un frame es un teletransporte: se vuelve a medir el relleno. */
+	constexpr double JumpM = 30.0;
+	/** Datos por instancia del material: rango de adelgazamiento y variación del parche. */
+	constexpr int32 CustomFloats = 2;
 	const FName GrassTag(TEXT("IslandGrass"));
-	const FName FadeStart(TEXT("FadeStartCm"));
-	const FName FadeEnd(TEXT("FadeEndCm"));
 	const FName WindSway(TEXT("WindSway"));
 	const FName WindStrength(TEXT("WindStrength"));
+	const FName WindFadeStart(TEXT("WindFadeStartM"));
+	const FName WindFadeEnd(TEXT("WindFadeEndM"));
 	/** Ranura libre: diminuta y muy por debajo del mar, fuera de cualquier vista. */
 	const FTransform Hidden(FQuat::Identity, FVector(0.0, 0.0, -1.0e6), FVector(1.0e-4));
+	/** Rango de las ranuras libres: el material las deja a 0 aunque se vieran. */
+	constexpr float HiddenRank = 2.0f;
 
 	FTransform ToTransform(const FGrassInstance& Inst)
 	{
@@ -54,6 +63,19 @@ namespace GrassFieldActorDetail
 				Palms.Add(FVector2D(Inst.Location.X, Inst.Location.Y));
 			}
 		}
+	}
+
+	/** Mallas que alguna mezcla usa: las demás no necesitan componente. */
+	bool IsKindUsed(const FGrassConfig& Config, int32 Kind)
+	{
+		for (const FGrassMix& Mix : Config.Mixes)
+		{
+			if (Mix.Weights[Kind] > 0.0f)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
@@ -118,43 +140,55 @@ bool AExploredGrassField::Setup()
 	World->Palms = FGrassWorld::PalmsFrom(*Props);
 	GrassFieldActorDetail::AddDecorPalms(World->Palms);
 
-	CreateComponents(Assets);
+	CreateComponents(Assets, Config);
+	ApplyThinningParameters(Assets, Config.Thinning);
 	Model = MakeUnique<FGrassFieldModel>(Config, World);
-	UE_LOG(LogExplored, Display, TEXT("[Césped] %d × %d vértices de suelo, %d exclusiones, %d palmeras, radio %.0f m"),
-		Ground->GetNx(), Ground->GetNy(), World->Exclusions.Num(), World->Palms.Num(), Config.RadiusM);
+	ResetSeedStats();
+	UE_LOG(LogExplored, Display, TEXT("[Césped] %d × %d vértices de suelo, %d exclusiones, %d palmeras, denso hasta %.0f m y adelgazado hasta %.0f m (%d niveles)"),
+		Ground->GetNx(), Ground->GetNy(), World->Exclusions.Num(), World->Palms.Num(), Config.Thinning.DenseM,
+		Config.Thinning.EndM, Config.Thinning.LevelCount());
 	return true;
 }
 
-void AExploredGrassField::CreateComponents(const FGrassAssets& Assets)
+void AExploredGrassField::CreateComponents(const FGrassAssets& Assets, const FGrassConfig& Config)
 {
 	using namespace GrassFieldActorDetail;
 	ClearComponents();
 	UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr, *Assets.Material);
 	if (!Material)
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[Césped] falta %s: se usa %s (hojas de una cara, sin viento por vértice)"), *Assets.Material, *Assets.FallbackMaterial);
+		UE_LOG(LogExplored, Warning, TEXT("[Césped] falta %s: se usa %s (hojas de una cara, sin viento ni adelgazamiento)"), *Assets.Material, *Assets.FallbackMaterial);
 		Material = LoadObject<UMaterialInterface>(nullptr, *Assets.FallbackMaterial);
 	}
 	UMaterialInstanceDynamic* Mid = Material ? UMaterialInstanceDynamic::Create(Material, this) : nullptr;
 	if (Mid)
 	{
-		Mid->SetScalarParameterValue(FadeStart, Assets.FadeStartM * MetersToCm);
-		Mid->SetScalarParameterValue(FadeEnd, Assets.FadeEndM * MetersToCm);
 		Mid->SetScalarParameterValue(WindSway, 1.0f);
+		Mid->SetScalarParameterValue(WindFadeStart, Assets.WindFadeStartM);
+		Mid->SetScalarParameterValue(WindFadeEnd, Assets.WindFadeEndM);
 		Materials.Add(Mid);
 	}
+	// Más allá de EndM el material ya deja cada parche a 0; el corte del componente solo evita dibujarlos.
+	const int32 CullCm = FMath::RoundToInt32((Config.Thinning.EndM + 2.0f) * MetersToCm);
 	for (int32 K = 0; K < GrassKindCount; ++K)
 	{
+		TrisPerKind[K] = 0;
+		UInstancedStaticMeshComponent* Ism = NewObject<UInstancedStaticMeshComponent>(this, NAME_None, RF_Transient);
+		KindComponents.Add(Ism);
+		if (!IsKindUsed(Config, K))
+		{
+			continue;  // ranura vacía: el modelo nunca escribe en ella
+		}
 		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Assets.Meshes[K]);
 		if (!Mesh)
 		{
 			UE_LOG(LogExplored, Warning, TEXT("[Césped] falta %s: se usa %s"), *Assets.Meshes[K], *Assets.FallbackMesh);
 			Mesh = LoadObject<UStaticMesh>(nullptr, *Assets.FallbackMesh);
 		}
-		UInstancedStaticMeshComponent* Ism = NewObject<UInstancedStaticMeshComponent>(this, NAME_None, RF_Transient);
 		if (Mesh)
 		{
 			Ism->SetStaticMesh(Mesh);
+			TrisPerKind[K] = Mesh->GetNumTriangles(0);
 		}
 		Ism->SetMobility(EComponentMobility::Movable);
 		Ism->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -163,8 +197,10 @@ void AExploredGrassField::CreateComponents(const FGrassAssets& Assets)
 		Ism->SetCanEverAffectNavigation(false);
 		Ism->SetCastShadow(Assets.bCastShadow[K]);
 		Ism->bAffectDistanceFieldLighting = false;
+		Ism->bAffectDynamicIndirectLighting = false;
 		Ism->SetReceivesDecals(false);
-		Ism->SetCullDistances(FMath::RoundToInt32(Assets.FadeStartM * MetersToCm), FMath::RoundToInt32(Assets.FadeEndM * MetersToCm));
+		Ism->SetNumCustomDataFloats(CustomFloats);
+		Ism->SetCullDistances(CullCm, CullCm);
 		Ism->ComponentTags.Add(GrassTag);
 		if (Mid && Mesh)
 		{
@@ -177,7 +213,26 @@ void AExploredGrassField::CreateComponents(const FGrassAssets& Assets)
 		Ism->SetWorldTransform(FTransform::Identity);
 		Ism->RegisterComponent();
 		AddInstanceComponent(Ism);
-		KindComponents.Add(Ism);
+	}
+}
+
+void AExploredGrassField::ApplyThinningParameters(const FGrassAssets& Assets, const FGrassThinning& Thinning)
+{
+	UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr, *Assets.ParameterCollection);
+	if (!Collection)
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Césped] falta %s: el material usa sus valores por defecto del adelgazamiento"), *Assets.ParameterCollection);
+		return;
+	}
+	const TPair<const TCHAR*, float> Params[] = {
+		{TEXT("GrassDenseM"), Thinning.DenseM}, {TEXT("GrassEndM"), Thinning.EndM},
+		{TEXT("GrassEndFadeM"), Thinning.EndFadeM}, {TEXT("GrassExponent"), Thinning.Exponent},
+		{TEXT("GrassMaxGrow"), Thinning.MaxGrow}, {TEXT("GrassGrowZ"), Thinning.GrowZ},
+		{TEXT("GrassBand"), Thinning.Band},
+	};
+	for (const TPair<const TCHAR*, float>& Param : Params)
+	{
+		UKismetMaterialLibrary::SetScalarParameterValue(this, Collection, FName(Param.Key), Param.Value);
 	}
 }
 
@@ -194,31 +249,46 @@ void AExploredGrassField::ClearComponents()
 	Materials.Reset();
 }
 
+void AExploredGrassField::ResetSeedStats()
+{
+	SeedMsSum = 0.0;
+	SeedMsMax = 0.0;
+	SeedFrames = 0;
+}
+
 void AExploredGrassField::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	FVector2D Camera;
-	if (!Model || !CameraMeters(Camera))
+	FVector2D Forward;
+	float HalfFov = 0.0f;
+	if (!Model || !CameraView(Camera, Forward, HalfFov))
 	{
 		return;
 	}
 	// Un salto largo (capturas, bench) vuelve a anotar el relleno del nuevo sitio.
-	constexpr double RelogDistanceM = 60.0;
-	if (bLoggedSettled && FVector2D::Distance(Camera, LoggedCamera) > RelogDistanceM)
+	if (bLoggedSettled && FVector2D::Distance(Camera, LoggedCamera) > GrassFieldActorDetail::JumpM * 2.0)
 	{
 		bLoggedSettled = false;
+		ResetSeedStats();
 	}
+	const double Start = FPlatformTime::Seconds();
 	const FGrassUpdate Update = Model->Update(Camera);
 	if (!Update.IsEmpty())
 	{
 		Apply(Update);
-		if (!bLoggedSettled && Model->GetPendingCellCount() == 0)
-		{
-			bLoggedSettled = true;
-			LoggedCamera = Camera;
-			UE_LOG(LogExplored, Display, TEXT("[Césped] %d matas en %d celdas alrededor de (%.0f, %.0f) m"),
-				Model->GetLiveInstanceCount(), Model->GetActiveCellCount(), Camera.X, Camera.Y);
-		}
+	}
+	const double Ms = (FPlatformTime::Seconds() - Start) * 1000.0;
+	SeedMsSum += Ms;
+	SeedMsMax = FMath::Max(SeedMsMax, Ms);
+	++SeedFrames;
+	if (!Update.IsEmpty() && !bLoggedSettled && Model->GetPendingCellCount() == 0)
+	{
+		bLoggedSettled = true;
+		LoggedCamera = Camera;
+		UE_LOG(LogExplored, Display, TEXT("[Césped] %d parches y matas en %d celdas alrededor de (%.0f, %.0f) m; %.2f M triángulos a la vista; relleno en %d frames (media %.2f ms, máx. %.2f ms)"),
+			Model->GetLiveInstanceCount(), Model->GetActiveCellCount(), Camera.X, Camera.Y,
+			GetGrassTrianglesInView() / 1.0e6, SeedFrames, GetGrassSeedMs(), GetGrassSeedMaxMs());
 	}
 	WindTimer -= DeltaSeconds;
 	if (WindTimer <= 0.0f)
@@ -230,6 +300,7 @@ void AExploredGrassField::Tick(float DeltaSeconds)
 
 void AExploredGrassField::Apply(const FGrassUpdate& Update)
 {
+	using namespace GrassFieldActorDetail;
 	for (int32 K = 0; K < GrassKindCount && K < KindComponents.Num(); ++K)
 	{
 		UInstancedStaticMeshComponent* Ism = KindComponents[K];
@@ -237,9 +308,11 @@ void AExploredGrassField::Apply(const FGrassUpdate& Update)
 		{
 			continue;
 		}
+		// Sin MarkRenderStateDirty: el gestor de instancias del ISM sube solo las ranuras cambiadas.
 		for (const FGrassWrite& Write : Update.Writes[K])
 		{
-			const FTransform T = GrassFieldActorDetail::ToTransform(Write.Instance);
+			const FTransform T = ToTransform(Write.Instance);
+			int32 Index = Write.Slot;
 			if (Write.Slot < Ism->GetInstanceCount())
 			{
 				Ism->UpdateInstanceTransform(Write.Slot, T, true, false, true);
@@ -247,18 +320,21 @@ void AExploredGrassField::Apply(const FGrassUpdate& Update)
 			else
 			{
 				// El modelo entrega las ranuras nuevas en orden: Slot == número de instancias.
-				Ism->AddInstance(T, true);
+				Index = Ism->AddInstance(T, true);
 			}
+			const float Data[CustomFloats] = {Write.Instance.Rank, Write.Instance.Variation};
+			Ism->SetCustomData(Index, MakeArrayView(Data, CustomFloats), false);
 		}
+		const float HiddenData[CustomFloats] = {HiddenRank, 0.0f};
 		for (const int32 Slot : Update.Hides[K])
 		{
-			Ism->UpdateInstanceTransform(Slot, GrassFieldActorDetail::Hidden, true, false, true);
+			Ism->UpdateInstanceTransform(Slot, Hidden, true, false, true);
+			Ism->SetCustomData(Slot, MakeArrayView(HiddenData, CustomFloats), false);
 		}
-		Ism->MarkRenderStateDirty();
 	}
 }
 
-bool AExploredGrassField::CameraMeters(FVector2D& Out) const
+bool AExploredGrassField::CameraView(FVector2D& OutMeters, FVector2D& OutForward, float& OutHalfFovRad) const
 {
 	const UWorld* World = GetWorld();
 	const APlayerController* Pc = World ? World->GetFirstPlayerController() : nullptr;
@@ -267,7 +343,10 @@ bool AExploredGrassField::CameraMeters(FVector2D& Out) const
 		return false;
 	}
 	const FVector Cam = Pc->PlayerCameraManager->GetCameraLocation();
-	Out = FVector2D(Cam.X, Cam.Y) / GrassFieldActorDetail::MetersToCm;
+	const FVector Dir = Pc->PlayerCameraManager->GetCameraRotation().Vector();
+	OutMeters = FVector2D(Cam.X, Cam.Y) / GrassFieldActorDetail::MetersToCm;
+	OutForward = FVector2D(Dir.X, Dir.Y).GetSafeNormal();
+	OutHalfFovRad = FMath::DegreesToRadians(Pc->PlayerCameraManager->GetFOVAngle() * 0.5f);
 	return true;
 }
 
@@ -292,6 +371,19 @@ int32 AExploredGrassField::GetGrassInstanceCount() const
 int32 AExploredGrassField::GetGrassCellCount() const
 {
 	return Model ? Model->GetActiveCellCount() : 0;
+}
+
+int64 AExploredGrassField::GetGrassTrianglesInView() const
+{
+	FVector2D Camera;
+	FVector2D Forward;
+	float HalfFov = 0.0f;
+	if (!Model || !CameraView(Camera, Forward, HalfFov))
+	{
+		return 0;
+	}
+	// El ángulo horizontal real a 16:9 es algo mayor que el FOV nominal en el borde; un 10 % de margen.
+	return Model->CountTrianglesInView(Camera, Forward, FMath::Min(HalfFov * 1.1f, UE_PI), TrisPerKind);
 }
 
 void AExploredGrassField::RebuildGrass()

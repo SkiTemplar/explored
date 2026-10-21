@@ -3,85 +3,13 @@
 #include "WorldGen/GrassFieldModel.h"
 #include "WorldGen/GroundField.h"
 #include "WorldGen/IslandPropsModel.h"
+#include "Tests/GrassTestWorld.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace GrassFieldTest
 {
-	constexpr int32 N = 101;
-	constexpr float CellM = 2.0f;
-	const FVector2D GridMin(-100.0, -100.0);
-
-	/** Suelo de prueba: llano a 2 m con hierba, arena al norte (x > 60), mar al sur (x < -80) y una ladera de 56° (y < -80). */
-	float HeightAt(double X, double Y)
-	{
-		if (X < -80.0)
-		{
-			return -1.0f;
-		}
-		return Y < -80.0 ? static_cast<float>(2.0 + (-80.0 - Y) * 1.5) : 2.0f;
-	}
-
-	EGroundSurface SurfaceAt(double X, double Y)
-	{
-		if (X < -80.0)
-		{
-			return EGroundSurface::Sea;
-		}
-		return X > 60.0 ? EGroundSurface::Sand : EGroundSurface::Grass;
-	}
-
-	TSharedPtr<FGroundField> MakeGround()
-	{
-		TArray<FVector3f> Verts;
-		TArray<uint8> Surface;
-		for (int32 I = 0; I < N; ++I)
-		{
-			for (int32 J = 0; J < N; ++J)
-			{
-				const double X = GridMin.X + I * CellM;
-				const double Y = GridMin.Y + J * CellM;
-				Verts.Add(FVector3f(static_cast<float>(X), static_cast<float>(Y), HeightAt(X, Y)));
-				Surface.Add(static_cast<uint8>(SurfaceAt(X, Y)));
-			}
-		}
-		TArray<uint8> Flip;
-		Flip.Init(0, (N - 1) * (N - 1));
-		TSharedPtr<FGroundField> Ground = MakeShared<FGroundField>();
-		FString Error;
-		check(Ground->Init(N, N, GridMin, CellM, MoveTemp(Verts), MoveTemp(Surface), MoveTemp(Flip), Error));
-		return Ground;
-	}
-
-	TSharedPtr<FGrassWorld> MakeWorld()
-	{
-		TSharedPtr<FGrassWorld> World = MakeShared<FGrassWorld>();
-		World->Ground = MakeGround();
-		FIslandZone Dense;
-		Dense.Id = FName(TEXT("densa"));
-		Dense.Center = FVector2D(-40.0, 40.0);
-		Dense.Radius = 25.0f;
-		World->Layout.Zones.Add(Dense);
-		FIslandPath Path;
-		Path.Id = FName(TEXT("camino"));
-		Path.Width = 3.0f;
-		Path.Points = {FVector2D(0.0, -60.0), FVector2D(0.0, 60.0)};
-		World->Layout.Paths.Add(Path);
-		World->Exclusions.Add({FVector2D(30.0, 30.0), 5.0f});
-		World->Palms.Add(FVector2D(30.0, -30.0));
-		return World;
-	}
-
-	FGrassConfig MakeConfig()
-	{
-		FGrassConfig Config = FGrassConfig::Defaults();
-		Config.ZoneDensity.Empty();
-		Config.ZoneDensity.Add(FName(TEXT("densa")), 3.0f);
-		Config.DensityPerM2 = 1.0f;
-		Config.RadiusM = 40.0f;
-		Config.ClearingThreshold = 2.0f;  // sin claros salvo que el test los pida
-		return Config;
-	}
+	using namespace GrassTestWorld;
 
 	void PutU32(TArray<uint8>& Out, uint32 V)
 	{
@@ -129,94 +57,6 @@ namespace GrassFieldTest
 		PutF32(Out, 1.5f);
 		PutF32(Out, 0.5f);
 		PutF32(Out, Probe);
-		return Out;
-	}
-
-	/** Aplica las actualizaciones a «componentes» simulados: escala 0 = oculta. */
-	struct FFakeComponents
-	{
-		TArray<TArray<float>> Scale;
-
-		FFakeComponents() { Scale.SetNum(GrassKindCount); }
-
-		bool Apply(const FGrassUpdate& Update)
-		{
-			for (int32 K = 0; K < GrassKindCount; ++K)
-			{
-				for (const FGrassWrite& W : Update.Writes[K])
-				{
-					if (W.Slot == Scale[K].Num())
-					{
-						Scale[K].Add(W.Instance.Scale);
-					}
-					else if (Scale[K].IsValidIndex(W.Slot))
-					{
-						Scale[K][W.Slot] = W.Instance.Scale;
-					}
-					else
-					{
-						return false;  // hueco: el componente no puede añadir fuera de orden
-					}
-				}
-				for (const int32 Slot : Update.Hides[K])
-				{
-					Scale[K][Slot] = 0.0f;
-				}
-			}
-			return true;
-		}
-
-		int32 Visible() const
-		{
-			int32 Count = 0;
-			for (const TArray<float>& Kind : Scale)
-			{
-				for (const float S : Kind)
-				{
-					Count += S > 0.0f ? 1 : 0;
-				}
-			}
-			return Count;
-		}
-	};
-
-	int32 Settle(FGrassFieldModel& Model, const FVector2D& Camera, FFakeComponents* Fake, int32& MaxBuilt)
-	{
-		int32 Frames = 0;
-		do
-		{
-			const FGrassUpdate Update = Model.Update(Camera);
-			MaxBuilt = FMath::Max(MaxBuilt, Update.CellsBuilt);
-			if (Fake)
-			{
-				check(Fake->Apply(Update));
-			}
-			++Frames;
-		}
-		while (Model.GetPendingCellCount() > 0 && Frames < 1000);
-		return Frames;
-	}
-
-	int32 CountIn(const TArray<FGrassInstance>& All, const FVector2D& Center, double Radius)
-	{
-		int32 Count = 0;
-		for (const FGrassInstance& I : All)
-		{
-			Count += FVector2D::Distance(FVector2D(I.Location.X, I.Location.Y), Center) < Radius ? 1 : 0;
-		}
-		return Count;
-	}
-
-	TArray<FGrassInstance> Generate(const FGrassConfig& Config, const FGrassWorld& World, int32 FromX, int32 ToX, int32 FromY, int32 ToY)
-	{
-		TArray<FGrassInstance> Out;
-		for (int32 X = FromX; X <= ToX; ++X)
-		{
-			for (int32 Y = FromY; Y <= ToY; ++Y)
-			{
-				FGrassFieldModel::GenerateCell(Config, World, FIntPoint(X, Y), Out);
-			}
-		}
 		return Out;
 	}
 }
@@ -286,8 +126,11 @@ void FGrassFieldSpec::Define()
 			Config.Mixes[static_cast<int32>(EGrassContext::Common)] = FGrassMix();
 			TestFalse(TEXT("mezcla vacía"), Config.Validate(Error));
 			Config = FGrassConfig::Defaults();
-			Config.RadiusM = 1.0f;
-			TestFalse(TEXT("radio menor que la celda"), Config.Validate(Error));
+			Config.Thinning.EndM = Config.Thinning.DenseM;
+			TestFalse(TEXT("sin franja de adelgazamiento"), Config.Validate(Error));
+			Config = FGrassConfig::Defaults();
+			Config.WorkPerFrame = 0;
+			TestFalse(TEXT("sin presupuesto de siembra"), Config.Validate(Error));
 		});
 
 		It(TEXT("la mezcla reparte por pesos"), [this]()
@@ -393,7 +236,7 @@ void FGrassFieldSpec::Define()
 				Edge += I.Context == EGrassContext::Edge ? 1 : 0;
 				Tall += I.Context == EGrassContext::Edge && I.Kind == EGrassKind::Tall ? 1 : 0;
 			}
-			TestTrue(TEXT("corona de palmera"), PalmRing > 10 && Ferns * 3 > PalmRing);
+			TestTrue(TEXT("corona de palmera"), PalmRing > 10 && Ferns * 8 > PalmRing);
 			TestTrue(TEXT("hierba alta en el borde del camino"), Edge > 50 && Tall * 4 > Edge);
 
 			Config.ClearingThreshold = 0.5f;
@@ -404,58 +247,60 @@ void FGrassFieldSpec::Define()
 				Clearing += I.Context == EGrassContext::Clearing ? 1 : 0;
 				Flowers += I.Context == EGrassContext::Clearing && (I.Kind == EGrassKind::FlowerA || I.Kind == EGrassKind::FlowerB) ? 1 : 0;
 			}
-			TestTrue(TEXT("claros con flores"), Clearing > 100 && Flowers * 3 > Clearing);
+			TestTrue(TEXT("claros con flores"), Clearing > 100 && Flowers * 10 > Clearing);
 			TestTrue(TEXT("los claros son más ralos"), WithClearings.Num() < All.Num());
 		});
 	});
 
 	Describe(TEXT("Actualización incremental"), [this]()
 	{
-		It(TEXT("respeta el presupuesto y solo toca el borde al moverse"), [this]()
+		It(TEXT("respeta el presupuesto y cada celda queda en su nivel"), [this]()
 		{
 			const FGrassConfig Config = MakeConfig();
-			FGrassFieldModel Model(Config, MakeWorld());
+			const TSharedPtr<FGrassWorld> World = MakeWorld();
+			FGrassFieldModel Model(Config, World);
 			FFakeComponents Fake;
-			int32 MaxBuilt = 0;
-			const int32 Frames = Settle(Model, FVector2D(-20.0, 0.0), &Fake, MaxBuilt);
+			int32 MaxWork = 0;
+			const int32 Frames = Settle(Model, FVector2D(-20.0, 0.0), &Fake, MaxWork);
 			const int32 Full = Model.GetActiveCellCount();
-			TestTrue(TEXT("presupuesto por frame"), MaxBuilt <= Config.CellsPerFrame);
-			TestTrue(TEXT("varios frames"), Frames >= Full / Config.CellsPerFrame);
-			TestTrue(TEXT("celdas del círculo"), Full > 60 && Full < 120);
+			const int32 PerCell = Config.Subdivisions() * Config.Subdivisions();
+			TestTrue(TEXT("presupuesto por frame (más un trabajo)"), MaxWork <= Config.WorkPerFrame + PerCell);
+			TestTrue(TEXT("varios frames"), Frames > 1);
+			TestTrue(TEXT("celdas del alcance"), Full > 60 && Full < 200);
 			TestEqual(TEXT("visibles = vivas"), Fake.Visible(), Model.GetLiveInstanceCount());
 			TestTrue(TEXT("quieta, nada que hacer"), Model.Update(FVector2D(-20.0, 0.0)).IsEmpty());
 
-			// Una celda hacia +X: entra una columna y sale otra (con histéresis).
-			int32 Built = 0, Removed = 0;
-			int32 Guard = 0;
-			do
-			{
-				const FGrassUpdate U = Model.Update(FVector2D(-12.0, 0.0));
-				TestTrue(TEXT("orden de ranuras"), Fake.Apply(U));
-				Built += U.CellsBuilt;
-				Removed += U.CellsRemoved;
-			}
-			while (Model.GetPendingCellCount() > 0 && ++Guard < 100);
-			const int32 Border = 2 * (FMath::CeilToInt32(Config.RadiusM / Config.CellSizeM) + 1) + 1;
-			TestTrue(TEXT("solo el borde se genera"), Built > 0 && Built <= Border);
-			TestTrue(TEXT("solo el borde se quita"), Removed <= Border);
+			// Tras moverse 8 m, cada celda tiene un nivel entre el de quedarse y el que se necesita, y sus
+			// matas son exactamente las de rango menor que f_k (deterministas).
+			Settle(Model, FVector2D(-12.0, 0.0), &Fake, MaxWork);
 			TestEqual(TEXT("visibles = vivas tras moverse"), Fake.Visible(), Model.GetLiveInstanceCount());
-
+			const FGrassThinning& Thin = Config.Thinning;
 			int32 Sum = 0;
+			int32 BadLevel = 0;
+			int32 BadCount = 0;
 			for (int32 X = -20; X <= 20; ++X)
 			{
 				for (int32 Y = -20; Y <= 20; ++Y)
 				{
-					const TArray<FGrassInstance>* Cell = Model.FindCell(FIntPoint(X, Y));
-					Sum += Cell ? Cell->Num() : 0;
-					if (Cell)
+					const FIntPoint Cell(X, Y);
+					const TArray<FGrassInstance>* Instances = Model.FindCell(Cell);
+					if (!Instances)
 					{
-						TArray<FGrassInstance> Fresh;
-						FGrassFieldModel::GenerateCell(Config, *MakeWorld(), FIntPoint(X, Y), Fresh);
-						TestEqual(TEXT("la celda del modelo es la determinista"), Cell->Num(), Fresh.Num());
+						continue;
 					}
+					Sum += Instances->Num();
+					const double Dist = Model.DistanceToCell(FVector2D(-12.0, 0.0), Cell);
+					const int32 Level = Model.GetCellLevel(Cell);
+					const int32 Need = Thin.LevelFor(Dist, Thin.MarginM);
+					const int32 Keep = Thin.LevelFor(Dist, Thin.MarginM + Thin.HysteresisM);
+					BadLevel += Keep != INDEX_NONE && Level >= Keep && (Need == INDEX_NONE || Level <= Need) ? 0 : 1;
+					TArray<FGrassInstance> Fresh;
+					FGrassFieldModel::GenerateCell(Config, *World, Cell, 0.0f, Thin.LevelFraction(Level), Fresh);
+					BadCount += Fresh.Num() == Instances->Num() ? 0 : 1;
 				}
 			}
+			TestEqual(TEXT("niveles fuera de su franja"), BadLevel, 0);
+			TestEqual(TEXT("celdas distintas de la determinista"), BadCount, 0);
 			TestEqual(TEXT("vivas = suma de las celdas"), Sum, Model.GetLiveInstanceCount());
 		});
 
@@ -464,8 +309,8 @@ void FGrassFieldSpec::Define()
 			const FGrassConfig Config = MakeConfig();
 			FGrassFieldModel Model(Config, MakeWorld());
 			FFakeComponents Fake;
-			int32 MaxBuilt = 0;
-			Settle(Model, FVector2D(-20.0, 0.0), &Fake, MaxBuilt);
+			int32 MaxWork = 0;
+			Settle(Model, FVector2D(-20.0, 0.0), &Fake, MaxWork);
 			int32 Slots = 0;
 			for (int32 K = 0; K < GrassKindCount; ++K)
 			{
@@ -473,7 +318,7 @@ void FGrassFieldSpec::Define()
 			}
 			for (int32 Trip = 0; Trip < 6; ++Trip)
 			{
-				Settle(Model, FVector2D(Trip % 2 == 0 ? 4.0 : -20.0, 0.0), &Fake, MaxBuilt);
+				Settle(Model, FVector2D(Trip % 2 == 0 ? 4.0 : -20.0, 0.0), &Fake, MaxWork);
 			}
 			int32 SlotsAfter = 0;
 			for (int32 K = 0; K < GrassKindCount; ++K)
@@ -488,8 +333,8 @@ void FGrassFieldSpec::Define()
 		{
 			TSharedPtr<FGrassWorld> World = MakeShared<FGrassWorld>();
 			FGrassFieldModel Model(MakeConfig(), World);
-			int32 MaxBuilt = 0;
-			Settle(Model, FVector2D::ZeroVector, nullptr, MaxBuilt);
+			int32 MaxWork = 0;
+			Settle(Model, FVector2D::ZeroVector, nullptr, MaxWork);
 			TestEqual(TEXT("matas"), Model.GetLiveInstanceCount(), 0);
 		});
 	});

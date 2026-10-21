@@ -6,7 +6,8 @@
 namespace GrassFieldDetail
 {
 	const TCHAR* const KindNames[GrassKindCount] = {
-		TEXT("tuft_a"), TEXT("tuft_b"), TEXT("tuft_c"), TEXT("tall"), TEXT("flower_a"), TEXT("flower_b"), TEXT("fern"), TEXT("clover")};
+		TEXT("tuft_a"), TEXT("tuft_b"), TEXT("tuft_c"), TEXT("tall"), TEXT("flower_a"), TEXT("flower_b"), TEXT("fern"), TEXT("clover"),
+		TEXT("patch_a"), TEXT("patch_b"), TEXT("patch_c")};
 	const TCHAR* const ContextNames[GrassContextCount] = {
 		TEXT("common"), TEXT("edge"), TEXT("clearing"), TEXT("palm"), TEXT("dirt")};
 	/** Nada por debajo de esta cota (m): ni orilla mojada ni charcos. */
@@ -268,12 +269,12 @@ FGrassConfig FGrassConfig::Defaults()
 	C.ZoneDensity.Add(FName(TEXT("playa_norte")), ZonePlayaDensity);
 	C.ZoneDensity.Add(FName(TEXT("rocas_pescador")), ZoneRocasDensity);
 	C.ZoneDensity.Add(FName(TEXT("isla_carguero")), ZoneCargueroDensity);
-	// Orden de los pesos: tuft_a, tuft_b, tuft_c, tall, flower_a, flower_b, fern, clover.
-	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Common)], {4.0f, 3.0f, 2.5f, 0.4f, 0.2f, 0.2f, 0.1f, 1.2f});
-	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Edge)], {2.0f, 1.0f, 2.0f, 4.0f, 0.2f, 0.2f, 0.3f, 0.5f});
-	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Clearing)], {1.5f, 2.5f, 0.5f, 0.1f, 2.5f, 2.5f, 0.0f, 2.0f});
-	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Palm)], {1.5f, 0.5f, 1.5f, 0.5f, 0.0f, 0.0f, 4.0f, 0.5f});
-	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Dirt)], {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f});
+	// Orden de los pesos: tuft_a, tuft_b, tuft_c, tall, flower_a, flower_b, fern, clover, patch_a, patch_b, patch_c.
+	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Common)], {0.0f, 0.0f, 0.0f, 0.12f, 0.06f, 0.06f, 0.03f, 0.2f, 4.0f, 3.5f, 3.0f});
+	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Edge)], {0.0f, 0.0f, 0.0f, 2.5f, 0.05f, 0.05f, 0.1f, 0.1f, 2.0f, 1.5f, 2.0f});
+	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Clearing)], {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.8f, 2.5f, 3.5f, 2.0f});
+	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Palm)], {0.0f, 0.0f, 0.0f, 0.1f, 0.0f, 0.0f, 1.5f, 0.1f, 2.0f, 1.5f, 2.0f});
+	SetMix(C.Mixes[static_cast<int32>(EGrassContext::Dirt)], {0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f});
 	return C;
 }
 
@@ -287,12 +288,17 @@ float FGrassConfig::MaxDensity() const
 	return Max;
 }
 
+int32 FGrassConfig::Subdivisions() const
+{
+	return FMath::Clamp(FMath::CeilToInt32(CellSizeM * FMath::Sqrt(MaxDensity())), 1, GrassFieldDetail::MaxSubdivisions);
+}
+
 bool FGrassConfig::Validate(FString& OutError) const
 {
 	auto Bad = [&OutError](const TCHAR* What) { OutError = What; return false; };
 	if (!(CellSizeM >= 2.0f && CellSizeM <= 32.0f)) { return Bad(TEXT("cellSizeM fuera de 2-32")); }
-	if (!(RadiusM >= CellSizeM && RadiusM <= 200.0f)) { return Bad(TEXT("radiusM fuera de cellSizeM-200")); }
-	if (CellsPerFrame < 1 || CellsPerFrame > 64) { return Bad(TEXT("cellsPerFrame fuera de 1-64")); }
+	if (WorkPerFrame < 50 || WorkPerFrame > 20000) { return Bad(TEXT("workPerFrame fuera de 50-20000")); }
+	if (!Thinning.Validate(OutError)) { return false; }
 	if (!(MaxSlopeDeg > 0.0f && MaxSlopeDeg < 90.0f)) { return Bad(TEXT("maxSlopeDeg fuera de 0-90")); }
 	if (!(ScaleMin > 0.0f && ScaleMax >= ScaleMin && ScaleMax <= 5.0f)) { return Bad(TEXT("escala no válida")); }
 	if (!(AlignToNormal >= 0.0f && AlignToNormal <= 1.0f)) { return Bad(TEXT("alignToNormal fuera de 0-1")); }
@@ -307,9 +313,10 @@ bool FGrassConfig::Validate(FString& OutError) const
 	}
 	if (!(ClearingCellM > 1.0f && ClearingDensity >= 0.0f && ClearingDensity <= 1.0f)) { return Bad(TEXT("claros no válidos")); }
 	if (!(PalmRadiusM > PalmTrunkM && PalmTrunkM >= 0.0f)) { return Bad(TEXT("corona de palmera no válida")); }
-	for (const float S : KindScale)
+	for (int32 K = 0; K < GrassKindCount; ++K)
 	{
-		if (!(S > 0.0f && S <= 5.0f)) { return Bad(TEXT("escala de malla no válida")); }
+		if (!(KindScale[K] > 0.0f && KindScale[K] <= 5.0f)) { return Bad(TEXT("escala de malla no válida")); }
+		if (!(KindFootprintM[K] >= 0.0f && KindFootprintM[K] <= 2.0f)) { return Bad(TEXT("huella de malla fuera de 0-2 m")); }
 	}
 	for (const FGrassMix& Mix : Mixes)
 	{
@@ -361,25 +368,39 @@ TArray<FVector2D> FGrassWorld::PalmsFrom(const FIslandProps& Props)
 
 void FGrassFieldModel::GenerateCell(const FGrassConfig& Config, const FGrassWorld& World, const FIntPoint& Cell, TArray<FGrassInstance>& Out)
 {
+	GenerateCell(Config, World, Cell, 0.0f, 1.0f, Out);
+}
+
+int32 FGrassFieldModel::GenerateCell(const FGrassConfig& Config, const FGrassWorld& World, const FIntPoint& Cell,
+	float RankLo, float RankHi, TArray<FGrassInstance>& Out)
+{
 	using namespace GrassFieldDetail;
-	if (!World.Ground || !World.Ground->IsValid())
+	if (!World.Ground || !World.Ground->IsValid() || !(RankHi > RankLo))
 	{
-		return;
+		return 0;
 	}
 	const double Size = Config.CellSizeM;
 	const FVector2D Lo(Cell.X * Size, Cell.Y * Size);
 	const FVector2D Hi = Lo + FVector2D(Size, Size);
-	const int32 K = FMath::Clamp(FMath::CeilToInt32(Size * FMath::Sqrt(Config.MaxDensity())), 1, MaxSubdivisions);
+	const int32 K = Config.Subdivisions();
 	const double Sub = Size / K;
 	const float SubArea = static_cast<float>(Sub * Sub);
 	const float MinNormalZ = FMath::Cos(FMath::DegreesToRadians(Config.MaxSlopeDeg));
 	const FCellContext Ctx = Gather(Config, World, Lo, Hi);
+	int32 Work = 0;
 
 	for (int32 I = 0; I < K; ++I)
 	{
 		for (int32 J = 0; J < K; ++J)
 		{
 			const uint32 H = ExploredHash::Hash3D(Config.Seed, Cell.X * K + I, Cell.Y * K + J, static_cast<int32>(CandidateSalt));
+			// El rango va primero: una celda lejana (nivel ralo) no paga el resto del candidato.
+			const float Rank = Roll(H, 6);
+			if (Rank < RankLo || Rank >= RankHi)
+			{
+				continue;
+			}
+			++Work;
 			const FVector2D P = Lo + FVector2D((I + Roll(H, 0)) * Sub, (J + Roll(H, 1)) * Sub);
 			const double PathDist = PathDistance(Ctx, P);
 			if (PathDist < Config.PathMarginM || IsExcluded(Ctx, P))
@@ -422,17 +443,21 @@ void FGrassFieldModel::GenerateCell(const FGrassConfig& Config, const FGrassWorl
 			}
 			FGrassInstance Inst;
 			Inst.Kind = Mix.Pick(Roll(H, 3));
+			const int32 Kind = static_cast<int32>(Inst.Kind);
 			Inst.Context = Context;
-			Inst.Scale = FMath::Lerp(Config.ScaleMin, Config.ScaleMax, Roll(H, 4)) * Config.KindScale[static_cast<int32>(Inst.Kind)];
+			Inst.Scale = FMath::Lerp(Config.ScaleMin, Config.ScaleMax, Roll(H, 4)) * Config.KindScale[Kind];
 			Inst.YawDeg = Roll(H, 5) * 360.0f;
+			Inst.Rank = Rank;
+			Inst.Variation = Roll(H, 7);
 			const FVector3f Up = FMath::Lerp(FVector3f(0.0f, 0.0f, 1.0f), Ground.Normal, Config.AlignToNormal);
 			Inst.Up = Up.GetSafeNormal(1e-6f, FVector3f(0.0f, 0.0f, 1.0f));
 			// En pendiente, el lado de abajo de la base quedaría en el aire: se hunde lo que no corrige la inclinación.
 			const float NZ = FMath::Max(Ground.Normal.Z, 0.05f);
 			const float Tan = FMath::Sqrt(FMath::Max(1.0f - NZ * NZ, 0.0f)) / NZ;
-			const float Sink = Config.SinkM + Config.FootprintM * Inst.Scale * Tan * (1.0f - Config.AlignToNormal);
+			const float Sink = Config.SinkM + Config.KindFootprintM[Kind] * Inst.Scale * Tan * (1.0f - Config.AlignToNormal);
 			Inst.Location = FVector(P.X, P.Y, Ground.Height - Sink);
 			Out.Add(Inst);
 		}
 	}
+	return Work;
 }

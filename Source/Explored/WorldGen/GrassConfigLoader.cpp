@@ -10,7 +10,8 @@ namespace GrassConfigDetail
 {
 	const TCHAR* const K6Meshes[GrassKindCount] = {
 		TEXT("SM_GrassTuft_A_01"), TEXT("SM_GrassTuft_B_01"), TEXT("SM_GrassTuft_C_01"), TEXT("SM_GrassTall_01"),
-		TEXT("SM_FlowerA_01"), TEXT("SM_FlowerB_01"), TEXT("SM_Fern_01"), TEXT("SM_Clover_01")};
+		TEXT("SM_FlowerA_01"), TEXT("SM_FlowerB_01"), TEXT("SM_Fern_01"), TEXT("SM_Clover_01"),
+		TEXT("SM_GrassPatch_A_01"), TEXT("SM_GrassPatch_B_01"), TEXT("SM_GrassPatch_C_01")};
 
 	void ReadFloat(const FJsonObject& Obj, const TCHAR* Field, float& Out)
 	{
@@ -39,10 +40,9 @@ namespace GrassConfigDetail
 	void ReadTop(const FJsonObject& Root, FGrassConfig& C)
 	{
 		ReadFloat(Root, TEXT("cellSizeM"), C.CellSizeM);
-		ReadFloat(Root, TEXT("radiusM"), C.RadiusM);
-		double Frames = C.CellsPerFrame;
-		Root.TryGetNumberField(TEXT("cellsPerFrame"), Frames);
-		C.CellsPerFrame = static_cast<int32>(Frames);
+		double Work = C.WorkPerFrame;
+		Root.TryGetNumberField(TEXT("workPerFrame"), Work);
+		C.WorkPerFrame = static_cast<int32>(Work);
 		double Seed = C.Seed;
 		Root.TryGetNumberField(TEXT("seed"), Seed);
 		C.Seed = static_cast<uint32>(FMath::Max(Seed, 0.0));
@@ -51,7 +51,6 @@ namespace GrassConfigDetail
 		ReadFloat(Root, TEXT("pathMarginM"), C.PathMarginM);
 		ReadFloat(Root, TEXT("pointClearanceM"), C.PointClearanceM);
 		ReadFloat(Root, TEXT("sinkM"), C.SinkM);
-		ReadFloat(Root, TEXT("footprintM"), C.FootprintM);
 		ReadFloat(Root, TEXT("alignToNormal"), C.AlignToNormal);
 		ReadFloat(Root, TEXT("edgeBandM"), C.EdgeBandM);
 		const TArray<TSharedPtr<FJsonValue>>* Scale = nullptr;
@@ -59,6 +58,29 @@ namespace GrassConfigDetail
 		{
 			C.ScaleMin = static_cast<float>((*Scale)[0]->AsNumber());
 			C.ScaleMax = static_cast<float>((*Scale)[1]->AsNumber());
+		}
+	}
+
+	void ReadThinning(const FJsonObject& Root, FGrassThinning& T, FGrassAssets& A)
+	{
+		if (const FJsonObject* Thin = Child(Root, TEXT("thinning")))
+		{
+			ReadFloat(*Thin, TEXT("denseM"), T.DenseM);
+			ReadFloat(*Thin, TEXT("endM"), T.EndM);
+			ReadFloat(*Thin, TEXT("endFadeM"), T.EndFadeM);
+			ReadFloat(*Thin, TEXT("exponent"), T.Exponent);
+			ReadFloat(*Thin, TEXT("maxGrow"), T.MaxGrow);
+			ReadFloat(*Thin, TEXT("growZ"), T.GrowZ);
+			ReadFloat(*Thin, TEXT("band"), T.Band);
+			ReadFloat(*Thin, TEXT("levelRatio"), T.LevelRatio);
+			ReadFloat(*Thin, TEXT("minLevel"), T.MinLevel);
+			ReadFloat(*Thin, TEXT("marginM"), T.MarginM);
+			ReadFloat(*Thin, TEXT("hysteresisM"), T.HysteresisM);
+		}
+		if (const FJsonObject* Wind = Child(Root, TEXT("wind")))
+		{
+			ReadFloat(*Wind, TEXT("fadeStartM"), A.WindFadeStartM);
+			ReadFloat(*Wind, TEXT("fadeEndM"), A.WindFadeEndM);
 		}
 	}
 
@@ -117,6 +139,7 @@ namespace GrassConfigDetail
 			const int32 K = static_cast<int32>(Kind);
 			ReadString(**Entry, TEXT("mesh"), A.Meshes[K]);
 			ReadFloat(**Entry, TEXT("scale"), C.KindScale[K]);
+			ReadFloat(**Entry, TEXT("footprintM"), C.KindFootprintM[K]);
 			(*Entry)->TryGetBoolField(TEXT("castShadow"), A.bCastShadow[K]);
 		}
 		return true;
@@ -163,8 +186,6 @@ FGrassAssets FGrassAssets::Defaults()
 	{
 		A.Meshes[K] = FString(TEXT("/Game/Art/K6_Cesped/")) + GrassConfigDetail::K6Meshes[K];
 	}
-	A.bCastShadow[static_cast<int32>(EGrassKind::Tall)] = true;
-	A.bCastShadow[static_cast<int32>(EGrassKind::Fern)] = true;
 	return A;
 }
 
@@ -193,18 +214,15 @@ bool ExploredGrass::ParseGrassJson(const FString& Json, FGrassConfig& OutConfig,
 	ReadString(*Root, TEXT("material"), Assets.Material);
 	ReadString(*Root, TEXT("fallbackMaterial"), Assets.FallbackMaterial);
 	ReadString(*Root, TEXT("fallbackMesh"), Assets.FallbackMesh);
-	if (const FJsonObject* Fade = Child(*Root, TEXT("fade")))
-	{
-		ReadFloat(*Fade, TEXT("startM"), Assets.FadeStartM);
-		ReadFloat(*Fade, TEXT("endM"), Assets.FadeEndM);
-	}
+	ReadString(*Root, TEXT("parameterCollection"), Assets.ParameterCollection);
+	ReadThinning(*Root, Config.Thinning, Assets);
 	if (!ReadDensity(*Root, Config, OutError) || !ReadMeshes(*Root, Config, Assets, OutError) || !ReadMixes(*Root, Config, OutError))
 	{
 		return false;
 	}
-	if (!(Assets.FadeStartM > 0.0f && Assets.FadeEndM > Assets.FadeStartM))
+	if (!(Assets.WindFadeStartM >= 0.0f && Assets.WindFadeEndM > Assets.WindFadeStartM))
 	{
-		OutError = TEXT("fade: startM debe ser > 0 y menor que endM");
+		OutError = TEXT("wind: fadeStartM debe ser ≥ 0 y menor que fadeEndM");
 		return false;
 	}
 	if (!Config.Validate(OutError))

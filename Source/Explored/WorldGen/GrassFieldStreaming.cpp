@@ -1,17 +1,17 @@
-// Actualización incremental de FGrassFieldModel: celdas que entran y salen del radio y reciclaje de
-// las ranuras de instancia. La generación de cada celda está en GrassFieldModel.cpp.
+// Actualización incremental de FGrassFieldModel: niveles de densidad por celda (FGrassThinning), celdas
+// que entran y salen del alcance y reciclaje de las ranuras de instancia. La generación de cada celda
+// está en GrassFieldModel.cpp.
 #include "WorldGen/GrassFieldModel.h"
 
 namespace GrassStreamingDetail
 {
-	/** Movimiento mínimo de la cámara (m²) para recalcular el conjunto de celdas. */
+	/** Movimiento mínimo de la cámara (m²) para recalcular niveles sin trabajo pendiente. */
 	constexpr double RecomputeDistSq = 1.0;
 
-	struct FCandidate
+	bool ByRank(const FGrassInstance& A, const FGrassInstance& B)
 	{
-		FIntPoint Cell;
-		double Dist = 0.0;
-	};
+		return A.Rank < B.Rank;
+	}
 }
 
 int32 FGrassUpdate::WriteCount() const
@@ -63,13 +63,40 @@ int32 FGrassFieldModel::GetLiveCount(EGrassKind Kind) const
 	return N;
 }
 
+int32 FGrassFieldModel::GetCellLevel(const FIntPoint& Cell) const
+{
+	const FCellState* State = Cells.Find(Cell);
+	return State ? State->Level : INDEX_NONE;
+}
+
 const TArray<FGrassInstance>* FGrassFieldModel::FindCell(const FIntPoint& Cell) const
 {
 	const FCellState* State = Cells.Find(Cell);
 	return State ? &State->Instances : nullptr;
 }
 
-int32 FGrassFieldModel::AcquireSlot(int32 Kind, FGrassUpdate& Update)
+int64 FGrassFieldModel::CountTrianglesInView(const FVector2D& Camera, const FVector2D& Forward, float HalfAngleRad, const int32 (&TrisPerKind)[GrassKindCount]) const
+{
+	const FVector2D Dir = Forward.GetSafeNormal();
+	const double MinCos = FMath::Cos(static_cast<double>(FMath::Clamp(HalfAngleRad, 0.0f, 3.14159265f)));
+	int64 Tris = 0;
+	for (const TPair<FIntPoint, FCellState>& Pair : Cells)
+	{
+		for (const FGrassInstance& Inst : Pair.Value.Instances)
+		{
+			const FVector2D To = FVector2D(Inst.Location.X, Inst.Location.Y) - Camera;
+			const double Len = To.Size();
+			// Lo que está a menos de 2 m cuenta siempre (cerca del borde del encuadre por la altura del ojo).
+			if (Len < 2.0 || FVector2D::DotProduct(To, Dir) >= MinCos * Len)
+			{
+				Tris += TrisPerKind[static_cast<int32>(Inst.Kind)];
+			}
+		}
+	}
+	return Tris;
+}
+
+int32 FGrassFieldModel::AcquireSlot(int32 Kind)
 {
 	int32 Slot = INDEX_NONE;
 	if (!FreeSlots[Kind].IsEmpty())
@@ -83,6 +110,21 @@ int32 FGrassFieldModel::AcquireSlot(int32 Kind, FGrassUpdate& Update)
 	}
 	SlotVisible[Kind][Slot] = 1;
 	return Slot;
+}
+
+void FGrassFieldModel::ReleaseTail(FCellState& State, int32 Keep)
+{
+	for (int32 I = State.Instances.Num() - 1; I >= Keep; --I)
+	{
+		const int32 Kind = static_cast<int32>(State.Instances[I].Kind);
+		const int32 Slot = State.Slots[I];
+		SlotVisible[Kind][Slot] = 0;
+		FreeSlots[Kind].Add(Slot);
+		ReleasedNow[Kind].Add(Slot);
+	}
+	LiveInstances -= State.Instances.Num() - Keep;
+	State.Instances.SetNum(Keep);
+	State.Slots.SetNum(Keep);
 }
 
 FGrassUpdate FGrassFieldModel::Update(const FVector2D& CameraMeters)
@@ -102,8 +144,8 @@ FGrassUpdate FGrassFieldModel::Update(const FVector2D& CameraMeters)
 	{
 		Released.Reset();
 	}
-	RemoveFarCells(CameraMeters, Out);
-	AddNearCells(CameraMeters, Out);
+	ShrinkOrRemoveCells(CameraMeters, Out);
+	GrowCells(CameraMeters, Out);
 	for (int32 K = 0; K < GrassKindCount; ++K)
 	{
 		for (const int32 Slot : ReleasedNow[K])
@@ -117,55 +159,70 @@ FGrassUpdate FGrassFieldModel::Update(const FVector2D& CameraMeters)
 	return Out;
 }
 
-void FGrassFieldModel::RemoveFarCells(const FVector2D& Camera, FGrassUpdate& Update)
+void FGrassFieldModel::ShrinkOrRemoveCells(const FVector2D& Camera, FGrassUpdate& Update)
 {
-	// Histéresis de media celda: una cámara que oscila en el borde no crea y borra la misma celda.
-	const double Keep = Config.RadiusM + Config.CellSizeM * 0.5;
-	TArray<FIntPoint> Far;
-	for (const TPair<FIntPoint, FCellState>& Pair : Cells)
+	// Bajar de nivel solo quita parches con rango ≥ f_k ≥ f(distancia de la celda): el material ya los
+	// tiene encogidos a 0. La histéresis evita que una cámara que oscila suba y baje la misma celda.
+	const FGrassThinning& Thin = Config.Thinning;
+	const double Extra = Thin.MarginM + Thin.HysteresisM;
+	TArray<FIntPoint> Gone;
+	for (TPair<FIntPoint, FCellState>& Pair : Cells)
 	{
-		if (DistanceToCell(Camera, Pair.Key) > Keep)
+		const int32 Keep = Thin.LevelFor(DistanceToCell(Camera, Pair.Key), Extra);
+		FCellState& State = Pair.Value;
+		if (Keep == INDEX_NONE)
 		{
-			Far.Add(Pair.Key);
+			Gone.Add(Pair.Key);
+			continue;
 		}
+		if (Keep <= State.Level)
+		{
+			continue;
+		}
+		const float Limit = Thin.LevelFraction(Keep);
+		int32 Count = State.Instances.Num();
+		while (Count > 0 && State.Instances[Count - 1].Rank >= Limit)
+		{
+			--Count;
+		}
+		ReleaseTail(State, Count);
+		State.Level = Keep;
+		++Update.CellsRemoved;
 	}
-	for (const FIntPoint& Cell : Far)
+	for (const FIntPoint& Cell : Gone)
 	{
-		const FCellState& State = Cells.FindChecked(Cell);
-		for (int32 I = 0; I < State.Instances.Num(); ++I)
-		{
-			const int32 Kind = static_cast<int32>(State.Instances[I].Kind);
-			const int32 Slot = State.Slots[I];
-			SlotVisible[Kind][Slot] = 0;
-			FreeSlots[Kind].Add(Slot);
-			ReleasedNow[Kind].Add(Slot);
-		}
-		LiveInstances -= State.Instances.Num();
+		ReleaseTail(Cells.FindChecked(Cell), 0);
 		Cells.Remove(Cell);
 		++Update.CellsRemoved;
 	}
 }
 
-void FGrassFieldModel::AddNearCells(const FVector2D& Camera, FGrassUpdate& Update)
+void FGrassFieldModel::GrowCells(const FVector2D& Camera, FGrassUpdate& Update)
 {
-	using GrassStreamingDetail::FCandidate;
+	const FGrassThinning& Thin = Config.Thinning;
 	const FIntPoint Center = CellOf(Camera);
-	const int32 Reach = FMath::CeilToInt32(Config.RadiusM / Config.CellSizeM) + 1;
-	TArray<FCandidate> Wanted;
+	const int32 Reach = FMath::CeilToInt32(Thin.ReachM() / Config.CellSizeM) + 1;
+	TArray<FCellJob> Jobs;
 	for (int32 Dx = -Reach; Dx <= Reach; ++Dx)
 	{
 		for (int32 Dy = -Reach; Dy <= Reach; ++Dy)
 		{
 			const FIntPoint Cell(Center.X + Dx, Center.Y + Dy);
 			const double Dist = DistanceToCell(Camera, Cell);
-			if (Dist <= Config.RadiusM && !Cells.Contains(Cell))
+			const int32 Need = Thin.LevelFor(Dist, Thin.MarginM);
+			if (Need == INDEX_NONE)
 			{
-				Wanted.Add({Cell, Dist});
+				continue;
+			}
+			const FCellState* State = Cells.Find(Cell);
+			if (!State || Need < State->Level)
+			{
+				Jobs.Add({Cell, Dist, Need});
 			}
 		}
 	}
 	// Las más cercanas primero; el desempate por coordenada deja el orden determinista.
-	Wanted.Sort([](const FCandidate& A, const FCandidate& B)
+	Jobs.Sort([](const FCellJob& A, const FCellJob& B)
 	{
 		if (A.Dist != B.Dist)
 		{
@@ -173,22 +230,44 @@ void FGrassFieldModel::AddNearCells(const FVector2D& Camera, FGrassUpdate& Updat
 		}
 		return A.Cell.X != B.Cell.X ? A.Cell.X < B.Cell.X : A.Cell.Y < B.Cell.Y;
 	});
-	const int32 Build = FMath::Min(Wanted.Num(), Config.CellsPerFrame);
-	Pending = Wanted.Num() - Build;
-	for (int32 C = 0; C < Build; ++C)
+	const int32 PerCell = Config.Subdivisions() * Config.Subdivisions();
+	int32 Done = 0;
+	for (; Done < Jobs.Num(); ++Done)
 	{
-		FCellState State;
-		GenerateCell(Config, *World, Wanted[C].Cell, State.Instances);
-		State.Slots.Reserve(State.Instances.Num());
-		for (const FGrassInstance& Inst : State.Instances)
+		const FCellState* State = Cells.Find(Jobs[Done].Cell);
+		const float From = State ? Thin.LevelFraction(State->Level) : 0.0f;
+		const int32 Expected = FMath::CeilToInt32(PerCell * (Thin.LevelFraction(Jobs[Done].Level) - From));
+		if (Update.Work > 0 && Update.Work + Expected > Config.WorkPerFrame)
 		{
-			const int32 Kind = static_cast<int32>(Inst.Kind);
-			const int32 Slot = AcquireSlot(Kind, Update);
-			State.Slots.Add(Slot);
-			Update.Writes[Kind].Add({Slot, Inst});
+			break;
 		}
-		LiveInstances += State.Instances.Num();
-		Cells.Add(Wanted[C].Cell, MoveTemp(State));
-		++Update.CellsBuilt;
+		RunJob(Jobs[Done], Update);
 	}
+	Pending = Jobs.Num() - Done;
+}
+
+void FGrassFieldModel::RunJob(const FCellJob& Job, FGrassUpdate& Update)
+{
+	const FGrassThinning& Thin = Config.Thinning;
+	FCellState* Existing = Cells.Find(Job.Cell);
+	FCellState& State = Existing ? *Existing : Cells.Add(Job.Cell);
+	const float From = Existing ? Thin.LevelFraction(State.Level) : 0.0f;
+	const float To = Thin.LevelFraction(Job.Level);
+	TArray<FGrassInstance> Added;
+	Update.Work += GenerateCell(Config, *World, Job.Cell, From, To, Added);
+	// Todos los nuevos tienen rango ≥ From > los que ya estaban: el orden por rango se conserva.
+	Added.StableSort(GrassStreamingDetail::ByRank);
+	State.Instances.Reserve(State.Instances.Num() + Added.Num());
+	State.Slots.Reserve(State.Slots.Num() + Added.Num());
+	for (const FGrassInstance& Inst : Added)
+	{
+		const int32 Kind = static_cast<int32>(Inst.Kind);
+		const int32 Slot = AcquireSlot(Kind);
+		State.Instances.Add(Inst);
+		State.Slots.Add(Slot);
+		Update.Writes[Kind].Add({Slot, Inst});
+	}
+	LiveInstances += Added.Num();
+	State.Level = Job.Level;
+	++Update.CellsBuilt;
 }

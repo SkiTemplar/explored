@@ -74,3 +74,4 @@ Debug/BenchBudgetModel.cpp
 WorldGen/GroundField.cpp
 WorldGen/GrassFieldModel.cpp
 WorldGen/GrassFieldStreaming.cpp
+WorldGen/GrassThinning.cpp

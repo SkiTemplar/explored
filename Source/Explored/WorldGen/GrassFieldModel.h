@@ -2,12 +2,16 @@
 
 #include "CoreMinimal.h"
 
+#include "WorldGen/GrassThinning.h"
 #include "WorldGen/GroundField.h"
 #include "WorldGen/IslandLayout.h"
 
 struct FIslandProps;
 
-/** Mallas del césped (kit K6, Content/Data/grass.json «meshes»). */
+/**
+ * Mallas del césped (kit K6, Content/Data/grass.json «meshes»). Los parches (PatchA-C, 17-18 hojas en
+ * ~0,4 m de radio) forman la alfombra; el resto son acentos (flores, helechos, tréboles, hierba alta).
+ */
 enum class EGrassKind : uint8
 {
 	TuftA,
@@ -18,6 +22,9 @@ enum class EGrassKind : uint8
 	FlowerB,
 	Fern,
 	Clover,
+	PatchA,
+	PatchB,
+	PatchC,
 	Count
 };
 
@@ -35,7 +42,7 @@ enum class EGrassContext : uint8
 constexpr int32 GrassKindCount = static_cast<int32>(EGrassKind::Count);
 constexpr int32 GrassContextCount = static_cast<int32>(EGrassContext::Count);
 
-/** Nombre de grass.json: tuft_a, tuft_b, tuft_c, tall, flower_a, flower_b, fern, clover. */
+/** Nombre de grass.json: tuft_a, tuft_b, tuft_c, tall, flower_a, flower_b, fern, clover, patch_a, patch_b, patch_c. */
 EXPLORED_API const TCHAR* LexToString(EGrassKind Kind);
 EXPLORED_API bool GrassKindFromName(const FString& Name, EGrassKind& Out);
 /** Nombre de grass.json: common, edge, clearing, palm, dirt. */
@@ -59,26 +66,29 @@ struct EXPLORED_API FGrassMix
 struct EXPLORED_API FGrassConfig
 {
 	static constexpr float DefaultCellSizeM = 8.0f;
-	static constexpr float DefaultRadiusM = 70.0f;
-	static constexpr int32 DefaultCellsPerFrame = 4;
+	static constexpr int32 DefaultWorkPerFrame = 700;
 	static constexpr float DefaultMaxSlopeDeg = 34.0f;
 	static constexpr float DefaultClearanceM = 1.5f;
 	static constexpr float DefaultPathMarginM = 0.4f;
-	static constexpr float DefaultDensity = 1.8f;
-	static constexpr float DefaultDirtDensity = 0.3f;
-	static constexpr float ZonePalmarDensity = 2.6f;
-	static constexpr float ZoneColinaDensity = 2.4f;
-	static constexpr float ZoneBambuDensity = 1.8f;
-	static constexpr float ZoneCalaDensity = 1.4f;
-	static constexpr float ZonePlayaDensity = 1.0f;
-	static constexpr float ZoneRocasDensity = 0.6f;
-	static constexpr float ZoneCargueroDensity = 1.2f;
+	static constexpr float DefaultDensity = 5.5f;
+	static constexpr float DefaultDirtDensity = 0.5f;
+	static constexpr float ZonePalmarDensity = 6.0f;
+	static constexpr float ZoneColinaDensity = 5.5f;
+	static constexpr float ZoneBambuDensity = 5.0f;
+	static constexpr float ZoneCalaDensity = 5.0f;
+	static constexpr float ZonePlayaDensity = 4.5f;
+	static constexpr float ZoneRocasDensity = 3.0f;
+	static constexpr float ZoneCargueroDensity = 4.0f;
 
 	float CellSizeM = DefaultCellSizeM;
-	/** Radio (m) alrededor de la cámara con celdas de césped. */
-	float RadiusM = DefaultRadiusM;
-	/** Celdas nuevas que se generan como mucho en cada Update. */
-	int32 CellsPerFrame = DefaultCellsPerFrame;
+	/**
+	 * Candidatos de la subrejilla que se evalúan en cada Update (≈ 1 µs cada uno): reparte entre frames
+	 * el relleno tras un salto de cámara. Un trabajo empieza si su coste esperado cabe; el real puede
+	 * pasarse un poco (como mucho una celda entera), y siempre se hace al menos uno por Update.
+	 */
+	int32 WorkPerFrame = DefaultWorkPerFrame;
+	/** Adelgazamiento con la distancia (grass.json «thinning»): fija también el alcance de las celdas. */
+	FGrassThinning Thinning;
 	uint32 Seed = 7177;
 	float MaxSlopeDeg = DefaultMaxSlopeDeg;
 	/** Holgura (m) alrededor de interactuables, recogibles, balsa, faro y casa. */
@@ -89,17 +99,15 @@ struct EXPLORED_API FGrassConfig
 	float PointClearanceM = 3.0f;
 	/** Hundimiento (m) de la base bajo el suelo, más el desnivel de la huella en pendiente. */
 	float SinkM = 0.03f;
-	/** Radio (m) de la base de una mata a escala 1 (para el hundimiento en pendiente). */
-	float FootprintM = 0.2f;
 	/** 0 = matas verticales, 1 = perpendiculares al suelo. */
 	float AlignToNormal = 0.5f;
 	float ScaleMin = 0.8f;
 	float ScaleMax = 1.3f;
-	/** Matas por m² fuera de las zonas con densidad propia. */
+	/** Parches (o matas) por m² fuera de las zonas con densidad propia. */
 	float DensityPerM2 = DefaultDensity;
-	/** Matas por m² sobre tierra suelta (tréboles). */
+	/** Por m² sobre tierra suelta (tréboles y matas sueltas). */
 	float DirtDensityPerM2 = DefaultDirtDensity;
-	/** Densidad (matas por m²) por id de zona de island.json. */
+	/** Densidad (parches por m²) por id de zona de island.json. */
 	TMap<FName, float> ZoneDensity;
 	/** Ancho (m) del fundido de la densidad en el borde de cada zona. */
 	float ZoneFeatherM = 8.0f;
@@ -107,14 +115,16 @@ struct EXPLORED_API FGrassConfig
 	float ClearingCellM = 22.0f;
 	float ClearingThreshold = 0.64f;
 	/** Factor de densidad dentro de un claro. */
-	float ClearingDensity = 0.6f;
+	float ClearingDensity = 0.85f;
 	/** Banda (m) de hierba alta junto al borde del camino (tras PathMarginM) y alrededor de las rocas. */
 	float EdgeBandM = 2.0f;
 	/** Corona de helechos alrededor de cada palmera: de PalmTrunkM a PalmRadiusM. */
 	float PalmTrunkM = 0.7f;
 	float PalmRadiusM = 3.5f;
 	/** Escala propia de cada malla (se multiplica por la tirada ScaleMin-ScaleMax). */
-	float KindScale[GrassKindCount] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 1.2f};
+	float KindScale[GrassKindCount] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 1.2f, 1.0f, 1.0f, 1.0f};
+	/** Radio (m) de la huella de cada malla a escala 1: hundimiento en pendiente y cobertura. */
+	float KindFootprintM[GrassKindCount] = {0.2f, 0.2f, 0.2f, 0.3f, 0.1f, 0.1f, 0.4f, 0.15f, 0.414f, 0.44f, 0.402f};
 	FGrassMix Mixes[GrassContextCount];
 
 	/** Valores de grass.json (mezclas y zonas incluidas). */
@@ -122,6 +132,8 @@ struct EXPLORED_API FGrassConfig
 
 	/** Mayor densidad posible (m⁻²): fija la rejilla de candidatos de cada celda. */
 	float MaxDensity() const;
+	/** Candidatos de la subrejilla por eje de una celda. */
+	int32 Subdivisions() const;
 	bool Validate(FString& OutError) const;
 };
 
@@ -150,7 +162,7 @@ struct EXPLORED_API FGrassWorld
 	static TArray<FVector2D> PalmsFrom(const FIslandProps& Props);
 };
 
-/** Una mata. Metros y grados; Up es el eje Z de la malla (vertical mezclada con la normal). */
+/** Una mata o parche. Metros y grados; Up es el eje Z de la malla (vertical mezclada con la normal). */
 struct EXPLORED_API FGrassInstance
 {
 	EGrassKind Kind = EGrassKind::TuftA;
@@ -159,6 +171,10 @@ struct EXPLORED_API FGrassInstance
 	float Scale = 1.0f;
 	FVector3f Up = FVector3f(0.0f, 0.0f, 1.0f);
 	EGrassContext Context = EGrassContext::Common;
+	/** Rango de adelgazamiento en [0, 1) (dato por instancia 0 del material; ver FGrassThinning). */
+	float Rank = 0.0f;
+	/** Variación del parche en [0, 1) (dato por instancia 1: tinte y altura). */
+	float Variation = 0.0f;
 };
 
 /** Escritura en la ranura Slot de la malla Kind (Slot == número de instancias: se añade al final). */
@@ -174,8 +190,12 @@ struct EXPLORED_API FGrassUpdate
 	TArray<FGrassWrite> Writes[GrassKindCount];
 	/** Ranuras que quedan libres: se ocultan (escala 0 lejos de la cámara) hasta que se reutilicen. */
 	TArray<int32> Hides[GrassKindCount];
+	/** Celdas creadas o subidas de nivel en este Update. */
 	int32 CellsBuilt = 0;
+	/** Celdas quitadas o bajadas de nivel en este Update. */
 	int32 CellsRemoved = 0;
+	/** Candidatos evaluados (el trabajo que limita WorkPerFrame). */
+	int32 Work = 0;
 
 	bool IsEmpty() const { return CellsBuilt == 0 && CellsRemoved == 0; }
 	int32 WriteCount() const;
@@ -183,14 +203,16 @@ struct EXPLORED_API FGrassUpdate
 };
 
 /**
- * Césped alrededor de la cámara (GDD v3 §11, F7): rejilla de celdas de CellSizeM en un radio RadiusM.
- * Cada celda se rellena de forma determinista por el hash de su coordenada (subrejilla con desplazamiento
- * y aceptación por densidad), sin depender del orden de llegada ni de la cámara. La altura sale de
- * FGroundField (la malla exacta), no de SampleColumn.
+ * Césped alrededor de la cámara (GDD v3 §11, F7-F8): rejilla de celdas de CellSizeM hasta
+ * Thinning.ReachM(). Cada candidato de la subrejilla de una celda tiene un hash fijo (posición,
+ * aceptación por densidad, malla, escala, giro, rango y variación), así que la salida no depende del
+ * orden de llegada ni de la cámara. La altura sale de FGroundField (la malla exacta), no de SampleColumn.
  *
- * Update(cámara) solo toca el borde: quita las celdas que salen del radio (con histéresis de media
- * celda) y genera como mucho CellsPerFrame celdas nuevas, las más cercanas primero. Las ranuras de
- * instancia se reciclan (las de una celda que sale pasan a la siguiente que entra), así que el
+ * Cada celda guarda un nivel de densidad (FGrassThinning): solo los parches con rango < f_k, ordenados
+ * por rango. Update(cámara) sube de nivel las celdas que se acercan (con MarginM de adelanto, generando
+ * solo la franja de rangos que falta), baja las que se alejan (con HysteresisM más; quitar del final no
+ * cuesta nada) y quita las que salen del alcance. Las subidas y las celdas nuevas se hacen por orden de
+ * cercanía hasta gastar WorkPerFrame candidatos. Las ranuras de instancia se reciclan, así que el
  * componente de cada malla nunca reordena índices.
  */
 class EXPLORED_API FGrassFieldModel
@@ -198,7 +220,13 @@ class EXPLORED_API FGrassFieldModel
 public:
 	FGrassFieldModel(const FGrassConfig& InConfig, TSharedPtr<const FGrassWorld> InWorld);
 
-	/** Matas de una celda (determinista: misma celda, misma salida). */
+	/**
+	 * Matas de una celda con rango en [RankLo, RankHi), en orden de candidato (determinista: misma celda y
+	 * franja, misma salida). Devuelve los candidatos evaluados (el trabajo).
+	 */
+	static int32 GenerateCell(const FGrassConfig& Config, const FGrassWorld& World, const FIntPoint& Cell,
+		float RankLo, float RankHi, TArray<FGrassInstance>& Out);
+	/** Todas las matas de la celda (rango en [0, 1)). */
 	static void GenerateCell(const FGrassConfig& Config, const FGrassWorld& World, const FIntPoint& Cell, TArray<FGrassInstance>& Out);
 
 	FGrassUpdate Update(const FVector2D& CameraMeters);
@@ -210,7 +238,9 @@ public:
 
 	bool IsCellActive(const FIntPoint& Cell) const { return Cells.Contains(Cell); }
 	int32 GetActiveCellCount() const { return Cells.Num(); }
-	/** Celdas dentro del radio de la última cámara que aún no se han generado. */
+	/** Nivel de densidad de una celda activa (INDEX_NONE si no está). */
+	int32 GetCellLevel(const FIntPoint& Cell) const;
+	/** Celdas que faltan por crear o subir de nivel para la última cámara. */
 	int32 GetPendingCellCount() const { return Pending; }
 	int32 GetLiveInstanceCount() const { return LiveInstances; }
 	int32 GetLiveCount(EGrassKind Kind) const;
@@ -218,17 +248,33 @@ public:
 	int32 GetSlotCount(EGrassKind Kind) const { return SlotHighWater[static_cast<int32>(Kind)]; }
 	const TArray<FGrassInstance>* FindCell(const FIntPoint& Cell) const;
 	const FGrassConfig& GetConfig() const { return Config; }
+	/**
+	 * Triángulos de las matas vivas dentro de un sector horizontal (cámara, dirección y medio ángulo en
+	 * radianes), con TrisPerKind triángulos por malla: el coste de geometría «a la vista».
+	 */
+	int64 CountTrianglesInView(const FVector2D& Camera, const FVector2D& Forward, float HalfAngleRad, const int32 (&TrisPerKind)[GrassKindCount]) const;
 
 private:
 	struct FCellState
 	{
+		/** Ordenadas por rango: bajar de nivel quita del final. */
 		TArray<FGrassInstance> Instances;
 		TArray<int32> Slots;
+		int32 Level = 0;
 	};
 
-	int32 AcquireSlot(int32 Kind, FGrassUpdate& Update);
-	void RemoveFarCells(const FVector2D& Camera, FGrassUpdate& Update);
-	void AddNearCells(const FVector2D& Camera, FGrassUpdate& Update);
+	struct FCellJob
+	{
+		FIntPoint Cell;
+		double Dist = 0.0;
+		int32 Level = 0;
+	};
+
+	int32 AcquireSlot(int32 Kind);
+	void ReleaseTail(FCellState& State, int32 Keep);
+	void ShrinkOrRemoveCells(const FVector2D& Camera, FGrassUpdate& Update);
+	void GrowCells(const FVector2D& Camera, FGrassUpdate& Update);
+	void RunJob(const FCellJob& Job, FGrassUpdate& Update);
 
 	FGrassConfig Config;
 	TSharedPtr<const FGrassWorld> World;

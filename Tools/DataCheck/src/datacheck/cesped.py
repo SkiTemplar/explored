@@ -1,7 +1,9 @@
 """grass.json (césped del kit K6), island_decor.json (vegetación decorativa) y ground_field.bin.
 
-grass.json: forma y rangos, las 8 mallas del kit K6 (que existan en Art/Export/K6_Cesped/manifest.json),
-las 5 mezclas por sitio, zonas que existan en island.json y el espejo con FGrassConfig (GrassFieldModel.h).
+grass.json (versión 2, césped continuo): forma y rangos, las 11 mallas del kit K6 (que existan en
+Art/Export/K6_Cesped/manifest.json) sin sombras, las 5 mezclas por sitio, zonas que existan en island.json,
+el adelgazamiento («thinning», FGrassThinning) y el espejo con FGrassConfig (GrassFieldModel.h) y
+FGrassThinning (GrassThinning.h).
 island_decor.json: mallas de /Game/Art que existan en algún manifest de Art/Export y tope de instancias
 de FIslandDecor (IslandDecorModel.h). ground_field.bin: que exista y tenga la cabecera EXGF.
 """
@@ -15,23 +17,25 @@ from pathlib import Path
 from typing import Any
 
 GRASS_CPP = "WorldGen/GrassFieldModel.h"
+THINNING_CPP = "WorldGen/GrassThinning.h"
+GRASS_VERSION = 2
 DECOR_CPP = "WorldGen/IslandDecorModel.h"
-KINDS = ("tuft_a", "tuft_b", "tuft_c", "tall", "flower_a", "flower_b", "fern", "clover")
+KINDS = ("tuft_a", "tuft_b", "tuft_c", "tall", "flower_a", "flower_b", "fern", "clover", "patch_a", "patch_b",
+         "patch_c")
 CONTEXTS = ("common", "edge", "clearing", "palm", "dirt")
 K6_MESH = re.compile(r"^/Game/Art/K6_Cesped/(SM_[A-Za-z_]+_01)$")
 ART_MESH = re.compile(r"^/Game/Art/(K\d_[A-Za-z]+)/(SM_[A-Za-z_]+_01)$")
 MATERIAL = re.compile(r"^/Game/Art/Materials/M_[A-Za-z]+$")
+COLLECTION = re.compile(r"^/Game/Art/Materials/MPC_[A-Za-z]+$")
 # (clave de primer nivel, mínimo, máximo, constante C++ o None)
 TOP = [
     ("cellSizeM", 2.0, 32.0, "DefaultCellSizeM"),
-    ("radiusM", 8.0, 200.0, "DefaultRadiusM"),
-    ("cellsPerFrame", 1, 64, "DefaultCellsPerFrame"),
+    ("workPerFrame", 50, 20000, "DefaultWorkPerFrame"),
     ("maxSlopeDeg", 1.0, 89.0, "DefaultMaxSlopeDeg"),
     ("clearanceM", 0.0, 10.0, "DefaultClearanceM"),
     ("pathMarginM", 0.0, 5.0, "DefaultPathMarginM"),
     ("pointClearanceM", 0.0, 20.0, None),
     ("sinkM", 0.0, 0.5, None),
-    ("footprintM", 0.0, 2.0, None),
     ("alignToNormal", 0.0, 1.0, None),
     ("edgeBandM", 0.0, 10.0, None),
     ("seed", 0, 2**32 - 1, None),
@@ -41,6 +45,20 @@ ZONE_MIRRORS = {
     "cala_varada": "ZoneCalaDensity", "playa_norte": "ZonePlayaDensity", "rocas_pescador": "ZoneRocasDensity",
     "isla_carguero": "ZoneCargueroDensity",
 }
+# (clave de «thinning», mínimo, máximo, constante C++ de GrassThinning.h o None)
+THINNING = [
+    ("denseM", 1.0, 200.0, "DefaultDenseM"),
+    ("endM", 1.0, 200.0, "DefaultEndM"),
+    ("endFadeM", 0.0, 200.0, None),
+    ("exponent", 0.5, 4.0, None),
+    ("maxGrow", 1.0, 4.0, None),
+    ("growZ", 0.0, 1.0, None),
+    ("band", 0.001, 1.0, None),
+    ("levelRatio", 0.25, 0.9, None),
+    ("minLevel", 0.001, 0.5, None),
+    ("marginM", 0.0, 20.0, None),
+    ("hysteresisM", 0.0, 20.0, None),
+]
 MAX_DENSITY = 16.0
 
 Report = Callable[[str], None]
@@ -64,12 +82,12 @@ def _cpp_constant(root: Path, rel: str, name: str) -> float | None:
     return float(m.group(1)) if m else None
 
 
-def _mirror(root: Path, where: str, value: float, name: str, error: Report) -> None:
-    cpp = _cpp_constant(root, GRASS_CPP, name)
+def _mirror(root: Path, where: str, value: float, name: str, error: Report, rel: str = GRASS_CPP) -> None:
+    cpp = _cpp_constant(root, rel, name)
     if cpp is None:
-        error(f"grass.json {where}: no existe la constante {name} en {GRASS_CPP}")
+        error(f"grass.json {where}: no existe la constante {name} en {rel}")
     elif value != cpp:
-        error(f"grass.json {where}={value:g} pero {name}={cpp:g} en {GRASS_CPP}")
+        error(f"grass.json {where}={value:g} pero {name}={cpp:g} en {rel}")
 
 
 def _manifest_meshes(root: Path) -> dict[str, set[str]]:
@@ -101,9 +119,32 @@ def _check_top(doc: dict[str, Any], root: Path, error: Report) -> None:
     if not (isinstance(scale, list) and len(scale) == 2 and all(_num(s) is not None for s in scale)
             and 0 < scale[0] <= scale[1] <= 5):
         error("grass.json scale: debe ser [mínimo, máximo] con 0 < mínimo ≤ máximo ≤ 5")
-    radius, cell = _num(doc.get("radiusM")), _num(doc.get("cellSizeM"))
-    if radius is not None and cell is not None and radius < cell:
-        error("grass.json radiusM: debe ser al menos cellSizeM")
+
+
+def _check_thinning(doc: dict[str, Any], root: Path, error: Report) -> None:
+    thin = doc.get("thinning")
+    if not isinstance(thin, dict):
+        error("grass.json thinning: falta el objeto")
+        return
+    values: dict[str, float] = {}
+    for key, lo, hi, constant in THINNING:
+        value = _range(thin, key, lo, hi, "thinning.", error)
+        if value is None:
+            continue
+        values[key] = value
+        if constant:
+            _mirror(root, f"thinning.{key}", value, constant, error, THINNING_CPP)
+    dense, end, fade = values.get("denseM"), values.get("endM"), values.get("endFadeM")
+    if dense is not None and end is not None and not dense < end:
+        error("grass.json thinning: denseM debe ser menor que endM")
+    elif dense is not None and end is not None and fade is not None and fade > end - dense:
+        error("grass.json thinning.endFadeM: no puede pasar de endM - denseM")
+    wind = _obj(doc.get("wind"))
+    start, stop = _num(wind.get("fadeStartM")), _num(wind.get("fadeEndM"))
+    if start is None or stop is None or not 0 <= start < stop:
+        error("grass.json wind: debe ser 0 ≤ fadeStartM < fadeEndM")
+    elif end is not None and stop > end:
+        error("grass.json wind.fadeEndM: no puede pasar de thinning.endM (más allá no hay césped)")
 
 
 def _check_density(doc: dict[str, Any], root: Path, zone_ids: set[str], error: Report) -> None:
@@ -147,11 +188,14 @@ def _check_assets(doc: dict[str, Any], manifests: dict[str, set[str]], error: Re
         elif manifests and m.group(1) not in manifests.get("K6_Cesped", set()):
             error(f"grass.json meshes.{kind}.mesh: {m.group(1)} no está en Art/Export/K6_Cesped/manifest.json")
         _range(entry, "scale", 0.05, 5.0, f"meshes.{kind}.", error)
-        if not isinstance(entry.get("castShadow"), bool):
-            error(f"grass.json meshes.{kind}.castShadow: debe ser true o false")
+        _range(entry, "footprintM", 0.0, 2.0, f"meshes.{kind}.", error)
+        if entry.get("castShadow") is not False:
+            error(f"grass.json meshes.{kind}.castShadow: debe ser false (el césped no proyecta sombras)")
     for key in ("material", "fallbackMaterial"):
         if not MATERIAL.match(str(doc.get(key, ""))):
             error(f"grass.json {key}: debe ser /Game/Art/Materials/M_<Nombre>")
+    if not COLLECTION.match(str(doc.get("parameterCollection", ""))):
+        error("grass.json parameterCollection: debe ser /Game/Art/Materials/MPC_<Nombre>")
     fallback = ART_MESH.match(str(doc.get("fallbackMesh", "")))
     if not fallback:
         error("grass.json fallbackMesh: debe ser /Game/Art/<Kit>/SM_<Nombre>_01")
@@ -159,7 +203,7 @@ def _check_assets(doc: dict[str, Any], manifests: dict[str, set[str]], error: Re
         error(f"grass.json fallbackMesh: {fallback.group(2)} no está en el manifest de {fallback.group(1)}")
 
 
-def _check_mixes_and_fade(doc: dict[str, Any], error: Report) -> None:
+def _check_mixes(doc: dict[str, Any], error: Report) -> None:
     mixes = doc.get("mixes")
     if not isinstance(mixes, dict) or set(mixes) != set(CONTEXTS):
         error(f"grass.json mixes: debe tener exactamente {', '.join(CONTEXTS)}")
@@ -183,26 +227,20 @@ def _check_mixes_and_fade(doc: dict[str, Any], error: Report) -> None:
     trunk, ring = _num(palms.get("trunkM")), _num(palms.get("radiusM"))
     if trunk is None or ring is None or not 0 <= trunk < ring:
         error("grass.json palms: debe ser 0 ≤ trunkM < radiusM")
-    fade = _obj(doc.get("fade"))
-    start, end = _num(fade.get("startM")), _num(fade.get("endM"))
-    radius = _num(doc.get("radiusM"))
-    if start is None or end is None or not 0 < start < end:
-        error("grass.json fade: debe ser 0 < startM < endM")
-    elif radius is not None and end > radius + 1e-6:
-        error("grass.json fade.endM: no puede pasar de radiusM (más allá no hay celdas)")
 
 
 def check_grass(doc: Any, root: Path, zone_ids: set[str], error: Report) -> None:
     if not isinstance(doc, dict):
         error("grass.json: debe ser un objeto")
         return
-    if doc.get("version") != 1:
-        error("grass.json version: debe ser 1")
+    if doc.get("version") != GRASS_VERSION:
+        error(f"grass.json version: debe ser {GRASS_VERSION}")
     manifests = _manifest_meshes(root)
     _check_top(doc, root, error)
+    _check_thinning(doc, root, error)
     _check_density(doc, root, zone_ids, error)
     _check_assets(doc, manifests, error)
-    _check_mixes_and_fade(doc, error)
+    _check_mixes(doc, error)
 
 
 def check_decor(doc: Any, root: Path, error: Report) -> None:
