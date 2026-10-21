@@ -1,0 +1,236 @@
+{
+  "kit": "K6 Césped",
+  "generador": "uv run python -m kits.k6_cesped (Tools/Blender)",
+  "notas": {
+    "pivote": "centro de la base (z = 0); +Z arriba; metros (1 m = 100 uu tras import_uniform_scale = 100)",
+    "color": "UV 0 en una celda de T_Paleta por cara (como K1-K5) y el mismo color en el RGB del color por vértice «Col» (sRGB exacto de paleta.json)",
+    "viento": "alfa del color por vértice «Col»: 0 en la base y 1 en las puntas (tréboles: 0,35 como máximo, van pegados al suelo). M_Toon no tiene canal de viento por vértice: su WPO usa la altura sobre el pivote / 750 uu, que en una mata de 30 cm da 0,002. El material del césped debe multiplicar su WPO por VertexColor.A",
+    "material": "tarjetas de una cara: hace falta una variante de M_Toon de dos caras (two_sided) con el WPO por VertexColor.A, p. ej. M_ToonCesped; sin dos caras, la mitad de las hojas desaparece",
+    "importacion": "FBX con vertex_color_import_option = REPLACE, normales importadas, sin colisión, sin lightmap UV, sin Nanite y sin LOD (≤ 120 tris); 8 mallas y 1 material: 8 draw calls por grupo de instancias (HISM/foliage)"
+  },
+  "mallas": [
+    {
+      "malla": "SM_GrassTuft_A_01",
+      "fbx": "SM_GrassTuft_A_01.fbx",
+      "uso": "mata media de 7 hojas, tres verdes",
+      "presupuesto": "vegetacion",
+      "tope_tris": 40,
+      "tris": 25,
+      "dimensiones_m": [
+        0.377,
+        0.427,
+        0.326
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "hierba_salvia"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 7
+    },
+    {
+      "malla": "SM_GrassTuft_B_01",
+      "fbx": "SM_GrassTuft_B_01.fbx",
+      "uso": "mata baja y abierta de 9 hojas, al sol",
+      "presupuesto": "vegetacion",
+      "tope_tris": 40,
+      "tris": 27,
+      "dimensiones_m": [
+        0.494,
+        0.428,
+        0.261
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_salvia",
+        "verde_lima"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 9
+    },
+    {
+      "malla": "SM_GrassTuft_C_01",
+      "fbx": "SM_GrassTuft_C_01.fbx",
+      "uso": "mata alta de 5 hojas con la punta doblada",
+      "presupuesto": "vegetacion",
+      "tope_tris": 40,
+      "tris": 25,
+      "dimensiones_m": [
+        0.443,
+        0.413,
+        0.396
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "hierba_salvia"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 5
+    },
+    {
+      "malla": "SM_GrassTall_01",
+      "fbx": "SM_GrassTall_01.fbx",
+      "uso": "hierba alta de 7 hojas y 3 espigas",
+      "presupuesto": "vegetacion",
+      "tope_tris": 60,
+      "tris": 47,
+      "dimensiones_m": [
+        0.596,
+        0.623,
+        0.76
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "hierba_salvia",
+        "hierba_seca"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FlowerA_01",
+      "fbx": "SM_FlowerA_01.fbx",
+      "uso": "dos margaritas blancas de botón amarillo",
+      "presupuesto": "vegetacion",
+      "tope_tris": 50,
+      "tris": 44,
+      "dimensiones_m": [
+        0.194,
+        0.222,
+        0.335
+      ],
+      "colores": [
+        "blanco_nube",
+        "hierba_oscura",
+        "hierba_salvia",
+        "laton"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FlowerB_01",
+      "fbx": "SM_FlowerB_01.fbx",
+      "uso": "tres florecillas lilas de 4 pétalos",
+      "presupuesto": "vegetacion",
+      "tope_tris": 50,
+      "tris": 42,
+      "dimensiones_m": [
+        0.202,
+        0.19,
+        0.308
+      ],
+      "colores": [
+        "hierba_oscura",
+        "hierba_salvia",
+        "laton",
+        "malva_ocaso"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Fern_01",
+      "fbx": "SM_Fern_01.fbx",
+      "uso": "helecho de 9 frondas en arco",
+      "presupuesto": "vegetacion",
+      "tope_tris": 120,
+      "tris": 100,
+      "dimensiones_m": [
+        0.823,
+        0.85,
+        0.288
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "verde_palma"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Clover_01",
+      "fbx": "SM_Clover_01.fbx",
+      "uso": "4 tréboles y una cabezuela blanca a ras de suelo",
+      "presupuesto": "vegetacion",
+      "tope_tris": 40,
+      "tris": 40,
+      "dimensiones_m": [
+        0.306,
+        0.311,
+        0.097
+      ],
+      "colores": [
+        "hierba_oscura",
+        "hierba_salvia",
+        "papel",
+        "verde_palma"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 0.35
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    }
+  ]
+}

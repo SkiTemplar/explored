@@ -18,7 +18,12 @@ dev = [
     "basedpyright>=1.20",
     # stubs de bpy/bmesh/mathutils (solo paquetes *-stubs: conviven con el bpy real)
     "fake-bpy-module-5.2==20260730",
+    # guía de estilo (paleta, MeshBuilder, export FBX y lámina) que usan los kits de kits/
+    "explored-style",
 ]
+
+[tool.uv.sources]
+explored-style = { path = "../Style", editable = true }
 
 [tool.ruff]
 target-version = "py313"
@@ -41,7 +46,7 @@ typeCheckingMode = "standard"
 pythonVersion = "3.13"
 # Los scripts se importan por nombre tras insertar lib/, assets/, animals/ y
 # props/ en sys.path (así los carga Blender), no como paquete.
-extraPaths = ["lib", "assets", "animals", "props", "."]
+extraPaths = ["lib", "assets", "animals", "props", "kits", "."]
 exclude = [".venv", "props/.cache", "**/__pycache__"]
 # Reglas bajadas a warning (siguen visibles, no bloquean) porque con los stubs
 # de fake-bpy-module-5.2 son casi todo ruido de los propios stubs, no de este
