@@ -136,6 +136,8 @@ public:
 	AExploredCharacter* GetOccupant() const { return Occupant.Get(); }
 	bool IsGrounded() const { return bGrounded; }
 	const FRaftMotion& GetMotion() const { return Motion; }
+	/** Mandos de la balsa (W, A/D) del último fotograma: los usa el sonido de las remadas. */
+	const FRaftControls& GetControls() const { return Controls; }
 
 	/** Coloca la balsa (cm, grados) y para su movimiento. */
 	void PlaceAt(const FVector& Location, float YawDeg);

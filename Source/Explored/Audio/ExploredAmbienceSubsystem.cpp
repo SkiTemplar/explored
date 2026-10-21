@@ -10,6 +10,7 @@
 #include "Ocean/ExploredOcean.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredGameUserSettings.h"
+#include "Weather/IslandWeatherQuery.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 
@@ -29,7 +30,10 @@ namespace
 		TEXT("/Game/Generated/Audio/Ambiente/amb_rain_light.amb_rain_light"),
 		TEXT("/Game/Generated/Audio/Ambiente/amb_rain_heavy.amb_rain_heavy"),
 		TEXT("/Game/Generated/Audio/Ambiente/amb_underwater.amb_underwater"),
+		TEXT("/Game/Generated/Audio/Ambiente/amb_rain_on_thatch.amb_rain_on_thatch"),
 	};
+	/** Cuánto se apaga el exterior bajo techo. */
+	constexpr float InteriorDamping = 0.7f;
 
 	float VegetationWeight(EIslandArchetype Archetype)
 	{
@@ -49,7 +53,7 @@ namespace
 
 void FAmbienceMixer::Mix(const FAmbienceEnvironment& Env, float Out[NumLayers])
 {
-	const float Dry = 1.0f - Env.Underwater;
+	const float Dry = (1.0f - Env.Underwater) * (1.0f - InteriorDamping * FMath::Clamp(Env.Interior, 0.0f, 1.0f));
 	const float Calm = 1.0f - FMath::SmoothStep(0.3f, 0.8f, Env.SeaState);
 
 	Out[static_cast<int32>(EAmbienceLayer::OceanCalm)] = Env.Coast * Calm * Dry;
@@ -61,6 +65,8 @@ void FAmbienceMixer::Mix(const FAmbienceEnvironment& Env, float Out[NumLayers])
 	Out[static_cast<int32>(EAmbienceLayer::RainLight)] = (1.0f - FMath::SmoothStep(0.4f, 0.8f, Env.Rain)) * FMath::SmoothStep(0.0f, 0.2f, Env.Rain) * Dry;
 	Out[static_cast<int32>(EAmbienceLayer::RainHeavy)] = FMath::SmoothStep(0.5f, 1.0f, Env.Rain) * Dry;
 	Out[static_cast<int32>(EAmbienceLayer::Underwater)] = Env.Underwater;
+	Out[static_cast<int32>(EAmbienceLayer::RainOnRoof)] = FMath::SmoothStep(0.05f, 0.6f, Env.Rain) * FMath::Clamp(Env.Interior, 0.0f, 1.0f)
+		* (1.0f - Env.Underwater);
 }
 
 bool UExploredAmbienceSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
@@ -140,6 +146,7 @@ FAmbienceEnvironment UExploredAmbienceSubsystem::Evaluate(const FVector& Listene
 	{
 		Env.Underwater = P.Z < -0.3f ? 1.0f : 0.0f;
 	}
+	Env.Interior = ExploredIslandWeather::IsSheltered(this, ListenerCm) ? 1.0f : 0.0f;
 	Env.Altitude = FMath::Clamp((P.Z - FMath::Max(Here.Height, 0.0f) * 0.2f) / 250.0f, 0.0f, 1.0f);
 
 	// Distancia a la costa: primera muestra de agua en 8 direcciones.

@@ -23,6 +23,7 @@ enum class EAmbienceLayer : uint8
 	RainLight,
 	RainHeavy,
 	Underwater,
+	RainOnRoof, // Lluvia sobre el tejado (interior del faro y refugios).
 	Count
 };
 
@@ -36,6 +37,8 @@ struct EXPLORED_API FAmbienceEnvironment
 	float Underwater = 0.0f;
 	float Rain = 0.0f;
 	float SeaState = 0.15f;
+	/** Bajo techo (AExploredShelterVolume, p. ej. el interior del faro): el exterior suena apagado. */
+	float Interior = 0.0f;
 };
 
 /** Mezcla de volúmenes de cada capa a partir del entorno (función pura). */
@@ -46,7 +49,8 @@ struct EXPLORED_API FAmbienceMixer
 
 /**
  * Paisaje sonoro en capas que sigue al oyente: olas cerca de la costa,
- * viento con la altura, selva de día y de noche, lluvia y bajo el agua.
+ * viento con la altura, vegetación de día y de noche, lluvia, bajo el agua e
+ * interior (el exterior amortiguado y la lluvia sobre el tejado).
  * Las transiciones son fundidos suaves.
  */
 UCLASS()

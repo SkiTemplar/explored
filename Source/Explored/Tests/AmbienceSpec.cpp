@@ -63,6 +63,20 @@ void FAmbienceSpec::Define()
 		TestTrue(TEXT("Mar agitado"), Get(EAmbienceLayer::OceanRough) > Get(EAmbienceLayer::OceanCalm));
 	});
 
+	It("bajo techo apaga el exterior y deja oír la lluvia en el tejado", [this]()
+	{
+		FAmbienceEnvironment Env;
+		Env.Coast = 1.0f;
+		Env.Rain = 1.0f;
+		FAmbienceMixer::Mix(Env, Volumes);
+		const float OutsideRain = Get(EAmbienceLayer::RainHeavy);
+		TestEqual(TEXT("Sin tejado fuera"), Get(EAmbienceLayer::RainOnRoof), 0.0f);
+		Env.Interior = 1.0f;
+		FAmbienceMixer::Mix(Env, Volumes);
+		TestTrue(TEXT("Exterior amortiguado"), Get(EAmbienceLayer::RainHeavy) < OutsideRain * 0.5f);
+		TestTrue(TEXT("Lluvia en el tejado"), Get(EAmbienceLayer::RainOnRoof) > 0.9f);
+	});
+
 	It("mantiene todos los volúmenes en [0, 1]", [this]()
 	{
 		for (int32 I = 0; I < 200; ++I)
@@ -74,6 +88,7 @@ void FAmbienceSpec::Define()
 			Env.Night = FMath::FRand();
 			Env.Rain = FMath::FRand();
 			Env.SeaState = FMath::FRand();
+			Env.Interior = FMath::FRand();
 			FAmbienceMixer::Mix(Env, Volumes);
 			for (const float V : Volumes)
 			{

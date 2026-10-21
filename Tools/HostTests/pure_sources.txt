@@ -66,3 +66,5 @@ UI/BackpackMenuModel.cpp
 Sky/SkyPaletteModel.cpp
 Sky/CloudFieldModel.cpp
 WorldGen/IslandDecorModel.cpp
+Weather/RainStreaksModel.cpp
+Audio/SfxRules.cpp

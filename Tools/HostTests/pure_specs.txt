@@ -53,3 +53,5 @@ Tests/BeaconSoftlockSpec.cpp
 Tests/IslandInputSpec.cpp
 Tests/SkyPaletteSpec.cpp
 Tests/IslandDecorSpec.cpp
+Tests/RainStreaksModelSpec.cpp
+Tests/SfxRulesSpec.cpp
