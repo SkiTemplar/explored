@@ -17,6 +17,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Player/ExploredCharacter.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 
@@ -88,7 +89,9 @@ void UExploredPlaytestBot::BuildRoute()
 		}
 		FWaypoint Waypoint;
 		Waypoint.Name = Zone.Id.ToString();
-		Waypoint.LocationMeters = FVector(Zone.Center.X, Zone.Center.Y, Column.Height + 1.7f);
+		// SampleColumn decide si es tierra; la altura de los ojos sale de la malla del terreno.
+		const float Ground = ExploredGround::HeightAtMeters(GetWorld(), Zone.Center.X, Zone.Center.Y);
+		Waypoint.LocationMeters = FVector(Zone.Center.X, Zone.Center.Y, Ground + 1.7f);
 		const FVector2D LandCenter = Layout.Islands[Column.IslandIndex].Center;
 		const FVector Target(LandCenter.X, LandCenter.Y, Waypoint.LocationMeters.Z);
 		Waypoint.AimRotation = Target.Equals(Waypoint.LocationMeters, 1.0f)

@@ -21,8 +21,8 @@
 #include "UI/ExploredHUD.h"
 #include "UI/ExploredPlayerController.h"
 #include "UI/IslandHudModel.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
-#include "WorldGen/IslandLayoutLoader.h"
 
 namespace ExploredUiShotsDetail
 {
@@ -98,9 +98,8 @@ namespace ExploredUiShotsDetail
 		}
 		const FVector Target = Best->GetActorLocation();
 		const FVector Away = FVector(-1.0, 0.35, 0.0).GetSafeNormal();
-		const FIslandLayout& Layout = *ExploredIsland::Get();
 		const FVector2D Stand(Target.X / 100.0 + Away.X * 1.5, Target.Y / 100.0 + Away.Y * 1.5);
-		const float GroundCm = FMath::Max(Layout.SampleColumn(Stand.X, Stand.Y).Height, FIslandLayout::SeaLevel) * 100.0f;
+		const float GroundCm = FMath::Max(ExploredGround::HeightAtMeters(Character->GetWorld(), Stand.X, Stand.Y), FIslandLayout::SeaLevel) * 100.0f;
 		const FVector Feet(Stand.X * 100.0, Stand.Y * 100.0, GroundCm + 100.0);
 		Character->SetActorLocation(Feet, false, nullptr, ETeleportType::TeleportPhysics);
 		const FVector Eye = Feet + FVector(0.0, 0.0, 60.0);

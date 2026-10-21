@@ -13,6 +13,7 @@
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/GrassFieldModel.h"
 #include "WorldGen/GroundField.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandDecorBuilder.h"
 #include "WorldGen/IslandDecorModel.h"
 #include "WorldGen/IslandLayoutLoader.h"
@@ -101,12 +102,11 @@ bool AExploredGrassField::Setup()
 		Assets = FGrassAssets::Defaults();
 	}
 
-	TArray<uint8> Bytes;
-	TSharedPtr<FGroundField> Ground = MakeShared<FGroundField>();
-	if (!FFileHelper::LoadFileToArray(Bytes, *ExploredGrass::GroundFieldPath()) || !Ground->Parse(Bytes, Error))
+	// Relee el campo compartido: el auditor, el bot y las capturas usan la misma altura que el césped.
+	const TSharedPtr<const FGroundField> Ground = ExploredGround::ReloadShared(Error);
+	if (!Ground)
 	{
-		UE_LOG(LogExplored, Warning, TEXT("[Césped] ground_field.bin no se puede usar (%s): la isla queda sin césped (uv run island-groundfield en Tools/Island)"),
-			Bytes.IsEmpty() ? TEXT("no existe") : *Error);
+		UE_LOG(LogExplored, Warning, TEXT("[Césped] ground_field.bin no se puede usar (%s): la isla queda sin césped (uv run island-groundfield en Tools/Island)"), *Error);
 		return false;
 	}
 

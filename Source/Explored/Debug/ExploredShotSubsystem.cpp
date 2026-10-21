@@ -29,6 +29,7 @@
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Engine/PostProcessVolume.h"
 #include "UI/ExploredPlayerController.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 
@@ -104,15 +105,20 @@ void UExploredShotSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 void UExploredShotSubsystem::BuildShotList(const FString& Set)
 {
-	// Vistas sobre la disposición de autor (island.json). Las alturas salen del relieve
-	// analítico de FIslandLayout, el mismo con el que Tools/Island genera la malla del terreno.
+	// Vistas sobre la disposición de autor (island.json). Las alturas salen de la malla del
+	// terreno (ground_field.bin); el relieve analítico de FIslandLayout se separa de ella hasta ~3,4 m.
 	const FIslandLayout& Layout = *ExploredIsland::Get();
+	const UWorld* World = GetWorld();
 	const bool bAll = Set == TEXT("all");
 	const bool bBench = Set == TEXT("bench");
 	const FIslandDesc* Main = Layout.Islands.IsEmpty() ? nullptr : &Layout.Islands[0];
-	auto GroundAt = [&Layout](const FVector2D& P)
+	auto FloorAt = [World](const FVector2D& P)
 	{
-		return FMath::Max(Layout.SampleColumn(P.X, P.Y).Height, FIslandLayout::SeaLevel);
+		return ExploredGround::HeightAtMeters(World, P.X, P.Y);
+	};
+	auto GroundAt = [&FloorAt](const FVector2D& P)
+	{
+		return FMath::Max(FloorAt(P), FIslandLayout::SeaLevel);
 	};
 	auto AddShot = [this](const FString& Name, const FVector& EyeMeters, const FVector& LookAtMeters, float ShotHours)
 	{
@@ -197,12 +203,12 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		const float ShoreR = Main->RadiusAlong(ShoreDir);
 		const FVector2D CamXY = Main->Center + ShoreDir * (ShoreR + 2.5f);
 		const FVector2D TargetXY = Main->Center + ShoreDir * (ShoreR - 5.0f);
-		const FVector Eye(CamXY.X, CamXY.Y, FMath::Max(Layout.SampleColumn(CamXY.X, CamXY.Y).Height, -0.3f) + 0.6f);
+		const FVector Eye(CamXY.X, CamXY.Y, FMath::Max(FloorAt(CamXY), -0.3f) + 0.6f);
 		AddShot(TEXT("shore_closeup"), Eye, FVector(TargetXY.X, TargetXY.Y, GroundAt(TargetXY)), 10.5f);
 		if (bAll || Set == TEXT("water"))
 		{
 			const FVector2D DeepXY = Main->Center + ShoreDir * (ShoreR + 50.0f);
-			const float Floor = Layout.SampleColumn(DeepXY.X, DeepXY.Y).Height;
+			const float Floor = FloorAt(DeepXY);
 			const float SafeZ = FMath::Clamp(-1.6f, FMath::Min(Floor + 0.5f, -0.6f), -0.6f);
 			FExploredShot Shot;
 			Shot.Name = TEXT("underwater");

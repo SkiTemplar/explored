@@ -27,10 +27,11 @@ struct EXPLORED_API FGroundSample
  * Superficie exacta de SM_IslaSal_Terrain (Content/Data/ground_field.bin, lo escribe Tools/Island con
  * «uv run island-groundfield» o «island-terrain»): los vértices de la rejilla desplazada, la diagonal de
  * cada celda y el tipo de suelo por vértice. Sample() da la altura del triángulo que se dibuja, sin
- * trazas de física: FIslandLayout::SampleColumn es el relieve analítico y difiere hasta ~1,5 m de la
- * malla desde el relieve de F6, así que no sirve para apoyar nada fino (césped) en el suelo.
+ * trazas de física: FIslandLayout::SampleColumn es el relieve analítico y difiere hasta ~3,4 m de la
+ * malla desde el relieve de F6, así que no sirve para apoyar nada en el suelo.
  *
- * Modelo puro (solo CoreMinimal): lo lee AExploredGrassField y lo prueban GrassFieldSpec y el host.
+ * Modelo puro (solo CoreMinimal): lo carga ExploredGround (GroundHeight.h) para el césped, el auditor,
+ * el bot y las capturas, y lo prueban GrassFieldSpec y el host.
  */
 class EXPLORED_API FGroundField
 {

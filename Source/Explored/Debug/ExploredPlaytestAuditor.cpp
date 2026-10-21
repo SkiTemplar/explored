@@ -36,8 +36,8 @@
 #include "Items/ExploredItemActor.h"
 #include "Narrative/ExploredSupplyCrate.h"
 #include "Weather/ExploredWeatherSubsystem.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
-#include "WorldGen/IslandLayoutLoader.h"
 
 namespace
 {
@@ -383,8 +383,8 @@ void UExploredPlaytestAuditor::BeginPhysicsTracking()
 
 void UExploredPlaytestAuditor::SamplePhysicsDrift()
 {
-	// Relieve aproximado de island.json: sustituir por una traza contra el Landscape en F3.
-	const FIslandLayout& Layout = *ExploredIsland::Get();
+	// Altura de la malla del terreno (ground_field.bin), no el relieve analítico de island.json.
+	const UWorld* World = GetWorld();
 
 	int32 Found = 0;
 	for (const FTrackedPhysicsActor& Tracked : TrackedPhysicsActors)
@@ -402,7 +402,7 @@ void UExploredPlaytestAuditor::SamplePhysicsDrift()
 			continue;
 		}
 
-		const float GroundHeight = Layout.SampleColumn(NowMeters.X, NowMeters.Y).Height;
+		const float GroundHeight = ExploredGround::HeightAtMeters(World, NowMeters.X, NowMeters.Y);
 		const bool bBelowTerrain = NowMeters.Z < GroundHeight - 0.1f;
 		const bool bBelowWater = NowMeters.Z < FIslandLayout::SeaLevel - 0.1f;
 		FPlaytestReportModel::AppendPhysicsDriftIssue(Report, Actor->GetName(), Tracked.StartLocationMeters, NowMeters, bBelowTerrain, bBelowWater);
