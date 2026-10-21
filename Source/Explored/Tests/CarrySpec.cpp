@@ -113,9 +113,9 @@ void FCarrySpec::Define()
 			UCarryComponent* Carry = NewObject<UCarryComponent>(Owner);
 			Carry->RegisterComponent();
 
-			// tronco_pequeno es DosManos en items.json (GDD §4.2: tronco, balsa, animal cazado).
+			// tronco es DosManos en items.json (GDD §4.2: tronco, balsa, animal cazado).
 			AExploredItemActor* Tronco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco_pequeno")));
+			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco")));
 			TestEqual(TEXT("El tronco es DosManos"), Tronco->GetEffectiveSize(), EItemSize::DosManos);
 
 			FText FailReason;
@@ -124,7 +124,7 @@ void FCarrySpec::Define()
 			TestFalse(TEXT("La mano derecha queda ocupada"), Carry->IsHandEmpty(EHand::Right));
 
 			AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			TestFalse(TEXT("No se puede coger nada más con las manos llenas"), Carry->TryPickUp(Coco, FailReason));
 			TestFalse(TEXT("Da un motivo"), FailReason.IsEmpty());
 		});
@@ -137,12 +137,12 @@ void FCarrySpec::Define()
 			Carry->RegisterComponent();
 
 			AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			FText FailReason;
 			TestTrue(TEXT("Coco a la mano libre"), Carry->TryPickUp(Coco, FailReason));
 
 			AExploredItemActor* Tronco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco_pequeno")));
+			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco")));
 			TestFalse(TEXT("El tronco no se puede coger con una mano ocupada"), Carry->TryPickUp(Tronco, FailReason));
 		});
 
@@ -199,11 +199,11 @@ void FCarrySpec::Define()
 			Carry->RegisterComponent();
 
 			AExploredItemActor* Tronco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco_pequeno")));
+			Tronco->InitializeFromInstance(MakeInstance(TEXT("tronco")));
 			FText FailReason;
 			TestTrue(TEXT("Se coge"), Carry->TryPickUp(Tronco, FailReason));
 			TestTrue(TEXT("Es un único objeto en las dos manos"), Carry->IsHoldingTwoHandedItem());
-			TestEqual(TEXT("Pesa una vez"), Carry->GetTotalWeight(), Items[TEXT("tronco_pequeno")].WeightKg);
+			TestEqual(TEXT("Pesa una vez"), Carry->GetTotalWeight(), Items[TEXT("tronco")].WeightKg);
 			EInventoryFail Fail = EInventoryFail::None;
 			TestFalse(TEXT("El modelo no deja combinarlo"), Carry->GetInventoryModel().CanCombineHands(Fail));
 			TestTrue(TEXT("Porque es el mismo objeto"), Fail == EInventoryFail::SameItem);
@@ -217,18 +217,18 @@ void FCarrySpec::Define()
 			Carry->RegisterComponent();
 
 			FText FailReason;
-			for (const TCHAR* Id : { TEXT("cuchillo"), TEXT("palo_recto") })
+			for (const TCHAR* Id : { TEXT("cuchillo"), TEXT("cana_bambu") })
 			{
 				AExploredItemActor* Piece = TestWorld.Get()->SpawnActor<AExploredItemActor>();
 				Piece->InitializeFromInstance(MakeInstance(Id));
 				TestTrue(TEXT("Pieza a la mano"), Carry->TryPickUp(Piece, FailReason));
 			}
-			TestTrue(TEXT("El resultado entra"), Carry->ReplaceHandsWithCraftResult(MakeInstance(TEXT("hacha")), FailReason));
+			TestTrue(TEXT("El resultado entra"), Carry->ReplaceHandsWithCraftResult(MakeInstance(TEXT("pez_crudo")), FailReason));
 			FItemInstance InHand;
 			TestTrue(TEXT("En la mano izquierda"), Carry->GetHandItem(EHand::Left, InHand));
-			TestTrue(TEXT("Es el hacha"), InHand.DefinitionId == FName(TEXT("hacha")));
+			TestTrue(TEXT("Es el hacha"), InHand.DefinitionId == FName(TEXT("pez_crudo")));
 			TestTrue(TEXT("La derecha queda libre"), Carry->IsHandEmpty(EHand::Right));
-			TestEqual(TEXT("Solo pesa el hacha"), Carry->GetTotalWeight(), Items[TEXT("hacha")].WeightKg);
+			TestEqual(TEXT("Solo pesa el hacha"), Carry->GetTotalWeight(), Items[TEXT("pez_crudo")].WeightKg);
 		});
 	});
 
@@ -242,13 +242,13 @@ void FCarrySpec::Define()
 			Carry->RegisterComponent();
 
 			AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>(); // Pequeño
-			Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			FText FailReason;
 			TestTrue(TEXT("Coco a la mano"), Carry->TryPickUp(Coco, FailReason));
 			TestTrue(TEXT("Coco al bolsillo"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 
 			AExploredItemActor* Hacha = TestWorld.Get()->SpawnActor<AExploredItemActor>(); // Mediano
-			Hacha->InitializeFromInstance(MakeInstance(TEXT("hacha")));
+			Hacha->InitializeFromInstance(MakeInstance(TEXT("pez_crudo")));
 			TestTrue(TEXT("Hacha a la mano"), Carry->TryPickUp(Hacha, FailReason));
 			TestFalse(TEXT("El hacha no cabe en el bolsillo"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 			TestFalse(TEXT("Da un motivo"), FailReason.IsEmpty());
@@ -265,13 +265,13 @@ void FCarrySpec::Define()
 			for (int32 Index = 0; Index < UCarryComponent::MaxPocketSlots; ++Index)
 			{
 				AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-				Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+				Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 				TestTrue(TEXT("Se coge"), Carry->TryPickUp(Coco, FailReason));
 				TestTrue(FString::Printf(TEXT("Bolsillo %d acepta el coco"), Index), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 			}
 
 			AExploredItemActor* OneMore = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			OneMore->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			OneMore->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			TestTrue(TEXT("Se coge el quinto"), Carry->TryPickUp(OneMore, FailReason));
 			TestFalse(TEXT("El quinto bolsillo no existe"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Pocket, FailReason));
 		});
@@ -286,8 +286,8 @@ void FCarrySpec::Define()
 			UCarryComponent* Carry = NewObject<UCarryComponent>(Owner);
 			Carry->RegisterComponent();
 
-			const float CocoWeight = Items[TEXT("coco_maduro")].WeightKg;
-			const float CocoVolume = Items[TEXT("coco_maduro")].VolumeLiters;
+			const float CocoWeight = Items[TEXT("coco")].WeightKg;
+			const float CocoVolume = Items[TEXT("coco")].VolumeLiters;
 
 			// Solo caben dos cocos por peso, aunque el volumen permitiría más.
 			Carry->SetBackpack(true, /*VolumeLiters=*/CocoVolume * 10.0f, /*WeightKg=*/CocoWeight * 2.5f);
@@ -296,13 +296,13 @@ void FCarrySpec::Define()
 			for (int32 Index = 0; Index < 2; ++Index)
 			{
 				AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-				Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+				Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 				TestTrue(TEXT("Se coge"), Carry->TryPickUp(Coco, FailReason));
 				TestTrue(FString::Printf(TEXT("Coco %d entra por peso"), Index), Carry->StoreFromHand(EHand::Left, ECarrySlot::Backpack, FailReason));
 			}
 
 			AExploredItemActor* ThirdCoco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			ThirdCoco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			ThirdCoco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			TestTrue(TEXT("Se coge el tercero"), Carry->TryPickUp(ThirdCoco, FailReason));
 			TestFalse(TEXT("El tercer coco no entra por peso"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Backpack, FailReason));
 			TestFalse(TEXT("Da un motivo"), FailReason.IsEmpty());
@@ -316,7 +316,7 @@ void FCarrySpec::Define()
 			Carry->RegisterComponent();
 
 			AExploredItemActor* Coco = TestWorld.Get()->SpawnActor<AExploredItemActor>();
-			Coco->InitializeFromInstance(MakeInstance(TEXT("coco_maduro")));
+			Coco->InitializeFromInstance(MakeInstance(TEXT("coco")));
 			FText FailReason;
 			Carry->TryPickUp(Coco, FailReason);
 			TestFalse(TEXT("Sin mochila no se guarda nada"), Carry->StoreFromHand(EHand::Left, ECarrySlot::Backpack, FailReason));

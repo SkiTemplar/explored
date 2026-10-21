@@ -34,11 +34,12 @@ void AExploredShelterVolume::SetExtentMeters(const FVector& HalfExtentMeters)
 
 bool AExploredShelterVolume::IsActorSheltered(const AActor* Actor) const
 {
-	if (!Actor)
-	{
-		return false;
-	}
-	const FVector Local = Box->GetComponentTransform().InverseTransformPosition(Actor->GetActorLocation());
+	return Actor && IsLocationSheltered(Actor->GetActorLocation());
+}
+
+bool AExploredShelterVolume::IsLocationSheltered(const FVector& Location) const
+{
+	const FVector Local = Box->GetComponentTransform().InverseTransformPosition(Location);
 	const FVector Extent = Box->GetUnscaledBoxExtent();
 	return FMath::Abs(Local.X) <= Extent.X && FMath::Abs(Local.Y) <= Extent.Y && FMath::Abs(Local.Z) <= Extent.Z;
 }

@@ -1,4 +1,6 @@
 #include "Player/ExploredCharacter.h"
+
+#include "Items/ExploredSurvivorComponent.h"
 #include "Core/ExploredAssetFallback.h"
 
 #include "Camera/CameraComponent.h"
@@ -114,6 +116,7 @@ AExploredCharacter::AExploredCharacter()
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
+	Survivor = CreateDefaultSubobject<UExploredSurvivorComponent>(TEXT("Survivor"));
 
 	bUseControllerRotationYaw = true;
 
@@ -708,6 +711,12 @@ void AExploredCharacter::HandleUseSecondary(const FInputActionValue&)
 
 void AExploredCharacter::HandleDrop(const FInputActionValue&)
 {
+	// Baliza Siete: la carga pesada (tronco, lente) va en las manos de UExploredSurvivorComponent.
+	if (Survivor && !Survivor->GetHeldHeavy().IsNone())
+	{
+		Survivor->DropHeavy();
+		return;
+	}
 	if (!Carry)
 	{
 		return;

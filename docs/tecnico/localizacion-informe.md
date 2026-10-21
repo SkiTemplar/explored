@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 590 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 230 |
-| … de `Content/Data` (campos bilingües) | 360 |
+| Textos en el catálogo | 315 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 256 |
+| … de `Content/Data` (campos bilingües) | 59 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
-| Literales para revisar | 116 |
-| Errores / avisos | 0 / 9 |
+| Literales para revisar | 152 |
+| Errores / avisos | 0 / 5 |
 
 ## Literales del C++
 
@@ -31,9 +31,9 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 |---|---|---|
 | `Source/Explored/Debug/PlaytestReportModel.cpp:182` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
-| `Source/Explored/WorldGen/ExploredPlaceholder.cpp:94` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
+| `Source/Explored/WorldGen/ExploredPlaceholder.cpp:95` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (116)
+### Revisar (152)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -68,6 +68,35 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Cooking/CookingModel.cpp:275` | `No cabe tanto en %s.` | `OutFailReason = FString::Printf(TEXT("No cabe tanto en %s."), *Vessel->NameEs);` |
 | `Source/Explored/Cooking/CookingModel.cpp:281` | `Hace falta un recipiente que no pierda agua.` | `OutFailReason = TEXT("Hace falta un recipiente que no pierda agua.");` |
 | `Source/Explored/Cooking/CookingModel.cpp:291` | `Así no se puede %s.` | `OutFailReason = FString::Printf(TEXT("Así no se puede %s."), LexToString(Technique));` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:94` | `Caña de pescar` | `Book.Recipes.Add(Make(TEXT("cana_pescar"), TEXT("Caña de pescar"), TEXT("Fishing rod"), TEXT("atar"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:94` | `Fishing rod` | `Book.Recipes.Add(Make(TEXT("cana_pescar"), TEXT("Caña de pescar"), TEXT("Fishing rod"), TEXT("atar"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:96` | `Pez asado` | `Book.Recipes.Add(Make(TEXT("pez_asado"), TEXT("Pez asado"), TEXT("Cooked fish"), TEXT("cocinar"), { { TEXT("pez_crudo"), 1 } },` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:96` | `Cooked fish` | `Book.Recipes.Add(Make(TEXT("pez_asado"), TEXT("Pez asado"), TEXT("Cooked fish"), TEXT("cocinar"), { { TEXT("pez_crudo"), 1 } },` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:100` | `Tarro de aceite` | `Book.Recipes.Add(Make(TEXT("tarro_aceite"), TEXT("Tarro de aceite"), TEXT("Oil jar"), TEXT("hervir"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:100` | `Oil jar` | `Book.Recipes.Add(Make(TEXT("tarro_aceite"), TEXT("Tarro de aceite"), TEXT("Oil jar"), TEXT("hervir"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:109` | `Linterna montada` | `FRecipeDef Lantern = Make(TEXT("linterna"), TEXT("Linterna montada"), TEXT("Mounted lantern"), TEXT("montar"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:109` | `Mounted lantern` | `FRecipeDef Lantern = Make(TEXT("linterna"), TEXT("Linterna montada"), TEXT("Mounted lantern"), TEXT("montar"),` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Baliza encendida` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
+| `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Beacon lit` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:101` | `kit inicial` | `Add(TEXT("kit inicial"), [this]() { return Count(TEXT("cuchillo")) == 1 && Count(TEXT("cantimplora")) == 1 && Count(TEXT("barometro")) == 1; },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:103` | `recoger leña 1` | `Add(TEXT("recoger leña 1"), [this]() { return Interact(TEXT("lena_cala_1")); }, [this]() { return Idle() && Count(TEXT("lena")) == 2; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:104` | `recoger leña 2` | `Add(TEXT("recoger leña 2"), [this]() { return Interact(TEXT("lena_cala_2")); }, [this]() { return Idle() && Count(TEXT("lena")) == 4; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:105` | `recoger fibra 1` | `Add(TEXT("recoger fibra 1"), [this]() { return Interact(TEXT("fibra_palmar_1")); }, [this]() { return Idle() && Count(TEXT("fibra")) == 1; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:106` | `recoger fibra 2` | `Add(TEXT("recoger fibra 2"), [this]() { return Interact(TEXT("fibra_palmar_2")); }, [this]() { return Idle() && Count(TEXT("fibra")) == 2; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:107` | `trenzar cuerda` | `Add(TEXT("trenzar cuerda"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:113` | `recoger caña de bambú` | `Add(TEXT("recoger caña de bambú"), [this]() { return Interact(TEXT("cana_bambu_1")); }, [this]() { return Idle() && Count(TEXT("cana_bambu")) == 1; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:114` | `atar caña de pescar` | `Add(TEXT("atar caña de pescar"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:120` | `pescar un pez` | `Add(TEXT("pescar un pez"), [this]() { return Interact(TEXT("punto_pesca_1")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:130` | `encender la hoguera del faro` | `Add(TEXT("encender la hoguera del faro"), [FireAction]() { return FireAction(TEXT("encender")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:136` | `asar el pez` | `Add(TEXT("asar el pez"), [FireAction]() { return FireAction(TEXT("cocinar")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:142` | `recoger el pez asado` | `Add(TEXT("recoger el pez asado"), [FireAction]() { return FireAction(TEXT("recoger")); }, [this]() { return Count(TEXT("pez_asado")) == 1; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:143` | `comer el pez asado` | `Add(TEXT("comer el pez asado"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:149` | `avivar con leña` | `Add(TEXT("avivar con leña"), [FireAction]() { return FireAction(TEXT("avivar")); }, [this]() { return Count(TEXT("lena")) == 0; });` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:150` | `bajar y beber un coco` | `Add(TEXT("bajar y beber un coco"), [this]() { return Interact(TEXT("palma_cala_1")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:160` | `abrir la caja de suministros` | `Add(TEXT("abrir la caja de suministros"), [this]() { return Interact(TEXT("caja_suministros_faro")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:166` | `llenar la cantimplora en el barril` | `Add(TEXT("llenar la cantimplora en el barril"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:182` | `beber de la cantimplora` | `Add(TEXT("beber de la cantimplora"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:192` | `combinación que no es receta` | `Add(TEXT("combinación que no es receta"), [this]()` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:71` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:477` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:478` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
@@ -127,6 +156,13 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Fishing/FishingModel.cpp:260` | `La Manta Negra` | `FLegendaryCatch L = MakeLegend(TEXT("manta_negra"), TEXT("La Manta Negra"), TEXT("bajios_manglar"), Spear,` |
 | `Source/Explored/Fishing/FishingModel.cpp:269` | `El Errante` | `FLegendaryCatch L = MakeLegend(TEXT("el_errante"), TEXT("El Errante"), TEXT("arrecife_arenas_blancas"), Spear \| Rod,` |
 | `Source/Explored/Fishing/FishingModel.cpp:277` | `El Rey de Plata` | `FLegendaryCatch L = MakeLegend(TEXT("rey_de_plata"), TEXT("El Rey de Plata"), TEXT("mar_abierto"), Rod,` |
+| `Source/Explored/Items/IslandDataLoader.cpp:30` | `%s: JSON mal formado o sin objeto raíz` | `Errors.Add(FString::Printf(TEXT("%s: JSON mal formado o sin objeto raíz"), File));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:67` | `items.json: JSON mal formado o sin lista raíz` | `Errors.Add(TEXT("items.json: JSON mal formado o sin lista raíz"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:78` | `items.json: objeto sin id` | `Errors.Add(TEXT("items.json: objeto sin id"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:155` | `recipes.json: falta la lista «recipes»` | `Errors.Add(TEXT("recipes.json: falta la lista «recipes»"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:167` | `recipes.json: receta incompleta (id, verb, place y output)` | `Errors.Add(TEXT("recipes.json: receta incompleta (id, verb, place y output)"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:174` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:179` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
@@ -175,14 +211,10 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (9)
+## Avisos (5)
 
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:93: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:181: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:105: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:247: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/UI/ExploredPlayerController.cpp:364: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_chapa.nameEs: el inglés (21 car.) es más de 1.3× el español (12); comprueba que cabe
-- Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_tubo.nameEs: el inglés (16 car.) es más de 1.3× el español (11); comprueba que cabe
-- Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,batir_chapa.nameEs: el inglés (22 car.) es más de 1.3× el español (11); comprueba que cabe
-- Content/Data/recipes_smithing.json «batir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,batir_tubo.nameEs: el inglés (17 car.) es más de 1.3× el español (10); comprueba que cabe

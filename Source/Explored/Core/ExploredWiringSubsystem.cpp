@@ -47,7 +47,6 @@ namespace ExploredWiringDetail
 	/** Un fuego guardado se reconoce por su sitio con esta tolerancia (cm). */
 	constexpr double FireMatchToleranceCm = 100.0;
 	/** Lo que trae el paquete del barco del horizonte (ids de items.json). */
-	const TCHAR* const ShipPackageItems[] = { TEXT("cerillas"), TEXT("cantimplora"), TEXT("cuerda"), TEXT("bolsa_impermeable") };
 	/** Velocidad mínima (cm/s) para que la vela cuente como navegar (música de travesía). */
 	constexpr float SailingMinSpeedCmS = 50.0f;
 
@@ -399,26 +398,6 @@ void UExploredWiringSubsystem::UpdateWorldEvents(const FVector2D& PositionMeters
 		WitnessedEvents.Add(Event.Id);
 		NotifyDiscovery(/*bMorale*/ false);
 	}
-
-	// Hoguera de señal → el barco del horizonte suelta un paquete una sola vez.
-	const AExploredFire* SignalFire = nullptr;
-	for (TActorIterator<AExploredFire> It(World); It; ++It)
-	{
-		if (It->IsSignalFire())
-		{
-			SignalFire = *It;
-			break;
-		}
-	}
-	FWorldEvent Ship;
-	if (SignalFire && Events->TryDropShipPackage(true, Ship))
-	{
-		// El paquete llega a la orilla junto a la hoguera (la deriva real queda para el océano).
-		for (const TCHAR* ItemId : ExploredWiringDetail::ShipPackageItems)
-		{
-			SpawnItemsAround(SignalFire->GetActorLocation() + FVector(Ship.Direction.X, Ship.Direction.Y, 0.0) * 400.0, FName(ItemId), 1, 150.0f);
-		}
-	}
 }
 
 void UExploredWiringSubsystem::UpdateStorms(float GameHours)
@@ -474,16 +453,7 @@ void UExploredWiringSubsystem::SpawnLandingStarterKitIfNeeded()
 	}
 	bStarterKitSpawned = true;
 
-	const FVector WreckCenter = Start->GetActorLocation() + Start->GetActorForwardVector() * 300.0;
-	SpawnItemsAround(WreckCenter, TEXT("cuchillo"), 1, 80.0f);
-	SpawnItemsAround(WreckCenter, TEXT("cantimplora"), 1, 80.0f);
-
-	const FVector AroundSpawn = Start->GetActorLocation();
-	SpawnItemsAround(AroundSpawn, TEXT("coco_maduro"), 3, 450.0f);
-	SpawnItemsAround(AroundSpawn, TEXT("palo_recto"), 4, 450.0f);
-	SpawnItemsAround(AroundSpawn, TEXT("rama_seca"), 3, 450.0f);
-	SpawnItemsAround(AroundSpawn, TEXT("canto_rodado"), 3, 450.0f);
-	SpawnItemsAround(AroundSpawn, TEXT("piedra_plana"), 2, 450.0f);
+	// Baliza Siete (GDD v3 §5.3): el kit inicial va directo a la mochila (UExploredSurvivorComponent).
 }
 
 void UExploredWiringSubsystem::SpawnItemsAround(const FVector& Center, FName ItemId, int32 Count, float RadiusCm) const
@@ -929,22 +899,24 @@ void UExploredWiringSubsystem::SaveFires(FSaveArchive& Ar) const
 	TArray<FSaveArchive> Fires;
 	for (TActorIterator<AExploredFire> It(GetWorld()); It; ++It)
 	{
-		ExploredSaveStates::FSavedFire Fire;
-		Fire.Location = It->GetActorLocation();
-		Fire.Fire = It->GetFireState();
-		Fire.Pot = It->GetPot();
+		const FCampfireState& Fire = It->GetCampfireState();
 		FSaveArchive& Entry = Fires.AddDefaulted_GetRef();
-		ExploredSaveStates::SaveFire(Entry, Fire);
-		ExploredWiringDetail::WriteItem(Entry, TEXT("vessel"), It->GetPotVesselItem());
+		Entry.Write(TEXT("location"), It->GetActorLocation());
+		Entry.Write(TEXT("lit"), Fire.bLit);
+		Entry.Write(TEXT("burnSeconds"), Fire.BurnSeconds);
+		Entry.Write(TEXT("jobRecipe"), Fire.Job.RecipeId);
+		Entry.Write(TEXT("jobItem"), Fire.Job.OutputItem);
+		Entry.Write(TEXT("jobCount"), Fire.Job.OutputCount);
+		Entry.Write(TEXT("jobSeconds"), Fire.Job.RemainingSeconds);
 	}
-	Ar.Write(TEXT("fires"), Fires);
+	Ar.Write(TEXT("campfires"), Fires);
 }
 
 void UExploredWiringSubsystem::LoadFires(const FSaveArchive& Ar)
 {
 	UWorld* World = GetWorld();
 	TArray<FSaveArchive> Fires;
-	if (!World || !Ar.Read(TEXT("fires"), Fires))
+	if (!World || !Ar.Read(TEXT("campfires"), Fires))
 	{
 		return;
 	}
@@ -955,13 +927,21 @@ void UExploredWiringSubsystem::LoadFires(const FSaveArchive& Ar)
 	}
 	for (const FSaveArchive& Entry : Fires)
 	{
-		ExploredSaveStates::FSavedFire Fire;
-		ExploredSaveStates::LoadFire(Entry, Fire);
-		// El fuego del mapa que está en ese sitio; si no hay (se construyó en partida), se crea.
+		FVector Location = FVector::ZeroVector;
+		FCampfireState Fire;
+		Entry.Read(TEXT("location"), Location);
+		Entry.Read(TEXT("lit"), Fire.bLit);
+		Entry.Read(TEXT("burnSeconds"), Fire.BurnSeconds);
+		Entry.Read(TEXT("jobRecipe"), Fire.Job.RecipeId);
+		Entry.Read(TEXT("jobItem"), Fire.Job.OutputItem);
+		Entry.Read(TEXT("jobCount"), Fire.Job.OutputCount);
+		Entry.Read(TEXT("jobSeconds"), Fire.Job.RemainingSeconds);
+		Fire.BurnSeconds = FMath::Max(0.0f, Fire.BurnSeconds);
+		// El fuego del mapa que está en ese sitio; si no hay (se encendió en partida), se crea.
 		AExploredFire* Target = nullptr;
 		for (int32 I = 0; I < Available.Num(); ++I)
 		{
-			if (FVector::Dist(Available[I]->GetActorLocation(), Fire.Location) <= ExploredWiringDetail::FireMatchToleranceCm)
+			if (FVector::Dist(Available[I]->GetActorLocation(), Location) <= ExploredWiringDetail::FireMatchToleranceCm)
 			{
 				Target = Available[I];
 				Available.RemoveAt(I);
@@ -972,11 +952,11 @@ void UExploredWiringSubsystem::LoadFires(const FSaveArchive& Ar)
 		{
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			Target = World->SpawnActor<AExploredFire>(AExploredFire::StaticClass(), Fire.Location, FRotator::ZeroRotator, Params);
+			Target = World->SpawnActor<AExploredFire>(AExploredFire::StaticClass(), Location, FRotator::ZeroRotator, Params);
 		}
 		if (Target)
 		{
-			Target->RestoreState(Fire.Fire, Fire.Pot, ExploredWiringDetail::ReadItem(Entry, TEXT("vessel")));
+			Target->RestoreCampfire(Fire);
 		}
 	}
 }

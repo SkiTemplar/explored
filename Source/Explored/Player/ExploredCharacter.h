@@ -12,6 +12,7 @@ class UCameraComponent;
 class UCarryComponent;
 class UExploredInputSettingsSubsystem;
 class UFishingComponent;
+class UExploredSurvivorComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
@@ -58,6 +59,10 @@ public:
 	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
 	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
 	UFishingComponent* GetFishingComponent() const { return Fishing; }
+
+	/** Mochila, consumo y crafteo de Baliza Siete (GDD v3 §5.3 y §5.6). */
+	UFUNCTION(BlueprintPure, Category = "Explored|Mochila")
+	UExploredSurvivorComponent* GetSurvivorComponent() const { return Survivor; }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -144,6 +149,9 @@ private:
 	TObjectPtr<UBodySignalsComponent> Body;
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Pesca")
 	TObjectPtr<UFishingComponent> Fishing;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Explored|Mochila", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UExploredSurvivorComponent> Survivor;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;

@@ -5,6 +5,12 @@
 
 #include "Cooking/ExploredFire.h"
 #include "Explored.h"
+#include "Fishing/ExploredFishingSpot.h"
+#include "Items/ExploredIslandStateSubsystem.h"
+#include "Items/ExploredPickup.h"
+#include "Narrative/ExploredSupplyCrate.h"
+#include "Weather/ExploredRainBarrel.h"
+#include "WorldGen/ExploredCoconutPalm.h"
 #include "WorldGen/ExploredPlaceholder.h"
 #include "WorldGen/ExploredShelterVolume.h"
 #include "WorldGen/IslandLayout.h"
@@ -26,6 +32,15 @@ AExploredIslandPopulator::AExploredIslandPopulator()
 	// Tipos que ya tienen actor de juego; el resto es AExploredPlaceholder hasta su tramo de F3.
 	ClassRegistry.Add(TEXT("hoguera_fija"), AExploredFire::StaticClass());
 	ClassRegistry.Add(TEXT("shelter_volume"), AExploredShelterVolume::StaticClass());
+	// F3b: recursos, pesca, agua y caja de suministros (GDD v3 §5.3-5.5).
+	ClassRegistry.Add(TEXT("palma"), AExploredCoconutPalm::StaticClass());
+	for (const TCHAR* Resource : { TEXT("lena"), TEXT("fibra"), TEXT("cana_bambu"), TEXT("tronco"), TEXT("lente") })
+	{
+		ClassRegistry.Add(Resource, AExploredPickup::StaticClass());
+	}
+	ClassRegistry.Add(TEXT("punto_pesca"), AExploredFishingSpot::StaticClass());
+	ClassRegistry.Add(TEXT("barril_lluvia"), AExploredRainBarrel::StaticClass());
+	ClassRegistry.Add(TEXT("caja_suministros"), AExploredSupplyCrate::StaticClass());
 }
 
 void AExploredIslandPopulator::BeginPlay()
@@ -63,6 +78,10 @@ int32 AExploredIslandPopulator::Populate()
 			Spawned.Add(Actor);
 			ById.Add(Prop.Id, Actor);
 		}
+	}
+	if (UExploredIslandStateSubsystem* Island = UExploredIslandStateSubsystem::Get(this))
+	{
+		Island->ApplyToWorld();
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Isla] %d colocaciones creadas (%d de reserva, %d con actor de juego)"),
 		Spawned.Num(), PlaceholderCount, Spawned.Num() - PlaceholderCount);
@@ -127,6 +146,10 @@ AActor* AExploredIslandPopulator::SpawnProp(const FIslandProps& Props, const FIs
 	if (Registered && *Registered)
 	{
 		Actor = World->SpawnActor<AActor>(*Registered, Transform, Params);
+		if (AExploredPlaceholder* GameplayProp = Cast<AExploredPlaceholder>(Actor))
+		{
+			GameplayProp->Configure(Prop, *Type, Props.MeshPathFor(Prop), Material);
+		}
 		if (AExploredShelterVolume* Shelter = Cast<AExploredShelterVolume>(Actor))
 		{
 			Shelter->ShelterId = Prop.Id;

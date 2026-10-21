@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 590,
-		"cpp": 230,
-		"datos": 360,
+		"total": 315,
+		"cpp": 256,
+		"datos": 59,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 3,
-		"revisar": 116
+		"revisar": 152
 	},
 	"entries": [
 		{
@@ -421,46 +421,6 @@
 		},
 		{
 			"namespace": "Explored",
-			"key": "Fire_AddFuel",
-			"es": "Echar al fuego",
-			"en": "Feed the fire",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:272"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Fire_Collect",
-			"es": "Retirar la comida",
-			"en": "Take the food off",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:262"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Fire_Ignite",
-			"es": "Encender",
-			"en": "Light",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:268"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Fire_Revive",
-			"es": "Avivar las brasas",
-			"en": "Stoke the embers",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:267"
-			]
-		},
-		{
-			"namespace": "Explored",
 			"key": "Verb_Board",
 			"es": "Subir a {0}",
 			"en": "Board {0}",
@@ -507,6 +467,307 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Carry/ExploredContainer.cpp:157"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "BackpackFull",
+			"es": "No te cabe más",
+			"en": "No more room",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:24"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "BarrelEmpty",
+			"es": "El barril está vacío",
+			"en": "The barrel is empty",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:103"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CanteenAlreadyFull",
+			"es": "La cantimplora ya está llena",
+			"en": "The canteen is already full",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:109"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CanteenEmpty",
+			"es": "La cantimplora está vacía",
+			"en": "The canteen is empty",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:162"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CanteenFilled",
+			"es": "Cantimplora llena",
+			"en": "Canteen filled",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:100"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CastLine",
+			"es": "Lanzar el sedal",
+			"en": "Cast the line",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:40"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CrateEmpty",
+			"es": "Caja vacía",
+			"en": "Empty crate",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:26"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "CrateNothing",
+			"es": "No te hace falta nada de la caja",
+			"en": "You need nothing from the crate",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:45"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FillCanteen",
+			"es": "Llenar la cantimplora ({0}/{1})",
+			"en": "Fill the canteen ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:75"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireBoil",
+			"es": "Hervir",
+			"en": "Boil",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:31"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireCollect",
+			"es": "Recoger",
+			"en": "Collect",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:28"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireCook",
+			"es": "Cocinar",
+			"en": "Cook",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:30"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireFeed",
+			"es": "Añadir leña",
+			"en": "Add firewood",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:32"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireLight",
+			"es": "Encender",
+			"en": "Light",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:29"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireNeedsWood",
+			"es": "Para encenderla: 3 de leña y el cuchillo",
+			"en": "To light it: 3 firewood and the knife",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:206"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FireNothing",
+			"es": "No llevas nada para el fuego",
+			"en": "You carry nothing for the fire",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Cooking/ExploredFire.cpp:205"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FishBite",
+			"es": "Pica: pulsa ahora",
+			"en": "A bite: press now",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:110"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "FishEscaped",
+			"es": "Se ha escapado",
+			"en": "It got away",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:113"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "HandsBusy",
+			"es": "Ya llevas algo pesado en las manos",
+			"en": "Your hands are full",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:73"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "MissingInputs",
+			"es": "Te falta material",
+			"en": "Missing materials",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:91"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "NeedRod",
+			"es": "Necesitas una caña de pescar",
+			"en": "You need a fishing rod",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:65"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "NoCanteen",
+			"es": "No llevas la cantimplora",
+			"en": "You don't have the canteen",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:106"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "NoFishing",
+			"es": "Ahora no pican",
+			"en": "Nothing bites now",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:116"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "NoGround",
+			"es": "Aquí no hay suelo despejado",
+			"en": "No clear ground here",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:270",
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:295"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "NotValid",
+			"es": "No sirve así",
+			"en": "That won't work",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:23"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "OpenCrate",
+			"es": "Abrir la caja",
+			"en": "Open the crate",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:26"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "PickCoconut",
+			"es": "Bajar un coco ({0})",
+			"en": "Pick a coconut ({0})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/WorldGen/ExploredCoconutPalm.cpp:43"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "PickUpItem",
+			"es": "Coger {0}",
+			"en": "Take {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Items/ExploredPickup.cpp:50"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "PullFish",
+			"es": "Sacar el pez",
+			"en": "Pull the fish",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:42"
+			]
+		},
+		{
+			"namespace": "ExploredIsland",
+			"key": "ReelIn",
+			"es": "Recoger el sedal",
+			"en": "Reel in",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Fishing/ExploredFishingSpot.cpp:41"
 			]
 		},
 		{
@@ -2349,576 +2610,6 @@
 			]
 		},
 		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "astillero.nameEs",
-			"es": "Astillero",
-			"en": "Shipyard",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «astillero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "atril_cuaderno.nameEs",
-			"es": "Atril del cuaderno",
-			"en": "Sketchbook lectern",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «atril_cuaderno» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "bancal.nameEs",
-			"es": "Bancal",
-			"en": "Garden bed",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «bancal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "banco_chatarra.nameEs",
-			"es": "Banco de chatarra",
-			"en": "Scrap bench",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «banco_chatarra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "bandeja_conchas.nameEs",
-			"es": "Bandeja de conchas",
-			"en": "Shell tray",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «bandeja_conchas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "cama_hojas.nameEs",
-			"es": "Cama de hojas",
-			"en": "Leaf bed",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «cama_hojas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "catre_bambu.nameEs",
-			"es": "Catre de bambú",
-			"en": "Bamboo cot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «catre_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "chimenea.nameEs",
-			"es": "Chimenea",
-			"en": "Chimney",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «chimenea» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "cimiento_piedra.nameEs",
-			"es": "Cimiento de piedra",
-			"en": "Stone foundation",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «cimiento_piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "cuerda_fija.nameEs",
-			"es": "Cuerda fija",
-			"en": "Fixed rope",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «cuerda_fija» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "escalera_bambu.nameEs",
-			"es": "Escalera de bambú",
-			"en": "Bamboo ladder",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «escalera_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "escalera_madera.nameEs",
-			"es": "Escalera de madera",
-			"en": "Wooden ladder",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «escalera_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "escalera_mano.nameEs",
-			"es": "Escalera de mano",
-			"en": "Lashed ladder",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «escalera_mano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "espaldera.nameEs",
-			"es": "Espaldera",
-			"en": "Trellis",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «espaldera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "espantapajaros.nameEs",
-			"es": "Espantapájaros",
-			"en": "Scarecrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «espantapajaros» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "estanteria_museo.nameEs",
-			"es": "Estantería del museo",
-			"en": "Museum shelf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «estanteria_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "fogata.nameEs",
-			"es": "Fogata",
-			"en": "Campfire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «fogata» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "hoguera_senal.nameEs",
-			"es": "Hoguera de señal",
-			"en": "Signal fire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «hoguera_senal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "horno_barro.nameEs",
-			"es": "Horno de barro",
-			"en": "Clay oven",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «horno_barro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "horno_fundicion.nameEs",
-			"es": "Horno de fundición",
-			"en": "Smelting furnace",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «horno_fundicion» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "marco_herbario.nameEs",
-			"es": "Marco del herbario",
-			"en": "Herbarium frame",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «marco_herbario» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "mesa_cartografia.nameEs",
-			"es": "Mesa de cartografía",
-			"en": "Chart table",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «mesa_cartografia» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "muelle.nameEs",
-			"es": "Muelle",
-			"en": "Jetty",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «muelle» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "muelle_final.nameEs",
-			"es": "Final de muelle",
-			"en": "Jetty end",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «muelle_final» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "muro_piedra.nameEs",
-			"es": "Muro de piedra seca",
-			"en": "Dry-stone wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «muro_piedra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "panel_fosiles.nameEs",
-			"es": "Panel de fósiles",
-			"en": "Fossil panel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «panel_fosiles» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "panel_museo.nameEs",
-			"es": "Panel de pared del museo",
-			"en": "Museum wall panel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «panel_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pared_bambu.nameEs",
-			"es": "Pared de bambú",
-			"en": "Bamboo wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pared_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pared_madera.nameEs",
-			"es": "Pared de madera",
-			"en": "Wooden wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pared_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pared_palma.nameEs",
-			"es": "Pared de palma",
-			"en": "Palm wall",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pared_palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pecera_museo.nameEs",
-			"es": "Pecera del museo",
-			"en": "Museum fish tank",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pecera_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "piedra_trabajo.nameEs",
-			"es": "Piedra de trabajo",
-			"en": "Work stone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «piedra_trabajo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pila_compost.nameEs",
-			"es": "Pila de compost",
-			"en": "Compost heap",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pila_compost» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pilote_bambu.nameEs",
-			"es": "Pilote de bambú",
-			"en": "Bamboo stilt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pilote_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "pilote_madera.nameEs",
-			"es": "Pilote de madera",
-			"en": "Wooden stilt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «pilote_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "puerta_bambu.nameEs",
-			"es": "Puerta de bambú",
-			"en": "Bamboo door",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «puerta_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "puerta_madera.nameEs",
-			"es": "Puerta de madera",
-			"en": "Wooden door",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «puerta_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "puerta_palma.nameEs",
-			"es": "Puerta de palma",
-			"en": "Palm door",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «puerta_palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "recolector_lluvia.nameEs",
-			"es": "Recolector de lluvia",
-			"en": "Rain catcher",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «recolector_lluvia» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "refugio_inclinado.nameEs",
-			"es": "Refugio inclinado",
-			"en": "Lean-to shelter",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «refugio_inclinado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "secadero.nameEs",
-			"es": "Secadero",
-			"en": "Drying rack",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «secadero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "suelo_bambu.nameEs",
-			"es": "Suelo de bambú",
-			"en": "Bamboo floor",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «suelo_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "suelo_madera.nameEs",
-			"es": "Suelo de madera",
-			"en": "Wooden floor",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «suelo_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "suelo_palma.nameEs",
-			"es": "Suelo de palma",
-			"en": "Palm floor",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «suelo_palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "tablon_contencion.nameEs",
-			"es": "Tablón de contención",
-			"en": "Retaining board",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «tablon_contencion» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "techo_bambu.nameEs",
-			"es": "Techo de bambú y palma",
-			"en": "Bamboo and palm roof",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «techo_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "techo_madera.nameEs",
-			"es": "Techo de madera y palma",
-			"en": "Wood and palm roof",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «techo_madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "techo_palma.nameEs",
-			"es": "Techo de palma",
-			"en": "Palm roof",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «techo_palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "telar.nameEs",
-			"es": "Telar de fibra",
-			"en": "Fibre loom",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «telar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "viga_apoyo.nameEs",
-			"es": "Viga de apoyo",
-			"en": "Support beam",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «viga_apoyo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "vitrina_minerales.nameEs",
-			"es": "Vitrina de minerales",
-			"en": "Mineral display case",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «vitrina_minerales» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "vitrina_museo.nameEs",
-			"es": "Vitrina",
-			"en": "Display case",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «vitrina_museo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.pieces",
-			"key": "yunque.nameEs",
-			"es": "Yunque",
-			"en": "Anvil",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «yunque» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.tiers",
-			"key": "bambu.nameEs",
-			"es": "Bambú",
-			"en": "Bamboo",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.tiers",
-			"key": "madera.nameEs",
-			"es": "Madera",
-			"en": "Wood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «madera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.tiers",
-			"key": "palma.nameEs",
-			"es": "Hoja de palma",
-			"en": "Palm leaf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.building_pieces.tiers",
-			"key": "piedra.nameEs",
-			"es": "Piedra",
-			"en": "Stone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/building_pieces.json «piedra» nameEs/nameEn"
-			]
-		},
-		{
 			"namespace": "Data.fauna.lod",
 			"key": "Frozen.nameEs",
 			"es": "Congelado",
@@ -3049,583 +2740,33 @@
 			]
 		},
 		{
-			"namespace": "Data.fish.legendary",
-			"key": "el_errante.nameEs",
-			"es": "El Errante",
-			"en": "The Wanderer",
+			"namespace": "Data.items.items",
+			"key": "barometro.nameEs",
+			"es": "Barómetro de bolsillo",
+			"en": "Pocket barometer",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/fish.json «el_errante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.legendary",
-			"key": "el_viejo.nameEs",
-			"es": "El Viejo",
-			"en": "The Old One",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «el_viejo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.legendary",
-			"key": "manta_negra.nameEs",
-			"es": "La Manta Negra",
-			"en": "The Black Ray",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «manta_negra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.legendary",
-			"key": "rey_de_plata.nameEs",
-			"es": "El Rey de Plata",
-			"en": "The Silver King",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «rey_de_plata» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.legendary",
-			"key": "sombra.nameEs",
-			"es": "Sombra",
-			"en": "Shadow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «sombra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "atun.nameEs",
-			"es": "Atún",
-			"en": "Tuna",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «atun» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "barracuda.nameEs",
-			"es": "Barracuda",
-			"en": "Barracuda",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «barracuda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "bonito.nameEs",
-			"es": "Bonito",
-			"en": "Bonito",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «bonito» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "dorado.nameEs",
-			"es": "Dorado",
-			"en": "Mahi-mahi",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «dorado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "jurel.nameEs",
-			"es": "Jurel",
-			"en": "Trevally",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «jurel» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "langosta.nameEs",
-			"es": "Langosta de arrecife",
-			"en": "Spiny lobster",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «langosta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "mero.nameEs",
-			"es": "Mero",
-			"en": "Grouper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «mero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "pargo.nameEs",
-			"es": "Pargo",
-			"en": "Snapper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «pargo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "pez_ballesta.nameEs",
-			"es": "Pez ballesta",
-			"en": "Triggerfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «pez_ballesta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "pez_cirujano.nameEs",
-			"es": "Pez cirujano",
-			"en": "Surgeonfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «pez_cirujano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "pez_loro.nameEs",
-			"es": "Pez loro",
-			"en": "Parrotfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «pez_loro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fish.species",
-			"key": "salmonete.nameEs",
-			"es": "Salmonete",
-			"en": "Goatfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fish.json «salmonete» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.ignition",
-			"key": "cerillas.nameEs",
-			"es": "Cerillas",
-			"en": "Matches",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «cerillas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.ignition",
-			"key": "friccion.nameEs",
-			"es": "Arco de fuego",
-			"en": "Bow drill",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «friccion» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.ignition",
-			"key": "pedernal.nameEs",
-			"es": "Pedernal y metal",
-			"en": "Flint and steel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «pedernal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.levels",
-			"key": "fogata.nameEs",
-			"es": "Fogata",
-			"en": "Campfire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «fogata» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.levels",
-			"key": "hoguera.nameEs",
-			"es": "Hoguera",
-			"en": "Bonfire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «hoguera» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.levels",
-			"key": "horno_arcilla.nameEs",
-			"es": "Horno de arcilla",
-			"en": "Clay oven",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «horno_arcilla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fuels.smeltingLevels",
-			"key": "horno_fundicion.nameEs",
-			"es": "Horno de fundición",
-			"en": "Smelting furnace",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fuels.json «horno_fundicion» nameEs/nameEn"
+				"Content/Data/items.json «barometro» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "aceite_pescado.nameEs",
-			"es": "Aceite de pescado",
-			"en": "Fish oil",
+			"key": "cana_bambu.nameEs",
+			"es": "Caña de bambú",
+			"en": "Bamboo cane",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «aceite_pescado» nameEs/nameEn"
+				"Content/Data/items.json «cana_bambu» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "agua_hervida.nameEs",
-			"es": "Agua hervida",
-			"en": "Boiled water",
+			"key": "cana_pescar.nameEs",
+			"es": "Caña de pescar",
+			"en": "Fishing rod",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «agua_hervida» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "agua_mar.nameEs",
-			"es": "Agua de mar",
-			"en": "Seawater",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «agua_mar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "agua_sin_tratar.nameEs",
-			"es": "Agua sin tratar",
-			"en": "Untreated water",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «agua_sin_tratar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "aguijon_manta_negra.nameEs",
-			"es": "Aguijón de La Manta Negra",
-			"en": "Black Manta barb",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «aguijon_manta_negra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "alambre.nameEs",
-			"es": "Alambre de cobre",
-			"en": "Copper wire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «alambre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "alga_fibra.nameEs",
-			"es": "Alga de fibra",
-			"en": "Fibre seaweed",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «alga_fibra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "algodon_silvestre.nameEs",
-			"es": "Algodón silvestre",
-			"en": "Wild cotton",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «algodon_silvestre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "angarillas.nameEs",
-			"es": "Angarillas",
-			"en": "Travois",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «angarillas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "antorcha.nameEs",
-			"es": "Antorcha",
-			"en": "Torch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «antorcha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "anzuelo_legendario.nameEs",
-			"es": "Anzuelo legendario",
-			"en": "Legendary hook",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «anzuelo_legendario» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "arcilla_roja.nameEs",
-			"es": "Arcilla roja",
-			"en": "Red clay",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «arcilla_roja» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "arco.nameEs",
-			"es": "Arco",
-			"en": "Bow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «arco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "arena.nameEs",
-			"es": "Arena",
-			"en": "Sand",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «arena» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "arenisca.nameEs",
-			"es": "Arenisca",
-			"en": "Sandstone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «arenisca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "atado_generico.nameEs",
-			"es": "Atado",
-			"en": "Bound piece",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «atado_generico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "atun.nameEs",
-			"es": "Atún",
-			"en": "Tuna",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «atun» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "azufre.nameEs",
-			"es": "Azufre",
-			"en": "Sulphur",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «azufre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "bambu_fino.nameEs",
-			"es": "Caña de bambú fina",
-			"en": "Thin bamboo cane",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «bambu_fino» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "bambu_grueso.nameEs",
-			"es": "Caña de bambú gruesa",
-			"en": "Thick bamboo cane",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «bambu_grueso» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "barracuda.nameEs",
-			"es": "Barracuda",
-			"en": "Barracuda",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «barracuda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "basalto.nameEs",
-			"es": "Basalto",
-			"en": "Basalt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «basalto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "basalto_tallado.nameEs",
-			"es": "Cabeza de basalto tallada",
-			"en": "Knapped basalt head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «basalto_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "batata.nameEs",
-			"es": "Batata",
-			"en": "Sweet potato",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «batata» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "batata_asada.nameEs",
-			"es": "Batata asada",
-			"en": "Roast sweet potato",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «batata_asada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "bolsa_impermeable.nameEs",
-			"es": "Bolsa estanca",
-			"en": "Dry bag",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «bolsa_impermeable» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "bonito.nameEs",
-			"es": "Bonito",
-			"en": "Bonito",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «bonito» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "brujula.nameEs",
-			"es": "Brújula",
-			"en": "Compass",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «brujula» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cabeza_pico_rescatada.nameEs",
-			"es": "Cabeza de pico rescatada",
-			"en": "Salvaged pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cabeza_pico_rescatada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cable_electrico.nameEs",
-			"es": "Cable eléctrico",
-			"en": "Electrical cable",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cable_electrico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "caliza.nameEs",
-			"es": "Caliza",
-			"en": "Limestone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «caliza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cangrejo.nameEs",
-			"es": "Cangrejo",
-			"en": "Crab",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cangrejo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cangrejo_caparazon.nameEs",
-			"es": "Cangrejo en su caparazón",
-			"en": "Crab roasted in its shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cangrejo_caparazon» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cangrejo_cocotero.nameEs",
-			"es": "Cangrejo de los cocoteros",
-			"en": "Coconut crab",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cangrejo_cocotero» nameEs/nameEn"
+				"Content/Data/items.json «cana_pescar» nameEs/nameEn"
 			]
 		},
 		{
@@ -3640,229 +2781,29 @@
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "canto_aguzado.nameEs",
-			"es": "Canto aguzado",
-			"en": "Pointed pebble",
+			"key": "coco.nameEs",
+			"es": "Coco",
+			"en": "Coconut",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «canto_aguzado» nameEs/nameEn"
+				"Content/Data/items.json «coco» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "canto_rodado.nameEs",
-			"es": "Canto rodado",
-			"en": "Pebble",
+			"key": "coco_vacio.nameEs",
+			"es": "Coco vacío",
+			"en": "Empty coconut",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «canto_rodado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "caracola.nameEs",
-			"es": "Caracola",
-			"en": "Conch shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «caracola» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "carbon_vegetal.nameEs",
-			"es": "Carbón vegetal",
-			"en": "Charcoal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «carbon_vegetal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "carretilla.nameEs",
-			"es": "Carretilla",
-			"en": "Wheelbarrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «carretilla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cascara_coco.nameEs",
-			"es": "Cáscara de coco",
-			"en": "Coconut shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cascara_coco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cerillas.nameEs",
-			"es": "Cerillas",
-			"en": "Matches",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cerillas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cesta.nameEs",
-			"es": "Cesta",
-			"en": "Basket",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cesta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "chapa_fuselaje.nameEs",
-			"es": "Chapa del fuselaje",
-			"en": "Fuselage sheet metal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «chapa_fuselaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cinta_americana.nameEs",
-			"es": "Cinta americana",
-			"en": "Duct tape",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cinta_americana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cinturon_cuero.nameEs",
-			"es": "Cinturón de cuero",
-			"en": "Leather belt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cinturon_cuero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "clavija_roca.nameEs",
-			"es": "Clavija de roca",
-			"en": "Rock piton",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «clavija_roca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "clavos.nameEs",
-			"es": "Clavos",
-			"en": "Nails",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «clavos» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "coco_maduro.nameEs",
-			"es": "Coco maduro",
-			"en": "Ripe coconut",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «coco_maduro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "coco_verde.nameEs",
-			"es": "Coco verde",
-			"en": "Green coconut",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «coco_verde» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "comida_quemada.nameEs",
-			"es": "Comida quemada",
-			"en": "Burnt food",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «comida_quemada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "compost.nameEs",
-			"es": "Compost",
-			"en": "Compost",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «compost» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "concha_grande.nameEs",
-			"es": "Concha grande de almeja gigante",
-			"en": "Giant clam shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «concha_grande» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "concha_pequena.nameEs",
-			"es": "Concha pequeña",
-			"en": "Small shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «concha_pequena» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cordel.nameEs",
-			"es": "Cordel",
-			"en": "Twine",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cordel» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "corteza.nameEs",
-			"es": "Corteza",
-			"en": "Bark",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «corteza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "cristal_cuarzo.nameEs",
-			"es": "Cristal de cuarzo",
-			"en": "Quartz crystal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «cristal_cuarzo» nameEs/nameEn"
+				"Content/Data/items.json «coco_vacio» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
 			"key": "cuchillo.nameEs",
-			"es": "Cuchillo",
-			"en": "Knife",
+			"es": "Cuchillo multiusos",
+			"en": "Multi-tool knife",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/items.json «cuchillo» nameEs/nameEn"
@@ -3880,1312 +2821,212 @@
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "cuero_curtido.nameEs",
-			"es": "Piel de tiburón curtida",
-			"en": "Tanned shark skin",
+			"key": "fibra.nameEs",
+			"es": "Fibra de palma",
+			"en": "Palm fibre",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «cuero_curtido» nameEs/nameEn"
+				"Content/Data/items.json «fibra» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "dientes_sombra.nameEs",
-			"es": "Dientes de Sombra",
-			"en": "Shadow's teeth",
+			"key": "lena.nameEs",
+			"es": "Leña",
+			"en": "Firewood",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «dientes_sombra» nameEs/nameEn"
+				"Content/Data/items.json «lena» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "dorado.nameEs",
-			"es": "Dorado",
-			"en": "Mahi-mahi",
+			"key": "lente.nameEs",
+			"es": "Lente de Fresnel",
+			"en": "Fresnel lens",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «dorado» nameEs/nameEn"
+				"Content/Data/items.json «lente» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "erizo.nameEs",
-			"es": "Erizo de mar",
-			"en": "Sea urchin",
+			"key": "mecha.nameEs",
+			"es": "Mecha",
+			"en": "Wick",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «erizo» nameEs/nameEn"
+				"Content/Data/items.json «mecha» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "espina_pescado.nameEs",
-			"es": "Espina de pescado",
-			"en": "Fish bone",
+			"key": "pez_asado.nameEs",
+			"es": "Pez asado",
+			"en": "Cooked fish",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «espina_pescado» nameEs/nameEn"
+				"Content/Data/items.json «pez_asado» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "esponja_mar.nameEs",
-			"es": "Esponja de mar",
-			"en": "Sea sponge",
+			"key": "pez_crudo.nameEs",
+			"es": "Pez",
+			"en": "Fish",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «esponja_mar» nameEs/nameEn"
+				"Content/Data/items.json «pez_crudo» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "estaca.nameEs",
-			"es": "Estaca",
-			"en": "Stake",
+			"key": "remo.nameEs",
+			"es": "Remo",
+			"en": "Paddle",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «estaca» nameEs/nameEn"
+				"Content/Data/items.json «remo» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "estofado_pescado.nameEs",
-			"es": "Estofado de pescado",
-			"en": "Fish stew",
+			"key": "tarro_aceite.nameEs",
+			"es": "Tarro de aceite",
+			"en": "Oil jar",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «estofado_pescado» nameEs/nameEn"
+				"Content/Data/items.json «tarro_aceite» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.items.items",
-			"key": "fibra_coco.nameEs",
-			"es": "Fibra de coco",
-			"en": "Coconut fibre",
+			"key": "tronco.nameEs",
+			"es": "Tronco",
+			"en": "Log",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/items.json «fibra_coco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "filete_pescado.nameEs",
-			"es": "Filete de pescado",
-			"en": "Fish fillet",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «filete_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "flecha.nameEs",
-			"es": "Flecha",
-			"en": "Arrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «flecha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "fruta_fermentada.nameEs",
-			"es": "Fruta fermentada",
-			"en": "Fermented fruit",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «fruta_fermentada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "fruta_seca.nameEs",
-			"es": "Fruta seca",
-			"en": "Dried fruit",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «fruta_seca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "grasa.nameEs",
-			"es": "Grasa",
-			"en": "Fat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «grasa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "guano.nameEs",
-			"es": "Guano",
-			"en": "Guano",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «guano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "guiso_improvisado.nameEs",
-			"es": "Guiso improvisado",
-			"en": "Improvised stew",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «guiso_improvisado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hacha.nameEs",
-			"es": "Hacha",
-			"en": "Axe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hacha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hierro_meteorito.nameEs",
-			"es": "Hierro de meteorito",
-			"en": "Meteoric iron",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hierro_meteorito» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hijuelo_platano.nameEs",
-			"es": "Hijuelo de plátano",
-			"en": "Banana sucker",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hijuelo_platano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hoja_palma.nameEs",
-			"es": "Hoja de palma",
-			"en": "Palm leaf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hoja_palma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hoja_platano.nameEs",
-			"es": "Hoja de plátano",
-			"en": "Banana leaf",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hoja_platano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hueso_largo.nameEs",
-			"es": "Hueso largo",
-			"en": "Long bone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hueso_largo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "hueso_pequeno.nameEs",
-			"es": "Hueso pequeño",
-			"en": "Small bone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «hueso_pequeno» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "huevo.nameEs",
-			"es": "Huevo",
-			"en": "Egg",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «huevo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "huevo_brasa.nameEs",
-			"es": "Huevo a la brasa",
-			"en": "Ember-roasted egg",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «huevo_brasa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "jurel.nameEs",
-			"es": "Jurel",
-			"en": "Trevally",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «jurel» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "langosta.nameEs",
-			"es": "Langosta de arrecife",
-			"en": "Spiny lobster",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «langosta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lanza.nameEs",
-			"es": "Lanza",
-			"en": "Spear",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lanza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lapa.nameEs",
-			"es": "Lapa",
-			"en": "Limpet",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lapa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lasca_obsidiana.nameEs",
-			"es": "Lasca de obsidiana",
-			"en": "Obsidian flake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lasca_obsidiana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lasca_pedernal.nameEs",
-			"es": "Lasca de pedernal",
-			"en": "Flint flake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lasca_pedernal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lasca_tallada.nameEs",
-			"es": "Lasca",
-			"en": "Flake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lasca_tallada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "liana.nameEs",
-			"es": "Liana",
-			"en": "Vine",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «liana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lima_silvestre.nameEs",
-			"es": "Lima silvestre",
-			"en": "Wild lime",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lima_silvestre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lingote_aluminio.nameEs",
-			"es": "Lingote de aluminio",
-			"en": "Aluminium ingot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lingote_aluminio» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lingote_cobre.nameEs",
-			"es": "Lingote de cobre",
-			"en": "Copper ingot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lingote_cobre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lingote_hierro.nameEs",
-			"es": "Lingote de hierro",
-			"en": "Iron ingot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lingote_hierro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "lombriz.nameEs",
-			"es": "Lombriz",
-			"en": "Earthworm",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «lombriz» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "madera_blanda.nameEs",
-			"es": "Madera blanda de balsa",
-			"en": "Balsa wood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «madera_blanda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "madera_dura.nameEs",
-			"es": "Madera dura de guayabo",
-			"en": "Hardwood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «madera_dura» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "madera_flotante.nameEs",
-			"es": "Madera flotante",
-			"en": "Driftwood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «madera_flotante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "madera_naufragio.nameEs",
-			"es": "Madera de naufragio",
-			"en": "Shipwreck wood",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «madera_naufragio» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mango_fruta.nameEs",
-			"es": "Mango",
-			"en": "Mango",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mango_fruta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "maracuya.nameEs",
-			"es": "Maracuyá",
-			"en": "Passion fruit",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «maracuya» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "martillo.nameEs",
-			"es": "Martillo",
-			"en": "Hammer",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «martillo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mero.nameEs",
-			"es": "Mero",
-			"en": "Grouper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mineral_cobre.nameEs",
-			"es": "Mineral de cobre",
-			"en": "Copper ore",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mineral_cobre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mochila.nameEs",
-			"es": "Mochila del Albatros",
-			"en": "Albatross backpack",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mochila» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mochila_cuero_bambu.nameEs",
-			"es": "Mochila de cuero con armazón de bambú",
-			"en": "Leather backpack with bamboo frame",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mochila_cuero_bambu» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "mochila_fibra.nameEs",
-			"es": "Mochila de fibra",
-			"en": "Fibre backpack",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «mochila_fibra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "musgo.nameEs",
-			"es": "Musgo",
-			"en": "Moss",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «musgo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "obsidiana.nameEs",
-			"es": "Obsidiana",
-			"en": "Obsidian",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «obsidiana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pala.nameEs",
-			"es": "Pala",
-			"en": "Shovel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pala» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "palo_recto.nameEs",
-			"es": "Palo recto",
-			"en": "Straight stick",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «palo_recto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pargo.nameEs",
-			"es": "Pargo",
-			"en": "Snapper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pargo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pasta_medicinal.nameEs",
-			"es": "Pasta medicinal",
-			"en": "Medicinal paste",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pasta_medicinal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pedernal.nameEs",
-			"es": "Pedernal",
-			"en": "Flint",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pedernal» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pegado_generico.nameEs",
-			"es": "Pegado",
-			"en": "Glued piece",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pegado_generico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pescado_ahumado.nameEs",
-			"es": "Pescado ahumado",
-			"en": "Smoked fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pescado_ahumado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pescado_arrecife.nameEs",
-			"es": "Pescado de arrecife",
-			"en": "Reef fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pescado_arrecife» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pescado_asado.nameEs",
-			"es": "Pescado asado en espeto",
-			"en": "Spit-roasted fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pescado_asado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pescado_salado.nameEs",
-			"es": "Pescado salado",
-			"en": "Salted fish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pescado_salado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pez_ballesta.nameEs",
-			"es": "Pez ballesta",
-			"en": "Triggerfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pez_ballesta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pez_cirujano.nameEs",
-			"es": "Pez cirujano",
-			"en": "Surgeonfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pez_cirujano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pez_loro.nameEs",
-			"es": "Pez loro",
-			"en": "Parrotfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pez_loro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pico.nameEs",
-			"es": "Pico",
-			"en": "Pick",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "piedra_plana.nameEs",
-			"es": "Piedra plana",
-			"en": "Flat stone",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «piedra_plana» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "piel_bruto.nameEs",
-			"es": "Piel de tiburón en bruto",
-			"en": "Raw shark skin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «piel_bruto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "piel_el_errante.nameEs",
-			"es": "Piel curtida de El Errante",
-			"en": "The Wanderer's tanned hide",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «piel_el_errante» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "piel_pescado.nameEs",
-			"es": "Piel de pescado",
-			"en": "Fish skin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «piel_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pina.nameEs",
-			"es": "Piña silvestre",
-			"en": "Wild pineapple",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "planta_medicinal_aloe.nameEs",
-			"es": "Aloe",
-			"en": "Aloe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «planta_medicinal_aloe» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "platano.nameEs",
-			"es": "Plátano",
-			"en": "Banana",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «platano» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "plumas.nameEs",
-			"es": "Plumas",
-			"en": "Feathers",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «plumas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "pulpo.nameEs",
-			"es": "Pulpo",
-			"en": "Octopus",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «pulpo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "rama_seca.nameEs",
-			"es": "Rama seca",
-			"en": "Dry branch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «rama_seca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "rama_verde.nameEs",
-			"es": "Rama verde",
-			"en": "Green branch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «rama_verde» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "recipiente_coco.nameEs",
-			"es": "Recipiente de coco",
-			"en": "Coconut bowl",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «recipiente_coco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "resina.nameEs",
-			"es": "Resina",
-			"en": "Resin",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «resina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "rizoma_curcuma.nameEs",
-			"es": "Rizoma de cúrcuma silvestre",
-			"en": "Wild turmeric root",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «rizoma_curcuma» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "sal_marina.nameEs",
-			"es": "Sal marina",
-			"en": "Sea salt",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «sal_marina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "salmonete.nameEs",
-			"es": "Salmonete",
-			"en": "Goatfish",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «salmonete» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "sedal_legendario.nameEs",
-			"es": "Sedal legendario",
-			"en": "Legendary line",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «sedal_legendario» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "senuelo_tallado.nameEs",
-			"es": "Señuelo tallado",
-			"en": "Carved lure",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «senuelo_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "seta_comestible.nameEs",
-			"es": "Seta comestible",
-			"en": "Edible mushroom",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «seta_comestible» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "sopa_pescado.nameEs",
-			"es": "Sopa de pescado",
-			"en": "Fish soup",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «sopa_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "taro.nameEs",
-			"es": "Taro",
-			"en": "Taro",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «taro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "taro_hervido.nameEs",
-			"es": "Taro hervido",
-			"en": "Boiled taro",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «taro_hervido» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "tendon.nameEs",
-			"es": "Tendón",
-			"en": "Sinew",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «tendon» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "tierra_suelta.nameEs",
-			"es": "Tierra suelta",
-			"en": "Loose soil",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «tierra_suelta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "trofeo_el_viejo.nameEs",
-			"es": "Trofeo de El Viejo",
-			"en": "The Old One trophy",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «trofeo_el_viejo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "tronco_pequeno.nameEs",
-			"es": "Tronco pequeño",
-			"en": "Small log",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «tronco_pequeno» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "tubo_aluminio.nameEs",
-			"es": "Tubo de aluminio",
-			"en": "Aluminium tube",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «tubo_aluminio» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "vara_flexible.nameEs",
-			"es": "Vara flexible de bambú",
-			"en": "Flexible bamboo rod",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «vara_flexible» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "vasija_barro.nameEs",
-			"es": "Vasija de barro cocido",
-			"en": "Fired clay pot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «vasija_barro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "visceras_pescado.nameEs",
-			"es": "Vísceras de pescado",
-			"en": "Fish guts",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «visceras_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "yesca_hongo.nameEs",
-			"es": "Yesca de hongo",
-			"en": "Fungus tinder",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «yesca_hongo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "yuca.nameEs",
-			"es": "Yuca",
-			"en": "Cassava",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «yuca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.items.items",
-			"key": "yuca_cocida.nameEs",
-			"es": "Yuca cocida",
-			"en": "Boiled cassava",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/items.json «yuca_cocida» nameEs/nameEn"
+				"Content/Data/items.json «tronco» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "agua_hervida.nameEs",
-			"es": "Agua hervida",
-			"en": "Boiled water",
+			"key": "baliza.nameEs",
+			"es": "Baliza encendida",
+			"en": "Beacon lit",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «agua_hervida» nameEs/nameEn"
+				"Content/Data/recipes.json «baliza» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "batata_asada.nameEs",
-			"es": "Batata asada",
-			"en": "Roast sweet potato",
+			"key": "balsa.nameEs",
+			"es": "Balsa",
+			"en": "Raft",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «batata_asada» nameEs/nameEn"
+				"Content/Data/recipes.json «balsa» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "cangrejo_caparazon.nameEs",
-			"es": "Cangrejo en su caparazón",
-			"en": "Crab roasted in its shell",
+			"key": "cana_pescar.nameEs",
+			"es": "Caña de pescar",
+			"en": "Fishing rod",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «cangrejo_caparazon» nameEs/nameEn"
+				"Content/Data/recipes.json «cana_pescar» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "carbon_vegetal.nameEs",
-			"es": "Carbón vegetal",
-			"en": "Charcoal",
+			"key": "cuerda.nameEs",
+			"es": "Cuerda",
+			"en": "Rope",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «carbon_vegetal» nameEs/nameEn"
+				"Content/Data/recipes.json «cuerda» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "estofado_pescado.nameEs",
-			"es": "Estofado de pescado",
-			"en": "Fish stew",
+			"key": "hoguera.nameEs",
+			"es": "Hoguera",
+			"en": "Campfire",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «estofado_pescado» nameEs/nameEn"
+				"Content/Data/recipes.json «hoguera» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "fruta_seca.nameEs",
-			"es": "Fruta seca",
-			"en": "Dried fruit",
+			"key": "linterna.nameEs",
+			"es": "Linterna montada",
+			"en": "Mounted lantern",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «fruta_seca» nameEs/nameEn"
+				"Content/Data/recipes.json «linterna» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "huevo_brasa.nameEs",
-			"es": "Huevo a la brasa",
-			"en": "Ember-roasted egg",
+			"key": "mecha.nameEs",
+			"es": "Mecha",
+			"en": "Wick",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «huevo_brasa» nameEs/nameEn"
+				"Content/Data/recipes.json «mecha» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "pescado_ahumado.nameEs",
-			"es": "Pescado ahumado",
-			"en": "Smoked fish",
+			"key": "pez_asado.nameEs",
+			"es": "Pez asado",
+			"en": "Cooked fish",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «pescado_ahumado» nameEs/nameEn"
+				"Content/Data/recipes.json «pez_asado» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "pescado_asado.nameEs",
-			"es": "Pescado asado en espeto",
-			"en": "Spit-roasted fish",
+			"key": "remo.nameEs",
+			"es": "Remo",
+			"en": "Paddle",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «pescado_asado» nameEs/nameEn"
+				"Content/Data/recipes.json «remo» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.recipes.recipes",
-			"key": "pescado_salado.nameEs",
-			"es": "Pescado en salazón",
-			"en": "Salted fish",
+			"key": "tarro_aceite.nameEs",
+			"es": "Tarro de aceite",
+			"en": "Oil jar",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/recipes.json «pescado_salado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "sal_al_sol.nameEs",
-			"es": "Sal por evaporación al sol",
-			"en": "Salt dried in the sun",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «sal_al_sol» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "sal_por_hervido.nameEs",
-			"es": "Sal por evaporación al fuego",
-			"en": "Salt boiled off over the fire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «sal_por_hervido» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "sopa_pescado.nameEs",
-			"es": "Sopa de pescado",
-			"en": "Fish soup",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «sopa_pescado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "taro_hervido.nameEs",
-			"es": "Taro hervido",
-			"en": "Boiled taro",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «taro_hervido» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "vasija_barro.nameEs",
-			"es": "Vasija de barro cocido",
-			"en": "Fired clay pot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «vasija_barro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.recipes",
-			"key": "yuca_cocida.nameEs",
-			"es": "Yuca cocida",
-			"en": "Boiled cassava",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «yuca_cocida» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.vessels",
-			"key": "bandeja.nameEs",
-			"es": "Piedra plana o concha",
-			"en": "Flat stone or shell",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «bandeja» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.vessels",
-			"key": "espeto.nameEs",
-			"es": "Espeto",
-			"en": "Skewer",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «espeto» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.vessels",
-			"key": "olla_coco.nameEs",
-			"es": "Olla de coco",
-			"en": "Coconut pot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «olla_coco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.vessels",
-			"key": "secadero.nameEs",
-			"es": "Secadero y ahumadero",
-			"en": "Drying and smoking rack",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «secadero» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes.vessels",
-			"key": "vasija_barro.nameEs",
-			"es": "Vasija de barro",
-			"en": "Clay pot",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes.json «vasija_barro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "batir_chapa.nameEs",
-			"es": "Batir chapa",
-			"en": "Hammer out sheet metal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "batir_tubo.nameEs",
-			"es": "Batir tubo",
-			"en": "Hammer out tubing",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «batir_tubo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "clavos_de_alambre.nameEs",
-			"es": "Clavos de alambre",
-			"en": "Wire nails",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «clavos_de_alambre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "clavos_de_hierro.nameEs",
-			"es": "Clavos de hierro",
-			"en": "Iron nails",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «clavos_de_hierro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "estirar_alambre.nameEs",
-			"es": "Estirar alambre",
-			"en": "Draw wire",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «estirar_alambre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "fundir_chapa.nameEs",
-			"es": "Fundir chapa",
-			"en": "Melt down sheet metal",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "fundir_cobre.nameEs",
-			"es": "Fundir cobre",
-			"en": "Smelt copper",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «fundir_cobre» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "fundir_hierro.nameEs",
-			"es": "Fundir hierro",
-			"en": "Smelt iron",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «fundir_hierro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.recipes_smithing.recipes",
-			"key": "fundir_tubo.nameEs",
-			"es": "Fundir tubo",
-			"en": "Melt down tubing",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn"
+				"Content/Data/recipes.json «tarro_aceite» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.survival_needs.needs",
-			"key": "animo.nameEs",
-			"es": "Ánimo",
-			"en": "Mood",
+			"key": "calor.nameEs",
+			"es": "Calor",
+			"en": "Warmth",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/survival_needs.json «animo» nameEs/nameEn"
+				"Content/Data/survival_needs.json «calor» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.survival_needs.needs",
-			"key": "energia_dieta.nameEs",
-			"es": "Hidratos",
-			"en": "Carbs",
+			"key": "energia.nameEs",
+			"es": "Energía",
+			"en": "Energy",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/survival_needs.json «energia_dieta» nameEs/nameEn"
+				"Content/Data/survival_needs.json «energia» nameEs/nameEn"
 			]
 		},
 		{
@@ -5200,26 +3041,6 @@
 		},
 		{
 			"namespace": "Data.survival_needs.needs",
-			"key": "proteina.nameEs",
-			"es": "Proteína",
-			"en": "Protein",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/survival_needs.json «proteina» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.survival_needs.needs",
-			"key": "salud.nameEs",
-			"es": "Salud",
-			"en": "Health",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/survival_needs.json «salud» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.survival_needs.needs",
 			"key": "sed.nameEs",
 			"es": "Sed",
 			"en": "Thirst",
@@ -5229,693 +3050,123 @@
 			]
 		},
 		{
-			"namespace": "Data.survival_needs.needs",
-			"key": "sueno.nameEs",
-			"es": "Sueño",
-			"en": "Sleep",
+			"namespace": "Data.verbs.verbs",
+			"key": "atar.description",
+			"es": "Une piezas con cuerda: caña de pescar, remo o balsa.",
+			"en": "Joins pieces with rope: fishing rod, paddle or raft.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/survival_needs.json «sueno» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.survival_needs.needs",
-			"key": "vitamina_c.nameEs",
-			"es": "Vitamina C",
-			"en": "Vitamin C",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/survival_needs.json «vitamina_c» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "afilar_generico.nameEs",
-			"es": "Afilar",
-			"en": "Sharpen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «afilar_generico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "angarillas.nameEs",
-			"es": "Angarillas",
-			"en": "Travois",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «angarillas» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "angarillas.nameTemplate",
-			"es": "Angarillas de {0}",
-			"en": "{0} travois",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «angarillas» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "antorcha.nameEs",
-			"es": "Antorcha",
-			"en": "Torch",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «antorcha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "antorcha.nameTemplate",
-			"es": "Antorcha de {0} con {1}",
-			"en": "{0} torch with {1}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «antorcha» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "arco.nameEs",
-			"es": "Arco",
-			"en": "Bow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «arco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "arco.nameTemplate",
-			"es": "Arco de {0} con cuerda de {1}",
-			"en": "{0} bow with a {1} string",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «arco» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "atado_generico.nameEs",
-			"es": "Atado genérico",
-			"en": "Simple lashing",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «atado_generico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "atado_generico.nameTemplate",
-			"es": "{0} atado con {1}",
-			"en": "{0} lashed with {1}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «atado_generico» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_de_chapa.nameEs",
-			"es": "Cabeza de pico de chapa",
-			"en": "Sheet-metal pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_de_chapa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_de_chapa.nameTemplate",
-			"es": "Cabeza de pico de {1}",
-			"en": "{1} pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_de_chapa» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_de_hierro.nameEs",
-			"es": "Cabeza de pico de hierro",
-			"en": "Iron pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_de_hierro» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_de_hierro.nameTemplate",
-			"es": "Cabeza de pico de {1}",
-			"en": "{1} pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_de_hierro» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_por_tallado.nameEs",
-			"es": "Cabeza de pico por tallado",
-			"en": "Carved pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_por_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cabeza_pico_por_tallado.nameTemplate",
-			"es": "Cabeza de pico de {1}",
-			"en": "{1} pick head",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cabeza_pico_por_tallado» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "carretilla.nameEs",
-			"es": "Carretilla",
-			"en": "Wheelbarrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «carretilla» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "carretilla.nameTemplate",
-			"es": "Carretilla de {0} con rueda de {1}",
-			"en": "{0} wheelbarrow with a {1} wheel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «carretilla» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cesta.nameEs",
-			"es": "Cesta",
-			"en": "Basket",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cesta» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cesta.nameTemplate",
-			"es": "Cesta de {0}",
-			"en": "{0} basket",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cesta» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "clavija_roca.nameEs",
-			"es": "Clavija de roca",
-			"en": "Rock piton",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «clavija_roca» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "clavija_roca.nameTemplate",
-			"es": "Clavija de {1}",
-			"en": "{1} piton",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «clavija_roca» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cordel.nameEs",
-			"es": "Cordel",
-			"en": "Twine",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cordel» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cordel.nameTemplate",
-			"es": "Cordel de fibra",
-			"en": "Fibre twine",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cordel» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cuchillo.nameEs",
-			"es": "Cuchillo",
-			"en": "Knife",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cuchillo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cuchillo.nameTemplate",
-			"es": "Cuchillo de {0} con mango de {1}",
-			"en": "{0} knife with a {1} handle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cuchillo» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cuerda.nameEs",
-			"es": "Cuerda",
-			"en": "Rope",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cuerda» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "cuerda.nameTemplate",
-			"es": "Cuerda trenzada",
-			"en": "Braided rope",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «cuerda» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "estaca_por_tallado.nameEs",
-			"es": "Estaca por tallado",
-			"en": "Carved stake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «estaca_por_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "estaca_por_tallado.nameTemplate",
-			"es": "Estaca de {1}",
-			"en": "{1} stake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «estaca_por_tallado» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "flecha.nameEs",
-			"es": "Flecha",
-			"en": "Arrow",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «flecha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "flecha.nameTemplate",
-			"es": "Flecha de {0} con punta de {1}",
-			"en": "{0} arrow with a {1} tip",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «flecha» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "hacha.nameEs",
-			"es": "Hacha",
-			"en": "Axe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «hacha» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "hacha.nameTemplate",
-			"es": "Hacha de {0} con mango de {1}, atada con {2}",
-			"en": "{0} axe with a {1} handle, lashed with {2}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «hacha» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "lanza.nameEs",
-			"es": "Lanza",
-			"en": "Spear",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «lanza» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "lanza.nameTemplate",
-			"es": "Lanza de {0} con punta de {1}, atada con {2}",
-			"en": "{0} spear with a {1} tip, lashed with {2}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «lanza» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "lasca_por_golpeo.nameEs",
-			"es": "Lasca por golpeo",
-			"en": "Struck flake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «lasca_por_golpeo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "lasca_por_golpeo.nameTemplate",
-			"es": "Lasca de {1}",
-			"en": "{1} flake",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «lasca_por_golpeo» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "martillo.nameEs",
-			"es": "Martillo",
-			"en": "Hammer",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «martillo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "martillo.nameTemplate",
-			"es": "Martillo de {0} con mango de {1}",
-			"en": "{0} hammer with a {1} handle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «martillo» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pala.nameEs",
-			"es": "Pala",
-			"en": "Shovel",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pala» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pala.nameTemplate",
-			"es": "Pala de {0} con mango de {1}",
-			"en": "{0} shovel with a {1} handle",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pala» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pasta_medicinal_por_machacado.nameEs",
-			"es": "Pasta medicinal por machacado",
-			"en": "Crushed medicinal paste",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pasta_medicinal_por_machacado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pasta_medicinal_por_machacado.nameTemplate",
-			"es": "Pasta de {1}",
-			"en": "{1} paste",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pasta_medicinal_por_machacado» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pegado_generico.nameEs",
-			"es": "Pegado genérico",
-			"en": "Simple gluing",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pegado_generico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pegado_generico.nameTemplate",
-			"es": "{0} pegado con {1}",
-			"en": "{0} glued with {1}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pegado_generico» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pico.nameEs",
-			"es": "Pico",
-			"en": "Pick",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pico» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "pico.nameTemplate",
-			"es": "Pico de {0} con mango de {1}, atado con {2}",
-			"en": "{0} pick with a {1} handle, lashed with {2}",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «pico» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "punta_de_canto_por_tallado.nameEs",
-			"es": "Punta de canto por tallado",
-			"en": "Knapped cobble point",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «punta_de_canto_por_tallado» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "punta_de_canto_por_tallado.nameTemplate",
-			"es": "Punta de {1}",
-			"en": "{1} point",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «punta_de_canto_por_tallado» nameTemplate/nameTemplateEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "recipiente_de_coco.nameEs",
-			"es": "Recipiente de coco",
-			"en": "Coconut bowl",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «recipiente_de_coco» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.templates.templates",
-			"key": "recipiente_de_coco.nameTemplate",
-			"es": "Recipiente de coco",
-			"en": "Coconut bowl",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/templates.json «recipiente_de_coco» nameTemplate/nameTemplateEn"
+				"Content/Data/verbs.json «atar» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Afilar.description",
-			"es": "Abrasivo sobre filo: recupera filo y durabilidad.",
-			"en": "Abrasive on an edge: restores sharpness and durability.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/verbs.json «Afilar» description/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.verbs.verbs",
-			"key": "Afilar.nameEs",
-			"es": "Afilar",
-			"en": "Sharpen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/verbs.json «Afilar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.verbs.verbs",
-			"key": "Atar.description",
-			"es": "Ata más dos piezas: herramientas compuestas.",
-			"en": "Binding plus two pieces: composite tools.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/verbs.json «Atar» description/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.verbs.verbs",
-			"key": "Atar.nameEs",
+			"key": "atar.nameEs",
 			"es": "Atar",
 			"en": "Lash",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Atar» nameEs/nameEn"
+				"Content/Data/verbs.json «atar» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Golpear.description",
-			"es": "Contundente sobre duro: lascas o cocos abiertos.",
-			"en": "Blunt on hard: flakes or cracked coconuts.",
+			"key": "cocinar.description",
+			"es": "Asa un pez junto a una hoguera encendida.",
+			"en": "Grills a fish next to a lit campfire.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Golpear» description/descriptionEn"
+				"Content/Data/verbs.json «cocinar» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Golpear.nameEs",
-			"es": "Golpear",
-			"en": "Strike",
+			"key": "cocinar.nameEs",
+			"es": "Cocinar",
+			"en": "Cook",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Golpear» nameEs/nameEn"
+				"Content/Data/verbs.json «cocinar» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Machacar.description",
-			"es": "Contundente sobre blando: pasta, fibra, pigmento.",
-			"en": "Blunt on soft: paste, fibre, pigment.",
+			"key": "encender.description",
+			"es": "Prende leña con el pedernal del cuchillo, o la linterna montada.",
+			"en": "Lights firewood with the knife's flint, or the mounted lantern.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Machacar» description/descriptionEn"
+				"Content/Data/verbs.json «encender» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Machacar.nameEs",
-			"es": "Machacar",
-			"en": "Crush",
+			"key": "encender.nameEs",
+			"es": "Encender",
+			"en": "Light",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Machacar» nameEs/nameEn"
+				"Content/Data/verbs.json «encender» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Pegar.description",
-			"es": "Adhesivo más dos piezas: unión más duradera que atar.",
-			"en": "Glue plus two pieces: a sturdier join than lashing.",
+			"key": "hervir.description",
+			"es": "Hierve pescado en un coco vacío para sacar aceite.",
+			"en": "Boils fish in an empty coconut to render oil.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Pegar» description/descriptionEn"
+				"Content/Data/verbs.json «hervir» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Pegar.nameEs",
-			"es": "Pegar",
-			"en": "Glue",
+			"key": "hervir.nameEs",
+			"es": "Hervir",
+			"en": "Boil",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Pegar» nameEs/nameEn"
+				"Content/Data/verbs.json «hervir» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Raspar.description",
-			"es": "Filo sobre piel o corteza: cuero en bruto, fibra.",
-			"en": "Edge on hide or bark: rawhide, fibre.",
+			"key": "montar.description",
+			"es": "Coloca una pieza en su ranura de la linterna del faro.",
+			"en": "Fits a part into its slot in the lighthouse lantern.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Raspar» description/descriptionEn"
+				"Content/Data/verbs.json «montar» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Raspar.nameEs",
-			"es": "Raspar",
-			"en": "Scrape",
+			"key": "montar.nameEs",
+			"es": "Montar",
+			"en": "Fit",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Raspar» nameEs/nameEn"
+				"Content/Data/verbs.json «montar» nameEs/nameEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Tallar.description",
-			"es": "Filo sobre madera o hueso: estacas, mangos, cucharas.",
-			"en": "Edge on wood or bone: stakes, handles, spoons.",
+			"key": "trenzar.description",
+			"es": "Retuerce fibras de palma: cuerda o mecha.",
+			"en": "Twists palm fibres into rope or a wick.",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Tallar» description/descriptionEn"
+				"Content/Data/verbs.json «trenzar» description/descriptionEn"
 			]
 		},
 		{
 			"namespace": "Data.verbs.verbs",
-			"key": "Tallar.nameEs",
-			"es": "Tallar",
-			"en": "Carve",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/verbs.json «Tallar» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.verbs.verbs",
-			"key": "Trenzar.description",
-			"es": "Fibroso combinado: cordel, cuerda, cesta.",
-			"en": "Fibres combined: twine, rope, basket.",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/verbs.json «Trenzar» description/descriptionEn"
-			]
-		},
-		{
-			"namespace": "Data.verbs.verbs",
-			"key": "Trenzar.nameEs",
+			"key": "trenzar.nameEs",
 			"es": "Trenzar",
 			"en": "Braid",
 			"origin": "datos",
 			"locations": [
-				"Content/Data/verbs.json «Trenzar» nameEs/nameEn"
+				"Content/Data/verbs.json «trenzar» nameEs/nameEn"
 			]
 		},
 		{

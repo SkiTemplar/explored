@@ -20,7 +20,7 @@ struct FIslandPropType;
  * Los tramos siguientes de F3 sustituyen cada tipo de juego por su actor registrando la clase en
  * AExploredIslandPopulator::ClassRegistry; el decorado puede quedarse como reserva hasta F4.
  */
-UCLASS(NotBlueprintable)
+UCLASS()
 class EXPLORED_API AExploredPlaceholder : public AActor
 {
 	GENERATED_BODY()
@@ -30,6 +30,15 @@ public:
 
 	/** Configura malla, escala, color, colisión y etiqueta. ToonMaterial puede ser nulo (material por defecto). */
 	void Configure(const FIslandProp& Prop, const FIslandPropType& Type, const FString& MeshPath, UMaterialInterface* ToonMaterial);
+
+	/**
+	 * Configura un actor creado en partida (sin colocación de island_props.json): usa el tipo TypeName
+	 * de island_props.json si existe (si no, un cubo pequeño) y M_Toon. Id puede ser NAME_None.
+	 */
+	void ConfigureStandalone(FName Id, FName TypeName, const FString& MeshPath);
+
+	/** Material de las primitivas de reserva (M_Toon). */
+	static const TCHAR* ToonMaterialPath();
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Isla")
 	FName GetPropId() const { return PropId; }
@@ -42,6 +51,9 @@ public:
 	bool UsesFinalMesh() const { return bFinalMesh; }
 
 protected:
+	/** Lo llama Configure al terminar: los actores de juego leen aquí cantidades, cocos o ids. */
+	virtual void OnConfigured(const FIslandProp& Prop, const FIslandPropType& Type) {}
+
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Isla")
 	TObjectPtr<USceneComponent> Root;
 

@@ -94,10 +94,10 @@ def _records(doc, key: str | None) -> Iterator[dict]:
 
 PLAYER_FIELDS = (
     ("items.json", None, "nameEs", "nameEn"),
-    ("templates.json", None, "nameEs", "nameEn"),
-    ("templates.json", None, "nameTemplate", "nameTemplateEn"),
-    ("building_pieces.json", "pieces", "nameEs", "nameEn"),
-    ("recipes_smithing.json", "recipes", "nameEs", "nameEn"),
+    ("verbs.json", None, "nameEs", "nameEn"),
+    ("verbs.json", None, "description", "descriptionEn"),
+    ("recipes.json", "recipes", "nameEs", "nameEn"),
+    ("survival_needs.json", "needs", "nameEs", "nameEn"),
 )
 
 

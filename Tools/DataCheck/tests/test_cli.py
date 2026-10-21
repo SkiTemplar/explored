@@ -1,4 +1,4 @@
-"""CLI ``datacheck``: códigos de salida, opciones y ficheros que escribe.
+"""CLI ``datacheck``: códigos de salida y opciones.
 
 Casi todos usan ``--root`` con un repositorio temporal, así que no simulan el catálogo real.
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from datacheck import cli, cooking
+from datacheck import cli
 from datacheck.checks import DATA_FILES, Report
 
 
@@ -36,13 +36,14 @@ def test_json_mal_formado_no_lanza_excepcion(tmp_path: Path, capsys: pytest.Capt
     rc = cli.main(["--root", str(root), "--quiet"])
     out = capsys.readouterr().out
     assert rc == 1
-    assert "ERROR  Content/Data/items.json: JSON mal formado" in out
+    assert "ERROR  items.json: JSON mal formado" in out
 
 
-def test_quiet_oculta_las_notas(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_quiet_oculta_las_notas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(cli, "run_all", lambda ds: Report(info=["nota"]))
     root = _repo(tmp_path)
     cli.main(["--root", str(root)])
-    assert "INFO   " in capsys.readouterr().out
+    assert "INFO   nota" in capsys.readouterr().out
     cli.main(["--root", str(root), "--quiet"])
     assert "INFO   " not in capsys.readouterr().out
 
@@ -63,37 +64,6 @@ def test_codigo_de_salida(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsy
     assert f"{len(report.errors)} errores, {len(report.warnings)} avisos" in out
     if report.warnings:
         assert "AVISO  aviso" in out
-
-
-def test_write_pending_es_determinista(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    items = [
-        {"id": "zeta", "meshPath": "/Engine/BasicShapes/Cube.Cube", "tags": []},
-        {"id": "alfa", "meshPath": "/Engine/BasicShapes/Sphere.Sphere", "tags": []},
-        {"id": "interno", "meshPath": "/Engine/BasicShapes/Cube.Cube", "tags": ["interno"]},
-        {"id": "hecho", "meshPath": "/Game/Generated/Meshes/Props/SM_Hecho.SM_Hecho", "tags": []},
-    ]
-    root = _repo(tmp_path, items_json=items, building_pieces_json={"tiers": [], "pieces": [{"id": "muro", "mesh": None}]})
-    path = root / "Content" / "Data" / "meshes_pendientes.json"
-    cli.main(["--root", str(root), "--write-pending", "--quiet"])
-    first = path.read_bytes()
-    cli.main(["--root", str(root), "--write-pending", "--quiet"])
-    assert path.read_bytes() == first
-    doc = json.loads(first)
-    assert doc["items"] == ["alfa", "zeta"]
-    assert doc["buildingPieces"] == ["muro"]
-    out = capsys.readouterr().out
-    assert "Escrito Content/Data/meshes_pendientes.json" in out
-    # Recién escrito, no puede faltar ni sobrar nada en la lista.
-    assert "meshes_pendientes.json/items" not in out
-
-
-def test_write_cooking_regenera_los_inl(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    root = _repo(tmp_path, fuels_json={"levels": [], "fuels": [], "ignition": []})
-    cli.main(["--root", str(root), "--write-cooking", "--quiet"])
-    out = capsys.readouterr().out
-    assert f"Escrito {cooking.FIRE_INL.as_posix()}" in out
-    assert (root / cooking.FIRE_INL).exists()
-    assert "FireData.inl no coincide" not in out
 
 
 def test_datos_reales_pasan_en_modo_estricto(capsys: pytest.CaptureFixture[str]) -> None:

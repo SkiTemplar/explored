@@ -290,12 +290,8 @@ bool UItemRegistrySubsystem::ReloadFromDisk()
 			bOk = false;
 		}
 	}
-	else
-	{
-		// L10: sin este aviso, faltar el fichero dejaba la fabricación vacía en silencio.
-		UE_LOG(LogTemp, Error, TEXT("[Explored] No se encontró %s"), *GetDataFilePath(TEXT("templates.json")));
-		bOk = false;
-	}
+	// Baliza Siete (GDD v3 §5.6) fabrica con recetas cerradas (recipes.json, FRecipeBook): las
+	// plantillas por propiedades de v1 ya no tienen fichero y su ausencia es lo normal.
 
 	FString VerbsJson;
 	if (FFileHelper::LoadFileToString(VerbsJson, *GetDataFilePath(TEXT("verbs.json"))))

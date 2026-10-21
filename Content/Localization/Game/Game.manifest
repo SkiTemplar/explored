@@ -52,34 +52,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Avivar las brasas"
-					},
-					"Keys": [
-						{
-							"Key": "Fire_Revive",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 267"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Coger {0}"
 					},
 					"Keys": [
 						{
 							"Key": "Verb_PickUp",
 							"Path": "Source/Explored/Items/ExploredItemActor.cpp - line 69"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Echar al fuego"
-					},
-					"Keys": [
-						{
-							"Key": "Fire_AddFuel",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 272"
 						}
 					]
 				},
@@ -113,17 +91,6 @@
 						{
 							"Key": "Crafting_NoRegistry",
 							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 33"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Encender"
-					},
-					"Keys": [
-						{
-							"Key": "Fire_Ignite",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 268"
 						}
 					]
 				},
@@ -404,17 +371,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Retirar la comida"
-					},
-					"Keys": [
-						{
-							"Key": "Fire_Collect",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 262"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Sacar de {0}"
 					},
 					"Keys": [
@@ -553,6 +509,341 @@
 						{
 							"Key": "Boat_Outrigger",
 							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
+						}
+					]
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredIsland",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Abrir la caja"
+					},
+					"Keys": [
+						{
+							"Key": "OpenCrate",
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 26"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ahora no pican"
+					},
+					"Keys": [
+						{
+							"Key": "NoFishing",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 116"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay suelo despejado"
+					},
+					"Keys": [
+						{
+							"Key": "NoGround",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 270"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Añadir leña"
+					},
+					"Keys": [
+						{
+							"Key": "FireFeed",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 32"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Bajar un coco ({0})"
+					},
+					"Keys": [
+						{
+							"Key": "PickCoconut",
+							"Path": "Source/Explored/WorldGen/ExploredCoconutPalm.cpp - line 43"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Caja vacía"
+					},
+					"Keys": [
+						{
+							"Key": "CrateEmpty",
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 26"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cantimplora llena"
+					},
+					"Keys": [
+						{
+							"Key": "CanteenFilled",
+							"Path": "Source/Explored/Weather/ExploredRainBarrel.cpp - line 100"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cocinar"
+					},
+					"Keys": [
+						{
+							"Key": "FireCook",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 30"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Coger {0}"
+					},
+					"Keys": [
+						{
+							"Key": "PickUpItem",
+							"Path": "Source/Explored/Items/ExploredPickup.cpp - line 50"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "El barril está vacío"
+					},
+					"Keys": [
+						{
+							"Key": "BarrelEmpty",
+							"Path": "Source/Explored/Weather/ExploredRainBarrel.cpp - line 103"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Keys": [
+						{
+							"Key": "FireLight",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 29"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Hervir"
+					},
+					"Keys": [
+						{
+							"Key": "FireBoil",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 31"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "La cantimplora está vacía"
+					},
+					"Keys": [
+						{
+							"Key": "CanteenEmpty",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 162"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "La cantimplora ya está llena"
+					},
+					"Keys": [
+						{
+							"Key": "CanteenAlreadyFull",
+							"Path": "Source/Explored/Weather/ExploredRainBarrel.cpp - line 109"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Lanzar el sedal"
+					},
+					"Keys": [
+						{
+							"Key": "CastLine",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 40"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Llenar la cantimplora ({0}/{1})"
+					},
+					"Keys": [
+						{
+							"Key": "FillCanteen",
+							"Path": "Source/Explored/Weather/ExploredRainBarrel.cpp - line 75"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Necesitas una caña de pescar"
+					},
+					"Keys": [
+						{
+							"Key": "NeedRod",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 65"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas la cantimplora"
+					},
+					"Keys": [
+						{
+							"Key": "NoCanteen",
+							"Path": "Source/Explored/Weather/ExploredRainBarrel.cpp - line 106"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No llevas nada para el fuego"
+					},
+					"Keys": [
+						{
+							"Key": "FireNothing",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 205"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No sirve así"
+					},
+					"Keys": [
+						{
+							"Key": "NotValid",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 23"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No te cabe más"
+					},
+					"Keys": [
+						{
+							"Key": "BackpackFull",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 24"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "No te hace falta nada de la caja"
+					},
+					"Keys": [
+						{
+							"Key": "CrateNothing",
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 45"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Para encenderla: 3 de leña y el cuchillo"
+					},
+					"Keys": [
+						{
+							"Key": "FireNeedsWood",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 206"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Pica: pulsa ahora"
+					},
+					"Keys": [
+						{
+							"Key": "FishBite",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 110"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recoger"
+					},
+					"Keys": [
+						{
+							"Key": "FireCollect",
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recoger el sedal"
+					},
+					"Keys": [
+						{
+							"Key": "ReelIn",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 41"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sacar el pez"
+					},
+					"Keys": [
+						{
+							"Key": "PullFish",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 42"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Se ha escapado"
+					},
+					"Keys": [
+						{
+							"Key": "FishEscaped",
+							"Path": "Source/Explored/Fishing/ExploredFishingSpot.cpp - line 113"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Te falta material"
+					},
+					"Keys": [
+						{
+							"Key": "MissingInputs",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 91"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya llevas algo pesado en las manos"
+					},
+					"Keys": [
+						{
+							"Key": "HandsBusy",
+							"Path": "Source/Explored/Items/ExploredSurvivorComponent.cpp - line 73"
 						}
 					]
 				}

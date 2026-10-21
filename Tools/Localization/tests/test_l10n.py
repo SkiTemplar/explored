@@ -47,7 +47,7 @@ def test_catalogo_une_cpp_ini_y_datos(real_cat: Catalogue) -> None:
     ids = {e.id for e in real_cat.entries}
     assert "ExploredUI,NewGame" in ids
     assert "Explored,Title" in ids  # ProjectDisplayedTitle de DefaultGame.ini
-    assert "Data.items.items,lima_silvestre.nameEs" in ids
+    assert "Data.items.items,cana_pescar.nameEs" in ids
 
 
 def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
@@ -56,7 +56,7 @@ def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
 
 def test_manifiesto_real_solo_con_espacios_del_codigo(real_cat: Catalogue) -> None:
     doc = unreal.manifest(real_cat.exported)
-    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == ["Explored", "ExploredUI", "ExploredVoyage"]
+    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == ["Explored", "ExploredIsland", "ExploredUI", "ExploredVoyage"]
 
 
 # --------------------------------------------------------------------------- C++
@@ -127,14 +127,14 @@ def test_falta_ingles_en_cpp(src: Sources) -> None:
 
 def test_falta_ingles_en_datos(src: Sources) -> None:
     del src.data["items.json"][0]["nameEn"]
-    assert has(build(src).report.errors, "rama_seca", "sin inglés")
+    assert has(build(src).report.errors, "cuchillo", "sin inglés")
     del src.data["verbs.json"][0]["descriptionEn"]
-    assert has(build(src).report.errors, "Golpear.description", "sin inglés")
+    assert has(build(src).report.errors, "encender.description", "sin inglés")
 
 
-def test_pesca_en_el_catalogo(real_cat: Catalogue) -> None:
+def test_recetas_en_el_catalogo(real_cat: Catalogue) -> None:
     ids = {e.id for e in real_cat.entries}
-    assert "Data.fish.legendary,el_viejo.nameEs" in ids
+    assert "Data.recipes.recipes,tarro_aceite.nameEs" in ids
 
 
 def test_valor_vacio(src: Sources) -> None:
@@ -144,9 +144,10 @@ def test_valor_vacio(src: Sources) -> None:
 
 
 def test_marcadores_distintos(src: Sources) -> None:
-    tpl = next(t for t in src.data["templates.json"] if t["id"] == "hacha")
-    tpl["nameTemplateEn"] = "{0} axe with a {1} handle"
-    assert has(build(src).report.errors, "hacha.nameTemplate", "marcadores distintos")
+    rec = next(r for r in src.data["recipes.json"]["recipes"] if r["id"] == "cuerda")
+    rec["nameEs"] = "Cuerda de {0}"
+    rec["nameEn"] = "Rope"
+    assert has(build(src).report.errors, "cuerda.nameEs", "marcadores distintos")
     src.translations["Explored"]["Verb_PickUp"]["en"] = "Pick up {Item}"
     assert has(build(src).report.errors, "Verb_PickUp", "marcadores")
 
@@ -179,12 +180,12 @@ def test_pendiente_ya_integrada(src: Sources) -> None:
     assert any(e.id == "ExploredUI,Apply" for e in cat.exported)
 
 
-def test_plantilla_sin_nombre_no_se_exige() -> None:
+def test_registro_sin_textos_no_se_exige() -> None:
     from l10n import data
 
-    texts, errors = data.extract({"templates.json": [{"id": "afilar", "nameEs": "Afilar", "nameEn": "Sharpen", "nameTemplate": ""}]})
+    texts, errors = data.extract({"verbs.json": [{"id": "atar", "nameEs": "Atar", "nameEn": "Lash", "description": ""}]})
     assert errors == []
-    assert [t.key for t in texts] == ["afilar.nameEs"]
+    assert [t.key for t in texts] == ["atar.nameEs"]
 
 
 # --------------------------------------------------------------------------- Unreal
@@ -331,10 +332,10 @@ def test_el_genero_puede_ir_solo_en_espanol() -> None:
 
 
 def test_plural_roto_en_datos_llega_al_informe(src: Sources) -> None:
-    tpl = next(t for t in src.data["templates.json"] if t["id"] == "hacha")
-    tpl["nameTemplate"] = "Hacha de {0} y {1}|plural(one=x)"
-    tpl["nameTemplateEn"] = "{0} axe with a {1}|plural(one=x) handle"
-    assert has(build(src).report.errors, "hacha.nameTemplate", "falta la categoría «other»")
+    rec = next(r for r in src.data["recipes.json"]["recipes"] if r["id"] == "cuerda")
+    rec["nameEs"] = "{0}|plural(one=cuerda)"
+    rec["nameEn"] = "{0}|plural(one=rope)"
+    assert has(build(src).report.errors, "cuerda.nameEs", "falta la categoría «other»")
 
 
 # --------------------------------------------------------------------------- estilo anti-IA (biblia 07 §1.2)
@@ -431,9 +432,9 @@ def test_texto_es_sin_registrar_es_error() -> None:
 
 def test_registrados_nuevos_en_el_catalogo(real_cat: Catalogue) -> None:
     ids = {e.id for e in real_cat.entries}
-    assert "Data.fish.species,pez_loro.nameEs" in ids
+    assert "Data.survival_needs.needs,calor.nameEs" in ids
 
 
 def test_mismo_nombre_dos_traducciones(src: Sources) -> None:
-    next(f for f in src.data["fish.json"]["species"] if f["id"] == "atun")["nameEn"] = "Yellowfin tuna"
-    assert has(build(src).report.warnings, "«atún» tiene 2 traducciones distintas")
+    next(r for r in src.data["recipes.json"]["recipes"] if r["id"] == "mecha")["nameEn"] = "Lamp wick"
+    assert has(build(src).report.warnings, "«mecha» tiene 2 traducciones distintas")

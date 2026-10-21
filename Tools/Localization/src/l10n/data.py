@@ -89,27 +89,14 @@ def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
 
 FIELDS: list[FieldSpec] = [
     FieldSpec("items.json", "items", _list, "nameEs", "nameEn", "nombre del objeto (mano, suelo, mochila)"),
-    FieldSpec("templates.json", "templates", _list, "nameEs", "nameEn", "nombre de la receta"),
-    FieldSpec("templates.json", "templates", _list, "nameTemplate", "nameTemplateEn",
-              "nombre generado del objeto fabricado ({0}, {1}... = pieza de cada hueco)"),
-    FieldSpec("verbs.json", "verbs", _list, "nameEs", "nameEn", "verbo de fabricación"),
+        FieldSpec("verbs.json", "verbs", _list, "nameEs", "nameEn", "verbo de fabricación"),
     FieldSpec("verbs.json", "verbs", _list, "description", "descriptionEn", "ayuda del verbo"),
-    FieldSpec("building_pieces.json", "tiers", _sub("tiers"), "nameEs", "nameEn", "nivel de construcción"),
-    FieldSpec("building_pieces.json", "pieces", _sub("pieces"), "nameEs", "nameEn", "pieza de construcción"),
-    FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),
+    FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "barra del cuerpo (HUD)"),
     FieldSpec("boats.json", "boats", _sub("boats"), "nameEs", "nameEn", "embarcación del astillero"),
     FieldSpec("fauna.json", "species", _sub("species"), "nameEs", "nameEn", "especie marina"),
     FieldSpec("fauna.json", "lod", _path("lod", "tiers"), "nameEs", "nameEn", "nivel de detalle de fauna (ajustes)"),
     FieldSpec("fauna_terrestre.json", "species", _sub("species"), "nameEs", "nameEn", "especie terrestre"),
-    FieldSpec("fish.json", "species", _sub("species"), "nameEs", "nameEn", "pez (pesca y pecera del museo)"),
-    FieldSpec("fish.json", "legendary", _sub("legendary"), "nameEs", "nameEn", "captura legendaria (trofeo)"),
-    FieldSpec("fuels.json", "levels", _sub("levels"), "nameEs", "nameEn", "nivel de fuego"),
-    FieldSpec("fuels.json", "ignition", _sub("ignition"), "nameEs", "nameEn", "forma de encender"),
-    FieldSpec("fuels.json", "smeltingLevels", _sub("smeltingLevels"), "nameEs", "nameEn", "horno de fundición"),
-    FieldSpec("recipes_smithing.json", "recipes", _sub("recipes"), "nameEs", "nameEn",
-              "receta de fundición, chatarra o forja"),
-    FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
-    FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
+    FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta (objeto + verbo, GDD v3 §5.6)"),
 ]
 
 # Campos «…Es» que no ve el jugador: notas de diseño y documentación interna.

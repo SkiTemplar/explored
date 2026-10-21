@@ -368,42 +368,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Echar al fuego"
-					},
-					"Translation": {
-						"Text": "Feed the fire"
-					},
-					"Key": "Fire_AddFuel"
-				},
-				{
-					"Source": {
-						"Text": "Retirar la comida"
-					},
-					"Translation": {
-						"Text": "Take the food off"
-					},
-					"Key": "Fire_Collect"
-				},
-				{
-					"Source": {
-						"Text": "Encender"
-					},
-					"Translation": {
-						"Text": "Light"
-					},
-					"Key": "Fire_Ignite"
-				},
-				{
-					"Source": {
-						"Text": "Avivar las brasas"
-					},
-					"Translation": {
-						"Text": "Stoke the embers"
-					},
-					"Key": "Fire_Revive"
-				},
-				{
-					"Source": {
 						"Text": "Explored"
 					},
 					"Translation": {
@@ -455,6 +419,281 @@
 						"Text": "Take from {0}"
 					},
 					"Key": "Verb_TakeFrom"
+				}
+			]
+		},
+		{
+			"Namespace": "ExploredIsland",
+			"Children": [
+				{
+					"Source": {
+						"Text": "No te cabe más"
+					},
+					"Translation": {
+						"Text": "No more room"
+					},
+					"Key": "BackpackFull"
+				},
+				{
+					"Source": {
+						"Text": "El barril está vacío"
+					},
+					"Translation": {
+						"Text": "The barrel is empty"
+					},
+					"Key": "BarrelEmpty"
+				},
+				{
+					"Source": {
+						"Text": "La cantimplora ya está llena"
+					},
+					"Translation": {
+						"Text": "The canteen is already full"
+					},
+					"Key": "CanteenAlreadyFull"
+				},
+				{
+					"Source": {
+						"Text": "La cantimplora está vacía"
+					},
+					"Translation": {
+						"Text": "The canteen is empty"
+					},
+					"Key": "CanteenEmpty"
+				},
+				{
+					"Source": {
+						"Text": "Cantimplora llena"
+					},
+					"Translation": {
+						"Text": "Canteen filled"
+					},
+					"Key": "CanteenFilled"
+				},
+				{
+					"Source": {
+						"Text": "Lanzar el sedal"
+					},
+					"Translation": {
+						"Text": "Cast the line"
+					},
+					"Key": "CastLine"
+				},
+				{
+					"Source": {
+						"Text": "Caja vacía"
+					},
+					"Translation": {
+						"Text": "Empty crate"
+					},
+					"Key": "CrateEmpty"
+				},
+				{
+					"Source": {
+						"Text": "No te hace falta nada de la caja"
+					},
+					"Translation": {
+						"Text": "You need nothing from the crate"
+					},
+					"Key": "CrateNothing"
+				},
+				{
+					"Source": {
+						"Text": "Llenar la cantimplora ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Fill the canteen ({0}/{1})"
+					},
+					"Key": "FillCanteen"
+				},
+				{
+					"Source": {
+						"Text": "Hervir"
+					},
+					"Translation": {
+						"Text": "Boil"
+					},
+					"Key": "FireBoil"
+				},
+				{
+					"Source": {
+						"Text": "Recoger"
+					},
+					"Translation": {
+						"Text": "Collect"
+					},
+					"Key": "FireCollect"
+				},
+				{
+					"Source": {
+						"Text": "Cocinar"
+					},
+					"Translation": {
+						"Text": "Cook"
+					},
+					"Key": "FireCook"
+				},
+				{
+					"Source": {
+						"Text": "Añadir leña"
+					},
+					"Translation": {
+						"Text": "Add firewood"
+					},
+					"Key": "FireFeed"
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Translation": {
+						"Text": "Light"
+					},
+					"Key": "FireLight"
+				},
+				{
+					"Source": {
+						"Text": "Para encenderla: 3 de leña y el cuchillo"
+					},
+					"Translation": {
+						"Text": "To light it: 3 firewood and the knife"
+					},
+					"Key": "FireNeedsWood"
+				},
+				{
+					"Source": {
+						"Text": "No llevas nada para el fuego"
+					},
+					"Translation": {
+						"Text": "You carry nothing for the fire"
+					},
+					"Key": "FireNothing"
+				},
+				{
+					"Source": {
+						"Text": "Pica: pulsa ahora"
+					},
+					"Translation": {
+						"Text": "A bite: press now"
+					},
+					"Key": "FishBite"
+				},
+				{
+					"Source": {
+						"Text": "Se ha escapado"
+					},
+					"Translation": {
+						"Text": "It got away"
+					},
+					"Key": "FishEscaped"
+				},
+				{
+					"Source": {
+						"Text": "Ya llevas algo pesado en las manos"
+					},
+					"Translation": {
+						"Text": "Your hands are full"
+					},
+					"Key": "HandsBusy"
+				},
+				{
+					"Source": {
+						"Text": "Te falta material"
+					},
+					"Translation": {
+						"Text": "Missing materials"
+					},
+					"Key": "MissingInputs"
+				},
+				{
+					"Source": {
+						"Text": "Necesitas una caña de pescar"
+					},
+					"Translation": {
+						"Text": "You need a fishing rod"
+					},
+					"Key": "NeedRod"
+				},
+				{
+					"Source": {
+						"Text": "No llevas la cantimplora"
+					},
+					"Translation": {
+						"Text": "You don't have the canteen"
+					},
+					"Key": "NoCanteen"
+				},
+				{
+					"Source": {
+						"Text": "Ahora no pican"
+					},
+					"Translation": {
+						"Text": "Nothing bites now"
+					},
+					"Key": "NoFishing"
+				},
+				{
+					"Source": {
+						"Text": "Aquí no hay suelo despejado"
+					},
+					"Translation": {
+						"Text": "No clear ground here"
+					},
+					"Key": "NoGround"
+				},
+				{
+					"Source": {
+						"Text": "No sirve así"
+					},
+					"Translation": {
+						"Text": "That won't work"
+					},
+					"Key": "NotValid"
+				},
+				{
+					"Source": {
+						"Text": "Abrir la caja"
+					},
+					"Translation": {
+						"Text": "Open the crate"
+					},
+					"Key": "OpenCrate"
+				},
+				{
+					"Source": {
+						"Text": "Bajar un coco ({0})"
+					},
+					"Translation": {
+						"Text": "Pick a coconut ({0})"
+					},
+					"Key": "PickCoconut"
+				},
+				{
+					"Source": {
+						"Text": "Coger {0}"
+					},
+					"Translation": {
+						"Text": "Take {0}"
+					},
+					"Key": "PickUpItem"
+				},
+				{
+					"Source": {
+						"Text": "Sacar el pez"
+					},
+					"Translation": {
+						"Text": "Pull the fish"
+					},
+					"Key": "PullFish"
+				},
+				{
+					"Source": {
+						"Text": "Recoger el sedal"
+					},
+					"Translation": {
+						"Text": "Reel in"
+					},
+					"Key": "ReelIn"
 				}
 			]
 		},

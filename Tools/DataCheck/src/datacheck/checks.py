@@ -1,4 +1,9 @@
-"""Comprobaciones de Content/Data/*.json. Cada check añade mensajes a un Report."""
+"""Comprobaciones de Content/Data/*.json de Baliza Siete (GDD v3). Cada check añade mensajes a un Report.
+
+Lista cerrada: 17 objetos (§7), 6 verbos y 10 recetas (§5.6), fuego (§5.2), cuerpo y consumibles
+(§5.1), pesca (§5.4) y barril (§5.5). Los números que también viven en C++ (valores por defecto de los
+modelos puros) se comparan con el código para que el JSON y el C++ no se separen.
+"""
 
 from __future__ import annotations
 
@@ -9,39 +14,44 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import (
-    cooking,
-    crafting,
-    fauna,
-    music,
-    packs,
-    smithing,
-    textos,
-)
+from . import music, textos
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
-# Biblia de contenido §2.1 (claves sin tildes, como las usa el C++).
-PROPERTIES = {
-    "Filo", "Punta", "Largo", "Rigido", "Flexible", "Contundente", "Ata", "Adhesivo",
-    "Inflamable", "Combustible", "Calor", "Recipiente", "Estanco", "Abrasivo", "Moldeable",
-    "Fibroso", "Aislante", "Impermeable", "Flota", "Brillante", "Sonoro", "Nutritivo",
-    "Medicinal", "Toxico", "Pesado",
-}
 SIZES = {"Pequeno", "Mediano", "Grande", "DosManos"}
-# Verbos que exige ItemsSpec.cpp (biblia §2.2).
-REQUIRED_VERBS = {"Golpear", "Tallar", "Atar", "Pegar", "Afilar", "Trenzar", "Machacar", "Raspar"}
-SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
-# Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
-BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
-# Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
-BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
-GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
+ASCII_ID = re.compile(r"^[a-z0-9_]+$")
+# GDD §11.1, kit K3: /Game/Art/K3_Objetos/SM_<Nombre>_01.SM_<Nombre>_01
+K3_MESH = re.compile(r"^/Game/Art/K3_Objetos/(SM_[A-Za-z]+_01)\.\1$")
 
-# GDD §12: sin narrativa de personajes eliminada. El GDD v2 §3.6-3.7 reintroduce la
-# fauna terrestre (cerdo salvaje, cabra, aves que se posan y animales de granja, en
-# fauna.json y fauna_terrestre.json), así que solo quedan prohibidas las especies que
-# ningún documento vigente contempla y el perro del prólogo eliminado.
+# GDD v3 §7: id → (pila, pesado).
+GDD_ITEMS: dict[str, tuple[int, bool]] = {
+    "cuchillo": (1, False), "cantimplora": (1, False), "barometro": (1, False), "coco": (4, False),
+    "coco_vacio": (4, False), "lena": (6, False), "fibra": (6, False), "cuerda": (4, False),
+    "cana_bambu": (2, False), "cana_pescar": (1, False), "tronco": (1, True), "remo": (1, False),
+    "pez_crudo": (3, False), "pez_asado": (3, False), "tarro_aceite": (2, False), "mecha": (1, False),
+    "lente": (1, True),
+}
+GDD_VERBS = ["encender", "trenzar", "atar", "cocinar", "hervir", "montar"]
+# GDD v3 §5.6: id → (verbo, lugar, segundos).
+GDD_RECIPES: dict[str, tuple[str, str, float]] = {
+    "hoguera": ("encender", "suelo", 3), "cuerda": ("trenzar", "cualquier", 4),
+    "cana_pescar": ("atar", "cualquier", 3), "pez_asado": ("cocinar", "hoguera", 20),
+    "mecha": ("trenzar", "cualquier", 6), "tarro_aceite": ("hervir", "hoguera", 40),
+    "remo": ("atar", "cualquier", 3), "balsa": ("atar", "sitio_balsa", 20),
+    "linterna": ("montar", "linterna", 3), "baliza": ("encender", "linterna", 3),
+}
+PLACES = {"cualquier", "suelo", "hoguera", "sitio_balsa", "linterna"}
+WORLD_OUTPUTS = {"hoguera", "balsa", "linterna_montada", "final"}
+NEEDS = ["sed", "hambre", "energia", "calor"]
+
+# Espejos JSON → constante C++ (fichero relativo a Source/Explored, nombre de la constante).
+CAMPFIRE_CPP = "Cooking/CampfireModel.h"
+FISH_CPP = "Fishing/CastFishingModel.h"
+CONSUMABLES_CPP = "Items/IslandConsumablesModel.h"
+BACKPACK_CPP = "Items/BackpackModel.h"
+BARREL_CPP = "Weather/RainBarrelModel.h"
+
+# GDD §12 (v1): términos de narrativa eliminada que no deben volver a los datos.
 FORBIDDEN_TERMS = [
     "rata", "murcielago", "murciélago", "serpiente",
     "lagarto", "iguana", "perro", "canela", "rodrigo", "ines", "inés",
@@ -49,13 +59,9 @@ FORBIDDEN_TERMS = [
 ]
 
 DATA_FILES = [
-    "items.json", "templates.json", "verbs.json",
-    "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
-    "fuels.json", "recipes.json", "boats.json",
-    "fish.json", "music_layers.json", "packs_catalogo.json", "fauna.json",
-    "fauna_terrestre.json", "recipes_smithing.json",
+    "items.json", "verbs.json", "recipes.json", "fuels.json", "survival_needs.json", "fish.json",
+    "music_layers.json",
 ]
-ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 
 
 @dataclass
@@ -76,14 +82,9 @@ class Report:
 
 
 def _dicts(value: Any) -> list[dict[str, Any]]:
-    """Entradas de una lista JSON que son objetos (lo demás lo informa su check de esquema).
-
-    Si todas lo son devuelve la misma lista, no una copia: los tests la editan en sitio.
-    """
+    """Entradas de una lista JSON que son objetos (lo demás lo informa su check de esquema)."""
     if not isinstance(value, list):
         return []
-    if all(isinstance(v, dict) for v in value):
-        return value
     return [v for v in value if isinstance(v, dict)]
 
 
@@ -112,37 +113,25 @@ class DataSet:
     def copy(self) -> "DataSet":
         return DataSet(copy.deepcopy(self.data), self.repo_root, dict(self.load_errors))
 
-    def _doc(self, name: str) -> dict[str, Any]:
-        doc = self.data.get(name)
-        return doc if isinstance(doc, dict) else {}
+    def doc(self, name: str) -> dict[str, Any]:
+        value = self.data.get(name)
+        return value if isinstance(value, dict) else {}
 
     @property
     def items(self) -> list[dict[str, Any]]:
         return _dicts(self.data.get("items.json"))
 
     @property
-    def templates(self) -> list[dict[str, Any]]:
-        return _dicts(self.data.get("templates.json"))
-
-    @property
     def verbs(self) -> list[dict[str, Any]]:
         return _dicts(self.data.get("verbs.json"))
 
     @property
-    def building(self) -> dict[str, Any]:
-        return self.data.get("building_pieces.json", {"tiers": [], "pieces": []})
-
-    @property
-    def boats(self) -> list[dict[str, Any]]:
-        return _dicts(self._doc("boats.json").get("boats"))
+    def recipes(self) -> list[dict[str, Any]]:
+        return _dicts(self.doc("recipes.json").get("recipes"))
 
     @property
     def item_ids(self) -> set[str]:
-        # Solo ids de texto: un objeto sin id no puede validar una referencia ausente (None).
         return {i["id"] for i in self.items if isinstance(i.get("id"), str)}
-
-
-# --------------------------------------------------------------------------- esquemas
 
 
 def _type_ok(value: Any, types: type | tuple[type, ...]) -> bool:
@@ -152,660 +141,306 @@ def _type_ok(value: Any, types: type | tuple[type, ...]) -> bool:
     return isinstance(value, types)
 
 
-def _in_range(value: Any, lo: float, hi: float) -> bool:
-    """Número (no booleano) dentro de [lo, hi]."""
-    return _type_ok(value, (int, float)) and lo <= value <= hi
+def _number(value: Any) -> bool:
+    return _type_ok(value, (int, float))
+
+
+def _text(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _read_cpp(ds: DataSet, rel: str) -> str:
+    path = ds.repo_root / "Source" / "Explored" / rel
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def _cpp_constant(text: str, name: str) -> float | None:
+    m = re.search(rf"constexpr\s+(?:float|int32|double)\s+{name}\s*=\s*(-?[0-9.]+)f?\s*;", text)
+    return float(m.group(1)) if m else None
+
+
+def _mirror(ds: DataSet, r: Report, where: str, value: Any, rel: str, constant: str) -> None:
+    """El valor del JSON debe coincidir con la constante por defecto del modelo C++."""
+    text = _read_cpp(ds, rel)
+    if not text:
+        r.warn(f"{where}: no se encuentra Source/Explored/{rel}; no se compara con el C++")
+        return
+    cpp = _cpp_constant(text, constant)
+    if cpp is None:
+        r.error(f"{where}: no existe la constante {constant} en {rel}")
+    elif not _number(value) or float(value) != cpp:
+        r.error(f"{where}={value} pero {constant}={cpp:g} en {rel}")
+
+
+# --------------------------------------------------------------------------- ficheros
 
 
 def check_files_present(ds: DataSet, r: Report) -> None:
     for name in DATA_FILES:
         if name in ds.load_errors:
-            r.error(f"Content/Data/{name}: JSON mal formado ({ds.load_errors[name]})")
+            r.error(f"{name}: JSON mal formado ({ds.load_errors[name]})")
         elif name not in ds.data:
             r.error(f"Falta Content/Data/{name}")
 
 
-def check_items_schema(ds: DataSet, r: Report) -> None:
-    seen: set[str] = set()
-    raw = ds.data.get("items.json", [])
+# --------------------------------------------------------------------------- objetos y verbos
+
+
+def _check_item(item: dict[str, Any], r: Report) -> None:
+    iid = item.get("id")
+    for key in ("nameEs", "nameEn"):
+        if not _text(item.get(key)):
+            r.error(f"items.json «{iid}»: falta {key}")
+    mesh = item.get("meshPath")
+    if not isinstance(mesh, str) or not K3_MESH.match(mesh):
+        r.error(f"items.json «{iid}»: meshPath «{mesh}» no es /Game/Art/K3_Objetos/SM_<Nombre>_01 (GDD §11.1)")
+    for key in ("weightKg", "volumeLiters"):
+        if not _number(item.get(key)) or item[key] <= 0:
+            r.error(f"items.json «{iid}»: {key} debe ser un número > 0")
+    if item.get("size") not in SIZES:
+        r.error(f"items.json «{iid}»: size «{item.get('size')}» desconocido")
+    tags = item.get("tags", [])
+    if not isinstance(tags, list) or not all(_text(t) for t in tags):
+        r.error(f"items.json «{iid}»: tags debe ser una lista de textos")
+    expected = GDD_ITEMS.get(iid) if isinstance(iid, str) else None
+    if expected is None:
+        return
+    stack, heavy = expected
+    if item.get("stack") != stack or not _type_ok(item.get("stack"), int):
+        r.error(f"items.json «{iid}»: stack={item.get('stack')} pero el GDD §5.3/§7 dice {stack}")
+    if item.get("heavy") is not heavy:
+        r.error(f"items.json «{iid}»: heavy={item.get('heavy')} pero el GDD §7 dice {heavy}")
+    if heavy and item.get("size") != "DosManos":
+        r.error(f"items.json «{iid}»: un objeto pesado se lleva con dos manos (size DosManos)")
+
+
+def check_items(ds: DataSet, r: Report) -> None:
+    raw = ds.data.get("items.json")
+    if raw is None:
+        return
     if not isinstance(raw, list):
-        r.error("items.json: la raíz debe ser una lista de objetos")
-        raw = []
-    if len(ds.items) < 60:
-        r.error(f"items.json: {len(ds.items)} objetos; ItemsSpec.cpp exige al menos 60")
-    for item in raw:
-        if not isinstance(item, dict):
-            r.error(f"items.json: id inválido en la entrada {item!r} (debe ser un objeto)")
+        r.error("items.json: la raíz debe ser una lista")
+        return
+    seen: list[str] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            r.error("items.json: hay una entrada que no es un objeto")
             continue
-        iid = item.get("id")
-        if not isinstance(iid, str) or not re.fullmatch(r"[a-z0-9_]+", iid):
-            r.error(f"items.json: id inválido {iid!r} (minúsculas, dígitos y _)")
+        iid = entry.get("id")
+        if not isinstance(iid, str) or not ASCII_ID.match(iid):
+            r.error(f"items.json: id «{iid}» no es ASCII en minúsculas")
             continue
         if iid in seen:
             r.error(f"items.json: id duplicado «{iid}»")
-        seen.add(iid)
-        for key in ("nameEs", "nameEn", "meshPath", "size"):
-            if not isinstance(item.get(key), str) or not item.get(key):
-                r.error(f"items.json «{iid}»: falta {key}")
-        if item.get("size") not in SIZES:
-            r.error(f"items.json «{iid}»: size {item.get('size')!r} no es {sorted(SIZES)}")
-        for key in ("weightKg", "volumeLiters"):
-            v = item.get(key)
-            if not _in_range(v, 0, 200):
-                r.error(f"items.json «{iid}»: {key}={v!r} fuera de [0, 200]")
-        # El peso no numérico ya es error arriba; aquí solo se comparan números.
-        weight = item.get("weightKg", 0)
-        weight = weight if _type_ok(weight, (int, float)) else 0
-        interno = "interno" in item.get("tags", [])
-        if not interno and weight <= 0:
-            r.error(f"items.json «{iid}»: weightKg debe ser > 0 en objetos reales")
-        if item.get("size") == "Pequeno" and weight > 3:
-            r.warn(f"items.json «{iid}»: Pequeno con {item['weightKg']} kg (¿cabe en un bolsillo?)")
-        if "maxDurability" in item and (not _type_ok(item["maxDurability"], (int, float)) or item["maxDurability"] < 0):
-            r.error(f"items.json «{iid}»: maxDurability negativa o no numérica")
-        for key in ("nutritionEnergy", "nutritionProtein", "nutritionVitamins"):
-            if key in item:
-                v = item[key]
-                if not _in_range(v, 0, 5):
-                    r.error(f"items.json «{iid}»: {key}={v!r} fuera de la escala 0-5")
-        tags = item.get("tags", [])
-        if not isinstance(tags, list) or not all(isinstance(t, str) for t in tags):
-            r.error(f"items.json «{iid}»: tags debe ser lista de cadenas")
-        names = set()
-        for prop in item.get("properties", []):
-            if not isinstance(prop, dict):
-                r.error(f"items.json «{iid}»: propiedad mal formada {prop!r} (debe ser {{name, value}})")
-                continue
-            name, value = prop.get("name"), prop.get("value")
-            if name not in PROPERTIES:
-                r.error(f"items.json «{iid}»: propiedad desconocida {name!r} (biblia §2.1)")
-            if name in names:
-                r.error(f"items.json «{iid}»: propiedad {name} repetida")
-            names.add(name)
-            if not _in_range(value, 0, 5):
-                r.error(f"items.json «{iid}».{name}={value!r} fuera de [0, 5]")
-        if "comida" in tags and "Nutritivo" not in names:
-            r.warn(f"items.json «{iid}»: etiqueta comida sin propiedad Nutritivo")
+        seen.append(iid)
+        _check_item(entry, r)
+    missing = sorted(set(GDD_ITEMS) - set(seen))
+    extra = sorted(set(seen) - set(GDD_ITEMS))
+    if missing:
+        r.error(f"items.json: faltan objetos del GDD §7: {', '.join(missing)}")
+    if extra:
+        r.error(f"items.json: objetos fuera de la lista cerrada del GDD §7: {', '.join(extra)}")
 
 
 def check_verbs(ds: DataSet, r: Report) -> None:
-    ids = [v.get("id") for v in ds.verbs]
-    for vid in set(ids):
-        if ids.count(vid) > 1:
-            r.error(f"verbs.json: verbo duplicado «{vid}»")
-    for missing in sorted(REQUIRED_VERBS - set(ids)):
-        r.error(f"verbs.json: falta el verbo «{missing}» (biblia §2.2)")
-    for v in ds.verbs:
-        if not v.get("nameEs") or not v.get("description"):
-            r.error(f"verbs.json «{v.get('id')}»: falta nameEs o description")
+    raw = ds.data.get("verbs.json")
+    if raw is None:
+        return
+    if not isinstance(raw, list):
+        r.error("verbs.json: la raíz debe ser una lista")
+        return
+    ids = [v.get("id") for v in _dicts(raw)]
+    if ids != GDD_VERBS:
+        r.error(f"verbs.json: {ids} no es la lista cerrada del GDD §5.6 {GDD_VERBS}")
+    for verb in _dicts(raw):
+        for key in ("nameEs", "nameEn", "description", "descriptionEn"):
+            if not _text(verb.get(key)):
+                r.error(f"verbs.json «{verb.get('id')}»: falta {key}")
 
 
-def check_templates(ds: DataSet, r: Report) -> None:
-    verb_ids = {v.get("id") for v in ds.verbs}
-    item_ids = ds.item_ids
-    seen: set[str] = set()
-    # «station» todavía no lo lee el C++: fija en datos la estación que exige la plantilla (biblia 03 §1.4).
-    stations = {p.get("id") for p in ds.data.get("building_pieces.json", {}).get("pieces", [])
-                if p.get("category") == "produccion"}
-    if len(ds.templates) < 15:
-        r.error(f"templates.json: {len(ds.templates)} plantillas; ItemsSpec.cpp exige al menos 15")
-    for t in ds.templates:
-        tid = t.get("id")
-        if not tid:
-            r.error("templates.json: plantilla sin id")
+# --------------------------------------------------------------------------- recetas
+
+
+def _amounts(value: Any, where: str, r: Report, known: set[str]) -> dict[str, int]:
+    out: dict[str, int] = {}
+    if not isinstance(value, list):
+        r.error(f"{where}: debe ser una lista de {{item, count}}")
+        return out
+    for entry in value:
+        if not isinstance(entry, dict):
+            r.error(f"{where}: entrada que no es un objeto")
             continue
-        if tid in seen:
-            r.error(f"templates.json: id duplicado «{tid}»")
-        seen.add(tid)
-        if t.get("resultDefinitionId") not in item_ids:
-            r.error(f"templates.json «{tid}»: produce «{t.get('resultDefinitionId')}», que no está en items.json")
-        if not t.get("verbs"):
-            r.error(f"templates.json «{tid}»: sin verbos")
-        station = t.get("station")
-        if station is not None and station not in stations:
-            r.error(f"templates.json «{tid}»: estación «{station}» no es una pieza de producción de building_pieces.json")
-        for verb in t.get("verbs", []):
-            if verb not in verb_ids:
-                r.error(f"templates.json «{tid}»: verbo «{verb}» no está en verbs.json")
-        slots = t.get("slots", [])
-        if not slots:
-            r.error(f"templates.json «{tid}»: sin slots")
-        roles = [s.get("role") for s in slots]
-        if len(set(roles)) != len(roles):
-            r.error(f"templates.json «{tid}»: roles repetidos {roles}")
-        for s in slots:
-            for req in s.get("requirements", []):
-                if req.get("property") not in PROPERTIES:
-                    r.error(f"templates.json «{tid}»/{s.get('role')}: propiedad desconocida {req.get('property')!r}")
-                m = req.get("min")
-                if not _in_range(m, 0, 5):
-                    r.error(f"templates.json «{tid}»/{s.get('role')}: min={m!r} fuera de [0, 5]")
-            for tag in s.get("tags", []):
-                if not any(tag in i.get("tags", []) for i in ds.items):
-                    r.error(f"templates.json «{tid}»/{s.get('role')}: ningún objeto tiene la etiqueta «{tag}»")
-        name_template = t.get("nameTemplate", "")
-        if not isinstance(name_template, str):
-            r.error(f"templates.json «{tid}»: nameTemplate debe ser texto, no {name_template!r}")
-            name_template = ""
-        placeholders = {int(n) for n in re.findall(r"\{(\d+)\}", name_template)}
-        if placeholders and max(placeholders) >= len(slots):
-            r.error(f"templates.json «{tid}»: nameTemplate usa {{{max(placeholders)}}} con {len(slots)} slots")
-        if t.get("isSharpen") and t.get("verbs") != ["Afilar"]:
-            r.warn(f"templates.json «{tid}»: isSharpen con verbos distintos de Afilar")
-
-
-# --------------------------------------------------------------------------- progresión
-
-
-def check_crafting_reachability(ds: DataSet, r: Report, max_depth: int = 2) -> crafting.Reachability:
-    reach = crafting.simulate(ds.items, ds.templates, max_depth=max_depth)
-    for t in ds.templates:
-        if t["id"] not in reach.reached_templates:
-            r.error(
-                f"templates.json «{t['id']}»: inalcanzable en {max_depth} pasos desde materiales en bruto "
-                "(requisitos imposibles o siempre gana otra plantilla con más slots)"
-            )
-    for verb, winner, shadowed in sorted(reach.ties):
-        r.info.append(f"con «{verb}», «{winner}» gana a «{shadowed}» por orden del fichero (empate en slots)")
-    for tid, hits in sorted(crafting.single_piece_templates(ds.items, ds.templates).items()):
-        r.info.append(f"«{tid}» se dispara con una sola pieza + cualquier otra: {', '.join(hits)}")
-    grouped: dict[tuple[str, str], list[str]] = {}
-    for a, b, hidden, lost in crafting.hidden_templates(ds.items, ds.templates):
-        grouped.setdefault((a, ", ".join(hidden)), []).append(f"{b} ({', '.join(lost)})")
-    for (a, hidden), partners in sorted(grouped.items()):
-        r.info.append(f"«{a}»: UCraftingLibrary::MaxActions corta en {crafting.MAX_ACTIONS} verbos y esconde {hidden} "
-                      f"con {len(partners)} piezas: {'; '.join(partners)}")
-    produced = {t["resultDefinitionId"] for t in ds.templates}
-    for item in ds.items:
-        if item["id"] in produced and item["id"] not in reach.reached_items:
-            r.error(f"items.json «{item['id']}»: solo se obtiene fabricando y ninguna cadena lo produce")
-    return reach
-
-
-def _obtainable(ds: DataSet, reach: crafting.Reachability) -> set[str]:
-    """Lo que alcanzan las plantillas, con los procesados solo si alguna receta los hace (smithing)."""
-    obtainable, _ = smithing.resolve_obtainable(ds, set(reach.reached_items))
-    return obtainable
-
-
-
-def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
-    doc = ds.building
-    tiers = {t.get("id"): t for t in doc.get("tiers", [])}
-    orders = _sorted_orders(t.get("order") for t in tiers.values())
-    if orders != list(range(len(orders))):
-        r.error(f"building_pieces.json: órdenes de tier no consecutivos {orders}")
-    expected = ["palma", "bambu", "madera", "piedra"]
-    if [t for t, _ in sorted(tiers.items(), key=lambda kv: _order_key(kv[1].get("order", 0)))] != expected:
-        r.error(f"building_pieces.json: los tiers deben ser {expected} en ese orden (GDD §8.6)")
-    for t in tiers.values():
-        for tool in t.get("requiresTools", []):
-            if tool not in obtainable:
-                r.error(f"building_pieces.json tier «{t['id']}»: herramienta «{tool}» no obtenible")
-    pieces = {p.get("id"): p for p in doc.get("pieces", [])}
-    if len(pieces) != len(doc.get("pieces", [])):
-        r.error("building_pieces.json: ids de pieza duplicados")
-    for pid, p in pieces.items():
-        if p.get("tier") not in tiers:
-            r.error(f"building_pieces.json «{pid}»: tier «{p.get('tier')}» desconocido")
-        if not p.get("cost"):
-            r.error(f"building_pieces.json «{pid}»: sin coste")
-        for c in p.get("cost", []):
-            if c.get("item") not in ds.item_ids:
-                r.error(f"building_pieces.json «{pid}»: ingrediente «{c.get('item')}» no está en items.json")
-            elif c["item"] not in obtainable:
-                r.error(f"building_pieces.json «{pid}»: ingrediente «{c['item']}» no obtenible")
-            if not isinstance(c.get("count"), int) or not 1 <= c["count"] <= 50:
-                r.error(f"building_pieces.json «{pid}»: count {c.get('count')!r} fuera de [1, 50]")
-        for tool in p.get("tools", []):
-            if tool not in ds.item_ids:
-                r.error(f"building_pieces.json «{pid}»: herramienta «{tool}» no está en items.json")
-            elif tool not in obtainable:
-                r.error(f"building_pieces.json «{pid}»: herramienta «{tool}» no obtenible")
-        for req in p.get("requiresPieces", []):
-            if req not in pieces:
-                r.error(f"building_pieces.json «{pid}»: requiere «{req}», que no existe")
-        if not _in_range(p.get("buildMinutes"), 1, 600):
-            r.error(f"building_pieces.json «{pid}»: buildMinutes fuera de [1, 600]")
-        if not isinstance(p.get("integrity"), int) or not 1 <= p["integrity"] <= 100:
-            r.error(f"building_pieces.json «{pid}»: integrity fuera de [1, 100]")
-        if p.get("maxCycloneCategory") not in (0, 1, 2, 3):
-            r.error(f"building_pieces.json «{pid}»: maxCycloneCategory fuera de 0-3")
-        # Encaje en la rejilla: lo lee FBuildingModel (ParseBuildSocket) y sin él la pieza no se coloca.
-        if p.get("socket") not in BUILDING_SOCKETS:
-            r.error(f"building_pieces.json «{pid}»: socket {p.get('socket')!r} no es uno de {sorted(BUILDING_SOCKETS)}")
-        if "respawnPoint" in p and not isinstance(p["respawnPoint"], bool):
-            r.error(f"building_pieces.json «{pid}»: respawnPoint debe ser true o false")
-    if not any(p.get("respawnPoint") is True for p in pieces.values()):
-        r.error("building_pieces.json: ninguna pieza es punto de reaparición (GDD §8.6: las fogatas encendidas)")
-    # Tier de una pieza estructural nunca por debajo de lo que aguanta: piedra ≥ madera ≥ ...
-    by_tier: dict[str, list[int]] = {}
-    for p in pieces.values():
-        if p.get("category") == "estructura" and p.get("tier") in tiers:
-            by_tier.setdefault(p["tier"], []).append(p.get("integrity", 0))
-    prev = None
-    for tier in expected:
-        if tier not in by_tier:
+        item, count = entry.get("item"), entry.get("count")
+        if item not in known:
+            r.error(f"{where}: «{item}» no está en items.json ni es un objeto del mundo")
+        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+            r.error(f"{where}: cantidad «{count}» de «{item}» no es un entero positivo")
             continue
-        avg = sum(by_tier[tier]) / len(by_tier[tier])
-        if prev is not None and avg <= prev[1]:
-            r.error(f"building_pieces.json: integridad media de «{tier}» ({avg:.0f}) no supera a «{prev[0]}» ({prev[1]:.0f})")
-        prev = (tier, avg)
-    _check_piece_cycles(pieces, r)
+        if isinstance(item, str):
+            out[item] = out.get(item, 0) + count
+    return out
 
 
-def _order_key(order: Any) -> tuple[int, int]:
-    """Clave de orden que no rompe con órdenes ausentes o no enteros (van al final)."""
-    return (0, order) if _type_ok(order, int) else (1, 0)
+def _check_recipe(rec: dict[str, Any], ds: DataSet, r: Report) -> None:
+    rid = rec.get("id")
+    where = f"recipes.json «{rid}»"
+    items = ds.item_ids
+    for key in ("nameEs", "nameEn"):
+        if not _text(rec.get(key)):
+            r.error(f"{where}: falta {key}")
+    verbs = {v.get("id") for v in ds.verbs}
+    if rec.get("verb") not in verbs:
+        r.error(f"{where}: verbo «{rec.get('verb')}» no está en verbs.json")
+    if rec.get("place") not in PLACES:
+        r.error(f"{where}: lugar «{rec.get('place')}» desconocido ({', '.join(sorted(PLACES))})")
+    _amounts(rec.get("inputs"), f"{where}.inputs", r, items)
+    _amounts(rec.get("stationNeeds", []), f"{where}.stationNeeds", r, items | WORLD_OUTPUTS)
+    tools = rec.get("tools", [])
+    if not isinstance(tools, list) or any(t not in items for t in tools):
+        r.error(f"{where}: tools debe listar objetos de items.json")
+    if not _number(rec.get("seconds")) or rec["seconds"] <= 0:
+        r.error(f"{where}: seconds debe ser > 0")
+    steps = rec.get("steps", 1)
+    if not _type_ok(steps, int) or steps < 1:
+        r.error(f"{where}: steps debe ser un entero ≥ 1")
+    out = rec.get("output")
+    if not isinstance(out, dict) or ("item" in out) == ("world" in out):
+        r.error(f"{where}: output necesita exactamente «item» o «world»")
+    elif "item" in out:
+        if out["item"] not in items:
+            r.error(f"{where}: la salida «{out['item']}» no está en items.json")
+        if not _type_ok(out.get("count"), int) or out["count"] <= 0:
+            r.error(f"{where}: la salida necesita un count entero positivo")
+    elif out["world"] not in WORLD_OUTPUTS:
+        r.error(f"{where}: salida de mundo «{out['world']}» desconocida")
+    expected = GDD_RECIPES.get(rid) if isinstance(rid, str) else None
+    if expected and (rec.get("verb"), rec.get("place"), rec.get("seconds")) != expected:
+        r.error(f"{where}: (verbo, lugar, segundos)=({rec.get('verb')}, {rec.get('place')}, {rec.get('seconds')}) "
+                f"pero el GDD §5.6 dice {expected}")
 
 
-def _sorted_orders(orders: Any) -> list[Any]:
-    """Órdenes ordenados; los no enteros (null, texto) se quedan tal cual al final para el mensaje."""
-    return sorted(orders, key=lambda o: (_order_key(o), repr(o)))
+def check_recipes(ds: DataSet, r: Report) -> None:
+    if "recipes.json" not in ds.data:
+        return
+    if not isinstance(ds.doc("recipes.json").get("recipes"), list):
+        r.error("recipes.json: falta la lista «recipes»")
+        return
+    ids = [rec.get("id") for rec in ds.recipes]
+    for dup in sorted({i for i in ids if isinstance(i, str) and ids.count(i) > 1}):
+        r.error(f"recipes.json: receta duplicada «{dup}»")
+    if sorted(i for i in ids if isinstance(i, str)) != sorted(GDD_RECIPES):
+        r.error(f"recipes.json: {ids} no es la lista cerrada de 10 recetas del GDD §5.6")
+    for rec in ds.recipes:
+        _check_recipe(rec, ds, r)
+    produced = {rec.get("output", {}).get("item") for rec in ds.recipes if isinstance(rec.get("output"), dict)}
+    raw = {"coco", "lena", "fibra", "cana_bambu", "tronco", "pez_crudo", "lente", "cuchillo", "cantimplora", "barometro"}
+    for item in sorted(ds.item_ids - produced - raw - {"coco_vacio"}):
+        r.error(f"recipes.json: «{item}» no sale de ninguna receta ni se recoge en la isla")
 
 
-def _check_piece_cycles(pieces: dict[str, dict], r: Report) -> None:
-    state: dict[str, int] = {}
-
-    def visit(pid: str, path: list[str]) -> None:
-        if state.get(pid) == 2 or pid not in pieces:
-            return
-        if state.get(pid) == 1:
-            cycle = path[path.index(pid):] + [pid]
-            r.error(f"building_pieces.json: ciclo de requisitos {' → '.join(cycle)}")
-            return
-        state[pid] = 1
-        for req in pieces[pid].get("requiresPieces", []):
-            visit(req, path + [pid])
-        state[pid] = 2
-
-    for pid in pieces:
-        visit(pid, [])
+# --------------------------------------------------------------------------- fuego, cuerpo, pesca
 
 
-# --------------------------------------------------------------------------- embarcaciones
-
-
-def _cpp_enum(text: str, name: str) -> list[str]:
-    m = re.search(rf"enum class {name}\s*:\s*uint8\s*\{{(.*?)\}};", text, re.S)
-    if not m:
-        return []
-    body = re.sub(r"//[^\n]*", "", m.group(1))
-    names = [re.split(r"[\s=]", v.strip())[0] for v in body.split(",")]
-    return [n for n in names if n and n != "Count"]
-
-
-def _read_source(ds: DataSet, rel: str) -> str:
-    path = ds.repo_root / "Source" / "Explored" / rel
-    return path.read_text(encoding="utf-8") if path.exists() else ""
-
-
-def check_boats(ds: DataSet, r: Report, obtainable: set[str]) -> None:
-    doc = ds.data.get("boats.json")
+def check_fuels(ds: DataSet, r: Report) -> None:
+    doc = ds.doc("fuels.json")
     if not doc:
         return
-    boats = {b.get("id"): b for b in ds.boats}
-    if len(boats) != len(ds.boats):
-        r.error("boats.json: ids de embarcación duplicados")
-    pieces = {p.get("id") for p in ds.building.get("pieces", [])}
+    fire = doc.get("campfire")
+    if not isinstance(fire, dict):
+        r.error("fuels.json: falta «campfire»")
+        return
+    for key, constant in (("burnSeconds", "DefaultBurnSeconds"), ("maxBurnSeconds", "DefaultMaxBurnSeconds"),
+                          ("heatRadiusMeters", "DefaultHeatRadiusMeters"), ("warmthPerMinute", "DefaultWarmthPerMinute")):
+        _mirror(ds, r, f"fuels.json campfire.{key}", fire.get(key), CAMPFIRE_CPP, constant)
+    fuel_constants = {"lena": "DefaultWoodSeconds", "tarro_aceite": "DefaultOilJarSeconds"}
+    fuels = _dicts(doc.get("fuels"))
+    for fuel in fuels:
+        item = fuel.get("item")
+        if item not in ds.item_ids:
+            r.error(f"fuels.json: combustible «{item}» no está en items.json")
+        elif item in fuel_constants:
+            _mirror(ds, r, f"fuels.json «{item}».secondsPerFuel", fuel.get("secondsPerFuel"), CAMPFIRE_CPP,
+                    fuel_constants[item])
+        else:
+            r.error(f"fuels.json: «{item}» no es combustible en el GDD §5.2 (leña o tarro de aceite)")
+    if {f.get("item") for f in fuels} != set(fuel_constants):
+        r.error("fuels.json: los combustibles deben ser exactamente leña y tarro de aceite (GDD §5.2)")
 
-    types_h = _read_source(ds, "Boats/BoatTypes.h")
-    model_cpp = _read_source(ds, "Boats/BoatModel.cpp")
-    progress_h = _read_source(ds, "Narrative/ExploredProgress.h")
-    cpp_types = _cpp_enum(types_h, "EBoatType")
-    ship_parts = set(_cpp_enum(progress_h, "EShipPart"))
-    if not cpp_types:
-        r.warn("boats.json: no se encuentra EBoatType en Boats/BoatTypes.h; no se compara con el C++")
-    cpp_meshes = {
-        m.group(1): m.group(2)
-        for m in re.finditer(r"case EBoatType::(\w+):(?:(?!break;).)*?D\.MeshName = TEXT\(\"([^\"]*)\"\)", model_cpp, re.S)
+
+def _check_consumables(ds: DataSet, doc: dict[str, Any], r: Report) -> None:
+    mirrors = {
+        ("coco", "thirst"): "CoconutThirst", ("coco", "hunger"): "CoconutHunger",
+        ("cantimplora", "thirst"): "CanteenSipThirst", ("pez_crudo", "hunger"): "RawFishHunger",
+        ("pez_crudo", "energy"): "RawFishEnergy", ("pez_asado", "hunger"): "GrilledFishHunger",
     }
-
-    orders = _sorted_orders(b.get("order") for b in boats.values())
-    if orders != list(range(len(orders))):
-        r.error(f"boats.json: órdenes de progresión no consecutivos {orders}")
-    if cpp_types and sorted(str(b.get("type")) for b in boats.values()) != sorted(cpp_types):
-        r.error(f"boats.json: los tipos deben ser exactamente los de EBoatType {cpp_types}")
-
-    for bid, b in boats.items():
-        if not isinstance(bid, str) or not re.fullmatch(r"[a-z0-9_]+", bid or ""):
-            r.error(f"boats.json: id inválido {bid!r} (minúsculas, dígitos y _)")
-            continue
-        for key in ("nameEs", "nameEn"):
-            if not isinstance(b.get(key), str) or not b[key]:
-                r.error(f"boats.json «{bid}»: falta {key}")
-        if b.get("station") not in pieces:
-            r.error(f"boats.json «{bid}»: estación «{b.get('station')}» no está en building_pieces.json")
-        if not b.get("cost"):
-            r.error(f"boats.json «{bid}»: sin coste")
-        for c in b.get("cost", []):
-            if c.get("item") not in ds.item_ids:
-                r.error(f"boats.json «{bid}»: ingrediente «{c.get('item')}» no está en items.json")
-            elif c["item"] not in obtainable:
-                r.error(f"boats.json «{bid}»: ingrediente «{c['item']}» no obtenible")
-            if not isinstance(c.get("count"), int) or not 1 <= c["count"] <= 50:
-                r.error(f"boats.json «{bid}»: count {c.get('count')!r} fuera de [1, 50]")
-        for tool in b.get("tools", []):
-            if tool not in ds.item_ids:
-                r.error(f"boats.json «{bid}»: herramienta «{tool}» no está en items.json")
-            elif tool not in obtainable:
-                r.error(f"boats.json «{bid}»: herramienta «{tool}» no obtenible")
-        req = b.get("requiresBoat")
-        if req is not None:
-            if req not in boats:
-                r.error(f"boats.json «{bid}»: requiere la embarcación «{req}», que no existe")
-            elif boats[req].get("order", 0) >= b.get("order", 0):
-                r.error(f"boats.json «{bid}»: requiere «{req}», que no va antes en la progresión")
-        elif b.get("consumesRequiredBoat"):
-            r.error(f"boats.json «{bid}»: consumesRequiredBoat sin requiresBoat")
-        bad_parts = set(b.get("requiresShipParts", [])) - ship_parts
-        if ship_parts and bad_parts:
-            r.error(f"boats.json «{bid}»: piezas del Albatros desconocidas {sorted(bad_parts)} (EShipPart)")
-        if not _in_range(b.get("buildMinutes"), 1, 600):
-            r.error(f"boats.json «{bid}»: buildMinutes fuera de [1, 600]")
-        btype = b.get("type")
-        if btype in cpp_meshes and (cpp_meshes[btype] or None) != b.get("mesh"):
-            r.error(f"boats.json «{bid}»: mesh={b.get('mesh')!r} pero FBoatDefinition::MeshName dice {cpp_meshes[btype]!r}")
-
-    first = next((b for b in boats.values() if b.get("order") == 0), None)
-    if first is not None and first.get("type") != "Raft":
-        r.error("boats.json: la progresión empieza por la balsa (GDD §8.10)")
-
-
-# --------------------------------------------------------------------------- mallas
-
-
-def pending_expected(ds: DataSet) -> dict[str, set[str]]:
-    items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
-    pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
-    boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
-    animals = {s["id"] for s in ds.data.get("fauna.json", {}).get("species", []) if s.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "boats": boats,
-            "fauna": animals}
-
-
-def check_meshes(ds: DataSet, r: Report) -> None:
-    # Solo se comprueba el formato de la ruta: el kit de mallas v1 (Tools/Blender/props) se
-    # borró en el reset v2 y el juego carga con forma básica del motor lo que aún no exista
-    # (Source/Explored/Core/ExploredAssetFallback.h).
-    for item in ds.items:
-        path = item.get("meshPath", "")
-        if BASIC_SHAPES.match(path):
-            continue
-        if not GENERATED_MESH.match(path):
-            r.error(f"items.json «{item['id']}»: meshPath {path!r} no es /Engine/BasicShapes ni /Game/Generated/Meshes/.../SM_*")
-
-    pending = ds.data.get("meshes_pendientes.json", {})
-    for group, expected in pending_expected(ds).items():
-        listed: set[str] = set()
-        for e in pending.get(group, []):
-            eid = e.get("id") if isinstance(e, dict) else e
-            if not isinstance(eid, str):
-                r.error(f"meshes_pendientes.json/{group}: entrada sin id de texto {e!r}")
-                continue
-            listed.add(eid)
-        for missing in sorted(expected - listed):
-            r.error(f"meshes_pendientes.json/{group}: falta «{missing}» (usa marcador o mesh null)")
-        for stale in sorted(listed - expected):
-            r.error(f"meshes_pendientes.json/{group}: «{stale}» ya tiene malla o no existe; quítalo")
-
-
-def _cpp_float(text: str, pattern: str) -> float | None:
-    m = re.search(pattern, text)
-    return float(m.group(1)) if m else None
-
-
-def _function_body(text: str, signature: str) -> str:
-    start = text.find(signature)
-    if start < 0:
-        return ""
-    end = text.find("\n\t}\n", start)
-    return text[start:end if end > 0 else len(text)]
+    seen = set()
+    for entry in _dicts(doc.get("consumables")):
+        item = entry.get("item")
+        seen.add(item)
+        if item not in ds.item_ids:
+            r.error(f"survival_needs.json consumables: «{item}» no está en items.json")
+        leaves = entry.get("leaves")
+        if leaves is not None and leaves not in ds.item_ids:
+            r.error(f"survival_needs.json consumables «{item}»: deja «{leaves}», que no está en items.json")
+        for key in ("thirst", "hunger", "energy"):
+            constant = mirrors.get((str(item), key))
+            if constant:
+                _mirror(ds, r, f"survival_needs.json consumables «{item}».{key}", entry.get(key), CONSUMABLES_CPP, constant)
+            elif not _number(entry.get(key, 0)):
+                r.error(f"survival_needs.json consumables «{item}».{key} debe ser un número")
+        if item == "cantimplora":
+            _mirror(ds, r, "survival_needs.json consumables «cantimplora».sips", entry.get("sips"), BACKPACK_CPP,
+                    "CanteenMaxSips")
+    if seen != {"coco", "cantimplora", "pez_crudo", "pez_asado"}:
+        r.error("survival_needs.json consumables: deben ser coco, cantimplora, pez crudo y pez asado (GDD §5.1)")
 
 
 def check_survival(ds: DataSet, r: Report) -> None:
-    doc = ds.data.get("survival_needs.json")
+    doc = ds.doc("survival_needs.json")
     if not doc:
         return
-    src = ds.repo_root / "Source" / "Explored" / "Survival"
-    header = (src / "SurvivalModel.h").read_text(encoding="utf-8") if (src / "SurvivalModel.h").exists() else ""
-    cpp = (src / "SurvivalModel.cpp").read_text(encoding="utf-8") if (src / "SurvivalModel.cpp").exists() else ""
-    if not header or not cpp:
-        r.warn("survival_needs.json: no se encuentra SurvivalModel.{h,cpp}; no se compara con el C++")
-    state_start = header.find("struct EXPLORED_API FSurvivalState")
-    header = header[state_start:header.find("};", state_start)] if state_start >= 0 else ""
-    all_tags = {t for i in ds.items for t in i.get("tags", [])}
-    seen = set()
-    for need in doc.get("needs", []):
+    needs = _dicts(doc.get("needs"))
+    if [n.get("id") for n in needs] != NEEDS:
+        r.error(f"survival_needs.json: las barras deben ser {NEEDS} (GDD §5.1)")
+    for need in needs:
         nid = need.get("id")
-        if nid in seen:
-            r.error(f"survival_needs.json: necesidad duplicada «{nid}»")
-        seen.add(nid)
-        init = need.get("initial")
-        if not _in_range(init, 0, 100):
+        for key in ("nameEs", "nameEn"):
+            if not _text(need.get(key)):
+                r.error(f"survival_needs.json «{nid}»: falta {key}")
+        if not _number(need.get("initial")) or not 0 <= need["initial"] <= 100:
             r.error(f"survival_needs.json «{nid}»: initial fuera de [0, 100]")
-        for tag in need.get("recoversWith", []):
-            if tag not in all_tags:
-                r.error(f"survival_needs.json «{nid}»: ningún objeto tiene la etiqueta «{tag}»")
-        if header and need.get("state"):
-            v = _cpp_float(header, rf"float {need['state']} = ([0-9.]+)f;")
-            if v is None:
-                r.error(f"survival_needs.json «{nid}»: FSurvivalState no tiene el campo {need['state']}")
-            elif v != init:
-                r.error(f"survival_needs.json «{nid}»: initial={init} pero SurvivalModel.h dice {v}")
-        if cpp and need.get("cppConstant"):
-            v = _cpp_float(cpp, rf"constexpr float {need['cppConstant']} = ([0-9.]+)f;")
-            if v is None:
-                r.error(f"survival_needs.json «{nid}»: no existe la constante {need['cppConstant']} en SurvivalModel.cpp")
-            elif v != need.get("hoursToEmpty"):
-                r.error(f"survival_needs.json «{nid}»: hoursToEmpty={need.get('hoursToEmpty')} pero {need['cppConstant']}={v}")
-    for required in ("hambre", "sed", "vitamina_c", "animo"):
-        if required not in seen:
-            r.error(f"survival_needs.json: falta la necesidad «{required}» (GDD §8.3)")
-    if not cpp:
-        return
-    sleep = doc.get("sleepRecoveryHours", {})
-    v = _cpp_float(cpp, rf"constexpr float {sleep.get('cppConstant')} = ([0-9.]+)f;")
-    if v is not None and v != sleep.get("value"):
-        r.error(f"survival_needs.json: sleepRecoveryHours={sleep.get('value')} pero C++ dice {v}")
-    mode_body = _function_body(cpp, "float ModeScale(")
-    for mode, cpp_name in (("Explorer", "Explorer"), ("Castaway", "Castaway")):
-        v = _cpp_float(mode_body, rf"ESurvivalMode::{cpp_name}: return ([0-9.]+)f;")
-        if v is not None and v != doc.get("modeScale", {}).get(mode):
-            r.error(f"survival_needs.json: modeScale.{mode}={doc['modeScale'].get(mode)} pero C++ dice {v}")
-    act_body = _function_body(cpp, "float ActivityMetabolism(")
-    for act, value in doc.get("activityMetabolism", {}).items():
-        v = _cpp_float(act_body, rf"EActivity::{act}: return ([0-9.]+)f;")
-        if v is None and act == "Walking":
-            v = _cpp_float(act_body, r"default: return ([0-9.]+)f;")
-        if v is not None and v != value:
-            r.error(f"survival_needs.json: activityMetabolism.{act}={value} pero C++ dice {v}")
-    bt = doc.get("bodyTemperature", {})
-    for key, pat in (("hypothermiaBelow", r"BodyTemperature < ([0-9.]+)f\)"), ("heatstrokeAbove", r"BodyTemperature > ([0-9.]+)f\)")):
-        v = _cpp_float(cpp, pat)
-        if v is not None and v != bt.get(key):
-            r.error(f"survival_needs.json: bodyTemperature.{key}={bt.get(key)} pero C++ dice {v}")
-    check_survival_body(doc, src, r)
-
-
-def _body_constants(node, path: str = "body"):
-    """Recorre «body» y devuelve (ruta, valor, cppConstant) de cada constante reflejada."""
-    if isinstance(node, dict):
-        if "cppConstant" in node and "value" in node:
-            yield path, node["value"], node["cppConstant"]
-            return
-        for key, child in node.items():
-            yield from _body_constants(child, f"{path}.{key}")
-
-
-def check_survival_body(doc: dict, src, r: Report) -> None:
-    body = doc.get("body")
-    if body is None:
-        return
-    path = src / "BodyModel.cpp"
-    if not path.exists():
-        r.warn("survival_needs.json: no se encuentra BodyModel.cpp; no se compara «body» con el C++")
-        return
-    cpp = path.read_text(encoding="utf-8")
-    for where, value, name in _body_constants(body):
-        if not _type_ok(value, (int, float)):
-            r.error(f"survival_needs.json {where}: value debe ser un número")
-            continue
-        v = _cpp_float(cpp, rf"constexpr float {name} = ([0-9.]+)f;")
-        if v is None:
-            r.error(f"survival_needs.json {where}: no existe la constante {name} en BodyModel.cpp")
-        elif v != value:
-            r.error(f"survival_needs.json {where}: value={value} pero {name}={v} en BodyModel.cpp")
-    events_body = _function_body(cpp, "float FBodyModel::MoraleEventDelta(")
-    for event, value in body.get("moraleEvents", {}).items():
-        m = re.search(rf"EMoraleEvent::{event}: return (-?[0-9.]+)f;", events_body)
-        if m is None:
-            r.error(f"survival_needs.json body.moraleEvents: EMoraleEvent::{event} no existe en BodyModel.cpp")
-        elif float(m.group(1)) != value:
-            r.error(f"survival_needs.json body.moraleEvents.{event}={value} pero BodyModel.cpp dice {m.group(1)}")
-
-
-# --------------------------------------------------------------------------- fuego y cocina
-
-
-def check_cooking(ds: DataSet, r: Report) -> None:
-    piece_ids = {p.get("id") for p in ds.building.get("pieces", [])}
-    if "fuels.json" in ds.data:
-        cooking.check_fuels(ds.data["fuels.json"], ds.items, piece_ids, r.error)
-    if "recipes.json" in ds.data:
-        cooking.check_recipes(ds.data["recipes.json"], ds.items, piece_ids, r.error)
-    cooking.check_generated(ds.repo_root, ds.data, r.error)
-
-
-# --------------------------------------------------------------------------- pesca
-
-FISH_HABITATS = {"orilla", "laguna", "arrecife", "talud", "profundo"}
-FISH_METHODS = {"cana", "arpon", "red", "trampa", "mano"}
-FISH_TRAPS = {"nasa", "trampa_cangrejos", "corral_piedras"}
-FISH_CPP = Path("Source") / "Explored" / "Fishing" / "FishingModel.cpp"
-FISH_TRAP_KINDS = {"Nasa": "nasa", "CrabTrap": "trampa_cangrejos", "StoneCorral": "corral_piedras"}
-
-
-def _cpp_calls(text: str, fn: str) -> dict[str, list[str]]:
-    """Argumentos de cada llamada «fn(TEXT("id"), ...)» del C++, por id."""
-    calls = {}
-    for m in re.finditer(rf'{fn}\(TEXT\("(\w+)"\),(.*?)\);', text, re.S):
-        calls[m.group(1)] = [a.strip() for a in m.group(2).split(",")]
-    return calls
-
-
-def _cpp_num(arg: str) -> float:
-    return float(arg.rstrip("f"))
-
-
-def _check_fish_species(doc: dict, ids: set[str], items: dict[str, dict], r: Report) -> None:
-    bait_keys = {"sin_cebo"} | set(doc.get("baits", {}))
-    species = doc.get("species", [])
-    rod_fish = [s for s in species if "cana" in s.get("methods", [])]
-    if len(rod_fish) != 11:
-        r.error(f"fish.json: {len(rod_fish)} peces de caña; el GDD §8.8 fija 11")
-    if "langosta" not in {s.get("id") for s in species}:
-        r.error("fish.json: falta la langosta de arrecife (GDD §8.8)")
-    for s in species:
-        sid = s.get("id")
-        if sid not in ids:
-            r.error(f"fish.json «{sid}»: la captura no está en items.json")
-        elif "comida" not in items[sid].get("tags", []):
-            r.error(f"fish.json «{sid}»: la captura debe tener la etiqueta comida")
-        if not set(s.get("habitats", [])) or set(s.get("habitats", [])) - FISH_HABITATS:
-            r.error(f"fish.json «{sid}»: hábitats inválidos {s.get('habitats')}")
-        if not set(s.get("methods", [])) or set(s.get("methods", [])) - FISH_METHODS:
-            r.error(f"fish.json «{sid}»: métodos inválidos {s.get('methods')}")
-        for key in ("depthM", "weightKg"):
-            lo, hi = (list(s.get(key) or []) + [0, 0])[:2]
-            if not (_type_ok(lo, (int, float)) and _type_ok(hi, (int, float)) and 0 < lo < hi):
-                r.error(f"fish.json «{sid}»: {key} {s.get(key)} no es un rango [min < max] positivo")
-        for group in ("periods", "tide", "moon", "baits"):
-            for k, v in s.get(group, {}).items():
-                if not _in_range(v, 0, 3):
-                    r.error(f"fish.json «{sid}».{group}.{k}={v!r} fuera de [0, 3]")
-        for k in s.get("baits", {}):
-            if k not in bait_keys:
-                r.error(f"fish.json «{sid}»: cebo desconocido «{k}»")
-
-
-def _check_fish_mirror(ds: DataSet, doc: dict, r: Report) -> None:
-    """Espejo del C++: ids y números de las tablas de FFishingModel."""
-    cpp_path = ds.repo_root / FISH_CPP
-    if not cpp_path.exists():
-        r.warn("fish.json: no se encuentra FishingModel.cpp; no se compara con el C++")
-        return
-    cpp = cpp_path.read_text(encoding="utf-8")
-    cpp_species = _cpp_calls(cpp, "MakeSpecies")
-    json_species = {s.get("id"): s for s in doc.get("species", [])}
-    for sid in sorted(set(cpp_species) ^ set(json_species)):
-        r.error(f"fish.json: la especie «{sid}» no coincide entre fish.json y FishingModel.cpp")
-    for sid in sorted(set(cpp_species) & set(json_species)):
-        n = [_cpp_num(a) for a in cpp_species[sid][-9:]]
-        s = json_species[sid]
-        expected = [*s.get("depthM", []), s.get("bitesPerMinute"), *s.get("weightKg", []),
-                    s.get("strengthKgf"), s.get("staminaSeconds"), s.get("aggression"), s.get("wariness")]
-        if n != expected:
-            r.error(f"fish.json «{sid}»: números distintos de FishingModel.cpp ({expected} frente a {n})")
-    cpp_legends = _cpp_calls(cpp, "MakeLegend")
-    json_legends = {leg.get("id") for leg in doc.get("legendary", [])}
-    for lid in sorted(set(cpp_legends) ^ json_legends):
-        r.error(f"fish.json: la legendaria «{lid}» no coincide entre fish.json y FishingModel.cpp")
-    cpp_traps = {(FISH_TRAP_KINDS.get(m.group(1)), m.group(2), float(m.group(3)))
-                 for m in re.finditer(r'\{ ETrapKind::(\w+), TEXT\("(\w+)"\), [^{}]*?, ([\d.]+)f, [\d.]+f, EFishBait', cpp)}
-    json_traps = {(k, c.get("item"), c.get("perHour"))
-                  for k, t in doc.get("traps", {}).items() for c in t.get("catches", [])}
-    for kind, item_id, rate in sorted(cpp_traps ^ json_traps, key=str):
-        r.error(f"fish.json: trampa «{kind}» «{item_id}» ({rate}/h) no coincide con FishingModel.cpp")
+        if not _number(need.get("lossPerMinute")) or need["lossPerMinute"] < 0:
+            r.error(f"survival_needs.json «{nid}»: lossPerMinute debe ser un número ≥ 0")
+    _check_consumables(ds, doc, r)
+    kit = {k.get("item"): k for k in _dicts(doc.get("starterKit"))}
+    if set(kit) != {"cuchillo", "cantimplora", "barometro"}:
+        r.error("survival_needs.json starterKit: debe ser cuchillo, cantimplora y barómetro (GDD §5.3)")
+    _mirror(ds, r, "survival_needs.json starterKit «cantimplora».sips", kit.get("cantimplora", {}).get("sips"),
+            BACKPACK_CPP, "StarterCanteenSips")
+    _mirror(ds, r, "survival_needs.json backpackSlots", doc.get("backpackSlots"), BACKPACK_CPP, "DefaultSlots")
+    barrel = doc.get("rainBarrel", {})
+    barrel = barrel if isinstance(barrel, dict) else {}
+    _mirror(ds, r, "survival_needs.json rainBarrel.charges", barrel.get("charges"), BARREL_CPP, "MaxCharges")
+    _mirror(ds, r, "survival_needs.json rainBarrel.showerCharges", barrel.get("showerCharges"), BARREL_CPP, "ShowerCharges")
 
 
 def check_fish(ds: DataSet, r: Report) -> None:
-    doc = ds.data.get("fish.json")
+    doc = ds.doc("fish.json")
     if not doc:
         return
-    ids = ds.item_ids
-    items = {i["id"]: i for i in ds.items}
-    for key, item_id in doc.get("baits", {}).items():
-        if item_id not in ids:
-            r.error(f"fish.json baits.{key}: «{item_id}» no está en items.json")
-    _check_fish_species(doc, ids, items, r)
-
-    legendary = doc.get("legendary", [])
-    if len(legendary) != 5:
-        r.error(f"fish.json: {len(legendary)} legendarias; la biblia §4.6 fija 5")
-    for leg in legendary:
-        if not leg.get("rewards"):
-            r.error(f"fish.json legendaria «{leg.get('id')}»: sin recompensa")
-        for reward in leg.get("rewards", []):
-            if reward not in ids:
-                r.error(f"fish.json legendaria «{leg.get('id')}»: recompensa «{reward}» no está en items.json")
-        if not leg.get("spot"):
-            r.error(f"fish.json legendaria «{leg.get('id')}»: sin sitio")
-
-    traps = doc.get("traps", {})
-    if set(traps) != FISH_TRAPS:
-        r.error(f"fish.json: trampas {sorted(traps)}; se esperan {sorted(FISH_TRAPS)}")
-    for kind, trap in traps.items():
-        if not isinstance(trap.get("capacity"), int) or trap["capacity"] < 1:
-            r.error(f"fish.json trampa «{kind}»: capacidad inválida")
-        for c in trap.get("catches", []):
-            if c.get("item") not in ids:
-                r.error(f"fish.json trampa «{kind}»: «{c.get('item')}» no está en items.json")
-            if not _type_ok(c.get("perHour"), (int, float)) or not 0 < c["perHour"] <= 1:
-                r.error(f"fish.json trampa «{kind}» «{c.get('item')}»: perHour fuera de (0, 1]")
-            bait = c.get("favouriteBait")
-            if bait is not None and bait not in ids:
-                r.error(f"fish.json trampa «{kind}»: cebo «{bait}» no está en items.json")
-    for c in doc.get("tidePool", {}).get("catches", []):
-        if c.get("item") not in ids:
-            r.error(f"fish.json poza: «{c.get('item')}» no está en items.json")
-    for y in doc.get("butchery", {}).get("yields", []):
-        if y not in ids:
-            r.error(f"fish.json despiece: «{y}» no está en items.json")
-    _check_fish_mirror(ds, doc, r)
+    for key, constant in (("meanBiteSeconds", "DefaultMeanBiteSeconds"), ("minBiteSeconds", "DefaultMinBiteSeconds"),
+                          ("biteWindowSeconds", "DefaultBiteWindowSeconds"), ("goldenHourFactor", "DefaultGoldenHourFactor")):
+        _mirror(ds, r, f"fish.json {key}", doc.get(key), FISH_CPP, constant)
+    for key in ("rod", "catch"):
+        if doc.get(key) not in ds.item_ids:
+            r.error(f"fish.json {key}: «{doc.get(key)}» no está en items.json")
+    for key in ("dawn", "dusk", "night"):
+        span = doc.get(key)
+        if not isinstance(span, list) or len(span) != 2 or not all(_number(h) and 0 <= h < 24 for h in span):
+            r.error(f"fish.json {key}: debe ser [desde, hasta] en horas 0-24")
 
 
-# --------------------------------------------------------------------------- reglas
+# --------------------------------------------------------------------------- reglas generales
 
 
 def check_forbidden_terms(ds: DataSet, r: Report) -> None:
@@ -813,70 +448,19 @@ def check_forbidden_terms(ds: DataSet, r: Report) -> None:
         text = json.dumps(content, ensure_ascii=False).lower()
         for term in FORBIDDEN_TERMS:
             if re.search(rf"(?<![a-záéíóúñ]){re.escape(term)}(?![a-záéíóúñ])", text):
-                r.error(f"{name}: contiene «{term}», eliminado por el GDD §12 (y no recuperado por el GDD v2)")
-
-
-# GDD §8.8 (recolección y mar): nombre del GDD -> ids de items.json que lo cubren.
-GDD_FOOD = {
-    "coco": ("coco_verde", "coco_maduro"), "plátano": ("platano",), "mango": ("mango_fruta",),
-    "papaya": ("papaya",), "carambola": ("carambola",), "guayaba": ("guayaba",),
-    "fruta del pan": ("fruta_pan",), "taro": ("taro",), "yuca": ("yuca",), "batata": ("batata",),
-    "miel": ("miel",), "huevos de gaviota": ("huevo",), "algas": ("alga_comestible",),
-    "cangrejos": ("cangrejo",), "lapas": ("lapa",), "erizos": ("erizo",), "pulpo": ("pulpo",),
-    "langosta de arrecife": ("langosta",),
-}
-# GDD §8.8: setas (2 comestibles, 2 tóxicas, 1 alucinógena).
-GDD_MUSHROOMS = {"comestible": 2, "toxica": 2, "alucinogena": 1}
-
-
-def _mushroom_kind(item: dict) -> str:
-    if "alucinogena" in item.get("tags", []):
-        return "alucinogena"
-    toxic = any(p["name"] == "Toxico" and p["value"] > 0 for p in item.get("properties", []))
-    return "toxica" if toxic else "comestible"
-
-
-def check_gdd_food_coverage(ds: DataSet, r: Report) -> None:
-    """Comida del GDD §8.8 que aún falta en items.json (nota, no error).
-
-    Añadir una comida obliga a darla de alta en recipes.json/foods y a regenerar
-    CookingData.inl, así que el hueco se deja visible en vez de bloquear.
-    """
-    ids = {i["id"] for i in ds.items}
-    missing = [name for name, cands in GDD_FOOD.items() if not ids.intersection(cands)]
-    if missing:
-        r.info.append(f"items.json: falta comida del GDD §8.8: {', '.join(missing)}")
-    counts = {k: 0 for k in GDD_MUSHROOMS}
-    for item in ds.items:
-        if "seta" in item.get("tags", []):
-            counts[_mushroom_kind(item)] += 1
-    short = [f"{k} {counts[k]}/{n}" for k, n in GDD_MUSHROOMS.items() if counts[k] < n]
-    if short:
-        r.info.append(f"items.json: setas por debajo del GDD §8.8: {', '.join(short)}")
-
-
-# --------------------------------------------------------------------------- entrada
+                r.error(f"{name}: contiene «{term}», eliminado del diseño")
 
 
 def run_all(ds: DataSet) -> Report:
     r = Report()
     check_files_present(ds, r)
-    check_items_schema(ds, r)
+    check_items(ds, r)
     check_verbs(ds, r)
-    check_templates(ds, r)
-    reach = check_crafting_reachability(ds, r)
-    obtainable = _obtainable(ds, reach)
-    check_building(ds, r, obtainable)
-    check_boats(ds, r, obtainable)
-    check_meshes(ds, r)
+    check_recipes(ds, r)
+    check_fuels(ds, r)
     check_survival(ds, r)
-    check_cooking(ds, r)
-    smithing.check_smithing(ds, r, obtainable)
-    textos.check_player_texts(ds.data, r.error)
     check_fish(ds, r)
+    textos.check_player_texts(ds.data, r.error)
     music.check_music(ds, r)
     check_forbidden_terms(ds, r)
-    check_gdd_food_coverage(ds, r)
-    fauna.check_fauna(ds, r, PROPERTIES)
-    packs.check_catalog(ds.repo_root, ds.data, r.error)
     return r

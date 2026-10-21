@@ -1,39 +1,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 
-#include "Carry/CarryTypes.h"
-#include "Cooking/CookingModel.h"
-#include "Cooking/FireModel.h"
+#include "Cooking/CampfireModel.h"
 #include "Interaction/ExploredInteractable.h"
-#include "Items/ItemTypes.h"
+#include "WorldGen/ExploredPlaceholder.h"
 
 #include "ExploredFire.generated.h"
 
-class UCarryComponent;
-class UParticleSystemComponent;
 class UPointLightComponent;
-class UStaticMeshComponent;
+class UExploredSurvivorComponent;
 
 /**
- * Fogata, hoguera u horno en el mundo (GDD §8.5, §8.8; biblia §5.3). Solo
- * conecta FFireModel y FCookingModel con el mundo: toda la lógica y el
- * equilibrio están en los modelos puros y en fuels.json / recipes.json.
+ * Hoguera de Baliza Siete (GDD v3 §5.2): la fija del refugio de la base del faro (hoguera_fija de
+ * island_props.json) o una encendida en el suelo con la receta «hoguera». Capa fina sobre
+ * FCampfireModel: arde 5 min, cada leña suma 1,7 min, calienta a 4 m, asa un pez en 20 s y hierve
+ * aceite en 40 s (2 peces crudos + coco vacío); solo el ciclón la apaga si no está bajo techo.
  *
- * Interacción (la mano derecha primero, luego la izquierda):
- * - Con la comida hecha o quemada: se retira junto con el utensilio.
- * - Con cerillas, pedernal o una rama seca y el fuego apagado: se intenta encender.
- * - Con combustible: se echa al fuego (sobre brasas lo reaviva).
- * - Con una olla de coco o una vasija: se pone al fuego.
- * - Con un ingrediente: se asa en el espeto o se echa a la olla. Al echar
- *   otro ingrediente la cocción vuelve a empezar con todo lo que hay dentro.
+ * Acciones (PerformAction / tecla E en este orden): «recoger» lo cocinado, «encender» (3 leña +
+ * cuchillo), «cocinar» un pez, «hervir» aceite, «avivar» con leña o un tarro de aceite.
  *
- * Luz y partículas son marcadores sin recursos propios: las plantillas de
- * partículas se asignan en el editor cuando existan.
+ * Blueprint: «Ignite», «Perform Action», «Is Burning», «Get Burn Seconds», «Get Heat At».
  */
 UCLASS()
-class EXPLORED_API AExploredFire : public AActor, public IExploredInteractable
+class EXPLORED_API AExploredFire : public AExploredPlaceholder, public IExploredInteractable
 {
 	GENERATED_BODY()
 
@@ -42,104 +32,72 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	// IExploredInteractable
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
 	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;
 	virtual void Interact_Implementation(AActor* InInstigator) override;
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
-	bool IsBurning() const { return State.Status == EFireStatus::Burning; }
+	bool IsBurning() const { return State.bLit; }
 
-	/** Encendida o en brasas: punto de reaparición (GDD §8.6). */
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
-	bool IsRespawnPoint() const { return FFireModel::IsRespawnPoint(State); }
+	float GetBurnSeconds() const { return State.BurnSeconds; }
 
-	/** Hoguera con humo verde: la ve el barco del horizonte (P-EVENTS). */
+	/** true si hay algo cocinándose o listo para recoger. */
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
-	bool IsSignalFire() const { return FFireModel::IsSignalFire(State); }
+	bool HasJob() const { return State.Job.IsActive(); }
 
-	/** Calor (0–1) que llega a un punto del mundo; lo usará FSurvivalInputs::FireHeat. */
+	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
+	bool IsJobReady() const { return State.Job.IsDone(); }
+
+	/** Calor 0-1 en un punto (1 a 4 m o menos). Lo suma el cuerpo con los demás fuegos. */
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
 	float GetHeatAt(const FVector& WorldLocation) const;
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
 	bool IsSheltered() const { return bSheltered; }
 
-	/** Mejora el hogar (fogata → hoguera → horno); lo llamará la construcción (P-BUILD). */
-	bool UpgradeLevel(EFireLevel NewLevel);
+	/** En Baliza Siete se reaparece en los refugios (GDD §5.1), no junto al fuego. */
+	bool IsRespawnPoint() const { return false; }
 
-	/** Estado plano para el guardado (sección «cooking», UExploredWiringSubsystem). */
-	const FFireState& GetFireState() const { return State; }
-	const FCookingPot& GetPot() const { return Pot; }
-	/** Utensilio puesto al fuego (inválido si se asa en el espeto). */
-	const FItemInstance& GetPotVesselItem() const { return PotVesselItem; }
-	void RestoreState(const FFireState& InState, const FCookingPot& InPot);
-	/** Restaura también el utensilio que había al fuego. */
-	void RestoreState(const FFireState& InState, const FCookingPot& InPot, const FItemInstance& InVesselItem);
+	/** Enciende sin gastar nada (receta ya pagada, depuración o bot). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Fuego")
+	void Ignite();
 
-protected:
-	virtual void BeginPlay() override;
+	/** Acciones válidas ahora para ese jugador, en orden de preferencia. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Fuego")
+	TArray<FName> GetAvailableActions(AActor* InInstigator) const;
 
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Fuego")
-	TObjectPtr<UStaticMeshComponent> Hearth;
+	/** «recoger», «encender», «cocinar», «hervir» o «avivar». false si no se pudo. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Fuego")
+	bool PerformAction(AActor* InInstigator, FName Action);
 
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Fuego")
-	TObjectPtr<UPointLightComponent> Light;
+	const FCampfireState& GetCampfireState() const { return State; }
+	void RestoreCampfire(const FCampfireState& InState);
 
-	/** Marcador de llamas: sin plantilla hasta que exista el efecto. */
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Fuego")
-	TObjectPtr<UParticleSystemComponent> Flames;
-
-	/** Marcador de humo (más denso con leña verde o mojada). */
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Fuego")
-	TObjectPtr<UParticleSystemComponent> SmokeFx;
-
-	/** 0 fogata, 1 hoguera, 2 horno de arcilla. */
-	UPROPERTY(EditAnywhere, Category = "Explored|Fuego", meta = (ClampMin = "0", ClampMax = "2"))
-	int32 InitialLevel = 0;
+	/** Segundos entre pasos de simulación. */
+	UPROPERTY(EditAnywhere, Category = "Explored|Fuego")
+	float SimulationIntervalSeconds = 0.25f;
 
 	UPROPERTY(EditAnywhere, Category = "Explored|Fuego")
 	float MaxLightIntensity = 6000.0f;
 
-	/** Altura (m) de la traza hacia arriba que decide si hay techo. */
-	UPROPERTY(EditAnywhere, Category = "Explored|Fuego")
-	float ShelterTraceMeters = 6.0f;
+protected:
+	virtual void BeginPlay() override;
+	virtual void OnConfigured(const FIslandProp& Prop, const FIslandPropType& Type) override;
 
-	/** Cada cuánto (s reales) se simula el modelo. */
-	UPROPERTY(EditAnywhere, Category = "Explored|Fuego")
-	float SimulationIntervalSeconds = 0.5f;
-
-	/** Horas de juego por segundo real si no hay reloj del mundo (mapas de prueba). */
-	UPROPERTY(EditAnywhere, Category = "Explored|Fuego")
-	float FallbackGameHoursPerSecond = 1.0f / 60.0f;
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Fuego")
+	TObjectPtr<UPointLightComponent> Light;
 
 private:
-	void Simulate(float GameHours);
-	float ConsumeGameHours(float DeltaSeconds);
+	bool StartCooking(UExploredSurvivorComponent& Survivor, FName RecipeId);
+	bool LightWithRecipe(UExploredSurvivorComponent& Survivor);
+	bool Feed(UExploredSurvivorComponent& Survivor);
+	bool Collect(UExploredSurvivorComponent& Survivor);
 	void UpdateShelter();
-	FFireEnvironment MakeFireEnvironment() const;
-	FCookEnvironment MakeCookEnvironment() const;
-	void ReportEvents(const TArray<EFireEvent>& Events);
-	void RefreshVisuals();
+	void Refresh();
 
-	bool TryIgniteWith(UCarryComponent& Carry, EHand Hand, const FIgnitionDef& Ignition);
-	bool TryAddFuel(UCarryComponent& Carry, EHand Hand, FName ItemId);
-	bool TryPlaceVessel(UCarryComponent& Carry, EHand Hand, FName VesselId);
-	bool TryAddIngredient(UCarryComponent& Carry, EHand Hand, FName ItemId);
-	void CollectPot();
-	void SpawnNearby(const FItemInstance& Instance, int32 Slot);
-	TArray<FCookIngredient> BuildIngredients(const TArray<FName>& Ids) const;
-
-	FFireState State;
-	FCookingPot Pot;
-
-	/** Utensilio puesto al fuego (vacío = se asa en el espeto del propio fuego). */
-	FName PotVesselId;
-	UPROPERTY()
-	FItemInstance PotVesselItem;
-
+	FCampfireState State;
 	bool bSheltered = false;
-	float ShelterTimer = 0.0f;
+	bool bConfigured = false;
 	float SimulationTimer = 0.0f;
-	float LastTotalDays = -1.0f;
 };

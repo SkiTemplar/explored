@@ -8,6 +8,7 @@
 #include "UObject/SoftObjectPath.h"
 
 #include "Core/ExploredAssetFallback.h"
+#include "WorldGen/IslandPropsLoader.h"
 #include "WorldGen/IslandPropsModel.h"
 
 namespace ExploredPlaceholderDetail
@@ -96,4 +97,33 @@ void AExploredPlaceholder::Configure(const FIslandProp& Prop, const FIslandPropT
 		Label->SetHiddenInGame(false);
 	}
 #endif
+	OnConfigured(Prop, Type);
+}
+
+const TCHAR* AExploredPlaceholder::ToonMaterialPath()
+{
+	return TEXT("/Game/Art/Materials/M_Toon.M_Toon");
+}
+
+void AExploredPlaceholder::ConfigureStandalone(FName Id, FName TypeName, const FString& MeshPath)
+{
+	const TSharedRef<const FIslandProps> Props = ExploredIslandProps::Get();
+	FIslandPropType Type;
+	if (const FIslandPropType* Found = Props->FindType(TypeName))
+	{
+		Type = *Found;
+	}
+	else
+	{
+		Type.Name = TypeName;
+		Type.Size = FVector(0.3);
+		Type.ColorIndex = 5;
+		Type.Collision = EIslandPropCollision::Query;
+	}
+	FIslandProp Prop;
+	Prop.Id = Id;
+	Prop.Type = TypeName;
+	Prop.Amount = 1;
+	UMaterialInterface* Material = Cast<UMaterialInterface>(FSoftObjectPath(ToonMaterialPath()).TryLoad());
+	Configure(Prop, Type, MeshPath.IsEmpty() ? Type.MeshPath : MeshPath, Material);
 }

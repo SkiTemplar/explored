@@ -28,6 +28,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Refugio")
 	bool IsActorSheltered(const AActor* Actor) const;
 
+	/** true si el punto está dentro de la caja (un fuego bajo el techo no lo apaga el ciclón). */
+	UFUNCTION(BlueprintPure, Category = "Explored|Refugio")
+	bool IsLocationSheltered(const FVector& Location) const;
+
 	/** Punto del suelo del refugio donde reaparecer tras un desmayo (cm). */
 	UFUNCTION(BlueprintPure, Category = "Explored|Refugio")
 	FVector GetRespawnLocation() const;

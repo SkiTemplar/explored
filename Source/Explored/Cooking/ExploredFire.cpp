@@ -1,496 +1,346 @@
 #include "Cooking/ExploredFire.h"
 
-#include "Carry/CarryComponent.h"
-#include "Engine/GameInstance.h"
-#include "CollisionQueryParams.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/EngineTypes.h"
-#include "Engine/HitResult.h"
-#include "Engine/StaticMesh.h"
-#include "Engine/World.h"
+
 #include "Explored.h"
-#include "ExploredGameMode.h"
-#include "Items/ExploredItemActor.h"
-#include "Items/ItemRegistrySubsystem.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Save/SaveSlots.h"
-#include "Sky/TimeOfDaySubsystem.h"
-#include "UI/ExploredSaveSubsystem.h"
-#include "Weather/ExploredWeatherSubsystem.h"
+#include "Items/BackpackModel.h"
+#include "Items/ExploredSurvivorComponent.h"
+#include "Items/IslandDataLoader.h"
+#include "Weather/IslandWeatherQuery.h"
+
+#define LOCTEXT_NAMESPACE "ExploredIsland"
 
 namespace ExploredFireDetail
 {
-	/** Cada cuánto (s) se repite la traza de techo. */
-	constexpr float ShelterCheckSeconds = 2.0f;
-	/** Tope de horas de juego por paso (saltos de tiempo al dormir o cargar). */
-	constexpr float MaxCatchUpHours = 72.0f;
-	/** Utensilio implícito del propio fuego: un espeto sobre las brasas. */
-	const FName SpitVesselId(TEXT("espeto"));
-	/** Malla marcadora del hogar hasta que exista SM_Campfire en el juego. */
-	const TCHAR* const HearthMeshPath = TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
+	const FName ActCollect(TEXT("recoger"));
+	const FName ActLight(TEXT("encender"));
+	const FName ActCook(TEXT("cocinar"));
+	const FName ActBoil(TEXT("hervir"));
+	const FName ActFeed(TEXT("avivar"));
+	const FName CampfireRecipe(TEXT("hoguera"));
+	const FName GrillRecipe(TEXT("pez_asado"));
+	const FName OilRecipe(TEXT("tarro_aceite"));
+	const FName FireType(TEXT("hoguera_fija"));
+
+	FText ActionText(FName Action)
+	{
+		if (Action == ActCollect) { return LOCTEXT("FireCollect", "Recoger"); }
+		if (Action == ActLight) { return LOCTEXT("FireLight", "Encender"); }
+		if (Action == ActCook) { return LOCTEXT("FireCook", "Cocinar"); }
+		if (Action == ActBoil) { return LOCTEXT("FireBoil", "Hervir"); }
+		return LOCTEXT("FireFeed", "Añadir leña");
+	}
 }
 
 AExploredFire::AExploredFire()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.1f;
-
-	Hearth = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hearth"));
-	RootComponent = Hearth;
-	// Movible: el fuego puede aparecer en partida al construirlo.
-	Hearth->SetMobility(EComponentMobility::Movable);
-	Hearth->SetCollisionProfileName(TEXT("BlockAllDynamic"));
-	Hearth->SetRelativeScale3D(FVector(1.0f, 1.0f, 0.2f));
-
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	Light = CreateDefaultSubobject<UPointLightComponent>(TEXT("Light"));
 	Light->SetupAttachment(RootComponent);
 	Light->SetMobility(EComponentMobility::Movable);
-	Light->SetRelativeLocation(FVector(0.0f, 0.0f, 80.0f));
+	Light->SetRelativeLocation(FVector(0.0, 0.0, 80.0));
 	Light->SetLightColor(FLinearColor(1.0f, 0.55f, 0.25f));
 	Light->SetAttenuationRadius(900.0f);
 	Light->SetIntensity(0.0f);
-
-	Flames = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Flames"));
-	Flames->SetupAttachment(RootComponent);
-	Flames->bAutoActivate = false;
-
-	SmokeFx = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Smoke"));
-	SmokeFx->SetupAttachment(RootComponent);
-	SmokeFx->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SmokeFx->bAutoActivate = false;
 }
 
 void AExploredFire::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (UStaticMesh* Mesh = Cast<UStaticMesh>(FSoftObjectPath(ExploredFireDetail::HearthMeshPath).TryLoad()))
+	// Encendida con la receta (sin colocación de island_props.json): se viste como la hoguera fija.
+	if (!bConfigured)
 	{
-		Hearth->SetStaticMesh(Mesh);
+		ConfigureStandalone(NAME_None, ExploredFireDetail::FireType, FString());
 	}
-	State.Level = static_cast<EFireLevel>(FMath::Clamp(InitialLevel, 0, static_cast<int32>(EFireLevel::Count) - 1));
 	UpdateShelter();
-	RefreshVisuals();
+	Refresh();
+}
+
+void AExploredFire::OnConfigured(const FIslandProp& Prop, const FIslandPropType& Type)
+{
+	bConfigured = true;
+	UpdateShelter();
+}
+
+void AExploredFire::UpdateShelter()
+{
+	bSheltered = ExploredIslandWeather::IsSheltered(this, GetActorLocation());
+}
+
+void AExploredFire::Refresh()
+{
+	SetActorTickEnabled(State.bLit || (State.Job.IsActive() && !State.Job.IsDone()));
+	if (Light)
+	{
+		Light->SetIntensity(State.bLit ? MaxLightIntensity : 0.0f);
+	}
+}
+
+void AExploredFire::Ignite()
+{
+	State = FCampfireModel::Ignite(State, ExploredIslandData::Get().Campfire);
+	UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s encendida (%.0f s)"), *GetName(), State.BurnSeconds);
+	Refresh();
+}
+
+void AExploredFire::RestoreCampfire(const FCampfireState& InState)
+{
+	State = InState;
+	Refresh();
+}
+
+float AExploredFire::GetHeatAt(const FVector& WorldLocation) const
+{
+	return FCampfireModel::HeatAt(State, ExploredIslandData::Get().Campfire, FVector::Dist(GetActorLocation(), WorldLocation) / 100.0f);
 }
 
 void AExploredFire::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	ShelterTimer -= DeltaSeconds;
-	if (ShelterTimer <= 0.0f)
-	{
-		ShelterTimer = ExploredFireDetail::ShelterCheckSeconds;
-		UpdateShelter();
-	}
-
 	SimulationTimer += DeltaSeconds;
-	if (SimulationTimer >= SimulationIntervalSeconds)
-	{
-		const float Hours = ConsumeGameHours(SimulationTimer);
-		SimulationTimer = 0.0f;
-		Simulate(Hours);
-	}
-}
-
-float AExploredFire::ConsumeGameHours(float DeltaSeconds)
-{
-	const UWorld* World = GetWorld();
-	const UTimeOfDaySubsystem* Clock = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
-	if (!Clock)
-	{
-		return DeltaSeconds * FallbackGameHoursPerSecond;
-	}
-	const float TotalDays = Clock->GetTotalDays();
-	const float Hours = LastTotalDays < 0.0f ? 0.0f : (TotalDays - LastTotalDays) * 24.0f;
-	LastTotalDays = TotalDays;
-	return FMath::Clamp(Hours, 0.0f, ExploredFireDetail::MaxCatchUpHours);
-}
-
-void AExploredFire::Simulate(float GameHours)
-{
-	if (GameHours <= 0.0f)
+	if (SimulationTimer < SimulationIntervalSeconds)
 	{
 		return;
 	}
-	TArray<EFireEvent> Events;
-	FFireModel::Tick(State, FFireData::Default(), MakeFireEnvironment(), GameHours, Events);
-	if (Pot.Status == EPotStatus::Cooking || Pot.Status == EPotStatus::Done)
+	const float Step = SimulationTimer;
+	SimulationTimer = 0.0f;
+	TArray<ECampfireEvent> Events;
+	const bool bExposed = !bSheltered && ExploredIslandWeather::IsCycloneWall(this);
+	State = FCampfireModel::Tick(State, Step, bExposed, Events);
+	for (const ECampfireEvent Event : Events)
 	{
-		FCookingModel::TickPot(Pot, FCookingData::Default(), MakeCookEnvironment(), GameHours * 60.0f);
+		UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s: %s"), *GetName(),
+			Event == ECampfireEvent::JobDone ? TEXT("listo para recoger") : Event == ECampfireEvent::Quenched ? TEXT("apagada por el ciclón") : TEXT("consumida"));
 	}
-	ReportEvents(Events);
-	RefreshVisuals();
+	if (Events.Num() > 0)
+	{
+		Refresh();
+	}
 }
 
-void AExploredFire::UpdateShelter()
+TArray<FName> AExploredFire::GetAvailableActions(AActor* InInstigator) const
 {
-	UWorld* World = GetWorld();
-	if (!World)
+	using namespace ExploredFireDetail;
+	TArray<FName> Actions;
+	const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
+	if (!Survivor)
 	{
-		return;
+		return Actions;
 	}
-	const FVector Start = GetActorLocation() + FVector(0.0f, 0.0f, 100.0f);
-	const FVector End = Start + FVector(0.0f, 0.0f, ShelterTraceMeters * 100.0f);
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(ExploredFireShelter), false, this);
-	FHitResult Hit;
-	bSheltered = World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
-}
-
-FFireEnvironment AExploredFire::MakeFireEnvironment() const
-{
-	FFireEnvironment Env;
-	Env.bSheltered = bSheltered;
-	const UWorld* World = GetWorld();
-	if (const UExploredWeatherSubsystem* Weather = World ? World->GetSubsystem<UExploredWeatherSubsystem>() : nullptr)
+	const FIslandData& Data = ExploredIslandData::Get();
+	const FBackpackState& Pack = Survivor->GetBackpack();
+	if (State.Job.IsDone())
 	{
-		Env.Rain = Weather->GetCurrent().Rain;
-		Env.Wind = Weather->GetCurrent().Wind;
+		Actions.Add(ActCollect);
 	}
-	return Env;
-}
-
-FCookEnvironment AExploredFire::MakeCookEnvironment() const
-{
-	const FFireEnvironment FireEnv = MakeFireEnvironment();
-	FCookEnvironment Env;
-	Env.FireHeat = State.Heat;
-	Env.Smoke = State.Smoke;
-	Env.FireLevel = State.Level;
-	Env.Rain = FireEnv.Rain;
-	Env.Wind = FireEnv.Wind;
-	Env.bSheltered = FireEnv.bSheltered;
-	const UWorld* World = GetWorld();
-	const UTimeOfDaySubsystem* Clock = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
-	const UExploredWeatherSubsystem* Weather = World ? World->GetSubsystem<UExploredWeatherSubsystem>() : nullptr;
-	if (Clock && !Clock->IsNight())
+	if (!State.bLit)
 	{
-		Env.Sun = Weather ? 1.0f - Weather->GetCurrent().CloudCover : 1.0f;
-	}
-	return Env;
-}
-
-void AExploredFire::ReportEvents(const TArray<EFireEvent>& Events)
-{
-	// Sonidos y textos llegarán con el audio y la UI; aquí, punto de reaparición y autoguardado.
-	for (const EFireEvent Event : Events)
-	{
-		UE_LOG(LogExplored, Verbose, TEXT("%s: suceso de fuego %d"), *GetName(), static_cast<int32>(Event));
-		if (Event != EFireEvent::Ignited)
+		if (const FRecipeDef* Recipe = Data.Recipes.Find(CampfireRecipe))
 		{
-			continue;
+			if (FRecipeBook::Check(*Recipe, Pack, ECraftPlace::Ground, {}) == ECraftResult::Ok)
+			{
+				Actions.Add(ActLight);
+			}
 		}
-		// El último fuego encendido es el punto de reaparición (AExploredGameMode::HandlePlayerDeath).
-		UWorld* World = GetWorld();
-		if (AExploredGameMode* GameMode = World ? World->GetAuthGameMode<AExploredGameMode>() : nullptr)
+		return Actions;
+	}
+	if (!State.Job.IsActive())
+	{
+		for (const TPair<FName, FName>& Pair : { TPair<FName, FName>(ActCook, GrillRecipe), TPair<FName, FName>(ActBoil, OilRecipe) })
 		{
-			GameMode->NotifyFireLit(this);
-		}
-		// Encender una hoguera autoguarda, con el intervalo mínimo de FSaveSlotPolicy.
-		UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
-		if (UExploredSaveSubsystem* Save = GameInstance ? GameInstance->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
-		{
-			Save->RequestAutosave(ESaveTrigger::Campfire);
+			const FRecipeDef* Recipe = Data.Recipes.Find(Pair.Value);
+			if (Recipe && FRecipeBook::Check(*Recipe, Pack, ECraftPlace::Fire, {}) == ECraftResult::Ok)
+			{
+				Actions.Add(Pair.Key);
+			}
 		}
 	}
-}
-
-void AExploredFire::RefreshVisuals()
-{
-	if (Light)
+	for (const TPair<FName, float>& Fuel : Data.Campfire.FuelSeconds)
 	{
-		Light->SetIntensity(MaxLightIntensity * FMath::Clamp(State.Heat, 0.0f, 1.2f));
-	}
-	if (Flames)
-	{
-		const bool bFlames = State.Status == EFireStatus::Burning;
-		if (Flames->IsActive() != bFlames)
+		if (FBackpackModel::Count(Pack, Fuel.Key) > 0)
 		{
-			Flames->SetActive(bFlames);
+			Actions.Add(ActFeed);
+			break;
 		}
 	}
-	if (SmokeFx)
-	{
-		const bool bSmoke = State.Smoke > 0.1f;
-		if (SmokeFx->IsActive() != bSmoke)
-		{
-			SmokeFx->SetActive(bSmoke);
-		}
-	}
+	return Actions;
 }
-
-float AExploredFire::GetHeatAt(const FVector& WorldLocation) const
-{
-	return FFireModel::HeatAtDistance(State, FVector::Dist(WorldLocation, GetActorLocation()) / 100.0f);
-}
-
-bool AExploredFire::UpgradeLevel(EFireLevel NewLevel)
-{
-	const bool bUpgraded = FFireModel::Upgrade(State, NewLevel);
-	RefreshVisuals();
-	return bUpgraded;
-}
-
-void AExploredFire::RestoreState(const FFireState& InState, const FCookingPot& InPot)
-{
-	State = InState;
-	Pot = InPot;
-	PotVesselId = Pot.Status == EPotStatus::Empty ? FName(NAME_None) : Pot.VesselId;
-	RefreshVisuals();
-}
-
-void AExploredFire::RestoreState(const FFireState& InState, const FCookingPot& InPot, const FItemInstance& InVesselItem)
-{
-	RestoreState(InState, InPot);
-	PotVesselItem = InVesselItem;
-	// Una olla vacía al fuego también cuenta: sin cocción, el utensilio manda.
-	if (PotVesselItem.IsValid() && PotVesselId.IsNone())
-	{
-		PotVesselId = FCookingData::Default().VesselForItem(PotVesselItem.DefinitionId);
-	}
-	// Tras cargar, el tiempo se vuelve a medir desde ahora (no se simula el salto).
-	LastTotalDays = -1.0f;
-}
-
-// --- Interacción -------------------------------------------------------------
 
 void AExploredFire::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const
 {
-	if (Pot.Status == EPotStatus::Done || Pot.Status == EPotStatus::Burnt)
+	// Sin instigador: lo que la hoguera admite en su estado, para el texto del foco.
+	if (State.Job.IsDone())
 	{
-		OutVerbs.Add(NSLOCTEXT("Explored", "Fire_Collect", "Retirar la comida"));
+		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActCollect));
 	}
-	if (State.Status != EFireStatus::Burning && State.FuelHours > 0.0f)
+	else if (!State.bLit)
 	{
-		OutVerbs.Add(State.Status == EFireStatus::Embers
-			? NSLOCTEXT("Explored", "Fire_Revive", "Avivar las brasas")
-			: NSLOCTEXT("Explored", "Fire_Ignite", "Encender"));
+		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActLight));
 	}
-	if (OutVerbs.Num() < 3)
+	else
 	{
-		OutVerbs.Add(NSLOCTEXT("Explored", "Fire_AddFuel", "Echar al fuego"));
+		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActCook));
+		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActBoil));
+		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActFeed));
 	}
 }
 
 bool AExploredFire::CanInteract_Implementation(AActor* InInstigator) const
 {
-	return InInstigator != nullptr;
+	const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
+	return Survivor && !Survivor->IsBusy();
 }
 
 void AExploredFire::Interact_Implementation(AActor* InInstigator)
 {
-	UCarryComponent* Carry = InInstigator ? InInstigator->FindComponentByClass<UCarryComponent>() : nullptr;
-	if (!Carry)
+	const TArray<FName> Actions = GetAvailableActions(InInstigator);
+	if (Actions.Num() > 0)
 	{
-		return;
+		PerformAction(InInstigator, Actions[0]);
 	}
-	if (Pot.Status == EPotStatus::Done || Pot.Status == EPotStatus::Burnt)
+	else if (UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator))
 	{
-		CollectPot();
-		return;
-	}
-
-	const FFireData& FireData = FFireData::Default();
-	const FCookingData& CookData = FCookingData::Default();
-	for (const EHand Hand : {EHand::Right, EHand::Left})
-	{
-		const FItemInstance* Held = Carry->GetHandItemPtr(Hand);
-		if (!Held || !Held->IsValid())
-		{
-			continue;
-		}
-		const FName ItemId = Held->DefinitionId;
-
-		// Encender tiene prioridad: una rama seca en la mano con el fuego apagado es un arco de
-		// fuego. Las brasas no se encienden: se avivan echando combustible.
-		const FIgnitionDef* Ignition = FireData.FindIgnitionByTool(ItemId);
-		if (Ignition && State.Status == EFireStatus::Unlit && State.FuelHours > 0.0f)
-		{
-			TryIgniteWith(*Carry, Hand, *Ignition);
-			return;
-		}
-		if (FireData.FindFuel(ItemId))
-		{
-			TryAddFuel(*Carry, Hand, ItemId);
-			return;
-		}
-		const FName VesselId = CookData.VesselForItem(ItemId);
-		if (!VesselId.IsNone() && VesselId != ExploredFireDetail::SpitVesselId)
-		{
-			if (TryPlaceVessel(*Carry, Hand, VesselId))
-			{
-				return;
-			}
-		}
-		if (TryAddIngredient(*Carry, Hand, ItemId))
-		{
-			return;
-		}
-	}
-
-	// Nada que hacer con lo que lleva en las manos: si hay una olla vacía al fuego, se la devuelve.
-	if (Pot.Status == EPotStatus::Empty && !PotVesselId.IsNone())
-	{
-		CollectPot();
+		Survivor->ShowMessage(State.bLit ? LOCTEXT("FireNothing", "No llevas nada para el fuego")
+			: LOCTEXT("FireNeedsWood", "Para encenderla: 3 de leña y el cuchillo"));
 	}
 }
 
-bool AExploredFire::TryIgniteWith(UCarryComponent& Carry, EHand Hand, const FIgnitionDef& Ignition)
+bool AExploredFire::PerformAction(AActor* InInstigator, FName Action)
 {
-	TArray<EFireEvent> Events;
-	const FIgnitionResult Result = FFireModel::TryIgnite(State, FFireData::Default(), Ignition.Method, MakeFireEnvironment(), FMath::FRand(), Events);
-	if (Result.bConsumedTool)
-	{
-		FItemInstance Used;
-		Carry.TakeOneFromHand(Hand, Used);
-	}
-	ReportEvents(Events);
-	RefreshVisuals();
-	return Result.bLit;
-}
-
-bool AExploredFire::TryAddFuel(UCarryComponent& Carry, EHand Hand, FName ItemId)
-{
-	TArray<EFireEvent> Events;
-	if (!FFireModel::AddFuel(State, FFireData::Default(), ItemId, Events))
+	using namespace ExploredFireDetail;
+	UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
+	if (!Survivor || Survivor->IsBusy())
 	{
 		return false;
 	}
-	FItemInstance Burned;
-	Carry.TakeOneFromHand(Hand, Burned);
-	ReportEvents(Events);
-	RefreshVisuals();
-	return true;
-}
-
-bool AExploredFire::TryPlaceVessel(UCarryComponent& Carry, EHand Hand, FName VesselId)
-{
-	if (!PotVesselId.IsNone() || Pot.Status != EPotStatus::Empty)
-	{
-		return false;
-	}
-	FItemInstance Vessel;
-	if (!Carry.TakeOneFromHand(Hand, Vessel))
-	{
-		return false;
-	}
-	PotVesselId = VesselId;
-	PotVesselItem = Vessel;
-	return true;
-}
-
-bool AExploredFire::TryAddIngredient(UCarryComponent& Carry, EHand Hand, FName ItemId)
-{
-	const FCookingData& Data = FCookingData::Default();
-	TArray<FName> Ids = Pot.IngredientIds;
-	Ids.Add(ItemId);
-	const TArray<FCookIngredient> Ingredients = BuildIngredients(Ids);
-
-	// Técnica según el utensilio: en olla se hierve si hay receta y si no se guisa; sin olla,
-	// el horno hornea y el resto asa en el espeto.
-	TArray<ECookTechnique> Candidates;
-	FName Vessel = PotVesselId;
-	if (!Vessel.IsNone())
-	{
-		Candidates = {ECookTechnique::Boil, ECookTechnique::Stew};
-	}
-	else
-	{
-		Vessel = ExploredFireDetail::SpitVesselId;
-		if (State.Level == EFireLevel::HornoArcilla)
-		{
-			Candidates.Add(ECookTechnique::Bake);
-		}
-		Candidates.Add(ECookTechnique::Roast);
-	}
-
-	for (const ECookTechnique Technique : Candidates)
-	{
-		const bool bHasRecipe = FCookingModel::FindRecipe(Data, Technique, Vessel, Ingredients, State.Level) != nullptr;
-		if (!bHasRecipe && Technique != Data.Improvised.Technique)
-		{
-			continue;
-		}
-		FCookingPot NewPot;
-		FString Reason;
-		if (!FCookingModel::StartPot(NewPot, Data, Technique, Vessel, Ingredients, State.Level, Reason))
-		{
-			UE_LOG(LogExplored, Verbose, TEXT("%s: no se cocina %s (%s)"), *GetName(), *ItemId.ToString(), *Reason);
-			continue;
-		}
-		FItemInstance Taken;
-		if (!Carry.TakeOneFromHand(Hand, Taken))
-		{
-			return false;
-		}
-		Pot = NewPot;
-		return true;
-	}
+	if (Action == ActCollect) { return this->Collect(*Survivor); }
+	if (Action == ActLight) { return LightWithRecipe(*Survivor); }
+	if (Action == ActCook) { return StartCooking(*Survivor, GrillRecipe); }
+	if (Action == ActBoil) { return StartCooking(*Survivor, OilRecipe); }
+	if (Action == ExploredFireDetail::ActFeed) { return this->Feed(*Survivor); }
+	Survivor->ReportCraft(ECraftResult::NotValid);
 	return false;
 }
 
-void AExploredFire::CollectPot()
+bool AExploredFire::LightWithRecipe(UExploredSurvivorComponent& Survivor)
 {
-	const FCookingData& Data = FCookingData::Default();
-	FCookedFood Food;
-	int32 Slot = 0;
-	if (FCookingModel::Collect(Pot, Data, Food))
+	const FIslandData& Data = ExploredIslandData::Get();
+	const FRecipeDef* Recipe = Data.Recipes.Find(ExploredFireDetail::CampfireRecipe);
+	if (State.bLit || !Recipe)
 	{
-		FItemInstance Result;
-		Result.DefinitionId = Food.ItemId;
-		Result.Count = Food.Count;
-		SpawnNearby(Result, Slot++);
+		return false;
 	}
-	if (!PotVesselId.IsNone() && PotVesselItem.IsValid())
+	const ECraftResult Checked = FRecipeBook::Check(*Recipe, Survivor.GetBackpack(), ECraftPlace::Ground, {});
+	if (Checked != ECraftResult::Ok)
 	{
-		// La olla de coco se gasta con cada uso; la vasija de barro no. Retirarla vacía no la gasta.
-		const FCookVesselDef* Vessel = Pot.Status == EPotStatus::Empty ? nullptr : Data.FindVessel(PotVesselId);
-		if (Vessel)
-		{
-			PotVesselItem.Durability -= FCookingModel::VesselWearPerUse(*Vessel);
-		}
-		if (PotVesselItem.Durability > 0.0f)
-		{
-			SpawnNearby(PotVesselItem, Slot++);
-		}
+		Survivor.ReportCraft(Checked);
+		return false;
 	}
-	Pot = FCookingPot();
-	PotVesselId = NAME_None;
-	PotVesselItem = FItemInstance();
+	const TWeakObjectPtr<AExploredFire> WeakThis(this);
+	const TWeakObjectPtr<UExploredSurvivorComponent> WeakSurvivor(&Survivor);
+	return Survivor.StartTimedAction(Recipe->Seconds, [WeakThis, WeakSurvivor]()
+	{
+		AExploredFire* Self = WeakThis.Get();
+		UExploredSurvivorComponent* Who = WeakSurvivor.Get();
+		const FIslandData& Data = ExploredIslandData::Get();
+		const FRecipeDef* Recipe = Data.Recipes.Find(ExploredFireDetail::CampfireRecipe);
+		if (!Self || !Who || !Recipe || Self->State.bLit)
+		{
+			return;
+		}
+		FBackpackState Next;
+		const ECraftResult Result = FRecipeBook::Apply(*Recipe, Who->GetBackpack(), Data.Backpack, ECraftPlace::Ground, {}, Next);
+		Who->ReportCraft(Result);
+		if (Result == ECraftResult::Ok)
+		{
+			Who->ApplyBackpack(Next);
+			Self->Ignite();
+		}
+	});
 }
 
-void AExploredFire::SpawnNearby(const FItemInstance& Instance, int32 Slot)
+bool AExploredFire::StartCooking(UExploredSurvivorComponent& Survivor, FName RecipeId)
 {
-	UWorld* World = GetWorld();
-	if (!World || !Instance.IsValid())
+	const FIslandData& Data = ExploredIslandData::Get();
+	const FRecipeDef* Recipe = Data.Recipes.Find(RecipeId);
+	if (!Recipe)
 	{
-		return;
+		return false;
 	}
-	const float Angle = FMath::DegreesToRadians(35.0f * static_cast<float>(Slot));
-	const FVector Offset(FMath::Cos(Angle) * 90.0f, FMath::Sin(Angle) * 90.0f, 40.0f);
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	AExploredItemActor* Spawned = World->SpawnActor<AExploredItemActor>(AExploredItemActor::StaticClass(),
-		GetActorLocation() + Offset, FRotator::ZeroRotator, Params);
-	if (Spawned)
+	ECraftResult Checked = FRecipeBook::Check(*Recipe, Survivor.GetBackpack(), State.bLit ? ECraftPlace::Fire : ECraftPlace::Anywhere, {});
+	if (Checked == ECraftResult::Ok && State.Job.IsActive())
 	{
-		Spawned->InitializeFromInstance(Instance);
+		Checked = ECraftResult::StationNotReady;
 	}
+	if (Checked != ECraftResult::Ok)
+	{
+		Survivor.ReportCraft(Checked);
+		return false;
+	}
+	// Las entradas se gastan al ponerlas al fuego; la salida se queda en la hoguera hasta recogerla.
+	TMap<FName, int32> Inputs;
+	for (const FRecipeAmount& Input : Recipe->Inputs)
+	{
+		Inputs.FindOrAdd(Input.Item) += Input.Count;
+	}
+	FBackpackState Next;
+	FCampfireState NextFire;
+	if (FBackpackModel::Exchange(Survivor.GetBackpack(), Data.Backpack, Inputs, {}, Next) != EBackpackResult::Ok
+		|| !FCampfireModel::StartJob(State, Recipe->Id, Recipe->OutputItem, Recipe->OutputCount, Recipe->Seconds, NextFire))
+	{
+		Survivor.ReportCraft(ECraftResult::NotValid);
+		return false;
+	}
+	Survivor.ApplyBackpack(Next);
+	State = NextFire;
+	UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s: %s en marcha (%.0f s)"), *GetName(), *RecipeId.ToString(), Recipe->Seconds);
+	Refresh();
+	return true;
 }
 
-TArray<FCookIngredient> AExploredFire::BuildIngredients(const TArray<FName>& Ids) const
+bool AExploredFire::Feed(UExploredSurvivorComponent& Survivor)
 {
-	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
-	TArray<FCookIngredient> Out;
-	for (const FName& Id : Ids)
+	const FIslandData& Data = ExploredIslandData::Get();
+	for (const TPair<FName, float>& Fuel : Data.Campfire.FuelSeconds)
 	{
-		FCookIngredient& In = Out.Emplace_GetRef(Id);
-		FItemDefinition Definition;
-		if (Registry && Registry->FindDefinition(Id, Definition))
+		if (Survivor.GetItemCount(Fuel.Key) <= 0)
 		{
-			In.Tags = Definition.Tags.Array();
+			continue;
+		}
+		FCampfireState NextFire;
+		FBackpackState Next;
+		if (FCampfireModel::AddFuel(State, Data.Campfire, Fuel.Key, NextFire)
+			&& FBackpackModel::Remove(Survivor.GetBackpack(), Fuel.Key, 1, Next) == EBackpackResult::Ok)
+		{
+			Survivor.ApplyBackpack(Next);
+			State = NextFire;
+			UE_LOG(LogExplored, Display, TEXT("[Isla] Hoguera %s: +%s (%.0f s)"), *GetName(), *Fuel.Key.ToString(), State.BurnSeconds);
+			Refresh();
+			return true;
 		}
 	}
-	return Out;
+	Survivor.ReportCraft(ECraftResult::MissingInputs);
+	return false;
 }
+
+bool AExploredFire::Collect(UExploredSurvivorComponent& Survivor)
+{
+	FCampfireState NextFire;
+	FName Item;
+	int32 Count = 0;
+	if (!FCampfireModel::CollectJob(State, NextFire, Item, Count))
+	{
+		return false;
+	}
+	if (!Survivor.TryAddItem(Item, Count))
+	{
+		return false;
+	}
+	State = NextFire;
+	Refresh();
+	return true;
+}
+
+#undef LOCTEXT_NAMESPACE
