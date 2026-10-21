@@ -119,15 +119,22 @@ void UExploredWeatherFxSubsystem::UpdateRain(float Intensity, float Wind)
 	const FRainStreaksFrame Frame = Rain->Evaluate(Clock, Intensity, Wind, WeatherFxDetail::WindDir, Camera);
 	const FQuat Tilt = FRotationMatrix::MakeFromZ(Frame.Direction).ToQuat();
 	const FVector Scale(WeatherFxDetail::StreakThickness, WeatherFxDetail::StreakThickness, Frame.LengthCm / 100.0);
-	TArray<FTransform> Transforms;
-	Transforms.Init(FTransform(FQuat::Identity, Camera, FVector::ZeroVector), Rain->GetTuning().MaxStreaks);
-	for (int32 Index = 0; Index < Frame.Positions.Num(); ++Index)
+	// Las gotas sobrantes quedan con escala 0 en la cámara; el búfer no se realoja cada fotograma.
+	const int32 MaxStreaks = Rain->GetTuning().MaxStreaks;
+	const int32 Visible = FMath::Min(Frame.Positions.Num(), MaxStreaks);
+	RainTransforms.SetNumUninitialized(MaxStreaks, EAllowShrinking::No);
+	for (int32 Index = 0; Index < Visible; ++Index)
 	{
-		Transforms[Index] = FTransform(Tilt, Frame.Positions[Index], Scale);
+		RainTransforms[Index] = FTransform(Tilt, Frame.Positions[Index], Scale);
 	}
-	RainMesh->BatchUpdateInstancesTransforms(0, Transforms, true, true, true);
+	const FTransform HiddenStreak(FQuat::Identity, Camera, FVector::ZeroVector);
+	for (int32 Index = Visible; Index < MaxStreaks; ++Index)
+	{
+		RainTransforms[Index] = HiddenStreak;
+	}
+	RainMesh->BatchUpdateInstancesTransforms(0, RainTransforms, true, true, true);
 	RainMesh->SetVisibility(true);
-	LastStreaks = Frame.Positions.Num();
+	LastStreaks = Visible;
 }
 
 void UExploredWeatherFxSubsystem::BindFoliageWind()

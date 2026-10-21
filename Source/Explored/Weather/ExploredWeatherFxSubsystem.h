@@ -54,6 +54,9 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> FoliageWind;
 
+	/** Búfer de transformaciones de las gotas, reutilizado cada fotograma (MaxStreaks entradas). */
+	TArray<FTransform> RainTransforms;
+
 	double Clock = 0.0;
 	float BindTimer = 1.0f;
 	int32 BindPasses = 0;
