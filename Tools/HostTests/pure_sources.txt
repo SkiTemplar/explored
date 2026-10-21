@@ -47,3 +47,9 @@ WorldGen/GroundBranchModel.cpp
 WorldGen/CoconutPalmModel.cpp
 WorldGen/IslandPropsModel.cpp
 Debug/WalkProbeModel.cpp
+Items/BackpackModel.cpp
+Items/IslandConsumablesModel.cpp
+Crafting/RecipeBookModel.cpp
+Cooking/CampfireModel.cpp
+Weather/RainBarrelModel.cpp
+Fishing/CastFishingModel.cpp

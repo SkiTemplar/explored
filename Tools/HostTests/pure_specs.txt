@@ -38,3 +38,8 @@ Tests/CoconutPalmModelSpec.cpp
 Tests/PropertyFuzzSpec.cpp
 Tests/IslandPropsSpec.cpp
 Tests/WalkProbeSpec.cpp
+Tests/BackpackSpec.cpp
+Tests/RecipeBookSpec.cpp
+Tests/CampfireSpec.cpp
+Tests/RainBarrelSpec.cpp
+Tests/CastFishingSpec.cpp
