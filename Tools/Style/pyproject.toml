@@ -14,6 +14,7 @@ style-lamina = "explored_style.lamina:main"
 style-kit-k1 = "explored_style.kits.k1:main"
 style-kit-k2 = "explored_style.kits.k2:main"
 style-kit-k3 = "explored_style.kits.k3:main"
+style-kit-k5 = "explored_style.kits.k5:main"
 
 [build-system]
 requires = ["uv_build>=0.8.18,<0.9"]

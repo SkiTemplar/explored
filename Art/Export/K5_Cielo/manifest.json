@@ -1,0 +1,159 @@
+{
+  "kit": "K5 Cielo",
+  "generador": "uv run style-kit-k5",
+  "notas": {
+    "pivote": "nubes: centro de la base (z = 0 es la base plana); discos: centro del disco (z = 0)",
+    "discos": "en el plano XY con normal +Z: el motor orienta la Z local hacia la cámara y escala Ø = 2 · distancia · tan(diámetro angular / 2); sin sombra proyectada y material sin sombreado. La Y local es «arriba» en pantalla: la cara iluminada de la luna queda arriba a la izquierda",
+    "nubes": "MI_ToonNube recomendado: bandas suaves (0,86 / 0,93 / 1,0) para que el gris de la base no parezca roca; sin sombra proyectada o con sombra suave",
+    "propuesta_color": {
+      "blanco_nube": {
+        "hex": "#FAF7F2",
+        "sustituye": "papel #F6EEDB (algo amarillento para nube)"
+      },
+      "gris_lila": {
+        "hex": "#C7C3D6",
+        "sustituye": "acero #B7C1C8 (gris azulado, sin matiz lila)"
+      }
+    }
+  },
+  "mallas": [
+    {
+      "malla": "SM_Nube_A_01",
+      "fbx": "SM_Nube_A_01.fbx",
+      "uso": "nube de 3 lóbulos, 20 m de ancho",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 256,
+      "dimensiones_m": [
+        20.0,
+        11.645,
+        10.366
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "lobulos": 3
+    },
+    {
+      "malla": "SM_Nube_B_01",
+      "fbx": "SM_Nube_B_01.fbx",
+      "uso": "nube de 4 lóbulos, 30 m de ancho",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 296,
+      "dimensiones_m": [
+        30.0,
+        16.103,
+        15.02
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "lobulos": 4
+    },
+    {
+      "malla": "SM_Nube_C_01",
+      "fbx": "SM_Nube_C_01.fbx",
+      "uso": "nube de 5 lóbulos, 40 m de ancho",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 328,
+      "dimensiones_m": [
+        40.0,
+        16.506,
+        18.191
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "lobulos": 5
+    },
+    {
+      "malla": "SM_Nube_D_01",
+      "fbx": "SM_Nube_D_01.fbx",
+      "uso": "nube de 6 lóbulos, 50 m de ancho",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 360,
+      "dimensiones_m": [
+        50.0,
+        17.142,
+        19.494
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "lobulos": 6
+    },
+    {
+      "malla": "SM_Nube_E_01",
+      "fbx": "SM_Nube_E_01.fbx",
+      "uso": "nube de 7 lóbulos, 60 m de ancho",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 392,
+      "dimensiones_m": [
+        60.0,
+        17.982,
+        20.951
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "lobulos": 7
+    },
+    {
+      "malla": "SM_DiscoSol_01",
+      "fbx": "SM_DiscoSol_01.fbx",
+      "uso": "disco del sol, Ø 1 m, normal +Z",
+      "presupuesto": "64",
+      "tope_tris": 64,
+      "tris": 48,
+      "dimensiones_m": [
+        1.0,
+        1.0,
+        0.0
+      ],
+      "colores": [
+        "cielo_ocaso",
+        "laton"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_DiscoLuna_01",
+      "fbx": "SM_DiscoLuna_01.fbx",
+      "uso": "disco de la luna, Ø 1 m, normal +Z",
+      "presupuesto": "64",
+      "tope_tris": 64,
+      "tris": 48,
+      "dimensiones_m": [
+        1.0,
+        1.0,
+        0.0
+      ],
+      "colores": [
+        "acero",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    }
+  ]
+}
