@@ -12,6 +12,7 @@ uv run style-lamina                      # docs/v3/laminas/f2-pilotos.png (EEVEE
 uv run style-kit-k1                      # Art/Export/K1_Naturaleza/*.fbx + manifest.json + docs/v3/laminas/k1.png
 uv run style-kit-k2                      # Art/Export/K2_Estructuras/*.fbx + manifest.json + docs/v3/laminas/k2.png
 uv run style-kit-k3                      # Art/Export/K3_Objetos/*.fbx + docs/v3/laminas/k3.png
+uv run style-kit-k5                      # Art/Export/K5_Cielo/*.fbx + manifest.json + docs/v3/laminas/k5.png
 uv run check-style <fbx|blend...> --budget <tipo|número>
 uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 ```
@@ -148,6 +149,40 @@ el pez de fauna y 400 para la gaviota.
 | `SM_Lente_01` | 660 | 800 | 0,50 × 0,17 × 0,53 |
 | `SM_FaunaPez_01` | 164 | 200 | 0,32 × 0,05 × 0,12 |
 | `SM_FaunaGaviota_01` | 336 | 400 | 0,62 × 1,17 × 0,18 |
+
+## Kit K5 Cielo
+
+`uv run style-kit-k5` (`explored_style/kits/k5.py`; formas en `k5_formas.py`,
+lámina en `k5_lamina.py`) genera 5 nubes de cúmulo y los discos del sol y la
+luna, exporta `Art/Export/K5_Cielo/SM_<Nombre>_01.fbx` con `manifest.json` y
+renderiza `docs/v3/laminas/k5.png`: arriba, la vista desde la isla (ojos a
+1,7 m, base de las nubes a 120 m, a 270-520 m); abajo, la fila a la misma
+escala vista desde abajo. `--sin-lamina` solo exporta.
+
+| Malla | Tris | Tope | Medidas X × Y × Z (m) | Lóbulos |
+|---|---|---|---|---|
+| `SM_Nube_A_01` | 256 | 400 | 20,0 × 11,6 × 10,4 | 3 |
+| `SM_Nube_B_01` | 296 | 400 | 30,0 × 16,1 × 15,0 | 4 |
+| `SM_Nube_C_01` | 328 | 400 | 40,0 × 16,5 × 18,2 | 5 |
+| `SM_Nube_D_01` | 360 | 400 | 50,0 × 17,1 × 19,5 | 6 |
+| `SM_Nube_E_01` | 392 | 400 | 60,0 × 18,0 × 21,0 | 7 |
+| `SM_DiscoSol_01` | 48 | 64 | Ø 1,0, plano | — |
+| `SM_DiscoLuna_01` | 48 | 64 | Ø 1,0, plano | — |
+
+- Nubes: lóbulos cerrados y solapados (cúpulas de revolución con base
+  plana), pivote en el centro de la base. Arriba `papel`, abajo (base y
+  primer tramo de los lóbulos apoyados) `acero`. `check-style --budget 400`.
+- Discos: en el plano XY con normal +Z y pivote en el centro; el motor
+  orienta la Z local hacia la cámara (Y local arriba) y escala
+  Ø = 2 · distancia · tan(diámetro angular / 2). Sol: `laton` con halo
+  `cielo_ocaso`; luna: `papel` con media luna de sombra `acero` (luz arriba a
+  la izquierda). `check-style --budget 64`.
+- Material: las nubes piden una instancia `MI_ToonNube` con bandas suaves
+  (0,86 / 0,93 / 1,0; la lámina las usa) y los discos, sin sombreado; ni
+  nubes ni discos proyectan sombra.
+- Propuesta de color (no aplicada; `paleta.json` intacto): la paleta no tiene
+  blanco frío ni gris lila. Se usan `papel` y `acero`; si se amplía la paleta,
+  `blanco_nube #FAF7F2` y `gris_lila #C7C3D6` (detalle en `manifest.json`).
 
 ## Importación en Unreal 5.6
 
