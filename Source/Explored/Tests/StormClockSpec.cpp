@@ -42,7 +42,7 @@ void FStormClockSpec::Define()
 		It(TEXT("da los hPa de la tabla del GDD en cada punto"), [this]()
 		{
 			const FPressureCase Table[] = {{1, 7.0, 1014.0f}, {1, 15.0, 1010.0f}, {2, 6.0, 1008.0f}, {2, 18.0, 998.0f}, {2, 19.0, 990.0f},
-				{2, 22.0, 965.0f}, {2, 23.75, 965.0f}, {3, 2.0, 995.0f}, {3, 6.0, 1012.0f}};
+				{2, 22.0, 965.0f}, {2, 22.0 + FStormClockConfig::EyeHours, 965.0f}, {3, 2.0, 995.0f}, {3, 6.0, 1012.0f}};
 			for (const FPressureCase& C : Table)
 			{
 				TestEqual(FString::Printf(TEXT("D%d %.2f h"), C.Day, C.Hour), Clock.PressureAt(At(C.Day, C.Hour)), C.Hpa, 1.0e-3f);
@@ -95,7 +95,8 @@ void FStormClockSpec::Define()
 				{1, 17.0 - Eps, EStormState::Squall}, {1, 17.0, EStormState::Clear}, {2, 6.0 - Eps, EStormState::Clear},
 				{2, 6.0, EStormState::HighClouds}, {2, 18.0 - Eps, EStormState::HighClouds}, {2, 18.0, EStormState::SeaClosed},
 				{2, 19.0, EStormState::CycloneWall1}, {2, 22.0 - Eps, EStormState::CycloneWall1}, {2, 22.0, EStormState::CycloneEye},
-				{2, 23.75, EStormState::CycloneWall2}, {3, 2.0 - Eps, EStormState::CycloneWall2}, {3, 2.0, EStormState::Clear},
+				{2, 22.0 + FStormClockConfig::EyeHours - Eps, EStormState::CycloneEye},
+				{2, 22.0 + FStormClockConfig::EyeHours, EStormState::CycloneWall2}, {3, 2.0 - Eps, EStormState::CycloneWall2}, {3, 2.0, EStormState::Clear},
 				{3, 20.0, EStormState::Clear}};
 			for (const FStateCase& C : Table)
 			{
@@ -103,7 +104,7 @@ void FStormClockSpec::Define()
 			}
 		});
 
-		It(TEXT("el ciclón dura 3 h de muro 1, 1,75 h de ojo y 2,25 h de muro 2"), [this]()
+		It(TEXT("el ciclón dura 3 h de muro 1, 65 s reales de ojo y el muro 2 hasta las 02:00"), [this]()
 		{
 			double Wall1 = 0.0;
 			double Eye = 0.0;
@@ -116,8 +117,9 @@ void FStormClockSpec::Define()
 				Wall2 += W.State == EStormState::CycloneWall2 ? Length : 0.0;
 			}
 			TestEqual(TEXT("Muro 1"), Wall1, 3.0);
-			TestEqual(TEXT("Ojo"), Eye, 1.75);
-			TestEqual(TEXT("Muro 2"), Wall2, 2.25);
+			TestEqual(TEXT("Ojo (s reales)"), Eye * FStormClockConfig::RealSecondsPerHour, 65.0, 1e-6);
+			TestEqual(TEXT("Muro 2"), Wall2, 4.0 - FStormClockConfig::EyeHours, 1e-9);
+			TestEqual(TEXT("1 h = 45 s"), FStormClockConfig::RealSecondsPerHour, 45.0);
 			TestTrue(TEXT("Ojo es ciclón"), Clock.IsCyclone(At(2, 23.0)));
 			TestFalse(TEXT("Mar cerrado aún no es ciclón"), Clock.IsCyclone(At(2, 18.5)));
 		});
@@ -179,7 +181,7 @@ void FStormClockSpec::Define()
 		It(TEXT("el ciclón llena el barril hasta 4 y lo demás rebosa"), [this]()
 		{
 			const float Charges = Clock.BarrelChargesBetween(At(2, 19.0), At(3, 2.0));
-			TestEqual(TEXT("Lluvia del ciclón (muros)"), Charges, 5.25f, 1.0e-4f);
+			TestEqual(TEXT("Lluvia del ciclón (muros)"), Charges, static_cast<float>(7.0 - FStormClockConfig::EyeHours), 1.0e-4f);
 			const FStormBarrelState Full = FStormClockModel::AddRain(FStormBarrelState(), Charges);
 			TestEqual(TEXT("Lleno"), Full.Charges, FStormClockModel::BarrelCapacity);
 			TestEqual(TEXT("Sin fracción"), Full.Partial, 0.0f);
@@ -246,6 +248,37 @@ void FStormClockSpec::Define()
 				TestTrue(TEXT("Sustituida"), Model.UsesFallback());
 				TestEqual(TEXT("Curva del GDD"), Model.PressureAt(At(2, 22.0)), 965.0f);
 			}
+		});
+	});
+
+	Describe(TEXT("aspecto del tiempo"), [this]()
+	{
+		It(TEXT("los muros dan mar 1, lluvia, viento y niebla; el ojo, calma sin lluvia"), [this]()
+		{
+			const FWeatherLook Wall = Clock.LookAt(At(2, 20.0));
+			TestEqual(TEXT("Mar del muro"), Wall.SeaState, 1.0f);
+			TestEqual(TEXT("Lluvia del muro"), Wall.Rain, Clock.GetConfig().CycloneRain);
+			TestTrue(TEXT("Niebla del muro"), Wall.Fog >= 0.5f);
+			TestEqual(TEXT("Barómetro"), Wall.Pressure, Clock.PressureAt(At(2, 20.0)));
+			const FWeatherLook Eye = Clock.LookAt(At(2, 22.5));
+			TestEqual(TEXT("Ojo sin lluvia"), Eye.Rain, 0.0f);
+			TestTrue(TEXT("Ojo con poco viento"), Eye.Wind < 0.2f);
+			TestTrue(TEXT("Ojo despejado"), Eye.CloudCover < 0.2f);
+		});
+
+		It(TEXT("el chubasco llueve y el día despejado no"), [this]()
+		{
+			TestEqual(TEXT("Chubasco"), Clock.LookAt(At(1, 15.5)).Rain, Clock.GetConfig().SquallRain);
+			const FWeatherLook Clear = Clock.LookAt(At(1, 9.0));
+			TestEqual(TEXT("Despejado sin lluvia"), Clear.Rain, 0.0f);
+			TestTrue(TEXT("Mar en calma"), Clear.SeaState < 0.3f);
+			TestTrue(TEXT("Solo los muros son muro"), FStormClockModel::IsWall(EStormState::CycloneWall2)
+				&& !FStormClockModel::IsWall(EStormState::CycloneEye) && !FStormClockModel::IsWall(EStormState::SeaClosed));
+		});
+
+		It(TEXT("una lluvia no finita no llueve"), [this]()
+		{
+			TestEqual(TEXT("NaN"), FStormClockModel::LookFor(EStormState::CycloneWall1, std::numeric_limits<float>::quiet_NaN()).Rain, 0.0f);
 		});
 	});
 }

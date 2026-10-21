@@ -6,6 +6,7 @@
 #include "ExploredHUD.generated.h"
 
 class AExploredCharacter;
+class UExploredSurvivorComponent;
 
 /** Un aviso flotante (recogida, evento del cuerpo) con el tiempo que le queda en pantalla. */
 struct FExploredHUDNotification
@@ -17,10 +18,12 @@ struct FExploredHUDNotification
 };
 
 /**
- * HUD mínimo por Canvas (GDD §7): punto de mira, texto contextual del foco,
- * el nombre de lo que hay en cada mano y las necesidades del cuerpo (solo
- * cuando bajan: discreto por defecto, biblia §5.4 «HUD mínimo», GDD §8.3 «el
- * cuerpo como HUD»). Nada de widgets UMG.
+ * HUD de Baliza Siete por Canvas (GDD v3 §9.1, sin pulido final hasta F5): 4 barras del cuerpo
+ * abajo a la izquierda (sin números; parpadean bajo 25), 3 ranuras rápidas abajo en el centro,
+ * aviso de interacción «E · Verbo objeto» bajo la retícula de punto, objetivo arriba a la
+ * izquierda, «Día N · HH:MM» y el barómetro (si se lleva) arriba a la derecha, subtítulo de
+ * pensamiento o aviso sobre las barras, barra de progreso de acciones largas y el cartel «Día N»
+ * al empezar cada día. Las reglas y los textos están en FIslandHudModel. Nada de widgets UMG.
  */
 UCLASS()
 class EXPLORED_API AExploredHUD : public AHUD
@@ -44,17 +47,24 @@ public:
 	/** Página del cuaderno: título, texto de Roig y nota de Iria en un panel central. */
 	void ShowPage(const FText& Title, const FText& Body, const FText& Note, float DurationSeconds);
 
-	/** Cartel centrado (inicio de partida). */
+	/** Cartel centrado (inicio de partida, «Día N», desmayo). Si ya hay uno, espera su turno. */
 	void ShowCard(const FText& Text, float DurationSeconds);
 
 private:
 	AExploredCharacter* GetExploredCharacter() const;
 	void DrawReticle();
+	FString InteractKeyName() const;
 	void DrawContextPrompt(const AExploredCharacter& Character);
-	void DrawHandLabels(const AExploredCharacter& Character);
-	void DrawFishing(const AExploredCharacter& Character);
-	/** Anillos/barras discretos de hambre, sed, energía y temperatura, más avisos de heridas, quemaduras y escorbuto. */
-	void DrawBodyNeeds(const AExploredCharacter& Character);
+	/** Sed, hambre, energía y calor: icono y barra fina, abajo a la izquierda. */
+	void DrawBodyBars(const AExploredCharacter& Character);
+	void DrawQuickSlots(const AExploredCharacter& Character);
+	/** «Día N · HH:MM» y, si lleva el barómetro, «NNNN hPa ↓», arriba a la derecha. */
+	void DrawClock(const AExploredCharacter* Character);
+	float CurrentActionProgress(const AExploredCharacter& Character) const;
+	void DrawActionBar(const AExploredCharacter& Character);
+	/** Cartel «Día N» cuando cambia el día. */
+	void UpdateDayCard();
+	void EnsureBoundToSurvivor(const AExploredCharacter& Character);
 	void DrawNotifications();
 	/** Objetivo actual de la historia (objectives.json), una línea arriba a la izquierda (GDD v3 §9.1). */
 	void DrawObjective();
@@ -75,6 +85,9 @@ private:
 	UFUNCTION()
 	void HandleItemPickedUp(FText DisplayName);
 
+	UFUNCTION()
+	void HandleSurvivorMessage(const FText& Message);
+
 	TArray<FExploredHUDNotification> Notifications;
 	/** Subtítulos en cola: se muestra el primero. */
 	TArray<FExploredHUDNotification> Subtitles;
@@ -82,5 +95,9 @@ private:
 	FText PageTitle;
 	FText PageNote;
 	FExploredHUDNotification Card;
+	/** Carteles en espera mientras se ve el actual. */
+	TArray<FExploredHUDNotification> PendingCards;
+	int32 LastCardDay = 0;
 	bool bBoundToCarry = false;
+	TWeakObjectPtr<UExploredSurvivorComponent> BoundSurvivor;
 };

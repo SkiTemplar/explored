@@ -238,6 +238,43 @@ void FBeaconSaveSpec::Define()
 		LoadCollectedIds(Ids, Collected);
 		TestEqual(TEXT("Dos ids"), Collected.Num(), 2);
 	});
+
+	It(TEXT("el cuerpo y la balsa van y vuelven; lo incoherente se rechaza"), [this]()
+	{
+		using namespace ExploredSaveStates;
+		FBodyBars Bars;
+		Bars.Thirst = 12.5f;
+		Bars.Warmth = 60.0f;
+		FSaveArchive BodyAr;
+		SaveBodyBars(BodyAr, Bars, FName(TEXT("refugio_faro_volumen")));
+		FBodyBars LoadedBars;
+		FName Shelter;
+		TestTrue(TEXT("Cuerpo leído"), LoadBodyBars(BodyAr, LoadedBars, Shelter));
+		TestTrue(TEXT("Mismas barras"), LoadedBars == Bars);
+		TestEqual(TEXT("Mismo refugio"), Shelter, FName(TEXT("refugio_faro_volumen")));
+		FSaveArchive BadBody = BodyAr;
+		BadBody.Write(TEXT("hunger"), 140.0f);
+		TestFalse(TEXT("Barra fuera de rango"), LoadBodyBars(BadBody, LoadedBars, Shelter));
+		TestTrue(TEXT("Por defecto"), LoadedBars == FBodyBars());
+		TestFalse(TEXT("Vacío"), LoadBodyBars(FSaveArchive(), LoadedBars, Shelter));
+
+		FRaftSaveData Raft;
+		Raft.Site.LogsPlaced = 4;
+		Raft.Site.bBuilt = true;
+		Raft.bHasPose = true;
+		Raft.Location = FVector(12000.0, -300.0, 15.0);
+		Raft.YawDeg = 37.5f;
+		FSaveArchive RaftAr;
+		SaveRaft(RaftAr, Raft);
+		FRaftSaveData LoadedRaft;
+		TestTrue(TEXT("Balsa leída"), LoadRaft(RaftAr, LoadedRaft));
+		TestTrue(TEXT("Mismo sitio"), LoadedRaft.Site == Raft.Site);
+		TestTrue(TEXT("Misma posición"), LoadedRaft.bHasPose && LoadedRaft.Location.Equals(Raft.Location) && LoadedRaft.YawDeg == Raft.YawDeg);
+		FSaveArchive BadRaft = RaftAr;
+		BadRaft.Write(TEXT("logs"), 2);
+		TestFalse(TEXT("Atada con 2 troncos"), LoadRaft(BadRaft, LoadedRaft));
+		TestEqual(TEXT("Por hacer"), LoadedRaft.Site.LogsPlaced, 0);
+	});
 }
 
 #endif

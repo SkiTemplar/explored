@@ -211,6 +211,110 @@ namespace IslandDataDetail
 		}
 	}
 
+	TSharedPtr<FJsonObject> Child(const TSharedPtr<FJsonObject>& Obj, const TCHAR* Field)
+	{
+		const TSharedPtr<FJsonObject>* Out = nullptr;
+		return Obj.IsValid() && Obj->TryGetObjectField(Field, Out) && Out ? *Out : nullptr;
+	}
+
+	/** Barras de survival_needs.json: «needs» (inicio y pérdidas), umbrales, «faint» y «sleep». */
+	void ParseBody(FIslandData& Data, const TSharedPtr<FJsonObject>& Root, TArray<FString>& Errors)
+	{
+		FIslandBodyTuning Body = Data.Body;
+		const FJsonArray* Needs = nullptr;
+		if (Root->TryGetArrayField(TEXT("needs"), Needs))
+		{
+			for (const TSharedPtr<FJsonValue>& Value : *Needs)
+			{
+				const TSharedPtr<FJsonObject> Need = Value.IsValid() ? Value->AsObject() : nullptr;
+				FString Id;
+				if (!Need.IsValid() || !Need->TryGetStringField(TEXT("id"), Id))
+				{
+					continue;
+				}
+				if (Id == TEXT("sed"))
+				{
+					Body.Initial.Thirst = Number(Need, TEXT("initial"), Body.Initial.Thirst);
+					Body.ThirstLossPerMinute = Number(Need, TEXT("lossPerMinute"), Body.ThirstLossPerMinute);
+				}
+				else if (Id == TEXT("hambre"))
+				{
+					Body.Initial.Hunger = Number(Need, TEXT("initial"), Body.Initial.Hunger);
+					Body.HungerLossPerMinute = Number(Need, TEXT("lossPerMinute"), Body.HungerLossPerMinute);
+				}
+				else if (Id == TEXT("energia"))
+				{
+					Body.Initial.Energy = Number(Need, TEXT("initial"), Body.Initial.Energy);
+					Body.EnergyLossPerMinute = Number(Need, TEXT("lossPerMinute"), Body.EnergyLossPerMinute);
+				}
+				else if (Id == TEXT("calor"))
+				{
+					Body.Initial.Warmth = Number(Need, TEXT("initial"), Body.Initial.Warmth);
+					Body.NightWarmthLossPerMinute = Number(Need, TEXT("nightLossPerMinute"), Body.NightWarmthLossPerMinute);
+					Body.RainWarmthLossPerMinute = Number(Need, TEXT("rainLossPerMinute"), Body.RainWarmthLossPerMinute);
+					Body.FireWarmthGainPerMinute = Number(Need, TEXT("fireGainPerMinute"), Body.FireWarmthGainPerMinute);
+				}
+			}
+		}
+		Body.LowThreshold = Number(Root, TEXT("lowThreshold"), Body.LowThreshold);
+		Body.LowSpeedFactor = Number(Root, TEXT("lowSpeedFactor"), Body.LowSpeedFactor);
+		Body.WarningAt = Number(Root, TEXT("warningAt"), Body.WarningAt);
+		if (const TSharedPtr<FJsonObject> Faint = Child(Root, TEXT("faint")))
+		{
+			FBodyEventsTuning& E = Body.Events;
+			E.FaintSeconds = Number(Faint, TEXT("zeroSeconds"), E.FaintSeconds);
+			E.FaintHours = Number(Faint, TEXT("skipHours"), static_cast<float>(E.FaintHours));
+			E.WakeAfterFaint.Thirst = Number(Faint, TEXT("wakeThirst"), E.WakeAfterFaint.Thirst);
+			E.WakeAfterFaint.Hunger = Number(Faint, TEXT("wakeHunger"), E.WakeAfterFaint.Hunger);
+			E.WakeAfterFaint.Energy = Number(Faint, TEXT("wakeEnergy"), E.WakeAfterFaint.Energy);
+			E.WakeAfterFaint.Warmth = Number(Faint, TEXT("wakeWarmth"), E.WakeAfterFaint.Warmth);
+		}
+		if (const TSharedPtr<FJsonObject> Sleep = Child(Root, TEXT("sleep")))
+		{
+			FBodyEventsTuning& E = Body.Events;
+			E.SleepFromHour = Number(Sleep, TEXT("fromHour"), static_cast<float>(E.SleepFromHour));
+			E.SleepUntilHour = Number(Sleep, TEXT("toHour"), static_cast<float>(E.SleepUntilHour));
+			E.WakeHour = Number(Sleep, TEXT("wakeHour"), static_cast<float>(E.WakeHour));
+			E.SleepThirstDelta = Number(Sleep, TEXT("thirstDelta"), E.SleepThirstDelta);
+			E.SleepHungerDelta = Number(Sleep, TEXT("hungerDelta"), E.SleepHungerDelta);
+			E.SleepThirstWarning = Number(Sleep, TEXT("warnThirstBelow"), E.SleepThirstWarning);
+		}
+		if (!Body.IsValid())
+		{
+			Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));
+			return;
+		}
+		Data.Body = Body;
+	}
+
+	bool StateFromName(const FString& Name, EStormState& Out)
+	{
+		static const TCHAR* const Names[] = { TEXT("Clear"), TEXT("Squall"), TEXT("HighClouds"), TEXT("SeaClosed"),
+			TEXT("CycloneWall1"), TEXT("CycloneEye"), TEXT("CycloneWall2") };
+		for (int32 Index = 0; Index < UE_ARRAY_COUNT(Names); ++Index)
+		{
+			if (Name == Names[Index])
+			{
+				Out = static_cast<EStormState>(Index);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {"day": D, "hour": H} en horas absolutas desde el día 1 a las 00:00. */
+	double AbsHour(const TSharedPtr<FJsonObject>& Obj, double Default)
+	{
+		if (!Obj.IsValid())
+		{
+			return Default;
+		}
+		double Day = 0.0;
+		double Hour = 0.0;
+		return Obj->TryGetNumberField(TEXT("day"), Day) && Obj->TryGetNumberField(TEXT("hour"), Hour)
+			? FStormClockModel::ToAbsoluteHours(static_cast<int32>(Day), Hour) : Default;
+	}
+
 	void ParseNeeds(FIslandData& Data, const FString& Text, TArray<FString>& Errors)
 	{
 		const TSharedPtr<FJsonObject> Root = ParseObject(Text, TEXT("survival_needs.json"), Errors);
@@ -244,6 +348,7 @@ namespace IslandDataDetail
 		{
 			Data.Consumables = MoveTemp(Table);
 		}
+		ParseBody(Data, Root, Errors);
 		Data.Backpack.Slots = FMath::Max(1, static_cast<int32>(Number(Root, TEXT("backpackSlots"), static_cast<float>(Data.Backpack.Slots))));
 	}
 
@@ -304,6 +409,7 @@ FIslandData FIslandData::Defaults()
 	Data.Recipes = FRecipeBook::Default();
 	Data.Consumables = FIslandConsumables::Default();
 	Data.Campfire = FCampfireConfig::Default();
+	Data.Storm = FStormClockConfig::Gdd();
 	return Data;
 }
 
@@ -317,6 +423,78 @@ TArray<FString> FIslandData::ParseInto(FIslandData& InOut, const FString& ItemsJ
 	if (!FuelsJson.IsEmpty()) { ParseFuels(InOut, FuelsJson, Errors); }
 	if (!NeedsJson.IsEmpty()) { ParseNeeds(InOut, NeedsJson, Errors); }
 	if (!FishJson.IsEmpty()) { ParseFish(InOut, FishJson, Errors); }
+	return Errors;
+}
+
+TArray<FString> FIslandData::ParseStorm(FStormClockConfig& InOut, const FString& StormJson)
+{
+	using namespace IslandDataDetail;
+	TArray<FString> Errors;
+	if (StormJson.IsEmpty())
+	{
+		return Errors;
+	}
+	const TSharedPtr<FJsonObject> Root = ParseObject(StormJson, TEXT("storm_curve.json"), Errors);
+	if (!Root.IsValid())
+	{
+		return Errors;
+	}
+	FStormClockConfig Config = InOut;
+	const FJsonArray* Points = nullptr;
+	if (Root->TryGetArrayField(TEXT("points"), Points))
+	{
+		Config.Points.Reset();
+		for (const TSharedPtr<FJsonValue>& Value : *Points)
+		{
+			const TSharedPtr<FJsonObject> Obj = Value.IsValid() ? Value->AsObject() : nullptr;
+			FStormCurvePoint Point;
+			Point.Hour = AbsHour(Obj, -1.0);
+			Point.Hpa = Number(Obj, TEXT("hpa"), 0.0f);
+			Config.Points.Add(Point);
+		}
+	}
+	const FJsonArray* Windows = nullptr;
+	if (Root->TryGetArrayField(TEXT("windows"), Windows))
+	{
+		Config.Windows.Reset();
+		for (const TSharedPtr<FJsonValue>& Value : *Windows)
+		{
+			const TSharedPtr<FJsonObject> Obj = Value.IsValid() ? Value->AsObject() : nullptr;
+			FString StateName;
+			FStormWindow Window;
+			if (!Obj.IsValid() || !Obj->TryGetStringField(TEXT("state"), StateName) || !StateFromName(StateName, Window.State))
+			{
+				Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));
+				continue;
+			}
+			Window.StartHour = AbsHour(Obj, -1.0);
+			// Ventanas seguidas: un inicio a menos de 1 s de juego del final anterior se pega a él.
+			if (Config.Windows.Num() > 0 && FMath::Abs(Window.StartHour - Config.Windows.Last().EndHour) < 1.0 / 3600.0)
+			{
+				Window.StartHour = Config.Windows.Last().EndHour;
+			}
+			Window.EndHour = Window.StartHour + Number(Obj, TEXT("hours"), 0.0f);
+			Config.Windows.Add(Window);
+		}
+	}
+	if (const TSharedPtr<FJsonObject> Rain = Child(Root, TEXT("rain")))
+	{
+		Config.SquallRain = Number(Rain, TEXT("squall"), Config.SquallRain);
+		Config.CycloneRain = Number(Rain, TEXT("cyclone"), Config.CycloneRain);
+	}
+	if (const TSharedPtr<FJsonObject> Charges = Child(Root, TEXT("chargesPerHour")))
+	{
+		Config.SquallChargesPerHour = Number(Charges, TEXT("squall"), Config.SquallChargesPerHour);
+		Config.CycloneChargesPerHour = Number(Charges, TEXT("cyclone"), Config.CycloneChargesPerHour);
+	}
+	Config.RaftLastHour = AbsHour(Child(Root, TEXT("raftLast")), Config.RaftLastHour);
+	Config.ForcedReturnHour = AbsHour(Child(Root, TEXT("forcedReturn")), Config.ForcedReturnHour);
+	if (!Config.IsValid())
+	{
+		Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));
+		return Errors;
+	}
+	InOut = Config;
 	return Errors;
 }
 
@@ -336,7 +514,9 @@ void ExploredIslandData::Reload()
 	TUniquePtr<FIslandData> Data = MakeUnique<FIslandData>(FIslandData::Defaults());
 	const TArray<FString> Errors = FIslandData::ParseInto(*Data, ReadData(TEXT("items.json")), ReadData(TEXT("recipes.json")),
 		ReadData(TEXT("verbs.json")), ReadData(TEXT("fuels.json")), ReadData(TEXT("survival_needs.json")), ReadData(TEXT("fish.json")));
-	for (const FString& Error : Errors)
+	TArray<FString> AllErrors = Errors;
+	AllErrors.Append(FIslandData::ParseStorm(Data->Storm, ReadData(TEXT("storm_curve.json"))));
+	for (const FString& Error : AllErrors)
 	{
 		UE_LOG(LogExplored, Warning, TEXT("[Isla] %s (se usan los valores por defecto)"), *Error);
 	}

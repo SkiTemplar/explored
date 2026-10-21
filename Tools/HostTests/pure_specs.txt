@@ -45,3 +45,6 @@ Tests/RecipeBookSpec.cpp
 Tests/CampfireSpec.cpp
 Tests/RainBarrelSpec.cpp
 Tests/CastFishingSpec.cpp
+Tests/IslandBodySpec.cpp
+Tests/RaftSpec.cpp
+Tests/IslandHudSpec.cpp

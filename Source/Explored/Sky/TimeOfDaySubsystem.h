@@ -42,6 +42,8 @@ namespace ExploredSky
 /**
  * Reloj del mundo. Avanza el tiempo de juego y expone la hora, el día y la
  * fase lunar. El resto de sistemas (cielo, clima, fauna) leen de aquí.
+ * En Baliza Siete el día dura siempre 18 min reales (FStormClockConfig::DayLengthMinutes):
+ * los ajustes del jugador ya no lo cambian.
  */
 UCLASS()
 class EXPLORED_API UTimeOfDaySubsystem : public UTickableWorldSubsystem
@@ -52,8 +54,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
-	/** Toma la duración del día de los ajustes del jugador (Ajustes > Juego). */
-	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	/** Hora local en [0, 24). */
 	float GetHours() const { return Hours; }
@@ -69,14 +69,16 @@ public:
 	void SetDayLengthMinutes(float Minutes) { DayLengthMinutes = FMath::Max(1.0f, Minutes); }
 	float GetDayLengthMinutes() const { return DayLengthMinutes; }
 
-	/** Multiplicador temporal (dormir, depuración). */
-	void SetTimeScale(float Scale) { TimeScale = FMath::Max(0.0f, Scale); }
+	/** Multiplicador temporal (depuración: BalizaTimeScale). */
+	void SetTimeScale(float Scale) { TimeScale = FMath::IsFinite(Scale) ? FMath::Max(0.0f, Scale) : 1.0f; }
+	float GetTimeScale() const { return TimeScale; }
 
 	FOnNewDay OnNewDay;
 
 private:
-	float Hours = 7.5f;
-	int32 Day = 4;
-	float DayLengthMinutes = 40.0f;
+	/** Baliza Siete empieza el día 1 a las 07:00 y el día dura 18 min reales (GDD v3 §3). */
+	float Hours = 7.0f;
+	int32 Day = 1;
+	float DayLengthMinutes = 18.0f;
 	float TimeScale = 1.0f;
 };

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source": "Barómetro, chubasco y ciclón del GDD v3 §3 y §5.8. Curva fija, sin azar. FStormClockModel (Source/Explored/Weather/StormClockModel) la lee al empezar; si no es válida usa FStormClockConfig::Gdd(). Tools/DataCheck la compara con el C++.",
+  "units": {
+    "dayLengthMinutes": "minutos reales que dura un día de juego (24 h); 1 h de juego = dayLengthMinutes × 60 / 24 s",
+    "points": "lectura del barómetro: día (1-3), hora del día (0-24) y hPa; entre puntos se interpola",
+    "windows": "estado del cielo desde día/hora durante «hours» horas de juego; fuera de toda ventana, despejado",
+    "rain": "intensidad 0-1 del chubasco y de los muros del ciclón",
+    "chargesPerHour": "cargas de barril por hora de juego (el barril real cuenta segundos de lluvia: survival_needs.json rainBarrel)",
+    "raftLast": "desde aquí el mar está cerrado: no se embarca (D2 18:00)",
+    "forcedReturn": "si Iria sigue en el islote, fundido y vuelta a Playa Norte (D2 18:45)"
+  },
+  "dayLengthMinutes": 18,
+  "eyeRealSeconds": 65,
+  "points": [
+    { "day": 1, "hour": 7.0, "hpa": 1014 },
+    { "day": 1, "hour": 15.0, "hpa": 1010 },
+    { "day": 2, "hour": 6.0, "hpa": 1008 },
+    { "day": 2, "hour": 18.0, "hpa": 998 },
+    { "day": 2, "hour": 19.0, "hpa": 990 },
+    { "day": 2, "hour": 22.0, "hpa": 965 },
+    { "day": 2, "hour": 23.444444, "hpa": 965 },
+    { "day": 3, "hour": 2.0, "hpa": 995 },
+    { "day": 3, "hour": 6.0, "hpa": 1012 }
+  ],
+  "windows": [
+    { "state": "Squall", "day": 1, "hour": 15.0, "hours": 2.0 },
+    { "state": "HighClouds", "day": 2, "hour": 6.0, "hours": 12.0 },
+    { "state": "SeaClosed", "day": 2, "hour": 18.0, "hours": 1.0 },
+    { "state": "CycloneWall1", "day": 2, "hour": 19.0, "hours": 3.0 },
+    { "state": "CycloneEye", "day": 2, "hour": 22.0, "hours": 1.444444 },
+    { "state": "CycloneWall2", "day": 2, "hour": 23.444444, "hours": 2.555556 }
+  ],
+  "rain": { "squall": 0.6, "cyclone": 1.0 },
+  "chargesPerHour": { "squall": 1.0, "cyclone": 1.0 },
+  "raftLast": { "day": 2, "hour": 18.0 },
+  "forcedReturn": { "day": 2, "hour": 18.75 }
+}

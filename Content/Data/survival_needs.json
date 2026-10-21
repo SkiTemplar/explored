@@ -5,14 +5,15 @@
     "initial": "valor al empezar la partida",
     "lossPerMinute": "pérdida por minuto real despierta",
     "nightLossPerMinute": "pérdida de calor por minuto real de noche (20:00-06:00) fuera de refugio y de fuego",
-    "rainLossPerMinute": "pérdida de calor por minuto real bajo lluvia fuera de refugio",
+    "rainLossPerMinute": "pérdida de calor por minuto real bajo lluvia fuera de refugio (con lluvia de noche cuenta la mayor, no la suma)",
+    "fireGainPerMinute": "calor que da por minuto real una hoguera encendida a 4 m o menos",
     "consumables": "lo que suma o resta cada objeto al consumirlo; leaves = objeto que queda en la mochila"
   },
   "needs": [
     { "id": "sed", "nameEs": "Sed", "nameEn": "Thirst", "initial": 55, "lossPerMinute": 4.5 },
     { "id": "hambre", "nameEs": "Hambre", "nameEn": "Hunger", "initial": 70, "lossPerMinute": 2.5 },
     { "id": "energia", "nameEs": "Energía", "nameEn": "Energy", "initial": 70, "lossPerMinute": 3.0 },
-    { "id": "calor", "nameEs": "Calor", "nameEn": "Warmth", "initial": 100, "lossPerMinute": 0, "nightLossPerMinute": 3, "rainLossPerMinute": 4 }
+    { "id": "calor", "nameEs": "Calor", "nameEn": "Warmth", "initial": 100, "lossPerMinute": 0, "nightLossPerMinute": 3, "rainLossPerMinute": 4, "fireGainPerMinute": 25 }
   ],
   "lowThreshold": 25,
   "lowSpeedFactor": 0.8,

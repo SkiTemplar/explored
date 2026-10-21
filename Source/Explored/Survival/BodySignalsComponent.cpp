@@ -208,6 +208,10 @@ void UBodySignalsComponent::ApplyMoraleEvent(EMoraleEvent Event)
 
 void UBodySignalsComponent::ApplyFall(float HeightM, ELandingSurface Surface)
 {
+	if (!bSimulateLegacySurvival)
+	{
+		return;
+	}
 	TArray<ESurvivalEvent> Events;
 	FBodyModel::ApplyFall(State, HeightM, Surface, ModeSettings, Events);
 	Broadcast(Events);
@@ -243,6 +247,11 @@ FRotator UBodySignalsComponent::GetShiverRotation() const
 
 void UBodySignalsComponent::StepSurvival(float RealSeconds)
 {
+	// Baliza Siete: el cuerpo lo lleva UIslandBodyComponent (4 barras, sin muerte).
+	if (!bSimulateLegacySurvival)
+	{
+		return;
+	}
 	const float DeltaHours = RealSeconds * GameHoursPerSecond();
 	if (DeltaHours <= 0.0f || State.IsDead())
 	{
@@ -362,7 +371,7 @@ void UBodySignalsComponent::ApplyPostProcess()
 		BodyPostProcessMID->SetScalarParameterValue(ParamVignette, Signals.Vignette);
 		BodyPostProcessMID->SetVectorParameterValue(ParamVignetteTint, Signals.VignetteTint);
 		BodyPostProcessMID->SetScalarParameterValue(ParamBlur, Signals.Blur);
-		BodyPostProcessMID->SetScalarParameterValue(ParamDesaturation, Signals.Desaturation);
+		BodyPostProcessMID->SetScalarParameterValue(ParamDesaturation, FMath::Max(Signals.Desaturation, IslandDesaturation));
 		BodyPostProcessMID->SetScalarParameterValue(ParamBleedPulse, Signals.BleedingPulse);
 		BodyPostProcessMID->SetScalarParameterValue(ParamHeartRateHz, FBodySignalsModel::HeartRateBpm(Signals.Heartbeat) / 60.0f);
 		BodyPostProcessMID->SetScalarParameterValue(ParamHallucination, Signals.Hallucination);
@@ -379,7 +388,7 @@ void UBodySignalsComponent::ApplyPostProcess()
 	PP.bOverride_VignetteIntensity = true;
 	PP.VignetteIntensity = 0.4f + Signals.Vignette * 1.2f;
 	PP.bOverride_ColorSaturation = true;
-	const float Saturation = 1.0f - Signals.Desaturation * 0.8f;
+	const float Saturation = 1.0f - FMath::Max(Signals.Desaturation, IslandDesaturation) * 0.8f;
 	PP.ColorSaturation = FVector4(Saturation, Saturation, Saturation, 1.0f);
 	PP.bOverride_SceneColorTint = true;
 	PP.SceneColorTint = FLinearColor::LerpUsingHSV(FLinearColor::White, Signals.VignetteTint * 2.0f, Signals.Vignette * 0.15f);

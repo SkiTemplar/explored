@@ -545,6 +545,92 @@
 			]
 		},
 		{
+			"Namespace": "ExploredBody",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Despiertas en el refugio…"
+					},
+					"Translation": {
+						"Text": "Despiertas en el refugio…"
+					},
+					"Key": "FaintShelter"
+				},
+				{
+					"Source": {
+						"Text": "Despiertas en Playa Norte…"
+					},
+					"Translation": {
+						"Text": "Despiertas en Playa Norte…"
+					},
+					"Key": "FaintShore"
+				},
+				{
+					"Source": {
+						"Text": "Solo puedo dormir bajo techo."
+					},
+					"Translation": {
+						"Text": "Solo puedo dormir bajo techo."
+					},
+					"Key": "SleepNoRoof"
+				},
+				{
+					"Source": {
+						"Text": "Tienes demasiada sed para dormir"
+					},
+					"Translation": {
+						"Text": "Tienes demasiada sed para dormir"
+					},
+					"Key": "SleepThirsty"
+				},
+				{
+					"Source": {
+						"Text": "Aún no es hora de dormir."
+					},
+					"Translation": {
+						"Text": "Aún no es hora de dormir."
+					},
+					"Key": "SleepWrongHour"
+				},
+				{
+					"Source": {
+						"Text": "Estoy agotada."
+					},
+					"Translation": {
+						"Text": "Estoy agotada."
+					},
+					"Key": "WarnEnergy"
+				},
+				{
+					"Source": {
+						"Text": "Tengo hambre."
+					},
+					"Translation": {
+						"Text": "Tengo hambre."
+					},
+					"Key": "WarnHunger"
+				},
+				{
+					"Source": {
+						"Text": "Tengo sed."
+					},
+					"Translation": {
+						"Text": "Tengo sed."
+					},
+					"Key": "WarnThirst"
+				},
+				{
+					"Source": {
+						"Text": "Tengo frío."
+					},
+					"Translation": {
+						"Text": "Tengo frío."
+					},
+					"Key": "WarnWarmth"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredIsland",
 			"Children": [
 				{
@@ -820,6 +906,92 @@
 			]
 		},
 		{
+			"Namespace": "ExploredRaft",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Subir a la balsa"
+					},
+					"Translation": {
+						"Text": "Subir a la balsa"
+					},
+					"Key": "BoardRaft"
+				},
+				{
+					"Source": {
+						"Text": "Cruzas como puedes. Playa Norte."
+					},
+					"Translation": {
+						"Text": "Cruzas como puedes. Playa Norte."
+					},
+					"Key": "ForcedReturn"
+				},
+				{
+					"Source": {
+						"Text": "Hacen falta troncos: se traen de uno en uno."
+					},
+					"Translation": {
+						"Text": "Hacen falta troncos: se traen de uno en uno."
+					},
+					"Key": "NeedLog"
+				},
+				{
+					"Source": {
+						"Text": "Sin remo no voy a ningún sitio."
+					},
+					"Translation": {
+						"Text": "Sin remo no voy a ningún sitio."
+					},
+					"Key": "NeedPaddle"
+				},
+				{
+					"Source": {
+						"Text": "Dejar tronco ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Dejar tronco ({0}/{1})"
+					},
+					"Key": "PlaceLog"
+				},
+				{
+					"Source": {
+						"Text": "Cuatro troncos y dos cuerdas. Flota."
+					},
+					"Translation": {
+						"Text": "Cuatro troncos y dos cuerdas. Flota."
+					},
+					"Key": "RaftDone"
+				},
+				{
+					"Source": {
+						"Text": "El mar se cierra. A tierra."
+					},
+					"Translation": {
+						"Text": "El mar se cierra. A tierra."
+					},
+					"Key": "SeaClosedNoBoard"
+				},
+				{
+					"Source": {
+						"Text": "El mar se cierra."
+					},
+					"Translation": {
+						"Text": "El mar se cierra."
+					},
+					"Key": "SeaClosing"
+				},
+				{
+					"Source": {
+						"Text": "Atar balsa"
+					},
+					"Translation": {
+						"Text": "Atar balsa"
+					},
+					"Key": "TieRaft"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredUI",
 			"Children": [
 				{
@@ -986,69 +1158,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Sangrando"
-					},
-					"Translation": {
-						"Text": "Sangrando"
-					},
-					"Key": "CondBleeding"
-				},
-				{
-					"Source": {
-						"Text": "Fiebre"
-					},
-					"Translation": {
-						"Text": "Fiebre"
-					},
-					"Key": "CondFever"
-				},
-				{
-					"Source": {
-						"Text": "Herida infectada"
-					},
-					"Translation": {
-						"Text": "Herida infectada"
-					},
-					"Key": "CondInfection"
-				},
-				{
-					"Source": {
-						"Text": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar"
-					},
-					"Translation": {
-						"Text": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar"
-					},
-					"Key": "CondOpenWounds"
-				},
-				{
-					"Source": {
-						"Text": "Escorbuto"
-					},
-					"Translation": {
-						"Text": "Escorbuto"
-					},
-					"Key": "CondScurvy"
-				},
-				{
-					"Source": {
-						"Text": "Esguince"
-					},
-					"Translation": {
-						"Text": "Esguince"
-					},
-					"Key": "CondSprain"
-				},
-				{
-					"Source": {
-						"Text": "Quemadura solar"
-					},
-					"Translation": {
-						"Text": "Quemadura solar"
-					},
-					"Key": "CondSunBurn"
-				},
-				{
-					"Source": {
 						"Text": "Continuar"
 					},
 					"Translation": {
@@ -1202,24 +1311,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
-					},
-					"Translation": {
-						"Text": "Sedal fuera: {0} m · [R] recoger · [T] soltar"
-					},
-					"Key": "FishingLineOut"
-				},
-				{
-					"Source": {
-						"Text": "Esperando la picada… [F] recoger"
-					},
-					"Translation": {
-						"Text": "Esperando la picada… [F] recoger"
-					},
-					"Key": "FishingWaiting"
-				},
-				{
-					"Source": {
 						"Text": "Vegetación"
 					},
 					"Translation": {
@@ -1280,15 +1371,6 @@
 						"Text": "Agacharse manteniendo pulsado"
 					},
 					"Key": "HoldCrouch"
-				},
-				{
-					"Source": {
-						"Text": "[{Key}] {Actions}"
-					},
-					"Translation": {
-						"Text": "[{Key}] {Actions}"
-					},
-					"Key": "InteractPrompt"
 				},
 				{
 					"Source": {
@@ -1481,51 +1563,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Energía"
-					},
-					"Translation": {
-						"Text": "Energía"
-					},
-					"Key": "NeedEnergy"
-				},
-				{
-					"Source": {
-						"Text": "Hambre"
-					},
-					"Translation": {
-						"Text": "Hambre"
-					},
-					"Key": "NeedHunger"
-				},
-				{
-					"Source": {
-						"Text": "Sueño"
-					},
-					"Translation": {
-						"Text": "Sueño"
-					},
-					"Key": "NeedRest"
-				},
-				{
-					"Source": {
-						"Text": "Sed"
-					},
-					"Translation": {
-						"Text": "Sed"
-					},
-					"Key": "NeedThirst"
-				},
-				{
-					"Source": {
-						"Text": "Temperatura"
-					},
-					"Translation": {
-						"Text": "Temperatura"
-					},
-					"Key": "NeedWarmth"
-				},
-				{
-					"Source": {
 						"Text": "Nueva partida"
 					},
 					"Translation": {
@@ -1595,6 +1632,15 @@
 						"Text": "Pulsa una tecla..."
 					},
 					"Key": "PressAnyKey"
+				},
+				{
+					"Source": {
+						"Text": "Dormir"
+					},
+					"Translation": {
+						"Text": "Dormir"
+					},
+					"Key": "PromptSleep"
 				},
 				{
 					"Source": {

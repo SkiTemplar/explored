@@ -8,7 +8,6 @@
 #include "Internationalization/Internationalization.h"
 #include "Kismet/GameplayStatics.h"
 #include "Rendering/SlateRenderer.h"
-#include "Sky/TimeOfDaySubsystem.h"
 #include "Sound/AudioSettings.h"
 #include "Sound/SoundClass.h"
 #include "Sound/SoundMix.h"
@@ -188,10 +187,7 @@ void UExploredGameUserSettings::ApplyToWorld(const UObject* WorldContextObject)
 
 	ApplyAudioSettings(World);
 
-	if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
-	{
-		Time->SetDayLengthMinutes(DayLengthMinutes);
-	}
+	// La duración del día ya no es un ajuste: Baliza Siete la fija en 18 min (GDD v3 §3).
 	if (UExploredAmbienceSubsystem* Ambience = World->GetSubsystem<UExploredAmbienceSubsystem>())
 	{
 		Ambience->SetAmbienceVolume(GetAmbienceLayerGain());

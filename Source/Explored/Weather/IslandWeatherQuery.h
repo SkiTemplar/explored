@@ -5,13 +5,11 @@
 class UObject;
 
 /**
- * Consultas de hora y clima que necesitan los actores de la isla (pesca, fuego, barril). Hasta que
- * F3c cablee FStormClockModel, el «muro del ciclón» se lee del tiempo actual: ciclón activo en
- * UExploredWeatherSubsystem, o lluvia y viento por encima de CycloneThreshold.
+ * Consultas de hora y clima que necesitan los actores de la isla (pesca, fuego, barril, cuerpo). El
+ * «muro del ciclón» es el de FStormClockModel en UExploredWeatherSubsystem (GDD v3 §5.8).
  */
 namespace ExploredIslandWeather
 {
-	inline constexpr float CycloneThreshold = 0.8f;
 
 	/** Hora del día (0-24) de UTimeOfDaySubsystem; 12 si no hay reloj. */
 	EXPLORED_API float GetHour(const UObject* WorldContext);

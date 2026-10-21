@@ -50,6 +50,13 @@ struct EXPLORED_API FStormWindow
 
 struct EXPLORED_API FStormClockConfig
 {
+	/** 24 h de juego = 18 min reales (GDD §3): 1 h = 45 s. */
+	static constexpr double DayLengthMinutes = 18.0;
+	static constexpr double RealSecondsPerHour = DayLengthMinutes * 60.0 / 24.0;
+	/** Ojo del ciclón: 65 s reales (GDD §3 y §5.8). */
+	static constexpr double EyeRealSeconds = 65.0;
+	static constexpr double EyeHours = EyeRealSeconds / RealSecondsPerHour;
+
 	/** Puntos de la curva con horas estrictamente crecientes. */
 	TArray<FStormCurvePoint> Points;
 	/** Ventanas de estado sin solaparse; ninguna es Clear. */
@@ -81,6 +88,19 @@ struct EXPLORED_API FStormRain
 	bool bRaining = false;
 	float Intensity = 0.0f;       // 0-1
 	float ChargesPerHour = 0.0f;  // cargas de barril por hora de juego
+};
+
+/** Aspecto del tiempo (0-1 salvo la presión); mismos campos que FWeatherSample. */
+struct EXPLORED_API FWeatherLook
+{
+	float CloudCover = 0.15f;
+	float Rain = 0.0f;
+	float Wind = 0.2f;
+	float SeaState = 0.15f;
+	float Fog = 0.0f;
+	float Lightning = 0.0f;
+	float Temperature = 28.0f;
+	float Pressure = 1013.0f;
 };
 
 /** Barril de lluvia (GDD §5.5): 4 cargas; las fracciones se acumulan. */
@@ -135,6 +155,17 @@ public:
 
 	/** Saca una carga para rellenar la cantimplora; bOk falso si está vacío. */
 	static FStormBarrelState TakeCharge(const FStormBarrelState& Barrel, bool& bOutOk);
+
+	/** Muro 1 o muro 2 (viento, olas, lluvia, niebla, fuegos al aire libre apagados). */
+	static bool IsWall(EStormState State);
+
+	/**
+	 * Cielo, mar y lluvia de un estado (lo reparte UExploredWeatherSubsystem al océano, al cielo y
+	 * al ambiente). Pressure es la del barómetro en esa hora; los muros dan mar 1 (olas de 3-4 m)
+	 * y niebla; el ojo, calma con mar de fondo.
+	 */
+	FWeatherLook LookAt(double Hour) const;
+	static FWeatherLook LookFor(EStormState State, float RainIntensity);
 
 private:
 	float ChargesPerHourFor(EStormState State) const;

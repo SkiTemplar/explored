@@ -2,9 +2,11 @@
 
 #include "CoreMinimal.h"
 
+#include "Boats/RaftModel.h"
 #include "Items/BackpackModel.h"
 #include "Narrative/BeaconDirectorModel.h"
 #include "Save/SaveArchive.h"
+#include "Survival/BodyEventsModel.h"
 
 /**
  * Secciones de guardado de Baliza Siete (GDD v3 §5.10) que no son de un sistema heredado:
@@ -46,4 +48,22 @@ namespace ExploredSaveStates
 	/** Ids en orden alfabético: el mismo conjunto da siempre el mismo texto. */
 	EXPLORED_API void SaveCollectedIds(FSaveArchive& Ar, const TSet<FName>& Ids);
 	EXPLORED_API void LoadCollectedIds(const FSaveArchive& Ar, TSet<FName>& OutIds);
+
+	// --- Cuerpo de Iria (sección «body»): 4 barras y el último refugio ---------------
+	EXPLORED_API void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter);
+	/** false si falta una barra o alguna está fuera de [0, 100]: se queda el cuerpo por defecto. */
+	EXPLORED_API bool LoadBodyBars(const FSaveArchive& Ar, FBodyBars& OutBars, FName& OutLastShelter);
+
+	// --- Balsa (dentro de «island»): troncos, atada y dónde quedó ----------------------
+	struct EXPLORED_API FRaftSaveData
+	{
+		FRaftSiteState Site;
+		bool bHasPose = false;
+		/** Posición (cm) y rumbo de la balsa si ya existe. */
+		FVector Location = FVector::ZeroVector;
+		float YawDeg = 0.0f;
+	};
+	EXPLORED_API void SaveRaft(FSaveArchive& Ar, const FRaftSaveData& Raft);
+	/** false si el sitio no es coherente (FRaftModel::IsValid): balsa por hacer. */
+	EXPLORED_API bool LoadRaft(const FSaveArchive& Ar, FRaftSaveData& OutRaft);
 }

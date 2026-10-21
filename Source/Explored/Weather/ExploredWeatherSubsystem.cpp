@@ -4,6 +4,8 @@
 #include "Engine/World.h"
 
 #include "Audio/ExploredAmbienceSubsystem.h"
+#include "Explored.h"
+#include "Items/IslandDataLoader.h"
 #include "Ocean/ExploredOcean.h"
 #include "Sky/ExploredSkyController.h"
 #include "Sky/TimeOfDaySubsystem.h"
@@ -26,6 +28,63 @@ void UExploredWeatherSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	Collection.InitializeDependency<UTimeOfDaySubsystem>();
 	Model = MakeUnique<FWeatherModel>(WeatherSeed);
+	Storm = FStormClockModel(ExploredIslandData::Get().Storm);
+	if (Storm.UsesFallback())
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Clima] storm_curve.json no es válido: se usa la curva del GDD"));
+	}
+}
+
+double UExploredWeatherSubsystem::GetAbsHours() const
+{
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	return Time ? FStormClockModel::ToAbsoluteHours(Time->GetDay(), Time->GetHours()) : 0.0;
+}
+
+float UExploredWeatherSubsystem::GetPressureHpa() const
+{
+	return Storm.PressureAt(GetAbsHours());
+}
+
+EBarometerTrend UExploredWeatherSubsystem::GetPressureTrend() const
+{
+	return Storm.TrendAt(GetAbsHours());
+}
+
+bool UExploredWeatherSubsystem::IsCycloneWall() const
+{
+	return FStormClockModel::IsWall(StormState) || (ForcedState == EWeatherState::Cyclone);
+}
+
+namespace ExploredWeatherDetail
+{
+	FWeatherSample ToSample(const FWeatherLook& Look)
+	{
+		FWeatherSample Sample;
+		Sample.CloudCover = Look.CloudCover;
+		Sample.Rain = Look.Rain;
+		Sample.Wind = Look.Wind;
+		Sample.SeaState = Look.SeaState;
+		Sample.Fog = Look.Fog;
+		Sample.Lightning = Look.Lightning;
+		Sample.Temperature = Look.Temperature;
+		Sample.Pressure = Look.Pressure;
+		return Sample;
+	}
+
+	EWeatherState ToWeatherState(EStormState State)
+	{
+		switch (State)
+		{
+		case EStormState::Squall: return EWeatherState::Shower;
+		case EStormState::HighClouds: return EWeatherState::Cloudy;
+		case EStormState::SeaClosed: return EWeatherState::Gale;
+		case EStormState::CycloneWall1:
+		case EStormState::CycloneWall2: return EWeatherState::Cyclone;
+		default: return EWeatherState::Clear;
+		}
+	}
 }
 
 uint32 UExploredWeatherSubsystem::GetWorldWeatherSeed()
@@ -52,6 +111,10 @@ int32 UExploredWeatherSubsystem::GetCycloneCategory() const
 	{
 		return 0;
 	}
+	if (FStormClockModel::IsWall(StormState))
+	{
+		return 3;
+	}
 	const UWorld* World = GetWorld();
 	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
 	const int32 Planned = (Model && Time) ? Model->CycloneCategoryAt(Time->GetTotalDays()) : 0;
@@ -76,12 +139,15 @@ void UExploredWeatherSubsystem::Tick(float DeltaTime)
 	}
 	else
 	{
+		// Baliza Siete: el cielo sigue la curva fija del reloj de tormenta (GDD v3 §5.8).
 		ForcedState = EWeatherState::Count;
-		NewState = Model->StateAt(Days);
-		Target = Model->SampleAt(Days);
+		const double AbsHours = FStormClockModel::ToAbsoluteHours(Time->GetDay(), Time->GetHours());
+		StormState = Storm.StateAt(AbsHours);
+		NewState = ExploredWeatherDetail::ToWeatherState(StormState);
+		Target = ExploredWeatherDetail::ToSample(Storm.LookAt(AbsHours));
 	}
 
-	// Suavizado adicional en tiempo real (el modelo interpola en días de juego).
+	// Suavizado en tiempo real: la curva cambia de estado de golpe y el cielo no debe saltar.
 	const float Alpha = 1.0f - FMath::Exp(-DeltaTime * 0.5f);
 	Current = FWeatherSample::Lerp(Current, Target, Alpha);
 

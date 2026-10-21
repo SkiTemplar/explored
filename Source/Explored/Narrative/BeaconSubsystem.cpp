@@ -19,9 +19,11 @@
 #include "Narrative/ExploredBeaconActors.h"
 #include "Save/SaveIslandSections.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "Survival/IslandBodyComponent.h"
 #include "UI/ExploredHUD.h"
 #include "UI/ExploredPlayerController.h"
 #include "UI/ExploredSaveSubsystem.h"
+#include "Weather/ExploredWeatherSubsystem.h"
 #include "Weather/StormClockModel.h"
 #include "WorldGen/ExploredShelterVolume.h"
 #include "WorldGen/IslandPropsLoader.h"
@@ -307,6 +309,10 @@ void UBeaconSubsystem::BeginNewRun()
 		Mistral->Destroy();
 		Mistral = nullptr;
 	}
+	if (UIslandBodyComponent* Body = UIslandBodyComponent::FindOn(GetPlayerPawn()))
+	{
+		Body->ResetForNewRun();
+	}
 	if (AExploredHUD* HUD = BeaconSubsystemDetail::FindHUD(this))
 	{
 		HUD->ShowCard(ExploredBeaconTexts::Get().Get(TEXT("cartel_inicio")), BeaconSubsystemDetail::CardSeconds);
@@ -337,7 +343,8 @@ FBeaconFacts UBeaconSubsystem::MeasureFacts(const APawn& Pawn) const
 	Facts.MetersToHouse = bHasHouse ? HorizontalMeters(Here, HouseLocation) : -1.0f;
 	Facts.MetersToFreighter = bHasFreighter ? HorizontalMeters(Here, FreighterLocation) : -1.0f;
 
-	const FStormClockModel Storm;
+	const UExploredWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UExploredWeatherSubsystem>() : nullptr;
+	const FStormClockModel Storm = Weather ? Weather->GetStorm() : FStormClockModel();
 	Facts.bCycloneEye = Storm.StateAt(Facts.AbsHours) == EStormState::CycloneEye;
 	if (const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(&Pawn))
 	{

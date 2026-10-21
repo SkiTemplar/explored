@@ -73,6 +73,16 @@ public:
 	/** Reaparición (el modo de juego decide dónde): vivo, sin heridas, con el cuerpo tocado. */
 	void ApplyRespawn();
 
+	/** Desaturación (0-1) de las barras bajas de Baliza Siete (UIslandBodyComponent, GDD v3 §5.1). */
+	void SetIslandDesaturation(float Amount01) { IslandDesaturation = FMath::IsFinite(Amount01) ? FMath::Clamp(Amount01, 0.0f, 1.0f) : 0.0f; }
+
+	/**
+	 * Supervivencia heredada (FSurvivalModel: heridas, fiebre, muerte). Baliza Siete la apaga: el
+	 * cuerpo lo lleva UIslandBodyComponent y este componente solo pinta el postproceso y el audio.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Explored|Cuerpo")
+	bool bSimulateLegacySurvival = false;
+
 	/** Ánimo que suman otros sistemas por su cuenta (la flauta junto al fuego), en puntos. */
 	void AddMorale(float Points);
 
@@ -182,6 +192,7 @@ private:
 	FBodySignals Signals;
 	FBodySignals TargetSignals;
 	FWristWatchReadout WatchReadout;
+	float IslandDesaturation = 0.0f;
 
 	float StepAccumulator = 0.0f;
 	float EnvironmentTimer = 0.0f;

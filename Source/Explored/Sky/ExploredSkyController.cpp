@@ -223,19 +223,25 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays)
 
 	const float Illumination = ExploredSky::MoonIllumination(Phase);
 	const float NightFactor = 1.0f - SunUp;
-	Moon->SetIntensity(MoonIlluminanceLux * MoonUp * NightFactor * FMath::Lerp(0.15f, 1.0f, Illumination));
+	Moon->SetIntensity(MoonIlluminanceLux * MoonUp * NightFactor * FMath::Lerp(0.15f, 1.0f, Illumination) * (1.0f - 0.8f * CloudCover));
 	Moon->SetVisibility(MoonUp * NightFactor > 0.001f);
 
 	if (StarDome && StarDome->GetStaticMesh())
 	{
-		StarDome->SetScalarParameterValueOnMaterials(TEXT("Night"), 1.0f - FMath::SmoothStep(-0.15f, 0.05f, SunZ));
+		// Con el cielo cubierto (muros del ciclón) no se ven las estrellas; en el ojo, sí.
+		const float Overcast = FMath::SmoothStep(0.45f, 0.95f, CloudCover);
+		StarDome->SetScalarParameterValueOnMaterials(TEXT("Night"), (1.0f - FMath::SmoothStep(-0.15f, 0.05f, SunZ)) * (1.0f - Overcast));
 	}
 
 	// Noches más densas y frescas; niebla matinal suave. L3: la niebla matinal
 	// entra y sale con SmoothStep (antes era un escalón ×2,4 a las 4:30 y a las 9:00).
 	const float Morning = FMath::SmoothStep(4.0f, 5.5f, Hours) * (1.0f - FMath::SmoothStep(8.0f, 9.5f, Hours));
 	Fog->SetFogDensity(FMath::Lerp(0.0012f, 0.005f, Morning) + WeatherFog * 0.03f + WeatherRain * 0.006f);
-	Fog->SetFogInscatteringColor(FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.32f, 0.52f, 0.8f), SunUp));
+	// La niebla del temporal (GDD v3 §5.8, visión reducida) empieza cerca y es gris, no azul.
+	Fog->SetStartDistance(FMath::Lerp(20000.0f, 600.0f, FMath::Clamp(WeatherFog * 1.6f, 0.0f, 1.0f)));
+	const FLinearColor ClearTint = FMath::Lerp(FLinearColor(0.02f, 0.03f, 0.06f), FLinearColor(0.32f, 0.52f, 0.8f), SunUp);
+	const FLinearColor StormTint = FMath::Lerp(FLinearColor(0.05f, 0.055f, 0.06f), FLinearColor(0.42f, 0.45f, 0.48f), SunUp);
+	Fog->SetFogInscatteringColor(FMath::Lerp(ClearTint, StormTint, FMath::Clamp(WeatherFog * 1.6f, 0.0f, 1.0f)));
 
 	// Centro del histograma (estrecho, ver constructor) según la hora: casi fijo, sin la
 	// «respiración» de un rango automático amplio al girar la cámara.

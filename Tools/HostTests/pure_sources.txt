@@ -55,3 +55,6 @@ Crafting/RecipeBookModel.cpp
 Cooking/CampfireModel.cpp
 Weather/RainBarrelModel.cpp
 Fishing/CastFishingModel.cpp
+Survival/IslandBodyModel.cpp
+Boats/RaftModel.cpp
+UI/IslandHudModel.cpp

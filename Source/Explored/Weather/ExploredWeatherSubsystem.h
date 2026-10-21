@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Weather/StormClockModel.h"
 #include "Weather/WeatherModel.h"
 
 #include "ExploredWeatherSubsystem.generated.h"
@@ -10,10 +11,12 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeatherStateChanged, EWeatherState /*Old
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSeasonChanged, ESeason);
 
 /**
- * Clima del mundo. Lee la hora del UTimeOfDaySubsystem, evalúa FWeatherModel
- * y reparte el resultado: océano (mar), ambiente sonoro (lluvia y mar) y cielo
- * (nubes, niebla y luz). Otros sistemas (supervivencia, fuego, fauna) leen
- * GetCurrent().
+ * Clima del mundo. Lee la hora del UTimeOfDaySubsystem y, en Baliza Siete, la curva fija de
+ * FStormClockModel (storm_curve.json, GDD v3 §5.8): chubasco guiado, nubes, mar cerrado y ciclón
+ * con muro 1, ojo y muro 2. Reparte el resultado al océano (olas), al ambiente sonoro (lluvia y
+ * mar) y al cielo (nubes, niebla y luz). Otros sistemas (cuerpo, fuego, barril, HUD) leen
+ * GetCurrent(), GetStormState() y el barómetro. FWeatherModel queda solo como planificador
+ * heredado (semilla de eventos).
  */
 UCLASS()
 class EXPLORED_API UExploredWeatherSubsystem : public UTickableWorldSubsystem
@@ -27,6 +30,17 @@ public:
 	virtual TStatId GetStatId() const override;
 
 	const FWeatherSample& GetCurrent() const { return Current; }
+
+	/** Reloj de tormenta de la partida (storm_curve.json o el del GDD). */
+	const FStormClockModel& GetStorm() const { return Storm; }
+	/** Horas absolutas desde el día 1 a las 00:00 (las de FStormClockModel). */
+	double GetAbsHours() const;
+	EStormState GetStormState() const { return StormState; }
+	/** Lectura del barómetro (hPa) y su tendencia ahora. */
+	float GetPressureHpa() const;
+	EBarometerTrend GetPressureTrend() const;
+	/** Muro 1 o muro 2 del ciclón (o un ciclón forzado por depuración). */
+	bool IsCycloneWall() const;
 	EWeatherState GetState() const { return State; }
 	ESeason GetSeason() const { return Season; }
 
@@ -59,6 +73,8 @@ private:
 	void Apply();
 
 	TUniquePtr<FWeatherModel> Model;
+	FStormClockModel Storm;
+	EStormState StormState = EStormState::Clear;
 	FWeatherSample Current;
 	EWeatherState State = EWeatherState::Clear;
 	ESeason Season = ESeason::Dry;

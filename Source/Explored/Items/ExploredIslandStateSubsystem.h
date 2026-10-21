@@ -5,6 +5,7 @@
 
 #include "Items/BackpackModel.h"
 #include "Narrative/SupplyCrateModel.h"
+#include "Save/SaveIslandSections.h"
 #include "Weather/RainBarrelModel.h"
 
 #include "ExploredIslandStateSubsystem.generated.h"
@@ -61,6 +62,10 @@ public:
 	FSupplyCrateState GetCrate(FName CrateId) const { return Crates.FindRef(CrateId); }
 	void SetCrate(FName CrateId, const FSupplyCrateState& State) { Crates.Add(CrateId, State); }
 
+	/** Sitio de la balsa (troncos, atada) y dónde quedó la balsa. */
+	const ExploredSaveStates::FRaftSaveData& GetRaft() const { return Raft; }
+	void SetRaft(const ExploredSaveStates::FRaftSaveData& InRaft) { Raft = InRaft; }
+
 	/** Crea un AExploredPickup suelto y lo apunta para el guardado. */
 	AExploredPickup* SpawnDropped(FName ItemId, int32 Count, const FVector& Location);
 	/** Quita de la lista un objeto soltado que se ha vuelto a coger. */
@@ -81,6 +86,7 @@ private:
 	TMap<FName, FRainBarrelState> Barrels;
 	TMap<FName, FSupplyCrateState> Crates;
 	TArray<FIslandDroppedItem> Dropped;
+	ExploredSaveStates::FRaftSaveData Raft;
 
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<AExploredPickup>> DroppedActors;

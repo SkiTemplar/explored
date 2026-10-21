@@ -16,6 +16,7 @@ class UExploredSurvivorComponent;
 class UInputAction;
 class UInputMappingContext;
 class UInteractionComponent;
+class UIslandBodyComponent;
 class USwimComponent;
 class UStaticMeshComponent;
 struct FInputActionValue;
@@ -63,6 +64,13 @@ public:
 	/** Mochila, consumo y crafteo de Baliza Siete (GDD v3 §5.3 y §5.6). */
 	UFUNCTION(BlueprintPure, Category = "Explored|Mochila")
 	UExploredSurvivorComponent* GetSurvivorComponent() const { return Survivor; }
+
+	/** Las cuatro barras, el desmayo y el sueño de Baliza Siete (GDD v3 §5.1). */
+	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
+	UIslandBodyComponent* GetIslandBodyComponent() const { return IslandBody; }
+
+	/** Vuelve a calcular la velocidad (carga, correr y barras bajas). */
+	void RefreshWalkSpeed() { ApplyWalkSpeed(); }
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Carga")
 	bool IsBackpackOpen() const { return bBackpackOpen; }
@@ -117,6 +125,9 @@ private:
 	void HandleFish(const FInputActionValue& Value);
 	void HandleReel(const FInputActionValue& Value);
 	void HandleReelCompleted(const FInputActionValue& Value);
+	void HandleQuickSlot1(const FInputActionValue& Value);
+	void HandleQuickSlot2(const FInputActionValue& Value);
+	void HandleQuickSlot3(const FInputActionValue& Value);
 
 	void UseHand(EHand Hand);
 	/** Andar o correr, por el multiplicador de carga de UCarryComponent. */
@@ -152,6 +163,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Explored|Mochila", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UExploredSurvivorComponent> Survivor;
+
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
+	TObjectPtr<UIslandBodyComponent> IslandBody;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -211,6 +225,10 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> ReelAction;
+
+	/** Ranuras rápidas 1-3 (GDD §9.1). */
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UInputAction>> QuickSlotActions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explored|Movimiento")
 	float WalkSpeed = 450.0f;

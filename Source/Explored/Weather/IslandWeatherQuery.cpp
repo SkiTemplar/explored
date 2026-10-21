@@ -29,8 +29,8 @@ bool ExploredIslandWeather::IsCycloneWall(const UObject* WorldContext)
 	{
 		return false;
 	}
-	const FWeatherSample& Sample = Weather->GetCurrent();
-	return Weather->GetCycloneCategory() > 0 || (Sample.Rain >= CycloneThreshold && Sample.Wind >= CycloneThreshold);
+	// Muro 1 o muro 2 del reloj de tormenta (no el ojo); un ciclón forzado por depuración también.
+	return Weather->IsCycloneWall();
 }
 
 bool ExploredIslandWeather::IsSheltered(const UObject* WorldContext, const FVector& Location)

@@ -1,6 +1,7 @@
 #include "Player/ExploredCharacter.h"
 
 #include "Items/ExploredSurvivorComponent.h"
+#include "Survival/IslandBodyComponent.h"
 #include "Core/ExploredAssetFallback.h"
 
 #include "Camera/CameraComponent.h"
@@ -117,6 +118,7 @@ AExploredCharacter::AExploredCharacter()
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
 	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
 	Survivor = CreateDefaultSubobject<UExploredSurvivorComponent>(TEXT("Survivor"));
+	IslandBody = CreateDefaultSubobject<UIslandBodyComponent>(TEXT("IslandBody"));
 
 	bUseControllerRotationYaw = true;
 
@@ -417,6 +419,10 @@ void AExploredCharacter::BuildInputAssets()
 	// Pesca (GDD §8.9): lanzar o recoger, y eje de sedal (recoger / soltar) en la pelea.
 	FishAction = MakeAction(this, TEXT("IA_Fish"), EInputActionValueType::Boolean);
 	ReelAction = MakeAction(this, TEXT("IA_Reel"), EInputActionValueType::Axis1D);
+	for (const TCHAR* Name : { TEXT("IA_QuickSlot1"), TEXT("IA_QuickSlot2"), TEXT("IA_QuickSlot3") })
+	{
+		QuickSlotActions.Add(MakeAction(this, FName(Name), EInputActionValueType::Boolean));
+	}
 
 #if !UE_BUILD_SHIPPING
 	// M12: E/Q de subir y bajar en vuelo viven en un contexto aparte que solo se
@@ -495,6 +501,13 @@ void AExploredCharacter::RebuildKeyMappings()
 
 	// Pesca (fijo): F lanza o recoge; R recoge sedal y T lo suelta en la pelea. El
 	// contexto de construcción también usa R, pero no la consume.
+	// Ranuras rápidas (fijas): 1, 2 y 3.
+	const FKey SlotKeys[] = { EKeys::One, EKeys::Two, EKeys::Three };
+	for (int32 Index = 0; Index < QuickSlotActions.Num() && Index < UE_ARRAY_COUNT(SlotKeys); ++Index)
+	{
+		MapKey(MappingContext, QuickSlotActions[Index], SlotKeys[Index]);
+	}
+
 	MapKey(MappingContext, FishAction, EKeys::F);
 	MapKey(MappingContext, ReelAction, EKeys::R);
 	MapKey(MappingContext, ReelAction, EKeys::T, true);
@@ -554,6 +567,12 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(FishAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleFish);
 	Input->BindAction(ReelAction, ETriggerEvent::Triggered, this, &AExploredCharacter::HandleReel);
 	Input->BindAction(ReelAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleReelCompleted);
+	if (QuickSlotActions.Num() == 3)
+	{
+		Input->BindAction(QuickSlotActions[0], ETriggerEvent::Started, this, &AExploredCharacter::HandleQuickSlot1);
+		Input->BindAction(QuickSlotActions[1], ETriggerEvent::Started, this, &AExploredCharacter::HandleQuickSlot2);
+		Input->BindAction(QuickSlotActions[2], ETriggerEvent::Started, this, &AExploredCharacter::HandleQuickSlot3);
+	}
 }
 
 void AExploredCharacter::HandleMove(const FInputActionValue& Value)
@@ -613,7 +632,33 @@ void AExploredCharacter::ApplyWalkSpeed()
 	// La carga frena: sobrepeso y angarillas (FInventoryModel::GetMoveSpeedMultiplier).
 	const float Base = bSprintHeld ? SprintSpeed : WalkSpeed;
 	const float Multiplier = Carry ? Carry->GetMoveSpeedMultiplier() : 1.0f;
-	GetCharacterMovement()->MaxWalkSpeed = Base * Multiplier;
+	// Una barra bajo 25 frena un 20 % (GDD v3 §5.1).
+	const float BodyFactor = IslandBody ? IslandBody->GetSpeedFactor() : 1.0f;
+	GetCharacterMovement()->MaxWalkSpeed = Base * Multiplier * BodyFactor;
+}
+
+void AExploredCharacter::HandleQuickSlot1(const FInputActionValue&)
+{
+	if (Survivor)
+	{
+		Survivor->SelectQuickSlot(0);
+	}
+}
+
+void AExploredCharacter::HandleQuickSlot2(const FInputActionValue&)
+{
+	if (Survivor)
+	{
+		Survivor->SelectQuickSlot(1);
+	}
+}
+
+void AExploredCharacter::HandleQuickSlot3(const FInputActionValue&)
+{
+	if (Survivor)
+	{
+		Survivor->SelectQuickSlot(2);
+	}
 }
 
 void AExploredCharacter::HandleToggleFly(const FInputActionValue&)
@@ -661,6 +706,12 @@ void AExploredCharacter::HandleInteract(const FInputActionValue&)
 		return;
 	}
 
+	// Sin nada enfocado, E dentro de un refugio es «Dormir» (GDD v3 §5.1).
+	if (!Interaction->GetFocusedActor() && IslandBody && IslandBody->IsSheltered())
+	{
+		IslandBody->TrySleep();
+		return;
+	}
 	Interaction->InteractWithFocus();
 }
 

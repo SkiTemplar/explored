@@ -5,6 +5,7 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Boats/ExploredRaft.h"
 #include "Explored.h"
 #include "Items/ExploredPickup.h"
 #include "Items/ExploredSurvivorComponent.h"
@@ -158,6 +159,10 @@ void UExploredIslandStateSubsystem::ApplyToWorld()
 	{
 		It->RefreshFromIslandState();
 	}
+	for (TActorIterator<AExploredRaftSite> It(World); It; ++It)
+	{
+		It->RefreshFromIslandState();
+	}
 }
 
 TOptional<FBackpackState> UExploredIslandStateSubsystem::TakePendingBackpack()
@@ -206,6 +211,9 @@ void UExploredIslandStateSubsystem::Save(FSaveArchive& Ar) const
 		Entry.Write(TEXT("location"), Item.Location);
 	}
 	Ar.Write(TEXT("dropped"), DroppedEntries);
+	FSaveArchive RaftAr;
+	ExploredSaveStates::SaveRaft(RaftAr, Raft);
+	Ar.Write(TEXT("raft"), RaftAr);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (const UExploredSurvivorComponent* Survivor = Pawn ? Pawn->FindComponentByClass<UExploredSurvivorComponent>() : nullptr)
 	{
@@ -223,6 +231,12 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 	Barrels.Reset();
 	Crates.Reset();
 	ExploredSaveStates::LoadCollectedIds(Ar, Collected);
+	FSaveArchive RaftAr;
+	Raft = ExploredSaveStates::FRaftSaveData();
+	if (Ar.Read(TEXT("raft"), RaftAr) && !ExploredSaveStates::LoadRaft(RaftAr, Raft))
+	{
+		UE_LOG(LogExplored, Warning, TEXT("[Isla] La balsa guardada no es coherente: queda por hacer"));
+	}
 	TArray<FString> Ids;
 	TArray<FSaveArchive> Entries;
 	Ar.Read(TEXT("palms"), Entries);

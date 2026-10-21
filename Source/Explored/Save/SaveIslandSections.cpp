@@ -161,4 +161,66 @@ namespace ExploredSaveStates
 			}
 		}
 	}
+
+	void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter)
+	{
+		Ar.Write(TEXT("thirst"), Bars.Thirst);
+		Ar.Write(TEXT("hunger"), Bars.Hunger);
+		Ar.Write(TEXT("energy"), Bars.Energy);
+		Ar.Write(TEXT("warmth"), Bars.Warmth);
+		Ar.Write(TEXT("lastShelter"), LastShelter);
+	}
+
+	bool LoadBodyBars(const FSaveArchive& Ar, FBodyBars& OutBars, FName& OutLastShelter)
+	{
+		FBodyBars Bars;
+		float* const Fields[] = { &Bars.Thirst, &Bars.Hunger, &Bars.Energy, &Bars.Warmth };
+		const TCHAR* const Keys[] = { TEXT("thirst"), TEXT("hunger"), TEXT("energy"), TEXT("warmth") };
+		for (int32 Index = 0; Index < UE_ARRAY_COUNT(Keys); ++Index)
+		{
+			if (!Ar.Read(Keys[Index], *Fields[Index]) || !FMath::IsFinite(*Fields[Index]) || *Fields[Index] < 0.0f || *Fields[Index] > 100.0f)
+			{
+				OutBars = FBodyBars();
+				OutLastShelter = NAME_None;
+				return false;
+			}
+		}
+		FName Shelter;
+		Ar.Read(TEXT("lastShelter"), Shelter);
+		OutBars = Bars;
+		OutLastShelter = Shelter;
+		return true;
+	}
+
+	void SaveRaft(FSaveArchive& Ar, const FRaftSaveData& Raft)
+	{
+		Ar.Write(TEXT("logs"), Raft.Site.LogsPlaced);
+		Ar.Write(TEXT("built"), Raft.Site.bBuilt);
+		Ar.Write(TEXT("hasPose"), Raft.bHasPose);
+		if (Raft.bHasPose)
+		{
+			Ar.Write(TEXT("location"), Raft.Location);
+			Ar.Write(TEXT("yaw"), Raft.YawDeg);
+		}
+	}
+
+	bool LoadRaft(const FSaveArchive& Ar, FRaftSaveData& OutRaft)
+	{
+		FRaftSaveData Raft;
+		Ar.Read(TEXT("logs"), Raft.Site.LogsPlaced);
+		Ar.Read(TEXT("built"), Raft.Site.bBuilt);
+		Ar.Read(TEXT("hasPose"), Raft.bHasPose);
+		if (Raft.bHasPose && !(Ar.Read(TEXT("location"), Raft.Location) && Ar.Read(TEXT("yaw"), Raft.YawDeg)
+			&& FMath::IsFinite(Raft.Location.X) && FMath::IsFinite(Raft.Location.Y) && FMath::IsFinite(Raft.Location.Z) && FMath::IsFinite(Raft.YawDeg)))
+		{
+			Raft.bHasPose = false;
+		}
+		if (!FRaftModel::IsValid(Raft.Site))
+		{
+			OutRaft = FRaftSaveData();
+			return false;
+		}
+		OutRaft = Raft;
+		return true;
+	}
 }

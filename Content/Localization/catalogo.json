@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 350,
-		"cpp": 242,
+		"total": 354,
+		"cpp": 246,
 		"datos": 108,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 3,
-		"revisar": 179
+		"revisar": 237
 	},
 	"entries": [
 		{
@@ -526,7 +526,7 @@
 			"en": "The lens is missing: it's on the «Sáhara»",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:89"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:91"
 			]
 		},
 		{
@@ -536,7 +536,7 @@
 			"en": "Two jars of oil are needed",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:90"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:92"
 			]
 		},
 		{
@@ -546,7 +546,7 @@
 			"en": "Wick missing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:91"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:93"
 			]
 		},
 		{
@@ -576,7 +576,7 @@
 			"en": "Watch log · page {0} of {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:454"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:461"
 			]
 		},
 		{
@@ -600,6 +600,96 @@
 			]
 		},
 		{
+			"namespace": "ExploredBody",
+			"key": "FaintShelter",
+			"es": "Despiertas en el refugio…",
+			"en": "You wake up in the shelter…",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:359"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "FaintShore",
+			"es": "Despiertas en Playa Norte…",
+			"en": "You wake up on North Beach…",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:359"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "SleepNoRoof",
+			"es": "Solo puedo dormir bajo techo.",
+			"en": "I can only sleep under a roof.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:263"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "SleepThirsty",
+			"es": "Tienes demasiada sed para dormir",
+			"en": "You're too thirsty to sleep",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:269"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "SleepWrongHour",
+			"es": "Aún no es hora de dormir.",
+			"en": "It's not time to sleep yet.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:264"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "WarnEnergy",
+			"es": "Estoy agotada.",
+			"en": "I'm exhausted.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:215"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "WarnHunger",
+			"es": "Tengo hambre.",
+			"en": "I'm hungry.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:214"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "WarnThirst",
+			"es": "Tengo sed.",
+			"en": "I'm thirsty.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:213"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "WarnWarmth",
+			"es": "Tengo frío.",
+			"en": "I'm cold.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:216"
+			]
+		},
+		{
 			"namespace": "ExploredIsland",
 			"key": "BackpackFull",
 			"es": "No te cabe más",
@@ -616,7 +706,7 @@
 			"en": "The barrel is empty",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Weather/ExploredRainBarrel.cpp:103"
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:108"
 			]
 		},
 		{
@@ -626,7 +716,7 @@
 			"en": "The canteen is already full",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Weather/ExploredRainBarrel.cpp:109"
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:114"
 			]
 		},
 		{
@@ -636,7 +726,7 @@
 			"en": "The canteen is empty",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Items/ExploredSurvivorComponent.cpp:162"
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:153"
 			]
 		},
 		{
@@ -646,7 +736,7 @@
 			"en": "Canteen filled",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Weather/ExploredRainBarrel.cpp:100"
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:105"
 			]
 		},
 		{
@@ -686,7 +776,7 @@
 			"en": "Fill the canteen ({0}/{1})",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Weather/ExploredRainBarrel.cpp:75"
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:80"
 			]
 		},
 		{
@@ -816,7 +906,7 @@
 			"en": "You don't have the canteen",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Weather/ExploredRainBarrel.cpp:106"
+				"Source/Explored/Weather/ExploredRainBarrel.cpp:111"
 			]
 		},
 		{
@@ -836,8 +926,8 @@
 			"en": "No clear ground here",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Items/ExploredSurvivorComponent.cpp:270",
-				"Source/Explored/Items/ExploredSurvivorComponent.cpp:295"
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:262",
+				"Source/Explored/Items/ExploredSurvivorComponent.cpp:287"
 			]
 		},
 		{
@@ -898,6 +988,96 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Fishing/ExploredFishingSpot.cpp:41"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "BoardRaft",
+			"es": "Subir a la balsa",
+			"en": "Board the raft",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:589"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "ForcedReturn",
+			"es": "Cruzas como puedes. Playa Norte.",
+			"en": "You make it across somehow. North Beach.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:470"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "NeedLog",
+			"es": "Hacen falta troncos: se traen de uno en uno.",
+			"en": "It needs logs, carried one at a time.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:304"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "NeedPaddle",
+			"es": "Sin remo no voy a ningún sitio.",
+			"en": "Without a paddle I'm going nowhere.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:82"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "PlaceLog",
+			"es": "Dejar tronco ({0}/{1})",
+			"en": "Lay log ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:271"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "RaftDone",
+			"es": "Cuatro troncos y dos cuerdas. Flota.",
+			"en": "Four logs and two ropes. It floats.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:370"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "SeaClosedNoBoard",
+			"es": "El mar se cierra. A tierra.",
+			"en": "The sea is closing. Back to land.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:83"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "SeaClosing",
+			"es": "El mar se cierra.",
+			"en": "The sea is closing.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:424"
+			]
+		},
+		{
+			"namespace": "ExploredRaft",
+			"key": "TieRaft",
+			"es": "Atar balsa",
+			"en": "Lash raft",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Boats/ExploredRaft.cpp:268"
 			]
 		},
 		{
@@ -1084,76 +1264,6 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "CondBleeding",
-			"es": "Sangrando",
-			"en": "Bleeding",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:457"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondFever",
-			"es": "Fiebre",
-			"en": "Fever",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:465"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondInfection",
-			"es": "Herida infectada",
-			"en": "Infected wound",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:469"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondOpenWounds",
-			"es": "{Count} {Count}|plural(one=herida,other=heridas) sin vendar",
-			"en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:486"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondScurvy",
-			"es": "Escorbuto",
-			"en": "Scurvy",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:479"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondSprain",
-			"es": "Esguince",
-			"en": "Sprain",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:473"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "CondSunBurn",
-			"es": "Quemadura solar",
-			"en": "Sunburn",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:461"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "Continue",
 			"es": "Continuar",
 			"en": "Continue",
@@ -1327,26 +1437,6 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "FishingLineOut",
-			"es": "Sedal fuera: {0} m · [R] recoger · [T] soltar",
-			"en": "Line out: {0} m · [R] reel in · [T] let out",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:325"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "FishingWaiting",
-			"es": "Esperando la picada… [F] recoger",
-			"en": "Waiting for a bite… [F] reel in",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:312"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "Foliage",
 			"es": "Vegetación",
 			"en": "Foliage",
@@ -1414,17 +1504,6 @@
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:379"
 			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InteractPrompt",
-			"es": "[{Key}] {Actions}",
-			"en": "[{Key}] {Actions}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:270"
-			],
-			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
 		},
 		{
 			"namespace": "ExploredUI",
@@ -1640,56 +1719,6 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "NeedEnergy",
-			"es": "Energía",
-			"en": "Energy",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:423"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedHunger",
-			"es": "Hambre",
-			"en": "Hunger",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:421"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedRest",
-			"es": "Sueño",
-			"en": "Sleep",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:424"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedThirst",
-			"es": "Sed",
-			"en": "Thirst",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:422"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedWarmth",
-			"es": "Temperatura",
-			"en": "Temperature",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:425"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "NewGame",
 			"es": "Nueva partida",
 			"en": "New game",
@@ -1745,7 +1774,7 @@
 			"en": "Picked up: {Item}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:350"
+				"Source/Explored/UI/ExploredHUD.cpp:525"
 			]
 		},
 		{
@@ -1766,6 +1795,16 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredKeyCaptureButton.cpp:34"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "PromptSleep",
+			"es": "Dormir",
+			"en": "Sleep",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredHUD.cpp:295"
 			]
 		},
 		{

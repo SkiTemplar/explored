@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import historia, music, textos
+from . import clima, historia, music, textos
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -50,6 +50,16 @@ FISH_CPP = "Fishing/CastFishingModel.h"
 CONSUMABLES_CPP = "Items/IslandConsumablesModel.h"
 BACKPACK_CPP = "Items/BackpackModel.h"
 BARREL_CPP = "Weather/RainBarrelModel.h"
+BODY_CPP = "Survival/IslandBodyModel.h"
+# survival_needs.json → FIslandBodyTuning (GDD v3 §5.1): (barra, campo, constante).
+BODY_MIRRORS = [
+    ("sed", "lossPerMinute", "DefaultThirstLossPerMinute"),
+    ("hambre", "lossPerMinute", "DefaultHungerLossPerMinute"),
+    ("energia", "lossPerMinute", "DefaultEnergyLossPerMinute"),
+    ("calor", "nightLossPerMinute", "DefaultNightWarmthLossPerMinute"),
+    ("calor", "rainLossPerMinute", "DefaultRainWarmthLossPerMinute"),
+    ("calor", "fireGainPerMinute", "DefaultFireWarmthGainPerMinute"),
+]
 
 # GDD §12 (v1): términos de narrativa eliminada que no deben volver a los datos.
 FORBIDDEN_TERMS = [
@@ -60,7 +70,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "verbs.json", "recipes.json", "fuels.json", "survival_needs.json", "fish.json",
-    "music_layers.json", "notebook.json", "objectives.json", "thoughts.json",
+    "music_layers.json", "notebook.json", "objectives.json", "thoughts.json", "storm_curve.json",
 ]
 
 
@@ -412,6 +422,12 @@ def check_survival(ds: DataSet, r: Report) -> None:
         if not _number(need.get("lossPerMinute")) or need["lossPerMinute"] < 0:
             r.error(f"survival_needs.json «{nid}»: lossPerMinute debe ser un número ≥ 0")
     _check_consumables(ds, doc, r)
+    by_id = {n.get("id"): n for n in needs}
+    for nid, key, constant in BODY_MIRRORS:
+        _mirror(ds, r, f"survival_needs.json «{nid}».{key}", by_id.get(nid, {}).get(key), BODY_CPP, constant)
+    for key, constant in (("lowThreshold", "DefaultLowThreshold"), ("lowSpeedFactor", "DefaultLowSpeedFactor"),
+                          ("warningAt", "DefaultWarningAt")):
+        _mirror(ds, r, f"survival_needs.json {key}", doc.get(key), BODY_CPP, constant)
     kit = {k.get("item"): k for k in _dicts(doc.get("starterKit"))}
     if set(kit) != {"cuchillo", "cantimplora", "barometro"}:
         r.error("survival_needs.json starterKit: debe ser cuchillo, cantimplora y barómetro (GDD §5.3)")
@@ -463,5 +479,6 @@ def run_all(ds: DataSet) -> Report:
     textos.check_player_texts(ds.data, r.error)
     music.check_music(ds, r)
     historia.check_story(ds.data, r.error)
+    clima.check_storm(ds.data, ds.repo_root, r.error)
     check_forbidden_terms(ds, r)
     return r

@@ -18,7 +18,7 @@
     "carguero_casco": {"mesh": "/Game/Art/K2_Estructuras/SM_CargueroCasco_01", "shape": "cube", "size": [36.0, 8.0, 4.0], "color": 8, "label": true, "collision": "solid", "gameplay": true},
     "carguero_puente": {"mesh": "/Game/Art/K2_Estructuras/SM_CargueroPuente_01", "shape": "cube", "size": [6.0, 7.0, 4.0], "color": 28, "label": true, "collision": "solid", "gameplay": true},
     "pasarela_carguero": {"mesh": "", "shape": "cube", "size": [9.7, 2.0, 0.3], "color": 16, "label": true, "collision": "solid", "gameplay": true},
-    "refugio_palma": {"mesh": "/Game/Art/K2_Estructuras/SM_RefugioPalma_01", "shape": "cube", "size": [4.0, 3.0, 2.4], "color": 17, "label": true, "collision": "solid", "gameplay": true},
+    "refugio_palma": {"mesh": "/Game/Art/K2_Estructuras/SM_RefugioPalma_01", "shape": "cube", "size": [4.0, 3.0, 2.4], "color": 17, "label": true, "collision": "query", "gameplay": true},
     "barril_lluvia": {"mesh": "/Game/Art/K2_Estructuras/SM_BarrilLluvia_01", "shape": "cylinder", "size": [0.7, 0.7, 1.0], "color": 5, "label": true, "collision": "solid", "gameplay": true},
     "hoguera_fija": {"mesh": "/Game/Art/K2_Estructuras/SM_Hoguera_01", "shape": "cylinder", "size": [1.0, 1.0, 0.4], "color": 26, "label": true, "collision": "query", "gameplay": true},
     "balsa_sitio": {"mesh": "/Game/Art/K2_Estructuras/SM_Balsa_01", "shape": "cube", "size": [3.0, 2.2, 0.3], "color": 16, "label": true, "collision": "query", "gameplay": true},

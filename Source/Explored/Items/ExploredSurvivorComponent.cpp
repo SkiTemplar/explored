@@ -9,7 +9,7 @@
 #include "Items/ExploredIslandStateSubsystem.h"
 #include "Items/IslandConsumablesModel.h"
 #include "Items/IslandDataLoader.h"
-#include "Survival/BodySignalsComponent.h"
+#include "Survival/IslandBodyComponent.h"
 #include "Survival/SurvivalModel.h"
 
 #define LOCTEXT_NAMESPACE "ExploredIsland"
@@ -133,19 +133,10 @@ bool UExploredSurvivorComponent::TryAddItem(FName ItemId, int32 Count)
 
 void UExploredSurvivorComponent::ApplyBodyEffect(float Thirst, float Hunger, float Energy) const
 {
-	UBodySignalsComponent* Body = GetOwner() ? GetOwner()->FindComponentByClass<UBodySignalsComponent>() : nullptr;
-	if (!Body)
+	// Las cuatro barras del GDD v3 §5.1 viven en UIslandBodyComponent.
+	if (UIslandBodyComponent* Body = UIslandBodyComponent::FindOn(GetOwner()))
 	{
-		return;
-	}
-	FConsumable Item;
-	Item.Water = Thirst;
-	Item.Food = Hunger;
-	Body->Consume(Item);
-	if (Energy != 0.0f)
-	{
-		FSurvivalState& State = Body->GetMutableSurvivalState();
-		State.Rest = FMath::Clamp(State.Rest + Energy, 0.0f, 100.0f);
+		Body->ApplyDelta(Thirst, Hunger, Energy);
 	}
 }
 
@@ -193,6 +184,7 @@ bool UExploredSurvivorComponent::StartTimedAction(float Seconds, TFunction<void(
 	}
 	bBusy = true;
 	PendingAction = MoveTemp(OnDone);
+	ActionTotalSeconds = FMath::Max(Seconds, SurvivorDetail::MinActionSeconds);
 	const TWeakObjectPtr<UExploredSurvivorComponent> WeakThis(this);
 	World->GetTimerManager().SetTimer(ActionTimer, FTimerDelegate::CreateWeakLambda(this, [WeakThis]()
 	{
@@ -208,7 +200,7 @@ bool UExploredSurvivorComponent::StartTimedAction(float Seconds, TFunction<void(
 		{
 			Action();
 		}
-	}), FMath::Max(Seconds, SurvivorDetail::MinActionSeconds), false);
+	}), ActionTotalSeconds, false);
 	return true;
 }
 
@@ -344,3 +336,19 @@ bool UExploredSurvivorComponent::DropHeavy()
 }
 
 #undef LOCTEXT_NAMESPACE
+
+float UExploredSurvivorComponent::GetActionProgress01() const
+{
+	const UWorld* World = GetWorld();
+	if (!bBusy || !World || ActionTotalSeconds <= 0.0f)
+	{
+		return 0.0f;
+	}
+	const float Elapsed = World->GetTimerManager().GetTimerElapsed(ActionTimer);
+	return Elapsed < 0.0f ? 0.0f : FMath::Clamp(Elapsed / ActionTotalSeconds, 0.0f, 1.0f);
+}
+
+void UExploredSurvivorComponent::SelectQuickSlot(int32 Index)
+{
+	SelectedQuickSlot = FMath::Clamp(Index, 0, 2);
+}

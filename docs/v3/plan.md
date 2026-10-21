@@ -130,7 +130,7 @@ Se sigue el inventario §2-3 con estas decisiones: crear `Maps/Map_IslaSal` y ca
   - Actores `AExploredPickup`, `AExploredHarvestable`, `ABarrilLluvia`, `ALighthouseLamp` (3 ranuras) sobre primitivas.
   - Modelos puros con Specs: `FBeaconProgressModel`, `FStormClockModel`, `FNotebookModel`, `FSupplyCrateModel`, `FTutorialHintModel`, `FIslandLayout`; ampliación de `BodyModel` (desmayo, dormir).
   - JSON: `survival_needs.json`, `storm_curve.json`, `items.json` (17), `recipes.json` (10), `verbs.json` (6), `objectives.json`.
-  - Balsa de cubos con remo, estabilidad forzada y plan B decidido (GDD §5.7).
+  - Balsa de cubos con remo, estabilidad forzada y plan B decidido (GDD §5.7). **Decisión de F3d:** balsa cinemática (`FRaftModel` + `AExploredRaft`: 2 m/s, giro 40°/s, corriente lateral 0,3 m/s, cabeceo visual ≤ 4°, encalla al tocar fondo); queda estable en la primera sesión y el plan B (cruce con fundido) no se usa. El ojo del ciclón dura 65 s reales (≈ 1,44 h de juego, 22:00-23:27) y el muro 2 llega hasta las 02:00: la tabla del GDD §5.8 (ojo hasta las 23:45) no cuadraba con los 65 s del §3.
   - Ciclón con ojo (solo clima y audio).
   - Autoguardado en amanecer y D3 20:00; guardar/cargar en cualquier etapa.
   - Final provisional: linterna encendida, luces de prueba, texto de epílogo.

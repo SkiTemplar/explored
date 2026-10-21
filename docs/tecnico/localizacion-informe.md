@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 350 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 242 |
+| Textos en el catálogo | 354 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 246 |
 | … de `Content/Data` (campos bilingües) | 108 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
-| Literales para revisar | 179 |
-| Errores / avisos | 0 / 0 |
+| Literales para revisar | 237 |
+| Errores / avisos | 0 / 15 |
 
 ## Literales del C++
 
@@ -33,7 +33,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:95` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (179)
+### Revisar (237)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -78,6 +78,11 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Crafting/RecipeBookModel.cpp:109` | `Mounted lantern` | `FRecipeDef Lantern = Make(TEXT("linterna"), TEXT("Linterna montada"), TEXT("Mounted lantern"), TEXT("montar"),` |
 | `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Baliza encendida` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
 | `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Beacon lit` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
+| `Source/Explored/Debug/BalizaDebugCommands.cpp:108` | `Acelera el reloj de Baliza Siete: BalizaTimeScale <x>` | `TEXT("Acelera el reloj de Baliza Siete: BalizaTimeScale <x>"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdTimeScale));` |
+| `Source/Explored/Debug/BalizaDebugCommands.cpp:110` | `Pone las barras de Iria: BalizaBody <sed> <hambre> <energía> <calor>` | `TEXT("Pone las barras de Iria: BalizaBody <sed> <hambre> <energía> <calor>"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdBody));` |
+| `Source/Explored/Debug/BalizaDebugCommands.cpp:112` | `Intenta dormir (refugio, 20:00-05:00)` | `TEXT("Intenta dormir (refugio, 20:00-05:00)"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdSleep));` |
+| `Source/Explored/Debug/BalizaDebugCommands.cpp:114` | `Desmayo inmediato de Iria` | `TEXT("Desmayo inmediato de Iria"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdFaint));` |
+| `Source/Explored/Debug/BalizaDebugCommands.cpp:116` | `Deja la balsa hecha: BalizaRaft [board]` | `TEXT("Deja la balsa hecha: BalizaRaft [board]"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdRaft));` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:115` | `empieza en el prólogo con objetivo` | `Add(TEXT("empieza en el prólogo con objetivo"), [] { return true; },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:117` | `leer la página 1` | `Add(TEXT("leer la página 1"), [this]() { return Interact(TEXT("pagina_1")); },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:119` | `BalizaStage Preparacion` | `Add(TEXT("BalizaStage Preparacion"), [this]() { return Console(TEXT("BalizaStage Preparacion")); },` |
@@ -102,6 +107,53 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:188` | `luces del Mistral` | `Add(TEXT("luces del Mistral"), [] { return true; },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:190` | `pantalla de epílogo` | `Add(TEXT("pantalla de epílogo"), [] { return true; },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:196` | `créditos del final` | `Add(TEXT("créditos del final"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:124` | `reloj D1 07:00 con días de 18 min` | `Add(TEXT("reloj D1 07:00 con días de 18 min"), [] { return true; }, [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:129` | `una barra bajo 25 frena un 20 %` | `Add(TEXT("una barra bajo 25 frena un 20 %"), [this]() { return Console(TEXT("BalizaBody 20 70 70 100")); }, [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:129` | `BalizaBody 20 70 70 100` | `Add(TEXT("una barra bajo 25 frena un 20 %"), [this]() { return Console(TEXT("BalizaBody 20 70 70 100")); }, [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:134` | `delante de una palma con cocos en la mochila` | `Add(TEXT("delante de una palma con cocos en la mochila"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:149` | `BalizaGive coco 2` | `return Console(TEXT("BalizaGive coco 2")) && Console(TEXT("BalizaGive fibra 3"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:149` | `BalizaGive fibra 3` | `return Console(TEXT("BalizaGive coco 2")) && Console(TEXT("BalizaGive fibra 3"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:151` | `captura f3d-hud` | `Add(TEXT("captura f3d-hud"), [this]() { return Shot(TEXT("f3d-hud")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:153` | `chubasco guiado D1 15:00` | `Add(TEXT("chubasco guiado D1 15:00"), [this]() { return Console(TEXT("BalizaBody 70 70 70 100")) && Console(TEXT("BalizaTime 1 15.1")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:153` | `BalizaBody 70 70 70 100` | `Add(TEXT("chubasco guiado D1 15:00"), [this]() { return Console(TEXT("BalizaBody 70 70 70 100")) && Console(TEXT("BalizaTime 1 15.1")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:153` | `BalizaTime 1 15.1` | `Add(TEXT("chubasco guiado D1 15:00"), [this]() { return Console(TEXT("BalizaBody 70 70 70 100")) && Console(TEXT("BalizaTime 1 15.1")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:175` | `balsa atada y a bordo (D2 08:00)` | `Add(TEXT("balsa atada y a bordo (D2 08:00)"), [this]() { return Console(TEXT("BalizaTime 2 8")) && Console(TEXT("BalizaRaft board")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:175` | `BalizaTime 2 8` | `Add(TEXT("balsa atada y a bordo (D2 08:00)"), [this]() { return Console(TEXT("BalizaTime 2 8")) && Console(TEXT("BalizaRaft board")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:175` | `BalizaRaft board` | `Add(TEXT("balsa atada y a bordo (D2 08:00)"), [this]() { return Console(TEXT("BalizaTime 2 8")) && Console(TEXT("BalizaRaft board")); },` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:177` | `remar 6 s: avanza y no vuelca` | `Add(TEXT("remar 6 s: avanza y no vuelca"), [this, Raft]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:198` | `girar y bajar de la balsa` | `Add(TEXT("girar y bajar de la balsa"), [Raft]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:212` | `a las 18:00 del día 2 no se embarca` | `Add(TEXT("a las 18:00 del día 2 no se embarca"), [this, Raft]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:214` | `BalizaTime 2 18.2` | `Console(TEXT("BalizaTime 2 18.2"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:218` | `18:45 en el islote: vuelta forzosa a Playa Norte con sed y hambre -20` | `Add(TEXT("18:45 en el islote: vuelta forzosa a Playa Norte con sed y hambre -20"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:226` | `BalizaTime 2 18.6` | `Console(TEXT("BalizaTime 2 18.6"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:227` | `BalizaBody 60 60 60 100` | `Console(TEXT("BalizaBody 60 60 60 100"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:230` | `BalizaTime 2 18.8` | `return Console(TEXT("BalizaTime 2 18.8"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:248` | `hoguera al aire libre antes del ciclón` | `Add(TEXT("hoguera al aire libre antes del ciclón"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:250` | `BalizaTime 2 18.9` | `Console(TEXT("BalizaTime 2 18.9"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:251` | `BalizaGive lena 3` | `Console(TEXT("BalizaGive lena 3"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:255` | `muro 1: lluvia, olas, niebla y fuego apagado` | `Add(TEXT("muro 1: lluvia, olas, niebla y fuego apagado"), [this]() { return Console(TEXT("BalizaTime 2 19.3")); }, [this, Weather]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:255` | `BalizaTime 2 19.3` | `Add(TEXT("muro 1: lluvia, olas, niebla y fuego apagado"), [this]() { return Console(TEXT("BalizaTime 2 19.3")); }, [this, Weather]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:262` | `el barril se llena con la lluvia` | `Add(TEXT("el barril se llena con la lluvia"), [this, Barrel]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:265` | `BalizaTimeScale 10` | `return MarkCount >= 0 && Console(TEXT("BalizaTimeScale 10"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:267` | `captura f3d-ciclon` | `Add(TEXT("captura f3d-ciclon"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:269` | `BalizaTimeScale 1` | `Console(TEXT("BalizaTimeScale 1"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:270` | `BalizaTime 2 20.5` | `Console(TEXT("BalizaTime 2 20.5"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:280` | `espera de la captura` | `Add(TEXT("espera de la captura"), [] { return true; }, [] { return !FScreenshotRequest::IsScreenshotRequested(); });` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:281` | `ojo: calma sin lluvia` | `Add(TEXT("ojo: calma sin lluvia"), [this]() { return Console(TEXT("BalizaTime 2 22.3")); }, [Weather]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:281` | `BalizaTime 2 22.3` | `Add(TEXT("ojo: calma sin lluvia"), [this]() { return Console(TEXT("BalizaTime 2 22.3")); }, [Weather]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:287` | `reloj x40: muro 2 y fin del ciclón a las 02:00` | `Add(TEXT("reloj x40: muro 2 y fin del ciclón a las 02:00"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:290` | `BalizaTime 2 23.2` | `return Console(TEXT("BalizaTime 2 23.2")) && Console(TEXT("BalizaTimeScale 40"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:290` | `BalizaTimeScale 40` | `return Console(TEXT("BalizaTime 2 23.2")) && Console(TEXT("BalizaTimeScale 40"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:306` | `desmayo: 20 s a 0, +3 h y despierta en Cala Varada con 40/40/40/60` | `Add(TEXT("desmayo: 20 s a 0, +3 h y despierta en Cala Varada con 40/40/40/60"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:308` | `BalizaTimeScale 1` | `Console(TEXT("BalizaTimeScale 1"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:309` | `BalizaTime 3 10` | `Console(TEXT("BalizaTime 3 10"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:311` | `BalizaBody 0 50 50 50` | `return Console(TEXT("BalizaBody 0 50 50 50"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:327` | `en el refugio de Cala Varada` | `Add(TEXT("en el refugio de Cala Varada"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:329` | `BalizaTime 3 12` | `Console(TEXT("BalizaTime 3 12"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:333` | `a mediodía no se duerme` | `Add(TEXT("a mediodía no se duerme"), [Body]() { return !Body()->TrySleep(); }, [Body]() { return Body()->GetSleepCount() == 0; });` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:334` | `dormir a las 21:00 hasta las 06:00 con energía 100` | `Add(TEXT("dormir a las 21:00 hasta las 06:00 con energía 100"), [this]()` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:336` | `BalizaTime 2 21` | `return Console(TEXT("BalizaTime 2 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));` |
+| `Source/Explored/Debug/ExploredF3dSmokeTest.cpp:336` | `BalizaBody 50 50 30 80` | `return Console(TEXT("BalizaTime 2 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:101` | `kit inicial` | `Add(TEXT("kit inicial"), [this]() { return Count(TEXT("cuchillo")) == 1 && Count(TEXT("cantimplora")) == 1 && Count(TEXT("barometro")) == 1; },` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:103` | `recoger leña 1` | `Add(TEXT("recoger leña 1"), [this]() { return Interact(TEXT("lena_cala_1")); }, [this]() { return Idle() && Count(TEXT("lena")) == 2; });` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:104` | `recoger leña 2` | `Add(TEXT("recoger leña 2"), [this]() { return Interact(TEXT("lena_cala_2")); }, [this]() { return Idle() && Count(TEXT("lena")) == 4; });` |
@@ -187,10 +239,13 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:167` | `recipes.json: receta incompleta (id, verb, place y output)` | `Errors.Add(TEXT("recipes.json: receta incompleta (id, verb, place y output)"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:174` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:179` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:284` | `survival_needs.json: valores del cuerpo no válidos` | `Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:467` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:494` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:148` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:151` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:154` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:150` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:153` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:156` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |
@@ -212,6 +267,9 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Save/SaveValue.cpp:754` | `se esperaba «,» o «]»` | `return Fail(TEXT("se esperaba «,» o «]»"));` |
 | `Source/Explored/Save/SaveValue.cpp:781` | `carácter inesperado` | `return Fail(TEXT("carácter inesperado"));` |
 | `Source/Explored/Save/SaveValue.cpp:1227` | `texto sobrante tras el valor` | `Parser.Fail(TEXT("texto sobrante tras el valor"));` |
+| `Source/Explored/UI/IslandHudModel.cpp:12` | `Día %d · %02d:%02d` | `return FString::Printf(TEXT("Día %d · %02d:%02d"), FMath::Max(1, Day), Minutes / 60, Minutes % 60);` |
+| `Source/Explored/UI/IslandHudModel.cpp:17` | `Día %d` | `return FString::Printf(TEXT("Día %d"), FMath::Max(1, Day));` |
+| `Source/Explored/UI/IslandHudModel.cpp:24` | `%d hPa %s` | `return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:168` | `Cala Varada` | `AddZone(TEXT("cala_varada"), TEXT("Cala Varada"), EIslandArchetype::Landing, FVector2D(-100.0f, 10.0f), 35.0f, 0.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:170` | `Rocas del Pescador` | `AddZone(TEXT("rocas_pescador"), TEXT("Rocas del Pescador"), EIslandArchetype::Teeth, FVector2D(-15.0f, -140.0f), 30.0f, 2.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:171` | `Bosque de Bambú` | `AddZone(TEXT("bosque_bambu"), TEXT("Bosque de Bambú"), EIslandArchetype::Emerald, FVector2D(55.0f, -85.0f), 42.0f, 5.0f);` |
@@ -238,6 +296,20 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (0)
+## Avisos (15)
 
-Ninguno.
+- translations/en.json: ExploredUI,CondBleeding no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondFever no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondInfection no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondOpenWounds no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondScurvy no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondSprain no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,CondSunBurn no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,FishingLineOut no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,FishingWaiting no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,InteractPrompt no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,NeedEnergy no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,NeedHunger no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,NeedRest no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,NeedThirst no aparece en el código (¿clave renombrada o borrada?)
+- translations/en.json: ExploredUI,NeedWarmth no aparece en el código (¿clave renombrada o borrada?)

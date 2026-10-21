@@ -40,17 +40,18 @@ FStormClockConfig FStormClockConfig::Gdd()
 	C.Points.Add(Point(At(2, 18.0), 998.0f));
 	C.Points.Add(Point(At(2, 19.0), 990.0f));
 	C.Points.Add(Point(At(2, 22.0), 965.0f));
-	C.Points.Add(Point(At(2, 23.75), 965.0f));
+	C.Points.Add(Point(At(2, 22.0 + FStormClockConfig::EyeHours), 965.0f));
 	C.Points.Add(Point(At(3, 2.0), 995.0f));
 	C.Points.Add(Point(At(3, 6.0), 1012.0f));
 
-	// Chubasco de 90 s reales = 2 h de juego (1 h = 45 s). Ciclón: muro 1 (3 h), ojo (1,75 h), muro 2 (2,25 h).
+	// Chubasco de 90 s reales = 2 h de juego (1 h = 45 s). Ciclón: muro 1 (3 h), ojo de 65 s reales
+	// (EyeHours ≈ 1,44 h) y muro 2 hasta las 02:00 del día 3.
 	C.Windows.Add(Window(EStormState::Squall, At(1, 15.0), At(1, 17.0)));
 	C.Windows.Add(Window(EStormState::HighClouds, At(2, 6.0), At(2, 18.0)));
 	C.Windows.Add(Window(EStormState::SeaClosed, At(2, 18.0), At(2, 19.0)));
 	C.Windows.Add(Window(EStormState::CycloneWall1, At(2, 19.0), At(2, 22.0)));
-	C.Windows.Add(Window(EStormState::CycloneEye, At(2, 22.0), At(2, 23.75)));
-	C.Windows.Add(Window(EStormState::CycloneWall2, At(2, 23.75), At(3, 2.0)));
+	C.Windows.Add(Window(EStormState::CycloneEye, At(2, 22.0), At(2, 22.0 + FStormClockConfig::EyeHours)));
+	C.Windows.Add(Window(EStormState::CycloneWall2, At(2, 22.0 + FStormClockConfig::EyeHours), At(3, 2.0)));
 	return C;
 }
 
@@ -262,4 +263,66 @@ FStormBarrelState FStormClockModel::TakeCharge(const FStormBarrelState& Barrel, 
 	FStormBarrelState Next = Barrel;
 	Next.Charges = FMath::Min(Barrel.Charges, BarrelCapacity) - 1;
 	return Next;
+}
+
+bool FStormClockModel::IsWall(EStormState State)
+{
+	return StormDetail::IsWall(State);
+}
+
+FWeatherLook FStormClockModel::LookFor(EStormState State, float RainIntensity)
+{
+	FWeatherLook Look;
+	const float Rain = FMath::IsFinite(RainIntensity) ? FMath::Clamp(RainIntensity, 0.0f, 1.0f) : 0.0f;
+	switch (State)
+	{
+	case EStormState::Squall:
+		Look.CloudCover = 0.85f;
+		Look.Rain = Rain;
+		Look.Wind = 0.45f;
+		Look.SeaState = 0.35f;
+		Look.Fog = 0.15f;
+		Look.Temperature = 25.0f;
+		break;
+	case EStormState::HighClouds:
+		Look.CloudCover = 0.55f;
+		Look.Wind = 0.35f;
+		Look.SeaState = 0.3f;
+		Look.Temperature = 27.0f;
+		break;
+	case EStormState::SeaClosed:
+		Look.CloudCover = 0.9f;
+		Look.Wind = 0.7f;
+		Look.SeaState = 0.7f;
+		Look.Fog = 0.15f;
+		Look.Temperature = 25.0f;
+		break;
+	case EStormState::CycloneWall1:
+	case EStormState::CycloneWall2:
+		Look.CloudCover = 1.0f;
+		Look.Rain = FMath::Max(Rain, 0.0f);
+		Look.Wind = 1.0f;
+		Look.SeaState = 1.0f;
+		Look.Fog = 0.6f;
+		Look.Lightning = 0.08f;
+		Look.Temperature = 22.0f;
+		break;
+	case EStormState::CycloneEye:
+		// Calma y cielo estrellado; el mar de fondo sigue alto.
+		Look.CloudCover = 0.05f;
+		Look.Wind = 0.1f;
+		Look.SeaState = 0.55f;
+		Look.Temperature = 24.0f;
+		break;
+	default:
+		break;
+	}
+	return Look;
+}
+
+FWeatherLook FStormClockModel::LookAt(double Hour) const
+{
+	FWeatherLook Look = LookFor(StateAt(Hour), RainAt(Hour).Intensity);
+	Look.Pressure = PressureAt(Hour);
+	return Look;
 }

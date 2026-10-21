@@ -6,6 +6,7 @@
 #include "Explored.h"
 #include "Items/ExploredIslandStateSubsystem.h"
 #include "Items/ExploredSurvivorComponent.h"
+#include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/IslandWeatherQuery.h"
 
 #define LOCTEXT_NAMESPACE "ExploredIsland"
@@ -55,7 +56,11 @@ void AExploredRainBarrel::SampleRain()
 	{
 		return;
 	}
-	const FRainBarrelState Next = FRainBarrelModel::Collect(State, FMath::Max(RainSampleSeconds, 0.1f));
+	// Con el reloj acelerado (BalizaTimeScale) la lluvia cuenta igual de rápido que el cielo.
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	const float Scale = Time ? Time->GetTimeScale() : 1.0f;
+	const FRainBarrelState Next = FRainBarrelModel::Collect(State, FMath::Max(RainSampleSeconds, 0.1f) * Scale);
 	if (!(Next == State))
 	{
 		State = Next;

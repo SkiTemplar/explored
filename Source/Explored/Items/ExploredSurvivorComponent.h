@@ -73,6 +73,17 @@ public:
 
 	/** Acción con duración; OnDone se llama al terminar si no se cancela. false si ya hay otra. */
 	bool StartTimedAction(float Seconds, TFunction<void()> OnDone);
+
+	/** Avance 0-1 de la acción con duración en curso (barra de acción del HUD); 0 sin acción. */
+	UFUNCTION(BlueprintPure, Category = "Explored|Mochila")
+	float GetActionProgress01() const;
+
+	/** Ranura rápida elegida con las teclas 1-3 (GDD §9.1): 0-2. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	void SelectQuickSlot(int32 Index);
+
+	UFUNCTION(BlueprintPure, Category = "Explored|Mochila")
+	int32 GetSelectedQuickSlot() const { return SelectedQuickSlot; }
 	void CancelTimedAction();
 
 	const FBackpackState& GetBackpack() const { return Backpack; }
@@ -108,4 +119,6 @@ private:
 	FTimerHandle ActionTimer;
 	TFunction<void()> PendingAction;
 	bool bBusy = false;
+	float ActionTotalSeconds = 0.0f;
+	int32 SelectedQuickSlot = 0;
 };

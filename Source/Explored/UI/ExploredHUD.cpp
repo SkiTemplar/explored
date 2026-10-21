@@ -1,24 +1,32 @@
 #include "UI/ExploredHUD.h"
 
 #include "Carry/CarryComponent.h"
-#include "Algo/Count.h"
 #include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "InputCoreTypes.h"
-#include "Fishing/FishingComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/InteractionComponent.h"
-#include "Items/ItemRegistrySubsystem.h"
 #include "Narrative/BeaconSubsystem.h"
 #include "UI/ExploredPlayerController.h"
 #include "Player/ExploredCharacter.h"
-#include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/SettingsLogic.h"
 
+#include "Cooking/ExploredFire.h"
+#include "Items/ExploredSurvivorComponent.h"
+#include "Items/IslandDataLoader.h"
+#include "Sky/TimeOfDaySubsystem.h"
+#include "Survival/IslandBodyComponent.h"
+#include "UI/IslandHudModel.h"
+#include "Weather/ExploredWeatherSubsystem.h"
+
+namespace HUDDetail
+{
+	const FName BarometerItem(TEXT("barometro"));
+}
 AExploredCharacter* AExploredHUD::GetExploredCharacter() const
 {
 	const APlayerController* PC = GetOwningPlayerController();
@@ -44,14 +52,18 @@ void AExploredHUD::DrawHUD()
 
 	DrawReticle();
 	DrawObjective();
+	UpdateDayCard();
 
-	if (AExploredCharacter* Character = GetExploredCharacter())
+	AExploredCharacter* Character = GetExploredCharacter();
+	DrawClock(Character);
+	if (Character)
 	{
 		EnsureBoundToCarry(*Character);
+		EnsureBoundToSurvivor(*Character);
 		DrawContextPrompt(*Character);
-		DrawHandLabels(*Character);
-		DrawFishing(*Character);
-		DrawBodyNeeds(*Character);
+		DrawActionBar(*Character);
+		DrawBodyBars(*Character);
+		DrawQuickSlots(*Character);
 	}
 
 	DrawNotifications();
@@ -110,10 +122,17 @@ void AExploredHUD::ShowPage(const FText& Title, const FText& Body, const FText& 
 
 void AExploredHUD::ShowCard(const FText& Text, float DurationSeconds)
 {
-	Card.Text = Text;
-	Card.Color = FLinearColor::White;
-	Card.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
-	Card.RemainingSeconds = Card.TotalSeconds;
+	FExploredHUDNotification Next;
+	Next.Text = Text;
+	Next.Color = FLinearColor::White;
+	Next.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
+	Next.RemainingSeconds = Next.TotalSeconds;
+	if (Card.RemainingSeconds > 0.0f)
+	{
+		PendingCards.Add(Next);
+		return;
+	}
+	Card = Next;
 }
 
 float AExploredHUD::Age(FExploredHUDNotification& Item) const
@@ -169,7 +188,7 @@ void AExploredHUD::DrawSubtitle()
 		FLinearColor Color = Subtitles[0].Color;
 		Color.A = Alpha;
 		// Abajo, por encima de las barras del cuerpo (GDD v3 §9.1).
-		DrawCenteredText(Subtitles[0].Text, Color, Canvas->SizeY * 0.80f, true);
+		DrawCenteredText(Subtitles[0].Text, Color, Canvas->SizeY * 0.74f, true);
 		return;
 	}
 }
@@ -219,7 +238,13 @@ void AExploredHUD::DrawPage()
 
 void AExploredHUD::DrawCard()
 {
-	const float Alpha = Age(Card);
+	float Alpha = Age(Card);
+	if (Alpha <= 0.0f && PendingCards.Num() > 0)
+	{
+		Card = PendingCards[0];
+		PendingCards.RemoveAt(0);
+		Alpha = Age(Card);
+	}
 	if (Alpha <= 0.0f)
 	{
 		return;
@@ -229,29 +254,14 @@ void AExploredHUD::DrawCard()
 
 void AExploredHUD::DrawReticle()
 {
-	const float CenterX = Canvas->SizeX * 0.5f;
-	const float CenterY = Canvas->SizeY * 0.5f;
-	constexpr float HalfSize = 4.0f;
-	const FLinearColor ReticleColor(1.0f, 1.0f, 1.0f, 0.85f);
-
-	DrawLine(CenterX - HalfSize, CenterY, CenterX + HalfSize, CenterY, ReticleColor, 1.5f);
-	DrawLine(CenterX, CenterY - HalfSize, CenterX, CenterY + HalfSize, ReticleColor, 1.5f);
+	// Retícula de punto (GDD v3 §9.1).
+	const float Size = FMath::Max(3.0f, 4.0f * TextScale());
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.5f), Canvas->SizeX * 0.5f - Size * 0.5f - 1.0f, Canvas->SizeY * 0.5f - Size * 0.5f - 1.0f, Size + 2.0f, Size + 2.0f);
+	DrawRect(FLinearColor(1.0f, 1.0f, 1.0f, 0.9f), Canvas->SizeX * 0.5f - Size * 0.5f, Canvas->SizeY * 0.5f - Size * 0.5f, Size, Size);
 }
 
-void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
+FString AExploredHUD::InteractKeyName() const
 {
-	const UInteractionComponent* InteractionComp = Character.GetInteractionComponent();
-	if (!InteractionComp || !InteractionComp->GetFocusedActor())
-	{
-		return;
-	}
-
-	const TArray<FText> Verbs = InteractionComp->GetContextVerbs();
-	if (Verbs.Num() == 0)
-	{
-		return;
-	}
-
 	// La tecla es la que tenga asignada Interactuar (se puede remapear), no una «E» fija.
 	const FName InteractAction(TEXT("IA_Interact"));
 	FKey InteractKey(ExploredSettingsLogic::GetDefaultKeyFor(InteractAction));
@@ -263,70 +273,235 @@ void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
 			InteractKey = InputSettings->GetKeyFor(InteractAction, InteractKey);
 		}
 	}
-
-	FFormatNamedArguments Args;
-	Args.Add(TEXT("Key"), InteractKey.GetDisplayName(false));
-	Args.Add(TEXT("Actions"), FText::Join(INVTEXT(" · "), Verbs));
-	const FText Prompt = FText::Format(NSLOCTEXT("ExploredUI", "InteractPrompt", "[{Key}] {Actions}"), Args);
-	DrawCenteredText(Prompt, FLinearColor::White, Canvas->SizeY * 0.6f);
+	return InteractKey.GetDisplayName(false).ToString();
 }
 
-void AExploredHUD::DrawHandLabels(const AExploredCharacter& Character)
+void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
 {
-	const UCarryComponent* CarryComp = Character.GetCarryComponent();
-	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(&Character);
-	if (!CarryComp || !Registry)
+	const UInteractionComponent* InteractionComp = Character.GetInteractionComponent();
+	const UIslandBodyComponent* Body = Character.GetIslandBodyComponent();
+	FString Action;
+	if (InteractionComp && InteractionComp->GetFocusedActor())
 	{
-		return;
+		const TArray<FText> Verbs = InteractionComp->GetContextVerbs();
+		if (Verbs.Num() > 0)
+		{
+			Action = FText::Join(INVTEXT(" · "), Verbs).ToString();
+		}
 	}
-
-	constexpr float Margin = 24.0f;
-	const float Bottom = Canvas->SizeY - Margin - 16.0f;
-
-	if (const FItemInstance* LeftItem = CarryComp->GetHandItemPtr(EHand::Left))
+	else if (Body && Body->IsSheltered())
 	{
-		DrawText(Registry->GetDisplayName(*LeftItem).ToString(), FLinearColor::White, Margin, Bottom);
+		// Sin foco, dentro de un refugio: E es «Dormir» (solo a su hora).
+		Action = Body->CanSleepNow() ? NSLOCTEXT("ExploredUI", "PromptSleep", "Dormir").ToString() : FString();
 	}
-
-	if (const FItemInstance* RightItem = CarryComp->GetHandItemPtr(EHand::Right))
+	const FString Prompt = FIslandHudModel::PromptText(InteractKeyName(), Action);
+	if (!Prompt.IsEmpty())
 	{
-		const FString Text = Registry->GetDisplayName(*RightItem).ToString();
-		float TextWidth = 0.0f, TextHeight = 0.0f;
-		GetTextSize(Text, TextWidth, TextHeight);
-		DrawText(Text, FLinearColor::White, Canvas->SizeX - Margin - TextWidth, Bottom);
+		DrawCenteredText(FText::FromString(Prompt), FLinearColor::White, Canvas->SizeY * 0.55f, true);
 	}
 }
 
-void AExploredHUD::DrawFishing(const AExploredCharacter& Character)
+void AExploredHUD::DrawBodyBars(const AExploredCharacter& Character)
 {
-	const UFishingComponent* FishingComp = Character.GetFishingComponent();
-	if (!FishingComp || FishingComp->GetSessionState() == EFishingSessionState::Idle)
+	const UIslandBodyComponent* Body = Character.GetIslandBodyComponent();
+	UFont* Font = GEngine ? GEngine->GetSmallFont() : nullptr;
+	if (!Body || !Font)
 	{
 		return;
 	}
-
-	const float CenterX = Canvas->SizeX * 0.5f;
-	const float Y = Canvas->SizeY * 0.7f;
-	if (FishingComp->GetSessionState() == EFishingSessionState::Waiting)
+	struct FBarStyle
 	{
-		DrawCenteredText(NSLOCTEXT("ExploredUI", "FishingWaiting", "Esperando la picada… [F] recoger"), FLinearColor(1.0f, 1.0f, 1.0f, 0.8f), Y);
+		EBodyBar Bar;
+		const TCHAR* Glyph;
+		FLinearColor Color;
+	};
+	// Iconos planos de un color (provisionales hasta F5): la inicial de la barra sobre su color.
+	const FBarStyle Styles[] = {
+		{ EBodyBar::Thirst, TEXT("S"), FLinearColor(0.36f, 0.62f, 0.86f) },
+		{ EBodyBar::Hunger, TEXT("H"), FLinearColor(0.80f, 0.55f, 0.24f) },
+		{ EBodyBar::Energy, TEXT("E"), FLinearColor(0.85f, 0.78f, 0.30f) },
+		{ EBodyBar::Warmth, TEXT("C"), FLinearColor(0.85f, 0.33f, 0.22f) },
+	};
+	const float Scale = TextScale();
+	const float Icon = 22.0f * Scale;
+	const float BarWidth = 150.0f * Scale;
+	const float BarHeight = 6.0f * Scale;
+	const float Gap = 8.0f * Scale;
+	const float Margin = 28.0f * Scale;
+	const double Now = GetWorld() ? GetWorld()->GetRealTimeSeconds() : 0.0;
+	const float Low = Body->GetTuning().LowThreshold;
+	float Y = Canvas->SizeY - Margin - 4.0f * (Icon + Gap);
+	for (const FBarStyle& Style : Styles)
+	{
+		const float Value = FIslandBodyModel::Get(Body->GetBars(), Style.Bar);
+		if (FIslandHudModel::IsBarVisible(Value, Low, Now))
+		{
+			DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), Margin - 4.0f, Y - 4.0f, Icon + BarWidth + Gap + 12.0f, Icon + 8.0f);
+			DrawRect(Style.Color, Margin, Y, Icon, Icon);
+			FCanvasTextItem Glyph(FVector2D(Margin + Icon * 0.28f, Y + Icon * 0.05f), FText::FromString(Style.Glyph), Font, FLinearColor(0.08f, 0.08f, 0.08f));
+			Glyph.Scale = FVector2D(Scale, Scale);
+			Canvas->DrawItem(Glyph);
+			const float BarY = Y + (Icon - BarHeight) * 0.5f;
+			DrawRect(FLinearColor(1.0f, 1.0f, 1.0f, 0.18f), Margin + Icon + Gap, BarY, BarWidth, BarHeight);
+			DrawRect(Style.Color, Margin + Icon + Gap, BarY, BarWidth * FMath::Clamp(Value / 100.0f, 0.0f, 1.0f), BarHeight);
+		}
+		Y += Icon + Gap;
+	}
+}
+
+void AExploredHUD::DrawQuickSlots(const AExploredCharacter& Character)
+{
+	const UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent();
+	UFont* Font = GEngine ? GEngine->GetSmallFont() : nullptr;
+	if (!Survivor || !Font)
+	{
 		return;
 	}
+	const TArray<FHudQuickSlot> Slots = FIslandHudModel::QuickSlots(Survivor->GetBackpack(), Survivor->GetSelectedQuickSlot());
+	const float Scale = TextScale();
+	const float Size = 72.0f * Scale;
+	const float Gap = 10.0f * Scale;
+	const float Total = Slots.Num() * Size + (Slots.Num() - 1) * Gap;
+	const float Top = Canvas->SizeY - 28.0f * Scale - Size;
+	float X = (Canvas->SizeX - Total) * 0.5f;
+	for (int32 Index = 0; Index < Slots.Num(); ++Index)
+	{
+		const FHudQuickSlot& Slot = Slots[Index];
+		const FLinearColor Border = Slot.bSelected ? FLinearColor(0.85f, 0.64f, 0.25f, 1.0f) : FLinearColor(1.0f, 1.0f, 1.0f, 0.25f);
+		const float Thick = Slot.bSelected ? 3.0f : 1.5f;
+		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X, Top, Size, Size);
+		DrawRect(Border, X, Top, Size, Thick);
+		DrawRect(Border, X, Top + Size - Thick, Size, Thick);
+		DrawRect(Border, X, Top, Thick, Size);
+		DrawRect(Border, X + Size - Thick, Top, Thick, Size);
+		const auto Text = [this, Font, Scale](const FString& Line, float TX, float TY, const FLinearColor& Color)
+		{
+			FCanvasTextItem Item(FVector2D(TX, TY), FText::FromString(Line), Font, Color);
+			Item.Scale = FVector2D(Scale, Scale);
+			Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
+			Canvas->DrawItem(Item);
+		};
+		Text(FString::FromInt(Index + 1), X + 5.0f * Scale, Top + 3.0f * Scale, FLinearColor(1.0f, 1.0f, 1.0f, 0.7f));
+		if (!Slot.IsEmpty())
+		{
+			const TArray<FString> Lines = WrapLines(ExploredIslandData::ItemName(Slot.ItemId).ToString(), Font, Scale, Size - 8.0f * Scale);
+			float LineY = Top + Size * 0.36f;
+			for (int32 Line = 0; Line < FMath::Min(2, Lines.Num()); ++Line)
+			{
+				Text(Lines[Line], X + 5.0f * Scale, LineY, FLinearColor::White);
+				LineY += 14.0f * Scale;
+			}
+			if (Slot.Count > 1)
+			{
+				Text(FString::Printf(TEXT("×%d"), Slot.Count), X + Size - 26.0f * Scale, Top + 3.0f * Scale, FLinearColor(1.0f, 0.9f, 0.6f));
+			}
+		}
+		X += Size + Gap;
+	}
+}
 
-	// Barra de tensión: verde con el sedal cómodo, roja cerca de la rotura (GDD §8.9).
-	constexpr float BarWidth = 240.0f;
-	constexpr float BarHeight = 8.0f;
-	const float Tension = FMath::Clamp(FishingComp->GetTension01(), 0.0f, 1.0f);
-	const FLinearColor Fill = FLinearColor::LerpUsingHSV(FLinearColor(0.2f, 0.8f, 0.3f), FLinearColor(0.9f, 0.15f, 0.1f), Tension);
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f), CenterX - BarWidth * 0.5f, Y, BarWidth, BarHeight);
-	DrawRect(Fill, CenterX - BarWidth * 0.5f, Y, BarWidth * Tension, BarHeight);
+void AExploredHUD::DrawClock(const AExploredCharacter* Character)
+{
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
+	if (!Time || !Font)
+	{
+		return;
+	}
+	const float Scale = TextScale();
+	const float Margin = 24.0f;
+	TArray<FString> Lines;
+	Lines.Add(FIslandHudModel::ClockText(Time->GetDay(), Time->GetHours()));
+	const UExploredSurvivorComponent* Survivor = Character ? Character->GetSurvivorComponent() : nullptr;
+	const UExploredWeatherSubsystem* Weather = World->GetSubsystem<UExploredWeatherSubsystem>();
+	if (Survivor && Weather && Survivor->GetItemCount(HUDDetail::BarometerItem) > 0)
+	{
+		Lines.Add(FIslandHudModel::BarometerText(Weather->GetPressureHpa(), Weather->GetPressureTrend()));
+	}
+	float Y = Margin;
+	for (const FString& Line : Lines)
+	{
+		float Width = 0.0f;
+		float Height = 0.0f;
+		Canvas->TextSize(Font, Line, Width, Height, Scale, Scale);
+		const float X = Canvas->SizeX - Margin - Width;
+		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X - 12.0f, Y - 7.0f, Width + 24.0f, Height + 14.0f);
+		FCanvasTextItem Item(FVector2D(X, Y), FText::FromString(Line), Font, FLinearColor(0.97f, 0.95f, 0.88f, 0.97f));
+		Item.Scale = FVector2D(Scale, Scale);
+		Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
+		Canvas->DrawItem(Item);
+		Y += Height + 18.0f;
+	}
+}
 
-	const FString Label = FText::Format(
-		NSLOCTEXT("ExploredUI", "FishingLineOut", "Sedal fuera: {0} m · [R] recoger · [T] soltar"),
-		FText::AsNumber(FMath::RoundToInt(FishingComp->GetLineOutM()))).ToString();
-	float TextWidth = 0.0f, TextHeight = 0.0f;
-	GetTextSize(Label, TextWidth, TextHeight);
-	DrawText(Label, FLinearColor::White, CenterX - TextWidth * 0.5f, Y + BarHeight + 6.0f);
+float AExploredHUD::CurrentActionProgress(const AExploredCharacter& Character) const
+{
+	if (const UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent(); Survivor && Survivor->IsBusy())
+	{
+		return FMath::Max(0.001f, Survivor->GetActionProgress01());
+	}
+	// Cocinar o hervir en la hoguera enfocada (aceite 40 s, pescado 20 s).
+	const UInteractionComponent* InteractionComp = Character.GetInteractionComponent();
+	const AExploredFire* Fire = InteractionComp ? Cast<AExploredFire>(InteractionComp->GetFocusedActor()) : nullptr;
+	if (!Fire || !Fire->HasJob() || Fire->IsJobReady())
+	{
+		return 0.0f;
+	}
+	const FCampfireJob& Job = Fire->GetCampfireState().Job;
+	const FRecipeDef* Recipe = ExploredIslandData::Get().Recipes.Find(Job.RecipeId);
+	const float Total = Recipe ? Recipe->Seconds : 0.0f;
+	return FMath::Max(0.001f, FIslandHudModel::Progress01(Total - Job.RemainingSeconds, Total));
+}
+
+void AExploredHUD::DrawActionBar(const AExploredCharacter& Character)
+{
+	const float Progress = CurrentActionProgress(Character);
+	if (Progress <= 0.0f)
+	{
+		return;
+	}
+	const float Scale = TextScale();
+	const float Width = 320.0f * Scale;
+	const float Height = 8.0f * Scale;
+	const float X = (Canvas->SizeX - Width) * 0.5f;
+	const float Y = Canvas->SizeY * 0.62f;
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.5f), X - 2.0f, Y - 2.0f, Width + 4.0f, Height + 4.0f);
+	DrawRect(FLinearColor(0.85f, 0.64f, 0.25f, 0.95f), X, Y, Width * Progress, Height);
+}
+
+void AExploredHUD::UpdateDayCard()
+{
+	const UWorld* World = GetWorld();
+	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	if (!Time || !Beacon || Beacon->GetStage() == EBeaconStage::Final)
+	{
+		return;
+	}
+	const int32 Day = Time->GetDay();
+	if (Day != LastCardDay)
+	{
+		// El primero (día 1) va detrás del cartel de inicio, que ya está en cola.
+		LastCardDay = Day;
+		ShowCard(FText::FromString(FIslandHudModel::DayCardText(Day)), 3.0f);
+	}
+}
+
+void AExploredHUD::EnsureBoundToSurvivor(const AExploredCharacter& Character)
+{
+	UExploredSurvivorComponent* Survivor = Character.GetSurvivorComponent();
+	if (!Survivor || BoundSurvivor.Get() == Survivor)
+	{
+		return;
+	}
+	Survivor->OnMessage.AddDynamic(this, &AExploredHUD::HandleSurvivorMessage);
+	BoundSurvivor = Survivor;
+}
+
+void AExploredHUD::HandleSurvivorMessage(const FText& Message)
+{
+	ShowSubtitle(Message, 3.0f);
 }
 
 void AExploredHUD::EnsureBoundToCarry(const AExploredCharacter& Character)
@@ -393,103 +568,6 @@ void AExploredHUD::DrawNotifications()
 		Color.A = Alpha;
 		DrawCenteredText(Notification.Text, Color, Y, true);
 		Y += 30.0f * TextScale();
-	}
-}
-
-void AExploredHUD::DrawBodyNeeds(const AExploredCharacter& Character)
-{
-	const UBodySignalsComponent* Body = Character.GetBodySignalsComponent();
-	if (!Body)
-	{
-		return;
-	}
-	const FSurvivalState& State = Body->GetSurvivalState();
-
-	struct FNeedBar
-	{
-		FText Label;
-		float Value01 = 1.0f;
-		FLinearColor Color;
-	};
-
-	// Temperatura corporal: 37 °C es cómodo; el aviso crece al alejarse en cualquier sentido
-	// (frío o fiebre), en línea con FBodySignalsModel (mismo criterio: desviación, no umbral fijo).
-	const float TempDeviation = FMath::Abs(State.BodyTemperature - 37.0f);
-	const float Warmth01 = FMath::Clamp(1.0f - TempDeviation / 3.5f, 0.0f, 1.0f);
-
-	const FNeedBar Bars[] = {
-		{ NSLOCTEXT("ExploredUI", "NeedHunger", "Hambre"), State.Hunger / 100.0f, FLinearColor(0.80f, 0.55f, 0.20f, 1.0f) },
-		{ NSLOCTEXT("ExploredUI", "NeedThirst", "Sed"), State.Thirst / 100.0f, FLinearColor(0.30f, 0.55f, 0.90f, 1.0f) },
-		{ NSLOCTEXT("ExploredUI", "NeedEnergy", "Energía"), State.Energy / 100.0f, FLinearColor(0.85f, 0.80f, 0.30f, 1.0f) },
-		{ NSLOCTEXT("ExploredUI", "NeedRest", "Sueño"), State.Rest / 100.0f, FLinearColor(0.55f, 0.45f, 0.85f, 1.0f) },
-		{ NSLOCTEXT("ExploredUI", "NeedWarmth", "Temperatura"), Warmth01, FLinearColor(0.90f, 0.35f, 0.20f, 1.0f) },
-	};
-
-	// Discreto a propósito (biblia §5.4): por debajo de este umbral empieza a asomar
-	// y se pone más opaco cuanto peor está, en vez de mostrar siempre las cinco barras.
-	constexpr float VisibleThreshold = 0.55f;
-	constexpr float BarWidth = 92.0f;
-	constexpr float BarHeight = 5.0f;
-	constexpr float RowGap = 15.0f;
-	constexpr float Margin = 24.0f;
-	// Bajo la línea del objetivo, que ocupa la esquina superior izquierda (GDD v3 §9.1) hasta F5.
-	constexpr float BelowObjective = 56.0f;
-
-	float Y = Margin + BelowObjective;
-	for (const FNeedBar& Bar : Bars)
-	{
-		if (Bar.Value01 >= VisibleThreshold)
-		{
-			continue;
-		}
-		const float Urgency = FMath::Clamp(1.0f - (Bar.Value01 / VisibleThreshold), 0.0f, 1.0f);
-		const float Alpha = FMath::Lerp(0.35f, 1.0f, Urgency);
-		DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.45f * Alpha), Margin, Y, BarWidth, BarHeight);
-		DrawRect(FLinearColor(Bar.Color.R, Bar.Color.G, Bar.Color.B, Alpha), Margin, Y, BarWidth * FMath::Max(Bar.Value01, 0.03f), BarHeight);
-		DrawText(Bar.Label.ToString(), FLinearColor(1.0f, 1.0f, 1.0f, Alpha), Margin, Y - 14.0f);
-		Y += BarHeight + RowGap;
-	}
-
-	// Heridas, quemaduras y escorbuto: texto solo si están activos (sin iconos, GDD §8.3).
-	TArray<FText> Conditions;
-	if (State.HasCondition(ECondition::Bleeding))
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondBleeding", "Sangrando"));
-	}
-	if (State.HasCondition(ECondition::SunBurn))
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondSunBurn", "Quemadura solar"));
-	}
-	if (State.HasCondition(ECondition::Fever))
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondFever", "Fiebre"));
-	}
-	if (State.HasCondition(ECondition::Infection))
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondInfection", "Herida infectada"));
-	}
-	if (State.HasCondition(ECondition::Sprain))
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondSprain", "Esguince"));
-	}
-	// Umbral tomado de FBodyModel::ScurvyStage (0.15 = primera etapa, encías); repetirlo aquí
-	// evitaría el acoplamiento, pero el HUD solo necesita saber "ya hay algo que avisar".
-	if (State.ScurvySeverity >= 0.15f)
-	{
-		Conditions.Add(NSLOCTEXT("ExploredUI", "CondScurvy", "Escorbuto"));
-	}
-	const int32 OpenWounds = Algo::CountIf(State.Wounds, [](const FWound& Wound) { return Wound.Healed < 1.0f && !Wound.bBandaged; });
-	if (OpenWounds > 0)
-	{
-		FFormatNamedArguments Args;
-		Args.Add(TEXT("Count"), OpenWounds);
-		Conditions.Add(FText::Format(NSLOCTEXT("ExploredUI", "CondOpenWounds", "{Count} {Count}|plural(one=herida,other=heridas) sin vendar"), Args));
-	}
-
-	if (Conditions.Num() > 0)
-	{
-		const FText Joined = FText::Join(INVTEXT(" · "), Conditions);
-		DrawText(Joined.ToString(), FLinearColor(0.95f, 0.30f, 0.22f, 0.95f), Margin, Y + 4.0f);
 	}
 }
 

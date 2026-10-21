@@ -48,6 +48,7 @@
 		"Verb_TakeFrom": { "es": "Sacar de {0}", "en": "Take from {0}" }
 	},
 	"ExploredUI": {
+		"PromptSleep": { "es": "Dormir", "en": "Sleep" },
 		"Title": { "es": "BALIZA SIETE", "en": "BEACON SEVEN" },
 		"Subtitle": { "es": "Isla de Sal", "en": "Salt Island" },
 		"MenuObsoleteSave": { "es": "La partida guardada es de una versión anterior del juego y no se puede continuar.", "en": "The saved game is from an earlier version of the game and can't be continued." },
@@ -212,6 +213,28 @@
 		"ReviveVerbMedicine": { "es": "Atender a {Name}", "en": "Patch {Name} up", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
 		"PlayerDown": { "es": "{Name} está en el suelo.", "en": "{Name} is down.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" },
 		"PlayerBackUp": { "es": "{Name} vuelve a estar en pie.", "en": "{Name} is back up.", "pendiente": "UI de cooperativo (biblia 08 §6.6 y §6.8), con ExploredLinks::DecideGroupSleep y el derribado de SystemLinks" }
+	},
+	"ExploredRaft": {
+		"NeedPaddle": { "es": "Sin remo no voy a ningún sitio.", "en": "Without a paddle I'm going nowhere." },
+		"SeaClosedNoBoard": { "es": "El mar se cierra. A tierra.", "en": "The sea is closing. Back to land." },
+		"TieRaft": { "es": "Atar balsa", "en": "Lash raft" },
+		"PlaceLog": { "es": "Dejar tronco ({0}/{1})", "en": "Lay log ({0}/{1})" },
+		"NeedLog": { "es": "Hacen falta troncos: se traen de uno en uno.", "en": "It needs logs, carried one at a time." },
+		"RaftDone": { "es": "Cuatro troncos y dos cuerdas. Flota.", "en": "Four logs and two ropes. It floats." },
+		"SeaClosing": { "es": "El mar se cierra.", "en": "The sea is closing." },
+		"ForcedReturn": { "es": "Cruzas como puedes. Playa Norte.", "en": "You make it across somehow. North Beach." },
+		"BoardRaft": { "es": "Subir a la balsa", "en": "Board the raft" }
+	},
+	"ExploredBody": {
+		"WarnThirst": { "es": "Tengo sed.", "en": "I'm thirsty." },
+		"WarnHunger": { "es": "Tengo hambre.", "en": "I'm hungry." },
+		"WarnEnergy": { "es": "Estoy agotada.", "en": "I'm exhausted." },
+		"WarnWarmth": { "es": "Tengo frío.", "en": "I'm cold." },
+		"SleepNoRoof": { "es": "Solo puedo dormir bajo techo.", "en": "I can only sleep under a roof." },
+		"SleepWrongHour": { "es": "Aún no es hora de dormir.", "en": "It's not time to sleep yet." },
+		"SleepThirsty": { "es": "Tienes demasiada sed para dormir", "en": "You're too thirsty to sleep" },
+		"FaintShore": { "es": "Despiertas en Playa Norte…", "en": "You wake up on North Beach…" },
+		"FaintShelter": { "es": "Despiertas en el refugio…", "en": "You wake up in the shelter…" }
 	},
 	"ExploredBeacon": {
 		"MissingLens": { "es": "Falta la lente: está en el «Sáhara»", "en": "The lens is missing: it's on the «Sáhara»" },

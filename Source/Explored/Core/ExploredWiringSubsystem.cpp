@@ -13,6 +13,7 @@
 #include "Carry/CarryComponent.h"
 #include "Cooking/ExploredFire.h"
 #include "Events/WorldEventsSubsystem.h"
+#include "Explored.h"
 #include "ExploredGameMode.h"
 #include "Fauna/ExploredFaunaManager.h"
 #include "Fishing/ExploredFishingSubsystem.h"
@@ -23,9 +24,11 @@
 #include "Items/ItemTypes.h"
 #include "Player/ExploredCharacter.h"
 #include "Player/SwimComponent.h"
+#include "Save/SaveIslandSections.h"
 #include "Save/SaveSystemStates.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Survival/BodySignalsComponent.h"
+#include "Survival/IslandBodyComponent.h"
 #include "UI/ExploredPlayerController.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredWeatherSubsystem.h"
@@ -745,7 +748,7 @@ void UExploredWiringSubsystem::LoadInventory(const FSaveArchive& Ar)
 void UExploredWiringSubsystem::SaveBody(FSaveArchive& Ar) const
 {
 	const AExploredCharacter* Character = GetPlayerCharacter();
-	const UBodySignalsComponent* Body = Character ? Character->GetBodySignalsComponent() : nullptr;
+	const UIslandBodyComponent* Body = Character ? Character->GetIslandBodyComponent() : nullptr;
 	if (!Body)
 	{
 		if (PendingBody.IsSet())
@@ -754,7 +757,8 @@ void UExploredWiringSubsystem::SaveBody(FSaveArchive& Ar) const
 		}
 		return;
 	}
-	ExploredSaveStates::SaveSurvival(Ar, Body->GetSurvivalState(), Body->GetModeSettings().Mode);
+	// Baliza Siete: las cuatro barras del GDD v3 §5.1 y el último refugio (desmayo).
+	ExploredSaveStates::SaveBodyBars(Ar, Body->GetBars(), Body->GetLastShelterId());
 }
 
 void UExploredWiringSubsystem::LoadBody(const FSaveArchive& Ar)
@@ -804,17 +808,16 @@ void UExploredWiringSubsystem::ApplyPendingPawnSections()
 	}
 	if (PendingBody.IsSet())
 	{
-		if (UBodySignalsComponent* Body = Character->GetBodySignalsComponent())
+		if (UIslandBodyComponent* Body = Character->GetIslandBodyComponent())
 		{
-			FSurvivalState State;
-			ESurvivalMode Mode = Body->GetModeSettings().Mode;
-			ExploredSaveStates::LoadSurvival(PendingBody.GetValue(), State, Mode);
-			Body->RestoreSurvival(State, Mode);
-			// La fauna se enlazó con el modo por defecto: el cargado manda (GDD §11).
-			if (AExploredFaunaManager* Fauna = BoundFauna.Get())
+			FBodyBars Bars;
+			FName Shelter;
+			if (!ExploredSaveStates::LoadBodyBars(PendingBody.GetValue(), Bars, Shelter))
 			{
-				Fauna->SetPeaceful(Body->GetModeSettings().Mode == ESurvivalMode::Explorer);
+				UE_LOG(LogExplored, Warning, TEXT("[Cuerpo] La sección «body» no se puede leer: cuerpo inicial"));
+				Bars = Body->GetTuning().Initial;
 			}
+			Body->RestoreBars(Bars, Shelter);
 		}
 		PendingBody.Reset();
 	}
