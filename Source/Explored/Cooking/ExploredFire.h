@@ -17,8 +17,9 @@ class UExploredSurvivorComponent;
  * FCampfireModel: arde 5 min, cada leña suma 1,7 min, calienta a 4 m, asa un pez en 20 s y hierve
  * aceite en 40 s (2 peces crudos + coco vacío); solo el ciclón la apaga si no está bajo techo.
  *
- * Acciones (PerformAction / tecla E en este orden): «recoger» lo cocinado, «encender» (3 leña +
- * cuchillo), «cocinar» un pez, «hervir» aceite, «avivar» con leña o un tarro de aceite.
+ * Acciones (FFireActionsModel, en este orden): «recoger» lo cocinado, «encender» (3 leña + cuchillo),
+ * «cocinar» un pez, «hervir» aceite, «avivar» con leña o un tarro de aceite. La tecla E ejecuta el
+ * verbo elegido y la de combinar (C) pasa al siguiente (FVerbChoiceModel, GDD §5.6).
  *
  * Blueprint: «Ignite», «Perform Action», «Is Burning», «Get Burn Seconds», «Get Heat At».
  */
@@ -35,6 +36,8 @@ public:
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
 	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;
 	virtual void Interact_Implementation(AActor* InInstigator) override;
+	virtual bool HasVerbChoice_Implementation(AActor* InInstigator) const override;
+	virtual bool CycleVerb_Implementation(AActor* InInstigator) override;
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
 	bool IsBurning() const { return State.bLit; }
@@ -67,6 +70,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Fuego")
 	TArray<FName> GetAvailableActions(AActor* InInstigator) const;
 
+	/** Lo que haría ahora la tecla de interactuar: el verbo elegido si vale; si no, el primero. */
+	UFUNCTION(BlueprintPure, Category = "Explored|Fuego")
+	FName GetChosenAction(AActor* InInstigator) const;
+
 	/** «recoger», «encender», «cocinar», «hervir» o «avivar». false si no se pudo. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Fuego")
 	bool PerformAction(AActor* InInstigator, FName Action);
@@ -97,6 +104,8 @@ private:
 	void Refresh();
 
 	FCampfireState State;
+	/** Verbo elegido con la tecla de combinar (se conserva entre usos). */
+	FName SelectedAction;
 	bool bSheltered = false;
 	bool bConfigured = false;
 	float SimulationTimer = 0.0f;

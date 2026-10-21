@@ -50,3 +50,4 @@ Tests/RaftSpec.cpp
 Tests/IslandHudSpec.cpp
 Tests/PlaytestRunSpec.cpp
 Tests/BeaconSoftlockSpec.cpp
+Tests/IslandInputSpec.cpp

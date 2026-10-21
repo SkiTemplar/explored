@@ -37,6 +37,12 @@ struct EXPLORED_API FIslandHudModel
 	/** «E · Beber coco». Sin tecla o sin texto, vacío. */
 	static FString PromptText(const FString& KeyName, const FString& VerbAndObject);
 
+	/**
+	 * Objeto con elección de verbo (hoguera): «E · Hervir   C · Cocinar». Verbs[0] es el que ejecuta
+	 * KeyName y Verbs[1] el que elige CycleKeyName. Con un solo verbo o sin tecla de cambio, como PromptText.
+	 */
+	static FString ChoicePromptText(const FString& KeyName, const FString& CycleKeyName, const TArray<FString>& Verbs);
+
 	/** La barra se ve: siempre por encima del umbral; por debajo, parpadea a BlinkHz. */
 	static bool IsBarVisible(float Value, float LowThreshold, double TimeSeconds);
 

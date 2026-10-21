@@ -78,6 +78,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void SetUIMode(EExploredUIMode NewMode);
 
+	/**
+	 * Inventario abierto en partida (Tab): cursor visible y juego + interfaz, para pulsar sus
+	 * botones sin soltar el teclado; cerrado, vuelve a solo juego. Fuera de partida no hace nada.
+	 */
+	void ApplyBackpackInputMode(bool bOpen);
+
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void ContinueGame();
 

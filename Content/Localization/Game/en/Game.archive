@@ -640,6 +640,164 @@
 			]
 		},
 		{
+			"Namespace": "ExploredInventory",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Translation": {
+						"Text": "Drop"
+					},
+					"Key": "Drop"
+				},
+				{
+					"Source": {
+						"Text": "{0} ×{1}"
+					},
+					"Translation": {
+						"Text": "{0} ×{1}"
+					},
+					"Key": "EntryCount"
+				},
+				{
+					"Source": {
+						"Text": "{0} ({1}/{2} sorbos)"
+					},
+					"Translation": {
+						"Text": "{0} ({1}/{2} sips)"
+					},
+					"Key": "EntrySips"
+				},
+				{
+					"Source": {
+						"Text": "En las manos: {0}"
+					},
+					"Translation": {
+						"Text": "In your hands: {0}"
+					},
+					"Key": "Heavy"
+				},
+				{
+					"Source": {
+						"Text": "Clic: usar, soltar o hacer · Tab: cerrar"
+					},
+					"Translation": {
+						"Text": "Click: use, drop or make · Tab: close"
+					},
+					"Key": "Hint"
+				},
+				{
+					"Source": {
+						"Text": "{0} {1}"
+					},
+					"Translation": {
+						"Text": "{0} {1}"
+					},
+					"Key": "InputAmount"
+				},
+				{
+					"Source": {
+						"Text": " + "
+					},
+					"Translation": {
+						"Text": " + "
+					},
+					"Key": "InputSeparator"
+				},
+				{
+					"Source": {
+						"Text": "{0}: {1}"
+					},
+					"Translation": {
+						"Text": "{0}: {1}"
+					},
+					"Key": "RecipeButton"
+				},
+				{
+					"Source": {
+						"Text": "Recetas"
+					},
+					"Translation": {
+						"Text": "Recipes"
+					},
+					"Key": "Recipes"
+				},
+				{
+					"Source": {
+						"Text": "Mochila ({0}/{1})"
+					},
+					"Translation": {
+						"Text": "Backpack ({0}/{1})"
+					},
+					"Key": "Title"
+				},
+				{
+					"Source": {
+						"Text": "Usar"
+					},
+					"Translation": {
+						"Text": "Use"
+					},
+					"Key": "Use"
+				},
+				{
+					"Source": {
+						"Text": "Hervir"
+					},
+					"Translation": {
+						"Text": "Boil"
+					},
+					"Key": "VerbBoil"
+				},
+				{
+					"Source": {
+						"Text": "Trenzar"
+					},
+					"Translation": {
+						"Text": "Braid"
+					},
+					"Key": "VerbBraid"
+				},
+				{
+					"Source": {
+						"Text": "Cocinar"
+					},
+					"Translation": {
+						"Text": "Cook"
+					},
+					"Key": "VerbCook"
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Translation": {
+						"Text": "Light"
+					},
+					"Key": "VerbLight"
+				},
+				{
+					"Source": {
+						"Text": "Montar"
+					},
+					"Translation": {
+						"Text": "Mount"
+					},
+					"Key": "VerbMount"
+				},
+				{
+					"Source": {
+						"Text": "Atar"
+					},
+					"Translation": {
+						"Text": "Tie"
+					},
+					"Key": "VerbTie"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredIsland",
 			"Children": [
 				{
@@ -1380,132 +1538,6 @@
 						"Text": "Hold to crouch"
 					},
 					"Key": "HoldCrouch"
-				},
-				{
-					"Source": {
-						"Text": "Mochila ({0} de {1} l)"
-					},
-					"Translation": {
-						"Text": "Backpack ({0} of {1} l)"
-					},
-					"Key": "InvBackpack"
-				},
-				{
-					"Source": {
-						"Text": "Cinturón ({0}/{1})"
-					},
-					"Translation": {
-						"Text": "Belt ({0}/{1})"
-					},
-					"Key": "InvBelt"
-				},
-				{
-					"Source": {
-						"Text": "En las dos manos: {0}"
-					},
-					"Translation": {
-						"Text": "In both hands: {0}"
-					},
-					"Key": "InvBothHands"
-				},
-				{
-					"Source": {
-						"Text": "vacía"
-					},
-					"Translation": {
-						"Text": "empty"
-					},
-					"Key": "InvEmptyHand"
-				},
-				{
-					"Source": {
-						"Text": "Vas cargado: te cansas antes y haces más ruido."
-					},
-					"Translation": {
-						"Text": "You're weighed down: you tire sooner and make more noise."
-					},
-					"Key": "InvHeavy"
-				},
-				{
-					"Source": {
-						"Text": "Mano izquierda: {0}"
-					},
-					"Translation": {
-						"Text": "Left hand: {0}"
-					},
-					"Key": "InvLeftHand"
-				},
-				{
-					"Source": {
-						"Text": "nada"
-					},
-					"Translation": {
-						"Text": "nothing"
-					},
-					"Key": "InvNothing"
-				},
-				{
-					"Source": {
-						"Text": "No puedes cargar más."
-					},
-					"Translation": {
-						"Text": "You can't carry any more."
-					},
-					"Key": "InvOverloaded"
-				},
-				{
-					"Source": {
-						"Text": "Bolsillos ({0}/{1})"
-					},
-					"Translation": {
-						"Text": "Pockets ({0}/{1})"
-					},
-					"Key": "InvPockets"
-				},
-				{
-					"Source": {
-						"Text": "Bolsa estanca ({0}/{1})"
-					},
-					"Translation": {
-						"Text": "Dry pouch ({0}/{1})"
-					},
-					"Key": "InvPouch"
-				},
-				{
-					"Source": {
-						"Text": "Mano derecha: {0}"
-					},
-					"Translation": {
-						"Text": "Right hand: {0}"
-					},
-					"Key": "InvRightHand"
-				},
-				{
-					"Source": {
-						"Text": "Angarillas ({0} kg)"
-					},
-					"Translation": {
-						"Text": "Sledge ({0} kg)"
-					},
-					"Key": "InvSledge"
-				},
-				{
-					"Source": {
-						"Text": "Lo que llevas"
-					},
-					"Translation": {
-						"Text": "What you carry"
-					},
-					"Key": "InvTitle"
-				},
-				{
-					"Source": {
-						"Text": "Carga: {0} kg de {1} kg cómodos"
-					},
-					"Translation": {
-						"Text": "Load: {0} kg of {1} kg comfortable"
-					},
-					"Key": "InvWeight"
 				},
 				{
 					"Source": {

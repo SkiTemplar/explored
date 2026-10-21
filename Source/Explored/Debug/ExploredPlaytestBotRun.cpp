@@ -132,6 +132,12 @@ UExploredSurvivorComponent* UExploredPlaytestBot::Survivor() const
 	return UExploredSurvivorComponent::FindOn(Character.Get());
 }
 
+bool UExploredPlaytestBot::UseItem(const TCHAR* ItemId) const
+{
+	AExploredCharacter* Player = Character.Get();
+	return Player && Player->UseBackpackItem(FName(ItemId));
+}
+
 UIslandBodyComponent* UExploredPlaytestBot::Body() const
 {
 	return UIslandBodyComponent::FindOn(Character.Get());
@@ -247,8 +253,9 @@ void UExploredPlaytestBot::AddCraft(const FString& RecipeId)
 {
 	AddStep(TEXT("craftear ") + RecipeId, [this, RecipeId]()
 	{
-		UExploredSurvivorComponent* S = Survivor();
-		return S && S->Craft(FName(*RecipeId));
+		// Como el botón de receta del inventario.
+		AExploredCharacter* Player = Character.Get();
+		return Player && Player->CraftFromBackpack(FName(*RecipeId));
 	}, [this]() { return Idle() && Run.Clock.Est1xSeconds - StepStart1x > 0.3; }, 60.0);
 }
 
@@ -287,8 +294,24 @@ void UExploredPlaytestBot::AddFireJob(TFunction<AActor*()> FireGetter, const FSt
 	AddStep(FString::Printf(TEXT("hoguera: %s"), *Action), [this, FireGetter, Action, Product]()
 	{
 		AExploredFire* Fire = Cast<AExploredFire>(FireGetter());
+		AExploredCharacter* Player = Character.Get();
 		MarkCount = Product.IsEmpty() ? 0 : Count(*Product);
-		return Fire && Fire->PerformAction(Character.Get(), FName(*Action));
+		if (!Fire || !Player)
+		{
+			return false;
+		}
+		// Como el jugador: C (CycleVerb) hasta el verbo y E (Interact) para hacerlo.
+		const FName Wanted(*Action);
+		for (int32 Tries = 0; Tries < 4 && Fire->GetChosenAction(Player) != Wanted; ++Tries)
+		{
+			IExploredInteractable::Execute_CycleVerb(Fire, Player);
+		}
+		if (Fire->GetChosenAction(Player) != Wanted)
+		{
+			return false;
+		}
+		IExploredInteractable::Execute_Interact(Fire, Player);
+		return true;
 	}, [this, FireGetter, Product]()
 	{
 		AExploredFire* Fire = Cast<AExploredFire>(FireGetter());
@@ -300,9 +323,9 @@ void UExploredPlaytestBot::AddFireJob(TFunction<AActor*()> FireGetter, const FSt
 		{
 			return Idle() && Fire->IsBurning();
 		}
-		if (Fire->IsJobReady() && Idle())
+		if (Fire->IsJobReady() && Idle() && Fire->GetChosenAction(Character.Get()) == FName(TEXT("recoger")))
 		{
-			Fire->PerformAction(Character.Get(), FName(TEXT("recoger")));
+			IExploredInteractable::Execute_Interact(Fire, Character.Get());
 		}
 		return Count(*Product) > MarkCount;
 	}, 90.0);
@@ -357,7 +380,7 @@ void UExploredPlaytestBot::AddDayOne()
 	// Prólogo: beber un coco en Cala Varada.
 	AddGoTo(TEXT("palma_cala_1"));
 	AddUse(TEXT("palma_cala_1"), 2);
-	AddStep(TEXT("beber un coco"), [this]() { return Survivor() && Survivor()->ConsumeItem(TEXT("coco")); },
+	AddStep(TEXT("beber un coco"), [this]() { return UseItem(TEXT("coco")); },
 		[this]() { return Count(TEXT("coco_vacio")) >= 1; }, 10.0);
 	AddGoTo(TEXT("lena_cala_1"));
 	AddUse(TEXT("lena_cala_1"));
@@ -387,7 +410,7 @@ void UExploredPlaytestBot::AddDayOne()
 	AddGoToActor(TEXT("la hoguera de las rocas"), [this]() { return Cast<AActor>(NearestFire()); });
 	AddFireJob([this]() { return NearestFire(); }, TEXT("cocinar"), TEXT("pez_asado"));
 	AddFireJob([this]() { return NearestFire(); }, TEXT("cocinar"), TEXT("pez_asado"));
-	AddStep(TEXT("comer un pez asado"), [this]() { return Survivor() && Survivor()->ConsumeItem(TEXT("pez_asado")); },
+	AddStep(TEXT("comer un pez asado"), [this]() { return UseItem(TEXT("pez_asado")); },
 		[] { return true; }, 10.0);
 	AddGoTo(TEXT("pagina_2"));
 	AddUse(TEXT("pagina_2"), 1, true);
@@ -396,7 +419,7 @@ void UExploredPlaytestBot::AddDayOne()
 	AddUse(TEXT("pagina_1"));
 	AddGoTo(TEXT("pagina_7"));
 	AddUse(TEXT("pagina_7"), 1, true);
-	AddStep(TEXT("beber el segundo coco (cuenco para el aceite)"), [this]() { return Count(TEXT("coco")) == 0 || Survivor()->ConsumeItem(TEXT("coco")); },
+	AddStep(TEXT("beber el segundo coco (cuenco para el aceite)"), [this]() { return Count(TEXT("coco")) == 0 || UseItem(TEXT("coco")); },
 		[this]() { return Count(TEXT("coco")) == 0; }, 10.0);
 	// Tarde: fibras para las 3 cuerdas de la balsa y el remo; el chubasco llena el barril.
 	for (int32 Index = 3; Index <= 8; ++Index)
@@ -420,7 +443,7 @@ void UExploredPlaytestBot::AddDayOne()
 
 void UExploredPlaytestBot::AddDayTwo()
 {
-	AddStep(TEXT("desayunar el pez asado de ayer"), [this]() { return Count(TEXT("pez_asado")) == 0 || Survivor()->ConsumeItem(TEXT("pez_asado")); },
+	AddStep(TEXT("desayunar el pez asado de ayer"), [this]() { return Count(TEXT("pez_asado")) == 0 || UseItem(TEXT("pez_asado")); },
 		[] { return true; }, 10.0);
 	AddGoTo(TEXT("barril_lluvia_faro"));
 	AddUse(TEXT("barril_lluvia_faro"), 1, true);
@@ -508,7 +531,7 @@ void UExploredPlaytestBot::AddDayThree()
 	AddFireJob(Hearth, TEXT("encender"), FString());
 	AddFireJob(Hearth, TEXT("avivar"), FString());
 	AddFireJob(Hearth, TEXT("cocinar"), TEXT("pez_asado"));
-	AddStep(TEXT("comer"), [this]() { return Survivor()->ConsumeItem(TEXT("pez_asado")); }, [] { return true; }, 10.0);
+	AddStep(TEXT("comer"), [this]() { return UseItem(TEXT("pez_asado")); }, [] { return true; }, 10.0);
 	AddFireJob(Hearth, TEXT("hervir"), TEXT("tarro_aceite"));
 	AddFireJob(Hearth, TEXT("hervir"), TEXT("tarro_aceite"));
 	for (int32 Index = 1; Index <= 3; ++Index)
@@ -701,16 +724,16 @@ void UExploredPlaytestBot::Upkeep()
 		// La cantimplora primero (se rellena en el barril); los cocos dan los cuencos del aceite.
 		if (S->GetCanteenSips() > 0)
 		{
-			S->ConsumeItem(TEXT("cantimplora"));
+			UseItem(TEXT("cantimplora"));
 		}
 		else if (S->GetItemCount(TEXT("coco")) > 0)
 		{
-			S->ConsumeItem(TEXT("coco"));
+			UseItem(TEXT("coco"));
 		}
 	}
 	if (Bars.Hunger < 40.0f && S->GetItemCount(TEXT("pez_asado")) > 0)
 	{
-		S->ConsumeItem(TEXT("pez_asado"));
+		UseItem(TEXT("pez_asado"));
 	}
 }
 

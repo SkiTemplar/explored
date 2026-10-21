@@ -100,6 +100,8 @@ private:
 	AActor* Prop(const FString& PropId) const;
 	AActor* NearestFire() const;
 	UExploredSurvivorComponent* Survivor() const;
+	/** Come o bebe como el jugador: AExploredCharacter::UseBackpackItem (botón «Usar» del inventario). */
+	bool UseItem(const TCHAR* ItemId) const;
 	UIslandBodyComponent* Body() const;
 	int32 Count(const TCHAR* ItemId) const;
 	bool Idle() const;

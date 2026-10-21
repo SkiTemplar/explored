@@ -2,53 +2,78 @@
 
 #include "GameFramework/PlayerController.h"
 #include "Internationalization/Text.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
 
-#include "Carry/CarryComponent.h"
-#include "Carry/InventoryModel.h"
-#include "Items/ItemRegistrySubsystem.h"
-#include "Items/ItemTypes.h"
+#include "Items/ExploredSurvivorComponent.h"
+#include "Items/IslandDataLoader.h"
 #include "Player/ExploredCharacter.h"
+#include "UI/BackpackMenuModel.h"
 #include "UI/ExploredUIStyle.h"
-#include "UI/ScreensLogic.h"
+#include "UI/Widgets/ExploredUIWidgets.h"
+
+#define LOCTEXT_NAMESPACE "ExploredInventory"
 
 namespace ExploredInventoryPanelDetail
 {
-	const AExploredCharacter* ResolveCharacter(const TWeakObjectPtr<APlayerController>& Owner)
+	FText VerbText(FName Verb)
 	{
-		const APlayerController* PC = Owner.Get();
-		return PC ? Cast<AExploredCharacter>(PC->GetPawn()) : nullptr;
+		if (Verb == FName(TEXT("encender"))) { return LOCTEXT("VerbLight", "Encender"); }
+		if (Verb == FName(TEXT("trenzar"))) { return LOCTEXT("VerbBraid", "Trenzar"); }
+		if (Verb == FName(TEXT("atar"))) { return LOCTEXT("VerbTie", "Atar"); }
+		if (Verb == FName(TEXT("cocinar"))) { return LOCTEXT("VerbCook", "Cocinar"); }
+		if (Verb == FName(TEXT("hervir"))) { return LOCTEXT("VerbBoil", "Hervir"); }
+		if (Verb == FName(TEXT("montar"))) { return LOCTEXT("VerbMount", "Montar"); }
+		return FText::FromName(Verb);
 	}
 
-	FText Kilos(float Value)
+	FText EntryText(const FBackpackMenuEntry& Entry)
 	{
-		FNumberFormattingOptions Options;
-		Options.SetMinimumFractionalDigits(0);
-		Options.SetMaximumFractionalDigits(1);
-		return FText::AsNumber(FMath::IsFinite(Value) ? Value : 0.0f, &Options);
-	}
-
-	FText SectionTitle(const ExploredScreens::FInventorySection& Section)
-	{
-		const FText Used = FText::AsNumber(Section.ItemIds.Num());
-		const FText Capacity = FText::AsNumber(Section.Capacity);
-		switch (Section.Slot)
+		const FText Name = ExploredIslandData::ItemName(Entry.ItemId);
+		if (Entry.Sips != INDEX_NONE)
 		{
-		case EInventorySlot::Pockets:
-			return FText::Format(NSLOCTEXT("ExploredUI", "InvPockets", "Bolsillos ({0}/{1})"), Used, Capacity);
-		case EInventorySlot::Belt:
-			return FText::Format(NSLOCTEXT("ExploredUI", "InvBelt", "Cinturón ({0}/{1})"), Used, Capacity);
-		case EInventorySlot::Pouch:
-			return FText::Format(NSLOCTEXT("ExploredUI", "InvPouch", "Bolsa estanca ({0}/{1})"), Used, Capacity);
-		case EInventorySlot::Backpack:
-			return FText::Format(NSLOCTEXT("ExploredUI", "InvBackpack", "Mochila ({0} de {1} l)"),
-				Kilos(Section.UsedVolumeLiters), Kilos(Section.MaxVolumeLiters));
-		default:
-			return FText::Format(NSLOCTEXT("ExploredUI", "InvSledge", "Angarillas ({0} kg)"), Kilos(Section.UsedWeightKg));
+			return FText::Format(LOCTEXT("EntrySips", "{0} ({1}/{2} sorbos)"), Name, FText::AsNumber(Entry.Sips),
+				FText::AsNumber(FBackpackModel::CanteenMaxSips));
 		}
+		return Entry.Count > 1 ? FText::Format(LOCTEXT("EntryCount", "{0} ×{1}"), Name, FText::AsNumber(Entry.Count)) : Name;
+	}
+
+	FText InputsText(const FRecipeDef& Recipe)
+	{
+		TArray<FText> Parts;
+		for (const FRecipeAmount& Input : Recipe.Inputs)
+		{
+			Parts.Add(FText::Format(LOCTEXT("InputAmount", "{0} {1}"), FText::AsNumber(Input.Count), ExploredIslandData::ItemName(Input.Item)));
+		}
+		for (const FName Tool : Recipe.Tools)
+		{
+			Parts.Add(ExploredIslandData::ItemName(Tool));
+		}
+		return FText::Join(LOCTEXT("InputSeparator", " + "), Parts);
+	}
+
+	TSharedRef<SWidget> MakeButton(const FText& Label, bool bEnabled, TFunction<void()> OnClick)
+	{
+		const FExploredUIStyle& Style = FExploredUIStyle::Get();
+		return SNew(SButton)
+			.ButtonStyle(&Style.ButtonStyle())
+			// No enfocable: un clic no se lleva el teclado y Tab sigue cerrando la mochila.
+			.IsFocusable(false)
+			.IsEnabled(bEnabled)
+			.OnClicked_Lambda([OnClick]()
+			{
+				OnClick();
+				return FReply::Handled();
+			})
+			[
+				SNew(STextBlock)
+				.Text(Label)
+				.Font(Style.FontSmall())
+				.ColorAndOpacity(FSlateColor(bEnabled ? Style.ColorAccent() : Style.ColorDisabled()))
+			];
 	}
 }
 
@@ -56,7 +81,6 @@ void SExploredInventoryPanel::Construct(const FArguments& InArgs)
 {
 	Owner = InArgs._Owner;
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	// Etiqueta del mundo, no menú: nunca intercepta el ratón ni el foco.
 	SetVisibility(TAttribute<EVisibility>::CreateSP(this, &SExploredInventoryPanel::GetPanelVisibility));
 
 	ChildSlot
@@ -67,11 +91,11 @@ void SExploredInventoryPanel::Construct(const FArguments& InArgs)
 		.Padding(FMargin(0.0f, 0.0f, 48.0f, 0.0f))
 		[
 			SNew(SBorder)
-			.BorderImage(Style.BrushSheet())
+			.BorderImage(Style.BrushPanel())
 			.Padding(FMargin(18.0f, 14.0f))
 			[
 				SNew(SBox)
-				.WidthOverride(300.0f)
+				.WidthOverride(400.0f)
 				[
 					SAssignNew(Content, SBox)
 				]
@@ -80,12 +104,19 @@ void SExploredInventoryPanel::Construct(const FArguments& InArgs)
 	];
 }
 
+AExploredCharacter* SExploredInventoryPanel::ResolveCharacter() const
+{
+	const APlayerController* PC = Owner.Get();
+	return PC ? Cast<AExploredCharacter>(PC->GetPawn()) : nullptr;
+}
+
 EVisibility SExploredInventoryPanel::GetPanelVisibility() const
 {
 	// Se consulta en cada evaluación y no en Tick: un widget plegado no se pinta ni recibe Tick.
-	const AExploredCharacter* Character = ExploredInventoryPanelDetail::ResolveCharacter(Owner);
-	const bool bOpen = Character && Character->IsBackpackOpen() && Character->GetCarryComponent() != nullptr;
-	return bOpen ? EVisibility::HitTestInvisible : EVisibility::Collapsed;
+	// SelfHitTestInvisible: los botones reciben el clic y el resto de la pantalla sigue siendo del juego.
+	const AExploredCharacter* Character = ResolveCharacter();
+	const bool bOpen = Character && Character->IsBackpackOpen() && Character->GetSurvivorComponent() != nullptr;
+	return bOpen ? EVisibility::SelfHitTestInvisible : EVisibility::Collapsed;
 }
 
 void SExploredInventoryPanel::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -102,24 +133,17 @@ void SExploredInventoryPanel::Tick(const FGeometry& AllottedGeometry, const doub
 
 FString SExploredInventoryPanel::ComputeSignature() const
 {
-	const AExploredCharacter* Character = ExploredInventoryPanelDetail::ResolveCharacter(Owner);
-	const UCarryComponent* Carry = Character ? Character->GetCarryComponent() : nullptr;
-	if (!Carry)
+	const AExploredCharacter* Character = ResolveCharacter();
+	const UExploredSurvivorComponent* Survivor = Character ? Character->GetSurvivorComponent() : nullptr;
+	if (!Survivor)
 	{
 		return FString();
 	}
-	const FInventoryModel& Model = Carry->GetInventoryModel();
-	const FInventoryState& State = Model.GetState();
-	FString Out = FString::Printf(TEXT("%lld|%lld|%d|%d|%d|%.1f"), State.HandLeft.InstanceId, State.HandRight.InstanceId,
-		State.bHasBackpack ? 1 : 0, State.bHasSledge ? 1 : 0, Model.HasPouch() ? 1 : 0, Model.GetBodyWeightKg());
-	const FInventoryContainer* Containers[] = { &State.Pockets, &State.Belt, &State.Pouch, &State.Backpack, &State.Sledge };
-	for (const FInventoryContainer* Container : Containers)
+	const FBackpackState& Pack = Survivor->GetBackpack();
+	FString Out = FString::Printf(TEXT("%s|%d|%d|"), *Pack.HeldHeavy.ToString(), Pack.CanteenSips, Survivor->IsBusy() ? 1 : 0);
+	for (const FBackpackStack& Stack : Pack.Stacks)
 	{
-		Out += TEXT("|");
-		for (const FInventoryEntry& Entry : Container->Entries)
-		{
-			Out += FString::Printf(TEXT("%lld:%d,"), Entry.Item.InstanceId, Entry.SlotIndex);
-		}
+		Out += FString::Printf(TEXT("%s:%d,"), *Stack.Id.ToString(), Stack.Count);
 	}
 	return Out;
 }
@@ -128,106 +152,114 @@ void SExploredInventoryPanel::Rebuild()
 {
 	using namespace ExploredInventoryPanelDetail;
 
-	const AExploredCharacter* Character = ResolveCharacter(Owner);
-	const UCarryComponent* Carry = Character ? Character->GetCarryComponent() : nullptr;
-	if (!Carry || !Content.IsValid())
+	AExploredCharacter* Character = ResolveCharacter();
+	const UExploredSurvivorComponent* Survivor = Character ? Character->GetSurvivorComponent() : nullptr;
+	if (!Survivor || !Content.IsValid())
 	{
 		return;
 	}
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
-	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(Character);
-	const FInventoryModel& Model = Carry->GetInventoryModel();
-	const FInventoryState& State = Model.GetState();
+	const FIslandData& Data = ExploredIslandData::Get();
+	const FBackpackState& Pack = Survivor->GetBackpack();
+	const bool bFree = !Survivor->IsBusy();
+	const TWeakObjectPtr<AExploredCharacter> WeakCharacter(Character);
 
-	auto ItemName = [Carry, Registry, &Model](int64 InstanceId) -> FText
-	{
-		const FItemInstance* Instance = Carry->FindInstance(InstanceId);
-		if (Instance && Registry)
-		{
-			return Registry->GetDisplayName(*Instance);
-		}
-		const FInventoryItem* Item = Model.FindItemById(InstanceId);
-		return Item ? FText::FromName(Item->DefinitionId) : FText::GetEmpty();
-	};
-	auto Line = [&Style](const FText& Text, bool bHeading = false, const FLinearColor* Color = nullptr) -> TSharedRef<SWidget>
+	auto Line = [&Style](const FText& Text, bool bHeading = false, bool bDim = false) -> TSharedRef<SWidget>
 	{
 		return SNew(STextBlock)
 			.Text(Text)
 			.Font(bHeading ? Style.FontBody() : Style.FontSmall())
 			.AutoWrapText(true)
-			.ColorAndOpacity(FSlateColor(Color ? *Color : Style.ColorSheetInk()));
+			.ColorAndOpacity(FSlateColor(bDim ? Style.ColorInkDim() : Style.ColorInk()));
 	};
 
 	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
 	Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 6.0f))
 	[
-		Line(NSLOCTEXT("ExploredUI", "InvTitle", "Lo que llevas"), true)
+		Line(FText::Format(LOCTEXT("Title", "Mochila ({0}/{1})"), FText::AsNumber(FBackpackModel::UsedSlots(Pack)),
+			FText::AsNumber(Data.Backpack.Slots)), true)
 	];
-
-	// Manos: un objeto de dos manos se cuenta una vez.
-	const FText Empty = NSLOCTEXT("ExploredUI", "InvEmptyHand", "vacía");
-	if (State.bHandsHoldTwoHanded && State.HandLeft.IsValid())
+	if (!Pack.HeldHeavy.IsNone())
 	{
 		Box->AddSlot().AutoHeight()
 		[
-			Line(FText::Format(NSLOCTEXT("ExploredUI", "InvBothHands", "En las dos manos: {0}"), ItemName(State.HandLeft.InstanceId)))
-		];
-	}
-	else
-	{
-		Box->AddSlot().AutoHeight()
-		[
-			Line(FText::Format(NSLOCTEXT("ExploredUI", "InvLeftHand", "Mano izquierda: {0}"),
-				State.HandLeft.IsValid() ? ItemName(State.HandLeft.InstanceId) : Empty))
-		];
-		Box->AddSlot().AutoHeight()
-		[
-			Line(FText::Format(NSLOCTEXT("ExploredUI", "InvRightHand", "Mano derecha: {0}"),
-				State.HandRight.IsValid() ? ItemName(State.HandRight.InstanceId) : Empty))
+			Line(FText::Format(LOCTEXT("Heavy", "En las manos: {0}"), ExploredIslandData::ItemName(Pack.HeldHeavy)))
 		];
 	}
 
-	for (const ExploredScreens::FInventorySection& Section : ExploredScreens::BuildInventorySections(State, Model.HasPouch()))
+	for (const FBackpackMenuEntry& Entry : FBackpackMenuModel::Entries(Pack, Data.Consumables))
 	{
-		Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 8.0f, 0.0f, 2.0f))
-		[
-			Line(SectionTitle(Section), true)
-		];
-		if (Section.ItemIds.Num() == 0)
+		const FName ItemId = Entry.ItemId;
+		TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+		Row->AddSlot().FillWidth(1.0f).VAlign(VAlign_Center)[Line(EntryText(Entry))];
+		if (Data.Consumables.Find(ItemId))
 		{
-			const FLinearColor Dim = Style.ColorSheetInk() * FLinearColor(1.0f, 1.0f, 1.0f, 0.55f);
-			Box->AddSlot().AutoHeight().Padding(FMargin(10.0f, 0.0f, 0.0f, 0.0f))
+			Row->AddSlot().AutoWidth()
 			[
-				Line(NSLOCTEXT("ExploredUI", "InvNothing", "nada"), false, &Dim)
+				MakeButton(LOCTEXT("Use", "Usar"), bFree && Entry.bCanUse, [WeakCharacter, ItemId]()
+				{
+					if (AExploredCharacter* Target = WeakCharacter.Get())
+					{
+						Target->UseBackpackItem(ItemId);
+					}
+				})
 			];
 		}
-		for (const int64 InstanceId : Section.ItemIds)
+		if (Entry.bCanDrop)
 		{
-			Box->AddSlot().AutoHeight().Padding(FMargin(10.0f, 0.0f, 0.0f, 0.0f))
+			Row->AddSlot().AutoWidth()
 			[
-				Line(ItemName(InstanceId))
+				MakeButton(LOCTEXT("Drop", "Soltar"), bFree, [WeakCharacter, ItemId]()
+				{
+					if (AExploredCharacter* Target = WeakCharacter.Get())
+					{
+						Target->DropBackpackItem(ItemId);
+					}
+				})
 			];
 		}
+		Box->AddSlot().AutoHeight()[Row];
 	}
 
-	// Peso frente a la capacidad cómoda (GDD §8.2: afecta a la energía, al nado y al ruido).
-	const ExploredScreens::ELoadBand Band = ExploredScreens::LoadBandFor(Model.GetCarriedWeightRatio());
-	const FLinearColor LoadColor = Band == ExploredScreens::ELoadBand::Comfortable ? Style.ColorSheetInk()
-		: Band == ExploredScreens::ELoadBand::Heavy ? Style.ColorAccentDim() : Style.ColorWarning();
+	Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 10.0f, 0.0f, 2.0f))
+	[
+		Line(LOCTEXT("Recipes", "Recetas"), true)
+	];
+	for (const FBackpackMenuRecipe& Recipe : FBackpackMenuModel::HandRecipes(Data.Recipes, Pack))
+	{
+		const FRecipeDef* Def = Data.Recipes.Find(Recipe.RecipeId);
+		if (!Def)
+		{
+			continue;
+		}
+		const FName RecipeId = Recipe.RecipeId;
+		const FText Label = FText::Format(LOCTEXT("RecipeButton", "{0}: {1}"), VerbText(Recipe.Verb),
+			ExploredUIWidgets::PickLocalized(Def->NameEs, Def->NameEn));
+		Box->AddSlot().AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				MakeButton(Label, bFree && Recipe.CanCraft(), [WeakCharacter, RecipeId]()
+				{
+					if (AExploredCharacter* Target = WeakCharacter.Get())
+					{
+						Target->CraftFromBackpack(RecipeId);
+					}
+				})
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
+			[
+				Line(InputsText(*Def), false, true)
+			]
+		];
+	}
 	Box->AddSlot().AutoHeight().Padding(FMargin(0.0f, 10.0f, 0.0f, 0.0f))
 	[
-		Line(FText::Format(NSLOCTEXT("ExploredUI", "InvWeight", "Carga: {0} kg de {1} kg cómodos"),
-			Kilos(Model.GetBodyWeightKg()), Kilos(Model.GetComfortableCapacityKg())), true, &LoadColor)
+		Line(LOCTEXT("Hint", "Clic: usar, soltar o hacer · Tab: cerrar"), false, true)
 	];
-	if (Band != ExploredScreens::ELoadBand::Comfortable)
-	{
-		Box->AddSlot().AutoHeight()
-		[
-			Line(Band == ExploredScreens::ELoadBand::Heavy
-				? NSLOCTEXT("ExploredUI", "InvHeavy", "Vas cargado: te cansas antes y haces más ruido.")
-				: NSLOCTEXT("ExploredUI", "InvOverloaded", "No puedes cargar más."), false, &LoadColor)
-		];
-	}
 
 	Content->SetContent(Box);
 }
+
+#undef LOCTEXT_NAMESPACE

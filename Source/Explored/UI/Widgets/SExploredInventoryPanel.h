@@ -6,22 +6,18 @@
 #include "Widgets/SCompoundWidget.h"
 
 class APlayerController;
+class AExploredCharacter;
 class SBox;
 
 /**
- * Vista mínima del inventario diegético (GDD §8.2): mientras la mochila está
- * abierta (Tab / cruceta derecha → AExploredCharacter::IsBackpackOpen), una
- * etiqueta de papel al lado derecho enseña lo que hay en cada mano, los
- * bolsillos, el cinturón, la bolsa estanca, la mochila y las angarillas (lo
- * que se lleve), con huecos, volumen y el peso frente a la capacidad cómoda.
+ * Inventario de Baliza Siete (Tab, GDD v3 §9.2): los huecos de la mochila (FBackpackState de
+ * UExploredSurvivorComponent), la carga pesada de las manos y las recetas de mano.
  *
- * Es solo lectura y no toma el foco: el juego sigue y el personaje se puede
- * mover con la mochila abierta. La visibilidad se consulta al personaje en
- * cada evaluación; mientras se ve, se reconstruye cuando cambia lo que se
- * lleva (una firma barata en cada Tick). TODO(P-UI3): el interior 3D de la mochila
- * y sacar las cosas con la mano (GDD §8.2).
- *
- * Qué secciones se ven y el color de la carga: ExploredScreens (ScreensLogicSpec).
+ * Cada fila tiene «Usar» (comer o beber) y «Soltar»; cada receta, un botón con su verbo («Trenzar:
+ * Cuerda») que se activa cuando hay material. Los botones llaman a AExploredCharacter
+ * (UseBackpackItem, DropBackpackItem, CraftFromBackpack), que valida con FBackpackMenuModel. Con el
+ * panel abierto AExploredPlayerController enseña el cursor; los botones no toman el foco, así que el
+ * teclado sigue en el juego (Tab cierra). Se reconstruye cuando cambia la mochila (firma barata en Tick).
  */
 class EXPLORED_API SExploredInventoryPanel : public SCompoundWidget
 {
@@ -38,8 +34,9 @@ public:
 private:
 	EVisibility GetPanelVisibility() const;
 	void Rebuild();
-	/** Resumen barato de lo que se lleva para saber si hay que reconstruir. */
+	/** Resumen barato de la mochila para saber si hay que reconstruir. */
 	FString ComputeSignature() const;
+	AExploredCharacter* ResolveCharacter() const;
 
 	TWeakObjectPtr<APlayerController> Owner;
 	TSharedPtr<SBox> Content;

@@ -524,7 +524,7 @@
 					"Keys": [
 						{
 							"Key": "LampWick",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 196"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 221"
 						}
 					]
 				},
@@ -557,7 +557,7 @@
 					"Keys": [
 						{
 							"Key": "LampLight",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 201"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 226"
 						}
 					]
 				},
@@ -601,7 +601,7 @@
 					"Keys": [
 						{
 							"Key": "LampLit",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 201"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 226"
 						}
 					]
 				},
@@ -623,7 +623,7 @@
 					"Keys": [
 						{
 							"Key": "LampLens",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 190"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 215"
 						}
 					]
 				},
@@ -656,7 +656,7 @@
 					"Keys": [
 						{
 							"Key": "LampOil",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 193"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 218"
 						}
 					]
 				}
@@ -778,6 +778,198 @@
 			]
 		},
 		{
+			"Namespace": "ExploredInventory",
+			"Children": [
+				{
+					"Source": {
+						"Text": " + "
+					},
+					"Keys": [
+						{
+							"Key": "InputSeparator",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 55"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Atar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbTie",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 26"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Clic: usar, soltar o hacer · Tab: cerrar"
+					},
+					"Keys": [
+						{
+							"Key": "Hint",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 259"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Cocinar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbCook",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 27"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "En las manos: {0}"
+					},
+					"Keys": [
+						{
+							"Key": "Heavy",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 186"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Encender"
+					},
+					"Keys": [
+						{
+							"Key": "VerbLight",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 24"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Hervir"
+					},
+					"Keys": [
+						{
+							"Key": "VerbBoil",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 28"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Mochila ({0}/{1})"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 179"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Montar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbMount",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 29"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Recetas"
+					},
+					"Keys": [
+						{
+							"Key": "Recipes",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 226"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Soltar"
+					},
+					"Keys": [
+						{
+							"Key": "Drop",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 212"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Trenzar"
+					},
+					"Keys": [
+						{
+							"Key": "VerbBraid",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 25"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Usar"
+					},
+					"Keys": [
+						{
+							"Key": "Use",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 199"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} ({1}/{2} sorbos)"
+					},
+					"Keys": [
+						{
+							"Key": "EntrySips",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 38"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} {1}"
+					},
+					"Keys": [
+						{
+							"Key": "InputAmount",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 49"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} ×{1}"
+					},
+					"Keys": [
+						{
+							"Key": "EntryCount",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 41"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0}: {1}"
+					},
+					"Keys": [
+						{
+							"Key": "RecipeButton",
+							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 236"
+						}
+					]
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredIsland",
 			"Children": [
 				{
@@ -820,7 +1012,7 @@
 					"Keys": [
 						{
 							"Key": "FireFeed",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 32"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 35"
 						}
 					]
 				},
@@ -864,7 +1056,7 @@
 					"Keys": [
 						{
 							"Key": "FireCook",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 30"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 33"
 						}
 					]
 				},
@@ -897,7 +1089,7 @@
 					"Keys": [
 						{
 							"Key": "FireLight",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 29"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 32"
 						}
 					]
 				},
@@ -908,7 +1100,7 @@
 					"Keys": [
 						{
 							"Key": "FireBoil",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 31"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 34"
 						}
 					]
 				},
@@ -985,7 +1177,7 @@
 					"Keys": [
 						{
 							"Key": "FireNothing",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 205"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 190"
 						}
 					]
 				},
@@ -1029,7 +1221,7 @@
 					"Keys": [
 						{
 							"Key": "FireNeedsWood",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 206"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 191"
 						}
 					]
 				},
@@ -1051,7 +1243,7 @@
 					"Keys": [
 						{
 							"Key": "FireCollect",
-							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 28"
+							"Path": "Source/Explored/Cooking/ExploredFire.cpp - line 31"
 						}
 					]
 				},
@@ -1210,7 +1402,7 @@
 					"Keys": [
 						{
 							"Key": "BoardRaft",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 590"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 597"
 						}
 					]
 				}
@@ -1298,17 +1490,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Angarillas ({0} kg)"
-					},
-					"Keys": [
-						{
-							"Key": "InvSledge",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 50"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Aplicar"
 					},
 					"Keys": [
@@ -1390,28 +1571,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Bolsa estanca ({0}/{1})"
-					},
-					"Keys": [
-						{
-							"Key": "InvPouch",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 45"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Bolsillos ({0}/{1})"
-					},
-					"Keys": [
-						{
-							"Key": "InvPockets",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 41"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Brillo"
 					},
 					"Keys": [
@@ -1467,17 +1626,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Carga: {0} kg de {1} kg cómodos"
-					},
-					"Keys": [
-						{
-							"Key": "InvWeight",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 219"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Cargar"
 					},
 					"Keys": [
@@ -1506,17 +1654,6 @@
 						{
 							"Key": "QualityCinematic",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 130"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Cinturón ({0}/{1})"
-					},
-					"Keys": [
-						{
-							"Key": "InvBelt",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 43"
 						}
 					]
 				},
@@ -1641,7 +1778,7 @@
 					"Keys": [
 						{
 							"Key": "PromptSleep",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 295"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 311"
 						}
 					]
 				},
@@ -1663,7 +1800,7 @@
 					"Keys": [
 						{
 							"Key": "HelpUse",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 375"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 400"
 						}
 					]
 				},
@@ -1712,17 +1849,6 @@
 						{
 							"Key": "SlotsSaveHint",
 							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 30"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "En las dos manos: {0}"
-					},
-					"Keys": [
-						{
-							"Key": "InvBothHands",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 173"
 						}
 					]
 				},
@@ -1891,18 +2017,7 @@
 					"Keys": [
 						{
 							"Key": "MenuObsoleteSave",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 292"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Lo que llevas"
-					},
-					"Keys": [
-						{
-							"Key": "InvTitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 164"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 317"
 						}
 					]
 				},
@@ -1941,28 +2056,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Mano derecha: {0}"
-					},
-					"Keys": [
-						{
-							"Key": "InvRightHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 185"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Mano izquierda: {0}"
-					},
-					"Keys": [
-						{
-							"Key": "InvLeftHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 180"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Media"
 					},
 					"Keys": [
@@ -1991,17 +2084,6 @@
 						{
 							"Key": "ActionBackpack",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 119"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Mochila ({0} de {1} l)"
-					},
-					"Keys": [
-						{
-							"Key": "InvBackpack",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 47"
 						}
 					]
 				},
@@ -2068,17 +2150,6 @@
 						{
 							"Key": "CVDNone",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 510"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "No puedes cargar más."
-					},
-					"Keys": [
-						{
-							"Key": "InvOverloaded",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 228"
 						}
 					]
 				},
@@ -2232,7 +2303,7 @@
 					"Keys": [
 						{
 							"Key": "PickedUpItem",
-							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 525"
+							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 541"
 						}
 					]
 				},
@@ -2524,17 +2595,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Vas cargado: te cansas antes y haces más ruido."
-					},
-					"Keys": [
-						{
-							"Key": "InvHeavy",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 227"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Vegetación"
 					},
 					"Keys": [
@@ -2595,29 +2655,7 @@
 					"Keys": [
 						{
 							"Key": "HelpMove",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 376"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "nada"
-					},
-					"Keys": [
-						{
-							"Key": "InvNothing",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 201"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "vacía"
-					},
-					"Keys": [
-						{
-							"Key": "InvEmptyHand",
-							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 168"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 401"
 						}
 					]
 				},

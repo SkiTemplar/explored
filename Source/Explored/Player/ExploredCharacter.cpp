@@ -618,6 +618,11 @@ void AExploredCharacter::HandleMove(const FInputActionValue& Value)
 
 void AExploredCharacter::HandleLook(const FInputActionValue& Value)
 {
+	// Con el inventario abierto el ratón mueve el cursor, no la cámara.
+	if (bBackpackOpen)
+	{
+		return;
+	}
 	const UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get();
 	ApplyLookInput(Value.Get<FVector2D>(), Settings ? Settings->GetMouseSensitivity() : ExploredSettingsLogic::SensitivityRange.Default);
 }
@@ -768,6 +773,16 @@ void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 	{
 		return;
 	}
+	// Con el inventario abierto el clic es para sus botones.
+	if (bBackpackOpen)
+	{
+		return;
+	}
+	// Baliza Siete: el clic come o bebe lo de la ranura rápida elegida (cantimplora, coco...).
+	if (UseSelectedQuickSlot())
+	{
+		return;
+	}
 	// «Clic izquierdo = usar la mano derecha» (encargo, punto 5).
 	UseHand(EHand::Right);
 }
@@ -813,6 +828,11 @@ void AExploredCharacter::HandleDrop(const FInputActionValue&)
 
 void AExploredCharacter::HandleCombine(const FInputActionValue&)
 {
+	// Baliza Siete: con foco en un objeto de varios verbos (hoguera), C elige el siguiente (GDD §5.6).
+	if (Interaction && Interaction->CycleFocusVerb())
+	{
+		return;
+	}
 	// Un objeto DosManos ocupa las dos manos con la misma instancia: no se
 	// combina consigo mismo (duplicaria su material en el resultado).
 	if (!Carry || Carry->IsHoldingTwoHandedItem())
@@ -847,8 +867,7 @@ void AExploredCharacter::HandleCombine(const FInputActionValue&)
 
 void AExploredCharacter::HandleToggleBackpack(const FInputActionValue&)
 {
-	bBackpackOpen = !bBackpackOpen;
-	OnBackpackToggled.Broadcast(bBackpackOpen);
+	SetBackpackOpen(!bBackpackOpen);
 }
 
 void AExploredCharacter::HandleDiveStarted(const FInputActionValue&)

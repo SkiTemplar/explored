@@ -32,6 +32,19 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
 	void Interact(AActor* Instigator);
 	virtual void Interact_Implementation(AActor* Instigator);
+
+	/**
+	 * true si ahora hay más de un verbo para este jugador y la tecla de combinar elige entre ellos
+	 * (GDD v3 §5.6). El HUD enseña entonces «E · verbo   C · siguiente».
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
+	bool HasVerbChoice(AActor* Instigator) const;
+	virtual bool HasVerbChoice_Implementation(AActor* Instigator) const;
+
+	/** Pasa al siguiente verbo válido; la próxima Interact lo ejecuta. false si no hay elección. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Explored|Interacción")
+	bool CycleVerb(AActor* Instigator);
+	virtual bool CycleVerb_Implementation(AActor* Instigator);
 };
 
 class UStaticMeshComponent;

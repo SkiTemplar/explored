@@ -78,6 +78,9 @@ void UInteractionComponent::UpdateFocus()
 		&& NewInstanceIndex == FocusedInstanceIndex;
 	if (bSameFocus && !bLostStaleFocus)
 	{
+		// Los verbos dependen de lo que lleva el jugador y del estado del objeto (hoguera con el
+		// pez listo, mochila con 2 peces): se refrescan en cada paso, que es de baja frecuencia.
+		RefreshVerbs();
 		return;
 	}
 
@@ -90,20 +93,11 @@ void UInteractionComponent::UpdateFocus()
 	FocusedComponent = NewComponent;
 	FocusedInstanceIndex = NewInstanceIndex;
 	bHasFocus = NewFocus != nullptr;
-	CurrentVerbs.Reset();
-
-	if (NewFocus)
+	if (AExploredItemActor* NewItem = Cast<AExploredItemActor>(NewFocus))
 	{
-		if (AExploredItemActor* NewItem = Cast<AExploredItemActor>(NewFocus))
-		{
-			NewItem->SetHighlighted(true);
-		}
-		IExploredInteractable::Execute_GetContextVerbs(NewFocus, CurrentVerbs);
-		if (CurrentVerbs.Num() > 3)
-		{
-			CurrentVerbs.SetNum(3);
-		}
+		NewItem->SetHighlighted(true);
 	}
+	RefreshVerbs();
 
 	OnFocusChanged.Broadcast(NewFocus);
 }
@@ -116,16 +110,35 @@ bool UInteractionComponent::InteractWithFocus()
 		return false;
 	}
 	IExploredInteractable::Execute_Interact(Focus, GetOwner());
-	// Con el mismo foco UpdateFocus no vuelve a pedir los verbos: sin esto el progreso de tala
-	// («Talar (1/4)») se quedaba en el valor del primer vistazo durante todos los golpes.
-	if (FocusedActor.IsValid())
-	{
-		CurrentVerbs.Reset();
-		IExploredInteractable::Execute_GetContextVerbs(FocusedActor.Get(), CurrentVerbs);
-		if (CurrentVerbs.Num() > 3)
-		{
-			CurrentVerbs.SetNum(3);
-		}
-	}
+	// Sin esperar al siguiente paso: el progreso de tala («Talar (1/4)») cambia con cada golpe.
+	RefreshVerbs();
 	return true;
+}
+
+bool UInteractionComponent::CycleFocusVerb()
+{
+	AActor* Focus = FocusedActor.Get();
+	if (!Focus || !IExploredInteractable::Execute_CycleVerb(Focus, GetOwner()))
+	{
+		return false;
+	}
+	RefreshVerbs();
+	return true;
+}
+
+void UInteractionComponent::RefreshVerbs()
+{
+	CurrentVerbs.Reset();
+	bCurrentHasChoice = false;
+	AActor* Focus = FocusedActor.Get();
+	if (!Focus)
+	{
+		return;
+	}
+	IExploredInteractable::Execute_GetContextVerbs(Focus, CurrentVerbs);
+	if (CurrentVerbs.Num() > 3)
+	{
+		CurrentVerbs.SetNum(3);
+	}
+	bCurrentHasChoice = IExploredInteractable::Execute_HasVerbChoice(Focus, GetOwner());
 }

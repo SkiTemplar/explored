@@ -60,3 +60,6 @@ Boats/RaftModel.cpp
 UI/IslandHudModel.cpp
 Debug/PlaytestRunModel.cpp
 Debug/BeaconSoftlockModel.cpp
+Interaction/VerbChoiceModel.cpp
+Cooking/FireActionsModel.cpp
+UI/BackpackMenuModel.cpp

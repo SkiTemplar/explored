@@ -40,6 +40,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Interacción")
 	TArray<FText> GetContextVerbs() const { return CurrentVerbs; }
 
+	/** true si el foco ofrece varios verbos y la tecla de combinar elige (IExploredInteractable::HasVerbChoice). */
+	UFUNCTION(BlueprintPure, Category = "Explored|Interacción")
+	bool FocusHasVerbChoice() const { return bCurrentHasChoice; }
+
+	/** Pasa al siguiente verbo del foco (tecla de combinar). false si no hay foco o no hay elección. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Interacción")
+	bool CycleFocusVerb();
+
 	/** Llama a Interact en el actor enfocado, si puede. Devuelve false si no hay foco. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Interacción")
 	bool InteractWithFocus();
@@ -55,6 +63,8 @@ protected:
 
 private:
 	void UpdateFocus();
+	/** Vuelve a pedir al foco sus verbos (como mucho 3) y si hay elección. */
+	void RefreshVerbs();
 
 	UPROPERTY()
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -72,4 +82,6 @@ private:
 
 	UPROPERTY()
 	TArray<FText> CurrentVerbs;
+
+	bool bCurrentHasChoice = false;
 };

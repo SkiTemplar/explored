@@ -159,7 +159,7 @@ Todos los valores viven en JSON (`survival_needs.json`, `storm_curve.json`, `rec
 
 ### 5.6 Crafteo objeto + verbo (reutiliza `Items`, `Crafting`)
 
-Lista cerrada de 6 verbos: encender, trenzar, atar, cocinar, hervir, montar. Interfaz: arrastrar un objeto sobre otro (o sobre un objeto del mundo) abre una lista de máximo 3 verbos válidos.
+Lista cerrada de 6 verbos: encender, trenzar, atar, cocinar, hervir, montar. Interfaz: arrastrar un objeto sobre otro (o sobre un objeto del mundo) abre una lista de máximo 3 verbos válidos. Implementación de F3 (sin arrastrar): las recetas de mano se hacen con el botón de su verbo en el inventario (Tab), y en un objeto del mundo con varios verbos (hoguera: cocinar, hervir, avivar) el aviso enseña «E · verbo   C · siguiente»; C elige y E ejecuta.
 
 | N.º | Receta | Entrada | Verbo | Lugar | Tiempo | Salida |
 |---|---|---|---|---|---|---|
@@ -296,7 +296,7 @@ Sin minimapa, sin brújula, sin números salvo en el inventario.
 | Mapa dibujado, logros, museo, cartografía | — | Fuera |
 | Mando, inglés | — | Posterior (tras la primera entrega) |
 
-Controles: WASD mover, Shift correr, Espacio saltar, E interactuar, 1-3 ranuras, Tab inventario, J cuaderno, Esc pausa, ratón mirar. En la balsa: W, A, D.
+Controles: WASD mover, Shift correr, Espacio saltar, E interactuar, C elegir verbo, 1-3 ranuras y clic para comer o beber lo de la ranura, Tab inventario (con cursor), J cuaderno, Esc pausa, ratón mirar. En la balsa: W, A, D.
 
 ## 10. Audio (reutiliza `Audio/*`, `MusicDirector`; audio ya generado)
 

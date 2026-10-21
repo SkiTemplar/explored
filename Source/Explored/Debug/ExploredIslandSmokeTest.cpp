@@ -12,6 +12,7 @@
 #include "Interaction/ExploredInteractable.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "Narrative/ExploredSupplyCrate.h"
+#include "Player/ExploredCharacter.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/ExploredRainBarrel.h"
 #include "WorldGen/ExploredIslandPopulator.h"
@@ -92,11 +93,29 @@ void UExploredIslandSmokeTest::BuildSteps()
 	{
 		Steps.Add({ Name, MoveTemp(Start), MoveTemp(IsDone), Timeout });
 	};
+	// Como un jugador: la tecla de combinar (CycleVerb) elige el verbo y la de interactuar lo ejecuta.
 	auto FireAction = [this](const TCHAR* Action)
 	{
 		AExploredFire* Fire = Cast<AExploredFire>(FindProp(TEXT("hoguera_faro")));
-		return Fire && Fire->PerformAction(GetPawn(), FName(Action));
+		APawn* Pawn = GetPawn();
+		if (!Fire || !Pawn)
+		{
+			return false;
+		}
+		for (int32 Tries = 0; Tries < 4 && Fire->GetChosenAction(Pawn) != FName(Action); ++Tries)
+		{
+			IExploredInteractable::Execute_CycleVerb(Fire, Pawn);
+		}
+		if (Fire->GetChosenAction(Pawn) != FName(Action))
+		{
+			UE_LOG(LogExplored, Error, TEXT("[IslaSmoke] La hoguera no deja elegir «%s»"), Action);
+			return false;
+		}
+		IExploredInteractable::Execute_Interact(Fire, Pawn);
+		return true;
 	};
+	// Los botones del inventario y el clic de la ranura rápida llaman a estas funciones del personaje.
+	auto Player = [this]() { return Cast<AExploredCharacter>(GetPawn()); };
 
 	Add(TEXT("kit inicial"), [this]() { return Count(TEXT("cuchillo")) == 1 && Count(TEXT("cantimplora")) == 1 && Count(TEXT("barometro")) == 1; },
 		[]() { return true; });
@@ -104,18 +123,15 @@ void UExploredIslandSmokeTest::BuildSteps()
 	Add(TEXT("recoger leña 2"), [this]() { return Interact(TEXT("lena_cala_2")); }, [this]() { return Idle() && Count(TEXT("lena")) == 4; });
 	Add(TEXT("recoger fibra 1"), [this]() { return Interact(TEXT("fibra_palmar_1")); }, [this]() { return Idle() && Count(TEXT("fibra")) == 1; });
 	Add(TEXT("recoger fibra 2"), [this]() { return Interact(TEXT("fibra_palmar_2")); }, [this]() { return Idle() && Count(TEXT("fibra")) == 2; });
-	Add(TEXT("trenzar cuerda"), [this]()
+	Add(TEXT("trenzar cuerda"), [this, Player]()
 		{
 			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
-			return Survivor && Survivor->GetCraftOptions(TEXT("fibra"), TEXT("fibra")).Contains(FName(TEXT("cuerda"))) && Survivor->Craft(TEXT("cuerda"));
+			return Survivor && Survivor->GetCraftOptions(TEXT("fibra"), TEXT("fibra")).Contains(FName(TEXT("cuerda")))
+				&& Player() && Player()->CraftFromBackpack(TEXT("cuerda"));
 		},
 		[this]() { return Idle() && Count(TEXT("cuerda")) == 1 && Count(TEXT("fibra")) == 0; });
 	Add(TEXT("recoger caña de bambú"), [this]() { return Interact(TEXT("cana_bambu_1")); }, [this]() { return Idle() && Count(TEXT("cana_bambu")) == 1; });
-	Add(TEXT("atar caña de pescar"), [this]()
-		{
-			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
-			return Survivor && Survivor->Craft(TEXT("cana_pescar"));
-		},
+	Add(TEXT("atar caña de pescar"), [Player]() { return Player() && Player()->CraftFromBackpack(TEXT("cana_pescar")); },
 		[this]() { return Idle() && Count(TEXT("cana_pescar")) == 1 && Count(TEXT("cuerda")) == 0; });
 	Add(TEXT("pescar un pez"), [this]() { return Interact(TEXT("punto_pesca_1")); },
 		[this]()
@@ -140,20 +156,15 @@ void UExploredIslandSmokeTest::BuildSteps()
 			return Fire && Fire->IsJobReady() && Count(TEXT("pez_crudo")) == 0;
 		}, 30.0f);
 	Add(TEXT("recoger el pez asado"), [FireAction]() { return FireAction(TEXT("recoger")); }, [this]() { return Count(TEXT("pez_asado")) == 1; });
-	Add(TEXT("comer el pez asado"), [this]()
-		{
-			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
-			return Survivor && Survivor->ConsumeItem(TEXT("pez_asado"));
-		},
+	Add(TEXT("comer el pez asado"), [Player]() { return Player() && Player()->UseBackpackItem(TEXT("pez_asado")); },
 		[this]() { return Count(TEXT("pez_asado")) == 0; });
 	Add(TEXT("avivar con leña"), [FireAction]() { return FireAction(TEXT("avivar")); }, [this]() { return Count(TEXT("lena")) == 0; });
 	Add(TEXT("bajar y beber un coco"), [this]() { return Interact(TEXT("palma_cala_1")); },
-		[this]()
+		[this, Player]()
 		{
-			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
-			if (Idle() && Count(TEXT("coco")) == 1)
+			if (Idle() && Count(TEXT("coco")) == 1 && Player())
 			{
-				Survivor->ConsumeItem(TEXT("coco"));
+				Player()->UseBackpackItem(TEXT("coco"));
 			}
 			return Count(TEXT("coco_vacio")) == 1 && Count(TEXT("coco")) == 0;
 		});
@@ -180,16 +191,50 @@ void UExploredIslandSmokeTest::BuildSteps()
 			const AExploredRainBarrel* Barrel = Cast<AExploredRainBarrel>(FindProp(TEXT("barril_lluvia_faro")));
 			return Survivor && Barrel && Survivor->GetCanteenSips() == 4 && Barrel->GetCharges() == 1;
 		});
-	Add(TEXT("beber de la cantimplora"), [this]()
+	// Clic con la ranura rápida de la cantimplora (kit: cuchillo, cantimplora, barómetro).
+	Add(TEXT("beber de la cantimplora con la ranura rápida"), [this, Player]()
 		{
 			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
-			return Survivor && Survivor->ConsumeItem(TEXT("cantimplora"));
+			if (!Survivor || !Player())
+			{
+				return false;
+			}
+			const int32 Slot = Survivor->GetBackpack().Stacks.IndexOfByPredicate([](const FBackpackStack& Stack)
+			{
+				return Stack.Id == FBackpackModel::CanteenId();
+			});
+			Survivor->SelectQuickSlot(Slot);
+			return Player()->UseSelectedQuickSlot();
 		},
 		[this]()
 		{
 			const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
 			return Survivor && Survivor->GetCanteenSips() == 3;
 		});
+	// Hallazgo de F3: con 2 peces y un coco vacío la E asaba siempre. Se elige «hervir» con C.
+	Add(TEXT("hervir aceite eligiendo el verbo"), [this, FireAction]()
+		{
+			UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());
+			AExploredFire* Fire = Cast<AExploredFire>(FindProp(TEXT("hoguera_faro")));
+			if (!Survivor || !Fire || !Survivor->TryAddItem(TEXT("pez_crudo"), 2))
+			{
+				return false;
+			}
+			if (Fire->GetChosenAction(GetPawn()) != FName(TEXT("cocinar")))
+			{
+				UE_LOG(LogExplored, Warning, TEXT("[IslaSmoke] Sin elegir, la hoguera haría «%s»"), *Fire->GetChosenAction(GetPawn()).ToString());
+			}
+			return IExploredInteractable::Execute_HasVerbChoice(Fire, GetPawn()) && FireAction(TEXT("hervir"));
+		},
+		[this]()
+		{
+			AExploredFire* Fire = Cast<AExploredFire>(FindProp(TEXT("hoguera_faro")));
+			if (Fire && Fire->IsJobReady() && Idle())
+			{
+				IExploredInteractable::Execute_Interact(Fire, GetPawn());
+			}
+			return Count(TEXT("tarro_aceite")) == 1 && Count(TEXT("coco_vacio")) == 0 && Count(TEXT("pez_crudo")) == 0;
+		}, 70.0f);
 	Add(TEXT("combinación que no es receta"), [this]()
 		{
 			const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(GetPawn());

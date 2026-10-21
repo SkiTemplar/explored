@@ -33,6 +33,21 @@ FString FIslandHudModel::PromptText(const FString& KeyName, const FString& VerbA
 	return KeyName + TEXT(" · ") + VerbAndObject;
 }
 
+FString FIslandHudModel::ChoicePromptText(const FString& KeyName, const FString& CycleKeyName, const TArray<FString>& Verbs)
+{
+	if (Verbs.Num() == 0)
+	{
+		return FString();
+	}
+	const FString First = PromptText(KeyName, Verbs[0]);
+	const FString Second = Verbs.Num() > 1 ? PromptText(CycleKeyName, Verbs[1]) : FString();
+	if (First.IsEmpty() || Second.IsEmpty())
+	{
+		return First;
+	}
+	return First + TEXT("   ") + Second;
+}
+
 bool FIslandHudModel::IsBarVisible(float Value, float LowThreshold, double TimeSeconds)
 {
 	if (FMath::IsFinite(Value) && Value >= LowThreshold)

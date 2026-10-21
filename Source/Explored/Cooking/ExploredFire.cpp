@@ -4,6 +4,9 @@
 #include "Components/StaticMeshComponent.h"
 
 #include "Explored.h"
+#include "Cooking/FireActionsModel.h"
+#include "Interaction/VerbChoiceModel.h"
+#include "Kismet/GameplayStatics.h"
 #include "Items/BackpackModel.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "Items/IslandDataLoader.h"
@@ -13,14 +16,14 @@
 
 namespace ExploredFireDetail
 {
-	const FName ActCollect(TEXT("recoger"));
-	const FName ActLight(TEXT("encender"));
-	const FName ActCook(TEXT("cocinar"));
-	const FName ActBoil(TEXT("hervir"));
-	const FName ActFeed(TEXT("avivar"));
-	const FName CampfireRecipe(TEXT("hoguera"));
-	const FName GrillRecipe(TEXT("pez_asado"));
-	const FName OilRecipe(TEXT("tarro_aceite"));
+	const FName ActCollect = FFireActionsModel::Collect();
+	const FName ActLight = FFireActionsModel::Light();
+	const FName ActCook = FFireActionsModel::Cook();
+	const FName ActBoil = FFireActionsModel::Boil();
+	const FName ActFeed = FFireActionsModel::Feed();
+	const FName CampfireRecipe = FFireActionsModel::CampfireRecipe();
+	const FName GrillRecipe = FFireActionsModel::GrillRecipe();
+	const FName OilRecipe = FFireActionsModel::OilRecipe();
 	const FName FireType(TEXT("hoguera_fija"));
 
 	FText ActionText(FName Action)
@@ -122,69 +125,51 @@ void AExploredFire::Tick(float DeltaSeconds)
 
 TArray<FName> AExploredFire::GetAvailableActions(AActor* InInstigator) const
 {
-	using namespace ExploredFireDetail;
-	TArray<FName> Actions;
 	const UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator);
 	if (!Survivor)
 	{
-		return Actions;
+		return TArray<FName>();
 	}
 	const FIslandData& Data = ExploredIslandData::Get();
-	const FBackpackState& Pack = Survivor->GetBackpack();
-	if (State.Job.IsDone())
-	{
-		Actions.Add(ActCollect);
-	}
-	if (!State.bLit)
-	{
-		if (const FRecipeDef* Recipe = Data.Recipes.Find(CampfireRecipe))
-		{
-			if (FRecipeBook::Check(*Recipe, Pack, ECraftPlace::Ground, {}) == ECraftResult::Ok)
-			{
-				Actions.Add(ActLight);
-			}
-		}
-		return Actions;
-	}
-	if (!State.Job.IsActive())
-	{
-		for (const TPair<FName, FName>& Pair : { TPair<FName, FName>(ActCook, GrillRecipe), TPair<FName, FName>(ActBoil, OilRecipe) })
-		{
-			const FRecipeDef* Recipe = Data.Recipes.Find(Pair.Value);
-			if (Recipe && FRecipeBook::Check(*Recipe, Pack, ECraftPlace::Fire, {}) == ECraftResult::Ok)
-			{
-				Actions.Add(Pair.Key);
-			}
-		}
-	}
-	for (const TPair<FName, float>& Fuel : Data.Campfire.FuelSeconds)
-	{
-		if (FBackpackModel::Count(Pack, Fuel.Key) > 0)
-		{
-			Actions.Add(ActFeed);
-			break;
-		}
-	}
-	return Actions;
+	return FFireActionsModel::Available(State, Survivor->GetBackpack(), Data.Recipes, Data.Campfire);
+}
+
+FName AExploredFire::GetChosenAction(AActor* InInstigator) const
+{
+	return FVerbChoiceModel::Resolve(GetAvailableActions(InInstigator), SelectedAction);
 }
 
 void AExploredFire::GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const
 {
-	// Sin instigador: lo que la hoguera admite en su estado, para el texto del foco.
-	if (State.Job.IsDone())
+	using namespace ExploredFireDetail;
+	// Un solo jugador: los verbos que valen para el peón local, el que ejecuta la tecla primero.
+	const TArray<FName> Ordered = FVerbChoiceModel::Ordered(GetAvailableActions(UGameplayStatics::GetPlayerPawn(this, 0)), SelectedAction);
+	for (const FName Action : Ordered)
 	{
-		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActCollect));
+		OutVerbs.Add(ActionText(Action));
 	}
-	else if (!State.bLit)
+	if (OutVerbs.Num() > 0)
 	{
-		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActLight));
+		return;
 	}
-	else
+	// Sin nada que hacer ahora: lo que pide la hoguera en su estado (Interact explica qué falta).
+	OutVerbs.Add(ActionText(State.Job.IsDone() ? ActCollect : !State.bLit ? ActLight : ActFeed));
+}
+
+bool AExploredFire::HasVerbChoice_Implementation(AActor* InInstigator) const
+{
+	return GetAvailableActions(InInstigator).Num() > 1;
+}
+
+bool AExploredFire::CycleVerb_Implementation(AActor* InInstigator)
+{
+	const TArray<FName> Actions = GetAvailableActions(InInstigator);
+	if (Actions.Num() < 2)
 	{
-		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActCook));
-		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActBoil));
-		OutVerbs.Add(ExploredFireDetail::ActionText(ExploredFireDetail::ActFeed));
+		return false;
 	}
+	SelectedAction = FVerbChoiceModel::Next(Actions, FVerbChoiceModel::Resolve(Actions, SelectedAction));
+	return true;
 }
 
 bool AExploredFire::CanInteract_Implementation(AActor* InInstigator) const
@@ -195,10 +180,10 @@ bool AExploredFire::CanInteract_Implementation(AActor* InInstigator) const
 
 void AExploredFire::Interact_Implementation(AActor* InInstigator)
 {
-	const TArray<FName> Actions = GetAvailableActions(InInstigator);
-	if (Actions.Num() > 0)
+	const FName Action = GetChosenAction(InInstigator);
+	if (!Action.IsNone())
 	{
-		PerformAction(InInstigator, Actions[0]);
+		PerformAction(InInstigator, Action);
 	}
 	else if (UExploredSurvivorComponent* Survivor = UExploredSurvivorComponent::FindOn(InInstigator))
 	{

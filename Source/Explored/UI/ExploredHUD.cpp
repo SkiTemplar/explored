@@ -263,17 +263,21 @@ void AExploredHUD::DrawReticle()
 FString AExploredHUD::InteractKeyName() const
 {
 	// La tecla es la que tenga asignada Interactuar (se puede remapear), no una «E» fija.
-	const FName InteractAction(TEXT("IA_Interact"));
-	FKey InteractKey(ExploredSettingsLogic::GetDefaultKeyFor(InteractAction));
+	return KeyNameFor(FName(TEXT("IA_Interact")));
+}
+
+FString AExploredHUD::KeyNameFor(FName ActionName) const
+{
+	FKey Key(ExploredSettingsLogic::GetDefaultKeyFor(ActionName));
 	const APlayerController* PC = GetOwningPlayerController();
 	if (const ULocalPlayer* LocalPlayer = PC ? PC->GetLocalPlayer() : nullptr)
 	{
 		if (const UExploredInputSettingsSubsystem* InputSettings = LocalPlayer->GetSubsystem<UExploredInputSettingsSubsystem>())
 		{
-			InteractKey = InputSettings->GetKeyFor(InteractAction, InteractKey);
+			Key = InputSettings->GetKeyFor(ActionName, Key);
 		}
 	}
-	return InteractKey.GetDisplayName(false).ToString();
+	return Key.GetDisplayName(false).ToString();
 }
 
 void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
@@ -284,6 +288,18 @@ void AExploredHUD::DrawContextPrompt(const AExploredCharacter& Character)
 	if (InteractionComp && InteractionComp->GetFocusedActor())
 	{
 		const TArray<FText> Verbs = InteractionComp->GetContextVerbs();
+		if (InteractionComp->FocusHasVerbChoice() && Verbs.Num() > 1)
+		{
+			// Hoguera con varios verbos: E ejecuta el primero y la tecla de combinar elige el siguiente.
+			TArray<FString> Names;
+			for (const FText& Verb : Verbs)
+			{
+				Names.Add(Verb.ToString());
+			}
+			const FString Choice = FIslandHudModel::ChoicePromptText(InteractKeyName(), KeyNameFor(FName(TEXT("IA_Combine"))), Names);
+			DrawCenteredText(FText::FromString(Choice), FLinearColor::White, Canvas->SizeY * 0.55f, true);
+			return;
+		}
 		if (Verbs.Num() > 0)
 		{
 			Action = FText::Join(INVTEXT(" · "), Verbs).ToString();

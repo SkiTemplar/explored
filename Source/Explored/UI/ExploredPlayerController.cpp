@@ -202,6 +202,11 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 		{
 			SetViewTarget(ControlledPawn);
 		}
+		// Al volver de la pausa con el inventario abierto, el cursor sigue haciendo falta.
+		if (const AExploredCharacter* PlayerCharacter = Cast<AExploredCharacter>(GetPawn()))
+		{
+			ApplyBackpackInputMode(PlayerCharacter->IsBackpackOpen());
+		}
 	}
 	else
 	{
@@ -223,6 +228,26 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 			SetViewTarget(FindOrSpawnMenuCamera());
 		}
 	}
+}
+
+void AExploredPlayerController::ApplyBackpackInputMode(bool bOpen)
+{
+	if (UIMode != EExploredUIMode::Playing)
+	{
+		return;
+	}
+	bShowMouseCursor = bOpen;
+	if (!bOpen)
+	{
+		SetInputMode(FInputModeGameOnly());
+		return;
+	}
+	// Sin widget con foco: el teclado sigue en el juego (Tab cierra, WASD mueve) y los botones
+	// del inventario no son enfocables, así que un clic no se lleva el teclado.
+	FInputModeGameAndUI InputMode;
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
 }
 
 AExploredMenuCamera* AExploredPlayerController::FindOrSpawnMenuCamera()

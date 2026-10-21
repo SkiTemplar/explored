@@ -78,6 +78,29 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Explored|Carga")
 	FOnBackpackToggled OnBackpackToggled;
 
+	/** Abre o cierra el inventario (Tab). Abierto, enseña el cursor para pulsar sus botones. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	void SetBackpackOpen(bool bOpen);
+
+	/**
+	 * Clic izquierdo con la ranura rápida elegida (1-3): come o bebe lo que haya en ella
+	 * (FBackpackMenuModel::QuickUseItem). false si no hay nada que consumir.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	bool UseSelectedQuickSlot();
+
+	/** Botón «Usar» del inventario: come o bebe una unidad si FBackpackMenuModel lo permite. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	bool UseBackpackItem(FName ItemId);
+
+	/** Botón «Soltar» del inventario (el kit inicial no se suelta). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	bool DropBackpackItem(FName ItemId);
+
+	/** Botón de receta del inventario (trenzar, atar, encender): solo recetas de mano que ya se pueden hacer. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Crafteo")
+	bool CraftFromBackpack(FName RecipeId);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

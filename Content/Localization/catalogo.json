@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 355,
-		"cpp": 247,
+		"total": 358,
+		"cpp": 250,
 		"datos": 108,
 		"pendientes": 7,
 		"sin_en": 0,
-		"literales": 2,
+		"literales": 3,
 		"invariantes": 4,
-		"revisar": 347
+		"revisar": 348
 	},
 	"entries": [
 		{
@@ -476,7 +476,7 @@
 			"en": "Set the lens",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:190"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:215"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Light the beacon",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:201"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:226"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "The beacon is lit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:201"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:226"
 			]
 		},
 		{
@@ -506,7 +506,7 @@
 			"en": "Pour the jars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:193"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:218"
 			]
 		},
 		{
@@ -516,7 +516,7 @@
 			"en": "Tighten the wick",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:196"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:221"
 			]
 		},
 		{
@@ -700,6 +700,176 @@
 			]
 		},
 		{
+			"namespace": "ExploredInventory",
+			"key": "Drop",
+			"es": "Soltar",
+			"en": "Drop",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:212"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "EntryCount",
+			"es": "{0} ×{1}",
+			"en": "{0} ×{1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:41"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "EntrySips",
+			"es": "{0} ({1}/{2} sorbos)",
+			"en": "{0} ({1}/{2} sips)",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:38"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "Heavy",
+			"es": "En las manos: {0}",
+			"en": "In your hands: {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:186"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "Hint",
+			"es": "Clic: usar, soltar o hacer · Tab: cerrar",
+			"en": "Click: use, drop or make · Tab: close",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:259"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "InputAmount",
+			"es": "{0} {1}",
+			"en": "{0} {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:49"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "InputSeparator",
+			"es": " + ",
+			"en": " + ",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:55"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "RecipeButton",
+			"es": "{0}: {1}",
+			"en": "{0}: {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:236"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "Recipes",
+			"es": "Recetas",
+			"en": "Recipes",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:226"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "Title",
+			"es": "Mochila ({0}/{1})",
+			"en": "Backpack ({0}/{1})",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:179"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "Use",
+			"es": "Usar",
+			"en": "Use",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:199"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbBoil",
+			"es": "Hervir",
+			"en": "Boil",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:28"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbBraid",
+			"es": "Trenzar",
+			"en": "Braid",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:25"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbCook",
+			"es": "Cocinar",
+			"en": "Cook",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:27"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbLight",
+			"es": "Encender",
+			"en": "Light",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:24"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbMount",
+			"es": "Montar",
+			"en": "Mount",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:29"
+			]
+		},
+		{
+			"namespace": "ExploredInventory",
+			"key": "VerbTie",
+			"es": "Atar",
+			"en": "Tie",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:26"
+			]
+		},
+		{
 			"namespace": "ExploredIsland",
 			"key": "BackpackFull",
 			"es": "No te cabe más",
@@ -796,7 +966,7 @@
 			"en": "Boil",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:31"
+				"Source/Explored/Cooking/ExploredFire.cpp:34"
 			]
 		},
 		{
@@ -806,7 +976,7 @@
 			"en": "Collect",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:28"
+				"Source/Explored/Cooking/ExploredFire.cpp:31"
 			]
 		},
 		{
@@ -816,7 +986,7 @@
 			"en": "Cook",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:30"
+				"Source/Explored/Cooking/ExploredFire.cpp:33"
 			]
 		},
 		{
@@ -826,7 +996,7 @@
 			"en": "Add firewood",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:32"
+				"Source/Explored/Cooking/ExploredFire.cpp:35"
 			]
 		},
 		{
@@ -836,7 +1006,7 @@
 			"en": "Light",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:29"
+				"Source/Explored/Cooking/ExploredFire.cpp:32"
 			]
 		},
 		{
@@ -846,7 +1016,7 @@
 			"en": "To light it: 3 firewood and the knife",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:206"
+				"Source/Explored/Cooking/ExploredFire.cpp:191"
 			]
 		},
 		{
@@ -856,7 +1026,7 @@
 			"en": "You carry nothing for the fire",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Cooking/ExploredFire.cpp:205"
+				"Source/Explored/Cooking/ExploredFire.cpp:190"
 			]
 		},
 		{
@@ -1007,7 +1177,7 @@
 			"en": "Board the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredRaft.cpp:590"
+				"Source/Explored/Boats/ExploredRaft.cpp:597"
 			]
 		},
 		{
@@ -1492,7 +1662,7 @@
 			"en": "WASD move · Space jump · Shift run",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:376"
+				"Source/Explored/UI/ExploredPlayerController.cpp:401"
 			]
 		},
 		{
@@ -1502,7 +1672,7 @@
 			"en": "E interact · Tab backpack · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:375"
+				"Source/Explored/UI/ExploredPlayerController.cpp:400"
 			]
 		},
 		{
@@ -1513,146 +1683,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:379"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvBackpack",
-			"es": "Mochila ({0} de {1} l)",
-			"en": "Backpack ({0} of {1} l)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:47"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvBelt",
-			"es": "Cinturón ({0}/{1})",
-			"en": "Belt ({0}/{1})",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:43"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvBothHands",
-			"es": "En las dos manos: {0}",
-			"en": "In both hands: {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:173"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvEmptyHand",
-			"es": "vacía",
-			"en": "empty",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:168"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvHeavy",
-			"es": "Vas cargado: te cansas antes y haces más ruido.",
-			"en": "You're weighed down: you tire sooner and make more noise.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:227"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvLeftHand",
-			"es": "Mano izquierda: {0}",
-			"en": "Left hand: {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:180"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvNothing",
-			"es": "nada",
-			"en": "nothing",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:201"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvOverloaded",
-			"es": "No puedes cargar más.",
-			"en": "You can't carry any more.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:228"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvPockets",
-			"es": "Bolsillos ({0}/{1})",
-			"en": "Pockets ({0}/{1})",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:41"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvPouch",
-			"es": "Bolsa estanca ({0}/{1})",
-			"en": "Dry pouch ({0}/{1})",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:45"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvRightHand",
-			"es": "Mano derecha: {0}",
-			"en": "Right hand: {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:185"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvSledge",
-			"es": "Angarillas ({0} kg)",
-			"en": "Sledge ({0} kg)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:50"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvTitle",
-			"es": "Lo que llevas",
-			"en": "What you carry",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:164"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "InvWeight",
-			"es": "Carga: {0} kg de {1} kg cómodos",
-			"en": "Load: {0} kg of {1} kg comfortable",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp:219"
 			]
 		},
 		{
@@ -1714,7 +1744,7 @@
 			"en": "The saved game is from an earlier version of the game and can't be continued.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:292"
+				"Source/Explored/UI/ExploredPlayerController.cpp:317"
 			]
 		},
 		{
@@ -1784,7 +1814,7 @@
 			"en": "Picked up: {Item}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:525"
+				"Source/Explored/UI/ExploredHUD.cpp:541"
 			]
 		},
 		{
@@ -1814,7 +1844,7 @@
 			"en": "Sleep",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:295"
+				"Source/Explored/UI/ExploredHUD.cpp:311"
 			]
 		},
 		{

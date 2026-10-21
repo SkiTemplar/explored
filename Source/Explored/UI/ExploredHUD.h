@@ -54,6 +54,8 @@ private:
 	AExploredCharacter* GetExploredCharacter() const;
 	void DrawReticle();
 	FString InteractKeyName() const;
+	/** Tecla efectiva (remapeo incluido) de una acción remapeable, para los avisos. */
+	FString KeyNameFor(FName ActionName) const;
 	void DrawContextPrompt(const AExploredCharacter& Character);
 	/** Sed, hambre, energía y calor: icono y barra fina, abajo a la izquierda. */
 	void DrawBodyBars(const AExploredCharacter& Character);

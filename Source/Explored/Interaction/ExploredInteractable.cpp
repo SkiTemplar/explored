@@ -21,6 +21,16 @@ void IExploredInteractable::Interact_Implementation(AActor* Instigator)
 {
 }
 
+bool IExploredInteractable::HasVerbChoice_Implementation(AActor* Instigator) const
+{
+	return false;
+}
+
+bool IExploredInteractable::CycleVerb_Implementation(AActor* Instigator)
+{
+	return false;
+}
+
 void ExploredInteraction::AddFocusBox(AActor& Owner, const UStaticMeshComponent& Mesh)
 {
 	const FBoxSphereBounds Bounds = Mesh.CalcBounds(Mesh.GetComponentTransform());
