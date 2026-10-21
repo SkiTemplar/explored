@@ -23,6 +23,7 @@ Ocean/OceanCurrents.cpp
 Ocean/OceanWaves.cpp
 Player/SwimModel.cpp
 Save/SaveFormat.cpp
+Save/SaveIslandSections.cpp
 Save/SaveSlots.cpp
 Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
@@ -30,6 +31,7 @@ Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
 Narrative/BeaconProgressModel.cpp
 Narrative/NotebookModel.cpp
+Narrative/BeaconDirectorModel.cpp
 Narrative/SupplyCrateModel.cpp
 Survival/BodyEventsModel.cpp
 UI/TutorialHintModel.cpp

@@ -4,6 +4,8 @@ Tests/BodySpec.cpp
 Tests/BeaconProgressSpec.cpp
 Tests/BodyEventsSpec.cpp
 Tests/NotebookSpec.cpp
+Tests/BeaconDirectorSpec.cpp
+Tests/BeaconSaveSpec.cpp
 Tests/StormClockSpec.cpp
 Tests/SupplyCrateSpec.cpp
 Tests/TutorialHintSpec.cpp

@@ -63,6 +63,10 @@ namespace ExploredScreens
 			{
 				Row.State = ESaveSlotRowState::FutureVersion;
 			}
+			else if (Info->Result == ESaveLoadResult::ObsoleteVersion)
+			{
+				Row.State = ESaveSlotRowState::Obsolete;
+			}
 			else
 			{
 				Row.State = ESaveSlotRowState::Damaged;

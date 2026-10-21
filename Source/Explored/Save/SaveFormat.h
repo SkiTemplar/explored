@@ -6,8 +6,15 @@
 
 namespace ExploredSave
 {
-	/** Versión actual del formato. Al cambiarla, registra la migración desde la anterior. */
-	constexpr int32 CurrentFormatVersion = 1;
+	/**
+	 * Versión actual del formato. Al cambiarla, registra la migración desde la anterior; si
+	 * no se registra, las partidas antiguas se rechazan como ObsoleteVersion.
+	 *
+	 * Versión 2 (Baliza Siete, GDD v3 §5.10): secciones de la historia nueva («progress» con
+	 * las etapas de la baliza, «pages», «island»). Las partidas de la versión 1 son de la
+	 * historia anterior y no se migran.
+	 */
+	constexpr int32 CurrentFormatVersion = 2;
 
 	/** Marca del documento: descarta ficheros que no son partidas de Explored. */
 	inline const TCHAR* FormatTag() { return TEXT("explored-save"); }
@@ -27,6 +34,8 @@ enum class ESaveLoadResult : uint8
 	FutureVersion,
 	/** Falta un paso de migración o una migración falló. */
 	MigrationFailed,
+	/** Partida de una versión anterior que ya no se puede migrar (sin ningún paso desde ella). */
+	ObsoleteVersion,
 };
 
 EXPLORED_API const TCHAR* LexToString(ESaveLoadResult Result);

@@ -98,6 +98,12 @@ PLAYER_FIELDS = (
     ("verbs.json", None, "description", "descriptionEn"),
     ("recipes.json", "recipes", "nameEs", "nameEn"),
     ("survival_needs.json", "needs", "nameEs", "nameEn"),
+    ("notebook.json", "pages", "textEs", "textEn"),
+    ("notebook.json", "pages", "iriaEs", "iriaEn"),
+    ("notebook.json", "epilogue", "textEs", "textEn"),
+    ("notebook.json", "cards", "textEs", "textEn"),
+    ("objectives.json", "objectives", "textEs", "textEn"),
+    ("thoughts.json", "thoughts", "textEs", "textEn"),
 )
 
 

@@ -19,7 +19,7 @@
 
 #include "Debug/ExploredPlaytestAuditor.h"
 #include "Explored.h"
-#include "Narrative/ExploredVoyageSubsystem.h"
+#include "Narrative/BeaconSubsystem.h"
 #include "Interaction/InteractionComponent.h"
 #include "Player/ExploredCharacter.h"
 #include "Sky/TimeOfDaySubsystem.h"
@@ -222,6 +222,18 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		AddShot(TEXT("f3a-islote"), FVector(North.X, North.Y, GroundAt(North) + 8.0f), FVector(232.0f, 150.0f, 4.0f), 16.5f);
 	}
 
+	if (Set == TEXT("beacon"))
+	{
+		// Final de F3c: la linterna montada vista desde la galería y la baliza encendida de noche
+		// desde la Colina, con las luces del Mistral en el horizonte (acción «light»).
+		const FVector2D Tower(45.0f, 15.0f);
+		const float TowerTop = GroundAt(Tower) + 12.0f;
+		AddShot(TEXT("beacon_lantern"), FVector(41.0f, 13.0f, TowerTop + 2.5f), FVector(Tower.X, Tower.Y, TowerTop + 1.2f), 21.5f);
+		Shots.Last().Action = TEXT("lantern");
+		AddShot(TEXT("beacon_light"), FVector(10.0f, -20.0f, TowerTop + 6.0f), FVector(Tower.X + 40.0f, Tower.Y - 10.0f, TowerTop), 22.0f);
+		Shots.Last().Action = TEXT("light");
+	}
+
 	if (Set == TEXT("menu"))
 	{
 		// El menú principal ya está en pantalla por defecto al arrancar el
@@ -335,37 +347,31 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		Time->SetTime(Time->GetDay(), Shot.Hours);
 		Time->SetTimeScale(0.0f);
 	}
-	// Conjunto «voyage»: se juega (sin el menú principal encima) para ver el HUD de juego.
-	AExploredPlayerController* VoyagePC = Shot.Name.StartsWith(TEXT("voyage"))
+	// Conjunto «beacon»: se juega (sin el menú principal encima) para ver el HUD de juego.
+	AExploredPlayerController* BeaconPC = Shot.Name.StartsWith(TEXT("beacon"))
 		? Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)) : nullptr;
-	if (VoyagePC && VoyagePC->GetUIMode() != EExploredUIMode::Playing)
+	if (BeaconPC && BeaconPC->GetUIMode() != EExploredUIMode::Playing)
 	{
-		VoyagePC->ResumeGame();
-		VoyagePC->SetViewTarget(Camera);
+		BeaconPC->ResumeGame();
+		BeaconPC->SetViewTarget(Camera);
 	}
 	if (Shot.Action == TEXT("interact"))
 	{
 		PlacePawnFacing(Shot.Target);
 	}
-	if (UExploredVoyageSubsystem* Voyage = Shot.Action.IsNone() ? nullptr : World->GetSubsystem<UExploredVoyageSubsystem>())
+	if (UBeaconSubsystem* Beacon = Shot.Action.IsNone() ? nullptr : UBeaconSubsystem::Get(World))
 	{
-		if (Shot.Action == TEXT("build"))
+		if (Shot.Action == TEXT("lantern"))
 		{
-			for (uint8 Part = 0; Part < static_cast<uint8>(EShipPart::Count); ++Part)
-			{
-				Voyage->RecoverPart(static_cast<EShipPart>(Part));
-			}
-			Voyage->TryBuildShip();
-			// Camino del jugador de día: «Esperar a la noche junto al barco».
-			Voyage->WaitForNight();
-			UE_LOG(LogExplored, Display, TEXT("[Shots] Tras esperar a la noche: %s"), Voyage->IsStarNightNow() ? TEXT("de noche") : TEXT("de día"));
+			Beacon->DebugSetStage(EBeaconStage::LinternaMontada);
 		}
-		else if (Shot.Action == TEXT("depart"))
+		else if (Shot.Action == TEXT("light"))
 		{
-			Voyage->TryDepart();
+			Beacon->DebugSetStage(EBeaconStage::LinternaMontada);
+			Beacon->TryLight();
 		}
 	}
-	// «wait»: deja correr la secuencia de salida (9 s) y el fundido antes de capturar.
+	// «wait»: deja correr la llegada del Mistral y el fundido antes de capturar.
 	Timer = Shot.Action == TEXT("wait") ? -10.0f : 0.0f;
 	bRequested = false;
 	CurrentShotFrameRates.Reset();

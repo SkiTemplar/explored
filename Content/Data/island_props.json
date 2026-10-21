@@ -98,7 +98,7 @@
     {"id": "pagina_5", "type": "pagina", "at": [103, 48], "yaw": 185, "page": 5},
     {"id": "pagina_6", "type": "pagina", "at": [235.75, 155.44], "yaw": 222, "page": 6, "anchor": "carguero_casco", "elevation": 3.0},
     {"id": "pagina_7", "type": "pagina", "at": [31, 33], "yaw": 259, "page": 7},
-    {"id": "pagina_8", "type": "pagina", "at": [45.9, 15.6], "yaw": 296, "page": 8, "anchor": "faro_torre", "elevation": 12.2},
+    {"id": "pagina_8", "type": "pagina", "at": [43.9, 16.15], "yaw": 296, "page": 8, "anchor": "faro_torre", "elevation": 12.2},
     {"id": "punto_pesca_1", "type": "punto_pesca", "at": [-30, -163], "yaw": 270.0},
     {"id": "punto_pesca_2", "type": "punto_pesca", "at": [-14, -164], "yaw": 270.0},
     {"id": "punto_pesca_3", "type": "punto_pesca", "at": [2, -162], "yaw": 270.0},

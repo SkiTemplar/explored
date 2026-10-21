@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
 #include "GameFramework/PlayerController.h"
 #include "UI/SettingsLogic.h"
 
@@ -120,8 +121,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void ExitToMainMenu();
 
-	/** Final «Zarpar» (UExploredVoyageSubsystem): funde a negro y muestra SExploredEnding. */
-	void ShowEnding();
+	/**
+	 * Final de Baliza Siete (UBeaconSubsystem): funde a negro y muestra el epílogo
+	 * (SExploredEnding); «Continuar» pasa a los créditos, que vuelven solos al menú.
+	 */
+	void ShowEnding(const FText& EpilogueLine, const FText& CommonLine);
+
+	/** Créditos del final: «Volver» o EndCreditsSeconds después, al menú principal. */
+	void ShowEndCredits();
+
+	/** La pantalla de epílogo ya está en el viewport (prueba de humo de la historia). */
+	bool IsShowingEnding() const { return bShowingEnding; }
+
+	/** Segundos que duran los créditos del final antes de volver al menú (GDD v3 §2: 60 s). */
+	UPROPERTY(EditDefaultsOnly, Category = "Explored|UI")
+	float EndCreditsSeconds = 60.0f;
 
 	/** Secuencia de salida del barco: sin pausa ni HUD de juego mientras dura. */
 	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
@@ -151,6 +165,7 @@ private:
 
 	EExploredUIMode UIMode = EExploredUIMode::Menu;
 	bool bCutsceneActive = false;
+	bool bShowingEnding = false;
 	/** Pantalla actual y camino hasta ella (la base es None jugando o MainMenu). */
 	ExploredSettingsLogic::FMenuNavigation Navigation;
 
@@ -164,5 +179,8 @@ private:
 	TWeakPtr<SExploredSettingsPanel> SettingsPanel;
 
 	TWeakObjectPtr<AExploredMenuCamera> MenuCamera;
+
+	/** Vuelta al menú tras los créditos del final; con el mundo en pausa no corren los temporizadores del mundo. */
+	FTSTicker::FDelegateHandle EndCreditsTicker;
 
 };

@@ -94,6 +94,18 @@ bool UExploredSaveSubsystem::HasSaveGame() const
 	return !GetContinueSlotId().IsEmpty();
 }
 
+bool UExploredSaveSubsystem::HasObsoleteSave() const
+{
+	for (const FSaveSlotInfo& Info : ListSlots())
+	{
+		if (Info.Result == ESaveLoadResult::ObsoleteVersion)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 TArray<FString> UExploredSaveSubsystem::GetSlotNames() const
 {
 	TArray<FString> Names;

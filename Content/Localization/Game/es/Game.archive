@@ -423,6 +423,128 @@
 			]
 		},
 		{
+			"Namespace": "ExploredBeacon",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Poner la lente"
+					},
+					"Translation": {
+						"Text": "Poner la lente"
+					},
+					"Key": "LampLens"
+				},
+				{
+					"Source": {
+						"Text": "Encender la baliza"
+					},
+					"Translation": {
+						"Text": "Encender la baliza"
+					},
+					"Key": "LampLight"
+				},
+				{
+					"Source": {
+						"Text": "La baliza está encendida"
+					},
+					"Translation": {
+						"Text": "La baliza está encendida"
+					},
+					"Key": "LampLit"
+				},
+				{
+					"Source": {
+						"Text": "Verter los tarros"
+					},
+					"Translation": {
+						"Text": "Verter los tarros"
+					},
+					"Key": "LampOil"
+				},
+				{
+					"Source": {
+						"Text": "Apretar la mecha"
+					},
+					"Translation": {
+						"Text": "Apretar la mecha"
+					},
+					"Key": "LampWick"
+				},
+				{
+					"Source": {
+						"Text": "Falta la lente: está en el «Sáhara»"
+					},
+					"Translation": {
+						"Text": "Falta la lente: está en el «Sáhara»"
+					},
+					"Key": "MissingLens"
+				},
+				{
+					"Source": {
+						"Text": "Hacen falta dos tarros de aceite"
+					},
+					"Translation": {
+						"Text": "Hacen falta dos tarros de aceite"
+					},
+					"Key": "MissingOil"
+				},
+				{
+					"Source": {
+						"Text": "Falta la mecha"
+					},
+					"Translation": {
+						"Text": "Falta la mecha"
+					},
+					"Key": "MissingWick"
+				},
+				{
+					"Source": {
+						"Text": "Leer la página"
+					},
+					"Translation": {
+						"Text": "Leer la página"
+					},
+					"Key": "PageRead"
+				},
+				{
+					"Source": {
+						"Text": "Releer la página"
+					},
+					"Translation": {
+						"Text": "Releer la página"
+					},
+					"Key": "PageReread"
+				},
+				{
+					"Source": {
+						"Text": "Cuaderno de guardia · página {0} de {1}"
+					},
+					"Translation": {
+						"Text": "Cuaderno de guardia · página {0} de {1}"
+					},
+					"Key": "PageTitle"
+				},
+				{
+					"Source": {
+						"Text": "Bajar del faro"
+					},
+					"Translation": {
+						"Text": "Bajar del faro"
+					},
+					"Key": "TowerDown"
+				},
+				{
+					"Source": {
+						"Text": "Subir a la linterna"
+					},
+					"Translation": {
+						"Text": "Subir a la linterna"
+					},
+					"Key": "TowerUp"
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredIsland",
 			"Children": [
 				{
@@ -1008,10 +1130,10 @@
 				},
 				{
 					"Source": {
-						"Text": "EXPLORED"
+						"Text": "BALIZA SIETE"
 					},
 					"Translation": {
-						"Text": "EXPLORED"
+						"Text": "BALIZA SIETE"
 					},
 					"Key": "CreditsTitle"
 				},
@@ -1053,39 +1175,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Volver al menú"
+						"Text": "Continuar"
 					},
 					"Translation": {
-						"Text": "Volver al menú"
+						"Text": "Continuar"
 					},
 					"Key": "EndingContinue"
-				},
-				{
-					"Source": {
-						"Text": "{0} {0}|plural(one=día,other=días) en el archipiélago."
-					},
-					"Translation": {
-						"Text": "{0} {0}|plural(one=día,other=días) en el archipiélago."
-					},
-					"Key": "EndingDays"
-				},
-				{
-					"Source": {
-						"Text": "El barco dejó la laguna con la marea de la noche."
-					},
-					"Translation": {
-						"Text": "El barco dejó la laguna con la marea de la noche."
-					},
-					"Key": "EndingLine1"
-				},
-				{
-					"Source": {
-						"Text": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."
-					},
-					"Translation": {
-						"Text": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."
-					},
-					"Key": "EndingLine2"
 				},
 				{
 					"Source": {
@@ -1161,28 +1256,19 @@
 				},
 				{
 					"Source": {
-						"Text": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."
+						"Text": "WASD moverse · Espacio saltar · Mayús correr"
 					},
 					"Translation": {
-						"Text": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."
-					},
-					"Key": "HelpGoal"
-				},
-				{
-					"Source": {
-						"Text": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"
-					},
-					"Translation": {
-						"Text": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"
+						"Text": "WASD moverse · Espacio saltar · Mayús correr"
 					},
 					"Key": "HelpMove"
 				},
 				{
 					"Source": {
-						"Text": "E interactuar · Tab mochila · H reloj · Esc pausa"
+						"Text": "E interactuar · Tab mochila · Esc pausa"
 					},
 					"Translation": {
-						"Text": "E interactuar · Tab mochila · H reloj · Esc pausa"
+						"Text": "E interactuar · Tab mochila · Esc pausa"
 					},
 					"Key": "HelpUse"
 				},
@@ -1374,6 +1460,15 @@
 						"Text": "Cargar"
 					},
 					"Key": "LoadGame"
+				},
+				{
+					"Source": {
+						"Text": "La partida guardada es de una versión anterior del juego y no se puede continuar."
+					},
+					"Translation": {
+						"Text": "La partida guardada es de una versión anterior del juego y no se puede continuar."
+					},
+					"Key": "MenuObsoleteSave"
 				},
 				{
 					"Source": {
@@ -1755,6 +1850,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Guardada con una versión anterior: no se puede cargar"
+					},
+					"Translation": {
+						"Text": "Guardada con una versión anterior: no se puede cargar"
+					},
+					"Key": "SlotObsolete"
+				},
+				{
+					"Source": {
 						"Text": "{0} · recuperada de la copia de seguridad (la principal estaba dañada)"
 					},
 					"Translation": {
@@ -1872,10 +1976,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Un archipiélago que no aparece en ningún mapa"
+						"Text": "Isla de Sal"
 					},
 					"Translation": {
-						"Text": "Un archipiélago que no aparece en ningún mapa"
+						"Text": "Isla de Sal"
 					},
 					"Key": "Subtitle"
 				},
@@ -1980,10 +2084,10 @@
 				},
 				{
 					"Source": {
-						"Text": "EXPLORED"
+						"Text": "BALIZA SIETE"
 					},
 					"Translation": {
-						"Text": "EXPLORED"
+						"Text": "BALIZA SIETE"
 					},
 					"Key": "Title"
 				},
@@ -2094,236 +2198,6 @@
 						"Text": "Ventana"
 					},
 					"Key": "WindowWindowed"
-				}
-			]
-		},
-		{
-			"Namespace": "ExploredVoyage",
-			"Children": [
-				{
-					"Source": {
-						"Text": "Ya tienes todo: construye el barco en la grada de la playa"
-					},
-					"Translation": {
-						"Text": "Ya tienes todo: construye el barco en la grada de la playa"
-					},
-					"Key": "AllParts"
-				},
-				{
-					"Source": {
-						"Text": "delante"
-					},
-					"Translation": {
-						"Text": "delante"
-					},
-					"Key": "DirAhead"
-				},
-				{
-					"Source": {
-						"Text": "detrás"
-					},
-					"Translation": {
-						"Text": "detrás"
-					},
-					"Key": "DirBehind"
-				},
-				{
-					"Source": {
-						"Text": "a {0} m, {1}{2}"
-					},
-					"Translation": {
-						"Text": "a {0} m, {1}{2}"
-					},
-					"Key": "DirFormat"
-				},
-				{
-					"Source": {
-						"Text": "a la izquierda"
-					},
-					"Translation": {
-						"Text": "a la izquierda"
-					},
-					"Key": "DirLeft"
-				},
-				{
-					"Source": {
-						"Text": "a la derecha"
-					},
-					"Translation": {
-						"Text": "a la derecha"
-					},
-					"Key": "DirRight"
-				},
-				{
-					"Source": {
-						"Text": " (bajo el agua)"
-					},
-					"Translation": {
-						"Text": " (bajo el agua)"
-					},
-					"Key": "DirUnderwater"
-				},
-				{
-					"Source": {
-						"Text": "Cae la noche. Las estrellas ya marcan el rumbo."
-					},
-					"Translation": {
-						"Text": "Cae la noche. Las estrellas ya marcan el rumbo."
-					},
-					"Key": "NightFell"
-				},
-				{
-					"Source": {
-						"Text": "Construye el barco en la grada de la playa"
-					},
-					"Translation": {
-						"Text": "Construye el barco en la grada de la playa"
-					},
-					"Key": "ObjBuild"
-				},
-				{
-					"Source": {
-						"Text": "Es de noche: zarpa en el barco"
-					},
-					"Translation": {
-						"Text": "Es de noche: zarpa en el barco"
-					},
-					"Key": "ObjSailNow"
-				},
-				{
-					"Source": {
-						"Text": "Espera a la noche para zarpar en el barco"
-					},
-					"Translation": {
-						"Text": "Espera a la noche para zarpar en el barco"
-					},
-					"Key": "ObjSailWait"
-				},
-				{
-					"Source": {
-						"Text": "Rescata las piezas del Albatros ({0}/4)"
-					},
-					"Translation": {
-						"Text": "Rescata las piezas del Albatros ({0}/4)"
-					},
-					"Key": "ObjSalvage"
-				},
-				{
-					"Source": {
-						"Text": "{0} · la más cercana {1}"
-					},
-					"Translation": {
-						"Text": "{0} · la más cercana {1}"
-					},
-					"Key": "ObjSalvageHint"
-				},
-				{
-					"Source": {
-						"Text": "Motor"
-					},
-					"Translation": {
-						"Text": "Motor"
-					},
-					"Key": "PartEngine"
-				},
-				{
-					"Source": {
-						"Text": "Fuselaje"
-					},
-					"Translation": {
-						"Text": "Fuselaje"
-					},
-					"Key": "PartFuselage"
-				},
-				{
-					"Source": {
-						"Text": "{0} del Albatros rescatado ({1}/4)"
-					},
-					"Translation": {
-						"Text": "{0} del Albatros rescatado ({1}/4)"
-					},
-					"Key": "PartRecovered"
-				},
-				{
-					"Source": {
-						"Text": "Cola"
-					},
-					"Translation": {
-						"Text": "Cola"
-					},
-					"Key": "PartTail"
-				},
-				{
-					"Source": {
-						"Text": "Ala"
-					},
-					"Translation": {
-						"Text": "Ala"
-					},
-					"Key": "PartWing"
-				},
-				{
-					"Source": {
-						"Text": "El barco está listo. Zarpa de noche, guiándote por las estrellas"
-					},
-					"Translation": {
-						"Text": "El barco está listo. Zarpa de noche, guiándote por las estrellas"
-					},
-					"Key": "ShipBuilt"
-				},
-				{
-					"Source": {
-						"Text": "Rescatar: {0} del Albatros"
-					},
-					"Translation": {
-						"Text": "Rescatar: {0} del Albatros"
-					},
-					"Key": "VerbSalvage"
-				},
-				{
-					"Source": {
-						"Text": "Construir el barco"
-					},
-					"Translation": {
-						"Text": "Construir el barco"
-					},
-					"Key": "VerbYardBuild"
-				},
-				{
-					"Source": {
-						"Text": "Grada del barco: faltan piezas del Albatros ({0}/4)"
-					},
-					"Translation": {
-						"Text": "Grada del barco: faltan piezas del Albatros ({0}/4)"
-					},
-					"Key": "VerbYardMissing"
-				},
-				{
-					"Source": {
-						"Text": "Zarpar guiándote por las estrellas"
-					},
-					"Translation": {
-						"Text": "Zarpar guiándote por las estrellas"
-					},
-					"Key": "VerbYardSail"
-				},
-				{
-					"Source": {
-						"Text": "Esperar a la noche junto al barco"
-					},
-					"Translation": {
-						"Text": "Esperar a la noche junto al barco"
-					},
-					"Key": "VerbYardWait"
-				},
-				{
-					"Source": {
-						"Text": "De día no se ven las estrellas: espera a la noche junto al barco"
-					},
-					"Translation": {
-						"Text": "De día no se ven las estrellas: espera a la noche junto al barco"
-					},
-					"Key": "WaitNight"
 				}
 			]
 		}

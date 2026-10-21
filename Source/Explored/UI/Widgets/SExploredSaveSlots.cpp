@@ -125,6 +125,8 @@ FText SExploredSaveSlots::SlotDetail(const ExploredScreens::FSaveSlotRow& Row)
 		return NSLOCTEXT("ExploredUI", "SlotDamaged", "Dañada: no se puede leer");
 	case ESaveSlotRowState::FutureVersion:
 		return NSLOCTEXT("ExploredUI", "SlotFuture", "Guardada con una versión más nueva del juego");
+	case ESaveSlotRowState::Obsolete:
+		return NSLOCTEXT("ExploredUI", "SlotObsolete", "Guardada con una versión anterior: no se puede cargar");
 	default:
 		break;
 	}
@@ -147,7 +149,7 @@ TSharedRef<SWidget> SExploredSaveSlots::BuildRow(const ExploredScreens::FSaveSlo
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 	using ExploredScreens::ESaveSlotRowState;
 	const bool bProblem = Row.State == ESaveSlotRowState::Damaged || Row.State == ESaveSlotRowState::FutureVersion
-		|| Row.State == ESaveSlotRowState::Recovered;
+		|| Row.State == ESaveSlotRowState::Obsolete || Row.State == ESaveSlotRowState::Recovered;
 	const FText Backup = Row.State == ESaveSlotRowState::Empty && !Row.bHasBackup
 		? FText::GetEmpty()
 		: (Row.bHasBackup ? NSLOCTEXT("ExploredUI", "SlotHasBackup", "Con copia de seguridad") : NSLOCTEXT("ExploredUI", "SlotNoBackup", "Sin copia de seguridad"));

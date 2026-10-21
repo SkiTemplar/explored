@@ -4,15 +4,18 @@
 #include "Widgets/SCompoundWidget.h"
 
 /**
- * Pantalla del final (GDD §0, §6.3): cielo nocturno y unas pocas líneas.
- * «Volver al menú» (o Escape/B) cierra la partida.
+ * Pantalla del epílogo de Baliza Siete (GDD v3 §2, «Final»): cielo nocturno, la línea que
+ * depende de las páginas leídas (8 de 8 o menos) y la línea común. «Continuar» (o Escape/B)
+ * pasa a los créditos.
  */
 class EXPLORED_API SExploredEnding : public SCompoundWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SExploredEnding) {}
-		/** Días que ha durado la partida, para la línea de cierre. */
-		SLATE_ARGUMENT(int32, DaysSurvived)
+		/** Línea del epílogo según las páginas leídas (notebook.json, epilogo_completo/parcial). */
+		SLATE_ARGUMENT(FText, EpilogueLine)
+		/** Línea común final (epilogo_comun). */
+		SLATE_ARGUMENT(FText, CommonLine)
 		SLATE_EVENT(FSimpleDelegate, OnContinue)
 	SLATE_END_ARGS()
 

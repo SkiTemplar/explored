@@ -6,7 +6,7 @@
 
 /**
  * Progreso de la historia de Baliza Siete (GDD v3 §5.9): máquina de etapas e
- * hitos guardados. Modelo puro: ExploredVoyageSubsystem lo conecta con el
+ * hitos guardados. Modelo puro: UBeaconSubsystem (con FBeaconDirectorModel) lo conecta con el
  * mundo, ExploredHUD pinta el objetivo y SaveSystemStates guarda el registro.
  *
  * Reglas de las etapas:

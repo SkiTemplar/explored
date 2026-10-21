@@ -16,6 +16,7 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 	OnCredits = InArgs._OnCredits;
 	OnQuit = InArgs._OnQuit;
 	const bool bCanContinue = InArgs._bCanContinue;
+	const FText Notice = InArgs._Notice;
 
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
@@ -46,14 +47,14 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 				+ SVerticalBox::Slot().AutoHeight()
 				[
 					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Title", "EXPLORED"))
+					.Text(NSLOCTEXT("ExploredUI", "Title", "BALIZA SIETE"))
 					.Font(Style.FontTitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 28.0f))
 				[
 					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Un archipiélago que no aparece en ningún mapa"))
+					.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Isla de Sal"))
 					.Font(Style.FontSubtitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
 				]
@@ -74,6 +75,19 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 				[
 					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Quit", "Salir"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleQuit))
+				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 16.0f, 0.0f, 0.0f))
+				[
+					SNew(SBox)
+					.WidthOverride(420.0f)
+					.Visibility(Notice.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
+					[
+						SNew(STextBlock)
+						.Text(Notice)
+						.Font(Style.FontBody())
+						.AutoWrapText(true)
+						.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
+					]
 				]
 			]
 		]

@@ -41,6 +41,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Guardado")
 	bool HasSaveGame() const;
 
+	/**
+	 * Hay alguna ranura de una versión anterior que ya no se puede cargar (formato 1, historia
+	 * anterior). El menú principal lo explica en vez de ofrecer «Continuar».
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Guardado")
+	bool HasObsoleteSave() const;
+
 	/** Ranuras cargables en orden de «Continuar» (la más reciente primero). */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Guardado")
 	TArray<FString> GetSlotNames() const;

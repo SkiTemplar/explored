@@ -56,7 +56,7 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 					[
 						SNew(SScrollBox)
 						.ScrollBarStyle(&Style.ScrollBarStyle())
-						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "EXPLORED"), true) ]
+						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "BALIZA SIETE"), true) ]
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 24.0f, 0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsAuthor", "Un juego de Rodrigo Fernández")) ]
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsClaude", "Desarrollado con Claude (Anthropic)")) ]
 						+ SScrollBox::Slot().Padding(FMargin(0.0f, 8.0f)) [ Line(NSLOCTEXT("ExploredUI", "CreditsEngine", "Motor: Unreal Engine 5.6")) ]

@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 315,
-		"cpp": 256,
-		"datos": 59,
+		"total": 350,
+		"cpp": 242,
+		"datos": 108,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 3,
-		"revisar": 152
+		"revisar": 179
 	},
 	"entries": [
 		{
@@ -467,6 +467,136 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Carry/ExploredContainer.cpp:157"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "LampLens",
+			"es": "Poner la lente",
+			"en": "Set the lens",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/LighthouseLamp.cpp:190"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "LampLight",
+			"es": "Encender la baliza",
+			"en": "Light the beacon",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/LighthouseLamp.cpp:201"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "LampLit",
+			"es": "La baliza está encendida",
+			"en": "The beacon is lit",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/LighthouseLamp.cpp:201"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "LampOil",
+			"es": "Verter los tarros",
+			"en": "Pour the jars",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/LighthouseLamp.cpp:193"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "LampWick",
+			"es": "Apretar la mecha",
+			"en": "Tighten the wick",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/LighthouseLamp.cpp:196"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "MissingLens",
+			"es": "Falta la lente: está en el «Sáhara»",
+			"en": "The lens is missing: it's on the «Sáhara»",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:89"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "MissingOil",
+			"es": "Hacen falta dos tarros de aceite",
+			"en": "Two jars of oil are needed",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:90"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "MissingWick",
+			"es": "Falta la mecha",
+			"en": "Wick missing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:91"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "PageRead",
+			"es": "Leer la página",
+			"en": "Read the page",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:79"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "PageReread",
+			"es": "Releer la página",
+			"en": "Read the page again",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:79"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "PageTitle",
+			"es": "Cuaderno de guardia · página {0} de {1}",
+			"en": "Watch log · page {0} of {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:454"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "TowerDown",
+			"es": "Bajar del faro",
+			"en": "Climb down",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:126"
+			]
+		},
+		{
+			"namespace": "ExploredBeacon",
+			"key": "TowerUp",
+			"es": "Subir a la linterna",
+			"en": "Climb to the lantern",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:126"
 			]
 		},
 		{
@@ -959,7 +1089,7 @@
 			"en": "Bleeding",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:316"
+				"Source/Explored/UI/ExploredHUD.cpp:457"
 			]
 		},
 		{
@@ -969,7 +1099,7 @@
 			"en": "Fever",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:324"
+				"Source/Explored/UI/ExploredHUD.cpp:465"
 			]
 		},
 		{
@@ -979,7 +1109,7 @@
 			"en": "Infected wound",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:328"
+				"Source/Explored/UI/ExploredHUD.cpp:469"
 			]
 		},
 		{
@@ -989,7 +1119,7 @@
 			"en": "{Count} unbandaged {Count}|plural(one=wound,other=wounds)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:345"
+				"Source/Explored/UI/ExploredHUD.cpp:486"
 			]
 		},
 		{
@@ -999,7 +1129,7 @@
 			"en": "Scurvy",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:338"
+				"Source/Explored/UI/ExploredHUD.cpp:479"
 			]
 		},
 		{
@@ -1009,7 +1139,7 @@
 			"en": "Sprain",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:332"
+				"Source/Explored/UI/ExploredHUD.cpp:473"
 			]
 		},
 		{
@@ -1019,7 +1149,7 @@
 			"en": "Sunburn",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:320"
+				"Source/Explored/UI/ExploredHUD.cpp:461"
 			]
 		},
 		{
@@ -1029,7 +1159,7 @@
 			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:23"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
 			]
 		},
 		{
@@ -1039,7 +1169,7 @@
 			"en": "Credits",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:70"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:71"
 			]
 		},
 		{
@@ -1060,7 +1190,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredCredits.cpp:60",
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:79"
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:71"
 			]
 		},
 		{
@@ -1116,12 +1246,12 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "CreditsTitle",
-			"es": "EXPLORED",
-			"en": "EXPLORED",
+			"es": "BALIZA SIETE",
+			"en": "BEACON SEVEN",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredCredits.cpp:59",
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:75"
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:67"
 			]
 		},
 		{
@@ -1168,41 +1298,11 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "EndingContinue",
-			"es": "Volver al menú",
-			"en": "Back to menu",
+			"es": "Continuar",
+			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredEnding.cpp:44"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "EndingDays",
-			"es": "{0} {0}|plural(one=día,other=días) en el archipiélago.",
-			"en": "{0} {0}|plural(one=day,other=days) in the archipelago.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:49"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "EndingLine1",
-			"es": "El barco dejó la laguna con la marea de la noche.",
-			"en": "The boat left the lagoon on the night tide.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:63"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "EndingLine2",
-			"es": "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes.",
-			"en": "No compass, no map: only the stars the navigators taught.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:67"
 			]
 		},
 		{
@@ -1232,7 +1332,7 @@
 			"en": "Line out: {0} m · [R] reel in · [T] let out",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:186"
+				"Source/Explored/UI/ExploredHUD.cpp:325"
 			]
 		},
 		{
@@ -1242,7 +1342,7 @@
 			"en": "Waiting for a bite… [F] reel in",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:173"
+				"Source/Explored/UI/ExploredHUD.cpp:312"
 			]
 		},
 		{
@@ -1287,32 +1387,22 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "HelpGoal",
-			"es": "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco.",
-			"en": "The Albatros broke into four parts. With them you can build a boat.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:364"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "HelpMove",
-			"es": "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear",
-			"en": "WASD move · Space jump · Shift run · Ctrl dive",
+			"es": "WASD moverse · Espacio saltar · Mayús correr",
+			"en": "WASD move · Space jump · Shift run",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:363"
+				"Source/Explored/UI/ExploredPlayerController.cpp:376"
 			]
 		},
 		{
 			"namespace": "ExploredUI",
 			"key": "HelpUse",
-			"es": "E interactuar · Tab mochila · H reloj · Esc pausa",
-			"en": "E interact · Tab backpack · H watch · Esc pause",
+			"es": "E interactuar · Tab mochila · Esc pausa",
+			"en": "E interact · Tab backpack · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:362"
+				"Source/Explored/UI/ExploredPlayerController.cpp:375"
 			]
 		},
 		{
@@ -1332,7 +1422,7 @@
 			"en": "[{Key}] {Actions}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:131"
+				"Source/Explored/UI/ExploredHUD.cpp:270"
 			],
 			"note": "{Key}: nombre de la tecla asignada a IA_Interact; {Actions}: FText::Join(INVTEXT(\" · \"), Verbs)."
 		},
@@ -1525,7 +1615,17 @@
 			"en": "Load",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:28"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:29"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "MenuObsoleteSave",
+			"es": "La partida guardada es de una versión anterior del juego y no se puede continuar.",
+			"en": "The saved game is from an earlier version of the game and can't be continued.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredPlayerController.cpp:292"
 			]
 		},
 		{
@@ -1545,7 +1645,7 @@
 			"en": "Energy",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:284"
+				"Source/Explored/UI/ExploredHUD.cpp:423"
 			]
 		},
 		{
@@ -1555,7 +1655,7 @@
 			"en": "Hunger",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:282"
+				"Source/Explored/UI/ExploredHUD.cpp:421"
 			]
 		},
 		{
@@ -1565,7 +1665,7 @@
 			"en": "Sleep",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:285"
+				"Source/Explored/UI/ExploredHUD.cpp:424"
 			]
 		},
 		{
@@ -1575,7 +1675,7 @@
 			"en": "Thirst",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:283"
+				"Source/Explored/UI/ExploredHUD.cpp:422"
 			]
 		},
 		{
@@ -1585,7 +1685,7 @@
 			"en": "Temperature",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:286"
+				"Source/Explored/UI/ExploredHUD.cpp:425"
 			]
 		},
 		{
@@ -1595,7 +1695,7 @@
 			"en": "New game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:25"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:26"
 			]
 		},
 		{
@@ -1645,7 +1745,7 @@
 			"en": "Picked up: {Item}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredHUD.cpp:211"
+				"Source/Explored/UI/ExploredHUD.cpp:350"
 			]
 		},
 		{
@@ -1725,7 +1825,7 @@
 			"en": "Quit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:75"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:76"
 			]
 		},
 		{
@@ -1865,7 +1965,7 @@
 			"en": "Settings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:65",
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:66",
 				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:48"
 			]
 		},
@@ -1926,7 +2026,7 @@
 			"en": "Backup available",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:153"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:155"
 			]
 		},
 		{
@@ -1946,7 +2046,17 @@
 			"en": "No backup",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:153"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:155"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "SlotObsolete",
+			"es": "Guardada con una versión anterior: no se puede cargar",
+			"en": "Saved with an earlier version: can't be loaded",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:129"
 			]
 		},
 		{
@@ -1956,7 +2066,7 @@
 			"en": "{0} · restored from the backup (the main file was damaged)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:140"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:142"
 			]
 		},
 		{
@@ -1966,7 +2076,7 @@
 			"en": "{0} · {1} h {2} min played",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:135"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:137"
 			]
 		},
 		{
@@ -1976,7 +2086,7 @@
 			"en": "Cancel",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:190"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:192"
 			]
 		},
 		{
@@ -1986,7 +2096,7 @@
 			"en": "Overwrite",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:222"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:224"
 			]
 		},
 		{
@@ -2016,7 +2126,7 @@
 			"en": "Overwrite {0}? The previous game is kept as a backup.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:210"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:212"
 			]
 		},
 		{
@@ -2026,7 +2136,7 @@
 			"en": "The game couldn't be saved.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:257"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:259"
 			]
 		},
 		{
@@ -2056,7 +2166,7 @@
 			"en": "Game saved in {0}.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:256"
+				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:258"
 			]
 		},
 		{
@@ -2082,11 +2192,11 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "Subtitle",
-			"es": "Un archipiélago que no aparece en ningún mapa",
-			"en": "An archipelago on no map",
+			"es": "Isla de Sal",
+			"en": "Salt Island",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:56"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:57"
 			]
 		},
 		{
@@ -2202,11 +2312,11 @@
 		{
 			"namespace": "ExploredUI",
 			"key": "Title",
-			"es": "EXPLORED",
-			"en": "EXPLORED",
+			"es": "BALIZA SIETE",
+			"en": "BEACON SEVEN",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:49"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:50"
 			]
 		},
 		{
@@ -2327,256 +2437,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:260"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "AllParts",
-			"es": "Ya tienes todo: construye el barco en la grada de la playa",
-			"en": "You have everything: build the boat on the beach slipway",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:109"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirAhead",
-			"es": "delante",
-			"en": "ahead",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:299"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirBehind",
-			"es": "detrás",
-			"en": "behind",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:303"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirFormat",
-			"es": "a {0} m, {1}{2}",
-			"en": "{0} m away, {1}{2}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:312"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirLeft",
-			"es": "a la izquierda",
-			"en": "to the left",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:307"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirRight",
-			"es": "a la derecha",
-			"en": "to the right",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:307"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "DirUnderwater",
-			"es": " (bajo el agua)",
-			"en": " (underwater)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:311"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "NightFell",
-			"es": "Cae la noche. Las estrellas ya marcan el rumbo.",
-			"en": "Night falls. The stars now mark the course.",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:225"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ObjBuild",
-			"es": "Construye el barco en la grada de la playa",
-			"en": "Build the boat on the beach slipway",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:252"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ObjSailNow",
-			"es": "Es de noche: zarpa en el barco",
-			"en": "It's night: sail the boat",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:255"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ObjSailWait",
-			"es": "Espera a la noche para zarpar en el barco",
-			"en": "Wait for night to sail the boat",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:256"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ObjSalvage",
-			"es": "Rescata las piezas del Albatros ({0}/4)",
-			"en": "Salvage the Albatros parts ({0}/4)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:247"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ObjSalvageHint",
-			"es": "{0} · la más cercana {1}",
-			"en": "{0} · nearest {1}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:249"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "PartEngine",
-			"es": "Motor",
-			"en": "Engine",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:322"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "PartFuselage",
-			"es": "Fuselaje",
-			"en": "Fuselage",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:319"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "PartRecovered",
-			"es": "{0} del Albatros rescatado ({1}/4)",
-			"en": "{0} of the Albatros salvaged ({1}/4)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:105"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "PartTail",
-			"es": "Cola",
-			"en": "Tail",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:321"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "PartWing",
-			"es": "Ala",
-			"en": "Wing",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:320"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "ShipBuilt",
-			"es": "El barco está listo. Zarpa de noche, guiándote por las estrellas",
-			"en": "The boat is ready. Sail at night, guided by the stars",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:126"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "VerbSalvage",
-			"es": "Rescatar: {0} del Albatros",
-			"en": "Salvage: {0} from the Albatros",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:93"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "VerbYardBuild",
-			"es": "Construir el barco",
-			"en": "Build the boat",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:185"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "VerbYardMissing",
-			"es": "Grada del barco: faltan piezas del Albatros ({0}/4)",
-			"en": "Boat slipway: Albatros parts missing ({0}/4)",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:181"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "VerbYardSail",
-			"es": "Zarpar guiándote por las estrellas",
-			"en": "Set sail by the stars",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:189"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "VerbYardWait",
-			"es": "Esperar a la noche junto al barco",
-			"en": "Wait for nightfall by the boat",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageActors.cpp:190"
-			]
-		},
-		{
-			"namespace": "ExploredVoyage",
-			"key": "WaitNight",
-			"es": "De día no se ven las estrellas: espera a la noche junto al barco",
-			"en": "Stars don't show by day: wait for night by the boat",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:151"
 			]
 		},
 		{
@@ -2910,6 +2770,376 @@
 			]
 		},
 		{
+			"namespace": "Data.notebook.cards",
+			"key": "cartel_inicio.textEs",
+			"es": "Isla de Sal. Martes, 04:10. La galerna se ha llevado la lancha «Gaviota II».",
+			"en": "Salt Island. Tuesday, 04:10. The gale has taken the launch «Gaviota II».",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cartel_inicio» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.epilogue",
+			"key": "epilogo_completo.textEs",
+			"es": "Iria entrega el cuaderno completo a la capitana Ibarra. Esa semana firma un informe contra el cierre de la Baliza Siete. La luz sigue encendida.",
+			"en": "Iria hands the complete log to Captain Ibarra. That week she signs a report against closing Beacon Seven. The light stays on.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «epilogo_completo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.epilogue",
+			"key": "epilogo_comun.textEs",
+			"es": "Isla de Sal. Jueves, 23:40.",
+			"en": "Salt Island. Thursday, 23:40.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «epilogo_comun» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.epilogue",
+			"key": "epilogo_parcial.textEs",
+			"es": "Iria sube a bordo en silencio, con el cuaderno a medias. No firma nada esa noche. Pero tampoco vuelve a apagar una luz.",
+			"en": "Iria climbs aboard in silence, with half the log. She signs nothing that night. But she never puts out a light again.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «epilogo_parcial» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p1.iriaEs",
+			"es": "Así que fuiste tú. Lente, aceite y mecha. Eso puedo hacerlo.",
+			"en": "So it was you. Lens, oil and wick. I can do that.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p1» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p1.textEs",
+			"es": "Cuaderno de guardia de la Baliza Siete. Hoy ha llegado la orden: la luz se apaga con el Plan Oscuridad. He escondido la lente en la bodega del carguero «Sáhara», en el bajo, donde no la buscan. El correo «Mistral» hace su última travesía de temporada pegado a esta costa: sin luz no se acerca. Hacen falta lente, aceite y mecha.",
+			"en": "Watch log of Beacon Seven. The order came today: the light goes dark under the Darkness Plan. I have hidden the lens in the hold of the freighter «Sáhara», on the shoal, where nobody looks. The mail boat «Mistral» makes its last run of the season close to this coast: without a light it will not come near. It takes a lens, oil and a wick.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p1» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p2.iriaEs",
+			"es": "Dos tarros. Cuatro peces. Se puede.",
+			"en": "Two jars. Four fish. Doable.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p2» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p2.textEs",
+			"es": "Pesco al amanecer y al atardecer: pican mejor. Para el aceite sirve el pescado, no el coco. Dos tarros alcanzan para una noche entera. El aceite lo pago yo; la empresa dejó de mandarlo hace dos años.",
+			"en": "I fish at dawn and at dusk: they bite better. Fish makes the oil, not coconut. Two jars last a whole night. I pay for the oil myself; the company stopped sending it two years ago.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p2» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p3.iriaEs",
+			"es": "Ocho palmas. Dieciséis cocos. Hay que repartirlos.",
+			"en": "Eight palms. Sixteen coconuts. They have to last.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p3» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p3.textEs",
+			"es": "La mecha es fibra de palma trenzada. Se recoge del suelo, no de la palma: la palma da cocos y hay que dejarla viva. Cuento ocho palmas en la isla. Con cocos y lluvia se aguanta una semana. Sin lluvia, tres días.",
+			"en": "The wick is braided palm fibre. You pick it up from the ground, not from the palm: the palm gives coconuts and has to stay alive. I count eight palms on the island. With coconuts and rain you last a week. Without rain, three days.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p3» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p4.iriaEs",
+			"es": "Barómetro bajo mil. Lo tengo en el bolsillo.",
+			"en": "Barometer below a thousand. I have one in my pocket.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p4» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p4.textEs",
+			"es": "Hice mi balsa con cuatro troncos y dos cuerdas. Sirve para cruzar al bajo con mar en calma. Cuando el barómetro baja de mil, me quedo en tierra: es la regla del faro y la de mi padre.",
+			"en": "I made my raft with four logs and two ropes. It will take you to the shoal on a calm sea. When the barometer drops below a thousand, I stay ashore: that is the rule of the lighthouse and of my father.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p4» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p5.iriaEs",
+			"es": "Mástil a la vista. Corriente a la izquierda.",
+			"en": "Mast in sight. Current to the left.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p5» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p5.textEs",
+			"es": "Desde aquí se ve el bajo. El «Sáhara» varó hace nueve años y el capitán no quiso dejarlo hasta que cayó el último mástil. No sé si fue valor o miedo a la empresa. Rema hacia el mástil: la corriente empuja a la izquierda.",
+			"en": "You can see the shoal from here. The «Sáhara» ran aground nine years ago and the captain would not leave her until the last mast fell. I do not know if it was courage or fear of the company. Row towards the mast: the current pushes to the left.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p5» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p6.iriaEs",
+			"es": "La caja de mapas. Aquí está.",
+			"en": "The chart box. Here it is.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p6» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p6.textEs",
+			"es": "Subí la lente a hombros, treinta y un peldaños de la bodega a cubierta, y la dejé en la caja de mapas. Una lente sola no es una luz. Una luz es lente, aceite y mecha, y alguien que las junte.",
+			"en": "I carried the lens on my shoulders, thirty-one steps from the hold to the deck, and left it in the chart box. A lens alone is not a light. A light is lens, oil and wick, and someone to put them together.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p6» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p7.iriaEs",
+			"es": "Seis años. Y yo, seis balizas apagadas.",
+			"en": "Six years. And me, six beacons put out.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p7» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p7.textEs",
+			"es": "Llevo cuarenta años encendiendo esta luz; los últimos seis, sin que nadie me lo pida ni me lo pague. Dicen que el satélite ve más lejos. No ve a un hombre con una barca sin radio en mitad de la noche. Una luz apagada es una promesa rota.",
+			"en": "I have lit this light for forty years; the last six without anyone asking or paying me. They say the satellite sees further. It does not see a man in a boat with no radio in the middle of the night. A light gone dark is a broken promise.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p7» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p8.iriaEs",
+			"es": "De nada, Roig.",
+			"en": "Anytime, Roig.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p8» iriaEs/iriaEn"
+			]
+		},
+		{
+			"namespace": "Data.notebook.pages",
+			"key": "cuaderno_p8.textEs",
+			"es": "Si has llegado hasta aquí, ya sabes más del mar que la empresa. Pon la lente en su aro, vierte los dos tarros, aprieta la mecha y enciende. No es un favor que me hagas a mí. Cuando la veas girar, sabrás por qué la guardé. Gracias, quien seas. A. R.",
+			"en": "If you have made it this far, you already know more about the sea than the company. Set the lens in its ring, pour in the two jars, tighten the wick and light it. It is not a favour to me. When you see it turn, you will know why I kept it. Thank you, whoever you are. A. R.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/notebook.json «cuaderno_p8» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_bebe_coco.textEs",
+			"es": "Bebe un coco",
+			"en": "Drink a coconut",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_bebe_coco» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_cruza_bajo.textEs",
+			"es": "Cruza al bajo",
+			"en": "Reach the shoal",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_cruza_bajo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_duerme_refugio.textEs",
+			"es": "Duerme en un refugio",
+			"en": "Sleep in a shelter",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_duerme_refugio» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_enciende_baliza.textEs",
+			"es": "Enciende la baliza",
+			"en": "Light the beacon",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_enciende_baliza» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_encuentra_lente.textEs",
+			"es": "Encuentra la lente",
+			"en": "Find the lens",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_encuentra_lente» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_haz_fuego.textEs",
+			"es": "Haz fuego",
+			"en": "Make a fire",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_haz_fuego» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_lee_cuaderno.textEs",
+			"es": "Lee el cuaderno",
+			"en": "Read the logbook",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_lee_cuaderno» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_monta_linterna.textEs",
+			"es": "Monta la linterna",
+			"en": "Assemble the lantern",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_monta_linterna» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_pesca_cocina.textEs",
+			"es": "Pesca y cocina un pez",
+			"en": "Catch and cook a fish",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_pesca_cocina» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_prepara_aceite.textEs",
+			"es": "Prepara dos tarros de aceite",
+			"en": "Make two jars of oil",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_prepara_aceite» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_prepara_balsa.textEs",
+			"es": "Prepara la balsa",
+			"en": "Get the raft ready",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_prepara_balsa» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_recupera_lente.textEs",
+			"es": "Recupera la lente del «Sáhara»",
+			"en": "Recover the lens from the «Sáhara»",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_recupera_lente» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_refugiate_faro.textEs",
+			"es": "Refúgiate en el faro",
+			"en": "Shelter in the lighthouse",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_refugiate_faro» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_sobrevive_noche.textEs",
+			"es": "Sobrevive a la noche",
+			"en": "Get through the night",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_sobrevive_noche» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_sube_faro.textEs",
+			"es": "Sube al faro",
+			"en": "Go to the tower",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_sube_faro» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_trenza_mecha.textEs",
+			"es": "Trenza la mecha",
+			"en": "Braid the wick",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_trenza_mecha» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.objectives.objectives",
+			"key": "obj_vuelve_antes_cierre.textEs",
+			"es": "Vuelve antes de que cierre el mar",
+			"en": "Get back before the sea closes",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/objectives.json «obj_vuelve_antes_cierre» textEs/textEn"
+			]
+		},
+		{
 			"namespace": "Data.recipes.recipes",
 			"key": "baliza.nameEs",
 			"es": "Baliza encendida",
@@ -3047,6 +3277,126 @@
 			"origin": "datos",
 			"locations": [
 				"Content/Data/survival_needs.json «sed» nameEs/nameEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_barometro_bajo.textEs",
+			"es": "Mil. Roig tenía razón: a tierra.",
+			"en": "A thousand. Roig was right: stay ashore.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_barometro_bajo» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_coger_lente.textEs",
+			"es": "Pesa menos de lo que parece.",
+			"en": "Lighter than it looks.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_coger_lente» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_encender.textEs",
+			"es": "Que se vea desde lejos.",
+			"en": "Let it be seen from far away.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_encender» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_entrar_casa.textEs",
+			"es": "Alguien vivió aquí hasta hace poco.",
+			"en": "Someone lived here until not long ago.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_entrar_casa» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_montar_linterna.textEs",
+			"es": "Lente, aceite y mecha. Ya está todo.",
+			"en": "Lens, oil and wick. That's everything.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_montar_linterna» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_ojo_ciclon.textEs",
+			"es": "Calma. Esto no dura.",
+			"en": "Calm. This won't last.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_ojo_ciclon» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_primer_movimiento.textEs",
+			"es": "Sal en la boca. Frío. Ni rastro de la lancha.",
+			"en": "Salt in my mouth. Cold. No sign of the launch.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_primer_movimiento» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_primera_hoguera.textEs",
+			"es": "Fuego. Lo demás puede esperar diez minutos.",
+			"en": "Fire. Everything else can wait ten minutes.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_primera_hoguera» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_primera_noche.textEs",
+			"es": "Mañana, el bajo.",
+			"en": "Tomorrow, the shoal.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_primera_noche» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_subir_balsa.textEs",
+			"es": "Una balsa. Qué buena idea, Iria.",
+			"en": "A raft. Great idea, Iria.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_subir_balsa» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_ver_carguero.textEs",
+			"es": "Nueve años varado y sigue de pie.",
+			"en": "Nine years aground and still standing.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_ver_carguero» textEs/textEn"
+			]
+		},
+		{
+			"namespace": "Data.thoughts.thoughts",
+			"key": "pensamiento_ver_faro.textEs",
+			"es": "La Baliza Siete. La que tenía que apagar el lunes.",
+			"en": "Beacon Seven. The one I was meant to shut down on Monday.",
+			"origin": "datos",
+			"locations": [
+				"Content/Data/thoughts.json «pensamiento_ver_faro» textEs/textEn"
 			]
 		},
 		{

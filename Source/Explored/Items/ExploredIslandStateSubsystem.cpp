@@ -10,57 +10,14 @@
 #include "Items/ExploredSurvivorComponent.h"
 #include "Narrative/ExploredSupplyCrate.h"
 #include "Save/SaveArchive.h"
+#include "Save/SaveIslandSections.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredRainBarrel.h"
 #include "WorldGen/ExploredCoconutPalm.h"
 
 namespace IslandStateDetail
 {
-	const TCHAR* const Section = TEXT("island");
-
-	TArray<FString> NamesToStrings(const TSet<FName>& Names)
-	{
-		TArray<FString> Out;
-		for (const FName& Name : Names)
-		{
-			Out.Add(Name.ToString());
-		}
-		Out.Sort();
-		return Out;
-	}
-
-	void SaveBackpack(FSaveArchive& Ar, const FBackpackState& Pack)
-	{
-		TArray<FSaveArchive> Stacks;
-		for (const FBackpackStack& Stack : Pack.Stacks)
-		{
-			FSaveArchive& Entry = Stacks.AddDefaulted_GetRef();
-			Entry.Write(TEXT("id"), Stack.Id);
-			Entry.Write(TEXT("count"), Stack.Count);
-		}
-		Ar.Write(TEXT("stacks"), Stacks);
-		Ar.Write(TEXT("heldHeavy"), Pack.HeldHeavy);
-		Ar.Write(TEXT("canteenSips"), Pack.CanteenSips);
-	}
-
-	bool LoadBackpack(const FSaveArchive& Ar, FBackpackState& Out)
-	{
-		TArray<FSaveArchive> Stacks;
-		if (!Ar.Read(TEXT("stacks"), Stacks))
-		{
-			return false;
-		}
-		for (const FSaveArchive& Entry : Stacks)
-		{
-			FBackpackStack Stack;
-			Entry.Read(TEXT("id"), Stack.Id);
-			Entry.Read(TEXT("count"), Stack.Count);
-			Out.Stacks.Add(Stack);
-		}
-		Ar.Read(TEXT("heldHeavy"), Out.HeldHeavy);
-		Ar.Read(TEXT("canteenSips"), Out.CanteenSips);
-		return true;
-	}
+	const TCHAR* const Section = ExploredSaveStates::SectionIsland;
 }
 
 bool UExploredIslandStateSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
@@ -213,7 +170,7 @@ TOptional<FBackpackState> UExploredIslandStateSubsystem::TakePendingBackpack()
 void UExploredIslandStateSubsystem::Save(FSaveArchive& Ar) const
 {
 	using namespace IslandStateDetail;
-	Ar.Write(TEXT("collected"), NamesToStrings(Collected));
+	ExploredSaveStates::SaveCollectedIds(Ar, Collected);
 	TArray<FSaveArchive> Palms;
 	for (const TPair<FName, int32>& Pair : PalmCoconuts)
 	{
@@ -253,7 +210,7 @@ void UExploredIslandStateSubsystem::Save(FSaveArchive& Ar) const
 	if (const UExploredSurvivorComponent* Survivor = Pawn ? Pawn->FindComponentByClass<UExploredSurvivorComponent>() : nullptr)
 	{
 		FSaveArchive Pack;
-		SaveBackpack(Pack, Survivor->GetBackpack());
+		ExploredSaveStates::SaveBackpack(Pack, Survivor->GetBackpack());
 		Ar.Write(TEXT("backpack"), Pack);
 	}
 }
@@ -265,12 +222,8 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 	PalmCoconuts.Reset();
 	Barrels.Reset();
 	Crates.Reset();
+	ExploredSaveStates::LoadCollectedIds(Ar, Collected);
 	TArray<FString> Ids;
-	Ar.Read(TEXT("collected"), Ids);
-	for (const FString& Id : Ids)
-	{
-		Collected.Add(FName(*Id));
-	}
 	TArray<FSaveArchive> Entries;
 	Ar.Read(TEXT("palms"), Entries);
 	for (const FSaveArchive& Entry : Entries)
@@ -321,7 +274,7 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 
 	FSaveArchive PackArchive;
 	FBackpackState Pack;
-	if (Ar.Read(TEXT("backpack"), PackArchive) && LoadBackpack(PackArchive, Pack))
+	if (Ar.Read(TEXT("backpack"), PackArchive) && ExploredSaveStates::LoadBackpack(PackArchive, Pack))
 	{
 		const APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 		UExploredSurvivorComponent* Survivor = Pawn ? Pawn->FindComponentByClass<UExploredSurvivorComponent>() : nullptr;

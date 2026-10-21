@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 315 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 256 |
-| … de `Content/Data` (campos bilingües) | 59 |
+| Textos en el catálogo | 350 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 242 |
+| … de `Content/Data` (campos bilingües) | 108 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
-| Literales para revisar | 152 |
-| Errores / avisos | 0 / 5 |
+| Literales para revisar | 179 |
+| Errores / avisos | 0 / 0 |
 
 ## Literales del C++
 
@@ -33,7 +33,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:95` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (152)
+### Revisar (179)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -78,6 +78,30 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Crafting/RecipeBookModel.cpp:109` | `Mounted lantern` | `FRecipeDef Lantern = Make(TEXT("linterna"), TEXT("Linterna montada"), TEXT("Mounted lantern"), TEXT("montar"),` |
 | `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Baliza encendida` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
 | `Source/Explored/Crafting/RecipeBookModel.cpp:114` | `Beacon lit` | `FRecipeDef Beacon = Make(TEXT("baliza"), TEXT("Baliza encendida"), TEXT("Beacon lit"), TEXT("encender"), {},` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:115` | `empieza en el prólogo con objetivo` | `Add(TEXT("empieza en el prólogo con objetivo"), [] { return true; },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:117` | `leer la página 1` | `Add(TEXT("leer la página 1"), [this]() { return Interact(TEXT("pagina_1")); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:119` | `BalizaStage Preparacion` | `Add(TEXT("BalizaStage Preparacion"), [this]() { return Console(TEXT("BalizaStage Preparacion")); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:119` | `BalizaStage Preparacion` | `Add(TEXT("BalizaStage Preparacion"), [this]() { return Console(TEXT("BalizaStage Preparacion")); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:121` | `BalizaGive tarros, mecha y lente` | `Add(TEXT("BalizaGive tarros, mecha y lente"), [this]()` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:123` | `BalizaGive tarro_aceite 2` | `return Console(TEXT("BalizaGive tarro_aceite 2")) && Console(TEXT("BalizaGive mecha 1")) && Console(TEXT("BalizaGive lente 1"));` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:123` | `BalizaGive mecha 1` | `return Console(TEXT("BalizaGive tarro_aceite 2")) && Console(TEXT("BalizaGive mecha 1")) && Console(TEXT("BalizaGive lente 1"));` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:123` | `BalizaGive lente 1` | `return Console(TEXT("BalizaGive tarro_aceite 2")) && Console(TEXT("BalizaGive mecha 1")) && Console(TEXT("BalizaGive lente 1"));` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:130` | `subir a la linterna` | `Add(TEXT("subir a la linterna"), [this]() { return Interact(TEXT("faro_torre"), false); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:136` | `poner la lente` | `for (const TCHAR* SlotName : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:136` | `verter los tarros` | `for (const TCHAR* SlotName : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:136` | `apretar la mecha` | `for (const TCHAR* SlotName : { TEXT("poner la lente"), TEXT("verter los tarros"), TEXT("apretar la mecha") })` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:140` | `linterna montada` | `Add(TEXT("linterna montada"), [] { return true; },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:142` | `guardar en manual3` | `Add(TEXT("guardar en manual3"), [this]()` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:149` | `cargar manual3 tras volver al prólogo` | `Add(TEXT("cargar manual3 tras volver al prólogo"), [this, Stage]()` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:151` | `BalizaStage Prologo` | `Console(TEXT("BalizaStage Prologo"));` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:161` | `partida del formato 1 rechazada sin romper nada` | `Add(TEXT("partida del formato 1 rechazada sin romper nada"), [this]()` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:183` | `leer la página 8` | `Add(TEXT("leer la página 8"), [this]() { return Interact(TEXT("pagina_8"), false); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:185` | `BalizaTime 3 21.5` | `Add(TEXT("BalizaTime 3 21.5"), [this]() { return Console(TEXT("BalizaTime 3 21.5")); }, [] { return true; });` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:185` | `BalizaTime 3 21.5` | `Add(TEXT("BalizaTime 3 21.5"), [this]() { return Console(TEXT("BalizaTime 3 21.5")); }, [] { return true; });` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:186` | `encender la baliza` | `Add(TEXT("encender la baliza"), [this]() { return Interact(TEXT("faro_linterna"), false); },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:188` | `luces del Mistral` | `Add(TEXT("luces del Mistral"), [] { return true; },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:190` | `pantalla de epílogo` | `Add(TEXT("pantalla de epílogo"), [] { return true; },` |
+| `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:196` | `créditos del final` | `Add(TEXT("créditos del final"), [this]()` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:101` | `kit inicial` | `Add(TEXT("kit inicial"), [this]() { return Count(TEXT("cuchillo")) == 1 && Count(TEXT("cantimplora")) == 1 && Count(TEXT("barometro")) == 1; },` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:103` | `recoger leña 1` | `Add(TEXT("recoger leña 1"), [this]() { return Interact(TEXT("lena_cala_1")); }, [this]() { return Idle() && Count(TEXT("lena")) == 2; });` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:104` | `recoger leña 2` | `Add(TEXT("recoger leña 2"), [this]() { return Interact(TEXT("lena_cala_2")); }, [this]() { return Idle() && Count(TEXT("lena")) == 4; });` |
@@ -98,12 +122,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:182` | `beber de la cantimplora` | `Add(TEXT("beber de la cantimplora"), [this]()` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:192` | `combinación que no es receta` | `Add(TEXT("combinación que no es receta"), [this]()` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:71` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:477` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:478` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:479` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:480` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:485` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:513` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:483` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:484` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:485` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:486` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:491` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:519` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:160` | `{\n  "status": "%s",\n  "start_zone": "%s",\n  "start_m": [%.2f, %.2f, %.2f],\n  "end_m": [%.2f, %.2f, %.2f],\n` | `TEXT("{\n \"status\": \"%s\",\n \"start_zone\": \"%s\",\n \"start_m\": [%.2f, %.2f, %.2f],\n \"end_m\": [%.2f, %.2f, %.2f],\n")` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:161` | `  "waypoints_reached": %d,\n  "waypoints": %d,\n  "elapsed_s": %.1f,\n  "travelled_m": %.1f,\n  "max_height_m": %.2f\n}\n` | `TEXT(" \"waypoints_reached\": %d,\n \"waypoints\": %d,\n \"elapsed_s\": %.1f,\n \"travelled_m\": %.1f,\n \"max_height_m\": %.2f\n}\n"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
@@ -164,6 +188,9 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:174` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:179` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:148` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:151` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:154` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |
@@ -211,10 +238,6 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (5)
+## Avisos (0)
 
-- Source/Explored/Narrative/ExploredVoyageActors.cpp:93: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/Narrative/ExploredVoyageActors.cpp:181: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:105: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:247: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/UI/ExploredPlayerController.cpp:364: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+Ninguno.

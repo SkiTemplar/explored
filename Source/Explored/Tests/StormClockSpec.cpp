@@ -173,21 +173,21 @@ void FStormClockSpec::Define()
 		{
 			const float Charges = Clock.BarrelChargesBetween(At(1, 0.0), At(2, 0.0));
 			TestEqual(TEXT("Cargas del día 1"), Charges, 2.0f, 1.0e-4f);
-			TestEqual(TEXT("Barril"), FStormClockModel::AddRain(FRainBarrelState(), Charges).Charges, 2);
+			TestEqual(TEXT("Barril"), FStormClockModel::AddRain(FStormBarrelState(), Charges).Charges, 2);
 		});
 
 		It(TEXT("el ciclón llena el barril hasta 4 y lo demás rebosa"), [this]()
 		{
 			const float Charges = Clock.BarrelChargesBetween(At(2, 19.0), At(3, 2.0));
 			TestEqual(TEXT("Lluvia del ciclón (muros)"), Charges, 5.25f, 1.0e-4f);
-			const FRainBarrelState Full = FStormClockModel::AddRain(FRainBarrelState(), Charges);
+			const FStormBarrelState Full = FStormClockModel::AddRain(FStormBarrelState(), Charges);
 			TestEqual(TEXT("Lleno"), Full.Charges, FStormClockModel::BarrelCapacity);
 			TestEqual(TEXT("Sin fracción"), Full.Partial, 0.0f);
 		});
 
 		It(TEXT("las fracciones se acumulan en pasos cortos"), [this]()
 		{
-			FRainBarrelState Barrel;
+			FStormBarrelState Barrel;
 			double T = At(1, 15.0);
 			for (int32 Step = 0; Step < 120; ++Step)
 			{
@@ -200,7 +200,7 @@ void FStormClockSpec::Define()
 		It(TEXT("intervalos y cantidades no válidos no llenan"), [this]()
 		{
 			TestEqual(TEXT("Al revés"), Clock.BarrelChargesBetween(At(1, 17.0), At(1, 15.0)), 0.0f);
-			FRainBarrelState Barrel;
+			FStormBarrelState Barrel;
 			Barrel.Charges = 1;
 			TestTrue(TEXT("Negativo"), FStormClockModel::AddRain(Barrel, -2.0f) == Barrel);
 			TestTrue(TEXT("NaN"), FStormClockModel::AddRain(Barrel, std::numeric_limits<float>::quiet_NaN()) == Barrel);
@@ -209,10 +209,10 @@ void FStormClockSpec::Define()
 		It(TEXT("sacar una carga del barril vacío falla"), [this]()
 		{
 			bool bOk = true;
-			const FRainBarrelState Empty;
+			const FStormBarrelState Empty;
 			TestTrue(TEXT("Sigue vacío"), FStormClockModel::TakeCharge(Empty, bOk) == Empty);
 			TestFalse(TEXT("Rechazado"), bOk);
-			FRainBarrelState One;
+			FStormBarrelState One;
 			One.Charges = 1;
 			TestEqual(TEXT("Queda 0"), FStormClockModel::TakeCharge(One, bOk).Charges, 0);
 			TestTrue(TEXT("Aceptado"), bOk);

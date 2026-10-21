@@ -14,6 +14,8 @@ enum class ESaveTrigger : uint8
 	Campfire,
 	/** Al salir al menú o al escritorio: siempre (autoguardado). */
 	Quit,
+	/** Hitos del reloj de la historia (amanecer de cada día y día 3 a las 20:00, GDD v3 §5.10): siempre. */
+	Story,
 };
 
 /** Estado de una ranura para el menú «Continuar» / «Cargar». */

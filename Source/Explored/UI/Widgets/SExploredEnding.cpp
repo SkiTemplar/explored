@@ -41,13 +41,9 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
 	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeMenuButton(
-		NSLOCTEXT("ExploredUI", "EndingContinue", "Volver al menú"),
+		NSLOCTEXT("ExploredUI", "EndingContinue", "Continuar"),
 		FOnClicked::CreateSP(this, &SExploredEnding::HandleContinue), false);
 	InitialFocus = ContinueButton;
-
-	const FText Days = FText::Format(
-		NSLOCTEXT("ExploredUI", "EndingDays", "{0} {0}|plural(one=día,other=días) en el archipiélago."),
-		FMath::Max(1, InArgs._DaysSurvived));
 
 	ChildSlot
 	[
@@ -60,19 +56,15 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 28.0f))
 				[
-					Line(NSLOCTEXT("ExploredUI", "EndingLine1", "El barco dejó la laguna con la marea de la noche."), Style.FontSubtitle(), StarWhite)
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 28.0f))
-				[
-					Line(NSLOCTEXT("ExploredUI", "EndingLine2", "Sin brújula ni mapa: solo las estrellas que enseñaron los navegantes."), Style.FontBody(), StarWhite)
+					Line(InArgs._EpilogueLine, Style.FontSubtitle(), StarWhite)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 48.0f))
 				[
-					Line(Days, Style.FontBody(), StarWhite)
+					Line(InArgs._CommonLine, Style.FontBody(), StarWhite)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 12.0f))
 				[
-					Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "EXPLORED"), Style.FontHeading(), BeaconAmber)
+					Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "BALIZA SIETE"), Style.FontHeading(), BeaconAmber)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 40.0f))
 				[

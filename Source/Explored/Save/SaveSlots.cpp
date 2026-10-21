@@ -83,6 +83,7 @@ bool FSaveSlotPolicy::ShouldAutosave(ESaveTrigger Trigger, double SecondsSinceLa
 	case ESaveTrigger::Manual:
 	case ESaveTrigger::Sleep:
 	case ESaveTrigger::Quit:
+	case ESaveTrigger::Story:
 		return true;
 	case ESaveTrigger::Campfire:
 		return SecondsSinceLastAutosave < 0.0 || SecondsSinceLastAutosave >= MinSecondsBetweenCampfireSaves;
@@ -145,8 +146,9 @@ FSaveReadOutcome FSaveSlotPolicy::ReadSlot(const FString* MainText, const FStrin
 	if (MainText)
 	{
 		Main.Result = FSaveCodec::Decode(*MainText, Migrations, CurrentVersion, Main.Document, Main.Error);
-		// Una partida futura no está dañada: no se sustituye en silencio por la copia antigua.
-		if (Main.Result == ESaveLoadResult::Ok || Main.Result == ESaveLoadResult::FutureVersion)
+		// Una partida futura u obsoleta no está dañada: no se sustituye en silencio por la copia.
+		if (Main.Result == ESaveLoadResult::Ok || Main.Result == ESaveLoadResult::FutureVersion
+			|| Main.Result == ESaveLoadResult::ObsoleteVersion)
 		{
 			return Main;
 		}

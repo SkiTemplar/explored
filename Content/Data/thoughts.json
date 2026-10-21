@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "_comment": "Pensamientos de Iria (GDD v3 §2.2): subtítulo de ≤ 20 palabras durante 4 s, una sola vez. «trigger» es el valor de EIriaThought (Narrative/BeaconDirectorModel.h) y el id el de FBeaconDirectorModel::ThoughtTextId. Lo valida Tools/DataCheck (historia.py).",
+  "subtitleSeconds": 4.0,
+  "thoughts": [
+    { "id": "pensamiento_primer_movimiento", "trigger": "FirstMove", "textEs": "Sal en la boca. Frío. Ni rastro de la lancha.", "textEn": "Salt in my mouth. Cold. No sign of the launch." },
+    { "id": "pensamiento_ver_faro", "trigger": "SeeLighthouse", "textEs": "La Baliza Siete. La que tenía que apagar el lunes.", "textEn": "Beacon Seven. The one I was meant to shut down on Monday." },
+    { "id": "pensamiento_primera_hoguera", "trigger": "FirstFire", "textEs": "Fuego. Lo demás puede esperar diez minutos.", "textEn": "Fire. Everything else can wait ten minutes." },
+    { "id": "pensamiento_entrar_casa", "trigger": "EnterHouse", "textEs": "Alguien vivió aquí hasta hace poco.", "textEn": "Someone lived here until not long ago." },
+    { "id": "pensamiento_primera_noche", "trigger": "FirstNight", "textEs": "Mañana, el bajo.", "textEn": "Tomorrow, the shoal." },
+    { "id": "pensamiento_subir_balsa", "trigger": "BoardRaft", "textEs": "Una balsa. Qué buena idea, Iria.", "textEn": "A raft. Great idea, Iria." },
+    { "id": "pensamiento_ver_carguero", "trigger": "SeeFreighter", "textEs": "Nueve años varado y sigue de pie.", "textEn": "Nine years aground and still standing." },
+    { "id": "pensamiento_coger_lente", "trigger": "TakeLens", "textEs": "Pesa menos de lo que parece.", "textEn": "Lighter than it looks." },
+    { "id": "pensamiento_barometro_bajo", "trigger": "BarometerLow", "textEs": "Mil. Roig tenía razón: a tierra.", "textEn": "A thousand. Roig was right: stay ashore." },
+    { "id": "pensamiento_ojo_ciclon", "trigger": "CycloneEye", "textEs": "Calma. Esto no dura.", "textEn": "Calm. This won't last." },
+    { "id": "pensamiento_montar_linterna", "trigger": "MountLantern", "textEs": "Lente, aceite y mecha. Ya está todo.", "textEn": "Lens, oil and wick. That's everything." },
+    { "id": "pensamiento_encender", "trigger": "LightBeacon", "textEs": "Que se vea desde lejos.", "textEn": "Let it be seen from far away." }
+  ]
+}

@@ -16,7 +16,7 @@ struct FExploredShot
 	float Hours = 12.0f;
 	/** Incluye la interfaz (HUD y Slate) en la captura. */
 	bool bShowUI = false;
-	/** Acción de juego antes de la vista (conjunto «voyage»): «interact», «build», «depart» o «wait». */
+	/** Acción de juego antes de la vista (conjunto «beacon»): «interact», «lantern» (linterna montada), «light» (encender) o «wait». */
 	FName Action;
 	/** Punto del mundo (cm) al que mira el personaje en «interact». */
 	FVector Target = FVector::ZeroVector;

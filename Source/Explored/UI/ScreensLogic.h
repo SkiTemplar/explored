@@ -32,7 +32,9 @@ namespace ExploredScreens
 		/** No se puede leer (ni la principal ni la copia). */
 		Damaged,
 		/** De una versión del juego más nueva. */
-		FutureVersion
+		FutureVersion,
+		/** De una versión anterior que ya no se puede cargar (historia anterior, formato 1). */
+		Obsolete
 	};
 
 	struct FSaveSlotRow

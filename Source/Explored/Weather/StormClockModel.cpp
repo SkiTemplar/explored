@@ -232,7 +232,7 @@ float FStormClockModel::BarrelChargesBetween(double FromHour, double ToHour) con
 	return static_cast<float>(Total);
 }
 
-FRainBarrelState FStormClockModel::AddRain(const FRainBarrelState& Barrel, float Charges)
+FStormBarrelState FStormClockModel::AddRain(const FStormBarrelState& Barrel, float Charges)
 {
 	if (!FMath::IsFinite(Charges) || Charges <= 0.0f)
 	{
@@ -241,7 +241,7 @@ FRainBarrelState FStormClockModel::AddRain(const FRainBarrelState& Barrel, float
 	const float Current = static_cast<float>(FMath::Clamp(Barrel.Charges, 0, BarrelCapacity))
 		+ (FMath::IsFinite(Barrel.Partial) ? FMath::Clamp(Barrel.Partial, 0.0f, 1.0f) : 0.0f);
 	const float Total = Current + Charges;
-	FRainBarrelState Next;
+	FStormBarrelState Next;
 	if (Total >= static_cast<float>(BarrelCapacity))
 	{
 		Next.Charges = BarrelCapacity;
@@ -252,14 +252,14 @@ FRainBarrelState FStormClockModel::AddRain(const FRainBarrelState& Barrel, float
 	return Next;
 }
 
-FRainBarrelState FStormClockModel::TakeCharge(const FRainBarrelState& Barrel, bool& bOutOk)
+FStormBarrelState FStormClockModel::TakeCharge(const FStormBarrelState& Barrel, bool& bOutOk)
 {
 	bOutOk = Barrel.Charges > 0;
 	if (!bOutOk)
 	{
 		return Barrel;
 	}
-	FRainBarrelState Next = Barrel;
+	FStormBarrelState Next = Barrel;
 	Next.Charges = FMath::Min(Barrel.Charges, BarrelCapacity) - 1;
 	return Next;
 }

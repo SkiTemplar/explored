@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import music, textos
+from . import historia, music, textos
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -60,7 +60,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "verbs.json", "recipes.json", "fuels.json", "survival_needs.json", "fish.json",
-    "music_layers.json",
+    "music_layers.json", "notebook.json", "objectives.json", "thoughts.json",
 ]
 
 
@@ -462,5 +462,6 @@ def run_all(ds: DataSet) -> Report:
     check_fish(ds, r)
     textos.check_player_texts(ds.data, r.error)
     music.check_music(ds, r)
+    historia.check_story(ds.data, r.error)
     check_forbidden_terms(ds, r)
     return r

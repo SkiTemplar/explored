@@ -40,7 +40,6 @@ namespace ExploredWiringDetail
 	const TCHAR* const SectionCooking = TEXT("cooking");
 	const TCHAR* const SectionBoats = TEXT("boats");
 	const TCHAR* const SectionTime = TEXT("time");
-	const TCHAR* const SectionProgress = TEXT("progress");
 	const TCHAR* const SectionWorld = TEXT("world");
 	const TCHAR* const SectionWiring = TEXT("wiring");
 
@@ -105,15 +104,6 @@ namespace ExploredWiringDetail
 		return Roots.Num() > 0 ? Roots[0] : FItemInstance();
 	}
 
-	const TCHAR* EndingName(EExploredEnding Ending)
-	{
-		switch (Ending)
-		{
-		case EExploredEnding::Departed: return TEXT("Departed");
-		case EExploredEnding::Stayed: return TEXT("Stayed");
-		default: return TEXT("None");
-		}
-	}
 }
 
 // ---------------------------------------------------------------------------
@@ -588,7 +578,6 @@ void UExploredWiringSubsystem::BeginNewRun()
 {
 	RunStartDays = GetTotalDays();
 	WitnessedEvents.Reset();
-	Progress = FExploredProgress();
 }
 
 // ---------------------------------------------------------------------------
@@ -621,7 +610,6 @@ void UExploredWiringSubsystem::RegisterSections(UExploredSaveSubsystem& Save)
 	// El reloj primero: los demás sistemas miden el tiempo desde la hora cargada.
 	Register(SectionTime, &UExploredWiringSubsystem::SaveClock, &UExploredWiringSubsystem::LoadClock);
 	Register(SectionWiring, &UExploredWiringSubsystem::SaveWiring, &UExploredWiringSubsystem::LoadWiring);
-	Register(SectionProgress, &UExploredWiringSubsystem::SaveProgress, &UExploredWiringSubsystem::LoadProgress);
 	Register(SectionWorld, &UExploredWiringSubsystem::SaveWorld, &UExploredWiringSubsystem::LoadWorld);
 	Register(SectionInventory, &UExploredWiringSubsystem::SaveInventory, &UExploredWiringSubsystem::LoadInventory);
 	Register(SectionBody, &UExploredWiringSubsystem::SaveBody, &UExploredWiringSubsystem::LoadBody);
@@ -635,7 +623,7 @@ void UExploredWiringSubsystem::UnregisterSections(UExploredSaveSubsystem& Save)
 {
 	using namespace ExploredWiringDetail;
 	for (const TCHAR* Name : {SectionInventory, SectionBody, SectionFishing, SectionCooking, SectionBoats,
-		SectionTime, SectionProgress, SectionWorld, SectionWiring})
+		SectionTime, SectionWorld, SectionWiring})
 	{
 		Save.UnregisterSection(Name);
 	}
@@ -696,46 +684,6 @@ void UExploredWiringSubsystem::LoadWiring(const FSaveArchive& Ar)
 	bStarterKitSpawned = false;
 	Ar.Read(TEXT("starterKitSpawned"), bStarterKitSpawned);
 	WitnessedEvents.Reset();
-}
-
-void UExploredWiringSubsystem::SaveProgress(FSaveArchive& Ar) const
-{
-	TArray<FName> Discovered = Progress.Discovered.Array();
-	Discovered.Sort(FNameLexicalLess());
-	Ar.Write(TEXT("discovered"), Discovered);
-	Ar.Write(TEXT("shipParts"), Progress.ShipParts);
-	Ar.Write(TEXT("shipBuilt"), Progress.bShipBuilt);
-	Ar.Write(TEXT("reachedHiddenIsland"), Progress.bReachedHiddenIsland);
-	TArray<FString> Endings;
-	for (const EExploredEnding Ending : Progress.EndingsSeen)
-	{
-		Endings.Add(ExploredWiringDetail::EndingName(Ending));
-	}
-	Ar.Write(TEXT("endingsSeen"), Endings);
-}
-
-void UExploredWiringSubsystem::LoadProgress(const FSaveArchive& Ar)
-{
-	Progress = FExploredProgress();
-	TArray<FName> Discovered;
-	Ar.Read(TEXT("discovered"), Discovered);
-	Progress.Discovered.Append(Discovered);
-	Ar.Read(TEXT("shipParts"), Progress.ShipParts);
-	Ar.Read(TEXT("shipBuilt"), Progress.bShipBuilt);
-	Ar.Read(TEXT("reachedHiddenIsland"), Progress.bReachedHiddenIsland);
-	TArray<FString> Endings;
-	Ar.Read(TEXT("endingsSeen"), Endings);
-	for (const FString& Ending : Endings)
-	{
-		if (Ending == TEXT("Departed"))
-		{
-			Progress.EndingsSeen.Add(EExploredEnding::Departed);
-		}
-		else if (Ending == TEXT("Stayed"))
-		{
-			Progress.EndingsSeen.Add(EExploredEnding::Stayed);
-		}
-	}
 }
 
 void UExploredWiringSubsystem::SaveWorld(FSaveArchive& Ar) const

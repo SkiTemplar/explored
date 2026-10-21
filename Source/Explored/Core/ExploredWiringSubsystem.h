@@ -8,7 +8,6 @@
 #include "Core/SystemLinks.h"
 #include "Events/WorldEventsModel.h"
 #include "Fauna/FaunaTypes.h"
-#include "Narrative/ExploredProgress.h"
 #include "Save/SaveArchive.h"
 #include "Save/SaveWorldDeltas.h"
 #include "Survival/SurvivalModel.h"
@@ -28,7 +27,7 @@ class UExploredSaveSubsystem;
  *
  * - Guardado: registra las secciones de lo que vive en el personaje o en actores
  *   sueltos («inventory», «body», «fishing», «cooking», «boats», «time»,
- *   «progress», «world» y «wiring»). Los eventos registran la suya en su propio
+ *   «world» y «wiring»; la historia, «progress» y «pages», es de UBeaconSubsystem). Los eventos registran la suya en su propio
  *   subsistema.
  * - Juego: calor de los fuegos, carga y música → cuerpo; muerte → modo de juego;
  *   hoguera de señal → barco del horizonte; paso de ballenas → fauna; daño de
@@ -55,10 +54,6 @@ public:
 
 	/** «Nueva partida» (AExploredPlayerController::StartNewGame): reinicia los contadores de la partida. */
 	void BeginNewRun();
-
-	/** Progreso de exploración de la partida (petroglifos, miradores, piezas del Albatros...). */
-	FExploredProgress& GetProgress() { return Progress; }
-	const FExploredProgress& GetProgress() const { return Progress; }
 
 	/**
 	 * Deltas del mundo procedural (sección «world»). Aún no hay recolección del
@@ -91,8 +86,6 @@ private:
 	void LoadBoats(const FSaveArchive& Ar);
 	void SaveClock(FSaveArchive& Ar) const;
 	void LoadClock(const FSaveArchive& Ar);
-	void SaveProgress(FSaveArchive& Ar) const;
-	void LoadProgress(const FSaveArchive& Ar);
 	void SaveWorld(FSaveArchive& Ar) const;
 	void LoadWorld(const FSaveArchive& Ar);
 	void SaveWiring(FSaveArchive& Ar) const;
@@ -129,9 +122,6 @@ private:
 	void HandleEventStarted(const FWorldEvent& Event);
 	void HandleEventEnded(const FWorldEvent& Event);
 	void HandleFaunaDamage(EFaunaSpecies Species, float Damage, const FVector& LocationCm);
-
-	UPROPERTY(Transient)
-	FExploredProgress Progress;
 
 	FSaveWorldDeltas WorldDeltas;
 	FIslandLayout Layout;

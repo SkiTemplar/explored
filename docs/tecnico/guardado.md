@@ -24,7 +24,7 @@ generado por el código (con el cuerpo del jugador abreviado):
 	"checksum": "84cc0f25389de202",
 	"format": "explored-save",
 	"header": {
-		"formatVersion": 1,
+		"formatVersion": 2,
 		"gameVersion": "0.1.0",
 		"playTimeSeconds": 5423.25,
 		"seed": 20260926,
@@ -75,12 +75,16 @@ da `ESaveLoadResult::BadChecksum`.
 
 ### Versiones y migraciones
 
-- `ExploredSave::CurrentFormatVersion` (hoy 1) va en `header.formatVersion`.
+- `ExploredSave::CurrentFormatVersion` (hoy 2, Baliza Siete) va en `header.formatVersion`.
 - Una partida de versión **mayor** que la actual se rechaza con `FutureVersion` (y no se
   sustituye en silencio por su copia de seguridad).
 - Una partida **anterior** pasa por `FSaveMigrations`: un paso por versión, `N → N + 1`, sobre
-  el objeto `sections`, en orden. Si falta un paso o uno falla, `MigrationFailed`; la partida
-  en memoria no queda a medias.
+  el objeto `sections`, en orden. Si falta un paso intermedio o uno falla, `MigrationFailed`; la
+  partida en memoria no queda a medias.
+- Una partida anterior sin **ningún** paso registrado desde su versión es `ObsoleteVersion`. Es
+  el caso de las del formato 1 (historia anterior al GDD v3): no se migran; el menú principal
+  avisa («La partida guardada es de una versión anterior…») y el selector de ranuras las marca
+  como no cargables (`ESaveSlotRowState::Obsolete`).
 
 Al cambiar el formato de una sección de forma incompatible:
 
@@ -175,7 +179,9 @@ con viajes de ida y vuelta en el host: `Explored.Save.Systems`).
 | `events` | `UWorldEventsSubsystem` | Resultados de un solo uso consumidos (ids de 64 bits) |
 | `time` | `UExploredWiringSubsystem` | Día, hora y estado del clima forzado |
 | `wiring` | `UExploredWiringSubsystem` | Día en que empezó la partida (`days_survived`) |
-| `progress` | `UExploredWiringSubsystem` | `FExploredProgress` (descubrimientos, piezas del Albatros, finales) |
+| `progress` | `UBeaconSubsystem` | Etapa (`EBeaconStage` por nombre), hitos, tarros, ranuras de la linterna, pensamientos vistos, hora del encendido (`SaveIslandSections.h`; un registro incoherente se rechaza y deja el prólogo) |
+| `pages` | `UBeaconSubsystem` | Páginas del cuaderno leídas (máscara de 8 bits) |
+| `island` | `UExploredIslandStateSubsystem` | Ids recogidos, cocos por palma, barriles, caja de suministros, objetos soltados y mochila |
 | `world` | `UExploredWiringSubsystem` | `FSaveWorldDeltas` (semilla + capas) |
 | `inventory` | `UExploredWiringSubsystem` | `FInventoryState` y cada instancia completa con sus piezas **aplanadas** (lista con el índice del padre, `FlattenItemTree`/`RebuildItemTrees`) |
 | `body` | `UExploredWiringSubsystem` | `FSurvivalState` completo (heridas, estados, escorbuto…) y modo |

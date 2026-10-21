@@ -12,7 +12,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ItemRegistrySubsystem.h"
-#include "Narrative/ExploredVoyageSubsystem.h"
+#include "Narrative/BeaconSubsystem.h"
 #include "UI/ExploredPlayerController.h"
 #include "Player/ExploredCharacter.h"
 #include "Survival/BodySignalsComponent.h"
@@ -55,37 +55,176 @@ void AExploredHUD::DrawHUD()
 	}
 
 	DrawNotifications();
+	DrawSubtitle();
+	DrawPage();
+	DrawCard();
 }
 
 void AExploredHUD::DrawObjective()
 {
-	const UExploredVoyageSubsystem* Voyage = GetWorld() ? GetWorld()->GetSubsystem<UExploredVoyageSubsystem>() : nullptr;
-	if (!Voyage)
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	if (!Beacon)
 	{
 		return;
 	}
-	const FText Objective = Voyage->GetObjectiveText();
-	if (Objective.IsEmpty())
+	const FText Objective = Beacon->GetObjectiveText();
+	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
+	if (Objective.IsEmpty() || !Font)
 	{
 		return;
 	}
 	constexpr float Margin = 24.0f;
-	const FString Text = Objective.ToString();
+	const float Scale = TextScale();
+	float Width = 0.0f;
+	float Height = 0.0f;
+	Canvas->TextSize(Font, Objective.ToString(), Width, Height, Scale, Scale);
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), Margin - 12.0f, Margin - 7.0f, Width + 24.0f, Height + 14.0f);
+	FCanvasTextItem Item(FVector2D(Margin, Margin), Objective, Font, FLinearColor(1.0f, 0.9f, 0.55f, 0.97f));
+	Item.Scale = FVector2D(Scale, Scale);
+	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
+	Canvas->DrawItem(Item);
+}
+
+void AExploredHUD::ShowSubtitle(const FText& Text, float DurationSeconds)
+{
+	if (Text.IsEmpty())
+	{
+		return;
+	}
+	FExploredHUDNotification& Line = Subtitles.AddDefaulted_GetRef();
+	Line.Text = Text;
+	Line.Color = FLinearColor(0.96f, 0.94f, 0.86f, 1.0f);
+	Line.TotalSeconds = FMath::Max(0.5f, DurationSeconds);
+	Line.RemainingSeconds = Line.TotalSeconds;
+}
+
+void AExploredHUD::ShowPage(const FText& Title, const FText& Body, const FText& Note, float DurationSeconds)
+{
+	PageTitle = Title;
+	PageNote = Note;
+	Page.Text = Body;
+	Page.Color = FLinearColor(0.16f, 0.12f, 0.08f, 1.0f);
+	Page.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
+	Page.RemainingSeconds = Page.TotalSeconds;
+}
+
+void AExploredHUD::ShowCard(const FText& Text, float DurationSeconds)
+{
+	Card.Text = Text;
+	Card.Color = FLinearColor::White;
+	Card.TotalSeconds = FMath::Max(1.0f, DurationSeconds);
+	Card.RemainingSeconds = Card.TotalSeconds;
+}
+
+float AExploredHUD::Age(FExploredHUDNotification& Item) const
+{
+	if (Item.RemainingSeconds <= 0.0f)
+	{
+		return 0.0f;
+	}
+	Item.RemainingSeconds -= GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
+	const float FadeWindow = Item.TotalSeconds * 0.25f;
+	return FadeWindow > 0.0f ? FMath::Clamp(Item.RemainingSeconds / FadeWindow, 0.0f, 1.0f) : 1.0f;
+}
+
+TArray<FString> AExploredHUD::WrapLines(const FString& Text, UFont* Font, float Scale, float MaxWidth) const
+{
+	TArray<FString> Words;
+	Text.ParseIntoArrayWS(Words);
+	TArray<FString> Lines;
+	FString Current;
+	for (const FString& Word : Words)
+	{
+		const FString Candidate = Current.IsEmpty() ? Word : Current + TEXT(" ") + Word;
+		float Width = 0.0f;
+		float Height = 0.0f;
+		Canvas->TextSize(Font, Candidate, Width, Height, Scale, Scale);
+		if (Width > MaxWidth && !Current.IsEmpty())
+		{
+			Lines.Add(Current);
+			Current = Word;
+		}
+		else
+		{
+			Current = Candidate;
+		}
+	}
+	if (!Current.IsEmpty())
+	{
+		Lines.Add(Current);
+	}
+	return Lines;
+}
+
+void AExploredHUD::DrawSubtitle()
+{
+	while (Subtitles.Num() > 0)
+	{
+		const float Alpha = Age(Subtitles[0]);
+		if (Alpha <= 0.0f)
+		{
+			Subtitles.RemoveAt(0);
+			continue;
+		}
+		FLinearColor Color = Subtitles[0].Color;
+		Color.A = Alpha;
+		// Abajo, por encima de las barras del cuerpo (GDD v3 §9.1).
+		DrawCenteredText(Subtitles[0].Text, Color, Canvas->SizeY * 0.80f, true);
+		return;
+	}
+}
+
+void AExploredHUD::DrawPage()
+{
 	UFont* Font = GEngine ? GEngine->GetMediumFont() : nullptr;
-	if (!Font)
+	const float Alpha = Age(Page);
+	if (Alpha <= 0.0f || !Font)
 	{
 		return;
 	}
 	const float Scale = TextScale();
-	float Width = 0.0f;
-	float Height = 0.0f;
-	Canvas->TextSize(Font, Text, Width, Height, Scale, Scale);
-	const float X = Canvas->SizeX - Margin - Width;
-	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.4f), X - 12.0f, Margin - 7.0f, Width + 24.0f, Height + 14.0f);
-	FCanvasTextItem Item(FVector2D(X, Margin), Objective, Font, FLinearColor(1.0f, 0.9f, 0.55f, 0.97f));
-	Item.Scale = FVector2D(Scale, Scale);
-	Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.7f));
-	Canvas->DrawItem(Item);
+	const float PanelWidth = FMath::Min(Canvas->SizeX * 0.6f, 900.0f * Scale);
+	const float Padding = 28.0f * Scale;
+	const float LineHeight = 28.0f * Scale;
+	const TArray<FString> Body = WrapLines(Page.Text.ToString(), Font, Scale, PanelWidth - 2.0f * Padding);
+	const TArray<FString> Note = WrapLines(PageNote.ToString(), Font, Scale, PanelWidth - 2.0f * Padding);
+	const float PanelHeight = Padding * 2.0f + LineHeight * (Body.Num() + Note.Num() + 2.5f);
+	const float X = (Canvas->SizeX - PanelWidth) * 0.5f;
+	float Y = (Canvas->SizeY - PanelHeight) * 0.42f;
+	// Papel: el panel del cuaderno es claro, con tinta oscura (Roig) y azul (la nota de Iria).
+	DrawRect(FLinearColor(0.93f, 0.88f, 0.76f, 0.95f * Alpha), X, Y, PanelWidth, PanelHeight);
+	Y += Padding;
+	const auto DrawLine = [this, Font, Scale, X, Padding](const FString& Line, float LineY, const FLinearColor& Color)
+	{
+		FCanvasTextItem Item(FVector2D(X + Padding, LineY), FText::FromString(Line), Font, Color);
+		Item.Scale = FVector2D(Scale, Scale);
+		Canvas->DrawItem(Item);
+	};
+	FLinearColor Ink = Page.Color;
+	Ink.A = Alpha;
+	DrawLine(PageTitle.ToString(), Y, FLinearColor(0.45f, 0.18f, 0.12f, Alpha));
+	Y += LineHeight * 1.5f;
+	for (const FString& Line : Body)
+	{
+		DrawLine(Line, Y, Ink);
+		Y += LineHeight;
+	}
+	Y += LineHeight;
+	for (const FString& Line : Note)
+	{
+		DrawLine(Line, Y, FLinearColor(0.10f, 0.22f, 0.50f, Alpha));
+		Y += LineHeight;
+	}
+}
+
+void AExploredHUD::DrawCard()
+{
+	const float Alpha = Age(Card);
+	if (Alpha <= 0.0f)
+	{
+		return;
+	}
+	DrawCenteredText(Card.Text, FLinearColor(1.0f, 1.0f, 1.0f, Alpha), Canvas->SizeY * 0.38f, true);
 }
 
 void AExploredHUD::DrawReticle()
@@ -293,8 +432,10 @@ void AExploredHUD::DrawBodyNeeds(const AExploredCharacter& Character)
 	constexpr float BarHeight = 5.0f;
 	constexpr float RowGap = 15.0f;
 	constexpr float Margin = 24.0f;
+	// Bajo la línea del objetivo, que ocupa la esquina superior izquierda (GDD v3 §9.1) hasta F5.
+	constexpr float BelowObjective = 56.0f;
 
-	float Y = Margin;
+	float Y = Margin + BelowObjective;
 	for (const FNeedBar& Bar : Bars)
 	{
 		if (Bar.Value01 >= VisibleThreshold)

@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "_comment": "Cuaderno de guardia de Anselmo Roig (GDD v3 §2.1), cartel de inicio y epílogo (GDD v3 §2). Cada página: texto de Roig (40-70 palabras) y nota de Iria (≤ 20 palabras). Ids: FNotebookModel::PageTextId (cuaderno_pN) y FBeaconProgressModel::EpilogueTextId. Lo lee BeaconTexts (Source/Explored/Narrative) y lo valida Tools/DataCheck (historia.py).",
+  "cards": [
+    {
+      "id": "cartel_inicio",
+      "textEs": "Isla de Sal. Martes, 04:10. La galerna se ha llevado la lancha «Gaviota II».",
+      "textEn": "Salt Island. Tuesday, 04:10. The gale has taken the launch «Gaviota II»."
+    }
+  ],
+  "pages": [
+    {
+      "id": "cuaderno_p1",
+      "page": 1,
+      "place": "Casa del Farero (mesa)",
+      "critical": true,
+      "textEs": "Cuaderno de guardia de la Baliza Siete. Hoy ha llegado la orden: la luz se apaga con el Plan Oscuridad. He escondido la lente en la bodega del carguero «Sáhara», en el bajo, donde no la buscan. El correo «Mistral» hace su última travesía de temporada pegado a esta costa: sin luz no se acerca. Hacen falta lente, aceite y mecha.",
+      "textEn": "Watch log of Beacon Seven. The order came today: the light goes dark under the Darkness Plan. I have hidden the lens in the hold of the freighter «Sáhara», on the shoal, where nobody looks. The mail boat «Mistral» makes its last run of the season close to this coast: without a light it will not come near. It takes a lens, oil and a wick.",
+      "iriaEs": "Así que fuiste tú. Lente, aceite y mecha. Eso puedo hacerlo.",
+      "iriaEn": "So it was you. Lens, oil and wick. I can do that."
+    },
+    {
+      "id": "cuaderno_p2",
+      "page": 2,
+      "place": "Rocas del Pescador",
+      "critical": false,
+      "textEs": "Pesco al amanecer y al atardecer: pican mejor. Para el aceite sirve el pescado, no el coco. Dos tarros alcanzan para una noche entera. El aceite lo pago yo; la empresa dejó de mandarlo hace dos años.",
+      "textEn": "I fish at dawn and at dusk: they bite better. Fish makes the oil, not coconut. Two jars last a whole night. I pay for the oil myself; the company stopped sending it two years ago.",
+      "iriaEs": "Dos tarros. Cuatro peces. Se puede.",
+      "iriaEn": "Two jars. Four fish. Doable."
+    },
+    {
+      "id": "cuaderno_p3",
+      "page": 3,
+      "place": "Palmar",
+      "critical": false,
+      "textEs": "La mecha es fibra de palma trenzada. Se recoge del suelo, no de la palma: la palma da cocos y hay que dejarla viva. Cuento ocho palmas en la isla. Con cocos y lluvia se aguanta una semana. Sin lluvia, tres días.",
+      "textEn": "The wick is braided palm fibre. You pick it up from the ground, not from the palm: the palm gives coconuts and has to stay alive. I count eight palms on the island. With coconuts and rain you last a week. Without rain, three days.",
+      "iriaEs": "Ocho palmas. Dieciséis cocos. Hay que repartirlos.",
+      "iriaEn": "Eight palms. Sixteen coconuts. They have to last."
+    },
+    {
+      "id": "cuaderno_p4",
+      "page": 4,
+      "place": "Bosque de Bambú",
+      "critical": false,
+      "textEs": "Hice mi balsa con cuatro troncos y dos cuerdas. Sirve para cruzar al bajo con mar en calma. Cuando el barómetro baja de mil, me quedo en tierra: es la regla del faro y la de mi padre.",
+      "textEn": "I made my raft with four logs and two ropes. It will take you to the shoal on a calm sea. When the barometer drops below a thousand, I stay ashore: that is the rule of the lighthouse and of my father.",
+      "iriaEs": "Barómetro bajo mil. Lo tengo en el bolsillo.",
+      "iriaEn": "Barometer below a thousand. I have one in my pocket."
+    },
+    {
+      "id": "cuaderno_p5",
+      "page": 5,
+      "place": "Playa Norte",
+      "critical": false,
+      "textEs": "Desde aquí se ve el bajo. El «Sáhara» varó hace nueve años y el capitán no quiso dejarlo hasta que cayó el último mástil. No sé si fue valor o miedo a la empresa. Rema hacia el mástil: la corriente empuja a la izquierda.",
+      "textEn": "You can see the shoal from here. The «Sáhara» ran aground nine years ago and the captain would not leave her until the last mast fell. I do not know if it was courage or fear of the company. Row towards the mast: the current pushes to the left.",
+      "iriaEs": "Mástil a la vista. Corriente a la izquierda.",
+      "iriaEn": "Mast in sight. Current to the left."
+    },
+    {
+      "id": "cuaderno_p6",
+      "page": 6,
+      "place": "Puente del «Sáhara»",
+      "critical": false,
+      "textEs": "Subí la lente a hombros, treinta y un peldaños de la bodega a cubierta, y la dejé en la caja de mapas. Una lente sola no es una luz. Una luz es lente, aceite y mecha, y alguien que las junte.",
+      "textEn": "I carried the lens on my shoulders, thirty-one steps from the hold to the deck, and left it in the chart box. A lens alone is not a light. A light is lens, oil and wick, and someone to put them together.",
+      "iriaEs": "La caja de mapas. Aquí está.",
+      "iriaEn": "The chart box. Here it is."
+    },
+    {
+      "id": "cuaderno_p7",
+      "page": 7,
+      "place": "Mirador de la Colina",
+      "critical": false,
+      "textEs": "Llevo cuarenta años encendiendo esta luz; los últimos seis, sin que nadie me lo pida ni me lo pague. Dicen que el satélite ve más lejos. No ve a un hombre con una barca sin radio en mitad de la noche. Una luz apagada es una promesa rota.",
+      "textEn": "I have lit this light for forty years; the last six without anyone asking or paying me. They say the satellite sees further. It does not see a man in a boat with no radio in the middle of the night. A light gone dark is a broken promise.",
+      "iriaEs": "Seis años. Y yo, seis balizas apagadas.",
+      "iriaEn": "Six years. And me, six beacons put out."
+    },
+    {
+      "id": "cuaderno_p8",
+      "page": 8,
+      "place": "Linterna del faro",
+      "critical": true,
+      "textEs": "Si has llegado hasta aquí, ya sabes más del mar que la empresa. Pon la lente en su aro, vierte los dos tarros, aprieta la mecha y enciende. No es un favor que me hagas a mí. Cuando la veas girar, sabrás por qué la guardé. Gracias, quien seas. A. R.",
+      "textEn": "If you have made it this far, you already know more about the sea than the company. Set the lens in its ring, pour in the two jars, tighten the wick and light it. It is not a favour to me. When you see it turn, you will know why I kept it. Thank you, whoever you are. A. R.",
+      "iriaEs": "De nada, Roig.",
+      "iriaEn": "Anytime, Roig."
+    }
+  ],
+  "epilogue": [
+    {
+      "id": "epilogo_completo",
+      "textEs": "Iria entrega el cuaderno completo a la capitana Ibarra. Esa semana firma un informe contra el cierre de la Baliza Siete. La luz sigue encendida.",
+      "textEn": "Iria hands the complete log to Captain Ibarra. That week she signs a report against closing Beacon Seven. The light stays on."
+    },
+    {
+      "id": "epilogo_parcial",
+      "textEs": "Iria sube a bordo en silencio, con el cuaderno a medias. No firma nada esa noche. Pero tampoco vuelve a apagar una luz.",
+      "textEn": "Iria climbs aboard in silence, with half the log. She signs nothing that night. But she never puts out a light again."
+    },
+    {
+      "id": "epilogo_comun",
+      "textEs": "Isla de Sal. Jueves, 23:40.",
+      "textEn": "Salt Island. Thursday, 23:40."
+    }
+  ]
+}

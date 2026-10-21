@@ -56,7 +56,7 @@ def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
 
 def test_manifiesto_real_solo_con_espacios_del_codigo(real_cat: Catalogue) -> None:
     doc = unreal.manifest(real_cat.exported)
-    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == ["Explored", "ExploredIsland", "ExploredUI", "ExploredVoyage"]
+    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == ["Explored", "ExploredBeacon", "ExploredIsland", "ExploredUI"]
 
 
 # --------------------------------------------------------------------------- C++

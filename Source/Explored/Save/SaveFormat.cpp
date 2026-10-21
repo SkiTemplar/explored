@@ -18,6 +18,7 @@ const TCHAR* LexToString(ESaveLoadResult Result)
 	case ESaveLoadResult::BadChecksum: return TEXT("BadChecksum");
 	case ESaveLoadResult::FutureVersion: return TEXT("FutureVersion");
 	case ESaveLoadResult::MigrationFailed: return TEXT("MigrationFailed");
+	case ESaveLoadResult::ObsoleteVersion: return TEXT("ObsoleteVersion");
 	}
 	return TEXT("Unknown");
 }
@@ -198,6 +199,12 @@ ESaveLoadResult FSaveCodec::Decode(const FString& Text, const FSaveMigrations& M
 	{
 		OutError = FString::Printf(TEXT("Versión de formato no válida: %d"), Result.Header.FormatVersion);
 		return ESaveLoadResult::Malformed;
+	}
+	if (Result.Header.FormatVersion < CurrentVersion && !Migrations.HasStep(Result.Header.FormatVersion))
+	{
+		OutError = FString::Printf(TEXT("La partida es de la versión %d, anterior a la %d, y no se puede convertir"),
+			Result.Header.FormatVersion, CurrentVersion);
+		return ESaveLoadResult::ObsoleteVersion;
 	}
 	Result.Sections = *SectionsValue;
 	const ESaveLoadResult Migrated = Migrations.Apply(Result.Header.FormatVersion, CurrentVersion, Result.Sections, OutError);

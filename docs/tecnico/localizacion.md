@@ -85,7 +85,7 @@ Quedan fuera, por ser notas de diseño que el jugador no ve: `units`, `note`, `s
 `noteEs`, `redNotaEs`, la `descriptionEs` de las estadísticas de `achievements.json`,
 `accessEs`/`rewardEs` de `exploration.json`, `atZero` de `survival_needs.json` y los ids. Una plantilla con `nameTemplate` vacío usa
 el nombre del objeto resultante y no necesita `nameTemplateEn`. El nombre
-`story_es.json` se mantiene (lo leen `NarrativeSpec` y `Tools/DataCheck`) aunque ya es
+`story_es.json` se mantiene (lo lee `Tools/DataCheck`) aunque ya es
 bilingüe; cuando se separe en `petroglyphs.json`/`artifacts.json`/`map_marks.json`
 (biblia §10) conviene llevar los dos idiomas igual.
 

@@ -15,6 +15,8 @@ public:
 		: _bCanContinue(false)
 	{}
 		SLATE_ARGUMENT(bool, bCanContinue)
+		/** Aviso de una línea bajo los botones (partida guardada de una versión anterior); vacío = sin aviso. */
+		SLATE_ARGUMENT(FText, Notice)
 		SLATE_EVENT(FSimpleDelegate, OnContinue)
 		SLATE_EVENT(FSimpleDelegate, OnNewGame)
 		SLATE_EVENT(FSimpleDelegate, OnLoad)

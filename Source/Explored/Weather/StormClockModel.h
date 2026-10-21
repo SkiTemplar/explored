@@ -84,12 +84,12 @@ struct EXPLORED_API FStormRain
 };
 
 /** Barril de lluvia (GDD §5.5): 4 cargas; las fracciones se acumulan. */
-struct EXPLORED_API FRainBarrelState
+struct EXPLORED_API FStormBarrelState
 {
 	int32 Charges = 0;
 	float Partial = 0.0f;  // fracción de la siguiente carga, [0, 1)
 
-	bool operator==(const FRainBarrelState& Other) const { return Charges == Other.Charges && Partial == Other.Partial; }
+	bool operator==(const FStormBarrelState& Other) const { return Charges == Other.Charges && Partial == Other.Partial; }
 };
 
 class EXPLORED_API FStormClockModel
@@ -131,10 +131,10 @@ public:
 	float BarrelChargesBetween(double FromHour, double ToHour) const;
 
 	/** Añade lluvia a un barril sin pasar de BarrelCapacity; lo que rebosa se pierde. */
-	static FRainBarrelState AddRain(const FRainBarrelState& Barrel, float Charges);
+	static FStormBarrelState AddRain(const FStormBarrelState& Barrel, float Charges);
 
 	/** Saca una carga para rellenar la cantimplora; bOk falso si está vacío. */
-	static FRainBarrelState TakeCharge(const FRainBarrelState& Barrel, bool& bOutOk);
+	static FStormBarrelState TakeCharge(const FStormBarrelState& Barrel, bool& bOutOk);
 
 private:
 	float ChargesPerHourFor(EStormState State) const;

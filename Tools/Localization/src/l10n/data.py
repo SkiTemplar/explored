@@ -97,6 +97,12 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("fauna.json", "lod", _path("lod", "tiers"), "nameEs", "nameEn", "nivel de detalle de fauna (ajustes)"),
     FieldSpec("fauna_terrestre.json", "species", _sub("species"), "nameEs", "nameEn", "especie terrestre"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta (objeto + verbo, GDD v3 §5.6)"),
+    FieldSpec("notebook.json", "pages", _sub("pages"), "textEs", "textEn", "página del cuaderno de Roig (GDD v3 §2.1)"),
+    FieldSpec("notebook.json", "pages", _sub("pages"), "iriaEs", "iriaEn", "nota de Iria en la página (GDD v3 §2.1)"),
+    FieldSpec("notebook.json", "cards", _sub("cards"), "textEs", "textEn", "cartel de inicio (GDD v3 §2)"),
+    FieldSpec("notebook.json", "epilogue", _sub("epilogue"), "textEs", "textEn", "línea del epílogo (GDD v3 §2)"),
+    FieldSpec("objectives.json", "objectives", _sub("objectives"), "textEs", "textEn", "objetivo del HUD (GDD v3 §3)"),
+    FieldSpec("thoughts.json", "thoughts", _sub("thoughts"), "textEs", "textEn", "pensamiento de Iria (GDD v3 §2.2)"),
 ]
 
 # Campos «…Es» que no ve el jugador: notas de diseño y documentación interna.

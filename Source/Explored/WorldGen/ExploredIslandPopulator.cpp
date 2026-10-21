@@ -8,7 +8,9 @@
 #include "Fishing/ExploredFishingSpot.h"
 #include "Items/ExploredIslandStateSubsystem.h"
 #include "Items/ExploredPickup.h"
+#include "Narrative/ExploredBeaconActors.h"
 #include "Narrative/ExploredSupplyCrate.h"
+#include "Narrative/LighthouseLamp.h"
 #include "Weather/ExploredRainBarrel.h"
 #include "WorldGen/ExploredCoconutPalm.h"
 #include "WorldGen/ExploredPlaceholder.h"
@@ -41,6 +43,10 @@ AExploredIslandPopulator::AExploredIslandPopulator()
 	ClassRegistry.Add(TEXT("punto_pesca"), AExploredFishingSpot::StaticClass());
 	ClassRegistry.Add(TEXT("barril_lluvia"), AExploredRainBarrel::StaticClass());
 	ClassRegistry.Add(TEXT("caja_suministros"), AExploredSupplyCrate::StaticClass());
+	// F3c: historia, linterna y final (GDD v3 §2, §5.6 y §5.9).
+	ClassRegistry.Add(TEXT("pagina"), AExploredNotebookPage::StaticClass());
+	ClassRegistry.Add(TEXT("faro_torre"), AExploredLighthouseTower::StaticClass());
+	ClassRegistry.Add(TEXT("faro_linterna"), ALighthouseLamp::StaticClass());
 }
 
 void AExploredIslandPopulator::BeginPlay()

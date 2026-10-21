@@ -120,6 +120,8 @@ void FSaveSlotsSpec::Define()
 		It("autoguarda al dormir y en hogueras, estas con intervalo mínimo", [this]()
 		{
 			TestTrue(TEXT("Dormir"), FSaveSlotPolicy::ShouldAutosave(ESaveTrigger::Sleep, 1.0));
+			TestTrue(TEXT("Amanecer de la historia"), FSaveSlotPolicy::ShouldAutosave(ESaveTrigger::Story, 1.0));
+			TestEqual(TEXT("La historia va a auto"), FSaveSlotPolicy::SlotForTrigger(ESaveTrigger::Story, TEXT("manual2")), FString(TEXT("auto")));
 			TestTrue(TEXT("Primera hoguera"), FSaveSlotPolicy::ShouldAutosave(ESaveTrigger::Campfire, -1.0));
 			TestFalse(TEXT("Hoguera seguida"), FSaveSlotPolicy::ShouldAutosave(ESaveTrigger::Campfire, 30.0));
 			TestTrue(TEXT("Hoguera tras el intervalo"),

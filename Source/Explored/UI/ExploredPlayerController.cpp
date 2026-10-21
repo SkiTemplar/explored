@@ -13,6 +13,7 @@
 #include "GameFramework/Pawn.h"
 #include "Misc/CommandLine.h"
 #include "Core/ExploredWiringSubsystem.h"
+#include "Narrative/BeaconSubsystem.h"
 #include "Player/ExploredCharacter.h"
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredGameUserSettings.h"
@@ -121,6 +122,8 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 	FadeWidget.Reset();
 	InventoryPanel.Reset();
 	CurrentFocusTarget.Reset();
+	FTSTicker::GetCoreTicker().RemoveTicker(EndCreditsTicker);
+	EndCreditsTicker.Reset();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -284,10 +287,15 @@ void AExploredPlayerController::ShowMainMenu()
 {
 	UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
 	const bool bCanContinue = SaveSubsystem && SaveSubsystem->HasSaveGame();
+	// Una partida de la historia anterior (formato 1) no se carga: se explica en vez de fallar en silencio.
+	const FText Notice = SaveSubsystem && SaveSubsystem->HasObsoleteSave()
+		? NSLOCTEXT("ExploredUI", "MenuObsoleteSave", "La partida guardada es de una versión anterior del juego y no se puede continuar.")
+		: FText::GetEmpty();
 
 	Navigation.Reset(ExploredSettingsLogic::EMenuScreen::MainMenu);
 	TSharedRef<SExploredMainMenu> Menu = SNew(SExploredMainMenu)
 		.bCanContinue(bCanContinue)
+		.Notice(Notice)
 		.OnContinue(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ContinueGame))
 		.OnNewGame(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::StartNewGame))
 		.OnLoad(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenLoadGame))
@@ -349,20 +357,23 @@ void AExploredPlayerController::StartNewGame()
 			Body->SetMode(ESurvivalMode::Survivor);
 		}
 	}
+	// La historia primero: pone el reloj en el día 1 a las 07:00 y los enlaces cuentan desde ahí.
+	if (UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this))
+	{
+		Beacon->BeginNewRun();
+	}
 	if (UExploredWiringSubsystem* Wiring = UExploredWiringSubsystem::Get(this))
 	{
 		Wiring->BeginNewRun();
 	}
 	FadeIntoGameplay();
-	// Ayuda de inicio: los controles básicos y el objetivo del viaje (provisional hasta el cuaderno de docs/v3/gdd.md).
+	// Ayuda de inicio: los controles del GDD v3 §9.2 (el objetivo ya lo enseña el HUD).
 	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
 	{
 		const FLinearColor HelpColor(0.92f, 0.95f, 1.0f, 1.0f);
 		// PushNotification apila la más reciente arriba: se empuja en orden inverso al de lectura.
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · H reloj · Esc pausa"), HelpColor, 10.0f);
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr · Ctrl bucear"), HelpColor, 10.0f);
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpGoal", "El Albatros se partió en cuatro piezas. Con ellas puedes construir un barco."),
-			FLinearColor(1.0f, 0.9f, 0.55f, 1.0f), 10.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · Esc pausa"), HelpColor, 10.0f);
+		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr"), HelpColor, 10.0f);
 	}
 }
 
@@ -469,25 +480,24 @@ void AExploredPlayerController::ExitToMainMenu()
 	UGameplayStatics::OpenLevel(this, MainMenuMapName);
 }
 
-void AExploredPlayerController::ShowEnding()
+void AExploredPlayerController::ShowEnding(const FText& EpilogueLine, const FText& CommonLine)
 {
-	const UTimeOfDaySubsystem* Time = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
-	const int32 Days = Time ? FMath::FloorToInt32(Time->GetTotalDays()) + 1 : 1;
 	const TWeakObjectPtr<AExploredPlayerController> WeakThis(this);
-	auto Show = [WeakThis, Days]()
+	auto Show = [WeakThis, EpilogueLine, CommonLine]()
 	{
 		AExploredPlayerController* PC = WeakThis.Get();
 		if (!PC)
 		{
 			return;
 		}
-		// El final no pasa por la pila de navegación: solo sale de él «Volver al menú».
+		// El final no pasa por la pila de navegación: solo sale de él «Continuar» (a los créditos).
 		PC->SetCutsceneActive(false);
 		PC->HideOverlay();
 		PC->SetUIMode(EExploredUIMode::Paused);
 		TSharedRef<SExploredEnding> Widget = SNew(SExploredEnding)
-			.DaysSurvived(Days)
-			.OnContinue(FSimpleDelegate::CreateUObject(PC, &AExploredPlayerController::ExitToMainMenu));
+			.EpilogueLine(EpilogueLine)
+			.CommonLine(CommonLine)
+			.OnContinue(FSimpleDelegate::CreateUObject(PC, &AExploredPlayerController::ShowEndCredits));
 		PC->CurrentOverlay = Widget;
 		PC->CurrentFocusTarget = Widget->GetInitialFocus();
 		if (UGameViewportClient* Viewport = PC->GetWorld()->GetGameViewport())
@@ -502,6 +512,8 @@ void AExploredPlayerController::ShowEnding()
 		{
 			PC->FadeWidget->FadeFromBlack(1.5f);
 		}
+		PC->bShowingEnding = true;
+		UE_LOG(LogTemp, Display, TEXT("[Explored] Pantalla de epílogo"));
 	};
 	if (FadeWidget.IsValid())
 	{
@@ -511,6 +523,32 @@ void AExploredPlayerController::ShowEnding()
 	{
 		Show();
 	}
+}
+
+void AExploredPlayerController::ShowEndCredits()
+{
+	HideOverlay();
+	TSharedRef<SExploredCredits> Widget = SNew(SExploredCredits)
+		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ExitToMainMenu));
+	CurrentOverlay = Widget;
+	CurrentFocusTarget = Widget->GetInitialFocus();
+	if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
+	{
+		Viewport->AddViewportWidgetContent(Widget, 500);
+	}
+	FInputModeUIOnly InputMode;
+	InputMode.SetWidgetToFocus(CurrentFocusTarget);
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(InputMode);
+	// El final deja el mundo en pausa: el temporizador va en el ticker del motor, no en el del mundo.
+	FTSTicker::GetCoreTicker().RemoveTicker(EndCreditsTicker);
+	EndCreditsTicker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [this](float)
+	{
+		EndCreditsTicker.Reset();
+		ExitToMainMenu();
+		return false;
+	}), FMath::Max(1.0f, EndCreditsSeconds));
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final"));
 }
 
 void AExploredPlayerController::QuitToDesktop()
