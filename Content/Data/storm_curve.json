@@ -11,7 +11,7 @@
     "forcedReturn": "si Iria sigue en el islote, fundido y vuelta a Playa Norte (D2 18:45)",
     "raftReopen": "el mar vuelve a abrirse tras el ciclón (D3 06:00): sin lente el día 2 la partida no queda bloqueada"
   },
-  "dayLengthMinutes": 18,
+  "dayLengthMinutes": 24,
   "eyeRealSeconds": 65,
   "points": [
     { "day": 1, "hour": 7.0, "hpa": 1014 },
@@ -20,7 +20,7 @@
     { "day": 2, "hour": 18.0, "hpa": 998 },
     { "day": 2, "hour": 19.0, "hpa": 990 },
     { "day": 2, "hour": 22.0, "hpa": 965 },
-    { "day": 2, "hour": 23.444444, "hpa": 965 },
+    { "day": 2, "hour": 23.083333, "hpa": 965 },
     { "day": 3, "hour": 2.0, "hpa": 995 },
     { "day": 3, "hour": 6.0, "hpa": 1012 }
   ],
@@ -29,8 +29,8 @@
     { "state": "HighClouds", "day": 2, "hour": 6.0, "hours": 12.0 },
     { "state": "SeaClosed", "day": 2, "hour": 18.0, "hours": 1.0 },
     { "state": "CycloneWall1", "day": 2, "hour": 19.0, "hours": 3.0 },
-    { "state": "CycloneEye", "day": 2, "hour": 22.0, "hours": 1.444444 },
-    { "state": "CycloneWall2", "day": 2, "hour": 23.444444, "hours": 2.555556 }
+    { "state": "CycloneEye", "day": 2, "hour": 22.0, "hours": 1.083333 },
+    { "state": "CycloneWall2", "day": 2, "hour": 23.083333, "hours": 2.916667 }
   ],
   "rain": { "squall": 0.6, "cyclone": 1.0 },
   "chargesPerHour": { "squall": 1.0, "cyclone": 1.0 },

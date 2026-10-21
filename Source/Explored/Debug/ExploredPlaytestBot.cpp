@@ -61,6 +61,14 @@ void UExploredPlaytestBot::OnWorldBeginPlay(UWorld& InWorld)
 		return;
 	}
 
+	// Partida completa de Baliza Siete (ExploredPlaytestBotRun.cpp).
+	FString RouteArg;
+	if (FParse::Param(FCommandLine::Get(), TEXT("BalizaRun")) || FParse::Value(FCommandLine::Get(), TEXT("BalizaRun="), RouteArg))
+	{
+		BeginRun();
+		return;
+	}
+
 	BuildRoute();
 	bActive = true;
 	UE_LOG(LogExplored, Display, TEXT("[PlaytestBot] Activo, %d punto(s) en la ruta"), Route.Num());
@@ -164,6 +172,11 @@ FString UExploredPlaytestBot::DescribeInventoryDelta(const TMap<FName, int32>& B
 
 void UExploredPlaytestBot::Tick(float DeltaTime)
 {
+	if (bRunMode && RunIndex != INDEX_NONE)
+	{
+		TickRun(DeltaTime);
+		return;
+	}
 	if ((GShaderCompilingManager && GShaderCompilingManager->IsCompiling()) || FAssetCompilingManager::Get().GetNumRemainingAssets() > 0)
 	{
 		return;
@@ -174,6 +187,12 @@ void UExploredPlaytestBot::Tick(float DeltaTime)
 		{
 			return;
 		}
+	}
+
+	if (bRunMode)
+	{
+		TickRun(DeltaTime);
+		return;
 	}
 
 	if (!bWarmedUp)

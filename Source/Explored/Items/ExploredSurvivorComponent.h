@@ -68,6 +68,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
 	bool DropHeavy();
 
+	/** Suelta a los pies la pila entera de un objeto (no del kit); se puede volver a coger. */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	bool DropItem(FName ItemId);
+
+	/** Tecla G con las manos libres: suelta la última pila que no sea del kit (FBackpackModel::DropCandidate). */
+	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
+	bool DropLastLoose();
+
 	UFUNCTION(BlueprintCallable, Category = "Explored|Mochila")
 	void ShowMessage(const FText& Message);
 
@@ -113,6 +121,8 @@ protected:
 private:
 	void FinishCraft(FName RecipeId);
 	bool FindCampfireSpot(FVector& OutLocation) const;
+	/** Punto del suelo delante de Iria donde cae lo que suelta. */
+	FVector DropLocation() const;
 	void ApplyBodyEffect(float Thirst, float Hunger, float Energy) const;
 
 	FBackpackState Backpack;

@@ -39,7 +39,7 @@ namespace BalizaDebugDetail
 		UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
 		if (Args.Num() < 1 || !Time)
 		{
-			UE_LOG(LogExplored, Warning, TEXT("[Baliza] Uso: BalizaTimeScale <x> (1 = 18 min por día)"));
+			UE_LOG(LogExplored, Warning, TEXT("[Baliza] Uso: BalizaTimeScale <x> (1 = 24 min por día)"));
 			return;
 		}
 		Time->SetTimeScale(FCString::Atof(*Args[0]));

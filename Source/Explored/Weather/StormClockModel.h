@@ -50,8 +50,9 @@ struct EXPLORED_API FStormWindow
 
 struct EXPLORED_API FStormClockConfig
 {
-	/** 24 h de juego = 18 min reales (GDD §3): 1 h = 45 s. */
-	static constexpr double DayLengthMinutes = 18.0;
+	/** 24 h de juego = 24 min reales (GDD §3 con la decisión de F3e): 1 h = 60 s. */
+	/** Decisión de F3e: 24 min por día (1 h = 60 s) para que la partida competente dure 47-65 min. */
+	static constexpr double DayLengthMinutes = 24.0;
 	static constexpr double RealSecondsPerHour = DayLengthMinutes * 60.0 / 24.0;
 	/** Ojo del ciclón: 65 s reales (GDD §3 y §5.8). */
 	static constexpr double EyeRealSeconds = 65.0;

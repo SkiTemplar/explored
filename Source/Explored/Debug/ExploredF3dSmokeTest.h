@@ -9,7 +9,7 @@ class APawn;
 
 /**
  * Prueba de humo de F3d en una partida real (-game con Map_IslaSal, «-SkipMenu -ExploredF3dSmoke»;
- * no existe en Shipping): reloj de 18 min, HUD (barras, ranuras, reloj, barómetro, aviso), cuerpo
+ * no existe en Shipping): reloj de 24 min, HUD (barras, ranuras, reloj, barómetro, aviso), cuerpo
  * con una barra baja (velocidad -20 %), chubasco, balsa (atar, remar, encallar, bajar), mar
  * cerrado, cruce forzoso de las 18:45, ciclón (muro, fuego apagado, olas, niebla, barril), ojo,
  * reloj acelerado, desmayo y dormir. Usa los comandos BalizaTime, BalizaTimeScale, BalizaBody,

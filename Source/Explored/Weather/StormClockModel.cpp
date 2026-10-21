@@ -44,8 +44,8 @@ FStormClockConfig FStormClockConfig::Gdd()
 	C.Points.Add(Point(At(3, 2.0), 995.0f));
 	C.Points.Add(Point(At(3, 6.0), 1012.0f));
 
-	// Chubasco de 90 s reales = 2 h de juego (1 h = 45 s). Ciclón: muro 1 (3 h), ojo de 65 s reales
-	// (EyeHours ≈ 1,44 h) y muro 2 hasta las 02:00 del día 3.
+	// Chubasco de 2 h de juego (120 s reales; 1 h = 60 s desde F3e). Ciclón: muro 1 (3 h), ojo de 65 s reales
+	// (EyeHours ≈ 1,08 h) y muro 2 hasta las 02:00 del día 3.
 	C.Windows.Add(Window(EStormState::Squall, At(1, 15.0), At(1, 17.0)));
 	C.Windows.Add(Window(EStormState::HighClouds, At(2, 6.0), At(2, 18.0)));
 	C.Windows.Add(Window(EStormState::SeaClosed, At(2, 18.0), At(2, 19.0)));

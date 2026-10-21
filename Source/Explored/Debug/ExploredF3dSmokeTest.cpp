@@ -121,10 +121,10 @@ void UExploredF3dSmokeTest::BuildSteps()
 	{
 		Steps.Add({ Name, MoveTemp(Start), MoveTemp(IsDone), Timeout });
 	};
-	Add(TEXT("reloj D1 07:00 con días de 18 min"), [] { return true; }, [this]()
+	Add(TEXT("reloj D1 07:00 con días de 24 min"), [] { return true; }, [this]()
 	{
 		const UTimeOfDaySubsystem* Time = GetWorld()->GetSubsystem<UTimeOfDaySubsystem>();
-		return Time && Time->GetDay() == 1 && Time->GetHours() >= 7.0f && Time->GetHours() < 7.5f && Time->GetDayLengthMinutes() == 18.0f;
+		return Time && Time->GetDay() == 1 && Time->GetHours() >= 7.0f && Time->GetHours() < 7.5f && Time->GetDayLengthMinutes() == 24.0f;
 	});
 	Add(TEXT("una barra bajo 25 frena un 20 %"), [this]() { return Console(TEXT("BalizaBody 20 70 70 100")); }, [this]()
 	{
@@ -331,14 +331,15 @@ void UExploredF3dSmokeTest::AddBodySteps()
 		return Cala && GetPawn()->SetActorLocation(Cala->GetRespawnLocation() + FVector(0.0, 0.0, 30.0), false, nullptr, ETeleportType::TeleportPhysics);
 	}, [Body]() { return Body() && Body()->IsSheltered(); });
 	Add(TEXT("a mediodía no se duerme"), [Body]() { return !Body()->TrySleep(); }, [Body]() { return Body()->GetSleepCount() == 0; });
+	// El día 2 a las 21:00 hay ciclón y no se duerme (F3e): se prueba el día 3.
 	Add(TEXT("dormir a las 21:00 hasta las 06:00 con energía 100"), [this]()
 	{
-		return Console(TEXT("BalizaTime 2 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));
+		return Console(TEXT("BalizaTime 3 21")) && Console(TEXT("BalizaBody 50 50 30 80")) && Console(TEXT("BalizaSleep"));
 	}, [this, Body]()
 	{
 		const UIslandBodyComponent* B = Body();
 		const UTimeOfDaySubsystem* Time = GetWorld()->GetSubsystem<UTimeOfDaySubsystem>();
-		return B && Time && B->GetSleepCount() == 1 && !B->IsFainting() && Time->GetDay() == 3 && Time->GetHours() >= 6.0f
+		return B && Time && B->GetSleepCount() == 1 && !B->IsFainting() && Time->GetDay() == 4 && Time->GetHours() >= 6.0f
 			&& Time->GetHours() < 6.2f && B->GetBars().Energy > 99.0f && FMath::IsNearlyEqual(B->GetBars().Thirst, 25.0f, 1.0f);
 	});
 }

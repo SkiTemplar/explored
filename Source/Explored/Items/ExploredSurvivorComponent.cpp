@@ -321,6 +321,19 @@ bool UExploredSurvivorComponent::DropHeavy()
 	{
 		return false;
 	}
+	const FVector Location = DropLocation();
+	ApplyBackpack(Next);
+	Island->SpawnDropped(Item, 1, Location);
+	return true;
+}
+
+FVector UExploredSurvivorComponent::DropLocation() const
+{
+	const AActor* Owner = GetOwner();
+	if (!Owner)
+	{
+		return FVector::ZeroVector;
+	}
 	FVector Forward = Owner->GetActorForwardVector();
 	Forward.Z = 0.0;
 	FVector Location = Owner->GetActorLocation() + Forward.GetSafeNormal() * 120.0;
@@ -330,9 +343,32 @@ bool UExploredSurvivorComponent::DropHeavy()
 	{
 		Location = Hit.ImpactPoint;
 	}
+	return Location;
+}
+
+bool UExploredSurvivorComponent::DropItem(FName ItemId)
+{
+	UExploredIslandStateSubsystem* Island = UExploredIslandStateSubsystem::Get(this);
+	const int32 Count = GetItemCount(ItemId);
+	if (!Island || bBusy || ItemId.IsNone() || Count <= 0 || ItemId == Backpack.HeldHeavy || FBackpackModel::IsStarterKit(ItemId))
+	{
+		return false;
+	}
+	FBackpackState Next;
+	if (FBackpackModel::Remove(Backpack, ItemId, Count, Next) != EBackpackResult::Ok)
+	{
+		return false;
+	}
+	const FVector Location = DropLocation();
 	ApplyBackpack(Next);
-	Island->SpawnDropped(Item, 1, Location);
+	Island->SpawnDropped(ItemId, Count, Location);
+	UE_LOG(LogExplored, Display, TEXT("[Isla] Suelta %d %s"), Count, *ItemId.ToString());
 	return true;
+}
+
+bool UExploredSurvivorComponent::DropLastLoose()
+{
+	return DropItem(FBackpackModel::DropCandidate(Backpack));
 }
 
 #undef LOCTEXT_NAMESPACE

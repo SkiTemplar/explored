@@ -61,6 +61,24 @@ int32 FBackpackModel::Count(const FBackpackState& State, FName Id)
 	return Total;
 }
 
+bool FBackpackModel::IsStarterKit(FName Id)
+{
+	return Id == FName(TEXT("cuchillo")) || Id == FName(TEXT("cantimplora")) || Id == FName(TEXT("barometro"));
+}
+
+FName FBackpackModel::DropCandidate(const FBackpackState& State)
+{
+	for (int32 Index = State.Stacks.Num() - 1; Index >= 0; --Index)
+	{
+		const FBackpackStack& Stack = State.Stacks[Index];
+		if (Stack.Count > 0 && !Stack.Id.IsNone() && !IsStarterKit(Stack.Id))
+		{
+			return Stack.Id;
+		}
+	}
+	return NAME_None;
+}
+
 int32 FBackpackModel::UsedSlots(const FBackpackState& State)
 {
 	return State.Stacks.Num();

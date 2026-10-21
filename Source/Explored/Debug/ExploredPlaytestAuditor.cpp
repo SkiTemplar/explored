@@ -30,9 +30,12 @@
 #include "DynamicRHI.h"
 #include "RHIStats.h"
 
+#include "Debug/BeaconSoftlockModel.h"
 #include "Debug/ExploredPlaytestBot.h"
 #include "Explored.h"
 #include "Items/ExploredItemActor.h"
+#include "Narrative/ExploredSupplyCrate.h"
+#include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 
@@ -102,6 +105,7 @@ void UExploredPlaytestAuditor::Tick(float DeltaTime)
 			AuditMaterials();
 			AuditGroundClearance();
 			AuditSpawnPoints();
+			AuditSoftlocks();
 			BeginPhysicsTracking();
 			Timer = 0.0f;
 			Phase = EPhase::WaitingPhysics;
@@ -427,13 +431,46 @@ void UExploredPlaytestAuditor::RecordBotStep(const FString& WaypointName, const 
 	FPlaytestReportModel::AppendBotStep(Report, WaypointName, LocationMeters, FocusedActorName, bInteracted, InventoryDelta);
 }
 
+void UExploredPlaytestAuditor::AuditSoftlocks()
+{
+	// Recursos del mapa al empezar (montones y cocos que existen ahora mismo en el mundo).
+	const TMap<FName, int32> Island = AExploredSupplyCrate::CountIslandResources(GetWorld());
+	if (Island.IsEmpty())
+	{
+		UE_LOG(LogExplored, Display, TEXT("[Playtest] Sin recursos de Baliza Siete en el mapa: no se auditan softlocks"));
+		return;
+	}
+	FSoftlockRules Rules;
+	if (const UExploredWeatherSubsystem* Weather = GetWorld()->GetSubsystem<UExploredWeatherSubsystem>())
+	{
+		Rules.RaftLastHour = Weather->GetStorm().GetConfig().RaftLastHour;
+		Rules.RaftReopenHour = Weather->GetStorm().GetConfig().RaftReopenHour;
+	}
+	for (const FSoftlockScenario& Scenario : FBeaconSoftlockModel::StandardScenarios(Island))
+	{
+		const FSoftlockVerdict Verdict = FBeaconSoftlockModel::Evaluate(Scenario.Snapshot, Rules);
+		Report.Softlocks.Add({ Scenario.Name, Verdict.bCompletable, FBeaconSoftlockModel::Describe(Verdict) });
+	}
+	const TArray<FString> StoryFailures = FBeaconSoftlockModel::StoryOrderFailures();
+	Report.Softlocks.Add({ TEXT("historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)"), StoryFailures.IsEmpty(),
+		StoryFailures.IsEmpty() ? FString(TEXT("todos llegan al final")) : FString::Join(StoryFailures, TEXT(" | ")) });
+	TArray<FString> Parts;
+	for (const TPair<FName, int32>& Pair : Island)
+	{
+		Parts.Add(FString::Printf(TEXT("%d %s"), Pair.Value, *Pair.Key.ToString()));
+	}
+	UE_LOG(LogExplored, Display, TEXT("[Playtest] Softlocks: %d escenarios con la isla (%s)"), Report.Softlocks.Num(),
+		*FString::Join(Parts, TEXT(", ")));
+}
+
 void UExploredPlaytestAuditor::WriteReport()
 {
 	IFileManager::Get().MakeDirectory(*OutputDir, true);
 	const FString JsonPath = OutputDir / TEXT("playtest_report.json");
 	const FString TxtPath = OutputDir / TEXT("playtest_report.txt");
-	FFileHelper::SaveStringToFile(FPlaytestReportModel::ToJson(Report), *JsonPath);
-	FFileHelper::SaveStringToFile(FPlaytestReportModel::ToReadableSummary(Report), *TxtPath);
+	// UTF-8 sin BOM: lo leen Tools/playtest_v3.ps1 y las herramientas de fuera del editor.
+	FFileHelper::SaveStringToFile(FPlaytestReportModel::ToJson(Report), *JsonPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+	FFileHelper::SaveStringToFile(FPlaytestReportModel::ToReadableSummary(Report), *TxtPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
 	UE_LOG(LogExplored, Display, TEXT("[Playtest] Informe: %d defecto(s), %d muestra(s) de rendimiento -> %s"),
 		Report.Issues.Num(), Report.FrameSamples.Num(), *JsonPath);
 }

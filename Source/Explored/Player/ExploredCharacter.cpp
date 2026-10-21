@@ -768,6 +768,11 @@ void AExploredCharacter::HandleDrop(const FInputActionValue&)
 		Survivor->DropHeavy();
 		return;
 	}
+	// Con las manos libres, G suelta la última pila de la mochila que no sea del kit.
+	if (Survivor && Survivor->DropLastLoose())
+	{
+		return;
+	}
 	if (!Carry)
 	{
 		return;

@@ -233,6 +233,24 @@ void FBackpackSpec::Define()
 			TestEqual(TEXT("Sin pez asado"), FIslandConsumables::Consume(Table, S, Rules, TEXT("pez_asado"), Out).Result, EConsumeResult::Missing);
 		});
 	});
+	Describe(TEXT("soltar con la tecla G"), [this]()
+	{
+		It(TEXT("suelta la última pila que no sea del kit; con solo el kit, nada (caso negativo)"), [this]()
+		{
+			FBackpackState Pack;
+			Pack.Stacks.Add({ TEXT("cuchillo"), 1 });
+			Pack.Stacks.Add({ TEXT("cantimplora"), 1 });
+			TestTrue(TEXT("Solo kit"), FBackpackModel::DropCandidate(Pack).IsNone());
+			Pack.Stacks.Add({ TEXT("remo"), 1 });
+			Pack.Stacks.Add({ TEXT("barometro"), 1 });
+			TestEqual(TEXT("El remo, no el barómetro"), FBackpackModel::DropCandidate(Pack), FName(TEXT("remo")));
+			Pack.Stacks.Add({ TEXT("coco_vacio"), 3 });
+			TestEqual(TEXT("La última"), FBackpackModel::DropCandidate(Pack), FName(TEXT("coco_vacio")));
+			TestTrue(TEXT("Kit"), FBackpackModel::IsStarterKit(TEXT("cantimplora")));
+			TestFalse(TEXT("No kit"), FBackpackModel::IsStarterKit(TEXT("mecha")));
+		});
+	});
+
 }
 
 #endif

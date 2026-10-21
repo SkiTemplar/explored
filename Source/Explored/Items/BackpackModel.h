@@ -89,6 +89,16 @@ struct EXPLORED_API FBackpackModel
 	static EBackpackResult Add(const FBackpackState& In, const FBackpackRules& Rules, FName Id, int32 Count, FBackpackState& Out);
 	static EBackpackResult Remove(const FBackpackState& In, FName Id, int32 Count, FBackpackState& Out);
 
+	/** El kit inicial (cuchillo, cantimplora, barómetro) no se suelta. */
+	static bool IsStarterKit(FName Id);
+
+	/**
+	 * Qué suelta la tecla G con las manos libres: la última pila de la mochila que no sea del kit
+	 * (NAME_None si no hay). Sin esto, una mochila llena de objetos que no se gastan (remo,
+	 * mecha, cocos vacíos...) dejaba la partida sin salida (auditor de F3e).
+	 */
+	static FName DropCandidate(const FBackpackState& State);
+
 	/**
 	 * Quita y añade en una sola operación (recetas, caja de suministros): o se aplica todo o nada.
 	 * Lo que se quita libera huecos antes de añadir.

@@ -48,6 +48,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool IsTickable() const override { return bActive; }
+	/** El final de Baliza Siete pausa el mundo: hay que seguir esperando al bot. */
+	virtual bool IsTickableWhenPaused() const override { return true; }
+
+	/** Partida completa del bot (UExploredPlaytestBot con «-BalizaRun»): entra en el informe. */
+	void SetRunSummary(const FPlaytestRunSummary& Summary) { Report.Run = Summary; }
 
 	/** Añade una muestra de FPS medio/mínimo (y consulta la VRAM actual) para un punto de captura. */
 	void RecordFrameSample(const FString& ShotName, float AvgFPS, float MinFPS);
@@ -72,6 +77,8 @@ private:
 	void AuditMaterials();
 	void AuditGroundClearance();
 	void AuditSpawnPoints();
+	/** Softlocks de Baliza Siete con los recursos reales del mapa (FBeaconSoftlockModel). */
+	void AuditSoftlocks();
 	void BeginPhysicsTracking();
 	void SamplePhysicsDrift();
 

@@ -119,7 +119,7 @@ void FStormClockSpec::Define()
 			TestEqual(TEXT("Muro 1"), Wall1, 3.0);
 			TestEqual(TEXT("Ojo (s reales)"), Eye * FStormClockConfig::RealSecondsPerHour, 65.0, 1e-6);
 			TestEqual(TEXT("Muro 2"), Wall2, 4.0 - FStormClockConfig::EyeHours, 1e-9);
-			TestEqual(TEXT("1 h = 45 s"), FStormClockConfig::RealSecondsPerHour, 45.0);
+			TestEqual(TEXT("1 h = 60 s (decisión de F3e)"), FStormClockConfig::RealSecondsPerHour, 60.0);
 			TestTrue(TEXT("Ojo es ciclón"), Clock.IsCyclone(At(2, 23.0)));
 			TestFalse(TEXT("Mar cerrado aún no es ciclón"), Clock.IsCyclone(At(2, 18.5)));
 		});

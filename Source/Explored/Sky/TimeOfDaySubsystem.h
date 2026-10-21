@@ -42,7 +42,7 @@ namespace ExploredSky
 /**
  * Reloj del mundo. Avanza el tiempo de juego y expone la hora, el día y la
  * fase lunar. El resto de sistemas (cielo, clima, fauna) leen de aquí.
- * En Baliza Siete el día dura siempre 18 min reales (FStormClockConfig::DayLengthMinutes):
+ * En Baliza Siete el día dura siempre 24 min reales (FStormClockConfig::DayLengthMinutes):
  * los ajustes del jugador ya no lo cambian.
  */
 UCLASS()
@@ -76,9 +76,9 @@ public:
 	FOnNewDay OnNewDay;
 
 private:
-	/** Baliza Siete empieza el día 1 a las 07:00 y el día dura 18 min reales (GDD v3 §3). */
+	/** Baliza Siete empieza el día 1 a las 07:00 y el día dura 24 min reales (GDD v3 §3, decisión de F3e). */
 	float Hours = 7.0f;
 	int32 Day = 1;
-	float DayLengthMinutes = 18.0f;
+	float DayLengthMinutes = 24.0f;
 	float TimeScale = 1.0f;
 };
