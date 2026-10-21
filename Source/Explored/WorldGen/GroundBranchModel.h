@@ -8,8 +8,8 @@
  * Ramas sueltas del suelo (GDD v2 §3.12): se recogen a mano y reaparecen bajo
  * los árboles en pie con el tiempo. Una celda de vegetación lleva su propio
  * estado; la capacidad y el ritmo salen de los ejemplares en pie de esa celda
- * (FFellingProfile::GroundBranchCapacity / GroundBranchPerDayMilli), así que
- * talar el bosque deja de dar ramas y un tocón no cuenta.
+ * (FGroundBranchSource::Capacity / PerDayMilli), así que un ejemplar que
+ * desaparece deja de dar ramas.
  *
  * Todo es entero (minutos de juego y milésimas de rama): avanzar 2 días de
  * golpe o 2880 veces un minuto da exactamente las mismas ramas en las mismas

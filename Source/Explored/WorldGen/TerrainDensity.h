@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Core/ExploredNoise.h"
 #include "WorldGen/ArchipelagoLayout.h"
-#include "WorldGen/TerrainEdits.h"
 #include "WorldGen/TerrainErosion.h"
 
 /** Cueva o arco: cápsula deformada que se excava en el terreno. Metros. */
@@ -30,13 +29,6 @@ struct EXPLORED_API FTerrainColumn
  * Campo de densidad volumétrico del archipiélago. Convenio: densidad < 0 es
  * sólido, > 0 es aire; el valor aproxima la distancia a la superficie en
  * metros. Inmutable tras la construcción y seguro entre hilos.
- *
- * Terreno editable (GDD v2 §7.3 punto 1): con SetEdits, Density y DensityWithColumn
- * consultan antes que nada la capa de ediciones del jugador (FTerrainEdits) y le suman
- * su delta al campo procedural; sin capa, o lejos de cualquier edición, cuestan lo mismo
- * que antes. La capa sí cambia: quien la edita no puede hacerlo mientras otro hilo lee
- * esta densidad (el remallado va en el hilo de juego o sobre una copia de la capa).
- * Las ediciones la usan como base con ProceduralDensity, nunca con Density.
  */
 class EXPLORED_API FTerrainDensity
 {
@@ -46,19 +38,15 @@ public:
 	/** Altura y contexto de la columna (X, Y) en metros. */
 	FTerrainColumn SampleColumn(float X, float Y) const;
 
-	/** Densidad en un punto 3D (metros): ediciones del jugador + campo procedural. */
+	/** Densidad en un punto 3D (metros). */
 	float Density(const FVector& P) const;
 
-	/** Densidad a partir de una columna ya evaluada (evita recalcularla), con ediciones. */
+	/** Densidad a partir de una columna ya evaluada (evita recalcularla). */
 	float DensityWithColumn(const FVector& P, const FTerrainColumn& Column) const;
 
-	/** Solo el campo procedural, sin ediciones: la base sobre la que se guardan los deltas. */
+	/** Campo procedural puro (hoy igual que Density). */
 	float ProceduralDensity(const FVector& P) const;
 	float ProceduralDensityWithColumn(const FVector& P, const FTerrainColumn& Column) const;
-
-	/** Engancha (o suelta, con nullptr) la capa de ediciones. Las copias de esta densidad la comparten. */
-	void SetEdits(TSharedPtr<const FTerrainEdits> InEdits) { Edits = MoveTemp(InEdits); }
-	const FTerrainEdits* GetEdits() const { return Edits ? &*Edits : nullptr; }
 
 	/** Gradiente normalizado de la densidad (normal de la superficie). */
 	FVector Normal(const FVector& P, float Step = 0.5f) const;
@@ -104,5 +92,4 @@ private:
 	TSharedPtr<const FErosionHeightGrid> KarstGrid;
 
 	/** Capa de ediciones del jugador; nula en el mundo recién generado. */
-	TSharedPtr<const FTerrainEdits> Edits;
 };

@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from datacheck import checks, cooking, fauna, mining, music, packs
+from datacheck import checks, cooking, fauna, music, packs
 from datacheck.checks import REPO_ROOT, DataSet, Report
 
 
@@ -141,39 +141,6 @@ def test_pendiente_de_malla_sin_id(tmp_path: Path) -> None:
     checks.check_meshes(ds, r)
     assert _has(r.errors, "meshes_pendientes.json/items", "«fantasma»", "quítalo")
     assert _has(r.errors, "meshes_pendientes.json/items", "sin id")
-
-
-# --------------------------------------------------------------------------- minería
-
-
-def _material(**extra: Any) -> dict[str, Any]:
-    m: dict[str, Any] = {"id": "tierra", "hardness": 1.0, "minToolTier": 1,
-                         "hitsPerM3": {"1": 6, "2": 6, "3": 6, "4": 6}}
-    m.update(extra)
-    return m
-
-
-def test_mineria_material_sin_cpp(tmp_path: Path) -> None:
-    # Con el C++ real presente, un material sin «cpp» mezclaba None y str al ordenar.
-    ds = DataSet({"mining.json": {"materials": [_material()]}, "items.json": [], "templates.json": []}, REPO_ROOT)
-    r = Report()
-    mining.check_mining(ds, r)
-    assert _has(r.errors, "no coincide con ETerrainMaterial")
-
-
-def test_mineria_nivel_no_numerico_en_la_tabla(tmp_path: Path) -> None:
-    doc = {"tierBonus": 1.5, "minHitsPerM3": 1.0, "materials": [_material(hitsPerM3={"uno": 6, "2": 6, "3": 6, "4": 6})]}
-    r = Report()
-    mining.check_mining(_ds(tmp_path, mining_json=doc, items_json=[], templates_json=[]), r)
-    assert _has(r.errors, "tierra", "hitsPerM3 debe tener los niveles")
-    assert _has(r.warnings, "TerrainEditModel")
-
-
-def test_mineria_formula_de_golpes() -> None:
-    assert mining.design_hits(1.0, 1, 1, 1.5, 1.0) == 6.0
-    assert mining.design_hits(3.0, 3, 4, 1.5, 10.0) == 12.0
-    # Nunca por debajo del suelo.
-    assert mining.design_hits(1.0, 1, 4, 3.0, 5.0) == 5.0
 
 
 # --------------------------------------------------------------------------- fauna

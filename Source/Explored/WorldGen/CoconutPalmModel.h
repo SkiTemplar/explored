@@ -52,7 +52,7 @@ struct EXPLORED_API FCoconutPalmProfile
 	int32 GroundLifeDays = 6;
 	/** Altura del tronco, en metros: cuanto más alta, más cuesta sacudirla a mano. */
 	float TrunkHeightMeters = 9.0f;
-	/** Radio de la copa, en metros (el mismo que FFellingProfile::CrownRadiusMeters). */
+	/** Radio de la copa, en metros. */
 	float CrownRadiusMeters = 3.0f;
 	/** Probabilidad de que cada maduro se abra al caer la palmera talada (se queda en cáscara), antes de acotar a [1, MaxFellMature]. */
 	float CrackChanceOnFell = 0.3f;
@@ -160,7 +160,7 @@ struct EXPLORED_API FCoconutPalmModel
 	static const FName GreenItem;
 	static const FName ShellItem;
 
-	/** Perfil de la palmera de coco (`Palm` de FFellingModel: 9 m de tronco y 3 m de copa). */
+	/** Perfil de la palmera de coco: 9 m de tronco y 3 m de copa. */
 	static FCoconutPalmProfile DefaultProfile();
 
 	/** Corrige números imposibles: huecos negativos, días en cero o mínimos mayores que los máximos, NaN. */

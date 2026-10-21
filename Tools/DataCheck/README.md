@@ -24,7 +24,7 @@ Qué comprueba:
 - **Esquema** de `items.json`, `templates.json`, `verbs.json`, `story_es.json`,
   `plants.json`, `building_pieces.json`, `survival_needs.json`,
   `meshes_pendientes.json`, `fuels.json`, `recipes.json`,
-  `boats.json`, `fish.json`, `music_layers.json`, `mining.json`, `fauna.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
+  `boats.json`, `fish.json`, `music_layers.json`, `fauna.json` y `recipes_smithing.json` (campos, tipos, rangos: propiedades 0-5, pesos > 0, ids ASCII
   sin tildes…).
 - **Referencias cruzadas**: resultados de plantillas, verbos, ingredientes y
   herramientas de construcción, objetos de siembra/cosecha, piezas requeridas.
@@ -36,20 +36,6 @@ Qué comprueba:
   propia cosecha y se arranca al cosechar debe dar al menos 2 (si no, la cosecha neta es nula). Todo cultivo
   cosecha comida (`recipes.json/foods`) o un objeto con `Medicinal ≥ 1`, y al menos uno es
   medicinal sin ser comida (GDD v3 §8.7: especias y plantas medicinales).
-- **Minería (GDD v2 §3.4)**: cada estrato (tierra y arena, arcilla, caliza, basalto,
-  obsidiana, cobre, hierro de meteorito, azufre, cristal) tiene su objeto en `items.json`.
-  `mining.json`: materiales espejo de `ETerrainMaterial`/`FTerrainEditModel::MaterialInfo`
-  (dureza, nivel mínimo, `SecondsPerPickaxeHit`, `TierBonus`, `MinHitsPerCubicMeter`) y
-  golpes/m³ según la fórmula del GDD; estratos con objeto, islas de `EIslandArchetype`,
-  capa, profundidad, fase y vetas finitas; niveles de herramienta 0–4 en los que cada
-  cabeza produce de verdad un `pico` (no la captura `hacha`) y toda pieza que cabe como
-  cabeza tiene nivel; progresión de picos sin ciclos y completa solo con islas de fase 1.
-  Peligros (biblia 02 §2.4): derrumbe con una pieza de apoyo real sobre el terreno que cubre la
-  luz máxima y avisa antes de caer, luces que existen, cada una con su ritmo de quema (`lightBurn`) y una `maxDurability` que gastar, aire viciado que nunca mata, sellado con
-  un encaje del kit y crecida en una estación conocida. Lugares subterráneos (§2.5): acceso y
-  nivel de entrada, fase 1 solo en las islas del acceso anticipado, objetos de estrato presentes
-  en esa isla y fase, la cueva de Landing que se cava con la pala sin tocar un estrato más duro
-  (GDD v2 §6.1), y los tubos de lava del Humo y las grutas marinas de Los Dientes (§6.2).
 - **Progresión**: simula la fabricación desde los materiales en bruto y exige que
   toda plantilla sea alcanzable (no sombreada por otra) y que cada herramienta y
   pieza tenga una cadena finita desde el inicio (sin ciclos de requisitos).
@@ -75,11 +61,10 @@ Qué comprueba:
 - **Fuentes de los procesados**: lo que sale de una receta de `recipes.json` o de
   `recipes_smithing.json` solo es obtenible si alguna de sus recetas se puede hacer
   (punto fijo con las piezas construibles: el horno cuesta carbón, el yunque un
-  lingote). Un `lingote` sin receta o un ingrediente de fundición sin veta, chatarra
-  (`rescatado`) ni receta no cuenta como material en bruto, así que su falta arrastra a
-  las piezas y recetas que lo piden. Las vetas que alimentan una fundición existen en
-  alguna isla de fase 1; todo `mineral` sale de un estrato y todo `lingote` de una
-  receta de fundición.
+  lingote). Un `lingote` sin receta o un ingrediente de fundición que no sea `mineral`,
+  chatarra (`rescatado`) ni receta no cuenta como material en bruto, así que su falta
+  arrastra a las piezas y recetas que lo piden. Todo `lingote` sale de una receta de
+  fundición.
 - **Guía anti-IA** (`textos.py`, biblia 07 §1): lista negra ES/EN, exclamaciones y emoji
   en nombres de objetos, plantillas, piezas, recetas de metal y logros; límites de
   §1.3 (nombre de 4 palabras sin puntuación final, descripción de una frase con 90/110

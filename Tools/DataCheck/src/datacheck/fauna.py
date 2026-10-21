@@ -23,10 +23,19 @@ from __future__ import annotations
 import re
 from typing import Any, TypeGuard
 
-from . import mining
-
 FAUNA_H = "Source/Explored/Fauna/FaunaTypes.h"
 SPAWNING_H = "Source/Explored/Fauna/FaunaSpawning.h"
+ARCHIPELAGO_CPP = "Source/Explored/WorldGen/ArchipelagoLayout.cpp"
+
+
+def _read(ds, rel: str) -> str:
+    path = ds.repo_root / rel
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def cpp_islands(ds) -> set[str]:
+    text = _read(ds, ARCHIPELAGO_CPP)
+    return {i.lower() for i in re.findall(r'case EIslandArchetype::\w+: return TEXT\("([^"]+)"\);', text)}
 EA_ISLANDS = ("landing", "emerald", "smoke", "teeth")
 DISPOSITIONS = {"huidizo", "defensivo", "territorial"}
 LOD_TIERS = ("Full", "Reduced", "Frozen")
@@ -59,7 +68,7 @@ def _ordered(lo: Any, hi: Any) -> bool:
 
 
 def cpp_species(ds) -> set[str]:
-    text = mining._read(ds, FAUNA_H)
+    text = _read(ds, FAUNA_H)
     m = re.search(r"enum class EFaunaSpecies : uint8\s*\{(.*?)\};", text, re.S)
     if not m:
         return set()
@@ -68,7 +77,7 @@ def cpp_species(ds) -> set[str]:
 
 
 def cpp_lod(ds) -> dict[str, float]:
-    text = mining._read(ds, SPAWNING_H)
+    text = _read(ds, SPAWNING_H)
     m = re.search(r"struct EXPLORED_API FFaunaLodSettings\s*\{(.*?)\};", text, re.S)
     if not m:
         return {}
@@ -176,7 +185,7 @@ def check_fauna(ds, r, properties: set[str]) -> None:
         _check_lod(s, where, tiers, r)
         _check_net(s, where, r)
 
-    islands = mining.cpp_islands(ds)
+    islands = cpp_islands(ds)
     listed: dict[str, dict] = {}
     home_phases: dict[str, set[int]] = {}
     for isl in doc.get("islands", []):

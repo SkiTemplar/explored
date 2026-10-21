@@ -9,11 +9,10 @@ así que un lingote o un carbón sin receta posible pasaría por recogible del s
   recetas se puede hacer: ingredientes obtenibles, estación y nivel de fuego construibles,
   herramientas y utensilios a mano. Se resuelve por punto fijo, porque el horno de
   fundición cuesta carbón y el yunque cuesta un lingote.
-- La fundición no admite cualquier cosa en bruto: cada ingrediente sale de una veta de
-  ``mining.json`` con presencia en una isla del acceso anticipado (fase 1), de los restos
-  del Albatros (etiqueta ``rescatado``) o de otra receta o plantilla.
-- Todo objeto con etiqueta ``mineral`` sale de un estrato de ``mining.json`` y todo
-  ``lingote`` de al menos una receta de fundición.
+- La fundición no admite cualquier cosa en bruto: cada ingrediente es un objeto con
+  etiqueta ``mineral`` (recogido en bruto: la minería y ``mining.json`` ya no existen), sale
+  de los restos del Albatros (etiqueta ``rescatado``) o de otra receta o plantilla.
+- Todo ``lingote`` sale de al menos una receta de fundición.
 """
 
 from __future__ import annotations
@@ -143,7 +142,7 @@ def resolve_obtainable(ds, crafted: set[str]) -> tuple[set[str], set[str]]:
 
 
 def sourceless_ingredients(ds) -> set[str]:
-    """Ingredientes de fundición que no salen de veta, chatarra, receta ni plantilla."""
+    """Ingredientes de fundición que no son mineral, chatarra, receta ni plantilla."""
     processed = processed_items(ds)
     templated = {t.get("resultDefinitionId") for t in ds.templates}
     sources = _stratum_sources(ds)
@@ -153,12 +152,8 @@ def sourceless_ingredients(ds) -> set[str]:
 
 
 def _stratum_sources(ds) -> dict[str, set[int]]:
-    """Objeto de items.json → fases de las islas donde lo deja algún estrato de mining.json."""
-    out: dict[str, set[int]] = {}
-    for stratum in ds.data.get("mining.json", {}).get("strata", []):
-        phases = {o.get("fase") for o in stratum.get("occurrences", []) if isinstance(o, dict)}
-        out.setdefault(stratum.get("item"), set()).update(p for p in phases if isinstance(p, int))
-    return out
+    """Objeto con etiqueta ``mineral`` → fases donde se recoge (todas en el acceso anticipado)."""
+    return {i["id"]: {1} for i in ds.items if "mineral" in i.get("tags", [])}
 
 
 def check_levels(ds, r) -> None:
@@ -291,10 +286,9 @@ def check_recipes(ds, r, obtainable: set[str]) -> None:
                 continue
             if iid in sources:
                 if 1 not in sources[iid]:
-                    r.error(f"{where}: «{iid}» solo sale de vetas de islas de fase 2 o 3; la receta es del "
-                            "acceso anticipado")
+                    r.error(f"{where}: «{iid}» solo se recoge en fase 2 o 3; la receta es del acceso anticipado")
             elif "rescatado" not in items[iid].get("tags", []):
-                r.error(f"{where}: «{iid}» no sale de ninguna fuente: ni de una veta de mining.json, ni de los "
+                r.error(f"{where}: «{iid}» no sale de ninguna fuente: ni es mineral, ni de los "
                         "restos del Albatros (rescatado), ni de otra receta o plantilla")
         if rec.get("result") not in items:
             r.error(f"{where}: resultado «{rec.get('result')}» no está en items.json")
@@ -328,18 +322,12 @@ def where_of(rec: dict) -> str:
 
 
 def check_sources(ds, r, obtainable: set[str]) -> None:
-    """Procesados que nunca se pueden hacer y minerales sin veta."""
+    """Procesados que nunca se pueden hacer y lingotes sin fundición."""
     processed = processed_items(ds)
     for iid, recipes in sorted(processed.items()):
         if iid not in obtainable:
             ids = ", ".join(f"{rec['file']} «{rec['id']}»" for rec in recipes)
             r.error(f"items.json «{iid}»: no sale de ninguna fuente; ninguna de sus recetas se puede hacer ({ids})")
-    sources = _stratum_sources(ds)
-    templated = {t.get("resultDefinitionId") for t in ds.templates}
-    for item in ds.items:
-        iid = item["id"]
-        if "mineral" in item.get("tags", []) and iid not in sources and iid not in processed and iid not in templated:
-            r.error(f"items.json «{iid}»: es un mineral y ningún estrato de mining.json lo deja")
     smelted = {rec.get("result") for rec in _recipes(ds) if rec.get("minFireLevel") is not None}
     for item in ds.items:
         if "lingote" in item.get("tags", []) and item["id"] not in smelted:

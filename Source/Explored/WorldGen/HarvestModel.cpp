@@ -30,7 +30,7 @@ TArray<FHarvestSpeciesRule> FHarvestModel::DefaultRules()
 			MakeDrop(TEXT("fibra_coco"), 0, 2),
 			MakeDrop(TEXT("cascara_coco"), 0, 1),
 		};
-		R.RegrowHours = 0.0f; // la instancia no reaparece: rebrota su tocón (FFellingModel), salvo que se arranque con pala.
+		R.RegrowHours = 0.0f; // la instancia no reaparece.
 		Rules.Add(R);
 	}
 	{

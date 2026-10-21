@@ -147,7 +147,7 @@ def test_contenido_de_h4_en_el_catalogo(real_cat: Catalogue) -> None:
 
 
 def test_contenido_de_h4_sin_avisos(real_cat: Catalogue) -> None:
-    files = ("halden_diaries", "journal_entries", "minerals")
+    files = ("halden_diaries", "journal_entries")
     assert not [w for w in real_cat.report.warnings if any(f"Content/Data/{f}.json" in w for f in files)]
 
 

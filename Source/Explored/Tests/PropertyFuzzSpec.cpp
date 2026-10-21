@@ -6,8 +6,6 @@
 #include "Player/SwimModel.h"
 #include "Survival/BodyModel.h"
 #include "Weather/RainCatchModel.h"
-#include "WorldGen/FellingModel.h"
-#include "WorldGen/WildfireModel.h"
 
 #include <limits>
 
@@ -342,9 +340,6 @@ void FPropertyFuzzSpec::Define()
 					{
 						AddError(At + TEXT(": caída o lluvia no finitas"));
 					}
-					const FVector2D Where(Hostile(Rng, -1.0e5f, 1.0e5f), Hostile(Rng, -1.0e5f, 1.0e5f));
-					FFellingModel::CellOf(Where, Hostile(Rng, 1.0f, 3200.0f));
-					FWildfireModel::CellAt(Where);
 				}
 			}
 		});

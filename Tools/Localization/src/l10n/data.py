@@ -110,20 +110,11 @@ FIELDS: list[FieldSpec] = [
     FieldSpec("fuels.json", "smeltingLevels", _sub("smeltingLevels"), "nameEs", "nameEn", "horno de fundición"),
     FieldSpec("recipes_smithing.json", "recipes", _sub("recipes"), "nameEs", "nameEn",
               "receta de fundición, chatarra o forja"),
-    FieldSpec("mining.json", "layers", _sub("layers"), "nameEs", "nameEn", "capa del subsuelo"),
-    FieldSpec("mining.json", "strata", _sub("strata"), "nameEs", "nameEn", "estrato minable"),
-    FieldSpec("mining.json", "tools", _sub("tools"), "nameEs", "nameEn", "herramienta de excavación"),
-    FieldSpec("mining.json", "places", _sub("places"), "nameEs", "nameEn", "lugar subterráneo"),
-    FieldSpec("mining.json", "hazards", _keyed("hazards"), "nameEs", "nameEn", "peligro de la mina"),
     FieldSpec("recipes.json", "vessels", _sub("vessels"), "nameEs", "nameEn", "recipiente de cocina"),
     FieldSpec("recipes.json", "recipes", _sub("recipes"), "nameEs", "nameEn", "receta de cocina"),
     FieldSpec("halden_diaries.json", "entries", _sub("entries"), "textEs", "textEn", "cuaderno de la expedición Halden"),
     FieldSpec("journal_entries.json", "entries", _sub("entries"), "textEs", "textEn",
               "entrada del diario del náufrago ({Day} = día de la partida)"),
-    *(FieldSpec(f, "pieces", _sub("pieces"), es, en, purpose)
-      for f in ("minerals.json",)
-      for es, en, purpose in (("nameEs", "nameEn", "etiqueta de vitrina"),
-                              ("descriptionEs", "descriptionEn", "ficha de vitrina"))),
 ]
 
 # Campos «…Es» que no ve el jugador: notas de diseño y documentación interna.

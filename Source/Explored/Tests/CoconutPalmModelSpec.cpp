@@ -2,7 +2,6 @@
 
 #include "Core/ExploredRandom.h"
 #include "WorldGen/CoconutPalmModel.h"
-#include "WorldGen/FellingModel.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -80,13 +79,10 @@ void FCoconutPalmModelSpec::Define()
 
 	Describe("perfil", [this]()
 	{
-		It("la palmera mide y abarca lo mismo que la Palm de la tala", [this]()
+		It("la palmera mide 9 m de tronco y 3 m de copa", [this]()
 		{
-			const TArray<FFellingProfile> Profiles = FFellingModel::DefaultProfiles();
-			const FFellingProfile* Palm = FFellingModel::FindProfile(Profiles, FName(TEXT("Palm")));
-			if (!TestNotNull(TEXT("Palm existe"), Palm)) { return; }
-			TestEqual(TEXT("altura"), Profile.TrunkHeightMeters, Palm->HeightMeters);
-			TestEqual(TEXT("copa"), Profile.CrownRadiusMeters, Palm->CrownRadiusMeters);
+			TestEqual(TEXT("altura"), Profile.TrunkHeightMeters, 9.0f);
+			TestEqual(TEXT("copa"), Profile.CrownRadiusMeters, 3.0f);
 		});
 
 		It("a mano una palmera de 9 m se sacude con fuerza 0,5 y una baja con fuerza 1", [this]()
@@ -367,8 +363,12 @@ void FCoconutPalmModelSpec::Define()
 		{
 			// Tronco justo en el borde de una celda de vegetación, con coordenadas negativas.
 			const double CellSize = 6400.0;
+			auto CellOf = [CellSize](const FVector2D& Position)
+			{
+				return FIntPoint(FMath::FloorToInt32(Position.X / CellSize), FMath::FloorToInt32(Position.Y / CellSize));
+			};
 			const FVector2D Trunk(-CellSize, -3.0 * CellSize + 20.0);
-			const FIntPoint Home = FFellingModel::CellOf(Trunk, CellSize);
+			const FIntPoint Home = CellOf(Trunk);
 			bool bNeighbour = false;
 			for (uint32 Seed = 1; Seed <= 100; ++Seed)
 			{
@@ -378,7 +378,7 @@ void FCoconutPalmModelSpec::Define()
 				{
 					const double D = FVector2D::Distance(C.Position, Trunk);
 					if (!TestTrue(TEXT("dentro del anillo"), D >= 50.0 - 1.0e-6 && D <= 180.0 + 1.0e-6)) { return; }
-					bNeighbour |= FFellingModel::CellOf(C.Position, CellSize) != Home;
+					bNeighbour |= CellOf(C.Position) != Home;
 				}
 			}
 			TestTrue(TEXT("alguno cae en la celda vecina y sigue siendo de su palmera"), bNeighbour);

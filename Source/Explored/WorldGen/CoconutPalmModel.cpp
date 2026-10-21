@@ -435,7 +435,7 @@ int32 FCoconutPalmModel::Fell(FCoconutPalmState& State, const FCoconutPalmProfil
 	{
 		Dir = FVector2D(1.0, 0.0);
 	}
-	// La copa queda donde FFellingModel::ComputeFellDrops pone ramas y hojas: al 85 % del tronco.
+	// La copa queda al 85 % del tronco.
 	const FVector2D Crown = State.TrunkPosition + Dir * (static_cast<double>(P.TrunkHeightMeters) * 0.85 * 100.0);
 	const double CrownCm = static_cast<double>(P.CrownRadiusMeters) * 100.0;
 	const int64 T = State.LastUpdateMinute;

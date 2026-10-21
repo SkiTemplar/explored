@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from datacheck import cooking, crafting, fauna, mining, music, smithing, textos
+from datacheck import cooking, crafting, fauna, music, smithing, textos
 from datacheck import packs as packs_check
 from datacheck.checks import (
     PROPERTIES,
@@ -447,16 +447,6 @@ def test_cuenta_setas_por_tipo(ds: DataSet) -> None:
     assert not any("setas" in n for n in _food_notes(ds))
 
 
-def test_estratos_de_mineria_del_gdd_v2(real_report: Report) -> None:
-    assert not any("GDD v2 §3.4" in e or "mining.json" in e for e in real_report.errors)
-    assert not any("pico" in n and "GDD v2 §3.4" in n for n in real_report.info)
-
-
-def test_detecta_estrato_de_mineria_que_desaparece(ds: DataSet) -> None:
-    ds.data["items.json"] = [i for i in ds.items if i["id"] != "hierro_meteorito"]
-    assert any_error(errors_of(ds), "hierro de meteorito", "GDD v2")
-
-
 # --------------------------------------------------------------------------- música (GDD §14.3)
 
 def music_errors(ds: DataSet) -> list[str]:
@@ -564,125 +554,7 @@ def test_detecta_malla_de_base_que_queda_sin_pieza(ds: DataSet) -> None:
     assert "SM_Base_Bed" in _idle_base_note(run_all(ds))
 
 
-# --------------------------------------------------------------------------- minería (GDD v2 §3.4)
-
-def mining_errors(ds: DataSet) -> list[str]:
-    r = Report()
-    mining.check_mining(ds, r)
-    return r.errors
-
-
-def stratum(ds: DataSet, sid: str) -> dict[str, Any]:
-    return next(s for s in ds.data["mining.json"]["strata"] if s["id"] == sid)
-
-
-def material(ds: DataSet, mid: str) -> dict[str, Any]:
-    return next(m for m in ds.data["mining.json"]["materials"] if m["id"] == mid)
-
-
-def without_tool(ds: DataSet, tid: str) -> None:
-    ds.data["mining.json"]["tools"] = [t for t in ds.data["mining.json"]["tools"] if t["id"] != tid]
-
-
-def test_mineria_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
-    assert mining_errors(real) == []
-    cpp = mining.cpp_materials(real)
-    assert cpp and cpp["Basalto"] == (3.0, 3)
-    assert {"landing", "emerald", "smoke", "teeth"} <= mining.cpp_islands(real)
-
-
-def test_mineria_lee_estratos_y_herramientas_de_mining_model(real: DataSet) -> None:
-    strata = mining.cpp_strata(real)
-    assert strata and len(strata) == 10
-    assert strata["veta_cobre"] == {"item": "mineral_cobre", "cpp": "Caliza", "hardness": 2, "minToolTier": 2,
-                                    "veinUnits": 10, "respawnDays": 20, "host": "Caliza"}
-    assert strata["azufre"]["minToolTier"] == 0
-    tools = mining.cpp_tools(real)
-    assert tools and len(tools) == 6
-    assert tools["pala_tosca"]["secondsPerHit"] == 1.2
-    assert tools["pico_obsidiana"] == {"tier": 4, "radiusM": 0.5, "secondsPerHit": 1.0, "durability": 30, "fragile": True}
-    anchors = mining.cpp_sand_anchor_pieces(real)
-    assert anchors and "tablon_contencion" in anchors
-
-
-def test_mineria_herramienta_distinta_del_mining_model(ds: DataSet) -> None:
-    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_tallado")["radiusM"] = 0.6
-    assert any_error(mining_errors(ds), "pico_tallado", "radiusM")
-
-
-def test_mineria_fragilidad_distinta_del_mining_model(ds: DataSet) -> None:
-    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["fragile"]["chance"] = 0.1
-    assert any_error(mining_errors(ds), "pico_obsidiana", "fragile")
-
-
-def test_mineria_veta_distinta_del_mining_model(ds: DataSet) -> None:
-    stratum(ds, "hierro_meteorito")["vein"]["veinUnits"] = 6
-    assert any_error(mining_errors(ds), "hierro_meteorito", "veta")
-
-
-def test_mineria_herramienta_mas_rapida_que_el_minimo_de_red(ds: DataSet) -> None:
-    ds.data["mining.json"]["secondsPerHit"] = 1.25
-    assert any_error(mining_errors(ds), "pico_obsidiana", "mínimo de red")
-
-
-def test_mineria_faltan_la_viga_o_una_pieza_que_sujeta_arena(ds: DataSet) -> None:
-    ds.data["building_pieces.json"]["pieces"] = [
-        p for p in ds.building["pieces"] if p["id"] not in ("viga_apoyo", "tablon_contencion")]
-    errors = mining_errors(ds)
-    assert any_error(errors, "viga_apoyo", "2.7")
-    assert any_error(errors, "tablon_contencion", "sujeta arena")
-def test_mineria_herramientas_espejo_del_cpp(real: DataSet) -> None:
-    cpp = mining.cpp_dig_tools(real)
-    assert cpp and cpp["PalaTosca"] == (1, 0.35, 1.2) and cpp["PicoRescatado"] == (4, 0.55, 1.1)
-
-
-def test_mineria_radio_distinto_del_cpp(ds: DataSet) -> None:
-    next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pico_obsidiana")["radiusM"] = 0.6
-    assert any_error(mining_errors(ds), "pico_obsidiana", "ToolInfo")
-
-
-def test_mineria_herramienta_sin_tiempo_de_golpe(ds: DataSet) -> None:
-    del next(t for t in ds.data["mining.json"]["tools"] if t["id"] == "pala_tosca")["secondsPerHit"]
-    assert any_error(mining_errors(ds), "pala_tosca", "secondsPerHit")
-
-
-def test_mineria_unidades_por_m3_distintas_del_cpp(ds: DataSet) -> None:
-    ds.data["mining.json"]["unitsPerM3"] = 5
-    assert any_error(mining_errors(ds), "unitsPerM3", "UnitsPerCubicMeter")
-
-
-def test_mineria_dureza_distinta_del_cpp(ds: DataSet) -> None:
-    m = material(ds, "basalto")
-    m["hardness"], m["hitsPerM3"] = 2.5, {"3": 15, "4": 10}
-    assert any_error(mining_errors(ds), "basalto", "MaterialInfo")
-
-
-def test_mineria_golpes_fuera_de_la_formula(ds: DataSet) -> None:
-    material(ds, "caliza")["hitsPerM3"]["3"] = 10
-    assert any_error(mining_errors(ds), "caliza", "fórmula")
-
-
-def test_mineria_isla_que_no_existe(ds: DataSet) -> None:
-    stratum(ds, "basalto")["occurrences"][0]["island"] = "atlantida"
-    assert any_error(mining_errors(ds), "atlantida", "EIslandArchetype")
-
-
-def test_mineria_falta_estrato_del_gdd(ds: DataSet) -> None:
-    ds.data["mining.json"]["strata"] = [s for s in ds.data["mining.json"]["strata"] if s["id"] != "azufre"]
-    assert any_error(mining_errors(ds), "azufre", "GDD v2")
-
-
-def test_mineria_cabeza_de_pico_sin_nivel(ds: DataSet) -> None:
-    ds.data["items.json"] = ds.items + [{"id": "granito", "tags": ["piedra"], "properties": [{"name": "Rigido", "value": 4}, {"name": "Punta", "value": 3}]}]
-    assert any_error(mining_errors(ds), "granito", "no tiene nivel")
-
-
-def test_mineria_hacha_delante_roba_el_pico(ds: DataSet) -> None:
-    tpl = ds.data["templates.json"]
-    pico = template(ds, "pico")
-    tpl.remove(pico)
-    tpl.append(pico)
-    assert any_error(mining_errors(ds), "canto_aguzado", "hacha")
+# --------------------------------------------------------------------------- herramientas de piedra (crafting)
 
 
 def test_canto_rodado_con_mango_sigue_dando_hacha_de_piedra(real: DataSet) -> None:
@@ -715,122 +587,10 @@ def test_plantilla_con_estacion_que_no_existe(ds: DataSet) -> None:
     assert any_error(run_all(ds).errors, "cabeza_pico_de_chapa", "fragua")
 
 
-def test_mineria_pico_de_obsidiana_solo_en_fase_2(ds: DataSet) -> None:
-    obs = stratum(ds, "obsidiana")
-    obs["surfaceSource"] = False
-    for occ in obs["occurrences"]:
-        occ["fase"] = 2
-    without_tool(ds, "pico_rescatado")
-    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
-
-
-def test_mineria_ciclo_obsidiana_solo_con_obsidiana(ds: DataSet) -> None:
-    stratum(ds, "obsidiana")["surfaceSource"] = False
-    without_tool(ds, "pico_rescatado")
-    errors = mining_errors(ds)
-    assert any_error(errors, "se queda en el nivel 3")
-    assert any_error(errors, "obsidiana", "ninguna herramienta")
-
-
-def test_mineria_afloramiento_de_fase_2_no_cuenta_en_fase_1(ds: DataSet) -> None:
-    # Obsidiana suelta solo en islas de fase 2: en fase 1 no puede dar el pico de nivel 4.
-    for occ in stratum(ds, "obsidiana")["occurrences"]:
-        occ["fase"] = 2
-    without_tool(ds, "pico_rescatado")
-    assert any_error(mining_errors(ds), "fase 1", "nivel 3")
-
-
-def test_mineria_nivel_saltado_no_cuenta(ds: DataSet) -> None:
-    # Cabeza tallada imposible: el nivel 3 no existe aunque la obsidiana suelta dé el 4.
-    template(ds, "cabeza_pico_por_tallado")["slots"][0]["requirements"][0]["min"] = 6
-    assert any_error(mining_errors(ds), "se queda en el nivel 2")
-
-
-def test_mineria_veta_mal_formada(ds: DataSet) -> None:
-    stratum(ds, "veta_cobre")["vein"]["veinUnits"] = 0
-    assert any_error(mining_errors(ds), "veta_cobre", "veinUnits")
-
-
 def test_mineria_la_cabeza_tallada_sale_de_lasca_y_basalto(real: DataSet) -> None:
     items = {i["id"]: i for i in real.items}
     best = crafting.best_template(real.templates, "Tallar", crafting.leaf(items["lasca_pedernal"]), crafting.leaf(items["basalto"]))
     assert best and best["resultDefinitionId"] == "basalto_tallado"
-
-
-# --------------------------------------------------------------------------- peligros y lugares de la mina (biblia 02 §2.4-2.5)
-
-def hazard(ds: DataSet, hid: str) -> dict:
-    return ds.data["mining.json"]["hazards"][hid]
-
-
-def place(ds: DataSet, pid: str) -> dict:
-    return next(p for p in ds.data["mining.json"]["places"] if p["id"] == pid)
-
-
-def test_mineria_viga_de_apoyo_es_pieza_de_madera_bajo_tierra(real: DataSet) -> None:
-    viga = piece(real, hazard(real, "derrumbe")["supportPiece"])
-    assert viga["id"] == "viga_apoyo" and viga["tier"] == "madera" and viga["socket"] == "terreno"
-    assert {c["item"]: c["count"] for c in viga["cost"]} == {"tronco_pequeno": 2, "cuerda": 1}
-
-
-def test_mineria_falta_un_peligro(ds: DataSet) -> None:
-    del ds.data["mining.json"]["hazards"]["aire_viciado"]
-    assert any_error(mining_errors(ds), "aire_viciado", "biblia 02")
-
-
-def test_mineria_viga_inexistente(ds: DataSet) -> None:
-    hazard(ds, "derrumbe")["supportPiece"] = "puntal_magico"
-    assert any_error(mining_errors(ds), "puntal_magico", "building_pieces.json")
-
-
-def test_mineria_viga_que_no_cubre_la_luz(ds: DataSet) -> None:
-    hazard(ds, "derrumbe")["supportRadiusM"] = 1.0
-    assert any_error(mining_errors(ds), "derrumbe", "luz")
-
-
-def test_mineria_aviso_despues_del_derrumbe(ds: DataSet) -> None:
-    hazard(ds, "derrumbe")["warningSeconds"] = 9
-    assert any_error(mining_errors(ds), "derrumbe", "aviso")
-
-
-def test_mineria_aire_viciado_nunca_mata(ds: DataSet) -> None:
-    hazard(ds, "aire_viciado")["lethal"] = True
-    assert any_error(mining_errors(ds), "aire_viciado", "nunca mata")
-
-
-def test_mineria_luz_pendiente_que_ya_existe(ds: DataSet) -> None:
-    hazard(ds, "oscuridad")["lightItemsPendientes"].append("antorcha")
-    assert any_error(mining_errors(ds), "oscuridad", "antorcha", "lightItems")
-
-
-def test_mineria_crecida_en_estacion_desconocida(ds: DataSet) -> None:
-    hazard(ds, "crecida")["season"] = "invierno"
-    assert any_error(mining_errors(ds), "crecida", "invierno")
-
-
-def test_mineria_lugar_de_fase_1_fuera_del_acceso_anticipado(ds: DataSet) -> None:
-    place(ds, "cenotes")["occurrences"][0]["fase"] = 1
-    assert any_error(mining_errors(ds), "cenotes", "mesa", "acceso anticipado")
-
-
-def test_mineria_lugar_con_objeto_de_estrato_ausente(ds: DataSet) -> None:
-    place(ds, "grutas_marinas")["items"] = ["obsidiana"]
-    assert any_error(mining_errors(ds), "grutas_marinas", "teeth", "obsidiana")
-
-
-def test_mineria_cueva_de_landing_mas_honda_que_la_pala(ds: DataSet) -> None:
-    place(ds, "cueva_landing")["occurrences"][0]["depthM"] = [0, 6]
-    assert any_error(mining_errors(ds), "cueva_landing", "basalto", "nivel 1")
-
-
-def test_mineria_falta_la_cueva_de_landing(ds: DataSet) -> None:
-    ds.data["mining.json"]["places"] = [p for p in ds.data["mining.json"]["places"] if p["id"] != "cueva_landing"]
-    assert any_error(mining_errors(ds), "Landing", "GDD v2 §6.1")
-
-
-def test_mineria_rio_subterraneo_sin_barco(ds: DataSet) -> None:
-    place(ds, "rios_subterraneos")["requiresBoat"] = "submarino"
-    assert any_error(mining_errors(ds), "rios_subterraneos", "boats.json")
 
 
 # --------------------------------------------------------------------------- fauna salvaje (GDD v2 §3.7)
@@ -1195,30 +955,11 @@ def test_metal_nivel_de_fundicion_heat_infinito(ds, real_reach) -> None:
     assert any_error(smith_report(ds, real_reach).errors, "heat", "fuera de")
 
 
-def test_metal_mineral_sin_veta(ds, real_reach) -> None:
-    ds.data["items.json"].append({
-        "id": "mineral_estano", "nameEs": "Mineral de estaño", "nameEn": "Tin ore",
-        "meshPath": "/Engine/BasicShapes/Sphere.Sphere", "weightKg": 1.0, "volumeLiters": 0.3,
-        "size": "Pequeno", "tags": ["mineral"], "properties": []})
-    smithing_recipe(ds, "fundir_cobre")["ingredients"].append({"item": "mineral_estano", "count": 1})
-    errors = smith_report(ds, real_reach, {"mineral_estano"}).errors
-    assert any_error(errors, "fundir_cobre", "mineral_estano", "no sale de ninguna fuente")
-    assert any_error(errors, "mineral_estano", "ningún estrato")
-
-
 def test_metal_ingrediente_en_bruto_que_no_es_mena_ni_chatarra(ds, real_reach) -> None:
-    smithing_recipe(ds, "fundir_cobre")["ingredients"].append({"item": "arena", "count": 1})
-    # La arena sí sale de un estrato: vale. La hoja de palma no sale de ninguno ni es chatarra.
     assert not any_error(smith_report(ds, real_reach).errors, "fundir_cobre")
+    # La hoja de palma no es mineral ni chatarra ni sale de una receta.
     smithing_recipe(ds, "fundir_cobre")["ingredients"].append({"item": "hoja_palma", "count": 1})
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "hoja_palma", "no sale de ninguna fuente")
-
-
-def test_metal_veta_solo_en_islas_de_fase_2(ds, real_reach) -> None:
-    stratum = next(s for s in ds.data["mining.json"]["strata"] if s["id"] == "hierro_meteorito")
-    for occ in stratum["occurrences"]:
-        occ["fase"] = 2
-    assert any_error(smith_report(ds, real_reach).errors, "fundir_hierro", "hierro_meteorito", "fase 2 o 3")
 
 
 def test_metal_sin_receta_de_hierro_cae_la_cadena(ds, real_reach) -> None:
@@ -1490,26 +1231,6 @@ def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> No
     smithing_recipe(ds, "fundir_cobre")["ingredients"][0]["item"] = value
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no está en items.json")
 # --------------------------------------------------------------------------- mina: quema de la luz
-
-
-def test_mineria_antorcha_con_ritmo_de_quema(real: DataSet) -> None:
-    burn = {b["item"]: b for b in hazard(real, "oscuridad")["lightBurn"]}
-    assert burn["antorcha"]["gameMinutesPerDurability"] * item(real, "antorcha")["maxDurability"] == 120
-
-
-def test_mineria_luz_sin_ritmo_de_quema(ds: DataSet) -> None:
-    hazard(ds, "oscuridad")["lightBurn"] = []
-    assert any_error(mining_errors(ds), "antorcha", "lightBurn")
-
-
-def test_mineria_quema_de_una_luz_que_no_existe(ds: DataSet) -> None:
-    hazard(ds, "oscuridad")["lightBurn"].append({"item": "vela", "gameMinutesPerDurability": 3})
-    assert any_error(mining_errors(ds), "«vela»", "lightItems")
-
-
-def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
-    del item(ds, "antorcha")["maxDurability"]
-    assert any_error(mining_errors(ds), "antorcha", "maxDurability")
 
 
 # --------------------------------------------------------------------------- iconos de UI (lote 9)

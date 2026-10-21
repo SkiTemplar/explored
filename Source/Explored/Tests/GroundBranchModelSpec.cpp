@@ -1,7 +1,6 @@
 #include "Misc/AutomationTest.h"
 
 #include "Save/SaveValue.h"
-#include "WorldGen/FellingModel.h"
 #include "WorldGen/GroundBranchModel.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -61,11 +60,20 @@ void FGroundBranchModelSpec::Define()
 {
 	BeforeEach([this]()
 	{
-		const TArray<FFellingProfile> Profiles = FFellingModel::DefaultProfiles();
+		auto MakeSource = [](const FVector2D& Position, float CrownRadiusMeters, int32 Capacity, int32 PerDayMilli, const TCHAR* ItemId)
+		{
+			FGroundBranchSource Source;
+			Source.Position = Position;
+			Source.CrownRadiusMeters = CrownRadiusMeters;
+			Source.Capacity = Capacity;
+			Source.PerDayMilli = PerDayMilli;
+			Source.ItemId = FName(ItemId);
+			return Source;
+		};
 		Sources.Reset();
 		// Un gigante al borde negativo de la celda y una palmera: dos objetos distintos en el suelo.
-		Sources.Add(FFellingModel::MakeBranchSource(*FFellingModel::FindProfile(Profiles, FName(TEXT("JungleGiant"))), FVector2D(-10.0, -3190.0)));
-		Sources.Add(FFellingModel::MakeBranchSource(*FFellingModel::FindProfile(Profiles, FName(TEXT("Palm"))), FVector2D(-1600.0, -1600.0)));
+		Sources.Add(MakeSource(FVector2D(-10.0, -3190.0), 6.0f, 4, 1500, TEXT("rama_seca")));
+		Sources.Add(MakeSource(FVector2D(-1600.0, -1600.0), 3.0f, 2, 500, TEXT("hoja_palma")));
 	});
 
 	It("empieza llena con ramas dentro de la copa de su ejemplar", [this]()
