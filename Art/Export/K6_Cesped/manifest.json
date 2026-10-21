@@ -236,14 +236,14 @@
     {
       "malla": "SM_GrassPatch_A_01",
       "fbx": "SM_GrassPatch_A_01.fbx",
-      "uso": "parche erguido: 9 hojas largas en anillo y 8 cortas en roseta",
+      "uso": "parche erguido: 7 hojas largas en anillo, 8 medias y 32 cortas",
       "presupuesto": "vegetacion",
-      "tope_tris": 80,
-      "tris": 69,
+      "tope_tris": 100,
+      "tris": 91,
       "dimensiones_m": [
-        0.683,
-        0.653,
-        0.409
+        0.755,
+        0.641,
+        0.468
       ],
       "colores": [
         "hierba_clara",
@@ -259,21 +259,21 @@
       "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
       "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
-      "hojas": 17,
-      "radio_huella_m": 0.414,
+      "hojas": 47,
+      "radio_huella_m": 0.433,
       "lod": "una sola LOD"
     },
     {
       "malla": "SM_GrassPatch_B_01",
       "fbx": "SM_GrassPatch_B_01.fbx",
-      "uso": "parche caído al exterior, al sol: 10 hojas tumbadas y 8 cortas",
+      "uso": "parche abierto, al sol: 8 hojas largas que se abren, 8 medias y 28 cortas",
       "presupuesto": "vegetacion",
-      "tope_tris": 80,
-      "tris": 74,
+      "tope_tris": 100,
+      "tris": 92,
       "dimensiones_m": [
-        0.777,
-        0.83,
-        0.277
+        0.75,
+        0.718,
+        0.391
       ],
       "colores": [
         "hierba_clara",
@@ -289,21 +289,21 @@
       "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
       "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
-      "hojas": 18,
-      "radio_huella_m": 0.44,
+      "hojas": 44,
+      "radio_huella_m": 0.428,
       "lod": "una sola LOD"
     },
     {
       "malla": "SM_GrassPatch_C_01",
       "fbx": "SM_GrassPatch_C_01.fbx",
-      "uso": "parche ralo y mezclado: 5 hojas largas y 12 cortas",
+      "uso": "parche mezclado: 6 hojas largas curvadas, 10 medias y 30 cortas",
       "presupuesto": "vegetacion",
-      "tope_tris": 80,
-      "tris": 61,
+      "tope_tris": 100,
+      "tris": 90,
       "dimensiones_m": [
-        0.749,
-        0.735,
-        0.417
+        0.72,
+        0.721,
+        0.45
       ],
       "colores": [
         "hierba_clara",
@@ -319,16 +319,21 @@
       "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
       "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
-      "hojas": 17,
-      "radio_huella_m": 0.402,
+      "hojas": 46,
+      "radio_huella_m": 0.413,
       "lod": "una sola LOD"
     }
   ],
   "cesped_continuo": {
     "tris_por_parche": {
-      "SM_GrassPatch_A_01": 69,
-      "SM_GrassPatch_B_01": 74,
-      "SM_GrassPatch_C_01": 61
+      "SM_GrassPatch_A_01": 91,
+      "SM_GrassPatch_B_01": 92,
+      "SM_GrassPatch_C_01": 90
+    },
+    "hojas_por_parche": {
+      "SM_GrassPatch_A_01": 47,
+      "SM_GrassPatch_B_01": 44,
+      "SM_GrassPatch_C_01": 46
     },
     "densidad_por_m2": {
       "matas": 2.2,
@@ -336,7 +341,7 @@
     },
     "tris_por_m2": {
       "matas": 56.3,
-      "parches": 379.2
+      "parches": 501.3
     },
     "instancias_en_16_m2": {
       "matas": 35,
@@ -344,15 +349,19 @@
     },
     "suelo_visible_cenital_pct": {
       "matas": 91.0,
-      "parches": 15.2
+      "parches": 34.7
     },
     "suelo_visible_cenital_interior_3x3_m_pct": {
       "matas": 90.2,
-      "parches": 14.7
+      "parches": 33.9
     },
     "suelo_visible_desde_1_7_m_a_30_grados_pct": {
       "matas": 88.3,
-      "parches": 14.8
+      "parches": 18.2
+    },
+    "suelo_visible_desde_1_7_m_a_30_grados_interior_3x3_m_pct": {
+      "matas": 83.5,
+      "parches": 9.7
     },
     "siembra": "parcela de 4 x 4 m en rejilla con jitter (semilla 707); matas A/B/C a escala 0.85-1.2, parches A/B/C a escala 0.8-1.3; mezcla y giro al azar",
     "medida": "Workbench con luz plana, sin sombras ni antialiasing; cenital ortográfico de 400 x 400 px (1 cm/px) con el suelo de la parcela en malva_ocaso; píxeles de suelo con hierba / sin hierba (Tools/Blender/kits/k6_continuo.py)"

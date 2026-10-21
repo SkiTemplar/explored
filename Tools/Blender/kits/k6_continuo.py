@@ -12,7 +12,10 @@ Importa los FBX exportados del kit K6 y compone:
 Medida: render Workbench cenital ortográfico de cada parcela (luz plana, sin sombras ni
 antialiasing, 400 x 400 px = 1 cm/px) con el suelo de la parcela en el color testigo;
 suelo visible = píxeles testigo con la hierba / píxeles testigo sin ella. Lo mismo desde la
-cámara a 1,7 m y 30°. La resolución de la medida no depende de `--percent`.
+cámara a 1,7 m y 30°, con toda la parcela y con solo su interior de 3 x 3 m en el color
+testigo (la hierba del borde sigue tapando): el borde cercano de la parcela no tiene hierba
+delante y deja ver suelo que en un prado sembrado entero quedaría tapado. La resolución de
+la medida no depende de `--percent`.
 """
 
 from __future__ import annotations
@@ -55,6 +58,7 @@ EYE_BACK = 1.5                                  # m por detrás del borde de la 
 # Interior de 3 x 3 m (sin 0,5 m de cada borde): sin el efecto de borde de la parcela,
 # donde falta la mitad de los vecinos; es lo que se ve en un prado sembrado entero.
 INTERIOR_BORDER = 0.125
+INTERIOR_SCALE = 0.75                           # lo mismo desde la cámara: testigo de 3 x 3 m
 
 
 def sow(names: tuple[str, ...], density: float, scale: tuple[float, float], seed: int = SEED,
@@ -88,6 +92,7 @@ def build_scene(pal: Palette, export_dir: Path, sheet_path: Path) -> dict[str, A
     material = lamina.toon_preview_material(bpy.data.images.load(str(sheet_path)))
     sources = {name: lamina._import_pilot(export_dir / f'{name}.fbx') for name in TUFTS + PATCHES}
     tris = {name: meshkit.triangle_count(obj) for name, obj in sources.items()}
+    blades = {name: meshkit.island_count(sources[name]) for name in PATCHES}
     for name, x in zip(PATCHES, ROW_X, strict=True):
         base._place(sources[name], x, ROW_Y)
     for name in TUFTS:
@@ -115,7 +120,7 @@ def build_scene(pal: Palette, export_dir: Path, sheet_path: Path) -> dict[str, A
         mesh_of(obj).materials.append(material)
     area = PARCEL * PARCEL
     return {
-        'tris': tris, 'grass': grass,
+        'tris': tris, 'blades': blades, 'grass': grass,
         'plots': {key: {'instancias': len(p), 'tris_m2': round(sum(tris[n] for n, *_ in p) / area, 1)}
                   for key, (p, _cx) in plots.items()},
     }
@@ -151,15 +156,17 @@ def _marker_count(image: np.ndarray, rgb: tuple[int, int, int], border: float = 
 
 
 def visible_ground(cam: base.Camera, grass: list[bpy.types.Object], pal: Palette, tmp: Path,
-                   border: float = 0.0) -> tuple[float, np.ndarray]:
+                   border: float = 0.0, marker_scale: float = 1.0) -> tuple[float, np.ndarray]:
     """% de suelo de la parcela visible desde «cam» (sin «border» de cada lado de la
-    imagen) y el render con el testigo."""
+    imagen; con «marker_scale» < 1, solo el centro de la parcela lleva el color testigo)
+    y el render con el testigo."""
     markers = [o for o in bpy.data.objects if o.name.endswith('_testigo')]
     greens = [bpy.data.objects[o.name.removesuffix('_testigo')] for o in markers]
     scene = bpy.context.scene
     previous = _set_aa(scene, 'OFF')
     for obj in markers:
         obj.hide_render = False
+        obj.scale = (marker_scale, marker_scale, 1.0)
     for obj in greens:
         obj.hide_render = True
     try:
@@ -173,6 +180,7 @@ def visible_ground(cam: base.Camera, grass: list[bpy.types.Object], pal: Palette
     finally:
         for obj in markers:
             obj.hide_render = True
+            obj.scale = (1.0, 1.0, 1.0)
         for obj in greens:
             obj.hide_render = False
         scene.display.render_aa = previous
@@ -186,23 +194,26 @@ def _cam_args(cam: base.Camera) -> tuple[Any, ...]:
 
 
 def measure(info: dict[str, Any], pal: Palette, tmp: Path) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
-    insets, cenital, interior, oblique = {}, {}, {}, {}
+    insets, cenital, interior, oblique, oblique_inner = {}, {}, {}, {}, {}
     for key, cx in (('matas', OLD_X), ('parches', NEW_X)):
         cenital[key], top = visible_ground(top_camera(f'cenital_{key}', cx), info['grass'], pal, tmp)
         interior[key], _img = visible_ground(top_camera(f'interior_{key}', cx), info['grass'], pal, tmp,
                                              border=INTERIOR_BORDER)
-        oblique[key], _img = visible_ground(eye_camera(f'ojo_{key}', cx, (PANEL_W, PANEL_H)), info['grass'],
-                                            pal, tmp)
+        eye = eye_camera(f'ojo_{key}', cx, (PANEL_W, PANEL_H))
+        oblique[key], _img = visible_ground(eye, info['grass'], pal, tmp)
+        oblique_inner[key], _img = visible_ground(eye, info['grass'], pal, tmp, marker_scale=INTERIOR_SCALE)
         insets[key] = lamina.over_background(top, pal.by_name('tinta').rgb)
     tris = info['tris']
     metrics = {
         'tris_por_parche': {name: tris[name] for name in PATCHES},
+        'hojas_por_parche': {name: info['blades'][name] for name in PATCHES},
         'densidad_por_m2': {'matas': TUFT_DENSITY, 'parches': PATCH_DENSITY},
         'tris_por_m2': {key: plot['tris_m2'] for key, plot in info['plots'].items()},
         'instancias_en_16_m2': {key: plot['instancias'] for key, plot in info['plots'].items()},
         'suelo_visible_cenital_pct': cenital,
         'suelo_visible_cenital_interior_3x3_m_pct': interior,
         'suelo_visible_desde_1_7_m_a_30_grados_pct': oblique,
+        'suelo_visible_desde_1_7_m_a_30_grados_interior_3x3_m_pct': oblique_inner,
         'siembra': (f'parcela de 4 x 4 m en rejilla con jitter (semilla {SEED}); matas A/B/C a escala '
                     f'{TUFT_SCALE[0]}-{TUFT_SCALE[1]}, parches A/B/C a escala {PATCH_SCALE[0]}-{PATCH_SCALE[1]}; '
                     'mezcla y giro al azar'),
@@ -230,9 +241,12 @@ def compose(images: dict[str, np.ndarray], metrics: dict[str, Any], pal: Palette
     tris = metrics['tris_por_parche']
     for k, name in enumerate(PATCHES):
         canvas = _label(canvas, f'{name} {tris[name]} TRIS', 120 + k * 500, ROW_H - 44, pal)
-    canvas = _label(canvas, 'K6 CESPED CONTINUO - PARCHES DE 12-18 HOJAS, UNA SOLA LOD', 16, 12, pal, scale=3)
+    blades = metrics['hojas_por_parche'].values()
+    canvas = _label(canvas, f'K6 CESPED CONTINUO - PARCHES DE {min(blades)}-{max(blades)} HOJAS FINAS, UNA SOLA LOD',
+                    16, 12, pal, scale=3)
     cen, eye = metrics['suelo_visible_cenital_pct'], metrics['suelo_visible_desde_1_7_m_a_30_grados_pct']
     inner = metrics['suelo_visible_cenital_interior_3x3_m_pct']
+    eye_inner = metrics['suelo_visible_desde_1_7_m_a_30_grados_interior_3x3_m_pct']
     texts = {'matas': f'ACTUAL: MATAS A/B/C A {_pct(TUFT_DENSITY)}/M2',
              'parches': f'NUEVO: PARCHES A/B/C A {_pct(PATCH_DENSITY)}/M2'}
     for k, key in enumerate(('matas', 'parches')):
@@ -242,8 +256,10 @@ def compose(images: dict[str, np.ndarray], metrics: dict[str, Any], pal: Palette
                               x0 + PANEL_W - INSET - 14, y0 + 12)
         plot = metrics['tris_por_m2'][key]
         canvas = _label(canvas, f'{texts[key]} - {plot:.0f} TRIS/M2', x0 + 12, y0 + 12, pal)
-        canvas = _label(canvas, f'SUELO VISIBLE: CENITAL {_pct(cen[key])} (INTERIOR 3X3 M {_pct(inner[key])}) - '
-                                f'A 1,7 M Y 30 GRADOS {_pct(eye[key])} POR CIENTO', x0 + 12, y0 + PANEL_H - 40, pal)
+        canvas = _label(canvas, f'SUELO VISIBLE A 1,7 M Y 30 GRADOS: {_pct(eye[key])} (INTERIOR 3X3 M '
+                                f'{_pct(eye_inner[key])}) POR CIENTO', x0 + 12, y0 + PANEL_H - 66, pal)
+        canvas = _label(canvas, f'CENITAL: {_pct(cen[key])} (INTERIOR 3X3 M {_pct(inner[key])}) POR CIENTO',
+                        x0 + 12, y0 + PANEL_H - 40, pal)
     return canvas
 
 

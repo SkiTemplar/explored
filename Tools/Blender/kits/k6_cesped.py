@@ -1,8 +1,8 @@
 """Kit K6 Césped de Baliza Siete: mallas para el sistema de hierba instanciada.
 
 Genera `SM_GrassTuft_A/B/C_01` (matas de 5-9 hojas, 0,25-0,45 m, 16-40 tris),
-`SM_GrassPatch_A/B/C_01` (parches de 12-18 hojas y 0,35-0,45 m de radio para
-sembrar una alfombra continua a ≈ 5,5 parches/m², 48-80 tris),
+`SM_GrassPatch_A/B/C_01` (parches de 30-40 hojas finas y 0,35-0,45 m de radio
+para sembrar una alfombra continua a ≈ 5,5 parches/m², 60-100 tris),
 `SM_GrassTall_01` (hierba alta con espigas, 0,6-0,8 m, ≤ 60 tris),
 `SM_FlowerA_01` y `SM_FlowerB_01` (flores blanca y lila, ≤ 50 tris),
 `SM_Fern_01` (helecho, ≤ 120 tris) y `SM_Clover_01` (tréboles a ras de suelo,
@@ -44,6 +44,9 @@ from kits import k6_parches as parches
 
 EXPORT_DIR = REPO_ROOT / 'Art' / 'Export' / 'K6_Cesped'
 SUFFIX = '_01'
+# Parches: hasta 100 tris (≤ 550 tris/m² a 5,5 parches/m²) y 36-48 hojas finas.
+PATCH_TRIS = (60, 100)
+PATCH_BLADES = (36, 48)
 COLOR_ATTR = 'Col'
 GREENS = frozenset(c.name for c in load_palette().colors if c.family == 'verde')
 
@@ -77,10 +80,10 @@ def _tuft(name: str, role: str) -> KitSpec:
 
 
 def _patch(name: str, role: str) -> KitSpec:
-    """«role» lleva {outer} e {inner}: el número de hojas sale de la forma, nunca a mano."""
+    """«role» lleva {outer}, {middle} e {inner}: el número de hojas sale de la forma, nunca a mano."""
     spec = parches.PATCHES[name]
-    role = role.format(outer=spec.outer.count, inner=spec.inner.count)
-    return KitSpec(name, partial(parches.build_patch, spec), role, (48, 80), (0.25, 0.55), 0.9, (12, 18),
+    role = role.format(outer=spec.outer.count, middle=spec.middle.count, inner=spec.inner.count)
+    return KitSpec(name, partial(parches.build_patch, spec), role, PATCH_TRIS, (0.25, 0.55), 0.9, PATCH_BLADES,
                    footprint=(0.35, 0.45))
 
 
@@ -96,9 +99,10 @@ K6: tuple[KitSpec, ...] = (
     KitSpec('SM_Fern', formas.build_fern, 'helecho de 9 frondas en arco', (40, 120), (0.25, 0.55), 1.0),
     KitSpec('SM_Clover', formas.build_clover, '4 tréboles y una cabezuela blanca a ras de suelo', (16, 40),
             (0.03, 0.12), 0.4, tip_weight=formas.CLOVER_TIP_WEIGHT),
-    _patch('SM_GrassPatch_A', 'parche erguido: {outer} hojas largas en anillo y {inner} cortas en roseta'),
-    _patch('SM_GrassPatch_B', 'parche caído al exterior, al sol: {outer} hojas tumbadas y {inner} cortas'),
-    _patch('SM_GrassPatch_C', 'parche ralo y mezclado: {outer} hojas largas y {inner} cortas'),
+    _patch('SM_GrassPatch_A', 'parche erguido: {outer} hojas largas en anillo, {middle} medias y {inner} cortas'),
+    _patch('SM_GrassPatch_B', 'parche abierto, al sol: {outer} hojas largas que se abren, {middle} medias y '
+                              '{inner} cortas'),
+    _patch('SM_GrassPatch_C', 'parche mezclado: {outer} hojas largas curvadas, {middle} medias y {inner} cortas'),
 )
 
 NOTAS = {

@@ -61,6 +61,7 @@ class Blade:
     colors: tuple[int, ...]      # uno por tramo, de la base a la punta
     offset: float = 0.0          # m del centro de la mata al pie de la hoja
     twist: float = 0.0           # grados que gira el ancho hasta la punta
+    foot_azimuth: float | None = None   # radianes: dirección del pie (None: la de «azimuth»)
 
     @property
     def segments(self) -> int:
@@ -75,8 +76,9 @@ def blade_spine(blade: Blade) -> list[Vector]:
     """Nervio curvado: «segments» tramos iguales con el ángulo creciendo
     de «tilt» a «tilt + bend» (curva más marcada hacia la punta)."""
     out, _side = _horizontal(blade.azimuth)
+    foot, _side = _horizontal(blade.azimuth if blade.foot_azimuth is None else blade.foot_azimuth)
     step = blade.length / blade.segments
-    points = [out * blade.offset]
+    points = [foot * blade.offset]
     for k in range(blade.segments):
         t = (k + 0.5) / blade.segments
         angle = math.radians(blade.tilt + blade.bend * t ** 1.4)

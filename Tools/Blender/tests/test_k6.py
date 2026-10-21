@@ -28,6 +28,7 @@ NOMBRES = ['SM_GrassTuft_A_01', 'SM_GrassTuft_B_01', 'SM_GrassTuft_C_01', 'SM_Gr
 MATAS = [s for s in k6_cesped.K6 if s.pieces is not None]          # matas sueltas y parches
 PARCHES = [s for s in k6_cesped.K6 if s.is_patch]
 BASE_Z = 0.002          # m: vértices «en el suelo»
+VERDES_DEL_PIE = {'hierba_oscura', 'hierba_salvia', 'hierba_clara'}
 BYTE = 1.0 / 255.0
 
 
@@ -103,17 +104,19 @@ def test_catalogo_y_criterios():
     topes = {s.asset: s.tris[1] for s in k6_cesped.K6}
     assert topes == {'SM_GrassTuft_A_01': 40, 'SM_GrassTuft_B_01': 40, 'SM_GrassTuft_C_01': 40,
                      'SM_GrassTall_01': 60, 'SM_FlowerA_01': 50, 'SM_FlowerB_01': 50, 'SM_Fern_01': 120,
-                     'SM_Clover_01': 40, 'SM_GrassPatch_A_01': 80, 'SM_GrassPatch_B_01': 80,
-                     'SM_GrassPatch_C_01': 80}
+                     'SM_Clover_01': 40, 'SM_GrassPatch_A_01': 100, 'SM_GrassPatch_B_01': 100,
+                     'SM_GrassPatch_C_01': 100}
     sueltas = [s for s in MATAS if not s.is_patch]
     assert all(s.tris[0] == 16 and s.height == (0.25, 0.45) and s.pieces == (5, 9) for s in sueltas)
     assert k6_cesped.spec_named('SM_GrassTall').height == (0.6, 0.8)
     assert [s.name for s in PARCHES] == ['SM_GrassPatch_A', 'SM_GrassPatch_B', 'SM_GrassPatch_C']
     for s in PARCHES:
-        assert s.tris == (48, 80) and s.height == (0.25, 0.55) and s.pieces == (12, 18)
+        assert s.tris == (60, 100) and s.height == (0.25, 0.55) and s.pieces == (36, 48)
         assert s.footprint == (0.35, 0.45) and s.width_max == pytest.approx(0.9)
         forma = k6_parches.PATCHES[s.name]
-        assert 12 <= forma.blades <= 18 and 48 <= forma.triangles <= 80
+        assert 36 <= forma.blades <= 48 and 60 <= forma.triangles <= 100
+        # presupuesto de la alfombra: ≤ 600 tris/m² sembrando 5,5 parches/m²
+        assert forma.triangles * 5.5 <= 600
 
 
 def test_manifiesto(kit_k6):
@@ -130,7 +133,7 @@ def test_manifiesto(kit_k6):
     assert {entradas[s.asset]['hojas'] for s in MATAS if not s.is_patch} == {7, 9, 5}
     for s in PARCHES:
         e = entradas[s.asset]
-        assert 12 <= e['hojas'] <= 18 and e['hojas'] == k6_parches.PATCHES[s.name].blades
+        assert 36 <= e['hojas'] <= 48 and e['hojas'] == k6_parches.PATCHES[s.name].blades
         assert 0.35 <= e['radio_huella_m'] <= 0.45 and e['lod'] == 'una sola LOD'
         assert e['tris'] == k6_parches.PATCHES[s.name].triangles
 
@@ -141,12 +144,19 @@ def test_manifiesto_mide_el_cesped_continuo(manifiesto_k6):
     assert c['instancias_en_16_m2'] == {'matas': 35, 'parches': 88}
     assert c['tris_por_parche'] == {s.asset: manifiesto_k6['mallas'][NOMBRES.index(s.asset)]['tris']
                                     for s in PARCHES}
-    assert 48 * 5.5 <= c['tris_por_m2']['parches'] <= 80 * 5.5
-    for clave in ('suelo_visible_cenital_pct', 'suelo_visible_cenital_interior_3x3_m_pct',
-                  'suelo_visible_desde_1_7_m_a_30_grados_pct'):
+    assert 60 * 5.5 <= c['tris_por_m2']['parches'] <= 600
+    assert c['hojas_por_parche'] == {s.asset: k6_parches.PATCHES[s.name].blades for s in PARCHES}
+    # desde la cámara de juego (1,7 m, 30°), en un prado sembrado entero (interior de la parcela),
+    # la alfombra tapa al menos el 85 % del suelo; con el borde cercano, que no tiene hierba
+    # delante, menos de una cuarta parte del suelo y menos de un tercio que las matas
+    assert c['suelo_visible_desde_1_7_m_a_30_grados_interior_3x3_m_pct']['parches'] <= 15.0
+    ojo = c['suelo_visible_desde_1_7_m_a_30_grados_pct']
+    assert ojo['parches'] < 25.0 and ojo['parches'] < ojo['matas'] / 3
+    # desde arriba las hojas finas y erguidas dejan ver más suelo (no se tumban), pero menos de la mitad
+    # que las matas
+    for clave in ('suelo_visible_cenital_pct', 'suelo_visible_cenital_interior_3x3_m_pct'):
         visible = c[clave]
-        # alfombra: los parches dejan ver menos de una cuarta parte del suelo y menos de un tercio que las matas
-        assert visible['parches'] < 25.0 and visible['parches'] < visible['matas'] / 3
+        assert visible['parches'] < 40.0 and visible['parches'] < visible['matas'] / 2
 
 
 @pytest.mark.parametrize('spec', k6_cesped.K6, ids=lambda s: s.name)
@@ -230,10 +240,14 @@ def test_matas_con_punta_mas_clara(kit_k6, spec):
     verdes = set()
     for isla in _islas(obj):
         propias = [e for e in esquinas if e[4] in isla]
+        verdes |= {PALETA_RGB[e[1]] for e in propias}
+        if len({e[3] for e in propias}) == 1:
+            # hoja corta de un triángulo (parches): un solo color, de los verdes del pie
+            assert PALETA_RGB[propias[0][1]] in VERDES_DEL_PIE
+            continue
         base = min(propias, key=lambda e: e[2])
         punta = max(propias, key=lambda e: e[2])
         assert raster.luminance(punta[1]) > raster.luminance(base[1])
-        verdes |= {PALETA_RGB[e[1]] for e in propias}
     assert 2 <= len(verdes) <= 3 and verdes <= k6_cesped.GREENS
 
 
@@ -289,14 +303,61 @@ def _cobertura(verts, caras, radio, pitch=None, acimut=0.0, n=81):
 
 @pytest.mark.parametrize('spec', PARCHES, ids=lambda s: s.name)
 def test_parche_sin_agujero_central(kit_k6, spec):
-    """Las hojas de la base se solapan: el centro de la huella queda tapado desde arriba
-    y desde la cámara de juego (30° hacia abajo), mire desde donde mire."""
+    """Las hojas se solapan: desde la cámara de juego (30° hacia abajo) la mayor parte del
+    centro de la huella queda tapada mire desde donde mire, aunque las hojas sean finas."""
     salida, _lamina, _entradas = kit_k6
     obj = _reimportar(salida / f'{spec.asset}.fbx')
     verts = [obj.matrix_world @ v.co for v in obj.data.vertices]
     caras = [tuple(p.vertices) for p in obj.data.polygons]
-    assert _cobertura(verts, caras, 0.2) >= 0.9
-    assert min(_cobertura(verts, caras, 0.1, 30.0, k * math.pi / 4) for k in range(8)) >= 0.8
+    # un parche solo; en la alfombra los vecinos se solapan (ver suelo visible en el manifiesto)
+    assert min(_cobertura(verts, caras, 0.1, 30.0, k * math.pi / 4) for k in range(8)) >= 0.6
+    assert min(_cobertura(verts, caras, 0.25, 30.0, k * math.pi / 4) for k in range(8)) >= 0.5
+
+
+@pytest.mark.parametrize('spec', PARCHES, ids=lambda s: s.name)
+def test_parche_de_hojas_finas_que_no_se_tumban(kit_k6, spec):
+    """Pasto y no esquirlas: en el FBX, cada hoja es al menos 8 veces más larga que ancha
+    en la base (semiancho de 1,5-3 cm) y su punta no se aparta más de 65° de la vertical."""
+    salida, _lamina, _entradas = kit_k6
+    obj = _reimportar(salida / f'{spec.asset}.fbx')
+    esquinas = _esquinas(obj)
+    for isla in _islas(obj):
+        propias = {e[4]: e for e in esquinas if e[4] in isla}.values()
+        pie = [co for co, _rgb, a, *_ in propias if a <= BYTE]
+        punta = max(propias, key=lambda e: e[2])[0]
+        centro, ancho = (pie[0] + pie[1]) / 2, (pie[0] - pie[1]).length
+        nervio = punta - centro
+        assert 0.015 - 0.001 <= ancho / 2 <= 0.03 + 0.001
+        # la cuerda del pie a la punta es algo más corta que el nervio curvado
+        assert nervio.length / ancho >= k6_parches.MIN_ASPECT * 0.85
+        assert math.degrees(nervio.angle(Vector((0.0, 0.0, 1.0)))) < k6_parches.MAX_LEAN
+
+
+@pytest.mark.parametrize('nombre', list(k6_parches.PATCHES))
+def test_forma_de_las_hojas_del_parche(nombre):
+    """Criterios del director de arte sobre las hojas generadas (antes de exportar)."""
+    forma = k6_parches.PATCHES[nombre]
+    for grupo in forma.groups:
+        assert grupo.max_lean < k6_parches.MAX_LEAN
+    for grupo in (forma.middle, forma.inner):
+        assert grupo.tilt[0] >= 5.0 and grupo.tilt[1] <= 30.0 and grupo.length[0] >= 0.25
+    assert forma.outer.length[0] >= 0.25 and forma.inner.triangles == forma.inner.count
+    hojas = k6_parches.patch_blades(forma)
+    assert len(hojas) == forma.blades
+    for hoja in hojas:
+        assert hoja.length / (2.0 * hoja.width) >= k6_parches.MIN_ASPECT
+        assert k6_parches.HALF_WIDTH[0] <= hoja.width <= k6_parches.HALF_WIDTH[1]
+        assert hoja.tilt + hoja.bend < k6_parches.MAX_LEAN
+    assert hojas == k6_parches.patch_blades(forma)
+
+
+def test_hoja_con_pie_separado_de_la_inclinacion():
+    hoja = k6_formas.Blade(azimuth=0.0, length=0.3, tilt=20.0, bend=0.0, width=0.02,
+                           colors=(k6_formas.C['hierba_oscura'],), offset=0.1, foot_azimuth=math.pi / 2)
+    nervio = k6_formas.blade_spine(hoja)
+    assert nervio[0].x == pytest.approx(0.0, abs=1e-9) and nervio[0].y == pytest.approx(0.1)
+    assert nervio[1].x > 0.0 and nervio[1].y == pytest.approx(0.1)
+    assert hoja.triangles == 1
 
 
 def test_cobertura_de_un_cuadrado():
