@@ -1,5 +1,5 @@
 import pytest
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 
 from explored_style import meshkit
 from explored_style.meshkit import MeshBuilder, lathe, mesh_of
@@ -50,3 +50,28 @@ def test_objeto_cerrado_con_normales_hacia_fuera(escena_vacia):
 def test_objeto_vacio_falla(escena_vacia):
     with pytest.raises(ValueError):
         meshkit.build_object('SM_Vacio', MeshBuilder())
+
+
+@pytest.mark.parametrize('frecuencia', [1, 2, 3])
+def test_geosphere_cerrada_y_hacia_fuera(escena_vacia, frecuencia):
+    verts, caras = meshkit.geosphere(frecuencia)
+    assert len(caras) == 20 * frecuencia ** 2
+    assert len(verts) == 10 * frecuencia ** 2 + 2   # Euler: V - E + F = 2
+    assert all(abs(v.length - 1.0) < 1e-5 for v in verts)
+    b = MeshBuilder()
+    meshkit.add_polys(b, verts, caras, lambda n, c: 2 if n.dot(c) > 0 else 9)
+    obj = meshkit.build_object('SM_Geo', b)
+    assert set(meshkit.face_colors(obj)) == {2}
+    assert meshkit.flipped_face_count(obj) == 0
+    with pytest.raises(ValueError):
+        meshkit.geosphere(0)
+
+
+def test_face_normal_y_recorte_por_planos():
+    tri = [Vector((0, 0, 0)), Vector((1, 0, 0)), Vector((0, 1, 0))]
+    assert meshkit.face_normal(tri).to_tuple() == pytest.approx((0.0, 0.0, 1.0))
+    assert meshkit.face_normal([Vector((0, 0, 0))] * 3).length == 0.0
+    planos = [(Vector((0.0, 0.0, 1.0)), 0.5), (Vector((1.0, 0.0, 0.0)), 0.25)]
+    p = Vector((1.0, 0.2, 2.0))
+    assert meshkit.clamp_to_planes(p, planos).to_tuple() == pytest.approx((0.25, 0.2, 0.5))
+    assert p.to_tuple() == pytest.approx((1.0, 0.2, 2.0))   # no muta la entrada

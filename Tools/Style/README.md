@@ -9,6 +9,7 @@ uv sync
 uv run style-paleta                      # Art/Export/Style/T_Paleta.png + docs/v3/laminas/paleta-ampliada.png
 uv run style-pilotos                     # Art/Export/Style/SM_*.fbx + manifest.json
 uv run style-lamina                      # docs/v3/laminas/f2-pilotos.png (EEVEE)
+uv run style-kit-k1                      # Art/Export/K1_Naturaleza/*.fbx + manifest.json + docs/v3/laminas/k1.png
 uv run check-style <fbx|blend...> --budget <tipo|número>
 uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 ```
@@ -51,6 +52,24 @@ con sombreado suave y nombre sin `SM_`. Salida 2: error de uso.
 
 La geometría es determinista; los FBX cambian de bytes en cada exportación
 porque el exportador de Blender graba la fecha.
+
+## Kit K1 Naturaleza (`explored_style/kits/k1.py`)
+
+| Malla | Tris | Tope | Medidas (m) |
+|---|---|---|---|
+| `SM_PalmA_01` | 1.418 | 1.500 | 6,3 de alto, copa 4,8 |
+| `SM_PalmB_01` | 1.188 | 1.500 | 4,3 de alto, inclinada 2,3 |
+| `SM_Bamboo_01` | 1.372 | 1.500 | 4,6 de alto, 7 cañas |
+| `SM_Shrub_01` | 400 | 400 | 1,6 × 1,3 × 1,0 |
+| `SM_GrassClump_01` | 360 | 400 | 0,9 × 1,0 × 0,6 |
+| `SM_RockBig_01` | 580 | 1.500 | 2,7 × 1,8 × 1,7 |
+| `SM_RockSmall_01` | 260 | 400 | 0,7 × 0,6 × 0,5 |
+| `SM_CliffRock_01` | 1.008 | 1.500 | 8 × 4,1 × 6 |
+
+`SM_CliffRock_01` es modular: el frente mira a -Y y los perfiles de x = ±4 m
+coinciden (lo comprueba `test_acantilado_modular`), así que se encadena cada
+8 m sin junta; la trasera (+Y) es plana para apoyarla contra el terreno.
+Colores y medidas exactas de cada malla en `Art/Export/K1_Naturaleza/manifest.json`.
 
 ## Importación en Unreal 5.6
 
