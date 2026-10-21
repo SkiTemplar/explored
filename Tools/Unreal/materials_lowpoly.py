@@ -1,11 +1,11 @@
 """Materiales low poly del agua y del cielo (pasada visual de F4, GDD v3 §11).
 
-    /Game/Materials/M_Ocean          Default Lit opaco, sin reflejos ni translucidez: facetas planas
-                                     (normal del triángulo de una rejilla de mundo de «FacetSize» cm,
-                                     evaluada con las mismas olas de Gerstner que FOceanWaves) y color
-                                     plano de paleta por faceta según la profundidad del fondo: orilla
+    /Game/Materials/M_Ocean          Default Lit opaco, sin reflejos ni translucidez: superficie suave
+                                     (normal por diferencias finitas de las mismas olas de Gerstner que
+                                     FOceanWaves; «FacetSize» queda sin uso desde F6) y degradado
+                                     continuo de paleta según la profundidad del fondo: orilla
                                      turquesa (agua_somera), media (agua_media) y profunda
-                                     (agua_profunda), con franja de espuma (blanco_nube) que late en la
+                                     (agua_profunda), con banda blanda de espuma (blanco_nube) que late en la
                                      orilla y crestas blancas con mar de temporal. La profundidad sale
                                      del relieve analítico de island.json (tierras elípticas con costa
                                      armónica y rocas, como FIslandLayout), no de texturas ni de
@@ -51,31 +51,11 @@ GERSTNER_LOOP = r"""
     }
 """
 
-# Triángulo de la rejilla de mundo que contiene el píxel (posición sin desplazar, cm). La diagonal
-# de cada celda se elige por hash para que las facetas no formen un patrón de rombos.
-FACET_LATTICE = r"""
+# Olas y su pendiente en el píxel (posición sin desplazar, cm). Desde F6 el mar no es facetado
+# (Rodrigo pidió agua suave): la normal sale de diferencias finitas de las mismas olas de Gerstner.
+WAVE_ARRAYS = r"""
 float4 waves[4] = { W0, W1, W2, W3 };
 float steep[4] = { S0, S1, S2, S3 };
-float S = max(FacetSize, 50.0);
-float2 g = WP.xy / S;
-float2 cell = floor(g);
-float2 f = g - cell;
-float h = frac(sin(dot(cell, float2(12.9898, 78.233))) * 43758.5453);
-float2 c0, c1, c2;
-if (h < 0.5)
-{
-    c0 = float2(0, 0); c2 = float2(1, 1);
-    c1 = (f.x > f.y) ? float2(1, 0) : float2(0, 1);
-}
-else if (f.x + f.y < 1.0)
-{
-    c0 = float2(0, 0); c1 = float2(1, 0); c2 = float2(0, 1);
-}
-else
-{
-    c0 = float2(1, 1); c1 = float2(0, 1); c2 = float2(1, 0);
-}
-float2 corners[3] = { (cell + c0) * S, (cell + c1) * S, (cell + c2) * S };
 """
 
 OCEAN_WPO_HLSL = r"""
@@ -85,18 +65,20 @@ float2 pos = WP.xy;
 float3 result = 0;
 """ + GERSTNER_LOOP.replace("RESULT", "result = off;") + "return result;"
 
-OCEAN_NORMAL_HLSL = FACET_LATTICE + r"""
+OCEAN_NORMAL_HLSL = WAVE_ARRAYS + r"""
+float e = 60.0;
+float2 offs[3] = { float2(0, 0), float2(e, 0), float2(0, e) };
 float3 pts[3];
 [unroll] for (int k = 0; k < 3; ++k)
 {
-    float2 pos = corners[k];
+    float2 pos = WP.xy + offs[k];
 """ + GERSTNER_LOOP.replace("RESULT", "pts[k] = float3(pos, 0) + off;") + r"""
 }
 float3 n = normalize(cross(pts[1] - pts[0], pts[2] - pts[0]));
 n *= sign(n.z + 1e-5);
-// Lejos, las facetas son menores que un píxel y parpadean: se aplanan hacia la vertical.
-float fade = saturate((distance(WP.xy, Cam.xy) - 15000.0) / 30000.0);
-return normalize(lerp(n, float3(0, 0, 1), fade));
+// Lejos, el oleaje fino parpadea: la normal se aplana hacia la vertical.
+float fade = saturate((distance(WP.xy, Cam.xy) - 8000.0) / 25000.0);
+return normalize(lerp(n, float3(0, 0, 1), fade * 0.8));
 """
 
 
@@ -135,25 +117,26 @@ def island_height_hlsl() -> str:
 def ocean_color_hlsl() -> str:
     shallow, mid, deep = (hlsl_float3(palette_linear(n)) for n in ("agua_somera", "agua_media", "agua_profunda"))
     foam, lilac, storm = (hlsl_float3(palette_linear(n)) for n in ("blanco_nube", "gris_lila", "gris_tormenta"))
-    return FACET_LATTICE + r"""
-float2 centre = (corners[0] + corners[1] + corners[2]) / 3.0;
-float2 pos = centre;
+    return WAVE_ARRAYS + r"""
+float2 pos = WP.xy;
 float crest = 0;
 """ + GERSTNER_LOOP.replace("RESULT", "crest = off.z;") + r"""
-float2 p = centre / 100.0;
+float2 p = WP.xy / 100.0;
 """ + island_height_hlsl() + f"""
-float jitter = frac(sin(dot(centre, float2(39.3468, 11.135))) * 24634.6345);
 float storm = saturate((SeaState - 0.45) * 2.5);
-// Franja de espuma: late con un periodo de 5 s y crece con el mar de fondo.
-float pulse = 0.5 + 0.5 * sin(T * 1.2566 + jitter * 0.8);
-float foamDepth = (0.1 + 0.18 * pulse) * (1.0 + SeaState);
-float3 colour = depth < 1.3 + jitter * 0.5 ? {shallow} : (depth < 4.2 + jitter * 0.8 ? {mid} : {deep});
+// Degradado continuo de profundidad: orilla, medio y profundo fundidos.
+float3 colour = lerp({shallow}, {mid}, smoothstep(0.6, 2.8, depth));
+colour = lerp(colour, {deep}, smoothstep(3.2, 8.0, depth));
 colour = lerp(colour, {storm}, storm * 0.55);
-// Crestas blancas por faceta con mar de temporal (altura de la ola en el centro de la faceta).
-float whitecap = step(0.62, crest / max(W0.w + W1.w + W2.w + W3.w, 1.0)) * step(0.4, SeaState) * step(jitter, 0.35 + storm);
-colour = whitecap > 0.5 ? lerp({foam}, {lilac}, storm) : colour;
-colour = (depth < foamDepth && depth > -2.0) ? {foam} : colour;
-return colour;
+// Crestas blancas suaves con mar de temporal.
+float crestN = crest / max(W0.w + W1.w + W2.w + W3.w, 1.0);
+float whitecap = smoothstep(0.5, 0.8, crestN) * smoothstep(0.35, 0.6, SeaState);
+colour = lerp(colour, lerp({foam}, {lilac}, storm), whitecap * 0.75);
+// Espuma de orilla: una banda blanda que late con un periodo de 5 s.
+float pulse = 0.5 + 0.5 * sin(T * 1.2566 + dot(WP.xy, float2(0.0011, 0.0007)));
+float foamDepth = (0.18 + 0.22 * pulse) * (1.0 + SeaState);
+float shore = (1.0 - smoothstep(foamDepth * 0.35, foamDepth, depth)) * step(-2.0, depth);
+return lerp(colour, {foam}, shore * 0.85);
 """
 
 

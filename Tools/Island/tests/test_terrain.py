@@ -37,16 +37,41 @@ def test_rejilla_completa_y_normales_hacia_arriba(layout, terreno):
     assert set(np.unique(terreno.colors)) <= set(PALETTE.values())
 
 
-def test_triangulos_de_unos_tres_metros(terreno):
+def test_triangulos_de_unos_dos_metros(terreno):
     v = terreno.verts
     edges = np.concatenate([
         np.linalg.norm(v[terreno.tris[:, a], :2] - v[terreno.tris[:, b], :2], axis=1)
         for a, b in ((0, 1), (1, 2), (2, 0))])
-    assert 2.4 <= float(np.median(edges)) <= 3.2
+    assert 1.6 <= float(np.median(edges)) <= 2.3
 
 
 def test_presupuesto_de_triangulos(terreno):
-    assert terreno.triangle_count < 80_000
+    assert terreno.triangle_count < 140_000
+
+
+def test_normales_suaves_y_colores_fundidos(layout):
+    from explored_island.export import linear_palette
+    mesh = build_terrain(layout, linear_palette())
+    assert np.allclose(np.linalg.norm(mesh.normals, axis=1), 1.0)
+    assert (mesh.normals[:, 2] > 0.0).all()
+    # Fundido: hay colores por vértice que no son ninguno de la paleta (mezclas en las transiciones)...
+    pal = linear_palette()
+    nearest = np.min(np.linalg.norm(mesh.vertex_colors[:, None, :] - pal[None, :, :], axis=2), axis=1)
+    assert (nearest > 0.01).mean() > 0.05
+    # ...y todos quedan dentro de la envolvente de la paleta.
+    assert mesh.vertex_colors.min() >= pal.min() - 1e-9 and mesh.vertex_colors.max() <= pal.max() + 1e-9
+
+
+def test_relieve_suave_sin_escalones(layout, terreno):
+    # Entre vecinos de la rejilla en tierra firme el salto típico es menor de 0,3 m (celda de
+    # 1,8 m); solo las rocas y el acantilado de la colina llegan a 3 m.
+    t = layout.terrain
+    ny = int(np.ceil((t.max_xy[1] - t.min_xy[1]) / t.cell)) + 1
+    z = terreno.verts[:, 2].reshape(-1, ny)
+    dry = (z[1:-1, 1:-1] > 0.5)
+    step = np.abs(np.diff(z, axis=0))[1:, 1:-1]
+    assert float(np.median(step[dry])) < 0.3
+    assert step[dry].max() < 3.0
 
 
 def test_fondo_somero_y_falda(layout, terreno):

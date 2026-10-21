@@ -1,11 +1,12 @@
 """Exporta el terreno de la Isla de Sal a Art/Island/SM_IslaSal_Terrain.fbx.
 
-Reutiliza explored_style.meshkit (MeshBuilder, UV por celda de paleta,
-normales planas, un solo material M_Toon y la exportación FBX común) sin
-modificarlo. Dos diferencias con un prop: el pivote es el nivel del mar
-(no la base de la malla) y el eje Y se invierte al pasar a Blender, porque
-el importador FBX de Unreal vuelve a invertirlo (Blender +Y -> Unreal -Y):
-así el este del JSON (+Y) es el +Y del mundo de Unreal.
+Reutiliza explored_style.meshkit (MeshBuilder, UV por celda de paleta, un
+material y la exportación FBX común) sin modificarlo. Diferencias con un prop:
+el pivote es el nivel del mar (no la base de la malla), el eje Y se invierte al
+pasar a Blender, porque el importador FBX de Unreal vuelve a invertirlo
+(Blender +Y -> Unreal -Y), y el terreno NO es facetado: normales suaves por
+vértice y un atributo de color por vértice («Col», colores de la paleta
+fundidos) que lee M_TerrainToon (Tools/Unreal/materials_f6.py).
 
 Uso: uv run island-terrain [--json RUTA] [--out RUTA.fbx] [--cell METROS]
 """
@@ -20,7 +21,9 @@ from pathlib import Path
 
 import bpy
 
+import numpy as np
 from explored_style import meshkit
+from explored_style.palette import load_palette
 from mathutils import Matrix
 
 from explored_island.layout import ISLAND_JSON, REPO_ROOT, Layout, distance_to_paths, load_layout
@@ -40,13 +43,42 @@ def to_builder(mesh: TerrainMesh) -> meshkit.MeshBuilder:
     return b
 
 
+def linear_palette() -> np.ndarray:
+    """(K, 3) color lineal de cada índice de Tools/Style/paleta.json."""
+    colors = load_palette().colors
+    srgb = np.array([[int(c.hex[i:i + 2], 16) / 255.0 for i in (1, 3, 5)] for c in colors])
+    return np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)
+
+
 def build_blender_object(mesh: TerrainMesh) -> bpy.types.Object:
     builder = to_builder(mesh)
     min_z = min(v[2] for v in builder.verts)
     obj = meshkit.build_object(MESH_NAME, builder)
     # build_object deja la base en z = 0; el terreno conserva el nivel del mar en el origen.
-    meshkit.mesh_of(obj).transform(Matrix.Translation((0.0, 0.0, min_z)))
+    data = meshkit.mesh_of(obj)
+    data.transform(Matrix.Translation((0.0, 0.0, min_z)))
+    for poly in data.polygons:
+        poly.use_smooth = True
+    attr = data.color_attributes.new(name='Col', type='FLOAT_COLOR', domain='POINT')
+    rgba = np.concatenate([mesh.vertex_colors, np.ones((len(mesh.vertex_colors), 1))], axis=1)
+    attr.data.foreach_set('color', rgba.astype(np.float32).ravel())  # pyright: ignore[reportAttributeAccessIssue]
+    data.color_attributes.active_color = attr
     return obj
+
+
+def export_smooth_fbx(obj: bpy.types.Object, filepath: str) -> str:
+    """Como meshkit.export_fbx, pero con normales por vértice y el color por vértice en sRGB."""
+    for other in bpy.context.selected_objects or []:
+        other.select_set(False)
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.export_scene.fbx(
+        filepath=filepath, check_existing=False, use_selection=True, global_scale=1.0,
+        apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
+        object_types={'MESH'}, use_mesh_modifiers=True, mesh_smooth_type='OFF', use_triangles=True,
+        use_tspace=False, bake_anim=False, path_mode='STRIP', embed_textures=False, colors_type='SRGB',
+    )
+    return filepath
 
 
 def path_max_slope(mesh: TerrainMesh, layout: Layout) -> float:
@@ -73,11 +105,11 @@ def stats(mesh: TerrainMesh, layout: Layout) -> dict:
 
 def generate(layout: Layout, out: Path) -> dict:
     """Construye la malla, la exporta a «out» y escribe sus cifras en «out».json."""
-    mesh = build_terrain(layout)
+    mesh = build_terrain(layout, linear_palette())
     meshkit.reset_scene()
     obj = build_blender_object(mesh)
     out.parent.mkdir(parents=True, exist_ok=True)
-    meshkit.export_fbx(obj, str(out))
+    export_smooth_fbx(obj, str(out))
     info = stats(mesh, layout)
     out.with_suffix('.json').write_text(json.dumps(info, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     return info

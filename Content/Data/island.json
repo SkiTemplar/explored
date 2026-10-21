@@ -44,10 +44,10 @@
     { "id": "camino_playa_faro", "width": 3, "points": [[109, 55], [100, 53], [84, 54], [72, 61], [60, 67], [48, 67], [36, 62], [32, 48], [34, 36], [40, 24], [45, 15]] }
   ],
   "terrain": {
-    "_comment": "Malla facetada de Tools/Island: rectángulo [min, max] en metros, celda de la rejilla y fondo marino somero.",
+    "_comment": "Malla suave de Tools/Island (normales y colores por vértice): rectángulo [min, max] en metros, celda de la rejilla y fondo marino somero.",
     "min": [-190, -220],
     "max": [300, 220],
-    "cell": 2.6,
+    "cell": 1.8,
     "seabed": -6,
     "skirt": -30
   },

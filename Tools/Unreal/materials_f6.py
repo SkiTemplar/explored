@@ -5,6 +5,8 @@
                                        en los bordes del cono y al cortar el mar (DepthFade).
     /Game/Art/Materials/M_RainStreak   trazo de lluvia: Unlit translúcido, color «gris_lila», para
                                        instancias (AExploredRainStreaks).
+    /Game/Art/Materials/M_TerrainToon  terreno suave: Default Lit, base color = color por vértice
+                                       (colores de paleta.json fundidos por Tools/Island), sin texturas.
     M_Toon                             + viento en palmas y bambú (material_utils.add_toon_wind).
 
 Idempotente. Uso: powershell -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_f6.py
@@ -85,6 +87,29 @@ def build_rain():
     finish(m)
 
 
+SRGB_TO_LINEAR_HLSL = r"""
+float3 c = saturate(C.rgb);
+return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+"""
+
+
+def build_terrain():
+    m = recreate_material("M_TerrainToon", ART_MATERIALS_PATH)
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
+    vc = expr(m, unreal.MaterialExpressionVertexColor, -700, 0)
+    # El color por vértice llega al sombreador codificado en sRGB (comprobado en f6-suave: sin esta
+    # conversión la hierba salía lavada): se pasa a lineal con la curva exacta.
+    linear = custom(m, -450, 0, SRGB_TO_LINEAR_HLSL, ["C"], unreal.CustomMaterialOutputType.CMOT_FLOAT3, "SrgbToLinear")
+    connect(vc, "", linear, "C")
+    to_property(linear, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = scalar_param(m, "Roughness", 1.0, -500, 200)
+    to_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    spec = scalar_param(m, "Specular", 0.0, -500, 300)
+    to_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+    finish(m)
+
+
 def patch_toon():
     toon = unreal.EditorAssetLibrary.load_asset(f"{ART_MATERIALS_PATH}/M_Toon")
     if toon is None:
@@ -97,4 +122,5 @@ def patch_toon():
 
 build_beam()
 build_rain()
+build_terrain()
 patch_toon()

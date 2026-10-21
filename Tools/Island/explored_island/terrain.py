@@ -29,9 +29,11 @@ PALETTE = {
     'hierba_salvia': 35, 'hierba_seca': 36, 'tierra': 37,
 }
 
-JITTER = 0.3            # fracción de celda que se desplaza cada vértice interior
-FACET_NOISE = 0.25      # m de ruido vertical en tierra firme (fuera de caminos)
-ROCK_NOISE = 0.45       # m de ruido vertical sobre las rocas
+JITTER = 0.12           # fracción de celda que se desplaza cada vértice interior
+FACET_NOISE = 0.05      # m de ruido vertical en tierra firme (fuera de caminos)
+ROCK_NOISE = 0.2        # m de ruido vertical sobre las rocas
+SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve (suaviza crestas y costa)
+COLOR_BLUR_PASSES = 1   # pasadas de fundido 3 × 3 de los colores por vértice
 WET_TOP = 0.35          # m: por debajo, arena húmeda de orilla
 SAND_TOP = 1.5          # m: por debajo, arena clara de playa
 UNDERWATER = -0.6       # m: por debajo, fondo marino
@@ -40,7 +42,7 @@ ROCK_SLOPE = 35.0       # grados: pendiente que ya es roca
 CLIFF_SLOPE = 50.0      # grados: acantilado (roca oscura)
 ROCK_FOOTPRINT = 0.2    # influencia de una roca a partir de la cual se pinta de roca
 SAND_EDGE = 0.6         # m sobre SAND_TOP: franja mixta de arena oscura y hierba
-DIRT_PATCH = 0.8        # umbral del ruido fino a partir del cual hay mancha de tierra
+DIRT_PATCH = 0.86       # umbral del ruido fino a partir del cual hay mancha de tierra
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,8 @@ class TerrainMesh:
     colors: np.ndarray     # (M,) índice de paleta por triángulo
     slopes: np.ndarray     # (M,) pendiente en grados
     centroids: np.ndarray  # (M, 3)
+    normals: np.ndarray    # (N, 3) normal suave de cada vértice
+    vertex_colors: np.ndarray  # (N, 3) color lineal fundido de cada vértice (de la paleta)
 
     @property
     def triangle_count(self) -> int:
@@ -92,7 +96,7 @@ def grid_vertices(layout: Layout) -> tuple[np.ndarray, int, int]:
     jitter = np.where(border, 0.0, JITTER * t.cell)
     x = t.min_xy[0] + ii * t.cell + (hash01(ii, jj, layout.seed, 1) - 0.5) * 2.0 * jitter
     y = t.min_xy[1] + jj * t.cell + (hash01(ii, jj, layout.seed, 2) - 0.5) * 2.0 * jitter
-    z = height_at(layout, x, y)
+    z = smoothed_height(layout, x, y, SMOOTH_RADIUS * t.cell)
     rock = rock_influence(layout, x, y)
     on_path = distance_to_paths(layout, x, y) <= 1.5
     noise = hash01(ii, jj, layout.seed, 3) - 0.5
@@ -101,6 +105,32 @@ def grid_vertices(layout: Layout) -> tuple[np.ndarray, int, int]:
     z = np.maximum(z + noise * 2.0 * facet, t.seabed)
     z = np.where(border, t.skirt, z)
     return np.column_stack([x, y, z]), nx, ny
+
+
+def smoothed_height(layout: Layout, x: np.ndarray, y: np.ndarray, radius: float) -> np.ndarray:
+    """Relieve analítico filtrado con una caja de 5 × 5 muestras de ±radius metros.
+
+    Se filtra en el espacio continuo (no sobre la rejilla desplazada) para no meter el error
+    del desplazamiento de los vértices en la pendiente."""
+    offsets = np.linspace(-radius, radius, 5)
+    acc = np.zeros_like(x, dtype=np.float64)
+    for dx in offsets:
+        for dy in offsets:
+            acc += height_at(layout, x + dx, y + dy)
+    return acc / float(len(offsets) ** 2)
+
+
+def smooth_grid(values: np.ndarray, passes: int) -> np.ndarray:
+    """Media 3 × 3 (bordes replicados) sobre una rejilla (nx, ny) o (nx, ny, c); copia nueva."""
+    out = values.astype(np.float64, copy=True)
+    for _ in range(passes):
+        pad = np.pad(out, [(1, 1), (1, 1)] + [(0, 0)] * (out.ndim - 2), mode='edge')
+        acc = np.zeros_like(out)
+        for di in (0, 1, 2):
+            for dj in (0, 1, 2):
+                acc += pad[di:di + out.shape[0], dj:dj + out.shape[1]]
+        out = acc / 9.0
+    return out
 
 
 def grid_triangles(nx: int, ny: int, seed: int) -> np.ndarray:
@@ -179,7 +209,8 @@ def face_colors(layout: Layout, centroids: np.ndarray, slopes: np.ndarray) -> np
     out = _grass_colors(layout, x, y, pick)
     out = np.where(_islet_mask(layout, x, y), islet_top, out)
     out = np.where(_zone_mask(layout, 'rocas_pescador', x, y), rocky, out)
-    edge = (z < SAND_TOP + SAND_EDGE) & (pick < 0.5)
+    # Borde de arena oscura en manchas coherentes (ruido de 6 m), no motas sueltas por triángulo.
+    edge = (z < SAND_TOP + SAND_EDGE) & (value_noise(x, y, 6.0, layout.seed + 23) > 0.5)
     out = np.where(edge, p['arena_oscura'], out)
     out = np.where(z < SAND_TOP, p['arena_clara'], out)
     out = np.where(path & (z >= SAND_TOP), p['tierra'], out)
@@ -193,14 +224,38 @@ def face_colors(layout: Layout, centroids: np.ndarray, slopes: np.ndarray) -> np
     return out.astype(np.int64)
 
 
-def build_terrain(layout: Layout) -> TerrainMesh:
+def vertex_normals(verts: np.ndarray, tris: np.ndarray) -> np.ndarray:
+    """Normal suave por vértice: suma de las normales de sus caras ponderadas por el área."""
+    p0, p1, p2 = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
+    weighted = np.cross(p1 - p0, p2 - p0)
+    acc = np.zeros_like(verts)
+    for k in range(3):
+        np.add.at(acc, tris[:, k], weighted)
+    return acc / np.maximum(np.linalg.norm(acc, axis=1, keepdims=True), 1e-12)
+
+
+def blended_vertex_colors(layout: Layout, verts: np.ndarray, normals: np.ndarray, nx: int, ny: int,
+                          linear_palette: np.ndarray) -> np.ndarray:
+    """Color lineal por vértice: las mismas reglas que las caras, fundidas con la media 3 × 3."""
+    slopes = np.degrees(np.arccos(np.clip(normals[:, 2], -1.0, 1.0)))
+    index = face_colors(layout, verts, slopes)
+    rgb = linear_palette[index].reshape(nx, ny, 3)
+    return smooth_grid(rgb, COLOR_BLUR_PASSES).reshape(-1, 3)
+
+
+def build_terrain(layout: Layout, linear_palette: np.ndarray | None = None) -> TerrainMesh:
+    """Malla del terreno. «linear_palette» (K, 3) da el color lineal de cada índice de la paleta;
+    sin él, los colores por vértice quedan en gris (solo para las cifras y los tests de forma)."""
     verts, nx, ny = grid_vertices(layout)
     tris = orient_up(verts, grid_triangles(nx, ny, layout.seed))
     normals = face_normals(verts, tris)
     slopes = np.degrees(np.arccos(np.clip(normals[:, 2], -1.0, 1.0)))
     centroids = verts[tris].mean(axis=1)
     colors = face_colors(layout, centroids, slopes)
-    return TerrainMesh(verts, tris, colors, slopes, centroids)
+    smooth = vertex_normals(verts, tris)
+    lin = linear_palette if linear_palette is not None else np.full((64, 3), 0.5)
+    vcolors = blended_vertex_colors(layout, verts, smooth, nx, ny, lin)
+    return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors)
 
 
 def surface_height(mesh: TerrainMesh, layout: Layout, x: float, y: float) -> float:

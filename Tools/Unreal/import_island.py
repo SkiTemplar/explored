@@ -1,7 +1,7 @@
 """Importa el terreno de la Isla de Sal (Art/Island/SM_IslaSal_Terrain.fbx, lo genera Tools/Island).
 
-Destino: /Game/Art/Island/SM_IslaSal_Terrain, con M_Toon (/Game/Art/Materials, ver
-build_materials.py), normales importadas (planas por cara), sin lightmap UV (la iluminación es
+Destino: /Game/Art/Island/SM_IslaSal_Terrain, con M_TerrainToon (/Game/Art/Materials, ver
+materials_f6.py), normales suaves y color por vértice importados, sin lightmap UV (la iluminación es
 dinámica) y colisión compleja como simple (el personaje camina sobre los triángulos reales).
 
 Comprueba al final que la caja de la malla coincide con las cifras de Art/Island/SM_IslaSal_Terrain.json
@@ -21,7 +21,7 @@ FBX_PATH = os.path.join(REPO_ROOT, "Art", "Island", "SM_IslaSal_Terrain.fbx")
 STATS_PATH = os.path.join(REPO_ROOT, "Art", "Island", "SM_IslaSal_Terrain.json")
 DEST_PATH = "/Game/Art/Island"
 MESH_NAME = "SM_IslaSal_Terrain"
-MATERIAL_PATH = "/Game/Art/Materials/M_Toon"
+MATERIAL_PATH = "/Game/Art/Materials/M_TerrainToon"
 # Tolerancia de la comprobación de la caja (cm).
 BOUNDS_TOLERANCE_CM = 5.0
 
@@ -47,6 +47,8 @@ def import_mesh():
     smi = options.static_mesh_import_data
     smi.set_editor_property("combine_meshes", True)
     smi.set_editor_property("normal_import_method", unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS)
+    # Colores fundidos por vértice (M_TerrainToon) y normales suaves por vértice desde F6.
+    smi.set_editor_property("vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
     smi.set_editor_property("generate_lightmap_u_vs", False)
     smi.set_editor_property("auto_generate_collision", False)
     smi.set_editor_property("convert_scene", True)
@@ -65,7 +67,7 @@ def import_mesh():
 def configure(mesh):
     material = unreal.load_asset(MATERIAL_PATH)
     if material is None:
-        raise RuntimeError(f"Falta {MATERIAL_PATH}: ejecuta antes build_materials.py")
+        raise RuntimeError(f"Falta {MATERIAL_PATH}: ejecuta antes materials_f6.py")
     for index in range(len(mesh.get_editor_property("static_materials"))):
         mesh.set_material(index, material)
     body_setup = mesh.get_editor_property("body_setup")
@@ -95,7 +97,7 @@ def main():
     configure(mesh)
     check_bounds(mesh)
     unreal.EditorAssetLibrary.save_loaded_asset(mesh)
-    unreal.log(f"[import_island] {mesh.get_path_name()} importado (M_Toon, colisión compleja como simple)")
+    unreal.log(f"[import_island] {mesh.get_path_name()} importado (M_TerrainToon, colisión compleja como simple)")
     return 0
 
 
