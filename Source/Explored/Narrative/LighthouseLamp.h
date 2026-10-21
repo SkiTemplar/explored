@@ -65,6 +65,9 @@ public:
 	/** Capturas: prende la llama y enciende la baliza a los LightSeconds, sin superviviente. */
 	void DebugIgnite();
 
+	/** Dirección del haz en el mundo (eje del foco). */
+	FVector GetBeamDirection() const;
+
 	/** Instante (s de mundo) en que empezó a prender; negativo si no está prendiendo. */
 	float GetIgniteStartedAt() const { return IgniteStartedAt; }
 
@@ -103,6 +106,10 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> BeamMaterial;
+
+	/** M_Toon de la linterna con el cristal encendido (GlowCell/GlowStrength) mientras arde la llama. */
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> GlassMaterial;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UAudioComponent> LensSound;

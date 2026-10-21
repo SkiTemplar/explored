@@ -34,6 +34,10 @@ namespace LighthouseLampDetail
 	const TCHAR* const BeamMaterialPath = TEXT("/Game/Art/Materials/M_BeaconBeam.M_BeaconBeam");
 	const TCHAR* const LensSoundPath = TEXT("/Game/Generated/Audio/Efectos/sfx_lens_rotation_loop.sfx_lens_rotation_loop");
 	constexpr float GlowLitCandelas = 2000.0f;
+	/** Emisivo del cristal de la linterna con la llama a plena fuerza (M_Toon, GlowStrength). */
+	constexpr float GlassGlowLit = 3.0f;
+	const FName GlowCellParam(TEXT("GlowCell"));
+	const FName GlowStrengthParam(TEXT("GlowStrength"));
 	constexpr int32 ConeSides = 18;
 
 	/**
@@ -94,6 +98,15 @@ void ALighthouseLamp::OnConfigured(const FIslandProp& Prop, const FIslandPropTyp
 		WickPart = MakePart(TEXT("WickPart"), WickMesh, CylinderPath, WickSlotCm, FVector(0.05, 0.05, 0.35), WickColor);
 		Beam->SetRelativeLocation(LensCenterCm);
 		Glow->SetRelativeLocation(LensCenterCm);
+		// El cristal de la linterna (celda «cristal» de la paleta) brilla con la llama: sin esto, la luz
+		// queda dentro de una caja opaca y desde fuera no se ve que la baliza prende.
+		if (UMaterialInterface* LanternMaterial = Mesh ? Mesh->GetMaterial(0) : nullptr)
+		{
+			GlassMaterial = UMaterialInstanceDynamic::Create(LanternMaterial, this);
+			GlassMaterial->SetScalarParameterValue(GlowCellParam, static_cast<float>(GlassColor));
+			GlassMaterial->SetScalarParameterValue(GlowStrengthParam, 0.0f);
+			Mesh->SetMaterial(0, GlassMaterial);
+		}
 	}
 	else
 	{
@@ -237,6 +250,10 @@ void ALighthouseLamp::UpdateFlame(float Now)
 	}
 	Glow->SetVisibility(Strength > 0.0f);
 	Glow->SetIntensity(GlowLitCandelas * Strength * FFinaleSequenceModel::Flicker(Now));
+	if (GlassMaterial)
+	{
+		GlassMaterial->SetScalarParameterValue(GlowStrengthParam, GlassGlowLit * Strength * FFinaleSequenceModel::Flicker(Now));
+	}
 	if (!BeamCone)
 	{
 		return;
@@ -250,6 +267,11 @@ void ALighthouseLamp::UpdateFlame(float Now)
 		BeamMaterial->SetVectorParameterValue(TEXT("BeamOrigin"), FLinearColor(Beam->GetComponentLocation()));
 		BeamMaterial->SetScalarParameterValue(TEXT("BeamIntensity"), 0.6f * Grow);
 	}
+}
+
+FVector ALighthouseLamp::GetBeamDirection() const
+{
+	return Beam ? Beam->GetForwardVector() : GetActorForwardVector();
 }
 
 void ALighthouseLamp::DebugIgnite()

@@ -335,6 +335,7 @@ void UBeaconSubsystem::BeginNewRun()
 void UBeaconSubsystem::ResetEnding()
 {
 	bEndingStarted = false;
+	MistralStartedAt = -1.0;
 	bHasStartLocation = false;
 	if (UWorld* World = GetWorld())
 	{
@@ -602,6 +603,7 @@ void UBeaconSubsystem::StartMistral()
 		return;
 	}
 	bEndingStarted = true;
+	MistralStartedAt = World->GetUnpausedTimeSeconds();
 	const FVector Anchor(TowerLocation.X, TowerLocation.Y, 0.0);
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -654,6 +656,12 @@ void UBeaconSubsystem::StartFinaleCamera()
 	PC->SetIgnoreMoveInput(true);
 	PC->SetIgnoreLookInput(true);
 	PC->SetViewTargetWithBlend(FinaleCamera, FinaleTiming().CameraBlendSeconds, VTBlend_Cubic);
+}
+
+float UBeaconSubsystem::GetSecondsSinceMistral() const
+{
+	const UWorld* World = GetWorld();
+	return World && MistralStartedAt >= 0.0 ? static_cast<float>(World->GetUnpausedTimeSeconds() - MistralStartedAt) : -1.0f;
 }
 
 FFinaleTiming UBeaconSubsystem::FinaleTiming() const

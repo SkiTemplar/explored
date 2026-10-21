@@ -162,3 +162,34 @@ def add_toon_wind(material) -> bool:
     connect(strength, "", wind, "Strength")
     to_property(wind, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
     return True
+
+
+# Cristal encendido (F6): la celda GlowCell de la paleta emite GlowColor × GlowStrength. Apagado por
+# defecto (GlowStrength = 0, GlowCell = -1): solo lo enciende ALighthouseLamp en el cristal de la
+# linterna mientras arde la llama. Hoja de 32 columnas: 0-31 en la fila central, 32-63 en la superior.
+TOON_GLOW_HLSL = r"""
+float col = floor(saturate(UV.x) * 32.0 - 0.0001);
+float cell = col + (UV.y < 1.0 / 3.0 ? 32.0 : 0.0);
+return abs(cell - Cell) < 0.5 ? max(Strength, 0.0) : 0.0;
+"""
+
+
+def add_toon_glow(material) -> bool:
+    """Añade GlowCell/GlowStrength/GlowColor y el emisivo por celda a M_Toon. Devuelve False si ya los tenía."""
+    if "GlowStrength" in [str(n) for n in MEL.get_scalar_parameter_names(material)]:
+        return False
+    uv = expr(material, unreal.MaterialExpressionTextureCoordinate, -900, 1200)
+    cell = scalar_param(material, "GlowCell", -1.0, -900, 1300)
+    strength = scalar_param(material, "GlowStrength", 0.0, -900, 1400)
+    color = vector_param(material, "GlowColor", palette_linear("fuego"), -900, 1500)
+    mask = custom(material, -500, 1300, TOON_GLOW_HLSL, ["UV", "Cell", "Strength"],
+                  unreal.CustomMaterialOutputType.CMOT_FLOAT1, "ToonGlow")
+    connect(uv, "", mask, "UV")
+    connect(cell, "", mask, "Cell")
+    connect(strength, "", mask, "Strength")
+    rgb_color = rgb(material, color, -700, 1500)
+    glow = expr(material, unreal.MaterialExpressionMultiply, -250, 1400)
+    connect(rgb_color, "", glow, "A")
+    connect(mask, "", glow, "B")
+    to_property(glow, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    return True

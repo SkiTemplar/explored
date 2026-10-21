@@ -2,6 +2,7 @@
 
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "CoreGlobals.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -21,6 +22,7 @@
 #include "Debug/ExploredPlaytestAuditor.h"
 #include "Explored.h"
 #include "Narrative/BeaconSubsystem.h"
+#include "Narrative/FinaleSequenceModel.h"
 #include "Narrative/LighthouseLamp.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredSurvivorComponent.h"
@@ -424,6 +426,55 @@ void UExploredShotSubsystem::ShowFirstPerson(const FExploredShot& Shot)
 	}
 }
 
+bool UExploredShotSubsystem::IsFinaleShotReady(const FExploredShot& Shot) const
+{
+	UWorld* World = GetWorld();
+	const UBeaconSubsystem* Beacon = World ? UBeaconSubsystem::Get(World) : nullptr;
+	const float SinceMistral = Beacon ? Beacon->GetSecondsSinceMistral() : -1.0f;
+	if (Shot.Name.EndsWith(TEXT("creditos")) || SinceMistral < 0.0f)
+	{
+		// Créditos (se piden en BeginShot) o final sin arrancar: asentamiento normal.
+		return Timer >= SettleSeconds;
+	}
+	const FFinaleTiming Timing = Beacon->FinaleTiming();
+	if (Shot.Name.EndsWith(TEXT("mistral")))
+	{
+		// En el instante de la bocina (GDD §3: 80 % de la llegada).
+		return SinceMistral >= FFinaleSequenceModel::HornAtSeconds(Timing) + 0.1f;
+	}
+	if (Shot.Name.EndsWith(TEXT("epilogo")))
+	{
+		// Pantalla del epílogo con el fundido desde negro terminado.
+		return SinceMistral >= FFinaleSequenceModel::EpilogueAtSeconds(Timing) + Timing.FadeFromBlackSeconds + 1.0f;
+	}
+	// Haz: con la cámara ya en su sitio y el cono crecido, cuando el haz sale en diagonal hacia el
+	// mar (25-65° del eje de la cámara); si no pasa antes de la bocina, se captura igual.
+	const float HornAt = FFinaleSequenceModel::HornAtSeconds(Timing);
+	if (SinceMistral < Timing.CameraBlendSeconds + Timing.BeamGrowSeconds)
+	{
+		return false;
+	}
+	if (SinceMistral >= HornAt - 1.5f)
+	{
+		return true;
+	}
+	const APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
+	const ALighthouseLamp* Lamp = nullptr;
+	for (TActorIterator<ALighthouseLamp> It(World); It; ++It)
+	{
+		Lamp = *It;
+		break;
+	}
+	if (!PC || !PC->PlayerCameraManager || !Lamp)
+	{
+		return true;
+	}
+	const FVector View = PC->PlayerCameraManager->GetCameraRotation().Vector().GetSafeNormal2D();
+	const FVector BeamDir = Lamp->GetBeamDirection().GetSafeNormal2D();
+	const float Degrees = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(View, BeamDir), -1.0f, 1.0f)));
+	return Degrees >= 25.0f && Degrees <= 65.0f;
+}
+
 void UExploredShotSubsystem::BeginShot(int32 Index)
 {
 	const FExploredShot& Shot = Shots[Index];
@@ -431,9 +482,8 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	if (Shot.Action == TEXT("finale"))
 	{
 		// La cámara es la del final (UBeaconSubsystem::StartFinaleCamera): no se toca la vista.
-		// Tiempos desde la captura anterior (4 s de asentamiento + este desfase): haz a ~6 s del
-		// encendido, Mistral con la bocina a ~11 s, epílogo a ~21 s y créditos al pedirlos.
-		Timer = Shot.Name.EndsWith(TEXT("mistral")) ? 0.5f : Shot.Name.EndsWith(TEXT("epilogo")) ? -5.5f : 0.0f;
+		// El momento de cada captura lo decide IsFinaleShotReady con el reloj del final.
+		Timer = 0.0f;
 		if (Shot.Name.EndsWith(TEXT("creditos")))
 		{
 			if (AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
@@ -604,7 +654,9 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 
 	// Sin esperar al streaming, las texturas del terreno se capturan con los mips más bajos.
 	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
-	const bool bSettled = Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds);
+	const bool bSettled = Shots[Current].Action == TEXT("finale")
+		? IsFinaleShotReady(Shots[Current])
+		: Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds);
 	// Una vez empezada, la medida del bench sigue aunque el barrido pida texturas nuevas: los
 	// fotogramas de streaming son justo los que pueden bajar el mínimo.
 	if (!bRequested && (bSettled || bBenchMeasuring))

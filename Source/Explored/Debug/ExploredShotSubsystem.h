@@ -73,6 +73,12 @@ private:
 	void BuildUiShots();
 	/** Prepara una vista «ui_*»; devuelve false si la vista no es de interfaz. */
 	bool BeginUiShot(const FExploredShot& Shot);
+	/**
+	 * Vistas «finale»: se capturan con el reloj del propio final (segundos desde las luces del
+	 * Mistral, FFinaleSequenceModel), no con el tiempo acumulado entre capturas, que varía con el
+	 * streaming. El haz espera además a cruzar el mar delante de la cámara.
+	 */
+	bool IsFinaleShotReady(const FExploredShot& Shot) const;
 	/** Escribe la muestra de rendimiento de la posición actual (stat unit/gpu, Nanite, memreport). */
 	void LogBenchSample(int32 Index);
 	/** Media y mínimo de fps de la vista actual en el log (decisión de Lumen y presupuesto de F7). */

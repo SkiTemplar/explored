@@ -202,6 +202,12 @@ void AExploredGrassField::Tick(float DeltaSeconds)
 	{
 		return;
 	}
+	// Un salto largo (capturas, bench) vuelve a anotar el relleno del nuevo sitio.
+	constexpr double RelogDistanceM = 60.0;
+	if (bLoggedSettled && FVector2D::Distance(Camera, LoggedCamera) > RelogDistanceM)
+	{
+		bLoggedSettled = false;
+	}
 	const FGrassUpdate Update = Model->Update(Camera);
 	if (!Update.IsEmpty())
 	{
@@ -209,6 +215,7 @@ void AExploredGrassField::Tick(float DeltaSeconds)
 		if (!bLoggedSettled && Model->GetPendingCellCount() == 0)
 		{
 			bLoggedSettled = true;
+			LoggedCamera = Camera;
 			UE_LOG(LogExplored, Display, TEXT("[Césped] %d matas en %d celdas alrededor de (%.0f, %.0f) m"),
 				Model->GetLiveInstanceCount(), Model->GetActiveCellCount(), Camera.X, Camera.Y);
 		}

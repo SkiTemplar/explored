@@ -74,6 +74,12 @@ public:
 	 */
 	bool TryFillSlot(ELanternSlot Slot, UExploredSurvivorComponent& Survivor);
 
+	/** Segundos reales (sin pausa: el epílogo pausa el juego) desde las luces del Mistral; negativo sin final. */
+	float GetSecondsSinceMistral() const;
+
+	/** Tiempos del final (FFinaleSequenceModel) con los valores editables de este subsistema. */
+	FFinaleTiming FinaleTiming() const;
+
 	/** Enciende la baliza (linterna montada) y arranca el final. */
 	bool TryLight();
 
@@ -112,8 +118,6 @@ private:
 	void StartMistral();
 	/** Plano del final: cámara fija detrás del faro mirando al mar por donde llega el Mistral. */
 	void StartFinaleCamera();
-	/** Tiempos del final (FFinaleSequenceModel) con los valores editables de este subsistema. */
-	FFinaleTiming FinaleTiming() const;
 	/** Cancela el final en curso (temporizadores de bocina y fundido, luces del Mistral, música del final). */
 	void ResetEnding();
 	/** Al amanecer, si la leña quemada deja la partida sin hoguera posible, el mar deja leña en la Cala Varada. */
@@ -143,6 +147,8 @@ private:
 	bool bSheltered = false;
 	bool bSectionsRegistered = false;
 	bool bEndingStarted = false;
+	/** Instante (s de mundo) en que aparecieron las luces del Mistral; negativo sin final en curso. */
+	double MistralStartedAt = -1.0;
 	/** Último día en que se miró la leña de deriva del amanecer (FSupplyCrateModel::DriftwoodAtDawn). */
 	int32 LastDriftwoodDay = 0;
 

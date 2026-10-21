@@ -72,6 +72,10 @@ private:
 
 	TUniquePtr<FGrassFieldModel> Model;
 	float WindTimer = 0.0f;
-	/** El primer relleno completo se anota en el log (lo leen bench y playtest). */
+	/**
+	 * Cada relleno completo tras un salto de cámara (aparición, teletransporte de capturas, bench o
+	 * playtest) se anota una vez en el log; caminando no se repite hasta alejarse RelogDistanceM.
+	 */
 	bool bLoggedSettled = false;
+	FVector2D LoggedCamera = FVector2D::ZeroVector;
 };

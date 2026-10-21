@@ -13,7 +13,8 @@
                                        (parámetros en Tools/Textures/strokes.json; GDD §11).
     /Game/Art/Materials/T_TerrainStrokes  la máscara (Art/Export/Textures/T_TerrainStrokes.png): lineal,
                                        TC_Grayscale, con mips y repetición.
-    M_Toon                             + viento en palmas y bambú (material_utils.add_toon_wind).
+    M_Toon                             + viento en palmas y bambú (material_utils.add_toon_wind) y cristal
+                                       encendido de la linterna (material_utils.add_toon_glow).
 
 Idempotente. Antes: cd Tools/Textures; uv run textures-strokes (genera la máscara). Para reimportar la
 máscara si ya existe en el proyecto: EXPLORED_REIMPORT_STROKES=1.
@@ -29,8 +30,8 @@ import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from material_utils import (  # noqa: E402 - necesita el sys.path de arriba
-    ART_MATERIALS_PATH, ASSET_TOOLS, MEL, REPO_ROOT, add_toon_wind, connect, custom, expr, finish, palette_linear,
-    recreate_material, scalar_param, to_property, vector_param,
+    ART_MATERIALS_PATH, ASSET_TOOLS, MEL, REPO_ROOT, add_toon_glow, add_toon_wind, connect, custom, expr, finish,
+    palette_linear, recreate_material, scalar_param, to_property, vector_param,
 )
 
 STROKES_JSON = os.path.join(REPO_ROOT, "Tools", "Textures", "strokes.json")
@@ -217,10 +218,14 @@ def patch_toon():
     toon = unreal.EditorAssetLibrary.load_asset(f"{ART_MATERIALS_PATH}/M_Toon")
     if toon is None:
         raise RuntimeError("Falta M_Toon (Tools/Unreal/build_materials.py)")
-    if add_toon_wind(toon):
+    added_wind = add_toon_wind(toon)
+    added_glow = add_toon_glow(toon)
+    if added_wind or added_glow:
         finish(toon)
-    else:
+    if not added_wind:
         unreal.log("[Explored] M_Toon ya tenía el viento")
+    if not added_glow:
+        unreal.log("[Explored] M_Toon ya tenía el cristal encendido")
 
 
 build_beam()
