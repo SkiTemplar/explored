@@ -70,3 +70,4 @@ Sky/CloudFieldModel.cpp
 WorldGen/IslandDecorModel.cpp
 Weather/RainStreaksModel.cpp
 Audio/SfxRules.cpp
+Debug/BenchBudgetModel.cpp

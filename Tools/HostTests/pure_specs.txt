@@ -57,3 +57,4 @@ Tests/RainStreaksModelSpec.cpp
 Tests/SfxRulesSpec.cpp
 Tests/FinaleSequenceSpec.cpp
 Tests/RunPacingSpec.cpp
+Tests/BenchBudgetSpec.cpp

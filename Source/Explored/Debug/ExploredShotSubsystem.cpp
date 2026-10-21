@@ -9,6 +9,7 @@
 #include "EngineUtils.h"
 #include "HAL/PlatformMisc.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
 #include "AssetCompilingManager.h"
@@ -47,6 +48,10 @@ namespace
 	constexpr float WarmupSeconds = 8.0f;
 	/** Espera máxima adicional a que el streaming de texturas alcance los mips pedidos. */
 	constexpr float MaxStreamingWaitSeconds = 20.0f;
+	/** Ventana de medida de cada vista del bench, después del asentamiento. */
+	constexpr float BenchMeasureSeconds = 12.0f;
+	/** Media amplitud del barrido de guiñada de la cámara durante la medida (grados). */
+	constexpr float BenchHalfSweepDegrees = 30.0f;
 }
 
 bool UExploredShotSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -119,7 +124,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		Shots.Add(Shot);
 	};
 
-	if ((bAll || bBench || Set == TEXT("spawn")) && Main)
+	if ((bAll || Set == TEXT("spawn")) && Main)
 	{
 		for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
 		{
@@ -185,7 +190,7 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
-	if ((bAll || bBench || Set == TEXT("water")) && Main)
+	if ((bAll || Set == TEXT("water")) && Main)
 	{
 		// Orilla de cerca, casi a ras de agua, y (solo en «water») una vista bajo el agua.
 		const FVector2D ShoreDir = FVector2D(1.0, -0.3).GetSafeNormal();
@@ -208,10 +213,36 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		}
 	}
 
-	if (bAll || bBench || Set == TEXT("aerial"))
+	if (bAll || Set == TEXT("aerial"))
 	{
 		// Toda la isla y el islote desde el suroeste.
 		AddShot(TEXT("aerial"), FVector(-320.0f, -260.0f, 180.0f), FVector(40.0f, 20.0f, 0.0f), 15.5f);
+	}
+
+	if (bBench)
+	{
+		// Recorrido de rendimiento de F7 por Map_IslaSal (docs/v3/estado-f7.md). Mismos encuadres
+		// que la pasada visual f4b donde coinciden, para comparar cifras con las capturas.
+		// Cala Varada desde el mar: agua, playa, palmeras y la balsa en un mismo plano.
+		AddShot(TEXT("bench-cala"), FVector(-150.0f, -12.0f, 7.0f), FVector(-98.0f, 2.0f, 2.0f), 10.5f);
+		// El Palmar a la altura de los ojos de Iria: la vegetación más densa de la isla.
+		const FVector2D PalmarEye(-62.0f, -38.0f);
+		const FVector2D PalmarLook(-30.0f, -8.0f);
+		AddShot(TEXT("bench-palmar"), FVector(PalmarEye.X, PalmarEye.Y, GroundAt(PalmarEye) + 1.7f),
+			FVector(PalmarLook.X, PalmarLook.Y, GroundAt(PalmarLook) + 1.7f), 11.0f);
+		// Base del faro desde la ladera de la Colina.
+		const FVector2D Tower(45.0f, 15.0f);
+		const FVector2D FaroEye(22.0f, -6.0f);
+		AddShot(TEXT("bench-faro"), FVector(FaroEye.X, FaroEye.Y, GroundAt(FaroEye) + 1.7f),
+			FVector(Tower.X, Tower.Y, GroundAt(Tower) + 6.0f), 15.0f);
+		// Galería del faro mirando a la Cala por encima del Palmar: el encuadre con más isla y mar a
+		// la vista (el peor caso de triángulos y de distancia de dibujado).
+		const float TowerTop = GroundAt(Tower) + 12.0f;
+		AddShot(TEXT("bench-faro-galeria"), FVector(41.0f, 13.0f, TowerTop + 2.5f), FVector(-100.0f, 10.0f, 0.0f), 17.0f);
+		// Ciclón (muro 1, D2 20:30) desde la orilla de la Cala hacia el mar: lluvia, viento y oleaje.
+		const FVector2D CycloneEye(-118.0f, 4.0f);
+		AddShot(TEXT("bench-ciclon"), FVector(CycloneEye.X, CycloneEye.Y, GroundAt(CycloneEye) + 2.5f), FVector(-200.0f, -20.0f, 2.0f), 20.5f);
+		Shots.Last().Day = 2;
 	}
 
 	if (Set == TEXT("f3a"))
@@ -537,7 +568,8 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 	// World Partition transmite según la posición del pawn (ya teleportado en BeginShot); sin
 	// esperar a que termine, una vista lejos del punto de aparición se captura con los trozos
 	// de terreno cercanos todavía sin cargar (mar y cielo vacíos alrededor de la cámara).
-	if (const UWorldPartitionSubsystem* Partition = GetWorld()->GetSubsystem<UWorldPartitionSubsystem>())
+	// La medida del bench no se para: un tirón de streaming durante el barrido es rendimiento real.
+	if (const UWorldPartitionSubsystem* Partition = bBenchMeasuring ? nullptr : GetWorld()->GetSubsystem<UWorldPartitionSubsystem>())
 	{
 		if (!Partition->IsStreamingCompleted())
 		{
@@ -566,10 +598,17 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 
 	// Sin esperar al streaming, las texturas del terreno se capturan con los mips más bajos.
 	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
-	if (!bRequested && Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds))
+	const bool bSettled = Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds);
+	// Una vez empezada, la medida del bench sigue aunque el barrido pida texturas nuevas: los
+	// fotogramas de streaming son justo los que pueden bajar el mínimo.
+	if (!bRequested && (bSettled || bBenchMeasuring))
 	{
 		if (bBenchMode)
 		{
+			if (!TickBenchMeasure())
+			{
+				return;
+			}
 			LogBenchSample(Current);
 		}
 		if (Shots[Current].Action == TEXT("interact"))
@@ -609,6 +648,10 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 			if (UExploredPlaytestAuditor* Auditor = GetWorld()->GetSubsystem<UExploredPlaytestAuditor>())
 			{
 				Auditor->WriteReport();
+			}
+			if (bBenchMode)
+			{
+				LogBenchSummary();
 			}
 			UE_LOG(LogExplored, Display, TEXT("[Shots] Terminado"));
 			FPlatformMisc::RequestExit(false, TEXT("ExploredShots"));
@@ -670,6 +713,51 @@ void UExploredShotSubsystem::LogBenchSample(int32 Index)
 	{
 		GEngine->Exec(World, TEXT("memreport -full"));
 	}
+}
+
+bool UExploredShotSubsystem::TickBenchMeasure()
+{
+	if (!bBenchMeasuring)
+	{
+		bBenchMeasuring = true;
+		BenchMeasureTimer = 0.0f;
+		BenchFrameSeconds.Reset();
+		BenchBaseRotation = Camera ? Camera->GetActorRotation() : FRotator::ZeroRotator;
+		return false;
+	}
+
+	// FApp::GetDeltaTime es el tiempo real del fotograma, sin dilatación ni el tope de
+	// MaxDeltaSeconds del mundo: es el que ve el jugador.
+	const float FrameSeconds = static_cast<float>(FApp::GetDeltaTime());
+	BenchFrameSeconds.Add(FrameSeconds);
+	BenchMeasureTimer += FrameSeconds;
+	const float Alpha = BenchMeasureTimer / BenchMeasureSeconds;
+	if (Camera)
+	{
+		FRotator Swept = BenchBaseRotation;
+		Swept.Yaw += FBenchBudgetModel::SweepYawOffset(Alpha, BenchHalfSweepDegrees);
+		Camera->SetActorRotation(Swept);
+	}
+	if (Alpha < 1.0f)
+	{
+		return false;
+	}
+
+	bBenchMeasuring = false;
+	if (Camera)
+	{
+		Camera->SetActorRotation(BenchBaseRotation);
+	}
+	const FBenchViewStats Stats = FBenchBudgetModel::ReduceView(Shots[Current].Name, BenchFrameSeconds);
+	BenchViews.Add(Stats);
+	UE_LOG(LogExplored, Display, TEXT("%s"), *FBenchBudgetModel::FormatView(Stats));
+	return true;
+}
+
+void UExploredShotSubsystem::LogBenchSummary() const
+{
+	const FBenchSummary Summary = FBenchBudgetModel::Summarize(BenchViews);
+	UE_LOG(LogExplored, Display, TEXT("%s"), *FBenchBudgetModel::FormatSummary(Summary));
 }
 
 TStatId UExploredShotSubsystem::GetStatId() const

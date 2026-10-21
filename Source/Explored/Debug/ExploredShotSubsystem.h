@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 
+#include "Debug/BenchBudgetModel.h"
+
 #include "ExploredShotSubsystem.generated.h"
 
 class ACameraActor;
@@ -36,13 +38,14 @@ struct FExploredShot
  * a varias horas; activa también a UExploredPlaytestAuditor y a UExploredPlaytestBot,
  * ver Tools/playtest.ps1) y «all».
  *
- * Con «-ExploredBench» en vez de (o junto a) «-ExploredShots» recorre tres
- * posiciones fijas (spawn en la selva, vista aérea, orilla) y, tras el mismo
- * asentamiento de Lumen/streaming que usan las capturas, vuelca `stat
- * unit`/`stat gpu` (vía los contadores internos de RenderCore, en ms),
- * `r.Nanite.ShowStats` y `memreport -full` (streaming de texturas) a
- * Saved/Logs. También registra el tiempo transcurrido desde el arranque del
- * proceso hasta el primer fotograma jugable de cada posición.
+ * Con «-ExploredBench» en vez de (o junto a) «-ExploredShots» recorre Map_IslaSal (conjunto
+ * «bench»): Cala Varada desde el mar, el Palmar a la altura de los ojos, la base del faro, la
+ * galería del faro mirando a toda la isla y el ciclón (D2 20:30) en la orilla de la Cala. En cada
+ * vista, tras el mismo asentamiento de streaming que usan las capturas, mide BenchMeasureSeconds
+ * con un barrido lento de la cámara y escribe media, mínimo y 1 % de fps frente al presupuesto de
+ * F7 (FBenchBudgetModel: ≥ 60 de media y ≥ 45 de mínimo), vuelca `stat unit`/`stat gpu` (vía
+ * los contadores internos de RenderCore, en ms), `r.Nanite.ShowStats` y `memreport -full` a
+ * Saved/Logs, y al final una línea «[Bench] Resumen» con el veredicto (Tools/bench.ps1).
  */
 UCLASS()
 class EXPLORED_API UExploredShotSubsystem : public UTickableWorldSubsystem
@@ -88,6 +91,20 @@ private:
 	bool bBenchMode = false;
 	/** Los «stat» del modo bench ya están encendidos (son interruptores: no repetir). */
 	bool bBenchStatsEnabled = false;
+	/** La vista actual está en su ventana de medida (después del asentamiento). */
+	bool bBenchMeasuring = false;
+	float BenchMeasureTimer = 0.0f;
+	/** Rotación de la vista antes del barrido de medida (se restaura para la captura). */
+	FRotator BenchBaseRotation = FRotator::ZeroRotator;
+	/** DeltaTime real (FApp) de cada fotograma de la ventana de medida. */
+	TArray<float> BenchFrameSeconds;
+	/** Cifras de las vistas ya medidas, para el resumen final. */
+	TArray<FBenchViewStats> BenchViews;
+
+	/** Avanza la ventana de medida del bench; devuelve true cuando la vista ya está medida. */
+	bool TickBenchMeasure();
+	/** Escribe la línea «[Bench] Resumen» con el veredicto de todo el recorrido. */
+	void LogBenchSummary() const;
 
 	/**
 	 * Fotogramas por segundo (1/DeltaTime) acumulados mientras se espera el asentamiento de la
