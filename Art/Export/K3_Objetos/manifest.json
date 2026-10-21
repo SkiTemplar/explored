@@ -1,0 +1,407 @@
+{
+  "kit": "K3 Objetos",
+  "generador": "uv run style-kit-k3",
+  "mallas": [
+    {
+      "malla": "SM_Cuchillo_01",
+      "fbx": "SM_Cuchillo_01.fbx",
+      "uso": "cuchillo",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 220,
+      "dimensiones_m": [
+        0.284,
+        0.048,
+        0.025
+      ],
+      "colores": [
+        "acero",
+        "cristal",
+        "laton",
+        "madera_oscura",
+        "roca_media"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Cantimplora_01",
+      "fbx": "SM_Cantimplora_01.fbx",
+      "uso": "cantimplora",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 288,
+      "dimensiones_m": [
+        0.201,
+        0.1,
+        0.239
+      ],
+      "colores": [
+        "hierba_oscura",
+        "hierro",
+        "laton"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Barometro_01",
+      "fbx": "SM_Barometro_01.fbx",
+      "uso": "barometro",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 268,
+      "dimensiones_m": [
+        0.097,
+        0.028,
+        0.129
+      ],
+      "colores": [
+        "laton",
+        "papel",
+        "rojo_faro",
+        "tinta"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Coco_01",
+      "fbx": "SM_Coco_01.fbx",
+      "uso": "coco",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 144,
+      "dimensiones_m": [
+        0.223,
+        0.166,
+        0.158
+      ],
+      "colores": [
+        "madera_media",
+        "madera_oscura",
+        "tinta"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CocoVacio_01",
+      "fbx": "SM_CocoVacio_01.fbx",
+      "uso": "coco_vacio",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 140,
+      "dimensiones_m": [
+        0.17,
+        0.162,
+        0.083
+      ],
+      "colores": [
+        "madera_media",
+        "madera_oscura",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Lena_01",
+      "fbx": "SM_Lena_01.fbx",
+      "uso": "lena",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 188,
+      "dimensiones_m": [
+        0.438,
+        0.282,
+        0.14
+      ],
+      "colores": [
+        "fibra",
+        "madera_clara",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Fibra_01",
+      "fbx": "SM_Fibra_01.fbx",
+      "uso": "fibra",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 232,
+      "dimensiones_m": [
+        0.511,
+        0.163,
+        0.093
+      ],
+      "colores": [
+        "arena_oscura",
+        "fibra",
+        "madera_clara",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Cuerda_01",
+      "fbx": "SM_Cuerda_01.fbx",
+      "uso": "cuerda",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 280,
+      "dimensiones_m": [
+        0.323,
+        0.307,
+        0.084
+      ],
+      "colores": [
+        "fibra",
+        "madera_clara"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CanaBambu_01",
+      "fbx": "SM_CanaBambu_01.fbx",
+      "uso": "cana_bambu",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 232,
+      "dimensiones_m": [
+        1.465,
+        0.215,
+        0.113
+      ],
+      "colores": [
+        "fibra",
+        "hierba_clara",
+        "hierba_oscura",
+        "madera_oscura",
+        "verde_lima"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CanaPescar_01",
+      "fbx": "SM_CanaPescar_01.fbx",
+      "uso": "cana_pescar",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 258,
+      "dimensiones_m": [
+        1.86,
+        0.065,
+        0.247
+      ],
+      "colores": [
+        "fibra",
+        "hierba_clara",
+        "madera_clara",
+        "madera_oscura",
+        "papel",
+        "rojo_faro",
+        "tinta",
+        "verde_lima"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Tronco_01",
+      "fbx": "SM_Tronco_01.fbx",
+      "uso": "tronco",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 496,
+      "dimensiones_m": [
+        2.532,
+        0.438,
+        0.416
+      ],
+      "colores": [
+        "madera_clara",
+        "madera_media",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Remo_01",
+      "fbx": "SM_Remo_01.fbx",
+      "uso": "remo",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 280,
+      "dimensiones_m": [
+        1.488,
+        0.184,
+        0.046
+      ],
+      "colores": [
+        "fibra",
+        "madera_clara",
+        "madera_media",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Pez_01",
+      "fbx": "SM_Pez_01.fbx",
+      "uso": "pez_crudo",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 204,
+      "dimensiones_m": [
+        0.336,
+        0.125,
+        0.052
+      ],
+      "colores": [
+        "acero",
+        "agua_media",
+        "agua_profunda",
+        "papel",
+        "tinta"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_PezAsado_01",
+      "fbx": "SM_PezAsado_01.fbx",
+      "uso": "pez_asado",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 264,
+      "dimensiones_m": [
+        0.474,
+        0.125,
+        0.052
+      ],
+      "colores": [
+        "cielo_ocaso",
+        "fibra",
+        "madera_clara",
+        "madera_oscura",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_TarroAceite_01",
+      "fbx": "SM_TarroAceite_01.fbx",
+      "uso": "tarro_aceite",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 280,
+      "dimensiones_m": [
+        0.122,
+        0.116,
+        0.156
+      ],
+      "colores": [
+        "cristal",
+        "laton",
+        "madera_oscura",
+        "papel"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Mecha_01",
+      "fbx": "SM_Mecha_01.fbx",
+      "uso": "mecha",
+      "presupuesto": "objeto_mano",
+      "tope_tris": 300,
+      "tris": 258,
+      "dimensiones_m": [
+        0.307,
+        0.062,
+        0.035
+      ],
+      "colores": [
+        "fibra",
+        "madera_clara",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Lente_01",
+      "fbx": "SM_Lente_01.fbx",
+      "uso": "lente",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 660,
+      "dimensiones_m": [
+        0.496,
+        0.17,
+        0.528
+      ],
+      "colores": [
+        "agua_somera",
+        "cristal",
+        "hierro",
+        "laton",
+        "madera_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FaunaPez_01",
+      "fbx": "SM_FaunaPez_01.fbx",
+      "uso": "fauna: pez",
+      "presupuesto": "200",
+      "tope_tris": 200,
+      "tris": 164,
+      "dimensiones_m": [
+        0.315,
+        0.049,
+        0.118
+      ],
+      "colores": [
+        "acero",
+        "agua_media",
+        "agua_profunda",
+        "papel",
+        "tinta"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FaunaGaviota_01",
+      "fbx": "SM_FaunaGaviota_01.fbx",
+      "uso": "fauna: gaviota",
+      "presupuesto": "400",
+      "tope_tris": 400,
+      "tris": 336,
+      "dimensiones_m": [
+        0.625,
+        1.17,
+        0.179
+      ],
+      "colores": [
+        "acero",
+        "laton",
+        "papel",
+        "tinta"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k3.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    }
+  ]
+}

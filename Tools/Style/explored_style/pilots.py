@@ -213,8 +213,8 @@ _BLADE_TIP = Vector((0.162, 0.004, 0.0))
 _BLADE_HALF_T = 0.0036
 
 
-def _knife_blade(b: MeshBuilder) -> None:
-    flat, bevel, spine = C['acero'], C['papel'], C['roca_media']
+def _knife_blade(b: MeshBuilder, bevel: int) -> None:
+    flat, spine = C['acero'], C['roca_media']
     rings = []
     for x, ys, ye in zip(_BLADE_X, _BLADE_SPINE_Y, _BLADE_EDGE_Y, strict=True):
         yb = ye + 0.4 * (ys - ye)
@@ -229,9 +229,11 @@ def _knife_blade(b: MeshBuilder) -> None:
         b.face((last[k], last[(k + 1) % len(last)], tip), colors[k])
 
 
-def build_knife() -> MeshBuilder:
+def build_knife(bevel: int | None = None) -> MeshBuilder:
+    """Cuchillo del piloto; «bevel» cambia el color del bisel (papel por
+    defecto; el kit K3 lo oscurece)."""
     b = MeshBuilder()
-    _knife_blade(b)
+    _knife_blade(b, C['papel'] if bevel is None else bevel)
     to_y = Matrix.Rotation(-math.pi / 2, 4, 'X')
     guard = [(0.0055, -0.024), (0.0085, -0.019), (0.0085, 0.019), (0.0055, 0.024)]
     lathe(b, guard, 6, [C['laton']] * 3, origin=Vector((-0.004, 0.0, 0.0)), axis=to_y,
