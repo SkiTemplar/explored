@@ -161,6 +161,17 @@ Se sigue el inventario §2-3 con estas decisiones: crear `Maps/Map_IslaSal` y ca
 - Agente: `technical-artist`; integración en mapa por `unreal-engine-engineer`.
 - Dependencias: F2 (estilo) y F3 (nombres de actores y mapa).
 
+### F4b — Pasada visual (hecha)
+
+Respuesta a «bastante cutrón» tras F4. Capturas `docs/v3/capturas/f4b-*.png` y lámina `docs/v3/laminas/f4b-antes-despues.png` (`uv run style-comparativa` en `Tools/Style`).
+
+- Paleta ampliada a 41 colores (`blanco_nube`, `gris_lila`, `cielo_cenit`, `hierba_salvia`, `hierba_seca`, `tierra`, `malva_ocaso`, `gris_tormenta`, `noche_cenit`) y hoja `T_Paleta` de 32 × 3: la fila central conserva los índices 0-31 en v = 0,5, así que ninguna malla exportada cambia (`Tools/Unreal/check_palette_uv.py`: 46 mallas, 0 errores).
+- Kit K5 Cielo fusionado e importado (nubes `blanco_nube`/`gris_lila`); 34 nubes en un anillo de 300-900 m que derivan con el viento (`FCloudFieldModel`); cúpula `M_SkyGradient` con colores de `FSkyPaletteModel` (amanecer, día, atardecer, noche, ciclón); discos de sol y luna.
+- `M_Ocean` low poly (`Tools/Unreal/materials_lowpoly.py`): facetas de 3,8 m con las mismas olas de Gerstner, color plano por faceta según la profundidad analítica de `island.json` (orilla, medio, profundo), espuma de orilla y crestas con temporal. La balsa y el nado no cambian (`FOceanWaves`).
+- Terreno: hierba salvia con zonas (Palmar y Bambú más oscuros, colina seca, manchas de tierra) y 671 instancias decorativas sin colisión (`Content/Data/island_decor.json`, `uv run island-decor`; HISM en `AExploredIslandPopulator`).
+- Luz: sin Lumen, sin SSAO/SSR/grano/aberración, saturación 0,88, luz de cielo sin oclusión por campos de distancia. `M_PP_Toon` se queda (comparado en `f4b-palmar` frente a `f4b-palmar-sin-bandas`).
+- Pendiente: el mar al atardecer y de noche se lee casi negro; lluvia visible en el ciclón; la cúpula y las nubes son referencias blandas desde C++ (revisar el cocinado en F7).
+
 ### F5 — UI completa (2 sesiones; en paralelo a F4)
 
 - Objetivo: la interfaz definitiva del GDD §9.

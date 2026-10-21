@@ -312,9 +312,9 @@ El arte de v1 se rechazó por cutre e incoherente. Todo asset nuevo cumple estas
 | Regla | Valor |
 |---|---|
 | Estilo | Low poly cartoon, formas simples y redondeadas, siluetas legibles a 30 m |
-| Paleta | **32 colores** en una hoja única (`Tools/Textures/paleta.json`, hoja 32 × 1 píxeles); cada polígono mapea a una celda; sin texturas fotográficas ni de detalle |
-| Material | `M_Toon` (3 bandas de sombreado, sin normal map, sin specular) para todo; `M_ToonLandscape` para el terreno; `M_Ocean` y `M_Stars` se mantienen; variantes por instancia de material, no por textura |
-| Iluminación | Una `DirectionalLight` + cielo; sin Lumen de reflejos si empeora el estilo (decisión en F2) |
+| Paleta | **41 colores** (32 de base más 9 de la pasada visual de F4: nube, cielo y hierba) en una hoja única (`Tools/Style/paleta.json`, hoja 32 × 3 píxeles: 0-31 en la fila central, 32-63 en la superior); cada polígono mapea a una celda; sin texturas fotográficas ni de detalle |
+| Material | `M_Toon` (3 bandas de sombreado, sin normal map, sin specular) para todo; `M_ToonLandscape` para el terreno; `M_Ocean` low poly (facetas planas, bandas de paleta por profundidad y franja de espuma, sin reflejos ni translucidez), cielo `M_SkyGradient` con nubes K5 y discos de sol y luna, y `M_Stars`; variantes por instancia de material, no por textura |
+| Iluminación | Una `DirectionalLight` cálida + luz de cielo que captura la cúpula (sombras tintadas, nunca negras); **sin Lumen** (GI ni reflejos: mismo aspecto y 230-250 fps frente a 187-212 en las vistas f4b); sin SSAO, SSR, grano ni aberración; `M_PP_Toon` (bandas) se queda |
 | Escala y pivotes | Metros; pivote en la base; nombre `SM_<Nombre>_01` |
 | Validador | `Tools/Blender/check_style.py` (en Blender) y commandlet en `ExploredEditor` (en Unreal): rechaza texturas, más de un material, UV fuera de celda, ngones, exceso de polígonos, escala no unitaria |
 | Producción | Todo por script en Blender (`Tools/Blender`, `uv run`); lámina de revisión (`render_preview.py`) por kit para la aprobación de Rodrigo |
