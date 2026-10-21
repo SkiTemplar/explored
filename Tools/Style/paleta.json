@@ -1,11 +1,11 @@
 {
-  "version": 1,
-  "descripcion": "Paleta única de Baliza Siete (GDD v3 §11). Los índices 0-11 son los del GDD y no se reordenan; cada polígono de una malla mapea a UNA celda de la hoja T_Paleta (32 x 1 px).",
+  "version": 2,
+  "descripcion": "Paleta única de Baliza Siete (GDD v3 §11). Los índices 0-11 son los del GDD y no se reordenan; cada polígono de una malla mapea a UNA celda de la hoja T_Paleta (32 x 3 px). Índices 0-31 en la fila central (v = 0,5, la de las mallas exportadas antes de la ampliación); 32-63 en la fila superior; la fila inferior repite la central.",
   "hoja": {
     "ancho": 32,
-    "alto": 1,
+    "alto": 3,
     "png": "Art/Export/Style/T_Paleta.png",
-    "muestreo": "UV de todos los vértices de la cara en el centro de su celda: u = (indice + 0,5) / 32, v = 0,5; filtro Nearest, sin mipmaps, sRGB"
+    "muestreo": "UV de todos los vértices de la cara en el centro de su celda: u = (indice % 32 + 0,5) / 32; v (Blender, 0 abajo) = 0,5 para 0-31 y 5/6 para 32-63 (fila superior del PNG); filtro Nearest, sin mipmaps, sRGB"
   },
   "colores": [
     {"indice": 0, "nombre": "arena_clara", "hex": "#E8D8A8", "familia": "arena", "uso": "playa seca, suelo base"},
@@ -39,6 +39,15 @@
     {"indice": 28, "nombre": "hierro", "hex": "#45474D", "familia": "acento", "uso": "aros, clavos, hierro viejo"},
     {"indice": 29, "nombre": "piel", "hex": "#D69C78", "familia": "acento", "uso": "manos de Iria"},
     {"indice": 30, "nombre": "papel", "hex": "#F6EEDB", "familia": "ui", "uso": "cuaderno, fondo de UI, blanco del faro"},
-    {"indice": 31, "nombre": "tinta", "hex": "#2B2722", "familia": "ui", "uso": "texto y trazo del cuaderno"}
+    {"indice": 31, "nombre": "tinta", "hex": "#2B2722", "familia": "ui", "uso": "texto y trazo del cuaderno"},
+    {"indice": 32, "nombre": "blanco_nube", "hex": "#FAF7F2", "familia": "cielo", "uso": "cara iluminada de las nubes, espuma"},
+    {"indice": 33, "nombre": "gris_lila", "hex": "#C7C3D6", "familia": "cielo", "uso": "base de las nubes, sombra fría, cielo alto del ocaso"},
+    {"indice": 34, "nombre": "cielo_cenit", "hex": "#5288C2", "familia": "cielo", "uso": "cenit del cielo de día"},
+    {"indice": 35, "nombre": "hierba_salvia", "hex": "#7FA05C", "familia": "verde", "uso": "hierba común (desaturada)"},
+    {"indice": 36, "nombre": "hierba_seca", "hex": "#A9A86A", "familia": "verde", "uso": "hierba seca de la colina"},
+    {"indice": 37, "nombre": "tierra", "hex": "#8C7155", "familia": "arena", "uso": "manchas de tierra, suelo pisado"},
+    {"indice": 38, "nombre": "malva_ocaso", "hex": "#B48AA2", "familia": "cielo", "uso": "cielo alto del amanecer y del atardecer"},
+    {"indice": 39, "nombre": "gris_tormenta", "hex": "#5A616C", "familia": "cielo", "uso": "cielo y mar del ciclón"},
+    {"indice": 40, "nombre": "noche_cenit", "hex": "#18203A", "familia": "cielo", "uso": "cenit de la noche"}
   ]
 }

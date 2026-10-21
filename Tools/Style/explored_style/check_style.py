@@ -32,7 +32,7 @@ from pathlib import Path
 import bpy
 
 from explored_style.meshkit import mesh_of
-from explored_style.palette import PALETTE_SIZE, cell_of_u
+from explored_style.palette import PALETTE_SIZE, SHEET_ROWS, cell_of_uv
 
 # Tope duro de triángulos por tipo de malla (GDD v3 §11).
 BUDGETS: dict[str, int] = {
@@ -133,14 +133,14 @@ def _uv_findings(mesh: bpy.types.Mesh) -> tuple[list[Finding], set[int]]:
         face_cells = set()
         for li in poly.loop_indices:
             u, v = uv[li].uv
-            face_cells.add(cell_of_u(u) if 0.0 <= v <= 1.0 else None)
+            face_cells.add(cell_of_uv(u, v))
         if len(face_cells) == 1 and None not in face_cells:
             cells |= face_cells  # type: ignore[arg-type]
         else:
             bad += 1
     if bad:
         return [Finding('uv', f'{bad} de {len(mesh.polygons)} caras con UV fuera de una única celda '
-                              f'de la hoja {PALETTE_SIZE} x 1')], cells
+                              f'de la hoja {PALETTE_SIZE} x {SHEET_ROWS}')], cells
     return [], cells
 
 

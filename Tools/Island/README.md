@@ -10,6 +10,7 @@ modificarlo.
 uv sync
 uv run island-terrain          # Art/Island/SM_IslaSal_Terrain.fbx + .json (cifras)
 uv run island-props-check      # island_props.json frente al GDD (§5.3, §6, §11.1)
+uv run island-decor            # Content/Data/island_decor.json: 400-900 instancias decorativas (HISM, sin colisión)
 uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 ```
 

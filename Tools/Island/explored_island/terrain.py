@@ -9,7 +9,9 @@ anillo exterior baja a `terrain.skirt` para que el agua no deje ver el canto.
 Cada triángulo recibe un índice de la paleta de Tools/Style según su altura,
 pendiente y zona (arena clara en la costa, arena húmeda en la orilla, hierba
 en el llano, roca en pendientes de más de 35° y en las rocas, tierra en los
-caminos).
+caminos). La hierba es salvia desaturada con manchas por zona: más oscura en el
+Palmar y el Bosque de Bambú, más clara y seca en la Colina del Faro, manchas
+de tierra sueltas y un borde de arena oscura entre la playa y la hierba.
 """
 
 from __future__ import annotations
@@ -23,7 +25,8 @@ from explored_island.layout import Layout, distance_to_paths, height_at, rock_in
 # Índices de Tools/Style/paleta.json (comprobados contra la paleta en los tests).
 PALETTE = {
     'arena_clara': 0, 'arena_oscura': 1, 'hierba_clara': 2, 'hierba_oscura': 3, 'roca_media': 7,
-    'arena_humeda': 12, 'roca_clara': 18, 'roca_oscura': 19,
+    'arena_humeda': 12, 'verde_selva': 13, 'verde_lima': 14, 'roca_clara': 18, 'roca_oscura': 19,
+    'hierba_salvia': 35, 'hierba_seca': 36, 'tierra': 37,
 }
 
 JITTER = 0.3            # fracción de celda que se desplaza cada vértice interior
@@ -36,6 +39,8 @@ SHALLOW_BOTTOM = -2.5   # m: fondo claro hasta aquí, oscuro más abajo
 ROCK_SLOPE = 35.0       # grados: pendiente que ya es roca
 CLIFF_SLOPE = 50.0      # grados: acantilado (roca oscura)
 ROCK_FOOTPRINT = 0.2    # influencia de una roca a partir de la cual se pinta de roca
+SAND_EDGE = 0.6         # m sobre SAND_TOP: franja mixta de arena oscura y hierba
+DIRT_PATCH = 0.8        # umbral del ruido fino a partir del cual hay mancha de tierra
 
 
 @dataclass(frozen=True)
@@ -138,6 +143,24 @@ def _islet_mask(layout: Layout, x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return islet.normalized_distance(x, y) < main.normalized_distance(x, y)
 
 
+def _grass_colors(layout: Layout, x: np.ndarray, y: np.ndarray, pick: np.ndarray) -> np.ndarray:
+    """Hierba por zona: salvia con manchas (ruido de 22 m) y manchas de tierra (ruido de 7 m)."""
+    p = PALETTE
+    patches = value_noise(x, y, 22.0, layout.seed)
+    fine = value_noise(x, y, 7.0, layout.seed + 11)
+    out = np.where(patches > 0.62, p['hierba_oscura'], p['hierba_salvia'])
+    out = np.where(patches < 0.22, p['hierba_clara'], out)
+    shade = _zone_mask(layout, 'palmar', x, y) | _zone_mask(layout, 'bosque_bambu', x, y)
+    shaded = np.where(patches > 0.5, p['hierba_oscura'], p['hierba_salvia'])
+    shaded = np.where(patches > 0.75, p['verde_selva'], shaded)
+    out = np.where(shade, shaded, out)
+    hill = _zone_mask(layout, 'colina_faro', x, y) & ~shade
+    dry = np.where(patches > 0.55, p['hierba_salvia'], p['hierba_seca'])
+    dry = np.where((patches < 0.3) & (pick < 0.5), p['verde_lima'], dry)
+    out = np.where(hill, dry, out)
+    return np.where(fine > DIRT_PATCH, p['tierra'], out)
+
+
 def face_colors(layout: Layout, centroids: np.ndarray, slopes: np.ndarray) -> np.ndarray:
     """Índice de paleta de cada triángulo (reglas en el docstring del módulo)."""
     x, y, z = centroids[:, 0], centroids[:, 1], centroids[:, 2]
@@ -149,18 +172,17 @@ def face_colors(layout: Layout, centroids: np.ndarray, slopes: np.ndarray) -> np
     rock = rock_influence(layout, x, y)
     path = distance_to_paths(layout, x, y) <= 0.0
 
-    bias = np.zeros(n)
-    bias = np.where(_zone_mask(layout, 'bosque_bambu', x, y), 0.3, bias)
-    bias = np.where(_zone_mask(layout, 'colina_faro', x, y), -0.15, bias)
-    grass = np.where(patches + bias > 0.55, p['hierba_oscura'], p['hierba_clara'])
-    islet_top = np.where(patches > 0.5, p['hierba_oscura'], p['roca_clara'])
+    islet_top = np.where(patches > 0.75, p['hierba_oscura'], p['hierba_salvia'])
+    islet_top = np.where(patches < 0.3, p['roca_clara'], islet_top)
     rocky = np.where(pick < 0.55, p['roca_media'], p['roca_clara'])
 
-    out = grass
+    out = _grass_colors(layout, x, y, pick)
     out = np.where(_islet_mask(layout, x, y), islet_top, out)
     out = np.where(_zone_mask(layout, 'rocas_pescador', x, y), rocky, out)
+    edge = (z < SAND_TOP + SAND_EDGE) & (pick < 0.5)
+    out = np.where(edge, p['arena_oscura'], out)
     out = np.where(z < SAND_TOP, p['arena_clara'], out)
-    out = np.where(path & (z >= SAND_TOP), p['arena_oscura'], out)
+    out = np.where(path & (z >= SAND_TOP), p['tierra'], out)
     out = np.where(z < WET_TOP, p['arena_humeda'], out)
     out = np.where(rock > ROCK_FOOTPRINT, rocky, out)
     out = np.where(slopes > ROCK_SLOPE, rocky, out)

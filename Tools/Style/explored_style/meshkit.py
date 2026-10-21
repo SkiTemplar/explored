@@ -17,7 +17,7 @@ import bpy
 import bmesh
 from mathutils import Euler, Matrix, Vector
 
-from explored_style.palette import PALETTE_SIZE, cell_uv
+from explored_style.palette import MAX_COLORS, cell_of_uv, cell_uv
 
 MATERIAL_NAME = 'M_Toon'
 UV_NAME = 'UVPaleta'
@@ -42,7 +42,7 @@ class MeshBuilder:
     def face(self, indices: Sequence[int], color: int) -> None:
         if len(indices) not in (3, 4):
             raise ValueError(f'solo tris o quads (se pidió una cara de {len(indices)} vértices)')
-        if not 0 <= color < PALETTE_SIZE:
+        if not 0 <= color < MAX_COLORS:
             raise ValueError(f'índice de paleta fuera de rango: {color}')
         self.faces.append(tuple(indices))
         self.colors.append(color)
@@ -351,7 +351,7 @@ def face_colors(obj: bpy.types.Object) -> list[int]:
     """Índice de paleta de cada cara, leído de su UV (centro de celda)."""
     mesh = mesh_of(obj)
     uv = mesh.uv_layers[0]
-    return [int(uv.data[p.loop_indices[0]].uv[0] * PALETTE_SIZE) for p in mesh.polygons]
+    return [cell_of_uv(*uv.data[p.loop_indices[0]].uv) or 0 for p in mesh.polygons]
 
 
 def flipped_face_count(obj: bpy.types.Object) -> int:

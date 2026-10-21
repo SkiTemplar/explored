@@ -9,6 +9,7 @@ dependencies = ["bpy==5.2.2", "numpy>=2", "explored-style"]
 [project.scripts]
 island-terrain = "explored_island.export:main"
 island-props-check = "explored_island.props:main"
+island-decor = "explored_island.decor:main"
 
 [tool.uv.sources]
 # meshkit (MeshBuilder, exportación FBX) y palette (celdas de la hoja) se reutilizan tal cual.

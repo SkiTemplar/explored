@@ -4,7 +4,9 @@
 el método de color de las mallas (una celda de la hoja por cara, ver
 README) y genera:
 
-- `Art/Export/Style/T_Paleta.png`: hoja de 32 x 1 px que muestrea `M_Toon`.
+- `Art/Export/Style/T_Paleta.png`: hoja de 32 x 3 px que muestrea `M_Toon`. Los índices
+  0-31 ocupan la fila central (v = 0,5: las mallas exportadas antes de ampliar la
+  paleta siguen igual); los 32-63, la fila superior; la inferior repite la central.
 - `docs/v3/laminas/paleta-ampliada.png`: versión rotulada para documentación.
 
 Uso: `uv run style-paleta [--sheet RUTA] [--doc RUTA]`.
@@ -27,7 +29,13 @@ PALETTE_PATH = STYLE_DIR / 'paleta.json'
 SHEET_PATH = REPO_ROOT / 'Art' / 'Export' / 'Style' / 'T_Paleta.png'
 DOC_PATH = REPO_ROOT / 'docs' / 'v3' / 'laminas' / 'paleta-ampliada.png'
 
+# Columnas de la hoja (y número de colores de la fila base, índices 0-31).
 PALETTE_SIZE = 32
+SHEET_ROWS = 3
+# Fila del PNG (0 arriba) de los índices 0-31 y de los 32-63.
+BASE_ROW = 1
+EXTRA_ROW = 0
+MAX_COLORS = 2 * PALETTE_SIZE
 # Los 12 colores fijados en el GDD §11, en este orden, en los índices 0-11.
 GDD_COLORS: tuple[tuple[str, str], ...] = (
     ('arena_clara', '#E8D8A8'), ('arena_oscura', '#C9B27C'), ('hierba_clara', '#8DBB5A'),
@@ -82,10 +90,10 @@ def parse_palette(data: dict) -> Palette:
                       str(e.get('uso', '')))
          for e in entries),
         key=lambda c: c.index))
-    if len(colors) != PALETTE_SIZE:
-        raise ValueError(f'paleta.json: {len(colors)} colores; el GDD fija {PALETTE_SIZE}')
-    if [c.index for c in colors] != list(range(PALETTE_SIZE)):
-        raise ValueError('paleta.json: los índices deben ser 0..31 sin huecos ni repetidos')
+    if not PALETTE_SIZE <= len(colors) <= MAX_COLORS:
+        raise ValueError(f'paleta.json: {len(colors)} colores; se esperan de {PALETTE_SIZE} a {MAX_COLORS}')
+    if [c.index for c in colors] != list(range(len(colors))):
+        raise ValueError('paleta.json: los índices deben ser 0..N-1 sin huecos ni repetidos')
     for color in colors:
         raster.hex_to_rgb(color.hex)
     for kind, values in (('nombres', [c.name for c in colors]), ('colores', [c.hex for c in colors])):
@@ -101,11 +109,30 @@ def load_palette(path: Path = PALETTE_PATH) -> Palette:
     return parse_palette(json.loads(path.read_text(encoding='utf-8')))
 
 
-def cell_uv(index: int, size: int = PALETTE_SIZE) -> tuple[float, float]:
-    """UV del centro de la celda «index» de la hoja (u, v)."""
-    if not 0 <= index < size:
+def row_v(row: int) -> float:
+    """v de Blender (0 abajo) del centro de la fila «row» del PNG (0 arriba)."""
+    return 1.0 - (row + 0.5) / SHEET_ROWS
+
+
+def cell_uv(index: int, size: int = MAX_COLORS) -> tuple[float, float]:
+    """UV de Blender del centro de la celda «index» de la hoja (u, v)."""
+    if not 0 <= index < min(size, MAX_COLORS):
         raise ValueError(f'índice de paleta fuera de rango: {index}')
-    return ((index + 0.5) / size, 0.5)
+    column, extra = index % PALETTE_SIZE, index >= PALETTE_SIZE
+    return ((column + 0.5) / PALETTE_SIZE, row_v(EXTRA_ROW if extra else BASE_ROW))
+
+
+def cell_of_uv(u: float, v: float, margin: float = CELL_MARGIN) -> int | None:
+    """Índice de paleta de una UV de Blender con el margen exigido en u y en v, o None."""
+    column = cell_of_u(u, PALETTE_SIZE, margin)
+    scaled = (1.0 - v) * SHEET_ROWS
+    row = int(np.floor(scaled))
+    if column is None or row not in (BASE_ROW, EXTRA_ROW):
+        return None
+    frac = scaled - row
+    if frac < margin or frac > 1.0 - margin:
+        return None
+    return column + (PALETTE_SIZE if row == EXTRA_ROW else 0)
 
 
 def cell_of_u(u: float, size: int = PALETTE_SIZE, margin: float = CELL_MARGIN) -> int | None:
@@ -122,10 +149,17 @@ def cell_of_u(u: float, size: int = PALETTE_SIZE, margin: float = CELL_MARGIN) -
 
 
 def sheet_canvas(palette: Palette) -> np.ndarray:
-    """Hoja 32 x 1: el píxel i es el color de índice i."""
-    canvas = raster.new_canvas(len(palette), 1, (0, 0, 0))
+    """Hoja 32 x 3: fila central = índices 0-31, superior = 32-63 (tinta donde no hay
+    color), inferior = copia de la central."""
+    ink = palette.by_name('tinta').rgb
+    canvas = raster.new_canvas(PALETTE_SIZE, SHEET_ROWS, ink)
     for color in palette.colors:
-        canvas = raster.fill_rect(canvas, color.index, 0, 1, 1, color.rgb)
+        column = color.index % PALETTE_SIZE
+        if color.index < PALETTE_SIZE:
+            canvas = raster.fill_rect(canvas, column, BASE_ROW, 1, 1, color.rgb)
+            canvas = raster.fill_rect(canvas, column, SHEET_ROWS - 1, 1, 1, color.rgb)
+        else:
+            canvas = raster.fill_rect(canvas, column, EXTRA_ROW, 1, 1, color.rgb)
     return canvas
 
 
@@ -151,7 +185,7 @@ def documentation_canvas(palette: Palette, columns: int = 2, swatch: int = 72, s
     paper, ink = palette.by_name('papel').rgb, palette.by_name('tinta').rgb
     title_h = 9 * scale + 2 * pad
     canvas = raster.new_canvas(columns * col_w + pad, title_h + rows * row_h + pad, paper)
-    canvas = raster.draw_text(canvas, 'BALIZA SIETE - PALETA UNICA (32) - T_PALETA 32X1', pad, pad, scale, ink)
+    canvas = raster.draw_text(canvas, f'BALIZA SIETE - PALETA UNICA ({len(palette)}) - T_PALETA 32X3', pad, pad, scale, ink)
     for color in palette.colors:
         col, row = divmod(color.index, rows)
         x, y = pad + col * col_w, title_h + row * row_h
@@ -171,7 +205,7 @@ def write_sheets(palette: Palette, sheet_path: Path = SHEET_PATH, doc_path: Path
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog='style-paleta', description='Genera las hojas PNG de la paleta.')
     parser.add_argument('--palette', type=Path, default=PALETTE_PATH)
-    parser.add_argument('--sheet', type=Path, default=SHEET_PATH, help='hoja 32 x 1 para el motor')
+    parser.add_argument('--sheet', type=Path, default=SHEET_PATH, help='hoja 32 x 3 para el motor')
     parser.add_argument('--doc', type=Path, default=DOC_PATH, help='versión ampliada para documentación')
     args = parser.parse_args(argv)
     try:

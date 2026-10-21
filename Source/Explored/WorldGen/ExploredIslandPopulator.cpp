@@ -16,6 +16,7 @@
 #include "WorldGen/ExploredCoconutPalm.h"
 #include "WorldGen/ExploredPlaceholder.h"
 #include "WorldGen/ExploredShelterVolume.h"
+#include "WorldGen/IslandDecorBuilder.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 #include "WorldGen/IslandPropsLoader.h"
@@ -54,6 +55,11 @@ AExploredIslandPopulator::AExploredIslandPopulator()
 void AExploredIslandPopulator::BeginPlay()
 {
 	Super::BeginPlay();
+	// La decoración (hierba, arbustos, rocas, acantilados) es cosmética: también en clientes.
+	if (bPopulateOnBeginPlay)
+	{
+		ExploredIslandDecor::Build(*this);
+	}
 	if (bPopulateOnBeginPlay && HasAuthority())
 	{
 		Populate();

@@ -19,11 +19,15 @@ uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 
 ## Método de color: UV a celda de paleta (no color de vértice)
 
-- `paleta.json`: 32 colores con índice, nombre, familia y uso. Los índices 0-11
+- `paleta.json`: 41 colores (de 32 a 64 admitidos) con índice, nombre, familia y uso. Los índices 0-11
   son los 12 del GDD §11 y no se reordenan (el validador lo comprueba).
 - Cada cara pone **todas** sus UV (canal 0) en el centro de una celda de la hoja
-  32 × 1: `u = (índice + 0,5) / 32`, `v = 0,5`. El validador acepta UV dentro de
-  la celda a más de ¼ de celda del borde.
+  32 × 3: `u = (índice % 32 + 0,5) / 32`; `v = 0,5` (fila central) para 0-31 y
+  `v = 5/6` en Blender (fila superior del PNG) para 32-63. La fila inferior repite
+  la central. Las mallas exportadas con la hoja 32 × 1 ya tenían `v = 0,5`: no
+  cambian. El validador acepta UV dentro de la celda a más de ¼ de celda del borde
+  en `u` y en `v`.
+- `uv run style-comparativa`: lámina antes/después de capturas (`docs/v3/laminas/f4b-antes-despues.png`).
 - Se descarta el color de vértice porque cambiar la hoja (día/noche, variantes)
   recolorea todo sin reexportar, y evita la conversión sRGB/lineal de los
   atributos de color en el FBX.
@@ -170,19 +174,18 @@ escala vista desde abajo. `--sin-lamina` solo exporta.
 | `SM_DiscoLuna_01` | 48 | 64 | Ø 1,0, plano | — |
 
 - Nubes: lóbulos cerrados y solapados (cúpulas de revolución con base
-  plana), pivote en el centro de la base. Arriba `papel`, abajo (base y
-  primer tramo de los lóbulos apoyados) `acero`. `check-style --budget 400`.
+  plana), pivote en el centro de la base. Arriba `blanco_nube`, abajo (base y
+  primer tramo de los lóbulos apoyados) `gris_lila`. `check-style --budget 400`.
 - Discos: en el plano XY con normal +Z y pivote en el centro; el motor
   orienta la Z local hacia la cámara (Y local arriba) y escala
   Ø = 2 · distancia · tan(diámetro angular / 2). Sol: `laton` con halo
-  `cielo_ocaso`; luna: `papel` con media luna de sombra `acero` (luz arriba a
+  `cielo_ocaso`; luna: `blanco_nube` con media luna de sombra `gris_lila` (luz arriba a
   la izquierda). `check-style --budget 64`.
 - Material: las nubes piden una instancia `MI_ToonNube` con bandas suaves
   (0,86 / 0,93 / 1,0; la lámina las usa) y los discos, sin sombreado; ni
   nubes ni discos proyectan sombra.
-- Propuesta de color (no aplicada; `paleta.json` intacto): la paleta no tiene
-  blanco frío ni gris lila. Se usan `papel` y `acero`; si se amplía la paleta,
-  `blanco_nube #FAF7F2` y `gris_lila #C7C3D6` (detalle en `manifest.json`).
+- Color: `blanco_nube #FAF7F2` arriba y `gris_lila #C7C3D6` en la base (y en la
+  luna), índices 32 y 33 de la paleta ampliada.
 
 ## Importación en Unreal 5.6
 

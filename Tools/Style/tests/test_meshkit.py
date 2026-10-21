@@ -13,7 +13,7 @@ def test_builder_rechaza_ngones_y_colores_fuera_de_rango():
     with pytest.raises(ValueError):
         b.face(ids, 0)
     with pytest.raises(ValueError):
-        b.face(ids[:3], 32)
+        b.face(ids[:3], 64)
 
 
 def test_lathe_valida_colores_y_cierra_con_puntas():

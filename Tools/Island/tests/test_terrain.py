@@ -13,7 +13,8 @@ from explored_island.terrain import (
 )
 
 ROCK = {PALETTE['roca_media'], PALETTE['roca_clara'], PALETTE['roca_oscura']}
-GRASS = {PALETTE['hierba_clara'], PALETTE['hierba_oscura']}
+GRASS = {PALETTE[n] for n in ('hierba_clara', 'hierba_oscura', 'hierba_salvia', 'hierba_seca', 'verde_selva',
+                              'verde_lima', 'tierra')}
 
 
 def face_at(mesh, x, y):
@@ -93,3 +94,22 @@ def test_determinista(layout, terreno):
     again = build_terrain(layout)
     assert np.array_equal(again.verts, terreno.verts)
     assert np.array_equal(again.colors, terreno.colors)
+
+
+def _zone_colors(layout, terreno, zone_id):
+    zone = layout.zone(zone_id)
+    c = terreno.centroids
+    inside = np.hypot(c[:, 0] - zone.center[0], c[:, 1] - zone.center[1]) <= zone.radius * 0.8
+    land = inside & (c[:, 2] > 2.0) & np.isin(terreno.colors, list(GRASS))
+    return terreno.colors[land]
+
+
+def test_hierba_por_zona_y_tierra(layout, terreno):
+    colina = _zone_colors(layout, terreno, 'colina_faro')
+    palmar = _zone_colors(layout, terreno, 'palmar')
+    assert (colina == PALETTE['hierba_seca']).mean() > 0.3          # colina clara y seca
+    assert (palmar == PALETTE['hierba_seca']).sum() == 0
+    oscuras = {PALETTE['hierba_oscura'], PALETTE['verde_selva']}
+    assert np.isin(palmar, list(oscuras)).mean() > np.isin(colina, list(oscuras)).mean() + 0.3
+    assert (terreno.colors == PALETTE['hierba_salvia']).sum() > (terreno.colors == PALETTE['hierba_clara']).sum()
+    assert (terreno.colors == PALETTE['tierra']).sum() > 200          # caminos y manchas de tierra

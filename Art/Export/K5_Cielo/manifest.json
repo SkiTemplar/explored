@@ -5,16 +5,7 @@
     "pivote": "nubes: centro de la base (z = 0 es la base plana); discos: centro del disco (z = 0)",
     "discos": "en el plano XY con normal +Z: el motor orienta la Z local hacia la cámara y escala Ø = 2 · distancia · tan(diámetro angular / 2); sin sombra proyectada y material sin sombreado. La Y local es «arriba» en pantalla: la cara iluminada de la luna queda arriba a la izquierda",
     "nubes": "MI_ToonNube recomendado: bandas suaves (0,86 / 0,93 / 1,0) para que el gris de la base no parezca roca; sin sombra proyectada o con sombra suave",
-    "propuesta_color": {
-      "blanco_nube": {
-        "hex": "#FAF7F2",
-        "sustituye": "papel #F6EEDB (algo amarillento para nube)"
-      },
-      "gris_lila": {
-        "hex": "#C7C3D6",
-        "sustituye": "acero #B7C1C8 (gris azulado, sin matiz lila)"
-      }
-    }
+    "colores": "nubes y luna: blanco_nube arriba y gris_lila en la base y la sombra"
   },
   "mallas": [
     {
@@ -30,8 +21,8 @@
         10.366
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
@@ -50,8 +41,8 @@
         15.02
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
@@ -70,8 +61,8 @@
         18.191
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
@@ -90,8 +81,8 @@
         19.494
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
@@ -110,8 +101,8 @@
         20.951
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored",
@@ -149,8 +140,8 @@
         0.0
       ],
       "colores": [
-        "acero",
-        "papel"
+        "blanco_nube",
+        "gris_lila"
       ],
       "origen": "generado por Tools/Style/explored_style/kits/k5.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored"

@@ -27,14 +27,10 @@ from explored_style.palette import load_palette
 
 C: dict[str, int] = {c.name: c.index for c in load_palette().colors}
 
-# Tonos de la nube. La paleta no tiene blanco frío ni gris lila: se usan los
-# más cercanos (propuesta de color en NUBE_PROPUESTA; paleta.json no se toca).
-NUBE_ARRIBA = 'papel'
-NUBE_ABAJO = 'acero'
-NUBE_PROPUESTA = {
-    'blanco_nube': {'hex': '#FAF7F2', 'sustituye': 'papel #F6EEDB (algo amarillento para nube)'},
-    'gris_lila': {'hex': '#C7C3D6', 'sustituye': 'acero #B7C1C8 (gris azulado, sin matiz lila)'},
-}
+# Tonos de la nube y de la luna: blanco frío arriba y gris lila en la base
+# (índices 32 y 33 de paleta.json, fila superior de la hoja 32 x 3).
+NUBE_ARRIBA = 'blanco_nube'
+NUBE_ABAJO = 'gris_lila'
 
 # Perfil unitario del lóbulo (radio, altura) en sentido antihorario: base
 # metida (0,80), panza (1,0) y hombro; la tapa superior cierra en (0, 1).
@@ -214,7 +210,7 @@ LUNA_SOMBRA_MIN = 0.045  # grosor (m, Ø 1 m) a partir del cual un vértice del 
 
 
 def build_luna() -> MeshBuilder:
-    """Luna: disco de papel con la media luna de sombra en acero (48 tris)."""
+    """Luna: disco blanco frío con la media luna de sombra en gris lila (48 tris)."""
     b = MeshBuilder()
     cx, cy = LUNA_LUZ_CENTRO
     center = b.vert((cx, cy, 0.0))
@@ -225,7 +221,7 @@ def build_luna() -> MeshBuilder:
         inner.append(b.vert((ix, iy, 0.0)))
         outer.append(b.vert((0.5 * math.cos(a), 0.5 * math.sin(a), 0.0)))
         gaps.append(0.5 - math.hypot(ix, iy))
-    lit, dark = C['papel'], C['acero']
+    lit, dark = C[NUBE_ARRIBA], C[NUBE_ABAJO]
     shadow = [g >= LUNA_SOMBRA_MIN for g in gaps]
     for k in range(LUNA_LADOS):
         j = (k + 1) % LUNA_LADOS

@@ -1,0 +1,57 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+/**
+ * Colores del cielo low poly (GDD v3 §11) por momento del día y tormenta. Todos los
+ * colores de superficie salen de Tools/Style/paleta.json (copias en SkyPaletteModel.cpp,
+ * comprobadas por SkyPaletteSpec); las luces se tiñen con ellos y se escalan en
+ * intensidad, pero no inventan tonos.
+ *
+ * Momentos: noche (sol bajo -0,2), amanecer/atardecer (sol en el horizonte), día (sol
+ * por encima de 0,3) y ciclón (nubosidad alta), que se mezcla encima de cualquiera.
+ */
+struct EXPLORED_API FSkyLook
+{
+	/** Degradado del cielo (lineal): horizonte, franja media (≈ 20° de altura) y cénit. */
+	FLinearColor Horizon = FLinearColor::Black;
+	FLinearColor Middle = FLinearColor::Black;
+	FLinearColor Zenith = FLinearColor::Black;
+	/** Halo alrededor del sol en el horizonte (amanecer y atardecer). */
+	FLinearColor Glow = FLinearColor::Black;
+	float GlowStrength = 0.0f;
+	/** Brillo general del cielo (la noche y el ciclón lo bajan). */
+	float SkyBrightness = 1.0f;
+
+	/** Color e intensidad relativa (0-1) del sol directo. */
+	FLinearColor SunColor = FLinearColor::White;
+	float SunIntensity = 1.0f;
+	/** Tinte de la luz ambiente (sombras): nunca negro. */
+	FLinearColor AmbientTint = FLinearColor::White;
+	/** Tinte de las nubes K5 (multiplica su color de paleta) y de la niebla lejana. */
+	FLinearColor CloudTint = FLinearColor::White;
+	FLinearColor FogColor = FLinearColor::Black;
+};
+
+struct EXPLORED_API FSkyPaletteModel
+{
+	/** Pesos de los momentos (suman 1). */
+	struct FWeights
+	{
+		float Night = 0.0f;
+		float Twilight = 0.0f;
+		float Day = 0.0f;
+	};
+
+	/** Reparto noche / crepúsculo / día según la altura del sol (componente Z de su dirección). */
+	static FWeights MomentWeights(float SunZ);
+
+	/** Aspecto del cielo para la altura del sol y la tormenta (0 = despejado, 1 = muro del ciclón). */
+	static FSkyLook Evaluate(float SunZ, float Storm);
+
+	/** Color de paleta (sRGB #RRGGBB de paleta.json) por nombre; negro si no existe. */
+	static FLinearColor PaletteColor(const TCHAR* Name);
+
+	/** Tormenta visual a partir de la nubosidad del clima (0 por debajo de 0,4, 1 desde 0,85). */
+	static float StormFromCloudCover(float CloudCover);
+};

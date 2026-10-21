@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Guía de estilo ejecutable de Baliza Siete (GDD v3 §11): paleta única, validador de mallas y pilotos low poly cartoon generados con Blender 5.2."
 # El módulo bpy de PyPI (Blender 5.2) solo existe para Python 3.13.
 requires-python = "==3.13.*"
-dependencies = ["bpy==5.2.2", "numpy>=2"]
+dependencies = [
+    "bpy==5.2.2",
+    "numpy>=2",
+    "pillow>=13.0.0",
+]
 
 [project.scripts]
 check-style = "explored_style.check_style:main"
@@ -15,6 +19,7 @@ style-kit-k1 = "explored_style.kits.k1:main"
 style-kit-k2 = "explored_style.kits.k2:main"
 style-kit-k3 = "explored_style.kits.k3:main"
 style-kit-k5 = "explored_style.kits.k5:main"
+style-comparativa = "explored_style.comparativa:main"
 
 [build-system]
 requires = ["uv_build>=0.8.18,<0.9"]

@@ -25,6 +25,7 @@
 #include "UI/IslandHudModel.h"
 #include "Player/ExploredCharacter.h"
 #include "Sky/TimeOfDaySubsystem.h"
+#include "Engine/PostProcessVolume.h"
 #include "UI/ExploredPlayerController.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
@@ -224,24 +225,44 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		AddShot(TEXT("f3a-islote"), FVector(North.X, North.Y, GroundAt(North) + 8.0f), FVector(232.0f, 150.0f, 4.0f), 16.5f);
 	}
 
-	if (Set == TEXT("f4"))
+	if (Set == TEXT("f4") || Set == TEXT("f4b"))
 	{
-		// Integración de arte de F4 (docs/v3/capturas/f4-*.png): cenital, Cala Varada, Palmar, el faro
-		// de cerca, el islote con el carguero y la primera persona con un objeto en la mano.
-		AddShot(TEXT("f4-cenital"), FVector(52.0f, 0.0f, 430.0f), FVector(52.5f, 0.0f, 0.0f), 13.0f);
-		AddShot(TEXT("f4-cala"), FVector(-150.0f, -12.0f, 7.0f), FVector(-98.0f, 2.0f, 2.0f), 10.5f);
+		// Integración de arte de F4 (docs/v3/capturas/f4-*.png) y pasada visual (f4b-*.png, mismas
+		// vistas más atardecer y ciclón): cenital, Cala Varada, Palmar, el faro de cerca, el islote
+		// con el carguero y la primera persona con un objeto en la mano.
+		const FString P = Set + TEXT("-");
+		AddShot(P + TEXT("cenital"), FVector(52.0f, 0.0f, 430.0f), FVector(52.5f, 0.0f, 0.0f), 13.0f);
+		AddShot(P + TEXT("cala"), FVector(-150.0f, -12.0f, 7.0f), FVector(-98.0f, 2.0f, 2.0f), 10.5f);
 		const FVector2D PalmarEye(-62.0f, -38.0f);
-		AddShot(TEXT("f4-palmar"), FVector(PalmarEye.X, PalmarEye.Y, GroundAt(PalmarEye) + 3.0f),
+		AddShot(P + TEXT("palmar"), FVector(PalmarEye.X, PalmarEye.Y, GroundAt(PalmarEye) + 3.0f),
 			FVector(-30.0f, -8.0f, GroundAt(FVector2D(-30.0f, -8.0f)) + 3.0f), 11.0f);
 		const FVector2D FaroEye(22.0f, -6.0f);
 		const float FaroBase = GroundAt(FVector2D(45.0f, 15.0f));
-		AddShot(TEXT("f4-faro"), FVector(FaroEye.X, FaroEye.Y, GroundAt(FaroEye) + 4.0f), FVector(42.0f, 15.0f, FaroBase + 6.0f), 15.0f);
+		AddShot(P + TEXT("faro"), FVector(FaroEye.X, FaroEye.Y, GroundAt(FaroEye) + 4.0f), FVector(42.0f, 15.0f, FaroBase + 6.0f), 15.0f);
 		const FVector2D IsloteEye(200.0f, 166.0f);
-		AddShot(TEXT("f4-islote"), FVector(IsloteEye.X, IsloteEye.Y, GroundAt(IsloteEye) + 9.0f), FVector(229.0f, 148.0f, 3.0f), 16.5f);
+		AddShot(P + TEXT("islote"), FVector(IsloteEye.X, IsloteEye.Y, GroundAt(IsloteEye) + 9.0f), FVector(229.0f, 148.0f, 3.0f), 16.5f);
+		if (Set == TEXT("f4b"))
+		{
+			// Atardecer desde la ladera de la colina, mirando hacia el sol poniente.
+			const float DuskHours = 17.9f;
+			const FVector SunDir = ExploredSky::SunDirection(DuskHours, 1.0f + DuskHours / 24.0f).GetSafeNormal2D();
+			const FVector2D DuskEye(20.0f, 30.0f);
+			const FVector DuskEye3(DuskEye.X, DuskEye.Y, GroundAt(DuskEye) + 6.0f);
+			AddShot(P + TEXT("atardecer"), DuskEye3, DuskEye3 + SunDir * 200.0 + FVector(0.0, 0.0, 4.0), DuskHours);
+			// El Palmar sin el sombreado por bandas (M_PP_Toon) para compararlo con f4b-palmar.
+			AddShot(P + TEXT("palmar-sin-bandas"), FVector(PalmarEye.X, PalmarEye.Y, GroundAt(PalmarEye) + 3.0f),
+				FVector(-30.0f, -8.0f, GroundAt(FVector2D(-30.0f, -8.0f)) + 3.0f), 11.0f);
+			Shots.Last().Action = TEXT("notoon");
+			// Muro 1 del ciclón (D2 20:30) desde la orilla de la Cala Varada hacia el mar.
+			AddShot(P + TEXT("ciclon"), FVector(-118.0f, 4.0f, GroundAt(FVector2D(-118.0f, 4.0f)) + 2.5f), FVector(-200.0f, -20.0f, 2.0f), 20.5f);
+			Shots.Last().Day = 2;
+		}
+		// La primera persona va la última: deja el juego en modo de juego con el HUD a la vista.
 		// Iria en la Cala Varada mirando al mar con el cuchillo en la mano (acción «firstperson»).
 		const FVector2D HandEye(-112.0f, 2.0f);
-		AddShot(TEXT("f4-mano"), FVector(HandEye.X, HandEye.Y, GroundAt(HandEye) + 1.7f), FVector(-150.0f, -6.0f, 0.5f), 11.0f);
+		AddShot(P + TEXT("mano"), FVector(HandEye.X, HandEye.Y, GroundAt(HandEye) + 1.7f), FVector(-150.0f, -6.0f, 0.5f), 11.0f);
 		Shots.Last().Action = TEXT("firstperson");
+		Shots.Last().Day = 1;
 	}
 
 	if (Set == TEXT("beacon"))
@@ -401,7 +422,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	}
 	if (UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
 	{
-		Time->SetTime(Time->GetDay(), Shot.Hours);
+		Time->SetTime(Shot.Day > 0 ? Shot.Day : Time->GetDay(), Shot.Hours);
 		Time->SetTimeScale(0.0f);
 	}
 	// Conjunto «beacon»: se juega (sin el menú principal encima) para ver el HUD de juego.
@@ -420,6 +441,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	{
 		ShowFirstPerson(Shot);
 	}
+	SetToonBands(Shot.Action != TEXT("notoon"));
 	if (UBeaconSubsystem* Beacon = Shot.Action.IsNone() ? nullptr : UBeaconSubsystem::Get(World))
 	{
 		if (Shot.Action == TEXT("lantern"))
@@ -498,6 +520,7 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 			const float AvgFPS = CurrentShotFrameRates.Num() > 0 ? SumFPS / CurrentShotFrameRates.Num() : 0.0f;
 			Auditor->RecordFrameSample(Shots[Current].Name, AvgFPS, MinFPS);
 		}
+		LogShotFrameRate(Shots[Current].Name);
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, Shots[Current].bShowUI, false);
 		bRequested = true;
@@ -584,4 +607,30 @@ void UExploredShotSubsystem::LogBenchSample(int32 Index)
 TStatId UExploredShotSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UExploredShotSubsystem, STATGROUP_Tickables);
+}
+
+void UExploredShotSubsystem::LogShotFrameRate(const FString& Name) const
+{
+	float Sum = 0.0f;
+	float Min = TNumericLimits<float>::Max();
+	for (const float Fps : CurrentShotFrameRates)
+	{
+		Sum += Fps;
+		Min = FMath::Min(Min, Fps);
+	}
+	const int32 N = CurrentShotFrameRates.Num();
+	UE_LOG(LogExplored, Display, TEXT("[Shots] fps %s: media %.1f, mínimo %.1f (%d fotogramas)"), *Name,
+		N > 0 ? Sum / N : 0.0f, N > 0 ? Min : 0.0f, N);
+}
+
+void UExploredShotSubsystem::SetToonBands(bool bEnabled) const
+{
+	// Comparación con y sin M_PP_Toon (pasada visual de F4): solo cambia el peso del blendable.
+	for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It)
+	{
+		for (FWeightedBlendable& Blendable : It->Settings.WeightedBlendables.Array)
+		{
+			Blendable.Weight = bEnabled ? 1.0f : 0.0f;
+		}
+	}
 }

@@ -14,6 +14,8 @@ struct FExploredShot
 	FVector Location = FVector::ZeroVector;
 	FRotator Rotation = FRotator::ZeroRotator;
 	float Hours = 12.0f;
+	/** Día de juego de la vista (0 = el actual); el clima del reloj de tormenta depende de él. */
+	int32 Day = 0;
 	/** Incluye la interfaz (HUD y Slate) en la captura. */
 	bool bShowUI = false;
 	/** Acción de juego antes de la vista (conjunto «beacon»): «interact», «lantern» (linterna montada), «light» (encender) o «wait». */
@@ -66,6 +68,10 @@ private:
 	void BeginShot(int32 Index);
 	/** Escribe la muestra de rendimiento de la posición actual (stat unit/gpu, Nanite, memreport). */
 	void LogBenchSample(int32 Index);
+	/** Media y mínimo de fps de la vista actual en el log (decisión de Lumen y presupuesto de F7). */
+	void LogShotFrameRate(const FString& Name) const;
+	/** Activa o quita el sombreado por bandas (M_PP_Toon) de los PostProcessVolume del mapa. */
+	void SetToonBands(bool bEnabled) const;
 
 	TArray<FExploredShot> Shots;
 	int32 Current = INDEX_NONE;

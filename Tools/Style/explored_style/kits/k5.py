@@ -68,7 +68,7 @@ NOTAS = {
               'La Y local es «arriba» en pantalla: la cara iluminada de la luna queda arriba a la izquierda',
     'nubes': 'MI_ToonNube recomendado: bandas suaves (0,86 / 0,93 / 1,0) para que el gris de la base no '
              'parezca roca; sin sombra proyectada o con sombra suave',
-    'propuesta_color': formas.NUBE_PROPUESTA,
+    'colores': f'nubes y luna: {formas.NUBE_ARRIBA} arriba y {formas.NUBE_ABAJO} en la base y la sombra',
 }
 
 

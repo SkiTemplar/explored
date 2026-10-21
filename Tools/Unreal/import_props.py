@@ -15,7 +15,7 @@ C++. Por malla:
 
 Escribe un resumen en Saved/Logs/import_props.json.
 
-Uso: Tools/unreal_python.ps1 -Script Tools/Unreal/import_props.py
+Uso: Tools/unreal_python.ps1 -Script Tools/Unreal/import_props.py  (EXPLORED_KITS=K5_Cielo para un solo kit)
 """
 
 import glob
@@ -38,14 +38,20 @@ COMPLEX_COLLISION = {
     "SM_CargueroCasco_01", "SM_CargueroPuente_01", "SM_FaroTorre_01", "SM_FaroLinterna_01",
     "SM_RockBig_01", "SM_CliffRock_01", "SM_PalmA_01", "SM_PalmB_01", "SM_Bamboo_01",
 }
-NO_COLLISION = {"SM_ManoIria_01", "SM_FaunaPez_01", "SM_FaunaGaviota_01", "SM_GrassClump_01"}
+NO_COLLISION = {"SM_ManoIria_01", "SM_FaunaPez_01", "SM_FaunaGaviota_01", "SM_GrassClump_01",
+                "SM_Nube_A_01", "SM_Nube_B_01", "SM_Nube_C_01", "SM_Nube_D_01", "SM_Nube_E_01",
+                "SM_DiscoSol_01", "SM_DiscoLuna_01"}
 
 
 def kit_manifests():
     paths = sorted(glob.glob(os.path.join(EXPORT_ROOT, "K*", "manifest.json")))
     if not paths:
         raise RuntimeError(f"No hay kits en {EXPORT_ROOT} (uv run style-kit-k1/k2/k3 en Tools/Style)")
+    # EXPLORED_KITS=K5_Cielo,K1_Naturaleza limita la importación a esos kits (por defecto, todos).
+    only = {k for k in os.environ.get("EXPLORED_KITS", "").split(",") if k}
     for path in paths:
+        if only and os.path.basename(os.path.dirname(path)) not in only:
+            continue
         with open(path, "r", encoding="utf-8") as f:
             yield os.path.basename(os.path.dirname(path)), os.path.dirname(path), json.load(f)
 

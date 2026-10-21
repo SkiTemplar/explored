@@ -63,3 +63,6 @@ Debug/BeaconSoftlockModel.cpp
 Interaction/VerbChoiceModel.cpp
 Cooking/FireActionsModel.cpp
 UI/BackpackMenuModel.cpp
+Sky/SkyPaletteModel.cpp
+Sky/CloudFieldModel.cpp
+WorldGen/IslandDecorModel.cpp

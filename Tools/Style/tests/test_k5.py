@@ -48,13 +48,13 @@ def test_nube_forma_colores_y_pivote(escena_vacia, spec):
     assert (min(c.x for c in cos) + max(c.x for c in cos)) / 2 == pytest.approx(0.0, abs=0.01)
     assert (min(c.y for c in cos) + max(c.y for c in cos)) / 2 == pytest.approx(0.0, abs=0.01)
     colores = meshkit.face_colors(obj)
-    assert set(colores) == {C['papel'], C['acero']}
+    assert set(colores) == {C['blanco_nube'], C['gris_lila']}
     caras = list(zip(mesh_of(obj).polygons, colores, strict=True))
     base = [c for p, c in caras if p.center.z < 1e-4]
-    assert base and set(base) == {C['acero']}  # base plana y gris
+    assert base and set(base) == {C['gris_lila']}  # base plana y gris
     techo = max(caras, key=lambda pc: pc[0].center.z)
-    assert techo[1] == C['papel']
-    blancas = sum(p.area for p, c in caras if c == C['papel'])
+    assert techo[1] == C['blanco_nube']
+    blancas = sum(p.area for p, c in caras if c == C['blanco_nube'])
     assert blancas > 0.5 * sum(p.area for p, _ in caras)
 
 
@@ -71,10 +71,10 @@ def test_colores_de_sol_y_luna(escena_vacia):
     sol = k5.generate(k5.spec_named('SM_DiscoSol'))
     luna = k5.generate(k5.spec_named('SM_DiscoLuna'))
     assert set(meshkit.face_colors(sol)) == {C['laton'], C['cielo_ocaso']}
-    assert set(meshkit.face_colors(luna)) == {C['papel'], C['acero']}
+    assert set(meshkit.face_colors(luna)) == {C['blanco_nube'], C['gris_lila']}
     # la sombra de la luna queda en el lado opuesto a la luz (abajo a la derecha)
     grises = [p.center for p, c in zip(mesh_of(luna).polygons, meshkit.face_colors(luna), strict=True)
-              if c == C['acero']]
+              if c == C['gris_lila']]
     assert sum(v.x for v in grises) > 0 and sum(v.y for v in grises) < 0
 
 
@@ -95,7 +95,7 @@ def test_disco_generico_con_colores_por_cara():
 
 def test_generate_all_exporta_fbx_validos(fbx_k5, capsys):
     manifest = json.loads((fbx_k5 / 'manifest.json').read_text(encoding='utf-8'))
-    assert manifest['kit'] == 'K5 Cielo' and 'propuesta_color' in manifest['notas']
+    assert manifest['kit'] == 'K5 Cielo' and 'colores' in manifest['notas']
     assert [m['malla'] for m in manifest['mallas']] == [s.asset for s in k5.K5]
     for spec, entry in zip(k5.K5, manifest['mallas'], strict=True):
         assert entry['tris'] <= entry['tope_tris'] == spec.max_tris
