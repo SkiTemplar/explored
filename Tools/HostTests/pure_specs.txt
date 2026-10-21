@@ -1,6 +1,12 @@
 # Automation Specs de Source/Explored/Tests que también se ejecutan en el host (solo modelos puros).
 Tests/BoatSpec.cpp
 Tests/BodySpec.cpp
+Tests/BeaconProgressSpec.cpp
+Tests/BodyEventsSpec.cpp
+Tests/NotebookSpec.cpp
+Tests/StormClockSpec.cpp
+Tests/SupplyCrateSpec.cpp
+Tests/TutorialHintSpec.cpp
 Tests/BoidsSpec.cpp
 Tests/PlaytestReportSpec.cpp
 Tests/CookingSpec.cpp

@@ -28,6 +28,12 @@ Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
 Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
+Narrative/BeaconProgressModel.cpp
+Narrative/NotebookModel.cpp
+Narrative/SupplyCrateModel.cpp
+Survival/BodyEventsModel.cpp
+UI/TutorialHintModel.cpp
+Weather/StormClockModel.cpp
 Survival/BodyModel.cpp
 Survival/BodySignals.cpp
 Survival/SurvivalModel.cpp
