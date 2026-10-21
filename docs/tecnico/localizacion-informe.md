@@ -14,7 +14,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
-| Literales para revisar | 237 |
+| Literales para revisar | 296 |
 | Errores / avisos | 0 / 15 |
 
 ## Literales del C++
@@ -29,11 +29,11 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 
 | Fichero:línea | Texto | Código |
 |---|---|---|
-| `Source/Explored/Debug/PlaytestReportModel.cpp:182` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:184` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:95` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (237)
+### Revisar (296)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -83,6 +83,23 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/BalizaDebugCommands.cpp:112` | `Intenta dormir (refugio, 20:00-05:00)` | `TEXT("Intenta dormir (refugio, 20:00-05:00)"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdSleep));` |
 | `Source/Explored/Debug/BalizaDebugCommands.cpp:114` | `Desmayo inmediato de Iria` | `TEXT("Desmayo inmediato de Iria"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdFaint));` |
 | `Source/Explored/Debug/BalizaDebugCommands.cpp:116` | `Deja la balsa hecha: BalizaRaft [board]` | `TEXT("Deja la balsa hecha: BalizaRaft [board]"), FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&CmdRaft));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:33` | `%s: faltan %d` | `Missing.Add(FString::Printf(TEXT("%s: faltan %d"), What, Need - Have));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:201` | `lente: el mar ya no vuelve a abrirse` | `Verdict.Missing.Add(TEXT("lente: el mar ya no vuelve a abrirse"));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:229` | `ruta competente: inicio de la partida` | `Out.Add({ TEXT("ruta competente: inicio de la partida"), Snapshot(Kit, Island, 7.0) });` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:231` | `orden: mecha y aceite el día 1, balsa después` | `FSoftlockScenario Early{ TEXT("orden: mecha y aceite el día 1, balsa después"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:238` | `orden: balsa y lente primero, aceite y mecha el día 3` | `FSoftlockScenario LensFirst{ TEXT("orden: balsa y lente primero, aceite y mecha el día 3"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:245` | `página 1 sin leer y sin lente al cerrarse el mar (D2 19:00)` | `FSoftlockScenario NoPage{ TEXT("página 1 sin leer y sin lente al cerrarse el mar (D2 19:00)"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:252` | `agotados: toda la leña quemada en hogueras (caja)` | `FSoftlockScenario NoWood{ TEXT("agotados: toda la leña quemada en hogueras (caja)"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:260` | `agotados: fibras en dos cañas de pescar de más` | `FSoftlockScenario Fibers{ TEXT("agotados: fibras en dos cañas de pescar de más"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:264` | `agotados: los dos tarros quemados como combustible` | `FSoftlockScenario Burnt{ TEXT("agotados: los dos tarros quemados como combustible"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:273` | `agotados: cocos de la isla bebidos (vacíos en la mochila)` | `FSoftlockScenario Coconuts{ TEXT("agotados: cocos de la isla bebidos (vacíos en la mochila)"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:306` | `%s → %s → %s, página 1 %s, lente %s del ciclón` | `Failures.Add(FString::Printf(TEXT("%s → %s → %s, página 1 %s, lente %s del ciclón"), TaskName(Order[0]),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:307` | `leída` | `TaskName(Order[1]), TaskName(Order[2]), bPageOne ? TEXT("leída") : TEXT("sin leer"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:307` | `sin leer` | `TaskName(Order[1]), TaskName(Order[2]), bPageOne ? TEXT("leída") : TEXT("sin leer"),` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:308` | `después` | `bLensEarly ? TEXT("antes") : TEXT("después")));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:323` | `la caja no hace falta` | `const FString Crate = Parts.IsEmpty() ? FString(TEXT("la caja no hace falta")) : TEXT("la caja da ") + FString::Join(Parts, TEXT(", "));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:323` | `la caja da ` | `const FString Crate = Parts.IsEmpty() ? FString(TEXT("la caja no hace falta")) : TEXT("la caja da ") + FString::Join(Parts, TEXT(", "));` |
+| `Source/Explored/Debug/BeaconSoftlockModel.cpp:324` | `faltan: ` | `return Verdict.bCompletable ? Crate : TEXT("faltan: ") + FString::Join(Verdict.Missing, TEXT("; ")) + TEXT(" (") + Crate + TEXT(")");` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:115` | `empieza en el prólogo con objetivo` | `Add(TEXT("empieza en el prólogo con objetivo"), [] { return true; },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:117` | `leer la página 1` | `Add(TEXT("leer la página 1"), [this]() { return Interact(TEXT("pagina_1")); },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:119` | `BalizaStage Preparacion` | `Add(TEXT("BalizaStage Preparacion"), [this]() { return Console(TEXT("BalizaStage Preparacion")); },` |
@@ -212,17 +229,59 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/PlaytestReportModel.cpp:155` | `      "focused_actor": "%s",\n` | `Out += FString::Printf(TEXT(" \"focused_actor\": \"%s\",\n"), *EscapeJsonString(Step.FocusedActorName));` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:156` | `      "interacted": %s,\n` | `Out += FString::Printf(TEXT(" \"interacted\": %s,\n"), Step.bInteracted ? TEXT("true") : TEXT("false"));` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:157` | `      "inventory_delta": "%s"\n` | `Out += FString::Printf(TEXT(" \"inventory_delta\": \"%s\"\n"), *EscapeJsonString(Step.InventoryDelta));` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:169` | `Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n` | `Out += FString::Printf(TEXT("Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n"),` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:190` | `Materiales nulos o por defecto` | `AppendSection(EPlaytestIssueType::MaterialMissing, TEXT("Materiales nulos o por defecto"));` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:191` | `Física a la deriva` | `AppendSection(EPlaytestIssueType::PhysicsDrift, TEXT("Física a la deriva"));` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:192` | `Flotando o enterrado` | `AppendSection(EPlaytestIssueType::FloatingOrBuried, TEXT("Flotando o enterrado"));` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:193` | `Puntos de aparición bloqueados` | `AppendSection(EPlaytestIssueType::SpawnBlocked, TEXT("Puntos de aparición bloqueados"));` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:195` | `== Rendimiento por punto de captura ==\n` | `Out += TEXT("== Rendimiento por punto de captura ==\n");` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:198` | `- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n` | `Out += FString::Printf(TEXT("- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n"),` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:203` | `== Bot de juego (%d paso(s)) ==\n` | `Out += FString::Printf(TEXT("== Bot de juego (%d paso(s)) ==\n"), Report.BotSteps.Num());` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:206` | `- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n` | `Out += FString::Printf(TEXT("- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n"),` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:209` | `sí` | `Step.bInteracted ? TEXT("sí") : TEXT("no"),` |
-| `Source/Explored/Debug/PlaytestReportModel.cpp:210` | `sin cambios` | `Step.InventoryDelta.IsEmpty() ? TEXT("sin cambios") : *Step.InventoryDelta);` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:162` | `  "run": ` | `Out += TEXT(" \"run\": ") + FPlaytestRunModel::ToJson(Report.Run, Report.Softlocks) + TEXT("\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:171` | `Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n` | `Out += FString::Printf(TEXT("Informe de playtest automático — %d defecto(s), %d punto(s) de captura medido(s)\n\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:192` | `Materiales nulos o por defecto` | `AppendSection(EPlaytestIssueType::MaterialMissing, TEXT("Materiales nulos o por defecto"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:193` | `Física a la deriva` | `AppendSection(EPlaytestIssueType::PhysicsDrift, TEXT("Física a la deriva"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:194` | `Flotando o enterrado` | `AppendSection(EPlaytestIssueType::FloatingOrBuried, TEXT("Flotando o enterrado"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:195` | `Puntos de aparición bloqueados` | `AppendSection(EPlaytestIssueType::SpawnBlocked, TEXT("Puntos de aparición bloqueados"));` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:197` | `== Rendimiento por punto de captura ==\n` | `Out += TEXT("== Rendimiento por punto de captura ==\n");` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:200` | `- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n` | `Out += FString::Printf(TEXT("- %s: %.1f fps medios, %.1f fps mínimos, %.1f MB VRAM\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:205` | `== Bot de juego (%d paso(s)) ==\n` | `Out += FString::Printf(TEXT("== Bot de juego (%d paso(s)) ==\n"), Report.BotSteps.Num());` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:208` | `- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n` | `Out += FString::Printf(TEXT("- %s en (%.0f, %.0f, %.0f) m: foco=%s, interactuó=%s, inventario: %s\n"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:211` | `sí` | `Step.bInteracted ? TEXT("sí") : TEXT("no"),` |
+| `Source/Explored/Debug/PlaytestReportModel.cpp:212` | `sin cambios` | `Step.InventoryDelta.IsEmpty() ? TEXT("sin cambios") : *Step.InventoryDelta);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:12` | `\n` | `return In.Replace(TEXT("\\"), TEXT("\\\\")).Replace(TEXT("\""), TEXT("\\\"")).Replace(TEXT("\n"), TEXT("\\n"));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:131` | `D%lld %02lld:%02lld` | `return FString::Printf(TEXT("D%lld %02lld:%02lld"), Day, Minute / 60, Minute % 60);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:139` | `    "route": "%s",\n` | `Out += FString::Printf(TEXT(" \"route\": \"%s\",\n"), *Escape(Summary.Route));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:140` | `    "ran": %s,\n` | `Out += FString::Printf(TEXT(" \"ran\": %s,\n"), Bool(Summary.bRan));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:141` | `    "reached_epilogue": %s,\n` | `Out += FString::Printf(TEXT(" \"reached_epilogue\": %s,\n"), Bool(Summary.bReachedEpilogue));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:142` | `    "failed_step": "%s",\n` | `Out += FString::Printf(TEXT(" \"failed_step\": \"%s\",\n"), *Escape(Summary.FailedStep));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:143` | `    "real_seconds": %.1f,\n` | `Out += FString::Printf(TEXT(" \"real_seconds\": %.1f,\n"), Summary.Clock.RealSeconds);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:144` | `    "estimated_1x_seconds": %.1f,\n` | `Out += FString::Printf(TEXT(" \"estimated_1x_seconds\": %.1f,\n"), Summary.Clock.Est1xSeconds);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:145` | `    "credits_seconds": %.1f,\n` | `Out += FString::Printf(TEXT(" \"credits_seconds\": %.1f,\n"), Summary.CreditsSeconds);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:146` | `    "estimated_1x_minutes": %.2f,\n` | `Out += FString::Printf(TEXT(" \"estimated_1x_minutes\": %.2f,\n"), EstimatedMinutes(Summary));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:147` | `    "target_minutes": [%.0f, %.0f],\n` | `Out += FString::Printf(TEXT(" \"target_minutes\": [%.0f, %.0f],\n"), Tuning.MinMinutes, Tuning.MaxMinutes);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:148` | `    "duration_in_target": %s,\n` | `Out += FString::Printf(TEXT(" \"duration_in_target\": %s,\n"), Bool(IsDurationInTarget(Summary, Tuning)));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:149` | `    "faints": %d,\n    "sleeps": %d,\n    "pages_read": %d,\n` | `Out += FString::Printf(TEXT(" \"faints\": %d,\n \"sleeps\": %d,\n \"pages_read\": %d,\n"), Summary.Faints, Summary.Sleeps,` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:151` | `    "stages_reached": %s,\n` | `Out += FString::Printf(TEXT(" \"stages_reached\": %s,\n"), *StringArray(Summary.StagesReached));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:152` | `    "all_stages": %s,\n` | `Out += FString::Printf(TEXT(" \"all_stages\": %s,\n"), Bool(AllStagesReached(Summary)));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:153` | `    "log_errors": %d,\n    "log_warnings": %d,\n` | `Out += FString::Printf(TEXT(" \"log_errors\": %d,\n \"log_warnings\": %d,\n"), Summary.LogErrors, Summary.LogWarnings);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:154` | `    "error_samples": %s,\n` | `Out += FString::Printf(TEXT(" \"error_samples\": %s,\n"), *StringArray(Summary.ErrorSamples));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:155` | `    "save_load_checks": %d,\n    "save_load_failures": %d,\n` | `Out += FString::Printf(TEXT(" \"save_load_checks\": %d,\n \"save_load_failures\": %d,\n"), Summary.SaveLoadChecks,` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:157` | `    "save_load_notes": %s,\n` | `Out += FString::Printf(TEXT(" \"save_load_notes\": %s,\n"), *StringArray(Summary.SaveLoadNotes));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:158` | `    "steps": [\n` | `Out += TEXT(" \"steps\": [\n");` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:162` | `      {"name": "%s", "ok": %s, "t_1x_s": %.1f, "clock": "%s", "stage": "%s"}%s\n` | `Out += FString::Printf(TEXT(" {\"name\": \"%s\", \"ok\": %s, \"t_1x_s\": %.1f, \"clock\": \"%s\", \"stage\": \"%s\"}%s\n"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:167` | `    "softlocks": [\n` | `Out += TEXT(" \"softlocks\": [\n");` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:171` | `      {"scenario": "%s", "completable": %s, "detail": "%s"}%s\n` | `Out += FString::Printf(TEXT(" {\"scenario\": \"%s\", \"completable\": %s, \"detail\": \"%s\"}%s\n"), *Escape(Check.Name),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:175` | `    "softlocks_found": %d,\n` | `Out += FString::Printf(TEXT(" \"softlocks_found\": %d,\n"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:177` | `    "passed": %s\n` | `Out += FString::Printf(TEXT(" \"passed\": %s\n"), Bool(Passed(Summary, Tuning) && AllCompletable(Softlocks)));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:186` | `== Partida completa del bot (ruta «%s») ==\n` | `FString Out = FString::Printf(TEXT("== Partida completa del bot (ruta «%s») ==\n"), *Summary.Route);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:187` | `- Epílogo alcanzado: %s%s\n` | `Out += FString::Printf(TEXT("- Epílogo alcanzado: %s%s\n"), Summary.bReachedEpilogue ? TEXT("sí") : TEXT("no"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:187` | `sí` | `Out += FString::Printf(TEXT("- Epílogo alcanzado: %s%s\n"), Summary.bReachedEpilogue ? TEXT("sí") : TEXT("no"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:188` | ` (falló: ` | `Summary.FailedStep.IsEmpty() ? TEXT("") : *(TEXT(" (falló: ") + Summary.FailedStep + TEXT(")")));` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:189` | `- Duración estimada a 1×: %.1f min (%.1f de partida + %.0f s de créditos), objetivo %.0f-%.0f: %s\n` | `Out += FString::Printf(TEXT("- Duración estimada a 1×: %.1f min (%.1f de partida + %.0f s de créditos), objetivo %.0f-%.0f: %s\n"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:192` | `- Tiempo real de la prueba: %.1f min\n` | `Out += FString::Printf(TEXT("- Tiempo real de la prueba: %.1f min\n"), Summary.Clock.RealSeconds / 60.0);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:193` | `- Etapas: %d/%d (%s)\n` | `Out += FString::Printf(TEXT("- Etapas: %d/%d (%s)\n"), Summary.StagesReached.Num(), StageCount,` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:195` | `- Desmayos: %d · sueños: %d · páginas leídas: %d\n` | `Out += FString::Printf(TEXT("- Desmayos: %d · sueños: %d · páginas leídas: %d\n"), Summary.Faints, Summary.Sleeps, Summary.PagesRead);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:196` | `- Guardar/cargar: %d comprobaciones, %d fallos\n` | `Out += FString::Printf(TEXT("- Guardar/cargar: %d comprobaciones, %d fallos\n"), Summary.SaveLoadChecks, Summary.SaveLoadFailures);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:201` | `- Log: %d errores, %d avisos\n` | `Out += FString::Printf(TEXT("- Log: %d errores, %d avisos\n"), Summary.LogErrors, Summary.LogWarnings);` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:206` | `- Pasos:\n` | `Out += TEXT("- Pasos:\n");` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:209` | `    %s %6.1f min  %s  [%s] %s\n` | `Out += FString::Printf(TEXT(" %s %6.1f min %s [%s] %s\n"), Step.bOk ? TEXT("ok ") : TEXT("FALLO"), Step.Est1xSeconds / 60.0,` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:209` | `ok   ` | `Out += FString::Printf(TEXT(" %s %6.1f min %s [%s] %s\n"), Step.bOk ? TEXT("ok ") : TEXT("FALLO"), Step.Est1xSeconds / 60.0,` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:212` | `\n== Softlocks (%d escenarios) ==\n` | `Out += FString::Printf(TEXT("\n== Softlocks (%d escenarios) ==\n"), Softlocks.Num());` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:215` | `se puede terminar` | `Out += FString::Printf(TEXT("- %s: %s%s\n"), *Check.Name, Check.bCompletable ? TEXT("se puede terminar") : TEXT("SOFTLOCK"),` |
+| `Source/Explored/Debug/PlaytestRunModel.cpp:218` | `\nRESULTADO: %s\n` | `Out += FString::Printf(TEXT("\nRESULTADO: %s\n"), Verdict(Passed(Summary, Tuning) && AllCompletable(Softlocks)));` |
 | `Source/Explored/Fishing/FishingModel.cpp:76` | `Pez loro` | `FFishSpecies S = MakeSpecies(TEXT("pez_loro"), TEXT("Pez loro"), FishBit(EHab::Reef), Rod \| Spear \| Net \| Trap,` |
 | `Source/Explored/Fishing/FishingModel.cpp:86` | `Pez cirujano` | `FFishSpecies S = MakeSpecies(TEXT("pez_cirujano"), TEXT("Pez cirujano"), FishBit(EHab::Reef) \| FishBit(EHab::Lagoon),` |
 | `Source/Explored/Fishing/FishingModel.cpp:130` | `Pez ballesta` | `FFishSpecies S = MakeSpecies(TEXT("pez_ballesta"), TEXT("Pez ballesta"), FishBit(EHab::Reef), Rod \| Spear \| Trap,` |

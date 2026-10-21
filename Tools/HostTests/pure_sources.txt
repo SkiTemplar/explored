@@ -58,3 +58,5 @@ Fishing/CastFishingModel.cpp
 Survival/IslandBodyModel.cpp
 Boats/RaftModel.cpp
 UI/IslandHudModel.cpp
+Debug/PlaytestRunModel.cpp
+Debug/BeaconSoftlockModel.cpp

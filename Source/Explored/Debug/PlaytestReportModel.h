@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Debug/PlaytestRunModel.h"
+
 /**
  * Tipos de defecto que detecta el auditor automático de playtest (ver
  * UExploredPlaytestAuditor). GDD-adyacente: no forma parte del contenido del
@@ -70,6 +72,10 @@ struct EXPLORED_API FPlaytestReport
 	TArray<FPlaytestIssue> Issues;
 	TArray<FPlaytestFrameSample> FrameSamples;
 	TArray<FPlaytestBotStep> BotSteps;
+	/** Partida completa de Baliza Siete («-BalizaRun»); Run.bRan falso si no se jugó. */
+	FPlaytestRunSummary Run;
+	/** Escenarios de softlock que decide el auditor (FBeaconSoftlockModel). */
+	TArray<FPlaytestSoftlockCheck> Softlocks;
 };
 
 /**

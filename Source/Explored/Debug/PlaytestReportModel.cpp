@@ -157,7 +157,9 @@ FString FPlaytestReportModel::ToJson(const FPlaytestReport& Report)
 		Out += FString::Printf(TEXT("      \"inventory_delta\": \"%s\"\n"), *EscapeJsonString(Step.InventoryDelta));
 		Out += (Index + 1 < Report.BotSteps.Num()) ? TEXT("    },\n") : TEXT("    }\n");
 	}
-	Out += TEXT("  ]\n");
+	Out += TEXT("  ],\n");
+
+	Out += TEXT("  \"run\": ") + FPlaytestRunModel::ToJson(Report.Run, Report.Softlocks) + TEXT("\n");
 
 	Out += TEXT("}\n");
 	return Out;
@@ -210,5 +212,9 @@ FString FPlaytestReportModel::ToReadableSummary(const FPlaytestReport& Report)
 			Step.InventoryDelta.IsEmpty() ? TEXT("sin cambios") : *Step.InventoryDelta);
 	}
 
+	if (Report.Run.bRan || Report.Softlocks.Num() > 0)
+	{
+		Out += TEXT("\n") + FPlaytestRunModel::ToReadable(Report.Run, Report.Softlocks);
+	}
 	return Out;
 }

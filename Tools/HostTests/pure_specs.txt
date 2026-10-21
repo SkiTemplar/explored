@@ -48,3 +48,5 @@ Tests/CastFishingSpec.cpp
 Tests/IslandBodySpec.cpp
 Tests/RaftSpec.cpp
 Tests/IslandHudSpec.cpp
+Tests/PlaytestRunSpec.cpp
+Tests/BeaconSoftlockSpec.cpp
