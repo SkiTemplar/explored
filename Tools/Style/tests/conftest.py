@@ -14,7 +14,8 @@ import pytest
 from explored_style import meshkit, pilots
 from explored_style.palette import REPO_ROOT
 
-VIGILADAS = (REPO_ROOT / 'Art' / 'Export' / 'Style', REPO_ROOT / 'docs' / 'v3' / 'laminas',
+VIGILADAS = (REPO_ROOT / 'Art' / 'Export' / 'Style', REPO_ROOT / 'Art' / 'Export' / 'K2_Estructuras',
+             REPO_ROOT / 'docs' / 'v3' / 'laminas',
              REPO_ROOT / 'Tools' / 'Style' / 'paleta.json')
 
 
@@ -58,4 +59,14 @@ def fbx_pilotos(tmp_path_factory) -> Path:
     """Los tres pilotos exportados una sola vez a un directorio temporal."""
     carpeta = tmp_path_factory.mktemp('pilotos')
     pilots.generate_all(carpeta)
+    return carpeta
+
+
+@pytest.fixture(scope='session')
+def fbx_k2(tmp_path_factory) -> Path:
+    """El kit K2 exportado una sola vez (FBX + manifest) a un directorio temporal."""
+    from explored_style.kits import k2
+
+    carpeta = tmp_path_factory.mktemp('k2')
+    k2.generate_all(carpeta)
     return carpeta

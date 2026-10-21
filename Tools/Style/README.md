@@ -9,6 +9,7 @@ uv sync
 uv run style-paleta                      # Art/Export/Style/T_Paleta.png + docs/v3/laminas/paleta-ampliada.png
 uv run style-pilotos                     # Art/Export/Style/SM_*.fbx + manifest.json
 uv run style-lamina                      # docs/v3/laminas/f2-pilotos.png (EEVEE)
+uv run style-kit-k2                      # Art/Export/K2_Estructuras/*.fbx + manifest.json + docs/v3/laminas/k2.png
 uv run check-style <fbx|blend...> --budget <tipo|número>
 uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 ```
@@ -29,7 +30,9 @@ uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 Fallan (salida 1): texturas (nodos `TEX_*` o imágenes en el fichero), número de
 materiales distinto de 1, UV fuera de una única celda, n-gones, escala o
 rotación sin aplicar, pivote fuera de la base (z mínima ≠ 0 ± 5 mm u origen
-fuera de la huella XY) y triángulos por encima del presupuesto. Avisos: caras
+fuera de la huella XY) y triángulos por encima del presupuesto. Excepción
+documentada: con `--budget manos` el pivote va en el codo (origen dentro de la
+caja envolvente y x mínima ≥ -0,1 m), porque los antebrazos cuelgan de la cámara. Avisos: caras
 con sombreado suave y nombre sin `SM_`. Salida 2: error de uso.
 
 | `--budget` | Tris | GDD §11 |
@@ -40,6 +43,7 @@ con sombreado suave y nombre sin `SM_`. Salida 2: error de uso.
 | `estructura` | 800 | refugio, barril, hoguera, balsa |
 | `faro` | 3.000 | torre, linterna, casa del faro |
 | `carguero` | 4.000 | casco y puente del carguero |
+| `manos` | 3.000 | `SM_ManoIria`: 2 antebrazos × 1.500; pivote en el codo |
 
 ## Pilotos (F2)
 
@@ -51,6 +55,44 @@ con sombreado suave y nombre sin `SM_`. Salida 2: error de uso.
 
 La geometría es determinista; los FBX cambian de bytes en cada exportación
 porque el exportador de Blender graba la fecha.
+
+## Kit K2 · Estructuras (+ manos)
+
+`uv run style-kit-k2` (`explored_style/kits/k2.py`; formas en `k2_faro`,
+`k2_carguero`, `k2_props` y `k2_manos`) exporta `SM_<Nombre>_01.fbx` a
+`Art/Export/K2_Estructuras/` con `manifest.json` (tris, medidas, colores,
+presupuesto, pivote y ensamblajes) y renderiza `docs/v3/laminas/k2.png`.
+Frente de todas las piezas: -Y en Blender (la puerta, el grifo y el lado
+abierto del refugio miran ahí).
+
+| Malla | Tris | Tope | Medidas (m) |
+|---|---|---|---|
+| `SM_FaroTorre_01` | 1.632 | 3.000 | 12,0 de alto, zócalo Ø 5,6 |
+| `SM_FaroLinterna_01` | 1.434 | 3.000 | 4,6 de alto, octógono Ø 3,0 |
+| `SM_FaroCasa_01` | 1.336 | 3.000 | 6,7 × 5,7 × 5,7 |
+| `SM_CajaSuministros_01` | 644 | 800 | 0,9 × 0,6 × 0,66 (con asas 1,09) |
+| `SM_CargueroCasco_01` | 1.766 | 4.000 | 40,2 de eslora, 15,9 con palos |
+| `SM_CargueroPuente_01` | 1.692 | 4.000 | 9,3 × 8,4 × 8,8 |
+| `SM_RefugioPalma_01` | 728 | 800 | 4,0 × 3,2 × 2,5 |
+| `SM_BarrilLluvia_01` | 794 | 800 | 0,98 de alto, Ø 0,70 |
+| `SM_Hoguera_01` | 720 | 800 | Ø 1,4, 0,58 de alto |
+| `SM_Balsa_01` | 788 | 800 | 3,0 × 1,3 (1,5 con cabos) |
+| `SM_ManoIria_01` | 1.384 | 3.000 | 656 + 728 tris por mano (tope 1.500) |
+
+Ensamblajes (en `manifest.json` → `ensamblaje`, coordenadas de Blender):
+
+- `SM_FaroLinterna_01` sobre `SM_FaroTorre_01` en (0, 0, 11) m. Ranuras de juego
+  en `ranuras_m` (aro de la lente, dos tarros, portamecha), en espacio local de
+  la linterna; la puerta (lado abierto) mira a -Y.
+- `SM_CargueroPuente_01` sobre `SM_CargueroCasco_01`: el casco se exporta ya
+  escorado 8° (estribor, -Y, abajo) y con la proa 2° arriba; el puente se
+  exporta recto y se coloca con `ubicacion_m` y `rotacion_grados`
+  (Euler XYZ de Blender). En Unreal la Y cambia de signo: conviene montarlo
+  como hijo del casco y comprobarlo a ojo.
+- `SM_ManoIria_01`: origen en el punto medio de los codos, antebrazos hacia +X
+  (adelante en Unreal), mano derecha en -Y de Blender (derecha en Unreal).
+- La caja de mapas del carguero es `SM_CajaSuministros_01` con otra instancia
+  de `M_Toon`. El fuego de la hoguera lo pone el motor.
 
 ## Importación en Unreal 5.6
 

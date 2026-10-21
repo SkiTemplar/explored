@@ -9,7 +9,10 @@ Reglas que hacen fallar (código de salida 1):
                paleta 32 x 1, a más de un cuarto de celda del borde
   ngones       solo tris y quads
   escala       escala del objeto 1,0 y sin rotación pendiente de aplicar
-  pivote       origen en la base: z mínima local = 0 (± 5 mm) y origen dentro de la huella XY
+  pivote       origen en la base: z mínima local = 0 (± 5 mm) y origen dentro de la huella XY.
+               Excepción «manos» (antebrazos en primera persona): pivote en el codo, es decir,
+               origen dentro de la caja envolvente y la malla avanzando hacia +X desde él
+               (x mínima >= -0,1 m); presupuesto 3.000 = 1.500 por mano
   tris         triángulos <= presupuesto del tipo (tabla del GDD §11)
 
 Avisos (no cambian el código de salida): sombreado suave (el estilo usa
@@ -39,7 +42,11 @@ BUDGETS: dict[str, int] = {
     'estructura': 800,     # refugio, barril, hoguera, balsa
     'faro': 3000,          # torre, linterna, casa del faro
     'carguero': 4000,      # casco y puente del carguero
+    'manos': 3000,         # SM_ManoIria: 2 antebrazos x 1.500 (pivote en el codo)
 }
+# Regla de pivote por tipo: «base» (GDD §11) salvo las excepciones documentadas.
+PIVOT_RULES: dict[str, str] = {'manos': 'codo'}
+ELBOW_BACK = 0.1
 PIVOT_TOLERANCE = 0.005
 SCALE_TOLERANCE = 1e-4
 ROTATION_TOLERANCE = 1e-3
@@ -152,11 +159,26 @@ def _transform_findings(obj: bpy.types.Object) -> list[Finding]:
     return out
 
 
-def _pivot_findings(mesh: bpy.types.Mesh) -> list[Finding]:
+def _elbow_pivot_findings(xs: list[float], ys: list[float], zs: list[float]) -> list[Finding]:
+    """Pivote de codo (presupuesto «manos»): origen dentro de la caja y la
+    malla avanzando hacia +X desde él."""
+    out = []
+    inside = all(min(vals) - PIVOT_TOLERANCE <= 0.0 <= max(vals) + PIVOT_TOLERANCE for vals in (xs, ys, zs))
+    if not inside:
+        out.append(Finding('pivote', 'pivote de codo fuera de la caja envolvente de la malla'))
+    if min(xs) < -ELBOW_BACK:
+        out.append(Finding('pivote', f'la malla se extiende {-min(xs):.3f} m por detrás del codo '
+                                     f'(máx. {ELBOW_BACK} m)'))
+    return out
+
+
+def _pivot_findings(mesh: bpy.types.Mesh, mode: str = 'base') -> list[Finding]:
     if not mesh.vertices:
         return [Finding('pivote', 'malla sin vértices')]
     xs = [v.co.x for v in mesh.vertices]
     ys = [v.co.y for v in mesh.vertices]
+    if mode == 'codo':
+        return _elbow_pivot_findings(xs, ys, [v.co.z for v in mesh.vertices])
     min_z = min(v.co.z for v in mesh.vertices)
     out = []
     if abs(min_z) > PIVOT_TOLERANCE:
@@ -168,12 +190,13 @@ def _pivot_findings(mesh: bpy.types.Mesh) -> list[Finding]:
     return out
 
 
-def check_object(obj: bpy.types.Object, budget: int) -> MeshReport:
+def check_object(obj: bpy.types.Object, budget: int, pivot: str = 'base') -> MeshReport:
+    """Valida un objeto; «pivot» es «base» (regla general) o «codo» (manos)."""
     mesh = mesh_of(obj)
     triangles = sum(p.loop_total - 2 for p in mesh.polygons)
     uv_errors, cells = _uv_findings(mesh)
     errors = [*_texture_findings(obj), *_material_findings(obj), *uv_errors, *_ngon_findings(mesh),
-              *_transform_findings(obj), *_pivot_findings(mesh)]
+              *_transform_findings(obj), *_pivot_findings(mesh, pivot)]
     if triangles > budget:
         errors.append(Finding('tris', f'{triangles} triángulos > presupuesto de {budget}'))
     warnings = []
@@ -185,19 +208,19 @@ def check_object(obj: bpy.types.Object, budget: int) -> MeshReport:
     return MeshReport(obj.name, triangles, budget, tuple(errors), tuple(warnings), tuple(sorted(cells)))
 
 
-def check_loaded(path: Path, budget: int) -> FileReport:
+def check_loaded(path: Path, budget: int, pivot: str = 'base') -> FileReport:
     """Valida lo que haya en la escena actual (ya cargada)."""
     images = [i.name for i in bpy.data.images if i.type not in _IMAGE_TYPES_IGNORED]
     file_errors = [Finding('texturas', f'el fichero trae imágenes: {", ".join(sorted(images))}')] if images else []
     meshes = sorted((o for o in bpy.data.objects if o.type == 'MESH'), key=lambda o: o.name)
     if not meshes:
         file_errors.append(Finding('mallas', 'el fichero no contiene mallas'))
-    return FileReport(path, tuple(check_object(o, budget) for o in meshes), tuple(file_errors))
+    return FileReport(path, tuple(check_object(o, budget, pivot) for o in meshes), tuple(file_errors))
 
 
-def check_file(path: Path, budget: int) -> FileReport:
+def check_file(path: Path, budget: int, pivot: str = 'base') -> FileReport:
     load_file(path)
-    return check_loaded(path, budget)
+    return check_loaded(path, budget, pivot)
 
 
 def format_report(report: FileReport) -> str:
@@ -236,7 +259,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     failed = 0
     for path in args.files:
-        report = check_file(path, budget)
+        report = check_file(path, budget, PIVOT_RULES.get(args.budget, 'base'))
         print(format_report(report))
         failed += 0 if report.ok else 1
     print(f'check-style: {len(args.files)} fichero(s), {failed} con fallos')

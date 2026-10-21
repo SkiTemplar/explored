@@ -50,3 +50,46 @@ def test_objeto_cerrado_con_normales_hacia_fuera(escena_vacia):
 def test_objeto_vacio_falla(escena_vacia):
     with pytest.raises(ValueError):
         meshkit.build_object('SM_Vacio', MeshBuilder())
+
+
+def test_primitivas_de_kit_cerradas_y_hacia_fuera(escena_vacia):
+    b = MeshBuilder()
+    meshkit.box(b, (1.0, 2.0, 0.5), 1, meshkit.matrix_at(0.0, 0.0, 1.0, rz=30.0))
+    assert b.triangle_count == 12
+    meshkit.chamfer_box(b, (1.0, 1.0, 1.0), 0.1, 2, meshkit.matrix_at(3.0, 0.0, 0.5), edge_color=3)
+    assert b.triangle_count == 12 + 44
+    meshkit.tube(b, (0, 4, 0), (0, 5, 1), 0.2, 0.1, 6, 4, cap0=4, cap1=4)
+    meshkit.sweep(b, [(5, 0, 0), (6, 0, 0), (6, 1, 0), (5, 1, 0)], 0.05, 4, 5, closed=True)
+    meshkit.sweep(b, [(8, 0, 0), (8, 0, 1), (8.5, 0, 1.5)], [0.1, 0.08, 0.05], 5, [6, 7], cap=6)
+    meshkit.blob(b, (-3, 0, 0.5), (0.5, 0.4, 0.3), 6, 3, 7, jitter=0.2, seed=3, flat_bottom=-0.4)
+    obj = meshkit.build_object('SM_Prims', b)
+    assert meshkit.flipped_face_count(obj) == 0
+    assert meshkit.island_count(obj) == 6
+    assert {2, 3} <= set(meshkit.face_colors(obj))
+
+
+def test_espejo_conserva_normales_y_pivote_libre(escena_vacia):
+    b = MeshBuilder()
+    meshkit.chamfer_box(b, (0.4, 0.2, 0.2), 0.05, 1, meshkit.matrix_at(0.0, 0.5, -0.3))
+    both = MeshBuilder()
+    both.extend(b)
+    both.extend(meshkit.mirrored(b, axis=1))
+    obj = meshkit.build_object('SM_Espejo', both, base_pivot=False)
+    assert meshkit.flipped_face_count(obj) == 0
+    assert min(v.co.z for v in mesh_of(obj).vertices) == pytest.approx(-0.4)
+    assert min(v.co.y for v in mesh_of(obj).vertices) == pytest.approx(-0.6)
+
+
+def test_noise_determinista_y_acotado():
+    valores = [meshkit.noise(s, k, j) for s in range(5) for k in range(5) for j in range(3)]
+    assert all(-1.0 <= v <= 1.0 for v in valores)
+    assert meshkit.noise(3, 1, 2) == meshkit.noise(3, 1, 2)
+    assert len({round(v, 6) for v in valores}) > 60
+
+
+def test_face_out_orienta_hacia_fuera():
+    b = MeshBuilder()
+    ids = [b.vert(p) for p in ((0, 0, 1), (1, 0, 1), (1, 1, 1))]
+    meshkit.face_out(b, ids, 0, (0.5, 0.5, 0.0))
+    meshkit.face_out(b, list(reversed(ids)), 0, (0.5, 0.5, 0.0))
+    assert b.faces[0] == b.faces[1]
