@@ -1,7 +1,8 @@
 """Crea /Game/Maps/Map_IslaSal: la Isla de Sal de F3a (docs/v3/plan.md, GDD v3 §6).
 
 Contenido: AExploredOcean, AExploredSkyController (ya trae sol, luna, atmósfera, luz de cielo,
-niebla y nubes; por eso no se añade otra DirectionalLight), PostProcessVolume infinito, el terreno
+niebla y nubes; por eso no se añade otra DirectionalLight), PostProcessVolume infinito con el
+sombreado por bandas (M_PP_Toon, map_post.py), el terreno
 SM_IslaSal_Terrain (malla facetada de Tools/Island, importada con import_island.py) en el origen,
 el PlayerStart en el punto «player_start» de island.json (Cala Varada) apoyado en el terreno con
 una traza, y un AExploredIslandPopulator que en BeginPlay crea las colocaciones de
@@ -12,8 +13,12 @@ Uso: Tools\\unreal_python.ps1 -Script Tools/Unreal/create_map_islasal.py
 
 import json
 import os
+import sys
 
 import unreal
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from map_post import apply_toon_post  # noqa: E402 - necesita el sys.path de arriba
 
 MAP_PATH = "/Game/Maps/Map_IslaSal"
 TERRAIN_PATH = "/Game/Art/Island/SM_IslaSal_Terrain"
@@ -78,6 +83,7 @@ def main():
           "ExploredSkyController")
     post = spawn(actor_subsystem, unreal.PostProcessVolume, unreal.Vector(0, 0, 0), "PostProcess_Global")
     post.set_editor_property("unbound", True)
+    apply_toon_post(post)
 
     terrain = spawn(actor_subsystem, unreal.StaticMeshActor, unreal.Vector(0, 0, 0), "IslaSal_Terrain")
     component = terrain.static_mesh_component

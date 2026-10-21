@@ -10,11 +10,14 @@ Materiales:
                                 según FBodySignals (VignetteAmount, TintColor, DesaturationAmount).
     /Game/Art/Materials/T_Paleta  hoja de paleta de Tools/Style (Art/Export/Style/T_Paleta.png, 32 x 1):
                                 filtro Nearest, sin mipmaps, sRGB, compresión sin pérdidas.
-    /Game/Art/Materials/M_Toon  material provisional del estilo (F3a): Default Lit, base color = T_Paleta
-                                muestreada con el UV 0 (cada cara en el centro de su celda), rugosidad 1,
-                                especular 0. «PaletteIndex» + «UsePaletteIndex» = 1 fuerzan una celda
-                                (primitivas de reserva de AExploredPlaceholder). La integración de arte lo
-                                refina (3 bandas de sombreado, GDD §11).
+    /Game/Art/Materials/M_Toon  material del estilo: Default Lit, base color = T_Paleta muestreada con
+                                el UV 0 (cada cara en el centro de su celda), rugosidad 1, especular 0.
+                                «PaletteIndex» + «UsePaletteIndex» = 1 fuerzan una celda (primitivas de
+                                reserva de AExploredPlaceholder).
+    /Game/Art/Materials/M_PP_Toon  postproceso de sombreado por bandas (GDD §11): cuantiza la luz que
+                                recibe cada píxel Default Lit (color de escena / base color) en pasos de
+                                «BandStops» diafragmas; el océano (Single Layer Water), el cielo y lo
+                                lejano (niebla) no se tocan. Lo usa el PostProcess_Global del mapa.
 
 El terreno, la vegetación y los materiales low poly del arte v1 se borraron en el reset v2;
 el material maestro nuevo (M_Toon con hoja de paleta) llega en F2 (docs/v3/plan.md).
@@ -576,13 +579,60 @@ def build_pp_body():
     finish(m)
 
 
-# ---------------------------------------------------------------------------
-# Vegetación y rocas (se reconstruyen en su sitio para conservar las referencias)
-# ---------------------------------------------------------------------------
+# Bandas de sombreado: la luz recibida es la luminancia de la escena entre la del base color; se
+# redondea en escala logarítmica (pasos de BandStops diafragmas) y se reescala el píxel. Sobre mallas
+# de caras planas deja 2-3 tonos por objeto. Solo Default Lit (id 1): el agua (Single Layer Water) y
+# el cielo (sin GBuffer) pasan intactos; se desvanece con la distancia para no dibujar curvas de
+# nivel en la niebla.
+PP_TOON_HLSL = r"""
+float3 Lum = float3(0.2126, 0.7152, 0.0722);
+float3 Color = SceneColor.rgb;
+float Albedo = dot(max(BaseColor.rgb, 0.0), Lum);
+float Light = dot(max(Color, 0.0), Lum);
+if (abs(ShadingModel.r - 1.0) > 0.5 || Albedo < 0.02 || Light < 1e-5)
+{
+    return Color;
+}
+float Received = Light / Albedo;
+float Steps = max(BandStops, 0.05);
+// Paso suave (ancho 0,3 de banda) en el borde: sin él, el ruido de la iluminación global hace
+// saltar los píxeles de una banda a otra y el borde se ve granulado.
+float Level = log2(Received) / Steps;
+float Base = floor(Level);
+float Banded = exp2((Base + smoothstep(0.35, 0.65, Level - Base)) * Steps);
+float Fade = 1.0 - saturate((Depth.r - FadeStartCm) / max(FadeRangeCm, 1.0));
+return Color * lerp(1.0, Banded / Received, saturate(Strength) * Fade);
+"""
 
-# ---------------------------------------------------------------------------
-# Low poly (packs CC0: Kenney, KayKit, Quaternius) — atlas de paleta por isla
-# ---------------------------------------------------------------------------
+
+def build_pp_toon():
+    m = recreate_material("M_PP_Toon", ART_MATERIALS_PATH)
+    m.set_editor_property("material_domain", unreal.MaterialDomain.MD_POST_PROCESS)
+    m.set_editor_property("blendable_location", unreal.BlendableLocation.BL_SCENE_COLOR_BEFORE_DOF)
+
+    inputs = []
+    for y, (name, scene_id) in enumerate((
+            ("SceneColor", unreal.SceneTextureId.PPI_POST_PROCESS_INPUT0),
+            ("BaseColor", unreal.SceneTextureId.PPI_BASE_COLOR),
+            ("ShadingModel", unreal.SceneTextureId.PPI_SHADING_MODEL_ID),
+            ("Depth", unreal.SceneTextureId.PPI_SCENE_DEPTH))):
+        node = expr(m, unreal.MaterialExpressionSceneTexture, -700, y * 140)
+        node.set_editor_property("scene_texture_id", scene_id)
+        inputs.append((name, node, "Color"))
+    for y, (name, value) in enumerate((("BandStops", 0.5), ("Strength", 1.0),
+                                       ("FadeStartCm", 6000.0), ("FadeRangeCm", 12000.0))):
+        node = expr(m, unreal.MaterialExpressionScalarParameter, -700, 600 + y * 100)
+        node.set_editor_property("parameter_name", name)
+        node.set_editor_property("default_value", value)
+        inputs.append((name, node, ""))
+
+    toon = custom(m, -300, 200, PP_TOON_HLSL, [name for name, _, _ in inputs],
+                  unreal.CustomMaterialOutputType.CMOT_FLOAT3, "ToonBands")
+    for name, node, out in inputs:
+        # Las SceneTexture dan float4 (Color = RGBA): el HLSL toma .rgb o .r.
+        connect(node, out, toon, name)
+    to_property(toon, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(m)
 
 # ---------------------------------------------------------------------------
 # Estilo low poly (F3a): hoja de paleta y M_Toon provisional
@@ -592,6 +642,12 @@ def import_palette_texture() -> unreal.Texture2D:
     """Importa la hoja de paleta con muestreo exacto (cada texel es un color de paleta.json)."""
     if not os.path.isfile(PALETTE_PNG):
         raise RuntimeError(f"Falta {PALETTE_PNG} (uv run style-paleta en Tools/Style)")
+    existing = f"{ART_MATERIALS_PATH}/T_Paleta"
+    # Reimportar una textura que ya usan M_Toon y M_PP_Toon tumba el commandlet de UE 5.6
+    # («Assertion failed: !IsRooted()» en MaterialEditor): si existe, solo se reajusta. Para
+    # reimportarla tras cambiar la paleta: EXPLORED_REIMPORT_PALETTE=1.
+    if unreal.EditorAssetLibrary.does_asset_exist(existing) and os.environ.get("EXPLORED_REIMPORT_PALETTE") != "1":
+        return configure_palette_texture(unreal.load_asset(existing))
     task = unreal.AssetImportTask()
     task.set_editor_property("filename", PALETTE_PNG)
     task.set_editor_property("destination_path", ART_MATERIALS_PATH)
@@ -603,6 +659,11 @@ def import_palette_texture() -> unreal.Texture2D:
     texture = unreal.load_asset(f"{ART_MATERIALS_PATH}/T_Paleta")
     if texture is None:
         raise RuntimeError("No se pudo importar T_Paleta")
+    return configure_palette_texture(texture)
+
+
+def configure_palette_texture(texture: unreal.Texture2D) -> unreal.Texture2D:
+    """Muestreo exacto: Nearest, sin mipmaps, sRGB y sin compresión por bloques."""
     texture.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
     texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
     texture.set_editor_property("srgb", True)
@@ -666,6 +727,7 @@ def main():
     build_pp_body()
     unreal.EditorAssetLibrary.make_directory(ART_MATERIALS_PATH)
     build_toon(import_palette_texture())
+    build_pp_toon()
 
 
 main()

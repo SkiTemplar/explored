@@ -151,12 +151,17 @@ el pez de fauna y 400 para la gaviota.
 
 ## Importación en Unreal 5.6
 
-- FBX: metros con `apply_unit_scale` (1 m = 100 uu), ejes FBX -Z adelante /
-  Y arriba que el importador convierte a Z arriba / X adelante. Import Uniform
-  Scale 1,0; *Convert Scene* activado; normales **importadas** (son planas por
-  cara); sin importar materiales ni texturas; asignar `M_Toon` (o una instancia).
-  Colisión: simple (caja o cápsula) generada en el editor; sin LOD (por debajo
-  del presupuesto).
+- Lo hace `Tools/Unreal/import_props.py` (todos los `Art/Export/K*/` a
+  `/Game/Art/<Kit>/`), que comprueba caja y triángulos contra `manifest.json`.
+- FBX: metros con `apply_unit_scale`, ejes FBX -Z adelante / Y arriba que el
+  importador convierte a Z arriba / X adelante (la Y de Blender cambia de
+  signo). El importador de UE 5.6 ignora la unidad del FBX: hace falta Import
+  Uniform Scale 100 para que la malla quede a escala real con el actor a
+  escala 1. *Convert Scene* activado; normales **importadas** (son planas por
+  cara); sin importar materiales ni texturas; `M_Toon` en el único slot.
+  Colisión: caja simple; compleja como simple en casco, puente, torre,
+  linterna, rocas grandes, acantilado, palmeras y bambú; ninguna en manos,
+  fauna y hierba. Sin LOD ni Nanite (por debajo del presupuesto).
 - `T_Paleta.png`: filtro *Nearest*, sin mipmaps, sRGB activado, compresión
   sin pérdidas (`UserInterface2D` o `VectorDisplacementmap`) para que los
   colores sean exactos; `M_Toon` la muestrea con el canal UV 0.
