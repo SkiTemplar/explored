@@ -111,6 +111,112 @@ def finish(material):
     unreal.log(f"[Explored] Material listo: {material.get_path_name()}")
 
 
+def ensure_collection(name: str, scalars: dict, vectors: dict, folder: str = ART_MATERIALS_PATH):
+    """Material Parameter Collection con esos parámetros (nombre -> valor por defecto). Conserva los que ya
+    existen (sus GUID, que guardan los materiales que los leen) y solo actualiza su valor por defecto."""
+    full = f"{folder}/{name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(full):
+        mpc = unreal.EditorAssetLibrary.load_asset(full)
+    else:
+        mpc = ASSET_TOOLS.create_asset(name, folder, unreal.MaterialParameterCollection,
+                                       unreal.MaterialParameterCollectionFactoryNew())
+    if mpc is None:
+        raise RuntimeError(f"No se pudo crear {full}")
+
+    def merge(prop: str, cls, wanted: dict, wrap):
+        current = {str(p.get_editor_property("parameter_name")): p for p in mpc.get_editor_property(prop)}
+        out = []
+        for key, value in wanted.items():
+            param = current.get(key) or cls()
+            param.set_editor_property("parameter_name", key)
+            param.set_editor_property("default_value", wrap(value))
+            out.append(param)
+        mpc.set_editor_property(prop, out)
+
+    merge("scalar_parameters", unreal.CollectionScalarParameter, scalars, float)
+    merge("vector_parameters", unreal.CollectionVectorParameter, vectors,
+          lambda v: unreal.LinearColor(*v, 0.0) if len(v) == 3 else unreal.LinearColor(*v))
+    unreal.EditorAssetLibrary.save_loaded_asset(mpc)
+    return mpc
+
+
+def collection_param(material, mpc, name: str, x: int, y: int):
+    """Nodo que lee un parámetro de una Material Parameter Collection."""
+    node = expr(material, unreal.MaterialExpressionCollectionParameter, x, y)
+    node.set_editor_property("collection", mpc)
+    node.set_editor_property("parameter_name", name)
+    return node
+
+
+# f(d) del adelgazamiento del césped (FGrassThinning::Fraction, Source/Explored/WorldGen/GrassThinning.cpp):
+# la misma fórmula en M_ToonCesped y M_TerrainToon. «d» en metros horizontales; los Grass* vienen de MPC_Terreno.
+GRASS_FRACTION_HLSL = r"""
+float GrassF = 0.0;
+if (d < GrassEndM)
+{
+    float baseF = d <= GrassDenseM ? 1.0 : pow(GrassDenseM / max(d, 1e-3), GrassExponent);
+    float tF = saturate((d - (GrassEndM - GrassEndFadeM)) / max(GrassEndFadeM, 1e-4));
+    GrassF = saturate(baseF * (1.0 - tF * tF * (3.0 - 2.0 * tF)));
+}
+"""
+# Colores de las hojas de los parches de K6 (manifest «colores»): su media da el verde de la base (suelo entre
+# hojas, BaseShade de M_ToonCesped) y el de la alfombra vista de lejos, al que tienden a la vez las hojas que
+# se alejan (M_ToonCesped) y el suelo bajo el césped (M_TerrainToon). El factor de lejos está medido sobre
+# las capturas f8 (la alfombra iluminada se ve más clara y algo más cálida que la media de su albedo).
+PATCH_COLORS = ("hierba_clara", "hierba_oscura", "hierba_salvia")
+GRASS_BASE_SHADE = 0.64
+GRASS_FAR_TINT = (1.22, 1.1, 1.22)
+
+
+def grass_ground_colors() -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """(verde de la base, verde de la alfombra lejana), lineales."""
+    lin = [palette_linear(n) for n in PATCH_COLORS]
+    avg = [sum(c[i] for c in lin) / len(lin) for i in range(3)]
+    base = (avg[0] * GRASS_BASE_SHADE, avg[1] * GRASS_BASE_SHADE, avg[2] * GRASS_BASE_SHADE)
+    far = (avg[0] * GRASS_FAR_TINT[0], avg[1] * GRASS_FAR_TINT[1], avg[2] * GRASS_FAR_TINT[2])
+    return base, far
+
+
+# Ruido de valor suave (hash entero, sin patrones lejos del origen) para los HLSL de los materiales: un
+# struct con métodos, que el nodo Custom admite. Uso: FExploredNoise N; N.Value(p) en [0, 1].
+NOISE_HLSL = r"""
+struct FExploredNoise
+{
+    float Hash(float2 c)
+    {
+        uint2 q = uint2(int2(c) + 1048576);
+        uint h = (q.x * 1664525u) ^ (q.y * 1013904223u + 0x9E3779B9u);
+        h ^= h >> 16; h *= 0x7feb352du; h ^= h >> 15; h *= 0x846ca68bu; h ^= h >> 16;
+        return (h & 0xFFFFu) / 65535.0;
+    }
+    float Value(float2 x)
+    {
+        float2 i = floor(x);
+        float2 f = frac(x);
+        f = f * f * (3.0 - 2.0 * f);
+        return lerp(lerp(Hash(i), Hash(i + float2(1.0, 0.0)), f.x), lerp(Hash(i + float2(0.0, 1.0)), Hash(i + float2(1.0, 1.0)), f.x), f.y);
+    }
+};
+FExploredNoise Noise;
+"""
+GRASS_MPC = "MPC_Terreno"
+GRASS_JSON = os.path.join(REPO_ROOT, "Content", "Data", "grass.json")
+# Parámetros de MPC_Terreno: el adelgazamiento (AExploredGrassField los escribe desde grass.json) y el sol
+# (AExploredSkyController) para el brillo de la arena.
+GRASS_THINNING_KEYS = {"GrassDenseM": "denseM", "GrassEndM": "endM", "GrassEndFadeM": "endFadeM",
+                       "GrassExponent": "exponent", "GrassMaxGrow": "maxGrow", "GrassGrowZ": "growZ",
+                       "GrassBand": "band"}
+
+
+def terrain_collection():
+    """Crea o actualiza MPC_Terreno con los valores de grass.json («thinning») y un sol de mediodía."""
+    with open(GRASS_JSON, "r", encoding="utf-8") as f:
+        thinning = json.load(f)["thinning"]
+    scalars = {name: float(thinning[key]) for name, key in GRASS_THINNING_KEYS.items()}
+    scalars["SunGlint"] = 1.0
+    return ensure_collection(GRASS_MPC, scalars, {"SunDirection": (0.3, 0.2, 0.93)})
+
+
 def srgb_to_linear(channel: int) -> float:
     f = channel / 255.0
     return f / 12.92 if f <= 0.04045 else ((f + 0.055) / 1.055) ** 2.4

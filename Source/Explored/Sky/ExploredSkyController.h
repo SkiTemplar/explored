@@ -12,6 +12,7 @@ class UExponentialHeightFogComponent;
 class UInstancedStaticMeshComponent;
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
+class UMaterialParameterCollection;
 class UPostProcessComponent;
 class USkyLightComponent;
 class UStaticMesh;
@@ -134,4 +135,11 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> MoonMid;
+
+	/**
+	 * MPC_Terreno (Tools/Unreal/material_utils.py): el sol para el brillo de la arena de M_TerrainToon
+	 * (SunDirection, SunGlint). Se carga en BeginPlay; si falta, la arena no brilla.
+	 */
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialParameterCollection> TerrainParams;
 };

@@ -17,7 +17,7 @@
     "endM": 100.0,
     "endFadeM": 25.0,
     "exponent": 2.0,
-    "maxGrow": 2.0,
+    "maxGrow": 2.6,
     "growZ": 0.4,
     "band": 0.2,
     "levelRatio": 0.5,

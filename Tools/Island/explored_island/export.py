@@ -7,7 +7,10 @@ pasar a Blender, porque el importador FBX de Unreal vuelve a invertirlo
 (Blender +Y -> Unreal -Y), y el terreno lleva normales por esquina (mezcla de la
 suave del vértice y la de la cara, `terrain.FACET_MIX`) y un atributo de color
 por vértice («Col», colores de la paleta fundidos) que lee M_TerrainToon
-(Tools/Unreal/materials_f6.py).
+(Tools/Unreal/materials_f6.py). El alfa de «Col» es el tipo de suelo fundido
+igual que el color (surface_alpha): 1 hierba, 0 arena y 0,5 el resto; el
+material lo usa para igualar el suelo bajo el césped y para los efectos de la
+arena.
 
 Uso: uv run island-terrain [--json RUTA] [--out RUTA.fbx] [--cell METROS]
 """
@@ -27,8 +30,9 @@ from explored_style import meshkit
 from explored_style.palette import load_palette
 from mathutils import Matrix
 
+from explored_island.colors import blend_grid
 from explored_island.decor import build_decor, palm_spots
-from explored_island.groundfield import FIELD_BIN, write_field
+from explored_island.groundfield import FIELD_BIN, GRASS_COLORS, SAND_COLORS, grid_size, write_field
 from explored_island.layout import ISLAND_JSON, REPO_ROOT, Layout, distance_to_paths, load_layout
 from explored_island.props import load_props
 from explored_island.terrain import FACET_MIX, TerrainMesh, build_terrain
@@ -54,7 +58,17 @@ def linear_palette() -> np.ndarray:
     return np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)
 
 
-def build_blender_object(mesh: TerrainMesh) -> bpy.types.Object:
+def surface_alpha(mesh: TerrainMesh, nx: int, ny: int) -> np.ndarray:
+    """(N,) alfa del color por vértice: 1 hierba, 0 arena (también la mojada y el fondo) y 0,5 el resto
+    (tierra, caminos, roca), fundido con el mismo núcleo 1-4-1 que el color."""
+    index = mesh.vertex_palette
+    code = np.full(index.shape, 0.5)
+    code[np.isin(index, list(GRASS_COLORS))] = 1.0
+    code[np.isin(index, list(SAND_COLORS))] = 0.0
+    return blend_grid(code.reshape(nx, ny, 1)).reshape(-1)
+
+
+def build_blender_object(mesh: TerrainMesh, alpha: np.ndarray | None = None) -> bpy.types.Object:
     builder = to_builder(mesh)
     min_z = min(v[2] for v in builder.verts)
     obj = meshkit.build_object(MESH_NAME, builder)
@@ -67,7 +81,8 @@ def build_blender_object(mesh: TerrainMesh) -> bpy.types.Object:
     loops = mesh.corner_normals[:, [0, 2, 1], :].reshape(-1, 3) * np.array([1.0, -1.0, 1.0])
     data.normals_split_custom_set([tuple(n) for n in loops.tolist()])
     attr = data.color_attributes.new(name='Col', type='FLOAT_COLOR', domain='POINT')
-    rgba = np.concatenate([mesh.vertex_colors, np.ones((len(mesh.vertex_colors), 1))], axis=1)
+    a = np.ones(len(mesh.vertex_colors)) if alpha is None else alpha
+    rgba = np.concatenate([mesh.vertex_colors, a[:, None]], axis=1)
     attr.data.foreach_set('color', rgba.astype(np.float32).ravel())  # pyright: ignore[reportAttributeAccessIssue]
     data.color_attributes.active_color = attr
     return obj
@@ -121,7 +136,7 @@ def generate(layout: Layout, out: Path, props: dict | None = None, field_out: Pa
     if field_out is not None:
         write_field(layout, mesh, field_out)
     meshkit.reset_scene()
-    obj = build_blender_object(mesh)
+    obj = build_blender_object(mesh, surface_alpha(mesh, *grid_size(layout)))
     out.parent.mkdir(parents=True, exist_ok=True)
     export_smooth_fbx(obj, str(out))
     info = stats(mesh, layout)

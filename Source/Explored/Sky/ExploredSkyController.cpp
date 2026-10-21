@@ -10,14 +10,17 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMaterialLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "UObject/ConstructorHelpers.h"
 
 #include "Ocean/ExploredOcean.h"
 #include "Sky/SkyPaletteModel.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Weather/WeatherModel.h"
+#include "WorldGen/GrassConfigLoader.h"
 
 namespace ExploredSkyDetail
 {
@@ -222,6 +225,7 @@ void AExploredSkyController::BeginPlay()
 {
 	Super::BeginPlay();
 	SetupSkyAssets();
+	TerrainParams = LoadObject<UMaterialParameterCollection>(nullptr, *FGrassAssets::Defaults().ParameterCollection);
 	CloudField = FCloudFieldModel::Make(ExploredSkyDetail::CloudSeed, CloudCount);
 	CloudInstanceIndex.Reset();
 	for (UInstancedStaticMeshComponent* Layer : CloudLayers)
@@ -351,6 +355,12 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays, float Delta
 	if (SkyMid)
 	{
 		SkyMid->SetVectorParameterValue(TEXT("SunDirection"), FLinearColor(SunDir.X, SunDir.Y, SunDir.Z, 0.0f));
+	}
+	if (TerrainParams)
+	{
+		// Brillo de la arena: solo con el sol fuera y sin el cielo cubierto del ciclón.
+		UKismetMaterialLibrary::SetVectorParameterValue(this, TerrainParams, TEXT("SunDirection"), FLinearColor(SunDir.X, SunDir.Y, SunDir.Z, 0.0f));
+		UKismetMaterialLibrary::SetScalarParameterValue(this, TerrainParams, TEXT("SunGlint"), SunUp * (1.0f - Storm));
 	}
 	ApplyLook(Look, SunZ);
 	// Hora dorada: sol al ras del horizonte y todavía visible.

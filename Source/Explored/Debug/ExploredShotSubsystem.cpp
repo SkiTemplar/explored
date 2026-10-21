@@ -31,6 +31,7 @@
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Engine/PostProcessVolume.h"
 #include "UI/ExploredPlayerController.h"
+#include "WorldGen/ExploredGrassField.h"
 #include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
@@ -344,6 +345,11 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		BuildUiShots();
 	}
 
+	if (Set == TEXT("f8"))
+	{
+		BuildGrassSandShots();
+	}
+
 	if (Set == TEXT("menu"))
 	{
 		// El menú principal ya está en pantalla por defecto al arrancar el
@@ -495,6 +501,16 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		CurrentShotFrameRates.Reset();
 		return;
 	}
+	if (Shot.Action == TEXT("walkon"))
+	{
+		// Sigue caminando desde la vista anterior: sin mover la cámara ni esperar otro asentamiento.
+		Timer = SettleSeconds + MaxStreamingWaitSeconds;
+		WalkElapsed = 0.0f;
+		bRequested = false;
+		CurrentShotFrameRates.Reset();
+		return;
+	}
+	WalkElapsed = -1.0f;
 	if (BeginUiShot(Shot))
 	{
 		// El final funde a negro 2 s antes de enseñar el epílogo: se espera más que en el resto.
@@ -659,6 +675,10 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 		: Timer >= SettleSeconds && (bTexturesReady || Timer >= SettleSeconds + MaxStreamingWaitSeconds);
 	// Una vez empezada, la medida del bench sigue aunque el barrido pida texturas nuevas: los
 	// fotogramas de streaming son justo los que pueden bajar el mínimo.
+	if (!bRequested && bSettled && !Shots[Current].WalkVelocity.IsNearlyZero() && !TickWalk(DeltaTime))
+	{
+		return;
+	}
 	if (!bRequested && (bSettled || bBenchMeasuring))
 	{
 		if (bBenchMode)
@@ -686,6 +706,7 @@ void UExploredShotSubsystem::Tick(float DeltaTime)
 			Auditor->RecordFrameSample(Shots[Current].Name, AvgFPS, MinFPS);
 		}
 		LogShotFrameRate(Shots[Current].Name);
+		LogGrassCost(Shots[Current].Name);
 		const FString File = OutputDir / (Shots[Current].Name + TEXT(".png"));
 		FScreenshotRequest::RequestScreenshot(File, Shots[Current].bShowUI, false);
 		bRequested = true;

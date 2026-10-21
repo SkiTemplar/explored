@@ -5,7 +5,7 @@
                                      FOceanWaves; «FacetSize» queda sin uso desde F6) y degradado
                                      continuo de paleta según la profundidad del fondo: orilla
                                      turquesa (agua_somera), media (agua_media) y profunda
-                                     (agua_profunda), con banda blanda de espuma (blanco_nube) que late en la
+                                     (agua_profunda), con banda blanda de espuma (blanco_nube, peso ShoreFoam: 0 desde F8, la dibuja M_TerrainToon) que late en la
                                      orilla y crestas blancas con mar de temporal. La profundidad sale
                                      del relieve analítico de island.json (tierras elípticas con costa
                                      armónica y rocas, como FIslandLayout), no de texturas ni de
@@ -20,10 +20,13 @@
 
 import json
 import math
+import os
+import sys
 
 import unreal
 
-from material_utils import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from material_utils import (  # noqa: E402 - necesita el sys.path de arriba
     ART_MATERIALS_PATH, ISLAND_JSON, connect, custom, expr, finish, hlsl_float3, palette_linear,
     recreate_material, recreate_material_fresh, rgb, scalar_param, to_property, vector_param,
 )
@@ -136,7 +139,7 @@ colour = lerp(colour, lerp({foam}, {lilac}, storm), whitecap * 0.75);
 float pulse = 0.5 + 0.5 * sin(T * 1.2566 + dot(WP.xy, float2(0.0011, 0.0007)));
 float foamDepth = (0.18 + 0.22 * pulse) * (1.0 + SeaState);
 float shore = (1.0 - smoothstep(foamDepth * 0.35, foamDepth, depth)) * step(-2.0, depth);
-return lerp(colour, {foam}, shore * 0.85);
+return lerp(colour, {foam}, shore * ShoreFoam);
 """
 
 
@@ -184,11 +187,15 @@ def build_ocean():
     connect(cam, "", normal, "Cam")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
-    colour = custom(m, -1000, 800, ocean_color_hlsl(), gerstner_inputs + ["FacetSize", "SeaState"],
+    colour = custom(m, -1000, 800, ocean_color_hlsl(), gerstner_inputs + ["FacetSize", "SeaState", "ShoreFoam"],
                     unreal.CustomMaterialOutputType.CMOT_FLOAT3, "FacetColour")
     wire(colour)
     connect(facet, "", colour, "FacetSize")
     connect(sea_state, "", colour, "SeaState")
+    # La profundidad del mar sale del relieve analítico, que se separa de la malla del terreno hasta
+    # ~3 m: en las playas de poca pendiente pintaba bandas blancas anchas y planas. La espuma de orilla
+    # la dibuja ahora M_TerrainToon por la altura real del suelo; aquí queda a 0 salvo que se pida.
+    connect(scalar_param(m, "ShoreFoam", 0.0, -1600, 1100), "", colour, "ShoreFoam")
     to_property(colour, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
     rough = expr(m, unreal.MaterialExpressionConstant, -300, 200)
@@ -281,3 +288,11 @@ def build_all(palette):
     build_sky_gradient()
     build_cloud(palette)
     build_sky_disc(palette)
+
+
+if __name__ == "__main__":
+    # Directo (Tools/unreal_python.ps1 -Script Tools/Unreal/materials_lowpoly.py): agua y cielo sin rehacer M_Toon.
+    _palette = unreal.load_asset(f"{ART_MATERIALS_PATH}/T_Paleta")
+    if _palette is None:
+        raise RuntimeError(f"Falta {ART_MATERIALS_PATH}/T_Paleta: ejecuta antes build_materials.py")
+    build_all(_palette)

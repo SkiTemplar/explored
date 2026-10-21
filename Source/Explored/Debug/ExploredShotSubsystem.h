@@ -24,6 +24,15 @@ struct FExploredShot
 	FName Action;
 	/** Punto del mundo (cm) al que mira el personaje en «interact». */
 	FVector Target = FVector::ZeroVector;
+	/**
+	 * Acciones «walk» y «walkon» (conjunto «f8»): la cámara avanza a esta velocidad horizontal (cm/s) con
+	 * los ojos a WalkEyeCm sobre la malla del suelo durante WalkSeconds y entonces se captura. «walkon»
+	 * sigue desde donde quedó la vista anterior, sin teletransporte ni asentamiento (dos capturas
+	 * separadas WalkSeconds para ver si el césped salta al caminar).
+	 */
+	FVector WalkVelocity = FVector::ZeroVector;
+	float WalkSeconds = 0.0f;
+	float WalkEyeCm = 170.0f;
 };
 
 /**
@@ -85,6 +94,12 @@ private:
 	void LogShotFrameRate(const FString& Name) const;
 	/** Activa o quita el sombreado por bandas (M_PP_Toon) de los PostProcessVolume del mapa. */
 	void SetToonBands(bool bEnabled) const;
+	/** Conjunto «f8»: césped continuo (alfombra, pasos sin saltos) y arena estilizada. */
+	void BuildGrassSandShots();
+	/** Avanza la cámara de una vista «walk»; devuelve true cuando ya ha caminado WalkSeconds. */
+	bool TickWalk(float DeltaTime);
+	/** Anota el coste del césped (siembra media y máxima, triángulos a la vista) de la vista actual. */
+	void LogGrassCost(const FString& Name) const;
 
 	TArray<FExploredShot> Shots;
 	int32 Current = INDEX_NONE;
@@ -118,6 +133,9 @@ private:
 	 * UExploredPlaytestAuditor en el mundo (conjunto «playtest»), se le pasa junto con la VRAM.
 	 */
 	TArray<float> CurrentShotFrameRates;
+
+	/** Segundos caminados en la vista actual (< 0: todavía no ha empezado a caminar). */
+	float WalkElapsed = -1.0f;
 
 	UPROPERTY(Transient)
 	TObjectPtr<ACameraActor> Camera;

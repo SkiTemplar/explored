@@ -13,7 +13,9 @@ C++. Por malla:
   linterna, rocas grandes, acantilado, palmeras y bambú), que usan su geometría como colisión; las
   manos y la fauna, sin colisión;
 - comprueba la caja y los triángulos contra el manifest: si no coinciden, el script falla en vez
-  de dejar una malla a otra escala.
+  de dejar una malla a otra escala;
+- el césped (K6) va con una sola LOD y sin grupo de LOD (LODGroup None, sin LOD generados: los
+  parches se adelgazan en el material, no por LOD); si el importador dejara más, el script falla.
 
 Escribe un resumen en Saved/Logs/import_props.json.
 
@@ -37,6 +39,7 @@ KIT_MATERIALS = {"K6_Cesped": "/Game/Art/Materials/M_ToonCesped"}
 # Kits que importan el color por vértice (K6: peso del viento en el alfa) y que van sin colisión.
 VERTEX_COLOR_KITS = {"K6_Cesped"}
 NO_COLLISION_KITS = {"K6_Cesped"}
+SINGLE_LOD_KITS = {"K6_Cesped"}
 SUMMARY_PATH = os.path.join(REPO_ROOT, "Saved", "Logs", "import_props.json")
 # Tolerancia de la caja frente a dimensiones_m del manifest (cm): el exportador redondea a mm.
 BOUNDS_TOLERANCE_CM = 1.5
@@ -158,6 +161,17 @@ def check_mesh(mesh, entry):
     return got, tris
 
 
+def check_single_lod(mesh):
+    """Una sola LOD y LODGroup None (el grupo por defecto de la importación no genera LOD)."""
+    group = str(mesh.get_editor_property("lod_group"))
+    if group not in ("None", ""):
+        mesh.set_editor_property("lod_group", "None")
+    lods = mesh.get_num_lods()
+    if lods != 1:
+        raise RuntimeError(f"{mesh.get_name()}: {lods} LOD (el césped va con una sola)")
+    return lods
+
+
 def kit_material(kit_dir, default):
     path = KIT_MATERIALS.get(kit_dir)
     if path is None:
@@ -186,9 +200,10 @@ def main():
             mesh.set_editor_property("nanite_settings", nanite)
             collision = configure_collision(mesh, kit_dir)
             size_cm, tris = check_mesh(mesh, entry)
+            lods = check_single_lod(mesh) if kit_dir in SINGLE_LOD_KITS else mesh.get_num_lods()
             unreal.EditorAssetLibrary.save_loaded_asset(mesh)
             summary.append({"path": mesh.get_path_name(), "tris": tris, "size_cm": [round(v, 1) for v in size_cm],
-                            "collision": collision})
+                            "collision": collision, "lods": lods})
             unreal.log(f"[import_props] {mesh.get_path_name()}: {tris} tris, colisión {collision}")
     os.makedirs(os.path.dirname(SUMMARY_PATH), exist_ok=True)
     with open(SUMMARY_PATH, "w", encoding="utf-8") as f:

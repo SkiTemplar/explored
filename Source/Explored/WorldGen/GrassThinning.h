@@ -30,7 +30,7 @@ struct EXPLORED_API FGrassThinning
 	float EndFadeM = 25.0f;
 	float Exponent = 2.0f;
 	/** Agrandado máximo (horizontal) de los parches que quedan. */
-	float MaxGrow = 2.0f;
+	float MaxGrow = 2.6f;
 	/** Fracción del agrandado que se aplica también a la altura (0 = altura fija). */
 	float GrowZ = 0.4f;
 	/** Ancho relativo del encogido: el parche pasa de entero (f ≥ r) a 0 (f ≤ r / (1 + Band)). */

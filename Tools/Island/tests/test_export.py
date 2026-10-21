@@ -44,3 +44,27 @@ def test_objeto_de_blender_conserva_nivel_del_mar_y_paleta(layout, props):
     # Blender guarda las normales personalizadas codificadas: error de ~1° como mucho.
     assert np.abs(corners - expected).max() < 0.03 and np.abs(corners - expected).mean() < 0.005
     meshkit.reset_scene()
+
+
+def test_alfa_del_color_es_el_tipo_de_suelo(layout, props):
+    from dataclasses import replace
+
+    from explored_island.colors import PALETTE
+    from explored_island.groundfield import grid_size
+    coarse = replace(layout, terrain=replace(layout.terrain, cell=15.0))
+    mesh = build_terrain(coarse, props)
+    alpha = export.surface_alpha(mesh, *grid_size(coarse))
+    assert alpha.shape == (len(mesh.verts),)
+    assert alpha.min() >= 0.0 and alpha.max() <= 1.0
+    grass = np.isin(mesh.vertex_palette, [PALETTE['hierba_clara'], PALETTE['hierba_oscura'], PALETTE['hierba_salvia']])
+    sand = np.isin(mesh.vertex_palette, [PALETTE['arena_clara'], PALETTE['arena_oscura']])
+    rock = np.isin(mesh.vertex_palette, [PALETTE['roca_media'], PALETTE['roca_oscura']])
+    # Fundido de una celda: dentro de cada zona el alfa se queda cerca de su código.
+    assert np.median(alpha[grass]) > 0.9 and np.median(alpha[sand]) < 0.1
+    assert 0.3 < np.median(alpha[rock]) < 0.7
+    meshkit.reset_scene()
+    obj = export.build_blender_object(mesh, alpha)
+    attr = meshkit.mesh_of(obj).color_attributes['Col']
+    written = np.array([c.color[3] for c in attr.data])  # pyright: ignore[reportAttributeAccessIssue]
+    assert np.abs(written - alpha).max() < 1e-5
+    meshkit.reset_scene()
