@@ -4,13 +4,16 @@
 # softlocks) en Saved\Shots\playtest_report.json y playtest_report.txt.
 # Uso: Tools\playtest_v3.ps1 [-Route competente] [-Clock 6] [-TimeoutMinutes 50] [-Window]
 # Sin -Window se renderiza fuera de pantalla (-RenderOffscreen): nadie cierra la ventana a mitad.
+# Con -Exe <Saved\Package\Windows\Explored.exe> juega sobre un paquete Development (criterio 2
+# de F7); en Shipping el bot no existe.
 param(
     [string]$Route = 'competente',
     [ValidateRange(1, 12)] [int]$Clock = 6,
     [int]$Width = 1280,
     [int]$Height = 720,
     [int]$TimeoutMinutes = 50,
-    [switch]$Window
+    [switch]$Window,
+    [string]$Exe = ''
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -21,12 +24,18 @@ $reportTxt = Join-Path $outDir 'playtest_report.txt'
 Remove-Item $reportJson, $reportTxt -ErrorAction SilentlyContinue
 $logFile = Join-Path $ProjectRoot 'Saved\Logs\PlaytestV3.log'
 
-$cmdArgs = @($UProject, '/Game/Maps/Map_IslaSal', '-game', '-SkipMenu', '-ExploredPlaytestAudit', "-BalizaRun=$Route",
+$cmdArgs = @('/Game/Maps/Map_IslaSal', '-SkipMenu', '-ExploredPlaytestAudit', "-BalizaRun=$Route",
     "-BalizaClock=$Clock", "-ShotsDir=$outDir", '-windowed', "-ResX=$Width", "-ResY=$Height", '-nosplash', '-unattended',
     '-log', "-ABSLOG=$logFile")
 if (-not $Window) { $cmdArgs += '-RenderOffscreen' }
 $start = Get-Date
-$proc = Start-Process -FilePath $Editor -ArgumentList $cmdArgs -PassThru
+if ($Exe) {
+    if (-not (Test-Path $Exe)) { throw "No existe el ejecutable $Exe" }
+    $proc = Start-Process -FilePath $Exe -ArgumentList $cmdArgs -PassThru
+}
+else {
+    $proc = Start-Process -FilePath $Editor -ArgumentList (@($UProject, '-game') + $cmdArgs) -PassThru
+}
 if (-not $proc.WaitForExit($TimeoutMinutes * 60 * 1000)) {
     $proc.Kill()
     throw "El bot no terminó en $TimeoutMinutes minutos (revisa $logFile)"

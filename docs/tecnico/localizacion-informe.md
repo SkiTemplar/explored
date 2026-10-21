@@ -12,21 +12,16 @@ La guía está en [`localizacion.md`](localizacion.md).
 | … de `Content/Data` (campos bilingües) | 125 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
-| Literales sin localizar | 2 |
+| Literales sin localizar | 0 |
 | Literales invariantes | 4 |
-| Literales para revisar | 363 |
-| Errores / avisos | 0 / 2 |
+| Literales para revisar | 366 |
+| Errores / avisos | 0 / 0 |
 
 ## Literales del C++
 
-### Literal (2)
+### Literal (0)
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
-
-| Fichero:línea | Texto | Código |
-|---|---|---|
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:242` | `ir a ` | `AddStep(TEXT("ir a ") + Label, [this, Target]() { return TeleportNear(Target(), true); }, [this]() { return TravelLeft1x <= 0.0; },` |
-| `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:345` | `remar hasta ` | `AddStep(TEXT("remar hasta ") + Label, [Raft]() { return Raft() && Raft()->IsOccupied(); }, [this, Raft, Target, ArriveMeters]()` |
 
 ### Invariante (4)
 
@@ -39,7 +34,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:97` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (363)
+### Revisar (366)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -106,6 +101,9 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/BeaconSoftlockModel.cpp:323` | `la caja no hace falta` | `const FString Crate = Parts.IsEmpty() ? FString(TEXT("la caja no hace falta")) : TEXT("la caja da ") + FString::Join(Parts, TEXT(", "));` |
 | `Source/Explored/Debug/BeaconSoftlockModel.cpp:323` | `la caja da ` | `const FString Crate = Parts.IsEmpty() ? FString(TEXT("la caja no hace falta")) : TEXT("la caja da ") + FString::Join(Parts, TEXT(", "));` |
 | `Source/Explored/Debug/BeaconSoftlockModel.cpp:324` | `faltan: ` | `return Verdict.bCompletable ? Crate : TEXT("faltan: ") + FString::Join(Verdict.Missing, TEXT("; ")) + TEXT(" (") + Crate + TEXT(")");` |
+| `Source/Explored/Debug/BenchBudgetModel.cpp:75` | `[Bench] fps %s: media %.1f, mínimo %.1f, 1 %% %.1f, %d fotogramas en %.1f s, %s` | `return FString::Printf(TEXT("[Bench] fps %s: media %.1f, mínimo %.1f, 1 %% %.1f, %d fotogramas en %.1f s, %s"),` |
+| `Source/Explored/Debug/BenchBudgetModel.cpp:82` | `[Bench] Resumen: %d vistas, %d fotogramas, media %.1f fps (objetivo ≥ %.0f), mínimo %.1f fps (objetivo ≥ %.0f): %s` | `FString Line = FString::Printf(TEXT("[Bench] Resumen: %d vistas, %d fotogramas, media %.1f fps (objetivo ≥ %.0f), mínimo %.1f fps (objetivo ≥ %.0f): %s"),` |
+| `Source/Explored/Debug/BenchBudgetModel.cpp:87` | ` (fuera de presupuesto: ` | `Line += TEXT(" (fuera de presupuesto: ");` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:115` | `empieza en el prólogo con objetivo` | `Add(TEXT("empieza en el prólogo con objetivo"), [] { return true; },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:117` | `leer la página 1` | `Add(TEXT("leer la página 1"), [this]() { return Interact(TEXT("pagina_1")); },` |
 | `Source/Explored/Debug/ExploredBeaconSmokeTest.cpp:119` | `BalizaStage Preparacion` | `Add(TEXT("BalizaStage Preparacion"), [this]() { return Console(TEXT("BalizaStage Preparacion")); },` |
@@ -428,7 +426,6 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (2)
+## Avisos (0)
 
-- Source/Explored/Debug/ExploredPlaytestBotRun.cpp:242: literal sin localizar «ir a »
-- Source/Explored/Debug/ExploredPlaytestBotRun.cpp:345: literal sin localizar «remar hasta »
+Ninguno.

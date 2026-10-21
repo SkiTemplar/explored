@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"EngineAssociation": "5.6",
 	"Category": "",
-	"Description": "Explored — supervivencia y exploración en un archipiélago procedural.",
+	"Description": "Baliza Siete — supervivencia corta en primera persona en una sola isla.",
 	"Modules": [
 		{
 			"Name": "Explored",

@@ -52,6 +52,17 @@
 				},
 				{
 					"Source": {
+						"Text": "Baliza Siete"
+					},
+					"Keys": [
+						{
+							"Key": "Title",
+							"Path": "Config/DefaultGame.ini - line 4"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Coger {0}"
 					},
 					"Keys": [
@@ -179,17 +190,6 @@
 						{
 							"Key": "Crafting_NoMatch",
 							"Path": "Source/Explored/Crafting/CraftingLibrary.cpp - line 238"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Explored"
-					},
-					"Keys": [
-						{
-							"Key": "Title",
-							"Path": "Config/DefaultGame.ini - line 4"
 						}
 					]
 				},

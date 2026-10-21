@@ -7,9 +7,9 @@
 		"datos": 125,
 		"pendientes": 7,
 		"sin_en": 0,
-		"literales": 2,
+		"literales": 0,
 		"invariantes": 4,
-		"revisar": 363
+		"revisar": 366
 	},
 	"entries": [
 		{
@@ -3868,8 +3868,8 @@
 		{
 			"namespace": "Explored",
 			"key": "Title",
-			"es": "Explored",
-			"en": "Explored",
+			"es": "Baliza Siete",
+			"en": "Baliza Siete",
 			"origin": "ini",
 			"locations": [
 				"Config/DefaultGame.ini:4"

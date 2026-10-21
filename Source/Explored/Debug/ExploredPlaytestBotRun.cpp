@@ -239,7 +239,7 @@ void UExploredPlaytestBot::AddGoTo(const FString& PropId)
 
 void UExploredPlaytestBot::AddGoToActor(const FString& Label, TFunction<AActor*()> Target)
 {
-	AddStep(TEXT("ir a ") + Label, [this, Target]() { return TeleportNear(Target(), true); }, [this]() { return TravelLeft1x <= 0.0; },
+	AddStep(TEXT("ir a ") + Label, [this, Target]() { return TeleportNear(Target(), true); }, [this]() { return TravelLeft1x <= 0.0; }, // loc: ignorar (paso del bot, solo en el log)
 		900.0, true);
 }
 
@@ -342,7 +342,7 @@ void UExploredPlaytestBot::AddRow(const FString& Label, TFunction<FVector()> Tar
 		TActorIterator<AExploredRaftSite> It(GetWorld());
 		return It ? It->GetRaft() : nullptr;
 	};
-	AddStep(TEXT("remar hasta ") + Label, [Raft]() { return Raft() && Raft()->IsOccupied(); }, [this, Raft, Target, ArriveMeters]()
+	AddStep(TEXT("remar hasta ") + Label, [Raft]() { return Raft() && Raft()->IsOccupied(); }, [this, Raft, Target, ArriveMeters]() // loc: ignorar (paso del bot, solo en el log)
 	{
 		AExploredRaft* R = Raft();
 		if (!R || !R->IsOccupied())
