@@ -5,17 +5,11 @@ import pytest
 
 from explored_island import decor
 from explored_island.layout import distance_to_paths
-from explored_island.props import load_props
 
 
 @pytest.fixture(scope='module')
-def props():
-    return load_props()
-
-
-@pytest.fixture(scope='module')
-def generado(layout, props):
-    return decor.build_decor(layout, props)
+def generado(layout, props, terreno):
+    return decor.build_decor(layout, props, terreno)
 
 
 def _xy(generado, mallas=None):
@@ -55,17 +49,34 @@ def test_por_zona(layout, generado):
     assert len(acantilados) >= 10 and (acantilados[:, 5] < 1.0).all()
 
 
-def test_apoyado_en_el_suelo(layout, generado):
-    from explored_island.terrain import build_terrain, surface_height
-    malla = build_terrain(layout)
+def test_nada_flota_ni_queda_enterrado(layout, terreno, generado):
+    assert decor.grounding_errors(terreno, layout, generado) == []
+    # La vegetación se apoya en el punto más bajo de su huella, unos centímetros por debajo.
+    from explored_island.terrain import surface_height
     for m, x, y, z, _yaw, _s in generado['instances'][::25]:
-        suelo = surface_height(malla, layout, x, y)
-        hundido = decor.CLIFF_SINK if m == decor.CLIFF else 0.05
-        assert z == pytest.approx(suelo - hundido, abs=0.02)
+        suelo = surface_height(terreno, layout, x, y)
+        assert z <= suelo - (decor.CLIFF_SINK if m == decor.CLIFF else decor.SINK) + 0.01
 
 
-def test_determinista(layout, props, generado):
-    assert decor.build_decor(layout, props) == generado
+def test_comprobacion_de_apoyo_detecta_errores(layout, terreno, generado):
+    from explored_island.terrain import surface_height
+    x, y = generado['instances'][0][1:3]
+    suelo = surface_height(terreno, layout, x, y)
+    malo = {'instances': [[decor.GRASS, x, y, suelo + 0.5, 0.0, 1.0], [decor.GRASS, x, y, suelo - 2.0, 0.0, 1.0],
+                          [decor.CLIFF, x, y, suelo, 0.0, 0.7]]}
+    errores = decor.grounding_errors(terreno, layout, malo)
+    assert len(errores) == 3 and 'flota' in errores[0] and 'enterrado' in errores[1] and 'acantilado' in errores[2]
+
+
+def test_palmeras_con_mancha(props, generado):
+    spots = decor.palm_spots(generado, props)
+    decorativas = sum(1 for inst in generado['instances'] if inst[0] in (decor.PALM_A, decor.PALM_B))
+    de_juego = sum(1 for p in props['props'] if p['type'] == 'palma')
+    assert spots.shape == (decorativas + de_juego, 2) and de_juego == 8
+
+
+def test_determinista(layout, props, terreno, generado):
+    assert decor.build_decor(layout, props, terreno) == generado
 
 
 def test_main_escribe_json(tmp_path, generado):
@@ -79,6 +90,12 @@ def test_main_falla_fuera_de_objetivo(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(decor, 'MAX_INSTANCES', 10)
     assert decor.main(['--out', str(tmp_path / 'x.json')]) == 1
     assert 'ERROR' in capsys.readouterr().out
+
+
+def test_main_falla_si_algo_flota(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(decor, 'grounding_errors', lambda *_: ['SM_Shrub_01 en (0, 0) flota 0.30 m'])
+    assert decor.main(['--out', str(tmp_path / 'x.json')]) == 1
+    assert 'mal apoyadas' in capsys.readouterr().out
 
 
 def test_json_versionado_al_dia(generado):

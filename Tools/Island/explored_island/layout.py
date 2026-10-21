@@ -2,9 +2,13 @@
 
 `height_at` es una copia exacta de FIslandLayout::SampleColumn (C++): tierras
 elípticas con meseta y plataforma, colinas gaussianas de zona y rocas. La
-malla del terreno se muestrea con esta misma función, así que el relieve
+malla del terreno parte de esta misma función (filtrada), así que el relieve
 aproximado que usa el juego (audio, cámaras, fauna) coincide con la malla
-salvo por el fondo marino recortado y el ruido de facetas (< 0,3 m).
+salvo por el fondo marino recortado y el detalle de media escala de relief.py
+(ondulaciones, surcos, rellanos, dunas y caminos: hasta ~1,5 m en tierra
+firme, 0 en la orilla y ≤ 0,3 m en los puntos de autor y las estructuras).
+Lo que tenga que apoyarse de verdad traza contra la malla (el poblador de
+island_props) o usa terrain.surface_height (island_decor).
 
 Coordenadas en metros: +X es el norte y +Y el este (igual que el mundo de
 Unreal dividido entre 100).

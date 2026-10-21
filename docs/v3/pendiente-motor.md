@@ -151,3 +151,40 @@ powershell -NoProfile -File Tools/package.ps1                              # Shi
 - Junto al agua, pulsar F: si Iria lanza un sedal sin caña ni punto de pesca, quitar la pesca
   antigua (`UFishingComponent` y el mapeo F/R/T de `AExploredCharacter`).
 - Mantener H: hoy no muestra nada (reloj de pulsera sin vista); decidir si se quita el mapeo.
+
+## F6 — Relieve y textura del suelo (2026-10-21)
+
+Estado sin motor: terreno regenerado con relieve de media escala (ondulaciones, lomas, surcos de la
+colina, rellanos rocosos, dunas, berma y caminos hundidos), normales 60 % suaves / 40 % de cara y
+color por vértice en tres tonos por zona (`Art/Island/SM_IslaSal_Terrain.fbx` + `.json`,
+133 770 triángulos, pendiente máxima en caminos 26,58°); `island_decor.json` reapoyado (643
+instancias, ninguna flotando ni enterrada); `M_TerrainToon` reescrito con la máscara
+`T_TerrainStrokes` (`Tools/Unreal/materials_f6.py`). Vista previa en Blender:
+`docs/v3/laminas/relieve-antes-despues.png`. Falta llevarlo al motor, en este orden:
+
+```powershell
+cd Tools/Textures; uv sync; uv run textures-strokes; cd ../..
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_f6.py
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_island.py
+powershell -NoProfile -File Tools/shots.ps1 -Set f4b -Width 1920 -Height 1080
+```
+
+(`textures-strokes` escribe `Art/Export/Textures/T_TerrainStrokes.png`, que no se versiona; si
+`T_TerrainStrokes` ya existe en el proyecto y se cambia `strokes.json`, lanzar `materials_f6.py` con
+`$env:EXPLORED_REIMPORT_STROKES = '1'`.) Copiar de `Saved/Shots` `f4b-cenital`, `f4b-cala`,
+`f4b-palmar`, `f4b-faro`, `f4b-islote` y `f4b-atardecer` a `docs/v3/capturas/` como
+`f6-relieve-<vista>.png`. Comprobar:
+
+- `materials_f6.py` termina sin `Error`; `M_TerrainToon` compila y tiene los parámetros
+  `DarkFactor`, `LightFactor`, `StrokesTile0/1`, `FadeStartM`/`FadeEndM`; `T_TerrainStrokes` es
+  lineal (sRGB desactivado), `TC_Grayscale` y con repetición.
+- `import_island.py` termina con la caja dentro de tolerancia (`bounds_max_m` z = 35,882) y la malla
+  conserva las normales importadas (sombreado con facetas suaves, sin costuras en las aristas).
+- En `f6-relieve-cala/palmar/faro`, frente a `f6-suave-*`: lomas y surcos legibles, trazos visibles
+  de cerca y apagados a lo lejos (sin moiré ni repetición evidente a 20-40 m), caminos de tierra
+  hundidos con borde marcado, manchas de tierra bajo las palmeras; que no se vea más facetado que
+  `f4b-*`.
+- Nada de la vegetación (HISM de `island_decor.json`) flota ni se hunde, y el faro, la casa, los
+  refugios y la balsa siguen apoyados en llano.
+- Recorrer los dos caminos hasta el faro (o `Tools/playtest_v3.ps1 -Route competente -Clock 6`): sin
+  atascos en los rebordes ni en los taludes de los caminos y sin que el bot se salga del camino.

@@ -4,9 +4,10 @@ Reutiliza explored_style.meshkit (MeshBuilder, UV por celda de paleta, un
 material y la exportación FBX común) sin modificarlo. Diferencias con un prop:
 el pivote es el nivel del mar (no la base de la malla), el eje Y se invierte al
 pasar a Blender, porque el importador FBX de Unreal vuelve a invertirlo
-(Blender +Y -> Unreal -Y), y el terreno NO es facetado: normales suaves por
-vértice y un atributo de color por vértice («Col», colores de la paleta
-fundidos) que lee M_TerrainToon (Tools/Unreal/materials_f6.py).
+(Blender +Y -> Unreal -Y), y el terreno lleva normales por esquina (mezcla de la
+suave del vértice y la de la cara, `terrain.FACET_MIX`) y un atributo de color
+por vértice («Col», colores de la paleta fundidos) que lee M_TerrainToon
+(Tools/Unreal/materials_f6.py).
 
 Uso: uv run island-terrain [--json RUTA] [--out RUTA.fbx] [--cell METROS]
 """
@@ -26,8 +27,10 @@ from explored_style import meshkit
 from explored_style.palette import load_palette
 from mathutils import Matrix
 
+from explored_island.decor import build_decor, palm_spots
 from explored_island.layout import ISLAND_JSON, REPO_ROOT, Layout, distance_to_paths, load_layout
-from explored_island.terrain import TerrainMesh, build_terrain
+from explored_island.props import load_props
+from explored_island.terrain import FACET_MIX, TerrainMesh, build_terrain
 
 MESH_NAME = 'SM_IslaSal_Terrain'
 DEFAULT_OUT = REPO_ROOT / 'Art' / 'Island' / f'{MESH_NAME}.fbx'
@@ -59,6 +62,9 @@ def build_blender_object(mesh: TerrainMesh) -> bpy.types.Object:
     data.transform(Matrix.Translation((0.0, 0.0, min_z)))
     for poly in data.polygons:
         poly.use_smooth = True
+    # Normal de cada esquina en el orden de los bucles de to_builder: (i0, i2, i1) y con Y invertida.
+    loops = mesh.corner_normals[:, [0, 2, 1], :].reshape(-1, 3) * np.array([1.0, -1.0, 1.0])
+    data.normals_split_custom_set([tuple(n) for n in loops.tolist()])
     attr = data.color_attributes.new(name='Col', type='FLOAT_COLOR', domain='POINT')
     rgba = np.concatenate([mesh.vertex_colors, np.ones((len(mesh.vertex_colors), 1))], axis=1)
     attr.data.foreach_set('color', rgba.astype(np.float32).ravel())  # pyright: ignore[reportAttributeAccessIssue]
@@ -99,13 +105,17 @@ def stats(mesh: TerrainMesh, layout: Layout) -> dict:
         'bounds_min_m': [round(float(v), 3) for v in lo],
         'bounds_max_m': [round(float(v), 3) for v in hi],
         'path_max_slope_deg': round(path_max_slope(mesh, layout), 2),
+        'facet_mix': FACET_MIX,
         'colors': {str(k): int(v) for k, v in sorted(Counter(mesh.colors.tolist()).items())},
     }
 
 
-def generate(layout: Layout, out: Path) -> dict:
-    """Construye la malla, la exporta a «out» y escribe sus cifras en «out».json."""
-    mesh = build_terrain(layout, linear_palette())
+def generate(layout: Layout, out: Path, props: dict | None = None) -> dict:
+    """Construye la malla, la exporta a «out» y escribe sus cifras en «out».json. Las palmeras con
+    mancha de tierra son las de island_decor (generado aquí mismo, determinista) y las de juego."""
+    props = props if props is not None else load_props()
+    palms = palm_spots(build_decor(layout, props), props)
+    mesh = build_terrain(layout, props, linear_palette(), palms)
     meshkit.reset_scene()
     obj = build_blender_object(mesh)
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -15,6 +15,11 @@ Reglas por lugar:
 - Acantilados: `SM_CliffRock` cada ~8 m en las pendientes de las Rocas del
   Pescador y en la ladera más empinada de la colina, de frente hacia abajo.
 
+Apoyo: la vegetación se apoya en el punto más bajo de su huella sobre la malla del
+terreno (nada flota) y se descarta si la huella tiene más de `BURY_MAX` m de desnivel
+(quedaría enterrada por un lado); los acantilados se entierran `CLIFF_SINK` m. El CLI
+falla si `grounding_errors` encuentra alguna instancia mal apoyada.
+
 Uso: `uv run island-decor [--out RUTA]`.
 """
 
@@ -27,8 +32,8 @@ from pathlib import Path
 import numpy as np
 
 from explored_island.layout import REPO_ROOT, Layout, distance_to_paths, height_at, load_layout, rock_influence
-from explored_island.props import load_props
-from explored_island.terrain import SAND_TOP, build_terrain, surface_height, value_noise
+from explored_island.props import STRUCTURE_TYPES, load_props
+from explored_island.terrain import SAND_TOP, TerrainMesh, build_terrain, surface_height, value_noise
 
 DECOR_JSON = REPO_ROOT / 'Content' / 'Data' / 'island_decor.json'
 KIT = '/Game/Art/K1_Naturaleza/'
@@ -40,9 +45,7 @@ GRID = 3.2              # m entre candidatos (rejilla con desplazamiento aleator
 PATH_CLEARANCE = 2.0    # m libres a cada lado del borde del camino
 PROP_CLEARANCE = 3.0    # m alrededor de un objeto de juego pequeño
 BIG_CLEARANCE = 8.0     # m alrededor de estructuras (faro, refugios, balsa, carguero...)
-BIG_TYPES = {'faro_torre', 'faro_casa', 'refugio_faro', 'refugio_palma', 'hoguera_fija', 'barril_lluvia',
-             'caja_suministros', 'balsa_sitio', 'carguero_casco', 'carguero_puente', 'pasarela_carguero',
-             'caja_mapas', 'shelter_volume'}
+BIG_TYPES = STRUCTURE_TYPES
 START_CLEARANCE = 6.0   # m alrededor del punto de aparición
 MAX_SLOPE = 30.0        # grados: por encima no se pone vegetación
 CLIFF_SLOPE = 22.0      # grados: pendiente mínima para un acantilado
@@ -52,6 +55,12 @@ CLIFF_SINK = 1.6        # m que se entierra el acantilado
 # pocas rocas sueltas en su ladera, no un muro).
 CLIFF_KEEP = {'rocas_pescador': 1.0, 'colina_faro': 0.15}
 MIN_INSTANCES, MAX_INSTANCES = 400, 900
+# Radio de apoyo (m, a escala 1) de cada malla: la instancia se apoya en el punto más bajo de ese círculo.
+FOOTPRINT = {GRASS: 0.3, SHRUB: 0.5, ROCK: 0.35, BAMBOO: 0.35, PALM_A: 0.25, PALM_B: 0.25}
+FOOTPRINT_SAMPLES = 6
+SINK = 0.03             # m que se hunde la base bajo el punto más bajo de la huella
+BURY_MAX = 0.45         # m de desnivel máximo dentro de la huella
+GROUND_TOL = 0.02       # m de tolerancia (redondeo a cm)
 
 
 def _zone_mask(layout: Layout, zone_id: str, x: np.ndarray, y: np.ndarray, grow: float = 1.0) -> np.ndarray:
@@ -162,23 +171,67 @@ def cliffs(layout: Layout, props: dict, rng: np.random.Generator) -> list[list[f
     return out
 
 
-def build_decor(layout: Layout, props: dict) -> dict:
+def footprint_heights(mesh: TerrainMesh, layout: Layout, x: float, y: float, radius: float) -> np.ndarray:
+    """Altura de la malla en el centro y en FOOTPRINT_SAMPLES puntos del círculo de apoyo."""
+    angles = np.linspace(0.0, 2.0 * np.pi, FOOTPRINT_SAMPLES, endpoint=False)
+    pts = [(x, y)] + [(x + radius * np.cos(a), y + radius * np.sin(a)) for a in angles]
+    return np.array([surface_height(mesh, layout, px, py) for px, py in pts])
+
+
+def ground(mesh: TerrainMesh, layout: Layout, instances: list[list[float]]) -> list[list[float]]:
+    """Apoya cada instancia en la malla: la vegetación en el punto más bajo de su huella (nada flota) y
+    se descarta si la huella tiene más de BURY_MAX m de desnivel (quedaría enterrada por un lado); los
+    acantilados se entierran CLIFF_SINK m bajo el centro."""
+    out = []
+    for m, x, y, _z, yaw, s in instances:
+        if m == CLIFF:
+            z = surface_height(mesh, layout, x, y) - CLIFF_SINK
+        else:
+            heights = footprint_heights(mesh, layout, x, y, FOOTPRINT[int(m)] * s)
+            if heights.max() - heights.min() > BURY_MAX:
+                continue
+            z = float(heights.min()) - SINK
+        out.append([int(m), round(x, 2), round(y, 2), round(z, 2), round(yaw, 1), round(s, 2)])
+    return out
+
+
+def grounding_errors(mesh: TerrainMesh, layout: Layout, decor: dict) -> list[str]:
+    """Instancias que flotan (base por encima del suelo de su huella) o quedan enterradas."""
+    errors = []
+    for m, x, y, z, _yaw, s in decor['instances']:
+        if m == CLIFF:
+            gap = abs(z + CLIFF_SINK - surface_height(mesh, layout, x, y))
+            if gap > GROUND_TOL:
+                errors.append(f'acantilado en ({x}, {y}) a {gap:.2f} m de su hundimiento')
+            continue
+        heights = footprint_heights(mesh, layout, x, y, FOOTPRINT[int(m)] * s)
+        if z > heights.min() + GROUND_TOL:
+            errors.append(f'{MESHES[m]} en ({x}, {y}) flota {z - heights.min():.2f} m')
+        if heights.max() - z > BURY_MAX + SINK + GROUND_TOL:
+            errors.append(f'{MESHES[m]} en ({x}, {y}) enterrado {heights.max() - z:.2f} m')
+    return errors
+
+
+def build_decor(layout: Layout, props: dict, mesh: TerrainMesh | None = None) -> dict:
     rng = np.random.default_rng(layout.seed + 404)
     instances = vegetation(layout, props, rng) + cliffs(layout, props, rng)
-    # La malla del terreno añade ruido de facetas al relieve analítico: se apoya cada instancia en ella.
-    mesh = build_terrain(layout)
-    rounded = []
-    for m, x, y, z, yaw, s in instances:
-        z = z + surface_height(mesh, layout, x, y) - float(height_at(layout, x, y))
-        rounded.append([int(m), round(x, 2), round(y, 2), round(z, 2), round(yaw, 1), round(s, 2)])
+    # La malla añade el relieve de detalle al analítico: se apoya cada instancia en ella.
+    grounded = ground(mesh if mesh is not None else build_terrain(layout, props), layout, instances)
     return {
         'version': 1,
         '_comment': 'Vegetación y rocas decorativas (pasada visual de F4). Lo genera Tools/Island (uv run '
                     'island-decor); no se edita a mano. Metros; +X norte, +Y este. «instances»: [malla, x, y, z, '
                     'yaw en grados, escala]; malla = índice de «meshes». Sin colisión: solo decoración.',
         'meshes': [KIT + name for name in MESHES],
-        'instances': rounded,
+        'instances': grounded,
     }
+
+
+def palm_spots(decor: dict, props: dict) -> np.ndarray:
+    """(K, 2) palmeras decorativas y de juego: el terreno les pinta una mancha de tierra debajo."""
+    spots = [(x, y) for m, x, y, *_ in decor['instances'] if m in (PALM_A, PALM_B)]
+    spots += [(float(p['at'][0]), float(p['at'][1])) for p in props['props'] if p['type'] == 'palma']
+    return np.array(spots, dtype=np.float64).reshape(-1, 2)
 
 
 def counts(decor: dict) -> dict[str, int]:
@@ -193,10 +246,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog='island-decor', description='Genera island_decor.json.')
     parser.add_argument('--out', type=Path, default=DECOR_JSON)
     args = parser.parse_args(argv)
-    decor = build_decor(load_layout(), load_props())
+    layout, props = load_layout(), load_props()
+    mesh = build_terrain(layout, props)
+    decor = build_decor(layout, props, mesh)
     total = len(decor['instances'])
     if not MIN_INSTANCES <= total <= MAX_INSTANCES:
         print(f'[decor] ERROR: {total} instancias (objetivo {MIN_INSTANCES}-{MAX_INSTANCES})')
+        return 1
+    errors = grounding_errors(mesh, layout, decor)
+    if errors:
+        print(f'[decor] ERROR: {len(errors)} instancias mal apoyadas; la primera: {errors[0]}')
         return 1
     lines = ',\n'.join('    ' + json.dumps(i) for i in decor['instances'])
     head = {k: v for k, v in decor.items() if k != 'instances'}

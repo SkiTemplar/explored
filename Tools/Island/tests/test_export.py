@@ -16,12 +16,13 @@ def test_main_exporta_fbx_y_cifras(tmp_path):
     assert info['mesh'] == 'SM_IslaSal_Terrain'
     assert info['triangles'] > 1000
     assert info['bounds_min_m'][2] == pytest.approx(-30.0)
+    assert info['facet_mix'] == pytest.approx(0.4)
 
 
-def test_objeto_de_blender_conserva_nivel_del_mar_y_paleta(layout):
+def test_objeto_de_blender_conserva_nivel_del_mar_y_paleta(layout, props):
     from dataclasses import replace
     coarse = replace(layout, terrain=replace(layout.terrain, cell=15.0))
-    mesh = build_terrain(coarse)
+    mesh = build_terrain(coarse, props)
     meshkit.reset_scene()
     obj = export.build_blender_object(mesh)
     data = meshkit.mesh_of(obj)
@@ -36,4 +37,10 @@ def test_objeto_de_blender_conserva_nivel_del_mar_y_paleta(layout):
     assert ys.max() == pytest.approx(-float(mesh.verts[:, 1].min()), abs=1e-4)
     # Normales hacia arriba también en Blender.
     assert all(p.normal.z > 0 for p in data.polygons)
+    # Normales por esquina: las de la malla (mezcla suave/cara) con Y invertida y en el orden de los bucles.
+    assert data.has_custom_normals
+    corners = np.array([(n.vector[0], n.vector[1], n.vector[2]) for n in data.corner_normals])
+    expected = mesh.corner_normals[:, [0, 2, 1], :].reshape(-1, 3) * np.array([1.0, -1.0, 1.0])
+    # Blender guarda las normales personalizadas codificadas: error de ~1° como mucho.
+    assert np.abs(corners - expected).max() < 0.03 and np.abs(corners - expected).mean() < 0.005
     meshkit.reset_scene()

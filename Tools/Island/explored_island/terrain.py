@@ -1,17 +1,15 @@
-"""Malla facetada del terreno (solo numpy; Blender entra en export.py).
+"""Malla del terreno (solo numpy; Blender entra en export.py).
 
-Rejilla regular de `terrain.cell` metros con los vértices desplazados al azar
-(determinista) y la diagonal de cada celda elegida por hash: triángulos de
-2,6-3,7 m sin patrón visible. La altura de cada vértice es la analítica de
-layout.height_at, recortada al fondo marino somero (`terrain.seabed`); el
-anillo exterior baja a `terrain.skirt` para que el agua no deje ver el canto.
+Rejilla regular de `terrain.cell` metros con los vértices desplazados al azar (determinista) y la
+diagonal de cada celda elegida por hash. La altura de cada vértice es el relieve base (la analítica
+de layout.height_at filtrada con una caja de 5 × 5 muestras) más el detalle de media escala de
+relief.py (ondulaciones, lomas, surcos, rellanos, dunas, berma y caminos hundidos), recortada al
+fondo marino somero (`terrain.seabed`); el anillo exterior baja a `terrain.skirt` para que el agua
+no deje ver el canto.
 
-Cada triángulo recibe un índice de la paleta de Tools/Style según su altura,
-pendiente y zona (arena clara en la costa, arena húmeda en la orilla, hierba
-en el llano, roca en pendientes de más de 35° y en las rocas, tierra en los
-caminos). La hierba es salvia desaturada con manchas por zona: más oscura en el
-Palmar y el Bosque de Bambú, más clara y seca en la Colina del Faro, manchas
-de tierra sueltas y un borde de arena oscura entre la playa y la hierba.
+Lectura low poly moderada: la normal de cada esquina de triángulo mezcla la normal suave del vértice
+con la de la cara (`FACET_MIX`), y el color por vértice (colors.py) tiene variación de alta
+frecuencia en tres tonos de la paleta por zona.
 """
 
 from __future__ import annotations
@@ -20,29 +18,21 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from explored_island.colors import PALETTE, ROCK_SLOPE, SAND_TOP, blend_grid, point_colors
 from explored_island.layout import Layout, distance_to_paths, height_at, rock_influence
+from explored_island.noise import hash01, value_noise
+from explored_island.paths import Profile, axis_height, build_profiles
+from explored_island.relief import PATH_LEVEL, ReliefFields, detail, guard_spots
 
-# Índices de Tools/Style/paleta.json (comprobados contra la paleta en los tests).
-PALETTE = {
-    'arena_clara': 0, 'arena_oscura': 1, 'hierba_clara': 2, 'hierba_oscura': 3, 'roca_media': 7,
-    'arena_humeda': 12, 'verde_selva': 13, 'verde_lima': 14, 'roca_clara': 18, 'roca_oscura': 19,
-    'hierba_salvia': 35, 'hierba_seca': 36, 'tierra': 37,
-}
+__all__ = ['PALETTE', 'ROCK_SLOPE', 'SAND_TOP', 'TerrainMesh', 'build_terrain', 'hash01', 'surface_height',
+           'terrain_height', 'value_noise']
 
 JITTER = 0.12           # fracción de celda que se desplaza cada vértice interior
-FACET_NOISE = 0.05      # m de ruido vertical en tierra firme (fuera de caminos)
+FACET_NOISE = 0.22      # m de ruido vertical en tierra firme (fuera de caminos)
 ROCK_NOISE = 0.2        # m de ruido vertical sobre las rocas
-SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve (suaviza crestas y costa)
-COLOR_BLUR_PASSES = 1   # pasadas de fundido 3 × 3 de los colores por vértice
-WET_TOP = 0.35          # m: por debajo, arena húmeda de orilla
-SAND_TOP = 1.5          # m: por debajo, arena clara de playa
-UNDERWATER = -0.6       # m: por debajo, fondo marino
-SHALLOW_BOTTOM = -2.5   # m: fondo claro hasta aquí, oscuro más abajo
-ROCK_SLOPE = 35.0       # grados: pendiente que ya es roca
-CLIFF_SLOPE = 50.0      # grados: acantilado (roca oscura)
-ROCK_FOOTPRINT = 0.2    # influencia de una roca a partir de la cual se pinta de roca
-SAND_EDGE = 0.6         # m sobre SAND_TOP: franja mixta de arena oscura y hierba
-DIRT_PATCH = 0.86       # umbral del ruido fino a partir del cual hay mancha de tierra
+SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve base
+FACET_MIX = 0.4         # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
+NO_PALMS = np.zeros((0, 2))
 
 
 @dataclass(frozen=True)
@@ -54,39 +44,52 @@ class TerrainMesh:
     centroids: np.ndarray  # (M, 3)
     normals: np.ndarray    # (N, 3) normal suave de cada vértice
     vertex_colors: np.ndarray  # (N, 3) color lineal fundido de cada vértice (de la paleta)
+    corner_normals: np.ndarray  # (M, 3, 3) normal de cada esquina: mezcla de suave y de cara
+    base: np.ndarray       # (N,) altura base (sin detalle) de cada vértice
 
     @property
     def triangle_count(self) -> int:
         return int(self.tris.shape[0])
 
 
-def hash01(a: np.ndarray, b: np.ndarray, seed: int, salt: int) -> np.ndarray:
-    """Hash entero determinista de (a, b) a [0, 1)."""
-    with np.errstate(over='ignore'):
-        h = (a.astype(np.uint64) * np.uint64(0x9E3779B1) ^ b.astype(np.uint64) * np.uint64(0x85EBCA77)
-             ^ np.uint64((seed * 0x27D4EB2F + salt * 0x165667B1) & 0xFFFFFFFF))
-        h = (h ^ (h >> np.uint64(15))) * np.uint64(0x2C1B3C6D)
-        h = (h ^ (h >> np.uint64(12))) * np.uint64(0x297A2D39)
-        h = h ^ (h >> np.uint64(15))
-    return (h & np.uint64(0xFFFFFF)).astype(np.float64) / float(0x1000000)
+def smoothed_height(layout: Layout, x: np.ndarray, y: np.ndarray, radius: float) -> np.ndarray:
+    """Relieve analítico filtrado con una caja de 5 × 5 muestras de ±radius metros.
+
+    Se filtra en el espacio continuo (no sobre la rejilla desplazada) para no meter el error
+    del desplazamiento de los vértices en la pendiente."""
+    offsets = np.linspace(-radius, radius, 5)
+    acc = np.zeros(np.broadcast(x, y).shape, dtype=np.float64)
+    for dx in offsets:
+        for dy in offsets:
+            acc += height_at(layout, x + dx, y + dy)
+    return acc / float(len(offsets) ** 2)
 
 
-def value_noise(x: np.ndarray, y: np.ndarray, scale: float, seed: int) -> np.ndarray:
-    """Ruido de valor suave (0-1) con celdas de «scale» metros."""
-    gx, gy = x / scale, y / scale
-    ix, iy = np.floor(gx), np.floor(gy)
-    fx, fy = gx - ix, gy - iy
-    sx, sy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
-    ix_i, iy_i = (ix + 100000).astype(np.int64), (iy + 100000).astype(np.int64)
-    v00 = hash01(ix_i, iy_i, seed, 7)
-    v10 = hash01(ix_i + 1, iy_i, seed, 7)
-    v01 = hash01(ix_i, iy_i + 1, seed, 7)
-    v11 = hash01(ix_i + 1, iy_i + 1, seed, 7)
-    return (v00 * (1 - sx) + v10 * sx) * (1 - sy) + (v01 * (1 - sx) + v11 * sx) * sy
+def path_profiles(layout: Layout) -> list[Profile]:
+    radius = SMOOTH_RADIUS * layout.terrain.cell
+    return build_profiles(layout, lambda x, y: smoothed_height(layout, x, y, radius))
 
 
-def grid_vertices(layout: Layout) -> tuple[np.ndarray, int, int]:
-    """Vértices (N, 3) de la rejilla desplazada y sus dimensiones (nx, ny)."""
+def relief_fields(layout: Layout, props: dict | None, x: np.ndarray, y: np.ndarray, base: np.ndarray,
+                  profiles: list[Profile]) -> ReliefFields:
+    """Detalle de relieve en los puntos; la altura del eje del camino solo se calcula cerca de él."""
+    dist = distance_to_paths(layout, x, y)
+    axis_base = base.copy()
+    near = dist < PATH_LEVEL[1]
+    if near.any():
+        axis_base[near] = axis_height(profiles, x[near], y[near])
+    return detail(layout, x, y, base, dist, guard_spots(layout, props), axis_base)
+
+
+def terrain_height(layout: Layout, props: dict | None, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Altura continua del terreno (base + detalle, sin el ruido de facetas por vértice)."""
+    base = smoothed_height(layout, x, y, SMOOTH_RADIUS * layout.terrain.cell)
+    return base + relief_fields(layout, props, x, y, base, path_profiles(layout)).dz
+
+
+def grid_vertices(layout: Layout, props: dict | None,
+                  profiles: list[Profile]) -> tuple[np.ndarray, np.ndarray, int, int]:
+    """Vértices (N, 3) de la rejilla desplazada, su altura base y sus dimensiones (nx, ny)."""
     t = layout.terrain
     nx = int(np.ceil((t.max_xy[0] - t.min_xy[0]) / t.cell)) + 1
     ny = int(np.ceil((t.max_xy[1] - t.min_xy[1]) / t.cell)) + 1
@@ -96,41 +99,17 @@ def grid_vertices(layout: Layout) -> tuple[np.ndarray, int, int]:
     jitter = np.where(border, 0.0, JITTER * t.cell)
     x = t.min_xy[0] + ii * t.cell + (hash01(ii, jj, layout.seed, 1) - 0.5) * 2.0 * jitter
     y = t.min_xy[1] + jj * t.cell + (hash01(ii, jj, layout.seed, 2) - 0.5) * 2.0 * jitter
-    z = smoothed_height(layout, x, y, SMOOTH_RADIUS * t.cell)
+    base = smoothed_height(layout, x, y, SMOOTH_RADIUS * t.cell)
+    fields = relief_fields(layout, props, x, y, base, profiles)
+    z = base + fields.dz
     rock = rock_influence(layout, x, y)
-    on_path = distance_to_paths(layout, x, y) <= 1.5
+    on_path = fields.path_dist <= 1.5
     noise = hash01(ii, jj, layout.seed, 3) - 0.5
     facet = np.where((z > SAND_TOP) & ~on_path & (rock < 0.1), FACET_NOISE, 0.0)
     facet = np.where(rock >= 0.3, ROCK_NOISE, facet)
     z = np.maximum(z + noise * 2.0 * facet, t.seabed)
     z = np.where(border, t.skirt, z)
-    return np.column_stack([x, y, z]), nx, ny
-
-
-def smoothed_height(layout: Layout, x: np.ndarray, y: np.ndarray, radius: float) -> np.ndarray:
-    """Relieve analítico filtrado con una caja de 5 × 5 muestras de ±radius metros.
-
-    Se filtra en el espacio continuo (no sobre la rejilla desplazada) para no meter el error
-    del desplazamiento de los vértices en la pendiente."""
-    offsets = np.linspace(-radius, radius, 5)
-    acc = np.zeros_like(x, dtype=np.float64)
-    for dx in offsets:
-        for dy in offsets:
-            acc += height_at(layout, x + dx, y + dy)
-    return acc / float(len(offsets) ** 2)
-
-
-def smooth_grid(values: np.ndarray, passes: int) -> np.ndarray:
-    """Media 3 × 3 (bordes replicados) sobre una rejilla (nx, ny) o (nx, ny, c); copia nueva."""
-    out = values.astype(np.float64, copy=True)
-    for _ in range(passes):
-        pad = np.pad(out, [(1, 1), (1, 1)] + [(0, 0)] * (out.ndim - 2), mode='edge')
-        acc = np.zeros_like(out)
-        for di in (0, 1, 2):
-            for dj in (0, 1, 2):
-                acc += pad[di:di + out.shape[0], dj:dj + out.shape[1]]
-        out = acc / 9.0
-    return out
+    return np.column_stack([x, y, z]), base, nx, ny
 
 
 def grid_triangles(nx: int, ny: int, seed: int) -> np.ndarray:
@@ -163,67 +142,6 @@ def face_normals(verts: np.ndarray, tris: np.ndarray) -> np.ndarray:
     return n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
 
 
-def _zone_mask(layout: Layout, zone_id: str, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    zone = layout.zone(zone_id)
-    return np.hypot(x - zone.center[0], y - zone.center[1]) <= zone.radius
-
-
-def _islet_mask(layout: Layout, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-    main, islet = layout.islands[0], layout.islands[-1]
-    return islet.normalized_distance(x, y) < main.normalized_distance(x, y)
-
-
-def _grass_colors(layout: Layout, x: np.ndarray, y: np.ndarray, pick: np.ndarray) -> np.ndarray:
-    """Hierba por zona: salvia con manchas (ruido de 22 m) y manchas de tierra (ruido de 7 m)."""
-    p = PALETTE
-    patches = value_noise(x, y, 22.0, layout.seed)
-    fine = value_noise(x, y, 7.0, layout.seed + 11)
-    out = np.where(patches > 0.62, p['hierba_oscura'], p['hierba_salvia'])
-    out = np.where(patches < 0.22, p['hierba_clara'], out)
-    shade = _zone_mask(layout, 'palmar', x, y) | _zone_mask(layout, 'bosque_bambu', x, y)
-    shaded = np.where(patches > 0.5, p['hierba_oscura'], p['hierba_salvia'])
-    shaded = np.where(patches > 0.75, p['verde_selva'], shaded)
-    out = np.where(shade, shaded, out)
-    hill = _zone_mask(layout, 'colina_faro', x, y) & ~shade
-    dry = np.where(patches > 0.55, p['hierba_salvia'], p['hierba_seca'])
-    dry = np.where((patches < 0.3) & (pick < 0.5), p['verde_lima'], dry)
-    out = np.where(hill, dry, out)
-    return np.where(fine > DIRT_PATCH, p['tierra'], out)
-
-
-def face_colors(layout: Layout, centroids: np.ndarray, slopes: np.ndarray) -> np.ndarray:
-    """Índice de paleta de cada triángulo (reglas en el docstring del módulo)."""
-    x, y, z = centroids[:, 0], centroids[:, 1], centroids[:, 2]
-    p = PALETTE
-    n = len(z)
-    idx = np.arange(n)
-    pick = hash01(idx, idx // 7, layout.seed, 5)
-    patches = value_noise(x, y, 22.0, layout.seed)
-    rock = rock_influence(layout, x, y)
-    path = distance_to_paths(layout, x, y) <= 0.0
-
-    islet_top = np.where(patches > 0.75, p['hierba_oscura'], p['hierba_salvia'])
-    islet_top = np.where(patches < 0.3, p['roca_clara'], islet_top)
-    rocky = np.where(pick < 0.55, p['roca_media'], p['roca_clara'])
-
-    out = _grass_colors(layout, x, y, pick)
-    out = np.where(_islet_mask(layout, x, y), islet_top, out)
-    out = np.where(_zone_mask(layout, 'rocas_pescador', x, y), rocky, out)
-    # Borde de arena oscura en manchas coherentes (ruido de 6 m), no motas sueltas por triángulo.
-    edge = (z < SAND_TOP + SAND_EDGE) & (value_noise(x, y, 6.0, layout.seed + 23) > 0.5)
-    out = np.where(edge, p['arena_oscura'], out)
-    out = np.where(z < SAND_TOP, p['arena_clara'], out)
-    out = np.where(path & (z >= SAND_TOP), p['tierra'], out)
-    out = np.where(z < WET_TOP, p['arena_humeda'], out)
-    out = np.where(rock > ROCK_FOOTPRINT, rocky, out)
-    out = np.where(slopes > ROCK_SLOPE, rocky, out)
-    out = np.where(slopes > CLIFF_SLOPE, p['roca_oscura'], out)
-    seabed = np.where(z > SHALLOW_BOTTOM, p['arena_clara'], p['arena_oscura'])
-    seabed = np.where(rock > ROCK_FOOTPRINT, p['roca_media'], seabed)
-    out = np.where(z < UNDERWATER, seabed, out)
-    return out.astype(np.int64)
-
-
 def vertex_normals(verts: np.ndarray, tris: np.ndarray) -> np.ndarray:
     """Normal suave por vértice: suma de las normales de sus caras ponderadas por el área."""
     p0, p1, p2 = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
@@ -234,28 +152,34 @@ def vertex_normals(verts: np.ndarray, tris: np.ndarray) -> np.ndarray:
     return acc / np.maximum(np.linalg.norm(acc, axis=1, keepdims=True), 1e-12)
 
 
-def blended_vertex_colors(layout: Layout, verts: np.ndarray, normals: np.ndarray, nx: int, ny: int,
-                          linear_palette: np.ndarray) -> np.ndarray:
-    """Color lineal por vértice: las mismas reglas que las caras, fundidas con la media 3 × 3."""
-    slopes = np.degrees(np.arccos(np.clip(normals[:, 2], -1.0, 1.0)))
-    index = face_colors(layout, verts, slopes)
-    rgb = linear_palette[index].reshape(nx, ny, 3)
-    return smooth_grid(rgb, COLOR_BLUR_PASSES).reshape(-1, 3)
+def corner_normals(smooth: np.ndarray, faces: np.ndarray, tris: np.ndarray, mix: float) -> np.ndarray:
+    """(M, 3, 3) normal de cada esquina: (1 − mix) · suave del vértice + mix · normal de la cara."""
+    blended = (1.0 - mix) * smooth[tris] + mix * faces[:, None, :]
+    return blended / np.maximum(np.linalg.norm(blended, axis=2, keepdims=True), 1e-12)
 
 
-def build_terrain(layout: Layout, linear_palette: np.ndarray | None = None) -> TerrainMesh:
-    """Malla del terreno. «linear_palette» (K, 3) da el color lineal de cada índice de la paleta;
-    sin él, los colores por vértice quedan en gris (solo para las cifras y los tests de forma)."""
-    verts, nx, ny = grid_vertices(layout)
+def build_terrain(layout: Layout, props: dict | None, linear_palette: np.ndarray | None = None,
+                  palms: np.ndarray = NO_PALMS, facet_mix: float = FACET_MIX) -> TerrainMesh:
+    """Malla del terreno. «props» (island_props.json) marca las estructuras que conservan la altura
+    base; «palms» (K, 2) son las palmeras con mancha de tierra; «linear_palette» (K, 3) da el color
+    lineal de cada índice de la paleta (sin él, los colores por vértice quedan en gris)."""
+    profiles = path_profiles(layout)
+    verts, base, nx, ny = grid_vertices(layout, props, profiles)
     tris = orient_up(verts, grid_triangles(nx, ny, layout.seed))
-    normals = face_normals(verts, tris)
-    slopes = np.degrees(np.arccos(np.clip(normals[:, 2], -1.0, 1.0)))
+    faces = face_normals(verts, tris)
+    slopes = np.degrees(np.arccos(np.clip(faces[:, 2], -1.0, 1.0)))
     centroids = verts[tris].mean(axis=1)
-    colors = face_colors(layout, centroids, slopes)
+    cx, cy = centroids[:, 0], centroids[:, 1]
+    centroid_base = base[tris].mean(axis=1)
+    colors = point_colors(layout, centroids, slopes, relief_fields(layout, props, cx, cy, centroid_base, profiles),
+                          palms)
     smooth = vertex_normals(verts, tris)
+    vertex_slopes = np.degrees(np.arccos(np.clip(smooth[:, 2], -1.0, 1.0)))
+    index = point_colors(layout, verts, vertex_slopes, relief_fields(layout, props, verts[:, 0], verts[:, 1], base, profiles), palms)
     lin = linear_palette if linear_palette is not None else np.full((64, 3), 0.5)
-    vcolors = blended_vertex_colors(layout, verts, smooth, nx, ny, lin)
-    return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors)
+    vcolors = blend_grid(lin[index].reshape(nx, ny, 3)).reshape(-1, 3)
+    return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors,
+                       corner_normals(smooth, faces, tris, facet_mix), base)
 
 
 def surface_height(mesh: TerrainMesh, layout: Layout, x: float, y: float) -> float:

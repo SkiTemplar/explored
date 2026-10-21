@@ -7,6 +7,7 @@ import bpy  # noqa: F401  (debe importarse antes que bmesh/mathutils)
 import pytest
 
 from explored_island.layout import REPO_ROOT, Layout, load_layout
+from explored_island.props import load_props
 from explored_island.terrain import TerrainMesh, build_terrain
 
 VIGILADAS = (REPO_ROOT / 'Art' / 'Island', REPO_ROOT / 'Content' / 'Data' / 'island.json',
@@ -35,5 +36,10 @@ def layout() -> Layout:
 
 
 @pytest.fixture(scope='session')
-def terreno(layout: Layout) -> TerrainMesh:
-    return build_terrain(layout)
+def props() -> dict:
+    return load_props()
+
+
+@pytest.fixture(scope='session')
+def terreno(layout: Layout, props: dict) -> TerrainMesh:
+    return build_terrain(layout, props)

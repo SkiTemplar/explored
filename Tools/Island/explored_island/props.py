@@ -46,6 +46,12 @@ EXPECTED_TOTALS = {('palma', 'cocos'): 16, ('lena', 'amount'): 20, ('fibra', 'am
 PAGE_ZONES = {1: 'colina_faro', 2: 'rocas_pescador', 3: 'palmar', 4: 'bosque_bambu', 5: 'playa_norte',
               6: None, 7: 'colina_faro', 8: None}
 DRY_MIN = 0.15
+# Estructuras grandes: la vegetación decorativa las respeta y el terreno conserva a su alrededor la
+# altura base (sin detalle de relieve) para que se apoyen en suelo llano.
+STRUCTURE_TYPES = frozenset({
+    'faro_torre', 'faro_casa', 'refugio_faro', 'refugio_palma', 'hoguera_fija', 'barril_lluvia',
+    'caja_suministros', 'balsa_sitio', 'carguero_casco', 'carguero_puente', 'pasarela_carguero', 'caja_mapas',
+    'shelter_volume'})
 
 
 def load_props(path: Path = PROPS_JSON) -> dict:
