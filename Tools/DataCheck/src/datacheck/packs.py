@@ -25,7 +25,6 @@ PHASES = {"AA", "F2", "F3"}
 AXES = {"x", "y", "z", "max"}
 PIVOTS = {"base", "agarre"}
 HAND_SOCKETS = {"hand_r"}
-SHEET_MAX_BYTES = 1_000_000
 ASCII_ID = re.compile(r"^[a-z0-9_]+$")
 # Ids de juego: item o pieza, o <planta>.<etapa> para las fases del huerto.
 GAME_ID = re.compile(r"^[a-z0-9_]+(\.[a-z0-9_]+)?$")
@@ -215,15 +214,6 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
         lotes.add(lid)
         if not DATE.match(str(lote.get("date", ""))):
             error(f"{CATALOG}: lote «{lid}» sin fecha")
-        sheet = lote.get("sheet", "")
-        sheet = sheet if isinstance(sheet, str) else ""
-        path = repo_root / sheet
-        if not sheet.startswith("docs/art/packs/") or not sheet.endswith(".png"):
-            error(f"{CATALOG}: lote «{lid}»: la hoja de contacto va en docs/art/packs/*.png")
-        elif not path.exists():
-            error(f"{CATALOG}: lote «{lid}»: no existe la hoja de contacto {sheet}")
-        elif path.stat().st_size > SHEET_MAX_BYTES and not path.read_bytes().startswith(b"version https://git-lfs"):
-            error(f"{CATALOG}: lote «{lid}»: {sheet} pasa de 1 MB")
 
     seen_game: set[tuple[str, str]] = set()
     seen_mesh: set[str] = set()

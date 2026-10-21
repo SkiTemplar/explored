@@ -53,8 +53,6 @@ lo que no se escribe nunca están en biblia 07 §1 (guía anti-IA).
 - Los registros (`UE_LOG`), asserts y errores internos siguen en `TEXT("...")` en español.
 - Estilo: tuteo, frases cortas y de una línea (GDD §3), ortografía completa (tildes,
   «¿», «¡»). El inglés es británico (*fibre*, *colour*), cálido y conciso.
-- **Dedicatoria:** «Para Almudena, mi Limón» no se traduce; es idéntica en los dos
-  idiomas (la herramienta falla si no lo es).
 - Los nombres de idioma del selector van en su propia lengua en las dos culturas:
   «Español» y «English».
 

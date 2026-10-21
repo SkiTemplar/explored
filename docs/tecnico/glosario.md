@@ -71,7 +71,6 @@ obvio es el equivocado (galería → *tunnel*, no *gallery*); los términos comu
 | Monzón | Monsoon | — | — |
 | Ciclón | Cyclone | — | — |
 | Escorbuto | Scurvy | — | — |
-| Limonero | Lemon tree | — | `[Ll]imoneros?` → `lemon tree` |
 | Huerto | Garden | — | — |
 | Granja | Farm | — | — |
 | Corral | Pen | — | — |
@@ -88,4 +87,3 @@ obvio es el equivocado (galería → *tunnel*, no *gallery*); los términos comu
 | Torre de vigía | Watchtower | — | `[Tt]orres? de vigía` → `watchtower` |
 | Integridad estructural | Structural integrity | — | — |
 | Modo Explorador | Explorer mode | — | — |
-| Dedicatoria | Dedication | «Para Almudena, mi Limón», idéntica en los dos idiomas (`localizacion.md`) | `Para Almudena, mi Limón` → `Para Almudena, mi Limón` |

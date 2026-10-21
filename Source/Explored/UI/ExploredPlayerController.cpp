@@ -354,7 +354,7 @@ void AExploredPlayerController::StartNewGame()
 		Wiring->BeginNewRun();
 	}
 	FadeIntoGameplay();
-	// Ayuda de inicio: los controles básicos y el objetivo del viaje (v1, docs/v1-alcance.md).
+	// Ayuda de inicio: los controles básicos y el objetivo del viaje (provisional hasta el cuaderno de docs/v3/gdd.md).
 	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
 	{
 		const FLinearColor HelpColor(0.92f, 0.95f, 1.0f, 1.0f);

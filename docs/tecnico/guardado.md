@@ -120,7 +120,7 @@ void UFarmSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		{
 			if (const UFarmSubsystem* Self = WeakThis.Get())
 			{
-				Ar.Write(TEXT("lemonTreeStage"), Self->State.LemonTreeStage); // enum por nombre
+				Ar.Write(TEXT("stage"), Self->State.Stage); // enum por nombre
 				Ar.Write(TEXT("plots"), Self->State.Plots);                   // TArray<FPlot> con TSaveTraits
 			}
 		},
@@ -129,7 +129,7 @@ void UFarmSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 			if (UFarmSubsystem* Self = WeakThis.Get())
 			{
 				Self->State = FFarmState();                               // 1) estado por defecto
-				Ar.Read(TEXT("lemonTreeStage"), Self->State.LemonTreeStage); // 2) lo que haya
+				Ar.Read(TEXT("stage"), Self->State.Stage); // 2) lo que haya
 				Ar.Read(TEXT("plots"), Self->State.Plots);
 			}
 		});

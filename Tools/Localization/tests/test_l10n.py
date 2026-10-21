@@ -389,8 +389,8 @@ def test_excepcion_de_estilo_y_de_longitud(src: Sources) -> None:
 
 def test_glosario_tiene_las_filas_de_la_biblia(real: Sources) -> None:
     assert real.glossary_errors == []
-    assert len(real.glossary) == 69
-    assert {t.es for t in real.glossary} >= {"Isla del Humo", "La Meseta", "Galería (minera)", "Dedicatoria"}
+    assert len(real.glossary) == 67
+    assert {t.es for t in real.glossary} >= {"Isla del Humo", "La Meseta", "Galería (minera)"}
     assert all(t.en_required for t in real.glossary if t.es_pattern is not None)
 
 

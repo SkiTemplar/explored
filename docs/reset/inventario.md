@@ -1,5 +1,7 @@
 # Inventario de poda del reset v2
 
+> **Superado en parte:** `docs/v3/plan.md` §3 sustituye a este inventario donde difiere (veredictos de módulos, `Content/` y `Tools/`). Lo que no contradice al plan sigue vigente como detalle fichero a fichero.
+
 Fecha: 2026-10-18 · rama `reset/v2` · referencia de alcance: `docs/reset/vision.md` y la
 lista de cortes acordada (sin red, combate, aldeas, piratas, tranvía, granja, minería,
 terraformado, barcos por piezas, logros, museo ni HUD; mundo de kit curado y no procedural;
@@ -115,7 +117,7 @@ versionados (`Data`, `Localization`, `Materials`, 4 materiales de `Generated/Mat
 | Veredicto | Ficheros |
 |---|---|
 | BORRAR | `achievements`, `building_pieces`, `combat`, `mining`, `minerals`, `recipes_smithing`, `museum_collections`, `fossils`, `herbarium`, `insects`, `shells`, `fases_futuras`, `packs_catalogo`, `meshes_pendientes` |
-| ADAPTAR | `items`, `recipes`, `templates`, `verbs`, `plants`, `fish`, `fauna`, `fauna_terrestre`, `fuels`, `survival_needs`, `boats`, `ruins`, `artifacts`, `exploration`, `map_clues`, `halden_diaries`, `journal_entries`, `story_es`, `music_layers` |
+| ADAPTAR | `items`, `recipes`, `templates`, `verbs`, `plants`, `fish`, `fauna`, `fauna_terrestre`, `fuels`, `survival_needs`, `boats`, `ruins`, `artifacts`, `exploration`, `map_clues`, `journal_entries`, `story_es`, `music_layers` |
 
 ---
 
