@@ -10,9 +10,10 @@
 
 /**
  * Caja de suministros de la base del faro (GDD v3 §5.3): al abrirla entrega una sola vez lo
- * mínimo que falte del camino crítico (FSupplyCrateModel; tope 1 cuerda, 3 fibras, 2 peces).
- * Si no cabe en la mochila no se entrega y queda para más tarde. El progreso de la baliza aún no
- * está cableado (F3c): mientras tanto se calcula con el progreso inicial y la mochila.
+ * mínimo que falte del camino crítico (FSupplyCrateModel; tope 1 cuerda, 3 fibras, 2 peces y
+ * 3 leñas) con el progreso real de la baliza, la mochila y lo que aún queda en la isla: mientras
+ * se pueda conseguir todo, no entrega nada y queda para cuando haga falta. Si no cabe en la
+ * mochila no se entrega y queda para más tarde.
  */
 UCLASS()
 class EXPLORED_API AExploredSupplyCrate : public AExploredPlaceholder, public IExploredInteractable
@@ -24,6 +25,9 @@ public:
 	bool IsDelivered() const { return State.bDelivered; }
 
 	void RefreshFromIslandState();
+
+	/** Recursos que aún se pueden recoger en la isla (id de objeto → cantidad): montones y cocos. */
+	static TMap<FName, int32> CountIslandResources(const UWorld* World);
 
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;
 	virtual bool CanInteract_Implementation(AActor* InInstigator) const override;

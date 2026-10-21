@@ -111,6 +111,8 @@ private:
 	FVector FaintRespawnLocation(bool bAtSea) const;
 	bool IsAtSea() const;
 	double GetAbsHours() const;
+	/** El ciclón está en curso (muros u ojo): no se duerme. */
+	bool IsCycloneNow() const;
 	void SetAbsHours(double AbsHours) const;
 	void FinishFade();
 

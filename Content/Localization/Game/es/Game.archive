@@ -576,6 +576,15 @@
 				},
 				{
 					"Source": {
+						"Text": "Con este temporal no hay quien duerma."
+					},
+					"Translation": {
+						"Text": "Con este temporal no hay quien duerma."
+					},
+					"Key": "SleepStorm"
+				},
+				{
+					"Source": {
 						"Text": "Tienes demasiada sed para dormir"
 					},
 					"Translation": {

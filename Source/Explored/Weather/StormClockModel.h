@@ -73,6 +73,11 @@ struct EXPLORED_API FStormClockConfig
 	double RaftLastHour = 42.0;
 	/** D2 18:45: si Iria sigue en el islote, fundido y vuelta a Playa Norte (GDD §5.7). */
 	double ForcedReturnHour = 42.75;
+	/**
+	 * D3 06:00: el mar vuelve a abrirse tras el ciclón. Sin esto, una partida que no recoge la lente
+	 * el día 2 queda sin salida (desviación del GDD §5.7 decidida en F3e; ver docs/v3/estado-f3.md).
+	 */
+	double RaftReopenHour = 54.0;
 	/** Por debajo de este cambio (hPa por hora) la flecha de tendencia queda estable. */
 	float SteadyHpaPerHour = 0.1f;
 
@@ -139,10 +144,10 @@ public:
 	/** Solo los muros del ciclón apagan los fuegos al aire libre (GDD §5.2); los techados no. */
 	bool ExtinguishesOutdoorFires(double Hour) const;
 
-	/** Se puede cruzar al bajo: antes de que el mar se cierre (D2 18:00). */
+	/** Se puede cruzar al bajo: antes de que el mar se cierre (D2 18:00) o tras reabrirse (D3 06:00). */
 	bool CanCrossByRaft(double Hour) const;
 
-	/** Pasada la hora del fundido forzoso de vuelta desde el islote. */
+	/** Entre la hora del fundido forzoso de vuelta desde el islote y la reapertura del mar. */
 	bool IsPastForcedReturn(double Hour) const;
 
 	FStormRain RainAt(double Hour) const;

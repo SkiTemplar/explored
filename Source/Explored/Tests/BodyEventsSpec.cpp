@@ -138,6 +138,20 @@ void FBodyEventsSpec::Define()
 			TestEqual(TEXT("Mediodía"), FBodyEventsModel::CanSleep(At(2, 12.0), true), ESleepCheck::WrongHour);
 		});
 
+		It(TEXT("durante el ciclón no se duerme ni en el refugio; al terminar, sí"), [this]()
+		{
+			const FBodyBars Bars = WithThirst(50.0f);
+			TestEqual(TEXT("D2 20:00 con ciclón"), FBodyEventsModel::CanSleep(At(2, 20.0), true, FBodyEventsTuning(), true), ESleepCheck::Storm);
+			const FSleepOutcome Storm = FBodyEventsModel::Sleep(Bars, At(2, 20.0), true, FBodyEventsTuning(), true);
+			TestFalse(TEXT("No duerme"), Storm.bSlept);
+			TestEqual(TEXT("Barras intactas"), Storm.Bars.Thirst, 50.0f);
+			TestEqual(TEXT("Fuera del refugio manda el techo"), FBodyEventsModel::CanSleep(At(2, 20.0), false, FBodyEventsTuning(), true),
+				ESleepCheck::NotSheltered);
+			const FSleepOutcome After = FBodyEventsModel::Sleep(Bars, At(3, 2.0), true, FBodyEventsTuning(), false);
+			TestTrue(TEXT("D3 02:00 sin ciclón duerme"), After.bSlept);
+			TestEqual(TEXT("Hasta las 06:00"), After.WakeHour, At(3, 6.0));
+		});
+
 		It(TEXT("fuera de horario o de refugio no duerme y no cambia nada"), [this]()
 		{
 			const FBodyBars Bars = WithThirst(50.0f);

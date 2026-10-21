@@ -248,7 +248,14 @@ void UIslandBodyComponent::SetAbsHours(double AbsHours) const
 
 bool UIslandBodyComponent::CanSleepNow() const
 {
-	return !bInFade && FBodyEventsModel::CanSleep(GetAbsHours(), bSheltered, Tuning.Events) == ESleepCheck::Allowed;
+	return !bInFade && FBodyEventsModel::CanSleep(GetAbsHours(), bSheltered, Tuning.Events, IsCycloneNow()) == ESleepCheck::Allowed;
+}
+
+bool UIslandBodyComponent::IsCycloneNow() const
+{
+	const UWorld* World = GetWorld();
+	const UExploredWeatherSubsystem* Weather = World ? World->GetSubsystem<UExploredWeatherSubsystem>() : nullptr;
+	return Weather && Weather->GetStorm().IsCyclone(GetAbsHours());
 }
 
 bool UIslandBodyComponent::TrySleep()
@@ -257,10 +264,11 @@ bool UIslandBodyComponent::TrySleep()
 	{
 		return false;
 	}
-	const FSleepOutcome Outcome = FBodyEventsModel::Sleep(Bars, GetAbsHours(), bSheltered, Tuning.Events);
+	const FSleepOutcome Outcome = FBodyEventsModel::Sleep(Bars, GetAbsHours(), bSheltered, Tuning.Events, IsCycloneNow());
 	if (!Outcome.bSlept)
 	{
 		ShowLine(Outcome.Check == ESleepCheck::NotSheltered ? LOCTEXT("SleepNoRoof", "Solo puedo dormir bajo techo.")
+			: Outcome.Check == ESleepCheck::Storm ? LOCTEXT("SleepStorm", "Con este temporal no hay quien duerma.")
 			: LOCTEXT("SleepWrongHour", "Aún no es hora de dormir."));
 		return false;
 	}

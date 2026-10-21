@@ -1,7 +1,13 @@
 #include "Narrative/ExploredSupplyCrate.h"
 
+#include "Engine/World.h"
+#include "EngineUtils.h"
+
 #include "Explored.h"
 #include "Items/BackpackModel.h"
+#include "Items/ExploredPickup.h"
+#include "Narrative/BeaconSubsystem.h"
+#include "WorldGen/ExploredCoconutPalm.h"
 #include "Items/ExploredIslandStateSubsystem.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "Items/IslandDataLoader.h"
@@ -11,6 +17,30 @@
 void AExploredSupplyCrate::OnConfigured(const FIslandProp& Prop, const FIslandPropType& Type)
 {
 	RefreshFromIslandState();
+}
+
+TMap<FName, int32> AExploredSupplyCrate::CountIslandResources(const UWorld* World)
+{
+	TMap<FName, int32> Remaining;
+	if (!World)
+	{
+		return Remaining;
+	}
+	for (TActorIterator<AExploredPickup> It(World); It; ++It)
+	{
+		if (!It->IsActorBeingDestroyed() && !It->GetItemId().IsNone() && It->GetCount() > 0)
+		{
+			Remaining.FindOrAdd(It->GetItemId()) += It->GetCount();
+		}
+	}
+	for (TActorIterator<AExploredCoconutPalm> It(World); It; ++It)
+	{
+		if (It->GetCoconuts() > 0)
+		{
+			Remaining.FindOrAdd(FName(TEXT("coco"))) += It->GetCoconuts();
+		}
+	}
+	return Remaining;
 }
 
 void AExploredSupplyCrate::RefreshFromIslandState()
@@ -39,7 +69,11 @@ void AExploredSupplyCrate::Interact_Implementation(AActor* InInstigator)
 	{
 		return;
 	}
-	const FSupplyCrateOpenResult Opened = FSupplyCrateModel::Open(State, FBackpackModel::ToCounts(Survivor->GetBackpack()), FBeaconProgressState());
+	// Progreso real de la baliza (antes se pasaba el inicial y la caja creía que faltaba todo).
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	const FBeaconProgressState Progress = Beacon ? Beacon->GetRunState().Progress : FBeaconProgressState();
+	const TMap<FName, int32> Pack = FBackpackModel::ToCounts(Survivor->GetBackpack());
+	const FSupplyCrateOpenResult Opened = FSupplyCrateModel::Open(State, Pack, Progress, CountIslandResources(GetWorld()));
 	if (!Opened.bDelivered)
 	{
 		Survivor->ShowMessage(LOCTEXT("CrateNothing", "No te hace falta nada de la caja"));

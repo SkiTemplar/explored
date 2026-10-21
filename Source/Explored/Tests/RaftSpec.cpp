@@ -78,7 +78,18 @@ void FRaftSpec::Define()
 			TestEqual(TEXT("Sin remo"), FRaftModel::CanBoard(Built(), false, 30.0, RaftLastHour), ERaftBoard::NoPaddle);
 			TestEqual(TEXT("Sin balsa"), FRaftModel::CanBoard(FRaftSiteState(), true, 30.0, RaftLastHour), ERaftBoard::NotBuilt);
 			TestEqual(TEXT("18:00 cerrado"), FRaftModel::CanBoard(Built(), true, RaftLastHour, RaftLastHour), ERaftBoard::SeaClosed);
-			TestEqual(TEXT("Día 3 cerrado"), FRaftModel::CanBoard(Built(), true, 55.0, RaftLastHour), ERaftBoard::SeaClosed);
+			TestEqual(TEXT("Día 3 cerrado sin reapertura"), FRaftModel::CanBoard(Built(), true, 55.0, RaftLastHour), ERaftBoard::SeaClosed);
+		});
+
+		It(TEXT("el mar reabre a las 06:00 del día 3 (sin lente no hay softlock)"), [this]()
+		{
+			const double Reopen = 54.0;
+			TestEqual(TEXT("Ciclón cerrado"), FRaftModel::CanBoard(Built(), true, 45.0, RaftLastHour, Reopen), ERaftBoard::SeaClosed);
+			TestEqual(TEXT("D3 05:59 cerrado"), FRaftModel::CanBoard(Built(), true, Reopen - 0.02, RaftLastHour, Reopen), ERaftBoard::SeaClosed);
+			TestEqual(TEXT("D3 06:00 abierto"), FRaftModel::CanBoard(Built(), true, Reopen, RaftLastHour, Reopen), ERaftBoard::Ok);
+			TestEqual(TEXT("D3 sin remo"), FRaftModel::CanBoard(Built(), false, 60.0, RaftLastHour, Reopen), ERaftBoard::NoPaddle);
+			TestTrue(TEXT("D2 19:00 en el islote vuelve"), FRaftModel::ShouldForceReturn(43.0, ForcedReturnHour, true, Reopen));
+			TestFalse(TEXT("D3 10:00 en el islote no vuelve"), FRaftModel::ShouldForceReturn(58.0, ForcedReturnHour, true, Reopen));
 		});
 
 		It(TEXT("a las 18:45 en el islote vuelve a Playa Norte con sed y hambre -20"), [this]()

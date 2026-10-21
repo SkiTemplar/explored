@@ -34,13 +34,70 @@ void FSupplyCrateSpec::Define()
 
 	Describe(TEXT("lo que falta"), [this]()
 	{
-		It(TEXT("al empezar sin nada da los topes: 1 cuerda, 3 fibras y 2 peces"), [this]()
+		It(TEXT("al empezar sin nada da los topes: 1 cuerda, 3 fibras, 2 peces y 3 leñas"), [this]()
 		{
 			const TMap<FName, int32> Missing = FSupplyCrateModel::ComputeMissing(TMap<FName, int32>(), FBeaconProgressState());
 			TestEqual(TEXT("Cuerda"), Get(Missing, TEXT("cuerda")), 1);
 			TestEqual(TEXT("Fibra"), Get(Missing, TEXT("fibra")), 3);
 			TestEqual(TEXT("Pez"), Get(Missing, TEXT("pez_crudo")), 2);
-			TestEqual(TEXT("Nada más"), Missing.Num(), 3);
+			TestEqual(TEXT("Leña"), Get(Missing, TEXT("lena")), 3);
+			TestEqual(TEXT("Nada más"), Missing.Num(), 4);
+		});
+
+		It(TEXT("con la isla llena no entrega nada y queda para cuando haga falta"), [this]()
+		{
+			TMap<FName, int32> Island;
+			Island.Add(TEXT("fibra"), 15);
+			Island.Add(TEXT("lena"), 20);
+			Island.Add(TEXT("cana_bambu"), 3);
+			TestTrue(TEXT("Nada falta"), FSupplyCrateModel::ComputeMissing(TMap<FName, int32>(), FBeaconProgressState(), Island).IsEmpty());
+			const FSupplyCrateOpenResult Open = FSupplyCrateModel::Open(FSupplyCrateState(), TMap<FName, int32>(), FBeaconProgressState(), Island);
+			TestFalse(TEXT("Sin entrega"), Open.bDelivered);
+		});
+
+		It(TEXT("leña quemada de más: da 3 leñas si quedan tarros por hervir"), [this]()
+		{
+			TMap<FName, int32> Pack;
+			Pack.Add(TEXT("cana_pescar"), 1);
+			Pack.Add(TEXT("mecha"), 1);
+			Pack.Add(TEXT("lena"), 1);
+			FBeaconProgressState S;
+			S.bLensCollected = true;
+			S.bWickMade = true;
+			const TMap<FName, int32> Missing = FSupplyCrateModel::ComputeMissing(Pack, S, TMap<FName, int32>());
+			TestEqual(TEXT("Dos leñas"), Get(Missing, TEXT("lena")), 2);
+			TestEqual(TEXT("Con caña, sin peces"), Get(Missing, TEXT("pez_crudo")), 0);
+			S.OilJars = 2;
+			TestEqual(TEXT("Con los tarros, nada"), Get(FSupplyCrateModel::ComputeMissing(Pack, S, TMap<FName, int32>()), TEXT("lena")), 0);
+		});
+
+		It(TEXT("fibras agotadas en la isla: cuerda y fibras para lo que falte"), [this]()
+		{
+			TMap<FName, int32> Pack;
+			Pack.Add(TEXT("cana_pescar"), 1);
+			Pack.Add(TEXT("fibra"), 4);
+			TMap<FName, int32> Island;
+			Island.Add(TEXT("lena"), 10);
+			FBeaconProgressState S;
+			S.bRaftBuilt = true;
+			S.bLensCollected = true;
+			// Mecha: 3 fibras, que ya están en la mochila: no falta nada.
+			TestTrue(TEXT("Con 4 fibras basta"), FSupplyCrateModel::ComputeMissing(Pack, S, Island).IsEmpty());
+			Pack[TEXT("fibra")] = 1;
+			const TMap<FName, int32> Missing = FSupplyCrateModel::ComputeMissing(Pack, S, Island);
+			TestEqual(TEXT("Faltan 2 fibras"), Get(Missing, TEXT("fibra")), 2);
+		});
+
+		It(TEXT("sin caña posible en la isla, los peces sí faltan"), [this]()
+		{
+			FBeaconProgressState S;
+			S.bLensCollected = true;
+			S.bWickMade = true;
+			TMap<FName, int32> Island;
+			Island.Add(TEXT("lena"), 10);
+			Island.Add(TEXT("fibra"), 4);
+			const TMap<FName, int32> Missing = FSupplyCrateModel::ComputeMissing(TMap<FName, int32>(), S, Island);
+			TestEqual(TEXT("Dos peces"), Get(Missing, TEXT("pez_crudo")), 2);
 		});
 
 		It(TEXT("no pide nada con el camino crítico cubierto"), [this]()
@@ -129,7 +186,7 @@ void FSupplyCrateSpec::Define()
 			const FSupplyCrateOpenResult First = FSupplyCrateModel::Open(FSupplyCrateState(), TMap<FName, int32>(), FBeaconProgressState());
 			TestTrue(TEXT("Primera"), First.bDelivered);
 			TestTrue(TEXT("Marcada"), First.State.bDelivered);
-			TestEqual(TEXT("Tres objetos"), First.Items.Num(), 3);
+			TestEqual(TEXT("Cuatro objetos"), First.Items.Num(), 4);
 
 			const FSupplyCrateOpenResult Second = FSupplyCrateModel::Open(First.State, TMap<FName, int32>(), FBeaconProgressState());
 			TestFalse(TEXT("Segunda rechazada"), Second.bDelivered);
@@ -159,7 +216,8 @@ void FSupplyCrateSpec::Define()
 					const TMap<FName, int32> Missing = FSupplyCrateModel::ComputeMissing(TMap<FName, int32>(), S);
 					const bool bWithinCaps = Get(Missing, TEXT("cuerda")) <= FSupplyCrateModel::MaxRope
 						&& Get(Missing, TEXT("fibra")) <= FSupplyCrateModel::MaxFiber
-						&& Get(Missing, TEXT("pez_crudo")) <= FSupplyCrateModel::MaxRawFish && Missing.Num() <= 3;
+						&& Get(Missing, TEXT("pez_crudo")) <= FSupplyCrateModel::MaxRawFish
+						&& Get(Missing, TEXT("lena")) <= FSupplyCrateModel::MaxWood && Missing.Num() <= 4;
 					TestTrue(FString::Printf(TEXT("Topes con %d tarros y hitos %d"), Oil, Flags), bWithinCaps);
 				}
 			}

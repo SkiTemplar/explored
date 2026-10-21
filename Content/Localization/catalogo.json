@@ -2,8 +2,8 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 354,
-		"cpp": 246,
+		"total": 355,
+		"cpp": 247,
 		"datos": 108,
 		"pendientes": 7,
 		"sin_en": 0,
@@ -606,7 +606,7 @@
 			"en": "You wake up in the shelter…",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:359"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:367"
 			]
 		},
 		{
@@ -616,7 +616,7 @@
 			"en": "You wake up on North Beach…",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:359"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:367"
 			]
 		},
 		{
@@ -626,7 +626,17 @@
 			"en": "I can only sleep under a roof.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:263"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:270"
+			]
+		},
+		{
+			"namespace": "ExploredBody",
+			"key": "SleepStorm",
+			"es": "Con este temporal no hay quien duerma.",
+			"en": "Nobody could sleep through this storm.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/Survival/IslandBodyComponent.cpp:271"
 			]
 		},
 		{
@@ -636,7 +646,7 @@
 			"en": "You're too thirsty to sleep",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:269"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:277"
 			]
 		},
 		{
@@ -646,7 +656,7 @@
 			"en": "It's not time to sleep yet.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:264"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:272"
 			]
 		},
 		{
@@ -756,7 +766,7 @@
 			"en": "Empty crate",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:26"
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:56"
 			]
 		},
 		{
@@ -766,7 +776,7 @@
 			"en": "You need nothing from the crate",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:45"
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:79"
 			]
 		},
 		{
@@ -947,7 +957,7 @@
 			"en": "Open the crate",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:26"
+				"Source/Explored/Narrative/ExploredSupplyCrate.cpp:56"
 			]
 		},
 		{
@@ -997,7 +1007,7 @@
 			"en": "Board the raft",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredRaft.cpp:589"
+				"Source/Explored/Boats/ExploredRaft.cpp:590"
 			]
 		},
 		{
@@ -1007,7 +1017,7 @@
 			"en": "You make it across somehow. North Beach.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Boats/ExploredRaft.cpp:470"
+				"Source/Explored/Boats/ExploredRaft.cpp:471"
 			]
 		},
 		{

@@ -427,7 +427,8 @@ void AExploredRaftSite::WatchClock()
 	LastSeenHours = Now;
 
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (!bReturning && Pawn && FRaftModel::ShouldForceReturn(Now, Storm.GetConfig().ForcedReturnHour, IsPlayerOnIslet(*Pawn)))
+	if (!bReturning && Pawn && FRaftModel::ShouldForceReturn(Now, Storm.GetConfig().ForcedReturnHour, IsPlayerOnIslet(*Pawn),
+		Storm.GetConfig().RaftReopenHour))
 	{
 		ForceReturn();
 	}
@@ -458,7 +459,7 @@ void AExploredRaftSite::ForceReturn()
 			{
 				Existing->Leave();
 			}
-			// Varada en la orilla como decorado: ya no se usa después del día 2.
+			// Varada en la orilla: no se vuelve a usar hasta que reabre el mar (D3 06:00).
 			Existing->PlaceAt(Self->FindLaunchLocation(), Self->RouteYawDeg);
 		}
 		InnerPawn->TeleportTo(Self->GetShoreLocation(), InnerPawn->GetActorRotation(), false, true);
@@ -603,7 +604,8 @@ void AExploredRaft::Interact_Implementation(AActor* InInstigator)
 	Built.LogsPlaced = Tuning.LogsNeeded;
 	Built.bBuilt = true;
 	const ERaftBoard Check = FRaftModel::CanBoard(Built, Survivor && Survivor->GetItemCount(ExploredRaftDetail::PaddleItem) > 0,
-		ExploredRaftDetail::AbsHours(this), ExploredRaftDetail::Storm(this).GetConfig().RaftLastHour);
+		ExploredRaftDetail::AbsHours(this), ExploredRaftDetail::Storm(this).GetConfig().RaftLastHour,
+		ExploredRaftDetail::Storm(this).GetConfig().RaftReopenHour);
 	if (Check != ERaftBoard::Ok)
 	{
 		ExploredRaftDetail::Say(this, ExploredRaftDetail::BoardMessage(Check));

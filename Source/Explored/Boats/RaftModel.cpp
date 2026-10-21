@@ -95,13 +95,13 @@ bool FRaftModel::IsValid(const FRaftSiteState& State, const FRaftTuning& Tuning)
 	return !State.bBuilt || State.LogsPlaced == Tuning.LogsNeeded;
 }
 
-ERaftBoard FRaftModel::CanBoard(const FRaftSiteState& Site, bool bHasPaddle, double AbsHour, double RaftLastHour)
+ERaftBoard FRaftModel::CanBoard(const FRaftSiteState& Site, bool bHasPaddle, double AbsHour, double RaftLastHour, double RaftReopenHour)
 {
 	if (!Site.bBuilt)
 	{
 		return ERaftBoard::NotBuilt;
 	}
-	if (!FMath::IsFinite(AbsHour) || AbsHour >= RaftLastHour)
+	if (!FMath::IsFinite(AbsHour) || (AbsHour >= RaftLastHour && !(AbsHour >= RaftReopenHour)))
 	{
 		return ERaftBoard::SeaClosed;
 	}
@@ -166,9 +166,9 @@ FVector2D FRaftModel::StableTilt(float SlopeForward, float SlopeRight, const FRa
 	return FVector2D(Tilt(SlopeForward), Tilt(SlopeRight));
 }
 
-bool FRaftModel::ShouldForceReturn(double AbsHour, double ForcedReturnHour, bool bOnIslet)
+bool FRaftModel::ShouldForceReturn(double AbsHour, double ForcedReturnHour, bool bOnIslet, double RaftReopenHour)
 {
-	return bOnIslet && FMath::IsFinite(AbsHour) && AbsHour >= ForcedReturnHour;
+	return bOnIslet && FMath::IsFinite(AbsHour) && AbsHour >= ForcedReturnHour && AbsHour < RaftReopenHour;
 }
 
 FBodyBars FRaftModel::ForcedReturnBars(const FBodyBars& Bars, const FRaftTuning& Tuning)

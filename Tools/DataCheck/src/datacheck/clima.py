@@ -107,6 +107,9 @@ def _check_rates(doc: dict[str, Any], error: Report) -> None:
     raft, back = _abs_hour(doc.get("raftLast")), _abs_hour(doc.get("forcedReturn"))
     if raft is None or back is None or back < raft:
         error("storm_curve.json: raftLast y forcedReturn deben ser día/hora válidos, con forcedReturn ≥ raftLast")
+    reopen = _abs_hour(doc.get("raftReopen"))
+    if reopen is None or back is None or reopen <= back:
+        error("storm_curve.json: raftReopen debe ser día/hora válido y posterior a forcedReturn")
 
 
 def check_storm(data: dict[str, Any], repo_root: Path, error: Report) -> None:

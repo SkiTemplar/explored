@@ -8,7 +8,8 @@
     "rain": "intensidad 0-1 del chubasco y de los muros del ciclón",
     "chargesPerHour": "cargas de barril por hora de juego (el barril real cuenta segundos de lluvia: survival_needs.json rainBarrel)",
     "raftLast": "desde aquí el mar está cerrado: no se embarca (D2 18:00)",
-    "forcedReturn": "si Iria sigue en el islote, fundido y vuelta a Playa Norte (D2 18:45)"
+    "forcedReturn": "si Iria sigue en el islote, fundido y vuelta a Playa Norte (D2 18:45)",
+    "raftReopen": "el mar vuelve a abrirse tras el ciclón (D3 06:00): sin lente el día 2 la partida no queda bloqueada"
   },
   "dayLengthMinutes": 18,
   "eyeRealSeconds": 65,
@@ -34,5 +35,6 @@
   "rain": { "squall": 0.6, "cyclone": 1.0 },
   "chargesPerHour": { "squall": 1.0, "cyclone": 1.0 },
   "raftLast": { "day": 2, "hour": 18.0 },
-  "forcedReturn": { "day": 2, "hour": 18.75 }
+  "forcedReturn": { "day": 2, "hour": 18.75 },
+  "raftReopen": { "day": 3, "hour": 6.0 }
 }

@@ -140,19 +140,21 @@ void FStormClockSpec::Define()
 
 	Describe(TEXT("balsa"), [this]()
 	{
-		It(TEXT("se cruza hasta las 18:00 del día 2 y nunca después"), [this]()
+		It(TEXT("se cruza hasta las 18:00 del día 2 y otra vez desde las 06:00 del día 3"), [this]()
 		{
 			TestTrue(TEXT("D1 10:00"), Clock.CanCrossByRaft(At(1, 10.0)));
 			TestTrue(TEXT("D2 17:59"), Clock.CanCrossByRaft(At(2, 18.0 - 1.0 / 60.0)));
 			TestFalse(TEXT("D2 18:00"), Clock.CanCrossByRaft(At(2, 18.0)));
 			TestFalse(TEXT("Ciclón"), Clock.CanCrossByRaft(At(2, 20.0)));
-			TestFalse(TEXT("D3 de día y en calma"), Clock.CanCrossByRaft(At(3, 10.0)));
+			TestFalse(TEXT("D3 05:59"), Clock.CanCrossByRaft(At(3, 6.0 - 1.0 / 60.0)));
+			TestTrue(TEXT("D3 de día y en calma"), Clock.CanCrossByRaft(At(3, 10.0)));
 		});
 
 		It(TEXT("el fundido forzoso llega a las 18:45 del día 2"), [this]()
 		{
 			TestFalse(TEXT("18:44"), Clock.IsPastForcedReturn(At(2, 18.75 - 1.0 / 60.0)));
 			TestTrue(TEXT("18:45"), Clock.IsPastForcedReturn(At(2, 18.75)));
+			TestFalse(TEXT("D3 06:00, mar abierto"), Clock.IsPastForcedReturn(At(3, 6.0)));
 		});
 	});
 

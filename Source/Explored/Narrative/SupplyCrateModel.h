@@ -16,7 +16,14 @@
  * - Balsa (sin lente ni balsa): 2 cuerdas, más 1 para el remo si no lo hay.
  * - Caña de pescar: 1 cuerda si faltan más peces de los que da la caja y no hay caña.
  * Las cuerdas que la caja no cubre se piden como fibras (2 por cuerda).
+ * - Leña: 3 si falta algún tarro (hay que encender una hoguera para hervir) y no se llega a 3.
  * Los troncos, la caña de bambú y los cocos no van en la caja (sobran en la isla).
+ *
+ * Con los recursos que quedan en la isla (sobrecarga de 3 argumentos) la caja solo entrega lo que
+ * ya no se puede conseguir: fibras y leña cuentan las de la isla, y los peces no faltan mientras
+ * haya caña o se pueda atar una (el pescado reaparece). Así la caja no se gasta pronto y queda como
+ * red de seguridad (decisión de F3e: el auditor encontró que la leña quemada de más dejaba la
+ * baliza imposible y que la caja, abierta el día 1, ya no servía después).
  */
 
 /** Lo que se ha guardado de la caja. */
@@ -38,6 +45,8 @@ struct EXPLORED_API FSupplyCrateModel
 	static constexpr int32 MaxRope = 1;
 	static constexpr int32 MaxFiber = 3;
 	static constexpr int32 MaxRawFish = 2;
+	static constexpr int32 MaxWood = 3;
+	static constexpr int32 WoodPerFire = 3;
 	static constexpr int32 FibersPerRope = 2;
 	static constexpr int32 FibersPerWick = 3;
 	static constexpr int32 FishPerOilJar = 2;
@@ -45,9 +54,13 @@ struct EXPLORED_API FSupplyCrateModel
 	static FName RopeId();
 	static FName FiberId();
 	static FName RawFishId();
+	static FName WoodId();
 
 	/** Lo mínimo que falta (ya con los topes). Las cantidades negativas del inventario cuentan como 0. */
 	static TMap<FName, int32> ComputeMissing(const TMap<FName, int32>& Inventory, const FBeaconProgressState& Progress);
+	/** Igual, pero descontando lo que aún se puede recoger en la isla (id de objeto → cantidad). */
+	static TMap<FName, int32> ComputeMissing(const TMap<FName, int32>& Inventory, const FBeaconProgressState& Progress,
+		const TMap<FName, int32>& WorldRemaining);
 
 	/**
 	 * Abre la caja. Si ya se entregó, o si no falta nada, no entrega y la caja
@@ -55,4 +68,6 @@ struct EXPLORED_API FSupplyCrateModel
 	 */
 	static FSupplyCrateOpenResult Open(const FSupplyCrateState& State, const TMap<FName, int32>& Inventory,
 		const FBeaconProgressState& Progress);
+	static FSupplyCrateOpenResult Open(const FSupplyCrateState& State, const TMap<FName, int32>& Inventory,
+		const FBeaconProgressState& Progress, const TMap<FName, int32>& WorldRemaining);
 };

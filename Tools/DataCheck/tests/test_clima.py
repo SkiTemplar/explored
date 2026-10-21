@@ -93,6 +93,16 @@ def test_detecta_lluvia_y_cierre_del_mar_rotos(ds: DataSet) -> None:
     assert any("forcedReturn" in e for e in errors)
 
 
+def test_detecta_reapertura_del_mar_antes_del_cierre(ds: DataSet) -> None:
+    storm(ds)["raftReopen"] = {"day": 2, "hour": 18.5}
+    errors = storm_errors(ds)
+    assert any("raftReopen" in e for e in errors)
+
+
+def test_reapertura_del_mar_valida(ds: DataSet) -> None:
+    assert not any("raftReopen" in e for e in storm_errors(ds))
+
+
 def test_listas_vacias(ds: DataSet) -> None:
     storm(ds)["points"] = []
     storm(ds)["windows"] = "no"

@@ -232,6 +232,7 @@
 		"WarnWarmth": { "es": "Tengo frío.", "en": "I'm cold." },
 		"SleepNoRoof": { "es": "Solo puedo dormir bajo techo.", "en": "I can only sleep under a roof." },
 		"SleepWrongHour": { "es": "Aún no es hora de dormir.", "en": "It's not time to sleep yet." },
+		"SleepStorm": { "es": "Con este temporal no hay quien duerma.", "en": "Nobody could sleep through this storm." },
 		"SleepThirsty": { "es": "Tienes demasiada sed para dormir", "en": "You're too thirsty to sleep" },
 		"FaintShore": { "es": "Despiertas en Playa Norte…", "en": "You wake up on North Beach…" },
 		"FaintShelter": { "es": "Despiertas en el refugio…", "en": "You wake up in the shelter…" }

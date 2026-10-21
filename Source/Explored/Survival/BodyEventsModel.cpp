@@ -65,24 +65,29 @@ FFaintOutcome FBodyEventsModel::Faint(double NowHour, const FBodyEventsTuning& T
 	return Outcome;
 }
 
-ESleepCheck FBodyEventsModel::CanSleep(double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning)
+ESleepCheck FBodyEventsModel::CanSleep(double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning, bool bCyclone)
 {
 	if (!bSheltered)
 	{
 		return ESleepCheck::NotSheltered;
+	}
+	if (bCyclone)
+	{
+		return ESleepCheck::Storm;
 	}
 	const double Hour = HourOfDay(NowHour);
 	const bool bInWindow = FMath::IsFinite(NowHour) && (Hour >= Tuning.SleepFromHour || Hour < Tuning.SleepUntilHour);
 	return bInWindow ? ESleepCheck::Allowed : ESleepCheck::WrongHour;
 }
 
-FSleepOutcome FBodyEventsModel::Sleep(const FBodyBars& Bars, double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning)
+FSleepOutcome FBodyEventsModel::Sleep(const FBodyBars& Bars, double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning,
+	bool bCyclone)
 {
 	using namespace BodyEventsDetail;
 	FSleepOutcome Outcome;
 	Outcome.Bars = Bars;
 	Outcome.WakeHour = NowHour;
-	Outcome.Check = CanSleep(NowHour, bSheltered, Tuning);
+	Outcome.Check = CanSleep(NowHour, bSheltered, Tuning, bCyclone);
 	if (Outcome.Check != ESleepCheck::Allowed)
 	{
 		return Outcome;

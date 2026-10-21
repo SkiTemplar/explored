@@ -7,8 +7,8 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 354 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 246 |
+| Textos en el catálogo | 355 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 247 |
 | … de `Content/Data` (campos bilingües) | 108 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
@@ -169,10 +169,10 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:143` | `comer el pez asado` | `Add(TEXT("comer el pez asado"), [this]()` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:149` | `avivar con leña` | `Add(TEXT("avivar con leña"), [FireAction]() { return FireAction(TEXT("avivar")); }, [this]() { return Count(TEXT("lena")) == 0; });` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:150` | `bajar y beber un coco` | `Add(TEXT("bajar y beber un coco"), [this]() { return Interact(TEXT("palma_cala_1")); },` |
-| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:160` | `abrir la caja de suministros` | `Add(TEXT("abrir la caja de suministros"), [this]() { return Interact(TEXT("caja_suministros_faro")); },` |
-| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:166` | `llenar la cantimplora en el barril` | `Add(TEXT("llenar la cantimplora en el barril"), [this]()` |
-| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:182` | `beber de la cantimplora` | `Add(TEXT("beber de la cantimplora"), [this]()` |
-| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:192` | `combinación que no es receta` | `Add(TEXT("combinación que no es receta"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:161` | `la caja de suministros no se gasta si no falta nada` | `Add(TEXT("la caja de suministros no se gasta si no falta nada"), [this]() { return Interact(TEXT("caja_suministros_faro")); },` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:167` | `llenar la cantimplora en el barril` | `Add(TEXT("llenar la cantimplora en el barril"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:183` | `beber de la cantimplora` | `Add(TEXT("beber de la cantimplora"), [this]()` |
+| `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:193` | `combinación que no es receta` | `Add(TEXT("combinación que no es receta"), [this]()` |
 | `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:71` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:483` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
 | `Source/Explored/Debug/ExploredShotSubsystem.cpp:484` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
@@ -241,7 +241,7 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:179` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:284` | `survival_needs.json: valores del cuerpo no válidos` | `Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:467` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:494` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:495` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
 | `Source/Explored/Narrative/BeaconSubsystem.cpp:150` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
 | `Source/Explored/Narrative/BeaconSubsystem.cpp:153` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |

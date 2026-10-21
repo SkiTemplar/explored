@@ -93,7 +93,8 @@ bool FStormClockConfig::IsValid() const
 			return false;
 		}
 	}
-	return FMath::IsFinite(RaftLastHour) && FMath::IsFinite(ForcedReturnHour) && ForcedReturnHour >= RaftLastHour;
+	return FMath::IsFinite(RaftLastHour) && FMath::IsFinite(ForcedReturnHour) && ForcedReturnHour >= RaftLastHour
+		&& FMath::IsFinite(RaftReopenHour) && RaftReopenHour > ForcedReturnHour;
 }
 
 FStormClockModel::FStormClockModel()
@@ -181,12 +182,12 @@ bool FStormClockModel::ExtinguishesOutdoorFires(double Hour) const
 
 bool FStormClockModel::CanCrossByRaft(double Hour) const
 {
-	return FMath::IsFinite(Hour) && Hour < Config.RaftLastHour;
+	return FMath::IsFinite(Hour) && (Hour < Config.RaftLastHour || Hour >= Config.RaftReopenHour);
 }
 
 bool FStormClockModel::IsPastForcedReturn(double Hour) const
 {
-	return FMath::IsFinite(Hour) && Hour >= Config.ForcedReturnHour;
+	return FMath::IsFinite(Hour) && Hour >= Config.ForcedReturnHour && Hour < Config.RaftReopenHour;
 }
 
 float FStormClockModel::ChargesPerHourFor(EStormState State) const

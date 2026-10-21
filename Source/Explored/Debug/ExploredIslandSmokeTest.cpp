@@ -157,11 +157,12 @@ void UExploredIslandSmokeTest::BuildSteps()
 			}
 			return Count(TEXT("coco_vacio")) == 1 && Count(TEXT("coco")) == 0;
 		});
-	Add(TEXT("abrir la caja de suministros"), [this]() { return Interact(TEXT("caja_suministros_faro")); },
+	// Con la isla llena y caña en la mochila no falta nada: la caja no se gasta (F3e).
+	Add(TEXT("la caja de suministros no se gasta si no falta nada"), [this]() { return Interact(TEXT("caja_suministros_faro")); },
 		[this]()
 		{
 			const AExploredSupplyCrate* Crate = Cast<AExploredSupplyCrate>(FindProp(TEXT("caja_suministros_faro")));
-			return Crate && Crate->IsDelivered() && Count(TEXT("pez_crudo")) == 2;
+			return Crate && !Crate->IsDelivered() && Count(TEXT("pez_crudo")) == 0;
 		});
 	Add(TEXT("llenar la cantimplora en el barril"), [this]()
 		{

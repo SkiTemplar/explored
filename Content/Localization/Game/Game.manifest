@@ -672,7 +672,18 @@
 					"Keys": [
 						{
 							"Key": "SleepWrongHour",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 264"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 272"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Con este temporal no hay quien duerma."
+					},
+					"Keys": [
+						{
+							"Key": "SleepStorm",
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 271"
 						}
 					]
 				},
@@ -683,7 +694,7 @@
 					"Keys": [
 						{
 							"Key": "FaintShore",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 359"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 367"
 						}
 					]
 				},
@@ -694,7 +705,7 @@
 					"Keys": [
 						{
 							"Key": "FaintShelter",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 359"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 367"
 						}
 					]
 				},
@@ -716,7 +727,7 @@
 					"Keys": [
 						{
 							"Key": "SleepNoRoof",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 263"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 270"
 						}
 					]
 				},
@@ -760,7 +771,7 @@
 					"Keys": [
 						{
 							"Key": "SleepThirsty",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 269"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 277"
 						}
 					]
 				}
@@ -776,7 +787,7 @@
 					"Keys": [
 						{
 							"Key": "OpenCrate",
-							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 26"
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 56"
 						}
 					]
 				},
@@ -831,7 +842,7 @@
 					"Keys": [
 						{
 							"Key": "CrateEmpty",
-							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 26"
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 56"
 						}
 					]
 				},
@@ -1007,7 +1018,7 @@
 					"Keys": [
 						{
 							"Key": "CrateNothing",
-							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 45"
+							"Path": "Source/Explored/Narrative/ExploredSupplyCrate.cpp - line 79"
 						}
 					]
 				},
@@ -1122,7 +1133,7 @@
 					"Keys": [
 						{
 							"Key": "ForcedReturn",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 470"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 471"
 						}
 					]
 				},
@@ -1199,7 +1210,7 @@
 					"Keys": [
 						{
 							"Key": "BoardRaft",
-							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 589"
+							"Path": "Source/Explored/Boats/ExploredRaft.cpp - line 590"
 						}
 					]
 				}

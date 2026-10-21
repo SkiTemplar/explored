@@ -489,6 +489,7 @@ TArray<FString> FIslandData::ParseStorm(FStormClockConfig& InOut, const FString&
 	}
 	Config.RaftLastHour = AbsHour(Child(Root, TEXT("raftLast")), Config.RaftLastHour);
 	Config.ForcedReturnHour = AbsHour(Child(Root, TEXT("forcedReturn")), Config.ForcedReturnHour);
+	Config.RaftReopenHour = AbsHour(Child(Root, TEXT("raftReopen")), Config.RaftReopenHour);
 	if (!Config.IsValid())
 	{
 		Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));

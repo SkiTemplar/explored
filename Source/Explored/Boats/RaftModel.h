@@ -105,8 +105,13 @@ struct EXPLORED_API FRaftModel
 	/** Estado coherente para cargar partidas. */
 	static bool IsValid(const FRaftSiteState& State, const FRaftTuning& Tuning = FRaftTuning());
 
-	/** ¿Puede embarcar? AbsHour en horas absolutas; RaftLastHour = D2 18:00 (FStormClockConfig). */
-	static ERaftBoard CanBoard(const FRaftSiteState& Site, bool bHasPaddle, double AbsHour, double RaftLastHour);
+	/**
+	 * ¿Puede embarcar? AbsHour en horas absolutas; el mar está cerrado entre RaftLastHour (D2 18:00)
+	 * y RaftReopenHour (D3 06:00, FStormClockConfig). Tras el ciclón se vuelve a cruzar para que una
+	 * partida sin la lente no quede bloqueada (softlock detectado por el auditor en F3e).
+	 */
+	static ERaftBoard CanBoard(const FRaftSiteState& Site, bool bHasPaddle, double AbsHour, double RaftLastHour,
+		double RaftReopenHour = TNumericLimits<double>::Max());
 
 	/** Dirección de avance para un rumbo (X norte, Y este). */
 	static FVector2D Forward(float YawDeg);
@@ -125,8 +130,9 @@ struct EXPLORED_API FRaftModel
 	/** Cabeceo y balanceo visuales (grados) para una pendiente del agua, limitados a ±MaxTiltDeg. */
 	static FVector2D StableTilt(float SlopeForward, float SlopeRight, const FRaftTuning& Tuning = FRaftTuning());
 
-	/** A las 18:45 del día 2 (o después), si Iria sigue en el islote, fundido y vuelta a Playa Norte. */
-	static bool ShouldForceReturn(double AbsHour, double ForcedReturnHour, bool bOnIslet);
+	/** Entre las 18:45 del día 2 y la reapertura del mar, si Iria sigue en el islote, fundido y vuelta a Playa Norte. */
+	static bool ShouldForceReturn(double AbsHour, double ForcedReturnHour, bool bOnIslet,
+		double RaftReopenHour = TNumericLimits<double>::Max());
 
 	/** Barras tras el cruce forzoso: sed y hambre -20. */
 	static FBodyBars ForcedReturnBars(const FBodyBars& Bars, const FRaftTuning& Tuning = FRaftTuning());

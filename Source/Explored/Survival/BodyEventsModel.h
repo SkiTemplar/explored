@@ -84,6 +84,7 @@ enum class ESleepCheck : uint8
 	Allowed,
 	NotSheltered,  // fuera de un ShelterVolume
 	WrongHour,     // entre las 05:00 y las 20:00
+	Storm,         // durante el ciclón (muros y ojo): se espera despierto, refugiado
 };
 
 struct EXPLORED_API FSleepOutcome
@@ -114,9 +115,15 @@ struct EXPLORED_API FBodyEventsModel
 	/** Al despertar del desmayo: barras fijas (40/40/40/60) y +3 h. */
 	static FFaintOutcome Faint(double NowHour, const FBodyEventsTuning& Tuning = FBodyEventsTuning());
 
-	static ESleepCheck CanSleep(double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning = FBodyEventsTuning());
+	/**
+	 * bCyclone: el ciclón está en curso (FStormClockModel::IsCyclone). No se duerme durante el
+	 * ciclón: si no, dormir a las 20:00 del día 2 saltaba hasta el día 3 y se perdía el acto entero
+	 * (GDD §3: «Ciclón ... sobrevive a la noche» y después «Noche 2, 02:00-06:00, duerme»).
+	 */
+	static ESleepCheck CanSleep(double NowHour, bool bSheltered, const FBodyEventsTuning& Tuning = FBodyEventsTuning(),
+		bool bCyclone = false);
 
 	/** Duerme hasta las 06:00 con los deltas fijos; si no se puede, las barras no cambian. */
 	static FSleepOutcome Sleep(const FBodyBars& Bars, double NowHour, bool bSheltered,
-		const FBodyEventsTuning& Tuning = FBodyEventsTuning());
+		const FBodyEventsTuning& Tuning = FBodyEventsTuning(), bool bCyclone = false);
 };
