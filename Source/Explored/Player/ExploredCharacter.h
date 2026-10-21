@@ -11,7 +11,6 @@ class UBodySignalsComponent;
 class UCameraComponent;
 class UCarryComponent;
 class UExploredInputSettingsSubsystem;
-class UFishingComponent;
 class UExploredSurvivorComponent;
 class UInputAction;
 class UInputMappingContext;
@@ -58,8 +57,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
 	UBodySignalsComponent* GetBodySignalsComponent() const { return Body; }
-	UFUNCTION(BlueprintPure, Category = "Explored|Pesca")
-	UFishingComponent* GetFishingComponent() const { return Fishing; }
 
 	/** Mochila, consumo y crafteo de Baliza Siete (GDD v3 §5.3 y §5.6). */
 	UFUNCTION(BlueprintPure, Category = "Explored|Mochila")
@@ -143,11 +140,6 @@ private:
 	void HandleToggleBackpack(const FInputActionValue& Value);
 	void HandleDiveStarted(const FInputActionValue& Value);
 	void HandleDiveCompleted(const FInputActionValue& Value);
-	void HandleWatchStarted(const FInputActionValue& Value);
-	void HandleWatchCompleted(const FInputActionValue& Value);
-	void HandleFish(const FInputActionValue& Value);
-	void HandleReel(const FInputActionValue& Value);
-	void HandleReelCompleted(const FInputActionValue& Value);
 	void HandleQuickSlot1(const FInputActionValue& Value);
 	void HandleQuickSlot2(const FInputActionValue& Value);
 	void HandleQuickSlot3(const FInputActionValue& Value);
@@ -185,8 +177,6 @@ private:
 	/** Cuerpo como HUD: supervivencia, señales corporales y reloj de pulsera (GDD §8.3). */
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Cuerpo")
 	TObjectPtr<UBodySignalsComponent> Body;
-	UPROPERTY(VisibleAnywhere, Category = "Explored|Pesca")
-	TObjectPtr<UFishingComponent> Fishing;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Explored|Mochila", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UExploredSurvivorComponent> Survivor;
@@ -243,15 +233,6 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> DiveAction;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UInputAction> WatchAction;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UInputAction> FishAction;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UInputAction> ReelAction;
 
 	/** Ranuras rápidas 1-3 (GDD §9.1). */
 	UPROPERTY(Transient)

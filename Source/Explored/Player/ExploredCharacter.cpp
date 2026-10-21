@@ -23,7 +23,6 @@
 #include "Carry/CarryComponent.h"
 #include "Cooking/CookingModel.h"
 #include "Crafting/CraftingLibrary.h"
-#include "Fishing/FishingComponent.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -135,7 +134,6 @@ AExploredCharacter::AExploredCharacter()
 	Interaction = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
 	Swim = CreateDefaultSubobject<USwimComponent>(TEXT("Swim"));
 	Body = CreateDefaultSubobject<UBodySignalsComponent>(TEXT("Body"));
-	Fishing = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing"));
 	Survivor = CreateDefaultSubobject<UExploredSurvivorComponent>(TEXT("Survivor"));
 	IslandBody = CreateDefaultSubobject<UIslandBodyComponent>(TEXT("IslandBody"));
 
@@ -436,11 +434,6 @@ void AExploredCharacter::BuildInputAssets()
 	// Bucear (en el agua) o agacharse (en tierra): mantener para bajar; al soltar,
 	// el pulmón empuja de vuelta a la superficie.
 	DiveAction = MakeAction(this, TEXT("IA_Dive"), EInputActionValueType::Boolean);
-	// Reloj de pulsera: mantener para levantar la muñeca y ver la hora (GDD §8.3).
-	WatchAction = MakeAction(this, TEXT("IA_Watch"), EInputActionValueType::Boolean);
-	// Pesca (GDD §8.9): lanzar o recoger, y eje de sedal (recoger / soltar) en la pelea.
-	FishAction = MakeAction(this, TEXT("IA_Fish"), EInputActionValueType::Boolean);
-	ReelAction = MakeAction(this, TEXT("IA_Reel"), EInputActionValueType::Axis1D);
 	for (const TCHAR* Name : { TEXT("IA_QuickSlot1"), TEXT("IA_QuickSlot2"), TEXT("IA_QuickSlot3") })
 	{
 		QuickSlotActions.Add(MakeAction(this, FName(Name), EInputActionValueType::Boolean));
@@ -516,25 +509,12 @@ void AExploredCharacter::RebuildKeyMappings()
 	// View (Special_Left) saca el mapa en las manos (P-UI2, AExploredPlayerController): la mochila va a la cruceta.
 	MapKey(MappingContext, ToggleBackpackAction, EKeys::Gamepad_DPad_Right);
 
-	// Reloj de pulsera (fijo, fuera de la tabla de remapeo). H de «hora»: la T es
-	// para soltar sedal al pescar.
-	MapKey(MappingContext, WatchAction, EKeys::H);
-	MapKey(MappingContext, WatchAction, EKeys::Gamepad_DPad_Up);
-
-	// Pesca (fijo): F lanza o recoge; R recoge sedal y T lo suelta en la pelea. El
-	// contexto de construcción también usa R, pero no la consume.
 	// Ranuras rápidas (fijas): 1, 2 y 3.
 	const FKey SlotKeys[] = { EKeys::One, EKeys::Two, EKeys::Three };
 	for (int32 Index = 0; Index < QuickSlotActions.Num() && Index < UE_ARRAY_COUNT(SlotKeys); ++Index)
 	{
 		MapKey(MappingContext, QuickSlotActions[Index], SlotKeys[Index]);
 	}
-
-	MapKey(MappingContext, FishAction, EKeys::F);
-	MapKey(MappingContext, ReelAction, EKeys::R);
-	MapKey(MappingContext, ReelAction, EKeys::T, true);
-	MapKey(MappingContext, ReelAction, EKeys::Gamepad_RightTriggerAxis);
-	MapKey(MappingContext, ReelAction, EKeys::Gamepad_LeftTriggerAxis, true);
 
 #if !UE_BUILD_SHIPPING
 	MapKey(MappingContext, FlyAction, EKeys::F8);
@@ -584,11 +564,6 @@ void AExploredCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Input->BindAction(ToggleBackpackAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleToggleBackpack);
 	Input->BindAction(DiveAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleDiveStarted);
 	Input->BindAction(DiveAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleDiveCompleted);
-	Input->BindAction(WatchAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleWatchStarted);
-	Input->BindAction(WatchAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleWatchCompleted);
-	Input->BindAction(FishAction, ETriggerEvent::Started, this, &AExploredCharacter::HandleFish);
-	Input->BindAction(ReelAction, ETriggerEvent::Triggered, this, &AExploredCharacter::HandleReel);
-	Input->BindAction(ReelAction, ETriggerEvent::Completed, this, &AExploredCharacter::HandleReelCompleted);
 	if (QuickSlotActions.Num() == 3)
 	{
 		Input->BindAction(QuickSlotActions[0], ETriggerEvent::Started, this, &AExploredCharacter::HandleQuickSlot1);
@@ -768,11 +743,6 @@ void AExploredCharacter::UseHand(EHand Hand)
 
 void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 {
-	// Pescando, los gatillos del mando son el eje del sedal (IA_Reel): no usar la mano.
-	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
-	{
-		return;
-	}
 	// Con el inventario abierto el clic es para sus botones.
 	if (bBackpackOpen)
 	{
@@ -789,10 +759,6 @@ void AExploredCharacter::HandleUsePrimary(const FInputActionValue&)
 
 void AExploredCharacter::HandleUseSecondary(const FInputActionValue&)
 {
-	if (Fishing && Fishing->GetSessionState() != EFishingSessionState::Idle)
-	{
-		return;
-	}
 	// «Clic derecho = usar la mano izquierda» (encargo, punto 5).
 	UseHand(EHand::Left);
 }
@@ -907,53 +873,5 @@ void AExploredCharacter::HandleDiveCompleted(const FInputActionValue&)
 	if (bHold && GetCharacterMovement()->bWantsToCrouch)
 	{
 		UnCrouch();
-	}
-}
-
-void AExploredCharacter::HandleWatchStarted(const FInputActionValue&)
-{
-	if (Body)
-	{
-		Body->SetWristWatchRaised(true);
-	}
-}
-
-void AExploredCharacter::HandleWatchCompleted(const FInputActionValue&)
-{
-	if (Body)
-	{
-		Body->SetWristWatchRaised(false);
-	}
-}
-
-void AExploredCharacter::HandleFish(const FInputActionValue&)
-{
-	if (!Fishing)
-	{
-		return;
-	}
-	if (Fishing->GetSessionState() == EFishingSessionState::Idle)
-	{
-		Fishing->StartCast();
-	}
-	else
-	{
-		Fishing->Cancel();
-	}
-}
-
-void AExploredCharacter::HandleReel(const FInputActionValue& Value)
-{
-	if (Fishing)
-	{
-		Fishing->SetReelInput(Value.Get<float>());
-	}
-}
-
-void AExploredCharacter::HandleReelCompleted(const FInputActionValue&)
-{
-	if (Fishing)
-	{
-		Fishing->SetReelInput(0.0f);
 	}
 }

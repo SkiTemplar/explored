@@ -169,6 +169,12 @@ void FExploredSettingsLogicSpec::Define()
 			TestEqual(TEXT("K libre"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("K"))).Result, ERemapCheck::Ok);
 			TestEqual(TEXT("Misma tecla"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("SpaceBar"))).Result, ERemapCheck::Ok);
 			TestEqual(TEXT("Botón lateral del ratón"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("ThumbMouseButton"))).Result, ERemapCheck::Ok);
+			// La pesca y el reloj de v1 ya no tienen teclas fijas: F, R, T y H quedan libres.
+			for (const TCHAR* Freed : { TEXT("F"), TEXT("R"), TEXT("T"), TEXT("H") })
+			{
+				TestFalse(FString::Printf(TEXT("%s no reservada"), Freed), IsReservedKey(FName(Freed)));
+				TestEqual(FString::Printf(TEXT("%s libre"), Freed), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(Freed)).Result, ERemapCheck::Ok);
+			}
 		});
 
 		It("rechaza teclas reservadas y vacías", [this]()
@@ -176,7 +182,6 @@ void FExploredSettingsLogicSpec::Define()
 			const TArray<FKeyBinding> Bindings = DefaultBindings();
 			TestEqual(TEXT("W es de movimiento"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("W"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Escape es del menú"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("Escape"))).Result, ERemapCheck::ReservedKey);
-			TestEqual(TEXT("F es de la caña"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("F"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("B es de construcción y del barco"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("B"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Sin tecla"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName()).Result, ERemapCheck::InvalidKey);
 		});

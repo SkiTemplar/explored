@@ -17,7 +17,6 @@
 #include "ExploredGameMode.h"
 #include "Fauna/ExploredFaunaManager.h"
 #include "Fishing/ExploredFishingSubsystem.h"
-#include "Fishing/FishingComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "Items/ExploredItemActor.h"
 #include "Items/ItemRegistrySubsystem.h"
@@ -311,11 +310,6 @@ void UExploredWiringSubsystem::UpdateBoat(AExploredCharacter& Character, const F
 	if (AExploredFaunaManager* Fauna = BoundFauna.Get())
 	{
 		Fauna->SetPlayerBoatState(bAboard, Carry && Carry->HasItemWithTag(TEXT("pescado")));
-	}
-	// Legendarias que solo pican desde la barca (el Rey de Plata).
-	if (UFishingComponent* Fishing = Character.GetFishingComponent())
-	{
-		Fishing->SetFromBoat(bAboard);
 	}
 }
 

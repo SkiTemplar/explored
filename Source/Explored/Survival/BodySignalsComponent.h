@@ -121,12 +121,6 @@ public:
 	// --- Reloj de pulsera ------------------------------------------------------------
 
 	UFUNCTION(BlueprintCallable, Category = "Explored|Cuerpo")
-	void SetWristWatchRaised(bool bRaised) { bWristWatchRaised = bRaised; }
-
-	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
-	bool IsWristWatchRaised() const { return bWristWatchRaised; }
-
-	UFUNCTION(BlueprintCallable, Category = "Explored|Cuerpo")
 	void SetShowWatchNeeds(bool bShow) { bShowWatchNeeds = bShow; }
 
 	const FWristWatchReadout& GetWristWatchReadout() const { return WatchReadout; }
@@ -201,6 +195,5 @@ private:
 	float FallApexZ = 0.0f;
 	bool bWasFalling = false;
 	bool bFallFromFlight = false;
-	bool bWristWatchRaised = false;
 	bool bShowWatchNeeds = true;
 };
