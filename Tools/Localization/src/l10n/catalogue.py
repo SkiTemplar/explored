@@ -33,7 +33,6 @@ DATA_DIR = Path("Content") / "Data"
 # en un botón o una fila de ajustes pensados para el texto español.
 LENGTH_RATIO = 1.3
 LENGTH_MIN = 12
-DEDICATION = "Para Almudena, mi Limón"
 PLACEHOLDER_RE = re.compile(r"\{([A-Za-z0-9_]+)\}")
 
 
@@ -300,8 +299,6 @@ def _check_entry(e: Entry, r: Report, src: Sources | None = None, used: dict[str
     if placeholders(es) != placeholders(en):
         r.errors.append(f"{where}: {e.id}: marcadores distintos {sorted(placeholders(es))} (ES) "
                         f"y {sorted(placeholders(en))} (EN)")
-    if DEDICATION in es and en != es:
-        r.errors.append(f"{where}: {e.id}: la dedicatoria «{DEDICATION}» no se traduce")
     if es != es.strip() or en != en.strip():
         if (es[:1].isspace(), es[-1:].isspace()) != (en[:1].isspace(), en[-1:].isspace()):
             r.warnings.append(f"{where}: {e.id}: espacios al principio o al final distintos entre ES y EN")

@@ -18,7 +18,7 @@ namespace ExploredEndingDetail
 	/** Azul de la noche en alta mar, el fondo de toda la pantalla. */
 	const FLinearColor NightSky(0.012f, 0.025f, 0.07f, 1.0f);
 	const FLinearColor StarWhite(0.93f, 0.91f, 0.82f, 1.0f);
-	const FLinearColor LemonYellow(1.0f, 0.86f, 0.22f, 1.0f);
+	const FLinearColor BeaconAmber(1.0f, 0.86f, 0.22f, 1.0f);
 	constexpr int32 StarCount = 160;
 	constexpr int32 StarSeed = 1974;
 
@@ -72,15 +72,11 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 12.0f))
 				[
-					Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "EXPLORED"), Style.FontHeading(), LemonYellow)
-				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 8.0f))
-				[
-					Line(NSLOCTEXT("ExploredUI", "CreditsAuthor", "Un juego de Rodrigo Fernández"), Style.FontBody(), StarWhite)
+					Line(NSLOCTEXT("ExploredUI", "CreditsTitle", "EXPLORED"), Style.FontHeading(), BeaconAmber)
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 0.0f, 0.0f, 40.0f))
 				[
-					Line(NSLOCTEXT("ExploredUI", "Dedication", "Para Almudena, mi Limón"), Style.FontSubtitle(), LemonYellow)
+					Line(NSLOCTEXT("ExploredUI", "CreditsAuthor", "Un juego de Rodrigo Fernández"), Style.FontBody(), StarWhite)
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[

@@ -855,15 +855,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Para Almudena, mi Limón"
-					},
-					"Translation": {
-						"Text": "Para Almudena, mi Limón"
-					},
-					"Key": "Dedication"
-				},
-				{
-					"Source": {
 						"Text": "Efectos"
 					},
 					"Translation": {
@@ -1206,15 +1197,6 @@
 				},
 				{
 					"Source": {
-						"Text": "muy mal"
-					},
-					"Translation": {
-						"Text": "very bad"
-					},
-					"Key": "NeedCritical"
-				},
-				{
-					"Source": {
 						"Text": "Energía"
 					},
 					"Translation": {
@@ -1224,39 +1206,12 @@
 				},
 				{
 					"Source": {
-						"Text": "regular"
-					},
-					"Translation": {
-						"Text": "so-so"
-					},
-					"Key": "NeedFair"
-				},
-				{
-					"Source": {
-						"Text": "bien"
-					},
-					"Translation": {
-						"Text": "fine"
-					},
-					"Key": "NeedGood"
-				},
-				{
-					"Source": {
 						"Text": "Hambre"
 					},
 					"Translation": {
 						"Text": "Hunger"
 					},
 					"Key": "NeedHunger"
-				},
-				{
-					"Source": {
-						"Text": "mal"
-					},
-					"Translation": {
-						"Text": "bad"
-					},
-					"Key": "NeedLow"
 				},
 				{
 					"Source": {
@@ -1500,15 +1455,6 @@
 						"Text": "Save game"
 					},
 					"Key": "SaveGame"
-				},
-				{
-					"Source": {
-						"Text": "Guardando..."
-					},
-					"Translation": {
-						"Text": "Saving..."
-					},
-					"Key": "Saving"
 				},
 				{
 					"Source": {
@@ -1923,42 +1869,6 @@
 						"Text": "Interface"
 					},
 					"Key": "VolUI"
-				},
-				{
-					"Source": {
-						"Text": "Comida"
-					},
-					"Translation": {
-						"Text": "Food"
-					},
-					"Key": "WatchFood"
-				},
-				{
-					"Source": {
-						"Text": "Sueño"
-					},
-					"Translation": {
-						"Text": "Sleep"
-					},
-					"Key": "WatchRest"
-				},
-				{
-					"Source": {
-						"Text": "Calor"
-					},
-					"Translation": {
-						"Text": "Warmth"
-					},
-					"Key": "WatchWarmth"
-				},
-				{
-					"Source": {
-						"Text": "Agua"
-					},
-					"Translation": {
-						"Text": "Water"
-					},
-					"Key": "WatchWater"
 				},
 				{
 					"Source": {

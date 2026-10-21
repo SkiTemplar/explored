@@ -46,12 +46,6 @@ void FLocalizationSpec::Define()
 			TestEqual(TEXT("en sin traducción"), Name.Get(TEXT("en")), FString(TEXT("Esqueje")));
 			TestFalse(TEXT("incompleto"), Name.IsComplete());
 		});
-
-		It("no traduce la dedicatoria: es la misma en los dos idiomas", [this]()
-		{
-			const FString Dedication = TEXT("Para Almudena, mi Limón");
-			TestEqual(TEXT("en"), ExploredLocalization::Pick(Dedication, Dedication, TEXT("en")), Dedication);
-		});
 	});
 }
 

@@ -9,7 +9,6 @@
 class AExploredMenuCamera;
 class SExploredFade;
 class SExploredInventoryPanel;
-class SExploredSavingIndicator;
 class SExploredSettingsPanel;
 class UExploredGameUserSettings;
 class UExploredSaveSubsystem;
@@ -156,7 +155,6 @@ private:
 	ExploredSettingsLogic::FMenuNavigation Navigation;
 
 	TSharedPtr<SExploredFade> FadeWidget;
-	TSharedPtr<SExploredSavingIndicator> SavingIndicator;
 	/** Vista del inventario: siempre en el viewport, visible solo con la mochila abierta. */
 	TSharedPtr<SExploredInventoryPanel> InventoryPanel;
 	TSharedPtr<SWidget> CurrentOverlay;
@@ -167,7 +165,4 @@ private:
 
 	TWeakObjectPtr<AExploredMenuCamera> MenuCamera;
 
-	/** Suscripción a UExploredSaveSubsystem::OnSaveCompleted; se retira en EndPlay (H1/M8). */
-	TWeakObjectPtr<UExploredSaveSubsystem> SaveSubsystemBound;
-	FDelegateHandle SaveCompletedHandle;
 };

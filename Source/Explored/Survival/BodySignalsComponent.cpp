@@ -4,7 +4,6 @@
 #include "CollisionQueryParams.h"
 #include "Components/AudioComponent.h"
 #include "Engine/EngineTypes.h"
-#include "Engine/GameViewportClient.h"
 #include "Engine/HitResult.h"
 #include "Engine/Scene.h"
 #include "Engine/World.h"
@@ -19,7 +18,6 @@
 
 #include "Player/SwimComponent.h"
 #include "Sky/TimeOfDaySubsystem.h"
-#include "UI/Widgets/SExploredWristWatch.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "Weather/WeatherModel.h"
 
@@ -97,7 +95,6 @@ void UBodySignalsComponent::BeginPlay()
 
 void UBodySignalsComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	RemoveWristWatch();
 	if (HeartbeatAudio)
 	{
 		HeartbeatAudio->Stop();
@@ -149,7 +146,6 @@ void UBodySignalsComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	const UWorld* World = GetWorld();
 	const UTimeOfDaySubsystem* Time = World ? World->GetSubsystem<UTimeOfDaySubsystem>() : nullptr;
 	WatchReadout = FBodySignalsModel::WristWatch(State, Time ? Time->GetHours() : 12.0f, bShowWatchNeeds);
-	EnsureWristWatch();
 }
 
 void UBodySignalsComponent::Consume(const FConsumable& Item)
@@ -407,52 +403,6 @@ void UBodySignalsComponent::ApplyAudio(float DeltaSeconds)
 			UGameplayStatics::PlaySound2D(this, LoadedBreathSound, FMath::Clamp((Signals.Breathing - 0.4f) / 0.6f, 0.2f, 1.0f));
 		}
 	}
-}
-
-void UBodySignalsComponent::EnsureWristWatch()
-{
-	if (WristWatchWidget.IsValid())
-	{
-		return;
-	}
-	const APawn* Pawn = Cast<APawn>(GetOwner());
-	UWorld* World = GetWorld();
-	if (!Pawn || !Pawn->IsLocallyControlled() || !World)
-	{
-		return;
-	}
-	UGameViewportClient* Viewport = World->GetGameViewport();
-	if (!Viewport)
-	{
-		return;
-	}
-	TWeakObjectPtr<UBodySignalsComponent> WeakThis(this);
-	WristWatchWidget = SNew(SExploredWristWatch)
-		.Readout_Lambda([WeakThis]()
-		{
-			return WeakThis.IsValid() ? WeakThis->GetWristWatchReadout() : FWristWatchReadout();
-		})
-		.Raised_Lambda([WeakThis]()
-		{
-			return WeakThis.IsValid() && WeakThis->IsWristWatchRaised();
-		});
-	Viewport->AddViewportWidgetContent(WristWatchWidget.ToSharedRef(), 800);
-}
-
-void UBodySignalsComponent::RemoveWristWatch()
-{
-	if (!WristWatchWidget.IsValid())
-	{
-		return;
-	}
-	if (UWorld* World = GetWorld())
-	{
-		if (UGameViewportClient* Viewport = World->GetGameViewport())
-		{
-			Viewport->RemoveViewportWidgetContent(WristWatchWidget.ToSharedRef());
-		}
-	}
-	WristWatchWidget.Reset();
 }
 
 void UBodySignalsComponent::Broadcast(const TArray<ESurvivalEvent>& Events)

@@ -29,7 +29,6 @@
 #include "UI/Widgets/SExploredMainMenu.h"
 #include "UI/Widgets/SExploredPauseMenu.h"
 #include "UI/Widgets/SExploredSaveSlots.h"
-#include "UI/Widgets/SExploredSavingIndicator.h"
 #include "UI/Widgets/SExploredSettingsPanel.h"
 
 namespace ExploredUI
@@ -82,26 +81,12 @@ void AExploredPlayerController::BeginPlay()
 	}
 
 	FadeWidget = SNew(SExploredFade);
-	SavingIndicator = SNew(SExploredSavingIndicator);
 	InventoryPanel = SNew(SExploredInventoryPanel).Owner(TWeakObjectPtr<APlayerController>(this));
 	if (UGameViewportClient* Viewport = GetWorld()->GetGameViewport())
 	{
 		// Bajo los menús (500): la mochila abierta no tapa la pausa.
 		Viewport->AddViewportWidgetContent(InventoryPanel.ToSharedRef(), 400);
-		Viewport->AddViewportWidgetContent(SavingIndicator.ToSharedRef(), 900);
 		Viewport->AddViewportWidgetContent(FadeWidget.ToSharedRef(), 1000);
-	}
-
-	if (UExploredSaveSubsystem* SaveSubsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr)
-	{
-		SaveSubsystemBound = SaveSubsystem;
-		SaveCompletedHandle = SaveSubsystem->OnSaveCompleted.AddWeakLambda(this, [this]()
-		{
-			if (SavingIndicator.IsValid())
-			{
-				SavingIndicator->Show();
-			}
-		});
 	}
 
 	const bool bSkipMenu = FParse::Param(FCommandLine::Get(), TEXT("SkipMenu"));
@@ -118,15 +103,6 @@ void AExploredPlayerController::BeginPlay()
 
 void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	// M8: el subsistema de guardado sobrevive a OpenLevel; sin quitar el handle
-	// se acumulaba una suscripción por cada carga de mapa.
-	if (UExploredSaveSubsystem* SaveSubsystem = SaveSubsystemBound.Get())
-	{
-		SaveSubsystem->OnSaveCompleted.Remove(SaveCompletedHandle);
-	}
-	SaveSubsystemBound.Reset();
-	SaveCompletedHandle.Reset();
-
 	// M8: los widgets añadidos al viewport no son del mundo; si no se retiran,
 	// se quedan pintados (y referenciados) tras parar PIE o cambiar de mapa.
 	HideOverlay();
@@ -137,10 +113,6 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 		{
 			Viewport->RemoveViewportWidgetContent(FadeWidget.ToSharedRef());
 		}
-		if (SavingIndicator.IsValid())
-		{
-			Viewport->RemoveViewportWidgetContent(SavingIndicator.ToSharedRef());
-		}
 		if (InventoryPanel.IsValid())
 		{
 			Viewport->RemoveViewportWidgetContent(InventoryPanel.ToSharedRef());
@@ -148,7 +120,6 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 	}
 	FadeWidget.Reset();
 	InventoryPanel.Reset();
-	SavingIndicator.Reset();
 	CurrentFocusTarget.Reset();
 
 	Super::EndPlay(EndPlayReason);

@@ -12,7 +12,6 @@
 
 #include "BodySignalsComponent.generated.h"
 
-class SExploredWristWatch;
 class UAudioComponent;
 class UCameraComponent;
 class UMaterialInstanceDynamic;
@@ -35,7 +34,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnBodySurvivalEvent, ESurvivalEvent);
  *   (nombres en docs/tecnico/cuerpo.md) o, si aún no existe, en los ajustes de
  *   postproceso de la cámara; temblor de cámara y de manos (el personaje lee
  *   GetShiverRotation / GetHandTremorOffset); latido y respiración audibles.
- * - Muestra el reloj de pulsera (SExploredWristWatch) mientras se levanta la muñeca.
+ * - Calcula la lectura del reloj de pulsera (FWristWatchReadout) para la vista.
  *
  * Sin iconos: el jugador diagnostica por sensaciones.
  */
@@ -159,8 +158,6 @@ private:
 	void UpdateFallDetection();
 	void ApplyPostProcess();
 	void ApplyAudio(float DeltaSeconds);
-	void EnsureWristWatch();
-	void RemoveWristWatch();
 	void Broadcast(const TArray<ESurvivalEvent>& Events);
 	float GameHoursPerSecond() const;
 	EActivity CurrentActivity() const;
@@ -185,7 +182,6 @@ private:
 	FBodySignals Signals;
 	FBodySignals TargetSignals;
 	FWristWatchReadout WatchReadout;
-	TSharedPtr<SExploredWristWatch> WristWatchWidget;
 
 	float StepAccumulator = 0.0f;
 	float EnvironmentTimer = 0.0f;

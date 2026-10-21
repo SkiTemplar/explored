@@ -4,9 +4,8 @@
 #include "Widgets/SCompoundWidget.h"
 
 /**
- * Menú principal (GDD §10, §15): título, subtítulo, la dedicatoria «Para
- * Almudena, mi Limón» y Continuar, Nueva partida, Cargar, Ajustes,
- * Créditos y Salir sobre el mundo real.
+ * Menú principal (GDD §10): título, subtítulo y Continuar, Nueva partida,
+ * Cargar, Ajustes, Créditos y Salir sobre el mundo real.
  * Escape no hace nada aquí (ver ExploredSettingsLogic::ScreenAfterBack).
  */
 class EXPLORED_API SExploredMainMenu : public SCompoundWidget

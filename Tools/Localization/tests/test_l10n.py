@@ -7,7 +7,7 @@ import json
 import pytest
 
 from l10n import cli, cpp, unreal
-from l10n.catalogue import DEDICATION, Catalogue, Sources, build
+from l10n.catalogue import Catalogue, Sources, build
 
 
 @pytest.fixture(scope="module")
@@ -49,12 +49,6 @@ def test_catalogo_une_cpp_ini_y_datos(real_cat: Catalogue) -> None:
     assert "Explored,Title" in ids  # ProjectDisplayedTitle de DefaultGame.ini
     assert "Data.items.items,limon.nameEs" in ids
     assert "Data.story_es.petroglyph_themes,29" in ids
-
-
-def test_dedicatoria_igual_en_los_dos_idiomas(real_cat: Catalogue) -> None:
-    ded = [e for e in real_cat.entries if DEDICATION in (e.es or "")]
-    assert ded, "la dedicatoria debe estar en el catálogo (GDD §15)"
-    assert all(e.en == e.es == DEDICATION for e in ded)
 
 
 def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
@@ -181,11 +175,6 @@ def test_conflicto_de_clave(src: Sources) -> None:
     assert has(build(src).report.errors, "ExploredUI,Back", "conflicto")
 
 
-def test_dedicatoria_no_se_traduce(src: Sources) -> None:
-    src.translations["ExploredUI"]["Dedication"]["en"] = "For Almudena, my Lemon"
-    assert has(build(src).report.errors, "dedicatoria")
-
-
 def test_aviso_de_longitud(src: Sources) -> None:
     src.translations["ExploredUI"]["Apply"]["en"] = "Apply all of these changes"
     assert has(build(src).report.warnings, "ExploredUI,Apply", "comprueba que cabe")
@@ -197,12 +186,11 @@ def test_traduccion_huerfana(src: Sources) -> None:
 
 
 def test_pendiente_ya_integrada(src: Sources) -> None:
-    # La dedicatoria ya está en el código (P-UI2): se simula que en.json aún la marca como pendiente.
-    src.translations["ExploredUI"]["Dedication"]["pendiente"] = "SExploredMainMenu y SExploredCredits"
-    src.loctexts.append(loc("ExploredUI", "Dedication", DEDICATION))
+    # La clave ya está en el código: se simula que en.json aún la marca como pendiente.
+    src.translations["ExploredUI"]["Apply"]["pendiente"] = "SExploredSettingsPanel"
     cat = build(src)
-    assert has(cat.report.warnings, "ExploredUI,Dedication", "quita «pendiente»")
-    assert any(e.id == "ExploredUI,Dedication" for e in cat.exported)
+    assert has(cat.report.warnings, "ExploredUI,Apply", "quita «pendiente»")
+    assert any(e.id == "ExploredUI,Apply" for e in cat.exported)
 
 
 def test_listas_paralelas_desparejas(src: Sources) -> None:

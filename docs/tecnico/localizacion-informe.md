@@ -7,13 +7,13 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 670 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 245 |
+| Textos en el catálogo | 660 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 235 |
 | … de `Content/Data` (campos bilingües) | 425 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
-| Literales invariantes | 3 |
+| Literales invariantes | 2 |
 | Literales para revisar | 108 |
 | Errores / avisos | 0 / 9 |
 
@@ -23,7 +23,7 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 Literales con letras que llegan a la pantalla: pasar a `NSLOCTEXT`/`LOCTEXT` (o `FText::Format`).
 
-### Invariante (3)
+### Invariante (2)
 
 Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FText::AsNumber`, sin traducir.
 
@@ -31,7 +31,6 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 |---|---|---|
 | `Source/Explored/Debug/PlaytestReportModel.cpp:182` | `== %s (%d) ==\n` | `Out += FString::Printf(TEXT("== %s (%d) ==\n"), Title, Matching.Num());` |
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:254` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
-| `Source/Explored/UI/Widgets/SExploredWristWatch.cpp:111` | `%02d:%02d` | `return FText::FromString(FString::Printf(TEXT("%02d:%02d"), R.Hour, R.Minute));` |
 
 ### Revisar (108)
 
@@ -173,7 +172,7 @@ Ninguno.
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:182: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:199: ExploredVoyage,PartRecovered: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageSubsystem.cpp:341: ExploredVoyage,ObjSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
-- Source/Explored/UI/ExploredPlayerController.cpp:393: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
+- Source/Explored/UI/ExploredPlayerController.cpp:364: ExploredUI,HelpGoal: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Content/Data/recipes_smithing.json «fundir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_chapa.nameEs: el inglés (21 car.) es más de 1.3× el español (12); comprueba que cabe
 - Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_tubo.nameEs: el inglés (16 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,batir_chapa.nameEs: el inglés (22 car.) es más de 1.3× el español (11); comprueba que cabe

@@ -4,8 +4,8 @@
 #include "Widgets/SCompoundWidget.h"
 
 /**
- * Pantalla del final «Zarpar» (GDD §0, §6.3): cielo nocturno, unas pocas líneas y la
- * dedicatoria. «Volver al menú» (o Escape/B) cierra la partida.
+ * Pantalla del final (GDD §0, §6.3): cielo nocturno y unas pocas líneas.
+ * «Volver al menú» (o Escape/B) cierra la partida.
  */
 class EXPLORED_API SExploredEnding : public SCompoundWidget
 {

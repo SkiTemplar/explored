@@ -667,23 +667,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Agua"
-					},
-					"Keys": [
-						{
-							"Key": "WatchWater",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 48"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Ajustes"
 					},
 					"Keys": [
 						{
 							"Key": "Settings",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 73"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 65"
 						}
 					]
 				},
@@ -843,17 +832,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Calor"
-					},
-					"Keys": [
-						{
-							"Key": "WatchWarmth",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 60"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Campo de visión"
 					},
 					"Keys": [
@@ -942,17 +920,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Comida"
-					},
-					"Keys": [
-						{
-							"Key": "WatchFood",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 52"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Con copia de seguridad"
 					},
 					"Keys": [
@@ -1002,7 +969,7 @@
 					"Keys": [
 						{
 							"Key": "Credits",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 78"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 70"
 						}
 					]
 				},
@@ -1068,7 +1035,7 @@
 					"Keys": [
 						{
 							"Key": "HelpUse",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 391"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 362"
 						}
 					]
 				},
@@ -1109,7 +1076,7 @@
 					"Keys": [
 						{
 							"Key": "HelpGoal",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 393"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 364"
 						}
 					]
 				},
@@ -1275,17 +1242,6 @@
 						{
 							"Key": "SlotFuture",
 							"Path": "Source/Explored/UI/Widgets/SExploredSaveSlots.cpp - line 127"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "Guardando..."
-					},
-					"Keys": [
-						{
-							"Key": "Saving",
-							"Path": "Source/Explored/UI/Widgets/SExploredSavingIndicator.cpp - line 25"
 						}
 					]
 				},
@@ -1625,17 +1581,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Para Almudena, mi Limón"
-					},
-					"Keys": [
-						{
-							"Key": "Dedication",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 82"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Partida guardada en la {0}."
 					},
 					"Keys": [
@@ -1817,7 +1762,7 @@
 					"Keys": [
 						{
 							"Key": "Quit",
-							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 83"
+							"Path": "Source/Explored/UI/Widgets/SExploredMainMenu.cpp - line 75"
 						}
 					]
 				},
@@ -1994,10 +1939,6 @@
 						{
 							"Key": "NeedRest",
 							"Path": "Source/Explored/UI/ExploredHUD.cpp - line 285"
-						},
-						{
-							"Key": "WatchRest",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 56"
 						}
 					]
 				},
@@ -2206,7 +2147,7 @@
 					"Keys": [
 						{
 							"Key": "HelpMove",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 392"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 363"
 						}
 					]
 				},
@@ -2223,56 +2164,12 @@
 				},
 				{
 					"Source": {
-						"Text": "bien"
-					},
-					"Keys": [
-						{
-							"Key": "NeedGood",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 118"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "mal"
-					},
-					"Keys": [
-						{
-							"Key": "NeedLow",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 120"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "muy mal"
-					},
-					"Keys": [
-						{
-							"Key": "NeedCritical",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 121"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "nada"
 					},
 					"Keys": [
 						{
 							"Key": "InvNothing",
 							"Path": "Source/Explored/UI/Widgets/SExploredInventoryPanel.cpp - line 201"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "regular"
-					},
-					"Keys": [
-						{
-							"Key": "NeedFair",
-							"Path": "Source/Explored/UI/Widgets/SExploredWristWatch.cpp - line 119"
 						}
 					]
 				},

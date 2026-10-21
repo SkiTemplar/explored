@@ -50,20 +50,12 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 					.Font(Style.FontTitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInk()))
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 0.0f))
+				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 0.0f, 0.0f, 28.0f))
 				[
 					SNew(STextBlock)
 					.Text(NSLOCTEXT("ExploredUI", "Subtitle", "Un archipiélago que no aparece en ningún mapa"))
 					.Font(Style.FontSubtitle())
 					.ColorAndOpacity(FSlateColor(Style.ColorInkDim()))
-				]
-				// Dedicatoria (GDD §15): idéntica en los dos idiomas.
-				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(4.0f, 6.0f, 0.0f, 28.0f))
-				[
-					SNew(STextBlock)
-					.Text(NSLOCTEXT("ExploredUI", "Dedication", "Para Almudena, mi Limón"))
-					.Font(Style.FontSmall())
-					.ColorAndOpacity(FSlateColor(Style.ColorAccent()))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ ContinueButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ NewGameButton ]

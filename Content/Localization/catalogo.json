@@ -2,13 +2,13 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 670,
-		"cpp": 245,
+		"total": 660,
+		"cpp": 235,
 		"datos": 425,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
-		"invariantes": 3,
+		"invariantes": 2,
 		"revisar": 108
 	},
 	"entries": [
@@ -828,7 +828,7 @@
 			"en": "Credits",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:78"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:70"
 			]
 		},
 		{
@@ -943,19 +943,6 @@
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:459"
 			],
 			"note": "FText::Format(..., FText::AsNumber(Minutes))."
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "Dedication",
-			"es": "Para Almudena, mi Limón",
-			"en": "Para Almudena, mi Limón",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:82",
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:83",
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:64"
-			],
-			"note": "Dedicatoria: idéntica en los dos idiomas."
 		},
 		{
 			"namespace": "ExploredUI",
@@ -1094,7 +1081,7 @@
 			"en": "The Albatros broke into four parts. With them you can build a boat.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:393"
+				"Source/Explored/UI/ExploredPlayerController.cpp:364"
 			]
 		},
 		{
@@ -1104,7 +1091,7 @@
 			"en": "WASD move · Space jump · Shift run · Ctrl dive",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:392"
+				"Source/Explored/UI/ExploredPlayerController.cpp:363"
 			]
 		},
 		{
@@ -1114,7 +1101,7 @@
 			"en": "E interact · Tab backpack · H watch · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:391"
+				"Source/Explored/UI/ExploredPlayerController.cpp:362"
 			]
 		},
 		{
@@ -1342,16 +1329,6 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "NeedCritical",
-			"es": "muy mal",
-			"en": "very bad",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:121"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "NeedEnergy",
 			"es": "Energía",
 			"en": "Energy",
@@ -1362,42 +1339,12 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "NeedFair",
-			"es": "regular",
-			"en": "so-so",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:119"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedGood",
-			"es": "bien",
-			"en": "fine",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:118"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "NeedHunger",
 			"es": "Hambre",
 			"en": "Hunger",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/ExploredHUD.cpp:282"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "NeedLow",
-			"es": "mal",
-			"en": "bad",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:120"
 			]
 		},
 		{
@@ -1567,7 +1514,7 @@
 			"en": "Quit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:83"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:75"
 			]
 		},
 		{
@@ -1672,16 +1619,6 @@
 		},
 		{
 			"namespace": "ExploredUI",
-			"key": "Saving",
-			"es": "Guardando...",
-			"en": "Saving...",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSavingIndicator.cpp:25"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
 			"key": "SectionDisplay",
 			"es": "Pantalla",
 			"en": "Display",
@@ -1717,7 +1654,7 @@
 			"en": "Settings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:73",
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:65",
 				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:48"
 			]
 		},
@@ -2139,46 +2076,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:342"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "WatchFood",
-			"es": "Comida",
-			"en": "Food",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:52"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "WatchRest",
-			"es": "Sueño",
-			"en": "Sleep",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:56"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "WatchWarmth",
-			"es": "Calor",
-			"en": "Warmth",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:60"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "WatchWater",
-			"es": "Agua",
-			"en": "Water",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredWristWatch.cpp:48"
 			]
 		},
 		{
