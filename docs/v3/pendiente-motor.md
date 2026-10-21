@@ -92,3 +92,62 @@ Una partida a mano (o la ruta competente con `-Window`) escuchando:
 - Ambiente por zona y lluvia del ciclón sin cortes al entrar en la base del faro.
 
 Apuntar en `docs/creditos-musica.md` cualquier cambio de pista.
+
+## F7 — Pulido y paquete (2026-10-21)
+
+Estado del código: recorrido de rendimiento por Map_IslaSal con veredicto (`FBenchBudgetModel`),
+cocinado configurado (`Config/DefaultGame.ini`), `Tools/package.ps1` con comprobación del paquete y
+Shipping compilado (con y sin Unity build). Detalle en [`estado-f7.md`](estado-f7.md).
+
+### 1. Rendimiento a 1080p (criterio 1 de F7)
+
+```powershell
+powershell -NoProfile -File Tools/bench.ps1                 # editor en -game, fuera de pantalla
+powershell -NoProfile -File Tools/bench.ps1 -Window         # con ventana, para mirarlo
+```
+
+- Objetivo: `[Bench] Resumen: … OK` con **≥ 60 fps de media y ≥ 45 fps de mínimo** en cada una de
+  las cinco vistas (`bench-cala`, `bench-palmar`, `bench-faro`, `bench-faro-galeria`,
+  `bench-ciclon`). El script sale con error si alguna falla o si no llega el resumen.
+- Apuntar en `estado-f7.md` la línea `[Bench] fps …` de cada vista y el `GPU=… ms` de su línea
+  `[Bench] <vista>`.
+- Comprobar en `Saved/Shots/bench-ciclon.png` que el ciclón está activo (lluvia y oleaje); si sale
+  un cielo despejado, la vista no fija el clima y su cifra no vale.
+- Repetir sobre el paquete Development (paso 2), que es la cifra que cuenta para la entrega:
+  `powershell -NoProfile -File Tools/bench.ps1 -Exe Saved/Package/Windows/Explored.exe`.
+- Si no llega: palancas en orden de coste visual, `r.ScreenPercentage.Default` (hoy 87),
+  `r.Nanite.MaxPixelsPerEdge` (hoy 2), distancia de dibujado de la vegetación HISM y sombras
+  virtuales de la lluvia.
+
+### 2. Paquete (criterios 2 y 5 de F7)
+
+```powershell
+powershell -NoProfile -File Tools/package.ps1 -Configuration Development
+powershell -NoProfile -File Tools/package.ps1                              # Shipping
+```
+
+- Las dos terminan con `Paquete <Configuración>: … (N MB)`; apuntar el tamaño de Shipping
+  (orientativo ≤ 1,2 GB con audio).
+- Si UAT rechaza `-AdditionalCookerOptions=-DisablePlugins=UnrealMCPython`, quitarlo del script
+  (no se ha podido probar sin motor).
+- En el log del cocinado (`%APPDATA%/Unreal Engine/AutomationTool/Logs/…/Cook-*.txt`), ningún
+  `Error`. Es esperable un aviso por `/Game/Generated/Meshes/Embarcaciones` (barco antiguo, la
+  balsa no lo usa).
+- Arrancar `Saved/Package/Windows/Explored.exe` (Shipping): título «Baliza Siete», menú principal
+  con música, Nueva partida, Iria en la Cala con HUD, ayuda inicial y textos (los JSON sueltos
+  cargan), lluvia y faro con sus materiales (no grises). Salir desde el menú.
+- Con el paquete Development, las tres partidas del bot sobre el paquete:
+
+  ```powershell
+  powershell -NoProfile -File Tools/playtest_v3.ps1 -Exe Saved/Package/Windows/Explored.exe -Route competente
+  powershell -NoProfile -File Tools/playtest_v3.ps1 -Exe Saved/Package/Windows/Explored.exe -Route lenta
+  powershell -NoProfile -File Tools/playtest_v3.ps1 -Exe Saved/Package/Windows/Explored.exe -Route sin_paginas
+  ```
+
+  Mismos criterios que la tabla de F6 §3; 0 `Error` en `Saved/Logs/PlaytestV3.log`.
+
+### 3. Comprobaciones de juego que dejó F7
+
+- Junto al agua, pulsar F: si Iria lanza un sedal sin caña ni punto de pesca, quitar la pesca
+  antigua (`UFishingComponent` y el mapeo F/R/T de `AExploredCharacter`).
+- Mantener H: hoy no muestra nada (reloj de pulsera sin vista); decidir si se quita el mapeo.
