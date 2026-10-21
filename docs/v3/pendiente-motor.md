@@ -40,6 +40,8 @@ que el arreglo toque lo que generaron.
 
 ## 1. Compilar
 
+**[x] Hecho 2026-10-21: OK.** `Result: Succeeded` (también tras los arreglos de d852aa40).
+
 ```powershell
 powershell -NoProfile -File Tools/build.ps1
 ```
@@ -48,6 +50,8 @@ powershell -NoProfile -File Tools/build.ps1
   el código actual.
 
 ## 2. Generar los assets locales
+
+**[x] Hecho 2026-10-21: OK.** `textures-strokes` regeneró la máscara (512 × 512, media 0,500); `sfx_ship_horn` y `sfx_lens_rotation_loop` ya estaban en `Content/Generated/Audio/Efectos`, así que no se generó audio.
 
 No se versionan (`Art/Export/…`, `Content/Generated/…`, `Content/Audio/…`): en este PC ya existen a
 2026-10-21, pero hay que regenerarlos si faltan o si cambió su fuente.
@@ -73,6 +77,8 @@ cd Tools/Audio; uv run explored-audio build --only sfx_ship_horn,sfx_lens_rotati
 
 ## 3. Importar el audio generado
 
+**[x] 2026-10-21: no aplica** (el paso 2 no generó audio).
+
 Solo si el paso 2 generó audio:
 
 ```powershell
@@ -82,6 +88,8 @@ powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_
 - Lleva `Art/Export/Audio` a `Content/Generated/Audio`; el log termina sin `Error`.
 
 ## 4. Materiales
+
+**[x] Hecho 2026-10-21: OK (d81d53d3), ampliado en d852aa40.** Los dos scripts sin `Error`. Comprobado por script: `M_BeaconBeam` con `BeamOrigin`/`BeamColor` y `BeamLength`/`BeamIntensity`; `M_TerrainToon` con `DarkFactor`, `LightFactor`, `StrokesTile0/1`, `FadeStartM`/`FadeEndM`; `T_TerrainStrokes` sRGB desactivado, `TC_Grayscale`, `TA_Wrap`; `M_ToonCesped` de dos caras, opaco, con ISM y `BaseShade`, `WindSway`, `WindStrength`, `FadeStartCm`/`FadeEndCm`. `materials_f6.py` añade ahora a `M_Toon` el cristal encendido (`GlowCell`, `GlowStrength`, `GlowColor`).
 
 Van antes de importar la isla y el césped: `import_island.py` y `import_props.py` fallan a propósito
 si no encuentran `M_TerrainToon` o `M_ToonCesped` («ejecuta antes materials_…»).
@@ -104,6 +112,8 @@ powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materia
 
 ## 5. Importar la isla y el césped (K6)
 
+**[x] Hecho 2026-10-21: OK (d81d53d3).** Isla con caja z máx. 3588,2 cm (35,882 m) y normales importadas; K6: 8 mallas en `/Game/Art/K6_Cesped` (25-100 triángulos, colisión ninguna, color por vértice), 0 errores.
+
 ```powershell
 powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_island.py
 $env:EXPLORED_KITS = 'K6_Cesped'
@@ -119,6 +129,8 @@ Remove-Item Env:EXPLORED_KITS
 
 ## 6. Automation tests
 
+**[x] Hecho 2026-10-21: OK.** 859 tests, 0 fallos (858 en verde y 1 con avisos de `GConfig` en `UExploredGameUserSettings`), repetido tras d852aa40; incluye «Entrada del final» y `SettingsLogic`. Host tests: 812 casos, 0 fallos.
+
 ```powershell
 powershell -NoProfile -File Tools/test.ps1
 ```
@@ -128,6 +140,8 @@ powershell -NoProfile -File Tools/test.ps1
   `SettingsLogicSpec` (F, R, T y H ya no son teclas reservadas).
 
 ## 7. Capturas
+
+**[x] Hecho 2026-10-21: arreglado en d852aa40.** En la primera tanda, `f6-final-encender` no enseñaba la llama (cristal opaco), el haz salía fuera de plano, el Mistral se capturaba 2 s antes de la bocina y el epílogo a medio fundir. Repetidas y conformes. Log: `[Decor] 1940 instancias decorativas en 11 mallas`, `[Césped] 274 × 246 vértices de suelo, 129 exclusiones, 36 palmeras` y 21 225 matas en el Palmar; ningún aviso de `falta` ni de `ground_field.bin`. Pendiente de arte: en `f6-relieve-islote` la roca de la ladera del islote sale en triángulos grises grandes (más facetado que `f6-suave-islote`), y los bloques de roca con techo verde junto al faro ya salían en `f6-suave-*`.
 
 ```powershell
 powershell -NoProfile -File Tools/shots.ps1 -Set f6 -Width 1920 -Height 1080
