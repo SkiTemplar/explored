@@ -228,9 +228,11 @@ void ALighthouseLamp::UpdateFlame(float Now)
 		Strength = FFinaleSequenceModel::FlameStrength(Timing, Now - IgniteStartedAt);
 		if (Now - IgniteStartedAt > LightSeconds + 1.0f)
 		{
-			// La acción se interrumpió sin encender: la llama no se queda prendida.
+			// La acción se interrumpió sin encender: la llama no se queda prendida y el
+			// tick vuelve al intervalo de reposo.
 			IgniteStartedAt = -1.0f;
 			Strength = 0.0f;
+			SetActorTickInterval(LighthouseLampDetail::IdleTickSeconds);
 		}
 	}
 	Glow->SetVisibility(Strength > 0.0f);
@@ -420,9 +422,10 @@ void ALighthouseLamp::Interact_Implementation(AActor* InInstigator)
 		Lamp->RefreshFromProgress();
 		if (!Lamp->IsLit())
 		{
-			// No prendió: la llama se apaga.
+			// No prendió: la llama se apaga y el tick vuelve al intervalo de reposo.
 			Lamp->IgniteStartedAt = -1.0f;
 			Lamp->Glow->SetVisibility(false);
+			Lamp->SetActorTickInterval(LighthouseLampDetail::IdleTickSeconds);
 		}
 	});
 }
