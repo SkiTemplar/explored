@@ -594,10 +594,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Tienes demasiada sed para dormir"
+						"Text": "Tienes demasiada sed para dormir."
 					},
 					"Translation": {
-						"Text": "Tienes demasiada sed para dormir"
+						"Text": "Tienes demasiada sed para dormir."
 					},
 					"Key": "SleepThirsty"
 				},
@@ -1280,10 +1280,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro."
+						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en la casa del farero."
 					},
 					"Translation": {
-						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro."
+						"Text": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en la casa del farero."
 					},
 					"Key": "NoPages"
 				},
@@ -1839,10 +1839,10 @@
 				},
 				{
 					"Source": {
-						"Text": "Pulsa una tecla..."
+						"Text": "Pulsa una tecla…"
 					},
 					"Translation": {
-						"Text": "Pulsa una tecla..."
+						"Text": "Pulsa una tecla…"
 					},
 					"Key": "PressAnyKey"
 				},

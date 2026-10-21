@@ -259,8 +259,8 @@
 			"en": "Quit game"
 		},
 		"PressAnyKey": {
-			"es": "Pulsa una tecla...",
-			"en": "Press a key..."
+			"es": "Pulsa una tecla…",
+			"en": "Press a key…"
 		},
 		"NoKey": {
 			"es": "(sin asignar)",
@@ -724,8 +724,8 @@
 			"en": "Nobody could sleep through this storm."
 		},
 		"SleepThirsty": {
-			"es": "Tienes demasiada sed para dormir",
-			"en": "You're too thirsty to sleep"
+			"es": "Tienes demasiada sed para dormir.",
+			"en": "You're too thirsty to sleep."
 		},
 		"FaintShore": {
 			"es": "Despiertas en Playa Norte…",
@@ -1086,8 +1086,8 @@
 			"en": "Objective"
 		},
 		"NoPages": {
-			"es": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro.",
-			"en": "You haven't found any page of Roig's logbook yet. Look in the lighthouse."
+			"es": "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en la casa del farero.",
+			"en": "You haven't found any page of Roig's logbook yet. Look in the keeper's house."
 		},
 		"PageHeading": {
 			"es": "Página {0}",

@@ -274,7 +274,7 @@ bool UIslandBodyComponent::TrySleep()
 	}
 	if (Outcome.bThirstWarning)
 	{
-		ShowLine(LOCTEXT("SleepThirsty", "Tienes demasiada sed para dormir"));
+		ShowLine(LOCTEXT("SleepThirsty", "Tienes demasiada sed para dormir."));
 	}
 	const FBodyBars NewBars = Outcome.Bars;
 	const double WakeHour = Outcome.WakeHour;

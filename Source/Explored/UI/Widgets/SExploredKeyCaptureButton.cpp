@@ -31,7 +31,7 @@ FText SExploredKeyCaptureButton::GetLabel() const
 {
 	if (bCapturing)
 	{
-		return NSLOCTEXT("ExploredUI", "PressAnyKey", "Pulsa una tecla...");
+		return NSLOCTEXT("ExploredUI", "PressAnyKey", "Pulsa una tecla…");
 	}
 	const FKey Key = CurrentKey.Get(EKeys::Invalid);
 	return Key.IsValid() ? Key.GetDisplayName() : NSLOCTEXT("ExploredUI", "NoKey", "(sin asignar)");

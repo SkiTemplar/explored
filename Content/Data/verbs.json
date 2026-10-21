@@ -1,5 +1,5 @@
 [
-	{ "id": "encender", "nameEs": "Encender", "nameEn": "Light", "description": "Prende leña con el pedernal del cuchillo, o la linterna montada.", "descriptionEn": "Lights firewood with the knife's flint, or the mounted lantern." },
+	{ "id": "encender", "nameEs": "Encender", "nameEn": "Light", "description": "Prende la leña con el pedernal del cuchillo o enciende la linterna montada.", "descriptionEn": "Lights firewood with the knife's flint, or lights the mounted lantern." },
 	{ "id": "trenzar", "nameEs": "Trenzar", "nameEn": "Braid", "description": "Retuerce fibras de palma: cuerda o mecha.", "descriptionEn": "Twists palm fibres into rope or a wick." },
 	{ "id": "atar", "nameEs": "Atar", "nameEn": "Lash", "description": "Une piezas con cuerda: caña de pescar, remo o balsa.", "descriptionEn": "Joins pieces with rope: fishing rod, paddle or raft." },
 	{ "id": "cocinar", "nameEs": "Cocinar", "nameEn": "Cook", "description": "Asa un pez junto a una hoguera encendida.", "descriptionEn": "Grills a fish next to a lit campfire." },

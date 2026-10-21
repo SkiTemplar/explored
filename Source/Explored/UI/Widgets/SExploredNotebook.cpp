@@ -175,7 +175,7 @@ TSharedRef<SWidget> SExploredNotebook::BuildPage() const
 	{
 		return SNew(SBox).VAlign(VAlign_Center)
 			[
-				Label(LOCTEXT("NoPages", "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en el faro."),
+				Label(LOCTEXT("NoPages", "Aún no has encontrado ninguna página del cuaderno de Roig. Busca en la casa del farero."),
 					Style.SerifItalic(26.0f), Style.ColorInkDim())
 			];
 	}
