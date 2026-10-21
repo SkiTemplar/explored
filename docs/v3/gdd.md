@@ -150,7 +150,7 @@ Todos los valores viven en JSON (`survival_needs.json`, `storm_curve.json`, `rec
 - **Caja de suministros** en la base del faro: entrega una sola vez lo mínimo que falte para el camino crítico (1 cuerda, 3 fibras, 2 pescados crudos). `FSupplyCrateModel` calcula qué falta; el bot verifica que ninguna secuencia deja la baliza imposible.
 - Mochila: 8 huecos; apilan cocos 4, leña 6, fibra 6, cuerdas 4, troncos 1 (pesado: ocupa una mano), peces 3. Mochila llena: aviso «No te cabe más» y el objeto no se recoge. Objeto no válido al combinar: «No sirve así», sin consumir nada.
 
-### 5.4 Pesca (reutiliza `FishingComponent`, `FishingModel`)
+### 5.4 Pesca (`AExploredFishingSpot` + `FCastFishingModel`; el `UFishingComponent` de v1 se borró en F7)
 
 - Caña de pescar en 3 puntos de las Rocas del Pescador. Lanzar, esperar, a los 3 s de mordida pulsar para sacar.
 - 1 pez cada ~35 s de media; ×1,5 al amanecer (06:00-08:00) y atardecer (17:00-19:00). No se pesca de noche ni durante el ciclón. La barra de tensión de v1 se elimina: pulsar a tiempo o se escapa.

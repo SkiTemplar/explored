@@ -1,7 +1,8 @@
 # Baliza Siete: estado de F7 (pulido y paquete, tramo sin motor)
 
 Fecha: 2026-10-21 · rama `reset/v2` · sin abrir Unreal (el PC estaba en uso): todo lo que necesita
-el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), sección «F7».
+el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una sola lista ordenada
+(pasos 10-12 para rendimiento y paquete).
 
 ## Criterio de salida de F7 (plan.md §4)
 
@@ -10,7 +11,7 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), secci�
 | 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Recorrido y veredicto listos en código; medida PENDIENTE (motor) |
 | 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Script y cocinado listos; Shipping compila; paquete y partidas PENDIENTE (motor) |
 | 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | No abordado en este tramo |
-| 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 797 casos, 0 fallos (13 nuevos de `BenchBudgetSpec`); sanitizers solo en CI (en Windows falta `stl_asan.lib`) |
+| 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 812 casos, 0 fallos (13 de `BenchBudgetSpec`; 2 de la entrada del final en `FinaleSequenceSpec`); sanitizers solo en CI (en Windows falta `stl_asan.lib`) |
 | 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | PENDIENTE (motor) |
 
 ## Hecho
@@ -79,15 +80,35 @@ En resumen: no apareció ningún error de Shipping que corregir; el tramo deja l
 - `CLAUDE.md`: «Qué es», «Stack» y «Cómo compilar / ejecutar» describen el juego real; «Tests» sin
   tocar.
 
+### Revisión final (corregido sin motor)
+
+- **Final:** el epílogo quitaba `bCutsceneActive` y `HandleEscape` no miraba `bShowingEnding`; Start
+  del mando abría la pausa, `HideOverlay` borraba el epílogo y al reanudar la cámara quedaba fija.
+  Ahora `FFinaleSequenceModel::CanOpenPause` bloquea la pausa en la cámara del final, el epílogo y
+  los créditos, y `SExploredEnding` consume Escape, B y Start (`IsEpilogueContinueKey`), con spec.
+- **Pesca de v1 (F/R/T):** lanzaba `UFishingComponent`, que generaba ids de v1 inexistentes (actores
+  invisibles huérfanos) y escribía en `FFishingSaveState`. Borrados el componente, `IA_Fish`,
+  `IA_Reel` y sus mapeos (también los gatillos del mando). La pesca es `AExploredFishingSpot` +
+  `FCastFishingModel` (tecla E en las Rocas del Pescador); `UExploredFishingSubsystem` se queda para
+  cargar partidas guardadas.
+- **H (reloj de pulsera):** solo ponía `bWristWatchRaised`, que no leía nadie. Borrados `IA_Watch`,
+  su mapeo (H y cruceta arriba) y el estado. F, R, T y H ya no son teclas reservadas: se pueden
+  asignar en Ajustes → Controles. Siguen fijas B, X y Z (barco antiguo `AExploredBoat`, que no está
+  en Map_IslaSal; también usa R, T y F en su propio contexto).
+- **Linterna:** si el encendido se interrumpía o no prendía, el tick se quedaba cada fotograma;
+  vuelve a `IdleTickSeconds`.
+- **«Duración del día»:** se guardaba pero no se aplicaba (el día dura siempre 26 min). Quitada de
+  Ajustes → Juego; `DayLengthMinutes` sigue en `UExploredGameUserSettings` para leer los ini antiguos.
+- **Lluvia:** `UpdateRain` creaba cada fotograma un array de 900 transformaciones; ahora reutiliza un
+  búfer miembro.
+- **Altura del suelo:** el auditor del bot, los puntos de la ruta del bot y las capturas usaban
+  `SampleColumn` (hasta 3,4 m de la malla). Ahora usan `ExploredGround::HeightAtMeters`
+  (`ground_field.bin`, el mismo lector que el césped; trazado contra lo estático si falta).
+
+Los controles del `README.md` no cambian: no listaban F, R, T ni H.
+
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 
-- **Pesca antigua en F/R/T.** `AExploredCharacter` sigue creando `UFishingComponent` y mapea F
-  (lanzar), R/T (sedal). `StartCast` solo pide agua de ≥ 0,3 m delante, sin caña ni punto de pesca:
-  `UExploredFishingSubsystem` no filtra `ShouldCreateSubsystem`, así que existe en Map_IslaSal y
-  esto es probablemente un atajo contra el GDD §5.4 (pesca solo en las Rocas del Pescador con caña,
-  tecla E). Comprobar en juego con F junto al agua y, si pesca, quitar el mapeo o el componente.
-- **H (reloj de pulsera) no muestra nada.** `SetWristWatchRaised` sigue mapeado, pero
-  `SExploredWristWatch` se borró en F1 y nadie lee la lectura. Quitar el mapeo o reutilizarlo.
 - **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Un
   clon limpio cocina sin música ni efectos. Decidir si van por LFS antes de entregar.
 - **La balsa no responde al mando** (solo W, A, D, E); fuera de alcance según el GDD §9.
@@ -98,5 +119,5 @@ En resumen: no apareció ningún error de Shipping que corregir; el tramo deja l
 
 ## Pendiente de motor
 
-Ver [`pendiente-motor.md`](pendiente-motor.md), sección «F7 — Pulido y paquete»: bench, paquete
-Shipping y Development, arranque del paquete, tres partidas del bot sobre el paquete y tamaño.
+Ver [`pendiente-motor.md`](pendiente-motor.md), pasos 10-12 de la lista única: bench, paquetes
+Shipping y Development, arranque de ambos, tres partidas del bot y bench sobre el paquete, y tamaño.
