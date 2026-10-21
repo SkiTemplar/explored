@@ -2,9 +2,7 @@
   "longitud": {
     "Data.items.items,palo_recto.nameEs": "«Straight stick»: no hay forma más corta que no pierda el sentido",
     "Data.items.items,batata.nameEs": "«Sweet potato» no tiene forma corta en inglés británico",
-    "Data.plants.plants,batata.nameEs": "«Sweet potato» no tiene forma corta en inglés británico",
     "Data.items.items,maracuya.nameEs": "«Passion fruit» no tiene forma corta",
-    "Data.plants.plants,maracuya.nameEs": "«Passion fruit» no tiene forma corta",
     "Data.items.items,batata_asada.nameEs": "«Roast sweet potato»: cabe en la ficha del inventario (2 líneas)",
     "Data.recipes.recipes,batata_asada.nameEs": "mismo nombre que el objeto",
     "Data.building_pieces.pieces,vitrina_museo.nameEs": "«Display case» es el término del glosario (biblia 07 §5.2)"

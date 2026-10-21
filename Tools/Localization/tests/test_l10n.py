@@ -158,8 +158,9 @@ def test_diario_sin_marcador_de_dia_en_ingles(src: Sources) -> None:
 
 
 def test_valor_vacio(src: Sources) -> None:
-    src.data["plants.json"]["plants"][0]["stages"][0]["nameEn"] = "   "
-    assert has(build(src).report.errors, "limonero.esqueje", "sin inglés")
+    first = src.data["items.json"][0]
+    first["nameEn"] = "   "
+    assert has(build(src).report.errors, f"{first['id']}.nameEs", "sin inglés")
 
 
 def test_marcadores_distintos(src: Sources) -> None:

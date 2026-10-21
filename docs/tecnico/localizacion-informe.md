@@ -7,15 +7,15 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 756 |
+| Textos en el catálogo | 723 |
 | … del C++ y los .ini (van al manifiesto de Unreal) | 245 |
-| … de `Content/Data` (campos bilingües) | 511 |
+| … de `Content/Data` (campos bilingües) | 478 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 3 |
 | Literales para revisar | 108 |
-| Errores / avisos | 0 / 10 |
+| Errores / avisos | 0 / 9 |
 
 ## Literales del C++
 
@@ -167,7 +167,7 @@ las usa con exactamente este espacio de nombres, clave y texto.
 
 Ninguno.
 
-## Avisos (10)
+## Avisos (9)
 
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:92: ExploredVoyage,VerbSalvage: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
 - Source/Explored/Narrative/ExploredVoyageActors.cpp:182: ExploredVoyage,VerbYardMissing: «Albatros» se traduce «Albatross» según el glosario (Albatros → Albatross)
@@ -178,4 +178,3 @@ Ninguno.
 - Content/Data/recipes_smithing.json «fundir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,fundir_tubo.nameEs: el inglés (16 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/recipes_smithing.json «batir_chapa» nameEs/nameEn: Data.recipes_smithing.recipes,batir_chapa.nameEs: el inglés (22 car.) es más de 1.3× el español (11); comprueba que cabe
 - Content/Data/recipes_smithing.json «batir_tubo» nameEs/nameEn: Data.recipes_smithing.recipes,batir_tubo.nameEs: el inglés (17 car.) es más de 1.3× el español (10); comprueba que cabe
-- «hijuelo» tiene 2 traducciones distintas: «offset» en Content/Data/plants.json «aloe.hijuelo» nameEs/nameEn; «sucker» en Content/Data/plants.json «platanera.hijuelo» nameEs/nameEn

@@ -56,21 +56,11 @@ def test_copia_conserva_los_errores_de_carga(tmp_path: Path) -> None:
 
 def test_json_raiz_de_tipo_equivocado_no_rompe(tmp_path: Path) -> None:
     # items.json como objeto en vez de lista: no hay objetos, se informa del mínimo.
-    ds = _ds(tmp_path, items_json={"liana": {}}, templates_json="no", plants_json=[])
-    assert ds.items == [] and ds.templates == [] and ds.plants == []
+    ds = _ds(tmp_path, items_json={"liana": {}}, templates_json="no")
+    assert ds.items == [] and ds.templates == []
     r = Report()
     checks.check_items_schema(ds, r)
     assert _has(r.errors, "0 objetos")
-
-
-def test_item_ids_ignora_ids_ausentes(tmp_path: Path) -> None:
-    # Un objeto sin id no puede hacer que una referencia ausente (None) parezca válida.
-    ds = _ds(tmp_path, items_json=[{"nameEs": "sin id"}, _item("semilla")],
-             plants_json={"plants": [{"id": "taro", "stages": []}]})
-    assert ds.item_ids == {"semilla"}
-    r = Report()
-    checks.check_plants(ds, r, obtainable={"semilla"})
-    assert _has(r.errors, "plantedFrom «None» no está en items.json")
 
 
 # --------------------------------------------------------------------------- objetos y plantillas
@@ -126,18 +116,7 @@ def test_verbos_duplicados_y_sin_descripcion(tmp_path: Path) -> None:
     assert _has(r.errors, "falta el verbo «Golpear»")
 
 
-# --------------------------------------------------------------------------- huerto, construcción, barcos
-
-
-def test_dias_de_etapa_no_numericos(tmp_path: Path) -> None:
-    plant = {"id": "taro", "plantedFrom": "taro", "requiresPiece": "bancal", "seasons": ["seca"],
-             "stages": [{"id": "brote", "days": "tres"}, {"id": "maduro", "days": 0}],
-             "harvest": {"item": "taro", "min": 1, "max": 2, "everyDays": 0}}
-    ds = _ds(tmp_path, items_json=[_item("taro")], plants_json={"plants": [plant]},
-             building_pieces_json={"tiers": [], "pieces": [{"id": "bancal"}]})
-    r = Report()
-    checks.check_plants(ds, r, obtainable={"taro"})
-    assert _has(r.errors, "taro", "days='tres'")
+# --------------------------------------------------------------------------- construcción, barcos
 
 
 def test_tier_sin_orden(tmp_path: Path) -> None:

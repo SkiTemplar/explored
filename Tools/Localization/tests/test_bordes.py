@@ -159,11 +159,10 @@ def test_texto_de_datos_que_no_es_cadena() -> None:
 
 
 def test_registro_de_datos_que_no_es_objeto() -> None:
-    texts, errors = data.extract({"items.json": ["rama"], "plants.json": {"plants": [7, {"id": "p", "stages": ["x"]}]}})
+    texts, errors = data.extract({"items.json": ["rama"], "fuels.json": {"levels": [7]}})
     assert texts == []
     assert has(errors, "items.json", "items #0 no es un objeto")
-    assert has(errors, "plants.json", "plants #0 no es un objeto")
-    assert has(errors, "plants.json", "stages p.#0 no es un objeto")
+    assert has(errors, "fuels.json", "levels #0 no es un objeto")
 
 
 def test_listas_paralelas_que_no_son_listas() -> None:

@@ -87,15 +87,6 @@ def _keyed(name: str) -> Callable[[object], Iterator[tuple[str, object]]]:
     return records
 
 
-def _stages(doc: object) -> Iterator[tuple[str, object]]:
-    for i, plant in enumerate(_items(doc, "plants")):
-        if not isinstance(plant, dict):
-            yield _id(plant, i), plant
-            continue
-        for j, stage in enumerate(_items(plant, "stages")):
-            yield f"{plant.get('id')}.{_id(stage, j)}", stage
-
-
 FIELDS: list[FieldSpec] = [
     FieldSpec("items.json", "items", _list, "nameEs", "nameEn", "nombre del objeto (mano, suelo, mochila)"),
     FieldSpec("templates.json", "templates", _list, "nameEs", "nameEn", "nombre de la receta"),
@@ -103,8 +94,6 @@ FIELDS: list[FieldSpec] = [
               "nombre generado del objeto fabricado ({0}, {1}... = pieza de cada hueco)"),
     FieldSpec("verbs.json", "verbs", _list, "nameEs", "nameEn", "verbo de fabricación"),
     FieldSpec("verbs.json", "verbs", _list, "description", "descriptionEn", "ayuda del verbo"),
-    FieldSpec("plants.json", "plants", _sub("plants"), "nameEs", "nameEn", "nombre de la planta"),
-    FieldSpec("plants.json", "stages", _stages, "nameEs", "nameEn", "etapa de crecimiento"),
     FieldSpec("building_pieces.json", "tiers", _sub("tiers"), "nameEs", "nameEn", "nivel de construcción"),
     FieldSpec("building_pieces.json", "pieces", _sub("pieces"), "nameEs", "nameEn", "pieza de construcción"),
     FieldSpec("survival_needs.json", "needs", _sub("needs"), "nameEs", "nameEn", "necesidad (señal corporal del HUD)"),

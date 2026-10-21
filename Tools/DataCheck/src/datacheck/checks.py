@@ -37,7 +37,6 @@ SEASONS = {"seca", "primeras_lluvias", "monzon", "ciclones"}
 # Encajes de building_pieces.json: espejo de EBuildSocket (Source/Explored/Building/BuildingTypes.h).
 BUILDING_SOCKETS = {"pilar", "suelo", "pared", "puerta", "techo", "escalera", "mueble", "terreno"}
 # Pieza que protege de las aves los cultivos con birdsEat (FFarmModel::ScarecrowRadius, GDD §8.7).
-SCARECROW_PIECE = "espantapajaros"
 BASIC_SHAPES = re.compile(r"^/Engine/BasicShapes/(Cube|Sphere|Cylinder|Cone|Plane)\.\1$")
 GENERATED_MESH = re.compile(r"^/Game/Generated/Meshes/[A-Za-z0-9_/]+/(SM_[A-Za-z0-9_]+)\.\1$")
 
@@ -53,7 +52,7 @@ FORBIDDEN_TERMS = [
 ]
 
 DATA_FILES = [
-    "items.json", "templates.json", "verbs.json", "story_es.json", "plants.json",
+    "items.json", "templates.json", "verbs.json", "story_es.json",
     "building_pieces.json", "survival_needs.json", "meshes_pendientes.json",
     "fuels.json", "recipes.json", "boats.json",
     "fish.json", "music_layers.json", "packs_catalogo.json", "mining.json", "fauna.json",
@@ -134,10 +133,6 @@ class DataSet:
     @property
     def verbs(self) -> list[dict[str, Any]]:
         return _dicts(self.data.get("verbs.json"))
-
-    @property
-    def plants(self) -> list[dict[str, Any]]:
-        return _dicts(self._doc("plants.json").get("plants"))
 
     @property
     def building(self) -> dict[str, Any]:
@@ -338,117 +333,6 @@ def _obtainable(ds: DataSet, reach: crafting.Reachability) -> set[str]:
     obtainable, _ = smithing.resolve_obtainable(ds, set(reach.reached_items))
     return obtainable
 
-
-def check_plants(ds: DataSet, r: Report, obtainable: set[str]) -> None:
-    doc = ds.data.get("plants.json", {})
-    piece_ids = {p.get("id") for p in ds.building.get("pieces", [])}
-    seen = set()
-    has_lemon_tree = False
-    for plant in doc.get("plants", []):
-        pid = plant.get("id")
-        if pid in seen:
-            r.error(f"plants.json: id duplicado «{pid}»")
-        seen.add(pid)
-        for key in ("plantedFrom",):
-            ref = plant.get(key)
-            if ref not in ds.item_ids:
-                r.error(f"plants.json «{pid}»: {key} «{ref}» no está en items.json")
-            elif ref not in obtainable:
-                r.error(f"plants.json «{pid}»: {key} «{ref}» no es obtenible")
-        if plant.get("requiresPiece") not in piece_ids:
-            r.error(f"plants.json «{pid}»: requiresPiece «{plant.get('requiresPiece')}» no está en building_pieces.json")
-        bad_seasons = set(plant.get("seasons", [])) - SEASONS
-        if bad_seasons or not plant.get("seasons"):
-            r.error(f"plants.json «{pid}»: estaciones inválidas {sorted(bad_seasons) or '[]'}")
-        stages = plant.get("stages", [])
-        if len(stages) < 2:
-            r.error(f"plants.json «{pid}»: necesita al menos 2 etapas")
-        stage_ids = [s.get("id") for s in stages]
-        if len(set(stage_ids)) != len(stage_ids):
-            r.error(f"plants.json «{pid}»: etapas repetidas")
-        for s in stages[:-1]:
-            d = s.get("days")
-            if not _in_range(d, 1, 32):
-                r.error(f"plants.json «{pid}».{s.get('id')}: days={d!r} fuera de [1, 32] (un año = 32 días)")
-        if stages and stages[-1].get("days") != 0:
-            r.error(f"plants.json «{pid}»: la última etapa es la final y debe tener days=0")
-        total = sum(d for s in stages if _type_ok(d := s.get("days", 0), (int, float)))
-        if total > 32:
-            r.warn(f"plants.json «{pid}»: {total} días hasta cosechar, más de un año de juego")
-        h = plant.get("harvest", {})
-        if h.get("item") not in ds.item_ids:
-            r.error(f"plants.json «{pid}»: cosecha «{h.get('item')}» no está en items.json")
-        if not (isinstance(h.get("min"), int) and isinstance(h.get("max"), int) and 1 <= h["min"] <= h["max"] <= 20):
-            r.error(f"plants.json «{pid}»: cosecha min/max inválidos ({h.get('min')}, {h.get('max')})")
-        if not _type_ok(h.get("everyDays"), (int, float)) or h.get("everyDays") < 0:
-            r.error(f"plants.json «{pid}»: everyDays inválido")
-        if "birdsEat" in plant and not isinstance(plant["birdsEat"], bool):
-            r.error(f"plants.json «{pid}»: birdsEat debe ser true o false")
-        elif plant.get("birdsEat") and SCARECROW_PIECE not in piece_ids:
-            r.error(f"plants.json «{pid}»: birdsEat sin pieza «{SCARECROW_PIECE}» en building_pieces.json (GDD §8.7)")
-        if pid == "limonero":
-            has_lemon_tree = True
-            if not plant.get("neverRemoved"):
-                r.error("plants.json «limonero»: debe tener neverRemoved=true (GDD §8.7)")
-            if h.get("item") != "limon":
-                r.error("plants.json «limonero»: debe cosechar «limon» (cura el escorbuto)")
-    if doc and not has_lemon_tree:
-        r.error("plants.json: falta el limonero (GDD §8.7)")
-
-
-def check_compost(ds: DataSet, r: Report, obtainable: set[str]) -> None:
-    """Pila de compost: restos obtenibles y pieza del primer bancal."""
-    doc = ds.data.get("plants.json", {})
-    if not doc:
-        return
-    c = doc.get("compost")
-    if not isinstance(c, dict):
-        r.error("plants.json: falta el bloque «compost» (GDD v2 §3.6, biblia §7.2)")
-        return
-    pieces = {p.get("id"): p for p in ds.building.get("pieces", [])}
-    tiers = [t.get("id") for t in ds.building.get("tiers", [])]
-    piece = pieces.get(c.get("piece"))
-    if piece is None:
-        r.error(f"plants.json/compost: piece «{c.get('piece')}» no está en building_pieces.json")
-    else:
-        bed = pieces.get("bancal")
-        if bed and piece.get("tier") in tiers and bed.get("tier") in tiers \
-                and tiers.index(piece["tier"]) > tiers.index(bed["tier"]):
-            r.error(f"plants.json/compost: la pieza «{piece['id']}» llega en un tier posterior al bancal")
-    result = next((i for i in ds.items if i.get("id") == c.get("result")), None)
-    if result is None:
-        r.error(f"plants.json/compost: result «{c.get('result')}» no está en items.json")
-    elif "comida" in result.get("tags", []):
-        r.error(f"plants.json/compost: «{result['id']}» no puede ser comida (se echaría a sí mismo a la pila)")
-    per = c.get("inputsPerResult")
-    cap = c.get("capacity")
-    if not (isinstance(per, int) and 1 <= per <= 10):
-        r.error(f"plants.json/compost: inputsPerResult={per!r} fuera de [1, 10]")
-    elif not (isinstance(cap, int) and cap >= per and cap % per == 0):
-        r.error(f"plants.json/compost: capacity={cap!r} debe ser múltiplo de inputsPerResult ({per})")
-    days = c.get("daysToMature")
-    if not (isinstance(days, int) and 1 <= days <= 8):
-        r.error(f"plants.json/compost: daysToMature={days!r} fuera de [1, 8]")
-    tags = {t for i in ds.items for t in i.get("tags", [])}
-    usable = False
-    for entry in c.get("inputs", []):
-        if "item" in entry:
-            ref = entry["item"]
-            if ref not in ds.item_ids:
-                r.error(f"plants.json/compost: input «{ref}» no está en items.json")
-            elif ref == c.get("result"):
-                r.error("plants.json/compost: el compost no puede ser su propio resto")
-            else:
-                usable |= ref in obtainable
-        elif "tag" in entry:
-            if entry["tag"] not in tags:
-                r.error(f"plants.json/compost: ninguna entrada de items.json tiene la etiqueta «{entry['tag']}»")
-            else:
-                usable |= any(entry["tag"] in i.get("tags", []) and i["id"] in obtainable for i in ds.items)
-        else:
-            r.error(f"plants.json/compost: input sin «item» ni «tag»: {entry!r}")
-    if not usable:
-        r.error("plants.json/compost: ningún resto aceptado es obtenible")
 
 
 def check_building(ds: DataSet, r: Report, obtainable: set[str]) -> None:
@@ -667,10 +551,9 @@ def blender_mesh_names(repo_root: Path) -> set[str]:
 def pending_expected(ds: DataSet) -> dict[str, set[str]]:
     items = {i["id"] for i in ds.items if BASIC_SHAPES.match(i.get("meshPath", "")) and "interno" not in i.get("tags", [])}
     pieces = {p["id"] for p in ds.building.get("pieces", []) if p.get("mesh") is None}
-    stages = {f"{pl['id']}.{s['id']}" for pl in ds.plants for s in pl.get("stages", []) if s.get("mesh") is None}
     boats = {b["id"] for b in ds.boats if b.get("mesh") is None}
     animals = {s["id"] for s in ds.data.get("fauna.json", {}).get("species", []) if s.get("mesh") is None}
-    return {"items": items, "buildingPieces": pieces, "plantStages": stages, "boats": boats,
+    return {"items": items, "buildingPieces": pieces, "boats": boats,
             "fauna": animals}
 
 
@@ -688,10 +571,6 @@ def check_meshes(ds: DataSet, r: Report) -> None:
     for p in ds.building.get("pieces", []):
         if p.get("mesh") is not None and p["mesh"] not in known:
             r.error(f"building_pieces.json «{p['id']}»: malla {p['mesh']} no existe en Tools/Blender/props")
-    for pl in ds.plants:
-        for s in pl.get("stages", []):
-            if s.get("mesh") is not None and s["mesh"] not in known:
-                r.error(f"plants.json «{pl['id']}.{s['id']}»: malla {s['mesh']} no existe en Tools/Blender/props")
     for b in ds.boats:
         if b.get("mesh") is not None and b["mesh"] not in known:
             r.error(f"boats.json «{b.get('id')}»: malla {b['mesh']} no existe en Tools/Blender/props")
@@ -1084,8 +963,6 @@ def run_all(ds: DataSet) -> Report:
     check_templates(ds, r)
     reach = check_crafting_reachability(ds, r)
     obtainable = _obtainable(ds, reach)
-    check_plants(ds, r, obtainable)
-    check_compost(ds, r, obtainable)
     check_building(ds, r, obtainable)
     check_boats(ds, r, obtainable)
     check_meshes(ds, r)

@@ -111,16 +111,11 @@ def check_manifest(manifest: dict, error: Err) -> set[str]:
 def _game_ids(data: dict) -> dict[str, set[str]]:
     items = {i.get("id") for i in data.get("items.json", [])}
     pieces = {p.get("id") for p in data.get("building_pieces.json", {}).get("pieces", [])}
-    stages = {
-        f"{pl['id']}.{s['id']}"
-        for pl in data.get("plants.json", {}).get("plants", [])
-        for s in pl.get("stages", [])
-    }
     # fauna.json trae también la fauna de ambiente (cangrejo, gaviota, fragata), que no está
     # en fauna_terrestre.json pero sale en meshes_pendientes.json y se busca en los packs.
     fauna = {f.get("id") for f in data.get(FAUNA, {}).get("species", [])}
     fauna |= {f.get("id") for f in data.get("fauna.json", {}).get("species", [])}
-    return {"item": items, "pieza": pieces, "planta": stages, "fauna": fauna}
+    return {"item": items, "pieza": pieces, "fauna": fauna}
 
 
 def check_fauna(data: dict, error: Err) -> None:
@@ -307,8 +302,6 @@ def check_catalog(repo_root: Path, data: dict, error: Err) -> None:
             gid = d.get("gameId", "")
             if not isinstance(gid, str) or not GAME_ID.match(gid):
                 error(f"{CATALOG}: {key}: id «{gid}» no ASCII")
-            elif "." in gid and gid not in ids["planta"]:
-                error(f"{CATALOG}: {key}: «{gid}» no es una etapa de plants.json")
             if not d.get("reason"):
                 error(f"{CATALOG}: {key}: «{gid}» sin motivo")
             if key == "discarded" and d.get("pack") not in known_packs:

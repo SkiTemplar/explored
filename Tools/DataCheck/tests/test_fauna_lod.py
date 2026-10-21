@@ -150,8 +150,6 @@ def test_guano_del_deposito_de_la_colonia(real: DataSet) -> None:
     deposit = animal(real, "fragata_colonia")["deposit"]
     assert deposit["item"] == "guano" and deposit["tool"] == "pala"
     assert "guano" not in animal(real, "fragata_colonia")["lootPendiente"]
-    inputs = real.data["plants.json"]["compost"]["inputs"]
-    assert {"item": "guano"} in inputs
 
 
 def test_deposito_con_objeto_inexistente(ds: DataSet) -> None:

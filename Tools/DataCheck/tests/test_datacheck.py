@@ -209,72 +209,6 @@ def test_detecta_tier_que_no_mejora(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "integridad media", "piedra")
 
 
-def test_detecta_planta_sin_pieza(ds: DataSet) -> None:
-    ds.data["plants.json"]["plants"][0]["requiresPiece"] = "invernadero"
-    assert any_error(errors_of(ds), "invernadero")
-
-
-def test_detecta_aves_sin_espantapajaros(ds: DataSet) -> None:
-    ds.building["pieces"] = [p for p in ds.building["pieces"] if p["id"] != "espantapajaros"]
-    assert any_error(errors_of(ds), "birdsEat", "espantapajaros")
-
-
-def test_detecta_birdseat_no_booleano(ds: DataSet) -> None:
-    ds.data["plants.json"]["plants"][1]["birdsEat"] = "si"
-    assert any_error(errors_of(ds), "birdsEat debe ser")
-
-
-def test_espantapajaros_en_el_primer_tier(real: DataSet) -> None:
-    # Las aves picotean desde el primer bancal: el remedio no puede esperar a otro tier.
-    p = next(p for p in real.building["pieces"] if p["id"] == "espantapajaros")
-    assert p["tier"] == "palma" and p["category"] == "huerto" and p["tools"] == []
-
-
-def test_compost_en_el_primer_tier_y_con_restos_de_landing(real: DataSet) -> None:
-    # El compost acompaña al primer bancal: pila del tier palma y restos que ya se recogen en Landing.
-    c = real.data["plants.json"]["compost"]
-    pile = next(p for p in real.building["pieces"] if p["id"] == c["piece"])
-    assert pile["tier"] == "palma" and pile["tools"] == []
-    assert {"item": "hoja_palma"} in c["inputs"] and {"tag": "comida"} in c["inputs"]
-
-
-def test_detecta_compost_sin_bloque(ds: DataSet) -> None:
-    del ds.data["plants.json"]["compost"]
-    assert any_error(errors_of(ds), "falta el bloque «compost»")
-
-
-def test_detecta_compost_como_resto_de_si_mismo(ds: DataSet) -> None:
-    ds.data["plants.json"]["compost"]["inputs"].append({"item": "compost"})
-    assert any_error(errors_of(ds), "su propio resto")
-
-
-def test_detecta_compost_con_capacidad_no_multiplo(ds: DataSet) -> None:
-    ds.data["plants.json"]["compost"]["capacity"] = 10
-    assert any_error(errors_of(ds), "múltiplo de inputsPerResult")
-
-
-def test_detecta_pila_de_compost_tardia(ds: DataSet) -> None:
-    pile = next(p for p in ds.building["pieces"] if p["id"] == "pila_compost")
-    pile["tier"] = "madera"
-    assert any_error(errors_of(ds), "tier posterior al bancal")
-
-
-def test_detecta_compost_con_etiqueta_inexistente(ds: DataSet) -> None:
-    ds.data["plants.json"]["compost"]["inputs"] = [{"tag": "estiercol"}]
-    errors = errors_of(ds)
-    assert any_error(errors, "estiercol") and any_error(errors, "ningún resto aceptado")
-
-
-def test_detecta_limonero_arrancable(ds: DataSet) -> None:
-    ds.data["plants.json"]["plants"][0]["neverRemoved"] = False
-    assert any_error(errors_of(ds), "neverRemoved")
-
-
-def test_detecta_etapa_final_con_dias(ds: DataSet) -> None:
-    ds.data["plants.json"]["plants"][1]["stages"][-1]["days"] = 3
-    assert any_error(errors_of(ds), "days=0")
-
-
 def test_detecta_malla_inventada(ds: DataSet) -> None:
     piece(ds, "pared_bambu")["mesh"] = "SM_Wall_Bamboo"
     assert any_error(errors_of(ds), "SM_Wall_Bamboo")
@@ -1037,23 +971,6 @@ def test_packs_catalogo_descarte_con_id_inexistente(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "pared_de_neon", "no existe")
 
 
-def test_packs_catalogo_cubre_fases_del_huerto(real: DataSet) -> None:
-    entries = {e["gameId"]: e for e in _catalog(real)["entries"]}
-    assert {"platanera.hijuelo", "pina.roseta", "limonero.arbol_joven"} <= set(entries)
-    assert all(entries[g]["kind"] == "planta" for g in ("platanera.hijuelo", "pina.roseta"))
-
-
-def test_packs_catalogo_pendiente_de_etapa_inexistente(ds: DataSet) -> None:
-    _catalog(ds)["pending"].append({"gameId": "taro.florecido", "reason": "prueba"})
-    assert any_error(errors_of(ds), "taro.florecido", "etapa")
-
-
-def test_packs_catalogo_descarte_de_etapa_valida(ds: DataSet) -> None:
-    d = dict(_catalog(ds)["discarded"][0], gameId="batata.enredadera")
-    _catalog(ds)["discarded"].append(d)
-    assert not any_error(errors_of(ds), "batata.enredadera")
-
-
 # --------------------------------------------------------------------------- red (biblia 08 §2.7)
 
 def species(ds: DataSet, sid: str) -> dict[str, Any]:
@@ -1109,9 +1026,9 @@ def test_packs_catalogo_pendiente_de_fauna_de_ambiente(ds: DataSet) -> None:
     assert not any_error(errors_of(ds), "gaviota_posada")
 
 
-def test_packs_catalogo_cubre_cuarzo_y_taro(real: DataSet) -> None:
+def test_packs_catalogo_cubre_cuarzo(real: DataSet) -> None:
     covered = {e["gameId"] for e in _catalog(real)["entries"]}
-    assert {"cristal_cuarzo", "taro.brote", "taro.hojas_grandes", "taro.listo"} <= covered
+    assert "cristal_cuarzo" in covered
 
 
 def test_packs_catalogo_fauna_sin_rig(ds: DataSet) -> None:
@@ -1572,23 +1489,6 @@ def test_metal_pieza_de_nivel_corrupta_no_rompe(ds, real_reach) -> None:
 def test_metal_ingrediente_con_id_corrupto_no_rompe(ds, real_reach, value) -> None:
     smithing_recipe(ds, "fundir_cobre")["ingredients"][0]["item"] = value
     assert any_error(smith_report(ds, real_reach).errors, "fundir_cobre", "no está en items.json")
-# --------------------------------------------------------------------------- huerto: reglas y cosecha neta
-
-
-def test_huerto_todo_cultivo_devuelve_mas_de_lo_que_cuesta(real: DataSet) -> None:
-    for p in real.plants:
-        h = p["harvest"]
-        if p["plantedFrom"] == h["item"]:
-            assert h["everyDays"] > 0 or h["min"] >= 2, p["id"]
-
-
-def test_huerto_cultivos_medicinales(real: DataSet) -> None:
-    plantas = {p["id"]: p for p in real.plants}
-    assert plantas["aloe"]["harvest"]["item"] == "planta_medicinal_aloe"
-    assert plantas["curcuma"]["plantedFrom"] == "rizoma_curcuma"
-    assert "especia" in item(real, "rizoma_curcuma")["tags"]
-
-
 # --------------------------------------------------------------------------- mina: quema de la luz
 
 
@@ -1613,5 +1513,3 @@ def test_mineria_luz_sin_durabilidad(ds: DataSet) -> None:
 
 
 # --------------------------------------------------------------------------- iconos de UI (lote 9)
-
-

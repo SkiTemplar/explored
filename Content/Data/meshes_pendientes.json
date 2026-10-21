@@ -39,33 +39,6 @@
     "vitrina_minerales",
     "yunque"
   ],
-  "plantStages": [
-    "aloe.hijuelo",
-    "aloe.hojas_carnosas",
-    "aloe.roseta",
-    "batata.brote",
-    "batata.enredadera",
-    "batata.listo",
-    "curcuma.brote",
-    "curcuma.hojas_anchas",
-    "curcuma.listo",
-    "limonero.arbol_adulto",
-    "limonero.arbol_joven",
-    "limonero.brote",
-    "limonero.esqueje",
-    "maracuya.brote",
-    "maracuya.en_flor_y_fruto",
-    "maracuya.trepadora",
-    "pina.con_fruto",
-    "pina.corona",
-    "pina.roseta",
-    "platanera.hijuelo",
-    "platanera.planta_con_racimo",
-    "platanera.planta_joven",
-    "taro.brote",
-    "taro.hojas_grandes",
-    "taro.listo"
-  ],
   "boats": [
     "barco_limon"
   ],
