@@ -138,6 +138,26 @@ void FFinaleSequenceSpec::Define()
 			TestEqual(TEXT("NaN"), FFinaleSequenceModel::CreditsStep(Timing, NAN, false), EFinaleCreditsStep::Stay);
 		});
 	});
+
+	Describe(TEXT("Entrada del final"), [this]()
+	{
+		It(TEXT("el epílogo consume Escape, B y Start"), [this]()
+		{
+			TestTrue(TEXT("Escape"), FFinaleSequenceModel::IsEpilogueContinueKey(FName(TEXT("Escape"))));
+			TestTrue(TEXT("B"), FFinaleSequenceModel::IsEpilogueContinueKey(FName(TEXT("Gamepad_FaceButton_Right"))));
+			TestTrue(TEXT("Start"), FFinaleSequenceModel::IsEpilogueContinueKey(FName(TEXT("Gamepad_Special_Right"))));
+			TestFalse(TEXT("A no (lo atiende el botón con foco)"), FFinaleSequenceModel::IsEpilogueContinueKey(FName(TEXT("Gamepad_FaceButton_Bottom"))));
+			TestFalse(TEXT("Sin tecla"), FFinaleSequenceModel::IsEpilogueContinueKey(NAME_None));
+		});
+
+		It(TEXT("la pausa solo se abre jugando"), [this]()
+		{
+			TestTrue(TEXT("jugando"), FFinaleSequenceModel::CanOpenPause(false, false));
+			TestFalse(TEXT("cámara del final"), FFinaleSequenceModel::CanOpenPause(true, false));
+			TestFalse(TEXT("epílogo (sin cinemática)"), FFinaleSequenceModel::CanOpenPause(false, true));
+			TestFalse(TEXT("ambos"), FFinaleSequenceModel::CanOpenPause(true, true));
+		});
+	});
 }
 
 #endif

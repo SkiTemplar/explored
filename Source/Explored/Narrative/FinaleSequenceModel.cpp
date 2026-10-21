@@ -115,3 +115,15 @@ EFinaleCreditsStep FFinaleSequenceModel::CreditsStep(const FFinaleTiming& Timing
 	}
 	return CreditsElapsed >= Sanitize(Timing).EndCreditsSeconds ? EFinaleCreditsStep::MainMenu : EFinaleCreditsStep::Stay;
 }
+
+bool FFinaleSequenceModel::IsEpilogueContinueKey(FName KeyName)
+{
+	return KeyName == FName(TEXT("Escape"))
+		|| KeyName == FName(TEXT("Gamepad_FaceButton_Right"))
+		|| KeyName == FName(TEXT("Gamepad_Special_Right"));
+}
+
+bool FFinaleSequenceModel::CanOpenPause(bool bCutsceneActive, bool bShowingEnding)
+{
+	return !bCutsceneActive && !bShowingEnding;
+}

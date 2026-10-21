@@ -1,13 +1,13 @@
 #include "UI/Widgets/SExploredEnding.h"
 
 #include "Input/Events.h"
-#include "Math/RandomStream.h"
-#include "Rendering/DrawElements.h"
 #include "InputCoreTypes.h"
+#include "Math/RandomStream.h"
+#include "Narrative/FinaleSequenceModel.h"
+#include "Rendering/DrawElements.h"
 #include "Styling/CoreStyle.h"
 #include "UI/ExploredUIPalette.h"
 #include "UI/ExploredUIStyle.h"
-#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -107,7 +107,7 @@ int32 SExploredEnding::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
 
 FReply SExploredEnding::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (ExploredSettingsLogic::IsMenuBackKey(InKeyEvent.GetKey().GetFName()))
+	if (FFinaleSequenceModel::IsEpilogueContinueKey(InKeyEvent.GetKey().GetFName()))
 	{
 		return HandleContinue();
 	}

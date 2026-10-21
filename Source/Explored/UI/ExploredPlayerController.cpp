@@ -152,7 +152,9 @@ void AExploredPlayerController::SetupInputComponent()
 
 void AExploredPlayerController::HandleEscape()
 {
-	if (bCutsceneActive)
+	// Ni la cámara del final ni el epílogo (que quita bCutsceneActive) ni los créditos abren la pausa:
+	// HideOverlay borraría su widget y al reanudar la cámara quedaría fija sin control.
+	if (!FFinaleSequenceModel::CanOpenPause(bCutsceneActive, bShowingEnding))
 	{
 		return;
 	}

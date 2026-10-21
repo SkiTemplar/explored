@@ -89,4 +89,13 @@ struct EXPLORED_API FFinaleSequenceModel
 
 	/** Tras los créditos: al menú con «Volver» o al agotar EndCreditsSeconds. */
 	static EFinaleCreditsStep CreditsStep(const FFinaleTiming& Timing, float CreditsElapsed, bool bBackPressed);
+
+	/**
+	 * Teclas que pasan del epílogo a los créditos: Escape, B y Start del mando. El epílogo
+	 * consume Start para que no llegue a la pausa del controlador, que lo borraría.
+	 */
+	static bool IsEpilogueContinueKey(FName KeyName);
+
+	/** La pausa solo se abre jugando: ni durante la cámara del final ni con el epílogo o los créditos. */
+	static bool CanOpenPause(bool bCutsceneActive, bool bShowingEnding);
 };
