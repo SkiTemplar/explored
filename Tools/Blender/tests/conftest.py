@@ -29,7 +29,7 @@ import pytest
 
 BLENDER_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = BLENDER_DIR.parents[1]
-SUBDIRS = ('lib', 'animals')
+SUBDIRS = ('lib', 'animals')  # kits/ se importa como paquete desde BLENDER_DIR
 
 _SYS_PATH_ORIGINAL = list(sys.path)
 _SYS_ARGV_ORIGINAL = list(sys.argv)
