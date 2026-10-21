@@ -14,6 +14,7 @@
 #include "Narrative/LighthouseLamp.h"
 #include "Weather/ExploredRainBarrel.h"
 #include "WorldGen/ExploredCoconutPalm.h"
+#include "WorldGen/ExploredGrassField.h"
 #include "WorldGen/ExploredPlaceholder.h"
 #include "WorldGen/ExploredShelterVolume.h"
 #include "WorldGen/IslandDecorBuilder.h"
@@ -50,6 +51,7 @@ AExploredIslandPopulator::AExploredIslandPopulator()
 	ClassRegistry.Add(TEXT("pagina"), AExploredNotebookPage::StaticClass());
 	ClassRegistry.Add(TEXT("faro_torre"), AExploredLighthouseTower::StaticClass());
 	ClassRegistry.Add(TEXT("faro_linterna"), ALighthouseLamp::StaticClass());
+	GrassFieldClass = AExploredGrassField::StaticClass();
 }
 
 void AExploredIslandPopulator::BeginPlay()
@@ -64,11 +66,32 @@ void AExploredIslandPopulator::BeginPlay()
 	{
 		Populate();
 	}
+	SpawnGrass();
+}
+
+void AExploredIslandPopulator::SpawnGrass()
+{
+	// Césped (kit K6): cosmético y local; un servidor dedicado no dibuja nada.
+	UWorld* World = GetWorld();
+	if (!bSpawnGrass || !GrassFieldClass || !World || GetNetMode() == NM_DedicatedServer || IsValid(GrassField))
+	{
+		return;
+	}
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.ObjectFlags |= RF_Transient;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GrassField = World->SpawnActor<AExploredGrassField>(GrassFieldClass, FTransform::Identity, Params);
 }
 
 void AExploredIslandPopulator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Clear();
+	if (IsValid(GrassField))
+	{
+		GrassField->Destroy();
+	}
+	GrassField = nullptr;
 	Super::EndPlay(EndPlayReason);
 }
 

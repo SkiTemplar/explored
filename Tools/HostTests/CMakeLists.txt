@@ -49,3 +49,6 @@ option(HOST_TESTS_FASTMATH "Compilar con matemáticas rápidas (-ffast-math)" OF
 if(HOST_TESTS_FASTMATH)
 	target_compile_options(explored_host_tests PRIVATE -ffast-math)
 endif()
+
+# Los tests con datos reales (tests/*RealData*.cpp) leen Content/Data desde la raíz del repo.
+target_compile_definitions(explored_host_tests PRIVATE EXPLORED_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/../..")

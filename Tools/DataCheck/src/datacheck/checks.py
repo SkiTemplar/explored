@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from . import clima, historia, music, textos
+from . import cesped, clima, historia, music, textos
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
@@ -71,6 +71,7 @@ FORBIDDEN_TERMS = [
 DATA_FILES = [
     "items.json", "verbs.json", "recipes.json", "fuels.json", "survival_needs.json", "fish.json",
     "soundtrack.json", "notebook.json", "objectives.json", "thoughts.json", "storm_curve.json",
+    "grass.json", "island_decor.json", "island.json",
 ]
 
 
@@ -480,5 +481,6 @@ def run_all(ds: DataSet) -> Report:
     music.check_music(ds, r)
     historia.check_story(ds.data, r.error)
     clima.check_storm(ds.data, ds.repo_root, r.error)
+    cesped.check_vegetation(ds.data, ds.repo_root, r.error)
     check_forbidden_terms(ds, r)
     return r

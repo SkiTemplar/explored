@@ -71,3 +71,6 @@ WorldGen/IslandDecorModel.cpp
 Weather/RainStreaksModel.cpp
 Audio/SfxRules.cpp
 Debug/BenchBudgetModel.cpp
+WorldGen/GroundField.cpp
+WorldGen/GrassFieldModel.cpp
+WorldGen/GrassFieldStreaming.cpp

@@ -6,7 +6,9 @@ C++. Por malla:
 
 - escala real (1 m = 100 uu, el actor a escala 1) y normales importadas (planas por cara), sin materiales ni texturas, sin UV de
   lightmap (la iluminación es dinámica) y sin Nanite (las mallas están muy por debajo de su coste);
-- M_Toon (/Game/Art/Materials, build_materials.py) en su único slot;
+- M_Toon (/Game/Art/Materials, build_materials.py) en su único slot; el kit K6 (césped) usa
+  M_ToonCesped (materials_cesped.py: dos caras y viento por VertexColor.A) e importa el color por
+  vértice (REPLACE), que lleva en el alfa el peso del viento;
 - colisión simple (caja) salvo las piezas que se pisan o se rodean de cerca (casco, puente, torre,
   linterna, rocas grandes, acantilado, palmeras y bambú), que usan su geometría como colisión; las
   manos y la fauna, sin colisión;
@@ -16,6 +18,7 @@ C++. Por malla:
 Escribe un resumen en Saved/Logs/import_props.json.
 
 Uso: Tools/unreal_python.ps1 -Script Tools/Unreal/import_props.py  (EXPLORED_KITS=K5_Cielo para un solo kit)
+Solo el césped: EXPLORED_KITS=K6_Cesped, después de materials_cesped.py.
 """
 
 import glob
@@ -29,6 +32,11 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file_
 EXPORT_ROOT = os.path.join(REPO_ROOT, "Art", "Export")
 ART_ROOT = "/Game/Art"
 MATERIAL_PATH = "/Game/Art/Materials/M_Toon"
+# Kits con material propio (si falta, el script falla: ejecuta antes su script de materiales).
+KIT_MATERIALS = {"K6_Cesped": "/Game/Art/Materials/M_ToonCesped"}
+# Kits que importan el color por vértice (K6: peso del viento en el alfa) y que van sin colisión.
+VERTEX_COLOR_KITS = {"K6_Cesped"}
+NO_COLLISION_KITS = {"K6_Cesped"}
 SUMMARY_PATH = os.path.join(REPO_ROOT, "Saved", "Logs", "import_props.json")
 # Tolerancia de la caja frente a dimensiones_m del manifest (cm): el exportador redondea a mm.
 BOUNDS_TOLERANCE_CM = 1.5
@@ -56,7 +64,7 @@ def kit_manifests():
             yield os.path.basename(os.path.dirname(path)), os.path.dirname(path), json.load(f)
 
 
-def import_fbx(fbx_path, dest_path, name):
+def import_fbx(fbx_path, dest_path, name, vertex_colors=False):
     full_path = f"{dest_path}/{name}"
     # Reimportar sobre un asset existente reutiliza sus ajustes guardados: se borra antes.
     if unreal.EditorAssetLibrary.does_asset_exist(full_path):
@@ -81,6 +89,8 @@ def import_fbx(fbx_path, dest_path, name):
     smi.set_editor_property("generate_lightmap_u_vs", False)
     smi.set_editor_property("auto_generate_collision", False)
     smi.set_editor_property("convert_scene", True)
+    if vertex_colors:
+        smi.set_editor_property("vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
     # El importador de UE 5.6 ignora la unidad del FBX (metros con apply_unit_scale), igual que en
     # import_island.py: el factor 100 deja la malla a escala real (1 m = 100 uu) y el actor a escala 1.
     # check_mesh lo comprueba contra dimensiones_m.
@@ -118,13 +128,13 @@ def add_box_collision(mesh, body_setup):
     body_setup.set_editor_property("agg_geom", geom)
 
 
-def configure_collision(mesh):
+def configure_collision(mesh, kit_dir=""):
     """La importación no genera colisión (auto_generate_collision = False): aquí se pone la que toca."""
     name = mesh.get_name()
     body_setup = mesh.get_editor_property("body_setup")
     if body_setup is None:
         raise RuntimeError(f"{name} no tiene BodySetup")
-    if name in NO_COLLISION:
+    if name in NO_COLLISION or kit_dir in NO_COLLISION_KITS:
         body_setup.set_editor_property("collision_trace_flag", unreal.CollisionTraceFlag.CTF_USE_SIMPLE_AS_COMPLEX)
         return "ninguna"
     if name in COMPLEX_COLLISION:
@@ -148,22 +158,33 @@ def check_mesh(mesh, entry):
     return got, tris
 
 
-def main():
-    material = unreal.load_asset(MATERIAL_PATH)
+def kit_material(kit_dir, default):
+    path = KIT_MATERIALS.get(kit_dir)
+    if path is None:
+        return default
+    material = unreal.load_asset(path)
     if material is None:
+        raise RuntimeError(f"Falta {path} para {kit_dir}: ejecuta antes materials_cesped.py")
+    return material
+
+
+def main():
+    toon = unreal.load_asset(MATERIAL_PATH)
+    if toon is None:
         raise RuntimeError(f"Falta {MATERIAL_PATH}: ejecuta antes build_materials.py")
     summary = []
     for kit_dir, export_dir, manifest in kit_manifests():
         dest = f"{ART_ROOT}/{kit_dir}"
         unreal.EditorAssetLibrary.make_directory(dest)
+        material = kit_material(kit_dir, toon)
         for entry in manifest["mallas"]:
             name = entry["malla"]
-            mesh = import_fbx(os.path.join(export_dir, entry["fbx"]), dest, name)
+            mesh = import_fbx(os.path.join(export_dir, entry["fbx"]), dest, name, kit_dir in VERTEX_COLOR_KITS)
             configure_material(mesh, material)
             nanite = mesh.get_editor_property("nanite_settings")
             nanite.set_editor_property("enabled", False)
             mesh.set_editor_property("nanite_settings", nanite)
-            collision = configure_collision(mesh)
+            collision = configure_collision(mesh, kit_dir)
             size_cm, tris = check_mesh(mesh, entry)
             unreal.EditorAssetLibrary.save_loaded_asset(mesh)
             summary.append({"path": mesh.get_path_name(), "tris": tris, "size_cm": [round(v, 1) for v in size_cm],

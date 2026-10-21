@@ -188,3 +188,53 @@ powershell -NoProfile -File Tools/shots.ps1 -Set f4b -Width 1920 -Height 1080
   refugios y la balsa siguen apoyados en llano.
 - Recorrer los dos caminos hasta el faro (o `Tools/playtest_v3.ps1 -Route competente -Clock 6`): sin
   atascos en los rebordes ni en los taludes de los caminos y sin que el bot se salga del camino.
+
+## Césped y vegetación media (2026-10-21)
+
+Estado sin motor: kit K6 fusionado (`Art/Export/K6_Cesped`, 8 mallas de 25-100 triángulos con el
+peso del viento en el alfa del color por vértice); césped alrededor de la cámara
+(`AExploredGrassField` sobre `FGrassFieldModel`, `Content/Data/grass.json`), que apoya cada mata en
+la malla exacta del terreno (`Content/Data/ground_field.bin`, `uv run island-groundfield`; no usa
+`SampleColumn`); `island_decor.json` con 1 940 instancias (643 de K1 + 1 297 de K6: 314 helechos,
+406 hierbas altas, 577 flores), ninguna flotando ni enterrada. Estimación con los datos reales (test
+del host `GrassRealData`, sin las exclusiones de `island_props.json`): 29 791 matas en el Palmar,
+23 773 en la colina del faro, 13 406 en la Cala Varada y 10 026 en la aparición; 0,1-0,25 ms por
+celda generada (4 celdas por frame como mucho). Falta llevarlo al motor, en este orden:
+
+```powershell
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/materials_cesped.py
+$env:EXPLORED_KITS = 'K6_Cesped'
+powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_props.py
+Remove-Item Env:EXPLORED_KITS
+powershell -NoProfile -File Tools/shots.ps1 -Set f4b -Width 1920 -Height 1080
+powershell -NoProfile -File Tools/bench.ps1
+powershell -NoProfile -File Tools/playtest_v3.ps1 -Route competente -Clock 6
+```
+
+Copiar de `Saved/Shots` `f4b-cala`, `f4b-palmar`, `f4b-faro` y `f4b-cenital` a `docs/v3/capturas/`
+como `f7-cesped-<vista>.png`. Comprobar:
+
+- `materials_cesped.py` termina sin `Error`; `M_ToonCesped` es de dos caras, opaco, con uso de
+  instancias y los parámetros `BaseShade`, `WindSway`, `WindStrength`, `FadeStartCm`, `FadeEndCm`.
+- `import_props.py` (solo K6) importa 8 mallas en `/Game/Art/K6_Cesped` con `M_ToonCesped`, colisión
+  «ninguna», color por vértice importado y caja/triángulos dentro de tolerancia
+  (`Saved/Logs/import_props.json`).
+- En el log del juego: `[Decor] 1940 instancias decorativas en 11 mallas`, `[Césped] ... vértices de
+  suelo, ... exclusiones, ... palmeras` y `[Césped] N matas en M celdas` con N entre 15 000 y 40 000
+  en el Palmar; ningún aviso `[Césped] falta` ni `[Decor] falta la malla`. Si `ground_field.bin` no
+  se lee, el log lo dice y la isla queda sin césped (no falla).
+- Capturas: ninguna hoja desaparece (dos caras), las matas se mecen desde la punta y no desde la base,
+  el césped no tapa caminos, objetos recogibles, la balsa, el faro ni la casa (1,5 m libres), no hay
+  césped en arena, roca ni agua, y nada flota ni se hunde en las laderas; en el borde (45-70 m) las
+  matas encogen sin un corte brusco.
+- `bench.ps1`: el Palmar sigue en ≥ 60 fps de media y ≥ 45 de mínimo a 1080p. Si no llega, por
+  orden: `castShadow` false en `tall` y `fern`; `radiusM` 55 con `fade` 35-55; densidades × 0,7.
+  Mirar también tirones al caminar (`stat unit`): cada frame con celdas nuevas reescribe ranuras de
+  los ISM y marca su estado de render; si se ven, bajar `cellsPerFrame` a 2.
+- `playtest_v3.ps1`: el bot llega al faro y a la balsa sin bloqueos (el césped y la decoración no
+  tienen colisión ni responden a ningún canal: las trazas de interacción los atraviesan).
+
+Problemas detectados con `SampleColumn` (relieve analítico, hasta ~1,5 m de la malla), sin tocar:
+`UExploredPlaytestAuditor` decide «bajo el terreno» con `SampleColumn` y 0,1 m de tolerancia (falsos
+positivos y negativos en laderas y caminos hundidos); `UExploredShotSubsystem` y `ExploredPlaytestBot`
+sitúan cámaras y objetivos con él. Todos pueden pasar a `FGroundField` (mismo fichero que el césped).

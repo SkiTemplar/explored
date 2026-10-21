@@ -20,6 +20,8 @@ Materiales:
                                 recibe cada píxel Default Lit (color de escena / base color) en pasos de
                                 «BandStops» diafragmas; el océano (Single Layer Water), el cielo y lo
                                 lejano (niebla) no se tocan. Lo usa el PostProcess_Global del mapa.
+    /Game/Art/Materials/M_ToonCesped  césped K6: M_Toon de dos caras con viento × VertexColor.A y fundido
+                                por distancia (materials_cesped.py).
 
 El terreno, la vegetación y los materiales low poly del arte v1 se borraron en el reset v2;
 el material maestro nuevo (M_Toon con hoja de paleta) llega en F2 (docs/v3/plan.md).
@@ -35,6 +37,7 @@ from material_utils import (  # noqa: E402 - necesita el sys.path de arriba
     ART_MATERIALS_PATH, MATERIALS_PATH, REPO_ROOT, add_toon_wind, connect, custom, expr, finish, recreate_material,
     to_property,
 )
+import materials_cesped  # noqa: E402
 import materials_lowpoly  # noqa: E402
 
 PALETTE_PNG = os.path.join(REPO_ROOT, "Art", "Export", "Style", "T_Paleta.png")
@@ -319,6 +322,7 @@ def main():
     unreal.EditorAssetLibrary.make_directory(ART_MATERIALS_PATH)
     palette = import_palette_texture()
     build_toon(palette)
+    materials_cesped.build_toon_cesped(palette)
     build_pp_toon()
     materials_lowpoly.build_all(palette)
 
