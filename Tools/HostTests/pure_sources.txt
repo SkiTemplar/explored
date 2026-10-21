@@ -1,5 +1,5 @@
 # Ficheros .cpp de Source/Explored que se compilan en el host (solo CoreMinimal, sin UObject).
-Audio/MusicDirectorModel.cpp
+Audio/SoundtrackModel.cpp
 Boats/BoatModel.cpp
 Carry/InventoryModel.cpp
 Cooking/CookingModel.cpp

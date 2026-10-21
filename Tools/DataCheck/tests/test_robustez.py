@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from datacheck import checks, music
-from datacheck.checks import REPO_ROOT, DataSet, Report
+from datacheck import checks
+from datacheck.checks import DataSet, Report
 
 
 def _ds(tmp_path: Path, **files: Any) -> DataSet:
@@ -67,13 +67,3 @@ def test_entradas_corruptas_no_rompen(tmp_path: Path) -> None:
     assert _has(r.errors, "«cuerda».stationNeeds", "no es un objeto")
     assert _has(r.errors, "«cuerda»", "output")
     assert _has(r.errors, "fish.json dawn")
-
-
-def test_musica_exploracion_sin_variante() -> None:
-    # Con las islas del C++ real, una pieza de exploración sin «variant» (None) rompía sorted().
-    piece = {"id": "mus_explore_x", "role": "explore", "asset": "/Game/Generated/Audio/Musica/mus_explore_x.mus_explore_x",
-             "bpm": 100, "beats_per_bar": 4, "bars": 4, "loop": True, "seconds_per_bar": 2.4, "duration_s": 9.6}
-    r = Report()
-    music.check_music(DataSet({"music_layers.json": {"version": 1, "pieces": [piece, "suelta"]}}, REPO_ROOT), r)
-    assert _has(r.errors, "una vez cada isla", "None")
-    assert _has(r.errors, "'suelta'", "no es un objeto")

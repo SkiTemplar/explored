@@ -36,7 +36,7 @@ namespace ExploredLinks
 		bool bBuildingShelter = false;
 		/** Peso llevado / capacidad cómoda (UCarryComponent). */
 		float CarriedWeightRatio = 0.0f;
-		/** Tocando la flauta (FFluteModel::IsPerforming). */
+		/** Oyendo música diegética (reservado; hoy siempre false). */
 		bool bPlayingMusic = false;
 		/** Sombrero puesto (reservado: aún no hay objeto de sombrero). */
 		bool bHasHat = false;
@@ -69,7 +69,7 @@ namespace ExploredLinks
 	 */
 	EXPLORED_API FSurvivalState MakeRespawnState(const FSurvivalState& Dead);
 
-	// --- Peligro para la música (FMusicDirectorModel vía SetDanger) ---------------------
+	// --- Peligro (0-1) para el ambiente y la interfaz ------------------------------------
 
 	/** Hipotermia, golpe de calor, salud baja o sangrado (0–1). */
 	EXPLORED_API float BodyDanger01(const FSurvivalState& State);

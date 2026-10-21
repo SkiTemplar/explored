@@ -4,7 +4,6 @@
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 #include "Engine/World.h"
-#include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -13,42 +12,59 @@
 #include "Sound/SoundBase.h"
 
 #include "Audio/ExploredAmbienceSubsystem.h"
-#include "Player/ExploredCharacter.h"
-#include "Player/SwimComponent.h"
+#include "Explored.h"
 #include "Sky/TimeOfDaySubsystem.h"
-#include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredPlayerController.h"
 #include "Weather/ExploredWeatherSubsystem.h"
-#include "Weather/WeatherModel.h"
-#include "WorldGen/IslandLayout.h"
 
 namespace ExploredMusicDetail
 {
-	/** Semilla del director: fija por mundo para que la música sea reproducible. */
-	constexpr uint32 MusicSeed = FIslandLayout::OfficialSeed ^ 0x4D55u;
+	/** Semilla fija: la banda sonora de una partida es reproducible. */
+	constexpr uint32 Seed = 0xBA112A7u;
 	/** Frecuencia con la que se recoge el contexto (s). */
 	constexpr float ContextInterval = 0.25f;
-	/** Frecuencia con la que se busca el próximo ciclón en el planificador (s). */
-	constexpr float CycloneInterval = 5.0f;
-	/** Volumen mínimo en lugar de 0: un componente a 0 exacto puede virtualizarse y perder la fase. */
-	constexpr float MinAudible = 0.0001f;
-	/** Pausa mínima entre notas de flauta (evita la repetición de tecla del sistema). */
-	constexpr double FluteMinInterval = 0.08;
 
-	FString MusicLayersPath()
+	FString SoundtrackPath()
 	{
-		return FPaths::ProjectContentDir() / TEXT("Data") / TEXT("music_layers.json");
+		return FPaths::ProjectContentDir() / TEXT("Data") / TEXT("soundtrack.json");
 	}
 
-	bool ReadNumber(const TSharedPtr<FJsonObject>& Obj, const TCHAR* Field, double& Out)
+	bool ReadStateConfig(const TSharedPtr<FJsonObject>& Obj, FSoundtrackCatalog& Catalog, FSoundtrackStateConfig& Out, FString& OutError)
 	{
-		return Obj.IsValid() && Obj->TryGetNumberField(Field, Out);
+		const TArray<TSharedPtr<FJsonValue>>* Pieces = nullptr;
+		if (!Obj.IsValid() || !Obj->TryGetArrayField(TEXT("pieces"), Pieces) || !Pieces)
+		{
+			OutError = TEXT("estado sin \"pieces\"");
+			return false;
+		}
+		for (const TSharedPtr<FJsonValue>& Value : *Pieces)
+		{
+			const int32 Index = Value.IsValid() ? Catalog.FindById(FName(*Value->AsString())) : INDEX_NONE;
+			if (Index == INDEX_NONE)
+			{
+				OutError = FString::Printf(TEXT("pieza desconocida %s"), Value.IsValid() ? *Value->AsString() : TEXT("?"));
+				return false;
+			}
+			Out.Pieces.Add(Index);
+		}
+		double Number = 0.0;
+		Out.Gain = Obj->TryGetNumberField(TEXT("gain"), Number) ? static_cast<float>(Number) : Out.Gain;
+		Out.FadeIn = Obj->TryGetNumberField(TEXT("fadeIn"), Number) ? static_cast<float>(Number) : Out.FadeIn;
+		Out.FadeOut = Obj->TryGetNumberField(TEXT("fadeOut"), Number) ? static_cast<float>(Number) : Out.FadeOut;
+		const TArray<TSharedPtr<FJsonValue>>* Rest = nullptr;
+		if (Obj->TryGetArrayField(TEXT("rest"), Rest) && Rest && Rest->Num() == 2)
+		{
+			Out.RestMin = static_cast<float>((*Rest)[0]->AsNumber());
+			Out.RestMax = static_cast<float>((*Rest)[1]->AsNumber());
+		}
+		Obj->TryGetBoolField(TEXT("loop"), Out.bLoop);
+		return true;
 	}
 }
 
-bool UExploredMusicSubsystem::ParseMusicLayers(const FString& Json, FMusicCatalog& OutCatalog, FString& OutError)
+bool UExploredMusicSubsystem::ParseSoundtrack(const FString& Json, FSoundtrackCatalog& OutCatalog, FString& OutError)
 {
-	OutCatalog = FMusicCatalog();
+	OutCatalog = FSoundtrackCatalog();
 	TSharedPtr<FJsonObject> Root;
 	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Json);
 	if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
@@ -56,94 +72,51 @@ bool UExploredMusicSubsystem::ParseMusicLayers(const FString& Json, FMusicCatalo
 		OutError = TEXT("JSON mal formado");
 		return false;
 	}
-
-	const TArray<TSharedPtr<FJsonValue>>* PiecesJson = nullptr;
-	if (!Root->TryGetArrayField(TEXT("pieces"), PiecesJson) || !PiecesJson)
+	FString AssetRoot = TEXT("/Game/Audio/Musica");
+	Root->TryGetStringField(TEXT("assetRoot"), AssetRoot);
+	const TArray<TSharedPtr<FJsonValue>>* Pieces = nullptr;
+	if (!Root->TryGetArrayField(TEXT("pieces"), Pieces) || !Pieces)
 	{
-		OutError = TEXT("Falta \"pieces\"");
+		OutError = TEXT("falta \"pieces\"");
 		return false;
 	}
-	for (const TSharedPtr<FJsonValue>& Value : *PiecesJson)
+	for (const TSharedPtr<FJsonValue>& Value : *Pieces)
 	{
 		const TSharedPtr<FJsonObject> Obj = Value.IsValid() ? Value->AsObject() : nullptr;
 		FString Id;
-		FString RoleKey;
-		if (!Obj.IsValid() || !Obj->TryGetStringField(TEXT("id"), Id) || !Obj->TryGetStringField(TEXT("role"), RoleKey))
+		double Seconds = 0.0;
+		if (!Obj.IsValid() || !Obj->TryGetStringField(TEXT("id"), Id) || !Obj->TryGetNumberField(TEXT("seconds"), Seconds))
 		{
-			OutError = TEXT("Pieza sin \"id\" o sin \"role\"");
+			OutError = TEXT("pieza sin \"id\" o sin \"seconds\"");
 			return false;
 		}
-		FMusicPiece Piece;
+		FSoundtrackPiece Piece;
 		Piece.Id = FName(*Id);
-		if (!MusicRoleFromKey(RoleKey, Piece.Role))
-		{
-			// Un papel nuevo en Tools/Audio que el director aún no conoce: se ignora.
-			continue;
-		}
-		Obj->TryGetStringField(TEXT("variant"), Piece.Variant);
-		Obj->TryGetStringField(TEXT("asset"), Piece.Asset);
-		double Number = 0.0;
-		if (ExploredMusicDetail::ReadNumber(Obj, TEXT("bpm"), Number))
-		{
-			Piece.Bpm = static_cast<float>(Number);
-		}
-		if (ExploredMusicDetail::ReadNumber(Obj, TEXT("beats_per_bar"), Number))
-		{
-			Piece.BeatsPerBar = FMath::RoundToInt32(Number);
-		}
-		if (ExploredMusicDetail::ReadNumber(Obj, TEXT("bars"), Number))
-		{
-			Piece.Bars = static_cast<float>(Number);
-		}
-		Obj->TryGetBoolField(TEXT("loop"), Piece.bLoop);
-		OutCatalog.Add(Piece);
+		Piece.Asset = FString::Printf(TEXT("%s/%s.%s"), *AssetRoot, *Id, *Id);
+		Piece.Seconds = static_cast<float>(Seconds);
+		OutCatalog.Pieces.Add(Piece);
 	}
-
-	const TSharedPtr<FJsonObject>* Days = nullptr;
-	if (Root->TryGetObjectField(TEXT("day_variants"), Days) && Days && Days->IsValid())
+	const TSharedPtr<FJsonObject>* States = nullptr;
+	if (!Root->TryGetObjectField(TEXT("states"), States) || !States || !States->IsValid())
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& Pair : (*Days)->Values)
-		{
-			EIslandArchetype Archetype = EIslandArchetype::Count;
-			if (!IslandArchetypeFromMusicKey(Pair.Key, Archetype) || !Pair.Value.IsValid())
-			{
-				continue;
-			}
-			for (const TSharedPtr<FJsonValue>& Id : Pair.Value->AsArray())
-			{
-				const int32 Index = Id.IsValid() ? OutCatalog.FindById(FName(*Id->AsString())) : INDEX_NONE;
-				if (Index != INDEX_NONE)
-				{
-					OutCatalog.DayVariants[static_cast<int32>(Archetype)].Add(Index);
-				}
-			}
-		}
+		OutError = TEXT("falta \"states\"");
+		return false;
 	}
-
-	const TSharedPtr<FJsonObject>* FluteJson = nullptr;
-	if (Root->TryGetObjectField(TEXT("flute"), FluteJson) && FluteJson && FluteJson->IsValid())
+	for (const TPair<FString, TSharedPtr<FJsonValue>>& Pair : (*States)->Values)
 	{
-		FString Sample;
-		if ((*FluteJson)->TryGetStringField(TEXT("sample"), Sample))
+		ESoundtrackState State = ESoundtrackState::Silence;
+		if (!SoundtrackStateFromKey(Pair.Key, State) || State == ESoundtrackState::Silence)
 		{
-			OutCatalog.Flute.SampleId = FName(*Sample);
+			OutError = FString::Printf(TEXT("estado desconocido %s"), *Pair.Key);
+			return false;
 		}
-		(*FluteJson)->TryGetStringField(TEXT("asset"), OutCatalog.Flute.Asset);
-		double Hz = 0.0;
-		if (ExploredMusicDetail::ReadNumber(*FluteJson, TEXT("sample_hz"), Hz))
+		if (!ExploredMusicDetail::ReadStateConfig(Pair.Value.IsValid() ? Pair.Value->AsObject() : nullptr, OutCatalog,
+				OutCatalog.Config(State), OutError))
 		{
-			OutCatalog.Flute.SampleHz = static_cast<float>(Hz);
-		}
-		const TArray<TSharedPtr<FJsonValue>>* Semitones = nullptr;
-		if ((*FluteJson)->TryGetArrayField(TEXT("semitones"), Semitones) && Semitones)
-		{
-			for (const TSharedPtr<FJsonValue>& Semitone : *Semitones)
-			{
-				OutCatalog.Flute.Semitones.Add(Semitone.IsValid() ? FMath::RoundToInt32(Semitone->AsNumber()) : 0);
-			}
+			OutError = Pair.Key + TEXT(": ") + OutError;
+			return false;
 		}
 	}
-
 	return OutCatalog.Validate(OutError);
 }
 
@@ -163,374 +136,156 @@ void UExploredMusicSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UExploredMusicSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-
 	FString Json;
 	FString Error;
-	if (!FFileHelper::LoadFileToString(Json, *ExploredMusicDetail::MusicLayersPath()))
+	if (!FFileHelper::LoadFileToString(Json, *ExploredMusicDetail::SoundtrackPath()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Explored] No se encontró %s: sin música adaptativa"), *ExploredMusicDetail::MusicLayersPath());
+		UE_LOG(LogExplored, Error, TEXT("[Música] No se encontró %s: sin música"), *ExploredMusicDetail::SoundtrackPath());
 		return;
 	}
-	if (!ParseMusicLayers(Json, Catalog, Error))
+	if (!ParseSoundtrack(Json, Catalog, Error))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Explored] music_layers.json inválido: %s"), *Error);
+		UE_LOG(LogExplored, Error, TEXT("[Música] soundtrack.json inválido: %s"), *Error);
 		return;
 	}
-	Director = MakeUnique<FMusicDirectorModel>(Catalog, ExploredMusicDetail::MusicSeed);
-	Flute = MakeUnique<FFluteModel>(Catalog.Flute);
+	Model = MakeUnique<FSoundtrackModel>(Catalog, ExploredMusicDetail::Seed);
 	Clock = 0.0;
 }
 
 void UExploredMusicSubsystem::Deinitialize()
 {
-	for (UAudioComponent* Component : Pool)
+	for (const TPair<int32, TObjectPtr<UAudioComponent>>& Pair : Voices)
 	{
-		if (Component)
+		if (Pair.Value)
 		{
-			Component->Stop();
+			Pair.Value->Stop();
 		}
 	}
-	Pool.Reset();
-	Layers.Reset();
-	Pending.Reset();
+	Voices.Reset();
 	Sounds.Reset();
-	Director.Reset();
-	Flute.Reset();
+	Model.Reset();
 	Super::Deinitialize();
 }
 
-void UExploredMusicSubsystem::SetDanger(float Danger01, FName Source)
+FSoundtrackContext UExploredMusicSubsystem::GatherContext() const
 {
-	FDangerSource& Entry = Danger.FindOrAdd(Source);
-	Entry.Value = FMath::Clamp(Danger01, 0.0f, 1.0f);
-	Entry.Time = Clock;
-}
-
-void UExploredMusicSubsystem::SetFinale(bool bActive, EMusicFinale Finale)
-{
-	bFinale = bActive;
-	FinaleKind = Finale;
-}
-
-void UExploredMusicSubsystem::NotifyDiscovery()
-{
-	if (!Director)
-	{
-		return;
-	}
-	TArray<FMusicLayerTarget> Targets;
-	Director->NotifyDiscovery(Clock, Targets);
-	Enqueue(Targets);
-}
-
-void UExploredMusicSubsystem::NotifyKeyMoment()
-{
-	if (Director)
-	{
-		Director->NotifyKeyMoment();
-	}
-}
-
-float UExploredMusicSubsystem::GetFluteMoraleRatePerHour(float FireHeat) const
-{
-	return Flute ? Flute->MoraleRatePerHour(Clock, FireHeat) : 0.0f;
-}
-
-bool UExploredMusicSubsystem::PlayFluteNote(int32 NoteIndex)
-{
-	if (!Flute || NoteIndex < 0 || NoteIndex >= FFluteModel::NumNotes || Clock - LastFluteNoteTime < ExploredMusicDetail::FluteMinInterval)
-	{
-		return false;
-	}
-	LastFluteNoteTime = Clock;
-	const FFluteNote Note = Flute->Play(Clock, NoteIndex);
-
-	TObjectPtr<USoundBase>* Cached = Sounds.Find(Note.SampleId);
-	USoundBase* Sound = Cached ? Cached->Get() : nullptr;
-	if (!Sound && !Catalog.Flute.Asset.IsEmpty())
-	{
-		Sound = LoadObject<USoundBase>(nullptr, *Catalog.Flute.Asset, nullptr, LOAD_Quiet | LOAD_NoWarn);
-		Sounds.Add(Note.SampleId, Sound);
-	}
-	if (!Sound)
-	{
-		return false;
-	}
-	// Diegética: suena como un efecto del jugador, no pasa por el volumen de Música.
-	UGameplayStatics::PlaySound2D(this, Sound, 1.0f, Note.PitchMultiplier);
-	return true;
-}
-
-float UExploredMusicSubsystem::GetSettingsVolume(bool bMusic) const
-{
-	const UExploredGameUserSettings* Settings = UExploredGameUserSettings::Get();
-	if (!Settings)
-	{
-		return 1.0f;
-	}
-	// Los USoundClass de los ajustes aún no están asignados a los assets (revisión H7):
-	// se aplican aquí el volumen general y el de Música.
-	const float Master = Settings->GetVolume(EExploredAudioChannel::Master) / 100.0f;
-	const float Channel = bMusic ? Settings->GetVolume(EExploredAudioChannel::Music) / 100.0f : 1.0f;
-	return FMath::Clamp(Master * Channel, 0.0f, 1.0f);
-}
-
-FMusicContext UExploredMusicSubsystem::GatherContext()
-{
-	UWorld* World = GetWorld();
-	FMusicContext Out;
-	Out.bSailing = bSailing;
+	FSoundtrackContext Out;
 	Out.bCredits = bCredits;
 	Out.bFinale = bFinale;
-	Out.Finale = FinaleKind;
+	const UWorld* World = GetWorld();
 	if (!World)
 	{
 		return Out;
 	}
-
 	if (const AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
 	{
 		Out.bInMenu = PC->GetUIMode() == EExploredUIMode::Menu;
 	}
-
-	// Oyente: isla, noche y agua ya las evalúa el paisaje sonoro en la cámara.
 	if (const UExploredAmbienceSubsystem* Ambience = World->GetSubsystem<UExploredAmbienceSubsystem>())
 	{
-		const FAmbienceEnvironment& Env = Ambience->GetListenerEnvironment();
-		Out.Island = Ambience->GetListenerIsland();
-		Out.Night = Env.Night;
-		Out.Underwater = Env.Underwater;
+		Out.Night = Ambience->GetListenerEnvironment().Night;
 	}
 	else if (const UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>())
 	{
 		Out.Night = Time->IsNight() ? 1.0f : 0.0f;
 	}
-	if (const AExploredCharacter* Character = Cast<AExploredCharacter>(UGameplayStatics::GetPlayerCharacter(World, 0)))
-	{
-		if (const USwimComponent* Swim = Character->GetSwimComponent())
-		{
-			if (Swim->GetWaterState() == EWaterState::Diving)
-			{
-				Out.Underwater = 1.0f;
-			}
-		}
-	}
-
-	// Clima: ciclón en curso, temporal y, cada pocos segundos, cuánto falta para el próximo ciclón.
 	if (const UExploredWeatherSubsystem* Weather = World->GetSubsystem<UExploredWeatherSubsystem>())
 	{
-		const EWeatherState State = Weather->GetState();
-		Out.bCyclone = State == EWeatherState::Cyclone;
-		Out.Storm = (State == EWeatherState::Gale || State == EWeatherState::Thunderstorm) ? 1.0f : 0.0f;
-
-		const UTimeOfDaySubsystem* Time = World->GetSubsystem<UTimeOfDaySubsystem>();
-		if (CycloneTimer <= 0.0f && Time && Weather->GetModel())
-		{
-			CycloneTimer = ExploredMusicDetail::CycloneInterval;
-			CycloneEtaHours = -1.0f;
-			const float Days = Time->GetTotalDays();
-			FWeatherSpan Span;
-			// NextSevereEvent también devuelve galernas: se busca el primer ciclón.
-			float From = Days;
-			for (int32 Attempt = 0; Attempt < 4 && Weather->GetModel()->NextSevereEvent(From, Span); ++Attempt)
-			{
-				if (Span.State == EWeatherState::Cyclone)
-				{
-					CycloneEtaHours = FMath::Max(0.0f, (Span.Start - Days) * 24.0f);
-					break;
-				}
-				From = Span.End + 0.01f;
-			}
-		}
-		Out.CycloneEtaHours = Out.bCyclone ? -1.0f : CycloneEtaHours;
-	}
-
-	// Peligro: el máximo de las fuentes que se han refrescado hace poco.
-	for (auto It = Danger.CreateIterator(); It; ++It)
-	{
-		if (Clock - It.Value().Time > DangerTimeoutSeconds)
-		{
-			It.RemoveCurrent();
-			continue;
-		}
-		Out.Danger = FMath::Max(Out.Danger, It.Value().Value);
+		const EStormState Storm = Weather->GetStormState();
+		Out.bCycloneWall = Weather->IsCycloneWall();
+		Out.bCycloneEye = Storm == EStormState::CycloneEye;
 	}
 	return Out;
 }
 
 USoundBase* UExploredMusicSubsystem::GetSound(const FName& PieceId)
 {
-	if (TObjectPtr<USoundBase>* Cached = Sounds.Find(PieceId))
+	if (const TObjectPtr<USoundBase>* Cached = Sounds.Find(PieceId))
 	{
 		return Cached->Get();
 	}
 	const int32 Index = Catalog.FindById(PieceId);
-	USoundBase* Sound = Index != INDEX_NONE
-		? LoadObject<USoundBase>(nullptr, *Catalog.Pieces[Index].Asset, nullptr, LOAD_Quiet | LOAD_NoWarn)
-		: nullptr;
+	const FSoftObjectPath Path(Index != INDEX_NONE ? Catalog.Pieces[Index].Asset : FString());
+	USoundBase* Sound = Path.IsValid() && FPackageName::DoesPackageExist(Path.GetLongPackageName())
+		? Cast<USoundBase>(Path.TryLoad()) : nullptr;
 	if (!Sound)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Explored] Falta la pieza de música %s (¿importado el audio?)"), *PieceId.ToString());
+		UE_LOG(LogExplored, Warning, TEXT("[Música] Falta la pieza %s (Tools/Audio/scripts/export_soundtrack.py e import_audio.py)"),
+			*PieceId.ToString());
 	}
 	Sounds.Add(PieceId, Sound);
 	return Sound;
 }
 
-UAudioComponent* UExploredMusicSubsystem::AcquireComponent(USoundBase* Sound)
+void UExploredMusicSubsystem::Execute(const FSoundtrackCommand& Command)
 {
-	for (UAudioComponent* Component : Pool)
+	if (Command.Action == ESoundtrackAction::Stop)
 	{
-		const bool bInUse = Layers.ContainsByPredicate([Component](const FLayer& Layer) { return Layer.Component.Get() == Component; });
-		if (Component && !bInUse && !Component->IsPlaying())
+		TObjectPtr<UAudioComponent> Component;
+		if (Voices.RemoveAndCopyValue(Command.Voice, Component) && Component)
 		{
-			Component->SetSound(Sound);
-			return Component;
+			// Las voces en bucle se crean sin autodestrucción; al pararlas sí se destruyen.
+			Component->bAutoDestroy = true;
+			Component->FadeOut(FMath::Max(Command.FadeSeconds, 0.05f), 0.0f);
 		}
-	}
-	UAudioComponent* Component = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.0f, 1.0f, 0.0f, nullptr, false, false);
-	if (Component)
-	{
-		// Como sonido de interfaz sigue sonando con el juego en pausa (menú de pausa).
-		Component->bIsUISound = true;
-		Pool.Add(Component);
-	}
-	return Component;
-}
-
-void UExploredMusicSubsystem::Enqueue(const TArray<FMusicLayerTarget>& Targets)
-{
-	for (const FMusicLayerTarget& Target : Targets)
-	{
-		if (Target.Action == EMusicLayerAction::Cancel)
-		{
-			// Se descartan ya las órdenes pendientes de esa capa; si no había empezado, no empezará.
-			Pending.RemoveAll([&Target](const FMusicLayerTarget& P) { return P.Voice == Target.Voice; });
-			Layers.RemoveAll([&Target](const FLayer& Layer) { return Layer.Voice == Target.Voice && !Layer.bStarted; });
-			continue;
-		}
-		// Inserción estable por instante: las órdenes del mismo instante conservan su orden.
-		int32 Index = Pending.Num();
-		while (Index > 0 && Pending[Index - 1].AtSeconds > Target.AtSeconds)
-		{
-			--Index;
-		}
-		Pending.Insert(Target, Index);
-	}
-}
-
-void UExploredMusicSubsystem::Execute(const FMusicLayerTarget& Target)
-{
-	FLayer* Layer = Layers.FindByPredicate([&Target](const FLayer& L) { return L.Voice == Target.Voice; });
-	if (Target.Action == EMusicLayerAction::Start)
-	{
-		USoundBase* Sound = GetSound(Target.PieceId);
-		UAudioComponent* Component = Sound ? AcquireComponent(Sound) : nullptr;
-		if (!Component)
-		{
-			return;
-		}
-		FLayer NewLayer;
-		NewLayer.Voice = Target.Voice;
-		NewLayer.Component = Component;
-		NewLayer.bStarted = true;
-		NewLayer.bLoop = Target.bLoop;
-		NewLayer.FromVolume = 0.0f;
-		NewLayer.ToVolume = Target.Volume;
-		NewLayer.FadeStart = Target.AtSeconds;
-		NewLayer.FadeSeconds = Target.FadeSeconds;
-		Component->SetVolumeMultiplier(ExploredMusicDetail::MinAudible);
-		// Si el fotograma llega tarde al límite de compás, se arranca adelantado lo que se
-		// perdió para no desplazar la rejilla de la pieza.
-		Component->Play(static_cast<float>(FMath::Max(0.0, Clock - Target.AtSeconds)));
-		Layers.Add(NewLayer);
 		return;
 	}
-	if (!Layer)
+	USoundBase* Sound = GetSound(Command.PieceId);
+	if (!Sound)
 	{
 		return;
 	}
-	Layer->FromVolume = Layer->Volume;
-	Layer->ToVolume = Target.Action == EMusicLayerAction::Stop ? 0.0f : Target.Volume;
-	Layer->FadeStart = Target.AtSeconds;
-	Layer->FadeSeconds = Target.FadeSeconds;
-	Layer->bStopAfterFade = Target.Action == EMusicLayerAction::Stop;
-}
-
-void UExploredMusicSubsystem::UpdateLayers(float DeltaTime)
-{
-	// Bus: se acerca a lo que pide el director en su tiempo de fundido.
-	const FMusicBus& Bus = Director->GetBus();
-	const float BusRate = 1.0f / FMath::Max(Bus.FadeSeconds, 0.05f);
-	BusVolume = FMath::FInterpConstantTo(BusVolume, Bus.Volume, DeltaTime, BusRate);
-	const float LogHz = FMath::FInterpConstantTo(FMath::Loge(BusLowPassHz), FMath::Loge(Bus.LowPassHz), DeltaTime, BusRate * 4.0f);
-	BusLowPassHz = FMath::Exp(LogHz);
-	const float Settings = GetSettingsVolume(true);
-	const bool bFilter = BusLowPassHz < 19000.0f;
-
-	for (int32 I = Layers.Num() - 1; I >= 0; --I)
+	UAudioComponent* Component = UGameplayStatics::CreateSound2D(GetWorld(), Sound, Command.Volume, 1.0f, 0.0f, nullptr, false, !Command.bLoop);
+	if (!Component)
 	{
-		FLayer& Layer = Layers[I];
-		UAudioComponent* Component = Layer.Component.Get();
-		if (!Component)
-		{
-			Layers.RemoveAt(I);
-			continue;
-		}
-		const double Alpha = Layer.FadeSeconds > 0.0f
-			? FMath::Clamp((Clock - Layer.FadeStart) / Layer.FadeSeconds, 0.0, 1.0)
-			: (Clock >= Layer.FadeStart ? 1.0 : 0.0);
-		Layer.Volume = FMath::Lerp(Layer.FromVolume, Layer.ToVolume, static_cast<float>(Alpha));
-
-		const bool bFadedOut = Layer.bStopAfterFade && Alpha >= 1.0;
-		const bool bEnded = !Layer.bLoop && !Component->IsPlaying();
-		if (bFadedOut || bEnded)
-		{
-			Component->Stop();
-			Layers.RemoveAt(I);
-			continue;
-		}
-		Component->SetVolumeMultiplier(FMath::Max(ExploredMusicDetail::MinAudible, Layer.Volume * BusVolume * Settings));
-		Component->SetLowPassFilterEnabled(bFilter);
-		Component->SetLowPassFilterFrequency(BusLowPassHz);
+		return;
 	}
+	// Como sonido de interfaz sigue sonando con el juego en pausa (menú de pausa).
+	Component->bIsUISound = true;
+	// Las piezas grabadas no son bucles en el asset: el bucle de menú, final y créditos va aquí.
+	if (Command.bLoop)
+	{
+		const TWeakObjectPtr<UExploredMusicSubsystem> WeakThis(this);
+		const int32 Voice = Command.Voice;
+		const float Volume = Command.Volume;
+		Component->OnAudioFinishedNative.AddLambda([WeakThis, Voice, Volume](UAudioComponent* Finished)
+		{
+			UExploredMusicSubsystem* Self = WeakThis.Get();
+			const TObjectPtr<UAudioComponent>* Live = Self ? Self->Voices.Find(Voice) : nullptr;
+			if (Live && Live->Get() == Finished)
+			{
+				Finished->FadeIn(1.0f, Volume);
+			}
+		});
+	}
+	Component->FadeIn(FMath::Max(Command.FadeSeconds, 0.05f), Command.Volume);
+	Voices.Add(Command.Voice, Component);
 }
 
 void UExploredMusicSubsystem::Tick(float DeltaTime)
 {
-	if (!Director)
+	if (!Model)
 	{
 		return;
 	}
 	Clock += DeltaTime;
 	ContextTimer -= DeltaTime;
-	CycloneTimer -= DeltaTime;
-
-	TArray<FMusicLayerTarget> Targets;
 	if (ContextTimer <= 0.0f)
 	{
 		ContextTimer = ExploredMusicDetail::ContextInterval;
 		Context = GatherContext();
 	}
-	Director->Update(Clock, Context, Targets);
-	Enqueue(Targets);
-
-	// Órdenes que ya han llegado a su instante, en orden.
-	int32 Due = 0;
-	while (Due < Pending.Num() && Pending[Due].AtSeconds <= Clock)
+	const ESoundtrackState Before = Model->GetState();
+	TArray<FSoundtrackCommand> Commands;
+	Model->Update(Clock, Context, Commands);
+	if (Model->GetState() != Before)
 	{
-		++Due;
+		UE_LOG(LogExplored, Display, TEXT("[Música] %s → %s"), LexToString(Before), LexToString(Model->GetState()));
 	}
-	if (Due > 0)
+	for (const FSoundtrackCommand& Command : Commands)
 	{
-		TArray<FMusicLayerTarget> Ready(Pending.GetData(), Due);
-		Pending.RemoveAt(0, Due);
-		for (const FMusicLayerTarget& Target : Ready)
-		{
-			Execute(Target);
-		}
+		Execute(Command);
 	}
-
-	UpdateLayers(DeltaTime);
 }
 
 TStatId UExploredMusicSubsystem::GetStatId() const

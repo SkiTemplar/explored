@@ -23,7 +23,7 @@ Tests/IslandLayoutSpec.cpp
 Tests/LocalizationSpec.cpp
 Tests/MarineFaunaSpec.cpp
 Tests/MoonSpec.cpp
-Tests/MusicDirectorSpec.cpp
+Tests/SoundtrackModelSpec.cpp
 Tests/OceanCurrentsSpec.cpp
 Tests/RainCatchModelSpec.cpp
 Tests/SaveArchiveSpec.cpp

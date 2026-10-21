@@ -262,7 +262,7 @@ def test_detecta_termino_prohibido(ds: DataSet) -> None:
     assert any_error(errors_of(ds), "items.json", "«mascota»")
 
 
-# --------------------------------------------------------------------------- música (GDD §14.3)
+# --------------------------------------------------------------------------- música (GDD v3 §10)
 
 def music_errors(ds: DataSet) -> list[str]:
     r = Report()
@@ -270,78 +270,49 @@ def music_errors(ds: DataSet) -> list[str]:
     return r.errors
 
 
-def music_piece(ds: DataSet, pid: str) -> dict[str, Any]:
-    return next(p for p in ds.data["music_layers.json"]["pieces"] if p["id"] == pid)
-
-
 def test_musica_real_sin_errores_y_lee_el_cpp(real: DataSet) -> None:
     r = Report()
     music.check_music(real, r)
     assert r.errors == [] and r.warnings == []
     cpp = (real.repo_root / music.MODEL_CPP).read_text(encoding="utf-8")
-    assert "explore" in music._cpp_keys(cpp, "RoleKeys")
-    assert len(music._cpp_keys(cpp, "IslandKeys")) == 7
-    keys, default = music._cpp_finale_keys(cpp)
-    assert default == "voyage" and "voyage" in keys
-    assert "Discovery" in music._cpp_required_roles(cpp)
+    assert {"day", "night", "cyclone", "eye", "finale"} <= set(music._cpp_keys(cpp, "StateKeys"))
 
 
-def test_musica_finales_fuera_del_gdd_son_nota(real_report: Report) -> None:
-    assert any("finales de música fuera del GDD" in i for i in real_report.info)
-
-
-def test_musica_papel_desconocido(ds: DataSet) -> None:
-    music_piece(ds, "mus_night")["role"] = "noche"
+def test_musica_estado_desconocido(ds: DataSet) -> None:
+    ds.data["soundtrack.json"]["states"]["noche"] = ds.data["soundtrack.json"]["states"].pop("night")
     errs = music_errors(ds)
-    assert any_error(errs, "mus_night", "papel «noche» desconocido")
-    assert any_error(errs, "falta una pieza con papel «night»")
+    assert any_error(errs, "estado «noche» desconocido")
+    assert any_error(errs, "falta el estado «night»")
 
 
-def test_musica_isla_de_exploracion_mal_escrita(ds: DataSet) -> None:
-    music_piece(ds, "mus_explore_mesa")["variant"] = "meseta"
-    assert any_error(music_errors(ds), "una vez cada isla")
+def test_musica_pieza_que_no_existe(ds: DataSet) -> None:
+    ds.data["soundtrack.json"]["states"]["day"]["pieces"].append("mus_rec_inventada")
+    assert any_error(music_errors(ds), "«day»", "mus_rec_inventada")
 
 
-def test_musica_variacion_diurna_que_no_es_exploracion(ds: DataSet) -> None:
-    ds.data["music_layers.json"]["day_variants"]["mesa"].append("mus_night")
-    assert any_error(music_errors(ds), "«mesa»", "no es de exploración")
+def test_musica_pieza_sin_licencia(ds: DataSet) -> None:
+    ds.data["soundtrack.json"]["pieces"].append({"id": "mus_rec_sin_fuente", "seconds": 10.0})
+    assert any_error(music_errors(ds), "mus_rec_sin_fuente", "sin procedencia")
 
 
-def test_musica_variacion_diurna_sin_su_pieza_primero(ds: DataSet) -> None:
-    lst = ds.data["music_layers.json"]["day_variants"]["smoke"]
-    lst[0], lst[1] = lst[1], lst[0]
-    assert any_error(music_errors(ds), "«smoke»", "propia pieza")
+def test_musica_ojo_demasiado_fuerte(ds: DataSet) -> None:
+    ds.data["soundtrack.json"]["states"]["eye"]["gain"] = 0.8
+    assert any_error(music_errors(ds), "«eye»", "casi silencio")
 
 
-def test_musica_final_que_nunca_sonaria(ds: DataSet) -> None:
-    music_piece(ds, "mus_finale_voyage")["variant"] = "zarpar"
-    errs = music_errors(ds)
-    assert any_error(errs, "final «zarpar» desconocido")
-    assert any_error(errs, "final por defecto «voyage»")
+def test_musica_silencio_invertido(ds: DataSet) -> None:
+    ds.data["soundtrack.json"]["states"]["night"]["rest"] = [90, 10]
+    assert any_error(music_errors(ds), "«night»", "«rest»")
 
 
-def test_musica_bucle_con_compas_a_medias(ds: DataSet) -> None:
-    p = music_piece(ds, "mus_sea")
-    p["bars"] = 15.5
-    p["duration_s"] = p["seconds_per_bar"] * 15.5
-    assert any_error(music_errors(ds), "mus_sea", "compases enteros")
-
-
-def test_musica_tempo_desfasado(ds: DataSet) -> None:
-    music_piece(ds, "mus_storm")["bpm"] = 96
-    assert any_error(music_errors(ds), "mus_storm", "seconds_per_bar")
-
-
-def test_musica_descubrimiento_largo(ds: DataSet) -> None:
-    p = music_piece(ds, "mus_discovery_01")
-    p["bars"] = 4
-    p["duration_s"] = p["seconds_per_bar"] * 4
-    assert any_error(music_errors(ds), "mus_discovery_01", "motivo corto")
-
-
-def test_musica_flauta_con_notas_de_mas(ds: DataSet) -> None:
-    ds.data["music_layers.json"]["flute"]["semitones"] = [0, 2, 4, 5, 7, 9]
-    assert any_error(music_errors(ds), "NumNotes")
+def test_musica_duracion_y_pieza_no_objeto() -> None:
+    doc = {"version": 1, "pieces": [{"id": "mus_x", "seconds": 0}, "suelta", {"id": "MAL"}], "states": []}
+    r = Report()
+    music.check_music(DataSet({"soundtrack.json": doc}, Path(".")), r)
+    assert any_error(r.errors, "mus_x", "seconds")
+    assert any_error(r.errors, "'suelta'", "no es un objeto")
+    assert any_error(r.errors, "id de pieza inválido")
+    assert any_error(r.errors, "«states»")
 
 
 

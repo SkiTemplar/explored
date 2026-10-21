@@ -82,11 +82,17 @@ def render_by_name(name: str) -> np.ndarray:
     raise KeyError(f"sonido no encontrado en el catalogo: {name}")
 
 
-def build_all(output_root: Path | None = None, verbose: bool = True) -> list[dict]:
+def build_all(output_root: Path | None = None, verbose: bool = True, only: set[str] | None = None) -> list[dict]:
+    """Genera el catalogo. Con `only`, solo esos sonidos, y el manifiesto existente se
+    conserva: sus entradas se sustituyen o se añaden por nombre."""
     output_root = Path(output_root) if output_root is not None else default_output_root()
     entries: list[dict] = []
+    specs = [spec for spec in build_catalog() if only is None or spec.name in only]
+    if only is not None and len(specs) != len(only):
+        missing = sorted(only - {spec.name for spec in specs})
+        raise KeyError(f"sonidos no encontrados en el catalogo: {', '.join(missing)}")
 
-    for spec in build_catalog():
+    for spec in specs:
         audio = render_sound(spec)
         channels = 1 if audio.ndim == 1 else audio.shape[0]
         duration_s = audio.shape[-1] / SAMPLE_RATE

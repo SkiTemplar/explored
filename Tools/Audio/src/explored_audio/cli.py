@@ -18,6 +18,7 @@ def main(argv: list[str] | None = None) -> int:
     build_parser = sub.add_parser("build", help="genera todo el catalogo de audio en Art/Export/Audio")
     build_parser.add_argument("--out", type=str, default=None, help="ruta de salida (por defecto: Art/Export/Audio del repo)")
     build_parser.add_argument("--quiet", action="store_true", help="no imprime el progreso por sonido")
+    build_parser.add_argument("--only", type=str, default=None, help="solo estos sonidos (separados por comas); conserva el resto del manifiesto")
 
     music_parser = sub.add_parser("music", help="renderiza las capas de musica que declara Content/Data/music_layers.json")
     music_parser.add_argument("--layers", type=str, default=None, help="JSON de capas (por defecto: Content/Data/music_layers.json)")
@@ -31,7 +32,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "build":
         out = args.out or default_output_root()
-        build_all(output_root=out, verbose=not args.quiet)
+        only = {name.strip() for name in args.only.split(",") if name.strip()} if args.only else None
+        build_all(output_root=out, verbose=not args.quiet, only=only)
         return 0
 
     if args.command == "music":

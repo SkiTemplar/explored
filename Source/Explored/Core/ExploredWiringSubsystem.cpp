@@ -52,10 +52,6 @@ namespace ExploredWiringDetail
 	/** Velocidad mínima (cm/s) para que la vela cuente como navegar (música de travesía). */
 	constexpr float SailingMinSpeedCmS = 50.0f;
 
-	const FName DangerBody(TEXT("body"));
-	const FName DangerStorm(TEXT("storm"));
-	const FName DangerFauna(TEXT("fauna"));
-	const FName DangerEruption(TEXT("eruption"));
 
 	UExploredSaveSubsystem* FindSave(const UWorld* World)
 	{
@@ -250,17 +246,11 @@ void UExploredWiringSubsystem::Sample(float DeltaSeconds)
 	const FVector2D PositionMeters(Location.X / 100.0, Location.Y / 100.0);
 	UpdateBody(*Character, GameHours);
 	UpdateBoat(*Character, PositionMeters);
-	UpdateDanger(*Character);
 	UpdateWorldEvents(PositionMeters);
 }
 
 void UExploredWiringSubsystem::NotifyDiscovery(bool bMorale) const
 {
-	UWorld* World = GetWorld();
-	if (UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
-	{
-		Music->NotifyDiscovery();
-	}
 	if (!bMorale)
 	{
 		return;
@@ -279,7 +269,6 @@ void UExploredWiringSubsystem::UpdateBody(AExploredCharacter& Character, float G
 	UWorld* World = GetWorld();
 	UBodySignalsComponent* Body = Character.GetBodySignalsComponent();
 	UCarryComponent* Carry = Character.GetCarryComponent();
-	UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr;
 
 	// Calor de los fuegos cercanos (FFireModel::HeatAtDistance en cada uno).
 	const FVector Location = Character.GetActorLocation();
@@ -292,20 +281,13 @@ void UExploredWiringSubsystem::UpdateBody(AExploredCharacter& Character, float G
 		}
 	}
 	const float FireHeat = ExploredLinks::CombineFireHeat(Heats);
-	const bool bPerforming = Music && Music->IsFlutePerforming();
 
 	if (Body)
 	{
 		ExploredLinks::FSurvivalLinkInputs Links;
 		Links.FireHeat = FireHeat;
 		Links.CarriedWeightRatio = Carry ? Carry->GetCarriedWeightRatio() : 0.0f;
-		Links.bPlayingMusic = bPerforming;
 		Body->SetLinkInputs(Links);
-		// Tocar la flauta junto al fuego sube el ánimo (FFluteModel::MoraleRatePerHour).
-		if (Music && GameHours > 0.0f)
-		{
-			Body->AddMorale(Music->GetFluteMoraleRatePerHour(FireHeat) * GameHours);
-		}
 	}
 }
 
@@ -324,14 +306,6 @@ void UExploredWiringSubsystem::UpdateBoat(AExploredCharacter& Character, const F
 	const bool bAboard = Boat != nullptr;
 	const bool bUnderSail = bAboard && Boat->IsSailRaised() && Boat->GetSpeedCmS() >= ExploredWiringDetail::SailingMinSpeedCmS;
 
-	// Música de travesía: a vela y lejos de tierra.
-	if (UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
-	{
-		float CoastDistance = 0.0f;
-		ExploredLinks::NearestIsland(Layout, PositionMeters, CoastDistance);
-		Music->SetSailing(bUnderSail && CoastDistance > 100.0f);
-	}
-
 	// Delfines junto a la canoa y gaviotas detrás del pescado (P-FAUNA).
 	UCarryComponent* Carry = Character.GetCarryComponent();
 	if (AExploredFaunaManager* Fauna = BoundFauna.Get())
@@ -342,34 +316,6 @@ void UExploredWiringSubsystem::UpdateBoat(AExploredCharacter& Character, const F
 	if (UFishingComponent* Fishing = Character.GetFishingComponent())
 	{
 		Fishing->SetFromBoat(bAboard);
-	}
-}
-
-void UExploredWiringSubsystem::UpdateDanger(AExploredCharacter& Character)
-{
-	UWorld* World = GetWorld();
-	UExploredMusicSubsystem* Music = World ? World->GetSubsystem<UExploredMusicSubsystem>() : nullptr;
-	if (!Music)
-	{
-		return;
-	}
-	const UBodySignalsComponent* Body = Character.GetBodySignalsComponent();
-	if (Body)
-	{
-		Music->SetDanger(ExploredLinks::BodyDanger01(Body->GetSurvivalState()), ExploredWiringDetail::DangerBody);
-	}
-	if (const UExploredWeatherSubsystem* Weather = World->GetSubsystem<UExploredWeatherSubsystem>())
-	{
-		Music->SetDanger(ExploredLinks::StormDanger01(Weather->GetState(), Body && Body->GetInputs().bSheltered),
-			ExploredWiringDetail::DangerStorm);
-	}
-	if (const AExploredFaunaManager* Fauna = BoundFauna.Get())
-	{
-		Music->SetDanger(Fauna->GetPlayerThreat01(Character.GetActorLocation()), ExploredWiringDetail::DangerFauna);
-	}
-	if (const UWorldEventsSubsystem* Events = World->GetSubsystem<UWorldEventsSubsystem>())
-	{
-		Music->SetDanger(Events->GetEruption().Tremor * 0.5f, ExploredWiringDetail::DangerEruption);
 	}
 }
 

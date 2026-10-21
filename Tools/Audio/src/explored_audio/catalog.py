@@ -11,6 +11,7 @@ import numpy as np
 
 from .generators import (
     ambience,
+    beacon,
     birds,
     body,
     cartography,
@@ -174,6 +175,10 @@ def build_catalog() -> list[SoundSpec]:
     specs.append(SoundSpec("sfx_breath_tired", "Efectos", False, body.breath_tired))
     specs.append(SoundSpec("sfx_heartbeat_low_loop", "Efectos", True, body.heartbeat_low))
     specs.append(SoundSpec("sfx_stomach_growl", "Efectos", False, body.stomach_growl))
+
+    # Final de Baliza Siete (GDD v3 §2 y §10): bocina del Mistral y giro de la lente.
+    specs.append(SoundSpec("sfx_ship_horn", "Efectos", False, beacon.ship_horn))
+    specs.append(SoundSpec("sfx_lens_rotation_loop", "Efectos", True, beacon.lens_rotation))
 
     # Musica adaptativa (§9.3): la genera `music.compose`, aqui solo se cablea
     # en el catalogo para que pase por el mismo postproceso, exportacion y

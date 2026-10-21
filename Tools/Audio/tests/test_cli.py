@@ -16,7 +16,7 @@ from explored_audio.music.layers import build_payload, to_json
 @pytest.fixture
 def catalogo_reducido(monkeypatch, rendered, specs_by_name):
     """Dos sonidos (un efecto mono y un ambiente estereo) desde la cache de
-    sesion: la CLI recorre el mismo `build_all`, pero sin sintetizar 132."""
+    sesion: la CLI recorre el mismo `build_all`, pero sin sintetizar 134."""
     specs = [specs_by_name["sfx_ui_click"], specs_by_name["amb_ocean_calm"]]
     monkeypatch.setattr(build, "build_catalog", lambda: specs)
     monkeypatch.setattr(build, "render_sound", lambda spec: rendered[spec.name])

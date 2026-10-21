@@ -21,15 +21,15 @@ from explored_audio.manifest import build_entry, write_manifest
 def test_build_all_escribe_wav_y_manifest_coherente(tmp_path, monkeypatch, rendered):
     # La sintesis ya la cubre la cache de sesion (y su determinismo,
     # `test_determinism`): aqui se comprueba la exportacion, sin volver a
-    # generar los 132 sonidos.
+    # generar los 134 sonidos.
     monkeypatch.setattr(build, "render_sound", lambda spec: rendered[spec.name])
     entries = build_all(output_root=tmp_path, verbose=False)
-    assert len(entries) == 132
+    assert len(entries) == 134
 
     manifest_path = tmp_path / "manifest.json"
     assert manifest_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["count"] == 132
+    assert manifest["count"] == 134
     assert manifest["sample_rate"] == SAMPLE_RATE
     assert manifest["bit_depth"] == 16
 
@@ -38,7 +38,7 @@ def test_build_all_escribe_wav_y_manifest_coherente(tmp_path, monkeypatch, rende
     assert [(s["category"], s["name"]) for s in manifest["sounds"]] == sorted(
         (s["category"], s["name"]) for s in manifest["sounds"]
     )
-    assert len(list(tmp_path.rglob("*.wav"))) == 132
+    assert len(list(tmp_path.rglob("*.wav"))) == 134
 
     # Comprobacion cruzada con un par de ficheros: el WAV en disco coincide
     # con lo que dice el manifiesto (duracion, canales, ruta).

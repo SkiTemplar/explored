@@ -70,7 +70,7 @@ FORBIDDEN_TERMS = [
 
 DATA_FILES = [
     "items.json", "verbs.json", "recipes.json", "fuels.json", "survival_needs.json", "fish.json",
-    "music_layers.json", "notebook.json", "objectives.json", "thoughts.json", "storm_curve.json",
+    "soundtrack.json", "notebook.json", "objectives.json", "thoughts.json", "storm_curve.json",
 ]
 
 

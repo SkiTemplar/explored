@@ -27,6 +27,7 @@ integre en el pipeline de importacion (`Tools/build_content.ps1`).
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -65,7 +66,18 @@ def _repo_root() -> Path:
 
 
 def _manifest_path() -> Path:
+    """Manifiesto a importar: `EXPLORED_AUDIO_MANIFEST` (relativo a la raíz del repo) o el de Tools/Audio."""
+    override = os.environ.get("EXPLORED_AUDIO_MANIFEST", "").strip()
+    if override:
+        path = Path(override)
+        return path if path.is_absolute() else _repo_root() / path
     return _repo_root() / "Art" / "Export" / "Audio" / "manifest.json"
+
+
+def _only_names() -> set[str]:
+    """`EXPLORED_AUDIO_ONLY`: nombres separados por comas; vacío = todo el manifiesto."""
+    raw = os.environ.get("EXPLORED_AUDIO_ONLY", "")
+    return {name.strip() for name in raw.split(",") if name.strip()}
 
 
 def _load_manifest(path: Path) -> list[dict]:
@@ -133,7 +145,8 @@ def _import_one(entry: dict, source_root: Path, asset_tools: "unreal.AssetTools"
         unreal.log_warning(f"[import_audio] falta el WAV en disco, se omite: {wav_path}")
         return None
 
-    destination_path = f"{CONTENT_ROOT}/{entry['category']}"
+    # Una entrada puede fijar su carpeta (la música grabada va a /Game/Audio/Musica).
+    destination_path = entry.get("content_root") or f"{CONTENT_ROOT}/{entry['category']}"
 
     task = unreal.AssetImportTask()
     task.filename = str(wav_path)
@@ -190,6 +203,9 @@ def main() -> int:
     _load_audio_decoders()
     manifest_path = _manifest_path()
     entries = _load_manifest(manifest_path)
+    only = _only_names()
+    if only:
+        entries = [entry for entry in entries if entry.get("name") in only]
     source_root = manifest_path.parent
 
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()

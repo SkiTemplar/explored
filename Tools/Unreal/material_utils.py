@@ -128,3 +128,37 @@ def palette_linear(name: str) -> tuple[float, float, float]:
 
 def hlsl_float3(color) -> str:
     return "float3({:.5f}, {:.5f}, {:.5f})".format(*color)
+
+
+# Viento en palmas y bambú (F6): desplazamiento de vértices (WPO) que crece con la altura local de la
+# malla. Apagado por defecto (WindSway = 0): solo lo encienden las instancias dinámicas de
+# AExploredPlaceholder para SM_Palm* y SM_Bamboo*; WindStrength (0-1) lo pone el clima.
+TOON_WIND_HLSL = r"""
+float h = saturate((WorldPos.z - ObjectPos.z) / 750.0);
+float mask = h * h;
+float phase = dot(WorldPos.xy, float2(0.0012, 0.0009));
+float s = sin(T * (1.1 + Strength) + phase) * 0.65 + sin(T * (2.7 + 2.0 * Strength) + phase * 1.9) * 0.2;
+float amp = (10.0 + 70.0 * Strength) * Sway * mask;
+return float3(s * amp, s * amp * 0.55, 0.0);
+"""
+
+
+def add_toon_wind(material) -> bool:
+    """Añade WindSway/WindStrength y el WPO de viento a M_Toon. Devuelve False si ya los tenía."""
+    if "WindSway" in [str(n) for n in MEL.get_scalar_parameter_names(material)]:
+        return False
+    world = expr(material, unreal.MaterialExpressionWorldPosition, -900, 600)
+    # Altura sobre el pivote (en la base de la malla): la copa se mueve y el pie no.
+    local = expr(material, unreal.MaterialExpressionObjectPositionWS, -900, 700)
+    time = expr(material, unreal.MaterialExpressionTime, -900, 800)
+    sway = scalar_param(material, "WindSway", 0.0, -900, 900)
+    strength = scalar_param(material, "WindStrength", 0.3, -900, 1000)
+    wind = custom(material, -500, 750, TOON_WIND_HLSL, ["WorldPos", "ObjectPos", "T", "Sway", "Strength"],
+                  unreal.CustomMaterialOutputType.CMOT_FLOAT3, "ToonWind")
+    connect(world, "", wind, "WorldPos")
+    connect(local, "", wind, "ObjectPos")
+    connect(time, "", wind, "T")
+    connect(sway, "", wind, "Sway")
+    connect(strength, "", wind, "Strength")
+    to_property(wind, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    return True

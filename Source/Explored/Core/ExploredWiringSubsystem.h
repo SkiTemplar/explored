@@ -101,7 +101,6 @@ private:
 	void Sample(float DeltaSeconds);
 	void UpdateBody(AExploredCharacter& Character, float GameHours);
 	void UpdateBoat(AExploredCharacter& Character, const FVector2D& PositionMeters);
-	void UpdateDanger(AExploredCharacter& Character);
 	void UpdateWorldEvents(const FVector2D& PositionMeters);
 	void UpdateStorms(float GameHours);
 	void SpawnItemsAround(const FVector& Center, FName ItemId, int32 Count, float RadiusCm) const;

@@ -334,7 +334,7 @@ void UBeaconSubsystem::ResetEnding()
 	}
 	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
 	{
-		Music->SetFinale(false, EMusicFinale::Rescue);
+		Music->SetFinale(false);
 	}
 }
 
@@ -584,7 +584,7 @@ void UBeaconSubsystem::StartMistral()
 	}
 	if (UExploredMusicSubsystem* Music = World->GetSubsystem<UExploredMusicSubsystem>())
 	{
-		Music->SetFinale(true, EMusicFinale::Rescue);
+		Music->SetFinale(true);
 	}
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Luces del Mistral en el horizonte"));
 	World->GetTimerManager().SetTimer(HornTimer, FTimerDelegate::CreateUObject(this, &UBeaconSubsystem::SoundHorn),

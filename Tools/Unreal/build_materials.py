@@ -32,7 +32,8 @@ import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from material_utils import (  # noqa: E402 - necesita el sys.path de arriba
-    ART_MATERIALS_PATH, MATERIALS_PATH, REPO_ROOT, connect, custom, expr, finish, recreate_material, to_property,
+    ART_MATERIALS_PATH, MATERIALS_PATH, REPO_ROOT, add_toon_wind, connect, custom, expr, finish, recreate_material,
+    to_property,
 )
 import materials_lowpoly  # noqa: E402
 
@@ -307,6 +308,7 @@ def build_toon(palette: unreal.Texture2D):
     specular = expr(m, unreal.MaterialExpressionConstant, -300, 330)
     specular.set_editor_property("r", 0.0)
     to_property(specular, "", unreal.MaterialProperty.MP_SPECULAR)
+    add_toon_wind(m)
     finish(m)
 
 

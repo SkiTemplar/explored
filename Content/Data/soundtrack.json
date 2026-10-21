@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "source": "Banda sonora de Baliza Siete (GDD v3 §10): música clásica grabada de licencia abierta (Tools/Audio/music_sources.json, créditos en docs/creditos-musica.md). La lee FSoundtrackModel (Source/Explored/Audio/SoundtrackModel) por medio de UExploredMusicSubsystem; Tools/DataCheck comprueba que cada estado tiene piezas y que cada pieza está en music_sources.json.",
+  "units": {
+    "seconds": "duración de la pieza tratada (Tools/Audio/.cache/music/manifest.json)",
+    "gain": "volumen del estado (0-1) antes del ajuste de Música",
+    "fadeIn": "segundos de fundido de entrada",
+    "fadeOut": "segundos de fundido de salida al cambiar de estado",
+    "rest": "silencio entre dos piezas del mismo estado (segundos, mínimo y máximo); 0 = encadena",
+    "loop": "la pieza vuelve a empezar sin silencio (créditos y menú)"
+  },
+  "assetRoot": "/Game/Audio/Musica",
+  "pieces": [
+    { "id": "mus_rec_gymnopedie_1", "seconds": 204.7 },
+    { "id": "mus_rec_prelude_op28_7", "seconds": 152.4 },
+    { "id": "mus_rec_romance_anonimo", "seconds": 166.5 },
+    { "id": "mus_rec_macleod_morning", "seconds": 147.9 },
+    { "id": "mus_rec_macleod_clear_air", "seconds": 183.8 },
+    { "id": "mus_rec_macleod_evening", "seconds": 184.5 },
+    { "id": "mus_rec_macleod_evening_fall_harp", "seconds": 142.5 },
+    { "id": "mus_rec_nocturne_op15_1", "seconds": 294.1 },
+    { "id": "mus_rec_nocturne_op55_2", "seconds": 307.0 },
+    { "id": "mus_rec_nocturne_op72_1", "seconds": 269.3 },
+    { "id": "mus_rec_nocturne_op62_2", "seconds": 334.7 },
+    { "id": "mus_rec_prelude_op28_15", "seconds": 292.0 },
+    { "id": "mus_rec_macleod_lamentation", "seconds": 191.6 },
+    { "id": "mus_rec_macleod_plaint", "seconds": 187.5 },
+    { "id": "mus_rec_prelude_op28_6", "seconds": 105.2 },
+    { "id": "mus_rec_macleod_gymnopedie_3", "seconds": 144.4 },
+    { "id": "mus_rec_macleod_canon_in_d", "seconds": 342.5 },
+    { "id": "mus_rec_cello_sonata_largo", "seconds": 218.1 },
+    { "id": "mus_rec_prelude_op28_13", "seconds": 164.9 }
+  ],
+  "states": {
+    "menu": { "pieces": ["mus_rec_prelude_op28_13"], "gain": 0.8, "fadeIn": 2.0, "fadeOut": 2.0, "rest": [0, 0], "loop": true },
+    "day": {
+      "pieces": ["mus_rec_gymnopedie_1", "mus_rec_macleod_morning", "mus_rec_romance_anonimo", "mus_rec_macleod_clear_air",
+        "mus_rec_prelude_op28_7", "mus_rec_macleod_evening_fall_harp", "mus_rec_macleod_evening"],
+      "gain": 0.5, "fadeIn": 6.0, "fadeOut": 5.0, "rest": [40, 90], "loop": false
+    },
+    "night": {
+      "pieces": ["mus_rec_nocturne_op15_1", "mus_rec_nocturne_op72_1", "mus_rec_nocturne_op55_2", "mus_rec_nocturne_op62_2"],
+      "gain": 0.42, "fadeIn": 8.0, "fadeOut": 6.0, "rest": [45, 100], "loop": false
+    },
+    "cyclone": {
+      "pieces": ["mus_rec_prelude_op28_15", "mus_rec_macleod_lamentation", "mus_rec_prelude_op28_6", "mus_rec_macleod_plaint"],
+      "gain": 0.55, "fadeIn": 4.0, "fadeOut": 6.0, "rest": [8, 20], "loop": false
+    },
+    "eye": { "pieces": ["mus_rec_macleod_gymnopedie_3"], "gain": 0.16, "fadeIn": 8.0, "fadeOut": 4.0, "rest": [0, 0], "loop": false },
+    "finale": { "pieces": ["mus_rec_macleod_canon_in_d"], "gain": 0.9, "fadeIn": 3.0, "fadeOut": 3.0, "rest": [0, 0], "loop": true },
+    "credits": { "pieces": ["mus_rec_cello_sonata_largo"], "gain": 0.9, "fadeIn": 2.0, "fadeOut": 2.0, "rest": [0, 0], "loop": true }
+  }
+}
