@@ -145,12 +145,12 @@ def _ground(pal: Palette) -> meshkit.MeshBuilder:
     return b
 
 
-def _capsule(pal: Palette) -> meshkit.MeshBuilder:
+def _capsule(pal: Palette, color_name: str = 'cielo_noche') -> meshkit.MeshBuilder:
     b = meshkit.MeshBuilder()
     r, h = 0.25, CAPSULE_HEIGHT
     profile = [(r * math.sin(math.radians(a)), r - r * math.cos(math.radians(a))) for a in (30, 60, 90)]
     profile += [(r * math.sin(math.radians(a)), h - r + r * math.cos(math.radians(a))) for a in (90, 60, 30)]
-    color = pal.index_of('cielo_noche')
+    color = pal.index_of(color_name)
     meshkit.lathe(b, profile, 12, [color] * (len(profile) - 1), cap_bottom=color, cap_top=color, tips=(0.0, h))
     return b
 

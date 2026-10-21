@@ -1,0 +1,342 @@
+{
+  "kit": "K2 Estructuras",
+  "generador": "uv run style-kit-k2",
+  "unidades": "metros, Z arriba",
+  "mallas": [
+    {
+      "malla": "SM_FaroTorre_01",
+      "fbx": "SM_FaroTorre_01.fbx",
+      "presupuesto": "faro",
+      "tope_tris": 3000,
+      "tris": 1632,
+      "dimensiones_m": [
+        5.137,
+        5.993,
+        12.02
+      ],
+      "colores": [
+        "cielo_noche",
+        "hierro",
+        "laton",
+        "madera_media",
+        "madera_oscura",
+        "papel",
+        "roca_clara",
+        "roca_media",
+        "rojo_faro"
+      ],
+      "pivote": "base",
+      "nota": "torre de 12 m; la linterna se apoya en z = 11 m",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FaroLinterna_01",
+      "fbx": "SM_FaroLinterna_01.fbx",
+      "presupuesto": "faro",
+      "tope_tris": 3000,
+      "tris": 1434,
+      "dimensiones_m": [
+        2.993,
+        2.993,
+        4.6
+      ],
+      "colores": [
+        "acero",
+        "cristal",
+        "hierro",
+        "laton",
+        "roca_media",
+        "rojo_faro",
+        "tinta"
+      ],
+      "pivote": "base",
+      "nota": "puerta hacia -Y; 3 ranuras en «ranuras_m»",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_FaroCasa_01",
+      "fbx": "SM_FaroCasa_01.fbx",
+      "presupuesto": "faro",
+      "tope_tris": 3000,
+      "tris": 1336,
+      "dimensiones_m": [
+        6.7,
+        5.69,
+        5.7
+      ],
+      "colores": [
+        "agua_media",
+        "agua_profunda",
+        "cielo_noche",
+        "laton",
+        "madera_clara",
+        "madera_oscura",
+        "oxido",
+        "papel",
+        "roca_clara",
+        "roca_media",
+        "rojo_faro",
+        "tinta"
+      ],
+      "pivote": "base",
+      "nota": "puerta hacia -Y",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CajaSuministros_01",
+      "fbx": "SM_CajaSuministros_01.fbx",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 644,
+      "dimensiones_m": [
+        1.094,
+        0.71,
+        0.655
+      ],
+      "colores": [
+        "fibra",
+        "hierro",
+        "laton",
+        "madera_clara",
+        "madera_media",
+        "madera_oscura",
+        "papel",
+        "rojo_faro"
+      ],
+      "pivote": "base",
+      "nota": "caja de mapas = misma malla, otra MI",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CargueroCasco_01",
+      "fbx": "SM_CargueroCasco_01.fbx",
+      "presupuesto": "carguero",
+      "tope_tris": 4000,
+      "tris": 1766,
+      "dimensiones_m": [
+        40.221,
+        8.712,
+        15.923
+      ],
+      "colores": [
+        "hierro",
+        "oxido",
+        "roca_clara",
+        "roca_media",
+        "roca_oscura",
+        "rojo_faro",
+        "tinta"
+      ],
+      "pivote": "base",
+      "nota": "proa hacia +X; escora 8° y proa 2° arriba",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CargueroPuente_01",
+      "fbx": "SM_CargueroPuente_01.fbx",
+      "presupuesto": "carguero",
+      "tope_tris": 4000,
+      "tris": 1692,
+      "dimensiones_m": [
+        9.332,
+        8.4,
+        8.78
+      ],
+      "colores": [
+        "cielo_noche",
+        "cristal",
+        "hierro",
+        "laton",
+        "madera_oscura",
+        "oxido",
+        "roca_clara",
+        "roca_media",
+        "roca_oscura",
+        "rojo_faro",
+        "tinta"
+      ],
+      "pivote": "base",
+      "nota": "recto; colocación en «ensamblaje»",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_RefugioPalma_01",
+      "fbx": "SM_RefugioPalma_01.fbx",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 728,
+      "dimensiones_m": [
+        3.975,
+        3.199,
+        2.536
+      ],
+      "colores": [
+        "arena_oscura",
+        "fibra",
+        "madera_clara",
+        "madera_media",
+        "madera_oscura",
+        "verde_palma"
+      ],
+      "pivote": "base",
+      "nota": "abierto hacia -Y",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_BarrilLluvia_01",
+      "fbx": "SM_BarrilLluvia_01.fbx",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 794,
+      "dimensiones_m": [
+        0.7,
+        0.894,
+        0.98
+      ],
+      "colores": [
+        "agua_media",
+        "hierro",
+        "laton",
+        "madera_clara",
+        "madera_oscura"
+      ],
+      "pivote": "base",
+      "nota": "piloto F2 revisado; grifo hacia -Y",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Hoguera_01",
+      "fbx": "SM_Hoguera_01.fbx",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 720,
+      "dimensiones_m": [
+        1.395,
+        1.678,
+        0.577
+      ],
+      "colores": [
+        "madera_clara",
+        "madera_media",
+        "madera_oscura",
+        "roca_clara",
+        "roca_media",
+        "roca_oscura",
+        "tinta"
+      ],
+      "pivote": "base",
+      "nota": "sin fuego: lo pone el motor",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Balsa_01",
+      "fbx": "SM_Balsa_01.fbx",
+      "presupuesto": "estructura",
+      "tope_tris": 800,
+      "tris": 788,
+      "dimensiones_m": [
+        3.011,
+        1.511,
+        0.402
+      ],
+      "colores": [
+        "fibra",
+        "madera_clara",
+        "madera_media",
+        "madera_oscura"
+      ],
+      "pivote": "base",
+      "nota": "eslora en X",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_ManoIria_01",
+      "fbx": "SM_ManoIria_01.fbx",
+      "presupuesto": "manos",
+      "tope_tris": 3000,
+      "tris": 1384,
+      "dimensiones_m": [
+        0.513,
+        0.532,
+        0.165
+      ],
+      "colores": [
+        "acero",
+        "agua_profunda",
+        "hierro",
+        "papel",
+        "piel",
+        "tinta"
+      ],
+      "pivote": "codo",
+      "nota": "pivote en el punto medio de los codos; +X adelante",
+      "origen": "generado por Tools/Style/explored_style/kits/k2*.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "tris_por_mano": {
+        "derecha": 656,
+        "izquierda": 728,
+        "tope": 1500
+      }
+    }
+  ],
+  "ensamblaje": {
+    "SM_FaroLinterna_01": {
+      "padre": "SM_FaroTorre_01",
+      "ubicacion_m": [
+        0.0,
+        0.0,
+        11.0
+      ],
+      "rotacion_grados": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ranuras_m": {
+        "aro_lente": [
+          0.0,
+          -0.22,
+          1.47
+        ],
+        "tarro_izq": [
+          -0.5,
+          0.08,
+          1.05
+        ],
+        "tarro_der": [
+          0.5,
+          0.08,
+          1.05
+        ],
+        "portamecha": [
+          0.0,
+          0.18,
+          1.44
+        ]
+      }
+    },
+    "SM_CargueroPuente_01": {
+      "padre": "SM_CargueroCasco_01",
+      "ubicacion_m": [
+        -14.788,
+        -0.793,
+        5.804
+      ],
+      "rotacion_grados": [
+        8.0,
+        -2.0,
+        0.0
+      ]
+    }
+  }
+}

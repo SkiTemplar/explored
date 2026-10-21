@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 import bpy
 
 import bmesh
-from mathutils import Matrix, Vector
+from mathutils import Euler, Matrix, Vector
 
 from explored_style.palette import PALETTE_SIZE, cell_uv
 
@@ -80,8 +80,12 @@ class MeshBuilder:
         for co in other.verts:
             v = Vector(co) if transform is None else transform @ Vector(co)
             self.vert(v)
+        # una transformación con espejo invierte el sentido de giro: se
+        # reordenan las caras para que las normales sigan hacia fuera.
+        mirror = transform is not None and transform.to_3x3().determinant() < 0.0
         for f, c in zip(other.faces, other.colors, strict=True):
-            self.face(tuple(i + offset for i in f), c)
+            ids = tuple(i + offset for i in f)
+            self.face(tuple(reversed(ids)) if mirror else ids, c)
 
     @property
     def triangle_count(self) -> int:
@@ -224,12 +228,14 @@ def toon_material() -> bpy.types.Material:
     return mat
 
 
-def build_object(name: str, builder: MeshBuilder) -> bpy.types.Object:
+def build_object(name: str, builder: MeshBuilder, base_pivot: bool = True) -> bpy.types.Object:
     """Crea el objeto en la escena: UV por celda, normales planas, un material
-    y el pivote en el centro de la base (z mínima = 0)."""
+    y el pivote en el centro de la base (z mínima = 0). Con «base_pivot» falso
+    se respeta el origen del constructor (excepción documentada: las manos
+    pivotan en el codo)."""
     if not builder.faces:
         raise ValueError(f'{name}: malla vacía')
-    min_z = min(v[2] for v in builder.verts)
+    min_z = min(v[2] for v in builder.verts) if base_pivot else 0.0
     verts = [(x, y, z - min_z) for x, y, z in builder.verts]
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(verts, [], builder.faces)
@@ -304,3 +310,173 @@ def export_fbx(obj: bpy.types.Object, filepath: str) -> str:
         use_tspace=False, bake_anim=False, path_mode='STRIP', embed_textures=False,
     )
     return filepath
+
+
+# ---------------------------------------------------------------------------
+# Primitivas de los kits (K2 en adelante). Añaden geometría a un MeshBuilder
+# con las caras hacia fuera.
+# ---------------------------------------------------------------------------
+def matrix_at(x: float = 0.0, y: float = 0.0, z: float = 0.0,
+              rx: float = 0.0, ry: float = 0.0, rz: float = 0.0) -> Matrix:
+    """Traslación y rotación en grados (Euler XYZ)."""
+    rot = Euler((math.radians(rx), math.radians(ry), math.radians(rz)), 'XYZ').to_matrix().to_4x4()
+    return Matrix.Translation((x, y, z)) @ rot
+
+
+def _newell(points: Sequence[Vector]) -> Vector:
+    n = Vector((0.0, 0.0, 0.0))
+    for k, p in enumerate(points):
+        q = points[(k + 1) % len(points)]
+        n += Vector(((p.y - q.y) * (p.z + q.z), (p.z - q.z) * (p.x + q.x), (p.x - q.x) * (p.y + q.y)))
+    return n
+
+
+def face_out(builder: MeshBuilder, indices: Sequence[int], color: int, inside: Coord) -> None:
+    """Cara orientada para que su normal se aleje de «inside» (piezas convexas)."""
+    pts = [Vector(builder.verts[i]) for i in indices]
+    centroid = sum(pts, Vector((0.0, 0.0, 0.0))) / len(pts)
+    outward = _newell(pts).dot(centroid - Vector((inside[0], inside[1], inside[2]))) >= 0.0
+    builder.face(tuple(indices) if outward else tuple(reversed(indices)), color)
+
+
+_CYCLE = ((-1, -1), (1, -1), (1, 1), (-1, 1))
+
+
+def _with(axis: int, value: int, p: int, q: int) -> tuple[int, int, int]:
+    """Terna de signos con «value» en «axis» y (p, q) en los otros dos ejes."""
+    out = [0, 0, 0]
+    others = [a for a in range(3) if a != axis]
+    out[axis], out[others[0]], out[others[1]] = value, p, q
+    return out[0], out[1], out[2]
+
+
+def box(builder: MeshBuilder, size: Coord, color: int, transform: Matrix | None = None) -> None:
+    """Caja centrada en el origen local (12 tris)."""
+    m = Matrix.Identity(4) if transform is None else transform
+    half = [float(size[k]) / 2 for k in range(3)]
+    ids = {}
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for sz in (-1, 1):
+                ids[(sx, sy, sz)] = builder.vert(m @ Vector((sx * half[0], sy * half[1], sz * half[2])))
+    center = m @ Vector((0.0, 0.0, 0.0))
+    for axis in range(3):
+        for s in (-1, 1):
+            face_out(builder, [ids[_with(axis, s, p, q)] for p, q in _CYCLE], color, center)
+
+
+def chamfer_box(builder: MeshBuilder, size: Coord, bevel: float, color: int,
+                transform: Matrix | None = None, edge_color: int | None = None) -> None:
+    """Caja con aristas achaflanadas (44 tris): la forma «redondeada» barata
+    del estilo. «edge_color» tiñe chaflanes y esquinas (por defecto, «color»)."""
+    m = Matrix.Identity(4) if transform is None else transform
+    half = [float(size[k]) / 2 for k in range(3)]
+    bv = min(bevel, *(h * 0.49 for h in half))
+    rim = color if edge_color is None else edge_color
+    ids: dict[tuple[int, int, int, int], int] = {}
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for sz in (-1, 1):
+                signs = (sx, sy, sz)
+                for axis in range(3):
+                    co = [signs[k] * (half[k] if k == axis else half[k] - bv) for k in range(3)]
+                    ids[(sx, sy, sz, axis)] = builder.vert(m @ Vector(co))
+    center = m @ Vector((0.0, 0.0, 0.0))
+    for axis in range(3):
+        for s in (-1, 1):
+            face_out(builder, [ids[(*_with(axis, s, p, q), axis)] for p, q in _CYCLE], color, center)
+    for axis in range(3):  # aristas paralelas a «axis»
+        a, c = [k for k in range(3) if k != axis]
+        for sa in (-1, 1):
+            for sc in (-1, 1):
+                lo, hi = _edge_signs(axis, a, sa, c, sc)
+                face_out(builder, [ids[(*lo, a)], ids[(*hi, a)], ids[(*hi, c)], ids[(*lo, c)]], rim, center)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for sz in (-1, 1):
+                face_out(builder, [ids[(sx, sy, sz, k)] for k in range(3)], rim, center)
+
+
+def _edge_signs(axis: int, a: int, sa: int, c: int, sc: int) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+    lo, hi = [0, 0, 0], [0, 0, 0]
+    lo[axis], hi[axis] = -1, 1
+    lo[a] = hi[a] = sa
+    lo[c] = hi[c] = sc
+    return (lo[0], lo[1], lo[2]), (hi[0], hi[1], hi[2])
+
+
+def tube(builder: MeshBuilder, p0: Coord, p1: Coord, r0: float, r1: float, sides: int, color: int,
+         cap0: int | None = None, cap1: int | None = None, phase: float = 0.0) -> list[list[int]]:
+    """Cilindro o cono truncado de «p0» a «p1»; tapas opcionales con su color."""
+    a, z = Vector((p0[0], p0[1], p0[2])), Vector((p1[0], p1[1], p1[2]))
+    axis = (z - a).normalized().to_track_quat('Z', 'Y').to_matrix().to_4x4()
+    return lathe(builder, [(r0, 0.0), (r1, (z - a).length)], sides, [color], origin=a, axis=axis, phase=phase,
+                 cap_bottom=cap0, cap_top=cap1)
+
+
+def sweep(builder: MeshBuilder, path: Sequence[Coord], radius: float | Sequence[float], sides: int,
+          color: int | Sequence[int], closed: bool = False, cap: int | None = None,
+          phase: float = 0.0) -> list[list[int]]:
+    """Tubo a lo largo de una polilínea (cuerdas, barandillas, dedos) con
+    marcos de transporte paralelo. «color» puede ser uno por tramo."""
+    pts = [Vector((p[0], p[1], p[2])) for p in path]
+    n = len(pts)
+    radii = [float(radius)] * n if isinstance(radius, (int, float)) else [float(r) for r in radius]
+    tangents = []
+    for i in range(n):
+        prev = pts[i - 1] if (closed or i > 0) else pts[i]
+        nxt = pts[(i + 1) % n] if (closed or i < n - 1) else pts[i]
+        tangents.append((nxt - prev).normalized())
+    ref = Vector((0.0, 0.0, 1.0)) if abs(tangents[0].z) < 0.9 else Vector((1.0, 0.0, 0.0))
+    u = (ref - tangents[0] * ref.dot(tangents[0])).normalized()
+    rings = []
+    for p, t, r in zip(pts, tangents, radii, strict=True):
+        u = (u - t * u.dot(t)).normalized()
+        rings.append(builder.ring(p, u, cross(t, u), r, sides, phase))
+    spans = n if closed else n - 1
+    for k in range(spans):
+        c = color if isinstance(color, int) else color[k]
+        builder.bridge(rings[k], rings[(k + 1) % n], c)
+    if cap is not None and not closed:
+        builder.cap(rings[0], pts[0] - tangents[0] * radii[0] * 0.5, cap, flip=True)
+        builder.cap(rings[-1], pts[-1] + tangents[-1] * radii[-1] * 0.5, cap)
+    return rings
+
+
+def noise(seed: int, *keys: int) -> float:
+    """Ruido determinista en [-1, 1] (sin estado ni aleatoriedad)."""
+    acc = seed * 12.9898 + sum(k * f for k, f in zip(keys, (78.233, 37.719, 11.135, 93.989), strict=False))
+    value = math.sin(acc) * 43758.5453
+    return (value - math.floor(value)) * 2.0 - 1.0
+
+
+def blob(builder: MeshBuilder, center: Coord, radii: Coord, sides: int, rings: int, color: int,
+         jitter: float = 0.0, seed: int = 0, flat_bottom: float | None = None) -> None:
+    """Elipsoide low poly (piedras, nudillos) con ruido radial determinista.
+    «flat_bottom» aplana por debajo de esa altura relativa (-1..1)."""
+    c = Vector((center[0], center[1], center[2]))
+    rx, ry, rz = float(radii[0]), float(radii[1]), float(radii[2])
+    floor_z = -1.0 if flat_bottom is None else flat_bottom
+
+    def point(sin_t: float, cos_t: float, a: float, h: float) -> Vector:
+        return c + Vector((rx * sin_t * math.cos(a) * h, ry * sin_t * math.sin(a) * h,
+                           rz * max(cos_t * h, floor_z)))
+
+    ring_ids = []
+    for j in range(1, rings + 1):
+        theta = math.pi * j / (rings + 1)
+        ring_ids.append([builder.vert(point(math.sin(theta), math.cos(theta), 2 * math.pi * k / sides,
+                                            1.0 + jitter * noise(seed, j, k))) for k in range(sides)])
+    for upper, lower in zip(ring_ids, ring_ids[1:], strict=False):
+        builder.bridge(lower, upper, color)
+    builder.cap(ring_ids[0], c + Vector((0.0, 0.0, rz * (1.0 + jitter * noise(seed, 0, 99)))), color)
+    builder.cap(ring_ids[-1], c + Vector((0.0, 0.0, rz * floor_z)), color, flip=True)
+
+
+def mirrored(builder: MeshBuilder, axis: int = 1) -> MeshBuilder:
+    """Copia espejada respecto al plano perpendicular a «axis» (normales correctas)."""
+    scale = [1.0, 1.0, 1.0]
+    scale[axis] = -1.0
+    out = MeshBuilder()
+    out.extend(builder, Matrix.Diagonal((*scale, 1.0)))
+    return out
