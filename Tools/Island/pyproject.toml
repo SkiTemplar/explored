@@ -10,6 +10,7 @@ dependencies = ["bpy==5.2.2", "numpy>=2", "explored-style"]
 island-terrain = "explored_island.export:main"
 island-props-check = "explored_island.props:main"
 island-decor = "explored_island.decor:main"
+island-groundfield = "explored_island.groundfield:main"
 island-preview = "explored_island.preview:main"
 
 [tool.uv.sources]

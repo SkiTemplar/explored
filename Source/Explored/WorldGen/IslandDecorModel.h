@@ -18,7 +18,7 @@ struct EXPLORED_API FIslandDecorInstance
  */
 struct EXPLORED_API FIslandDecor
 {
-	static constexpr int32 MaxInstances = 2000;
+	static constexpr int32 MaxInstances = 3000;
 
 	/** Rutas /Game/Art/K1_Naturaleza/SM_*_01 de cada índice de malla. */
 	TArray<FString> Meshes;

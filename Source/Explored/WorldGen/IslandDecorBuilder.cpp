@@ -42,9 +42,17 @@ namespace IslandDecorDetail
 		return true;
 	}
 
+	/** Hierba, arbustos, rocas pequeñas y la vegetación media del kit K6 (helechos, hierba alta, flores). */
 	bool IsSmall(const FString& MeshPath)
 	{
-		return MeshPath.Contains(TEXT("GrassClump")) || MeshPath.Contains(TEXT("Shrub")) || MeshPath.Contains(TEXT("RockSmall"));
+		return MeshPath.Contains(TEXT("GrassClump")) || MeshPath.Contains(TEXT("Shrub")) || MeshPath.Contains(TEXT("RockSmall"))
+			|| MeshPath.Contains(TEXT("/K6_Cesped/"));
+	}
+
+	/** Las matas bajas no proyectan sombra (coste sin lectura a esa escala). */
+	bool CastsShadow(const FString& MeshPath)
+	{
+		return !MeshPath.Contains(TEXT("GrassClump")) && !MeshPath.Contains(TEXT("SM_Flower"));
 	}
 }
 
@@ -118,8 +126,13 @@ int32 ExploredIslandDecor::Build(AActor& Owner)
 	for (int32 M = 0; M < Decor.Meshes.Num(); ++M)
 	{
 		const FString& Path = Decor.Meshes[M];
+		if (PerMesh[M].IsEmpty())
+		{
+			continue;
+		}
+		// Tolerante: una malla aún no importada (p. ej. el kit K6 antes de import_props.py) se omite con aviso.
 		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path);
-		if (!Mesh || PerMesh[M].IsEmpty())
+		if (!Mesh)
 		{
 			UE_LOG(LogExplored, Warning, TEXT("[Decor] falta la malla %s (%d instancias sin dibujar)"), *Path, PerMesh[M].Num());
 			continue;
@@ -128,12 +141,14 @@ int32 ExploredIslandDecor::Build(AActor& Owner)
 		Hism->SetStaticMesh(Mesh);
 		Hism->SetMobility(EComponentMobility::Static);
 		Hism->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Hism->SetCollisionResponseToAllChannels(ECR_Ignore);
+		Hism->SetGenerateOverlapEvents(false);
 		Hism->SetCanEverAffectNavigation(false);
 		Hism->ComponentTags.Add(DecorTag);
 		if (IsSmall(Path))
 		{
 			Hism->SetCullDistances(SmallCullCm * 0.8f, SmallCullCm);
-			Hism->SetCastShadow(!Path.Contains(TEXT("GrassClump")));
+			Hism->SetCastShadow(CastsShadow(Path));
 		}
 		// Sin padre: el populador es móvil y estas instancias son estáticas en el origen del mundo.
 		Hism->SetWorldTransform(FTransform::Identity);

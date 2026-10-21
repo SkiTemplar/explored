@@ -15,6 +15,11 @@ Reglas por lugar:
 - Acantilados: `SM_CliffRock` cada ~8 m en las pendientes de las Rocas del
   Pescador y en la ladera más empinada de la colina, de frente hacia abajo.
 
+Vegetación media del kit K6 (Césped), con su propia tirada para no mover las palmeras (el terreno
+pinta una mancha de tierra bajo cada una): helechos grandes al pie de las palmeras y en el bambú,
+hierba alta en los bordes de los caminos y al pie de las rocas, y corros de flores en los claros
+(ruido de 18 m) y en la colina. Mismas distancias a caminos y objetos que el resto.
+
 Apoyo: la vegetación se apoya en el punto más bajo de su huella sobre la malla del
 terreno (nada flota) y se descarta si la huella tiene más de `BURY_MAX` m de desnivel
 (quedaría enterrada por un lado); los acantilados se entierran `CLIFF_SINK` m. El CLI
@@ -37,9 +42,11 @@ from explored_island.terrain import SAND_TOP, TerrainMesh, build_terrain, surfac
 
 DECOR_JSON = REPO_ROOT / 'Content' / 'Data' / 'island_decor.json'
 KIT = '/Game/Art/K1_Naturaleza/'
+KIT_K6 = '/Game/Art/K6_Cesped/'
 MESHES = ('SM_GrassClump_01', 'SM_Shrub_01', 'SM_RockSmall_01', 'SM_Bamboo_01', 'SM_PalmA_01', 'SM_PalmB_01',
-          'SM_CliffRock_01')
-GRASS, SHRUB, ROCK, BAMBOO, PALM_A, PALM_B, CLIFF = range(len(MESHES))
+          'SM_CliffRock_01', 'SM_Fern_01', 'SM_GrassTall_01', 'SM_FlowerA_01', 'SM_FlowerB_01')
+GRASS, SHRUB, ROCK, BAMBOO, PALM_A, PALM_B, CLIFF, FERN, TALL, FLOWER_A, FLOWER_B = range(len(MESHES))
+K6 = (FERN, TALL, FLOWER_A, FLOWER_B)
 
 GRID = 3.2              # m entre candidatos (rejilla con desplazamiento aleatorio)
 PATH_CLEARANCE = 2.0    # m libres a cada lado del borde del camino
@@ -54,9 +61,19 @@ CLIFF_SINK = 1.6        # m que se entierra el acantilado
 # Fracción de los puntos válidos de cada zona que reciben acantilado (la colina es una loma suave:
 # pocas rocas sueltas en su ladera, no un muro).
 CLIFF_KEEP = {'rocas_pescador': 1.0, 'colina_faro': 0.15}
-MIN_INSTANCES, MAX_INSTANCES = 400, 900
+MIN_INSTANCES, MAX_INSTANCES = 1500, 2500
 # Radio de apoyo (m, a escala 1) de cada malla: la instancia se apoya en el punto más bajo de ese círculo.
-FOOTPRINT = {GRASS: 0.3, SHRUB: 0.5, ROCK: 0.35, BAMBOO: 0.35, PALM_A: 0.25, PALM_B: 0.25}
+FOOTPRINT = {GRASS: 0.3, SHRUB: 0.5, ROCK: 0.35, BAMBOO: 0.35, PALM_A: 0.25, PALM_B: 0.25,
+             FERN: 0.3, TALL: 0.2, FLOWER_A: 0.1, FLOWER_B: 0.1}
+# Vegetación media K6: rejilla, escalas y probabilidad por sitio.
+K6_GRID = 1.6           # m entre candidatos
+K6_SCALE = {FERN: (1.3, 1.9), TALL: (1.2, 1.7), FLOWER_A: (1.0, 1.4), FLOWER_B: (1.0, 1.4)}
+PALM_RING = (1.3, 4.2)  # m: corona de helechos alrededor de cada palmera
+PATH_BAND = 2.2         # m de banda de hierba alta tras PATH_CLEARANCE
+CLEARING_SCALE, CLEARING_MIN = 18.0, 0.6   # ruido de los claros con flores
+K6_SITES = {'palm': 0.42, 'bamboo': 0.12, 'path': 0.22, 'rock': 0.25, 'clearing': 0.14, 'hill': 0.04,
+            'grass': 0.05}
+OCCUPIED = 0.9          # m mínimos a otra instancia ya colocada
 FOOTPRINT_SAMPLES = 6
 SINK = 0.03             # m que se hunde la base bajo el punto más bajo de la huella
 BURY_MAX = 0.45         # m de desnivel máximo dentro de la huella
@@ -171,6 +188,88 @@ def cliffs(layout: Layout, props: dict, rng: np.random.Generator) -> list[list[f
     return out
 
 
+def _palm_xy(base: list[list[float]], props: dict) -> np.ndarray:
+    spots = [(i[1], i[2]) for i in base if i[0] in (PALM_A, PALM_B)]
+    spots += [(float(p['at'][0]), float(p['at'][1])) for p in props['props'] if p['type'] == 'palma']
+    return np.array(spots, dtype=np.float64).reshape(-1, 2)
+
+
+def _near_palm(palms: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    near = np.zeros(x.shape, dtype=bool)
+    for px, py in palms:
+        d = np.hypot(x - px, y - py)
+        near |= (d > PALM_RING[0]) & (d < PALM_RING[1])
+    return near
+
+
+def _free_of(base: list[list[float]], x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Lejos (OCCUPIED m) de las instancias ya colocadas: cubos de 2 m para no compararlas todas."""
+    buckets: dict[tuple[int, int], list[tuple[float, float]]] = {}
+    for inst in base:
+        buckets.setdefault((int(inst[1] // 2.0), int(inst[2] // 2.0)), []).append((inst[1], inst[2]))
+    ok = np.ones(x.shape, dtype=bool)
+    for k in range(x.size):
+        bx, by = int(x[k] // 2.0), int(y[k] // 2.0)
+        near = [p for dx in (-1, 0, 1) for dy in (-1, 0, 1) for p in buckets.get((bx + dx, by + dy), ())]
+        ok[k] = all((x[k] - ox) ** 2 + (y[k] - oy) ** 2 >= OCCUPIED * OCCUPIED for ox, oy in near)
+    return ok
+
+
+def k6_sites(layout: Layout, palms: np.ndarray, x: np.ndarray, y: np.ndarray,
+             z: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """(probabilidad, malla) de cada candidato según su sitio; manda la primera regla que aplica."""
+    grass_land = z > SAND_TOP + 0.4
+    path_d = distance_to_paths(layout, x, y)
+    rock = rock_influence(layout, x, y)
+    clearing = value_noise(x, y, CLEARING_SCALE, layout.seed + 31) > CLEARING_MIN
+    flower = np.where(value_noise(x, y, 7.0, layout.seed + 33) > 0.5, FLOWER_A, FLOWER_B)
+    rules = (
+        (_near_palm(palms, x, y), 'palm', FERN),
+        (_zone_mask(layout, 'bosque_bambu', x, y), 'bamboo', FERN),
+        ((path_d > PATH_CLEARANCE) & (path_d < PATH_CLEARANCE + PATH_BAND), 'path', TALL),
+        ((rock > 0.02) & (rock < 0.15), 'rock', TALL),
+        (clearing & ~_zone_mask(layout, 'palmar', x, y), 'clearing', -1),
+        (_zone_mask(layout, 'colina_faro', x, y), 'hill', -1),
+        (np.ones(x.shape, dtype=bool), 'grass', TALL),
+    )
+    prob = np.zeros(x.shape)
+    mesh = np.full(x.shape, -1)
+    for mask, site, m in rules:
+        take = mask & grass_land & (prob == 0.0)
+        prob = np.where(take, K6_SITES[site], prob)
+        mesh = np.where(take, flower if m < 0 else m, mesh)
+    return prob, mesh
+
+
+def k6_vegetation(layout: Layout, props: dict, base: list[list[float]]) -> list[list[float]]:
+    """Helechos, hierba alta y flores del kit K6 (tirada propia: no cambia lo ya colocado)."""
+    rng = np.random.default_rng(layout.seed + 606)
+    t = layout.terrain
+    gx = np.arange(t.min_xy[0] + K6_GRID, t.max_xy[0] - K6_GRID, K6_GRID)
+    gy = np.arange(t.min_xy[1] + K6_GRID, t.max_xy[1] - K6_GRID, K6_GRID)
+    xx, yy = np.meshgrid(gx, gy, indexing='ij')
+    x = xx.ravel() + rng.uniform(-0.45, 0.45, xx.size) * K6_GRID
+    y = yy.ravel() + rng.uniform(-0.45, 0.45, yy.size) * K6_GRID
+    roll, yaw, size = rng.random(x.size), rng.uniform(0.0, 360.0, x.size), rng.random(x.size)
+    z = height_at(layout, x, y)
+    prob, mesh = k6_sites(layout, _palm_xy(base, props), x, y, z)
+    slope, _ = _slope_deg(layout, x, y)
+    start = layout.points.get('player_start', (1e9, 1e9))
+    ok = (roll < prob) & (slope < MAX_SLOPE) & (rock_influence(layout, x, y) < 0.15)
+    ok &= distance_to_paths(layout, x, y) > PATH_CLEARANCE
+    ok &= _clear_of_props(props, x, y)
+    ok &= np.hypot(x - start[0], y - start[1]) > START_CLEARANCE
+    ok &= ~_zone_mask(layout, 'rocas_pescador', x, y, 0.8)
+    pick = np.flatnonzero(ok)
+    pick = pick[_free_of(base, x[pick], y[pick])]
+    out = []
+    for i in pick:
+        m = int(mesh[i])
+        lo, hi = K6_SCALE[m]
+        out.append([m, float(x[i]), float(y[i]), float(z[i]), float(yaw[i]), lo + (hi - lo) * float(size[i])])
+    return out
+
+
 def footprint_heights(mesh: TerrainMesh, layout: Layout, x: float, y: float, radius: float) -> np.ndarray:
     """Altura de la malla en el centro y en FOOTPRINT_SAMPLES puntos del círculo de apoyo."""
     angles = np.linspace(0.0, 2.0 * np.pi, FOOTPRINT_SAMPLES, endpoint=False)
@@ -215,14 +314,16 @@ def grounding_errors(mesh: TerrainMesh, layout: Layout, decor: dict) -> list[str
 def build_decor(layout: Layout, props: dict, mesh: TerrainMesh | None = None) -> dict:
     rng = np.random.default_rng(layout.seed + 404)
     instances = vegetation(layout, props, rng) + cliffs(layout, props, rng)
+    instances += k6_vegetation(layout, props, instances)
     # La malla añade el relieve de detalle al analítico: se apoya cada instancia en ella.
     grounded = ground(mesh if mesh is not None else build_terrain(layout, props), layout, instances)
     return {
         'version': 1,
         '_comment': 'Vegetación y rocas decorativas (pasada visual de F4). Lo genera Tools/Island (uv run '
                     'island-decor); no se edita a mano. Metros; +X norte, +Y este. «instances»: [malla, x, y, z, '
-                    'yaw en grados, escala]; malla = índice de «meshes». Sin colisión: solo decoración.',
-        'meshes': [KIT + name for name in MESHES],
+                    'yaw en grados, escala]; malla = índice de «meshes». Sin colisión: solo decoración. Si una '
+                    'malla no está importada, el juego omite sus instancias con un aviso.',
+        'meshes': [(KIT_K6 if i in K6 else KIT) + name for i, name in enumerate(MESHES)],
         'instances': grounded,
     }
 

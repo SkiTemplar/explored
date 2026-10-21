@@ -10,7 +10,7 @@ from explored_island.terrain import build_terrain
 
 def test_main_exporta_fbx_y_cifras(tmp_path):
     out = tmp_path / 'SM_IslaSal_Terrain.fbx'
-    assert export.main(['--out', str(out), '--cell', '12']) == 0
+    assert export.main(['--out', str(out), '--cell', '12', '--field', str(out.with_suffix('.bin'))]) == 0
     assert out.stat().st_size > 10_000
     info = json.loads(out.with_suffix('.json').read_text(encoding='utf-8'))
     assert info['mesh'] == 'SM_IslaSal_Terrain'

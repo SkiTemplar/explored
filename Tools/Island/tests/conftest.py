@@ -11,7 +11,7 @@ from explored_island.props import load_props
 from explored_island.terrain import TerrainMesh, build_terrain
 
 VIGILADAS = (REPO_ROOT / 'Art' / 'Island', REPO_ROOT / 'Content' / 'Data' / 'island.json',
-             REPO_ROOT / 'Content' / 'Data' / 'island_props.json')
+             REPO_ROOT / 'Content' / 'Data' / 'island_props.json', REPO_ROOT / 'Content' / 'Data' / 'ground_field.bin')
 
 
 def _foto(ruta: Path) -> dict[str, int]:

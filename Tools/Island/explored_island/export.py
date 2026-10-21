@@ -28,6 +28,7 @@ from explored_style.palette import load_palette
 from mathutils import Matrix
 
 from explored_island.decor import build_decor, palm_spots
+from explored_island.groundfield import FIELD_BIN, write_field
 from explored_island.layout import ISLAND_JSON, REPO_ROOT, Layout, distance_to_paths, load_layout
 from explored_island.props import load_props
 from explored_island.terrain import FACET_MIX, TerrainMesh, build_terrain
@@ -110,12 +111,15 @@ def stats(mesh: TerrainMesh, layout: Layout) -> dict:
     }
 
 
-def generate(layout: Layout, out: Path, props: dict | None = None) -> dict:
+def generate(layout: Layout, out: Path, props: dict | None = None, field_out: Path | None = None) -> dict:
     """Construye la malla, la exporta a «out» y escribe sus cifras en «out».json. Las palmeras con
-    mancha de tierra son las de island_decor (generado aquí mismo, determinista) y las de juego."""
+    mancha de tierra son las de island_decor (generado aquí mismo, determinista) y las de juego.
+    Con «field_out», escribe también el campo de suelo de esa misma malla (groundfield.py)."""
     props = props if props is not None else load_props()
     palms = palm_spots(build_decor(layout, props), props)
     mesh = build_terrain(layout, props, linear_palette(), palms)
+    if field_out is not None:
+        write_field(layout, mesh, field_out)
     meshkit.reset_scene()
     obj = build_blender_object(mesh)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -129,12 +133,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description='Exporta el terreno de la Isla de Sal a FBX.')
     parser.add_argument('--json', type=Path, default=ISLAND_JSON)
     parser.add_argument('--out', type=Path, default=DEFAULT_OUT)
+    parser.add_argument('--field', type=Path, default=FIELD_BIN, help='campo de suelo (ground_field.bin)')
     parser.add_argument('--cell', type=float, default=None, help='tamaño de celda (m); por defecto el del JSON')
     args = parser.parse_args(argv)
     layout = load_layout(args.json)
     if args.cell is not None:
         layout = replace(layout, terrain=replace(layout.terrain, cell=args.cell))
-    info = generate(layout, args.out)
+    info = generate(layout, args.out, field_out=args.field)
     print(f"{args.out}: {info['triangles']} triángulos, pendiente máx. en caminos {info['path_max_slope_deg']}°")
     return 0
 

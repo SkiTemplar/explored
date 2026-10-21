@@ -8,9 +8,10 @@ modificarlo.
 
 ```bash
 uv sync
-uv run island-terrain          # Art/Island/SM_IslaSal_Terrain.fbx + .json (cifras)
+uv run island-terrain          # Art/Island/SM_IslaSal_Terrain.fbx + .json (cifras) + Content/Data/ground_field.bin
 uv run island-props-check      # island_props.json frente al GDD (§5.3, §6, §11.1)
-uv run island-decor            # Content/Data/island_decor.json: 400-900 instancias decorativas (HISM, sin colisión)
+uv run island-decor            # Content/Data/island_decor.json: 1500-2500 instancias decorativas K1 + K6 (HISM, sin colisión)
+uv run island-groundfield      # Content/Data/ground_field.bin: la malla exacta y el tipo de suelo (césped del juego)
 uv run island-preview          # docs/v3/laminas/relieve-antes-despues.png (Blender, sin Unreal)
 uv run ruff check . && uv run basedpyright && uv run pytest -q --cov
 ```

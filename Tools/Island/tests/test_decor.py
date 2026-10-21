@@ -25,7 +25,9 @@ def test_cantidad_y_mallas(generado):
     cuenta = decor.counts(generado)
     assert all(n > 0 for n in cuenta.values()), cuenta
     assert cuenta['SM_GrassClump_01'] > cuenta['SM_Shrub_01'] > cuenta['SM_PalmA_01']
-    assert all(m.startswith('/Game/Art/K1_Naturaleza/SM_') for m in generado['meshes'])
+    assert all(m.startswith(('/Game/Art/K1_Naturaleza/SM_', '/Game/Art/K6_Cesped/SM_')) for m in generado['meshes'])
+    k6 = [m for m in generado['meshes'] if '/K6_Cesped/' in m]
+    assert len(k6) == len(decor.K6) and all(cuenta[m.rsplit('/', 1)[-1]] >= 100 for m in k6), cuenta
 
 
 def test_no_tapa_caminos_ni_objetos(layout, props, generado):
@@ -101,3 +103,32 @@ def test_main_falla_si_algo_flota(tmp_path, monkeypatch, capsys):
 def test_json_versionado_al_dia(generado):
     versionado = json.loads(decor.DECOR_JSON.read_text(encoding='utf-8'))
     assert versionado['instances'] == generado['instances']
+
+
+def test_k6_no_mueve_las_palmeras(layout, props, terreno, generado):
+    """La capa K6 tiene su propia tirada: las palmeras (y la tierra que el terreno pinta debajo) siguen igual."""
+    rng = np.random.default_rng(layout.seed + 404)
+    sin_k6 = decor.ground(terreno, layout, decor.vegetation(layout, props, rng) + decor.cliffs(layout, props, rng))
+    assert np.array_equal(decor.palm_spots({'instances': sin_k6}, props), decor.palm_spots(generado, props))
+    assert generado['instances'][:len(sin_k6)] == sin_k6
+
+
+def test_k6_por_sitio(layout, props, generado):
+    helechos = _xy(generado, [decor.FERN])
+    palmas = decor._palm_xy(generado['instances'], props)
+    bambu = layout.zone('bosque_bambu')
+    cerca = np.zeros(len(helechos), dtype=bool)
+    for px, py in palmas:
+        cerca |= np.hypot(helechos[:, 1] - px, helechos[:, 2] - py) < decor.PALM_RING[1]
+    cerca |= np.hypot(helechos[:, 1] - bambu.center[0], helechos[:, 2] - bambu.center[1]) <= bambu.radius
+    assert cerca.all()
+    k6 = _xy(generado, list(decor.K6))
+    assert ((k6[:, 5] >= 1.0) & (k6[:, 5] <= 1.9)).all()
+
+
+def test_k6_no_se_amontona(generado):
+    inst = _xy(generado)
+    k6 = inst[np.isin(inst[:, 0], decor.K6)]
+    otras = inst[~np.isin(inst[:, 0], decor.K6)]
+    for fila in k6[::7]:
+        assert (np.hypot(otras[:, 1] - fila[1], otras[:, 2] - fila[2]) >= decor.OCCUPIED - 0.02).all()

@@ -46,6 +46,7 @@ class TerrainMesh:
     vertex_colors: np.ndarray  # (N, 3) color lineal fundido de cada vértice (de la paleta)
     corner_normals: np.ndarray  # (M, 3, 3) normal de cada esquina: mezcla de suave y de cara
     base: np.ndarray       # (N,) altura base (sin detalle) de cada vértice
+    vertex_palette: np.ndarray  # (N,) índice de paleta de cada vértice (antes de fundir el color)
 
     @property
     def triangle_count(self) -> int:
@@ -179,7 +180,7 @@ def build_terrain(layout: Layout, props: dict | None, linear_palette: np.ndarray
     lin = linear_palette if linear_palette is not None else np.full((64, 3), 0.5)
     vcolors = blend_grid(lin[index].reshape(nx, ny, 3)).reshape(-1, 3)
     return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors,
-                       corner_normals(smooth, faces, tris, facet_mix), base)
+                       corner_normals(smooth, faces, tris, facet_mix), base, index)
 
 
 def surface_height(mesh: TerrainMesh, layout: Layout, x: float, y: float) -> float:

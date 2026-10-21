@@ -14,7 +14,7 @@ from explored_island import export, preview
 def ficheros(tmp_path_factory):
     folder = tmp_path_factory.mktemp('preview')
     terreno = folder / 'terreno.fbx'
-    assert export.main(['--out', str(terreno), '--cell', '12']) == 0
+    assert export.main(['--out', str(terreno), '--cell', '12', '--field', str(terreno.with_suffix('.bin'))]) == 0
     builder = meshkit.MeshBuilder()
     for x, y, z in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1)):
         builder.vert((x - 0.5, y - 0.5, z))
