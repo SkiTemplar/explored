@@ -115,6 +115,7 @@ class EXPLORED_API AExploredRaft : public AActor, public IExploredInteractable
 public:
 	AExploredRaft();
 
+	virtual void PostInitializeComponents() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void GetContextVerbs_Implementation(TArray<FText>& OutVerbs) const override;

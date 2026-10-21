@@ -77,6 +77,7 @@ namespace IslandPropsLoaderDetail
 		Out.Location = FVector2D(At[0], At[1]);
 		Out.Yaw = OptionalFloat(Obj, TEXT("yaw"));
 		Out.Pitch = OptionalFloat(Obj, TEXT("pitch"));
+		Out.Roll = OptionalFloat(Obj, TEXT("roll"));
 		Out.Elevation = OptionalFloat(Obj, TEXT("elevation"));
 		FString Anchor;
 		if (Obj.TryGetStringField(TEXT("anchor"), Anchor) && !Anchor.IsEmpty())

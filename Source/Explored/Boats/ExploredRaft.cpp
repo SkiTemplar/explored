@@ -487,7 +487,14 @@ AExploredRaft::AExploredRaft()
 	Seat = CreateDefaultSubobject<USceneComponent>(TEXT("Seat"));
 	Seat->SetupAttachment(Root);
 	Seat->SetRelativeLocation(FVector(-40.0, 0.0, ExploredRaftDetail::SeatHeightCm));
+}
 
+void AExploredRaft::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	// La malla se carga aquí y no en el constructor: lo que carga un constructor (CDO) al arrancar
+	// el motor queda fuera del recolector, y entonces M_Toon ya no se puede rehacer en el editor
+	// (build_materials.py: «Assertion failed: !IsRooted()»).
 	bool bFinal = false;
 	UStaticMesh* Mesh = ExploredRaftDetail::LoadMesh(ExploredRaftDetail::RaftMeshPath, ExploredAssets::FallbackCubePath, bFinal);
 	Hull->SetStaticMesh(Mesh);

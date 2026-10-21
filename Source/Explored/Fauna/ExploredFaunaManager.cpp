@@ -41,11 +41,6 @@ namespace FaunaManagerDetail
 	constexpr float BloodLifetimeSeconds = 600.0f;
 	constexpr float NoiseBurstDecayPerSecond = 0.8f;
 
-	/** Variantes de peces de arrecife de Tools/Blender/animals/fish.py. */
-	const TCHAR* ReefFishMeshes[] = {
-		TEXT("ClownFish"), TEXT("ButterflyFish"), TEXT("ParrotFish"), TEXT("SurgeonFish"), TEXT("Wrasse"), TEXT("Grouper"),
-	};
-
 	/** Rumbo en radianes a partir de una semilla (migración, viaje de la ballena). */
 	float SeedAngle(uint32 Seed)
 	{
@@ -392,12 +387,10 @@ void AExploredFaunaManager::SpawnGroup(const FFaunaSpawn& Spawn, const FIntPoint
 		Entry.Species = Spawn.Species;
 		Entry.Cell = Cell;
 		Entry.LodId = NextLodId++;
-		const FName MeshName = Spawn.Species == EFaunaSpecies::ReefFish
-			? FName(ReefFishMeshes[Spawn.Seed % UE_ARRAY_COUNT(ReefFishMeshes)]) : FName(Info.Mesh);
 		Entry.ComponentIndex = AcquireInstancedComponent(Spawn.Species, Config.Count);
 		if (UInstancedStaticMeshComponent* Component = GroupComponents.IsValidIndex(Entry.ComponentIndex) ? GroupComponents[Entry.ComponentIndex].Get() : nullptr)
 		{
-			Component->SetStaticMesh(LoadMesh(MeshName));
+			Component->SetStaticMesh(LoadMesh(Spawn.Species));
 		}
 		for (int32 I = 0; I < Config.Count; ++I)
 		{
@@ -425,7 +418,7 @@ void AExploredFaunaManager::SpawnGroup(const FFaunaSpawn& Spawn, const FIntPoint
 		Entry.ComponentIndex = AcquireInstancedComponent(Spawn.Species, Config.Count);
 		if (UInstancedStaticMeshComponent* Component = GroupComponents.IsValidIndex(Entry.ComponentIndex) ? GroupComponents[Entry.ComponentIndex].Get() : nullptr)
 		{
-			Component->SetStaticMesh(LoadMesh(FName(Info.Mesh)));
+			Component->SetStaticMesh(LoadMesh(Spawn.Species));
 		}
 		for (int32 I = 0; I < Config.Count; ++I)
 		{
@@ -443,7 +436,7 @@ void AExploredFaunaManager::SpawnGroup(const FFaunaSpawn& Spawn, const FIntPoint
 	{
 		return;
 	}
-	UStaticMesh* Mesh = LoadMesh(FName(Info.Mesh));
+	UStaticMesh* Mesh = LoadMesh(Spawn.Species);
 	for (int32 I = 0; I < Spawn.GroupSize; ++I)
 	{
 		FMarineBrainConfig Config;
@@ -552,17 +545,19 @@ void AExploredFaunaManager::ReleaseInstancedComponent(int32 Index)
 	FreeComponents.Add(Index);
 }
 
-UStaticMesh* AExploredFaunaManager::LoadMesh(FName MeshName)
+UStaticMesh* AExploredFaunaManager::LoadMesh(EFaunaSpecies Species)
 {
-	if (const TObjectPtr<UStaticMesh>* Cached = MeshCache.Find(MeshName))
+	const FName Key(LexToString(Species));
+	if (const TObjectPtr<UStaticMesh>* Cached = MeshCache.Find(Key))
 	{
 		return Cached->Get();
 	}
-	// Ruta del kit de fauna (/Game/Generated/Meshes/Fauna/<Especie>/SM_<Especie>_Body); si falta, esfera del motor.
-	const FString Name = MeshName.ToString();
-	const FString Path = FString::Printf(TEXT("/Game/Generated/Meshes/Fauna/%s/SM_%s_Body.SM_%s_Body"), *Name, *Name, *Name);
-	UStaticMesh* Mesh = ExploredAssets::LoadMeshOrFallback(FSoftObjectPath(Path), ExploredAssets::FallbackSpherePath);
-	MeshCache.Add(MeshName, Mesh);
+	// Kit K3 (SM_FaunaPez_01, SM_FaunaGaviota_01); las especies sin malla propia, esfera del motor.
+	const FString Path = FFaunaSpeciesInfo::ArtMeshPath(Species);
+	UStaticMesh* Mesh = Path.IsEmpty()
+		? Cast<UStaticMesh>(FSoftObjectPath(ExploredAssets::FallbackSpherePath).TryLoad())
+		: ExploredAssets::LoadMeshOrFallback(FSoftObjectPath(Path), ExploredAssets::FallbackSpherePath);
+	MeshCache.Add(Key, Mesh);
 	return Mesh;
 }
 

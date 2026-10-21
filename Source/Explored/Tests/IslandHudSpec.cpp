@@ -61,6 +61,25 @@ void FIslandHudSpec::Define()
 			TestFalse(TEXT("Fuera de rango, ninguna"), None[0].bSelected || None[1].bSelected || None[2].bSelected);
 		});
 
+		It(TEXT("en la mano va la carga pesada o la ranura elegida"), [this]()
+		{
+			FBackpackState Pack;
+			Pack.Stacks.Add({ FName(TEXT("cuchillo")), 1 });
+			Pack.Stacks.Add({ FName(TEXT("coco")), 3 });
+			TestEqual(TEXT("Ranura 2"), FIslandHudModel::HeldItem(Pack, 1), FName(TEXT("coco")));
+			TestTrue(TEXT("Ranura vacía, nada"), FIslandHudModel::HeldItem(Pack, 2).IsNone());
+			TestTrue(TEXT("Fuera de rango, nada"), FIslandHudModel::HeldItem(Pack, 9).IsNone());
+			Pack.HeldHeavy = FName(TEXT("lente"));
+			TestEqual(TEXT("La lente manda"), FIslandHudModel::HeldItem(Pack, 0), FName(TEXT("lente")));
+		});
+
+		It(TEXT("encoge lo que no cabe en la mano y no agranda lo pequeño"), [this]()
+		{
+			TestEqual(TEXT("Tronco de 250 cm a 50"), FIslandHudModel::HeldItemScale(250.0f, 50.0f), 0.2f);
+			TestEqual(TEXT("Cuchillo intacto"), FIslandHudModel::HeldItemScale(28.0f, 50.0f), 1.0f);
+			TestEqual(TEXT("Sin tamaño, 1"), FIslandHudModel::HeldItemScale(0.0f, 50.0f), 1.0f);
+		});
+
 		It(TEXT("progreso de 0 a 1 y 0 si el total no vale"), [this]()
 		{
 			TestEqual(TEXT("Mitad"), FIslandHudModel::Progress01(10.0f, 20.0f), 0.5f);

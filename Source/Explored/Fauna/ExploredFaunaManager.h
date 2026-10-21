@@ -121,7 +121,7 @@ private:
 	void ReleaseInstancedComponent(int32 Index);
 	void WriteInstances(UInstancedStaticMeshComponent* Component, const FBoidsModel& Boids, EFaunaSpecies Species,
 		TArray<FFaunaAnimState>& Anim, float DeltaSeconds);
-	UStaticMesh* LoadMesh(FName MeshName);
+	UStaticMesh* LoadMesh(EFaunaSpecies Species);
 
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UInstancedStaticMeshComponent>> GroupComponents;

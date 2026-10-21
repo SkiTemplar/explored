@@ -386,5 +386,12 @@ float UExploredSurvivorComponent::GetActionProgress01() const
 
 void UExploredSurvivorComponent::SelectQuickSlot(int32 Index)
 {
-	SelectedQuickSlot = FMath::Clamp(Index, 0, 2);
+	const int32 Clamped = FMath::Clamp(Index, 0, 2);
+	if (Clamped == SelectedQuickSlot)
+	{
+		return;
+	}
+	SelectedQuickSlot = Clamped;
+	// Cambia lo que se lleva en la mano (primera persona y HUD).
+	OnBackpackChanged.Broadcast();
 }

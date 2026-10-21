@@ -125,6 +125,19 @@ void FMarineFaunaSpec::Define()
 {
 	using namespace MarineFaunaSpecDetail;
 
+	Describe("Mallas del kit K3", [this]()
+	{
+		It("peces y aves usan las mallas de fauna; el resto no tiene malla propia", [this]()
+		{
+			const FString Fish = FFaunaSpeciesInfo::ArtMeshPath(EFaunaSpecies::ReefFish);
+			TestEqual(TEXT("pez de arrecife"), Fish, FString(TEXT("/Game/Art/K3_Objetos/SM_FaunaPez_01.SM_FaunaPez_01")));
+			TestEqual(TEXT("pez de mar abierto"), FString(FFaunaSpeciesInfo::ArtMeshPath(EFaunaSpecies::OpenSeaFish)), Fish);
+			TestEqual(TEXT("gaviota"), FString(FFaunaSpeciesInfo::ArtMeshPath(EFaunaSpecies::Gull)),
+				FString(TEXT("/Game/Art/K3_Objetos/SM_FaunaGaviota_01.SM_FaunaGaviota_01")));
+			TestTrue(TEXT("tiburón sin malla"), FString(FFaunaSpeciesInfo::ArtMeshPath(EFaunaSpecies::TigerShark)).IsEmpty());
+		});
+	});
+
 	Describe("Bancos de peces", [this]()
 	{
 		It("nunca rompen la superficie con olas ni atraviesan el fondo ni entran en tierra", [this]()

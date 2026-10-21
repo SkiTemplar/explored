@@ -30,6 +30,7 @@
 #include "Player/SwimComponent.h"
 #include "UI/ExploredGameUserSettings.h"
 #include "UI/ExploredInputSettingsSubsystem.h"
+#include "UI/IslandHudModel.h"
 #include "UI/SettingsLogic.h"
 #include "Survival/BodySignalsComponent.h"
 
@@ -68,6 +69,16 @@ namespace ExploredCharacterInput
 	}
 
 	constexpr float TickIntervalIdle = 1.0f / 30.0f;
+
+	/** Antebrazos (pivote en los codos, +X adelante) bajo la cámara, algo levantados hacia el centro. */
+	const TCHAR* const ArmsMeshPath = TEXT("/Game/Art/K2_Estructuras/SM_ManoIria_01.SM_ManoIria_01");
+	const FVector ArmsRestLocation(30.0f, 0.0f, -33.0f);
+	const FRotator ArmsRestRotation(12.0f, 0.0f, 0.0f);
+	/** Objeto en mano: sobre la palma derecha; la carga pesada (tronco, lente), entre las dos. */
+	const FVector RightHoldLocation(60.0f, 19.0f, -16.0f);
+	const FVector HeavyHoldLocation(62.0f, 0.0f, -14.0f);
+	constexpr float HandFitCm = 30.0f;
+	constexpr float HeavyFitCm = 45.0f;
 }
 
 using namespace ExploredCharacterInput;
@@ -94,7 +105,15 @@ AExploredCharacter::AExploredCharacter()
 	Camera->SetFieldOfView(ExploredSettingsLogic::FieldOfViewRange.Default);
 
 	HandRestLocationLeft = FVector(30.0f, -12.0f, -10.0f);
-	HandRestLocationRight = FVector(30.0f, 12.0f, -10.0f);
+	HandRestLocationRight = RightHoldLocation;
+
+	ArmsMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmsMesh"));
+	ArmsMesh->SetupAttachment(Camera);
+	ArmsMesh->SetRelativeLocation(ArmsRestLocation);
+	ArmsMesh->SetRelativeRotation(ArmsRestRotation);
+	ArmsMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ArmsMesh->SetCastShadow(false);
+	ArmsMesh->SetVisibility(false);
 
 	HandMeshLeft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HandMeshLeft"));
 	HandMeshLeft->SetupAttachment(Camera);
@@ -142,6 +161,16 @@ void AExploredCharacter::BeginPlay()
 	{
 		Carry->OnCarryChanged.AddDynamic(this, &AExploredCharacter::RefreshHandMeshes);
 	}
+	if (Survivor)
+	{
+		Survivor->OnBackpackChanged.AddDynamic(this, &AExploredCharacter::RefreshHandMeshes);
+	}
+	if (UStaticMesh* Arms = ExploredAssets::LoadMeshIfPresent(FSoftObjectPath(ArmsMeshPath)))
+	{
+		ArmsMesh->SetStaticMesh(Arms);
+		ArmsMesh->SetVisibility(true);
+	}
+	RefreshHandMeshes();
 
 	BindToPlayerSettings();
 	ApplyPlayerSettings();
@@ -360,33 +389,26 @@ void AExploredCharacter::RefreshHandMeshes()
 	// Cualquier cambio de carga puede cambiar el peso y, con él, la velocidad.
 	ApplyWalkSpeed();
 
+	// Lo que se lleva en la mano sale de la mochila (GDD v3 §9.1): la carga pesada o la ranura
+	// rápida elegida. La mano izquierda queda libre.
+	HandMeshLeft->SetVisibility(false);
+	const FName Held = Survivor ? FIslandHudModel::HeldItem(Survivor->GetBackpack(), Survivor->GetSelectedQuickSlot()) : NAME_None;
 	const UItemRegistrySubsystem* Registry = UItemRegistrySubsystem::Resolve(this);
-	if (!Registry || !Carry)
+	FItemDefinition Definition;
+	UStaticMesh* HeldMesh = !Held.IsNone() && Registry && Registry->FindDefinition(Held, Definition)
+		? ExploredAssets::LoadMeshIfPresent(Definition.MeshPath) : nullptr;
+	// Sin esto, un objeto sin malla seguía mostrando la del anterior.
+	HandMeshRight->SetStaticMesh(HeldMesh);
+	HandMeshRight->SetVisibility(HeldMesh != nullptr);
+	if (!HeldMesh)
 	{
 		return;
 	}
-
-	auto UpdateOne = [Registry](UStaticMeshComponent* MeshComp, UCarryComponent* CarryComp, EHand Hand)
-	{
-		const FItemInstance* Item = CarryComp->GetHandItemPtr(Hand);
-		if (!Item)
-		{
-			MeshComp->SetVisibility(false);
-			return;
-		}
-		// L6: sin esto, un objeto sin malla (o cuya malla no carga) seguía
-		// mostrando la del objeto anterior.
-		MeshComp->SetStaticMesh(nullptr);
-		FItemDefinition Definition;
-		if (Registry->FindDefinition(Item->DefinitionId, Definition))
-		{
-			MeshComp->SetStaticMesh(ExploredAssets::LoadMeshOrFallback(Definition.MeshPath, ExploredAssets::FallbackSpherePath));
-		}
-		MeshComp->SetVisibility(true);
-	};
-
-	UpdateOne(HandMeshLeft, Carry, EHand::Left);
-	UpdateOne(HandMeshRight, Carry, EHand::Right);
+	const bool bHeavy = Survivor->GetBackpack().HeldHeavy == Held;
+	const float FitCm = bHeavy ? HeavyFitCm : HandFitCm;
+	HandMeshRight->SetRelativeScale3D(FVector(FIslandHudModel::HeldItemScale(static_cast<float>(HeldMesh->GetBoundingBox().GetSize().GetMax()), FitCm)));
+	HandRestLocationRight = bHeavy ? HeavyHoldLocation : RightHoldLocation;
+	HandMeshRight->SetRelativeLocation(HandRestLocationRight);
 }
 
 void AExploredCharacter::BuildInputAssets()

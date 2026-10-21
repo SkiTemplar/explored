@@ -146,6 +146,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Manos")
 	TObjectPtr<UStaticMeshComponent> HandMeshRight;
 
+	/** Antebrazos de Iria en primera persona (SM_ManoIria_01, kit K2; GDD v3 §11.1). */
+	UPROPERTY(VisibleAnywhere, Category = "Explored|Manos")
+	TObjectPtr<UStaticMeshComponent> ArmsMesh;
+
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Carga")
 	TObjectPtr<UCarryComponent> Carry;
 

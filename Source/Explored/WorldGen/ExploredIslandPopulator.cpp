@@ -144,7 +144,7 @@ AActor* AExploredIslandPopulator::SpawnProp(const FIslandProps& Props, const FIs
 	{
 		return nullptr;
 	}
-	const FTransform Transform(FRotator(Prop.Pitch, Prop.Yaw, 0.0f), IslandPropsPlacement::WorldLocation(Prop, GroundMeters));
+	const FTransform Transform(FRotator(Prop.Pitch, Prop.Yaw, Prop.Roll), IslandPropsPlacement::WorldLocation(Prop, GroundMeters));
 	FActorSpawnParameters Params;
 	Params.Owner = this;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

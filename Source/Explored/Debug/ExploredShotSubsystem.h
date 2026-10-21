@@ -55,6 +55,7 @@ public:
 	void PlacePawnFacing(const FVector& Target);
 	/** Interactúa con lo que enfoque el personaje y lo deja en el log. */
 	void InteractWithFocus(const FString& ShotName);
+	void ShowFirstPerson(const FExploredShot& Shot);
 	/** El final del juego pausa el mundo; las capturas tienen que seguir. */
 	virtual bool IsTickableWhenPaused() const override { return true; }
 	virtual TStatId GetStatId() const override;

@@ -63,6 +63,25 @@ TArray<FHudQuickSlot> FIslandHudModel::QuickSlots(const FBackpackState& Pack, in
 	return Slots;
 }
 
+FName FIslandHudModel::HeldItem(const FBackpackState& Pack, int32 Selected)
+{
+	if (!Pack.HeldHeavy.IsNone())
+	{
+		return Pack.HeldHeavy;
+	}
+	const TArray<FHudQuickSlot> Slots = QuickSlots(Pack, Selected);
+	return Slots.IsValidIndex(Selected) ? Slots[Selected].ItemId : NAME_None;
+}
+
+float FIslandHudModel::HeldItemScale(float MaxDimensionCm, float FitCm)
+{
+	if (!FMath::IsFinite(MaxDimensionCm) || !FMath::IsFinite(FitCm) || MaxDimensionCm <= 0.0f || FitCm <= 0.0f)
+	{
+		return 1.0f;
+	}
+	return FMath::Min(1.0f, FitCm / MaxDimensionCm);
+}
+
 float FIslandHudModel::Progress01(float ElapsedSeconds, float TotalSeconds)
 {
 	if (!FMath::IsFinite(ElapsedSeconds) || !FMath::IsFinite(TotalSeconds) || TotalSeconds <= 0.0f)

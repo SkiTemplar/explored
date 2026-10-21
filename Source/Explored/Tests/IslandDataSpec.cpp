@@ -57,7 +57,15 @@ void FIslandDataSpec::Define()
 		if (TestNotNull(TEXT("linterna"), Lantern))
 		{
 			TestEqual(TEXT("anclada a la torre"), Lantern->Anchor, FName(TEXT("faro_torre")));
-			TestEqual(TEXT("a 12 m"), Lantern->Elevation, 12.0f);
+			// SM_FaroLinterna_01 se apoya en la galería de SM_FaroTorre_01, a 11 m (manifest de K2).
+			TestEqual(TEXT("a 11 m"), Lantern->Elevation, 11.0f);
+		}
+		const FIslandProp* Bridge = Props.FindProp(TEXT("carguero_puente"));
+		if (TestNotNull(TEXT("puente"), Bridge))
+		{
+			// El casco se exporta escorado 8° a estribor (+Y en Unreal) y con la proa 2° arriba.
+			TestEqual(TEXT("escora del casco"), Bridge->Roll, 8.0f);
+			TestEqual(TEXT("proa arriba"), Bridge->Pitch, 2.0f);
 		}
 	});
 

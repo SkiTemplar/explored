@@ -46,6 +46,12 @@ struct EXPLORED_API FIslandHudModel
 	 */
 	static TArray<FHudQuickSlot> QuickSlots(const FBackpackState& Pack, int32 Selected);
 
+	/** Lo que Iria lleva en la mano en primera persona: la carga pesada o la ranura rápida elegida. */
+	static FName HeldItem(const FBackpackState& Pack, int32 Selected);
+
+	/** Escala de un objeto en mano para que su lado mayor no pase de FitCm (nunca lo agranda). */
+	static float HeldItemScale(float MaxDimensionCm, float FitCm);
+
 	/** Fracción 0-1 de una acción larga; 0 si el total no es válido. */
 	static float Progress01(float ElapsedSeconds, float TotalSeconds);
 };

@@ -25,6 +25,18 @@ namespace LighthouseLampDetail
 	constexpr int32 BrassColor = 10;
 	constexpr int32 WickColor = 5;
 	const FLinearColor BeamColor(1.0f, 0.88f, 0.62f);
+
+	/**
+	 * Ranuras de SM_FaroLinterna_01 en su espacio local (cm), de Art/Export/K2_Estructuras/manifest.json
+	 * («ensamblaje» -> «ranuras_m»), con la Y de Blender cambiada de signo para Unreal. Las piezas
+	 * tienen el pivote en la base: la lente se baja media altura para que quede centrada en su aro.
+	 */
+	const FVector LensSlotCm(0.0, 22.0, 147.0 - 26.0);
+	const FVector OilSlotLeftCm(-50.0, -8.0, 105.0);
+	const FVector OilSlotRightCm(50.0, -8.0, 105.0);
+	const FVector WickSlotCm(0.0, -18.0, 144.0);
+	/** Centro del aro de la lente: de ahí sale el haz y ahí brilla la luz. */
+	const FVector LensCenterCm(0.0, 22.0, 147.0);
 }
 
 ALighthouseLamp::ALighthouseLamp()
@@ -61,24 +73,37 @@ void ALighthouseLamp::OnConfigured(const FIslandProp& Prop, const FIslandPropTyp
 	LampHeightCm = Type.Size.Z * 100.0f;
 	LampRadiusCm = FMath::Max(Type.Size.X, Type.Size.Y) * 50.0f;
 
-	// Las piezas van por fuera de la primitiva (que es maciza): la lente encima, en su aro, y
-	// los tarros y la mecha en la repisa del lado sur, por donde se sube.
-	LensPart = MakePart(TEXT("LensPart"), LensMesh, ExploredAssets::FallbackSpherePath,
-		FVector(0.0, 0.0, LampHeightCm + 30.0), FVector(0.6), GlassColor);
-	OilParts.Reset();
-	for (int32 Jar = 0; Jar < FBeaconProgressModel::RequiredOilJars; ++Jar)
+	if (UsesFinalMesh())
 	{
-		const double Side = Jar == 0 ? -25.0 : 25.0;
-		OilParts.Add(MakePart(Jar == 0 ? TEXT("OilPart0") : TEXT("OilPart1"), OilMesh, CylinderPath,
-			FVector(-LampRadiusCm - 15.0, Side, LampHeightCm * 0.45), FVector(0.18, 0.18, 0.25), BrassColor));
+		// Malla definitiva: cada pieza en su ranura de la linterna (mallas a escala real).
+		LensPart = MakePart(TEXT("LensPart"), LensMesh, ExploredAssets::FallbackSpherePath, LensSlotCm, FVector(0.6), GlassColor);
+		OilParts.Reset();
+		OilParts.Add(MakePart(TEXT("OilPart0"), OilMesh, CylinderPath, OilSlotLeftCm, FVector(0.18, 0.18, 0.25), BrassColor));
+		OilParts.Add(MakePart(TEXT("OilPart1"), OilMesh, CylinderPath, OilSlotRightCm, FVector(0.18, 0.18, 0.25), BrassColor));
+		WickPart = MakePart(TEXT("WickPart"), WickMesh, CylinderPath, WickSlotCm, FVector(0.05, 0.05, 0.35), WickColor);
+		Beam->SetRelativeLocation(LensCenterCm);
+		Glow->SetRelativeLocation(LensCenterCm);
 	}
-	WickPart = MakePart(TEXT("WickPart"), WickMesh, CylinderPath,
-		FVector(-LampRadiusCm - 15.0, 0.0, LampHeightCm * 0.45 + 30.0), FVector(0.05, 0.05, 0.35), WickColor);
-
-	Beam->SetRelativeLocation(FVector(0.0, 0.0, LampHeightCm * 0.7));
+	else
+	{
+		// Las piezas van por fuera de la primitiva (que es maciza): la lente encima, en su aro, y
+		// los tarros y la mecha en la repisa del lado sur, por donde se sube.
+		LensPart = MakePart(TEXT("LensPart"), LensMesh, ExploredAssets::FallbackSpherePath,
+			FVector(0.0, 0.0, LampHeightCm + 30.0), FVector(0.6), GlassColor);
+		OilParts.Reset();
+		for (int32 Jar = 0; Jar < FBeaconProgressModel::RequiredOilJars; ++Jar)
+		{
+			const double Side = Jar == 0 ? -25.0 : 25.0;
+			OilParts.Add(MakePart(Jar == 0 ? TEXT("OilPart0") : TEXT("OilPart1"), OilMesh, CylinderPath,
+				FVector(-LampRadiusCm - 15.0, Side, LampHeightCm * 0.45), FVector(0.18, 0.18, 0.25), BrassColor));
+		}
+		WickPart = MakePart(TEXT("WickPart"), WickMesh, CylinderPath,
+			FVector(-LampRadiusCm - 15.0, 0.0, LampHeightCm * 0.45 + 30.0), FVector(0.05, 0.05, 0.35), WickColor);
+		Beam->SetRelativeLocation(FVector(0.0, 0.0, LampHeightCm * 0.7));
+		Glow->SetRelativeLocation(FVector(0.0, 0.0, LampHeightCm + 60.0));
+	}
 	// Ligeramente hacia abajo para que el haz barra el mar cercano además del horizonte.
 	Beam->SetRelativeRotation(FRotator(-2.0, 0.0, 0.0));
-	Glow->SetRelativeLocation(FVector(0.0, 0.0, LampHeightCm + 60.0));
 	RefreshFromProgress();
 }
 

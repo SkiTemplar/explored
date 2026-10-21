@@ -50,6 +50,21 @@ const TCHAR* LexToString(EFaunaSpecies Species)
 	}
 }
 
+const TCHAR* FFaunaSpeciesInfo::ArtMeshPath(EFaunaSpecies Species)
+{
+	switch (Species)
+	{
+	case EFaunaSpecies::ReefFish:
+	case EFaunaSpecies::OpenSeaFish:
+		return TEXT("/Game/Art/K3_Objetos/SM_FaunaPez_01.SM_FaunaPez_01");
+	case EFaunaSpecies::Gull:
+	case EFaunaSpecies::Frigatebird:
+		return TEXT("/Game/Art/K3_Objetos/SM_FaunaGaviota_01.SM_FaunaGaviota_01");
+	default:
+		return TEXT("");
+	}
+}
+
 const FFaunaSpeciesInfo& FFaunaSpeciesInfo::Get(EFaunaSpecies Species)
 {
 	using namespace FaunaTypesDetail;

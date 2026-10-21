@@ -64,6 +64,12 @@ struct EXPLORED_API FFaunaSpeciesInfo
 	bool bBird = false;
 
 	static const FFaunaSpeciesInfo& Get(EFaunaSpecies Species);
+
+	/**
+	 * Malla del kit K3 (GDD v3 §11.1) para la especie: SM_FaunaPez_01 para los peces y
+	 * SM_FaunaGaviota_01 para las aves. Vacía para las especies fuera de alcance (sin malla propia).
+	 */
+	static const TCHAR* ArtMeshPath(EFaunaSpecies Species);
 };
 
 /**

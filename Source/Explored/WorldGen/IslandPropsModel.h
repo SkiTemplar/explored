@@ -45,6 +45,8 @@ struct EXPLORED_API FIslandProp
 	FVector2D Location = FVector2D::ZeroVector;
 	float Yaw = 0.0f;
 	float Pitch = 0.0f;
+	/** Alabeo (grados; positivo baja el costado +Y): el puente sigue la escora del casco varado. */
+	float Roll = 0.0f;
 	/** Metros sobre el suelo trazado en Location, o sobre el suelo del ancla si hay Anchor. */
 	float Elevation = 0.0f;
 	/** Id de otra colocación (anterior) cuyo suelo sirve de referencia: piezas sobre el casco o la torre. */

@@ -21,6 +21,8 @@
 #include "Explored.h"
 #include "Narrative/BeaconSubsystem.h"
 #include "Interaction/InteractionComponent.h"
+#include "Items/ExploredSurvivorComponent.h"
+#include "UI/IslandHudModel.h"
 #include "Player/ExploredCharacter.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "UI/ExploredPlayerController.h"
@@ -222,6 +224,26 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		AddShot(TEXT("f3a-islote"), FVector(North.X, North.Y, GroundAt(North) + 8.0f), FVector(232.0f, 150.0f, 4.0f), 16.5f);
 	}
 
+	if (Set == TEXT("f4"))
+	{
+		// Integración de arte de F4 (docs/v3/capturas/f4-*.png): cenital, Cala Varada, Palmar, el faro
+		// de cerca, el islote con el carguero y la primera persona con un objeto en la mano.
+		AddShot(TEXT("f4-cenital"), FVector(52.0f, 0.0f, 430.0f), FVector(52.5f, 0.0f, 0.0f), 13.0f);
+		AddShot(TEXT("f4-cala"), FVector(-150.0f, -12.0f, 7.0f), FVector(-98.0f, 2.0f, 2.0f), 10.5f);
+		const FVector2D PalmarEye(-62.0f, -38.0f);
+		AddShot(TEXT("f4-palmar"), FVector(PalmarEye.X, PalmarEye.Y, GroundAt(PalmarEye) + 3.0f),
+			FVector(-30.0f, -8.0f, GroundAt(FVector2D(-30.0f, -8.0f)) + 3.0f), 11.0f);
+		const FVector2D FaroEye(22.0f, -6.0f);
+		const float FaroBase = GroundAt(FVector2D(45.0f, 15.0f));
+		AddShot(TEXT("f4-faro"), FVector(FaroEye.X, FaroEye.Y, GroundAt(FaroEye) + 4.0f), FVector(42.0f, 15.0f, FaroBase + 6.0f), 15.0f);
+		const FVector2D IsloteEye(200.0f, 166.0f);
+		AddShot(TEXT("f4-islote"), FVector(IsloteEye.X, IsloteEye.Y, GroundAt(IsloteEye) + 9.0f), FVector(229.0f, 148.0f, 3.0f), 16.5f);
+		// Iria en la Cala Varada mirando al mar con el cuchillo en la mano (acción «firstperson»).
+		const FVector2D HandEye(-112.0f, 2.0f);
+		AddShot(TEXT("f4-mano"), FVector(HandEye.X, HandEye.Y, GroundAt(HandEye) + 1.7f), FVector(-150.0f, -6.0f, 0.5f), 11.0f);
+		Shots.Last().Action = TEXT("firstperson");
+	}
+
 	if (Set == TEXT("beacon"))
 	{
 		// Final de F3c: la linterna montada vista desde la galería y la baliza encendida de noche
@@ -279,6 +301,41 @@ void UExploredShotSubsystem::InteractWithFocus(const FString& ShotName)
 	const bool bDone = Interaction && Interaction->InteractWithFocus();
 	UE_LOG(LogExplored, Display, TEXT("[Shots] %s: foco %s, interacción %s"), *ShotName,
 		Focus ? *Focus->GetClass()->GetName() : TEXT("ninguno"), bDone ? TEXT("hecha") : TEXT("fallida"));
+}
+
+void UExploredShotSubsystem::ShowFirstPerson(const FExploredShot& Shot)
+{
+	// Vista desde los ojos de Iria con el cuchillo en la mano: el pawn visible, apoyado en el suelo
+	// bajo el ojo del encuadre, y la vista en su cámara (antebrazos y objeto en mano).
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	AExploredCharacter* Character = PC ? Cast<AExploredCharacter>(PC->GetPawn()) : nullptr;
+	if (!Character)
+	{
+		return;
+	}
+	if (AExploredPlayerController* ExploredPC = Cast<AExploredPlayerController>(PC))
+	{
+		ExploredPC->ResumeGame();
+	}
+	Character->SetActorHiddenInGame(false);
+	Character->SetActorLocation(Shot.Location - FVector(0.0, 0.0, 70.0), false, nullptr, ETeleportType::TeleportPhysics);
+	PC->SetControlRotation(Shot.Rotation);
+	PC->SetViewTarget(Character);
+	if (UExploredSurvivorComponent* Survivor = Character->GetSurvivorComponent())
+	{
+		const FName Knife(TEXT("cuchillo"));
+		if (Survivor->GetItemCount(Knife) == 0)
+		{
+			Survivor->TryAddItem(Knife);
+		}
+		const TArray<FBackpackStack>& Stacks = Survivor->GetBackpack().Stacks;
+		const int32 KnifeSlot = Stacks.IndexOfByPredicate([&Knife](const FBackpackStack& Stack) { return Stack.Id == Knife; });
+		// Elegir otra ranura antes obliga a refrescar la mano aunque el cuchillo ya fuera la elegida.
+		Survivor->SelectQuickSlot(KnifeSlot == 0 ? 1 : 0);
+		Survivor->SelectQuickSlot(FMath::Max(KnifeSlot, 0));
+		UE_LOG(LogExplored, Display, TEXT("[Shots] %s: primera persona con %s en la mano"), *Shot.Name,
+			*FIslandHudModel::HeldItem(Survivor->GetBackpack(), Survivor->GetSelectedQuickSlot()).ToString());
+	}
 }
 
 void UExploredShotSubsystem::BeginShot(int32 Index)
@@ -358,6 +415,10 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 	if (Shot.Action == TEXT("interact"))
 	{
 		PlacePawnFacing(Shot.Target);
+	}
+	if (Shot.Action == TEXT("firstperson"))
+	{
+		ShowFirstPerson(Shot);
 	}
 	if (UBeaconSubsystem* Beacon = Shot.Action.IsNone() ? nullptr : UBeaconSubsystem::Get(World))
 	{
