@@ -6,7 +6,8 @@
     "color": "UV 0 en una celda de T_Paleta por cara (como K1-K5) y el mismo color en el RGB del color por vértice «Col» (sRGB exacto de paleta.json)",
     "viento": "alfa del color por vértice «Col»: 0 en la base y 1 en las puntas (tréboles: 0,35 como máximo, van pegados al suelo). M_Toon no tiene canal de viento por vértice: su WPO usa la altura sobre el pivote / 750 uu, que en una mata de 30 cm da 0,002. El material del césped debe multiplicar su WPO por VertexColor.A",
     "material": "tarjetas de una cara: hace falta una variante de M_Toon de dos caras (two_sided) con el WPO por VertexColor.A, p. ej. M_ToonCesped; sin dos caras, la mitad de las hojas desaparece",
-    "importacion": "FBX con vertex_color_import_option = REPLACE, normales importadas, sin colisión, sin lightmap UV, sin Nanite y sin LOD (≤ 120 tris); 8 mallas y 1 material: 8 draw calls por grupo de instancias (HISM/foliage)"
+    "importacion": "FBX con vertex_color_import_option = REPLACE, normales importadas, sin colisión, sin lightmap UV, sin Nanite y sin LOD (≤ 120 tris); 11 mallas y 1 material: 1 draw call por malla y grupo de instancias (HISM/foliage)",
+    "parches": "SM_GrassPatch_A/B/C_01 sustituyen a las matas sueltas donde el suelo debe quedar tapado: sembrar ≈ 5,5 parches/m² mezclando A/B/C al azar, escala 0,8-1,3 y giro al azar; una sola LOD (sin LOD generados ni encogido por distancia en el material). Cifras medidas en «cesped_continuo»"
   },
   "mallas": [
     {
@@ -231,6 +232,129 @@
       "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
       "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
       "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_GrassPatch_A_01",
+      "fbx": "SM_GrassPatch_A_01.fbx",
+      "uso": "parche erguido: 9 hojas largas en anillo y 8 cortas en roseta",
+      "presupuesto": "vegetacion",
+      "tope_tris": 80,
+      "tris": 69,
+      "dimensiones_m": [
+        0.683,
+        0.653,
+        0.409
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "hierba_salvia"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 17,
+      "radio_huella_m": 0.414,
+      "lod": "una sola LOD"
+    },
+    {
+      "malla": "SM_GrassPatch_B_01",
+      "fbx": "SM_GrassPatch_B_01.fbx",
+      "uso": "parche caído al exterior, al sol: 10 hojas tumbadas y 8 cortas",
+      "presupuesto": "vegetacion",
+      "tope_tris": 80,
+      "tris": 74,
+      "dimensiones_m": [
+        0.777,
+        0.83,
+        0.277
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_salvia",
+        "verde_lima"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 18,
+      "radio_huella_m": 0.44,
+      "lod": "una sola LOD"
+    },
+    {
+      "malla": "SM_GrassPatch_C_01",
+      "fbx": "SM_GrassPatch_C_01.fbx",
+      "uso": "parche ralo y mezclado: 5 hojas largas y 12 cortas",
+      "presupuesto": "vegetacion",
+      "tope_tris": 80,
+      "tris": 61,
+      "dimensiones_m": [
+        0.749,
+        0.735,
+        0.417
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "hierba_salvia"
+      ],
+      "viento": {
+        "canal": "Col.A",
+        "base": 0.0,
+        "punta": 1.0
+      },
+      "colision": "ninguna",
+      "material": "M_ToonCesped (M_Toon de dos caras con WPO por VertexColor.A)",
+      "origen": "generado por Tools/Blender/kits/k6_cesped.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored",
+      "hojas": 17,
+      "radio_huella_m": 0.402,
+      "lod": "una sola LOD"
     }
-  ]
+  ],
+  "cesped_continuo": {
+    "tris_por_parche": {
+      "SM_GrassPatch_A_01": 69,
+      "SM_GrassPatch_B_01": 74,
+      "SM_GrassPatch_C_01": 61
+    },
+    "densidad_por_m2": {
+      "matas": 2.2,
+      "parches": 5.5
+    },
+    "tris_por_m2": {
+      "matas": 56.3,
+      "parches": 379.2
+    },
+    "instancias_en_16_m2": {
+      "matas": 35,
+      "parches": 88
+    },
+    "suelo_visible_cenital_pct": {
+      "matas": 91.0,
+      "parches": 15.2
+    },
+    "suelo_visible_cenital_interior_3x3_m_pct": {
+      "matas": 90.2,
+      "parches": 14.7
+    },
+    "suelo_visible_desde_1_7_m_a_30_grados_pct": {
+      "matas": 88.3,
+      "parches": 14.8
+    },
+    "siembra": "parcela de 4 x 4 m en rejilla con jitter (semilla 707); matas A/B/C a escala 0.85-1.2, parches A/B/C a escala 0.8-1.3; mezcla y giro al azar",
+    "medida": "Workbench con luz plana, sin sombras ni antialiasing; cenital ortográfico de 400 x 400 px (1 cm/px) con el suelo de la parcela en malva_ocaso; píxeles de suelo con hierba / sin hierba (Tools/Blender/kits/k6_continuo.py)"
+  }
 }

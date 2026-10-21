@@ -36,6 +36,9 @@ OUT_PATH = REPO_ROOT / 'docs' / 'v3' / 'laminas' / 'k6-cesped.png'
 K1_DIR = REPO_ROOT / 'Art' / 'Export' / 'K1_Naturaleza'
 REFERENCES = ('SM_GrassClump_01', 'SM_Shrub_01')
 WIDTH, HEIGHT = 1600, 900
+# Esta lámina revisa las matas sueltas y la vegetación de detalle; los parches
+# SM_GrassPatch_* tienen la suya (k6_continuo).
+TUFT_KIT = tuple(s for s in K6 if not s.is_patch)
 ROW_H = 400
 PARCEL_H = HEIGHT - ROW_H
 ROW_Y = -25.0              # la fila va lejos de la parcela: cada plano ve solo lo suyo
@@ -109,7 +112,7 @@ def build_scene(pal: Palette, export_dir: Path, k1_dir: Path, sheet_path: Path) 
     meshkit.reset_scene()
     material = lamina.toon_preview_material(bpy.data.images.load(str(sheet_path)))
     sources: dict[str, bpy.types.Object] = {}
-    for spec in K6:
+    for spec in TUFT_KIT:
         sources[spec.asset] = lamina._import_pilot(export_dir / f'{spec.asset}.fbx')
     tris = {name: meshkit.triangle_count(obj) for name, obj in sources.items()}
     xs = row_positions({name: max(obj.dimensions.x, obj.dimensions.y) for name, obj in sources.items()})
@@ -216,8 +219,8 @@ def compose(row: np.ndarray, parcel: np.ndarray, info: dict[str, Any], anchors: 
     tris = info['tris']
     for name, (cx, y) in anchors.items():
         canvas = _label(canvas, f'{name} {tris[name]}', cx, y, pal)
-    kit_tris = sum(tris[s.asset] for s in K6)
-    title = f'K6 CESPED - {len(K6)} MALLAS - {kit_tris} TRIS'
+    kit_tris = sum(tris[s.asset] for s in TUFT_KIT)
+    title = f'K6 CESPED - {len(TUFT_KIT)} MALLAS - {kit_tris} TRIS'
     canvas = _label(canvas, title, raster.text_width(title, 3) // 2 + 18, 12, pal, scale=3)
     sub = (f'PARCELA 4 X 4 M: {info["instances"]} INSTANCIAS, {info["parcel_tris"]} TRIS - '
            f'REFERENCIAS K1: SM_GRASSCLUMP_01 {tris["SM_GrassClump_01"]}, SM_SHRUB_01 {tris["SM_Shrub_01"]}')
@@ -227,7 +230,7 @@ def compose(row: np.ndarray, parcel: np.ndarray, info: dict[str, Any], anchors: 
 def make_sheet(out: Path, export_dir: Path = EXPORT_DIR, k1_dir: Path = K1_DIR, sheet_path: Path = SHEET_PATH,
                percent: int = 100) -> Path:
     pal = load_palette()
-    needed = [export_dir / f'{s.asset}.fbx' for s in K6] + [k1_dir / f'{n}.fbx' for n in REFERENCES]
+    needed = [export_dir / f'{s.asset}.fbx' for s in TUFT_KIT] + [k1_dir / f'{n}.fbx' for n in REFERENCES]
     missing = [p.name for p in needed if not p.is_file()]
     if missing:
         raise FileNotFoundError(f'faltan FBX: {", ".join(missing)}')

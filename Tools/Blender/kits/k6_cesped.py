@@ -1,11 +1,16 @@
 """Kit K6 Césped de Baliza Siete: mallas para el sistema de hierba instanciada.
 
 Genera `SM_GrassTuft_A/B/C_01` (matas de 5-9 hojas, 0,25-0,45 m, 16-40 tris),
+`SM_GrassPatch_A/B/C_01` (parches de 12-18 hojas y 0,35-0,45 m de radio para
+sembrar una alfombra continua a ≈ 5,5 parches/m², 48-80 tris),
 `SM_GrassTall_01` (hierba alta con espigas, 0,6-0,8 m, ≤ 60 tris),
 `SM_FlowerA_01` y `SM_FlowerB_01` (flores blanca y lila, ≤ 50 tris),
 `SM_Fern_01` (helecho, ≤ 120 tris) y `SM_Clover_01` (tréboles a ras de suelo,
 ≤ 40 tris); exporta `Art/Export/K6_Cesped/*.fbx` con `manifest.json` y
-renderiza la lámina `docs/v3/laminas/k6-cesped.png` (Workbench).
+renderiza las láminas `docs/v3/laminas/k6-cesped.png` y
+`docs/v3/laminas/k6-cesped-continuo.png` (Workbench). La segunda mide además
+el suelo visible desde arriba con matas y con parches, y lo apunta en el
+manifiesto (`cesped_continuo`).
 
 Mismo método que K1-K5 (Tools/Style): un material `M_Toon`, cada cara con su
 UV en una celda de `T_Paleta`, normales planas y pivote en la base (z = 0),
@@ -15,7 +20,8 @@ M_Toon no tiene canal de viento por vértice (su WPO usa la altura sobre el
 pivote dividida entre 7,5 m), así que el peso va en el alfa: ver NOTAS.
 
 Determinista: volver a ejecutar regenera los mismos FBX.
-Uso (desde Tools/Blender): `uv run python -m kits.k6_cesped [--out DIR] [--lamina RUTA] [--sin-lamina]`.
+Uso (desde Tools/Blender):
+`uv run python -m kits.k6_cesped [--out DIR] [--lamina RUTA] [--continuo RUTA] [--sin-lamina]`.
 """
 
 from __future__ import annotations
@@ -34,6 +40,7 @@ from explored_style import meshkit
 from explored_style.palette import REPO_ROOT, load_palette
 
 from kits import k6_formas as formas
+from kits import k6_parches as parches
 
 EXPORT_DIR = REPO_ROOT / 'Art' / 'Export' / 'K6_Cesped'
 SUFFIX = '_01'
@@ -53,6 +60,11 @@ class KitSpec:
     width_max: float                    # m (dimensión XY mayor)
     pieces: tuple[int, int] | None = None   # hojas sueltas (islas), si aplica
     tip_weight: float = 1.0
+    footprint: tuple[float, float] | None = None   # parches: radio de la huella (m)
+
+    @property
+    def is_patch(self) -> bool:
+        return self.footprint is not None
 
     @property
     def asset(self) -> str:
@@ -62,6 +74,14 @@ class KitSpec:
 def _tuft(name: str, role: str) -> KitSpec:
     spec = formas.TUFTS[name]
     return KitSpec(name, partial(formas.build_tuft, spec), role, (16, 40), (0.25, 0.45), 0.6, (5, 9))
+
+
+def _patch(name: str, role: str) -> KitSpec:
+    """«role» lleva {outer} e {inner}: el número de hojas sale de la forma, nunca a mano."""
+    spec = parches.PATCHES[name]
+    role = role.format(outer=spec.outer.count, inner=spec.inner.count)
+    return KitSpec(name, partial(parches.build_patch, spec), role, (48, 80), (0.25, 0.55), 0.9, (12, 18),
+                   footprint=(0.35, 0.45))
 
 
 K6: tuple[KitSpec, ...] = (
@@ -76,6 +96,9 @@ K6: tuple[KitSpec, ...] = (
     KitSpec('SM_Fern', formas.build_fern, 'helecho de 9 frondas en arco', (40, 120), (0.25, 0.55), 1.0),
     KitSpec('SM_Clover', formas.build_clover, '4 tréboles y una cabezuela blanca a ras de suelo', (16, 40),
             (0.03, 0.12), 0.4, tip_weight=formas.CLOVER_TIP_WEIGHT),
+    _patch('SM_GrassPatch_A', 'parche erguido: {outer} hojas largas en anillo y {inner} cortas en roseta'),
+    _patch('SM_GrassPatch_B', 'parche caído al exterior, al sol: {outer} hojas tumbadas y {inner} cortas'),
+    _patch('SM_GrassPatch_C', 'parche ralo y mezclado: {outer} hojas largas y {inner} cortas'),
 )
 
 NOTAS = {
@@ -89,8 +112,12 @@ NOTAS = {
     'material': 'tarjetas de una cara: hace falta una variante de M_Toon de dos caras (two_sided) con el WPO '
                 'por VertexColor.A, p. ej. M_ToonCesped; sin dos caras, la mitad de las hojas desaparece',
     'importacion': 'FBX con vertex_color_import_option = REPLACE, normales importadas, sin colisión, sin '
-                   'lightmap UV, sin Nanite y sin LOD (≤ 120 tris); 8 mallas y 1 material: 8 draw calls por '
-                   'grupo de instancias (HISM/foliage)',
+                   'lightmap UV, sin Nanite y sin LOD (≤ 120 tris); 11 mallas y 1 material: 1 draw call por '
+                   'malla y grupo de instancias (HISM/foliage)',
+    'parches': 'SM_GrassPatch_A/B/C_01 sustituyen a las matas sueltas donde el suelo debe quedar tapado: '
+               'sembrar ≈ 5,5 parches/m² mezclando A/B/C al azar, escala 0,8-1,3 y giro al azar; una sola LOD '
+               '(sin LOD generados ni encogido por distancia en el material). Cifras medidas en '
+               '«cesped_continuo»',
 }
 
 
@@ -171,7 +198,25 @@ def manifest_entry(spec: KitSpec, obj: bpy.types.Object, fbx_name: str) -> dict:
     }
     if spec.pieces is not None:
         entry['hojas'] = meshkit.island_count(obj)
+    if spec.footprint is not None:
+        entry['radio_huella_m'] = round(footprint_radius(obj), 3)
+        entry['lod'] = 'una sola LOD'
     return entry
+
+
+def footprint_radius(obj: bpy.types.Object) -> float:
+    """Distancia horizontal máxima de un vértice al pivote (m)."""
+    return max((v.co.x ** 2 + v.co.y ** 2) ** 0.5 for v in meshkit.mesh_of(obj).vertices)
+
+
+def write_manifest(out_dir: Path, entries: list[dict], continuo: dict | None = None) -> Path:
+    manifest: dict[str, Any] = {'kit': 'K6 Césped', 'generador': 'uv run python -m kits.k6_cesped (Tools/Blender)',
+                                'notas': NOTAS, 'mallas': entries}
+    if continuo is not None:
+        manifest['cesped_continuo'] = continuo
+    path = out_dir / 'manifest.json'
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return path
 
 
 def generate_all(out_dir: Path) -> list[dict]:
@@ -184,26 +229,27 @@ def generate_all(out_dir: Path) -> list[dict]:
         path = export_fbx(obj, out_dir / f'{spec.asset}.fbx')
         entries.append(manifest_entry(spec, obj, path.name))
         print(f'[k6] {spec.asset}: {entries[-1]["tris"]}/{spec.tris[1]} tris -> {path}')
-    manifest = {'kit': 'K6 Césped', 'generador': 'uv run python -m kits.k6_cesped (Tools/Blender)',
-                'notas': NOTAS, 'mallas': entries}
-    (out_dir / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
-                                           encoding='utf-8')
+    write_manifest(out_dir, entries)
     return entries
 
 
 def main(argv: list[str] | None = None) -> int:
-    from kits import k6_lamina  # k6_lamina importa este módulo: evita el ciclo
+    from kits import k6_continuo, k6_lamina  # importan este módulo: evita el ciclo
 
     parser = argparse.ArgumentParser(prog='k6_cesped', description='Genera el kit K6 Césped y su lámina.')
     parser.add_argument('--out', type=Path, default=EXPORT_DIR)
     parser.add_argument('--lamina', type=Path, default=k6_lamina.OUT_PATH)
+    parser.add_argument('--continuo', type=Path, default=k6_continuo.OUT_PATH)
     parser.add_argument('--sin-lamina', action='store_true', help='solo exporta los FBX y el manifiesto')
     parser.add_argument('--percent', type=int, default=100, help='porcentaje de resolución (pruebas)')
     args = parser.parse_args(argv)
-    generate_all(args.out)
+    entries = generate_all(args.out)
     if not args.sin_lamina:
         path = k6_lamina.make_sheet(args.lamina, args.out, percent=args.percent)
         print(f'[k6] lámina: {path}')
+        path, continuo = k6_continuo.make_sheet(args.continuo, args.out, percent=args.percent)
+        write_manifest(args.out, entries, continuo)
+        print(f'[k6] lámina: {path}; suelo visible {continuo["suelo_visible_cenital_pct"]}')
     return 0
 
 
