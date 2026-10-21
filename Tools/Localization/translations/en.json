@@ -394,15 +394,6 @@
 			"es": "Correr",
 			"en": "Sprint"
 		},
-		"DayLength": {
-			"es": "Duración del día",
-			"en": "Day length"
-		},
-		"DayLengthMinutes": {
-			"es": "{0} min",
-			"en": "{0} min",
-			"nota": "FText::Format(..., FText::AsNumber(Minutes))."
-		},
 		"Subtitles": {
 			"es": "Subtítulos",
 			"en": "Subtitles"

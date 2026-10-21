@@ -444,12 +444,6 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 		return SNullWidget::NullWidget;
 	}
 
-	TArray<FText> DayLengthLabels;
-	for (const float Minutes : UExploredGameUserSettings::GetSupportedDayLengths())
-	{
-		DayLengthLabels.Add(FText::Format(NSLOCTEXT("ExploredUI", "DayLengthMinutes", "{0} min"), FText::AsNumber(static_cast<int32>(Minutes))));
-	}
-
 	TArray<FText> TextSizeLabels = {
 		NSLOCTEXT("ExploredUI", "TextSmall", "Pequeño"),
 		NSLOCTEXT("ExploredUI", "TextMedium", "Mediano"),
@@ -461,14 +455,8 @@ TSharedRef<SWidget> SExploredSettingsPanel::BuildGameTab()
 	};
 
 	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
-		[
-			MakeRow(NSLOCTEXT("ExploredUI", "DayLength", "Duración del día"),
-				MakeCycler(DayLengthLabels,
-					// Índice de la duración soportada más cercana: nunca -1 aunque el ini traiga un valor raro (M14).
-					[GS]() { return ExploredSettingsLogic::DayLengthIndex(GS->GetDayLengthMinutes()); },
-					[GS](int32 Index) { const TArray<float>& Lengths = UExploredGameUserSettings::GetSupportedDayLengths(); if (Lengths.IsValidIndex(Index)) { GS->SetDayLengthMinutes(Lengths[Index]); } }))
-		]
+		// Sin «Duración del día»: en Baliza Siete el día dura siempre 26 min (UTimeOfDaySubsystem).
+		// DayLengthMinutes sigue en UExploredGameUserSettings para leer los ini antiguos.
 		+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 		[
 			MakeRow(NSLOCTEXT("ExploredUI", "Subtitles", "Subtítulos"), MakeToggle([GS]() { return GS->GetSubtitlesEnabled(); }, [GS](bool B) { GS->SetSubtitlesEnabled(B); }))

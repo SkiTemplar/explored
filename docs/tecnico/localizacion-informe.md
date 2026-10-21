@@ -7,14 +7,14 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 385 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 260 |
+| Textos en el catálogo | 383 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 258 |
 | … de `Content/Data` (campos bilingües) | 125 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 4 |
-| Literales para revisar | 366 |
+| Literales para revisar | 379 |
 | Errores / avisos | 0 / 0 |
 
 ## Literales del C++
@@ -34,7 +34,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:97` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (366)
+### Revisar (379)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -255,12 +255,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:559` | `RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s` | `Note(FString::Printf(TEXT("RESULTADO: %s · %.1f min a 1× · %d desmayos · %d/10 etapas · %d errores de log%s"),` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:561` | ` · falló: ` | `Run.StagesReached.Num(), Run.LogErrors, FailedStep.IsEmpty() ? TEXT("") : *(TEXT(" · falló: ") + FailedStep)));` |
 | `Source/Explored/Debug/ExploredPlaytestBotRun.cpp:598` | `tope de tiempo real` | `EndRun(TEXT("tope de tiempo real"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:635` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:636` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:637` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:638` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:643` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
-| `Source/Explored/Debug/ExploredShotSubsystem.cpp:671` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:678` | `stat unit` | `GEngine->Exec(World, TEXT("stat unit"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:679` | `stat gpu` | `GEngine->Exec(World, TEXT("stat gpu"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:680` | `stat rhi` | `GEngine->Exec(World, TEXT("stat rhi"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:681` | `stat streaming` | `GEngine->Exec(World, TEXT("stat streaming"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:686` | `r.Nanite.ShowStats 1` | `GEngine->Exec(World, TEXT("r.Nanite.ShowStats 1"));` |
+| `Source/Explored/Debug/ExploredShotSubsystem.cpp:714` | `memreport -full` | `GEngine->Exec(World, TEXT("memreport -full"));` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:160` | `{\n  "status": "%s",\n  "start_zone": "%s",\n  "start_m": [%.2f, %.2f, %.2f],\n  "end_m": [%.2f, %.2f, %.2f],\n` | `TEXT("{\n \"status\": \"%s\",\n \"start_zone\": \"%s\",\n \"start_m\": [%.2f, %.2f, %.2f],\n \"end_m\": [%.2f, %.2f, %.2f],\n")` |
 | `Source/Explored/Debug/ExploredWalkProbe.cpp:161` | `  "waypoints_reached": %d,\n  "waypoints": %d,\n  "elapsed_s": %.1f,\n  "travelled_m": %.1f,\n  "max_height_m": %.2f\n}\n` | `TEXT(" \"waypoints_reached\": %d,\n \"waypoints\": %d,\n \"elapsed_s\": %.1f,\n \"travelled_m\": %.1f,\n \"max_height_m\": %.2f\n}\n"),` |
 | `Source/Explored/Debug/PlaytestReportModel.cpp:33` | `slot %s` | `Issue.Detail = FString::Printf(TEXT("slot %s"), *SlotName);` |
@@ -400,6 +400,19 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
 | `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
 | `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:293` | `cellSizeM fuera de 2-32` | `if (!(CellSizeM >= 2.0f && CellSizeM <= 32.0f)) { return Bad(TEXT("cellSizeM fuera de 2-32")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:294` | `radiusM fuera de cellSizeM-200` | `if (!(RadiusM >= CellSizeM && RadiusM <= 200.0f)) { return Bad(TEXT("radiusM fuera de cellSizeM-200")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:295` | `cellsPerFrame fuera de 1-64` | `if (CellsPerFrame < 1 \|\| CellsPerFrame > 64) { return Bad(TEXT("cellsPerFrame fuera de 1-64")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:296` | `maxSlopeDeg fuera de 0-90` | `if (!(MaxSlopeDeg > 0.0f && MaxSlopeDeg < 90.0f)) { return Bad(TEXT("maxSlopeDeg fuera de 0-90")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:297` | `escala no válida` | `if (!(ScaleMin > 0.0f && ScaleMax >= ScaleMin && ScaleMax <= 5.0f)) { return Bad(TEXT("escala no válida")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:298` | `alignToNormal fuera de 0-1` | `if (!(AlignToNormal >= 0.0f && AlignToNormal <= 1.0f)) { return Bad(TEXT("alignToNormal fuera de 0-1")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:302` | `densidades fuera de 0-16 matas/m²` | `return Bad(TEXT("densidades fuera de 0-16 matas/m²"));` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:306` | `densidad de zona negativa` | `if (!(Pair.Value >= 0.0f)) { return Bad(TEXT("densidad de zona negativa")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:308` | `claros no válidos` | `if (!(ClearingCellM > 1.0f && ClearingDensity >= 0.0f && ClearingDensity <= 1.0f)) { return Bad(TEXT("claros no válidos")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:309` | `corona de palmera no válida` | `if (!(PalmRadiusM > PalmTrunkM && PalmTrunkM >= 0.0f)) { return Bad(TEXT("corona de palmera no válida")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:312` | `escala de malla no válida` | `if (!(S > 0.0f && S <= 5.0f)) { return Bad(TEXT("escala de malla no válida")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:318` | `peso de mezcla negativo` | `if (!(W >= 0.0f) \|\| !FMath::IsFinite(W)) { return Bad(TEXT("peso de mezcla negativo")); }` |
+| `Source/Explored/WorldGen/GrassFieldModel.cpp:321` | `la mezcla «common» está vacía` | `if (Mixes[static_cast<int32>(EGrassContext::Common)].Total() <= 0.0f) { return Bad(TEXT("la mezcla «common» está vacía")); }` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:168` | `Cala Varada` | `AddZone(TEXT("cala_varada"), TEXT("Cala Varada"), EIslandArchetype::Landing, FVector2D(-100.0f, 10.0f), 35.0f, 0.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:170` | `Rocas del Pescador` | `AddZone(TEXT("rocas_pescador"), TEXT("Rocas del Pescador"), EIslandArchetype::Teeth, FVector2D(-15.0f, -140.0f), 30.0f, 2.0f);` |
 | `Source/Explored/WorldGen/IslandLayout.cpp:171` | `Bosque de Bambú` | `AddZone(TEXT("bosque_bambu"), TEXT("Bosque de Bambú"), EIslandArchetype::Emerald, FVector2D(55.0f, -85.0f), 42.0f, 5.0f);` |

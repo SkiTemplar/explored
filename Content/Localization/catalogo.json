@@ -2,14 +2,14 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 385,
-		"cpp": 260,
+		"total": 383,
+		"cpp": 258,
 		"datos": 125,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 4,
-		"revisar": 366
+		"revisar": 379
 	},
 	"entries": [
 		{
@@ -486,7 +486,7 @@
 			"en": "Set the lens",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:368"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:370"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "Light the beacon",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:379"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:381"
 			]
 		},
 		{
@@ -506,7 +506,7 @@
 			"en": "The beacon is lit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:379"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:381"
 			]
 		},
 		{
@@ -516,7 +516,7 @@
 			"en": "Pour the jars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:371"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:373"
 			]
 		},
 		{
@@ -526,7 +526,7 @@
 			"en": "Tighten the wick",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:374"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:376"
 			]
 		},
 		{
@@ -1637,7 +1637,7 @@
 			"en": "Apply",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:534"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:522"
 			]
 		},
 		{
@@ -1648,7 +1648,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSaveSlots.cpp:33",
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:542"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:530"
 			]
 		},
 		{
@@ -1668,7 +1668,7 @@
 			"en": "Deuteranopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:503"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:491"
 			]
 		},
 		{
@@ -1678,7 +1678,7 @@
 			"en": "None",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:501"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:489"
 			]
 		},
 		{
@@ -1688,7 +1688,7 @@
 			"en": "Protanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:502"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:490"
 			]
 		},
 		{
@@ -1698,7 +1698,7 @@
 			"en": "Tritanopia",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:504"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:492"
 			]
 		},
 		{
@@ -1718,7 +1718,7 @@
 			"en": "Colour-blind mode",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:510"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:498"
 			]
 		},
 		{
@@ -1738,7 +1738,7 @@
 			"en": "The saved game could not be loaded. Try «Load» or start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:423"
+				"Source/Explored/UI/ExploredPlayerController.cpp:425"
 			]
 		},
 		{
@@ -1770,27 +1770,6 @@
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredEnding.cpp:68"
 			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "DayLength",
-			"es": "Duración del día",
-			"en": "Day length",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:466"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "DayLengthMinutes",
-			"es": "{0} min",
-			"en": "{0} min",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:450"
-			],
-			"note": "FText::Format(..., FText::AsNumber(Minutes))."
 		},
 		{
 			"namespace": "ExploredUI",
@@ -1849,7 +1828,7 @@
 			"en": "WASD move · Space jump · Shift run",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:469"
+				"Source/Explored/UI/ExploredPlayerController.cpp:471"
 			]
 		},
 		{
@@ -1859,7 +1838,7 @@
 			"en": "E interact · Tab backpack · J notebook · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:470"
+				"Source/Explored/UI/ExploredPlayerController.cpp:472"
 			]
 		},
 		{
@@ -1889,7 +1868,7 @@
 			"en": "English",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:460"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:454"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -1900,7 +1879,7 @@
 			"en": "Español",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:459"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:453"
 			],
 			"note": "Cada idioma se nombra en su propia lengua."
 		},
@@ -1911,7 +1890,7 @@
 			"en": "Language",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:485"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:473"
 			]
 		},
 		{
@@ -1931,7 +1910,7 @@
 			"en": "There is a save from an earlier version of the game. It cannot be continued: start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:377"
+				"Source/Explored/UI/ExploredPlayerController.cpp:379"
 			]
 		},
 		{
@@ -1961,7 +1940,7 @@
 			"en": "Disable flashing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:521"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:509"
 			]
 		},
 		{
@@ -2081,7 +2060,7 @@
 			"en": "Reduce motion",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:517"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:505"
 			]
 		},
 		{
@@ -2131,7 +2110,7 @@
 			"en": "Restore defaults",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:538"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:526"
 			]
 		},
 		{
@@ -2402,7 +2381,7 @@
 			"en": "Visual sound cues",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:525"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:513"
 			]
 		},
 		{
@@ -2422,7 +2401,7 @@
 			"en": "Subtitles",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:474"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:462"
 			]
 		},
 		{
@@ -2482,7 +2461,7 @@
 			"en": "Large",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:456"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:450"
 			]
 		},
 		{
@@ -2492,7 +2471,7 @@
 			"en": "Medium",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:455"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:449"
 			]
 		},
 		{
@@ -2502,7 +2481,7 @@
 			"en": "Text size",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:478"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:466"
 			]
 		},
 		{
@@ -2512,7 +2491,7 @@
 			"en": "Small",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:454"
+				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:448"
 			]
 		},
 		{

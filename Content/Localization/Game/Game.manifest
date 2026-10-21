@@ -524,7 +524,7 @@
 					"Keys": [
 						{
 							"Key": "LampWick",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 374"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 376"
 						}
 					]
 				},
@@ -557,7 +557,7 @@
 					"Keys": [
 						{
 							"Key": "LampLight",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 379"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 381"
 						}
 					]
 				},
@@ -612,7 +612,7 @@
 					"Keys": [
 						{
 							"Key": "LampLit",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 379"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 381"
 						}
 					]
 				},
@@ -634,7 +634,7 @@
 					"Keys": [
 						{
 							"Key": "LampLens",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 368"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 370"
 						}
 					]
 				},
@@ -667,7 +667,7 @@
 					"Keys": [
 						{
 							"Key": "LampOil",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 371"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 373"
 						}
 					]
 				}
@@ -1806,7 +1806,7 @@
 					"Keys": [
 						{
 							"Key": "Apply",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 534"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 522"
 						}
 					]
 				},
@@ -1839,7 +1839,7 @@
 					"Keys": [
 						{
 							"Key": "SoundCues",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 525"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 513"
 						}
 					]
 				},
@@ -2052,7 +2052,7 @@
 					"Keys": [
 						{
 							"Key": "NoFlashing",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 521"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 509"
 						}
 					]
 				},
@@ -2063,7 +2063,7 @@
 					"Keys": [
 						{
 							"Key": "CVDDeuteranopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 503"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 491"
 						}
 					]
 				},
@@ -2080,23 +2080,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Duración del día"
-					},
-					"Keys": [
-						{
-							"Key": "DayLength",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 466"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "E interactuar · Tab mochila · J cuaderno · Esc pausa"
 					},
 					"Keys": [
 						{
 							"Key": "HelpUse",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 470"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 472"
 						}
 					]
 				},
@@ -2151,7 +2140,7 @@
 					"Keys": [
 						{
 							"Key": "LangEn",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 460"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 454"
 						}
 					]
 				},
@@ -2162,7 +2151,7 @@
 					"Keys": [
 						{
 							"Key": "LangEs",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 459"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 453"
 						}
 					]
 				},
@@ -2173,7 +2162,7 @@
 					"Keys": [
 						{
 							"Key": "TextLarge",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 456"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 450"
 						}
 					]
 				},
@@ -2232,7 +2221,7 @@
 					"Keys": [
 						{
 							"Key": "MenuObsoleteSave",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 377"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 379"
 						}
 					]
 				},
@@ -2243,7 +2232,7 @@
 					"Keys": [
 						{
 							"Key": "Language",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 485"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 473"
 						}
 					]
 				},
@@ -2331,7 +2320,7 @@
 					"Keys": [
 						{
 							"Key": "TextMedium",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 455"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 449"
 						}
 					]
 				},
@@ -2353,7 +2342,7 @@
 					"Keys": [
 						{
 							"Key": "Colorblind",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 510"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 498"
 						}
 					]
 				},
@@ -2386,7 +2375,7 @@
 					"Keys": [
 						{
 							"Key": "CVDNone",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 501"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 489"
 						}
 					]
 				},
@@ -2397,7 +2386,7 @@
 					"Keys": [
 						{
 							"Key": "ContinueFailed",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 423"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 425"
 						}
 					]
 				},
@@ -2474,7 +2463,7 @@
 					"Keys": [
 						{
 							"Key": "TextSmall",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 454"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 448"
 						}
 					]
 				},
@@ -2485,7 +2474,7 @@
 					"Keys": [
 						{
 							"Key": "CVDProtanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 502"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 490"
 						}
 					]
 				},
@@ -2540,7 +2529,7 @@
 					"Keys": [
 						{
 							"Key": "ReduceMotion",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 517"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 505"
 						}
 					]
 				},
@@ -2573,7 +2562,7 @@
 					"Keys": [
 						{
 							"Key": "RestoreDefaults",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 538"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 526"
 						}
 					]
 				},
@@ -2694,7 +2683,7 @@
 					"Keys": [
 						{
 							"Key": "Subtitles",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 474"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 462"
 						}
 					]
 				},
@@ -2705,7 +2694,7 @@
 					"Keys": [
 						{
 							"Key": "TextSize",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 478"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 466"
 						}
 					]
 				},
@@ -2716,7 +2705,7 @@
 					"Keys": [
 						{
 							"Key": "CVDTritanopia",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 504"
+							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 492"
 						}
 					]
 				},
@@ -2815,7 +2804,7 @@
 					"Keys": [
 						{
 							"Key": "HelpMove",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 469"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 471"
 						}
 					]
 				},
@@ -2827,17 +2816,6 @@
 						{
 							"Key": "RemapReserved",
 							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 426"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "{0} min"
-					},
-					"Keys": [
-						{
-							"Key": "DayLengthMinutes",
-							"Path": "Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp - line 450"
 						}
 					]
 				},

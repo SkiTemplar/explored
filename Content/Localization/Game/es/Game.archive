@@ -1632,24 +1632,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Duración del día"
-					},
-					"Translation": {
-						"Text": "Duración del día"
-					},
-					"Key": "DayLength"
-				},
-				{
-					"Source": {
-						"Text": "{0} min"
-					},
-					"Translation": {
-						"Text": "{0} min"
-					},
-					"Key": "DayLengthMinutes"
-				},
-				{
-					"Source": {
 						"Text": "Continuar"
 					},
 					"Translation": {
