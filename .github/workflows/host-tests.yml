@@ -49,6 +49,8 @@ jobs:
           - tool: Island
             python: "3.13"
             extra: uv run island-props-check
+          - tool: Textures
+            python: "3.11"
     defaults:
       run:
         working-directory: Tools/${{ matrix.tool }}

@@ -1,0 +1,20 @@
+{
+  "_comment": "Máscara de trazos del terreno (GDD v3 §11, excepción a «solo T_Paleta»). La genera Tools/Textures (uv run textures-strokes) en Art/Export/Textures/T_TerrainStrokes.png; la leen Tools/Unreal/materials_f6.py (M_TerrainToon) y la vista previa de Tools/Island. Escala de grises lineal, media 0,5: el material multiplica el color por vértice por lerp(dark, light, máscara).",
+  "texture": "T_TerrainStrokes",
+  "size": 512,
+  "seed": 20261021,
+  "strokes": 1100,
+  "length_px": [10, 30],
+  "width_px": [3.0, 5.5],
+  "angle_deg": 65.0,
+  "angle_spread_deg": 28.0,
+  "dark": [0.18, 0.34],
+  "light": [0.66, 0.82],
+  "tiles_m": [3.2, 9.7],
+  "second_rotation_deg": 37.0,
+  "weights": [0.6, 0.4],
+  "dark_factor": 0.7,
+  "light_factor": 1.24,
+  "slope_fade": [0.55, 0.8],
+  "distance_fade_m": [35.0, 90.0]
+}
