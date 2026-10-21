@@ -9,7 +9,7 @@ UV de cada cara en el centro de su celda, normales planas y pivote en la base.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
 import bpy
@@ -114,6 +114,85 @@ def lathe(builder: MeshBuilder, profile: Sequence[tuple[float, float]], sides: i
     if cap_top is not None:
         builder.cap(rings[-1], base + w * tip_top, cap_top)
     return rings
+
+
+_ICOSA_FACES = (
+    (0, 11, 5), (0, 5, 1), (0, 1, 7), (0, 7, 10), (0, 10, 11), (1, 5, 9), (5, 11, 4), (11, 10, 2), (10, 7, 6),
+    (7, 1, 8), (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9), (4, 9, 5), (2, 4, 11), (6, 2, 10),
+    (8, 6, 7), (9, 8, 1),
+)
+
+
+def geosphere(frequency: int) -> tuple[list[Vector], list[tuple[int, int, int]]]:
+    """Esfera geodésica unitaria: cada cara del icosaedro se divide en
+    frequency² triángulos (20 · frequency² en total), con los vértices de las
+    aristas compartidos y las caras en sentido antihorario visto desde fuera."""
+    if frequency < 1:
+        raise ValueError('geosphere: la frecuencia mínima es 1')
+    g = (1.0 + math.sqrt(5.0)) / 2.0
+    base = [Vector(p).normalized() for p in (
+        (-1, g, 0), (1, g, 0), (-1, -g, 0), (1, -g, 0), (0, -1, g), (0, 1, g),
+        (0, -1, -g), (0, 1, -g), (g, 0, -1), (g, 0, 1), (-g, 0, -1), (-g, 0, 1))]
+    verts: list[Vector] = []
+    index: dict[tuple[int, int, int], int] = {}
+
+    def vid(p: Vector) -> int:
+        key = (round(p.x * 1e6), round(p.y * 1e6), round(p.z * 1e6))
+        if key not in index:
+            index[key] = len(verts)
+            verts.append(p)
+        return index[key]
+
+    faces: list[tuple[int, int, int]] = []
+    n = frequency
+    for ia, ib, ic in _ICOSA_FACES:
+        a, b, c = base[ia], base[ib], base[ic]
+
+        def at(i: int, j: int, a: Vector = a, b: Vector = b, c: Vector = c) -> int:
+            return vid((a + (b - a) * (i / n) + (c - a) * (j / n)).normalized())
+
+        for i in range(n):
+            for j in range(n - i):
+                faces.append((at(i, j), at(i + 1, j), at(i, j + 1)))
+                if i + j < n - 1:
+                    faces.append((at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)))
+    return verts, faces
+
+
+def face_normal(points: Sequence[Vector]) -> Vector:
+    """Normal (Newell) de un polígono plano o casi plano; cero si es degenerado."""
+    nx = ny = nz = 0.0
+    for k, p in enumerate(points):
+        q = points[(k + 1) % len(points)]
+        nx += (p.y - q.y) * (p.z + q.z)
+        ny += (p.z - q.z) * (p.x + q.x)
+        nz += (p.x - q.x) * (p.y + q.y)
+    n = Vector((nx, ny, nz))
+    return n.normalized() if n.length > 1e-12 else n
+
+
+def add_polys(builder: MeshBuilder, verts: Sequence[Vector], faces: Sequence[Sequence[int]],
+              color_of: Callable[[Vector, Vector], int]) -> list[int]:
+    """Añade una pieza dada como vértices y caras locales; el color de cada
+    cara lo decide «color_of(normal, centro)». Devuelve los índices nuevos."""
+    ids = [builder.vert(v) for v in verts]
+    for f in faces:
+        pts = [verts[i] for i in f]
+        center = sum(pts, Vector((0.0, 0.0, 0.0))) / len(pts)
+        builder.face(tuple(ids[i] for i in f), color_of(face_normal(pts), center))
+    return ids
+
+
+def clamp_to_planes(p: Vector, planes: Sequence[tuple[Vector, float]]) -> Vector:
+    """Recorta un punto contra planos (normal unitaria, distancia): lo que
+    sobresale se proyecta sobre el plano. Da las caras planas grandes de las
+    rocas talladas."""
+    out = p.copy()
+    for n, d in planes:
+        excess = out.dot(n) - d
+        if excess > 0.0:
+            out = out - n * excess
+    return out
 
 
 def mesh_of(obj: bpy.types.Object) -> bpy.types.Mesh:

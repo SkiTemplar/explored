@@ -1,0 +1,162 @@
+{
+  "kit": "K1 Naturaleza",
+  "generador": "uv run style-kit-k1",
+  "mallas": [
+    {
+      "malla": "SM_PalmA_01",
+      "fbx": "SM_PalmA_01.fbx",
+      "presupuesto": "palmera",
+      "tris": 1418,
+      "dimensiones_m": [
+        4.803,
+        4.698,
+        6.315
+      ],
+      "colores": [
+        "fibra",
+        "hierba_oscura",
+        "madera_media",
+        "madera_oscura",
+        "verde_palma",
+        "verde_selva"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_PalmB_01",
+      "fbx": "SM_PalmB_01.fbx",
+      "presupuesto": "palmera",
+      "tris": 1188,
+      "dimensiones_m": [
+        4.875,
+        3.783,
+        4.283
+      ],
+      "colores": [
+        "fibra",
+        "hierba_oscura",
+        "madera_media",
+        "madera_oscura",
+        "verde_palma",
+        "verde_selva"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Bamboo_01",
+      "fbx": "SM_Bamboo_01.fbx",
+      "presupuesto": "palmera",
+      "tris": 1372,
+      "dimensiones_m": [
+        3.212,
+        2.831,
+        4.56
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "madera_clara",
+        "verde_lima",
+        "verde_selva"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_Shrub_01",
+      "fbx": "SM_Shrub_01.fbx",
+      "presupuesto": "vegetacion",
+      "tris": 400,
+      "dimensiones_m": [
+        1.56,
+        1.324,
+        0.973
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "verde_selva"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_GrassClump_01",
+      "fbx": "SM_GrassClump_01.fbx",
+      "presupuesto": "vegetacion",
+      "tris": 360,
+      "dimensiones_m": [
+        0.91,
+        0.954,
+        0.643
+      ],
+      "colores": [
+        "arena_oscura",
+        "fibra",
+        "hierba_clara",
+        "hierba_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_RockBig_01",
+      "fbx": "SM_RockBig_01.fbx",
+      "presupuesto": "palmera",
+      "tris": 580,
+      "dimensiones_m": [
+        2.725,
+        1.821,
+        1.667
+      ],
+      "colores": [
+        "roca_clara",
+        "roca_media",
+        "roca_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_RockSmall_01",
+      "fbx": "SM_RockSmall_01.fbx",
+      "presupuesto": "vegetacion",
+      "tris": 260,
+      "dimensiones_m": [
+        0.723,
+        0.634,
+        0.455
+      ],
+      "colores": [
+        "roca_clara",
+        "roca_media",
+        "roca_oscura"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    },
+    {
+      "malla": "SM_CliffRock_01",
+      "fbx": "SM_CliffRock_01.fbx",
+      "presupuesto": "palmera",
+      "tris": 1008,
+      "dimensiones_m": [
+        8.0,
+        4.131,
+        6.0
+      ],
+      "colores": [
+        "hierba_clara",
+        "hierba_oscura",
+        "roca_clara",
+        "roca_media",
+        "roca_oscura",
+        "verde_selva"
+      ],
+      "origen": "generado por Tools/Style/explored_style/kits/k1.py (sin fuentes externas)",
+      "licencia": "propia del proyecto Explored"
+    }
+  ]
+}
