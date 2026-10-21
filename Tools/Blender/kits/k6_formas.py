@@ -303,15 +303,15 @@ def _leaf(azimuth_deg: float, length: float, tilt: float) -> Blade:
 FLOWERS: dict[str, FlowerSpec] = {
     # margarita blanca de botón amarillo: 2 flores y 2 hojas
     'SM_FlowerA': FlowerSpec(
-        heads=(FlowerHead(30.0, 0.24, 7.0, 0.046), FlowerHead(215.0, 0.18, 14.0, 0.04)),
+        heads=(FlowerHead(30.0, 0.31, 7.0, 0.06), FlowerHead(215.0, 0.25, 14.0, 0.052)),
         petals=5, petal=C['blanco_nube'], center=C['laton'], center_sides=5, stem_sides=3,
-        leaves=(_leaf(120.0, 0.14, 44.0), _leaf(300.0, 0.12, 52.0))),
+        leaves=(_leaf(120.0, 0.16, 44.0), _leaf(300.0, 0.14, 52.0))),
     # florecillas lilas de 4 pétalos: 3 flores, tallos planos y 2 hojas
     'SM_FlowerB': FlowerSpec(
-        heads=(FlowerHead(80.0, 0.21, 6.0, 0.036), FlowerHead(200.0, 0.16, 15.0, 0.033),
-               FlowerHead(320.0, 0.13, 20.0, 0.031)),
+        heads=(FlowerHead(80.0, 0.29, 6.0, 0.048), FlowerHead(200.0, 0.24, 15.0, 0.044),
+               FlowerHead(320.0, 0.2, 20.0, 0.042)),
         petals=4, petal=C['malva_ocaso'], center=C['laton'], center_sides=4, stem_sides=2,
-        leaves=(_leaf(20.0, 0.1, 50.0), _leaf(250.0, 0.11, 46.0))),
+        leaves=(_leaf(20.0, 0.13, 50.0), _leaf(250.0, 0.14, 46.0))),
 }
 
 
