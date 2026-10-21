@@ -8,7 +8,10 @@
 
 #include "LighthouseLamp.generated.h"
 
+class UAudioComponent;
+class UMaterialInstanceDynamic;
 class UPointLightComponent;
+class UProceduralMeshComponent;
 class USpotLightComponent;
 class UStaticMeshComponent;
 
@@ -16,7 +19,8 @@ class UStaticMeshComponent;
  * Linterna del faro (GDD v3 §5.6, recetas 9 y 10): tres ranuras (lente, los dos tarros de
  * aceite, mecha) y encender. Cada interacción llena la siguiente ranura con lo que lleva Iria;
  * con las tres llenas, «Encender la baliza» tarda 3 s y arranca el final (UBeaconSubsystem).
- * Encendida, un foco gira sobre el mar.
+ * Durante esos 3 s la llama prende y crece (luz que parpadea y sube); encendida, un foco y un
+ * cono visible (M_BeaconBeam) giran sobre el mar con el sonido de la lente.
  *
  * Mallas: SM_FaroLinterna_01 (K2) y las piezas de las ranuras SM_Lente_01, SM_TarroAceite_01 y
  * SM_Mecha_01 (K3); mientras no estén importadas, primitivas del motor (ExploredAssetFallback).
@@ -51,6 +55,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Explored|Baliza")
 	float LightSeconds = 3.0f;
 
+	/** Largo (m) y radio final (m) del cono visible del haz. */
+	UPROPERTY(EditAnywhere, Category = "Explored|Baliza")
+	float BeamConeLengthM = 140.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Explored|Baliza")
+	float BeamConeRadiusM = 11.0f;
+
+	/** Capturas: prende la llama y enciende la baliza a los LightSeconds, sin superviviente. */
+	void DebugIgnite();
+
+	/** Instante (s de mundo) en que empezó a prender; negativo si no está prendiendo. */
+	float GetIgniteStartedAt() const { return IgniteStartedAt; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnConfigured(const FIslandProp& Prop, const FIslandPropType& Type) override;
@@ -60,6 +77,11 @@ private:
 	void RefreshFromProgress();
 	UStaticMeshComponent* MakePart(const TCHAR* Name, const TCHAR* MeshPath, const TCHAR* FallbackPath,
 		const FVector& LocationCm, const FVector& FallbackScale, int32 ColorIndex);
+	/** Cono del haz (malla procedural abierta, punta en la lente, con M_BeaconBeam), hijo del foco. */
+	void BuildBeamCone();
+	/** Luz de la llama mientras prende y al quedar encendida (parpadeo suave). */
+	void UpdateFlame(float Now);
+	void StartLensSound();
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Baliza")
 	TObjectPtr<USpotLightComponent> Beam;
@@ -75,6 +97,18 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UStaticMeshComponent> WickPart;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UProceduralMeshComponent> BeamCone;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> BeamMaterial;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UAudioComponent> LensSound;
+
+	float IgniteStartedAt = -1.0f;
+	float LitAt = -1.0f;
 
 	float LampHeightCm = 250.0f;
 	float LampRadiusCm = 120.0f;

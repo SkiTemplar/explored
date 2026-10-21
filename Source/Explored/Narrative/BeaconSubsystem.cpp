@@ -1,5 +1,7 @@
 #include "Narrative/BeaconSubsystem.h"
 
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -21,6 +23,8 @@
 #include "Narrative/ExploredSupplyCrate.h"
 #include "Narrative/SupplyCrateModel.h"
 #include "Narrative/ExploredBeaconActors.h"
+#include "Narrative/FinaleSequenceModel.h"
+#include "Narrative/LighthouseLamp.h"
 #include "Save/SaveIslandSections.h"
 #include "Sky/TimeOfDaySubsystem.h"
 #include "Survival/IslandBodyComponent.h"
@@ -48,9 +52,19 @@ namespace BeaconSubsystemDetail
 	const FVector MistralFromOffsetCm(160000.0, -70000.0, 0.0);
 	const FVector MistralToOffsetCm(48000.0, -20000.0, 0.0);
 
-	const TCHAR* const HornSound = TEXT("/Game/Generated/Audio/Efectos/sfx_flute_note.sfx_flute_note");
-	/** La nota de flauta grave, provisional hasta que exista la bocina del Mistral (GDD §10). */
-	constexpr float HornPitch = 0.3f;
+	/** Bocina del Mistral (Tools/Audio, generators/beacon.py). */
+	const TCHAR* const HornSound = TEXT("/Game/Generated/Audio/Efectos/sfx_ship_horn.sfx_ship_horn");
+	/** Tono de la bocina (1 = el de la grabación). */
+	constexpr float HornPitch = 1.0f;
+	/** Plano del final (cm, respecto a la linterna): detrás del faro, al lado contrario de la casa
+	 *  (al oeste) y algo por encima, para ver el haz sobre el mar y el Mistral. */
+	constexpr double FinaleCamBackCm = 3200.0;
+	constexpr double FinaleCamSideCm = -2200.0;
+	constexpr double FinaleCamDropCm = -500.0;
+	/** Punto al que mira: mar adentro hacia el Mistral, cerca del agua. */
+	constexpr double FinaleLookAheadCm = 14000.0;
+	constexpr double FinaleLookZCm = 300.0;
+	constexpr float FinaleBlendSeconds = 2.5f;
 	const TCHAR* const PageSound = TEXT("/Game/Generated/Audio/Efectos/sfx_ui_page_turn.sfx_ui_page_turn");
 	const TCHAR* const IgniteSound = TEXT("/Game/Generated/Audio/Efectos/sfx_fire_ignite.sfx_fire_ignite");
 
@@ -332,6 +346,20 @@ void UBeaconSubsystem::ResetEnding()
 		Mistral->Destroy();
 		Mistral = nullptr;
 	}
+	if (FinaleCamera)
+	{
+		if (AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			PC->SetCutsceneActive(false);
+			PC->ResetIgnoreInputFlags();
+			if (APawn* Pawn = PC->GetPawn())
+			{
+				PC->SetViewTarget(Pawn);
+			}
+		}
+		FinaleCamera->Destroy();
+		FinaleCamera = nullptr;
+	}
 	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
 	{
 		Music->SetFinale(false);
@@ -586,9 +614,56 @@ void UBeaconSubsystem::StartMistral()
 	{
 		Music->SetFinale(true);
 	}
+	StartFinaleCamera();
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Luces del Mistral en el horizonte"));
 	World->GetTimerManager().SetTimer(HornTimer, FTimerDelegate::CreateUObject(this, &UBeaconSubsystem::SoundHorn),
-		FMath::Max(0.1f, MistralApproachSeconds * HornAtApproachFraction), false);
+		FFinaleSequenceModel::HornDelaySeconds(FinaleTiming()), false);
+}
+
+void UBeaconSubsystem::StartFinaleCamera()
+{
+	using namespace BeaconSubsystemDetail;
+	UWorld* World = GetWorld();
+	AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (!World || !PC || FinaleCamera)
+	{
+		return;
+	}
+	// La linterna marca el encuadre; sin ella (mapa de pruebas), la torre a 30 m de altura.
+	FVector Lantern(TowerLocation.X, TowerLocation.Y, TowerLocation.Z + 3000.0);
+	for (TActorIterator<ALighthouseLamp> It(World); It; ++It)
+	{
+		Lantern = It->GetActorLocation();
+		break;
+	}
+	const FVector Toward = MistralToOffsetCm.GetSafeNormal2D();
+	const FVector Side = FVector::CrossProduct(FVector::UpVector, Toward);
+	const FVector Eye = Lantern - Toward * FinaleCamBackCm + Side * FinaleCamSideCm - FVector(0.0, 0.0, FinaleCamDropCm);
+	const FVector Look(Lantern.X + Toward.X * FinaleLookAheadCm, Lantern.Y + Toward.Y * FinaleLookAheadCm, FinaleLookZCm);
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FinaleCamera = World->SpawnActor<ACameraActor>(Eye, (Look - Eye).Rotation(), Params);
+	if (!FinaleCamera)
+	{
+		return;
+	}
+	FinaleCamera->GetCameraComponent()->SetFieldOfView(70.0f);
+	FinaleCamera->GetCameraComponent()->bConstrainAspectRatio = false;
+	// El jugador mira el final: sin moverse ni girar la cámara hasta el epílogo.
+	PC->SetCutsceneActive(true);
+	PC->SetIgnoreMoveInput(true);
+	PC->SetIgnoreLookInput(true);
+	PC->SetViewTargetWithBlend(FinaleCamera, FinaleTiming().CameraBlendSeconds, VTBlend_Cubic);
+}
+
+FFinaleTiming UBeaconSubsystem::FinaleTiming() const
+{
+	FFinaleTiming Timing;
+	Timing.MistralApproachSeconds = MistralApproachSeconds;
+	Timing.HornAtApproachFraction = BeaconSubsystemDetail::HornAtApproachFraction;
+	Timing.HornToFadeSeconds = HornToFadeSeconds;
+	Timing.CameraBlendSeconds = BeaconSubsystemDetail::FinaleBlendSeconds;
+	return FFinaleSequenceModel::Sanitize(Timing);
 }
 
 void UBeaconSubsystem::SoundHorn()
@@ -598,14 +673,14 @@ void UBeaconSubsystem::SoundHorn()
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().SetTimer(FadeTimer, FTimerDelegate::CreateUObject(this, &UBeaconSubsystem::FinishEnding),
-			FMath::Max(0.1f, HornToFadeSeconds), false);
+			FFinaleSequenceModel::FadeDelaySeconds(FinaleTiming()), false);
 	}
 }
 
 void UBeaconSubsystem::FinishEnding()
 {
 	const FBeaconTexts& Texts = ExploredBeaconTexts::Get();
-	const EBeaconEpilogue Epilogue = FBeaconProgressModel::EpilogueFor(Run.Notebook);
+	const EBeaconEpilogue Epilogue = FFinaleSequenceModel::EpilogueForPages(FNotebookModel::ReadCount(Run.Notebook));
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Epílogo %s (%d/8 páginas)"),
 		Epilogue == EBeaconEpilogue::Complete ? TEXT("completo") : TEXT("parcial"), FNotebookModel::ReadCount(Run.Notebook));
 	if (AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))

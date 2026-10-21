@@ -1,15 +1,20 @@
 #include "Narrative/LighthouseLamp.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "ProceduralMeshComponent.h"
+#include "Sound/SoundBase.h"
 #include "UObject/SoftObjectPath.h"
 
 #include "Core/ExploredAssetFallback.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "Narrative/BeaconSubsystem.h"
+#include "Narrative/FinaleSequenceModel.h"
 #include "WorldGen/IslandPropsModel.h"
 
 #define LOCTEXT_NAMESPACE "ExploredBeacon"
@@ -26,6 +31,10 @@ namespace LighthouseLampDetail
 	constexpr int32 BrassColor = 10;
 	constexpr int32 WickColor = 5;
 	const FLinearColor BeamColor(1.0f, 0.88f, 0.62f);
+	const TCHAR* const BeamMaterialPath = TEXT("/Game/Art/Materials/M_BeaconBeam.M_BeaconBeam");
+	const TCHAR* const LensSoundPath = TEXT("/Game/Generated/Audio/Efectos/sfx_lens_rotation_loop.sfx_lens_rotation_loop");
+	constexpr float GlowLitCandelas = 2000.0f;
+	constexpr int32 ConeSides = 18;
 
 	/**
 	 * Ranuras de SM_FaroLinterna_01 en su espacio local (cm), de Art/Export/K2_Estructuras/manifest.json
@@ -106,6 +115,7 @@ void ALighthouseLamp::OnConfigured(const FIslandProp& Prop, const FIslandPropTyp
 	}
 	// Ligeramente hacia abajo para que el haz barra el mar cercano además del horizonte.
 	Beam->SetRelativeRotation(FRotator(-2.0, 0.0, 0.0));
+	BuildBeamCone();
 	RefreshFromProgress();
 }
 
@@ -137,6 +147,127 @@ UStaticMeshComponent* ALighthouseLamp::MakePart(const TCHAR* Name, const TCHAR* 
 	Part->SetVisibility(false);
 	Part->RegisterComponent();
 	return Part;
+}
+
+void ALighthouseLamp::BuildBeamCone()
+{
+	using namespace LighthouseLampDetail;
+	if (BeamCone)
+	{
+		return;
+	}
+	BeamCone = NewObject<UProceduralMeshComponent>(this, TEXT("BeamCone"));
+	BeamCone->SetupAttachment(Beam);
+	BeamCone->SetMobility(EComponentMobility::Movable);
+	BeamCone->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BeamCone->SetCastShadow(false);
+	// Cono abierto a lo largo de +X (el eje del foco): punta en la lente, boca a BeamConeLengthM.
+	const float Length = BeamConeLengthM * 100.0f;
+	const float Radius = BeamConeRadiusM * 100.0f;
+	const float Slope = Radius / FMath::Max(Length, 1.0f);
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UVs;
+	for (int32 Side = 0; Side <= ConeSides; ++Side)
+	{
+		const float Angle = UE_TWO_PI * static_cast<float>(Side) / ConeSides;
+		const FVector Radial(0.0, FMath::Cos(Angle), FMath::Sin(Angle));
+		const FVector Normal = (Radial - FVector(Slope, 0.0, 0.0)).GetSafeNormal();
+		Vertices.Add(FVector::ZeroVector);
+		Vertices.Add(FVector(Length, 0.0, 0.0) + Radial * Radius);
+		Normals.Add(Normal);
+		Normals.Add(Normal);
+		UVs.Add(FVector2D(static_cast<float>(Side) / ConeSides, 0.0f));
+		UVs.Add(FVector2D(static_cast<float>(Side) / ConeSides, 1.0f));
+	}
+	for (int32 Side = 0; Side < ConeSides; ++Side)
+	{
+		const int32 Tip = Side * 2;
+		Triangles.Append({ Tip, Tip + 3, Tip + 1 });
+	}
+	BeamCone->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, {}, {}, false);
+	if (UMaterialInterface* Material = Cast<UMaterialInterface>(FSoftObjectPath(BeamMaterialPath).TryLoad()))
+	{
+		BeamMaterial = UMaterialInstanceDynamic::Create(Material, this);
+		BeamMaterial->SetScalarParameterValue(TEXT("BeamLength"), Length);
+		BeamCone->SetMaterial(0, BeamMaterial);
+	}
+	BeamCone->SetVisibility(false);
+	BeamCone->RegisterComponent();
+}
+
+void ALighthouseLamp::StartLensSound()
+{
+	if (LensSound)
+	{
+		return;
+	}
+	const FSoftObjectPath Path(LighthouseLampDetail::LensSoundPath);
+	USoundBase* Sound = FPackageName::DoesPackageExist(Path.GetLongPackageName()) ? Cast<USoundBase>(Path.TryLoad()) : nullptr;
+	if (Sound)
+	{
+		LensSound = UGameplayStatics::SpawnSoundAttached(Sound, Glow, NAME_None, FVector::ZeroVector,
+			EAttachLocation::KeepRelativeOffset, false, 0.9f);
+	}
+}
+
+void ALighthouseLamp::UpdateFlame(float Now)
+{
+	using namespace LighthouseLampDetail;
+	FFinaleTiming Timing;
+	Timing.IgniteSeconds = LightSeconds;
+	float Strength = 0.0f;
+	if (bShowingLit)
+	{
+		Strength = 1.0f;
+	}
+	else if (IgniteStartedAt >= 0.0f)
+	{
+		// La mecha prende: la llama crece durante los 3 s de la acción.
+		Strength = FFinaleSequenceModel::FlameStrength(Timing, Now - IgniteStartedAt);
+		if (Now - IgniteStartedAt > LightSeconds + 1.0f)
+		{
+			// La acción se interrumpió sin encender: la llama no se queda prendida.
+			IgniteStartedAt = -1.0f;
+			Strength = 0.0f;
+		}
+	}
+	Glow->SetVisibility(Strength > 0.0f);
+	Glow->SetIntensity(GlowLitCandelas * Strength * FFinaleSequenceModel::Flicker(Now));
+	if (!BeamCone)
+	{
+		return;
+	}
+	const float Grow = bShowingLit && LitAt >= 0.0f ? FFinaleSequenceModel::BeamGrow(Timing, Now - LitAt) : 0.0f;
+	BeamCone->SetVisibility(Grow > 0.0f);
+	// Crece desde la lente: el cono conserva su apertura mientras se alarga.
+	BeamCone->SetRelativeScale3D(FVector(FMath::Max(Grow, 0.01f)));
+	if (BeamMaterial)
+	{
+		BeamMaterial->SetVectorParameterValue(TEXT("BeamOrigin"), FLinearColor(Beam->GetComponentLocation()));
+		BeamMaterial->SetScalarParameterValue(TEXT("BeamIntensity"), 0.6f * Grow);
+	}
+}
+
+void ALighthouseLamp::DebugIgnite()
+{
+	UWorld* World = GetWorld();
+	if (!World || bShowingLit)
+	{
+		return;
+	}
+	IgniteStartedAt = World->GetTimeSeconds();
+	SetActorTickInterval(0.0f);
+	FTimerHandle Handle;
+	World->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		if (UBeaconSubsystem* Subsystem = UBeaconSubsystem::Get(this))
+		{
+			Subsystem->TryLight();
+		}
+		RefreshFromProgress();
+	}), FMath::Max(LightSeconds, 0.1f), false);
 }
 
 void ALighthouseLamp::BeginPlay()
@@ -171,9 +302,24 @@ void ALighthouseLamp::RefreshFromProgress()
 	if (bShowingLit != Progress.bBeaconLit)
 	{
 		bShowingLit = Progress.bBeaconLit;
+		IgniteStartedAt = -1.0f;
+		LitAt = bShowingLit && GetWorld() ? GetWorld()->GetTimeSeconds() : -1.0f;
 		Beam->SetVisibility(bShowingLit);
 		Glow->SetVisibility(bShowingLit);
 		SetActorTickInterval(bShowingLit ? 0.0f : LighthouseLampDetail::IdleTickSeconds);
+		if (bShowingLit)
+		{
+			StartLensSound();
+		}
+		else if (LensSound)
+		{
+			LensSound->Stop();
+			LensSound = nullptr;
+		}
+		if (!bShowingLit && BeamCone)
+		{
+			BeamCone->SetVisibility(false);
+		}
 	}
 }
 
@@ -184,6 +330,10 @@ void ALighthouseLamp::Tick(float DeltaSeconds)
 	if (bShowingLit)
 	{
 		Beam->AddRelativeRotation(FRotator(0.0, BeamDegreesPerSecond * DeltaSeconds, 0.0));
+	}
+	if (bShowingLit || IgniteStartedAt >= 0.0f)
+	{
+		UpdateFlame(GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f);
 	}
 }
 
@@ -252,6 +402,9 @@ void ALighthouseLamp::Interact_Implementation(AActor* InInstigator)
 		return;
 	}
 	const TWeakObjectPtr<ALighthouseLamp> WeakThis(this);
+	// La llama prende durante la acción (UpdateFlame): el tick pasa a cada fotograma.
+	IgniteStartedAt = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f;
+	SetActorTickInterval(0.0f);
 	// Mientras dura, el superviviente está ocupado y CanInteract no deja empezar otra vez.
 	Survivor->StartTimedAction(LightSeconds, [WeakThis]()
 	{
@@ -265,6 +418,12 @@ void ALighthouseLamp::Interact_Implementation(AActor* InInstigator)
 			Subsystem->TryLight();
 		}
 		Lamp->RefreshFromProgress();
+		if (!Lamp->IsLit())
+		{
+			// No prendió: la llama se apaga.
+			Lamp->IgniteStartedAt = -1.0f;
+			Lamp->Glow->SetVisibility(false);
+		}
 	});
 }
 

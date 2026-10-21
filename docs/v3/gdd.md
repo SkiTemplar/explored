@@ -38,6 +38,8 @@ Al ver el faro por primera vez: «La Baliza Siete. La que tenía que apagar el l
 
 Después, créditos (60 s) y vuelta al menú. Sin pantalla de derrota.
 
+**Decisión de F6 (secuencia del final, `FFinaleSequenceModel`):** la llama crece en los 3 s de encender; el cono del haz (`M_BeaconBeam`) se alarga en 1,5 s y gira con el sonido de la lente; de noche, el Mistral aparece al encender y la cámara pasa en 2,5 s a un plano fijo detrás del faro. Bocina a 9,6 s de la aparición (80 % de los 12 s de llegada), fundido a negro a 14,6 s (2 s) y epílogo a 16,6 s. «Continuar» lleva a los créditos y, a los 60 s o con «Volver», al menú.
+
 ### 2.1 Cuaderno de guardia (8 páginas; 40-70 palabras; texto definitivo de primera pasada)
 
 Cada página se desbloquea al interactuar con el objeto-página en su lugar. Solo la 1 y la 8 están en el camino crítico. Tras leer una página, Iria añade una nota (≤ 20 palabras) en la misma hoja.
@@ -45,13 +47,13 @@ Cada página se desbloquea al interactuar con el objeto-página en su lugar. Sol
 | N.º | Lugar | Crítica | Texto de Roig | Nota de Iria |
 |---|---|---|---|---|
 | 1 | Casa del Farero (mesa) | Sí | «Cuaderno de guardia de la Baliza Siete. Hoy ha llegado la orden: la luz se apaga con el Plan Oscuridad. He escondido la lente en la bodega del carguero "Sáhara", en el bajo, donde no la buscan. El correo "Mistral" hace su última travesía de temporada pegado a esta costa: sin luz no se acerca. Hacen falta lente, aceite y mecha.» | «Así que fuiste tú. Lente, aceite y mecha. Eso puedo hacerlo.» |
-| 2 | Rocas del Pescador | No | «Pesco al amanecer y al atardecer: pican mejor. Para el aceite sirve el pescado, no el coco. Dos tarros alcanzan para una noche entera. El aceite lo pago yo; la empresa dejó de mandarlo hace dos años.» | «Dos tarros. Cuatro peces. Se puede.» |
+| 2 | Rocas del Pescador | No | «Pesco al amanecer y al atardecer: pican mejor. Para el aceite sirve el pescado, no el coco. Dos tarros alcanzan para una noche entera. El aceite lo pago yo; la empresa dejó de mandarlo hace seis años.» | «Dos tarros. Cuatro peces. Se puede.» |
 | 3 | Palmar | No | «La mecha es fibra de palma trenzada. Se recoge del suelo, no de la palma: la palma da cocos y hay que dejarla viva. Cuento ocho palmas en la isla. Con cocos y lluvia se aguanta una semana. Sin lluvia, tres días.» | «Ocho palmas. Dieciséis cocos. Hay que repartirlos.» |
 | 4 | Bosque de Bambú | No | «Hice mi balsa con cuatro troncos y dos cuerdas. Sirve para cruzar al bajo con mar en calma. Cuando el barómetro baja de mil, me quedo en tierra: es la regla del faro y la de mi padre.» | «Barómetro bajo mil. Lo tengo en el bolsillo.» |
 | 5 | Playa Norte | No | «Desde aquí se ve el bajo. El "Sáhara" varó hace nueve años y el capitán no quiso dejarlo hasta que cayó el último mástil. No sé si fue valor o miedo a la empresa. Rema hacia el mástil: la corriente empuja a la izquierda.» | «Mástil a la vista. Corriente a la izquierda.» |
 | 6 | Puente del «Sáhara» | No | «Subí la lente a hombros, treinta y un peldaños de la bodega a cubierta, y la dejé en la caja de mapas. Una lente sola no es una luz. Una luz es lente, aceite y mecha, y alguien que las junte.» | «La caja de mapas. Aquí está.» |
 | 7 | Mirador de la Colina | No | «Llevo cuarenta años encendiendo esta luz; los últimos seis, sin que nadie me lo pida ni me lo pague. Dicen que el satélite ve más lejos. No ve a un hombre con una barca sin radio en mitad de la noche. Una luz apagada es una promesa rota.» | «Seis años. Y yo, seis balizas apagadas.» |
-| 8 | Linterna del faro | Sí | «Si has llegado hasta aquí, ya sabes más del mar que la empresa. Pon la lente en su aro, vierte los dos tarros, aprieta la mecha y enciende. No es un favor que me hagas a mí. Cuando la veas girar, sabrás por qué la guardé. Gracias, quien seas. A. R.» | «De nada, Roig.» |
+| 8 | Linterna del faro | Sí | «Si has llegado hasta aquí, ya sabes más del mar que la empresa. Pon la lente en su aro, vierte los dos tarros, aprieta la mecha y enciende. No es un favor que me hagas a mí. Cuando la veas girar, sabrás por qué la guardé. Gracias, seas quien seas. A. R.» | «De nada, Roig.» |
 
 ### 2.2 Pensamientos de Iria (disparadores, máximo 12)
 
@@ -73,6 +75,8 @@ Cada página se desbloquea al interactuar con el objeto-página en su lugar. Sol
 ## 3. Estructura y duración (primera partida: 45-75 min; objetivo del bot 50 min)
 
 **Decisión de F3e (sustituye a los 18 min de este párrafo y del pilar 1):** 24 h de juego = 24 min reales (1 h = 60 s). Con 18 min la partida competente del bot duraba 36,7 min a 1×, por debajo del mínimo de 47: la duración la fija el reloj (dormir a las 20:00, ciclón de 19:00 a 02:00, encender de noche el día 3), no las tareas. La tabla de abajo conserva los minutos originales; las cifras medidas están en `docs/v3/estado-f3.md`. El ojo sigue durando 65 s (≈ 1,08 h) y el chubasco dura 2 h de juego (120 s).
+
+**Decisión de F6 (sustituye a la de F3e):** 24 h de juego = 26 min reales (1 h = 65 s), para que la partida competente del bot quede en 50-60 min (52,4 min medidos; antes 48,5). La cota del reloj está en `FRunPacingModel` (47 h despierto: 13 + 20 + 14; 50,9 min de juego + 0,3 de final + 1 de créditos = 52,2 min) con su spec. El ojo sigue durando 65 s reales, que ahora son 1 h de juego (22:00-23:00), y el chubasco 2 h de juego (130 s). Verificación pendiente con las 3 rutas del bot: `docs/v3/pendiente-motor.md`.
 
 Reloj: 24 h de juego = 18 min reales (1 h = 45 s). Luz de 06:00 a 20:00 (10,5 min); noche de 20:00 a 06:00. Inicio: día 1, 04:10 (despertar), el jugador pasa a la mañana por fundido corto a las 07:00.
 

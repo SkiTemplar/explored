@@ -4,6 +4,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
+#include "Misc/CommandLine.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/SoftObjectPath.h"
 
@@ -90,7 +91,8 @@ void AExploredPlaceholder::Configure(const FIslandProp& Prop, const FIslandPropT
 	ApplyCollision(*Mesh, Type.Collision);
 
 #if !UE_BUILD_SHIPPING
-	if (Type.bLabel && !bFinalMesh)
+	// Etiquetas de depuración del blockout: solo con -ExploredLabels (en F6 ya no se ven al jugar).
+	if (Type.bLabel && !bFinalMesh && FParse::Param(FCommandLine::Get(), TEXT("ExploredLabels")))
 	{
 		Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));
 		Label->SetRelativeLocation(FVector(0.0, 0.0, Type.Size.Z * 100.0 + LabelGapCm));

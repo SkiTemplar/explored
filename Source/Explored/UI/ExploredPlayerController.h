@@ -102,6 +102,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void CloseCredits();
+	/** Tema de créditos del director musical (UExploredMusicSubsystem::SetCredits). */
+	void SetCreditsMusic(bool bCredits) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Explored|UI")
 	void OpenPauseMenu();

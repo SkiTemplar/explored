@@ -20,6 +20,7 @@
 #include "Debug/ExploredPlaytestAuditor.h"
 #include "Explored.h"
 #include "Narrative/BeaconSubsystem.h"
+#include "Narrative/LighthouseLamp.h"
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredSurvivorComponent.h"
 #include "UI/IslandHudModel.h"
@@ -277,6 +278,28 @@ void UExploredShotSubsystem::BuildShotList(const FString& Set)
 		Shots.Last().Action = TEXT("light");
 	}
 
+	if (Set == TEXT("f6"))
+	{
+		// Final escenificado de F6, en orden y con el reloj real del final: la llama prende
+		// (2 s de los 3), el plano del final con el haz y el Mistral lejos, el Mistral cerca con la
+		// bocina, el epílogo y los créditos. Las tres últimas usan la cámara del propio final.
+		const FVector2D Tower(45.0f, 15.0f);
+		const float TowerTop = GroundAt(Tower) + 12.0f;
+		AddShot(TEXT("f6-final-encender"), FVector(36.0f, 9.0f, TowerTop + 3.0f), FVector(Tower.X, Tower.Y, TowerTop + 1.5f), 22.0f);
+		Shots.Last().Action = TEXT("ignite");
+		Shots.Last().Day = 3;
+		for (const TCHAR* Name : { TEXT("f6-final-haz"), TEXT("f6-final-mistral"), TEXT("f6-final-epilogo"), TEXT("f6-final-creditos") })
+		{
+			FExploredShot Shot;
+			Shot.Name = Name;
+			Shot.Hours = 22.0f;
+			Shot.Day = 3;
+			Shot.Action = TEXT("finale");
+			Shot.bShowUI = Shot.Name.EndsWith(TEXT("epilogo")) || Shot.Name.EndsWith(TEXT("creditos"));
+			Shots.Add(Shot);
+		}
+	}
+
 	if (Set == TEXT("f5"))
 	{
 		BuildUiShots();
@@ -368,6 +391,23 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 {
 	const FExploredShot& Shot = Shots[Index];
 	UWorld* World = GetWorld();
+	if (Shot.Action == TEXT("finale"))
+	{
+		// La cámara es la del final (UBeaconSubsystem::StartFinaleCamera): no se toca la vista.
+		// Tiempos desde la captura anterior (4 s de asentamiento + este desfase): haz a ~6 s del
+		// encendido, Mistral con la bocina a ~11 s, epílogo a ~21 s y créditos al pedirlos.
+		Timer = Shot.Name.EndsWith(TEXT("mistral")) ? 0.5f : Shot.Name.EndsWith(TEXT("epilogo")) ? -5.5f : 0.0f;
+		if (Shot.Name.EndsWith(TEXT("creditos")))
+		{
+			if (AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
+			{
+				PC->ShowEndCredits();
+			}
+		}
+		bRequested = false;
+		CurrentShotFrameRates.Reset();
+		return;
+	}
 	if (BeginUiShot(Shot))
 	{
 		// El final funde a negro 2 s antes de enseñar el epílogo: se espera más que en el resto.
@@ -440,7 +480,7 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		Time->SetTimeScale(0.0f);
 	}
 	// Conjunto «beacon»: se juega (sin el menú principal encima) para ver el HUD de juego.
-	AExploredPlayerController* BeaconPC = Shot.Name.StartsWith(TEXT("beacon"))
+	AExploredPlayerController* BeaconPC = Shot.Name.StartsWith(TEXT("beacon")) || Shot.Name.StartsWith(TEXT("f6-final"))
 		? Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(World, 0)) : nullptr;
 	if (BeaconPC && BeaconPC->GetUIMode() != EExploredUIMode::Playing)
 	{
@@ -466,6 +506,20 @@ void UExploredShotSubsystem::BeginShot(int32 Index)
 		{
 			Beacon->DebugSetStage(EBeaconStage::LinternaMontada);
 			Beacon->TryLight();
+		}
+		else if (Shot.Action == TEXT("ignite"))
+		{
+			Beacon->DebugSetStage(EBeaconStage::LinternaMontada);
+			for (TActorIterator<ALighthouseLamp> It(World); It; ++It)
+			{
+				It->DebugIgnite();
+				break;
+			}
+			// Captura a los 2 s de los 3 que tarda en prender (4 s de asentamiento).
+			Timer = 2.0f;
+			bRequested = false;
+			CurrentShotFrameRates.Reset();
+			return;
 		}
 	}
 	// «wait»: deja correr la llegada del Mistral y el fundido antes de capturar.

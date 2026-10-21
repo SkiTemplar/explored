@@ -33,6 +33,8 @@ Narrative/BeaconProgressModel.cpp
 Narrative/NotebookModel.cpp
 Narrative/BeaconDirectorModel.cpp
 Narrative/SupplyCrateModel.cpp
+Narrative/FinaleSequenceModel.cpp
+Narrative/RunPacingModel.cpp
 Survival/BodyEventsModel.cpp
 UI/TutorialHintModel.cpp
 Weather/StormClockModel.cpp

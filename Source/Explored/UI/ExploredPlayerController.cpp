@@ -12,8 +12,10 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "Misc/CommandLine.h"
+#include "Audio/ExploredMusicSubsystem.h"
 #include "Core/ExploredWiringSubsystem.h"
 #include "Narrative/BeaconSubsystem.h"
+#include "Narrative/FinaleSequenceModel.h"
 #include "Player/ExploredCharacter.h"
 #include "Survival/BodySignalsComponent.h"
 #include "UI/ExploredGameUserSettings.h"
@@ -494,11 +496,21 @@ void AExploredPlayerController::OpenCredits()
 	TSharedRef<SExploredCredits> Widget = SNew(SExploredCredits)
 		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::CloseCredits));
 	ShowOverlay(Widget, Widget->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::Credits);
+	SetCreditsMusic(true);
 }
 
 void AExploredPlayerController::CloseCredits()
 {
+	SetCreditsMusic(false);
 	NavigateBack();
+}
+
+void AExploredPlayerController::SetCreditsMusic(bool bCredits) const
+{
+	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
+	{
+		Music->SetCredits(bCredits);
+	}
 }
 
 void AExploredPlayerController::OpenPauseMenu()
@@ -607,14 +619,14 @@ void AExploredPlayerController::ShowEnding(const FText& EpilogueLine, const FTex
 		PC->SetInputMode(InputMode);
 		if (PC->FadeWidget.IsValid())
 		{
-			PC->FadeWidget->FadeFromBlack(1.5f);
+			PC->FadeWidget->FadeFromBlack(FFinaleTiming().FadeFromBlackSeconds);
 		}
 		PC->bShowingEnding = true;
 		UE_LOG(LogTemp, Display, TEXT("[Explored] Pantalla de epílogo"));
 	};
 	if (FadeWidget.IsValid())
 	{
-		FadeWidget->FadeToBlack(2.0f, Show);
+		FadeWidget->FadeToBlack(FFinaleTiming().FadeToBlackSeconds, Show);
 	}
 	else
 	{
@@ -625,6 +637,7 @@ void AExploredPlayerController::ShowEnding(const FText& EpilogueLine, const FTex
 void AExploredPlayerController::ShowEndCredits()
 {
 	HideOverlay();
+	SetCreditsMusic(true);
 	TSharedRef<SExploredCredits> Widget = SNew(SExploredCredits)
 		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ExitToMainMenu));
 	CurrentOverlay = Widget;
@@ -644,7 +657,7 @@ void AExploredPlayerController::ShowEndCredits()
 		EndCreditsTicker.Reset();
 		ExitToMainMenu();
 		return false;
-	}), FMath::Max(1.0f, EndCreditsSeconds));
+	}), FMath::Max(FFinaleSequenceModel::MinCreditsSeconds, EndCreditsSeconds));
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final"));
 }
 

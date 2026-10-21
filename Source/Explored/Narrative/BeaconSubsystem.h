@@ -8,6 +8,8 @@
 
 #include "BeaconSubsystem.generated.h"
 
+class ACameraActor;
+struct FFinaleTiming;
 class AExploredMistralLights;
 class APawn;
 class FSaveArchive;
@@ -108,6 +110,10 @@ private:
 	void PlaySound2D(const TCHAR* Path, float Pitch = 1.0f) const;
 
 	void StartMistral();
+	/** Plano del final: cámara fija detrás del faro mirando al mar por donde llega el Mistral. */
+	void StartFinaleCamera();
+	/** Tiempos del final (FFinaleSequenceModel) con los valores editables de este subsistema. */
+	FFinaleTiming FinaleTiming() const;
 	/** Cancela el final en curso (temporizadores de bocina y fundido, luces del Mistral, música del final). */
 	void ResetEnding();
 	/** Al amanecer, si la leña quemada deja la partida sin hoguera posible, el mar deja leña en la Cala Varada. */
@@ -142,6 +148,9 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<AExploredMistralLights> Mistral;
+
+	UPROPERTY(Transient)
+	TObjectPtr<ACameraActor> FinaleCamera;
 
 	FTimerHandle HornTimer;
 	FTimerHandle FadeTimer;
