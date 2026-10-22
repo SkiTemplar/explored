@@ -158,6 +158,14 @@ struct EXPLORED_API FFaunaActivity
 	/** Actividad de la especie a esa hora en [ActivityFloor, 1]. */
 	static float Level(EFaunaSpecies Species, float Hours);
 
+	/**
+	 * ¿Hay aves en el aire? Solo con luz de día y nunca en el final de la baliza (de noche se veían
+	 * gaviotas delante de la cámara del Mistral).
+	 */
+	static bool BirdsAloft(float Hours, bool bFinale);
+
+	/** Luz diurna (Daylight) por debajo de la cual las aves ya no vuelan. */
+	static constexpr float BirdsMinDaylight = 0.05f;
 	static constexpr float DuskStartHours = 17.0f;
 	static constexpr float DuskEndHours = 19.5f;
 };

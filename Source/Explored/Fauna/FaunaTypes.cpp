@@ -94,6 +94,11 @@ float FFaunaActivity::Daylight(float Hours)
 	return FMath::SmoothStep(5.5f, 7.0f, H) * (1.0f - FMath::SmoothStep(17.5f, 19.0f, H));
 }
 
+bool FFaunaActivity::BirdsAloft(float Hours, bool bFinale)
+{
+	return !bFinale && Daylight(Hours) > BirdsMinDaylight;
+}
+
 float FFaunaActivity::Level(EFaunaSpecies Species, float Hours)
 {
 	using namespace FaunaTypesDetail;

@@ -12,6 +12,7 @@
 #include "Core/ExploredRandom.h"
 #include "Core/SystemLinks.h"
 #include "Fauna/ExploredMarineCreature.h"
+#include "Narrative/BeaconSubsystem.h"
 #include "Ocean/ExploredOcean.h"
 #include "Ocean/OceanCurrents.h"
 #include "Player/SwimComponent.h"
@@ -658,8 +659,22 @@ void AExploredFaunaManager::Tick(float DeltaSeconds)
 		}
 	}
 
+	// De noche y en el final de la baliza las bandadas no se ven ni se mueven (posan fuera de cuadro).
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	const bool bBirdsAloft = FFaunaActivity::BirdsAloft(Stimuli.Hours, Beacon && Beacon->IsBeaconLit());
 	for (FFlockEntry& Entry : Flocks)
 	{
+		if (UInstancedStaticMeshComponent* FlockComponent = GroupComponents.IsValidIndex(Entry.ComponentIndex) ? GroupComponents[Entry.ComponentIndex].Get() : nullptr)
+		{
+			if (FlockComponent->IsVisible() != bBirdsAloft)
+			{
+				FlockComponent->SetVisibility(bBirdsAloft);
+			}
+		}
+		if (!bBirdsAloft)
+		{
+			continue;
+		}
 		const float Delta = LodDelta(Entry.Species, Entry.Model.GetBoids().Centroid(), Entry.LodId, Entry.Tier, Entry.PendingDelta);
 		if (Delta <= 0.0f)
 		{

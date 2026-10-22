@@ -751,6 +751,9 @@ void FMarineFaunaSpec::Define()
 			TestTrue(TEXT("Aves casi nada de noche"), FFaunaActivity::Level(EFaunaSpecies::Gull, 2.0f) < 0.1f);
 			TestEqual(TEXT("Medusas siempre"), FFaunaActivity::Level(EFaunaSpecies::Jellyfish, 3.0f), 1.0f);
 			TestTrue(TEXT("Ventana del atardecer"), FFaunaActivity::IsDusk(18.0f) && !FFaunaActivity::IsDusk(12.0f));
+			TestTrue(TEXT("Aves en el aire de día"), FFaunaActivity::BirdsAloft(12.0f, false) && FFaunaActivity::BirdsAloft(17.5f, false));
+			TestFalse(TEXT("Sin aves de noche"), FFaunaActivity::BirdsAloft(22.0f, false) || FFaunaActivity::BirdsAloft(3.0f, false));
+			TestFalse(TEXT("Sin aves en el final"), FFaunaActivity::BirdsAloft(12.0f, true));
 		});
 	});
 

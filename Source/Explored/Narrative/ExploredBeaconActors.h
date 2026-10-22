@@ -86,8 +86,11 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	UPointLightComponent* MakeLight(const TCHAR* Name, const FLinearColor& Color, const FVector& Offset, float Intensity);
+	UPointLightComponent* MakeLight(const TCHAR* Name, const FLinearColor& Color, const FVector& Offset, float Intensity,
+		float AttenuationRadiusCm = 60000.0f);
 	UStaticMeshComponent* MakeBulb(const TCHAR* Name, UPointLightComponent& Light, float SizeMeters);
+	/** Casco en silueta (SM_CargueroCasco_01 a media escala, hierro) con ojos de buey encendidos. */
+	void MakeHull();
 
 	UPROPERTY(VisibleAnywhere, Category = "Explored|Baliza")
 	TObjectPtr<USceneComponent> Root;
