@@ -230,10 +230,50 @@ Decisiones aceptadas por el diseñador, un commit por elemento (detalle en cada 
   teclado está cubierta por spec (`MenuNavigationStep`) y por la navegación nativa de Slate, pero no se ha
   probado pulsando teclas en una sesión real.
 
+## Revisión final: hallazgos corregidos (2026-10-22)
+
+Los 14 hallazgos confirmados de la revisión final, todos reales; un commit por grupo:
+
+- **Leña de deriva enterrada** (`70482a52`): se colocaba con suelo 0, unos 2 m bajo la arena de la
+  Cala Varada. Ahora usa `ExploredGround::HeightAtMeters`. Al cargar, los objetos soltados
+  enterrados suben a ras de suelo y los incoherentes (id desconocido, cantidad imposible, posición
+  no finita o fuera de la isla) se descartan con aviso; barril saneado (`FRainBarrelModel::Sanitize`,
+  NaN e infinito) y cocos acotados por palma. Specs en `BeaconSaveSpec` y `RainBarrelSpec`.
+- **Rendimiento** (`9081a250`): nubes, lluvia y bancos de peces ya no recrean su proxy cada
+  fotograma; el sol y la luna giran a pasos de 0,1° (`FSkyPaletteModel::ShouldRotateLight`) y la
+  luna solo hace sombra con el sol fuera. Sin medir con `stat VirtualShadowMapCache` ni con
+  `bench.ps1`: queda para el paso de bench de `pendiente-motor.md`.
+- **Efectos puntuales** (`5807fd27`): atenuación y clase antes de `Play` y `bAutoDestroy`.
+- **Datos que faltan** (`399548b9`): «<fichero>: no se puede leer» en el log (spec de editor).
+- **Teclas reservadas** (`70b0977c`): J, 1, 2 y 3.
+- **Tiempos del final** (`1c4f26da`): créditos, rollo y fundidos leen `UBeaconSubsystem::FinaleTiming()`;
+  `PhaseAt` sin uso, fuera.
+- **Salir del juego** (`292f969a`): pide confirmación como «Salir al menú». Decisión: confirmar,
+  no autoguardar al salir (un guardado silencioso en mitad de la noche del día 3 podría dejar al
+  jugador en un punto peor que su último guardado manual).
+- **Inglés de menús y HUD** (`023cc33b`): `.locres` compilados y versionados; spec
+  `Explored.Localization.Locres` (existe, trae el C++ y está al día con el español).
+- **Empaquetado y CI** (`8a1293bf`): `package.ps1` exige el audio local, recompila los `.locres` y
+  comprueba el audio cocinado y el `.locres` en el paquete; CI con `reset/**` y `Tools/Style`.
+
+Verificación: build del editor `Succeeded`; host tests 827 casos y 0 fallos; specs de editor
+`Locres` e `IslandData` 6/6; DataCheck `--strict` y `l10n export --check` sin errores; `Tools/Style`
+ruff, basedpyright (0 errores) y pytest 161/161 con 99 % de cobertura; partida del bot `competente`
+VERDE (52,4 min a 1×, 10/10 etapas, 10/10 guardar/cargar, 0 errores ni avisos en el informe).
+
+Con los `.locres` el juego arranca en cultura `es` (antes caía a `en` por no haber localización), y
+el smoke test del motor `Core::Logging::StructuredLogFormat`, que depende del formato de números,
+escribe 2-3 «LogAutomationTest: Error: Condition failed» al arrancar en Development. Es del motor,
+no del juego, y el informe del bot no lo cuenta.
+
+Pendiente de Rodrigo: añadir `Tools/Style` a la sección «Tests» de `CLAUDE.md` (no se ha tocado) y
+empujar `reset/v2` para que corra CI con ASan, UBSan y matemáticas rápidas.
+
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 
-- **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Un
-  clon limpio cocina sin música ni efectos. Decidir si van por LFS antes de entregar.
+- **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Ahora
+  el README explica cómo regenerarlos y `package.ps1` no empaqueta sin ellos, pero siguen sin copia
+  fuera de este PC. Decidir si van por LFS.
 - **La balsa no responde al mando** (solo W, A, D, E); fuera de alcance según el GDD §9.
 - **`Tools/Textures` no tiene `pyproject.toml`** aunque la sección «Tests» de `CLAUDE.md` lo cita;
   es carpeta del tramo «Relieve» y no se ha tocado.
