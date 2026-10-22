@@ -4,7 +4,8 @@ name: host-tests
 on:
   pull_request:
   push:
-    branches: [main]
+    # reset/** son las ramas largas de reinicio (v3 en reset/v2): sin PR abierta no pasarían por CI.
+    branches: [main, "reset/**"]
 
 jobs:
   cpp-models:
@@ -49,6 +50,10 @@ jobs:
           - tool: Island
             python: "3.13"
             extra: uv run island-props-check
+          - tool: Style
+            # Kits y láminas con bpy 5.2 y Workbench, como Blender.
+            python: "3.13"
+            egl: true
           - tool: Textures
             python: "3.11"
     defaults:

@@ -45,6 +45,16 @@ teclado.
   que indique la variable de entorno `UE_ROOT`).
 - Visual Studio 2022 con la carga de trabajo «Desarrollo de juegos con C++» (MSVC y Windows SDK).
 - Git LFS: los `.uasset`, `.umap`, `.png`, `.wav`, `.ogg` y `.ttf` van por LFS (`git lfs pull`).
+  **El audio no está en el repositorio**: `Content/Audio` (clases de sonido y música grabada) y
+  `Content/Generated` (efectos, ambiente y música, ~685 MB) se generan en local. En un clon limpio,
+  antes de abrir o empaquetar:
+
+  ```powershell
+  cd Tools/Audio; uv sync; uv run explored-audio build; cd ../..          # catálogo completo en Art/Export/Audio
+  powershell -NoProfile -File Tools/unreal_python.ps1 -Script Tools/Unreal/import_audio.py   # a Content/Generated/Audio y Content/Audio
+  ```
+
+  `Tools/package.ps1` se niega a empaquetar si falta ese audio y comprueba después que se ha cocinado.
 - Para las herramientas: [uv](https://docs.astral.sh/uv/) (Python), CMake ≥ 3.20 y clang o g++
   con C++20 (tests del host) y Blender 5.2 solo para regenerar arte.
 
