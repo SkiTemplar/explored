@@ -272,6 +272,9 @@ powershell -NoProfile -File Tools/bench.ps1 -Window         # con ventana, para 
 
 ## 11. Paquetes Development y Shipping y su arranque (criterios 2 y 5 de F7)
 
+**[~] Shipping hecho 2026-10-22** (604 MB, arranca al menú; detalle en `estado-f7.md`, «Paquete
+Shipping»). Falta el Development y su arranque.
+
 Los dos se archivan en `Saved/Package/Windows` y el segundo pisa al primero: se empaqueta y se
 arranca Shipping primero, y Development al final, porque es el que usa el paso 12.
 

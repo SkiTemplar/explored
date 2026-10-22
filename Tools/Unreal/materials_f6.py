@@ -118,7 +118,9 @@ def build_rain():
 
 SRGB_TO_LINEAR_HLSL = r"""
 float3 c = saturate(C.rgb);
-return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+// Sin ?: con condición vectorial: HLSL 2021 (pase Nanite de cómputo en SM6) no lo admite y el
+// material cocinado cae al de por defecto. step(c, 0.04045) vale 1 donde c <= 0.04045.
+return lerp(pow((c + 0.055) / 1.055, 2.4), c / 12.92, step(c, 0.04045));
 """
 
 

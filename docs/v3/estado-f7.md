@@ -9,10 +9,10 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una so
 | # | Criterio | Estado en este tramo |
 |---|---|---|
 | 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22 por la mañana, 199,8 / 116,7 fps tras quitar dos tirones de un fotograma; ver «Rendimiento en el editor, tanda del 2026-10-22 por la mañana»). Sobre el paquete: PENDIENTE (paso 12) |
-| 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Script y cocinado listos; Shipping compila; paquete y partidas PENDIENTE (motor) |
+| 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Shipping: OK (2026-10-22, empaqueta y arranca al menú; ver «Paquete Shipping»). Development y las 3 partidas sobre el paquete: PENDIENTE (pasos 11-12) |
 | 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | NO CUMPLIDO: `codex exec` no puede ejecutar nada en el sandbox de Windows (ver «Huecos de completitud»); revisión manual del guardado hecha |
 | 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 836/836 normal, con ASan + UBSan y con matemáticas rápidas (WSL); cobertura C++ 91,8 % de líneas, modelos v3 92-100 %. CI sin ejecutar: `reset/v2` sin empujar |
-| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | PENDIENTE (motor) |
+| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | OK: Shipping 604 MB con audio en `Saved/Package/Windows` (2026-10-22) |
 
 ## Hecho
 
@@ -348,8 +348,8 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
   constancia escrita de que Rodrigo aprobara los pilotos de F2 ni K1-K3. Solo él puede cerrarlo.
 - **F6.4 y paso 9 de `pendiente-motor.md`.** Falta una partida humana completa y la mezcla de audio
   a oído.
-- **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Sin empaquetar todavía en v3: tamaño,
-  arranque de Shipping y Development, tres partidas del bot y bench sobre el paquete.
+- **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Shipping hecho (ver «Paquete Shipping»);
+  faltan el Development, su arranque, las tres partidas del bot y el bench sobre el paquete.
 - **Arte con crítica pendiente** (paso 7): franja de arena mojada entre el agua y la espuma, ondas
   a contraluz, bloques de roca con techo verde junto al faro y ΔE de hierba y cénit por encima de
   8. No se ha tocado esta noche: son cambios de material y de malla que piden revisión visual de
@@ -359,6 +359,34 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
 - **`Tools/Textures` sin `pyproject.toml`** aunque la sección «Tests» de `CLAUDE.md` lo cita.
 - **Opcionales de F7 sin abordar:** cangrejo ambiental y optimización de LOD y distancia de
   dibujado (el bench va con 30-50 fps de margen sobre el mínimo).
+
+## Paquete Shipping (paso 11 de `pendiente-motor.md`, 2026-10-22)
+
+`powershell -NoProfile -File Tools/package.ps1 -Configuration Shipping`: `BUILD SUCCESSFUL`,
+`ExitCode=0`; el cocinado, 0 errores y 1 aviso único (`r.VolumetricFog` por escalabilidad, inocuo).
+
+- **Ruta y tamaño:** `Saved/Package/Windows` (lanzador `Explored.exe`), **604 MB**: `.ucas` 346 MB,
+  `Explored-Win64-Shipping.exe` 151 MB, `.pak` 13 MB y el resto, prerrequisitos y DLL del motor.
+- **Dentro:** los 17 ficheros de `Content/Data` sueltos (16 JSON, `grass.json` entre ellos, y
+  `ground_field.bin`); en el
+  `.pak`, las fuentes Lora, `T_IconosUI.png` y los `.locres` es/en; cocinados, las 11 mallas de
+  `/Game/Art/K6_Cesped`, el suelo de la isla y el audio de muestra (clases, música, efectos, ambiente).
+- **Arranque:** `Explored.exe -windowed` abre la ventana «Baliza Siete» con el menú principal
+  (título, isla con césped y camino con su material, faro, botones con la fuente Lora); se cerró a
+  los 35 s, sin volcados en `%LOCALAPPDATA%/Explored/Saved/Crashes` y sin procesos vivos. Shipping
+  no escribe registro (`bUseLoggingInShipping` exige un motor compilado desde el código fuente): la
+  comprobación de `Error` en el registro queda para el paquete Development.
+
+Corregido por el camino:
+
+- **`M_TerrainToon` se cocinaba como el material por defecto** (suelo gris en el paquete): el nodo
+  Custom `SrgbToLinear` usaba `?:` con condición `float3`, que HLSL 2021 rechaza en el pase Nanite de
+  cómputo de SM6 (`TBasePassCS…`). Ahora es `lerp(…, step(c, 0.04045))` en
+  `Tools/Unreal/materials_f6.py`; el material se regeneró con ese script.
+- **`package.ps1`:** vacía `Saved/Package/Windows` antes de archivar (UAT no lo hace: quedaban el
+  `.pdb` de 245 MB y 27 JSON de v1, y el tamaño salía 843 MB); falla si el registro del cocinado
+  trae `Failed to compile Material` (el cocinado da «Success» igualmente) y comprueba también
+  `grass.json`, `ground_field.bin`, Slate en el manifiesto del `.pak` y las mallas de K6 cocinadas.
 
 ## Partidas del bot en el editor (paso 8 de `pendiente-motor.md`)
 
