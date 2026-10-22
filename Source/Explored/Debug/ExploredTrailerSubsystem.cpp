@@ -155,7 +155,6 @@ bool UExploredTrailerSubsystem::IsWorldSettled() const
 
 void UExploredTrailerSubsystem::Tick(float DeltaTime)
 {
-	using namespace TrailerDetail;
 	if (State == EState::Flushing)
 	{
 		if (InFlight.load() == 0)
@@ -189,7 +188,7 @@ void UExploredTrailerSubsystem::Tick(float DeltaTime)
 		{
 			PC->SetViewTarget(Camera);
 		}
-		if (Timer >= BeamLeadSeconds)
+		if (Timer >= TrailerDetail::BeamLeadSeconds)
 		{
 			State = EState::Recording;
 		}
@@ -198,7 +197,7 @@ void UExploredTrailerSubsystem::Tick(float DeltaTime)
 	// Asentamiento: la cámara quieta en el primer fotograma del plano (césped, texturas, exposición, TSR).
 	ApplySample(Shot, FTrailerModel::Evaluate(Shot, 0, Timeline.Fps, GroundFn()));
 	const bool bTexturesReady = IStreamingManager::Get().GetNumWantingResources() == 0;
-	if (Timer < SettleSeconds || (!bTexturesReady && Timer < SettleSeconds + MaxStreamingWaitSeconds))
+	if (Timer < SettleSeconds || (!bTexturesReady && Timer < SettleSeconds + TrailerDetail::MaxStreamingWaitSeconds))
 	{
 		return;
 	}
