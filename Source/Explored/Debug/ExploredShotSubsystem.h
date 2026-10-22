@@ -119,6 +119,8 @@ private:
 	FRotator BenchBaseRotation = FRotator::ZeroRotator;
 	/** DeltaTime real (FApp) de cada fotograma de la ventana de medida. */
 	TArray<float> BenchFrameSeconds;
+	/** Primitivas que dibujó el RHI en cada fotograma de la ventana (todas las pasadas, sin Nanite). */
+	TArray<int32> BenchPrimitives;
 	/** Cifras de las vistas ya medidas, para el resumen final. */
 	TArray<FBenchViewStats> BenchViews;
 

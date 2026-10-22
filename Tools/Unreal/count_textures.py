@@ -1,7 +1,9 @@
 """Cuenta las texturas de /Game (Content) y falla si hay alguna fuera de la lista permitida.
 
-GDD v3 §11: el estilo no usa texturas salvo la hoja de paleta (T_Paleta). El océano y el cielo
-usan texturas del motor (/Engine), que no cuentan. Escribe el resultado en
+GDD v3 §11: el estilo no usa texturas salvo la hoja de paleta (T_Paleta) y la máscara de trazos del
+terreno (T_TerrainStrokes, excepción del terreno de F6 en el GDD §11). El océano y el cielo
+usan texturas del motor (/Engine), que no cuentan; la hoja de iconos de Slate
+(Content/Slate/T_IconosUI.png) es un PNG suelto, no un asset de /Game. Escribe el resultado en
 Saved/Logs/count_textures.json.
 
 Uso: Tools/unreal_python.ps1 -Script Tools/Unreal/count_textures.py
@@ -14,7 +16,7 @@ import unreal
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 RESULT_PATH = os.path.join(REPO_ROOT, "Saved", "Logs", "count_textures.json")
-ALLOWED = {"/Game/Art/Materials/T_Paleta"}
+ALLOWED = {"/Game/Art/Materials/T_Paleta", "/Game/Art/Materials/T_TerrainStrokes"}
 TEXTURE_CLASSES = ("Texture2D", "TextureCube", "TextureRenderTarget2D", "Texture2DArray", "VolumeTexture",
                    "TextureCubeArray", "TextureLightProfile", "MediaTexture")
 

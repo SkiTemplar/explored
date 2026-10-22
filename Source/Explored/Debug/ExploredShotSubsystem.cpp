@@ -801,6 +801,7 @@ bool UExploredShotSubsystem::TickBenchMeasure()
 		bBenchMeasuring = true;
 		BenchMeasureTimer = 0.0f;
 		BenchFrameSeconds.Reset();
+		BenchPrimitives.Reset();
 		BenchBaseRotation = Camera ? Camera->GetActorRotation() : FRotator::ZeroRotator;
 		return false;
 	}
@@ -809,6 +810,8 @@ bool UExploredShotSubsystem::TickBenchMeasure()
 	// MaxDeltaSeconds del mundo: es el que ve el jugador.
 	const float FrameSeconds = static_cast<float>(FApp::GetDeltaTime());
 	BenchFrameSeconds.Add(FrameSeconds);
+	// Del fotograma anterior (el RHI lo cierra al final de cada fotograma).
+	BenchPrimitives.Add(GNumPrimitivesDrawnRHI[0]);
 	BenchMeasureTimer += FrameSeconds;
 	const float Alpha = BenchMeasureTimer / BenchMeasureSeconds;
 	if (Camera)
@@ -830,6 +833,19 @@ bool UExploredShotSubsystem::TickBenchMeasure()
 	const FBenchViewStats Stats = FBenchBudgetModel::ReduceView(Shots[Current].Name, BenchFrameSeconds);
 	BenchViews.Add(Stats);
 	UE_LOG(LogExplored, Display, TEXT("%s"), *FBenchBudgetModel::FormatView(Stats));
+	if (BenchPrimitives.Num() > 1)
+	{
+		// El primer valor es del fotograma de antes de la ventana: se descarta.
+		int64 Sum = 0;
+		int32 Peak = 0;
+		for (int32 I = 1; I < BenchPrimitives.Num(); ++I)
+		{
+			Sum += BenchPrimitives[I];
+			Peak = FMath::Max(Peak, BenchPrimitives[I]);
+		}
+		UE_LOG(LogExplored, Display, TEXT("[Bench] triángulos %s: media %.0f, máximo %d (RHI, todas las pasadas, sin Nanite)"),
+			*Shots[Current].Name, static_cast<double>(Sum) / (BenchPrimitives.Num() - 1), Peak);
+	}
 	return true;
 }
 
