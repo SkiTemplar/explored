@@ -366,6 +366,7 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
 |---|---|---|---|---|---|---|
 | competente | 2026-10-22, este commit (sobre `9c880015`) | 52,4 min (51,4 + 60 s de créditos) | 0 | 8/8 | `completo (8/8 páginas)` | VERDE |
 | lenta | 2026-10-22, binarios de `c3eaa7bc` | 52,4 min (51,4 + 60 s de créditos) | 0 | 8/8 | `completo (8/8 páginas)` | VERDE |
+| sin_paginas | 2026-10-22, binarios de `e3c46e2e` (código de `c3eaa7bc`) | 52,4 min (51,4 + 60 s de créditos) | 0 | 1/8 | `parcial (1/8 páginas)` | VERDE |
 
 Ruta competente, `-Clock 6`: 16,6 min reales; 10/10 etapas, 10/10 guardar/cargar, `reached_epilogue`
 true, 0 errores y 0 avisos en el informe; física a la deriva 0, puntos de aparición bloqueados 0,
@@ -398,7 +399,18 @@ recargado, deja `[Playtest] Menú principal tras los créditos del final` (o un 
 `playtest_v3.ps1` exige esa línea. El auditor sigue marcando 276 instancias «flotando/enterradas»
 (283 en la pasada anterior): no es criterio del paso 8 y no se ha tocado.
 
-Pendiente del paso 8: ruta `sin_paginas`.
+Ruta sin_paginas, `-Clock 6`: 17,2 min reales de prueba (18,5 con el arranque); 10/10 etapas, 10/10
+guardar/cargar, `reached_epilogue` true, 2 sueños, 0 errores y 0 avisos en el informe; física a la
+deriva 0, 9/9 softlocks resolubles y todos los pasos `ok` (sin atascos ni pasos fuera de tiempo). Solo
+lee la página 1 (camino crítico del guion, D1 en la casa del farero); el log da `[Baliza] Epílogo
+parcial (1/8 páginas)`. En `PlaytestV3.log`, 0 `Error` propios (solo los 3 «LogAutomationTest: Error»
+del smoke test del motor). Final: `Luces del Mistral` → `Bocina` 9,6 s → `Pantalla de epílogo` 7,0 s →
+`Créditos del final (60 s)` → `Vuelta al menú principal` 60,0 s → `Menú principal` 0,6 s;
+`playtest_v3.ps1` termina con «Créditos del final -> menú principal: ok». La duración a 1× es la misma
+que en las otras dos rutas porque la cierra el reloj (el Mistral pasa el D3 a las 20:05): saltarse las
+7 páginas opcionales se absorbe en la espera a la noche del D3 (linterna montada a las 13:31).
+
+Paso 8 completo: las tres rutas en verde.
 
 ## Pendiente de motor
 
