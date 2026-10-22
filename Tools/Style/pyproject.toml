@@ -21,6 +21,7 @@ style-kit-k3 = "explored_style.kits.k3:main"
 style-kit-k5 = "explored_style.kits.k5:main"
 style-comparativa = "explored_style.comparativa:main"
 style-ui = "explored_style.ui_kit:main"
+style-icon = "explored_style.app_icon:main"
 
 [build-system]
 requires = ["uv_build>=0.8.18,<0.9"]
