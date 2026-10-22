@@ -170,6 +170,43 @@ namespace ExploredSaveStates
 		}
 	}
 
+	bool IsSaneDropped(FName ItemId, int32 Count, const FVector& LocationCm, const FBackpackRules& Rules, FString& OutReason)
+	{
+		const FBackpackItemRule* Rule = ItemId.IsNone() ? nullptr : Rules.Find(ItemId);
+		if (!Rule)
+		{
+			OutReason = FString::Printf(TEXT("objeto desconocido «%s»"), *ItemId.ToString());
+			return false;
+		}
+		const int32 MaxCount = FMath::Max(1, Rule->Stack) * FMath::Max(1, Rules.Slots);
+		if (Count <= 0 || Count > MaxCount)
+		{
+			OutReason = FString::Printf(TEXT("cantidad %d fuera de [1, %d]"), Count, MaxCount);
+			return false;
+		}
+		if (!FMath::IsFinite(LocationCm.X) || !FMath::IsFinite(LocationCm.Y) || !FMath::IsFinite(LocationCm.Z))
+		{
+			OutReason = TEXT("posición no finita");
+			return false;
+		}
+		if (FVector2D(LocationCm.X, LocationCm.Y).Size() > MaxDroppedRadiusCm || FMath::Abs(LocationCm.Z) > MaxDroppedRadiusCm)
+		{
+			OutReason = TEXT("posición fuera de la isla");
+			return false;
+		}
+		return true;
+	}
+
+	FVector RestOnGround(const FVector& LocationCm, float GroundMeters)
+	{
+		const double GroundCm = static_cast<double>(GroundMeters) * 100.0;
+		if (!FMath::IsFinite(GroundCm) || LocationCm.Z >= GroundCm - BuriedToleranceCm)
+		{
+			return LocationCm;
+		}
+		return FVector(LocationCm.X, LocationCm.Y, GroundCm + RestLiftCm);
+	}
+
 	void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter)
 	{
 		Ar.Write(TEXT("thirst"), Bars.Thirst);

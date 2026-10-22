@@ -3,6 +3,8 @@
 #include "Items/BackpackModel.h"
 #include "Weather/RainBarrelModel.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 BEGIN_DEFINE_SPEC(FRainBarrelSpec, "Explored.RainBarrel",
@@ -29,6 +31,22 @@ void FRainBarrelSpec::Define()
 		TestEqual(TEXT("45 s = 1 carga"), S.Charges, 1);
 		TestEqual(TEXT("Resto"), S.RainSeconds, 0.0f);
 		TestEqual(TEXT("Sin lluvia no cambia"), FRainBarrelModel::Collect(S, -3.0f).Charges, 1);
+	});
+
+	It(TEXT("un barril leído con NaN, infinito o fuera de rango queda saneado y sigue llenándose"), [this]()
+	{
+		const FRainBarrelState Nan = FRainBarrelModel::Sanitize(FRainBarrelState{ 1, std::numeric_limits<float>::quiet_NaN() });
+		TestEqual(TEXT("NaN pasa a 0 s"), Nan.RainSeconds, 0.0f);
+		TestEqual(TEXT("Conserva la carga"), Nan.Charges, 1);
+		TestEqual(TEXT("Infinito pasa a 0 s"), FRainBarrelModel::Sanitize(FRainBarrelState{ 0, std::numeric_limits<float>::infinity() }).RainSeconds, 0.0f);
+		TestEqual(TEXT("Negativo pasa a 0 s"), FRainBarrelModel::Sanitize(FRainBarrelState{ 0, -7.0f }).RainSeconds, 0.0f);
+		TestTrue(TEXT("Por debajo de una carga"), FRainBarrelModel::Sanitize(FRainBarrelState{ 0, 1.0e6f }).RainSeconds < FRainBarrelModel::RainSecondsPerCharge);
+		TestEqual(TEXT("Cargas acotadas"), FRainBarrelModel::Sanitize(FRainBarrelState{ 99, 0.0f }).Charges, FRainBarrelModel::MaxCharges);
+		TestEqual(TEXT("Cargas negativas"), FRainBarrelModel::Sanitize(FRainBarrelState{ -3, 0.0f }).Charges, 0);
+		// Aunque llegue sin sanear, el barril no se queda roto: la lluvia siguiente da cargas.
+		const FRainBarrelState Broken{ 0, std::numeric_limits<float>::quiet_NaN() };
+		TestEqual(TEXT("Llena tras un NaN"), FRainBarrelModel::Collect(Broken, FRainBarrelModel::ShowerSeconds).Charges, 2);
+		TestTrue(TEXT("Lluvia NaN no cuenta"), FRainBarrelModel::Collect(FRainBarrelState(), std::numeric_limits<float>::quiet_NaN()) == FRainBarrelState());
 	});
 
 	It(TEXT("una carga deja la cantimplora a 4 sorbos"), [this]()

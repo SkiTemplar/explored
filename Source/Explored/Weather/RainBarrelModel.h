@@ -41,6 +41,9 @@ struct EXPLORED_API FRainBarrelModel
 
 	static FRainBarrelState AddCharges(const FRainBarrelState& In, int32 Charges);
 
+	/** Estado leído de la partida dentro de rango: cargas en [0, MaxCharges] y segundos finitos en [0, RainSecondsPerCharge). */
+	static FRainBarrelState Sanitize(const FRainBarrelState& In);
+
 	/** Suma segundos de lluvia; cada RainSecondsPerCharge es una carga (hasta MaxCharges). */
 	static FRainBarrelState Collect(const FRainBarrelState& In, float RainSeconds);
 

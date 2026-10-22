@@ -34,6 +34,7 @@
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "Weather/StormClockModel.h"
 #include "WorldGen/ExploredShelterVolume.h"
+#include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandPropsLoader.h"
 #include "WorldGen/IslandPropsModel.h"
 
@@ -485,7 +486,10 @@ void UBeaconSubsystem::WashUpDriftwood(const APawn& Pawn)
 	{
 		return;
 	}
-	Island->SpawnDropped(FSupplyCrateModel::WoodId(), Wood, IslandPropsPlacement::WorldLocation(*Beach, 0.0f) + FVector(0.0, 0.0, 30.0));
+	// Sobre la arena de la cala, como la coloca el populador: con suelo 0 quedaba 2 m bajo tierra.
+	const float Ground = ExploredGround::HeightAtMeters(World, Beach->Location.X, Beach->Location.Y);
+	const FVector Pile = IslandPropsPlacement::WorldLocation(*Beach, Ground) + FVector(0.0, 0.0, ExploredSaveStates::RestLiftCm);
+	Island->SpawnDropped(FSupplyCrateModel::WoodId(), Wood, Pile);
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Leña de deriva en la Cala Varada: %d (día %d)"), Wood, LastDriftwoodDay);
 	if (AExploredHUD* HUD = BeaconSubsystemDetail::FindHUD(this))
 	{

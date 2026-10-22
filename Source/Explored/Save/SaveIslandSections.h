@@ -49,6 +49,21 @@ namespace ExploredSaveStates
 	EXPLORED_API void SaveCollectedIds(FSaveArchive& Ar, const TSet<FName>& Ids);
 	EXPLORED_API void LoadCollectedIds(const FSaveArchive& Ar, TSet<FName>& OutIds);
 
+	// --- Objetos soltados (dentro de «island») ------------------------------------------
+	/** Distancia horizontal máxima (cm) al origen de la isla de un objeto soltado que se acepta al cargar. */
+	inline constexpr double MaxDroppedRadiusCm = 200000.0;
+	/** Por debajo del suelo más de esto (cm) un objeto se considera enterrado. */
+	inline constexpr double BuriedToleranceCm = 50.0;
+	/** Altura (cm) sobre el suelo a la que se deja un objeto que estaba enterrado. */
+	inline constexpr double RestLiftCm = 30.0;
+	/**
+	 * Objeto soltado que se puede recrear: id de items.json, cantidad entre 1 y lo que cabe en la
+	 * mochila entera, y posición finita a menos de MaxDroppedRadiusCm. Si no, false y el motivo.
+	 */
+	EXPLORED_API bool IsSaneDropped(FName ItemId, int32 Count, const FVector& LocationCm, const FBackpackRules& Rules, FString& OutReason);
+	/** Un objeto más de BuriedToleranceCm bajo el suelo (metros) sube a RestLiftCm sobre él; el resto no se toca. */
+	EXPLORED_API FVector RestOnGround(const FVector& LocationCm, float GroundMeters);
+
 	// --- Cuerpo de Iria (sección «body»): 4 barras y el último refugio ---------------
 	EXPLORED_API void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter);
 	/** false si falta una barra o alguna está fuera de [0, 100]: se queda el cuerpo por defecto. */

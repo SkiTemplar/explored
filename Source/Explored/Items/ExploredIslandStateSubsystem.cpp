@@ -9,12 +9,14 @@
 #include "Explored.h"
 #include "Items/ExploredPickup.h"
 #include "Items/ExploredSurvivorComponent.h"
+#include "Items/IslandDataLoader.h"
 #include "Narrative/ExploredSupplyCrate.h"
 #include "Save/SaveArchive.h"
 #include "Save/SaveIslandSections.h"
 #include "UI/ExploredSaveSubsystem.h"
 #include "Weather/ExploredRainBarrel.h"
 #include "WorldGen/ExploredCoconutPalm.h"
+#include "WorldGen/GroundHeight.h"
 
 namespace IslandStateDetail
 {
@@ -257,7 +259,7 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 		Entry.Read(TEXT("id"), Id);
 		Entry.Read(TEXT("charges"), State.Charges);
 		Entry.Read(TEXT("rainSeconds"), State.RainSeconds);
-		Barrels.Add(Id, FRainBarrelModel::AddCharges(FRainBarrelState{ 0, FMath::Max(0.0f, State.RainSeconds) }, State.Charges));
+		Barrels.Add(Id, FRainBarrelModel::Sanitize(State));
 	}
 	Ids.Reset();
 	Ar.Read(TEXT("cratesDelivered"), Ids);
@@ -283,7 +285,15 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 		Entry.Read(TEXT("item"), Item.ItemId);
 		Entry.Read(TEXT("count"), Item.Count);
 		Entry.Read(TEXT("location"), Item.Location);
-		SpawnDropped(Item.ItemId, Item.Count, Item.Location);
+		FString Reason;
+		if (!ExploredSaveStates::IsSaneDropped(Item.ItemId, Item.Count, Item.Location, ExploredIslandData::Get().Backpack, Reason))
+		{
+			UE_LOG(LogExplored, Warning, TEXT("[Isla] Objeto soltado descartado al cargar: %s"), *Reason);
+			continue;
+		}
+		// Las partidas de antes del arreglo de la leña de deriva la guardaron bajo la arena.
+		const float Ground = ExploredGround::HeightAtMeters(GetWorld(), Item.Location.X / 100.0, Item.Location.Y / 100.0);
+		SpawnDropped(Item.ItemId, Item.Count, ExploredSaveStates::RestOnGround(Item.Location, Ground));
 	}
 
 	FSaveArchive PackArchive;

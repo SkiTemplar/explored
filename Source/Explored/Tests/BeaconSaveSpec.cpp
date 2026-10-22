@@ -4,6 +4,8 @@
 #include "Save/SaveIslandSections.h"
 #include "Save/SaveSystemStates.h"
 
+#include <limits>
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 /**
@@ -288,6 +290,38 @@ void FBeaconSaveSpec::Define()
 		BadRaft.Write(TEXT("logs"), 2);
 		TestFalse(TEXT("Atada con 2 troncos"), LoadRaft(BadRaft, LoadedRaft));
 		TestEqual(TEXT("Por hacer"), LoadedRaft.Site.LogsPlaced, 0);
+	});
+
+	It(TEXT("un objeto soltado desconocido, sin cantidad razonable o fuera de la isla se descarta"), [this]()
+	{
+		using namespace ExploredSaveStates;
+		const FBackpackRules Rules = FBackpackRules::Default();
+		const FName Wood(TEXT("lena"));
+		const FVector Beach(-9800.0, 1800.0, 263.0);
+		FString Reason;
+		TestTrue(TEXT("Leña en la cala"), IsSaneDropped(Wood, 3, Beach, Rules, Reason));
+		TestFalse(TEXT("Id desconocido"), IsSaneDropped(FName(TEXT("espada_laser")), 1, Beach, Rules, Reason));
+		TestFalse(TEXT("Sin id"), IsSaneDropped(NAME_None, 1, Beach, Rules, Reason));
+		TestFalse(TEXT("Cantidad nula"), IsSaneDropped(Wood, 0, Beach, Rules, Reason));
+		TestFalse(TEXT("Cantidad absurda"), IsSaneDropped(Wood, 100000, Beach, Rules, Reason));
+		TestFalse(TEXT("NaN"), IsSaneDropped(Wood, 1, FVector(std::numeric_limits<float>::quiet_NaN(), 0.0, 0.0), Rules, Reason));
+		TestFalse(TEXT("Infinito"), IsSaneDropped(Wood, 1, FVector(0.0, 0.0, std::numeric_limits<float>::infinity()), Rules, Reason));
+		TestFalse(TEXT("A 50 km"), IsSaneDropped(Wood, 1, FVector(5000000.0, 0.0, 0.0), Rules, Reason));
+		TestFalse(TEXT("El motivo se informa"), Reason.IsEmpty());
+	});
+
+	It(TEXT("un objeto soltado bajo el suelo vuelve a la superficie y el resto no se mueve"), [this]()
+	{
+		using namespace ExploredSaveStates;
+		// La leña de deriva de antes del arreglo quedaba a 30 cm de cota con el suelo a 2,33 m.
+		const FVector Buried(-9800.0, 1800.0, 30.0);
+		const FVector Lifted = RestOnGround(Buried, 2.33f);
+		TestTrue(TEXT("Mismo XY"), Lifted.X == Buried.X && Lifted.Y == Buried.Y);
+		TestTrue(TEXT("A ras de suelo"), Lifted.Z >= 233.0 && Lifted.Z - 233.0 < 100.0);
+		const FVector OnRock(-9800.0, 1800.0, 400.0);
+		TestTrue(TEXT("Sobre una roca no se toca"), RestOnGround(OnRock, 2.33f) == OnRock);
+		const FVector Resting(-9800.0, 1800.0, 220.0);
+		TestTrue(TEXT("Dentro de la tolerancia no se toca"), RestOnGround(Resting, 2.33f) == Resting);
 	});
 }
 

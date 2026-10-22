@@ -32,7 +32,8 @@ void AExploredCoconutPalm::RefreshFromIslandState()
 {
 	if (const UExploredIslandStateSubsystem* Island = UExploredIslandStateSubsystem::Get(this))
 	{
-		Coconuts = Island->GetPalmCoconuts(GetPropId(), InitialCoconuts);
+		// Una partida editada o corrupta no da más cocos de los que tiene la palma.
+		Coconuts = FMath::Clamp(Island->GetPalmCoconuts(GetPropId(), InitialCoconuts), 0, InitialCoconuts);
 	}
 }
 

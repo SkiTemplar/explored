@@ -11,9 +11,20 @@ FRainBarrelState FRainBarrelModel::AddCharges(const FRainBarrelState& In, int32 
 	return Out;
 }
 
-FRainBarrelState FRainBarrelModel::Collect(const FRainBarrelState& In, float RainSeconds)
+FRainBarrelState FRainBarrelModel::Sanitize(const FRainBarrelState& In)
 {
-	if (!(RainSeconds > 0.0f) || In.Charges >= MaxCharges)
+	FRainBarrelState Out;
+	Out.Charges = FMath::Clamp(In.Charges, 0, MaxCharges);
+	// FMath::Max(0, NaN) devuelve NaN y FloorToInt(NaN) es indefinido: lo no finito vuelve a 0.
+	const bool bUsable = FMath::IsFinite(In.RainSeconds) && In.RainSeconds > 0.0f && Out.Charges < MaxCharges;
+	Out.RainSeconds = bUsable ? FMath::Fmod(In.RainSeconds, RainSecondsPerCharge) : 0.0f;
+	return Out;
+}
+
+FRainBarrelState FRainBarrelModel::Collect(const FRainBarrelState& InRaw, float RainSeconds)
+{
+	const FRainBarrelState In = Sanitize(InRaw);
+	if (!(RainSeconds > 0.0f) || !FMath::IsFinite(RainSeconds) || In.Charges >= MaxCharges)
 	{
 		return In;
 	}
