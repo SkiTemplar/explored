@@ -1,5 +1,6 @@
 #include "Audio/ExploredSfxSubsystem.h"
 
+#include "AudioDevice.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/StaticMesh.h"
@@ -29,6 +30,9 @@ namespace SfxDetail
 	/** Alcance (cm) de los bucles de las hogueras. */
 	constexpr float FireRadiusCm = 250.0f;
 	constexpr float FireFalloffCm = 1600.0f;
+	/** Alcance (cm) de los efectos puntuales (pisadas, paladas...). */
+	constexpr float EffectRadiusCm = 150.0f;
+	constexpr float EffectFalloffCm = 2500.0f;
 
 	void Attenuate(UAudioComponent& Component, float Radius, float Falloff)
 	{
@@ -107,25 +111,37 @@ void UExploredSfxSubsystem::PlayEffect(const FString& Name, FVector Location, bo
 	{
 		return;
 	}
-	UAudioComponent* Component = bAtLocation
-		? UGameplayStatics::SpawnSoundAtLocation(World, Sound, Location, FRotator::ZeroRotator, Volume, Pitch, 0.0f, nullptr, nullptr, false)
-		: UGameplayStatics::CreateSound2D(World, Sound, Volume, Pitch, 0.0f, nullptr, false, true);
+	// El componente se crea parado: la clase y la atenuación solo llegan al sonido si se ponen antes de
+	// Play (SpawnSoundAtLocation ya lo arranca). Se destruye solo al acabar: una pisada no deja un
+	// componente registrado hasta el siguiente GC.
+	UAudioComponent* Component = nullptr;
+	if (bAtLocation)
+	{
+		FAudioDevice::FCreateComponentParams Params(World);
+		Params.SetLocation(Location);
+		Params.bPlay = false;
+		Component = FAudioDevice::CreateComponent(Sound, Params);
+	}
+	else
+	{
+		Component = UGameplayStatics::CreateSound2D(World, Sound, Volume, Pitch, 0.0f, nullptr, false, true);
+	}
 	if (!Component)
 	{
 		return;
 	}
+	Component->bAutoDestroy = true;
+	Component->SetVolumeMultiplier(Volume);
+	Component->SetPitchMultiplier(Pitch);
 	if (EffectsClass)
 	{
 		Component->SoundClassOverride = EffectsClass;
 	}
 	if (bAtLocation)
 	{
-		SfxDetail::Attenuate(*Component, 150.0f, 2500.0f);
+		SfxDetail::Attenuate(*Component, SfxDetail::EffectRadiusCm, SfxDetail::EffectFalloffCm);
 	}
-	else
-	{
-		Component->Play();
-	}
+	Component->Play();
 }
 
 void UExploredSfxSubsystem::BindPickups()
