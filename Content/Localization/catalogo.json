@@ -3317,8 +3317,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_duerme_refugio.textEs",
-			"es": "Duerme en un refugio",
-			"en": "Sleep in a shelter",
+			"es": "Reúne troncos y cuerdas; duerme tras las 20:00",
+			"en": "Gather logs and rope; sleep after 20:00",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_duerme_refugio» textEs/textEn"
@@ -3327,8 +3327,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_enciende_baliza.textEs",
-			"es": "Enciende la baliza",
-			"en": "Light the beacon",
+			"es": "Enciende la baliza; el Mistral llega de noche",
+			"en": "Light the beacon; the Mistral arrives at night",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_enciende_baliza» textEs/textEn"
@@ -3377,8 +3377,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_pesca_cocina.textEs",
-			"es": "Pesca y cocina un pez",
-			"en": "Catch and cook a fish",
+			"es": "Caña de bambú y cuerda: pesca y cocina un pez",
+			"en": "Bamboo rod and rope: catch and cook a fish",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_pesca_cocina» textEs/textEn"
@@ -3387,8 +3387,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_prepara_aceite.textEs",
-			"es": "Prepara dos tarros de aceite",
-			"en": "Make two jars of oil",
+			"es": "Dos tarros de aceite: 2 peces y 1 coco vacío por tarro",
+			"en": "Two jars of oil: 2 fish and 1 empty coconut per jar",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_prepara_aceite» textEs/textEn"
@@ -3427,8 +3427,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_sobrevive_noche.textEs",
-			"es": "Sobrevive a la noche",
-			"en": "Get through the night",
+			"es": "Trenza la mecha, lee el cuaderno y recoge agua en el ojo",
+			"en": "Braid the wick, read the logbook, collect water in the eye",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_sobrevive_noche» textEs/textEn"
@@ -3447,8 +3447,8 @@
 		{
 			"namespace": "Data.objectives.objectives",
 			"key": "obj_trenza_mecha.textEs",
-			"es": "Trenza la mecha",
-			"en": "Braid the wick",
+			"es": "Trenza la mecha (3 fibras del suelo)",
+			"en": "Braid the wick (3 fibers from the ground)",
 			"origin": "datos",
 			"locations": [
 				"Content/Data/objectives.json «obj_trenza_mecha» textEs/textEn"

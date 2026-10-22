@@ -4,20 +4,20 @@
   "objectives": [
     { "id": "obj_bebe_coco", "stage": "Prologo", "textEs": "Bebe un coco", "textEn": "Drink a coconut" },
     { "id": "obj_haz_fuego", "stage": "Orilla", "textEs": "Haz fuego", "textEn": "Make a fire" },
-    { "id": "obj_pesca_cocina", "stage": "Orilla", "textEs": "Pesca y cocina un pez", "textEn": "Catch and cook a fish" },
+    { "id": "obj_pesca_cocina", "stage": "Orilla", "textEs": "Caña de bambú y cuerda: pesca y cocina un pez", "textEn": "Bamboo rod and rope: catch and cook a fish" },
     { "id": "obj_sube_faro", "stage": "Orilla", "textEs": "Sube al faro", "textEn": "Go to the tower" },
     { "id": "obj_lee_cuaderno", "stage": "Faro", "textEs": "Lee el cuaderno", "textEn": "Read the logbook" },
-    { "id": "obj_duerme_refugio", "stage": "Faro", "textEs": "Duerme en un refugio", "textEn": "Sleep in a shelter" },
+    { "id": "obj_duerme_refugio", "stage": "Faro", "textEs": "Reúne troncos y cuerdas; duerme tras las 20:00", "textEn": "Gather logs and rope; sleep after 20:00" },
     { "id": "obj_prepara_balsa", "stage": "Balsa", "textEs": "Prepara la balsa", "textEn": "Get the raft ready" },
     { "id": "obj_cruza_bajo", "stage": "Balsa", "textEs": "Cruza al bajo", "textEn": "Reach the shoal" },
     { "id": "obj_encuentra_lente", "stage": "Carguero", "textEs": "Encuentra la lente", "textEn": "Find the lens" },
     { "id": "obj_vuelve_antes_cierre", "stage": "LenteEnMano", "textEs": "Vuelve antes de que cierre el mar", "textEn": "Get back before the sea closes" },
     { "id": "obj_refugiate_faro", "stage": "Ciclon", "textEs": "Refúgiate en el faro", "textEn": "Shelter in the lighthouse" },
-    { "id": "obj_sobrevive_noche", "stage": "Ciclon", "textEs": "Sobrevive a la noche", "textEn": "Get through the night" },
+    { "id": "obj_sobrevive_noche", "stage": "Ciclon", "textEs": "Trenza la mecha, lee el cuaderno y recoge agua en el ojo", "textEn": "Braid the wick, read the logbook, collect water in the eye" },
     { "id": "obj_recupera_lente", "stage": "Preparacion", "textEs": "Recupera la lente del «Sáhara»", "textEn": "Recover the lens from the «Sáhara»" },
-    { "id": "obj_prepara_aceite", "stage": "Preparacion", "textEs": "Prepara dos tarros de aceite", "textEn": "Make two jars of oil" },
-    { "id": "obj_trenza_mecha", "stage": "Preparacion", "textEs": "Trenza la mecha", "textEn": "Braid the wick" },
+    { "id": "obj_prepara_aceite", "stage": "Preparacion", "textEs": "Dos tarros de aceite: 2 peces y 1 coco vacío por tarro", "textEn": "Two jars of oil: 2 fish and 1 empty coconut per jar" },
+    { "id": "obj_trenza_mecha", "stage": "Preparacion", "textEs": "Trenza la mecha (3 fibras del suelo)", "textEn": "Braid the wick (3 fibers from the ground)" },
     { "id": "obj_monta_linterna", "stage": "Preparacion", "textEs": "Monta la linterna", "textEn": "Assemble the lantern" },
-    { "id": "obj_enciende_baliza", "stage": "LinternaMontada", "textEs": "Enciende la baliza", "textEn": "Light the beacon" }
+    { "id": "obj_enciende_baliza", "stage": "LinternaMontada", "textEs": "Enciende la baliza; el Mistral llega de noche", "textEn": "Light the beacon; the Mistral arrives at night" }
   ]
 }
