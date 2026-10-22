@@ -4,18 +4,14 @@
 #include "Misc/Optional.h"
 #include "Subsystems/WorldSubsystem.h"
 
-#include "Core/ExploredRandom.h"
 #include "Core/SystemLinks.h"
 #include "Events/WorldEventsModel.h"
 #include "Fauna/FaunaTypes.h"
 #include "Save/SaveArchive.h"
-#include "Save/SaveWorldDeltas.h"
 #include "Survival/SurvivalModel.h"
-#include "WorldGen/IslandLayout.h"
 
 #include "ExploredWiringSubsystem.generated.h"
 
-class AExploredBoat;
 class AExploredCharacter;
 class AExploredFaunaManager;
 class UExploredSaveSubsystem;
@@ -25,17 +21,15 @@ class UExploredSaveSubsystem;
  * conocen a los demás; este subsistema del mundo los enlaza sin meter lógica: las
  * reglas están en ExploredLinks (Core/SystemLinks.h, probadas en el host).
  *
- * - Guardado: registra las secciones de lo que vive en el personaje o en actores
- *   sueltos («inventory», «body», «fishing», «cooking», «boats», «time»,
- *   «world» y «wiring»; la historia, «progress» y «pages», es de UBeaconSubsystem). Los eventos registran la suya en su propio
- *   subsistema.
- * - Juego: calor de los fuegos, carga y música → cuerpo; muerte → modo de juego;
- *   hoguera de señal → barco del horizonte; paso de ballenas → fauna; daño de
- *   fauna → heridas y picaduras; peligro, navegación y eventos presenciados →
- *   música; barca → delfines y pesca desde la barca; ciclón → daño de las
- *   embarcaciones.
- *
- * Sin compilar en la nube: verificar en local (Tools/build.ps1, Tools/test.ps1).
+ * - Guardado (ExploredWiringSave.cpp): registra las secciones de lo que vive en el
+ *   personaje o en actores sueltos: «time», «inventory», «body», «fishing» y
+ *   «cooking». La historia («progress» y «pages») es de UBeaconSubsystem y las
+ *   pistas («tutorial») de UExploredTutorialSubsystem. Las secciones de v1 que ya
+ *   no existen («boats», «world», «wiring») se conservan sin leer en las partidas
+ *   antiguas (FSaveSectionRegistry guarda las desconocidas).
+ * - Juego: calor de los fuegos y carga → cuerpo; muerte → modo de juego; paso de
+ *   ballenas → fauna; daño de fauna → heridas y picaduras; balsa y pescado → fauna
+ *   (delfines y gaviotas).
  */
 UCLASS()
 class EXPLORED_API UExploredWiringSubsystem : public UTickableWorldSubsystem
@@ -52,15 +46,8 @@ public:
 
 	static UExploredWiringSubsystem* Get(const UObject* WorldContextObject);
 
-	/** «Nueva partida» (AExploredPlayerController::StartNewGame): reinicia los contadores de la partida. */
+	/** «Nueva partida» (AExploredPlayerController::StartNewGame): sin secciones pendientes de la anterior. */
 	void BeginNewRun();
-
-	/**
-	 * Deltas del mundo procedural (sección «world»). Aún no hay recolección del
-	 * scatter: cuando exista, la capa «harvested» se rellena aquí con
-	 * WorldDeltas.Layer("harvested").Add(Celda, Índice).
-	 */
-	FSaveWorldDeltas& GetWorldDeltas() { return WorldDeltas; }
 
 	/** Cada cuánto (s reales) se revisa la posición del jugador y los enlaces. */
 	UPROPERTY(EditAnywhere, Category = "Explored|Enlaces")
@@ -71,7 +58,8 @@ public:
 	float FireSearchRadiusCm = 1500.0f;
 
 private:
-	// --- Guardado --------------------------------------------------------------
+	// --- Guardado (ExploredWiringSave.cpp) ---------------------------------------
+	UExploredSaveSubsystem* FindSaveSubsystem() const;
 	void RegisterSections(UExploredSaveSubsystem& Save);
 	void UnregisterSections(UExploredSaveSubsystem& Save);
 	void SaveInventory(FSaveArchive& Ar) const;
@@ -82,14 +70,8 @@ private:
 	void LoadFishing(const FSaveArchive& Ar);
 	void SaveFires(FSaveArchive& Ar) const;
 	void LoadFires(const FSaveArchive& Ar);
-	void SaveBoats(FSaveArchive& Ar) const;
-	void LoadBoats(const FSaveArchive& Ar);
 	void SaveClock(FSaveArchive& Ar) const;
 	void LoadClock(const FSaveArchive& Ar);
-	void SaveWorld(FSaveArchive& Ar) const;
-	void LoadWorld(const FSaveArchive& Ar);
-	void SaveWiring(FSaveArchive& Ar) const;
-	void LoadWiring(const FSaveArchive& Ar);
 	/** Aplica las secciones del personaje que llegaron antes que él. */
 	void ApplyPendingPawnSections();
 
@@ -98,32 +80,14 @@ private:
 	void BindPawn(AExploredCharacter* Character);
 	void UnbindPawn();
 	void BindFaunaManager();
-	void Sample(float DeltaSeconds);
-	void UpdateBody(AExploredCharacter& Character, float GameHours);
-	void UpdateBoat(AExploredCharacter& Character, const FVector2D& PositionMeters);
-	void UpdateWorldEvents(const FVector2D& PositionMeters);
-	void UpdateStorms(float GameHours);
-	void SpawnItemsAround(const FVector& Center, FName ItemId, int32 Count, float RadiusCm) const;
-	void NotifyDiscovery(bool bMorale = true) const;
-	float GetTotalDays() const;
-
-	/**
-	 * Arranque de partida nueva en Landing (GDD): un cuchillo y una cantimplora de
-	 * salvamento junto al PlayerStart, con cocos, palos y piedras sueltos alrededor
-	 * para poder fabricar, encender fuego y beber en los primeros minutos. Una sola
-	 * vez por partida (bStarterKitSpawned, sección «wiring»): «Continuar» no repite
-	 * el reparto. Sin malla de restos del avión propia (no hay Content en este
-	 * cambio): el salvamento son los objetos, no un decorado.
-	 */
-	void SpawnLandingStarterKitIfNeeded();
+	void Sample();
+	void UpdateBody(AExploredCharacter& Character);
+	void UpdateFaunaAboard(AExploredCharacter& Character);
 
 	void HandleSurvivalEvent(ESurvivalEvent Event);
 	void HandleEventStarted(const FWorldEvent& Event);
 	void HandleEventEnded(const FWorldEvent& Event);
 	void HandleFaunaDamage(EFaunaSpecies Species, float Damage, const FVector& LocationCm);
-
-	FSaveWorldDeltas WorldDeltas;
-	FIslandLayout Layout;
 
 	/** Secciones del personaje que llegaron antes de que existiera. */
 	TOptional<FSaveArchive> PendingInventory;
@@ -136,12 +100,6 @@ private:
 	FDelegateHandle EventStartedHandle;
 	FDelegateHandle EventEndedHandle;
 
-	/** Eventos ya presenciados en esta sesión (por id), para no informar en cada muestra. */
-	TSet<uint64> WitnessedEvents;
-	/** Día total en que empezó la partida; < 0 = aún no se sabe. */
-	float RunStartDays = -1.0f;
-	float LastSampleDays = -1.0f;
-	bool bStarterKitSpawned = false;
 	float SampleTimer = 0.0f;
 	bool bSectionsRegistered = false;
 };

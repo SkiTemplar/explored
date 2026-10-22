@@ -106,8 +106,6 @@ namespace ExploredSettingsLogic
 		static const TArray<FName> Reserved = {
 			FName(TEXT("W")), FName(TEXT("A")), FName(TEXT("S")), FName(TEXT("D")),
 			FName(TEXT("Escape")), FName(TEXT("M")), FName(TEXT("F8")),
-			// Fijas de construcción y del barco.
-			FName(TEXT("B")), FName(TEXT("X")), FName(TEXT("Z")),
 			// Cuaderno (AExploredPlayerController) y ranuras rápidas (AExploredCharacter).
 			FName(TEXT("J")), FName(TEXT("One")), FName(TEXT("Two")), FName(TEXT("Three"))
 		};

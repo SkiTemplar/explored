@@ -182,7 +182,8 @@ void FExploredSettingsLogicSpec::Define()
 			const TArray<FKeyBinding> Bindings = DefaultBindings();
 			TestEqual(TEXT("W es de movimiento"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("W"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Escape es del menú"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("Escape"))).Result, ERemapCheck::ReservedKey);
-			TestEqual(TEXT("B es de construcción y del barco"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("B"))).Result, ERemapCheck::ReservedKey);
+			// B, X y Z eran del barco de v1 (AExploredBoat, retirado): ya se pueden asignar.
+			TestEqual(TEXT("B está libre"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("B"))).Result, ERemapCheck::Ok);
 			// J abre el cuaderno y 1, 2 y 3 son las ranuras rápidas: una pulsación haría dos cosas.
 			TestEqual(TEXT("J es del cuaderno"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("J"))).Result, ERemapCheck::ReservedKey);
 			for (const TCHAR* Slot : { TEXT("One"), TEXT("Two"), TEXT("Three") })

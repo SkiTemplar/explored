@@ -2,8 +2,8 @@
 
 #include "Core/ExploredRandom.h"
 #include "Save/SaveFormat.h"
+#include "Save/SavePlayerState.h"
 #include "Save/SaveSlots.h"
-#include "Save/SaveWorldDeltas.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -284,166 +284,38 @@ void FSaveSlotsSpec::Define()
 		});
 	});
 
-	Describe(TEXT("los deltas del mundo"), [this]()
-	{
-		It("guarda y lee instancias retiradas por celda e índice", [this]()
-		{
-			FSaveWorldDeltas World;
-			World.Seed = 20260926;
-			FSaveScatterDeltas& Harvested = World.Layer(TEXT("harvested"));
-			TestTrue(TEXT("Añade"), Harvested.Add(FIntPoint(-3, 7), 12));
-			TestFalse(TEXT("Repetida"), Harvested.Add(FIntPoint(-3, 7), 12));
-			Harvested.Add(FIntPoint(-3, 7), 13);
-			Harvested.Add(FIntPoint(4, -1), 0);
-			Harvested.Add(FIntPoint(0, 0), FSaveIndexSet::MaxIndex);
-			TestFalse(TEXT("Índice negativo"), Harvested.Add(FIntPoint(0, 0), -1));
-			TestFalse(TEXT("Índice excesivo"), Harvested.Add(FIntPoint(0, 0), FSaveIndexSet::MaxIndex + 1));
-			World.Layer(TEXT("destroyed")).Add(FIntPoint(1, 1), 5);
-
-			FSaveArchive Ar;
-			World.Save(Ar);
-			FSaveValue Parsed;
-			FString Error;
-			FSaveText::Parse(FSaveText::Write(Ar.GetRoot()), Parsed, Error);
-			FSaveWorldDeltas Loaded;
-			Loaded.Load(FSaveArchive(Parsed));
-			TestTrue(TEXT("Ida y vuelta"), Loaded == World);
-			TestTrue(TEXT("Contiene"), Loaded.FindLayer(TEXT("harvested")) && Loaded.FindLayer(TEXT("harvested"))->Contains(FIntPoint(-3, 7), 13));
-			TestEqual(TEXT("Total"), Loaded.FindLayer(TEXT("harvested"))->Num(), 4);
-
-			// Añadir capas al TMap puede mover las existentes: se vuelve a pedir la referencia.
-			FSaveScatterDeltas& HarvestedAgain = World.Layer(TEXT("harvested"));
-			TArray<FIntPoint> Order;
-			HarvestedAgain.ForEach([&Order](const FIntPoint& Cell, int32 Index) { Order.Add(Cell); });
-			TestTrue(TEXT("Orden determinista (Y, X)"), Order == TArray<FIntPoint>({ FIntPoint(4, -1), FIntPoint(0, 0), FIntPoint(-3, 7), FIntPoint(-3, 7) }));
-
-			TestTrue(TEXT("Quita"), HarvestedAgain.Remove(FIntPoint(4, -1), 0));
-			TestTrue(TEXT("La celda vacía desaparece"), HarvestedAgain.FindCell(FIntPoint(4, -1)) == nullptr);
-		});
-
-		It("une deltas de dos partidas", [this]()
-		{
-			FSaveScatterDeltas A;
-			A.Add(FIntPoint(0, 0), 1);
-			A.Add(FIntPoint(2, 0), 5);
-			FSaveScatterDeltas B;
-			B.Add(FIntPoint(0, 0), 1);
-			B.Add(FIntPoint(0, 0), 2);
-			B.Add(FIntPoint(-1, 0), 9);
-			A.Merge(B);
-			TestEqual(TEXT("Unión sin duplicados"), A.Num(), 4);
-			TestEqual(TEXT("Tres celdas"), A.NumCells(), 3);
-			TestTrue(TEXT("Contiene la nueva"), A.Contains(FIntPoint(-1, 0), 9));
-		});
-
-		It("codifica en poco espacio tanto claros contiguos como patrones dispersos", [this]()
-		{
-			FSaveIndexSet Contiguous;
-			for (int32 I = 0; I < 10000; ++I)
-			{
-				Contiguous.Add(I);
-			}
-			TestEqual(TEXT("Rango único"), Contiguous.Encode(), FString(TEXT("r:0-9999")));
-
-			FExploredRandom Random(7);
-			FSaveIndexSet Scattered;
-			for (int32 I = 0; I < 4096; ++I)
-			{
-				if (Random.Chance(0.5f))
-				{
-					Scattered.Add(I);
-				}
-			}
-			const FString Encoded = Scattered.Encode();
-			TestTrue(TEXT("Mapa de bits para lo disperso"), Encoded.StartsWith(TEXT("b:")));
-			TestTrue(TEXT("Cota: 6 bits por carácter"), Encoded.Len() <= 4096 / 6 + 4);
-			FSaveIndexSet Back;
-			TestTrue(TEXT("Se lee"), Back.Decode(Encoded));
-			TestTrue(TEXT("Igual"), Back == Scattered);
-
-			FSaveIndexSet Few;
-			Few.Add(3);
-			Few.Add(700);
-			TestEqual(TEXT("Pocos índices como rangos"), Few.Encode(), FString(TEXT("r:3,700")));
-			FSaveIndexSet FewBack;
-			TestTrue(TEXT("Rangos ida y vuelta"), FewBack.Decode(Few.Encode()) && FewBack == Few);
-			FSaveIndexSet Empty;
-			TestTrue(TEXT("Vacío"), Empty.Decode(Empty.Encode()) && Empty.IsEmpty());
-
-			// Peor caso: cada celda cuesta como mucho un bit por instancia posible (más la cabecera).
-			FSaveIndexSet Max;
-			Max.Add(FSaveIndexSet::MaxIndex);
-			TestTrue(TEXT("Índice máximo en rangos"), Max.Encode().Len() < 16);
-		});
-
-		It("rechaza deltas manipulados sin reservar memoria desmedida", [this]()
-		{
-			const TArray<FString> Bad = {
-				TEXT(""), TEXT("x:1"), TEXT("r:5-3"), TEXT("r:3,2"), TEXT("r:1,1"), TEXT("r:01"), TEXT("r:1,"),
-				TEXT("r:-1"), TEXT("r:99999999999"), TEXT("r:1048576"), TEXT("b:!!"), TEXT("b:A"), TEXT("b:AB"),
-			};
-			for (const FString& Text : Bad)
-			{
-				FSaveIndexSet Set;
-				Set.Add(1);
-				TestFalse(FString::Printf(TEXT("Rechaza «%s»"), *Text), Set.Decode(Text));
-				TestTrue(TEXT("Queda vacío"), Set.IsEmpty());
-			}
-			FString Huge = TEXT("b:");
-			for (int32 I = 0; I < 200000; ++I)
-			{
-				Huge.AppendChar(TEXT('/'));
-			}
-			FSaveIndexSet Set;
-			TestFalse(TEXT("Mapa de bits demasiado grande"), Set.Decode(Huge));
-
-			FSaveScatterDeltas Deltas;
-			FSaveValue Value;
-			FString Error;
-			FSaveText::Parse(TEXT("[[1, 2, \"r:0-3\"], [1, 2, \"r:5\"], [\"x\", 0, \"r:1\"]]"), Value, Error);
-			TestFalse(TEXT("Celda con coordenada no entera"), Deltas.FromValue(Value));
-			FSaveText::Parse(TEXT("[[1, 2, \"r:0-3\"], [1, 2, \"r:5\"]]"), Value, Error);
-			TestTrue(TEXT("Celdas repetidas se unen"), Deltas.FromValue(Value) && Deltas.Num() == 5 && Deltas.NumCells() == 1);
-		});
-
-		It("acota la memoria total de muchas celdas con el índice máximo", [this]()
-		{
-			// "r:1048575" son 11 caracteres y 128 KiB: sin tope, 90.000 celdas pedirían ~11 GB.
-			auto MakeCells = [](int32 NumCells)
-			{
-				FSaveValue Cells = FSaveValue::MakeArray();
-				for (int32 I = 0; I < NumCells; ++I)
-				{
-					FSaveValue Entry = FSaveValue::MakeArray();
-					Entry.Add(FSaveValue::MakeInt(I));
-					Entry.Add(FSaveValue::MakeInt(0));
-					Entry.Add(FSaveValue::MakeString(FString::Printf(TEXT("r:%d"), FSaveIndexSet::MaxIndex)));
-					Cells.Add(MoveTemp(Entry));
-				}
-				return Cells;
-			};
-			const int32 WordsPerCell = (FSaveIndexSet::MaxIndex + 1) / 32;
-			const int32 CellsAtCap = FSaveScatterDeltas::MaxLoadedWords / WordsPerCell;
-
-			FSaveScatterDeltas Deltas;
-			TestTrue(TEXT("Justo en el tope se carga"), Deltas.FromValue(MakeCells(CellsAtCap)));
-			TestFalse(TEXT("Una celda más se rechaza"), Deltas.FromValue(MakeCells(CellsAtCap + 1)));
-			TestTrue(TEXT("Y queda vacío"), Deltas.IsEmpty());
-
-			// El tope vale también para la suma de capas.
-			FSaveValue Layers = FSaveValue::MakeObject();
-			Layers.Set(TEXT("destroyed"), MakeCells(CellsAtCap));
-			Layers.Set(TEXT("harvested"), MakeCells(CellsAtCap));
-			FSaveArchive Ar;
-			Ar.SetValue(TEXT("layers"), Layers);
-			FSaveWorldDeltas World;
-			World.Load(Ar);
-			TestEqual(TEXT("Solo cabe una de las dos capas"), World.Layers.Num(), 1);
-		});
-	});
-
 	Describe(TEXT("el estado del jugador"), [this]()
 	{
+		It("rechaza posiciones no finitas o fuera de la isla y anula rotaciones no finitas", [this]()
+		{
+			const double NaN = std::numeric_limits<double>::quiet_NaN();
+			const double Inf = std::numeric_limits<double>::infinity();
+			FSavePlayerState Good;
+			Good.Location = FVector(-9800.0, 4200.0, 350.0);
+			TestTrue(TEXT("En la isla"), Good.HasPlausibleLocation());
+			for (const FVector& Bad : { FVector(NaN, 0.0, 0.0), FVector(0.0, Inf, 0.0), FVector(0.0, 0.0, -Inf),
+				FVector(200001.0, 0.0, 0.0), FVector(0.0, -5.0e7, 0.0) })
+			{
+				FSavePlayerState State;
+				State.Location = Bad;
+				TestFalse(FString::Printf(TEXT("Rechaza (%f, %f, %f)"), Bad.X, Bad.Y, Bad.Z), State.HasPlausibleLocation());
+			}
+
+			// Una partida editada a mano: el escritor guarda NaN e infinitos y el lector los devuelve.
+			FSaveArchive Ar;
+			Ar.Write(TEXT("location"), FVector(NaN, 0.0, 0.0));
+			Ar.Write(TEXT("controlRotation"), FRotator(NaN, 90.0, 0.0));
+			Ar.Write(TEXT("velocity"), FVector(Inf, 0.0, 0.0));
+			FSaveValue Parsed;
+			FString Error;
+			TestTrue(TEXT("Texto válido"), FSaveText::Parse(FSaveText::Write(Ar.GetRoot()), Parsed, Error));
+			FSavePlayerState Loaded;
+			Loaded.Load(FSaveArchive(Parsed));
+			TestFalse(TEXT("Posición descartada"), Loaded.HasPlausibleLocation());
+			TestTrue(TEXT("Rotación a cero"), Loaded.ControlRotation == FRotator::ZeroRotator);
+			TestTrue(TEXT("Velocidad a cero"), Loaded.Velocity == FVector::ZeroVector);
+		});
+
 		It("viaja por el documento completo sin perder precisión", [this]()
 		{
 			FSavePlayerState Player;

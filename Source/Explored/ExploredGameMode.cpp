@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
-#include "Boats/ExploredBoat.h"
+#include "Boats/ExploredRaft.h"
 #include "Cooking/ExploredFire.h"
 #include "Core/SystemLinks.h"
 #include "Player/ExploredCharacter.h"
@@ -57,9 +57,9 @@ void AExploredGameMode::HandlePlayerDeath(APawn* Pawn)
 		Decision == ExploredLinks::ERespawnDecision::GameOver ? TEXT("sin reaparición (Náufrago)") : TEXT("reaparece"));
 
 	bDeathInProgress = true;
-	// Muerto a bordo: se baja del barco, o seguiría enganchado al asiento tras
-	// reaparecer y el contexto de entrada del barco seguiría activo.
-	for (TActorIterator<AExploredBoat> It(GetWorld()); It; ++It)
+	// Muerto a bordo: se baja de la balsa, o seguiría enganchado a ella tras
+	// reaparecer y el contexto de entrada de la balsa seguiría activo.
+	for (TActorIterator<AExploredRaft> It(GetWorld()); It; ++It)
 	{
 		if (It->GetOccupant() == Pawn)
 		{

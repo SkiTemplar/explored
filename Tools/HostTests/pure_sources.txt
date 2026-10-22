@@ -24,10 +24,10 @@ Ocean/OceanWaves.cpp
 Player/SwimModel.cpp
 Save/SaveFormat.cpp
 Save/SaveIslandSections.cpp
+Save/SavePlayerState.cpp
 Save/SaveSlots.cpp
 Save/SaveSystemStates.cpp
 Save/SaveValue.cpp
-Save/SaveWorldDeltas.cpp
 Sky/MoonModel.cpp
 Narrative/BeaconProgressModel.cpp
 Narrative/NotebookModel.cpp
