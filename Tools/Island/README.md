@@ -62,19 +62,20 @@ ruido de facetas de ±0,22 m por vértice en tierra firme (±0,2 m en las rocas)
 - Rejilla de `terrain.cell` = 1,8 m con los vértices desplazados ±12 % de
   celda y la diagonal de cada celda elegida por hash: 133 770 triángulos.
 - Lectura low poly moderada: la normal de cada esquina mezcla la normal suave
-  del vértice (75 %) y la de la cara (25 %, `terrain.FACET_MIX`; 6 % en la
+  del vértice (90 %) y la de la cara (10 %, `terrain.FACET_MIX`; 5 % en las
+  pendientes fuertes, `STEEP_FACET_MIX`, y 6 % en la
   arena y en cuatro celdas a su alrededor, `SAND_FACET_MIX`, donde con el sol
   bajo la faceta salía en triángulos oscuros); se exportan como normales
   personalizadas y `import_island.py` las importa tal cual.
 - Color por vértice («Col», `colors.py`): tres tonos de la paleta por zona con
   variación de alta frecuencia (ruido de 3 y 6,5 m; racha media ≤ 4 celdas),
   fundidos con un núcleo 1-4-1 (transiciones de una o dos celdas). Arena
-  húmeda en la orilla, arena clara con vetas oscuras en los valles de las
-  dunas, hierba por zona (más oscura en el Palmar y el Bambú, seca en la
+  clara con vetas oscuras en los valles de las dunas (la franja mojada de la
+  orilla la pinta `M_TerrainToon` con `WetTopM`, no el color por vértice), hierba por zona (más oscura en el Palmar y el Bambú, seca en la
   colina, más verde en los surcos), roca en tres tonos en pendientes > 35° y
   en la huella de las rocas, tierra en los caminos (borde ondulado y reborde
-  de hierba pisada), en el fondo de los surcos y en manchas de borde definido
-  bajo cada palmera (decorativa o de juego). `M_TerrainToon` multiplica este
+  de hierba pisada) y en el fondo de los surcos, y hierba seca en una mancha
+  pequeña (1,2 m) bajo cada palmera (decorativa o de juego). `M_TerrainToon` multiplica este
   color por la máscara de trazos de `Tools/Textures` (GDD §11).
 - Pivote en el nivel del mar. El eje Y se invierte al pasar a Blender porque
   el importador FBX de Unreal lo vuelve a invertir; `import_island.py`

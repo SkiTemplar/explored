@@ -31,11 +31,11 @@ JITTER = 0.12           # fracción de celda que se desplaza cada vértice inter
 FACET_NOISE = 0.22      # m de ruido vertical en tierra firme (fuera de caminos)
 ROCK_NOISE = 0.2        # m de ruido vertical sobre las rocas
 SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve base
-FACET_MIX = 0.25        # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
+FACET_MIX = 0.10        # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
 # En pendiente fuerte la normal de cara domina la lectura (losas grandes y oscuras en las laderas del
 # islote): la mezcla baja de FACET_MIX a STEEP_FACET_MIX entre estas pendientes de cara (grados).
 STEEP_FACET_SLOPE = (25.0, 45.0)
-STEEP_FACET_MIX = 0.12
+STEEP_FACET_MIX = 0.05
 # En la arena y su franja de transición a la hierba (cuatro celdas alrededor) la faceta se leía como triángulos
 # oscuros de borde duro con el sol bajo: allí la mezcla baja a SAND_FACET_MIX, fundida por vértice.
 SAND_FACET_MIX = 0.06

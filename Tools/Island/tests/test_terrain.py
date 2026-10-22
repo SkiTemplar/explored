@@ -77,7 +77,7 @@ def test_normales_por_esquina_mezclan_suave_y_cara(layout, props):
     assert np.allclose(np.linalg.norm(mesh.normals, axis=1), 1.0)
     assert (mesh.normals[:, 2] > 0.0).all()
     assert np.allclose(np.linalg.norm(mesh.corner_normals, axis=2), 1.0)
-    assert 0.25 <= FACET_MIX <= 0.4
+    assert 0.08 <= FACET_MIX <= 0.12
     # La normal de esquina queda entre la suave y la de cara: más cerca de la suave con FACET_MIX < 0,5.
     smooth = mesh.normals[mesh.tris]
     faces = np.cross(mesh.verts[mesh.tris[:, 1]] - mesh.verts[mesh.tris[:, 0]],
@@ -168,7 +168,9 @@ def test_colores_por_lugar(layout, terreno):
     assert terreno.colors[face_at(terreno, *start)] in {PALETTE['arena_clara'], PALETTE['arena_oscura']}
     assert terreno.colors[face_at(terreno, -45.0, -20.0)] in GRASS
     shore = terreno.colors[(terreno.centroids[:, 2] > -0.5) & (terreno.centroids[:, 2] < 0.3)]
-    assert (shore == PALETTE['arena_humeda']).mean() > 0.8
+    # Sin franja húmeda por vértice (la pinta el material): la orilla es arena clara u oscura.
+    assert np.isin(shore, [PALETTE['arena_clara'], PALETTE['arena_oscura']]).mean() > 0.8
+    assert not (terreno.colors == PALETTE['arena_humeda']).any()
     assert (terreno.colors == PALETTE['arena_oscura']).sum() > 100
 
 
@@ -235,14 +237,17 @@ def test_variacion_de_color_de_alta_frecuencia(layout, terreno):
     assert pairs / max(int(changes.sum()), 1) <= 4.0
 
 
-def test_mancha_de_tierra_bajo_las_palmeras(layout, props):
+def test_mancha_de_hierba_seca_bajo_las_palmeras(layout, props):
     palms = np.array([[-40.0, -20.0]])
     with_palm = build_terrain(layout, props, palms=palms)
     c = with_palm.centroids
-    near = np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0) < 1.5
-    ring = (np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0) > 3.5) & (np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0) < 4.5)
-    assert (with_palm.colors[near] == PALETTE['tierra']).all()
-    assert (with_palm.colors[ring] == PALETTE['tierra']).mean() < 0.5
+    d = np.hypot(c[:, 0] + 40.0, c[:, 1] + 20.0)
+    near = d < 0.7
+    ring = (d > 2.0) & (d < 4.5)
+    assert near.any()
+    assert (with_palm.colors[near] == PALETTE['hierba_seca']).all()
+    assert (with_palm.colors[ring] == PALETTE['hierba_seca']).mean() < 0.5
+    assert not (with_palm.colors[d < 4.5] == PALETTE['tierra']).any()
 
 
 def test_mezcla_de_cara_baja_en_pendiente_fuerte():

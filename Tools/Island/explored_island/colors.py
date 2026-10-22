@@ -1,10 +1,10 @@
 """Colores del terreno: índice de paleta por punto y color por vértice fundido.
 
-Reglas (de abajo arriba): fondo marino claro u oscuro, arena húmeda en la orilla, arena clara en
-la playa con vetas de arena oscura en los valles de las dunas, borde de arena oscura entre playa y
+Reglas (de abajo arriba): fondo marino claro u oscuro, arena clara en la playa (la franja mojada
+de la orilla la pinta M_TerrainToon con WetTopM, no el color por vértice) con vetas de arena oscura en los valles de las dunas, borde de arena oscura entre playa y
 hierba, hierba en tres tonos por zona, roca en tres tonos en las pendientes de más de 35° y en la
-huella de las rocas (oscura en el acantilado), tierra en los caminos (con un reborde oscuro), en el
-fondo de los surcos de la colina y en manchas de borde definido bajo las palmeras.
+huella de las rocas (oscura en el acantilado), tierra en los caminos (con un reborde oscuro) y en el
+fondo de los surcos de la colina, y hierba seca en manchas pequeñas bajo las palmeras.
 
 La variación de la hierba, la arena y la roca es de alta frecuencia (ruido de 4,5 y 9 m más un
 hash por punto): transiciones de 1-2 celdas, no manchas de 20 m. El color por vértice se funde con
@@ -26,7 +26,6 @@ PALETTE = {
     'hierba_salvia': 35, 'hierba_seca': 36, 'tierra': 37,
 }
 
-WET_TOP = 0.35          # m: por debajo, arena húmeda de orilla
 UNDERWATER = -0.6       # m: por debajo, fondo marino
 SHALLOW_BOTTOM = -2.5   # m: fondo claro hasta aquí, oscuro más abajo
 ROCK_SLOPE = 35.0       # grados: pendiente que ya es roca
@@ -37,7 +36,7 @@ DIRT_PATCH = 0.86       # umbral del ruido de 7 m a partir del cual hay mancha d
 GULLY_WET = 0.35        # peso del surco a partir del cual la hierba es más verde (escorrentía)
 GULLY_DIRT = 0.85       # peso del surco a partir del cual el fondo es tierra
 DUNE_TROUGH = -0.1      # m de duna por debajo del cual la arena es oscura
-PALM_DIRT = 2.3         # m: radio medio de la mancha de tierra bajo una palmera
+PALM_DIRT = 1.2         # m: radio medio de la mancha de hierba seca bajo una palmera
 PALM_SHADE = 3.6        # m: radio del corro de hierba oscura alrededor
 PATH_RIM = 0.9          # m fuera del camino con hierba pisada (oscura)
 PATH_WIDEN = 0.25       # m que la tierra del camino invade la hierba (borde ondulado ±0,15 m)
@@ -77,7 +76,7 @@ def pick_tone(kind: str, t: np.ndarray, light: float = TONE_LIGHT, dark_below: f
 
 
 def palm_dirt(palms: np.ndarray, x: np.ndarray, y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarray]:
-    """(tierra, corro de sombra) bajo cada palmera: círculo de borde ondulado por el ángulo."""
+    """(mancha de hierba seca, corro de sombra) bajo cada palmera: círculo de borde ondulado por el ángulo."""
     dirt = np.zeros(x.shape, dtype=bool)
     shade = np.zeros(x.shape, dtype=bool)
     for k, (px, py) in enumerate(palms):
@@ -117,7 +116,7 @@ def point_colors(layout: Layout, points: np.ndarray, slopes: np.ndarray, fields:
 
     out = _ground(layout, x, y, t)
     out = np.where(shade & (z >= SAND_TOP), np.where(t > 0.0, p['hierba_oscura'], p['verde_selva']), out)
-    out = np.where(dirt & (z >= SAND_TOP - 0.3), p['tierra'], out)
+    out = np.where(dirt & (z >= SAND_TOP - 0.3), p['hierba_seca'], out)
     out = np.where(value_noise(x, y, 7.0, layout.seed + 11) > DIRT_PATCH, p['tierra'], out)
     out = np.where(fields.gully > GULLY_WET, np.where(t > 0.1, p['hierba_salvia'], p['hierba_oscura']), out)
     out = np.where(fields.gully > GULLY_DIRT, p['tierra'], out)
@@ -130,7 +129,6 @@ def point_colors(layout: Layout, points: np.ndarray, slopes: np.ndarray, fields:
     sand = np.where(t > 0.75, p['arena_oscura'], sand)
     out = np.where(z < SAND_TOP, sand, out)
     out = np.where((fields.path_dist <= path_edge) & (z >= SAND_TOP - 0.4), p['tierra'], out)
-    out = np.where(z < WET_TOP, p['arena_humeda'], out)
     out = np.where(rock > ROCK_FOOTPRINT, rocky, out)
     out = np.where(slopes > ROCK_SLOPE, rocky, out)
     out = np.where(slopes > CLIFF_SLOPE, p['roca_oscura'], out)
