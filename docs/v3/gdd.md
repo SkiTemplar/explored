@@ -288,8 +288,8 @@ Sin minimapa, sin brújula, sin números salvo en el inventario.
 
 | Pantalla | Contenido | Estado |
 |---|---|---|
-| Menú principal | Continuar (si hay guardado), Nueva partida, Ajustes, Créditos, Salir. Fondo: la isla al atardecer con la baliza apagada | MVP |
-| Pausa | Reanudar, Guardar, Ajustes, Volver al menú | MVP |
+| Menú principal | Continuar, Nueva partida, Cargar, Ajustes, Créditos, Salir. Sin guardado, Continuar y Cargar salen atenuados y no se pueden pulsar. Foco con pastilla naranja y «›»; W/S o flechas y Enter. Fondo: la isla al atardecer con la baliza apagada | MVP |
+| Pausa | 5 entradas: Reanudar, Ajustes, Guardar partida, Salir al menú (pide Sí/No si hay progreso sin guardar) y Salir del juego. Mismo foco y teclas que el menú principal; línea fija «Tab mochila · J cuaderno · C verbos · Esc pausa» | MVP |
 | Ajustes | Volumen (música, ambiente, efectos), sensibilidad del ratón, calidad gráfica (3 niveles: reutiliza `SettingsLogic`). Solo español | MVP |
 | Inventario (Tab) | 8 huecos; descripción breve; arrastrar sobre otro objeto para combinar; lista de recetas descubiertas | MVP |
 | Cuaderno (J) | Páginas desbloqueadas (X/8) con nota de Iria y objetivo actual | MVP |

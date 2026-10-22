@@ -208,6 +208,28 @@ Pendiente de criterio: la orilla de `f8-arena-orilla` deja una franja de arena m
 espuma cuando la ola baja (el mar se mueve y la espuma va por altura fija); la arena de `f8-arena-sol`
 sigue con ondas visibles a contraluz.
 
+## Pasada de diseño P1-P10 (2026-10-22)
+
+Decisiones aceptadas por el diseñador, un commit por elemento (detalle en cada mensaje):
+
+- **P1 objetivos** (`2633cb62`): textos del HUD con materiales y hora, ≤ 60 caracteres. La receta de la
+  mecha no depende de la etapa, así que la noche del ciclón invita a trenzarla.
+- **P2 gradación** (`e71cd171`): saturación 1,0, césped 1,08, exposición fija de día (1,45 EV100). ΔE frente a
+  la paleta: arena 8,0, hierba 14,5, cénit 9,8; el objetivo < 8 no se alcanza en hierba ni cénit.
+- **P3 terreno** (`f7ba8336`): sin banda húmeda por vértice, mancha de palmera en hierba seca de 1,2 m, facetado
+  al 10 % / 5 %. Fuera de alcance: pendiente mínima de la orilla y espuma ligada a la ola (A1 pasos 2-3).
+- **P4 haz** (`cf9a4cf2`), **P5 Mistral** (`d59fc330`), **P6 créditos** (`6e5a5ddf`), **P7 nubes**
+  (`83685574`).
+- **P8 bocina** (`7eaac9a3`): 1,6 recortaba (pico de la grabación −1,9 dBFS); se dejó en 0,95 con la música
+  agachada a 0,6 durante 8 s: ~+5 LU sobre el canon y pico −2,3 dBFS.
+- **P9 mezcla** (`d92f2066`): solo volúmenes en C++.
+- **P10 menús**: botones con foco (pastilla `cielo_ocaso` y «›», porque Lora no trae «▸»), W/S además de flechas
+  y Enter; Continuar y Cargar atenuados y no enfocables sin guardado; «Salir al menú» pregunta Sí/No si hay
+  más de 20 s de juego desde el último guardado o carga (`FSaveSlotPolicy::HasUnsavedProgress`, con spec);
+  línea fija de teclas en la pausa. Capturas `f8-menu-sin-guardado` y `f8-menu-pausa`. La navegación con
+  teclado está cubierta por spec (`MenuNavigationStep`) y por la navegación nativa de Slate, pero no se ha
+  probado pulsando teclas en una sesión real.
+
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 
 - **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Un

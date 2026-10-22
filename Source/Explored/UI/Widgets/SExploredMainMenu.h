@@ -28,6 +28,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 	virtual bool SupportsKeyboardFocus() const override { return true; }
+	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 
 	/** «Continuar» si hay partida guardada; si no, «Nueva partida». */
 	TSharedPtr<SWidget> GetInitialFocus() const { return InitialFocus; }

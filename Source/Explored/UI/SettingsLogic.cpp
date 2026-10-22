@@ -225,6 +225,15 @@ namespace ExploredSettingsLogic
 		return KeyName == FName(TEXT("Escape")) || KeyName == FName(TEXT("Gamepad_Special_Right"));
 	}
 
+	int32 MenuNavigationStep(FName KeyName)
+	{
+		if (KeyName == FName(TEXT("W")))
+		{
+			return -1;
+		}
+		return KeyName == FName(TEXT("S")) ? 1 : 0;
+	}
+
 	int32 QualityPresetToScalability(int32 Preset)
 	{
 		// Baja, media y alta (épica del motor: la isla es pequeña y el estilo es plano).

@@ -14,6 +14,14 @@ namespace ExploredUIWidgets
 	/** Botón de menú a ancho de texto, con la tipografía y colores de FExploredUIStyle. */
 	EXPLORED_API TSharedRef<SWidget> MakeMenuButton(const FText& Label, FOnClicked OnClicked, bool bLarge = true);
 
+	/**
+	 * Botón de menú navegable con teclado y mando: con el foco lleva una pastilla naranja (cielo_ocaso,
+	 * el de las pestañas activas) y la marca «›» (Lora no trae el triángulo «▸»); deshabilitado, el texto sale atenuado y no se
+	 * puede pulsar ni enfocar. OutFocusable recibe el SButton (el que debe recibir el foco inicial).
+	 */
+	EXPLORED_API TSharedRef<SWidget> MakeFocusMenuButton(const FText& Label, FOnClicked OnClicked, bool bEnabled = true,
+		TSharedPtr<SWidget>* OutFocusable = nullptr);
+
 	/** Botón sobre la escena o un fondo oscuro (final, créditos): texto de papel con sombra. */
 	EXPLORED_API TSharedRef<SWidget> MakeSceneButton(const FText& Label, FOnClicked OnClicked);
 

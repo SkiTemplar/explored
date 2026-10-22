@@ -4,7 +4,9 @@
 #include "Widgets/SCompoundWidget.h"
 
 /**
- * Menú de pausa (GDD §10, §15): Reanudar, Ajustes, Guardar (selector de ranura), Salir al menú y Salir del juego.
+ * Menú de pausa (GDD v3 §9.2): Reanudar, Ajustes, Guardar (selector de ranura), Salir al menú y Salir del
+ * juego, con el foco resaltado (W/S o flechas y Enter) y una línea fija con las teclas del juego. «Salir al
+ * menú» pide confirmación (Sí/No) si hay progreso sin guardar.
  *
  * Escape, Start o B del mando reanudan (H6): con FInputModeUIOnly la tecla no
  * llega al InputComponent del PlayerController, así que la atiende el widget.
@@ -12,7 +14,11 @@
 class EXPLORED_API SExploredPauseMenu : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SExploredPauseMenu) {}
+	SLATE_BEGIN_ARGS(SExploredPauseMenu)
+		: _bConfirmExit(false)
+	{}
+		/** Hay progreso sin guardar: «Salir al menú» pregunta antes. */
+		SLATE_ARGUMENT(bool, bConfirmExit)
 		SLATE_EVENT(FSimpleDelegate, OnResume)
 		SLATE_EVENT(FSimpleDelegate, OnSettings)
 		SLATE_EVENT(FSimpleDelegate, OnSave)
@@ -31,6 +37,15 @@ public:
 private:
 	FSimpleDelegate OnResume, OnSettings, OnSave, OnExitToMenu, OnQuit;
 	TSharedPtr<SWidget> InitialFocus;
+	TSharedPtr<SWidget> ExitFocus;
+	TSharedPtr<SWidget> ConfirmNoFocus;
+	TSharedPtr<class SWidgetSwitcher> Pages;
+	bool bConfirmExit = false;
+
+	FReply HandleConfirmYes();
+	FReply HandleConfirmNo();
+	TSharedRef<SWidget> BuildButtons();
+	TSharedRef<SWidget> BuildConfirm();
 
 	FReply HandleResume();
 	FReply HandleSettings();

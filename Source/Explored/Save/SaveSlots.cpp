@@ -91,6 +91,16 @@ bool FSaveSlotPolicy::ShouldAutosave(ESaveTrigger Trigger, double SecondsSinceLa
 	return false;
 }
 
+bool FSaveSlotPolicy::HasUnsavedProgress(double PlaySeconds, double LastSavedPlaySeconds)
+{
+	if (!FMath::IsFinite(PlaySeconds) || !FMath::IsFinite(LastSavedPlaySeconds))
+	{
+		return true;
+	}
+	const double Since = LastSavedPlaySeconds < 0.0 ? PlaySeconds : PlaySeconds - LastSavedPlaySeconds;
+	return Since > UnsavedProgressSeconds;
+}
+
 FString FSaveSlotPolicy::SlotForTrigger(ESaveTrigger Trigger, const FString& ManualSlotIdIn)
 {
 	if (Trigger == ESaveTrigger::Manual)

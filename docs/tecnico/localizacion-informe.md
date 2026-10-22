@@ -7,8 +7,8 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 383 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 258 |
+| Textos en el catálogo | 387 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 262 |
 | … de `Content/Data` (campos bilingües) | 125 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
@@ -366,9 +366,9 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:471` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:499` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:168` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:171` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:174` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:177` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:180` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:183` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |
@@ -394,12 +394,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/UI/IslandHudModel.cpp:17` | `Día %d` | `return FString::Printf(TEXT("Día %d"), FMath::Max(1, Day));` |
 | `Source/Explored/UI/IslandHudModel.cpp:24` | `%d hPa %s` | `return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);` |
 | `Source/Explored/UI/IslandHudModel.cpp:29` | `%d hPa` | `return FString::Printf(TEXT("%d hPa"), FMath::IsFinite(Hpa) ? FMath::RoundToInt32(Hpa) : 0);` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:54` | `Clear Air` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:54` | `Gymnopedie No. 3` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Enchanted Journey` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:55` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:90` | `Clear Air` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:90` | `Gymnopedie No. 3` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Enchanted Journey` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:351` | `cellSizeM fuera de 2-32` | `if (!(CellSizeM >= 2.0f && CellSizeM <= 32.0f)) { return Bad(TEXT("cellSizeM fuera de 2-32")); }` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:352` | `workPerFrame fuera de 50-20000` | `if (WorkPerFrame < 50 \|\| WorkPerFrame > 20000) { return Bad(TEXT("workPerFrame fuera de 50-20000")); }` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:354` | `maxSlopeDeg fuera de 0-90` | `if (!(MaxSlopeDeg > 0.0f && MaxSlopeDeg < 90.0f)) { return Bad(TEXT("maxSlopeDeg fuera de 0-90")); }` |

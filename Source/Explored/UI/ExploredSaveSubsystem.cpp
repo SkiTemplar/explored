@@ -89,6 +89,11 @@ double UExploredSaveSubsystem::GetPlayTimeSeconds() const
 	return PlayTimeAtLoad + FMath::Max(0.0, FPlatformTime::Seconds() - SessionStartSeconds);
 }
 
+bool UExploredSaveSubsystem::HasUnsavedProgress() const
+{
+	return FSaveSlotPolicy::HasUnsavedProgress(GetPlayTimeSeconds(), LastSavedPlaySeconds);
+}
+
 bool UExploredSaveSubsystem::HasSaveGame() const
 {
 	return !GetContinueSlotId().IsEmpty();
@@ -194,7 +199,12 @@ bool UExploredSaveSubsystem::SaveToSlot(const FString& SlotId, FString& OutError
 
 	ExploredSaveDisk::FDiskFileSystem Disk;
 	FSaveSlotStore Store(Disk, GetSaveDirectory(), Migrations);
-	return Store.Write(SlotId, Document, OutError);
+	if (!Store.Write(SlotId, Document, OutError))
+	{
+		return false;
+	}
+	LastSavedPlaySeconds = Document.Header.PlayTimeSeconds;
+	return true;
 }
 
 ESaveLoadResult UExploredSaveSubsystem::LoadFromSlot(const FString& SlotId, FString& OutError)
@@ -216,6 +226,7 @@ ESaveLoadResult UExploredSaveSubsystem::LoadFromSlot(const FString& SlotId, FStr
 	WorldSeed = Outcome.Document.Header.Seed;
 	PlayTimeAtLoad = Outcome.Document.Header.PlayTimeSeconds;
 	SessionStartSeconds = FPlatformTime::Seconds();
+	LastSavedPlaySeconds = PlayTimeAtLoad;
 	Sections.Apply(Outcome.Document.Sections);
 	OnLoadCompleted.Broadcast(SlotId);
 	OutError.Reset();

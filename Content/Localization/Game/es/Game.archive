@@ -1641,6 +1641,33 @@
 				},
 				{
 					"Source": {
+						"Text": "¿Salir al menú? Lo que no hayas guardado se perderá."
+					},
+					"Translation": {
+						"Text": "¿Salir al menú? Lo que no hayas guardado se perderá."
+					},
+					"Key": "ExitConfirm"
+				},
+				{
+					"Source": {
+						"Text": "No, seguir jugando"
+					},
+					"Translation": {
+						"Text": "No, seguir jugando"
+					},
+					"Key": "ExitConfirmNo"
+				},
+				{
+					"Source": {
+						"Text": "Sí, salir al menú"
+					},
+					"Translation": {
+						"Text": "Sí, salir al menú"
+					},
+					"Key": "ExitConfirmYes"
+				},
+				{
+					"Source": {
 						"Text": "Salir al menú"
 					},
 					"Translation": {
@@ -1800,6 +1827,15 @@
 						"Text": "Calidad general"
 					},
 					"Key": "OverallQuality"
+				},
+				{
+					"Source": {
+						"Text": "Tab mochila · J cuaderno · C verbos · Esc pausa"
+					},
+					"Translation": {
+						"Text": "Tab mochila · J cuaderno · C verbos · Esc pausa"
+					},
+					"Key": "PauseKeysHint"
 				},
 				{
 					"Source": {

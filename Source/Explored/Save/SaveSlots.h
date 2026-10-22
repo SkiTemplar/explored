@@ -88,6 +88,12 @@ struct EXPLORED_API FSaveSlotPolicy
 
 	/** Si un disparador debe guardar ya (SecondsSinceLastAutosave < 0 = nunca se ha guardado). */
 	static bool ShouldAutosave(ESaveTrigger Trigger, double SecondsSinceLastAutosave);
+	/**
+	 * ¿Hay progreso que se perdería al salir al menú? Más de UnsavedProgressSeconds de juego desde el
+	 * último guardado o carga (LastSavedPlaySeconds < 0 = nunca se ha guardado ni cargado).
+	 */
+	static bool HasUnsavedProgress(double PlaySeconds, double LastSavedPlaySeconds);
+	static constexpr double UnsavedProgressSeconds = 20.0;
 	/** Ranura de un disparador: los automáticos van a «auto». */
 	static FString SlotForTrigger(ESaveTrigger Trigger, const FString& ManualSlotId);
 

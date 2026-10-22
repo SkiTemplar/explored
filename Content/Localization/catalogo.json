@@ -2,8 +2,8 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 383,
-		"cpp": 258,
+		"total": 387,
+		"cpp": 262,
 		"datos": 125,
 		"pendientes": 7,
 		"sin_en": 0,
@@ -476,7 +476,7 @@
 			"en": "Last night the sea left firewood in Cala Varada.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:483"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:492"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Set the lens",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:392"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:401"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "Light the beacon",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:403"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:412"
 			]
 		},
 		{
@@ -506,7 +506,7 @@
 			"en": "The beacon is lit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:403"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:412"
 			]
 		},
 		{
@@ -516,7 +516,7 @@
 			"en": "Pour the jars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:395"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:404"
 			]
 		},
 		{
@@ -526,7 +526,7 @@
 			"en": "Tighten the wick",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:398"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:407"
 			]
 		},
 		{
@@ -536,7 +536,7 @@
 			"en": "The lens is missing: it's on the «Sáhara»",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:109"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:118"
 			]
 		},
 		{
@@ -546,7 +546,7 @@
 			"en": "Two jars of oil are needed",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:110"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:119"
 			]
 		},
 		{
@@ -556,7 +556,7 @@
 			"en": "Wick missing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:111"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:120"
 			]
 		},
 		{
@@ -566,7 +566,7 @@
 			"en": "Read the page",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredBeaconActors.cpp:79"
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:102"
 			]
 		},
 		{
@@ -576,7 +576,7 @@
 			"en": "Read the page again",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredBeaconActors.cpp:79"
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:102"
 			]
 		},
 		{
@@ -586,7 +586,7 @@
 			"en": "Watch log · page {0} of {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:548"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:557"
 			]
 		},
 		{
@@ -596,7 +596,7 @@
 			"en": "Climb down",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredBeaconActors.cpp:126"
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:149"
 			]
 		},
 		{
@@ -606,7 +606,7 @@
 			"en": "Climb to the lantern",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/ExploredBeaconActors.cpp:126"
+				"Source/Explored/Narrative/ExploredBeaconActors.cpp:149"
 			]
 		},
 		{
@@ -716,7 +716,7 @@
 			"en": "Low poly meshes generated with Blender scripts; a single 41-colour palette",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:83"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:120"
 			]
 		},
 		{
@@ -726,7 +726,7 @@
 			"en": "Rodrigo Fernández",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:80"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:117"
 			]
 		},
 		{
@@ -736,7 +736,7 @@
 			"en": "A game by",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:79"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:116"
 			]
 		},
 		{
@@ -746,7 +746,7 @@
 			"en": "Back",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:66"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:102"
 			]
 		},
 		{
@@ -756,7 +756,7 @@
 			"en": "Developed with Claude (Anthropic)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:82"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:119"
 			]
 		},
 		{
@@ -766,7 +766,7 @@
 			"en": "Code-made programming, art and sound",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:81"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:118"
 			]
 		},
 		{
@@ -776,7 +776,7 @@
 			"en": "Unreal Engine 5.6",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:85"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:122"
 			]
 		},
 		{
@@ -786,7 +786,7 @@
 			"en": "Engine",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:84"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:121"
 			]
 		},
 		{
@@ -796,7 +796,7 @@
 			"en": "Lora, by The Lora Project Authors",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:87"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:124"
 			]
 		},
 		{
@@ -806,7 +806,7 @@
 			"en": "Typeface",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:86"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:123"
 			]
 		},
 		{
@@ -816,7 +816,7 @@
 			"en": "SIL Open Font License 1.1",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:88"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:125"
 			]
 		},
 		{
@@ -826,7 +826,7 @@
 			"en": "Additional music by Kevin MacLeod (incompetech.com)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:91"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:128"
 			]
 		},
 		{
@@ -836,7 +836,7 @@
 			"en": "Music",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:89"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:126"
 			]
 		},
 		{
@@ -846,7 +846,7 @@
 			"en": "Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). Changes: normalised volume and trimmed silences.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:96"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:133"
 			]
 		},
 		{
@@ -856,7 +856,7 @@
 			"en": "Pieces composed in code for the game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:90"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:127"
 			]
 		},
 		{
@@ -866,7 +866,7 @@
 			"en": "Salt Island",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:78"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:115"
 			]
 		},
 		{
@@ -876,7 +876,7 @@
 			"en": "Thank you for lighting the beacon.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:98"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:135"
 			]
 		},
 		{
@@ -886,7 +886,7 @@
 			"en": "Beacon Seven",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:77"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:114"
 			]
 		},
 		{
@@ -896,7 +896,7 @@
 			"en": "\"{0}\"",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:94"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:131"
 			]
 		},
 		{
@@ -1728,7 +1728,7 @@
 			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:24"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:29"
 			]
 		},
 		{
@@ -1748,7 +1748,7 @@
 			"en": "Credits",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:79"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:83"
 			]
 		},
 		{
@@ -1758,7 +1758,7 @@
 			"en": "A game by Rodrigo Fernández",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:72"
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:74"
 			]
 		},
 		{
@@ -1768,7 +1768,7 @@
 			"en": "BEACON SEVEN",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:68"
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:70"
 			]
 		},
 		{
@@ -1778,7 +1778,37 @@
 			"en": "Continue",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredEnding.cpp:45"
+				"Source/Explored/UI/Widgets/SExploredEnding.cpp:47"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ExitConfirm",
+			"es": "¿Salir al menú? Lo que no hayas guardado se perderá.",
+			"en": "Exit to the menu? Anything you have not saved will be lost.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:117"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ExitConfirmNo",
+			"es": "No, seguir jugando",
+			"en": "No, keep playing",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:125"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
+			"key": "ExitConfirmYes",
+			"es": "Sí, salir al menú",
+			"en": "Yes, exit to menu",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:130"
 			]
 		},
 		{
@@ -1788,7 +1818,7 @@
 			"en": "Exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:64"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:97"
 			]
 		},
 		{
@@ -1900,7 +1930,7 @@
 			"en": "Load",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:29"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:34"
 			]
 		},
 		{
@@ -1930,7 +1960,7 @@
 			"en": "New game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:26"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:31"
 			]
 		},
 		{
@@ -1965,12 +1995,22 @@
 		},
 		{
 			"namespace": "ExploredUI",
+			"key": "PauseKeysHint",
+			"es": "Tab mochila · J cuaderno · C verbos · Esc pausa",
+			"en": "Tab backpack · J logbook · C verbs · Esc pause",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:67"
+			]
+		},
+		{
+			"namespace": "ExploredUI",
 			"key": "Paused",
 			"es": "Pausa",
 			"en": "Paused",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:47"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:52"
 			]
 		},
 		{
@@ -2040,7 +2080,7 @@
 			"en": "Quit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:84"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:88"
 			]
 		},
 		{
@@ -2050,7 +2090,7 @@
 			"en": "Quit game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:69"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:102"
 			]
 		},
 		{
@@ -2120,7 +2160,7 @@
 			"en": "Resume",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:23"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:82"
 			]
 		},
 		{
@@ -2130,7 +2170,7 @@
 			"en": "Save game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:59"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:92"
 			]
 		},
 		{
@@ -2170,8 +2210,8 @@
 			"en": "Settings",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:74",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:54"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:78",
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:87"
 			]
 		},
 		{
@@ -2391,7 +2431,7 @@
 			"en": "Salt Island",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:56"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:60"
 			]
 		},
 		{
@@ -2501,7 +2541,7 @@
 			"en": "Beacon Seven",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:47"
+				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:51"
 			]
 		},
 		{

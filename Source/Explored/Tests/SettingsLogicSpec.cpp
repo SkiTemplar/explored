@@ -282,6 +282,9 @@ void FExploredSettingsLogicSpec::Define()
 			TestTrue(TEXT("Start pausa"), IsPauseToggleKey(FName(TEXT("Gamepad_Special_Right"))));
 			TestTrue(TEXT("Escape pausa"), IsPauseToggleKey(FName(TEXT("Escape"))));
 			TestFalse(TEXT("B no pausa"), IsPauseToggleKey(FName(TEXT("Gamepad_FaceButton_Right"))));
+			TestEqual(TEXT("W sube en los menús"), MenuNavigationStep(FName(TEXT("W"))), -1);
+			TestEqual(TEXT("S baja en los menús"), MenuNavigationStep(FName(TEXT("S"))), 1);
+			TestEqual(TEXT("Otras teclas no mueven el foco"), MenuNavigationStep(FName(TEXT("D"))), 0);
 		});
 	});
 

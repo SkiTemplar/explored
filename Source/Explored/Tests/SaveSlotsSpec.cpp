@@ -130,6 +130,15 @@ void FSaveSlotsSpec::Define()
 			TestEqual(TEXT("Manual va a su ranura"), FSaveSlotPolicy::SlotForTrigger(ESaveTrigger::Manual, TEXT("Manual1")), FString(TEXT("manual1")));
 		});
 
+		It("pide confirmar la salida al menú solo con progreso sin guardar", [this]()
+		{
+			TestFalse(TEXT("Recién guardado"), FSaveSlotPolicy::HasUnsavedProgress(600.0, 595.0));
+			TestTrue(TEXT("Un rato después"), FSaveSlotPolicy::HasUnsavedProgress(600.0, 500.0));
+			TestFalse(TEXT("Partida recién empezada"), FSaveSlotPolicy::HasUnsavedProgress(5.0, -1.0));
+			TestTrue(TEXT("Nunca guardada"), FSaveSlotPolicy::HasUnsavedProgress(300.0, -1.0));
+			TestTrue(TEXT("Reloj no válido: se pregunta"), FSaveSlotPolicy::HasUnsavedProgress(std::numeric_limits<double>::quiet_NaN(), 0.0));
+		});
+
 		It("planifica la escritura atómica: temporal, copia y renombrado", [this]()
 		{
 			const TArray<FSaveFileOp> First = FSaveSlotPolicy::PlanWrite(Dir, TEXT("auto"), TEXT("x"), false);

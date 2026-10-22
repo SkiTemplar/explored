@@ -214,6 +214,9 @@ namespace ExploredSettingsLogic
 	/** Teclas que abren y cierran la pausa: Escape y Start (Menu) del mando. */
 	EXPLORED_API bool IsPauseToggleKey(FName KeyName);
 
+	/** Paso de foco en los menús con W y S (las flechas ya las navega Slate): -1 arriba, +1 abajo, 0 nada. */
+	EXPLORED_API int32 MenuNavigationStep(FName KeyName);
+
 	// --- Calidad (GDD v3 §9.2: 3 niveles) ---------------------------------------
 
 	constexpr int32 QualityPresetCount = 3;

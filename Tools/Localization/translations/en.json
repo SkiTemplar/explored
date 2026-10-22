@@ -254,6 +254,22 @@
 			"es": "Salir al menú",
 			"en": "Exit to menu"
 		},
+		"ExitConfirm": {
+			"es": "¿Salir al menú? Lo que no hayas guardado se perderá.",
+			"en": "Exit to the menu? Anything you have not saved will be lost."
+		},
+		"ExitConfirmNo": {
+			"es": "No, seguir jugando",
+			"en": "No, keep playing"
+		},
+		"ExitConfirmYes": {
+			"es": "Sí, salir al menú",
+			"en": "Yes, exit to menu"
+		},
+		"PauseKeysHint": {
+			"es": "Tab mochila · J cuaderno · C verbos · Esc pausa",
+			"en": "Tab backpack · J logbook · C verbs · Esc pause"
+		},
 		"QuitGame": {
 			"es": "Salir del juego",
 			"en": "Quit game"

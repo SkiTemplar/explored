@@ -98,6 +98,8 @@ public:
 	void SetWorldSeed(int64 InSeed) { WorldSeed = InSeed; }
 	int64 GetWorldSeed() const { return WorldSeed; }
 	double GetPlayTimeSeconds() const;
+	/** Más de unos segundos de juego desde el último guardado o carga (pide confirmar «Salir al menú»). */
+	bool HasUnsavedProgress() const;
 
 	/** Saved/SaveGames/. */
 	FString GetSaveDirectory() const;
@@ -131,6 +133,8 @@ private:
 	double PlayTimeAtLoad = 0.0;
 	double SessionStartSeconds = 0.0;
 	double LastAutosaveSeconds = -1.0;
+	/** Tiempo de juego del último guardado o carga correctos (-1 = ninguno en esta sesión). */
+	double LastSavedPlaySeconds = -1.0;
 
 	FDelegateHandle PostLoadMapHandle;
 

@@ -1641,6 +1641,33 @@
 				},
 				{
 					"Source": {
+						"Text": "¿Salir al menú? Lo que no hayas guardado se perderá."
+					},
+					"Translation": {
+						"Text": "Exit to the menu? Anything you have not saved will be lost."
+					},
+					"Key": "ExitConfirm"
+				},
+				{
+					"Source": {
+						"Text": "No, seguir jugando"
+					},
+					"Translation": {
+						"Text": "No, keep playing"
+					},
+					"Key": "ExitConfirmNo"
+				},
+				{
+					"Source": {
+						"Text": "Sí, salir al menú"
+					},
+					"Translation": {
+						"Text": "Yes, exit to menu"
+					},
+					"Key": "ExitConfirmYes"
+				},
+				{
+					"Source": {
 						"Text": "Salir al menú"
 					},
 					"Translation": {
@@ -1800,6 +1827,15 @@
 						"Text": "Overall quality"
 					},
 					"Key": "OverallQuality"
+				},
+				{
+					"Source": {
+						"Text": "Tab mochila · J cuaderno · C verbos · Esc pausa"
+					},
+					"Translation": {
+						"Text": "Tab backpack · J logbook · C verbs · Esc pause"
+					},
+					"Key": "PauseKeysHint"
 				},
 				{
 					"Source": {

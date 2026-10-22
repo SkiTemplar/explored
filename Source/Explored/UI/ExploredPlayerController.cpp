@@ -518,7 +518,9 @@ void AExploredPlayerController::SetCreditsMusic(bool bCredits) const
 void AExploredPlayerController::OpenPauseMenu()
 {
 	SetUIMode(EExploredUIMode::Paused);
+	const UExploredSaveSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UExploredSaveSubsystem>() : nullptr;
 	TSharedRef<SExploredPauseMenu> Widget = SNew(SExploredPauseMenu)
+		.bConfirmExit(!Saves || Saves->HasUnsavedProgress())
 		.OnResume(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ResumeGame))
 		.OnSettings(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSettings))
 		.OnSave(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenSaveGame))

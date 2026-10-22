@@ -1,6 +1,9 @@
 #include "UI/Widgets/SExploredMainMenu.h"
 
+#include "Input/Events.h"
+#include "InputCoreTypes.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -20,17 +23,18 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
-	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeMenuButton(
-		NSLOCTEXT("ExploredUI", "Continue", "Continuar"), FOnClicked::CreateSP(this, &SExploredMainMenu::HandleContinue));
-	ContinueButton->SetEnabled(bCanContinue);
-	TSharedRef<SWidget> NewGameButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "NewGame", "Nueva partida"),
-		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleNewGame));
+	// Sin partida guardada, «Continuar» y «Cargar» salen atenuados y no se pueden pulsar ni enfocar.
+	TSharedPtr<SWidget> ContinueFocus;
+	TSharedPtr<SWidget> NewGameFocus;
+	TSharedRef<SWidget> ContinueButton = ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "Continue", "Continuar"),
+		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleContinue), bCanContinue, &ContinueFocus);
+	TSharedRef<SWidget> NewGameButton = ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "NewGame", "Nueva partida"),
+		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleNewGame), true, &NewGameFocus);
 	// «Cargar» solo tiene sentido con alguna partida legible (la misma condición que «Continuar»).
-	TSharedRef<SWidget> LoadButton = ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "LoadGame", "Cargar"),
-		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleLoad));
-	LoadButton->SetEnabled(bCanContinue);
+	TSharedRef<SWidget> LoadButton = ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "LoadGame", "Cargar"),
+		FOnClicked::CreateSP(this, &SExploredMainMenu::HandleLoad), bCanContinue);
 	// Un botón deshabilitado no puede recibir el foco.
-	InitialFocus = bCanContinue ? ContinueButton : NewGameButton;
+	InitialFocus = bCanContinue ? ContinueFocus : NewGameFocus;
 
 	ChildSlot
 	[
@@ -71,17 +75,17 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f)) [ LoadButton ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),
+					ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "Settings", "Ajustes"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleSettings))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Credits", "Créditos"),
+					ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "Credits", "Créditos"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleCredits))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 4.0f))
 				[
-					ExploredUIWidgets::MakeMenuButton(NSLOCTEXT("ExploredUI", "Quit", "Salir"),
+					ExploredUIWidgets::MakeFocusMenuButton(NSLOCTEXT("ExploredUI", "Quit", "Salir"),
 						FOnClicked::CreateSP(this, &SExploredMainMenu::HandleQuit))
 				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(FMargin(0.0f, 16.0f, 0.0f, 0.0f))
@@ -101,6 +105,17 @@ void SExploredMainMenu::Construct(const FArguments& InArgs)
 			]
 		]
 	];
+}
+
+FReply SExploredMainMenu::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	// W y S mueven el foco como las flechas (Slate ya navega con flechas y mando; Enter pulsa).
+	const int32 Step = ExploredSettingsLogic::MenuNavigationStep(InKeyEvent.GetKey().GetFName());
+	if (Step != 0)
+	{
+		return FReply::Handled().SetNavigation(Step < 0 ? EUINavigation::Up : EUINavigation::Down, ENavigationGenesis::Keyboard);
+	}
+	return SCompoundWidget::OnKeyDown(MyGeometry, InKeyEvent);
 }
 
 FReply SExploredMainMenu::HandleContinue()
