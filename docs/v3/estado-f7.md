@@ -365,6 +365,7 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
 | Ruta | Fecha y commit | Duración a 1× | Desmayos | Páginas | Epílogo | Resultado |
 |---|---|---|---|---|---|---|
 | competente | 2026-10-22, este commit (sobre `9c880015`) | 52,4 min (51,4 + 60 s de créditos) | 0 | 8/8 | `completo (8/8 páginas)` | VERDE |
+| lenta | 2026-10-22, binarios de `c3eaa7bc` | 52,4 min (51,4 + 60 s de créditos) | 0 | 8/8 | `completo (8/8 páginas)` | VERDE |
 
 Ruta competente, `-Clock 6`: 16,6 min reales; 10/10 etapas, 10/10 guardar/cargar, `reached_epilogue`
 true, 0 errores y 0 avisos en el informe; física a la deriva 0, puntos de aparición bloqueados 0,
@@ -372,6 +373,19 @@ true, 0 errores y 0 avisos en el informe; física a la deriva 0, puntos de apari
 propios (los 3 «LogAutomationTest: Error» son el smoke test del motor ya documentado). Final:
 `Luces del Mistral` → `Bocina` 9,6 s → `Pantalla de epílogo` 7,0 s → `Créditos del final (60 s)` →
 `Vuelta al menú principal` 60,0 s → `Menú principal` 0,6 s.
+
+Ruta lenta, `-Clock 6`: 25,6 min reales (24,4 de prueba; la competente, 16,6), con una pausa de
+«entretenerse» tras cada trayecto; 10/10 etapas, 10/10 guardar/cargar, `reached_epilogue` true,
+2 sueños, 0 errores y 0 avisos en el informe; física a la deriva 0, puntos de aparición bloqueados
+0, 9/9 softlocks resolubles y todos los pasos `ok` (sin atascos ni pasos fuera de tiempo). En
+`PlaytestV3.log`, 0 `Error` propios (solo los 3 «LogAutomationTest: Error» del smoke test del
+motor). Final: `Luces del Mistral` → `Bocina` 9,6 s → `Pantalla de epílogo` 7,0 s → `Créditos del
+final (60 s)` → `Vuelta al menú principal` 60,0 s → `Menú principal` 0,6 s; `playtest_v3.ps1`
+termina con «Créditos del final -> menú principal: ok». La duración a 1× coincide con la competente
+porque la partida la cierra el reloj (el Mistral pasa el D3 a las 20:05), no el ritmo del jugador:
+la lentitud se absorbe en las esperas (la ruta lenta pesca y hierve más tarde el D3, pero llega a la
+linterna a las 14:20). `Luces del Mistral` sale dos veces en el log porque el bot guarda y carga en la
+etapa Final; no es un fallo. El auditor marca 283 instancias «flotando/enterradas» (no es criterio).
 
 Hallazgo y decisión: el bot se paraba en la pantalla de epílogo, así que «créditos → menú
 principal» no se comprobaba nunca. Al añadirlo salió un fallo real de la vuelta al menú: con
@@ -384,7 +398,7 @@ recargado, deja `[Playtest] Menú principal tras los créditos del final` (o un 
 `playtest_v3.ps1` exige esa línea. El auditor sigue marcando 276 instancias «flotando/enterradas»
 (283 en la pasada anterior): no es criterio del paso 8 y no se ha tocado.
 
-Pendientes del paso 8: rutas `lenta` y `sin_paginas`.
+Pendiente del paso 8: ruta `sin_paginas`.
 
 ## Pendiente de motor
 
