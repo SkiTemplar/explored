@@ -592,8 +592,8 @@ void AExploredFaunaManager::WriteInstances(UInstancedStaticMeshComponent* Compon
 		const float Data[4] = {Params.Phase01, Params.Amplitude, Params.FrequencyHz, Params.Secondary};
 		Component->SetCustomData(I, MakeArrayView(Data, 4), false);
 	}
+	// Sin MarkRenderStateDirty: transformadas y datos por instancia se suben como cambios, sin recrear el proxy.
 	Component->BatchUpdateInstancesTransforms(0, Transforms, true, false, true);
-	Component->MarkRenderStateDirty();
 }
 
 void AExploredFaunaManager::Tick(float DeltaSeconds)

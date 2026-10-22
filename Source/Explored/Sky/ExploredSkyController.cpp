@@ -297,11 +297,9 @@ void AExploredSkyController::UpdateClouds(float DeltaSeconds, float CloudCoverNo
 		const FVector Location(Cloud.Position.X * 100.0, Cloud.Position.Y * 100.0, Cloud.Altitude * Low * 100.0);
 		const float Scale = FMath::Max(Cloud.Scale * Visible, 0.001f);
 		const FTransform Transform(FRotator(0.0, Cloud.YawDeg, 0.0), Location, FVector(Scale, Scale, Scale * Low));
+		// Sin MarkRenderStateDirty: el gestor de instancias sube solo las cambiadas; recrear los 5
+		// proxies en cada fotograma costaba siempre, llueva o no.
 		CloudLayers[Cloud.Variant]->UpdateInstanceTransform(CloudInstanceIndex[I], Transform, true, false, true);
-	}
-	for (UInstancedStaticMeshComponent* Layer : CloudLayers)
-	{
-		Layer->MarkRenderStateDirty();
 	}
 }
 
@@ -335,12 +333,23 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays, float Delta
 	const float Storm = FSkyPaletteModel::StormFromCloudCover(CloudCover);
 	const FSkyLook Look = FSkyPaletteModel::Evaluate(SunZ, Storm);
 
-	// La luz viaja en sentido opuesto a la dirección hacia el astro.
-	Sun->SetWorldRotation((-SunDir).Rotation());
-	Moon->SetWorldRotation((-MoonDir).Rotation());
+	// La luz viaja en sentido opuesto a la dirección hacia el astro. Gira a pasos de
+	// LightRotationStepDeg: cada giro invalida la caché de sombras virtuales de la direccional.
+	if (FSkyPaletteModel::ShouldRotateLight(AppliedSunDir, SunDir))
+	{
+		Sun->SetWorldRotation((-SunDir).Rotation());
+		AppliedSunDir = SunDir;
+	}
+	if (FSkyPaletteModel::ShouldRotateLight(AppliedMoonDir, MoonDir))
+	{
+		Moon->SetWorldRotation((-MoonDir).Rotation());
+		AppliedMoonDir = MoonDir;
+	}
 
 	const float SunUp = FMath::SmoothStep(-0.08f, 0.04f, SunZ);
 	const float MoonUp = FMath::SmoothStep(-0.05f, 0.08f, MoonZ);
+	// Con el sol fuera (también en el crepúsculo) la luna no paga su propia VSM.
+	Moon->SetCastShadows(FSkyPaletteModel::MoonCastsShadows(SunUp));
 	Sun->SetIntensity(ExploredSkyDetail::SunIlluminanceLux * SunUp * Look.SunIntensity);
 	Sun->SetLightColor(Look.SunColor);
 	Sun->SetVisibility(SunUp > 0.001f);

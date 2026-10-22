@@ -102,6 +102,28 @@ void FSkyPaletteSpec::Define()
 		});
 	});
 
+	Describe(TEXT("luces direccionales y sombras virtuales"), [this]()
+	{
+		It(TEXT("el sol solo gira cuando se ha movido más del umbral (la caché de VSM no se invalida cada fotograma)"), [this]()
+		{
+			const FVector Applied = FRotator(-30.0, 120.0, 0.0).Vector();
+			// Un fotograma de un día de 26 min mueve el sol unos 0,004°.
+			const FVector OneFrame = FRotator(-30.004, 120.0, 0.0).Vector();
+			const FVector Later = FRotator(-30.0 - 2.0 * FSkyPaletteModel::LightRotationStepDeg, 120.0, 0.0).Vector();
+			TestFalse(TEXT("un fotograma no gira la luz"), FSkyPaletteModel::ShouldRotateLight(Applied, OneFrame));
+			TestTrue(TEXT("pasado el umbral, sí"), FSkyPaletteModel::ShouldRotateLight(Applied, Later));
+			TestTrue(TEXT("sin dirección aplicada, siempre"), FSkyPaletteModel::ShouldRotateLight(FVector::ZeroVector, OneFrame));
+			TestTrue(TEXT("un salto de hora (dormir, cargar), siempre"), FSkyPaletteModel::ShouldRotateLight(Applied, -Applied));
+		});
+
+		It(TEXT("la luna no proyecta sombra mientras el sol está fuera"), [this]()
+		{
+			TestFalse(TEXT("de día"), FSkyPaletteModel::MoonCastsShadows(1.0f));
+			TestFalse(TEXT("crepúsculo"), FSkyPaletteModel::MoonCastsShadows(0.2f));
+			TestTrue(TEXT("de noche"), FSkyPaletteModel::MoonCastsShadows(0.0f));
+		});
+	});
+
 	Describe(TEXT("campo de nubes"), [this]()
 	{
 		It(TEXT("genera las nubes en el anillo de 300-900 m, deterministas"), [this]()

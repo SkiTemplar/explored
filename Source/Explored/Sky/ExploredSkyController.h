@@ -83,6 +83,9 @@ private:
 	float WeatherWind = 0.2f;
 	/** Fracción sumergida actual (0 en superficie, 1 ya asentada bajo el agua); suaviza la transición. */
 	float UnderwaterBlend = 0.0f;
+	/** Dirección (hacia el astro) aplicada a la luz del sol y de la luna; nula hasta la primera vez. */
+	FVector AppliedSunDir = FVector::ZeroVector;
+	FVector AppliedMoonDir = FVector::ZeroVector;
 
 	FCloudFieldModel CloudField;
 	/** Índice de instancia de cada nube dentro del componente de su variante. */

@@ -132,7 +132,9 @@ void UExploredWeatherFxSubsystem::UpdateRain(float Intensity, float Wind)
 	{
 		RainTransforms[Index] = HiddenStreak;
 	}
-	RainMesh->BatchUpdateInstancesTransforms(0, RainTransforms, true, true, true);
+	// Sin MarkRenderStateDirty: el gestor de instancias sube solo las ranuras cambiadas; recrear el
+	// proxy de 900 instancias en cada fotograma costaba durante toda la tormenta.
+	RainMesh->BatchUpdateInstancesTransforms(0, RainTransforms, /*bWorldSpace*/ true, /*bMarkRenderStateDirty*/ false, /*bTeleport*/ true);
 	RainMesh->SetVisibility(true);
 	LastStreaks = Visible;
 }

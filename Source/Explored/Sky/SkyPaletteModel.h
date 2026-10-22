@@ -54,4 +54,17 @@ struct EXPLORED_API FSkyPaletteModel
 
 	/** Tormenta visual a partir de la nubosidad del clima (0 por debajo de 0,4, 1 desde 0,85). */
 	static float StormFromCloudCover(float CloudCover);
+
+	/**
+	 * Paso (grados) con que giran el sol y la luna. Cualquier giro de una direccional invalida las
+	 * páginas cacheadas de su VSM: girarla cada fotograma (0,004° con el día de 26 min) obliga a
+	 * rasterizar la sombra entera siempre. 0,1° es ~6 % de la penumbra (LightSourceAngle 1,6°).
+	 */
+	static constexpr float LightRotationStepDeg = 0.1f;
+
+	/** La luz aplicada (Applied, nula si no hay) debe girar hacia Wanted: se ha separado más del paso. */
+	static bool ShouldRotateLight(const FVector& Applied, const FVector& Wanted);
+
+	/** La luna proyecta sombra solo con el sol del todo fuera (SunUp ≈ 0): nunca dos VSM direccionales a la vez. */
+	static bool MoonCastsShadows(float SunUp);
 };

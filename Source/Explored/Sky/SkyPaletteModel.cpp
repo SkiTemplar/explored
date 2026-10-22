@@ -74,6 +74,23 @@ float FSkyPaletteModel::StormFromCloudCover(float CloudCover)
 	return FMath::IsFinite(CloudCover) ? FMath::SmoothStep(0.4f, 0.85f, CloudCover) : 0.0f;
 }
 
+bool FSkyPaletteModel::ShouldRotateLight(const FVector& Applied, const FVector& Wanted)
+{
+	const FVector A = Applied.GetSafeNormal();
+	const FVector B = Wanted.GetSafeNormal();
+	if (A.IsZero() || B.IsZero())
+	{
+		return !B.IsZero();
+	}
+	const double CosStep = FMath::Cos(FMath::DegreesToRadians(static_cast<double>(LightRotationStepDeg)));
+	return FVector::DotProduct(A, B) < CosStep;
+}
+
+bool FSkyPaletteModel::MoonCastsShadows(float SunUp)
+{
+	return !(SunUp > 0.001f);
+}
+
 FSkyLook FSkyPaletteModel::Evaluate(float SunZ, float Storm)
 {
 	using namespace SkyPaletteDetail;
