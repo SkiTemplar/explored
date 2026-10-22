@@ -293,6 +293,26 @@ void FSaveArchiveSpec::Define()
 			TestTrue(TEXT("Admite la marca UTF-8 inicial"), FSaveText::Parse(TEXT("\uFEFF[1]"), Value, Error));
 		});
 
+		It("rechaza un texto más largo que MaxChars sin leerlo (partida inflada a mano)", [this]()
+		{
+			// Una cadena válida de MaxChars caracteres y la misma con un espacio detrás (sigue siendo
+			// JSON válido): lo único que cambia es el tamaño.
+			FString Exact = TEXT("\"");
+			for (int32 I = 0; I < FSaveText::MaxChars - 2; ++I)
+			{
+				Exact.AppendChar(TEXT('a'));
+			}
+			Exact.AppendChar(TEXT('"'));
+			const FString Huge = Exact + TEXT(" ");
+			FSaveValue Value = FSaveValue::MakeInt(7);
+			FString Error;
+			TestEqual(TEXT("Justo MaxChars + 1"), Huge.Len(), FSaveText::MaxChars + 1);
+			TestFalse(TEXT("Rechaza"), FSaveText::Parse(Huge, Value, Error));
+			TestTrue(TEXT("Dice por qué"), Error.Contains(TEXT("demasiado grande")));
+			TestTrue(TEXT("No toca la salida"), Value == FSaveValue::MakeInt(7));
+			TestTrue(TEXT("MaxChars justos se leen"), FSaveText::Parse(Exact, Value, Error) && Value.IsString());
+		});
+
 		It("resiste miles de mutaciones aleatorias de documentos válidos", [this]()
 		{
 			FSaveDocument Document;

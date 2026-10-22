@@ -29,7 +29,13 @@ namespace ExploredSaveDisk
 
 		virtual bool ReadText(const FString& Path, FString& OutText) const override
 		{
-			return IFileManager::Get().FileExists(*Path) && FFileHelper::LoadFileToString(OutText, *Path);
+			// Ni se lee un fichero mayor que lo que acepta el lector (UTF-8: hasta 4 bytes por carácter).
+			const int64 Bytes = IFileManager::Get().FileSize(*Path);
+			if (Bytes < 0 || Bytes > static_cast<int64>(FSaveText::MaxChars) * 4)
+			{
+				return false;
+			}
+			return FFileHelper::LoadFileToString(OutText, *Path);
 		}
 
 		virtual bool WriteText(const FString& Path, const FString& Text) override
@@ -313,6 +319,14 @@ void UExploredSaveSubsystem::ApplyPendingPlayer()
 	UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
 	if (!Pawn || !World)
 	{
+		return;
+	}
+	if (!PlayerState.HasPlausibleLocation())
+	{
+		// Partida editada o dañada: mejor el punto de partida del mapa que el vacío.
+		UE_LOG(LogTemp, Warning, TEXT("[Explored] Posición del jugador imposible (%s): se queda en el punto de partida"),
+			*PlayerState.Location.ToString());
+		bPlayerPending = false;
 		return;
 	}
 	Pawn->SetActorLocation(PlayerState.Location, /*bSweep*/ false, nullptr, ETeleportType::TeleportPhysics);

@@ -139,6 +139,11 @@ struct EXPLORED_API FSaveText
 {
 	/** Profundidad máxima de anidamiento que acepta el lector. */
 	static constexpr int32 MaxDepth = 64;
+	/**
+	 * Tamaño máximo (caracteres) que acepta el lector. Una partida real ocupa unos 6 KB: el tope
+	 * corta un fichero inflado a mano antes de reservar memoria para millones de valores.
+	 */
+	static constexpr int32 MaxChars = 4 * 1024 * 1024;
 
 	static FString Write(const FSaveValue& Value, ESaveTextStyle Style = ESaveTextStyle::Pretty);
 	static bool Parse(const FString& Text, FSaveValue& OutValue, FString& OutError);

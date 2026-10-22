@@ -1200,6 +1200,11 @@ FString FSaveText::Write(const FSaveValue& Value, ESaveTextStyle Style)
 
 bool FSaveText::Parse(const FString& Text, FSaveValue& OutValue, FString& OutError)
 {
+	if (Text.Len() > MaxChars)
+	{
+		OutError = FString::Printf(TEXT("texto demasiado grande (%d caracteres; máximo %d)"), Text.Len(), MaxChars);
+		return false;
+	}
 	SaveValueDetail::FParser Parser;
 	Parser.Data = *Text;
 	Parser.Len = Text.Len();
