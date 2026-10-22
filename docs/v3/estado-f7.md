@@ -8,10 +8,10 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una so
 
 | # | Criterio | Estado en este tramo |
 |---|---|---|
-| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Recorrido y veredicto listos en código; medida PENDIENTE (motor) |
+| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22, 187,2 / 93,6 fps; ver «Huecos de completitud»). Sobre el paquete: PENDIENTE (paso 12) |
 | 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Script y cocinado listos; Shipping compila; paquete y partidas PENDIENTE (motor) |
-| 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | No abordado en este tramo |
-| 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 812 casos, 0 fallos (13 de `BenchBudgetSpec`; 2 de la entrada del final en `FinaleSequenceSpec`); sanitizers solo en CI (en Windows falta `stl_asan.lib`) |
+| 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | NO CUMPLIDO: `codex exec` no puede ejecutar nada en el sandbox de Windows (ver «Huecos de completitud»); revisión manual del guardado hecha |
+| 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 836/836 normal, con ASan + UBSan y con matemáticas rápidas (WSL); cobertura C++ 91,8 % de líneas, modelos v3 92-100 %. CI sin ejecutar: `reset/v2` sin empujar |
 | 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | PENDIENTE (motor) |
 
 ## Hecho
@@ -281,16 +281,84 @@ empujar `reset/v2` para que corra CI con ASan, UBSan y matemáticas rápidas.
   (`ExploredScreens::Pause*`). Los 7 casos nuevos fallaban con el código anterior; host tests
   835/835.
 
-## Hallazgos sin corregir (decisión de diseño o de otro tramo)
+## Huecos de completitud (2026-10-22, noche)
 
-- **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Ahora
-  el README explica cómo regenerarlos y `package.ps1` no empaqueta sin ellos, pero siguen sin copia
-  fuera de este PC. Decidir si van por LFS.
-- **La balsa no responde al mando** (solo W, A, D, E); fuera de alcance según el GDD §9.
-- **`Tools/Textures` no tiene `pyproject.toml`** aunque la sección «Tests» de `CLAUDE.md` lo cita;
-  es carpeta del tramo «Relieve» y no se ha tocado.
-- Del plan de F7 quedan sin abordar: optimización (LOD, distancia de dibujado), revisión de
-  seguridad del guardado (`SaveArchive`), cangrejo ambiental y revisión adversarial.
+Repaso de los criterios sin evidencia y las carencias que señaló un crítico independiente. Commits
+del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (icono y 1.0.0),
+`129141eb` (fuera el barco de v1 y `SaveWorldDeltas`), `5dcfbb3f` y `644bb30b` (guardado),
+`076fc41f` (triángulos en el bench), `450d5379` (commandlet de estilo), `0f6e9f24` y `5f4f4e51`
+(capturas), `71aadbe4` (datos de v1) y `5d409ef3` (`.locres`).
+
+### Cerrados, con evidencia
+
+- **F1.2, F3.3 y F7.4 (sanitizers y cobertura).** En WSL (Ubuntu 24.04, clang 18): host tests
+  836/836 con ASan + UBSan y 836/836 con `-ffast-math` (tras `644bb30b`: `HasPlausibleLocation`
+  dejaba pasar un NaN con matemáticas rápidas, el mismo modo que el `/fp:fast` del editor); en
+  Windows, 836/836 normal. Cobertura C++ de los modelos del host (`llvm-cov`, sin tests ni shim):
+  91,8 % de líneas, 90,8 % de regiones y 79,9 % de ramas. Modelos de v3: `BeaconProgress` 99,2 %,
+  `StormClock` 94,1 %, `Notebook` 100 %, `SupplyCrate` 94,9 %, `TutorialHint` 100 %,
+  `IslandLayout` 92,3 %, `FinaleSequence` 100 %, `BenchBudget` 96,2 %, `RunPacing` 100 % y
+  `SavePlayerState` 100 %. Receta en `Tools/HostTests/README.md`.
+- **F1.5 (Wiring < 500 líneas).** `ExploredWiringSubsystem.cpp` tiene 293 líneas; el guardado está
+  en `ExploredWiringSave.cpp` (378).
+- **F2 (commandlet de validación).** `-run=ExploredStyle` (`450d5379`): 56 mallas, 0 fallos y 0
+  avisos (`Saved/Logs/StyleCheck.log`). `Tools/Blender/validate.py` se queda: valida la fauna
+  animada de `run_animals.py`, que `check-style` no cubre.
+- **F4.2 (triángulos de escena).** `bench.ps1` (cinco vistas, 1080p): el RHI dibuja de media
+  446.588 (cala), 454.390 (palmar), 443.868 (faro), 446.775 (galería) y 433.192 (ciclón)
+  triángulos, todas las pasadas y con el césped, sin Nanite. El GDD §11 separa ahora el césped
+  (≤ 1,5 M) del resto (< 400.000) y deja el rendimiento como criterio que manda.
+- **F4.3 (texturas).** `count_textures.py` con la lista blanca nueva: 2 texturas en `/Game`
+  (`T_Paleta` y `T_TerrainStrokes`) y 0 fuera de la lista.
+- **Rendimiento en el editor.** Segunda pasada: 187,2 fps de media y 93,6 de mínimo, las cinco
+  vistas OK. La primera dio un único fotograma de 38 ms en `bench-ciclon` (mínimo 25,9; 1 % bajo
+  146,9) que no se repitió; si vuelve a salir sobre el paquete, mirar el relámpago del ciclón.
+- **Editor.** Automation tests: 884 de 885 en verde, 0 fallos (uno con avisos de `GConfig`, como
+  antes).
+- **Carencias de juego y paquete.** Pistas contextuales (ocho, de una sola vez); avisos de Unreal,
+  del soundfont MIT y enlaces CC BY en los créditos, más `Content/Licenses/THIRD_PARTY_LICENSES.txt`;
+  icono propio y versión 1.0.0; fuera `AExploredBoat`, las teclas B, X y Z y `SaveWorldDeltas`;
+  fuera `fauna.json`, `fauna_terrestre.json` y `boats.json` (no los leía nada) y
+  `packs_catalogo.json` movido a `Tools/Packs`. El aviso de malla de
+  `/Game/Generated/Meshes/Embarcaciones` ya no sale en los logs del juego (0 en `Shots.log` y
+  `Explored.log`); falta comprobarlo en el log del cocinado (paso 11).
+- **Revisión de seguridad del guardado (entregable de F7), a mano.** Tope de 4 M caracteres antes
+  de reservar y un fichero mayor ni se carga; parser recursivo con `MaxDepth` y sin leer fuera del
+  texto; NaN e infinitos con `IsFinite` explícito (corregido el caso de `644bb30b`); una posición
+  fuera de la isla devuelve al jugador al punto de partida; escritura atómica (temporal + `Move`)
+  con copia de seguridad. Sin hallazgos abiertos.
+- **Smoke test `StructuredLogFormat`.** No afecta al paquete: el motor solo ejecuta los smoke tests
+  si `!FPlatformProperties::RequiresCookedData()` (`AutomationTest.cpp`), falso en un juego
+  cocinado. En el editor con `-game` sigue escribiendo 3 «LogAutomationTest: Error» que el informe
+  del bot no cuenta.
+- **Alcance de entrada e idioma.** README y GDD §9: entrega «teclado y ratón»; español original e
+  inglés en Ajustes → Idioma (379 textos, 0 sin inglés).
+- **Capturas.** f5 rehechas (`0f6e9f24`) y final de F6 rehecho (`5f4f4e51`): el epílogo ya no
+  tiene estrellas sobre el texto. Las de f3 y f4 son el registro de su fase, no de la entrega.
+
+### No cerrados
+
+- **F1.6 y CI.** `reset/v2` no está empujada (decisión de Rodrigo): `host-tests.yml` no ha corrido.
+  Las mismas pasadas (normal, sanitizers y matemáticas rápidas) están verdes en local.
+- **F7.3 (revisión adversarial).** `codex exec` 0.162.1 con `-s read-only` o `workspace-write` no
+  puede lanzar ningún proceso en Windows («setup refresh had errors») y devuelve una revisión
+  vacía; no se ha saltado el sandbox. Queda pendiente con `/codex:adversarial-review` desde una
+  sesión de Rodrigo. Apuntado en `papercuts.md`.
+- **F2.2 y F4.4 (aprobación de láminas).** Las láminas existen (`docs/v3/laminas`), pero no hay
+  constancia escrita de que Rodrigo aprobara los pilotos de F2 ni K1-K3. Solo él puede cerrarlo.
+- **F6.4 y paso 9 de `pendiente-motor.md`.** Falta una partida humana completa y la mezcla de audio
+  a oído.
+- **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Sin empaquetar todavía en v3: tamaño,
+  arranque de Shipping y Development, tres partidas del bot y bench sobre el paquete.
+- **Arte con crítica pendiente** (paso 7): franja de arena mojada entre el agua y la espuma, ondas
+  a contraluz, bloques de roca con techo verde junto al faro y ΔE de hierba y cénit por encima de
+  8. No se ha tocado esta noche: son cambios de material y de malla que piden revisión visual de
+  Rodrigo.
+- **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB, solo en este PC). El
+  README explica cómo regenerarlos y `package.ps1` no empaqueta sin ellos. Decidir si van por LFS.
+- **`Tools/Textures` sin `pyproject.toml`** aunque la sección «Tests» de `CLAUDE.md` lo cita.
+- **Opcionales de F7 sin abordar:** cangrejo ambiental y optimización de LOD y distancia de
+  dibujado (el bench va con 30-50 fps de margen sobre el mínimo).
 
 ## Pendiente de motor
 

@@ -246,7 +246,7 @@ Apuntar en `docs/creditos-musica.md` cualquier cambio de pista. En la misma part
 
 **[x] Hecho 2026-10-22 con el césped continuo (F8): OK.** `[Bench] Resumen: 5 vistas, media 180,7 fps,
 mínimo 88,4 fps: OK` (cala 197,0 / 99,8; palmar 158,7 / 93,5; faro 182,0 / 109,8; galería 137,5 / 88,4;
-ciclón 228,2 / 127,7). Detalle y coste del césped en [`estado-f7.md`](estado-f7.md) § F8.
+ciclón 228,2 / 127,7). Detalle y coste del césped en [`estado-f7.md`](estado-f7.md) § F8. Repetido el 2026-10-22 de noche: 187,2 / 93,6 fps y 433.000-459.000 triángulos del RHI por vista (estado-f7.md, «Huecos de completitud»).
 
 ```powershell
 powershell -NoProfile -File Tools/bench.ps1                 # editor en -game, fuera de pantalla
@@ -291,8 +291,8 @@ powershell -NoProfile -File Tools/package.ps1 -Configuration Development
 - Si UAT rechaza `-AdditionalCookerOptions=-DisablePlugins=UnrealMCPython`, quitarlo del script (no se
   ha podido probar sin motor).
 - En el log del cocinado (`%APPDATA%/Unreal Engine/AutomationTool/Logs/…/Cook-*.txt`), ningún
-  `Error`. Es esperable un aviso por `/Game/Generated/Meshes/Embarcaciones` (barco antiguo, la balsa
-  no lo usa).
+  `Error` ni avisos de `/Game/Generated/Meshes/Embarcaciones` (el barco antiguo se quitó en
+  129141eb y el juego ya no lo pide).
 - Arrancar también el Development y comprobar lo mismo que en Shipping (además carga los comandos de
   depuración que usan el bot y el bench).
 

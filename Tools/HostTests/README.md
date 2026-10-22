@@ -17,6 +17,13 @@ HOST_TESTS_FASTMATH=ON Tools/HostTests/run.sh   # con matemáticas rápidas, com
 Requisitos: `cmake` ≥ 3.20 y un compilador C++20 (g++ 13 o clang 18). Funciona en la nube
 (Linux) y en Windows con WSL.
 
+En Windows nativo, ASan no enlaza (falta `stl_asan.lib`): las pasadas con sanitizers y la
+cobertura se hacen en WSL (Ubuntu 24.04 con `cmake ninja-build clang`). `run.sh` tiene finales
+de línea CRLF en el árbol de Windows; en WSL se llama a `cmake` directamente con
+`-DHOST_TESTS_SANITIZE=ON` o `-DHOST_TESTS_FASTMATH=ON` y un directorio de compilación fuera de
+`/mnt/c`. Cobertura: `-DCMAKE_CXX_FLAGS="-fprofile-instr-generate -fcoverage-mapping"`, y
+`llvm-profdata-18 merge` + `llvm-cov-18 report` ignorando `Tools/HostTests` y `/Tests/`.
+
 ## Qué es y qué no es
 
 - `shim/` reproduce **solo** la parte de Core que usan los modelos, con la semántica de

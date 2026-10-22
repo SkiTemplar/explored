@@ -340,7 +340,7 @@ Presupuesto de triángulos por malla (tope duro):
 | Escena visible sin césped (media) | < 400.000 |
 | Césped continuo K6 a la vista (F8) | ≤ 1,5 M (medido en el host 1,07-1,28 M) |
 
-**Presupuesto de escena tras F8 (2026-10-22).** El tope de 400.000 triángulos se fijó antes del césped continuo. El césped K6 (parches sin Nanite, una LOD, sin sombras, adelgazamiento continuo hasta 100 m) lleva su propio tope de 1,5 M triángulos a la vista, medido en el host con los datos reales (`GrassRealData`: 1,07-1,28 M en la peor dirección, 2026-10-22). El criterio que manda es el rendimiento: `bench.ps1` a 1080p da 185,5 fps de media y 91,3 de mínimo en las cinco vistas (objetivo ≥ 60 y ≥ 45), y el recorrido registra además los triángulos que dibuja el RHI por vista (`[Bench] triángulos`, todas las pasadas, sin Nanite).
+**Presupuesto de escena tras F8 (2026-10-22).** El tope de 400.000 triángulos se fijó antes del césped continuo. El césped K6 (parches sin Nanite, una LOD, sin sombras, adelgazamiento continuo hasta 100 m) lleva su propio tope de 1,5 M triángulos a la vista, medido en el host con los datos reales (`GrassRealData`: 1,07-1,28 M en la peor dirección, 2026-10-22). Medido con el motor (`bench.ps1`, 2026-10-22, cinco vistas): el RHI dibuja 433.000-459.000 triángulos de media por vista contando todas las pasadas y el césped (sin Nanite, que no pasa por ese contador): la escena entera queda un 8-15 % por encima del tope antiguo, y la cifra del host es una cota superior de la peor dirección. El criterio que manda es el rendimiento: 187,2 fps de media y 93,6 de mínimo (objetivo ≥ 60 y ≥ 45).
 
 ### 11.1 Lista cerrada de assets únicos (34 mallas de prop; tope firme 35)
 
