@@ -392,10 +392,15 @@ namespace IslandDataDetail
 		}
 	}
 
-	FString ReadData(const TCHAR* File)
+	/** Texto de DataDir/File; si no se puede leer, apunta el error y devuelve vacío (el fichero queda por defecto). */
+	FString ReadData(const FString& DataDir, const TCHAR* File, TArray<FString>& Errors)
 	{
 		FString Text;
-		FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data"), File));
+		if (!FFileHelper::LoadFileToString(Text, *FPaths::Combine(DataDir, File)))
+		{
+			Errors.Add(FString::Printf(TEXT("%s: no se puede leer"), File));
+			return FString();
+		}
 		return Text;
 	}
 
@@ -517,15 +522,28 @@ void ExploredIslandData::Reload()
 {
 	using namespace IslandDataDetail;
 	TUniquePtr<FIslandData> Data = MakeUnique<FIslandData>(FIslandData::Defaults());
-	const TArray<FString> Errors = FIslandData::ParseInto(*Data, ReadData(TEXT("items.json")), ReadData(TEXT("recipes.json")),
-		ReadData(TEXT("verbs.json")), ReadData(TEXT("fuels.json")), ReadData(TEXT("survival_needs.json")), ReadData(TEXT("fish.json")));
-	TArray<FString> AllErrors = Errors;
-	AllErrors.Append(FIslandData::ParseStorm(Data->Storm, ReadData(TEXT("storm_curve.json"))));
-	for (const FString& Error : AllErrors)
+	const TArray<FString> Errors = FIslandData::LoadDirectory(*Data, FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data")));
+	for (const FString& Error : Errors)
 	{
 		UE_LOG(LogExplored, Warning, TEXT("[Isla] %s (se usan los valores por defecto)"), *Error);
 	}
 	Cache() = MoveTemp(Data);
+}
+
+TArray<FString> FIslandData::LoadDirectory(FIslandData& InOut, const FString& DataDir)
+{
+	using namespace IslandDataDetail;
+	TArray<FString> Errors;
+	const FString Items = ReadData(DataDir, TEXT("items.json"), Errors);
+	const FString Recipes = ReadData(DataDir, TEXT("recipes.json"), Errors);
+	const FString Verbs = ReadData(DataDir, TEXT("verbs.json"), Errors);
+	const FString Fuels = ReadData(DataDir, TEXT("fuels.json"), Errors);
+	const FString Needs = ReadData(DataDir, TEXT("survival_needs.json"), Errors);
+	const FString Fish = ReadData(DataDir, TEXT("fish.json"), Errors);
+	const FString Storm = ReadData(DataDir, TEXT("storm_curve.json"), Errors);
+	Errors.Append(ParseInto(InOut, Items, Recipes, Verbs, Fuels, Needs, Fish));
+	Errors.Append(ParseStorm(InOut.Storm, Storm));
+	return Errors;
 }
 
 FText ExploredIslandData::ItemDescription(FName ItemId)

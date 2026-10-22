@@ -42,6 +42,12 @@ struct EXPLORED_API FIslandData
 
 	/** storm_curve.json. Una curva no válida deja la del GDD y lo apunta en los errores. */
 	static TArray<FString> ParseStorm(FStormClockConfig& InOut, const FString& StormJson);
+
+	/**
+	 * Lee los 7 ficheros de DataDir y los aplica sobre InOut. Un fichero que falta o no se puede leer
+	 * da el error «<fichero>: no se puede leer» y deja sus valores por defecto. Devuelve los errores.
+	 */
+	static TArray<FString> LoadDirectory(FIslandData& InOut, const FString& DataDir);
 };
 
 namespace ExploredIslandData

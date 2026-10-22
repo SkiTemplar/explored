@@ -1,6 +1,9 @@
 #include "Misc/AutomationTest.h"
+#include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
+#include "Items/IslandDataLoader.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
 #include "WorldGen/IslandPropsLoader.h"
@@ -82,6 +85,26 @@ void FIslandDataSpec::Define()
 		TestTrue(TEXT("escala leída"), Rock && Rock->MeshScale.Equals(FVector(1.5, 1.5, 2.0)));
 		const FString BadScale = Scaled.Replace(TEXT("[1.5, 1.5, 2]"), TEXT("[1.5, 0, 2]"));
 		TestFalse(TEXT("meshScale con un cero"), ExploredIslandProps::ParseIslandPropsJson(BadScale, Props, Error));
+	});
+
+	It("un fichero de datos que falta da un error por fichero y deja los valores por defecto", [this]()
+	{
+		const FString Empty = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Tests"), TEXT("IslandDataVacio"));
+		IFileManager::Get().DeleteDirectory(*Empty, false, true);
+		IFileManager::Get().MakeDirectory(*Empty, true);
+		FIslandData Data = FIslandData::Defaults();
+		const TArray<FString> Errors = FIslandData::LoadDirectory(Data, Empty);
+		TestEqual(TEXT("7 errores"), Errors.Num(), 7);
+		for (const TCHAR* File : { TEXT("items.json"), TEXT("recipes.json"), TEXT("verbs.json"), TEXT("fuels.json"),
+			TEXT("survival_needs.json"), TEXT("fish.json"), TEXT("storm_curve.json") })
+		{
+			TestTrue(FString::Printf(TEXT("avisa de %s"), File), Errors.Contains(FString::Printf(TEXT("%s: no se puede leer"), File)));
+		}
+		TestEqual(TEXT("mochila por defecto"), Data.Backpack.Items.Num(), FBackpackRules::Default().Items.Num());
+		FIslandData Real = FIslandData::Defaults();
+		TestEqual(TEXT("con los datos del juego no hay errores"),
+			FIslandData::LoadDirectory(Real, FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data"))).Num(), 0);
+		IFileManager::Get().DeleteDirectory(*Empty, false, true);
 	});
 }
 
