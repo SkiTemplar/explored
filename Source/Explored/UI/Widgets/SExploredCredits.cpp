@@ -1,6 +1,9 @@
 #include "UI/Widgets/SExploredCredits.h"
 
 #include "Input/Events.h"
+#include "Rendering/DrawElements.h"
+#include "Styling/CoreStyle.h"
+#include "Widgets/SLeafWidget.h"
 #include "InputCoreTypes.h"
 #include "UI/ExploredUIPalette.h"
 #include "UI/ExploredUIStyle.h"
@@ -20,6 +23,39 @@ namespace ExploredCreditsDetail
 {
 	/** Los créditos completos pasan en 60 s (GDD v3 §9.2). */
 	constexpr float RollSeconds = 60.0f;
+	/** Margen vertical (px) del rollo: las líneas se cortan a esta distancia del borde, bajo el degradado. */
+	constexpr float RollMarginY = 120.0f;
+	/** Alto (px) del degradado de la noche a transparente arriba y abajo del rollo. */
+	constexpr float FadeHeight = 160.0f;
+
+	/** Degradado vertical de la noche (opaca en el borde del rollo) a transparente hacia dentro. */
+	class SNightFade : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SNightFade) {}
+			SLATE_ARGUMENT(bool, OpaqueAtTop)
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs) { bOpaqueAtTop = InArgs._OpaqueAtTop; }
+
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1.0f, FadeHeight); }
+
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
+			FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
+		{
+			const FVector2f Size(AllottedGeometry.GetLocalSize());
+			const FLinearColor Night = ExploredPalette::Linear(ExploredPalette::NocheCenit);
+			const FLinearColor Clear(Night.R, Night.G, Night.B, 0.0f);
+			TArray<FSlateGradientStop> Stops;
+			Stops.Add(FSlateGradientStop(FVector2f(0.0f, 0.0f), bOpaqueAtTop ? Night : Clear));
+			Stops.Add(FSlateGradientStop(Size, bOpaqueAtTop ? Clear : Night));
+			FSlateDrawElement::MakeGradient(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(), MoveTemp(Stops), Orient_Horizontal);
+			return LayerId;
+		}
+
+	private:
+		bool bOpaqueAtTop = true;
+	};
 
 	enum class ELine : uint8 { Title, Heading, Body, Small };
 
@@ -72,8 +108,9 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 	{
 		Roll->AddSlot().AutoHeight().Padding(FMargin(0.0f, Top, 0.0f, 0.0f))[Line(Text, Kind)];
 	};
-	// Hueco de una pantalla: el rollo entra desde abajo.
-	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(380.0f)];
+	// Hueco del alto visible: el rollo empieza vacío y entra desde abajo.
+	const auto ViewGap = [this]() { return FOptionalSize(RollViewHeight); };
+	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride_Lambda(ViewGap)];
 	Add(LOCTEXT("Title", "Baliza Siete"), ELine::Title, 0.0f);
 	Add(LOCTEXT("Subtitle", "Isla de Sal"), ELine::Small, 4.0f);
 	Add(LOCTEXT("AuthorHeading", "Un juego de"), ELine::Heading, 90.0f);
@@ -96,7 +133,8 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 	Add(LOCTEXT("MusicLicense", "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados."),
 		ELine::Small, 12.0f);
 	Add(LOCTEXT("Thanks", "Gracias por encender la baliza."), ELine::Heading, 120.0f);
-	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(1000.0f)];
+	// Y otro igual al final: la última línea sale por arriba y el rollo acaba vacío.
+	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride_Lambda(ViewGap)];
 
 	ChildSlot
 	[
@@ -106,6 +144,7 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 		[
 			SNew(SBox)
 			.WidthOverride(1000.0f)
+			.Padding(FMargin(0.0f, RollMarginY))
 			[
 				SAssignNew(Scroll, SScrollBox)
 				.Style(&ExploredCreditsDetail::NoShadowStyle())
@@ -113,6 +152,14 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 				.ConsumeMouseWheel(EConsumeMouseWheel::Never)
 				+ SScrollBox::Slot()[Roll]
 			]
+		]
+		+ SOverlay::Slot().VAlign(VAlign_Top).Padding(FMargin(0.0f, RollMarginY, 0.0f, 0.0f))
+		[
+			SNew(SNightFade).OpaqueAtTop(true)
+		]
+		+ SOverlay::Slot().VAlign(VAlign_Bottom).Padding(FMargin(0.0f, 0.0f, 0.0f, RollMarginY))
+		[
+			SNew(SNightFade).OpaqueAtTop(false)
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(FMargin(0.0f, 0.0f, 48.0f, 40.0f))
 		[
@@ -130,6 +177,7 @@ void SExploredCredits::Tick(const FGeometry& AllottedGeometry, const double InCu
 	}
 	// Velocidad para que todo el rollo pase en RollSeconds (con el mundo en pausa: tiempo de Slate).
 	Elapsed += InDeltaTime;
+	RollViewHeight = FMath::Max(1.0f, static_cast<float>(AllottedGeometry.GetLocalSize().Y) - 2.0f * ExploredCreditsDetail::RollMarginY);
 	const float Total = Scroll->GetScrollOffsetOfEnd();
 	Scroll->SetScrollOffset(FMath::Clamp(Elapsed / ExploredCreditsDetail::RollSeconds, 0.0f, 1.0f) * Total);
 }

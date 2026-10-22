@@ -22,6 +22,8 @@ namespace ExploredEndingDetail
 	const FLinearColor BeaconAmber = ExploredPalette::Linear(ExploredPalette::Laton);
 	constexpr int32 StarCount = 160;
 	constexpr int32 StarSeed = 1974;
+	/** Margen (px) alrededor del texto sin estrellas: ninguna toca una letra. */
+	constexpr float StarTextMargin = 40.0f;
 
 	TSharedRef<SWidget> Line(const FText& Text, const FSlateFontInfo& Font, const FLinearColor& Color)
 	{
@@ -51,7 +53,7 @@ void SExploredEnding::Construct(const FArguments& InArgs)
 		SNew(SOverlay)
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
 		[
-			SNew(SBox)
+			SAssignNew(TextColumn, SBox)
 			.WidthOverride(760.0f)
 			[
 				SNew(SVerticalBox)
@@ -89,6 +91,16 @@ int32 SExploredEnding::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
 		ExploredEndingDetail::NightSky);
 	const FVector2D Size = AllottedGeometry.GetLocalSize();
 	const double Now = FPlatformTime::Seconds();
+	// Rectángulo del texto (geometría del fotograma anterior) en el espacio local, ampliado StarTextMargin.
+	FSlateRect TextRect(0.0f, 0.0f, 0.0f, 0.0f);
+	if (TextColumn.IsValid())
+	{
+		const FGeometry& TextGeometry = TextColumn->GetPaintSpaceGeometry();
+		const FVector2D TopLeft = AllottedGeometry.AbsoluteToLocal(TextGeometry.GetAbsolutePosition());
+		const FVector2D BottomRight = AllottedGeometry.AbsoluteToLocal(TextGeometry.GetAbsolutePosition() + TextGeometry.GetAbsoluteSize());
+		const float Margin = ExploredEndingDetail::StarTextMargin;
+		TextRect = FSlateRect(TopLeft.X - Margin, TopLeft.Y - Margin, BottomRight.X + Margin, BottomRight.Y + Margin);
+	}
 	FRandomStream Rng(ExploredEndingDetail::StarSeed);
 	for (int32 I = 0; I < ExploredEndingDetail::StarCount; ++I)
 	{
@@ -96,6 +108,11 @@ int32 SExploredEnding::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
 		const float Radius = Rng.FRandRange(1.0f, 2.6f);
 		const float Phase = Rng.FRand() * 6.28f;
 		const float Twinkle = 0.55f + 0.45f * FMath::Sin(static_cast<float>(Now) * Rng.FRandRange(0.6f, 2.2f) + Phase);
+		// Se descarta después de tirar los dados: el resto de estrellas no se mueve.
+		if (TextRect.ContainsPoint(Position) || TextRect.ContainsPoint(Position + FVector2D(Radius, Radius)))
+		{
+			continue;
+		}
 		FLinearColor Color = ExploredEndingDetail::StarWhite;
 		Color.A = Twinkle;
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId + 1,

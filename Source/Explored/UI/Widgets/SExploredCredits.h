@@ -29,5 +29,7 @@ private:
 	TSharedPtr<SWidget> InitialFocus;
 	TSharedPtr<class SScrollBox> Scroll;
 	float Elapsed = 0.0f;
+	/** Alto visible del rollo (px): los huecos de entrada y salida miden eso, para que empiece y acabe vacío. */
+	float RollViewHeight = 840.0f;
 	FReply HandleBack();
 };

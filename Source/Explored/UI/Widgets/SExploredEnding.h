@@ -24,6 +24,9 @@ public:
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 	/** Pinta el cielo estrellado detrás del texto (posiciones fijas por semilla, titilando). */
+	/** Columna de texto: las estrellas no se dibujan dentro de su rectángulo ampliado. */
+	TSharedPtr<SWidget> TextColumn;
+
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
 		FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
