@@ -50,21 +50,6 @@ void FFinaleSequenceSpec::Define()
 		});
 	});
 
-	Describe(TEXT("PhaseAt"), [this]()
-	{
-		It(TEXT("recorre las cuatro fases en orden"), [this]()
-		{
-			const FFinaleTiming Timing;
-			TestEqual(TEXT("antes"), FFinaleSequenceModel::PhaseAt(Timing, -1.0f), EFinalePhase::Approach);
-			TestEqual(TEXT("NaN"), FFinaleSequenceModel::PhaseAt(Timing, NAN), EFinalePhase::Approach);
-			TestEqual(TEXT("llegando"), FFinaleSequenceModel::PhaseAt(Timing, 9.5f), EFinalePhase::Approach);
-			TestEqual(TEXT("bocina"), FFinaleSequenceModel::PhaseAt(Timing, 9.6f), EFinalePhase::Horn);
-			TestEqual(TEXT("fundido"), FFinaleSequenceModel::PhaseAt(Timing, 15.0f), EFinalePhase::FadeOut);
-			TestEqual(TEXT("epílogo"), FFinaleSequenceModel::PhaseAt(Timing, 16.6f), EFinalePhase::Epilogue);
-			TestEqual(TEXT("se queda en el epílogo"), FFinaleSequenceModel::PhaseAt(Timing, 500.0f), EFinalePhase::Epilogue);
-		});
-	});
-
 	Describe(TEXT("Llama y haz"), [this]()
 	{
 		It(TEXT("la llama crece en los 3 s de encender y se queda en 1"), [this]()

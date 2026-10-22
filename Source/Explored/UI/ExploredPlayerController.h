@@ -13,6 +13,7 @@ class SExploredInventoryPanel;
 class SExploredSettingsPanel;
 class UExploredGameUserSettings;
 class UExploredSaveSubsystem;
+struct FFinaleTiming;
 
 /** Modos de interfaz del PlayerController (GDD §10). */
 UENUM(BlueprintType)
@@ -141,10 +142,6 @@ public:
 	/** La pantalla de epílogo ya está en el viewport (prueba de humo de la historia). */
 	bool IsShowingEnding() const { return bShowingEnding; }
 
-	/** Segundos que duran los créditos del final antes de volver al menú (GDD v3 §2: 60 s). */
-	UPROPERTY(EditDefaultsOnly, Category = "Explored|UI")
-	float EndCreditsSeconds = 60.0f;
-
 	/** Secuencia de salida del barco: sin pausa ni HUD de juego mientras dura. */
 	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
 	bool IsCutsceneActive() const { return bCutsceneActive; }
@@ -192,6 +189,8 @@ private:
 	/** Funde a negro, entra a jugar y vuelve a fundir (Continuar y Nueva partida). */
 	void FadeIntoGameplay();
 	AExploredMenuCamera* FindOrSpawnMenuCamera();
+	/** Tiempos del final de UBeaconSubsystem (los mismos que programan la bocina y el fundido). */
+	FFinaleTiming GetFinaleTiming() const;
 
 	EExploredUIMode UIMode = EExploredUIMode::Menu;
 	bool bCutsceneActive = false;
@@ -217,5 +216,7 @@ private:
 
 	/** Vuelta al menú tras los créditos del final; con el mundo en pausa no corren los temporizadores del mundo. */
 	FTSTicker::FDelegateHandle EndCreditsTicker;
+	/** Segundos reales desde que empezaron los créditos del final (FFinaleSequenceModel::CreditsStep). */
+	float EndCreditsElapsed = 0.0f;
 
 };

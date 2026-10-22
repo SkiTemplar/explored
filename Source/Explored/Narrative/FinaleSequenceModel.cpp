@@ -65,19 +65,6 @@ float FFinaleSequenceModel::EpilogueAtSeconds(const FFinaleTiming& Timing)
 	return FadeAtSeconds(Timing) + Sanitize(Timing).FadeToBlackSeconds;
 }
 
-EFinalePhase FFinaleSequenceModel::PhaseAt(const FFinaleTiming& Timing, float SinceMistral)
-{
-	if (!FMath::IsFinite(SinceMistral) || SinceMistral < HornAtSeconds(Timing))
-	{
-		return EFinalePhase::Approach;
-	}
-	if (SinceMistral < FadeAtSeconds(Timing))
-	{
-		return EFinalePhase::Horn;
-	}
-	return SinceMistral < EpilogueAtSeconds(Timing) ? EFinalePhase::FadeOut : EFinalePhase::Epilogue;
-}
-
 float FFinaleSequenceModel::FlameStrength(const FFinaleTiming& Timing, float SinceIgnite)
 {
 	return FinaleSequenceDetail::Ramp(SinceIgnite, Sanitize(Timing).IgniteSeconds);

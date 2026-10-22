@@ -623,14 +623,14 @@ void AExploredPlayerController::ShowEnding(const FText& EpilogueLine, const FTex
 		PC->SetInputMode(InputMode);
 		if (PC->FadeWidget.IsValid())
 		{
-			PC->FadeWidget->FadeFromBlack(FFinaleTiming().FadeFromBlackSeconds);
+			PC->FadeWidget->FadeFromBlack(PC->GetFinaleTiming().FadeFromBlackSeconds);
 		}
 		PC->bShowingEnding = true;
 		UE_LOG(LogTemp, Display, TEXT("[Explored] Pantalla de epílogo"));
 	};
 	if (FadeWidget.IsValid())
 	{
-		FadeWidget->FadeToBlack(FFinaleTiming().FadeToBlackSeconds, Show);
+		FadeWidget->FadeToBlack(GetFinaleTiming().FadeToBlackSeconds, Show);
 	}
 	else
 	{
@@ -642,7 +642,9 @@ void AExploredPlayerController::ShowEndCredits()
 {
 	HideOverlay();
 	SetCreditsMusic(true);
+	const FFinaleTiming Timing = GetFinaleTiming();
 	TSharedRef<SExploredCredits> Widget = SNew(SExploredCredits)
+		.RollSeconds(Timing.EndCreditsSeconds)
 		.OnBack(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::ExitToMainMenu));
 	CurrentOverlay = Widget;
 	CurrentFocusTarget = Widget->GetInitialFocus();
@@ -655,14 +657,28 @@ void AExploredPlayerController::ShowEndCredits()
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
 	// El final deja el mundo en pausa: el temporizador va en el ticker del motor, no en el del mundo.
+	// Cada fotograma (el delta del ticker es el del fotograma, no el del intervalo): el paso lo decide
+	// el modelo con los tiempos del final de UBeaconSubsystem (EndCreditsSeconds).
 	FTSTicker::GetCoreTicker().RemoveTicker(EndCreditsTicker);
-	EndCreditsTicker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [this](float)
+	EndCreditsElapsed = 0.0f;
+	EndCreditsTicker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [this, Timing](float DeltaSeconds)
 	{
+		EndCreditsElapsed += DeltaSeconds;
+		if (FFinaleSequenceModel::CreditsStep(Timing, EndCreditsElapsed, false) == EFinaleCreditsStep::Stay)
+		{
+			return true;
+		}
 		EndCreditsTicker.Reset();
 		ExitToMainMenu();
 		return false;
-	}), FMath::Max(FFinaleSequenceModel::MinCreditsSeconds, EndCreditsSeconds));
-	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final"));
+	}));
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final (%.0f s)"), Timing.EndCreditsSeconds);
+}
+
+FFinaleTiming AExploredPlayerController::GetFinaleTiming() const
+{
+	const UBeaconSubsystem* Beacon = UBeaconSubsystem::Get(this);
+	return Beacon ? Beacon->FinaleTiming() : FFinaleSequenceModel::Sanitize(FFinaleTiming());
 }
 
 void AExploredPlayerController::ToggleNotebook()

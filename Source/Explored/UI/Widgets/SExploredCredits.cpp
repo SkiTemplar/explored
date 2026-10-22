@@ -21,8 +21,6 @@
 // Espacio de nombres con nombre (no anónimo) para no chocar en el Unity build.
 namespace ExploredCreditsDetail
 {
-	/** Los créditos completos pasan en 60 s (GDD v3 §9.2). */
-	constexpr float RollSeconds = 60.0f;
 	/** Margen vertical (px) del rollo: las líneas se cortan a esta distancia del borde, bajo el degradado. */
 	constexpr float RollMarginY = 120.0f;
 	/** Alto (px) del degradado de la noche a transparente arriba y abajo del rollo. */
@@ -97,6 +95,7 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 	using namespace ExploredCreditsDetail;
 
 	OnBack = InArgs._OnBack;
+	RollSeconds = FMath::Max(FFinaleSequenceModel::MinCreditsSeconds, InArgs._RollSeconds);
 	const FExploredUIStyle& Style = FExploredUIStyle::Get();
 
 	TSharedRef<SWidget> BackButton = ExploredUIWidgets::MakeSceneButton(LOCTEXT("Back", "Volver"),
@@ -179,7 +178,7 @@ void SExploredCredits::Tick(const FGeometry& AllottedGeometry, const double InCu
 	Elapsed += InDeltaTime;
 	RollViewHeight = FMath::Max(1.0f, static_cast<float>(AllottedGeometry.GetLocalSize().Y) - 2.0f * ExploredCreditsDetail::RollMarginY);
 	const float Total = Scroll->GetScrollOffsetOfEnd();
-	Scroll->SetScrollOffset(FMath::Clamp(Elapsed / ExploredCreditsDetail::RollSeconds, 0.0f, 1.0f) * Total);
+	Scroll->SetScrollOffset(FMath::Clamp(Elapsed / RollSeconds, 0.0f, 1.0f) * Total);
 }
 
 FReply SExploredCredits::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)

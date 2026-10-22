@@ -37,15 +37,6 @@ struct EXPLORED_API FFinaleTiming
 	float EndCreditsSeconds = 60.0f;
 };
 
-/** Fase del final desde que aparecen las luces del Mistral. */
-enum class EFinalePhase : uint8
-{
-	Approach,   // las luces se acercan
-	Horn,       // ha sonado la bocina; el barco termina de llegar
-	FadeOut,    // fundido a negro
-	Epilogue,   // pantalla del epílogo (sale con «Continuar»)
-};
-
 /** Paso siguiente tras los créditos del final. */
 enum class EFinaleCreditsStep : uint8
 {
@@ -73,9 +64,6 @@ struct EXPLORED_API FFinaleSequenceModel
 	/** Retraso de la bocina tras la aparición y del fundido tras la bocina (para los temporizadores). */
 	static float HornDelaySeconds(const FFinaleTiming& Timing);
 	static float FadeDelaySeconds(const FFinaleTiming& Timing);
-
-	/** Fase a los segundos dados desde la aparición del Mistral (negativo o NaN = Approach). */
-	static EFinalePhase PhaseAt(const FFinaleTiming& Timing, float SinceMistral);
 
 	/** Fuerza de la llama (0-1) mientras prende: sube suave durante IgniteSeconds. */
 	static float FlameStrength(const FFinaleTiming& Timing, float SinceIgnite);
