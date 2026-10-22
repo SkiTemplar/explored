@@ -91,6 +91,17 @@ bool FSkyPaletteModel::MoonCastsShadows(float SunUp)
 	return !(SunUp > 0.001f);
 }
 
+float FSkyPaletteModel::SunUp(float SunZ)
+{
+	return FMath::SmoothStep(-0.08f, 0.04f, SunZ);
+}
+
+float FSkyPaletteModel::MoonLightFade(float SunZ)
+{
+	// Sale de 0 justo donde SunUp llega a 0 (SunZ = -0,08): nunca alumbra con el sol encendido.
+	return 1.0f - FMath::SmoothStep(-0.12f, -0.08f, SunZ);
+}
+
 FSkyLook FSkyPaletteModel::Evaluate(float SunZ, float Storm)
 {
 	using namespace SkyPaletteDetail;

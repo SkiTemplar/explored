@@ -122,6 +122,25 @@ void FSkyPaletteSpec::Define()
 			TestFalse(TEXT("crepúsculo"), FSkyPaletteModel::MoonCastsShadows(0.2f));
 			TestTrue(TEXT("de noche"), FSkyPaletteModel::MoonCastsShadows(0.0f));
 		});
+
+		It(TEXT("la luna solo alumbra cuando puede proyectar sombra (sin Lumen se colaría en los interiores)"), [this]()
+		{
+			bool bLeaks = false;
+			for (int32 Step = 0; Step <= 400; ++Step)
+			{
+				const float SunZ = -0.3f + 0.4f * static_cast<float>(Step) / 400.0f;
+				const float SunUp = FSkyPaletteModel::SunUp(SunZ);
+				if (FSkyPaletteModel::MoonLightFade(SunZ) > 0.0f && !FSkyPaletteModel::MoonCastsShadows(SunUp))
+				{
+					bLeaks = true;
+				}
+			}
+			TestFalse(TEXT("ninguna altura del sol enciende la luna sin sombra"), bLeaks);
+			TestEqual(TEXT("crepúsculo (sol aún alumbrando): luna apagada"), FSkyPaletteModel::MoonLightFade(-0.05f), 0.0f);
+			TestEqual(TEXT("noche cerrada: luna entera"), FSkyPaletteModel::MoonLightFade(-0.3f), 1.0f);
+			const float Mid = FSkyPaletteModel::MoonLightFade(-0.1f);
+			TestTrue(TEXT("entra con fundido, no de golpe"), Mid > 0.0f && Mid < 1.0f);
+		});
 	});
 
 	Describe(TEXT("campo de nubes"), [this]()

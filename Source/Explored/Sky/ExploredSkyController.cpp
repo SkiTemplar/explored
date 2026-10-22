@@ -346,18 +346,21 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays, float Delta
 		AppliedMoonDir = MoonDir;
 	}
 
-	const float SunUp = FMath::SmoothStep(-0.08f, 0.04f, SunZ);
+	const float SunUp = FSkyPaletteModel::SunUp(SunZ);
 	const float MoonUp = FMath::SmoothStep(-0.05f, 0.08f, MoonZ);
-	// Con el sol fuera (también en el crepúsculo) la luna no paga su propia VSM.
-	Moon->SetCastShadows(FSkyPaletteModel::MoonCastsShadows(SunUp));
+	// La luna proyecta sombra solo con el sol del todo fuera (SunUp ≈ 0): nunca dos VSM a la vez. Y sin
+	// sombra no alumbra (MoonLightFade): sin Lumen se colaría por techos y paredes en el crepúsculo.
+	const bool bMoonShadows = FSkyPaletteModel::MoonCastsShadows(SunUp);
+	Moon->SetCastShadows(bMoonShadows);
 	Sun->SetIntensity(ExploredSkyDetail::SunIlluminanceLux * SunUp * Look.SunIntensity);
 	Sun->SetLightColor(Look.SunColor);
 	Sun->SetVisibility(SunUp > 0.001f);
 
 	const float Illumination = ExploredSky::MoonIllumination(Phase);
 	const float NightFactor = 1.0f - SunUp;
-	Moon->SetIntensity(ExploredSkyDetail::MoonIlluminanceLux * MoonUp * NightFactor * FMath::Lerp(0.15f, 1.0f, Illumination) * (1.0f - 0.8f * CloudCover));
-	Moon->SetVisibility(MoonUp * NightFactor > 0.001f);
+	const float MoonLight = MoonUp * FSkyPaletteModel::MoonLightFade(SunZ);
+	Moon->SetIntensity(ExploredSkyDetail::MoonIlluminanceLux * MoonLight * FMath::Lerp(0.15f, 1.0f, Illumination) * (1.0f - 0.8f * CloudCover));
+	Moon->SetVisibility(bMoonShadows && MoonLight > 0.001f);
 
 	if (StarDome && StarDome->GetStaticMesh())
 	{

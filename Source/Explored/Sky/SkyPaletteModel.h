@@ -67,4 +67,15 @@ struct EXPLORED_API FSkyPaletteModel
 
 	/** La luna proyecta sombra solo con el sol del todo fuera (SunUp ≈ 0): nunca dos VSM direccionales a la vez. */
 	static bool MoonCastsShadows(float SunUp);
+
+	/** Peso de la luz del sol según la altura del sol (Z de su dirección): 0 bajo -0,08 y 1 sobre 0,04. */
+	static float SunUp(float SunZ);
+
+	/**
+	 * Peso de la luz de la luna según la altura del sol: 0 mientras el sol alumbra (SunUp > 0) y
+	 * entra con fundido hasta 1 en SunZ = -0,12. Sin Lumen, una direccional sin sombra atraviesa
+	 * techos y paredes; como la luna no proyecta sombra con el sol encendido (MoonCastsShadows),
+	 * tampoco debe alumbrar hasta que el sol se apague del todo.
+	 */
+	static float MoonLightFade(float SunZ);
 };
