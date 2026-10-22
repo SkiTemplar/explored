@@ -183,6 +183,12 @@ void FExploredSettingsLogicSpec::Define()
 			TestEqual(TEXT("W es de movimiento"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("W"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("Escape es del menú"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(TEXT("Escape"))).Result, ERemapCheck::ReservedKey);
 			TestEqual(TEXT("B es de construcción y del barco"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("B"))).Result, ERemapCheck::ReservedKey);
+			// J abre el cuaderno y 1, 2 y 3 son las ranuras rápidas: una pulsación haría dos cosas.
+			TestEqual(TEXT("J es del cuaderno"), CheckRemap(Bindings, FName(TEXT("IA_Interact")), FName(TEXT("J"))).Result, ERemapCheck::ReservedKey);
+			for (const TCHAR* Slot : { TEXT("One"), TEXT("Two"), TEXT("Three") })
+			{
+				TestEqual(FString::Printf(TEXT("%s es una ranura rápida"), Slot), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName(Slot)).Result, ERemapCheck::ReservedKey);
+			}
 			TestEqual(TEXT("Sin tecla"), CheckRemap(Bindings, FName(TEXT("IA_Jump")), FName()).Result, ERemapCheck::InvalidKey);
 		});
 
