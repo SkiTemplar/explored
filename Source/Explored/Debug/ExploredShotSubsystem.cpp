@@ -812,6 +812,13 @@ bool UExploredShotSubsystem::TickBenchMeasure()
 	BenchFrameSeconds.Add(FrameSeconds);
 	// Del fotograma anterior (el RHI lo cierra al final de cada fotograma).
 	BenchPrimitives.Add(GNumPrimitivesDrawnRHI[0]);
+	// Cada fotograma por debajo del mínimo, con su instante: para cruzarlo con el resto del log (GC,
+	// streaming, césped) en vez de adivinar qué tumbó la vista.
+	if (FrameSeconds * FBenchBudget().MinFrameFps > 1.0f)
+	{
+		UE_LOG(LogExplored, Display, TEXT("[Bench] tirón %s: %.1f ms a los %.2f s de la medida"),
+			*Shots[Current].Name, FrameSeconds * 1000.0f, BenchMeasureTimer);
+	}
 	BenchMeasureTimer += FrameSeconds;
 	const float Alpha = BenchMeasureTimer / BenchMeasureSeconds;
 	if (Camera)

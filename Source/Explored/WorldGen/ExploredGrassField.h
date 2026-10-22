@@ -83,6 +83,8 @@ private:
 	void CreateComponents(const FGrassAssets& Assets, const FGrassConfig& Config);
 	void ApplyThinningParameters(const FGrassAssets& Assets, const FGrassThinning& Thinning);
 	void ClearComponents();
+	/** Reserva en cada componente las ranuras que necesita la isla (FGrassFieldModel::EstimateSlotHighWater). */
+	void ReserveSlots(const FGrassConfig& Config, const TSharedPtr<const FGrassWorld>& World);
 	void Apply(const FGrassUpdate& Update);
 	bool CameraView(FVector2D& OutMeters, FVector2D& OutForward, float& OutHalfFovRad) const;
 	void RefreshWind();

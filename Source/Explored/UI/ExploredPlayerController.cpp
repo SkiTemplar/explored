@@ -1,6 +1,7 @@
 #include "UI/ExploredPlayerController.h"
 
 #include "Components/InputComponent.h"
+#include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
@@ -227,6 +228,11 @@ void AExploredPlayerController::SetUIMode(EExploredUIMode NewMode)
 	UIMode = NewMode;
 	bShowMouseCursor = ExploredUI::ShouldShowCursor(NewMode);
 	SetPause(ExploredUI::ShouldPauseGame(NewMode));
+	// En pausa el tirón de la recolección no se ve (el intervalo periódico es largo: DefaultEngine.ini).
+	if (NewMode == EExploredUIMode::Paused && GEngine)
+	{
+		GEngine->ForceGarbageCollection(true);
+	}
 	// En el menú principal el mundo sigue vivo detrás (mar, nubes, cámara), pero la partida no corre.
 	FreezeWorldClock(NewMode == EExploredUIMode::Menu);
 

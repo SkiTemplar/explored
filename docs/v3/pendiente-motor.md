@@ -248,7 +248,7 @@ Apuntar en `docs/creditos-musica.md` cualquier cambio de pista. En la misma part
 
 **[x] Hecho 2026-10-22 con el césped continuo (F8): OK.** `[Bench] Resumen: 5 vistas, media 180,7 fps,
 mínimo 88,4 fps: OK` (cala 197,0 / 99,8; palmar 158,7 / 93,5; faro 182,0 / 109,8; galería 137,5 / 88,4;
-ciclón 228,2 / 127,7). Detalle y coste del césped en [`estado-f7.md`](estado-f7.md) § F8. Repetido el 2026-10-22 de noche: 187,2 / 93,6 fps y 433.000-459.000 triángulos del RHI por vista (estado-f7.md, «Huecos de completitud»).
+ciclón 228,2 / 127,7). Detalle y coste del césped en [`estado-f7.md`](estado-f7.md) § F8. Repetido el 2026-10-22 de noche: 187,2 / 93,6 fps y 433.000-459.000 triángulos del RHI por vista (estado-f7.md, «Huecos de completitud»). El 2026-10-22 por la mañana falló una vez (Palmar, un fotograma de 22,8 ms): reserva de ranuras del césped al cargar y recolección de basura en pausas y fundidos; después, 199,8 / 116,7 fps: OK (estado-f7.md, «Rendimiento en el editor, tanda del 2026-10-22 por la mañana»).
 
 ```powershell
 powershell -NoProfile -File Tools/bench.ps1                 # editor en -game, fuera de pantalla

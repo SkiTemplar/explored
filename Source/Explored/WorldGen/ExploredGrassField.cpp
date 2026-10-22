@@ -38,6 +38,28 @@ namespace GrassFieldActorDetail
 	const FTransform Hidden(FQuat::Identity, FVector(0.0, 0.0, -1.0e6), FVector(1.0e-4));
 	/** Rango de las ranuras libres: el material las deja a 0 aunque se vieran. */
 	constexpr float HiddenRank = 2.0f;
+	/** Margen sobre la marca de agua estimada (caminar entre zonas solapa celdas que se van y que llegan). */
+	constexpr double ReserveMargin = 1.2;
+	/** Si aun así hace falta crecer, se crece de golpe en esta proporción y no ranura a ranura. */
+	constexpr double GrowFactor = 1.25;
+
+	/** Añade ranuras ocultas hasta Count de una vez (cada crecimiento recrea búferes de instancias en la GPU). */
+	void GrowHidden(UInstancedStaticMeshComponent& Ism, int32 Count)
+	{
+		const int32 First = Ism.GetInstanceCount();
+		if (Count <= First)
+		{
+			return;
+		}
+		TArray<FTransform> Transforms;
+		Transforms.Init(Hidden, Count - First);
+		Ism.AddInstances(Transforms, false, true, false);
+		const float HiddenData[CustomFloats] = {HiddenRank, 0.0f};
+		for (int32 Index = First; Index < Count; ++Index)
+		{
+			Ism.SetCustomData(Index, MakeArrayView(HiddenData, CustomFloats), false);
+		}
+	}
 
 	FTransform ToTransform(const FGrassInstance& Inst)
 	{
@@ -142,6 +164,7 @@ bool AExploredGrassField::Setup()
 	GrassFieldActorDetail::AddDecorPalms(World->Palms);
 
 	CreateComponents(Assets, Config);
+	ReserveSlots(Config, World);
 	ApplyThinningParameters(Assets, Config.Thinning);
 	Model = MakeUnique<FGrassFieldModel>(Config, World);
 	ResetSeedStats();
@@ -250,6 +273,35 @@ void AExploredGrassField::ClearComponents()
 	Materials.Reset();
 }
 
+void AExploredGrassField::ReserveSlots(const FGrassConfig& Config, const TSharedPtr<const FGrassWorld>& World)
+{
+	using namespace GrassFieldActorDetail;
+	// La marca de agua de recorrer el centro de cada zona de island.json (el Palmar es el pico): con las
+	// ranuras ya creadas al cargar, entrar en la zona densa no recrea los búferes de la escena en la GPU.
+	TArray<FVector2D> Points;
+	for (const FIslandZone& Zone : World->Layout.Zones)
+	{
+		Points.Add(Zone.Center);
+	}
+	const double Start = FPlatformTime::Seconds();
+	int32 Slots[GrassKindCount] = {};
+	FGrassFieldModel::EstimateSlotHighWater(Config, World, Points, Slots);
+	int32 Total = 0;
+	for (int32 K = 0; K < GrassKindCount && K < KindComponents.Num(); ++K)
+	{
+		UInstancedStaticMeshComponent* Ism = KindComponents[K];
+		if (Slots[K] <= 0 || !IsValid(Ism) || !Ism->GetStaticMesh())
+		{
+			continue;
+		}
+		const int32 Count = FMath::CeilToInt32(Slots[K] * ReserveMargin);
+		GrowHidden(*Ism, Count);
+		Total += Count;
+	}
+	UE_LOG(LogExplored, Display, TEXT("[Césped] %d ranuras reservadas al cargar (%d zonas recorridas, %.0f ms)"),
+		Total, Points.Num(), (FPlatformTime::Seconds() - Start) * 1000.0);
+}
+
 void AExploredGrassField::ResetSeedStats()
 {
 	SeedMsSum = 0.0;
@@ -312,19 +364,14 @@ void AExploredGrassField::Apply(const FGrassUpdate& Update)
 		// Sin MarkRenderStateDirty: el gestor de instancias del ISM sube solo las ranuras cambiadas.
 		for (const FGrassWrite& Write : Update.Writes[K])
 		{
-			const FTransform T = ToTransform(Write.Instance);
-			int32 Index = Write.Slot;
-			if (Write.Slot < Ism->GetInstanceCount())
+			// Fuera de la reserva: se crece de golpe con ranuras ocultas (el modelo entrega las nuevas en orden).
+			if (Write.Slot >= Ism->GetInstanceCount())
 			{
-				Ism->UpdateInstanceTransform(Write.Slot, T, true, false, true);
+				GrowHidden(*Ism, FMath::Max(Write.Slot + 1, FMath::CeilToInt32(Ism->GetInstanceCount() * GrowFactor)));
 			}
-			else
-			{
-				// El modelo entrega las ranuras nuevas en orden: Slot == número de instancias.
-				Index = Ism->AddInstance(T, true);
-			}
+			Ism->UpdateInstanceTransform(Write.Slot, ToTransform(Write.Instance), true, false, true);
 			const float Data[CustomFloats] = {Write.Instance.Rank, Write.Instance.Variation};
-			Ism->SetCustomData(Index, MakeArrayView(Data, CustomFloats), false);
+			Ism->SetCustomData(Write.Slot, MakeArrayView(Data, CustomFloats), false);
 		}
 		const float HiddenData[CustomFloats] = {HiddenRank, 0.0f};
 		for (const int32 Slot : Update.Hides[K])

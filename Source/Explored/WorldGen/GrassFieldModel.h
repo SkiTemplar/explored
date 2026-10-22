@@ -238,6 +238,13 @@ public:
 		float RankLo, float RankHi, TArray<FGrassInstance>& Out);
 	/** Todas las matas de la celda (rango en [0, 1)). */
 	static void GenerateCell(const FGrassConfig& Config, const FGrassWorld& World, const FIntPoint& Cell, TArray<FGrassInstance>& Out);
+	/**
+	 * Ranuras por malla que usa un modelo que se asienta en cada punto, en orden (su marca de agua), para
+	 * reservarlas al cargar: el componente de instancias ya no crece al entrar en la zona densa, y cada
+	 * crecimiento recrea los búferes de instancias de la escena en la GPU (tirones de 20-30 ms).
+	 */
+	static void EstimateSlotHighWater(const FGrassConfig& Config, TSharedPtr<const FGrassWorld> World,
+		const TArray<FVector2D>& Points, int32 (&OutSlots)[GrassKindCount]);
 
 	FGrassUpdate Update(const FVector2D& CameraMeters);
 

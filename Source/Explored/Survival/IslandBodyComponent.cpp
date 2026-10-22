@@ -1,6 +1,7 @@
 #include "Survival/IslandBodyComponent.h"
 
 #include "Camera/PlayerCameraManager.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
@@ -425,6 +426,12 @@ void UIslandBodyComponent::PlayBlackout(TFunction<void()> OnBlack, const FText& 
 		{
 			Self->PendingOnBlack();
 			Self->PendingOnBlack = nullptr;
+		}
+		// Con la pantalla en negro el tirón de la recolección no se ve (el intervalo periódico es largo:
+		// Config/DefaultEngine.ini, gc.TimeBetweenPurgingPendingKillObjects).
+		if (GEngine)
+		{
+			GEngine->ForceGarbageCollection(true);
 		}
 		Self->ApplyBodyOutputs();
 		// GDD v3 §9.2: negro con el texto («Despiertas en el refugio…») mientras dura el fundido.

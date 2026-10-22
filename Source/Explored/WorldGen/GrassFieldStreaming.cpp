@@ -40,6 +40,29 @@ FGrassFieldModel::FGrassFieldModel(const FGrassConfig& InConfig, TSharedPtr<cons
 {
 }
 
+void FGrassFieldModel::EstimateSlotHighWater(const FGrassConfig& Config, TSharedPtr<const FGrassWorld> World,
+	const TArray<FVector2D>& Points, int32 (&OutSlots)[GrassKindCount])
+{
+	// Sin tope de trabajo: cada punto se asienta en un solo Update.
+	FGrassConfig Unbounded = Config;
+	Unbounded.WorkPerFrame = 1 << 28;
+	FGrassFieldModel Probe(Unbounded, MoveTemp(World));
+	constexpr int32 MaxUpdatesPerPoint = 64;
+	for (const FVector2D& Point : Points)
+	{
+		int32 Updates = 0;
+		do
+		{
+			Probe.Update(Point);
+		}
+		while (Probe.Pending > 0 && ++Updates < MaxUpdatesPerPoint);
+	}
+	for (int32 K = 0; K < GrassKindCount; ++K)
+	{
+		OutSlots[K] = Probe.SlotHighWater[K];
+	}
+}
+
 FIntPoint FGrassFieldModel::CellOf(const FVector2D& Meters) const
 {
 	return FIntPoint(FMath::FloorToInt32(Meters.X / Config.CellSizeM), FMath::FloorToInt32(Meters.Y / Config.CellSizeM));

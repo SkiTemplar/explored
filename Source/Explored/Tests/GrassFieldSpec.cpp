@@ -374,6 +374,38 @@ void FGrassFieldSpec::Define()
 			TestEqual(TEXT("visibles = vivas"), Fake.Visible(), Model.GetLiveInstanceCount());
 		});
 
+		It(TEXT("la reserva de ranuras es la marca de agua de asentarse en cada punto"), [this]()
+		{
+			const FGrassConfig Config = MakeConfig();
+			const TSharedPtr<FGrassWorld> World = MakeWorld();
+			FGrassFieldModel Model(Config, World);
+			int32 MaxWork = 0;
+			Settle(Model, FVector2D(-20.0, 0.0), nullptr, MaxWork);
+
+			int32 One[GrassKindCount] = {};
+			FGrassFieldModel::EstimateSlotHighWater(Config, World, {FVector2D(-20.0, 0.0)}, One);
+			int32 Two[GrassKindCount] = {};
+			FGrassFieldModel::EstimateSlotHighWater(Config, World, {FVector2D(-20.0, 0.0), FVector2D(40.0, 0.0)}, Two);
+			int32 None[GrassKindCount] = {};
+			FGrassFieldModel::EstimateSlotHighWater(Config, World, {}, None);
+
+			int32 Total = 0;
+			int32 Mismatch = 0;
+			int32 Shrunk = 0;
+			int32 NonZero = 0;
+			for (int32 K = 0; K < GrassKindCount; ++K)
+			{
+				Total += One[K];
+				Mismatch += One[K] != Model.GetSlotCount(static_cast<EGrassKind>(K)) ? 1 : 0;
+				Shrunk += Two[K] < One[K] ? 1 : 0;
+				NonZero += None[K] != 0 ? 1 : 0;
+			}
+			TestTrue(TEXT("reserva algo"), Total > 0);
+			TestEqual(TEXT("igual que el modelo con presupuesto, por malla"), Mismatch, 0);
+			TestEqual(TEXT("más puntos nunca reservan menos"), Shrunk, 0);
+			TestEqual(TEXT("sin puntos no reserva nada"), NonZero, 0);
+		});
+
 		It(TEXT("sin suelo no genera nada"), [this]()
 		{
 			TSharedPtr<FGrassWorld> World = MakeShared<FGrassWorld>();

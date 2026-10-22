@@ -8,7 +8,7 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una so
 
 | # | Criterio | Estado en este tramo |
 |---|---|---|
-| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22, 187,2 / 93,6 fps; ver «Huecos de completitud»). Sobre el paquete: PENDIENTE (paso 12) |
+| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22 por la mañana, 199,8 / 116,7 fps tras quitar dos tirones de un fotograma; ver «Rendimiento en el editor, tanda del 2026-10-22 por la mañana»). Sobre el paquete: PENDIENTE (paso 12) |
 | 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Script y cocinado listos; Shipping compila; paquete y partidas PENDIENTE (motor) |
 | 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | NO CUMPLIDO: `codex exec` no puede ejecutar nada en el sandbox de Windows (ver «Huecos de completitud»); revisión manual del guardado hecha |
 | 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 836/836 normal, con ASan + UBSan y con matemáticas rápidas (WSL); cobertura C++ 91,8 % de líneas, modelos v3 92-100 %. CI sin ejecutar: `reset/v2` sin empujar |
@@ -411,6 +411,53 @@ que en las otras dos rutas porque la cierra el reloj (el Mistral pasa el D3 a la
 7 páginas opcionales se absorbe en la espera a la noche del D3 (linterna montada a las 13:31).
 
 Paso 8 completo: las tres rutas en verde.
+
+## Rendimiento en el editor, tanda del 2026-10-22 por la mañana (paso 10)
+
+`Tools/bench.ps1`, 1080p, editor en `-game` fuera de pantalla. Media / mínimo en fps:
+
+| Vista | Antes (`0ac5c871`) | Después (este commit) | GPU después |
+|---|---|---|---|
+| bench-cala | 212,7 / 119,8 | 211,4 / 130,9 | 3,97 ms |
+| bench-palmar | 165,4 / **43,9 FALLA** | 165,0 / 117,4 | 5,43 ms |
+| bench-faro | 205,6 / 137,4 | 204,8 / 134,4 | 4,39 ms |
+| bench-faro-galeria | 162,0 / 110,8 | 162,0 / 116,7 | 5,98 ms |
+| bench-ciclon | 256,9 / 161,7 | 255,7 / 169,3 | 3,40 ms |
+| Resumen | 200,5 / 43,9: FALLA | 199,8 / 116,7: OK | |
+
+La media iba sobrada; lo que fallaba era **un único fotograma de 22,8 ms** en el Palmar (1 % bajo,
+125 fps). Con `stat dumphitches` (umbral de 20 ms) y el log de `LogGarbage` salieron dos causas de
+tirones de un fotograma, ninguna de densidad del césped:
+
+1. **Crecimiento de los ISM del césped.** Al llegar al Palmar (45.313 matas frente a ~4.800 en la Cala)
+   los componentes crecían ranura a ranura y GPUScene recreaba su búfer de instancias (disposición
+   SOA, potencias de dos): `UpdatePrimitive → CreateBuffer` de 22,4 ms en el hilo de render (fotograma
+   de 26,6 ms). Arreglo: `FGrassFieldModel::EstimateSlotHighWater` (modelo puro, spec nuevo) asienta un
+   modelo sin tope de trabajo en el centro de cada zona de `island.json` y el actor reserva al cargar
+   esa marca de agua × 1,2 en ranuras ocultas (67.954 ranuras, 337 ms en la carga); si aun así hace
+   falta crecer, crece un 25 % de golpe. Con la reserva, la Cala no pierde nada (211,4 frente a 212,7)
+   y el tirón del Palmar desaparece.
+2. **Recolección de basura periódica (cada 61 s).** En el editor marca ~44.000 objetos sin clústeres
+   (27.000 son reflexión del editor: `Function`, `Class`, `ScriptStruct`): 16,4 ms de `GC Mark` en el
+   hilo de juego, fotograma de 20 ms. Sumado a los 3,3 ms del hilo de juego del Palmar da los ~22,8 ms
+   del fallo; es una lotería de en qué vista cae. La partida apenas genera basura (0-360 objetos por
+   pasada), así que ahora se recoge cuando no se ve: pantalla en negro al dormir o desmayarse
+   (`UIslandBodyComponent::PlayBlackout`) y al abrir la pausa (`AExploredPlayerController::SetUIMode`).
+   La periódica queda de red de seguridad cada 300 s (`gc.TimeBetweenPurgingPendingKillObjects` en
+   `Config/DefaultEngine.ini`).
+
+Además, el bench escribe `[Bench] tirón <vista>: X ms a los Y s de la medida` por cada fotograma por
+debajo de 45 fps, para cruzarlo con el resto del log; en la pasada final no salió ninguno.
+
+Configuración final: césped sin cambios (`grass.json`: denso hasta 25 m, adelgazado hasta 100 m,
+densidad 5,5 por m² y 6,0 en el Palmar, sin sombras), `r.ScreenPercentage.Default=87`,
+`r.Nanite.MaxPixelsPerEdge=2.0`, sin Lumen, VSM y lluvia sin cambios. No ha hecho falta ninguna
+ronda de recorte visual (densidad, sombras, materiales, decorado ni partículas).
+
+Hueco que queda: una recolección periódica puede seguir cayendo en pleno juego si el jugador pasa
+5 minutos sin pausar ni dormir; en el editor cuesta ~20 ms (50 fps ese fotograma) y en el paquete
+debería costar bastante menos (las clases del motor van al pool que la recolección no recorre), sin
+medir todavía: mirarlo en el bench sobre el paquete (paso 12) con `-LogCmds="LogGarbage Log"`.
 
 ## Pendiente de motor
 
