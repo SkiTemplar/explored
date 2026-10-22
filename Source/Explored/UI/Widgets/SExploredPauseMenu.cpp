@@ -3,6 +3,7 @@
 #include "Input/Events.h"
 #include "InputCoreTypes.h"
 #include "UI/ExploredUIStyle.h"
+#include "UI/ScreensLogic.h"
 #include "UI/SettingsLogic.h"
 #include "UI/Widgets/ExploredUIWidgets.h"
 #include "Widgets/Layout/SBorder.h"
@@ -13,10 +14,11 @@
 
 namespace ExploredPauseMenuDetail
 {
-	/** Página del conmutador: los botones o la pregunta de «Salir al menú» o de «Salir del juego». */
-	constexpr int32 ButtonsPage = 0;
-	constexpr int32 ConfirmPage = 1;
-	constexpr int32 QuitConfirmPage = 2;
+	/** Página del conmutador (ranuras en el orden de ExploredScreens::EPauseMenuPage). */
+	int32 PageIndex(ExploredScreens::EPauseMenuPage Page)
+	{
+		return static_cast<int32>(Page);
+	}
 }
 
 void SExploredPauseMenu::Construct(const FArguments& InArgs)
@@ -57,7 +59,7 @@ void SExploredPauseMenu::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().AutoHeight()
 					[
 						SAssignNew(Pages, SWidgetSwitcher)
-						.WidgetIndex(ExploredPauseMenuDetail::ButtonsPage)
+						.WidgetIndex(ExploredPauseMenuDetail::PageIndex(ExploredScreens::EPauseMenuPage::Buttons))
 						+ SWidgetSwitcher::Slot()[BuildButtons()]
 						+ SWidgetSwitcher::Slot()[BuildConfirm(false)]
 						+ SWidgetSwitcher::Slot()[BuildConfirm(true)]
@@ -142,7 +144,7 @@ TSharedRef<SWidget> SExploredPauseMenu::BuildConfirm(bool bQuit)
 FReply SExploredPauseMenu::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
 	const FName Key = InKeyEvent.GetKey().GetFName();
-	const bool bConfirming = Pages.IsValid() && Pages->GetActiveWidgetIndex() != ExploredPauseMenuDetail::ButtonsPage;
+	const bool bConfirming = CurrentPage() != ExploredScreens::EPauseMenuPage::Buttons;
 	if (bConfirming && ExploredSettingsLogic::IsMenuBackKey(Key))
 	{
 		// Escape en la pregunta es «No»: vuelve a los botones, no reanuda.
@@ -179,58 +181,59 @@ FReply SExploredPauseMenu::HandleSave()
 	return FReply::Handled();
 }
 
-bool SExploredPauseMenu::AskConfirm(int32 Page, const TSharedPtr<SWidget>& NoFocus, FReply& OutReply)
+ExploredScreens::EPauseMenuPage SExploredPauseMenu::CurrentPage() const
 {
-	if (!bConfirmExit || !Pages.IsValid() || !NoFocus.IsValid())
-	{
-		return false;
-	}
-	Pages->SetActiveWidgetIndex(Page);
-	OutReply = FReply::Handled().SetUserFocus(NoFocus.ToSharedRef(), EFocusCause::SetDirectly);
-	return true;
+	const int32 Index = Pages.IsValid() ? Pages->GetActiveWidgetIndex() : 0;
+	return Index == ExploredPauseMenuDetail::PageIndex(ExploredScreens::EPauseMenuPage::ConfirmQuit) ? ExploredScreens::EPauseMenuPage::ConfirmQuit
+		: Index == ExploredPauseMenuDetail::PageIndex(ExploredScreens::EPauseMenuPage::ConfirmExit) ? ExploredScreens::EPauseMenuPage::ConfirmExit
+		: ExploredScreens::EPauseMenuPage::Buttons;
 }
 
-FReply SExploredPauseMenu::HandleExitToMenu()
+FReply SExploredPauseMenu::ApplyStep(const ExploredScreens::FPauseMenuStep& Step)
 {
-	FReply Reply = FReply::Handled();
-	if (AskConfirm(ExploredPauseMenuDetail::ConfirmPage, ConfirmNoFocus, Reply))
-	{
-		return Reply;
-	}
-	OnExitToMenu.ExecuteIfBound();
-	return FReply::Handled();
-}
-
-FReply SExploredPauseMenu::HandleConfirmYes()
-{
-	const bool bQuit = Pages.IsValid() && Pages->GetActiveWidgetIndex() == ExploredPauseMenuDetail::QuitConfirmPage;
-	(bQuit ? OnQuit : OnExitToMenu).ExecuteIfBound();
-	return FReply::Handled();
-}
-
-FReply SExploredPauseMenu::HandleConfirmNo()
-{
-	const bool bQuit = Pages.IsValid() && Pages->GetActiveWidgetIndex() == ExploredPauseMenuDetail::QuitConfirmPage;
+	using namespace ExploredScreens;
 	if (Pages.IsValid())
 	{
-		Pages->SetActiveWidgetIndex(ExploredPauseMenuDetail::ButtonsPage);
+		Pages->SetActiveWidgetIndex(ExploredPauseMenuDetail::PageIndex(Step.Page));
+	}
+	switch (Step.Action)
+	{
+	case EPauseMenuAction::Quit: OnQuit.ExecuteIfBound(); break;
+	case EPauseMenuAction::ExitToMenu: OnExitToMenu.ExecuteIfBound(); break;
+	default: break;
+	}
+	TSharedPtr<SWidget> Focus;
+	switch (Step.Focus)
+	{
+	case EPauseMenuFocus::ConfirmNo: Focus = Step.Page == EPauseMenuPage::ConfirmQuit ? QuitConfirmNoFocus : ConfirmNoFocus; break;
+	case EPauseMenuFocus::ExitButton: Focus = ExitFocus; break;
+	case EPauseMenuFocus::QuitButton: Focus = QuitFocus; break;
+	default: break;
 	}
 	FReply Reply = FReply::Handled();
-	const TSharedPtr<SWidget>& Back = bQuit ? QuitFocus : ExitFocus;
-	if (Back.IsValid())
+	if (Focus.IsValid())
 	{
-		Reply.SetUserFocus(Back.ToSharedRef(), EFocusCause::SetDirectly);
+		Reply.SetUserFocus(Focus.ToSharedRef(), EFocusCause::SetDirectly);
 	}
 	return Reply;
 }
 
+FReply SExploredPauseMenu::HandleExitToMenu()
+{
+	return ApplyStep(ExploredScreens::PauseRequestExit(false, bConfirmExit));
+}
+
 FReply SExploredPauseMenu::HandleQuit()
 {
-	FReply Reply = FReply::Handled();
-	if (AskConfirm(ExploredPauseMenuDetail::QuitConfirmPage, QuitConfirmNoFocus, Reply))
-	{
-		return Reply;
-	}
-	OnQuit.ExecuteIfBound();
-	return FReply::Handled();
+	return ApplyStep(ExploredScreens::PauseRequestExit(true, bConfirmExit));
+}
+
+FReply SExploredPauseMenu::HandleConfirmYes()
+{
+	return ApplyStep(ExploredScreens::PauseConfirmYes(CurrentPage()));
+}
+
+FReply SExploredPauseMenu::HandleConfirmNo()
+{
+	return ApplyStep(ExploredScreens::PauseConfirmNo(CurrentPage()));
 }

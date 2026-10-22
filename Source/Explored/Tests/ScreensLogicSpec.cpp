@@ -175,6 +175,50 @@ void FExploredScreensLogicSpec::Define()
 			TestEqual("1 sin menos", StepNotebookPage(Mask, 1, -1), 1);
 		});
 	});
+
+	Describe(TEXT("menú de pausa"), [this]()
+	{
+		using namespace ExploredScreens;
+
+		It(TEXT("«Salir del juego» con progreso sin guardar pregunta y no sale"), [this]()
+		{
+			const FPauseMenuStep Step = PauseRequestExit(true, true);
+			TestTrue(TEXT("no sale todavía"), Step.Action == EPauseMenuAction::None);
+			TestTrue(TEXT("abre la pregunta de salir del juego"), Step.Page == EPauseMenuPage::ConfirmQuit);
+			TestTrue(TEXT("con el foco en «No»"), Step.Focus == EPauseMenuFocus::ConfirmNo);
+		});
+
+		It(TEXT("«Salir al menú» con progreso sin guardar abre su propia pregunta"), [this]()
+		{
+			const FPauseMenuStep Step = PauseRequestExit(false, true);
+			TestTrue(TEXT("no sale todavía"), Step.Action == EPauseMenuAction::None);
+			TestTrue(TEXT("pregunta de salir al menú"), Step.Page == EPauseMenuPage::ConfirmExit);
+		});
+
+		It(TEXT("sin nada que perder sale al momento"), [this]()
+		{
+			TestTrue(TEXT("sale del juego"), PauseRequestExit(true, false).Action == EPauseMenuAction::Quit);
+			TestTrue(TEXT("sale al menú"), PauseRequestExit(false, false).Action == EPauseMenuAction::ExitToMenu);
+			TestTrue(TEXT("sin cambiar de página"), PauseRequestExit(true, false).Page == EPauseMenuPage::Buttons);
+		});
+
+		It(TEXT("«Sí» lanza el delegado de su pregunta y no el de la otra"), [this]()
+		{
+			TestTrue(TEXT("salir del juego"), PauseConfirmYes(EPauseMenuPage::ConfirmQuit).Action == EPauseMenuAction::Quit);
+			TestTrue(TEXT("salir al menú"), PauseConfirmYes(EPauseMenuPage::ConfirmExit).Action == EPauseMenuAction::ExitToMenu);
+			TestTrue(TEXT("en los botones no hace nada"), PauseConfirmYes(EPauseMenuPage::Buttons).Action == EPauseMenuAction::None);
+		});
+
+		It(TEXT("«No» vuelve a los botones con el foco en el que preguntó"), [this]()
+		{
+			const FPauseMenuStep FromQuit = PauseConfirmNo(EPauseMenuPage::ConfirmQuit);
+			TestTrue(TEXT("página 0"), FromQuit.Page == EPauseMenuPage::Buttons);
+			TestTrue(TEXT("sin salir"), FromQuit.Action == EPauseMenuAction::None);
+			TestTrue(TEXT("foco en «Salir del juego»"), FromQuit.Focus == EPauseMenuFocus::QuitButton);
+			const FPauseMenuStep FromExit = PauseConfirmNo(EPauseMenuPage::ConfirmExit);
+			TestTrue(TEXT("foco en «Salir al menú»"), FromExit.Focus == EPauseMenuFocus::ExitButton);
+		});
+	});
 }
 
 #endif // WITH_DEV_AUTOMATION_TESTS

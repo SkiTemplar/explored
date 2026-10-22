@@ -139,4 +139,49 @@ namespace ExploredScreens
 
 	/** Siguiente página leída en Direction (+1 o -1) desde Current, sin dar la vuelta; Current si no hay. */
 	EXPLORED_API int32 StepNotebookPage(uint8 PagesMask, int32 Current, int32 Direction);
+
+	// --- Menú de pausa: «Salir al menú» y «Salir del juego» (GDD v3 §9.2) ---------------
+
+	/** Página del conmutador de SExploredPauseMenu (el orden de sus ranuras). */
+	enum class EPauseMenuPage : uint8
+	{
+		Buttons = 0,
+		ConfirmExit = 1,
+		ConfirmQuit = 2
+	};
+
+	/** Delegado que lanza el paso. */
+	enum class EPauseMenuAction : uint8
+	{
+		None,
+		ExitToMenu,
+		Quit
+	};
+
+	/** Adónde va el foco tras el paso. */
+	enum class EPauseMenuFocus : uint8
+	{
+		Unchanged,
+		/** «No» de la pregunta que se acaba de abrir. */
+		ConfirmNo,
+		ExitButton,
+		QuitButton
+	};
+
+	struct FPauseMenuStep
+	{
+		EPauseMenuPage Page = EPauseMenuPage::Buttons;
+		EPauseMenuAction Action = EPauseMenuAction::None;
+		EPauseMenuFocus Focus = EPauseMenuFocus::Unchanged;
+	};
+
+	/**
+	 * «Salir al menú» (bQuit = false) o «Salir del juego» (true) desde los botones: con progreso sin
+	 * guardar (bConfirmExit) abre su pregunta con el foco en «No» y no sale; si no, sale al momento.
+	 */
+	EXPLORED_API FPauseMenuStep PauseRequestExit(bool bQuit, bool bConfirmExit);
+	/** «Sí» en la pregunta de la página Current: sale al menú o del juego según cuál sea; en los botones, nada. */
+	EXPLORED_API FPauseMenuStep PauseConfirmYes(EPauseMenuPage Current);
+	/** «No»: vuelve a los botones con el foco en el que abrió la pregunta. */
+	EXPLORED_API FPauseMenuStep PauseConfirmNo(EPauseMenuPage Current);
 }

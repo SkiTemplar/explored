@@ -165,3 +165,48 @@ namespace ExploredScreens
 		return Current;
 	}
 }
+
+namespace ExploredScreens
+{
+	FPauseMenuStep PauseRequestExit(bool bQuit, bool bConfirmExit)
+	{
+		FPauseMenuStep Step;
+		if (bConfirmExit)
+		{
+			Step.Page = bQuit ? EPauseMenuPage::ConfirmQuit : EPauseMenuPage::ConfirmExit;
+			Step.Focus = EPauseMenuFocus::ConfirmNo;
+			return Step;
+		}
+		Step.Action = bQuit ? EPauseMenuAction::Quit : EPauseMenuAction::ExitToMenu;
+		return Step;
+	}
+
+	FPauseMenuStep PauseConfirmYes(EPauseMenuPage Current)
+	{
+		FPauseMenuStep Step;
+		Step.Page = Current;
+		if (Current == EPauseMenuPage::ConfirmQuit)
+		{
+			Step.Action = EPauseMenuAction::Quit;
+		}
+		else if (Current == EPauseMenuPage::ConfirmExit)
+		{
+			Step.Action = EPauseMenuAction::ExitToMenu;
+		}
+		return Step;
+	}
+
+	FPauseMenuStep PauseConfirmNo(EPauseMenuPage Current)
+	{
+		FPauseMenuStep Step;
+		if (Current == EPauseMenuPage::ConfirmQuit)
+		{
+			Step.Focus = EPauseMenuFocus::QuitButton;
+		}
+		else if (Current == EPauseMenuPage::ConfirmExit)
+		{
+			Step.Focus = EPauseMenuFocus::ExitButton;
+		}
+		return Step;
+	}
+}

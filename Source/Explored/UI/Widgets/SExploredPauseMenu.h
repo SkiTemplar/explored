@@ -3,6 +3,12 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
+namespace ExploredScreens
+{
+	enum class EPauseMenuPage : uint8;
+	struct FPauseMenuStep;
+}
+
 /**
  * Menú de pausa (GDD v3 §9.2): Reanudar, Ajustes, Guardar (selector de ranura), Salir al menú y Salir del
  * juego, con el foco resaltado (W/S o flechas y Enter) y una línea fija con las teclas del juego. «Salir al
@@ -49,8 +55,10 @@ private:
 	TSharedRef<SWidget> BuildButtons();
 	/** Pregunta de «Salir al menú» (bQuit = false) o de «Salir del juego» (true). */
 	TSharedRef<SWidget> BuildConfirm(bool bQuit);
-	/** Pasa a la página de la pregunta con el foco en «No»; false si no hay que preguntar. */
-	bool AskConfirm(int32 Page, const TSharedPtr<SWidget>& NoFocus, FReply& OutReply);
+	/** Página activa del conmutador. */
+	ExploredScreens::EPauseMenuPage CurrentPage() const;
+	/** Aplica un paso de ExploredScreens (página, delegado y foco), que decide la lógica pura. */
+	FReply ApplyStep(const ExploredScreens::FPauseMenuStep& Step);
 
 	FReply HandleResume();
 	FReply HandleSettings();
