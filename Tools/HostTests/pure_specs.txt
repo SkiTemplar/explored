@@ -60,3 +60,4 @@ Tests/RunPacingSpec.cpp
 Tests/BenchBudgetSpec.cpp
 Tests/GrassFieldSpec.cpp
 Tests/GrassThinningSpec.cpp
+Tests/TrailerSpec.cpp

@@ -75,3 +75,4 @@ WorldGen/GroundField.cpp
 WorldGen/GrassFieldModel.cpp
 WorldGen/GrassFieldStreaming.cpp
 WorldGen/GrassThinning.cpp
+Debug/TrailerModel.cpp

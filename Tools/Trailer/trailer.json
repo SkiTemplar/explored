@@ -1,0 +1,88 @@
+{
+  "_comment": "Tráiler de Baliza Siete (UExploredTrailerSubsystem, FTrailerModel; Tools/trailer.ps1). Metros; +X norte, +Y este. eye/look: puntos de la cámara (con followGround, la Z del ojo es altura sobre el suelo). hours y fov: [desde, hasta]. kind: normal, finale (el final real del juego) o beam (baliza encendida, título). start/end/startFrame/frames: tiempos reales en el montaje, los comprueba trailer.ps1.",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "settleSeconds": 4.0,
+  "limits": { "maxEyeStepM": 1.0, "maxTurnStepDeg": 2.5, "maxEyeAccelM": 0.08 },
+  "shots": [
+    {
+      "name": "01-mar-amanecer", "section": "Mar al amanecer", "start": 0.0, "end": 4.0, "startFrame": 0, "frames": 120,
+      "duration": 4.0, "day": 1, "hours": [6.30, 6.36], "fov": [44, 41], "fadeIn": 1.5, "ease": 0.1,
+      "eye": [[-262, -48, 3.0], [-246, -42, 3.2]],
+      "look": [[45, 15, 30]]
+    },
+    {
+      "name": "02-cala-varada", "section": "Cala Varada", "start": 4.0, "end": 12.0, "startFrame": 120, "frames": 240,
+      "duration": 8.0, "day": 1, "hours": [6.40, 6.55], "fov": [70, 70], "ease": 0.2, "followGround": true,
+      "eye": [[-115.5, -17, 1.7], [-113.5, -11, 1.7], [-112, -5, 1.7]],
+      "look": [[-150, -16, 0.5], [-125, 40, 1.0], [45, 15, 40]]
+    },
+    {
+      "name": "03a-palmar", "section": "Supervivencia", "start": 12.0, "end": 14.7, "startFrame": 360, "frames": 81,
+      "duration": 2.7, "day": 1, "hours": [8.5, 8.52], "fov": [65, 65], "ease": 0.15, "followGround": true,
+      "eye": [[-61, -35, 1.0], [-57, -39.5, 1.0]],
+      "look": [[-35, -12, 11]]
+    },
+    {
+      "name": "03b-rocas-pescador", "section": "Supervivencia", "start": 14.7, "end": 17.0, "startFrame": 441, "frames": 69,
+      "duration": 2.3, "day": 1, "hours": [10.5, 10.52], "fov": [65, 65], "ease": 0.15,
+      "eye": [[-58, -190, 2.5], [-51, -194, 2.5]],
+      "look": [[-12, -150, 4]]
+    },
+    {
+      "name": "03c-interfaz", "section": "Supervivencia", "start": 17.0, "end": 20.0, "startFrame": 510, "frames": 90,
+      "duration": 3.0, "day": 1, "hours": [9.5, 9.52], "fov": [80, 80], "ease": 0.25, "followGround": true, "ui": true, "action": "hud",
+      "eye": [[-55, -3, 1.6]],
+      "look": [[-20, -25, 6], [45, 15, 40]]
+    },
+    {
+      "name": "03d-cenital", "section": "Supervivencia", "start": 20.0, "end": 22.0, "startFrame": 600, "frames": 60,
+      "duration": 2.0, "day": 1, "hours": [11.0, 11.02], "fov": [60, 60], "ease": 0.3,
+      "eye": [[-25, -5, 75], [-14, -5, 40]],
+      "look": [[-23, -5, 10], [45, 15, 40]]
+    },
+    {
+      "name": "04a-camino-faro", "section": "El faro", "start": 22.0, "end": 27.0, "startFrame": 660, "frames": 150,
+      "duration": 5.0, "day": 1, "hours": [17.15, 17.25], "fov": [70, 70], "ease": 0.2, "followGround": true,
+      "eye": [[16, -5, 1.7], [24, -4, 1.7], [30.5, 0.5, 1.7]],
+      "look": [[45, 15, 46]]
+    },
+    {
+      "name": "04b-galeria", "section": "El faro", "start": 27.0, "end": 32.0, "startFrame": 810, "frames": 150,
+      "duration": 5.0, "day": 1, "hours": [17.45, 17.55], "fov": [70, 70], "ease": 0.2,
+      "eye": [[41, 13, 49.3], [39, 11, 50.5]],
+      "look": [[-60, -70, 30], [-90, 40, 30]]
+    },
+    {
+      "name": "05a-ciclon-orilla", "section": "El ciclón", "start": 32.0, "end": 37.0, "startFrame": 960, "frames": 150,
+      "duration": 5.0, "day": 2, "hours": [20.5, 20.52], "fov": [70, 70], "ease": 0.2, "followGround": true,
+      "eye": [[-116, -20, 1.0], [-116.5, -14, 1.0]],
+      "look": [[-119, 30, 1.5]]
+    },
+    {
+      "name": "05b-ciclon-refugio", "section": "El ciclón", "start": 37.0, "end": 42.0, "startFrame": 1110, "frames": 150,
+      "duration": 5.0, "day": 2, "hours": [20.55, 20.57], "fov": [70, 70], "ease": 0.2, "followGround": true,
+      "eye": [[-93, -3, 1.8], [-96, -1, 1.8]],
+      "look": [[-140, 8, 1.5]]
+    },
+    {
+      "name": "06-carguero", "section": "El carguero", "start": 42.0, "end": 50.0, "startFrame": 1260, "frames": 240,
+      "duration": 8.0, "day": 1, "hours": [17.2, 17.3], "fov": [48, 48], "ease": 0.2,
+      "eye": [[180.3, 131.2, 8], [188.1, 116.9, 8], [200.5, 104.9, 8]],
+      "look": [[230, 148, 9]]
+    },
+    {
+      "name": "07-final", "section": "El final", "start": 50.0, "end": 68.0, "startFrame": 1500, "frames": 540,
+      "duration": 18.0, "day": 3, "hours": [22.0, 22.0], "fov": [60, 60], "ease": 0.3, "kind": "finale",
+      "eye": [[33, 6, 50.5], [34.5, 7.5, 50]],
+      "look": [[45, 15, 47.5]]
+    },
+    {
+      "name": "08-titulo", "section": "Título", "start": 68.0, "end": 75.0, "startFrame": 2040, "frames": 210,
+      "duration": 7.0, "day": 3, "hours": [22.0, 22.0], "fov": [65, 65], "fadeOut": 1.0, "ease": 0.2, "followGround": true, "kind": "beam",
+      "eye": [[20, -12, 2.5], [21, -10, 2.6]],
+      "look": [[60, 35, 44]]
+    }
+  ]
+}
