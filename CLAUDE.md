@@ -23,8 +23,8 @@ Rama de trabajo: `reset/v2`.
   cuaderno, objetivos, pensamientos, curva de tormenta, música…), leídos del disco con
   `FFileHelper` y copiados sueltos al paquete (`DirectoriesToAlwaysStageAsNonUFS`). Fuentes e
   iconos de Slate en `Content/Slate`; localización ES/EN en `Content/Localization`.
-- Arte en `/Game/Art` (kits K1-K5, `Art/Island`, `Art/Materials`; el césped irá en
-  `/Game/Art/K6_Cesped`), audio en `/Game/Audio` y `/Game/Generated/Audio`. Todo lo que el código
+- Arte en `/Game/Art` (kits K1-K6, `Art/Island`, `Art/Materials`; el césped de parches está en
+  `/Game/Art/K6_Cesped` y lo siembra `AExploredGrassField`), audio en `/Game/Audio` y `/Game/Generated/Audio`. Todo lo que el código
   carga por ruta se cocina por directorio (`Config/DefaultGame.ini`).
 - `Tools/`: scripts PowerShell (`build`, `test`, `package`, `bench`, `playtest_v3`, `shots`,
   `build_content`, `unreal_python`; rutas comunes en `common.ps1`, motor en `UE_ROOT`),
