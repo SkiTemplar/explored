@@ -207,6 +207,44 @@ namespace ExploredSaveStates
 		return FVector(LocationCm.X, LocationCm.Y, GroundCm + RestLiftCm);
 	}
 
+	void SaveDroppedItems(FSaveArchive& Ar, const TArray<FDroppedSaveEntry>& Items)
+	{
+		TArray<FSaveArchive> Entries;
+		for (const FDroppedSaveEntry& Item : Items)
+		{
+			FSaveArchive& Entry = Entries.AddDefaulted_GetRef();
+			Entry.Write(TEXT("item"), Item.ItemId);
+			Entry.Write(TEXT("count"), Item.Count);
+			Entry.Write(TEXT("location"), Item.Location);
+		}
+		Ar.Write(TEXT("dropped"), Entries);
+	}
+
+	void LoadDroppedItems(const FSaveArchive& Ar, const FBackpackRules& Rules,
+		TFunctionRef<float(double XMeters, double YMeters)> GroundAt, TArray<FDroppedSaveEntry>& OutItems,
+		TArray<FString>& OutRejected)
+	{
+		OutItems.Reset();
+		OutRejected.Reset();
+		TArray<FSaveArchive> Entries;
+		Ar.Read(TEXT("dropped"), Entries);
+		for (const FSaveArchive& Entry : Entries)
+		{
+			FDroppedSaveEntry Item;
+			Entry.Read(TEXT("item"), Item.ItemId);
+			Entry.Read(TEXT("count"), Item.Count);
+			Entry.Read(TEXT("location"), Item.Location);
+			FString Reason;
+			if (!IsSaneDropped(Item.ItemId, Item.Count, Item.Location, Rules, Reason))
+			{
+				OutRejected.Add(MoveTemp(Reason));
+				continue;
+			}
+			Item.Location = RestOnGround(Item.Location, GroundAt(Item.Location.X / 100.0, Item.Location.Y / 100.0));
+			OutItems.Add(Item);
+		}
+	}
+
 	void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter)
 	{
 		Ar.Write(TEXT("thirst"), Bars.Thirst);

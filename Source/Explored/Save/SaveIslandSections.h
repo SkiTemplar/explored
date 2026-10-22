@@ -64,6 +64,24 @@ namespace ExploredSaveStates
 	/** Un objeto más de BuriedToleranceCm bajo el suelo (metros) sube a RestLiftCm sobre él; el resto no se toca. */
 	EXPLORED_API FVector RestOnGround(const FVector& LocationCm, float GroundMeters);
 
+	/** Objeto soltado tal como se guarda (lista «dropped» de «island»). */
+	struct EXPLORED_API FDroppedSaveEntry
+	{
+		FName ItemId;
+		int32 Count = 1;
+		/** Posición (cm). */
+		FVector Location = FVector::ZeroVector;
+	};
+	EXPLORED_API void SaveDroppedItems(FSaveArchive& Ar, const TArray<FDroppedSaveEntry>& Items);
+	/**
+	 * Lee «dropped»: descarta lo que no pasa IsSaneDropped (un motivo por descarte en OutRejected) y
+	 * sube a la superficie lo enterrado (RestOnGround con GroundAt(X, Y), en metros). Las partidas de
+	 * antes del arreglo de la leña de deriva la guardaron bajo la arena.
+	 */
+	EXPLORED_API void LoadDroppedItems(const FSaveArchive& Ar, const FBackpackRules& Rules,
+		TFunctionRef<float(double XMeters, double YMeters)> GroundAt, TArray<FDroppedSaveEntry>& OutItems,
+		TArray<FString>& OutRejected);
+
 	// --- Cuerpo de Iria (sección «body»): 4 barras y el último refugio ---------------
 	EXPLORED_API void SaveBodyBars(FSaveArchive& Ar, const FBodyBars& Bars, FName LastShelter);
 	/** false si falta una barra o alguna está fuera de [0, 100]: se queda el cuerpo por defecto. */

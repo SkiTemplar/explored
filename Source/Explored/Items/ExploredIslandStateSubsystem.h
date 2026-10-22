@@ -15,12 +15,7 @@ class FSaveArchive;
 class UExploredSaveSubsystem;
 
 /** Objeto soltado en el suelo durante la partida (un tronco que se deja en el sitio de la balsa...). */
-struct EXPLORED_API FIslandDroppedItem
-{
-	FName ItemId;
-	int32 Count = 1;
-	FVector Location = FVector::ZeroVector;
-};
+using FIslandDroppedItem = ExploredSaveStates::FDroppedSaveEntry;
 
 /**
  * Estado de la Isla de Sal que se guarda (GDD v3 §5.3 y §5.10): ids de island_props.json ya

@@ -323,6 +323,32 @@ void FBeaconSaveSpec::Define()
 		const FVector Resting(-9800.0, 1800.0, 220.0);
 		TestTrue(TEXT("Dentro de la tolerancia no se toca"), RestOnGround(Resting, 2.33f) == Resting);
 	});
+
+	It(TEXT("al cargar los objetos soltados se descarta lo absurdo y lo enterrado sube al suelo"), [this]()
+	{
+		using namespace ExploredSaveStates;
+		const FName Wood(TEXT("lena"));
+		TArray<FDroppedSaveEntry> Saved;
+		Saved.Add({ Wood, 3, FVector(-9800.0, 1800.0, 263.0) });
+		Saved.Add({ FName(TEXT("espada_laser")), 1, FVector(-9800.0, 1800.0, 263.0) });
+		Saved.Add({ Wood, 1, FVector(std::numeric_limits<double>::quiet_NaN(), 0.0, 0.0) });
+		Saved.Add({ Wood, 2, FVector(-9700.0, 1700.0, 30.0) });
+		FSaveArchive Ar;
+		SaveDroppedItems(Ar, Saved);
+
+		TArray<FDroppedSaveEntry> Loaded;
+		TArray<FString> Rejected;
+		LoadDroppedItems(Ar, FBackpackRules::Default(), [](double, double) { return 2.33f; }, Loaded, Rejected);
+		if (!TestEqual(TEXT("Quedan 2 objetos"), Loaded.Num(), 2))
+		{
+			return;
+		}
+		TestEqual(TEXT("2 motivos de descarte"), Rejected.Num(), 2);
+		TestTrue(TEXT("La leña sana no se toca"), Loaded[0].ItemId == Wood && Loaded[0].Count == 3
+			&& Loaded[0].Location == FVector(-9800.0, 1800.0, 263.0));
+		TestEqual(TEXT("La enterrada sube a suelo + RestLiftCm"), Loaded[1].Location.Z, 233.0 + RestLiftCm, 0.01);
+		TestTrue(TEXT("Sin moverse en el plano"), Loaded[1].Location.X == -9700.0 && Loaded[1].Location.Y == 1700.0);
+	});
 }
 
 #endif

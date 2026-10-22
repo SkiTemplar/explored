@@ -204,15 +204,7 @@ void UExploredIslandStateSubsystem::Save(FSaveArchive& Ar) const
 		}
 	}
 	Ar.Write(TEXT("cratesDelivered"), Delivered);
-	TArray<FSaveArchive> DroppedEntries;
-	for (const FIslandDroppedItem& Item : Dropped)
-	{
-		FSaveArchive& Entry = DroppedEntries.AddDefaulted_GetRef();
-		Entry.Write(TEXT("item"), Item.ItemId);
-		Entry.Write(TEXT("count"), Item.Count);
-		Entry.Write(TEXT("location"), Item.Location);
-	}
-	Ar.Write(TEXT("dropped"), DroppedEntries);
+	ExploredSaveStates::SaveDroppedItems(Ar, Dropped);
 	FSaveArchive RaftAr;
 	ExploredSaveStates::SaveRaft(RaftAr, Raft);
 	Ar.Write(TEXT("raft"), RaftAr);
@@ -277,23 +269,18 @@ void UExploredIslandStateSubsystem::Load(const FSaveArchive& Ar)
 	}
 	Dropped.Reset();
 	DroppedActors.Reset();
-	Entries.Reset();
-	Ar.Read(TEXT("dropped"), Entries);
-	for (const FSaveArchive& Entry : Entries)
+	TArray<FIslandDroppedItem> Loaded;
+	TArray<FString> Rejected;
+	const UWorld* World = GetWorld();
+	ExploredSaveStates::LoadDroppedItems(Ar, ExploredIslandData::Get().Backpack,
+		[World](double XMeters, double YMeters) { return ExploredGround::HeightAtMeters(World, XMeters, YMeters); }, Loaded, Rejected);
+	for (const FString& Reason : Rejected)
 	{
-		FIslandDroppedItem Item;
-		Entry.Read(TEXT("item"), Item.ItemId);
-		Entry.Read(TEXT("count"), Item.Count);
-		Entry.Read(TEXT("location"), Item.Location);
-		FString Reason;
-		if (!ExploredSaveStates::IsSaneDropped(Item.ItemId, Item.Count, Item.Location, ExploredIslandData::Get().Backpack, Reason))
-		{
-			UE_LOG(LogExplored, Warning, TEXT("[Isla] Objeto soltado descartado al cargar: %s"), *Reason);
-			continue;
-		}
-		// Las partidas de antes del arreglo de la leña de deriva la guardaron bajo la arena.
-		const float Ground = ExploredGround::HeightAtMeters(GetWorld(), Item.Location.X / 100.0, Item.Location.Y / 100.0);
-		SpawnDropped(Item.ItemId, Item.Count, ExploredSaveStates::RestOnGround(Item.Location, Ground));
+		UE_LOG(LogExplored, Warning, TEXT("[Isla] Objeto soltado descartado al cargar: %s"), *Reason);
+	}
+	for (const FIslandDroppedItem& Item : Loaded)
+	{
+		SpawnDropped(Item.ItemId, Item.Count, Item.Location);
 	}
 
 	FSaveArchive PackArchive;
