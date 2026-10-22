@@ -23,6 +23,7 @@
 #include "UI/ExploredInputSettingsSubsystem.h"
 #include "UI/ExploredMenuCamera.h"
 #include "UI/ExploredSaveSubsystem.h"
+#include "UI/ExploredTutorialSubsystem.h"
 #include "UI/ScreensLogic.h"
 #include "UI/Widgets/SExploredCredits.h"
 #include "UI/Widgets/SExploredEnding.h"
@@ -463,14 +464,12 @@ void AExploredPlayerController::StartNewGame()
 	{
 		Wiring->BeginNewRun();
 	}
-	FadeIntoGameplay();
-	// Ayuda de inicio: los controles del GDD v3 §9.2 (el objetivo ya lo enseña el HUD).
-	if (AExploredHUD* ExploredHUD = Cast<AExploredHUD>(GetHUD()))
+	// Los controles los enseñan las pistas contextuales (GDD v3 §4), una a una y cuando hacen falta.
+	if (UExploredTutorialSubsystem* Tutorial = UExploredTutorialSubsystem::Get(this))
 	{
-		// Los avisos se apilan hacia arriba desde las barras: el último empujado queda abajo.
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpMove", "WASD moverse · Espacio saltar · Mayús correr"), FLinearColor::White, 10.0f);
-		ExploredHUD->PushNotification(NSLOCTEXT("ExploredUI", "HelpUse", "E interactuar · Tab mochila · J cuaderno · Esc pausa"), FLinearColor::White, 10.0f);
+		Tutorial->BeginNewRun();
 	}
+	FadeIntoGameplay();
 }
 
 void AExploredPlayerController::OpenSettings()

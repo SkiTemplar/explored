@@ -2,8 +2,8 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 389,
-		"cpp": 264,
+		"total": 395,
+		"cpp": 270,
 		"datos": 125,
 		"pendientes": 7,
 		"sin_en": 0,
@@ -476,7 +476,7 @@
 			"en": "Last night the sea left firewood in Cala Varada.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:496"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:495"
 			]
 		},
 		{
@@ -586,7 +586,7 @@
 			"en": "Watch log · page {0} of {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:561"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:560"
 			]
 		},
 		{
@@ -616,7 +616,7 @@
 			"en": "You wake up in the shelter…",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:367"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:372"
 			]
 		},
 		{
@@ -626,7 +626,7 @@
 			"en": "You wake up on North Beach…",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:367"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:372"
 			]
 		},
 		{
@@ -636,7 +636,7 @@
 			"en": "I can only sleep under a roof.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:270"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:275"
 			]
 		},
 		{
@@ -646,7 +646,7 @@
 			"en": "Nobody could sleep through this storm.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:271"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:276"
 			]
 		},
 		{
@@ -656,7 +656,7 @@
 			"en": "You're too thirsty to sleep.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:277"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:282"
 			]
 		},
 		{
@@ -666,7 +666,7 @@
 			"en": "It's not time to sleep yet.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Survival/IslandBodyComponent.cpp:272"
+				"Source/Explored/Survival/IslandBodyComponent.cpp:277"
 			]
 		},
 		{
@@ -1541,6 +1541,86 @@
 			]
 		},
 		{
+			"namespace": "ExploredTutorial",
+			"key": "TutBarometer",
+			"es": "Arriba a la derecha, el barómetro: si la flecha baja, viene temporal",
+			"en": "Top right, the barometer: if the arrow drops, a storm is coming",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:193"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutCraft",
+			"es": "Con 2 fibras se trenza una cuerda: {0} y el botón «Trenzar»",
+			"en": "Two fibres braid a rope: {0} and the \"Braid\" button",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:185"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutDrink",
+			"es": "Para beber: {0} y «Usar» en el coco, o elígelo con 1-3 y {1}",
+			"en": "To drink: {0} and \"Use\" on the coconut, or pick it with 1-3 and {1}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:182"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutMove",
+			"es": "W A S D moverse · {0} correr · {1} saltar · Esc pausa",
+			"en": "W A S D move · {0} run · {1} jump · Esc pause",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:176"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutNotebook",
+			"es": "J abre el cuaderno: las páginas de Roig y tus notas",
+			"en": "J opens the notebook: Roig's pages and your notes",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:191"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutPaddle",
+			"es": "En la balsa: W rema (con el remo), A y D giran, E para bajar",
+			"en": "On the raft: W paddles (with the paddle), A and D turn, E gets off",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:195"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutPickup",
+			"es": "{0} coge o usa lo que miras; lo que coges va a la mochila",
+			"en": "{0} picks up or uses what you look at; items go to the backpack",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:179"
+			]
+		},
+		{
+			"namespace": "ExploredTutorial",
+			"key": "TutSleep",
+			"es": "Ya puedes dormir: bajo techo y sin mirar nada, {0}",
+			"en": "You can sleep now: under a roof, looking at nothing, {0}",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/ExploredTutorialSubsystem.cpp:188"
+			]
+		},
+		{
 			"namespace": "ExploredUI",
 			"key": "ActionBackpack",
 			"es": "Mochila",
@@ -1738,7 +1818,7 @@
 			"en": "The saved game could not be loaded. Try «Load» or start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:425"
+				"Source/Explored/UI/ExploredPlayerController.cpp:426"
 			]
 		},
 		{
@@ -1788,7 +1868,7 @@
 			"en": "Exit to the menu? Anything you have not saved will be lost.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:114"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:116"
 			]
 		},
 		{
@@ -1798,7 +1878,7 @@
 			"en": "No, keep playing",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:133"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:135"
 			]
 		},
 		{
@@ -1808,7 +1888,7 @@
 			"en": "Yes, exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:117"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:119"
 			]
 		},
 		{
@@ -1818,7 +1898,7 @@
 			"en": "Exit to menu",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:99"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:101"
 			]
 		},
 		{
@@ -1849,26 +1929,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:352"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "HelpMove",
-			"es": "WASD moverse · Espacio saltar · Mayús correr",
-			"en": "WASD move · Space jump · Shift run",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:471"
-			]
-		},
-		{
-			"namespace": "ExploredUI",
-			"key": "HelpUse",
-			"es": "E interactuar · Tab mochila · J cuaderno · Esc pausa",
-			"en": "E interact · Tab backpack · J notebook · Esc pause",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:472"
 			]
 		},
 		{
@@ -1940,7 +2000,7 @@
 			"en": "There is a save from an earlier version of the game. It cannot be continued: start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:379"
+				"Source/Explored/UI/ExploredPlayerController.cpp:380"
 			]
 		},
 		{
@@ -2000,7 +2060,7 @@
 			"en": "Tab backpack · J logbook · C verbs · Esc pause",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:69"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:71"
 			]
 		},
 		{
@@ -2010,7 +2070,7 @@
 			"en": "Paused",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:53"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:55"
 			]
 		},
 		{
@@ -2090,7 +2150,7 @@
 			"en": "Quit the game? Anything you have not saved will be lost.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:113"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:115"
 			]
 		},
 		{
@@ -2100,7 +2160,7 @@
 			"en": "Yes, quit the game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:116"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:118"
 			]
 		},
 		{
@@ -2110,7 +2170,7 @@
 			"en": "Quit game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:104"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:106"
 			]
 		},
 		{
@@ -2180,7 +2240,7 @@
 			"en": "Resume",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:84"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:86"
 			]
 		},
 		{
@@ -2190,7 +2250,7 @@
 			"en": "Save game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:94"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:96"
 			]
 		},
 		{
@@ -2231,7 +2291,7 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredMainMenu.cpp:78",
-				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:89"
+				"Source/Explored/UI/Widgets/SExploredPauseMenu.cpp:91"
 			]
 		},
 		{

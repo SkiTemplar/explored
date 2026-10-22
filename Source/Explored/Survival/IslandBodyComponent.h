@@ -65,6 +65,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Explored|Cuerpo")
 	bool CanSleepNow() const;
 
+	/** Es hora de dormir y no hay ciclón (dentro o fuera de un refugio); lo usa la pista de dormir. */
+	bool IsSleepHour() const;
+
 	/** Duerme hasta las 06:00 si se puede; si no, avisa por qué. */
 	UFUNCTION(BlueprintCallable, Category = "Explored|Cuerpo")
 	bool TrySleep();

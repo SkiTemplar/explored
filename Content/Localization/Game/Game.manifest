@@ -546,7 +546,7 @@
 					"Keys": [
 						{
 							"Key": "PageTitle",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 561"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 560"
 						}
 					]
 				},
@@ -568,7 +568,7 @@
 					"Keys": [
 						{
 							"Key": "Driftwood",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 496"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 495"
 						}
 					]
 				},
@@ -683,7 +683,7 @@
 					"Keys": [
 						{
 							"Key": "SleepWrongHour",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 272"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 277"
 						}
 					]
 				},
@@ -694,7 +694,7 @@
 					"Keys": [
 						{
 							"Key": "SleepStorm",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 271"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 276"
 						}
 					]
 				},
@@ -705,7 +705,7 @@
 					"Keys": [
 						{
 							"Key": "FaintShore",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 367"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 372"
 						}
 					]
 				},
@@ -716,7 +716,7 @@
 					"Keys": [
 						{
 							"Key": "FaintShelter",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 367"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 372"
 						}
 					]
 				},
@@ -738,7 +738,7 @@
 					"Keys": [
 						{
 							"Key": "SleepNoRoof",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 270"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 275"
 						}
 					]
 				},
@@ -782,7 +782,7 @@
 					"Keys": [
 						{
 							"Key": "SleepThirsty",
-							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 277"
+							"Path": "Source/Explored/Survival/IslandBodyComponent.cpp - line 282"
 						}
 					]
 				}
@@ -1720,6 +1720,99 @@
 			]
 		},
 		{
+			"Namespace": "ExploredTutorial",
+			"Children": [
+				{
+					"Source": {
+						"Text": "Arriba a la derecha, el barómetro: si la flecha baja, viene temporal"
+					},
+					"Keys": [
+						{
+							"Key": "TutBarometer",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 193"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Con 2 fibras se trenza una cuerda: {0} y el botón «Trenzar»"
+					},
+					"Keys": [
+						{
+							"Key": "TutCraft",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 185"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "En la balsa: W rema (con el remo), A y D giran, E para bajar"
+					},
+					"Keys": [
+						{
+							"Key": "TutPaddle",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 195"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "J abre el cuaderno: las páginas de Roig y tus notas"
+					},
+					"Keys": [
+						{
+							"Key": "TutNotebook",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 191"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Para beber: {0} y «Usar» en el coco, o elígelo con 1-3 y {1}"
+					},
+					"Keys": [
+						{
+							"Key": "TutDrink",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 182"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "W A S D moverse · {0} correr · {1} saltar · Esc pausa"
+					},
+					"Keys": [
+						{
+							"Key": "TutMove",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 176"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Ya puedes dormir: bajo techo y sin mirar nada, {0}"
+					},
+					"Keys": [
+						{
+							"Key": "TutSleep",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 188"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "{0} coge o usa lo que miras; lo que coges va a la mochila"
+					},
+					"Keys": [
+						{
+							"Key": "TutPickup",
+							"Path": "Source/Explored/UI/ExploredTutorialSubsystem.cpp - line 179"
+						}
+					]
+				}
+			]
+		},
+		{
 			"Namespace": "ExploredUI",
 			"Children": [
 				{
@@ -2080,17 +2173,6 @@
 				},
 				{
 					"Source": {
-						"Text": "E interactuar · Tab mochila · J cuaderno · Esc pausa"
-					},
-					"Keys": [
-						{
-							"Key": "HelpUse",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 472"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Efectos"
 					},
 					"Keys": [
@@ -2206,7 +2288,7 @@
 					"Keys": [
 						{
 							"Key": "SaveGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 94"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 96"
 						},
 						{
 							"Key": "SlotsSaveTitle",
@@ -2221,7 +2303,7 @@
 					"Keys": [
 						{
 							"Key": "MenuObsoleteSave",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 379"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 380"
 						}
 					]
 				},
@@ -2386,7 +2468,7 @@
 					"Keys": [
 						{
 							"Key": "ContinueFailed",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 425"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 426"
 						}
 					]
 				},
@@ -2408,7 +2490,7 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirmNo",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 133"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 135"
 						}
 					]
 				},
@@ -2463,7 +2545,7 @@
 					"Keys": [
 						{
 							"Key": "Paused",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 53"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 55"
 						}
 					]
 				},
@@ -2518,7 +2600,7 @@
 					"Keys": [
 						{
 							"Key": "Resume",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 84"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 86"
 						}
 					]
 				},
@@ -2595,7 +2677,7 @@
 					"Keys": [
 						{
 							"Key": "ExitToMenu",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 99"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 101"
 						}
 					]
 				},
@@ -2606,7 +2688,7 @@
 					"Keys": [
 						{
 							"Key": "QuitGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 104"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 106"
 						}
 					]
 				},
@@ -2705,7 +2787,7 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirmYes",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 117"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 119"
 						}
 					]
 				},
@@ -2716,7 +2798,7 @@
 					"Keys": [
 						{
 							"Key": "QuitConfirmYes",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 116"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 118"
 						}
 					]
 				},
@@ -2727,7 +2809,7 @@
 					"Keys": [
 						{
 							"Key": "PauseKeysHint",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 69"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 71"
 						}
 					]
 				},
@@ -2843,17 +2925,6 @@
 				},
 				{
 					"Source": {
-						"Text": "WASD moverse · Espacio saltar · Mayús correr"
-					},
-					"Keys": [
-						{
-							"Key": "HelpMove",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 471"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "{0} está reservada (movimiento o menú)."
 					},
 					"Keys": [
@@ -2903,7 +2974,7 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirm",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 114"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 116"
 						}
 					]
 				},
@@ -2914,7 +2985,7 @@
 					"Keys": [
 						{
 							"Key": "QuitConfirm",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 113"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 115"
 						}
 					]
 				},

@@ -251,6 +251,11 @@ bool UIslandBodyComponent::CanSleepNow() const
 	return !bInFade && FBodyEventsModel::CanSleep(GetAbsHours(), bSheltered, Tuning.Events, IsCycloneNow()) == ESleepCheck::Allowed;
 }
 
+bool UIslandBodyComponent::IsSleepHour() const
+{
+	return FBodyEventsModel::CanSleep(GetAbsHours(), /*bSheltered*/ true, Tuning.Events, IsCycloneNow()) == ESleepCheck::Allowed;
+}
+
 bool UIslandBodyComponent::IsCycloneNow() const
 {
 	const UWorld* World = GetWorld();

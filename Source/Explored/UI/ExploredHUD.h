@@ -71,10 +71,12 @@ public:
 	/** Quita lo transitorio (avisos, subtítulos, página, carteles): al cargar o empezar partida. */
 	void ClearTransient();
 
+	/** Nombre visible de la tecla asignada a una acción (la remapeada, o la de fábrica). */
+	FString KeyNameFor(FName ActionName) const;
+
 private:
 	AExploredCharacter* GetExploredCharacter() const;
 	bool ShouldPaint() const;
-	FString KeyNameFor(FName ActionName) const;
 	void PaintReticle(FExploredHudPainter& P);
 	void PaintObjective(FExploredHudPainter& P);
 	void PaintClock(FExploredHudPainter& P, const AExploredCharacter* Character);

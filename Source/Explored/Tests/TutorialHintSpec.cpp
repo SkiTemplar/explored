@@ -129,6 +129,85 @@ void FTutorialHintSpec::Define()
 		}
 		TestTrue(TEXT("Todas mostradas y cola vacía"), FTutorialHintModel::FromRecord(Record(0xFF, {})).bOk);
 	});
+
+	It(TEXT("nada antes de jugar 2 s; luego mover sale la primera"), [this]()
+	{
+		FTutorialFacts Facts;
+		Facts.PlayingSeconds = 1.9f;
+		Facts.bHasFocus = true;
+		Facts.bCarriesDrink = true;
+		Facts.bOnRaft = true;
+		TestEqual(TEXT("Aún nada"), FTutorialHintModel::Triggered(Facts).Num(), 0);
+		Facts.PlayingSeconds = 2.0f;
+		const TArray<ETutorialHint> Hints = FTutorialHintModel::Triggered(Facts);
+		TestEqual(TEXT("Mover, coger, beber y remar"), Hints.Num(), 4);
+		TestTrue(TEXT("Mover primero"), Hints.Num() == 4 && Hints[0] == ETutorialHint::Move && Hints[1] == ETutorialHint::Pickup);
+	});
+
+	It(TEXT("cada disparador pide su pista"), [this]()
+	{
+		FTutorialFacts Base;
+		Base.PlayingSeconds = 5.0f;
+		TestEqual(TEXT("Solo mover"), FTutorialHintModel::Triggered(Base).Num(), 1);
+		auto Only = [this](const FTutorialFacts& Facts, ETutorialHint Expected, const TCHAR* What)
+		{
+			const TArray<ETutorialHint> Hints = FTutorialHintModel::Triggered(Facts);
+			TestTrue(What, Hints.Num() == 2 && Hints[0] == ETutorialHint::Move && Hints[1] == Expected);
+		};
+		FTutorialFacts Drink = Base;
+		Drink.bCarriesDrink = true;
+		Only(Drink, ETutorialHint::Drink, TEXT("Coco en la mochila"));
+		FTutorialFacts Thirsty = Base;
+		Thirsty.Thirst = 45.0f;
+		Only(Thirsty, ETutorialHint::Drink, TEXT("Sed a 45"));
+		FTutorialFacts NotThirsty = Base;
+		NotThirsty.Thirst = 55.0f;
+		TestEqual(TEXT("Sed inicial (55): solo mover"), FTutorialHintModel::Triggered(NotThirsty).Num(), 1);
+		FTutorialFacts Craft = Base;
+		Craft.Fibres = 2;
+		Only(Craft, ETutorialHint::Craft, TEXT("Dos fibras"));
+		Craft.Fibres = 1;
+		TestEqual(TEXT("Una fibra: solo mover"), FTutorialHintModel::Triggered(Craft).Num(), 1);
+		FTutorialFacts Sleep = Base;
+		Sleep.bSleepHour = true;
+		Only(Sleep, ETutorialHint::Sleep, TEXT("Hora de dormir"));
+		FTutorialFacts Notebook = Base;
+		Notebook.PagesRead = 1;
+		Only(Notebook, ETutorialHint::Notebook, TEXT("Primera página"));
+		FTutorialFacts Barometer = Base;
+		Barometer.bHasBarometer = true;
+		Only(Barometer, ETutorialHint::Barometer, TEXT("Barómetro"));
+		FTutorialFacts Raft = Base;
+		Raft.bOnRaft = true;
+		Only(Raft, ETutorialHint::Paddle, TEXT("En la balsa"));
+	});
+
+	It(TEXT("una pista disparada sale una sola vez aunque el disparador siga"), [this]()
+	{
+		FTutorialFacts Facts;
+		Facts.PlayingSeconds = 5.0f;
+		Facts.bOnRaft = true;
+		FTutorialHintState S = FTutorialHintModel::RequestTriggered(FTutorialHintState(), Facts);
+		TestEqual(TEXT("Mover y remar en cola"), S.Queue.Num(), 2);
+		S = FTutorialHintModel::RequestTriggered(S, Facts);
+		TestEqual(TEXT("Sin repetir en cola"), S.Queue.Num(), 2);
+		S = Must(FTutorialHintModel::PopNext(S));
+		S = Must(FTutorialHintModel::PopNext(S));
+		S = FTutorialHintModel::RequestTriggered(S, Facts);
+		TestEqual(TEXT("Ya mostradas: no vuelven"), S.Queue.Num(), 0);
+		TestTrue(TEXT("Remar mostrada"), FTutorialHintModel::WasShown(S, ETutorialHint::Paddle));
+	});
+
+	It(TEXT("una partida anterior a las pistas las da todas por vistas"), [this]()
+	{
+		const FTutorialHintState S = FTutorialHintModel::AllShownState();
+		TestTrue(TEXT("Todas"), FTutorialHintModel::AllShown(S));
+		TestTrue(TEXT("Cola vacía"), S.Queue.IsEmpty());
+		FTutorialFacts Facts;
+		Facts.PlayingSeconds = 10.0f;
+		Facts.bOnRaft = true;
+		TestEqual(TEXT("Nada que pedir"), FTutorialHintModel::RequestTriggered(S, Facts).Queue.Num(), 0);
+	});
 }
 
 #endif

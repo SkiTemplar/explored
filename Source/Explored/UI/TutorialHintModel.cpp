@@ -74,6 +74,68 @@ FTutorialHintResult FTutorialHintModel::PopNext(const FTutorialHintState& State)
 	return Result;
 }
 
+TArray<ETutorialHint> FTutorialHintModel::Triggered(const FTutorialFacts& Facts, const FTutorialTriggerTuning& Tuning)
+{
+	TArray<ETutorialHint> Hints;
+	// Nada antes de la de mover: así sale siempre la primera.
+	if (Facts.PlayingSeconds < Tuning.MoveDelaySeconds)
+	{
+		return Hints;
+	}
+	Hints.Add(ETutorialHint::Move);
+	if (Facts.bHasFocus)
+	{
+		Hints.Add(ETutorialHint::Pickup);
+	}
+	if (Facts.bCarriesDrink || Facts.Thirst <= Tuning.DrinkThirst)
+	{
+		Hints.Add(ETutorialHint::Drink);
+	}
+	if (Facts.Fibres >= Tuning.CraftFibres)
+	{
+		Hints.Add(ETutorialHint::Craft);
+	}
+	if (Facts.bSleepHour)
+	{
+		Hints.Add(ETutorialHint::Sleep);
+	}
+	if (Facts.PagesRead > 0)
+	{
+		Hints.Add(ETutorialHint::Notebook);
+	}
+	if (Facts.bHasBarometer)
+	{
+		Hints.Add(ETutorialHint::Barometer);
+	}
+	if (Facts.bOnRaft)
+	{
+		Hints.Add(ETutorialHint::Paddle);
+	}
+	return Hints;
+}
+
+FTutorialHintState FTutorialHintModel::RequestTriggered(const FTutorialHintState& State, const FTutorialFacts& Facts,
+	const FTutorialTriggerTuning& Tuning)
+{
+	FTutorialHintState Next = State;
+	for (const ETutorialHint Hint : Triggered(Facts, Tuning))
+	{
+		const FTutorialHintResult Result = Request(Next, Hint);
+		if (Result.bOk)
+		{
+			Next = Result.State;
+		}
+	}
+	return Next;
+}
+
+FTutorialHintState FTutorialHintModel::AllShownState()
+{
+	FTutorialHintState State;
+	State.ShownMask = static_cast<uint8>((1u << HintCount) - 1u);
+	return State;
+}
+
 FName FTutorialHintModel::TextId(ETutorialHint Hint)
 {
 	switch (Hint)

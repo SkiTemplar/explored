@@ -616,14 +616,6 @@
 			"es": "Recogido: {Item}",
 			"en": "Picked up: {Item}"
 		},
-		"HelpUse": {
-			"es": "E interactuar · Tab mochila · J cuaderno · Esc pausa",
-			"en": "E interact · Tab backpack · J notebook · Esc pause"
-		},
-		"HelpMove": {
-			"es": "WASD moverse · Espacio saltar · Mayús correr",
-			"en": "WASD move · Space jump · Shift run"
-		},
 		"EndingContinue": {
 			"es": "Continuar",
 			"en": "Continue"
@@ -1111,6 +1103,40 @@
 		"Help": {
 			"es": "A / D: pasar página · J: cerrar",
 			"en": "A / D: turn page · J: close"
+		}
+	},
+	"ExploredTutorial": {
+		"TutMove": {
+			"es": "W A S D moverse · {0} correr · {1} saltar · Esc pausa",
+			"en": "W A S D move · {0} run · {1} jump · Esc pause"
+		},
+		"TutPickup": {
+			"es": "{0} coge o usa lo que miras; lo que coges va a la mochila",
+			"en": "{0} picks up or uses what you look at; items go to the backpack"
+		},
+		"TutDrink": {
+			"es": "Para beber: {0} y «Usar» en el coco, o elígelo con 1-3 y {1}",
+			"en": "To drink: {0} and \"Use\" on the coconut, or pick it with 1-3 and {1}"
+		},
+		"TutCraft": {
+			"es": "Con 2 fibras se trenza una cuerda: {0} y el botón «Trenzar»",
+			"en": "Two fibres braid a rope: {0} and the \"Braid\" button"
+		},
+		"TutSleep": {
+			"es": "Ya puedes dormir: bajo techo y sin mirar nada, {0}",
+			"en": "You can sleep now: under a roof, looking at nothing, {0}"
+		},
+		"TutNotebook": {
+			"es": "J abre el cuaderno: las páginas de Roig y tus notas",
+			"en": "J opens the notebook: Roig's pages and your notes"
+		},
+		"TutBarometer": {
+			"es": "Arriba a la derecha, el barómetro: si la flecha baja, viene temporal",
+			"en": "Top right, the barometer: if the arrow drops, a storm is coming"
+		},
+		"TutPaddle": {
+			"es": "En la balsa: W rema (con el remo), A y D giran, E para bajar",
+			"en": "On the raft: W paddles (with the paddle), A and D turn, E gets off"
 		}
 	}
 }
