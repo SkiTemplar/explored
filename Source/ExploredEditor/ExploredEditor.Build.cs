@@ -11,7 +11,7 @@ public class ExploredEditor : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "UnrealEd", "Explored"
+			"Core", "CoreUObject", "Engine", "UnrealEd", "AssetRegistry", "Json", "Explored"
 		});
 	}
 }
