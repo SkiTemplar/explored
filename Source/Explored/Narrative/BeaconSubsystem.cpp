@@ -213,8 +213,9 @@ void UBeaconSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	Super::OnWorldBeginPlay(InWorld);
 	RegisterSections();
 	CacheLandmarks();
-	// Sin menú (pruebas de humo, bot) no hay «Nueva partida»: la partida empieza ya.
-	if (FParse::Param(FCommandLine::Get(), TEXT("SkipMenu")))
+	// Sin menú (pruebas de humo, bot) no hay «Nueva partida»: la partida empieza ya. De vuelta al
+	// menú («Salir al menú», créditos del final) se espera a «Nueva partida» o «Continuar».
+	if (!AExploredPlayerController::StartsInMainMenu(&InWorld))
 	{
 		BeginNewRun();
 	}

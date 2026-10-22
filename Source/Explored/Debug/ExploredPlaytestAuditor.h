@@ -32,7 +32,10 @@
  * evidencia (recorrer el mundo, lanzar trazas) que ese modelo no puede tocar.
  *
  * En solitario («-ExploredPlaytestAudit» sin capturas) escribe el informe y
- * cierra el proceso él mismo en cuanto termina. Combinado con el conjunto
+ * cierra el proceso él mismo en cuanto termina; si el bot dejó rodando los
+ * créditos del final, antes espera a que recarguen el mapa en el menú
+ * principal y lo deja en el log («[Playtest] Menú principal tras los créditos
+ * del final»), o un Error si no llega. Combinado con el conjunto
  * «playtest» de capturas, es UExploredShotSubsystem quien pide el volcado
  * final (WriteReport) justo antes de cerrar, para que incluya también el
  * rendimiento de todas las vistas.
@@ -71,8 +74,15 @@ private:
 		WaitingPhysics,
 		/** Solo en solitario: espera a que UExploredPlaytestBot (si lo hay) termine su ruta antes de cerrar. */
 		WaitingForBot,
+		/** Informe escrito con los créditos del final en pantalla: espera a que recarguen el mapa en el menú. */
+		WaitingForMenuTravel,
+		/** Mundo recargado por los créditos del final: comprueba que abre el menú principal y cierra. */
+		WaitingForMainMenu,
 		Done,
 	};
+
+	/** Cierra el proceso (solo en solitario). */
+	void ExitStandalone(const TCHAR* Reason);
 
 	void AuditMaterials();
 	void AuditGroundClearance();

@@ -491,7 +491,7 @@
 					"Keys": [
 						{
 							"Key": "PageTitle",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 560"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 561"
 						}
 					]
 				},
@@ -513,7 +513,7 @@
 					"Keys": [
 						{
 							"Key": "Driftwood",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 495"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 496"
 						}
 					]
 				},
@@ -2303,7 +2303,7 @@
 					"Keys": [
 						{
 							"Key": "MenuObsoleteSave",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 380"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 396"
 						}
 					]
 				},
@@ -2468,7 +2468,7 @@
 					"Keys": [
 						{
 							"Key": "ContinueFailed",
-							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 426"
+							"Path": "Source/Explored/UI/ExploredPlayerController.cpp - line 442"
 						}
 					]
 				},

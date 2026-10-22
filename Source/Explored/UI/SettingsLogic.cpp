@@ -160,6 +160,11 @@ namespace ExploredSettingsLogic
 		return Current == EMenuScreen::None ? EMenuScreen::Pause : ScreenAfterBack(Current, bOpenedFromPause);
 	}
 
+	bool StartsInMainMenu(bool bSkipMenuFlag, bool bReturningToMenu)
+	{
+		return bReturningToMenu || !bSkipMenuFlag;
+	}
+
 	bool CanOpenScreenFrom(EMenuScreen From, EMenuScreen To)
 	{
 		switch (From)

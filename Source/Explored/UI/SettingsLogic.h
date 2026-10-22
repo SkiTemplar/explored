@@ -208,6 +208,13 @@ namespace ExploredSettingsLogic
 		TArray<EMenuScreen> Stack;
 	};
 
+	/**
+	 * Si el mapa arranca en el menú principal. «-SkipMenu» (pruebas de humo, bot) entra a jugar
+	 * directamente, pero solo en el arranque: «Salir al menú» y los créditos del final recargan el
+	 * mapa con la opción de URL de vuelta al menú (bReturningToMenu), y ahí manda el menú.
+	 */
+	EXPLORED_API bool StartsInMainMenu(bool bSkipMenuFlag, bool bReturningToMenu);
+
 	/** Teclas que equivalen a «Volver» en cualquier menú: Escape y B del mando. */
 	EXPLORED_API bool IsMenuBackKey(FName KeyName);
 

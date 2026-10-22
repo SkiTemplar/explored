@@ -426,7 +426,7 @@
 			"en": "Last night the sea left firewood in Cala Varada.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:495"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:496"
 			]
 		},
 		{
@@ -536,7 +536,7 @@
 			"en": "Watch log · page {0} of {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:560"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:561"
 			]
 		},
 		{
@@ -1818,7 +1818,7 @@
 			"en": "The saved game could not be loaded. Try «Load» or start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:426"
+				"Source/Explored/UI/ExploredPlayerController.cpp:442"
 			]
 		},
 		{
@@ -2000,7 +2000,7 @@
 			"en": "There is a save from an earlier version of the game. It cannot be continued: start a new game.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/ExploredPlayerController.cpp:380"
+				"Source/Explored/UI/ExploredPlayerController.cpp:396"
 			]
 		},
 		{

@@ -35,6 +35,7 @@
 #include "Explored.h"
 #include "Items/ExploredItemActor.h"
 #include "Narrative/ExploredSupplyCrate.h"
+#include "UI/ExploredPlayerController.h"
 #include "Weather/ExploredWeatherSubsystem.h"
 #include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
@@ -49,6 +50,10 @@ namespace
 	constexpr int32 MaxGroundSamplesPerComponent = 40;
 	/** Techo de defectos de material acumulados, por si algo deja el mundo en un estado extremo. */
 	constexpr int32 MaxMaterialIssues = 2000;
+	/** Créditos del final (60 s reales, GDD §9.2) más margen hasta pedir la recarga del mapa. */
+	constexpr float MenuTravelTimeoutSeconds = 120.0f;
+	/** Del mapa recargado al menú principal en pantalla (carga, shaders y streaming no cuentan). */
+	constexpr float MainMenuTimeoutSeconds = 60.0f;
 }
 
 bool UExploredPlaytestAuditor::ShouldCreateSubsystem(UObject* Outer) const
@@ -76,10 +81,25 @@ void UExploredPlaytestAuditor::OnWorldBeginPlay(UWorld& InWorld)
 	FParse::Value(FCommandLine::Get(), TEXT("ShotsDir="), OutputDir);
 
 	bActive = true;
-	Phase = EPhase::Warmup;
 	Timer = 0.0f;
+	// De vuelta al menú tras los créditos del final: el informe ya está escrito; solo falta ver el menú.
+	if (bStandalone && AExploredPlayerController::IsReturningToMenu(&InWorld))
+	{
+		Phase = EPhase::WaitingForMainMenu;
+		UE_LOG(LogExplored, Display, TEXT("[Playtest] Mapa recargado tras los créditos del final; esperando al menú principal"));
+		return;
+	}
+	Phase = EPhase::Warmup;
 	UE_LOG(LogExplored, Display, TEXT("[Playtest] Auditor activo (standalone=%s) -> %s"),
 		bStandalone ? TEXT("true") : TEXT("false"), *OutputDir);
+}
+
+void UExploredPlaytestAuditor::ExitStandalone(const TCHAR* Reason)
+{
+	Phase = EPhase::Done;
+	bActive = false;
+	UE_LOG(LogExplored, Display, TEXT("[Playtest] Auditor en solitario: %s, cerrando"), Reason);
+	FPlatformMisc::RequestExit(false, TEXT("ExploredPlaytestAudit"));
 }
 
 void UExploredPlaytestAuditor::Tick(float DeltaTime)
@@ -97,6 +117,33 @@ void UExploredPlaytestAuditor::Tick(float DeltaTime)
 	}
 
 	Timer += DeltaTime;
+
+	if (Phase == EPhase::WaitingForMenuTravel)
+	{
+		// Si los créditos vuelven al menú, el mapa se recarga y este auditor desaparece con el mundo.
+		if (Timer >= MenuTravelTimeoutSeconds)
+		{
+			UE_LOG(LogExplored, Error, TEXT("[Playtest] Los créditos del final no volvieron al menú principal en %.0f s"), MenuTravelTimeoutSeconds);
+			ExitStandalone(TEXT("sin vuelta al menú")); // loc: ignorar (motivo de cierre, solo en el log)
+		}
+		return;
+	}
+
+	if (Phase == EPhase::WaitingForMainMenu)
+	{
+		const AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (PC && PC->IsInMainMenu())
+		{
+			UE_LOG(LogExplored, Display, TEXT("[Playtest] Menú principal tras los créditos del final"));
+			ExitStandalone(TEXT("menú principal comprobado")); // loc: ignorar (motivo de cierre, solo en el log)
+		}
+		else if (Timer >= MainMenuTimeoutSeconds)
+		{
+			UE_LOG(LogExplored, Error, TEXT("[Playtest] El mapa recargado tras los créditos no abrió el menú principal"));
+			ExitStandalone(TEXT("sin menú principal")); // loc: ignorar (motivo de cierre, solo en el log)
+		}
+		return;
+	}
 
 	if (Phase == EPhase::Warmup)
 	{
@@ -135,14 +182,22 @@ void UExploredPlaytestAuditor::Tick(float DeltaTime)
 			return;
 		}
 
-		Phase = EPhase::Done;
-		bActive = false;
-		if (bStandalone)
+		if (!bStandalone)
 		{
-			WriteReport();
-			UE_LOG(LogExplored, Display, TEXT("[Playtest] Auditor en solitario: informe escrito, cerrando"));
-			FPlatformMisc::RequestExit(false, TEXT("ExploredPlaytestAudit"));
+			Phase = EPhase::Done;
+			bActive = false;
+			return;
 		}
+		WriteReport();
+		const AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (PC && PC->IsRollingEndCredits())
+		{
+			UE_LOG(LogExplored, Display, TEXT("[Playtest] Informe escrito; esperando a que los créditos del final vuelvan al menú"));
+			Phase = EPhase::WaitingForMenuTravel;
+			Timer = 0.0f;
+			return;
+		}
+		ExitStandalone(TEXT("informe escrito")); // loc: ignorar (motivo de cierre, solo en el log)
 	}
 }
 

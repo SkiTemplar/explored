@@ -202,9 +202,9 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:195` | `beber de la cantimplora con la ranura rápida` | `Add(TEXT("beber de la cantimplora con la ranura rápida"), [this, Player]()` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:215` | `hervir aceite eligiendo el verbo` | `Add(TEXT("hervir aceite eligiendo el verbo"), [this, FireAction]()` |
 | `Source/Explored/Debug/ExploredIslandSmokeTest.cpp:238` | `combinación que no es receta` | `Add(TEXT("combinación que no es receta"), [this]()` |
-| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:74` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
-| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:455` | `historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)` | `Report.Softlocks.Add({ TEXT("historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)"), StoryFailures.IsEmpty(),` |
-| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:456` | `todos llegan al final` | `StoryFailures.IsEmpty() ? FString(TEXT("todos llegan al final")) : FString::Join(StoryFailures, TEXT(" \| ")) });` |
+| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:79` | `-ExploredShots=` | `bStandalone = !FString(FCommandLine::Get()).Contains(TEXT("-ExploredShots="));` |
+| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:510` | `historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)` | `Report.Softlocks.Add({ TEXT("historia: 24 órdenes de lente, aceite y mecha (con y sin página 1)"), StoryFailures.IsEmpty(),` |
+| `Source/Explored/Debug/ExploredPlaytestAuditor.cpp:511` | `todos llegan al final` | `StoryFailures.IsEmpty() ? FString(TEXT("todos llegan al final")) : FString::Join(StoryFailures, TEXT(" \| ")) });` |
 | `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:64` | `entretenerse en ` | `AddStep(TEXT("entretenerse en ") + Where, [] { return true; },` |
 | `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:81` | `beber un coco` | `AddStep(TEXT("beber un coco"), [this]() { return UseItem(TEXT("coco")); },` |
 | `Source/Explored/Debug/ExploredPlaytestBotRoute.cpp:106` | `la hoguera de las rocas` | `AddGoToActor(TEXT("la hoguera de las rocas"), [this]() { return Cast<AActor>(NearestFire()); });` |

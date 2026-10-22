@@ -142,6 +142,21 @@ public:
 	/** La pantalla de epílogo ya está en el viewport (prueba de humo de la historia). */
 	bool IsShowingEnding() const { return bShowingEnding; }
 
+	/** Los créditos del final están en pantalla y vuelven solos al menú (bot de la partida completa). */
+	bool IsRollingEndCredits() const { return bRollingEndCredits; }
+
+	/** El menú principal es la raíz del frontend y se está en el menú (no jugando). */
+	bool IsInMainMenu() const;
+
+	/** Opción de URL con la que «Salir al menú» y los créditos del final recargan el mapa. */
+	static const TCHAR* ReturnToMenuOption() { return TEXT("ExploredMenu"); }
+
+	/** El mundo arranca en el menú principal: sin «-SkipMenu», o recargado por «Salir al menú». */
+	static bool StartsInMainMenu(const UWorld* World);
+
+	/** El mundo se ha cargado desde «Salir al menú» o desde los créditos del final. */
+	static bool IsReturningToMenu(const UWorld* World);
+
 	/** Secuencia de salida del barco: sin pausa ni HUD de juego mientras dura. */
 	void SetCutsceneActive(bool bActive) { bCutsceneActive = bActive; }
 	bool IsCutsceneActive() const { return bCutsceneActive; }
@@ -195,6 +210,7 @@ private:
 	EExploredUIMode UIMode = EExploredUIMode::Menu;
 	bool bCutsceneActive = false;
 	bool bShowingEnding = false;
+	bool bRollingEndCredits = false;
 	/** Pantalla actual y camino hasta ella (la base es None jugando o MainMenu). */
 	ExploredSettingsLogic::FMenuNavigation Navigation;
 

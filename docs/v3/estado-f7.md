@@ -360,6 +360,32 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
 - **Opcionales de F7 sin abordar:** cangrejo ambiental y optimización de LOD y distancia de
   dibujado (el bench va con 30-50 fps de margen sobre el mínimo).
 
+## Partidas del bot en el editor (paso 8 de `pendiente-motor.md`)
+
+| Ruta | Fecha y commit | Duración a 1× | Desmayos | Páginas | Epílogo | Resultado |
+|---|---|---|---|---|---|---|
+| competente | 2026-10-22, este commit (sobre `9c880015`) | 52,4 min (51,4 + 60 s de créditos) | 0 | 8/8 | `completo (8/8 páginas)` | VERDE |
+
+Ruta competente, `-Clock 6`: 16,6 min reales; 10/10 etapas, 10/10 guardar/cargar, `reached_epilogue`
+true, 0 errores y 0 avisos en el informe; física a la deriva 0, puntos de aparición bloqueados 0,
+9/9 softlocks resolubles y ningún paso fuera de tiempo (sin atascos). En `PlaytestV3.log`, 0 `Error`
+propios (los 3 «LogAutomationTest: Error» son el smoke test del motor ya documentado). Final:
+`Luces del Mistral` → `Bocina` 9,6 s → `Pantalla de epílogo` 7,0 s → `Créditos del final (60 s)` →
+`Vuelta al menú principal` 60,0 s → `Menú principal` 0,6 s.
+
+Hallazgo y decisión: el bot se paraba en la pantalla de epílogo, así que «créditos → menú
+principal» no se comprobaba nunca. Al añadirlo salió un fallo real de la vuelta al menú: con
+`-SkipMenu` en la línea de comandos, «Salir al menú» y el fin de los créditos recargaban el mapa y
+entraban otra vez a jugar (el `BeaconSubsystem` empezaba partida nueva). Ahora `ExitToMainMenu`
+recarga con la opción de URL `ExploredMenu` y `ExploredSettingsLogic::StartsInMainMenu` hace que
+`-SkipMenu` solo valga en el arranque (spec nuevo; con el código anterior falla). El bot pulsa
+«Continuar» del epílogo, el auditor escribe el informe con los créditos rodando y, ya en el mapa
+recargado, deja `[Playtest] Menú principal tras los créditos del final` (o un `Error` si no llega);
+`playtest_v3.ps1` exige esa línea. El auditor sigue marcando 276 instancias «flotando/enterradas»
+(283 en la pasada anterior): no es criterio del paso 8 y no se ha tocado.
+
+Pendientes del paso 8: rutas `lenta` y `sin_paginas`.
+
 ## Pendiente de motor
 
 Ver [`pendiente-motor.md`](pendiente-motor.md), pasos 10-12 de la lista única: bench, paquetes

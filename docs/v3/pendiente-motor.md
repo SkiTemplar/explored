@@ -211,7 +211,9 @@ Además:
 
 - `reached_epilogue: true` en las tres, 0 `Error` en el log, y la secuencia `Luces del Mistral` →
   `Bocina del Mistral` (~9,6 s después) → `Pantalla de epílogo` (~7 s después) →
-  `Créditos del final` → menú principal.
+  `Créditos del final` → menú principal. El bot pulsa «Continuar» del epílogo y el auditor espera la
+  vuelta al menú tras escribir el informe; `playtest_v3.ps1` falla si no está la línea
+  `[Playtest] Menú principal tras los créditos del final`.
 - El bot llega al faro y a la balsa sin bloqueos ni atascos en los rebordes y taludes de los caminos
   hundidos, y no se sale del camino (el césped y la decoración no tienen colisión ni responden a
   ningún canal: las trazas de interacción los atraviesan).

@@ -222,6 +222,14 @@ void FExploredSettingsLogicSpec::Define()
 			TestEqual(TEXT("Desde el menú principal"), ScreenAfterEscape(EMenuScreen::Settings, false), EMenuScreen::MainMenu);
 		});
 
+		It("-SkipMenu solo salta el menú del arranque, no la vuelta al menú", [this]()
+		{
+			TestTrue(TEXT("Arranque normal"), StartsInMainMenu(false, false));
+			TestFalse(TEXT("Arranque con -SkipMenu"), StartsInMainMenu(true, false));
+			TestTrue(TEXT("Vuelta al menú con -SkipMenu"), StartsInMainMenu(true, true));
+			TestTrue(TEXT("Vuelta al menú sin -SkipMenu"), StartsInMainMenu(false, true));
+		});
+
 		It("créditos vuelve al menú principal, que no hace nada", [this]()
 		{
 			TestEqual(TEXT("Créditos"), ScreenAfterBack(EMenuScreen::Credits, false), EMenuScreen::MainMenu);

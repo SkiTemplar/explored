@@ -274,4 +274,20 @@ void UExploredPlaytestBot::AddDayThree()
 		const AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		return PC && PC->IsShowingEnding();
 	}, 90.0);
+	// «Continuar» del epílogo. Los créditos ruedan con el mundo en pausa y vuelven solos al menú
+	// principal; el auditor espera esa vuelta tras escribir el informe (sus 60 s ya se suman aparte).
+	AddStep(TEXT("continuar a los créditos"), [this]() // loc: ignorar (paso del bot, solo en el log)
+	{
+		AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (!PC || !PC->IsShowingEnding())
+		{
+			return false;
+		}
+		PC->ShowEndCredits();
+		return true;
+	}, [this]()
+	{
+		const AExploredPlayerController* PC = Cast<AExploredPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		return PC && PC->IsRollingEndCredits();
+	}, 10.0);
 }

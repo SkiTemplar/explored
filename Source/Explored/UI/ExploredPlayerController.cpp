@@ -96,16 +96,30 @@ void AExploredPlayerController::BeginPlay()
 		Viewport->AddViewportWidgetContent(FadeWidget.ToSharedRef(), 1000);
 	}
 
-	const bool bSkipMenu = FParse::Param(FCommandLine::Get(), TEXT("SkipMenu"));
-	if (bSkipMenu)
-	{
-		SetUIMode(EExploredUIMode::Playing);
-	}
-	else
+	if (StartsInMainMenu(GetWorld()))
 	{
 		SetUIMode(EExploredUIMode::Menu);
 		ShowMainMenu();
 	}
+	else
+	{
+		SetUIMode(EExploredUIMode::Playing);
+	}
+}
+
+bool AExploredPlayerController::IsReturningToMenu(const UWorld* World)
+{
+	return World && World->URL.HasOption(ReturnToMenuOption());
+}
+
+bool AExploredPlayerController::StartsInMainMenu(const UWorld* World)
+{
+	return ExploredSettingsLogic::StartsInMainMenu(FParse::Param(FCommandLine::Get(), TEXT("SkipMenu")), IsReturningToMenu(World));
+}
+
+bool AExploredPlayerController::IsInMainMenu() const
+{
+	return UIMode == EExploredUIMode::Menu && Navigation.Root() == ExploredSettingsLogic::EMenuScreen::MainMenu;
 }
 
 void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -135,6 +149,7 @@ void AExploredPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason
 	CurrentFocusTarget.Reset();
 	FTSTicker::GetCoreTicker().RemoveTicker(EndCreditsTicker);
 	EndCreditsTicker.Reset();
+	bRollingEndCredits = false;
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -373,6 +388,7 @@ void AExploredPlayerController::ShowMainMenu()
 		.OnCredits(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::OpenCredits))
 		.OnQuit(FSimpleDelegate::CreateUObject(this, &AExploredPlayerController::QuitToDesktop));
 	ShowOverlay(Menu, Menu->GetInitialFocus(), ExploredSettingsLogic::EMenuScreen::MainMenu);
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Menú principal"));
 }
 
 FText AExploredPlayerController::ObsoleteSaveNotice()
@@ -589,7 +605,12 @@ void AExploredPlayerController::LoadSlotAndPlay(const FString& SlotId)
 void AExploredPlayerController::ExitToMainMenu()
 {
 	HideOverlay();
-	UGameplayStatics::OpenLevel(this, MainMenuMapName);
+	FTSTicker::GetCoreTicker().RemoveTicker(EndCreditsTicker);
+	EndCreditsTicker.Reset();
+	bRollingEndCredits = false;
+	UE_LOG(LogTemp, Display, TEXT("[Explored] Vuelta al menú principal"));
+	// La opción de URL hace que el mapa recargado abra el menú aunque el proceso se lanzara con -SkipMenu.
+	UGameplayStatics::OpenLevel(this, MainMenuMapName, true, ReturnToMenuOption());
 }
 
 void AExploredPlayerController::ShowEnding(const FText& EpilogueLine, const FText& CommonLine)
@@ -671,6 +692,7 @@ void AExploredPlayerController::ShowEndCredits()
 		ExitToMainMenu();
 		return false;
 	}));
+	bRollingEndCredits = true;
 	UE_LOG(LogTemp, Display, TEXT("[Explored] Créditos del final (%.0f s)"), Timing.EndCreditsSeconds);
 }
 

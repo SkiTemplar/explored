@@ -17,6 +17,7 @@
 #include "Interaction/InteractionComponent.h"
 #include "Items/ExploredItemActor.h"
 #include "Player/ExploredCharacter.h"
+#include "UI/ExploredPlayerController.h"
 #include "WorldGen/GroundHeight.h"
 #include "WorldGen/IslandLayout.h"
 #include "WorldGen/IslandLayoutLoader.h"
@@ -53,6 +54,14 @@ void UExploredPlaytestBot::OnWorldBeginPlay(UWorld& InWorld)
 
 	OutputDir = FPaths::ProjectSavedDir() / TEXT("Shots");
 	FParse::Value(FCommandLine::Get(), TEXT("ShotsDir="), OutputDir);
+
+	// Tras los créditos del final se recarga el mapa en el menú principal: la partida ya se jugó y
+	// el auditor solo comprueba que se llega al menú.
+	if (AExploredPlayerController::IsReturningToMenu(&InWorld))
+	{
+		bDone = true;
+		return;
+	}
 
 	Character = Cast<AExploredCharacter>(UGameplayStatics::GetPlayerCharacter(&InWorld, 0));
 	if (!Character.IsValid())

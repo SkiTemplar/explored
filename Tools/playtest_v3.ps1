@@ -58,3 +58,10 @@ if (-not $passed) {
     Write-Warning 'El bot no cumple el criterio de salida de F3 (ver el informe)'
     exit 1
 }
+# El informe se escribe con los créditos del final en pantalla; la vuelta al menú solo está en el log.
+$menu = Select-String -Path $logFile -Encoding UTF8 -Pattern '\[Playtest\] Men. principal tras los cr.ditos del final' -Quiet
+if (-not $menu) {
+    Write-Warning "Los créditos del final no volvieron al menú principal (ver $logFile)"
+    exit 1
+}
+Write-Output 'Créditos del final -> menú principal: ok'
