@@ -1,7 +1,7 @@
 ﻿# Empaqueta Baliza Siete para Windows (Win64) en Saved/Package/Windows.
-# Pasos: audio local presente (no se versiona), .locres compilados (GatherText), datos (DataCheck
-# --strict), compilación del editor (lo usa el cocinado) y del juego con
-# Build.bat -WaitMutex, y BuildCookRun -skipbuild (con -build, UAT choca con el mutex de UBT si
+# Pasos: audio local presente (no se versiona), datos (DataCheck --strict), compilación del editor
+# (lo usan GatherText y el cocinado) y del juego con Build.bat -WaitMutex, .locres compilados
+# (GatherText), y BuildCookRun -skipbuild (con -build, UAT choca con el mutex de UBT si
 # otro proceso compila). Al final comprueba que el paquete trae el ejecutable, los .pak/.utoc y
 # los JSON de Content/Data sueltos (DirectoriesToAlwaysStageAsNonUFS, Config/DefaultGame.ini), el
 # audio de muestra cocinado y el .locres inglés preparado para el .pak.
@@ -29,7 +29,15 @@ if ($missingAudio.Count -gt 0) {
     throw "Falta el audio local ($($missingAudio -join ', ')): genéralo e impórtalo como dice README.md («Requisitos»)"
 }
 
-# Los .locres que carga el juego (Ajustes → Idioma) los compila el editor desde los .archive.
+if (-not $SkipChecks) {
+    Push-Location (Join-Path $ProjectRoot 'Tools\DataCheck')
+    try { uv run datacheck --strict; Assert-ExitCode 'DataCheck' } finally { Pop-Location }
+    & "$PSScriptRoot\build.ps1"
+    & "$PSScriptRoot\build.ps1" -Target Game -Configuration $Configuration
+}
+
+# Los .locres que carga el juego (Ajustes → Idioma) los compila el editor desde los .archive. Va
+# después de compilar el editor: el commandlet necesita los módulos del proyecto (clon limpio).
 $locres = @('es', 'en' | ForEach-Object { Join-Path $ProjectRoot "Content\Localization\Game\$_\Game.locres" })
 # El commandlet reescribe el .ini que recibe (le quita los comentarios): se le pasa una copia.
 $compileIni = Join-Path $ProjectRoot 'Saved\Temp\Game_Compile.ini'
@@ -40,13 +48,6 @@ $code = Invoke-Native $EditorCmd @($UProject, '-run=GatherText', "-config=$compi
 if ($code -ne 0) { throw "La compilación de la localización falló con código $code" }
 $missingLocres = @($locres | Where-Object { -not (Test-Path $_) })
 if ($missingLocres.Count -gt 0) { throw "No se generaron los .locres: $($missingLocres -join ', ')" }
-
-if (-not $SkipChecks) {
-    Push-Location (Join-Path $ProjectRoot 'Tools\DataCheck')
-    try { uv run datacheck --strict; Assert-ExitCode 'DataCheck' } finally { Pop-Location }
-    & "$PSScriptRoot\build.ps1"
-    & "$PSScriptRoot\build.ps1" -Target Game -Configuration $Configuration
-}
 
 $cmdArgs = @('BuildCookRun', "-project=$UProject", '-noP4', '-platform=Win64', "-clientconfig=$Configuration",
     '-skipbuild', '-nocompileeditor', '-cook', '-map=/Game/Maps/Map_IslaSal', '-stage', '-pak', '-iostore',
