@@ -189,6 +189,10 @@ En el log del juego de cualquiera de las dos tandas (`Saved/Logs/`):
 
 ## 8. Las tres partidas del bot en el editor (criterios 1 y 2 de F6)
 
+**[x] Hecho 2026-10-22: OK.** Competente, lenta y sin_paginas en VERDE en el editor (52,4 min a 1×,
+0 desmayos, 8/8, 8/8 y 1/8 páginas, vuelta al menú tras los créditos) y repetidas sobre el paquete
+Development (paso 12). Detalle en `estado-f7.md`, «Partidas del bot en el editor».
+
 A 1× real (lo que mide el criterio) cada una tarda ~53 min; con `-Clock 6` el bot acelera el reloj y
 el informe sigue dando los minutos equivalentes a 1×.
 
@@ -226,6 +230,8 @@ hasta el epílogo (3 s de encender + 16,6 s) y 60 s de créditos = 52,2 min. Con
 F3e daba 48,3 (fuera del rango), y con 32 min se pasaría de 60.
 
 ## 9. Mezcla de audio y comprobaciones a mano
+
+**[ ] Pendiente de Rodrigo (2026-10-22).** Necesita oído y mando: ningún agente puede cerrarlo.
 
 Una partida a mano (o la ruta competente con `-Window`) escuchando:
 

@@ -107,12 +107,17 @@ Valida los datos, compila el editor y el juego, cocina con `BuildCookRun` y deja
 `.pak`/`.utoc` y los JSON de `Content/Data` (que el juego lee del disco y se copian sueltos). Qué
 se cocina está en `Config/DefaultGame.ini`, sección `ProjectPackagingSettings`.
 
+`package.ps1` vacía `Saved/Package/Windows` antes de archivar: para conservar un paquete, muévelo
+antes. Shipping pesa 604 MB y Development 1.193 MB (385 MB son el `.pdb`). Estado de la entrega,
+cifras y límites conocidos: [`docs/v3/informe-final.md`](docs/v3/informe-final.md).
+
 ## Estructura
 
 - `Source/Explored`: módulo de juego (supervivencia, isla, baliza, balsa, pesca, interfaz Slate,
   guardado). La lógica va en modelos puros `F<Algo>Model` con su `Tests/*Spec.cpp`.
-- `Source/ExploredEditor`: módulo de editor, hoy sin código propio (solo el `IMPLEMENT_MODULE`).
+- `Source/ExploredEditor`: módulo de editor; solo el commandlet `-run=ExploredStyle`, que valida
+  mallas y texturas contra el GDD §11.
 - `Content/Data`: datos del juego en JSON (isla, objetos, recetas, cuaderno, objetivos, música…).
 - `Tools/`: scripts de compilación, pruebas y paquete, y herramientas Python de contenido
-  (isla, texturas, audio, arte en Blender, localización, comprobación de datos).
+  (isla, texturas, audio, arte en Blender, estilo, localización, comprobación de datos).
 - `docs/v3`: diseño, plan y estado de cada fase.

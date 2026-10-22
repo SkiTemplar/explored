@@ -16,7 +16,7 @@ Rama de trabajo: `reset/v2`.
   con SM6. Interfaz en Slate; entrada con Enhanced Input creada por código.
 - Módulos: `Source/Explored` (juego; carpetas Audio, Boats, Carry, Cooking, Core, Crafting,
   Debug, Events, Fauna, Fishing, Interaction, Items, Narrative, Ocean, Player, Save, Sky, Survival,
-  UI, Weather, WorldGen y Tests) y `Source/ExploredEditor` (editor, sin código propio).
+  UI, Weather, WorldGen y Tests) y `Source/ExploredEditor` (editor: solo el commandlet `-run=ExploredStyle`, validador del GDD §11).
   Dependencias en `Explored.Build.cs`: Core, CoreUObject, Engine, InputCore, EnhancedInput,
   ProceduralMeshComponent, PhysicsCore; privadas RenderCore, RHI, Slate, SlateCore, UMG, Json.
 - Datos de juego en `Content/Data/*.json` (isla, decorado, props, objetos, recetas, verbos,
@@ -53,7 +53,7 @@ el mutex de UBT, `-WaitMutex` espera. Controles y requisitos en `README.md`.
   `HOST_TESTS_SANITIZE=ON` añade ASan/UBSan. Ver `Tools/HostTests/README.md`.
 - **Con Unreal (local):** `Tools/test.ps1` ejecuta todos los Automation Tests del editor.
 - Herramientas Python (`Tools/Packs`, `Textures`, `Audio`, `DataCheck`, `Localization`, `Island`,
-  `Blender`): cada una con su `pyproject.toml` y `uv.lock`. Desde su carpeta:
+  `Blender`, `Style`): cada una con su `pyproject.toml` y `uv.lock`. Desde su carpeta:
   `uv run ruff check .`, `uv run basedpyright` y `uv run pytest -q --cov` (mínimo 80 %).
   `Tools/Blender` y los tests de Blender de `Tools/Packs` (`--group blender`) usan
   `bpy==5.2.2` de PyPI con Python 3.13, y el render Workbench necesita

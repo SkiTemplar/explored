@@ -12,7 +12,10 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una so
 | 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Shipping: OK (2026-10-22, empaqueta y arranca al menú; ver «Paquete Shipping»). Development: OK (2026-10-22, arranca al menú y el bot completa competente, lenta y sin_paginas en VERDE sobre el paquete; ver «Paquete Development, bot y bench sobre el paquete») |
 | 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | NO CUMPLIDO: `codex exec` no puede ejecutar nada en el sandbox de Windows (ver «Huecos de completitud»); revisión manual del guardado hecha |
 | 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 836/836 normal, con ASan + UBSan y con matemáticas rápidas (WSL); cobertura C++ 91,8 % de líneas, modelos v3 92-100 %. CI sin ejecutar: `reset/v2` sin empujar |
-| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | OK: Shipping 604 MB con audio (2026-10-22; guardado en `Saved/Package-Shipping.zip`); Development 1.193 MB, de ellos 385 MB de `.pdb` |
+| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | OK: Shipping 604 MB con audio (2026-10-22, rehecho en el cierre desde `HEAD`: `Saved/Package/Windows`); Development 1.193 MB, de ellos 385 MB de `.pdb` (`Saved/Package-Development/Windows`) |
+
+Resultado del cierre (2026-10-22, ver «Cierre de la entrega»): criterios 1, 2 y 5 cumplidos; 3 sin
+cumplir y 4 a medias (sin CI). La tarjeta de F7 del kanban se queda en curso.
 
 ## Hecho
 
@@ -349,15 +352,15 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
 - **F6.4 y paso 9 de `pendiente-motor.md`.** Falta una partida humana completa y la mezcla de audio
   a oído.
 - **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Hecho el 2026-10-22: ver «Paquete
-  Development, bot y bench sobre el paquete». El Shipping verificado está en
-  `Saved/Package-Shipping.zip`; `Saved/Package/Windows` tiene ahora el Development.
+  Development, bot y bench sobre el paquete». Tras el cierre, `Saved/Package/Windows`
+  tiene el Shipping rehecho desde `HEAD` y `Saved/Package-Development/Windows` el Development.
 - **Arte con crítica pendiente** (paso 7): franja de arena mojada entre el agua y la espuma, ondas
   a contraluz, bloques de roca con techo verde junto al faro y ΔE de hierba y cénit por encima de
   8. No se ha tocado esta noche: son cambios de material y de malla que piden revisión visual de
   Rodrigo.
 - **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB, solo en este PC). El
   README explica cómo regenerarlos y `package.ps1` no empaqueta sin ellos. Decidir si van por LFS.
-- **`Tools/Textures` sin `pyproject.toml`** aunque la sección «Tests» de `CLAUDE.md` lo cita.
+- ~~**`Tools/Textures` sin `pyproject.toml`**~~: ya lo tiene (8 tests, cobertura 100 % en el cierre).
 - **Opcionales de F7 sin abordar:** cangrejo ambiental y optimización de LOD y distancia de
   dibujado (el bench va con 30-50 fps de margen sobre el mínimo).
 
@@ -538,7 +541,28 @@ medir todavía: mirarlo en el bench sobre el paquete (paso 12) con `-LogCmds="Lo
 **Medido el 2026-10-22:** en el paquete la marca tarda 0,34-0,96 ms (ver «Paquete Development, bot y
 bench sobre el paquete»); hueco cerrado.
 
+## Cierre de la entrega (2026-10-22, 09:45-10:30)
+
+- **Shipping rehecho desde `HEAD`.** El Shipping de `Saved/Package-Shipping.zip` se cocinó a las
+  08:11, antes del commit `6ac833f9` (08:16) que versiona el `M_TerrainToon` corregido. Para que el
+  paquete entregado sea exactamente el código etiquetado, `package.ps1 -Configuration Shipping`
+  otra vez: `ExitCode=0`, cocinado con 0 `Error:` y 0 `Failed to compile Material`, **604 MB** en
+  `Saved/Package/Windows`. El Development (de las 08:19, posterior al último commit de código) se
+  movió a `Saved/Package-Development/Windows` sin rehacerlo: sus tres partidas del bot y el bench
+  siguen valiendo.
+- **Arranque del Shipping:** ventana «Baliza Siete» con el menú principal a los 40 s
+  (`Saved/Shots/pkg-shipping-final-menu.png`), 0 volcados en `%LOCALAPPDATA%/Explored/Saved/Crashes`.
+  Hallazgo: en el primer arranque de este ejecutable Windows pregunta si permite el acceso a la red
+  (diálogo del cortafuegos). El juego es para un jugador; no se ha averiguado qué abre el socket.
+  No se ha pulsado nada en el diálogo.
+- **Verificación final:** build del editor y Shipping `Succeeded`; host tests 838 casos, 0 fallos;
+  DataCheck `--strict` 0 errores; `l10n export --check` 379 textos, 0 errores; Python con ruff y
+  basedpyright sin errores y cobertura: Island 99,4 % (104), Textures 100 % (8), Audio 93,8 % (406),
+  DataCheck 95,4 % (94), Localization 95,7 % (96), Style 99,2 % (165), Blender 85,7 % (111),
+  Packs 90,8 % (78).
+- Informe para Rodrigo: [`informe-final.md`](informe-final.md).
+
 ## Pendiente de motor
 
-Pasos 10-12 de [`pendiente-motor.md`](pendiente-motor.md) hechos el 2026-10-22. Queda lo que pide a
+Pasos 8 y 10-12 de [`pendiente-motor.md`](pendiente-motor.md) hechos el 2026-10-22. Queda lo que pide a
 Rodrigo: partida a mano y mezcla de audio a oído (paso 9) y la revisión visual del arte (paso 7).
