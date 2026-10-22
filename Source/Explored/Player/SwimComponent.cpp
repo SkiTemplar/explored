@@ -19,6 +19,9 @@
 namespace SwimComponentDetail
 {
 	constexpr float OceanSearchIntervalSeconds = 2.0f;
+	/** Mezcla (crítica de audio A3): las brazadas y la zambullida tapaban los pasos y la música. */
+	constexpr float StrokeVolume = 0.35f;
+	constexpr float DiveSplashVolume = 0.5f;
 }
 
 // GetWaterState convierte ESwimState (modelo puro) en el UENUM por su valor.
@@ -94,7 +97,7 @@ FSwimTuning USwimComponent::MakeTuning() const
 	return Tuning;
 }
 
-void USwimComponent::PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef) const
+void USwimComponent::PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef, float Volume) const
 {
 	// Las rutas apuntan al catálogo de Tools/Audio; si el paquete de audio aún
 	// no se ha construido, LoadSynchronous no encuentra el asset y no suena
@@ -103,7 +106,7 @@ void USwimComponent::PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef) con
 	{
 		if (const AActor* Owner = GetOwner())
 		{
-			UGameplayStatics::PlaySoundAtLocation(Owner, Sound, Owner->GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(Owner, Sound, Owner->GetActorLocation(), Volume);
 		}
 	}
 }
@@ -195,7 +198,7 @@ void USwimComponent::ApplyStep(const FSwimStep& Step, float DeltaTime)
 		if (Step.bEnteredWater)
 		{
 			OnDiveSplash.Broadcast();
-			PlayOneShot(DiveSplashSound);
+			PlayOneShot(DiveSplashSound, SwimComponentDetail::DiveSplashVolume);
 		}
 	}
 	else if (Step.bLeftWater && Movement && Movement->MovementMode == MOVE_Flying)
@@ -220,7 +223,7 @@ void USwimComponent::ApplyStep(const FSwimStep& Step, float DeltaTime)
 
 		if (Step.bStrokeCompleted && SwimStrokeSounds.Num() > 0)
 		{
-			PlayOneShot(SwimStrokeSounds[FMath::RandRange(0, SwimStrokeSounds.Num() - 1)]);
+			PlayOneShot(SwimStrokeSounds[FMath::RandRange(0, SwimStrokeSounds.Num() - 1)], SwimComponentDetail::StrokeVolume);
 		}
 	}
 

@@ -23,7 +23,8 @@ namespace SfxDetail
 	const TCHAR* const Root = TEXT("/Game/Generated/Audio/Efectos");
 	constexpr float SlowInterval = 0.5f;
 	constexpr float FootVolume = 0.55f;
-	constexpr float PaddleVolume = 0.8f;
+	/** Remada de la balsa: con 0,8 tapaba el mar y la música (crítica de audio A4). */
+	constexpr float PaddleVolume = 0.45f;
 	constexpr float GullVolume = 0.35f;
 	/** Alcance (cm) de los bucles de las hogueras. */
 	constexpr float FireRadiusCm = 250.0f;

@@ -23,6 +23,8 @@
 
 namespace BodySignalsComponentDetail
 {
+	/** Rugido de tripas: con 0,8 no se oía al aire libre con hambre (crítica de audio A3). */
+	constexpr float StomachGrowlVolume = 1.6f;
 	// Nombres de los parámetros del material de postproceso (docs/tecnico/cuerpo.md).
 	const FName ParamVignette(TEXT("BodyVignette"));
 	const FName ParamVignetteTint(TEXT("BodyVignetteTint"));
@@ -267,7 +269,7 @@ void UBodySignalsComponent::StepSurvival(float RealSeconds)
 	// Estómago: la señal es una probabilidad por minuto real.
 	if (LoadedStomachSound && FMath::FRand() < Signals.StomachGrowl * RealSeconds / 60.0f)
 	{
-		UGameplayStatics::PlaySound2D(this, LoadedStomachSound, 0.8f);
+		UGameplayStatics::PlaySound2D(this, LoadedStomachSound, BodySignalsComponentDetail::StomachGrowlVolume);
 	}
 }
 

@@ -115,7 +115,7 @@ private:
 	void ApplyStep(const FSwimStep& Step, float DeltaTime);
 	float GetCarriedWeightKg() const;
 	AExploredOcean* FindOcean() const;
-	void PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef) const;
+	void PlayOneShot(const TSoftObjectPtr<USoundBase>& SoundRef, float Volume = 1.0f) const;
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<AExploredOcean> Ocean;
