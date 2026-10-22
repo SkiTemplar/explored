@@ -7,9 +7,9 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 400 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 275 |
-| … de `Content/Data` (campos bilingües) | 125 |
+| Textos en el catálogo | 379 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 270 |
+| … de `Content/Data` (campos bilingües) | 109 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
@@ -394,7 +394,7 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Save/SaveValue.cpp:725` | `anidamiento excesivo` | `return Fail(TEXT("anidamiento excesivo"));` |
 | `Source/Explored/Save/SaveValue.cpp:754` | `se esperaba «,» o «]»` | `return Fail(TEXT("se esperaba «,» o «]»"));` |
 | `Source/Explored/Save/SaveValue.cpp:781` | `carácter inesperado` | `return Fail(TEXT("carácter inesperado"));` |
-| `Source/Explored/Save/SaveValue.cpp:1227` | `texto sobrante tras el valor` | `Parser.Fail(TEXT("texto sobrante tras el valor"));` |
+| `Source/Explored/Save/SaveValue.cpp:1232` | `texto sobrante tras el valor` | `Parser.Fail(TEXT("texto sobrante tras el valor"));` |
 | `Source/Explored/UI/IslandHudModel.cpp:12` | `Día %d · %02d:%02d` | `return FString::Printf(TEXT("Día %d · %02d:%02d"), FMath::Max(1, Day), Minutes / 60, Minutes % 60);` |
 | `Source/Explored/UI/IslandHudModel.cpp:17` | `Día %d` | `return FString::Printf(TEXT("Día %d"), FMath::Max(1, Day));` |
 | `Source/Explored/UI/IslandHudModel.cpp:24` | `%d hPa %s` | `return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);` |

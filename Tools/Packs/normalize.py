@@ -1,5 +1,5 @@
 """
-normalize.py — normaliza mallas de packs CC0 según Content/Data/packs_catalogo.json.
+normalize.py — normaliza mallas de packs CC0 según Tools/Packs/packs_catalogo.json.
 
 Se ejecuta dentro de Blender (5.2, sin interfaz):
 
@@ -82,7 +82,7 @@ from normalize_core import (  # noqa: E402
 )
 
 REPO = HERE.parent.parent
-CATALOG = REPO / "Content" / "Data" / "packs_catalogo.json"
+CATALOG = HERE / "packs_catalogo.json"
 PALETTE = REPO / "Tools" / "Textures" / "paleta.json"
 EXPORT = REPO / "Art" / "Export" / "Packs"
 PACKS_JSON = HERE / "packs.json"

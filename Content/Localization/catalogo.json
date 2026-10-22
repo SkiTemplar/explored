@@ -2,9 +2,9 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 400,
-		"cpp": 275,
-		"datos": 125,
+		"total": 379,
+		"cpp": 270,
+		"datos": 109,
 		"pendientes": 7,
 		"sin_en": 0,
 		"literales": 0,
@@ -12,36 +12,6 @@
 		"revisar": 395
 	},
 	"entries": [
-		{
-			"namespace": "Explored",
-			"key": "Boat_Canoe",
-			"es": "la canoa",
-			"en": "the canoe",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:79"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Boat_Outrigger",
-			"es": "la canoa con balancín",
-			"en": "the outrigger canoe",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:80"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Boat_Raft",
-			"es": "la balsa",
-			"en": "the raft",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:81"
-			]
-		},
 		{
 			"namespace": "Explored",
 			"key": "Carry_AlreadyThere",
@@ -421,32 +391,12 @@
 		},
 		{
 			"namespace": "Explored",
-			"key": "Verb_Board",
-			"es": "Subir a {0}",
-			"en": "Board {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:476"
-			]
-		},
-		{
-			"namespace": "Explored",
 			"key": "Verb_PickUp",
 			"es": "Coger {0}",
 			"en": "Pick up {0}",
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/Items/ExploredItemActor.cpp:69"
-			]
-		},
-		{
-			"namespace": "Explored",
-			"key": "Verb_RightBoat",
-			"es": "Adrizar {0}",
-			"en": "Right {0}",
-			"origin": "cpp",
-			"locations": [
-				"Source/Explored/Boats/ExploredBoat.cpp:472"
 			]
 		},
 		{
@@ -2762,166 +2712,6 @@
 			"origin": "cpp",
 			"locations": [
 				"Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:264"
-			]
-		},
-		{
-			"namespace": "Data.boats.boats",
-			"key": "balsa.nameEs",
-			"es": "Balsa",
-			"en": "Raft",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/boats.json «balsa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.boats.boats",
-			"key": "canoa.nameEs",
-			"es": "Canoa",
-			"en": "Canoe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/boats.json «canoa» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.boats.boats",
-			"key": "canoa_balancin.nameEs",
-			"es": "Canoa con balancín y vela",
-			"en": "Outrigger sailing canoe",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/boats.json «canoa_balancin» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.lod",
-			"key": "Frozen.nameEs",
-			"es": "Congelado",
-			"en": "Frozen",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «Frozen» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.lod",
-			"key": "Full.nameEs",
-			"es": "Completo",
-			"en": "Full",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «Full» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.lod",
-			"key": "Reduced.nameEs",
-			"es": "Reducido",
-			"en": "Reduced",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «Reduced» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.species",
-			"key": "cabra_salvaje.nameEs",
-			"es": "Cabra salvaje",
-			"en": "Wild goat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «cabra_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.species",
-			"key": "cangrejo_cocotero_salvaje.nameEs",
-			"es": "Cangrejo de los cocoteros",
-			"en": "Coconut crab",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «cangrejo_cocotero_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.species",
-			"key": "cerdo_salvaje.nameEs",
-			"es": "Cerdo salvaje",
-			"en": "Wild boar",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «cerdo_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.species",
-			"key": "fragata_colonia.nameEs",
-			"es": "Fragata",
-			"en": "Frigatebird",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «fragata_colonia» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna.species",
-			"key": "gaviota_posada.nameEs",
-			"es": "Gaviota",
-			"en": "Gull",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna.json «gaviota_posada» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna_terrestre.species",
-			"key": "cabra.nameEs",
-			"es": "Cabra",
-			"en": "Goat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna_terrestre.json «cabra» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna_terrestre.species",
-			"key": "cabra_salvaje.nameEs",
-			"es": "Cabra salvaje",
-			"en": "Wild goat",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna_terrestre.json «cabra_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna_terrestre.species",
-			"key": "cerdo.nameEs",
-			"es": "Cerdo",
-			"en": "Pig",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna_terrestre.json «cerdo» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna_terrestre.species",
-			"key": "cerdo_salvaje.nameEs",
-			"es": "Cerdo salvaje",
-			"en": "Wild boar",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna_terrestre.json «cerdo_salvaje» nameEs/nameEn"
-			]
-		},
-		{
-			"namespace": "Data.fauna_terrestre.species",
-			"key": "gallina.nameEs",
-			"es": "Gallina",
-			"en": "Chicken",
-			"origin": "datos",
-			"locations": [
-				"Content/Data/fauna_terrestre.json «gallina» nameEs/nameEn"
 			]
 		},
 		{

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PIL import Image
 
 import icons
@@ -47,6 +49,23 @@ def test_colores_del_estilo_de_la_ui() -> None:
     colors = icons.style_colors()
     assert {"ColorAccent", "ColorDisabled", "ColorInkDim", "ColorPaper"} <= colors.keys()
     assert all(0 <= v <= 255 for c in colors.values() for v in c)
+    assert colors["ColorPaper"] == (246, 238, 219, round(0.97 * 255))
+
+
+def test_color_de_paleta_desconocido_falla(tmp_path: Path) -> None:
+    palette = tmp_path / "pal.h"
+    palette.write_text("inline const FColor Papel(1, 2, 3);\n", encoding="utf-8")
+    style = tmp_path / "style.cpp"
+    style.write_text(
+        "FLinearColor FExploredUIStyle::ColorInk() const { return ExploredPalette::Linear(ExploredPalette::Tinta); }\n",
+        encoding="utf-8",
+    )
+    try:
+        icons.style_colors(style, palette)
+    except ValueError as err:
+        assert "Tinta" in str(err)
+        return
+    raise AssertionError("un color fuera de la paleta debe fallar")
 
 
 def test_tinte_multiplica_el_blanco() -> None:

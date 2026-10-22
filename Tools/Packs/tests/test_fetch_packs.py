@@ -92,7 +92,7 @@ def test_cache_por_defecto_ignorada_en_git() -> None:
 
 
 def test_catalogo_usa_packs_del_manifiesto() -> None:
-    catalog = json.loads((fp.REPO_ROOT / "Content" / "Data" / "packs_catalogo.json").read_text(encoding="utf-8"))
+    catalog = json.loads((fp.HERE / "packs_catalogo.json").read_text(encoding="utf-8"))
     ids = {p["id"] for p in fp.load_manifest()["packs"]}
     assert {e["pack"] for e in catalog["entries"]} <= ids
 

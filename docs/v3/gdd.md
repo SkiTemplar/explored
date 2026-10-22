@@ -263,7 +263,7 @@ Objetos del mundo no recogibles: hoguera, barril de lluvia, refugio de palma, ba
 | Gaviota | MVP | 6 en boids sobre la costa; huyen al ciclón | `BoidsModel` |
 | Cangrejo | Posterior (solo si sobra tiempo en F7) | Ambiental en Cala Varada, sin lógica de juego | `ProceduralGait` (solo modelo hoy) |
 
-Fuera: tortuga, tiburón, ballena y fauna terrestre. Se borran sus entradas de `fauna.json`.
+Fuera: tortuga, tiburón, ballena y fauna terrestre. La fauna del juego (pez y gaviota) está en C++ (`Source/Explored/Fauna`); `fauna.json`, `fauna_terrestre.json` y `boats.json` de v1 no los leía nada y se borraron el 2026-10-22 (`packs_catalogo.json` pasó a `Tools/Packs`).
 
 ## 9. Interfaz
 
@@ -290,7 +290,7 @@ Sin minimapa, sin brújula, sin números salvo en el inventario.
 |---|---|---|
 | Menú principal | Continuar, Nueva partida, Cargar, Ajustes, Créditos, Salir. Sin guardado, Continuar y Cargar salen atenuados y no se pueden pulsar. Foco con pastilla naranja y «›»; W/S o flechas y Enter. Fondo: la isla al atardecer con la baliza apagada | MVP |
 | Pausa | 5 entradas: Reanudar, Ajustes, Guardar partida, Salir al menú (pide Sí/No si hay progreso sin guardar) y Salir del juego. Mismo foco y teclas que el menú principal; línea fija «Tab mochila · J cuaderno · C verbos · Esc pausa» | MVP |
-| Ajustes | Volumen (música, ambiente, efectos), sensibilidad del ratón, calidad gráfica (3 niveles: reutiliza `SettingsLogic`). Solo español | MVP |
+| Ajustes | Volumen (música, ambiente, efectos), sensibilidad del ratón, calidad gráfica (3 niveles: reutiliza `SettingsLogic`), controles e idioma. Español original; inglés en Ajustes → Idioma (catálogo de `Tools/Localization`: 379 textos, 0 sin inglés; `.locres` compilados; decisión de F7) | MVP |
 | Inventario (Tab) | 8 huecos; descripción breve; arrastrar sobre otro objeto para combinar; lista de recetas descubiertas | MVP |
 | Cuaderno (J) | Páginas desbloqueadas (X/8) con nota de Iria y objetivo actual | MVP |
 | Cartel de título | Aparece al empezar cada día: «Día 2» | MVP |
@@ -298,7 +298,7 @@ Sin minimapa, sin brújula, sin números salvo en el inventario.
 | Pantalla final | Epílogo de 3 líneas | MVP |
 | Créditos | 60 s, música de `docs/creditos-musica.md` | MVP |
 | Mapa dibujado, logros, museo, cartografía | — | Fuera |
-| Mando, inglés | — | Posterior (tras la primera entrega) |
+| Mando | El personaje tiene asignaciones de mando sin pulir; la balsa y los menús solo responden a teclado y ratón. Entrega declarada «teclado y ratón» (README) | Posterior (tras la primera entrega) |
 
 Controles: WASD mover, Shift correr, Espacio saltar, E interactuar, C elegir verbo, 1-3 ranuras y clic para comer o beber lo de la ranura, Tab inventario (con cursor), J cuaderno, Esc pausa, ratón mirar. En la balsa: W, A, D.
 
@@ -320,7 +320,7 @@ El arte de v1 se rechazó por cutre e incoherente. Todo asset nuevo cumple estas
 | Material | `M_Toon` (3 bandas de sombreado, sin normal map, sin specular) para todo; `M_ToonLandscape` para el terreno; `M_Ocean` low poly (facetas planas, bandas de paleta por profundidad y franja de espuma, sin reflejos ni translucidez), cielo `M_SkyGradient` con nubes K5 y discos de sol y luna, y `M_Stars`; variantes por instancia de material, no por textura |
 | Iluminación | Una `DirectionalLight` cálida + luz de cielo que captura la cúpula (sombras tintadas, nunca negras); **sin Lumen** (GI ni reflejos: mismo aspecto y 230-250 fps frente a 187-212 en las vistas f4b); sin SSAO, SSR, grano ni aberración; `M_PP_Toon` (bandas) se queda |
 | Escala y pivotes | Metros; pivote en la base; nombre `SM_<Nombre>_01` |
-| Validador | `Tools/Blender/check_style.py` (en Blender) y commandlet en `ExploredEditor` (en Unreal): rechaza texturas, más de un material, UV fuera de celda, ngones, exceso de polígonos, escala no unitaria |
+| Validador | `Tools/Style` `check-style` (en Blender: rechaza texturas, más de un material, UV fuera de celda, ngones, exceso de polígonos, escala no unitaria) y, en Unreal, el commandlet `-run=ExploredStyle` de `ExploredEditor` (cada malla de los manifiestos de `Art/Export/K*`: existe, triángulos ≤ tope, un solo material de la familia `M_Toon`, una LOD en K6) más `Tools/Unreal/count_textures.py` (texturas de `/Game` fuera de la lista permitida) |
 | Producción | Todo por script en Blender (`Tools/Blender`, `uv run`); lámina de revisión (`render_preview.py`) por kit para la aprobación de Rodrigo |
 
 **Excepción del terreno (F6, «relieve y textura», 2026-10-21).** El terreno no usa `M_ToonLandscape` ni la hoja por UV: es la malla `SM_IslaSal_Terrain` (Tools/Island) con `M_TerrainToon`, cuyo color base es el color por vértice (colores de `paleta.json`, tres tonos por zona con variación de alta frecuencia) multiplicado por una única máscara en escala de grises, `T_TerrainStrokes` (512 × 512, trazos estilizados generados por script en `Tools/Textures`, sin fotos), muestreada en espacio de mundo a dos escalas (3,2 m y 9,7 m). La máscara solo oscurece o aclara el color de paleta (factor 0,7-1,24, media neutra) y se apaga en pendientes de roca y a más de 35-90 m; no introduce colores nuevos. Es la única textura de detalle permitida: el resto de mallas sigue con `T_Paleta`. Normales del terreno: 60 % suave del vértice y 40 % de la cara (lectura low poly moderada). Parámetros en `Tools/Textures/strokes.json`; comparación en `docs/v3/laminas/relieve-antes-despues.png`.
@@ -337,7 +337,10 @@ Presupuesto de triángulos por malla (tope duro):
 | Refugio, barril, hoguera, balsa | 800 |
 | Torre, linterna, casa del faro | 3.000 |
 | Casco y puente del carguero | 4.000 |
-| Escena visible (media) | < 400.000 |
+| Escena visible sin césped (media) | < 400.000 |
+| Césped continuo K6 a la vista (F8) | ≤ 1,5 M (medido en el host 1,07-1,28 M) |
+
+**Presupuesto de escena tras F8 (2026-10-22).** El tope de 400.000 triángulos se fijó antes del césped continuo. El césped K6 (parches sin Nanite, una LOD, sin sombras, adelgazamiento continuo hasta 100 m) lleva su propio tope de 1,5 M triángulos a la vista, medido en el host con los datos reales (`GrassRealData`: 1,07-1,28 M en la peor dirección, 2026-10-22). El criterio que manda es el rendimiento: `bench.ps1` a 1080p da 185,5 fps de media y 91,3 de mínimo en las cinco vistas (objetivo ≥ 60 y ≥ 45), y el recorrido registra además los triángulos que dibuja el RHI por vista (`[Bench] triángulos`, todas las pasadas, sin Nanite).
 
 ### 11.1 Lista cerrada de assets únicos (34 mallas de prop; tope firme 35)
 

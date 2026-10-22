@@ -34,8 +34,10 @@ Teclado y ratón. Las teclas marcadas con «*» se pueden cambiar en Ajustes →
 | En la balsa: remar / girar / bajar | W / A, D / E |
 
 El mando tiene asignaciones para el personaje (`AExploredCharacter::RebuildKeyMappings`), pero
-queda fuera del alcance de la primera entrega (GDD §9: «Mando, inglés: posterior») y la balsa solo responde al
-teclado.
+queda fuera del alcance de la primera entrega (GDD §9) y la balsa solo responde al teclado: la entrega es
+**teclado y ratón**.
+
+Idioma: español; inglés en Ajustes → Idioma.
 
 ## Requisitos
 

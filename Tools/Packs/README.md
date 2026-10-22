@@ -10,7 +10,7 @@ pequeñas.
 |---|---|
 | `packs.json` | Manifiesto: autor, página oficial, versión, fuente de descarga, licencia CC0 verificada (fecha y texto leído) y sha256 del zip. |
 | `fetch_packs.py` | Descarga reproducible a `Art/Packs/` (ignorado; `$EXPLORED_PACKS_CACHE` lo cambia) y verifica el sha256. |
-| `../../Content/Data/packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
+| `packs_catalogo.json` | Id de juego → fichero del pack, escala en metros, pivote, reglas de color, descartes y pendientes. |
 | `normalize.py` | Blender: aplica el catálogo y exporta `Art/Export/Packs/<lote>/SM_Pack_*.fbx` (ignorado). |
 | `normalize_core.py` | Lógica pura de `normalize.py` (color Oklab, reglas, degradado de paleta, medida y pivote), sin `bpy`. |
 | `icons.py` | Iconos de UI (`icons` del catálogo): silueta blanca de 128 px a `Art/Export/Packs/<lote>/T_Pack_Icon_*.png` (ignorado) y su hoja de contacto. |
@@ -114,7 +114,7 @@ de apoyo de mina no tiene candidato (ver `pending`).
 
 ## Fauna con esqueleto
 
-`kind: fauna` (ids de `Content/Data/fauna_terrestre.json`) lleva un bloque `rig`: armadura y
+`kind: fauna` (ids de la fauna terrestre de v1, ya fuera del juego) lleva un bloque `rig`: armadura y
 acciones del pack se conservan y salen en `SK_Pack_*.fbx` con una toma por acción. El animal
 mira a +X (delante de Unreal) con el pivote en el suelo entre las patas. `behaviors` asigna
 a cada comportamiento de la biblia 02 §11.2-11.3 un clip del pack (`null` si falta: el cerdo

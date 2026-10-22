@@ -21,7 +21,7 @@ class P:
 
 
 PALETTE = json.loads((REPO_ROOT / "Tools" / "Textures" / "paleta.json").read_text(encoding="utf-8"))
-CATALOG = json.loads((REPO_ROOT / "Content" / "Data" / "packs_catalogo.json").read_text(encoding="utf-8"))
+CATALOG = json.loads((REPO_ROOT / "Tools" / "Packs" / "packs_catalogo.json").read_text(encoding="utf-8"))
 
 
 # --- color -----------------------------------------------------------------

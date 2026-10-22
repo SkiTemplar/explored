@@ -405,9 +405,9 @@ def test_glosario_detecta_traduccion_distinta(real: Sources) -> None:
 
 
 def test_glosario_llega_al_informe(src: Sources) -> None:
-    boat = src.data["boats.json"]["boats"][0]
-    boat["nameEs"], boat["nameEn"] = "Balsa del Albatros", "Albatros raft"
-    assert has(build(src).report.warnings, boat["id"], "«Albatros»", "glosario")
+    item = src.data["items.json"][0]
+    item["nameEs"], item["nameEn"] = "Balsa del Albatros", "Albatros raft"
+    assert has(build(src).report.warnings, item["id"], "«Albatros»", "glosario")
 
 
 def test_glosario_mal_formado() -> None:

@@ -80,18 +80,6 @@
 			"es": "Coger {0}",
 			"en": "Pick up {0}"
 		},
-		"Boat_Canoe": {
-			"es": "la canoa",
-			"en": "the canoe"
-		},
-		"Boat_Outrigger": {
-			"es": "la canoa con balancín",
-			"en": "the outrigger canoe"
-		},
-		"Boat_Raft": {
-			"es": "la balsa",
-			"en": "the raft"
-		},
 		"Carry_AlreadyThere": {
 			"es": "Ya está ahí.",
 			"en": "Already there."
@@ -167,14 +155,6 @@
 		"Container_Shelf": {
 			"es": "estante",
 			"en": "shelf"
-		},
-		"Verb_Board": {
-			"es": "Subir a {0}",
-			"en": "Board {0}"
-		},
-		"Verb_RightBoat": {
-			"es": "Adrizar {0}",
-			"en": "Right {0}"
 		},
 		"Verb_StoreIn": {
 			"es": "Guardar en {0}",

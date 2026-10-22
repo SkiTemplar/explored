@@ -8,33 +8,6 @@
 			"Children": [
 				{
 					"Source": {
-						"Text": "la canoa"
-					},
-					"Translation": {
-						"Text": "the canoe"
-					},
-					"Key": "Boat_Canoe"
-				},
-				{
-					"Source": {
-						"Text": "la canoa con balancín"
-					},
-					"Translation": {
-						"Text": "the outrigger canoe"
-					},
-					"Key": "Boat_Outrigger"
-				},
-				{
-					"Source": {
-						"Text": "la balsa"
-					},
-					"Translation": {
-						"Text": "the raft"
-					},
-					"Key": "Boat_Raft"
-				},
-				{
-					"Source": {
 						"Text": "Ya está ahí."
 					},
 					"Translation": {
@@ -377,30 +350,12 @@
 				},
 				{
 					"Source": {
-						"Text": "Subir a {0}"
-					},
-					"Translation": {
-						"Text": "Board {0}"
-					},
-					"Key": "Verb_Board"
-				},
-				{
-					"Source": {
 						"Text": "Coger {0}"
 					},
 					"Translation": {
 						"Text": "Pick up {0}"
 					},
 					"Key": "Verb_PickUp"
-				},
-				{
-					"Source": {
-						"Text": "Adrizar {0}"
-					},
-					"Translation": {
-						"Text": "Right {0}"
-					},
-					"Key": "Verb_RightBoat"
 				},
 				{
 					"Source": {

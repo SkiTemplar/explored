@@ -8,17 +8,6 @@
 			"Children": [
 				{
 					"Source": {
-						"Text": "Adrizar {0}"
-					},
-					"Keys": [
-						{
-							"Key": "Verb_RightBoat",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 472"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Ahí no hay nada."
 					},
 					"Keys": [
@@ -393,17 +382,6 @@
 				},
 				{
 					"Source": {
-						"Text": "Subir a {0}"
-					},
-					"Keys": [
-						{
-							"Key": "Verb_Board",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 476"
-						}
-					]
-				},
-				{
-					"Source": {
 						"Text": "Tienes las dos manos ocupadas."
 					},
 					"Keys": [
@@ -476,39 +454,6 @@
 						{
 							"Key": "Container_Shelf",
 							"Path": "Source/Explored/Carry/ExploredContainer.cpp - line 28"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "la balsa"
-					},
-					"Keys": [
-						{
-							"Key": "Boat_Raft",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 81"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "la canoa"
-					},
-					"Keys": [
-						{
-							"Key": "Boat_Canoe",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 79"
-						}
-					]
-				},
-				{
-					"Source": {
-						"Text": "la canoa con balancín"
-					},
-					"Keys": [
-						{
-							"Key": "Boat_Outrigger",
-							"Path": "Source/Explored/Boats/ExploredBoat.cpp - line 80"
 						}
 					]
 				}

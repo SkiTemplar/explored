@@ -23,8 +23,9 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 REPO = Path(__file__).resolve().parent.parent.parent
-CATALOG = REPO / "Content" / "Data" / "packs_catalogo.json"
-STYLE = REPO / "Source" / "Explored" / "UI" / "ExploredUIStyle.h"
+CATALOG = Path(__file__).resolve().parent / "packs_catalogo.json"
+STYLE = REPO / "Source" / "Explored" / "UI" / "ExploredUIStyle.cpp"
+PALETTE = REPO / "Source" / "Explored" / "UI" / "ExploredUIPalette.h"
 EXPORT = REPO / "Art" / "Export" / "Packs"
 SIZE = 128
 MARGIN = 0.10
@@ -33,8 +34,13 @@ COLS = 2
 BG = (38, 41, 46)
 FG = (235, 232, 224)
 DIM = (160, 164, 170)
+# ExploredUIPalette.h: «inline const FColor Papel(246, 238, 219);» (sRGB de 8 bits).
+PALETTE_COLOR = re.compile(r"inline const FColor (\w+)\((\d+), (\d+), (\d+)\);")
+# ExploredUIStyle.cpp: «FLinearColor FExploredUIStyle::ColorPaper() const { return
+# ExploredPalette::Linear(ExploredPalette::Papel, 0.97f); }» (alfa opcional).
 STYLE_COLOR = re.compile(
-    r"FLinearColor (Color[A-Za-z]+)\(\) const \{ return FLinearColor\(([\d.]+)f, ([\d.]+)f, ([\d.]+)f, ([\d.]+)f\)"
+    r"FLinearColor FExploredUIStyle::(Color\w+)\(\) const \{ return "
+    r"ExploredPalette::Linear\(ExploredPalette::(\w+)(?:, ([\d.]+)f)?\); \}"
 )
 
 
@@ -43,17 +49,17 @@ def cache_dir() -> Path:
     return Path(env) if env else REPO / "Art" / "Packs"
 
 
-def style_colors(path: Path = STYLE) -> dict[str, tuple[int, int, int, int]]:
-    """Colores de ExploredUIStyle.h en sRGB de 8 bits (FLinearColor es lineal)."""
-
-    def srgb(c: float) -> int:
-        c = min(max(c, 0.0), 1.0)
-        s = 12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
-        return round(s * 255)
-
-    out = {}
-    for name, r, g, b, a in STYLE_COLOR.findall(path.read_text(encoding="utf-8")):
-        out[name] = (srgb(float(r)), srgb(float(g)), srgb(float(b)), round(float(a) * 255))
+def style_colors(path: Path = STYLE, palette: Path = PALETTE) -> dict[str, tuple[int, int, int, int]]:
+    """Colores de FExploredUIStyle en sRGB de 8 bits, resueltos contra la paleta de la UI."""
+    swatches = {
+        name: (int(r), int(g), int(b))
+        for name, r, g, b in PALETTE_COLOR.findall(palette.read_text(encoding="utf-8"))
+    }
+    out: dict[str, tuple[int, int, int, int]] = {}
+    for name, swatch, alpha in STYLE_COLOR.findall(path.read_text(encoding="utf-8")):
+        if swatch not in swatches:
+            raise ValueError(f"{name}: color de paleta desconocido {swatch}")
+        out[name] = (*swatches[swatch], round(float(alpha or 1.0) * 255))
     return out
 
 
