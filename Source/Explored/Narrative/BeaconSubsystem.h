@@ -113,7 +113,7 @@ private:
 	/** Reparte un resultado del director: estado, pensamientos, autoguardado y Mistral. */
 	void Apply(const FBeaconStepResult& Result);
 	void ShowThought(EIriaThought Thought) const;
-	void PlaySound2D(const TCHAR* Path, float Pitch = 1.0f) const;
+	void PlaySound2D(const TCHAR* Path, float Pitch = 1.0f, float Volume = 1.0f) const;
 
 	void StartMistral();
 	/** Plano del final: cámara fija detrás del faro mirando al mar por donde llega el Mistral. */

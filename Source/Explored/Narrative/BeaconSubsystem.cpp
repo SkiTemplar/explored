@@ -56,6 +56,15 @@ namespace BeaconSubsystemDetail
 	const TCHAR* const HornSound = TEXT("/Game/Generated/Audio/Efectos/sfx_ship_horn.sfx_ship_horn");
 	/** Tono de la bocina (1 = el de la grabación). */
 	constexpr float HornPitch = 1.0f;
+	/**
+	 * Mezcla de la bocina (crítica de audio A1): el canon del final la tapaba. La grabación tiene el pico
+	 * a -1,9 dBFS, así que subirla a 1,6 (+4 dB) recortaba; se deja en 0,95 (pico -2,3 dBFS) y el canon
+	 * baja a 0,6 (-4,4 dB) mientras suena: la bocina queda ~+5 LU sobre la música (medido en Tools/Audio).
+	 */
+	constexpr float HornVolume = 0.95f;
+	constexpr float HornMusicDuck = 0.6f;
+	/** Duración de sfx_ship_horn (s) más el fundido de vuelta. */
+	constexpr float HornSeconds = 8.0f;
 	/** Plano del final (cm, respecto a la linterna): detrás del faro, al lado contrario de la casa
 	 *  (al oeste) y algo por encima, para ver el haz sobre el mar y el Mistral. */
 	constexpr double FinaleCamBackCm = 3200.0;
@@ -676,7 +685,11 @@ FFinaleTiming UBeaconSubsystem::FinaleTiming() const
 
 void UBeaconSubsystem::SoundHorn()
 {
-	PlaySound2D(BeaconSubsystemDetail::HornSound, BeaconSubsystemDetail::HornPitch);
+	PlaySound2D(BeaconSubsystemDetail::HornSound, BeaconSubsystemDetail::HornPitch, BeaconSubsystemDetail::HornVolume);
+	if (UExploredMusicSubsystem* Music = GetWorld() ? GetWorld()->GetSubsystem<UExploredMusicSubsystem>() : nullptr)
+	{
+		Music->Duck(BeaconSubsystemDetail::HornMusicDuck, BeaconSubsystemDetail::HornSeconds);
+	}
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Bocina del Mistral"));
 	if (UWorld* World = GetWorld())
 	{
@@ -697,7 +710,7 @@ void UBeaconSubsystem::FinishEnding()
 	}
 }
 
-void UBeaconSubsystem::PlaySound2D(const TCHAR* Path, float Pitch) const
+void UBeaconSubsystem::PlaySound2D(const TCHAR* Path, float Pitch, float Volume) const
 {
 	const FSoftObjectPath SoundPath(Path);
 	if (!FPackageName::DoesPackageExist(SoundPath.GetLongPackageName()))
@@ -707,7 +720,7 @@ void UBeaconSubsystem::PlaySound2D(const TCHAR* Path, float Pitch) const
 	}
 	if (USoundBase* Sound = Cast<USoundBase>(SoundPath.TryLoad()))
 	{
-		UGameplayStatics::PlaySound2D(this, Sound, 1.0f, Pitch);
+		UGameplayStatics::PlaySound2D(this, Sound, Volume, Pitch);
 	}
 }
 

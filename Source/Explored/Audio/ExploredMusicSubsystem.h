@@ -45,6 +45,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Explored|Música")
 	void SetFinale(bool bActive) { bFinale = bActive; }
 
+	/**
+	 * Baja la música a Gain (0-1) durante HoldSeconds reales y luego la devuelve a su volumen: deja sitio
+	 * a un sonido que tiene que oírse por encima (la bocina del Mistral) sin subirlo hasta recortar.
+	 */
+	void Duck(float Gain, float HoldSeconds);
+
 	/** Estado musical actual («day», «eye»...), para depuración y el bot. */
 	UFUNCTION(BlueprintPure, Category = "Explored|Música")
 	FString GetMusicStateName() const { return Model ? LexToString(Model->GetState()) : TEXT("silence"); }
@@ -76,4 +82,8 @@ private:
 	FSoundtrackContext Context;
 	bool bCredits = false;
 	bool bFinale = false;
+	/** Segundos que quedan de atenuación (Duck); 0 = sin atenuar. */
+	float DuckRemaining = 0.0f;
+
+	void ApplyDuck(float Gain, float FadeSeconds);
 };

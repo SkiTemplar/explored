@@ -23,6 +23,9 @@ namespace ExploredMusicDetail
 	constexpr uint32 Seed = 0xBA112A7u;
 	/** Frecuencia con la que se recoge el contexto (s). */
 	constexpr float ContextInterval = 0.25f;
+	/** Fundidos (s) al atenuar la música para un sonido que manda y al devolverla. */
+	constexpr float DuckInSeconds = 0.4f;
+	constexpr float DuckOutSeconds = 1.5f;
 
 	FString SoundtrackPath()
 	{
@@ -262,11 +265,41 @@ void UExploredMusicSubsystem::Execute(const FSoundtrackCommand& Command)
 	Voices.Add(Command.Voice, Component);
 }
 
+void UExploredMusicSubsystem::Duck(float Gain, float HoldSeconds)
+{
+	if (!FMath::IsFinite(Gain) || !FMath::IsFinite(HoldSeconds) || HoldSeconds <= 0.0f)
+	{
+		return;
+	}
+	DuckRemaining = HoldSeconds;
+	ApplyDuck(FMath::Clamp(Gain, 0.0f, 1.0f), ExploredMusicDetail::DuckInSeconds);
+}
+
+void UExploredMusicSubsystem::ApplyDuck(float Gain, float FadeSeconds)
+{
+	for (const TPair<int32, TObjectPtr<UAudioComponent>>& Voice : Voices)
+	{
+		if (UAudioComponent* Component = Voice.Value.Get())
+		{
+			Component->AdjustVolume(FadeSeconds, Gain);
+		}
+	}
+}
+
 void UExploredMusicSubsystem::Tick(float DeltaTime)
 {
 	if (!Model)
 	{
 		return;
+	}
+	if (DuckRemaining > 0.0f)
+	{
+		DuckRemaining -= DeltaTime;
+		if (DuckRemaining <= 0.0f)
+		{
+			DuckRemaining = 0.0f;
+			ApplyDuck(1.0f, ExploredMusicDetail::DuckOutSeconds);
+		}
 	}
 	Clock += DeltaTime;
 	ContextTimer -= DeltaTime;
