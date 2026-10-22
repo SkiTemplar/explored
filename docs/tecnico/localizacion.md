@@ -151,7 +151,11 @@ Los `.locres` que carga el juego son binarios y solo los genera el editor:
      -run=GatherText -config=Config/Localization/Game_Compile.ini -unattended -nopause
    ```
 
-   Produce `Content/Localization/Game/es/Game.locres` y `en/Game.locres`. Versiónalos.
+   Produce `Content/Localization/Game/es/Game.locres`, `en/Game.locres` y `Game.locmeta`.
+   Versiónalos. El commandlet reescribe el `.ini` que recibe y le quita los comentarios: no
+   versiones ese cambio (o pásale una copia, como hace `Tools/package.ps1`, que recompila los
+   `.locres` antes de cocinar). El spec `Explored.Localization.Locres` falla si el `.locres`
+   inglés falta o se compiló con un español anterior.
 3. Para comprobar que la recopilación de Unreal coincide con la nuestra, ejecuta antes
    `-config=Config/Localization/Game_Gather.ini`. Reescribe el manifiesto y los archivos
    (en UTF-16 y con las rutas a su manera) conservando las traducciones; después

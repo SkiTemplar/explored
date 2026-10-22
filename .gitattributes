@@ -10,3 +10,7 @@
 
 # Las hojas de contacto de docs/art se versionan como PNG normal, no por LFS.
 docs/art/*.png -filter -diff -merge -text
+
+# Localización compilada (binarios pequeños, sin LFS).
+*.locres binary
+*.locmeta binary
