@@ -269,6 +269,18 @@ no del juego, y el informe del bot no lo cuenta.
 Pendiente de Rodrigo: añadir `Tools/Style` a la sección «Tests» de `CLAUDE.md` (no se ha tocado) y
 empujar `reset/v2` para que corra CI con ASan, UBSan y matemáticas rápidas.
 
+## Segunda revisión final (2026-10-22): 5 hallazgos corregidos
+
+- Luna: sin Lumen, con la sombra apagada en el crepúsculo se colaba en los interiores. Decisión:
+  no alumbra hasta que el sol se apaga del todo y entra con un fundido corto
+  (`FSkyPaletteModel::MoonLightFade`, SunZ -0,08 → -0,12), en vez de pagar dos VSM a la vez.
+- `package.ps1`: los `.locres` se compilan después de compilar el editor (clon limpio).
+- Tests de regresión con modelo puro: carga de objetos soltados
+  (`ExploredSaveStates::LoadDroppedItems`), posición de la leña de deriva
+  (`FSupplyCrateModel::DriftwoodPileLocation`) y confirmación de salir de la pausa
+  (`ExploredScreens::Pause*`). Los 7 casos nuevos fallaban con el código anterior; host tests
+  835/835.
+
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 
 - **`Content/Audio` y `Content/Generated` sin versionar** (411 MB y 274 MB en disco local). Ahora
