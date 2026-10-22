@@ -55,7 +55,12 @@ void FSavePlayerState::Load(const FSaveArchive& Ar)
 
 bool FSavePlayerState::HasPlausibleLocation(double MaxAbsCm) const
 {
-	// Comparar con el tope también descarta NaN e infinitos (cualquier comparación con NaN es falsa).
+	// IsFinite explícito: con matemáticas rápidas (el editor compila con /fp:fast) el compilador da
+	// por hecho que no hay NaN y `Abs(NaN) <= Tope` puede salir cierto (host tests con -ffast-math).
+	if (!SavePlayerStateDetail::IsFinite(Location.X, Location.Y, Location.Z))
+	{
+		return false;
+	}
 	return FMath::Abs(Location.X) <= MaxAbsCm && FMath::Abs(Location.Y) <= MaxAbsCm && FMath::Abs(Location.Z) <= MaxAbsCm;
 }
 
