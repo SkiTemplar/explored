@@ -272,8 +272,9 @@ powershell -NoProfile -File Tools/bench.ps1 -Window         # con ventana, para 
 
 ## 11. Paquetes Development y Shipping y su arranque (criterios 2 y 5 de F7)
 
-**[~] Shipping hecho 2026-10-22** (604 MB, arranca al menú; detalle en `estado-f7.md`, «Paquete
-Shipping»). Falta el Development y su arranque.
+**[x] Hecho 2026-10-22.** Shipping: 604 MB, arranca al menú (`estado-f7.md`, «Paquete Shipping»;
+copia en `Saved/Package-Shipping.zip`). Development: 1.193 MB, arranca al menú con 0 `Error` en el log
+(`estado-f7.md`, «Paquete Development, bot y bench sobre el paquete»).
 
 Los dos se archivan en `Saved/Package/Windows` y el segundo pisa al primero: se empaqueta y se
 arranca Shipping primero, y Development al final, porque es el que usa el paso 12.
@@ -302,6 +303,10 @@ powershell -NoProfile -File Tools/package.ps1 -Configuration Development
   depuración que usan el bot y el bench).
 
 ## 12. Bot y rendimiento sobre el paquete Development
+
+**[x] Hecho 2026-10-22.** Competente, sin_paginas y lenta en VERDE sobre el paquete; bench
+`191,7 / 98,4 fps: OK` (el editor, medido a continuación, 183,4 / 92,6). Detalle en `estado-f7.md`,
+«Paquete Development, bot y bench sobre el paquete».
 
 ```powershell
 powershell -NoProfile -File Tools/playtest_v3.ps1 -Exe Saved/Package/Windows/Explored.exe -Route competente

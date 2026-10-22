@@ -8,11 +8,11 @@ el editor o el juego está en [`pendiente-motor.md`](pendiente-motor.md), una so
 
 | # | Criterio | Estado en este tramo |
 |---|---|---|
-| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22 por la mañana, 199,8 / 116,7 fps tras quitar dos tirones de un fotograma; ver «Rendimiento en el editor, tanda del 2026-10-22 por la mañana»). Sobre el paquete: PENDIENTE (paso 12) |
-| 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Shipping: OK (2026-10-22, empaqueta y arranca al menú; ver «Paquete Shipping»). Development y las 3 partidas sobre el paquete: PENDIENTE (pasos 11-12) |
+| 1 | ≥ 60 fps de media y ≥ 45 de mínimo a 1080p (`Tools/bench.ps1`, 3 zonas y ciclón) | Editor: OK (2026-10-22 por la mañana, 199,8 / 116,7 fps tras quitar dos tirones de un fotograma; ver «Rendimiento en el editor, tanda del 2026-10-22 por la mañana»). Sobre el paquete Development: OK (2026-10-22, 191,7 / 98,4 fps, por encima del editor medido a continuación, 183,4 / 92,6; ver «Paquete Development, bot y bench sobre el paquete») |
+| 2 | `Tools/package.ps1` genera un Win64 que arranca y el bot completa 3 partidas sin fallo | Shipping: OK (2026-10-22, empaqueta y arranca al menú; ver «Paquete Shipping»). Development: OK (2026-10-22, arranca al menú y el bot completa competente, lenta y sin_paginas en VERDE sobre el paquete; ver «Paquete Development, bot y bench sobre el paquete») |
 | 3 | `/codex:adversarial-review` sin CRITICAL ni HIGH | NO CUMPLIDO: `codex exec` no puede ejecutar nada en el sandbox de Windows (ver «Huecos de completitud»); revisión manual del guardado hecha |
 | 4 | Cobertura ≥ 80 % en modelos nuevos; HostTests con sanitizers y CI verdes | HostTests 836/836 normal, con ASan + UBSan y con matemáticas rápidas (WSL); cobertura C++ 91,8 % de líneas, modelos v3 92-100 %. CI sin ejecutar: `reset/v2` sin empujar |
-| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | OK: Shipping 604 MB con audio en `Saved/Package/Windows` (2026-10-22) |
+| 5 | Tamaño del paquete registrado (orientativo ≤ 1,2 GB con audio) | OK: Shipping 604 MB con audio (2026-10-22; guardado en `Saved/Package-Shipping.zip`); Development 1.193 MB, de ellos 385 MB de `.pdb` |
 
 ## Hecho
 
@@ -348,8 +348,9 @@ del tramo: `b50d5710` (pistas), `651d8a2d` (créditos y licencias), `30d75b45` (
   constancia escrita de que Rodrigo aprobara los pilotos de F2 ni K1-K3. Solo él puede cerrarlo.
 - **F6.4 y paso 9 de `pendiente-motor.md`.** Falta una partida humana completa y la mezcla de audio
   a oído.
-- **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Shipping hecho (ver «Paquete Shipping»);
-  faltan el Development, su arranque, las tres partidas del bot y el bench sobre el paquete.
+- **Paquete (pasos 11 y 12 de `pendiente-motor.md`).** Hecho el 2026-10-22: ver «Paquete
+  Development, bot y bench sobre el paquete». El Shipping verificado está en
+  `Saved/Package-Shipping.zip`; `Saved/Package/Windows` tiene ahora el Development.
 - **Arte con crítica pendiente** (paso 7): franja de arena mojada entre el agua y la espuma, ondas
   a contraluz, bloques de roca con techo verde junto al faro y ΔE de hierba y cénit por encima de
   8. No se ha tocado esta noche: son cambios de material y de malla que piden revisión visual de
@@ -387,6 +388,54 @@ Corregido por el camino:
   `.pdb` de 245 MB y 27 JSON de v1, y el tamaño salía 843 MB); falla si el registro del cocinado
   trae `Failed to compile Material` (el cocinado da «Success» igualmente) y comprueba también
   `grass.json`, `ground_field.bin`, Slate en el manifiesto del `.pak` y las mallas de K6 cocinadas.
+
+## Paquete Development, bot y bench sobre el paquete (pasos 11 y 12, 2026-10-22)
+
+Binarios y contenido de `6ac833f9`. El Shipping verificado se guardó antes en
+`Saved/Package-Shipping.zip` (471 MB comprimido; `package.ps1` vacía `Saved/Package/Windows`).
+
+- **Empaquetado:** `Tools/package.ps1 -Configuration Development`: `BUILD SUCCESSFUL`, `ExitCode=0`,
+  8 min; cocinado con 0 errores y el mismo aviso único de `r.VolumetricFog`; ningún `Failed to compile
+  Material` ni referencias a `/Game/Generated/Meshes/Embarcaciones`. **1.193 MB**: `Explored.exe`
+  313 MB y su `.pdb` 385 MB (solo en Development), `.ucas` 346 MB.
+- **Arranque:** `Explored.exe -windowed` abre «Baliza Siete (64-bit Development PCD3D_SM6)» con el menú
+  principal (título y subtítulo en Lora, faro con su material, suelo con caminos, césped, palmeras y
+  mar; captura en `Saved/Shots/pkg-dev-menu.png`). En el log, `[Explored] Menú principal`, 0 `Error` y
+  un solo aviso (`r.VolumetricFog`).
+- **Bot sobre el paquete** (`-Clock 6`): ninguna diferencia con el editor.
+
+| Ruta | Tiempo real | Duración a 1× | Desmayos | Páginas | Epílogo | Pasos | Resultado |
+|---|---|---|---|---|---|---|---|
+| competente | 17,4 min | 52,4 min | 0 | 8/8 | `completo (8/8 páginas)` | 140 `ok` | VERDE |
+| sin_paginas | 17,2 min | 52,4 min | 0 | 1/8 | `parcial (1/8 páginas)` | 127 `ok` | VERDE |
+| lenta | 25,9 min | 52,4 min | 0 | 8/8 | `completo (8/8 páginas)` | 188 `ok` | VERDE |
+
+  En todas: 10/10 etapas, 10/10 guardar/cargar, 9/9 softlocks resolubles, física a la deriva 0, 0
+  errores y 0 avisos en el informe; en `PlaytestV3.log` 0 `Error` (en el paquete no corre el smoke test
+  del motor que daba los 3 «LogAutomationTest: Error» del editor) y solo el aviso de `r.VolumetricFog`.
+  Final: `Luces del Mistral` → `Bocina` 9,6 s → `Pantalla de epílogo` → `Créditos del final (60 s)` →
+  `[Playtest] Menú principal tras los créditos del final`; `playtest_v3.ps1` sale con 0. Logs copiados en
+  `Saved/Logs/PkgBot-<ruta>.*`.
+- **Bench sobre el paquete** (`Tools/bench.ps1 -Exe`, 1080p): OK en las tres pasadas. Para comparar con
+  el editor en las mismas condiciones (portátil con RTX 4060 Laptop, la cifra baila ±5 % según la
+  temperatura y el estado de energía), se midió el editor justo después:
+
+| Vista | Paquete, 1.ª | Paquete, 2.ª | Editor, a continuación | GPU paquete 2.ª |
+|---|---|---|---|---|
+| bench-cala | 203,9 / 111,5 | 208,6 / 114,3 | 196,6 / 109,5 | 4,33 ms |
+| bench-palmar | 159,9 / 94,3 | 163,3 / 98,4 | 160,1 / 92,6 | 5,24 ms |
+| bench-faro | 192,8 / 101,3 | 196,5 / 106,6 | 186,1 / 110,1 | 3,96 ms |
+| bench-faro-galeria | 153,4 / 90,3 | 160,2 / 103,1 | 155,6 / 99,7 | 7,84 ms |
+| bench-ciclon | 225,7 / 131,2 | 230,1 / 130,7 | 218,7 / 136,0 | 3,34 ms |
+| Resumen | 187,1 / 90,3: OK | **191,7 / 98,4: OK** | 183,4 / 92,6: OK | |
+
+  Tercera pasada del paquete, con `-LogCmds="LogGarbage Log"`: 195,2 / 117,2 fps, OK. El paquete rinde
+  igual o mejor que el editor medido a continuación (+4,5 % de media, +6 % de mínimo); los 199,8 / 116,7
+  del editor de esta mañana salieron con la GPU en otro estado y no son comparables. Cifra de entrega:
+  **191,7 fps de media y 98,4 de mínimo** (todas las vistas por encima de 150 / 90).
+- **Recolección de basura en el paquete** (hueco de la tanda de la mañana): la marca recorre
+  ~1.550 objetos en 0,34-0,96 ms (en el editor, ~44.000 y 16,4 ms). La recolección periódica de cada
+  300 s ya no puede dar un tirón visible en el juego entregado.
 
 ## Partidas del bot en el editor (paso 8 de `pendiente-motor.md`)
 
@@ -486,8 +535,10 @@ Hueco que queda: una recolección periódica puede seguir cayendo en pleno juego
 5 minutos sin pausar ni dormir; en el editor cuesta ~20 ms (50 fps ese fotograma) y en el paquete
 debería costar bastante menos (las clases del motor van al pool que la recolección no recorre), sin
 medir todavía: mirarlo en el bench sobre el paquete (paso 12) con `-LogCmds="LogGarbage Log"`.
+**Medido el 2026-10-22:** en el paquete la marca tarda 0,34-0,96 ms (ver «Paquete Development, bot y
+bench sobre el paquete»); hueco cerrado.
 
 ## Pendiente de motor
 
-Ver [`pendiente-motor.md`](pendiente-motor.md), pasos 10-12 de la lista única: bench, paquetes
-Shipping y Development, arranque de ambos, tres partidas del bot y bench sobre el paquete, y tamaño.
+Pasos 10-12 de [`pendiente-motor.md`](pendiente-motor.md) hechos el 2026-10-22. Queda lo que pide a
+Rodrigo: partida a mano y mezcla de audio a oído (paso 9) y la revisión visual del arte (paso 7).
