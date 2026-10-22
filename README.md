@@ -111,6 +111,22 @@ se cocina está en `Config/DefaultGame.ini`, sección `ProjectPackagingSettings`
 antes. Shipping pesa 604 MB y Development 1.193 MB (385 MB son el `.pdb`). Estado de la entrega,
 cifras y límites conocidos: [`docs/v3/informe-final.md`](docs/v3/informe-final.md).
 
+## Tráiler
+
+```powershell
+powershell -NoProfile -File Tools/trailer.ps1 -Preview              # ensayo: 640x360, 1 de cada 3 fotogramas
+powershell -NoProfile -File Tools/trailer.ps1                       # grabación: 1920x1080, 30 fps, 2250 PNG
+powershell -NoProfile -File Tools/trailer.ps1 -Shot 06-carguero     # repetir un plano suelto
+```
+
+Los planos (cámara, hora, clima, duración y tiempos reales en el montaje) están en
+`Tools/Trailer/trailer.json`. El juego arranca fuera de pantalla con `-ExploredTrailer`
+(`UExploredTrailerSubsystem`, fuera de Shipping), a tiempo fijo, y escribe
+`Saved/Trailer/frames/f_00000.png…`; el final se graba en un segundo proceso reproduciendo el final
+real del juego. El script comprueba que no falta ni se repite ningún fotograma, deja el informe en
+`Saved/Trailer/report.txt` y una hoja de contacto por plano en `Saved/Trailer/contact/`. La música,
+los rótulos y el montaje con ffmpeg van aparte.
+
 ## Estructura
 
 - `Source/Explored`: módulo de juego (supervivencia, isla, baliza, balsa, pesca, interfaz Slate,

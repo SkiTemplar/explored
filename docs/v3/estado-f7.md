@@ -562,6 +562,26 @@ bench sobre el paquete»); hueco cerrado.
   Packs 90,8 % (78).
 - Informe para Rodrigo: [`informe-final.md`](informe-final.md).
 
+## Tráiler (2026-10-22)
+
+- **Cómo se genera:** `Tools/trailer.ps1 [-Preview] [-Shot <plano>]` lanza el juego fuera de
+  pantalla, con prioridad BelowNormal, con `-ExploredTrailer=Tools/Trailer/trailer.json`
+  (`UExploredTrailerSubsystem`, fuera de Shipping). Paso de tiempo fijo de 1/30 s y un PNG por
+  fotograma con el índice global (`Saved/Trailer/frames/f_00000.png`…); cada plano se asienta 4 s
+  de juego sin grabar. El final se graba en un segundo proceso: la baliza se enciende en su primer
+  fotograma y el final del juego corre de verdad. La cámara sale de `FTrailerModel` (Catmull-Rom
+  centrípeto por longitud de arco, slerp de la mirada, suelo de `ground_field.bin` suavizado y
+  fundidos) y `TrailerSpec` falla si el ojo salta, gira de golpe o da tirones dentro de un plano.
+- **Grabación final:** 1920×1080, 2250 fotogramas (75,0 s), 0 faltan, 0 repetidos, 0 idénticos
+  al anterior y 0 avisos de movimiento; 4,2 GB; unos 3 min de grabación en total. Solo salen
+  oscuros los fundidos previstos (fotograma 0 y 2241-2249). Ensayo a 640×360 en 3 vueltas.
+- **Tiempos reales** (también en `trailer.json`): mar 0-4 s, Cala 4-12, Palmar 12-14,7,
+  Rocas 14,7-17, interfaz 17-20, cenital 20-22, camino 22-27, galería 27-32, ciclón orilla 32-37,
+  ciclón refugio 37-42, carguero 42-50, final 50-68, título 68-75. En el final: luces del Mistral en
+  el fotograma 1590 (53,0 s), bocina en el 1878 (62,6 s); el fundido del juego empieza en el
+  2028 (67,6 s) y es interfaz, así que no sale en los fotogramas.
+- Hojas de contacto: `Saved/Trailer/contact/<plano>.png`; informe: `Saved/Trailer/report.txt`.
+
 ## Pendiente de motor
 
 Pasos 8 y 10-12 de [`pendiente-motor.md`](pendiente-motor.md) hechos el 2026-10-22. Queda lo que pide a
