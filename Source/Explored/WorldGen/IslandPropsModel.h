@@ -28,6 +28,8 @@ struct EXPLORED_API FIslandPropType
 	EIslandPropShape Shape = EIslandPropShape::Cube;
 	/** Caja que ocupa la primitiva de reserva (m). */
 	FVector Size = FVector(1.0);
+	/** Escala de la malla definitiva («meshScale», opcional): p. ej. un peñasco de K1 agrandado. */
+	FVector MeshScale = FVector::OneVector;
 	/** Celda de la hoja de paleta (Tools/Style/paleta.json, 0-31). */
 	int32 ColorIndex = 0;
 	/** Muestra la etiqueta de depuración sobre la primitiva. */

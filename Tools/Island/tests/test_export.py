@@ -16,7 +16,7 @@ def test_main_exporta_fbx_y_cifras(tmp_path):
     assert info['mesh'] == 'SM_IslaSal_Terrain'
     assert info['triangles'] > 1000
     assert info['bounds_min_m'][2] == pytest.approx(-30.0)
-    assert info['facet_mix'] == pytest.approx(0.4)
+    assert info['facet_mix'] == pytest.approx(0.25)
 
 
 def test_objeto_de_blender_conserva_nivel_del_mar_y_paleta(layout, props):

@@ -12,8 +12,8 @@ Reglas por lugar:
 - Colina del Faro: hierba y rocas pequeñas; sin palmeras (la vista del faro queda libre).
 - Resto de la hierba: hierba, arbustos y alguna roca.
 - Borde de playa: alguna palmera y rocas pequeñas.
-- Acantilados: `SM_CliffRock` cada ~8 m en las pendientes de las Rocas del
-  Pescador y en la ladera más empinada de la colina, de frente hacia abajo.
+- Peñascos: `SM_RockBig` grande y medio enterrado cada ~8 m en las pendientes de
+  las Rocas del Pescador (en la colina ya no: ver CLIFF_KEEP).
 
 Vegetación media del kit K6 (Césped), con su propia tirada para no mover las palmeras (el terreno
 pinta una mancha de tierra bajo cada una): helechos grandes al pie de las palmeras y en el bambú,
@@ -43,8 +43,11 @@ from explored_island.terrain import SAND_TOP, TerrainMesh, build_terrain, surfac
 DECOR_JSON = REPO_ROOT / 'Content' / 'Data' / 'island_decor.json'
 KIT = '/Game/Art/K1_Naturaleza/'
 KIT_K6 = '/Game/Art/K6_Cesped/'
+# El índice CLIFF son los peñascos de las laderas de las Rocas del Pescador: SM_RockBig_01 grande y medio
+# enterrado. Antes era el módulo SM_CliffRock_01 (8 x 4 x 6 m, trasera plana), que suelto y visto de lado o
+# desde arriba se leía como una caja de lados azul oscuro y tapa verde (crítica de f8).
 MESHES = ('SM_GrassClump_01', 'SM_Shrub_01', 'SM_RockSmall_01', 'SM_Bamboo_01', 'SM_PalmA_01', 'SM_PalmB_01',
-          'SM_CliffRock_01', 'SM_Fern_01', 'SM_GrassTall_01', 'SM_FlowerA_01', 'SM_FlowerB_01')
+          'SM_RockBig_01', 'SM_Fern_01', 'SM_GrassTall_01', 'SM_FlowerA_01', 'SM_FlowerB_01')
 GRASS, SHRUB, ROCK, BAMBOO, PALM_A, PALM_B, CLIFF, FERN, TALL, FLOWER_A, FLOWER_B = range(len(MESHES))
 K6 = (FERN, TALL, FLOWER_A, FLOWER_B)
 
@@ -56,11 +59,17 @@ BIG_TYPES = STRUCTURE_TYPES
 START_CLEARANCE = 6.0   # m alrededor del punto de aparición
 MAX_SLOPE = 30.0        # grados: por encima no se pone vegetación
 CLIFF_SLOPE = 22.0      # grados: pendiente mínima para un acantilado
-CLIFF_SPACING = 8.0     # m entre acantilados (módulo de SM_CliffRock)
-CLIFF_SINK = 1.6        # m que se entierra el acantilado
+CLIFF_SPACING = 8.0     # m entre peñascos
+CLIFF_SINK = 0.5        # m que se entierra el peñasco bajo su centro
+CLIFF_SCALE = (1.6, 2.3)  # escala de SM_RockBig_01 (2,7 x 1,8 x 1,7 m): de 4,3 a 6,2 m de largo
 # Fracción de los puntos válidos de cada zona que reciben acantilado (la colina es una loma suave:
 # pocas rocas sueltas en su ladera, no un muro).
-CLIFF_KEEP = {'rocas_pescador': 1.0, 'colina_faro': 0.15}
+CLIFF_KEEP = {'rocas_pescador': 1.0, 'colina_faro': 0.0}
+# Las matas K1 (SM_GrassClump) eran el césped antes de la alfombra de parches K6 (AExploredGrassField): junto a
+# ella se leían como manchas de otra especie y en la arena como matas sueltas. Se siguen sorteando (la tirada
+# del resto no cambia) pero no se colocan. En la colina, el módulo de acantilado (8 x 4 x 6 m, trasera plana)
+# se leía como una caja de lados oscuros sobre una loma suave: allí no hay acantilados (CLIFF_KEEP = 0).
+DROPPED = (GRASS,)
 MIN_INSTANCES, MAX_INSTANCES = 1500, 2500
 # Radio de apoyo (m, a escala 1) de cada malla: la instancia se apoya en el punto más bajo de ese círculo.
 FOOTPRINT = {GRASS: 0.3, SHRUB: 0.5, ROCK: 0.35, BAMBOO: 0.35, PALM_A: 0.25, PALM_B: 0.25,
@@ -164,7 +173,7 @@ def vegetation(layout: Layout, props: dict, rng: np.random.Generator) -> list[li
 
 
 def cliffs(layout: Layout, props: dict, rng: np.random.Generator) -> list[list[float]]:
-    """Acantilados a lo largo de las pendientes de las Rocas del Pescador y la colina."""
+    """Peñascos a lo largo de las pendientes de las Rocas del Pescador (la colina tiene CLIFF_KEEP = 0)."""
     out: list[list[float]] = []
     for zone_id, grow in (('rocas_pescador', 1.2), ('colina_faro', 1.0)):
         zone = layout.zone(zone_id)
@@ -181,10 +190,9 @@ def cliffs(layout: Layout, props: dict, rng: np.random.Generator) -> list[list[f
         ok &= distance_to_paths(layout, x, y) > PATH_CLEARANCE + 3.0
         ok &= _clear_of_props(props, x, y)
         for i in np.flatnonzero(ok):
-            # El frente de SM_CliffRock mira a −Y en Blender, que el importador FBX convierte en +Y de
-            # Unreal: yaw = dirección cuesta abajo − 90° deja la trasera plana contra la ladera.
+            # Giro cuesta abajo (heredado del acantilado modular: el frente de la pieza mira a +Y en Unreal).
             out.append([CLIFF, float(x[i]), float(y[i]), float(z[i]) - CLIFF_SINK,
-                        float((downhill[i] - 90.0) % 360.0), float(rng.uniform(0.6, 0.85))])
+                        float((downhill[i] - 90.0) % 360.0), float(rng.uniform(*CLIFF_SCALE))])
     return out
 
 
@@ -315,6 +323,7 @@ def build_decor(layout: Layout, props: dict, mesh: TerrainMesh | None = None) ->
     rng = np.random.default_rng(layout.seed + 404)
     instances = vegetation(layout, props, rng) + cliffs(layout, props, rng)
     instances += k6_vegetation(layout, props, instances)
+    instances = [inst for inst in instances if inst[0] not in DROPPED]
     # La malla añade el relieve de detalle al analítico: se apoya cada instancia en ella.
     grounded = ground(mesh if mesh is not None else build_terrain(layout, props), layout, instances)
     return {

@@ -15,14 +15,16 @@
                                        Tools/Island export.surface_alpha). Bajo el césped, el suelo se funde
                                        con el verde de la base de las hojas cerca y con el de la alfombra
                                        lejos, con la misma f(d) que el césped (MPC_Terreno). En la arena
-                                       (sin texturas fotográficas): ondas de viento en espacio de mundo
-                                       (bandas finas perpendiculares a WindX/WindY, onduladas por la
-                                       máscara, sin marcas en pendiente ni en lo mojado y con su tono
-                                       medio de lejos), grano de 1,5 cm que se apaga a GrainFadeEndM,
-                                       brillos escasos (emisivo: microfaceta por celda, umbral de R·V, más
-                                       fuertes de cara al sol; SunDirection y SunGlint de MPC_Terreno) y
-                                       orilla por ALTURA sobre el mar: arena mojada más oscura y algo
-                                       especular hasta WetTopM, borde claro y banda de espuma que late.
+                                       (sin texturas fotográficas): pesos de arena y hierba con un borde
+                                       de ruido en espacio de mundo (no el degradado de cada triángulo),
+                                       ondas de viento (bandas perpendiculares a WindX/WindY con la fase
+                                       deformada por ruido de 3-6 m, ≈ 6 % de contraste, solo en arena,
+                                       apagadas a 40 m y bajo ~3 px de banda: sin moiré), grano de 1,5 cm que
+                                       se apaga a GrainFadeEndM, brillos escasos en el color base (celdas
+                                       de 2,5 cm, solo de cara al sol; la luz los apaga en la sombra;
+                                       SunDirection y SunGlint de MPC_Terreno) y orilla por ALTURA sobre el
+                                       mar: arena mojada más oscura y algo especular hasta WetTopM, borde
+                                       claro y espuma continua de 0,25-0,6 m (máx. 40 %) que late.
     /Game/Art/Materials/T_TerrainStrokes  la máscara (Art/Export/Textures/T_TerrainStrokes.png): lineal,
                                        TC_Grayscale, con mips y repetición.
     M_Toon                             + viento en palmas y bambú (material_utils.add_toon_wind) y cristal
@@ -139,33 +141,51 @@ return lerp(1.0, tone, slope * far);
 """
 
 
-# Ondas del viento: fase a lo largo de WindX/WindY con las crestas onduladas por ruido suave de 2,5 y 7 m
-# (desvío de ~10°) y la intensidad repartida en manchas de ~5 m, para que no se lea como una trama.
+# Mezcla de suelos y ondas del viento. Los pesos de arena y de hierba salen del alfa del color por vértice
+# (lineal entre vértices) desplazado por un ruido suave de 1,3 y 0,6 m y afilado: el borde arena-tierra-hierba
+# es una línea orgánica en espacio de mundo y no el degradado de cada triángulo de 1,8 m. Las ondas siguen
+# WindX/WindY con la fase deformada por ruido de 3-6 m (crestas que serpentean, sin trama de pana), contraste
+# RippleDark-RippleLight (≈ 6 % de luminancia), nada en tierra (× peso de arena), y se apagan del todo a
+# RippleFadeEndM y cuando la banda baja de ~3 píxeles (tamaño del píxel en el suelo: sin moiré).
 RIPPLE_HLSL = NOISE_HLSL + r"""
 float2 p = WP.xy / 100.0;
 float2 w = normalize(float2(WindX, WindY) + 1e-5);
-float warp = (Noise.Value(p / 2.5) - 0.5) * 2.2 + (Noise.Value(p / 7.0 + 17.3) - 0.5) * 3.0;
-float fr = frac(dot(p, w) / max(RippleWavelength, 0.01) + warp);
+float edgeN = Noise.Smooth(p / 1.3 + 3.7) * 0.7 + Noise.Smooth(p / 0.6 + 9.1) * 0.3;
+float sandLin = saturate(1.0 - A * 2.0);
+float grassLin = saturate(A * 2.0 - 1.0);
+float sandW = smoothstep(0.3, 0.7, sandLin + (edgeN - 0.5) * 0.7);
+float grassW = smoothstep(0.3, 0.7, grassLin + (edgeN - 0.5) * 0.7);
+float warp = (Noise.Smooth(p / 4.5) - 0.5) * 7.0 + (Noise.Smooth(p / 1.7 + 17.3) - 0.5) * 1.2;
+float phase = dot(p, w) / max(RippleWavelength, 0.01) + warp;
+float fr = frac(phase);
 float crest = smoothstep(0.0, 0.7, fr) * (1.0 - smoothstep(0.7, 1.0, fr));
 float h = WP.z / 100.0;
 float d = length(WP.xy - Cam.xy) / 100.0;
-float sandW = saturate(1.0 - A * 2.0);
-float grassW = saturate(A * 2.0 - 1.0);
-float shoreNoise = Noise.Value(p / 1.8 + 5.1);
+float shoreNoise = Noise.Smooth(p / 1.8 + 5.1);
 float wetTop = WetTopM + (shoreNoise - 0.5) * 0.12;
 float dry = smoothstep(wetTop, wetTop + 0.25, h);
 float flatW = saturate((N.z - 0.8) / 0.15);
-float rippleFade = 1.0 - saturate((d - RippleFadeStartM) / max(RippleFadeEndM - RippleFadeStartM, 1e-3));
-float patchy = lerp(0.35, 1.0, smoothstep(0.25, 0.65, Noise.Value(p / 5.0 + 41.0)));
+// Bandas por píxel sin ddx/fwidth (no compilan en todos los pases): el píxel mide ≈ d / 900 m a 1080p y
+// se estira con la incidencia rasante.
+float3 toCam = Cam - WP;
+float grazing = max(abs(dot(normalize(toCam), normalize(N))), 0.12);
+float footprint = length(toCam) / 100.0 / (900.0 * grazing);
+float aa = 1.0 - smoothstep(0.18, 0.35, footprint / max(RippleWavelength, 0.01));
+float rippleFade = (1.0 - saturate((d - RippleFadeStartM) / max(RippleFadeEndM - RippleFadeStartM, 1e-3))) * aa;
+float patchy = lerp(0.45, 1.0, smoothstep(0.3, 0.7, Noise.Smooth(p / 5.0 + 41.0)));
 float rip = sandW * flatW * dry * RippleStrength * patchy;
 """
 
 TERRAIN_COLOR_HLSL = RIPPLE_HLSL + r"""
 float3 col = C * lerp(Strokes, 1.0 + (Strokes - 1.0) * 0.4, sandW);
-// Suelo bajo el césped: el verde de la base de las hojas cerca y el de la alfombra lejos (misma f(d)).
+// Donde el ruido ya dice arena pero el triángulo aún mezcla, arena (del tono de la franja de orilla).
+float tone = lerp(0.94, 1.04, Noise.Smooth(p / 3.0 + 2.2));
+col = lerp(col, SAND_EDGE_COLOR * tone, saturate(sandW - sandLin));
+// Suelo bajo el césped: el verde de la base de las hojas cerca y el de la alfombra lejos (misma f(d)); lejos
+// se iguala del todo, para que el final de la alfombra no deje un borde de otro verde.
 """ + GRASS_FRACTION_HLSL + r"""
-float3 under = lerp(GRASS_FAR, GRASS_BASE, GrassF) * lerp(1.0, Strokes, 0.5);
-col = lerp(col, under, grassW * GroundMatch);
+float3 under = lerp(GRASS_FAR, GRASS_BASE, GrassF) * lerp(1.0, Strokes, 0.5 * GrassF);
+col = lerp(col, under, grassW * lerp(1.0, GroundMatch, GrassF));
 // Dos tonos de arena en las ondas; de lejos, su tono medio (sin cambio de brillo al apagarlas).
 col *= lerp(1.0, lerp(RippleDark, RippleLight, crest), rip * rippleFade);
 col *= lerp(1.0, (RippleDark + RippleLight) * 0.5, rip * (1.0 - rippleFade));
@@ -176,19 +196,38 @@ gh ^= gh >> 16; gh *= 0x7feb352du; gh ^= gh >> 15; gh *= 0x846ca68bu; gh ^= gh >
 float grain = (gh & 0xFFFFu) / 65535.0;
 float grainFade = 1.0 - saturate(d / max(GrainFadeEndM, 1e-3));
 col *= lerp(1.0, lerp(1.0 - GrainAmount, 1.0 + GrainAmount * 0.6, grain), sandW * grainFade);
-// Orilla por altura sobre el mar: mojada, borde claro y espuma que late.
+// Orilla por altura sobre el mar: mojada y borde claro.
 float notGrass = 1.0 - grassW;
 float wet = (1.0 - smoothstep(wetTop - 0.12, wetTop, h)) * notGrass;
 col = lerp(col, col * WetDarken * float3(0.94, 0.97, 1.03), wet);
 float rim = smoothstep(wetTop - 0.02, wetTop + 0.01, h) * (1.0 - smoothstep(wetTop + 0.01, wetTop + 0.08, h));
 col = lerp(col, col * RimLight, rim * sandW);
+// Espuma: banda continua de FoamWidthMin-FoamWidthMax metros en horizontal desde la línea del agua (altura
+// / pendiente de la normal suave), con ruido de baja frecuencia en el ancho y en la opacidad (máx.
+// FoamOpacity) y fundida hacia la arena seca; sin escalones ni máscaras de onda.
+float tanS = sqrt(saturate(1.0 - N.z * N.z)) / max(N.z, 0.05);
+float fromWater = h / max(tanS, 0.03);
+float foamN = Noise.Smooth(p / 3.5 + float2(T * 0.04, 0.0));
+float foamWidth = lerp(FoamWidthMin, FoamWidthMax, foamN);
 float pulse = 0.5 + 0.5 * sin(T * 1.2566 + dot(WP.xy, float2(0.0011, 0.0007)));
-float foamTop = FoamTopM * (0.55 + 0.45 * pulse);
-float foam = smoothstep(-0.06, 0.0, h) * (1.0 - smoothstep(foamTop * 0.35, foamTop, h));
-float broken = smoothstep(0.35, 0.75, Noise.Value(p * 1.6 + float2(T * 0.05, 0.0)));
-// En los bajíos casi planos la franja de altura se haría de metros: ahí la espuma se queda en un velo.
-float shoreSlope = lerp(0.25, 1.0, saturate((1.0 - N.z) / 0.03));
-col = lerp(col, FOAM_COLOR, foam * broken * shoreSlope * FoamOpacity * notGrass);
+float foam = smoothstep(-0.6, -0.1, fromWater) * (1.0 - smoothstep(0.0, foamWidth * lerp(0.75, 1.0, pulse), fromWater));
+foam *= smoothstep(0.15, 0.75, Noise.Smooth(p / 1.4 + float2(7.7, T * 0.03)));
+col = lerp(col, FOAM_COLOR, foam * FoamOpacity * notGrass);
+// Brillos de la arena: celdas escasas de GlitterCm cuya microfaceta refleja el sol hacia la cámara. Van en el
+// color base (no en el emisivo): la luz los apaga en la sombra. Solo en arena seca, llana y cerca.
+uint2 cq = uint2(int2(floor(WP.xy / GlitterCm)) + 1048576);
+uint c0 = (cq.x * 747796405u) ^ (cq.y * 2891336453u + 0x632BE5ABu);
+c0 ^= c0 >> 16; c0 *= 0x7feb352du; c0 ^= c0 >> 15; c0 *= 0x846ca68bu; c0 ^= c0 >> 16;
+uint c1 = c0 * 1664525u + 1013904223u;
+uint c2 = c1 * 1664525u + 1013904223u;
+float present = step((c0 & 0xFFFFu) / 65535.0, GlitterDensity);
+float2 tilt = float2((c1 >> 16) / 65535.0, (c2 >> 16) / 65535.0) * 2.0 - 1.0;
+float3 G = normalize(float3(tilt * 0.35, 1.0));
+float3 V = normalize(Cam - WP);
+float3 L = normalize(SunDir.xyz + 1e-5);
+float spark = smoothstep(GlitterThreshold, 1.0, dot(reflect(-L, G), V));
+float glitterFade = 1.0 - saturate((d - 2.0) / max(GlitterFadeEndM - 2.0, 1e-3));
+col *= 1.0 + GlitterStrength * spark * present * glitterFade * sandW * dry * flatW * SunGlint * saturate(L.z * 4.0);
 return col;
 """
 
@@ -207,31 +246,13 @@ TERRAIN_WET_HLSL = RIPPLE_HLSL + r"""
 return (1.0 - smoothstep(wetTop - 0.12, wetTop, h)) * (1.0 - grassW);
 """
 
-GLITTER_HLSL = RIPPLE_HLSL + r"""
-uint2 cq = uint2(int2(floor(WP.xy / GlitterCm)) + 1048576);
-uint c0 = (cq.x * 747796405u) ^ (cq.y * 2891336453u + 0x632BE5ABu);
-c0 ^= c0 >> 16; c0 *= 0x7feb352du; c0 ^= c0 >> 15; c0 *= 0x846ca68bu; c0 ^= c0 >> 16;
-uint c1 = c0 * 1664525u + 1013904223u;
-uint c2 = c1 * 1664525u + 1013904223u;
-float present = step((c0 & 0xFFFFu) / 65535.0, GlitterDensity);
-float2 tilt = float2((c1 >> 16) / 65535.0, (c2 >> 16) / 65535.0) * 2.0 - 1.0;
-float3 G = normalize(float3(tilt * 0.6, 1.0));
-float3 V = normalize(Cam - WP);
-float3 L = normalize(SunDir.xyz + 1e-5);
-float3 R = reflect(-L, G);
-float spark = smoothstep(GlitterThreshold, 1.0, dot(R, V));
-float facing = 0.35 + 0.65 * saturate(dot(normalize(V.xy + 1e-5), normalize(-L.xy + 1e-5)));
-float fade = 1.0 - saturate((d - 2.0) / max(GlitterFadeEndM - 2.0, 1e-3));
-return GLITTER_COLOR * (spark * present * facing * fade * sandW * dry * flatW * SunGlint * saturate(L.z * 4.0) * GlitterStrength);
-"""
-
 TERRAIN_PARAMS = {
-    "GroundMatch": 0.8, "WindX": 0.8, "WindY": 0.6, "RippleWavelength": 0.14, "RippleStrength": 1.0,
-    "RippleDark": 0.91, "RippleLight": 1.02, "RippleFadeStartM": 12.0, "RippleFadeEndM": 30.0,
+    "GroundMatch": 0.8, "WindX": 0.8, "WindY": 0.6, "RippleWavelength": 0.15, "RippleStrength": 1.0,
+    "RippleDark": 0.955, "RippleLight": 1.02, "RippleFadeStartM": 12.0, "RippleFadeEndM": 40.0,
     "RippleNormal": 0.06, "GrainCm": 1.5, "GrainAmount": 0.07, "GrainFadeEndM": 9.0, "WetTopM": 0.32,
-    "WetDarken": 0.76, "RimLight": 1.08, "FoamTopM": 0.08, "FoamOpacity": 0.4, "GlitterCm": 1.2,
-    "GlitterDensity": 0.08, "GlitterThreshold": 0.992, "GlitterFadeEndM": 14.0, "GlitterStrength": 4.0,
-    "WetRoughness": 0.5, "WetSpecular": 0.25,
+    "WetDarken": 0.76, "RimLight": 1.08, "FoamWidthMin": 0.25, "FoamWidthMax": 0.6, "FoamOpacity": 0.4,
+    "GlitterCm": 2.5, "GlitterDensity": 0.008, "GlitterThreshold": 0.995, "GlitterFadeEndM": 10.0,
+    "GlitterStrength": 1.6, "WetRoughness": 0.5, "WetSpecular": 0.25,
 }
 RIPPLE_INPUTS = ["WP", "Cam", "A", "N", "WindX", "WindY", "RippleWavelength", "WetTopM", "RippleFadeStartM",
                  "RippleFadeEndM", "RippleStrength"]
@@ -243,12 +264,12 @@ def terrain_constants(code: str) -> str:
     return (code.replace("GRASS_BASE", hlsl_float3(base))
             .replace("GRASS_FAR", hlsl_float3(far))
             .replace("FOAM_COLOR", hlsl_float3(palette_linear("blanco_nube")))
-            .replace("GLITTER_COLOR", hlsl_float3(palette_linear("papel"))))
+            .replace("SAND_EDGE_COLOR", hlsl_float3(palette_linear("arena_oscura"))))
 
 
 def build_terrain_surface(m, vc, linear, strokes, world):
     """Suelo bajo el césped, arena (ondas, grano, brillo) y orilla mojada: nodos de color, normal (en
-    espacio de mundo), emisivo y rugosidad/especular de la orilla."""
+    espacio de mundo) y rugosidad/especular de la orilla. Los brillos de la arena van en el color base."""
     mpc = terrain_collection()
     m.set_editor_property("tangent_space_normal", False)
     params = {name: scalar_param(m, name, value, -1700, 1700 + 60 * i)
@@ -274,14 +295,13 @@ def build_terrain_surface(m, vc, linear, strokes, world):
 
     out3 = unreal.CustomMaterialOutputType.CMOT_FLOAT3
     color_extra = ["C", "Strokes", "T", "GroundMatch", "RippleDark", "RippleLight", "GrainCm", "GrainAmount",
-                   "GrainFadeEndM", "WetDarken", "RimLight", "FoamTopM", "FoamOpacity", *grass]
+                   "GrainFadeEndM", "WetDarken", "RimLight", "FoamWidthMin", "FoamWidthMax", "FoamOpacity",
+                   "GlitterCm", "GlitterDensity", "GlitterThreshold", "GlitterFadeEndM", "GlitterStrength", *grass,
+                   *sun]
     color = node(terrain_constants(TERRAIN_COLOR_HLSL), color_extra, 1700, out3, "TerrainColor")
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
     normal = node(TERRAIN_NORMAL_HLSL, ["RippleNormal"], 2100, out3, "TerrainNormal")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
-    glitter_extra = ["GlitterCm", "GlitterDensity", "GlitterThreshold", "GlitterFadeEndM", "GlitterStrength", *sun]
-    glitter = node(terrain_constants(GLITTER_HLSL), glitter_extra, 2500, out3, "SandGlitter")
-    to_property(glitter, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     wet = node(TERRAIN_WET_HLSL, [], 2900, unreal.CustomMaterialOutputType.CMOT_FLOAT1, "ShoreWet")
     for prop, dry_value, wet_param, y in ((unreal.MaterialProperty.MP_ROUGHNESS, 1.0, "WetRoughness", 2950),
                                          (unreal.MaterialProperty.MP_SPECULAR, 0.0, "WetSpecular", 3100)):

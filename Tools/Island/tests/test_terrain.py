@@ -10,12 +10,14 @@ from explored_island.terrain import (
     FACET_MIX,
     PALETTE,
     ROCK_SLOPE,
+    SAND_FACET_MIX,
     SMOOTH_RADIUS,
     STEEP_FACET_MIX,
     blend_colors,
     build_terrain,
     corner_normals,
     facet_weights,
+    sand_facet_weights,
     smoothed_height,
     smoothed_slopes,
     surface_height,
@@ -295,3 +297,25 @@ def test_roca_por_pendiente_en_manchas_no_salpicada(layout, terreno):
     loose = ((grid == 1) & (neighbours <= 2)).sum()
     assert grid.sum() > 500
     assert loose / grid.sum() < 0.05
+
+
+def test_arena_y_su_transicion_casi_sin_facetas():
+    # Rejilla de 8 x 3 vértices: arena en las dos primeras columnas, hierba en el resto.
+    nx, ny = 8, 3
+    index = np.full(nx * ny, PALETTE['hierba_clara'])
+    index[:2 * ny] = PALETTE['arena_clara']
+    tris = np.array([[i * ny, i * ny + 1, (i + 1) * ny] for i in range(nx - 1)])
+    mix = sand_facet_weights(np.full(len(tris), FACET_MIX), index, tris, nx, ny)
+    assert mix[0] == pytest.approx(SAND_FACET_MIX)
+    assert mix[-1] == pytest.approx(FACET_MIX)
+    assert (np.diff(mix) >= -1e-12).all()  # sube sin saltos hacia la hierba
+
+
+def test_la_malla_baja_las_facetas_en_la_arena(layout, props):
+    from explored_island.export import linear_palette
+    mesh = build_terrain(layout, props, linear_palette())
+    sand = np.isin(mesh.vertex_palette[mesh.tris], [PALETTE['arena_clara'], PALETTE['arena_oscura']]).all(axis=1)
+    flat = mesh.slopes < 10.0
+    smooth = mesh.normals[mesh.tris]
+    gap = np.linalg.norm(mesh.corner_normals - smooth, axis=2).max(axis=1)
+    assert np.median(gap[sand & flat]) < np.median(gap[~sand & flat & (mesh.verts[mesh.tris][:, :, 2].min(axis=1) > 3.0)])

@@ -62,8 +62,10 @@ ruido de facetas de ±0,22 m por vértice en tierra firme (±0,2 m en las rocas)
 - Rejilla de `terrain.cell` = 1,8 m con los vértices desplazados ±12 % de
   celda y la diagonal de cada celda elegida por hash: 133 770 triángulos.
 - Lectura low poly moderada: la normal de cada esquina mezcla la normal suave
-  del vértice (60 %) y la de la cara (40 %, `terrain.FACET_MIX`); se exportan
-  como normales personalizadas y `import_island.py` las importa tal cual.
+  del vértice (75 %) y la de la cara (25 %, `terrain.FACET_MIX`; 6 % en la
+  arena y en cuatro celdas a su alrededor, `SAND_FACET_MIX`, donde con el sol
+  bajo la faceta salía en triángulos oscuros); se exportan como normales
+  personalizadas y `import_island.py` las importa tal cual.
 - Color por vértice («Col», `colors.py`): tres tonos de la paleta por zona con
   variación de alta frecuencia (ruido de 3 y 6,5 m; racha media ≤ 4 celdas),
   fundidos con un núcleo 1-4-1 (transiciones de una o dos celdas). Arena

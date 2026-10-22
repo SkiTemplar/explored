@@ -118,13 +118,21 @@ struct EXPLORED_API FGrassConfig
 	float ClearingDensity = 0.85f;
 	/** Banda (m) de hierba alta junto al borde del camino (tras PathMarginM) y alrededor de las rocas. */
 	float EdgeBandM = 2.0f;
+	/**
+	 * Fundido (m) del borde de la alfombra: junto a caminos, exclusiones y suelo que no es hierba (arena,
+	 * tierra, roca) la densidad baja de 1 a 0 y la altura de 1 a EdgeMinHeight en esta distancia, en vez
+	 * de cortar en seco.
+	 */
+	float EdgeFadeM = 1.5f;
+	/** Altura relativa de los parches en el mismo borde (EdgeFadeM la sube hasta 1). */
+	float EdgeMinHeight = 0.3f;
 	/** Corona de helechos alrededor de cada palmera: de PalmTrunkM a PalmRadiusM. */
 	float PalmTrunkM = 0.7f;
 	float PalmRadiusM = 3.5f;
 	/** Escala propia de cada malla (se multiplica por la tirada ScaleMin-ScaleMax). */
 	float KindScale[GrassKindCount] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 1.2f, 1.0f, 1.0f, 1.0f};
 	/** Radio (m) de la huella de cada malla a escala 1: hundimiento en pendiente y cobertura. */
-	float KindFootprintM[GrassKindCount] = {0.2f, 0.2f, 0.2f, 0.3f, 0.1f, 0.1f, 0.4f, 0.15f, 0.414f, 0.44f, 0.402f};
+	float KindFootprintM[GrassKindCount] = {0.2f, 0.2f, 0.2f, 0.3f, 0.1f, 0.1f, 0.4f, 0.15f, 0.433f, 0.428f, 0.413f};
 	FGrassMix Mixes[GrassContextCount];
 
 	/** Valores de grass.json (mezclas y zonas incluidas). */
@@ -175,6 +183,8 @@ struct EXPLORED_API FGrassInstance
 	float Rank = 0.0f;
 	/** Variación del parche en [0, 1) (dato por instancia 1: tinte y altura). */
 	float Variation = 0.0f;
+	/** Escala de la altura (eje Z de la malla) en el fundido del borde: EdgeMinHeight-1. */
+	float HeightScale = 1.0f;
 };
 
 /** Escritura en la ranura Slot de la malla Kind (Slot == número de instancias: se añade al final). */

@@ -31,11 +31,15 @@ JITTER = 0.12           # fracción de celda que se desplaza cada vértice inter
 FACET_NOISE = 0.22      # m de ruido vertical en tierra firme (fuera de caminos)
 ROCK_NOISE = 0.2        # m de ruido vertical sobre las rocas
 SMOOTH_RADIUS = 1.0     # celdas: radio del filtro de caja 5 × 5 del relieve base
-FACET_MIX = 0.4         # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
+FACET_MIX = 0.25        # peso de la normal de cara en la normal de cada esquina (0 = suave, 1 = facetado)
 # En pendiente fuerte la normal de cara domina la lectura (losas grandes y oscuras en las laderas del
 # islote): la mezcla baja de FACET_MIX a STEEP_FACET_MIX entre estas pendientes de cara (grados).
 STEEP_FACET_SLOPE = (25.0, 45.0)
 STEEP_FACET_MIX = 0.12
+# En la arena y su franja de transición a la hierba (cuatro celdas alrededor) la faceta se leía como triángulos
+# oscuros de borde duro con el sol bajo: allí la mezcla baja a SAND_FACET_MIX, fundida por vértice.
+SAND_FACET_MIX = 0.06
+SAND_FACET_PASSES = 4
 # Pasadas del núcleo 3 × 3 sobre las normales con las que se decide la roca por pendiente: sin ellas,
 # el ruido de facetas (±0,22 m en celdas de 1,8 m) inclina cada vértice ±14° y la roca sale salpicada
 # vértice a vértice (triángulos grises sueltos).
@@ -180,6 +184,15 @@ def facet_weights(slopes: np.ndarray, mix: float) -> np.ndarray:
     return mix + (min(mix, STEEP_FACET_MIX) - mix) * steep
 
 
+def sand_facet_weights(mix: np.ndarray, index: np.ndarray, tris: np.ndarray, nx: int, ny: int) -> np.ndarray:
+    """Baja el peso de la normal de cara hacia SAND_FACET_MIX en la arena y en SAND_FACET_PASSES celdas a su
+    alrededor, con un fundido por vértice (sin saltos de un triángulo al vecino)."""
+    sand = np.isin(index, [PALETTE['arena_clara'], PALETTE['arena_oscura'], PALETTE['arena_humeda']])
+    near = blend_grid(sand.astype(np.float64).reshape(nx, ny, 1), SAND_FACET_PASSES).reshape(-1)
+    w = np.clip(near[tris].mean(axis=1) * 4.0, 0.0, 1.0)
+    return mix + (np.minimum(mix, SAND_FACET_MIX) - mix) * w
+
+
 def smoothed_slopes(normals: np.ndarray, nx: int, ny: int, passes: int = SLOPE_SMOOTH_PASSES) -> np.ndarray:
     """Pendiente (grados) de cada vértice con la normal fundida en la rejilla: roca en manchas, no salpicada."""
     n = blend_grid(normals.reshape(nx, ny, 3), passes).reshape(-1, 3)
@@ -228,8 +241,9 @@ def build_terrain(layout: Layout, props: dict | None, linear_palette: np.ndarray
     lin = linear_palette if linear_palette is not None else np.full((64, 3), 0.5)
     rocky = np.isin(index, [PALETTE['roca_oscura'], PALETTE['roca_media'], PALETTE['roca_clara']])
     vcolors = blend_colors(slope_rock_colors(layout, verts, vertex_slopes, vfields, palms, lin), rocky, nx, ny)
+    mix = sand_facet_weights(facet_weights(slopes, facet_mix), index, tris, nx, ny)
     return TerrainMesh(verts, tris, colors, slopes, centroids, smooth, vcolors,
-                       corner_normals(smooth, faces, tris, facet_weights(slopes, facet_mix)), base, index)
+                       corner_normals(smooth, faces, tris, mix), base, index)
 
 
 def surface_height(mesh: TerrainMesh, layout: Layout, x: float, y: float) -> float:

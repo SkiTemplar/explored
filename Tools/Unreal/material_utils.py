@@ -165,15 +165,32 @@ if (d < GrassEndM)
 # las capturas f8 (la alfombra iluminada se ve más clara y algo más cálida que la media de su albedo).
 PATCH_COLORS = ("hierba_clara", "hierba_oscura", "hierba_salvia")
 GRASS_BASE_SHADE = 0.64
-GRASS_FAR_TINT = (1.22, 1.1, 1.22)
+# Punta de las hojas (TipBright de M_ToonCesped) y saturación del césped: la crítica de f8 vio la alfombra
+# cercana verde lima pálido junto a palmeras y arbustos saturados; la punta baja un 12 % y el verde se satura
+# un 25 % (alrededor de la luminancia lineal), también en el suelo bajo la hierba para que casen.
+GRASS_TIP_BRIGHT = 0.92
+GRASS_SATURATION = 1.25
+GRASS_FAR_TINT = (1.13, 1.02, 1.13)
+LUMA = (0.2126, 0.7152, 0.0722)
+
+
+def saturate_color(c, amount: float) -> tuple[float, float, float]:
+    """Satura un color lineal alrededor de su luminancia (mismo cálculo que GRASS_SATURATE_HLSL)."""
+    luma = sum(c[i] * LUMA[i] for i in range(3))
+    return tuple(min(max(luma + (c[i] - luma) * amount, 0.0), 1.0) for i in range(3))
+
+
+GRASS_SATURATE_HLSL = r"""float lum = dot(c, float3(0.2126, 0.7152, 0.0722));
+c = saturate(lum + (c - lum) * GRASS_SAT);
+"""
 
 
 def grass_ground_colors() -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """(verde de la base, verde de la alfombra lejana), lineales."""
+    """(verde de la base, verde de la alfombra lejana), lineales y con la saturación del césped."""
     lin = [palette_linear(n) for n in PATCH_COLORS]
     avg = [sum(c[i] for c in lin) / len(lin) for i in range(3)]
-    base = (avg[0] * GRASS_BASE_SHADE, avg[1] * GRASS_BASE_SHADE, avg[2] * GRASS_BASE_SHADE)
-    far = (avg[0] * GRASS_FAR_TINT[0], avg[1] * GRASS_FAR_TINT[1], avg[2] * GRASS_FAR_TINT[2])
+    base = saturate_color([avg[i] * GRASS_BASE_SHADE for i in range(3)], GRASS_SATURATION)
+    far = saturate_color([avg[i] * GRASS_FAR_TINT[i] for i in range(3)], GRASS_SATURATION)
     return base, far
 
 
@@ -195,6 +212,14 @@ struct FExploredNoise
         float2 f = frac(x);
         f = f * f * (3.0 - 2.0 * f);
         return lerp(lerp(Hash(i), Hash(i + float2(1.0, 0.0)), f.x), lerp(Hash(i + float2(0.0, 1.0)), Hash(i + float2(1.0, 1.0)), f.x), f.y);
+    }
+    // Dos octavas giradas (37° y 74°): sin la cuadrícula del ruido de valor, que umbralizado sale en
+    // rectángulos alineados con los ejes.
+    float Smooth(float2 x)
+    {
+        float2 a = float2(0.8 * x.x - 0.6 * x.y, 0.6 * x.x + 0.8 * x.y);
+        float2 b = float2(0.28 * x.x + 0.96 * x.y, -0.96 * x.x + 0.28 * x.y) * 2.13 + 31.7;
+        return Value(a) * 0.65 + Value(b) * 0.35;
     }
 };
 FExploredNoise Noise;

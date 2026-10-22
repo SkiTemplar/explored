@@ -9,7 +9,7 @@
 		"sin_en": 0,
 		"literales": 0,
 		"invariantes": 4,
-		"revisar": 379
+		"revisar": 390
 	},
 	"entries": [
 		{
@@ -476,7 +476,7 @@
 			"en": "Last night the sea left firewood in Cala Varada.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:482"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:483"
 			]
 		},
 		{
@@ -486,7 +486,7 @@
 			"en": "Set the lens",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:370"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:392"
 			]
 		},
 		{
@@ -496,7 +496,7 @@
 			"en": "Light the beacon",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:381"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:403"
 			]
 		},
 		{
@@ -506,7 +506,7 @@
 			"en": "The beacon is lit",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:381"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:403"
 			]
 		},
 		{
@@ -516,7 +516,7 @@
 			"en": "Pour the jars",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:373"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:395"
 			]
 		},
 		{
@@ -526,7 +526,7 @@
 			"en": "Tighten the wick",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/LighthouseLamp.cpp:376"
+				"Source/Explored/Narrative/LighthouseLamp.cpp:398"
 			]
 		},
 		{
@@ -586,7 +586,7 @@
 			"en": "Watch log · page {0} of {1}",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/Narrative/BeaconSubsystem.cpp:547"
+				"Source/Explored/Narrative/BeaconSubsystem.cpp:548"
 			]
 		},
 		{

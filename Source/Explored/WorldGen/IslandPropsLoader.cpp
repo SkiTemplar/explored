@@ -57,6 +57,17 @@ namespace IslandPropsLoaderDetail
 			return false;
 		}
 		Out.Size = FVector(Size[0], Size[1], Size[2]);
+		if (Obj.HasField(TEXT("meshScale")))
+		{
+			double Scale[3] = { 1.0, 1.0, 1.0 };
+			if (!ReadNumbers(Obj, TEXT("meshScale"), 3, Scale) || Scale[0] <= 0.0 || Scale[1] <= 0.0 || Scale[2] <= 0.0
+				|| Scale[0] > 10.0 || Scale[1] > 10.0 || Scale[2] > 10.0)
+			{
+				OutError = FString::Printf(TEXT("tipo %s: meshScale debe ser tres números en (0, 10]"), *Name);
+				return false;
+			}
+			Out.MeshScale = FVector(Scale[0], Scale[1], Scale[2]);
+		}
 		Obj.TryGetBoolField(TEXT("label"), Out.bLabel); // loc: ignorar (nombre de campo JSON)
 		Obj.TryGetBoolField(TEXT("gameplay"), Out.bGameplay);
 		return true;

@@ -524,7 +524,7 @@
 					"Keys": [
 						{
 							"Key": "LampWick",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 376"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 398"
 						}
 					]
 				},
@@ -546,7 +546,7 @@
 					"Keys": [
 						{
 							"Key": "PageTitle",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 547"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 548"
 						}
 					]
 				},
@@ -557,7 +557,7 @@
 					"Keys": [
 						{
 							"Key": "LampLight",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 381"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 403"
 						}
 					]
 				},
@@ -568,7 +568,7 @@
 					"Keys": [
 						{
 							"Key": "Driftwood",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 482"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 483"
 						}
 					]
 				},
@@ -612,7 +612,7 @@
 					"Keys": [
 						{
 							"Key": "LampLit",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 381"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 403"
 						}
 					]
 				},
@@ -634,7 +634,7 @@
 					"Keys": [
 						{
 							"Key": "LampLens",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 370"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 392"
 						}
 					]
 				},
@@ -667,7 +667,7 @@
 					"Keys": [
 						{
 							"Key": "LampOil",
-							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 373"
+							"Path": "Source/Explored/Narrative/LighthouseLamp.cpp - line 395"
 						}
 					]
 				}

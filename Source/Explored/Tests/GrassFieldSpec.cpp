@@ -250,6 +250,51 @@ void FGrassFieldSpec::Define()
 			TestTrue(TEXT("claros con flores"), Clearing > 100 && Flowers * 10 > Clearing);
 			TestTrue(TEXT("los claros son más ralos"), WithClearings.Num() < All.Num());
 		});
+
+		It(TEXT("el borde de la alfombra se funde en densidad y altura, sin corte"), [this]()
+		{
+			const TSharedPtr<FGrassWorld> World = MakeWorld();
+			const FGrassConfig Config = MakeConfig();
+			const TArray<FGrassInstance> All = Generate(Config, *World, -13, 12, -13, 12);
+			// Arena desde x ≈ 61 (vértice más cercano), y de -70 a 70 para no tocar la ladera ni el mar.
+			auto Band = [&All](double X0, double X1, float& OutMaxHeight)
+			{
+				int32 Count = 0;
+				OutMaxHeight = 0.0f;
+				for (const FGrassInstance& I : All)
+				{
+					if (I.Location.X >= X0 && I.Location.X < X1 && FMath::Abs(I.Location.Y) < 70.0)
+					{
+						++Count;
+						OutMaxHeight = FMath::Max(OutMaxHeight, I.HeightScale);
+					}
+				}
+				return Count;
+			};
+			float EdgeHeight = 0.0f, MidHeight = 0.0f, InnerHeight = 0.0f;
+			// Franjas de 0,5 m: a 0-0,5 m del borde, a 1-1,5 m y lejos.
+			const int32 Edge = Band(60.5, 61.0, EdgeHeight);
+			const int32 Mid = Band(59.5, 60.0, MidHeight);
+			const int32 Inner = Band(50.0, 50.5, InnerHeight);
+			TestTrue(TEXT("hay hierba lejos del borde"), Inner > 40);
+			TestTrue(TEXT("junto a la arena hay menos"), Edge * 2 < Inner);
+			TestTrue(TEXT("y aumenta hacia dentro"), Mid > Edge * 2);
+			TestTrue(TEXT("más baja en el borde"), EdgeHeight < 0.85f && EdgeHeight >= Config.EdgeMinHeight);
+			TestEqual(TEXT("altura entera dentro"), InnerHeight, 1.0f);
+			// Junto al camino (borde en |x| = 1,5 + margen) también baja la densidad.
+			float PathHeight = 0.0f;
+			int32 NearPath = 0;
+			int32 FarPath = 0;
+			for (const FGrassInstance& I : All)
+			{
+				const double Ax = FMath::Abs(I.Location.X);
+				const bool bRow = FMath::Abs(I.Location.Y) < 50.0 && FMath::Abs(I.Location.Y - 30.0) > 8.0;
+				if (bRow && Ax >= 1.9 && Ax < 2.4) { ++NearPath; PathHeight = FMath::Max(PathHeight, I.HeightScale); }
+				if (bRow && Ax >= 6.0 && Ax < 6.5) { ++FarPath; }
+			}
+			TestTrue(TEXT("camino: menos parches junto al borde"), NearPath * 2 < FarPath);
+			TestTrue(TEXT("camino: más bajos junto al borde"), PathHeight < 0.85f);
+		});
 	});
 
 	Describe(TEXT("Actualización incremental"), [this]()

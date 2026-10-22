@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "_comment": "Césped continuo alrededor de la cámara (kit K6; AExploredGrassField sobre FGrassFieldModel). Metros. La alfombra son los parches patch_a/b/c (17-18 hojas en ~0,4 m de radio) a ~5,5 por m²; tréboles, flores, helechos y hierba alta son acentos con su peso en mixes. Colocación determinista por hash de celda (celdas de cellSizeM) sobre la malla del terreno (ground_field.bin, Tools/Island). Sin césped en arena, caminos (+pathMarginM), roca, agua, pendientes > maxSlopeDeg ni a menos de clearanceM de las colocaciones de island_props.json (pointClearanceM de los puntos de island.json). density: parches por m² (default fuera de zonas, dirt sobre tierra suelta, zones por id de island.json con fundido zoneFeatherM en el borde). thinning: adelgazamiento continuo sin cortes (FGrassThinning): f(d) = 1 hasta denseM, (denseM/d)^exponent después y fundido a 0 en [endM - endFadeM, endM]; cada parche tiene un rango r y el material lo encoge a 0 cuando f < r y agranda los que quedan (máx. maxGrow; growZ de eso en altura); las celdas guardan niveles f_k = levelRatio^k hasta minLevel y suben marginM antes de hacer falta (bajan con hysteresisM más). workPerFrame: candidatos evaluados como mucho por frame. wind: el viento del material se apaga entre fadeStartM y fadeEndM. parameterCollection: MPC con el adelgazamiento para M_ToonCesped y M_TerrainToon. Sin sombras ni colisión. Si falta una malla o el material, el juego usa fallbackMesh / fallbackMaterial con un aviso. Los números de primer nivel, de thinning y de density son espejo de FGrassConfig / FGrassThinning (GrassFieldModel.h, GrassThinning.h): lo comprueba Tools/DataCheck.",
+  "_comment": "Césped continuo alrededor de la cámara (kit K6; AExploredGrassField sobre FGrassFieldModel). Metros. La alfombra son los parches patch_a/b/c (17-18 hojas en ~0,4 m de radio) a ~5,5 por m²; tréboles, flores, helechos y hierba alta son acentos con su peso en mixes. Colocación determinista por hash de celda (celdas de cellSizeM) sobre la malla del terreno (ground_field.bin, Tools/Island). Sin césped en arena, caminos (+pathMarginM), roca, agua, pendientes > maxSlopeDeg ni a menos de clearanceM de las colocaciones de island_props.json (pointClearanceM de los puntos de island.json). density: parches por m² (default fuera de zonas, dirt sobre tierra suelta, zones por id de island.json con fundido zoneFeatherM en el borde). thinning: adelgazamiento continuo sin cortes (FGrassThinning): f(d) = 1 hasta denseM, (denseM/d)^exponent después y fundido a 0 en [endM - endFadeM, endM]; cada parche tiene un rango r y el material lo encoge a 0 cuando f < r y agranda los que quedan (máx. maxGrow; growZ de eso en altura); las celdas guardan niveles f_k = levelRatio^k hasta minLevel y suben marginM antes de hacer falta (bajan con hysteresisM más). workPerFrame: candidatos evaluados como mucho por frame. wind: el viento del material se apaga entre fadeStartM y fadeEndM. edgeFadeM y edgeMinHeight: el borde de la alfombra (caminos, exclusiones y suelo que no es hierba) se funde en edgeFadeM metros, con la densidad de 0 a 1 y la altura de edgeMinHeight a 1. parameterCollection: MPC con el adelgazamiento para M_ToonCesped y M_TerrainToon. Sin sombras ni colisión. Si falta una malla o el material, el juego usa fallbackMesh / fallbackMaterial con un aviso. Los números de primer nivel, de thinning y de density son espejo de FGrassConfig / FGrassThinning (GrassFieldModel.h, GrassThinning.h): lo comprueba Tools/DataCheck.",
   "cellSizeM": 8.0,
   "workPerFrame": 700,
   "seed": 7177,
@@ -12,6 +12,8 @@
   "alignToNormal": 0.5,
   "scale": [0.8, 1.3],
   "edgeBandM": 2.0,
+  "edgeFadeM": 1.5,
+  "edgeMinHeight": 0.3,
   "thinning": {
     "denseM": 25.0,
     "endM": 100.0,
@@ -55,9 +57,9 @@
     "flower_b": {"mesh": "/Game/Art/K6_Cesped/SM_FlowerB_01", "scale": 1.0, "footprintM": 0.1, "castShadow": false},
     "fern": {"mesh": "/Game/Art/K6_Cesped/SM_Fern_01", "scale": 0.8, "footprintM": 0.4, "castShadow": false},
     "clover": {"mesh": "/Game/Art/K6_Cesped/SM_Clover_01", "scale": 1.2, "footprintM": 0.15, "castShadow": false},
-    "patch_a": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_A_01", "scale": 1.0, "footprintM": 0.414, "castShadow": false},
-    "patch_b": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_B_01", "scale": 1.0, "footprintM": 0.44, "castShadow": false},
-    "patch_c": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_C_01", "scale": 1.0, "footprintM": 0.402, "castShadow": false}
+    "patch_a": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_A_01", "scale": 1.0, "footprintM": 0.433, "castShadow": false},
+    "patch_b": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_B_01", "scale": 1.0, "footprintM": 0.428, "castShadow": false},
+    "patch_c": {"mesh": "/Game/Art/K6_Cesped/SM_GrassPatch_C_01", "scale": 1.0, "footprintM": 0.413, "castShadow": false}
   },
   "mixes": {
     "common": {"tuft_a": 0.0, "tuft_b": 0.0, "tuft_c": 0.0, "tall": 0.12, "flower_a": 0.06, "flower_b": 0.06, "fern": 0.03, "clover": 0.2, "patch_a": 4.0, "patch_b": 3.5, "patch_c": 3.0},

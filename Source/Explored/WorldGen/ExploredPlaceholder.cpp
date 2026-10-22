@@ -73,7 +73,7 @@ void AExploredPlaceholder::Configure(const FIslandProp& Prop, const FIslandPropT
 	{
 		Mesh->SetStaticMesh(Final);
 		Mesh->SetRelativeLocation(FVector::ZeroVector);
-		Mesh->SetRelativeScale3D(FVector::OneVector);
+		Mesh->SetRelativeScale3D(Type.MeshScale);
 	}
 	else
 	{

@@ -38,6 +38,8 @@ TOP = [
     ("sinkM", 0.0, 0.5, None),
     ("alignToNormal", 0.0, 1.0, None),
     ("edgeBandM", 0.0, 10.0, None),
+    ("edgeFadeM", 0.0, 10.0, None),
+    ("edgeMinHeight", 0.05, 1.0, None),
     ("seed", 0, 2**32 - 1, None),
 ]
 ZONE_MIRRORS = {

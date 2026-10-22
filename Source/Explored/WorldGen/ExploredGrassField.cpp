@@ -44,7 +44,8 @@ namespace GrassFieldActorDetail
 		const FVector Up(Inst.Up.X, Inst.Up.Y, Inst.Up.Z);
 		const FQuat Tilt = FQuat::FindBetweenNormals(FVector::UpVector, Up.GetSafeNormal(UE_SMALL_NUMBER, FVector::UpVector));
 		const FQuat Yaw(FVector::UpVector, FMath::DegreesToRadians(static_cast<double>(Inst.YawDeg)));
-		return FTransform(Tilt * Yaw, Inst.Location * MetersToCm, FVector(Inst.Scale));
+		// La altura (eje Z de la malla) se escala aparte: el borde de la alfombra baja de altura.
+		return FTransform(Tilt * Yaw, Inst.Location * MetersToCm, FVector(Inst.Scale, Inst.Scale, Inst.Scale * Inst.HeightScale));
 	}
 
 	/** Palmeras decorativas de island_decor.json (corona de helechos). */

@@ -6,9 +6,10 @@
     /Game/Art/Materials/M_ToonCesped  M_Toon de DOS CARAS para las tarjetas de una cara de K6, opaco y sin
                                       alfa: base color = T_Paleta (UV 0) con degradado base→punta
                                       (BaseShade → TipBright por VertexColor.A) y tinte por parche (dato por
-                                      instancia 1) que tiende al verde de la alfombra lejana al alejarse
-                                      (FarBlend × (1 - f)); normal en espacio de mundo redondeada hacia arriba
-                                      (UpBias), para que la alfombra se ilumine como el suelo; rugosidad 1 y
+                                      instancia 1), saturado (GRASS_SATURATION), que tiende al verde de la
+                                      alfombra lejana al alejarse (FarBlend × (1 - f)); normal en espacio de
+                                      mundo, igual en las dos caras y redondeada hacia arriba (UpBias), para
+                                      que la alfombra se ilumine como el suelo y no por hojas; rugosidad 1 y
                                       especular 0. WPO: adelgazamiento continuo (dato por instancia 0 = rango:
                                       el parche encoge a 0 cuando f(d) baja de él y los que quedan crecen
                                       hasta GrassMaxGrow; misma f(d) que FGrassThinning), variación de altura
@@ -29,10 +30,14 @@ import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from material_utils import (  # noqa: E402 - necesita el sys.path de arriba
-    ART_MATERIALS_PATH, GRASS_BASE_SHADE, GRASS_FRACTION_HLSL, GRASS_THINNING_KEYS, collection_param, connect,
+    ART_MATERIALS_PATH, GRASS_BASE_SHADE, GRASS_FRACTION_HLSL, GRASS_SATURATE_HLSL, GRASS_SATURATION,
+    GRASS_THINNING_KEYS, GRASS_TIP_BRIGHT, collection_param, connect,
     custom, expr, finish, grass_ground_colors, hlsl_float3, recreate_material, scalar_param, terrain_collection,
     to_property,
 )
+
+# Peso de la vertical en la normal de las hojas (0 = normal de la malla, 1 = como el suelo llano).
+GRASS_UP_BIAS = 0.85
 
 GRASS_WPO_HLSL = r"""
 float d = length(ObjectPos.xy - CamPos.xy) / 100.0;
@@ -59,11 +64,15 @@ float d = length(ObjectPos.xy - CamPos.xy) / 100.0;
 float g = lerp(lerp(BaseShade, TipBright, saturate(Weight)), 0.95, 1.0 - GrassF);
 float3 tint = lerp(float3(0.90, 0.95, 0.92), float3(1.07, 1.05, 0.90), Var);
 float3 c = saturate(Pal * g * tint);
-return lerp(c, GRASS_FAR, FarBlend * (1.0 - GrassF));
+""" + GRASS_SATURATE_HLSL + r"""return lerp(c, GRASS_FAR, FarBlend * (1.0 - GrassF));
 """
 
+# La misma normal en las dos caras de la tarjeta (la del hemisferio de arriba, sin el signo de la cara) y
+# muy redondeada hacia arriba: el sombreado lo lleva el degradado base→punta, no la orientación de cada
+# triángulo (con UpBias 0,6 cada hoja salía con un tono plano distinto: facetado de papel).
 GRASS_NORMAL_HLSL = r"""
-float3 n = normalize(N) * Sign;
+float3 n = normalize(N);
+n = n.z < 0.0 ? -n : n;
 return normalize(lerp(n, float3(0.0, 0.0, 1.0), UpBias));
 """
 
@@ -94,13 +103,14 @@ def build_toon_cesped(palette: unreal.Texture2D) -> unreal.Material:
     far = hlsl_float3(grass_ground_colors()[1])
     color_inputs = ["Pal", "Weight", "Var", "BaseShade", "TipBright", "FarBlend", "ObjectPos", "CamPos",
                     "GrassDenseM", "GrassEndM", "GrassEndFadeM", "GrassExponent"]
-    color = custom(m, -500, 0, GRASS_COLOR_HLSL.replace("GRASS_FAR", far), color_inputs,
+    color_code = GRASS_COLOR_HLSL.replace("GRASS_FAR", far).replace("GRASS_SAT", f"{GRASS_SATURATION:.3f}")
+    color = custom(m, -500, 0, color_code, color_inputs,
                    unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GrassColor")
     connect(sample, "RGB", color, "Pal")
     connect(vcolor, "A", color, "Weight")
     connect(var, "", color, "Var")
     connect(scalar_param(m, "BaseShade", GRASS_BASE_SHADE, -800, 150), "", color, "BaseShade")
-    connect(scalar_param(m, "TipBright", 1.04, -800, 220), "", color, "TipBright")
+    connect(scalar_param(m, "TipBright", GRASS_TIP_BRIGHT, -800, 220), "", color, "TipBright")
     connect(scalar_param(m, "FarBlend", 0.75, -800, 290), "", color, "FarBlend")
     connect(expr(m, unreal.MaterialExpressionObjectPositionWS, -800, 360), "", color, "ObjectPos")
     connect(expr(m, unreal.MaterialExpressionCameraPositionWS, -800, 430), "", color, "CamPos")
@@ -108,11 +118,10 @@ def build_toon_cesped(palette: unreal.Texture2D) -> unreal.Material:
         connect(collection_param(m, mpc, name, -800, 500 + 60 * i), "", color, name)
     to_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
-    normal = custom(m, -500, 400, GRASS_NORMAL_HLSL, ["N", "Sign", "UpBias"],
+    normal = custom(m, -500, 400, GRASS_NORMAL_HLSL, ["N", "UpBias"],
                     unreal.CustomMaterialOutputType.CMOT_FLOAT3, "GrassNormal")
     connect(expr(m, unreal.MaterialExpressionVertexNormalWS, -800, 400), "", normal, "N")
-    connect(expr(m, unreal.MaterialExpressionTwoSidedSign, -800, 460), "", normal, "Sign")
-    connect(scalar_param(m, "UpBias", 0.6, -800, 520), "", normal, "UpBias")
+    connect(scalar_param(m, "UpBias", GRASS_UP_BIAS, -800, 520), "", normal, "UpBias")
     to_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
 
     roughness = expr(m, unreal.MaterialExpressionConstant, -250, 250)

@@ -53,6 +53,8 @@ namespace GrassConfigDetail
 		ReadFloat(Root, TEXT("sinkM"), C.SinkM);
 		ReadFloat(Root, TEXT("alignToNormal"), C.AlignToNormal);
 		ReadFloat(Root, TEXT("edgeBandM"), C.EdgeBandM);
+		ReadFloat(Root, TEXT("edgeFadeM"), C.EdgeFadeM);
+		ReadFloat(Root, TEXT("edgeMinHeight"), C.EdgeMinHeight);
 		const TArray<TSharedPtr<FJsonValue>>* Scale = nullptr;
 		if (Root.TryGetArrayField(TEXT("scale"), Scale) && Scale && Scale->Num() == 2)
 		{

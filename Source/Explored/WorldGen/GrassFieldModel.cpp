@@ -16,6 +16,11 @@ namespace GrassFieldDetail
 	constexpr int32 MaxSubdivisions = 64;
 	constexpr uint32 ClearingSalt = 0xC1EA41u;
 	constexpr uint32 CandidateSalt = 0x6A55u;
+	/** Anillos y muestras por anillo con que se busca el suelo que no es hierba en el fundido del borde. */
+	constexpr int32 EdgeRings = 3;
+	constexpr int32 EdgeRingSamples = 6;
+	/** Medio ancho (en unidades del ruido de los claros) del fundido de su densidad. */
+	constexpr float ClearingFeather = 0.05f;
 
 	/** Tramo de camino de la celda: extremos y media anchura. */
 	struct FSegment
@@ -73,7 +78,7 @@ namespace GrassFieldDetail
 		FCellContext Ctx;
 		for (const FGrassExclusion& Ex : World.Exclusions)
 		{
-			if (DistanceToBox(Ex.Center, Lo, Hi) < Ex.Radius)
+			if (DistanceToBox(Ex.Center, Lo, Hi) < Ex.Radius + Config.EdgeFadeM)
 			{
 				Ctx.Exclusions.Add(Ex);
 			}
@@ -89,7 +94,7 @@ namespace GrassFieldDetail
 		const double HalfDiag = FVector2D::Distance(Lo, Hi) * 0.5;
 		for (const FIslandPath& Path : World.Layout.Paths)
 		{
-			const double Reach = HalfDiag + Path.Width * 0.5 + Config.PathMarginM + Config.EdgeBandM;
+			const double Reach = HalfDiag + Path.Width * 0.5 + Config.PathMarginM + FMath::Max(Config.EdgeBandM, Config.EdgeFadeM);
 			for (int32 I = 0; I + 1 < Path.Points.Num(); ++I)
 			{
 				if (DistanceToSegment(Center, Path.Points[I], Path.Points[I + 1]) < Reach)
@@ -128,6 +133,53 @@ namespace GrassFieldDetail
 			}
 		}
 		return false;
+	}
+
+	/** Distancia (m) al borde del círculo de exclusión más cercano (negativa dentro). */
+	double ExclusionDistance(const FCellContext& Ctx, const FVector2D& P)
+	{
+		double Best = TNumericLimits<double>::Max();
+		for (const FGrassExclusion& Ex : Ctx.Exclusions)
+		{
+			Best = FMath::Min(Best, FVector2D::Distance(P, Ex.Center) - Ex.Radius);
+		}
+		return Best;
+	}
+
+	/**
+	 * Distancia aproximada (m) al suelo que no es hierba: anillos de EdgeRingSamples muestras a
+	 * EdgeFadeM / EdgeRings, 2·EdgeFadeM / EdgeRings… (girados al azar por candidato, Turn en [0, 1)).
+	 * Devuelve el punto medio entre el último anillo limpio y el primero que toca arena, tierra, roca,
+	 * camino o mar (o sale del campo); EdgeFadeM si no toca nada.
+	 */
+	double SurfaceEdgeDistance(const FGrassConfig& Config, const FGroundField& Ground, const FVector2D& P, float Turn)
+	{
+		const double Step = Config.EdgeFadeM / EdgeRings;
+		for (int32 Ring = 1; Ring <= EdgeRings; ++Ring)
+		{
+			const double R = Step * Ring;
+			for (int32 K = 0; K < EdgeRingSamples; ++K)
+			{
+				const double A = (K + Turn) * (2.0 * UE_DOUBLE_PI / EdgeRingSamples);
+				FGroundSample S;
+				if (!Ground.Sample(P.X + R * FMath::Cos(A), P.Y + R * FMath::Sin(A), S) || S.Surface != EGroundSurface::Grass)
+				{
+					return R - Step * 0.5;
+				}
+			}
+		}
+		return Config.EdgeFadeM;
+	}
+
+	/** Fundido del borde (0 en el borde, 1 a EdgeFadeM o más) con un smoothstep. */
+	float EdgeFade(const FGrassConfig& Config, double Distance)
+	{
+		if (Config.EdgeFadeM <= 0.0f)
+		{
+			return Distance >= 0.0 ? 1.0f : 0.0f;
+		}
+		const float T = FMath::Clamp(static_cast<float>(Distance / Config.EdgeFadeM), 0.0f, 1.0f);
+		return T * T * (3.0f - 2.0f * T);
 	}
 
 	bool InPalmRing(const FGrassConfig& Config, const FCellContext& Ctx, const FVector2D& P)
@@ -313,6 +365,8 @@ bool FGrassConfig::Validate(FString& OutError) const
 	}
 	if (!(ClearingCellM > 1.0f && ClearingDensity >= 0.0f && ClearingDensity <= 1.0f)) { return Bad(TEXT("claros no válidos")); }
 	if (!(PalmRadiusM > PalmTrunkM && PalmTrunkM >= 0.0f)) { return Bad(TEXT("corona de palmera no válida")); }
+	if (!(EdgeFadeM >= 0.0f && EdgeFadeM <= 10.0f)) { return Bad(TEXT("edgeFadeM fuera de 0-10")); }
+	if (!(EdgeMinHeight > 0.0f && EdgeMinHeight <= 1.0f)) { return Bad(TEXT("edgeMinHeight fuera de (0, 1]")); }
 	for (int32 K = 0; K < GrassKindCount; ++K)
 	{
 		if (!(KindScale[K] > 0.0f && KindScale[K] <= 5.0f)) { return Bad(TEXT("escala de malla no válida")); }
@@ -430,16 +484,34 @@ int32 FGrassFieldModel::GenerateCell(const FGrassConfig& Config, const FGrassWor
 				{
 					Context = EGrassContext::Edge;
 				}
-				else if (ValueNoise(Config.Seed, P, Config.ClearingCellM) > Config.ClearingThreshold)
+				else
 				{
-					Context = EGrassContext::Clearing;
-					Density *= Config.ClearingDensity;
+					// El claro se funde en su borde (densidad) y cambia de mezcla en el umbral.
+					const float Noise = ValueNoise(Config.Seed, P, Config.ClearingCellM);
+					const float InClearing = FMath::SmoothStep(Config.ClearingThreshold - ClearingFeather, Config.ClearingThreshold + ClearingFeather, Noise);
+					Density *= FMath::Lerp(1.0f, Config.ClearingDensity, InClearing);
+					Context = Noise > Config.ClearingThreshold ? EGrassContext::Clearing : EGrassContext::Common;
 				}
 			}
 			const FGrassMix& Mix = Config.Mixes[static_cast<int32>(Context)];
 			if (Roll(H, 2) >= Density * SubArea || Mix.Total() <= 0.0f)
 			{
 				continue;
+			}
+			// Borde de la alfombra: menos parches y más bajos hacia caminos, exclusiones y otro suelo.
+			float Fade = 1.0f;
+			if (Ground.Surface == EGroundSurface::Grass)
+			{
+				double EdgeDist = FMath::Min(PathDist - Config.PathMarginM, ExclusionDistance(Ctx, P));
+				if (EdgeDist > 0.0)
+				{
+					EdgeDist = FMath::Min(EdgeDist, SurfaceEdgeDistance(Config, *World.Ground, P, Roll(H, 9)));
+				}
+				Fade = EdgeFade(Config, EdgeDist);
+				if (Roll(H, 8) >= Fade)
+				{
+					continue;
+				}
 			}
 			FGrassInstance Inst;
 			Inst.Kind = Mix.Pick(Roll(H, 3));
@@ -449,6 +521,7 @@ int32 FGrassFieldModel::GenerateCell(const FGrassConfig& Config, const FGrassWor
 			Inst.YawDeg = Roll(H, 5) * 360.0f;
 			Inst.Rank = Rank;
 			Inst.Variation = Roll(H, 7);
+			Inst.HeightScale = FMath::Lerp(Config.EdgeMinHeight, 1.0f, Fade);
 			const FVector3f Up = FMath::Lerp(FVector3f(0.0f, 0.0f, 1.0f), Ground.Normal, Config.AlignToNormal);
 			Inst.Up = Up.GetSafeNormal(1e-6f, FVector3f(0.0f, 0.0f, 1.0f));
 			// En pendiente, el lado de abajo de la base quedaría en el aire: se hunde lo que no corrige la inclinación.

@@ -76,6 +76,12 @@ void FIslandDataSpec::Define()
 		const FString Bad = TEXT("{\"types\": {}, \"props\": [{\"id\": \"a\", \"type\": \"palma\", \"at\": [0, 0]}]}");
 		TestFalse(TEXT("inválido"), ExploredIslandProps::ParseIslandPropsJson(Bad, Props, Error));
 		TestTrue(TEXT("dice por qué"), Error.Contains(TEXT("tipo sin definir")));
+		const FString Scaled = TEXT("{\"types\": {\"roca\": {\"shape\": \"cube\", \"collision\": \"solid\", \"size\": [1, 1, 1], \"color\": 0, \"meshScale\": [1.5, 1.5, 2]}}, \"props\": []}");
+		TestTrue(TEXT("meshScale válido"), ExploredIslandProps::ParseIslandPropsJson(Scaled, Props, Error));
+		const FIslandPropType* Rock = Props.FindType(TEXT("roca"));
+		TestTrue(TEXT("escala leída"), Rock && Rock->MeshScale.Equals(FVector(1.5, 1.5, 2.0)));
+		const FString BadScale = Scaled.Replace(TEXT("[1.5, 1.5, 2]"), TEXT("[1.5, 0, 2]"));
+		TestFalse(TEXT("meshScale con un cero"), ExploredIslandProps::ParseIslandPropsJson(BadScale, Props, Error));
 	});
 }
 

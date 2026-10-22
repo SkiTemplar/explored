@@ -148,16 +148,65 @@ Cifras (Development Editor, `-game`, 1080p):
 | Triángulos de césped a la vista (peor dirección, host `GrassRealData`) | 1,10-1,26 M (tope 1,5 M) |
 | Parches y matas vivos | 22 000-55 000 según la zona, en ~590 celdas |
 | Siembra al caminar (host, 5 m/s) | 0,10 ms de media, peor frame 1,7 ms |
-| Siembra al caminar (juego, `f8-cesped-paseo`) | 0,015 ms de media, máx. 0,81 ms |
+| Siembra al caminar (juego, `f8-cesped-paseo-*`) | 0,015 ms de media, máx. 0,81 ms (con la secuencia nueva de 8 fotogramas: 0,023-0,031 ms) |
 | Relleno tras un teletransporte | 80-175 frames, 0,3-0,45 ms de media; el primer frame llega a 6-8 ms (oculta las ranuras de todas las celdas que se van) |
 | `bench.ps1` | cala 197,0 / 99,8 · palmar 158,7 / 93,5 · faro 182,0 / 109,8 · galería 137,5 / 88,4 · ciclón 228,2 / 127,7 (media / mínimo); resumen 180,7 / 88,4: OK |
 
 No hay cifra de bench anterior con el césped viejo (el paso 10 de `pendiente-motor.md` no se había
 medido), así que no hay «antes» que comparar; no hizo falta bajar densidad ni radio.
 
-Para revisar (sin rehacer mallas, como pedía el encargo): de cerca (`f8-cesped-cerca`, `f8-cesped-cala`)
-las hojas de 10-15 cm de los parches se leen como esquirlas planas y anchas, de punta triangular; a
-partir de ~3 m la alfombra funciona. Decidirá el crítico si se afinan las hojas en `k6_cesped.py`.
+### F8 tras la crítica de arte (2026-10-22)
+
+La crítica de las capturas f8 pedía diez cambios (tres bloqueantes). Hecho, con las capturas `f8-*` rehechas
+(tres vueltas) y mirado cada encuadre:
+
+- **Hojas (bloqueante).** `SM_GrassPatch_A/B/C_01` rehechos en `k6_parches.py` (d797d953: semiancho de
+  1,5-3 cm, 8:1, inclinación más curvatura < 65°) y reimportados en K6. De cerca ya se lee pasto
+  (`f8-cesped-cerca`).
+- **Facetado de las hojas.** `M_ToonCesped`: la misma normal en las dos caras (la del hemisferio de arriba,
+  sin el signo de la cara) y `UpBias` 0,85 (antes 0,6). El sombreado lo lleva el degradado base→punta.
+- **Color.** La punta baja de 1,04 a 0,92 y el césped se satura un 25 % (`GRASS_SATURATION`), también en el
+  suelo bajo la hierba. Las matas K1 (`SM_GrassClump_01`) dejan de colocarse en `island_decor.json`: se
+  leían como manchas de otra especie y, en la arena, como matas sueltas.
+- **Bordes de la alfombra.** `FGrassFieldModel`: junto a caminos, exclusiones y suelo que no es hierba
+  (anillos de 6 muestras a 0,5, 1 y 1,5 m del campo de suelo), la densidad baja de 1 a 0 y la altura de
+  1 a 0,3 en `edgeFadeM` = 1,5 m (`edgeMinHeight` 0,3, en `grass.json`, `FGrassInstance::HeightScale`).
+  Los claros se funden en su borde. Spec «el borde de la alfombra se funde en densidad y altura». Lejos,
+  el suelo bajo la hierba se iguala del todo al verde de la alfombra (`GroundMatch` → 1 cuando f(d) → 0).
+- **Espuma (bloqueante).** `M_TerrainToon`: banda continua de 0,25-0,6 m en horizontal desde la línea del
+  agua (altura / pendiente de la normal suave), con ruido suave girado (`Noise.Smooth`, sin la cuadrícula del
+  ruido de valor que, umbralizado, salía en rectángulos) y opacidad máxima del 40 %.
+- **Duna → hierba (bloqueante).** Los triángulos oscuros de borde recto eran **sombras del propio terreno**
+  con el sol bajo (lomas de triángulos de 1,8 m): `map_post.py` quita la sombra proyectada de
+  `SM_IslaSal_Terrain` (la sigue recibiendo). Además, la normal de cara pesa un 25 % (antes 40 %) y un 6 % en
+  la arena y cuatro celdas a su alrededor (`SAND_FACET_MIX`); los pesos de arena y hierba se afilan con
+  ruido de mundo (borde orgánico, no por triángulo), y las ondas solo van donde hay arena.
+- **Ondas.** Fase deformada por ruido de 4,5 y 1,7 m, contraste del 6,5 % (0,955-1,02), apagadas a 40 m y
+  cuando la banda baja de ~3 px (estimación del píxel en el suelo; `fwidth` hacía fallar la compilación de
+  `M_TerrainToon` en SM6 y el juego usaba el material por defecto).
+- **Brillos.** En el color base (la luz los apaga en la sombra), celdas de 2,5 cm, densidad 0,008 (una
+  décima), microfaceta de ±19° y umbral R·V 0,995: solo de cara al sol, sobre arena seca.
+- **Capturas.** f8 con cielo despejado (las vistas de las 15:00 caían en el chubasco del día 1: ahora 13:30),
+  `f8-cesped-f7cala`, `-f7faro` y `-f7cenital` con los encuadres de f7, y `f8-cesped-paseo-1…8`: 8 fotogramas
+  cada 3 m por un prado llano y despejado (0,4 m de desnivel en 60 m); no se ve nada aparecer ni saltar.
+- **Rocas de caja.** Los módulos `SM_CliffRock_01` sueltos (8 × 4 × 6 m, trasera plana) se leían como cajas
+  de lados azul oscuro y tapa verde. En la colina ya no se colocan; en las Rocas del Pescador son peñascos
+  `SM_RockBig_01` (escala 1,6-2,3). Los cuatro «acantilado» de `island_props.json` (farallones del Pescador
+  y del islote) usan `SM_RockBig_01` con `meshScale` [1,6, 1,6, 2,1] (campo nuevo de tipo, opcional).
+- **Lámina gris de `f8-cesped-cerca`.** No se ha identificado con certeza: lo más probable es una espiga
+  `hierba_seca` de `SM_GrassTall_01`. Con la saturación nueva ya no se lee gris.
+
+Cifras tras los cambios:
+
+| Medida | Valor |
+|---|---|
+| Triángulos de césped a la vista (host `GrassRealData`) | 1,02-1,18 M (antes 1,10-1,26) |
+| `bench.ps1` | cala 198,7 / 110,1 · palmar 156,9 / 91,3 · faro 192,7 / 111,3 · galería 144,0 / 93,2 · ciclón 235,3 / 130,7 (media / mínimo); resumen 185,5 / 91,3: OK |
+| Host tests | 822 casos, 0 fallos |
+
+Pendiente de criterio: la orilla de `f8-arena-orilla` deja una franja de arena mojada entre el agua y la
+espuma cuando la ola baja (el mar se mueve y la espuma va por altura fija); la arena de `f8-arena-sol`
+sigue con ondas visibles a contraluz.
 
 ## Hallazgos sin corregir (decisión de diseño o de otro tramo)
 

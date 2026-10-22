@@ -23,8 +23,10 @@ def test_cantidad_y_mallas(generado):
     total = len(generado['instances'])
     assert decor.MIN_INSTANCES <= total <= decor.MAX_INSTANCES
     cuenta = decor.counts(generado)
-    assert all(n > 0 for n in cuenta.values()), cuenta
-    assert cuenta['SM_GrassClump_01'] > cuenta['SM_Shrub_01'] > cuenta['SM_PalmA_01']
+    colocadas = {m: n for m, n in cuenta.items() if m != 'SM_GrassClump_01'}
+    assert all(n > 0 for n in colocadas.values()), cuenta
+    assert cuenta['SM_GrassClump_01'] == 0, 'las matas K1 ya no se colocan: las sustituye la alfombra K6'
+    assert cuenta['SM_Shrub_01'] > cuenta['SM_PalmA_01']
     assert all(m.startswith(('/Game/Art/K1_Naturaleza/SM_', '/Game/Art/K6_Cesped/SM_')) for m in generado['meshes'])
     k6 = [m for m in generado['meshes'] if '/K6_Cesped/' in m]
     assert len(k6) == len(decor.K6) and all(cuenta[m.rsplit('/', 1)[-1]] >= 100 for m in k6), cuenta
@@ -48,7 +50,12 @@ def test_por_zona(layout, generado):
     lejos = np.hypot(palmas[:, 1] - colina.center[0], palmas[:, 2] - colina.center[1]) > colina.radius * 0.5
     assert lejos.all()  # la cima del faro queda despejada
     acantilados = _xy(generado, [decor.CLIFF])
-    assert len(acantilados) >= 10 and (acantilados[:, 5] < 1.0).all()
+    lo, hi = decor.CLIFF_SCALE
+    assert len(acantilados) >= 5 and ((acantilados[:, 5] >= lo) & (acantilados[:, 5] <= hi)).all()
+    # En la loma de la colina el módulo de acantilado se leía como una caja: solo en las Rocas del Pescador.
+    pescador = layout.zone('rocas_pescador')
+    cerca = np.hypot(acantilados[:, 1] - pescador.center[0], acantilados[:, 2] - pescador.center[1])
+    assert (cerca <= pescador.radius * 1.2 + 1e-6).all()
 
 
 def test_nada_flota_ni_queda_enterrado(layout, terreno, generado):
@@ -108,7 +115,8 @@ def test_json_versionado_al_dia(generado):
 def test_k6_no_mueve_las_palmeras(layout, props, terreno, generado):
     """La capa K6 tiene su propia tirada: las palmeras (y la tierra que el terreno pinta debajo) siguen igual."""
     rng = np.random.default_rng(layout.seed + 404)
-    sin_k6 = decor.ground(terreno, layout, decor.vegetation(layout, props, rng) + decor.cliffs(layout, props, rng))
+    base = decor.vegetation(layout, props, rng) + decor.cliffs(layout, props, rng)
+    sin_k6 = decor.ground(terreno, layout, [i for i in base if i[0] not in decor.DROPPED])
     assert np.array_equal(decor.palm_spots({'instances': sin_k6}, props), decor.palm_spots(generado, props))
     assert generado['instances'][:len(sin_k6)] == sin_k6
 
