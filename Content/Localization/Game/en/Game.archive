@@ -1911,6 +1911,24 @@
 				},
 				{
 					"Source": {
+						"Text": "¿Salir del juego? Lo que no hayas guardado se perderá."
+					},
+					"Translation": {
+						"Text": "Quit the game? Anything you have not saved will be lost."
+					},
+					"Key": "QuitConfirm"
+				},
+				{
+					"Source": {
+						"Text": "Sí, salir del juego"
+					},
+					"Translation": {
+						"Text": "Yes, quit the game"
+					},
+					"Key": "QuitConfirmYes"
+				},
+				{
+					"Source": {
 						"Text": "Salir del juego"
 					},
 					"Translation": {

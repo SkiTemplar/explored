@@ -7,14 +7,14 @@ La guía está en [`localizacion.md`](localizacion.md).
 
 | Concepto | Número |
 |---|---|
-| Textos en el catálogo | 387 |
-| … del C++ y los .ini (van al manifiesto de Unreal) | 262 |
+| Textos en el catálogo | 389 |
+| … del C++ y los .ini (van al manifiesto de Unreal) | 264 |
 | … de `Content/Data` (campos bilingües) | 125 |
 | Textos sin inglés | 0 |
 | Claves propuestas pendientes de integrar | 7 |
 | Literales sin localizar | 0 |
 | Literales invariantes | 4 |
-| Literales para revisar | 390 |
+| Literales para revisar | 395 |
 | Errores / avisos | 0 / 0 |
 
 ## Literales del C++
@@ -34,7 +34,7 @@ Sin letras (números, símbolos, separadores): `FText::AsCultureInvariant` o `FT
 | `Source/Explored/UI/Widgets/SExploredSettingsPanel.cpp:258` | `%d x %d` | `ResolutionLabels.Add(FText::AsCultureInvariant(FString::Printf(TEXT("%d x %d"), R.X, R.Y)));` |
 | `Source/Explored/WorldGen/ExploredPlaceholder.cpp:97` | `%s\n%s` | `Label->SetText(FText::FromString(FString::Printf(TEXT("%s\n%s"), *Prop.Type.ToString(), *Prop.Id.ToString())));` |
 
-### Revisar (390)
+### Revisar (395)
 
 Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 
@@ -363,12 +363,17 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/Items/IslandDataLoader.cpp:178` | `recipes.json: sin recetas` | `Errors.Add(TEXT("recipes.json: sin recetas"));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:183` | `recipes.json: %s` | `Errors.Add(FString::Printf(TEXT("recipes.json: %s"), *Error));` |
 | `Source/Explored/Items/IslandDataLoader.cpp:288` | `survival_needs.json: valores del cuerpo no válidos` | `Errors.Add(TEXT("survival_needs.json: valores del cuerpo no válidos"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:471` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
-| `Source/Explored/Items/IslandDataLoader.cpp:499` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:401` | `%s: no se puede leer` | `Errors.Add(FString::Printf(TEXT("%s: no se puede leer"), File));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:476` | `storm_curve.json: ventana sin estado conocido` | `Errors.Add(TEXT("storm_curve.json: ventana sin estado conocido"));` |
+| `Source/Explored/Items/IslandDataLoader.cpp:504` | `storm_curve.json: curva o ventanas no válidas` | `Errors.Add(TEXT("storm_curve.json: curva o ventanas no válidas"));` |
 | `Source/Explored/Items/ItemTypes.cpp:7` | `Pequeño` | `case EItemSize::Pequeno: return TEXT("Pequeño");` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:177` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:180` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
-| `Source/Explored/Narrative/BeaconSubsystem.cpp:183` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:178` | `Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>` | `TEXT("Pone la historia de Baliza Siete en una etapa: BalizaStage <nombre o 0-9>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:181` | `Mete objetos en la mochila de Iria: BalizaGive <id> <n>` | `TEXT("Mete objetos en la mochila de Iria: BalizaGive <id> <n>"),` |
+| `Source/Explored/Narrative/BeaconSubsystem.cpp:184` | `Pone el reloj: BalizaTime <día> <hora>` | `TEXT("Pone el reloj: BalizaTime <día> <hora>"),` |
+| `Source/Explored/Save/SaveIslandSections.cpp:178` | `objeto desconocido «%s»` | `OutReason = FString::Printf(TEXT("objeto desconocido «%s»"), *ItemId.ToString());` |
+| `Source/Explored/Save/SaveIslandSections.cpp:184` | `cantidad %d fuera de [1, %d]` | `OutReason = FString::Printf(TEXT("cantidad %d fuera de [1, %d]"), Count, MaxCount);` |
+| `Source/Explored/Save/SaveIslandSections.cpp:189` | `posición no finita` | `OutReason = TEXT("posición no finita");` |
+| `Source/Explored/Save/SaveIslandSections.cpp:194` | `posición fuera de la isla` | `OutReason = TEXT("posición fuera de la isla");` |
 | `Source/Explored/Save/SaveValue.cpp:455` | `escape \u incompleto` | `return Fail(TEXT("escape \\u incompleto"));` |
 | `Source/Explored/Save/SaveValue.cpp:462` | `cifra hexadecimal no válida` | `else { return Fail(TEXT("cifra hexadecimal no válida")); }` |
 | `Source/Explored/Save/SaveValue.cpp:473` | `se esperaba una cadena` | `return Fail(TEXT("se esperaba una cadena"));` |
@@ -394,12 +399,12 @@ Parecen prosa pero no se ve cómo llegan a la UI: comprobar a mano.
 | `Source/Explored/UI/IslandHudModel.cpp:17` | `Día %d` | `return FString::Printf(TEXT("Día %d"), FMath::Max(1, Day));` |
 | `Source/Explored/UI/IslandHudModel.cpp:24` | `%d hPa %s` | `return FString::Printf(TEXT("%d hPa %s"), Rounded, Arrow);` |
 | `Source/Explored/UI/IslandHudModel.cpp:29` | `%d hPa` | `return FString::Printf(TEXT("%d hPa"), FMath::IsFinite(Hpa) ? FMath::RoundToInt32(Hpa) : 0);` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:90` | `Clear Air` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:90` | `Gymnopedie No. 3` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Enchanted Journey` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
-| `Source/Explored/UI/Widgets/SExploredCredits.cpp:91` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:88` | `Clear Air` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:88` | `Gymnopedie No. 3` | `TEXT("Morning"), TEXT("Clear Air"), TEXT("Evening"), TEXT("Plaint"), TEXT("Gymnopedie No. 3"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:89` | `Enchanted Journey` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:89` | `Evening Fall (Harp)` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:89` | `Canon in D Major` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
+| `Source/Explored/UI/Widgets/SExploredCredits.cpp:89` | `Danse Morialta` | `TEXT("Enchanted Journey"), TEXT("Evening Fall (Harp)"), TEXT("Lamentation"), TEXT("Canon in D Major"), TEXT("Danse Morialta"),` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:351` | `cellSizeM fuera de 2-32` | `if (!(CellSizeM >= 2.0f && CellSizeM <= 32.0f)) { return Bad(TEXT("cellSizeM fuera de 2-32")); }` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:352` | `workPerFrame fuera de 50-20000` | `if (WorkPerFrame < 50 \|\| WorkPerFrame > 20000) { return Bad(TEXT("workPerFrame fuera de 50-20000")); }` |
 | `Source/Explored/WorldGen/GrassFieldModel.cpp:354` | `maxSlopeDeg fuera de 0-90` | `if (!(MaxSlopeDeg > 0.0f && MaxSlopeDeg < 90.0f)) { return Bad(TEXT("maxSlopeDeg fuera de 0-90")); }` |

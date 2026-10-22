@@ -546,7 +546,7 @@
 					"Keys": [
 						{
 							"Key": "PageTitle",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 557"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 561"
 						}
 					]
 				},
@@ -568,7 +568,7 @@
 					"Keys": [
 						{
 							"Key": "Driftwood",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 492"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 496"
 						}
 					]
 				},
@@ -579,7 +579,7 @@
 					"Keys": [
 						{
 							"Key": "MissingLens",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 118"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 119"
 						}
 					]
 				},
@@ -590,7 +590,7 @@
 					"Keys": [
 						{
 							"Key": "MissingWick",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 120"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 121"
 						}
 					]
 				},
@@ -601,7 +601,7 @@
 					"Keys": [
 						{
 							"Key": "MissingOil",
-							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 119"
+							"Path": "Source/Explored/Narrative/BeaconSubsystem.cpp - line 120"
 						}
 					]
 				},
@@ -798,7 +798,7 @@
 					"Keys": [
 						{
 							"Key": "Title",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 114"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 113"
 						}
 					]
 				},
@@ -809,7 +809,7 @@
 					"Keys": [
 						{
 							"Key": "Code",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 119"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 118"
 						}
 					]
 				},
@@ -820,7 +820,7 @@
 					"Keys": [
 						{
 							"Key": "Thanks",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 135"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 134"
 						}
 					]
 				},
@@ -831,7 +831,7 @@
 					"Keys": [
 						{
 							"Key": "Subtitle",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 115"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 114"
 						}
 					]
 				},
@@ -842,7 +842,7 @@
 					"Keys": [
 						{
 							"Key": "MusicLicense",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 133"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 132"
 						}
 					]
 				},
@@ -853,7 +853,7 @@
 					"Keys": [
 						{
 							"Key": "Font",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 124"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 123"
 						}
 					]
 				},
@@ -864,7 +864,7 @@
 					"Keys": [
 						{
 							"Key": "Art",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 120"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 119"
 						}
 					]
 				},
@@ -875,7 +875,7 @@
 					"Keys": [
 						{
 							"Key": "EngineHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 121"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 120"
 						}
 					]
 				},
@@ -886,7 +886,7 @@
 					"Keys": [
 						{
 							"Key": "MusicHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 126"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 125"
 						}
 					]
 				},
@@ -897,7 +897,7 @@
 					"Keys": [
 						{
 							"Key": "MusicExtra",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 128"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 127"
 						}
 					]
 				},
@@ -908,7 +908,7 @@
 					"Keys": [
 						{
 							"Key": "MusicOwn",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 127"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 126"
 						}
 					]
 				},
@@ -919,7 +919,7 @@
 					"Keys": [
 						{
 							"Key": "CodeHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 118"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 117"
 						}
 					]
 				},
@@ -930,7 +930,7 @@
 					"Keys": [
 						{
 							"Key": "Author",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 117"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 116"
 						}
 					]
 				},
@@ -941,7 +941,7 @@
 					"Keys": [
 						{
 							"Key": "FontLicense",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 125"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 124"
 						}
 					]
 				},
@@ -952,7 +952,7 @@
 					"Keys": [
 						{
 							"Key": "FontHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 123"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 122"
 						}
 					]
 				},
@@ -963,7 +963,7 @@
 					"Keys": [
 						{
 							"Key": "AuthorHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 116"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 115"
 						}
 					]
 				},
@@ -974,7 +974,7 @@
 					"Keys": [
 						{
 							"Key": "Engine",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 122"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 121"
 						}
 					]
 				},
@@ -985,7 +985,7 @@
 					"Keys": [
 						{
 							"Key": "Back",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 102"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 101"
 						}
 					]
 				},
@@ -996,7 +996,7 @@
 					"Keys": [
 						{
 							"Key": "Track",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 131"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 130"
 						}
 					]
 				}
@@ -1237,7 +1237,7 @@
 					"Keys": [
 						{
 							"Key": "PickCoconut",
-							"Path": "Source/Explored/WorldGen/ExploredCoconutPalm.cpp - line 43"
+							"Path": "Source/Explored/WorldGen/ExploredCoconutPalm.cpp - line 44"
 						}
 					]
 				},
@@ -2206,7 +2206,7 @@
 					"Keys": [
 						{
 							"Key": "SaveGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 92"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 94"
 						},
 						{
 							"Key": "SlotsSaveTitle",
@@ -2408,7 +2408,7 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirmNo",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 125"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 133"
 						}
 					]
 				},
@@ -2463,7 +2463,7 @@
 					"Keys": [
 						{
 							"Key": "Paused",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 52"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 53"
 						}
 					]
 				},
@@ -2518,7 +2518,7 @@
 					"Keys": [
 						{
 							"Key": "Resume",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 82"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 84"
 						}
 					]
 				},
@@ -2595,7 +2595,7 @@
 					"Keys": [
 						{
 							"Key": "ExitToMenu",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 97"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 99"
 						}
 					]
 				},
@@ -2606,7 +2606,7 @@
 					"Keys": [
 						{
 							"Key": "QuitGame",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 102"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 104"
 						}
 					]
 				},
@@ -2705,7 +2705,18 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirmYes",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 130"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 117"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Sí, salir del juego"
+					},
+					"Keys": [
+						{
+							"Key": "QuitConfirmYes",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 116"
 						}
 					]
 				},
@@ -2716,7 +2727,7 @@
 					"Keys": [
 						{
 							"Key": "PauseKeysHint",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 67"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 69"
 						}
 					]
 				},
@@ -2892,7 +2903,18 @@
 					"Keys": [
 						{
 							"Key": "ExitConfirm",
-							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 117"
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 114"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "¿Salir del juego? Lo que no hayas guardado se perderá."
+					},
+					"Keys": [
+						{
+							"Key": "QuitConfirm",
+							"Path": "Source/Explored/UI/Widgets/SExploredPauseMenu.cpp - line 113"
 						}
 					]
 				},
