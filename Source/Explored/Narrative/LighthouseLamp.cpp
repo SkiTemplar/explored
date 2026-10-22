@@ -38,7 +38,12 @@ namespace LighthouseLampDetail
 	constexpr float GlassGlowLit = 3.0f;
 	const FName GlowCellParam(TEXT("GlowCell"));
 	const FName GlowStrengthParam(TEXT("GlowStrength"));
-	constexpr int32 ConeSides = 18;
+	/** Lados del cono del haz: con 18 se leían bandas paralelas al eje (crítica de arte de F6). */
+	constexpr int32 ConeSides = 48;
+	/** Intensidad del haz a plena fuerza (M_BeaconBeam, BeamIntensity): con 0,6 se leía como un tablón. */
+	constexpr float BeamIntensityLit = 0.35f;
+	/** Distancia (cm) de la punta al primer anillo del cono: el anillo lleva las mismas normales que la boca. */
+	constexpr float ConeTipRingCm = 1.0f;
 
 	/**
 	 * Ranuras de SM_FaroLinterna_01 en su espacio local (cm), de Art/Export/K2_Estructuras/manifest.json
@@ -174,7 +179,10 @@ void ALighthouseLamp::BuildBeamCone()
 	BeamCone->SetMobility(EComponentMobility::Movable);
 	BeamCone->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	BeamCone->SetCastShadow(false);
-	// Cono abierto a lo largo de +X (el eje del foco): punta en la lente, boca a BeamConeLengthM.
+	// Cono abierto a lo largo de +X (el eje del foco): punta en la lente, boca a BeamConeLengthM. Es un
+	// tronco de cono con un anillo a ConeTipRingCm de la punta en vez de una punta por lado: cada arista
+	// que comparten dos lados tiene la misma normal en sus dos extremos y el sombreado del material
+	// (|N·V|) no salta entre lados, que era lo que dibujaba bandas paralelas al eje.
 	const float Length = BeamConeLengthM * 100.0f;
 	const float Radius = BeamConeRadiusM * 100.0f;
 	const float Slope = Radius / FMath::Max(Length, 1.0f);
@@ -187,7 +195,7 @@ void ALighthouseLamp::BuildBeamCone()
 		const float Angle = UE_TWO_PI * static_cast<float>(Side) / ConeSides;
 		const FVector Radial(0.0, FMath::Cos(Angle), FMath::Sin(Angle));
 		const FVector Normal = (Radial - FVector(Slope, 0.0, 0.0)).GetSafeNormal();
-		Vertices.Add(FVector::ZeroVector);
+		Vertices.Add(FVector(ConeTipRingCm, 0.0, 0.0) + Radial * (ConeTipRingCm * Slope));
 		Vertices.Add(FVector(Length, 0.0, 0.0) + Radial * Radius);
 		Normals.Add(Normal);
 		Normals.Add(Normal);
@@ -198,6 +206,7 @@ void ALighthouseLamp::BuildBeamCone()
 	{
 		const int32 Tip = Side * 2;
 		Triangles.Append({ Tip, Tip + 3, Tip + 1 });
+		Triangles.Append({ Tip, Tip + 2, Tip + 3 });
 	}
 	BeamCone->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, {}, {}, false);
 	if (UMaterialInterface* Material = Cast<UMaterialInterface>(FSoftObjectPath(BeamMaterialPath).TryLoad()))
@@ -265,7 +274,7 @@ void ALighthouseLamp::UpdateFlame(float Now)
 	if (BeamMaterial)
 	{
 		BeamMaterial->SetVectorParameterValue(TEXT("BeamOrigin"), FLinearColor(Beam->GetComponentLocation()));
-		BeamMaterial->SetScalarParameterValue(TEXT("BeamIntensity"), 0.6f * Grow);
+		BeamMaterial->SetScalarParameterValue(TEXT("BeamIntensity"), BeamIntensityLit * Grow);
 	}
 }
 
