@@ -293,7 +293,7 @@ void AExploredSkyController::UpdateClouds(float DeltaSeconds, float CloudCoverNo
 		const FCloudInstance& Cloud = CloudField.Clouds[I];
 		const float Visible = FCloudFieldModel::Visibility(Cloud, CloudCoverNow);
 		// Con el cielo cubierto las nubes bajan y se aplastan un poco (techo de tormenta).
-		const float Low = FMath::Lerp(1.0f, 0.65f, FSkyPaletteModel::StormFromCloudCover(CloudCoverNow));
+		const float Low = FMath::Lerp(1.0f, FCloudFieldModel::StormCeilingFactor, FSkyPaletteModel::StormFromCloudCover(CloudCoverNow));
 		const FVector Location(Cloud.Position.X * 100.0, Cloud.Position.Y * 100.0, Cloud.Altitude * Low * 100.0);
 		const float Scale = FMath::Max(Cloud.Scale * Visible, 0.001f);
 		const FTransform Transform(FRotator(0.0, Cloud.YawDeg, 0.0), Location, FVector(Scale, Scale, Scale * Low));

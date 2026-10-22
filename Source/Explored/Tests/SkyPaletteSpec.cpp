@@ -116,6 +116,7 @@ void FSkyPaletteSpec::Define()
 				const double R = C.Position.Size();
 				TestTrue(TEXT("anillo"), R >= FCloudFieldModel::InnerRadius - 0.01 && R <= FCloudFieldModel::OuterRadius + 0.01);
 				TestTrue(TEXT("altura"), C.Altitude >= FCloudFieldModel::MinAltitude && C.Altitude <= FCloudFieldModel::MaxAltitude);
+				TestTrue(TEXT("sobre la linterna con tormenta"), C.Altitude * FCloudFieldModel::StormCeilingFactor >= FCloudFieldModel::LanternClearanceM);
 				TestTrue(TEXT("variante"), C.Variant >= 0 && C.Variant < FCloudFieldModel::NumVariants);
 				TestEqual(TEXT("determinista"), C.Position.X, B.Clouds[I].Position.X);
 				Always += C.CoverThreshold <= 0.0f ? 1 : 0;
