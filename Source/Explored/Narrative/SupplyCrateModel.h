@@ -4,6 +4,8 @@
 
 #include "Narrative/BeaconProgressModel.h"
 
+struct FIslandProp;
+
 /**
  * Caja de suministros de la base del faro (GDD v3 §5.3): entrega una sola vez
  * lo mínimo que falta del camino crítico, con tope de 1 cuerda, 3 fibras y
@@ -78,4 +80,10 @@ struct EXPLORED_API FSupplyCrateModel
 	 */
 	static int32 DriftwoodAtDawn(const TMap<FName, int32>& Inventory, const FBeaconProgressState& Progress,
 		const TMap<FName, int32>& WorldRemaining, bool bAnyFireBurning);
+
+	/**
+	 * Dónde se deja la leña de deriva (cm): sobre el montón de la cala (Beach) con el suelo real
+	 * en metros, ExploredSaveStates::RestLiftCm por encima para que no nazca dentro de la arena.
+	 */
+	static FVector DriftwoodPileLocation(const FIslandProp& Beach, float GroundMeters);
 };

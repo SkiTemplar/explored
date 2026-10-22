@@ -1,5 +1,8 @@
 #include "Narrative/SupplyCrateModel.h"
 
+#include "Save/SaveIslandSections.h"
+#include "WorldGen/IslandPropsModel.h"
+
 namespace SupplyCrateDetail
 {
 	int32 Count(const TMap<FName, int32>& Inventory, const TCHAR* Id)
@@ -180,4 +183,9 @@ int32 FSupplyCrateModel::DriftwoodAtDawn(const TMap<FName, int32>& Inventory, co
 		return 0;
 	}
 	return ComputeMissing(Inventory, Progress, WorldRemaining).FindRef(WoodId());
+}
+
+FVector FSupplyCrateModel::DriftwoodPileLocation(const FIslandProp& Beach, float GroundMeters)
+{
+	return IslandPropsPlacement::WorldLocation(Beach, GroundMeters) + FVector(0.0, 0.0, ExploredSaveStates::RestLiftCm);
 }

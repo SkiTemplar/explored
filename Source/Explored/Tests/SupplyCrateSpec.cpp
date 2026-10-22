@@ -2,6 +2,8 @@
 
 #include "Narrative/BeaconProgressModel.h"
 #include "Narrative/SupplyCrateModel.h"
+#include "Save/SaveIslandSections.h"
+#include "WorldGen/IslandPropsModel.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -238,6 +240,24 @@ void FSupplyCrateSpec::Define()
 					TestTrue(FString::Printf(TEXT("Topes con %d tarros y hitos %d"), Oil, Flags), bWithinCaps);
 				}
 			}
+		});
+	});
+
+	Describe(TEXT("leña de deriva"), [this]()
+	{
+		It(TEXT("se deja sobre la arena de la cala, no bajo ella"), [this]()
+		{
+			FIslandProp Beach;
+			Beach.Id = FName(TEXT("lena_cala_1"));
+			Beach.Location = FVector2D(-98.0, 18.0);
+			// Con el suelo de la cala a 2,33 m, el código anterior (suelo 0) la dejaba a 30 cm de cota.
+			const FVector Pile = FSupplyCrateModel::DriftwoodPileLocation(Beach, 2.33f);
+			TestEqual(TEXT("X"), Pile.X, -9800.0);
+			TestEqual(TEXT("Y"), Pile.Y, 1800.0);
+			TestEqual(TEXT("Z = suelo + RestLiftCm"), Pile.Z, 233.0 + ExploredSaveStates::RestLiftCm, 0.01);
+			Beach.Elevation = 0.5f;
+			TestEqual(TEXT("respeta la elevación del montón"), FSupplyCrateModel::DriftwoodPileLocation(Beach, 2.33f).Z,
+				283.0 + ExploredSaveStates::RestLiftCm, 0.01);
 		});
 	});
 }

@@ -488,8 +488,7 @@ void UBeaconSubsystem::WashUpDriftwood(const APawn& Pawn)
 	}
 	// Sobre la arena de la cala, como la coloca el populador: con suelo 0 quedaba 2 m bajo tierra.
 	const float Ground = ExploredGround::HeightAtMeters(World, Beach->Location.X, Beach->Location.Y);
-	const FVector Pile = IslandPropsPlacement::WorldLocation(*Beach, Ground) + FVector(0.0, 0.0, ExploredSaveStates::RestLiftCm);
-	Island->SpawnDropped(FSupplyCrateModel::WoodId(), Wood, Pile);
+	Island->SpawnDropped(FSupplyCrateModel::WoodId(), Wood, FSupplyCrateModel::DriftwoodPileLocation(*Beach, Ground));
 	UE_LOG(LogExplored, Display, TEXT("[Baliza] Leña de deriva en la Cala Varada: %d (día %d)"), Wood, LastDriftwoodDay);
 	if (AExploredHUD* HUD = BeaconSubsystemDetail::FindHUD(this))
 	{
