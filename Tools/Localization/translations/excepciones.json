@@ -1,4 +1,7 @@
 {
   "longitud": {},
-  "estilo": {}
+  "estilo": {
+    "ExploredCredits,EngineNotice": "«Epic» es el nombre de la empresa (Epic Games, Inc.) en el aviso que exige el EULA de Unreal Engine, no un adjetivo",
+    "ExploredCredits,EngineCopyright": "«Epic» es el nombre de la empresa (Epic Games, Inc.) en el aviso de copyright que exige el EULA de Unreal Engine"
+  }
 }

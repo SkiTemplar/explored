@@ -1034,6 +1034,26 @@
 			"es": "Unreal Engine 5.6",
 			"en": "Unreal Engine 5.6"
 		},
+		"EngineNotice": {
+			"es": "Baliza Siete usa Unreal® Engine. Unreal® es una marca comercial o registrada de Epic Games, Inc. en los Estados Unidos de América y en otros países.",
+			"en": "Baliza Siete uses the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere."
+		},
+		"EngineCopyright": {
+			"es": "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. Todos los derechos reservados.",
+			"en": "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. All rights reserved."
+		},
+		"SoundfontNotice": {
+			"es": "Instrumentos: soundfont FluidR3Mono GM (licencia MIT). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016.",
+			"en": "Instruments: FluidR3Mono GM soundfont (MIT licence). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016."
+		},
+		"MusicPublicDomain": {
+			"es": "Grabaciones de Satie, Chopin y otros: dominio público (CC0), de Musopen y Wikimedia Commons.",
+			"en": "Recordings of Satie, Chopin and others: public domain (CC0), from Musopen and Wikimedia Commons."
+		},
+		"LicensesFile": {
+			"es": "Textos completos de las licencias: THIRD_PARTY_LICENSES.txt, junto al juego.",
+			"en": "Full licence texts: THIRD_PARTY_LICENSES.txt, next to the game."
+		},
 		"FontHeading": {
 			"es": "Tipografía",
 			"en": "Typeface"

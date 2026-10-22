@@ -2,8 +2,8 @@
 	"version": 1,
 	"note": "Catálogo generado por Tools/Localization (uv run l10n export). Fuente de verdad: el código (español), Tools/Localization/translations/en.json (inglés del C++) y Content/Data (campos bilingües).",
 	"stats": {
-		"total": 395,
-		"cpp": 270,
+		"total": 400,
+		"cpp": 275,
 		"datos": 125,
 		"pendientes": 7,
 		"sin_en": 0,
@@ -781,6 +781,16 @@
 		},
 		{
 			"namespace": "ExploredCredits",
+			"key": "EngineCopyright",
+			"es": "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. Todos los derechos reservados.",
+			"en": "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. All rights reserved.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:125"
+			]
+		},
+		{
+			"namespace": "ExploredCredits",
 			"key": "EngineHeading",
 			"es": "Motor",
 			"en": "Engine",
@@ -791,12 +801,22 @@
 		},
 		{
 			"namespace": "ExploredCredits",
+			"key": "EngineNotice",
+			"es": "Baliza Siete usa Unreal® Engine. Unreal® es una marca comercial o registrada de Epic Games, Inc. en los Estados Unidos de América y en otros países.",
+			"en": "Baliza Siete uses the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:123"
+			]
+		},
+		{
+			"namespace": "ExploredCredits",
 			"key": "Font",
 			"es": "Lora, de The Lora Project Authors",
 			"en": "Lora, by The Lora Project Authors",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:123"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:127"
 			]
 		},
 		{
@@ -806,7 +826,7 @@
 			"en": "Typeface",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:122"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:126"
 			]
 		},
 		{
@@ -816,7 +836,17 @@
 			"en": "SIL Open Font License 1.1",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:124"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:128"
+			]
+		},
+		{
+			"namespace": "ExploredCredits",
+			"key": "LicensesFile",
+			"es": "Textos completos de las licencias: THIRD_PARTY_LICENSES.txt, junto al juego.",
+			"en": "Full licence texts: THIRD_PARTY_LICENSES.txt, next to the game.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:144"
 			]
 		},
 		{
@@ -826,7 +856,7 @@
 			"en": "Additional music by Kevin MacLeod (incompetech.com)",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:127"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:134"
 			]
 		},
 		{
@@ -836,7 +866,7 @@
 			"en": "Music",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:125"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:129"
 			]
 		},
 		{
@@ -846,7 +876,7 @@
 			"en": "Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). Changes: normalised volume and trimmed silences.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:132"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:139"
 			]
 		},
 		{
@@ -856,7 +886,27 @@
 			"en": "Pieces composed in code for the game",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:126"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:130"
+			]
+		},
+		{
+			"namespace": "ExploredCredits",
+			"key": "MusicPublicDomain",
+			"es": "Grabaciones de Satie, Chopin y otros: dominio público (CC0), de Musopen y Wikimedia Commons.",
+			"en": "Recordings of Satie, Chopin and others: public domain (CC0), from Musopen and Wikimedia Commons.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:142"
+			]
+		},
+		{
+			"namespace": "ExploredCredits",
+			"key": "SoundfontNotice",
+			"es": "Instrumentos: soundfont FluidR3Mono GM (licencia MIT). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016.",
+			"en": "Instruments: FluidR3Mono GM soundfont (MIT licence). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016.",
+			"origin": "cpp",
+			"locations": [
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:132"
 			]
 		},
 		{
@@ -876,7 +926,7 @@
 			"en": "Thank you for lighting the beacon.",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:134"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:145"
 			]
 		},
 		{
@@ -896,7 +946,7 @@
 			"en": "\"{0}\"",
 			"origin": "cpp",
 			"locations": [
-				"Source/Explored/UI/Widgets/SExploredCredits.cpp:130"
+				"Source/Explored/UI/Widgets/SExploredCredits.cpp:137"
 			]
 		},
 		{

@@ -59,9 +59,14 @@ $code = Invoke-Native $RunUAT $cmdArgs '(Error|error C|BUILD SUCCESSFUL|BUILD FA
 if ($code -ne 0) { throw "BuildCookRun falló con código $code" }
 
 $root = Join-Path $archive 'Windows'
+# Avisos de terceros (EULA de Unreal, CC BY, MIT, OFL) a la vista, en la raíz del paquete.
+$licenses = Join-Path $ProjectRoot 'Content\Licenses\THIRD_PARTY_LICENSES.txt'
+if (Test-Path $licenses) { Copy-Item $licenses $root -Force }
 $suffix = if ($Configuration -eq 'Shipping') { '-Win64-Shipping' } else { '' }
 $expected = @(
     (Join-Path $root 'Explored.exe'),
+    (Join-Path $root 'THIRD_PARTY_LICENSES.txt'),
+    (Join-Path $root 'Explored\Content\Licenses\THIRD_PARTY_LICENSES.txt'),
     (Join-Path $root "Explored\Binaries\Win64\Explored$suffix.exe"),
     (Join-Path $root 'Explored\Content\Data\island.json'),
     (Join-Path $root 'Explored\Content\Data\items.json'),

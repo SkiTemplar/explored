@@ -119,11 +119,18 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 	Add(LOCTEXT("Art", "Mallas low poly generadas con Blender por script; una sola paleta de 41 colores"), ELine::Small, 8.0f);
 	Add(LOCTEXT("EngineHeading", "Motor"), ELine::Heading, 70.0f);
 	Add(LOCTEXT("Engine", "Unreal Engine 5.6"), ELine::Body, 8.0f);
+	// Aviso que exige el EULA de Unreal Engine (atribución y marca).
+	Add(LOCTEXT("EngineNotice", "Baliza Siete usa Unreal® Engine. Unreal® es una marca comercial o registrada de Epic Games, Inc. en los Estados Unidos de América y en otros países."),
+		ELine::Small, 8.0f);
+	Add(LOCTEXT("EngineCopyright", "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. Todos los derechos reservados."), ELine::Small, 4.0f);
 	Add(LOCTEXT("FontHeading", "Tipografía"), ELine::Heading, 70.0f);
 	Add(LOCTEXT("Font", "Lora, de The Lora Project Authors"), ELine::Body, 8.0f);
 	Add(LOCTEXT("FontLicense", "SIL Open Font License 1.1"), ELine::Small, 4.0f);
 	Add(LOCTEXT("MusicHeading", "Música"), ELine::Heading, 70.0f);
 	Add(LOCTEXT("MusicOwn", "Piezas compuestas por código para el juego"), ELine::Body, 8.0f);
+	// Los instrumentos de las piezas propias salen de un soundfont MIT: sus avisos van en la obra derivada.
+	Add(LOCTEXT("SoundfontNotice", "Instrumentos: soundfont FluidR3Mono GM (licencia MIT). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016."),
+		ELine::Small, 8.0f);
 	Add(LOCTEXT("MusicExtra", "Música adicional de Kevin MacLeod (incompetech.com)"), ELine::Body, 24.0f);
 	for (const TCHAR* Track : MusicTracks)
 	{
@@ -131,6 +138,10 @@ void SExploredCredits::Construct(const FArguments& InArgs)
 	}
 	Add(LOCTEXT("MusicLicense", "Licencia Creative Commons Reconocimiento 4.0 (CC BY 4.0). Cambios: volumen normalizado y silencios recortados."),
 		ELine::Small, 12.0f);
+	Add(INVTEXT("https://creativecommons.org/licenses/by/4.0/"), ELine::Small, 4.0f);
+	Add(LOCTEXT("MusicPublicDomain", "Grabaciones de Satie, Chopin y otros: dominio público (CC0), de Musopen y Wikimedia Commons."),
+		ELine::Small, 12.0f);
+	Add(LOCTEXT("LicensesFile", "Textos completos de las licencias: THIRD_PARTY_LICENSES.txt, junto al juego."), ELine::Small, 40.0f);
 	Add(LOCTEXT("Thanks", "Gracias por encender la baliza."), ELine::Heading, 120.0f);
 	// Y otro igual al final: la última línea sale por arriba y el rollo acaba vacío.
 	Roll->AddSlot().AutoHeight()[SNew(SBox).HeightOverride_Lambda(ViewGap)];

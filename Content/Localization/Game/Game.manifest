@@ -804,6 +804,17 @@
 				},
 				{
 					"Source": {
+						"Text": "Baliza Siete usa Unreal® Engine. Unreal® es una marca comercial o registrada de Epic Games, Inc. en los Estados Unidos de América y en otros países."
+					},
+					"Keys": [
+						{
+							"Key": "EngineNotice",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 123"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Desarrollado con Claude (Anthropic)"
 					},
 					"Keys": [
@@ -815,12 +826,34 @@
 				},
 				{
 					"Source": {
+						"Text": "Grabaciones de Satie, Chopin y otros: dominio público (CC0), de Musopen y Wikimedia Commons."
+					},
+					"Keys": [
+						{
+							"Key": "MusicPublicDomain",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 142"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Gracias por encender la baliza."
 					},
 					"Keys": [
 						{
 							"Key": "Thanks",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 134"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 145"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Instrumentos: soundfont FluidR3Mono GM (licencia MIT). Frank Wen © 2000-2002, 2008; Michael Cowgill © 2014-2017; S. Christian Collins © 2018; Ethan Winer © 2002; Michael Schorsch © 2016."
+					},
+					"Keys": [
+						{
+							"Key": "SoundfontNotice",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 132"
 						}
 					]
 				},
@@ -842,7 +875,7 @@
 					"Keys": [
 						{
 							"Key": "MusicLicense",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 132"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 139"
 						}
 					]
 				},
@@ -853,7 +886,7 @@
 					"Keys": [
 						{
 							"Key": "Font",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 123"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 127"
 						}
 					]
 				},
@@ -886,7 +919,7 @@
 					"Keys": [
 						{
 							"Key": "MusicHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 125"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 129"
 						}
 					]
 				},
@@ -897,7 +930,7 @@
 					"Keys": [
 						{
 							"Key": "MusicExtra",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 127"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 134"
 						}
 					]
 				},
@@ -908,7 +941,7 @@
 					"Keys": [
 						{
 							"Key": "MusicOwn",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 126"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 130"
 						}
 					]
 				},
@@ -941,7 +974,18 @@
 					"Keys": [
 						{
 							"Key": "FontLicense",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 124"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 128"
+						}
+					]
+				},
+				{
+					"Source": {
+						"Text": "Textos completos de las licencias: THIRD_PARTY_LICENSES.txt, junto al juego."
+					},
+					"Keys": [
+						{
+							"Key": "LicensesFile",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 144"
 						}
 					]
 				},
@@ -952,7 +996,7 @@
 					"Keys": [
 						{
 							"Key": "FontHeading",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 122"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 126"
 						}
 					]
 				},
@@ -980,6 +1024,17 @@
 				},
 				{
 					"Source": {
+						"Text": "Unreal® Engine, Copyright 1998-2026, Epic Games, Inc. Todos los derechos reservados."
+					},
+					"Keys": [
+						{
+							"Key": "EngineCopyright",
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 125"
+						}
+					]
+				},
+				{
+					"Source": {
 						"Text": "Volver"
 					},
 					"Keys": [
@@ -996,7 +1051,7 @@
 					"Keys": [
 						{
 							"Key": "Track",
-							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 130"
+							"Path": "Source/Explored/UI/Widgets/SExploredCredits.cpp - line 137"
 						}
 					]
 				}

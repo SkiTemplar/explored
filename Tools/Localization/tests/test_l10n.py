@@ -56,7 +56,10 @@ def test_ficheros_generados_al_dia(real_cat: Catalogue) -> None:
 
 def test_manifiesto_real_solo_con_espacios_del_codigo(real_cat: Catalogue) -> None:
     doc = unreal.manifest(real_cat.exported)
-    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == ["Explored", "ExploredBeacon", "ExploredIsland", "ExploredUI"]
+    assert [ns["Namespace"] for ns in doc["Subnamespaces"]] == [
+        "Explored", "ExploredBeacon", "ExploredBody", "ExploredCredits", "ExploredInventory", "ExploredIsland",
+        "ExploredNotebook", "ExploredRaft", "ExploredTutorial", "ExploredUI",
+    ]
 
 
 # --------------------------------------------------------------------------- C++
@@ -254,9 +257,9 @@ def test_plural_valido_en_los_dos_idiomas() -> None:
     assert (mod.argument, mod.name, mod.values) == ("Count", "plural", ["one=pez", "other=peces"])
 
 
-def test_texto_real_del_hud_con_plural(real_cat: Catalogue) -> None:
-    wounds = next(e for e in real_cat.entries if e.id == "ExploredUI,CondOpenWounds")
-    assert icu.numeric_signature(wounds.es) == icu.numeric_signature(wounds.en) == {("Count", "plural")}
+def test_textos_reales_con_los_mismos_modificadores_en_los_dos_idiomas(real_cat: Catalogue) -> None:
+    distintos = [e.id for e in real_cat.entries if icu.numeric_signature(e.es) != icu.numeric_signature(e.en)]
+    assert distintos == []
 
 
 def test_plural_sin_other() -> None:
@@ -377,8 +380,8 @@ def test_longitudes_de_logro() -> None:
 
 
 def test_excepcion_de_estilo_y_de_longitud(src: Sources) -> None:
-    del src.exceptions["estilo"]["ExploredUI,QualityEpic"]
-    assert has(build(src).report.warnings, "ExploredUI,QualityEpic", "adjetivo vacío")
+    del src.exceptions["estilo"]["ExploredCredits,EngineNotice"]
+    assert has(build(src).report.warnings, "ExploredCredits,EngineNotice", "adjetivo vacío")
     src.exceptions["longitud"]["ExploredUI,NoExiste"] = "sobra"
     assert has(build(src).report.warnings, "ExploredUI,NoExiste", "ya no hace falta")
     src.exceptions["otra"] = {}
