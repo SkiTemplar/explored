@@ -69,7 +69,7 @@ protected:
 private:
 	void ApplyTime(float Hours, float TotalDays, float DeltaSeconds);
 	void ApplyLook(const FSkyLook& Look, float SunZ);
-	void ApplyPostProcess(float GoldenHour, float SunUp);
+	void ApplyPostProcess(float GoldenHour, float SunUp, float DayLock);
 	void SetupSkyAssets();
 	void UpdateClouds(float DeltaSeconds, float CloudCoverNow);
 	void PlaceDisc(UStaticMeshComponent* Disc, const FVector& Direction, float AngularDiameterDeg, bool bVisible) const;

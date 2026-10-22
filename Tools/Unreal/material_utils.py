@@ -167,9 +167,10 @@ PATCH_COLORS = ("hierba_clara", "hierba_oscura", "hierba_salvia")
 GRASS_BASE_SHADE = 0.64
 # Punta de las hojas (TipBright de M_ToonCesped) y saturación del césped: la crítica de f8 vio la alfombra
 # cercana verde lima pálido junto a palmeras y arbustos saturados; la punta baja un 12 % y el verde se satura
-# un 25 % (alrededor de la luminancia lineal), también en el suelo bajo la hierba para que casen.
+# un 8 % (alrededor de la luminancia lineal), también en el suelo bajo la hierba para que casen. Era un 25 %
+# cuando el postproceso desaturaba la imagen entera al 0,88; con el grading neutro (1,0) basta con un 8 %.
 GRASS_TIP_BRIGHT = 0.92
-GRASS_SATURATION = 1.25
+GRASS_SATURATION = 1.08
 GRASS_FAR_TINT = (1.13, 1.02, 1.13)
 LUMA = (0.2126, 0.7152, 0.0722)
 

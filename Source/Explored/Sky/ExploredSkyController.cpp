@@ -34,6 +34,11 @@ namespace ExploredSkyDetail
 	constexpr float MoonDiameterDeg = 5.0f;
 	/** Brillo (emisivo) de la cúpula de día: el cielo algo más claro que la arena al sol. */
 	constexpr float SkyLuminance = 1.8f;
+	/** Rango de la autoexposición (EV100) al amanecer, al ocaso y de noche. */
+	constexpr float AutoExposureMinEV100 = -1.2f;
+	constexpr float AutoExposureMaxEV100 = 2.0f;
+	/** Exposición fija de día (EV100), medida en f8-arena-cerca para que la arena seca dé ~#E0D2A4. */
+	constexpr float DayExposureEV100 = 1.45f;
 	constexpr uint32 CloudSeed = 20261021u;
 	/** Alisio del este: las nubes derivan hacia el oeste-suroeste. */
 	const FVector2D WindDirection(-0.35, -0.94);
@@ -139,9 +144,9 @@ AExploredSkyController::AExploredSkyController()
 	FPostProcessSettings& PP = PostProcess->Settings;
 	// Exposición casi fija por hora (rango estrecho) para que no «respire» al girar la cámara.
 	PP.bOverride_AutoExposureMinBrightness = true;
-	PP.AutoExposureMinBrightness = -1.2f;
+	PP.AutoExposureMinBrightness = ExploredSkyDetail::AutoExposureMinEV100;
 	PP.bOverride_AutoExposureMaxBrightness = true;
-	PP.AutoExposureMaxBrightness = 2.0f;
+	PP.AutoExposureMaxBrightness = ExploredSkyDetail::AutoExposureMaxEV100;
 	PP.bOverride_AutoExposureSpeedUp = true;
 	PP.AutoExposureSpeedUp = 6.0f;
 	PP.bOverride_AutoExposureSpeedDown = true;
@@ -149,9 +154,10 @@ AExploredSkyController::AExploredSkyController()
 	PP.bOverride_AutoExposureBias = true;
 	PP.AutoExposureBias = 0.3f;
 	// Grading contenido (GDD §11): los colores ya son los de la paleta; sin saturar ni contrastar
-	// de más, sin oclusión ambiental de pantalla, reflejos de pantalla, grano ni aberración.
+	// de más, sin oclusión ambiental de pantalla, reflejos de pantalla, grano ni aberración. La
+	// saturación es neutra: con 0,88 la arena, la hierba y el cielo quedaban grises frente a la paleta.
 	PP.bOverride_ColorSaturation = true;
-	PP.ColorSaturation = Vec4(0.88f);
+	PP.ColorSaturation = Vec4(1.0f);
 	PP.bOverride_ColorContrast = true;
 	PP.ColorContrast = Vec4(1.02f);
 	PP.bOverride_ColorGain = true;
@@ -364,7 +370,8 @@ void AExploredSkyController::ApplyTime(float Hours, float TotalDays, float Delta
 	}
 	ApplyLook(Look, SunZ);
 	// Hora dorada: sol al ras del horizonte y todavía visible.
-	ApplyPostProcess(SunUp * (1.0f - FMath::SmoothStep(0.06f, 0.3f, SunZ)), SunUp);
+	const float HighSun = FMath::SmoothStep(0.06f, 0.3f, SunZ);
+	ApplyPostProcess(SunUp * (1.0f - HighSun), SunUp, HighSun);
 }
 
 void AExploredSkyController::ApplyLook(const FSkyLook& Look, float SunZ)
@@ -401,9 +408,14 @@ void AExploredSkyController::ApplyLook(const FSkyLook& Look, float SunZ)
 	Fog->SetFogInscatteringColor(Look.FogColor * ExploredSkyDetail::SkyLuminance * Look.SkyBrightness * 0.6f);
 }
 
-void AExploredSkyController::ApplyPostProcess(float GoldenHour, float SunUp)
+void AExploredSkyController::ApplyPostProcess(float GoldenHour, float SunUp, float DayLock)
 {
+	using namespace ExploredSkyDetail;
 	FPostProcessSettings& PP = PostProcess->Settings;
+	// Con el sol alto la exposición es fija (DayExposureEV100): la arena seca da el color de la paleta
+	// mire donde mire la cámara. Al amanecer, al ocaso y de noche vuelve el rango automático de siempre.
+	PP.AutoExposureMinBrightness = FMath::Lerp(AutoExposureMinEV100, DayExposureEV100, DayLock);
+	PP.AutoExposureMaxBrightness = FMath::Lerp(AutoExposureMaxEV100, DayExposureEV100, DayLock);
 	// De noche la exposición no compensa del todo: el cielo y el mar quedan azul noche, no grises.
 	PP.AutoExposureBias = FMath::Lerp(-0.6f, 0.3f, SunUp);
 	PP.ColorGain = FVector4(FMath::Lerp(1.0f, 1.08f, GoldenHour), FMath::Lerp(1.0f, 1.02f, GoldenHour), FMath::Lerp(1.0f, 0.94f, GoldenHour), 1.0f);
